@@ -326,7 +326,7 @@ TEST_F(MasterPreferencesTest, TestDefaultInstallConfig) {
   EXPECT_TRUE(pref_chrome.install_chrome());
 }
 
-TEST_F(MasterPreferencesTest, TestMultiInstallConfig) {
+TEST_F(MasterPreferencesTest, TestMultiInstallIgnoredConfig) {
   using installer::switches::kMultiInstall;
   using installer::switches::kChrome;
 
@@ -338,7 +338,7 @@ TEST_F(MasterPreferencesTest, TestMultiInstallConfig) {
 
   installer::MasterPreferences pref_chrome(chrome_install);
 
-  EXPECT_TRUE(pref_chrome.is_multi_install());
+  EXPECT_FALSE(pref_chrome.is_multi_install());
   EXPECT_TRUE(pref_chrome.install_chrome());
 }
 

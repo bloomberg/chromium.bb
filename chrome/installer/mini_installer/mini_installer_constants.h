@@ -37,9 +37,12 @@ extern const wchar_t kCleanupRegistryValue[];
 extern const wchar_t kInstallerErrorRegistryValue[];
 extern const wchar_t kInstallerExtraCode1RegistryValue[];
 extern const wchar_t kInstallerResultRegistryValue[];
+extern const wchar_t kPvRegistryValue[];
+extern const wchar_t kUninstallArgumentsRegistryValue[];
 extern const wchar_t kUninstallRegistryValue[];
 
 // Registry key paths.
+extern const wchar_t kClientsKeyBase[];
 extern const wchar_t kClientStateKeyBase[];
 extern const wchar_t kCleanupRegistryKey[];
 

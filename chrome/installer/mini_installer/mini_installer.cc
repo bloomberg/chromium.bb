@@ -74,89 +74,99 @@ struct Context {
   PathString* setup_resource_path;
 };
 
-
-// Opens the Google Update ClientState key for the current install
-// configuration.  This includes locating the correct key in the face of
-// multi-install.  The flag will by default be written to HKCU, but if
-// --system-level is included in the command line, it will be written to
-// HKLM instead.
-bool OpenInstallStateKey(const Configuration& configuration, RegKey* key) {
+#if defined(GOOGLE_CHROME_BUILD)
+// Opens the Google Update ClientState key. If |binaries| is false, opens the
+// key for Google Chrome or Chrome SxS (canary). If |binaries| is true and an
+// existing multi-install Chrome is being updated, opens the key for the
+// binaries; otherwise, returns false.
+bool OpenInstallStateKey(const Configuration& configuration,
+                         bool binaries,
+                         RegKey* key) {
+  if (binaries && !configuration.is_updating_multi_chrome())
+    return false;
   const HKEY root_key =
       configuration.is_system_level() ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  const wchar_t* app_guid = configuration.chrome_app_guid();
+  const wchar_t* app_guid = binaries ? google_update::kMultiInstallAppGuid
+                                     : configuration.chrome_app_guid();
   const REGSAM key_access = KEY_QUERY_VALUE | KEY_SET_VALUE;
 
-  return OpenClientStateKey(root_key, app_guid, key_access, key);
+  return OpenClientStateKey(root_key, app_guid, key_access, key) ==
+         ERROR_SUCCESS;
 }
 
-// Writes install results into registry where it is read by Google Update.
+// Writes install results into the registry where it is read by Google Update.
 // Don't write anything if there is already a result present, likely
 // written by setup.exe.
 void WriteInstallResults(const Configuration& configuration,
                          ProcessExitResult result) {
-#if defined(GOOGLE_CHROME_BUILD)
   // Calls to setup.exe will write a "success" result if everything was good
   // so we don't need to write anything from here.
   if (result.IsSuccess())
     return;
 
-  RegKey key;
-  DWORD value;
-  if (OpenInstallStateKey(configuration, &key)) {
-    if (key.ReadDWValue(kInstallerResultRegistryValue, &value)
-            != ERROR_SUCCESS || value == 0) {
-      key.WriteDWValue(kInstallerResultRegistryValue,
-                       result.exit_code ? 1 /* FAILED_CUSTOM_ERROR */
-                                        : 0 /* SUCCESS */);
-      key.WriteDWValue(kInstallerErrorRegistryValue, result.exit_code);
-      key.WriteDWValue(kInstallerExtraCode1RegistryValue, result.windows_error);
+  // Write the value in Chrome ClientState key and in the binaries' if an
+  // existing multi-install Chrome is being updated.
+  for (int i = 0; i < 2; ++i) {
+    RegKey key;
+    DWORD value;
+    if (OpenInstallStateKey(configuration, i != 0, &key)) {
+      if (key.ReadDWValue(kInstallerResultRegistryValue, &value) !=
+              ERROR_SUCCESS ||
+          value == 0) {
+        key.WriteDWValue(kInstallerResultRegistryValue,
+                         result.exit_code ? 1 /* FAILED_CUSTOM_ERROR */
+                                          : 0 /* SUCCESS */);
+        key.WriteDWValue(kInstallerErrorRegistryValue, result.exit_code);
+        key.WriteDWValue(kInstallerExtraCode1RegistryValue,
+                         result.windows_error);
+      }
     }
-    key.Close();
   }
-#endif
 }
 
 // This function sets the flag in registry to indicate that Google Update
 // should try full installer next time. If the current installer works, this
 // flag is cleared by setup.exe at the end of install.
 void SetInstallerFlags(const Configuration& configuration) {
-  RegKey key;
   StackString<128> value;
-  LONG ret = ERROR_SUCCESS;
 
-  if (!OpenInstallStateKey(configuration, &key))
-    return;
+  for (int i = 0; i < 2; ++i) {
+    RegKey key;
+    if (!OpenInstallStateKey(configuration, i != 0, &key))
+      continue;
 
-  ret = key.ReadSZValue(kApRegistryValue, value.get(), value.capacity());
+    LONG ret = key.ReadSZValue(kApRegistryValue, value.get(), value.capacity());
 
-  // The conditions below are handling two cases:
-  // 1. When ap value is present, we want to add the required tag only if it is
-  //    not present.
-  // 2. When ap value is missing, we are going to create it with the required
-  //    tag.
-  if ((ret == ERROR_SUCCESS) || (ret == ERROR_FILE_NOT_FOUND)) {
-    if (ret == ERROR_FILE_NOT_FOUND)
-      value.clear();
+    // The conditions below are handling two cases:
+    // 1. When ap value is present, we want to add the required tag only if it
+    //    is not present.
+    // 2. When ap value is missing, we are going to create it with the required
+    //    tag.
+    if ((ret == ERROR_SUCCESS) || (ret == ERROR_FILE_NOT_FOUND)) {
+      if (ret == ERROR_FILE_NOT_FOUND)
+        value.clear();
 
-    if (!StrEndsWith(value.get(), kFullInstallerSuffix) &&
-        value.append(kFullInstallerSuffix)) {
-      key.WriteSZValue(kApRegistryValue, value.get());
+      if (!StrEndsWith(value.get(), kFullInstallerSuffix) &&
+          value.append(kFullInstallerSuffix)) {
+        key.WriteSZValue(kApRegistryValue, value.get());
+      }
     }
   }
 }
+#endif  // GOOGLE_CHROME_BUILD
 
 // Gets the setup.exe path from Registry by looking at the value of Uninstall
 // string.  |size| is measured in wchar_t units.
 ProcessExitResult GetSetupExePathForAppGuid(bool system_level,
-                                          const wchar_t* app_guid,
-                                          const wchar_t* previous_version,
-                                          wchar_t* path,
-                                          size_t size) {
+                                            const wchar_t* app_guid,
+                                            const wchar_t* previous_version,
+                                            wchar_t* path,
+                                            size_t size) {
   const HKEY root_key = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
   RegKey key;
-  if (!OpenClientStateKey(root_key, app_guid, KEY_QUERY_VALUE, &key))
-    return ProcessExitResult(UNABLE_TO_FIND_REGISTRY_KEY);
-  DWORD result = key.ReadSZValue(kUninstallRegistryValue, path, size);
+  LONG result = OpenClientStateKey(root_key, app_guid, KEY_QUERY_VALUE, &key);
+  if (result == ERROR_SUCCESS)
+    result = key.ReadSZValue(kUninstallRegistryValue, path, size);
   if (result != ERROR_SUCCESS)
     return ProcessExitResult(UNABLE_TO_FIND_REGISTRY_KEY, result);
 
@@ -173,24 +183,23 @@ ProcessExitResult GetSetupExePathForAppGuid(bool system_level,
 // in the Uninstall string in the registry. A previous version number specified
 // in |configuration| is used if available. |size| is measured in wchar_t units.
 ProcessExitResult GetPreviousSetupExePath(const Configuration& configuration,
-                                        wchar_t* path,
-                                        size_t size) {
+                                          wchar_t* path,
+                                          size_t size) {
   bool system_level = configuration.is_system_level();
   const wchar_t* previous_version = configuration.previous_version();
   ProcessExitResult exit_code = ProcessExitResult(GENERIC_ERROR);
 
-  // If this is a multi install, first try looking in the binaries for the path.
-  if (configuration.is_multi_install()) {
-    exit_code = GetSetupExePathForAppGuid(
-        system_level, google_update::kMultiInstallAppGuid, previous_version,
-        path, size);
-  }
+  // Check Chrome's ClientState key for the path to setup.exe. This will have
+  // the correct path for all well-functioning installs.
+  exit_code =
+      GetSetupExePathForAppGuid(system_level, configuration.chrome_app_guid(),
+                                previous_version, path, size);
 
-  // Make a last-ditch effort to look in the Chrome client state key.
-  if (!exit_code.IsSuccess()) {
-    exit_code = GetSetupExePathForAppGuid(
-        system_level, configuration.chrome_app_guid(), previous_version,
-        path, size);
+  // Failing that, check the binaries if updating multi-install Chrome.
+  if (!exit_code.IsSuccess() && configuration.is_updating_multi_chrome()) {
+    exit_code = GetSetupExePathForAppGuid(system_level,
+                                          google_update::kMultiInstallAppGuid,
+                                          previous_version, path, size);
   }
 
   return exit_code;
@@ -451,8 +460,8 @@ ProcessExitResult UnpackBinaryResources(const Configuration& configuration,
 
 // Executes setup.exe, waits for it to finish and returns the exit code.
 ProcessExitResult RunSetup(const Configuration& configuration,
-                         const wchar_t* archive_path,
-                         const wchar_t* setup_path) {
+                           const wchar_t* archive_path,
+                           const wchar_t* setup_path) {
   // There could be three full paths in the command line for setup.exe (path
   // to exe itself, path to archive and path to log file), so we declare
   // total size as three + one additional to hold command line options.
@@ -848,8 +857,9 @@ ProcessExitResult WMain(HMODULE module) {
 #if defined(GOOGLE_CHROME_BUILD)
   // Set the magic suffix in registry to try full installer next time. We ignore
   // any errors here and we try to set the suffix for user level unless
-  // --system-level is on the command line in which case we set it for system
-  // level instead. This only applies to the Google Chrome distribution.
+  // GoogleUpdateIsMachine=1 is present in the environment or --system-level is
+  // on the command line in which case we set it for system level instead. This
+  // only applies to the Google Chrome distribution.
   SetInstallerFlags(configuration);
 #endif
 
@@ -869,7 +879,10 @@ ProcessExitResult WMain(HMODULE module) {
   if (ShouldDeleteExtractedFiles())
     DeleteExtractedFiles(base_path.get(), archive_path.get(), setup_path.get());
 
+#if defined(GOOGLE_CHROME_BUILD)
   WriteInstallResults(configuration, exit_code);
+#endif
+
   return exit_code;
 }
 

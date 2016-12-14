@@ -148,6 +148,10 @@ class InstallerState {
   // with the ClientState key we will be interacting with.
   BrowserDistribution::Type state_type() const { return state_type_; }
 
+  // Returns true if this is an update of multi-install Chrome to
+  // single-install.
+  bool is_migrating_to_single() const { return is_migrating_to_single_; }
+
   // Returns the BrowserDistribution instance corresponding to the binaries for
   // this run if we're operating on a multi-package product.
   BrowserDistribution* multi_package_binaries_distribution() const {
@@ -270,6 +274,7 @@ class InstallerState {
   bool msi_;
   bool background_mode_;
   bool verbose_logging_;
+  bool is_migrating_to_single_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InstallerState);

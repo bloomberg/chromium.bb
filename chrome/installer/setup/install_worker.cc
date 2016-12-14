@@ -897,12 +897,9 @@ void AddMigrateUsageStatesWorkItems(const InstallationState& original_state,
     return;
   }
 
-  const ProductState* chrome_state = original_state.GetProductState(
-      installer_state.system_install(),
-      BrowserDistribution::CHROME_BROWSER);
-  // Bail out if there is not an existing multi-install Chrome that is being
-  // updated.
-  if (!chrome_state || !chrome_state->is_multi_install()) {
+  // Bail out if an existing multi-install Chrome is not being migrated to
+  // single-install.
+  if (!installer_state.is_migrating_to_single()) {
     VLOG(1) << "No multi-install Chrome found to migrate to single-install.";
     return;
   }

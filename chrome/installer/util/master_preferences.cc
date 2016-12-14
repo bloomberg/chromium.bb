@@ -75,34 +75,19 @@ base::DictionaryValue* ParseDistributionPreferences(
 
 namespace installer {
 
-MasterPreferences::MasterPreferences() : distribution_(NULL),
-                                         preferences_read_from_file_(false),
-                                         chrome_(true),
-                                         multi_install_(false) {
+MasterPreferences::MasterPreferences() {
   InitializeFromCommandLine(*base::CommandLine::ForCurrentProcess());
 }
 
-MasterPreferences::MasterPreferences(const base::CommandLine& cmd_line)
-    : distribution_(NULL),
-      preferences_read_from_file_(false),
-      chrome_(true),
-      multi_install_(false) {
+MasterPreferences::MasterPreferences(const base::CommandLine& cmd_line) {
   InitializeFromCommandLine(cmd_line);
 }
 
-MasterPreferences::MasterPreferences(const base::FilePath& prefs_path)
-    : distribution_(NULL),
-      preferences_read_from_file_(false),
-      chrome_(true),
-      multi_install_(false) {
+MasterPreferences::MasterPreferences(const base::FilePath& prefs_path) {
   InitializeFromFilePath(prefs_path);
 }
 
-MasterPreferences::MasterPreferences(const std::string& prefs)
-    : distribution_(NULL),
-      preferences_read_from_file_(false),
-      chrome_(true),
-      multi_install_(false) {
+MasterPreferences::MasterPreferences(const std::string& prefs) {
   InitializeFromString(prefs);
 }
 
@@ -129,14 +114,10 @@ void MasterPreferences::InitializeFromCommandLine(
     const char* cmd_line_switch;
     const char* distribution_switch;
   } translate_switches[] = {
-    { installer::switches::kChrome,
-      installer::master_preferences::kChrome },
     { installer::switches::kDisableLogging,
       installer::master_preferences::kDisableLogging },
     { installer::switches::kMsi,
       installer::master_preferences::kMsi },
-    { installer::switches::kMultiInstall,
-      installer::master_preferences::kMultiInstall },
     { installer::switches::kDoNotRegisterForUpdateLaunch,
       installer::master_preferences::kDoNotRegisterForUpdateLaunch },
     { installer::switches::kDoNotLaunchChrome,
@@ -181,11 +162,17 @@ void MasterPreferences::InitializeFromCommandLine(
     }
   }
 
+  // Strip multi-install from the dictionary, if present. This ensures that any
+  // code that probes the dictionary directly to check for multi-install (rather
+  // than calling is_multi_install()) receives false. The updated dictionary is
+  // not written back to disk.
+  master_dictionary_->Remove(std::string(master_preferences::kDistroDict) +
+                                 '.' + master_preferences::kMultiInstall,
+                             nullptr);
+
   // Cache a pointer to the distribution dictionary. Ignore errors if any.
   master_dictionary_->GetDictionary(installer::master_preferences::kDistroDict,
                                     &distribution_);
-
-  InitializeProductFlags();
 #endif
 }
 
@@ -217,28 +204,8 @@ bool MasterPreferences::InitializeFromString(const std::string& json_data) {
         installer::master_preferences::kDistroDict, &distribution_);
   }
 
-  InitializeProductFlags();
   EnforceLegacyPreferences();
   return data_is_valid;
-}
-
-void MasterPreferences::InitializeProductFlags() {
-  // Make sure we start out with the correct defaults.
-  multi_install_ = false;
-  chrome_ = true;
-
-  GetBool(installer::master_preferences::kMultiInstall, &multi_install_);
-
-  // When multi-install is specified, the checks are pretty simple (in theory):
-  // In order to be installed/uninstalled, each product must have its switch
-  // present on the command line.
-  // When multi-install is not set, operate on Chrome.
-  if (multi_install_) {
-    if (!GetBool(installer::master_preferences::kChrome, &chrome_))
-      chrome_ = false;
-  } else {
-    chrome_ = true;
-  }
 }
 
 void MasterPreferences::EnforceLegacyPreferences() {

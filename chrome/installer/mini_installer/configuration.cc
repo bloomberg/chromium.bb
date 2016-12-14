@@ -11,6 +11,7 @@
 #include "chrome/installer/mini_installer/appid.h"
 #include "chrome/installer/mini_installer/mini_installer_constants.h"
 #include "chrome/installer/mini_installer/mini_installer_resource.h"
+#include "chrome/installer/mini_installer/mini_string.h"
 #include "chrome/installer/mini_installer/regkey.h"
 
 namespace mini_installer {
@@ -36,54 +37,10 @@ Configuration::~Configuration() {
   Clear();
 }
 
-// When multi_install is true, we are potentially:
-// 1. Performing a multi-install of some product(s) on a clean machine.
-//    Neither the product(s) nor the multi-installer will have a
-//    ClientState key in the registry, so there is no key to be modified.
-// 2. Upgrading an existing multi-install.  The multi-installer will have
-//    a ClientState key in the registry.  Only it need be modified.
-// 3. Migrating a single-install into a multi-install.  The product will
-//    have a ClientState key in the registry.  Only it need be modified.
-// To handle all cases, we inspect the product's ClientState to see if it
-// exists and its "ap" value does not contain "-multi".  This is case 3,
-// so we modify the product's ClientState.  Otherwise, we check the
-// multi-installer's ClientState and modify it if it exists.
-// TODO(bcwhite): Write a unit test for this that uses registry virtualization.
-void Configuration::SetChromeAppGuid() {
-  const HKEY root_key =
-      is_system_level_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  const wchar_t* app_guid =
-      is_side_by_side_ ? google_update::kSxSAppGuid
-                       : google_update::kAppGuid;
-
-  // This is the value for single-install and case 3.
-  chrome_app_guid_ = app_guid;
-
-  if (is_multi_install_) {
-    ValueString value;
-    LONG ret = ERROR_SUCCESS;
-    if (ReadClientStateRegistryValue(root_key, app_guid, &ret, value)) {
-      // The product has a client state key.  See if it's a single-install.
-      if (ret == ERROR_FILE_NOT_FOUND ||
-          (ret == ERROR_SUCCESS &&
-           !FindTagInStr(value.get(), kMultiInstallTag, NULL))) {
-        // yes -- case 3: use the existing key.
-        return;
-      }
-    }
-    // error, case 1, or case 2: modify the multi-installer's key.
-    chrome_app_guid_ = google_update::kMultiInstallAppGuid;
-  }
-}
-
-bool Configuration::ReadClientStateRegistryValue(
-    const HKEY root_key, const wchar_t* app_guid,
-    LONG* retval, ValueString& value) {
-  RegKey key;
-  if (!OpenClientStateKey(root_key, app_guid, KEY_QUERY_VALUE, &key))
-    return false;
-  *retval = key.ReadSZValue(kApRegistryValue, value.get(), value.capacity());
-  return true;
+bool Configuration::Initialize(HMODULE module) {
+  Clear();
+  ReadResources(module);
+  return ParseCommandLine(::GetCommandLine());
 }
 
 const wchar_t* Configuration::program() const {
@@ -99,18 +56,11 @@ void Configuration::Clear() {
   command_line_ = NULL;
   operation_ = INSTALL_PRODUCT;
   argument_count_ = 0;
-  has_chrome_ = false;
-  is_multi_install_ = false;
   is_system_level_ = false;
   is_side_by_side_ = false;
+  is_updating_multi_chrome_ = false;
   has_invalid_switch_ = false;
   previous_version_ = NULL;
-}
-
-bool Configuration::Initialize(HMODULE module) {
-  Clear();
-  ReadResources(module);
-  return ParseCommandLine(::GetCommandLine());
 }
 
 // |command_line| is shared with this instance in the sense that this
@@ -123,25 +73,24 @@ bool Configuration::ParseCommandLine(const wchar_t* command_line) {
     return false;
 
   for (int i = 1; i < argument_count_; ++i) {
-    if (0 == ::lstrcmpi(args_[i], L"--chrome-sxs"))
-      is_side_by_side_ = true;
-    else if (0 == ::lstrcmpi(args_[i], L"--chrome"))
-      has_chrome_ = true;
-    else if (0 == ::lstrcmpi(args_[i], L"--multi-install"))
-      is_multi_install_ = true;
-    else if (0 == ::lstrcmpi(args_[i], L"--system-level"))
+    if (0 == ::lstrcmpi(args_[i], L"--system-level")) {
       is_system_level_ = true;
-    else if (0 == ::lstrcmpi(args_[i], L"--cleanup"))
+#if defined(GOOGLE_CHROME_BUILD)
+    } else if (0 == ::lstrcmpi(args_[i], L"--chrome-sxs")) {
+      is_side_by_side_ = true;
+      chrome_app_guid_ = google_update::kSxSAppGuid;
+#endif
+    } else if (0 == ::lstrcmpi(args_[i], L"--cleanup")) {
       operation_ = CLEANUP;
-    else if (0 == ::lstrcmpi(args_[i], L"--chrome-frame"))
+    } else if (0 == ::lstrcmpi(args_[i], L"--chrome-frame")) {
       has_invalid_switch_ = true;
+    }
   }
 
   if (!is_system_level_)
     is_system_level_ = GetGoogleUpdateIsMachineEnvVar();
-  SetChromeAppGuid();
-  if (!is_multi_install_)
-    has_chrome_ = true;
+
+  is_updating_multi_chrome_ = IsUpdatingMultiChrome();
 
   return true;
 }
@@ -173,6 +122,31 @@ void Configuration::ReadResources(HMODULE module) {
     return;
 
   previous_version_ = version_string;
+}
+
+bool Configuration::IsUpdatingMultiChrome() const {
+#if defined(GOOGLE_CHROME_BUILD)
+  // SxS/canary does not support multi-install.
+  if (is_side_by_side_)
+    return false;
+
+  // Is Chrome already installed as multi-install?
+  const HKEY root = is_system_level_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  StackString<128> value;
+  RegKey key;
+  return (OpenClientsKey(root, google_update::kAppGuid, KEY_QUERY_VALUE,
+                         &key) == ERROR_SUCCESS &&
+          key.ReadSZValue(kPvRegistryValue, value.get(), value.capacity()) ==
+              ERROR_SUCCESS &&
+          value.length() != 0 &&
+          OpenClientStateKey(root, google_update::kAppGuid, KEY_QUERY_VALUE,
+                             &key) == ERROR_SUCCESS &&
+          key.ReadSZValue(kUninstallArgumentsRegistryValue, value.get(),
+                          value.capacity()) == ERROR_SUCCESS &&
+          value.findi(L"--multi-install") != nullptr);
+#else
+  return false;
+#endif
 }
 
 }  // namespace mini_installer

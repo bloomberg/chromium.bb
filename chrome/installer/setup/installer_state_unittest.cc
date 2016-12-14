@@ -123,12 +123,16 @@ TEST_F(InstallerStateTest, InstallerResult) {
   std::wstring value;
   DWORD dw_value;
 
-  // check results for a fresh install of single Chrome
-  {
+  // Check results for a fresh install of single Chrome and the same for an
+  // attempt at multi-install, which is now ignored.
+  static constexpr const wchar_t* kCommandLines[] = {
+      L"setup.exe --system-level",
+      L"setup.exe --system-level --multi-install --chrome",
+  };
+  for (const wchar_t* command_line : kCommandLines) {
     RegistryOverrideManager override_manager;
     override_manager.OverrideRegistry(root);
-    base::CommandLine cmd_line =
-        base::CommandLine::FromString(L"setup.exe --system-level");
+    base::CommandLine cmd_line = base::CommandLine::FromString(command_line);
     const MasterPreferences prefs(cmd_line);
     InstallationState machine_state;
     machine_state.Initialize();
@@ -153,38 +157,6 @@ TEST_F(InstallerStateTest, InstallerResult) {
     EXPECT_EQ(ERROR_SUCCESS,
         key.ReadValue(installer::kInstallerSuccessLaunchCmdLine, &value));
     EXPECT_EQ(launch_cmd, value);
-  }
-
-  // check results for a fresh install of multi Chrome
-  {
-    RegistryOverrideManager override_manager;
-    override_manager.OverrideRegistry(root);
-    base::CommandLine cmd_line = base::CommandLine::FromString(
-        L"setup.exe --system-level --multi-install --chrome");
-    const MasterPreferences prefs(cmd_line);
-    InstallationState machine_state;
-    machine_state.Initialize();
-    InstallerState state;
-    state.Initialize(cmd_line, prefs, machine_state);
-    state.WriteInstallerResult(installer::FIRST_INSTALL_SUCCESS, 0,
-                               &launch_cmd);
-    BrowserDistribution* distribution =
-        BrowserDistribution::GetSpecificDistribution(
-            BrowserDistribution::CHROME_BROWSER);
-    BrowserDistribution* binaries =
-        BrowserDistribution::GetSpecificDistribution(
-            BrowserDistribution::CHROME_BINARIES);
-    EXPECT_EQ(ERROR_SUCCESS,
-        key.Open(root, distribution->GetStateKey().c_str(), KEY_READ));
-    EXPECT_EQ(ERROR_SUCCESS,
-        key.ReadValue(installer::kInstallerSuccessLaunchCmdLine, &value));
-    EXPECT_EQ(launch_cmd, value);
-    EXPECT_EQ(ERROR_SUCCESS,
-        key.Open(root, binaries->GetStateKey().c_str(), KEY_READ));
-    EXPECT_EQ(ERROR_SUCCESS,
-        key.ReadValue(installer::kInstallerSuccessLaunchCmdLine, &value));
-    EXPECT_EQ(launch_cmd, value);
-    key.Close();
   }
 }
 
@@ -259,27 +231,27 @@ TEST_F(InstallerStateTest, InitializeTwice) {
 
   InstallerState installer_state;
 
-  // Initialize the instance to install multi Chrome.
+  // Initialize the instance to install user-level Chrome.
   {
-    base::CommandLine cmd_line(
-        base::CommandLine::FromString(L"setup.exe --multi-install --chrome"));
+    base::CommandLine cmd_line(base::CommandLine::FromString(L"setup.exe"));
     MasterPreferences prefs(cmd_line);
     installer_state.Initialize(cmd_line, prefs, machine_state);
   }
   // Confirm the expected state.
   EXPECT_EQ(InstallerState::USER_LEVEL, installer_state.level());
-  EXPECT_EQ(InstallerState::MULTI_PACKAGE, installer_state.package_type());
-  EXPECT_EQ(InstallerState::MULTI_INSTALL, installer_state.operation());
+  EXPECT_EQ(InstallerState::SINGLE_PACKAGE, installer_state.package_type());
+  EXPECT_EQ(InstallerState::SINGLE_INSTALL_OR_UPDATE,
+            installer_state.operation());
   EXPECT_TRUE(wcsstr(installer_state.target_path().value().c_str(),
                      BrowserDistribution::GetSpecificDistribution(
-                         BrowserDistribution::CHROME_BINARIES)->
-                         GetInstallSubDir().c_str()));
+                         BrowserDistribution::CHROME_BROWSER)
+                         ->GetInstallSubDir()
+                         .c_str()));
   EXPECT_FALSE(installer_state.verbose_logging());
   EXPECT_EQ(installer_state.state_key(),
             BrowserDistribution::GetSpecificDistribution(
                 BrowserDistribution::CHROME_BROWSER)->GetStateKey());
   EXPECT_EQ(installer_state.state_type(), BrowserDistribution::CHROME_BROWSER);
-  EXPECT_TRUE(installer_state.multi_package_binaries_distribution());
   EXPECT_TRUE(installer_state.FindProduct(BrowserDistribution::CHROME_BROWSER));
 
   // Now initialize it to install system-level single Chrome.

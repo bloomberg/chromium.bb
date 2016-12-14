@@ -7,8 +7,6 @@
 
 #include <windows.h>
 
-#include "chrome/installer/mini_installer/mini_string.h"
-
 namespace mini_installer {
 
 // A simple container of the mini_installer's configuration, as dictated by the
@@ -40,22 +38,20 @@ class Configuration {
   // Returns the original command line.
   const wchar_t* command_line() const { return command_line_; }
 
-  // Returns the app guid to be used for Chrome.  --chrome-sxs on the command
-  // line makes this the canary's app guid.
+  // Returns the app guid to be used for Chrome. --chrome-sxs on the command
+  // line makes this the canary's app guid (Google Chrome only).
   const wchar_t* chrome_app_guid() const { return chrome_app_guid_; }
-
-  // Returns true if --chrome is explicitly or implicitly on the command line.
-  bool has_chrome() const { return has_chrome_; }
-
-  // Returns true if --multi-install is on the command line.
-  bool is_multi_install() const { return is_multi_install_; }
 
   // Returns true if --system-level is on the command line or if
   // GoogleUpdateIsMachine=1 is set in the process's environment.
   bool is_system_level() const { return is_system_level_; }
 
-  // Retuns true if --chrome-sxs is on the command line.
+  // Retuns true if --chrome-sxs is on the command line (Google Chrome only).
   bool is_side_by_side() const { return is_side_by_side_; }
+
+  // Returns true if an existing multi-install Chrome is being updated (Google
+  // Chrome only).
+  bool is_updating_multi_chrome() const { return is_updating_multi_chrome_; }
 
   // Returns true if any invalid switch is found on the command line.
   bool has_invalid_switch() const { return has_invalid_switch_; }
@@ -73,26 +69,18 @@ class Configuration {
   const wchar_t* command_line_;
   int argument_count_;
   Operation operation_;
-  bool has_chrome_;
-  bool is_multi_install_;
   bool is_system_level_;
   bool is_side_by_side_;
+  bool is_updating_multi_chrome_;
   bool has_invalid_switch_;
   const wchar_t* previous_version_;
 
- protected:
-  typedef StackString<128> ValueString;
-
-  // Virtual for testing.
-  virtual bool ReadClientStateRegistryValue(
-      const HKEY root_key, const wchar_t* app_guid,
-      LONG* retval, ValueString& value);
-
  private:
-  Configuration(const Configuration&);
-  Configuration& operator=(const Configuration&);
+  Configuration(const Configuration&) = delete;
+  Configuration& operator=(const Configuration&) = delete;
 
-  void SetChromeAppGuid();
+  // Returns true if multi-install Chrome is already present on the machine.
+  bool IsUpdatingMultiChrome() const;
 };
 
 }  // namespace mini_installer

@@ -8,12 +8,16 @@
 #include <stdlib.h>
 
 #include <memory>
+#include <vector>
 
 #include "base/environment.h"
+#include "base/test/test_reg_util_win.h"
+#include "base/win/registry.h"
 #include "chrome/installer/mini_installer/appid.h"
+#include "chrome/installer/mini_installer/mini_installer_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using mini_installer::Configuration;
+namespace mini_installer {
 
 namespace {
 
@@ -33,47 +37,66 @@ class ScopedGoogleUpdateIsMachine {
   std::unique_ptr<base::Environment> env_;
 };
 
-}  // namespace
-
 class TestConfiguration : public Configuration {
  public:
-  explicit TestConfiguration(const wchar_t* command_line)
-      : Configuration(),
-        open_registry_key_result_(false),
-        read_registry_value_result_(0),
-        read_registry_value_(L"") {
-    Initialize(command_line);
+  explicit TestConfiguration(const wchar_t* command_line) {
+    EXPECT_TRUE(ParseCommandLine(command_line));
   }
-  explicit TestConfiguration(const wchar_t* command_line,
-                             LONG ret, const wchar_t* value)
-      : Configuration(),
-        open_registry_key_result_(true),
-        read_registry_value_result_(ret),
-        read_registry_value_(value) {
-    Initialize(command_line);
-  }
-  void SetRegistryResults(bool openkey, LONG ret, const wchar_t* value) {
-  }
- private:
-  bool open_registry_key_result_;
-  LONG read_registry_value_result_;
-  const wchar_t* read_registry_value_ = L"";
 
-  void Initialize(const wchar_t* command_line) {
-    Clear();
-    ASSERT_TRUE(ParseCommandLine(command_line));
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestConfiguration);
+};
+
+}  // namespace
+
+class MiniInstallerConfigurationTest : public ::testing::Test {
+ protected:
+  MiniInstallerConfigurationTest() {
+    registry_overrides_.OverrideRegistry(HKEY_CURRENT_USER);
+    registry_overrides_.OverrideRegistry(HKEY_LOCAL_MACHINE);
   }
-  bool ReadClientStateRegistryValue(
-      const HKEY root_key, const wchar_t* app_guid,
-      LONG* retval, ValueString& value) override {
-    *retval = read_registry_value_result_;
-    value.assign(read_registry_value_);
-    return open_registry_key_result_;
+
+  // Adds sufficient state in the registry for Configuration to think that
+  // Chrome is already installed at |system_level| as per |multi_install|.
+  void AddChromeRegistryState(bool system_level, bool multi_install) {
+#if defined(GOOGLE_CHROME_BUILD)
+    static constexpr wchar_t kClientsPath[] =
+        L"SOFTWARE\\Google\\Update\\Clients\\"
+        L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
+    static constexpr wchar_t kClientStatePath[] =
+        L"SOFTWARE\\Google\\Update\\ClientState\\"
+        L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
+#else
+    static constexpr wchar_t kClientsPath[] = L"SOFTWARE\\Chromium";
+    static constexpr wchar_t kClientStatePath[] = L"SOFTWARE\\Chromium";
+#endif
+    static constexpr const wchar_t* kUninstallArguments[] = {
+        L"--uninstall", L"--uninstall --multi-install --chrome",
+        L"--uninstall --system-level",
+        L"--uninstall --system-level --multi-install --chrome",
+    };
+    const int uninstall_index =
+        ((system_level ? 0x02 : 0) | (multi_install ? 0x01 : 0));
+    const HKEY root = system_level ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+    base::win::RegKey key;
+    ASSERT_EQ(ERROR_SUCCESS,
+              key.Create(root, kClientsPath, KEY_WOW64_32KEY | KEY_SET_VALUE));
+    ASSERT_EQ(ERROR_SUCCESS, key.WriteValue(L"pv", L"4.3.2.1"));
+    ASSERT_EQ(ERROR_SUCCESS, key.Create(root, kClientStatePath,
+                                        KEY_WOW64_32KEY | KEY_SET_VALUE));
+    ASSERT_EQ(ERROR_SUCCESS,
+              key.WriteValue(L"UninstallArguments",
+                             kUninstallArguments[uninstall_index]));
   }
+
+ private:
+  registry_util::RegistryOverrideManager registry_overrides_;
+
+  DISALLOW_COPY_AND_ASSIGN(MiniInstallerConfigurationTest);
 };
 
 // Test that the operation type is CLEANUP iff --cleanup is on the cmdline.
-TEST(MiniInstallerConfigurationTest, Operation) {
+TEST_F(MiniInstallerConfigurationTest, Operation) {
   EXPECT_EQ(Configuration::INSTALL_PRODUCT,
             TestConfiguration(L"spam.exe").operation());
   EXPECT_EQ(Configuration::INSTALL_PRODUCT,
@@ -87,7 +110,7 @@ TEST(MiniInstallerConfigurationTest, Operation) {
             TestConfiguration(L"spam.exe --cleanup now").operation());
 }
 
-TEST(MiniInstallerConfigurationTest, Program) {
+TEST_F(MiniInstallerConfigurationTest, Program) {
   EXPECT_TRUE(NULL == mini_installer::Configuration().program());
   EXPECT_TRUE(std::wstring(L"spam.exe") ==
               TestConfiguration(L"spam.exe").program());
@@ -97,13 +120,13 @@ TEST(MiniInstallerConfigurationTest, Program) {
               TestConfiguration(L"c:\\blaz\\spam.exe --with args").program());
 }
 
-TEST(MiniInstallerConfigurationTest, ArgumentCount) {
+TEST_F(MiniInstallerConfigurationTest, ArgumentCount) {
   EXPECT_EQ(1, TestConfiguration(L"spam.exe").argument_count());
   EXPECT_EQ(2, TestConfiguration(L"spam.exe --foo").argument_count());
   EXPECT_EQ(3, TestConfiguration(L"spam.exe --foo --bar").argument_count());
 }
 
-TEST(MiniInstallerConfigurationTest, CommandLine) {
+TEST_F(MiniInstallerConfigurationTest, CommandLine) {
   static const wchar_t* const kCommandLines[] = {
     L"",
     L"spam.exe",
@@ -115,52 +138,47 @@ TEST(MiniInstallerConfigurationTest, CommandLine) {
   }
 }
 
-TEST(MiniInstallerConfigurationTest, ChromeAppGuid) {
-  EXPECT_TRUE(std::wstring(google_update::kAppGuid) ==
-              TestConfiguration(L"spam.exe").chrome_app_guid());
-  EXPECT_TRUE(std::wstring(google_update::kAppGuid) ==
-              TestConfiguration(L"spam.exe --chrome").chrome_app_guid());
-  EXPECT_TRUE(std::wstring(google_update::kSxSAppGuid) ==
-              TestConfiguration(L"spam.exe --chrome-sxs").chrome_app_guid());
-  EXPECT_TRUE(std::wstring(google_update::kMultiInstallAppGuid) ==
-              TestConfiguration(L"spam.exe --multi-install --chrome")
-                  .chrome_app_guid());
-  EXPECT_TRUE(std::wstring(google_update::kMultiInstallAppGuid) ==
-              TestConfiguration(L"spam.exe --multi-install --chrome",
-                                ERROR_INVALID_FUNCTION, L"")
-                  .chrome_app_guid());
-  EXPECT_TRUE(std::wstring(google_update::kAppGuid) ==
-              TestConfiguration(L"spam.exe --multi-install --chrome",
-                                ERROR_FILE_NOT_FOUND, L"")
-                  .chrome_app_guid());
-  EXPECT_TRUE(std::wstring(google_update::kAppGuid) ==
-              TestConfiguration(L"spam.exe --multi-install --chrome",
-                                ERROR_SUCCESS, L"foo-bar")
-                  .chrome_app_guid());
-  EXPECT_TRUE(std::wstring(google_update::kMultiInstallAppGuid) ==
-              TestConfiguration(L"spam.exe --multi-install --chrome",
-                                ERROR_SUCCESS, L"foo-multi")
-                  .chrome_app_guid());
+TEST_F(MiniInstallerConfigurationTest, IsUpdatingUserSingle) {
+  AddChromeRegistryState(false /* !system_level */, false /* !multi_install */);
+  EXPECT_FALSE(TestConfiguration(L"spam.exe").is_updating_multi_chrome());
 }
 
-TEST(MiniInstallerConfigurationTest, HasChrome) {
-  EXPECT_TRUE(TestConfiguration(L"spam.exe").has_chrome());
-  EXPECT_TRUE(TestConfiguration(L"spam.exe --chrome").has_chrome());
-  EXPECT_TRUE(TestConfiguration(L"spam.exe --multi-install --chrome")
-                  .has_chrome());
-  EXPECT_FALSE(TestConfiguration(L"spam.exe --multi-install").has_chrome());
+TEST_F(MiniInstallerConfigurationTest, IsUpdatingSystemSingle) {
+  AddChromeRegistryState(true /* system_level */, false /* !multi_install */);
+  EXPECT_FALSE(
+      TestConfiguration(L"spam.exe --system-level").is_updating_multi_chrome());
 }
 
-TEST(MiniInstallerConfigurationTest, IsMultiInstall) {
-  EXPECT_FALSE(TestConfiguration(L"spam.exe").is_multi_install());
-  EXPECT_FALSE(TestConfiguration(L"spam.exe --chrome").is_multi_install());
-  EXPECT_TRUE(TestConfiguration(L"spam.exe --multi-install --chrome")
-                  .is_multi_install());
-  EXPECT_TRUE(TestConfiguration(L"spam.exe --multi-install")
-                  .is_multi_install());
+TEST_F(MiniInstallerConfigurationTest, IsUpdatingUserMulti) {
+  AddChromeRegistryState(false /* !system_level */, true /* multi_install */);
+#if defined(GOOGLE_CHROME_BUILD)
+  EXPECT_TRUE(TestConfiguration(L"spam.exe").is_updating_multi_chrome());
+#else
+  EXPECT_FALSE(TestConfiguration(L"spam.exe").is_updating_multi_chrome());
+#endif
 }
 
-TEST(MiniInstallerConfigurationTest, IsSystemLevel) {
+TEST_F(MiniInstallerConfigurationTest, IsUpdatingSystemMulti) {
+  AddChromeRegistryState(true /* system_level */, true /* multi_install */);
+#if defined(GOOGLE_CHROME_BUILD)
+  EXPECT_TRUE(
+      TestConfiguration(L"spam.exe --system-level").is_updating_multi_chrome());
+#else
+  EXPECT_FALSE(
+      TestConfiguration(L"spam.exe --system-level").is_updating_multi_chrome());
+#endif
+}
+
+TEST_F(MiniInstallerConfigurationTest, ChromeAppGuid) {
+#if defined(GOOGLE_CHROME_BUILD)
+  EXPECT_STREQ(google_update::kAppGuid,
+               TestConfiguration(L"spam.exe").chrome_app_guid());
+  EXPECT_STREQ(google_update::kSxSAppGuid,
+               TestConfiguration(L"spam.exe --chrome-sxs").chrome_app_guid());
+#endif
+}
+
+TEST_F(MiniInstallerConfigurationTest, IsSystemLevel) {
   EXPECT_FALSE(TestConfiguration(L"spam.exe").is_system_level());
   EXPECT_FALSE(TestConfiguration(L"spam.exe --chrome").is_system_level());
   EXPECT_TRUE(TestConfiguration(L"spam.exe --system-level").is_system_level());
@@ -176,8 +194,19 @@ TEST(MiniInstallerConfigurationTest, IsSystemLevel) {
   }
 }
 
-TEST(MiniInstallerConfigurationTest, HasInvalidSwitch) {
+TEST_F(MiniInstallerConfigurationTest, IsSideBySide) {
+  EXPECT_FALSE(TestConfiguration(L"spam.exe").is_side_by_side());
+#if defined(GOOGLE_CHROME_BUILD)
+  EXPECT_TRUE(TestConfiguration(L"spam.exe --chrome-sxs").is_side_by_side());
+#else
+  EXPECT_FALSE(TestConfiguration(L"spam.exe --chrome-sxs").is_side_by_side());
+#endif
+}
+
+TEST_F(MiniInstallerConfigurationTest, HasInvalidSwitch) {
   EXPECT_FALSE(TestConfiguration(L"spam.exe").has_invalid_switch());
   EXPECT_TRUE(TestConfiguration(L"spam.exe --chrome-frame")
                   .has_invalid_switch());
 }
+
+}  // namespace mini_installer

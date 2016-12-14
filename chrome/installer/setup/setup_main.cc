@@ -1705,6 +1705,9 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   InstallerState installer_state;
   installer_state.Initialize(cmd_line, prefs, original_state);
 
+  VLOG(1) << "is_migrating_to_single is "
+          << installer_state.is_migrating_to_single();
+
   persistent_histogram_storage.set_storage_dir(
       installer::PersistentHistogramStorage::GetReportedStorageDir(
           installer_state.target_path()));

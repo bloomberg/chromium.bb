@@ -55,11 +55,19 @@ class RegKey {
   HKEY key_;
 };  // class RegKey
 
+// Initializes |key| with the desired |access| to |app_guid|'s Clients key.
+// Returns ERROR_SUCCESS on success, or a Windows error code on failure.
+LONG OpenClientsKey(HKEY root_key,
+                    const wchar_t* app_guid,
+                    REGSAM access,
+                    RegKey* key);
 
-// Helper function to get the RegKey associated with the "client state" of
-// the given |app_guid|.
-bool OpenClientStateKey(HKEY root_key, const wchar_t* app_guid,
-                        REGSAM access, RegKey* key);
+// Initializes |key| with the desired |access| to |app_guid|'s ClientState key.
+// Returns ERROR_SUCCESS on success, or a Windows error code on failure.
+LONG OpenClientStateKey(HKEY root_key,
+                        const wchar_t* app_guid,
+                        REGSAM access,
+                        RegKey* key);
 
 }  // namespace mini_installer
 

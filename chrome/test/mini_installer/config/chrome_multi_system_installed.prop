@@ -23,7 +23,10 @@
       }
     },
     "HKEY_LOCAL_MACHINE\\$BINARIES_UPDATE_REGISTRY_SUBKEY": {
-      "exists": "forbidden"
+      "exists": "required",
+      "values": {
+        "pv": {"type": "SZ", "data": "$MINI_INSTALLER_FILE_VERSION"}
+      }
     },
     "HKEY_LOCAL_MACHINE\\$LAUNCHER_UPDATE_REGISTRY_SUBKEY": {
       "condition": "'$CHROME_SHORT_NAME' == 'Chrome'",
@@ -34,7 +37,7 @@
       "values": {
         "UninstallString": {
           "type": "SZ",
-          "data": "\"$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe\" --uninstall --system-level --verbose-logging"
+          "data": "\"$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe\" --uninstall --multi-install --chrome --system-level --verbose-logging"
         },
         "Version": {"type": "SZ", "data": "$MINI_INSTALLER_FILE_VERSION"}
       }

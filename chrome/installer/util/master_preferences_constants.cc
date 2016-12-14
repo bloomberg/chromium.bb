@@ -6,7 +6,6 @@
 
 namespace installer {
 namespace master_preferences {
-  const char kChrome[] = "chrome";
   const char kCreateAllShortcuts[] = "create_all_shortcuts";
   const char kDisableLogging[] = "disable_logging";
   const char kDistroDict[] = "distribution";

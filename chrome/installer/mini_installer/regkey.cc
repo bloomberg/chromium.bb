@@ -72,7 +72,6 @@ void RegKey::Close() {
   }
 }
 
-
 // static
 bool RegKey::ReadSZValue(HKEY root_key, const wchar_t *sub_key,
                          const wchar_t *value_name, wchar_t *value,
@@ -82,17 +81,34 @@ bool RegKey::ReadSZValue(HKEY root_key, const wchar_t *sub_key,
           key.ReadSZValue(value_name, value, size) == ERROR_SUCCESS);
 }
 
-// Opens the Google Update ClientState key for a product.  This finds only
-// registry entries for Chrome; it does not support the Chromium registry
-// layout.
-bool OpenClientStateKey(HKEY root_key, const wchar_t* app_guid,
-                        REGSAM access, RegKey* key) {
+// Opens the Google Update Clients key for a product.
+LONG OpenClientsKey(HKEY root_key,
+                    const wchar_t* app_guid,
+                    REGSAM access,
+                    RegKey* key) {
+  StackString<MAX_PATH> clients_key;
+  if (!clients_key.assign(kClientsKeyBase))
+    return ERROR_BUFFER_OVERFLOW;
+#if defined(GOOGLE_CHROME_BUILD)
+  if (!clients_key.append(app_guid))
+    return ERROR_BUFFER_OVERFLOW;
+#endif
+  return key->Open(root_key, clients_key.get(), access | KEY_WOW64_32KEY);
+}
+
+// Opens the Google Update ClientState key for a product.
+LONG OpenClientStateKey(HKEY root_key,
+                        const wchar_t* app_guid,
+                        REGSAM access,
+                        RegKey* key) {
   StackString<MAX_PATH> client_state_key;
-  return client_state_key.assign(kClientStateKeyBase) &&
-         client_state_key.append(app_guid) &&
-         (key->Open(root_key,
-                    client_state_key.get(),
-                    access | KEY_WOW64_32KEY) == ERROR_SUCCESS);
+  if (!client_state_key.assign(kClientStateKeyBase))
+    return ERROR_BUFFER_OVERFLOW;
+#if defined(GOOGLE_CHROME_BUILD)
+  if (!client_state_key.append(app_guid))
+    return ERROR_BUFFER_OVERFLOW;
+#endif
+  return key->Open(root_key, client_state_key.get(), access | KEY_WOW64_32KEY);
 }
 
 }  // namespace mini_installer

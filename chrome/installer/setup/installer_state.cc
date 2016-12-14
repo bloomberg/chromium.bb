@@ -73,7 +73,8 @@ InstallerState::InstallerState()
       root_key_(NULL),
       msi_(false),
       background_mode_(false),
-      verbose_logging_(false) {}
+      verbose_logging_(false),
+      is_migrating_to_single_(false) {}
 
 InstallerState::InstallerState(Level level)
     : operation_(UNINITIALIZED),
@@ -84,7 +85,8 @@ InstallerState::InstallerState(Level level)
       root_key_(NULL),
       msi_(false),
       background_mode_(false),
-      verbose_logging_(false) {
+      verbose_logging_(false),
+      is_migrating_to_single_(false) {
   // Use set_level() so that root_key_ is updated properly.
   set_level(level);
 }
@@ -138,6 +140,10 @@ void InstallerState::Initialize(const base::CommandLine& command_line,
     // For a single-install, the current browser dist is the operand.
     operand = BrowserDistribution::GetDistribution();
     operation_ = SINGLE_INSTALL_OR_UPDATE;
+    // Is this a migration from multi-install to single-install?
+    const ProductState* state =
+        machine_state.GetProductState(system_install(), operand->GetType());
+    is_migrating_to_single_ = state && state->is_multi_install();
   } else if (IsMultiInstallUpdate(prefs, machine_state)) {
     // Updates driven by Google Update take place under the multi-installer's
     // app guid.
@@ -473,6 +479,7 @@ void InstallerState::Clear() {
   root_key_ = NULL;
   msi_ = false;
   verbose_logging_ = false;
+  is_migrating_to_single_ = false;
 }
 
 bool InstallerState::AnyExistsAndIsInUse(const InstallationState& machine_state,
@@ -625,6 +632,24 @@ void InstallerState::WriteInstallerResult(
     InstallUtil::AddInstallerResultItems(
         system_install, multi_package_binaries_distribution()->GetStateKey(),
         status, string_resource_id, launch_cmd, install_list.get());
+  } else if (is_migrating_to_single() &&
+             InstallUtil::GetInstallReturnCode(status)) {
+#if defined(GOOGLE_CHROME_BUILD)
+    // Also write to the binaries on error if this is a migration back to
+    // single-install for Google Chrome builds. Skip this for Chromium builds
+    // because they lump the "ClientState" and "Clients" keys into a single
+    // key. As a consequence, writing this value causes Software\Chromium to be
+    // re-created after it was deleted during the migration to single-install.
+    // Google Chrome builds don't suffer this since the two keys are distinct
+    // and have different lifetimes. The result is only written on failure since
+    // for success, the binaries have been uninstalled and therefore the result
+    // will not be read by Google Update.
+    InstallUtil::AddInstallerResultItems(
+        system_install, BrowserDistribution::GetSpecificDistribution(
+                            BrowserDistribution::CHROME_BINARIES)
+                            ->GetStateKey(),
+        status, string_resource_id, launch_cmd, install_list.get());
+#endif
   }
   install_list->Do();
 }
