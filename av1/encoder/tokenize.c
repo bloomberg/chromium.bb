@@ -361,10 +361,10 @@ static void set_entropy_context_b(int plane, int block, int blk_row,
 }
 
 #if CONFIG_NEW_TOKENSET
-static INLINE void add_token(TOKENEXTRA **t,
-                             aom_cdf_prob (*tail_cdf)[ENTROPY_TOKENS],
-                             aom_cdf_prob (*head_cdf)[ENTROPY_TOKENS],
-                             int is_eob, int32_t extra, uint8_t token) {
+static INLINE void add_token(
+    TOKENEXTRA **t, aom_cdf_prob (*tail_cdf)[ENTROPY_TOKENS + CONFIG_EC_ADAPT],
+    aom_cdf_prob (*head_cdf)[ENTROPY_TOKENS + CONFIG_EC_ADAPT], int is_eob,
+    int32_t extra, uint8_t token) {
   (*t)->token = token;
   (*t)->extra = extra;
   (*t)->tail_cdf = tail_cdf;
@@ -374,12 +374,12 @@ static INLINE void add_token(TOKENEXTRA **t,
 }
 
 #else
-static INLINE void add_token(TOKENEXTRA **t, const aom_prob *context_tree,
+static INLINE void add_token(
+    TOKENEXTRA **t, const aom_prob *context_tree,
 #if CONFIG_EC_MULTISYMBOL
-                             aom_cdf_prob (*token_cdf)[ENTROPY_TOKENS],
+    aom_cdf_prob (*token_cdf)[ENTROPY_TOKENS + CONFIG_EC_ADAPT],
 #endif  // CONFIG_EC_MULTISYMBOL
-                             int32_t extra, uint8_t token,
-                             uint8_t skip_eob_node, unsigned int *counts) {
+    int32_t extra, uint8_t token, uint8_t skip_eob_node, unsigned int *counts) {
   (*t)->token = token;
   (*t)->extra = extra;
   (*t)->context_tree = context_tree;
@@ -489,16 +489,19 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   FRAME_CONTEXT *ec_ctx = cpi->common.fc;
 #endif
 #if CONFIG_NEW_TOKENSET
-  aom_cdf_prob(*const coef_head_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
+  aom_cdf_prob(
+      *const coef_head_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS + CONFIG_EC_ADAPT] =
       ec_ctx->coef_head_cdfs[tx_size][type][ref];
-  aom_cdf_prob(*const coef_tail_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
+  aom_cdf_prob(
+      *const coef_tail_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS + CONFIG_EC_ADAPT] =
       ec_ctx->coef_tail_cdfs[tx_size][type][ref];
   unsigned int(*const blockz_count)[2] =
       td->counts->blockz_count[txsize_sqr_map[tx_size]][type][ref];
   int is_eob;
 #else
 #if CONFIG_EC_MULTISYMBOL
-  aom_cdf_prob(*const coef_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
+  aom_cdf_prob(
+      *const coef_cdfs)[COEFF_CONTEXTS][ENTROPY_TOKENS + CONFIG_EC_ADAPT] =
       ec_ctx->coef_cdfs[tx_size][type][ref];
 #endif
   int skip_eob = 0;

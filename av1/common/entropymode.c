@@ -17,7 +17,8 @@
 #include "av1/common/seg_common.h"
 
 #if CONFIG_EC_MULTISYMBOL
-aom_cdf_prob av1_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES][INTRA_MODES];
+aom_cdf_prob av1_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES]
+                              [INTRA_MODES + CONFIG_EC_ADAPT];
 #endif
 
 #if CONFIG_ALT_INTRA

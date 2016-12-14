@@ -231,19 +231,22 @@ typedef struct frame_contexts {
   aom_prob switchable_restore_prob[RESTORE_SWITCHABLE_TYPES - 1];
 #endif  // CONFIG_LOOP_RESTORATION
 #if CONFIG_EC_MULTISYMBOL
-  aom_cdf_prob y_mode_cdf[BLOCK_SIZE_GROUPS][INTRA_MODES];
-  aom_cdf_prob uv_mode_cdf[INTRA_MODES][INTRA_MODES];
-  aom_cdf_prob partition_cdf[PARTITION_CONTEXTS][PARTITION_TYPES];
+  aom_cdf_prob y_mode_cdf[BLOCK_SIZE_GROUPS][INTRA_MODES + CONFIG_EC_ADAPT];
+  aom_cdf_prob uv_mode_cdf[INTRA_MODES][INTRA_MODES + CONFIG_EC_ADAPT];
+  aom_cdf_prob partition_cdf[PARTITION_CONTEXTS]
+                            [PARTITION_TYPES + CONFIG_EC_ADAPT];
   aom_cdf_prob switchable_interp_cdf[SWITCHABLE_FILTER_CONTEXTS]
-                                    [SWITCHABLE_FILTERS];
-  aom_cdf_prob inter_mode_cdf[INTER_MODE_CONTEXTS][INTER_MODES];
+                                    [SWITCHABLE_FILTERS + CONFIG_EC_ADAPT];
+  aom_cdf_prob inter_mode_cdf[INTER_MODE_CONTEXTS]
+                             [INTER_MODES + CONFIG_EC_ADAPT];
   /* Keep track of kf_y_cdf here, as this makes handling
      multiple copies for adaptation in tiles easier */
-  aom_cdf_prob kf_y_cdf[INTRA_MODES][INTRA_MODES][INTRA_MODES];
-
+  aom_cdf_prob kf_y_cdf[INTRA_MODES][INTRA_MODES]
+                       [INTRA_MODES + CONFIG_EC_ADAPT];
 #if !CONFIG_EXT_TX
-  aom_cdf_prob intra_ext_tx_cdf[EXT_TX_SIZES][TX_TYPES][TX_TYPES];
-  aom_cdf_prob inter_ext_tx_cdf[EXT_TX_SIZES][TX_TYPES];
+  aom_cdf_prob intra_ext_tx_cdf[EXT_TX_SIZES][TX_TYPES]
+                               [TX_TYPES + CONFIG_EC_ADAPT];
+  aom_cdf_prob inter_ext_tx_cdf[EXT_TX_SIZES][TX_TYPES + CONFIG_EC_ADAPT];
 #endif
 #endif
 #if CONFIG_DELTA_Q
@@ -372,7 +375,8 @@ extern const aom_prob av1_kf_y_mode_prob[INTRA_MODES][INTRA_MODES]
                                         [INTRA_MODES - 1];
 #if CONFIG_EC_MULTISYMBOL
 // CDF version of 'av1_kf_y_mode_prob'.
-extern aom_cdf_prob av1_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES][INTRA_MODES];
+extern aom_cdf_prob av1_kf_y_mode_cdf[INTRA_MODES][INTRA_MODES]
+                                     [INTRA_MODES + CONFIG_EC_ADAPT];
 #endif
 #if CONFIG_PALETTE
 extern const aom_prob av1_default_palette_y_mode_prob[PALETTE_BLOCK_SIZES]
