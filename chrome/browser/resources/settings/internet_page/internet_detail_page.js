@@ -38,6 +38,31 @@ Polymer({
     },
 
     /**
+     * Whether the user is a secondary user.
+     * @private
+     */
+    isSecondaryUser_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('isSecondaryUser');
+      },
+      readOnly: true,
+    },
+
+    /**
+     * Email address for the primary user.
+     * @private
+     */
+    primaryUserEmail_: {
+      type: String,
+      value: function() {
+        return loadTimeData.getBoolean('isSecondaryUser') ?
+            loadTimeData.getString('primaryUserEmail') : '';
+      },
+      readOnly: true,
+    },
+
+    /**
      * Highest priority connected network or null.
      * @type {?CrOnc.NetworkStateProperties}
      */
@@ -207,8 +232,13 @@ Polymer({
    */
   getNetworkDetails_: function() {
     assert(!!this.guid);
-    this.networkingPrivate.getManagedProperties(
-        this.guid, this.getPropertiesCallback_.bind(this));
+    if (this.isSecondaryUser_) {
+      this.networkingPrivate.getState(
+          this.guid, this.getStateCallback_.bind(this));
+    } else {
+      this.networkingPrivate.getManagedProperties(
+          this.guid, this.getPropertiesCallback_.bind(this));
+    }
   },
 
   /**
@@ -219,11 +249,30 @@ Polymer({
   getPropertiesCallback_: function(properties) {
     this.networkProperties = properties;
     if (!properties) {
-      // If |properties| becomes null (i.e. the network is no longer visible),
-      // close the page.
+      // If |properties| is null, the network is no longer visible, close this.
       console.error('Network no longer exists: ' + this.guid);
       this.close_();
     }
+  },
+
+  /**
+   * networkingPrivate.getState callback.
+   * @param {CrOnc.NetworkStateProperties} state The network state properties.
+   * @private
+   */
+  getStateCallback_: function(state) {
+    if (!state) {
+      // If |state| is null, the network is no longer visible, close this.
+      console.error('Network no longer exists: ' + this.guid);
+      this.networkProperties = undefined;
+      this.close_();
+    }
+    this.networkProperties = {
+      GUID: state.GUID,
+      Type: state.Type,
+      Connectable: state.Connectable,
+      ConnectionState: state.ConnectionState,
+    };
   },
 
   /**

@@ -808,6 +808,8 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"networkIPAddress", IDS_SETTINGS_INTERNET_NETWORK_IP_ADDRESS},
       {"networkIPConfigAuto", IDS_SETTINGS_INTERNET_NETWORK_IP_CONFIG_AUTO},
       {"networkPrefer", IDS_SETTINGS_INTERNET_NETWORK_PREFER},
+      {"networkPrimaryUserControlled",
+       IDS_SETTINGS_INTERNET_NETWORK_PRIMARY_USER_CONTROLLED},
       {"networkProxy", IDS_SETTINGS_INTERNET_NETWORK_PROXY_PROXY},
       {"networkProxyAddException",
        IDS_SETTINGS_INTERNET_NETWORK_PROXY_ADD_EXCEPTION},
