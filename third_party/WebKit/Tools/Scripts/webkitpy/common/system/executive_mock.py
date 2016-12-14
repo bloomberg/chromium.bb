@@ -98,8 +98,7 @@ class MockExecutive(object):
                     args,
                     cwd=None,
                     input=None,
-                    # pylint: disable=W0613
-                    # unused argument
+                    # pylint: disable=unused-argument
                     timeout_seconds=None,
                     error_handler=None,
                     return_exit_code=False,
@@ -206,7 +205,7 @@ class MockExecutive2(MockExecutive):
         assert isinstance(args, list) or isinstance(args, tuple)
         assert all(isinstance(arg, basestring) for arg in args)
         if self._exception:
-            raise self._exception  # pylint: disable=E0702
+            raise self._exception  # pylint: disable=raising-bad-type
         if self._run_command_fn:
             return self._run_command_fn(args)
         if return_exit_code:

@@ -275,7 +275,7 @@ class ServerBase(object):
             except IOError as e:
                 if e.errno in (errno.EALREADY, errno.EADDRINUSE):
                     raise ServerError('Port %d is already in use.' % port)
-                elif self._platform.is_win() and e.errno in (errno.WSAEACCES,):  # pylint: disable=E1101
+                elif self._platform.is_win() and e.errno in (errno.WSAEACCES,):  # pylint: disable=no-member
                     raise ServerError('Port %d is already in use.' % port)
                 else:
                     raise

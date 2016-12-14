@@ -310,7 +310,7 @@ class PortTestCase(unittest.TestCase):
         port.host.filesystem.write_text_file('/tmp/foo', 'foo')
         port.host.filesystem.write_text_file('/tmp/bar', 'bar')
         ordered_dict = port.expectations_dict()
-        self.assertEqual(ordered_dict.keys()[-2:], options.additional_expectations)  # pylint: disable=E1101
+        self.assertEqual(ordered_dict.keys()[-2:], options.additional_expectations)
         self.assertEqual(ordered_dict.values()[-2:], ['foo', 'bar'])
 
     def test_path_to_apache_config_file(self):

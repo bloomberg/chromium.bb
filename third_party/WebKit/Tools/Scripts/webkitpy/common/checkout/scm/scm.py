@@ -55,8 +55,7 @@ class SCM:
     def _run(self,
              args,
              cwd=None,
-             # pylint: disable=W0622
-             # redefining built-in
+             # pylint: disable=redefined-builtin
              input=None,
              timeout_seconds=None,
              error_handler=None,

@@ -42,7 +42,7 @@ from webkitpy.common.system.filesystem import FileSystem
 
 class GenericFileSystemTests(object):
     """Tests that should pass on either a real or mock filesystem."""
-    # pylint gets confused about this being a mixin: pylint: disable=E1101
+    # Pylint gets confused about this being a mixin: pylint: disable=no-member
 
     def setup_generic_test_dir(self):
         fs = self.fs

@@ -56,7 +56,7 @@ class BrowserTestPortOverrides(object):
         """Overridden function from the base port class. Redirects everything
         to src/chrome/test/data/printing/layout_tests.
         """
-        return self.path_from_chromium_base('chrome', 'test', 'data', 'printing', 'layout_tests')  # pylint: disable=E1101
+        return self.path_from_chromium_base('chrome', 'test', 'data', 'printing', 'layout_tests')  # pylint: disable=no-member
 
     def check_sys_deps(self, needs_http):
         """This function is meant to be a no-op since we don't want to actually
@@ -69,7 +69,7 @@ class BrowserTestPortOverrides(object):
 
     def default_timeout_ms(self):
         timeout_ms = 10 * 1000
-        if self.get_option('configuration') == 'Debug':  # pylint: disable=E1101
+        if self.get_option('configuration') == 'Debug':  # pylint: disable=no-member
             # Debug is usually 2x-3x slower than Release.
             return 3 * timeout_ms
         return timeout_ms
@@ -89,7 +89,7 @@ class BrowserTestMacPort(BrowserTestPortOverrides, mac.MacPort):
 
     def default_timeout_ms(self):
         timeout_ms = 20 * 1000
-        if self.get_option('configuration') == 'Debug':  # pylint: disable=E1101
+        if self.get_option('configuration') == 'Debug':  # pylint: disable=no-member
             # Debug is usually 2x-3x slower than Release.
             return 3 * timeout_ms
         return timeout_ms
@@ -99,7 +99,7 @@ class BrowserTestWinPort(BrowserTestPortOverrides, win.WinPort):
 
     def default_timeout_ms(self):
         timeout_ms = 20 * 1000
-        if self.get_option('configuration') == 'Debug':  # pylint: disable=E1101
+        if self.get_option('configuration') == 'Debug':  # pylint: disable=no-member
             # Debug is usually 2x-3x slower than Release.
             return 3 * timeout_ms
         return timeout_ms

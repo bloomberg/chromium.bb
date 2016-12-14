@@ -78,10 +78,10 @@ class FakeFactory(object):
         for port in ports:
             self.ports[port.name] = port
 
-    def get(self, port_name='a', *args, **kwargs):  # pylint: disable=W0613,E0202
+    def get(self, port_name='a', *args, **kwargs):  # pylint: disable=unused-argument,method-hidden
         return self.ports[port_name]
 
-    def all_port_names(self, platform=None):  # pylint: disable=W0613,E0202
+    def all_port_names(self, platform=None):  # pylint: disable=unused-argument,method-hidden
         return sorted(self.ports.keys())
 
 
@@ -109,8 +109,6 @@ class LintTest(unittest.TestCase):
         options = optparse.Values({'platform': 'test-mac-mac10.10'})
         host = MockHost()
 
-        # pylint appears to complain incorrectly about the method overrides pylint: disable=E0202,C0322
-        # FIXME: incorrect complaints about spacing pylint: disable=C0322
         host.port_factory.all_port_names = lambda platform=None: [platform]
 
         logger, handler = lint_test_expectations.set_up_logging(logging_stream)
@@ -124,7 +122,6 @@ class LintTest(unittest.TestCase):
         options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
         host = MockHost()
 
-        # FIXME: incorrect complaints about spacing pylint: disable=C0322
         port = host.port_factory.get(options.platform, options=options)
         port.expectations_dict = lambda: {'foo': '-- syntax error1', 'bar': '-- syntax error2'}
 
@@ -146,7 +143,6 @@ class LintTest(unittest.TestCase):
         options = optparse.Values({'platform': 'test', 'debug_rwt_logging': False})
         host = MockHost()
 
-        # FIXME: incorrect complaints about spacing pylint: disable=C0322
         port = host.port_factory.get(options.platform, options=options)
         port.expectations_dict = lambda: {'flag-specific': 'does/not/exist', 'noproblem': ''}
 
@@ -187,7 +183,7 @@ class CheckVirtualSuiteTest(unittest.TestCase):
 
 
 class MainTest(unittest.TestCase):
-    # unused args pylint: disable=W0613
+    # pylint: disable=unused-argument
 
     def setUp(self):
         self.orig_lint_fn = lint_test_expectations.lint

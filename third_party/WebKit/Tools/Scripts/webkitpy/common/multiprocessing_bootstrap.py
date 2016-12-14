@@ -39,7 +39,7 @@ import os
 import subprocess
 import sys
 
-from webkitpy.common import version_check   # 'unused import' pylint: disable=W0611
+from webkitpy.common import version_check  # pylint: disable=unused-import
 
 
 def run(*parts):

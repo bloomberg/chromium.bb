@@ -1165,7 +1165,7 @@ class MainTest(unittest.TestCase):
     def test_exception_handling(self):
         orig_run_fn = run_webkit_tests._run_tests
 
-        # unused args pylint: disable=W0613
+        # pylint: disable=unused-argument
         def interrupting_run(port, options, args, printer):
             raise KeyboardInterrupt
 

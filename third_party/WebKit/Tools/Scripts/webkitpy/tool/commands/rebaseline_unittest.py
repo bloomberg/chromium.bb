@@ -25,7 +25,7 @@ class BaseTestCase(unittest.TestCase):
 
     def setUp(self):
         self.tool = MockWebKitPatch()
-        # lint warns that command_constructor might not be set, but this is intentional; pylint: disable=E1102
+        # Lint warns that command_constructor might not be set, but this is intentional; pylint: disable=not-callable
         self.command = self.command_constructor()
         self.command._tool = self.tool
         self.tool.builders = BuilderList({
