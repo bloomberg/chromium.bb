@@ -497,7 +497,6 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
             : UMA_STATUS_AREA_CONNECT_TO_CONFIGURED_NETWORK);
     chromeos::NetworkConnect::Get()->ConnectToNetworkId(network->guid());
   }
-  owner()->system_tray()->CloseSystemBubble();
 }
 
 void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
