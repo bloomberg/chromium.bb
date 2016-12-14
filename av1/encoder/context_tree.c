@@ -12,7 +12,10 @@
 #include "av1/encoder/context_tree.h"
 #include "av1/encoder/encoder.h"
 
-static const BLOCK_SIZE square[MAX_SB_SIZE_LOG2 - 2] = {
+static const BLOCK_SIZE square[MAX_SB_SIZE_LOG2 - 1] = {
+#if CONFIG_CB4X4
+  BLOCK_4X4,
+#endif
   BLOCK_8X8,     BLOCK_16X16, BLOCK_32X32, BLOCK_64X64,
 #if CONFIG_EXT_PARTITION
   BLOCK_128X128,
@@ -191,12 +194,21 @@ static void free_tree_contexts(PC_TREE *tree) {
 // represents the state of our search.
 void av1_setup_pc_tree(AV1_COMMON *cm, ThreadData *td) {
   int i, j;
-#if CONFIG_EXT_PARTITION
-  const int leaf_nodes = 256;
-  const int tree_nodes = 256 + 64 + 16 + 4 + 1;
+// TODO(jingning): The pc_tree allocation is redundant. We can take out all
+// the leaf nodes after cb4x4 mode is enabled.
+#if CONFIG_CB4X4
+  const int tree_nodes_inc = 256;
+  const int leaf_factor = 4;
 #else
-  const int leaf_nodes = 64;
-  const int tree_nodes = 64 + 16 + 4 + 1;
+  const int tree_nodes_inc = 0;
+  const int leaf_factor = 1;
+#endif
+#if CONFIG_EXT_PARTITION
+  const int leaf_nodes = 256 * leaf_factor;
+  const int tree_nodes = tree_nodes_inc + 256 + 64 + 16 + 4 + 1;
+#else
+  const int leaf_nodes = 64 * leaf_factor;
+  const int tree_nodes = tree_nodes_inc + 64 + 16 + 4 + 1;
 #endif  // CONFIG_EXT_PARTITION
   int pc_tree_index = 0;
   PC_TREE *this_pc;
