@@ -1279,12 +1279,11 @@ void PaintLayerCompositor::updateRootLayerAttachment() {
 void PaintLayerCompositor::attachCompositorTimeline() {
   LocalFrame& frame = m_layoutView.frameView()->frame();
   Page* page = frame.page();
-  if (!page)
+  if (!page || !frame.document())
     return;
 
   CompositorAnimationTimeline* compositorTimeline =
-      frame.document() ? frame.document()->timeline().compositorTimeline()
-                       : nullptr;
+      frame.document()->timeline().compositorTimeline();
   if (compositorTimeline)
     page->chromeClient().attachCompositorAnimationTimeline(compositorTimeline,
                                                            &frame);
@@ -1293,12 +1292,11 @@ void PaintLayerCompositor::attachCompositorTimeline() {
 void PaintLayerCompositor::detachCompositorTimeline() {
   LocalFrame& frame = m_layoutView.frameView()->frame();
   Page* page = frame.page();
-  if (!page)
+  if (!page || !frame.document())
     return;
 
   CompositorAnimationTimeline* compositorTimeline =
-      frame.document() ? frame.document()->timeline().compositorTimeline()
-                       : nullptr;
+      frame.document()->timeline().compositorTimeline();
   if (compositorTimeline)
     page->chromeClient().detachCompositorAnimationTimeline(compositorTimeline,
                                                            &frame);
