@@ -198,8 +198,16 @@ void MIDIAccess::sendMIDIData(unsigned portIndex,
                               const unsigned char* data,
                               size_t length,
                               double timeStampInMilliseconds) {
+  // Do not continue sending when document is going to be closed.
+  Document* document = toDocument(getExecutionContext());
+  DCHECK(document);
+  DocumentLoader* loader = document->loader();
+  if (!loader)
+    return;
+
   if (!data || !length || portIndex >= m_outputs.size())
     return;
+
   // Convert from a time in milliseconds (a DOMHighResTimeStamp) according to
   // the same time coordinate system as performance.now() into a time in seconds
   // which is based on the time coordinate system of
@@ -211,10 +219,7 @@ void MIDIAccess::sendMIDIData(unsigned portIndex,
     // "now".  We need to translate it exactly to 0 seconds.
     timeStamp = 0;
   } else {
-    Document* document = toDocument(getExecutionContext());
-    DCHECK(document);
-    double documentStartTime =
-        document->loader()->timing().referenceMonotonicTime();
+    double documentStartTime = loader->timing().referenceMonotonicTime();
     timeStamp = documentStartTime + 0.001 * timeStampInMilliseconds;
   }
 
