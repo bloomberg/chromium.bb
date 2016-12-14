@@ -15,8 +15,8 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/arc/arc_session_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync_preferences/pref_service_syncable_observer.h"
 #include "components/sync_preferences/synced_pref_observer.h"
@@ -38,13 +38,14 @@ namespace arc {
 class ArcAndroidManagementChecker;
 class ArcAuthCodeFetcher;
 class ArcAuthContext;
+class ArcBridgeService;
 class ArcTermsOfServiceNegotiator;
 enum class ProvisioningResult : int;
 
 // This class proxies the request from the client to fetch an auth code from
 // LSO. It lives on the UI thread.
 class ArcSessionManager : public ArcService,
-                          public ArcBridgeService::Observer,
+                          public ArcSessionObserver,
                           public ArcSupportHost::Observer,
                           public sync_preferences::PrefServiceSyncableObserver,
                           public sync_preferences::SyncedPrefObserver {
@@ -153,8 +154,8 @@ class ArcSessionManager : public ArcService,
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // ArcBridgeService::Observer:
-  void OnBridgeStopped(ArcBridgeService::StopReason reason) override;
+  // ArcSessionObserver:
+  void OnSessionStopped(StopReason reason) override;
 
   // Called from Arc support platform app when user cancels signing.
   void CancelAuthCode();

@@ -22,7 +22,7 @@ class ArcPrintService : public ArcService,
   explicit ArcPrintService(ArcBridgeService* bridge_service);
   ~ArcPrintService() override;
 
-  // ArcBridgeService::Observer overrides.
+  // InstanceHolder<mojom::PrintInstance>::Observer:
   void OnInstanceReady() override;
 
   void Print(mojo::ScopedHandle pdf_data) override;

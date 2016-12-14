@@ -6,20 +6,19 @@
 #define CHROME_BROWSER_CHROMEOS_ARC_NOTIFICATION_ARC_BOOT_ERROR_NOTIFICATION_H_
 
 #include "base/macros.h"
-#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
+#include "components/arc/arc_session_observer.h"
 
 namespace arc {
 
 // Watches for ARC boot errors and show notifications.
-class ArcBootErrorNotification : public ArcService,
-                                 public ArcBridgeService::Observer {
+class ArcBootErrorNotification : public ArcService, public ArcSessionObserver {
  public:
   explicit ArcBootErrorNotification(ArcBridgeService* bridge_service);
   ~ArcBootErrorNotification() override;
 
-  // ArcBridgeService::Observer
-  void OnBridgeStopped(ArcBridgeService::StopReason reason) override;
+  // ArcSessionObserver:
+  void OnSessionStopped(StopReason reason) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcBootErrorNotification);

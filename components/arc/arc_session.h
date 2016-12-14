@@ -17,6 +17,8 @@
 
 namespace arc {
 
+class ArcSessionObserver;
+
 // Starts the ARC instance and bootstraps the bridge connection.
 // Clients should implement the Delegate to be notified upon communications
 // being available.
@@ -26,22 +28,6 @@ namespace arc {
 // conflict.
 class ArcSession {
  public:
-  class Observer {
-   public:
-    Observer() = default;
-    virtual ~Observer() = default;
-
-    // Called when the connection with ARC instance has been established.
-    virtual void OnReady() = 0;
-
-    // Called when ARC instance is stopped. This is called exactly once
-    // per instance which is Start()ed.
-    virtual void OnStopped(ArcBridgeService::StopReason reason) = 0;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Observer);
-  };
-
   // Creates a default instance of ArcSession.
   static std::unique_ptr<ArcSession> Create(
       ArcBridgeService* arc_bridge_service,
@@ -61,13 +47,13 @@ class ArcSession {
   // loop is already stopped, and the instance will soon be deleted.
   virtual void OnShutdown() = 0;
 
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddObserver(ArcSessionObserver* observer);
+  void RemoveObserver(ArcSessionObserver* observer);
 
  protected:
   ArcSession();
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<ArcSessionObserver> observer_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ArcSession);

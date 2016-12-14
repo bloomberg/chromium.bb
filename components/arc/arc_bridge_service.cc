@@ -23,7 +23,7 @@ const base::Feature kArcEnabledFeature{"EnableARC",
 
 ArcBridgeService::ArcBridgeService()
     : state_(State::STOPPED),
-      stop_reason_(StopReason::SHUTDOWN),
+      stop_reason_(ArcSessionObserver::StopReason::SHUTDOWN),
       weak_factory_(this) {}
 
 ArcBridgeService::~ArcBridgeService() {
@@ -55,12 +55,12 @@ void ArcBridgeService::OnShutdown() {
   NOTREACHED();
 }
 
-void ArcBridgeService::AddObserver(Observer* observer) {
+void ArcBridgeService::AddObserver(ArcSessionObserver* observer) {
   DCHECK(CalledOnValidThread());
   observer_list_.AddObserver(observer);
 }
 
-void ArcBridgeService::RemoveObserver(Observer* observer) {
+void ArcBridgeService::RemoveObserver(ArcSessionObserver* observer) {
   DCHECK(CalledOnValidThread());
   observer_list_.RemoveObserver(observer);
 }
@@ -72,38 +72,21 @@ void ArcBridgeService::SetState(State state) {
   VLOG(2) << "State: " << static_cast<uint32_t>(state_);
   if (state_ == State::READY) {
     for (auto& observer : observer_list())
-      observer.OnBridgeReady();
+      observer.OnSessionReady();
   } else if (state == State::STOPPED) {
     for (auto& observer : observer_list())
-      observer.OnBridgeStopped(stop_reason_);
+      observer.OnSessionStopped(stop_reason_);
   }
 }
 
-void ArcBridgeService::SetStopReason(StopReason stop_reason) {
+void ArcBridgeService::SetStopReason(
+    ArcSessionObserver::StopReason stop_reason) {
   DCHECK(CalledOnValidThread());
   stop_reason_ = stop_reason;
 }
 
 bool ArcBridgeService::CalledOnValidThread() {
   return thread_checker_.CalledOnValidThread();
-}
-
-std::ostream& operator<<(
-    std::ostream& os, ArcBridgeService::StopReason reason) {
-  switch (reason) {
-#define CASE_IMPL(val) \
-    case ArcBridgeService::StopReason::val: \
-      return os << #val
-
-    CASE_IMPL(SHUTDOWN);
-    CASE_IMPL(GENERIC_BOOT_FAILURE);
-    CASE_IMPL(LOW_DISK_SPACE);
-    CASE_IMPL(CRASH);
-#undef CASE_IMPL
-  }
-
-  // In case of unexpected value, output the int value.
-  return os << "StopReason(" << static_cast<int>(reason) << ")";
 }
 
 }  // namespace arc

@@ -18,28 +18,28 @@ FakeArcSession::~FakeArcSession() = default;
 void FakeArcSession::Start() {
   if (boot_failure_emulation_enabled_) {
     for (auto& observer : observer_list_)
-      observer.OnStopped(boot_failure_reason_);
+      observer.OnSessionStopped(boot_failure_reason_);
   } else if (!boot_suspended_) {
     for (auto& observer : observer_list_)
-      observer.OnReady();
+      observer.OnSessionReady();
   }
 }
 
 void FakeArcSession::Stop() {
-  StopWithReason(ArcBridgeService::StopReason::SHUTDOWN);
+  StopWithReason(ArcSessionObserver::StopReason::SHUTDOWN);
 }
 
 void FakeArcSession::OnShutdown() {
-  StopWithReason(ArcBridgeService::StopReason::SHUTDOWN);
+  StopWithReason(ArcSessionObserver::StopReason::SHUTDOWN);
 }
 
-void FakeArcSession::StopWithReason(ArcBridgeService::StopReason reason) {
+void FakeArcSession::StopWithReason(ArcSessionObserver::StopReason reason) {
   for (auto& observer : observer_list_)
-    observer.OnStopped(reason);
+    observer.OnSessionStopped(reason);
 }
 
 void FakeArcSession::EnableBootFailureEmulation(
-    ArcBridgeService::StopReason reason) {
+    ArcSessionObserver::StopReason reason) {
   DCHECK(!boot_failure_emulation_enabled_);
   DCHECK(!boot_suspended_);
 

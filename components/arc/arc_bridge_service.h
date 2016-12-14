@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/values.h"
+#include "components/arc/arc_session_observer.h"
 #include "components/arc/instance_holder.h"
 
 namespace base {
@@ -60,34 +61,6 @@ class WallpaperInstance;
 // communication channel (the ARC bridge) used to send and receive messages.
 class ArcBridgeService {
  public:
-  // Describes the reason the bridge is stopped.
-  enum class StopReason {
-    // ARC instance has been gracefully shut down.
-    SHUTDOWN,
-
-    // Errors occurred during the ARC instance boot. This includes any failures
-    // before the instance is actually attempted to be started, and also
-    // failures on bootstrapping IPC channels with Android.
-    GENERIC_BOOT_FAILURE,
-
-    // The device is critically low on disk space.
-    LOW_DISK_SPACE,
-
-    // ARC instance has crashed.
-    CRASH,
-  };
-
-  // Notifies life cycle events of ArcBridgeService.
-  class Observer {
-   public:
-    // Called whenever the state of the bridge has changed.
-    virtual void OnBridgeReady() {}
-    virtual void OnBridgeStopped(StopReason reason) {}
-
-   protected:
-    virtual ~Observer() {}
-  };
-
   ArcBridgeService();
   virtual ~ArcBridgeService();
 
@@ -117,8 +90,8 @@ class ArcBridgeService {
   // Adds or removes observers. This can only be called on the thread that this
   // class was created on. RemoveObserver does nothing if |observer| is not in
   // the list.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
+  void AddObserver(ArcSessionObserver* observer);
+  void RemoveObserver(ArcSessionObserver* observer);
 
   InstanceHolder<mojom::AppInstance>* app() { return &app_; }
   InstanceHolder<mojom::AudioInstance>* audio() { return &audio_; }
@@ -239,9 +212,11 @@ class ArcBridgeService {
   // Sets the reason the bridge is stopped. This function must be always called
   // before SetState(State::STOPPED) to report a correct reason with
   // Observer::OnBridgeStopped().
-  void SetStopReason(StopReason stop_reason);
+  void SetStopReason(ArcSessionObserver::StopReason stop_reason);
 
-  base::ObserverList<Observer>& observer_list() { return observer_list_; }
+  base::ObserverList<ArcSessionObserver>& observer_list() {
+    return observer_list_;
+  }
 
   bool CalledOnValidThread();
 
@@ -254,7 +229,7 @@ class ArcBridgeService {
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, OnBridgeStopped);
   FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Shutdown);
 
-  base::ObserverList<Observer> observer_list_;
+  base::ObserverList<ArcSessionObserver> observer_list_;
 
   base::ThreadChecker thread_checker_;
 
@@ -262,17 +237,13 @@ class ArcBridgeService {
   ArcBridgeService::State state_;
 
   // The reason the bridge is stopped.
-  StopReason stop_reason_;
+  ArcSessionObserver::StopReason stop_reason_;
 
   // WeakPtrFactory to use callbacks.
   base::WeakPtrFactory<ArcBridgeService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeService);
 };
-
-// Defines "<<" operator for LOGging purpose.
-std::ostream& operator<<(
-    std::ostream& os, ArcBridgeService::StopReason reason);
 
 }  // namespace arc
 

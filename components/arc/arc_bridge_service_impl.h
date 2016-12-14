@@ -15,14 +15,16 @@
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
 #include "components/arc/arc_bridge_service.h"
-#include "components/arc/arc_session.h"
+#include "components/arc/arc_session_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
 
+class ArcSession;
+
 // Real IPC based ArcBridgeService that is used in production.
 class ArcBridgeServiceImpl : public ArcBridgeService,
-                             public ArcSession::Observer {
+                             public ArcSessionObserver {
  public:
   // This is the factory interface to inject ArcSession instance
   // for testing purpose.
@@ -62,9 +64,9 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   // Stops the running instance.
   void StopInstance();
 
-  // ArcSession::Observer:
-  void OnReady() override;
-  void OnStopped(StopReason reason) override;
+  // ArcSessionObserver:
+  void OnSessionReady() override;
+  void OnSessionStopped(StopReason reason) override;
 
   std::unique_ptr<ArcSession> arc_session_;
 

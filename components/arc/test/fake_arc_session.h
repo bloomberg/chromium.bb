@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "components/arc/arc_session.h"
+#include "components/arc/arc_session_observer.h"
 
 namespace arc {
 
@@ -24,13 +25,13 @@ class FakeArcSession : public ArcSession {
   void OnShutdown() override;
 
   // To emulate unexpected stop, such as crash.
-  void StopWithReason(ArcBridgeService::StopReason reason);
+  void StopWithReason(ArcSessionObserver::StopReason reason);
 
   // The following control Start() behavior for testing various situations.
 
   // Enables/disables boot failure emulation, in which OnStopped(reason) will
   // be called when Start() is called.
-  void EnableBootFailureEmulation(ArcBridgeService::StopReason reason);
+  void EnableBootFailureEmulation(ArcSessionObserver::StopReason reason);
 
   // Emulate Start() is suspended at some phase, before OnReady() is invoked.
   void SuspendBoot();
@@ -41,7 +42,7 @@ class FakeArcSession : public ArcSession {
 
  private:
   bool boot_failure_emulation_enabled_ = false;
-  ArcBridgeService::StopReason boot_failure_reason_;
+  ArcSessionObserver::StopReason boot_failure_reason_;
 
   bool boot_suspended_ = false;
 

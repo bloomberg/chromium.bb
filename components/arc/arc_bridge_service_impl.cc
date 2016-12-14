@@ -17,6 +17,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/arc/arc_session.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
@@ -119,7 +120,7 @@ void ArcBridgeServiceImpl::StopInstance() {
   arc_session_->Stop();
 }
 
-void ArcBridgeServiceImpl::OnReady() {
+void ArcBridgeServiceImpl::OnSessionReady() {
   DCHECK(CalledOnValidThread());
   if (state() != State::CONNECTING) {
     VLOG(1) << "StopInstance() called while connecting";
@@ -133,7 +134,7 @@ void ArcBridgeServiceImpl::OnReady() {
   SetState(State::READY);
 }
 
-void ArcBridgeServiceImpl::OnStopped(StopReason stop_reason) {
+void ArcBridgeServiceImpl::OnSessionStopped(StopReason stop_reason) {
   DCHECK(CalledOnValidThread());
   VLOG(0) << "ARC stopped: " << stop_reason;
   arc_session_->RemoveObserver(this);

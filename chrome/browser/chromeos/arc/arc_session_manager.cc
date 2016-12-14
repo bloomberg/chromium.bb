@@ -192,11 +192,10 @@ bool ArcSessionManager::IsArcKioskMode() {
   return user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp();
 }
 
-void ArcSessionManager::OnBridgeStopped(ArcBridgeService::StopReason reason) {
+void ArcSessionManager::OnSessionStopped(StopReason reason) {
   // TODO(crbug.com/625923): Use |reason| to report more detailed errors.
-  if (arc_sign_in_timer_.IsRunning()) {
+  if (arc_sign_in_timer_.IsRunning())
     OnProvisioningFinished(ProvisioningResult::ARC_STOPPED);
-  }
 
   if (profile_->GetPrefs()->GetBoolean(prefs::kArcDataRemoveRequested)) {
     // This should be always true, but just in case as this is looked at

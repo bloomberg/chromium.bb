@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/arc/arc_bridge_service.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -95,11 +96,9 @@ ArcBootErrorNotification::~ArcBootErrorNotification() {
   arc_bridge_service()->RemoveObserver(this);
 }
 
-void ArcBootErrorNotification::OnBridgeStopped(
-    ArcBridgeService::StopReason reason) {
-  if (reason == ArcBridgeService::StopReason::LOW_DISK_SPACE) {
+void ArcBootErrorNotification::OnSessionStopped(StopReason reason) {
+  if (reason == StopReason::LOW_DISK_SPACE)
     ShowLowDiskSpaceErrorNotification();
-  }
 }
 
 }  // namespace arc
