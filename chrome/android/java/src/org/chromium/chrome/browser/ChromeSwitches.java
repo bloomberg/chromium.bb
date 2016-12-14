@@ -93,6 +93,11 @@ public abstract class ChromeSwitches {
      */
     public static final String MARKET_URL_FOR_TESTING = "market-url-for-testing";
 
+    /**
+     * Disable multiwindow tab merging for testing.
+     */
+    public static final String DISABLE_TAB_MERGING_FOR_TESTING = "disable-tab-merging";
+
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Native Switches
     ///////////////////////////////////////////////////////////////////////////////////////////////

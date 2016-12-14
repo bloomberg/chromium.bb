@@ -848,10 +848,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                             // Used by the Account management screen to open a new incognito tab.
                             // Account management screen collects its metrics separately.
                             getTabCreator(true).launchUrl(
-                                    UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
+                                    UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI,
+                                    intent, mIntentHandlingTimeMs);
                         } else {
                             getTabCreator(true).launchUrl(
-                                    UrlConstants.NTP_URL, TabLaunchType.FROM_EXTERNAL_APP);
+                                    UrlConstants.NTP_URL, TabLaunchType.FROM_EXTERNAL_APP,
+                                    intent, mIntentHandlingTimeMs);
                             RecordUserAction.record("MobileReceivedExternalIntent");
                         }
                     } else {

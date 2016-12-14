@@ -28,8 +28,7 @@ import java.util.concurrent.Callable;
 /**
  * Class for testing MultiWindowUtils.
  */
-// TODO(twellington): Replace with Build.VERSION_CODES.N when available.
-@MinAndroidSdkLevel(24)
+@MinAndroidSdkLevel(Build.VERSION_CODES.N)
 public class MultiWindowUtilsTest extends  ChromeTabbedActivityTestBase {
 
     @Override
