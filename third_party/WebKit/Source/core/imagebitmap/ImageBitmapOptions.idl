@@ -12,7 +12,7 @@ dictionary ImageBitmapOptions {
     ImageOrientation imageOrientation = "none";
     PremultiplyAlpha premultiplyAlpha = "default";
     CanvasColorSpace colorSpaceConversion = "default";
-    [RuntimeEnabled=ExperimentalCanvasFeatures, EnforceRange] unsigned long? resizeWidth;
-    [RuntimeEnabled=ExperimentalCanvasFeatures, EnforceRange] unsigned long? resizeHeight;
+    [RuntimeEnabled=ExperimentalCanvasFeatures, EnforceRange] unsigned long resizeWidth;
+    [RuntimeEnabled=ExperimentalCanvasFeatures, EnforceRange] unsigned long resizeHeight;
     [RuntimeEnabled=ExperimentalCanvasFeatures] ResizeQuality resizeQuality = "low";
 };
