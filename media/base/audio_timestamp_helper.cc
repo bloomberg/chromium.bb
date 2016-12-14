@@ -20,7 +20,7 @@ base::TimeDelta AudioTimestampHelper::FramesToTime(int64_t frames,
 // static
 int64_t AudioTimestampHelper::TimeToFrames(base::TimeDelta time,
                                            int samples_per_second) {
-  return time.InSecondsF() * samples_per_second;
+  return std::round(time.InSecondsF() * samples_per_second);
 }
 
 AudioTimestampHelper::AudioTimestampHelper(int samples_per_second)

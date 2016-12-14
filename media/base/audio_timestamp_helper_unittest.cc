@@ -80,9 +80,11 @@ TEST_F(AudioTimestampHelperTest, TimeToFrames) {
   // Zero.
   EXPECT_EQ(0, AudioTimestampHelper::TimeToFrames(
                    base::TimeDelta::FromMicroseconds(0), k48kHz));
-  // Any duration less than 21 microseconds will return zero frames at 48 kHz
-  // because each frame is 20.833 microseconds.
+  // Duration of each frame is 20.833 microseconds. The result is rounded to
+  // integral.
   EXPECT_EQ(0, AudioTimestampHelper::TimeToFrames(
+                   base::TimeDelta::FromMicroseconds(10), k48kHz));
+  EXPECT_EQ(1, AudioTimestampHelper::TimeToFrames(
                    base::TimeDelta::FromMicroseconds(20), k48kHz));
   EXPECT_EQ(1, AudioTimestampHelper::TimeToFrames(
                    base::TimeDelta::FromMicroseconds(21), k48kHz));
