@@ -14,6 +14,7 @@
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
+#include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/search/instant_service_observer.h"
@@ -100,20 +101,8 @@ InstantService::InstantService(Profile* profile)
                  content::NotificationService::AllSources());
 
   if (base::FeatureList::IsEnabled(kNtpTilesFeature)) {
-    most_visited_sites_ = base::MakeUnique<ntp_tiles::MostVisitedSites>(
-        profile_->GetPrefs(), TopSitesFactory::GetForProfile(profile_),
-        suggestions::SuggestionsServiceFactory::GetForProfile(profile_),
-        /*popular_sites=*/nullptr,
-        base::MakeUnique<ntp_tiles::IconCacher>(
-            FaviconServiceFactory::GetForProfile(
-                profile, ServiceAccessType::IMPLICIT_ACCESS),
-            base::MakeUnique<image_fetcher::ImageFetcherImpl>(
-                base::MakeUnique<suggestions::ImageDecoderImpl>(),
-                profile->GetRequestContext())),
-        /*supervisor=*/nullptr);
-    // TODO(treib): Add supervisor.
-    // TODO(sfiera): Share this with Android in a factory.
-
+    most_visited_sites_ =
+        ChromeMostVisitedSitesFactory::NewForProfile(profile_);
     most_visited_sites_->SetMostVisitedURLsObserver(this, 8);
   } else {
     top_sites_ = TopSitesFactory::GetForProfile(profile_);

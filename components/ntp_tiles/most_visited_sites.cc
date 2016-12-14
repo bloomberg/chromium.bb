@@ -46,18 +46,19 @@ bool AreURLsEquivalent(const GURL& url1, const GURL& url2) {
 
 }  // namespace
 
-MostVisitedSites::MostVisitedSites(PrefService* prefs,
-                                   scoped_refptr<history::TopSites> top_sites,
-                                   SuggestionsService* suggestions,
-                                   std::unique_ptr<PopularSites> popular_sites,
-                                   std::unique_ptr<IconCacher> icon_cacher,
-                                   MostVisitedSitesSupervisor* supervisor)
+MostVisitedSites::MostVisitedSites(
+    PrefService* prefs,
+    scoped_refptr<history::TopSites> top_sites,
+    SuggestionsService* suggestions,
+    std::unique_ptr<PopularSites> popular_sites,
+    std::unique_ptr<IconCacher> icon_cacher,
+    std::unique_ptr<MostVisitedSitesSupervisor> supervisor)
     : prefs_(prefs),
       top_sites_(top_sites),
       suggestions_service_(suggestions),
       popular_sites_(std::move(popular_sites)),
       icon_cacher_(std::move(icon_cacher)),
-      supervisor_(supervisor),
+      supervisor_(std::move(supervisor)),
       observer_(nullptr),
       num_sites_(0),
       top_sites_observer_(this),

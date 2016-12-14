@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_NTP_POPULAR_SITES_H_
-#define CHROME_BROWSER_ANDROID_NTP_POPULAR_SITES_H_
+#ifndef CHROME_BROWSER_NTP_TILES_CHROME_POPULAR_SITES_FACTORY_H_
+#define CHROME_BROWSER_NTP_TILES_CHROME_POPULAR_SITES_FACTORY_H_
 
 #include <memory>
-
-#include "base/files/file_path.h"
-#include "base/macros.h"
 
 class Profile;
 
@@ -16,14 +13,12 @@ namespace ntp_tiles {
 class PopularSites;
 }  // namespace ntp_tiles
 
-// TODO(sfiera): move to chrome_popular_sites.h
-class ChromePopularSites {
+class ChromePopularSitesFactory {
  public:
   static std::unique_ptr<ntp_tiles::PopularSites> NewForProfile(
       Profile* profile);
 
- private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ChromePopularSites);
+  ChromePopularSitesFactory() = delete;
 };
 
-#endif  // CHROME_BROWSER_ANDROID_NTP_POPULAR_SITES_H_
+#endif  // CHROME_BROWSER_NTP_TILES_CHROME_POPULAR_SITES_FACTORY_H_

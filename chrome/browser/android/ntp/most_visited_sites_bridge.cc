@@ -10,34 +10,16 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/bind.h"
-#include "base/callback.h"
-#include "base/memory/ptr_util.h"
-#include "chrome/browser/android/ntp/popular_sites.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/favicon/favicon_service_factory.h"
-#include "chrome/browser/history/top_sites_factory.h"
+#include "chrome/browser/ntp_tiles/chrome_most_visited_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
-#include "chrome/browser/search/suggestions/image_decoder_impl.h"
-#include "chrome/browser/search/suggestions/suggestions_service_factory.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_service.h"
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
-#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
-#include "components/history/core/browser/top_sites.h"
-#include "components/image_fetcher/image_fetcher_impl.h"
-#include "components/ntp_tiles/icon_cacher.h"
 #include "components/ntp_tiles/metrics.h"
-#include "components/ntp_tiles/popular_sites.h"
+#include "components/ntp_tiles/most_visited_sites.h"
 #include "components/rappor/rappor_service_impl.h"
-#include "components/safe_json/safe_json_parser.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/url_data_source.h"
 #include "jni/MostVisitedSites_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
-#include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
@@ -47,63 +29,11 @@ using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaArrayOfStrings;
 using base::android::ToJavaIntArray;
-using content::BrowserThread;
+using ntp_tiles::MostVisitedSites;
+using ntp_tiles::NTPTileSource;
+using ntp_tiles::NTPTilesVector;
 using ntp_tiles::metrics::MostVisitedTileType;
 using ntp_tiles::metrics::TileImpression;
-using ntp_tiles::MostVisitedSites;
-using ntp_tiles::MostVisitedSitesSupervisor;
-using ntp_tiles::NTPTileSource;
-using suggestions::SuggestionsServiceFactory;
-
-MostVisitedSitesBridge::SupervisorBridge::SupervisorBridge(Profile* profile)
-    : profile_(profile),
-      supervisor_observer_(nullptr),
-      register_observer_(this) {
-  register_observer_.Add(SupervisedUserServiceFactory::GetForProfile(profile_));
-}
-
-MostVisitedSitesBridge::SupervisorBridge::~SupervisorBridge() {}
-
-void MostVisitedSitesBridge::SupervisorBridge::SetObserver(
-    Observer* new_observer) {
-  if (new_observer)
-    DCHECK(!supervisor_observer_);
-  else
-    DCHECK(supervisor_observer_);
-
-  supervisor_observer_ = new_observer;
-}
-
-bool MostVisitedSitesBridge::SupervisorBridge::IsBlocked(const GURL& url) {
-  SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForProfile(profile_);
-  auto* url_filter = supervised_user_service->GetURLFilterForUIThread();
-  return url_filter->GetFilteringBehaviorForURL(url) ==
-         SupervisedUserURLFilter::FilteringBehavior::BLOCK;
-}
-
-std::vector<MostVisitedSitesSupervisor::Whitelist>
-MostVisitedSitesBridge::SupervisorBridge::whitelists() {
-  std::vector<MostVisitedSitesSupervisor::Whitelist> results;
-  SupervisedUserService* supervised_user_service =
-      SupervisedUserServiceFactory::GetForProfile(profile_);
-  for (const auto& whitelist : supervised_user_service->whitelists()) {
-    results.emplace_back(Whitelist{
-        whitelist->title(), whitelist->entry_point(),
-        whitelist->large_icon_path(),
-    });
-  }
-  return results;
-}
-
-bool MostVisitedSitesBridge::SupervisorBridge::IsChildProfile() {
-  return profile_->IsChild();
-}
-
-void MostVisitedSitesBridge::SupervisorBridge::OnURLFilterChanged() {
-  if (supervisor_observer_)
-    supervisor_observer_->OnBlockedSitesChanged();
-}
 
 class MostVisitedSitesBridge::JavaObserver : public MostVisitedSites::Observer {
  public:
@@ -157,19 +87,7 @@ void MostVisitedSitesBridge::JavaObserver::OnIconMadeAvailable(
 }
 
 MostVisitedSitesBridge::MostVisitedSitesBridge(Profile* profile)
-    : supervisor_(profile),
-      most_visited_(profile->GetPrefs(),
-                    TopSitesFactory::GetForProfile(profile),
-                    SuggestionsServiceFactory::GetForProfile(profile),
-                    ChromePopularSites::NewForProfile(profile),
-                    base::MakeUnique<ntp_tiles::IconCacher>(
-                        FaviconServiceFactory::GetForProfile(
-                            profile,
-                            ServiceAccessType::IMPLICIT_ACCESS),
-                        base::MakeUnique<image_fetcher::ImageFetcherImpl>(
-                            base::MakeUnique<suggestions::ImageDecoderImpl>(),
-                            profile->GetRequestContext())),
-                    &supervisor_) {
+    : most_visited_(ChromeMostVisitedSitesFactory::NewForProfile(profile)) {
   // Register the thumbnails debugging page.
   // TODO(sfiera): find thumbnails a home. They don't belong here.
   content::URLDataSource::Add(profile, new ThumbnailListSource(profile));
@@ -189,7 +107,7 @@ void MostVisitedSitesBridge::SetMostVisitedURLsObserver(
     const JavaParamRef<jobject>& j_observer,
     jint num_sites) {
   java_observer_.reset(new JavaObserver(env, j_observer));
-  most_visited_.SetMostVisitedURLsObserver(java_observer_.get(), num_sites);
+  most_visited_->SetMostVisitedURLsObserver(java_observer_.get(), num_sites);
 }
 
 void MostVisitedSitesBridge::AddOrRemoveBlacklistedUrl(
@@ -198,7 +116,7 @@ void MostVisitedSitesBridge::AddOrRemoveBlacklistedUrl(
     const JavaParamRef<jstring>& j_url,
     jboolean add_url) {
   GURL url(ConvertJavaStringToUTF8(env, j_url));
-  most_visited_.AddOrRemoveBlacklistedUrl(url, add_url);
+  most_visited_->AddOrRemoveBlacklistedUrl(url, add_url);
 }
 
 void MostVisitedSitesBridge::RecordPageImpression(

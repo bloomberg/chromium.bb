@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/ntp/popular_sites.h"
+#include "chrome/browser/ntp_tiles/chrome_popular_sites_factory.h"
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -15,8 +15,8 @@
 #include "components/safe_json/safe_json_parser.h"
 #include "content/public/browser/browser_thread.h"
 
-std::unique_ptr<ntp_tiles::PopularSites> ChromePopularSites::NewForProfile(
-    Profile* profile) {
+std::unique_ptr<ntp_tiles::PopularSites>
+ChromePopularSitesFactory::NewForProfile(Profile* profile) {
   base::FilePath directory;  // remains empty if PathService::Get() fails.
   PathService::Get(chrome::DIR_USER_DATA, &directory);
   return base::MakeUnique<ntp_tiles::PopularSites>(

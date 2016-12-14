@@ -53,6 +53,8 @@ class MostVisitedSitesSupervisor {
     ~Observer() {}
   };
 
+  virtual ~MostVisitedSitesSupervisor() {}
+
   // Pass non-null to set observer, or null to remove observer.
   // If setting observer, there must not yet be an observer set.
   // If removing observer, there must already be one to remove.
@@ -67,9 +69,6 @@ class MostVisitedSitesSupervisor {
 
   // If true, be conservative about suggesting sites from outside sources.
   virtual bool IsChildProfile() = 0;
-
- protected:
-  virtual ~MostVisitedSitesSupervisor() {}
 };
 
 // Tracks the list of most visited sites and their thumbnails.
@@ -98,7 +97,7 @@ class MostVisitedSites : public history::TopSitesObserver,
                    suggestions::SuggestionsService* suggestions,
                    std::unique_ptr<PopularSites> popular_sites,
                    std::unique_ptr<IconCacher> icon_cacher,
-                   MostVisitedSitesSupervisor* supervisor);
+                   std::unique_ptr<MostVisitedSitesSupervisor> supervisor);
 
   ~MostVisitedSites() override;
 
@@ -177,7 +176,7 @@ class MostVisitedSites : public history::TopSitesObserver,
   suggestions::SuggestionsService* suggestions_service_;
   std::unique_ptr<PopularSites> const popular_sites_;
   std::unique_ptr<IconCacher> const icon_cacher_;
-  MostVisitedSitesSupervisor* supervisor_;
+  std::unique_ptr<MostVisitedSitesSupervisor> supervisor_;
 
   Observer* observer_;
 

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/webui/popular_sites_internals_ui.h"
 
-#include "chrome/browser/android/ntp/popular_sites.h"
+#include "chrome/browser/ntp_tiles/chrome_popular_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
@@ -56,7 +56,7 @@ ChromePopularSitesInternalsMessageHandlerBridge::GetBlockingPool() {
 
 std::unique_ptr<ntp_tiles::PopularSites>
 ChromePopularSitesInternalsMessageHandlerBridge::MakePopularSites() {
-  return ChromePopularSites::NewForProfile(Profile::FromWebUI(web_ui()));
+  return ChromePopularSitesFactory::NewForProfile(Profile::FromWebUI(web_ui()));
 }
 
 PrefService* ChromePopularSitesInternalsMessageHandlerBridge::GetPrefs() {
