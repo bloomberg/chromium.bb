@@ -52,6 +52,9 @@
                 "domain": "Security"
             },
             {
+                "domain": "ServiceWorker"
+            },
+            {
                 "domain": "Storage"
             },
             {
