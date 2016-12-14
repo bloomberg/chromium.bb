@@ -32,14 +32,13 @@ class PerfTestTimeDomain : public VirtualTimeDomain {
   PerfTestTimeDomain() : VirtualTimeDomain(nullptr, base::TimeTicks::Now()) {}
   ~PerfTestTimeDomain() override {}
 
-  base::Optional<base::TimeDelta> DelayTillNextTask(
-      LazyNow* lazy_now) override {
+  bool MaybeAdvanceTime() override {
     base::TimeTicks run_time;
     if (!NextScheduledRunTime(&run_time))
-      return base::Optional<base::TimeDelta>();
+      return false;
 
     AdvanceTo(run_time);
-    return base::TimeDelta();  // Makes DoWork post an immediate continuation.
+    return true;
   }
 
   void RequestWakeup(base::TimeTicks now, base::TimeDelta delay) override {

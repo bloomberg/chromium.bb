@@ -163,14 +163,12 @@ bool TaskQueueSelector::PrioritizingSelector::
         WorkQueue** out_work_queue) const {
   WorkQueue* immediate_queue;
   DCHECK_EQ(*out_chose_delayed_over_immediate, false);
-  EnqueueOrder immediate_enqueue_order;
-  if (immediate_work_queue_sets_.GetOldestQueueAndEnqueueOrderInSet(
-          priority, &immediate_queue, &immediate_enqueue_order)) {
+  if (immediate_work_queue_sets_.GetOldestQueueInSet(priority,
+                                                     &immediate_queue)) {
     WorkQueue* delayed_queue;
-    EnqueueOrder delayed_enqueue_order;
-    if (delayed_work_queue_sets_.GetOldestQueueAndEnqueueOrderInSet(
-            priority, &delayed_queue, &delayed_enqueue_order)) {
-      if (immediate_enqueue_order < delayed_enqueue_order) {
+    if (delayed_work_queue_sets_.GetOldestQueueInSet(priority,
+                                                     &delayed_queue)) {
+      if (immediate_queue->ShouldRunBefore(delayed_queue)) {
         *out_work_queue = immediate_queue;
       } else {
         *out_chose_delayed_over_immediate = true;
@@ -191,9 +189,13 @@ bool TaskQueueSelector::PrioritizingSelector::ChooseOldestWithPriority(
   // Select an immediate work queue if we are starving immediate tasks.
   if (task_queue_selector_->immediate_starvation_count_ >=
       kMaxDelayedStarvationTasks) {
-    if (ChooseOldestImmediateTaskWithPriority(priority, out_work_queue))
+    if (ChooseOldestImmediateTaskWithPriority(priority, out_work_queue)) {
       return true;
-    return ChooseOldestDelayedTaskWithPriority(priority, out_work_queue);
+    }
+    if (ChooseOldestDelayedTaskWithPriority(priority, out_work_queue)) {
+      return true;
+    }
+    return false;
   }
   return ChooseOldestImmediateOrDelayedTaskWithPriority(
       priority, out_chose_delayed_over_immediate, out_work_queue);

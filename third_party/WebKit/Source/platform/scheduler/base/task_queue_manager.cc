@@ -58,7 +58,7 @@ TaskQueueManager::TaskQueueManager(
     : real_time_domain_(new RealTimeDomain(tracing_category)),
       delegate_(delegate),
       task_was_run_on_quiescence_monitored_queue_(false),
-      record_task_delay_histograms_(true),
+      other_thread_pending_wakeup_(false),
       work_batch_size_(1),
       task_count_(0),
       tracing_category_(tracing_category),
@@ -75,10 +75,12 @@ TaskQueueManager::TaskQueueManager(
                                      "TaskQueueManager", this);
   selector_.SetTaskQueueSelectorObserver(this);
 
-  delayed_do_work_closure_ =
-      base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), true);
-  immediate_do_work_closure_ =
-      base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(), false);
+  from_main_thread_immediate_do_work_closure_ =
+      base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(),
+                 base::TimeTicks(), true);
+  from_other_thread_immediate_do_work_closure_ =
+      base::Bind(&TaskQueueManager::DoWork, weak_factory_.GetWeakPtr(),
+                 base::TimeTicks(), false);
 
   // TODO(alexclarke): Change this to be a parameter that's passed in.
   RegisterTimeDomain(real_time_domain_.get());
@@ -97,11 +99,6 @@ TaskQueueManager::~TaskQueueManager() {
 
   delegate_->RemoveNestingObserver(this);
 }
-
-TaskQueueManager::AnyThread::AnyThread()
-    : do_work_running_count(0),
-      immediate_do_work_posted_count(0),
-      is_nested(false) {}
 
 void TaskQueueManager::RegisterTimeDomain(TimeDomain* time_domain) {
   time_domains_.insert(time_domain);
@@ -148,72 +145,45 @@ void TaskQueueManager::UnregisterTaskQueue(
   queues_.erase(task_queue);
 
   selector_.RemoveQueue(task_queue.get());
-
-  {
-    base::AutoLock lock(any_thread_lock_);
-    any_thread().has_incoming_immediate_work.erase(task_queue.get());
-  }
 }
 
-void TaskQueueManager::UpdateWorkQueues(LazyNow* lazy_now) {
+void TaskQueueManager::UpdateWorkQueues(LazyNow lazy_now) {
+  TRACE_EVENT0(disabled_by_default_tracing_category_,
+               "TaskQueueManager::UpdateWorkQueues");
+
   for (TimeDomain* time_domain : time_domains_) {
-    if (time_domain == real_time_domain_.get()) {
-      time_domain->WakeupReadyDelayedQueues(lazy_now);
-      continue;
-    }
-    LazyNow time_domain_lazy_now = time_domain->CreateLazyNow();
-    time_domain->WakeupReadyDelayedQueues(&time_domain_lazy_now);
+    LazyNow lazy_now_in_domain = time_domain == real_time_domain_.get()
+                                     ? lazy_now
+                                     : time_domain->CreateLazyNow();
+    time_domain->UpdateWorkQueues(lazy_now_in_domain);
   }
 }
 
 void TaskQueueManager::OnBeginNestedMessageLoop() {
   // We just entered a nested message loop, make sure there's a DoWork posted or
   // the system will grind to a halt.
-  {
-    base::AutoLock lock(any_thread_lock_);
-    any_thread().immediate_do_work_posted_count++;
-    any_thread().is_nested = true;
-  }
-  delegate_->PostTask(FROM_HERE, immediate_do_work_closure_);
-}
-
-void TaskQueueManager::OnQueueHasImmediateWork(internal::TaskQueueImpl* queue,
-                                               bool ensure_do_work_posted) {
-  MoveableAutoLock lock(any_thread_lock_);
-  any_thread().has_incoming_immediate_work.insert(queue);
-  if (ensure_do_work_posted)
-    MaybeScheduleImmediateWorkLocked(FROM_HERE, std::move(lock));
-}
-
-void TaskQueueManager::NotifyQueuesOfIncomingImmediateWorkOnMainThreadLocked() {
-  for (internal::TaskQueueImpl* queue :
-       any_thread().has_incoming_immediate_work) {
-    queue->ReloadImmediateWorkQueueIfEmpty();
-  }
-  any_thread().has_incoming_immediate_work.clear();
+  delegate_->PostTask(FROM_HERE, from_main_thread_immediate_do_work_closure_);
 }
 
 void TaskQueueManager::MaybeScheduleImmediateWork(
     const tracked_objects::Location& from_here) {
-  MoveableAutoLock lock(any_thread_lock_);
-  MaybeScheduleImmediateWorkLocked(from_here, std::move(lock));
-}
-
-void TaskQueueManager::MaybeScheduleImmediateWorkLocked(
-    const tracked_objects::Location& from_here,
-    MoveableAutoLock&& lock) {
-  {
-    MoveableAutoLock auto_lock(std::move(lock));
-    // Unless we're nested, try to avoid posting redundant DoWorks.
-    if (!any_thread().is_nested &&
-        (any_thread().do_work_running_count == 1 ||
-         any_thread().immediate_do_work_posted_count > 0)) {
+  bool on_main_thread = delegate_->BelongsToCurrentThread();
+  // De-duplicate DoWork posts.
+  if (on_main_thread) {
+    if (!main_thread_pending_wakeups_.insert(base::TimeTicks()).second) {
       return;
     }
-
-    any_thread().immediate_do_work_posted_count++;
+    delegate_->PostTask(from_here, from_main_thread_immediate_do_work_closure_);
+  } else {
+    {
+      base::AutoLock lock(other_thread_lock_);
+      if (other_thread_pending_wakeup_)
+        return;
+      other_thread_pending_wakeup_ = true;
+    }
+    delegate_->PostTask(from_here,
+                        from_other_thread_immediate_do_work_closure_);
   }
-  delegate_->PostTask(from_here, immediate_do_work_closure_);
 }
 
 void TaskQueueManager::MaybeScheduleDelayedWork(
@@ -222,74 +192,54 @@ void TaskQueueManager::MaybeScheduleDelayedWork(
     base::TimeDelta delay) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_GE(delay, base::TimeDelta());
-  {
-    base::AutoLock lock(any_thread_lock_);
 
-    // Unless we're nested, don't post a delayed DoWork if there's an immediate
-    // DoWork in flight or we're inside a DoWork. We can rely on DoWork posting
-    // a delayed continuation as needed.
-    if (!any_thread().is_nested &&
-        (any_thread().immediate_do_work_posted_count > 0 ||
-         any_thread().do_work_running_count == 1)) {
-      return;
-    }
+  // If there's a pending immediate DoWork then we rely on
+  // TryAdvanceTimeDomains getting the TimeDomain to call
+  // MaybeScheduleDelayedWork again when the immediate DoWork is complete.
+  if (main_thread_pending_wakeups_.find(base::TimeTicks()) !=
+      main_thread_pending_wakeups_.end()) {
+    return;
   }
-
   // De-duplicate DoWork posts.
   base::TimeTicks run_time = now + delay;
-  if (next_delayed_do_work_ <= run_time && !next_delayed_do_work_.is_null())
+  if (!main_thread_pending_wakeups_.empty() &&
+      *main_thread_pending_wakeups_.begin() <= run_time) {
     return;
-
-  TRACE_EVENT1(tracing_category_, "MaybeScheduleDelayedWorkInternal",
-               "delay_ms", delay.InMillisecondsF());
-
-  cancelable_delayed_do_work_closure_.Reset(delayed_do_work_closure_);
-  next_delayed_do_work_ = run_time;
+  }
+  main_thread_pending_wakeups_.insert(run_time);
   delegate_->PostDelayedTask(
-      from_here, cancelable_delayed_do_work_closure_.callback(), delay);
+      from_here, base::Bind(&TaskQueueManager::DoWork,
+                            weak_factory_.GetWeakPtr(), run_time, true),
+      delay);
 }
 
-void TaskQueueManager::DoWork(bool delayed) {
+void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  TRACE_EVENT1("tracing_category_", "TaskQueueManager::DoWork", "delayed",
-               delayed);
-  LazyNow lazy_now(real_time_domain()->CreateLazyNow());
+  TRACE_EVENT1(tracing_category_, "TaskQueueManager::DoWork",
+               "from_main_thread", from_main_thread);
 
-  bool is_nested = delegate_->IsNested();
-  if (!is_nested)
+  if (from_main_thread) {
+    main_thread_pending_wakeups_.erase(run_time);
+  } else {
+    base::AutoLock lock(other_thread_lock_);
+    other_thread_pending_wakeup_ = false;
+  }
+
+  // Posting a DoWork while a DoWork is running leads to spurious DoWorks.
+  main_thread_pending_wakeups_.insert(base::TimeTicks());
+
+  if (!delegate_->IsNested())
     queues_to_delete_.clear();
 
-  // This must be done before running any tasks because they could invoke a
-  // nested message loop and we risk having a stale |next_delayed_do_work_|.
-  if (delayed)
-    next_delayed_do_work_ = base::TimeTicks();
+  LazyNow lazy_now(real_time_domain()->CreateLazyNow());
+  UpdateWorkQueues(lazy_now);
 
   for (int i = 0; i < work_batch_size_; i++) {
-    {
-      base::AutoLock lock(any_thread_lock_);
-      any_thread().is_nested = is_nested;
-      DCHECK_EQ(any_thread().is_nested, delegate_->IsNested());
-
-      if (i == 0) {
-        any_thread().do_work_running_count++;
-
-        if (!delayed) {
-          any_thread().immediate_do_work_posted_count--;
-          DCHECK_GE(any_thread().immediate_do_work_posted_count, 0);
-        }
-      }
-
-      NotifyQueuesOfIncomingImmediateWorkOnMainThreadLocked();
-    }
-
-    UpdateWorkQueues(&lazy_now);
-
-    internal::WorkQueue* work_queue = nullptr;
+    internal::WorkQueue* work_queue;
     if (!SelectWorkQueueToService(&work_queue))
       break;
 
-    // NB this may unregister the queue.
-    switch (ProcessTaskFromWorkQueue(work_queue, is_nested, &lazy_now)) {
+    switch (ProcessTaskFromWorkQueue(work_queue, &lazy_now)) {
       case ProcessTaskResult::DEFERRED:
         // If a task was deferred, try again with another task.
         continue;
@@ -299,111 +249,31 @@ void TaskQueueManager::DoWork(bool delayed) {
         return;  // The TaskQueueManager got deleted, we must bail out.
     }
 
+    work_queue = nullptr;  // The queue may have been unregistered.
+
+    UpdateWorkQueues(lazy_now);
+
     // Only run a single task per batch in nested run loops so that we can
     // properly exit the nested loop when someone calls RunLoop::Quit().
-    if (is_nested)
+    if (delegate_->IsNested())
       break;
   }
+
+  main_thread_pending_wakeups_.erase(base::TimeTicks());
 
   // TODO(alexclarke): Consider refactoring the above loop to terminate only
   // when there's no more work left to be done, rather than posting a
   // continuation task.
-
-  {
-    MoveableAutoLock lock(any_thread_lock_);
-    base::Optional<base::TimeDelta> next_delay =
-        ComputeDelayTillNextTaskLocked(&lazy_now);
-
-    any_thread().do_work_running_count--;
-    DCHECK_GE(any_thread().do_work_running_count, 0);
-
-    any_thread().is_nested = is_nested;
-    DCHECK_EQ(any_thread().is_nested, delegate_->IsNested());
-
-    PostDoWorkContinuationLocked(next_delay, &lazy_now, std::move(lock));
-  }
+  if (!selector_.EnabledWorkQueuesEmpty() || TryAdvanceTimeDomains())
+    MaybeScheduleImmediateWork(FROM_HERE);
 }
 
-void TaskQueueManager::PostDoWorkContinuationLocked(
-    base::Optional<base::TimeDelta> next_delay,
-    LazyNow* lazy_now,
-    MoveableAutoLock&& lock) {
-  base::TimeDelta delay;
-
-  {
-    MoveableAutoLock auto_lock(std::move(lock));
-
-    // If there are no tasks left then we don't need to post a continuation.
-    if (!next_delay) {
-      // If there's a pending delayed DoWork, cancel it because it's not needed.
-      if (!next_delayed_do_work_.is_null()) {
-        next_delayed_do_work_ = base::TimeTicks();
-        cancelable_delayed_do_work_closure_.Cancel();
-      }
-      return;
-    }
-
-    // If an immediate DoWork is posted, we don't need to post a continuation.
-    if (any_thread().immediate_do_work_posted_count > 0)
-      return;
-
-    delay = next_delay.value();
-
-    // This isn't supposed to happen, but in case it does convert to
-    // non-delayed.
-    if (delay < base::TimeDelta())
-      delay = base::TimeDelta();
-
-    if (delay.is_zero()) {
-      // If a delayed DoWork is pending then we don't need to post a
-      // continuation because it should run immediately.
-      if (!next_delayed_do_work_.is_null() &&
-          next_delayed_do_work_ <= lazy_now->Now()) {
-        return;
-      }
-
-      any_thread().immediate_do_work_posted_count++;
-    } else {
-      base::TimeTicks run_time = lazy_now->Now() + delay;
-      if (next_delayed_do_work_ == run_time)
-        return;
-
-      next_delayed_do_work_ = run_time;
-    }
-  }
-
-  // We avoid holding |any_thread_lock_| while posting the task.
-  if (delay.is_zero()) {
-    delegate_->PostTask(FROM_HERE, immediate_do_work_closure_);
-  } else {
-    cancelable_delayed_do_work_closure_.Reset(delayed_do_work_closure_);
-    delegate_->PostDelayedTask(
-        FROM_HERE, cancelable_delayed_do_work_closure_.callback(), delay);
-  }
-}
-
-base::Optional<base::TimeDelta>
-TaskQueueManager::ComputeDelayTillNextTaskLocked(LazyNow* lazy_now) {
-  NotifyQueuesOfIncomingImmediateWorkOnMainThreadLocked();
-
-  // If the selector has non-empty queues we trivially know there is immediate
-  // word to be done.
-  if (!selector_.EnabledWorkQueuesEmpty())
-    return base::TimeDelta();
-
-  UpdateWorkQueues(lazy_now);
-
-  // Otherwise we need to find the shortest delay, if any.
-  base::Optional<base::TimeDelta> next_continuation;
+bool TaskQueueManager::TryAdvanceTimeDomains() {
+  bool can_advance = false;
   for (TimeDomain* time_domain : time_domains_) {
-    base::Optional<base::TimeDelta> continuation =
-        time_domain->DelayTillNextTask(lazy_now);
-    if (!continuation)
-      continue;
-    if (!next_continuation || next_continuation.value() > continuation.value())
-      next_continuation = continuation;
+    can_advance |= time_domain->MaybeAdvanceTime();
   }
-  return next_continuation;
+  return can_advance;
 }
 
 bool TaskQueueManager::SelectWorkQueueToService(
@@ -422,7 +292,6 @@ void TaskQueueManager::DidQueueTask(
 
 TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
     internal::WorkQueue* work_queue,
-    bool is_nested,
     LazyNow* lazy_now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   scoped_refptr<DeletionSentinel> protect(deletion_sentinel_);
@@ -437,7 +306,7 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
   if (queue->GetQuiescenceMonitored())
     task_was_run_on_quiescence_monitored_queue_ = true;
 
-  if (!pending_task.nestable && is_nested) {
+  if (!pending_task.nestable && delegate_->IsNested()) {
     // Defer non-nestable work to the main task runner.  NOTE these tasks can be
     // arbitrarily delayed so the additional delay should not be a problem.
     // TODO(skyostil): Figure out a way to not forget which task queue the
@@ -450,8 +319,7 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
     return ProcessTaskResult::DEFERRED;
   }
 
-  if (record_task_delay_histograms_)
-    MaybeRecordTaskDelayHistograms(pending_task, queue);
+  MaybeRecordTaskDelayHistograms(pending_task, queue);
 
   double task_start_time = 0;
   TRACE_TASK_EXECUTION("TaskQueueManager::ProcessTaskFromWorkQueue",
@@ -602,22 +470,13 @@ TaskQueueManager::AsValueWithSelectorResult(
   for (auto* time_domain : time_domains_)
     time_domain->AsValueInto(state.get());
   state->EndArray();
-
-  {
-    base::AutoLock lock(any_thread_lock_);
-    state->SetBoolean("is_nested", any_thread().is_nested);
-    state->SetInteger("do_work_running_count",
-                      any_thread().do_work_running_count);
-    state->SetInteger("immediate_do_work_posted_count",
-                      any_thread().immediate_do_work_posted_count);
-  }
   return std::move(state);
 }
 
 void TaskQueueManager::OnTaskQueueEnabled(internal::TaskQueueImpl* queue) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   // Only schedule DoWork if there's something to do.
-  if (queue->HasPendingImmediateWork() && !queue->BlockedByFence())
+  if (queue->HasPendingImmediateWork())
     MaybeScheduleImmediateWork(FROM_HERE);
 }
 
@@ -633,12 +492,6 @@ void TaskQueueManager::OnTriedToSelectBlockedWorkQueue(
 
 bool TaskQueueManager::HasImmediateWorkForTesting() const {
   return !selector_.EnabledWorkQueuesEmpty();
-}
-
-void TaskQueueManager::SetRecordTaskDelayHistograms(
-    bool record_task_delay_histograms) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  record_task_delay_histograms_ = record_task_delay_histograms;
 }
 
 }  // namespace scheduler
