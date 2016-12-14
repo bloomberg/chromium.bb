@@ -13,7 +13,6 @@ import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
 
 /**
@@ -52,7 +51,7 @@ public class BackgroundSyncLauncherTest extends InstrumentationTestCase {
                     }
                 };
 
-        BackgroundSyncLauncher.shouldLaunchBrowserIfStopped(callback);
+        BackgroundSyncLauncher.shouldLaunchBrowserIfStopped(mContext, callback);
         try {
             // Wait on the callback to be called.
             semaphore.acquire();
@@ -60,16 +59,6 @@ public class BackgroundSyncLauncherTest extends InstrumentationTestCase {
             fail("Failed to acquire semaphore");
         }
         return mShouldLaunchResult;
-    }
-
-    private void waitForLaunchBrowserTask() {
-        try {
-            mLauncher.mLaunchBrowserIfStoppedTask.get();
-        } catch (InterruptedException e) {
-            fail("Launch task was interrupted");
-        } catch (ExecutionException e) {
-            fail("Launch task had execution exception");
-        }
     }
 
     @SmallTest
@@ -92,11 +81,9 @@ public class BackgroundSyncLauncherTest extends InstrumentationTestCase {
     @RetryOnFailure
     public void testSetLaunchWhenNextOnline() {
         assertFalse(shouldLaunchBrowserIfStoppedSync());
-        mLauncher.launchBrowserIfStopped(true, 0);
-        waitForLaunchBrowserTask();
+        mLauncher.launchBrowserIfStopped(mContext, true, 0);
         assertTrue(shouldLaunchBrowserIfStoppedSync());
-        mLauncher.launchBrowserIfStopped(false, 0);
-        waitForLaunchBrowserTask();
+        mLauncher.launchBrowserIfStopped(mContext, false, 0);
         assertFalse(shouldLaunchBrowserIfStoppedSync());
     }
 
@@ -104,8 +91,7 @@ public class BackgroundSyncLauncherTest extends InstrumentationTestCase {
     @Feature({"BackgroundSync"})
     @RetryOnFailure
     public void testNewLauncherDisablesNextOnline() {
-        mLauncher.launchBrowserIfStopped(true, 0);
-        waitForLaunchBrowserTask();
+        mLauncher.launchBrowserIfStopped(mContext, true, 0);
         assertTrue(shouldLaunchBrowserIfStoppedSync());
 
         // Simulate restarting the browser by deleting the launcher and creating a new one.
