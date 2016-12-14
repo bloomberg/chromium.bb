@@ -183,4 +183,40 @@ TEST(SubresourceFilterFeaturesTest, ActivationList) {
   }
 }
 
+TEST(SubresourceFilterFeaturesTest, PerfMeasurementRate) {
+  const struct {
+    bool feature_enabled;
+    const char* perf_measurement_param;
+    double expected_perf_measurement_rate;
+  } kTestCases[] = {{false, "not_a_number", 0},
+                    {false, "0", 0},
+                    {false, "1", 0},
+                    {true, "not_a_number", 0},
+                    {true, "0.5not_a_number", 0},
+                    {true, "0", 0},
+                    {true, "0.000", 0},
+                    {true, "0.05", 0.05},
+                    {true, "0.5", 0.5},
+                    {true, "1", 1},
+                    {true, "1.0", 1},
+                    {true, "0.333", 0.333},
+                    {true, "1e0", 1}};
+
+  for (const auto& test_case : kTestCases) {
+    SCOPED_TRACE(::testing::Message("Enabled = ") << test_case.feature_enabled);
+    SCOPED_TRACE(::testing::Message("PerfMeasurementParam = \"")
+                 << test_case.perf_measurement_param << "\"");
+
+    base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
+    testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+        test_case.feature_enabled ? base::FeatureList::OVERRIDE_ENABLE_FEATURE
+                                  : base::FeatureList::OVERRIDE_USE_DEFAULT,
+        {{kPerformanceMeasurementRateParameterName,
+          test_case.perf_measurement_param}});
+
+    EXPECT_EQ(test_case.expected_perf_measurement_rate,
+              GetPerformanceMeasurementRate());
+  }
+}
+
 }  // namespace subresource_filter

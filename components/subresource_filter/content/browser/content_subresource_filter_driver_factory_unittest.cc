@@ -234,7 +234,8 @@ class ContentSubresourceFilterDriverFactoryTest
       rfh_tester->SimulateRedirect(url);
     }
     EXPECT_CALL(*driver(),
-                ActivateForProvisionalLoad(::testing::_, ::testing::_, true))
+                ActivateForProvisionalLoad(::testing::_, ::testing::_,
+                                           expected_measure_performance()))
         .Times(expected_activation);
     if (!content::IsBrowserSideNavigationEnabled()) {
       factory()->ReadyToCommitNavigationInternal(main_rfh(),
@@ -261,7 +262,8 @@ class ContentSubresourceFilterDriverFactoryTest
 
   void NavigateAndCommitSubframe(const GURL& url, bool expected_activation) {
     EXPECT_CALL(*subframe_driver(),
-                ActivateForProvisionalLoad(::testing::_, ::testing::_, true))
+                ActivateForProvisionalLoad(::testing::_, ::testing::_,
+                                           expected_measure_performance()))
         .Times(expected_activation);
     EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
 
@@ -298,7 +300,7 @@ class ContentSubresourceFilterDriverFactoryTest
   void EmulateInPageNavigation(const std::vector<bool>& blacklisted_urls,
                                RedirectChainMatchPattern extected_pattern,
                                bool expected_activation) {
-    // This test-case examinse the nevigation woth following sequence of event:
+    // This test examines the navigation with the following sequence of events:
     //   DidStartProvisional(main, "example.com")
     //   ReadyToCommitNavigation(“example.com”)
     //   DidCommitProvisional(main, "example.com")
@@ -319,6 +321,13 @@ class ContentSubresourceFilterDriverFactoryTest
   }
 
  private:
+  static bool expected_measure_performance() {
+    const double rate = GetPerformanceMeasurementRate();
+    // Note: The case when 0 < rate < 1 is not deterministic, don't test it.
+    EXPECT_TRUE(rate == 0 || rate == 1);
+    return rate == 1;
+  }
+
   // Owned by the factory.
   MockSubresourceFilterClient* client_;
   MockSubresourceFilterDriver* driver_;
@@ -409,6 +418,18 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
       base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
       kActivationScopeActivationList,
       kActivationListSocialEngineeringAdsInterstitial);
+  EmulateInPageNavigation({true}, NO_REDIRECTS_HIT,
+                          true /* expected_activation */);
+}
+
+TEST_F(ContentSubresourceFilterDriverFactoryTest,
+       SpecialCaseNavigationActivationListEnabledWithPerformanceMeasurement) {
+  base::FieldTrialList field_trial_list(nullptr);
+  testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE, kActivationStateEnabled,
+      kActivationScopeActivationList,
+      kActivationListSocialEngineeringAdsInterstitial,
+      "1" /* performance_measurement_rate */);
   EmulateInPageNavigation({true}, NO_REDIRECTS_HIT,
                           true /* expected_activation */);
 }

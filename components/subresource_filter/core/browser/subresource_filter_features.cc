@@ -6,6 +6,7 @@
 
 #include <string>
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "components/variations/variations_associated_data.h"
@@ -29,6 +30,9 @@ const char kActivationListsParameterName[] = "activation_lists";
 const char kActivationListSocialEngineeringAdsInterstitial[] =
     "social_engineering_ads_interstitial";
 const char kActivationListPhishingInterstitial[] = "phishing_interstitial";
+
+const char kPerformanceMeasurementRateParameterName[] =
+    "performance_measurement_rate";
 
 ActivationState GetMaximumActivationState() {
   std::string activation_state = variations::GetVariationParamValueByFeature(
@@ -68,6 +72,15 @@ ActivationList GetCurrentActivationList() {
     }
   }
   return activation_list_type;
+}
+
+double GetPerformanceMeasurementRate() {
+  const std::string rate = variations::GetVariationParamValueByFeature(
+      kSafeBrowsingSubresourceFilter, kPerformanceMeasurementRateParameterName);
+  double value = 0;
+  if (!base::StringToDouble(rate, &value) || value < 0)
+    return 0;
+  return value < 1 ? value : 1;
 }
 
 }  // namespace subresource_filter

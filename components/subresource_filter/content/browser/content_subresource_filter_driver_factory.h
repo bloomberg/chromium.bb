@@ -145,6 +145,7 @@ class ContentSubresourceFilterDriverFactory
   HostPathSet whitelisted_hosts_;
 
   ActivationState activation_state_;
+  bool measure_performance_;
 
   // The URLs in the navigation chain.
   std::vector<GURL> navigation_chain_;

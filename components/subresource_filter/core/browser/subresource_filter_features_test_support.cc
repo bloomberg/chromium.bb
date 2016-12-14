@@ -23,23 +23,22 @@ const char kTestExperimentGroupName[] = "GroupNameShouldNotMatter";
 ScopedSubresourceFilterFeatureToggle::ScopedSubresourceFilterFeatureToggle(
     base::FeatureList::OverrideState feature_state,
     const std::string& maximum_activation_state,
-    const std::string& activation_scope)
-    : ScopedSubresourceFilterFeatureToggle(feature_state,
-                                           maximum_activation_state,
-                                           activation_scope,
-                                           std::string()) {}
+    const std::string& activation_scope,
+    const std::string& activation_lists,
+    const std::string& performance_measurement_rate)
+    : ScopedSubresourceFilterFeatureToggle(
+          feature_state,
+          {{kActivationStateParameterName, maximum_activation_state},
+           {kActivationScopeParameterName, activation_scope},
+           {kActivationListsParameterName, activation_lists},
+           {kPerformanceMeasurementRateParameterName,
+            performance_measurement_rate}}) {}
 
 ScopedSubresourceFilterFeatureToggle::ScopedSubresourceFilterFeatureToggle(
     base::FeatureList::OverrideState feature_state,
-    const std::string& maximum_activation_state,
-    const std::string& activation_scope,
-    const std::string& activation_lists) {
+    std::map<std::string, std::string> variation_params) {
   variations::testing::ClearAllVariationParams();
 
-  std::map<std::string, std::string> variation_params;
-  variation_params[kActivationStateParameterName] = maximum_activation_state;
-  variation_params[kActivationScopeParameterName] = activation_scope;
-  variation_params[kActivationListsParameterName] = activation_lists;
   EXPECT_TRUE(variations::AssociateVariationParams(
       kTestFieldTrialName, kTestExperimentGroupName, variation_params));
 

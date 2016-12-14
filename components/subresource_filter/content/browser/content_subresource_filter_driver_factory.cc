@@ -5,6 +5,7 @@
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_driver.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/core/browser/subresource_filter_client.h"
@@ -22,6 +23,10 @@ namespace {
 
 std::string DistillURLToHostAndPath(const GURL& url) {
   return url.host() + url.path();
+}
+
+bool ShouldMeasurePerformance(double rate) {
+  return base::RandDouble() < rate;
 }
 
 }  // namespace
@@ -54,7 +59,8 @@ ContentSubresourceFilterDriverFactory::ContentSubresourceFilterDriverFactory(
     std::unique_ptr<SubresourceFilterClient> client)
     : content::WebContentsObserver(web_contents),
       client_(std::move(client)),
-      activation_state_(ActivationState::DISABLED) {
+      activation_state_(ActivationState::DISABLED),
+      measure_performance_(false) {
   content::RenderFrameHost* main_frame_host = web_contents->GetMainFrame();
   if (main_frame_host && main_frame_host->IsRenderFrameLive())
     CreateDriverForFrameHostIfNeeded(main_frame_host);
@@ -122,14 +128,10 @@ void ContentSubresourceFilterDriverFactory::ActivateForFrameHostIfNeeded(
     content::RenderFrameHost* render_frame_host,
     const GURL& url) {
   if (activation_state_ != ActivationState::DISABLED) {
-    // TODO(pkalinnikov): Introduce a variation parameter controlling how often
-    // the |measure_performance| bit is set. crbug/672519
-    constexpr bool measure_performance = true;
-
     auto* driver = DriverFromFrameHost(render_frame_host);
     DCHECK(driver);
     driver->ActivateForProvisionalLoad(GetMaximumActivationState(), url,
-                                       measure_performance);
+                                       measure_performance_);
   }
 }
 
@@ -164,6 +166,7 @@ void ContentSubresourceFilterDriverFactory::DidStartNavigation(
 
     client_->ToggleNotificationVisibility(false);
     activation_state_ = ActivationState::DISABLED;
+    measure_performance_ = false;
   }
 }
 
@@ -209,9 +212,12 @@ void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigationInternal(
     RecordRedirectChainMatchPattern();
     if (ShouldActivateForMainFrameURL(url)) {
       activation_state_ = GetMaximumActivationState();
+      measure_performance_ =
+          ShouldMeasurePerformance(GetPerformanceMeasurementRate());
       ActivateForFrameHostIfNeeded(render_frame_host, url);
     } else {
       activation_state_ = ActivationState::DISABLED;
+      measure_performance_ = false;
     }
   } else {
     ActivateForFrameHostIfNeeded(render_frame_host, url);

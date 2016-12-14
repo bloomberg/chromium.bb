@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_FEATURES_TEST_SUPPORT_H_
 #define COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_SUBRESOURCE_FILTER_FEATURES_TEST_SUPPORT_H_
 
+#include <map>
 #include <string>
 
 #include "base/feature_list.h"
@@ -14,21 +15,21 @@
 namespace subresource_filter {
 namespace testing {
 
-// Helper to override the state of the |kSafeBrowsingSubresourceFilter| feature
-// and the maximum activation state during tests. Expects a pre-existing global
-// base::FieldTrialList singleton.
+// Helper to override the state of the |kSafeBrowsingSubresourceFilter| feature,
+// and its variation parameters, e.g., maximum activation state and activation
+// scope. Expects a pre-existing global base::FieldTrialList singleton.
 class ScopedSubresourceFilterFeatureToggle {
  public:
   ScopedSubresourceFilterFeatureToggle(
       base::FeatureList::OverrideState feature_state,
       const std::string& maximum_activation_state,
-      const std::string& activation_scope);
+      const std::string& activation_scope,
+      const std::string& activation_lists = std::string(),
+      const std::string& performance_measurement_rate = std::string());
 
   ScopedSubresourceFilterFeatureToggle(
       base::FeatureList::OverrideState feature_state,
-      const std::string& maximum_activation_state,
-      const std::string& activation_scope,
-      const std::string& activation_lists);
+      std::map<std::string, std::string> variation_params);
 
   ~ScopedSubresourceFilterFeatureToggle();
 

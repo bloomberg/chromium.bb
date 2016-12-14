@@ -30,6 +30,8 @@ extern const char kActivationListsParameterName[];
 extern const char kActivationListSocialEngineeringAdsInterstitial[];
 extern const char kActivationListPhishingInterstitial[];
 
+extern const char kPerformanceMeasurementRateParameterName[];
+
 // Returns the maximum degree to which subresource filtering should be activated
 // on any RenderFrame. This will be ActivationState::DISABLED unless the feature
 // is enabled and variation parameters prescribe a higher activation state.
@@ -45,6 +47,11 @@ ActivationScope GetCurrentActivationScope();
 // the feature |kSafeBrowsingSubresourceFilter|. When the corresponding
 // variation param is empty, returns most conservative ActivationList::NONE.
 ActivationList GetCurrentActivationList();
+
+// Returns a number in the range [0, 1], indicating the fraction of page loads
+// that should have extended performance measurements enabled. The rate will be
+// 0 unless a greater frequency is specified by variation parameters.
+double GetPerformanceMeasurementRate();
 
 }  // namespace subresource_filter
 
