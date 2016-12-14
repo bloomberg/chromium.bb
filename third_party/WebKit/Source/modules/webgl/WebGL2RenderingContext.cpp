@@ -157,8 +157,7 @@ void WebGL2RenderingContext::registerContextExtensions() {
   registerExtension<EXTDisjointTimerQueryWebGL2>(m_extDisjointTimerQueryWebGL2);
   registerExtension<EXTTextureFilterAnisotropic>(m_extTextureFilterAnisotropic);
   registerExtension<OESTextureFloatLinear>(m_oesTextureFloatLinear);
-  registerExtension<WebGLCompressedTextureASTC>(m_webglCompressedTextureASTC,
-                                                DraftExtension);
+  registerExtension<WebGLCompressedTextureASTC>(m_webglCompressedTextureASTC);
   registerExtension<WebGLCompressedTextureATC>(m_webglCompressedTextureATC);
   registerExtension<WebGLCompressedTextureETC>(m_webglCompressedTextureETC);
   registerExtension<WebGLCompressedTextureETC1>(m_webglCompressedTextureETC1);

@@ -187,8 +187,7 @@ void WebGLRenderingContext::registerContextExtensions() {
   registerExtension<OESTextureHalfFloat>(m_oesTextureHalfFloat);
   registerExtension<OESTextureHalfFloatLinear>(m_oesTextureHalfFloatLinear);
   registerExtension<OESVertexArrayObject>(m_oesVertexArrayObject);
-  registerExtension<WebGLCompressedTextureASTC>(m_webglCompressedTextureASTC,
-                                                DraftExtension);
+  registerExtension<WebGLCompressedTextureASTC>(m_webglCompressedTextureASTC);
   registerExtension<WebGLCompressedTextureATC>(m_webglCompressedTextureATC,
                                                ApprovedExtension, bothPrefixes);
   registerExtension<WebGLCompressedTextureETC>(m_webglCompressedTextureETC,
