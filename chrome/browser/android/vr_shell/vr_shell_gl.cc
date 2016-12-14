@@ -214,25 +214,25 @@ bool VrShellGl::InitializeGl() {
   if (gl::GetGLImplementation() == gl::kGLImplementationNone &&
       !gl::init::InitializeGLOneOff()) {
     LOG(ERROR) << "gl::init::InitializeGLOneOff failed";
-    ForceExitVR();
+    ForceExitVr();
     return false;
   }
   surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
   if (!surface_.get()) {
     LOG(ERROR) << "gl::init::CreateOffscreenGLSurface failed";
-    ForceExitVR();
+    ForceExitVr();
     return false;
   }
   context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
                                        gl::GLContextAttribs());
   if (!context_.get()) {
     LOG(ERROR) << "gl::init::CreateGLContext failed";
-    ForceExitVR();
+    ForceExitVr();
     return false;
   }
   if (!context_->MakeCurrent(surface_.get())) {
     LOG(ERROR) << "gl::GLContext::MakeCurrent() failed";
-    ForceExitVR();
+    ForceExitVr();
     return false;
   }
 
@@ -317,7 +317,6 @@ void VrShellGl::InitializeRenderer() {
   // For kFramePrimaryBuffer (primary VrShell and WebVR content)
   specs.push_back(gvr_api_->CreateBufferSpec());
   render_size_primary_ = specs[kFramePrimaryBuffer].GetSize();
-  render_size_primary_vrshell_ = render_size_primary_;
 
   // For kFrameHeadlockedBuffer (for WebVR insecure content warning).
   // Set this up at fixed resolution, the (smaller) FOV gets set below.
@@ -610,25 +609,6 @@ void VrShellGl::DrawFrame() {
   // DrawVrShell if needed.
   buffer_viewport_list_->SetToRecommendedBufferViewports();
 
-  // TODO(klausw): Fix this. Resizing buffers here leads to webVR mode showing
-  // nothing but a black screen.
-//  if (vr_shell_->GetUiInterface()->GetMode() == UiInterface::Mode::WEB_VR) {
-//    // If needed, resize the primary buffer for use with WebVR.
-//    if (render_size_primary_ != render_size_primary_webvr_) {
-//      if (!render_size_primary_webvr_.width) {
-//        VLOG(2) << "WebVR rendering size not known yet, dropping frame";
-//        return;
-//      }
-//      render_size_primary_ = render_size_primary_webvr_;
-//      swap_chain_->ResizeBuffer(kFramePrimaryBuffer, render_size_primary_);
-//    }
-//  } else {
-//    if (render_size_primary_ != render_size_primary_vrshell_) {
-//      render_size_primary_ = render_size_primary_vrshell_;
-//      swap_chain_->ResizeBuffer(kFramePrimaryBuffer, render_size_primary_);
-//    }
-//  }
-
   gvr::Frame frame = swap_chain_->AcquireFrame();
   gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
   target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;
@@ -753,13 +733,6 @@ void VrShellGl::DrawVrShell(const gvr::Mat4f& head_pose,
     DrawUiView(nullptr, head_locked_elements, render_size_headlocked_,
                kViewportListHeadlockedOffset);
   }
-}
-
-void VrShellGl::SetWebVRRenderSurfaceSize(int width, int height) {
-  render_size_primary_webvr_.width = width;
-  render_size_primary_webvr_.height = height;
-  // TODO(klausw,crbug.com/655722): set the WebVR render surface size here once
-  // we have that.
 }
 
 gvr::Sizei VrShellGl::GetWebVRCompositorSurfaceSize() {
@@ -1005,9 +978,9 @@ void VrShellGl::ScheduleNextDrawFrame() {
   task_runner_->PostDelayedTask(FROM_HERE, draw_task_.callback(), target - now);
 }
 
-void VrShellGl::ForceExitVR() {
+void VrShellGl::ForceExitVr() {
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VrShell::ForceExitVR, weak_vr_shell_));
+      FROM_HERE, base::Bind(&VrShell::ForceExitVr, weak_vr_shell_));
 }
 
 }  // namespace vr_shell

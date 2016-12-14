@@ -75,7 +75,6 @@ class VrShellGl {
                                 const gvr::Rectf& right_bounds);
   gvr::GvrApi* gvr_api();
   void SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num);
-  void SetWebVRRenderSurfaceSize(int width, int height);
   gvr::Sizei GetWebVRCompositorSurfaceSize();
 
   UiScene* GetScene() { return scene_.get(); }
@@ -107,7 +106,7 @@ class VrShellGl {
                              const base::TimeDelta interval);
   void ScheduleNextDrawFrame();
 
-  void ForceExitVR();
+  void ForceExitVr();
 
   // samplerExternalOES texture data for UI content image.
   int ui_texture_id_ = 0;
@@ -136,12 +135,6 @@ class VrShellGl {
   // Current sizes for the render buffers.
   gvr::Sizei render_size_primary_;
   gvr::Sizei render_size_headlocked_;
-
-  // Intended size for the primary render buffer by UI mode.
-  // For WebVR, a size of 0x0 is used to indicate "not yet ready"
-  // to suppress rendering while still initializing.
-  gvr::Sizei render_size_primary_webvr_ = device::kInvalidRenderTargetSize;
-  gvr::Sizei render_size_primary_vrshell_;
 
   std::unique_ptr<VrShellRenderer> vr_shell_renderer_;
 

@@ -179,28 +179,6 @@ VrShell::~VrShell() {
   g_instance = nullptr;
 }
 
-void VrShell::SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num) {
-  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
-  if (thread->GetVrShellGlUnsafe()) {
-    thread->GetVrShellGlUnsafe()->SetGvrPoseForWebVr(pose, pose_num);
-  }
-}
-
-void VrShell::SetWebVRRenderSurfaceSize(int width, int height) {
-  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
-  if (thread->GetVrShellGlUnsafe()) {
-    thread->GetVrShellGlUnsafe()->SetWebVRRenderSurfaceSize(width, height);
-  }
-}
-
-gvr::Sizei VrShell::GetWebVRCompositorSurfaceSize() {
-  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
-  if (thread->GetVrShellGlUnsafe()) {
-    return thread->GetVrShellGlUnsafe()->GetWebVRCompositorSurfaceSize();
-  }
-  return gvr::Sizei();
-}
-
 void VrShell::OnTriggerEvent(JNIEnv* env,
                              const JavaParamRef<jobject>& obj) {
   GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
@@ -260,6 +238,23 @@ void VrShell::SetWebVrMode(JNIEnv* env,
   }
 }
 
+void VrShell::SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num) {
+  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
+  thread->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&VrShellGl::SetGvrPoseForWebVr,
+                            thread->GetVrShellGl(), pose, pose_num));
+}
+
+void VrShell::SetWebVRRenderSurfaceSize(int width, int height) {
+  // TODO(klausw,crbug.com/655722): Change the GVR render size and set the WebVR
+  // render surface size.
+}
+
+gvr::Sizei VrShell::GetWebVRCompositorSurfaceSize() {
+  const gfx::Size& size = content_compositor_->GetWindowBounds();
+  return {size.width(), size.height()};
+}
+
 void VrShell::SetWebVRSecureOrigin(bool secure_origin) {
   // TODO(cjgrant): Align this state with the logic that drives the omnibox.
   html_interface_->SetWebVRSecureOrigin(secure_origin);
@@ -270,10 +265,9 @@ void VrShell::SubmitWebVRFrame() {}
 void VrShell::UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,
                                        const gvr::Rectf& right_bounds) {
   GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
-  if (thread->GetVrShellGlUnsafe()) {
-    thread->GetVrShellGlUnsafe()->UpdateWebVRTextureBounds(left_bounds,
-                                                           right_bounds);
-  }
+  thread->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&VrShellGl::UpdateWebVRTextureBounds,
+                            thread->GetVrShellGl(), left_bounds, right_bounds));
 }
 
 // TODO(mthiesse): Do not expose GVR API outside of GL thread.
@@ -308,7 +302,7 @@ void VrShell::ContentBoundsChanged(JNIEnv* env,
       FROM_HERE, base::Bind(&VrShellGl::ContentPhysicalBoundsChanged,
                             thread->GetVrShellGl(),
                             width, height)));
-  content_compositor_->SetWindowBounds(width, height);
+  content_compositor_->SetWindowBounds(gfx::Size(width, height));
 }
 
 void VrShell::UIBoundsChanged(JNIEnv* env,
@@ -322,7 +316,7 @@ void VrShell::UIBoundsChanged(JNIEnv* env,
       FROM_HERE, base::Bind(&VrShellGl::UIPhysicalBoundsChanged,
                             thread->GetVrShellGl(),
                             width, height));
-  ui_compositor_->SetWindowBounds(width, height);
+  ui_compositor_->SetWindowBounds(gfx::Size(width, height));
 }
 
 UiScene* VrShell::GetScene() {
@@ -412,24 +406,24 @@ void VrShell::WebContentsDestroyed() {
   ui_input_manager_.reset();
   ui_contents_ = nullptr;
   // TODO(mthiesse): Handle web contents being destroyed.
-  ForceExitVR();
+  ForceExitVr();
 }
 
 void VrShell::ContentWebContentsDestroyed() {
   content_input_manager_.reset();
   main_contents_ = nullptr;
   // TODO(mthiesse): Handle web contents being destroyed.
-  ForceExitVR();
+  ForceExitVr();
 }
 
 void VrShell::ContentWasHidden() {
   // Ensure we don't continue sending input to it.
   content_input_manager_.reset();
   // TODO(mthiesse): Handle web contents being hidden.
-  ForceExitVR();
+  ForceExitVr();
 }
 
-void VrShell::ForceExitVR() {
+void VrShell::ForceExitVr() {
   delegate_->ForceExitVr();
 }
 

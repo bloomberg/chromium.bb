@@ -131,7 +131,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
 
   void ContentFrameWasResized(bool width_changed);
 
-  void ForceExitVR();
+  void ForceExitVr();
 
  private:
   ~VrShell() override;
