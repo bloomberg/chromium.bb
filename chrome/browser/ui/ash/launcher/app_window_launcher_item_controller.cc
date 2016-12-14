@@ -136,10 +136,6 @@ base::string16 AppWindowLauncherItemController::GetTitle() {
                                                app_id());
 }
 
-bool AppWindowLauncherItemController::IsDraggable() {
-  return true;
-}
-
 bool AppWindowLauncherItemController::CanPin() const {
   return GetPinnableForAppID(app_id(), launcher_controller()->profile()) ==
          AppListControllerDelegate::PIN_EDITABLE;

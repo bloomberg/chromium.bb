@@ -230,10 +230,6 @@ BrowserShortcutLauncherItemController::CreateApplicationMenu(int event_flags) {
   return new LauncherApplicationMenuItemModel(GetApplicationList(event_flags));
 }
 
-bool BrowserShortcutLauncherItemController::IsDraggable() {
-  return true;
-}
-
 bool BrowserShortcutLauncherItemController::CanPin() const {
   return true;
 }

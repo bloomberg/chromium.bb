@@ -50,7 +50,6 @@ class AppShortcutLauncherItemController : public LauncherItemController {
       const ui::Event& event) override;
   base::string16 GetTitle() override;
   ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
-  bool IsDraggable() override;
   bool CanPin() const override;
   void Close() override;
 

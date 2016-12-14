@@ -38,7 +38,6 @@ class ArcAppDeferredLauncherItemController : public LauncherItemController {
   base::string16 GetTitle() override;
   bool CanPin() const override;
   ash::ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
-  bool IsDraggable() override;
   void Close() override;
 
   // LauncherItemController overrides:

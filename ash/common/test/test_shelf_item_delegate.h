@@ -21,21 +21,16 @@ class TestShelfItemDelegate : public ShelfItemDelegate {
   explicit TestShelfItemDelegate(WmWindow* window);
   ~TestShelfItemDelegate() override;
 
-  void set_is_draggable(bool is_draggable) { is_draggable_ = is_draggable; }
-
   // ShelfItemDelegate:
   ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override;
   base::string16 GetTitle() override;
   ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
-  bool IsDraggable() override;
   bool CanPin() const override;
   void Close() override;
 
  private:
   WmWindow* window_;
-
-  bool is_draggable_;
 
   DISALLOW_COPY_AND_ASSIGN(TestShelfItemDelegate);
 };

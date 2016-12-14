@@ -60,10 +60,6 @@ ArcAppDeferredLauncherItemController::CreateApplicationMenu(int event_flags) {
   return nullptr;
 }
 
-bool ArcAppDeferredLauncherItemController::IsDraggable() {
-  return false;
-}
-
 void ArcAppDeferredLauncherItemController::Close() {
   if (host_)
     host_->Close(app_id());

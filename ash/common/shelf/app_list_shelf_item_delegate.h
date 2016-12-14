@@ -26,7 +26,6 @@ class AppListShelfItemDelegate : public ShelfItemDelegate {
       const ui::Event& event) override;
   base::string16 GetTitle() override;
   ShelfMenuModel* CreateApplicationMenu(int event_flags) override;
-  bool IsDraggable() override;
   bool CanPin() const override;
   void Close() override;
 

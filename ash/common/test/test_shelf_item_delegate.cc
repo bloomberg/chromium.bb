@@ -10,7 +10,7 @@ namespace ash {
 namespace test {
 
 TestShelfItemDelegate::TestShelfItemDelegate(WmWindow* window)
-    : window_(window), is_draggable_(true) {}
+    : window_(window) {}
 
 TestShelfItemDelegate::~TestShelfItemDelegate() {}
 
@@ -32,10 +32,6 @@ base::string16 TestShelfItemDelegate::GetTitle() {
 
 ShelfMenuModel* TestShelfItemDelegate::CreateApplicationMenu(int event_flags) {
   return nullptr;
-}
-
-bool TestShelfItemDelegate::IsDraggable() {
-  return is_draggable_;
 }
 
 bool TestShelfItemDelegate::CanPin() const {

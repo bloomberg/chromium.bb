@@ -63,9 +63,6 @@ class ASH_EXPORT ShelfItemDelegate {
   // |event_flags| specifies the flags of the event which triggered this menu.
   virtual ShelfMenuModel* CreateApplicationMenu(int event_flags) = 0;
 
-  // Whether the launcher item is draggable.
-  virtual bool IsDraggable() = 0;
-
   // Closes all windows associated with this item.
   virtual void Close() = 0;
 };

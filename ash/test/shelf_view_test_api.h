@@ -5,7 +5,6 @@
 #ifndef ASH_TEST_SHELF_VIEW_TEST_API_H_
 #define ASH_TEST_SHELF_VIEW_TEST_API_H_
 
-#include "ash/common/shelf/shelf_item_delegate.h"
 #include "ash/common/shelf/shelf_item_types.h"
 #include "base/macros.h"
 
@@ -21,6 +20,7 @@ class Event;
 namespace views {
 class Button;
 class InkDrop;
+class View;
 }
 
 namespace ash {
@@ -43,8 +43,12 @@ class ShelfViewTestAPI {
   // Number of icons displayed.
   int GetButtonCount();
 
-  // Retrieve the button at |index|.
+  // Retrieve the button at |index|, doesn't support the app list button,
+  // because the app list button is not a ShelfButton.
   ShelfButton* GetButton(int index);
+
+  // Retrieve the view at |index|.
+  views::View* GetViewAt(int index);
 
   // First visible button index.
   int GetFirstVisibleIndex();

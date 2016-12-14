@@ -439,13 +439,23 @@ class ShelfViewTest : public AshTestBase {
     }
   }
 
+  // Simulate a mouse press event on the shelf's view at |view_index|.
+  views::View* SimulateViewPressed(ShelfView::Pointer pointer, int view_index) {
+    views::View* view = test_api_->GetViewAt(view_index);
+    ui::MouseEvent pressed_event(ui::ET_MOUSE_PRESSED, gfx::Point(),
+                                 view->GetBoundsInScreen().origin(),
+                                 ui::EventTimeForNow(), 0, 0);
+    shelf_view_->PointerPressedOnButton(view, pointer, pressed_event);
+    return view;
+  }
+
+  // Similar to SimulateViewPressed, but the index must not be for the app list,
+  // since the app list button is not a ShelfButton.
   ShelfButton* SimulateButtonPressed(ShelfView::Pointer pointer,
                                      int button_index) {
+    EXPECT_NE(TYPE_APP_LIST, model_->items()[button_index].type);
     ShelfButton* button = test_api_->GetButton(button_index);
-    ui::MouseEvent click_event(ui::ET_MOUSE_PRESSED, gfx::Point(),
-                               button->GetBoundsInScreen().origin(),
-                               ui::EventTimeForNow(), 0, 0);
-    shelf_view_->PointerPressedOnButton(button, pointer, click_event);
+    EXPECT_EQ(button, SimulateViewPressed(pointer, button_index));
     return button;
   }
 
@@ -496,8 +506,8 @@ class ShelfViewTest : public AshTestBase {
                     int from_index,
                     int to_index,
                     bool progressively) {
-    views::View* to = test_api_->GetButton(to_index);
-    views::View* from = test_api_->GetButton(from_index);
+    views::View* to = test_api_->GetViewAt(to_index);
+    views::View* from = test_api_->GetViewAt(from_index);
     int dist_x = to->x() - from->x();
     int dist_y = to->y() - from->y();
     if (progressively) {
@@ -520,7 +530,7 @@ class ShelfViewTest : public AshTestBase {
                             int button_index,
                             int destination_index,
                             bool progressively) {
-    views::View* button = SimulateButtonPressed(pointer, button_index);
+    views::View* button = SimulateViewPressed(pointer, button_index);
 
     if (!progressively) {
       ContinueDrag(button, pointer, button_index, destination_index, false);
@@ -1165,26 +1175,30 @@ TEST_F(ShelfViewTest, SimultaneousDrag) {
   ASSERT_NO_FATAL_FAILURE(CheckModelIDs(id_map));
 }
 
-// Check that whether the ash behaves correctly if not draggable
-// item are in front of the shelf.
+// Ensure the app list button cannot be dragged and other items cannot be
+// dragged in front of the app list button.
 TEST_F(ShelfViewTest, DragWithNotDraggableItemInFront) {
+  // The expected id order is initialized as: 1, 2, 3, 4, 5, 6, 7
   std::vector<std::pair<ShelfID, views::View*>> id_map;
   SetupForDragTest(&id_map);
+  ASSERT_EQ(TYPE_APP_LIST, model_->items()[0].type);
 
-  (static_cast<TestShelfItemDelegate*>(
-       model_->GetShelfItemDelegate(id_map[1].first)))
-      ->set_is_draggable(false);
-  (static_cast<TestShelfItemDelegate*>(
-       model_->GetShelfItemDelegate(id_map[2].first)))
-      ->set_is_draggable(false);
+  // Ensure that the app list button cannot be dragged.
+  // The expected id order is unchanged: 1, 2, 3, 4, 5, 6, 7
+  ASSERT_NO_FATAL_FAILURE(DragAndVerify(0, 1, shelf_view_, id_map));
+  ASSERT_NO_FATAL_FAILURE(DragAndVerify(0, 2, shelf_view_, id_map));
+  ASSERT_NO_FATAL_FAILURE(DragAndVerify(0, 5, shelf_view_, id_map));
 
-  ASSERT_NO_FATAL_FAILURE(DragAndVerify(3, 1, shelf_view_, id_map));
-  ASSERT_NO_FATAL_FAILURE(DragAndVerify(3, 2, shelf_view_, id_map));
-
-  std::rotate(id_map.begin() + 3, id_map.begin() + 4, id_map.begin() + 5);
-  ASSERT_NO_FATAL_FAILURE(DragAndVerify(4, 1, shelf_view_, id_map));
-  std::rotate(id_map.begin() + 3, id_map.begin() + 5, id_map.begin() + 6);
-  ASSERT_NO_FATAL_FAILURE(DragAndVerify(5, 1, shelf_view_, id_map));
+  // Ensure that items cannot be dragged in front of the app list button.
+  // Attempting to do so will order buttons immediately after the app list.
+  // Dragging the second button in front should no-op: 1, 2, 3, 4, 5, 6, 7
+  ASSERT_NO_FATAL_FAILURE(DragAndVerify(1, 0, shelf_view_, id_map));
+  // Dragging the third button in front should yield: 1, 3, 2, 4, 5, 6, 7
+  std::rotate(id_map.begin() + 1, id_map.begin() + 2, id_map.begin() + 3);
+  ASSERT_NO_FATAL_FAILURE(DragAndVerify(2, 0, shelf_view_, id_map));
+  // Dragging the sixth button in front should yield: 1, 6, 3, 2, 4, 5, 7
+  std::rotate(id_map.begin() + 1, id_map.begin() + 5, id_map.begin() + 6);
+  ASSERT_NO_FATAL_FAILURE(DragAndVerify(5, 0, shelf_view_, id_map));
 }
 
 // Check that clicking first on one item and then dragging another works as

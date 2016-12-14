@@ -114,11 +114,6 @@ class ShelfItemDelegateMus : public ShelfItemDelegate {
     return new ShelfMenuModelMus(this);
   }
 
-  bool IsDraggable() override {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
   void Close() override { NOTIMPLEMENTED(); }
 
   mojom::ShelfItemDelegateAssociatedPtr delegate_;

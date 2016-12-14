@@ -51,7 +51,6 @@ class AppWindowLauncherItemController : public LauncherItemController,
   ash::ShelfItemDelegate::PerformedAction ItemSelected(
       const ui::Event& event) override;
   base::string16 GetTitle() override;
-  bool IsDraggable() override;
   bool CanPin() const override;
   void Close() override;
 

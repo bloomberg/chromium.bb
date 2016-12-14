@@ -55,10 +55,6 @@ ShelfMenuModel* AppListShelfItemDelegate::CreateApplicationMenu(
   return NULL;
 }
 
-bool AppListShelfItemDelegate::IsDraggable() {
-  return false;
-}
-
 bool AppListShelfItemDelegate::CanPin() const {
   return true;
 }

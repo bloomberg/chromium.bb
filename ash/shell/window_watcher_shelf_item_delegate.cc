@@ -40,10 +40,6 @@ ShelfMenuModel* WindowWatcherShelfItemDelegate::CreateApplicationMenu(
   return nullptr;
 }
 
-bool WindowWatcherShelfItemDelegate::IsDraggable() {
-  return true;
-}
-
 bool WindowWatcherShelfItemDelegate::CanPin() const {
   return true;
 }

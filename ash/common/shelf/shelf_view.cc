@@ -798,9 +798,7 @@ void ShelfView::PointerPressedOnButton(views::View* view,
   if (index == -1 || view_model_->view_size() <= 1)
     return;  // View is being deleted, ignore request.
 
-  ShelfItemDelegate* item_delegate =
-      model_->GetShelfItemDelegate(model_->items()[index].id);
-  if (!item_delegate->IsDraggable())
+  if (view == GetAppListButton())
     return;  // View is not draggable, ignore request.
 
   // Only when the repost event occurs on the same shelf item, we should ignore
@@ -1104,14 +1102,6 @@ void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {
     return;
   }
 
-  // If the item is no longer draggable, bail out.
-  ShelfItemDelegate* item_delegate =
-      model_->GetShelfItemDelegate(model_->items()[start_drag_index_].id);
-  if (!item_delegate->IsDraggable()) {
-    CancelDrag(-1);
-    return;
-  }
-
   // Move the view to the front so that it appears on top of other views.
   ReorderChildView(drag_view_, -1);
   bounds_animator_->StopAnimatingView(drag_view_);
@@ -1120,17 +1110,12 @@ void ShelfView::PrepareForDrag(Pointer pointer, const ui::LocatedEvent& event) {
 }
 
 void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
+  DCHECK(dragging());
+  DCHECK(drag_view_);
   // Due to a syncing operation the application might have been removed.
   // Bail if it is gone.
   int current_index = view_model_->GetIndexOfView(drag_view_);
   DCHECK_NE(-1, current_index);
-
-  ShelfItemDelegate* item_delegate =
-      model_->GetShelfItemDelegate(model_->items()[current_index].id);
-  if (!item_delegate->IsDraggable()) {
-    CancelDrag(-1);
-    return;
-  }
 
   // If this is not a drag and drop host operation and not the app list item,
   // check if the item got ripped off the shelf - if it did we are done.
@@ -1184,14 +1169,11 @@ void ShelfView::ContinueDrag(const ui::LocatedEvent& event) {
   target_index =
       std::min(indices.second, std::max(target_index, indices.first));
 
-  int first_draggable_item = 0;
-  while (first_draggable_item < static_cast<int>(model_->items().size()) &&
-         !model_->GetShelfItemDelegate(model_->items()[first_draggable_item].id)
-              ->IsDraggable()) {
-    first_draggable_item++;
-  }
-
+  // The app list button is always first, and it is the only non-draggable item.
+  int first_draggable_item = model_->GetItemIndexForType(TYPE_APP_LIST) + 1;
+  DCHECK_EQ(1, first_draggable_item);
   target_index = std::max(target_index, first_draggable_item);
+  DCHECK_LT(target_index, model_->item_count());
 
   if (target_index == current_index)
     return;
