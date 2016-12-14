@@ -60,11 +60,6 @@ const char kAshEnablePalette[] = "ash-enable-palette";
 // Enables the palette on every display, instead of only the internal one.
 const char kAshEnablePaletteOnAllDisplays[] =
     "ash-enable-palette-on-all-displays";
-
-// Enables tablet power button behavior for convertible/tablet devices.
-// TODO(warx): Enable or remove this switch once crbug.com/633304 is fully
-// finished.
-const char kAshEnableTabletPowerButton[] = "ash-enable-tablet-power-button";
 #endif
 
 // Enables the observation of accelerometer events to enter touch-view mode.

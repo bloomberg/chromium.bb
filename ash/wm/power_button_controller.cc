@@ -45,7 +45,9 @@ PowerButtonController::PowerButtonController(LockStateController* controller)
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableTabletPowerButton)) {
+          switches::kAshEnableTouchView) ||
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAshEnableTouchViewTesting)) {
     tablet_controller_.reset(
         new TabletPowerButtonController(lock_state_controller_));
   }
