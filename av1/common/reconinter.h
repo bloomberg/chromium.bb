@@ -428,8 +428,13 @@ static INLINE int has_subpel_mv_component(const MODE_INFO *const mi,
   const BLOCK_SIZE bsize = mbmi->sb_type;
   int plane;
   int ref = (dir >> 1);
+#if CONFIG_CB4X4
+  const int unify_bsize = 1;
+#else
+  const int unify_bsize = 0;
+#endif
 
-  if (bsize >= BLOCK_8X8) {
+  if (bsize >= BLOCK_8X8 || unify_bsize) {
     if (dir & 0x01) {
       if (mbmi->mv[ref].as_mv.col & SUBPEL_MASK) return 1;
     } else {

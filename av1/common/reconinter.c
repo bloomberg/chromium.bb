@@ -579,6 +579,10 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
   (void)is_global;
 #endif  // CONFIG_GLOBAL_MOTION
 
+#if CONFIG_CB4X4
+  (void)block;
+#endif
+
 // TODO(sarahparker) enable the use of DUAL_FILTER in warped motion functions
 // in order to allow GLOBAL_MOTION and DUAL_FILTER to work together
 #if CONFIG_SUB8X8_MC
@@ -671,6 +675,9 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
     struct buf_2d *const pre_buf = &pd->pre[ref];
     struct buf_2d *const dst_buf = &pd->dst;
     uint8_t *const dst = dst_buf->buf + dst_buf->stride * y + x;
+#if CONFIG_CB4X4
+    const MV mv = mi->mbmi.mv[ref].as_mv;
+#else
     const MV mv = mi->mbmi.sb_type < BLOCK_8X8
 #if CONFIG_MOTION_VAR
                       ? (build_for_obmc ? mi->bmi[block].as_mv[ref].as_mv
@@ -679,6 +686,7 @@ void build_inter_predictors(MACROBLOCKD *xd, int plane,
                       ? average_split_mvs(pd, mi, ref, block)
 #endif  // CONFIG_MOTION_VAR
                       : mi->mbmi.mv[ref].as_mv;
+#endif
 
     // TODO(jkoleszar): This clamping is done in the incorrect place for the
     // scaling case. It needs to be done on the scaled MV, not the pre-scaling
@@ -784,12 +792,17 @@ static void build_inter_predictors_for_planes(MACROBLOCKD *xd, BLOCK_SIZE bsize,
   int plane;
   const int mi_x = mi_col * MI_SIZE;
   const int mi_y = mi_row * MI_SIZE;
+#if CONFIG_CB4X4
+  const int unify_bsize = 1;
+#else
+  const int unify_bsize = 0;
+#endif
   for (plane = plane_from; plane <= plane_to; ++plane) {
     const struct macroblockd_plane *pd = &xd->plane[plane];
     const int bw = block_size_wide[bsize] >> pd->subsampling_x;
     const int bh = block_size_high[bsize] >> pd->subsampling_y;
 
-    if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8) {
+    if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8 && !unify_bsize) {
       const PARTITION_TYPE bp = bsize - xd->mi[0]->mbmi.sb_type;
       const int have_vsplit = bp != PARTITION_HORZ;
       const int have_hsplit = bp != PARTITION_VERT;
