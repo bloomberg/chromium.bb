@@ -47,6 +47,9 @@ void ExtensionsActivityMonitor::Observe(
   DCHECK_EQ(extensions::NOTIFICATION_EXTENSION_BOOKMARKS_API_INVOKED, type);
   const extensions::Extension* extension =
       content::Source<const extensions::Extension>(source).ptr();
+  if (!extension)
+    return;
+
   const extensions::BookmarksFunction* f =
       content::Details<const extensions::BookmarksFunction>(details).ptr();
   switch (f->histogram_value()) {
