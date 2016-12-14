@@ -292,8 +292,9 @@ class Executive(object):
 
     def interrupt(self, pid):
         interrupt_signal = signal.SIGINT
-        # FIXME: The python docs seem to imply that platform == 'win32' may need to use signal.CTRL_C_EVENT
-        # http://docs.python.org/2/library/signal.html
+        # Note: The python docs seem to suggest that on Windows, we may want to use
+        # signal.CTRL_C_EVENT (http://docs.python.org/2/library/signal.html), but
+        # it appears that signal.SIGINT also appears to work on Windows.
         try:
             os.kill(pid, interrupt_signal)
         except OSError:
