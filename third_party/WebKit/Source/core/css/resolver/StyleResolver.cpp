@@ -622,6 +622,12 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForDocument(Document& document) {
   documentStyle->setDisplay(EDisplay::Block);
   documentStyle->setPosition(AbsolutePosition);
 
+  // Document::inheritHtmlAndBodyElementStyles will set the final overflow
+  // style values, but they should initially be auto to avoid premature
+  // scrollbar removal in PaintLayerScrollableArea::updateAfterStyleChange.
+  documentStyle->setOverflowX(OverflowAuto);
+  documentStyle->setOverflowY(OverflowAuto);
+
   document.setupFontBuilder(*documentStyle);
 
   return documentStyle.release();
