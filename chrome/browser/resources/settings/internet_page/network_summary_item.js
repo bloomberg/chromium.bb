@@ -190,15 +190,6 @@ Polymer({
   },
 
   /**
-   * @return {boolean}
-   * @private
-   */
-  showDetailsIsVisible_: function() {
-    return this.deviceState.Type == CrOnc.Type.CELLULAR &&
-        this.networkStateList.length == 1;
-  },
-
-  /**
    * @return {boolean} Whether or not to show the UI to expand the list.
    * @private
    */
@@ -271,13 +262,5 @@ Polymer({
         'device-enabled-toggled', {enabled: !deviceIsEnabled, type: type});
     // Make sure this does not propagate to onDetailsTap_.
     event.stopPropagation();
-  },
-
-  /**
-   * @return {string}
-   * @private
-   */
-  getTabIndex_: function() {
-    return this.deviceIsEnabled_() ? '0' : '-1';
   },
 });

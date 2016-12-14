@@ -146,7 +146,8 @@
              type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_SHARED_STYLE_CSS_HTML"
              file="../../webui/resources/cr_elements/shared_style_css.html"
-             type="chrome_html" />
+             type="chrome_html"
+             flattenhtml="true" />
   <structure name="IDR_CR_ELEMENTS_CR_SHARED_VARS_CSS_HTML"
              file="../../webui/resources/cr_elements/shared_vars_css.html"
              type="chrome_html" />

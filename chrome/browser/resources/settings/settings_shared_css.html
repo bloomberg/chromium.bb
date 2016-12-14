@@ -26,24 +26,6 @@
         transform: scaleX(-1);  /* Flip on the X axis (aka mirror). */
       }
 
-      button[is='paper-icon-button-light'].subpage-arrow {
-        background-image: url(images/arrow_right.svg);
-      }
-
-      button[is='paper-icon-button-light'].icon-external {
-        background-image: url(images/open_in_new.svg);
-      }
-
-      .subpage-arrow,
-      .icon-external {
-        display: none;
-      }
-
-      [actionable] :-webkit-any(.subpage-arrow, .icon-external),
-      [actionable]:-webkit-any(.subpage-arrow, .icon-external) {
-        display: block;
-      }
-
       :host-context([dir=rtl]) paper-icon-button[icon='settings:arrow-back'] {
         transform: scaleX(-1);  /* Flip on the X axis (aka mirror). */
       }

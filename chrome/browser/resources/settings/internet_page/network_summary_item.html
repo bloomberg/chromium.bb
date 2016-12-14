@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="/settings_shared_css.html">
@@ -52,10 +53,9 @@
         max-height: 400px;
       }
     </style>
-    <div class="settings-box two-line">
-      <div id="details" selectable
-          no-flex$="[[showSimInfo_(deviceState)]]"
-          on-tap="onDetailsTap_" tabindex$="[[getTabIndex_(deviceState)]]">
+    <div class="settings-box two-line" actionable on-tap="onDetailsTap_">
+      <div id="details"
+          no-flex$="[[showSimInfo_(deviceState)]]">
         <cr-network-list-item item="[[activeNetworkState]]" class="flex">
         </cr-network-list-item>
         <paper-spinner active="[[scanningIsActive_(deviceState, expanded_)]]"
@@ -70,26 +70,29 @@
         </network-siminfo>
       </template>
 
-      <div>
-        <div id="buttons" class="layout horizontal">
-          <template is="dom-if"
-              if="[[showDetailsIsVisible_(deviceState, networkStateList)]]">
-            <paper-icon-button icon="cr:settings" on-tap="onShowDetailsTap_">
-            </paper-icon-button>
-          </template>
-          <template is="dom-if"
-              if="[[expandIsVisible_(deviceState, networkStateList)]]">
-            <cr-expand-button id="expandListButton" expanded="{{expanded_}}">
-            </cr-expand-button>
-          </template>
-          <template is="dom-if" if="[[enableIsVisible_(deviceState)]]">
-            <paper-toggle-button  id="deviceEnabledButton"
-                checked="[[deviceIsEnabled_(deviceState)]]"
-                on-tap="onDeviceEnabledTap_">
-            </paper-toggle-button>
-          </template>
-        </div>
+      <div id="buttons" class="layout horizontal">
+        <template is="dom-if"
+            if="[[expandIsVisible_(deviceState, networkStateList)]]">
+          <cr-expand-button id="expandListButton" expanded="{{expanded_}}">
+          </cr-expand-button>
+        </template>
+        <template is="dom-if"
+            if="[[!expandIsVisible_(deviceState, networkStateList)]]">
+          <button class="subpage-arrow" is="paper-icon-button-light"
+              on-tap="onShowDetailsTap_">
+          </button>
+        </template>
       </div>
+
+      <template is="dom-if" if="[[enableIsVisible_(deviceState)]]">
+        <div class="secondary-action">
+          <paper-toggle-button  id="deviceEnabledButton"
+              checked="[[deviceIsEnabled_(deviceState)]]"
+              on-tap="onDeviceEnabledTap_">
+          </paper-toggle-button>
+        </div>
+      </template>
+
     </div>
     <template is="dom-if"
         if="[[networksDomIfIsTrue_(expanded_, wasExpanded_)]]">

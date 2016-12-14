@@ -1,7 +1,7 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior.html">
@@ -116,11 +116,11 @@
         </cr-policy-network-indicator>
       </template>
       <template is="dom-if"
-          if="[[isSettingsButtonVisible_(networkState, showButtons)]]">
+          if="[[isSubpageButtonVisible_(networkState, showButtons)]]">
         <div id="divButtons">
-          <paper-icon-button icon="cr:settings" on-tap="fireShowDetails_"
-              tabindex$="[[tabindex]]">
-          </paper-icon-button>
+          <button class="subpage-arrow" is="paper-icon-button-light"
+              on-tap="fireShowDetails_" tabindex$="[[tabindex]]">
+          </button>
         </div>
       </template>
     </div>

@@ -41,6 +41,24 @@
         @apply(--cr-actionable);
       }
 
+      button[is='paper-icon-button-light'].subpage-arrow {
+        background-image: url(../images/arrow_right.svg);
+      }
+
+      button[is='paper-icon-button-light'].icon-external {
+        background-image: url(../images/open_in_new.svg);
+      }
+
+      .subpage-arrow,
+      .icon-external {
+        display: none;
+      }
+
+      [actionable] :-webkit-any(.subpage-arrow, .icon-external),
+      [actionable]:-webkit-any(.subpage-arrow, .icon-external) {
+        display: block;
+      }
+
       [scrollable] {
         border-color: transparent;
         border-style: solid;

@@ -47,8 +47,8 @@ Polymer({
 
     /**
      * Reflect the element's tabindex attribute to a property so that embedded
-     * elements (e.g. the settings button) can become keyboard focusable when
-     * this element has keyboard focus.
+     * elements (e.g. the show subpage button) can become keyboard focusable
+     * when this element has keyboard focus.
      */
     tabindex: {
       type: Number,
@@ -146,7 +146,7 @@ Polymer({
   },
 
   /** @private */
-  isSettingsButtonVisible_: function() {
+  isSubpageButtonVisible_: function() {
     return !!this.networkState && this.showButtons;
   },
 
