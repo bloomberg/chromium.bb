@@ -6,34 +6,37 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_STORAGE_HANDLER_H_
 
 #include "base/macros.h"
-#include "content/browser/devtools/protocol/storage.h"
+#include "content/browser/devtools/devtools_protocol_handler.h"
+#include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
 
 namespace content {
 
-class RenderFrameHostImpl;
+class RenderFrameHost;
 
-namespace protocol {
+namespace devtools {
+namespace storage {
 
-class StorageHandler : public Storage::Backend {
+class StorageHandler {
  public:
-  StorageHandler();
-  ~StorageHandler() override;
+  typedef DevToolsProtocolClient::Response Response;
 
-  void Wire(UberDispatcher*);
-  void SetRenderFrameHost(RenderFrameHostImpl* host);
-  Response Disable() override;
+  StorageHandler();
+  ~StorageHandler();
+
+  void SetRenderFrameHost(RenderFrameHost* host);
 
   Response ClearDataForOrigin(
       const std::string& origin,
-      const std::string& storage_types) override;
+      const std::string& storage_types);
 
  private:
-  RenderFrameHostImpl* host_;
+  RenderFrameHost* host_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageHandler);
 };
 
-}  // namespace protocol
+}  // namespace storage
+}  // namespace devtools
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVTOOLS_PROTOCOL_STORAGE_HANDLER_H_

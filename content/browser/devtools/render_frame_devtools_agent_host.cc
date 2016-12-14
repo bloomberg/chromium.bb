@@ -397,6 +397,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
       input_handler_(new devtools::input::InputHandler()),
       service_worker_handler_(
           new devtools::service_worker::ServiceWorkerHandler()),
+      storage_handler_(new devtools::storage::StorageHandler()),
       target_handler_(new devtools::target::TargetHandler()),
       frame_trace_recorder_(nullptr),
       protocol_handler_(new DevToolsProtocolHandler(this)),
@@ -407,6 +408,7 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
   DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
   dispatcher->SetInputHandler(input_handler_.get());
   dispatcher->SetServiceWorkerHandler(service_worker_handler_.get());
+  dispatcher->SetStorageHandler(storage_handler_.get());
   dispatcher->SetTargetHandler(target_handler_.get());
 
   SetPending(host);
@@ -509,9 +511,6 @@ void RenderFrameDevToolsAgentHost::Attach() {
     security_handler_->SetRenderFrameHost(handlers_frame_host_);
   }
 
-  storage_handler_.reset(new protocol::StorageHandler());
-  storage_handler_->Wire(session()->dispatcher());
-
   tracing_handler_.reset(new protocol::TracingHandler(
       protocol::TracingHandler::Renderer,
       frame_tree_node_->frame_tree_node_id(),
@@ -548,8 +547,6 @@ void RenderFrameDevToolsAgentHost::Detach() {
     security_handler_->Disable();
     security_handler_.reset();
   }
-  storage_handler_->Disable();
-  storage_handler_.reset();
   tracing_handler_->Disable();
   tracing_handler_.reset();
 

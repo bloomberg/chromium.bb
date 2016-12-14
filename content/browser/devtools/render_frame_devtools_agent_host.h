@@ -42,6 +42,7 @@ class RenderFrameHostImpl;
 namespace devtools {
 namespace input { class InputHandler; }
 namespace service_worker { class ServiceWorkerHandler; }
+namespace storage { class StorageHandler; }
 namespace target { class TargetHandler; }
 }
 
@@ -54,7 +55,6 @@ class NetworkHandler;
 class PageHandler;
 class SchemaHandler;
 class SecurityHandler;
-class StorageHandler;
 class TracingHandler;
 }  // namespace protocol
 
@@ -193,7 +193,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   std::unique_ptr<protocol::SecurityHandler> security_handler_;
   std::unique_ptr<devtools::service_worker::ServiceWorkerHandler>
       service_worker_handler_;
-  std::unique_ptr<protocol::StorageHandler> storage_handler_;
+  std::unique_ptr<devtools::storage::StorageHandler>
+      storage_handler_;
   std::unique_ptr<devtools::target::TargetHandler> target_handler_;
   std::unique_ptr<protocol::TracingHandler> tracing_handler_;
   std::unique_ptr<protocol::EmulationHandler> emulation_handler_;
