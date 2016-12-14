@@ -442,7 +442,6 @@ class NTPSnippetsContentSuggestionsFetcherTest
 TEST_F(ChromeReaderSnippetsFetcherTest, BuildRequestAuthenticated) {
   NTPSnippetsFetcher::RequestBuilder builder;
   NTPSnippetsFetcher::Params params;
-  params.hosts = {"chromium.org"};
   params.excluded_ids = {"1234567890"};
   params.count_to_fetch = 25;
   params.interactive_request = false;
@@ -478,12 +477,6 @@ TEST_F(ChromeReaderSnippetsFetcherTest, BuildRequestAuthenticated) {
                          "          \"type\": \"METADATA\","
                          "          \"value\": \"THUMBNAIL\""
                          "        }"
-                         "      ],"
-                         "      \"content_selectors\": ["
-                         "        {"
-                         "          \"type\": \"HOST_RESTRICT\","
-                         "          \"value\": \"chromium.org\""
-                         "        }"
                          "      ]"
                          "    },"
                          "    \"global_scoring_params\": {"
@@ -498,9 +491,6 @@ TEST_F(ChromeReaderSnippetsFetcherTest, BuildRequestAuthenticated) {
   EXPECT_THAT(builder.PreviewRequestBodyForTesting(),
               EqualsJSON("{"
                          "  \"priority\": \"BACKGROUND_PREFETCH\","
-                         "  \"regularlyVisitedHostNames\": ["
-                         "    \"chromium.org\""
-                         "  ],"
                          "  \"excludedSuggestionIds\": ["
                          "    \"1234567890\""
                          "  ],"
@@ -541,8 +531,7 @@ TEST_F(ChromeReaderSnippetsFetcherTest, BuildRequestUnauthenticated) {
                          "          \"type\": \"METADATA\","
                          "          \"value\": \"THUMBNAIL\""
                          "        }"
-                         "      ],"
-                         "      \"content_selectors\": []"
+                         "      ]"
                          "    },"
                          "    \"global_scoring_params\": {"
                          "      \"num_to_return\": 10,"
@@ -555,7 +544,6 @@ TEST_F(ChromeReaderSnippetsFetcherTest, BuildRequestUnauthenticated) {
       NTPSnippetsFetcher::FetchAPI::CHROME_CONTENT_SUGGESTIONS_API);
   EXPECT_THAT(builder.PreviewRequestBodyForTesting(),
               EqualsJSON("{"
-                         "  \"regularlyVisitedHostNames\": [],"
                          "  \"priority\": \"USER_ACTION\","
                          "  \"excludedSuggestionIds\": [],"
                          "  \"userActivenessClass\": \"ACTIVE_NTP_USER\""
@@ -577,7 +565,6 @@ TEST_F(ChromeReaderSnippetsFetcherTest, BuildRequestExcludedIds) {
 
   EXPECT_THAT(builder.PreviewRequestBodyForTesting(),
               EqualsJSON("{"
-                         "  \"regularlyVisitedHostNames\": [],"
                          "  \"priority\": \"BACKGROUND_PREFETCH\","
                          "  \"excludedSuggestionIds\": ["
                          "    \"000\", \"001\", \"002\", \"003\", \"004\","
@@ -618,7 +605,6 @@ TEST_F(ChromeReaderSnippetsFetcherTest, BuildRequestNoUserClass) {
 
   EXPECT_THAT(builder.PreviewRequestBodyForTesting(),
               EqualsJSON("{"
-                         "  \"regularlyVisitedHostNames\": [],"
                          "  \"priority\": \"BACKGROUND_PREFETCH\","
                          "  \"excludedSuggestionIds\": []"
                          "}"));
@@ -638,7 +624,6 @@ TEST_F(ChromeReaderSnippetsFetcherTest, BuildRequestWithTwoLanguages) {
 
   EXPECT_THAT(builder.PreviewRequestBodyForTesting(),
               EqualsJSON("{"
-                         "  \"regularlyVisitedHostNames\": [],"
                          "  \"priority\": \"USER_ACTION\","
                          "  \"uiLanguage\": \"en\","
                          "  \"excludedSuggestionIds\": [],"
@@ -669,7 +654,6 @@ TEST_F(ChromeReaderSnippetsFetcherTest, BuildRequestWithUILanguageOnly) {
 
   EXPECT_THAT(builder.PreviewRequestBodyForTesting(),
               EqualsJSON("{"
-                         "  \"regularlyVisitedHostNames\": [],"
                          "  \"priority\": \"USER_ACTION\","
                          "  \"uiLanguage\": \"en\","
                          "  \"excludedSuggestionIds\": [],"
@@ -1002,40 +986,6 @@ TEST_F(ChromeReaderSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {
   EXPECT_THAT(histogram_tester().GetAllSamples(
                   "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
               ElementsAre(base::Bucket(/*min=*/200, /*count=*/1)));
-}
-
-TEST_F(ChromeReaderSnippetsFetcherTest, ShouldRestrictToHosts) {
-  DelegateCallingTestURLFetcherFactory fetcher_factory;
-  NTPSnippetsFetcher::Params params = test_params();
-  params.hosts = {"www.somehost1.com", "www.somehost2.com"};
-  params.count_to_fetch = 17;
-
-  snippets_fetcher().FetchSnippets(
-      params, ToSnippetsAvailableCallback(&mock_callback()));
-
-  net::TestURLFetcher* fetcher = fetcher_factory.GetLastCreatedFetcher();
-  ASSERT_THAT(fetcher, NotNull());
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::Read(fetcher->upload_data());
-  ASSERT_TRUE(value) << " failed to parse JSON: "
-                     << PrintToString(fetcher->upload_data());
-  const base::DictionaryValue* dict = nullptr;
-  ASSERT_TRUE(value->GetAsDictionary(&dict));
-  const base::DictionaryValue* local_scoring_params = nullptr;
-  ASSERT_TRUE(dict->GetDictionary("advanced_options.local_scoring_params",
-                                  &local_scoring_params));
-  const base::ListValue* content_selectors = nullptr;
-  ASSERT_TRUE(
-      local_scoring_params->GetList("content_selectors", &content_selectors));
-  ASSERT_THAT(content_selectors->GetSize(), Eq(static_cast<size_t>(2)));
-  const base::DictionaryValue* content_selector = nullptr;
-  ASSERT_TRUE(content_selectors->GetDictionary(0, &content_selector));
-  std::string content_selector_value;
-  EXPECT_TRUE(content_selector->GetString("value", &content_selector_value));
-  EXPECT_THAT(content_selector_value, Eq("www.somehost1.com"));
-  ASSERT_TRUE(content_selectors->GetDictionary(1, &content_selector));
-  EXPECT_TRUE(content_selector->GetString("value", &content_selector_value));
-  EXPECT_THAT(content_selector_value, Eq("www.somehost2.com"));
 }
 
 TEST_F(ChromeReaderSnippetsFetcherTest, RetryOnInteractiveRequests) {

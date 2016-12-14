@@ -10,7 +10,7 @@ cr.define('chrome.SnippetsInternals', function() {
 
   function initialize() {
     $('submit-download').addEventListener('click', function(event) {
-      chrome.send('download', [$('hosts-input').value]);
+      chrome.send('download');
       event.preventDefault();
     });
 

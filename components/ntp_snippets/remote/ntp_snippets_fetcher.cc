@@ -718,20 +718,10 @@ std::string NTPSnippetsFetcher::RequestBuilder::BuildBody() const {
         content_restricts->Append(std::move(entry));
       }
 
-      auto content_selectors = base::MakeUnique<base::ListValue>();
-      for (const auto& host : params_.hosts) {
-        auto entry = base::MakeUnique<base::DictionaryValue>();
-        entry->SetString("type", "HOST_RESTRICT");
-        entry->SetString("value", host);
-        content_selectors->Append(std::move(entry));
-      }
-
       auto local_scoring_params = base::MakeUnique<base::DictionaryValue>();
       local_scoring_params->Set("content_params", std::move(content_params));
       local_scoring_params->Set("content_restricts",
                                 std::move(content_restricts));
-      local_scoring_params->Set("content_selectors",
-                                std::move(content_selectors));
 
       auto global_scoring_params = base::MakeUnique<base::DictionaryValue>();
       global_scoring_params->SetInteger("num_to_return",
@@ -758,11 +748,6 @@ std::string NTPSnippetsFetcher::RequestBuilder::BuildBody() const {
         request->SetString("uiLanguage", user_locale);
       }
 
-      auto regular_hosts = base::MakeUnique<base::ListValue>();
-      for (const auto& host : params_.hosts) {
-        regular_hosts->AppendString(host);
-      }
-      request->Set("regularlyVisitedHostNames", std::move(regular_hosts));
       request->SetString("priority", params_.interactive_request
                                          ? "USER_ACTION"
                                          : "BACKGROUND_PREFETCH");

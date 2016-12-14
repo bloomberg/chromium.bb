@@ -112,9 +112,6 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
     Params(const Params&);
     ~Params();
 
-    // If non-empty, restricts the result to the given set of hosts.
-    std::set<std::string> hosts;
-
     // BCP 47 language code specifying the user's UI language.
     std::string language_code;
 

@@ -188,24 +188,14 @@ void SnippetsInternalsMessageHandler::HandleRefreshContent(
 
 void SnippetsInternalsMessageHandler::HandleDownload(
     const base::ListValue* args) {
-  DCHECK_EQ(1u, args->GetSize());
+  DCHECK_EQ(0u, args->GetSize());
 
-  SendString("hosts-status", std::string());
+  SendString("remote-status", std::string());
 
   if (!remote_suggestions_provider_)
     return;
 
-  std::string hosts_string;
-  if (!args->GetString(0, &hosts_string))
-    return;
-
-  std::vector<std::string> hosts_vector = base::SplitString(
-      hosts_string, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  std::set<std::string> hosts(hosts_vector.begin(), hosts_vector.end());
-
-  remote_suggestions_provider_->FetchSnippetsFromHosts(
-      hosts,
-      /*interactive_request=*/true);
+  remote_suggestions_provider_->FetchSnippetsForAllCategories();
 }
 
 void SnippetsInternalsMessageHandler::HandleClearCachedSuggestions(
@@ -404,7 +394,7 @@ void SnippetsInternalsMessageHandler::SendContentSuggestions() {
     const std::string& status =
         remote_suggestions_provider_->snippets_fetcher()->last_status();
     if (!status.empty())
-      SendString("hosts-status", "Finished: " + status);
+      SendString("remote-status", "Finished: " + status);
   }
 
   base::DictionaryValue result;

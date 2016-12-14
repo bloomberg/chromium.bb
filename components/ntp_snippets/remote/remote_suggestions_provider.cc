@@ -308,30 +308,16 @@ void RemoteSuggestionsProvider::FetchSnippetsForAllCategories() {
   FetchSnippets(/*interactive_request=*/true);
 }
 
-void RemoteSuggestionsProvider::FetchSnippets(bool interactive_request) {
-  // TODO(markusheintz): Merge the FetchSnippets into the
-  // FetchSnippetsInTheBackground method.
-  if (ready()) {
-    FetchSnippetsFromHosts(std::set<std::string>(), interactive_request);
-  } else {
-    fetch_when_ready_ = true;
-  }
-}
-
-void RemoteSuggestionsProvider::FetchSnippetsFromHosts(
-    const std::set<std::string>& hosts,
+void RemoteSuggestionsProvider::FetchSnippets(
     bool interactive_request) {
-  // TODO(tschumann): FetchSnippets() and FetchSnippetsFromHost() implement the
-  // fetch logic when called by the background fetcher or interactive "reload"
-  // requests. Fetch() is right now only called for the fetch-more use case.
-  // The names are confusing and we need to clean them up.
   if (!ready()) {
+    fetch_when_ready_ = true;
     return;
   }
+
   MarkEmptyCategoriesAsLoading();
 
   NTPSnippetsFetcher::Params params = BuildFetchParams();
-  params.hosts = hosts;
   params.interactive_request = interactive_request;
   snippets_fetcher_->FetchSnippets(
       params, base::BindOnce(&RemoteSuggestionsProvider::OnFetchFinished,

@@ -102,12 +102,6 @@ class RemoteSuggestionsProvider final
   // and request lower latency processing.
   void FetchSnippetsForAllCategories();
 
-  // Fetches snippets from the server for specified hosts and adds them to the
-  // current ones. Only called from chrome://snippets-internals, DO NOT USE
-  // otherwise! Ignored while ready() is false.
-  void FetchSnippetsFromHosts(const std::set<std::string>& hosts,
-                              bool interactive_request);
-
   const NTPSnippetsFetcher* snippets_fetcher() const {
     return snippets_fetcher_.get();
   }
