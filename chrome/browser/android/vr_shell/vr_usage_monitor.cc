@@ -175,30 +175,14 @@ void VrMetricsHelper::UpdateMode() {
     SetVrMode(mode);
 }
 
-void VrMetricsHelper::SetWebVREnabledOnMainThread(bool is_webvr_presenting) {
-  DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
+void VrMetricsHelper::SetWebVREnabled(bool is_webvr_presenting) {
   is_webvr_ = is_webvr_presenting;
   UpdateMode();
 }
 
-void VrMetricsHelper::SetVRActiveOnMainThread(bool is_vr_enabled) {
-  DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
+void VrMetricsHelper::SetVRActive(bool is_vr_enabled) {
   is_vr_enabled_ = is_vr_enabled;
   UpdateMode();
-}
-
-void VrMetricsHelper::SetWebVREnabled(bool is_webvr) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&VrMetricsHelper::SetWebVREnabledOnMainThread, this,
-                 is_webvr));
-}
-
-void VrMetricsHelper::SetVRActive(bool is_vr_enabled) {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&VrMetricsHelper::SetVRActiveOnMainThread, this,
-                 is_vr_enabled));
 }
 
 void VrMetricsHelper::SetVrMode(VRMode mode) {
@@ -278,8 +262,7 @@ void VrMetricsHelper::SetVrMode(VRMode mode) {
   mode_ = mode;
 }
 
-VrMetricsHelper::VrMetricsHelper(content::WebContents* contents)
-    : thread_id_(base::PlatformThread::CurrentId()) {
+VrMetricsHelper::VrMetricsHelper(content::WebContents* contents) {
   num_videos_playing_ = contents->GetCurrentlyPlayingVideoCount();
   is_fullscreen_ = contents->IsFullscreen();
   origin_ = contents->GetLastCommittedURL();
@@ -291,13 +274,10 @@ VrMetricsHelper::VrMetricsHelper(content::WebContents* contents)
       maximumVideoSessionGap, minimumVideoSessionDuration));
 }
 
-VrMetricsHelper::~VrMetricsHelper() {
-  DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
-}
+VrMetricsHelper::~VrMetricsHelper() = default;
 
 void VrMetricsHelper::MediaStartedPlaying(const MediaPlayerInfo& media_info,
                                           const MediaPlayerId&) {
-  DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
   if (!media_info.has_video)
     return;
 
@@ -318,7 +298,6 @@ void VrMetricsHelper::MediaStartedPlaying(const MediaPlayerInfo& media_info,
 
 void VrMetricsHelper::MediaStoppedPlaying(const MediaPlayerInfo& media_info,
                                           const MediaPlayerId&) {
-  DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
   if (!media_info.has_video)
     return;
 
@@ -336,7 +315,6 @@ void VrMetricsHelper::MediaStoppedPlaying(const MediaPlayerInfo& media_info,
 }
 
 void VrMetricsHelper::DidFinishNavigation(content::NavigationHandle* handle) {
-  DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
   if (handle != nullptr && handle->HasCommitted() && handle->IsInMainFrame()) {
     origin_ = handle->GetURL();
     // Counting the number of pages viewed is difficult - some websites load
@@ -352,7 +330,6 @@ void VrMetricsHelper::DidFinishNavigation(content::NavigationHandle* handle) {
 
 void VrMetricsHelper::DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                                     bool will_cause_resize) {
-  DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
   is_fullscreen_ = entered_fullscreen;
   UpdateMode();
 }

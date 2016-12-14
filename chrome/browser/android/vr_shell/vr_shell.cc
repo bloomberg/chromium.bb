@@ -106,9 +106,11 @@ VrShell::VrShell(JNIEnv* env,
                  gvr_context* gvr_api)
     : WebContentsObserver(ui_contents),
       main_contents_(main_contents),
+      content_compositor_(new VrCompositor(content_window, false)),
       ui_contents_(ui_contents),
+      ui_compositor_(new VrCompositor(ui_window, true)),
       delegate_(delegate),
-      metrics_helper_(new VrMetricsHelper(main_contents)),
+      metrics_helper_(new VrMetricsHelper(main_contents_)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {
   DCHECK(g_instance == nullptr);
@@ -117,6 +119,9 @@ VrShell::VrShell(JNIEnv* env,
 
   content_input_manager_.reset(new VrInputManager(main_contents_));
   ui_input_manager_.reset(new VrInputManager(ui_contents_));
+
+  content_compositor_->SetLayer(main_contents_);
+  ui_compositor_->SetLayer(ui_contents_);
 
   gl_thread_.reset(new GLThread(this, weak_ptr_factory_.GetWeakPtr(),
                                 content_input_manager_->GetWeakPtr(),
@@ -133,10 +138,6 @@ VrShell::VrShell(JNIEnv* env,
   html_interface_.reset(new UiInterface(
       for_web_vr ? UiInterface::Mode::WEB_VR : UiInterface::Mode::STANDARD,
       main_contents_->IsFullscreen()));
-  content_compositor_.reset(new VrCompositor(content_window, false));
-  content_compositor_->SetLayer(main_contents_);
-  ui_compositor_.reset(new VrCompositor(ui_window, true));
-  ui_compositor_->SetLayer(ui_contents_);
   vr_web_contents_observer_.reset(new VrWebContentsObserver(
       main_contents, html_interface_.get(), this));
 

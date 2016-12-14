@@ -145,10 +145,11 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
 
   std::unique_ptr<UiInterface> html_interface_;
 
-  std::unique_ptr<VrCompositor> content_compositor_;
   content::WebContents* main_contents_;
-  std::unique_ptr<VrCompositor> ui_compositor_;
+  std::unique_ptr<VrCompositor> content_compositor_;
   content::WebContents* ui_contents_;
+  std::unique_ptr<VrCompositor> ui_compositor_;
+
   std::unique_ptr<VrWebContentsObserver> vr_web_contents_observer_;
 
   VrShellDelegate* delegate_ = nullptr;
@@ -156,8 +157,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
 
   std::unique_ptr<VrInputManager> content_input_manager_;
   std::unique_ptr<VrInputManager> ui_input_manager_;
-
-  scoped_refptr<VrMetricsHelper> metrics_helper_;
+  std::unique_ptr<VrMetricsHelper> metrics_helper_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<base::Thread> gl_thread_;

@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_SHELL_VR_USAGE_MONITOR_H_
 #define CHROME_BROWSER_ANDROID_VR_SHELL_VR_USAGE_MONITOR_H_
 
-#include "base/threading/platform_thread.h"
+#include <memory>
+
+#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -51,21 +53,15 @@ class SessionTimer {
   DISALLOW_COPY_AND_ASSIGN(SessionTimer);
 };
 
-// Most methods of this class are not threadsafe - they must be called
-// on the Browser's main thread.  This happens by default except for
-// SetWebVREnabled and SetVRActive, where we'll post a message to get to the
-// correct thread.
-// Destruction must happen on the main thread, or there could be corruption when
-// WebContentsObserver unregisters itself from the web_contents_.
-// There are DCHECKS to ensure these threading rules are satisfied.
-class VrMetricsHelper : public content::WebContentsObserver,
-                        public base::RefCountedThreadSafe<VrMetricsHelper> {
+// This class is not threadsafe and must only be used from the main thread.
+class VrMetricsHelper : public content::WebContentsObserver {
  public:
   explicit VrMetricsHelper(content::WebContents*);
-
+  ~VrMetricsHelper() override;
   void SetWebVREnabled(bool is_webvr_presenting);
   void SetVRActive(bool is_vr_enabled);
 
+ private:
   // WebContentObserver
   void MediaStartedPlaying(const MediaPlayerInfo& media_info,
                            const MediaPlayerId&) override;
@@ -74,13 +70,6 @@ class VrMetricsHelper : public content::WebContentsObserver,
   void DidFinishNavigation(content::NavigationHandle*) override;
   void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                      bool will_cause_resize) override;
-
- protected:
-  friend class base::RefCountedThreadSafe<VrMetricsHelper>;
-  ~VrMetricsHelper() override;
-
-  void SetWebVREnabledOnMainThread(bool is_webvr_presenting);
-  void SetVRActiveOnMainThread(bool is_vr_enabled);
 
   void SetVrMode(VRMode mode);
   void UpdateMode();
@@ -102,9 +91,6 @@ class VrMetricsHelper : public content::WebContentsObserver,
   int num_session_video_playback_ = 0;
 
   GURL origin_;
-
-  // not thread safe, so ensure we are on the same thread at all times:
-  base::PlatformThreadId thread_id_;
 };
 
 }  // namespace vr_shell
