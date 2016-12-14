@@ -31,8 +31,8 @@
 #include "core/fetch/MemoryCache.h"
 
 #include "core/fetch/FetchRequest.h"
-#include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCacheCorrectnessTestHelper.h"
+#include "core/fetch/MockResource.h"
 #include "core/fetch/RawResource.h"
 #include "core/fetch/Resource.h"
 #include "platform/network/ResourceRequest.h"
@@ -42,21 +42,23 @@ namespace blink {
 
 class MemoryCacheCorrectnessTest : public MemoryCacheCorrectnessTestHelper {
  protected:
-  Resource* fetchImage() {
+  Resource* fetchMockResource() {
     FetchRequest fetchRequest(
         ResourceRequest(KURL(ParsedURLString, kResourceURL)),
         FetchInitiatorInfo());
-    return ImageResource::fetch(fetchRequest, fetcher());
+    return MockResource::fetch(fetchRequest, fetcher());
   }
 
  private:
   Resource* createResource(const ResourceRequest& request,
                            Resource::Type type) override {
+    // TODO(toyoshim): Consider to use MockResource for all tests instead of
+    // RawResource.
     switch (type) {
       case Resource::Raw:
         return RawResource::create(request, type);
-      case Resource::Image:
-        return ImageResource::create(request);
+      case Resource::Mock:
+        return MockResource::create(request);
       default:
         EXPECT_TRUE(false) << "'Unreachable' code was reached";
         break;
@@ -148,48 +150,48 @@ TEST_F(MemoryCacheCorrectnessTest, ExpiredFromExpires) {
   EXPECT_NE(expired200, fetched);
 }
 
-// If the image hasn't been loaded in this "document" before, then it shouldn't
-// have list of available images logic.
-TEST_F(MemoryCacheCorrectnessTest, NewImageExpiredFromExpires) {
+// If the resource hasn't been loaded in this "document" before, then it
+// shouldn't have list of available resources logic.
+TEST_F(MemoryCacheCorrectnessTest, NewMockResourceExpiredFromExpires) {
   ResourceResponse expired200Response;
   expired200Response.setHTTPStatusCode(200);
   expired200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
   expired200Response.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
 
   Resource* expired200 =
-      resourceFromResourceResponse(expired200Response, Resource::Image);
+      resourceFromResourceResponse(expired200Response, Resource::Mock);
 
   // Advance the clock within the expiredness period of this resource before we
   // make a request.
   advanceClock(24. * 60. * 60. + 15.);
 
-  Resource* fetched = fetchImage();
+  Resource* fetched = fetchMockResource();
   EXPECT_NE(expired200, fetched);
 }
 
-// If the image has been loaded in this "document" before, then it should have
-// list of available images logic, and so normal cache testing should be
+// If the resource has been loaded in this "document" before, then it should
+// have list of available resources logic, and so normal cache testing should be
 // bypassed.
-TEST_F(MemoryCacheCorrectnessTest, ReuseImageExpiredFromExpires) {
+TEST_F(MemoryCacheCorrectnessTest, ReuseMockResourceExpiredFromExpires) {
   ResourceResponse expired200Response;
   expired200Response.setHTTPStatusCode(200);
   expired200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
   expired200Response.setHTTPHeaderField("Expires", kOneDayAfterOriginalRequest);
 
   Resource* expired200 =
-      resourceFromResourceResponse(expired200Response, Resource::Image);
+      resourceFromResourceResponse(expired200Response, Resource::Mock);
 
   // Advance the clock within the freshness period, and make a request to add
-  // this image to the document resources.
+  // this resource to the document resources.
   advanceClock(15.);
-  Resource* firstFetched = fetchImage();
+  Resource* firstFetched = fetchMockResource();
   EXPECT_EQ(expired200, firstFetched);
 
   // Advance the clock within the expiredness period of this resource before we
   // make a request.
   advanceClock(24. * 60. * 60. + 15.);
 
-  Resource* fetched = fetchImage();
+  Resource* fetched = fetchMockResource();
   EXPECT_EQ(expired200, fetched);
 }
 

@@ -40,11 +40,6 @@ Resource* MemoryCacheCorrectnessTestHelper::resourceFromResourceResponse(
   Resource* resource = createResource(ResourceRequest(response.url()), type);
   resource->setResponse(response);
   resource->finish();
-  // Because we didn't give any real data, an image will have set its status
-  // to DecodeError. Override it so the resource is cacaheable for testing
-  // purposes.
-  if (type == Resource::Image)
-    resource->setStatus(Resource::Cached);
   memoryCache()->add(resource);
 
   return resource;

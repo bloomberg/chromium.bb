@@ -21,6 +21,7 @@ struct ResourceLoaderOptions;
 class MockResource final : public Resource {
  public:
   static MockResource* fetch(FetchRequest&, ResourceFetcher*);
+  static MockResource* create(const ResourceRequest&);
   MockResource(const ResourceRequest&, const ResourceLoaderOptions&);
 };
 

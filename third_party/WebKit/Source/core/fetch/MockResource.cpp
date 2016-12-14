@@ -34,6 +34,11 @@ MockResource* MockResource::fetch(FetchRequest& request,
   return static_cast<MockResource*>(resource);
 }
 
+// static
+MockResource* MockResource::create(const ResourceRequest& request) {
+  return new MockResource(request, ResourceLoaderOptions());
+}
+
 MockResource::MockResource(const ResourceRequest& request,
                            const ResourceLoaderOptions& options)
     : Resource(request, Resource::Mock, options) {}
