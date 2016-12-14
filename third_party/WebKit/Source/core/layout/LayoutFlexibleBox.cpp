@@ -1216,7 +1216,7 @@ LayoutUnit LayoutFlexibleBox::adjustChildSizeForMinAndMax(
     // percentage min size, but we have an indefinite size in that axis.
     minExtent = std::max(LayoutUnit(), minExtent);
   } else if (min.isAuto() && !child.styleRef().containsSize() &&
-             mainAxisOverflowForChild(child) == OverflowVisible &&
+             mainAxisOverflowForChild(child) == EOverflow::Visible &&
              !(isColumnFlow() && child.isFlexibleBox())) {
     // TODO(cbiesinger): For now, we do not handle min-height: auto for nested
     // column flexboxes. We need to implement

@@ -236,7 +236,7 @@ static bool blockHeightConstrained(const LayoutBlock* block) {
   // the content is already overflowing before autosizing kicks in.
   for (; block; block = block->containingBlock()) {
     const ComputedStyle& style = block->styleRef();
-    if (style.overflowY() >= OverflowScroll)
+    if (style.overflowY() >= EOverflow::Scroll)
       return false;
     if (style.height().isSpecified() || style.maxHeight().isSpecified() ||
         block->isOutOfFlowPositioned()) {

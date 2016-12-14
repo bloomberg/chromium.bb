@@ -334,8 +334,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
             static_cast<unsigned>(initialDisplay());
     m_nonInheritedData.m_overflowAnchor =
         static_cast<unsigned>(initialOverflowAnchor());
-    m_nonInheritedData.m_overflowX = initialOverflowX();
-    m_nonInheritedData.m_overflowY = initialOverflowY();
+    m_nonInheritedData.m_overflowX = static_cast<unsigned>(initialOverflowX());
+    m_nonInheritedData.m_overflowY = static_cast<unsigned>(initialOverflowY());
     m_nonInheritedData.m_verticalAlign = initialVerticalAlign();
     m_nonInheritedData.m_clear = initialClear();
     m_nonInheritedData.m_position = initialPosition();
@@ -1512,18 +1512,22 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // overflow-x
-  static EOverflow initialOverflowX() { return OverflowVisible; }
+  static EOverflow initialOverflowX() { return EOverflow::Visible; }
   EOverflow overflowX() const {
     return static_cast<EOverflow>(m_nonInheritedData.m_overflowX);
   }
-  void setOverflowX(EOverflow v) { m_nonInheritedData.m_overflowX = v; }
+  void setOverflowX(EOverflow v) {
+    m_nonInheritedData.m_overflowX = static_cast<unsigned>(v);
+  }
 
   // overflow-y
-  static EOverflow initialOverflowY() { return OverflowVisible; }
+  static EOverflow initialOverflowY() { return EOverflow::Visible; }
   EOverflow overflowY() const {
     return static_cast<EOverflow>(m_nonInheritedData.m_overflowY);
   }
-  void setOverflowY(EOverflow v) { m_nonInheritedData.m_overflowY = v; }
+  void setOverflowY(EOverflow v) {
+    m_nonInheritedData.m_overflowY = static_cast<unsigned>(v);
+  }
 
   // Padding properties.
   static Length initialPadding() { return Length(Fixed); }
@@ -3469,11 +3473,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // It's sufficient to just check one direction, since it's illegal to have
   // visible on only one overflow value.
   bool isOverflowVisible() const {
-    DCHECK(overflowX() != OverflowVisible || overflowX() == overflowY());
-    return overflowX() == OverflowVisible;
+    DCHECK(overflowX() != EOverflow::Visible || overflowX() == overflowY());
+    return overflowX() == EOverflow::Visible;
   }
   bool isOverflowPaged() const {
-    return overflowY() == OverflowPagedX || overflowY() == OverflowPagedY;
+    return overflowY() == EOverflow::PagedX || overflowY() == EOverflow::PagedY;
   }
 
   // Visibility utility functions.
@@ -3673,7 +3677,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     // columns may be laid out along the inline axis, just like for regular
     // multicol. Otherwise, we need to lay out along the block axis.
     if (isOverflowPaged())
-      return (overflowY() == OverflowPagedX) == isHorizontalWritingMode();
+      return (overflowY() == EOverflow::PagedX) == isHorizontalWritingMode();
     return false;
   }
 

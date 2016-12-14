@@ -374,8 +374,8 @@ bool SVGLayoutSupport::isOverflowHidden(const LayoutObject* object) {
   // itself to the initial viewport size.
   ASSERT(!object->isDocumentElement());
 
-  return object->style()->overflowX() == OverflowHidden ||
-         object->style()->overflowX() == OverflowScroll;
+  return object->style()->overflowX() == EOverflow::Hidden ||
+         object->style()->overflowX() == EOverflow::Scroll;
 }
 
 void SVGLayoutSupport::adjustVisualRectWithResources(

@@ -930,14 +930,14 @@ void LayoutBox::computeSelfHitTestRects(Vector<LayoutRect>& rects,
 }
 
 int LayoutBox::verticalScrollbarWidth() const {
-  if (!hasOverflowClip() || style()->overflowY() == OverflowOverlay)
+  if (!hasOverflowClip() || style()->overflowY() == EOverflow::Overlay)
     return 0;
 
   return getScrollableArea()->verticalScrollbarWidth();
 }
 
 int LayoutBox::horizontalScrollbarHeight() const {
-  if (!hasOverflowClip() || style()->overflowX() == OverflowOverlay)
+  if (!hasOverflowClip() || style()->overflowX() == EOverflow::Overlay)
     return 0;
 
   return getScrollableArea()->horizontalScrollbarHeight();
@@ -3196,8 +3196,8 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(
         // cases, but it is preferable to the alternative (sizing intrinsically
         // and making the row end up too big).
         LayoutTableCell* cell = toLayoutTableCell(cb);
-        if (style()->overflowY() != OverflowVisible &&
-            style()->overflowY() != OverflowHidden &&
+        if (style()->overflowY() != EOverflow::Visible &&
+            style()->overflowY() != EOverflow::Hidden &&
             (!cell->style()->logicalHeight().isAuto() ||
              !cell->table()->style()->logicalHeight().isAuto()))
           return LayoutUnit();

@@ -1002,13 +1002,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   virtual void stopAutoscroll() {}
 
   DISABLE_CFI_PERF bool hasAutoVerticalScrollbar() const {
-    return hasOverflowClip() && (style()->overflowY() == OverflowAuto ||
-                                 style()->overflowY() == OverflowPagedY ||
-                                 style()->overflowY() == OverflowOverlay);
+    return hasOverflowClip() && (style()->overflowY() == EOverflow::Auto ||
+                                 style()->overflowY() == EOverflow::PagedY ||
+                                 style()->overflowY() == EOverflow::Overlay);
   }
   DISABLE_CFI_PERF bool hasAutoHorizontalScrollbar() const {
-    return hasOverflowClip() && (style()->overflowX() == OverflowAuto ||
-                                 style()->overflowX() == OverflowOverlay);
+    return hasOverflowClip() && (style()->overflowX() == EOverflow::Auto ||
+                                 style()->overflowX() == EOverflow::Overlay);
   }
   DISABLE_CFI_PERF bool scrollsOverflow() const {
     return scrollsOverflowX() || scrollsOverflowY();
@@ -1026,11 +1026,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
            pixelSnappedScrollHeight() != pixelSnappedClientHeight();
   }
   virtual bool scrollsOverflowX() const {
-    return hasOverflowClip() && (style()->overflowX() == OverflowScroll ||
+    return hasOverflowClip() && (style()->overflowX() == EOverflow::Scroll ||
                                  hasAutoHorizontalScrollbar());
   }
   virtual bool scrollsOverflowY() const {
-    return hasOverflowClip() && (style()->overflowY() == OverflowScroll ||
+    return hasOverflowClip() && (style()->overflowY() == EOverflow::Scroll ||
                                  hasAutoVerticalScrollbar());
   }
 

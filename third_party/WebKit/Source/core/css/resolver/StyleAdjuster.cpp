@@ -230,8 +230,8 @@ static void adjustStyleForHTMLElement(ComputedStyle& style,
   if (isHTMLFrameElementBase(element)) {
     // Frames cannot overflow (they are always the size we ask them to be).
     // Some compositing code paths may try to draw scrollbars anyhow.
-    style.setOverflowX(OverflowVisible);
-    style.setOverflowY(OverflowVisible);
+    style.setOverflowX(EOverflow::Visible);
+    style.setOverflowY(EOverflow::Visible);
     return;
   }
 
@@ -250,18 +250,18 @@ static void adjustStyleForHTMLElement(ComputedStyle& style,
 
   if (isHTMLMarqueeElement(element)) {
     // For now, <marquee> requires an overflow clip to work properly.
-    style.setOverflowX(OverflowHidden);
-    style.setOverflowY(OverflowHidden);
+    style.setOverflowX(EOverflow::Hidden);
+    style.setOverflowY(EOverflow::Hidden);
     return;
   }
 
   if (isHTMLTextAreaElement(element)) {
     // Textarea considers overflow visible as auto.
-    style.setOverflowX(style.overflowX() == OverflowVisible
-                           ? OverflowAuto
+    style.setOverflowX(style.overflowX() == EOverflow::Visible
+                           ? EOverflow::Auto
                            : style.overflowX());
-    style.setOverflowY(style.overflowY() == OverflowVisible
-                           ? OverflowAuto
+    style.setOverflowY(style.overflowY() == EOverflow::Visible
+                           ? EOverflow::Auto
                            : style.overflowY());
     return;
   }
@@ -274,8 +274,8 @@ static void adjustStyleForHTMLElement(ComputedStyle& style,
 }
 
 static void adjustOverflow(ComputedStyle& style) {
-  ASSERT(style.overflowX() != OverflowVisible ||
-         style.overflowY() != OverflowVisible);
+  DCHECK(style.overflowX() != EOverflow::Visible ||
+         style.overflowY() != EOverflow::Visible);
 
   if (style.display() == EDisplay::Table ||
       style.display() == EDisplay::InlineTable) {
@@ -284,34 +284,34 @@ static void adjustOverflow(ComputedStyle& style) {
     // a table is not a block container box the rules for resolving conflicting
     // x and y values in CSS Overflow Module Level 3 do not apply. Arguably
     // overflow-x and overflow-y aren't allowed on tables but all UAs allow it.
-    if (style.overflowX() != OverflowHidden)
-      style.setOverflowX(OverflowVisible);
-    if (style.overflowY() != OverflowHidden)
-      style.setOverflowY(OverflowVisible);
+    if (style.overflowX() != EOverflow::Hidden)
+      style.setOverflowX(EOverflow::Visible);
+    if (style.overflowY() != EOverflow::Hidden)
+      style.setOverflowY(EOverflow::Visible);
     // If we are left with conflicting overflow values for the x and y axes on a
     // table then resolve both to OverflowVisible. This is interoperable
     // behaviour but is not specced anywhere.
-    if (style.overflowX() == OverflowVisible)
-      style.setOverflowY(OverflowVisible);
-    else if (style.overflowY() == OverflowVisible)
-      style.setOverflowX(OverflowVisible);
-  } else if (style.overflowX() == OverflowVisible &&
-             style.overflowY() != OverflowVisible) {
+    if (style.overflowX() == EOverflow::Visible)
+      style.setOverflowY(EOverflow::Visible);
+    else if (style.overflowY() == EOverflow::Visible)
+      style.setOverflowX(EOverflow::Visible);
+  } else if (style.overflowX() == EOverflow::Visible &&
+             style.overflowY() != EOverflow::Visible) {
     // If either overflow value is not visible, change to auto.
     // FIXME: Once we implement pagination controls, overflow-x should default
     // to hidden if overflow-y is set to -webkit-paged-x or -webkit-page-y. For
     // now, we'll let it default to auto so we can at least scroll through the
     // pages.
-    style.setOverflowX(OverflowAuto);
-  } else if (style.overflowY() == OverflowVisible &&
-             style.overflowX() != OverflowVisible) {
-    style.setOverflowY(OverflowAuto);
+    style.setOverflowX(EOverflow::Auto);
+  } else if (style.overflowY() == EOverflow::Visible &&
+             style.overflowX() != EOverflow::Visible) {
+    style.setOverflowY(EOverflow::Auto);
   }
 
   // Menulists should have visible overflow
   if (style.appearance() == MenulistPart) {
-    style.setOverflowX(OverflowVisible);
-    style.setOverflowY(OverflowVisible);
+    style.setOverflowX(EOverflow::Visible);
+    style.setOverflowY(EOverflow::Visible);
   }
 }
 
@@ -433,8 +433,8 @@ void StyleAdjuster::adjustComputedStyle(ComputedStyle& style,
     style.setIsStackingContext(true);
   }
 
-  if (style.overflowX() != OverflowVisible ||
-      style.overflowY() != OverflowVisible)
+  if (style.overflowX() != EOverflow::Visible ||
+      style.overflowY() != EOverflow::Visible)
     adjustOverflow(style);
 
   if (doesNotInheritTextDecoration(style, element))

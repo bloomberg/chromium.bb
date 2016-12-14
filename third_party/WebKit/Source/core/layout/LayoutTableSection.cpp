@@ -1114,8 +1114,9 @@ static bool shouldFlexCellChild(LayoutObject* cellDescendant) {
   return cellDescendant->isAtomicInlineLevel() ||
          (cellDescendant->isBox() &&
           toLayoutBox(cellDescendant)->style()->overflowY() !=
-              OverflowVisible &&
-          toLayoutBox(cellDescendant)->style()->overflowY() != OverflowHidden);
+              EOverflow::Visible &&
+          toLayoutBox(cellDescendant)->style()->overflowY() !=
+              EOverflow::Hidden);
 }
 
 void LayoutTableSection::layoutRows() {

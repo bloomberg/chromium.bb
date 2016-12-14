@@ -148,14 +148,14 @@ enum EBoxSizing { BoxSizingContentBox, BoxSizingBorderBox };
 
 enum class EOverflowAnchor : unsigned { Visible, None, Auto };
 
-enum EOverflow {
-  OverflowVisible,
-  OverflowHidden,
-  OverflowScroll,
-  OverflowAuto,
-  OverflowOverlay,
-  OverflowPagedX,
-  OverflowPagedY
+enum class EOverflow : unsigned {
+  Visible,
+  Hidden,
+  Scroll,
+  Auto,
+  Overlay,
+  PagedX,
+  PagedY
 };
 
 enum EVerticalAlign {

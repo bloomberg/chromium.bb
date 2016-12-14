@@ -702,15 +702,15 @@ void FrameView::calculateScrollbarModesFromOverflowStyle(
   EOverflow overflowY = style->overflowY();
 
   if (!shouldIgnoreOverflowHidden()) {
-    if (overflowX == OverflowHidden)
+    if (overflowX == EOverflow::Hidden)
       hMode = ScrollbarAlwaysOff;
-    if (overflowY == OverflowHidden)
+    if (overflowY == EOverflow::Hidden)
       vMode = ScrollbarAlwaysOff;
   }
 
-  if (overflowX == OverflowScroll)
+  if (overflowX == EOverflow::Scroll)
     hMode = ScrollbarAlwaysOn;
-  if (overflowY == OverflowScroll)
+  if (overflowY == EOverflow::Scroll)
     vMode = ScrollbarAlwaysOn;
 }
 
@@ -3653,9 +3653,9 @@ void FrameView::setScrollbarModes(ScrollbarMode horizontalMode,
   // anything to override that setting, http://crbug.com/426447
   LayoutObject* viewport = viewportLayoutObject();
   if (viewport && !shouldIgnoreOverflowHidden()) {
-    if (viewport->style()->overflowX() == OverflowHidden)
+    if (viewport->style()->overflowX() == EOverflow::Hidden)
       horizontalMode = ScrollbarAlwaysOff;
-    if (viewport->style()->overflowY() == OverflowHidden)
+    if (viewport->style()->overflowY() == EOverflow::Hidden)
       verticalMode = ScrollbarAlwaysOff;
   }
 

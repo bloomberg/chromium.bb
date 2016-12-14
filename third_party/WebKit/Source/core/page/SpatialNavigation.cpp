@@ -330,21 +330,21 @@ bool canScrollInDirection(const Node* container, WebFocusType type) {
   switch (type) {
     case WebFocusTypeLeft:
       return (container->layoutObject()->style()->overflowX() !=
-                  OverflowHidden &&
+                  EOverflow::Hidden &&
               container->layoutBox()->scrollLeft() > 0);
     case WebFocusTypeUp:
       return (container->layoutObject()->style()->overflowY() !=
-                  OverflowHidden &&
+                  EOverflow::Hidden &&
               container->layoutBox()->scrollTop() > 0);
     case WebFocusTypeRight:
       return (container->layoutObject()->style()->overflowX() !=
-                  OverflowHidden &&
+                  EOverflow::Hidden &&
               container->layoutBox()->scrollLeft() +
                       container->layoutBox()->clientWidth() <
                   container->layoutBox()->scrollWidth());
     case WebFocusTypeDown:
       return (container->layoutObject()->style()->overflowY() !=
-                  OverflowHidden &&
+                  EOverflow::Hidden &&
               container->layoutBox()->scrollTop() +
                       container->layoutBox()->clientHeight() <
                   container->layoutBox()->scrollHeight());
@@ -626,9 +626,11 @@ bool canBeScrolledIntoView(WebFocusType type, const FocusCandidate& candidate) {
     LayoutRect parentRect = nodeRectInAbsoluteCoordinates(&parentNode);
     if (!candidateRect.intersects(parentRect)) {
       if (((type == WebFocusTypeLeft || type == WebFocusTypeRight) &&
-           parentNode.layoutObject()->style()->overflowX() == OverflowHidden) ||
+           parentNode.layoutObject()->style()->overflowX() ==
+               EOverflow::Hidden) ||
           ((type == WebFocusTypeUp || type == WebFocusTypeDown) &&
-           parentNode.layoutObject()->style()->overflowY() == OverflowHidden))
+           parentNode.layoutObject()->style()->overflowY() ==
+               EOverflow::Hidden))
         return false;
     }
     if (parentNode == candidate.enclosingScrollableBox)
