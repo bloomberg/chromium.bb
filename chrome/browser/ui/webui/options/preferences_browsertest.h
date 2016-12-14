@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_OPTIONS_PREFERENCES_BROWSERTEST_H_
 #define CHROME_BROWSER_UI_WEBUI_OPTIONS_PREFERENCES_BROWSERTEST_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -38,11 +39,15 @@ class PreferencesBrowserTest : public InProcessBrowserTest {
 
   // InProcessBrowserTest implementation:
   void SetUpOnMainThread() override;
+  void TearDownOnMainThread() override;
 
   void OnPreferenceChanged(const std::string& pref_name);
 
  protected:
   MOCK_METHOD1(OnCommit, void(const PrefService::Preference*));
+
+  // The pref service that holds the current pref values in the C++ backend.
+  PrefService* pref_service();
 
   void SetUpPrefs();
 
@@ -175,10 +180,7 @@ class PreferencesBrowserTest : public InProcessBrowserTest {
 
   // Pref change registrar that detects changes to user-modified pref values
   // made in the C++ backend by the JavaScript Preferences class.
-  PrefChangeRegistrar pref_change_registrar_;
-
-  // The pref service that holds the current pref values in the C++ backend.
-  PrefService* pref_service_;
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   // The prefs and corresponding policies used by the current test.
   std::vector<std::string> types_;

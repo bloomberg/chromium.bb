@@ -92,6 +92,11 @@ PreferencesBrowserTest::PreferencesBrowserTest() {
 PreferencesBrowserTest::~PreferencesBrowserTest() {
 }
 
+PrefService* PreferencesBrowserTest::pref_service() {
+  DCHECK(pref_change_registrar_);
+  return pref_change_registrar_->prefs();
+}
+
 // Navigates to the settings page, causing the JavaScript pref handling code to
 // load and injects JavaScript testing code.
 void PreferencesBrowserTest::SetUpOnMainThread() {
@@ -100,14 +105,21 @@ void PreferencesBrowserTest::SetUpOnMainThread() {
   SetUpPrefs();
 }
 
+void PreferencesBrowserTest::TearDownOnMainThread() {
+  pref_change_registrar_.reset();
+}
+
 void PreferencesBrowserTest::SetUpPrefs() {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);
   render_view_host_ = web_contents->GetRenderViewHost();
   ASSERT_TRUE(render_view_host_);
-  pref_service_ = browser()->profile()->GetPrefs();
-  pref_change_registrar_.Init(pref_service_);
+
+  DCHECK(!pref_change_registrar_);
+  pref_change_registrar_.reset(new PrefChangeRegistrar);
+  pref_change_registrar_->Init(browser()->profile()->GetPrefs());
+
   ASSERT_TRUE(content::ExecuteScript(render_view_host_,
       "function TestEnv() {"
       "  this.sentinelName_ = 'download.prompt_for_download';"
@@ -190,7 +202,7 @@ void PreferencesBrowserTest::SetUpPrefs() {
 
 // Forwards notifications received when pref values change in the backend.
 void PreferencesBrowserTest::OnPreferenceChanged(const std::string& pref_name) {
-  OnCommit(pref_service_->FindPreference(pref_name.c_str()));
+  OnCommit(pref_service()->FindPreference(pref_name.c_str()));
 }
 
 void PreferencesBrowserTest::SetUpInProcessBrowserTestFixture() {
@@ -222,7 +234,7 @@ void PreferencesBrowserTest::SetUserValues(
     const std::vector<std::string>& names,
     const std::vector<base::Value*>& values) {
   for (size_t i = 0; i < names.size(); ++i) {
-    pref_service_->Set(names[i].c_str(), *values[i]);
+    pref_service()->Set(names[i].c_str(), *values[i]);
   }
 }
 
@@ -295,7 +307,7 @@ void PreferencesBrowserTest::VerifyObservedPrefs(
 }
 
 void PreferencesBrowserTest::ExpectNoCommit(const std::string& name) {
-  pref_change_registrar_.Add(
+  pref_change_registrar_->Add(
       name.c_str(),
       base::Bind(&PreferencesBrowserTest::OnPreferenceChanged,
                  base::Unretained(this)));
@@ -305,7 +317,7 @@ void PreferencesBrowserTest::ExpectNoCommit(const std::string& name) {
 
 void PreferencesBrowserTest::ExpectSetCommit(const std::string& name,
                                              const base::Value* value) {
-  pref_change_registrar_.Add(
+  pref_change_registrar_->Add(
       name.c_str(),
       base::Bind(&PreferencesBrowserTest::OnPreferenceChanged,
                  base::Unretained(this)));
@@ -316,7 +328,7 @@ void PreferencesBrowserTest::ExpectSetCommit(const std::string& name,
 }
 
 void PreferencesBrowserTest::ExpectClearCommit(const std::string& name) {
-  pref_change_registrar_.Add(
+  pref_change_registrar_->Add(
       name.c_str(),
       base::Bind(&PreferencesBrowserTest::OnPreferenceChanged,
                  base::Unretained(this)));
@@ -327,7 +339,7 @@ void PreferencesBrowserTest::ExpectClearCommit(const std::string& name) {
 
 void PreferencesBrowserTest::VerifyAndClearExpectations() {
   Mock::VerifyAndClearExpectations(this);
-  pref_change_registrar_.RemoveAll();
+  pref_change_registrar_->RemoveAll();
 }
 
 void PreferencesBrowserTest::SetupJavaScriptTestEnvironment(
@@ -481,7 +493,7 @@ void PreferencesBrowserTest::UseDefaultTestPrefs(bool includeListPref) {
   for (std::vector<std::string>::const_iterator name = pref_names_.begin();
         name != pref_names_.end(); ++name) {
     default_values_.push_back(
-        pref_service_->GetDefaultPrefValue(name->c_str())->DeepCopy());
+        pref_service()->GetDefaultPrefValue(name->c_str())->DeepCopy());
   }
 }
 
@@ -924,7 +936,7 @@ class ProxyPreferencesBrowserTest : public PreferencesBrowserTest {
     onc::ONCSource actual_source;
     std::unique_ptr<ProxyConfigDictionary> proxy_dict =
         chromeos::proxy_config::GetProxyConfigForNetwork(
-            g_browser_process->local_state(), pref_service_, *network,
+            g_browser_process->local_state(), pref_service(), *network,
             &actual_source);
     ASSERT_TRUE(proxy_dict);
     std::string actual_proxy_server;
