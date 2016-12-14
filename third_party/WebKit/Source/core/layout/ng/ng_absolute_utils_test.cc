@@ -124,6 +124,10 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
 
   NGAbsolutePhysicalPosition p;
 
+  NGStaticPosition static_position{NGStaticPosition::kTopLeft,
+                                   {LayoutUnit(), LayoutUnit()}};
+  NGStaticPosition static_right_position{NGStaticPosition::kTopRight,
+                                         {LayoutUnit(), LayoutUnit()}};
   //
   // Tests.
   //
@@ -132,23 +136,32 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   SetHorizontalStyle(NGAuto, NGAuto, NGAuto, NGAuto, NGAuto);
   EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), true);
   estimated_inline = LayoutUnit(60);
-  p = ComputePartialAbsoluteWithChildInlineSize(*ltr_space_, *style_,
-                                                estimated_inline);
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *ltr_space_, *style_, static_position, estimated_inline);
   EXPECT_EQ(*estimated_inline, p.size.width);
   EXPECT_EQ(LayoutUnit(0), p.inset.left);
 
-  // All auto + RTL.
-  p = ComputePartialAbsoluteWithChildInlineSize(*rtl_space_, *style_,
-                                                estimated_inline);
+  // All auto => width is estimated_inline, static_position is right
+  SetHorizontalStyle(NGAuto, NGAuto, NGAuto, NGAuto, NGAuto);
+  EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), true);
+  estimated_inline = LayoutUnit(60);
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *ltr_space_, *style_, static_right_position, estimated_inline);
   EXPECT_EQ(*estimated_inline, p.size.width);
   EXPECT_EQ(LayoutUnit(0), p.inset.right);
+
+  // All auto + RTL.
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *rtl_space_, *style_, static_position, estimated_inline);
+  EXPECT_EQ(*estimated_inline, p.size.width);
+  EXPECT_EQ(container_size_.inline_size - *estimated_inline, p.inset.right);
 
   // left, right, and left are known, compute margins.
   SetHorizontalStyle(left, NGAuto, width, NGAuto, right);
   EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), false);
   estimated_inline.reset();
-  p = ComputePartialAbsoluteWithChildInlineSize(*ltr_space_, *style_,
-                                                estimated_inline);
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *ltr_space_, *style_, static_position, estimated_inline);
   LayoutUnit marginSpace =
       (container_size_.inline_size - left - right - p.size.width) / 2;
   EXPECT_EQ(left + marginSpace, p.inset.left);
@@ -158,8 +171,8 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   SetHorizontalStyle(left, NGAuto, width, NGAuto, right);
   EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), false);
   estimated_inline.reset();
-  p = ComputePartialAbsoluteWithChildInlineSize(*vertical_lr_space_, *style_,
-                                                estimated_inline);
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *vertical_lr_space_, *style_, static_position, estimated_inline);
   EXPECT_EQ(left + marginSpace, p.inset.left);
   EXPECT_EQ(right + marginSpace, p.inset.right);
 
@@ -167,24 +180,24 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   SetHorizontalStyle(left, NGAuto, width, NGAuto, right);
   EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), false);
   estimated_inline.reset();
-  p = ComputePartialAbsoluteWithChildInlineSize(*vertical_rl_space_, *style_,
-                                                estimated_inline);
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *vertical_rl_space_, *style_, static_position, estimated_inline);
   EXPECT_EQ(left + marginSpace, p.inset.left);
   EXPECT_EQ(right + marginSpace, p.inset.right);
 
   // left, right, and width are known, not enough space for margins LTR.
   SetHorizontalStyle(left, NGAuto, LayoutUnit(200), NGAuto, right);
   estimated_inline.reset();
-  p = ComputePartialAbsoluteWithChildInlineSize(*ltr_space_, *style_,
-                                                estimated_inline);
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *ltr_space_, *style_, static_position, estimated_inline);
   EXPECT_EQ(left, p.inset.left);
   EXPECT_EQ(-left, p.inset.right);
 
   // left, right, and left are known, not enough space for margins RTL.
   SetHorizontalStyle(left, NGAuto, LayoutUnit(200), NGAuto, right);
   estimated_inline.reset();
-  p = ComputePartialAbsoluteWithChildInlineSize(*rtl_space_, *style_,
-                                                estimated_inline);
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *rtl_space_, *style_, static_position, estimated_inline);
   EXPECT_EQ(-right, p.inset.left);
   EXPECT_EQ(right, p.inset.right);
 
@@ -192,16 +205,16 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   SetHorizontalStyle(NGAuto, margin_left, NGAuto, margin_right, right);
   EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), true);
   estimated_inline = LayoutUnit(60);
-  p = ComputePartialAbsoluteWithChildInlineSize(*ltr_space_, *style_,
-                                                estimated_inline);
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *ltr_space_, *style_, static_position, estimated_inline);
   EXPECT_EQ(*estimated_inline, p.size.width);
 
   // Rule 2 left and right are auto LTR.
   SetHorizontalStyle(NGAuto, margin_left, width, margin_right, NGAuto);
   EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), false);
   estimated_inline.reset();
-  p = ComputePartialAbsoluteWithChildInlineSize(*ltr_space_, *style_,
-                                                estimated_inline);
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *ltr_space_, *style_, static_position, estimated_inline);
   EXPECT_EQ(margin_left, p.inset.left);
   EXPECT_EQ(container_size_.inline_size - margin_left - width, p.inset.right);
 
@@ -209,17 +222,17 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   SetHorizontalStyle(NGAuto, margin_left, width, margin_right, NGAuto);
   EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), false);
   estimated_inline.reset();
-  p = ComputePartialAbsoluteWithChildInlineSize(*rtl_space_, *style_,
-                                                estimated_inline);
-  EXPECT_EQ(container_size_.inline_size - margin_right - width, p.inset.left);
-  EXPECT_EQ(margin_right, p.inset.right);
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *rtl_space_, *style_, static_position, estimated_inline);
+  EXPECT_EQ(margin_left, p.inset.left);
+  EXPECT_EQ(container_size_.inline_size - margin_left - width, p.inset.right);
 
   // Rule 3 width and right are auto.
   SetHorizontalStyle(left, margin_left, NGAuto, margin_right, NGAuto);
   EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), true);
   estimated_inline = LayoutUnit(60);
-  p = ComputePartialAbsoluteWithChildInlineSize(*ltr_space_, *style_,
-                                                estimated_inline);
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *ltr_space_, *style_, static_position, estimated_inline);
   EXPECT_EQ(
       container_size_.inline_size - *estimated_inline - left - margin_left,
       p.inset.right);
@@ -229,8 +242,8 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   SetHorizontalStyle(NGAuto, margin_left, width, margin_right, right);
   EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), false);
   estimated_inline.reset();
-  p = ComputePartialAbsoluteWithChildInlineSize(*ltr_space_, *style_,
-                                                estimated_inline);
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *ltr_space_, *style_, static_position, estimated_inline);
   EXPECT_EQ(left + margin_left, p.inset.left);
 
   // Rule 4: left is auto, EBoxSizing::BoxSizingContentBox
@@ -240,8 +253,8 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
                      margin_right, right);
   EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), false);
   estimated_inline.reset();
-  p = ComputePartialAbsoluteWithChildInlineSize(*ltr_space_, *style_,
-                                                estimated_inline);
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *ltr_space_, *style_, static_position, estimated_inline);
   EXPECT_EQ(left + margin_left, p.inset.left);
   style_->setBoxSizing(EBoxSizing::BoxSizingBorderBox);
 
@@ -249,16 +262,16 @@ TEST_F(NGAbsoluteUtilsTest, Horizontal) {
   SetHorizontalStyle(left, margin_left, width, margin_right, NGAuto);
   EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), false);
   estimated_inline.reset();
-  p = ComputePartialAbsoluteWithChildInlineSize(*ltr_space_, *style_,
-                                                estimated_inline);
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *ltr_space_, *style_, static_position, estimated_inline);
   EXPECT_EQ(right + margin_right, p.inset.right);
 
   // Rule 6: width is auto.
   SetHorizontalStyle(left, margin_left, NGAuto, margin_right, right);
   EXPECT_EQ(AbsoluteNeedsChildInlineSize(*style_), false);
   estimated_inline.reset();
-  p = ComputePartialAbsoluteWithChildInlineSize(*ltr_space_, *style_,
-                                                estimated_inline);
+  p = ComputePartialAbsoluteWithChildInlineSize(
+      *ltr_space_, *style_, static_position, estimated_inline);
   EXPECT_EQ(width, p.size.width);
 }
 
@@ -292,6 +305,11 @@ TEST_F(NGAbsoluteUtilsTest, Vertical) {
   NGAbsolutePhysicalPosition p;
   Optional<LayoutUnit> auto_height;
 
+  NGStaticPosition static_position{NGStaticPosition::kTopLeft,
+                                   {LayoutUnit(), LayoutUnit()}};
+  NGStaticPosition static_position_bottom{NGStaticPosition::kBottomLeft,
+                                          {LayoutUnit(), LayoutUnit()}};
+
   //
   // Tests
   //
@@ -300,15 +318,22 @@ TEST_F(NGAbsoluteUtilsTest, Vertical) {
   SetVerticalStyle(NGAuto, NGAuto, NGAuto, NGAuto, NGAuto);
   EXPECT_EQ(AbsoluteNeedsChildBlockSize(*style_), true);
   auto_height = LayoutUnit(60);
-  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, auto_height, &p);
+  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, static_position,
+                                        auto_height, &p);
   EXPECT_EQ(*auto_height, p.size.height);
   EXPECT_EQ(LayoutUnit(0), p.inset.top);
+
+  // All auto, static position bottom
+  ComputeFullAbsoluteWithChildBlockSize(
+      *ltr_space_, *style_, static_position_bottom, auto_height, &p);
+  EXPECT_EQ(LayoutUnit(0), p.inset.bottom);
 
   // If top, bottom, and height are known, compute margins.
   SetVerticalStyle(top, NGAuto, height, NGAuto, bottom);
   EXPECT_EQ(AbsoluteNeedsChildBlockSize(*style_), false);
   auto_height.reset();
-  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, auto_height, &p);
+  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, static_position,
+                                        auto_height, &p);
   LayoutUnit margin_space =
       (container_size_.block_size - top - height - bottom) / 2;
   EXPECT_EQ(top + margin_space, p.inset.top);
@@ -318,7 +343,7 @@ TEST_F(NGAbsoluteUtilsTest, Vertical) {
   SetVerticalStyle(top, NGAuto, height, NGAuto, bottom);
   EXPECT_EQ(AbsoluteNeedsChildBlockSize(*style_), false);
   ComputeFullAbsoluteWithChildBlockSize(*vertical_lr_space_, *style_,
-                                        auto_height, &p);
+                                        static_position, auto_height, &p);
   EXPECT_EQ(top + margin_space, p.inset.top);
   EXPECT_EQ(bottom + margin_space, p.inset.bottom);
 
@@ -326,14 +351,15 @@ TEST_F(NGAbsoluteUtilsTest, Vertical) {
   SetVerticalStyle(top, NGAuto, height, NGAuto, bottom);
   EXPECT_EQ(AbsoluteNeedsChildBlockSize(*style_), false);
   ComputeFullAbsoluteWithChildBlockSize(*vertical_rl_space_, *style_,
-                                        auto_height, &p);
+                                        static_position, auto_height, &p);
   EXPECT_EQ(top + margin_space, p.inset.top);
   EXPECT_EQ(bottom + margin_space, p.inset.bottom);
 
   // If top, bottom, and height are known, not enough space for margins.
   SetVerticalStyle(top, NGAuto, LayoutUnit(300), NGAuto, bottom);
   EXPECT_EQ(AbsoluteNeedsChildBlockSize(*style_), false);
-  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, auto_height, &p);
+  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, static_position,
+                                        auto_height, &p);
   EXPECT_EQ(top, p.inset.top);
   EXPECT_EQ(-top, p.inset.bottom);
 
@@ -341,14 +367,16 @@ TEST_F(NGAbsoluteUtilsTest, Vertical) {
   SetVerticalStyle(NGAuto, margin_top, NGAuto, margin_bottom, bottom);
   EXPECT_EQ(AbsoluteNeedsChildBlockSize(*style_), true);
   auto_height = LayoutUnit(60);
-  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, auto_height, &p);
+  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, static_position,
+                                        auto_height, &p);
   EXPECT_EQ(*auto_height, p.size.height);
 
   // Rule 2: top and bottom are unknown.
   SetVerticalStyle(NGAuto, margin_top, height, margin_bottom, NGAuto);
   EXPECT_EQ(AbsoluteNeedsChildBlockSize(*style_), false);
   auto_height.reset();
-  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, auto_height, &p);
+  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, static_position,
+                                        auto_height, &p);
   EXPECT_EQ(margin_top, p.inset.top);
   EXPECT_EQ(container_size_.block_size - margin_top - height, p.inset.bottom);
 
@@ -356,7 +384,8 @@ TEST_F(NGAbsoluteUtilsTest, Vertical) {
   SetVerticalStyle(top, margin_top, NGAuto, margin_bottom, NGAuto);
   EXPECT_EQ(AbsoluteNeedsChildBlockSize(*style_), true);
   auto_height = LayoutUnit(20);
-  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, auto_height, &p);
+  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, static_position,
+                                        auto_height, &p);
   EXPECT_EQ(border_top + border_bottom + padding_top + padding_bottom,
             p.size.height);
 
@@ -364,28 +393,32 @@ TEST_F(NGAbsoluteUtilsTest, Vertical) {
   SetVerticalStyle(top, margin_top, NGAuto, margin_bottom, NGAuto);
   EXPECT_EQ(AbsoluteNeedsChildBlockSize(*style_), true);
   auto_height = LayoutUnit(70);
-  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, auto_height, &p);
+  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, static_position,
+                                        auto_height, &p);
   EXPECT_EQ(*auto_height, p.size.height);
 
   // Rule 4: top is unknown.
   SetVerticalStyle(NGAuto, margin_top, height, margin_bottom, bottom);
   EXPECT_EQ(AbsoluteNeedsChildBlockSize(*style_), false);
   auto_height.reset();
-  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, auto_height, &p);
+  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, static_position,
+                                        auto_height, &p);
   EXPECT_EQ(top + margin_top, p.inset.top);
 
   // Rule 5: bottom is unknown.
   SetVerticalStyle(top, margin_top, height, margin_bottom, NGAuto);
   EXPECT_EQ(AbsoluteNeedsChildBlockSize(*style_), false);
   auto_height.reset();
-  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, auto_height, &p);
+  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, static_position,
+                                        auto_height, &p);
   EXPECT_EQ(bottom + margin_bottom, p.inset.bottom);
 
   // Rule 6: height is unknown.
   SetVerticalStyle(top, margin_top, NGAuto, margin_bottom, bottom);
   EXPECT_EQ(AbsoluteNeedsChildBlockSize(*style_), false);
   auto_height.reset();
-  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, auto_height, &p);
+  ComputeFullAbsoluteWithChildBlockSize(*ltr_space_, *style_, static_position,
+                                        auto_height, &p);
   EXPECT_EQ(height, p.size.height);
 }
 

@@ -49,12 +49,14 @@ CORE_EXPORT NGAbsolutePhysicalPosition
 ComputePartialAbsoluteWithChildInlineSize(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
+    const NGStaticPosition&,
     const Optional<LayoutUnit>& child_inline_size);
 
 // Compute rest of NGPhysicalRect that depends on child's block_size.
 CORE_EXPORT void ComputeFullAbsoluteWithChildBlockSize(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
+    const NGStaticPosition&,
     const Optional<LayoutUnit>& child_block_size,
     NGAbsolutePhysicalPosition* position);
 

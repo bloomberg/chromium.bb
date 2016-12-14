@@ -304,6 +304,51 @@ struct CORE_EXPORT NGStaticPosition {
   static NGStaticPosition Create(NGWritingMode,
                                  TextDirection,
                                  NGPhysicalOffset);
+
+  // Left/Right/TopPosition functions map static position to
+  // left/right/top edge wrt container space.
+  // The function arguments are required to solve the equation:
+  // contaner_size = left + margin_left + width + margin_right + right
+  LayoutUnit LeftPosition(LayoutUnit container_size,
+                          LayoutUnit width,
+                          LayoutUnit margin_left,
+                          LayoutUnit margin_right) const {
+    return GenericPosition(HasLeft(), offset.left, container_size, width,
+                           margin_left, margin_right);
+  }
+  LayoutUnit RightPosition(LayoutUnit container_size,
+                           LayoutUnit width,
+                           LayoutUnit margin_left,
+                           LayoutUnit margin_right) const {
+    return GenericPosition(!HasLeft(), offset.left, container_size, width,
+                           margin_left, margin_right);
+  }
+  LayoutUnit TopPosition(LayoutUnit container_size,
+                         LayoutUnit height,
+                         LayoutUnit margin_top,
+                         LayoutUnit margin_bottom) const {
+    return GenericPosition(HasTop(), offset.top, container_size, height,
+                           margin_top, margin_bottom);
+  }
+
+ private:
+  bool HasTop() const { return type == kTopLeft || type == kTopRight; }
+  bool HasLeft() const { return type == kTopLeft || type == kBottomLeft; }
+  LayoutUnit GenericPosition(bool position_matches,
+                             LayoutUnit position,
+                             LayoutUnit container_size,
+                             LayoutUnit length,
+                             LayoutUnit margin_start,
+                             LayoutUnit margin_end) const {
+    DCHECK_GE(container_size, LayoutUnit());
+    DCHECK_GE(length, LayoutUnit());
+    DCHECK_GE(margin_start, LayoutUnit());
+    DCHECK_GE(margin_end, LayoutUnit());
+    if (position_matches)
+      return position;
+    else
+      return container_size - position - length - margin_start - margin_end;
+  }
 };
 
 }  // namespace blink

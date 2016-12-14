@@ -37,6 +37,7 @@ bool AbsoluteVerticalNeedsEstimate(const ComputedStyle& style) {
 // https://www.w3.org/TR/css-position-3/#abs-non-replaced-width
 void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
                                const ComputedStyle& style,
+                               const NGStaticPosition& static_position,
                                const Optional<LayoutUnit>& child_auto_width,
                                NGAbsolutePhysicalPosition* position) {
   // Always use inline_size for percent resolution.
@@ -68,8 +69,6 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
       width != NGSizeIndefinite)
     width += border_padding;
 
-  LayoutUnit static_start;  // TODO(atotic) needs to be passed in.
-
   NGPhysicalSize container_size =
       space.AvailableSize().ConvertToPhysical(space.WritingMode());
   DCHECK(container_size.width != NGSizeIndefinite);
@@ -83,10 +82,15 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
       margin_left = LayoutUnit();
     if (margin_right == NGSizeIndefinite)
       margin_right = LayoutUnit();
-    if (space.Direction() == LTR)
-      left = LayoutUnit();
-    else
-      right = LayoutUnit();
+    DCHECK(child_auto_width.has_value());
+    width = *child_auto_width;
+    if (space.Direction() == LTR) {
+      left = static_position.LeftPosition(container_size.width, width,
+                                          margin_left, margin_right);
+    } else {
+      right = static_position.RightPosition(container_size.width, width,
+                                            margin_left, margin_right);
+    }
   } else if (left != NGSizeIndefinite && right != NGSizeIndefinite &&
              width != NGSizeIndefinite) {
     // Standard: "If left, right, and width are not auto:"
@@ -133,18 +137,20 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
   if (left == NGSizeIndefinite && width == NGSizeIndefinite) {
     // Rule 1: left/width are unknown.
     DCHECK_NE(right, NGSizeIndefinite);
-    DCHECK(child_auto_width);
+    DCHECK(child_auto_width.has_value());
     width = *child_auto_width;
   } else if (left == NGSizeIndefinite && right == NGSizeIndefinite) {
     // Rule 2.
     DCHECK_NE(width, NGSizeIndefinite);
     if (space.Direction() == LTR)
-      left = static_start;
+      left = static_position.LeftPosition(container_size.width, width,
+                                          margin_left, margin_right);
     else
-      right = static_start;
+      right = static_position.RightPosition(container_size.width, width,
+                                            margin_left, margin_right);
   } else if (width == NGSizeIndefinite && right == NGSizeIndefinite) {
     // Rule 3.
-    DCHECK(child_auto_width);
+    DCHECK(child_auto_width.has_value());
     width = *child_auto_width;
   }
 
@@ -171,6 +177,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
 // https://www.w3.org/TR/css-position-3/#abs-non-replaced-height
 void ComputeAbsoluteVertical(const NGConstraintSpace& space,
                              const ComputedStyle& style,
+                             const NGStaticPosition& static_position,
                              const Optional<LayoutUnit>& child_auto_height,
                              NGAbsolutePhysicalPosition* position) {
   // TODO(atotic) check percentage resolution for vertical writing modes.
@@ -201,8 +208,6 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
       height != NGSizeIndefinite)
     height += border_padding;
 
-  LayoutUnit static_start;  // TODO(atotic) needs to be passed in.
-
   NGPhysicalSize container_size =
       space.AvailableSize().ConvertToPhysical(space.WritingMode());
   DCHECK(container_size.height != NGSizeIndefinite);
@@ -217,7 +222,10 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
       margin_top = LayoutUnit();
     if (margin_bottom == NGSizeIndefinite)
       margin_bottom = LayoutUnit();
-    top = LayoutUnit();
+    DCHECK(child_auto_height.has_value());
+    height = *child_auto_height;
+    top = static_position.TopPosition(container_size.height, height, margin_top,
+                                      margin_bottom);
   } else if (top != NGSizeIndefinite && bottom != NGSizeIndefinite &&
              height != NGSizeIndefinite) {
     // Standard: "If top, bottom, and height are not auto:"
@@ -256,15 +264,16 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
   if (top == NGSizeIndefinite && height == NGSizeIndefinite) {
     // Rule 1.
     DCHECK_NE(bottom, NGSizeIndefinite);
-    DCHECK(child_auto_height);
+    DCHECK(child_auto_height.has_value());
     height = *child_auto_height;
   } else if (top == NGSizeIndefinite && bottom == NGSizeIndefinite) {
     // Rule 2.
     DCHECK_NE(height, NGSizeIndefinite);
-    top = static_start;
+    top = static_position.TopPosition(container_size.height, height, margin_top,
+                                      margin_bottom);
   } else if (height == NGSizeIndefinite && bottom == NGSizeIndefinite) {
     // Rule 3.
-    DCHECK(child_auto_height);
+    DCHECK(child_auto_height.has_value());
     height = *child_auto_height;
   }
 
@@ -313,24 +322,30 @@ bool AbsoluteNeedsChildInlineSize(const ComputedStyle& style) {
 NGAbsolutePhysicalPosition ComputePartialAbsoluteWithChildInlineSize(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
+    const NGStaticPosition& static_position,
     const Optional<LayoutUnit>& child_inline_size) {
   NGAbsolutePhysicalPosition position;
   if (style.isHorizontalWritingMode())
-    ComputeAbsoluteHorizontal(space, style, child_inline_size, &position);
+    ComputeAbsoluteHorizontal(space, style, static_position, child_inline_size,
+                              &position);
   else
-    ComputeAbsoluteVertical(space, style, child_inline_size, &position);
+    ComputeAbsoluteVertical(space, style, static_position, child_inline_size,
+                            &position);
   return position;
 }
 
 void ComputeFullAbsoluteWithChildBlockSize(
     const NGConstraintSpace& space,
     const ComputedStyle& style,
+    const NGStaticPosition& static_position,
     const Optional<LayoutUnit>& child_block_size,
     NGAbsolutePhysicalPosition* position) {
   if (style.isHorizontalWritingMode())
-    ComputeAbsoluteVertical(space, style, child_block_size, position);
+    ComputeAbsoluteVertical(space, style, static_position, child_block_size,
+                            position);
   else
-    ComputeAbsoluteHorizontal(space, style, child_block_size, position);
+    ComputeAbsoluteHorizontal(space, style, static_position, child_block_size,
+                              position);
 }
 
 }  // namespace blink
