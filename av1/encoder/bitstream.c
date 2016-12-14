@@ -2163,10 +2163,15 @@ static void write_partition(const AV1_COMMON *const cm,
                             const MACROBLOCKD *const xd, int hbs, int mi_row,
                             int mi_col, PARTITION_TYPE p, BLOCK_SIZE bsize,
                             aom_writer *w) {
-  const int ctx = partition_plane_context(xd, mi_row, mi_col, bsize);
+  const int is_partition_point = bsize >= BLOCK_8X8;
+  const int ctx = is_partition_point
+                      ? partition_plane_context(xd, mi_row, mi_col, bsize)
+                      : 0;
   const aom_prob *const probs = cm->fc->partition_prob[ctx];
   const int has_rows = (mi_row + hbs) < cm->mi_rows;
   const int has_cols = (mi_col + hbs) < cm->mi_cols;
+
+  if (!is_partition_point) return;
 
   if (has_rows && has_cols) {
 #if CONFIG_EXT_PARTITION_TYPES

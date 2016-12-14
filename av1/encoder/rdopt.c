@@ -1377,13 +1377,16 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   aom_prob skip_prob = av1_get_skip_prob(cm, xd);
   int s0, s1;
   const int is_inter = is_inter_block(mbmi);
-  const int tx_size_ctx = get_tx_size_context(xd);
+
   const int tx_size_cat =
       is_inter ? inter_tx_size_cat_lookup[bs] : intra_tx_size_cat_lookup[bs];
   const TX_SIZE coded_tx_size = txsize_sqr_up_map[tx_size];
   const int depth = tx_size_to_depth(coded_tx_size);
-  const int tx_select = cm->tx_mode == TX_MODE_SELECT;
-  const int r_tx_size = cpi->tx_size_cost[tx_size_cat][tx_size_ctx][depth];
+  const int tx_select =
+      cm->tx_mode == TX_MODE_SELECT && mbmi->sb_type >= BLOCK_8X8;
+  const int tx_size_ctx = tx_select ? get_tx_size_context(xd) : 0;
+  const int r_tx_size =
+      tx_select ? cpi->tx_size_cost[tx_size_cat][tx_size_ctx][depth] : 0;
 
   assert(skip_prob > 0);
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
@@ -2968,7 +2971,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
     this_rate = this_rate_tokenonly + bmode_costs[mic->mbmi.mode];
 
-    if (!xd->lossless[xd->mi[0]->mbmi.segment_id]) {
+    if (!xd->lossless[xd->mi[0]->mbmi.segment_id] &&
+        mic->mbmi.sb_type >= BLOCK_8X8) {
       // super_block_yrd above includes the cost of the tx_size in the
       // tokenonly rate, but for intra blocks, tx_size is always coded
       // (prediction granularity), so we account for it in the full rate,
@@ -9198,7 +9202,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             av1_default_palette_y_mode_prob[bsize - BLOCK_8X8][palette_ctx], 0);
 #endif  // CONFIG_PALETTE
 
-      if (!xd->lossless[mbmi->segment_id]) {
+      if (!xd->lossless[mbmi->segment_id] && bsize >= BLOCK_8X8) {
         // super_block_yrd above includes the cost of the tx_size in the
         // tokenonly rate, but for intra blocks, tx_size is always coded
         // (prediction granularity), so we account for it in the full rate,
