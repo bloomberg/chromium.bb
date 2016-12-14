@@ -48,8 +48,7 @@ V8PerContextData::V8PerContextData(v8::Local<v8::Context> context)
       m_constructorMap(m_isolate),
       m_contextHolder(WTF::makeUnique<gin::ContextHolder>(m_isolate)),
       m_context(m_isolate, context),
-      m_activityLogger(0),
-      m_compiledPrivateScript(m_isolate) {
+      m_activityLogger(0) {
   m_contextHolder->SetContext(context);
 
   v8::Context::Scope contextScope(context);
@@ -173,16 +172,6 @@ v8::Local<v8::Object> V8PerContextData::prototypeForType(
 void V8PerContextData::addCustomElementBinding(
     std::unique_ptr<V0CustomElementBinding> binding) {
   m_customElementBindings.push_back(std::move(binding));
-}
-
-v8::Local<v8::Value> V8PerContextData::compiledPrivateScript(String className) {
-  return m_compiledPrivateScript.Get(className);
-}
-
-void V8PerContextData::setCompiledPrivateScript(
-    String className,
-    v8::Local<v8::Value> compiledObject) {
-  m_compiledPrivateScript.Set(className, compiledObject);
 }
 
 }  // namespace blink

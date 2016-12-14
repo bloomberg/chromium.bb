@@ -1539,22 +1539,6 @@ You need to specify `[URL]` if a given DOMString represents a URL, since getters
 
 Only used in some HTML*ELement.idl files and one other place.
 
-### [NoImplHeader] _(i)_
-
-Summary: `[NoImplHeader]` indicates that a given interface does not have a corresponding header file in the impl side.
-
-Usage: `[NoImplHeader]` can be specified on any interface:
-
-```webidl
-[
-    NoImplHeader,
-] interface XXX {
-    ...;
-};
-```
-
-Without `[NoImplHeader]`, the IDL compiler assumes that there is XXX.h in the impl side. With `[NoImplHeader]`, you can tell the IDL compiler that there is no XXX.h. You can use `[NoImplHeader]` when all of the DOM attributes and methods of the interface are implemented in Blink-in-JS and thus don't have any C++ header file.
-
 ## Temporary Blink-specific IDL Extended Attributes
 
 These extended attributes are _temporary_ and are only in use while some change is in progress. Unless you are involved with the change, you can generally ignore them, and should not use them.
@@ -1658,7 +1642,6 @@ Added to members of a partial interface definition (and implemented interfaces w
 
 * `[PerWorldBindings]` :: interacts with `[LogActivity]`
 * `[OverrideBuiltins]` :: used on named accessors
-* `[ImplementedInPrivateScript]`, `[OnlyExposedToPrivateScript]`
 
 -------------
 

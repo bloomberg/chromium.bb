@@ -34,29 +34,6 @@ class ScriptState;
 class V8TestObject {
   STATIC_ONLY(V8TestObject);
  public:
-  class PrivateScript {
-    STATIC_ONLY(PrivateScript);
-   public:
-    static bool voidMethodImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl);
-    static bool shortMethodImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl, int* result);
-    static bool shortMethodWithShortArgumentImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl, int value, int* result);
-    static bool stringMethodWithStringArgumentImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl, String value, String* result);
-    static bool nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl, Node* value, Node** result);
-    static bool nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl, Document* document, Node* node, int value1, double value2, String string, Node** result);
-    static bool methodForPrivateScriptOnlyMethod(LocalFrame* frame, TestObject* holderImpl, int value1, int value2, int* result);
-    static bool readonlyShortAttributeAttributeGetter(LocalFrame* frame, TestObject* holderImpl, int* result);
-    static bool shortAttributeAttributeGetter(LocalFrame* frame, TestObject* holderImpl, int* result);
-    static bool shortAttributeAttributeSetter(LocalFrame* frame, TestObject* holderImpl, int cppValue);
-    static bool stringAttributeAttributeGetter(LocalFrame* frame, TestObject* holderImpl, String* result);
-    static bool stringAttributeAttributeSetter(LocalFrame* frame, TestObject* holderImpl, String cppValue);
-    static bool nodeAttributeAttributeGetter(LocalFrame* frame, TestObject* holderImpl, Node** result);
-    static bool nodeAttributeAttributeSetter(LocalFrame* frame, TestObject* holderImpl, Node* cppValue);
-    static bool attributeForPrivateScriptOnlyAttributeGetter(LocalFrame* frame, TestObject* holderImpl, String* result);
-    static bool attributeForPrivateScriptOnlyAttributeSetter(LocalFrame* frame, TestObject* holderImpl, String cppValue);
-    static bool enumForPrivateScriptAttributeGetter(LocalFrame* frame, TestObject* holderImpl, String* result);
-    static bool enumForPrivateScriptAttributeSetter(LocalFrame* frame, TestObject* holderImpl, String cppValue);
-  };
-
   CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
   static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
   CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);

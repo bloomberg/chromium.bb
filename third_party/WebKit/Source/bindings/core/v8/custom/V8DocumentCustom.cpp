@@ -106,30 +106,25 @@ void V8Document::createTouchMethodPrologueCustom(
     Document*) {
   v8::Local<v8::Value> v8Window = info[0];
   if (isUndefinedOrNull(v8Window)) {
-    UseCounter::countIfNotPrivateScript(
-        info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-        UseCounter::DocumentCreateTouchWindowNull);
+    UseCounter::count(currentExecutionContext(info.GetIsolate()),
+                      UseCounter::DocumentCreateTouchWindowNull);
   } else if (!toDOMWindow(info.GetIsolate(), v8Window)) {
-    UseCounter::countIfNotPrivateScript(
-        info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-        UseCounter::DocumentCreateTouchWindowWrongType);
+    UseCounter::count(currentExecutionContext(info.GetIsolate()),
+                      UseCounter::DocumentCreateTouchWindowWrongType);
   }
 
   v8::Local<v8::Value> v8Target = info[1];
   if (isUndefinedOrNull(v8Target)) {
-    UseCounter::countIfNotPrivateScript(
-        info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-        UseCounter::DocumentCreateTouchTargetNull);
+    UseCounter::count(currentExecutionContext(info.GetIsolate()),
+                      UseCounter::DocumentCreateTouchTargetNull);
   } else if (!toEventTarget(info.GetIsolate(), v8Target)) {
-    UseCounter::countIfNotPrivateScript(
-        info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-        UseCounter::DocumentCreateTouchTargetWrongType);
+    UseCounter::count(currentExecutionContext(info.GetIsolate()),
+                      UseCounter::DocumentCreateTouchTargetWrongType);
   }
 
   if (info.Length() < 7) {
-    UseCounter::countIfNotPrivateScript(
-        info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-        UseCounter::DocumentCreateTouchLessThanSevenArguments);
+    UseCounter::count(currentExecutionContext(info.GetIsolate()),
+                      UseCounter::DocumentCreateTouchLessThanSevenArguments);
   }
 }
 

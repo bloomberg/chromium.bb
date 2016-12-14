@@ -73,8 +73,6 @@ bindings_core_v8_files =
                     "core/v8/Microtask.h",
                     "core/v8/NativeValueTraits.h",
                     "core/v8/Nullable.h",
-                    "core/v8/PrivateScriptRunner.cpp",
-                    "core/v8/PrivateScriptRunner.h",
                     "core/v8/RejectedPromises.cpp",
                     "core/v8/RejectedPromises.h",
                     "core/v8/RetainedDOMInfo.cpp",

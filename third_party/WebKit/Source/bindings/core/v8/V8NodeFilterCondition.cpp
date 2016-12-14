@@ -74,9 +74,8 @@ unsigned V8NodeFilterCondition::acceptNode(
   v8::Local<v8::Function> callback;
   v8::Local<v8::Value> receiver;
   if (filter->IsFunction()) {
-    UseCounter::countIfNotPrivateScript(isolate,
-                                        currentExecutionContext(isolate),
-                                        UseCounter::NodeFilterIsFunction);
+    UseCounter::count(currentExecutionContext(isolate),
+                      UseCounter::NodeFilterIsFunction);
     callback = v8::Local<v8::Function>::Cast(filter);
     receiver = v8::Undefined(isolate);
   } else {
@@ -95,9 +94,8 @@ unsigned V8NodeFilterCondition::acceptNode(
           "NodeFilter object does not have an acceptNode function");
       return NodeFilter::kFilterReject;
     }
-    UseCounter::countIfNotPrivateScript(isolate,
-                                        currentExecutionContext(isolate),
-                                        UseCounter::NodeFilterIsObject);
+    UseCounter::count(currentExecutionContext(isolate),
+                      UseCounter::NodeFilterIsObject);
     callback = v8::Local<v8::Function>::Cast(value);
     receiver = filter;
   }

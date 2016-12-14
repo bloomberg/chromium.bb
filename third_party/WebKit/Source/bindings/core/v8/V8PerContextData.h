@@ -93,9 +93,6 @@ class CORE_EXPORT V8PerContextData final {
     m_activityLogger = activityLogger;
   }
 
-  v8::Local<v8::Value> compiledPrivateScript(String);
-  void setCompiledPrivateScript(String, v8::Local<v8::Value>);
-
  private:
   V8PerContextData(v8::Local<v8::Context>);
 
@@ -125,8 +122,6 @@ class CORE_EXPORT V8PerContextData final {
 
   // This is owned by a static hash map in V8DOMActivityLogger.
   V8DOMActivityLogger* m_activityLogger;
-
-  V8GlobalValueMap<String, v8::Value, v8::kNotWeak> m_compiledPrivateScript;
 };
 
 }  // namespace blink

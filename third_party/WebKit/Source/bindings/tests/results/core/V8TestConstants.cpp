@@ -55,12 +55,12 @@ static_assert(
 namespace TestConstantsV8Internal {
 
 void DEPRECATED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::Constant);
+  Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::Constant);
   v8SetReturnValueInt(info, 1);
 }
 
 void MEASURED_CONSTANTConstantGetterCallback(v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::Constant);
+  UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::Constant);
   v8SetReturnValueInt(info, 1);
 }
 

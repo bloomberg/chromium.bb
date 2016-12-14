@@ -91,7 +91,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
   if (deprecatedCreateMemberValue.IsEmpty() || deprecatedCreateMemberValue->IsUndefined()) {
     // Do nothing.
   } else {
-    Deprecation::countDeprecationIfNotPrivateScript(isolate, currentExecutionContext(isolate), UseCounter::CreateMember);
+    Deprecation::countDeprecation(currentExecutionContext(isolate), UseCounter::CreateMember);
     bool deprecatedCreateMember = toBoolean(isolate, deprecatedCreateMemberValue, exceptionState);
     if (exceptionState.hadException())
       return;

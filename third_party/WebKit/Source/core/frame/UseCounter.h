@@ -1397,12 +1397,6 @@ class CORE_EXPORT UseCounter {
   static void count(const Frame*, Feature);
   static void count(const Document&, Feature);
   static void count(ExecutionContext*, Feature);
-  // Use countIfNotPrivateScript() instead of count() if you don't want
-  // to count metrics in private scripts. You should use
-  // countIfNotPrivateScript() in a binding layer.
-  static void countIfNotPrivateScript(v8::Isolate*, const Frame*, Feature);
-  static void countIfNotPrivateScript(v8::Isolate*, const Document&, Feature);
-  static void countIfNotPrivateScript(v8::Isolate*, ExecutionContext*, Feature);
 
   void count(CSSParserMode, CSSPropertyID);
   void count(Feature);

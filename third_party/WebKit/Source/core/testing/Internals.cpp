@@ -121,7 +121,6 @@
 #include "core/testing/LayerRectList.h"
 #include "core/testing/MockHyphenation.h"
 #include "core/testing/OriginTrialsTest.h"
-#include "core/testing/PrivateScriptTest.h"
 #include "core/testing/TypeConversions.h"
 #include "core/testing/UnionTypesTest.h"
 #include "core/workers/WorkerThread.h"
@@ -2285,13 +2284,6 @@ void Internals::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(
 
 TypeConversions* Internals::typeConversions() const {
   return TypeConversions::create();
-}
-
-PrivateScriptTest* Internals::privateScriptTest() const {
-  if (!frame())
-    return nullptr;
-
-  return PrivateScriptTest::create(frame()->document());
 }
 
 DictionaryTest* Internals::dictionaryTest() const {

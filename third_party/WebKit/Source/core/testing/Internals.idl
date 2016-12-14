@@ -231,11 +231,6 @@
 
     TypeConversions typeConversions();
 
-    // This is enabled only in Debug builds.
-    // This is because we want to avoid putting the byte stream of testing private scripts
-    // into the binary of Release builds.
-    PrivateScriptTest privateScriptTest();
-
     sequence<DOMString> getReferencedFilePaths();
 
     // These functions both reset the tracked repaint rects. They are intended to be used in the following order:

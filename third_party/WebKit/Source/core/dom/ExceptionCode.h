@@ -28,8 +28,7 @@ namespace blink {
 // an exception of any type can be expressed with a single integer.
 typedef int ExceptionCode;
 
-// This list must be in sync with the |domExceptions| in PrivateScriptRunner.js
-// and |coreExceptions| in DOMExceptions.cpp.
+// This list must be in sync with |coreExceptions| in DOMExceptions.cpp.
 // Some of these are considered historical since they have been
 // changed or removed from the specifications.
 enum {

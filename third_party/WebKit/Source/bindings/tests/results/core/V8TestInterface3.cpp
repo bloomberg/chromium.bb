@@ -260,12 +260,12 @@ void V8TestInterface3::visitDOMWrapper(v8::Isolate* isolate, ScriptWrappable* sc
 }
 
 const V8DOMConfiguration::AccessorConfiguration V8TestInterface3Accessors[] = {
-    {"readonlyStringifierAttribute", TestInterface3V8Internal::readonlyStringifierAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"readonlyStringifierAttribute", TestInterface3V8Internal::readonlyStringifierAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestInterface3Methods[] = {
-    {"voidMethodDocument", TestInterface3V8Internal::voidMethodDocumentMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"toString", TestInterface3V8Internal::toStringMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDocument", TestInterface3V8Internal::voidMethodDocumentMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"toString", TestInterface3V8Internal::toStringMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 static void installV8TestInterface3Template(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
@@ -291,24 +291,24 @@ static void installV8TestInterface3Template(v8::Isolate* isolate, const DOMWrapp
 
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
       // Iterator (@@iterator)
-      const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterface3V8Internal::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype };
+      const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestInterface3V8Internal::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::OnPrototype };
       V8DOMConfiguration::installMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
   }
 
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration keysMethodConfiguration = {"keys", TestInterface3V8Internal::keysMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+      const V8DOMConfiguration::MethodConfiguration keysMethodConfiguration = {"keys", TestInterface3V8Internal::keysMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, keysMethodConfiguration);
   }
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration valuesMethodConfiguration = {"values", TestInterface3V8Internal::valuesMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+      const V8DOMConfiguration::MethodConfiguration valuesMethodConfiguration = {"values", TestInterface3V8Internal::valuesMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, valuesMethodConfiguration);
   }
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration entriesMethodConfiguration = {"entries", TestInterface3V8Internal::entriesMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+      const V8DOMConfiguration::MethodConfiguration entriesMethodConfiguration = {"entries", TestInterface3V8Internal::entriesMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, entriesMethodConfiguration);
   }
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration forEachMethodConfiguration = {"forEach", TestInterface3V8Internal::forEachMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+      const V8DOMConfiguration::MethodConfiguration forEachMethodConfiguration = {"forEach", TestInterface3V8Internal::forEachMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, forEachMethodConfiguration);
   }
 }

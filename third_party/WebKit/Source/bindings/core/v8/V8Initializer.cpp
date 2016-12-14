@@ -162,19 +162,7 @@ void V8Initializer::messageHandlerInMainThread(v8::Local<v8::Message> message,
     }
   }
 
-  if (scriptState->world().isPrivateScriptIsolatedWorld()) {
-    // We allow a private script to dispatch error events even in a
-    // EventDispatchForbiddenScope scope.  Without having this ability, it's
-    // hard to debug the private script because syntax errors in the private
-    // script are not reported to console (the private script just crashes
-    // silently).  Allowing error events in private scripts is safe because
-    // error events don't propagate to other isolated worlds (which means that
-    // the error events won't fire any event listeners in user's scripts).
-    EventDispatchForbiddenScope::AllowUserAgentEvents allowUserAgentEvents;
-    context->dispatchErrorEvent(event, accessControlStatus);
-  } else {
-    context->dispatchErrorEvent(event, accessControlStatus);
-  }
+  context->dispatchErrorEvent(event, accessControlStatus);
 }
 
 namespace {

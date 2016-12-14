@@ -163,17 +163,15 @@ void invokeOnScriptableObject(const v8::FunctionCallbackInfo<v8::Value>& info) {
 void V8HTMLEmbedElement::legacyCallCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   invokeOnScriptableObject<V8HTMLEmbedElement>(info);
-  Deprecation::countDeprecationIfNotPrivateScript(
-      info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-      UseCounter::HTMLEmbedElementLegacyCall);
+  Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()),
+                                UseCounter::HTMLEmbedElementLegacyCall);
 }
 
 void V8HTMLObjectElement::legacyCallCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   invokeOnScriptableObject<V8HTMLObjectElement>(info);
-  Deprecation::countDeprecationIfNotPrivateScript(
-      info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-      UseCounter::HTMLObjectElementLegacyCall);
+  Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()),
+                                UseCounter::HTMLObjectElementLegacyCall);
 }
 
 }  // namespace blink

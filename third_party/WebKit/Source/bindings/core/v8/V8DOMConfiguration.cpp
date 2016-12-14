@@ -43,11 +43,6 @@ void installAttributeInternal(
     v8::Local<v8::ObjectTemplate> prototypeTemplate,
     const V8DOMConfiguration::AttributeConfiguration& attribute,
     const DOMWrapperWorld& world) {
-  if (attribute.exposeConfiguration ==
-          V8DOMConfiguration::OnlyExposedToPrivateScript &&
-      !world.isPrivateScriptIsolatedWorld())
-    return;
-
   v8::Local<v8::Name> name = v8AtomicString(isolate, attribute.name);
   v8::AccessorNameGetterCallback getter = attribute.getter;
   v8::AccessorNameSetterCallback setter = attribute.setter;
@@ -83,11 +78,6 @@ void installAttributeInternal(
     v8::Local<v8::Object> prototype,
     const V8DOMConfiguration::AttributeConfiguration& attribute,
     const DOMWrapperWorld& world) {
-  if (attribute.exposeConfiguration ==
-          V8DOMConfiguration::OnlyExposedToPrivateScript &&
-      !world.isPrivateScriptIsolatedWorld())
-    return;
-
   v8::Local<v8::Name> name = v8AtomicString(isolate, attribute.name);
 
   // This method is only being used for installing interfaces which are
@@ -125,11 +115,6 @@ void installLazyDataAttributeInternal(
     v8::Local<v8::ObjectTemplate> prototypeTemplate,
     const V8DOMConfiguration::AttributeConfiguration& attribute,
     const DOMWrapperWorld& world) {
-  if (attribute.exposeConfiguration ==
-          V8DOMConfiguration::OnlyExposedToPrivateScript &&
-      !world.isPrivateScriptIsolatedWorld())
-    return;
-
   v8::Local<v8::Name> name = v8AtomicString(isolate, attribute.name);
   v8::AccessorNameGetterCallback getter = attribute.getter;
   DCHECK(!attribute.setter);
@@ -226,11 +211,6 @@ void installAccessorInternal(
     v8::Local<v8::Signature> signature,
     const V8DOMConfiguration::AccessorConfiguration& accessor,
     const DOMWrapperWorld& world) {
-  if (accessor.exposeConfiguration ==
-          V8DOMConfiguration::OnlyExposedToPrivateScript &&
-      !world.isPrivateScriptIsolatedWorld())
-    return;
-
   v8::Local<v8::Name> name = v8AtomicString(isolate, accessor.name);
   v8::FunctionCallback getterCallback = accessor.getter;
   v8::FunctionCallback setterCallback = accessor.setter;
@@ -351,11 +331,6 @@ void installMethodInternal(v8::Isolate* isolate,
                            v8::Local<v8::Signature> signature,
                            const Configuration& method,
                            const DOMWrapperWorld& world) {
-  if (method.exposeConfiguration ==
-          V8DOMConfiguration::OnlyExposedToPrivateScript &&
-      !world.isPrivateScriptIsolatedWorld())
-    return;
-
   v8::Local<v8::Name> name = method.methodName(isolate);
   v8::FunctionCallback callback = method.callbackForWorld(world);
   // Promise-returning functions need to return a reject promise when
@@ -404,11 +379,6 @@ void installMethodInternal(
     v8::Local<v8::Signature> signature,
     const V8DOMConfiguration::MethodConfiguration& method,
     const DOMWrapperWorld& world) {
-  if (method.exposeConfiguration ==
-          V8DOMConfiguration::OnlyExposedToPrivateScript &&
-      !world.isPrivateScriptIsolatedWorld())
-    return;
-
   v8::Local<v8::Name> name = method.methodName(isolate);
   v8::FunctionCallback callback = method.callbackForWorld(world);
   // Promise-returning functions need to return a reject promise when

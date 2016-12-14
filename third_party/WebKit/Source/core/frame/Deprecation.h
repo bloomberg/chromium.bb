@@ -42,12 +42,7 @@ class CORE_EXPORT Deprecation {
   static void countDeprecation(const LocalFrame*, UseCounter::Feature);
   static void countDeprecation(ExecutionContext*, UseCounter::Feature);
   static void countDeprecation(const Document&, UseCounter::Feature);
-  // Use countDeprecationIfNotPrivateScript() instead of countDeprecation()
-  // if you don't want to count metrics in private scripts. You should use
-  // countDeprecationIfNotPrivateScript() in a binding layer.
-  static void countDeprecationIfNotPrivateScript(v8::Isolate*,
-                                                 ExecutionContext*,
-                                                 UseCounter::Feature);
+
   // Count only features if they're being used in an iframe which does not
   // have script access into the top level document.
   static void countDeprecationCrossOriginIframe(const LocalFrame*,

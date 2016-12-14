@@ -196,8 +196,7 @@ void V8Window::postMessageMethodCustom(
   LocalDOMWindow* source = currentDOMWindow(info.GetIsolate());
 
   ASSERT(window);
-  UseCounter::countIfNotPrivateScript(info.GetIsolate(), window->frame(),
-                                      UseCounter::WindowPostMessage);
+  UseCounter::count(window->frame(), UseCounter::WindowPostMessage);
 
   // If called directly by WebCore we don't have a calling context.
   if (!source) {

@@ -276,8 +276,6 @@ source_set("testing") {
     "testing/OriginTrialsTest.cpp",
     "testing/OriginTrialsTest.h",
     "testing/OriginTrialsTestPartial.h",
-    "testing/PrivateScriptTest.cpp",
-    "testing/PrivateScriptTest.h",
     "testing/TypeConversions.h",
     "testing/UnionTypesTest.cpp",
     "testing/UnionTypesTest.h",
@@ -698,47 +696,6 @@ make_qualified_names("make_core_generated_xml_names") {
 
 # One-off scripts --------------------------------------------------------------
 
-# FIXME: The implementation of Blink-in-JS is not yet mature.
-# You can use Blink-in-JS in your local experiment, but don't ship it.
-# crbug.com/341031
-action("make_core_generated_private_script") {
-  visibility = []  # Allow re-assignment of list.
-  visibility = [ ":*" ]
-  script = "../build/scripts/make_private_script_source.py"
-
-  inputs = [
-    "../bindings/core/v8/PrivateScriptRunner.js",
-  ]
-  outputs = [
-    "$blink_core_output_dir/PrivateScriptSources.h",
-  ]
-
-  args = rebase_path(outputs, root_build_dir)
-  args += rebase_path(inputs, root_build_dir)
-
-  deps = make_core_generated_deps
-}
-
-action("make_core_generated_private_script_for_testing") {
-  visibility = []  # Allow re-assignment of list.
-  visibility = [ ":*" ]
-  script = "../build/scripts/make_private_script_source.py"
-
-  inputs = [
-    "testing/PartialPrivateScriptTest.js",
-    "testing/PrivateScriptTest.js",
-  ]
-  outputs = [
-    "$blink_core_output_dir/PrivateScriptSourcesForTesting.h",
-  ]
-
-  args = [ "--for-testing" ]
-  args += rebase_path(outputs, root_build_dir)
-  args += rebase_path(inputs, root_build_dir)
-
-  deps = make_core_generated_deps
-}
-
 action("make_minimized_css") {
   script = "../build/scripts/minimize_css.py"
 
@@ -940,12 +897,10 @@ targets_generating_sources = [
   ":make_core_generated_xlink_names",
   ":make_core_generated_xml_names",
   ":make_core_generated_xml_ns_names",
-  ":make_core_generated_private_script",
   ":make_core_generated_html_element_type_helpers",
   ":make_core_generated_css_value_keywords",
   ":make_core_generated_media_features",
   ":make_core_generated_svg_element_type_helpers",
-  ":make_core_generated_private_script_for_testing",
 ]
 
 group("all_generators") {
@@ -1319,7 +1274,6 @@ source_set("unit_tests") {
     "svg/SVGPathParserTest.cpp",
     "svg/UnsafeSVGAttributeSanitizationTest.cpp",
     "svg/graphics/SVGImageTest.cpp",
-    "testing/PrivateScriptTestTest.cpp",
     "timing/MemoryInfoTest.cpp",
     "timing/PerformanceBaseTest.cpp",
     "timing/PerformanceObserverTest.cpp",

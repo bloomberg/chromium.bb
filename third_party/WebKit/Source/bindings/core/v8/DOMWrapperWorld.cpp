@@ -106,23 +106,6 @@ DOMWrapperWorld& DOMWrapperWorld::mainWorld() {
   return *cachedMainWorld;
 }
 
-DOMWrapperWorld& DOMWrapperWorld::privateScriptIsolatedWorld() {
-  ASSERT(isMainThread());
-  DEFINE_STATIC_LOCAL(RefPtr<DOMWrapperWorld>, cachedPrivateScriptIsolatedWorld,
-                      ());
-  if (!cachedPrivateScriptIsolatedWorld) {
-    cachedPrivateScriptIsolatedWorld = DOMWrapperWorld::create(
-        v8::Isolate::GetCurrent(), PrivateScriptIsolatedWorldId,
-        privateScriptIsolatedWorldExtensionGroup);
-    // This name must match the string in DevTools used to guard the
-    // privateScriptInspection experiment.
-    DOMWrapperWorld::setIsolatedWorldHumanReadableName(
-        PrivateScriptIsolatedWorldId, "private script");
-    isolatedWorldCount++;
-  }
-  return *cachedPrivateScriptIsolatedWorld;
-}
-
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::fromWorldId(v8::Isolate* isolate,
                                                          int worldId,
                                                          int extensionGroup) {

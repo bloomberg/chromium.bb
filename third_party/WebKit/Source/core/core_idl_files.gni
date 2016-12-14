@@ -582,7 +582,6 @@ webcore_testing_idl_files =
                     "testing/LayerRect.idl",
                     "testing/LayerRectList.idl",
                     "testing/OriginTrialsTest.idl",
-                    "testing/PrivateScriptTest.idl",
                     "testing/TypeConversions.idl",
                     "testing/UnionTypesTest.idl",
                   ],
@@ -597,11 +596,7 @@ webcore_testing_idl_with_modules_dependency_files =
                   "abspath")
 
 webcore_testing_dependency_idl_files =
-    get_path_info([
-                    "testing/OriginTrialsTestPartial.idl",
-                    "testing/PartialPrivateScriptTest.idl",
-                  ],
-                  "abspath")
+    get_path_info([ "testing/OriginTrialsTestPartial.idl" ], "abspath")
 
 generated_webcore_testing_idl_files =
     get_path_info(

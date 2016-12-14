@@ -1190,30 +1190,6 @@ void UseCounter::count(ExecutionContext* context, Feature feature) {
     toWorkerOrWorkletGlobalScope(context)->countFeature(feature);
 }
 
-void UseCounter::countIfNotPrivateScript(v8::Isolate* isolate,
-                                         const Frame* frame,
-                                         Feature feature) {
-  if (DOMWrapperWorld::current(isolate).isPrivateScriptIsolatedWorld())
-    return;
-  UseCounter::count(frame, feature);
-}
-
-void UseCounter::countIfNotPrivateScript(v8::Isolate* isolate,
-                                         const Document& document,
-                                         Feature feature) {
-  if (DOMWrapperWorld::current(isolate).isPrivateScriptIsolatedWorld())
-    return;
-  UseCounter::count(document, feature);
-}
-
-void UseCounter::countIfNotPrivateScript(v8::Isolate* isolate,
-                                         ExecutionContext* context,
-                                         Feature feature) {
-  if (DOMWrapperWorld::current(isolate).isPrivateScriptIsolatedWorld())
-    return;
-  UseCounter::count(context, feature);
-}
-
 void UseCounter::countCrossOriginIframe(const Document& document,
                                         Feature feature) {
   LocalFrame* frame = document.frame();

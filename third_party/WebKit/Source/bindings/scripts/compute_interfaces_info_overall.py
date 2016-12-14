@@ -260,12 +260,10 @@ def compute_interfaces_info_overall(info_individuals):
         # However, they are needed for legacy implemented interfaces that
         # are being treated as partial interfaces, until we remove these.
         # http://crbug.com/360435
-        implemented_interfaces_include_paths = []
-        for implemented_interface_info in implemented_interfaces_info:
-            if (implemented_interface_info['is_legacy_treat_as_partial_interface'] and
-                implemented_interface_info['include_path']):
-                implemented_interfaces_include_paths.append(
-                    implemented_interface_info['include_path'])
+        implemented_interfaces_include_paths = [
+            implemented_interface_info['include_path']
+            for implemented_interface_info in implemented_interfaces_info
+            if implemented_interface_info['is_legacy_treat_as_partial_interface']]
 
         dependencies_full_paths = implemented_interfaces_full_paths
         dependencies_include_paths = implemented_interfaces_include_paths

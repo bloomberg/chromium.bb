@@ -157,11 +157,11 @@ void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackIn
 } // namespace TestIntegerIndexedGlobalV8Internal
 
 const V8DOMConfiguration::AccessorConfiguration V8TestIntegerIndexedGlobalAccessors[] = {
-    {"length", TestIntegerIndexedGlobalV8Internal::lengthAttributeGetterCallback, TestIntegerIndexedGlobalV8Internal::lengthAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+    {"length", TestIntegerIndexedGlobalV8Internal::lengthAttributeGetterCallback, TestIntegerIndexedGlobalV8Internal::lengthAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestIntegerIndexedGlobalMethods[] = {
-    {"voidMethodDocument", TestIntegerIndexedGlobalV8Internal::voidMethodDocumentMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDocument", TestIntegerIndexedGlobalV8Internal::voidMethodDocumentMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
 };
 
 static void installV8TestIntegerIndexedGlobalTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {

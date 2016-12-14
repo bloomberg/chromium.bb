@@ -544,22 +544,5 @@ interface TestObject {
     attribute TestInterfaceGarbageCollected testInterfaceGarbageCollectedAttribute; // [GarbageCollected]
     attribute TestInterfaceGarbageCollected? testInterfaceGarbageCollectedOrNullAttribute; // [GarbageCollected]
 
-    // Private scripts
-    [ImplementedInPrivateScript] void voidMethodImplementedInPrivateScript();
-    [ImplementedInPrivateScript] short shortMethodImplementedInPrivateScript();
-    [ImplementedInPrivateScript] short shortMethodWithShortArgumentImplementedInPrivateScript(short value);
-    [ImplementedInPrivateScript] DOMString stringMethodWithStringArgumentImplementedInPrivateScript(DOMString value);
-    [ImplementedInPrivateScript] Node nodeMethodWithNodeArgumentImplementedInPrivateScript(Node value);
-    [ImplementedInPrivateScript] Node nodeMethodWithVariousArgumentsImplementedInPrivateScript(Document document, Node node, short value1, double value2, DOMString string);
-    [ImplementedInPrivateScript] readonly attribute short readonlyShortAttribute;
-    [ImplementedInPrivateScript] attribute short shortAttribute;
-    [ImplementedInPrivateScript] attribute DOMString stringAttribute;
-    [ImplementedInPrivateScript] attribute Node nodeAttribute;
-    [OnlyExposedToPrivateScript] short methodImplementedInCPPForPrivateScriptOnly(short value1, short value2);
-    [OnlyExposedToPrivateScript] attribute DOMString attributeImplementedInCPPForPrivateScriptOnly;
-    [ImplementedInPrivateScript, OnlyExposedToPrivateScript] short methodForPrivateScriptOnly(short value1, short value2);
-    [ImplementedInPrivateScript, OnlyExposedToPrivateScript] attribute DOMString attributeForPrivateScriptOnly;
-    [ImplementedInPrivateScript] attribute TestEnum enumForPrivateScript;
-
     maplike<long, DOMStringOrDouble>;
 };

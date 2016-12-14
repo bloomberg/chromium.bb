@@ -169,15 +169,6 @@ void Deprecation::countDeprecation(const Document& document,
   Deprecation::countDeprecation(document.frame(), feature);
 }
 
-void Deprecation::countDeprecationIfNotPrivateScript(
-    v8::Isolate* isolate,
-    ExecutionContext* context,
-    UseCounter::Feature feature) {
-  if (DOMWrapperWorld::current(isolate).isPrivateScriptIsolatedWorld())
-    return;
-  Deprecation::countDeprecation(context, feature);
-}
-
 void Deprecation::countDeprecationCrossOriginIframe(
     const LocalFrame* frame,
     UseCounter::Feature feature) {

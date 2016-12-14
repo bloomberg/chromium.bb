@@ -60,7 +60,6 @@ Global=|*
 HTMLConstructor
 ImmutablePrototype
 ImplementedAs=*
-ImplementedInPrivateScript
 Iterable
 LegacyInterfaceTypeChecking
 LegacyTreatAsPartialInterface
@@ -71,10 +70,8 @@ NewObject
 Measure
 MeasureAs=*
 NamedConstructor=*
-NoImplHeader
 NoInterfaceObject
 NotEnumerable
-OnlyExposedToPrivateScript
 OriginTrialEnabled=*
 OverrideBuiltins
 PartialInterfaceImplementedAs=*

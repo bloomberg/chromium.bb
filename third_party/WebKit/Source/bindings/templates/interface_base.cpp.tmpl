@@ -96,10 +96,8 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
        attribute_getter, attribute_getter_callback,
        attribute_setter, attribute_setter_callback,
        attribute_cache_property_callback,
-       attribute_getter_implemented_in_private_script,
-       attribute_setter_implemented_in_private_script
        with context %}
-{% for attribute in attributes if attribute.should_be_exposed_to_script %}
+{% for attribute in attributes %}
 {% if attribute.is_cached_accessor %}
 {{attribute_cache_property_callback(attribute)}}
 {% endif %}
@@ -124,10 +122,10 @@ static void (*{{method.name}}MethodForPartialInterface)(const v8::FunctionCallba
 {# Methods #}
 {% from 'methods.cpp.tmpl' import generate_method, overload_resolution_method,
        method_callback, origin_safe_method_getter, generate_constructor,
-       method_implemented_in_private_script, generate_post_message_impl,
-       runtime_determined_length_method, runtime_determined_maxarg_method
+       generate_post_message_impl, runtime_determined_length_method,
+       runtime_determined_maxarg_method
        with context %}
-{% for method in methods if method.should_be_exposed_to_script %}
+{% for method in methods %}
 {% for world_suffix in method.world_suffixes %}
 {% if not method.is_custom and not method.is_post_message and method.visible %}
 {{generate_method(method, world_suffix)}}
@@ -488,7 +486,7 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   {% filter exposed(iterator_method.exposed_test) %}
   {% filter runtime_enabled(iterator_method.runtime_enabled_function) %}
   // Iterator (@@iterator)
-  const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class_or_partial}}V8Internal::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype };
+  const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class_or_partial}}V8Internal::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::OnPrototype };
   V8DOMConfiguration::installMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
   {% endfilter %}
   {% endfilter %}
@@ -590,15 +588,6 @@ void {{v8_class_or_partial}}::install{{origin_trial_feature.name}}(ScriptState* 
 {##############################################################################}
 {% block prepare_prototype_and_interface_object %}{% endblock %}
 {##############################################################################}
-{% for method in methods if method.is_implemented_in_private_script and method.visible %}
-{{method_implemented_in_private_script(method)}}
-{% endfor %}
-{% for attribute in attributes if attribute.is_implemented_in_private_script %}
-{{attribute_getter_implemented_in_private_script(attribute)}}
-{% if attribute.has_setter %}
-{{attribute_setter_implemented_in_private_script(attribute)}}
-{% endif %}
-{% endfor %}
 {% block partial_interface %}{% endblock %}
 }  // namespace blink
 

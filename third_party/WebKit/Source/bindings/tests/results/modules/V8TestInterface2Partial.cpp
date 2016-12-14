@@ -69,7 +69,7 @@ void voidMethodPartial2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>&
 } // namespace TestInterface2PartialV8Internal
 
 const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {
-    {"voidMethodPartial2", TestInterface2PartialV8Internal::voidMethodPartial2MethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodPartial2", TestInterface2PartialV8Internal::voidMethodPartial2MethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 void V8TestInterface2Partial::installV8TestInterface2Template(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
@@ -86,7 +86,7 @@ void V8TestInterface2Partial::installV8TestInterface2Template(v8::Isolate* isola
   V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface2Methods, WTF_ARRAY_LENGTH(V8TestInterface2Methods));
 
   if (RuntimeEnabledFeatures::interface2PartialFeatureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration voidMethodPartial1MethodConfiguration = {"voidMethodPartial1", TestInterface2PartialV8Internal::voidMethodPartial1MethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+      const V8DOMConfiguration::MethodConfiguration voidMethodPartial1MethodConfiguration = {"voidMethodPartial1", TestInterface2PartialV8Internal::voidMethodPartial1MethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, voidMethodPartial1MethodConfiguration);
   }
 }

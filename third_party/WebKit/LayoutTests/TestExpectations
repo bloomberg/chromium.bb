@@ -1204,8 +1204,6 @@ crbug.com/555703 [ Linux Mac Win ] virtual/media-gpu-accelerated [ Skip ]
 
 crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ Failure ]
 
-crbug.com/390377 [ Release ] fast/dom/private_script_unittest.html [ Skip ]
-
 crbug.com/613887 http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
 crbug.com/613887 virtual/mojo-loading/http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
 crbug.com/564403 [ Win Debug ] http/tests/inspector/service-workers/service-worker-manager.html [ Failure Pass Timeout ]

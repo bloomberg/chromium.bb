@@ -93,11 +93,7 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   bool isNull = false;
   {% endif %}
 
-  {% if attribute.is_implemented_in_private_script %}
-  {{attribute.cpp_type}} result{{attribute.cpp_type_initializer}};
-  if (!{{attribute.cpp_value_original}})
-    return;
-  {% elif attribute.cpp_value_original %}
+  {% if attribute.cpp_value_original %}
   {{attribute.cpp_type}} {{attribute.cpp_value}}({{attribute.cpp_value_original}});
   {% endif %}
 
@@ -199,11 +195,11 @@ v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info
 const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %}) {
   {% if attribute.deprecate_as %}
-  Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
+  Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
   {% endif %}
 
   {% if attribute.measure_as %}
-  UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('AttributeGetter')}});
+  UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('AttributeGetter')}});
   {% endif %}
 
   {% if world_suffix in attribute.activity_logging_world_list_for_getter %}
@@ -244,11 +240,11 @@ static v8::Local<v8::Private> {{attribute.name}}CachedAccessorCallback(v8::Isola
 {% macro constructor_getter_callback(attribute, world_suffix) %}
 void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
   {% if attribute.deprecate_as %}
-  Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
+  Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
   {% endif %}
 
   {% if attribute.measure_as %}
-  UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('ConstructorGetter')}});
+  UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('ConstructorGetter')}});
   {% endif %}
 
   v8ConstructorAttributeGetter(property, info);
@@ -381,11 +377,11 @@ const v8::FunctionCallbackInfo<v8::Value>& info
   {% endif %}
 
   {% if attribute.deprecate_as %}
-  Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
+  Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.deprecate_as}});
   {% endif %}
 
   {% if attribute.measure_as %}
-  UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('AttributeSetter')}});
+  UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::{{attribute.measure_as('AttributeSetter')}});
   {% endif %}
 
   {% if world_suffix in attribute.activity_logging_world_list_for_setter %}
@@ -424,55 +420,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
 
 {##############################################################################}
-{% macro attribute_getter_implemented_in_private_script(attribute) %}
-bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeGetter(LocalFrame* frame, {{cpp_class}}* holderImpl, {{attribute.cpp_type}}* result) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::GetterContext, "{{cpp_class}}", "{{attribute.name}}");
-  v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "{{cpp_class}}", "{{attribute.name}}", holder);
-  if (v8Value.IsEmpty())
-    return false;
-  {{v8_value_to_local_cpp_value(attribute.private_script_v8_value_to_local_cpp_value) | indent(2)}}
-  CHECK(!exceptionState.hadException());
-  *result = cppValue;
-  return true;
-}
-{% endmacro %}
-
-
-{% macro attribute_setter_implemented_in_private_script(attribute) %}
-bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* frame, {{cpp_class}}* holderImpl, {{attribute.argument_cpp_type}} cppValue) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::SetterContext, "{{cpp_class}}", "{{attribute.name}}");
-  return PrivateScriptRunner::runDOMAttributeSetter(scriptState, scriptStateInUserScript, "{{cpp_class}}", "{{attribute.name}}", holder, {{attribute.private_script_cpp_value_to_v8_value}});
-}
-{% endmacro %}
-
-
-{##############################################################################}
 {% macro attribute_configuration(attribute) %}
 {% from 'utilities.cpp.tmpl' import property_location %}
 {% if attribute.constructor_type %}
@@ -506,10 +453,6 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
 {% endif %}
 {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
                             ' | '.join(attribute.property_attributes) %}
-{% set only_exposed_to_private_script =
-       'V8DOMConfiguration::OnlyExposedToPrivateScript'
-       if attribute.only_exposed_to_private_script else
-       'V8DOMConfiguration::ExposedToAllScripts' %}
 {% set cached_accessor_callback =
        '%sV8Internal::%sCachedAccessorCallback' % (cpp_class_or_partial, attribute.name)
        if attribute.is_cached_accessor else
@@ -526,7 +469,6 @@ bool {{v8_class}}::PrivateScript::{{attribute.name}}AttributeSetter(LocalFrame* 
        wrapper_type_info,
        access_control,
        property_attribute,
-       only_exposed_to_private_script,
        property_location(attribute),
        holder_check,
    ] %}

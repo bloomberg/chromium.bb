@@ -267,20 +267,10 @@ void ScriptController::namedItemRemoved(HTMLDocument* doc,
   windowProxy(DOMWrapperWorld::mainWorld())->namedItemRemoved(doc, name);
 }
 
-static bool isInPrivateScriptIsolateWorld(v8::Isolate* isolate) {
-  v8::Local<v8::Context> context = isolate->GetCurrentContext();
-  return !context.IsEmpty() && toDOMWindow(context) &&
-         DOMWrapperWorld::current(isolate).isPrivateScriptIsolatedWorld();
-}
-
 bool ScriptController::canExecuteScripts(
     ReasonForCallingCanExecuteScripts reason) {
-  // For performance reasons, we check isInPrivateScriptIsolateWorld() only if
-  // canExecuteScripts is going to return false.
 
   if (frame()->document() && frame()->document()->isSandboxed(SandboxScripts)) {
-    if (isInPrivateScriptIsolateWorld(isolate()))
-      return true;
     // FIXME: This message should be moved off the console once a solution to
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
     if (reason == AboutToExecuteScript)
@@ -303,8 +293,7 @@ bool ScriptController::canExecuteScripts(
     return false;
   Settings* settings = frame()->settings();
   const bool allowed =
-      client->allowScript(settings && settings->scriptEnabled()) ||
-      isInPrivateScriptIsolateWorld(isolate());
+      client->allowScript(settings && settings->scriptEnabled());
   if (!allowed && reason == AboutToExecuteScript)
     client->didNotAllowScript();
   return allowed;

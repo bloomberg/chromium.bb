@@ -384,8 +384,6 @@ def interface_context(interface, interfaces):
     context.update({
         'has_origin_safe_method_setter': any(method['is_cross_origin'] and not method['is_unforgeable']
             for method in methods),
-        'has_private_script': (any(attribute['is_implemented_in_private_script'] for attribute in attributes) or
-                               any(method['is_implemented_in_private_script'] for method in methods)),
         'iterator_method': iterator_method,
         'methods': methods,
     })

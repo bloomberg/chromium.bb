@@ -15,7 +15,6 @@
 #include "bindings/core/v8/DoubleOrString.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/GeneratedCodeHelper.h"
-#include "bindings/core/v8/PrivateScriptRunner.h"
 #include "bindings/core/v8/ScriptCallStack.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -72,7 +71,6 @@
 #include "core/dom/custom/V0CustomElementProcessingStack.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/ImageBitmap.h"
-#include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLDataListOptionsCollection.h"
@@ -82,7 +80,6 @@
 #include "core/inspector/ScriptArguments.h"
 #include "core/origin_trials/OriginTrials.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/ScriptForbiddenScope.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
 
@@ -2559,13 +2556,13 @@ void checkSecurityForNodeReadonlyDocumentAttributeAttributeGetterCallback(const 
 }
 
 void testInterfaceEmptyConstructorAttributeConstructorGetterCallback(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::deprecatedTestInterfaceEmptyConstructorAttribute);
+  Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::deprecatedTestInterfaceEmptyConstructorAttribute);
 
   v8ConstructorAttributeGetter(property, info);
 }
 
 void measureAsFeatureNameTestInterfaceEmptyConstructorAttributeConstructorGetterCallback(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info) {
-  UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::FeatureName);
+  UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::FeatureName);
 
   v8ConstructorAttributeGetter(property, info);
 }
@@ -2635,7 +2632,7 @@ static void deprecatedLongAttributeAttributeGetter(const v8::FunctionCallbackInf
 }
 
 void deprecatedLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::LongAttribute);
+  Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::LongAttribute);
 
   TestObjectV8Internal::deprecatedLongAttributeAttributeGetter(info);
 }
@@ -2657,7 +2654,7 @@ static void deprecatedLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
 void deprecatedLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
-  Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::LongAttribute);
+  Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::LongAttribute);
 
   TestObjectV8Internal::deprecatedLongAttributeAttributeSetter(v8Value, info);
 }
@@ -2787,7 +2784,7 @@ static void measureAsLongAttributeAttributeGetter(const v8::FunctionCallbackInfo
 }
 
 void measureAsLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+  UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
 
   TestObjectV8Internal::measureAsLongAttributeAttributeGetter(info);
 }
@@ -2809,7 +2806,7 @@ static void measureAsLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, 
 void measureAsLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
-  UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+  UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
 
   TestObjectV8Internal::measureAsLongAttributeAttributeSetter(v8Value, info);
 }
@@ -4870,7 +4867,7 @@ static void measuredLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<
 }
 
 void measuredLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::V8TestObject_MeasuredLongAttribute_AttributeGetter);
+  UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::V8TestObject_MeasuredLongAttribute_AttributeGetter);
 
   TestObjectV8Internal::measuredLongAttributeAttributeGetter(info);
 }
@@ -4892,7 +4889,7 @@ static void measuredLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, c
 void measuredLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   v8::Local<v8::Value> v8Value = info[0];
 
-  UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::V8TestObject_MeasuredLongAttribute_AttributeSetter);
+  UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::V8TestObject_MeasuredLongAttribute_AttributeSetter);
 
   TestObjectV8Internal::measuredLongAttributeAttributeSetter(v8Value, info);
 }
@@ -5161,212 +5158,6 @@ void testInterfaceGarbageCollectedOrNullAttributeAttributeSetterCallback(const v
   v8::Local<v8::Value> v8Value = info[0];
 
   TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeSetter(v8Value, info);
-}
-
-static void readonlyShortAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Object> holder = info.Holder();
-
-  TestObject* impl = V8TestObject::toImpl(holder);
-
-  int result = 0;
-  if (!V8TestObject::PrivateScript::readonlyShortAttributeAttributeGetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, &result))
-    return;
-
-  v8SetReturnValueInt(info, result);
-}
-
-void readonlyShortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObjectV8Internal::readonlyShortAttributeAttributeGetter(info);
-}
-
-static void shortAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Object> holder = info.Holder();
-
-  TestObject* impl = V8TestObject::toImpl(holder);
-
-  int result = 0;
-  if (!V8TestObject::PrivateScript::shortAttributeAttributeGetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, &result))
-    return;
-
-  v8SetReturnValueInt(info, result);
-}
-
-void shortAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObjectV8Internal::shortAttributeAttributeGetter(info);
-}
-
-static void shortAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Object> holder = info.Holder();
-  TestObject* impl = V8TestObject::toImpl(holder);
-
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "shortAttribute");
-
-  // Prepare the value to be set.
-  int cppValue = toInt16(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-  if (exceptionState.hadException())
-    return;
-
-  V8TestObject::PrivateScript::shortAttributeAttributeSetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, cppValue);
-}
-
-void shortAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Value> v8Value = info[0];
-
-  TestObjectV8Internal::shortAttributeAttributeSetter(v8Value, info);
-}
-
-static void stringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Object> holder = info.Holder();
-
-  TestObject* impl = V8TestObject::toImpl(holder);
-
-  String result;
-  if (!V8TestObject::PrivateScript::stringAttributeAttributeGetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, &result))
-    return;
-
-  v8SetReturnValueString(info, result, info.GetIsolate());
-}
-
-void stringAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObjectV8Internal::stringAttributeAttributeGetter(info);
-}
-
-static void stringAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Object> holder = info.Holder();
-  TestObject* impl = V8TestObject::toImpl(holder);
-
-  // Prepare the value to be set.
-  V8StringResource<> cppValue = v8Value;
-  if (!cppValue.prepare())
-    return;
-
-  V8TestObject::PrivateScript::stringAttributeAttributeSetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, cppValue);
-}
-
-void stringAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Value> v8Value = info[0];
-
-  TestObjectV8Internal::stringAttributeAttributeSetter(v8Value, info);
-}
-
-static void nodeAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Object> holder = info.Holder();
-
-  TestObject* impl = V8TestObject::toImpl(holder);
-
-  Node* result = nullptr;
-  if (!V8TestObject::PrivateScript::nodeAttributeAttributeGetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, &result))
-    return;
-
-  v8SetReturnValueFast(info, result, impl);
-}
-
-void nodeAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObjectV8Internal::nodeAttributeAttributeGetter(info);
-}
-
-static void nodeAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Object> holder = info.Holder();
-  TestObject* impl = V8TestObject::toImpl(holder);
-
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "nodeAttribute");
-
-  // Prepare the value to be set.
-  Node* cppValue = V8Node::toImplWithTypeCheck(info.GetIsolate(), v8Value);
-
-  // Type check per: http://heycam.github.io/webidl/#es-interface
-  if (!cppValue) {
-    exceptionState.throwTypeError("The provided value is not of type 'Node'.");
-    return;
-  }
-
-  V8TestObject::PrivateScript::nodeAttributeAttributeSetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, cppValue);
-}
-
-void nodeAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Value> v8Value = info[0];
-
-  TestObjectV8Internal::nodeAttributeAttributeSetter(v8Value, info);
-}
-
-static void attributeImplementedInCPPForPrivateScriptOnlyAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Object> holder = info.Holder();
-
-  TestObject* impl = V8TestObject::toImpl(holder);
-
-  v8SetReturnValueString(info, impl->attributeImplementedInCPPForPrivateScriptOnly(), info.GetIsolate());
-}
-
-void attributeImplementedInCPPForPrivateScriptOnlyAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObjectV8Internal::attributeImplementedInCPPForPrivateScriptOnlyAttributeGetter(info);
-}
-
-static void attributeImplementedInCPPForPrivateScriptOnlyAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Object> holder = info.Holder();
-  TestObject* impl = V8TestObject::toImpl(holder);
-
-  // Prepare the value to be set.
-  V8StringResource<> cppValue = v8Value;
-  if (!cppValue.prepare())
-    return;
-
-  impl->setAttributeImplementedInCPPForPrivateScriptOnly(cppValue);
-}
-
-void attributeImplementedInCPPForPrivateScriptOnlyAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Value> v8Value = info[0];
-
-  TestObjectV8Internal::attributeImplementedInCPPForPrivateScriptOnlyAttributeSetter(v8Value, info);
-}
-
-static void enumForPrivateScriptAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Object> holder = info.Holder();
-
-  TestObject* impl = V8TestObject::toImpl(holder);
-
-  String result;
-  if (!V8TestObject::PrivateScript::enumForPrivateScriptAttributeGetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, &result))
-    return;
-
-  v8SetReturnValueString(info, result, info.GetIsolate());
-}
-
-void enumForPrivateScriptAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObjectV8Internal::enumForPrivateScriptAttributeGetter(info);
-}
-
-static void enumForPrivateScriptAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Object> holder = info.Holder();
-  TestObject* impl = V8TestObject::toImpl(holder);
-
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::SetterContext, "TestObject", "enumForPrivateScript");
-
-  // Prepare the value to be set.
-  V8StringResource<> cppValue = v8Value;
-  if (!cppValue.prepare())
-    return;
-
-  // Type check per: http://heycam.github.io/webidl/#dfn-attribute-setter
-  // Returns undefined without setting the value if the value is invalid.
-  DummyExceptionStateForTesting dummyExceptionState;
-  const char* validValues[] = {
-      "",
-      "EnumValue1",
-      "EnumValue2",
-      "EnumValue3",
-  };
-  if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", dummyExceptionState)) {
-    currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, dummyExceptionState.message()));
-    return;
-  }
-
-  V8TestObject::PrivateScript::enumForPrivateScriptAttributeSetter(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, cppValue);
-}
-
-void enumForPrivateScriptAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  v8::Local<v8::Value> v8Value = info[0];
-
-  TestObjectV8Internal::enumForPrivateScriptAttributeSetter(v8Value, info);
 }
 
 static void unscopableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -9674,7 +9465,7 @@ static void deprecatedVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
 }
 
 void deprecatedVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::voidMethod);
+  Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::voidMethod);
   TestObjectV8Internal::deprecatedVoidMethodMethod(info);
 }
 
@@ -9695,7 +9486,7 @@ static void measureAsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>&
 }
 
 void measureAsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+  UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
   TestObjectV8Internal::measureAsVoidMethodMethod(info);
 }
 
@@ -9706,7 +9497,7 @@ static void measureMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 }
 
 void measureMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::V8TestObject_MeasureMethod_Method);
+  UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::V8TestObject_MeasureMethod_Method);
   TestObjectV8Internal::measureMethodMethod(info);
 }
 
@@ -9734,14 +9525,14 @@ static void measureOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Val
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::V8TestObject_MeasureOverloadedMethod_Method);
+        UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::V8TestObject_MeasureOverloadedMethod_Method);
         measureOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::V8TestObject_MeasureOverloadedMethod_Method);
+        UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::V8TestObject_MeasureOverloadedMethod_Method);
         measureOverloadedMethod2Method(info);
         return;
       }
@@ -9785,14 +9576,14 @@ static void DeprecateAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8:
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
+        Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
         DeprecateAsOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
+        Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
         DeprecateAsOverloadedMethod2Method(info);
         return;
       }
@@ -9832,7 +9623,7 @@ static void DeprecateAsSameValueOverloadedMethod2Method(const v8::FunctionCallba
 }
 
 static void DeprecateAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+  Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
 
   bool isArityError = false;
   switch (std::min(1, info.Length())) {
@@ -9887,14 +9678,14 @@ static void measureAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::V
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
+        UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
         measureAsOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
+        UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
         measureAsOverloadedMethod2Method(info);
         return;
       }
@@ -9938,14 +9729,14 @@ static void measureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackI
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+        UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
         measureAsSameValueOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+        UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
         measureAsSameValueOverloadedMethod2Method(info);
         return;
       }
@@ -9989,16 +9780,16 @@ static void deprecateAsMeasureAsSameValueOverloadedMethodMethod(const v8::Functi
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
-        Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
+        UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+        Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
         deprecateAsMeasureAsSameValueOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
-        Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
+        UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+        Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
         deprecateAsMeasureAsSameValueOverloadedMethod2Method(info);
         return;
       }
@@ -10038,20 +9829,20 @@ static void deprecateAsSameValueMeasureAsOverloadedMethod2Method(const v8::Funct
 }
 
 static void deprecateAsSameValueMeasureAsOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
+  Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeature);
 
   bool isArityError = false;
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
+        UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
         deprecateAsSameValueMeasureAsOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
+        UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
         deprecateAsSameValueMeasureAsOverloadedMethod2Method(info);
         return;
       }
@@ -10091,20 +9882,20 @@ static void deprecateAsSameValueMeasureAsSameValueOverloadedMethod2Method(const 
 }
 
 static void deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  Deprecation::countDeprecationIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
+  Deprecation::countDeprecation(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureA);
 
   bool isArityError = false;
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
+        UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
         deprecateAsSameValueMeasureAsSameValueOverloadedMethod1Method(info);
         return;
       }
       break;
     case 1:
       if (true) {
-        UseCounter::countIfNotPrivateScript(info.GetIsolate(), currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
+        UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::TestFeatureB);
         deprecateAsSameValueMeasureAsSameValueOverloadedMethod2Method(info);
         return;
       }
@@ -10972,181 +10763,6 @@ void serializerMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& i
   TestObjectV8Internal::serializerMethodMethod(info);
 }
 
-static void voidMethodImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObject* impl = V8TestObject::toImpl(info.Holder());
-
-  V8TestObject::PrivateScript::voidMethodImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl);
-}
-
-void voidMethodImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObjectV8Internal::voidMethodImplementedInPrivateScriptMethod(info);
-}
-
-static void shortMethodImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObject* impl = V8TestObject::toImpl(info.Holder());
-
-  int result = 0;
-  if (!V8TestObject::PrivateScript::shortMethodImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, &result))
-    return;
-  v8SetReturnValueInt(info, result);
-}
-
-void shortMethodImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObjectV8Internal::shortMethodImplementedInPrivateScriptMethod(info);
-}
-
-static void shortMethodWithShortArgumentImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "shortMethodWithShortArgumentImplementedInPrivateScript");
-
-  TestObject* impl = V8TestObject::toImpl(info.Holder());
-
-  if (UNLIKELY(info.Length() < 1)) {
-    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
-    return;
-  }
-
-  int value;
-  value = toInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-  if (exceptionState.hadException())
-    return;
-
-  int result = 0;
-  if (!V8TestObject::PrivateScript::shortMethodWithShortArgumentImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, value, &result))
-    return;
-  v8SetReturnValueInt(info, result);
-}
-
-void shortMethodWithShortArgumentImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObjectV8Internal::shortMethodWithShortArgumentImplementedInPrivateScriptMethod(info);
-}
-
-static void stringMethodWithStringArgumentImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObject* impl = V8TestObject::toImpl(info.Holder());
-
-  if (UNLIKELY(info.Length() < 1)) {
-    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("stringMethodWithStringArgumentImplementedInPrivateScript", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
-    return;
-  }
-
-  V8StringResource<> value;
-  value = info[0];
-  if (!value.prepare())
-    return;
-
-  String result;
-  if (!V8TestObject::PrivateScript::stringMethodWithStringArgumentImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, value, &result))
-    return;
-  v8SetReturnValueString(info, result, info.GetIsolate());
-}
-
-void stringMethodWithStringArgumentImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObjectV8Internal::stringMethodWithStringArgumentImplementedInPrivateScriptMethod(info);
-}
-
-static void nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObject* impl = V8TestObject::toImpl(info.Holder());
-
-  if (UNLIKELY(info.Length() < 1)) {
-    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("nodeMethodWithNodeArgumentImplementedInPrivateScript", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())));
-    return;
-  }
-
-  Node* value;
-  value = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-  if (!value) {
-    V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("nodeMethodWithNodeArgumentImplementedInPrivateScript", "TestObject", "parameter 1 is not of type 'Node'."));
-
-    return;
-  }
-
-  Node* result = nullptr;
-  if (!V8TestObject::PrivateScript::nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, value, &result))
-    return;
-  v8SetReturnValue(info, result);
-}
-
-void nodeMethodWithNodeArgumentImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObjectV8Internal::nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(info);
-}
-
-static void nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "nodeMethodWithVariousArgumentsImplementedInPrivateScript");
-
-  TestObject* impl = V8TestObject::toImpl(info.Holder());
-
-  if (UNLIKELY(info.Length() < 5)) {
-    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(5, info.Length()));
-    return;
-  }
-
-  Document* document;
-  Node* node;
-  int value1;
-  double value2;
-  V8StringResource<> string;
-  document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-  if (!document) {
-    exceptionState.throwTypeError("parameter 1 is not of type 'Document'.");
-
-    return;
-  }
-
-  node = V8Node::toImplWithTypeCheck(info.GetIsolate(), info[1]);
-  if (!node) {
-    exceptionState.throwTypeError("parameter 2 is not of type 'Node'.");
-
-    return;
-  }
-
-  value1 = toInt16(info.GetIsolate(), info[2], NormalConversion, exceptionState);
-  if (exceptionState.hadException())
-    return;
-
-  value2 = toRestrictedDouble(info.GetIsolate(), info[3], exceptionState);
-  if (exceptionState.hadException())
-    return;
-
-  string = info[4];
-  if (!string.prepare())
-    return;
-
-  Node* result = nullptr;
-  if (!V8TestObject::PrivateScript::nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(toLocalFrame(toFrameIfNotDetached(info.GetIsolate()->GetCurrentContext())), impl, document, node, value1, value2, string, &result))
-    return;
-  v8SetReturnValue(info, result);
-}
-
-void nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObjectV8Internal::nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(info);
-}
-
-static void methodImplementedInCPPForPrivateScriptOnlyMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "methodImplementedInCPPForPrivateScriptOnly");
-
-  TestObject* impl = V8TestObject::toImpl(info.Holder());
-
-  if (UNLIKELY(info.Length() < 2)) {
-    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(2, info.Length()));
-    return;
-  }
-
-  int value1;
-  int value2;
-  value1 = toInt16(info.GetIsolate(), info[0], NormalConversion, exceptionState);
-  if (exceptionState.hadException())
-    return;
-
-  value2 = toInt16(info.GetIsolate(), info[1], NormalConversion, exceptionState);
-  if (exceptionState.hadException())
-    return;
-
-  v8SetReturnValueInt(info, impl->methodImplementedInCPPForPrivateScriptOnly(value1, value2));
-}
-
-void methodImplementedInCPPForPrivateScriptOnlyMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
-  TestObjectV8Internal::methodImplementedInCPPForPrivateScriptOnlyMethod(info);
-}
-
 static void keysMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "keys");
 
@@ -11565,8 +11181,8 @@ void indexedPropertyDeleterCallback(uint32_t index, const v8::PropertyCallbackIn
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
 const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[] = {
-    {"testInterfaceEmptyConstructorAttribute", TestObjectV8Internal::testInterfaceEmptyConstructorAttributeConstructorGetterCallback, 0, 0, 0, nullptr, const_cast<WrapperTypeInfo*>(&V8TestInterfaceEmpty::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
-    {"measureAsFeatureNameTestInterfaceEmptyConstructorAttribute", TestObjectV8Internal::measureAsFeatureNameTestInterfaceEmptyConstructorAttributeConstructorGetterCallback, 0, 0, 0, nullptr, const_cast<WrapperTypeInfo*>(&V8TestInterfaceEmpty::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+    {"testInterfaceEmptyConstructorAttribute", TestObjectV8Internal::testInterfaceEmptyConstructorAttributeConstructorGetterCallback, 0, 0, 0, nullptr, const_cast<WrapperTypeInfo*>(&V8TestInterfaceEmpty::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+    {"measureAsFeatureNameTestInterfaceEmptyConstructorAttribute", TestObjectV8Internal::measureAsFeatureNameTestInterfaceEmptyConstructorAttributeConstructorGetterCallback, 0, 0, 0, nullptr, const_cast<WrapperTypeInfo*>(&V8TestInterfaceEmpty::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
 };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
@@ -11579,400 +11195,387 @@ const V8DOMConfiguration::AttributeConfiguration V8TestObjectAttributes[] = {
 #pragma clang diagnostic ignored "-Wglobal-constructors"
 #endif
 const V8DOMConfiguration::AttributeConfiguration V8TestObjectLazyDataAttributes[] = {
-    {"testInterfaceEmptyConstructorAttribute", v8ConstructorAttributeGetter, 0, 0, 0, nullptr, const_cast<WrapperTypeInfo*>(&V8TestInterfaceEmpty::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+    {"testInterfaceEmptyConstructorAttribute", v8ConstructorAttributeGetter, 0, 0, 0, nullptr, const_cast<WrapperTypeInfo*>(&V8TestInterfaceEmpty::wrapperTypeInfo), static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
 };
 #if defined(COMPONENT_BUILD) && defined(WIN32) && COMPILER(CLANG)
 #pragma clang diagnostic pop
 #endif
 
 const V8DOMConfiguration::AccessorConfiguration V8TestObjectAccessors[] = {
-    {"stringifierAttribute", TestObjectV8Internal::stringifierAttributeAttributeGetterCallback, TestObjectV8Internal::stringifierAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"readonlyStringAttribute", TestObjectV8Internal::readonlyStringAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"readonlyTestInterfaceEmptyAttribute", TestObjectV8Internal::readonlyTestInterfaceEmptyAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"readonlyLongAttribute", TestObjectV8Internal::readonlyLongAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"dateAttribute", TestObjectV8Internal::dateAttributeAttributeGetterCallback, TestObjectV8Internal::dateAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"stringAttribute", TestObjectV8Internal::stringAttributeAttributeGetterCallback, TestObjectV8Internal::stringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"byteStringAttribute", TestObjectV8Internal::byteStringAttributeAttributeGetterCallback, TestObjectV8Internal::byteStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"usvStringAttribute", TestObjectV8Internal::usvStringAttributeAttributeGetterCallback, TestObjectV8Internal::usvStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"domTimeStampAttribute", TestObjectV8Internal::domTimeStampAttributeAttributeGetterCallback, TestObjectV8Internal::domTimeStampAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"booleanAttribute", TestObjectV8Internal::booleanAttributeAttributeGetterCallback, TestObjectV8Internal::booleanAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"byteAttribute", TestObjectV8Internal::byteAttributeAttributeGetterCallback, TestObjectV8Internal::byteAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"doubleAttribute", TestObjectV8Internal::doubleAttributeAttributeGetterCallback, TestObjectV8Internal::doubleAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"floatAttribute", TestObjectV8Internal::floatAttributeAttributeGetterCallback, TestObjectV8Internal::floatAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"longAttribute", TestObjectV8Internal::longAttributeAttributeGetterCallback, TestObjectV8Internal::longAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"longLongAttribute", TestObjectV8Internal::longLongAttributeAttributeGetterCallback, TestObjectV8Internal::longLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"octetAttribute", TestObjectV8Internal::octetAttributeAttributeGetterCallback, TestObjectV8Internal::octetAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"shortAttribute", TestObjectV8Internal::shortAttributeAttributeGetterCallback, TestObjectV8Internal::shortAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"unrestrictedDoubleAttribute", TestObjectV8Internal::unrestrictedDoubleAttributeAttributeGetterCallback, TestObjectV8Internal::unrestrictedDoubleAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"unrestrictedFloatAttribute", TestObjectV8Internal::unrestrictedFloatAttributeAttributeGetterCallback, TestObjectV8Internal::unrestrictedFloatAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"unsignedLongAttribute", TestObjectV8Internal::unsignedLongAttributeAttributeGetterCallback, TestObjectV8Internal::unsignedLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"unsignedLongLongAttribute", TestObjectV8Internal::unsignedLongLongAttributeAttributeGetterCallback, TestObjectV8Internal::unsignedLongLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"unsignedShortAttribute", TestObjectV8Internal::unsignedShortAttributeAttributeGetterCallback, TestObjectV8Internal::unsignedShortAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testInterfaceEmptyAttribute", TestObjectV8Internal::testInterfaceEmptyAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceEmptyAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testObjectAttribute", TestObjectV8Internal::testObjectAttributeAttributeGetterCallback, TestObjectV8Internal::testObjectAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"cssAttribute", TestObjectV8Internal::cssAttributeAttributeGetterCallback, TestObjectV8Internal::cssAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"imeAttribute", TestObjectV8Internal::imeAttributeAttributeGetterCallback, TestObjectV8Internal::imeAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"svgAttribute", TestObjectV8Internal::svgAttributeAttributeGetterCallback, TestObjectV8Internal::svgAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"xmlAttribute", TestObjectV8Internal::xmlAttributeAttributeGetterCallback, TestObjectV8Internal::xmlAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"nodeFilterAttribute", TestObjectV8Internal::nodeFilterAttributeAttributeGetterCallback, TestObjectV8Internal::nodeFilterAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"serializedScriptValueAttribute", TestObjectV8Internal::serializedScriptValueAttributeAttributeGetterCallback, TestObjectV8Internal::serializedScriptValueAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"anyAttribute", TestObjectV8Internal::anyAttributeAttributeGetterCallback, TestObjectV8Internal::anyAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"promiseAttribute", TestObjectV8Internal::promiseAttributeAttributeGetterCallback, TestObjectV8Internal::promiseAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"windowAttribute", TestObjectV8Internal::windowAttributeAttributeGetterCallback, TestObjectV8Internal::windowAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"documentAttribute", TestObjectV8Internal::documentAttributeAttributeGetterCallback, TestObjectV8Internal::documentAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"documentFragmentAttribute", TestObjectV8Internal::documentFragmentAttributeAttributeGetterCallback, TestObjectV8Internal::documentFragmentAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"documentTypeAttribute", TestObjectV8Internal::documentTypeAttributeAttributeGetterCallback, TestObjectV8Internal::documentTypeAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"elementAttribute", TestObjectV8Internal::elementAttributeAttributeGetterCallback, TestObjectV8Internal::elementAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"nodeAttribute", TestObjectV8Internal::nodeAttributeAttributeGetterCallback, TestObjectV8Internal::nodeAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"shadowRootAttribute", TestObjectV8Internal::shadowRootAttributeAttributeGetterCallback, TestObjectV8Internal::shadowRootAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"arrayBufferAttribute", TestObjectV8Internal::arrayBufferAttributeAttributeGetterCallback, TestObjectV8Internal::arrayBufferAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"float32ArrayAttribute", TestObjectV8Internal::float32ArrayAttributeAttributeGetterCallback, TestObjectV8Internal::float32ArrayAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"uint8ArrayAttribute", TestObjectV8Internal::uint8ArrayAttributeAttributeGetterCallback, TestObjectV8Internal::uint8ArrayAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"self", TestObjectV8Internal::selfAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"readonlyEventTargetAttribute", TestObjectV8Internal::readonlyEventTargetAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"readonlyEventTargetOrNullAttribute", TestObjectV8Internal::readonlyEventTargetOrNullAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"readonlyWindowAttribute", TestObjectV8Internal::readonlyWindowAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"htmlCollectionAttribute", TestObjectV8Internal::htmlCollectionAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"htmlElementAttribute", TestObjectV8Internal::htmlElementAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"stringArrayAttribute", TestObjectV8Internal::stringArrayAttributeAttributeGetterCallback, TestObjectV8Internal::stringArrayAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testInterfaceEmptyArrayAttribute", TestObjectV8Internal::testInterfaceEmptyArrayAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceEmptyArrayAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"floatArrayAttribute", TestObjectV8Internal::floatArrayAttributeAttributeGetterCallback, TestObjectV8Internal::floatArrayAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"stringFrozenArrayAttribute", TestObjectV8Internal::stringFrozenArrayAttributeAttributeGetterCallback, TestObjectV8Internal::stringFrozenArrayAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testInterfaceEmptyFrozenArrayAttribute", TestObjectV8Internal::testInterfaceEmptyFrozenArrayAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceEmptyFrozenArrayAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"stringOrNullAttribute", TestObjectV8Internal::stringOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::stringOrNullAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"longOrNullAttribute", TestObjectV8Internal::longOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::longOrNullAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testInterfaceOrNullAttribute", TestObjectV8Internal::testInterfaceOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceOrNullAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testEnumAttribute", TestObjectV8Internal::testEnumAttributeAttributeGetterCallback, TestObjectV8Internal::testEnumAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testEnumOrNullAttribute", TestObjectV8Internal::testEnumOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::testEnumOrNullAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"staticStringAttribute", TestObjectV8Internal::staticStringAttributeAttributeGetterCallback, TestObjectV8Internal::staticStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder},
-    {"staticLongAttribute", TestObjectV8Internal::staticLongAttributeAttributeGetterCallback, TestObjectV8Internal::staticLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder},
-    {"eventHandlerAttribute", TestObjectV8Internal::eventHandlerAttributeAttributeGetterCallback, TestObjectV8Internal::eventHandlerAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"doubleOrStringAttribute", TestObjectV8Internal::doubleOrStringAttributeAttributeGetterCallback, TestObjectV8Internal::doubleOrStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"doubleOrStringOrNullAttribute", TestObjectV8Internal::doubleOrStringOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::doubleOrStringOrNullAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"doubleOrNullStringAttribute", TestObjectV8Internal::doubleOrNullStringAttributeAttributeGetterCallback, TestObjectV8Internal::doubleOrNullStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"stringOrStringSequenceAttribute", TestObjectV8Internal::stringOrStringSequenceAttributeAttributeGetterCallback, TestObjectV8Internal::stringOrStringSequenceAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testEnumOrDoubleAttribute", TestObjectV8Internal::testEnumOrDoubleAttributeAttributeGetterCallback, TestObjectV8Internal::testEnumOrDoubleAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"unrestrictedDoubleOrStringAttribute", TestObjectV8Internal::unrestrictedDoubleOrStringAttributeAttributeGetterCallback, TestObjectV8Internal::unrestrictedDoubleOrStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"activityLoggingAccessForAllWorldsLongAttribute", TestObjectV8Internal::activityLoggingAccessForAllWorldsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingAccessForAllWorldsLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"activityLoggingGetterForAllWorldsLongAttribute", TestObjectV8Internal::activityLoggingGetterForAllWorldsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingGetterForAllWorldsLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"activityLoggingSetterForAllWorldsLongAttribute", TestObjectV8Internal::activityLoggingSetterForAllWorldsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingSetterForAllWorldsLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"cachedAttributeAnyAttribute", TestObjectV8Internal::cachedAttributeAnyAttributeAttributeGetterCallback, TestObjectV8Internal::cachedAttributeAnyAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"cachedArrayAttribute", TestObjectV8Internal::cachedArrayAttributeAttributeGetterCallback, TestObjectV8Internal::cachedArrayAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"cachedStringOrNoneAttribute", TestObjectV8Internal::cachedStringOrNoneAttributeAttributeGetterCallback, TestObjectV8Internal::cachedStringOrNoneAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"callWithExecutionContextAnyAttribute", TestObjectV8Internal::callWithExecutionContextAnyAttributeAttributeGetterCallback, TestObjectV8Internal::callWithExecutionContextAnyAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"callWithScriptStateAnyAttribute", TestObjectV8Internal::callWithScriptStateAnyAttributeAttributeGetterCallback, TestObjectV8Internal::callWithScriptStateAnyAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"callWithExecutionContextAndScriptStateAnyAttribute", TestObjectV8Internal::callWithExecutionContextAndScriptStateAnyAttributeAttributeGetterCallback, TestObjectV8Internal::callWithExecutionContextAndScriptStateAnyAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"checkSecurityForNodeReadonlyDocumentAttribute", TestObjectV8Internal::checkSecurityForNodeReadonlyDocumentAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"customObjectAttribute", TestObjectV8Internal::customObjectAttributeAttributeGetterCallback, TestObjectV8Internal::customObjectAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"customGetterLongAttribute", TestObjectV8Internal::customGetterLongAttributeAttributeGetterCallback, TestObjectV8Internal::customGetterLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"customGetterReadonlyObjectAttribute", TestObjectV8Internal::customGetterReadonlyObjectAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"customSetterLongAttribute", TestObjectV8Internal::customSetterLongAttributeAttributeGetterCallback, TestObjectV8Internal::customSetterLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"deprecatedLongAttribute", TestObjectV8Internal::deprecatedLongAttributeAttributeGetterCallback, TestObjectV8Internal::deprecatedLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"enforceRangeLongAttribute", TestObjectV8Internal::enforceRangeLongAttributeAttributeGetterCallback, TestObjectV8Internal::enforceRangeLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"implementedAsLongAttribute", TestObjectV8Internal::implementedAsLongAttributeAttributeGetterCallback, TestObjectV8Internal::implementedAsLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"customImplementedAsLongAttribute", TestObjectV8Internal::customImplementedAsLongAttributeAttributeGetterCallback, TestObjectV8Internal::customImplementedAsLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"customGetterImplementedAsLongAttribute", TestObjectV8Internal::customGetterImplementedAsLongAttributeAttributeGetterCallback, TestObjectV8Internal::customGetterImplementedAsLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"customSetterImplementedAsLongAttribute", TestObjectV8Internal::customSetterImplementedAsLongAttributeAttributeGetterCallback, TestObjectV8Internal::customSetterImplementedAsLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"measureAsLongAttribute", TestObjectV8Internal::measureAsLongAttributeAttributeGetterCallback, TestObjectV8Internal::measureAsLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"notEnumerableLongAttribute", TestObjectV8Internal::notEnumerableLongAttributeAttributeGetterCallback, TestObjectV8Internal::notEnumerableLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"perWorldBindingsReadonlyTestInterfaceEmptyAttribute", TestObjectV8Internal::perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterCallback, 0, TestObjectV8Internal::perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterCallbackForMainWorld, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"activityLoggingAccessPerWorldBindingsLongAttribute", TestObjectV8Internal::activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterCallback, TestObjectV8Internal::activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld, TestObjectV8Internal::activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute", TestObjectV8Internal::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallback, TestObjectV8Internal::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld, TestObjectV8Internal::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"activityLoggingGetterPerWorldBindingsLongAttribute", TestObjectV8Internal::activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetterCallback, TestObjectV8Internal::activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld, TestObjectV8Internal::activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute", TestObjectV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallback, TestObjectV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld, TestObjectV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"location", TestObjectV8Internal::locationAttributeGetterCallback, TestObjectV8Internal::locationAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"locationWithException", TestObjectV8Internal::locationWithExceptionAttributeGetterCallback, TestObjectV8Internal::locationWithExceptionAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"locationWithCallWith", TestObjectV8Internal::locationWithCallWithAttributeGetterCallback, TestObjectV8Internal::locationWithCallWithAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"locationByteString", TestObjectV8Internal::locationByteStringAttributeGetterCallback, TestObjectV8Internal::locationByteStringAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"locationWithPerWorldBindings", TestObjectV8Internal::locationWithPerWorldBindingsAttributeGetterCallback, TestObjectV8Internal::locationWithPerWorldBindingsAttributeSetterCallback, TestObjectV8Internal::locationWithPerWorldBindingsAttributeGetterCallbackForMainWorld, TestObjectV8Internal::locationWithPerWorldBindingsAttributeSetterCallbackForMainWorld, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"locationLegacyInterfaceTypeChecking", TestObjectV8Internal::locationLegacyInterfaceTypeCheckingAttributeGetterCallback, TestObjectV8Internal::locationLegacyInterfaceTypeCheckingAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"locationGarbageCollected", TestObjectV8Internal::locationGarbageCollectedAttributeGetterCallback, TestObjectV8Internal::locationGarbageCollectedAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"raisesExceptionLongAttribute", TestObjectV8Internal::raisesExceptionLongAttributeAttributeGetterCallback, TestObjectV8Internal::raisesExceptionLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"raisesExceptionGetterLongAttribute", TestObjectV8Internal::raisesExceptionGetterLongAttributeAttributeGetterCallback, TestObjectV8Internal::raisesExceptionGetterLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"setterRaisesExceptionLongAttribute", TestObjectV8Internal::setterRaisesExceptionLongAttributeAttributeGetterCallback, TestObjectV8Internal::setterRaisesExceptionLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"raisesExceptionTestInterfaceEmptyAttribute", TestObjectV8Internal::raisesExceptionTestInterfaceEmptyAttributeAttributeGetterCallback, TestObjectV8Internal::raisesExceptionTestInterfaceEmptyAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"cachedAttributeRaisesExceptionGetterAnyAttribute", TestObjectV8Internal::cachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetterCallback, TestObjectV8Internal::cachedAttributeRaisesExceptionGetterAnyAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"reflectTestInterfaceAttribute", TestObjectV8Internal::reflectTestInterfaceAttributeAttributeGetterCallback, TestObjectV8Internal::reflectTestInterfaceAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"reflectReflectedNameAttributeTestAttribute", TestObjectV8Internal::reflectReflectedNameAttributeTestAttributeAttributeGetterCallback, TestObjectV8Internal::reflectReflectedNameAttributeTestAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"reflectBooleanAttribute", TestObjectV8Internal::reflectBooleanAttributeAttributeGetterCallback, TestObjectV8Internal::reflectBooleanAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"reflectLongAttribute", TestObjectV8Internal::reflectLongAttributeAttributeGetterCallback, TestObjectV8Internal::reflectLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"reflectUnsignedShortAttribute", TestObjectV8Internal::reflectUnsignedShortAttributeAttributeGetterCallback, TestObjectV8Internal::reflectUnsignedShortAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"reflectUnsignedLongAttribute", TestObjectV8Internal::reflectUnsignedLongAttributeAttributeGetterCallback, TestObjectV8Internal::reflectUnsignedLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"id", TestObjectV8Internal::idAttributeGetterCallback, TestObjectV8Internal::idAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"name", TestObjectV8Internal::nameAttributeGetterCallback, TestObjectV8Internal::nameAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"class", TestObjectV8Internal::classAttributeGetterCallback, TestObjectV8Internal::classAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"reflectedId", TestObjectV8Internal::reflectedIdAttributeGetterCallback, TestObjectV8Internal::reflectedIdAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"reflectedName", TestObjectV8Internal::reflectedNameAttributeGetterCallback, TestObjectV8Internal::reflectedNameAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"reflectedClass", TestObjectV8Internal::reflectedClassAttributeGetterCallback, TestObjectV8Internal::reflectedClassAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"limitedToOnlyOneAttribute", TestObjectV8Internal::limitedToOnlyOneAttributeAttributeGetterCallback, TestObjectV8Internal::limitedToOnlyOneAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"limitedToOnlyAttribute", TestObjectV8Internal::limitedToOnlyAttributeAttributeGetterCallback, TestObjectV8Internal::limitedToOnlyAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"limitedToOnlyOtherAttribute", TestObjectV8Internal::limitedToOnlyOtherAttributeAttributeGetterCallback, TestObjectV8Internal::limitedToOnlyOtherAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"limitedWithMissingDefaultAttribute", TestObjectV8Internal::limitedWithMissingDefaultAttributeAttributeGetterCallback, TestObjectV8Internal::limitedWithMissingDefaultAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"limitedWithInvalidMissingDefaultAttribute", TestObjectV8Internal::limitedWithInvalidMissingDefaultAttributeAttributeGetterCallback, TestObjectV8Internal::limitedWithInvalidMissingDefaultAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"corsSettingAttribute", TestObjectV8Internal::corsSettingAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"limitedWithEmptyMissingInvalidAttribute", TestObjectV8Internal::limitedWithEmptyMissingInvalidAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"replaceableReadonlyLongAttribute", TestObjectV8Internal::replaceableReadonlyLongAttributeAttributeGetterCallback, TestObjectV8Internal::replaceableReadonlyLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"locationPutForwards", TestObjectV8Internal::locationPutForwardsAttributeGetterCallback, TestObjectV8Internal::locationPutForwardsAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"setterCallWithCurrentWindowAndEnteredWindowStringAttribute", TestObjectV8Internal::setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeGetterCallback, TestObjectV8Internal::setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"setterCallWithExecutionContextStringAttribute", TestObjectV8Internal::setterCallWithExecutionContextStringAttributeAttributeGetterCallback, TestObjectV8Internal::setterCallWithExecutionContextStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"treatNullAsEmptyStringStringAttribute", TestObjectV8Internal::treatNullAsEmptyStringStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatNullAsEmptyStringStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"treatNullAsNullStringStringAttribute", TestObjectV8Internal::treatNullAsNullStringStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatNullAsNullStringStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"legacyInterfaceTypeCheckingFloatAttribute", TestObjectV8Internal::legacyInterfaceTypeCheckingFloatAttributeAttributeGetterCallback, TestObjectV8Internal::legacyInterfaceTypeCheckingFloatAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"legacyInterfaceTypeCheckingTestInterfaceAttribute", TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeGetterCallback, TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"legacyInterfaceTypeCheckingTestInterfaceOrNullAttribute", TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"urlStringAttribute", TestObjectV8Internal::urlStringAttributeAttributeGetterCallback, TestObjectV8Internal::urlStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"urlStringAttribute", TestObjectV8Internal::urlStringAttributeAttributeGetterCallback, TestObjectV8Internal::urlStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"unforgeableLongAttribute", TestObjectV8Internal::unforgeableLongAttributeAttributeGetterCallback, TestObjectV8Internal::unforgeableLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::DontDelete), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
-    {"measuredLongAttribute", TestObjectV8Internal::measuredLongAttributeAttributeGetterCallback, TestObjectV8Internal::measuredLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"sameObjectAttribute", TestObjectV8Internal::sameObjectAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"saveSameObjectAttribute", TestObjectV8Internal::saveSameObjectAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"unscopableLongAttribute", TestObjectV8Internal::unscopableLongAttributeAttributeGetterCallback, TestObjectV8Internal::unscopableLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testInterfaceAttribute", TestObjectV8Internal::testInterfaceAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testInterfaceGarbageCollectedAttribute", TestObjectV8Internal::testInterfaceGarbageCollectedAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceGarbageCollectedAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testInterfaceGarbageCollectedOrNullAttribute", TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"readonlyShortAttribute", TestObjectV8Internal::readonlyShortAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"shortAttribute", TestObjectV8Internal::shortAttributeAttributeGetterCallback, TestObjectV8Internal::shortAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"stringAttribute", TestObjectV8Internal::stringAttributeAttributeGetterCallback, TestObjectV8Internal::stringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"nodeAttribute", TestObjectV8Internal::nodeAttributeAttributeGetterCallback, TestObjectV8Internal::nodeAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"attributeImplementedInCPPForPrivateScriptOnly", TestObjectV8Internal::attributeImplementedInCPPForPrivateScriptOnlyAttributeGetterCallback, TestObjectV8Internal::attributeImplementedInCPPForPrivateScriptOnlyAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnlyExposedToPrivateScript, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"enumForPrivateScript", TestObjectV8Internal::enumForPrivateScriptAttributeGetterCallback, TestObjectV8Internal::enumForPrivateScriptAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"stringifierAttribute", TestObjectV8Internal::stringifierAttributeAttributeGetterCallback, TestObjectV8Internal::stringifierAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"readonlyStringAttribute", TestObjectV8Internal::readonlyStringAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"readonlyTestInterfaceEmptyAttribute", TestObjectV8Internal::readonlyTestInterfaceEmptyAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"readonlyLongAttribute", TestObjectV8Internal::readonlyLongAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"dateAttribute", TestObjectV8Internal::dateAttributeAttributeGetterCallback, TestObjectV8Internal::dateAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"stringAttribute", TestObjectV8Internal::stringAttributeAttributeGetterCallback, TestObjectV8Internal::stringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"byteStringAttribute", TestObjectV8Internal::byteStringAttributeAttributeGetterCallback, TestObjectV8Internal::byteStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"usvStringAttribute", TestObjectV8Internal::usvStringAttributeAttributeGetterCallback, TestObjectV8Internal::usvStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"domTimeStampAttribute", TestObjectV8Internal::domTimeStampAttributeAttributeGetterCallback, TestObjectV8Internal::domTimeStampAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"booleanAttribute", TestObjectV8Internal::booleanAttributeAttributeGetterCallback, TestObjectV8Internal::booleanAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"byteAttribute", TestObjectV8Internal::byteAttributeAttributeGetterCallback, TestObjectV8Internal::byteAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"doubleAttribute", TestObjectV8Internal::doubleAttributeAttributeGetterCallback, TestObjectV8Internal::doubleAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"floatAttribute", TestObjectV8Internal::floatAttributeAttributeGetterCallback, TestObjectV8Internal::floatAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"longAttribute", TestObjectV8Internal::longAttributeAttributeGetterCallback, TestObjectV8Internal::longAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"longLongAttribute", TestObjectV8Internal::longLongAttributeAttributeGetterCallback, TestObjectV8Internal::longLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"octetAttribute", TestObjectV8Internal::octetAttributeAttributeGetterCallback, TestObjectV8Internal::octetAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"shortAttribute", TestObjectV8Internal::shortAttributeAttributeGetterCallback, TestObjectV8Internal::shortAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"unrestrictedDoubleAttribute", TestObjectV8Internal::unrestrictedDoubleAttributeAttributeGetterCallback, TestObjectV8Internal::unrestrictedDoubleAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"unrestrictedFloatAttribute", TestObjectV8Internal::unrestrictedFloatAttributeAttributeGetterCallback, TestObjectV8Internal::unrestrictedFloatAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"unsignedLongAttribute", TestObjectV8Internal::unsignedLongAttributeAttributeGetterCallback, TestObjectV8Internal::unsignedLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"unsignedLongLongAttribute", TestObjectV8Internal::unsignedLongLongAttributeAttributeGetterCallback, TestObjectV8Internal::unsignedLongLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"unsignedShortAttribute", TestObjectV8Internal::unsignedShortAttributeAttributeGetterCallback, TestObjectV8Internal::unsignedShortAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testInterfaceEmptyAttribute", TestObjectV8Internal::testInterfaceEmptyAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceEmptyAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testObjectAttribute", TestObjectV8Internal::testObjectAttributeAttributeGetterCallback, TestObjectV8Internal::testObjectAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"cssAttribute", TestObjectV8Internal::cssAttributeAttributeGetterCallback, TestObjectV8Internal::cssAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"imeAttribute", TestObjectV8Internal::imeAttributeAttributeGetterCallback, TestObjectV8Internal::imeAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"svgAttribute", TestObjectV8Internal::svgAttributeAttributeGetterCallback, TestObjectV8Internal::svgAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"xmlAttribute", TestObjectV8Internal::xmlAttributeAttributeGetterCallback, TestObjectV8Internal::xmlAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"nodeFilterAttribute", TestObjectV8Internal::nodeFilterAttributeAttributeGetterCallback, TestObjectV8Internal::nodeFilterAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"serializedScriptValueAttribute", TestObjectV8Internal::serializedScriptValueAttributeAttributeGetterCallback, TestObjectV8Internal::serializedScriptValueAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"anyAttribute", TestObjectV8Internal::anyAttributeAttributeGetterCallback, TestObjectV8Internal::anyAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"promiseAttribute", TestObjectV8Internal::promiseAttributeAttributeGetterCallback, TestObjectV8Internal::promiseAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"windowAttribute", TestObjectV8Internal::windowAttributeAttributeGetterCallback, TestObjectV8Internal::windowAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"documentAttribute", TestObjectV8Internal::documentAttributeAttributeGetterCallback, TestObjectV8Internal::documentAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"documentFragmentAttribute", TestObjectV8Internal::documentFragmentAttributeAttributeGetterCallback, TestObjectV8Internal::documentFragmentAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"documentTypeAttribute", TestObjectV8Internal::documentTypeAttributeAttributeGetterCallback, TestObjectV8Internal::documentTypeAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"elementAttribute", TestObjectV8Internal::elementAttributeAttributeGetterCallback, TestObjectV8Internal::elementAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"nodeAttribute", TestObjectV8Internal::nodeAttributeAttributeGetterCallback, TestObjectV8Internal::nodeAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"shadowRootAttribute", TestObjectV8Internal::shadowRootAttributeAttributeGetterCallback, TestObjectV8Internal::shadowRootAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"arrayBufferAttribute", TestObjectV8Internal::arrayBufferAttributeAttributeGetterCallback, TestObjectV8Internal::arrayBufferAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"float32ArrayAttribute", TestObjectV8Internal::float32ArrayAttributeAttributeGetterCallback, TestObjectV8Internal::float32ArrayAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"uint8ArrayAttribute", TestObjectV8Internal::uint8ArrayAttributeAttributeGetterCallback, TestObjectV8Internal::uint8ArrayAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"self", TestObjectV8Internal::selfAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"readonlyEventTargetAttribute", TestObjectV8Internal::readonlyEventTargetAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"readonlyEventTargetOrNullAttribute", TestObjectV8Internal::readonlyEventTargetOrNullAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"readonlyWindowAttribute", TestObjectV8Internal::readonlyWindowAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"htmlCollectionAttribute", TestObjectV8Internal::htmlCollectionAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"htmlElementAttribute", TestObjectV8Internal::htmlElementAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"stringArrayAttribute", TestObjectV8Internal::stringArrayAttributeAttributeGetterCallback, TestObjectV8Internal::stringArrayAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testInterfaceEmptyArrayAttribute", TestObjectV8Internal::testInterfaceEmptyArrayAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceEmptyArrayAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"floatArrayAttribute", TestObjectV8Internal::floatArrayAttributeAttributeGetterCallback, TestObjectV8Internal::floatArrayAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"stringFrozenArrayAttribute", TestObjectV8Internal::stringFrozenArrayAttributeAttributeGetterCallback, TestObjectV8Internal::stringFrozenArrayAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testInterfaceEmptyFrozenArrayAttribute", TestObjectV8Internal::testInterfaceEmptyFrozenArrayAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceEmptyFrozenArrayAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"stringOrNullAttribute", TestObjectV8Internal::stringOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::stringOrNullAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"longOrNullAttribute", TestObjectV8Internal::longOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::longOrNullAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testInterfaceOrNullAttribute", TestObjectV8Internal::testInterfaceOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceOrNullAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testEnumAttribute", TestObjectV8Internal::testEnumAttributeAttributeGetterCallback, TestObjectV8Internal::testEnumAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testEnumOrNullAttribute", TestObjectV8Internal::testEnumOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::testEnumOrNullAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"staticStringAttribute", TestObjectV8Internal::staticStringAttributeAttributeGetterCallback, TestObjectV8Internal::staticStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder},
+    {"staticLongAttribute", TestObjectV8Internal::staticLongAttributeAttributeGetterCallback, TestObjectV8Internal::staticLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder},
+    {"eventHandlerAttribute", TestObjectV8Internal::eventHandlerAttributeAttributeGetterCallback, TestObjectV8Internal::eventHandlerAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"doubleOrStringAttribute", TestObjectV8Internal::doubleOrStringAttributeAttributeGetterCallback, TestObjectV8Internal::doubleOrStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"doubleOrStringOrNullAttribute", TestObjectV8Internal::doubleOrStringOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::doubleOrStringOrNullAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"doubleOrNullStringAttribute", TestObjectV8Internal::doubleOrNullStringAttributeAttributeGetterCallback, TestObjectV8Internal::doubleOrNullStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"stringOrStringSequenceAttribute", TestObjectV8Internal::stringOrStringSequenceAttributeAttributeGetterCallback, TestObjectV8Internal::stringOrStringSequenceAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testEnumOrDoubleAttribute", TestObjectV8Internal::testEnumOrDoubleAttributeAttributeGetterCallback, TestObjectV8Internal::testEnumOrDoubleAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"unrestrictedDoubleOrStringAttribute", TestObjectV8Internal::unrestrictedDoubleOrStringAttributeAttributeGetterCallback, TestObjectV8Internal::unrestrictedDoubleOrStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"activityLoggingAccessForAllWorldsLongAttribute", TestObjectV8Internal::activityLoggingAccessForAllWorldsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingAccessForAllWorldsLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"activityLoggingGetterForAllWorldsLongAttribute", TestObjectV8Internal::activityLoggingGetterForAllWorldsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingGetterForAllWorldsLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"activityLoggingSetterForAllWorldsLongAttribute", TestObjectV8Internal::activityLoggingSetterForAllWorldsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingSetterForAllWorldsLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"cachedAttributeAnyAttribute", TestObjectV8Internal::cachedAttributeAnyAttributeAttributeGetterCallback, TestObjectV8Internal::cachedAttributeAnyAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"cachedArrayAttribute", TestObjectV8Internal::cachedArrayAttributeAttributeGetterCallback, TestObjectV8Internal::cachedArrayAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"cachedStringOrNoneAttribute", TestObjectV8Internal::cachedStringOrNoneAttributeAttributeGetterCallback, TestObjectV8Internal::cachedStringOrNoneAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"callWithExecutionContextAnyAttribute", TestObjectV8Internal::callWithExecutionContextAnyAttributeAttributeGetterCallback, TestObjectV8Internal::callWithExecutionContextAnyAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"callWithScriptStateAnyAttribute", TestObjectV8Internal::callWithScriptStateAnyAttributeAttributeGetterCallback, TestObjectV8Internal::callWithScriptStateAnyAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"callWithExecutionContextAndScriptStateAnyAttribute", TestObjectV8Internal::callWithExecutionContextAndScriptStateAnyAttributeAttributeGetterCallback, TestObjectV8Internal::callWithExecutionContextAndScriptStateAnyAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"checkSecurityForNodeReadonlyDocumentAttribute", TestObjectV8Internal::checkSecurityForNodeReadonlyDocumentAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"customObjectAttribute", TestObjectV8Internal::customObjectAttributeAttributeGetterCallback, TestObjectV8Internal::customObjectAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"customGetterLongAttribute", TestObjectV8Internal::customGetterLongAttributeAttributeGetterCallback, TestObjectV8Internal::customGetterLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"customGetterReadonlyObjectAttribute", TestObjectV8Internal::customGetterReadonlyObjectAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"customSetterLongAttribute", TestObjectV8Internal::customSetterLongAttributeAttributeGetterCallback, TestObjectV8Internal::customSetterLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"deprecatedLongAttribute", TestObjectV8Internal::deprecatedLongAttributeAttributeGetterCallback, TestObjectV8Internal::deprecatedLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"enforceRangeLongAttribute", TestObjectV8Internal::enforceRangeLongAttributeAttributeGetterCallback, TestObjectV8Internal::enforceRangeLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"implementedAsLongAttribute", TestObjectV8Internal::implementedAsLongAttributeAttributeGetterCallback, TestObjectV8Internal::implementedAsLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"customImplementedAsLongAttribute", TestObjectV8Internal::customImplementedAsLongAttributeAttributeGetterCallback, TestObjectV8Internal::customImplementedAsLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"customGetterImplementedAsLongAttribute", TestObjectV8Internal::customGetterImplementedAsLongAttributeAttributeGetterCallback, TestObjectV8Internal::customGetterImplementedAsLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"customSetterImplementedAsLongAttribute", TestObjectV8Internal::customSetterImplementedAsLongAttributeAttributeGetterCallback, TestObjectV8Internal::customSetterImplementedAsLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"measureAsLongAttribute", TestObjectV8Internal::measureAsLongAttributeAttributeGetterCallback, TestObjectV8Internal::measureAsLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"notEnumerableLongAttribute", TestObjectV8Internal::notEnumerableLongAttributeAttributeGetterCallback, TestObjectV8Internal::notEnumerableLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"perWorldBindingsReadonlyTestInterfaceEmptyAttribute", TestObjectV8Internal::perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterCallback, 0, TestObjectV8Internal::perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterCallbackForMainWorld, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"activityLoggingAccessPerWorldBindingsLongAttribute", TestObjectV8Internal::activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterCallback, TestObjectV8Internal::activityLoggingAccessPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld, TestObjectV8Internal::activityLoggingAccessPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttribute", TestObjectV8Internal::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallback, TestObjectV8Internal::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld, TestObjectV8Internal::activityLoggingAccessForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"activityLoggingGetterPerWorldBindingsLongAttribute", TestObjectV8Internal::activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetterCallback, TestObjectV8Internal::activityLoggingGetterPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld, TestObjectV8Internal::activityLoggingGetterPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttribute", TestObjectV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallback, TestObjectV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallback, TestObjectV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeGetterCallbackForMainWorld, TestObjectV8Internal::activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeAttributeSetterCallbackForMainWorld, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"location", TestObjectV8Internal::locationAttributeGetterCallback, TestObjectV8Internal::locationAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"locationWithException", TestObjectV8Internal::locationWithExceptionAttributeGetterCallback, TestObjectV8Internal::locationWithExceptionAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"locationWithCallWith", TestObjectV8Internal::locationWithCallWithAttributeGetterCallback, TestObjectV8Internal::locationWithCallWithAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"locationByteString", TestObjectV8Internal::locationByteStringAttributeGetterCallback, TestObjectV8Internal::locationByteStringAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"locationWithPerWorldBindings", TestObjectV8Internal::locationWithPerWorldBindingsAttributeGetterCallback, TestObjectV8Internal::locationWithPerWorldBindingsAttributeSetterCallback, TestObjectV8Internal::locationWithPerWorldBindingsAttributeGetterCallbackForMainWorld, TestObjectV8Internal::locationWithPerWorldBindingsAttributeSetterCallbackForMainWorld, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"locationLegacyInterfaceTypeChecking", TestObjectV8Internal::locationLegacyInterfaceTypeCheckingAttributeGetterCallback, TestObjectV8Internal::locationLegacyInterfaceTypeCheckingAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"locationGarbageCollected", TestObjectV8Internal::locationGarbageCollectedAttributeGetterCallback, TestObjectV8Internal::locationGarbageCollectedAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"raisesExceptionLongAttribute", TestObjectV8Internal::raisesExceptionLongAttributeAttributeGetterCallback, TestObjectV8Internal::raisesExceptionLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"raisesExceptionGetterLongAttribute", TestObjectV8Internal::raisesExceptionGetterLongAttributeAttributeGetterCallback, TestObjectV8Internal::raisesExceptionGetterLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"setterRaisesExceptionLongAttribute", TestObjectV8Internal::setterRaisesExceptionLongAttributeAttributeGetterCallback, TestObjectV8Internal::setterRaisesExceptionLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"raisesExceptionTestInterfaceEmptyAttribute", TestObjectV8Internal::raisesExceptionTestInterfaceEmptyAttributeAttributeGetterCallback, TestObjectV8Internal::raisesExceptionTestInterfaceEmptyAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"cachedAttributeRaisesExceptionGetterAnyAttribute", TestObjectV8Internal::cachedAttributeRaisesExceptionGetterAnyAttributeAttributeGetterCallback, TestObjectV8Internal::cachedAttributeRaisesExceptionGetterAnyAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"reflectTestInterfaceAttribute", TestObjectV8Internal::reflectTestInterfaceAttributeAttributeGetterCallback, TestObjectV8Internal::reflectTestInterfaceAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"reflectReflectedNameAttributeTestAttribute", TestObjectV8Internal::reflectReflectedNameAttributeTestAttributeAttributeGetterCallback, TestObjectV8Internal::reflectReflectedNameAttributeTestAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"reflectBooleanAttribute", TestObjectV8Internal::reflectBooleanAttributeAttributeGetterCallback, TestObjectV8Internal::reflectBooleanAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"reflectLongAttribute", TestObjectV8Internal::reflectLongAttributeAttributeGetterCallback, TestObjectV8Internal::reflectLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"reflectUnsignedShortAttribute", TestObjectV8Internal::reflectUnsignedShortAttributeAttributeGetterCallback, TestObjectV8Internal::reflectUnsignedShortAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"reflectUnsignedLongAttribute", TestObjectV8Internal::reflectUnsignedLongAttributeAttributeGetterCallback, TestObjectV8Internal::reflectUnsignedLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"id", TestObjectV8Internal::idAttributeGetterCallback, TestObjectV8Internal::idAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"name", TestObjectV8Internal::nameAttributeGetterCallback, TestObjectV8Internal::nameAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"class", TestObjectV8Internal::classAttributeGetterCallback, TestObjectV8Internal::classAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"reflectedId", TestObjectV8Internal::reflectedIdAttributeGetterCallback, TestObjectV8Internal::reflectedIdAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"reflectedName", TestObjectV8Internal::reflectedNameAttributeGetterCallback, TestObjectV8Internal::reflectedNameAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"reflectedClass", TestObjectV8Internal::reflectedClassAttributeGetterCallback, TestObjectV8Internal::reflectedClassAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"limitedToOnlyOneAttribute", TestObjectV8Internal::limitedToOnlyOneAttributeAttributeGetterCallback, TestObjectV8Internal::limitedToOnlyOneAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"limitedToOnlyAttribute", TestObjectV8Internal::limitedToOnlyAttributeAttributeGetterCallback, TestObjectV8Internal::limitedToOnlyAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"limitedToOnlyOtherAttribute", TestObjectV8Internal::limitedToOnlyOtherAttributeAttributeGetterCallback, TestObjectV8Internal::limitedToOnlyOtherAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"limitedWithMissingDefaultAttribute", TestObjectV8Internal::limitedWithMissingDefaultAttributeAttributeGetterCallback, TestObjectV8Internal::limitedWithMissingDefaultAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"limitedWithInvalidMissingDefaultAttribute", TestObjectV8Internal::limitedWithInvalidMissingDefaultAttributeAttributeGetterCallback, TestObjectV8Internal::limitedWithInvalidMissingDefaultAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"corsSettingAttribute", TestObjectV8Internal::corsSettingAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"limitedWithEmptyMissingInvalidAttribute", TestObjectV8Internal::limitedWithEmptyMissingInvalidAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"replaceableReadonlyLongAttribute", TestObjectV8Internal::replaceableReadonlyLongAttributeAttributeGetterCallback, TestObjectV8Internal::replaceableReadonlyLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"locationPutForwards", TestObjectV8Internal::locationPutForwardsAttributeGetterCallback, TestObjectV8Internal::locationPutForwardsAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"setterCallWithCurrentWindowAndEnteredWindowStringAttribute", TestObjectV8Internal::setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeGetterCallback, TestObjectV8Internal::setterCallWithCurrentWindowAndEnteredWindowStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"setterCallWithExecutionContextStringAttribute", TestObjectV8Internal::setterCallWithExecutionContextStringAttributeAttributeGetterCallback, TestObjectV8Internal::setterCallWithExecutionContextStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"treatNullAsEmptyStringStringAttribute", TestObjectV8Internal::treatNullAsEmptyStringStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatNullAsEmptyStringStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"treatNullAsNullStringStringAttribute", TestObjectV8Internal::treatNullAsNullStringStringAttributeAttributeGetterCallback, TestObjectV8Internal::treatNullAsNullStringStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"legacyInterfaceTypeCheckingFloatAttribute", TestObjectV8Internal::legacyInterfaceTypeCheckingFloatAttributeAttributeGetterCallback, TestObjectV8Internal::legacyInterfaceTypeCheckingFloatAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"legacyInterfaceTypeCheckingTestInterfaceAttribute", TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeGetterCallback, TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"legacyInterfaceTypeCheckingTestInterfaceOrNullAttribute", TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::legacyInterfaceTypeCheckingTestInterfaceOrNullAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"urlStringAttribute", TestObjectV8Internal::urlStringAttributeAttributeGetterCallback, TestObjectV8Internal::urlStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"urlStringAttribute", TestObjectV8Internal::urlStringAttributeAttributeGetterCallback, TestObjectV8Internal::urlStringAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"unforgeableLongAttribute", TestObjectV8Internal::unforgeableLongAttributeAttributeGetterCallback, TestObjectV8Internal::unforgeableLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::DontDelete), V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+    {"measuredLongAttribute", TestObjectV8Internal::measuredLongAttributeAttributeGetterCallback, TestObjectV8Internal::measuredLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"sameObjectAttribute", TestObjectV8Internal::sameObjectAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"saveSameObjectAttribute", TestObjectV8Internal::saveSameObjectAttributeAttributeGetterCallback, 0, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"unscopableLongAttribute", TestObjectV8Internal::unscopableLongAttributeAttributeGetterCallback, TestObjectV8Internal::unscopableLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testInterfaceAttribute", TestObjectV8Internal::testInterfaceAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testInterfaceGarbageCollectedAttribute", TestObjectV8Internal::testInterfaceGarbageCollectedAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceGarbageCollectedAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testInterfaceGarbageCollectedOrNullAttribute", TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeGetterCallback, TestObjectV8Internal::testInterfaceGarbageCollectedOrNullAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
-    {"unscopableVoidMethod", TestObjectV8Internal::unscopableVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethod", TestObjectV8Internal::voidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"staticVoidMethod", TestObjectV8Internal::staticVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder},
-    {"dateMethod", TestObjectV8Internal::dateMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"stringMethod", TestObjectV8Internal::stringMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"byteStringMethod", TestObjectV8Internal::byteStringMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"usvStringMethod", TestObjectV8Internal::usvStringMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"readonlyDOMTimeStampMethod", TestObjectV8Internal::readonlyDOMTimeStampMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"booleanMethod", TestObjectV8Internal::booleanMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"byteMethod", TestObjectV8Internal::byteMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"doubleMethod", TestObjectV8Internal::doubleMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"floatMethod", TestObjectV8Internal::floatMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"longMethod", TestObjectV8Internal::longMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"longLongMethod", TestObjectV8Internal::longLongMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"octetMethod", TestObjectV8Internal::octetMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"shortMethod", TestObjectV8Internal::shortMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"unsignedLongMethod", TestObjectV8Internal::unsignedLongMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"unsignedLongLongMethod", TestObjectV8Internal::unsignedLongLongMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"unsignedShortMethod", TestObjectV8Internal::unsignedShortMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDateArg", TestObjectV8Internal::voidMethodDateArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodStringArg", TestObjectV8Internal::voidMethodStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodByteStringArg", TestObjectV8Internal::voidMethodByteStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodUSVStringArg", TestObjectV8Internal::voidMethodUSVStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDOMTimeStampArg", TestObjectV8Internal::voidMethodDOMTimeStampArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodBooleanArg", TestObjectV8Internal::voidMethodBooleanArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodByteArg", TestObjectV8Internal::voidMethodByteArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDoubleArg", TestObjectV8Internal::voidMethodDoubleArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodFloatArg", TestObjectV8Internal::voidMethodFloatArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodLongArg", TestObjectV8Internal::voidMethodLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodLongLongArg", TestObjectV8Internal::voidMethodLongLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodOctetArg", TestObjectV8Internal::voidMethodOctetArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodShortArg", TestObjectV8Internal::voidMethodShortArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodUnsignedLongArg", TestObjectV8Internal::voidMethodUnsignedLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodUnsignedLongLongArg", TestObjectV8Internal::voidMethodUnsignedLongLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodUnsignedShortArg", TestObjectV8Internal::voidMethodUnsignedShortArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testInterfaceEmptyMethod", TestObjectV8Internal::testInterfaceEmptyMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodTestInterfaceEmptyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodLongArgTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodLongArgTestInterfaceEmptyArgMethodCallback, 0, 2, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"anyMethod", TestObjectV8Internal::anyMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodEventTargetArg", TestObjectV8Internal::voidMethodEventTargetArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodAnyArg", TestObjectV8Internal::voidMethodAnyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodAttrArg", TestObjectV8Internal::voidMethodAttrArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDocumentArg", TestObjectV8Internal::voidMethodDocumentArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDocumentTypeArg", TestObjectV8Internal::voidMethodDocumentTypeArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodElementArg", TestObjectV8Internal::voidMethodElementArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodNodeArg", TestObjectV8Internal::voidMethodNodeArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"arrayBufferMethod", TestObjectV8Internal::arrayBufferMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"arrayBufferViewMethod", TestObjectV8Internal::arrayBufferViewMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"float32ArrayMethod", TestObjectV8Internal::float32ArrayMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"int32ArrayMethod", TestObjectV8Internal::int32ArrayMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"uint8ArrayMethod", TestObjectV8Internal::uint8ArrayMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodArrayBufferArg", TestObjectV8Internal::voidMethodArrayBufferArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodArrayBufferOrNullArg", TestObjectV8Internal::voidMethodArrayBufferOrNullArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodArrayBufferViewArg", TestObjectV8Internal::voidMethodArrayBufferViewArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodFlexibleArrayBufferViewArg", TestObjectV8Internal::voidMethodFlexibleArrayBufferViewArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodFlexibleArrayBufferViewTypedArg", TestObjectV8Internal::voidMethodFlexibleArrayBufferViewTypedArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodFloat32ArrayArg", TestObjectV8Internal::voidMethodFloat32ArrayArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodInt32ArrayArg", TestObjectV8Internal::voidMethodInt32ArrayArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodUint8ArrayArg", TestObjectV8Internal::voidMethodUint8ArrayArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"longArrayMethod", TestObjectV8Internal::longArrayMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"stringArrayMethod", TestObjectV8Internal::stringArrayMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testInterfaceEmptyArrayMethod", TestObjectV8Internal::testInterfaceEmptyArrayMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodArrayLongArg", TestObjectV8Internal::voidMethodArrayLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodArrayStringArg", TestObjectV8Internal::voidMethodArrayStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodArrayTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodArrayTestInterfaceEmptyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodNullableArrayLongArg", TestObjectV8Internal::voidMethodNullableArrayLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"longSequenceMethod", TestObjectV8Internal::longSequenceMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"stringSequenceMethod", TestObjectV8Internal::stringSequenceMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testInterfaceEmptySequenceMethod", TestObjectV8Internal::testInterfaceEmptySequenceMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodSequenceLongArg", TestObjectV8Internal::voidMethodSequenceLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodSequenceStringArg", TestObjectV8Internal::voidMethodSequenceStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodSequenceTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodSequenceTestInterfaceEmptyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodSequenceSequenceDOMStringArg", TestObjectV8Internal::voidMethodSequenceSequenceDOMStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodNullableSequenceLongArg", TestObjectV8Internal::voidMethodNullableSequenceLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"longFrozenArrayMethod", TestObjectV8Internal::longFrozenArrayMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodStringFrozenArrayMethod", TestObjectV8Internal::voidMethodStringFrozenArrayMethodMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodTestInterfaceEmptyFrozenArrayMethod", TestObjectV8Internal::voidMethodTestInterfaceEmptyFrozenArrayMethodMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"nullableLongMethod", TestObjectV8Internal::nullableLongMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"nullableStringMethod", TestObjectV8Internal::nullableStringMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"nullableTestInterfaceMethod", TestObjectV8Internal::nullableTestInterfaceMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"nullableLongSequenceMethod", TestObjectV8Internal::nullableLongSequenceMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testInterfaceGarbageCollectedOrDOMStringMethod", TestObjectV8Internal::testInterfaceGarbageCollectedOrDOMStringMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"booleanOrDOMStringOrUnrestrictedDoubleMethod", TestObjectV8Internal::booleanOrDOMStringOrUnrestrictedDoubleMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testInterfaceOrLongMethod", TestObjectV8Internal::testInterfaceOrLongMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDoubleOrDOMStringArg", TestObjectV8Internal::voidMethodDoubleOrDOMStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDoubleOrDOMStringOrNullArg", TestObjectV8Internal::voidMethodDoubleOrDOMStringOrNullArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDoubleOrNullOrDOMStringArg", TestObjectV8Internal::voidMethodDoubleOrNullOrDOMStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDOMStringOrArrayBufferOrArrayBufferViewArg", TestObjectV8Internal::voidMethodDOMStringOrArrayBufferOrArrayBufferViewArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodArrayBufferOrArrayBufferViewOrDictionaryArg", TestObjectV8Internal::voidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodArrayOfDoubleOrDOMStringArg", TestObjectV8Internal::voidMethodArrayOfDoubleOrDOMStringArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodTestInterfaceEmptyOrNullArg", TestObjectV8Internal::voidMethodTestInterfaceEmptyOrNullArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodTestCallbackInterfaceArg", TestObjectV8Internal::voidMethodTestCallbackInterfaceArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodOptionalTestCallbackInterfaceArg", TestObjectV8Internal::voidMethodOptionalTestCallbackInterfaceArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodTestCallbackInterfaceOrNullArg", TestObjectV8Internal::voidMethodTestCallbackInterfaceOrNullArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testEnumMethod", TestObjectV8Internal::testEnumMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodTestEnumArg", TestObjectV8Internal::voidMethodTestEnumArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodTestMultipleEnumArg", TestObjectV8Internal::voidMethodTestMultipleEnumArgMethodCallback, 0, 2, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"dictionaryMethod", TestObjectV8Internal::dictionaryMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testDictionaryMethod", TestObjectV8Internal::testDictionaryMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"nullableTestDictionaryMethod", TestObjectV8Internal::nullableTestDictionaryMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"passPermissiveDictionaryMethod", TestObjectV8Internal::passPermissiveDictionaryMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"nodeFilterMethod", TestObjectV8Internal::nodeFilterMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"promiseMethod", TestObjectV8Internal::promiseMethodMethodCallback, 0, 3, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::DoNotCheckHolder},
-    {"promiseMethodWithoutExceptionState", TestObjectV8Internal::promiseMethodWithoutExceptionStateMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::DoNotCheckHolder},
-    {"serializedScriptValueMethod", TestObjectV8Internal::serializedScriptValueMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"xPathNSResolverMethod", TestObjectV8Internal::xPathNSResolverMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDictionaryArg", TestObjectV8Internal::voidMethodDictionaryArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodNodeFilterArg", TestObjectV8Internal::voidMethodNodeFilterArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodPromiseArg", TestObjectV8Internal::voidMethodPromiseArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodSerializedScriptValueArg", TestObjectV8Internal::voidMethodSerializedScriptValueArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodXPathNSResolverArg", TestObjectV8Internal::voidMethodXPathNSResolverArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDictionarySequenceArg", TestObjectV8Internal::voidMethodDictionarySequenceArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodStringArgLongArg", TestObjectV8Internal::voidMethodStringArgLongArgMethodCallback, 0, 2, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodOptionalStringArg", TestObjectV8Internal::voidMethodOptionalStringArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodOptionalTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodOptionalTestInterfaceEmptyArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodOptionalLongArg", TestObjectV8Internal::voidMethodOptionalLongArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"stringMethodOptionalLongArg", TestObjectV8Internal::stringMethodOptionalLongArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"testInterfaceEmptyMethodOptionalLongArg", TestObjectV8Internal::testInterfaceEmptyMethodOptionalLongArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"longMethodOptionalLongArg", TestObjectV8Internal::longMethodOptionalLongArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodLongArgOptionalLongArg", TestObjectV8Internal::voidMethodLongArgOptionalLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodLongArgOptionalLongArgOptionalLongArg", TestObjectV8Internal::voidMethodLongArgOptionalLongArgOptionalLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodLongArgOptionalTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodLongArgOptionalTestInterfaceEmptyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodTestInterfaceEmptyArgOptionalLongArg", TestObjectV8Internal::voidMethodTestInterfaceEmptyArgOptionalLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodOptionalDictionaryArg", TestObjectV8Internal::voidMethodOptionalDictionaryArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDefaultByteStringArg", TestObjectV8Internal::voidMethodDefaultByteStringArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDefaultStringArg", TestObjectV8Internal::voidMethodDefaultStringArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDefaultIntegerArgs", TestObjectV8Internal::voidMethodDefaultIntegerArgsMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDefaultDoubleArg", TestObjectV8Internal::voidMethodDefaultDoubleArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDefaultTrueBooleanArg", TestObjectV8Internal::voidMethodDefaultTrueBooleanArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDefaultFalseBooleanArg", TestObjectV8Internal::voidMethodDefaultFalseBooleanArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDefaultNullableByteStringArg", TestObjectV8Internal::voidMethodDefaultNullableByteStringArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDefaultNullableStringArg", TestObjectV8Internal::voidMethodDefaultNullableStringArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDefaultNullableTestInterfaceArg", TestObjectV8Internal::voidMethodDefaultNullableTestInterfaceArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDefaultDoubleOrStringArgs", TestObjectV8Internal::voidMethodDefaultDoubleOrStringArgsMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDefaultStringSequenceArg", TestObjectV8Internal::voidMethodDefaultStringSequenceArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodVariadicStringArg", TestObjectV8Internal::voidMethodVariadicStringArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodStringArgVariadicStringArg", TestObjectV8Internal::voidMethodStringArgVariadicStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodVariadicTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodVariadicTestInterfaceEmptyArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodVariadicTestInterfaceGarbageCollectedArg", TestObjectV8Internal::voidMethodVariadicTestInterfaceGarbageCollectedArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"overloadedMethodA", TestObjectV8Internal::overloadedMethodAMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"overloadedMethodB", TestObjectV8Internal::overloadedMethodBMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"overloadedMethodC", TestObjectV8Internal::overloadedMethodCMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"overloadedMethodD", TestObjectV8Internal::overloadedMethodDMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"overloadedMethodE", TestObjectV8Internal::overloadedMethodEMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"overloadedMethodF", TestObjectV8Internal::overloadedMethodFMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"overloadedMethodG", TestObjectV8Internal::overloadedMethodGMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"overloadedMethodH", TestObjectV8Internal::overloadedMethodHMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"overloadedMethodI", TestObjectV8Internal::overloadedMethodIMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"overloadedMethodJ", TestObjectV8Internal::overloadedMethodJMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"overloadedMethodK", TestObjectV8Internal::overloadedMethodKMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"overloadedMethodL", TestObjectV8Internal::overloadedMethodLMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"overloadedMethodN", TestObjectV8Internal::overloadedMethodNMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"promiseOverloadMethod", TestObjectV8Internal::promiseOverloadMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::DoNotCheckHolder},
-    {"overloadedPerWorldBindingsMethod", TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodCallback, TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"overloadedStaticMethod", TestObjectV8Internal::overloadedStaticMethodMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder},
-    {"item", TestObjectV8Internal::itemMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"setItem", TestObjectV8Internal::setItemMethodCallback, 0, 2, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodClampUnsignedShortArg", TestObjectV8Internal::voidMethodClampUnsignedShortArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodClampUnsignedLongArg", TestObjectV8Internal::voidMethodClampUnsignedLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDefaultUndefinedTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodDefaultUndefinedTestInterfaceEmptyArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDefaultUndefinedLongArg", TestObjectV8Internal::voidMethodDefaultUndefinedLongArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodDefaultUndefinedStringArg", TestObjectV8Internal::voidMethodDefaultUndefinedStringArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodEnforceRangeLongArg", TestObjectV8Internal::voidMethodEnforceRangeLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodTreatNullAsEmptyStringStringArg", TestObjectV8Internal::voidMethodTreatNullAsEmptyStringStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodTreatNullAsNullStringStringArg", TestObjectV8Internal::voidMethodTreatNullAsNullStringStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"activityLoggingAccessForAllWorldsMethod", TestObjectV8Internal::activityLoggingAccessForAllWorldsMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"callWithExecutionContextVoidMethod", TestObjectV8Internal::callWithExecutionContextVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"callWithScriptStateVoidMethod", TestObjectV8Internal::callWithScriptStateVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"callWithScriptStateLongMethod", TestObjectV8Internal::callWithScriptStateLongMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"callWithScriptStateExecutionContextVoidMethod", TestObjectV8Internal::callWithScriptStateExecutionContextVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"callWithScriptStateScriptArgumentsVoidMethod", TestObjectV8Internal::callWithScriptStateScriptArgumentsVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg", TestObjectV8Internal::callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"callWithCurrentWindow", TestObjectV8Internal::callWithCurrentWindowMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"callWithCurrentWindowScriptWindow", TestObjectV8Internal::callWithCurrentWindowScriptWindowMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"callWithThisValue", TestObjectV8Internal::callWithThisValueMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"checkSecurityForNodeVoidMethod", TestObjectV8Internal::checkSecurityForNodeVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"customVoidMethod", TestObjectV8Internal::customVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"customCallPrologueVoidMethod", TestObjectV8Internal::customCallPrologueVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"customCallEpilogueVoidMethod", TestObjectV8Internal::customCallEpilogueVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"deprecatedVoidMethod", TestObjectV8Internal::deprecatedVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"implementedAsVoidMethod", TestObjectV8Internal::implementedAsVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"measureAsVoidMethod", TestObjectV8Internal::measureAsVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"measureMethod", TestObjectV8Internal::measureMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"measureOverloadedMethod", TestObjectV8Internal::measureOverloadedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"DeprecateAsOverloadedMethod", TestObjectV8Internal::DeprecateAsOverloadedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"DeprecateAsSameValueOverloadedMethod", TestObjectV8Internal::DeprecateAsSameValueOverloadedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"measureAsOverloadedMethod", TestObjectV8Internal::measureAsOverloadedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"measureAsSameValueOverloadedMethod", TestObjectV8Internal::measureAsSameValueOverloadedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"deprecateAsMeasureAsSameValueOverloadedMethod", TestObjectV8Internal::deprecateAsMeasureAsSameValueOverloadedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"deprecateAsSameValueMeasureAsOverloadedMethod", TestObjectV8Internal::deprecateAsSameValueMeasureAsOverloadedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"deprecateAsSameValueMeasureAsSameValueOverloadedMethod", TestObjectV8Internal::deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"notEnumerableVoidMethod", TestObjectV8Internal::notEnumerableVoidMethodMethodCallback, 0, 0, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"perWorldBindingsVoidMethod", TestObjectV8Internal::perWorldBindingsVoidMethodMethodCallback, TestObjectV8Internal::perWorldBindingsVoidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"perWorldBindingsVoidMethodTestInterfaceEmptyArg", TestObjectV8Internal::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallback, TestObjectV8Internal::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallbackForMainWorld, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"postMessage", TestObjectV8Internal::postMessageMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"activityLoggingForAllWorldsPerWorldBindingsVoidMethod", TestObjectV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallback, TestObjectV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod", TestObjectV8Internal::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCallback, TestObjectV8Internal::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"raisesExceptionVoidMethod", TestObjectV8Internal::raisesExceptionVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"raisesExceptionStringMethod", TestObjectV8Internal::raisesExceptionStringMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"raisesExceptionVoidMethodOptionalLongArg", TestObjectV8Internal::raisesExceptionVoidMethodOptionalLongArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"raisesExceptionVoidMethodTestCallbackInterfaceArg", TestObjectV8Internal::raisesExceptionVoidMethodTestCallbackInterfaceArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg", TestObjectV8Internal::raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"raisesExceptionTestInterfaceEmptyVoidMethod", TestObjectV8Internal::raisesExceptionTestInterfaceEmptyVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"raisesExceptionXPathNSResolverVoidMethod", TestObjectV8Internal::raisesExceptionXPathNSResolverVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"callWithExecutionContextRaisesExceptionVoidMethodLongArg", TestObjectV8Internal::callWithExecutionContextRaisesExceptionVoidMethodLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArg", TestObjectV8Internal::legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArg", TestObjectV8Internal::legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg", TestObjectV8Internal::useToImpl4ArgumentsCheckingIfPossibleWithOptionalArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"useToImpl4ArgumentsCheckingIfPossibleWithNullableArg", TestObjectV8Internal::useToImpl4ArgumentsCheckingIfPossibleWithNullableArgMethodCallback, 0, 2, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg", TestObjectV8Internal::useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"unforgeableVoidMethod", TestObjectV8Internal::unforgeableVoidMethodMethodCallback, 0, 0, static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
-    {"voidMethodTestInterfaceGarbageCollectedSequenceArg", TestObjectV8Internal::voidMethodTestInterfaceGarbageCollectedSequenceArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodTestInterfaceGarbageCollectedArrayArg", TestObjectV8Internal::voidMethodTestInterfaceGarbageCollectedArrayArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"newObjectTestInterfaceMethod", TestObjectV8Internal::newObjectTestInterfaceMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"serializerMethod", TestObjectV8Internal::serializerMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"voidMethodImplementedInPrivateScript", TestObjectV8Internal::voidMethodImplementedInPrivateScriptMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"shortMethodImplementedInPrivateScript", TestObjectV8Internal::shortMethodImplementedInPrivateScriptMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"shortMethodWithShortArgumentImplementedInPrivateScript", TestObjectV8Internal::shortMethodWithShortArgumentImplementedInPrivateScriptMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"stringMethodWithStringArgumentImplementedInPrivateScript", TestObjectV8Internal::stringMethodWithStringArgumentImplementedInPrivateScriptMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"nodeMethodWithNodeArgumentImplementedInPrivateScript", TestObjectV8Internal::nodeMethodWithNodeArgumentImplementedInPrivateScriptMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"nodeMethodWithVariousArgumentsImplementedInPrivateScript", TestObjectV8Internal::nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethodCallback, 0, 5, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"methodImplementedInCPPForPrivateScriptOnly", TestObjectV8Internal::methodImplementedInCPPForPrivateScriptOnlyMethodCallback, 0, 2, v8::None, V8DOMConfiguration::OnlyExposedToPrivateScript, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"keys", TestObjectV8Internal::keysMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"values", TestObjectV8Internal::valuesMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"entries", TestObjectV8Internal::entriesMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"forEach", TestObjectV8Internal::forEachMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"has", TestObjectV8Internal::hasMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"get", TestObjectV8Internal::getMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"clear", TestObjectV8Internal::clearMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"delete", TestObjectV8Internal::deleteMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"set", TestObjectV8Internal::setMethodCallback, 0, 2, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"toJSON", TestObjectV8Internal::toJSONMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-    {"toString", TestObjectV8Internal::toStringMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"unscopableVoidMethod", TestObjectV8Internal::unscopableVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethod", TestObjectV8Internal::voidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"staticVoidMethod", TestObjectV8Internal::staticVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder},
+    {"dateMethod", TestObjectV8Internal::dateMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"stringMethod", TestObjectV8Internal::stringMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"byteStringMethod", TestObjectV8Internal::byteStringMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"usvStringMethod", TestObjectV8Internal::usvStringMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"readonlyDOMTimeStampMethod", TestObjectV8Internal::readonlyDOMTimeStampMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"booleanMethod", TestObjectV8Internal::booleanMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"byteMethod", TestObjectV8Internal::byteMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"doubleMethod", TestObjectV8Internal::doubleMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"floatMethod", TestObjectV8Internal::floatMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"longMethod", TestObjectV8Internal::longMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"longLongMethod", TestObjectV8Internal::longLongMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"octetMethod", TestObjectV8Internal::octetMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"shortMethod", TestObjectV8Internal::shortMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"unsignedLongMethod", TestObjectV8Internal::unsignedLongMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"unsignedLongLongMethod", TestObjectV8Internal::unsignedLongLongMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"unsignedShortMethod", TestObjectV8Internal::unsignedShortMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDateArg", TestObjectV8Internal::voidMethodDateArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodStringArg", TestObjectV8Internal::voidMethodStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodByteStringArg", TestObjectV8Internal::voidMethodByteStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodUSVStringArg", TestObjectV8Internal::voidMethodUSVStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDOMTimeStampArg", TestObjectV8Internal::voidMethodDOMTimeStampArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodBooleanArg", TestObjectV8Internal::voidMethodBooleanArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodByteArg", TestObjectV8Internal::voidMethodByteArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDoubleArg", TestObjectV8Internal::voidMethodDoubleArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodFloatArg", TestObjectV8Internal::voidMethodFloatArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodLongArg", TestObjectV8Internal::voidMethodLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodLongLongArg", TestObjectV8Internal::voidMethodLongLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodOctetArg", TestObjectV8Internal::voidMethodOctetArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodShortArg", TestObjectV8Internal::voidMethodShortArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodUnsignedLongArg", TestObjectV8Internal::voidMethodUnsignedLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodUnsignedLongLongArg", TestObjectV8Internal::voidMethodUnsignedLongLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodUnsignedShortArg", TestObjectV8Internal::voidMethodUnsignedShortArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testInterfaceEmptyMethod", TestObjectV8Internal::testInterfaceEmptyMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodTestInterfaceEmptyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodLongArgTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodLongArgTestInterfaceEmptyArgMethodCallback, 0, 2, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"anyMethod", TestObjectV8Internal::anyMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodEventTargetArg", TestObjectV8Internal::voidMethodEventTargetArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodAnyArg", TestObjectV8Internal::voidMethodAnyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodAttrArg", TestObjectV8Internal::voidMethodAttrArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDocumentArg", TestObjectV8Internal::voidMethodDocumentArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDocumentTypeArg", TestObjectV8Internal::voidMethodDocumentTypeArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodElementArg", TestObjectV8Internal::voidMethodElementArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodNodeArg", TestObjectV8Internal::voidMethodNodeArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"arrayBufferMethod", TestObjectV8Internal::arrayBufferMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"arrayBufferViewMethod", TestObjectV8Internal::arrayBufferViewMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"float32ArrayMethod", TestObjectV8Internal::float32ArrayMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"int32ArrayMethod", TestObjectV8Internal::int32ArrayMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"uint8ArrayMethod", TestObjectV8Internal::uint8ArrayMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodArrayBufferArg", TestObjectV8Internal::voidMethodArrayBufferArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodArrayBufferOrNullArg", TestObjectV8Internal::voidMethodArrayBufferOrNullArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodArrayBufferViewArg", TestObjectV8Internal::voidMethodArrayBufferViewArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodFlexibleArrayBufferViewArg", TestObjectV8Internal::voidMethodFlexibleArrayBufferViewArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodFlexibleArrayBufferViewTypedArg", TestObjectV8Internal::voidMethodFlexibleArrayBufferViewTypedArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodFloat32ArrayArg", TestObjectV8Internal::voidMethodFloat32ArrayArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodInt32ArrayArg", TestObjectV8Internal::voidMethodInt32ArrayArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodUint8ArrayArg", TestObjectV8Internal::voidMethodUint8ArrayArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"longArrayMethod", TestObjectV8Internal::longArrayMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"stringArrayMethod", TestObjectV8Internal::stringArrayMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testInterfaceEmptyArrayMethod", TestObjectV8Internal::testInterfaceEmptyArrayMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodArrayLongArg", TestObjectV8Internal::voidMethodArrayLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodArrayStringArg", TestObjectV8Internal::voidMethodArrayStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodArrayTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodArrayTestInterfaceEmptyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodNullableArrayLongArg", TestObjectV8Internal::voidMethodNullableArrayLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"longSequenceMethod", TestObjectV8Internal::longSequenceMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"stringSequenceMethod", TestObjectV8Internal::stringSequenceMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testInterfaceEmptySequenceMethod", TestObjectV8Internal::testInterfaceEmptySequenceMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodSequenceLongArg", TestObjectV8Internal::voidMethodSequenceLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodSequenceStringArg", TestObjectV8Internal::voidMethodSequenceStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodSequenceTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodSequenceTestInterfaceEmptyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodSequenceSequenceDOMStringArg", TestObjectV8Internal::voidMethodSequenceSequenceDOMStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodNullableSequenceLongArg", TestObjectV8Internal::voidMethodNullableSequenceLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"longFrozenArrayMethod", TestObjectV8Internal::longFrozenArrayMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodStringFrozenArrayMethod", TestObjectV8Internal::voidMethodStringFrozenArrayMethodMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodTestInterfaceEmptyFrozenArrayMethod", TestObjectV8Internal::voidMethodTestInterfaceEmptyFrozenArrayMethodMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"nullableLongMethod", TestObjectV8Internal::nullableLongMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"nullableStringMethod", TestObjectV8Internal::nullableStringMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"nullableTestInterfaceMethod", TestObjectV8Internal::nullableTestInterfaceMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"nullableLongSequenceMethod", TestObjectV8Internal::nullableLongSequenceMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testInterfaceGarbageCollectedOrDOMStringMethod", TestObjectV8Internal::testInterfaceGarbageCollectedOrDOMStringMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"booleanOrDOMStringOrUnrestrictedDoubleMethod", TestObjectV8Internal::booleanOrDOMStringOrUnrestrictedDoubleMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testInterfaceOrLongMethod", TestObjectV8Internal::testInterfaceOrLongMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDoubleOrDOMStringArg", TestObjectV8Internal::voidMethodDoubleOrDOMStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDoubleOrDOMStringOrNullArg", TestObjectV8Internal::voidMethodDoubleOrDOMStringOrNullArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDoubleOrNullOrDOMStringArg", TestObjectV8Internal::voidMethodDoubleOrNullOrDOMStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDOMStringOrArrayBufferOrArrayBufferViewArg", TestObjectV8Internal::voidMethodDOMStringOrArrayBufferOrArrayBufferViewArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodArrayBufferOrArrayBufferViewOrDictionaryArg", TestObjectV8Internal::voidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodArrayOfDoubleOrDOMStringArg", TestObjectV8Internal::voidMethodArrayOfDoubleOrDOMStringArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodTestInterfaceEmptyOrNullArg", TestObjectV8Internal::voidMethodTestInterfaceEmptyOrNullArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodTestCallbackInterfaceArg", TestObjectV8Internal::voidMethodTestCallbackInterfaceArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodOptionalTestCallbackInterfaceArg", TestObjectV8Internal::voidMethodOptionalTestCallbackInterfaceArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodTestCallbackInterfaceOrNullArg", TestObjectV8Internal::voidMethodTestCallbackInterfaceOrNullArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testEnumMethod", TestObjectV8Internal::testEnumMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodTestEnumArg", TestObjectV8Internal::voidMethodTestEnumArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodTestMultipleEnumArg", TestObjectV8Internal::voidMethodTestMultipleEnumArgMethodCallback, 0, 2, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"dictionaryMethod", TestObjectV8Internal::dictionaryMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testDictionaryMethod", TestObjectV8Internal::testDictionaryMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"nullableTestDictionaryMethod", TestObjectV8Internal::nullableTestDictionaryMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"passPermissiveDictionaryMethod", TestObjectV8Internal::passPermissiveDictionaryMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"nodeFilterMethod", TestObjectV8Internal::nodeFilterMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"promiseMethod", TestObjectV8Internal::promiseMethodMethodCallback, 0, 3, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::DoNotCheckHolder},
+    {"promiseMethodWithoutExceptionState", TestObjectV8Internal::promiseMethodWithoutExceptionStateMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::DoNotCheckHolder},
+    {"serializedScriptValueMethod", TestObjectV8Internal::serializedScriptValueMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"xPathNSResolverMethod", TestObjectV8Internal::xPathNSResolverMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDictionaryArg", TestObjectV8Internal::voidMethodDictionaryArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodNodeFilterArg", TestObjectV8Internal::voidMethodNodeFilterArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodPromiseArg", TestObjectV8Internal::voidMethodPromiseArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodSerializedScriptValueArg", TestObjectV8Internal::voidMethodSerializedScriptValueArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodXPathNSResolverArg", TestObjectV8Internal::voidMethodXPathNSResolverArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDictionarySequenceArg", TestObjectV8Internal::voidMethodDictionarySequenceArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodStringArgLongArg", TestObjectV8Internal::voidMethodStringArgLongArgMethodCallback, 0, 2, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodOptionalStringArg", TestObjectV8Internal::voidMethodOptionalStringArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodOptionalTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodOptionalTestInterfaceEmptyArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodOptionalLongArg", TestObjectV8Internal::voidMethodOptionalLongArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"stringMethodOptionalLongArg", TestObjectV8Internal::stringMethodOptionalLongArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"testInterfaceEmptyMethodOptionalLongArg", TestObjectV8Internal::testInterfaceEmptyMethodOptionalLongArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"longMethodOptionalLongArg", TestObjectV8Internal::longMethodOptionalLongArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodLongArgOptionalLongArg", TestObjectV8Internal::voidMethodLongArgOptionalLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodLongArgOptionalLongArgOptionalLongArg", TestObjectV8Internal::voidMethodLongArgOptionalLongArgOptionalLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodLongArgOptionalTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodLongArgOptionalTestInterfaceEmptyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodTestInterfaceEmptyArgOptionalLongArg", TestObjectV8Internal::voidMethodTestInterfaceEmptyArgOptionalLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodOptionalDictionaryArg", TestObjectV8Internal::voidMethodOptionalDictionaryArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDefaultByteStringArg", TestObjectV8Internal::voidMethodDefaultByteStringArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDefaultStringArg", TestObjectV8Internal::voidMethodDefaultStringArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDefaultIntegerArgs", TestObjectV8Internal::voidMethodDefaultIntegerArgsMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDefaultDoubleArg", TestObjectV8Internal::voidMethodDefaultDoubleArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDefaultTrueBooleanArg", TestObjectV8Internal::voidMethodDefaultTrueBooleanArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDefaultFalseBooleanArg", TestObjectV8Internal::voidMethodDefaultFalseBooleanArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDefaultNullableByteStringArg", TestObjectV8Internal::voidMethodDefaultNullableByteStringArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDefaultNullableStringArg", TestObjectV8Internal::voidMethodDefaultNullableStringArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDefaultNullableTestInterfaceArg", TestObjectV8Internal::voidMethodDefaultNullableTestInterfaceArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDefaultDoubleOrStringArgs", TestObjectV8Internal::voidMethodDefaultDoubleOrStringArgsMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDefaultStringSequenceArg", TestObjectV8Internal::voidMethodDefaultStringSequenceArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodVariadicStringArg", TestObjectV8Internal::voidMethodVariadicStringArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodStringArgVariadicStringArg", TestObjectV8Internal::voidMethodStringArgVariadicStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodVariadicTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodVariadicTestInterfaceEmptyArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodVariadicTestInterfaceGarbageCollectedArg", TestObjectV8Internal::voidMethodVariadicTestInterfaceGarbageCollectedArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"overloadedMethodA", TestObjectV8Internal::overloadedMethodAMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"overloadedMethodB", TestObjectV8Internal::overloadedMethodBMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"overloadedMethodC", TestObjectV8Internal::overloadedMethodCMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"overloadedMethodD", TestObjectV8Internal::overloadedMethodDMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"overloadedMethodE", TestObjectV8Internal::overloadedMethodEMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"overloadedMethodF", TestObjectV8Internal::overloadedMethodFMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"overloadedMethodG", TestObjectV8Internal::overloadedMethodGMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"overloadedMethodH", TestObjectV8Internal::overloadedMethodHMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"overloadedMethodI", TestObjectV8Internal::overloadedMethodIMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"overloadedMethodJ", TestObjectV8Internal::overloadedMethodJMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"overloadedMethodK", TestObjectV8Internal::overloadedMethodKMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"overloadedMethodL", TestObjectV8Internal::overloadedMethodLMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"overloadedMethodN", TestObjectV8Internal::overloadedMethodNMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"promiseOverloadMethod", TestObjectV8Internal::promiseOverloadMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::DoNotCheckHolder},
+    {"overloadedPerWorldBindingsMethod", TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodCallback, TestObjectV8Internal::overloadedPerWorldBindingsMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"overloadedStaticMethod", TestObjectV8Internal::overloadedStaticMethodMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder},
+    {"item", TestObjectV8Internal::itemMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"setItem", TestObjectV8Internal::setItemMethodCallback, 0, 2, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodClampUnsignedShortArg", TestObjectV8Internal::voidMethodClampUnsignedShortArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodClampUnsignedLongArg", TestObjectV8Internal::voidMethodClampUnsignedLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDefaultUndefinedTestInterfaceEmptyArg", TestObjectV8Internal::voidMethodDefaultUndefinedTestInterfaceEmptyArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDefaultUndefinedLongArg", TestObjectV8Internal::voidMethodDefaultUndefinedLongArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodDefaultUndefinedStringArg", TestObjectV8Internal::voidMethodDefaultUndefinedStringArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodEnforceRangeLongArg", TestObjectV8Internal::voidMethodEnforceRangeLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodTreatNullAsEmptyStringStringArg", TestObjectV8Internal::voidMethodTreatNullAsEmptyStringStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodTreatNullAsNullStringStringArg", TestObjectV8Internal::voidMethodTreatNullAsNullStringStringArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"activityLoggingAccessForAllWorldsMethod", TestObjectV8Internal::activityLoggingAccessForAllWorldsMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"callWithExecutionContextVoidMethod", TestObjectV8Internal::callWithExecutionContextVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"callWithScriptStateVoidMethod", TestObjectV8Internal::callWithScriptStateVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"callWithScriptStateLongMethod", TestObjectV8Internal::callWithScriptStateLongMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"callWithScriptStateExecutionContextVoidMethod", TestObjectV8Internal::callWithScriptStateExecutionContextVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"callWithScriptStateScriptArgumentsVoidMethod", TestObjectV8Internal::callWithScriptStateScriptArgumentsVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg", TestObjectV8Internal::callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"callWithCurrentWindow", TestObjectV8Internal::callWithCurrentWindowMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"callWithCurrentWindowScriptWindow", TestObjectV8Internal::callWithCurrentWindowScriptWindowMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"callWithThisValue", TestObjectV8Internal::callWithThisValueMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"checkSecurityForNodeVoidMethod", TestObjectV8Internal::checkSecurityForNodeVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"customVoidMethod", TestObjectV8Internal::customVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"customCallPrologueVoidMethod", TestObjectV8Internal::customCallPrologueVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"customCallEpilogueVoidMethod", TestObjectV8Internal::customCallEpilogueVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"deprecatedVoidMethod", TestObjectV8Internal::deprecatedVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"implementedAsVoidMethod", TestObjectV8Internal::implementedAsVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"measureAsVoidMethod", TestObjectV8Internal::measureAsVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"measureMethod", TestObjectV8Internal::measureMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"measureOverloadedMethod", TestObjectV8Internal::measureOverloadedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"DeprecateAsOverloadedMethod", TestObjectV8Internal::DeprecateAsOverloadedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"DeprecateAsSameValueOverloadedMethod", TestObjectV8Internal::DeprecateAsSameValueOverloadedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"measureAsOverloadedMethod", TestObjectV8Internal::measureAsOverloadedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"measureAsSameValueOverloadedMethod", TestObjectV8Internal::measureAsSameValueOverloadedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"deprecateAsMeasureAsSameValueOverloadedMethod", TestObjectV8Internal::deprecateAsMeasureAsSameValueOverloadedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"deprecateAsSameValueMeasureAsOverloadedMethod", TestObjectV8Internal::deprecateAsSameValueMeasureAsOverloadedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"deprecateAsSameValueMeasureAsSameValueOverloadedMethod", TestObjectV8Internal::deprecateAsSameValueMeasureAsSameValueOverloadedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"notEnumerableVoidMethod", TestObjectV8Internal::notEnumerableVoidMethodMethodCallback, 0, 0, static_cast<v8::PropertyAttribute>(v8::DontEnum), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"perWorldBindingsVoidMethod", TestObjectV8Internal::perWorldBindingsVoidMethodMethodCallback, TestObjectV8Internal::perWorldBindingsVoidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"perWorldBindingsVoidMethodTestInterfaceEmptyArg", TestObjectV8Internal::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallback, TestObjectV8Internal::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallbackForMainWorld, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"postMessage", TestObjectV8Internal::postMessageMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"activityLoggingForAllWorldsPerWorldBindingsVoidMethod", TestObjectV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallback, TestObjectV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod", TestObjectV8Internal::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCallback, TestObjectV8Internal::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"raisesExceptionVoidMethod", TestObjectV8Internal::raisesExceptionVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"raisesExceptionStringMethod", TestObjectV8Internal::raisesExceptionStringMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"raisesExceptionVoidMethodOptionalLongArg", TestObjectV8Internal::raisesExceptionVoidMethodOptionalLongArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"raisesExceptionVoidMethodTestCallbackInterfaceArg", TestObjectV8Internal::raisesExceptionVoidMethodTestCallbackInterfaceArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"raisesExceptionVoidMethodOptionalTestCallbackInterfaceArg", TestObjectV8Internal::raisesExceptionVoidMethodOptionalTestCallbackInterfaceArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"raisesExceptionTestInterfaceEmptyVoidMethod", TestObjectV8Internal::raisesExceptionTestInterfaceEmptyVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"raisesExceptionXPathNSResolverVoidMethod", TestObjectV8Internal::raisesExceptionXPathNSResolverVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"callWithExecutionContextRaisesExceptionVoidMethodLongArg", TestObjectV8Internal::callWithExecutionContextRaisesExceptionVoidMethodLongArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArg", TestObjectV8Internal::legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArg", TestObjectV8Internal::legacyInterfaceTypeCheckingVoidMethodTestInterfaceEmptyVariadicArgMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"useToImpl4ArgumentsCheckingIfPossibleWithOptionalArg", TestObjectV8Internal::useToImpl4ArgumentsCheckingIfPossibleWithOptionalArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"useToImpl4ArgumentsCheckingIfPossibleWithNullableArg", TestObjectV8Internal::useToImpl4ArgumentsCheckingIfPossibleWithNullableArgMethodCallback, 0, 2, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArg", TestObjectV8Internal::useToImpl4ArgumentsCheckingIfPossibleWithUndefinedArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"unforgeableVoidMethod", TestObjectV8Internal::unforgeableVoidMethodMethodCallback, 0, 0, static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete), V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+    {"voidMethodTestInterfaceGarbageCollectedSequenceArg", TestObjectV8Internal::voidMethodTestInterfaceGarbageCollectedSequenceArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"voidMethodTestInterfaceGarbageCollectedArrayArg", TestObjectV8Internal::voidMethodTestInterfaceGarbageCollectedArrayArgMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"newObjectTestInterfaceMethod", TestObjectV8Internal::newObjectTestInterfaceMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"serializerMethod", TestObjectV8Internal::serializerMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"keys", TestObjectV8Internal::keysMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"values", TestObjectV8Internal::valuesMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"entries", TestObjectV8Internal::entriesMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"forEach", TestObjectV8Internal::forEachMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"has", TestObjectV8Internal::hasMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"get", TestObjectV8Internal::getMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"clear", TestObjectV8Internal::clearMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"delete", TestObjectV8Internal::deleteMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"set", TestObjectV8Internal::setMethodCallback, 0, 2, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"toJSON", TestObjectV8Internal::toJSONMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+    {"toString", TestObjectV8Internal::toStringMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
 };
 
 static void installV8TestObjectTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
@@ -11992,9 +11595,9 @@ static void installV8TestObjectTemplate(v8::Isolate* isolate, const DOMWrapperWo
   V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestObjectMethods, WTF_ARRAY_LENGTH(V8TestObjectMethods));
 
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
-    const V8DOMConfiguration::AccessorConfiguration accessorruntimeEnabledLongAttributeConfiguration = {"runtimeEnabledLongAttribute", TestObjectV8Internal::runtimeEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::runtimeEnabledLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+    const V8DOMConfiguration::AccessorConfiguration accessorruntimeEnabledLongAttributeConfiguration = {"runtimeEnabledLongAttribute", TestObjectV8Internal::runtimeEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::runtimeEnabledLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
     V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorruntimeEnabledLongAttributeConfiguration);
-    const V8DOMConfiguration::AccessorConfiguration accessorunscopableRuntimeEnabledLongAttributeConfiguration = {"unscopableRuntimeEnabledLongAttribute", TestObjectV8Internal::unscopableRuntimeEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::unscopableRuntimeEnabledLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+    const V8DOMConfiguration::AccessorConfiguration accessorunscopableRuntimeEnabledLongAttributeConfiguration = {"unscopableRuntimeEnabledLongAttribute", TestObjectV8Internal::unscopableRuntimeEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::unscopableRuntimeEnabledLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
     V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorunscopableRuntimeEnabledLongAttributeConfiguration);
   }
 
@@ -12006,26 +11609,26 @@ static void installV8TestObjectTemplate(v8::Isolate* isolate, const DOMWrapperWo
   instanceTemplate->SetHandler(namedPropertyHandlerConfig);
 
   // Iterator (@@iterator)
-  const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestObjectV8Internal::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype };
+  const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, TestObjectV8Internal::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::OnPrototype };
   V8DOMConfiguration::installMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
 
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration unscopableRuntimeEnabledVoidMethodMethodConfiguration = {"unscopableRuntimeEnabledVoidMethod", TestObjectV8Internal::unscopableRuntimeEnabledVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+      const V8DOMConfiguration::MethodConfiguration unscopableRuntimeEnabledVoidMethodMethodConfiguration = {"unscopableRuntimeEnabledVoidMethod", TestObjectV8Internal::unscopableRuntimeEnabledVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, unscopableRuntimeEnabledVoidMethodMethodConfiguration);
   }
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration runtimeEnabledVoidMethodMethodConfiguration = {"runtimeEnabledVoidMethod", TestObjectV8Internal::runtimeEnabledVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+      const V8DOMConfiguration::MethodConfiguration runtimeEnabledVoidMethodMethodConfiguration = {"runtimeEnabledVoidMethod", TestObjectV8Internal::runtimeEnabledVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, runtimeEnabledVoidMethodMethodConfiguration);
   }
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration perWorldBindingsRuntimeEnabledVoidMethodMethodConfiguration = {"perWorldBindingsRuntimeEnabledVoidMethod", TestObjectV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallback, TestObjectV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+      const V8DOMConfiguration::MethodConfiguration perWorldBindingsRuntimeEnabledVoidMethodMethodConfiguration = {"perWorldBindingsRuntimeEnabledVoidMethod", TestObjectV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallback, TestObjectV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, perWorldBindingsRuntimeEnabledVoidMethodMethodConfiguration);
   }
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration runtimeEnabledOverloadedVoidMethodMethodConfiguration = {"runtimeEnabledOverloadedVoidMethod", TestObjectV8Internal::runtimeEnabledOverloadedVoidMethodMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+      const V8DOMConfiguration::MethodConfiguration runtimeEnabledOverloadedVoidMethodMethodConfiguration = {"runtimeEnabledOverloadedVoidMethod", TestObjectV8Internal::runtimeEnabledOverloadedVoidMethodMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
       V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, runtimeEnabledOverloadedVoidMethodMethodConfiguration);
   }
-  const V8DOMConfiguration::MethodConfiguration partiallyRuntimeEnabledOverloadedVoidMethodMethodConfiguration = {"partiallyRuntimeEnabledOverloadedVoidMethod", TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodCallback, 0, TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodLength(), v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+  const V8DOMConfiguration::MethodConfiguration partiallyRuntimeEnabledOverloadedVoidMethodMethodConfiguration = {"partiallyRuntimeEnabledOverloadedVoidMethod", TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodCallback, 0, TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodLength(), v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
   V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partiallyRuntimeEnabledOverloadedVoidMethodMethodConfiguration);
 }
 
@@ -12033,13 +11636,13 @@ void V8TestObject::installFeatureName(v8::Isolate* isolate, const DOMWrapperWorl
   v8::Local<v8::FunctionTemplate> interfaceTemplate = V8TestObject::wrapperTypeInfo.domTemplate(isolate, world);
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   ALLOW_UNUSED_LOCAL(signature);
-  const V8DOMConfiguration::AccessorConfiguration accessororiginTrialEnabledLongAttributeConfiguration = {"originTrialEnabledLongAttribute", TestObjectV8Internal::originTrialEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::originTrialEnabledLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+  const V8DOMConfiguration::AccessorConfiguration accessororiginTrialEnabledLongAttributeConfiguration = {"originTrialEnabledLongAttribute", TestObjectV8Internal::originTrialEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::originTrialEnabledLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
   V8DOMConfiguration::installAccessor(isolate, world, instance, prototype, interface, signature, accessororiginTrialEnabledLongAttributeConfiguration);
-  const V8DOMConfiguration::AccessorConfiguration accessorunscopableOriginTrialEnabledLongAttributeConfiguration = {"unscopableOriginTrialEnabledLongAttribute", TestObjectV8Internal::unscopableOriginTrialEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::unscopableOriginTrialEnabledLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+  const V8DOMConfiguration::AccessorConfiguration accessorunscopableOriginTrialEnabledLongAttributeConfiguration = {"unscopableOriginTrialEnabledLongAttribute", TestObjectV8Internal::unscopableOriginTrialEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::unscopableOriginTrialEnabledLongAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
   V8DOMConfiguration::installAccessor(isolate, world, instance, prototype, interface, signature, accessorunscopableOriginTrialEnabledLongAttributeConfiguration);
-  const V8DOMConfiguration::MethodConfiguration methodOrigintrialenabledvoidmethodConfiguration = {"originTrialEnabledVoidMethod", TestObjectV8Internal::originTrialEnabledVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+  const V8DOMConfiguration::MethodConfiguration methodOrigintrialenabledvoidmethodConfiguration = {"originTrialEnabledVoidMethod", TestObjectV8Internal::originTrialEnabledVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
   V8DOMConfiguration::installMethod(isolate, world, instance, prototype, interface, signature, methodOrigintrialenabledvoidmethodConfiguration);
-  const V8DOMConfiguration::MethodConfiguration methodPerworldbindingsorigintrialenabledvoidmethodConfiguration = {"perWorldBindingsOriginTrialEnabledVoidMethod", TestObjectV8Internal::perWorldBindingsOriginTrialEnabledVoidMethodMethodCallback, TestObjectV8Internal::perWorldBindingsOriginTrialEnabledVoidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+  const V8DOMConfiguration::MethodConfiguration methodPerworldbindingsorigintrialenabledvoidmethodConfiguration = {"perWorldBindingsOriginTrialEnabledVoidMethod", TestObjectV8Internal::perWorldBindingsOriginTrialEnabledVoidMethodMethodCallback, TestObjectV8Internal::perWorldBindingsOriginTrialEnabledVoidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
   V8DOMConfiguration::installMethod(isolate, world, instance, prototype, interface, signature, methodPerworldbindingsorigintrialenabledvoidmethodConfiguration);
 }
 
@@ -12089,441 +11692,6 @@ void V8TestObject::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> con
   }
   unscopables->CreateDataProperty(context, v8AtomicString(isolate, "unscopableVoidMethod"), v8::True(isolate)).FromJust();
   prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopables).FromJust();
-}
-
-bool V8TestObject::PrivateScript::voidMethodImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  v8::Local<v8::Value> *argv = 0;
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodImplementedInPrivateScript");
-  v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestObject", "voidMethodImplementedInPrivateScript", holder, 0, argv);
-  if (v8Value.IsEmpty())
-    return false;
-  CHECK(!exceptionState.hadException());
-  return true;
-}
-
-bool V8TestObject::PrivateScript::shortMethodImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl, int* result) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  v8::Local<v8::Value> *argv = 0;
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::ExecutionContext, "TestObject", "shortMethodImplementedInPrivateScript");
-  v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestObject", "shortMethodImplementedInPrivateScript", holder, 0, argv);
-  if (v8Value.IsEmpty())
-    return false;
-  int cppValue = toInt16(scriptState->isolate(), v8Value, NormalConversion, exceptionState);
-  if (exceptionState.hadException())
-    return false;
-  *result = cppValue;
-  CHECK(!exceptionState.hadException());
-  return true;
-}
-
-bool V8TestObject::PrivateScript::shortMethodWithShortArgumentImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl, int value, int* result) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  v8::Local<v8::Value> valueHandle = v8::Integer::New(scriptState->isolate(), value);
-  v8::Local<v8::Value> argv[] = { valueHandle };
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::ExecutionContext, "TestObject", "shortMethodWithShortArgumentImplementedInPrivateScript");
-  v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestObject", "shortMethodWithShortArgumentImplementedInPrivateScript", holder, 1, argv);
-  if (v8Value.IsEmpty())
-    return false;
-  int cppValue = toInt16(scriptState->isolate(), v8Value, NormalConversion, exceptionState);
-  if (exceptionState.hadException())
-    return false;
-  *result = cppValue;
-  CHECK(!exceptionState.hadException());
-  return true;
-}
-
-bool V8TestObject::PrivateScript::stringMethodWithStringArgumentImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl, String value, String* result) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  v8::Local<v8::Value> valueHandle = v8String(scriptState->isolate(), value);
-  v8::Local<v8::Value> argv[] = { valueHandle };
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::ExecutionContext, "TestObject", "stringMethodWithStringArgumentImplementedInPrivateScript");
-  v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestObject", "stringMethodWithStringArgumentImplementedInPrivateScript", holder, 1, argv);
-  if (v8Value.IsEmpty())
-    return false;
-  V8StringResource<> cppValue = v8Value;
-  if (!cppValue.prepare())
-    return false;
-  *result = cppValue;
-  CHECK(!exceptionState.hadException());
-  return true;
-}
-
-bool V8TestObject::PrivateScript::nodeMethodWithNodeArgumentImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl, Node* value, Node** result) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  v8::Local<v8::Value> valueHandle = toV8(value, scriptState->context()->Global(), scriptState->isolate());
-  v8::Local<v8::Value> argv[] = { valueHandle };
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::ExecutionContext, "TestObject", "nodeMethodWithNodeArgumentImplementedInPrivateScript");
-  v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestObject", "nodeMethodWithNodeArgumentImplementedInPrivateScript", holder, 1, argv);
-  if (v8Value.IsEmpty())
-    return false;
-  Node* cppValue = V8Node::toImplWithTypeCheck(scriptState->isolate(), v8Value);
-  *result = cppValue;
-  CHECK(!exceptionState.hadException());
-  return true;
-}
-
-bool V8TestObject::PrivateScript::nodeMethodWithVariousArgumentsImplementedInPrivateScriptMethod(LocalFrame* frame, TestObject* holderImpl, Document* document, Node* node, int value1, double value2, String string, Node** result) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  v8::Local<v8::Value> documentHandle = toV8(document, scriptState->context()->Global(), scriptState->isolate());
-  v8::Local<v8::Value> nodeHandle = toV8(node, scriptState->context()->Global(), scriptState->isolate());
-  v8::Local<v8::Value> value1Handle = v8::Integer::New(scriptState->isolate(), value1);
-  v8::Local<v8::Value> value2Handle = v8::Number::New(scriptState->isolate(), value2);
-  v8::Local<v8::Value> stringHandle = v8String(scriptState->isolate(), string);
-  v8::Local<v8::Value> argv[] = { documentHandle, nodeHandle, value1Handle, value2Handle, stringHandle };
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::ExecutionContext, "TestObject", "nodeMethodWithVariousArgumentsImplementedInPrivateScript");
-  v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestObject", "nodeMethodWithVariousArgumentsImplementedInPrivateScript", holder, 5, argv);
-  if (v8Value.IsEmpty())
-    return false;
-  Node* cppValue = V8Node::toImplWithTypeCheck(scriptState->isolate(), v8Value);
-  *result = cppValue;
-  CHECK(!exceptionState.hadException());
-  return true;
-}
-
-bool V8TestObject::PrivateScript::methodForPrivateScriptOnlyMethod(LocalFrame* frame, TestObject* holderImpl, int value1, int value2, int* result) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  v8::Local<v8::Value> value1Handle = v8::Integer::New(scriptState->isolate(), value1);
-  v8::Local<v8::Value> value2Handle = v8::Integer::New(scriptState->isolate(), value2);
-  v8::Local<v8::Value> argv[] = { value1Handle, value2Handle };
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::ExecutionContext, "TestObject", "methodForPrivateScriptOnly");
-  v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMMethod(scriptState, scriptStateInUserScript, "TestObject", "methodForPrivateScriptOnly", holder, 2, argv);
-  if (v8Value.IsEmpty())
-    return false;
-  int cppValue = toInt16(scriptState->isolate(), v8Value, NormalConversion, exceptionState);
-  if (exceptionState.hadException())
-    return false;
-  *result = cppValue;
-  CHECK(!exceptionState.hadException());
-  return true;
-}
-
-bool V8TestObject::PrivateScript::readonlyShortAttributeAttributeGetter(LocalFrame* frame, TestObject* holderImpl, int* result) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::GetterContext, "TestObject", "readonlyShortAttribute");
-  v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "readonlyShortAttribute", holder);
-  if (v8Value.IsEmpty())
-    return false;
-  int cppValue = toInt16(scriptState->isolate(), v8Value, NormalConversion, exceptionState);
-  if (exceptionState.hadException())
-    return false;
-  CHECK(!exceptionState.hadException());
-  *result = cppValue;
-  return true;
-}
-
-bool V8TestObject::PrivateScript::shortAttributeAttributeGetter(LocalFrame* frame, TestObject* holderImpl, int* result) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::GetterContext, "TestObject", "shortAttribute");
-  v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "shortAttribute", holder);
-  if (v8Value.IsEmpty())
-    return false;
-  int cppValue = toInt16(scriptState->isolate(), v8Value, NormalConversion, exceptionState);
-  if (exceptionState.hadException())
-    return false;
-  CHECK(!exceptionState.hadException());
-  *result = cppValue;
-  return true;
-}
-
-bool V8TestObject::PrivateScript::shortAttributeAttributeSetter(LocalFrame* frame, TestObject* holderImpl, int cppValue) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::SetterContext, "TestObject", "shortAttribute");
-  return PrivateScriptRunner::runDOMAttributeSetter(scriptState, scriptStateInUserScript, "TestObject", "shortAttribute", holder, v8::Integer::New(scriptState->isolate(), cppValue));
-}
-
-bool V8TestObject::PrivateScript::stringAttributeAttributeGetter(LocalFrame* frame, TestObject* holderImpl, String* result) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::GetterContext, "TestObject", "stringAttribute");
-  v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "stringAttribute", holder);
-  if (v8Value.IsEmpty())
-    return false;
-  V8StringResource<> cppValue = v8Value;
-  if (!cppValue.prepare())
-    return false;
-  CHECK(!exceptionState.hadException());
-  *result = cppValue;
-  return true;
-}
-
-bool V8TestObject::PrivateScript::stringAttributeAttributeSetter(LocalFrame* frame, TestObject* holderImpl, String cppValue) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::SetterContext, "TestObject", "stringAttribute");
-  return PrivateScriptRunner::runDOMAttributeSetter(scriptState, scriptStateInUserScript, "TestObject", "stringAttribute", holder, v8String(scriptState->isolate(), cppValue));
-}
-
-bool V8TestObject::PrivateScript::nodeAttributeAttributeGetter(LocalFrame* frame, TestObject* holderImpl, Node** result) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::GetterContext, "TestObject", "nodeAttribute");
-  v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "nodeAttribute", holder);
-  if (v8Value.IsEmpty())
-    return false;
-  Node* cppValue = V8Node::toImplWithTypeCheck(scriptState->isolate(), v8Value);
-  CHECK(!exceptionState.hadException());
-  *result = cppValue;
-  return true;
-}
-
-bool V8TestObject::PrivateScript::nodeAttributeAttributeSetter(LocalFrame* frame, TestObject* holderImpl, Node* cppValue) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::SetterContext, "TestObject", "nodeAttribute");
-  return PrivateScriptRunner::runDOMAttributeSetter(scriptState, scriptStateInUserScript, "TestObject", "nodeAttribute", holder, toV8(cppValue, scriptState->context()->Global(), scriptState->isolate()));
-}
-
-bool V8TestObject::PrivateScript::attributeForPrivateScriptOnlyAttributeGetter(LocalFrame* frame, TestObject* holderImpl, String* result) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::GetterContext, "TestObject", "attributeForPrivateScriptOnly");
-  v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "attributeForPrivateScriptOnly", holder);
-  if (v8Value.IsEmpty())
-    return false;
-  V8StringResource<> cppValue = v8Value;
-  if (!cppValue.prepare())
-    return false;
-  CHECK(!exceptionState.hadException());
-  *result = cppValue;
-  return true;
-}
-
-bool V8TestObject::PrivateScript::attributeForPrivateScriptOnlyAttributeSetter(LocalFrame* frame, TestObject* holderImpl, String cppValue) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::SetterContext, "TestObject", "attributeForPrivateScriptOnly");
-  return PrivateScriptRunner::runDOMAttributeSetter(scriptState, scriptStateInUserScript, "TestObject", "attributeForPrivateScriptOnly", holder, v8String(scriptState->isolate(), cppValue));
-}
-
-bool V8TestObject::PrivateScript::enumForPrivateScriptAttributeGetter(LocalFrame* frame, TestObject* holderImpl, String* result) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::GetterContext, "TestObject", "enumForPrivateScript");
-  v8::Local<v8::Value> v8Value = PrivateScriptRunner::runDOMAttributeGetter(scriptState, scriptStateInUserScript, "TestObject", "enumForPrivateScript", holder);
-  if (v8Value.IsEmpty())
-    return false;
-  V8StringResource<> cppValue = v8Value;
-  if (!cppValue.prepare())
-    return false;
-  CHECK(!exceptionState.hadException());
-  *result = cppValue;
-  return true;
-}
-
-bool V8TestObject::PrivateScript::enumForPrivateScriptAttributeSetter(LocalFrame* frame, TestObject* holderImpl, String cppValue) {
-  if (!frame)
-    return false;
-  v8::HandleScope handleScope(toIsolate(frame));
-  ScriptForbiddenScope::AllowUserAgentScript script;
-  ScriptState* scriptState = ScriptState::forWorld(frame, DOMWrapperWorld::privateScriptIsolatedWorld());
-  if (!scriptState)
-    return false;
-  ScriptState* scriptStateInUserScript = ScriptState::forMainWorld(frame);
-  if (!scriptStateInUserScript)
-    return false;
-
-  ScriptState::Scope scope(scriptState);
-  v8::Local<v8::Value> holder = toV8(holderImpl, scriptState->context()->Global(), scriptState->isolate());
-  ExceptionState exceptionState(scriptState->isolate(), ExceptionState::SetterContext, "TestObject", "enumForPrivateScript");
-  return PrivateScriptRunner::runDOMAttributeSetter(scriptState, scriptStateInUserScript, "TestObject", "enumForPrivateScript", holder, v8String(scriptState->isolate(), cppValue));
 }
 
 }  // namespace blink

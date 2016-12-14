@@ -46,11 +46,6 @@ class CORE_EXPORT V8DOMConfiguration final {
   // This greatly reduces the binary size by moving from code driven setup to
   // data table driven setup.
 
-  enum ExposeConfiguration {
-    ExposedToAllScripts,
-    OnlyExposedToPrivateScript,
-  };
-
   // Bitflags to show where the member will be defined.
   enum PropertyLocationConfiguration {
     OnInstance = 1 << 0,
@@ -81,9 +76,8 @@ class CORE_EXPORT V8DOMConfiguration final {
     // The accessor's 'result' is stored in a private property.
     CachedAccessorCallback cachedAccessorCallback;
     const WrapperTypeInfo* data;
-    unsigned settings : 8;             // v8::AccessControl
-    unsigned attribute : 8;            // v8::PropertyAttribute
-    unsigned exposeConfiguration : 1;  // ExposeConfiguration
+    unsigned settings : 8;   // v8::AccessControl
+    unsigned attribute : 8;  // v8::PropertyAttribute
     unsigned
         propertyLocationConfiguration : 3;  // PropertyLocationConfiguration
     unsigned holderCheckConfiguration : 1;  // HolderCheckConfiguration
@@ -135,9 +129,8 @@ class CORE_EXPORT V8DOMConfiguration final {
     // The accessor's 'result' is stored in a private property.
     CachedAccessorCallback cachedAccessorCallback;
     const WrapperTypeInfo* data;
-    unsigned settings : 8;             // v8::AccessControl
-    unsigned attribute : 8;            // v8::PropertyAttribute
-    unsigned exposeConfiguration : 1;  // ExposeConfiguration
+    unsigned settings : 8;   // v8::AccessControl
+    unsigned attribute : 8;  // v8::PropertyAttribute
     unsigned
         propertyLocationConfiguration : 3;  // PropertyLocationConfiguration
     unsigned holderCheckConfiguration : 1;  // HolderCheckConfiguration
@@ -240,8 +233,7 @@ class CORE_EXPORT V8DOMConfiguration final {
     v8::FunctionCallback callback;
     v8::FunctionCallback callbackForMainWorld;
     int length;
-    unsigned attribute : 8;            // v8::PropertyAttribute
-    unsigned exposeConfiguration : 1;  // ExposeConfiguration
+    unsigned attribute : 8;  // v8::PropertyAttribute
     unsigned
         propertyLocationConfiguration : 3;  // PropertyLocationConfiguration
     unsigned holderCheckConfiguration : 1;  // HolderCheckConfiguration
@@ -262,8 +254,7 @@ class CORE_EXPORT V8DOMConfiguration final {
     v8::FunctionCallback callback;
     // SymbolKeyedMethodConfiguration doesn't support per-world bindings.
     int length;
-    unsigned attribute : 8;            // v8::PropertyAttribute
-    unsigned exposeConfiguration : 1;  // ExposeConfiguration
+    unsigned attribute : 8;  // v8::PropertyAttribute
     unsigned
         propertyLocationConfiguration : 3;  // PropertyLocationConfiguration
     unsigned holderCheckConfiguration : 1;  // HolderCheckConfiguration

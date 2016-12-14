@@ -202,7 +202,7 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
         # Add the include for interface itself
         if IdlType(interface_name).is_typed_array:
             template_context['header_includes'].add('core/dom/DOMTypedArray.h')
-        elif interface_info['include_path']:
+        else:
             template_context['header_includes'].add(interface_info['include_path'])
         template_context['header_includes'].update(
             interface_info.get('additional_header_includes', []))
@@ -228,8 +228,7 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
             dictionary, interfaces_info)
         include_paths = interface_info.get('dependencies_include_paths')
         # Add the include for interface itself
-        if interface_info['include_path']:
-            template_context['header_includes'].add(interface_info['include_path'])
+        template_context['header_includes'].add(interface_info['include_path'])
         if not is_testing_target(interface_info.get('full_path')):
             template_context['header_includes'].add(self.info_provider.include_path_for_export)
             template_context['exported'] = self.info_provider.specifier_for_export

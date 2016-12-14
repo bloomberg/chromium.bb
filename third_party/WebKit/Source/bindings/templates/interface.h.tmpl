@@ -28,22 +28,6 @@ class {{v8_class}}Constructor {
 class {{v8_class}} {
   STATIC_ONLY({{v8_class}});
  public:
-  {% if has_private_script %}
-  class PrivateScript {
-    STATIC_ONLY(PrivateScript);
-   public:
-    {% for method in methods if method.is_implemented_in_private_script %}
-    static bool {{method.name}}Method({{method.argument_declarations_for_private_script | join(', ')}});
-    {% endfor %}
-    {% for attribute in attributes if attribute.is_implemented_in_private_script %}
-    static bool {{attribute.name}}AttributeGetter(LocalFrame* frame, {{cpp_class}}* holderImpl, {{attribute.cpp_type}}* result);
-    {% if not attribute.is_read_only %}
-    static bool {{attribute.name}}AttributeSetter(LocalFrame* frame, {{cpp_class}}* holderImpl, {{attribute.argument_cpp_type}} cppValue);
-    {% endif %}
-    {% endfor %}
-  };
-
-  {% endif %}
   {% if is_array_buffer_or_view %}
   {{exported}}static {{cpp_class}}* toImpl(v8::Local<v8::Object> object);
   {% else %}

@@ -69,9 +69,7 @@ static v8::Local<v8::Value> getItem(
   v8::Local<v8::Uint32> index;
   if (!argument->ToArrayIndex(info.GetIsolate()->GetCurrentContext())
            .ToLocal(&index)) {
-    UseCounter::countIfNotPrivateScript(
-        info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-        namedFeature);
+    UseCounter::count(currentExecutionContext(info.GetIsolate()), namedFeature);
     TOSTRING_DEFAULT(V8StringResource<>, name, argument,
                      v8::Undefined(info.GetIsolate()));
     v8::Local<v8::Value> result = getNamedItems(collection, name, info);
@@ -82,14 +80,11 @@ static v8::Local<v8::Value> getItem(
     return result;
   }
 
-  UseCounter::countIfNotPrivateScript(
-      info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-      indexedFeature);
-  if (!argument->IsNumber())
-    UseCounter::countIfNotPrivateScript(
-        info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-        indexedWithNonNumberFeature);
-
+  UseCounter::count(currentExecutionContext(info.GetIsolate()), indexedFeature);
+  if (!argument->IsNumber()) {
+    UseCounter::count(currentExecutionContext(info.GetIsolate()),
+                      indexedWithNonNumberFeature);
+  }
   Element* result = collection->item(index->Value());
   return toV8(result, info.Holder(), info.GetIsolate());
 }
@@ -97,9 +92,8 @@ static v8::Local<v8::Value> getItem(
 void V8HTMLAllCollection::itemMethodCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   if (info.Length() < 1) {
-    UseCounter::countIfNotPrivateScript(
-        info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-        UseCounter::DocumentAllItemNoArguments);
+    UseCounter::count(currentExecutionContext(info.GetIsolate()),
+                      UseCounter::DocumentAllItemNoArguments);
     return;
   }
 
@@ -113,15 +107,13 @@ void V8HTMLAllCollection::itemMethodCustom(
 void V8HTMLAllCollection::legacyCallCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info) {
   if (info.Length() < 1) {
-    UseCounter::countIfNotPrivateScript(
-        info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-        UseCounter::DocumentAllLegacyCallNoArguments);
+    UseCounter::count(currentExecutionContext(info.GetIsolate()),
+                      UseCounter::DocumentAllLegacyCallNoArguments);
     return;
   }
 
-  UseCounter::countIfNotPrivateScript(
-      info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-      UseCounter::DocumentAllLegacyCall);
+  UseCounter::count(currentExecutionContext(info.GetIsolate()),
+                    UseCounter::DocumentAllLegacyCall);
 
   HTMLAllCollection* impl = V8HTMLAllCollection::toImpl(info.Holder());
 
@@ -134,9 +126,8 @@ void V8HTMLAllCollection::legacyCallCustom(
     return;
   }
 
-  UseCounter::countIfNotPrivateScript(
-      info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-      UseCounter::DocumentAllLegacyCallTwoArguments);
+  UseCounter::count(currentExecutionContext(info.GetIsolate()),
+                    UseCounter::DocumentAllLegacyCallTwoArguments);
 
   // If there is a second argument it is the index of the item we want.
   TOSTRING_VOID(V8StringResource<>, name, info[0]);

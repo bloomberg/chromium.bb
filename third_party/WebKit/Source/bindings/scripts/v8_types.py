@@ -437,8 +437,7 @@ def impl_includes_for_type(idl_type, interfaces_info):
         includes_for_type.add('wtf/text/WTFString.h')
     if base_idl_type in interfaces_info:
         interface_info = interfaces_info[base_idl_type]
-        if interface_info['include_path']:
-            includes_for_type.add(interface_info['include_path'])
+        includes_for_type.add(interface_info['include_path'])
     if base_idl_type in INCLUDES_FOR_TYPE:
         includes_for_type.update(INCLUDES_FOR_TYPE[base_idl_type])
     if idl_type.is_typed_array:

@@ -48,7 +48,6 @@ enum WorldIdConstants {
   MainWorldId = 0,
   // Embedder isolated worlds can use IDs in [1, 1<<29).
   EmbedderWorldIdLimit = (1 << 29),
-  PrivateScriptIsolatedWorldId,
   DocumentXMLTreeViewerWorldId,
   IsolatedWorldIdLimit,
   WorkerWorldId,
@@ -65,7 +64,6 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
                                             int extensionGroup = -1);
 
   static const int mainWorldExtensionGroup = 0;
-  static const int privateScriptIsolatedWorldExtensionGroup = 1;
   static PassRefPtr<DOMWrapperWorld> ensureIsolatedWorld(v8::Isolate*,
                                                          int worldId,
                                                          int extensionGroup);
@@ -90,7 +88,6 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   }
 
   static DOMWrapperWorld& mainWorld();
-  static DOMWrapperWorld& privateScriptIsolatedWorld();
   static PassRefPtr<DOMWrapperWorld> fromWorldId(v8::Isolate*,
                                                  int worldId,
                                                  int extensionGroup);
@@ -118,9 +115,6 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   bool isolatedWorldHasContentSecurityPolicy();
 
   bool isMainWorld() const { return m_worldId == MainWorldId; }
-  bool isPrivateScriptIsolatedWorld() const {
-    return m_worldId == PrivateScriptIsolatedWorldId;
-  }
   bool isWorkerWorld() const { return m_worldId == WorkerWorldId; }
   bool isIsolatedWorld() const {
     return MainWorldId < m_worldId && m_worldId < IsolatedWorldIdLimit;

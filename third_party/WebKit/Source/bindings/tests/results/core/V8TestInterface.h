@@ -25,14 +25,6 @@ namespace blink {
 class V8TestInterface {
   STATIC_ONLY(V8TestInterface);
  public:
-  class PrivateScript {
-    STATIC_ONLY(PrivateScript);
-   public:
-    static bool shortMethodWithShortArgumentImplementedInPrivateScriptMethod(LocalFrame* frame, TestInterface* holderImpl, int value, int* result);
-    static bool stringAttributeAttributeGetter(LocalFrame* frame, TestInterfaceImplementation* holderImpl, String* result);
-    static bool stringAttributeAttributeSetter(LocalFrame* frame, TestInterfaceImplementation* holderImpl, String cppValue);
-  };
-
   CORE_EXPORT static bool hasInstance(v8::Local<v8::Value>, v8::Isolate*);
   static v8::Local<v8::Object> findInstanceInPrototypeChain(v8::Local<v8::Value>, v8::Isolate*);
   CORE_EXPORT static v8::Local<v8::FunctionTemplate> domTemplate(v8::Isolate*, const DOMWrapperWorld&);

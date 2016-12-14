@@ -471,9 +471,7 @@ void WindowProxy::setSecurityToken(SecurityOrigin* origin) {
     return;
   }
 
-  if (m_world->isPrivateScriptIsolatedWorld()) {
-    token = "private-script://" + token;
-  } else if (m_world->isIsolatedWorld()) {
+  if (m_world->isIsolatedWorld()) {
     SecurityOrigin* frameSecurityOrigin =
         m_frame->securityContext()->getSecurityOrigin();
     String frameSecurityToken = frameSecurityOrigin->toString();

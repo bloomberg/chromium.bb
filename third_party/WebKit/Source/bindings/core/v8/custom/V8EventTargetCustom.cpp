@@ -40,14 +40,12 @@ void V8EventTarget::addEventListenerMethodPrologueCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info,
     EventTarget*) {
   if (info.Length() >= 3 && info[2]->IsObject()) {
-    UseCounter::countIfNotPrivateScript(
-        info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-        UseCounter::AddEventListenerThirdArgumentIsObject);
+    UseCounter::count(currentExecutionContext(info.GetIsolate()),
+                      UseCounter::AddEventListenerThirdArgumentIsObject);
   }
   if (info.Length() >= 4) {
-    UseCounter::countIfNotPrivateScript(
-        info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-        UseCounter::AddEventListenerFourArguments);
+    UseCounter::count(currentExecutionContext(info.GetIsolate()),
+                      UseCounter::AddEventListenerFourArguments);
   }
 }
 
@@ -63,14 +61,12 @@ void V8EventTarget::removeEventListenerMethodPrologueCustom(
     const v8::FunctionCallbackInfo<v8::Value>& info,
     EventTarget*) {
   if (info.Length() >= 3 && info[2]->IsObject()) {
-    UseCounter::countIfNotPrivateScript(
-        info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-        UseCounter::RemoveEventListenerThirdArgumentIsObject);
+    UseCounter::count(currentExecutionContext(info.GetIsolate()),
+                      UseCounter::RemoveEventListenerThirdArgumentIsObject);
   }
   if (info.Length() >= 4) {
-    UseCounter::countIfNotPrivateScript(
-        info.GetIsolate(), currentExecutionContext(info.GetIsolate()),
-        UseCounter::RemoveEventListenerFourArguments);
+    UseCounter::count(currentExecutionContext(info.GetIsolate()),
+                      UseCounter::RemoveEventListenerFourArguments);
   }
 }
 
