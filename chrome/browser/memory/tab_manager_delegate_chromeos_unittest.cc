@@ -21,7 +21,6 @@
 #include "chrome/common/url_constants.h"
 #include "chromeos/dbus/fake_debug_daemon_client.h"
 #include "components/arc/common/process.mojom.h"
-#include "components/arc/test/fake_arc_bridge_service.h"
 #include "components/exo/shell_surface.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
@@ -170,7 +169,6 @@ class MockMemoryStat : public TabManagerDelegate::MemoryStat {
 
 TEST_F(TabManagerDelegateTest, SetOomScoreAdj) {
   base::MessageLoop message_loop;
-  arc::FakeArcBridgeService fake_arc_bridge_service;
   MockTabManagerDelegate tab_manager_delegate;
 
   std::vector<arc::ArcProcess> arc_processes;
@@ -228,8 +226,6 @@ TEST_F(TabManagerDelegateTest, SetOomScoreAdj) {
 }
 
 TEST_F(TabManagerDelegateTest, KillMultipleProcesses) {
-  arc::FakeArcBridgeService fake_arc_bridge_service;
-
   // Not owned.
   MockMemoryStat* memory_stat = new MockMemoryStat();
 

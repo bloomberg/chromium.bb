@@ -88,6 +88,7 @@ class ArcBridgeService {
     virtual ~Observer() {}
   };
 
+  ArcBridgeService();
   virtual ~ArcBridgeService();
 
   // Return true if ARC has been enabled through a commandline
@@ -103,15 +104,15 @@ class ArcBridgeService {
 
   // Starts the ARC service, then it will connect the Mojo channel. When the
   // bridge becomes ready, OnBridgeReady() is called.
-  virtual void RequestStart() = 0;
+  virtual void RequestStart();
 
   // Stops the ARC service.
-  virtual void RequestStop() = 0;
+  virtual void RequestStop();
 
   // OnShutdown() should be called when the browser is shutting down. This can
   // only be called on the thread that this class was created on. We assume that
   // when this function is called, MessageLoop is no longer exists.
-  virtual void OnShutdown() = 0;
+  virtual void OnShutdown();
 
   // Adds or removes observers. This can only be called on the thread that this
   // class was created on. RemoveObserver does nothing if |observer| is not in
@@ -202,8 +203,6 @@ class ArcBridgeService {
     // The ARC instance has started shutting down.
     STOPPING,
   };
-
-  ArcBridgeService();
 
   // Instance holders.
   InstanceHolder<mojom::AppInstance> app_;

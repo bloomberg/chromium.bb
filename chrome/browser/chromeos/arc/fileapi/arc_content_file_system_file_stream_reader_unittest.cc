@@ -12,8 +12,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_file_stream_reader.h"
+#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/test/fake_arc_bridge_service.h"
 #include "components/arc/test/fake_file_system_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -85,8 +85,6 @@ class ArcContentFileSystemFileStreamReaderTest : public testing::Test {
 
     file_system_ = base::MakeUnique<ArcFileSystemInstanceTestImpl>(path);
 
-    ArcServiceManager::SetArcBridgeServiceForTesting(
-        base::MakeUnique<FakeArcBridgeService>());
     arc_service_manager_ = base::MakeUnique<ArcServiceManager>(nullptr);
     arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
         file_system_.get());

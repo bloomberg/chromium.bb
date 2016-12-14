@@ -10,7 +10,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_bridge.h"
-#include "components/arc/test/fake_arc_bridge_service.h"
+#include "components/arc/arc_bridge_service.h"
 #include "components/arc/test/fake_policy_instance.h"
 #include "components/policy/core/common/mock_policy_service.h"
 #include "components/policy/core/common/policy_map.h"
@@ -101,9 +101,9 @@ class ArcPolicyBridgeTest : public testing::Test {
   ArcPolicyBridgeTest() {}
 
   void SetUp() override {
-    bridge_service_.reset(new FakeArcBridgeService());
-    policy_bridge_.reset(
-        new ArcPolicyBridge(bridge_service_.get(), &policy_service_));
+    bridge_service_ = base::MakeUnique<ArcBridgeService>();
+    policy_bridge_ = base::MakeUnique<ArcPolicyBridge>(bridge_service_.get(),
+                                                       &policy_service_);
     policy_bridge_->OverrideIsManagedForTesting(true);
 
     EXPECT_CALL(policy_service_,
@@ -113,7 +113,7 @@ class ArcPolicyBridgeTest : public testing::Test {
     EXPECT_CALL(policy_service_, AddObserver(policy::POLICY_DOMAIN_CHROME, _))
         .Times(1);
 
-    policy_instance_.reset(new FakePolicyInstance);
+    policy_instance_ = base::MakeUnique<FakePolicyInstance>();
     bridge_service_->policy()->SetInstance(policy_instance_.get());
   }
 
@@ -126,7 +126,7 @@ class ArcPolicyBridgeTest : public testing::Test {
   // Not an unused variable. Unit tests do not have a message loop by themselves
   // and mojo needs a message loop for communication.
   base::MessageLoop loop_;
-  std::unique_ptr<FakeArcBridgeService> bridge_service_;
+  std::unique_ptr<ArcBridgeService> bridge_service_;
   std::unique_ptr<ArcPolicyBridge> policy_bridge_;
   // Always keep policy_instance_ below bridge_service_, so that
   // policy_instance_ is destructed first. It needs to remove itself as

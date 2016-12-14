@@ -133,26 +133,26 @@ class ArcImeServiceTest : public testing::Test {
   ArcImeServiceTest() {}
 
  protected:
-  std::unique_ptr<FakeArcBridgeService> fake_arc_bridge_service_;
+  std::unique_ptr<ArcBridgeService> arc_bridge_service_;
   std::unique_ptr<FakeInputMethod> fake_input_method_;
   std::unique_ptr<ArcImeService> instance_;
   FakeArcImeBridge* fake_arc_ime_bridge_;  // Owned by |instance_|
 
  private:
   void SetUp() override {
-    fake_arc_bridge_service_.reset(new FakeArcBridgeService);
-    instance_.reset(new ArcImeService(fake_arc_bridge_service_.get()));
-    fake_arc_ime_bridge_ = new FakeArcImeBridge;
+    arc_bridge_service_ = base::MakeUnique<ArcBridgeService>();
+    instance_ = base::MakeUnique<ArcImeService>(arc_bridge_service_.get());
+    fake_arc_ime_bridge_ = new FakeArcImeBridge();
     instance_->SetImeBridgeForTesting(base::WrapUnique(fake_arc_ime_bridge_));
 
-    fake_input_method_.reset(new FakeInputMethod);
+    fake_input_method_ = base::MakeUnique<FakeInputMethod>();
     instance_->SetInputMethodForTesting(fake_input_method_.get());
   }
 
   void TearDown() override {
     fake_arc_ime_bridge_ = nullptr;
     instance_.reset();
-    fake_arc_bridge_service_.reset();
+    arc_bridge_service_.reset();
   }
 };
 

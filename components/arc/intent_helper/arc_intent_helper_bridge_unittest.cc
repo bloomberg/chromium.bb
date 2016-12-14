@@ -6,10 +6,11 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
+#include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
 #include "components/arc/intent_helper/local_activity_resolver.h"
-#include "components/arc/test/fake_arc_bridge_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {
@@ -21,25 +22,25 @@ class ArcIntentHelperTest : public testing::Test {
   ArcIntentHelperTest() = default;
 
  protected:
-  std::unique_ptr<FakeArcBridgeService> fake_arc_bridge_service_;
+  std::unique_ptr<ArcBridgeService> arc_bridge_service_;
   scoped_refptr<ActivityIconLoader> icon_loader_;
   scoped_refptr<LocalActivityResolver> activity_resolver_;
   std::unique_ptr<ArcIntentHelperBridge> instance_;
 
  private:
   void SetUp() override {
-    fake_arc_bridge_service_.reset(new FakeArcBridgeService());
+    arc_bridge_service_ = base::MakeUnique<ArcBridgeService>();
     icon_loader_ = new ActivityIconLoader();
     activity_resolver_ = new LocalActivityResolver();
-    instance_.reset(new ArcIntentHelperBridge(
-        fake_arc_bridge_service_.get(), icon_loader_, activity_resolver_));
+    instance_ = base::MakeUnique<ArcIntentHelperBridge>(
+        arc_bridge_service_.get(), icon_loader_, activity_resolver_);
   }
 
   void TearDown() override {
     instance_.reset();
     activity_resolver_ = nullptr;
     icon_loader_ = nullptr;
-    fake_arc_bridge_service_.reset();
+    arc_bridge_service_.reset();
   }
 
   DISALLOW_COPY_AND_ASSIGN(ArcIntentHelperTest);

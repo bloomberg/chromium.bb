@@ -43,6 +43,18 @@ bool ArcBridgeService::GetAvailable(const base::CommandLine* command_line) {
   return command_line->HasSwitch(chromeos::switches::kArcAvailable);
 }
 
+void ArcBridgeService::RequestStart() {
+  NOTREACHED();
+}
+
+void ArcBridgeService::RequestStop() {
+  NOTREACHED();
+}
+
+void ArcBridgeService::OnShutdown() {
+  NOTREACHED();
+}
+
 void ArcBridgeService::AddObserver(Observer* observer) {
   DCHECK(CalledOnValidThread());
   observer_list_.AddObserver(observer);

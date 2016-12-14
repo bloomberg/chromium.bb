@@ -12,8 +12,8 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_async_file_util.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
+#include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/test/fake_arc_bridge_service.h"
 #include "components/arc/test/fake_file_system_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -42,8 +42,6 @@ class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
   ~ArcContentFileSystemAsyncFileUtilTest() override = default;
 
   void SetUp() override {
-    ArcServiceManager::SetArcBridgeServiceForTesting(
-        base::MakeUnique<FakeArcBridgeService>());
     arc_service_manager_ = base::MakeUnique<ArcServiceManager>(nullptr);
     arc_service_manager_->arc_bridge_service()->file_system()->SetInstance(
         &file_system_);

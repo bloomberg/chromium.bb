@@ -34,8 +34,4 @@ void FakeArcBridgeService::SetStopped() {
     SetState(State::STOPPED);
 }
 
-bool FakeArcBridgeService::HasObserver(const Observer* observer) {
-  return observer_list().HasObserver(observer);
-}
-
 }  // namespace arc

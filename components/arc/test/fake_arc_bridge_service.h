@@ -23,13 +23,10 @@ class FakeArcBridgeService : public ArcBridgeService {
   void RequestStop() override;
   void OnShutdown() override;
 
+ private:
   void SetReady();
-
   void SetStopped();
 
-  bool HasObserver(const Observer* observer);
-
- private:
   DISALLOW_COPY_AND_ASSIGN(FakeArcBridgeService);
 };
 
