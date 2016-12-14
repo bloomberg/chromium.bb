@@ -47,6 +47,7 @@
 #include "wtf/StdLibExtras.h"
 #include "wtf/WTF.h"
 #include "wtf/WTFExport.h"
+#include "wtf/allocator/PartitionAllocator.h"
 #include "wtf/allocator/Partitions.h"
 
 #if OS(POSIX)

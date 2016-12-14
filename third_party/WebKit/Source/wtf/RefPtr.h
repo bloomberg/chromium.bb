@@ -25,6 +25,7 @@
 #include "wtf/Allocator.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/allocator/PartitionAllocator.h"
 #include <algorithm>
 #include <utility>
 

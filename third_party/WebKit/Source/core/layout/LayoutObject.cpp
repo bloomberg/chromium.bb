@@ -144,7 +144,7 @@ void* LayoutObject::operator new(size_t sz) {
 
 void LayoutObject::operator delete(void* ptr) {
   ASSERT(isMainThread());
-  partitionFree(ptr);
+  WTF::partitionFree(ptr);
 }
 
 LayoutObject* LayoutObject::createObject(Element* element,

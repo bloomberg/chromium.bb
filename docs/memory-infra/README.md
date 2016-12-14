@@ -105,7 +105,7 @@ and it is discounted from malloc and the blue columns.
 [discardable]:base/memory/discardable_memory.h
 [cc-memory]:  probe-cc.md
 [gpu-memory]: probe-gpu.md
-[partalloc]:  /third_party/WebKit/Source/wtf/allocator/PartitionAlloc.md
+[partalloc]:  /base/allocator/partition_allocator/PartitionAlloc.md
 
 ## Related Pages
 

@@ -8,7 +8,6 @@
 #include "wtf/AddressSanitizer.h"
 #include "wtf/Assertions.h"
 #include "wtf/Atomics.h"
-#include "wtf/allocator/PageAllocator.h"
 
 namespace blink {
 

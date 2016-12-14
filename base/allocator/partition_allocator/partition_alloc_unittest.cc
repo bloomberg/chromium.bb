@@ -1,45 +1,20 @@
-/*
- * Copyright (C) 2013 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#include "wtf/allocator/PartitionAlloc.h"
+#include "base/allocator/partition_allocator/partition_alloc.h"
 
-#include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/BitwiseOperations.h"
-#include "wtf/CPU.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
-#include <memory>
 #include <stdlib.h>
 #include <string.h>
 
-#if OS(POSIX)
+#include <memory>
+#include <vector>
+
+#include "base/bits.h"
+#include "build/build_config.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(OS_POSIX)
 #include <sys/mman.h>
 #include <sys/resource.h>
 #include <sys/time.h>
@@ -47,11 +22,18 @@
 #ifndef MAP_ANONYMOUS
 #define MAP_ANONYMOUS MAP_ANON
 #endif
-#endif  // OS(POSIX)
+#endif  // defined(OS_POSIX)
+
+namespace {
+template <typename T>
+std::unique_ptr<T[]> WrapArrayUnique(T* ptr) {
+  return std::unique_ptr<T[]>(ptr);
+}
+}  // namespace
 
 #if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 
-namespace WTF {
+namespace base {
 
 namespace {
 
@@ -60,15 +42,15 @@ SizeSpecificPartitionAllocator<kTestMaxAllocation> allocator;
 PartitionAllocatorGeneric genericAllocator;
 
 const size_t kTestAllocSize = 16;
-#if !ENABLE(ASSERT)
+#if !DCHECK_IS_ON()
 const size_t kPointerOffset = 0;
 const size_t kExtraAllocSize = 0;
 #else
-const size_t kPointerOffset = WTF::kCookieSize;
-const size_t kExtraAllocSize = WTF::kCookieSize * 2;
+const size_t kPointerOffset = kCookieSize;
+const size_t kExtraAllocSize = kCookieSize * 2;
 #endif
 const size_t kRealAllocSize = kTestAllocSize + kExtraAllocSize;
-const size_t kTestBucketIndex = kRealAllocSize >> WTF::kBucketShift;
+const size_t kTestBucketIndex = kRealAllocSize >> kBucketShift;
 
 const char* typeName = nullptr;
 
@@ -84,12 +66,12 @@ void TestShutdown() {
   EXPECT_TRUE(genericAllocator.shutdown());
 }
 
-#if !CPU(64BIT) || OS(POSIX)
+#if !defined(ARCH_CPU_64_BITS) || defined(OS_POSIX)
 bool SetAddressSpaceLimit() {
-#if !CPU(64BIT)
+#if !defined(ARCH_CPU_64_BITS)
   // 32 bits => address space is limited already.
   return true;
-#elif OS(POSIX) && !OS(MACOSX)
+#elif defined(OS_POSIX) && !defined(OS_MACOSX)
   // Mac will accept RLIMIT_AS changes but it is not enforced.
   // See https://crbug.com/435269 and rdar://17576114.
   const size_t kAddressSpaceLimit = static_cast<size_t>(4096) * 1024 * 1024;
@@ -108,9 +90,9 @@ bool SetAddressSpaceLimit() {
 }
 
 bool ClearAddressSpaceLimit() {
-#if !CPU(64BIT)
+#if !defined(ARCH_CPU_64_BITS)
   return true;
-#elif OS(POSIX)
+#elif defined(OS_POSIX)
   struct rlimit limit;
   if (getrlimit(RLIMIT_AS, &limit) != 0)
     return false;
@@ -170,7 +152,7 @@ void CycleFreeCache(size_t size) {
   size_t realSize = size + kExtraAllocSize;
   size_t bucketIdx = realSize >> kBucketShift;
   PartitionBucket* bucket = &allocator.root()->buckets()[bucketIdx];
-  ASSERT(!bucket->activePagesHead->numAllocatedSlots);
+  DCHECK(!bucket->activePagesHead->numAllocatedSlots);
 
   for (size_t i = 0; i < kMaxFreeableSpans; ++i) {
     void* ptr = partitionAlloc(allocator.root(), size, typeName);
@@ -195,7 +177,7 @@ void CycleGenericFreeCache(size_t size) {
 }
 
 void CheckPageInCore(void* ptr, bool inCore) {
-#if OS(LINUX)
+#if defined(OS_LINUX)
   unsigned char ret;
   EXPECT_EQ(0, mincore(ptr, kSystemPageSize, &ret));
   EXPECT_EQ(inCore, ret);
@@ -225,7 +207,7 @@ class MockPartitionStatsDumper : public PartitionStatsDumper {
     (void)partitionName;
     EXPECT_TRUE(memoryStats->isValid);
     EXPECT_EQ(0u, memoryStats->bucketSlotSize & kAllocationGranularityMask);
-    m_bucketStats.append(*memoryStats);
+    m_bucketStats.push_back(*memoryStats);
     m_totalResidentBytes += memoryStats->residentBytes;
     m_totalActiveBytes += memoryStats->activeBytes;
     m_totalDecommittableBytes += memoryStats->decommittableBytes;
@@ -250,7 +232,7 @@ class MockPartitionStatsDumper : public PartitionStatsDumper {
   size_t m_totalDecommittableBytes;
   size_t m_totalDiscardableBytes;
 
-  Vector<PartitionBucketMemoryStats> m_bucketStats;
+  std::vector<PartitionBucketMemoryStats> m_bucketStats;
 };
 
 }  // anonymous namespace
@@ -453,7 +435,7 @@ TEST(PartitionAllocTest, FreePageListPageTransitions) {
   // never gets thrown on the freelist.
   ++numToFillFreeListPage;
   std::unique_ptr<PartitionPage* []> pages =
-      wrapArrayUnique(new PartitionPage*[numToFillFreeListPage]);
+      WrapArrayUnique(new PartitionPage*[numToFillFreeListPage]);
 
   size_t i;
   for (i = 0; i < numToFillFreeListPage; ++i) {
@@ -499,7 +481,7 @@ TEST(PartitionAllocTest, MultiPageAllocs) {
 
   EXPECT_GT(numPagesNeeded, 1u);
   std::unique_ptr<PartitionPage* []> pages;
-  pages = wrapArrayUnique(new PartitionPage*[numPagesNeeded]);
+  pages = WrapArrayUnique(new PartitionPage*[numPagesNeeded]);
   uintptr_t firstSuperPageBase = 0;
   size_t i;
   for (i = 0; i < numPagesNeeded; ++i) {
@@ -560,7 +542,7 @@ TEST(PartitionAllocTest, GenericAlloc) {
   // Check that the realloc copied correctly.
   char* newCharPtr = static_cast<char*>(newPtr);
   EXPECT_EQ(*newCharPtr, 'A');
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   // Subtle: this checks for an old bug where we copied too much from the
   // source of the realloc. The condition can be detected by a trashing of
   // the uninitialized value in the space of the upsized allocation.
@@ -671,7 +653,7 @@ TEST(PartitionAllocTest, GenericAllocSizes) {
   EXPECT_EQ(ptr3, newPtr);
   newPtr = partitionAllocGeneric(genericAllocator.root(), size, typeName);
   EXPECT_EQ(ptr2, newPtr);
-#if OS(LINUX) && !ENABLE(ASSERT)
+#if defined(OS_LINUX) && !DCHECK_IS_ON()
   // On Linux, we have a guarantee that freelisting a page should cause its
   // contents to be nulled out. We check for null here to detect an bug we
   // had where a large slot size was causing us to not properly free all
@@ -807,7 +789,7 @@ TEST(PartitionAllocTest, Realloc) {
   char* charPtr2 = static_cast<char*>(ptr2);
   EXPECT_EQ('A', charPtr2[0]);
   EXPECT_EQ('A', charPtr2[size - 1]);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   EXPECT_EQ(kUninitializedByte, static_cast<unsigned char>(charPtr2[size]));
 #endif
 
@@ -819,7 +801,7 @@ TEST(PartitionAllocTest, Realloc) {
   char* charPtr = static_cast<char*>(ptr);
   EXPECT_EQ('A', charPtr[0]);
   EXPECT_EQ('A', charPtr[size - 2]);
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   EXPECT_EQ(kUninitializedByte, static_cast<unsigned char>(charPtr[size - 1]));
 #endif
 
@@ -1073,9 +1055,9 @@ TEST(PartitionAllocTest, MappingCollision) {
   // guard pages.
   size_t numPartitionPagesNeeded = kNumPartitionPagesPerSuperPage - 2;
   std::unique_ptr<PartitionPage* []> firstSuperPagePages =
-      wrapArrayUnique(new PartitionPage*[numPartitionPagesNeeded]);
+      WrapArrayUnique(new PartitionPage*[numPartitionPagesNeeded]);
   std::unique_ptr<PartitionPage* []> secondSuperPagePages =
-      wrapArrayUnique(new PartitionPage*[numPartitionPagesNeeded]);
+      WrapArrayUnique(new PartitionPage*[numPartitionPagesNeeded]);
 
   size_t i;
   for (i = 0; i < numPartitionPagesNeeded; ++i)
@@ -1266,7 +1248,7 @@ TEST(PartitionAllocTest, LostFreePagesBug) {
   TestShutdown();
 }
 
-#if !CPU(64BIT) || OS(POSIX)
+#if !defined(ARCH_CPU_64_BITS) || defined(OS_POSIX)
 
 static void DoReturnNullTest(size_t allocSize) {
   TestSetup();
@@ -1319,7 +1301,10 @@ static void DoReturnNullTest(size_t allocSize) {
 // crash, and still returns null. The test tries to allocate 6 GB of memory in
 // 512 kB blocks. On 64-bit POSIX systems, the address space is limited to 4 GB
 // using setrlimit() first.
-#if OS(MACOSX)
+//
+// Disable this test on Android because, due to its allocation-heavy behavior,
+// it tends to get OOM-killed rather than pass.
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
 #define MAYBE_RepeatedReturnNull DISABLED_RepeatedReturnNull
 #else
 #define MAYBE_RepeatedReturnNull RepeatedReturnNull
@@ -1330,7 +1315,10 @@ TEST(PartitionAllocTest, MAYBE_RepeatedReturnNull) {
 }
 
 // Another "return null" test but for larger, direct-mapped allocations.
-#if OS(MACOSX)
+//
+// Disable this test on Android because, due to its allocation-heavy behavior,
+// it tends to get OOM-killed rather than pass.
+#if defined(OS_MACOSX) || defined(OS_ANDROID)
 #define MAYBE_RepeatedReturnNullDirect DISABLED_RepeatedReturnNullDirect
 #else
 #define MAYBE_RepeatedReturnNullDirect RepeatedReturnNullDirect
@@ -1340,9 +1328,10 @@ TEST(PartitionAllocTest, MAYBE_RepeatedReturnNullDirect) {
   DoReturnNullTest(256 * 1024 * 1024);
 }
 
-#endif  // !CPU(64BIT) || OS(POSIX)
+#endif  // !defined(ARCH_CPU_64_BITS) || defined(OS_POSIX)
 
-#if !OS(ANDROID)
+// Death tests misbehave on Android, http://crbug.com/643760.
+#if defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
 // Make sure that malloc(-1) dies.
 // In the past, we had an integer overflow that would alias malloc(-1) to
@@ -1452,7 +1441,7 @@ TEST(PartitionAllocDeathTest, FreeWrongPartitionPage) {
   TestShutdown();
 }
 
-#endif  // !OS(ANDROID)
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 // Tests that partitionDumpStatsGeneric and partitionDumpStats runs without
 // crashing and returns non zero values when memory is allocated.
@@ -2113,6 +2102,6 @@ TEST(PartitionAllocTest, PurgeDiscardable) {
   TestShutdown();
 }
 
-}  // namespace WTF
+}  // namespace base
 
 #endif  // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)

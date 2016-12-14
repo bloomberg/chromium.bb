@@ -560,7 +560,7 @@ class PersistentHeapCollectionBase : public Collection {
   // PartitionAllocator to ensure persistent heap collections are always
   // allocated off-heap. This allows persistent collections to be used in
   // DEFINE_STATIC_LOCAL et. al.
-  WTF_USE_ALLOCATOR(PersistentHeapCollectionBase, WTF::PartitionAllocator);
+  USE_ALLOCATOR(PersistentHeapCollectionBase, WTF::PartitionAllocator);
   IS_PERSISTENT_REFERENCE_TYPE();
 
  public:

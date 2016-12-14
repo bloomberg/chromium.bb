@@ -24,6 +24,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/HashMap.h"
 #include "wtf/Vector.h"
+#include "wtf/allocator/PartitionAllocator.h"
 
 namespace WTF {
 
@@ -35,7 +36,7 @@ template <typename Value,
           typename Traits = HashTraits<Value>,
           typename Allocator = PartitionAllocator>
 class HashCountedSet {
-  WTF_USE_ALLOCATOR(HashCountedSet, Allocator);
+  USE_ALLOCATOR(HashCountedSet, Allocator);
   WTF_MAKE_NONCOPYABLE(HashCountedSet);
 
  private:

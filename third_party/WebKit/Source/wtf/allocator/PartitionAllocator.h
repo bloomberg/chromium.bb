@@ -1,32 +1,6 @@
-/*
- * Copyright (C) 2013 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef WTF_PartitionAllocator_h
 #define WTF_PartitionAllocator_h
@@ -35,11 +9,11 @@
 // traced, garbage collected heap. It uses FastMalloc for collections,
 // but uses the partition allocator for the backing store of the collections.
 
-#include "wtf/Allocator.h"
+#include "base/allocator/partition_allocator/partition_alloc.h"
+#include "third_party/WebKit/Source/wtf/Allocator.h"
 #include "wtf/Assertions.h"
-#include "wtf/allocator/PartitionAlloc.h"
-#include "wtf/allocator/Partitions.h"
-
+#include "wtf/TypeTraits.h"
+#include "wtf/WTFExport.h"
 #include <string.h>
 
 namespace WTF {
@@ -55,8 +29,8 @@ class WTF_EXPORT PartitionAllocator {
 
   template <typename T>
   static size_t quantizedSize(size_t count) {
-    RELEASE_ASSERT(count <= kGenericMaxDirectMapped / sizeof(T));
-    return partitionAllocActualSize(Partitions::bufferPartition(),
+    RELEASE_ASSERT(count <= base::kGenericMaxDirectMapped / sizeof(T));
+    return partitionAllocActualSize(WTF::Partitions::bufferPartition(),
                                     count * sizeof(T));
   }
   template <typename T>
@@ -108,11 +82,12 @@ class WTF_EXPORT PartitionAllocator {
 
   template <typename Return, typename Metadata>
   static Return malloc(size_t size, const char* typeName) {
-    return reinterpret_cast<Return>(Partitions::fastMalloc(size, typeName));
+    return reinterpret_cast<Return>(
+        WTF::Partitions::fastMalloc(size, typeName));
   }
 
   static inline bool expandHashTableBacking(void*, size_t) { return false; }
-  static void free(void* address) { Partitions::fastFree(address); }
+  static void free(void* address) { WTF::Partitions::fastFree(address); }
   template <typename T>
   static void* newArray(size_t bytes) {
     return malloc<void*, void>(bytes, WTF_HEAP_PROFILER_TYPE_NAME(T));
@@ -141,7 +116,7 @@ WTF_EXPORT char* PartitionAllocator::allocateExpandedVectorBacking<char>(
 
 }  // namespace WTF
 
-#define WTF_USE_ALLOCATOR(ClassName, Allocator)                   \
+#define USE_ALLOCATOR(ClassName, Allocator)                       \
  public:                                                          \
   void* operator new(size_t size) {                               \
     return Allocator::template malloc<void*, ClassName>(          \
@@ -160,7 +135,5 @@ WTF_EXPORT char* PartitionAllocator::allocateExpandedVectorBacking<char>(
                                                                   \
  private:                                                         \
   typedef int __thisIsHereToForceASemicolonAfterThisMacro
-
-using WTF::PartitionAllocator;
 
 #endif  // WTF_PartitionAllocator_h

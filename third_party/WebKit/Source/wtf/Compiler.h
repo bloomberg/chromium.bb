@@ -65,8 +65,6 @@
 
 // TODO(palmer): Remove this and update callers to use NOINLINE from Chromium
 // base. https://bugs.chromium.org/p/chromium/issues/detail?id=632441
-//
-// For compatibility with callers in Blink:
 #define NEVER_INLINE NOINLINE
 
 /* OBJC_CLASS */

@@ -77,7 +77,7 @@ class ListHashSet
           ListHashSet<ValueArg, inlineCapacity, HashArg, AllocatorArg>,
           AllocatorArg::isGarbageCollected> {
   typedef AllocatorArg Allocator;
-  WTF_USE_ALLOCATOR(ListHashSet, Allocator);
+  USE_ALLOCATOR(ListHashSet, Allocator);
 
   typedef ListHashSetNode<ValueArg, Allocator> Node;
   typedef HashTraits<Node*> NodeTraits;

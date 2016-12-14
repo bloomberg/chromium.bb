@@ -118,12 +118,20 @@ namespace WTF {
                                                                       \
   void operator delete[](void* p) { ::WTF::Partitions::fastFree(p); } \
   void* operator new(size_t, NotNullTag, void* location) {            \
-    ASSERT(location);                                                 \
+    DCHECK(location);                                                 \
     return location;                                                  \
   }                                                                   \
                                                                       \
  private:                                                             \
   typedef int __thisIsHereToForceASemicolonAfterThisMacro
+
+// In official builds, do not include type info string literals to avoid
+// bloating the binary.
+#if defined(OFFICIAL_BUILD)
+#define WTF_HEAP_PROFILER_TYPE_NAME(T) nullptr
+#else
+#define WTF_HEAP_PROFILER_TYPE_NAME(T) ::WTF::getStringWithTypeName<T>()
+#endif
 
 // Both of these macros enable fast malloc and provide type info to the heap
 // profiler. The regular macro does not provide type info in official builds,

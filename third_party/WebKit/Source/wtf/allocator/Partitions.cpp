@@ -30,6 +30,7 @@
 
 #include "wtf/allocator/Partitions.h"
 
+#include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/debug/alias.h"
 #include "wtf/allocator/PartitionAllocator.h"
 
@@ -38,21 +39,21 @@ namespace WTF {
 const char* const Partitions::kAllocatedObjectPoolName =
     "partition_alloc/allocated_objects";
 
-SpinLock Partitions::s_initializationLock;
+base::subtle::SpinLock Partitions::s_initializationLock;
 bool Partitions::s_initialized = false;
 
-PartitionAllocatorGeneric Partitions::m_fastMallocAllocator;
-PartitionAllocatorGeneric Partitions::m_bufferAllocator;
-SizeSpecificPartitionAllocator<1024> Partitions::m_layoutAllocator;
+base::PartitionAllocatorGeneric Partitions::m_fastMallocAllocator;
+base::PartitionAllocatorGeneric Partitions::m_bufferAllocator;
+base::SizeSpecificPartitionAllocator<1024> Partitions::m_layoutAllocator;
 Partitions::ReportPartitionAllocSizeFunction Partitions::m_reportSizeFunction =
     nullptr;
 
 void Partitions::initialize(
     ReportPartitionAllocSizeFunction reportSizeFunction) {
-  SpinLock::Guard guard(s_initializationLock);
+  base::subtle::SpinLock::Guard guard(s_initializationLock);
 
   if (!s_initialized) {
-    partitionAllocGlobalInit(&Partitions::handleOutOfMemory);
+    base::partitionAllocGlobalInit(&Partitions::handleOutOfMemory);
     m_fastMallocAllocator.init();
     m_bufferAllocator.init();
     m_layoutAllocator.init();
@@ -62,7 +63,7 @@ void Partitions::initialize(
 }
 
 void Partitions::shutdown() {
-  SpinLock::Guard guard(s_initializationLock);
+  base::subtle::SpinLock::Guard guard(s_initializationLock);
 
   // We could ASSERT here for a memory leak within the partition, but it leads
   // to very hard to diagnose ASSERTs, so it's best to leave leak checking for
@@ -80,10 +81,11 @@ void Partitions::decommitFreeableMemory() {
     return;
 
   partitionPurgeMemoryGeneric(bufferPartition(),
-                              PartitionPurgeDecommitEmptyPages);
+                              base::PartitionPurgeDecommitEmptyPages);
   partitionPurgeMemoryGeneric(fastMallocPartition(),
-                              PartitionPurgeDecommitEmptyPages);
-  partitionPurgeMemory(layoutPartition(), PartitionPurgeDecommitEmptyPages);
+                              base::PartitionPurgeDecommitEmptyPages);
+  partitionPurgeMemory(layoutPartition(),
+                       base::PartitionPurgeDecommitEmptyPages);
 }
 
 void Partitions::reportMemoryUsageHistogram() {
@@ -102,8 +104,9 @@ void Partitions::reportMemoryUsageHistogram() {
   }
 }
 
-void Partitions::dumpMemoryStats(bool isLightDump,
-                                 PartitionStatsDumper* partitionStatsDumper) {
+void Partitions::dumpMemoryStats(
+    bool isLightDump,
+    base::PartitionStatsDumper* partitionStatsDumper) {
   // Object model and rendering partitions are not thread safe and can be
   // accessed only on the main thread.
   ASSERT(isMainThread());

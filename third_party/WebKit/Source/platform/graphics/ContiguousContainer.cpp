@@ -7,7 +7,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/ContainerAnnotations.h"
 #include "wtf/PtrUtil.h"
-#include "wtf/allocator/PartitionAlloc.h"
 #include "wtf/allocator/Partitions.h"
 #include <algorithm>
 #include <memory>

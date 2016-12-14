@@ -26,8 +26,8 @@
 
 #include "wtf/typed_arrays/ArrayBufferContents.h"
 
+#include "base/allocator/partition_allocator/partition_alloc.h"
 #include "wtf/Assertions.h"
-#include "wtf/allocator/PartitionAlloc.h"
 #include "wtf/allocator/Partitions.h"
 #include <string.h>
 
@@ -127,7 +127,7 @@ void ArrayBufferContents::allocateMemory(size_t size,
 void ArrayBufferContents::allocateMemoryOrNull(size_t size,
                                                InitializationPolicy policy,
                                                void*& data) {
-  allocateMemoryWithFlags(size, policy, PartitionAllocReturnNull, data);
+  allocateMemoryWithFlags(size, policy, base::PartitionAllocReturnNull, data);
 }
 
 void ArrayBufferContents::freeMemory(void* data, size_t size) {

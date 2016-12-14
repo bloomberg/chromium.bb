@@ -1,42 +1,18 @@
-/*
- * Copyright (C) 2013 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#include "wtf/allocator/PageAllocator.h"
-
-#include "wtf/Assertions.h"
-#include "wtf/Atomics.h"
-#include "wtf/allocator/AddressSpaceRandomization.h"
+#include "base/allocator/partition_allocator/page_allocator.h"
 
 #include <limits.h>
 
-#if OS(POSIX)
+#include "base/allocator/partition_allocator/address_space_randomization.h"
+#include "base/atomicops.h"
+#include "base/base_export.h"
+#include "base/logging.h"
+#include "build/build_config.h"
+
+#if defined(OS_POSIX)
 
 #include <errno.h>
 #include <sys/mman.h>
@@ -49,50 +25,47 @@
 #define MAP_ANONYMOUS MAP_ANON
 #endif
 
-// On POSIX memmap uses a nearby address if the hint address is blocked.
+// On POSIX |mmap| uses a nearby address if the hint address is blocked.
 static const bool kHintIsAdvisory = true;
-static uint32_t s_allocPageErrorCode = 0;
+static volatile base::subtle::Atomic32 s_allocPageErrorCode = 0;
 
-#elif OS(WIN)
+#elif defined(OS_WIN)
 
 #include <windows.h>
 
-// VirtualAlloc will fail if allocation at the hint address is blocked.
+// |VirtualAlloc| will fail if allocation at the hint address is blocked.
 static const bool kHintIsAdvisory = false;
-static uint32_t s_allocPageErrorCode = ERROR_SUCCESS;
+static base::subtle::Atomic32 s_allocPageErrorCode = ERROR_SUCCESS;
 
 #else
 #error Unknown OS
-#endif  // OS(POSIX)
+#endif  // defined(OS_POSIX)
 
-namespace WTF {
+namespace base {
 
-// This internal function wraps the OS-specific page allocation call. The
-// behavior of the hint address is determined by the kHintIsAdvisory constant.
-// If true, a non-zero hint is advisory and the returned address may differ from
-// the hint. If false, the hint is mandatory and a successful allocation will
-// not differ from the hint.
+// This internal function wraps the OS-specific page allocation call:
+// |VirtualAlloc| on Windows, and |mmap| on POSIX.
 static void* systemAllocPages(
     void* hint,
     size_t len,
     PageAccessibilityConfiguration pageAccessibility) {
-  ASSERT(!(len & kPageAllocationGranularityOffsetMask));
-  ASSERT(!(reinterpret_cast<uintptr_t>(hint) &
+  DCHECK(!(len & kPageAllocationGranularityOffsetMask));
+  DCHECK(!(reinterpret_cast<uintptr_t>(hint) &
            kPageAllocationGranularityOffsetMask));
   void* ret;
-#if OS(WIN)
+#if defined(OS_WIN)
   DWORD accessFlag =
       pageAccessibility == PageAccessible ? PAGE_READWRITE : PAGE_NOACCESS;
   ret = VirtualAlloc(hint, len, MEM_RESERVE | MEM_COMMIT, accessFlag);
   if (!ret)
-    releaseStore(&s_allocPageErrorCode, GetLastError());
+    base::subtle::Release_Store(&s_allocPageErrorCode, GetLastError());
 #else
   int accessFlag = pageAccessibility == PageAccessible
                        ? (PROT_READ | PROT_WRITE)
                        : PROT_NONE;
   ret = mmap(hint, len, accessFlag, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
   if (ret == MAP_FAILED) {
-    releaseStore(&s_allocPageErrorCode, errno);
+    base::subtle::Release_Store(&s_allocPageErrorCode, errno);
     ret = 0;
   }
 #endif
@@ -110,21 +83,21 @@ static void* trimMapping(void* base,
   if (preSlack)
     preSlack = align - preSlack;
   size_t postSlack = baseLen - preSlack - trimLen;
-  ASSERT(baseLen >= trimLen || preSlack || postSlack);
-  ASSERT(preSlack < baseLen);
-  ASSERT(postSlack < baseLen);
+  DCHECK(baseLen >= trimLen || preSlack || postSlack);
+  DCHECK(preSlack < baseLen);
+  DCHECK(postSlack < baseLen);
   void* ret = base;
 
-#if OS(POSIX)  // On POSIX we can resize the allocation run.
+#if defined(OS_POSIX)  // On POSIX we can resize the allocation run.
   (void)pageAccessibility;
   if (preSlack) {
     int res = munmap(base, preSlack);
-    RELEASE_ASSERT(!res);
+    CHECK(!res);
     ret = reinterpret_cast<char*>(base) + preSlack;
   }
   if (postSlack) {
     int res = munmap(reinterpret_cast<char*>(ret) + trimLen, postSlack);
-    RELEASE_ASSERT(!res);
+    CHECK(!res);
   }
 #else  // On Windows we can't resize the allocation run.
   if (preSlack || postSlack) {
@@ -141,15 +114,15 @@ void* allocPages(void* addr,
                  size_t len,
                  size_t align,
                  PageAccessibilityConfiguration pageAccessibility) {
-  ASSERT(len >= kPageAllocationGranularity);
-  ASSERT(!(len & kPageAllocationGranularityOffsetMask));
-  ASSERT(align >= kPageAllocationGranularity);
-  ASSERT(!(align & kPageAllocationGranularityOffsetMask));
-  ASSERT(!(reinterpret_cast<uintptr_t>(addr) &
+  DCHECK(len >= kPageAllocationGranularity);
+  DCHECK(!(len & kPageAllocationGranularityOffsetMask));
+  DCHECK(align >= kPageAllocationGranularity);
+  DCHECK(!(align & kPageAllocationGranularityOffsetMask));
+  DCHECK(!(reinterpret_cast<uintptr_t>(addr) &
            kPageAllocationGranularityOffsetMask));
   uintptr_t alignOffsetMask = align - 1;
   uintptr_t alignBaseMask = ~alignOffsetMask;
-  ASSERT(!(reinterpret_cast<uintptr_t>(addr) & alignOffsetMask));
+  DCHECK(!(reinterpret_cast<uintptr_t>(addr) & alignOffsetMask));
 
   // If the client passed null as the address, choose a good one.
   if (!addr) {
@@ -166,7 +139,7 @@ void* allocPages(void* addr,
       if (!(reinterpret_cast<uintptr_t>(ret) & alignOffsetMask))
         return ret;
       freePages(ret, len);
-#if CPU(32BIT)
+#if defined(ARCH_CPU_32_BITS)
       addr = reinterpret_cast<void*>(
           (reinterpret_cast<uintptr_t>(ret) + align) & alignBaseMask);
 #endif
@@ -174,12 +147,12 @@ void* allocPages(void* addr,
       return nullptr;
 
     } else {
-#if CPU(32BIT)
+#if defined(ARCH_CPU_32_BITS)
       addr = reinterpret_cast<char*>(addr) + align;
 #endif
     }
 
-#if !CPU(32BIT)
+#if !defined(ARCH_CPU_32_BITS)
     // Keep trying random addresses on systems that have a large address space.
     addr = getRandomPageBase();
     addr = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(addr) &
@@ -190,7 +163,7 @@ void* allocPages(void* addr,
   // Map a larger allocation so we can force alignment, but continue randomizing
   // only on 64-bit POSIX.
   size_t tryLen = len + (align - kPageAllocationGranularity);
-  RELEASE_ASSERT(tryLen >= len);
+  CHECK(tryLen >= len);
   void* ret;
 
   do {
@@ -200,38 +173,39 @@ void* allocPages(void* addr,
     // The retries are for Windows, where a race can steal our mapping on
     // resize.
   } while (ret &&
-           !(ret = trimMapping(ret, tryLen, len, align, pageAccessibility)));
+           (ret = trimMapping(ret, tryLen, len, align, pageAccessibility)) ==
+               nullptr);
 
   return ret;
 }
 
 void freePages(void* addr, size_t len) {
-  ASSERT(!(reinterpret_cast<uintptr_t>(addr) &
+  DCHECK(!(reinterpret_cast<uintptr_t>(addr) &
            kPageAllocationGranularityOffsetMask));
-  ASSERT(!(len & kPageAllocationGranularityOffsetMask));
-#if OS(POSIX)
+  DCHECK(!(len & kPageAllocationGranularityOffsetMask));
+#if defined(OS_POSIX)
   int ret = munmap(addr, len);
-  RELEASE_ASSERT(!ret);
+  CHECK(!ret);
 #else
   BOOL ret = VirtualFree(addr, 0, MEM_RELEASE);
-  RELEASE_ASSERT(ret);
+  CHECK(ret);
 #endif
 }
 
 void setSystemPagesInaccessible(void* addr, size_t len) {
-  ASSERT(!(len & kSystemPageOffsetMask));
-#if OS(POSIX)
+  DCHECK(!(len & kSystemPageOffsetMask));
+#if defined(OS_POSIX)
   int ret = mprotect(addr, len, PROT_NONE);
-  RELEASE_ASSERT(!ret);
+  CHECK(!ret);
 #else
   BOOL ret = VirtualFree(addr, len, MEM_DECOMMIT);
-  RELEASE_ASSERT(ret);
+  CHECK(ret);
 #endif
 }
 
 bool setSystemPagesAccessible(void* addr, size_t len) {
-  ASSERT(!(len & kSystemPageOffsetMask));
-#if OS(POSIX)
+  DCHECK(!(len & kSystemPageOffsetMask));
+#if defined(OS_POSIX)
   return !mprotect(addr, len, PROT_READ | PROT_WRITE);
 #else
   return !!VirtualAlloc(addr, len, MEM_COMMIT, PAGE_READWRITE);
@@ -239,27 +213,27 @@ bool setSystemPagesAccessible(void* addr, size_t len) {
 }
 
 void decommitSystemPages(void* addr, size_t len) {
-  ASSERT(!(len & kSystemPageOffsetMask));
-#if OS(POSIX)
+  DCHECK(!(len & kSystemPageOffsetMask));
+#if defined(OS_POSIX)
   int ret = madvise(addr, len, MADV_FREE);
-  RELEASE_ASSERT(!ret);
+  CHECK(!ret);
 #else
   setSystemPagesInaccessible(addr, len);
 #endif
 }
 
 void recommitSystemPages(void* addr, size_t len) {
-  ASSERT(!(len & kSystemPageOffsetMask));
-#if OS(POSIX)
+  DCHECK(!(len & kSystemPageOffsetMask));
+#if defined(OS_POSIX)
   (void)addr;
 #else
-  RELEASE_ASSERT(setSystemPagesAccessible(addr, len));
+  CHECK(setSystemPagesAccessible(addr, len));
 #endif
 }
 
 void discardSystemPages(void* addr, size_t len) {
-  ASSERT(!(len & kSystemPageOffsetMask));
-#if OS(POSIX)
+  DCHECK(!(len & kSystemPageOffsetMask));
+#if defined(OS_POSIX)
   // On POSIX, the implementation detail is that discard and decommit are the
   // same, and lead to pages that are returned to the system immediately and
   // get replaced with zeroed pages when touched. So we just call
@@ -286,13 +260,13 @@ void discardSystemPages(void* addr, size_t len) {
   // failure.
   if (ret) {
     void* ret = VirtualAlloc(addr, len, MEM_RESET, PAGE_READWRITE);
-    RELEASE_ASSERT(ret);
+    CHECK(ret);
   }
 #endif
 }
 
 uint32_t getAllocPageErrorCode() {
-  return acquireLoad(&s_allocPageErrorCode);
+  return base::subtle::Acquire_Load(&s_allocPageErrorCode);
 }
 
-}  // namespace WTF
+}  // namespace base

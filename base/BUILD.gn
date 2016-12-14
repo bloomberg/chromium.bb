@@ -1234,6 +1234,17 @@ component("base") {
       "rand_util_nacl.cc",
       "synchronization/read_write_lock_nacl.cc",
     ]
+
+    # Add stuff that doesn't work in NaCl.
+    sources += [
+      # PartitionAlloc uses SpinLock, which doesn't work in NaCl (see below).
+      "allocator/partition_allocator/address_space_randomization.cc",
+      "allocator/partition_allocator/address_space_randomization.h",
+      "allocator/partition_allocator/page_allocator.cc",
+      "allocator/partition_allocator/page_allocator.h",
+      "allocator/partition_allocator/partition_alloc.cc",
+      "allocator/partition_allocator/partition_alloc.h",
+    ]
   }
 
   # SpinLock uses inline assembly that doesn't work on NaCl, and for which there
@@ -1796,6 +1807,7 @@ if (is_ios || is_mac) {
 
 test("base_unittests") {
   sources = [
+    "allocator/partition_allocator/partition_alloc_unittest.cc",
     "allocator/tcmalloc_unittest.cc",
     "android/application_status_listener_unittest.cc",
     "android/content_uri_utils_unittest.cc",

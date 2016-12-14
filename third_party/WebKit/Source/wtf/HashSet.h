@@ -37,7 +37,7 @@ template <typename ValueArg,
           typename TraitsArg = HashTraits<ValueArg>,
           typename Allocator = PartitionAllocator>
 class HashSet {
-  WTF_USE_ALLOCATOR(HashSet, Allocator);
+  USE_ALLOCATOR(HashSet, Allocator);
 
  private:
   typedef HashArg HashFunctions;

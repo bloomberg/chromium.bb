@@ -31,6 +31,7 @@
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/WTFExport.h"
+#include "wtf/allocator/PartitionAllocator.h"
 #include <string.h>
 
 namespace WTF {

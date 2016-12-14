@@ -801,7 +801,7 @@ class Vector
       public ConditionalDestructor<Vector<T, INLINE_CAPACITY, Allocator>,
                                    (INLINE_CAPACITY == 0) &&
                                        Allocator::isGarbageCollected> {
-  WTF_USE_ALLOCATOR(Vector, Allocator);
+  USE_ALLOCATOR(Vector, Allocator);
   using Base = VectorBuffer<T, INLINE_CAPACITY, Allocator>;
   using TypeOperations = VectorTypeOperations<T>;
   using OffsetRange = typename Base::OffsetRange;

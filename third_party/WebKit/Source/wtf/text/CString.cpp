@@ -27,7 +27,6 @@
 #include "wtf/text/CString.h"
 
 #include "wtf/ASCIICType.h"
-#include "wtf/allocator/PartitionAlloc.h"
 #include "wtf/allocator/Partitions.h"
 #include <string.h>
 

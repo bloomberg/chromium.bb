@@ -42,7 +42,7 @@
 #include "wtf/Assertions.h"
 #include "wtf/ContainerAnnotations.h"
 #include "wtf/Forward.h"
-#include "wtf/allocator/PageAllocator.h"
+#include "wtf/allocator/Partitions.h"
 #include <stdint.h>
 
 namespace blink {
@@ -65,7 +65,7 @@ const size_t blinkPagesPerRegion = 10;
 // (whose size is 128 KB). So we don't use guard pages in NaCl.
 const size_t blinkGuardPageSize = 0;
 #else
-const size_t blinkGuardPageSize = WTF::kSystemPageSize;
+const size_t blinkGuardPageSize = base::kSystemPageSize;
 #endif
 
 // Double precision floats are more efficient when 8 byte aligned, so we 8 byte

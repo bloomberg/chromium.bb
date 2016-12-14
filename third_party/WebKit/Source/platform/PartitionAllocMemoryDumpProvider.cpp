@@ -38,7 +38,7 @@ std::string getPartitionDumpName(const char* partitionName) {
 // This class is used to invert the dependency of PartitionAlloc on the
 // PartitionAllocMemoryDumpProvider. This implements an interface that will
 // be called with memory statistics for each bucket in the allocator.
-class PartitionStatsDumperImpl final : public PartitionStatsDumper {
+class PartitionStatsDumperImpl final : public WTF::PartitionStatsDumper {
   DISALLOW_NEW();
   WTF_MAKE_NONCOPYABLE(PartitionStatsDumperImpl);
 
@@ -50,9 +50,10 @@ class PartitionStatsDumperImpl final : public PartitionStatsDumper {
 
   // PartitionStatsDumper implementation.
   void partitionDumpTotals(const char* partitionName,
-                           const PartitionMemoryStats*) override;
-  void partitionsDumpBucketStats(const char* partitionName,
-                                 const PartitionBucketMemoryStats*) override;
+                           const WTF::PartitionMemoryStats*) override;
+  void partitionsDumpBucketStats(
+      const char* partitionName,
+      const WTF::PartitionBucketMemoryStats*) override;
 
   size_t totalActiveBytes() const { return m_totalActiveBytes; }
 
@@ -64,7 +65,7 @@ class PartitionStatsDumperImpl final : public PartitionStatsDumper {
 
 void PartitionStatsDumperImpl::partitionDumpTotals(
     const char* partitionName,
-    const PartitionMemoryStats* memoryStats) {
+    const WTF::PartitionMemoryStats* memoryStats) {
   m_totalActiveBytes += memoryStats->totalActiveBytes;
   std::string dumpName = getPartitionDumpName(partitionName);
   base::trace_event::MemoryAllocatorDump* allocatorDump =
@@ -84,7 +85,7 @@ void PartitionStatsDumperImpl::partitionDumpTotals(
 
 void PartitionStatsDumperImpl::partitionsDumpBucketStats(
     const char* partitionName,
-    const PartitionBucketMemoryStats* memoryStats) {
+    const WTF::PartitionBucketMemoryStats* memoryStats) {
   ASSERT(memoryStats->isValid);
   std::string dumpName = getPartitionDumpName(partitionName);
   if (memoryStats->isDirectMap)
@@ -185,11 +186,11 @@ void PartitionAllocMemoryDumpProvider::OnHeapProfilingEnabled(bool enabled) {
       if (!m_allocationRegister)
         m_allocationRegister.reset(new base::trace_event::AllocationRegister());
     }
-    PartitionAllocHooks::setAllocationHook(reportAllocation);
-    PartitionAllocHooks::setFreeHook(reportFree);
+    WTF::PartitionAllocHooks::setAllocationHook(reportAllocation);
+    WTF::PartitionAllocHooks::setFreeHook(reportFree);
   } else {
-    PartitionAllocHooks::setAllocationHook(nullptr);
-    PartitionAllocHooks::setFreeHook(nullptr);
+    WTF::PartitionAllocHooks::setAllocationHook(nullptr);
+    WTF::PartitionAllocHooks::setFreeHook(nullptr);
   }
   m_isHeapProfilingEnabled = enabled;
 }

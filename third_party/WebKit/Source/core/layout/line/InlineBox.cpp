@@ -85,7 +85,7 @@ void* InlineBox::operator new(size_t sz) {
 }
 
 void InlineBox::operator delete(void* ptr) {
-  partitionFree(ptr);
+  WTF::partitionFree(ptr);
 }
 
 const char* InlineBox::boxName() const {

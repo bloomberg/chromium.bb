@@ -157,7 +157,7 @@ template <typename ValueArg,
           typename TraitsArg = HashTraits<ValueArg>,
           typename Allocator = PartitionAllocator>
 class LinkedHashSet {
-  WTF_USE_ALLOCATOR(LinkedHashSet, Allocator);
+  USE_ALLOCATOR(LinkedHashSet, Allocator);
 
  private:
   typedef ValueArg Value;

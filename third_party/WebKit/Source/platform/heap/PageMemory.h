@@ -9,7 +9,7 @@
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/Compiler.h"
-#include "wtf/allocator/PageAllocator.h"
+#include "wtf/allocator/Partitions.h"
 
 #if OS(POSIX)
 #include <sys/mman.h>

@@ -47,7 +47,7 @@ template <typename KeyArg,
           typename MappedTraitsArg = HashTraits<MappedArg>,
           typename Allocator = PartitionAllocator>
 class HashMap {
-  WTF_USE_ALLOCATOR(HashMap, Allocator);
+  USE_ALLOCATOR(HashMap, Allocator);
 
  private:
   typedef KeyTraitsArg KeyTraits;

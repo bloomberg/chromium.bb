@@ -1,46 +1,21 @@
-/*
- * Copyright (C) 2013 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-#ifndef WTF_PageAllocator_h
-#define WTF_PageAllocator_h
+#ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_PAGE_ALLOCATOR_H
+#define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PAGE_ALLOCATOR_H
 
-#include "wtf/Assertions.h"
-#include "wtf/CPU.h"
-#include "wtf/Compiler.h"
-#include "wtf/WTFExport.h"
-#include <cstddef>
 #include <stdint.h>
 
-namespace WTF {
+#include <cstddef>
 
-#if OS(WIN)
+#include "base/base_export.h"
+#include "base/compiler_specific.h"
+#include "build/build_config.h"
+
+namespace base {
+
+#if defined(OS_WIN)
 static const size_t kPageAllocationGranularityShift = 16;  // 64KB
 #else
 static const size_t kPageAllocationGranularityShift = 12;  // 4KB
@@ -74,30 +49,29 @@ enum PageAccessibilityConfiguration {
 // PageAccessibilityConfiguration controls the permission of the
 // allocated pages.
 // This call will return null if the allocation cannot be satisfied.
-WTF_EXPORT void* allocPages(void* addr,
-                            size_t len,
-                            size_t align,
-                            PageAccessibilityConfiguration);
+BASE_EXPORT void* allocPages(void* addr,
+                             size_t len,
+                             size_t align,
+                             PageAccessibilityConfiguration);
 
 // Free one or more pages.
 // addr and len must match a previous call to allocPages().
-WTF_EXPORT void freePages(void* addr, size_t len);
+BASE_EXPORT void freePages(void* addr, size_t len);
 
 // Mark one or more system pages as being inaccessible.
 // Subsequently accessing any address in the range will fault, and the
 // addresses will not be re-used by future allocations.
 // len must be a multiple of kSystemPageSize bytes.
-WTF_EXPORT void setSystemPagesInaccessible(void* addr, size_t len);
+BASE_EXPORT void setSystemPagesInaccessible(void* addr, size_t len);
 
 // Mark one or more system pages as being accessible.
 // The pages will be readable and writeable.
 // len must be a multiple of kSystemPageSize bytes.
 // The result bool value indicates whether the permission
 // change succeeded or not. You must check the result
-// (in most cases you need to RELEASE_ASSERT that it is
-// true).
-WTF_EXPORT WARN_UNUSED_RESULT bool setSystemPagesAccessible(void* addr,
-                                                            size_t len);
+// (in most cases you need to CHECK that it is true).
+BASE_EXPORT WARN_UNUSED_RESULT bool setSystemPagesAccessible(void* addr,
+                                                             size_t len);
 
 // Decommit one or more system pages. Decommitted means that the physical memory
 // is released to the system, but the virtual address space remains reserved.
@@ -109,13 +83,13 @@ WTF_EXPORT WARN_UNUSED_RESULT bool setSystemPagesAccessible(void* addr,
 // after recommitting and writing to it. In particlar note that system pages are
 // not guaranteed to be zero-filled upon re-commit. len must be a multiple of
 // kSystemPageSize bytes.
-WTF_EXPORT void decommitSystemPages(void* addr, size_t len);
+BASE_EXPORT void decommitSystemPages(void* addr, size_t len);
 
 // Recommit one or more system pages. Decommitted system pages must be
 // recommitted before they are read are written again.
 // Note that this operation may be a no-op on some platforms.
 // len must be a multiple of kSystemPageSize bytes.
-WTF_EXPORT void recommitSystemPages(void* addr, size_t len);
+BASE_EXPORT void recommitSystemPages(void* addr, size_t len);
 
 // Discard one or more system pages. Discarding is a hint to the system that
 // the page is no longer required. The hint may:
@@ -132,22 +106,19 @@ WTF_EXPORT void recommitSystemPages(void* addr, size_t len);
 // guaranteed stable once more. After being written to, the page content may be
 // based on the original page content, or a page of zeroes.
 // len must be a multiple of kSystemPageSize bytes.
-WTF_EXPORT void discardSystemPages(void* addr, size_t len);
+BASE_EXPORT void discardSystemPages(void* addr, size_t len);
 
-WTF_EXPORT ALWAYS_INLINE uintptr_t roundUpToSystemPage(uintptr_t address) {
+ALWAYS_INLINE uintptr_t roundUpToSystemPage(uintptr_t address) {
   return (address + kSystemPageOffsetMask) & kSystemPageBaseMask;
 }
 
-WTF_EXPORT ALWAYS_INLINE uintptr_t roundDownToSystemPage(uintptr_t address) {
+ALWAYS_INLINE uintptr_t roundDownToSystemPage(uintptr_t address) {
   return address & kSystemPageBaseMask;
 }
 
-// Only allowed inside WTF for investigating WTF::initializeWithoutV8 crashes.
-// Guess, the function fails because of mmap (or VirtualAlloc) failure.
-// The following function returns errno (or GetLastError code) when mmap
-// (or VirtualAlloc) fails.
-uint32_t getAllocPageErrorCode();
+// Returns errno (or GetLastError code) when mmap (or VirtualAlloc) fails.
+BASE_EXPORT uint32_t getAllocPageErrorCode();
 
-}  // namespace WTF
+}  // namespace base
 
-#endif  // WTF_PageAllocator_h
+#endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PAGE_ALLOCATOR_H

@@ -1251,7 +1251,7 @@ void* PaintLayer::operator new(size_t sz) {
 }
 
 void PaintLayer::operator delete(void* ptr) {
-  partitionFree(ptr);
+  WTF::partitionFree(ptr);
 }
 
 void PaintLayer::addChild(PaintLayer* child, PaintLayer* beforeChild) {

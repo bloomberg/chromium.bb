@@ -31,9 +31,11 @@
 #ifndef Partitions_h
 #define Partitions_h
 
+#include "base/allocator/partition_allocator/partition_alloc.h"
+#include "base/synchronization/spin_lock.h"
+#include "wtf/Assertions.h"
 #include "wtf/WTF.h"
 #include "wtf/WTFExport.h"
-#include "wtf/allocator/PartitionAlloc.h"
 #include <string.h>
 
 namespace WTF {
@@ -48,21 +50,21 @@ class WTF_EXPORT Partitions {
 
   static void initialize(ReportPartitionAllocSizeFunction);
   static void shutdown();
-  ALWAYS_INLINE static PartitionRootGeneric* bufferPartition() {
+  ALWAYS_INLINE static base::PartitionRootGeneric* bufferPartition() {
     ASSERT(s_initialized);
     return m_bufferAllocator.root();
   }
 
-  ALWAYS_INLINE static PartitionRootGeneric* fastMallocPartition() {
+  ALWAYS_INLINE static base::PartitionRootGeneric* fastMallocPartition() {
     ASSERT(s_initialized);
     return m_fastMallocAllocator.root();
   }
 
-  ALWAYS_INLINE static PartitionRoot* nodePartition() {
+  ALWAYS_INLINE static base::PartitionRoot* nodePartition() {
     ASSERT_NOT_REACHED();
     return nullptr;
   }
-  ALWAYS_INLINE static PartitionRoot* layoutPartition() {
+  ALWAYS_INLINE static base::PartitionRoot* layoutPartition() {
     ASSERT(s_initialized);
     return m_layoutAllocator.root();
   }
@@ -85,7 +87,7 @@ class WTF_EXPORT Partitions {
 
   static void reportMemoryUsageHistogram();
 
-  static void dumpMemoryStats(bool isLightDump, PartitionStatsDumper*);
+  static void dumpMemoryStats(bool isLightDump, base::PartitionStatsDumper*);
 
   ALWAYS_INLINE static void* bufferMalloc(size_t n, const char* typeName) {
     return partitionAllocGeneric(bufferPartition(), n, typeName);
@@ -121,7 +123,7 @@ class WTF_EXPORT Partitions {
   static void handleOutOfMemory();
 
  private:
-  static SpinLock s_initializationLock;
+  static base::subtle::SpinLock s_initializationLock;
   static bool s_initialized;
 
   // We have the following four partitions.
@@ -136,11 +138,36 @@ class WTF_EXPORT Partitions {
   //     scripts. Vectors, HashTables, ArrayBufferContents and Strings are
   //     allocated in the buffer partition.
   //   - Fast malloc partition: A partition to allocate all other objects.
-  static PartitionAllocatorGeneric m_fastMallocAllocator;
-  static PartitionAllocatorGeneric m_bufferAllocator;
-  static SizeSpecificPartitionAllocator<1024> m_layoutAllocator;
+  static base::PartitionAllocatorGeneric m_fastMallocAllocator;
+  static base::PartitionAllocatorGeneric m_bufferAllocator;
+  static base::SizeSpecificPartitionAllocator<1024> m_layoutAllocator;
   static ReportPartitionAllocSizeFunction m_reportSizeFunction;
 };
+
+using base::kGenericMaxDirectMapped;
+using base::kPageAllocationGranularity;
+using base::kPageAllocationGranularityBaseMask;
+using base::kPageAllocationGranularityOffsetMask;
+using base::kSystemPageSize;
+
+using base::allocPages;
+using base::decommitSystemPages;
+using base::discardSystemPages;
+using base::partitionFree;
+using base::freePages;
+using base::getAllocPageErrorCode;
+using base::recommitSystemPages;
+using base::roundDownToSystemPage;
+using base::roundUpToSystemPage;
+using base::setSystemPagesAccessible;
+using base::setSystemPagesInaccessible;
+
+using base::PageAccessible;
+using base::PageInaccessible;
+using base::PartitionStatsDumper;
+using base::PartitionMemoryStats;
+using base::PartitionBucketMemoryStats;
+using base::PartitionAllocHooks;
 
 }  // namespace WTF
 

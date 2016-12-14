@@ -51,7 +51,7 @@ template <typename T,
 class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
                                            (INLINE_CAPACITY == 0) &&
                                                Allocator::isGarbageCollected> {
-  WTF_USE_ALLOCATOR(Deque, Allocator);
+  USE_ALLOCATOR(Deque, Allocator);
 
  public:
   typedef DequeIterator<T, inlineCapacity, Allocator> iterator;
