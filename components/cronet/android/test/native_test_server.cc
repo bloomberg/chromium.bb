@@ -87,7 +87,7 @@ std::unique_ptr<net::test_server::RawHttpResponse> ConstructResponseBasedOnFile(
     const base::FilePath& file_path) {
   std::string file_contents;
   bool read_file = base::ReadFileToString(file_path, &file_contents);
-  DCHECK(read_file);
+  DCHECK(read_file) << file_path.value();
   base::FilePath headers_path(
       file_path.AddExtension(FILE_PATH_LITERAL("mock-http-headers")));
   std::string headers_contents;
@@ -147,12 +147,10 @@ std::unique_ptr<net::test_server::HttpResponse> NativeTestServerRequestHandler(
 }
 
 std::unique_ptr<net::test_server::HttpResponse> SdchRequestHandler(
+    const base::FilePath& test_files_root,
     const net::test_server::HttpRequest& request) {
   DCHECK(g_test_server);
-  base::FilePath dir_path;
-  bool get_data_dir = base::android::GetDataDirectory(&dir_path);
-  DCHECK(get_data_dir);
-  dir_path = dir_path.Append(FILE_PATH_LITERAL("test"));
+  base::FilePath dir_path = test_files_root;
 
   if (base::StartsWith(request.relative_url, kSdchPath,
                        base::CompareCase::SENSITIVE)) {
@@ -220,9 +218,10 @@ jboolean StartNativeTestServer(JNIEnv* env,
   g_test_server->RegisterDefaultHandler(
       base::Bind(&net::test_server::HandlePrefixedRequest, kExabyteResponsePath,
                  base::Bind(&HandleExabyteRequest)));
-  g_test_server->RegisterRequestHandler(base::Bind(&SdchRequestHandler));
   base::FilePath test_files_root(
       base::android::ConvertJavaStringToUTF8(env, jtest_files_root));
+  g_test_server->RegisterRequestHandler(
+      base::Bind(&SdchRequestHandler, test_files_root));
 
   // Add a third handler for paths that NativeTestServerRequestHandler does not
   // handle.
