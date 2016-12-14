@@ -346,6 +346,7 @@ modules_idl_files =
                     "webgl/WebGLDepthTexture.idl",
                     "webgl/WebGLDrawBuffers.idl",
                     "webgl/WebGLFramebuffer.idl",
+                    "webgl/WebGLGetBufferSubDataAsync.idl",
                     "webgl/WebGLLoseContext.idl",
                     "webgl/WebGLProgram.idl",
                     "webgl/WebGLQuery.idl",

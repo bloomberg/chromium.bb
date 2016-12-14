@@ -36,6 +36,7 @@ enum WebGLExtensionName {
   WebGLDebugShadersName,
   WebGLDepthTextureName,
   WebGLDrawBuffersName,
+  WebGLGetBufferSubDataAsyncName,
   WebGLLoseContextName,
   WebGLExtensionNameCount,  // Must be the last entry
 };

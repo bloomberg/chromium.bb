@@ -5,18 +5,17 @@
 #include "modules/webgl/WebGL2RenderingContextBase.h"
 
 #include "bindings/modules/v8/WebGLAny.h"
-#include "core/dom/DOMException.h"
 #include "core/frame/ImageBitmap.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
-#include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/webgl/WebGLActiveInfo.h"
 #include "modules/webgl/WebGLBuffer.h"
 #include "modules/webgl/WebGLFenceSync.h"
 #include "modules/webgl/WebGLFramebuffer.h"
+#include "modules/webgl/WebGLGetBufferSubDataAsync.h"
 #include "modules/webgl/WebGLProgram.h"
 #include "modules/webgl/WebGLQuery.h"
 #include "modules/webgl/WebGLRenderbuffer.h"
@@ -140,87 +139,6 @@ const GLenum kSupportedInternalFormatsStorage[] = {
     GL_DEPTH24_STENCIL8,
     GL_DEPTH32F_STENCIL8,
 };
-
-class WebGLGetBufferSubDataAsyncCallback
-    : public GarbageCollected<WebGLGetBufferSubDataAsyncCallback> {
- public:
-  WebGLGetBufferSubDataAsyncCallback(
-      WebGL2RenderingContextBase* context,
-      ScriptPromiseResolver* promiseResolver,
-      void* shmReadbackResultData,
-      GLuint commandsIssuedQueryID,
-      DOMArrayBufferView* destinationArrayBufferView,
-      void* destinationDataPtr,
-      long long destinationByteLength)
-      : m_context(context),
-        m_promiseResolver(promiseResolver),
-        m_shmReadbackResultData(shmReadbackResultData),
-        m_commandsIssuedQueryID(commandsIssuedQueryID),
-        m_destinationArrayBufferView(destinationArrayBufferView),
-        m_destinationDataPtr(destinationDataPtr),
-        m_destinationByteLength(destinationByteLength) {
-    DCHECK(shmReadbackResultData);
-    DCHECK(destinationDataPtr);
-  }
-
-  void destroy() {
-    DCHECK(m_shmReadbackResultData);
-    m_context->contextGL()->FreeSharedMemory(m_shmReadbackResultData);
-    m_shmReadbackResultData = nullptr;
-    DOMException* exception =
-        DOMException::create(InvalidStateError, "Context lost or destroyed");
-    m_promiseResolver->reject(exception);
-  }
-
-  void resolve() {
-    if (!m_context || !m_shmReadbackResultData) {
-      DOMException* exception =
-          DOMException::create(InvalidStateError, "Context lost or destroyed");
-      m_promiseResolver->reject(exception);
-      return;
-    }
-    if (m_destinationArrayBufferView->buffer()->isNeutered()) {
-      DOMException* exception = DOMException::create(
-          InvalidStateError, "ArrayBufferView became invalid asynchronously");
-      m_promiseResolver->reject(exception);
-      return;
-    }
-    memcpy(m_destinationDataPtr, m_shmReadbackResultData,
-           m_destinationByteLength);
-    // TODO(kainino): What would happen if the DOM was suspended when the
-    // promise became resolved? Could another JS task happen between the memcpy
-    // and the promise resolution task, which would see the wrong data?
-    m_promiseResolver->resolve(m_destinationArrayBufferView);
-
-    m_context->contextGL()->DeleteQueriesEXT(1, &m_commandsIssuedQueryID);
-    this->destroy();
-    m_context->unregisterGetBufferSubDataAsyncCallback(this);
-  }
-
-  DECLARE_TRACE();
-
- private:
-  WeakMember<WebGL2RenderingContextBase> m_context;
-  Member<ScriptPromiseResolver> m_promiseResolver;
-
-  // Pointer to shared memory where the gpu readback result is stored.
-  void* m_shmReadbackResultData;
-  // ID of the GL query used to call this callback.
-  GLuint m_commandsIssuedQueryID;
-
-  // ArrayBufferView returned from the promise.
-  Member<DOMArrayBufferView> m_destinationArrayBufferView;
-  // Pointer into the offset into destinationArrayBufferView.
-  void* m_destinationDataPtr;
-  // Size in bytes of the copy operation being performed.
-  long long m_destinationByteLength;
-};
-
-DEFINE_TRACE(WebGLGetBufferSubDataAsyncCallback) {
-  visitor->trace(m_context);
-  visitor->trace(m_promiseResolver);
-  visitor->trace(m_destinationArrayBufferView);
-}
 
 WebGL2RenderingContextBase::WebGL2RenderingContextBase(
     HTMLCanvasElement* passedCanvas,
@@ -479,71 +397,6 @@ void WebGL2RenderingContextBase::getBufferSubData(GLenum target,
   memcpy(destinationDataPtr, mappedData, destinationByteLength);
 
   contextGL()->UnmapBuffer(target);
-}
-
-ScriptPromise WebGL2RenderingContextBase::getBufferSubDataAsync(
-    ScriptState* scriptState,
-    GLenum target,
-    GLintptr srcByteOffset,
-    DOMArrayBufferView* dstData,
-    GLuint dstOffset,
-    GLuint length) {
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  ScriptPromise promise = resolver->promise();
-
-  WebGLBuffer* sourceBuffer = nullptr;
-  void* destinationDataPtr = nullptr;
-  long long destinationByteLength = 0;
-  const char* message = validateGetBufferSubData(
-      __FUNCTION__, target, srcByteOffset, dstData, dstOffset, length,
-      &sourceBuffer, &destinationDataPtr, &destinationByteLength);
-  if (message) {
-    // If there was a GL error, it was already synthesized in
-    // validateGetBufferSubData, so it's not done here.
-    DOMException* exception = DOMException::create(InvalidStateError, message);
-    resolver->reject(exception);
-    return promise;
-  }
-
-  message = validateGetBufferSubDataBounds(
-      __FUNCTION__, sourceBuffer, srcByteOffset, destinationByteLength);
-  if (message) {
-    // If there was a GL error, it was already synthesized in
-    // validateGetBufferSubDataBounds, so it's not done here.
-    DOMException* exception = DOMException::create(InvalidStateError, message);
-    resolver->reject(exception);
-    return promise;
-  }
-
-  // If the length of the copy is zero, this is a no-op.
-  if (!destinationByteLength) {
-    resolver->resolve(dstData);
-    return promise;
-  }
-
-  GLuint queryID;
-  contextGL()->GenQueriesEXT(1, &queryID);
-  contextGL()->BeginQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM, queryID);
-  void* mappedData = contextGL()->GetBufferSubDataAsyncCHROMIUM(
-      target, srcByteOffset, destinationByteLength);
-  contextGL()->EndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
-  if (!mappedData) {
-    DOMException* exception =
-        DOMException::create(InvalidStateError, "Out of memory");
-    resolver->reject(exception);
-    return promise;
-  }
-
-  auto callbackObject = new WebGLGetBufferSubDataAsyncCallback(
-      this, resolver, mappedData, queryID, dstData, destinationDataPtr,
-      destinationByteLength);
-  registerGetBufferSubDataAsyncCallback(callbackObject);
-  auto callback = WTF::bind(&WebGLGetBufferSubDataAsyncCallback::resolve,
-                            wrapPersistent(callbackObject));
-  drawingBuffer()->contextProvider()->signalQuery(
-      queryID, convertToBaseCallback(std::move(callback)));
-
-  return promise;
 }
 
 void WebGL2RenderingContextBase::registerGetBufferSubDataAsyncCallback(

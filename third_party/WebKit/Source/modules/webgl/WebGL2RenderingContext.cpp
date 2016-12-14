@@ -26,6 +26,7 @@
 #include "modules/webgl/WebGLContextEvent.h"
 #include "modules/webgl/WebGLDebugRendererInfo.h"
 #include "modules/webgl/WebGLDebugShaders.h"
+#include "modules/webgl/WebGLGetBufferSubDataAsync.h"
 #include "modules/webgl/WebGLLoseContext.h"
 #include "platform/graphics/gpu/DrawingBuffer.h"
 #include "public/platform/Platform.h"
@@ -167,6 +168,8 @@ void WebGL2RenderingContext::registerContextExtensions() {
       m_webglCompressedTextureS3TCsRGB, DraftExtension);
   registerExtension<WebGLDebugRendererInfo>(m_webglDebugRendererInfo);
   registerExtension<WebGLDebugShaders>(m_webglDebugShaders);
+  registerExtension<WebGLGetBufferSubDataAsync>(m_webglGetBufferSubDataAsync,
+                                                DraftExtension);
   registerExtension<WebGLLoseContext>(m_webglLoseContext);
 }
 
@@ -184,6 +187,7 @@ DEFINE_TRACE(WebGL2RenderingContext) {
   visitor->trace(m_webglCompressedTextureS3TCsRGB);
   visitor->trace(m_webglDebugRendererInfo);
   visitor->trace(m_webglDebugShaders);
+  visitor->trace(m_webglGetBufferSubDataAsync);
   visitor->trace(m_webglLoseContext);
   WebGL2RenderingContextBase::trace(visitor);
 }
