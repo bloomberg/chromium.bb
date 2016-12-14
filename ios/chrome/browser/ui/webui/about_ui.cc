@@ -20,7 +20,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/web/public/url_data_source_ios.h"
 #include "net/base/escape.h"
-#include "third_party/brotli/dec/decode.h"
+#include "third_party/brotli/include/brotli/decode.h"
 #include "ui/base/device_form_factor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
@@ -131,18 +131,26 @@ void AboutUIHTMLSource::StartDataRequest(
     base::StringPiece raw_response =
         ResourceBundle::GetSharedInstance().GetRawDataResource(idr);
     if (idr == IDR_ABOUT_UI_CREDITS_HTML) {
-      size_t decoded_size;
-      const uint8_t* encoded_response_buffer =
+      const uint8_t* next_encoded_byte =
           reinterpret_cast<const uint8_t*>(raw_response.data());
-      CHECK(BrotliDecompressedSize(raw_response.size(), encoded_response_buffer,
-                                   &decoded_size));
-      // Resizing the response and using it as the buffer Brotli decompresses
-      // into.
-      response.resize(decoded_size);
-      CHECK(BrotliDecompressBuffer(raw_response.size(), encoded_response_buffer,
-                                   &decoded_size,
-                                   reinterpret_cast<uint8_t*>(&response[0])) ==
-            BROTLI_RESULT_SUCCESS);
+      size_t input_size_remaining = raw_response.size();
+      BrotliDecoderState* decoder =
+          BrotliDecoderCreateInstance(nullptr /* no custom allocator */,
+                                      nullptr /* no custom deallocator */,
+                                      nullptr /* no custom memory handle */);
+      CHECK(!!decoder);
+      while (!BrotliDecoderIsFinished(decoder)) {
+        size_t output_size_remaining = 0;
+        CHECK(BrotliDecoderDecompressStream(
+                  decoder, &input_size_remaining, &next_encoded_byte,
+                  &output_size_remaining, nullptr,
+                  nullptr) != BROTLI_DECODER_RESULT_ERROR);
+        const uint8_t* output_buffer =
+            BrotliDecoderTakeOutput(decoder, &output_size_remaining);
+        response.insert(response.end(), output_buffer,
+                        output_buffer + output_size_remaining);
+      }
+      BrotliDecoderDestroyInstance(decoder);
     } else {
       response = raw_response.as_string();
     }

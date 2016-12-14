@@ -13,3 +13,4 @@ Local Modifications:
 
 - BUILD.gn: Added.
 - woff2.gyp: Added.
+- src/woff2_dec.cc modified to use new Brotli API at lines 739-741

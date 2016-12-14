@@ -23,13 +23,10 @@ static_library("woff2_dec") {
   configs += [ "//build/config/compiler:no_chromium_code" ]
 
   deps = [
-    "//third_party/brotli",
+    "//third_party/brotli:dec",
   ]
 
-  include_dirs = [
-    "src",
-    "//third_party/brotli/dec",
-  ]
+  include_dirs = [ "src" ]
 
   # TODO(ksakamoto): http://crbug.com/167187
   if (is_win) {

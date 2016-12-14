@@ -49,7 +49,7 @@ source_set("webui") {
     "//ios/web",
     "//net",
     "//services/service_manager/public/cpp",
-    "//third_party/brotli",
+    "//third_party/brotli:dec",
     "//ui/base",
     "//url",
   ]

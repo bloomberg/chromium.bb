@@ -77,7 +77,7 @@ static_library("ots") {
   public_configs = [ ":ots_config" ]
 
   deps = [
-    "//third_party/brotli",
+    "//third_party/brotli:dec",
     "//third_party/woff2:woff2_dec",
     "//third_party/zlib",
   ]
