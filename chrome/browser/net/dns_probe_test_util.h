@@ -13,9 +13,9 @@
 namespace chrome_browser_net {
 
 // Creates a mock DNS client with a single rule for the known-good query
-// (currently google.com) that returns |result|.
+// (currently google.com) that returns |result| for A queries.
 std::unique_ptr<net::DnsClient> CreateMockDnsClientForProbes(
-    net::MockDnsClientRule::Result result);
+    net::MockDnsClientRule::ResultType result);
 
 }  // namespace chrome_browser_net
 

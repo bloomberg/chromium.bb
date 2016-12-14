@@ -319,8 +319,8 @@ class DnsProbeBrowserTestIOThreadHelper {
   void SetUpOnIOThread(IOThread* io_thread);
   void CleanUpOnIOThreadAndDeleteHelper();
 
-  void SetMockDnsClientRules(MockDnsClientRule::Result system_good_result,
-                             MockDnsClientRule::Result public_good_result);
+  void SetMockDnsClientRules(MockDnsClientRule::ResultType system_good_result,
+                             MockDnsClientRule::ResultType public_good_result);
   void SetCorrectionServiceNetError(int net_error);
   void SetCorrectionServiceDelayRequests(bool delay_requests);
   void SetRequestDestructionCallback(const base::Closure& callback);
@@ -382,8 +382,8 @@ void DnsProbeBrowserTestIOThreadHelper::CleanUpOnIOThreadAndDeleteHelper() {
 }
 
 void DnsProbeBrowserTestIOThreadHelper::SetMockDnsClientRules(
-    MockDnsClientRule::Result system_result,
-    MockDnsClientRule::Result public_result) {
+    MockDnsClientRule::ResultType system_result,
+    MockDnsClientRule::ResultType public_result) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   DnsProbeService* service = io_thread_->globals()->dns_probe_service.get();
@@ -443,8 +443,8 @@ class DnsProbeBrowserTest : public InProcessBrowserTest {
   void SetCorrectionServiceBroken(bool broken);
   void SetCorrectionServiceDelayRequests(bool delay_requests);
   void WaitForDelayedRequestDestruction();
-  void SetMockDnsClientRules(MockDnsClientRule::Result system_result,
-                             MockDnsClientRule::Result public_result);
+  void SetMockDnsClientRules(MockDnsClientRule::ResultType system_result,
+                             MockDnsClientRule::ResultType public_result);
 
   // These functions are often used to wait for two navigations because two
   // pages are loaded when navigation corrections are enabled: a blank page, so
@@ -583,8 +583,8 @@ void DnsProbeBrowserTest::NavigateToOtherError(int num_navigations) {
 }
 
 void DnsProbeBrowserTest::SetMockDnsClientRules(
-    MockDnsClientRule::Result system_result,
-    MockDnsClientRule::Result public_result) {
+    MockDnsClientRule::ResultType system_result,
+    MockDnsClientRule::ResultType public_result) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       Bind(&DnsProbeBrowserTestIOThreadHelper::SetMockDnsClientRules,

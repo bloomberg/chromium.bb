@@ -48,7 +48,7 @@ class TestDnsProbeRunnerCallback {
 
 class DnsProbeRunnerTest : public testing::Test {
  protected:
-  void RunTest(MockDnsClientRule::Result query_result,
+  void RunTest(MockDnsClientRule::ResultType query_result,
                DnsProbeRunner::Result expected_probe_result);
 
   TestBrowserThreadBundle bundle_;
@@ -56,7 +56,7 @@ class DnsProbeRunnerTest : public testing::Test {
 };
 
 void DnsProbeRunnerTest::RunTest(
-    MockDnsClientRule::Result query_result,
+    MockDnsClientRule::ResultType query_result,
     DnsProbeRunner::Result expected_probe_result) {
   TestDnsProbeRunnerCallback callback;
 

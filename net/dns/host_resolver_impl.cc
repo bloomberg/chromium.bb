@@ -182,6 +182,16 @@ enum DnsResolveStatus {
 // For more details: https://www.icann.org/news/announcement-2-2014-08-01-en
 const uint8_t kIcanNameCollisionIp[] = {127, 0, 53, 53};
 
+bool ContainsIcannNameCollisionIp(const AddressList& addr_list) {
+  for (const auto& endpoint : addr_list) {
+    const IPAddress& addr = endpoint.address();
+    if (addr.IsIPv4() && IPAddressStartsWith(addr, kIcanNameCollisionIp)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void UmaAsyncDnsResolveStatus(DnsResolveStatus result) {
   UMA_HISTOGRAM_ENUMERATION("AsyncDNS.ResolveStatus",
                             result,
@@ -737,16 +747,6 @@ class HostResolverImpl::ProcTask
                                                key_.host_resolver_flags,
                                                &results,
                                                &os_error);
-
-    // Fail the resolution if the result contains 127.0.53.53. See the comment
-    // block of kIcanNameCollisionIp for details on why.
-    for (const auto& it : results) {
-      const IPAddress& cur = it.address();
-      if (cur.IsIPv4() && IPAddressStartsWith(cur, kIcanNameCollisionIp)) {
-        error = ERR_ICANN_NAME_COLLISION;
-        break;
-      }
-    }
 
     network_task_runner_->PostTask(
         FROM_HERE, base::Bind(&ProcTask::OnLookupComplete, this, results,
@@ -1618,6 +1618,9 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       }
     }
 
+    if (ContainsIcannNameCollisionIp(addr_list))
+      net_error = ERR_ICANN_NAME_COLLISION;
+
     base::TimeDelta ttl =
         base::TimeDelta::FromSeconds(kNegativeCacheEntryTTLSeconds);
     if (net_error == OK)
@@ -1708,6 +1711,9 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     base::TimeDelta bounded_ttl =
         std::max(ttl, base::TimeDelta::FromSeconds(kMinimumTTLSeconds));
 
+    if (ContainsIcannNameCollisionIp(addr_list))
+      net_error = ERR_ICANN_NAME_COLLISION;
+
     CompleteRequests(
         HostCache::Entry(net_error, MakeAddressListForRequest(addr_list), ttl),
         bounded_ttl);
@@ -1768,7 +1774,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
 
     DCHECK(!requests_.empty());
 
-    if (entry.error() == OK) {
+    if (entry.error() == OK || entry.error() == ERR_ICANN_NAME_COLLISION) {
       // Record this histogram here, when we know the system has a valid DNS
       // configuration.
       UMA_HISTOGRAM_BOOLEAN("AsyncDNS.HaveDnsConfig",

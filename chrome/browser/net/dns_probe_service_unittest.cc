@@ -43,16 +43,16 @@ class DnsProbeServiceTest : public testing::Test {
   }
 
  protected:
-  void SetRules(MockDnsClientRule::Result system_query_result,
-                MockDnsClientRule::Result public_query_result) {
+  void SetRules(MockDnsClientRule::ResultType system_query_result,
+                MockDnsClientRule::ResultType public_query_result) {
     service_.SetSystemClientForTesting(
         CreateMockDnsClientForProbes(system_query_result));
     service_.SetPublicClientForTesting(
         CreateMockDnsClientForProbes(public_query_result));
   }
 
-  void RunTest(MockDnsClientRule::Result system_query_result,
-               MockDnsClientRule::Result public_query_result,
+  void RunTest(MockDnsClientRule::ResultType system_query_result,
+               MockDnsClientRule::ResultType public_query_result,
                DnsProbeStatus expected_result) {
     Reset();
     SetRules(system_query_result, public_query_result);
