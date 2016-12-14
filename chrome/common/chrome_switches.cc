@@ -965,9 +965,6 @@ const char kEnableHostedMode[] = "enable-hosted-mode";
 // unresponsive web content.
 const char kEnableHungRendererInfoBar[] = "enable-hung-renderer-infobar";
 
-// Enables "Add to Home screen" in the app menu to generate WebAPKs.
-const char kEnableWebApk[] = "enable-improved-a2hs";
-
 // Forces the update menu badge to show.
 const char kForceShowUpdateMenuBadge[] = "force-show-update-menu-badge";
 

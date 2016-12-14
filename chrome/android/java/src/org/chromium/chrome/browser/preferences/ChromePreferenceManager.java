@@ -356,16 +356,6 @@ public class ChromePreferenceManager {
         writeBoolean(INSTANT_APPS_KEY, isEnabled);
     }
 
-    /** Checks the cached value for the WebAPK command line flag. */
-    public boolean getCachedWebApkCommandLineEnabled() {
-        return mSharedPreferences.getBoolean(WEBAPK_COMMAND_LINE_KEY, false);
-    }
-
-    /** Sets the cached value for the WebAPK command line flag. */
-    public void setCachedWebApkCommandLineEnabled(boolean isEnabled) {
-        writeBoolean(WEBAPK_COMMAND_LINE_KEY, isEnabled);
-    }
-
     /** Checks the cached value for the webapk feature. */
     public boolean getCachedWebApkRuntimeEnabled() {
         return mSharedPreferences.getBoolean(WEBAPK_RUNTIME_KEY, false);

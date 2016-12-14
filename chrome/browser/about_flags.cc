@@ -2018,7 +2018,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_ANDROID)
     {"enable-improved-a2hs", IDS_FLAGS_ENABLE_WEBAPK,
      IDS_FLAGS_ENABLE_WEBAPK_DESCRIPTION, kOsAndroid,
-     SINGLE_VALUE_TYPE(switches::kEnableWebApk)},
+     FEATURE_VALUE_TYPE(chrome::android::kImprovedA2HS)},
     {"no-credit-card-abort", IDS_FLAGS_NO_CREDIT_CARD_ABORT,
      IDS_FLAGS_NO_CREDIT_CARD_ABORT_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kNoCreditCardAbort)},

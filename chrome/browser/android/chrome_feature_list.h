@@ -20,6 +20,7 @@ extern const base::Feature kChromeHomeFeature;
 extern const base::Feature kContextualSearchSingleActions;
 extern const base::Feature kDownloadsUiFeature;
 extern const base::Feature kImportantSitesInCBD;
+extern const base::Feature kImprovedA2HS;
 extern const base::Feature kNoCreditCardAbort;
 extern const base::Feature kNTPFakeOmniboxTextFeature;
 extern const base::Feature kNTPOfflinePagesFeature;
@@ -29,7 +30,6 @@ extern const base::Feature kSpecialLocaleFeature;
 extern const base::Feature kSpecialLocaleWrapper;
 extern const base::Feature kTabReparenting;
 extern const base::Feature kUserMediaScreenCapturing;
-extern const base::Feature kWebApks;
 extern const base::Feature kWebPaymentsModifiers;
 
 bool RegisterChromeFeatureListJni(JNIEnv* env);

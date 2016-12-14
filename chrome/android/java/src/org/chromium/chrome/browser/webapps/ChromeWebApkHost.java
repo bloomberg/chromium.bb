@@ -12,13 +12,11 @@ import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.components.variations.VariationsAssociatedData;
@@ -53,7 +51,7 @@ public class ChromeWebApkHost {
     public static boolean canUseGooglePlayToInstallWebApk() {
         if (!isEnabled()) return false;
         return TextUtils.equals(VariationsAssociatedData.getVariationParamValue(
-                ChromeFeatureList.WEBAPKS, PLAY_INSTALL), "true");
+                ChromeFeatureList.IMPROVED_A2HS, PLAY_INSTALL), "true");
     }
 
     @CalledByNative
@@ -79,22 +77,15 @@ public class ChromeWebApkHost {
 
     /**
      * Show dialog warning user that "installation from unknown sources" is required by the WebAPK
-     * experiment if:
-     * - The user toggled the --enable-improved-a2hs command line flag via chrome://flags
-     * AND
-     * - WebAPKs are not disabled via variations kill switch.
-     * Must be run prior to {@link cacheEnabledStateForNextLaunch}.
+     * experiment if the user enabled "Improved Add to Home screen" via chrome://flags.
      */
     public static void launchWebApkRequirementsDialogIfNeeded(Context context) {
         // Show dialog on Canary & Dev. Installation via "unknown sources" is disabled via
         // variations on other channels.
         if (!ChromeVersionInfo.isCanaryBuild() && !ChromeVersionInfo.isDevBuild()) return;
 
-        Context applicationContext = ContextUtils.getApplicationContext();
-        boolean wasCommandLineFlagEnabled = ChromePreferenceManager.getInstance(applicationContext)
-                                                    .getCachedWebApkCommandLineEnabled();
-        if (computeEnabled() && !wasCommandLineFlagEnabled
-                && !installingFromUnknownSourcesAllowed(applicationContext)) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.IMPROVED_A2HS)
+                && !installingFromUnknownSourcesAllowed()) {
             showUnknownSourcesNeededDialog(context);
         }
     }
@@ -107,40 +98,23 @@ public class ChromeWebApkHost {
         ChromePreferenceManager preferenceManager =
                 ChromePreferenceManager.getInstance(ContextUtils.getApplicationContext());
 
-        boolean wasCommandLineEnabled = preferenceManager.getCachedWebApkCommandLineEnabled();
-        boolean isCommandLineEnabled = isCommandLineFlagSet();
-        if (isCommandLineEnabled != wasCommandLineEnabled) {
-            // {@link launchWebApkRequirementsDialogIfNeeded()} is skipped the first time Chrome is
-            // launched so do caching here instead.
-            preferenceManager.setCachedWebApkCommandLineEnabled(isCommandLineEnabled);
-        }
-
         boolean wasEnabled = isEnabledInPrefs();
-        boolean isEnabled = computeEnabled();
+        boolean isEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.IMPROVED_A2HS);
         if (isEnabled != wasEnabled) {
             Log.d(TAG, "WebApk setting changed (%s => %s)", wasEnabled, isEnabled);
             preferenceManager.setCachedWebApkRuntimeEnabled(isEnabled);
         }
     }
 
-    /** Returns whether the --enable-improved-a2hs command line flag is set */
-    private static boolean isCommandLineFlagSet() {
-        return CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_WEBAPK);
-    }
-
-    /** Returns whether we should enable WebAPKs */
-    private static boolean computeEnabled() {
-        return isCommandLineFlagSet() && ChromeFeatureList.isEnabled(ChromeFeatureList.WEBAPKS);
-    }
-
     /**
      * Returns whether the user has enabled installing apps from sources other than the Google Play
      * Store.
      */
-    private static boolean installingFromUnknownSourcesAllowed(Context context) {
+    private static boolean installingFromUnknownSourcesAllowed() {
+        Context applicationContext = ContextUtils.getApplicationContext();
         try {
-            return Settings.Secure.getInt(
-                           context.getContentResolver(), Settings.Secure.INSTALL_NON_MARKET_APPS)
+            return Settings.Secure.getInt(applicationContext.getContentResolver(),
+                           Settings.Secure.INSTALL_NON_MARKET_APPS)
                     == 1;
         } catch (Settings.SettingNotFoundException e) {
             return false;

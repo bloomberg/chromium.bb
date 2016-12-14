@@ -196,11 +196,6 @@ public abstract class ChromeSwitches {
     public static final String PARTNER_HOMEPAGE_FOR_TESTING = "partner-homepage-for-testing";
 
     /**
-     * Enables "Add to Home screen" to mint a WebApk.
-     */
-    public static final String ENABLE_WEBAPK = "enable-improved-a2hs";
-
-    /**
      * Forces the WebAPK runtime dex to be extracted each time that Chrome is started.
      */
     public static final String ALWAYS_EXTRACT_WEBAPK_RUNTIME_DEX_ON_STARTUP =

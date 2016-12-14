@@ -284,7 +284,6 @@ extern const char kEnableContextualSearchContextualCardsBarIntegration[];
 extern const char kEnableHostedMode[];
 extern const char kEnableHungRendererInfoBar[];
 extern const char kEnableVrShell[];
-extern const char kEnableWebApk[];
 extern const char kForceShowUpdateMenuBadge[];
 extern const char kForceShowUpdateMenuItem[];
 extern const char kForceShowUpdateMenuItemCustomSummary[];

@@ -45,6 +45,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kContextualSearchSingleActions,
     &kDownloadsUiFeature,
     &kImportantSitesInCBD,
+    &kImprovedA2HS,
     &kNoCreditCardAbort,
     &kNTPFakeOmniboxTextFeature,
     &kNTPOfflinePagesFeature,
@@ -53,7 +54,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kSpecialLocaleFeature,
     &kSpecialLocaleWrapper,
     &kTabReparenting,
-    &kWebApks,
     &kWebPaymentsModifiers,
     &ntp_snippets::kContentSuggestionsFeature,
     &ntp_snippets::kIncreasedVisibility,
@@ -91,6 +91,11 @@ const base::Feature kDownloadsUiFeature{"DownloadsUi",
 const base::Feature kImportantSitesInCBD{"ImportantSitesInCBD",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Makes "Add to Home screen" in the app menu generate an APK for the shortcut
+// URL which opens Chrome in fullscreen.
+const base::Feature kImprovedA2HS{"ImprovedA2HS",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kNoCreditCardAbort{"NoCreditCardAbort",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -117,10 +122,6 @@ const base::Feature kTabReparenting{"TabReparenting",
 
 const base::Feature kUserMediaScreenCapturing{
     "UserMediaScreenCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Makes "Add to Home screen" in the app menu generate an APK for the shortcut
-// URL which opens Chrome in fullscreen.
-const base::Feature kWebApks{"WebApks", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kWebPaymentsModifiers{"WebPaymentsModifiers",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
