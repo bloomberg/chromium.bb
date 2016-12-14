@@ -41,8 +41,9 @@
       <neon-animatable route-path="default">
         <div class="settings-box first" actionable
             on-tap="toggleDeviceListExpanded_">
-          <iron-icon icon="settings:bluetooth"></iron-icon>
-          <span class="middle">$i18n{bluetoothEnable}</span>
+          <iron-icon icon="[[getIcon_(bluetoothEnabled_, deviceConnected_)]]">
+          </iron-icon>
+          <span class="middle">[[getTitle_(bluetoothEnabled_)]]</span>
           <cr-policy-pref-indicator
               pref="[[prefs.cros.device.allow_bluetooth]]"
               hidden="[[prefs.cros.device.allow_bluetooth.value]]">

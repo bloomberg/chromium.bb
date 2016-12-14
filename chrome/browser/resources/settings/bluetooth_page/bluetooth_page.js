@@ -62,6 +62,12 @@ Polymer({
     adapterState_: Object,
 
     /**
+     * Whether or not a bluetooth device is connected.
+     * @private
+     */
+    deviceConnected_: Boolean,
+
+    /**
      * The ordered list of bluetooth devices.
      * @type {!Array<!chrome.bluetooth.Device>}
      * @private
@@ -133,6 +139,8 @@ Polymer({
       value: chrome.bluetoothPrivate,
     },
   },
+
+  observers: ['deviceListChanged_(deviceList_.*)'],
 
   /**
    * Listener for chrome.bluetooth.onAdapterStateChanged events.
@@ -219,9 +227,41 @@ Polymer({
   },
 
   /** @private */
+  deviceListChanged_: function() {
+    for (let device of this.deviceList_) {
+      if (device.connected) {
+        this.deviceConnected_ = true;
+        return;
+      }
+    }
+    this.deviceConnected_ = false;
+  },
+
+  /** @private */
   selectedItemChanged_: function() {
     if (this.selectedItem_)
       this.connectDevice_(this.selectedItem_);
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getIcon_: function() {
+    if (!this.bluetoothEnabled_)
+      return 'settings:bluetooth-disabled';
+    if (this.deviceConnected_)
+      return 'settings:bluetooth-connected';
+    return 'settings:bluetooth';
+  },
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getTitle_: function() {
+    return this.i18n(
+        this.bluetoothEnabled_ ? 'bluetoothEnabled' : 'bluetoothDisabled');
   },
 
   /** @private */

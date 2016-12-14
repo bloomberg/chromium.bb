@@ -473,8 +473,11 @@
     <message name="IDS_SETTINGS_BLUETOOTH_PAIR_DEVICE" desc="Name of the settings page for pairing bluetooth devices.">
       Pair Bluetooth Device
     </message>
-    <message name="IDS_SETTINGS_BLUETOOTH_ENABLE" desc="Label for control to enable or disable bluetooth.">
-      Enable Bluetooth
+    <message name="IDS_SETTINGS_BLUETOOTH_ENABLED" desc="Label for bluetooth section when enabled.">
+      Bluetooth enabled
+    </message>
+    <message name="IDS_SETTINGS_BLUETOOTH_DISABLED" desc="Label for bluetooth section when disabled.">
+      Bluetooth disabled
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing available bluetooth devices. Only visible by screen reader software.">
       Show available bluetooth devices
