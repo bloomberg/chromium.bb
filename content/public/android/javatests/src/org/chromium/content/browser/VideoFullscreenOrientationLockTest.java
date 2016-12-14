@@ -16,6 +16,7 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_shell_apk.ContentShellTestBase;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeoutException;
@@ -104,6 +105,8 @@ public class VideoFullscreenOrientationLockTest extends ContentShellTestBase {
     @MediumTest
     @Feature({"VideoFullscreenOrientationLock"})
     public void testEnterExitFullscreenWithControlsButton() throws Exception {
+        if (DeviceFormFactor.isTablet(getInstrumentation().getContext())) return;
+
         // Start playback to guarantee it's properly loaded.
         assertTrue(DOMUtils.isMediaPaused(getWebContents(), VIDEO_ID));
         DOMUtils.playMedia(getWebContents(), VIDEO_ID);
@@ -128,6 +131,8 @@ public class VideoFullscreenOrientationLockTest extends ContentShellTestBase {
     @MediumTest
     @Feature({"VideoFullscreenOrientationLock"})
     public void testEnterExitFullscreenWithAPI() throws Exception {
+        if (DeviceFormFactor.isTablet(getInstrumentation().getContext())) return;
+
         // Start playback to guarantee it's properly loaded.
         assertTrue(DOMUtils.isMediaPaused(getWebContents(), VIDEO_ID));
         DOMUtils.playMedia(getWebContents(), VIDEO_ID);

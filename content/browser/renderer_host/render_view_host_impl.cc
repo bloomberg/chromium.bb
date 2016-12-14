@@ -84,6 +84,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/clipboard/clipboard.h"
+#include "ui/base/device_form_factor.h"
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/animation/animation.h"
@@ -468,7 +469,8 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.device_supports_mouse = false;
 
   prefs.video_fullscreen_orientation_lock_enabled =
-      base::FeatureList::IsEnabled(media::kVideoFullscreenOrientationLock);
+      base::FeatureList::IsEnabled(media::kVideoFullscreenOrientationLock) &&
+      ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE;
 #endif
 
   prefs.pointer_events_max_touch_points = ui::MaxTouchPoints();
