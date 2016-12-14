@@ -524,10 +524,10 @@ void DisplayConfigurator::Init(
 
   // If the delegate is already initialized don't update it (For example, tests
   // set their own delegates).
-  if (!native_display_delegate_) {
+  if (!native_display_delegate_)
     native_display_delegate_ = std::move(display_delegate);
-    native_display_delegate_->AddObserver(this);
-  }
+
+  native_display_delegate_->AddObserver(this);
 }
 
 void DisplayConfigurator::TakeControl(const DisplayControlCallback& callback) {
@@ -945,6 +945,11 @@ void DisplayConfigurator::OnConfigurationChanged() {
   configure_timer_.Start(FROM_HERE,
                          base::TimeDelta::FromMilliseconds(kConfigureDelayMs),
                          this, &DisplayConfigurator::ConfigureDisplays);
+}
+
+void DisplayConfigurator::OnDisplaySnapshotsInvalidated() {
+  VLOG(1) << "Display snapshots invalidated.";
+  cached_displays_.clear();
 }
 
 void DisplayConfigurator::AddObserver(Observer* observer) {

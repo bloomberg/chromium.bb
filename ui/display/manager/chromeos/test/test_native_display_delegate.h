@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "ui/display/manager/chromeos/test/action_logger.h"
 #include "ui/display/manager/chromeos/test/action_logger_util.h"
 #include "ui/display/types/native_display_delegate.h"
@@ -18,6 +19,7 @@ namespace ui {
 
 class ActionLogger;
 class DisplaySnapshot;
+class NativeDisplayObserver;
 
 namespace test {
 
@@ -110,6 +112,8 @@ class TestNativeDisplayDelegate : public NativeDisplayDelegate {
   bool run_async_;
 
   ActionLogger* log_;  // Not owned.
+
+  base::ObserverList<NativeDisplayObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNativeDisplayDelegate);
 };

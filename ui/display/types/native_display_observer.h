@@ -16,6 +16,10 @@ class DISPLAY_TYPES_EXPORT NativeDisplayObserver {
   virtual ~NativeDisplayObserver() {}
 
   virtual void OnConfigurationChanged() = 0;
+
+  // DisplaySnapshots owned by NativeDisplayDelegate are about to be
+  // invalidated and any stored pointers to them should be deleted.
+  virtual void OnDisplaySnapshotsInvalidated() = 0;
 };
 
 }  //  namespace ui

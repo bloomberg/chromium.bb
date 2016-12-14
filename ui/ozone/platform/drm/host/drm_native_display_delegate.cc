@@ -25,6 +25,11 @@ void DrmNativeDisplayDelegate::OnConfigurationChanged() {
     observer.OnConfigurationChanged();
 }
 
+void DrmNativeDisplayDelegate::OnDisplaySnapshotsInvalidated() {
+  for (NativeDisplayObserver& observer : observers_)
+    observer.OnDisplaySnapshotsInvalidated();
+}
+
 void DrmNativeDisplayDelegate::Initialize() {
   display_manager_->AddDelegate(this);
 }

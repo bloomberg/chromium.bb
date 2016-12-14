@@ -359,6 +359,8 @@ void DrmDisplayHostManager::OnGpuThreadRetired() {}
 
 void DrmDisplayHostManager::GpuHasUpdatedNativeDisplays(
     const std::vector<DisplaySnapshot_Params>& params) {
+  if (delegate_)
+    delegate_->OnDisplaySnapshotsInvalidated();
   std::vector<std::unique_ptr<DrmDisplayHost>> old_displays;
   displays_.swap(old_displays);
   for (size_t i = 0; i < params.size(); ++i) {

@@ -288,7 +288,16 @@ void DisplayChangeObserver::OnDisplayModeChangeFailed(
 }
 
 void DisplayChangeObserver::OnTouchscreenDeviceConfigurationChanged() {
-  OnDisplayModeChanged(display_configurator_->cached_displays());
+  // If there are no cached display snapshots, either there are no attached
+  // displays or the cached snapshots have been invalidated. For the first case
+  // there aren't any touchscreens to associate. For the second case, the
+  // displays and touch input-devices will get associated when display
+  // configuration finishes.
+  const auto& cached_displays = display_configurator_->cached_displays();
+  if (!cached_displays.empty())
+    OnDisplayModeChanged(cached_displays);
+  else
+    VLOG(1) << "Not updating touchscreen associations";
 }
 
 // static

@@ -91,6 +91,7 @@ class WindowManager : public ui::NativeDisplayObserver {
 
   // ui::NativeDisplayDelegate:
   void OnConfigurationChanged() override;
+  void OnDisplaySnapshotsInvalidated() override;
 
   std::unique_ptr<ui::NativeDisplayDelegate> delegate_;
   base::Closure quit_closure_;
@@ -281,6 +282,8 @@ void WindowManager::OnConfigurationChanged() {
   delegate_->GetDisplays(
       base::Bind(&WindowManager::OnDisplaysAquired, base::Unretained(this)));
 }
+
+void WindowManager::OnDisplaySnapshotsInvalidated() {}
 
 void WindowManager::OnDisplaysAquired(
     const std::vector<ui::DisplaySnapshot*>& displays) {

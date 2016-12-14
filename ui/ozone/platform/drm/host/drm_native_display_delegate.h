@@ -21,6 +21,7 @@ class DrmNativeDisplayDelegate : public NativeDisplayDelegate {
   ~DrmNativeDisplayDelegate() override;
 
   void OnConfigurationChanged();
+  void OnDisplaySnapshotsInvalidated();
 
   // NativeDisplayDelegate overrides:
   void Initialize() override;
