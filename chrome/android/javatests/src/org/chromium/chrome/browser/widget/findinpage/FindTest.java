@@ -25,6 +25,7 @@ import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
@@ -355,6 +356,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"FindInPage"})
+    @FlakyTest(message = "https://crbug.com/673930")
     public void testBackKeyDoesNotDismissFindWhenImeIsPresent() throws InterruptedException {
         loadUrl(mTestServer.getURL(FILEPATH));
         findInPageFromMenu();
