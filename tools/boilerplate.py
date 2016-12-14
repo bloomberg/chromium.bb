@@ -51,15 +51,22 @@ def _CppHeader(filename):
   ])
 
 
-def _CppImplementation(filename):
+def _RemoveTestSuffix(filename):
   base, _ = os.path.splitext(filename)
-  include = '#include "' + base + '.h"'
+  suffixes = [ '_test', '_unittest', '_browsertest' ]
+  for suffix in suffixes:
+    l = len(suffix)
+    if base[-l:] == suffix:
+      return base[:-l]
+  return base
+
+def _CppImplementation(filename):
+  include = '#include "' + _RemoveTestSuffix(filename) + '.h"'
   return '\n'.join(['', include])
 
 
 def _ObjCppImplementation(filename):
-  base, _ = os.path.splitext(filename)
-  include = '#import "' + base + '.h"'
+  include = '#import "' + _RemoveTestSuffix(filename) + '.h"'
   return '\n'.join(['', include])
 
 
