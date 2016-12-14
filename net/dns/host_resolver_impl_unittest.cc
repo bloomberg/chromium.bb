@@ -1503,6 +1503,12 @@ TEST_F(HostResolverImplTest, NameCollisionIcann) {
   EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
   EXPECT_THAT(request->WaitForResult(), IsError(ERR_ICANN_NAME_COLLISION));
 
+  // ERR_ICANN_NAME_COLLISION is cached like any other error, using a
+  // fixed TTL for failed entries from proc-based resolver. That said, the
+  // fixed TTL is 0, so it will never be cached.
+  request = CreateRequest("single");
+  EXPECT_THAT(request->ResolveFromCache(), IsError(ERR_DNS_CACHE_MISS));
+
   request = CreateRequest("multiple");
   EXPECT_THAT(request->Resolve(), IsError(ERR_IO_PENDING));
   EXPECT_THAT(request->WaitForResult(), IsError(ERR_ICANN_NAME_COLLISION));
@@ -1836,6 +1842,14 @@ TEST_F(HostResolverImplDnsTest, NameCollisionIcann) {
 
   EXPECT_THAT(requests_[1]->WaitForResult(), IsError(OK));
   EXPECT_TRUE(requests_[1]->HasAddress("::127.0.53.53", 80));
+
+  // The mock responses for 4collision (and 6collision) have a TTL of 1 day.
+  // Test whether the ERR_ICANN_NAME_COLLISION failure was cached.
+  // On the one hand caching the failure makes sense, as the error is derived
+  // from the IP in the response. However for consistency with the the proc-
+  // based implementation the TTL is unused.
+  EXPECT_THAT(CreateRequest("4collision", 80)->ResolveFromCache(),
+              IsError(ERR_DNS_CACHE_MISS));
 }
 
 TEST_F(HostResolverImplDnsTest, ServeFromHosts) {

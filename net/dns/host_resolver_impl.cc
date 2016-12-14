@@ -1457,9 +1457,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
                                   requests_.front()->info(),
                                   &addr_list)) {
       // This will destroy the Job.
-      CompleteRequests(
-          HostCache::Entry(OK, MakeAddressListForRequest(addr_list)),
-          base::TimeDelta());
+      CompleteRequests(MakeCacheEntry(OK, addr_list), base::TimeDelta());
       return true;
     }
     return false;
@@ -1497,6 +1495,25 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       --num_occupied_job_slots_;
     }
     DCHECK_EQ(1u, num_occupied_job_slots_);
+  }
+
+  // MakeCacheEntry() and MakeCacheEntryWithTTL() are helpers to build a
+  // HostCache::Entry(). The address list is omited from the cache entry
+  // for errors.
+  HostCache::Entry MakeCacheEntry(int net_error,
+                                  const AddressList& addr_list) const {
+    return HostCache::Entry(
+        net_error,
+        net_error == OK ? MakeAddressListForRequest(addr_list) : AddressList());
+  }
+
+  HostCache::Entry MakeCacheEntryWithTTL(int net_error,
+                                         const AddressList& addr_list,
+                                         base::TimeDelta ttl) const {
+    return HostCache::Entry(
+        net_error,
+        net_error == OK ? MakeAddressListForRequest(addr_list) : AddressList(),
+        ttl);
   }
 
   AddressList MakeAddressListForRequest(const AddressList& list) const {
@@ -1627,9 +1644,7 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
       ttl = base::TimeDelta::FromSeconds(kCacheEntryTTLSeconds);
 
     // Don't store the |ttl| in cache since it's not obtained from the server.
-    CompleteRequests(
-        HostCache::Entry(net_error, MakeAddressListForRequest(addr_list)),
-        ttl);
+    CompleteRequests(MakeCacheEntry(net_error, addr_list), ttl);
   }
 
   void StartDnsTask() {
@@ -1711,12 +1726,12 @@ class HostResolverImpl::Job : public PrioritizedDispatcher::Job,
     base::TimeDelta bounded_ttl =
         std::max(ttl, base::TimeDelta::FromSeconds(kMinimumTTLSeconds));
 
-    if (ContainsIcannNameCollisionIp(addr_list))
-      net_error = ERR_ICANN_NAME_COLLISION;
-
-    CompleteRequests(
-        HostCache::Entry(net_error, MakeAddressListForRequest(addr_list), ttl),
-        bounded_ttl);
+    if (ContainsIcannNameCollisionIp(addr_list)) {
+      CompleteRequestsWithError(ERR_ICANN_NAME_COLLISION);
+    } else {
+      CompleteRequests(MakeCacheEntryWithTTL(net_error, addr_list, ttl),
+                       bounded_ttl);
+    }
   }
 
   void OnFirstDnsTransactionComplete() override {
