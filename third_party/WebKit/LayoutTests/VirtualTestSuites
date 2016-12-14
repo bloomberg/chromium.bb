@@ -301,6 +301,11 @@
     "args": ["--enable-features=WebAssembly"]
   },
   {
+    "prefix": "enable_asmjs",
+    "base": "http/tests/asmjs",
+    "args": ["--enable-features=AsmJsToWebAssembly"]
+  },
+  {
     "prefix": "disable-mojo-service-worker",
     "base": "http/tests/serviceworker",
     "args": ["--disable-mojo-service-worker"]

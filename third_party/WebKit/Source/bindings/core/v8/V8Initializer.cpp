@@ -48,6 +48,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/EventDispatchForbiddenScope.h"
@@ -118,6 +119,32 @@ static String extractMessageForConsole(v8::Isolate* isolate,
   return emptyString();
 }
 
+namespace {
+MessageLevel MessageLevelFromNonFatalErrorLevel(int errorLevel) {
+  MessageLevel level = ErrorMessageLevel;
+  switch (errorLevel) {
+    case v8::Isolate::kMessageLog:
+      level = LogMessageLevel;
+      break;
+    case v8::Isolate::kMessageWarning:
+      level = WarningMessageLevel;
+      break;
+    case v8::Isolate::kMessageDebug:
+      level = DebugMessageLevel;
+      break;
+    case v8::Isolate::kMessageInfo:
+      level = InfoMessageLevel;
+      break;
+    case v8::Isolate::kMessageError:
+      level = InfoMessageLevel;
+      break;
+    default:
+      NOTREACHED();
+  }
+  return level;
+}
+}  // namespace
+
 void V8Initializer::messageHandlerInMainThread(v8::Local<v8::Message> message,
                                                v8::Local<v8::Value> data) {
   ASSERT(isMainThread());
@@ -134,6 +161,14 @@ void V8Initializer::messageHandlerInMainThread(v8::Local<v8::Message> message,
   ExecutionContext* context = scriptState->getExecutionContext();
   std::unique_ptr<SourceLocation> location =
       SourceLocation::fromMessage(isolate, message, context);
+
+  if (message->ErrorLevel() != v8::Isolate::kMessageError) {
+    context->addConsoleMessage(ConsoleMessage::create(
+        JSMessageSource,
+        MessageLevelFromNonFatalErrorLevel(message->ErrorLevel()),
+        toCoreStringWithNullCheck(message->Get()), std::move(location)));
+    return;
+  }
 
   AccessControlStatus accessControlStatus = NotSharableCrossOrigin;
   if (message->IsOpaque())
@@ -374,7 +409,11 @@ void V8Initializer::initializeMainThread() {
 
   isolate->SetOOMErrorHandler(reportOOMErrorInMainThread);
   isolate->SetFatalErrorHandler(reportFatalErrorInMainThread);
-  isolate->AddMessageListener(messageHandlerInMainThread);
+  isolate->AddMessageListenerWithErrorLevel(
+      messageHandlerInMainThread,
+      v8::Isolate::kMessageError | v8::Isolate::kMessageWarning |
+          v8::Isolate::kMessageInfo | v8::Isolate::kMessageDebug |
+          v8::Isolate::kMessageLog);
   isolate->SetFailedAccessCheckCallbackFunction(
       failedAccessCheckCallbackInMainThread);
   isolate->SetAllowCodeGenerationFromStringsCallback(
@@ -444,6 +483,15 @@ static void messageHandlerInWorker(v8::Local<v8::Message> message,
   ExecutionContext* context = scriptState->getExecutionContext();
   std::unique_ptr<SourceLocation> location =
       SourceLocation::fromMessage(isolate, message, context);
+
+  if (message->ErrorLevel() != v8::Isolate::kMessageError) {
+    context->addConsoleMessage(ConsoleMessage::create(
+        JSMessageSource,
+        MessageLevelFromNonFatalErrorLevel(message->ErrorLevel()),
+        toCoreStringWithNullCheck(message->Get()), std::move(location)));
+    return;
+  }
+
   ErrorEvent* event =
       ErrorEvent::create(toCoreStringWithNullCheck(message->Get()),
                          std::move(location), &scriptState->world());
@@ -476,7 +524,11 @@ NO_SANITIZE_ADDRESS
 void V8Initializer::initializeWorker(v8::Isolate* isolate) {
   initializeV8Common(isolate);
 
-  isolate->AddMessageListener(messageHandlerInWorker);
+  isolate->AddMessageListenerWithErrorLevel(
+      messageHandlerInWorker,
+      v8::Isolate::kMessageError | v8::Isolate::kMessageWarning |
+          v8::Isolate::kMessageInfo | v8::Isolate::kMessageDebug |
+          v8::Isolate::kMessageLog);
   isolate->SetFatalErrorHandler(reportFatalErrorInWorker);
 
   uint32_t here;
