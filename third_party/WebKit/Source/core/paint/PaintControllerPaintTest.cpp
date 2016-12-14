@@ -21,6 +21,10 @@ INSTANTIATE_TEST_CASE_P(All,
                         PaintControllerPaintTestForSlimmingPaintV1AndV2,
                         ::testing::Bool());
 
+INSTANTIATE_TEST_CASE_P(All,
+                        PaintControllerPaintTestForSlimmingPaintV2,
+                        ::testing::Bool());
+
 TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2,
        FullDocumentPaintingWithCaret) {
   setBodyInnerHTML(
@@ -171,7 +175,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV1AndV2, InlineRelayout) {
   }
 }
 
-TEST_F(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
+TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
   setBodyInnerHTML(
       "<div id='div' style='width: 200px; height: 200px; opacity: 0.5'>"
       "  <div style='width: 100px; height: 100px; background-color: "
@@ -185,29 +189,48 @@ TEST_F(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
   LayoutBlock& div = *toLayoutBlock(getLayoutObjectByElementId("div"));
   LayoutObject& subDiv = *div.firstChild();
   LayoutObject& subDiv2 = *subDiv.nextSibling();
-  EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 11,
-      TestDisplayItem(layoutView(),
-                      DisplayItem::kClipFrameToVisibleContentRect),
-      TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
-      TestDisplayItem(layoutView(), documentBackgroundType),
-      TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-      TestDisplayItem(div, DisplayItem::kBeginCompositing),
-      TestDisplayItem(subDiv, backgroundType),
-      TestDisplayItem(subDiv2, backgroundType),
-      TestDisplayItem(div, DisplayItem::kEndCompositing),
-      TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence),
-      TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence),
-      TestDisplayItem(layoutView(),
-                      DisplayItem::clipTypeToEndClipType(
-                          DisplayItem::kClipFrameToVisibleContentRect)));
+  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    EXPECT_DISPLAY_LIST(
+        rootPaintController().getDisplayItemList(), 9,
+        TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
+        TestDisplayItem(layoutView(), documentBackgroundType),
+        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
+        TestDisplayItem(div, DisplayItem::kBeginCompositing),
+        TestDisplayItem(subDiv, backgroundType),
+        TestDisplayItem(subDiv2, backgroundType),
+        TestDisplayItem(div, DisplayItem::kEndCompositing),
+        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence),
+        TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence));
+  } else {
+    EXPECT_DISPLAY_LIST(
+        rootPaintController().getDisplayItemList(), 11,
+        TestDisplayItem(layoutView(),
+                        DisplayItem::kClipFrameToVisibleContentRect),
+        TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
+        TestDisplayItem(layoutView(), documentBackgroundType),
+        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
+        TestDisplayItem(div, DisplayItem::kBeginCompositing),
+        TestDisplayItem(subDiv, backgroundType),
+        TestDisplayItem(subDiv2, backgroundType),
+        TestDisplayItem(div, DisplayItem::kEndCompositing),
+        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence),
+        TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence),
+        TestDisplayItem(layoutView(),
+                        DisplayItem::clipTypeToEndClipType(
+                            DisplayItem::kClipFrameToVisibleContentRect)));
+  }
 
   const PaintChunk& backgroundChunk = rootPaintController().paintChunks()[0];
   EXPECT_TRUE(backgroundChunk.properties.propertyTreeState.scroll()->isRoot());
 
   const EffectPaintPropertyNode* effectNode = div.paintProperties()->effect();
   EXPECT_EQ(0.5f, effectNode->opacity());
-  const PaintChunk& chunk = rootPaintController().paintChunks()[1];
+
+  // When RLS is enabled, an additional paint chunk will be created for the
+  // LayoutView's layer.
+  unsigned divChunkIndex =
+      RuntimeEnabledFeatures::rootLayerScrollingEnabled() ? 2 : 1;
+  const PaintChunk& chunk = rootPaintController().paintChunks()[divChunkIndex];
   EXPECT_EQ(*div.layer(), chunk.id->client);
   EXPECT_EQ(effectNode, chunk.properties.propertyTreeState.effect());
 
@@ -219,7 +242,7 @@ TEST_F(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
   EXPECT_TRUE(rootPaintController().clientCacheIsValid(subDiv));
 }
 
-TEST_F(PaintControllerPaintTestForSlimmingPaintV2, CompositingFold) {
+TEST_P(PaintControllerPaintTestForSlimmingPaintV2, CompositingFold) {
   setBodyInnerHTML(
       "<div id='div' style='width: 200px; height: 200px; opacity: 0.5'>"
       "  <div style='width: 100px; height: 100px; background-color: "
@@ -231,21 +254,36 @@ TEST_F(PaintControllerPaintTestForSlimmingPaintV2, CompositingFold) {
   LayoutBlock& div = *toLayoutBlock(getLayoutObjectByElementId("div"));
   LayoutObject& subDiv = *div.firstChild();
 
-  EXPECT_DISPLAY_LIST(
-      rootPaintController().getDisplayItemList(), 8,
-      TestDisplayItem(layoutView(),
-                      DisplayItem::kClipFrameToVisibleContentRect),
-      TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
-      TestDisplayItem(layoutView(), documentBackgroundType),
-      TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-      // The begin and end compositing display items have been folded into this
-      // one.
-      TestDisplayItem(subDiv, backgroundType),
-      TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence),
-      TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence),
-      TestDisplayItem(layoutView(),
-                      DisplayItem::clipTypeToEndClipType(
-                          DisplayItem::kClipFrameToVisibleContentRect)));
+  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+    EXPECT_DISPLAY_LIST(
+        rootPaintController().getDisplayItemList(), 6,
+        TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
+        TestDisplayItem(layoutView(), documentBackgroundType),
+        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
+        // The begin and end compositing display items have been folded into
+        // this
+        // one.
+        TestDisplayItem(subDiv, backgroundType),
+        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence),
+        TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence));
+  } else {
+    EXPECT_DISPLAY_LIST(
+        rootPaintController().getDisplayItemList(), 8,
+        TestDisplayItem(layoutView(),
+                        DisplayItem::kClipFrameToVisibleContentRect),
+        TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
+        TestDisplayItem(layoutView(), documentBackgroundType),
+        TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
+        // The begin and end compositing display items have been folded into
+        // this
+        // one.
+        TestDisplayItem(subDiv, backgroundType),
+        TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence),
+        TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence),
+        TestDisplayItem(layoutView(),
+                        DisplayItem::clipTypeToEndClipType(
+                            DisplayItem::kClipFrameToVisibleContentRect)));
+  }
 }
 
 }  // namespace blink
