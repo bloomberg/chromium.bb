@@ -3551,7 +3551,6 @@ test("unit_tests") {
       "../browser/font_family_cache_unittest.cc",
       "../browser/importer/firefox_profile_lock_unittest.cc",
       "../browser/importer/profile_writer_unittest.cc",
-      "../browser/media/combined_desktop_media_list_unittest.cc",
       "../browser/media/webrtc/tab_desktop_media_list_unittest.cc",
       "../browser/media_galleries/fileapi/native_media_file_util_unittest.cc",
       "../browser/media_galleries/gallery_watch_manager_unittest.cc",
@@ -4566,7 +4565,6 @@ test("unit_tests") {
         "../browser/ui/cocoa/location_bar/security_state_bubble_decoration_unittest.mm",
         "../browser/ui/cocoa/location_bar/selected_keyword_decoration_unittest.mm",
         "../browser/ui/cocoa/location_bar/zoom_decoration_unittest.mm",
-        "../browser/ui/cocoa/media_picker/desktop_media_picker_controller_deprecated_unittest.mm",
         "../browser/ui/cocoa/media_picker/desktop_media_picker_controller_unittest.mm",
         "../browser/ui/cocoa/menu_button_unittest.mm",
         "../browser/ui/cocoa/notifications/notification_builder_mac_unittest.mm",
@@ -4789,7 +4787,6 @@ test("unit_tests") {
         # Get these compiling on Mac - see http://crbug.com/657883.
         "../browser/ui/views/crypto_module_password_dialog_view_unittest.cc",
         "../browser/ui/views/desktop_capture/desktop_media_picker_views_unittest.cc",
-        "../browser/ui/views/desktop_media_picker_views_deprecated_unittest.cc",
         "../browser/ui/views/first_run_bubble_unittest.cc",
       ]
     }

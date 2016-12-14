@@ -6341,12 +6341,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAG_DISABLE_TAB_FOR_DESKTOP_SHARE_DESCRIPTION" desc="Description for the flag to disable tab for desktop share.">
         This flag controls whether users can choose a tab for desktop share.
       </message>
-      <message name="IDS_FLAG_DISABLE_DESKTOP_CAPTURE_PICKER_NEW_UI" desc="Title for the flag to disable desktop capture picker window new UI.">
-        Disable Desktop Capture Picker Window New UI.
-      </message>
-      <message name="IDS_FLAG_DISABLE_DESKTOP_CAPTURE_PICKER_NEW_UI_DESCRIPTION" desc="Description for the flag to disable desktop capture picker window new UI.">
-        This flag controls whether we show the old or new UI for desktop capture picker window.
-      </message>
       <message name="IDS_TRACE_UPLOAD_URL_CHOICE_OTHER">
         Other
       </message>
@@ -14045,9 +14039,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
           Share Your Screen
         </message>
       </if>
-      <message name="IDS_DESKTOP_MEDIA_PICKER_TITLE_DEPRECATED" desc="Title for the window picker dialog shown when desktop capture is requested by an app.">
-        Share your screen - <ph name="APP_NAME">$1<ex>Google Hangouts</ex></ph>
-      </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_TEXT" desc="Text for the window picker dialog shown when desktop capture is requested by an app to be used by the app itself.">
         <ph name="APP_NAME">$1<ex>Google Hangouts</ex></ph> wants to share the contents of your screen. Choose what you'd like to share.
       </message>
@@ -14056,16 +14047,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
       <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE" desc="Text for the checkbox on the window picker dialog, when checked, audio will be shared, otherwise just video sharing">
         Share audio
-      </message>
-      <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TOOLTIP_MAC" desc="Tooltip text for the checkbox on the window picker dialog, explaining why the checkbox to share audio is disabled">
-        To share audio, select a tab.
-      </message>
-      <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TOOLTIP_WINDOW" desc="Tooltip text for the checkbox on the window picker dialog, explaining why the checkbox to share audio is disabled">
-        To share audio, select a tab or entire screen.
-      </message>
-      <message name="IDS_DESKTOP_MEDIA_PICKER_AUDIO_SHARE_TOOLTIP_NONE" desc="Tooltip text for the checkbox on the window picker dialog, explaining why the checkbox for audio sharing is disabled">
-        Please select what to share first.
-      </message>
+      </message>      
       <message name="IDS_DESKTOP_MEDIA_PICKER_SOURCE_TYPE_SCREEN" desc="Text for the button on the window picker dialog, clicking which takes one to full screen sharing">
         Your Entire Screen
       </message>

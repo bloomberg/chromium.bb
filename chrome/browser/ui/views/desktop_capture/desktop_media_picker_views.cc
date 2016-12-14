@@ -5,13 +5,11 @@
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_picker_views.h"
 
 #include "base/callback.h"
-#include "base/command_line.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_list_view.h"
 #include "chrome/browser/ui/views/desktop_capture/desktop_media_source_view.h"
-#include "chrome/browser/ui/views/desktop_media_picker_views_deprecated.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -20,7 +18,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "extensions/common/switches.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -445,10 +442,5 @@ void DesktopMediaPickerViews::NotifyDialogResult(DesktopMediaID source) {
 
 // static
 std::unique_ptr<DesktopMediaPicker> DesktopMediaPicker::Create() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          extensions::switches::kDisableDesktopCapturePickerNewUI)) {
-    return std::unique_ptr<DesktopMediaPicker>(
-        new deprecated::DesktopMediaPickerViews());
-  }
   return std::unique_ptr<DesktopMediaPicker>(new DesktopMediaPickerViews());
 }

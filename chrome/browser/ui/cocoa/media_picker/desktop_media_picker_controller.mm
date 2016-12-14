@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #import "base/mac/bundle_locations.h"
 #include "base/strings/sys_string_conversions.h"
-#include "chrome/browser/media/combined_desktop_media_list.h"
+#include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"

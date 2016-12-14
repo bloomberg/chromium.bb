@@ -10,7 +10,6 @@
 #import "base/mac/scoped_nsobject.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker.h"
 
-@class DesktopMediaPickerControllerDeprecated;
 @class DesktopMediaPickerController;
 
 // Cocoa's DesktopMediaPicker implementation.
@@ -32,9 +31,6 @@ class DesktopMediaPickerCocoa : public DesktopMediaPicker {
             const DoneCallback& done_callback) override;
 
  private:
-  base::scoped_nsobject<DesktopMediaPickerControllerDeprecated>
-      controller_deprecated_;
-
   base::scoped_nsobject<DesktopMediaPickerController> controller_;
 };
 

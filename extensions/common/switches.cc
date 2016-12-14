@@ -49,10 +49,6 @@ const char kEnableOverrideBookmarksUI[] = "enable-override-bookmarks-ui";
 // Enables tab for desktop sharing.
 const char kDisableTabForDesktopShare[] = "disable-tab-for-desktop-share";
 
-// Disable new UI for desktop capture picker window.
-const char kDisableDesktopCapturePickerNewUI[] =
-    "disable-desktop-capture-picker-new-ui";
-
 // Allows the ErrorConsole to collect runtime and manifest errors, and display
 // them in the chrome:extensions page.
 const char kErrorConsole[] = "error-console";

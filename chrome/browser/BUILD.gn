@@ -533,8 +533,6 @@ split_static_library("browser") {
     "manifest/manifest_icon_downloader.h",
     "manifest/manifest_icon_selector.cc",
     "manifest/manifest_icon_selector.h",
-    "media/combined_desktop_media_list.cc",
-    "media/combined_desktop_media_list.h",
     "media/media_access_handler.h",
     "media/media_device_id_salt.cc",
     "media/media_device_id_salt.h",
