@@ -10,6 +10,7 @@
 
 #include <memory>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
@@ -133,6 +134,8 @@ class OmniboxViewMac : public OmniboxView,
   AutocompleteTextField* field() const { return field_; }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewMacTest, WritingDirectionLTR);
+  FRIEND_TEST_ALL_PREFIXES(OmniboxViewMacTest, WritingDirectionRTL);
   // Called when the user hits backspace in |field_|.  Checks whether
   // keyword search is being terminated.  Returns true if the
   // backspace should be intercepted (not forwarded on to the standard

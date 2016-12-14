@@ -9,6 +9,7 @@
 #import "base/mac/sdk_forward_declarations.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
@@ -46,6 +47,9 @@ const CGFloat kAnimationDuration = 0.2;
   resizeAnimation_.reset([[NSViewAnimation alloc] init]);
   [resizeAnimation_ setDuration:kAnimationDuration];
   [resizeAnimation_ setAnimationBlockingMode:NSAnimationNonblocking];
+  [self setAlignment:cocoa_l10n_util::ShouldDoExperimentalRTLLayout()
+                         ? NSRightTextAlignment
+                         : NSLeftTextAlignment];
 
   // Disable Force Touch in the Omnibox. Note that this API is defined in
   // 10.10.3 and higher so have to check more than just isYosmiteOrLater().

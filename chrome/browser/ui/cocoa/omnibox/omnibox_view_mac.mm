@@ -17,7 +17,8 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#include "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
+#import "chrome/browser/ui/cocoa/l10n_util.h"
+#import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_editor.h"
 #include "chrome/browser/ui/cocoa/omnibox/omnibox_popup_view_mac.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
@@ -530,6 +531,10 @@ void OmniboxViewMac::ApplyTextStyle(
   [paragraph_style setMaximumLineHeight:line_height];
   [paragraph_style setMinimumLineHeight:line_height];
   [paragraph_style setLineBreakMode:NSLineBreakByTruncatingTail];
+  // Set an explicit alignment so it isn't implied from writing direction.
+  [paragraph_style setAlignment:cocoa_l10n_util::ShouldDoExperimentalRTLLayout()
+                                    ? NSRightTextAlignment
+                                    : NSLeftTextAlignment];
   // If this is a URL, set the top-level paragraph direction to LTR (avoids RTL
   // characters from making the URL render from right to left, as per RFC 3987
   // Section 4.1).
