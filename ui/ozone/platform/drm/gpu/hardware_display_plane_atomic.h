@@ -10,6 +10,10 @@
 #include <stdint.h>
 #include <xf86drmMode.h>
 
+namespace gfx {
+class Rect;
+}  // namespace gfx
+
 namespace ui {
 
 class CrtcController;
