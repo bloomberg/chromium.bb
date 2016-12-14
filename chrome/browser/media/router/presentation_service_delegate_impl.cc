@@ -81,8 +81,9 @@ class PresentationSessionMessagesObserver : public RouteMessageObserver {
   // |message_cb|: The callback to invoke whenever messages are received.
   // |route_id|: ID of MediaRoute to listen for messages.
   PresentationSessionMessagesObserver(
-      MediaRouter* router, const MediaRoute::Id& route_id,
-      const content::PresentationSessionMessageCallback& message_cb)
+      MediaRouter* router,
+      const MediaRoute::Id& route_id,
+      const content::PresentationConnectionMessageCallback& message_cb)
       : RouteMessageObserver(router, route_id), message_cb_(message_cb) {
     DCHECK(!message_cb_.is_null());
   }
@@ -91,15 +92,17 @@ class PresentationSessionMessagesObserver : public RouteMessageObserver {
 
   void OnMessagesReceived(const std::vector<RouteMessage>& messages) final {
     DVLOG(2) << __func__ << ", number of messages : " << messages.size();
-    ScopedVector<content::PresentationSessionMessage> presentation_messages;
+    ScopedVector<content::PresentationConnectionMessage> presentation_messages;
     for (const RouteMessage& message : messages) {
       if (message.type == RouteMessage::TEXT && message.text) {
-        presentation_messages.push_back(new content::PresentationSessionMessage(
-            content::PresentationMessageType::TEXT));
+        presentation_messages.push_back(
+            new content::PresentationConnectionMessage(
+                content::PresentationMessageType::TEXT));
         presentation_messages.back()->message = *message.text;
       } else if (message.type == RouteMessage::BINARY && message.binary) {
-        presentation_messages.push_back(new content::PresentationSessionMessage(
-            content::PresentationMessageType::ARRAY_BUFFER));
+        presentation_messages.push_back(
+            new content::PresentationConnectionMessage(
+                content::PresentationMessageType::BINARY));
         presentation_messages.back()->data.reset(
             new std::vector<uint8_t>(*message.binary));
       }
@@ -110,7 +113,7 @@ class PresentationSessionMessagesObserver : public RouteMessageObserver {
   }
 
  private:
-  const content::PresentationSessionMessageCallback message_cb_;
+  const content::PresentationConnectionMessageCallback message_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(PresentationSessionMessagesObserver);
 };
@@ -144,7 +147,7 @@ class PresentationFrame {
           state_changed_cb);
   void ListenForSessionMessages(
       const content::PresentationSessionInfo& session,
-      const content::PresentationSessionMessageCallback& message_cb);
+      const content::PresentationConnectionMessageCallback& message_cb);
 
   void Reset();
   void RemoveConnection(const std::string& presentation_id,
@@ -315,7 +318,7 @@ void PresentationFrame::ListenForConnectionStateChange(
 
 void PresentationFrame::ListenForSessionMessages(
     const content::PresentationSessionInfo& session,
-    const content::PresentationSessionMessageCallback& message_cb) {
+    const content::PresentationConnectionMessageCallback& message_cb) {
   auto it = presentation_id_to_route_id_.find(session.presentation_id);
   if (it == presentation_id_to_route_id_.end()) {
     DVLOG(2) << "ListenForSessionMessages: no route for "
@@ -367,7 +370,7 @@ class PresentationFrameManager {
   void ListenForSessionMessages(
       const RenderFrameHostId& render_frame_host_id,
       const content::PresentationSessionInfo& session,
-      const content::PresentationSessionMessageCallback& message_cb);
+      const content::PresentationConnectionMessageCallback& message_cb);
 
   // Sets or clears the default presentation request and callback for the given
   // frame. Also sets / clears the default presentation requests for the owning
@@ -540,7 +543,7 @@ void PresentationFrameManager::ListenForConnectionStateChange(
 void PresentationFrameManager::ListenForSessionMessages(
     const RenderFrameHostId& render_frame_host_id,
     const content::PresentationSessionInfo& session,
-    const content::PresentationSessionMessageCallback& message_cb) {
+    const content::PresentationConnectionMessageCallback& message_cb) {
   const auto it = presentation_frames_.find(render_frame_host_id);
   if (it == presentation_frames_.end()) {
     DVLOG(2) << "ListenForSessionMessages: PresentationFrame does not exist "
@@ -894,11 +897,11 @@ void PresentationServiceDelegateImpl::Terminate(
   frame_manager_->RemoveConnection(rfh_id, presentation_id, route_id);
 }
 
-void PresentationServiceDelegateImpl::ListenForSessionMessages(
+void PresentationServiceDelegateImpl::ListenForConnectionMessages(
     int render_process_id,
     int render_frame_id,
     const content::PresentationSessionInfo& session,
-    const content::PresentationSessionMessageCallback& message_cb) {
+    const content::PresentationConnectionMessageCallback& message_cb) {
   frame_manager_->ListenForSessionMessages(
       RenderFrameHostId(render_process_id, render_frame_id), session,
       message_cb);
@@ -908,7 +911,7 @@ void PresentationServiceDelegateImpl::SendMessage(
     int render_process_id,
     int render_frame_id,
     const content::PresentationSessionInfo& session,
-    std::unique_ptr<content::PresentationSessionMessage> message,
+    std::unique_ptr<content::PresentationConnectionMessage> message,
     const SendMessageCallback& send_message_cb) {
   const MediaRoute::Id& route_id = frame_manager_->GetRouteId(
       RenderFrameHostId(render_process_id, render_frame_id),

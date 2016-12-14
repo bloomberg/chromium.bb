@@ -6,6 +6,6 @@
 
 namespace content {
 
-const size_t kMaxPresentationSessionMessageSize = 64 * 1024; // 64 KB.
+const size_t kMaxPresentationConnectionMessageSize = 64 * 1024;  // 64 KB.
 
 }  // namespace content

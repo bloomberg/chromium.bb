@@ -4,6 +4,7 @@
 
 #include "content/renderer/presentation/presentation_dispatcher.h"
 
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -142,7 +143,7 @@ void PresentationDispatcher::joinSession(
 void PresentationDispatcher::sendString(const blink::WebURL& presentationUrl,
                                         const blink::WebString& presentationId,
                                         const blink::WebString& message) {
-  if (message.utf8().size() > kMaxPresentationSessionMessageSize) {
+  if (message.utf8().size() > kMaxPresentationConnectionMessageSize) {
     // TODO(crbug.com/459008): Limit the size of individual messages to 64k
     // for now. Consider throwing DOMException or splitting bigger messages
     // into smaller chunks later.
@@ -163,7 +164,7 @@ void PresentationDispatcher::sendArrayBuffer(
     const uint8_t* data,
     size_t length) {
   DCHECK(data);
-  if (length > kMaxPresentationSessionMessageSize) {
+  if (length > kMaxPresentationConnectionMessageSize) {
     // TODO(crbug.com/459008): Same as in sendString().
     LOG(WARNING) << "data size exceeded limit!";
     return;
@@ -171,7 +172,7 @@ void PresentationDispatcher::sendArrayBuffer(
 
   message_request_queue_.push(base::WrapUnique(CreateSendBinaryMessageRequest(
       presentationUrl, presentationId,
-      blink::mojom::PresentationMessageType::ARRAY_BUFFER, data, length)));
+      blink::mojom::PresentationMessageType::BINARY, data, length)));
   // Start processing request if only one in the queue.
   if (message_request_queue_.size() == 1)
     DoSendMessage(message_request_queue_.front().get());
@@ -183,7 +184,7 @@ void PresentationDispatcher::sendBlobData(
     const uint8_t* data,
     size_t length) {
   DCHECK(data);
-  if (length > kMaxPresentationSessionMessageSize) {
+  if (length > kMaxPresentationConnectionMessageSize) {
     // TODO(crbug.com/459008): Same as in sendString().
     LOG(WARNING) << "data size exceeded limit!";
     return;
@@ -191,7 +192,7 @@ void PresentationDispatcher::sendBlobData(
 
   message_request_queue_.push(base::WrapUnique(CreateSendBinaryMessageRequest(
       presentationUrl, presentationId,
-      blink::mojom::PresentationMessageType::BLOB, data, length)));
+      blink::mojom::PresentationMessageType::BINARY, data, length)));
   // Start processing request if only one in the queue.
   if (message_request_queue_.size() == 1)
     DoSendMessage(message_request_queue_.front().get());
@@ -200,7 +201,7 @@ void PresentationDispatcher::sendBlobData(
 void PresentationDispatcher::DoSendMessage(SendMessageRequest* request) {
   ConnectToPresentationServiceIfNeeded();
 
-  presentation_service_->SendSessionMessage(
+  presentation_service_->SendConnectionMessage(
       std::move(request->session_info), std::move(request->message),
       base::Bind(&PresentationDispatcher::HandleSendMessageRequests,
                  base::Unretained(this)));
@@ -376,7 +377,7 @@ void PresentationDispatcher::OnDefaultSessionStarted(
     return;
 
   if (!session_info.is_null()) {
-    presentation_service_->ListenForSessionMessages(session_info.Clone());
+    presentation_service_->ListenForConnectionMessages(session_info.Clone());
     controller_->didStartDefaultSession(
         new PresentationConnectionClient(std::move(session_info)));
   }
@@ -396,7 +397,7 @@ void PresentationDispatcher::OnSessionCreated(
   }
 
   DCHECK(!session_info.is_null());
-  presentation_service_->ListenForSessionMessages(session_info.Clone());
+  presentation_service_->ListenForConnectionMessages(session_info.Clone());
   callback->onSuccess(
       base::MakeUnique<PresentationConnectionClient>(std::move(session_info)));
 }
@@ -435,9 +436,9 @@ void PresentationDispatcher::OnConnectionClosed(
       blink::WebString::fromUTF8(message));
 }
 
-void PresentationDispatcher::OnSessionMessagesReceived(
+void PresentationDispatcher::OnConnectionMessagesReceived(
     blink::mojom::PresentationSessionInfoPtr session_info,
-    std::vector<blink::mojom::SessionMessagePtr> messages) {
+    std::vector<blink::mojom::ConnectionMessagePtr> messages) {
   if (!controller_)
     return;
 
@@ -454,8 +455,7 @@ void PresentationDispatcher::OnSessionMessagesReceived(
             blink::WebString::fromUTF8(messages[i]->message.value()));
         break;
       }
-      case blink::mojom::PresentationMessageType::ARRAY_BUFFER:
-      case blink::mojom::PresentationMessageType::BLOB: {
+      case blink::mojom::PresentationMessageType::BINARY: {
         // TODO(mfoltz): Do we need to DCHECK(messages[i]->data)?
         controller_->didReceiveSessionBinaryMessage(
             session_client.release(), &(messages[i]->data->front()),
@@ -498,7 +498,7 @@ void PresentationDispatcher::UpdateListeningState(AvailabilityStatus* status) {
 
 PresentationDispatcher::SendMessageRequest::SendMessageRequest(
     blink::mojom::PresentationSessionInfoPtr session_info,
-    blink::mojom::SessionMessagePtr message)
+    blink::mojom::ConnectionMessagePtr message)
     : session_info(std::move(session_info)), message(std::move(message)) {}
 
 PresentationDispatcher::SendMessageRequest::~SendMessageRequest() {}
@@ -514,8 +514,8 @@ PresentationDispatcher::CreateSendTextMessageRequest(
   session_info->url = presentationUrl;
   session_info->id = presentationId.utf8();
 
-  blink::mojom::SessionMessagePtr session_message =
-      blink::mojom::SessionMessage::New();
+  blink::mojom::ConnectionMessagePtr session_message =
+      blink::mojom::ConnectionMessage::New();
   session_message->type = blink::mojom::PresentationMessageType::TEXT;
   session_message->message = message.utf8();
   return new SendMessageRequest(std::move(session_info),
@@ -535,8 +535,8 @@ PresentationDispatcher::CreateSendBinaryMessageRequest(
   session_info->url = presentationUrl;
   session_info->id = presentationId.utf8();
 
-  blink::mojom::SessionMessagePtr session_message =
-      blink::mojom::SessionMessage::New();
+  blink::mojom::ConnectionMessagePtr session_message =
+      blink::mojom::ConnectionMessage::New();
   session_message->type = type;
   session_message->data = std::vector<uint8_t>(data, data + length);
   return new SendMessageRequest(std::move(session_info),

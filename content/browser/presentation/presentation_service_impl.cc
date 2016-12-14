@@ -14,7 +14,7 @@
 #include "content/browser/presentation/presentation_type_converters.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_details.h"
-#include "content/public/browser/presentation_session_message.h"
+#include "content/public/browser/presentation_connection_message.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
@@ -33,19 +33,20 @@ int GetNextRequestSessionId() {
   return ++next_request_session_id;
 }
 
-// Converts a PresentationSessionMessage |input| to a SessionMessage.
+// Converts a PresentationConnectionMessage |input| to a ConnectionMessage.
 // |input|: The message to convert.
 // |pass_ownership|: If true, function may reuse strings or buffers from
 //     |input| without copying. |input| can be freely modified.
-blink::mojom::SessionMessagePtr ToMojoSessionMessage(
-    content::PresentationSessionMessage* input,
+blink::mojom::ConnectionMessagePtr ToMojoConnectionMessage(
+    content::PresentationConnectionMessage* input,
     bool pass_ownership) {
   DCHECK(input);
-  blink::mojom::SessionMessagePtr output(blink::mojom::SessionMessage::New());
+  blink::mojom::ConnectionMessagePtr output(
+      blink::mojom::ConnectionMessage::New());
   if (input->is_binary()) {
     // binary data
     DCHECK(input->data);
-    output->type = blink::mojom::PresentationMessageType::ARRAY_BUFFER;
+    output->type = blink::mojom::PresentationMessageType::BINARY;
     if (pass_ownership) {
       output->data = std::move(*(input->data));
     } else {
@@ -63,47 +64,37 @@ blink::mojom::SessionMessagePtr ToMojoSessionMessage(
   return output;
 }
 
-std::unique_ptr<PresentationSessionMessage> GetPresentationSessionMessage(
-    blink::mojom::SessionMessagePtr input) {
-  std::unique_ptr<content::PresentationSessionMessage> output;
+std::unique_ptr<PresentationConnectionMessage> GetPresentationConnectionMessage(
+    blink::mojom::ConnectionMessagePtr input) {
+  std::unique_ptr<content::PresentationConnectionMessage> output;
   if (input.is_null())
     return output;
 
   switch (input->type) {
     case blink::mojom::PresentationMessageType::TEXT: {
-      // Return nullptr PresentationSessionMessage if invalid (unset |message|,
+      // Return nullptr PresentationConnectionMessage if invalid (unset
+      // |message|,
       // set |data|, or size too large).
       if (input->data || !input->message ||
-          input->message->size() > content::kMaxPresentationSessionMessageSize)
+          input->message->size() >
+              content::kMaxPresentationConnectionMessageSize)
         return output;
 
       output.reset(
-          new PresentationSessionMessage(PresentationMessageType::TEXT));
+          new PresentationConnectionMessage(PresentationMessageType::TEXT));
       output->message = std::move(input->message.value());
       return output;
     }
-    case blink::mojom::PresentationMessageType::ARRAY_BUFFER: {
-      // Return nullptr PresentationSessionMessage if invalid (unset |data|, set
+    case blink::mojom::PresentationMessageType::BINARY: {
+      // Return nullptr PresentationConnectionMessage if invalid (unset |data|,
+      // set
       // |message|, or size too large).
       if (!input->data || input->message ||
-          input->data->size() > content::kMaxPresentationSessionMessageSize)
-        return output;
-
-      output.reset(new PresentationSessionMessage(
-          PresentationMessageType::ARRAY_BUFFER));
-      output->data.reset(
-          new std::vector<uint8_t>(std::move(input->data.value())));
-      return output;
-    }
-    case blink::mojom::PresentationMessageType::BLOB: {
-      // Return nullptr PresentationSessionMessage if invalid (unset |data|, set
-      // |message|, or size too large).
-      if (!input->data || input->message ||
-          input->data->size() > content::kMaxPresentationSessionMessageSize)
+          input->data->size() > content::kMaxPresentationConnectionMessageSize)
         return output;
 
       output.reset(
-          new PresentationSessionMessage(PresentationMessageType::BLOB));
+          new PresentationConnectionMessage(PresentationMessageType::BINARY));
       output->data.reset(
           new std::vector<uint8_t>(std::move(input->data.value())));
       return output;
@@ -374,12 +365,12 @@ void PresentationServiceImpl::SetDefaultPresentationUrls(
                  weak_factory_.GetWeakPtr()));
 }
 
-void PresentationServiceImpl::SendSessionMessage(
+void PresentationServiceImpl::SendConnectionMessage(
     blink::mojom::PresentationSessionInfoPtr session,
-    blink::mojom::SessionMessagePtr session_message,
-    const SendSessionMessageCallback& callback) {
-  DVLOG(2) << "SendSessionMessage";
-  DCHECK(!session_message.is_null());
+    blink::mojom::ConnectionMessagePtr connection_message,
+    const SendConnectionMessageCallback& callback) {
+  DVLOG(2) << "SendConnectionMessage";
+  DCHECK(!connection_message.is_null());
   // send_message_callback_ should be null by now, otherwise resetting of
   // send_message_callback_ with new callback will drop the old callback.
   if (!delegate_ || send_message_callback_) {
@@ -387,11 +378,11 @@ void PresentationServiceImpl::SendSessionMessage(
     return;
   }
 
-  send_message_callback_.reset(new SendSessionMessageCallback(callback));
+  send_message_callback_.reset(new SendConnectionMessageCallback(callback));
   delegate_->SendMessage(
       render_process_id_, render_frame_id_,
       session.To<PresentationSessionInfo>(),
-      GetPresentationSessionMessage(std::move(session_message)),
+      GetPresentationConnectionMessage(std::move(connection_message)),
       base::Bind(&PresentationServiceImpl::OnSendMessageCallback,
                  weak_factory_.GetWeakPtr()));
 }
@@ -449,33 +440,34 @@ bool PresentationServiceImpl::FrameMatches(
          render_frame_host->GetRoutingID() == render_frame_id_;
 }
 
-void PresentationServiceImpl::ListenForSessionMessages(
+void PresentationServiceImpl::ListenForConnectionMessages(
     blink::mojom::PresentationSessionInfoPtr session) {
-  DVLOG(2) << "ListenForSessionMessages";
+  DVLOG(2) << "ListenForConnectionMessages";
   if (!delegate_)
     return;
 
   PresentationSessionInfo session_info(session.To<PresentationSessionInfo>());
-  delegate_->ListenForSessionMessages(
+  delegate_->ListenForConnectionMessages(
       render_process_id_, render_frame_id_, session_info,
-      base::Bind(&PresentationServiceImpl::OnSessionMessages,
+      base::Bind(&PresentationServiceImpl::OnConnectionMessages,
                  weak_factory_.GetWeakPtr(), session_info));
 }
 
-void PresentationServiceImpl::OnSessionMessages(
+void PresentationServiceImpl::OnConnectionMessages(
     const PresentationSessionInfo& session,
-    const ScopedVector<PresentationSessionMessage>& messages,
+    const ScopedVector<PresentationConnectionMessage>& messages,
     bool pass_ownership) {
   DCHECK(client_);
 
-  DVLOG(2) << "OnSessionMessages";
-  std::vector<blink::mojom::SessionMessagePtr> mojo_messages(messages.size());
+  DVLOG(2) << "OnConnectionMessages";
+  std::vector<blink::mojom::ConnectionMessagePtr> mojo_messages(
+      messages.size());
   std::transform(messages.begin(), messages.end(), mojo_messages.begin(),
-                 [pass_ownership](PresentationSessionMessage* message) {
-                   return ToMojoSessionMessage(message, pass_ownership);
+                 [pass_ownership](PresentationConnectionMessage* message) {
+                   return ToMojoConnectionMessage(message, pass_ownership);
                  });
 
-  client_->OnSessionMessagesReceived(
+  client_->OnConnectionMessagesReceived(
       blink::mojom::PresentationSessionInfo::From(session),
       std::move(mojo_messages));
 }
@@ -537,10 +529,10 @@ void PresentationServiceImpl::Reset() {
 
   pending_join_session_cbs_.clear();
 
-  if (on_session_messages_callback_.get()) {
-    on_session_messages_callback_->Run(
-        mojo::Array<blink::mojom::SessionMessagePtr>());
-    on_session_messages_callback_.reset();
+  if (on_connection_messages_callback_.get()) {
+    on_connection_messages_callback_->Run(
+        mojo::Array<blink::mojom::ConnectionMessagePtr>());
+    on_connection_messages_callback_.reset();
   }
 
   if (send_message_callback_) {

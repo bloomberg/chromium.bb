@@ -34,7 +34,7 @@ namespace content {
 
 struct FrameNavigateParams;
 struct LoadCommittedDetails;
-struct PresentationSessionMessage;
+struct PresentationConnectionMessage;
 class RenderFrameHost;
 
 // Implementation of Mojo PresentationService.
@@ -86,7 +86,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
       DefaultSessionStartReset);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
-                           ReceiveSessionMessagesAfterReset);
+                           ReceiveConnectionMessagesAfterReset);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
                            MaxPendingStartSessionRequests);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
@@ -99,9 +99,9 @@ class CONTENT_EXPORT PresentationServiceImpl
   // Maximum number of pending JoinSession requests at any given time.
   static const int kMaxNumQueuedSessionRequests = 10;
 
-  using SessionMessagesCallback =
-      base::Callback<void(mojo::Array<blink::mojom::SessionMessagePtr>)>;
-  using SendSessionMessageCallback = base::Callback<void(bool)>;
+  using ConnectionMessagesCallback =
+      base::Callback<void(mojo::Array<blink::mojom::ConnectionMessagePtr>)>;
+  using SendConnectionMessageCallback = base::Callback<void(bool)>;
 
   // Listener implementation owned by PresentationServiceImpl. An instance of
   // this is created when PresentationRequest.getAvailability() is resolved.
@@ -161,14 +161,15 @@ class CONTENT_EXPORT PresentationServiceImpl
   void JoinSession(const std::vector<GURL>& presentation_urls,
                    const base::Optional<std::string>& presentation_id,
                    const NewSessionCallback& callback) override;
-  void SendSessionMessage(blink::mojom::PresentationSessionInfoPtr session_info,
-                          blink::mojom::SessionMessagePtr session_message,
-                          const SendSessionMessageCallback& callback) override;
+  void SendConnectionMessage(
+      blink::mojom::PresentationSessionInfoPtr session_info,
+      blink::mojom::ConnectionMessagePtr connection_message,
+      const SendConnectionMessageCallback& callback) override;
   void CloseConnection(const GURL& presentation_url,
                        const std::string& presentation_id) override;
   void Terminate(const GURL& presentation_url,
                  const std::string& presentation_id) override;
-  void ListenForSessionMessages(
+  void ListenForConnectionMessages(
       blink::mojom::PresentationSessionInfoPtr session) override;
 
   // Creates a binding between this object and |request|.
@@ -229,9 +230,9 @@ class CONTENT_EXPORT PresentationServiceImpl
 
   // Passed to embedder's implementation of PresentationServiceDelegate for
   // later invocation when session messages arrive.
-  void OnSessionMessages(
+  void OnConnectionMessages(
       const content::PresentationSessionInfo& session,
-      const ScopedVector<PresentationSessionMessage>& messages,
+      const ScopedVector<PresentationConnectionMessage>& messages,
       bool pass_ownership);
 
   // Associates a JoinSession |callback| with a unique request ID and
@@ -276,9 +277,9 @@ class CONTENT_EXPORT PresentationServiceImpl
   std::unique_ptr<mojo::Binding<blink::mojom::PresentationService>> binding_;
 
   // There can be only one send message request at a time.
-  std::unique_ptr<SendSessionMessageCallback> send_message_callback_;
+  std::unique_ptr<SendConnectionMessageCallback> send_message_callback_;
 
-  std::unique_ptr<SessionMessagesCallback> on_session_messages_callback_;
+  std::unique_ptr<ConnectionMessagesCallback> on_connection_messages_callback_;
 
   // ID of the RenderFrameHost this object is associated with.
   int render_process_id_;

@@ -40,15 +40,16 @@ struct PresentationError {
 
 enum PresentationMessageType {
   TEXT,
-  ARRAY_BUFFER,
-  BLOB,
+  BINARY,
 };
 
-struct SessionMessage {
+struct ConnectionMessage {
   PresentationMessageType type;
   // Used when message type is TEXT.
   string? message;
-  // Used when message type is ARRAY_BUFFER or BLOB.
+  // Used when message type is BINARY.
+  // TODO(lethalantidote): Make this a mojo union.
+  // See https://crbug.com/632623.
   array<uint8>? data;
 };
 
@@ -95,8 +96,8 @@ interface PresentationService {
   // The false in the result callback notifies the renderer to stop sending
   // the send requests and invalidate all pending requests. This occurs
   // for eg., when frame is deleted or navigated away.
-  SendSessionMessage(PresentationSessionInfo sessionInfo,
-                     SessionMessage message_request) => (bool success);
+  SendConnectionMessage(PresentationSessionInfo sessionInfo,
+                     ConnectionMessage message_request) => (bool success);
 
   // Called when close() is called by the frame.
   CloseConnection(url.mojom.Url presentation_url, string presentation_id);
@@ -106,9 +107,9 @@ interface PresentationService {
 
   // Starts listening for messages for session with |sessionInfo|.
   // Messages will be received in
-  // PresentationServiceClient::OnSessionMessagesReceived.
+  // PresentationServiceClient::OnConnectionMessagesReceived.
   // This is called after a presentation session is created.
-  ListenForSessionMessages(PresentationSessionInfo sessionInfo);
+  ListenForConnectionMessages(PresentationSessionInfo sessionInfo);
 };
 
 interface PresentationServiceClient {
@@ -135,9 +136,9 @@ interface PresentationServiceClient {
                      PresentationConnectionCloseReason reason,
                      string message);
 
-  // See PresentationService::ListenForSessionMessages.
-  OnSessionMessagesReceived(PresentationSessionInfo sessionInfo,
-                            array<SessionMessage> messages);
+  // See PresentationService::ListenForConnectionMessages.
+  OnConnectionMessagesReceived(PresentationSessionInfo sessionInfo,
+                            array<ConnectionMessage> messages);
 
   // See PresentationService::SetDefaultPresentationURL.
   OnDefaultSessionStarted(PresentationSessionInfo sessionInfo);

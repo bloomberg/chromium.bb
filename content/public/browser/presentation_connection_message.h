@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_BROWSER_PRESENTATION_SESSION_MESSAGE_H_
-#define CONTENT_PUBLIC_BROWSER_PRESENTATION_SESSION_MESSAGE_H_
+#ifndef CONTENT_PUBLIC_BROWSER_PRESENTATION_CONNECTION_MESSAGE_H_
+#define CONTENT_PUBLIC_BROWSER_PRESENTATION_CONNECTION_MESSAGE_H_
 
 #include <stdint.h>
 
@@ -17,17 +17,16 @@ namespace content {
 
 enum PresentationMessageType {
   TEXT,
-  ARRAY_BUFFER,
-  BLOB,
+  BINARY,
 };
 
-// Represents a presentation session message.
+// Represents a presentation connection message.
 // If this is a text message, |data| is null; otherwise, |message| is null.
 // Empty messages are allowed.
-struct CONTENT_EXPORT PresentationSessionMessage {
+struct CONTENT_EXPORT PresentationConnectionMessage {
  public:
-  explicit PresentationSessionMessage(PresentationMessageType type);
-  ~PresentationSessionMessage();
+  explicit PresentationConnectionMessage(PresentationMessageType type);
+  ~PresentationConnectionMessage();
 
   bool is_binary() const;
   const PresentationMessageType type;
@@ -37,4 +36,4 @@ struct CONTENT_EXPORT PresentationSessionMessage {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_BROWSER_PRESENTATION_SESSION_H_
+#endif  // CONTENT_PUBLIC_BROWSER_PRESENTATION_CONNECTION_MESSAGE_H_

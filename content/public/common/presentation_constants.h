@@ -11,8 +11,8 @@
 
 namespace content {
 
-// The maximum number of bytes allowed in a presentation session message.
-CONTENT_EXPORT extern const size_t kMaxPresentationSessionMessageSize;
+// The maximum number of bytes allowed in a presentation connection message.
+CONTENT_EXPORT extern const size_t kMaxPresentationConnectionMessageSize;
 
 }  // namespace content
 

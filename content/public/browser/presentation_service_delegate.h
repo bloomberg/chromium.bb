@@ -12,8 +12,8 @@
 #include "base/callback.h"
 #include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/presentation_connection_message.h"
 #include "content/public/browser/presentation_session.h"
-#include "content/public/browser/presentation_session_message.h"
 
 class GURL;
 
@@ -29,8 +29,8 @@ using PresentationSessionErrorCallback =
 // Param #0: a vector of messages that are received.
 // Param #1: tells the callback handler that it may reuse strings or buffers
 //           in the messages contained within param #0.
-using PresentationSessionMessageCallback = base::Callback<
-    void(const ScopedVector<content::PresentationSessionMessage>&, bool)>;
+using PresentationConnectionMessageCallback = base::Callback<
+    void(const ScopedVector<content::PresentationConnectionMessage>&, bool)>;
 
 struct PresentationConnectionStateChangeInfo {
   explicit PresentationConnectionStateChangeInfo(
@@ -173,11 +173,11 @@ class CONTENT_EXPORT PresentationServiceDelegate {
   // |session|: URL and ID of presentation session to listen for messages.
   // |message_cb|: Invoked with a non-empty list of messages whenever there are
   // messages.
-  virtual void ListenForSessionMessages(
+  virtual void ListenForConnectionMessages(
       int render_process_id,
       int render_frame_id,
       const content::PresentationSessionInfo& session,
-      const PresentationSessionMessageCallback& message_cb) = 0;
+      const PresentationConnectionMessageCallback& message_cb) = 0;
 
   // Sends a message (string or binary data) to a presentation session.
   // |render_process_id|, |render_frame_id|: ID of originating frame.
@@ -185,11 +185,12 @@ class CONTENT_EXPORT PresentationServiceDelegate {
   // |message|: The message to send. The embedder takes ownership of |message|.
   //            Must not be null.
   // |send_message_cb|: Invoked after handling the send message request.
-  virtual void SendMessage(int render_process_id,
-                           int render_frame_id,
-                           const content::PresentationSessionInfo& session,
-                           std::unique_ptr<PresentationSessionMessage> message,
-                           const SendMessageCallback& send_message_cb) = 0;
+  virtual void SendMessage(
+      int render_process_id,
+      int render_frame_id,
+      const content::PresentationSessionInfo& session,
+      std::unique_ptr<PresentationConnectionMessage> message,
+      const SendMessageCallback& send_message_cb) = 0;
 
   // Continuously listen for state changes for a PresentationConnection in a
   // frame.

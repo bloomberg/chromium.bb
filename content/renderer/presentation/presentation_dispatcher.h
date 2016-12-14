@@ -11,6 +11,9 @@
 #include <map>
 #include <memory>
 #include <queue>
+#include <set>
+#include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
@@ -46,11 +49,11 @@ class CONTENT_EXPORT PresentationDispatcher
  private:
   struct SendMessageRequest {
     SendMessageRequest(blink::mojom::PresentationSessionInfoPtr session_info,
-                       blink::mojom::SessionMessagePtr message);
+                       blink::mojom::ConnectionMessagePtr message);
     ~SendMessageRequest();
 
     blink::mojom::PresentationSessionInfoPtr session_info;
-    blink::mojom::SessionMessagePtr message;
+    blink::mojom::ConnectionMessagePtr message;
   };
 
   static SendMessageRequest* CreateSendTextMessageRequest(
@@ -117,9 +120,9 @@ class CONTENT_EXPORT PresentationDispatcher
       blink::mojom::PresentationSessionInfoPtr connection,
       blink::mojom::PresentationConnectionCloseReason reason,
       const std::string& message) override;
-  void OnSessionMessagesReceived(
+  void OnConnectionMessagesReceived(
       blink::mojom::PresentationSessionInfoPtr session_info,
-      std::vector<blink::mojom::SessionMessagePtr> messages) override;
+      std::vector<blink::mojom::ConnectionMessagePtr> messages) override;
   void OnDefaultSessionStarted(
       blink::mojom::PresentationSessionInfoPtr session_info) override;
 

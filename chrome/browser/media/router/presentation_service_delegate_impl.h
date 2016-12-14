@@ -27,7 +27,7 @@ namespace content {
 class PresentationScreenAvailabilityListener;
 class WebContents;
 struct PresentationSessionInfo;
-struct PresentationSessionMessage;
+struct PresentationConnectionMessage;
 }  // namespace content
 
 namespace url {
@@ -114,16 +114,18 @@ class PresentationServiceDelegateImpl
   void Terminate(int render_process_id,
                  int render_frame_id,
                  const std::string& presentation_id) override;
-  void ListenForSessionMessages(
+  void ListenForConnectionMessages(
       int render_process_id,
       int render_frame_id,
       const content::PresentationSessionInfo& session,
-      const content::PresentationSessionMessageCallback& message_cb) override;
-  void SendMessage(int render_process_id,
-                   int render_frame_id,
-                   const content::PresentationSessionInfo& session,
-                   std::unique_ptr<content::PresentationSessionMessage> message,
-                   const SendMessageCallback& send_message_cb) override;
+      const content::PresentationConnectionMessageCallback& message_cb)
+      override;
+  void SendMessage(
+      int render_process_id,
+      int render_frame_id,
+      const content::PresentationSessionInfo& session,
+      std::unique_ptr<content::PresentationConnectionMessage> message,
+      const SendMessageCallback& send_message_cb) override;
   void ListenForConnectionStateChange(
       int render_process_id,
       int render_frame_id,

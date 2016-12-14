@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/presentation_session_message.h"
+#include "content/public/browser/presentation_connection_message.h"
 
 namespace content {
 
-PresentationSessionMessage::PresentationSessionMessage(
+PresentationConnectionMessage::PresentationConnectionMessage(
     PresentationMessageType type)
     : type(type) {}
 
-PresentationSessionMessage::~PresentationSessionMessage() {}
+PresentationConnectionMessage::~PresentationConnectionMessage() {}
 
-bool PresentationSessionMessage::is_binary() const {
+bool PresentationConnectionMessage::is_binary() const {
   return data != nullptr;
 }
 
