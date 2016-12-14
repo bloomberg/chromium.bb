@@ -26,6 +26,20 @@ EventWithCallback::EventWithCallback(
   original_events_.emplace_back(std::move(event), callback);
 }
 
+EventWithCallback::EventWithCallback(
+    ScopedWebInputEvent event,
+    const LatencyInfo& latency,
+    base::TimeTicks creation_timestamp,
+    base::TimeTicks last_coalesced_timestamp,
+    std::unique_ptr<OriginalEventList> original_events)
+    : event_(std::move(event)),
+      latency_(latency),
+      creation_timestamp_(creation_timestamp),
+      last_coalesced_timestamp_(last_coalesced_timestamp) {
+  if (original_events)
+    original_events_.splice(original_events_.end(), *original_events);
+}
+
 EventWithCallback::~EventWithCallback() {}
 
 bool EventWithCallback::CanCoalesceWith(const EventWithCallback& other) const {

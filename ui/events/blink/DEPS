@@ -14,6 +14,7 @@ include_rules = [
   "+third_party/WebKit/public/web/WebActiveWheelFlingParameters.h",
 
   "+ui/display/win",
+  "+ui/gfx",
   "+ui/gfx/geometry",
   "+ui/events"
 ]

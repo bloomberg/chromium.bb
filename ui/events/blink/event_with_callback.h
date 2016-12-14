@@ -18,11 +18,26 @@ class InputHandlerProxyEventQueueTest;
 
 class EventWithCallback {
  public:
+  struct OriginalEventWithCallback {
+    OriginalEventWithCallback(
+        ScopedWebInputEvent event,
+        const InputHandlerProxy::EventDispositionCallback& callback);
+    ~OriginalEventWithCallback();
+    ScopedWebInputEvent event_;
+    InputHandlerProxy::EventDispositionCallback callback_;
+  };
+  using OriginalEventList = std::list<OriginalEventWithCallback>;
+
   EventWithCallback(
       ScopedWebInputEvent event,
       const LatencyInfo& latency,
       base::TimeTicks timestamp_now,
       const InputHandlerProxy::EventDispositionCallback& callback);
+  EventWithCallback(ScopedWebInputEvent event,
+                    const LatencyInfo& latency,
+                    base::TimeTicks creation_timestamp,
+                    base::TimeTicks last_coalesced_timestamp,
+                    std::unique_ptr<OriginalEventList> original_events);
   ~EventWithCallback();
 
   bool CanCoalesceWith(const EventWithCallback& other) const WARN_UNUSED_RESULT;
@@ -39,23 +54,16 @@ class EventWithCallback {
     return last_coalesced_timestamp_;
   }
   size_t coalesced_count() const { return original_events_.size(); }
+  OriginalEventList& original_events() { return original_events_; }
 
  private:
   friend class test::InputHandlerProxyEventQueueTest;
-  struct OriginalEventWithCallback {
-    OriginalEventWithCallback(
-        ScopedWebInputEvent event,
-        const InputHandlerProxy::EventDispositionCallback& callback);
-    ~OriginalEventWithCallback();
-    ScopedWebInputEvent event_;
-    InputHandlerProxy::EventDispositionCallback callback_;
-  };
 
   void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
 
   ScopedWebInputEvent event_;
   LatencyInfo latency_;
-  std::list<OriginalEventWithCallback> original_events_;
+  OriginalEventList original_events_;
 
   base::TimeTicks creation_timestamp_;
   base::TimeTicks last_coalesced_timestamp_;

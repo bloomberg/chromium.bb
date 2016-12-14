@@ -37,6 +37,7 @@ source_set("blink") {
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
     "//ui/events:gesture_detection",
+    "//ui/gfx",
     "//ui/gfx/geometry",
   ]
 

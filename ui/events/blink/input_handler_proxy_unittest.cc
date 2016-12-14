@@ -21,6 +21,7 @@
 #include "third_party/WebKit/public/platform/WebGestureCurve.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
+#include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/compositor_thread_event_queue.h"
 #include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/event_with_callback.h"
@@ -3085,6 +3086,54 @@ TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedQueueingTime) {
   histogram_tester.ExpectBucketCount(kNonContinuousQueueingTimeHistogram, 0, 1);
   histogram_tester.ExpectBucketCount(kNonContinuousQueueingTimeHistogram, 70,
                                      1);
+}
+
+TEST_F(InputHandlerProxyEventQueueTest, VSyncAlignedCoalesceScrollAndPinch) {
+  // Start scroll in the first frame.
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+      .WillOnce(testing::Return(kImplThreadScrollState));
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput()).Times(1);
+
+  // GSUs and GPUs in one sequence should be coalesced into 1 GSU and 1 GPU.
+  HandleGestureEvent(WebInputEvent::GestureScrollBegin);
+  HandleGestureEvent(WebInputEvent::GestureScrollUpdate, -20);
+  HandleGestureEvent(WebInputEvent::GestureScrollUpdate, -7);
+  HandleGestureEvent(WebInputEvent::GesturePinchUpdate, 2.0f, 13, 10);
+  HandleGestureEvent(WebInputEvent::GestureScrollUpdate, -10);
+  HandleGestureEvent(WebInputEvent::GestureScrollUpdate, -6);
+  HandleGestureEvent(WebInputEvent::GestureScrollEnd);
+  HandleGestureEvent(WebInputEvent::GesturePinchBegin);
+  HandleGestureEvent(WebInputEvent::GesturePinchUpdate, 0.2f, 2, 20);
+  HandleGestureEvent(WebInputEvent::GesturePinchUpdate, 10.0f, 1, 10);
+  HandleGestureEvent(WebInputEvent::GestureScrollUpdate, -30);
+  HandleGestureEvent(WebInputEvent::GesturePinchUpdate, 0.25f, 3, 30);
+  HandleGestureEvent(WebInputEvent::GestureScrollUpdate, -10);
+  HandleGestureEvent(WebInputEvent::GesturePinchEnd);
+
+  // Only the first GSB was dispatched.
+  EXPECT_EQ(7ul, event_queue().size());
+  EXPECT_EQ(1ul, event_disposition_recorder_.size());
+
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, event_queue()[0]->event().type);
+  EXPECT_EQ(
+      -35,
+      ToWebGestureEvent(event_queue()[0]->event()).data.scrollUpdate.deltaY);
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, event_queue()[1]->event().type);
+  EXPECT_EQ(
+      2.0f,
+      ToWebGestureEvent(event_queue()[1]->event()).data.pinchUpdate.scale);
+  EXPECT_EQ(WebInputEvent::GestureScrollEnd, event_queue()[2]->event().type);
+  EXPECT_EQ(WebInputEvent::GesturePinchBegin, event_queue()[3]->event().type);
+  EXPECT_EQ(WebInputEvent::GestureScrollUpdate, event_queue()[4]->event().type);
+  EXPECT_EQ(
+      -85,
+      ToWebGestureEvent(event_queue()[4]->event()).data.scrollUpdate.deltaY);
+  EXPECT_EQ(WebInputEvent::GesturePinchUpdate, event_queue()[5]->event().type);
+  EXPECT_EQ(
+      0.5f,
+      ToWebGestureEvent(event_queue()[5]->event()).data.pinchUpdate.scale);
+  EXPECT_EQ(WebInputEvent::GesturePinchEnd, event_queue()[6]->event().type);
+  testing::Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }
 
 INSTANTIATE_TEST_CASE_P(AnimateInput,

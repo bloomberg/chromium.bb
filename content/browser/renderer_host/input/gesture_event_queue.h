@@ -19,7 +19,6 @@
 #include "content/common/content_export.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
-#include "ui/gfx/transform.h"
 
 namespace content {
 class GestureEventQueueTest;

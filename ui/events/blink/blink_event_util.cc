@@ -16,7 +16,6 @@
 
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
@@ -26,6 +25,7 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/gfx/transform.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
@@ -381,6 +381,24 @@ void Coalesce(const WebGestureEvent& event_to_coalesce,
   }
 }
 
+// Returns the transform matrix corresponding to the gesture event.
+gfx::Transform GetTransformForEvent(const WebGestureEvent& gesture_event) {
+  gfx::Transform gesture_transform;
+  if (gesture_event.type == WebInputEvent::GestureScrollUpdate) {
+    gesture_transform.Translate(gesture_event.data.scrollUpdate.deltaX,
+                                gesture_event.data.scrollUpdate.deltaY);
+  } else if (gesture_event.type == WebInputEvent::GesturePinchUpdate) {
+    float scale = gesture_event.data.pinchUpdate.scale;
+    gesture_transform.Translate(-gesture_event.x, -gesture_event.y);
+    gesture_transform.Scale(scale, scale);
+    gesture_transform.Translate(gesture_event.x, gesture_event.y);
+  } else {
+    NOTREACHED() << "Invalid event type for transform retrieval: "
+                 << WebInputEvent::GetName(gesture_event.type);
+  }
+  return gesture_transform;
+}
+
 }  // namespace
 
 bool CanCoalesce(const blink::WebInputEvent& event_to_coalesce,
@@ -437,6 +455,73 @@ void Coalesce(const blink::WebInputEvent& event_to_coalesce,
     Coalesce(static_cast<const blink::WebMouseWheelEvent&>(event_to_coalesce),
              static_cast<blink::WebMouseWheelEvent*>(event));
   }
+}
+
+// Whether |event_in_queue| is GesturePinchUpdate or GestureScrollUpdate and
+// has the same modifiers/source as the new scroll/pinch event. Compatible
+// scroll and pinch event pairs can be logically coalesced.
+bool IsCompatibleScrollorPinch(const WebGestureEvent& new_event,
+                               const WebGestureEvent& event_in_queue) {
+  DCHECK(new_event.type == WebInputEvent::GestureScrollUpdate ||
+         new_event.type == WebInputEvent::GesturePinchUpdate)
+      << "Invalid event type for pinch/scroll coalescing: "
+      << WebInputEvent::GetName(new_event.type);
+  DLOG_IF(WARNING, new_event.timeStampSeconds < event_in_queue.timeStampSeconds)
+      << "Event time not monotonic?\n";
+  return (event_in_queue.type == WebInputEvent::GestureScrollUpdate ||
+          event_in_queue.type == WebInputEvent::GesturePinchUpdate) &&
+         event_in_queue.modifiers == new_event.modifiers &&
+         event_in_queue.sourceDevice == new_event.sourceDevice;
+}
+
+std::pair<WebGestureEvent, WebGestureEvent> CoalesceScrollAndPinch(
+    const WebGestureEvent* second_last_event,
+    const WebGestureEvent& last_event,
+    const WebGestureEvent& new_event) {
+  DCHECK(!CanCoalesce(new_event, last_event))
+      << "New event can be coalesced with the last event in queue directly.";
+  DCHECK(IsContinuousGestureEvent(new_event.type));
+  DCHECK(IsCompatibleScrollorPinch(new_event, last_event));
+  DCHECK(!second_last_event ||
+         IsCompatibleScrollorPinch(new_event, *second_last_event));
+
+  WebGestureEvent scroll_event;
+  WebGestureEvent pinch_event;
+  scroll_event.modifiers |= new_event.modifiers;
+  scroll_event.sourceDevice = new_event.sourceDevice;
+  scroll_event.timeStampSeconds = new_event.timeStampSeconds;
+  pinch_event = scroll_event;
+  scroll_event.type = WebInputEvent::GestureScrollUpdate;
+  pinch_event.type = WebInputEvent::GesturePinchUpdate;
+  pinch_event.x = new_event.type == WebInputEvent::GesturePinchUpdate
+                      ? new_event.x
+                      : last_event.x;
+  pinch_event.y = new_event.type == WebInputEvent::GesturePinchUpdate
+                      ? new_event.y
+                      : last_event.y;
+
+  gfx::Transform combined_scroll_pinch = GetTransformForEvent(last_event);
+  if (second_last_event) {
+    combined_scroll_pinch.PreconcatTransform(
+        GetTransformForEvent(*second_last_event));
+  }
+  combined_scroll_pinch.ConcatTransform(GetTransformForEvent(new_event));
+
+  float combined_scale =
+      SkMScalarToFloat(combined_scroll_pinch.matrix().get(0, 0));
+  float combined_scroll_pinch_x =
+      SkMScalarToFloat(combined_scroll_pinch.matrix().get(0, 3));
+  float combined_scroll_pinch_y =
+      SkMScalarToFloat(combined_scroll_pinch.matrix().get(1, 3));
+  scroll_event.data.scrollUpdate.deltaX =
+      (combined_scroll_pinch_x + pinch_event.x) / combined_scale -
+      pinch_event.x;
+  scroll_event.data.scrollUpdate.deltaY =
+      (combined_scroll_pinch_y + pinch_event.y) / combined_scale -
+      pinch_event.y;
+  pinch_event.data.pinchUpdate.scale = combined_scale;
+
+  return std::make_pair(scroll_event, pinch_event);
 }
 
 blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(

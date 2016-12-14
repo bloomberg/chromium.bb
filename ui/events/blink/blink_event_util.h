@@ -7,12 +7,11 @@
 
 #include <memory>
 
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/events/gesture_detection/motion_event.h"
 
 namespace blink {
-class WebGestureEvent;
-class WebInputEvent;
 class WebTouchEvent;
 }
 
@@ -32,6 +31,16 @@ bool CanCoalesce(const blink::WebInputEvent& event_to_coalesce,
 
 void Coalesce(const blink::WebInputEvent& event_to_coalesce,
               blink::WebInputEvent* event);
+
+bool IsCompatibleScrollorPinch(const blink::WebGestureEvent& new_event,
+                               const blink::WebGestureEvent& event_in_queue);
+
+// Coalesces 3 GestureScroll/PinchUpdate into 2 events.
+// Returns <GestureScrollUpdate, GesturePinchUpdate>.
+std::pair<blink::WebGestureEvent, blink::WebGestureEvent>
+CoalesceScrollAndPinch(const blink::WebGestureEvent* second_last_event,
+                       const blink::WebGestureEvent& last_event,
+                       const blink::WebGestureEvent& new_event);
 
 blink::WebTouchEvent CreateWebTouchEventFromMotionEvent(
     const MotionEvent& event,
@@ -83,6 +92,12 @@ blink::WebInputEvent::Modifiers DomCodeToWebInputEventModifiers(
 bool IsGestureScollOrPinch(blink::WebInputEvent::Type);
 
 bool IsContinuousGestureEvent(blink::WebInputEvent::Type);
+
+inline const blink::WebGestureEvent& ToWebGestureEvent(
+    const blink::WebInputEvent& event) {
+  DCHECK(IsGestureScollOrPinch(event.type));
+  return static_cast<const blink::WebGestureEvent&>(event);
+}
 
 }  // namespace ui
 
