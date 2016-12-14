@@ -318,6 +318,7 @@ static_library("test_support") {
     "//components/startup_metric_utils/browser:lib",
     "//content/public/app:both",
     "//content/public/common",
+    "//pdf",
     "//ppapi/features",
     "//printing/features",
     "//ui/base",
@@ -342,10 +343,6 @@ static_library("test_support") {
       "//chrome/browser/chromeos",
       "//components/metrics/leak_detector:leak_detector",
     ]
-  }
-
-  if (enable_pdf) {
-    deps += [ "//pdf" ]
   }
 
   if (enable_plugins && enable_nacl) {

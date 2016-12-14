@@ -130,6 +130,7 @@ static_library("test_support") {
     "//media:media_features",
     "//net",
     "//net:test_support",
+    "//pdf",
     "//ppapi/features",
     "//printing/features",
     "//skia",
@@ -225,10 +226,6 @@ static_library("test_support") {
       "base/test_browser_window_aura.cc",
       "base/test_browser_window_aura.h",
     ]
-  }
-
-  if (enable_plugins && enable_pdf) {
-    public_deps += [ "//pdf" ]
   }
 
   if (use_ash) {

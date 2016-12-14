@@ -239,13 +239,11 @@ if (!is_android && !is_mac) {
         # Needed to use the master_preferences functions
         "//chrome/installer/util:with_no_strings",
         "//content/public/app:both",
+        "//pdf",
 
         # For headless mode.
         "//headless:headless_shell_lib",
       ]
-      if (enable_plugins && enable_pdf) {
-        deps += [ "//pdf" ]
-      }
 
       public_deps = [
         ":xdg_mime",  # Needs to be public for installer to consume files.
@@ -378,11 +376,8 @@ if (is_win) {
       deps += [
         ":child_dependencies",
         "//content/public/app:both",
+        "//pdf",
       ]
-    }
-
-    if (enable_plugins && enable_pdf && !is_multi_dll_chrome) {
-      deps += [ "//pdf" ]
     }
 
     if (enable_package_mash_services) {
@@ -420,6 +415,7 @@ if (is_win) {
         "//components/browser_watcher:browser_watcher_client",
         "//components/crash/content/app",
         "//content/public/app:child",
+        "//pdf",
       ]
 
       ldflags = [
@@ -439,10 +435,6 @@ if (is_win) {
         configs += [ "//build/config/win:no_incremental_linking" ]
       }
       configs += [ "//build/config/compiler/pgo:default_pgo_flags" ]
-
-      if (enable_plugins && enable_pdf) {
-        deps += [ "//pdf" ]
-      }
     }
   }
   copy("copy_first_run") {
@@ -980,6 +972,7 @@ if (is_win) {
       "//components/crash/content/app",
       "//components/policy:generated",
       "//content/public/app:both",
+      "//pdf",
       "//third_party/cld",
     ]
 
@@ -992,10 +985,6 @@ if (is_win) {
       "-Wl," + rebase_path("app/framework.order", root_build_dir),
       "-ObjC",
     ]
-
-    if (enable_plugins && enable_pdf) {
-      deps += [ "//pdf" ]
-    }
 
     if (enable_package_mash_services) {
       deps += [ "//chrome/app/mash" ]

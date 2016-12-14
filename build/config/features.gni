@@ -21,8 +21,6 @@ if (is_android) {
 }
 
 declare_args() {
-  enable_pdf = !is_android && !is_ios && !is_chromecast
-
   # Enables Native Client support.
   # Temporarily disable nacl on arm64 linux to get rid of compilation errors.
   # TODO(mcgrathr): When mipsel-nacl-clang is available, drop the exclusion.

@@ -44,6 +44,7 @@
 #include "extensions/features/features.h"
 #include "gpu/config/gpu_info.h"
 #include "net/http/http_util.h"
+#include "pdf/features.h"
 #include "ppapi/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
@@ -90,14 +91,14 @@
 namespace {
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-#if defined(ENABLE_PDF)
+#if BUILDFLAG(ENABLE_PDF)
 const char kPDFPluginExtension[] = "pdf";
 const char kPDFPluginDescription[] = "Portable Document Format";
 const char kPDFPluginOutOfProcessMimeType[] =
     "application/x-google-chrome-pdf";
 const uint32_t kPDFPluginPermissions =
     ppapi::PERMISSION_PRIVATE | ppapi::PERMISSION_DEV;
-#endif  // defined(ENABLE_PDF)
+#endif  // BUILDFLAG(ENABLE_PDF)
 
 content::PepperPluginInfo::GetInterfaceFunc g_pdf_get_interface;
 content::PepperPluginInfo::PPP_InitializeModuleFunc g_pdf_initialize_module;
@@ -151,7 +152,7 @@ bool IsWidevineAvailable(base::FilePath* adapter_path,
 // not marked internal, aside from being automatically registered, they're just
 // regular plugins).
 void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
-#if defined(ENABLE_PDF)
+#if BUILDFLAG(ENABLE_PDF)
   content::PepperPluginInfo pdf_info;
   pdf_info.is_internal = true;
   pdf_info.is_out_of_process = true;
@@ -169,7 +170,7 @@ void ComputeBuiltInPlugins(std::vector<content::PepperPluginInfo>* plugins) {
   pdf_info.internal_entry_points.shutdown_module = g_pdf_shutdown_module;
   pdf_info.permissions = kPDFPluginPermissions;
   plugins->push_back(pdf_info);
-#endif  // defined(ENABLE_PDF)
+#endif  // BUILDFLAG(ENABLE_PDF)
 
 #if !defined(DISABLE_NACL)
   // Handle Native Client just like the PDF plugin. This means that it is
