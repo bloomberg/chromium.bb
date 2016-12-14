@@ -61,10 +61,6 @@ WebViewImpl& SimTest::webView() {
   return *m_webViewHelper.webView();
 }
 
-WebLocalFrameImpl& SimTest::mainFrame() {
-  return *webView().mainFrameImpl();
-}
-
 const SimWebViewClient& SimTest::webViewClient() const {
   return m_webViewClient;
 }
