@@ -31,9 +31,6 @@ static void MaybePrintResultsForAudioReceive(
     return;
   }
 
-  EXPECT_TRUE(pc_dict.GetString(Statistic("bytesReceived", ssrc), &value));
-  perf_test::PrintResult(
-      "audio_bytes", modifier, "bytes_recv", value, "bytes", false);
   EXPECT_TRUE(pc_dict.GetString(Statistic("packetsLost", ssrc), &value));
   perf_test::PrintResult(
       "audio_misc", modifier, "packets_lost", value, "frames", false);
@@ -64,9 +61,6 @@ static void MaybePrintResultsForAudioSend(
     return;
   }
 
-  EXPECT_TRUE(pc_dict.GetString(Statistic("bytesSent", ssrc), &value));
-  perf_test::PrintResult(
-      "audio_bytes", modifier, "bytes_sent", value, "bytes", false);
   EXPECT_TRUE(pc_dict.GetString(Statistic("googJitterReceived", ssrc), &value));
   perf_test::PrintResult(
       "audio_tx", modifier, "goog_jitter_recv", value, "ms", false);
@@ -96,10 +90,6 @@ static void MaybePrintResultsForVideoSend(
   EXPECT_TRUE(pc_dict.GetString(Statistic("googFrameRateInput", ssrc), &value));
   perf_test::PrintResult(
       "video_fps", modifier, "goog_frame_rate_input", value, "fps", false);
-
-  EXPECT_TRUE(pc_dict.GetString(Statistic("bytesSent", ssrc), &value));
-  perf_test::PrintResult(
-      "video_total_bytes", modifier, "bytes_sent", value, "bytes", false);
 
   EXPECT_TRUE(pc_dict.GetString(Statistic("googFirsReceived", ssrc), &value));
   perf_test::PrintResult(
@@ -147,10 +137,6 @@ static void MaybePrintResultsForVideoReceive(
   EXPECT_TRUE(pc_dict.GetString(Statistic("packetsLost", ssrc), &value));
   perf_test::PrintResult("video_misc", modifier, "packets_lost", value,
                          "frames", false);
-
-  EXPECT_TRUE(pc_dict.GetString(Statistic("bytesReceived", ssrc), &value));
-  perf_test::PrintResult(
-      "video_total_bytes", modifier, "bytes_recv", value, "bytes", false);
 
   EXPECT_TRUE(
       pc_dict.GetString(Statistic("googFrameWidthReceived", ssrc), &value));
