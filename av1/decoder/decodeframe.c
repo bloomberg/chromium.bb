@@ -477,8 +477,10 @@ static void predict_and_reconstruct_intra_block(AV1_COMMON *cm,
 #endif
   dst = &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
 
+#if !CONFIG_CB4X4
   if (mbmi->sb_type < BLOCK_8X8)
     if (plane == 0) mode = xd->mi[0]->bmi[(row << 1) + col].as_mode;
+#endif
 
   av1_predict_intra_block(xd, pd->width, pd->height, tx_size, mode, dst,
                           pd->dst.stride, dst, pd->dst.stride, col, row, plane);
@@ -1422,7 +1424,11 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   }
 #endif
 
+#if CONFIG_CB4X4
+  if (mbmi->skip) reset_skip_context(xd, bsize);
+#else
   if (mbmi->skip) reset_skip_context(xd, AOMMAX(BLOCK_8X8, bsize));
+#endif
 
 #if CONFIG_COEF_INTERLEAVE
   {
@@ -1558,8 +1564,12 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       const TX_SIZE tx_size = plane ? get_uv_tx_size(mbmi, pd) : mbmi->tx_size;
       const int stepr = tx_size_high_unit[tx_size];
       const int stepc = tx_size_wide_unit[tx_size];
+#if CONFIG_CB4X4
+      const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+#else
       const BLOCK_SIZE plane_bsize =
           get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
+#endif
       int row, col;
       const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
       const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
@@ -1596,8 +1606,12 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       }
     } else {
 #endif  // CONFIG_WARPED_MOTION
-      av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL,
-                                    AOMMAX(bsize, BLOCK_8X8));
+#if CONFIG_CB4X4
+      av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL, bsize);
+#else
+    av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL,
+                                  AOMMAX(bsize, BLOCK_8X8));
+#endif
 #if CONFIG_WARPED_MOTION
     }
 #endif  // CONFIG_WARPED_MOTION
@@ -1614,8 +1628,12 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 
       for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
         const struct macroblockd_plane *const pd = &xd->plane[plane];
+#if CONFIG_CB4X4
+        const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+#else
         const BLOCK_SIZE plane_bsize =
             get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
+#endif
         const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
         const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
         int row, col;
@@ -1724,6 +1742,11 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   const int n8x8_l2 = n4x4_l2 - 1;
   const int num_8x8_wh = mi_size_wide[bsize];
   const int hbs = num_8x8_wh >> 1;
+#if CONFIG_CB4X4
+  const int unify_bsize = 1;
+#else
+  const int unify_bsize = 0;
+#endif
   PARTITION_TYPE partition;
   BLOCK_SIZE subsize;
 #if CONFIG_EXT_PARTITION_TYPES
@@ -1762,7 +1785,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #endif
   }
 #endif  // CONFIG_SUPERTX
-  if (!hbs) {
+  if (!hbs && !unify_bsize) {
     // calculate bmode block dimensions (log 2)
     xd->bmode_blocks_wl = 1 >> !!(partition & PARTITION_VERT);
     xd->bmode_blocks_hl = 1 >> !!(partition & PARTITION_HORZ);
