@@ -483,9 +483,7 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
      * in {@link CardViewHolder#onBindViewHolder()}.
      */
     public void dismissItemWithAnimation(final ViewHolder viewHolder) {
-        // We need to check the position, as the view holder might have been removed.
-        final int position = viewHolder.getAdapterPosition();
-        if (position == RecyclerView.NO_POSITION) {
+        if (viewHolder.getAdapterPosition() == RecyclerView.NO_POSITION) {
             // The item does not exist anymore, so ignore.
             return;
         }
@@ -513,11 +511,21 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                getNewTabPageAdapter().dismissItem(position);
+                dismissItemInternal(viewHolder);
                 NewTabPageRecyclerView.this.onItemDismissFinished(viewHolder);
             }
         });
         animation.start();
+    }
+
+    private void dismissItemInternal(ViewHolder viewHolder) {
+        // Re-check the position in case the adapter has changed.
+        final int position = viewHolder.getAdapterPosition();
+        if (position == RecyclerView.NO_POSITION) {
+            // The item does not exist anymore, so ignore.
+            return;
+        }
+        getNewTabPageAdapter().dismissItem(position);
     }
 
     /**

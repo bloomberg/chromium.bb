@@ -29,7 +29,7 @@ public abstract class InnerNode extends ChildNode implements NodeParent {
             numItems += children.get(i).getItemCount();
             if (position < numItems) return i;
         }
-        return -1;
+        throw new IndexOutOfBoundsException(position + "/" + numItems);
     }
 
     private int getStartingOffsetForChildIndex(int childIndex) {
