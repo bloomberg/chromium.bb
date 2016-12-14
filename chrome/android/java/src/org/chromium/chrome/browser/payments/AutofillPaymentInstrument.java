@@ -256,7 +256,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
      */
     private void checkAndUpateCardCompleteness() {
         int editMessageResId = 0; // Zero is the invalid resource Id.
-        int editTitleResId = 0;
+        int editTitleResId = R.string.payments_edit_card;
         int invalidFieldsCount = 0;
 
         if (mBillingAddress == null) {
@@ -287,7 +287,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
         }
 
         mEditMessage = editMessageResId == 0 ? null : mContext.getString(editMessageResId);
-        mEditTitle = editTitleResId == 0 ? null : mContext.getString(editTitleResId);
+        mEditTitle = mContext.getString(editTitleResId);
         mIsComplete = mEditMessage == null;
     }
 

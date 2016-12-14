@@ -163,6 +163,7 @@ public class AutofillAddress extends PaymentOption {
 
         switch (checkAddressCompletionStatus(mProfile)) {
             case COMPLETE:
+                editTitleResId = R.string.autofill_edit_profile;
                 break;
             case INVALID_ADDRESS:
                 editMessageResId = R.string.payments_invalid_address;
