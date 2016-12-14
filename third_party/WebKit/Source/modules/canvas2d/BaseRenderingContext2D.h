@@ -13,6 +13,7 @@
 #include "modules/canvas2d/CanvasPathMethods.h"
 #include "modules/canvas2d/CanvasRenderingContext2DState.h"
 #include "modules/canvas2d/CanvasStyle.h"
+#include "platform/graphics/ColorBehavior.h"
 #include "platform/graphics/ExpensiveCanvasHeuristicParameters.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/effects/SkComposeImageFilter.h"
@@ -238,6 +239,8 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   virtual bool hasAlpha() const = 0;
 
   virtual bool isContextLost() const = 0;
+
+  virtual ColorBehavior drawImageColorBehavior() const = 0;
 
   void restoreMatrixClipStack(SkCanvas*) const;
 

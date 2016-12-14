@@ -105,6 +105,11 @@ void OffscreenCanvasRenderingContext2D::reset() {
   BaseRenderingContext2D::reset();
 }
 
+ColorBehavior OffscreenCanvasRenderingContext2D::drawImageColorBehavior()
+    const {
+  return CanvasRenderingContext::colorBehaviorForMediaDrawnToCanvas();
+}
+
 ImageBuffer* OffscreenCanvasRenderingContext2D::imageBuffer() const {
   if (!m_imageBuffer) {
     IntSize surfaceSize(width(), height());

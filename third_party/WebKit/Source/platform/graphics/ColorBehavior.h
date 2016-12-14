@@ -49,6 +49,7 @@ class PLATFORM_EXPORT ColorBehavior {
   // profiles should be converted. Note that only the first call to this
   // function in this process has any effect.
   static void setGlobalTargetColorProfile(const WebVector<char>&);
+  static void setGlobalTargetColorSpaceForTesting(const sk_sp<SkColorSpace>&);
   static sk_sp<SkColorSpace> globalTargetColorSpace();
 
   // Return the behavior of transforming to the color space specified above, or

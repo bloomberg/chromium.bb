@@ -31,6 +31,7 @@
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
 #include "core/layout/HitTestCanvasResult.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
+#include "platform/graphics/ColorBehavior.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "wtf/HashSet.h"
@@ -87,6 +88,7 @@ class CORE_EXPORT CanvasRenderingContext
   WTF::String colorSpaceAsString() const;
   sk_sp<SkColorSpace> skColorSpace() const;
   SkColorType colorType() const;
+  ColorBehavior colorBehaviorForMediaDrawnToCanvas() const;
 
   virtual PassRefPtr<Image> getImage(AccelerationHint,
                                      SnapshotReason) const = 0;

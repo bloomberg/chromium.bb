@@ -38,6 +38,17 @@ void ColorBehavior::setGlobalTargetColorProfile(
   BitmapImageMetrics::countOutputGamma(gTargetColorSpace);
 }
 
+void ColorBehavior::setGlobalTargetColorSpaceForTesting(
+    const sk_sp<SkColorSpace>& colorSpace) {
+  // Take a lock around initializing and accessing the global device color
+  // profile.
+  SpinLock::Guard guard(gTargetColorSpaceLock);
+
+  SkSafeUnref(gTargetColorSpace);
+  gTargetColorSpace = colorSpace.get();
+  SkSafeRef(gTargetColorSpace);
+}
+
 // static
 sk_sp<SkColorSpace> ColorBehavior::globalTargetColorSpace() {
   // Take a lock around initializing and accessing the global device color

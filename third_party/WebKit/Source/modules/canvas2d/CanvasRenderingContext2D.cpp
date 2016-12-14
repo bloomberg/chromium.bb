@@ -269,6 +269,10 @@ void CanvasRenderingContext2D::dispatchContextRestoredEvent(TimerBase*) {
   }
 }
 
+ColorBehavior CanvasRenderingContext2D::drawImageColorBehavior() const {
+  return CanvasRenderingContext::colorBehaviorForMediaDrawnToCanvas();
+}
+
 void CanvasRenderingContext2D::reset() {
   // This is a multiple inherritance bootstrap
   BaseRenderingContext2D::reset();

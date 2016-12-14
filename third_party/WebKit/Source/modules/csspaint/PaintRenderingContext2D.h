@@ -58,6 +58,8 @@ class MODULES_EXPORT PaintRenderingContext2D
 
   void didDraw(const SkIRect& dirtyRect) final;
 
+  ColorBehavior drawImageColorBehavior() const final;
+
   // TODO(ikilpatrick): We'll need to either only accept resolved filters
   // from a typed-om <filter> object, or use the appropriate style resolution
   // host to determine 'em' units etc in filters. At the moment just pretend

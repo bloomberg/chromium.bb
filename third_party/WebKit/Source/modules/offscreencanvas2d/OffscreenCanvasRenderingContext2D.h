@@ -85,6 +85,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   ImageBitmap* transferToImageBitmap(ScriptState*) final;
 
+  ColorBehavior drawImageColorBehavior() const final;
+
  protected:
   OffscreenCanvasRenderingContext2D(
       ScriptState*,

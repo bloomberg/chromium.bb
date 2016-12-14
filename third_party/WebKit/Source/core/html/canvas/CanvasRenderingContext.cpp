@@ -89,6 +89,15 @@ sk_sp<SkColorSpace> CanvasRenderingContext::skColorSpace() const {
   return nullptr;
 }
 
+ColorBehavior CanvasRenderingContext::colorBehaviorForMediaDrawnToCanvas()
+    const {
+  sk_sp<SkColorSpace> colorSpace = skColorSpace();
+  if (colorSpace) {
+    return ColorBehavior::transformTo(std::move(colorSpace));
+  }
+  return ColorBehavior::transformToGlobalTarget();
+}
+
 SkColorType CanvasRenderingContext::colorType() const {
   switch (m_colorSpace) {
     case kLinearRGBCanvasColorSpace:

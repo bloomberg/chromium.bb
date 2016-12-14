@@ -107,7 +107,7 @@ class CanvasRenderingContext2DTest : public ::testing::Test {
     return canvasElement().buffer()->getGPUMemoryUsage();
   }
 
-  void createContext(OpacityMode);
+  void createContext(OpacityMode, String colorSpace = String());
   void TearDown();
   void unrefCanvas();
   PassRefPtr<Canvas2DLayerBridge> makeBridge(
@@ -158,10 +158,13 @@ CanvasRenderingContext2DTest::CanvasRenderingContext2DTest()
       m_opaqueBitmap(IntSize(10, 10), OpaqueBitmap),
       m_alphaBitmap(IntSize(10, 10), TransparentBitmap) {}
 
-void CanvasRenderingContext2DTest::createContext(OpacityMode opacityMode) {
+void CanvasRenderingContext2DTest::createContext(OpacityMode opacityMode,
+                                                 String colorSpace) {
   String canvasType("2d");
   CanvasContextCreationAttributes attributes;
   attributes.setAlpha(opacityMode == NonOpaque);
+  if (!colorSpace.isEmpty())
+    attributes.setColorSpace(colorSpace);
   m_canvasElement->getCanvasRenderingContext(canvasType, attributes);
 }
 
@@ -1169,6 +1172,103 @@ TEST_F(CanvasRenderingContext2DTest, DisableAcceleration) {
   EXPECT_EQ(0, getCurrentGPUMemoryUsage());
   EXPECT_EQ(0, getGlobalGPUMemoryUsage());
   EXPECT_EQ(0u, getGlobalAcceleratedImageBufferCount());
+}
+
+TEST_F(CanvasRenderingContext2DTest,
+       LegacyColorSpaceUsesGlobalTargetColorBehavior) {
+  // Set the global target color space to something distinctly recognizable (not
+  // srgb)
+  sk_sp<SkColorSpace> savedGlobalTargetColorSpace =
+      ColorBehavior::globalTargetColorSpace();
+  ColorBehavior::setGlobalTargetColorSpaceForTesting(
+      SkColorSpace::MakeNamed(SkColorSpace::kAdobeRGB_Named));
+  bool savedColorCorrectRenderingEnabled =
+      RuntimeEnabledFeatures::colorCorrectRenderingEnabled();
+
+  RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(false);
+  createContext(NonOpaque, "legacy-srgb");
+  ColorBehavior behavior = context2d()->drawImageColorBehavior();
+  EXPECT_TRUE(behavior.isTransformToTargetColorSpace());
+  EXPECT_TRUE(
+      SkColorSpace::Equals(ColorBehavior::globalTargetColorSpace().get(),
+                           behavior.targetColorSpace().get()));
+
+  // Restore global state to avoid interfering with other tests
+  ColorBehavior::setGlobalTargetColorSpaceForTesting(
+      savedGlobalTargetColorSpace);
+  RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(
+      savedColorCorrectRenderingEnabled);
+}
+
+TEST_F(CanvasRenderingContext2DTest,
+       LegacyColorSpaceUsesSRGBWhenColorCorrectRenderingEnabled) {
+  // Set the global target color space to something distinctly recognizable (not
+  // srgb)
+  sk_sp<SkColorSpace> savedGlobalTargetColorSpace =
+      ColorBehavior::globalTargetColorSpace();
+  ColorBehavior::setGlobalTargetColorSpaceForTesting(
+      SkColorSpace::MakeNamed(SkColorSpace::kAdobeRGB_Named));
+  bool savedColorCorrectRenderingEnabled =
+      RuntimeEnabledFeatures::colorCorrectRenderingEnabled();
+
+  RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(true);
+  createContext(NonOpaque, "legacy-srgb");
+  ColorBehavior behavior = context2d()->drawImageColorBehavior();
+  sk_sp<SkColorSpace> srgbColorSpace =
+      SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+  EXPECT_TRUE(behavior.isTransformToTargetColorSpace());
+  EXPECT_TRUE(SkColorSpace::Equals(srgbColorSpace.get(),
+                                   behavior.targetColorSpace().get()));
+
+  // Restore global state to avoid interfering with other tests
+  ColorBehavior::setGlobalTargetColorSpaceForTesting(
+      savedGlobalTargetColorSpace);
+  RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(
+      savedColorCorrectRenderingEnabled);
+}
+
+TEST_F(CanvasRenderingContext2DTest,
+       SRGBColorSpaceUsesTransformToSRGBColorBehavior) {
+  // Set the global target color space to something distinctly recognizable (not
+  // srgb)
+  sk_sp<SkColorSpace> savedGlobalTargetColorSpace =
+      ColorBehavior::globalTargetColorSpace();
+  ColorBehavior::setGlobalTargetColorSpaceForTesting(
+      SkColorSpace::MakeNamed(SkColorSpace::kAdobeRGB_Named));
+
+  createContext(NonOpaque, "srgb");
+  ColorBehavior behavior = context2d()->drawImageColorBehavior();
+  sk_sp<SkColorSpace> srgbColorSpace =
+      SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+  EXPECT_TRUE(behavior.isTransformToTargetColorSpace());
+  EXPECT_TRUE(SkColorSpace::Equals(srgbColorSpace.get(),
+                                   behavior.targetColorSpace().get()));
+
+  // Restore global state to avoid interfering with other tests
+  ColorBehavior::setGlobalTargetColorSpaceForTesting(
+      savedGlobalTargetColorSpace);
+}
+
+TEST_F(CanvasRenderingContext2DTest,
+       LinearRGBColorSpaceUsesTransformToLinearSRGBColorBehavior) {
+  // Set the global target color space to something distinctly recognizable (not
+  // srgb)
+  sk_sp<SkColorSpace> savedGlobalTargetColorSpace =
+      ColorBehavior::globalTargetColorSpace();
+  ColorBehavior::setGlobalTargetColorSpaceForTesting(
+      SkColorSpace::MakeNamed(SkColorSpace::kAdobeRGB_Named));
+
+  createContext(NonOpaque, "linear-rgb");
+  ColorBehavior behavior = context2d()->drawImageColorBehavior();
+  sk_sp<SkColorSpace> linearSrgbColorSpace =
+      SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named);
+  EXPECT_TRUE(behavior.isTransformToTargetColorSpace());
+  EXPECT_TRUE(SkColorSpace::Equals(linearSrgbColorSpace.get(),
+                                   behavior.targetColorSpace().get()));
+
+  // Restore global state to avoid interfering with other tests
+  ColorBehavior::setGlobalTargetColorSpaceForTesting(
+      savedGlobalTargetColorSpace);
 }
 
 }  // namespace blink
