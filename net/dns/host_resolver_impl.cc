@@ -2343,12 +2343,14 @@ HostResolverImpl::Key HostResolverImpl::GetEffectiveKeyForRequest(
 }
 
 bool HostResolverImpl::IsIPv6Reachable(const NetLogWithSource& net_log) {
-  base::TimeTicks now = base::TimeTicks::Now();
+  // Cache the result for kIPv6ProbePeriodMs (measured from after
+  // IsGloballyReachable() completes).
   bool cached = true;
-  if ((now - last_ipv6_probe_time_).InMilliseconds() > kIPv6ProbePeriodMs) {
+  if ((base::TimeTicks::Now() - last_ipv6_probe_time_).InMilliseconds() >
+      kIPv6ProbePeriodMs) {
     last_ipv6_probe_result_ =
         IsGloballyReachable(IPAddress(kIPv6ProbeAddress), net_log);
-    last_ipv6_probe_time_ = now;
+    last_ipv6_probe_time_ = base::TimeTicks::Now();
     cached = false;
   }
   net_log.AddEvent(NetLogEventType::HOST_RESOLVER_IMPL_IPV6_REACHABILITY_CHECK,
