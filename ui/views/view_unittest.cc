@@ -4618,6 +4618,63 @@ TEST_F(ViewTest, CrashOnAddFromFromOnNativeThemeChanged) {
   EXPECT_TRUE(v->on_native_theme_changed_called());
 }
 
+// A View that removes its Layer when hidden.
+class NoLayerWhenHiddenView : public View {
+ public:
+  NoLayerWhenHiddenView() {
+    SetPaintToLayer(true);
+    set_owned_by_client();
+    SetBounds(0, 0, 100, 100);
+  }
+
+  bool was_hidden() const { return was_hidden_; }
+
+  // View:
+  void VisibilityChanged(View* starting_from, bool is_visible) override {
+    if (!is_visible) {
+      was_hidden_ = true;
+      SetPaintToLayer(false);
+    }
+  }
+
+ private:
+  bool was_hidden_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(NoLayerWhenHiddenView);
+};
+
+// Test that Views can safely manipulate Layers during Widget closure.
+TEST_F(ViewTest, DestroyLayerInClose) {
+  NoLayerWhenHiddenView view;
+  Widget* widget = new Widget;
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  widget->Init(params);
+  widget->SetBounds(gfx::Rect(0, 0, 100, 100));
+  widget->GetContentsView()->AddChildView(&view);
+  widget->Show();
+
+  EXPECT_TRUE(view.layer());
+  EXPECT_TRUE(view.GetWidget());
+  EXPECT_FALSE(view.was_hidden());
+
+  widget->Close();
+  if (IsAuraMusClient()) {
+    // Mus on Ozone doesn't send the visibility change during Close().
+    // See http://crbug.com/674003.
+    EXPECT_TRUE(view.layer());
+    EXPECT_FALSE(view.was_hidden());
+  } else {
+    EXPECT_FALSE(view.layer());
+    // Ensure the layer went away via VisibilityChanged().
+    EXPECT_TRUE(view.was_hidden());
+  }
+
+  // Not removed from Widget until Close() completes.
+  EXPECT_TRUE(view.GetWidget());
+  base::RunLoop().RunUntilIdle();  // Let the Close() complete.
+  EXPECT_FALSE(view.GetWidget());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Observer tests.
 ////////////////////////////////////////////////////////////////////////////////

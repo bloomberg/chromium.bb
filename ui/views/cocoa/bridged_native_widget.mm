@@ -1046,6 +1046,11 @@ void BridgedNativeWidget::ClearAssociationForView(const views::View* view) {
 }
 
 void BridgedNativeWidget::ReorderChildViews() {
+  // Ignore layer manipulation during a Close(). This can be reached during the
+  // orderOut: in Close(), which notifies visibility changes to Views.
+  if (!bridged_view_)
+    return;
+
   RankMap rank;
   Widget* widget = native_widget_mac_->GetWidget();
   RankNSViews(widget->GetRootView(), associated_views_, &rank);
