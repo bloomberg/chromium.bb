@@ -225,9 +225,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
         ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
-    self.Fail('conformance/extensions/' +
-        'angle-instanced-arrays-out-of-bounds.html',
-        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
     self.Fail('conformance/extensions/ext-disjoint-timer-query.html',
         ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
     self.Fail('conformance/extensions/ext-frag-depth.html',
@@ -274,29 +271,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/glsl/variables/glsl-built-ins.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
-    self.Fail('conformance/limits/gl-line-width.html',
-        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
     self.Fail('conformance/misc/invalid-passed-params.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/misc/object-deletion-behaviour.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
-    self.Fail('conformance/misc/type-conversion-test.html',
-        ['win', 'passthrough', 'd3d11'], bug=602688)
     self.Fail('conformance/misc/uninitialized-test.html',
         ['win', 'passthrough', 'd3d11'], bug=1635) # angle bug ID
-    self.Fail('conformance/misc/webgl-specific.html',
-        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
-    self.Fail('conformance/more/functions/copyTexImage2D.html',
-        ['win', 'passthrough', 'd3d11'], bug=665518)
     self.Fail('conformance/more/functions/copyTexImage2DBadArgs.html',
-        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
-    self.Fail('conformance/more/functions/copyTexSubImage2D.html',
-        ['win', 'passthrough', 'd3d11'], bug=665518)
-    self.Fail('conformance/more/functions/drawArrays.html',
-        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
-    self.Fail('conformance/more/functions/drawArraysOutOfBounds.html',
-        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
-    self.Fail('conformance/more/functions/drawElementsBadArgs.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/more/functions/texSubImage2DBadArgs.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
@@ -310,13 +291,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/renderbuffers/framebuffer-object-attachment.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance/renderbuffers/framebuffer-state-restoration.html',
-        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/renderbuffers/framebuffer-test.html',
-        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
-    self.Fail('conformance/renderbuffers/renderbuffer-initialization.html',
-        ['win', 'passthrough', 'd3d11'], bug=1635) # angle bug ID
-    self.Fail('conformance/rendering/draw-arrays-out-of-bounds.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/rendering/draw-elements-out-of-bounds.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
@@ -324,8 +299,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/textures/misc/copy-tex-image-and-sub-image-2d.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
-    self.Fail('conformance/textures/misc/mipmap-fbo.html',
-        ['win', 'passthrough', 'd3d11'], bug=665518)
     self.Fail('conformance/textures/misc/tex-input-validation.html',
         ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
     self.Fail('conformance/textures/misc/texture-attachment-formats.html',
