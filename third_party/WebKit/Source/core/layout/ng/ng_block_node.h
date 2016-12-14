@@ -61,6 +61,10 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   // geometry.
   NGPhysicalFragment* RunOldLayout(const NGConstraintSpace&);
 
+  // Called if this is an out-of-flow block which needs to be
+  // positioned with legacy layout.
+  void UseOldOutOfFlowPositioning();
+
   void UpdateLayoutBox(NGPhysicalFragment* fragment,
                        const NGConstraintSpace* constraint_space);
 

@@ -325,4 +325,10 @@ NGPhysicalFragment* NGBlockNode::RunOldLayout(
   return builder.ToFragment();
 }
 
+void NGBlockNode::UseOldOutOfFlowPositioning() {
+  DCHECK(layout_box_);
+  DCHECK(layout_box_->isOutOfFlowPositioned());
+  layout_box_->containingBlock()->insertPositionedObject(layout_box_);
+}
+
 }  // namespace blink

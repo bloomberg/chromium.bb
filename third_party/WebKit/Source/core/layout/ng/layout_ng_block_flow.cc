@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_fragment_base.h"
 #include "core/layout/LayoutAnalyzer.h"
 
 namespace blink {
@@ -28,6 +29,9 @@ void LayoutNGBlockFlow::layoutBlock(bool relayoutChildren) {
   NGFragmentBase* fragment;
   while (!m_box->Layout(constraint_space, &fragment))
     ;
+
+  for (auto& descendant : fragment->PhysicalFragment()->OutOfFlowDescendants())
+    descendant->UseOldOutOfFlowPositioning();
   clearNeedsLayout();
 }
 
