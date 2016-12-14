@@ -776,12 +776,10 @@ if (!is_android) {
         "//ash/drag_drop/drag_drop_interactive_uitest.cc",
         "//ash/wm/ash_native_cursor_manager_interactive_uitest.cc",
       ]
-      if (is_chromeos) {
-        sources -= [
-          # Use only the _chromeos version on ChromeOS.
-          "base/view_event_test_platform_part_default.cc",
-        ]
-      }
+      sources -= [
+        # Use only the _chromeos version on Ash / Chrome OS.
+        "base/view_event_test_platform_part_default.cc",
+      ]
       deps += [ "//ash/test:interactive_ui_test_support" ]
     }
 
@@ -2358,7 +2356,7 @@ test("browser_tests") {
       if (use_dbus) {
         deps += [ "//dbus:test_support" ]
       }
-    } else {
+    } else {  # !is_chromeos
       sources -= [
         "../browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_apitest.cc",
         "../browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_apitest_nss.cc",
@@ -2368,9 +2366,6 @@ test("browser_tests") {
         "../browser/net/nss_context_chromeos_browsertest.cc",
         "data/webui/certificate_viewer_ui_test-inl.h",
       ]
-      if (use_ash) {
-        sources -= [ "../browser/ui/ash/keyboard_controller_browsertest.cc" ]
-      }
       if (toolkit_views) {
         sources -= [ "../browser/ui/views/select_file_dialog_extension_browsertest.cc" ]
       }
@@ -2429,23 +2424,6 @@ test("browser_tests") {
         "../app/chrome_version.rc.version",
         "../browser/media_galleries/fileapi/iapps_finder_impl_win_browsertest.cc",
       ]
-    }
-    if (!is_chromeos && use_ash) {
-      sources -= [
-        # On Windows and Linux, we currently don't support enough of the
-        # ash environment to run these unit tests.
-        #
-        # TODO: enable these on windows and linux.
-        "../browser/ui/ash/accelerator_commands_browsertest.cc",
-        "../browser/ui/ash/accelerator_controller_browsertest.cc",
-        "../browser/ui/ash/launcher/chrome_launcher_controller_impl_browsertest.cc",
-        "../browser/ui/ash/launcher/launcher_favicon_loader_browsertest.cc",
-        "../browser/ui/ash/shelf_browsertest.cc",
-      ]
-
-      if (toolkit_views) {
-        sources -= [ "../browser/ui/views/frame/browser_non_client_frame_view_ash_browsertest.cc" ]
-      }
     }
     if (is_mac) {
       # Other platforms only need .pak files, and can build this target
@@ -4154,11 +4132,8 @@ test("unit_tests") {
       "//ash/test:test_support_with_content",
     ]
 
-    # We eventually want to compile both in Win Aura builds, see
-    # http://crbug.com/155545.
-    if (!is_win) {
-      sources -= [ "../browser/ui/window_sizer/window_sizer_unittest.cc" ]
-    }
+    # Chrome OS uses window_sizer_ash_unittest.cc
+    sources -= [ "../browser/ui/window_sizer/window_sizer_unittest.cc" ]
   }
   if (use_aura) {
     deps += [
