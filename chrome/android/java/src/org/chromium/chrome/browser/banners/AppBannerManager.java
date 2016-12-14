@@ -157,22 +157,28 @@ public class AppBannerManager {
         sIsSupported = state;
     }
 
+    /** Returns whether the native AppBannerManager is working. */
+    @VisibleForTesting
+    public boolean isActiveForTesting() {
+        return nativeIsActiveForTesting(mNativePointer);
+    }
+
+    /** Sets constants (in days) the banner should be blocked for after dismissing and ignoring. */
+    @VisibleForTesting
+    static void setDaysAfterDismissAndIgnoreForTesting(int dismissDays, int ignoreDays) {
+        nativeSetDaysAfterDismissAndIgnoreToTrigger(dismissDays, ignoreDays);
+    }
+
     /** Sets a constant (in days) that gets added to the time when the current time is requested. */
     @VisibleForTesting
     static void setTimeDeltaForTesting(int days) {
         nativeSetTimeDeltaForTesting(days);
     }
 
-    /** Sets the weights of direct and indirect page navigations for testing. */
+    /** Sets the total required engagement to trigger the banner. */
     @VisibleForTesting
-    static void setEngagementWeights(double directEngagement, double indirectEngagement) {
-        nativeSetEngagementWeights(directEngagement, indirectEngagement);
-    }
-
-    /** Returns whether the native AppBannerManager is working. */
-    @VisibleForTesting
-    public boolean isActiveForTesting() {
-        return nativeIsActiveForTesting(mNativePointer);
+    static void setTotalEngagementForTesting(double engagement) {
+        nativeSetTotalEngagementToTrigger(engagement);
     }
 
     /** Returns the AppBannerManager object. This is owned by the C++ banner manager. */
@@ -187,8 +193,9 @@ public class AppBannerManager {
             AppData data, String title, String packageName, String imageUrl);
 
     // Testing methods.
-    private static native void nativeSetTimeDeltaForTesting(int days);
-    private static native void nativeSetEngagementWeights(double directEngagement,
-            double indirectEngagement);
     private native boolean nativeIsActiveForTesting(long nativeAppBannerManagerAndroid);
+    private static native void nativeSetDaysAfterDismissAndIgnoreToTrigger(
+            int dismissDays, int ignoreDays);
+    private static native void nativeSetTimeDeltaForTesting(int days);
+    private static native void nativeSetTotalEngagementToTrigger(double engagement);
 }

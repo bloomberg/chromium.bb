@@ -307,12 +307,12 @@ ScopedJavaLocalRef<jobject> GetJavaBannerManagerForWebContents(
 }
 
 // static
-void SetEngagementWeights(JNIEnv* env,
-                          const JavaParamRef<jclass>& clazz,
-                          jdouble direct_engagement,
-                          jdouble indirect_engagement) {
-  AppBannerManager::SetEngagementWeights(direct_engagement,
-                                         indirect_engagement);
+void SetDaysAfterDismissAndIgnoreToTrigger(JNIEnv* env,
+                                           const JavaParamRef<jclass>& clazz,
+                                           jint dismiss_days,
+                                           jint ignore_days) {
+  AppBannerSettingsHelper::SetDaysAfterDismissAndIgnoreToTrigger(dismiss_days,
+                                                                 ignore_days);
 }
 
 // static
@@ -320,6 +320,13 @@ void SetTimeDeltaForTesting(JNIEnv* env,
                             const JavaParamRef<jclass>& clazz,
                             jint days) {
   AppBannerManager::SetTimeDeltaForTesting(days);
+}
+
+// static
+void SetTotalEngagementToTrigger(JNIEnv* env,
+                                 const JavaParamRef<jclass>& clazz,
+                                 jdouble engagement) {
+  AppBannerSettingsHelper::SetTotalEngagementToTrigger(engagement);
 }
 
 }  // namespace banners

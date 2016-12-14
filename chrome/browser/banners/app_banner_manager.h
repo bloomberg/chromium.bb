@@ -58,11 +58,8 @@ class AppBannerManager : public content::WebContentsObserver,
   // Fast-forwards the current time for testing.
   static void SetTimeDeltaForTesting(int days);
 
-  // Sets the weights applied to direct and indirect navigations for triggering
-  // the banner. Deprecated and will be removed when app banners fully migrates
-  // to using site engagement as a trigger.
-  static void SetEngagementWeights(double direct_engagement,
-                                   double indirect_engagement);
+  // Sets the total engagement required for triggering the banner in testing.
+  static void SetTotalEngagementToTrigger(double engagement);
 
   // Returns whether or not the URLs match for everything except for the ref.
   static bool URLsAreForTheSamePage(const GURL& first, const GURL& second);
@@ -160,9 +157,8 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Sends a message to the renderer that the page has met the requirements to
   // show a banner. The page can respond to cancel the banner (and possibly
-  // display it later), or otherwise allow it to be shown. This is virtual to
-  // allow tests to mock out the renderer IPC.
-  virtual void SendBannerPromptRequest();
+  // display it later), or otherwise allow it to be shown.
+  void SendBannerPromptRequest();
 
   // content::WebContentsObserver overrides.
   void DidStartNavigation(content::NavigationHandle* handle) override;
@@ -232,9 +228,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // Called when Blink has prevented a banner from being shown, and is now
   // requesting that it be shown later.
   void DisplayAppBanner() override;
-
-  // The type of navigation made to the page
-  ui::PageTransition last_transition_type_;
 
   // Fetches the data required to display a banner for the current page.
   InstallableManager* manager_;

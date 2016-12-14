@@ -5,14 +5,11 @@
     <script src="main.js"></script>
     <script>
       function callPrompt(event) {
-        console.log('Re-prompt banner');
         event.prompt();
       }
 
       window.addEventListener('beforeinstallprompt', function(e) {
-        console.log('Preventing banner from appearing');
         e.preventDefault();
-
         setTimeout(callPrompt, 0, e);
       });
 

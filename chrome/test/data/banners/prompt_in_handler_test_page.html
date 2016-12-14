@@ -5,10 +5,7 @@
     <script src="main.js"></script>
     <script>
       window.addEventListener('beforeinstallprompt', function(e) {
-        console.log('Preventing banner from appearing');
         e.preventDefault();
-
-        console.log('Re-prompt banner');
         e.prompt();
       });
     </script>

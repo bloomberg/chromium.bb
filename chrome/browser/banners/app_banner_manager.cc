@@ -72,10 +72,8 @@ void AppBannerManager::SetTimeDeltaForTesting(int days) {
 }
 
 // static
-void AppBannerManager::SetEngagementWeights(double direct_engagement,
-                                            double indirect_engagement) {
-  AppBannerSettingsHelper::SetEngagementWeights(direct_engagement,
-                                                indirect_engagement);
+void AppBannerManager::SetTotalEngagementToTrigger(double engagement) {
+  AppBannerSettingsHelper::SetTotalEngagementToTrigger(engagement);
 }
 
 // static
@@ -363,8 +361,7 @@ void AppBannerManager::DidStartNavigation(content::NavigationHandle* handle) {
     return;
 
   load_finished_ = false;
-  if (AppBannerSettingsHelper::ShouldUseSiteEngagementScore() &&
-      GetSiteEngagementService() == nullptr) {
+  if (GetSiteEngagementService() == nullptr) {
     // Ensure that we are observing the site engagement service on navigation
     // start. This may be the first navigation, or we may have stopped
     // observing if the banner flow was triggered on the previous page.
@@ -376,7 +373,6 @@ void AppBannerManager::DidStartNavigation(content::NavigationHandle* handle) {
 void AppBannerManager::DidFinishNavigation(content::NavigationHandle* handle) {
   if (handle->IsInMainFrame() && handle->HasCommitted() &&
       !handle->IsSamePage()) {
-    last_transition_type_ = handle->GetPageTransition();
     active_media_players_.clear();
     if (is_active_)
       Stop();
@@ -392,10 +388,9 @@ void AppBannerManager::DidFinishLoad(
 
   load_finished_ = true;
   validated_url_ = validated_url;
-  // Start the pipeline immediately if we aren't using engagement, or if 0
-  // engagement is required.
-  if (!AppBannerSettingsHelper::ShouldUseSiteEngagementScore() ||
-      banner_request_queued_ ||
+  // Start the pipeline immediately if 0 engagement is required or if we've
+  // queued a banner request.
+  if (banner_request_queued_ ||
       AppBannerSettingsHelper::HasSufficientEngagement(0)) {
     SiteEngagementObserver::Observe(nullptr);
     banner_request_queued_ = false;
@@ -448,9 +443,9 @@ void AppBannerManager::RecordCouldShowBanner() {
   content::WebContents* contents = web_contents();
   DCHECK(contents);
 
-  AppBannerSettingsHelper::RecordBannerCouldShowEvent(
+  AppBannerSettingsHelper::RecordBannerEvent(
       contents, validated_url_, GetAppIdentifier(),
-      GetCurrentTime(), last_transition_type_);
+      AppBannerSettingsHelper::APP_BANNER_EVENT_COULD_SHOW, GetCurrentTime());
 }
 
 bool AppBannerManager::CheckIfShouldShowBanner() {

@@ -425,12 +425,6 @@ const char kEnableSaveAsMenuLabelExperiment[] = "saveas-menu-label";
 // (see SettingsWindowEnabled() below).
 const char kEnableSettingsWindow[]           = "enable-settings-window";
 
-// Enable the Site Engagement App Banner which triggers app install banners
-// using the site engagement service rather than a navigation-based heuristic.
-// Implicitly enables the site engagement service.
-const char kEnableSiteEngagementAppBanner[] =
-    "enable-site-engagement-app-banner";
-
 // Enable the Site Engagement Eviction Policy which evicts temporary storage
 // using the site engagement service. Implicitly enables the site engagement
 // service.

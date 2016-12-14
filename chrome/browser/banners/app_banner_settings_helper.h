@@ -7,12 +7,10 @@
 
 #include <set>
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/installable/installable_logging.h"
-#include "ui/base/page_transition_types.h"
 
 namespace content {
 class WebContents;
@@ -52,12 +50,25 @@ class AppBannerSettingsHelper {
     LANGUAGE_OPTION_MAX = LANGUAGE_OPTION_INSTALL,
   };
 
+  // The various types of banner events recorded as timestamps in the app banner
+  // content setting per origin and package_name_or_start_url pair. This enum
+  // corresponds to the kBannerEventsKeys array.
   // TODO(mariakhomenko): Rename events to reflect that they are used in more
   // contexts now.
   enum AppBannerEvent {
+    // Records the first time that a site met the conditions to show a banner.
+    // Used for computing the MinutesFromFirstVisitToBannerShown metric.
     APP_BANNER_EVENT_COULD_SHOW,
+    // Records the latest time a banner was shown to the user. Used to suppress
+    // the banner from being shown too often.
     APP_BANNER_EVENT_DID_SHOW,
+    // Records the latest time a banner was dismissed by the user. Used to
+    // suppress the banenr for some time if the user explicitly didn't want it.
     APP_BANNER_EVENT_DID_BLOCK,
+    // Records the latest time the user adds a site to the homescreen from a
+    // banner, or launched that site from homescreen. Used to ensure banenrs are
+    // not shown for sites which were added, and to determine if sites were
+    // launched recently.
     APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
     APP_BANNER_EVENT_NUM_EVENTS,
   };
@@ -68,13 +79,6 @@ class AppBannerSettingsHelper {
   };
 
   static const char kInstantAppsKey[];
-
-  // BannerEvents record the time that a site was accessed, along with an
-  // engagement weight representing the importance of the access.
-  struct BannerEvent {
-    base::Time time;
-    double engagement;
-  };
 
   // The content setting basically records a simplified subset of history.
   // For privacy reasons this needs to be cleared. The ClearHistoryForURLs
@@ -95,21 +99,12 @@ class AppBannerSettingsHelper {
       const std::string& package_name_or_start_url,
       AppBannerRapporMetric rappor_metric);
 
-  // Record a banner event. Should not be used for could show events, as they
-  // require a transition type.
+  // Record a banner event specified by |event|.
   static void RecordBannerEvent(content::WebContents* web_contents,
                                 const GURL& origin_url,
                                 const std::string& package_name_or_start_url,
                                 AppBannerEvent event,
                                 base::Time time);
-
-  // Record a banner could show event, with a specified transition type.
-  static void RecordBannerCouldShowEvent(
-      content::WebContents* web_contents,
-      const GURL& origin_url,
-      const std::string& package_name_or_start_url,
-      base::Time time,
-      ui::PageTransition transition_type);
 
   // Determine if the banner should be shown, given the recorded events for the
   // supplied app. Returns an InstallableStatusCode indicated the reason why the
@@ -120,16 +115,8 @@ class AppBannerSettingsHelper {
       const std::string& package_name_or_start_url,
       base::Time time);
 
-  // Gets the could have been shown events that are stored for the given package
-  // or start url. This is only exposed for testing.
-  static std::vector<BannerEvent> GetCouldShowBannerEvents(
-      content::WebContents* web_contents,
-      const GURL& origin_url,
-      const std::string& package_name_or_start_url);
-
-  // Get the recorded event for an event type that only records the last event.
-  // Should not be used with APP_BANNER_EVENT_COULD_SHOW. This is only exposed
-  // for testing.
+  // Get the time that |event| was recorded, or a null time if it has not yet
+  // been recorded. Exposed for testing.
   static base::Time GetSingleBannerEvent(
       content::WebContents* web_contents,
       const GURL& origin_url,
@@ -162,16 +149,6 @@ class AppBannerSettingsHelper {
   static void SetDaysAfterDismissAndIgnoreToTrigger(unsigned int dismiss_days,
                                                     unsigned int ignore_days);
 
-  // Set the engagement weights assigned to direct and indirect navigations.
-  static void SetEngagementWeights(double direct_engagement,
-                                   double indirect_engagement);
-
-  // Set the minimum number of minutes between banner visits that will
-  // trigger a could show banner event. This must be less than the
-  // number of minutes in a day, and evenly divide the number of minutes
-  // in a day.
-  static void SetMinimumMinutesBetweenVisits(unsigned int minutes);
-
   // Set the total engagement weight required to trigger a banner.
   static void SetTotalEngagementToTrigger(double total_engagement);
 
@@ -179,20 +156,12 @@ class AppBannerSettingsHelper {
   // trigger to their default values.
   static void SetDefaultParameters();
 
-  // Bucket a given time to the given resolution in local time.
-  static base::Time BucketTimeToResolution(base::Time time,
-                                           unsigned int minutes);
-
   // Updates all values from field trial.
   static void UpdateFromFieldTrial();
 
   // Queries variations to determine which language option should be used for
   // app banners and add to homescreen.
   static LanguageOption GetHomescreenLanguageOption();
-
-  // Returns true if the app banner trigger condition should use the site
-  // engagement score instead of the navigation-based heuristic.
-  static bool ShouldUseSiteEngagementScore();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(AppBannerSettingsHelper);

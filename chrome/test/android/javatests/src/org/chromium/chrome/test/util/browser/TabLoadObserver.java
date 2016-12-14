@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.ui.base.PageTransition;
 
 import java.util.Locale;
 
@@ -63,10 +64,20 @@ public class TabLoadObserver extends EmptyTabObserver {
      * @param url URL to load and wait for.
      */
     public void fullyLoadUrl(final String url) throws Exception {
+        fullyLoadUrl(url, PageTransition.LINK);
+    }
+
+    /**
+     * Loads the given URL and waits for it to complete.
+     *
+     * @param url            URL to load and wait for.
+     * @param transitionType the transition type to use.
+     */
+    public void fullyLoadUrl(final String url, final int transitionType) throws Exception {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mTab.loadUrl(new LoadUrlParams(url));
+                mTab.loadUrl(new LoadUrlParams(url, transitionType));
             }
         });
         assertLoaded();
