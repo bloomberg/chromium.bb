@@ -288,8 +288,8 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName) {
   if (updateRelativeLengthsOrViewBox ||
       SVGZoomAndPan::isKnownAttribute(attrName)) {
     SVGElement::InvalidationGuard invalidationGuard(this);
-    if (layoutObject())
-      markForLayoutAndParentResourceInvalidation(layoutObject());
+    if (auto* layoutObject = this->layoutObject())
+      markForLayoutAndParentResourceInvalidation(layoutObject);
     return;
   }
 

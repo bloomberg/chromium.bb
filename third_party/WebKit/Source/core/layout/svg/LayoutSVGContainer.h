@@ -88,16 +88,8 @@ class LayoutSVGContainer : public LayoutSVGModelObject {
                         const FloatPoint& pointInParent,
                         HitTestAction) override;
 
-  // Allow LayoutSVGTransformableContainer to hook in at the right time in
-  // layout().
+  // Called during layout to update the local transform.
   virtual SVGTransformChange calculateLocalTransform();
-
-  // Allow LayoutSVGViewportContainer to hook in at the right times in layout()
-  // and nodeAtFloatPoint().
-  virtual void calcViewport() {}
-  virtual bool pointIsInsideViewportClip(const FloatPoint& /*pointInParent*/) {
-    return true;
-  }
 
   virtual void determineIfLayoutSizeChanged() {}
 

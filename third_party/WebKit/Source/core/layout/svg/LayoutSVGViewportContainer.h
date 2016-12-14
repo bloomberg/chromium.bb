@@ -39,8 +39,6 @@ class LayoutSVGViewportContainer final : public LayoutSVGContainer {
   void determineIfLayoutSizeChanged() override;
   void setNeedsTransformUpdate() override;
 
-  void paint(const PaintInfo&, const LayoutPoint&) const override;
-
   const char* name() const override { return "LayoutSVGViewportContainer"; }
 
  private:
@@ -49,15 +47,15 @@ class LayoutSVGViewportContainer final : public LayoutSVGContainer {
            LayoutSVGContainer::isOfType(type);
   }
 
-  AffineTransform viewportTransform() const;
   AffineTransform localToSVGParentTransform() const override {
     return m_localToParentTransform;
   }
 
-  void calcViewport() override;
   SVGTransformChange calculateLocalTransform() override;
 
-  bool pointIsInsideViewportClip(const FloatPoint& pointInParent) override;
+  bool nodeAtFloatPoint(HitTestResult&,
+                        const FloatPoint& pointInParent,
+                        HitTestAction) override;
 
   FloatRect m_viewport;
   mutable AffineTransform m_localToParentTransform;

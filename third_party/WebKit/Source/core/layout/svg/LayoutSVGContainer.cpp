@@ -46,10 +46,7 @@ void LayoutSVGContainer::layout() {
   ASSERT(needsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
 
-  // Allow LayoutSVGViewportContainer to update its viewport.
-  calcViewport();
-
-  // Allow LayoutSVGTransformableContainer to update its transform.
+  // Update the local transform in subclasses.
   SVGTransformChange transformChange = calculateLocalTransform();
   m_didScreenScaleFactorChange =
       transformChange == SVGTransformChange::Full ||
@@ -182,10 +179,6 @@ void LayoutSVGContainer::updateCachedBoundaries() {
 bool LayoutSVGContainer::nodeAtFloatPoint(HitTestResult& result,
                                           const FloatPoint& pointInParent,
                                           HitTestAction hitTestAction) {
-  // Give LayoutSVGViewportContainer a chance to apply its viewport clip
-  if (!pointIsInsideViewportClip(pointInParent))
-    return false;
-
   FloatPoint localPoint;
   if (!SVGLayoutSupport::transformToUserSpaceAndCheckClipping(
           *this, localToSVGParentTransform(), pointInParent, localPoint))
