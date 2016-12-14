@@ -1104,6 +1104,7 @@ if (is_android) {
   generate_jni("net_test_jni_headers") {
     sources = [
       "android/javatests/src/org/chromium/net/AndroidKeyStoreTestUtil.java",
+      "android/javatests/src/org/chromium/net/AndroidNetworkLibraryTestUtil.java",
       "test/android/javatests/src/org/chromium/net/test/DummySpnegoAuthenticator.java",
       "test/android/javatests/src/org/chromium/net/test/EmbeddedTestServerImpl.java",
     ]
