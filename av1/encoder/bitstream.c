@@ -4252,6 +4252,11 @@ static void write_uncompressed_header(AV1_COMP *cpi,
 
       fix_interp_filter(cm, cpi->td.counts);
       write_frame_interp_filter(cm->interp_filter, wb);
+#if CONFIG_TEMPMV_SIGNALING
+      if (!cm->error_resilient_mode) {
+        aom_wb_write_bit(wb, cm->use_prev_frame_mvs);
+      }
+#endif
     }
   }
 

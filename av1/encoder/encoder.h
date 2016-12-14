@@ -199,6 +199,9 @@ typedef struct AV1EncoderConfig {
   unsigned int mtu;
 #endif
 
+#if CONFIG_TEMPMV_SIGNALING
+  unsigned int disable_tempmv;
+#endif
   // Internal frame size scaling.
   RESIZE_TYPE resize_mode;
   int scaled_frame_width;
@@ -788,6 +791,9 @@ void av1_scale_references(AV1_COMP *cpi);
 void av1_update_reference_frames(AV1_COMP *cpi);
 
 void av1_set_high_precision_mv(AV1_COMP *cpi, int allow_high_precision_mv);
+#if CONFIG_TEMPMV_SIGNALING
+void av1_set_temporal_mv_prediction(AV1_COMP *cpi, int allow_tempmv_prediction);
+#endif
 
 YV12_BUFFER_CONFIG *av1_scale_if_required_fast(AV1_COMMON *cm,
                                                YV12_BUFFER_CONFIG *unscaled,

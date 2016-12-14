@@ -4132,7 +4132,11 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 
       cm->allow_high_precision_mv = aom_rb_read_bit(rb);
       cm->interp_filter = read_frame_interp_filter(rb);
-
+#if CONFIG_TEMPMV_SIGNALING
+      if (!cm->error_resilient_mode) {
+        cm->use_prev_frame_mvs = aom_rb_read_bit(rb);
+      }
+#endif
       for (i = 0; i < INTER_REFS_PER_FRAME; ++i) {
         RefBuffer *const ref_buf = &cm->frame_refs[i];
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -4148,6 +4152,9 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       }
     }
   }
+#if CONFIG_TEMPMV_SIGNALING
+  cm->cur_frame->intra_only = cm->frame_type == KEY_FRAME || cm->intra_only;
+#endif
 
 #if CONFIG_REFERENCE_BUFFER
   if (pbi->seq_params.frame_id_numbers_present_flag) {
@@ -4733,10 +4740,21 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   cm->setup_mi(cm);
 #endif
 
+#if CONFIG_TEMPMV_SIGNALING
+  if (cm->use_prev_frame_mvs) {
+    RefBuffer *last_fb_ref_buf = &cm->frame_refs[LAST_FRAME - LAST_FRAME];
+    cm->prev_frame = &cm->buffer_pool->frame_bufs[last_fb_ref_buf->idx];
+    assert(!cm->error_resilient_mode &&
+           cm->width == last_fb_ref_buf->buf->y_width &&
+           cm->height == last_fb_ref_buf->buf->y_height &&
+           !cm->prev_frame->intra_only);
+  }
+#else
   cm->use_prev_frame_mvs =
       !cm->error_resilient_mode && cm->width == cm->last_width &&
       cm->height == cm->last_height && !cm->last_intra_only &&
       cm->last_show_frame && (cm->last_frame_type != KEY_FRAME);
+#endif
 #if CONFIG_EXT_REFS
   // NOTE(zoeliu): As cm->prev_frame can take neither a frame of
   //               show_exisiting_frame=1, nor can it take a frame not used as

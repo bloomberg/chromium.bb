@@ -4611,6 +4611,12 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
   // Set the arf sign bias for this frame.
   set_arf_sign_bias(cpi);
+#if CONFIG_TEMPMV_SIGNALING
+  // frame type has been decided outside of this function call
+  cm->cur_frame->intra_only = cm->frame_type == KEY_FRAME || cm->intra_only;
+  cm->use_prev_frame_mvs =
+      !cpi->oxcf.disable_tempmv && !cm->cur_frame->intra_only;
+#endif
 
 #if CONFIG_EXT_REFS
   // NOTE:

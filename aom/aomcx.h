@@ -238,6 +238,16 @@ enum aome_enc_control_id {
    */
   AV1E_SET_LOSSLESS = AV1E_SET_GF_CBR_BOOST_PCT + 2,
 
+#if CONFIG_TEMPMV_SIGNALING
+  /*!\brief Codec control function to set temporal mv prediction
+  * enabling/disabling.
+  *
+  * This will enable or disable temporal mv predicton. The default value is 0.
+  *
+  * Supported in codecs: AV1
+  */
+  AV1E_SET_DISABLE_TEMPMV,
+#endif
   /*!\brief Codec control function to set number of tile columns.
    *
    * In encoding and decoding, AV1 allows an input image frame be partitioned
@@ -630,6 +640,11 @@ AOM_CTRL_USE_TYPE(AV1E_SET_NUM_TG, unsigned int)
 #define AOM_CTRL_AV1E_SET_NUM_TG
 AOM_CTRL_USE_TYPE(AV1E_SET_MTU, unsigned int)
 #define AOM_CTRL_AV1E_SET_MTU
+
+#if CONFIG_TEMPMV_SIGNALING
+AOM_CTRL_USE_TYPE(AV1E_SET_DISABLE_TEMPMV, unsigned int)
+#define AOM_CTRL_AV1E_SET_DISABLE_TEMPMV
+#endif
 
 AOM_CTRL_USE_TYPE(AV1E_SET_FRAME_PARALLEL_DECODING, unsigned int)
 #define AOM_CTRL_AV1E_SET_FRAME_PARALLEL_DECODING

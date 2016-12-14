@@ -109,7 +109,9 @@ typedef struct {
   int mi_cols;
   aom_codec_frame_buffer_t raw_frame_buffer;
   YV12_BUFFER_CONFIG buf;
-
+#if CONFIG_TEMPMV_SIGNALING
+  uint8_t intra_only;
+#endif
   // The Following variables will only be used in frame parallel decode.
 
   // frame_worker_owner indicates which FrameWorker owns this buffer. NULL means

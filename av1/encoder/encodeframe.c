@@ -5028,10 +5028,20 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_initialize_rd_consts(cpi);
   av1_initialize_me_consts(cpi, x, cm->base_qindex);
   init_encode_frame_mb_context(cpi);
-
+#if CONFIG_TEMPMV_SIGNALING
+  const int last_fb_buf_idx = get_ref_frame_buf_idx(cpi, LAST_FRAME);
+  if (last_fb_buf_idx != INVALID_IDX) {
+    cm->prev_frame = &cm->buffer_pool->frame_bufs[last_fb_buf_idx];
+    cm->use_prev_frame_mvs &= !cm->error_resilient_mode &&
+                              cm->width == cm->prev_frame->buf.y_width &&
+                              cm->height == cm->prev_frame->buf.y_height &&
+                              !cm->intra_only && !cm->prev_frame->intra_only;
+  }
+#else
   cm->use_prev_frame_mvs =
       !cm->error_resilient_mode && cm->width == cm->last_width &&
       cm->height == cm->last_height && !cm->intra_only && cm->last_show_frame;
+#endif
 
 #if CONFIG_DELTA_Q
   // Fix delta q resolution for the moment

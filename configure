@@ -291,6 +291,7 @@ EXPERIMENT_LIST="
     deblocking_across_tiles
     tile_groups
     ec_adapt
+    tempmv_signaling
     rd_debug
     reference_buffer
     coef_interleave

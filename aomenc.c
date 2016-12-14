@@ -399,6 +399,10 @@ static const arg_def_t mtu_size =
             "MTU size for a tile group, default is 0 (no MTU targeting), "
             "overrides maximum number of tile groups");
 #endif
+#if CONFIG_TEMPMV_SIGNALING
+static const arg_def_t disable_tempmv = ARG_DEF(
+    NULL, "disable-tempmv", 1, "Disable temporal mv prediction (default is 0)");
+#endif
 static const arg_def_t frame_parallel_decoding =
     ARG_DEF(NULL, "frame-parallel", 1,
             "Enable frame parallel decodability features "
@@ -503,6 +507,9 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &num_tg,
                                        &mtu_size,
 #endif
+#if CONFIG_TEMPMV_SIGNALING
+                                       &disable_tempmv,
+#endif
 #if CONFIG_AOM_HIGHBITDEPTH
                                        &bitdeptharg,
                                        &inbitdeptharg,
@@ -544,6 +551,9 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
 #if CONFIG_TILE_GROUPS
                                         AV1E_SET_NUM_TG,
                                         AV1E_SET_MTU,
+#endif
+#if CONFIG_TEMPMV_SIGNALING
+                                        AV1E_SET_DISABLE_TEMPMV,
 #endif
                                         0 };
 #endif
