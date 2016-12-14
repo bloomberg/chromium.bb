@@ -11,6 +11,8 @@ import unittest
 from code_generator_web_module import InterfaceContextBuilder
 
 
+# TODO(dglazkov): Convert to use actual objects, not stubs.
+# See http://crbug.com/673214 for more details.
 class IdlTestingHelper(object):
     """A collection of stub makers and helper utils to make testing code
     generation easy."""
@@ -51,6 +53,20 @@ class InterfaceContextBuilderTest(unittest.TestCase):
             'code_generator': 'test',
             'class_name': 'foo',
         }, builder.build())
+
+    def test_set_inheritance(self):
+        builder = InterfaceContextBuilder('test')
+        builder.set_inheritance('foo')
+        self.assertEqual({
+            'code_generator': 'test',
+            'inherits_expression': ' : public foo',
+            'cpp_includes': set(['foo']),
+        }, builder.build())
+
+        builder = InterfaceContextBuilder('test')
+        builder.set_inheritance(None)
+        self.assertEqual({'code_generator': 'test'}, builder.build())
+
 
     def test_add_attribute(self):
         helper = IdlTestingHelper()

@@ -31,15 +31,10 @@ MODULE_PYNAME = os.path.splitext(os.path.basename(__file__))[0] + '.py'
 WEB_MODULE_IDL_ATTRIBUTE = 'WebModuleAPI'
 
 
-def includes_for_type(idl_type):
-    # TODO(dglazkov): Make this actually work.
-    name = idl_type.preprocessed_type.base_type
-    return set([name])
-
-
 def interface_context(idl_interface):
     builder = InterfaceContextBuilder(MODULE_PYNAME)
     builder.set_class_name(idl_interface.name)
+    builder.set_inheritance(idl_interface.parent)
 
     for idl_attribute in idl_interface.attributes:
         builder.add_attribute(idl_attribute)
@@ -57,24 +52,40 @@ class InterfaceContextBuilder(object):
     def set_class_name(self, class_name):
         self.result['class_name'] = class_name
 
+    def set_inheritance(self, base_interface):
+        if base_interface is None:
+            return
+        self.result['inherits_expression'] = ' : public %s' % base_interface
+        self._ensure_set('cpp_includes').update(
+            self._includes_for_type(base_interface))
+
     def _ensure_set(self, name):
         return self.result.setdefault(name, set())
 
     def _ensure_list(self, name):
         return self.result.setdefault(name, [])
 
+    def _includes_for_type(self, idl_type):
+        # TODO(dglazkov): Make this actually work.
+        name = idl_type
+        return set([name])
+
+    def _get_return_type(self, idl_definition):
+        return idl_definition.idl_type.preprocessed_type.base_type
+
     def add_attribute(self, idl_attribute):
         self._ensure_list('attributes').append(
             self.create_attribute(idl_attribute))
         self._ensure_set('cpp_includes').update(
-            includes_for_type(idl_attribute.idl_type))
+            self._includes_for_type(self._get_return_type(idl_attribute)))
 
     def add_operation(self, idl_operation):
-        if idl_operation.name:
-            self._ensure_list('methods').append(
-                self.create_method(idl_operation))
-            self._ensure_set('cpp_includes').update(
-                includes_for_type(idl_operation.idl_type))
+        if not idl_operation.name:
+            return
+        self._ensure_list('methods').append(
+            self.create_method(idl_operation))
+        self._ensure_set('cpp_includes').update(
+            self._includes_for_type(self._get_return_type(idl_operation)))
 
     def create_method(self, idl_operation):
         name = idl_operation.name
