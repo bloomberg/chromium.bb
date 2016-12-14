@@ -16,7 +16,7 @@
 #include "components/url_formatter/url_formatter.h"
 #include "jni/BrowsingHistoryBridge_jni.h"
 
-const int kMaxQueryCount = 100;
+const int kMaxQueryCount = 150;
 
 BrowsingHistoryBridge::BrowsingHistoryBridge(
     JNIEnv* env,
@@ -91,7 +91,8 @@ void BrowsingHistoryBridge::OnQueryComplete(
   Java_BrowsingHistoryBridge_onQueryHistoryComplete(
       env,
       j_history_service_obj_.obj(),
-      j_query_result_obj_.obj());
+      j_query_result_obj_.obj(),
+      !(query_results_info->reached_beginning));
 
   j_query_result_obj_.Release();
 }

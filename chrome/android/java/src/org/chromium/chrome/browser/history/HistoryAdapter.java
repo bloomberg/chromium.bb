@@ -46,8 +46,12 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
 
     private boolean mHasOtherFormsOfBrowsingData;
     private boolean mHasSyncedData;
-    private boolean mHeaderInflated;
-    private boolean mDestroyed;
+    private boolean mIsHeaderInflated;
+    private boolean mIsDestroyed;
+    private boolean mIsInitialized;
+    private boolean mIsLoadingItems;
+    private boolean mHasMorePotentialItems;
+    private long mNextQueryEndTime;
 
     public HistoryAdapter(SelectionDelegate<HistoryItem> delegate, HistoryManager manager) {
         setHasStableIds(true);
@@ -61,14 +65,35 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
      */
     public void onDestroyed() {
         mBridge.destroy();
-        mDestroyed = true;
+        mIsDestroyed = true;
     }
 
     /**
      * Initializes the HistoryAdapter and loads the first set of browsing history items.
      */
     public void initialize() {
+        mIsLoadingItems = true;
         mBridge.queryHistory(EMPTY_QUERY, 0);
+    }
+
+    /**
+     * Load more browsing history items. Returns early if more items are already being loaded or
+     * there are no more items to load.
+     */
+    public void loadMoreItems() {
+        if (!canLoadMoreItems()) return;
+
+        mIsLoadingItems = true;
+        addFooter();
+        notifyDataSetChanged();
+        mBridge.queryHistory(EMPTY_QUERY, mNextQueryEndTime);
+    }
+
+    /**
+     * @return Whether more items can be loaded right now.
+     */
+    public boolean canLoadMoreItems() {
+        return !mIsLoadingItems && mHasMorePotentialItems;
     }
 
     /**
@@ -116,15 +141,24 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     }
 
     @Override
-    public void onQueryHistoryComplete(List<HistoryItem> items) {
+    public void onQueryHistoryComplete(List<HistoryItem> items, boolean hasMorePotentialMatches) {
         // Return early if the results are returned after the activity/native page is
         // destroyed to avoid unnecessary work.
-        if (mDestroyed) return;
+        if (mIsDestroyed) return;
 
-        clear(true);
+        if (!mIsInitialized) {
+            clear(true);
+            if (items.size() > 0) addHeader();
+            mIsInitialized = true;
+        }
+
+        removeFooter();
+        loadItems(items);
+
+        mIsLoadingItems = false;
+        mHasMorePotentialItems = hasMorePotentialMatches;
         if (items.size() > 0) {
-            addHeader();
-            loadItems(items);
+            mNextQueryEndTime = items.get(items.size() - 1).getTimestamp();
         }
     }
 
@@ -144,10 +178,10 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     }
 
     @Override
-    protected HeaderViewHolder createHeader(ViewGroup parent) {
+    protected BasicViewHolder createHeader(ViewGroup parent) {
         ViewGroup v = (ViewGroup) LayoutInflater.from(parent.getContext()).inflate(
                 R.layout.history_header, parent, false);
-        mHeaderInflated = true;
+        mIsHeaderInflated = true;
 
         View cbdButton = v.findViewById(R.id.clear_browsing_data_button);
         cbdButton.setOnClickListener(new OnClickListener() {
@@ -172,7 +206,13 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
 
         setPrivacyDisclaimerVisibility();
 
-        return new HeaderViewHolder(v);
+        return new BasicViewHolder(v);
+    }
+
+    @Override
+    protected BasicViewHolder createFooter(ViewGroup parent) {
+        return new BasicViewHolder(LayoutInflater.from(parent.getContext()).inflate(
+                R.layout.indeterminate_progress_view, parent, false));
     }
 
     private void setPrivacyDisclaimerText(TextView view, int stringId, final  String url) {
@@ -190,7 +230,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     }
 
     private void setPrivacyDisclaimerVisibility() {
-        if (!mHeaderInflated) return;
+        if (!mIsHeaderInflated) return;
 
         boolean isSignedIn =
                 ChromeSigninController.get(ContextUtils.getApplicationContext()).isSignedIn();

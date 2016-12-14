@@ -20,8 +20,12 @@ public class BrowsingHistoryBridge {
         /**
          * Called after {@link BrowsingHistoryBridge#queryHistory(String, long)} is complete.
          * @param items The items that matched the #queryHistory() parameters.
+         * @param hasMorePotentialMatches Whether there are more items that match the query text.
+         *                                This will be false once the entire local history database
+         *                                has been searched.
          */
-        public void onQueryHistoryComplete(List<HistoryItem> items);
+        public void onQueryHistoryComplete(List<HistoryItem> items,
+                boolean hasMorePotentialMatches);
 
         /**
          * Called when history has been deleted through something other than a call to
@@ -100,8 +104,8 @@ public class BrowsingHistoryBridge {
     }
 
     @CalledByNative
-    public void onQueryHistoryComplete(List<HistoryItem> items) {
-        mObserver.onQueryHistoryComplete(items);
+    public void onQueryHistoryComplete(List<HistoryItem> items, boolean hasMorePotentialMatches) {
+        mObserver.onQueryHistoryComplete(items, hasMorePotentialMatches);
     }
 
     @CalledByNative

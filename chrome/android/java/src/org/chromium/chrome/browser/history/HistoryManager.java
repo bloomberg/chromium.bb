@@ -9,6 +9,9 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.OnScrollListener;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -49,7 +52,7 @@ public class HistoryManager implements OnMenuItemClickListener {
         mSelectableListLayout =
                 (SelectableListLayout) LayoutInflater.from(activity).inflate(
                         R.layout.history_main, null);
-        mSelectableListLayout.initializeRecyclerView(mHistoryAdapter);
+        RecyclerView recyclerView = mSelectableListLayout.initializeRecyclerView(mHistoryAdapter);
         mSelectableListLayout.initializeToolbar(R.layout.history_toolbar, mSelectionDelegate,
                 R.string.menu_history, null, R.id.normal_menu_group,
                 R.id.selection_mode_menu_group, this);
@@ -60,8 +63,19 @@ public class HistoryManager implements OnMenuItemClickListener {
 
         mHistoryAdapter.initialize();
 
-        // TODO(twellington): add a scroll listener to the RecyclerView that loads more items when
-        //                    the scroll position is near the end.
+        recyclerView.addOnScrollListener(new OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                if (!mHistoryAdapter.canLoadMoreItems()) return;
+
+                // Load more items if the scroll position is close to the bottom of the list.
+                LinearLayoutManager layoutManager =
+                        (LinearLayoutManager) recyclerView.getLayoutManager();
+                if (layoutManager.findLastVisibleItemPosition()
+                        > (mHistoryAdapter.getItemCount() - 25)) {
+                    mHistoryAdapter.loadMoreItems();
+                }
+            }});
     }
 
     @Override
