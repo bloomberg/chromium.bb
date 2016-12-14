@@ -22,4 +22,11 @@ cc::Layer* EffectPaintPropertyNode::ensureDummyLayer() const {
   return m_dummyLayer.get();
 }
 
+String EffectPaintPropertyNode::toString() const {
+  return String::format(
+      "localTransformSpace=%p outputClip=%p opacity=%f filter=%s",
+      m_localTransformSpace.get(), m_outputClip.get(), m_opacity,
+      m_filter.toString().ascii().data());
+}
+
 }  // namespace blink

@@ -90,6 +90,7 @@ class CC_EXPORT FilterOperations {
   FilterOperations Blend(const FilterOperations& from, double progress) const;
 
   void AsValueInto(base::trace_event::TracedValue* value) const;
+  std::string ToString() const;
 
  private:
   std::vector<FilterOperation> operations_;

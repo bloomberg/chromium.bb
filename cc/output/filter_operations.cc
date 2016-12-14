@@ -245,4 +245,12 @@ void FilterOperations::AsValueInto(
   }
 }
 
+std::string FilterOperations::ToString() const {
+  base::trace_event::TracedValue value;
+  value.BeginArray("FilterOperations");
+  AsValueInto(&value);
+  value.EndArray();
+  return value.ToString();
+}
+
 }  // namespace cc

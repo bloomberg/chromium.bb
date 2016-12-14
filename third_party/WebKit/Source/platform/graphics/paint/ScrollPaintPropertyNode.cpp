@@ -14,4 +14,18 @@ ScrollPaintPropertyNode* ScrollPaintPropertyNode::root() {
   return root;
 }
 
+String ScrollPaintPropertyNode::toString() const {
+  FloatSize scrollOffset =
+      m_scrollOffsetTranslation->matrix().to2DTranslation();
+  std::string mainThreadScrollingReasonsAsText =
+      MainThreadScrollingReason::mainThreadScrollingReasonsAsText(
+          m_mainThreadScrollingReasons);
+  return String::format(
+      "scrollOffsetTranslation=%s clip=%s bounds=%s "
+      "mainThreadScrollingReasons=%s",
+      scrollOffset.toString().ascii().data(), m_clip.toString().ascii().data(),
+      m_bounds.toString().ascii().data(),
+      mainThreadScrollingReasonsAsText.c_str());
+}
+
 }  // namespace blink

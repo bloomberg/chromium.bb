@@ -12,6 +12,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 #include <iosfwd>
 
@@ -122,6 +123,8 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
            m_mainThreadScrollingReasons == o.m_mainThreadScrollingReasons;
   }
 #endif
+
+  String toString() const;
 
  private:
   ScrollPaintPropertyNode(

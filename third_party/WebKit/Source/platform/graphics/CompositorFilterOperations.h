@@ -10,6 +10,7 @@
 #include "platform/geometry/IntPoint.h"
 #include "platform/graphics/Color.h"
 #include "third_party/skia/include/core/SkScalar.h"
+#include "wtf/text/WTFString.h"
 
 class SkImageFilter;
 
@@ -50,6 +51,8 @@ class PLATFORM_EXPORT CompositorFilterOperations {
 #if DCHECK_IS_ON()
   bool equalsIgnoringReferenceFilters(const CompositorFilterOperations&) const;
 #endif
+
+  String toString() const;
 
  private:
   cc::FilterOperations m_filterOperations;

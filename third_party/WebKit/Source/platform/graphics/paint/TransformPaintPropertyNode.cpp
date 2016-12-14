@@ -13,4 +13,8 @@ TransformPaintPropertyNode* TransformPaintPropertyNode::root() {
   return root;
 }
 
+String TransformPaintPropertyNode::toString() const {
+  return "transform=" + m_matrix.toString() + " origin=" + m_origin.toString();
+}
+
 }  // namespace blink

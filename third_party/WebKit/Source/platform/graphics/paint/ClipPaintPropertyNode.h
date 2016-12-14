@@ -11,6 +11,7 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 #include <iosfwd>
 
@@ -70,6 +71,8 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
            m_clipRect == o.m_clipRect;
   }
 #endif
+
+  String toString() const;
 
  private:
   ClipPaintPropertyNode(

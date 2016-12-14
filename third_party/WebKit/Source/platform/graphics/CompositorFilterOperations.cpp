@@ -117,4 +117,8 @@ bool CompositorFilterOperations::equalsIgnoringReferenceFilters(
 }
 #endif
 
+String CompositorFilterOperations::toString() const {
+  return m_filterOperations.ToString().c_str();
+}
+
 }  // namespace blink
