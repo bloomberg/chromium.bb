@@ -18,17 +18,28 @@ namespace blink {
 // before rebuilding properties, forcing the properties to get updated, then
 // checking that the updated properties match the original properties.
 
-#define DCHECK_FRAMEVIEW_PROPERTY_EQ(original, updated)                      \
-  do {                                                                       \
-    DCHECK(!!original == !!updated) << "Property was created or deleted "    \
-                                       "without the FrameView needing a "    \
-                                       "paint property update.";             \
-    if (!!original && !!updated) {                                           \
-      DCHECK(*original == *updated) << "Property was updated without the "   \
-                                       "FrameView needing a paint property " \
-                                       "update.";                            \
-    }                                                                        \
-  } while (0);
+#define DUMP_PROPERTIES(original, updated)                           \
+  "\nOriginal:\n"                                                    \
+      << (original ? (original)->toString().ascii().data() : "null") \
+      << "\nUpdated:\n"                                              \
+      << (updated ? (updated)->toString().ascii().data() : "null")
+
+#define CHECK_PROPERTY_EQ(thing, original, updated)                        \
+  do {                                                                     \
+    DCHECK(!!original == !!updated) << "Property was created or deleted "  \
+                                    << "without " << thing                 \
+                                    << " needing a paint property update." \
+                                    << DUMP_PROPERTIES(original, updated); \
+    if (!!original && !!updated) {                                         \
+      DCHECK(*original == *updated) << "Property was updated without "     \
+                                    << thing                               \
+                                    << " needing a paint property update." \
+                                    << DUMP_PROPERTIES(original, updated); \
+    }                                                                      \
+  } while (0)
+
+#define DCHECK_FRAMEVIEW_PROPERTY_EQ(original, updated) \
+  CHECK_PROPERTY_EQ("the FrameView", original, updated)
 
 class FindFrameViewPropertiesNeedingUpdateScope {
  public:
@@ -88,19 +99,9 @@ class FindFrameViewPropertiesNeedingUpdateScope {
   RefPtr<ScrollPaintPropertyNode> m_originalScroll;
 };
 
-#define DCHECK_OBJECT_PROPERTY_EQ(object, original, updated)                 \
-  do {                                                                       \
-    DCHECK(!!original == !!updated) << "Property was created or deleted "    \
-                                       "without the layout object ("         \
-                                    << object.debugName()                    \
-                                    << ") needing a paint property update."; \
-    if (!!original && !!updated) {                                           \
-      DCHECK(*original == *updated) << "Property was updated without the "   \
-                                       "layout object ("                     \
-                                    << object.debugName()                    \
-                                    << ") needing a paint property update."; \
-    }                                                                        \
-  } while (0);
+#define DCHECK_OBJECT_PROPERTY_EQ(object, original, updated)            \
+  CHECK_PROPERTY_EQ("the layout object (" << object.debugName() << ")", \
+                    original, updated)
 
 class FindObjectPropertiesNeedingUpdateScope {
  public:
@@ -171,9 +172,8 @@ class FindObjectPropertiesNeedingUpdateScope {
       const auto* objectBorderBox =
           objectProperties->localBorderBoxProperties();
       if (originalBorderBox && objectBorderBox) {
-        DCHECK(originalBorderBox->paintOffset == objectBorderBox->paintOffset)
-            << "Border box paint offset was updated without the layout object ("
-            << m_object.debugName() << ") needing a paint property update.";
+        DCHECK_OBJECT_PROPERTY_EQ(m_object, &originalBorderBox->paintOffset,
+                                  &objectBorderBox->paintOffset);
         DCHECK_OBJECT_PROPERTY_EQ(
             m_object, originalBorderBox->propertyTreeState.transform(),
             objectBorderBox->propertyTreeState.transform());
