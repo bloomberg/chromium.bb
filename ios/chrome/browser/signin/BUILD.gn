@@ -120,7 +120,7 @@ source_set("unit_tests") {
     "//google_apis",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state:test_support",
-    "//ios/chrome/browser/prefs",
+    "//ios/chrome/browser/prefs:browser_prefs",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/sync:test_support",
     "//ios/chrome/test:test_support",

@@ -8,10 +8,10 @@
 
 #include "base/mac/scoped_nsobject.h"
 #import "components/handoff/handoff_manager.h"
+#include "components/handoff/pref_names_ios.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prefs/pref_observer_bridge.h"
 #include "url/gurl.h"
 

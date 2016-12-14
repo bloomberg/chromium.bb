@@ -25,7 +25,7 @@ source_set("test_support") {
     "//components/prefs:test_support",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state:browser_state_impl",
-    "//ios/chrome/browser/prefs",
+    "//ios/chrome/browser/prefs:browser_prefs",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser:test_support",
     "//ios/web",

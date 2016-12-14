@@ -4,8 +4,6 @@
 
 source_set("prefs") {
   sources = [
-    "browser_prefs.h",
-    "browser_prefs.mm",
     "ios_chrome_pref_model_associator_client.cc",
     "ios_chrome_pref_model_associator_client.h",
     "ios_chrome_pref_service_factory.cc",
@@ -15,6 +13,26 @@ source_set("prefs") {
   ]
   deps = [
     "//base",
+    "//components/content_settings/core/browser",
+    "//components/prefs",
+    "//components/proxy_config",
+    "//components/search_engines",
+    "//components/sync_preferences",
+    "//ios/chrome/browser",
+  ]
+
+  # TODO(sdefresne): remove once downstream dependencies have been fixed.
+  public_deps = [
+    ":browser_prefs",
+  ]
+}
+
+source_set("browser_prefs") {
+  sources = [
+    "browser_prefs.h",
+    "browser_prefs.mm",
+  ]
+  deps = [
     "//components/autofill/core/browser",
     "//components/browsing_data/core",
     "//components/content_settings/core/browser",
@@ -36,7 +54,6 @@ source_set("prefs") {
     "//components/ssl_config",
     "//components/strings",
     "//components/sync",
-    "//components/sync_preferences",
     "//components/translate/core/browser",
     "//components/translate/core/common",
     "//components/update_client",
@@ -50,7 +67,6 @@ source_set("prefs") {
     "//ios/chrome/browser/metrics",
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/physical_web",
-    "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/voice:prefs",
     "//ios/public/provider/chrome/browser",

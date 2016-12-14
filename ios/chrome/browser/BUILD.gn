@@ -175,6 +175,7 @@ source_set("browser_impl") {
     "//ios/chrome/browser/open_from_clipboard",
     "//ios/chrome/browser/physical_web",
     "//ios/chrome/browser/prefs",
+    "//ios/chrome/browser/prefs:browser_prefs",
     "//ios/chrome/browser/services/gcm",
     "//ios/chrome/browser/translate",
     "//ios/chrome/browser/update_client",
