@@ -33,6 +33,8 @@
     liveRegionChanged,
     loadComplete,
     locationChanged,
+    mediaStartedPlaying,
+    mediaStoppedPlaying,
     menuEnd,
     menuListItemSelected,
     menuListValueChanged,

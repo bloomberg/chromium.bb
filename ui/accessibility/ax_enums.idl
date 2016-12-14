@@ -45,6 +45,8 @@
     live_region_changed,       // Web
     load_complete,             // Web
     location_changed,          // Web
+    media_started_playing,     // Automation
+    media_stopped_playing,     // Automation
     menu_end,                  // Native / Win
     menu_list_item_selected,   // Web
     menu_list_value_changed,   // Web

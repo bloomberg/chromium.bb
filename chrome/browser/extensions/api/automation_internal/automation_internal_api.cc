@@ -28,6 +28,7 @@
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
+#include "content/public/browser/media_session.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -222,6 +223,26 @@ class AutomationWebContentsObserver
         browser_context_);
   }
 
+  void MediaStartedPlaying(const MediaPlayerInfo& video_type,
+                           const MediaPlayerId& id) override {
+    std::vector<content::AXEventNotificationDetails> details;
+    content::AXEventNotificationDetails detail;
+    detail.ax_tree_id = id.first->GetAXTreeID();
+    detail.event_type = ui::AX_EVENT_MEDIA_STARTED_PLAYING;
+    details.push_back(detail);
+    AccessibilityEventReceived(details);
+  }
+
+  void MediaStoppedPlaying(const MediaPlayerInfo& video_type,
+                           const MediaPlayerId& id) override {
+    std::vector<content::AXEventNotificationDetails> details;
+    content::AXEventNotificationDetails detail;
+    detail.ax_tree_id = id.first->GetAXTreeID();
+    detail.event_type = ui::AX_EVENT_MEDIA_STOPPED_PLAYING;
+    details.push_back(detail);
+    AccessibilityEventReceived(details);
+  }
+
  private:
   friend class content::WebContentsUserData<AutomationWebContentsObserver>;
 
@@ -334,11 +355,34 @@ AutomationInternalPerformActionFunction::Run() {
   if (!rfh)
     return RespondNow(Error("Ignoring action on destroyed node"));
 
-  const content::WebContents* contents =
+  content::WebContents* contents =
       content::WebContents::FromRenderFrameHost(rfh);
   if (!CanRequestAutomation(extension(), automation_info, contents)) {
     return RespondNow(
         Error(kCannotRequestAutomationOnPage, contents->GetURL().spec()));
+  }
+
+  // These actions are handled directly for the WebContents.
+  if (params->args.action_type ==
+      api::automation_internal::ACTION_TYPE_STARTDUCKINGMEDIA) {
+    content::MediaSession* session = content::MediaSession::Get(contents);
+    session->StartDucking();
+    return RespondNow(NoArguments());
+  } else if (params->args.action_type ==
+             api::automation_internal::ACTION_TYPE_STOPDUCKINGMEDIA) {
+    content::MediaSession* session = content::MediaSession::Get(contents);
+    session->StopDucking();
+    return RespondNow(NoArguments());
+  } else if (params->args.action_type ==
+             api::automation_internal::ACTION_TYPE_RESUMEMEDIA) {
+    content::MediaSession* session = content::MediaSession::Get(contents);
+    session->Resume(content::MediaSession::SuspendType::SYSTEM);
+    return RespondNow(NoArguments());
+  } else if (params->args.action_type ==
+             api::automation_internal::ACTION_TYPE_SUSPENDMEDIA) {
+    content::MediaSession* session = content::MediaSession::Get(contents);
+    session->Suspend(content::MediaSession::SuspendType::SYSTEM);
+    return RespondNow(NoArguments());
   }
 
   RenderFrameHostActionAdapter adapter(rfh);

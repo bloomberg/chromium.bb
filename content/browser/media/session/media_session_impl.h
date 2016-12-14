@@ -132,11 +132,11 @@ class MediaSessionImpl : public MediaSession,
 
   // Let the media session start ducking such that the volume multiplier is
   // reduced.
-  CONTENT_EXPORT void StartDucking();
+  CONTENT_EXPORT void StartDucking() override;
 
   // Let the media session stop ducking such that the volume multiplier is
   // recovered.
-  CONTENT_EXPORT void StopDucking();
+  CONTENT_EXPORT void StopDucking() override;
 
   // Returns if the session can be controlled by Resume() and Suspend calls
   // above.

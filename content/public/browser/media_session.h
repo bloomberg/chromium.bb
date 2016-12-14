@@ -55,6 +55,14 @@ class MediaSession {
   // Tell the media session a user action has performed.
   virtual void DidReceiveAction(blink::mojom::MediaSessionAction action) = 0;
 
+  // Let the media session start ducking such that the volume multiplier is
+  // reduced.
+  virtual void StartDucking() = 0;
+
+  // Let the media session stop ducking such that the volume multiplier is
+  // recovered.
+  virtual void StopDucking() = 0;
+
  protected:
   MediaSession() = default;
 };

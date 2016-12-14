@@ -33,9 +33,13 @@ namespace automationInternal {
     doDefault,
     getImageData,
     makeVisible,
+    resumeMedia,
     setAccessibilityFocus,
     setSequentialFocusNavigationStartingPoint,
     setSelection,
+    startDuckingMedia,
+    stopDuckingMedia,
+    suspendMedia,
     showContextMenu
   };
 

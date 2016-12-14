@@ -377,6 +377,10 @@ AutomationNodeImpl.prototype = {
     this.performAction_('makeVisible');
   },
 
+    resumeMedia: function() {
+    this.performAction_('resumeMedia');
+  },
+
   setSelection: function(startIndex, endIndex) {
     if (this.role == 'textField' || this.role == 'textBox') {
       this.performAction_('setSelection',
@@ -392,6 +396,18 @@ AutomationNodeImpl.prototype = {
 
   showContextMenu: function() {
     this.performAction_('showContextMenu');
+  },
+
+  startDuckingMedia: function() {
+    this.performAction_('startDuckingMedia');
+  },
+
+  stopDuckingMedia: function() {
+    this.performAction_('stopDuckingMedia');
+  },
+
+  suspendMedia: function() {
+    this.performAction_('suspendMedia');
   },
 
   domQuerySelector: function(selector, callback) {
@@ -1072,9 +1088,13 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
     'getImageData',
     'makeVisible',
     'matches',
+    'resumeMedia',
     'setSelection',
     'setSequentialFocusNavigationStartingPoint',
     'showContextMenu',
+    'startDuckingMedia',
+    'stopDuckingMedia',
+    'suspendMedia',
     'addEventListener',
     'removeEventListener',
     'domQuerySelector',

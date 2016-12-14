@@ -38,6 +38,8 @@ class MockMediaSession : public content::MediaSession {
   MOCK_METHOD1(Resume, void(content::MediaSession::SuspendType));
   MOCK_METHOD1(Suspend, void(content::MediaSession::SuspendType));
   MOCK_METHOD1(Stop, void(content::MediaSession::SuspendType));
+  MOCK_METHOD0(StartDucking, void());
+  MOCK_METHOD0(StopDucking, void());
   MOCK_METHOD1(DidReceiveAction, void(blink::mojom::MediaSessionAction));
 
  private:
