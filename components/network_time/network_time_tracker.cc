@@ -534,8 +534,19 @@ bool NetworkTimeTracker::UpdateTimeFromResponse() {
   base::TimeDelta resolution =
       base::TimeDelta::FromMilliseconds(1) +
       base::TimeDelta::FromSeconds(kTimeServerMaxSkewSeconds);
+
+  // Record histograms for the latency of the time query and the time delta
+  // between time fetches.
   base::TimeDelta latency = tick_clock_->NowTicks() - fetch_started_;
   UMA_HISTOGRAM_TIMES("NetworkTimeTracker.TimeQueryLatency", latency);
+  if (!last_fetched_time_.is_null()) {
+    UMA_HISTOGRAM_CUSTOM_TIMES("NetworkTimeTracker.TimeBetweenFetches",
+                               current_time - last_fetched_time_,
+                               base::TimeDelta::FromHours(1),
+                               base::TimeDelta::FromDays(7), 50);
+  }
+  last_fetched_time_ = current_time;
+
   UpdateNetworkTime(current_time, resolution, latency, tick_clock_->NowTicks());
   return true;
 }

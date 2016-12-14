@@ -217,6 +217,12 @@ class NetworkTimeTracker : public net::URLFetcherDelegate {
   // this NetworkTimeTracker's lifetime.
   bool time_query_completed_;
 
+  // The time that was received from the last network time fetch made by
+  // CheckTime(). Unlike |network_time_at_least_measurement_|, this time
+  // is not updated when UpdateNetworkTime() is called. Used for UMA
+  // metrics.
+  base::Time last_fetched_time_;
+
   // Callbacks to run when the in-progress time fetch completes.
   std::vector<base::Closure> fetch_completion_callbacks_;
 
