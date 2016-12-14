@@ -92,6 +92,7 @@ include_rules = [
   "+ios/public/provider/components",
   "+ios/public/provider/web",
   "+ios/web/public",
+  "+libxml/xmlwriter.h",
   "+net",
   "+rlz/features",
   "+third_party/brotli",
