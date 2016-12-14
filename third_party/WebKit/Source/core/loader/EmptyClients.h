@@ -30,7 +30,6 @@
 #define EmptyClients_h
 
 #include "core/CoreExport.h"
-#include "core/editing/commands/UndoStep.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuClient.h"
