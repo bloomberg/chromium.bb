@@ -1179,12 +1179,17 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
   int ret = 1;
 #if CONFIG_REF_MV
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+#if CONFIG_CB4X4
+  int_mv *pred_mv = mbmi->pred_mv;
+  (void)block;
+#else
   BLOCK_SIZE bsize = mbmi->sb_type;
   int_mv *pred_mv =
       (bsize >= BLOCK_8X8) ? mbmi->pred_mv : xd->mi[0]->bmi[block].pred_mv;
+#endif  // CONFIG_CB4X4
 #else
   (void)block;
-#endif
+#endif  // CONFIG_REF_MV
   (void)ref_frame;
 
   switch (mode) {
@@ -1435,6 +1440,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   MB_MODE_INFO *const mbmi = &mi->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   const int allow_hp = cm->allow_high_precision_mv;
+  const int unify_bsize = CONFIG_CB4X4;
   int_mv nearestmv[2], nearmv[2];
   int_mv ref_mvs[MODE_CTX_REF_FRAMES][MAX_MV_REF_CANDIDATES];
 #if CONFIG_EXT_INTER
@@ -1538,7 +1544,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
       return;
     }
   } else {
-    if (bsize >= BLOCK_8X8) {
+    if (bsize >= BLOCK_8X8 || unify_bsize) {
 #if CONFIG_EXT_INTER
       if (is_compound)
         mbmi->mode = read_inter_compound_mode(cm, xd, r, mode_ctx);
@@ -1557,10 +1563,10 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   }
 
 #if CONFIG_EXT_INTER
-  if (bsize < BLOCK_8X8 ||
+  if ((bsize < BLOCK_8X8 && unify_bsize) ||
       (mbmi->mode != ZEROMV && mbmi->mode != ZERO_ZEROMV)) {
 #else
-  if (bsize < BLOCK_8X8 || mbmi->mode != ZEROMV) {
+  if ((bsize < BLOCK_8X8 && !unify_bsize) || mbmi->mode != ZEROMV) {
 #endif  // CONFIG_EXT_INTER
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       av1_find_best_ref_mvs(allow_hp, ref_mvs[mbmi->ref_frame[ref]],
@@ -1578,8 +1584,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_EXT_INTER
   if (is_compound && bsize >= BLOCK_8X8 && mbmi->mode != ZERO_ZEROMV) {
 #else
-  if (is_compound && bsize >= BLOCK_8X8 && mbmi->mode != NEWMV &&
-      mbmi->mode != ZEROMV) {
+  if (is_compound && (bsize >= BLOCK_8X8 || unify_bsize) &&
+      mbmi->mode != NEWMV && mbmi->mode != ZEROMV) {
 #endif  // CONFIG_EXT_INTER
     uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
 
@@ -1636,7 +1642,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   read_mb_interp_filter(cm, xd, mbmi, r);
 #endif  // !CONFIG_EXT_INTERP && !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
 
-  if (bsize < BLOCK_8X8) {
+  if (bsize < BLOCK_8X8 && !unify_bsize) {
     const int num_4x4_w = 1 << xd->bmode_blocks_wl;
     const int num_4x4_h = 1 << xd->bmode_blocks_hl;
     int idx, idy;
