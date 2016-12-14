@@ -9,7 +9,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <set>
+#include <list>
 
 #include "base/macros.h"
 #include "base/win/scoped_handle.h"
@@ -17,7 +17,7 @@
 
 namespace device {
 
-struct PendingHidTransfer;
+class PendingHidTransfer;
 
 class HidConnectionWin : public HidConnection {
  public:
@@ -26,7 +26,7 @@ class HidConnectionWin : public HidConnection {
 
  private:
   friend class HidServiceWin;
-  friend struct PendingHidTransfer;
+  friend class PendingHidTransfer;
 
   ~HidConnectionWin() override;
 
@@ -54,9 +54,12 @@ class HidConnectionWin : public HidConnection {
                        PendingHidTransfer* transfer,
                        bool signaled);
 
+  std::unique_ptr<PendingHidTransfer> UnlinkTransfer(
+      PendingHidTransfer* transfer);
+
   base::win::ScopedHandle file_;
 
-  std::set<scoped_refptr<PendingHidTransfer> > transfers_;
+  std::list<std::unique_ptr<PendingHidTransfer>> transfers_;
 
   DISALLOW_COPY_AND_ASSIGN(HidConnectionWin);
 };
