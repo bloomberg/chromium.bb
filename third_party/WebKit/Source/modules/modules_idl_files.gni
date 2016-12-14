@@ -582,6 +582,7 @@ modules_dependency_idl_files =
           "mediasource/VideoTrackSourceBuffer.idl",
           "mediasource/HTMLVideoElementMediaSource.idl",
           "mediasource/URLMediaSource.idl",
+          "mediastream/MediaStreamTrackContentHint.idl",
           "mediastream/NavigatorMediaStream.idl",
           "mediastream/NavigatorUserMedia.idl",
           "mediastream/URLMediaStream.idl",
