@@ -246,7 +246,7 @@ TEST_F(RecentTabHelperTest, SimpleCapture) {
   RunUntilIdle();
   EXPECT_TRUE(model()->is_loaded());
   GetAllPages();
-  EXPECT_EQ(1U, all_pages().size());
+  ASSERT_EQ(1U, all_pages().size());
   EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
 }
 
@@ -263,7 +263,7 @@ TEST_F(RecentTabHelperTest, NoTabIdNoCapture) {
   EXPECT_TRUE(model()->is_loaded());
   GetAllPages();
   // No page should be captured.
-  EXPECT_EQ(0U, all_pages().size());
+  ASSERT_EQ(0U, all_pages().size());
 }
 
 // Triggers two snapshot captures during a single page load. Should end up with
@@ -281,7 +281,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesSamePageLoad) {
   EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
   GetAllPages();
-  EXPECT_EQ(1U, all_pages().size());
+  ASSERT_EQ(1U, all_pages().size());
   EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
   int64_t first_offline_id = all_pages()[0].offline_id;
 
@@ -294,7 +294,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesSamePageLoad) {
   EXPECT_EQ(1U, model_removed_count());
   // the same page should be simply overridden.
   GetAllPages();
-  EXPECT_EQ(1U, all_pages().size());
+  ASSERT_EQ(1U, all_pages().size());
   EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
   EXPECT_NE(first_offline_id, all_pages()[0].offline_id);
 }
@@ -316,7 +316,7 @@ TEST_F(RecentTabHelperTest, DISABLED_TwoCapturesSamePageLoadSecondFails) {
   EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
   GetAllPages();
-  EXPECT_EQ(1U, all_pages().size());
+  ASSERT_EQ(1U, all_pages().size());
   EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
   int64_t first_offline_id = all_pages()[0].offline_id;
 
@@ -339,7 +339,7 @@ TEST_F(RecentTabHelperTest, DISABLED_TwoCapturesSamePageLoadSecondFails) {
   EXPECT_EQ(0U, model_removed_count());
   // The exact same page should still be available.
   GetAllPages();
-  EXPECT_EQ(1U, all_pages().size());
+  ASSERT_EQ(1U, all_pages().size());
   EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
   EXPECT_EQ(first_offline_id, all_pages()[0].offline_id);
 }
@@ -359,7 +359,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsSameUrl) {
   EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
   GetAllPages();
-  EXPECT_EQ(1U, all_pages().size());
+  ASSERT_EQ(1U, all_pages().size());
   EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
   int64_t first_offline_id = all_pages()[0].offline_id;
 
@@ -373,7 +373,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsSameUrl) {
   EXPECT_EQ(1U, model_removed_count());
   // the same page should be simply overridden.
   GetAllPages();
-  EXPECT_EQ(1U, all_pages().size());
+  ASSERT_EQ(1U, all_pages().size());
   EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
   EXPECT_NE(first_offline_id, all_pages()[0].offline_id);
 }
@@ -394,7 +394,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsSameUrlSecondFails) {
   EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
   GetAllPages();
-  EXPECT_EQ(1U, all_pages().size());
+  ASSERT_EQ(1U, all_pages().size());
   EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
 
   // Sets a new delegate that will make the second snapshot fail.
@@ -417,7 +417,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsSameUrlSecondFails) {
   EXPECT_EQ(1U, model_removed_count());
   // the same page should be simply overridden.
   GetAllPages();
-  EXPECT_EQ(0U, all_pages().size());
+  ASSERT_EQ(0U, all_pages().size());
 }
 
 // Triggers two snapshot captures for two different page loads and URLs. Should
@@ -435,7 +435,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsAndUrls) {
   EXPECT_EQ(1U, page_added_count());
   EXPECT_EQ(0U, model_removed_count());
   GetAllPages();
-  EXPECT_EQ(1U, all_pages().size());
+  ASSERT_EQ(1U, all_pages().size());
   EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
 
   NavigateAndCommit(kTestPageUrlOther);
@@ -448,7 +448,7 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsAndUrls) {
   EXPECT_EQ(1U, model_removed_count());
   // the same page should be simply overridden.
   GetAllPages();
-  EXPECT_EQ(1U, all_pages().size());
+  ASSERT_EQ(1U, all_pages().size());
   EXPECT_EQ(kTestPageUrlOther, all_pages()[0].url);
 }
 
@@ -469,7 +469,7 @@ TEST_F(RecentTabHelperTest, TwoDownloadCapturesInARowSamePage) {
   EXPECT_EQ(2U, page_added_count());
   EXPECT_EQ(1U, model_removed_count());
   GetAllPages();
-  EXPECT_EQ(1U, all_pages().size());
+  ASSERT_EQ(1U, all_pages().size());
   EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
   int64_t first_offline_id = all_pages()[0].offline_id;
 
@@ -515,7 +515,7 @@ TEST_F(RecentTabHelperTest, NoCaptureOnErrorPage) {
   RunUntilIdle();
   EXPECT_TRUE(model()->is_loaded());
   GetAllPages();
-  EXPECT_EQ(0U, all_pages().size());
+  ASSERT_EQ(0U, all_pages().size());
 }
 
 // Checks that no snapshots are created if the Offline Page Cache feature is
@@ -530,20 +530,21 @@ TEST_F(RecentTabHelperTest, FeatureNotEnabled) {
   EXPECT_TRUE(model()->is_loaded());
   GetAllPages();
   // No page should be captured.
-  EXPECT_EQ(0U, all_pages().size());
+  ASSERT_EQ(0U, all_pages().size());
 }
 
 // Simulates a download request to offline the current page. Should end up with
 // one offline pages.
-TEST_F(RecentTabHelperTest, DISABLED_DownloadRequest) {
+TEST_F(RecentTabHelperTest, DownloadRequest) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->ObserveAndDownloadCurrentPage(
       ClientId("download", "id1"), 153L);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  FastForwardSnapshotController();
   RunUntilIdle();
   EXPECT_TRUE(model()->is_loaded());
   GetAllPages();
-  EXPECT_EQ(1U, all_pages().size());
+  ASSERT_EQ(1U, all_pages().size());
   const OfflinePageItem& page = all_pages()[0];
   EXPECT_EQ(kTestPageUrl, page.url);
   EXPECT_EQ("download", page.client_id.name_space);
