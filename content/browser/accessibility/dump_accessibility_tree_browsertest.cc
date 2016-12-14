@@ -300,6 +300,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityAriaHidden) {
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaHiddenIframeBody) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-hidden-iframe-body.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        MAYBE(AccessibilityAriaFlowto)) {
   RunAriaTest(FILE_PATH_LITERAL("aria-flowto.html"));
 }

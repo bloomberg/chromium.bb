@@ -347,8 +347,10 @@ bool AXLayoutObject::isEditable() const {
   if (isWebArea()) {
     Document& document = getLayoutObject()->document();
     HTMLElement* body = document.body();
-    if (body && hasEditableStyle(*body))
-      return true;
+    if (body && hasEditableStyle(*body)) {
+      AXObject* axBody = axObjectCache().getOrCreate(body);
+      return axBody && axBody != axBody->ariaHiddenRoot();
+    }
 
     return hasEditableStyle(document);
   }
@@ -365,8 +367,10 @@ bool AXLayoutObject::isRichlyEditable() const {
   if (isWebArea()) {
     Document& document = m_layoutObject->document();
     HTMLElement* body = document.body();
-    if (body && hasRichlyEditableStyle(*body))
-      return true;
+    if (body && hasRichlyEditableStyle(*body)) {
+      AXObject* axBody = axObjectCache().getOrCreate(body);
+      return axBody && axBody != axBody->ariaHiddenRoot();
+    }
 
     return hasRichlyEditableStyle(document);
   }
@@ -405,8 +409,10 @@ bool AXLayoutObject::isReadOnly() const {
   if (isWebArea()) {
     Document& document = m_layoutObject->document();
     HTMLElement* body = document.body();
-    if (body && hasEditableStyle(*body))
-      return false;
+    if (body && hasEditableStyle(*body)) {
+      AXObject* axBody = axObjectCache().getOrCreate(body);
+      return !axBody || axBody == axBody->ariaHiddenRoot();
+    }
 
     return !hasEditableStyle(document);
   }
