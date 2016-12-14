@@ -435,8 +435,13 @@ void av1_update_mv_count(ThreadData *td) {
   const MODE_INFO *mi = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   const MB_MODE_INFO_EXT *mbmi_ext = td->mb.mbmi_ext;
+#if CONFIG_CB4X4
+  const int unify_bsize = 1;
+#else
+  const int unify_bsize = 0;
+#endif
 
-  if (mbmi->sb_type < BLOCK_8X8) {
+  if (mbmi->sb_type < BLOCK_8X8 && !unify_bsize) {
     const int num_4x4_w = num_4x4_blocks_wide_lookup[mbmi->sb_type];
     const int num_4x4_h = num_4x4_blocks_high_lookup[mbmi->sb_type];
     int idx, idy;
