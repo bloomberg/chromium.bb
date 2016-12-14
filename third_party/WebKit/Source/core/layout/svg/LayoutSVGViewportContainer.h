@@ -27,11 +27,13 @@
 
 namespace blink {
 
+class SVGSVGElement;
+
 // This is used for non-root <svg> elements which are SVGTransformable thus we
 // inherit from LayoutSVGContainer instead of LayoutSVGTransformableContainer.
 class LayoutSVGViewportContainer final : public LayoutSVGContainer {
  public:
-  explicit LayoutSVGViewportContainer(SVGElement*);
+  explicit LayoutSVGViewportContainer(SVGSVGElement*);
   FloatRect viewport() const { return m_viewport; }
 
   bool isLayoutSizeChanged() const { return m_isLayoutSizeChanged; }

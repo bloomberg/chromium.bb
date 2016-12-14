@@ -23,23 +23,17 @@
 #include "core/layout/svg/LayoutSVGViewportContainer.h"
 
 #include "core/layout/svg/SVGLayoutSupport.h"
-#include "core/paint/SVGContainerPainter.h"
 #include "core/svg/SVGSVGElement.h"
-#include "core/svg/SVGUseElement.h"
-#include "platform/graphics/GraphicsContext.h"
 
 namespace blink {
 
-LayoutSVGViewportContainer::LayoutSVGViewportContainer(SVGElement* node)
+LayoutSVGViewportContainer::LayoutSVGViewportContainer(SVGSVGElement* node)
     : LayoutSVGContainer(node),
       m_isLayoutSizeChanged(false),
       m_needsTransformUpdate(true) {}
 
 void LayoutSVGViewportContainer::determineIfLayoutSizeChanged() {
-  ASSERT(element());
-  if (!isSVGSVGElement(*element()))
-    return;
-
+  DCHECK(isSVGSVGElement(element()));
   m_isLayoutSizeChanged =
       toSVGSVGElement(element())->hasRelativeLengths() && selfNeedsLayout();
 }
