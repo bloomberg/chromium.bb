@@ -431,9 +431,11 @@ public class PaymentRequestImpl
                     if (!uniqueContactInfos.contains(uniqueContactInfo)) {
                         uniqueContactInfos.add(uniqueContactInfo);
 
-                        boolean isComplete = mContactEditor.isContactInformationComplete(name,
-                                phone, email);
-                        contacts.add(new AutofillContact(profile, name, phone, email, isComplete));
+                        @ContactEditor.CompletionStatus
+                        int completionStatus =
+                                mContactEditor.checkContactCompletionStatus(name, phone, email);
+                        contacts.add(new AutofillContact(
+                                mContext, profile, name, phone, email, completionStatus));
                     }
                 }
             }

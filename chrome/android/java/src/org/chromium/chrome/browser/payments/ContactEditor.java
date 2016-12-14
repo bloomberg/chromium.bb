@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.support.annotation.IntDef;
 import android.telephony.PhoneNumberUtils;
 import android.text.TextUtils;
 import android.util.Patterns;
@@ -16,6 +17,8 @@ import org.chromium.chrome.browser.payments.ui.EditorFieldModel;
 import org.chromium.chrome.browser.payments.ui.EditorFieldModel.EditorFieldValidator;
 import org.chromium.chrome.browser.payments.ui.EditorModel;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,6 +28,20 @@ import javax.annotation.Nullable;
  * Contact information editor.
  */
 public class ContactEditor extends EditorBase<AutofillContact> {
+    @IntDef({INVALID_NAME, INVALID_EMAIL, INVALID_PHONE_NUMBER, INVALID_MULTIPLE_FIELDS})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface CompletionStatus {}
+    /** Can be sent to the merchant as-is without editing first. */
+    public static final int COMPLETE = 0;
+    /** The contact name is missing. */
+    public static final int INVALID_NAME = 1;
+    /** The contact email is invalid or missing. */
+    public static final int INVALID_EMAIL = 2;
+    /** The contact phone number is invalid or missing. */
+    public static final int INVALID_PHONE_NUMBER = 3;
+    /** Multiple fields are invalid or missing. */
+    public static final int INVALID_MULTIPLE_FIELDS = 4;
+
     private final boolean mRequestPayerName;
     private final boolean mRequestPayerPhone;
     private final boolean mRequestPayerEmail;
@@ -53,19 +70,39 @@ public class ContactEditor extends EditorBase<AutofillContact> {
     }
 
     /**
-     * Returns whether the following contact information can be sent to the merchant as-is without
-     * editing first.
+     * Returns the contact completion status with the given name, phone and email.
      *
      * @param name  The payer name to check.
      * @param phone The phone number to check.
      * @param email The email address to check.
-     * @return Whether the contact information is complete.
+     * @return The completion status.
      */
-    public boolean isContactInformationComplete(
+    @CompletionStatus
+    public int checkContactCompletionStatus(
             @Nullable String name, @Nullable String phone, @Nullable String email) {
-        return (!mRequestPayerName || !TextUtils.isEmpty(name))
-                && (!mRequestPayerPhone || getPhoneValidator().isValid(phone))
-                && (!mRequestPayerEmail || getEmailValidator().isValid(email));
+        int invalidFieldCount = 0;
+        int completionStatus = COMPLETE;
+
+        if (mRequestPayerName && TextUtils.isEmpty(name)) {
+            invalidFieldCount++;
+            completionStatus = INVALID_NAME;
+        }
+
+        if (mRequestPayerPhone && !getPhoneValidator().isValid(phone)) {
+            invalidFieldCount++;
+            completionStatus = INVALID_PHONE_NUMBER;
+        }
+
+        if (mRequestPayerEmail && !getEmailValidator().isValid(email)) {
+            invalidFieldCount++;
+            completionStatus = INVALID_EMAIL;
+        }
+
+        if (invalidFieldCount > 1) {
+            completionStatus = INVALID_MULTIPLE_FIELDS;
+        }
+
+        return completionStatus;
     }
 
     /**
@@ -101,7 +138,9 @@ public class ContactEditor extends EditorBase<AutofillContact> {
         super.edit(toEdit, callback);
 
         final AutofillContact contact = toEdit == null
-                ? new AutofillContact(new AutofillProfile(), null, null, null, false) : toEdit;
+                ? new AutofillContact(mContext, new AutofillProfile(), null, null, null,
+                          INVALID_MULTIPLE_FIELDS)
+                : toEdit;
 
         final EditorFieldModel nameField = mRequestPayerName
                 ? EditorFieldModel.createTextInput(EditorFieldModel.INPUT_TYPE_HINT_PERSON_NAME,
@@ -129,9 +168,10 @@ public class ContactEditor extends EditorBase<AutofillContact> {
                           contact.getPayerEmail())
                 : null;
 
-        EditorModel editor = new EditorModel(
-                mContext.getString(toEdit == null ? R.string.payments_add_contact_details_label
-                                                  : R.string.payments_edit_contact_details_label));
+        EditorModel editor = new EditorModel(toEdit == null
+                ? mContext.getString(R.string.payments_add_contact_details_label)
+                : toEdit.getEditTitle());
+
         if (nameField != null) editor.addField(nameField);
         if (phoneField != null) editor.addField(phoneField);
         if (emailField != null) editor.addField(emailField);

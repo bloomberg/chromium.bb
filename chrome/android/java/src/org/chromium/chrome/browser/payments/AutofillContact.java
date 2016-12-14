@@ -4,8 +4,10 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.content.Context;
 import android.text.TextUtils;
 
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.payments.ui.PaymentOption;
 
@@ -16,6 +18,7 @@ import javax.annotation.Nullable;
  */
 public class AutofillContact extends PaymentOption {
     private final AutofillProfile mProfile;
+    private final Context mContext;
     @Nullable private String mPayerName;
     @Nullable private String mPayerPhone;
     @Nullable private String mPayerEmail;
@@ -23,21 +26,23 @@ public class AutofillContact extends PaymentOption {
     /**
      * Builds contact details.
      *
-     * @param profile    The autofill profile where this contact data lives.
-     * @param name       The payer name. If not empty, this will be the primary label.
-     * @param phone      The phone number. If name is empty, this will be the primary label.
-     * @param email      The email address. If name and phone are empty, this will be the primary
-     *                   label.
-     * @param isComplete Whether the data in this contact can be sent to the merchant as-is. If
-     *                   false, user needs to add more information here.
+     * @param context          The application context.
+     * @param profile          The autofill profile where this contact data lives.
+     * @param name             The payer name. If not empty, this will be the primary label.
+     * @param phone            The phone number. If name is empty, this will be the primary label.
+     * @param email            The email address. If name and phone are empty, this will be the
+     *                         primary label.
+     * @param completionStatus The completion status of this contact.
      */
-    public AutofillContact(AutofillProfile profile, @Nullable String name,
-            @Nullable String phone, @Nullable String email, boolean isComplete) {
+    public AutofillContact(Context context, AutofillProfile profile, @Nullable String name,
+            @Nullable String phone, @Nullable String email,
+            @ContactEditor.CompletionStatus int completionStatus) {
         super(profile.getGUID(), null, null, null, null);
+        mContext = context;
         mProfile = profile;
-        mIsComplete = isComplete;
         mIsEditable = true;
         setContactInfo(profile.getGUID(), name, phone, email);
+        updateCompletionStatus(completionStatus);
     }
 
     /** @return Payer name. Null if the merchant did not request it or data is incomplete. */
@@ -73,8 +78,8 @@ public class AutofillContact extends PaymentOption {
      */
     public void completeContact(String guid, @Nullable String name,
             @Nullable String phone, @Nullable String email) {
-        mIsComplete = true;
         setContactInfo(guid, name, phone, email);
+        updateCompletionStatus(ContactEditor.COMPLETE);
     }
 
     private void setContactInfo(String guid, @Nullable String name,
@@ -90,6 +95,35 @@ public class AutofillContact extends PaymentOption {
             updateIdentifierAndLabels(guid, mPayerName,
                     mPayerPhone == null ? mPayerEmail : mPayerPhone,
                     mPayerPhone == null ? null : mPayerEmail);
+        }
+    }
+
+    private void updateCompletionStatus(int completionStatus) {
+        mIsComplete = completionStatus == ContactEditor.COMPLETE;
+
+        switch (completionStatus) {
+            case ContactEditor.COMPLETE:
+                mEditMessage = null;
+                mEditTitle = mContext.getString(R.string.payments_edit_contact_details_label);
+                break;
+            case ContactEditor.INVALID_NAME:
+                mEditMessage = mContext.getString(R.string.payments_name_required);
+                mEditTitle = mContext.getString(R.string.payments_add_name);
+                break;
+            case ContactEditor.INVALID_EMAIL:
+                mEditMessage = mContext.getString(R.string.payments_email_required);
+                mEditTitle = mContext.getString(R.string.payments_add_email);
+                break;
+            case ContactEditor.INVALID_PHONE_NUMBER:
+                mEditMessage = mContext.getString(R.string.payments_phone_number_required);
+                mEditTitle = mContext.getString(R.string.payments_add_phone_number);
+                break;
+            case ContactEditor.INVALID_MULTIPLE_FIELDS:
+                mEditMessage = mContext.getString(R.string.payments_more_information_required);
+                mEditTitle = mContext.getString(R.string.payments_add_more_information);
+                break;
+            default:
+                assert false : "Invalid completion status code";
         }
     }
 }

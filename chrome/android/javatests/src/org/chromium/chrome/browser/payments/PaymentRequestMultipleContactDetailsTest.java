@@ -10,18 +10,55 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
  * A payment integration test for a merchant that requests contact details and a user that has
- * 5 contact detail options.
+ * multiple contact detail options.
  */
 public class PaymentRequestMultipleContactDetailsTest extends PaymentRequestTestBase {
+    private static final AutofillProfile[] AUTOFILL_PROFILES = {
+            // Incomplete (no phone) profile.
+            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+                    "Bart Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
+                    "90210", "", "US", "", "bart@simpson.com", ""),
+
+            // Incomplete (no email) profile.
+            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+                    "Homer Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
+                    "90210", "", "US", "555 123-4567", "", ""),
+
+            // Complete profile.
+            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+                    "Lisa Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
+                    "90210", "", "US", "555 123-4567", "lisa@simpson.com", ""),
+
+            // Complete profile.
+            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+                    "Maggie Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
+                    "90210", "", "US", "555 123-4567", "maggie@simpson.com", ""),
+
+            // Incomplete (no phone and email) profile.
+            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
+                    "Marge Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
+                    "90210", "", "US", "", "", ""),
+
+            // Incomplete (no name) profile.
+            new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */, "",
+                    "Acme Inc.", "123 Main", "California", "Los Angeles", "", "90210", "", "US",
+                    "555 123-4567", "marge@simpson.com", ""),
+
+    };
+
+    private AutofillProfile[] mProfilesToAdd;
+    private int[] mCountsToSet;
+    private int[] mDatesToSet;
+
     public PaymentRequestMultipleContactDetailsTest() {
-        // The merchant requests both a phone number and an email address.
+        // The merchant requests a name, a phone number and an email address.
         super("payment_request_contact_details_test.html");
     }
 
@@ -29,48 +66,17 @@ public class PaymentRequestMultipleContactDetailsTest extends PaymentRequestTest
     public void onMainActivityStarted()
             throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
-        // Create an incomplete (no phone) profile with the highest frecency score.
-        String guid1 = helper.setProfile(
-                new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                        "Bart Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
-                        "90210", "", "US", "", "bart@simpson.com", ""));
 
-        // Create an incomplete (no phone) profile with a the second highest frecency score.
-        String guid2 = helper.setProfile(
-                new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                        "Homer Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
-                        "90210", "", "US", "", "homer@simpson.com", ""));
+        // Add the profiles.
+        ArrayList<String> guids = new ArrayList<>();
+        for (int i = 0; i < mProfilesToAdd.length; i++) {
+            guids.add(helper.setProfile(mProfilesToAdd[i]));
+        }
 
-        // Create a complete profile with a middle frecency score.
-        String guid3 = helper.setProfile(
-                new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                        "Lisa Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
-                        "90210", "", "US", "555 123-4567", "lisa@simpson.com", ""));
-
-        // Create a complete profile with the second lowest frecency score.
-        String guid4 = helper.setProfile(
-                new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                        "Maggie Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
-                        "90210", "", "US", "555 123-4567", "maggie@simpson.com", ""));
-
-        // Create an incomplete profile with the lowest frecency score.
-        String guid5 = helper.setProfile(
-                new AutofillProfile("" /* guid */, "https://www.example.com" /* origin */,
-                        "Marge Simpson", "Acme Inc.", "123 Main", "California", "Los Angeles", "",
-                        "90210", "", "US", "", "marge@simpson.com", ""));
-
-        // Create a credit card associated with the fourth profile.
-        helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
-                "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
-                guid4, "" /* serverId */));
-
-        // Set the use stats so that profile1 has the highest frecency score, profile2 the second
-        // highest, profile 3 the third lowest, profile4 the second lowest and profile 5 the lowest.
-        helper.setProfileUseStatsForTesting(guid1, 20, 5000);
-        helper.setProfileUseStatsForTesting(guid2, 15, 5000);
-        helper.setProfileUseStatsForTesting(guid3, 10, 5000);
-        helper.setProfileUseStatsForTesting(guid4, 5, 5000);
-        helper.setProfileUseStatsForTesting(guid5, 1, 1);
+        // Set up the profile use stats.
+        for (int i = 0; i < guids.size(); i++) {
+            helper.setProfileUseStatsForTesting(guids.get(i), mCountsToSet[i], mDatesToSet[i]);
+        }
     }
 
     /**
@@ -82,14 +88,50 @@ public class PaymentRequestMultipleContactDetailsTest extends PaymentRequestTest
     @Feature({"Payments"})
     public void testContactDetailsSuggestionOrdering()
             throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
+        // Set the use stats so that profile[0] has the highest frecency score, profile[1] the
+        // second highest, profile[2] the third lowest, profile[3] the second lowest and profile[4]
+        // the lowest.
+        mProfilesToAdd = new AutofillProfile[] {AUTOFILL_PROFILES[0], AUTOFILL_PROFILES[1],
+                AUTOFILL_PROFILES[2], AUTOFILL_PROFILES[3], AUTOFILL_PROFILES[4]};
+        mCountsToSet = new int[] {20, 15, 10, 5, 1};
+        mDatesToSet = new int[] {5000, 5000, 5000, 5000, 1};
+
+        triggerUIAndWait(mReadyForInput);
         clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
         assertEquals(4, getNumberOfContactDetailSuggestions());
         assertEquals("Lisa Simpson\n555 123-4567\nlisa@simpson.com",
                 getContactDetailsSuggestionLabel(0));
         assertEquals("Maggie Simpson\n555 123-4567\nmaggie@simpson.com",
                 getContactDetailsSuggestionLabel(1));
-        assertEquals("Bart Simpson\nbart@simpson.com", getContactDetailsSuggestionLabel(2));
-        assertEquals("Homer Simpson\nhomer@simpson.com", getContactDetailsSuggestionLabel(3));
+        assertEquals("Bart Simpson\nbart@simpson.com\nPhone number required",
+                getContactDetailsSuggestionLabel(2));
+        assertEquals(
+                "Homer Simpson\n555 123-4567\nEmail required", getContactDetailsSuggestionLabel(3));
+    }
+
+    /**
+     * Make sure the information required message has been displayed for incomplete contact details
+     * correctly.
+     */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testContactDetailsEditRequiredMessage()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        mProfilesToAdd = new AutofillProfile[] {AUTOFILL_PROFILES[0], AUTOFILL_PROFILES[1],
+                AUTOFILL_PROFILES[4], AUTOFILL_PROFILES[5]};
+        mCountsToSet = new int[] {15, 10, 5, 1};
+        mDatesToSet = new int[] {5000, 5000, 5000, 5000};
+
+        triggerUIAndWait(mReadyForInput);
+        clickInContactInfoAndWait(R.id.payments_section, mReadyForInput);
+        assertEquals(4, getNumberOfContactDetailSuggestions());
+        assertEquals("Bart Simpson\nbart@simpson.com\nPhone number required",
+                getContactDetailsSuggestionLabel(0));
+        assertEquals(
+                "Homer Simpson\n555 123-4567\nEmail required", getContactDetailsSuggestionLabel(1));
+        assertEquals(
+                "Marge Simpson\nMore information required", getContactDetailsSuggestionLabel(2));
+        assertEquals("555 123-4567\nmarge@simpson.com\nName required",
+                getContactDetailsSuggestionLabel(3));
     }
 }

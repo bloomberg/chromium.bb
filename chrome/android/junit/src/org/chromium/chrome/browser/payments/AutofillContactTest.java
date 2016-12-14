@@ -4,11 +4,19 @@
 
 package org.chromium.chrome.browser.payments;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
+
+import android.content.Context;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.robolectric.ParameterizedRobolectricTestRunner;
+import org.robolectric.ParameterizedRobolectricTestRunner.Parameters;
+import org.robolectric.RuntimeEnvironment;
+import org.robolectric.annotation.Config;
 
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 
@@ -18,7 +26,8 @@ import java.util.Collection;
 /**
  * Unit tests for the AutofillContact class.
  */
-@RunWith(Parameterized.class)
+@RunWith(ParameterizedRobolectricTestRunner.class)
+@Config(sdk = 21, manifest = Config.NONE)
 public class AutofillContactTest {
     @Parameters
     public static Collection<Object[]> data() {
@@ -62,6 +71,9 @@ public class AutofillContactTest {
         });
     }
 
+    private static final String IMCOMPLETE_MESSAGE = "incomplete";
+
+    private final Context mContext;
     private final String mPayerName;
     private final String mPayerPhone;
     private final String mPayerEmail;
@@ -77,6 +89,8 @@ public class AutofillContactTest {
             boolean isComplete, String expectedLabel, String expectedSublabel,
             String expectedTertiaryLabel, String expectedPayerName, String expectedPayerPhone,
             String expectedPayerEmail) {
+        mContext = spy(RuntimeEnvironment.application);
+        doReturn(IMCOMPLETE_MESSAGE).when(mContext).getString(anyInt());
         mPayerName = payerName;
         mPayerPhone = payerPhone;
         mPayerEmail = payerEmail;
@@ -92,8 +106,9 @@ public class AutofillContactTest {
     @Test
     public void test() {
         AutofillProfile profile = new AutofillProfile();
-        AutofillContact contact =
-                new AutofillContact(profile, mPayerName, mPayerPhone, mPayerEmail, mIsComplete);
+        AutofillContact contact = new AutofillContact(mContext, profile, mPayerName, mPayerPhone,
+                mPayerEmail,
+                mIsComplete ? ContactEditor.COMPLETE : ContactEditor.INVALID_MULTIPLE_FIELDS);
 
         Assert.assertEquals(
                 mIsComplete ? "Contact should be complete" : "Contact should be incomplete",
@@ -124,5 +139,11 @@ public class AutofillContactTest {
                 "Sublabel should be " + expectedSublabel, expectedSublabel, actual.getSublabel());
         Assert.assertEquals("TertiaryLabel should be " + expectedTertiaryLabel,
                 expectedTertiaryLabel, actual.getTertiaryLabel());
+
+        Assert.assertEquals("EditTitle should be " + IMCOMPLETE_MESSAGE, IMCOMPLETE_MESSAGE,
+                actual.getEditTitle());
+        String editMessage = actual.isComplete() ? null : IMCOMPLETE_MESSAGE;
+        Assert.assertEquals(
+                "EditMessage should be " + editMessage, editMessage, actual.getEditMessage());
     }
 }
