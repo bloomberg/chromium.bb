@@ -268,19 +268,21 @@ public class DownloadNotificationService extends Service {
             int percentage, long timeRemainingInMillis, long startTime, boolean isOffTheRecord,
             boolean canDownloadWhileMetered, boolean isOfflinePage, boolean isDownloadPending) {
         if (mStopPostingProgressNotifications) return;
+
         String contentText = mContext.getResources().getString(isDownloadPending
                 ? R.string.download_notification_pending : R.string.download_started);
         int resId = isDownloadPending ? android.R.drawable.stat_sys_download_done
                 : android.R.drawable.stat_sys_download;
-        NotificationCompat.Builder builder = buildNotification(
-                resId, fileName, contentText);
-        boolean indeterminate = (percentage == INVALID_DOWNLOAD_PERCENTAGE) || isDownloadPending;
+        NotificationCompat.Builder builder = buildNotification(resId, fileName, contentText);
         builder.setOngoing(true);
-        // Avoid moving animations while download is not downloading.
+        builder.setPriority(Notification.PRIORITY_HIGH);
+
+        // Avoid animations while the download isn't progressing.
+        boolean indeterminate = (percentage == INVALID_DOWNLOAD_PERCENTAGE) || isDownloadPending;
         if (!isDownloadPending) {
             builder.setProgress(100, percentage, indeterminate);
         }
-        builder.setPriority(Notification.PRIORITY_HIGH);
+
         if (!indeterminate && !isOfflinePage) {
             String duration = formatRemainingTime(mContext, timeRemainingInMillis);
             if (Build.VERSION.CODENAME.equals("N")
@@ -291,22 +293,33 @@ public class DownloadNotificationService extends Service {
             }
         }
         int notificationId = getNotificationId(downloadGuid);
+        if (startTime > 0) builder.setWhen(startTime);
+
+        // Clicking on an in-progress download sends the user to see all their downloads.
+        Intent downloadHomeIntent = buildActionIntent(
+                mContext, DownloadManager.ACTION_NOTIFICATION_CLICKED, null, null);
+        builder.setContentIntent(PendingIntent.getBroadcast(
+                mContext, notificationId, downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+        builder.setAutoCancel(false);
+
+        Intent pauseIntent = buildActionIntent(
+                mContext, ACTION_DOWNLOAD_PAUSE, downloadGuid, fileName);
+        builder.addAction(R.drawable.ic_media_control_pause,
+                mContext.getResources().getString(R.string.download_notification_pause_button),
+                buildPendingIntent(pauseIntent, notificationId));
+
+        Intent cancelIntent = buildActionIntent(
+                mContext, ACTION_DOWNLOAD_CANCEL, downloadGuid, fileName);
+        builder.addAction(R.drawable.btn_close_white,
+                mContext.getResources().getString(R.string.download_notification_cancel_button),
+                buildPendingIntent(cancelIntent, notificationId));
+
+        updateNotification(notificationId, builder.build());
+
         int itemType = isOfflinePage ? DownloadSharedPreferenceEntry.ITEM_TYPE_OFFLINE_PAGE
                                      : DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD;
         addOrReplaceSharedPreferenceEntry(new DownloadSharedPreferenceEntry(notificationId,
                 isOffTheRecord, canDownloadWhileMetered, downloadGuid, fileName, itemType, true));
-        if (startTime > 0) builder.setWhen(startTime);
-        Intent cancelIntent = buildActionIntent(
-                mContext, ACTION_DOWNLOAD_CANCEL, downloadGuid, fileName, isOfflinePage);
-        builder.addAction(R.drawable.btn_close_white,
-                mContext.getResources().getString(R.string.download_notification_cancel_button),
-                buildPendingIntent(cancelIntent, notificationId));
-        Intent pauseIntent = buildActionIntent(
-                mContext, ACTION_DOWNLOAD_PAUSE, downloadGuid, fileName, isOfflinePage);
-        builder.addAction(R.drawable.ic_media_control_pause,
-                mContext.getResources().getString(R.string.download_notification_pause_button),
-                buildPendingIntent(pauseIntent, notificationId));
-        updateNotification(notificationId, builder.build());
         if (!mDownloadsInProgress.contains(downloadGuid)) {
             mDownloadsInProgress.add(downloadGuid);
         }
@@ -357,23 +370,35 @@ public class DownloadNotificationService extends Service {
             mDownloadsInProgress.remove(downloadGuid);
             return;
         }
+
         String contentText = mContext.getResources().getString(
                 R.string.download_notification_paused);
         NotificationCompat.Builder builder = buildNotification(
                 android.R.drawable.ic_media_pause, entry.fileName, contentText);
-        Intent cancelIntent = buildActionIntent(mContext, ACTION_DOWNLOAD_CANCEL,
-                entry.downloadGuid, entry.fileName, entry.isOfflinePage());
-        Intent dismissIntent = new Intent(cancelIntent);
-        dismissIntent.putExtra(EXTRA_NOTIFICATION_DISMISSED, true);
-        builder.setDeleteIntent(buildPendingIntent(dismissIntent, entry.notificationId));
-        builder.addAction(R.drawable.btn_close_white,
-                mContext.getResources().getString(R.string.download_notification_cancel_button),
-                buildPendingIntent(cancelIntent, entry.notificationId));
+
+        // Clicking on an in-progress download sends the user to see all their downloads.
+        Intent downloadHomeIntent = buildActionIntent(
+                mContext, DownloadManager.ACTION_NOTIFICATION_CLICKED, null, null);
+        builder.setContentIntent(PendingIntent.getBroadcast(mContext, entry.notificationId,
+                downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
+        builder.setAutoCancel(false);
+
         Intent resumeIntent = buildActionIntent(mContext, ACTION_DOWNLOAD_RESUME,
-                entry.downloadGuid, entry.fileName, entry.isOfflinePage());
+                entry.downloadGuid, entry.fileName);
         builder.addAction(R.drawable.ic_get_app_white_24dp,
                 mContext.getResources().getString(R.string.download_notification_resume_button),
                 buildPendingIntent(resumeIntent, entry.notificationId));
+
+        Intent cancelIntent = buildActionIntent(mContext, ACTION_DOWNLOAD_CANCEL,
+                entry.downloadGuid, entry.fileName);
+        builder.addAction(R.drawable.btn_close_white,
+                mContext.getResources().getString(R.string.download_notification_cancel_button),
+                buildPendingIntent(cancelIntent, entry.notificationId));
+
+        Intent dismissIntent = new Intent(cancelIntent);
+        dismissIntent.putExtra(EXTRA_NOTIFICATION_DISMISSED, true);
+        builder.setDeleteIntent(buildPendingIntent(dismissIntent, entry.notificationId));
+
         updateNotification(entry.notificationId, builder.build());
         // Update the SharedPreference entry with the new isAutoResumable value.
         addOrReplaceSharedPreferenceEntry(new DownloadSharedPreferenceEntry(entry.notificationId,
@@ -405,7 +430,7 @@ public class DownloadNotificationService extends Service {
         Intent intent;
         if (isOfflinePage) {
             intent = buildActionIntent(
-                    mContext, ACTION_DOWNLOAD_OPEN, downloadGuid, fileName, isOfflinePage);
+                    mContext, ACTION_DOWNLOAD_OPEN, downloadGuid, fileName);
         } else {
             intent = new Intent(DownloadManager.ACTION_NOTIFICATION_CLICKED);
             long[] idArray = {systemDownloadId};
@@ -490,10 +515,9 @@ public class DownloadNotificationService extends Service {
      * @param action Download action to perform.
      * @param downloadGuid GUID of the download.
      * @param fileName Name of the download file.
-     * @param isOfflinePage Whether the intent is for offline page download.
      */
     static Intent buildActionIntent(Context context, String action, String downloadGuid,
-            String fileName, boolean isOfflinePage) {
+            String fileName) {
         ComponentName component = new ComponentName(
                 context.getPackageName(), DownloadBroadcastReceiver.class.getName());
         Intent intent = new Intent(action);

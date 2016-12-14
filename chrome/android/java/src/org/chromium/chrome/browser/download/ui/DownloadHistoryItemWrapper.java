@@ -395,7 +395,11 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
                 return false;
             }
 
-            if (mItem.getDownloadInfo().state() == DownloadState.CANCELLED) {
+            int state = mItem.getDownloadInfo().state();
+            if ((state == DownloadState.INTERRUPTED && !mItem.getDownloadInfo().isResumable())
+                    || state == DownloadState.CANCELLED) {
+                // Mocks don't include showing cancelled/unresumable downloads.  Might need to if
+                // undeletable files become a big issue.
                 return false;
             }
 

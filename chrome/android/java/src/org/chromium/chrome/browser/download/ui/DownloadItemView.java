@@ -209,6 +209,15 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     }
 
     @Override
+    public boolean onLongClick(View view) {
+        if (mItem != null && mItem.isComplete()) {
+            return super.onLongClick(view);
+        } else {
+            return true;
+        }
+    }
+
+    @Override
     public void setChecked(boolean checked) {
         super.setChecked(checked);
         updateIconView();

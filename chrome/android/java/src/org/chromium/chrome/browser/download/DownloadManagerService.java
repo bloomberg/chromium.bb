@@ -982,6 +982,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param isSupportedMimeType Whether the MIME type is supported by browser.
      * @return the intent to launch for the given download item.
      */
+    @Nullable
     static Intent getLaunchIntentFromDownloadId(
             Context context, @Nullable String filePath, long downloadId,
             boolean isSupportedMimeType) {
@@ -1021,29 +1022,36 @@ public class DownloadManagerService extends BroadcastReceiver implements
                 context, intent, true);
     }
 
+    /** See {@link #openDownloadedContent(Context, String, boolean, long)}. */
+    protected void openDownloadedContent(final DownloadInfo downloadInfo, final long downloadId) {
+        openDownloadedContent(mContext, downloadInfo.getFilePath(),
+                isSupportedMimeType(downloadInfo.getMimeType()), downloadId);
+    }
+
     /**
-     * Launch the intent for a given download item.
+     * Launch the intent for a given download item, or Download Home if that's not possible.
      * TODO(qinmin): Move this to DownloadManagerDelegate.
      *
-     * @param downloadInfo Info about the downloaded item.
-     * @param downloadId   ID of the download item in DownloadManager.
+     * @param context             Context to use.
+     * @param filePath            Path to the downloaded item.
+     * @param isSupportedMimeType MIME type of the downloaded item.
+     * @param downloadId          ID of the download item in DownloadManager.
      */
-    protected void openDownloadedContent(final DownloadInfo downloadInfo, final long downloadId) {
-        final boolean isSupportedMimeType = isSupportedMimeType(downloadInfo.getMimeType());
+    protected static void openDownloadedContent(final Context context, final String filePath,
+            final boolean isSupportedMimeType, final long downloadId) {
         new AsyncTask<Void, Void, Intent>() {
             @Override
             public Intent doInBackground(Void... params) {
                 return getLaunchIntentFromDownloadId(
-                        mContext, downloadInfo.getFilePath(), downloadId, isSupportedMimeType);
+                        context, filePath, downloadId, isSupportedMimeType);
             }
 
             @Override
             protected void onPostExecute(Intent intent) {
-                if (intent == null) return;
-
-                Context context = ContextUtils.getApplicationContext();
-                if (ExternalNavigationDelegateImpl.resolveIntent(context, intent, true)) {
-                    DownloadUtils.fireOpenIntentForDownload(context, intent);
+                if (intent == null
+                        || !ExternalNavigationDelegateImpl.resolveIntent(context, intent, true)
+                        || !DownloadUtils.fireOpenIntentForDownload(context, intent)) {
+                    openDownloadsPage(context);
                 }
             }
         }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -1559,7 +1567,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     @Override
     public void broadcastDownloadAction(DownloadItem downloadItem, String action) {
         Intent intent = DownloadNotificationService.buildActionIntent(mContext, action,
-                downloadItem.getId(), downloadItem.getDownloadInfo().getFileName(), false);
+                downloadItem.getId(), downloadItem.getDownloadInfo().getFileName());
         mContext.sendBroadcast(intent);
     }
 
