@@ -311,8 +311,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   double navigationStartTime() const { return m_navigationStart; }
 
  private:
-  void initialize(const KURL&);
-
   const CacheControlHeader& cacheControlHeader() const;
 
   bool needsHTTPOrigin() const;
