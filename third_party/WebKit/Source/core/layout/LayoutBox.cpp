@@ -323,13 +323,14 @@ void LayoutBox::styleDidChange(StyleDifference diff,
       flowThread->flowThreadDescendantStyleDidChange(this, diff, *oldStyle);
 
     updateScrollSnapMappingAfterStyleChange(&newStyle, oldStyle);
-  }
 
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
-    if (hasOverflowClip() || styleRef().containsPaint() || hasControlClip()) {
+    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
+        shouldClipOverflow()) {
       // The overflow clip paint property depends on border sizes through
-      // overflowClipRect() so we update properties on border size changes.
-      if (oldStyle && !oldStyle->border().sizeEquals(newStyle.border()))
+      // overflowClipRect(), and border radii, so we update properties on
+      // border size or radii change.
+      if (!oldStyle->border().sizeEquals(newStyle.border()) ||
+          !oldStyle->border().radiiEqual(newStyle.border()))
         setNeedsPaintPropertyUpdate();
     }
   }
@@ -1702,13 +1703,12 @@ void LayoutBox::frameRectChanged() {
   if (!needsLayout())
     setMayNeedPaintInvalidation();
 
-  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
-    // The overflow clip paint property depends on the border box rect through
-    // overflowClipRect(). The border box rect's size equals the frame rect's
-    // size, so we trigger a paint property update when the framerect changes.
-    if (hasOverflowClip() || styleRef().containsPaint() || hasControlClip())
-      setNeedsPaintPropertyUpdate();
-  }
+  // The overflow clip paint property depends on the border box rect through
+  // overflowClipRect(). The border box rect's size equals the frame rect's
+  // size, so we trigger a paint property update when the framerect changes.
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
+      shouldClipOverflow())
+    setNeedsPaintPropertyUpdate();
 }
 
 bool LayoutBox::intersectsVisibleViewport() const {
@@ -5660,6 +5660,10 @@ LayoutRect LayoutBox::debugRect() const {
     block->adjustChildDebugRect(rect);
 
   return rect;
+}
+
+bool LayoutBox::shouldClipOverflow() const {
+  return hasOverflowClip() || styleRef().containsPaint() || hasControlClip();
 }
 
 }  // namespace blink

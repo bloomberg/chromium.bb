@@ -532,9 +532,7 @@ void PaintPropertyTreeBuilder::updateOverflowClip(
     LayoutRect clipRect;
     if (box.hasControlClip()) {
       clipRect = box.controlClipRect(context.current.paintOffset);
-    } else if (box.hasOverflowClip() || box.styleRef().containsPaint() ||
-               (box.isSVGRoot() &&
-                toLayoutSVGRoot(box).shouldApplyViewportClip())) {
+    } else if (box.shouldClipOverflow()) {
       clipRect = LayoutRect(pixelSnappedIntRect(
           box.overflowClipRect(context.current.paintOffset)));
     } else {

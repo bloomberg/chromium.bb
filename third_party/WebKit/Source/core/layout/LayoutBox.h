@@ -1306,6 +1306,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   void ensureIsReadyForPaintInvalidation() override;
 
+  virtual bool shouldClipOverflow() const;
+
  protected:
   void willBeDestroyed() override;
 

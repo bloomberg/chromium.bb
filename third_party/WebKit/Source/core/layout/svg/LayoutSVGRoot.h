@@ -81,7 +81,11 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   const AffineTransform& localToBorderBoxTransform() const {
     return m_localToBorderBoxTransform;
   }
+
   bool shouldApplyViewportClip() const;
+  bool shouldClipOverflow() const override {
+    return LayoutBox::shouldClipOverflow() || shouldApplyViewportClip();
+  }
 
   LayoutRect visualOverflowRect() const override;
   LayoutRect overflowClipRect(
