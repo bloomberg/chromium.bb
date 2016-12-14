@@ -1346,10 +1346,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // https://crbug.com/491334
 #define MAYBE_SurfaceHitTestPointerEventsNone \
   DISABLED_SurfaceHitTestPointerEventsNone
-#elif defined(THREAD_SANITIZER)
-// Flaky on TSAN. https://crbug.com/582277
-#define MAYBE_SurfaceHitTestPointerEventsNone \
-  DISABLED_SurfaceHitTestPointerEventsNone
 #else
 #define MAYBE_SurfaceHitTestPointerEventsNone SurfaceHitTestPointerEventsNone
 #endif
