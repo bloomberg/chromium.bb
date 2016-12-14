@@ -90,12 +90,23 @@ cr.define('settings-languages', function() {
       languageSettingsPrivate.setSettingsPrefs(settingsPrefs);
       settings.languageSettingsPrivateApiForTest = languageSettingsPrivate;
 
+      var getProspectiveUILanguageCalled = false;
+      registerMessageCallback('getProspectiveUILanguage', null,
+          function(callbackId) {
+            assertFalse(getProspectiveUILanguageCalled);
+            getProspectiveUILanguageCalled = true;
+            cr.webUIResponse(callbackId, true, 'en-US');
+          });
+
       languageHelper = document.createElement('settings-languages');
 
       // Prefs would normally be data-bound to settings-languages.
       fakeDataBind(settingsPrefs, languageHelper, 'prefs');
 
-      return languageHelper.whenReady();
+      return languageHelper.whenReady().then(function() {
+        assertEquals(
+            cr.isChromeOS || cr.isWindows, getProspectiveUILanguageCalled);
+      });
     });
 
     test('languages model', function() {

@@ -10,7 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui.h"
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -33,12 +33,43 @@ LanguagesHandler::~LanguagesHandler() {
 
 void LanguagesHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "setUILanguage",
-      base::Bind(&LanguagesHandler::HandleSetUILanguage,
+      "getProspectiveUILanguage",
+      base::Bind(&LanguagesHandler::HandleGetProspectiveUILanguage,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setProspectiveUILanguage",
+      base::Bind(&LanguagesHandler::HandleSetProspectiveUILanguage,
                  base::Unretained(this)));
 }
 
-void LanguagesHandler::HandleSetUILanguage(const base::ListValue* args) {
+void LanguagesHandler::HandleGetProspectiveUILanguage(
+    const base::ListValue* args) {
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  AllowJavascript();
+
+  std::string locale;
+#if defined(OS_CHROMEOS)
+  // On Chrome OS, an individual profile may have a preferred locale.
+  locale = profile_->GetPrefs()->GetString(prefs::kApplicationLocale);
+#endif  // defined(OS_CHROMEOS)
+
+  if (locale.empty()) {
+    locale =
+        g_browser_process->local_state()->GetString(prefs::kApplicationLocale);
+  }
+
+  ResolveJavascriptCallback(*callback_id, base::StringValue(locale));
+#else
+  NOTREACHED() << "Attempting to get locale on unsupported platform";
+#endif  // defined(OS_WIN) || defined(OS_CHROMEOS)
+}
+
+void LanguagesHandler::HandleSetProspectiveUILanguage(
+    const base::ListValue* args) {
+  AllowJavascript();
   CHECK_EQ(1U, args->GetSize());
 
   std::string language_code;

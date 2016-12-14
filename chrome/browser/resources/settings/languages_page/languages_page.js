@@ -124,7 +124,7 @@ Polymer({
   /**
    * @param {!LanguageState} languageState
    * @param {string} prospectiveUILanguage The chosen UI language.
-   * @return {boolean} True if the given language cannot be set/unset as the
+   * @return {boolean} True if the given language cannot be set as the
    *     prospective UI language by the user.
    * @private
    */
@@ -133,21 +133,16 @@ Polymer({
     if (this.isSecondaryUser_())
       return true;
 
-    // If the language cannot be a UI language, we can't set/unset it as the
+    // If the language cannot be a UI language, we can't set it as the
     // prospective UI language.
     if (!languageState.language.supportsUI)
       return true;
 
-    // If the language already is the prospective UI language, it can't be unset
-    // if it is also the *actual* UI language, as we wouldn't know what other
-    // language to set as the prospective UI language.
-    if (languageState.language.code == navigator.language &&
-        (!prospectiveUILanguage ||
-         languageState.language.code == prospectiveUILanguage)) {
+    // Unchecking the currently chosen language doesn't make much sense.
+    if (languageState.language.code == prospectiveUILanguage)
       return true;
-    }
 
-    // Otherwise, the prospective language can be changed to/from this language.
+    // Otherwise, the prospective language can be changed to this language.
     return false;
   },
 
@@ -165,13 +160,12 @@ Polymer({
    * @private
    */
   onUILanguageChange_: function(e) {
-    if (e.target.checked) {
-      this.languageHelper.setUILanguage(this.detailLanguage_.language.code);
-    } else if (this.detailLanguage_.language.code ==
-        this.languageHelper.getProspectiveUILanguage()) {
-      // Reset the chosen UI language to the actual UI language.
-      this.languageHelper.resetUILanguage();
-    }
+    // We don't support unchecking this checkbox. TODO(michaelpg): Ask for a
+    // simpler widget.
+    assert(e.target.checked);
+    this.languageHelper.setProspectiveUILanguage(
+        this.detailLanguage_.language.code);
+
     /** @type {!CrActionMenuElement} */(this.$.menu.get()).close();
   },
 
@@ -356,17 +350,17 @@ Polymer({
    */
   isProspectiveUILanguage_: function(languageCode, prospectiveUILanguage) {
     assert(cr.isChromeOS || cr.isWindows);
-    return languageCode == this.languageHelper.getProspectiveUILanguage();
+    return languageCode == prospectiveUILanguage;
   },
 
 <if expr="chromeos or is_win">
    /**
+    * @param {string} prospectiveUILanguage
     * @return {string}
     * @private
     */
-  getProspectiveUILanguageName_: function() {
-    return this.languageHelper.getLanguage(
-        this.languageHelper.getProspectiveUILanguage()).displayName;
+  getProspectiveUILanguageName_: function(prospectiveUILanguage) {
+    return this.languageHelper.getLanguage(prospectiveUILanguage).displayName;
   },
 </if>
 
@@ -392,15 +386,12 @@ Polymer({
    * selected on Chrome OS and Windows.
    * @param {string} languageCode The language code identifying a language.
    * @param {string} prospectiveUILanguage The prospective UI language.
-   * @param {boolean} supportsUI Whether Chrome's UI can be shown in this
-   *     language.
    * @return {string} The class name for the language item.
    * @private
    */
-  getLanguageItemClass_: function(languageCode, prospectiveUILanguage,
-      supportsUI) {
+  getLanguageItemClass_: function(languageCode, prospectiveUILanguage) {
     if ((cr.isChromeOS || cr.isWindows) &&
-        this.isProspectiveUILanguage_(languageCode, prospectiveUILanguage)) {
+        languageCode == prospectiveUILanguage) {
       return 'selected';
     }
     return '';
@@ -415,7 +406,7 @@ Polymer({
    */
   isRestartRequired_: function(languageCode, prospectiveUILanguage) {
     return prospectiveUILanguage == languageCode &&
-        navigator.language != languageCode;
+        this.languageHelper.requiresRestart();
   },
 
   /**
@@ -464,8 +455,11 @@ Polymer({
    * @private
    */
   onDotsTap_: function(e) {
-    this.detailLanguage_ =
-        /** @type {!{model: !{item: !LanguageState}}} */(e).model.item;
+    // Set a copy of the LanguageState object since it is not data-bound to the
+    // languages model directly.
+    this.detailLanguage_ = /** @type {!LanguageState} */(Object.assign(
+        {},
+        /** @type {!{model: !{item: !LanguageState}}} */(e).model.item));
 
     // Ensure the template has been stamped.
     var menu = /** @type {?CrActionMenuElement} */(
