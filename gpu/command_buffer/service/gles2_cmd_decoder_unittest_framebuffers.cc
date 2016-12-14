@@ -3961,18 +3961,21 @@ TEST_P(GLES3DecoderTest, BlitFramebufferDisabledReadBuffer) {
                                             1.0f,                 // depth
                                             false,  // scissor test
                                             0, 0, 128, 64);
+    EXPECT_CALL(*gl_, BlitFramebufferEXT(0, 0, _, _, 0, 0, _, _,
+                                      GL_COLOR_BUFFER_BIT, GL_LINEAR))
+        .Times(1)
+        .RetiresOnSaturation();
     BlitFramebufferCHROMIUM cmd;
     cmd.Init(0, 0, 1, 1, 0, 0, 1, 1, GL_COLOR_BUFFER_BIT, GL_LINEAR);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    // Generate INVALID_OPERATION because of missing read buffer image.
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
   }
 }
 
 TEST_P(GLES3DecoderTest, BlitFramebufferMissingDepthOrStencil) {
   // Run BlitFramebufferCHROMIUM with depth or stencil bits, from/to a read/draw
-  // framebuffer that doesn't have depth/stencil. It should generate
-  // INVALID_OPERATION.
+  // framebuffer that doesn't have depth/stencil. The bits should be silently
+  // ignored.
   DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
                      kServiceRenderbufferId);
   DoRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8,
@@ -4020,13 +4023,16 @@ TEST_P(GLES3DecoderTest, BlitFramebufferMissingDepthOrStencil) {
     EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(GL_READ_FRAMEBUFFER))
         .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
         .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, BlitFramebufferEXT(0, 0, 1, 1, 0, 0, 1, 1,
+                                         _, _))
+        .Times(0);
     BlitFramebufferCHROMIUM cmd;
     cmd.Init(0, 0, 1, 1, 0, 0, 1, 1, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
     cmd.Init(0, 0, 1, 1, 0, 0, 1, 1, GL_STENCIL_BUFFER_BIT, GL_NEAREST);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+    EXPECT_EQ(GL_NO_ERROR, GetGLError());
   }
 
   // Switch FBOs and try the same.
