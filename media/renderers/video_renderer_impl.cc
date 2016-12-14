@@ -638,14 +638,8 @@ bool VideoRendererImpl::IsBeforeStartTime(base::TimeDelta timestamp) {
 }
 
 void VideoRendererImpl::RemoveFramesForUnderflowOrBackgroundRendering() {
-  // Nothing to do if we're not underflowing, background rendering, or frame
-  // dropping is disabled (test only).
-  const bool have_nothing = buffering_state_ == BUFFERING_HAVE_NOTHING;
-  if (!was_background_rendering_ && !have_nothing && !drop_frames_)
-    return;
-
-  // If there are no frames to remove, nothing can be done.
-  if (!algorithm_->frames_queued())
+  // Nothing to do if frame dropping is disabled for testing or we have nothing.
+  if (!drop_frames_ || !algorithm_->frames_queued())
     return;
 
   // If we're paused for prerolling (current time is 0), don't expire any
@@ -664,13 +658,6 @@ void VideoRendererImpl::RemoveFramesForUnderflowOrBackgroundRendering() {
     return;
   }
 
-  // Use the current media wall clock time plus the frame duration since
-  // RemoveExpiredFrames() is expecting the end point of an interval (it will
-  // subtract from the given value). It's important to always call this so
-  // that frame statistics are updated correctly.
-  frames_dropped_ += algorithm_->RemoveExpiredFrames(
-      current_time + algorithm_->average_frame_duration());
-
   // If we've paused for underflow, and still have no effective frames, clear
   // the entire queue.  Note: this may cause slight inaccuracies in the number
   // of dropped frames since the frame may have been rendered before.
@@ -685,7 +672,21 @@ void VideoRendererImpl::RemoveFramesForUnderflowOrBackgroundRendering() {
     // calling this function will check if we need to transition or not.
     if (buffering_state_ == BUFFERING_HAVE_ENOUGH)
       TransitionToHaveNothing_Locked();
+    return;
   }
+
+  // Use the current media wall clock time plus the frame duration since
+  // RemoveExpiredFrames() is expecting the end point of an interval (it will
+  // subtract from the given value). It's important to always call this so
+  // that frame statistics are updated correctly.
+  if (buffering_state_ == BUFFERING_HAVE_NOTHING) {
+    frames_dropped_ += algorithm_->RemoveExpiredFrames(
+        current_time + algorithm_->average_frame_duration());
+    return;
+  }
+
+  // If we reach this point, the normal rendering process will take care of
+  // removing any expired frames.
 }
 
 void VideoRendererImpl::CheckForMetadataChanges(VideoPixelFormat pixel_format,

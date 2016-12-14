@@ -892,14 +892,14 @@ TEST_F(VideoRendererImplTest, UnderflowEvictionBeforeEOS) {
         .WillOnce(RunClosure(event.GetClosure()));
     renderer_->OnTimeProgressing();
     time_source_.StartTicking();
+    // Jump time far enough forward that no frames are valid.
+    AdvanceTimeInMs(1000);
     event.RunAndWait();
   }
 
   WaitForPendingDecode();
 
-  // Jump time far enough forward that no frames are valid.
   renderer_->OnTimeStopped();
-  AdvanceTimeInMs(1000);
   time_source_.StopTicking();
 
   // Providing the end of stream packet should remove all frames and exit.
@@ -927,32 +927,30 @@ TEST_F(VideoRendererImplTest, UnderflowEvictionWhileHaveEnough) {
     event.RunAndWait();
   }
 
-  null_video_sink_->set_background_render(true);
-  time_source_.StartTicking();
-  renderer_->OnTimeProgressing();
-  WaitForPendingDecode();
-  renderer_->OnTimeStopped();
+  // Now wait until we have no effective frames.
+  {
+    SCOPED_TRACE("Waiting for zero effective frames.");
+    WaitableMessageLoopEvent event;
+    null_video_sink_->set_background_render(true);
+    time_source_.StartTicking();
+    AdvanceTimeInMs(1000);
+    renderer_->OnTimeProgressing();
+    EXPECT_CALL(mock_cb_, FrameReceived(_))
+        .WillOnce(RunClosure(event.GetClosure()));
+    event.RunAndWait();
+    ASSERT_EQ(renderer_->effective_frames_queued_for_testing(), 0u);
+  }
 
-  // Jump time far enough forward that no frames are valid.
-  AdvanceTimeInMs(1000);
-
+  // When OnTimeStopped() is called it should transition to HAVE_NOTHING.
   {
     SCOPED_TRACE("Waiting for BUFFERING_HAVE_NOTHING");
     WaitableMessageLoopEvent event;
     EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_NOTHING))
         .WillOnce(RunClosure(event.GetClosure()));
-    QueueFrames("120");
-    SatisfyPendingDecode();
+    renderer_->OnTimeStopped();
     event.RunAndWait();
   }
 
-  // This should do nothing.
-  renderer_->OnTimeProgressing();
-
-  // Providing the end of stream packet should remove all frames and exit.
-  SatisfyPendingDecodeWithEndOfStream();
-  EXPECT_CALL(mock_cb_, OnBufferingStateChange(BUFFERING_HAVE_ENOUGH));
-  WaitForEnded();
   Destroy();
 }
 

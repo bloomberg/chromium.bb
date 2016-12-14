@@ -79,6 +79,9 @@ class MEDIA_EXPORT VideoRendererImpl
   size_t frames_queued_for_testing() const {
     return algorithm_->frames_queued();
   }
+  size_t effective_frames_queued_for_testing() const {
+    return algorithm_->effective_frames_queued();
+  }
 
   // VideoRendererSink::RenderCallback implementation.
   scoped_refptr<VideoFrame> Render(base::TimeTicks deadline_min,
