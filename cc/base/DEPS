@@ -8,5 +8,9 @@ include_rules = [
 specific_include_rules = {
   ".*unittest\.cc": [
     "+cc/test",
-  ]
+  ],
+  # Allow lap_timer.h for perftests
+  ".*perftest\.cc": [
+    "+cc/debug/lap_timer.h",
+  ],
 }
