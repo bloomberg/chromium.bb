@@ -33,7 +33,8 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
                                         update_vsync_parameters_callback,
                                         std::move(overlay_candidate_validator)),
       ui_window_(window),
-      window_(nullptr) {
+      window_(nullptr),
+      begin_frame_source_(nullptr) {
   ui_compositor_frame_sink_ = ui_window_->RequestCompositorFrameSink(
       ui::mojom::CompositorFrameSinkType::DEFAULT, context,
       gpu_memory_buffer_manager);
@@ -51,7 +52,8 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
                                         update_vsync_parameters_callback,
                                         std::move(overlay_candidate_validator)),
       ui_window_(nullptr),
-      window_(window) {
+      window_(window),
+      begin_frame_source_(nullptr) {
   aura::WindowPortMus* window_port = aura::WindowPortMus::Get(window_);
   DCHECK(window_port);
   compositor_frame_sink_ = window_port->RequestCompositorFrameSink(
@@ -61,6 +63,10 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
 }
 
 MusBrowserCompositorOutputSurface::~MusBrowserCompositorOutputSurface() {}
+
+cc::BeginFrameSource* MusBrowserCompositorOutputSurface::GetBeginFrameSource() {
+  return begin_frame_source_;
+}
 
 void MusBrowserCompositorOutputSurface::SwapBuffers(
     cc::OutputSurfaceFrame frame) {
@@ -141,7 +147,9 @@ void MusBrowserCompositorOutputSurface::SwapBuffers(
 }
 
 void MusBrowserCompositorOutputSurface::SetBeginFrameSource(
-    cc::BeginFrameSource* source) {}
+    cc::BeginFrameSource* source) {
+  begin_frame_source_ = source;
+}
 
 void MusBrowserCompositorOutputSurface::ReclaimResources(
     const cc::ReturnedResourceArray& resources) {

@@ -445,16 +445,17 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     }
   }
 
-  std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source;
+  std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source;
   if (!compositor->GetRendererSettings().disable_display_vsync) {
-    begin_frame_source.reset(new cc::DelayBasedBeginFrameSource(
+    synthetic_begin_frame_source.reset(new cc::DelayBasedBeginFrameSource(
         base::MakeUnique<cc::DelayBasedTimeSource>(
             compositor->task_runner().get())));
   } else {
-    begin_frame_source.reset(new cc::BackToBackBeginFrameSource(
+    synthetic_begin_frame_source.reset(new cc::BackToBackBeginFrameSource(
         base::MakeUnique<cc::DelayBasedTimeSource>(
             compositor->task_runner().get())));
   }
+  cc::BeginFrameSource* begin_frame_source = synthetic_begin_frame_source.get();
 
   BrowserCompositorOutputSurface::UpdateVSyncParametersCallback vsync_callback =
       base::Bind(&ui::Compositor::SetDisplayVSyncParameters, compositor);
@@ -519,10 +520,11 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
                   context_provider, vsync_callback, std::move(validator));
         } else {
 #if defined(USE_AURA)
+          std::unique_ptr<MusBrowserCompositorOutputSurface> mus_output_surface;
           if (compositor->window()) {
             // TODO(mfomitchev): Remove this clause once we complete the switch
             // to Aura-Mus.
-            display_output_surface =
+            mus_output_surface =
                 base::MakeUnique<MusBrowserCompositorOutputSurface>(
                     compositor->window(), context_provider,
                     GetGpuMemoryBufferManager(), vsync_callback,
@@ -531,12 +533,18 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
             aura::WindowTreeHost* host =
                 aura::WindowTreeHost::GetForAcceleratedWidget(
                     compositor->widget());
-            display_output_surface =
+            mus_output_surface =
                 base::MakeUnique<MusBrowserCompositorOutputSurface>(
                     host->window(), context_provider,
                     GetGpuMemoryBufferManager(), vsync_callback,
                     std::move(validator));
           }
+          // We use the ExternalBeginFrameSource provided by the output surface
+          // instead of our own synthetic one.
+          synthetic_begin_frame_source.reset();
+          begin_frame_source = mus_output_surface->GetBeginFrameSource();
+          DCHECK(begin_frame_source);
+          display_output_surface = std::move(mus_output_surface);
 #else
           NOTREACHED();
 #endif
@@ -562,12 +570,12 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   data->display = base::MakeUnique<cc::Display>(
       HostSharedBitmapManager::current(), GetGpuMemoryBufferManager(),
       compositor->GetRendererSettings(), compositor->frame_sink_id(),
-      begin_frame_source.get(), std::move(display_output_surface),
+      begin_frame_source, std::move(display_output_surface),
       std::move(scheduler), base::MakeUnique<cc::TextureMailboxDeleter>(
                                 compositor->task_runner().get()));
   // Note that we are careful not to destroy a prior |data->begin_frame_source|
   // until we have reset |data->display|.
-  data->begin_frame_source = std::move(begin_frame_source);
+  data->begin_frame_source = std::move(synthetic_begin_frame_source);
 
   // The |delegated_output_surface| is given back to the compositor, it
   // delegates to the Display as its root surface. Importantly, it shares the

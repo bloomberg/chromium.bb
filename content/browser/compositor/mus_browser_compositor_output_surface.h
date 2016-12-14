@@ -58,6 +58,8 @@ class MusBrowserCompositorOutputSurface
 
   ~MusBrowserCompositorOutputSurface() override;
 
+  cc::BeginFrameSource* GetBeginFrameSource();
+
  protected:
   // cc::OutputSurface implementation.
   void SwapBuffers(cc::OutputSurfaceFrame frame) override;
@@ -89,6 +91,7 @@ class MusBrowserCompositorOutputSurface
   std::unique_ptr<aura::WindowCompositorFrameSink> compositor_frame_sink_;
   std::vector<uint32_t> free_resource_ids_;
   std::vector<gpu::Mailbox> mailboxes_;
+  cc::BeginFrameSource* begin_frame_source_;
 
   DISALLOW_COPY_AND_ASSIGN(MusBrowserCompositorOutputSurface);
 };
