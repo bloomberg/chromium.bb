@@ -1393,6 +1393,8 @@ void ComputedStyle::applyMotionPathTransform(
   if (!motionData.m_path) {
     return;
   }
+  const LengthPoint& position = offsetPosition();
+  const LengthPoint& anchor = offsetAnchor();
   const StylePath& motionPath = *motionData.m_path;
   float pathLength = motionPath.length();
   float distance = floatValueForLength(motionData.m_distance, pathLength);
@@ -1414,9 +1416,10 @@ void ComputedStyle::applyMotionPathTransform(
 
   float originShiftX = 0;
   float originShiftY = 0;
-  if (RuntimeEnabledFeatures::cssOffsetPositionAnchorEnabled()) {
-    // TODO(ericwilligers): crbug.com/638055 Support offset-anchor: auto.
-    const LengthPoint& anchor = offsetAnchor();
+  // If offset-Position and offset-anchor properties are not yet enabled,
+  // they will have the default value, auto.
+  if (position.x() != Length(Auto) || anchor.x() != Length(Auto)) {
+    // Shift the origin from transform-origin to offset-anchor.
     originShiftX = floatValueForLength(anchor.x(), boundingBox.width()) -
                    floatValueForLength(transformOriginX(), boundingBox.width());
     originShiftY =
@@ -1428,9 +1431,9 @@ void ComputedStyle::applyMotionPathTransform(
                       point.y() - originY + originShiftY);
   transform.rotate(angle + motionData.m_rotation.angle);
 
-  if (RuntimeEnabledFeatures::cssOffsetPositionAnchorEnabled()) {
+  if (position.x() != Length(Auto) || anchor.x() != Length(Auto))
+    // Shift the origin back to transform-origin.
     transform.translate(-originShiftX, -originShiftY);
-  }
 }
 
 void ComputedStyle::setTextShadow(PassRefPtr<ShadowList> s) {

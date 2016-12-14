@@ -27,18 +27,11 @@ assertInterpolation({
   {at: 1.5, is: '25px 15px'},
 ]);
 
-assertInterpolation({
+assertNoInterpolation({
   property: 'offset-anchor',
   from: 'initial',
   to: '60% 40%',
-}, [
-  {at: -0.3, is: '47% 53%'},
-  {at: 0, is: '50% 50%'},
-  {at: 0.3, is: '53% 47%'},
-  {at: 0.6, is: '56% 44%'},
-  {at: 1, is: '60% 40%'},
-  {at: 1.5, is: '65% 35%'},
-]);
+});
 
 assertInterpolation({
   property: 'offset-anchor',
@@ -53,18 +46,11 @@ assertInterpolation({
   {at: 1.5, is: '15px 25px'},
 ]);
 
-assertInterpolation({
-  property: 'offset-anchor',
+assertNoInterpolation({
+  property: 'offset-position',
   from: 'unset',
   to: '50% 10px',
-}, [
-  {at: -0.3, is: '50% calc(-3px + 65%)'},
-  {at: 0, is: '50% 50%'},
-  {at: 0.3, is: '50% calc(3px + 35%)'},
-  {at: 0.6, is: '50% calc(6px + 20%)'},
-  {at: 1, is: '50% 10px'},
-  {at: 1.5, is: '50% calc(15px - 25%)'},
-]);
+});
 
 assertInterpolation({
   property: 'offset-anchor',

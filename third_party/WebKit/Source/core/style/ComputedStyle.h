@@ -1416,7 +1416,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // offset-anchor
   static LengthPoint initialOffsetAnchor() {
-    return LengthPoint(Length(50.0, Percent), Length(50.0, Percent));
+    return LengthPoint(Length(Auto), Length(Auto));
   }
   const LengthPoint& offsetAnchor() const {
     return m_rareNonInheritedData->m_transform->m_motion.m_anchor;

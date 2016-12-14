@@ -22,8 +22,8 @@ body {
 test(function() {
     var element = document.createElement('div');
     document.body.appendChild(element);
-    assert_equals(getComputedStyle(element, null).offsetAnchor, '50% 50%');
-}, 'offset-anchor default is 50% 50%');
+    assert_equals(getComputedStyle(element, null).offsetAnchor, 'auto');
+}, 'offset-anchor default is auto');
 
 test(function() {
     assert_equals(getComputedStyle(container, null).offsetAnchor, '30% 40%');
@@ -34,7 +34,7 @@ test(function() {
 }, 'offset-anchor can explicitly inherited');
 
 test(function() {
-    assert_equals(getComputedStyle(child2, null).offsetAnchor, '50% 50%');
+    assert_equals(getComputedStyle(child2, null).offsetAnchor, 'auto');
 }, 'offset-anchor is not inherited by default');
 
 function computed(specified) {
