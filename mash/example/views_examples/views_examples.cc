@@ -20,12 +20,6 @@
 #include "ui/views/examples/example_base.h"
 #include "ui/views/examples/examples_window.h"
 #include "ui/views/mus/aura_init.h"
-#include "ui/views/mus/window_manager_connection.h"
-
-namespace views {
-class AuraInit;
-class WindowManagerConnection;
-}
 
 class ViewsExamples
     : public service_manager::Service,
@@ -41,9 +35,8 @@ class ViewsExamples
     tracing_.Initialize(context()->connector(), context()->identity().name());
     aura_init_ = base::MakeUnique<views::AuraInit>(
         context()->connector(), context()->identity(),
-        "views_mus_resources.pak");
-    window_manager_connection_ = views::WindowManagerConnection::Create(
-        context()->connector(), context()->identity());
+        "views_mus_resources.pak", std::string(), nullptr,
+        views::AuraInit::Mode::AURA_MUS);
   }
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override {
@@ -67,7 +60,6 @@ class ViewsExamples
 
   tracing::Provider tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;
-  std::unique_ptr<views::WindowManagerConnection> window_manager_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewsExamples);
 };

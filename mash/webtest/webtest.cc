@@ -20,9 +20,8 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/tracing/public/cpp/provider.h"
-#include "services/ui/public/cpp/window.h"
-#include "services/ui/public/cpp/window_tree_client.h"
-#include "ui/aura/mus/mus_util.h"
+#include "ui/aura/mus/window_port_mus.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_throbber.h"
 #include "ui/native_theme/native_theme.h"
@@ -31,7 +30,7 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/mus/aura_init.h"
-#include "ui/views/mus/window_manager_connection.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "url/gurl.h"
 
@@ -41,6 +40,12 @@ class AuraInit;
 
 namespace mash {
 namespace webtest {
+namespace {
+
+// Callback from Embed().
+void EmbedCallback(bool result) {}
+
+}  // namespace
 
 class UI : public views::WidgetDelegateView,
            public navigation::mojom::ViewClient {
@@ -89,13 +94,16 @@ class UI : public views::WidgetDelegateView,
   void ViewHierarchyChanged(
       const views::View::ViewHierarchyChangedDetails& details) override {
     if (details.is_add && GetWidget() && !content_area_) {
-      ui::Window* window = aura::GetMusWindow(GetWidget()->GetNativeWindow());
-      content_area_ = window->window_tree()->NewWindow(nullptr);
+      aura::Window* window = GetWidget()->GetNativeWindow();
+      content_area_ = new aura::Window(nullptr);
+      content_area_->Init(ui::LAYER_NOT_DRAWN);
       window->AddChild(content_area_);
 
       ui::mojom::WindowTreeClientPtr client;
       view_->GetWindowTreeClient(GetProxy(&client));
-      content_area_->Embed(std::move(client));
+      const uint32_t embed_flags = 0;  // Nothing special.
+      aura::WindowPortMus::Get(content_area_)
+          ->Embed(std::move(client), embed_flags, base::Bind(&EmbedCallback));
     }
   }
 
@@ -135,7 +143,7 @@ class UI : public views::WidgetDelegateView,
   void NavigationListPruned(bool from_front, int count) override {}
 
   Webtest* webtest_;
-  ui::Window* content_area_ = nullptr;
+  aura::Window* content_area_ = nullptr;
   navigation::mojom::ViewPtr view_;
   mojo::Binding<navigation::mojom::ViewClient> view_client_binding_;
   base::string16 current_title_;
@@ -161,9 +169,8 @@ void Webtest::RemoveWindow(views::Widget* window) {
 void Webtest::OnStart() {
   tracing_.Initialize(context()->connector(), context()->identity().name());
   aura_init_ = base::MakeUnique<views::AuraInit>(
-      context()->connector(), context()->identity(), "views_mus_resources.pak");
-  window_manager_connection_ = views::WindowManagerConnection::Create(
-      context()->connector(), context()->identity());
+      context()->connector(), context()->identity(), "views_mus_resources.pak",
+      std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);
 }
 
 bool Webtest::OnConnect(const service_manager::ServiceInfo& remote_info,

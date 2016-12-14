@@ -36,7 +36,6 @@ service("views_examples") {
 
   data_deps = [
     ":manifest",
-    "//services/ui",
   ]
 }
 
