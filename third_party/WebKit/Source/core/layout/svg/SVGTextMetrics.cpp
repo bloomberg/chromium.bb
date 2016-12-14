@@ -23,8 +23,6 @@
 
 namespace blink {
 
-SVGTextMetrics::SVGTextMetrics() : m_width(0), m_height(0), m_length(0) {}
-
 SVGTextMetrics::SVGTextMetrics(unsigned length, float width, float height)
     : m_width(width), m_height(height), m_length(length) {}
 

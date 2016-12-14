@@ -32,7 +32,6 @@ class SVGTextMetrics {
  public:
   enum MetricsType { SkippedSpaceMetrics };
 
-  SVGTextMetrics();
   SVGTextMetrics(MetricsType);
   SVGTextMetrics(unsigned length, float width, float height);
 
