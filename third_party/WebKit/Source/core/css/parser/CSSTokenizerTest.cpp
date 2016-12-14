@@ -62,11 +62,11 @@ void testTokens(const String& string,
                 const CSSParserToken& token2 = CSSParserToken(EOFToken),
                 const CSSParserToken& token3 = CSSParserToken(EOFToken)) {
   Vector<CSSParserToken> expectedTokens;
-  expectedTokens.append(token1);
+  expectedTokens.push_back(token1);
   if (token2.type() != EOFToken) {
-    expectedTokens.append(token2);
+    expectedTokens.push_back(token2);
     if (token3.type() != EOFToken)
-      expectedTokens.append(token3);
+      expectedTokens.push_back(token3);
   }
 
   CSSParserTokenRange expected(expectedTokens);

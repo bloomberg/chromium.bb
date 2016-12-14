@@ -206,13 +206,13 @@ void FontFaceSet::beginFontLoading(FontFace* fontFace) {
 
 void FontFaceSet::notifyLoaded(FontFace* fontFace) {
   m_histogram.updateStatus(fontFace);
-  m_loadedFonts.append(fontFace);
+  m_loadedFonts.push_back(fontFace);
   removeFromLoadingFonts(fontFace);
 }
 
 void FontFaceSet::notifyError(FontFace* fontFace) {
   m_histogram.updateStatus(fontFace);
-  m_failedFonts.append(fontFace);
+  m_failedFonts.push_back(fontFace);
   removeFromLoadingFonts(fontFace);
 }
 
@@ -535,9 +535,9 @@ FontFaceSetIterable::IterationSource* FontFaceSet::startIteration(
     fontFaces.reserveInitialCapacity(cssConnectedFaces.size() +
                                      m_nonCSSConnectedFaces.size());
     for (const auto& fontFace : cssConnectedFaces)
-      fontFaces.append(fontFace);
+      fontFaces.push_back(fontFace);
     for (const auto& fontFace : m_nonCSSConnectedFaces)
-      fontFaces.append(fontFace);
+      fontFaces.push_back(fontFace);
   }
   return new IterationSource(fontFaces);
 }

@@ -174,7 +174,7 @@ static void collectScopedResolversForHostedShadowTrees(
   for (ShadowRoot* shadowRoot = &shadow->youngestShadowRoot(); shadowRoot;
        shadowRoot = shadowRoot->olderShadowRoot()) {
     if (ScopedStyleResolver* resolver = shadowRoot->scopedStyleResolver())
-      resolvers.append(resolver);
+      resolvers.push_back(resolver);
   }
 }
 
@@ -329,7 +329,7 @@ static void matchSlottedRules(const Element& element,
   HeapVector<Member<ScopedStyleResolver>> resolvers;
   for (; slot; slot = slot->assignedSlot()) {
     if (ScopedStyleResolver* resolver = slot->treeScope().scopedStyleResolver())
-      resolvers.append(resolver);
+      resolvers.push_back(resolver);
   }
   for (auto it = resolvers.rbegin(); it != resolvers.rend(); ++it) {
     collector.clearMatchedRules();
@@ -1203,7 +1203,7 @@ StyleRuleKeyframes* StyleResolver::findKeyframesRule(
   collectScopedResolversForHostedShadowTrees(*element, resolvers);
   if (ScopedStyleResolver* scopedResolver =
           element->treeScope().scopedStyleResolver())
-    resolvers.append(scopedResolver);
+    resolvers.push_back(scopedResolver);
 
   for (auto& resolver : resolvers) {
     if (StyleRuleKeyframes* keyframesRule =

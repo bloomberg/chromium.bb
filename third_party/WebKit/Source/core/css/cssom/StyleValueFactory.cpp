@@ -52,7 +52,7 @@ CSSStyleValue* styleValueForProperty(CSSPropertyID propertyID,
 
 CSSStyleValueVector unsupportedCSSValue(const CSSValue& value) {
   CSSStyleValueVector styleValueVector;
-  styleValueVector.append(CSSUnsupportedStyleValue::create(value.cssText()));
+  styleValueVector.push_back(CSSUnsupportedStyleValue::create(value.cssText()));
   return styleValueVector;
 }
 
@@ -64,7 +64,7 @@ CSSStyleValueVector StyleValueFactory::cssValueToStyleValueVector(
   CSSStyleValueVector styleValueVector;
   CSSStyleValue* styleValue = styleValueForProperty(propertyID, value);
   if (styleValue) {
-    styleValueVector.append(styleValue);
+    styleValueVector.push_back(styleValue);
     return styleValueVector;
   }
 
@@ -79,7 +79,7 @@ CSSStyleValueVector StyleValueFactory::cssValueToStyleValueVector(
     if (!styleValue) {
       return unsupportedCSSValue(value);
     }
-    styleValueVector.append(styleValue);
+    styleValueVector.push_back(styleValue);
   }
   return styleValueVector;
 }

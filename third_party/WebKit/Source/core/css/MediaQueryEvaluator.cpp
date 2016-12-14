@@ -124,11 +124,11 @@ bool MediaQueryEvaluator::eval(
     bool exprResult = eval(expressions.at(i).get());
     if (viewportDependentMediaQueryResults &&
         expressions.at(i)->isViewportDependent())
-      viewportDependentMediaQueryResults->append(
+      viewportDependentMediaQueryResults->push_back(
           new MediaQueryResult(*expressions.at(i), exprResult));
     if (deviceDependentMediaQueryResults &&
         expressions.at(i)->isDeviceDependent())
-      deviceDependentMediaQueryResults->append(
+      deviceDependentMediaQueryResults->push_back(
           new MediaQueryResult(*expressions.at(i), exprResult));
     if (!exprResult)
       break;

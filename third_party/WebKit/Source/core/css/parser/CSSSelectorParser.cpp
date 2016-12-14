@@ -115,13 +115,13 @@ CSSSelectorList CSSSelectorParser::consumeComplexSelectorList(
   std::unique_ptr<CSSParserSelector> selector = consumeComplexSelector(range);
   if (!selector)
     return CSSSelectorList();
-  selectorList.append(std::move(selector));
+  selectorList.push_back(std::move(selector));
   while (!range.atEnd() && range.peek().type() == CommaToken) {
     range.consumeIncludingWhitespace();
     selector = consumeComplexSelector(range);
     if (!selector)
       return CSSSelectorList();
-    selectorList.append(std::move(selector));
+    selectorList.push_back(std::move(selector));
   }
 
   if (m_failedParsing)
@@ -137,14 +137,14 @@ CSSSelectorList CSSSelectorParser::consumeCompoundSelectorList(
   range.consumeWhitespace();
   if (!selector)
     return CSSSelectorList();
-  selectorList.append(std::move(selector));
+  selectorList.push_back(std::move(selector));
   while (!range.atEnd() && range.peek().type() == CommaToken) {
     range.consumeIncludingWhitespace();
     selector = consumeCompoundSelector(range);
     range.consumeWhitespace();
     if (!selector)
       return CSSSelectorList();
-    selectorList.append(std::move(selector));
+    selectorList.push_back(std::move(selector));
   }
 
   if (m_failedParsing)
@@ -547,7 +547,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumePseudo(
       if (!innerSelector || !innerSelector->isSimple() || !block.atEnd())
         return nullptr;
       Vector<std::unique_ptr<CSSParserSelector>> selectorVector;
-      selectorVector.append(std::move(innerSelector));
+      selectorVector.push_back(std::move(innerSelector));
       selector->adoptSelectorVector(selectorVector);
       return selector;
     }
@@ -560,7 +560,7 @@ std::unique_ptr<CSSParserSelector> CSSSelectorParser::consumePseudo(
       if (!innerSelector || !block.atEnd())
         return nullptr;
       Vector<std::unique_ptr<CSSParserSelector>> selectorVector;
-      selectorVector.append(std::move(innerSelector));
+      selectorVector.push_back(std::move(innerSelector));
       selector->adoptSelectorVector(selectorVector);
       return selector;
     }

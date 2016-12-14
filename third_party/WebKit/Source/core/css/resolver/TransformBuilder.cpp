@@ -164,7 +164,7 @@ TransformOperations TransformBuilder::createTransformOperations(
             }
           }
         }
-        operations.operations().append(
+        operations.operations().push_back(
             ScaleTransformOperation::create(sx, sy, 1.0, transformType));
         break;
       }
@@ -180,7 +180,7 @@ TransformOperations TransformBuilder::createTransformOperations(
           sy = toCSSPrimitiveValue(transformValue->item(1)).getDoubleValue();
           sz = toCSSPrimitiveValue(transformValue->item(2)).getDoubleValue();
         }
-        operations.operations().append(
+        operations.operations().push_back(
             ScaleTransformOperation::create(sx, sy, sz, transformType));
         break;
       }
@@ -202,7 +202,7 @@ TransformOperations TransformBuilder::createTransformOperations(
           }
         }
 
-        operations.operations().append(
+        operations.operations().push_back(
             TranslateTransformOperation::create(tx, ty, 0, transformType));
         break;
       }
@@ -221,7 +221,7 @@ TransformOperations TransformBuilder::createTransformOperations(
                    .computeLength<double>(conversionData);
         }
 
-        operations.operations().append(
+        operations.operations().push_back(
             TranslateTransformOperation::create(tx, ty, tz, transformType));
         break;
       }
@@ -233,7 +233,7 @@ TransformOperations TransformBuilder::createTransformOperations(
           double x = transformType == TransformOperation::RotateX;
           double y = transformType == TransformOperation::RotateY;
           double z = transformType == TransformOperation::RotateZ;
-          operations.operations().append(
+          operations.operations().push_back(
               RotateTransformOperation::create(x, y, z, angle, transformType));
         } else {
           // For SVG 'transform' attributes we generate 3-argument rotate()
@@ -243,7 +243,7 @@ TransformOperations TransformBuilder::createTransformOperations(
               toCSSPrimitiveValue(transformValue->item(1));
           const CSSPrimitiveValue& thirdValue =
               toCSSPrimitiveValue(transformValue->item(2));
-          operations.operations().append(
+          operations.operations().push_back(
               RotateAroundOriginTransformOperation::create(
                   angle, secondValue.computeLength<double>(conversionData),
                   thirdValue.computeLength<double>(conversionData)));
@@ -261,7 +261,7 @@ TransformOperations TransformBuilder::createTransformOperations(
         double y = secondValue.getDoubleValue();
         double z = thirdValue.getDoubleValue();
         double angle = fourthValue.computeDegrees();
-        operations.operations().append(
+        operations.operations().push_back(
             RotateTransformOperation::create(x, y, z, angle, transformType));
         break;
       }
@@ -283,7 +283,7 @@ TransformOperations TransformBuilder::createTransformOperations(
             }
           }
         }
-        operations.operations().append(
+        operations.operations().push_back(
             SkewTransformOperation::create(angleX, angleY, transformType));
         break;
       }
@@ -301,7 +301,7 @@ TransformOperations TransformBuilder::createTransformOperations(
         double f =
             zoomFactor *
             toCSSPrimitiveValue(transformValue->item(5)).getDoubleValue();
-        operations.operations().append(
+        operations.operations().push_back(
             MatrixTransformOperation::create(a, b, c, d, e, f));
         break;
       }
@@ -324,14 +324,14 @@ TransformOperations TransformBuilder::createTransformOperations(
             toCSSPrimitiveValue(transformValue->item(14)).getDoubleValue(),
             toCSSPrimitiveValue(transformValue->item(15)).getDoubleValue());
         matrix.zoom(zoomFactor);
-        operations.operations().append(
+        operations.operations().push_back(
             Matrix3DTransformOperation::create(matrix));
         break;
       }
       case TransformOperation::Perspective: {
         double p = firstValue.computeLength<double>(conversionData);
         ASSERT(p >= 0);
-        operations.operations().append(
+        operations.operations().push_back(
             PerspectiveTransformOperation::create(p));
         break;
       }

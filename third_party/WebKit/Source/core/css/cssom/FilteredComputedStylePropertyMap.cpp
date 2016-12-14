@@ -79,11 +79,11 @@ bool FilteredComputedStylePropertyMap::has(const String& propertyName,
 Vector<String> FilteredComputedStylePropertyMap::getProperties() {
   Vector<String> result;
   for (const auto& nativeProperty : m_nativeProperties) {
-    result.append(getPropertyNameString(nativeProperty));
+    result.push_back(getPropertyNameString(nativeProperty));
   }
 
   for (const auto& customProperty : m_customProperties) {
-    result.append(customProperty);
+    result.push_back(customProperty);
   }
 
   return result;

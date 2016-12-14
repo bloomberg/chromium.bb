@@ -347,7 +347,7 @@ void MutableStylePropertySet::setProperty(CSSPropertyID propertyID,
   removePropertiesInSet(shorthand.properties(), shorthand.length());
 
   for (unsigned i = 0; i < shorthand.length(); ++i)
-    m_propertyVector.append(
+    m_propertyVector.push_back(
         CSSProperty(shorthand.properties()[i], value, important));
 }
 
@@ -365,7 +365,7 @@ bool MutableStylePropertySet::setProperty(const CSSProperty& property,
     *toReplace = property;
     return true;
   }
-  m_propertyVector.append(property);
+  m_propertyVector.push_back(property);
   return true;
 }
 
@@ -423,7 +423,7 @@ void MutableStylePropertySet::mergeAndOverrideOnConflict(
     if (old)
       setProperty(toMerge.toCSSProperty(), old);
     else
-      m_propertyVector.append(toMerge.toCSSProperty());
+      m_propertyVector.push_back(toMerge.toCSSProperty());
   }
 }
 
@@ -505,7 +505,7 @@ void MutableStylePropertySet::removeEquivalentProperties(
   for (unsigned i = 0; i < size; ++i) {
     PropertyReference property = propertyAt(i);
     if (style->propertyMatches(property.id(), property.value()))
-      propertiesToRemove.append(property.id());
+      propertiesToRemove.push_back(property.id());
   }
   // FIXME: This should use mass removal.
   for (unsigned i = 0; i < propertiesToRemove.size(); ++i)
@@ -519,7 +519,7 @@ void MutableStylePropertySet::removeEquivalentProperties(
   for (unsigned i = 0; i < size; ++i) {
     PropertyReference property = propertyAt(i);
     if (style->cssPropertyMatches(property.id(), &property.value()))
-      propertiesToRemove.append(property.id());
+      propertiesToRemove.push_back(property.id());
   }
   // FIXME: This should use mass removal.
   for (unsigned i = 0; i < propertiesToRemove.size(); ++i)
@@ -537,7 +537,7 @@ MutableStylePropertySet* StylePropertySet::copyPropertiesInSet(
   for (unsigned i = 0; i < properties.size(); ++i) {
     const CSSValue* value = getPropertyCSSValue(properties[i]);
     if (value)
-      list.append(CSSProperty(properties[i], *value, false));
+      list.push_back(CSSProperty(properties[i], *value, false));
   }
   return MutableStylePropertySet::create(list.data(), list.size());
 }

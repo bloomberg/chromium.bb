@@ -40,7 +40,7 @@ CSSParserSelector::~CSSParserSelector() {
   std::unique_ptr<CSSParserSelector> selector = std::move(m_tagHistory);
   while (true) {
     std::unique_ptr<CSSParserSelector> next = std::move(selector->m_tagHistory);
-    toDelete.append(std::move(selector));
+    toDelete.push_back(std::move(selector));
     if (!next)
       break;
     selector = std::move(next);

@@ -51,14 +51,14 @@ bool SizesCalcParser::handleOperator(Vector<CSSParserToken>& stack,
       stack.pop_back();
     }
   }
-  stack.append(token);
+  stack.push_back(token);
   return true;
 }
 
 void SizesCalcParser::appendNumber(const CSSParserToken& token) {
   SizesCalcValue value;
   value.value = token.numericValue();
-  m_valueList.append(value);
+  m_valueList.push_back(value);
 }
 
 bool SizesCalcParser::appendLength(const CSSParserToken& token) {
@@ -69,14 +69,14 @@ bool SizesCalcParser::appendLength(const CSSParserToken& token) {
     return false;
   value.value = result;
   value.isLength = true;
-  m_valueList.append(value);
+  m_valueList.push_back(value);
   return true;
 }
 
 void SizesCalcParser::appendOperator(const CSSParserToken& token) {
   SizesCalcValue value;
   value.operation = token.delimiter();
-  m_valueList.append(value);
+  m_valueList.push_back(value);
 }
 
 bool SizesCalcParser::calcToReversePolishNotation(CSSParserTokenRange range) {
@@ -106,7 +106,7 @@ bool SizesCalcParser::calcToReversePolishNotation(CSSParserTokenRange range) {
       // "calc(" is the same as "("
       case LeftParenthesisToken:
         // If the token is a left parenthesis, then push it onto the stack.
-        stack.append(token);
+        stack.push_back(token);
         break;
       case RightParenthesisToken:
         // If the token is a right parenthesis:
@@ -187,28 +187,28 @@ static bool operateOnStack(Vector<SizesCalcValue>& stack, UChar operation) {
       if (rightOperand.isLength != leftOperand.isLength)
         return false;
       isLength = (rightOperand.isLength && leftOperand.isLength);
-      stack.append(
+      stack.push_back(
           SizesCalcValue(leftOperand.value + rightOperand.value, isLength));
       break;
     case '-':
       if (rightOperand.isLength != leftOperand.isLength)
         return false;
       isLength = (rightOperand.isLength && leftOperand.isLength);
-      stack.append(
+      stack.push_back(
           SizesCalcValue(leftOperand.value - rightOperand.value, isLength));
       break;
     case '*':
       if (rightOperand.isLength && leftOperand.isLength)
         return false;
       isLength = (rightOperand.isLength || leftOperand.isLength);
-      stack.append(
+      stack.push_back(
           SizesCalcValue(leftOperand.value * rightOperand.value, isLength));
       break;
     case '/':
       if (rightOperand.isLength || rightOperand.value == 0)
         return false;
-      stack.append(SizesCalcValue(leftOperand.value / rightOperand.value,
-                                  leftOperand.isLength));
+      stack.push_back(SizesCalcValue(leftOperand.value / rightOperand.value,
+                                     leftOperand.isLength));
       break;
     default:
       return false;
@@ -220,7 +220,7 @@ bool SizesCalcParser::calculate() {
   Vector<SizesCalcValue> stack;
   for (const auto& value : m_valueList) {
     if (value.operation == 0) {
-      stack.append(value);
+      stack.push_back(value);
     } else {
       if (!operateOnStack(stack, value.operation))
         return false;

@@ -66,11 +66,11 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_NoChange) {
   CSSStyleSheet* sheet1 = createSheet();
   CSSStyleSheet* sheet2 = createSheet();
 
-  oldSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  oldSheets.append(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
 
-  newSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  newSheets.append(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
 
   EXPECT_EQ(NoActiveSheetsChanged,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
@@ -85,8 +85,8 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_AppendedToEmpty) {
   CSSStyleSheet* sheet1 = createSheet();
   CSSStyleSheet* sheet2 = createSheet();
 
-  newSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  newSheets.append(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
 
   EXPECT_EQ(ActiveSheetsAppended,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
@@ -101,9 +101,9 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_AppendedToNonEmpty) {
   CSSStyleSheet* sheet1 = createSheet();
   CSSStyleSheet* sheet2 = createSheet();
 
-  oldSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  newSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  newSheets.append(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
 
   EXPECT_EQ(ActiveSheetsAppended,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
@@ -119,9 +119,9 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_Mutated) {
   CSSStyleSheet* sheet2 = createSheet();
   CSSStyleSheet* sheet3 = createSheet();
 
-  oldSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  oldSheets.append(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
-  oldSheets.append(std::make_pair(sheet3, &sheet3->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet3, &sheet3->contents()->ruleSet()));
 
   sheet2->contents()->clearRuleSet();
   sheet2->contents()->ensureRuleSet(MediaQueryEvaluator(),
@@ -129,9 +129,9 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_Mutated) {
 
   EXPECT_NE(oldSheets[1].second, &sheet2->contents()->ruleSet());
 
-  newSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  newSheets.append(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
-  newSheets.append(std::make_pair(sheet3, &sheet3->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet3, &sheet3->contents()->ruleSet()));
 
   EXPECT_EQ(ActiveSheetsChanged,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
@@ -149,12 +149,12 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_Inserted) {
   CSSStyleSheet* sheet2 = createSheet();
   CSSStyleSheet* sheet3 = createSheet();
 
-  oldSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  oldSheets.append(std::make_pair(sheet3, &sheet3->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet3, &sheet3->contents()->ruleSet()));
 
-  newSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  newSheets.append(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
-  newSheets.append(std::make_pair(sheet3, &sheet3->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet3, &sheet3->contents()->ruleSet()));
 
   EXPECT_EQ(ActiveSheetsChanged,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
@@ -171,12 +171,12 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_Removed) {
   CSSStyleSheet* sheet2 = createSheet();
   CSSStyleSheet* sheet3 = createSheet();
 
-  oldSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  oldSheets.append(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
-  oldSheets.append(std::make_pair(sheet3, &sheet3->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet3, &sheet3->contents()->ruleSet()));
 
-  newSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  newSheets.append(std::make_pair(sheet3, &sheet3->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet3, &sheet3->contents()->ruleSet()));
 
   EXPECT_EQ(ActiveSheetsChanged,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
@@ -193,9 +193,9 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_RemovedAll) {
   CSSStyleSheet* sheet2 = createSheet();
   CSSStyleSheet* sheet3 = createSheet();
 
-  oldSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  oldSheets.append(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
-  oldSheets.append(std::make_pair(sheet3, &sheet3->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet3, &sheet3->contents()->ruleSet()));
 
   EXPECT_EQ(ActiveSheetsChanged,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
@@ -211,11 +211,11 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_InsertedAndRemoved) {
   CSSStyleSheet* sheet2 = createSheet();
   CSSStyleSheet* sheet3 = createSheet();
 
-  oldSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  oldSheets.append(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
 
-  newSheets.append(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
-  newSheets.append(std::make_pair(sheet3, &sheet3->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet3, &sheet3->contents()->ruleSet()));
 
   EXPECT_EQ(ActiveSheetsChanged,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
@@ -232,10 +232,10 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_AddNullRuleSet) {
   CSSStyleSheet* sheet1 = createSheet();
   CSSStyleSheet* sheet2 = createSheet();
 
-  oldSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
 
-  newSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  newSheets.append(std::make_pair(sheet2, nullptr));
+  newSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet2, nullptr));
 
   EXPECT_EQ(NoActiveSheetsChanged,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
@@ -250,10 +250,10 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_RemoveNullRuleSet) {
   CSSStyleSheet* sheet1 = createSheet();
   CSSStyleSheet* sheet2 = createSheet();
 
-  oldSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  oldSheets.append(std::make_pair(sheet2, nullptr));
+  oldSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet2, nullptr));
 
-  newSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
 
   EXPECT_EQ(NoActiveSheetsChanged,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
@@ -269,11 +269,11 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_AddRemoveNullRuleSet) {
   CSSStyleSheet* sheet2 = createSheet();
   CSSStyleSheet* sheet3 = createSheet();
 
-  oldSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  oldSheets.append(std::make_pair(sheet2, nullptr));
+  oldSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet2, nullptr));
 
-  newSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  newSheets.append(std::make_pair(sheet3, nullptr));
+  newSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet3, nullptr));
 
   EXPECT_EQ(NoActiveSheetsChanged,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
@@ -290,11 +290,11 @@ TEST_F(ActiveStyleSheetsTest,
   CSSStyleSheet* sheet2 = createSheet();
   CSSStyleSheet* sheet3 = createSheet();
 
-  oldSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  oldSheets.append(std::make_pair(sheet2, nullptr));
+  oldSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet2, nullptr));
 
-  newSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  newSheets.append(std::make_pair(sheet3, &sheet3->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet3, &sheet3->contents()->ruleSet()));
 
   EXPECT_EQ(ActiveSheetsChanged,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
@@ -317,11 +317,11 @@ TEST_F(ActiveStyleSheetsTest, CompareActiveStyleSheets_ReorderedImportSheets) {
   //
   // Imports are handled by forcing re-append and recalc of the document scope
   // when html imports are removed.
-  oldSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
-  oldSheets.append(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  oldSheets.push_back(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
 
-  newSheets.append(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
-  newSheets.append(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet2, &sheet2->contents()->ruleSet()));
+  newSheets.push_back(std::make_pair(sheet1, &sheet1->contents()->ruleSet()));
 
   EXPECT_EQ(NoActiveSheetsChanged,
             compareActiveStyleSheets(oldSheets, newSheets, changedRuleSets));
@@ -334,7 +334,8 @@ TEST_F(ApplyRulesetsTest, AddUniversalRuleToDocument) {
   CSSStyleSheet* sheet = createSheet("body * { color:red }");
 
   ActiveStyleSheetVector newStyleSheets;
-  newStyleSheets.append(std::make_pair(sheet, &sheet->contents()->ruleSet()));
+  newStyleSheets.push_back(
+      std::make_pair(sheet, &sheet->contents()->ruleSet()));
 
   styleEngine().applyRuleSetChanges(document(), ActiveStyleSheetVector(),
                                     newStyleSheets);
@@ -353,7 +354,8 @@ TEST_F(ApplyRulesetsTest, AddUniversalRuleToShadowTree) {
   CSSStyleSheet* sheet = createSheet("body * { color:red }");
 
   ActiveStyleSheetVector newStyleSheets;
-  newStyleSheets.append(std::make_pair(sheet, &sheet->contents()->ruleSet()));
+  newStyleSheets.push_back(
+      std::make_pair(sheet, &sheet->contents()->ruleSet()));
 
   styleEngine().applyRuleSetChanges(shadowRoot, ActiveStyleSheetVector(),
                                     newStyleSheets);
@@ -368,7 +370,8 @@ TEST_F(ApplyRulesetsTest, AddShadowV0BoundaryCrossingRuleToDocument) {
   CSSStyleSheet* sheet = createSheet(".a /deep/ .b { color:red }");
 
   ActiveStyleSheetVector newStyleSheets;
-  newStyleSheets.append(std::make_pair(sheet, &sheet->contents()->ruleSet()));
+  newStyleSheets.push_back(
+      std::make_pair(sheet, &sheet->contents()->ruleSet()));
 
   styleEngine().applyRuleSetChanges(document(), ActiveStyleSheetVector(),
                                     newStyleSheets);
@@ -387,7 +390,8 @@ TEST_F(ApplyRulesetsTest, AddShadowV0BoundaryCrossingRuleToShadowTree) {
   CSSStyleSheet* sheet = createSheet(".a /deep/ .b { color:red }");
 
   ActiveStyleSheetVector newStyleSheets;
-  newStyleSheets.append(std::make_pair(sheet, &sheet->contents()->ruleSet()));
+  newStyleSheets.push_back(
+      std::make_pair(sheet, &sheet->contents()->ruleSet()));
 
   styleEngine().applyRuleSetChanges(shadowRoot, ActiveStyleSheetVector(),
                                     newStyleSheets);
@@ -403,7 +407,8 @@ TEST_F(ApplyRulesetsTest, AddFontFaceRuleToDocument) {
       createSheet("@font-face { font-family: ahum; src: url(ahum.ttf) }");
 
   ActiveStyleSheetVector newStyleSheets;
-  newStyleSheets.append(std::make_pair(sheet, &sheet->contents()->ruleSet()));
+  newStyleSheets.push_back(
+      std::make_pair(sheet, &sheet->contents()->ruleSet()));
 
   styleEngine().applyRuleSetChanges(document(), ActiveStyleSheetVector(),
                                     newStyleSheets);
@@ -423,7 +428,8 @@ TEST_F(ApplyRulesetsTest, AddFontFaceRuleToShadowTree) {
       createSheet("@font-face { font-family: ahum; src: url(ahum.ttf) }");
 
   ActiveStyleSheetVector newStyleSheets;
-  newStyleSheets.append(std::make_pair(sheet, &sheet->contents()->ruleSet()));
+  newStyleSheets.push_back(
+      std::make_pair(sheet, &sheet->contents()->ruleSet()));
 
   styleEngine().applyRuleSetChanges(shadowRoot, ActiveStyleSheetVector(),
                                     newStyleSheets);
@@ -452,7 +458,7 @@ TEST_F(ApplyRulesetsTest, RemoveSheetFromShadowTree) {
 
   CSSStyleSheet* cssSheet = toCSSStyleSheet(sheet);
   ActiveStyleSheetVector oldStyleSheets;
-  oldStyleSheets.append(
+  oldStyleSheets.push_back(
       std::make_pair(cssSheet, &cssSheet->contents()->ruleSet()));
   styleEngine().applyRuleSetChanges(shadowRoot, oldStyleSheets,
                                     ActiveStyleSheetVector());

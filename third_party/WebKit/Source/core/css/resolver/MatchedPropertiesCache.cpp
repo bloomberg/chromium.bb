@@ -112,7 +112,7 @@ void MatchedPropertiesCache::clearViewportDependent() {
   for (const auto& cacheEntry : m_cache) {
     CachedMatchedProperties* cacheItem = cacheEntry.value.get();
     if (cacheItem->computedStyle->hasViewportUnits())
-      toRemove.append(cacheEntry.key);
+      toRemove.push_back(cacheEntry.key);
   }
   m_cache.removeAll(toRemove);
 }

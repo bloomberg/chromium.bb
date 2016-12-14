@@ -53,7 +53,7 @@ class CORE_EXPORT CSSValueList : public CSSValue {
   size_t length() const { return m_values.size(); }
   const CSSValue& item(size_t index) const { return *m_values[index]; }
 
-  void append(const CSSValue& value) { m_values.append(value); }
+  void append(const CSSValue& value) { m_values.push_back(value); }
   bool removeAll(const CSSValue&);
   bool hasValue(const CSSValue&) const;
   CSSValueList* copy() const;

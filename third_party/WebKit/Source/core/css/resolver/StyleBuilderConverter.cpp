@@ -639,10 +639,10 @@ static void convertGridLineNamesList(
     String namedGridLine = toCSSCustomIdentValue(*namedGridLineValue).value();
     NamedGridLinesMap::AddResult result =
         namedGridLines.add(namedGridLine, Vector<size_t>());
-    result.storedValue->value.append(currentNamedGridLine);
+    result.storedValue->value.push_back(currentNamedGridLine);
     OrderedNamedGridLines::AddResult orderedInsertionResult =
         orderedNamedGridLines.add(currentNamedGridLine, Vector<String>());
-    orderedInsertionResult.storedValue->value.append(namedGridLine);
+    orderedInsertionResult.storedValue->value.push_back(namedGridLine);
   }
 }
 
@@ -654,7 +654,7 @@ Vector<GridTrackSize> StyleBuilderConverter::convertGridTrackSizeList(
   for (auto& currValue : toCSSValueList(value)) {
     DCHECK(!currValue->isGridLineNamesValue());
     DCHECK(!currValue->isGridAutoRepeatValue());
-    trackSizes.append(convertGridTrackSize(state, *currValue));
+    trackSizes.push_back(convertGridTrackSize(state, *currValue));
   }
   return trackSizes;
 }
@@ -699,7 +699,7 @@ void StyleBuilderConverter::convertGridTrackList(
           continue;
         }
         ++autoRepeatIndex;
-        autoRepeatTrackSizes.append(
+        autoRepeatTrackSizes.push_back(
             convertGridTrackSize(state, *autoRepeatValue));
       }
       autoRepeatInsertionPoint = currentNamedGridLine++;
@@ -707,7 +707,7 @@ void StyleBuilderConverter::convertGridTrackList(
     }
 
     ++currentNamedGridLine;
-    trackSizes.append(convertGridTrackSize(state, *currValue));
+    trackSizes.push_back(convertGridTrackSize(state, *currValue));
   }
 
   // The parser should have rejected any <track-list> without any <track-size>
@@ -727,7 +727,7 @@ void StyleBuilderConverter::convertOrderedNamedGridLinesMapToNamedGridLinesMap(
     for (auto& lineName : orderedNamedGridLine.value) {
       NamedGridLinesMap::AddResult startResult =
           namedGridLines.add(lineName, Vector<size_t>());
-      startResult.storedValue->value.append(orderedNamedGridLine.key);
+      startResult.storedValue->value.push_back(orderedNamedGridLine.key);
     }
   }
 
@@ -747,14 +747,14 @@ void StyleBuilderConverter::createImplicitNamedGridLinesFromGridArea(
     {
       NamedGridLinesMap::AddResult startResult = namedGridLines.add(
           namedGridAreaEntry.key + "-start", Vector<size_t>());
-      startResult.storedValue->value.append(areaSpan.startLine());
+      startResult.storedValue->value.push_back(areaSpan.startLine());
       std::sort(startResult.storedValue->value.begin(),
                 startResult.storedValue->value.end());
     }
     {
       NamedGridLinesMap::AddResult endResult =
           namedGridLines.add(namedGridAreaEntry.key + "-end", Vector<size_t>());
-      endResult.storedValue->value.append(areaSpan.endLine());
+      endResult.storedValue->value.push_back(areaSpan.endLine());
       std::sort(endResult.storedValue->value.begin(),
                 endResult.storedValue->value.end());
     }

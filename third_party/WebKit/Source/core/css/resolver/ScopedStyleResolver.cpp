@@ -95,7 +95,7 @@ void ScopedStyleResolver::appendCSSStyleSheet(CSSStyleSheet& cssSheet) {
     return;
 
   unsigned index = m_authorStyleSheets.size();
-  m_authorStyleSheets.append(&cssSheet);
+  m_authorStyleSheets.push_back(&cssSheet);
   addKeyframeRules(*ruleSet);
   addFontFaceRules(*ruleSet);
   addTreeBoundaryCrossingRules(*ruleSet, &cssSheet, index);
@@ -114,7 +114,7 @@ void ScopedStyleResolver::appendActiveStyleSheets(
     if (!activeIterator->second)
       continue;
     const RuleSet& ruleSet = *activeIterator->second;
-    m_authorStyleSheets.append(sheet);
+    m_authorStyleSheets.push_back(sheet);
     addKeyframeRules(ruleSet);
     addFontFaceRules(ruleSet);
     addTreeBoundaryCrossingRules(ruleSet, sheet, index++);
@@ -312,7 +312,7 @@ void ScopedStyleResolver::addTreeBoundaryCrossingRules(
         treeScope());
   }
 
-  m_treeBoundaryCrossingRuleSet->append(
+  m_treeBoundaryCrossingRuleSet->push_back(
       RuleSubSet::create(parentStyleSheet, sheetIndex, ruleSetForScope));
 }
 

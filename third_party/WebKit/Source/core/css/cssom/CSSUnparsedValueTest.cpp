@@ -14,7 +14,7 @@ namespace {
 CSSUnparsedValue* unparsedValueFromCSSVariableReferenceValue(
     CSSStyleVariableReferenceValue* variableReferenceValue) {
   HeapVector<StringOrCSSVariableReferenceValue> fragments;
-  fragments.append(
+  fragments.push_back(
       StringOrCSSVariableReferenceValue::fromCSSVariableReferenceValue(
           variableReferenceValue));
   return CSSUnparsedValue::create(fragments);
@@ -65,11 +65,11 @@ TEST(CSSUnparsedValueTest, MixedList) {
           "Ref", CSSUnparsedValue::fromString("string"));
 
   HeapVector<StringOrCSSVariableReferenceValue> fragments;
-  fragments.append(StringOrCSSVariableReferenceValue::fromString("string"));
-  fragments.append(
+  fragments.push_back(StringOrCSSVariableReferenceValue::fromString("string"));
+  fragments.push_back(
       StringOrCSSVariableReferenceValue::fromCSSVariableReferenceValue(
           variableReferenceValue));
-  fragments.append(StringOrCSSVariableReferenceValue());
+  fragments.push_back(StringOrCSSVariableReferenceValue());
 
   CSSUnparsedValue* unparsedValue = CSSUnparsedValue::create(fragments);
 

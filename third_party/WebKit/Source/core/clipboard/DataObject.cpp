@@ -55,7 +55,7 @@ DataObject* DataObject::createFromPasteboard(PasteMode pasteMode) {
   for (const WebString& type : webTypes) {
     if (pasteMode == PlainTextOnly && type != mimeTypeTextPlain)
       continue;
-    dataObject->m_itemList.append(
+    dataObject->m_itemList.push_back(
         DataObjectItem::createFromPasteboard(type, sequenceNumber));
     ASSERT(typesSeen.add(type).isNewEntry);
   }
@@ -106,7 +106,7 @@ DataObjectItem* DataObject::add(File* file) {
     return nullptr;
 
   DataObjectItem* item = DataObjectItem::createFromFile(file);
-  m_itemList.append(item);
+  m_itemList.push_back(item);
   return item;
 }
 
@@ -131,7 +131,7 @@ Vector<String> DataObject::types() const {
     switch (item->kind()) {
       case DataObjectItem::StringKind:
         // Per the spec, type must be unique among all items of kind 'string'.
-        results.append(item->type());
+        results.push_back(item->type());
         ASSERT(typesSeen.add(item->type()).isNewEntry);
         break;
       case DataObjectItem::FileKind:
@@ -140,7 +140,7 @@ Vector<String> DataObject::types() const {
     }
   }
   if (containsFiles) {
-    results.append(mimeTypeFiles);
+    results.push_back(mimeTypeFiles);
     ASSERT(typesSeen.add(mimeTypeFiles).isNewEntry);
   }
   return results;
@@ -200,7 +200,7 @@ Vector<String> DataObject::filenames() const {
   Vector<String> results;
   for (size_t i = 0; i < m_itemList.size(); ++i) {
     if (m_itemList[i]->isFilename())
-      results.append(toFile(m_itemList[i]->getAsFile())->path());
+      results.push_back(toFile(m_itemList[i]->getAsFile())->path());
   }
   return results;
 }
@@ -236,13 +236,13 @@ bool DataObject::internalAddStringItem(DataObjectItem* item) {
       return false;
   }
 
-  m_itemList.append(item);
+  m_itemList.push_back(item);
   return true;
 }
 
 void DataObject::internalAddFileItem(DataObjectItem* item) {
   ASSERT(item->kind() == DataObjectItem::FileKind);
-  m_itemList.append(item);
+  m_itemList.push_back(item);
 }
 
 DEFINE_TRACE(DataObject) {

@@ -94,14 +94,14 @@ Vector<String> InlineStylePropertyMap::getProperties() {
           inlineStyleSet.propertyAt(i);
       const CSSCustomPropertyDeclaration& customDeclaration =
           toCSSCustomPropertyDeclaration(propertyReference.value());
-      result.append(customDeclaration.name());
+      result.push_back(customDeclaration.name());
     } else if (propertyID == CSSPropertyApplyAtRule) {
       if (!containsAtApply) {
-        result.append(kAtApply);
+        result.push_back(kAtApply);
         containsAtApply = true;
       }
     } else {
-      result.append(getPropertyNameString(propertyID));
+      result.push_back(getPropertyNameString(propertyID));
     }
   }
   return result;
@@ -227,7 +227,7 @@ InlineStylePropertyMap::getIterationEntries() {
       else
         value.setCSSStyleValueSequence(styleValueVector);
     }
-    result.append(std::make_pair(name, value));
+    result.push_back(std::make_pair(name, value));
   }
   return result;
 }

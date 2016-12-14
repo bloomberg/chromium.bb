@@ -413,7 +413,7 @@ void FontFace::addCallback(LoadFontCallback* callback) {
   else if (m_status == Error)
     callback->notifyError(this);
   else
-    m_callbacks.append(callback);
+    m_callbacks.push_back(callback);
 }
 
 void FontFace::loadInternal(ExecutionContext* context) {
@@ -563,7 +563,7 @@ static CSSFontFace* createCSSFontFace(FontFace* fontFace,
     for (unsigned i = 0; i < numRanges; i++) {
       const CSSUnicodeRangeValue& range =
           toCSSUnicodeRangeValue(rangeList->item(i));
-      ranges.append(UnicodeRange(range.from(), range.to()));
+      ranges.push_back(UnicodeRange(range.from(), range.to()));
     }
   }
 

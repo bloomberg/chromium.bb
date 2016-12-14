@@ -32,9 +32,9 @@ class CSSParserObserverWrapper {
                   unsigned endOffset,
                   unsigned tokensBefore) {
     CommentPosition position = {startOffset, endOffset, tokensBefore};
-    m_commentOffsets.append(position);
+    m_commentOffsets.push_back(position);
   }
-  void addToken(unsigned startOffset) { m_tokenOffsets.append(startOffset); }
+  void addToken(unsigned startOffset) { m_tokenOffsets.push_back(startOffset); }
   void finalizeConstruction(CSSParserToken* firstParserToken) {
     m_firstParserToken = firstParserToken;
     m_commentIterator = m_commentOffsets.begin();

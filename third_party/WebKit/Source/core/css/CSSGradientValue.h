@@ -92,7 +92,7 @@ class CSSGradientValue : public CSSImageGeneratorValue {
   void setSecondX(CSSValue* val) { m_secondX = val; }
   void setSecondY(CSSValue* val) { m_secondY = val; }
 
-  void addStop(const CSSGradientColorStop& stop) { m_stops.append(stop); }
+  void addStop(const CSSGradientColorStop& stop) { m_stops.push_back(stop); }
 
   unsigned stopCount() const { return m_stops.size(); }
 

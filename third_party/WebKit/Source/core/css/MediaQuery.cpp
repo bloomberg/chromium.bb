@@ -112,7 +112,7 @@ MediaQuery::MediaQuery(const MediaQuery& o)
       m_serializationCache(o.m_serializationCache) {
   m_expressions.reserveInitialCapacity(o.m_expressions.size());
   for (unsigned i = 0; i < o.m_expressions.size(); ++i)
-    m_expressions.append(o.m_expressions[i]->copy());
+    m_expressions.push_back(o.m_expressions[i]->copy());
 }
 
 MediaQuery::~MediaQuery() {}

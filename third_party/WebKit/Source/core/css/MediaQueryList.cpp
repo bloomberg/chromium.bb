@@ -97,7 +97,7 @@ bool MediaQueryList::mediaFeaturesChanged(
   if (!updateMatches())
     return false;
   for (const auto& listener : m_listeners) {
-    listenersToNotify->append(listener);
+    listenersToNotify->push_back(listener);
   }
   return hasEventListeners(EventTypeNames::change);
 }

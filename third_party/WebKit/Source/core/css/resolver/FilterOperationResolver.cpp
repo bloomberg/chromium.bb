@@ -135,7 +135,7 @@ FilterOperations FilterOperationResolver::createFilterOperations(
       const CSSURIValue& urlValue = toCSSURIValue(*currValue);
       SVGElementProxy& elementProxy =
           state.elementStyleResources().cachedOrPendingFromValue(urlValue);
-      operations.operations().append(
+      operations.operations().push_back(
           ReferenceFilterOperation::create(urlValue.value(), elementProxy));
       continue;
     }
@@ -161,7 +161,7 @@ FilterOperations FilterOperationResolver::createFilterOperations(
             amount /= 100;
         }
 
-        operations.operations().append(
+        operations.operations().push_back(
             BasicColorMatrixFilterOperation::create(amount, operationType));
         break;
       }
@@ -170,7 +170,7 @@ FilterOperations FilterOperationResolver::createFilterOperations(
         if (filterValue->length() == 1)
           angle = firstValue->computeDegrees();
 
-        operations.operations().append(
+        operations.operations().push_back(
             BasicColorMatrixFilterOperation::create(angle, operationType));
         break;
       }
@@ -186,7 +186,7 @@ FilterOperations FilterOperationResolver::createFilterOperations(
             amount /= 100;
         }
 
-        operations.operations().append(
+        operations.operations().push_back(
             BasicComponentTransferFilterOperation::create(amount,
                                                           operationType));
         break;
@@ -195,7 +195,7 @@ FilterOperations FilterOperationResolver::createFilterOperations(
         Length stdDeviation = Length(0, Fixed);
         if (filterValue->length() >= 1)
           stdDeviation = firstValue->convertToLength(conversionData);
-        operations.operations().append(
+        operations.operations().push_back(
             BlurFilterOperation::create(stdDeviation));
         break;
       }
@@ -210,7 +210,7 @@ FilterOperations FilterOperationResolver::createFilterOperations(
           shadowColor = state.document().textLinkColors().colorFromCSSValue(
               *item.color, state.style()->color());
 
-        operations.operations().append(
+        operations.operations().push_back(
             DropShadowFilterOperation::create(location, blur, shadowColor));
         break;
       }

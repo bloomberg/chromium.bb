@@ -106,8 +106,8 @@ class CSSBasicShapePolygonValue final : public CSSValue {
   }
 
   void appendPoint(CSSPrimitiveValue* x, CSSPrimitiveValue* y) {
-    m_values.append(x);
-    m_values.append(y);
+    m_values.push_back(x);
+    m_values.push_back(y);
   }
 
   CSSPrimitiveValue* getXAt(unsigned i) const { return m_values.at(i * 2); }

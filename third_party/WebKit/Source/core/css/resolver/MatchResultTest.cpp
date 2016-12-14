@@ -23,7 +23,7 @@ class MatchResultTest : public ::testing::Test {
 
 void MatchResultTest::SetUp() {
   for (unsigned i = 0; i < 6; i++)
-    propertySets.append(MutableStylePropertySet::create(HTMLQuirksMode));
+    propertySets.push_back(MutableStylePropertySet::create(HTMLQuirksMode));
 }
 
 void testMatchedPropertiesRange(const MatchedPropertiesRange& range,

@@ -22,12 +22,12 @@ TEST(CSSVariableReferenceValueTest, EmptyList) {
 
 TEST(CSSVariableReferenceValueTest, MixedList) {
   HeapVector<StringOrCSSVariableReferenceValue> fragments;
-  fragments.append(StringOrCSSVariableReferenceValue::fromString("string"));
-  fragments.append(
+  fragments.push_back(StringOrCSSVariableReferenceValue::fromString("string"));
+  fragments.push_back(
       StringOrCSSVariableReferenceValue::fromCSSVariableReferenceValue(
           CSSStyleVariableReferenceValue::create(
               "Variable", CSSUnparsedValue::fromString("Fallback"))));
-  fragments.append(StringOrCSSVariableReferenceValue());
+  fragments.push_back(StringOrCSSVariableReferenceValue());
 
   CSSUnparsedValue* unparsedValue = CSSUnparsedValue::create(fragments);
 

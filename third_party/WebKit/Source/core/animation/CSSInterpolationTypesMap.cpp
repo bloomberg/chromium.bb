@@ -111,7 +111,7 @@ const InterpolationTypes& CSSInterpolationTypesMap::get(
     case CSSPropertyWordSpacing:
     case CSSPropertyX:
     case CSSPropertyY:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSLengthInterpolationType>(usedProperty));
       break;
     case CSSPropertyFlexGrow:
@@ -128,13 +128,13 @@ const InterpolationTypes& CSSInterpolationTypesMap::get(
     case CSSPropertyColumnCount:
     case CSSPropertyWidows:
     case CSSPropertyZIndex:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSNumberInterpolationType>(usedProperty));
       break;
     case CSSPropertyLineHeight:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSLengthInterpolationType>(usedProperty));
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSNumberInterpolationType>(usedProperty));
       break;
     case CSSPropertyBackgroundColor:
@@ -150,130 +150,130 @@ const InterpolationTypes& CSSInterpolationTypesMap::get(
     case CSSPropertyTextDecorationColor:
     case CSSPropertyColumnRuleColor:
     case CSSPropertyWebkitTextStrokeColor:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSColorInterpolationType>(usedProperty));
       break;
     case CSSPropertyFill:
     case CSSPropertyStroke:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSPaintInterpolationType>(usedProperty));
       break;
     case CSSPropertyD:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSPathInterpolationType>(usedProperty));
       break;
     case CSSPropertyBoxShadow:
     case CSSPropertyTextShadow:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSShadowListInterpolationType>(usedProperty));
       break;
     case CSSPropertyBorderImageSource:
     case CSSPropertyListStyleImage:
     case CSSPropertyWebkitMaskBoxImageSource:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSImageInterpolationType>(usedProperty));
       break;
     case CSSPropertyBackgroundImage:
     case CSSPropertyWebkitMaskImage:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSImageListInterpolationType>(usedProperty));
       break;
     case CSSPropertyStrokeDasharray:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSLengthListInterpolationType>(usedProperty));
       break;
     case CSSPropertyFontWeight:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSFontWeightInterpolationType>(usedProperty));
       break;
     case CSSPropertyVisibility:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSVisibilityInterpolationType>(usedProperty));
       break;
     case CSSPropertyClip:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSClipInterpolationType>(usedProperty));
       break;
     case CSSPropertyOffsetRotation:
     case CSSPropertyOffsetRotate:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSOffsetRotationInterpolationType>(usedProperty));
       break;
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
     case CSSPropertyWebkitMaskPositionX:
     case CSSPropertyWebkitMaskPositionY:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSPositionAxisListInterpolationType>(usedProperty));
       break;
     case CSSPropertyObjectPosition:
     case CSSPropertyOffsetAnchor:
     case CSSPropertyOffsetPosition:
     case CSSPropertyPerspectiveOrigin:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSPositionInterpolationType>(usedProperty));
       break;
     case CSSPropertyBorderBottomLeftRadius:
     case CSSPropertyBorderBottomRightRadius:
     case CSSPropertyBorderTopLeftRadius:
     case CSSPropertyBorderTopRightRadius:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSLengthPairInterpolationType>(usedProperty));
       break;
     case CSSPropertyTranslate:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSTranslateInterpolationType>(usedProperty));
       break;
     case CSSPropertyTransformOrigin:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSTransformOriginInterpolationType>(usedProperty));
       break;
     case CSSPropertyBackgroundSize:
     case CSSPropertyWebkitMaskSize:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSSizeListInterpolationType>(usedProperty));
       break;
     case CSSPropertyBorderImageOutset:
     case CSSPropertyBorderImageWidth:
     case CSSPropertyWebkitMaskBoxImageOutset:
     case CSSPropertyWebkitMaskBoxImageWidth:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSBorderImageLengthBoxInterpolationType>(
               usedProperty));
       break;
     case CSSPropertyScale:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSScaleInterpolationType>(usedProperty));
       break;
     case CSSPropertyFontSize:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSFontSizeInterpolationType>(usedProperty));
       break;
     case CSSPropertyTextIndent:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSTextIndentInterpolationType>(usedProperty));
       break;
     case CSSPropertyBorderImageSlice:
     case CSSPropertyWebkitMaskBoxImageSlice:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSImageSliceInterpolationType>(usedProperty));
       break;
     case CSSPropertyClipPath:
     case CSSPropertyShapeOutside:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSBasicShapeInterpolationType>(usedProperty));
       break;
     case CSSPropertyRotate:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSRotateInterpolationType>(usedProperty));
       break;
     case CSSPropertyBackdropFilter:
     case CSSPropertyFilter:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSFilterListInterpolationType>(usedProperty));
       break;
     case CSSPropertyTransform:
-      applicableTypes->append(
+      applicableTypes->push_back(
           WTF::makeUnique<CSSTransformInterpolationType>(usedProperty));
       break;
     default:
@@ -283,7 +283,7 @@ const InterpolationTypes& CSSInterpolationTypesMap::get(
       break;
   }
 
-  applicableTypes->append(
+  applicableTypes->push_back(
       WTF::makeUnique<CSSValueInterpolationType>(usedProperty));
 
   auto addResult = applicableTypesMap.add(property, std::move(applicableTypes));

@@ -176,7 +176,7 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component,
   AtomicString tagName;
 
 #ifndef NDEBUG
-  m_allRules.append(ruleData);
+  m_allRules.push_back(ruleData);
 #endif
 
   const CSSSelector* it = &component;
@@ -210,18 +210,18 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component,
 
   switch (component.getPseudoType()) {
     case CSSSelector::PseudoCue:
-      m_cuePseudoRules.append(ruleData);
+      m_cuePseudoRules.push_back(ruleData);
       return true;
     case CSSSelector::PseudoLink:
     case CSSSelector::PseudoVisited:
     case CSSSelector::PseudoAnyLink:
-      m_linkPseudoClassRules.append(ruleData);
+      m_linkPseudoClassRules.push_back(ruleData);
       return true;
     case CSSSelector::PseudoFocus:
-      m_focusPseudoClassRules.append(ruleData);
+      m_focusPseudoClassRules.push_back(ruleData);
       return true;
     case CSSSelector::PseudoPlaceholder:
-      m_placeholderPseudoRules.append(ruleData);
+      m_placeholderPseudoRules.push_back(ruleData);
       return true;
     default:
       break;
@@ -233,7 +233,7 @@ bool RuleSet::findBestRuleSetAndAdd(const CSSSelector& component,
   }
 
   if (component.isHostPseudoClass()) {
-    m_shadowHostRules.append(ruleData);
+    m_shadowHostRules.push_back(ruleData);
     return true;
   }
 
@@ -251,23 +251,23 @@ void RuleSet::addRule(StyleRule* rule,
   if (!findBestRuleSetAndAdd(ruleData.selector(), ruleData)) {
     // If we didn't find a specialized map to stick it in, file under universal
     // rules.
-    m_universalRules.append(ruleData);
+    m_universalRules.push_back(ruleData);
   }
 }
 
 void RuleSet::addPageRule(StyleRulePage* rule) {
   ensurePendingRules();  // So that m_pageRules.shrinkToFit() gets called.
-  m_pageRules.append(rule);
+  m_pageRules.push_back(rule);
 }
 
 void RuleSet::addFontFaceRule(StyleRuleFontFace* rule) {
   ensurePendingRules();  // So that m_fontFaceRules.shrinkToFit() gets called.
-  m_fontFaceRules.append(rule);
+  m_fontFaceRules.push_back(rule);
 }
 
 void RuleSet::addKeyframesRule(StyleRuleKeyframes* rule) {
   ensurePendingRules();  // So that m_keyframesRules.shrinkToFit() gets called.
-  m_keyframesRules.append(rule);
+  m_keyframesRules.push_back(rule);
 }
 
 void RuleSet::addChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
@@ -284,13 +284,13 @@ void RuleSet::addChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
            selector = selectorList.next(*selector)) {
         size_t selectorIndex = selectorList.selectorIndex(*selector);
         if (selector->hasDeepCombinatorOrShadowPseudo()) {
-          m_deepCombinatorOrShadowPseudoRules.append(
+          m_deepCombinatorOrShadowPseudoRules.push_back(
               MinimalRuleData(styleRule, selectorIndex, addRuleFlags));
         } else if (selector->hasContentPseudo()) {
-          m_contentPseudoElementRules.append(
+          m_contentPseudoElementRules.push_back(
               MinimalRuleData(styleRule, selectorIndex, addRuleFlags));
         } else if (selector->hasSlottedPseudo()) {
-          m_slottedPseudoElementRules.append(
+          m_slottedPseudoElementRules.push_back(
               MinimalRuleData(styleRule, selectorIndex, addRuleFlags));
         } else {
           addRule(styleRule, selectorIndex, addRuleFlags);

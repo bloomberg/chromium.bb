@@ -29,10 +29,10 @@ void CSSVariableData::updateTokens(const CSSParserTokenRange& range) {
     if (token.hasStringBacking()) {
       unsigned length = token.value().length();
       StringView string(currentOffset, length);
-      m_tokens.append(token.copyWithUpdatedString(string));
+      m_tokens.push_back(token.copyWithUpdatedString(string));
       currentOffset += length;
     } else {
-      m_tokens.append(token);
+      m_tokens.push_back(token);
     }
   }
   ASSERT(currentOffset ==

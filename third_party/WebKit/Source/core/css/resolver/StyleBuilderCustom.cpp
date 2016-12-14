@@ -708,7 +708,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyWillChange(
     DCHECK(value.isValueList());
     for (auto& willChangeValue : toCSSValueList(value)) {
       if (willChangeValue->isCustomIdentValue())
-        willChangeProperties.append(
+        willChangeProperties.push_back(
             toCSSCustomIdentValue(*willChangeValue).valueAsPropertyID());
       else if (toCSSIdentifierValue(*willChangeValue).getValueID() ==
                CSSValueContents)

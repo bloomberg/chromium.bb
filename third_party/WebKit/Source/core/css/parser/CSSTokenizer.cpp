@@ -39,7 +39,7 @@ CSSTokenizer::CSSTokenizer(const String& string) : m_input(string) {
       continue;
     if (token.type() == EOFToken)
       return;
-    m_tokens.append(token);
+    m_tokens.push_back(token);
   }
 }
 
@@ -57,7 +57,7 @@ CSSTokenizer::CSSTokenizer(const String& string,
     if (token.type() == CommentToken) {
       wrapper.addComment(offset, m_input.offset(), m_tokens.size());
     } else {
-      m_tokens.append(token);
+      m_tokens.push_back(token);
       wrapper.addToken(offset);
     }
     offset = m_input.offset();
@@ -101,14 +101,14 @@ CSSParserToken CSSTokenizer::whiteSpace(UChar cc) {
 }
 
 CSSParserToken CSSTokenizer::blockStart(CSSParserTokenType type) {
-  m_blockStack.append(type);
+  m_blockStack.push_back(type);
   return CSSParserToken(type, CSSParserToken::BlockStart);
 }
 
 CSSParserToken CSSTokenizer::blockStart(CSSParserTokenType blockType,
                                         CSSParserTokenType type,
                                         StringView name) {
-  m_blockStack.append(blockType);
+  m_blockStack.push_back(blockType);
   return CSSParserToken(type, name, CSSParserToken::BlockStart);
 }
 
@@ -677,7 +677,7 @@ bool CSSTokenizer::nextCharsAreIdentifier() {
 }
 
 StringView CSSTokenizer::registerString(const String& string) {
-  m_stringPool.append(string);
+  m_stringPool.push_back(string);
   return string;
 }
 

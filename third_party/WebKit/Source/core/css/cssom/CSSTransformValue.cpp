@@ -49,7 +49,7 @@ CSSTransformValue* CSSTransformValue::fromCSSValue(const CSSValue& cssValue) {
         CSSTransformComponent::fromCSSValue(*value);
     if (!component)
       return nullptr;
-    components.append(component);
+    components.push_back(component);
   }
   return CSSTransformValue::create(components);
 }

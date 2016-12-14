@@ -128,7 +128,7 @@ void PageRuleCollector::matchPageRulesForList(
       continue;
 
     // Add this rule to our list of matched rules.
-    matchedRules.append(rule);
+    matchedRules.push_back(rule);
   }
 }
 

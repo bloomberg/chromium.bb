@@ -267,7 +267,7 @@ String CSSBasicShapePolygonValue::customCSSText() const {
   points.reserveInitialCapacity(m_values.size());
 
   for (size_t i = 0; i < m_values.size(); ++i)
-    points.append(m_values.at(i)->cssText());
+    points.push_back(m_values.at(i)->cssText());
 
   return buildPolygonString(m_windRule, points);
 }
@@ -291,13 +291,13 @@ static bool buildInsetRadii(Vector<String>& radii,
   bool showBottomRight = showBottomLeft || (bottomRightRadius != topLeftRadius);
   bool showTopRight = showBottomRight || (topRightRadius != topLeftRadius);
 
-  radii.append(topLeftRadius);
+  radii.push_back(topLeftRadius);
   if (showTopRight)
-    radii.append(topRightRadius);
+    radii.push_back(topRightRadius);
   if (showBottomRight)
-    radii.append(bottomRightRadius);
+    radii.push_back(bottomRightRadius);
   if (showBottomLeft)
-    radii.append(bottomLeftRadius);
+    radii.push_back(bottomLeftRadius);
 
   return radii.size() == 1 && radii[0] == "0px";
 }

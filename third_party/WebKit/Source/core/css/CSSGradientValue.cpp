@@ -636,7 +636,7 @@ void CSSGradientValue::getStopColors(Vector<Color>& stopColors,
                                      const LayoutObject& object) const {
   for (auto& stop : m_stops) {
     if (!stop.isHint())
-      stopColors.append(resolveStopColor(*stop.m_color, object));
+      stopColors.push_back(resolveStopColor(*stop.m_color, object));
   }
 }
 

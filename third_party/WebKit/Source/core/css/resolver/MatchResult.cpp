@@ -65,7 +65,7 @@ void MatchResult::finishAddingAuthorRulesForTreeScope() {
   if (!m_authorRangeEnds.isEmpty() &&
       m_authorRangeEnds.back() == m_matchedProperties.size())
     return;
-  m_authorRangeEnds.append(m_matchedProperties.size());
+  m_authorRangeEnds.push_back(m_matchedProperties.size());
 }
 
 }  // namespace blink

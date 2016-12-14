@@ -162,7 +162,7 @@ void StyleSheetContents::parserAppendRule(StyleRuleBase* rule) {
     StyleRuleImport* importRule = toStyleRuleImport(rule);
     if (importRule->mediaQueries())
       setHasMediaQueries();
-    m_importRules.append(importRule);
+    m_importRules.push_back(importRule);
     m_importRules.back()->setParentStyleSheet(this);
     m_importRules.back()->requestStyleSheet();
     return;
@@ -174,11 +174,11 @@ void StyleSheetContents::parserAppendRule(StyleRuleBase* rule) {
     ASSERT(m_childRules.isEmpty());
     StyleRuleNamespace& namespaceRule = toStyleRuleNamespace(*rule);
     parserAddNamespace(namespaceRule.prefix(), namespaceRule.uri());
-    m_namespaceRules.append(&namespaceRule);
+    m_namespaceRules.push_back(&namespaceRule);
     return;
   }
 
-  m_childRules.append(rule);
+  m_childRules.push_back(rule);
 }
 
 void StyleSheetContents::setHasMediaQueries() {
@@ -665,7 +665,7 @@ static void findFontFaceRulesFromRules(
     StyleRuleBase* rule = rules[i].get();
 
     if (rule->isFontFaceRule()) {
-      fontFaceRules.append(toStyleRuleFontFace(rule));
+      fontFaceRules.push_back(toStyleRuleFontFace(rule));
     } else if (rule->isMediaRule()) {
       StyleRuleMedia* mediaRule = toStyleRuleMedia(rule);
       // We cannot know whether the media rule matches or not, but

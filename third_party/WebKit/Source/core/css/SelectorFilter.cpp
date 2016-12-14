@@ -43,11 +43,11 @@ enum { TagNameSalt = 13, IdAttributeSalt = 17, ClassAttributeSalt = 19 };
 static inline void collectElementIdentifierHashes(
     const Element& element,
     Vector<unsigned, 4>& identifierHashes) {
-  identifierHashes.append(
+  identifierHashes.push_back(
       element.localNameForSelectorMatching().impl()->existingHash() *
       TagNameSalt);
   if (element.hasID())
-    identifierHashes.append(
+    identifierHashes.push_back(
         element.idForStyleResolution().impl()->existingHash() *
         IdAttributeSalt);
   if (element.isStyledElement() && element.hasClass()) {
@@ -57,8 +57,8 @@ static inline void collectElementIdentifierHashes(
       DCHECK(classNames[i].impl());
       // Speculative fix for https://crbug.com/646026
       if (classNames[i].impl())
-        identifierHashes.append(classNames[i].impl()->existingHash() *
-                                ClassAttributeSalt);
+        identifierHashes.push_back(classNames[i].impl()->existingHash() *
+                                   ClassAttributeSalt);
     }
   }
 }
@@ -68,7 +68,7 @@ void SelectorFilter::pushParentStackFrame(Element& parent) {
   ASSERT(m_parentStack.isEmpty() ||
          m_parentStack.back().element == parent.parentOrShadowHostElement());
   ASSERT(!m_parentStack.isEmpty() || !parent.parentOrShadowHostElement());
-  m_parentStack.append(ParentStackFrame(parent));
+  m_parentStack.push_back(ParentStackFrame(parent));
   ParentStackFrame& parentFrame = m_parentStack.back();
   // Mix tags, class names and ids into some sort of weird bouillabaisse.
   // The filter is used for fast rejection of child and descendant selectors.

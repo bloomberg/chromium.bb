@@ -50,7 +50,7 @@ class CORE_EXPORT CSSUnparsedValue final
  private:
   static CSSUnparsedValue* fromString(String string) {
     HeapVector<StringOrCSSVariableReferenceValue> fragments;
-    fragments.append(StringOrCSSVariableReferenceValue::fromString(string));
+    fragments.push_back(StringOrCSSVariableReferenceValue::fromString(string));
     return create(fragments);
   }
 

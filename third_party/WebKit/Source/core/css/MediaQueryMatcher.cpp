@@ -125,7 +125,7 @@ void MediaQueryMatcher::viewportChanged() {
 
   HeapVector<Member<MediaQueryListListener>> listenersToNotify;
   for (const auto& listener : m_viewportListeners)
-    listenersToNotify.append(listener);
+    listenersToNotify.push_back(listener);
 
   m_document->enqueueMediaQueryChangeListeners(listenersToNotify);
 }

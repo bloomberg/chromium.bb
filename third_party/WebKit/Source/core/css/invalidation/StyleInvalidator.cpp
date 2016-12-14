@@ -77,7 +77,7 @@ void StyleInvalidator::scheduleInvalidationSetsForNode(
     for (auto& invalidationSet : invalidationLists.siblings) {
       if (pendingInvalidations.siblings().contains(invalidationSet))
         continue;
-      pendingInvalidations.siblings().append(invalidationSet);
+      pendingInvalidations.siblings().push_back(invalidationSet);
     }
   }
 
@@ -90,7 +90,7 @@ void StyleInvalidator::scheduleInvalidationSetsForNode(
       continue;
     if (pendingInvalidations.descendants().contains(invalidationSet))
       continue;
-    pendingInvalidations.descendants().append(invalidationSet);
+    pendingInvalidations.descendants().push_back(invalidationSet);
   }
 }
 
@@ -116,7 +116,7 @@ void StyleInvalidator::scheduleSiblingInvalidationsAsDescendants(
     }
     if (invalidationSet->invalidatesSelf() &&
         !pendingInvalidations.descendants().contains(invalidationSet))
-      pendingInvalidations.descendants().append(invalidationSet);
+      pendingInvalidations.descendants().push_back(invalidationSet);
 
     if (DescendantInvalidationSet* descendants =
             toSiblingInvalidationSet(*invalidationSet).siblingDescendants()) {
@@ -127,7 +127,7 @@ void StyleInvalidator::scheduleSiblingInvalidationsAsDescendants(
         return;
       }
       if (!pendingInvalidations.descendants().contains(descendants))
-        pendingInvalidations.descendants().append(descendants);
+        pendingInvalidations.descendants().push_back(descendants);
     }
   }
 }
@@ -169,7 +169,7 @@ void StyleInvalidator::RecursionData::pushInvalidationSet(
     m_insertionPointCrossing = true;
   if (invalidationSet.invalidatesSlotted())
     m_invalidatesSlotted = true;
-  m_invalidationSets.append(&invalidationSet);
+  m_invalidationSets.push_back(&invalidationSet);
 }
 
 ALWAYS_INLINE bool
@@ -213,7 +213,7 @@ void StyleInvalidator::SiblingData::pushInvalidationSet(
   else
     invalidationLimit =
         m_elementIndex + invalidationSet.maxDirectAdjacentSelectors();
-  m_invalidationEntries.append(Entry(&invalidationSet, invalidationLimit));
+  m_invalidationEntries.push_back(Entry(&invalidationSet, invalidationLimit));
 }
 
 bool StyleInvalidator::SiblingData::matchCurrentInvalidationSets(

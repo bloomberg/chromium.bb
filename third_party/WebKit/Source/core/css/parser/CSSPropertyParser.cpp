@@ -79,7 +79,7 @@ void CSSPropertyParser::addProperty(CSSPropertyID property,
           indexOfShorthandForLonghand(currentShorthand, shorthands);
   }
 
-  m_parsedProperties->append(CSSProperty(
+  m_parsedProperties->push_back(CSSProperty(
       property, value, important, setFromShorthand, shorthandIndex, implicit));
 }
 
@@ -2022,7 +2022,7 @@ static CSSValue* consumePaintOrder(CSSParserTokenRange& range) {
       markers = consumeIdent(range);
     else
       return nullptr;
-    paintTypeList.append(id);
+    paintTypeList.push_back(id);
   } while (!range.atEnd());
 
   // After parsing we serialize the paint-order list. Since it is not possible
@@ -3114,7 +3114,7 @@ static Vector<String> parseGridTemplateAreasColumnNames(
   for (unsigned i = 0; i < text.length(); ++i) {
     if (isCSSSpace(text[i])) {
       if (!areaName.isEmpty()) {
-        columnNames.append(areaName.toString());
+        columnNames.push_back(areaName.toString());
         areaName.clear();
       }
       continue;
@@ -3123,14 +3123,14 @@ static Vector<String> parseGridTemplateAreasColumnNames(
       if (areaName == ".")
         continue;
       if (!areaName.isEmpty()) {
-        columnNames.append(areaName.toString());
+        columnNames.push_back(areaName.toString());
         areaName.clear();
       }
     } else {
       if (!isNameCodePoint(text[i]))
         return Vector<String>();
       if (areaName == ".") {
-        columnNames.append(areaName.toString());
+        columnNames.push_back(areaName.toString());
         areaName.clear();
       }
     }
@@ -3139,7 +3139,7 @@ static Vector<String> parseGridTemplateAreasColumnNames(
   }
 
   if (!areaName.isEmpty())
-    columnNames.append(areaName.toString());
+    columnNames.push_back(areaName.toString());
 
   return columnNames;
 }

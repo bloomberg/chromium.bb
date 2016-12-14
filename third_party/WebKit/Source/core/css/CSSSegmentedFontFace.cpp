@@ -185,7 +185,7 @@ void CSSSegmentedFontFace::match(const String& text,
                                  HeapVector<Member<FontFace>>& faces) const {
   for (const auto& fontFace : m_fontFaces) {
     if (fontFace->cssFontFace()->ranges()->intersectsWith(text))
-      faces.append(fontFace);
+      faces.push_back(fontFace);
   }
 }
 

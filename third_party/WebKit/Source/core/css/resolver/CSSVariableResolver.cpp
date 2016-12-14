@@ -185,7 +185,7 @@ bool CSSVariableResolver::resolveTokenRange(CSSParserTokenRange range,
                RuntimeEnabledFeatures::cssApplyAtRulesEnabled()) {
       resolveApplyAtRule(range, result);
     } else {
-      result.append(range.consume());
+      result.push_back(range.consume());
     }
   }
   return success;

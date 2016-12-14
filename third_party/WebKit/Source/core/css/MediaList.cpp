@@ -92,7 +92,7 @@ bool MediaQuerySet::add(const String& queryString) {
       return true;
   }
 
-  m_queries.append(newQuery);
+  m_queries.push_back(newQuery);
   return true;
 }
 
@@ -125,7 +125,7 @@ bool MediaQuerySet::remove(const String& queryStringToRemove) {
 }
 
 void MediaQuerySet::addMediaQuery(MediaQuery* mediaQuery) {
-  m_queries.append(mediaQuery);
+  m_queries.push_back(mediaQuery);
 }
 
 String MediaQuerySet::mediaText() const {

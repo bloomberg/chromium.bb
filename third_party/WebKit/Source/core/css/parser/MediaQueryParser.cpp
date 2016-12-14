@@ -267,7 +267,7 @@ bool MediaQueryData::addExpression() {
   MediaQueryExp* expression =
       MediaQueryExp::createIfValid(m_mediaFeature, m_valueList);
   bool isValid = !!expression;
-  m_expressions.append(expression);
+  m_expressions.push_back(expression);
   m_valueList.clear();
   return isValid;
 }
@@ -276,7 +276,7 @@ bool MediaQueryData::tryAddParserToken(CSSParserTokenType type,
                                        const CSSParserToken& token) {
   if (type == NumberToken || type == PercentageToken ||
       type == DimensionToken || type == DelimiterToken || type == IdentToken) {
-    m_valueList.append(token);
+    m_valueList.push_back(token);
     return true;
   }
 

@@ -96,7 +96,7 @@ CSSSyntaxDescriptor::CSSSyntaxDescriptor(String input) {
   if (consumeCharacterAndWhitespace(input, '*', offset)) {
     if (offset != input.length())
       return;
-    m_syntaxComponents.append(
+    m_syntaxComponents.push_back(
         CSSSyntaxComponent(CSSSyntaxType::TokenStream, emptyString(), false));
     return;
   }
@@ -120,7 +120,7 @@ CSSSyntaxDescriptor::CSSSyntaxDescriptor(String input) {
 
     bool repeatable = consumeCharacterAndWhitespace(input, '+', offset);
     consumeWhitespace(input, offset);
-    m_syntaxComponents.append(CSSSyntaxComponent(type, ident, repeatable));
+    m_syntaxComponents.push_back(CSSSyntaxComponent(type, ident, repeatable));
 
   } while (consumeCharacterAndWhitespace(input, '|', offset));
 

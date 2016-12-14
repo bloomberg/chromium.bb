@@ -278,7 +278,7 @@ CSSSelectorList CSSParserImpl::parsePageSelector(
 
   selector->setForPage();
   Vector<std::unique_ptr<CSSParserSelector>> selectorVector;
-  selectorVector.append(std::move(selector));
+  selectorVector.push_back(std::move(selector));
   CSSSelectorList selectorList =
       CSSSelectorList::adoptSelectorVector(selectorVector);
   return selectorList;
@@ -582,7 +582,7 @@ StyleRuleMedia* CSSParserImpl::consumeMediaRule(CSSParserTokenRange prelude,
     m_styleSheet->setHasMediaQueries();
 
   consumeRuleList(block, RegularRuleList,
-                  [&rules](StyleRuleBase* rule) { rules.append(rule); });
+                  [&rules](StyleRuleBase* rule) { rules.push_back(rule); });
 
   if (m_observerWrapper)
     m_observerWrapper->observer().endRuleBody(
@@ -611,7 +611,7 @@ StyleRuleSupports* CSSParserImpl::consumeSupportsRule(
 
   HeapVector<Member<StyleRuleBase>> rules;
   consumeRuleList(block, RegularRuleList,
-                  [&rules](StyleRuleBase* rule) { rules.append(rule); });
+                  [&rules](StyleRuleBase* rule) { rules.push_back(rule); });
 
   if (m_observerWrapper)
     m_observerWrapper->observer().endRuleBody(
@@ -740,7 +740,7 @@ void CSSParserImpl::consumeApplyRule(CSSParserTokenRange prelude) {
   const CSSParserToken& ident = prelude.consumeIncludingWhitespace();
   if (!prelude.atEnd() || !CSSVariableParser::isValidVariableName(ident))
     return;  // Parse error, expected a single custom property name
-  m_parsedProperties.append(CSSProperty(
+  m_parsedProperties.push_back(CSSProperty(
       CSSPropertyApplyAtRule,
       *CSSCustomIdentValue::create(ident.value().toAtomicString())));
 }
@@ -934,7 +934,7 @@ void CSSParserImpl::consumeVariableValue(CSSParserTokenRange range,
   if (CSSCustomPropertyDeclaration* value =
           CSSVariableParser::parseDeclarationValue(variableName, range,
                                                    isAnimationTainted))
-    m_parsedProperties.append(
+    m_parsedProperties.push_back(
         CSSProperty(CSSPropertyVariable, *value, important));
 }
 
@@ -954,13 +954,13 @@ std::unique_ptr<Vector<double>> CSSParserImpl::consumeKeyframeKeyList(
     const CSSParserToken& token = range.consumeIncludingWhitespace();
     if (token.type() == PercentageToken && token.numericValue() >= 0 &&
         token.numericValue() <= 100)
-      result->append(token.numericValue() / 100);
+      result->push_back(token.numericValue() / 100);
     else if (token.type() == IdentToken &&
              equalIgnoringASCIICase(token.value(), "from"))
-      result->append(0);
+      result->push_back(0);
     else if (token.type() == IdentToken &&
              equalIgnoringASCIICase(token.value(), "to"))
-      result->append(1);
+      result->push_back(1);
     else
       return nullptr;  // Parser error, invalid value in keyframe selector
     if (range.atEnd())

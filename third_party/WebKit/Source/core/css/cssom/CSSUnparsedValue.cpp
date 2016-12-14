@@ -65,7 +65,7 @@ HeapVector<StringOrCSSVariableReferenceValue> parserTokenRangeToFragments(
   while (!range.atEnd()) {
     if (range.peek().functionId() == CSSValueVar) {
       if (!builder.isEmpty()) {
-        fragments.append(
+        fragments.push_back(
             StringOrCSSVariableReferenceValue::fromString(builder.toString()));
         builder.clear();
       }
@@ -74,14 +74,14 @@ HeapVector<StringOrCSSVariableReferenceValue> parserTokenRangeToFragments(
       block.consumeWhitespace();
       if (block.peek().type() == CSSParserTokenType::CommaToken)
         block.consume();
-      fragments.append(variableReferenceValue(
+      fragments.push_back(variableReferenceValue(
           variableName, parserTokenRangeToFragments(block)));
     } else {
       range.consume().serialize(builder);
     }
   }
   if (!builder.isEmpty()) {
-    fragments.append(
+    fragments.push_back(
         StringOrCSSVariableReferenceValue::fromString(builder.toString()));
   }
   return fragments;

@@ -66,7 +66,7 @@ void CSSImageSetValue::fillImageSet() {
         imageValue.referrer().referrerPolicy, KURL(ParsedURLString, imageURL),
         imageValue.referrer().referrer);
     image.scaleFactor = scaleFactor;
-    m_imagesInSet.append(image);
+    m_imagesInSet.push_back(image);
     ++i;
   }
 

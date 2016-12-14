@@ -50,11 +50,11 @@ StyleRuleKeyframes::~StyleRuleKeyframes() {}
 void StyleRuleKeyframes::parserAppendKeyframe(StyleRuleKeyframe* keyframe) {
   if (!keyframe)
     return;
-  m_keyframes.append(keyframe);
+  m_keyframes.push_back(keyframe);
 }
 
 void StyleRuleKeyframes::wrapperAppendKeyframe(StyleRuleKeyframe* keyframe) {
-  m_keyframes.append(keyframe);
+  m_keyframes.push_back(keyframe);
   styleChanged();
 }
 
