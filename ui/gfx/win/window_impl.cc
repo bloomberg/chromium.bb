@@ -283,19 +283,20 @@ LRESULT CALLBACK WindowImpl::WndProc(HWND hwnd,
                                      UINT message,
                                      WPARAM w_param,
                                      LPARAM l_param) {
+  WindowImpl* window = nullptr;
   if (message == WM_NCCREATE) {
     CREATESTRUCT* cs = reinterpret_cast<CREATESTRUCT*>(l_param);
-    WindowImpl* window = reinterpret_cast<WindowImpl*>(cs->lpCreateParams);
+    window = reinterpret_cast<WindowImpl*>(cs->lpCreateParams);
     DCHECK(window);
     gfx::SetWindowUserData(hwnd, window);
     window->hwnd_ = hwnd;
     window->got_create_ = true;
     if (hwnd)
       window->got_valid_hwnd_ = true;
-    return TRUE;
+  } else {
+    window = reinterpret_cast<WindowImpl*>(GetWindowUserData(hwnd));
   }
 
-  WindowImpl* window = reinterpret_cast<WindowImpl*>(GetWindowUserData(hwnd));
   if (!window)
     return 0;
 

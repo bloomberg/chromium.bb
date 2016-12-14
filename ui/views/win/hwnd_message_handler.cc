@@ -329,6 +329,7 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       current_cursor_(NULL),
       previous_cursor_(NULL),
       dpi_(0),
+      called_enable_non_client_dpi_scaling_(false),
       active_mouse_tracking_flags_(0),
       is_right_mouse_pressed_on_caption_(false),
       lock_updates_count_(0),
@@ -362,7 +363,9 @@ void HWNDMessageHandler::Init(HWND parent, const gfx::Rect& bounds) {
   // Create the window.
   WindowImpl::Init(parent, bounds);
 
-  if (delegate_->HasFrame() && base::win::IsProcessPerMonitorDpiAware()) {
+  if (!called_enable_non_client_dpi_scaling_ &&
+      delegate_->HasFrame() &&
+      base::win::IsProcessPerMonitorDpiAware()) {
     static auto enable_child_window_dpi_message_func = []() {
       // Derived signature; not available in headers.
       // This call gets Windows to scale the non-client area when WM_DPICHANGED
@@ -1793,6 +1796,24 @@ LRESULT HWNDMessageHandler::OnNCCalcSize(BOOL mode, LPARAM l_param) {
   if (insets.left() == 0 || insets.top() == 0)
     return 0;
   return mode ? WVR_REDRAW : 0;
+}
+
+LRESULT HWNDMessageHandler::OnNCCreate(LPCREATESTRUCT lpCreateStruct) {
+  SetMsgHandled(FALSE);
+  if (delegate_->HasFrame() && base::win::IsProcessPerMonitorDpiAware()) {
+    static auto enable_non_client_dpi_scaling_func = []() {
+      // Signature only available in the 10.0.14393.0 API. As of this writing,
+      // Chrome built against 10.0.10586.0.
+      using EnableNonClientDpiScalingPtr = LRESULT (WINAPI*)(HWND);
+      return reinterpret_cast<EnableNonClientDpiScalingPtr>(
+                 GetProcAddress(GetModuleHandle(L"user32.dll"),
+                                "EnableNonClientDpiScaling"));
+    }();
+    called_enable_non_client_dpi_scaling_ =
+        !!(enable_non_client_dpi_scaling_func &&
+           enable_non_client_dpi_scaling_func(hwnd()));
+  }
+  return FALSE;
 }
 
 LRESULT HWNDMessageHandler::OnNCHitTest(const gfx::Point& point) {

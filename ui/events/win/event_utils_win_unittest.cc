@@ -22,7 +22,10 @@ class TestWindow : public gfx::WindowImpl {
                             LPARAM l_param,
                             LRESULT& result,
                             DWORD msg_map_id = 0) override {
-    return true;
+    // Handle WM_NCCALCSIZE because the test below assumes there is no
+    // non-client area, affecting EventSystemLocationFromNative's client to
+    // screen coordinate transform.
+    return message == WM_NCCALCSIZE;
   }
 
  private:
