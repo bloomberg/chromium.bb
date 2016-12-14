@@ -9,10 +9,10 @@
 namespace blink {
 
 // This file contains two scope classes for catching cases where paint
-// properties need an update but where not marked as such. If paint properties
+// properties needed an update but were not marked as such. If paint properties
 // will change, the object must be marked as needing a paint property update
 // using {FrameView, LayoutObject}::setNeedsPaintPropertyUpdate() or by forcing
-// a subtree update (see: PaintPropertyTreeBuilderContext::forceSubtreeupdate).
+// a subtree update (see: PaintPropertyTreeBuilderContext::forceSubtreeUpdate).
 //
 // Both scope classes work by recording the paint property state of an object
 // before rebuilding properties, forcing the properties to get updated, then
@@ -71,12 +71,12 @@ class FindFrameViewPropertiesNeedingUpdateScope {
     if (m_neededPaintPropertyUpdate || m_neededForcedSubtreeUpdate)
       return;
 
-    // If these checks fail, the paint properties should not have changed but
-    // did. This is due to missing one of these paint property invalidations:
+    // If these checks fail, the paint properties changed unexpectedly. This is
+    // due to missing one of these paint property invalidations:
     // 1) The FrameView should have been marked as needing an update with
     //    FrameView::setNeedsPaintPropertyUpdate().
     // 2) The PrePaintTreeWalk should have had a forced subtree update (see:
-    //    PaintPropertyTreeBuilderContext::forceSubtreeupdate).
+    //    PaintPropertyTreeBuilderContext::forceSubtreeUpdate).
     DCHECK_FRAMEVIEW_PROPERTY_EQ(m_originalPreTranslation,
                                  m_frameView->preTranslation());
     DCHECK_FRAMEVIEW_PROPERTY_EQ(m_originalContentClip,
@@ -128,12 +128,12 @@ class FindObjectPropertiesNeedingUpdateScope {
     if (m_neededPaintPropertyUpdate || m_neededForcedSubtreeUpdate)
       return;
 
-    // If these checks fail, the paint properties should not have changed but
-    // did. This is due to missing one of these paint property invalidations:
+    // If these checks fail, the paint properties changed unexpectedly. This is
+    // due to missing one of these paint property invalidations:
     // 1) The LayoutObject should have been marked as needing an update with
     //    LayoutObject::setNeedsPaintPropertyUpdate().
     // 2) The PrePaintTreeWalk should have had a forced subtree update (see:
-    //    PaintPropertyTreeBuilderContext::forceSubtreeupdate).
+    //    PaintPropertyTreeBuilderContext::forceSubtreeUpdate).
     const auto* objectProperties = m_object.paintProperties();
     if (m_originalProperties && objectProperties) {
       DCHECK_OBJECT_PROPERTY_EQ(m_object,
