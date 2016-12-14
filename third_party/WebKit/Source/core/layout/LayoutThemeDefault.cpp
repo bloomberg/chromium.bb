@@ -339,7 +339,7 @@ int LayoutThemeDefault::popupInternalPaddingBottom(
 int LayoutThemeDefault::scrollbarThicknessInDIP() {
   int width = Platform::current()
                   ->themeEngine()
-                  ->getSize(WebThemeEngine::PartScrollbarDownArrow)
+                  ->getSize(WebThemeEngine::PartScrollbarUpArrow)
                   .width;
   return width > 0 ? width : 15;
 }
