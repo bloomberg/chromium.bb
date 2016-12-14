@@ -5,7 +5,6 @@
 #ifndef NavigatorServiceWorker_h
 #define NavigatorServiceWorker_h
 
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/Navigator.h"
 #include "modules/ModulesExport.h"
 #include "platform/Supplementable.h"
@@ -20,8 +19,7 @@ class ServiceWorkerContainer;
 
 class MODULES_EXPORT NavigatorServiceWorker final
     : public GarbageCollected<NavigatorServiceWorker>,
-      public Supplement<Navigator>,
-      public ContextLifecycleObserver {
+      public Supplement<Navigator> {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorServiceWorker);
 
  public:
@@ -34,6 +32,7 @@ class MODULES_EXPORT NavigatorServiceWorker final
   static ServiceWorkerContainer* serviceWorker(ExecutionContext*,
                                                Navigator&,
                                                String& errorMessage);
+  void clearServiceWorker();
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -43,9 +42,6 @@ class MODULES_EXPORT NavigatorServiceWorker final
   ServiceWorkerContainer* serviceWorker(LocalFrame*, String& errorMessage);
 
   static const char* supplementName();
-
-  // ContextLifecycleObserver override.
-  void contextDestroyed() override;
 
   Member<ServiceWorkerContainer> m_serviceWorker;
 };

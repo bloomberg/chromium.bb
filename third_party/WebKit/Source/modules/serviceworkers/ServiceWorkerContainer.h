@@ -49,6 +49,7 @@
 namespace blink {
 
 class ExecutionContext;
+class NavigatorServiceWorker;
 class WebServiceWorker;
 class WebServiceWorkerProvider;
 
@@ -63,7 +64,8 @@ class MODULES_EXPORT ServiceWorkerContainer final
   using RegistrationCallbacks =
       WebServiceWorkerProvider::WebServiceWorkerRegistrationCallbacks;
 
-  static ServiceWorkerContainer* create(ExecutionContext*);
+  static ServiceWorkerContainer* create(ExecutionContext*,
+                                        NavigatorServiceWorker*);
   ~ServiceWorkerContainer();
 
   DECLARE_VIRTUAL_TRACE();
@@ -102,7 +104,7 @@ class MODULES_EXPORT ServiceWorkerContainer final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message);
 
  private:
-  explicit ServiceWorkerContainer(ExecutionContext*);
+  ServiceWorkerContainer(ExecutionContext*, NavigatorServiceWorker*);
 
   class GetRegistrationForReadyCallback;
   typedef ScriptPromiseProperty<Member<ServiceWorkerContainer>,
@@ -114,6 +116,7 @@ class MODULES_EXPORT ServiceWorkerContainer final
   WebServiceWorkerProvider* m_provider;
   Member<ServiceWorker> m_controller;
   Member<ReadyProperty> m_ready;
+  Member<NavigatorServiceWorker> m_navigator;
 };
 
 }  // namespace blink

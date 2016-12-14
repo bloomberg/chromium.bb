@@ -177,7 +177,7 @@ class ServiceWorkerContainerTest : public ::testing::Test {
     provide(WTF::makeUnique<NotReachedWebServiceWorkerProvider>());
 
     ServiceWorkerContainer* container =
-        ServiceWorkerContainer::create(getExecutionContext());
+        ServiceWorkerContainer::create(getExecutionContext(), nullptr);
     ScriptState::Scope scriptScope(getScriptState());
     RegistrationOptions options;
     options.setScope(scope);
@@ -191,7 +191,7 @@ class ServiceWorkerContainerTest : public ::testing::Test {
     provide(WTF::makeUnique<NotReachedWebServiceWorkerProvider>());
 
     ServiceWorkerContainer* container =
-        ServiceWorkerContainer::create(getExecutionContext());
+        ServiceWorkerContainer::create(getExecutionContext(), nullptr);
     ScriptState::Scope scriptScope(getScriptState());
     ScriptPromise promise =
         container->getRegistration(getScriptState(), documentURL);
@@ -332,7 +332,7 @@ TEST_F(ServiceWorkerContainerTest,
   provide(stubProvider.provider());
 
   ServiceWorkerContainer* container =
-      ServiceWorkerContainer::create(getExecutionContext());
+      ServiceWorkerContainer::create(getExecutionContext(), nullptr);
 
   // register
   {
@@ -358,7 +358,7 @@ TEST_F(ServiceWorkerContainerTest,
   provide(stubProvider.provider());
 
   ServiceWorkerContainer* container =
-      ServiceWorkerContainer::create(getExecutionContext());
+      ServiceWorkerContainer::create(getExecutionContext(), nullptr);
 
   {
     ScriptState::Scope scriptScope(getScriptState());

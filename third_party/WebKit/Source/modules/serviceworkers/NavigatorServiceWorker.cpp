@@ -12,9 +12,7 @@
 
 namespace blink {
 
-NavigatorServiceWorker::NavigatorServiceWorker(Navigator& navigator)
-    : ContextLifecycleObserver(navigator.frame() ? navigator.frame()->document()
-                                                 : nullptr) {}
+NavigatorServiceWorker::NavigatorServiceWorker(Navigator& navigator) {}
 
 NavigatorServiceWorker* NavigatorServiceWorker::from(Document& document) {
   if (!document.frame() || !document.frame()->domWindow())
@@ -105,21 +103,23 @@ ServiceWorkerContainer* NavigatorServiceWorker::serviceWorker(
     return nullptr;
   }
   if (!m_serviceWorker && frame) {
+    // We need to create a new ServiceWorkerContainer when the frame
+    // navigates to a new document. In practice, this happens only when the
+    // frame navigates from the initial empty page to a new same-origin page.
     DCHECK(frame->domWindow());
     m_serviceWorker = ServiceWorkerContainer::create(
-        frame->domWindow()->getExecutionContext());
+        frame->domWindow()->getExecutionContext(), this);
   }
   return m_serviceWorker.get();
 }
 
-void NavigatorServiceWorker::contextDestroyed() {
+void NavigatorServiceWorker::clearServiceWorker() {
   m_serviceWorker = nullptr;
 }
 
 DEFINE_TRACE(NavigatorServiceWorker) {
   visitor->trace(m_serviceWorker);
   Supplement<Navigator>::trace(visitor);
-  ContextLifecycleObserver::trace(visitor);
 }
 
 }  // namespace blink

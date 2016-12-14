@@ -45,6 +45,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "modules/EventTargetModules.h"
+#include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
@@ -123,8 +124,9 @@ class ServiceWorkerContainer::GetRegistrationForReadyCallback
 };
 
 ServiceWorkerContainer* ServiceWorkerContainer::create(
-    ExecutionContext* executionContext) {
-  return new ServiceWorkerContainer(executionContext);
+    ExecutionContext* executionContext,
+    NavigatorServiceWorker* navigator) {
+  return new ServiceWorkerContainer(executionContext, navigator);
 }
 
 ServiceWorkerContainer::~ServiceWorkerContainer() {
@@ -136,11 +138,14 @@ void ServiceWorkerContainer::contextDestroyed() {
     m_provider->setClient(0);
     m_provider = nullptr;
   }
+  if (m_navigator)
+    m_navigator->clearServiceWorker();
 }
 
 DEFINE_TRACE(ServiceWorkerContainer) {
   visitor->trace(m_controller);
   visitor->trace(m_ready);
+  visitor->trace(m_navigator);
   EventTargetWithInlineData::trace(visitor);
   ContextLifecycleObserver::trace(visitor);
 }
@@ -459,8 +464,11 @@ const AtomicString& ServiceWorkerContainer::interfaceName() const {
 }
 
 ServiceWorkerContainer::ServiceWorkerContainer(
-    ExecutionContext* executionContext)
-    : ContextLifecycleObserver(executionContext), m_provider(0) {
+    ExecutionContext* executionContext,
+    NavigatorServiceWorker* navigator)
+    : ContextLifecycleObserver(executionContext),
+      m_provider(0),
+      m_navigator(navigator) {
   if (!executionContext)
     return;
 
