@@ -5,32 +5,35 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_OFFSCREEN_CANVAS_COMPOSITOR_FRAME_SINK_H_
 #define CONTENT_BROWSER_RENDERER_HOST_OFFSCREEN_CANVAS_COMPOSITOR_FRAME_SINK_H_
 
-#include <memory>
-#include <vector>
-
-#include "cc/surfaces/surface_factory.h"
-#include "cc/surfaces/surface_factory_client.h"
-#include "third_party/WebKit/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom.h"
+#include "cc/ipc/compositor_frame.mojom.h"
+#include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
+#include "cc/resources/transferable_resource.h"
+#include "cc/surfaces/compositor_frame_sink_support.h"
+#include "cc/surfaces/compositor_frame_sink_support_client.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
 class OffscreenCanvasCompositorFrameSink
-    : public cc::mojom::MojoCompositorFrameSink,
-      public cc::SurfaceFactoryClient {
+    : public cc::CompositorFrameSinkSupportClient,
+      public cc::mojom::MojoCompositorFrameSink {
  public:
-  OffscreenCanvasCompositorFrameSink(
-      const cc::SurfaceId& surface_id,
-      cc::mojom::MojoCompositorFrameSinkClientPtr client);
-  ~OffscreenCanvasCompositorFrameSink() override;
-
-  static void Create(const cc::SurfaceId& surface_id,
+  static void Create(const cc::FrameSinkId& frame_sink_id,
+                     cc::SurfaceManager* surface_manager,
                      cc::mojom::MojoCompositorFrameSinkClientPtr client,
                      cc::mojom::MojoCompositorFrameSinkRequest request);
 
-  // cc::mojom::MojoCompositorFrameSink implementation.
+  OffscreenCanvasCompositorFrameSink(
+      const cc::FrameSinkId& frame_sink_id,
+      cc::SurfaceManager* surface_manager,
+      cc::mojom::MojoCompositorFrameSinkClientPtr client);
+
+  ~OffscreenCanvasCompositorFrameSink() override;
+
+  // Overridden from cc::mojom::MojoCompositorFrameSink:
+  void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SubmitCompositorFrame(const cc::LocalFrameId& local_frame_id,
                              cc::CompositorFrame frame) override;
-  void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void AddSurfaceReferences(
       const std::vector<cc::SurfaceReference>& references) override;
   void RemoveSurfaceReferences(
@@ -40,20 +43,17 @@ class OffscreenCanvasCompositorFrameSink
                const cc::SurfaceSequence& sequence) override;
   void Satisfy(const cc::SurfaceSequence& sequence) override;
 
-  // cc::SurfaceFactoryClient implementation.
-  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
-  void WillDrawSurface(const cc::LocalFrameId& id,
-                       const gfx::Rect& damage_rect) override;
-  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
+  // Overridden from cc::CompositorFrameSinkSupportClient:
+  void DidReceiveCompositorFrameAck() override;
+  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
+  void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
+  void WillDrawSurface() override;
 
  private:
-  void DidReceiveCompositorFrameAck();
-
-  cc::SurfaceId surface_id_;
-  std::unique_ptr<cc::SurfaceFactory> surface_factory_;
+  cc::CompositorFrameSinkSupport support_;
   cc::mojom::MojoCompositorFrameSinkClientPtr client_;
-  int ack_pending_count_ = 0;
   cc::ReturnedResourceArray surface_returned_resources_;
+  mojo::StrongBindingPtr<cc::mojom::MojoCompositorFrameSink> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(OffscreenCanvasCompositorFrameSink);
 };

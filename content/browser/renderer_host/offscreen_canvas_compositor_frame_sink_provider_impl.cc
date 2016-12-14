@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/offscreen_canvas_compositor_frame_sink_provider_impl.h"
 
+#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/renderer_host/offscreen_canvas_compositor_frame_sink.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
@@ -27,8 +28,9 @@ void OffscreenCanvasCompositorFrameSinkProviderImpl::CreateCompositorFrameSink(
     const cc::SurfaceId& surface_id,
     cc::mojom::MojoCompositorFrameSinkClientPtr client,
     cc::mojom::MojoCompositorFrameSinkRequest request) {
-  OffscreenCanvasCompositorFrameSink::Create(surface_id, std::move(client),
-                                             std::move(request));
+  OffscreenCanvasCompositorFrameSink::Create(
+      surface_id.frame_sink_id(), GetSurfaceManager(), std::move(client),
+      std::move(request));
 }
 
 }  // namespace content

@@ -6,118 +6,91 @@
 
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
-#include "content/browser/compositor/surface_utils.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
 
-OffscreenCanvasCompositorFrameSink::OffscreenCanvasCompositorFrameSink(
-    const cc::SurfaceId& surface_id,
-    cc::mojom::MojoCompositorFrameSinkClientPtr client)
-    : surface_id_(surface_id), client_(std::move(client)) {
-  cc::SurfaceManager* manager = GetSurfaceManager();
-  surface_factory_ = base::MakeUnique<cc::SurfaceFactory>(
-      surface_id_.frame_sink_id(), manager, this);
-  manager->RegisterFrameSinkId(surface_id_.frame_sink_id());
-}
-
-OffscreenCanvasCompositorFrameSink::~OffscreenCanvasCompositorFrameSink() {
-  cc::SurfaceManager* manager = GetSurfaceManager();
-  if (!manager) {
-    // Inform SurfaceFactory that SurfaceManager's no longer alive to
-    // avoid its destruction error.
-    surface_factory_->DidDestroySurfaceManager();
-  } else {
-    manager->InvalidateFrameSinkId(surface_id_.frame_sink_id());
-  }
-  surface_factory_->EvictSurface();
-}
-
 // static
 void OffscreenCanvasCompositorFrameSink::Create(
-    const cc::SurfaceId& surface_id,
+    const cc::FrameSinkId& frame_sink_id,
+    cc::SurfaceManager* surface_manager,
     cc::mojom::MojoCompositorFrameSinkClientPtr client,
     cc::mojom::MojoCompositorFrameSinkRequest request) {
-  mojo::MakeStrongBinding(base::MakeUnique<OffscreenCanvasCompositorFrameSink>(
-                              surface_id, std::move(client)),
-                          std::move(request));
+  std::unique_ptr<OffscreenCanvasCompositorFrameSink> impl =
+      base::MakeUnique<OffscreenCanvasCompositorFrameSink>(
+          frame_sink_id, surface_manager, std::move(client));
+  OffscreenCanvasCompositorFrameSink* compositor_frame_sink = impl.get();
+  compositor_frame_sink->binding_ =
+      mojo::MakeStrongBinding(std::move(impl), std::move(request));
+}
+
+OffscreenCanvasCompositorFrameSink::OffscreenCanvasCompositorFrameSink(
+    const cc::FrameSinkId& frame_sink_id,
+    cc::SurfaceManager* surface_manager,
+    cc::mojom::MojoCompositorFrameSinkClientPtr client)
+    : support_(this, surface_manager, frame_sink_id, nullptr, nullptr),
+      client_(std::move(client)) {}
+
+OffscreenCanvasCompositorFrameSink::~OffscreenCanvasCompositorFrameSink() {}
+
+void OffscreenCanvasCompositorFrameSink::SetNeedsBeginFrame(
+    bool needs_begin_frame) {
+  support_.SetNeedsBeginFrame(needs_begin_frame);
 }
 
 void OffscreenCanvasCompositorFrameSink::SubmitCompositorFrame(
     const cc::LocalFrameId& local_frame_id,
     cc::CompositorFrame frame) {
-  ++ack_pending_count_;
-  surface_factory_->SubmitCompositorFrame(
-      surface_id_.local_frame_id(), std::move(frame),
-      base::Bind(
-          &OffscreenCanvasCompositorFrameSink::DidReceiveCompositorFrameAck,
-          base::Unretained(this)));
-}
-
-void OffscreenCanvasCompositorFrameSink::SetNeedsBeginFrame(
-    bool needs_begin_frame) {
-  NOTIMPLEMENTED();
+  support_.SubmitCompositorFrame(local_frame_id, std::move(frame));
 }
 
 void OffscreenCanvasCompositorFrameSink::AddSurfaceReferences(
     const std::vector<cc::SurfaceReference>& references) {
+  // TODO(fsamuel, staraz): Implement this.
   NOTIMPLEMENTED();
 }
 
 void OffscreenCanvasCompositorFrameSink::RemoveSurfaceReferences(
     const std::vector<cc::SurfaceReference>& references) {
+  // TODO(fsamuel, staraz): Implement this.
   NOTIMPLEMENTED();
 }
 
 void OffscreenCanvasCompositorFrameSink::EvictFrame() {
-  // TODO(fsamuel, staraz): Implement this
-  NOTIMPLEMENTED();
+  support_.EvictFrame();
 }
 
 void OffscreenCanvasCompositorFrameSink::Require(
     const cc::LocalFrameId& local_frame_id,
     const cc::SurfaceSequence& sequence) {
-  // TODO(staraz): Implement this.
-  NOTIMPLEMENTED();
+  support_.Require(local_frame_id, sequence);
 }
 
 void OffscreenCanvasCompositorFrameSink::Satisfy(
     const cc::SurfaceSequence& sequence) {
-  // TODO(staraz): Implement this.
-  NOTIMPLEMENTED();
+  support_.Satisfy(sequence);
 }
-
-void OffscreenCanvasCompositorFrameSink::ReturnResources(
-    const cc::ReturnedResourceArray& resources) {
-  if (resources.empty())
-    return;
-
-  if (!ack_pending_count_ && client_) {
-    client_->ReclaimResources(resources);
-    return;
-  }
-
-  std::copy(resources.begin(), resources.end(),
-            std::back_inserter(surface_returned_resources_));
-}
-
-void OffscreenCanvasCompositorFrameSink::WillDrawSurface(
-    const cc::LocalFrameId& id,
-    const gfx::Rect& damage_rect) {}
-
-void OffscreenCanvasCompositorFrameSink::SetBeginFrameSource(
-    cc::BeginFrameSource* begin_frame_source) {}
 
 void OffscreenCanvasCompositorFrameSink::DidReceiveCompositorFrameAck() {
-  if (!client_)
-    return;
-  client_->DidReceiveCompositorFrameAck();
-  DCHECK_GT(ack_pending_count_, 0);
-  if (!surface_returned_resources_.empty()) {
-    client_->ReclaimResources(surface_returned_resources_);
-    surface_returned_resources_.clear();
-  }
-  ack_pending_count_--;
+  if (client_)
+    client_->DidReceiveCompositorFrameAck();
+}
+
+void OffscreenCanvasCompositorFrameSink::OnBeginFrame(
+    const cc::BeginFrameArgs& args) {
+  if (client_)
+    client_->OnBeginFrame(args);
+}
+
+void OffscreenCanvasCompositorFrameSink::ReclaimResources(
+    const cc::ReturnedResourceArray& resources) {
+  if (client_)
+    client_->ReclaimResources(resources);
+}
+
+void OffscreenCanvasCompositorFrameSink::WillDrawSurface() {
+  if (client_)
+    client_->WillDrawSurface();
 }
 
 }  // namespace content
