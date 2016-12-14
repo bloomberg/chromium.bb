@@ -70,34 +70,34 @@ class list_set {
    public:
     typedef iterator self_type;
     typedef T value_type;
-    typedef T& reference;
-    typedef T* pointer;
+    typedef value_type& reference;
+    typedef value_type* pointer;
     typedef std::bidirectional_iterator_tag iterator_category;
     typedef std::ptrdiff_t difference_type;
 
-    explicit inline iterator(typename std::list<T>::iterator it) : it_(it) {}
-    inline self_type& operator++() {
+    explicit iterator(typename std::list<T>::iterator it) : it_(it) {}
+    self_type& operator++() {
       ++it_;
       return *this;
     }
-    inline self_type operator++(int /*ignored*/) {
+    self_type operator++(int /*ignored*/) {
       self_type result(*this);
       ++(*this);
       return result;
     }
-    inline self_type& operator--() {
+    self_type& operator--() {
       --it_;
       return *this;
     }
-    inline self_type operator--(int /*ignored*/) {
+    self_type operator--(int /*ignored*/) {
       self_type result(*this);
       --(*this);
       return result;
     }
-    inline value_type& operator*() { return *it_; }
-    inline value_type* operator->() { return &(*it_); }
-    inline bool operator==(const iterator& rhs) const { return it_ == rhs.it_; }
-    inline bool operator!=(const iterator& rhs) const { return it_ != rhs.it_; }
+    reference operator*() const { return *it_; }
+    pointer operator->() const { return &(*it_); }
+    bool operator==(const iterator& rhs) const { return it_ == rhs.it_; }
+    bool operator!=(const iterator& rhs) const { return it_ != rhs.it_; }
 
     inline operator const_iterator() const { return const_iterator(it_); }
 
@@ -109,39 +109,35 @@ class list_set {
    public:
     typedef const_iterator self_type;
     typedef T value_type;
-    typedef T& reference;
-    typedef T* pointer;
+    typedef const value_type& reference;
+    typedef const value_type* pointer;
     typedef std::bidirectional_iterator_tag iterator_category;
     typedef std::ptrdiff_t difference_type;
 
     explicit inline const_iterator(typename std::list<T>::const_iterator it)
         : it_(it) {}
-    inline self_type& operator++() {
+    self_type& operator++() {
       ++it_;
       return *this;
     }
-    inline self_type operator++(int ignored) {
+    self_type operator++(int ignored) {
       self_type result(*this);
       ++(*this);
       return result;
     }
-    inline self_type& operator--() {
+    self_type& operator--() {
       --it_;
       return *this;
     }
-    inline self_type operator--(int ignored) {
+    self_type operator--(int ignored) {
       self_type result(*this);
       --(*this);
       return result;
     }
-    inline const value_type& operator*() { return *it_; }
-    inline const value_type* operator->() { return &(*it_); }
-    inline bool operator==(const const_iterator& rhs) const {
-      return it_ == rhs.it_;
-    }
-    inline bool operator!=(const const_iterator& rhs) const {
-      return it_ != rhs.it_;
-    }
+    reference operator*() const { return *it_; }
+    pointer operator->() const { return &(*it_); }
+    bool operator==(const const_iterator& rhs) const { return it_ == rhs.it_; }
+    bool operator!=(const const_iterator& rhs) const { return it_ != rhs.it_; }
 
    private:
     typename std::list<T>::const_iterator it_;
