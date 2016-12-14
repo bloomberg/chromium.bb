@@ -1639,6 +1639,8 @@ LayoutUnit LayoutBlock::lineHeight(bool firstLine,
 
 int LayoutBlock::beforeMarginInLineDirection(
     LineDirectionMode direction) const {
+  // InlineFlowBox::placeBoxesInBlockDirection will flip lines in
+  // case of verticalLR mode, so we can assume verticalRL for now.
   return (direction == HorizontalLine ? marginTop() : marginRight()).toInt();
 }
 

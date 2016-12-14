@@ -773,6 +773,8 @@ void InlineFlowBox::placeBoxesInBlockDirection(
       // m_layoutObject.isHorizontalWritingMode(). crbug.com/552954
       // ASSERT(curr->isHorizontal() ==
       // curr->getLineLayoutItem().style()->isHorizontalWritingMode());
+      // We may flip lines in case of verticalLR mode, so we can
+      // assume verticalRL for now.
       LayoutUnit overSideMargin =
           curr->isHorizontal() ? box.marginTop() : box.marginRight();
       LayoutUnit underSideMargin =

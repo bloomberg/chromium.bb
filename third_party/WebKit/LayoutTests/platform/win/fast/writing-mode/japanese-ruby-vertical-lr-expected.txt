@@ -3,8 +3,8 @@ layer at (0,0) size 800x600
 layer at (0,0) size 115x600
   LayoutBlockFlow {HTML} at (0,0) size 115x600 [border: (10px solid #800000)]
     LayoutBlockFlow {BODY} at (18,18) size 79x564
-      LayoutText {#text} at (13,0) size 45x220
-        text run at (13,0) width 220: "\x{653B}\x{6BBB} \x{6A5F}\x{52D5}\x{968A} "
+      LayoutText {#text} at (12,0) size 45x220
+        text run at (12,0) width 220: "\x{653B}\x{6BBB} \x{6A5F}\x{52D5}\x{968A} "
       LayoutRuby (inline) {RUBY} at (0,0) size 45x200
         LayoutRubyRun (anonymous) at (0,220) size 70x80
           LayoutRubyText {RT} at (50,0) size 36x80

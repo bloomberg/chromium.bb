@@ -44,8 +44,8 @@ layer at (8,304) size 158x540 backgroundClip at (0,0) size 785x600 clip at (0,0)
         text run at (2,122) width 4: " "
       LayoutBlockFlow {DIV} at (16,136) size 110x100 [bgcolor=#000000] [border: (20px double #FFFFFF)]
       LayoutText {#text} at (0,0) size 0x0
-    LayoutText {#text} at (128,268) size 18x4
-      text run at (128,268) width 4: " "
+    LayoutText {#text} at (12,268) size 18x4
+      text run at (12,268) width 4: " "
     LayoutBlockFlow {DIV} at (10,282) size 138x248 [bgcolor=#808080]
       LayoutBlockFlow {DIV} at (16,12) size 110x100 [bgcolor=#FFFFFF] [border: (20px solid #0000FF7F)]
       LayoutText {#text} at (2,122) size 18x4

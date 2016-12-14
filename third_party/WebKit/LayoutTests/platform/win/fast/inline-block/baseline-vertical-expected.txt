@@ -1,0 +1,155 @@
+layer at (0,0) size 800x600
+  LayoutView at (0,0) size 800x600
+layer at (0,0) size 800x504
+  LayoutBlockFlow {HTML} at (0,0) size 800x504.03
+    LayoutBlockFlow {BODY} at (0,0) size 800x252.02
+      LayoutBlockFlow (floating) {DIV} at (5,0) size 130.05x252.02
+        LayoutBlockFlow {P} at (0,16) size 130.05x18
+          LayoutText {#text} at (0,0) size 131x17
+            text run at (0,0) width 131: "VerticalLR and LTR"
+        LayoutBlockFlow {DIV} at (0,50) size 125x202.02 [bgcolor=#808080]
+          LayoutBlockFlow {DIV} at (19,10) size 36x27 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (12,8) size 15x9
+              text run at (12,8) width 9: "A"
+          LayoutBlockFlow {DIV} at (18,51) size 43x32.45 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (12,8) size 22x15
+              text run at (12,8) width 15: "A"
+          LayoutBlockFlow {DIV} at (16,97.45) size 54x39.67 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (12,8) size 33x22
+              text run at (12,8) width 22: "A"
+          LayoutBlockFlow {DIV} at (12,151.13) size 67x46.89 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (13,8) size 45x29
+              text run at (13,8) width 29: "A"
+          LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (floating) {DIV} at (140.05,0) size 130.56x252.02
+        LayoutBlockFlow {P} at (0,16) size 130.56x18
+          LayoutText {#text} at (0,0) size 131x17
+            text run at (0,0) width 131: "VerticalLR and RTL"
+          LayoutBR {BR} at (130,0) size 1x17
+        LayoutBlockFlow {DIV} at (0,50) size 125x202.02 [bgcolor=#808080]
+          LayoutBlockFlow {DIV} at (19,171.02) size 36x27 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (12,8) size 15x9
+              text run at (12,8) width 9: "A"
+          LayoutBlockFlow {DIV} at (18,124.56) size 43x32.45 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (12,8) size 22x15
+              text run at (12,8) width 15: "A"
+          LayoutBlockFlow {DIV} at (16,70.89) size 54x39.67 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (12,8) size 33x22
+              text run at (12,8) width 22: "A"
+          LayoutBlockFlow {DIV} at (12,10) size 67x46.89 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (13,8) size 45x29
+              text run at (13,8) width 29: "A"
+          LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (floating) {DIV} at (275.61,0) size 175x252.02
+        LayoutBlockFlow {P} at (0,16) size 175x18
+          LayoutText {#text} at (0,0) size 131x17
+            text run at (0,0) width 131: "VerticalLR and LTR"
+        LayoutBlockFlow {DIV} at (0,50) size 175x202.02 [bgcolor=#808080]
+          LayoutBlockFlow {DIV} at (12,10) size 58x27 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (34,8) size 15x9
+              text run at (34,8) width 9: "A"
+          LayoutBlockFlow {DIV} at (33,51) size 43x32.45 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (12,8) size 22x15
+              text run at (12,8) width 15: "A"
+          LayoutBlockFlow {DIV} at (31,97.45) size 81x39.67 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (12,8) size 33x22
+              text run at (12,8) width 22: "A"
+          LayoutBlockFlow {DIV} at (27,151.13) size 67x46.89 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (13,8) size 45x29
+              text run at (13,8) width 29: "A"
+          LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (floating) {DIV} at (455.61,0) size 175x252.02
+        LayoutBlockFlow {P} at (0,16) size 175x18
+          LayoutText {#text} at (0,0) size 131x17
+            text run at (0,0) width 131: "VerticalLR and RTL"
+        LayoutBlockFlow {DIV} at (0,50) size 175x202.02 [bgcolor=#808080]
+          LayoutBlockFlow {DIV} at (12,171.02) size 58x27 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (34,8) size 15x9
+              text run at (34,8) width 9: "A"
+          LayoutBlockFlow {DIV} at (33,124.56) size 43x32.45 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (12,8) size 22x15
+              text run at (12,8) width 15: "A"
+          LayoutBlockFlow {DIV} at (31,70.89) size 81x39.67 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (12,8) size 33x22
+              text run at (12,8) width 22: "A"
+          LayoutBlockFlow {DIV} at (27,10) size 67x46.89 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (13,8) size 45x29
+              text run at (13,8) width 29: "A"
+          LayoutText {#text} at (0,0) size 0x0
+      LayoutBR {BR} at (630,0) size 1x17
+      LayoutBlockFlow (floating) {DIV} at (5,252.02) size 130.05x252.02
+        LayoutBlockFlow {P} at (0,16) size 130.05x18
+          LayoutText {#text} at (0,0) size 131x17
+            text run at (0,0) width 131: "VerticalRL and LTR"
+        LayoutBlockFlow {DIV} at (0,50) size 125x202.02 [bgcolor=#808080]
+          LayoutBlockFlow {DIV} at (31,10) size 36x27 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (8,8) size 15x9
+              text run at (8,8) width 9: "A"
+          LayoutBlockFlow {DIV} at (25,51) size 43x32.45 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (8,8) size 22x15
+              text run at (8,8) width 15: "A"
+          LayoutBlockFlow {DIV} at (16,97.45) size 54x39.67 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (8,8) size 33x22
+              text run at (8,8) width 22: "A"
+          LayoutBlockFlow {DIV} at (6,151.13) size 67x46.89 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (9,8) size 45x29
+              text run at (9,8) width 29: "A"
+          LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (floating) {DIV} at (140.05,252.02) size 130.56x252.02
+        LayoutBlockFlow {P} at (0,16) size 130.56x18
+          LayoutText {#text} at (0,0) size 131x17
+            text run at (0,0) width 131: "VerticalRL and RTL"
+        LayoutBlockFlow {DIV} at (0,50) size 125x202.02 [bgcolor=#808080]
+          LayoutBlockFlow {DIV} at (31,171.02) size 36x27 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (8,8) size 15x9
+              text run at (8,8) width 9: "A"
+          LayoutBlockFlow {DIV} at (25,124.56) size 43x32.45 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (8,8) size 22x15
+              text run at (8,8) width 15: "A"
+          LayoutBlockFlow {DIV} at (16,70.89) size 54x39.67 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (8,8) size 33x22
+              text run at (8,8) width 22: "A"
+          LayoutBlockFlow {DIV} at (6,10) size 67x46.89 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (9,8) size 45x29
+              text run at (9,8) width 29: "A"
+          LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (floating) {DIV} at (275.61,252.02) size 175x252.02
+        LayoutBlockFlow {P} at (0,16) size 175x18
+          LayoutText {#text} at (0,0) size 131x17
+            text run at (0,0) width 131: "VerticalRL and LTR"
+        LayoutBlockFlow {DIV} at (0,50) size 175x202.02 [bgcolor=#808080]
+          LayoutBlockFlow {DIV} at (48,10) size 58x27 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (8,8) size 15x9
+              text run at (8,8) width 9: "A"
+          LayoutBlockFlow {DIV} at (42,51) size 43x32.45 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (8,8) size 22x15
+              text run at (8,8) width 15: "A"
+          LayoutBlockFlow {DIV} at (6,97.45) size 81x39.67 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (35,8) size 33x22
+              text run at (35,8) width 22: "A"
+          LayoutBlockFlow {DIV} at (23,151.13) size 67x46.89 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (9,8) size 45x29
+              text run at (9,8) width 29: "A"
+          LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0
+      LayoutBlockFlow (floating) {DIV} at (455.61,252.02) size 175x252.02
+        LayoutBlockFlow {P} at (0,16) size 175x18
+          LayoutText {#text} at (0,0) size 131x17
+            text run at (0,0) width 131: "VerticalRL and RTL"
+        LayoutBlockFlow {DIV} at (0,50) size 175x202.02 [bgcolor=#808080]
+          LayoutBlockFlow {DIV} at (48,171.02) size 58x27 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (8,8) size 15x9
+              text run at (8,8) width 9: "A"
+          LayoutBlockFlow {DIV} at (42,124.56) size 43x32.45 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (8,8) size 22x15
+              text run at (8,8) width 15: "A"
+          LayoutBlockFlow {DIV} at (6,70.89) size 81x39.67 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (35,8) size 33x22
+              text run at (35,8) width 22: "A"
+          LayoutBlockFlow {DIV} at (23,10) size 67x46.89 [border: (2px solid #000000) (5px solid #000000) (3px solid #000000) (4px solid #000000)]
+            LayoutText {#text} at (9,8) size 45x29
+              text run at (9,8) width 29: "A"
+          LayoutText {#text} at (0,0) size 0x0
+      LayoutText {#text} at (0,0) size 0x0

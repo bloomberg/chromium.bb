@@ -2566,6 +2566,13 @@ int LayoutBlockFlow::inlineBlockBaseline(
     DCHECK(fontData);
     if (!fontData)
       return -1;
+    // InlineFlowBox::placeBoxesInBlockDirection will flip lines in
+    // case of verticalLR mode, so we can assume verticalRL for now.
+    if (style()->isFlippedLinesWritingMode()) {
+      return (logicalHeight() - lastLineBox()->logicalBottom() +
+              fontData->getFontMetrics().ascent(lastRootBox()->baselineType()))
+          .toInt();
+    }
     return (lastLineBox()->logicalTop() +
             fontData->getFontMetrics().ascent(lastRootBox()->baselineType()))
         .toInt();
