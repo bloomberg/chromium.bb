@@ -2704,7 +2704,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     print('Issue %s has been submitted.' % self.GetIssueURL())
     links = self._GetChangeCommit().get('web_links', [])
     for link in links:
-      if link.get('name') == 'gerrit' and link.get('url'):
+      if link.get('name') == 'gitiles' and link.get('url'):
         print('Landed as %s' % link.get('url'))
         break
     return 0

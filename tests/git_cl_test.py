@@ -2763,7 +2763,7 @@ class TestGitCl(TestCase):
     }
     cl._codereview_impl._GetChangeCommit = lambda: {
       'commit': 'deadbeef',
-      'web_links': [{'name': 'gerrit',
+      'web_links': [{'name': 'gitiles',
                      'url': 'https://git.googlesource.com/test/+/deadbeef'}],
     }
     cl._codereview_impl.SubmitIssue = lambda wait_for_merge: None
