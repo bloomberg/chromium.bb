@@ -128,9 +128,11 @@ scoped_refptr<AudioInputController> AudioInputController::Create(
     return nullptr;
 
   if (factory_) {
-    return factory_->Create(
-        audio_manager, event_handler, params, user_input_monitor);
+    return factory_->Create(audio_manager->GetTaskRunner(),
+                            /*sync_writer*/ nullptr, audio_manager,
+                            event_handler, params, user_input_monitor);
   }
+
   scoped_refptr<AudioInputController> controller(new AudioInputController(
       event_handler, nullptr, nullptr, user_input_monitor, false));
 
@@ -167,6 +169,12 @@ scoped_refptr<AudioInputController> AudioInputController::CreateLowLatency(
   if (!params.IsValid() || (params.channels() > kMaxInputChannels))
     return nullptr;
 
+  if (factory_) {
+    return factory_->Create(audio_manager->GetTaskRunner(), sync_writer,
+                            audio_manager, event_handler, params,
+                            user_input_monitor);
+  }
+
   // Create the AudioInputController object and ensure that it runs on
   // the audio-manager thread.
   scoped_refptr<AudioInputController> controller(new AudioInputController(
@@ -199,6 +207,12 @@ scoped_refptr<AudioInputController> AudioInputController::CreateForStream(
     UserInputMonitor* user_input_monitor) {
   DCHECK(sync_writer);
   DCHECK(stream);
+
+  if (factory_) {
+    return factory_->Create(
+        task_runner, sync_writer, AudioManager::Get(), event_handler,
+        media::AudioParameters::UnavailableDeviceParams(), user_input_monitor);
+  }
 
   // Create the AudioInputController object and ensure that it runs on
   // the audio-manager thread.

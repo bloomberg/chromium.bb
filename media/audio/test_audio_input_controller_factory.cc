@@ -52,6 +52,8 @@ TestAudioInputControllerFactory::~TestAudioInputControllerFactory() {
 }
 
 AudioInputController* TestAudioInputControllerFactory::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    AudioInputController::SyncWriter* sync_writer,
     AudioManager* audio_manager,
     AudioInputController::EventHandler* event_handler,
     AudioParameters params,

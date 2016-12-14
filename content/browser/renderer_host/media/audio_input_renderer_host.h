@@ -30,20 +30,10 @@
 #include <memory>
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
-#include "base/process/process.h"
-#include "base/sequenced_task_runner_helpers.h"
 #include "content/common/media/audio_messages.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "content/public/browser/browser_thread.h"
 #include "media/audio/audio_input_controller.h"
-#include "media/audio/audio_io.h"
-#include "media/audio/audio_logging.h"
-#include "media/audio/simple_sources.h"
-#include "media/media_features.h"
 
 namespace media {
 class AudioManager;
@@ -53,13 +43,12 @@ class UserInputMonitor;
 namespace content {
 class AudioMirroringManager;
 class MediaStreamManager;
-class RenderProcessHost;
 
 class CONTENT_EXPORT AudioInputRendererHost
     : public BrowserMessageFilter,
       public media::AudioInputController::EventHandler {
  public:
-  // Error codes to make native loggin more clear. These error codes are added
+  // Error codes to make native logging more clear. These error codes are added
   // to generic error strings to provide a higher degree of details.
   // Changing these values can lead to problems when matching native debug
   // logs with the actual cause of error.
@@ -85,20 +74,14 @@ class CONTENT_EXPORT AudioInputRendererHost
     // Failed to create native audio input stream.
     STREAM_CREATE_ERROR,  // = 6
 
-    // Renderer process handle is invalid.
-    INVALID_PEER_HANDLE,  // = 7
-
-    // Only low-latency mode is supported.
-    INVALID_LATENCY_MODE,  // = 8
-
     // Failed to map and share the shared memory.
-    MEMORY_SHARING_FAILED,  // = 9
+    MEMORY_SHARING_FAILED,  // = 7,
 
     // Unable to prepare the foreign socket handle.
-    SYNC_SOCKET_ERROR,  // = 10
+    SYNC_SOCKET_ERROR,  // = 8,
 
     // This error message comes from the AudioInputController instance.
-    AUDIO_INPUT_CONTROLLER_ERROR,  // = 11
+    AUDIO_INPUT_CONTROLLER_ERROR,  // = 9,
   };
 
   // Called from UI thread from the owner of this object.
@@ -135,16 +118,15 @@ class CONTENT_EXPORT AudioInputRendererHost
   // filename.
   void set_renderer_pid(int32_t renderer_pid);
 
+ protected:
+  ~AudioInputRendererHost() override;
+
  private:
-  // TODO(henrika): extend test suite (compare AudioRenderHost)
   friend class BrowserThread;
-  friend class TestAudioInputRendererHost;
   friend class base::DeleteHelper<AudioInputRendererHost>;
 
   struct AudioEntry;
   typedef std::map<int, AudioEntry*> AudioEntryMap;
-
-  ~AudioInputRendererHost() override;
 
   // Methods called on IO thread ----------------------------------------------
 
@@ -160,8 +142,8 @@ class CONTENT_EXPORT AudioInputRendererHost
 
   // Creates an audio input stream with the specified format whose data is
   // consumed by an entity in the RenderFrame referenced by |render_frame_id|.
-  // |session_id| is used to find out which device to be used for the stream.
-  // Upon success/failure, the peer is notified via the
+  // |session_id| is used to identify the device that should be used for the
+  // stream. Upon success/failure, the peer is notified via the
   // NotifyStreamCreated message.
   void DoCreateStream(int stream_id,
                       int render_frame_id,
@@ -196,7 +178,7 @@ class CONTENT_EXPORT AudioInputRendererHost
   // Send an error message to the renderer.
   void SendErrorMessage(int stream_id, ErrorCode error_code);
 
-  // Delete all audio entry and all audio streams
+  // Delete all audio entries and all audio streams.
   void DeleteEntries();
 
   // Closes the stream. The stream is then deleted in DeleteEntry() after it
@@ -260,8 +242,6 @@ class CONTENT_EXPORT AudioInputRendererHost
   media::UserInputMonitor* user_input_monitor_;
 
   std::unique_ptr<media::AudioLog> audio_log_;
-
-  base::WeakPtrFactory<AudioInputRendererHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioInputRendererHost);
 };

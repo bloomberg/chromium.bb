@@ -147,6 +147,8 @@ class MEDIA_EXPORT AudioInputController
   class Factory {
    public:
     virtual AudioInputController* Create(
+        scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+        SyncWriter* sync_writer,
         AudioManager* audio_manager,
         EventHandler* event_handler,
         AudioParameters params,
@@ -232,10 +234,10 @@ class MEDIA_EXPORT AudioInputController
   bool SharedMemoryAndSyncSocketMode() const { return sync_writer_ != NULL; }
 
   // Enable debug recording of audio input.
-  void EnableDebugRecording(const base::FilePath& file_name);
+  virtual void EnableDebugRecording(const base::FilePath& file_name);
 
   // Disable debug recording of audio input.
-  void DisableDebugRecording();
+  virtual void DisableDebugRecording();
 
  protected:
   friend class base::RefCountedThreadSafe<AudioInputController>;

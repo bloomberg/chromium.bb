@@ -215,6 +215,8 @@ void AudioInputMessageFilter::AudioInputIPCImpl::RecordStream() {
 
 void AudioInputMessageFilter::AudioInputIPCImpl::SetVolume(double volume) {
   DCHECK_NE(stream_id_, kStreamIDNotSet);
+  DCHECK_GE(volume, 0);
+  DCHECK_LE(volume, 1);
   filter_->Send(new AudioInputHostMsg_SetVolume(stream_id_, volume));
 }
 
