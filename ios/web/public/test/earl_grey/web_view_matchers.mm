@@ -4,9 +4,11 @@
 
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 
+#import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
 #include "base/mac/bind_objc_block.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -16,8 +18,28 @@
 #import "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
+#import "net/base/mac/url_conversions.h"
 
+using testing::kWaitForDownloadTimeout;
 using testing::WaitUntilConditionOrTimeout;
+
+// A helper delegate class that allows downloading responses with invalid
+// SSL certs.
+@interface TestURLSessionDelegate : NSObject<NSURLSessionDelegate>
+@end
+
+@implementation TestURLSessionDelegate
+
+- (void)URLSession:(NSURLSession*)session
+    didReceiveChallenge:(NSURLAuthenticationChallenge*)challenge
+      completionHandler:(void (^)(NSURLSessionAuthChallengeDisposition,
+                                  NSURLCredential*))completionHandler {
+  SecTrustRef serverTrust = challenge.protectionSpace.serverTrust;
+  completionHandler(NSURLSessionAuthChallengeUseCredential,
+                    [NSURLCredential credentialForTrust:serverTrust]);
+}
+
+@end
 
 namespace {
 
@@ -58,6 +80,40 @@ id<GREYMatcher> webViewWithText(std::string text,
                     nil);
 }
 
+// Fetches the image from |image_url|.
+UIImage* LoadImage(const GURL& image_url) {
+  __block base::scoped_nsobject<UIImage> image;
+  __block base::scoped_nsobject<NSError> error;
+  TestURLSessionDelegate* session_delegate =
+      [[TestURLSessionDelegate alloc] init];
+  NSURLSessionConfiguration* session_config =
+      [NSURLSessionConfiguration defaultSessionConfiguration];
+  NSURLSession* session =
+      [NSURLSession sessionWithConfiguration:session_config
+                                    delegate:session_delegate
+                               delegateQueue:nil];
+  id completion_handler = ^(NSData* data, NSURLResponse*, NSError* task_error) {
+    if (task_error) {
+      error.reset([task_error retain]);
+    } else {
+      image.reset([[UIImage alloc] initWithData:data]);
+    }
+    [session_delegate autorelease];
+  };
+
+  NSURLSessionDataTask* task =
+      [session dataTaskWithURL:net::NSURLWithGURL(image_url)
+             completionHandler:completion_handler];
+  [task resume];
+
+  bool image_loaded = WaitUntilConditionOrTimeout(kWaitForDownloadTimeout, ^{
+    return image || error;
+  });
+  GREYAssert(image_loaded, @"Failed to download image");
+
+  return [[image retain] autorelease];
+}
+
 }  // namespace
 
 namespace web {
@@ -84,6 +140,23 @@ id<GREYMatcher> webViewContainingText(std::string text, WebState* web_state) {
 id<GREYMatcher> webViewNotContainingText(std::string text,
                                          WebState* web_state) {
   return webViewWithText(text, web_state, false);
+}
+
+id<GREYMatcher> webViewContainingBlockedImage(std::string image_id,
+                                              WebState* web_state) {
+  std::string get_url_script =
+      base::StringPrintf("document.getElementById('%s').src", image_id.c_str());
+  std::unique_ptr<base::Value> url_as_value =
+      test::ExecuteJavaScript(web_state, get_url_script);
+  std::string url_as_string;
+  if (!url_as_value->GetAsString(&url_as_string))
+    return grey_nil();
+
+  UIImage* image = LoadImage(GURL(url_as_string));
+  if (!image)
+    return grey_nil();
+
+  return webViewContainingBlockedImage(image_id, image.size, web_state);
 }
 
 id<GREYMatcher> webViewContainingBlockedImage(std::string image_id,

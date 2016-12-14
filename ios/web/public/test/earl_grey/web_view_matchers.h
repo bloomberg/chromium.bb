@@ -26,7 +26,14 @@ id<GREYMatcher> webViewContainingText(std::string text, WebState* web_state);
 id<GREYMatcher> webViewNotContainingText(std::string text, WebState* web_state);
 
 // Matcher for WKWebView containing a blocked |image_id|.  When blocked, the
+// image element will be smaller actual image size.
+id<GREYMatcher> webViewContainingBlockedImage(std::string image_id,
+                                              WebState* web_state);
+
+// Matcher for WKWebView containing a blocked |image_id|.  When blocked, the
 // image will be smaller than |expected_size|.
+// Note: deprecated. Use webViewContainingBlockedImage(std::string, WebState*)
+// instead. TODO(crbug.com/673520): Remove this method.
 id<GREYMatcher> webViewContainingBlockedImage(std::string image_id,
                                               CGSize expected_size,
                                               WebState* web_state);
