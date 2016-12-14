@@ -93,7 +93,7 @@ TEST_F(
 
 TEST_F(
     LayoutObjectTest,
-    ContainingBlockAbsoluteLayoutObjectShouldNotBeNonStaticlyPositionedInlineAncestor) {
+    ContainingBlockAbsoluteLayoutObjectShouldNotBeNonStaticallyPositionedInlineAncestor) {
   setBodyInnerHTML(
       "<span style='position:relative'><bar "
       "style='position:absolute'></bar></span>");
@@ -122,6 +122,55 @@ TEST_F(LayoutObjectTest, PaintingLayerOfOverflowClipLayerUnderColumnSpanAll) {
       getLayoutObjectByElementId("overflow-clip-layer");
   LayoutBlock* columns = toLayoutBlock(getLayoutObjectByElementId("columns"));
   EXPECT_EQ(columns->layer(), overflowClipObject->paintingLayer());
+}
+
+namespace {
+
+class ScopedSPv2 {
+ public:
+  ScopedSPv2() { RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true); }
+  ~ScopedSPv2() { m_featuresBackup.restore(); }
+
+ private:
+  RuntimeEnabledFeatures::Backup m_featuresBackup;
+};
+
+}  // namespace
+
+TEST_F(LayoutObjectTest, MutableForPaintingClearPaintFlags) {
+  LayoutObject* object = document().body()->layoutObject();
+  object->setShouldDoFullPaintInvalidation();
+  EXPECT_TRUE(object->shouldDoFullPaintInvalidation());
+  object->m_bitfields.setChildShouldCheckForPaintInvalidation(true);
+  EXPECT_TRUE(object->m_bitfields.childShouldCheckForPaintInvalidation());
+  object->setMayNeedPaintInvalidation();
+  EXPECT_TRUE(object->mayNeedPaintInvalidation());
+  object->setMayNeedPaintInvalidationSubtree();
+  EXPECT_TRUE(object->mayNeedPaintInvalidationSubtree());
+  object->setMayNeedPaintInvalidationAnimatedBackgroundImage();
+  EXPECT_TRUE(object->mayNeedPaintInvalidationAnimatedBackgroundImage());
+  object->setShouldInvalidateSelection();
+  EXPECT_TRUE(object->shouldInvalidateSelection());
+  object->setBackgroundChangedSinceLastPaintInvalidation();
+  EXPECT_TRUE(object->backgroundChangedSinceLastPaintInvalidation());
+  object->setNeedsPaintPropertyUpdate();
+  EXPECT_TRUE(object->needsPaintPropertyUpdate());
+  object->m_bitfields.setDescendantNeedsPaintPropertyUpdate(true);
+  EXPECT_TRUE(object->descendantNeedsPaintPropertyUpdate());
+
+  ScopedSPv2 enableSPv2;
+  document().lifecycle().advanceTo(DocumentLifecycle::InPrePaint);
+  object->getMutableForPainting().clearPaintFlags();
+
+  EXPECT_FALSE(object->shouldDoFullPaintInvalidation());
+  EXPECT_FALSE(object->m_bitfields.childShouldCheckForPaintInvalidation());
+  EXPECT_FALSE(object->mayNeedPaintInvalidation());
+  EXPECT_FALSE(object->mayNeedPaintInvalidationSubtree());
+  EXPECT_FALSE(object->mayNeedPaintInvalidationAnimatedBackgroundImage());
+  EXPECT_FALSE(object->shouldInvalidateSelection());
+  EXPECT_FALSE(object->backgroundChangedSinceLastPaintInvalidation());
+  EXPECT_FALSE(object->needsPaintPropertyUpdate());
+  EXPECT_FALSE(object->descendantNeedsPaintPropertyUpdate());
 }
 
 }  // namespace blink

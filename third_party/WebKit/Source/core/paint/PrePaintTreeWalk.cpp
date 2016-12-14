@@ -119,9 +119,7 @@ bool PrePaintTreeWalk::walk(const LayoutObject& object,
     if (descendantsFullyUpdated) {
       // If descendants were not fully updated, do not clear flags. During the
       // next PrePaintTreeWalk, these flags will be used again.
-      object.getMutableForPainting().clearPaintInvalidationFlags();
-      object.getMutableForPainting().clearNeedsPaintPropertyUpdate();
-      object.getMutableForPainting().clearDescendantNeedsPaintPropertyUpdate();
+      object.getMutableForPainting().clearPaintFlags();
     }
     return descendantsFullyUpdated;
   }
@@ -131,7 +129,7 @@ bool PrePaintTreeWalk::walk(const LayoutObject& object,
   updateAuxiliaryObjectProperties(object, localContext);
 
   // Ensure the current context takes into account the box position. This can
-  // change the current context's paint offset so it must proceed the paint
+  // change the current context's paint offset so it must precede the paint
   // offset property update check.
   m_propertyTreeBuilder.updateContextForBoxPosition(
       object, localContext.treeBuilderContext);
@@ -191,9 +189,7 @@ bool PrePaintTreeWalk::walk(const LayoutObject& object,
   if (descendantsFullyUpdated) {
     // If descendants were not updated, do not clear flags. During the next
     // PrePaintTreeWalk, these flags will be used again.
-    object.getMutableForPainting().clearPaintInvalidationFlags();
-    object.getMutableForPainting().clearNeedsPaintPropertyUpdate();
-    object.getMutableForPainting().clearDescendantNeedsPaintPropertyUpdate();
+    object.getMutableForPainting().clearPaintFlags();
   }
   return descendantsFullyUpdated;
 }

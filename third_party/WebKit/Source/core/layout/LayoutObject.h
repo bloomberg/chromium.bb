@@ -196,6 +196,7 @@ const int showTreeCharacterOffset = 39;
 class CORE_EXPORT LayoutObject : public ImageResourceObserver,
                                  public DisplayItemClient {
   friend class LayoutObjectChildList;
+  FRIEND_TEST_ALL_PREFIXES(LayoutObjectTest, MutableForPaintingClearPaintFlags);
   friend class VisualRectMappingTest;
   WTF_MAKE_NONCOPYABLE(LayoutObject);
 
@@ -1653,8 +1654,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // methods.
   class MutableForPainting {
    public:
-    void clearPaintInvalidationFlags() {
+    // Convenience mutator that clears paint invalidation flags and this object
+    // and its descendants' needs-paint-property-update flags.
+    void clearPaintFlags() {
       m_layoutObject.clearPaintInvalidationFlags();
+      m_layoutObject.clearNeedsPaintPropertyUpdate();
+      m_layoutObject.clearDescendantNeedsPaintPropertyUpdate();
     }
     void setShouldDoFullPaintInvalidation(PaintInvalidationReason reason) {
       m_layoutObject.setShouldDoFullPaintInvalidation(reason);
@@ -1690,12 +1695,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     }
     void setNeedsPaintPropertyUpdate() {
       m_layoutObject.setNeedsPaintPropertyUpdate();
-    }
-    void clearNeedsPaintPropertyUpdate() {
-      m_layoutObject.clearNeedsPaintPropertyUpdate();
-    }
-    void clearDescendantNeedsPaintPropertyUpdate() {
-      m_layoutObject.clearDescendantNeedsPaintPropertyUpdate();
     }
 
    protected:
