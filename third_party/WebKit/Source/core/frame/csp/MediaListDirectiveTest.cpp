@@ -135,12 +135,11 @@ TEST_F(MediaListDirectiveTest, Subsumes) {
   };
 
   MediaListDirective emptyA("plugin-types", "", csp.get());
-  EXPECT_TRUE(emptyA.subsumes({&emptyA}));
 
   for (const auto& test : cases) {
-    std::vector<MediaListDirective*> policiesB;
+    HeapVector<Member<MediaListDirective>> policiesB;
     for (const auto& policy : test.policiesB) {
-      policiesB.push_back(
+      policiesB.append(
           new MediaListDirective("plugin-types", policy, csp.get()));
     }
 

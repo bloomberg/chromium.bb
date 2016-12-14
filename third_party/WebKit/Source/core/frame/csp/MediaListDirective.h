@@ -21,11 +21,11 @@ class CORE_EXPORT MediaListDirective final : public CSPDirective {
   MediaListDirective(const String& name,
                      const String& value,
                      ContentSecurityPolicy*);
-  bool allows(const String& type);
+  bool allows(const String& type) const;
 
   // The algorothm is described more extensively here:
   // https://w3c.github.io/webappsec-csp/embedded/#subsume-policy.
-  bool subsumes(const std::vector<MediaListDirective*>& other);
+  bool subsumes(const HeapVector<Member<MediaListDirective>>& other) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaListDirectiveTest, GetIntersect);
@@ -35,7 +35,7 @@ class CORE_EXPORT MediaListDirective final : public CSPDirective {
 
   // The algorothm is described more extensively here:
   // https://w3c.github.io/webappsec-csp/embedded/#subsume-policy.
-  HashSet<String> getIntersect(const HashSet<String>& other);
+  HashSet<String> getIntersect(const HashSet<String>& other) const;
 
   HashSet<String> m_pluginTypes;
 };

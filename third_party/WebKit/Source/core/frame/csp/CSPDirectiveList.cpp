@@ -1264,7 +1264,16 @@ bool CSPDirectiveList::subsumes(const CSPDirectiveListVector& other) {
       return false;
   }
 
-  return true;
+  if (!hasPluginTypes())
+    return true;
+
+  HeapVector<Member<MediaListDirective>> pluginTypesOther;
+  for (const auto& policy : other) {
+    if (policy->hasPluginTypes())
+      pluginTypesOther.append(policy->m_pluginTypes);
+  }
+
+  return m_pluginTypes->subsumes(pluginTypesOther);
 }
 
 DEFINE_TRACE(CSPDirectiveList) {

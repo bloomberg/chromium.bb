@@ -621,6 +621,87 @@ TEST_F(CSPDirectiveListTest, SubsumesIfNoneIsPresent) {
   }
 }
 
+TEST_F(CSPDirectiveListTest, SubsumesPluginTypes) {
+  struct TestCase {
+    const char* policyA;
+    const std::vector<const char*> policiesB;
+    bool expected;
+  } cases[] = {
+      // `policyA` subsumes `policiesB`.
+      {"script-src 'unsafe-inline'",
+       {"script-src  ", "script-src http://example.com",
+        "plugin-types text/plain"},
+       true},
+      {"script-src http://example.com",
+       {"script-src http://example.com; plugin-types "},
+       true},
+      {"script-src http://example.com",
+       {"script-src http://example.com; plugin-types text/plain"},
+       true},
+      {"script-src http://example.com; plugin-types text/plain",
+       {"script-src http://example.com; plugin-types text/plain"},
+       true},
+      {"script-src http://example.com; plugin-types text/plain",
+       {"script-src http://example.com; plugin-types "},
+       true},
+      {"script-src http://example.com; plugin-types text/plain",
+       {"script-src http://example.com; plugin-types ", "plugin-types "},
+       true},
+      {"plugin-types application/pdf text/plain",
+       {"plugin-types application/pdf text/plain",
+        "plugin-types application/x-blink-test-plugin"},
+       true},
+      {"plugin-types application/pdf text/plain",
+       {"plugin-types application/pdf text/plain",
+        "plugin-types application/pdf text/plain "
+        "application/x-blink-test-plugin"},
+       true},
+      {"plugin-types application/x-shockwave-flash application/pdf text/plain",
+       {"plugin-types application/x-shockwave-flash application/pdf text/plain",
+        "plugin-types application/x-shockwave-flash"},
+       true},
+      {"plugin-types application/x-shockwave-flash",
+       {"plugin-types application/x-shockwave-flash application/pdf text/plain",
+        "plugin-types application/x-shockwave-flash"},
+       true},
+      // `policyA` does not subsume `policiesB`.
+      {"script-src http://example.com; plugin-types text/plain",
+       {"script-src http://example.com"},
+       false},
+      {"plugin-types random-value",
+       {"script-src 'unsafe-inline'", "plugin-types text/plain"},
+       false},
+      {"plugin-types random-value",
+       {"script-src http://example.com", "script-src http://example.com"},
+       false},
+      {"plugin-types random-value",
+       {"plugin-types  text/plain", "plugin-types text/plain"},
+       false},
+      {"script-src http://example.com; plugin-types text/plain",
+       {"plugin-types ", "plugin-types "},
+       false},
+      {"plugin-types application/pdf text/plain",
+       {"plugin-types application/x-blink-test-plugin",
+        "plugin-types application/x-blink-test-plugin"},
+       false},
+      {"plugin-types application/pdf text/plain",
+       {"plugin-types application/pdf application/x-blink-test-plugin",
+        "plugin-types application/x-blink-test-plugin"},
+       false},
+  };
+
+  for (const auto& test : cases) {
+    CSPDirectiveList* A =
+        createList(test.policyA, ContentSecurityPolicyHeaderTypeEnforce);
+
+    HeapVector<Member<CSPDirectiveList>> listB;
+    for (const auto& policyB : test.policiesB)
+      listB.append(createList(policyB, ContentSecurityPolicyHeaderTypeEnforce));
+
+    EXPECT_EQ(test.expected, A->subsumes(listB));
+  }
+}
+
 TEST_F(CSPDirectiveListTest, OperativeDirectiveGivenType) {
   enum DefaultBehaviour { Default, NoDefault, ChildAndDefault };
 

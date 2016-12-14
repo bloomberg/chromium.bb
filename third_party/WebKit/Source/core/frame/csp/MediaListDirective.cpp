@@ -21,7 +21,7 @@ MediaListDirective::MediaListDirective(const String& name,
   parse(characters.data(), characters.data() + characters.size());
 }
 
-bool MediaListDirective::allows(const String& type) {
+bool MediaListDirective::allows(const String& type) const {
   return m_pluginTypes.contains(type);
 }
 
@@ -84,7 +84,7 @@ void MediaListDirective::parse(const UChar* begin, const UChar* end) {
 }
 
 bool MediaListDirective::subsumes(
-    const std::vector<MediaListDirective*>& other) {
+    const HeapVector<Member<MediaListDirective>>& other) const {
   if (!other.size())
     return false;
 
@@ -106,7 +106,8 @@ bool MediaListDirective::subsumes(
   return true;
 }
 
-HashSet<String> MediaListDirective::getIntersect(const HashSet<String>& other) {
+HashSet<String> MediaListDirective::getIntersect(
+    const HashSet<String>& other) const {
   HashSet<String> normalized;
   for (const auto& type : m_pluginTypes) {
     if (other.contains(type))
