@@ -1631,6 +1631,11 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
                           get_wedge_bits_lookup(bsize));
         aom_write_bit(w, mbmi->interinter_compound_data.wedge_sign);
       }
+#if CONFIG_COMPOUND_SEGMENT
+      else if (mbmi->interinter_compound_data.type == COMPOUND_SEG) {
+        aom_write_bit(w, mbmi->interinter_compound_data.which);
+      }
+#endif  // CONFIG_COMPOUND_SEGMENT
     }
 #endif  // CONFIG_EXT_INTER
 

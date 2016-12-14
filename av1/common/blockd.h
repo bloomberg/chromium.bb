@@ -180,10 +180,12 @@ static INLINE int have_newmv_in_inter_mode(PREDICTION_MODE mode) {
           mode == NEAR_NEWMV || mode == NEW_NEARMV);
 }
 
-// TODO(sarahparker) this will eventually be extended when more
-// masked compound types are added
 static INLINE int is_masked_compound_type(COMPOUND_TYPE type) {
+#if CONFIG_COMPOUND_SEGMENT
+  return (type == COMPOUND_WEDGE || type == COMPOUND_SEG);
+#else
   return (type == COMPOUND_WEDGE);
+#endif  // CONFIG_COMPOUND_SEGMENT
 }
 #else
 
@@ -259,7 +261,10 @@ typedef struct {
   COMPOUND_TYPE type;
   int wedge_index;
   int wedge_sign;
-  // TODO(sarahparker) add neccesary data for segmentation compound type
+#if CONFIG_COMPOUND_SEGMENT
+  int which;
+  uint8_t seg_mask[2][2 * MAX_SB_SQUARE];
+#endif  // CONFIG_COMPOUND_SEGMENT
 } INTERINTER_COMPOUND_DATA;
 #endif  // CONFIG_EXT_INTER
 

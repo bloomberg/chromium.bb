@@ -211,6 +211,13 @@ static INLINE int is_interintra_wedge_used(BLOCK_SIZE sb_type) {
 static INLINE int get_interintra_wedge_bits(BLOCK_SIZE sb_type) {
   return wedge_params_lookup[sb_type].bits;
 }
+
+#if CONFIG_COMPOUND_SEGMENT
+void build_compound_seg_mask(INTERINTER_COMPOUND_DATA *comp_data,
+                             const uint8_t *src0, int src0_stride,
+                             const uint8_t *src1, int src1_stride,
+                             BLOCK_SIZE sb_type, int h, int w);
+#endif  // CONFIG_COMPOUND_SEGMENT
 #endif  // CONFIG_EXT_INTER
 
 void build_inter_predictors(MACROBLOCKD *xd, int plane,
@@ -260,7 +267,10 @@ void av1_make_masked_inter_predictor(const uint8_t *pre, int pre_stride,
 #if CONFIG_SUPERTX
                                      int wedge_offset_x, int wedge_offset_y,
 #endif  // CONFIG_SUPERTX
-                                     const MACROBLOCKD *xd);
+#if CONFIG_COMPOUND_SEGMENT
+                                     int plane,
+#endif  // CONFIG_COMPOUND_SEGMENT
+                                     MACROBLOCKD *xd);
 #endif  // CONFIG_EXT_INTER
 
 static INLINE int round_mv_comp_q4(int value) {
@@ -528,9 +538,8 @@ const uint8_t *av1_get_soft_mask(int wedge_index, int wedge_sign,
                                  BLOCK_SIZE sb_type, int wedge_offset_x,
                                  int wedge_offset_y);
 
-const uint8_t *av1_get_compound_type_mask(
-    const INTERINTER_COMPOUND_DATA *const comp_data, BLOCK_SIZE sb_type,
-    int invert);
+const uint8_t *av1_get_compound_type_mask(INTERINTER_COMPOUND_DATA *comp_data,
+                                          BLOCK_SIZE sb_type, int invert);
 
 void av1_build_interintra_predictors(MACROBLOCKD *xd, uint8_t *ypred,
                                      uint8_t *upred, uint8_t *vpred,
