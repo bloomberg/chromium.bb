@@ -4242,8 +4242,13 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
   // Use an estimated rd for uv_intra based on DC_PRED if the
   // appropriate speed flag is set.
   (void)ctx;
+#if CONFIG_CB4X4
+  rd_pick_intra_sbuv_mode(cpi, x, rate_uv, rate_uv_tokenonly, dist_uv, skip_uv,
+                          bsize, max_tx_size);
+#else
   rd_pick_intra_sbuv_mode(cpi, x, rate_uv, rate_uv_tokenonly, dist_uv, skip_uv,
                           bsize < BLOCK_8X8 ? BLOCK_8X8 : bsize, max_tx_size);
+#endif
   *mode_uv = x->e_mbd.mi[0]->mbmi.uv_mode;
 }
 
@@ -5043,12 +5048,14 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
                          (mi_row << 3), (mi_col << 3), NULL, pd->subsampling_x,
                          pd->subsampling_y);
 
-        // If bsize < BLOCK_8X8, adjust pred pointer for this block
+// If bsize < BLOCK_8X8, adjust pred pointer for this block
+#if !CONFIG_CB4X4
         if (bsize < BLOCK_8X8)
           pd->pre[0].buf =
               &pd->pre[0].buf[(av1_raster_block_offset(BLOCK_8X8, block,
                                                        pd->pre[0].stride))
                               << 3];
+#endif
 
         bestsme = cpi->find_fractional_mv_step(
             x, &ref_mv[id].as_mv, cpi->common.allow_high_precision_mv,
@@ -6128,12 +6135,17 @@ static void setup_buffer_inter(const AV1_COMP *const cpi, MACROBLOCK *x,
                         &frame_nearest_mv[ref_frame],
                         &frame_near_mv[ref_frame]);
 
-  // Further refinement that is encode side only to test the top few candidates
-  // in full and choose the best as the centre point for subsequent searches.
-  // The current implementation doesn't support scaling.
+// Further refinement that is encode side only to test the top few candidates
+// in full and choose the best as the centre point for subsequent searches.
+// The current implementation doesn't support scaling.
+#if CONFIG_CB4X4
+  av1_mv_pred(cpi, x, yv12_mb[ref_frame][0].buf, yv12->y_stride, ref_frame,
+              block_size);
+#else
   if (!av1_is_scaled(sf) && block_size >= BLOCK_8X8)
     av1_mv_pred(cpi, x, yv12_mb[ref_frame][0].buf, yv12->y_stride, ref_frame,
                 block_size);
+#endif
 }
 
 static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
@@ -8139,11 +8151,13 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   int y_skip = 0, uv_skip = 0;
   int64_t dist_y = 0, dist_uv = 0;
   TX_SIZE max_uv_tx_size;
+  const int unify_bsize = CONFIG_CB4X4;
+
   ctx->skip = 0;
   xd->mi[0]->mbmi.ref_frame[0] = INTRA_FRAME;
   xd->mi[0]->mbmi.ref_frame[1] = NONE;
 
-  if (bsize >= BLOCK_8X8) {
+  if (bsize >= BLOCK_8X8 || unify_bsize) {
     if (rd_pick_intra_sby_mode(cpi, x, &rate_y, &rate_y_tokenonly, &dist_y,
                                &y_skip, bsize, best_rd) >= best_rd) {
       rd_cost->rate = INT_MAX;
@@ -8158,8 +8172,14 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   }
   max_uv_tx_size = uv_txsize_lookup[bsize][xd->mi[0]->mbmi.tx_size]
                                    [pd[1].subsampling_x][pd[1].subsampling_y];
+
+#if CONFIG_CB4X4
+  rd_pick_intra_sbuv_mode(cpi, x, &rate_uv, &rate_uv_tokenonly, &dist_uv,
+                          &uv_skip, bsize, max_uv_tx_size);
+#else
   rd_pick_intra_sbuv_mode(cpi, x, &rate_uv, &rate_uv_tokenonly, &dist_uv,
                           &uv_skip, AOMMAX(BLOCK_8X8, bsize), max_uv_tx_size);
+#endif
 
   if (y_skip && uv_skip) {
     rd_cost->rate = rate_y + rate_uv - rate_y_tokenonly - rate_uv_tokenonly +
