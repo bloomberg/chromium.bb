@@ -103,10 +103,12 @@ void ExtensionMessageBubbleBridge::OnBubbleClosed(CloseAction action) {
 std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
 ExtensionMessageBubbleBridge::GetExtraViewInfo() {
   const extensions::ExtensionIdList& list = controller_->GetExtensionIdList();
+  int include_mask = controller_->delegate()->ShouldLimitToEnabledExtensions() ?
+      extensions::ExtensionRegistry::ENABLED :
+      extensions::ExtensionRegistry::EVERYTHING;
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(controller_->profile())
-          ->enabled_extensions()
-          .GetByID(list[0]);
+          ->GetExtensionById(list[0], include_mask);
 
   DCHECK(extension);
 
