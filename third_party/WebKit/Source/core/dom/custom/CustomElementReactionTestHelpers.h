@@ -110,7 +110,7 @@ class TestReaction : public CustomElementReaction {
     // TODO(dominicc): Simply pass the initializer list when
     // HeapVector supports initializer lists like Vector.
     for (auto& command : commands)
-      m_commands.append(command);
+      m_commands.push_back(command);
   }
   ~TestReaction() override = default;
   DEFINE_INLINE_VIRTUAL_TRACE() {

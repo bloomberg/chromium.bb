@@ -77,7 +77,7 @@ class CORE_EXPORT V0CustomElementProcessingStack
     // crash.
     V0CustomElementCallbackQueue* sentinel = 0;
     for (size_t i = 0; i < kNumSentinels; i++)
-      m_flattenedProcessingStack.append(sentinel);
+      m_flattenedProcessingStack.push_back(sentinel);
     DCHECK_EQ(s_elementQueueEnd, m_flattenedProcessingStack.size());
   }
 

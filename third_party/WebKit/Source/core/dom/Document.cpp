@@ -5119,7 +5119,7 @@ void Document::currentScriptForBinding(
 void Document::pushCurrentScript(Element* newCurrentScript) {
   DCHECK(isHTMLScriptElement(newCurrentScript) ||
          isSVGScriptElement(newCurrentScript));
-  m_currentScriptStack.append(newCurrentScript);
+  m_currentScriptStack.push_back(newCurrentScript);
 }
 
 void Document::popCurrentScript() {
@@ -5365,15 +5365,15 @@ Vector<IconURL> Document::iconURLs(int iconTypesMask) {
                    linkElement->type(), linkElement->getIconType());
     if (linkElement->getIconType() == Favicon) {
       if (firstFavicon.m_iconType != InvalidIcon)
-        secondaryIcons.append(firstFavicon);
+        secondaryIcons.push_back(firstFavicon);
       firstFavicon = newURL;
     } else if (linkElement->getIconType() == TouchIcon) {
       if (firstTouchIcon.m_iconType != InvalidIcon)
-        secondaryIcons.append(firstTouchIcon);
+        secondaryIcons.push_back(firstTouchIcon);
       firstTouchIcon = newURL;
     } else if (linkElement->getIconType() == TouchPrecomposedIcon) {
       if (firstTouchPrecomposedIcon.m_iconType != InvalidIcon)
-        secondaryIcons.append(firstTouchPrecomposedIcon);
+        secondaryIcons.push_back(firstTouchPrecomposedIcon);
       firstTouchPrecomposedIcon = newURL;
     } else {
       NOTREACHED();
@@ -5382,16 +5382,16 @@ Vector<IconURL> Document::iconURLs(int iconTypesMask) {
 
   Vector<IconURL> iconURLs;
   if (firstFavicon.m_iconType != InvalidIcon)
-    iconURLs.append(firstFavicon);
+    iconURLs.push_back(firstFavicon);
   else if (m_url.protocolIsInHTTPFamily() && iconTypesMask & Favicon)
-    iconURLs.append(IconURL::defaultFavicon(m_url));
+    iconURLs.push_back(IconURL::defaultFavicon(m_url));
 
   if (firstTouchIcon.m_iconType != InvalidIcon)
-    iconURLs.append(firstTouchIcon);
+    iconURLs.push_back(firstTouchIcon);
   if (firstTouchPrecomposedIcon.m_iconType != InvalidIcon)
-    iconURLs.append(firstTouchPrecomposedIcon);
+    iconURLs.push_back(firstTouchPrecomposedIcon);
   for (int i = secondaryIcons.size() - 1; i >= 0; --i)
-    iconURLs.append(secondaryIcons[i]);
+    iconURLs.push_back(secondaryIcons[i]);
   return iconURLs;
 }
 
@@ -5813,7 +5813,7 @@ void Document::addToTopLayer(Element* element, const Element* before) {
     size_t beforePosition = m_topLayerElements.find(before);
     m_topLayerElements.insert(beforePosition, element);
   } else {
-    m_topLayerElements.append(element);
+    m_topLayerElements.push_back(element);
   }
   element->setIsInTopLayer(true);
 }
@@ -6179,7 +6179,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request,
       for (Node& node : NodeTraversal::inclusiveAncestorsOf(*oldHoverNode)) {
         if (!mustBeInActiveChain ||
             (node.isElementNode() && toElement(node).inActiveChain()))
-          nodesToRemoveFromChain.append(node);
+          nodesToRemoveFromChain.push_back(node);
       }
     }
 
@@ -6189,7 +6189,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request,
          curr = curr->hoverAncestor()) {
       if (curr->node() && !curr->isText() &&
           (!mustBeInActiveChain || curr->node()->inActiveChain()))
-        nodesToRemoveFromChain.append(curr->node());
+        nodesToRemoveFromChain.push_back(curr->node());
     }
 
     // TODO(mustaq): The two loops above may push a single node twice into
@@ -6200,7 +6200,7 @@ void Document::updateHoverActiveState(const HitTestRequest& request,
   for (LayoutObject* curr = newHoverObj; curr; curr = curr->hoverAncestor()) {
     if (curr->node() && !curr->isText() &&
         (!mustBeInActiveChain || curr->node()->inActiveChain()))
-      nodesToAddToChain.append(curr->node());
+      nodesToAddToChain.push_back(curr->node());
   }
 
   size_t removeCount = nodesToRemoveFromChain.size();

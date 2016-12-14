@@ -105,7 +105,7 @@ bool DOMTokenList::contains(const AtomicString& token,
 void DOMTokenList::add(const AtomicString& token,
                        ExceptionState& exceptionState) {
   Vector<String> tokens;
-  tokens.append(token.getString());
+  tokens.push_back(token.getString());
   add(tokens, exceptionState);
 }
 
@@ -122,7 +122,7 @@ void DOMTokenList::add(const Vector<String>& tokens,
       continue;
     if (filteredTokens.contains(token))
       continue;
-    filteredTokens.append(token);
+    filteredTokens.push_back(token);
   }
 
   if (!filteredTokens.isEmpty())
@@ -132,7 +132,7 @@ void DOMTokenList::add(const Vector<String>& tokens,
 void DOMTokenList::remove(const AtomicString& token,
                           ExceptionState& exceptionState) {
   Vector<String> tokens;
-  tokens.append(token.getString());
+  tokens.push_back(token.getString());
   remove(tokens, exceptionState);
 }
 
@@ -205,7 +205,7 @@ void DOMTokenList::removeInternal(const AtomicString& token) {
 AtomicString DOMTokenList::addToken(const AtomicString& input,
                                     const AtomicString& token) {
   Vector<String> tokens;
-  tokens.append(token.getString());
+  tokens.push_back(token.getString());
   return addTokens(input, tokens);
 }
 
@@ -234,7 +234,7 @@ AtomicString DOMTokenList::addTokens(const AtomicString& input,
 AtomicString DOMTokenList::removeToken(const AtomicString& input,
                                        const AtomicString& token) {
   Vector<String> tokens;
-  tokens.append(token.getString());
+  tokens.push_back(token.getString());
   return removeTokens(input, tokens);
 }
 

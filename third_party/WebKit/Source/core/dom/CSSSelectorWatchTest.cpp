@@ -53,15 +53,15 @@ TEST_F(CSSSelectorWatchTest, RecalcOnDocumentChange) {
   CSSSelectorWatch& watch = CSSSelectorWatch::from(document());
 
   Vector<String> selectors;
-  selectors.append(".a");
+  selectors.push_back(".a");
   watch.watchCSSSelectors(selectors);
 
   document().view()->updateAllLifecyclePhases();
 
   selectors.clear();
-  selectors.append(".b");
-  selectors.append(".c");
-  selectors.append("#nomatch");
+  selectors.push_back(".b");
+  selectors.push_back(".c");
+  selectors.push_back("#nomatch");
   watch.watchCSSSelectors(selectors);
 
   document().view()->updateAllLifecyclePhases();

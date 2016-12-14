@@ -53,7 +53,7 @@ void StyleSheetCollection::swapSheetsForSheetList(
 }
 
 void StyleSheetCollection::appendActiveStyleSheet(CSSStyleSheet* sheet) {
-  m_activeAuthorStyleSheets.append(sheet);
+  m_activeAuthorStyleSheets.push_back(sheet);
 }
 
 void StyleSheetCollection::appendActiveStyleSheets(
@@ -64,12 +64,12 @@ void StyleSheetCollection::appendActiveStyleSheets(
 void StyleSheetCollection::appendActiveStyleSheets(
     const HeapVector<TraceWrapperMember<CSSStyleSheet>>& sheets) {
   for (CSSStyleSheet* sheet : sheets) {
-    m_activeAuthorStyleSheets.append(sheet);
+    m_activeAuthorStyleSheets.push_back(sheet);
   }
 }
 
 void StyleSheetCollection::appendSheetForList(StyleSheet* sheet) {
-  m_styleSheetsForStyleSheetList.append(
+  m_styleSheetsForStyleSheetList.push_back(
       TraceWrapperMember<StyleSheet>(this, sheet));
 }
 

@@ -60,7 +60,7 @@ class NodeMutationObserverData final
   }
 
   void addRegistration(MutationObserverRegistration* registration) {
-    m_registry.append(
+    m_registry.push_back(
         TraceWrapperMember<MutationObserverRegistration>(this, registration));
   }
 

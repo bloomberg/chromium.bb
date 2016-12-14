@@ -82,16 +82,16 @@ void parseRootMargin(String rootMarginParameter,
     const CSSParserToken& token = tokenRange.consumeIncludingWhitespace();
     switch (token.type()) {
       case PercentageToken:
-        rootMargin.append(Length(token.numericValue(), Percent));
+        rootMargin.push_back(Length(token.numericValue(), Percent));
         break;
       case DimensionToken:
         switch (token.unitType()) {
           case CSSPrimitiveValue::UnitType::Pixels:
-            rootMargin.append(
+            rootMargin.push_back(
                 Length(static_cast<int>(floor(token.numericValue())), Fixed));
             break;
           case CSSPrimitiveValue::UnitType::Percentage:
-            rootMargin.append(Length(token.numericValue(), Percent));
+            rootMargin.push_back(Length(token.numericValue(), Percent));
             break;
           default:
             exceptionState.throwDOMException(
@@ -110,10 +110,10 @@ void parseThresholds(const DoubleOrDoubleSequence& thresholdParameter,
                      Vector<float>& thresholds,
                      ExceptionState& exceptionState) {
   if (thresholdParameter.isDouble()) {
-    thresholds.append(static_cast<float>(thresholdParameter.getAsDouble()));
+    thresholds.push_back(static_cast<float>(thresholdParameter.getAsDouble()));
   } else {
     for (auto thresholdValue : thresholdParameter.getAsDoubleSequence())
-      thresholds.append(static_cast<float>(thresholdValue));
+      thresholds.push_back(static_cast<float>(thresholdValue));
   }
 
   for (auto thresholdValue : thresholds) {
@@ -383,7 +383,7 @@ String IntersectionObserver::rootMargin() const {
 
 void IntersectionObserver::enqueueIntersectionObserverEntry(
     IntersectionObserverEntry& entry) {
-  m_entries.append(&entry);
+  m_entries.push_back(&entry);
   toDocument(m_callback->getExecutionContext())
       ->ensureIntersectionObserverController()
       .scheduleIntersectionObserverForDelivery(*this);

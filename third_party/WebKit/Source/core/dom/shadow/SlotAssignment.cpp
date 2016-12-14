@@ -170,7 +170,7 @@ void SlotAssignment::collectSlots() {
   m_slots.reserveCapacity(m_slotCount);
   for (HTMLSlotElement& slot :
        Traversal<HTMLSlotElement>::descendantsOf(*m_owner)) {
-    m_slots.append(&slot);
+    m_slots.push_back(&slot);
   }
   m_needsCollectSlots = false;
   DCHECK_EQ(m_slots.size(), m_slotCount);

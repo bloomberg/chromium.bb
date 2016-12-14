@@ -820,7 +820,7 @@ void Fullscreen::popFullscreenElementStack() {
 
 void Fullscreen::pushFullscreenElementStack(Element& element,
                                             RequestType requestType) {
-  m_fullscreenElementStack.append(std::make_pair(&element, requestType));
+  m_fullscreenElementStack.push_back(std::make_pair(&element, requestType));
 }
 
 DEFINE_TRACE(Fullscreen) {

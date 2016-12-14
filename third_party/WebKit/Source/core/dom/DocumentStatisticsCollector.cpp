@@ -89,14 +89,14 @@ bool isGoodForScoring(const WebDistillabilityFeatures& features,
         "share",   "shoutbox",   "sidebar", "skyscraper", "sponsor", "ad-break",
         "agegate", "pagination", "pager",   "popup"};
     for (auto word : words) {
-      unlikelyCandidates.append(word);
+      unlikelyCandidates.push_back(word);
     }
   }
   DEFINE_STATIC_LOCAL(Vector<String>, highlyLikelyCandidates, ());
   if (highlyLikelyCandidates.isEmpty()) {
     auto words = {"and", "article", "body", "column", "main", "shadow"};
     for (auto word : words) {
-      highlyLikelyCandidates.append(word);
+      highlyLikelyCandidates.push_back(word);
     }
   }
 

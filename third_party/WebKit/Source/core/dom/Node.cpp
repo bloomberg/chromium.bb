@@ -1366,9 +1366,9 @@ unsigned short Node::compareDocumentPosition(
   HeapVector<Member<const Node>, 16> chain1;
   HeapVector<Member<const Node>, 16> chain2;
   if (attr1)
-    chain1.append(attr1);
+    chain1.push_back(attr1);
   if (attr2)
-    chain2.append(attr2);
+    chain2.push_back(attr2);
 
   if (attr1 && attr2 && start1 == start2 && start1) {
     // We are comparing two attributes on the same node. Crawl our attribute map
@@ -1413,9 +1413,9 @@ unsigned short Node::compareDocumentPosition(
   // of the two immediate children.
   const Node* current;
   for (current = start1; current; current = current->parentOrShadowHostNode())
-    chain1.append(current);
+    chain1.push_back(current);
   for (current = start2; current; current = current->parentOrShadowHostNode())
-    chain2.append(current);
+    chain2.push_back(current);
 
   unsigned index1 = chain1.size();
   unsigned index2 = chain2.size();
@@ -1578,7 +1578,7 @@ void Node::printNodePathTo(std::ostream& stream) const {
   HeapVector<Member<const Node>, 16> chain;
   const Node* node = this;
   while (node->parentOrShadowHostNode()) {
-    chain.append(node);
+    chain.push_back(node);
     node = node->parentOrShadowHostNode();
   }
   for (unsigned index = chain.size(); index > 0; --index) {
@@ -2294,7 +2294,7 @@ StaticNodeList* Node::getDestinationInsertionPoints() {
     DCHECK(insertionPoint->containingShadowRoot());
     if (!insertionPoint->containingShadowRoot()->isOpenOrV0())
       break;
-    filteredInsertionPoints.append(insertionPoint);
+    filteredInsertionPoints.push_back(insertionPoint);
   }
   return StaticNodeList::adopt(filteredInsertionPoints);
 }

@@ -143,7 +143,7 @@ static void makePresentationAttributeCacheKey(
     // Disallow caching.
     if (attr.name() == backgroundAttr)
       return;
-    result.attributesAndValues.append(
+    result.attributesAndValues.push_back(
         std::make_pair(attr.localName().impl(), attr.value()));
   }
   if (result.attributesAndValues.isEmpty())

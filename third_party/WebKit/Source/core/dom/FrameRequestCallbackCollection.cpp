@@ -21,7 +21,7 @@ FrameRequestCallbackCollection::registerCallback(
   FrameRequestCallbackCollection::CallbackId id = ++m_nextCallbackId;
   callback->m_cancelled = false;
   callback->m_id = id;
-  m_callbacks.append(callback);
+  m_callbacks.push_back(callback);
 
   TRACE_EVENT_INSTANT1("devtools.timeline", "RequestAnimationFrame",
                        TRACE_EVENT_SCOPE_THREAD, "data",

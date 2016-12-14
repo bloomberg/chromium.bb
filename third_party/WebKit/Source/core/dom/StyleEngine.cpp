@@ -137,7 +137,7 @@ StyleEngine::styleSheetsForStyleSheetList(TreeScope& treeScope) {
 }
 
 void StyleEngine::injectAuthorSheet(StyleSheetContents* authorSheet) {
-  m_injectedAuthorStyleSheets.append(TraceWrapperMember<CSSStyleSheet>(
+  m_injectedAuthorStyleSheets.push_back(TraceWrapperMember<CSSStyleSheet>(
       this, CSSStyleSheet::create(authorSheet, *m_document)));
   markDocumentDirty();
   resolverChanged(AnalyzedStyleUpdate);

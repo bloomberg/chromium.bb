@@ -56,7 +56,7 @@ class CORE_EXPORT TouchList final : public GarbageCollected<TouchList>,
   Touch* item(unsigned);
   const Touch* item(unsigned) const;
 
-  void append(Touch* touch) { m_values.append(touch); }
+  void append(Touch* touch) { m_values.push_back(touch); }
 
   DECLARE_TRACE();
 

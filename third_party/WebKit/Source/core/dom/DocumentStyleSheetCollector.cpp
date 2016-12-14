@@ -57,7 +57,7 @@ void DocumentStyleSheetCollector::appendActiveStyleSheet(CSSStyleSheet* sheet) {
 
 void DocumentStyleSheetCollector::appendSheetForList(StyleSheet* sheet) {
   if (m_styleSheetsForStyleSheetList) {
-    m_styleSheetsForStyleSheetList->append(sheet);
+    m_styleSheetsForStyleSheetList->push_back(sheet);
   } else {
     m_collection->appendSheetForList(sheet);
   }

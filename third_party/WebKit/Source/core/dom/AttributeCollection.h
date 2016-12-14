@@ -118,7 +118,7 @@ class MutableAttributeCollection
 
 inline void MutableAttributeCollection::append(const QualifiedName& name,
                                                const AtomicString& value) {
-  m_attributes.append(Attribute(name, value));
+  m_attributes.push_back(Attribute(name, value));
 }
 
 inline void MutableAttributeCollection::remove(unsigned index) {

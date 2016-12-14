@@ -274,7 +274,7 @@ ShadowRoot::descendantInsertionPoints() {
   HeapVector<Member<InsertionPoint>> insertionPoints;
   for (InsertionPoint& insertionPoint :
        Traversal<InsertionPoint>::descendantsOf(*this))
-    insertionPoints.append(&insertionPoint);
+    insertionPoints.push_back(&insertionPoint);
 
   ensureShadowRootRareDataV0().setDescendantInsertionPoints(insertionPoints);
 

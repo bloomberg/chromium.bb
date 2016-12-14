@@ -186,7 +186,7 @@ static void activateObserver(MutationObserver* observer) {
 
 void MutationObserver::enqueueMutationRecord(MutationRecord* mutation) {
   DCHECK(isMainThread());
-  m_records.append(mutation);
+  m_records.push_back(mutation);
   activateObserver(this);
   InspectorInstrumentation::asyncTaskScheduled(
       m_callback->getExecutionContext(), mutation->type(), mutation);
@@ -224,7 +224,7 @@ void MutationObserver::deliver() {
   HeapVector<Member<MutationObserverRegistration>, 1> transientRegistrations;
   for (auto& registration : m_registrations) {
     if (registration->hasTransientRegistrations())
-      transientRegistrations.append(registration);
+      transientRegistrations.push_back(registration);
   }
   for (const auto& registration : transientRegistrations)
     registration->clearTransientRegistrations();

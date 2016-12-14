@@ -50,7 +50,7 @@ class TaskOrderObserver {
   const Vector<int>& order() const { return m_order; }
 
  private:
-  void runTask(int id) { m_order.append(id); }
+  void runTask(int id) { m_order.push_back(id); }
   Vector<int> m_order;
 };
 

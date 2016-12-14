@@ -66,7 +66,7 @@ class CORE_EXPORT ClientRectList final
   explicit ClientRectList(const Rects& rects) {
     m_list.reserveInitialCapacity(rects.size());
     for (const auto& r : rects)
-      m_list.append(ClientRect::create(FloatRect(r)));
+      m_list.push_back(ClientRect::create(FloatRect(r)));
   }
 
   explicit ClientRectList(const Vector<FloatQuad>&);

@@ -76,7 +76,7 @@ static inline void collectChildrenAndRemoveFromOldParent(
     fragment.removeChildren();
     return;
   }
-  nodes.append(&node);
+  nodes.push_back(&node);
   if (ContainerNode* oldParent = node.parentNode())
     oldParent->removeChild(&node, exceptionState);
 }
@@ -728,7 +728,7 @@ void ContainerNode::notifyNodeInsertedInternal(
       continue;
     if (Node::InsertionShouldCallDidNotifySubtreeInsertions ==
         node.insertedInto(this))
-      postInsertionNotificationTargets.append(&node);
+      postInsertionNotificationTargets.push_back(&node);
     for (ShadowRoot* shadowRoot = node.youngestShadowRoot(); shadowRoot;
          shadowRoot = shadowRoot->olderShadowRoot())
       notifyNodeInsertedInternal(*shadowRoot, postInsertionNotificationTargets);

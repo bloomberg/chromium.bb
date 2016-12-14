@@ -56,7 +56,7 @@ class CORE_EXPORT DOMStringList final
 
   bool isEmpty() const { return m_strings.isEmpty(); }
   void clear() { m_strings.clear(); }
-  void append(const String& string) { m_strings.append(string); }
+  void append(const String& string) { m_strings.push_back(string); }
   void sort();
 
   // Implements the IDL.

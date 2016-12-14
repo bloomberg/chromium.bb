@@ -112,7 +112,7 @@ void URLSearchParams::setInput(const String& queryString) {
             queryString.substring(endOfName + 1, nameValueEnd - endOfName - 1));
       if (value.isNull())
         value = "";
-      m_params.append(std::make_pair(name, value));
+      m_params.push_back(std::make_pair(name, value));
     }
     start = nameValueEnd + 1;
   }
@@ -126,7 +126,7 @@ String URLSearchParams::toString() const {
 }
 
 void URLSearchParams::append(const String& name, const String& value) {
-  m_params.append(std::make_pair(name, value));
+  m_params.push_back(std::make_pair(name, value));
   runUpdateSteps();
 }
 
@@ -152,7 +152,7 @@ Vector<String> URLSearchParams::getAll(const String& name) const {
   Vector<String> result;
   for (const auto& param : m_params) {
     if (param.first == name)
-      result.append(param.second);
+      result.push_back(param.second);
   }
   return result;
 }

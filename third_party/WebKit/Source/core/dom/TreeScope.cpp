@@ -308,7 +308,7 @@ HeapVector<Member<Element>> TreeScope::elementsFromHitTestResult(
       continue;
 
     if (node && node->isElementNode()) {
-      elements.append(toElement(node));
+      elements.push_back(toElement(node));
       lastNode = node;
     }
   }
@@ -316,7 +316,7 @@ HeapVector<Member<Element>> TreeScope::elementsFromHitTestResult(
   if (rootNode().isDocumentNode()) {
     if (Element* rootElement = toDocument(rootNode()).documentElement()) {
       if (elements.isEmpty() || elements.back() != rootElement)
-        elements.append(rootElement);
+        elements.push_back(rootElement);
     }
   }
 
@@ -448,9 +448,9 @@ unsigned short TreeScope::comparePosition(const TreeScope& otherScope) const {
   HeapVector<Member<const TreeScope>, 16> chain2;
   const TreeScope* current;
   for (current = this; current; current = current->parentTreeScope())
-    chain1.append(current);
+    chain1.push_back(current);
   for (current = &otherScope; current; current = current->parentTreeScope())
-    chain2.append(current);
+    chain2.push_back(current);
 
   unsigned index1 = chain1.size();
   unsigned index2 = chain2.size();
@@ -492,11 +492,11 @@ const TreeScope* TreeScope::commonAncestorTreeScope(
     const TreeScope& other) const {
   HeapVector<Member<const TreeScope>, 16> thisChain;
   for (const TreeScope* tree = this; tree; tree = tree->parentTreeScope())
-    thisChain.append(tree);
+    thisChain.push_back(tree);
 
   HeapVector<Member<const TreeScope>, 16> otherChain;
   for (const TreeScope* tree = &other; tree; tree = tree->parentTreeScope())
-    otherChain.append(tree);
+    otherChain.push_back(tree);
 
   // Keep popping out the last elements of these chains until a mismatched pair
   // is found. If |this| and |other| belong to different documents, null will be

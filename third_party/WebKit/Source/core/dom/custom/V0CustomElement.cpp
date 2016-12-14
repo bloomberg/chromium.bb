@@ -59,7 +59,7 @@ void V0CustomElement::addEmbedderCustomElementName(const AtomicString& name) {
   AtomicString lower = name.lower();
   if (isValidName(lower, EmbedderNames))
     return;
-  embedderCustomElementNames().append(lower);
+  embedderCustomElementNames().push_back(lower);
 }
 
 static inline bool isValidNCName(const AtomicString& name) {
@@ -89,7 +89,7 @@ bool V0CustomElement::isValidName(const AtomicString& name,
     DEFINE_STATIC_LOCAL(Vector<AtomicString>, reservedNames, ());
     if (reservedNames.isEmpty()) {
       // FIXME(crbug.com/426605): We should be able to remove this.
-      reservedNames.append(MathMLNames::annotation_xmlTag.localName());
+      reservedNames.push_back(MathMLNames::annotation_xmlTag.localName());
     }
 
     if (kNotFound == reservedNames.find(name))

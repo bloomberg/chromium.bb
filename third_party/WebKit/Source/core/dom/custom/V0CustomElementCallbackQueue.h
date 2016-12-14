@@ -60,7 +60,7 @@ class V0CustomElementCallbackQueue
   bool processInElementQueue(ElementQueueId);
 
   void append(V0CustomElementProcessingStep* invocation) {
-    m_queue.append(invocation);
+    m_queue.push_back(invocation);
   }
   bool inCreatedCallback() const { return m_inCreatedCallback; }
 

@@ -99,7 +99,7 @@ void ChildListMutationAccumulator::childAdded(Node* child) {
   }
 
   m_lastAdded = child;
-  m_addedNodes.append(child);
+  m_addedNodes.push_back(child);
 }
 
 inline bool ChildListMutationAccumulator::isRemovedNodeInOrder(Node* child) {
@@ -120,7 +120,7 @@ void ChildListMutationAccumulator::willRemoveChild(Node* child) {
     m_nextSibling = child->nextSibling();
   }
 
-  m_removedNodes.append(child);
+  m_removedNodes.push_back(child);
 }
 
 void ChildListMutationAccumulator::enqueueMutationRecord() {

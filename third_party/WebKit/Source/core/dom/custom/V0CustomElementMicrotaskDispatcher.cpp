@@ -28,7 +28,7 @@ void V0CustomElementMicrotaskDispatcher::enqueue(
     V0CustomElementCallbackQueue* queue) {
   ensureMicrotaskScheduledForElementQueue();
   queue->setOwner(kMicrotaskQueueId);
-  m_elements.append(queue);
+  m_elements.push_back(queue);
 }
 
 void V0CustomElementMicrotaskDispatcher::

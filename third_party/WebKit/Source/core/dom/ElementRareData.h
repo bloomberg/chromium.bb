@@ -157,7 +157,7 @@ class ElementRareData : public NodeRareData {
   AttrNodeList* attrNodeList() { return m_attrNodeList.get(); }
   void removeAttrNodeList() { m_attrNodeList.clear(); }
   void addAttr(Attr* attr) {
-    ensureAttrNodeList().append(attr);
+    ensureAttrNodeList().push_back(attr);
     ScriptWrappableVisitor::writeBarrier(this, attr);
   }
 

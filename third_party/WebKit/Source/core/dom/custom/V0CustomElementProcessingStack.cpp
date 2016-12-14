@@ -86,7 +86,7 @@ void V0CustomElementProcessingStack::enqueue(
 
   callbackQueue->setOwner(currentElementQueue());
 
-  m_flattenedProcessingStack.append(callbackQueue);
+  m_flattenedProcessingStack.push_back(callbackQueue);
   ++s_elementQueueEnd;
 }
 

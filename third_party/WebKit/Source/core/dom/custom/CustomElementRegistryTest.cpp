@@ -219,7 +219,7 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
   }
 
   bool runConstructor(Element* element) override {
-    m_logs.append(Constructor);
+    m_logs.push_back(Constructor);
     m_element = element;
     return TestCustomElementDefinition::runConstructor(element);
   }
@@ -229,30 +229,30 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
   bool hasAdoptedCallback() const override { return true; }
 
   void runConnectedCallback(Element* element) override {
-    m_logs.append(ConnectedCallback);
+    m_logs.push_back(ConnectedCallback);
     EXPECT_EQ(element, m_element);
   }
 
   void runDisconnectedCallback(Element* element) override {
-    m_logs.append(DisconnectedCallback);
+    m_logs.push_back(DisconnectedCallback);
     EXPECT_EQ(element, m_element);
   }
 
   void runAdoptedCallback(Element* element,
                           Document* oldOwner,
                           Document* newOwner) override {
-    m_logs.append(AdoptedCallback);
+    m_logs.push_back(AdoptedCallback);
     EXPECT_EQ(element, m_element);
-    m_adopted.append(new Adopted(oldOwner, newOwner));
+    m_adopted.push_back(new Adopted(oldOwner, newOwner));
   }
 
   void runAttributeChangedCallback(Element* element,
                                    const QualifiedName& name,
                                    const AtomicString& oldValue,
                                    const AtomicString& newValue) override {
-    m_logs.append(AttributeChangedCallback);
+    m_logs.push_back(AttributeChangedCallback);
     EXPECT_EQ(element, m_element);
-    m_attributeChanged.append(AttributeChanged{name, oldValue, newValue});
+    m_attributeChanged.push_back(AttributeChanged{name, oldValue, newValue});
   }
 };
 

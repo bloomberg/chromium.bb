@@ -460,7 +460,7 @@ inline bool Node::isTreeScope() const {
 inline void getChildNodes(ContainerNode& node, NodeVector& nodes) {
   DCHECK(!nodes.size());
   for (Node* child = node.firstChild(); child; child = child->nextSibling())
-    nodes.append(child);
+    nodes.push_back(child);
 }
 
 }  // namespace blink

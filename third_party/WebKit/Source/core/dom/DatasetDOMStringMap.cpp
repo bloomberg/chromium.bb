@@ -153,7 +153,7 @@ void DatasetDOMStringMap::getNames(Vector<String>& names) {
   AttributeCollection attributes = m_element->attributes();
   for (const Attribute& attr : attributes) {
     if (isValidAttributeName(attr.localName()))
-      names.append(convertAttributeNameToPropertyName(attr.localName()));
+      names.push_back(convertAttributeNameToPropertyName(attr.localName()));
   }
 }
 

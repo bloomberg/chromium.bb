@@ -59,7 +59,7 @@ struct AllElementsSelectorQueryTrait {
   static const bool shouldOnlyMatchFirstElement = false;
   ALWAYS_INLINE static void appendElement(OutputType& output,
                                           Element& element) {
-    output.append(&element);
+    output.push_back(&element);
   }
 };
 

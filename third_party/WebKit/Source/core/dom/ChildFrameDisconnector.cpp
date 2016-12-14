@@ -38,7 +38,7 @@ void ChildFrameDisconnector::collectFrameOwners(Node& root) {
     return;
 
   if (root.isHTMLElement() && root.isFrameOwnerElement())
-    m_frameOwners.append(&toHTMLFrameOwnerElement(root));
+    m_frameOwners.push_back(&toHTMLFrameOwnerElement(root));
 
   for (Node* child = root.firstChild(); child; child = child->nextSibling())
     collectFrameOwners(*child);

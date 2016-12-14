@@ -126,7 +126,7 @@ CustomElementDefinition::ConstructionStackScope::ConstructionStackScope(
     Element* element)
     : m_constructionStack(definition->m_constructionStack), m_element(element) {
   // Push the construction stack.
-  m_constructionStack.append(element);
+  m_constructionStack.push_back(element);
   m_depth = m_constructionStack.size();
 }
 

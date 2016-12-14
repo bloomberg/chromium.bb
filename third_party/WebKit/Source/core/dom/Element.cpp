@@ -1062,7 +1062,7 @@ IntRect Element::boundsInViewport() const {
   if (isSVGElement() && layoutObject()) {
     // Get the bounding rectangle from the SVG model.
     if (toSVGElement(this)->isSVGGraphicsElement())
-      quads.append(layoutObject()->localToAbsoluteQuad(
+      quads.push_back(layoutObject()->localToAbsoluteQuad(
           layoutObject()->objectBoundingBox()));
   } else {
     // Get the bounding rectangle from the box model.
@@ -1104,7 +1104,7 @@ void Element::clientQuads(Vector<FloatQuad>& quads) {
   if (isSVGElement() && !elementLayoutObject->isSVGRoot()) {
     // Get the bounding rectangle from the SVG model.
     if (toSVGElement(this)->isSVGGraphicsElement())
-      quads.append(elementLayoutObject->localToAbsoluteQuad(
+      quads.push_back(elementLayoutObject->localToAbsoluteQuad(
           elementLayoutObject->objectBoundingBox()));
     return;
   }
@@ -4023,8 +4023,8 @@ void Element::logAddElementIfIsolatedWorldAndInDocument(
   if (!activityLogger)
     return;
   Vector<String, 2> argv;
-  argv.append(element);
-  argv.append(fastGetAttribute(attr1));
+  argv.push_back(element);
+  argv.push_back(fastGetAttribute(attr1));
   activityLogger->logEvent("blinkAddElement", argv.size(), argv.data());
 }
 
@@ -4039,9 +4039,9 @@ void Element::logAddElementIfIsolatedWorldAndInDocument(
   if (!activityLogger)
     return;
   Vector<String, 3> argv;
-  argv.append(element);
-  argv.append(fastGetAttribute(attr1));
-  argv.append(fastGetAttribute(attr2));
+  argv.push_back(element);
+  argv.push_back(fastGetAttribute(attr1));
+  argv.push_back(fastGetAttribute(attr2));
   activityLogger->logEvent("blinkAddElement", argv.size(), argv.data());
 }
 
@@ -4057,10 +4057,10 @@ void Element::logAddElementIfIsolatedWorldAndInDocument(
   if (!activityLogger)
     return;
   Vector<String, 4> argv;
-  argv.append(element);
-  argv.append(fastGetAttribute(attr1));
-  argv.append(fastGetAttribute(attr2));
-  argv.append(fastGetAttribute(attr3));
+  argv.push_back(element);
+  argv.push_back(fastGetAttribute(attr1));
+  argv.push_back(fastGetAttribute(attr2));
+  argv.push_back(fastGetAttribute(attr3));
   activityLogger->logEvent("blinkAddElement", argv.size(), argv.data());
 }
 
@@ -4076,10 +4076,10 @@ void Element::logUpdateAttributeIfIsolatedWorldAndInDocument(
   if (!activityLogger)
     return;
   Vector<String, 4> argv;
-  argv.append(element);
-  argv.append(attributeName.toString());
-  argv.append(oldValue);
-  argv.append(newValue);
+  argv.push_back(element);
+  argv.push_back(attributeName.toString());
+  argv.push_back(oldValue);
+  argv.push_back(newValue);
   activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
 }
 

@@ -8,7 +8,7 @@ namespace blink {
 
 void V0CustomElementSyncMicrotaskQueue::enqueue(
     V0CustomElementMicrotaskStep* step) {
-  m_queue.append(step);
+  m_queue.push_back(step);
 }
 
 void V0CustomElementSyncMicrotaskQueue::doDispatch() {

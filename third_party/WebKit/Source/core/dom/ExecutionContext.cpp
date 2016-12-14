@@ -104,7 +104,7 @@ bool ExecutionContext::shouldSanitizeScriptError(
 void ExecutionContext::dispatchErrorEvent(ErrorEvent* errorEvent,
                                           AccessControlStatus corsStatus) {
   if (m_inDispatchErrorEvent) {
-    m_pendingExceptions.append(errorEvent);
+    m_pendingExceptions.push_back(errorEvent);
     return;
   }
 

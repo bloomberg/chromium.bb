@@ -293,7 +293,7 @@ void collectDestinationInsertionPoints(
     if (!insertionPoints)
       return;
     for (size_t i = 0; i < insertionPoints->size(); ++i)
-      results.append(insertionPoints->at(i).get());
+      results.push_back(insertionPoints->at(i).get());
     DCHECK_NE(current, insertionPoints->back().get());
     current = insertionPoints->back().get();
   }

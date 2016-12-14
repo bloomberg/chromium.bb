@@ -590,7 +590,7 @@ DocumentFragment* Range::processContents(ActionType action,
   if (processStart) {
     NodeVector nodes;
     for (Node* n = processStart; n && n != processEnd; n = n->nextSibling())
-      nodes.append(n);
+      nodes.push_back(n);
     processNodes(action, nodes, commonRoot, fragment, exceptionState);
   }
 
@@ -662,7 +662,7 @@ Node* Range::processContentsBetweenOffsets(ActionType action,
         n = n->nextSibling();
       for (unsigned i = startOffset; n && i < endOffset;
            i++, n = n->nextSibling())
-        nodes.append(n);
+        nodes.push_back(n);
 
       processNodes(action, nodes, container, result, exceptionState);
       break;
@@ -705,7 +705,7 @@ Node* Range::processAncestorsAndTheirSiblings(
   for (Node& runner : NodeTraversal::ancestorsOf(*container)) {
     if (runner == commonRoot)
       break;
-    ancestors.append(runner);
+    ancestors.push_back(runner);
   }
 
   Node* firstChildInAncestorToProcess = direction == ProcessContentsForward
@@ -731,7 +731,7 @@ Node* Range::processAncestorsAndTheirSiblings(
          child = (direction == ProcessContentsForward)
                      ? child->nextSibling()
                      : child->previousSibling())
-      nodes.append(child);
+      nodes.push_back(child);
 
     for (const auto& node : nodes) {
       Node* child = node.get();

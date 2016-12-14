@@ -99,9 +99,9 @@ void ScriptedAnimationController::dispatchEvents(
     for (auto& event : m_eventQueue) {
       if (event && event->interfaceName() == eventInterfaceFilter) {
         m_perFrameEvents.remove(eventTargetKey(event.get()));
-        events.append(event.release());
+        events.push_back(event.release());
       } else {
-        remaining.append(event.release());
+        remaining.push_back(event.release());
       }
     }
     remaining.swap(m_eventQueue);
@@ -170,14 +170,14 @@ void ScriptedAnimationController::serviceScriptedAnimations(
 
 void ScriptedAnimationController::enqueueTask(
     std::unique_ptr<WTF::Closure> task) {
-  m_taskQueue.append(std::move(task));
+  m_taskQueue.push_back(std::move(task));
   scheduleAnimationIfNeeded();
 }
 
 void ScriptedAnimationController::enqueueEvent(Event* event) {
   InspectorInstrumentation::asyncTaskScheduled(
       event->target()->getExecutionContext(), event->type(), event);
-  m_eventQueue.append(event);
+  m_eventQueue.push_back(event);
   scheduleAnimationIfNeeded();
 }
 

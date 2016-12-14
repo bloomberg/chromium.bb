@@ -19,7 +19,7 @@ DEFINE_TRACE(CustomElementReactionQueue) {
 }
 
 void CustomElementReactionQueue::add(CustomElementReaction* reaction) {
-  m_reactions.append(reaction);
+  m_reactions.push_back(reaction);
 }
 
 // There is one queue per element, so this could be invoked

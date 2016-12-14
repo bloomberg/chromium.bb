@@ -143,7 +143,7 @@ void ScriptedIdleTaskController::callbackFired(
   if (m_suspended) {
     if (callbackType == IdleDeadline::CallbackType::CalledByTimeout) {
       // Queue for execution when we are resumed.
-      m_pendingTimeouts.append(id);
+      m_pendingTimeouts.push_back(id);
     }
     // Just drop callbacks called while suspended, these will be reposted on the
     // idle task queue when we are resumed.

@@ -177,16 +177,16 @@ void TestSynchronousMutationObserver::contextDestroyed() {
 
 void TestSynchronousMutationObserver::didChangeChildren(
     const ContainerNode& container) {
-  m_childrenChangedNodes.append(&container);
+  m_childrenChangedNodes.push_back(&container);
 }
 
 void TestSynchronousMutationObserver::didMergeTextNodes(Text& node,
                                                         unsigned offset) {
-  m_mergeTextNodesRecords.append(new MergeTextNodesRecord(&node, offset));
+  m_mergeTextNodesRecords.push_back(new MergeTextNodesRecord(&node, offset));
 }
 
 void TestSynchronousMutationObserver::didSplitTextNode(const Text& node) {
-  m_splitTextNodes.append(&node);
+  m_splitTextNodes.push_back(&node);
 }
 
 void TestSynchronousMutationObserver::didUpdateCharacterData(
@@ -194,17 +194,17 @@ void TestSynchronousMutationObserver::didUpdateCharacterData(
     unsigned offset,
     unsigned oldLength,
     unsigned newLength) {
-  m_updatedCharacterDataRecords.append(new UpdateCharacterDataRecord(
+  m_updatedCharacterDataRecords.push_back(new UpdateCharacterDataRecord(
       characterData, offset, oldLength, newLength));
 }
 
 void TestSynchronousMutationObserver::nodeChildrenWillBeRemoved(
     ContainerNode& container) {
-  m_removedChildrenNodes.append(&container);
+  m_removedChildrenNodes.push_back(&container);
 }
 
 void TestSynchronousMutationObserver::nodeWillBeRemoved(Node& node) {
-  m_removedNodes.append(&node);
+  m_removedNodes.push_back(&node);
 }
 
 DEFINE_TRACE(TestSynchronousMutationObserver) {
