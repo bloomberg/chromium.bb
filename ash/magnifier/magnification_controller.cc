@@ -812,9 +812,17 @@ void MagnificationControllerImpl::OnCaretBoundsChanged(
   if (caret_bounds.width() == 0 && caret_bounds.height() == 0)
     return;
 
-  caret_point_ = caret_bounds.CenterPoint();
+  gfx::Point new_caret_point = caret_bounds.CenterPoint();
   // |caret_point_| in |root_window_| coordinates.
-  ::wm::ConvertPointFromScreen(root_window_, &caret_point_);
+  ::wm::ConvertPointFromScreen(root_window_, &new_caret_point);
+
+  // When the caret point was not actually changed, nothing should happen.
+  // OnCaretBoundsChanged could be fired on every event that may change the
+  // caret bounds, in particular a window creation/movement, that may not result
+  // in an actual movement.
+  if (new_caret_point == caret_point_)
+    return;
+  caret_point_ = new_caret_point;
 
   // If the feature for centering the text input focus is disabled, the
   // magnifier window will be moved to follow the focus with a panning margin.
