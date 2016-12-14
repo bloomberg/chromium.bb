@@ -9,14 +9,12 @@
 #include <vector>
 
 #include "base/strings/string_split.h"
-#include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
-#include "content/public/browser/render_frame_host.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 
 namespace content {
-namespace devtools {
-namespace storage {
+namespace protocol {
 
 namespace {
 static const char kAppCache[] = "appcache";
@@ -31,23 +29,29 @@ static const char kCacheStorage[] = "cache_storage";
 static const char kAll[] = "all";
 }
 
-typedef DevToolsProtocolClient::Response Response;
-
 StorageHandler::StorageHandler()
     : host_(nullptr) {
 }
 
 StorageHandler::~StorageHandler() = default;
 
-void StorageHandler::SetRenderFrameHost(RenderFrameHost* host) {
+void StorageHandler::Wire(UberDispatcher* dispatcher) {
+  Storage::Dispatcher::wire(dispatcher, this);
+}
+
+void StorageHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
   host_ = host;
+}
+
+Response StorageHandler::Disable() {
+  return Response::OK();
 }
 
 Response StorageHandler::ClearDataForOrigin(
     const std::string& origin,
     const std::string& storage_types) {
   if (!host_)
-    return Response::InternalError("Not connected to host");
+    return Response::InternalError();
 
   StoragePartition* partition = host_->GetProcess()->GetStoragePartition();
   std::vector<std::string> types = base::SplitString(
@@ -87,6 +91,5 @@ Response StorageHandler::ClearDataForOrigin(
   return Response::OK();
 }
 
-}  // namespace storage
-}  // namespace devtools
+}  // namespace protocol
 }  // namespace content
