@@ -117,12 +117,12 @@ bool SignWithOpenSSL(const EVP_MD* md,
                      const base::StringPiece& digest,
                      EVP_PKEY* key,
                      std::string* result) {
-  size_t sig_len;
+  size_t sig_len = EVP_PKEY_size(key);
   bssl::UniquePtr<EVP_PKEY_CTX> ctx(EVP_PKEY_CTX_new(key, nullptr));
   if (!ctx || !EVP_PKEY_sign_init(ctx.get()) ||
       !EVP_PKEY_CTX_set_signature_md(ctx.get(), md) ||
-      !EVP_PKEY_sign(ctx.get(), OpenSSLWriteInto(result, EVP_PKEY_size(key)),
-                     &sig_len, reinterpret_cast<const uint8_t*>(digest.data()),
+      !EVP_PKEY_sign(ctx.get(), OpenSSLWriteInto(result, sig_len), &sig_len,
+                     reinterpret_cast<const uint8_t*>(digest.data()),
                      digest.size())) {
     return false;
   }
