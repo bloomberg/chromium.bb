@@ -19,10 +19,10 @@
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
-#include "components/bookmarks/browser/bookmark_match.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
+#include "components/bookmarks/browser/titled_url_match.h"
 #include "components/bookmarks/common/android/bookmark_type.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/managed/managed_bookmark_service.h"
@@ -586,13 +586,13 @@ void BookmarkBridge::SearchBookmarks(JNIEnv* env,
                                       jint max_results) {
   DCHECK(bookmark_model_->loaded());
 
-  std::vector<bookmarks::BookmarkMatch> results;
+  std::vector<bookmarks::TitledUrlMatch> results;
   bookmark_model_->GetBookmarksMatching(
       base::android::ConvertJavaStringToUTF16(env, j_query),
       max_results,
       query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH,
       &results);
-  for (const bookmarks::BookmarkMatch& match : results) {
+  for (const bookmarks::TitledUrlMatch& match : results) {
     const BookmarkNode* node = static_cast<const BookmarkNode*>(match.node);
 
     std::vector<int> title_match_start_positions;

@@ -12,8 +12,8 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "components/bookmarks/browser/bookmark_match.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/titled_url_match.h"
 #include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/browser/autocomplete_provider_client.h"
 #include "components/omnibox/browser/autocomplete_result.h"
@@ -23,9 +23,9 @@
 #include "components/url_formatter/url_formatter.h"
 #include "url/url_constants.h"
 
-using bookmarks::BookmarkMatch;
-using BookmarkMatches = std::vector<BookmarkMatch>;
 using bookmarks::BookmarkNode;
+using bookmarks::TitledUrlMatch;
+using TitledUrlMatches = std::vector<TitledUrlMatch>;
 
 namespace {
 
@@ -34,7 +34,7 @@ namespace {
 // characters are highlighted.
 void CorrectTitleAndMatchPositions(
     base::string16* title,
-    BookmarkMatch::MatchPositions* title_match_positions) {
+    TitledUrlMatch::MatchPositions* title_match_positions) {
   size_t leading_whitespace_chars = title->length();
   base::TrimWhitespace(*title, base::TRIM_LEADING, title);
   leading_whitespace_chars-= title->length();
@@ -78,7 +78,7 @@ void BookmarkProvider::DoAutocomplete(const AutocompleteInput& input) {
   if (!bookmark_model_)
     return;
 
-  BookmarkMatches matches;
+  TitledUrlMatches matches;
   // Retrieve enough bookmarks so that we have a reasonable probability of
   // suggesting the one that the user desires.
   const size_t kMaxBookmarkMatches = 50;
@@ -98,7 +98,7 @@ void BookmarkProvider::DoAutocomplete(const AutocompleteInput& input) {
   //  - Multiple terms enclosed in quotes will require those exact words in that
   //    exact order to match.
   //
-  // Please refer to the code for BookmarkIndex::GetBookmarksMatching for
+  // Please refer to the code for TitledUrlIndex::GetResultsMatching for
   // complete details of how searches are performed against the user's
   // bookmarks.
   bookmark_model_->GetBookmarksMatching(input.text(),
@@ -107,11 +107,11 @@ void BookmarkProvider::DoAutocomplete(const AutocompleteInput& input) {
   if (matches.empty())
     return;  // There were no matches.
   const base::string16 fixed_up_input(FixupUserInput(input).second);
-  for (BookmarkMatches::const_iterator i = matches.begin(); i != matches.end();
+  for (TitledUrlMatches::const_iterator i = matches.begin(); i != matches.end();
        ++i) {
     // Create and score the AutocompleteMatch. If its score is 0 then the
     // match is discarded.
-    AutocompleteMatch match(BookmarkMatchToACMatch(input, fixed_up_input, *i));
+    AutocompleteMatch match(TitledUrlMatchToACMatch(input, fixed_up_input, *i));
     if (match.relevance > 0)
       matches_.push_back(match);
   }
@@ -155,17 +155,17 @@ class ScoringFunctor {
 
 }  // namespace
 
-AutocompleteMatch BookmarkProvider::BookmarkMatchToACMatch(
+AutocompleteMatch BookmarkProvider::TitledUrlMatchToACMatch(
     const AutocompleteInput& input,
     const base::string16& fixed_up_input_text,
-    const BookmarkMatch& bookmark_match) {
+    const TitledUrlMatch& bookmark_match) {
   // The AutocompleteMatch we construct is non-deletable because the only
   // way to support this would be to delete the underlying bookmark, which is
   // unlikely to be what the user intends.
   AutocompleteMatch match(this, 0, false,
                           AutocompleteMatchType::BOOKMARK_TITLE);
   base::string16 title(bookmark_match.node->GetTitledUrlNodeTitle());
-  BookmarkMatch::MatchPositions new_title_match_positions =
+  TitledUrlMatch::MatchPositions new_title_match_positions =
       bookmark_match.title_match_positions;
   CorrectTitleAndMatchPositions(&title, &new_title_match_positions);
   const GURL& url(bookmark_match.node->GetTitledUrlNodeUrl());
@@ -177,7 +177,7 @@ AutocompleteMatch BookmarkProvider::BookmarkMatchToACMatch(
       0 : bookmark_match.url_match_positions[0].first;
   const bool trim_http = !AutocompleteInput::HasHTTPScheme(input.text()) &&
       ((match_start == base::string16::npos) || (match_start != 0));
-  std::vector<size_t> offsets = BookmarkMatch::OffsetsFromMatchPositions(
+  std::vector<size_t> offsets = TitledUrlMatch::OffsetsFromMatchPositions(
       bookmark_match.url_match_positions);
   // In addition to knowing how |offsets| is transformed, we need to know how
   // |inline_autocomplete_offset| is transformed.  We add it to the end of
@@ -190,8 +190,8 @@ AutocompleteMatch BookmarkProvider::BookmarkMatchToACMatch(
       net::UnescapeRule::SPACES, nullptr, nullptr, &offsets);
   inline_autocomplete_offset = offsets.back();
   offsets.pop_back();
-  BookmarkMatch::MatchPositions new_url_match_positions =
-      BookmarkMatch::ReplaceOffsetsInMatchPositions(
+  TitledUrlMatch::MatchPositions new_url_match_positions =
+      TitledUrlMatch::ReplaceOffsetsInMatchPositions(
           bookmark_match.url_match_positions, offsets);
   match.contents_class =
       ClassificationsFromMatch(new_url_match_positions,

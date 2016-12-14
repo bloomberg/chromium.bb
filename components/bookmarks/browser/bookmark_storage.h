@@ -17,8 +17,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/bookmarks/browser/bookmark_index.h"
 #include "components/bookmarks/browser/bookmark_node.h"
+#include "components/bookmarks/browser/titled_url_index.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -51,7 +51,7 @@ class BookmarkLoadDetails {
                       BookmarkPermanentNode* other_folder_node,
                       BookmarkPermanentNode* mobile_folder_node,
                       const LoadExtraCallback& load_extra_callback,
-                      BookmarkIndex* index,
+                      TitledUrlIndex* index,
                       int64_t max_id);
   ~BookmarkLoadDetails();
 
@@ -79,8 +79,8 @@ class BookmarkLoadDetails {
   BookmarkPermanentNodeList owned_extra_nodes() {
     return std::move(extra_nodes_);
   }
-  BookmarkIndex* index() { return index_.get(); }
-  std::unique_ptr<BookmarkIndex> owned_index() { return std::move(index_); }
+  TitledUrlIndex* index() { return index_.get(); }
+  std::unique_ptr<TitledUrlIndex> owned_index() { return std::move(index_); }
 
   const BookmarkNode::MetaInfoMap& model_meta_info_map() const {
     return model_meta_info_map_;
@@ -125,7 +125,7 @@ class BookmarkLoadDetails {
   std::unique_ptr<BookmarkPermanentNode> mobile_folder_node_;
   LoadExtraCallback load_extra_callback_;
   BookmarkPermanentNodeList extra_nodes_;
-  std::unique_ptr<BookmarkIndex> index_;
+  std::unique_ptr<TitledUrlIndex> index_;
   BookmarkNode::MetaInfoMap model_meta_info_map_;
   int64_t model_sync_transaction_version_;
   int64_t max_id_;

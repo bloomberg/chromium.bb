@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_MATCH_H_
-#define COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_MATCH_H_
+#ifndef COMPONENTS_BOOKMARKS_BROWSER_TITLED_URL_MATCH_H_
+#define COMPONENTS_BOOKMARKS_BROWSER_TITLED_URL_MATCH_H_
 
 #include <stddef.h>
 
@@ -15,15 +15,15 @@ namespace bookmarks {
 
 class TitledUrlNode;
 
-struct BookmarkMatch {
+struct TitledUrlMatch {
   // Each MatchPosition is the [begin, end) positions of a match within a
   // string.
   using MatchPosition = std::pair<size_t, size_t>;
   using MatchPositions = std::vector<MatchPosition>;
 
-  BookmarkMatch();
-  BookmarkMatch(const BookmarkMatch& other);
-  ~BookmarkMatch();
+  TitledUrlMatch();
+  TitledUrlMatch(const TitledUrlMatch& other);
+  ~TitledUrlMatch();
 
   // Extracts and returns the offsets from |match_positions|.
   static std::vector<size_t> OffsetsFromMatchPositions(
@@ -48,4 +48,4 @@ struct BookmarkMatch {
 
 }  // namespace bookmarks
 
-#endif  // COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_MATCH_H_
+#endif  // COMPONENTS_BOOKMARKS_BROWSER_TITLED_URL_MATCH_H_

@@ -16,17 +16,17 @@
 #include "chrome/browser/importer/importer_unittest_utils.h"
 #include "chrome/common/importer/imported_bookmark_entry.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/bookmarks/browser/bookmark_match.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/browser/titled_url_match.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_types.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using bookmarks::BookmarkMatch;
 using bookmarks::BookmarkModel;
+using bookmarks::TitledUrlMatch;
 
 class TestProfileWriter : public ProfileWriter {
  public:
@@ -81,7 +81,7 @@ class ProfileWriterTest : public testing::Test {
       const std::vector<BookmarkModel::URLAndTitle>& bookmarks_record,
       BookmarkModel* bookmark_model,
       size_t expected) {
-    std::vector<BookmarkMatch> matches;
+    std::vector<TitledUrlMatch> matches;
     for (size_t i = 0; i < bookmarks_record.size(); ++i) {
       bookmark_model->GetBookmarksMatching(
           bookmarks_record[i].title, 10, &matches);

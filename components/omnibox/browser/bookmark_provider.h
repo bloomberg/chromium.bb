@@ -20,7 +20,7 @@ class AutocompleteProviderClient;
 
 namespace bookmarks {
 class BookmarkModel;
-struct BookmarkMatch;
+struct TitledUrlMatch;
 }
 
 // This class is an autocomplete provider which quickly (and synchronously)
@@ -60,10 +60,10 @@ class BookmarkProvider : public AutocompleteProvider {
   // title, as the description.  |input| is used to compute the match's
   // inline_autocompletion.  |fixed_up_input_text| is used in that way as well;
   // it's passed separately so this function doesn't have to compute it.
-  AutocompleteMatch BookmarkMatchToACMatch(
+  AutocompleteMatch TitledUrlMatchToACMatch(
       const AutocompleteInput& input,
       const base::string16& fixed_up_input_text,
-      const bookmarks::BookmarkMatch& match);
+      const bookmarks::TitledUrlMatch& match);
 
   // Converts |positions| into ACMatchClassifications and returns the
   // classifications. |text_length| is used to determine the need to add an

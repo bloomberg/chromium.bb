@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_INDEX_H_
-#define COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_INDEX_H_
+#ifndef COMPONENTS_BOOKMARKS_BROWSER_TITLED_URL_INDEX_H_
+#define COMPONENTS_BOOKMARKS_BROWSER_TITLED_URL_INDEX_H_
 
 #include <stddef.h>
 
@@ -20,19 +20,17 @@ namespace bookmarks {
 
 class TitledUrlNode;
 class TitledUrlNodeSorter;
-struct BookmarkMatch;
+struct TitledUrlMatch;
 
-// BookmarkIndex maintains an index of the titles and URLs of bookmarks for
-// quick look up. BookmarkIndex is owned and maintained by BookmarkModel, you
-// shouldn't need to interact directly with BookmarkIndex.
+// TitledUrlIndex maintains an index of paired titles and URLs for quick lookup.
 //
-// BookmarkIndex maintains the index (index_) as a map of sets. The map (type
-// Index) maps from a lower case string to the set (type NodeSet) of
+// TitledUrlIndex maintains the index (index_) as a map of sets. The map (type
+// Index) maps from a lower case string to the set (type TitledUrlNodeSet) of
 // TitledUrlNodes that contain that string in their title or URL.
-class BookmarkIndex {
+class TitledUrlIndex {
  public:
-  BookmarkIndex(std::unique_ptr<TitledUrlNodeSorter> sorter);
-  ~BookmarkIndex();
+  TitledUrlIndex(std::unique_ptr<TitledUrlNodeSorter> sorter);
+  ~TitledUrlIndex();
 
   // Invoked when a title/URL pair has been added to the model.
   void Add(const TitledUrlNode* node);
@@ -45,16 +43,15 @@ class BookmarkIndex {
   void GetResultsMatching(const base::string16& query,
                           size_t max_count,
                           query_parser::MatchingAlgorithm matching_algorithm,
-                          std::vector<BookmarkMatch>* results);
+                          std::vector<TitledUrlMatch>* results);
 
  private:
   using TitledUrlNodes = std::vector<const TitledUrlNode*>;
   using TitledUrlNodeSet = std::set<const TitledUrlNode*>;
   using Index = std::map<base::string16, TitledUrlNodeSet>;
 
-  // Constructs |sorted_nodes| by taking the matches in |matches| and sorting
-  // them in decreasing order of typed count (if supported by the client) and
-  // deduping them.
+  // Constructs |sorted_nodes| by copying the matches in |matches| and sorting
+  // them.
   void SortMatches(const TitledUrlNodeSet& matches,
                    TitledUrlNodes* sorted_nodes) const;
 
@@ -62,7 +59,7 @@ class BookmarkIndex {
   void AddMatchToResults(const TitledUrlNode* node,
                          query_parser::QueryParser* parser,
                          const query_parser::QueryNodeVector& query_nodes,
-                         std::vector<BookmarkMatch>* results);
+                         std::vector<TitledUrlMatch>* results);
 
   // Populates |matches| for the specified term. If |first_term| is true, this
   // is the first term in the query. Returns true if there is at least one node
@@ -86,9 +83,9 @@ class BookmarkIndex {
 
   std::unique_ptr<TitledUrlNodeSorter> sorter_;
 
-  DISALLOW_COPY_AND_ASSIGN(BookmarkIndex);
+  DISALLOW_COPY_AND_ASSIGN(TitledUrlIndex);
 };
 
 }  // namespace bookmarks
 
-#endif  // COMPONENTS_BOOKMARKS_BROWSER_BOOKMARK_INDEX_H_
+#endif  // COMPONENTS_BOOKMARKS_BROWSER_TITLED_URL_INDEX_H_

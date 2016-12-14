@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/bookmarks/browser/bookmark_index.h"
+#include "components/bookmarks/browser/titled_url_index.h"
 
 #include <stdint.h>
 
@@ -11,8 +11,8 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_offset_string_conversions.h"
 #include "build/build_config.h"
-#include "components/bookmarks/browser/bookmark_match.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/browser/titled_url_match.h"
 #include "components/bookmarks/browser/titled_url_node.h"
 #include "components/bookmarks/browser/titled_url_node_sorter.h"
 #include "components/query_parser/snippet.h"
@@ -48,14 +48,14 @@ base::string16 Normalize(const base::string16& text) {
 
 }  // namespace
 
-BookmarkIndex::BookmarkIndex(std::unique_ptr<TitledUrlNodeSorter> sorter)
+TitledUrlIndex::TitledUrlIndex(std::unique_ptr<TitledUrlNodeSorter> sorter)
     : sorter_(std::move(sorter)) {
 }
 
-BookmarkIndex::~BookmarkIndex() {
+TitledUrlIndex::~TitledUrlIndex() {
 }
 
-void BookmarkIndex::Add(const TitledUrlNode* node) {
+void TitledUrlIndex::Add(const TitledUrlNode* node) {
   std::vector<base::string16> terms =
       ExtractQueryWords(Normalize(node->GetTitledUrlNodeTitle()));
   for (size_t i = 0; i < terms.size(); ++i)
@@ -66,7 +66,7 @@ void BookmarkIndex::Add(const TitledUrlNode* node) {
     RegisterNode(terms[i], node);
 }
 
-void BookmarkIndex::Remove(const TitledUrlNode* node) {
+void TitledUrlIndex::Remove(const TitledUrlNode* node) {
   std::vector<base::string16> terms =
       ExtractQueryWords(Normalize(node->GetTitledUrlNodeTitle()));
   for (size_t i = 0; i < terms.size(); ++i)
@@ -77,11 +77,11 @@ void BookmarkIndex::Remove(const TitledUrlNode* node) {
     UnregisterNode(terms[i], node);
 }
 
-void BookmarkIndex::GetResultsMatching(
+void TitledUrlIndex::GetResultsMatching(
     const base::string16& input_query,
     size_t max_count,
     query_parser::MatchingAlgorithm matching_algorithm,
-    std::vector<BookmarkMatch>* results) {
+    std::vector<TitledUrlMatch>* results) {
   const base::string16 query = Normalize(input_query);
   std::vector<base::string16> terms = ExtractQueryWords(query);
   if (terms.empty())
@@ -116,7 +116,7 @@ void BookmarkIndex::GetResultsMatching(
     AddMatchToResults(*i, &parser, query_nodes, results);
 }
 
-void BookmarkIndex::SortMatches(const TitledUrlNodeSet& matches,
+void TitledUrlIndex::SortMatches(const TitledUrlNodeSet& matches,
                                 TitledUrlNodes* sorted_nodes) const {
   if (sorter_) {
     sorter_->SortMatches(matches, sorted_nodes);
@@ -125,11 +125,11 @@ void BookmarkIndex::SortMatches(const TitledUrlNodeSet& matches,
   }
 }
 
-void BookmarkIndex::AddMatchToResults(
+void TitledUrlIndex::AddMatchToResults(
     const TitledUrlNode* node,
     query_parser::QueryParser* parser,
     const query_parser::QueryNodeVector& query_nodes,
-    std::vector<BookmarkMatch>* results) {
+    std::vector<TitledUrlMatch>* results) {
   if (!node) {
     return;
   }
@@ -156,7 +156,7 @@ void BookmarkIndex::AddMatchToResults(
     query_parser::QueryParser::SortAndCoalesceMatchPositions(&title_matches);
     query_parser::QueryParser::SortAndCoalesceMatchPositions(&url_matches);
   }
-  BookmarkMatch match;
+  TitledUrlMatch match;
   if (lower_title.length() == node->GetTitledUrlNodeTitle().length()) {
     // Only use title matches if the lowercase string is the same length
     // as the original string, otherwise the matches are meaningless.
@@ -167,16 +167,16 @@ void BookmarkIndex::AddMatchToResults(
   // matches in |url_matches| so they point to offsets in the original URL
   // spec, not the cleaned-up URL string that we used for matching.
   std::vector<size_t> offsets =
-      BookmarkMatch::OffsetsFromMatchPositions(url_matches);
+      TitledUrlMatch::OffsetsFromMatchPositions(url_matches);
   base::OffsetAdjuster::UnadjustOffsets(adjustments, &offsets);
   url_matches =
-      BookmarkMatch::ReplaceOffsetsInMatchPositions(url_matches, offsets);
+      TitledUrlMatch::ReplaceOffsetsInMatchPositions(url_matches, offsets);
   match.url_match_positions.swap(url_matches);
   match.node = node;
   results->push_back(match);
 }
 
-bool BookmarkIndex::GetResultsMatchingTerm(
+bool TitledUrlIndex::GetResultsMatchingTerm(
     const base::string16& term,
     bool first_term,
     query_parser::MatchingAlgorithm matching_algorithm,
@@ -227,7 +227,7 @@ bool BookmarkIndex::GetResultsMatchingTerm(
   return !matches->empty();
 }
 
-std::vector<base::string16> BookmarkIndex::ExtractQueryWords(
+std::vector<base::string16> TitledUrlIndex::ExtractQueryWords(
     const base::string16& query) {
   std::vector<base::string16> terms;
   if (query.empty())
@@ -239,12 +239,12 @@ std::vector<base::string16> BookmarkIndex::ExtractQueryWords(
   return terms;
 }
 
-void BookmarkIndex::RegisterNode(const base::string16& term,
+void TitledUrlIndex::RegisterNode(const base::string16& term,
                                  const TitledUrlNode* node) {
   index_[term].insert(node);
 }
 
-void BookmarkIndex::UnregisterNode(const base::string16& term,
+void TitledUrlIndex::UnregisterNode(const base::string16& term,
                                    const TitledUrlNode* node) {
   Index::iterator i = index_.find(term);
   if (i == index_.end()) {

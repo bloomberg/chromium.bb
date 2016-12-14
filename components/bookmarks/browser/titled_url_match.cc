@@ -2,21 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/bookmarks/browser/bookmark_match.h"
+#include "components/bookmarks/browser/titled_url_match.h"
 
 #include "base/logging.h"
 #include "base/strings/string16.h"
 
 namespace bookmarks {
 
-BookmarkMatch::BookmarkMatch() : node(NULL) {}
+TitledUrlMatch::TitledUrlMatch() : node(NULL) {}
 
-BookmarkMatch::BookmarkMatch(const BookmarkMatch& other) = default;
+TitledUrlMatch::TitledUrlMatch(const TitledUrlMatch& other) = default;
 
-BookmarkMatch::~BookmarkMatch() {}
+TitledUrlMatch::~TitledUrlMatch() {}
 
 // static
-std::vector<size_t> BookmarkMatch::OffsetsFromMatchPositions(
+std::vector<size_t> TitledUrlMatch::OffsetsFromMatchPositions(
     const MatchPositions& match_positions) {
   std::vector<size_t> offsets;
   for (MatchPositions::const_iterator i = match_positions.begin();
@@ -28,7 +28,7 @@ std::vector<size_t> BookmarkMatch::OffsetsFromMatchPositions(
 }
 
 // static
-BookmarkMatch::MatchPositions BookmarkMatch::ReplaceOffsetsInMatchPositions(
+TitledUrlMatch::MatchPositions TitledUrlMatch::ReplaceOffsetsInMatchPositions(
     const MatchPositions& match_positions,
     const std::vector<size_t>& offsets) {
   DCHECK_EQ(2 * match_positions.size(), offsets.size());

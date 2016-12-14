@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/bookmarks/browser/bookmark_index.h"
-
 #include <stddef.h>
 
 #include <string>
@@ -15,8 +13,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/bookmarks/browser/bookmark_match.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/titled_url_match.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -93,7 +91,7 @@ class BookmarkIndexTest : public testing::Test {
   void ExpectMatches(const std::string& query,
                      query_parser::MatchingAlgorithm matching_algorithm,
                      const std::vector<std::string>& expected_titles) {
-    std::vector<BookmarkMatch> matches;
+    std::vector<TitledUrlMatch> matches;
     model_->GetBookmarksMatching(ASCIIToUTF16(query), 1000, matching_algorithm,
                                  &matches);
     ASSERT_EQ(expected_titles.size(), matches.size());
@@ -112,14 +110,14 @@ class BookmarkIndexTest : public testing::Test {
   }
 
   void ExtractMatchPositions(const std::string& string,
-                             BookmarkMatch::MatchPositions* matches) {
+                             TitledUrlMatch::MatchPositions* matches) {
     for (const base::StringPiece& match :
          base::SplitStringPiece(string, ":",
                                 base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
       std::vector<base::StringPiece> chunks = base::SplitStringPiece(
           match, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
       ASSERT_EQ(2U, chunks.size());
-      matches->push_back(BookmarkMatch::MatchPosition());
+      matches->push_back(TitledUrlMatch::MatchPosition());
       int chunks0, chunks1;
       EXPECT_TRUE(base::StringToInt(chunks[0], &chunks0));
       EXPECT_TRUE(base::StringToInt(chunks[1], &chunks1));
@@ -129,8 +127,8 @@ class BookmarkIndexTest : public testing::Test {
   }
 
   void ExpectMatchPositions(
-      const BookmarkMatch::MatchPositions& actual_positions,
-      const BookmarkMatch::MatchPositions& expected_positions) {
+      const TitledUrlMatch::MatchPositions& actual_positions,
+      const TitledUrlMatch::MatchPositions& expected_positions) {
     ASSERT_EQ(expected_positions.size(), actual_positions.size());
     for (size_t i = 0; i < expected_positions.size(); ++i) {
       EXPECT_EQ(expected_positions[i].first, actual_positions[i].first);
@@ -359,7 +357,7 @@ TEST_F(BookmarkIndexTest, Normalization) {
   GURL url(kAboutBlankURL);
   for (size_t i = 0; i < arraysize(data); ++i) {
     model_->AddURL(model_->other_node(), 0, UTF8ToUTF16(data[i].title), url);
-    std::vector<BookmarkMatch> matches;
+    std::vector<TitledUrlMatch> matches;
     model_->GetBookmarksMatching(UTF8ToUTF16(data[i].query), 10, &matches);
     EXPECT_EQ(1u, matches.size());
     model_ = TestBookmarkClient::CreateModel();
@@ -389,11 +387,11 @@ TEST_F(BookmarkIndexTest, MatchPositionsTitles) {
     bookmarks.push_back(bookmark);
     AddBookmarks(bookmarks);
 
-    std::vector<BookmarkMatch> matches;
+    std::vector<TitledUrlMatch> matches;
     model_->GetBookmarksMatching(ASCIIToUTF16(data[i].query), 1000, &matches);
     ASSERT_EQ(1U, matches.size());
 
-    BookmarkMatch::MatchPositions expected_title_matches;
+    TitledUrlMatch::MatchPositions expected_title_matches;
     ExtractMatchPositions(data[i].expected_title_match_positions,
                           &expected_title_matches);
     ExpectMatchPositions(matches[0].title_match_positions,
@@ -441,11 +439,11 @@ TEST_F(BookmarkIndexTest, MatchPositionsURLs) {
     bookmarks.push_back(bookmark);
     AddBookmarks(bookmarks);
 
-    std::vector<BookmarkMatch> matches;
+    std::vector<TitledUrlMatch> matches;
     model_->GetBookmarksMatching(UTF8ToUTF16(data[i].query), 1000, &matches);
     ASSERT_EQ(1U, matches.size()) << data[i].url << data[i].query;
 
-    BookmarkMatch::MatchPositions expected_url_matches;
+    TitledUrlMatch::MatchPositions expected_url_matches;
     ExtractMatchPositions(data[i].expected_url_match_positions,
                           &expected_url_matches);
     ExpectMatchPositions(matches[0].url_match_positions, expected_url_matches);
@@ -493,7 +491,7 @@ TEST_F(BookmarkIndexTest, HonorMax) {
   const char* urls[] = {kAboutBlankURL, kAboutBlankURL};
   AddBookmarks(titles, urls, arraysize(titles));
 
-  std::vector<BookmarkMatch> matches;
+  std::vector<TitledUrlMatch> matches;
   model_->GetBookmarksMatching(ASCIIToUTF16("ABc"), 1, &matches);
   EXPECT_EQ(1U, matches.size());
 }
@@ -505,7 +503,7 @@ TEST_F(BookmarkIndexTest, EmptyMatchOnMultiwideLowercaseString) {
                                           base::WideToUTF16(L"\u0130 i"),
                                           GURL("http://www.google.com"));
 
-  std::vector<BookmarkMatch> matches;
+  std::vector<TitledUrlMatch> matches;
   model_->GetBookmarksMatching(ASCIIToUTF16("i"), 100, &matches);
   ASSERT_EQ(1U, matches.size());
   EXPECT_EQ(n1, matches[0].node);
@@ -538,7 +536,7 @@ TEST_F(BookmarkIndexTest, GetResultsSortedByTypedCount) {
         model->other_node(), i, UTF8ToUTF16(data[i].title), data[i].url);
 
   // Populate match nodes.
-  std::vector<BookmarkMatch> matches;
+  std::vector<TitledUrlMatch> matches;
   model->GetBookmarksMatching(ASCIIToUTF16("google"), 4, &matches);
 
   // The resulting order should be:
