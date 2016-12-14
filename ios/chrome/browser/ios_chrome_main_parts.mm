@@ -133,8 +133,6 @@ void IOSChromeMainParts::PreCreateThreads() {
 
   // Task Scheduler initialization needs to be here for the following reasons:
   //   * After |SetupFieldTrials()|: Initialization uses variations.
-  //   * Before |SetupMetrics()|: |SetupMetrics()| uses the blocking pool. The
-  //         Task Scheduler must do any necessary redirection before then.
   //   * Near the end of |PreCreateThreads()|: The TaskScheduler needs to be
   //         created before any other threads are (by contract) but it creates
   //         threads itself so instantiating it earlier is also incorrect.
@@ -142,7 +140,6 @@ void IOSChromeMainParts::PreCreateThreads() {
   // shutdown call may also need to be moved.
   task_scheduler_util::InitializeDefaultBrowserTaskScheduler();
 
-  SetupMetrics();
 
   // Initialize FieldTrialSynchronizer system.
   field_trial_synchronizer_.reset(new ios::FieldTrialSynchronizer);
@@ -151,6 +148,10 @@ void IOSChromeMainParts::PreCreateThreads() {
 }
 
 void IOSChromeMainParts::PreMainMessageLoopRun() {
+  // This must occur at PreMainMessageLoopRun because |SetupMetrics()| uses the
+  // blocking pool, which is disabled until the CreateThreads phase of startup.
+  SetupMetrics();
+
   // Now that the file thread has been started, start recording.
   StartMetricsRecording();
 
