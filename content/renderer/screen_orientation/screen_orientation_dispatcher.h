@@ -11,8 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
 #include "base/macros.h"
-#include "content/common/screen_orientation.mojom.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "device/screen_orientation/public/interfaces/screen_orientation.mojom.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationClient.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
@@ -20,8 +20,8 @@
 
 namespace content {
 
-using mojom::ScreenOrientationAssociatedPtr;
-using ::blink::mojom::ScreenOrientationLockResult;
+using device::mojom::ScreenOrientationAssociatedPtr;
+using device::mojom::ScreenOrientationLockResult;
 
 class RenderFrame;
 

@@ -12,6 +12,7 @@ include_rules = [
   "+device/battery",  # For battery status service.
   "+device/base/synchronization",
   "+device/gamepad/public/interfaces",
+  "+device/screen_orientation/public/interfaces",
   "+device/sensors/public",
   "+device/time_zone_monitor/public",
   "+device/usb/public",

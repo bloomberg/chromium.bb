@@ -15,7 +15,7 @@
 
 namespace content {
 
-using ::blink::mojom::ScreenOrientationLockResult;
+using device::mojom::ScreenOrientationLockResult;
 
 ScreenOrientationDelegate* ScreenOrientationProvider::delegate_ = nullptr;
 

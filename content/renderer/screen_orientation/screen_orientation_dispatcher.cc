@@ -9,7 +9,7 @@
 
 namespace content {
 
-using ::blink::mojom::ScreenOrientationLockResult;
+using device::mojom::ScreenOrientationLockResult;
 
 ScreenOrientationDispatcher::ScreenOrientationDispatcher(
     RenderFrame* render_frame)

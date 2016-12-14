@@ -76,6 +76,7 @@ source_set("browser") {
     "//device/nfc:mojo_bindings",
     "//device/power_monitor",
     "//device/power_save_blocker",
+    "//device/screen_orientation/public/interfaces",
     "//device/sensors/public/cpp",
     "//device/time_zone_monitor",
     "//device/time_zone_monitor/public/interfaces",

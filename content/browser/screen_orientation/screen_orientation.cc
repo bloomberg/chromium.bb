@@ -12,7 +12,7 @@
 
 namespace content {
 
-using LockResult = blink::mojom::ScreenOrientationLockResult;
+using LockResult = device::mojom::ScreenOrientationLockResult;
 
 ScreenOrientation::ScreenOrientation(WebContents* web_contents)
     : WebContentsObserver(web_contents),

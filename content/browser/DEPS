@@ -23,6 +23,7 @@ include_rules = [
   "+device/nfc",
   "+device/power_monitor",
   "+device/power_save_blocker",
+  "+device/screen_orientation/public/interfaces",
   "+device/sensors/public",
   "+device/time_zone_monitor",  # For TimeZoneMonitor creation.
   "+device/vibration",  # For Vibration API

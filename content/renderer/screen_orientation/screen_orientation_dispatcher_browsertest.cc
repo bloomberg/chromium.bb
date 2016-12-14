@@ -16,8 +16,8 @@
 namespace content {
 
 using LockOrientationCallback =
-    mojom::ScreenOrientation::LockOrientationCallback;
-using LockResult = ::blink::mojom::ScreenOrientationLockResult;
+    device::mojom::ScreenOrientation::LockOrientationCallback;
+using LockResult = device::mojom::ScreenOrientationLockResult;
 
 // MockLockOrientationCallback is an implementation of
 // WebLockOrientationCallback and takes a LockOrientationResultHolder* as a

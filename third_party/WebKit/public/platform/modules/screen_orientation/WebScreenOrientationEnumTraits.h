@@ -5,68 +5,68 @@
 #ifndef WebScreenOrientationEnumTraits_h
 #define WebScreenOrientationEnumTraits_h
 
+#include "device/screen_orientation/public/interfaces/screen_orientation_lock_types.mojom-shared.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
-#include "third_party/WebKit/public/platform/modules/screen_orientation/screen_orientation_lock_types.mojom-shared.h"
 
 namespace mojo {
 
 template <>
-struct EnumTraits<::blink::mojom::ScreenOrientationLockType,
+struct EnumTraits<::device::mojom::ScreenOrientationLockType,
                   ::blink::WebScreenOrientationLockType> {
-  static ::blink::mojom::ScreenOrientationLockType ToMojom(
+  static ::device::mojom::ScreenOrientationLockType ToMojom(
       ::blink::WebScreenOrientationLockType lockType) {
     switch (lockType) {
       case ::blink::WebScreenOrientationLockDefault:
-        return ::blink::mojom::ScreenOrientationLockType::DEFAULT;
+        return ::device::mojom::ScreenOrientationLockType::DEFAULT;
       case ::blink::WebScreenOrientationLockPortraitPrimary:
-        return ::blink::mojom::ScreenOrientationLockType::PORTRAIT_PRIMARY;
+        return ::device::mojom::ScreenOrientationLockType::PORTRAIT_PRIMARY;
       case ::blink::WebScreenOrientationLockPortraitSecondary:
-        return ::blink::mojom::ScreenOrientationLockType::PORTRAIT_SECONDARY;
+        return ::device::mojom::ScreenOrientationLockType::PORTRAIT_SECONDARY;
       case ::blink::WebScreenOrientationLockLandscapePrimary:
-        return ::blink::mojom::ScreenOrientationLockType::LANDSCAPE_PRIMARY;
+        return ::device::mojom::ScreenOrientationLockType::LANDSCAPE_PRIMARY;
       case ::blink::WebScreenOrientationLockLandscapeSecondary:
-        return ::blink::mojom::ScreenOrientationLockType::LANDSCAPE_SECONDARY;
+        return ::device::mojom::ScreenOrientationLockType::LANDSCAPE_SECONDARY;
       case ::blink::WebScreenOrientationLockAny:
-        return ::blink::mojom::ScreenOrientationLockType::ANY;
+        return ::device::mojom::ScreenOrientationLockType::ANY;
       case ::blink::WebScreenOrientationLockLandscape:
-        return ::blink::mojom::ScreenOrientationLockType::LANDSCAPE;
+        return ::device::mojom::ScreenOrientationLockType::LANDSCAPE;
       case ::blink::WebScreenOrientationLockPortrait:
-        return ::blink::mojom::ScreenOrientationLockType::PORTRAIT;
+        return ::device::mojom::ScreenOrientationLockType::PORTRAIT;
       case ::blink::WebScreenOrientationLockNatural:
-        return ::blink::mojom::ScreenOrientationLockType::NATURAL;
+        return ::device::mojom::ScreenOrientationLockType::NATURAL;
     }
     NOTREACHED();
-    return ::blink::mojom::ScreenOrientationLockType::DEFAULT;
+    return ::device::mojom::ScreenOrientationLockType::DEFAULT;
   }
 
-  static bool FromMojom(::blink::mojom::ScreenOrientationLockType lockType,
+  static bool FromMojom(::device::mojom::ScreenOrientationLockType lockType,
                         ::blink::WebScreenOrientationLockType* out) {
     switch (lockType) {
-      case ::blink::mojom::ScreenOrientationLockType::DEFAULT:
+      case ::device::mojom::ScreenOrientationLockType::DEFAULT:
         *out = ::blink::WebScreenOrientationLockDefault;
         return true;
-      case ::blink::mojom::ScreenOrientationLockType::PORTRAIT_PRIMARY:
+      case ::device::mojom::ScreenOrientationLockType::PORTRAIT_PRIMARY:
         *out = ::blink::WebScreenOrientationLockPortraitPrimary;
         return true;
-      case ::blink::mojom::ScreenOrientationLockType::PORTRAIT_SECONDARY:
+      case ::device::mojom::ScreenOrientationLockType::PORTRAIT_SECONDARY:
         *out = ::blink::WebScreenOrientationLockPortraitSecondary;
         return true;
-      case ::blink::mojom::ScreenOrientationLockType::LANDSCAPE_PRIMARY:
+      case ::device::mojom::ScreenOrientationLockType::LANDSCAPE_PRIMARY:
         *out = ::blink::WebScreenOrientationLockLandscapePrimary;
         return true;
-      case ::blink::mojom::ScreenOrientationLockType::LANDSCAPE_SECONDARY:
+      case ::device::mojom::ScreenOrientationLockType::LANDSCAPE_SECONDARY:
         *out = ::blink::WebScreenOrientationLockLandscapeSecondary;
         return true;
-      case ::blink::mojom::ScreenOrientationLockType::ANY:
+      case ::device::mojom::ScreenOrientationLockType::ANY:
         *out = ::blink::WebScreenOrientationLockAny;
         return true;
-      case ::blink::mojom::ScreenOrientationLockType::LANDSCAPE:
+      case ::device::mojom::ScreenOrientationLockType::LANDSCAPE:
         *out = ::blink::WebScreenOrientationLockLandscape;
         return true;
-      case ::blink::mojom::ScreenOrientationLockType::PORTRAIT:
+      case ::device::mojom::ScreenOrientationLockType::PORTRAIT:
         *out = ::blink::WebScreenOrientationLockPortrait;
         return true;
-      case ::blink::mojom::ScreenOrientationLockType::NATURAL:
+      case ::device::mojom::ScreenOrientationLockType::NATURAL:
         *out = ::blink::WebScreenOrientationLockNatural;
         return true;
     }

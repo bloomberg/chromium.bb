@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "device/screen_orientation/public/interfaces/screen_orientation_lock_types.mojom.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
-#include "third_party/WebKit/public/platform/modules/screen_orientation/screen_orientation_lock_types.mojom.h"
 
 namespace content {
 
@@ -20,7 +20,7 @@ class ScreenOrientationDelegate;
 class WebContents;
 
 using LockOrientationCallback =
-    base::Callback<void(::blink::mojom::ScreenOrientationLockResult)>;
+    base::Callback<void(device::mojom::ScreenOrientationLockResult)>;
 
 // Handles screen orientation lock/unlock. Platforms which wish to provide
 // custom implementations can provide a factory for ScreenOrientationDelegate.
@@ -53,7 +53,7 @@ class CONTENT_EXPORT ScreenOrientationProvider : public WebContentsObserver {
  private:
   // Calls on |on_result_callback_| with |result|, followed by resetting
   // |on_result_callback_| and |pending_lock_orientation_|.
-  void NotifyLockResult(::blink::mojom::ScreenOrientationLockResult result);
+  void NotifyLockResult(device::mojom::ScreenOrientationLockResult result);
 
   // Returns the lock type that should be associated with 'natural' lock.
   // Returns WebScreenOrientationLockDefault if the natural lock type can't be
