@@ -7,5 +7,5 @@
 [
     Constructor(DOMString type, optional DragEventInit eventInitDict),
 ] interface DragEvent : MouseEvent {
-    [ImplementedAs=getDataTransfer] readonly attribute DataTransfer dataTransfer;
+    [ImplementedAs=getDataTransfer] readonly attribute DataTransfer? dataTransfer;
 };

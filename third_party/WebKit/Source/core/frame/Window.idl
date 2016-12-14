@@ -56,10 +56,10 @@
     // other browsing contexts
     [Replaceable, CallWith=ScriptState, CrossOrigin] readonly attribute Window frames;
     [Replaceable, CrossOrigin] readonly attribute unsigned long length;
-    [Unforgeable, CrossOrigin] readonly attribute Window top;
+    [Unforgeable, CrossOrigin] readonly attribute Window? top;
     // FIXME: opener should be of type any.
     [CrossOrigin, Custom=Setter] attribute Window opener;
-    [Replaceable, CrossOrigin] readonly attribute Window parent;
+    [Replaceable, CrossOrigin] readonly attribute Window? parent;
     [CheckSecurity=ReturnValue, Custom=Getter] readonly attribute Element? frameElement;
     // FIXME: open() should have 4 optional arguments with defaults.
     [Custom] Window? open(DOMString url, DOMString target, optional DOMString features);
