@@ -1174,7 +1174,6 @@ class PresubmitExecuter(object):
     os.chdir(main_path)
     return result
 
-
 def DoPresubmitChecks(change,
                       committing,
                       verbose,
@@ -1201,7 +1200,8 @@ def DoPresubmitChecks(change,
     output_stream: A stream to write output from presubmit tests to.
     input_stream: A stream to read input from the user.
     default_presubmit: A default presubmit script to execute in any case.
-    may_prompt: Enable (y/n) questions on warning or error.
+    may_prompt: Enable (y/n) questions on warning or error. If False,
+                any questions are answered with yes by default.
     rietveld_obj: rietveld.Rietveld object.
     gerrit_obj: provides basic Gerrit codereview functionality.
     dry_run: if true, some Checks will be skipped.
@@ -1271,14 +1271,14 @@ def DoPresubmitChecks(change,
     if total_time > 1.0:
       output.write("Presubmit checks took %.1fs to calculate.\n\n" % total_time)
 
-    if not errors:
-      if not warnings:
-        output.write('Presubmit checks passed.\n')
-      elif may_prompt:
-        output.prompt_yes_no('There were presubmit warnings. '
-                            'Are you sure you wish to continue? (y/N): ')
-      else:
-        output.fail()
+    if errors:
+      output.fail()
+    elif warnings:
+      output.write('There were presubmit warnings. ')
+      if may_prompt:
+        output.prompt_yes_no('Are you sure you wish to continue? (y/N): ')
+    else:
+      output.write('Presubmit checks passed.\n')
 
     global _ASKED_FOR_FEEDBACK
     # Ask for feedback one time out of 5.

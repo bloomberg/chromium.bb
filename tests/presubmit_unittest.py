@@ -634,6 +634,38 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.assertEqual(output.getvalue().count(
         'Running presubmit upload checks ...\n'), 1)
 
+  def testDoPresubmitChecksWithWarningsAndNoPrompt(self):
+    presubmit_path = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
+    haspresubmit_path = presubmit.os.path.join(
+        self.fake_root_dir, 'haspresubmit', 'PRESUBMIT.py')
+    inherit_path = presubmit.os.path.join(self.fake_root_dir,
+                                          self._INHERIT_SETTINGS)
+    presubmit.os.path.isfile(inherit_path).AndReturn(False)
+    presubmit.os.listdir(self.fake_root_dir).AndReturn(['PRESUBMIT.py'])
+    presubmit.os.path.isfile(presubmit_path).AndReturn(True)
+    presubmit.os.listdir(presubmit.os.path.join(
+        self.fake_root_dir, 'haspresubmit')).AndReturn(['PRESUBMIT.py'])
+    presubmit.os.path.isfile(haspresubmit_path).AndReturn(True)
+    presubmit.gclient_utils.FileRead(presubmit_path, 'rU').AndReturn(
+        self.presubmit_text)
+    presubmit.gclient_utils.FileRead(haspresubmit_path, 'rU').AndReturn(
+        self.presubmit_text)
+    presubmit.random.randint(0, 4).AndReturn(1)
+    self.mox.ReplayAll()
+
+    change = self.ExampleChange(extra_lines=['NOSUCHKEY=http://tracker/123'])
+
+    # There is no input buffer and may_prompt is set to False.
+    output = presubmit.DoPresubmitChecks(
+        change=change, committing=False, verbose=True,
+        output_stream=None, input_stream=None,
+        default_presubmit=None, may_prompt=False, rietveld_obj=None)
+    # A warning is printed, and should_continue is True.
+    self.failUnless(output.should_continue())
+    self.assertEquals(output.getvalue().count('??'), 2)
+    self.assertEqual(output.getvalue().count(
+        'Running presubmit upload checks ...\n'), 1)
+
   def testDoPresubmitChecksNoWarningPromptIfErrors(self):
     presubmit_path = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
     haspresubmit_path = presubmit.os.path.join(
