@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.view.WindowManager;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.ui.VSyncMonitor;
 
 import java.util.Arrays;
@@ -92,6 +93,7 @@ public class VSyncMonitorTest extends InstrumentationTestCase {
 
     // Check that the vsync period roughly matches the timestamps that the monitor generates.
     @MediumTest
+    @DisabledTest(message = "crbug.com/674129")
     public void testVSyncPeriod() throws InterruptedException {
         // Collect roughly one second of data on a 60 fps display.
         VSyncDataCollector collector = new VSyncDataCollector(FRAME_COUNT);
