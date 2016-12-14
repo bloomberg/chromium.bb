@@ -80,20 +80,15 @@ class TracingBrowserTest : public InProcessBrowserTest {
   }
 };
 
-// Flaky on Linux.  http://crbug.com/658054
-#if defined(OS_LINUX)
-#define MAYBE_TestMemoryInfra DISABLED_TestMemoryInfra
-#else
-#define MAYBE_TestMemoryInfra TestMemoryInfra
-#endif
-
-IN_PROC_BROWSER_TEST_F(TracingBrowserTest, MAYBE_TestMemoryInfra) {
+// Flaky: http://crbug.com/658054
+IN_PROC_BROWSER_TEST_F(TracingBrowserTest, DISABLED_TestMemoryInfra) {
   PerformDumpMemoryTestActions(base::trace_event::TraceConfig(
       base::trace_event::TraceConfigMemoryTestUtil::
           GetTraceConfig_PeriodicTriggers(250, 2000)));
 }
 
-IN_PROC_BROWSER_TEST_F(TracingBrowserTest, TestBackgroundMemoryInfra) {
+// Flaky: http://crbug.com/658054
+IN_PROC_BROWSER_TEST_F(TracingBrowserTest, DISABLED_TestBackgroundMemoryInfra) {
   PerformDumpMemoryTestActions(base::trace_event::TraceConfig(
       base::trace_event::TraceConfigMemoryTestUtil::
           GetTraceConfig_BackgroundTrigger(200)));
