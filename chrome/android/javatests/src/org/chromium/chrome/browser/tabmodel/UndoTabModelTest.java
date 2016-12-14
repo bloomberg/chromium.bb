@@ -777,9 +777,8 @@ public class UndoTabModelTest extends ChromeTabbedActivityTestBase {
      *
      * @throws InterruptedException
      */
-    // @MediumTest
-    // @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE) // See crbug.com/633607
-    @DisabledTest(message = "crbug.com/673729")
+    @MediumTest
+    @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE) // See crbug.com/633607
     public void testReverseOrderRestore() throws InterruptedException {
         TabModel model = getActivity().getTabModelSelector().getModel(false);
         ChromeTabCreator tabCreator = getActivity().getTabCreator(false);
