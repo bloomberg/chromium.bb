@@ -1953,8 +1953,11 @@ void LayoutObject::setStyleWithWritingModeOfParent(
 
 void LayoutObject::addChildWithWritingModeOfParent(LayoutObject* newChild,
                                                    LayoutObject* beforeChild) {
-  if (newChild->mutableStyleRef().setWritingMode(styleRef().getWritingMode()) &&
-      newChild->isBoxModelObject()) {
+  const WritingMode oldWritingMode =
+      newChild->mutableStyleRef().getWritingMode();
+  const WritingMode newWritingMode = styleRef().getWritingMode();
+  if (oldWritingMode != newWritingMode && newChild->isBoxModelObject()) {
+    newChild->mutableStyleRef().setWritingMode(newWritingMode);
     newChild->setHorizontalWritingMode(isHorizontalWritingMode());
   }
   addChild(newChild, beforeChild);

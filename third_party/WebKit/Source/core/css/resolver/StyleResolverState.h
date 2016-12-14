@@ -182,9 +182,12 @@ class CORE_EXPORT StyleResolverState {
     if (m_style->setEffectiveZoom(f))
       m_fontBuilder.didChangeEffectiveZoom();
   }
-  void setWritingMode(WritingMode writingMode) {
-    if (m_style->setWritingMode(writingMode))
-      m_fontBuilder.didChangeWritingMode();
+  void setWritingMode(WritingMode newWritingMode) {
+    if (m_style->getWritingMode() == newWritingMode) {
+      return;
+    }
+    m_style->setWritingMode(newWritingMode);
+    m_fontBuilder.didChangeWritingMode();
   }
   void setTextOrientation(TextOrientation textOrientation) {
     if (m_style->setTextOrientation(textOrientation))

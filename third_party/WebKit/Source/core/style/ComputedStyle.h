@@ -2280,13 +2280,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   WritingMode getWritingMode() const {
     return static_cast<WritingMode>(m_inheritedData.m_writingMode);
   }
-  bool setWritingMode(WritingMode v) {
-    if (v == getWritingMode())
-      return false;
-
-    m_inheritedData.m_writingMode = v;
-    return true;
-  }
+  void setWritingMode(WritingMode v) { m_inheritedData.m_writingMode = v; }
 
   // Text emphasis properties.
   static TextEmphasisFill initialTextEmphasisFill() {
