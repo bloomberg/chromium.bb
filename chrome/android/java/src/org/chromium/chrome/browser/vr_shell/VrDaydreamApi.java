@@ -49,11 +49,6 @@ public interface VrDaydreamApi {
     boolean exitFromVr(int requestCode, final Intent intent);
 
     /**
-     * Sets VR Mode to |enabled|.
-     */
-    void setVrModeEnabled(boolean enabled);
-
-    /**
      * @return Whether the current Viewer is a Daydream Viewer.
      */
     Boolean isDaydreamCurrentViewer();

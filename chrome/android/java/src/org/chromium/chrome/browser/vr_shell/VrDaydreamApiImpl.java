@@ -9,7 +9,6 @@ import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Intent;
 
-import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.DaydreamApi;
 import com.google.vr.ndk.base.GvrApi;
 
@@ -68,11 +67,6 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
         daydreamApi.exitFromVr(mActivity, requestCode, intent);
         daydreamApi.close();
         return true;
-    }
-
-    @Override
-    public void setVrModeEnabled(boolean enabled) {
-        AndroidCompat.setVrModeEnabled(mActivity, enabled);
     }
 
     @Override

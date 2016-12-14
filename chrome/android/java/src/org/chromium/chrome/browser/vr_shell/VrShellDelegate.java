@@ -90,11 +90,9 @@ public class VrShellDelegate {
     public VrShellDelegate(ChromeTabbedActivity activity) {
         mActivity = activity;
 
-        // TODO(bshe): refactor code so that mCardboardSupportOnly does not depend on mVrAvailable
-        // and mVrAvailable does not depend on createVrDaydreamApi.
-        mVrAvailable = createVrClassesBuilder() && isVrCoreCompatible() && createVrDaydreamApi();
-        // Only Cardboard mode is supported on non-daydream devices.
-        if (mVrDaydreamApi != null && mVrDaydreamApi.isDaydreamReadyDevice()) {
+        mVrAvailable = createVrClassesBuilder() && isVrCoreCompatible();
+        // Daydream ready devices support both Cardboard and Daydream mode.
+        if (mVrAvailable && createVrDaydreamApi() && mVrDaydreamApi.isDaydreamReadyDevice()) {
             mCardboardSupportOnly = false;
         }
 
@@ -181,7 +179,7 @@ public class VrShellDelegate {
         } else {
             if (mRequestedWebVR) nativeSetPresentResult(mNativeVrShellDelegate, false);
             if (!mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
-                mVrDaydreamApi.setVrModeEnabled(false);
+                mVrShell.setVrModeEnabled(false);
             }
         }
 
@@ -190,7 +188,6 @@ public class VrShellDelegate {
 
     private boolean enterVR() {
         if (mInVr) return true;
-        mVrDaydreamApi.setVrModeEnabled(true);
 
         Tab tab = mActivity.getActivityTab();
         if (!canEnterVR(tab)) return false;
@@ -201,6 +198,7 @@ public class VrShellDelegate {
             mActivity.setRequestedOrientation(mRestoreOrientation);
             return false;
         }
+        mVrShell.setVrModeEnabled(true);
         mInVr = true;
         mTab = tab;
         mTab.addObserver(mTabObserver);
@@ -402,11 +400,11 @@ public class VrShellDelegate {
     public void onExitVRResult(int resultCode) {
         assert mVrAvailable;
         if (resultCode == Activity.RESULT_OK) {
-            mVrDaydreamApi.setVrModeEnabled(false);
+            mVrShell.setVrModeEnabled(false);
         } else {
             // For now, we don't handle re-entering VR when exit fails, so keep trying to exit.
             if (!mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
-                mVrDaydreamApi.setVrModeEnabled(false);
+                mVrShell.setVrModeEnabled(false);
             }
         }
     }
@@ -464,10 +462,10 @@ public class VrShellDelegate {
         mRequestedWebVR = false;
         if (!isPausing) {
             if (!showTransition || !mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
-                mVrDaydreamApi.setVrModeEnabled(false);
+                mVrShell.setVrModeEnabled(false);
             }
         } else {
-            mVrDaydreamApi.setVrModeEnabled(false);
+            mVrShell.setVrModeEnabled(false);
             mLastVRExit = SystemClock.uptimeMillis();
         }
         mActivity.setRequestedOrientation(mRestoreOrientation);

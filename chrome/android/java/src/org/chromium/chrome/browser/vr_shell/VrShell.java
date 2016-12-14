@@ -34,6 +34,11 @@ public interface VrShell {
     void teardown();
 
     /**
+     * Sets VR Mode to |enabled|.
+     */
+    void setVrModeEnabled(boolean enabled);
+
+    /**
      * Sets whether we're presenting WebVR content or not.
      */
     void setWebVrModeEnabled(boolean enabled);
