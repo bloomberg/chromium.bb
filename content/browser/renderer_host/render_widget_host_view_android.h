@@ -238,6 +238,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
     return synchronous_compositor_client_;
   }
 
+  void OnOverscrollRefreshHandlerAvailable();
+
   static void OnContextLost();
 
   // TextInputManager::Observer overrides.
@@ -301,6 +303,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool SyncCompositorOnMessageReceived(const IPC::Message& message);
 
   void ComputeEventLatencyOSTouchHistograms(const ui::MotionEvent& event);
+
+  void CreateOverscrollControllerIfPossible();
 
   // The model object.
   RenderWidgetHostImpl* host_;

@@ -2,16 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/android/scoped_java_ref.h"
 #include "cc/layers/layer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/android/overscroll_refresh.h"
+#include "ui/android/overscroll_refresh_handler.h"
 
 namespace ui {
 
 class OverscrollRefreshTest : public OverscrollRefreshHandler,
                               public testing::Test {
  public:
-  OverscrollRefreshTest() {}
+  OverscrollRefreshTest() : OverscrollRefreshHandler(nullptr) {}
 
   // OverscrollRefreshHandler implementation.
   bool PullStart() override {

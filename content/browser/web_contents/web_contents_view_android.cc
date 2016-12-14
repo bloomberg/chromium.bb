@@ -17,6 +17,7 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/drop_data.h"
+#include "ui/android/overscroll_refresh_handler.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -109,6 +110,31 @@ void WebContentsViewAndroid::SetContentViewCore(
     if (rwhv)
       rwhv->SetContentViewCore(content_view_core_);
   }
+}
+
+void WebContentsViewAndroid::SetOverscrollRefreshHandler(
+    std::unique_ptr<ui::OverscrollRefreshHandler> overscroll_refresh_handler) {
+  overscroll_refresh_handler_ = std::move(overscroll_refresh_handler);
+  RenderWidgetHostViewAndroid* rwhv = static_cast<RenderWidgetHostViewAndroid*>(
+      web_contents_->GetRenderWidgetHostView());
+  if (rwhv)
+    rwhv->OnOverscrollRefreshHandlerAvailable();
+
+  if (web_contents_->ShowingInterstitialPage()) {
+    rwhv = static_cast<RenderWidgetHostViewAndroid*>(
+        web_contents_->GetInterstitialPage()
+            ->GetMainFrame()
+            ->GetRenderViewHost()
+            ->GetWidget()
+            ->GetView());
+    if (rwhv)
+      rwhv->OnOverscrollRefreshHandlerAvailable();
+  }
+}
+
+ui::OverscrollRefreshHandler*
+WebContentsViewAndroid::GetOverscrollRefreshHandler() const {
+  return overscroll_refresh_handler_.get();
 }
 
 gfx::NativeView WebContentsViewAndroid::GetNativeView() const {

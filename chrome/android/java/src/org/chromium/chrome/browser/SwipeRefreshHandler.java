@@ -5,15 +5,15 @@
 package org.chromium.chrome.browser;
 
 import android.content.Context;
+import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content.browser.OverscrollRefreshHandler;
 import org.chromium.third_party.android.swiperefresh.SwipeRefreshLayout;
+import org.chromium.ui.OverscrollRefreshHandler;
 
 /**
  * An overscroll handler implemented in terms a modified version of the Android
@@ -35,10 +35,9 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
     // The Tab where the swipe occurs.
     private Tab mTab;
 
-    // The ContentViewCore with which the handler is associated. The handler
-    // will set/unset itself as the default OverscrollRefreshHandler as the
-    // association changes.
-    private ContentViewCore mContentViewCore;
+    // The container view the SwipeRefreshHandler instance is currently
+    // associated with.
+    private ViewGroup mContainerView;
 
     // Async runnable for ending the refresh animation after the page first
     // loads a frame. This is used to provide a reasonable minimum animation time.
@@ -57,9 +56,9 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
      * @param context The associated context.
      * @param tab The Tab where the swipe occurs.
      */
-    public SwipeRefreshHandler(Context context, Tab tab) {
+    public SwipeRefreshHandler(final Context context, Tab tab) {
         mTab = tab;
-        mContentViewCore = mTab.getContentViewCore();
+        mContainerView = mTab.getContentViewCore().getContainerView();
 
         mSwipeRefreshLayout = new SwipeRefreshLayout(context);
         mSwipeRefreshLayout.setLayoutParams(
@@ -78,8 +77,7 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
                         getStopRefreshingRunnable(), MAX_REFRESH_ANIMATION_DURATION_MS);
                 if (mAccessibilityRefreshString == null) {
                     int resId = R.string.accessibility_swipe_refresh;
-                    mAccessibilityRefreshString =
-                            mContentViewCore.getContext().getResources().getString(resId);
+                    mAccessibilityRefreshString = context.getResources().getString(resId);
                 }
                 mSwipeRefreshLayout.announceForAccessibility(mAccessibilityRefreshString);
                 mTab.reload();
@@ -100,8 +98,7 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
                 mSwipeRefreshLayout.post(mDetachLayoutRunnable);
             }
         });
-
-        mContentViewCore.setOverscrollRefreshHandler(this);
+        mTab.getWebContents().setOverscrollRefreshHandler(this);
     }
 
     /**
@@ -111,7 +108,6 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
         setEnabled(false);
         cancelStopRefreshingRunnable();
         mSwipeRefreshLayout.setOnRefreshListener(null);
-        mContentViewCore.setOverscrollRefreshHandler(null);
     }
 
     /**
@@ -188,14 +184,14 @@ public class SwipeRefreshHandler implements OverscrollRefreshHandler {
     private void attachSwipeRefreshLayoutIfNecessary() {
         cancelDetachLayoutRunnable();
         if (mSwipeRefreshLayout.getParent() == null) {
-            mContentViewCore.getContainerView().addView(mSwipeRefreshLayout);
+            mContainerView.addView(mSwipeRefreshLayout);
         }
     }
 
     private void detachSwipeRefreshLayoutIfNecessary() {
         cancelDetachLayoutRunnable();
         if (mSwipeRefreshLayout.getParent() != null) {
-            mContentViewCore.getContainerView().removeView(mSwipeRefreshLayout);
+            mContainerView.removeView(mSwipeRefreshLayout);
         }
     }
 }

@@ -160,6 +160,11 @@ class CONTENT_EXPORT WebContentsAndroid
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj) const;
 
+  void SetOverscrollRefreshHandler(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& overscroll_refresh_handler);
+
   // Relay the access from Java layer to GetScaledContentBitmap through JNI.
   void GetContentBitmap(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,

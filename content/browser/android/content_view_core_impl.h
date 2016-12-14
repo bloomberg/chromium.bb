@@ -23,7 +23,6 @@
 #include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
-#include "ui/android/overscroll_refresh.h"
 #include "ui/android/view_android.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -42,7 +41,6 @@ class RenderWidgetHostViewAndroid;
 struct MenuItem;
 
 class ContentViewCoreImpl : public ContentViewCore,
-                            public ui::OverscrollRefreshHandler,
                             public WebContentsObserver {
  public:
   static ContentViewCoreImpl* FromWebContents(WebContents* web_contents);
@@ -406,12 +404,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   void RenderViewHostChanged(RenderViewHost* old_host,
                              RenderViewHost* new_host) override;
   void WebContentsDestroyed() override;
-
-  // OverscrollRefreshHandler implementation.
-  bool PullStart() override;
-  void PullUpdate(float delta) override;
-  void PullRelease(bool allow_refresh) override;
-  void PullReset() override;
 
   // --------------------------------------------------------------------------
   // Other private methods and data

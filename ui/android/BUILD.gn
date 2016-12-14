@@ -27,6 +27,8 @@ component("android") {
     "overscroll_glow.h",
     "overscroll_refresh.cc",
     "overscroll_refresh.h",
+    "overscroll_refresh_handler.cc",
+    "overscroll_refresh_handler.h",
     "resources/crushed_sprite_resource.cc",
     "resources/crushed_sprite_resource.h",
     "resources/resource_manager.cc",
@@ -76,6 +78,7 @@ static_library("test_support") {
 
 generate_jni("ui_android_jni_headers") {
   sources = [
+    "java/src/org/chromium/ui/OverscrollRefreshHandler.java",
     "java/src/org/chromium/ui/base/ViewAndroidDelegate.java",
     "java/src/org/chromium/ui/base/WindowAndroid.java",
     "java/src/org/chromium/ui/display/DisplayAndroidManager.java",
@@ -160,6 +163,7 @@ android_library("ui_java") {
     "java/src/org/chromium/ui/DropdownItem.java",
     "java/src/org/chromium/ui/DropdownItemBase.java",
     "java/src/org/chromium/ui/DropdownPopupWindow.java",
+    "java/src/org/chromium/ui/OverscrollRefreshHandler.java",
     "java/src/org/chromium/ui/UiUtils.java",
     "java/src/org/chromium/ui/VSyncMonitor.java",
     "java/src/org/chromium/ui/base/ActivityWindowAndroid.java",

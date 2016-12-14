@@ -5,6 +5,7 @@
 #include "ui/android/overscroll_refresh.h"
 
 #include "base/logging.h"
+#include "ui/android/overscroll_refresh_handler.h"
 
 namespace ui {
 namespace {

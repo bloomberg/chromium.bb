@@ -9,10 +9,10 @@
 #include "base/memory/ptr_util.h"
 #include "cc/layers/layer.h"
 #include "cc/output/compositor_frame_metadata.h"
-#include "content/browser/android/content_view_core_impl.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/android/edge_effect.h"
 #include "ui/android/edge_effect_l.h"
@@ -29,7 +29,6 @@ using ui::EdgeEffectL;
 using ui::OverscrollGlow;
 using ui::OverscrollGlowClient;
 using ui::OverscrollRefresh;
-using ui::OverscrollRefreshHandler;
 
 namespace content {
 namespace {
@@ -86,25 +85,26 @@ std::unique_ptr<OverscrollGlow> CreateGlowEffect(OverscrollGlowClient* client,
 }
 
 std::unique_ptr<OverscrollRefresh> CreateRefreshEffect(
-    OverscrollRefreshHandler* handler) {
+    ui::OverscrollRefreshHandler* overscroll_refresh_handler) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisablePullToRefreshEffect)) {
     return nullptr;
   }
 
-  return base::MakeUnique<OverscrollRefresh>(handler);
+  return base::MakeUnique<OverscrollRefresh>(overscroll_refresh_handler);
 }
 
 }  // namespace
 
 OverscrollControllerAndroid::OverscrollControllerAndroid(
-    ContentViewCoreImpl* content_view_core,
+    ui::OverscrollRefreshHandler* overscroll_refresh_handler,
+    ui::WindowAndroidCompositor* compositor,
     float dpi_scale)
-    : compositor_(content_view_core->GetWindowAndroid()->GetCompositor()),
+    : compositor_(compositor),
       dpi_scale_(dpi_scale),
       enabled_(true),
       glow_effect_(CreateGlowEffect(this, dpi_scale_)),
-      refresh_effect_(CreateRefreshEffect(content_view_core)) {
+      refresh_effect_(CreateRefreshEffect(overscroll_refresh_handler)) {
   DCHECK(compositor_);
 }
 

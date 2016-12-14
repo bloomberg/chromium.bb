@@ -1152,6 +1152,7 @@ source_set("browser") {
     "renderer_host/render_sandbox_host_linux.h",
     "renderer_host/render_view_host_delegate.cc",
     "renderer_host/render_view_host_delegate.h",
+    "renderer_host/render_view_host_delegate_view.cc",
     "renderer_host/render_view_host_delegate_view.h",
     "renderer_host/render_view_host_factory.cc",
     "renderer_host/render_view_host_factory.h",

@@ -13,6 +13,7 @@
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/public/common/drop_data.h"
+#include "ui/android/overscroll_refresh.h"
 #include "ui/android/view_android.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -41,6 +42,9 @@ class WebContentsViewAndroid : public WebContentsView,
   SynchronousCompositorClient* synchronous_compositor_client() const {
     return synchronous_compositor_client_;
   }
+
+  void SetOverscrollRefreshHandler(
+      std::unique_ptr<ui::OverscrollRefreshHandler> overscroll_refresh_handler);
 
   // WebContentsView implementation --------------------------------------------
   gfx::NativeView GetNativeView() const override;
@@ -79,6 +83,7 @@ class WebContentsViewAndroid : public WebContentsView,
                      bool right_aligned,
                      bool allow_multiple_selection) override;
   void HidePopupMenu() override;
+  ui::OverscrollRefreshHandler* GetOverscrollRefreshHandler() const override;
   void StartDragging(const DropData& drop_data,
                      blink::WebDragOperationsMask allowed_ops,
                      const gfx::ImageSkia& image,
@@ -106,6 +111,9 @@ class WebContentsViewAndroid : public WebContentsView,
 
   // ContentViewCoreImpl is our interface to the view system.
   ContentViewCoreImpl* content_view_core_;
+
+  // Handles "overscroll to refresh" events
+  std::unique_ptr<ui::OverscrollRefreshHandler> overscroll_refresh_handler_;
 
   // Interface for extensions to WebContentsView. Used to show the context menu.
   std::unique_ptr<WebContentsViewDelegate> delegate_;

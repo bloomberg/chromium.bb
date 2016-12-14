@@ -12,26 +12,7 @@
 
 namespace ui {
 
-class UI_ANDROID_EXPORT OverscrollRefreshHandler {
- public:
-  // Signals the start of an overscrolling pull. Returns whether the handler
-  // will consume the overscroll gesture, in which case it will receive the
-  // remaining pull updates.
-  virtual bool PullStart() = 0;
-
-  // Signals a pull update, where |delta| is in device pixels.
-  virtual void PullUpdate(float delta) = 0;
-
-  // Signals the release of the pull, and whether the release is allowed to
-  // trigger the refresh action.
-  virtual void PullRelease(bool allow_refresh) = 0;
-
-  // Reset the active pull state.
-  virtual void PullReset() = 0;
-
- protected:
-  virtual ~OverscrollRefreshHandler() {}
-};
+class OverscrollRefreshHandler;
 
 // Simple pull-to-refresh styled effect. Listens to scroll events, conditionally
 // activating when:
@@ -99,6 +80,6 @@ class UI_ANDROID_EXPORT OverscrollRefresh {
   DISALLOW_COPY_AND_ASSIGN(OverscrollRefresh);
 };
 
-}  // namespace content
+}  // namespace ui
 
 #endif  // UI_ANDROID_OVERSCROLL_REFRESH_H_

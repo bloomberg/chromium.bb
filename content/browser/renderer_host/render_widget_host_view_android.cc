@@ -55,6 +55,7 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
 #include "content/browser/renderer_host/input/web_input_event_builders_android.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu_host_messages.h"
@@ -336,13 +337,6 @@ std::unique_ptr<ui::TouchSelectionController> CreateSelectionController(
   return base::MakeUnique<ui::TouchSelectionController>(client, config);
 }
 
-std::unique_ptr<OverscrollControllerAndroid> CreateOverscrollController(
-    ContentViewCoreImpl* content_view_core,
-    float dpi_scale) {
-  return base::MakeUnique<OverscrollControllerAndroid>(content_view_core,
-                                                       dpi_scale);
-}
-
 gfx::RectF GetSelectionRect(const ui::TouchSelectionController& controller) {
   gfx::RectF rect = controller.GetRectBetweenBounds();
   if (rect.IsEmpty())
@@ -469,6 +463,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
 
   host_->SetView(this);
   SetContentViewCore(content_view_core);
+
+  CreateOverscrollControllerIfPossible();
 
   if (GetTextInputManager())
     GetTextInputManager()->AddObserver(this);
@@ -1216,6 +1212,11 @@ void RenderWidgetHostViewAndroid::SetSynchronousCompositorClient(
   }
 }
 
+void RenderWidgetHostViewAndroid::OnOverscrollRefreshHandlerAvailable() {
+  DCHECK(!overscroll_controller_);
+  CreateOverscrollControllerIfPossible();
+}
+
 bool RenderWidgetHostViewAndroid::SupportsAnimation() const {
   // The synchronous (WebView) compositor does not have a proper browser
   // compositor with which to drive animations.
@@ -1768,7 +1769,6 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
 
   bool resize = false;
   if (content_view_core != content_view_core_) {
-    overscroll_controller_.reset();
     selection_controller_.reset();
     ReleaseLocksOnSurface();
     // TODO(yusufo) : Get rid of the below conditions and have a better handling
@@ -1816,12 +1816,8 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
   if (!selection_controller_)
     selection_controller_ = CreateSelectionController(this, content_view_core_);
 
-  if (!overscroll_controller_ &&
-      view_.GetWindowAndroid()->GetCompositor()) {
-    overscroll_controller_ = CreateOverscrollController(
-        content_view_core_, ui::GetScaleFactorForNativeView(GetNativeView()));
-    is_showing_overscroll_glow_ = true;
-  }
+  if (content_view_core_)
+    CreateOverscrollControllerIfPossible();
 }
 
 void RenderWidgetHostViewAndroid::RunAckCallbacks() {
@@ -1848,6 +1844,7 @@ void RenderWidgetHostViewAndroid::OnGestureEvent(
 
 void RenderWidgetHostViewAndroid::OnContentViewCoreDestroyed() {
   SetContentViewCore(NULL);
+  overscroll_controller_.reset();
 }
 
 void RenderWidgetHostViewAndroid::OnCompositingDidCommit() {
@@ -1885,9 +1882,7 @@ void RenderWidgetHostViewAndroid::OnDetachedFromWindow() {
 
 void RenderWidgetHostViewAndroid::OnAttachCompositor() {
   DCHECK(content_view_core_);
-  if (!overscroll_controller_)
-    overscroll_controller_ = CreateOverscrollController(
-        content_view_core_, ui::GetScaleFactorForNativeView(GetNativeView()));
+  CreateOverscrollControllerIfPossible();
   ui::WindowAndroidCompositor* compositor =
       view_.GetWindowAndroid()->GetCompositor();
   delegated_frame_host_->RegisterFrameSinkHierarchy(
@@ -1999,6 +1994,49 @@ void RenderWidgetHostViewAndroid::ComputeEventLatencyOSTouchHistograms(
     default:
       return;
   }
+}
+
+void RenderWidgetHostViewAndroid::CreateOverscrollControllerIfPossible() {
+  // an OverscrollController is already set
+  if (overscroll_controller_)
+    return;
+
+  RenderWidgetHostDelegate* delegate = host_->delegate();
+  if (!delegate)
+    return;
+
+  RenderViewHostDelegateView* delegate_view = delegate->GetDelegateView();
+  // render_widget_host_unittest.cc uses an object called
+  // MockRenderWidgetHostDelegate that does not have a DelegateView
+  if (!delegate_view)
+    return;
+
+  ui::OverscrollRefreshHandler* overscroll_refresh_handler =
+      delegate_view->GetOverscrollRefreshHandler();
+  if (!overscroll_refresh_handler)
+    return;
+
+  if (!content_view_core_)
+    return;
+
+  // If window_android is null here, this is bad because we don't listen for it
+  // being set, so we won't be able to construct the OverscrollController at the
+  // proper time.
+  // TODO(rlanday): once we get WindowAndroid from ViewAndroid instead of
+  // ContentViewCore, listen for WindowAndroid being set and create the
+  // OverscrollController.
+  ui::WindowAndroid* window_android = content_view_core_->GetWindowAndroid();
+  if (!window_android)
+    return;
+
+  ui::WindowAndroidCompositor* compositor = window_android->GetCompositor();
+  if (!compositor)
+    return;
+
+  overscroll_controller_ = base::MakeUnique<OverscrollControllerAndroid>(
+      overscroll_refresh_handler, compositor,
+      ui::GetScaleFactorForNativeView(GetNativeView()));
+  is_showing_overscroll_glow_ = true;
 }
 
 }  // namespace content

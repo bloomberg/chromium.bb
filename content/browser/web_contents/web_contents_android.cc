@@ -23,6 +23,7 @@
 #include "content/browser/media/android/media_web_contents_observer_android.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/devtools_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
@@ -37,6 +38,7 @@
 #include "jni/WebContentsImpl_jni.h"
 #include "net/android/network_library.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/android/overscroll_refresh_handler.h"
 #include "ui/gfx/android/device_display_info.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/geometry/rect.h"
@@ -614,6 +616,17 @@ ScopedJavaLocalRef<jstring> WebContentsAndroid::GetEncoding(
     const JavaParamRef<jobject>& obj) const {
   return base::android::ConvertUTF8ToJavaString(env,
                                                 web_contents_->GetEncoding());
+}
+
+void WebContentsAndroid::SetOverscrollRefreshHandler(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jobject>& overscroll_refresh_handler) {
+  WebContentsViewAndroid* view =
+      static_cast<WebContentsViewAndroid*>(web_contents_->GetView());
+  view->SetOverscrollRefreshHandler(
+      base::MakeUnique<ui::OverscrollRefreshHandler>(
+          overscroll_refresh_handler));
 }
 
 void WebContentsAndroid::GetContentBitmap(

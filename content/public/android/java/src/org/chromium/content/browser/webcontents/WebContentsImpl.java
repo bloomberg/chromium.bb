@@ -28,6 +28,7 @@ import org.chromium.content_public.browser.MessagePortService;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.ui.OverscrollRefreshHandler;
 import org.chromium.ui.accessibility.AXTextStyle;
 
 import java.util.ArrayList;
@@ -421,8 +422,13 @@ import java.util.UUID;
     }
 
     @Override
-    public void getContentBitmapAsync(Bitmap.Config config, float scale, Rect srcRect,
-            ContentBitmapCallback callback) {
+    public void setOverscrollRefreshHandler(OverscrollRefreshHandler handler) {
+        nativeSetOverscrollRefreshHandler(mNativeWebContentsAndroid, handler);
+    }
+
+    @Override
+    public void getContentBitmapAsync(
+            Bitmap.Config config, float scale, Rect srcRect, ContentBitmapCallback callback) {
         nativeGetContentBitmap(mNativeWebContentsAndroid, callback, config, scale,
                 srcRect.left, srcRect.top, srcRect.width(), srcRect.height());
     }
@@ -533,6 +539,8 @@ import java.util.UUID;
     private native int nativeGetThemeColor(long nativeWebContentsAndroid);
     private native void nativeRequestAccessibilitySnapshot(
             long nativeWebContentsAndroid, AccessibilitySnapshotCallback callback);
+    private native void nativeSetOverscrollRefreshHandler(
+            long nativeWebContentsAndroid, OverscrollRefreshHandler nativeOverscrollRefreshHandler);
     private native void nativeGetContentBitmap(long nativeWebContentsAndroid,
             ContentBitmapCallback callback, Bitmap.Config config, float scale,
             float x, float y, float width, float height);

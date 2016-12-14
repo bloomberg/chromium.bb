@@ -19,6 +19,12 @@ class Rect;
 class Vector2d;
 }
 
+#if defined(OS_ANDROID)
+namespace ui {
+class OverscrollRefreshHandler;
+}
+#endif
+
 namespace content {
 class RenderFrameHost;
 class RenderWidgetHostImpl;
@@ -74,6 +80,10 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
 
   // Hides a popup menu opened by ShowPopupMenu().
   virtual void HidePopupMenu() {};
+#endif
+
+#if defined(OS_ANDROID)
+  virtual ui::OverscrollRefreshHandler* GetOverscrollRefreshHandler() const;
 #endif
 
  protected:

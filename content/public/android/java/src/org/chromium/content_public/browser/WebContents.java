@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.os.Parcelable;
 
 import org.chromium.base.VisibleForTesting;
+import org.chromium.ui.OverscrollRefreshHandler;
 
 /**
  * The WebContents Java wrapper to allow communicating with the native WebContents object.
@@ -317,6 +318,13 @@ public interface WebContents extends Parcelable {
      * @param observer The observer to remove.
      */
     void removeObserver(WebContentsObserver observer);
+
+    /**
+     * Sets a handler to handle swipe to refresh events.
+     *
+     * @param handler The handler to install.
+     */
+    void setOverscrollRefreshHandler(OverscrollRefreshHandler handler);
 
     public void getContentBitmapAsync(Bitmap.Config config, float scale, Rect srcRect,
             ContentBitmapCallback callback);
