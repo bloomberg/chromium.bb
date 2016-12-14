@@ -16,14 +16,14 @@
 
 namespace content {
 
-class PaymentAppContext;
+class PaymentAppContextImpl;
 class ServiceWorkerRegistration;
 
 class CONTENT_EXPORT PaymentAppManager
     : public NON_EXPORTED_BASE(payments::mojom::PaymentAppManager) {
  public:
   PaymentAppManager(
-      PaymentAppContext* payment_app_context,
+      PaymentAppContextImpl* payment_app_context,
       mojo::InterfaceRequest<payments::mojom::PaymentAppManager> request);
 
   ~PaymentAppManager() override;
@@ -59,8 +59,8 @@ class CONTENT_EXPORT PaymentAppManager
   // Called when an error is detected on binding_.
   void OnConnectionError();
 
-  // PaymentAppContext owns PaymentAppManager
-  PaymentAppContext* payment_app_context_;
+  // PaymentAppContextImpl owns PaymentAppManager
+  PaymentAppContextImpl* payment_app_context_;
 
   mojo::Binding<payments::mojom::PaymentAppManager> binding_;
 

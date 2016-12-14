@@ -375,7 +375,7 @@ StoragePartitionImpl::StoragePartitionImpl(
     HostZoomLevelContext* host_zoom_level_context,
     PlatformNotificationContextImpl* platform_notification_context,
     BackgroundSyncContext* background_sync_context,
-    PaymentAppContext* payment_app_context,
+    PaymentAppContextImpl* payment_app_context,
     scoped_refptr<BroadcastChannelProvider> broadcast_channel_provider)
     : partition_path_(partition_path),
       quota_manager_(quota_manager),
@@ -515,8 +515,8 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
       new BackgroundSyncContext();
   background_sync_context->Init(service_worker_context);
 
-  scoped_refptr<PaymentAppContext> payment_app_context =
-      new PaymentAppContext(service_worker_context);
+  scoped_refptr<PaymentAppContextImpl> payment_app_context =
+      new PaymentAppContextImpl(service_worker_context);
 
   scoped_refptr<BroadcastChannelProvider>
       broadcast_channel_provider = new BroadcastChannelProvider();
@@ -605,7 +605,7 @@ BackgroundSyncContext* StoragePartitionImpl::GetBackgroundSyncContext() {
   return background_sync_context_.get();
 }
 
-PaymentAppContext* StoragePartitionImpl::GetPaymentAppContext() {
+PaymentAppContextImpl* StoragePartitionImpl::GetPaymentAppContext() {
   return payment_app_context_.get();
 }
 

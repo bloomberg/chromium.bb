@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/optional.h"
 #include "content/browser/payments/payment_app.pb.h"
-#include "content/browser/payments/payment_app_context.h"
+#include "content/browser/payments/payment_app_context_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/public/browser/browser_thread.h"
@@ -26,7 +26,7 @@ PaymentAppManager::~PaymentAppManager() {
 }
 
 PaymentAppManager::PaymentAppManager(
-    PaymentAppContext* payment_app_context,
+    PaymentAppContextImpl* payment_app_context,
     mojo::InterfaceRequest<payments::mojom::PaymentAppManager> request)
     : payment_app_context_(payment_app_context),
       binding_(this, std::move(request)),

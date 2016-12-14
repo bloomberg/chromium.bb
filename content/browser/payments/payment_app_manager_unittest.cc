@@ -67,7 +67,7 @@ class PaymentAppManagerTest : public testing::Test {
         storage_partition_impl_.get());
 
     payment_app_context_ =
-        new PaymentAppContext(embedded_worker_helper_->context_wrapper());
+        new PaymentAppContextImpl(embedded_worker_helper_->context_wrapper());
 
     bool called = false;
     embedded_worker_helper_->context()->RegisterServiceWorker(
@@ -109,7 +109,7 @@ class PaymentAppManagerTest : public testing::Test {
   std::unique_ptr<EmbeddedWorkerTestHelper> embedded_worker_helper_;
   std::unique_ptr<StoragePartitionImpl> storage_partition_impl_;
   int64_t sw_registration_id_;
-  scoped_refptr<PaymentAppContext> payment_app_context_;
+  scoped_refptr<PaymentAppContextImpl> payment_app_context_;
   payments::mojom::PaymentAppManagerPtr service_;
 
   // Owned by payment_app_context_.

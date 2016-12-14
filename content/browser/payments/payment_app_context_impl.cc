@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/payments/payment_app_context.h"
+#include "content/browser/payments/payment_app_context_impl.h"
 
 #include <utility>
 
@@ -15,52 +15,60 @@
 
 namespace content {
 
-PaymentAppContext::PaymentAppContext(
+PaymentAppContextImpl::PaymentAppContextImpl(
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
     : service_worker_context_(std::move(service_worker_context)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-PaymentAppContext::~PaymentAppContext() {
-  DCHECK(services_.empty());
-}
-
-void PaymentAppContext::Shutdown() {
+void PaymentAppContextImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&PaymentAppContext::ShutdownOnIO, this));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PaymentAppContextImpl::ShutdownOnIO, this));
 }
 
-void PaymentAppContext::CreateService(
+void PaymentAppContextImpl::CreateService(
     mojo::InterfaceRequest<payments::mojom::PaymentAppManager> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PaymentAppContext::CreateServiceOnIOThread, this,
+      base::Bind(&PaymentAppContextImpl::CreateServiceOnIOThread, this,
                  base::Passed(&request)));
 }
 
-void PaymentAppContext::ServiceHadConnectionError(PaymentAppManager* service) {
+void PaymentAppContextImpl::ServiceHadConnectionError(
+    PaymentAppManager* service) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(base::ContainsKey(services_, service));
 
   services_.erase(service);
 }
 
-ServiceWorkerContextWrapper* PaymentAppContext::service_worker_context() const {
+ServiceWorkerContextWrapper* PaymentAppContextImpl::service_worker_context()
+    const {
   return service_worker_context_.get();
 }
 
-void PaymentAppContext::CreateServiceOnIOThread(
+void PaymentAppContextImpl::GetAllManifests(
+    const GetAllManifestsCallback& callback) {
+  NOTIMPLEMENTED();
+}
+
+PaymentAppContextImpl::~PaymentAppContextImpl() {
+  DCHECK(services_.empty());
+}
+
+void PaymentAppContextImpl::CreateServiceOnIOThread(
     mojo::InterfaceRequest<payments::mojom::PaymentAppManager> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   PaymentAppManager* service = new PaymentAppManager(this, std::move(request));
   services_[service] = base::WrapUnique(service);
 }
 
-void PaymentAppContext::ShutdownOnIO() {
+void PaymentAppContextImpl::ShutdownOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   services_.clear();
