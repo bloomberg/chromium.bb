@@ -4,6 +4,8 @@
 
 #include "components/cryptauth/remote_device.h"
 
+#include "base/base64.h"
+
 namespace cryptauth {
 
 RemoteDevice::RemoteDevice() : bluetooth_type(BLUETOOTH_CLASSIC) {}
@@ -26,5 +28,20 @@ RemoteDevice::RemoteDevice(const std::string& user_id,
 RemoteDevice::RemoteDevice(const RemoteDevice& other) = default;
 
 RemoteDevice::~RemoteDevice() {}
+
+std::string RemoteDevice::GetDeviceId() {
+   std::string to_return;
+   base::Base64Encode(public_key, &to_return);
+   return to_return;
+}
+
+std::string RemoteDevice::GetTruncatedDeviceIdForLogs() {
+   std::string id = GetDeviceId();
+   if (id.length() <= 10) {
+      return id;
+   }
+
+   return id.substr(0, 5) + "..." + id.substr(id.length() - 5, id.length());
+}
 
 }  // namespace cryptauth

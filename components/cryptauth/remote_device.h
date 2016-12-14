@@ -32,6 +32,14 @@ struct RemoteDevice {
                std::string sign_in_challenge);
   RemoteDevice(const RemoteDevice& other);
   ~RemoteDevice();
+
+  // Returns a unique ID for the device.
+  std::string GetDeviceId();
+
+  // Returns a shortened device ID for the purpose of concise logging (device
+  // IDs are often so long that logs are difficult to read). Note that this
+  // ID is not guaranteed to be unique, so it should only be used for log.
+  std::string GetTruncatedDeviceIdForLogs();
 };
 
 typedef std::vector<RemoteDevice> RemoteDeviceList;
