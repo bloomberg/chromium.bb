@@ -2117,7 +2117,7 @@ void RenderFrameImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {
     render_accessibility_ = NULL;
   }
 
-  if (accessibility_mode_ & AccessibilityModeFlagFullTree)
+  if (accessibility_mode_ & ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS)
     render_accessibility_ = new RenderAccessibilityImpl(this);
 
   for (auto& observer : observers_)

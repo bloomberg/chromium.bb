@@ -1384,7 +1384,7 @@ void ContentViewCoreImpl::SetAccessibilityEnabledInternal(bool enabled) {
     // this WebContents if that succeeded.
     accessibility_state->OnScreenReaderDetected();
     if (accessibility_state->IsAccessibleBrowser() && web_contents_)
-      web_contents_->AddAccessibilityMode(AccessibilityModeComplete);
+      web_contents_->AddAccessibilityMode(ACCESSIBILITY_MODE_COMPLETE);
   } else {
     accessibility_state->ResetAccessibilityMode();
     if (web_contents_) {

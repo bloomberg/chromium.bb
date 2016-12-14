@@ -302,13 +302,13 @@ class WebContents : public PageNavigator,
   virtual void SetUserAgentOverride(const std::string& override) = 0;
   virtual const std::string& GetUserAgentOverride() const = 0;
 
-  // Enable the accessibility tree for this WebContents in the renderer,
-  // but don't enable creating a native accessibility tree on the browser
-  // side.
-  virtual void EnableTreeOnlyAccessibilityMode() = 0;
+  // Set the accessibility mode so that accessibility events are forwarded
+  // to each WebContentsObserver.
+  virtual void EnableWebContentsOnlyAccessibilityMode() = 0;
 
-  // Returns true only if "tree only" accessibility mode is on.
-  virtual bool IsTreeOnlyAccessibilityModeForTesting() const = 0;
+  // Returns true only if the WebContentsObserver accessibility mode is
+  // enabled.
+  virtual bool IsWebContentsOnlyAccessibilityModeForTesting() const = 0;
 
   // Returns true only if complete accessibility mode is on, meaning there's
   // both renderer accessibility, and a native browser accessibility tree.

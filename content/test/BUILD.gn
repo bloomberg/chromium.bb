@@ -941,7 +941,6 @@ test("content_unittests") {
 
   defines = []
   sources = [
-    "../browser/accessibility/accessibility_mode_helper_unittest.cc",
     "../browser/accessibility/browser_accessibility_mac_unittest.mm",
     "../browser/accessibility/browser_accessibility_manager_unittest.cc",
     "../browser/accessibility/browser_accessibility_win_unittest.cc",

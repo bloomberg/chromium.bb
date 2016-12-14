@@ -257,7 +257,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     NavigateToURL(shell(), url);
     AccessibilityNotificationWaiter accessibility_waiter(
         web_contents,
-        AccessibilityModeComplete,
+        ACCESSIBILITY_MODE_COMPLETE,
         ui::AX_EVENT_NONE);
     accessibility_waiter.WaitForNotification();
   } else {
@@ -265,7 +265,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     // "load complete" AX event.
     AccessibilityNotificationWaiter accessibility_waiter(
         web_contents,
-        AccessibilityModeComplete,
+        ACCESSIBILITY_MODE_COMPLETE,
         ui::AX_EVENT_LOAD_COMPLETE);
     NavigateToURL(shell(), url);
     accessibility_waiter.WaitForNotification();

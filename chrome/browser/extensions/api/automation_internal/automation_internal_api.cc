@@ -292,7 +292,7 @@ AutomationInternalEnableTabFunction::Run() {
   }
 
   AutomationWebContentsObserver::CreateForWebContents(contents);
-  contents->EnableTreeOnlyAccessibilityMode();
+  contents->EnableWebContentsOnlyAccessibilityMode();
 
   int ax_tree_id = rfh->GetAXTreeID();
 
@@ -326,7 +326,7 @@ ExtensionFunction::ResponseAction AutomationInternalEnableFrameFunction::Run() {
   // Only call this if this is the root of a frame tree, to avoid resetting
   // the accessibility state multiple times.
   if (!rfh->GetParent())
-    contents->EnableTreeOnlyAccessibilityMode();
+    contents->EnableWebContentsOnlyAccessibilityMode();
 
   return RespondNow(NoArguments());
 }

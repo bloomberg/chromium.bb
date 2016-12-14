@@ -226,12 +226,6 @@ class CONTENT_EXPORT WebContentsImpl
   // bitmap.
   void AddAccessibilityMode(AccessibilityMode mode);
 
-  // Removes the given accessibility mode from the current accessibility
-  // mode bitmap, managing the bits that are shared with other modes such
-  // that a bit will only be turned off when all modes that depend on it
-  // have been removed.
-  void RemoveAccessibilityMode(AccessibilityMode mode);
-
   // Request a one-time snapshot of the accessibility tree without changing
   // the accessibility mode.
   using AXTreeSnapshotCallback =
@@ -294,8 +288,8 @@ class CONTENT_EXPORT WebContentsImpl
   WebUI* GetCommittedWebUI() const override;
   void SetUserAgentOverride(const std::string& override) override;
   const std::string& GetUserAgentOverride() const override;
-  void EnableTreeOnlyAccessibilityMode() override;
-  bool IsTreeOnlyAccessibilityModeForTesting() const override;
+  void EnableWebContentsOnlyAccessibilityMode() override;
+  bool IsWebContentsOnlyAccessibilityModeForTesting() const override;
   bool IsFullAccessibilityModeForTesting() const override;
   const PageImportanceSignals& GetPageImportanceSignals() const override;
   const base::string16& GetTitle() const override;

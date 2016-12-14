@@ -202,8 +202,8 @@ void AccessibilityUI::ToggleAccessibility(const base::ListValue* args) {
   auto* web_contents =
       static_cast<WebContentsImpl*>(WebContents::FromRenderViewHost(rvh));
   AccessibilityMode mode = web_contents->GetAccessibilityMode();
-  if ((mode & AccessibilityModeComplete) != AccessibilityModeComplete) {
-    web_contents->AddAccessibilityMode(AccessibilityModeComplete);
+  if ((mode & ACCESSIBILITY_MODE_COMPLETE) != ACCESSIBILITY_MODE_COMPLETE) {
+    web_contents->AddAccessibilityMode(ACCESSIBILITY_MODE_COMPLETE);
   } else {
     web_contents->SetAccessibilityMode(
         BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode());
@@ -214,7 +214,7 @@ void AccessibilityUI::ToggleGlobalAccessibility(const base::ListValue* args) {
   BrowserAccessibilityStateImpl* state =
       BrowserAccessibilityStateImpl::GetInstance();
   AccessibilityMode mode = state->accessibility_mode();
-  if ((mode & AccessibilityModeComplete) != AccessibilityModeComplete)
+  if ((mode & ACCESSIBILITY_MODE_COMPLETE) != ACCESSIBILITY_MODE_COMPLETE)
     state->EnableAccessibility();
   else
     state->DisableAccessibility();

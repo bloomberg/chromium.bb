@@ -32,7 +32,6 @@
 #include "components/mime_util/mime_util.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/url_formatter/url_formatter.h"
-#include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
@@ -963,11 +962,7 @@ void WebContentsImpl::SetAccessibilityMode(AccessibilityMode mode) {
 }
 
 void WebContentsImpl::AddAccessibilityMode(AccessibilityMode mode) {
-  SetAccessibilityMode(AddAccessibilityModeTo(accessibility_mode_, mode));
-}
-
-void WebContentsImpl::RemoveAccessibilityMode(AccessibilityMode mode) {
-  SetAccessibilityMode(RemoveAccessibilityModeFrom(accessibility_mode_, mode));
+  SetAccessibilityMode(accessibility_mode_ | mode);
 }
 
 void WebContentsImpl::RequestAXTreeSnapshot(AXTreeSnapshotCallback callback) {
@@ -1078,21 +1073,21 @@ const std::string& WebContentsImpl::GetUserAgentOverride() const {
   return renderer_preferences_.user_agent_override;
 }
 
-void WebContentsImpl::EnableTreeOnlyAccessibilityMode() {
+void WebContentsImpl::EnableWebContentsOnlyAccessibilityMode() {
   if (GetAccessibilityMode() != AccessibilityModeOff) {
     for (RenderFrameHost* rfh : GetAllFrames())
       ResetAccessibility(rfh);
   } else {
-    AddAccessibilityMode(AccessibilityModeTreeOnly);
+    AddAccessibilityMode(ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY);
   }
 }
 
-bool WebContentsImpl::IsTreeOnlyAccessibilityModeForTesting() const {
-  return accessibility_mode_ == AccessibilityModeTreeOnly;
+bool WebContentsImpl::IsWebContentsOnlyAccessibilityModeForTesting() const {
+  return accessibility_mode_ == ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY;
 }
 
 bool WebContentsImpl::IsFullAccessibilityModeForTesting() const {
-  return accessibility_mode_ == AccessibilityModeComplete;
+  return accessibility_mode_ == ACCESSIBILITY_MODE_COMPLETE;
 }
 
 const PageImportanceSignals& WebContentsImpl::GetPageImportanceSignals() const {

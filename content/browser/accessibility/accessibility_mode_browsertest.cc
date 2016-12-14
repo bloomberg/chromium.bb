@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -42,17 +41,12 @@ class AccessibilityModeTest : public ContentBrowserTest {
     }
   }
 
-  AccessibilityMode CorrectedAccessibility(AccessibilityMode mode) {
-    return AddAccessibilityModeTo(GetBaseAccessibilityMode(), mode);
-  }
-
   bool ShouldBeBrowserAccessibilityManager(AccessibilityMode mode) {
-    mode = CorrectedAccessibility(mode);
     switch (mode) {
       case AccessibilityModeOff:
-      case AccessibilityModeTreeOnly:
+      case ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY:
         return false;
-      case AccessibilityModeComplete:
+      case ACCESSIBILITY_MODE_COMPLETE:
         return true;
       default:
         NOTREACHED();
@@ -64,61 +58,62 @@ class AccessibilityModeTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AccessibilityModeOff) {
   NavigateToURL(shell(), GURL(kMinimalPageDataURL));
 
-  EXPECT_EQ(CorrectedAccessibility(AccessibilityModeOff),
-            web_contents()->GetAccessibilityMode());
+  EXPECT_EQ(AccessibilityModeOff, web_contents()->GetAccessibilityMode());
   ExpectBrowserAccessibilityManager(
       ShouldBeBrowserAccessibilityManager(AccessibilityModeOff));
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AccessibilityModeComplete) {
+IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, ACCESSIBILITY_MODE_COMPLETE) {
   NavigateToURL(shell(), GURL(kMinimalPageDataURL));
-  ASSERT_EQ(CorrectedAccessibility(AccessibilityModeOff),
-            web_contents()->GetAccessibilityMode());
+  ASSERT_EQ(AccessibilityModeOff, web_contents()->GetAccessibilityMode());
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents());
-  web_contents()->AddAccessibilityMode(AccessibilityModeComplete);
-  EXPECT_EQ(AccessibilityModeComplete, web_contents()->GetAccessibilityMode());
+  web_contents()->AddAccessibilityMode(ACCESSIBILITY_MODE_COMPLETE);
+  EXPECT_EQ(ACCESSIBILITY_MODE_COMPLETE,
+            web_contents()->GetAccessibilityMode());
   waiter.WaitForNotification();
   ExpectBrowserAccessibilityManager(
-      ShouldBeBrowserAccessibilityManager(AccessibilityModeComplete));
+      ShouldBeBrowserAccessibilityManager(ACCESSIBILITY_MODE_COMPLETE));
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AccessibilityModeTreeOnly) {
+IN_PROC_BROWSER_TEST_F(AccessibilityModeTest,
+                       ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY) {
   NavigateToURL(shell(), GURL(kMinimalPageDataURL));
-  ASSERT_EQ(CorrectedAccessibility(AccessibilityModeOff),
-            web_contents()->GetAccessibilityMode());
+  ASSERT_EQ(AccessibilityModeOff, web_contents()->GetAccessibilityMode());
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents());
-  web_contents()->AddAccessibilityMode(AccessibilityModeTreeOnly);
-  EXPECT_EQ(CorrectedAccessibility(AccessibilityModeTreeOnly),
+  web_contents()->AddAccessibilityMode(ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY);
+  EXPECT_EQ(ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY,
             web_contents()->GetAccessibilityMode());
   waiter.WaitForNotification();
-  // No BrowserAccessibilityManager expected for AccessibilityModeTreeOnly
-  ExpectBrowserAccessibilityManager(
-      ShouldBeBrowserAccessibilityManager(AccessibilityModeTreeOnly));
+  // No BrowserAccessibilityManager expected for
+  // ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY
+  ExpectBrowserAccessibilityManager(ShouldBeBrowserAccessibilityManager(
+      ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY));
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AddingModes) {
   NavigateToURL(shell(), GURL(kMinimalPageDataURL));
 
   AccessibilityNotificationWaiter waiter(shell()->web_contents());
-  web_contents()->AddAccessibilityMode(AccessibilityModeTreeOnly);
-  EXPECT_EQ(CorrectedAccessibility(AccessibilityModeTreeOnly),
+  web_contents()->AddAccessibilityMode(ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY);
+  EXPECT_EQ(ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY,
             web_contents()->GetAccessibilityMode());
   waiter.WaitForNotification();
-  ExpectBrowserAccessibilityManager(ShouldBeBrowserAccessibilityManager(
-                                        AccessibilityModeTreeOnly),
-                                    "Should be no BrowserAccessibilityManager "
-                                    "for AccessibilityModeTreeOnly");
+  ExpectBrowserAccessibilityManager(
+      ShouldBeBrowserAccessibilityManager(ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY),
+      "Should be no BrowserAccessibilityManager "
+      "for ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY");
 
   AccessibilityNotificationWaiter waiter2(shell()->web_contents());
-  web_contents()->AddAccessibilityMode(AccessibilityModeComplete);
-  EXPECT_EQ(AccessibilityModeComplete, web_contents()->GetAccessibilityMode());
+  web_contents()->AddAccessibilityMode(ACCESSIBILITY_MODE_COMPLETE);
+  EXPECT_EQ(ACCESSIBILITY_MODE_COMPLETE,
+            web_contents()->GetAccessibilityMode());
   waiter2.WaitForNotification();
-  ExpectBrowserAccessibilityManager(ShouldBeBrowserAccessibilityManager(
-                                          AccessibilityModeComplete),
-                                    "Should be a BrowserAccessibilityManager "
-                                    "for AccessibilityModeComplete");
+  ExpectBrowserAccessibilityManager(
+      ShouldBeBrowserAccessibilityManager(ACCESSIBILITY_MODE_COMPLETE),
+      "Should be a BrowserAccessibilityManager "
+      "for ACCESSIBILITY_MODE_COMPLETE");
 }
 
 }  // namespace content

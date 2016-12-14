@@ -150,8 +150,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // Get the accessibility mode for the WebContents that owns this frame.
   virtual AccessibilityMode GetAccessibilityMode() const;
 
-  // Forward accessibility messages to other potential listeners like
-  // the automation extension API.
+  // Called when accessibility events or location changes are received
+  // from a render frame, when the accessibility mode has the
+  // ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS flag set.
   virtual void AccessibilityEventReceived(
       const std::vector<AXEventNotificationDetails>& details) {}
   virtual void AccessibilityLocationChangesReceived(

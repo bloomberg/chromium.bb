@@ -51,14 +51,13 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
 
   AccessibilityMode accessibility_mode() const { return accessibility_mode_; };
 
-  // Adds the given accessibility mode to the current accessibility mode bitmap.
-  void AddAccessibilityMode(AccessibilityMode mode);
+  // Adds the given accessibility mode flags to the current accessibility
+  // mode bitmap.
+  void AddAccessibilityModeFlags(AccessibilityMode mode);
 
-  // Removes the given accessibility mode from the current accessibility mode
-  // bitmap, managing the bits that are shared with other modes such that a
-  // bit will only be turned off when all modes that depend on it have been
-  // removed.
-  void RemoveAccessibilityMode(AccessibilityMode mode);
+  // Remove the given accessibility mode flags from the current accessibility
+  // mode bitmap.
+  void RemoveAccessibilityModeFlags(AccessibilityMode mode);
 
   // Accessibility objects can have the "hot tracked" state set when
   // the mouse is hovering over them, but this makes tests flaky because
@@ -87,10 +86,6 @@ class CONTENT_EXPORT BrowserAccessibilityStateImpl
   ~BrowserAccessibilityStateImpl() override;
 
   void UpdatePlatformSpecificHistograms();
-
-  // Updates the accessibility mode of all web contents, including swapped out
-  // ones. |add| specifies whether the mode should be added or removed.
-  void AddOrRemoveFromAllWebContents(AccessibilityMode mode, bool add);
 
   AccessibilityMode accessibility_mode_;
 

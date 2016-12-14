@@ -2627,8 +2627,8 @@ bool RenderViewImpl::didTapMultipleTargets(
   AccessibilityMode accessibility_mode =
       GetMainRenderFrame()->accessibility_mode();
   bool matches_accessibility_mode_complete =
-      (accessibility_mode & AccessibilityModeComplete) ==
-          AccessibilityModeComplete;
+      (accessibility_mode & ACCESSIBILITY_MODE_COMPLETE) ==
+          ACCESSIBILITY_MODE_COMPLETE;
   if (matches_accessibility_mode_complete)
     return false;
 

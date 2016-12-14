@@ -1969,16 +1969,17 @@ TEST_F(RenderViewImplTest, OnSetAccessibilityMode) {
   ASSERT_EQ(AccessibilityModeOff, frame()->accessibility_mode());
   ASSERT_FALSE(frame()->render_accessibility());
 
-  frame()->SetAccessibilityMode(AccessibilityModeTreeOnly);
-  ASSERT_EQ(AccessibilityModeTreeOnly, frame()->accessibility_mode());
+  frame()->SetAccessibilityMode(ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY);
+  ASSERT_EQ(ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY,
+            frame()->accessibility_mode());
   ASSERT_TRUE(frame()->render_accessibility());
 
   frame()->SetAccessibilityMode(AccessibilityModeOff);
   ASSERT_EQ(AccessibilityModeOff, frame()->accessibility_mode());
   ASSERT_FALSE(frame()->render_accessibility());
 
-  frame()->SetAccessibilityMode(AccessibilityModeComplete);
-  ASSERT_EQ(AccessibilityModeComplete, frame()->accessibility_mode());
+  frame()->SetAccessibilityMode(ACCESSIBILITY_MODE_COMPLETE);
+  ASSERT_EQ(ACCESSIBILITY_MODE_COMPLETE, frame()->accessibility_mode());
   ASSERT_TRUE(frame()->render_accessibility());
 }
 

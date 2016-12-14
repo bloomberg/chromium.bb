@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
-#include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -70,7 +69,7 @@ void BrowserAccessibilityStateImpl::OnScreenReaderDetected() {
 }
 
 void BrowserAccessibilityStateImpl::EnableAccessibility() {
-  AddAccessibilityMode(AccessibilityModeComplete);
+  AddAccessibilityModeFlags(ACCESSIBILITY_MODE_COMPLETE);
 }
 
 void BrowserAccessibilityStateImpl::DisableAccessibility() {
@@ -81,7 +80,7 @@ void BrowserAccessibilityStateImpl::ResetAccessibilityModeValue() {
   accessibility_mode_ = AccessibilityModeOff;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceRendererAccessibility)) {
-    accessibility_mode_ = AccessibilityModeComplete;
+    accessibility_mode_ = ACCESSIBILITY_MODE_COMPLETE;
   }
 }
 
@@ -95,8 +94,8 @@ void BrowserAccessibilityStateImpl::ResetAccessibilityMode() {
 }
 
 bool BrowserAccessibilityStateImpl::IsAccessibleBrowser() {
-  return ((accessibility_mode_ & AccessibilityModeComplete) ==
-          AccessibilityModeComplete);
+  return ((accessibility_mode_ & ACCESSIBILITY_MODE_COMPLETE) ==
+          ACCESSIBILITY_MODE_COMPLETE);
 }
 
 void BrowserAccessibilityStateImpl::AddHistogramCallback(
@@ -127,44 +126,33 @@ void BrowserAccessibilityStateImpl::UpdatePlatformSpecificHistograms() {
 }
 #endif
 
-void BrowserAccessibilityStateImpl::AddAccessibilityMode(
+void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(
     AccessibilityMode mode) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableRendererAccessibility)) {
     return;
   }
 
-  accessibility_mode_ =
-      content::AddAccessibilityModeTo(accessibility_mode_, mode);
-
-  AddOrRemoveFromAllWebContents(mode, true);
+  accessibility_mode_ |= mode;
+  std::vector<WebContentsImpl*> web_contents_vector =
+      WebContentsImpl::GetAllWebContents();
+  for (size_t i = 0; i < web_contents_vector.size(); ++i)
+    web_contents_vector[i]->AddAccessibilityMode(accessibility_mode_);
 }
 
-void BrowserAccessibilityStateImpl::RemoveAccessibilityMode(
+void BrowserAccessibilityStateImpl::RemoveAccessibilityModeFlags(
     AccessibilityMode mode) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceRendererAccessibility) &&
-      mode == AccessibilityModeComplete) {
+      mode == ACCESSIBILITY_MODE_COMPLETE) {
     return;
   }
 
-  accessibility_mode_ =
-      content::RemoveAccessibilityModeFrom(accessibility_mode_, mode);
-
-  AddOrRemoveFromAllWebContents(mode, false);
-}
-
-void BrowserAccessibilityStateImpl::AddOrRemoveFromAllWebContents(
-    AccessibilityMode mode,
-    bool add) {
+  accessibility_mode_ = accessibility_mode_ ^ (mode & accessibility_mode_);
   std::vector<WebContentsImpl*> web_contents_vector =
       WebContentsImpl::GetAllWebContents();
-  for (size_t i = 0; i < web_contents_vector.size(); ++i) {
-    if (add)
-      web_contents_vector[i]->AddAccessibilityMode(mode);
-    else
-      web_contents_vector[i]->RemoveAccessibilityMode(mode);
-  }
+  for (size_t i = 0; i < web_contents_vector.size(); ++i)
+    web_contents_vector[i]->SetAccessibilityMode(accessibility_mode());
 }
 
 }  // namespace content

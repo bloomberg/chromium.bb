@@ -16,7 +16,6 @@
 #include "base/process/kill.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/accessibility/ax_tree_id_registry.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
@@ -1899,7 +1898,7 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
 
   AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
   if ((accessibility_mode != AccessibilityModeOff) && view && is_active()) {
-    if (accessibility_mode & AccessibilityModeFlagPlatform)
+    if (accessibility_mode & ACCESSIBILITY_MODE_FLAG_NATIVE_APIS)
       GetOrCreateBrowserAccessibilityManager();
 
     std::vector<AXEventNotificationDetails> details;
@@ -1926,12 +1925,11 @@ void RenderFrameHostImpl::OnAccessibilityEvents(
       details.push_back(detail);
     }
 
-    if (accessibility_mode & AccessibilityModeFlagPlatform) {
+    if (accessibility_mode & ACCESSIBILITY_MODE_FLAG_NATIVE_APIS) {
       if (browser_accessibility_manager_)
         browser_accessibility_manager_->OnAccessibilityEvents(details);
     }
 
-    // Send the updates to the automation extension API.
     delegate_->AccessibilityEventReceived(details);
 
     // For testing only.
@@ -1972,7 +1970,7 @@ void RenderFrameHostImpl::OnAccessibilityLocationChanges(
       render_view_host_->GetWidget()->GetView());
   if (view && is_active()) {
     AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
-    if (accessibility_mode & AccessibilityModeFlagPlatform) {
+    if (accessibility_mode & ACCESSIBILITY_MODE_FLAG_NATIVE_APIS) {
       BrowserAccessibilityManager* manager =
           GetOrCreateBrowserAccessibilityManager();
       if (manager)
@@ -1997,7 +1995,7 @@ void RenderFrameHostImpl::OnAccessibilityLocationChanges(
 void RenderFrameHostImpl::OnAccessibilityFindInPageResult(
     const AccessibilityHostMsg_FindInPageResultParams& params) {
   AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode & AccessibilityModeFlagPlatform) {
+  if (accessibility_mode & ACCESSIBILITY_MODE_FLAG_NATIVE_APIS) {
     BrowserAccessibilityManager* manager =
         GetOrCreateBrowserAccessibilityManager();
     if (manager) {
@@ -2871,7 +2869,7 @@ BrowserAccessibilityManager*
 void RenderFrameHostImpl::ActivateFindInPageResultForAccessibility(
     int request_id) {
   AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
-  if (accessibility_mode & AccessibilityModeFlagPlatform) {
+  if (accessibility_mode & ACCESSIBILITY_MODE_FLAG_NATIVE_APIS) {
     BrowserAccessibilityManager* manager =
         GetOrCreateBrowserAccessibilityManager();
     if (manager)

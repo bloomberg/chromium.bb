@@ -27,7 +27,6 @@
 #include "build/build_config.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
-#include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
@@ -1027,7 +1026,7 @@ bool WaitForRenderFrameReady(RenderFrameHost* rfh) {
 void EnableAccessibilityForWebContents(WebContents* web_contents) {
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(web_contents);
-  web_contents_impl->SetAccessibilityMode(AccessibilityModeComplete);
+  web_contents_impl->SetAccessibilityMode(ACCESSIBILITY_MODE_COMPLETE);
 }
 
 void WaitForAccessibilityFocusChange() {

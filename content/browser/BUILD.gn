@@ -195,8 +195,6 @@ source_set("browser") {
     "../zygote/zygote_linux.cc",
     "../zygote/zygote_linux.h",
     "../zygote/zygote_main_linux.cc",
-    "accessibility/accessibility_mode_helper.cc",
-    "accessibility/accessibility_mode_helper.h",
     "accessibility/accessibility_tree_formatter.cc",
     "accessibility/accessibility_tree_formatter.h",
     "accessibility/accessibility_tree_formatter_blink.cc",

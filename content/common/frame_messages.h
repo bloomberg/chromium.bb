@@ -80,9 +80,6 @@ using FrameMsg_SerializeAsMHTML_FrameRoutingIdToContentIdMap =
 
 #define IPC_MESSAGE_START FrameMsgStart
 
-IPC_ENUM_TRAITS_MIN_MAX_VALUE(AccessibilityMode,
-                              AccessibilityModeOff,
-                              AccessibilityModeComplete)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::JavaScriptMessageType,
                               content::JAVASCRIPT_MESSAGE_TYPE_ALERT,
                               content::JAVASCRIPT_MESSAGE_TYPE_PROMPT)
