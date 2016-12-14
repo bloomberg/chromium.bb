@@ -48,11 +48,13 @@ enum URLValidationResult {
   NOT_HTTPS,
   NOT_GOOGLE_DOMAIN,
   SHOULD_APPEND,
+  NEITHER_HTTP_HTTPS,
+  IS_GOOGLE_NOT_HTTPS,
   URL_VALIDATION_RESULT_SIZE,
 };
 
 // Checks whether headers should be appended to the |url|, based on the domain
-// of |url|. |url| is assumed to be valid, and to have the https scheme.
+// of |url|. |url| is assumed to be valid, and to have an http/https scheme.
 bool IsGoogleDomain(const GURL& url) {
   if (google_util::IsGoogleDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
                                      google_util::ALLOW_NON_STANDARD_PORTS)) {
@@ -131,15 +133,20 @@ bool ShouldAppendVariationHeaders(const GURL& url) {
     LogUrlValidationHistogram(INVALID_URL);
     return false;
   }
-  if (!url.SchemeIs("https")) {
-    LogUrlValidationHistogram(NOT_HTTPS);
+  if (!url.SchemeIsHTTPOrHTTPS()) {
+    LogUrlValidationHistogram(NEITHER_HTTP_HTTPS);
     return false;
   }
   if (!IsGoogleDomain(url)) {
     LogUrlValidationHistogram(NOT_GOOGLE_DOMAIN);
     return false;
   }
-
+  // We check https here, rather than before the IsGoogleDomain() check, to know
+  // how many Google domains are being rejected by the change to https only.
+  if (!url.SchemeIs("https")) {
+    LogUrlValidationHistogram(IS_GOOGLE_NOT_HTTPS);
+    return false;
+  }
   LogUrlValidationHistogram(SHOULD_APPEND);
   return true;
 }
