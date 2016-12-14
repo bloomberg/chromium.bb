@@ -3185,19 +3185,16 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(
       // always make ourselves be a percentage of the cell's current content
       // height.
       if (!cb->hasOverrideLogicalContentHeight()) {
-        // Normally we would let the cell size intrinsically, but scrolling
-        // overflow has to be treated differently, since WinIE lets scrolled
-        // overflow regions shrink as needed.
-        // While we can't get all cases right, we can at least detect when the
-        // cell has a specified height or when the table has a specified height.
-        // In these cases we want to initially have no size and allow the
-        // flexing of the table or the cell to its specified height to cause us
-        // to grow to fill the space. This could end up being wrong in some
-        // cases, but it is preferable to the alternative (sizing intrinsically
-        // and making the row end up too big).
+        // https://drafts.csswg.org/css-tables-3/#row-layout:
+        // For the purpose of calculating [the minimum height of a row],
+        // descendants of table cells whose height depends on percentages
+        // of their parent cell's height are considered to have an auto
+        // height if they have overflow set to visible or hidden or if
+        // they are replaced elements, and a 0px height if they have not.
         LayoutTableCell* cell = toLayoutTableCell(cb);
         if (style()->overflowY() != EOverflow::Visible &&
             style()->overflowY() != EOverflow::Hidden &&
+            !shouldBeConsideredAsReplaced() &&
             (!cell->style()->logicalHeight().isAuto() ||
              !cell->table()->style()->logicalHeight().isAuto()))
           return LayoutUnit();
@@ -3218,16 +3215,17 @@ LayoutUnit LayoutBox::computePercentageLogicalHeight(
     availableHeight += cb->paddingLogicalHeight();
 
   LayoutUnit result = valueForLength(height, availableHeight);
-  bool includeBorderPadding =
+  // |overrideLogicalContentHeight| is the maximum height made available by the
+  // cell to its percent height children when we decide they can determine the
+  // height of the cell. If the percent height child is box-sizing:content-box
+  // then we must subtract the border and padding from the cell's
+  // |availableHeight| (given by |overrideLogicalContentHeight|) to arrive
+  // at the child's computed height.
+  bool subtractBorderAndPadding =
       isTable() || (cb->isTableCell() && !skippedAutoHeightContainingBlock &&
-                    cb->hasOverrideLogicalContentHeight());
-
-  if (includeBorderPadding) {
-    // FIXME: Table cells should default to box-sizing: border-box so we can
-    // avoid this hack.
-    // It is necessary to use the border-box to match WinIE's broken
-    // box model. This is essential for sizing inside
-    // table cells using percentage heights.
+                    cb->hasOverrideLogicalContentHeight() &&
+                    style()->boxSizing() == BoxSizingContentBox);
+  if (subtractBorderAndPadding) {
     result -= borderAndPaddingLogicalHeight();
     return std::max(LayoutUnit(), result);
   }
@@ -4672,9 +4670,12 @@ bool LayoutBox::shrinkToAvoidFloats() const {
 }
 
 DISABLE_CFI_PERF
-static bool shouldBeConsideredAsReplaced(Node* node) {
+bool LayoutBox::shouldBeConsideredAsReplaced() const {
   // Checkboxes and radioboxes are not isAtomicInlineLevel() nor do they have
   // their own layoutObject in which to override avoidFloats().
+  if (isAtomicInlineLevel())
+    return true;
+  Node* node = this->node();
   return node && node->isElementNode() &&
          (toElement(node)->isFormControlElement() ||
           isHTMLImageElement(toElement(node)));
@@ -4682,10 +4683,9 @@ static bool shouldBeConsideredAsReplaced(Node* node) {
 
 DISABLE_CFI_PERF
 bool LayoutBox::avoidsFloats() const {
-  return isAtomicInlineLevel() || shouldBeConsideredAsReplaced(node()) ||
-         hasOverflowClip() || isHR() || isLegend() || isWritingModeRoot() ||
-         isFlexItemIncludingDeprecated() || style()->containsPaint() ||
-         style()->containsLayout();
+  return shouldBeConsideredAsReplaced() || hasOverflowClip() || isHR() ||
+         isLegend() || isWritingModeRoot() || isFlexItemIncludingDeprecated() ||
+         style()->containsPaint() || style()->containsLayout();
 }
 
 bool LayoutBox::hasNonCompositedScrollbars() const {

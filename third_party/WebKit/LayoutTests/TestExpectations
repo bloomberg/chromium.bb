@@ -1212,6 +1212,14 @@ crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
 
 crbug.com/467477 fast/multicol/vertical-rl/nested-columns.html [ Failure ]
 
+crbug.com/674225 [ Mac ] fast/replaced/input-radio-height-inside-auto-container.html [ Failure ]
+crbug.com/669867 [ Mac Win ] fast/replaced/table-percent-height-text-controls.html [ NeedsRebaseline ]
+crbug.com/669867 [ Mac Win ] fast/replaced/table-percent-height.html [ NeedsRebaseline ]
+crbug.com/669867 [ Mac Win ] fast/table/003.html [ NeedsRebaseline ]
+crbug.com/669867 [ Mac Win ] fast/table/split-table-section-before-anonymous-block-2.html [ NeedsRebaseline ]
+crbug.com/669867 [ Mac Win ] fast/table/split-table-section-before-anonymous-block-4.html [ NeedsRebaseline ]
+crbug.com/669867 [ Mac Win ] tables/mozilla/bugs/bug30692.html [ NeedsRebaseline ]
+
 crbug.com/400841 media/video-canvas-draw.html [ Failure ]
 crbug.com/400829 media/video-object-fit.html [ Failure ]
 crbug.com/400829 virtual/stable/media/stable/video-object-fit-stable.html [ Failure ]

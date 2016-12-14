@@ -30,11 +30,7 @@ function getWidth(id)
 function getFullHeight(id)
 {
     var element = document.getElementById(id);
-    var h = parseFloat(getComputedStyleForElement(element, 'border-top-width'));
-    h += parseFloat(getComputedStyleForElement(element, 'padding-top'));
-    h += parseFloat(getComputedStyleForElement(element, 'height'));
-    h += parseFloat(getComputedStyleForElement(element, 'padding-bottom'));
-    h += parseFloat(getComputedStyleForElement(element, 'border-bottom-width'));
+    var h = parseFloat(getComputedStyleForElement(element, 'height'));
     return h + 'px';
 }
 
@@ -47,39 +43,24 @@ function parsePixelValue(str)
     return parseFloat(str);
 }
 
-function is75PercentOf(expression75, expression100)
-{
-    var str75 = eval(expression75);
-    var str100 = eval(expression100);
-    var num75 = parsePixelValue(str75);
-    var num100 = parsePixelValue(str100);
-    if (num75 < 0 || num100 < 0)
-        return;
-    if (num75 == Math.floor(num100 * 75 / 100))
-        testPassed(expression75 + " is 75% of " + expression100 + ".");
-    else
-        testFailed(expression75 + " [" + str75 + "] is not 75% of " + expression100 + " [" + str100 + "].");
-}
-
 function test()
 {
     description("This test checks that text controls with percentage heights within table cells have the correct height." +
-        "Text controls are in a different test than other replaced elements because their metrics are platform-specific.");
+        "Text controls are in a different test than other replaced elements because their metrics are platform-specific." +
+        "The reason a 75% control is the same height as a 100% control is because a replaced element that depends on the" +
+        "height of its parent cell is treated as auto. So by itself it will set the height of the row. See https://drafts.csswg.org/css-tables-3/#row-layout");
 
     shouldBe("getWidth('input-password-75')", "getWidth('input-password-100')");
     shouldBeTrue("getFullHeight('input-password-75') != '0px'");
-    // Note: This behavior doesn't match to IE 8, Firefox 3.5 and Opera 10.
-    is75PercentOf("getFullHeight('input-password-75')", "getFullHeight('input-password-100')");
+    shouldBe("getFullHeight('input-password-75')", "getFullHeight('input-password-100')");
 
     shouldBe("getWidth('input-text-75')", "getWidth('input-text-100')");
     shouldBeTrue("getFullHeight('input-text-75') != '0px'");
-    // Note: This behavior doesn't match to IE 8, Firefox 3.5 and Opera 10.
-    is75PercentOf("getFullHeight('input-text-75')", "getFullHeight('input-text-100')");
+    shouldBe("getFullHeight('input-text-75')", "getFullHeight('input-text-100')");
 
     shouldBe("getWidth('textarea-75')", "getWidth('textarea-100')");
     shouldBeTrue("getFullHeight('textarea-75') != '0px'");
-    // Note: This behavior doesn't match to IE 8, Firefox 3.5 and Opera 10.
-    is75PercentOf("getFullHeight('textarea-75')", "getFullHeight('textarea-100')");
+    shouldBe("getFullHeight('textarea-75')", "getFullHeight('textarea-100')");
 
     isSuccessfullyParsed();
 
