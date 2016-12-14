@@ -91,7 +91,7 @@ DEFINE_TRACE(ScriptLoader) {
   visitor->trace(m_element);
   visitor->trace(m_resource);
   visitor->trace(m_pendingScript);
-  ScriptResourceClient::trace(visitor);
+  PendingScriptClient::trace(visitor);
 }
 
 void ScriptLoader::setFetchDocWrittenScriptDeferIdle() {
@@ -291,7 +291,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
     m_asyncExecType = ScriptRunner::InOrder;
     contextDocument->scriptRunner()->queueScriptForExecution(this,
                                                              m_asyncExecType);
-    // Note that watchForLoad can immediately call notifyFinished.
+    // Note that watchForLoad can immediately call pendingScriptFinished.
     m_pendingScript->watchForLoad(this);
   } else if (client->hasSourceAttribute()) {
     m_pendingScript = PendingScript::create(m_element, m_resource.get());
@@ -306,7 +306,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
     }
     contextDocument->scriptRunner()->queueScriptForExecution(this,
                                                              m_asyncExecType);
-    // Note that watchForLoad can immediately call notifyFinished.
+    // Note that watchForLoad can immediately call pendingScriptFinished.
     m_pendingScript->watchForLoad(this);
   } else {
     // Reset line numbering for nested writes.
@@ -573,8 +573,9 @@ void ScriptLoader::execute() {
   m_resource = nullptr;
 }
 
-void ScriptLoader::notifyFinished(Resource* resource) {
+void ScriptLoader::pendingScriptFinished(PendingScript* pendingScript) {
   DCHECK(!m_willBeParserExecuted);
+  DCHECK_EQ(m_pendingScript, pendingScript);
 
   // We do not need this script in the memory cache. The primary goals of
   // sending this fetch request are to let the third party server know
@@ -582,7 +583,7 @@ void ScriptLoader::notifyFinished(Resource* resource) {
   // cache for subsequent uses.
   if (m_documentWriteIntervention ==
       DocumentWriteIntervention::FetchDocWrittenScriptDeferIdle) {
-    memoryCache()->remove(resource);
+    memoryCache()->remove(m_pendingScript->resource());
     m_pendingScript->stopWatchingForLoad();
     return;
   }
@@ -595,7 +596,7 @@ void ScriptLoader::notifyFinished(Resource* resource) {
     return;
   }
 
-  DCHECK_EQ(resource, m_resource);
+  DCHECK_EQ(pendingScript->resource(), m_resource);
 
   if (m_resource->errorOccurred()) {
     contextDocument->scriptRunner()->notifyScriptLoadError(this,

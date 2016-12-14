@@ -91,17 +91,14 @@ class ScriptStreamingTest : public ::testing::Test {
   Persistent<PendingScript> m_pendingScript;
 };
 
-class TestScriptResourceClient
-    : public GarbageCollectedFinalized<TestScriptResourceClient>,
-      public ScriptResourceClient {
-  USING_GARBAGE_COLLECTED_MIXIN(TestScriptResourceClient);
+class TestPendingScriptClient
+    : public GarbageCollectedFinalized<TestPendingScriptClient>,
+      public PendingScriptClient {
+  USING_GARBAGE_COLLECTED_MIXIN(TestPendingScriptClient);
 
  public:
-  TestScriptResourceClient() : m_finished(false) {}
-
-  void notifyFinished(Resource*) override { m_finished = true; }
-  String debugName() const override { return "TestScriptResourceClient"; }
-
+  TestPendingScriptClient() : m_finished(false) {}
+  void pendingScriptFinished(PendingScript*) override { m_finished = true; }
   bool finished() const { return m_finished; }
 
  private:
@@ -114,7 +111,7 @@ TEST_F(ScriptStreamingTest, CompilingStreamedScript) {
   ScriptStreamer::startStreaming(
       getPendingScript(), ScriptStreamer::ParsingBlocking, m_settings.get(),
       scope.getScriptState(), m_loadingTaskRunner);
-  TestScriptResourceClient* client = new TestScriptResourceClient;
+  TestPendingScriptClient* client = new TestPendingScriptClient;
   getPendingScript()->watchForLoad(client);
 
   appendData("function foo() {");
@@ -149,7 +146,7 @@ TEST_F(ScriptStreamingTest, CompilingStreamedScriptWithParseError) {
   ScriptStreamer::startStreaming(
       getPendingScript(), ScriptStreamer::ParsingBlocking, m_settings.get(),
       scope.getScriptState(), m_loadingTaskRunner);
-  TestScriptResourceClient* client = new TestScriptResourceClient;
+  TestPendingScriptClient* client = new TestPendingScriptClient;
   getPendingScript()->watchForLoad(client);
   appendData("function foo() {");
   appendData("this is the part which will be a parse error");
@@ -185,7 +182,7 @@ TEST_F(ScriptStreamingTest, CancellingStreaming) {
   ScriptStreamer::startStreaming(
       getPendingScript(), ScriptStreamer::ParsingBlocking, m_settings.get(),
       scope.getScriptState(), m_loadingTaskRunner);
-  TestScriptResourceClient* client = new TestScriptResourceClient;
+  TestPendingScriptClient* client = new TestPendingScriptClient;
   getPendingScript()->watchForLoad(client);
   appendData("function foo() {");
 
@@ -215,7 +212,7 @@ TEST_F(ScriptStreamingTest, SuppressingStreaming) {
   ScriptStreamer::startStreaming(
       getPendingScript(), ScriptStreamer::ParsingBlocking, m_settings.get(),
       scope.getScriptState(), m_loadingTaskRunner);
-  TestScriptResourceClient* client = new TestScriptResourceClient;
+  TestPendingScriptClient* client = new TestPendingScriptClient;
   getPendingScript()->watchForLoad(client);
   appendData("function foo() {");
   appendPadding();
@@ -248,7 +245,7 @@ TEST_F(ScriptStreamingTest, EmptyScripts) {
   ScriptStreamer::startStreaming(
       getPendingScript(), ScriptStreamer::ParsingBlocking, m_settings.get(),
       scope.getScriptState(), m_loadingTaskRunner);
-  TestScriptResourceClient* client = new TestScriptResourceClient;
+  TestPendingScriptClient* client = new TestPendingScriptClient;
   getPendingScript()->watchForLoad(client);
 
   // Finish the script without sending any data.
@@ -272,7 +269,7 @@ TEST_F(ScriptStreamingTest, SmallScripts) {
   ScriptStreamer::startStreaming(
       getPendingScript(), ScriptStreamer::ParsingBlocking, m_settings.get(),
       scope.getScriptState(), m_loadingTaskRunner);
-  TestScriptResourceClient* client = new TestScriptResourceClient;
+  TestPendingScriptClient* client = new TestPendingScriptClient;
   getPendingScript()->watchForLoad(client);
 
   appendData("function foo() { }");
@@ -299,7 +296,7 @@ TEST_F(ScriptStreamingTest, ScriptsWithSmallFirstChunk) {
   ScriptStreamer::startStreaming(
       getPendingScript(), ScriptStreamer::ParsingBlocking, m_settings.get(),
       scope.getScriptState(), m_loadingTaskRunner);
-  TestScriptResourceClient* client = new TestScriptResourceClient;
+  TestPendingScriptClient* client = new TestPendingScriptClient;
   getPendingScript()->watchForLoad(client);
 
   // This is the first data chunk which is small.
@@ -333,7 +330,7 @@ TEST_F(ScriptStreamingTest, EncodingChanges) {
   ScriptStreamer::startStreaming(
       getPendingScript(), ScriptStreamer::ParsingBlocking, m_settings.get(),
       scope.getScriptState(), m_loadingTaskRunner);
-  TestScriptResourceClient* client = new TestScriptResourceClient;
+  TestPendingScriptClient* client = new TestPendingScriptClient;
   getPendingScript()->watchForLoad(client);
 
   m_resource->setEncoding("UTF-8");
@@ -368,7 +365,7 @@ TEST_F(ScriptStreamingTest, EncodingFromBOM) {
   ScriptStreamer::startStreaming(
       getPendingScript(), ScriptStreamer::ParsingBlocking, m_settings.get(),
       scope.getScriptState(), m_loadingTaskRunner);
-  TestScriptResourceClient* client = new TestScriptResourceClient;
+  TestPendingScriptClient* client = new TestPendingScriptClient;
   getPendingScript()->watchForLoad(client);
 
   // \xef\xbb\xbf is the UTF-8 byte order mark. \xec\x92\x81 are the raw bytes

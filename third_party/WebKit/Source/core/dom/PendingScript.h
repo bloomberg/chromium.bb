@@ -38,7 +38,21 @@
 namespace blink {
 
 class Element;
+class PendingScript;
 class ScriptSourceCode;
+
+class CORE_EXPORT PendingScriptClient : public GarbageCollectedMixin {
+ public:
+  virtual ~PendingScriptClient() {}
+
+  // Invoked when the pending script has finished loading. This could be during
+  // |watchForLoad| (if the pending script was already ready), or when the
+  // resource loads (if script streaming is not occurring), or when script
+  // streaming finishes.
+  virtual void pendingScriptFinished(PendingScript*) = 0;
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {}
+};
 
 // A container for an external script which may be loaded and executed.
 //
@@ -71,17 +85,13 @@ class CORE_EXPORT PendingScript final
     return m_parserBlockingLoadStartTime;
   }
 
-  void watchForLoad(ScriptResourceClient*);
+  void watchForLoad(PendingScriptClient*);
   void stopWatchingForLoad();
 
   Element* element() const { return m_element.get(); }
   void setElement(Element*);
 
   void setScriptResource(ScriptResource*);
-
-  void notifyFinished(Resource*) override;
-  String debugName() const override { return "PendingScript"; }
-  void notifyAppendData(ScriptResource*) override;
 
   DECLARE_TRACE();
 
@@ -100,6 +110,12 @@ class CORE_EXPORT PendingScript final
   PendingScript(Element*, ScriptResource*);
   PendingScript() = delete;
 
+  // ScriptResourceClient
+  void notifyFinished(Resource*) override;
+  String debugName() const override { return "PendingScript"; }
+  void notifyAppendData(ScriptResource*) override;
+
+  // MemoryCoordinatorClient
   void onMemoryStateChange(MemoryState) override;
 
   bool m_watchingForLoad;
@@ -109,7 +125,7 @@ class CORE_EXPORT PendingScript final
   double m_parserBlockingLoadStartTime;
 
   Member<ScriptStreamer> m_streamer;
-  Member<ScriptResourceClient> m_client;
+  Member<PendingScriptClient> m_client;
 };
 
 }  // namespace blink

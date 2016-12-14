@@ -37,7 +37,6 @@
 
 namespace blink {
 
-class Resource;
 class Document;
 class Element;
 class HTMLParserScriptRunnerHost;
@@ -53,7 +52,7 @@ class HTMLParserScriptRunnerHost;
 // An HTMLParserScriptRunner is owned by its host, an HTMLDocumentParser.
 class HTMLParserScriptRunner final
     : public GarbageCollectedFinalized<HTMLParserScriptRunner>,
-      private ScriptResourceClient {
+      private PendingScriptClient {
   WTF_MAKE_NONCOPYABLE(HTMLParserScriptRunner);
   USING_GARBAGE_COLLECTED_MIXIN(HTMLParserScriptRunner);
   USING_PRE_FINALIZER(HTMLParserScriptRunner, detach);
@@ -78,7 +77,7 @@ class HTMLParserScriptRunner final
 
   // Invoked when the parsing-blocking script resource has loaded, to execute
   // parsing-blocking scripts.
-  void executeScriptsWaitingForLoad(Resource*);
+  void executeScriptsWaitingForLoad(PendingScript*);
 
   // Invoked when all script-blocking resources (e.g., stylesheets) have loaded,
   // to execute parsing-blocking scripts.
@@ -92,16 +91,15 @@ class HTMLParserScriptRunner final
     return !!m_reentryPermit->scriptNestingLevel();
   }
 
-  // ResourceClient
-  void notifyFinished(Resource*) override;
-  String debugName() const override { return "HTMLParserScriptRunner"; }
-
   DECLARE_TRACE();
 
  private:
   HTMLParserScriptRunner(HTMLParserReentryPermit*,
                          Document*,
                          HTMLParserScriptRunnerHost*);
+
+  // PendingScriptClient
+  void pendingScriptFinished(PendingScript*) override;
 
   void executePendingScriptAndDispatchEvent(PendingScript*,
                                             ScriptStreamer::Type);
@@ -118,9 +116,7 @@ class HTMLParserScriptRunner final
 
   bool isParserBlockingScriptReady();
 
-  void stopWatchingResourceForLoad(Resource*);
-
-  void possiblyFetchBlockedDocWriteScript(Resource*);
+  void possiblyFetchBlockedDocWriteScript(PendingScript*);
 
   RefPtr<HTMLParserReentryPermit> m_reentryPermit;
   Member<Document> m_document;

@@ -248,19 +248,6 @@ void HTMLParserScriptRunner::executePendingScriptAndDispatchEvent(
   DCHECK(!isExecutingScript());
 }
 
-void HTMLParserScriptRunner::stopWatchingResourceForLoad(Resource* resource) {
-  if (m_parserBlockingScript->resource() == resource) {
-    m_parserBlockingScript->dispose();
-    return;
-  }
-  for (auto& script : m_scriptsToExecuteAfterParsing) {
-    if (script->resource() == resource) {
-      script->dispose();
-      return;
-    }
-  }
-}
-
 void fetchBlockedDocWriteScript(Element* script,
                                 bool isParserInserted,
                                 const TextPosition& scriptStartPosition) {
@@ -274,15 +261,15 @@ void fetchBlockedDocWriteScript(Element* script,
 }
 
 void HTMLParserScriptRunner::possiblyFetchBlockedDocWriteScript(
-    Resource* resource) {
+    PendingScript* pendingScript) {
   // If the script was blocked as part of document.write intervention,
   // then send an asynchronous GET request with an interventions header.
   Element* element = nullptr;
   TextPosition startingPosition;
   bool isParserInserted = false;
 
-  if (!resource->errorOccurred() || !m_parserBlockingScript ||
-      !(m_parserBlockingScript->resource() == resource))
+  if (!pendingScript->errorOccurred() ||
+      m_parserBlockingScript != pendingScript)
     return;
 
   // Due to dependency violation, not able to check the exact error to be
@@ -297,28 +284,29 @@ void HTMLParserScriptRunner::possiblyFetchBlockedDocWriteScript(
     isParserInserted = scriptLoader->isParserInserted();
     // remove this resource entry from memory cache as the new request
     // should not join onto this existing entry.
-    memoryCache()->remove(resource);
+    memoryCache()->remove(pendingScript->resource());
     fetchBlockedDocWriteScript(element, isParserInserted, startingPosition);
   }
 }
 
-void HTMLParserScriptRunner::notifyFinished(Resource* cachedResource) {
+void HTMLParserScriptRunner::pendingScriptFinished(
+    PendingScript* pendingScript) {
   // Handle cancellations of parser-blocking script loads without
   // notifying the host (i.e., parser) if these were initiated by nested
   // document.write()s. The cancellation may have been triggered by
   // script execution to signal an abrupt stop (e.g., window.close().)
   //
   // The parser is unprepared to be told, and doesn't need to be.
-  if (isExecutingScript() && cachedResource->wasCanceled()) {
-    stopWatchingResourceForLoad(cachedResource);
+  if (isExecutingScript() && pendingScript->resource()->wasCanceled()) {
+    pendingScript->dispose();
     return;
   }
 
   // If the script was blocked as part of document.write intervention,
   // then send an asynchronous GET request with an interventions header.
-  possiblyFetchBlockedDocWriteScript(cachedResource);
+  possiblyFetchBlockedDocWriteScript(pendingScript);
 
-  m_host->notifyScriptLoaded(cachedResource);
+  m_host->notifyScriptLoaded(pendingScript);
 }
 
 // Implements the steps for 'An end tag whose tag name is "script"'
@@ -373,11 +361,12 @@ void HTMLParserScriptRunner::executeParsingBlockingScripts() {
   }
 }
 
-void HTMLParserScriptRunner::executeScriptsWaitingForLoad(Resource* resource) {
+void HTMLParserScriptRunner::executeScriptsWaitingForLoad(
+    PendingScript* pendingScript) {
   TRACE_EVENT0("blink", "HTMLParserScriptRunner::executeScriptsWaitingForLoad");
   DCHECK(!isExecutingScript());
   DCHECK(hasParserBlockingScript());
-  DCHECK_EQ(resource, m_parserBlockingScript->resource());
+  DCHECK_EQ(pendingScript, m_parserBlockingScript);
   DCHECK(m_parserBlockingScript->isReady());
   executeParsingBlockingScripts();
 }
@@ -529,7 +518,7 @@ DEFINE_TRACE(HTMLParserScriptRunner) {
   visitor->trace(m_host);
   visitor->trace(m_parserBlockingScript);
   visitor->trace(m_scriptsToExecuteAfterParsing);
-  ScriptResourceClient::trace(visitor);
+  PendingScriptClient::trace(visitor);
 }
 
 }  // namespace blink

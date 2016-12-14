@@ -65,7 +65,7 @@ void PendingScript::dispose() {
   m_element = nullptr;
 }
 
-void PendingScript::watchForLoad(ScriptResourceClient* client) {
+void PendingScript::watchForLoad(PendingScriptClient* client) {
   DCHECK(!m_watchingForLoad);
   // addClient() will call streamingFinished() if the load is complete. Callers
   // who do not expect to be re-entered from this call should not call
@@ -74,16 +74,14 @@ void PendingScript::watchForLoad(ScriptResourceClient* client) {
   // notifyFinished and further stopWatchingForLoad().
   m_watchingForLoad = true;
   m_client = client;
-  if (!m_streamer)
-    resource()->addClient(client);
+  if (isReady())
+    m_client->pendingScriptFinished(this);
 }
 
 void PendingScript::stopWatchingForLoad() {
   if (!m_watchingForLoad)
     return;
   DCHECK(resource());
-  if (!m_streamer)
-    resource()->removeClient(m_client);
   m_client = nullptr;
   m_watchingForLoad = false;
 }
@@ -91,7 +89,7 @@ void PendingScript::stopWatchingForLoad() {
 void PendingScript::streamingFinished() {
   DCHECK(resource());
   if (m_client)
-    m_client->notifyFinished(resource());
+    m_client->pendingScriptFinished(this);
 }
 
 void PendingScript::setElement(Element* element) {
@@ -163,8 +161,12 @@ void PendingScript::notifyFinished(Resource* resource) {
     }
   }
 
+  // If script streaming is in use, the client will be notified in
+  // streamingFinished.
   if (m_streamer)
     m_streamer->notifyFinished(resource);
+  else if (m_client)
+    m_client->pendingScriptFinished(this);
 }
 
 void PendingScript::notifyAppendData(ScriptResource* resource) {

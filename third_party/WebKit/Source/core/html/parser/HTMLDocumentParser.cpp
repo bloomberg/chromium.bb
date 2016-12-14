@@ -1083,7 +1083,7 @@ void HTMLDocumentParser::appendCurrentInputStreamToPreloadScannerAndScan() {
   scanAndPreload(m_preloadScanner.get());
 }
 
-void HTMLDocumentParser::notifyScriptLoaded(Resource* cachedResource) {
+void HTMLDocumentParser::notifyScriptLoaded(PendingScript* pendingScript) {
   ASSERT(m_scriptRunner);
   ASSERT(!isExecutingScript());
 
@@ -1096,7 +1096,7 @@ void HTMLDocumentParser::notifyScriptLoaded(Resource* cachedResource) {
     return;
   }
 
-  m_scriptRunner->executeScriptsWaitingForLoad(cachedResource);
+  m_scriptRunner->executeScriptsWaitingForLoad(pendingScript);
   if (!isWaitingForScripts())
     resumeParsingAfterScriptExecution();
 }

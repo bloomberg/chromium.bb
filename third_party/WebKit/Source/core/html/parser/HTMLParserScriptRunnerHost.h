@@ -32,14 +32,14 @@
 namespace blink {
 
 class HTMLInputStream;
-class Resource;
+class PendingScript;
 
 class CORE_EXPORT HTMLParserScriptRunnerHost : public GarbageCollectedMixin {
  public:
   virtual ~HTMLParserScriptRunnerHost() {}
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-  virtual void notifyScriptLoaded(Resource*) = 0;
+  virtual void notifyScriptLoaded(PendingScript*) = 0;
   virtual HTMLInputStream& inputStream() = 0;
 
   virtual bool hasPreloadScanner() const = 0;

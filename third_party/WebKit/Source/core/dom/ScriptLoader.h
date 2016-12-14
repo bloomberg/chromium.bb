@@ -38,7 +38,7 @@ class ScriptSourceCode;
 class LocalFrame;
 
 class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
-                                 public ScriptResourceClient {
+                                 public PendingScriptClient {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptLoader);
 
  public:
@@ -134,9 +134,8 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
 
   ScriptLoaderClient* client() const;
 
-  // ResourceClient
-  void notifyFinished(Resource*) override;
-  String debugName() const override { return "ScriptLoader"; }
+  // PendingScriptClient
+  void pendingScriptFinished(PendingScript*) override;
 
   Member<Element> m_element;
   Member<ScriptResource> m_resource;
