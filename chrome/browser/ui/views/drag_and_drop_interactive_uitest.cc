@@ -579,8 +579,27 @@ class DragAndDropBrowserTest : public InProcessBrowserTest,
 
   bool SimulateMouseDownAndDragStartInLeftFrame() {
     AssertTestPageIsLoaded();
-    if (!SimulateMouseMove(kMiddleOfLeftFrame) || !SimulateMouseDown() ||
-        !SimulateMouseMove(expected_location_of_drag_start_in_left_frame()))
+
+    // Waiting until the mousemove and mousedown events reach the right renderer
+    // is needed to avoid flakiness reported in https://crbug.com/671445 (which
+    // has its root cause in https://crbug.com/647378).  Once the latter bug
+    // is fixed, we should no longer need to wait for these events (because
+    // fixing https://crbug.com/647378 should guarantee that events arrive
+    // to the renderer in the right order).
+    DOMDragEventWaiter mouse_move_event_waiter("mousemove", left_frame());
+    DOMDragEventWaiter mouse_down_event_waiter("mousedown", left_frame());
+
+    if (!SimulateMouseMove(kMiddleOfLeftFrame))
+      return false;
+    if (!mouse_move_event_waiter.WaitForNextMatchingEvent(nullptr))
+      return false;
+
+    if (!SimulateMouseDown())
+      return false;
+    if (!mouse_down_event_waiter.WaitForNextMatchingEvent(nullptr))
+      return false;
+
+    if (!SimulateMouseMove(expected_location_of_drag_start_in_left_frame()))
       return false;
 
     return true;
