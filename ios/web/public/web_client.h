@@ -11,11 +11,13 @@
 #include "base/callback.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "ui/base/layout.h"
 #include "url/url_util.h"
 
 namespace base {
 class RefCountedMemory;
+class SchedulerWorkerPoolParams;
 }
 
 class GURL;
@@ -127,6 +129,16 @@ class WebClient {
       const GURL& request_url,
       bool overridable,
       const base::Callback<void(bool)>& callback);
+
+  // Provides parameters for initializing the global task scheduler. If
+  // |params_vector| is empty, default parameters are used.
+  virtual void GetTaskSchedulerInitializationParams(
+      std::vector<base::SchedulerWorkerPoolParams>* params_vector,
+      base::TaskScheduler::WorkerPoolIndexForTraitsCallback*
+          index_to_traits_callback) {}
+
+  // Performs any necessary PostTask API redirection to the task scheduler.
+  virtual void PerformExperimentalTaskSchedulerRedirections() {}
 };
 
 }  // namespace web

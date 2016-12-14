@@ -18,6 +18,10 @@
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/process/process_metrics.h"
 #include "base/system_monitor/system_monitor.h"
+#include "base/task_scheduler/initialization_util.h"
+#include "base/task_scheduler/scheduler_worker_pool_params.h"
+#include "base/task_scheduler/task_scheduler.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_restrictions.h"
 #include "ios/web/net/cookie_notification_bridge.h"
 #include "ios/web/public/app/web_main_parts.h"
@@ -31,6 +35,56 @@
 #endif
 
 namespace web {
+
+namespace {
+
+enum WorkerPoolType : size_t {
+  BACKGROUND = 0,
+  BACKGROUND_FILE_IO,
+  FOREGROUND,
+  FOREGROUND_FILE_IO,
+  WORKER_POOL_COUNT  // Always last.
+};
+
+std::vector<base::SchedulerWorkerPoolParams>
+GetDefaultSchedulerWorkerPoolParams() {
+  using StandbyThreadPolicy =
+      base::SchedulerWorkerPoolParams::StandbyThreadPolicy;
+  using ThreadPriority = base::ThreadPriority;
+  std::vector<base::SchedulerWorkerPoolParams> params_vector;
+  params_vector.emplace_back(
+      "Background", ThreadPriority::BACKGROUND, StandbyThreadPolicy::ONE,
+      base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
+      base::TimeDelta::FromSeconds(30));
+  params_vector.emplace_back(
+      "BackgroundFileIO", ThreadPriority::BACKGROUND, StandbyThreadPolicy::ONE,
+      base::RecommendedMaxNumberOfThreadsInPool(2, 8, 0.1, 0),
+      base::TimeDelta::FromSeconds(30));
+  params_vector.emplace_back(
+      "Foreground", ThreadPriority::NORMAL, StandbyThreadPolicy::ONE,
+      base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.3, 0),
+      base::TimeDelta::FromSeconds(30));
+  params_vector.emplace_back(
+      "ForegroundFileIO", ThreadPriority::NORMAL, StandbyThreadPolicy::ONE,
+      base::RecommendedMaxNumberOfThreadsInPool(3, 8, 0.1, 0),
+      base::TimeDelta::FromSeconds(30));
+  DCHECK_EQ(WORKER_POOL_COUNT, params_vector.size());
+  return params_vector;
+}
+
+// Returns the worker pool index for |traits| defaulting to FOREGROUND or
+// FOREGROUND_FILE_IO on any other priorities based off of worker pools defined
+// in GetDefaultSchedulerWorkerPoolParams().
+size_t DefaultBrowserWorkerPoolIndexForTraits(const base::TaskTraits& traits) {
+  const bool is_background =
+      traits.priority() == base::TaskPriority::BACKGROUND;
+  if (traits.with_file_io())
+    return is_background ? BACKGROUND_FILE_IO : FOREGROUND_FILE_IO;
+
+  return is_background ? BACKGROUND : FOREGROUND;
+}
+
+}  // namespace
 
 // The currently-running WebMainLoop.  There can be one or zero.
 // TODO(rohitrao): Desktop uses this to implement
@@ -115,6 +169,23 @@ int WebMainLoop::PreCreateThreads() {
 }
 
 int WebMainLoop::CreateThreads() {
+  std::vector<base::SchedulerWorkerPoolParams> params_vector;
+  base::TaskScheduler::WorkerPoolIndexForTraitsCallback
+      index_to_traits_callback;
+  GetWebClient()->GetTaskSchedulerInitializationParams(
+      &params_vector, &index_to_traits_callback);
+
+  if (params_vector.empty() || index_to_traits_callback.is_null()) {
+    params_vector = GetDefaultSchedulerWorkerPoolParams();
+    index_to_traits_callback =
+        base::Bind(&DefaultBrowserWorkerPoolIndexForTraits);
+  }
+
+  base::TaskScheduler::CreateAndSetDefaultTaskScheduler(
+      params_vector, index_to_traits_callback);
+
+  GetWebClient()->PerformExperimentalTaskSchedulerRedirections();
+
   base::Thread::Options io_message_loop_options;
   io_message_loop_options.message_loop_type = base::MessageLoop::TYPE_IO;
 
@@ -249,6 +320,7 @@ void WebMainLoop::ShutdownThreadsAndCleanUp() {
   // it here (which will block until required operations are complete) gives
   // more head start for those operations to finish.
   WebThreadImpl::ShutdownThreadPool();
+  base::TaskScheduler::GetInstance()->Shutdown();
 
   URLDataManagerIOS::DeleteDataSources();
 
