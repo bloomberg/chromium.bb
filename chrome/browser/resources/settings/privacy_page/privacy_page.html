@@ -237,10 +237,10 @@
         <settings-subpage page-title="$i18n{siteSettingsCategoryCamera}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
+          <media-picker type="camera"></media-picker>
           <site-settings-category
               selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.CAMERA}}">
-            <media-picker type="camera" class="media-picker"></media-picker>
           </site-settings-category>
         </settings-subpage>
       </template>
@@ -258,8 +258,8 @@
                   pref="{{prefs.profile.block_third_party_cookies}}">
               </settings-toggle-button>
             </div>
-            <site-data class="site-data"></site-data>
           </site-settings-category>
+          <site-data></site-data>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/images" no-search>
@@ -321,10 +321,10 @@
         <settings-subpage page-title="$i18n{siteSettingsCategoryMicrophone}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
+          <media-picker type="mic"></media-picker>
           <site-settings-category
               selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.MIC}}">
-            <media-picker type="mic" class="media-picker"></media-picker>
           </site-settings-category>
         </settings-subpage>
       </template>
