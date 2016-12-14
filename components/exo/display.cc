@@ -24,10 +24,9 @@
 #if defined(USE_OZONE)
 #include <GLES2/gl2extchromium.h>
 #include "components/exo/buffer.h"
-#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/ipc/client/gpu_memory_buffer_impl_ozone_native_pixmap.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
-#include "ui/aura/env.h"
 #endif
 
 namespace exo {
@@ -77,10 +76,9 @@ std::unique_ptr<Buffer> Display::CreateLinuxDMABufBuffer(
     handle.native_pixmap_handle.planes.push_back(plane);
 
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
-      aura::Env::GetInstance()
-          ->context_factory()
-          ->GetGpuMemoryBufferManager()
-          ->CreateGpuMemoryBufferFromHandle(handle, size, format);
+      gpu::GpuMemoryBufferImplOzoneNativePixmap::CreateFromHandle(
+          handle, size, format, gfx::BufferUsage::GPU_READ,
+          gpu::GpuMemoryBufferImpl::DestructionCallback());
   if (!gpu_memory_buffer) {
     LOG(ERROR) << "Failed to create GpuMemoryBuffer from handle";
     return nullptr;

@@ -47,10 +47,6 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
       gpu::SurfaceHandle surface_handle) override;
-  std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBufferFromHandle(
-      const gfx::GpuMemoryBufferHandle& handle,
-      const gfx::Size& size,
-      gfx::BufferFormat format) override;
   void SetDestructionSyncToken(gfx::GpuMemoryBuffer* buffer,
                                const gpu::SyncToken& sync_token) override;
 
@@ -93,7 +89,6 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
   };
 
   struct CreateGpuMemoryBufferRequest;
-  struct CreateGpuMemoryBufferFromHandleRequest;
 
   using CreateDelegate = base::Callback<void(GpuProcessHost* host,
                                              gfx::GpuMemoryBufferId id,
@@ -111,8 +106,6 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
 
   // Functions that handle synchronous buffer creation requests.
   void HandleCreateGpuMemoryBufferOnIO(CreateGpuMemoryBufferRequest* request);
-  void HandleCreateGpuMemoryBufferFromHandleOnIO(
-      CreateGpuMemoryBufferFromHandleRequest* request);
   void HandleGpuMemoryBufferCreatedOnIO(
       CreateGpuMemoryBufferRequest* request,
       const gfx::GpuMemoryBufferHandle& handle);

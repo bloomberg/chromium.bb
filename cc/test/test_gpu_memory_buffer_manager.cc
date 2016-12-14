@@ -172,23 +172,6 @@ TestGpuMemoryBufferManager::CreateGpuMemoryBuffer(
   return result;
 }
 
-std::unique_ptr<gfx::GpuMemoryBuffer>
-TestGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
-    const gfx::GpuMemoryBufferHandle& handle,
-    const gfx::Size& size,
-    gfx::BufferFormat format) {
-  if (handle.type != gfx::SHARED_MEMORY_BUFFER)
-    return nullptr;
-
-  last_gpu_memory_buffer_id_ += 1;
-  std::unique_ptr<gfx::GpuMemoryBuffer> result(new GpuMemoryBufferImpl(
-      this, last_gpu_memory_buffer_id_, size, format,
-      base::MakeUnique<base::SharedMemory>(handle.handle, false), handle.offset,
-      handle.stride));
-  buffers_[last_gpu_memory_buffer_id_] = result.get();
-  return result;
-}
-
 void TestGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {}

@@ -67,15 +67,6 @@ ServerGpuMemoryBufferManager::CreateGpuMemoryBuffer(
                  weak_factory_.GetWeakPtr(), id, client_id_));
 }
 
-std::unique_ptr<gfx::GpuMemoryBuffer>
-ServerGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
-    const gfx::GpuMemoryBufferHandle& handle,
-    const gfx::Size& size,
-    gfx::BufferFormat format) {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 void ServerGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {

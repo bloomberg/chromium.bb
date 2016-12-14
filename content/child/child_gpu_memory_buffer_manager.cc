@@ -64,15 +64,6 @@ ChildGpuMemoryBufferManager::CreateGpuMemoryBuffer(
   return std::move(buffer);
 }
 
-std::unique_ptr<gfx::GpuMemoryBuffer>
-ChildGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
-    const gfx::GpuMemoryBufferHandle& handle,
-    const gfx::Size& size,
-    gfx::BufferFormat format) {
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
 void ChildGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {

@@ -137,19 +137,6 @@ BlimpGpuMemoryBufferManager::CreateGpuMemoryBuffer(
           gfx::RowSizeForBufferFormat(size.width(), format, 0))));
 }
 
-std::unique_ptr<gfx::GpuMemoryBuffer>
-BlimpGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
-    const gfx::GpuMemoryBufferHandle& handle,
-    const gfx::Size& size,
-    gfx::BufferFormat format) {
-  if (handle.type != gfx::SHARED_MEMORY_BUFFER)
-    return nullptr;
-
-  return base::WrapUnique<gfx::GpuMemoryBuffer>(new GpuMemoryBufferImpl(
-      size, format, base::MakeUnique<base::SharedMemory>(handle.handle, false),
-      handle.offset, handle.stride));
-}
-
 void BlimpGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {

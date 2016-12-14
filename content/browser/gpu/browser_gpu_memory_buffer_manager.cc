@@ -78,23 +78,6 @@ struct BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferRequest {
   std::unique_ptr<gfx::GpuMemoryBuffer> result;
 };
 
-struct BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandleRequest
-    : public CreateGpuMemoryBufferRequest {
-  CreateGpuMemoryBufferFromHandleRequest(
-      const gfx::GpuMemoryBufferHandle& handle,
-      const gfx::Size& size,
-      gfx::BufferFormat format,
-      int client_id)
-      : CreateGpuMemoryBufferRequest(size,
-                                     format,
-                                     gfx::BufferUsage::GPU_READ,
-                                     client_id,
-                                     gpu::kNullSurfaceHandle),
-        handle(handle) {}
-  ~CreateGpuMemoryBufferFromHandleRequest() {}
-  gfx::GpuMemoryBufferHandle handle;
-};
-
 BrowserGpuMemoryBufferManager::BrowserGpuMemoryBufferManager(
     int gpu_client_id,
     uint64_t gpu_client_tracing_id)
@@ -152,31 +135,6 @@ BrowserGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     gfx::BufferUsage usage,
     gpu::SurfaceHandle surface_handle) {
   return AllocateGpuMemoryBufferForSurface(size, format, usage, surface_handle);
-}
-
-std::unique_ptr<gfx::GpuMemoryBuffer>
-BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
-    const gfx::GpuMemoryBufferHandle& handle,
-    const gfx::Size& size,
-    gfx::BufferFormat format) {
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  CreateGpuMemoryBufferFromHandleRequest request(handle, size, format,
-                                                 gpu_client_id_);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&BrowserGpuMemoryBufferManager::
-                     HandleCreateGpuMemoryBufferFromHandleOnIO,
-                 base::Unretained(this),  // Safe as we wait for result below.
-                 base::Unretained(&request)));
-
-  // We're blocking the UI thread, which is generally undesirable.
-  TRACE_EVENT0(
-      "browser",
-      "BrowserGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle");
-  base::ThreadRestrictions::ScopedAllowWait allow_wait;
-  request.event.Wait();
-  return std::move(request.result);
 }
 
 void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
@@ -370,33 +328,6 @@ void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferOnIO(
   // destroyed.
   request->result = gpu::GpuMemoryBufferImplSharedMemory::Create(
       new_id, request->size, request->format,
-      base::Bind(
-          &GpuMemoryBufferDeleted,
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
-          base::Bind(&BrowserGpuMemoryBufferManager::DestroyGpuMemoryBufferOnIO,
-                     base::Unretained(this), new_id, request->client_id)));
-  request->event.Signal();
-}
-
-void BrowserGpuMemoryBufferManager::HandleCreateGpuMemoryBufferFromHandleOnIO(
-    CreateGpuMemoryBufferFromHandleRequest* request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  gfx::GpuMemoryBufferId new_id = content::GetNextGenericSharedMemoryId();
-
-  BufferMap& buffers = clients_[request->client_id];
-  auto insert_result = buffers.insert(std::make_pair(
-      new_id, BufferInfo(request->size, request->handle.type,
-                         request->format, request->usage, 0)));
-  DCHECK(insert_result.second);
-
-  gfx::GpuMemoryBufferHandle handle = request->handle;
-  handle.id = new_id;
-
-  // Note: Unretained is safe as IO thread is stopped before manager is
-  // destroyed.
-  request->result = gpu::GpuMemoryBufferImpl::CreateFromHandle(
-      handle, request->size, request->format, request->usage,
       base::Bind(
           &GpuMemoryBufferDeleted,
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
