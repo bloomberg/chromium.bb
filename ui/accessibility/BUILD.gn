@@ -24,6 +24,7 @@ component("accessibility") {
     "ax_node_position.cc",
     "ax_node_position.h",
     "ax_position.h",
+    "ax_range.h",
     "ax_relative_bounds.cc",
     "ax_relative_bounds.h",
     "ax_serializable_tree.cc",
@@ -134,6 +135,7 @@ test("accessibility_unittests") {
 
   deps = [
     ":accessibility",
+    ":ax_gen",
     ":test_support",
     "//base",
     "//base/test:run_all_unittests",

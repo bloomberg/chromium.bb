@@ -5,12 +5,24 @@
 #include "content/browser/accessibility/ax_platform_position.h"
 
 #include "content/browser/accessibility/browser_accessibility_manager.h"
+#include "ui/accessibility/ax_enums.h"
 
 namespace content {
 
 AXPlatformPosition::AXPlatformPosition() {}
 
 AXPlatformPosition::~AXPlatformPosition() {}
+
+AXPlatformPosition::AXPositionInstance AXPlatformPosition::Clone() const {
+  return AXPositionInstance(new AXPlatformPosition(*this));
+}
+
+base::string16 AXPlatformPosition::GetInnerText() const {
+  if (IsNullPosition())
+    return base::string16();
+  DCHECK(GetAnchor());
+  return GetAnchor()->GetText();
+}
 
 void AXPlatformPosition::AnchorChild(int child_index,
                                      AXTreeID* tree_id,
@@ -19,8 +31,8 @@ void AXPlatformPosition::AnchorChild(int child_index,
   DCHECK(child_id);
 
   if (!GetAnchor() || child_index < 0 || child_index >= AnchorChildCount()) {
-    *tree_id = AXPosition::INVALID_TREE_ID;
-    *child_id = AXPosition::INVALID_ANCHOR_ID;
+    *tree_id = INVALID_TREE_ID;
+    *child_id = INVALID_ANCHOR_ID;
     return;
   }
 
@@ -82,12 +94,55 @@ BrowserAccessibility* AXPlatformPosition::GetNodeInTree(AXTreeID tree_id,
 
 int AXPlatformPosition::MaxTextOffset() const {
   if (IsNullPosition())
-    return AXPosition::INVALID_OFFSET;
+    return INVALID_OFFSET;
+  return static_cast<int>(GetInnerText().length());
+}
 
-  BrowserAccessibility* anchor = GetNodeInTree(tree_id(), anchor_id());
-  if (!anchor)
-    return AXPosition::INVALID_OFFSET;
-  return static_cast<int>(anchor->GetText().length());
+bool AXPlatformPosition::IsInLineBreak() const {
+  if (IsNullPosition())
+    return false;
+
+  DCHECK(GetAnchor());
+  return GetAnchor()->IsLineBreakObject();
+}
+
+std::vector<int32_t> AXPlatformPosition::GetWordStartOffsets() const {
+  if (IsNullPosition())
+    return std::vector<int32_t>();
+  DCHECK(GetAnchor());
+  return GetAnchor()->GetIntListAttribute(ui::AX_ATTR_WORD_STARTS);
+}
+
+std::vector<int32_t> AXPlatformPosition::GetWordEndOffsets() const {
+  if (IsNullPosition())
+    return std::vector<int32_t>();
+  DCHECK(GetAnchor());
+  return GetAnchor()->GetIntListAttribute(ui::AX_ATTR_WORD_ENDS);
+}
+
+int32_t AXPlatformPosition::GetNextOnLineID(int32_t node_id) const {
+  if (IsNullPosition())
+    return INVALID_ANCHOR_ID;
+  BrowserAccessibility* node = GetNodeInTree(tree_id(), node_id);
+  int next_on_line_id;
+  if (!node ||
+      !node->GetIntAttribute(ui::AX_ATTR_NEXT_ON_LINE_ID, &next_on_line_id)) {
+    return INVALID_ANCHOR_ID;
+  }
+  return static_cast<int32_t>(next_on_line_id);
+}
+
+int32_t AXPlatformPosition::GetPreviousOnLineID(int32_t node_id) const {
+  if (IsNullPosition())
+    return INVALID_ANCHOR_ID;
+  BrowserAccessibility* node = GetNodeInTree(tree_id(), node_id);
+  int previous_on_line_id;
+  if (!node ||
+      !node->GetIntAttribute(ui::AX_ATTR_PREVIOUS_ON_LINE_ID,
+                             &previous_on_line_id)) {
+    return INVALID_ANCHOR_ID;
+  }
+  return static_cast<int32_t>(previous_on_line_id);
 }
 
 }  // namespace content

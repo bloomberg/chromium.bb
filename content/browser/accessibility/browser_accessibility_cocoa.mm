@@ -112,6 +112,8 @@ AXTextMarkerRef AXTextMarkerCreate(CFAllocatorRef allocator,
 
 const UInt8* AXTextMarkerGetBytePtr(AXTextMarkerRef text_marker);
 
+size_t AXTextMarkerGetLength(AXTextMarkerRef text_marker);
+
 AXTextMarkerRangeRef AXTextMarkerRangeCreate(CFAllocatorRef allocator,
                                              AXTextMarkerRef start_marker,
                                              AXTextMarkerRef end_marker);
@@ -136,9 +138,10 @@ id CreateTextMarker(const BrowserAccessibility& object,
   DCHECK(manager);
   auto marker_data = AXPlatformPosition::CreateTextPosition(
       manager->ax_tree_id(), object.GetId(), offset, affinity);
-  return (id)base::mac::CFTypeRefToNSObjectAutorelease(AXTextMarkerCreate(
-      kCFAllocatorDefault, reinterpret_cast<const UInt8*>(marker_data),
-      sizeof(*marker_data)));
+  return (id)base::mac::CFTypeRefToNSObjectAutorelease(
+      AXTextMarkerCreate(kCFAllocatorDefault,
+                         reinterpret_cast<const UInt8*>(marker_data.release()),
+                         sizeof(AXPlatformPosition)));
 }
 
 id CreateTextMarkerRange(const BrowserAccessibility& start_object,
@@ -160,9 +163,17 @@ bool GetTextMarkerData(AXTextMarkerRef text_marker,
                        ui::AXTextAffinity* affinity) {
   DCHECK(text_marker);
   DCHECK(object && offset);
-  const auto* marker_data = reinterpret_cast<const AXPlatformPosition*>(
-      AXTextMarkerGetBytePtr(text_marker));
-  if (!marker_data)
+  if (AXTextMarkerGetLength(text_marker) != sizeof(AXPlatformPosition))
+    return false;
+  const UInt8* source_buffer = AXTextMarkerGetBytePtr(text_marker);
+  if (!source_buffer)
+    return false;
+  UInt8* destination_buffer = new UInt8[sizeof(AXPlatformPosition)];
+  std::memcpy(destination_buffer, source_buffer, sizeof(AXPlatformPosition));
+  AXPlatformPosition::AXPositionInstance marker_data(
+      reinterpret_cast<AXPlatformPosition::AXPositionInstance::pointer>(
+          destination_buffer));
+  if (marker_data->IsNullPosition())
     return false;
 
   *object = marker_data->GetAnchor();

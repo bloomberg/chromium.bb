@@ -7,6 +7,9 @@
 
 #include <stdint.h>
 
+#include <vector>
+
+#include "base/strings/string16.h"
 #include "content/browser/accessibility/ax_tree_id_registry.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "ui/accessibility/ax_position.h"
@@ -21,7 +24,12 @@ class AXPlatformPosition
   AXPlatformPosition();
   ~AXPlatformPosition() override;
 
+  AXPositionInstance Clone() const override;
+
+  base::string16 GetInnerText() const override;
+
  protected:
+  AXPlatformPosition(const AXPlatformPosition& other) = default;
   void AnchorChild(int child_index,
                    AXTreeID* tree_id,
                    int32_t* child_id) const override;
@@ -31,6 +39,11 @@ class AXPlatformPosition
   BrowserAccessibility* GetNodeInTree(AXTreeID tree_id,
                                       int32_t node_id) const override;
   int MaxTextOffset() const override;
+  bool IsInLineBreak() const override;
+  std::vector<int32_t> GetWordStartOffsets() const override;
+  std::vector<int32_t> GetWordEndOffsets() const override;
+  int32_t GetNextOnLineID(int32_t node_id) const override;
+  int32_t GetPreviousOnLineID(int32_t node_id) const override;
 };
 
 }  // namespace content

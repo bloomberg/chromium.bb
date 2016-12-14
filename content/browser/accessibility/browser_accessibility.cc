@@ -133,6 +133,12 @@ bool BrowserAccessibility::IsTextOnlyObject() const {
          GetRole() == ui::AX_ROLE_INLINE_TEXT_BOX;
 }
 
+bool BrowserAccessibility::IsLineBreakObject() const {
+  return GetRole() == ui::AX_ROLE_LINE_BREAK ||
+         (IsTextOnlyObject() && GetParent() &&
+          GetParent()->GetRole() == ui::AX_ROLE_LINE_BREAK);
+}
+
 BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
     uint32_t child_index) const {
   BrowserAccessibility* result = nullptr;
