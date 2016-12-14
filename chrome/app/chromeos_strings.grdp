@@ -806,6 +806,9 @@ Press any key to continue exploring.
   <message name="IDS_FILE_BROWSER_METADATA_BOX_EXIF_DEVICE_MODEL" desc="Label for the device model which created the image.">
     Device Model
   </message>
+  <message name="IDS_FILE_BROWSER_METADATA_BOX_EXIF_DEVICE_SETTINGS" desc="Label for the device settings (exif's F number, exposure time, focal length and ISO speed rating) metadata.">
+    Device Settings
+  </message>
   <message name="IDS_FILE_BROWSER_METADATA_BOX_EXIF_GEOGRAPHY" desc="Label for the latitude and the longitude where the image was taken.">
     Geography
   </message>
