@@ -520,6 +520,15 @@ ChromePermissionMessageRule::GetAllRules() {
 
       // Network-related permissions.
       {IDS_EXTENSION_PROMPT_WARNING_NETWORKING_PRIVATE,
+       {APIPermission::kNetworkingOnc},
+       // Adding networkingPrivate as an optional permission for this rule so
+       // the permission is removed from the available permission set when the
+       // next rule (for networkingPrivate permission) is considered - without
+       // this, IDS_EXTENSION_PROMPT_WARNING_NETWORK_PRIVATE would be duplicated
+       // for manifests that have both networking.onc and networkingPrivate
+       // permission.
+       {APIPermission::kNetworkingPrivate}},
+      {IDS_EXTENSION_PROMPT_WARNING_NETWORKING_PRIVATE,
        {APIPermission::kNetworkingPrivate},
        {}},
       {IDS_EXTENSION_PROMPT_WARNING_NETWORKING_CONFIG,

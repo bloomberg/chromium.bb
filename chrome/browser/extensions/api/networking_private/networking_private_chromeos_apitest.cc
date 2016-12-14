@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
@@ -167,10 +168,11 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
         service_test_(nullptr),
         device_test_(nullptr) {}
 
-  bool RunNetworkingSubtest(const std::string& subtest) {
-    return RunExtensionSubtest("networking_private/chromeos",
-                               "main.html?" + subtest,
-                               kFlagEnableFileAccess | kFlagLoadAsComponent);
+  bool RunNetworkingSubtest(const std::string& test) {
+    const std::string arg =
+        base::StringPrintf("{\"test\": \"%s\"}", test.c_str());
+    return RunPlatformAppTestWithArg("networking_private/chromeos",
+                                     arg.c_str());
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -711,6 +713,13 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, CellularSimPuk) {
   // Lock the SIM
   device_test_->SetSimLocked(kCellularDevicePath, true);
   EXPECT_TRUE(RunNetworkingSubtest("cellularSimPuk")) << message_;
+}
+
+// Tests subset of networking API for the networking API alias - to verify that
+// using API methods and event does not cause access exceptions (due to
+// missing permissions).
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, Alias) {
+  EXPECT_TRUE(RunPlatformAppTest("networking_private/alias")) << message_;
 }
 
 }  // namespace

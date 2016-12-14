@@ -19,6 +19,9 @@ const char kAllowUsbDevicesPermissionInterfaceClass[] =
 
 const char kSigninScreen[] = "signin_screen";
 
+const char kWhitelistedForNetworkingOncApi[] =
+    "whitelisted_for_networking_onc_api";
+
 }  // namespace behavior_feature
 
 }  // namespace extensions

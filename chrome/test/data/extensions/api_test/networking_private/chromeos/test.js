@@ -711,8 +711,7 @@ var availableTests = [
     var expectedStates = [ConnectionStateType.CONNECTED];
     var listener =
         new privateHelpers.watchForStateChanges(network, expectedStates, done);
-    chrome.networkingPrivate.startConnect(network,
-                                          networkCallbackPass());
+    chrome.networkingPrivate.startConnect(network, networkCallbackPass());
   },
   function onNetworksChangedEventDisconnect() {
     var network = 'stub_wifi1_guid';
@@ -720,8 +719,7 @@ var availableTests = [
     var expectedStates = [ConnectionStateType.NOT_CONNECTED];
     var listener =
         new privateHelpers.watchForStateChanges(network, expectedStates, done);
-    chrome.networkingPrivate.startDisconnect(network,
-                                             networkCallbackPass());
+    chrome.networkingPrivate.startDisconnect(network, networkCallbackPass());
   },
   function onNetworkListChangedEvent() {
     // Connecting to wifi2 should set wifi1 to offline. Connected or Connecting
@@ -737,8 +735,7 @@ var availableTests = [
     chrome.networkingPrivate.onNetworkListChanged.addListener(
       listener.listenForChanges);
     var network = 'stub_wifi2_guid';
-    chrome.networkingPrivate.startConnect(network,
-                                          networkCallbackPass());
+    chrome.networkingPrivate.startConnect(network, networkCallbackPass());
   },
   function onDeviceStateListChangedEvent() {
     var listener = callbackPass(function() {
@@ -879,7 +876,15 @@ var availableTests = [
   }
 ];
 
-var testToRun = window.location.search.substring(1);
-chrome.test.runTests(availableTests.filter(function(op) {
-  return op.name == testToRun;
-}));
+chrome.test.getConfig(function(config) {
+  var args = JSON.parse(config.customArg);
+  var tests = availableTests.filter(function(op) {
+    return args.test == op.name;
+  });
+  if (tests.length !== 1) {
+    chrome.test.notifyFail('Test not found ' + args.test);
+    return;
+  }
+
+  chrome.test.runTests(tests);
+});
