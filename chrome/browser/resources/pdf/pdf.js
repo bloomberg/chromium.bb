@@ -246,10 +246,10 @@ function PDFViewer(browserApi) {
   document.addEventListener('mousemove', this.handleMouseEvent_.bind(this));
   document.addEventListener('mouseout', this.handleMouseEvent_.bind(this));
 
-  var isInTab = this.browserApi_.getStreamInfo().tabId != -1;
+  var tabId = this.browserApi_.getStreamInfo().tabId;
   this.navigator_ = new Navigator(
       this.originalUrl_, this.viewport_, this.paramsParser_,
-      new NavigatorDelegate(isInTab));
+      new NavigatorDelegate(tabId));
   this.viewportScroller_ =
       new ViewportScroller(this.viewport_, this.plugin_, window);
 

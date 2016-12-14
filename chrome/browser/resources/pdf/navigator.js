@@ -7,10 +7,11 @@
 /**
  * Creates a new NavigatorDelegate for calling browser-specific functions to
  * do the actual navigating.
- * @param {boolean} isInTab Indicates if the PDF viewer is displayed in a tab.
+ * @param {number} tabId The tab ID of the PDF viewer or -1 if the viewer is
+ *    not displayed in a tab.
  */
-function NavigatorDelegate(isInTab) {
-  this.isInTab_ = isInTab;
+function NavigatorDelegate(tabId) {
+  this.tabId_ = tabId;
 }
 
 /**
@@ -38,8 +39,8 @@ NavigatorDelegate.prototype = {
   navigateInCurrentTab: function(url) {
     // When the PDFviewer is inside a browser tab, prefer the tabs API because
     // it can navigate from one file:// URL to another.
-    if (chrome.tabs && this.isInTab_)
-      chrome.tabs.update({url: url});
+    if (chrome.tabs && this.tabId_ != -1)
+      chrome.tabs.update(this.tabId_, {url: url});
     else
       window.location.href = url;
   },

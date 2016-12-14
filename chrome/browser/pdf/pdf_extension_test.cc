@@ -905,3 +905,30 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkShiftLeftClick) {
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, RedirectsFailInPlugin) {
   RunTestsInFile("redirects_fail_test.js", "test.pdf");
 }
+
+// Test that even if a different tab is selected when a navigation occurs,
+// the correct tab still gets navigated (see crbug.com/672563).
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, NavigationOnCorrectTab) {
+  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
+  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL("about:blank"),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
+          ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_NE(web_contents, active_web_contents);
+
+  ASSERT_TRUE(content::ExecuteScript(
+      guest_contents,
+      "viewer.navigator_.navigate("
+      "    'www.example.com', Navigator.WindowOpenDisposition.CURRENT_TAB);"));
+
+  EXPECT_TRUE(web_contents->GetController().GetPendingEntry());
+  EXPECT_FALSE(active_web_contents->GetController().GetPendingEntry());
+}
