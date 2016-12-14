@@ -32,6 +32,7 @@
 #include "ui/compositor/paint_context.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -183,12 +184,9 @@ std::unique_ptr<Layer> Layer::Clone() const {
   // cc::Layer state.
   if (surface_layer_ && surface_layer_->surface_id().is_valid()) {
     clone->SetShowSurface(
-        surface_layer_->surface_id(),
-        surface_layer_->satisfy_callback(),
-        surface_layer_->require_callback(),
-        surface_layer_->surface_size(),
-        surface_layer_->surface_scale(),
-        frame_size_in_dip_);
+        surface_layer_->surface_id(), surface_layer_->satisfy_callback(),
+        surface_layer_->require_callback(), surface_layer_->surface_size(),
+        surface_layer_->surface_scale());
   } else if (type_ == LAYER_SOLID_COLOR) {
     clone->SetColor(GetTargetColor());
   }
@@ -661,24 +659,23 @@ void Layer::SetShowSurface(
     const cc::SurfaceId& surface_id,
     const cc::SurfaceLayer::SatisfyCallback& satisfy_callback,
     const cc::SurfaceLayer::RequireCallback& require_callback,
-    gfx::Size surface_size,
-    float scale,
-    gfx::Size frame_size_in_dip) {
+    const gfx::Size& surface_size_in_pixels,
+    float scale) {
   DCHECK(type_ == LAYER_TEXTURED || type_ == LAYER_SOLID_COLOR);
 
   scoped_refptr<cc::SurfaceLayer> new_layer =
       cc::SurfaceLayer::Create(satisfy_callback, require_callback);
-  new_layer->SetSurfaceId(surface_id, scale, surface_size);
+  new_layer->SetSurfaceId(surface_id, scale, surface_size_in_pixels);
   SwitchToLayer(new_layer);
   surface_layer_ = new_layer;
 
-  frame_size_in_dip_ = frame_size_in_dip;
+  frame_size_in_dip_ = gfx::ConvertSizeToDIP(scale, surface_size_in_pixels);
   RecomputeDrawsContentAndUVRect();
 
   for (const auto& mirror : mirrors_) {
-    mirror->dest()->SetShowSurface(
-        surface_id, satisfy_callback, require_callback,
-        surface_size, scale, frame_size_in_dip);
+    mirror->dest()->SetShowSurface(surface_id, satisfy_callback,
+                                   require_callback, surface_size_in_pixels,
+                                   scale);
   }
 }
 

@@ -296,9 +296,8 @@ class COMPOSITOR_EXPORT Layer
   void SetShowSurface(const cc::SurfaceId& surface_id,
                       const cc::SurfaceLayer::SatisfyCallback& satisfy_callback,
                       const cc::SurfaceLayer::RequireCallback& require_callback,
-                      gfx::Size surface_size,
-                      float scale,
-                      gfx::Size frame_size_in_dip);
+                      const gfx::Size& surface_size_in_pixels,
+                      float scale);
 
   bool has_external_content() {
     return texture_layer_.get() || surface_layer_.get();
@@ -386,6 +385,10 @@ class COMPOSITOR_EXPORT Layer
 
   const cc::Region& damaged_region_for_testing() const {
     return damaged_region_;
+  }
+
+  const gfx::Size& frame_size_in_dip_for_testing() const {
+    return frame_size_in_dip_;
   }
 
  private:

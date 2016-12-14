@@ -1840,7 +1840,7 @@ TEST_F(LayerWithDelegateTest, ExternalContent) {
   before = child->cc_layer_for_testing();
   child->SetShowSurface(cc::SurfaceId(), base::Bind(&FakeSatisfyCallback),
                         base::Bind(&FakeRequireCallback), gfx::Size(10, 10),
-                        1.0, gfx::Size(10, 10));
+                        1.0);
   EXPECT_TRUE(child->cc_layer_for_testing());
   EXPECT_NE(before.get(), child->cc_layer_for_testing());
 
@@ -1861,7 +1861,7 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
       cc::FrameSinkId(0, 1),
       cc::LocalFrameId(2, base::UnguessableToken::Create()));
   layer->SetShowSurface(surface_id, satisfy_callback, require_callback,
-                        gfx::Size(10, 10), 1.0f, gfx::Size(10, 10));
+                        gfx::Size(10, 10), 1.0f);
 
   const auto mirror = layer->Mirror();
   auto* const cc_layer = mirror->cc_layer_for_testing();
@@ -1878,7 +1878,7 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
       cc::SurfaceId(cc::FrameSinkId(1, 2),
                     cc::LocalFrameId(3, base::UnguessableToken::Create()));
   layer->SetShowSurface(surface_id, satisfy_callback, require_callback,
-                        gfx::Size(20, 20), 2.0f, gfx::Size(20, 20));
+                        gfx::Size(20, 20), 2.0f);
 
   // A new cc::Layer should be created for the mirror.
   EXPECT_NE(cc_layer, mirror->cc_layer_for_testing());
@@ -1888,6 +1888,23 @@ TEST_F(LayerWithDelegateTest, ExternalContentMirroring) {
   EXPECT_EQ(surface_id, surface->surface_id());
   EXPECT_EQ(gfx::Size(20, 20), surface->surface_size());
   EXPECT_EQ(2.0f, surface->surface_scale());
+}
+
+// Test if frame size in dip is properly calculated in SetShowSurface
+TEST_F(LayerWithDelegateTest, FrameSizeInDip) {
+  std::unique_ptr<Layer> layer(CreateLayer(LAYER_SOLID_COLOR));
+
+  const auto satisfy_callback = base::Bind(&FakeSatisfyCallback);
+  const auto require_callback = base::Bind(&FakeRequireCallback);
+
+  cc::SurfaceId surface_id(
+      cc::FrameSinkId(0, 1),
+      cc::LocalFrameId(2, base::UnguessableToken::Create()));
+
+  layer->SetShowSurface(surface_id, satisfy_callback, require_callback,
+                        gfx::Size(30, 40), 2.0f);
+
+  EXPECT_EQ(layer->frame_size_in_dip_for_testing(), gfx::Size(15, 20));
 }
 
 // Verifies that layer filters still attached after changing implementation
@@ -1906,7 +1923,7 @@ TEST_F(LayerWithDelegateTest, LayerFiltersSurvival) {
   scoped_refptr<cc::Layer> before = layer->cc_layer_for_testing();
   layer->SetShowSurface(cc::SurfaceId(), base::Bind(&FakeSatisfyCallback),
                         base::Bind(&FakeRequireCallback), gfx::Size(10, 10),
-                        1.0, gfx::Size(10, 10));
+                        1.0);
   EXPECT_EQ(layer->layer_grayscale(), 0.5f);
   EXPECT_TRUE(layer->cc_layer_for_testing());
   EXPECT_NE(before.get(), layer->cc_layer_for_testing());
@@ -2229,7 +2246,7 @@ TEST(LayerDelegateTest, DelegatedFrameDamage) {
   layer->set_delegate(&delegate);
   layer->SetShowSurface(cc::SurfaceId(), base::Bind(&FakeSatisfyCallback),
                         base::Bind(&FakeRequireCallback), gfx::Size(10, 10),
-                        1.0, gfx::Size(10, 10));
+                        1.0);
 
   EXPECT_FALSE(delegate.delegated_frame_damage_called());
   layer->OnDelegatedFrameDamage(damage_rect);

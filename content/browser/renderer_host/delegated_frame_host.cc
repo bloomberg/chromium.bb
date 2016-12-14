@@ -515,7 +515,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
           cc::SurfaceId(frame_sink_id_, local_frame_id_),
           base::Bind(&SatisfyCallback, base::Unretained(manager)),
           base::Bind(&RequireCallback, base::Unretained(manager)), frame_size,
-          frame_device_scale_factor, frame_size_in_dip);
+          frame_device_scale_factor);
       current_surface_size_ = frame_size;
       current_scale_factor_ = frame_device_scale_factor;
     }

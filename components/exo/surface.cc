@@ -428,7 +428,7 @@ void Surface::CommitSurfaceHierarchy() {
                    compositor_frame_sink_holder_),
         base::Bind(&CompositorFrameSinkHolder::Require,
                    compositor_frame_sink_holder_),
-        content_size_, contents_surface_to_layer_scale, content_size_);
+        content_size_, contents_surface_to_layer_scale);
     window_->layer()->SetFillsBoundsOpaquely(
         state_.blend_mode == SkBlendMode::kSrc ||
         state_.opaque_region.contains(
