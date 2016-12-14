@@ -122,7 +122,7 @@ const Ht4x8Param kArrayHt4x8Param_sse2[] = {
   make_tuple(&av1_fht4x8_sse2, &av1_iht4x8_32_add_sse2, 15, AOM_BITS_8, 32)
 #endif  // CONFIG_EXT_TX
 };
-INSTANTIATE_TEST_CASE_P(DISABLED_SSE2, AV1Trans4x8HT,
+INSTANTIATE_TEST_CASE_P(SSE2, AV1Trans4x8HT,
                         ::testing::ValuesIn(kArrayHt4x8Param_sse2));
 #endif  // HAVE_SSE2
 
