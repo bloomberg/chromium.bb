@@ -33,6 +33,7 @@ struct ANativeWindow;
 
 namespace cc {
 class AnimationHost;
+class BeginFrameSource;
 class Display;
 class Layer;
 class LayerTreeHost;
@@ -151,6 +152,7 @@ class CONTENT_EXPORT CompositorImpl
   std::unique_ptr<cc::LayerTreeHost> host_;
   ui::ResourceManagerImpl resource_manager_;
 
+  std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
   std::unique_ptr<cc::Display> display_;
 
   gfx::Size size_;

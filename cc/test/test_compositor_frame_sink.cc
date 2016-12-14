@@ -68,29 +68,28 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
   bool display_context_shared_with_compositor =
       display_output_surface->context_provider() == context_provider();
 
-  std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source;
   std::unique_ptr<DisplayScheduler> scheduler;
   if (!synchronous_composite_) {
     if (renderer_settings_.disable_display_vsync) {
-      begin_frame_source.reset(new BackToBackBeginFrameSource(
+      begin_frame_source_.reset(new BackToBackBeginFrameSource(
           base::MakeUnique<DelayBasedTimeSource>(task_runner_.get())));
     } else {
-      begin_frame_source.reset(new DelayBasedBeginFrameSource(
+      begin_frame_source_.reset(new DelayBasedBeginFrameSource(
           base::MakeUnique<DelayBasedTimeSource>(task_runner_.get())));
-      begin_frame_source->SetAuthoritativeVSyncInterval(
+      begin_frame_source_->SetAuthoritativeVSyncInterval(
           base::TimeDelta::FromMilliseconds(1000.f /
                                             renderer_settings_.refresh_rate));
     }
     scheduler.reset(new DisplayScheduler(
-        begin_frame_source.get(), task_runner_.get(),
+        task_runner_.get(),
         display_output_surface->capabilities().max_frames_pending));
   }
 
-  display_.reset(new Display(
-      shared_bitmap_manager(), gpu_memory_buffer_manager(), renderer_settings_,
-      frame_sink_id_, std::move(begin_frame_source),
-      std::move(display_output_surface), std::move(scheduler),
-      base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));
+  display_.reset(
+      new Display(shared_bitmap_manager(), gpu_memory_buffer_manager(),
+                  renderer_settings_, frame_sink_id_, begin_frame_source_.get(),
+                  std::move(display_output_surface), std::move(scheduler),
+                  base::MakeUnique<TextureMailboxDeleter>(task_runner_.get())));
 
   // We want the Display's OutputSurface to hear about lost context, and when
   // this shares a context with it we should not be listening for lost context

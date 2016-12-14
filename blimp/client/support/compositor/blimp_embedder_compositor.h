@@ -16,6 +16,7 @@
 
 namespace cc {
 class AnimationHost;
+class BeginFrameSource;
 class ContextProvider;
 class Display;
 class LayerTreeHost;
@@ -82,6 +83,7 @@ class BlimpEmbedderCompositor : public cc::LayerTreeHostClient,
   scoped_refptr<cc::ContextProvider> context_provider_;
 
   bool compositor_frame_sink_request_pending_;
+  std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
   std::unique_ptr<cc::Display> display_;
 
   gfx::Size viewport_size_in_px_;

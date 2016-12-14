@@ -12,6 +12,7 @@ GpuCompositorFrameSink::GpuCompositorFrameSink(
     DisplayCompositor* display_compositor,
     const cc::FrameSinkId& frame_sink_id,
     std::unique_ptr<cc::Display> display,
+    std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client)
@@ -19,7 +20,8 @@ GpuCompositorFrameSink::GpuCompositorFrameSink(
       support_(this,
                display_compositor->manager(),
                frame_sink_id,
-               std::move(display)),
+               std::move(display),
+               std::move(begin_frame_source)),
       client_(std::move(client)),
       binding_(this, std::move(request)),
       private_binding_(this, std::move(private_request)) {

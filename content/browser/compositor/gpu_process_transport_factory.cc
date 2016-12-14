@@ -165,7 +165,7 @@ namespace content {
 struct GpuProcessTransportFactory::PerCompositorData {
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
   BrowserCompositorOutputSurface* display_output_surface = nullptr;
-  cc::SyntheticBeginFrameSource* begin_frame_source = nullptr;
+  std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source;
   ReflectorImpl* reflector = nullptr;
   std::unique_ptr<cc::Display> display;
   bool output_is_secure = false;
@@ -292,10 +292,10 @@ void GpuProcessTransportFactory::CreateCompositorFrameSink(
   if (!data) {
     data = CreatePerCompositorData(compositor.get());
   } else {
-    // TODO(danakj): We can destroy the |data->display| here when the compositor
-    // destroys its CompositorFrameSink before calling back here.
+    // TODO(danakj): We can destroy the |data->display| and
+    // |data->begin_frame_source| here when the compositor destroys its
+    // CompositorFrameSink before calling back here.
     data->display_output_surface = nullptr;
-    data->begin_frame_source = nullptr;
   }
 
 #if defined(OS_WIN)
@@ -546,7 +546,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   }
 
   data->display_output_surface = display_output_surface.get();
-  data->begin_frame_source = begin_frame_source.get();
   if (data->reflector)
     data->reflector->OnSourceSurfaceReady(data->display_output_surface);
 
@@ -556,16 +555,19 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 #endif
 
   std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
-      begin_frame_source.get(), compositor->task_runner().get(),
+      compositor->task_runner().get(),
       display_output_surface->capabilities().max_frames_pending));
 
   // The Display owns and uses the |display_output_surface| created above.
   data->display = base::MakeUnique<cc::Display>(
       HostSharedBitmapManager::current(), GetGpuMemoryBufferManager(),
       compositor->GetRendererSettings(), compositor->frame_sink_id(),
-      std::move(begin_frame_source), std::move(display_output_surface),
+      begin_frame_source.get(), std::move(display_output_surface),
       std::move(scheduler), base::MakeUnique<cc::TextureMailboxDeleter>(
                                 compositor->task_runner().get()));
+  // Note that we are careful not to destroy a prior |data->begin_frame_source|
+  // until we have reset |data->display|.
+  data->begin_frame_source = std::move(begin_frame_source);
 
   // The |delegated_output_surface| is given back to the compositor, it
   // delegates to the Display as its root surface. Importantly, it shares the

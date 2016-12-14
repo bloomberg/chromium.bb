@@ -31,7 +31,7 @@ CompositorFrameSink::CompositorFrameSink(
     const cc::FrameSinkId& frame_sink_id,
     cc::SurfaceManager* surface_manager,
     cc::mojom::MojoCompositorFrameSinkClientPtr client)
-    : support_(this, surface_manager, frame_sink_id, nullptr),
+    : support_(this, surface_manager, frame_sink_id, nullptr, nullptr),
       client_(std::move(client)) {}
 
 CompositorFrameSink::~CompositorFrameSink() {}

@@ -45,8 +45,10 @@ class TestDisplayScheduler : public DisplayScheduler {
   TestDisplayScheduler(BeginFrameSource* begin_frame_source,
                        base::SingleThreadTaskRunner* task_runner,
                        int max_pending_swaps)
-      : DisplayScheduler(begin_frame_source, task_runner, max_pending_swaps),
-        scheduler_begin_frame_deadline_count_(0) {}
+      : DisplayScheduler(task_runner, max_pending_swaps),
+        scheduler_begin_frame_deadline_count_(0) {
+    SetBeginFrameSource(begin_frame_source);
+  }
 
   base::TimeTicks DesiredBeginFrameDeadlineTimeForTest() {
     return DesiredBeginFrameDeadlineTime();

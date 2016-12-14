@@ -119,6 +119,7 @@ class DirectOutputSurface : public cc::OutputSurface {
 
 struct InProcessContextFactory::PerCompositorData {
   gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
+  std::unique_ptr<cc::BeginFrameSource> begin_frame_source;
   std::unique_ptr<cc::Display> display;
 };
 
@@ -200,15 +201,18 @@ void InProcessContextFactory::CreateCompositorFrameSink(
           base::MakeUnique<cc::DelayBasedTimeSource>(
               compositor->task_runner().get())));
   std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
-      begin_frame_source.get(), compositor->task_runner().get(),
+      compositor->task_runner().get(),
       display_output_surface->capabilities().max_frames_pending));
 
   data->display = base::MakeUnique<cc::Display>(
       &shared_bitmap_manager_, &gpu_memory_buffer_manager_,
       compositor->GetRendererSettings(), compositor->frame_sink_id(),
-      std::move(begin_frame_source), std::move(display_output_surface),
+      begin_frame_source.get(), std::move(display_output_surface),
       std::move(scheduler), base::MakeUnique<cc::TextureMailboxDeleter>(
                                 compositor->task_runner().get()));
+  // Note that we are careful not to destroy a prior |data->begin_frame_source|
+  // until we have reset |data->display|.
+  data->begin_frame_source = std::move(begin_frame_source);
 
   auto* display = per_compositor_data_[compositor.get()]->display.get();
   auto compositor_frame_sink = base::MakeUnique<cc::DirectCompositorFrameSink>(

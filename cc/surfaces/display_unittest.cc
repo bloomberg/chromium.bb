@@ -61,9 +61,8 @@ class TestSoftwareOutputDevice : public SoftwareOutputDevice {
 
 class TestDisplayScheduler : public DisplayScheduler {
  public:
-  TestDisplayScheduler(BeginFrameSource* begin_frame_source,
-                       base::SingleThreadTaskRunner* task_runner)
-      : DisplayScheduler(begin_frame_source, task_runner, 1),
+  explicit TestDisplayScheduler(base::SingleThreadTaskRunner* task_runner)
+      : DisplayScheduler(task_runner, 1),
         damaged(false),
         display_resized_(false),
         has_new_root_surface(false),
@@ -111,8 +110,7 @@ class DisplayTest : public testing::Test {
 
   void SetUpDisplay(const RendererSettings& settings,
                     std::unique_ptr<TestWebGraphicsContext3D> context) {
-    std::unique_ptr<BeginFrameSource> begin_frame_source(
-        new StubBeginFrameSource);
+    begin_frame_source_.reset(new StubBeginFrameSource);
 
     std::unique_ptr<FakeOutputSurface> output_surface;
     if (context) {
@@ -128,12 +126,12 @@ class DisplayTest : public testing::Test {
     output_surface_ = output_surface.get();
 
     std::unique_ptr<TestDisplayScheduler> scheduler(
-        new TestDisplayScheduler(begin_frame_source.get(), task_runner_.get()));
+        new TestDisplayScheduler(task_runner_.get()));
     scheduler_ = scheduler.get();
 
     display_ = base::MakeUnique<Display>(
         &shared_bitmap_manager_, nullptr /* gpu_memory_buffer_manager */,
-        settings, kArbitraryFrameSinkId, std::move(begin_frame_source),
+        settings, kArbitraryFrameSinkId, begin_frame_source_.get(),
         std::move(output_surface), std::move(scheduler),
         base::MakeUnique<TextureMailboxDeleter>(task_runner_.get()));
     display_->SetVisible(true);
@@ -155,6 +153,7 @@ class DisplayTest : public testing::Test {
   SurfaceIdAllocator id_allocator_;
   scoped_refptr<base::NullTaskRunner> task_runner_;
   TestSharedBitmapManager shared_bitmap_manager_;
+  std::unique_ptr<BeginFrameSource> begin_frame_source_;
   std::unique_ptr<Display> display_;
   TestSoftwareOutputDevice* software_output_device_ = nullptr;
   FakeOutputSurface* output_surface_ = nullptr;

@@ -726,17 +726,15 @@ void CompositorImpl::InitializeDisplay(
   cc::SurfaceManager* manager =
       ui::ContextProviderFactory::GetInstance()->GetSurfaceManager();
   auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
-  std::unique_ptr<ExternalBeginFrameSource> begin_frame_source(
-      new ExternalBeginFrameSource(this));
+  begin_frame_source_.reset(new ExternalBeginFrameSource(this));
   std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
-      begin_frame_source.get(), task_runner,
-      display_output_surface->capabilities().max_frames_pending));
+      task_runner, display_output_surface->capabilities().max_frames_pending));
 
   display_.reset(new cc::Display(
       HostSharedBitmapManager::current(),
       BrowserGpuMemoryBufferManager::current(),
       host_->GetSettings().renderer_settings, frame_sink_id_,
-      std::move(begin_frame_source), std::move(display_output_surface),
+      begin_frame_source_.get(), std::move(display_output_surface),
       std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner)));
 

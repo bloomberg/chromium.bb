@@ -34,7 +34,7 @@ Display::Display(SharedBitmapManager* bitmap_manager,
                  gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                  const RendererSettings& settings,
                  const FrameSinkId& frame_sink_id,
-                 std::unique_ptr<BeginFrameSource> begin_frame_source,
+                 BeginFrameSource* begin_frame_source,
                  std::unique_ptr<OutputSurface> output_surface,
                  std::unique_ptr<DisplayScheduler> scheduler,
                  std::unique_ptr<TextureMailboxDeleter> texture_mailbox_deleter)
@@ -42,15 +42,17 @@ Display::Display(SharedBitmapManager* bitmap_manager,
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       settings_(settings),
       frame_sink_id_(frame_sink_id),
-      begin_frame_source_(std::move(begin_frame_source)),
+      begin_frame_source_(begin_frame_source),
       output_surface_(std::move(output_surface)),
       scheduler_(std::move(scheduler)),
       texture_mailbox_deleter_(std::move(texture_mailbox_deleter)) {
   DCHECK(output_surface_);
   DCHECK_EQ(!scheduler_, !begin_frame_source_);
   DCHECK(frame_sink_id_.is_valid());
-  if (scheduler_)
+  if (scheduler_) {
     scheduler_->SetClient(this);
+    scheduler_->SetBeginFrameSource(begin_frame_source);
+  }
 }
 
 Display::~Display() {
@@ -59,7 +61,7 @@ Display::~Display() {
     if (auto* context = output_surface_->context_provider())
       context->SetLostContextCallback(base::Closure());
     if (begin_frame_source_)
-      surface_manager_->UnregisterBeginFrameSource(begin_frame_source_.get());
+      surface_manager_->UnregisterBeginFrameSource(begin_frame_source_);
     surface_manager_->RemoveObserver(this);
   }
   if (aggregator_) {
@@ -83,7 +85,7 @@ void Display::Initialize(DisplayClient* client,
   // This must be done in Initialize() so that the caller can delay this until
   // they are ready to receive a BeginFrameSource.
   if (begin_frame_source_) {
-    surface_manager_->RegisterBeginFrameSource(begin_frame_source_.get(),
+    surface_manager_->RegisterBeginFrameSource(begin_frame_source_,
                                                frame_sink_id_);
   }
 

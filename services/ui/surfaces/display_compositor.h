@@ -33,6 +33,7 @@ class ImageFactory;
 namespace cc {
 class Display;
 class SurfaceManager;
+class SyntheticBeginFrameSource;
 }
 
 namespace ui {
@@ -97,7 +98,8 @@ class DisplayCompositor : public cc::SurfaceObserver,
 
   std::unique_ptr<cc::Display> CreateDisplay(
       const cc::FrameSinkId& frame_sink_id,
-      gpu::SurfaceHandle surface_handle);
+      gpu::SurfaceHandle surface_handle,
+      cc::SyntheticBeginFrameSource* begin_frame_source);
 
   const cc::SurfaceId& GetRootSurfaceId() const;
 

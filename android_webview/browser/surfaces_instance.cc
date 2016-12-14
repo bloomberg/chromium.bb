@@ -55,8 +55,7 @@ SurfacesInstance::SurfacesInstance()
   surface_factory_.reset(
       new cc::SurfaceFactory(frame_sink_id_, surface_manager_.get(), this));
 
-  std::unique_ptr<cc::BeginFrameSource> begin_frame_source(
-      new cc::StubBeginFrameSource);
+  begin_frame_source_.reset(new cc::StubBeginFrameSource);
   std::unique_ptr<cc::TextureMailboxDeleter> texture_mailbox_deleter(
       new cc::TextureMailboxDeleter(nullptr));
   std::unique_ptr<ParentOutputSurface> output_surface_holder(
@@ -65,12 +64,11 @@ SurfacesInstance::SurfacesInstance()
           DeferredGpuCommandService::GetInstance())));
   output_surface_ = output_surface_holder.get();
   std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
-      begin_frame_source.get(), nullptr,
-      output_surface_holder->capabilities().max_frames_pending));
+      nullptr, output_surface_holder->capabilities().max_frames_pending));
   display_.reset(new cc::Display(
       nullptr /* shared_bitmap_manager */,
       nullptr /* gpu_memory_buffer_manager */, settings, frame_sink_id_,
-      std::move(begin_frame_source), std::move(output_surface_holder),
+      begin_frame_source_.get(), std::move(output_surface_holder),
       std::move(scheduler), std::move(texture_mailbox_deleter)));
   display_->Initialize(this, surface_manager_.get());
   display_->SetVisible(true);

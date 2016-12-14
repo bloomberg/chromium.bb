@@ -33,6 +33,7 @@ class GpuCompositorFrameSink
       DisplayCompositor* display_compositor,
       const cc::FrameSinkId& frame_sink_id,
       std::unique_ptr<cc::Display> display,
+      std::unique_ptr<cc::BeginFrameSource> begin_frame_source,
       cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);

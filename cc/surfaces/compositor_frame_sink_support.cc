@@ -17,10 +17,12 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
     CompositorFrameSinkSupportClient* client,
     SurfaceManager* surface_manager,
     const FrameSinkId& frame_sink_id,
-    std::unique_ptr<Display> display)
+    std::unique_ptr<Display> display,
+    std::unique_ptr<BeginFrameSource> display_begin_frame_source)
     : client_(client),
       surface_manager_(surface_manager),
       frame_sink_id_(frame_sink_id),
+      display_begin_frame_source_(std::move(display_begin_frame_source)),
       display_(std::move(display)),
       surface_factory_(frame_sink_id_, surface_manager_, this),
       weak_factory_(this) {

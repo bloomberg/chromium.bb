@@ -26,10 +26,12 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
       public SurfaceFactoryClient,
       public BeginFrameObserver {
  public:
-  CompositorFrameSinkSupport(CompositorFrameSinkSupportClient* client,
-                             SurfaceManager* surface_manager,
-                             const FrameSinkId& frame_sink_id,
-                             std::unique_ptr<Display> display);
+  CompositorFrameSinkSupport(
+      CompositorFrameSinkSupportClient* client,
+      SurfaceManager* surface_manager,
+      const FrameSinkId& frame_sink_id,
+      std::unique_ptr<Display> display,
+      std::unique_ptr<BeginFrameSource> display_begin_frame_source);
 
   ~CompositorFrameSinkSupport() override;
 
@@ -73,9 +75,10 @@ class CC_SURFACES_EXPORT CompositorFrameSinkSupport
 
   const FrameSinkId frame_sink_id_;
 
-  // GpuCompositorFrameSink holds a Display if it created with
-  // non-null gpu::SurfaceHandle. In the window server, the display root
-  // window's CompositorFrameSink will have a valid gpu::SurfaceHandle.
+  // GpuCompositorFrameSink holds a Display and its BeginFrameSource if it
+  // created with non-null gpu::SurfaceHandle. In the window server, the display
+  // root window's CompositorFrameSink will have a valid gpu::SurfaceHandle.
+  std::unique_ptr<BeginFrameSource> display_begin_frame_source_;
   std::unique_ptr<Display> display_;
 
   LocalFrameId local_frame_id_;

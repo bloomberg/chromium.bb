@@ -209,17 +209,16 @@ void BlimpEmbedderCompositor::HandlePendingCompositorFrameSinkRequest() {
   auto display_output_surface =
       base::MakeUnique<DisplayOutputSurface>(context_provider_, task_runner);
 
-  std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source(
-      new cc::DelayBasedBeginFrameSource(
-          base::MakeUnique<cc::DelayBasedTimeSource>(task_runner.get())));
+  begin_frame_source_.reset(new cc::DelayBasedBeginFrameSource(
+      base::MakeUnique<cc::DelayBasedTimeSource>(task_runner.get())));
   std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
-      begin_frame_source.get(), task_runner.get(),
+      task_runner.get(),
       display_output_surface->capabilities().max_frames_pending));
 
   display_ = base::MakeUnique<cc::Display>(
       shared_bitmap_manager, gpu_memory_buffer_manager,
       host_->GetSettings().renderer_settings, frame_sink_id_,
-      std::move(begin_frame_source), std::move(display_output_surface),
+      begin_frame_source_.get(), std::move(display_output_surface),
       std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner.get()));
   display_->SetVisible(true);
