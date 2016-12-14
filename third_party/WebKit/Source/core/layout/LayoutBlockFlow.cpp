@@ -408,22 +408,23 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren) {
   relayoutChildren |= logicalWidthChanged;
 
   TextAutosizer::LayoutScope textAutosizerLayoutScope(this, &layoutScope);
-  LayoutState state(*this, logicalWidthChanged);
 
-  if (m_paginationStateChanged) {
-    // We now need a deep layout to clean up struts after pagination, if we
-    // just ceased to be paginated, or, if we just became paginated on the
-    // other hand, we now need the deep layout, to insert pagination struts.
-    m_paginationStateChanged = false;
-    state.setPaginationStateChanged();
-  }
-
+  bool paginationStateChanged = m_paginationStateChanged;
   bool preferredLogicalWidthsWereDirty = preferredLogicalWidthsDirty();
 
   // Multiple passes might be required for column based layout.
   // The number of passes could be as high as the number of columns.
   LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread();
   do {
+    LayoutState state(*this, logicalWidthChanged);
+    if (m_paginationStateChanged) {
+      // We now need a deep layout to clean up struts after pagination, if we
+      // just ceased to be paginated, or, if we just became paginated on the
+      // other hand, we now need the deep layout, to insert pagination struts.
+      m_paginationStateChanged = false;
+      state.setPaginationStateChanged();
+    }
+
     layoutChildren(relayoutChildren, layoutScope);
 
     if (!preferredLogicalWidthsWereDirty && preferredLogicalWidthsDirty()) {
@@ -447,6 +448,13 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren) {
     }
     break;
   } while (true);
+
+  LayoutState state(*this, logicalWidthChanged);
+  if (paginationStateChanged) {
+    // We still haven't laid out positioned descendants, and we need to perform
+    // a deep layout on those too if pagination state changed.
+    state.setPaginationStateChanged();
+  }
 
   // Remember the automatic logical height we got from laying out the children.
   LayoutUnit unconstrainedHeight = logicalHeight();
