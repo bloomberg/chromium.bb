@@ -17,6 +17,8 @@ ROOT_DIR = os.path.abspath(os.path.join(THIS_DIR, '..', '..'))
 
 DEVNULL = open(os.devnull, 'w')
 
+BAT_EXT = '.bat' if sys.platform.startswith('win') else ''
+
 
 def _check_call(argv, **kwargs):
   """Wrapper for subprocess.check_call that adds logging."""
@@ -41,17 +43,6 @@ def clean_up_old_git_installations(git_directory):
     if full_entry != git_directory:
       logging.info('Cleaning up old git installation %r', entry)
       shutil.rmtree(full_entry, ignore_errors=True)
-
-
-def bootstrap_cipd(cipd_directory, cipd_platform):
-  """Bootstraps CIPD client into |cipd_directory|."""
-  _check_call([
-      sys.executable,
-      os.path.join(ROOT_DIR, 'recipe_modules', 'cipd', 'resources',
-                   'bootstrap.py'),
-      '--platform', cipd_platform,
-      '--dest-directory', cipd_directory
-  ])
 
 
 def cipd_install(args, dest_directory, package, version):
@@ -104,9 +95,6 @@ def need_to_install_git(args, git_directory):
 def install_git(args, git_version, git_directory):
   """Installs |git_version| into |git_directory|."""
   cipd_platform = 'windows-%s' % ('amd64' if args.bits == 64 else '386')
-  if not args.cipd_client:
-    bootstrap_cipd(ROOT_DIR, cipd_platform)
-    args.cipd_client = os.path.join(ROOT_DIR, 'cipd')
   temp_dir = tempfile.mkdtemp()
   try:
     cipd_install(args,
@@ -172,7 +160,9 @@ def main(argv):
   parser = argparse.ArgumentParser()
   parser.add_argument('--bits', type=int, choices=(32,64), default=64,
                       help='Bitness of the client to install.')
-  parser.add_argument('--cipd-client', help='Path to CIPD client binary.')
+  parser.add_argument('--cipd-client',
+                      help='Path to CIPD client binary. default: %(default)s',
+                      default=os.path.join(ROOT_DIR, 'cipd'+BAT_EXT))
   parser.add_argument('--cipd-cache-directory',
                       help='Path to CIPD cache directory.')
   parser.add_argument('--force', action='store_true',
