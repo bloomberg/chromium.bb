@@ -94,8 +94,9 @@ namespace blink {
 //
 //
 // In order to implement the above exceptions, we have template classes below.
-// OnSuccess and OnError provide onSuccess and onError implementation, and there
-// are utility templates that provide the trivial WebType holder.
+// OnSuccessAdapter and OnErrorAdapter provide onSuccess and onError
+// implementation, and there are utility templates that provide the trivial
+// WebType holder.
 
 namespace internal {
 
@@ -133,9 +134,9 @@ class CallbackPromiseAdapterInternal {
   };
 
   template <typename S, typename T>
-  class OnSuccess : public Base<S, T> {
+  class OnSuccessAdapter : public Base<S, T> {
    public:
-    explicit OnSuccess(ScriptPromiseResolver* resolver)
+    explicit OnSuccessAdapter(ScriptPromiseResolver* resolver)
         : Base<S, T>(resolver) {}
     void onSuccess(typename S::WebType result) override {
       ScriptPromiseResolver* resolver = this->resolver();
@@ -146,10 +147,10 @@ class CallbackPromiseAdapterInternal {
     }
   };
   template <typename T>
-  class OnSuccess<CallbackPromiseAdapterTrivialWebTypeHolder<void>, T>
+  class OnSuccessAdapter<CallbackPromiseAdapterTrivialWebTypeHolder<void>, T>
       : public Base<CallbackPromiseAdapterTrivialWebTypeHolder<void>, T> {
    public:
-    explicit OnSuccess(ScriptPromiseResolver* resolver)
+    explicit OnSuccessAdapter(ScriptPromiseResolver* resolver)
         : Base<CallbackPromiseAdapterTrivialWebTypeHolder<void>, T>(resolver) {}
     void onSuccess() override {
       ScriptPromiseResolver* resolver = this->resolver();
@@ -160,10 +161,10 @@ class CallbackPromiseAdapterInternal {
     }
   };
   template <typename S, typename T>
-  class OnError : public OnSuccess<S, T> {
+  class OnErrorAdapter : public OnSuccessAdapter<S, T> {
    public:
-    explicit OnError(ScriptPromiseResolver* resolver)
-        : OnSuccess<S, T>(resolver) {}
+    explicit OnErrorAdapter(ScriptPromiseResolver* resolver)
+        : OnSuccessAdapter<S, T>(resolver) {}
     void onError(typename T::WebType e) override {
       ScriptPromiseResolver* resolver = this->resolver();
       if (!resolver->getExecutionContext() ||
@@ -174,11 +175,13 @@ class CallbackPromiseAdapterInternal {
     }
   };
   template <typename S>
-  class OnError<S, CallbackPromiseAdapterTrivialWebTypeHolder<void>>
-      : public OnSuccess<S, CallbackPromiseAdapterTrivialWebTypeHolder<void>> {
+  class OnErrorAdapter<S, CallbackPromiseAdapterTrivialWebTypeHolder<void>>
+      : public OnSuccessAdapter<
+            S,
+            CallbackPromiseAdapterTrivialWebTypeHolder<void>> {
    public:
-    explicit OnError(ScriptPromiseResolver* resolver)
-        : OnSuccess<S, CallbackPromiseAdapterTrivialWebTypeHolder<void>>(
+    explicit OnErrorAdapter(ScriptPromiseResolver* resolver)
+        : OnSuccessAdapter<S, CallbackPromiseAdapterTrivialWebTypeHolder<void>>(
               resolver) {}
     void onError() override {
       ScriptPromiseResolver* resolver = this->resolver();
@@ -192,12 +195,12 @@ class CallbackPromiseAdapterInternal {
  public:
   template <typename S, typename T>
   class CallbackPromiseAdapter final
-      : public OnError<WebTypeHolder<S>, WebTypeHolder<T>> {
+      : public OnErrorAdapter<WebTypeHolder<S>, WebTypeHolder<T>> {
     WTF_MAKE_NONCOPYABLE(CallbackPromiseAdapter);
 
    public:
     explicit CallbackPromiseAdapter(ScriptPromiseResolver* resolver)
-        : OnError<WebTypeHolder<S>, WebTypeHolder<T>>(resolver) {}
+        : OnErrorAdapter<WebTypeHolder<S>, WebTypeHolder<T>>(resolver) {}
   };
 };
 
