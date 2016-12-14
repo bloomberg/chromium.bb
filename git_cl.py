@@ -1160,7 +1160,7 @@ class _GitNumbererState(object):
     return self._pending_prefix
 
   @property
-  def should_git_number(self):
+  def should_add_git_number(self):
     return self._validator_enabled and self._pending_prefix is None
 
 
@@ -4658,7 +4658,7 @@ def SendUpstream(parser, args, cmd):
 
       pending_prefix = git_numberer.pending_prefix
 
-      if git_numberer.should_git_number:
+      if git_numberer.should_add_git_number:
         # TODO(tandrii): run git fetch in a loop + autorebase when there there
         # is no pending ref to push to?
         logging.debug('Adding git number footers')

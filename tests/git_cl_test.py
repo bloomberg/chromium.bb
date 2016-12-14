@@ -1169,7 +1169,7 @@ class TestGitCl(TestCase):
         remote_url='https://chromium.googlesource.com/chromium/tools/build',
         remote_ref='refs/whatever')
     self.assertEqual(res.pending_prefix, None)
-    self.assertEqual(res.should_git_number, False)
+    self.assertEqual(res.should_add_git_number, False)
 
   def test_GitNumbererState_fail_fetch(self):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
@@ -1185,7 +1185,7 @@ class TestGitCl(TestCase):
         remote_url='https://chromium.googlesource.com/chromium/src',
         remote_ref='refs/whatever')
     self.assertEqual(res.pending_prefix, 'refs/pending-prefix/')
-    self.assertEqual(res.should_git_number, False)
+    self.assertEqual(res.should_add_git_number, False)
 
   def test_GitNumbererState_fail_gnumbd_and_validator(self):
     self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
@@ -1203,7 +1203,7 @@ class TestGitCl(TestCase):
         remote_url='https://chromium.googlesource.com/chromium/src',
         remote_ref='refs/whatever')
     self.assertEqual(res.pending_prefix, None)
-    self.assertEqual(res.should_git_number, False)
+    self.assertEqual(res.should_add_git_number, False)
 
   def test_GitNumbererState_valid_configs(self):
     class NamedTempFileStab(StringIO.StringIO):
@@ -1248,19 +1248,19 @@ class TestGitCl(TestCase):
         remote_url='https://chromium.googlesource.com/chromium/src',
         remote_ref='refs/heads/master')
     self.assertEqual(res.pending_prefix, 'refs/pending/')
-    self.assertEqual(res.should_git_number, False)
+    self.assertEqual(res.should_add_git_number, False)
 
     res = git_cl._GitNumbererState.load(
         remote_url='https://chromium.googlesource.com/chromium/src',
         remote_ref='refs/heads/test')
     self.assertEqual(res.pending_prefix, None)
-    self.assertEqual(res.should_git_number, True)
+    self.assertEqual(res.should_add_git_number, True)
 
     res = git_cl._GitNumbererState.load(
         remote_url='https://chromium.googlesource.com/chromium/src',
         remote_ref='refs/heads/disabled')
     self.assertEqual(res.pending_prefix, None)
-    self.assertEqual(res.should_git_number, False)
+    self.assertEqual(res.should_add_git_number, False)
 
     # Validator is disabled by default, even if it's not explicitely in disabled
     # refglobs.
@@ -1268,7 +1268,7 @@ class TestGitCl(TestCase):
         remote_url='https://chromium.googlesource.com/chromium/src',
         remote_ref='refs/arbitrary/ref')
     self.assertEqual(res.pending_prefix, None)
-    self.assertEqual(res.should_git_number, False)
+    self.assertEqual(res.should_add_git_number, False)
 
   @classmethod
   def _gerrit_ensure_auth_calls(cls, issue=None, skip_auth_check=False):
