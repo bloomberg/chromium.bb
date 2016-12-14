@@ -149,6 +149,8 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
     }
 
     bool current_phase_ended = false;
+    bool scroll_phase_ended = false;
+    bool momentum_phase_ended = false;
     bool has_phase_info = false;
 
     if (event_sent_for_gesture_ack_->event.phase !=
@@ -156,14 +158,15 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
         event_sent_for_gesture_ack_->event.momentumPhase !=
             blink::WebMouseWheelEvent::PhaseNone) {
       has_phase_info = true;
-      current_phase_ended = event_sent_for_gesture_ack_->event.phase ==
-                                blink::WebMouseWheelEvent::PhaseEnded ||
-                            event_sent_for_gesture_ack_->event.phase ==
-                                blink::WebMouseWheelEvent::PhaseCancelled ||
-                            event_sent_for_gesture_ack_->event.momentumPhase ==
-                                blink::WebMouseWheelEvent::PhaseEnded ||
-                            event_sent_for_gesture_ack_->event.momentumPhase ==
-                                blink::WebMouseWheelEvent::PhaseCancelled;
+      scroll_phase_ended = event_sent_for_gesture_ack_->event.phase ==
+                               blink::WebMouseWheelEvent::PhaseEnded ||
+                           event_sent_for_gesture_ack_->event.phase ==
+                               blink::WebMouseWheelEvent::PhaseCancelled;
+      momentum_phase_ended = event_sent_for_gesture_ack_->event.momentumPhase ==
+                                 blink::WebMouseWheelEvent::PhaseEnded ||
+                             event_sent_for_gesture_ack_->event.momentumPhase ==
+                                 blink::WebMouseWheelEvent::PhaseCancelled;
+      current_phase_ended = scroll_phase_ended || momentum_phase_ended;
     }
 
     bool needs_update = scroll_update.data.scrollUpdate.deltaX != 0 ||
@@ -177,40 +180,78 @@ void MouseWheelEventQueue::ProcessMouseWheelAck(
     bool empty_sequence =
         !needs_update && needs_scroll_begin_ && current_phase_ended;
 
-    if (needs_update || !empty_sequence) {
-      if (needs_scroll_begin_) {
-        // If no GSB has been sent, it will be a non-synthetic GSB.
-        SendScrollBegin(scroll_update, false);
-      } else if (has_phase_info) {
-        // If a GSB has been sent, generate a synthetic GSB if we have phase
-        // information. This should be removed once crbug.com/526463 is fully
-        // implemented.
-        SendScrollBegin(scroll_update, true);
+    if (enable_scroll_latching_) {
+      if (event_sent_for_gesture_ack_->event.momentumPhase ==
+          blink::WebMouseWheelEvent::PhaseBegan) {
+        // Don't send the pending scrollEnd if a fling starts.
+        if (scroll_end_timer_.IsRunning())
+          scroll_end_timer_.Stop();
       }
 
-      if (needs_update) {
-        ui::LatencyInfo latency = ui::LatencyInfo(ui::SourceEventType::WHEEL);
-        latency.AddLatencyNumber(
-            ui::INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL, 0,
-            0);
-        client_->ForwardGestureEventWithLatencyInfo(scroll_update, latency);
+      if (needs_update || !empty_sequence) {
+        if (needs_scroll_begin_) {
+          SendScrollBegin(scroll_update, false);
+        }
+
+        if (needs_update) {
+          ui::LatencyInfo latency = ui::LatencyInfo(ui::SourceEventType::WHEEL);
+          latency.AddLatencyNumber(
+              ui::INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL,
+              0, 0);
+          client_->ForwardGestureEventWithLatencyInfo(scroll_update, latency);
+        }
+
+        if (momentum_phase_ended) {
+          // Send GSE with if scroll latching is enabled and no fling is going
+          // to happen next.
+          SendScrollEnd(scroll_update, false);
+        } else if (scroll_phase_ended || !has_phase_info) {
+          // If scroll latching is enabled and a fling might happen next, or
+          // no phase info exists, start the scroll_end_timer_.
+          scroll_end_timer_.Start(
+              FROM_HERE,
+              base::TimeDelta::FromMilliseconds(scroll_transaction_ms_),
+              base::Bind(&MouseWheelEventQueue::SendScrollEnd,
+                         base::Unretained(this), scroll_update, false));
+        }
       }
 
-      if (current_phase_ended) {
-        // Non-synthetic GSEs are sent when the current phase is canceled or
-        // ended.
-        SendScrollEnd(scroll_update, false);
-      } else if (has_phase_info) {
-        // Generate a synthetic GSE for every update to force hit testing so
-        // that the non-latching behavior is preserved. Remove once
-        // crbug.com/526463 is fully implemented.
-        SendScrollEnd(scroll_update, true);
-      } else {
-        scroll_end_timer_.Start(
-            FROM_HERE,
-            base::TimeDelta::FromMilliseconds(scroll_transaction_ms_),
-            base::Bind(&MouseWheelEventQueue::SendScrollEnd,
-                       base::Unretained(this), scroll_update, false));
+    } else {  // !enable_scroll_latching_
+      if (needs_update || !empty_sequence) {
+        if (needs_scroll_begin_) {
+          // If no GSB has been sent, it will be a non-synthetic GSB.
+          SendScrollBegin(scroll_update, false);
+        } else if (has_phase_info) {
+          // If a GSB has been sent, generate a synthetic GSB if we have phase
+          // information. This should be removed once crbug.com/526463 is
+          // fully implemented.
+          SendScrollBegin(scroll_update, true);
+        }
+
+        if (needs_update) {
+          ui::LatencyInfo latency = ui::LatencyInfo(ui::SourceEventType::WHEEL);
+          latency.AddLatencyNumber(
+              ui::INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL,
+              0, 0);
+          client_->ForwardGestureEventWithLatencyInfo(scroll_update, latency);
+        }
+
+        if (current_phase_ended) {
+          // Non-synthetic GSEs are sent when the current phase is canceled or
+          // ended.
+          SendScrollEnd(scroll_update, false);
+        } else if (has_phase_info) {
+          // Generate a synthetic GSE for every update to force hit testing so
+          // that the non-latching behavior is preserved. Remove once
+          // crbug.com/526463 is fully implemented.
+          SendScrollEnd(scroll_update, true);
+        } else if (!has_phase_info) {
+          scroll_end_timer_.Start(
+              FROM_HERE,
+              base::TimeDelta::FromMilliseconds(scroll_transaction_ms_),
+              base::Bind(&MouseWheelEventQueue::SendScrollEnd,
+                         base::Unretained(this), scroll_update, false));
+        }
       }
     }
   }

@@ -2642,34 +2642,40 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
       MainThreadScrollingReason::kNotScrollingOnMain;
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBegin");
 
-  ClearCurrentlyScrollingLayer();
-
-  gfx::Point viewport_point(scroll_state->position_x(),
-                            scroll_state->position_y());
-
-  gfx::PointF device_viewport_point = gfx::ScalePoint(
-      gfx::PointF(viewport_point), active_tree_->device_scale_factor());
-  LayerImpl* layer_impl =
-      active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
-
-  if (layer_impl) {
-    LayerImpl* scroll_layer_impl =
-        active_tree_->FindFirstScrollingLayerOrScrollbarLayerThatIsHitByPoint(
-            device_viewport_point);
-    if (scroll_layer_impl &&
-        !IsClosestScrollAncestor(layer_impl, scroll_layer_impl)) {
-      scroll_status.thread = SCROLL_UNKNOWN;
-      scroll_status.main_thread_scrolling_reasons =
-          MainThreadScrollingReason::kFailedHitTest;
-      return scroll_status;
-    }
-  }
-
+  LayerImpl* scrolling_layer_impl = nullptr;
   bool scroll_on_main_thread = false;
-  LayerImpl* scrolling_layer_impl = FindScrollLayerForDeviceViewportPoint(
-      device_viewport_point, type, layer_impl, &scroll_on_main_thread,
-      &scroll_status.main_thread_scrolling_reasons);
 
+  if (scroll_state->is_in_inertial_phase())
+    scrolling_layer_impl = CurrentlyScrollingLayer();
+
+  if (!scrolling_layer_impl) {
+    ClearCurrentlyScrollingLayer();
+
+    gfx::Point viewport_point(scroll_state->position_x(),
+                              scroll_state->position_y());
+
+    gfx::PointF device_viewport_point = gfx::ScalePoint(
+        gfx::PointF(viewport_point), active_tree_->device_scale_factor());
+    LayerImpl* layer_impl =
+        active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
+
+    if (layer_impl) {
+      LayerImpl* scroll_layer_impl =
+          active_tree_->FindFirstScrollingLayerOrScrollbarLayerThatIsHitByPoint(
+              device_viewport_point);
+      if (scroll_layer_impl &&
+          !IsClosestScrollAncestor(layer_impl, scroll_layer_impl)) {
+        scroll_status.thread = SCROLL_UNKNOWN;
+        scroll_status.main_thread_scrolling_reasons =
+            MainThreadScrollingReason::kFailedHitTest;
+        return scroll_status;
+      }
+    }
+
+    scrolling_layer_impl = FindScrollLayerForDeviceViewportPoint(
+        device_viewport_point, type, layer_impl, &scroll_on_main_thread,
+        &scroll_status.main_thread_scrolling_reasons);
+  }
   if (scrolling_layer_impl)
     scroll_affects_scroll_handler_ =
         scrolling_layer_impl->layer_tree_impl()->have_scroll_event_handlers();
@@ -2718,11 +2724,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
     ScrollStateData scroll_state_end_data;
     scroll_state_end_data.is_ending = true;
     ScrollState scroll_state_end(scroll_state_end_data);
-    // TODO(Sahel): Once the touchpad scroll latching for Non-mac devices is
-    // implemented, the current scrolling layer should not get cleared after
-    // each animation (crbug.com/526463).
     ScrollEnd(&scroll_state_end);
-    ClearCurrentlyScrollingLayer();
   }
   return scroll_status;
 }
@@ -2809,7 +2811,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
   ScrollStateData scroll_state_data;
   scroll_state_data.position_x = viewport_point.x();
   scroll_state_data.position_y = viewport_point.y();
-  scroll_state_data.is_in_inertial_phase = true;
   ScrollState scroll_state(scroll_state_data);
 
   // ScrollAnimated is used for animated wheel scrolls. We find the first layer
