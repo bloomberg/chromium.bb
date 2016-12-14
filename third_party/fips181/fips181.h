@@ -34,12 +34,8 @@
 */
 
 
-#ifndef APG_PRONPASS_H
-#define APG_PRONPASS_H	1
-
-#ifndef APG_OWN_TYPES_H
-#include "owntypes.h"
-#endif /* APG_OWN_TYPES_H */
+#ifndef FIPS181_H
+#define FIPS181_H	1
 
 #define RULE_SIZE             (sizeof(rules)/sizeof(struct unit))
 #define ALLOWED(flag)         (digram[units_in_syllable[current_unit -1]][unit] & (flag))
@@ -69,16 +65,18 @@
 #define S_SL    0x08 /* Small   */
 #define S_RS    0x10 /* Restricted Symbol*/
 
-extern int gen_pron_pass (char *word, char* hypenated_word,
-                          USHORT minlen, USHORT maxlen, unsigned int pass_mode);
-USHORT  random_unit (USHORT type);
-USHORT  get_random (USHORT minlen, USHORT maxlen);
-boolean have_initial_y (USHORT *units, USHORT unit_size);
-boolean illegal_placement (USHORT *units, USHORT pwlen);
-boolean improper_word (USHORT *units, USHORT word_size);
-boolean have_final_split (USHORT *units, USHORT unit_size);
-int gen_word (char *word, char *hyphenated_word, USHORT pwlen, unsigned int pass_mode);
-char   	*gen_syllable(char *syllable, USHORT pwlen, USHORT *units_in_syllable,
-                      USHORT *syllable_length);
+#define APG_MAX_PASSWORD_LENGTH 255
 
-#endif /* APG_PRONPASS_H */
+extern int gen_pron_pass (char *word, char* hypenated_word,
+                          unsigned short minlen, unsigned short maxlen, unsigned int pass_mode);
+unsigned short  random_unit (unsigned short type);
+unsigned short  get_random (unsigned short minlen, unsigned short maxlen);
+bool have_initial_y (unsigned short *units, unsigned short unit_size);
+bool illegal_placement (unsigned short *units, unsigned short pwlen);
+bool improper_word (unsigned short *units, unsigned short word_size);
+bool have_final_split (unsigned short *units, unsigned short unit_size);
+int gen_word (char *word, char *hyphenated_word, unsigned short pwlen, unsigned int pass_mode);
+char   	*gen_syllable(char *syllable, unsigned short pwlen, unsigned short *units_in_syllable,
+                      unsigned short *syllable_length);
+
+#endif /* FIPS181_H */

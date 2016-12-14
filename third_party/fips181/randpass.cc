@@ -36,7 +36,6 @@
 #include <time.h>
 
 #include "base/rand_util.h"
-#include "owntypes.h"
 #include "randpass.h"
 #include "smbl.h"
 
@@ -143,18 +142,18 @@ gen_rand_symbol (char *symbol, unsigned int mode)
 ** INPUT:
 **   char - symbol.
 ** OUTPUT:
-**   int - 0 - not restricted
-**         1 - restricted
+**   bool - false - not restricted
+**          true - restricted
 ** NOTES:
 **   none.
 */
-int
+bool
 is_restricted_symbol (char symbol)
 {
   int j = 0;
   for (j = 0; j <= 93 ; j++)
     if (symbol == smbl[j].ch)
       if ((S_RS & smbl[j].type) > 0)
-        return(1);
-  return(0);
+        return(true);
+  return(false);
 }

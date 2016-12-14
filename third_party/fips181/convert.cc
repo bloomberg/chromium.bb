@@ -108,7 +108,7 @@ capitalize (char *syllable)
    (void)memcpy((void *)&tmp, (void *)syllable, sizeof(tmp));
    for(i=0; i < 26; i++)
      if ( let[i] == tmp )
-       if (is_restricted_symbol(clet[i]) != TRUE)
+       if (!is_restricted_symbol(clet[i]))
          (void)memcpy ((void *)syllable, (void *)&clet[i], 1);
   }
 }
@@ -225,7 +225,7 @@ symb2name(char * syllable, char * h_syllable)
    {126, "TILDE"}
   };
  int i = 0;
- int flag = FALSE;
+ bool flag = false;
  
  if (strlen(syllable) == 1)
     {
@@ -234,10 +234,10 @@ symb2name(char * syllable, char * h_syllable)
        if(*syllable == ssn[i].symbol)
         {
          (void)memcpy((void*)h_syllable, (void*)ssn[i].name, strlen(ssn[i].name));
-	 flag = TRUE;
+	 flag = true;
         }
       }
-     if (flag != TRUE)
+     if (flag != true)
        (void)memcpy((void*)h_syllable, (void*)syllable, strlen(syllable));
     }
 }

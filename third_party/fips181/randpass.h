@@ -33,20 +33,16 @@
 #ifndef APG_RANDPASS_H
 #define APG_RANDPASS_H	1
 
-#ifndef APG_OWN_TYPES_H
-#include "owntypes.h"
-#endif
-
 struct sym
  {
   char   ch;
-  USHORT type;
+  unsigned short type;
  };
 
 /* char gen_symbol(unsigned short int symbol_class); */
 extern int gen_rand_pass(char* password_string, int minl,
                          int maxl, unsigned int pass_mode);
 extern int gen_rand_symbol (char *symbol, unsigned int mode);
-extern int is_restricted_symbol (char symbol);
+extern bool is_restricted_symbol (char symbol);
 
 #endif /* RANDPASS_H */
