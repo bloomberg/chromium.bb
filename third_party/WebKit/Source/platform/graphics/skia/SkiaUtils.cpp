@@ -55,7 +55,7 @@ static const struct CompositOpToXfermodeMode {
 // Keep this array in sync with the WebBlendMode enum in
 // public/platform/WebBlendMode.h.
 static const SkBlendMode gMapBlendOpsToXfermodeModes[] = {
-    SkBlendMode::kClear,       // WebBlendModeNormal
+    SkBlendMode::kSrcOver,     // WebBlendModeNormal
     SkBlendMode::kMultiply,    // WebBlendModeMultiply
     SkBlendMode::kScreen,      // WebBlendModeScreen
     SkBlendMode::kOverlay,     // WebBlendModeOverlay
