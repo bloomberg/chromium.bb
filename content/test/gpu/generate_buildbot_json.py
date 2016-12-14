@@ -1504,7 +1504,7 @@ def generate_gtest(tester_name, tester_config, test, test_config, is_fyi):
           {
             'cipd_package': 'infra/tools/luci/logdog/butler/${platform}',
             'location': 'bin',
-            'revision': 'git_revision:3ff24775a900b675866fbcacf2a8f98a18b2a16a'
+            'revision': 'git_revision:25755a2c316937ee44a6432163dc5e2f9c85cf58'
           }
         ],
         'output_links': [
