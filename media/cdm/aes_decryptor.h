@@ -146,8 +146,8 @@ class MEDIA_EXPORT AesDecryptor : public ContentDecryptionModule,
   KeyIdToSessionKeysMap key_map_;  // Protected by |key_map_lock_|.
   mutable base::Lock key_map_lock_;  // Protects the |key_map_|.
 
-  // Keeps track of current valid sessions.
-  std::set<std::string> valid_sessions_;
+  // Keeps track of current open sessions.
+  std::set<std::string> open_sessions_;
 
   // Make session ID unique per renderer by making it static. Session
   // IDs seen by the app will be "1", "2", etc.

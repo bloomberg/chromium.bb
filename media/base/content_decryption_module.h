@@ -125,6 +125,8 @@ class MEDIA_EXPORT ContentDecryptionModule
   // reject the |promise| when the call has been processed. This may be before
   // the session is closed. Once the session is closed, a SessionClosedCB must
   // also be called.
+  // Note that the EME spec executes the close() action asynchronously, so
+  // CloseSession() may be called multiple times on the same session.
   virtual void CloseSession(const std::string& session_id,
                             std::unique_ptr<SimpleCdmPromise> promise) = 0;
 

@@ -435,14 +435,18 @@ void WebContentDecryptionModuleSessionImpl::update(
 
 void WebContentDecryptionModuleSessionImpl::close(
     blink::WebContentDecryptionModuleResult result) {
-  // close() shouldn't be called if the session is already closed. blink
-  // prevents a second call to close(), but since the operation is
-  // asynchronous, there is a window where close() was called just before
-  // the closed event arrives. The CDM should handle the case where
-  // close() is called after it has already closed the session.
   DCHECK(!session_id_.empty());
-  DCHECK(!has_close_been_called_);
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // close() shouldn't be called if the session is already closed. Since the
+  // operation is asynchronous, there is a window where close() was called
+  // just before the closed event arrives. The CDM should handle the case where
+  // close() is called after it has already closed the session. However, if
+  // we can tell the session is now closed, simply resolve the promise.
+  if (is_closed_) {
+    result.complete();
+    return;
+  }
 
   has_close_been_called_ = true;
   adapter_->CloseSession(
