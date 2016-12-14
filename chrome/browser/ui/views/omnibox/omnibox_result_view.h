@@ -69,6 +69,7 @@ class OmniboxResultView : public views::View,
   // views::View:
   gfx::Size GetPreferredSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   ResultViewState GetState() const;
 

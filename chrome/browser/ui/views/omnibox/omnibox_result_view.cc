@@ -301,6 +301,11 @@ void OmniboxResultView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
                          : match_.contents);
 }
 
+void OmniboxResultView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  Invalidate();
+  SchedulePaint();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxResultView, protected:
 
