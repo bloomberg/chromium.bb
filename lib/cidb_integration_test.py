@@ -635,6 +635,54 @@ class BuildStagesAndFailureTest(CIDBIntegrationTest):
         master_build_id, buildbucket_ids=[])
     self.assertEqual(len(slave_stages), 0)
 
+  def testGetSlaveFailures(self):
+    """Test GetSlaveFailures"""
+    self._PrepareDatabase()
+
+    bot_db = self.LocalCIDBConnection(self.CIDB_USER_BOT)
+
+    master_build_id = bot_db.InsertBuild('master',
+                                         constants.WATERFALL_INTERNAL,
+                                         _random(),
+                                         'master',
+                                         'master.hostname')
+
+    build_id_1 = bot_db.InsertBuild('slave1',
+                                    constants.WATERFALL_INTERNAL,
+                                    _random(),
+                                    'slave1',
+                                    'bot_hostname',
+                                    master_build_id=master_build_id,
+                                    buildbucket_id='bb_id_1')
+    build_id_2 = bot_db.InsertBuild('slave1',
+                                    constants.WATERFALL_INTERNAL,
+                                    _random(),
+                                    'slave1',
+                                    'bot_hostname',
+                                    master_build_id=master_build_id,
+                                    buildbucket_id='bb_id_2')
+    build_stage_id_1 = bot_db.InsertBuildStage(
+        build_id_1, 'build_1_stage', board='test1')
+    build_stage_id_2 = bot_db.InsertBuildStage(
+        build_id_2, 'build_2_stage', board='test1')
+
+    e = ValueError('The value was erroneous.')
+    bot_db.InsertFailure(build_stage_id_1, type(e).__name__, str(e),
+                         constants.EXCEPTION_CATEGORY_UNKNOWN)
+    bot_db.InsertFailure(build_stage_id_2, type(e).__name__, str(e),
+                         constants.EXCEPTION_CATEGORY_UNKNOWN)
+
+    failures = bot_db.GetSlaveFailures(master_build_id)
+    self.assertEqual(len(failures), 2)
+
+    failures = bot_db.GetSlaveFailures(master_build_id,
+                                       buildbucket_ids=[])
+    self.assertEqual(len(failures), 0)
+
+    failures = bot_db.GetSlaveFailures(master_build_id,
+                                       buildbucket_ids=['bb_id_2'])
+    self.assertEqual(len(failures), 1)
+    self.assertEqual(failures[0]['buildbucket_id'], 'bb_id_2')
 
 class BuildTableTest(CIDBIntegrationTest):
   """Test buildTable functionality not tested by the DataSeries tests."""

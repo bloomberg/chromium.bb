@@ -1088,8 +1088,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
           'master_build_id = %d' % master_build_id,
           self.BUILD_STATUS_KEYS)
     else:
-      assert isinstance(buildbucket_ids, list)
-
       if buildbucket_ids:
         return self._SelectWhere(
             'buildTable',
@@ -1132,8 +1130,6 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     if buildbucket_ids is None:
       results = self._Execute(query).fetchall()
     else:
-      assert isinstance(buildbucket_ids, list)
-
       if not buildbucket_ids:
         return []
 
@@ -1145,12 +1141,16 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return [dict(zip(columns, values)) for values in results]
 
   @minimum_schema(44)
-  def GetSlaveFailures(self, master_build_id):
+  def GetSlaveFailures(self, master_build_id, buildbucket_ids=None):
     """Gets the failure entries for slave builds to given build.
 
     Args:
       master_build_id: build id of the master build to fetch failures
                        for.
+      buildbucket_ids: A list of buildbucket_ids (strings) of slave builds
+        to given master_build_id. If buildbucket_ids is given, only fetch
+        the failures of builds with |buildbucket_id| in buildbucket_ids.
+        Default to None.
 
     Returns:
       A list containing, for each failure entry, a dictionary with keys
@@ -1163,11 +1163,23 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
                'exception_message', 'exception_category', 'extra_info',
                'timestamp', 'stage_name', 'board', 'stage_status', 'build_id',
                'master_build_id', 'builder_name', 'waterfall', 'build_number',
-               'build_config', 'build_status', 'important']
+               'build_config', 'build_status', 'important', 'buildbucket_id']
     columns_string = ', '.join(columns)
-    results = self._Execute('SELECT %s FROM failureView '
-                            'WHERE master_build_id = %s ' %
-                            (columns_string, master_build_id)).fetchall()
+
+    query = ('SELECT %s FROM failureView WHERE master_build_id = %s ' %
+             (columns_string, master_build_id))
+
+    results = []
+    if buildbucket_ids is None:
+      results = self._Execute(query).fetchall()
+    else:
+      if not buildbucket_ids:
+        return []
+
+      query += (' AND buildbucket_id IN (%s)' %
+                (','.join('"%s"' % x for x in buildbucket_ids)))
+      results = self._Execute(query).fetchall()
+
     return [dict(zip(columns, values)) for values in results]
 
   @minimum_schema(32)

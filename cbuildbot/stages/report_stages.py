@@ -300,7 +300,9 @@ class SlaveFailureSummaryStage(generic_stages.BuilderStage):
                    'Doing nothing.')
       return
 
-    slave_failures = db.GetSlaveFailures(build_id)
+    slave_buildbucket_ids = self.GetScheduledSlaveBuildbucketIds()
+    slave_failures = db.GetSlaveFailures(
+        build_id, buildbucket_ids=slave_buildbucket_ids)
     failures_by_build = cros_build_lib.GroupByKey(slave_failures, 'build_id')
     for build_id, build_failures in sorted(failures_by_build.items()):
       failures_by_stage = cros_build_lib.GroupByKey(build_failures,
