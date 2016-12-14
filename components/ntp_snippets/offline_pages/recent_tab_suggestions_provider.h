@@ -25,8 +25,7 @@ class PrefService;
 
 namespace ntp_snippets {
 
-// Provides recent tabs content suggestions from the offline pages model
-// obtaining the data through OfflinePageProxy.
+// Provides recent tabs content suggestions from the offline pages model.
 class RecentTabSuggestionsProvider
     : public ContentSuggestionsProvider,
       public offline_pages::OfflinePageModel::Observer {
