@@ -2298,6 +2298,8 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
 
 #if CONFIG_CB4X4
   BFP(BLOCK_2X2, NULL, NULL, aom_variance2x2, NULL, NULL, NULL, NULL, NULL)
+  BFP(BLOCK_2X4, NULL, NULL, aom_variance2x4, NULL, NULL, NULL, NULL, NULL)
+  BFP(BLOCK_4X2, NULL, NULL, aom_variance4x2, NULL, NULL, NULL, NULL, NULL)
 #endif
 
 #if CONFIG_MOTION_VAR
