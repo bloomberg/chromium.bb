@@ -260,6 +260,8 @@ MON_BB_RETRY_BUILD_COUNT = ('chromeos/cbuildbot/buildbucket/'
                             'retry_build_count')
 MON_BB_CANCEL_BATCH_BUILDS_COUNT = ('chromeos/cbuildbot/buildbucket/'
                                     'cancel_batch_builds_count')
+MON_BB_CANCEL_PRE_CQ_BUILD_COUNT = ('chromeos/cbuildbot/buildbucket/'
+                                    'cancel_pre_cq_build_count')
 
 # Re-execution API constants.
 # Used by --resume and --bootstrap to decipher which options they
