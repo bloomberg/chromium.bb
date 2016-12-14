@@ -83,7 +83,7 @@ class ScopedImagePaint {
     SkMatrix matrix;
     SkShader::TileMode xy[2];
     SkImage* image = shader->isAImage(&matrix, xy);
-    if (!image)
+    if (!image || !image->isLazyGenerated())
       return base::Optional<ScopedImagePaint>();
 
     SkMatrix total_image_matrix = matrix;

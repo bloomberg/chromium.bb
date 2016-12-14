@@ -852,6 +852,7 @@ cc_test("cc_unittests") {
     "output/texture_mailbox_deleter_unittest.cc",
     "playback/discardable_image_map_unittest.cc",
     "playback/display_item_list_unittest.cc",
+    "playback/image_hijack_canvas_unittest.cc",
     "playback/raster_source_unittest.cc",
     "playback/recording_source_unittest.cc",
     "proto/base_conversions_unittest.cc",

@@ -6,13 +6,14 @@
 #define CC_PLAYBACK_IMAGE_HIJACK_CANVAS_H_
 
 #include "base/macros.h"
+#include "cc/base/cc_export.h"
 #include "third_party/skia/include/utils/SkNWayCanvas.h"
 
 namespace cc {
 
 class ImageDecodeCache;
 
-class ImageHijackCanvas : public SkNWayCanvas {
+class CC_EXPORT ImageHijackCanvas : public SkNWayCanvas {
  public:
   ImageHijackCanvas(int width,
                     int height,
