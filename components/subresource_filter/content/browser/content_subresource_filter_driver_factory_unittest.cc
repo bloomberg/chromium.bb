@@ -313,7 +313,7 @@ class ContentSubresourceFilterDriverFactoryTest
     EXPECT_CALL(*driver(), ActivateForProvisionalLoad(
                                ::testing::_, ::testing::_, ::testing::_))
         .Times(0);
-    EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(1);
+    EXPECT_CALL(*client(), ToggleNotificationVisibility(::testing::_)).Times(0);
     content::RenderFrameHostTester::For(main_rfh())
         ->SimulateNavigationCommit(GURL(kExampleUrl));
     ::testing::Mock::VerifyAndClearExpectations(driver());

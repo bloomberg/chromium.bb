@@ -159,7 +159,7 @@ ContentSubresourceFilterDriverFactory::DriverFromFrameHost(
 
 void ContentSubresourceFilterDriverFactory::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsInMainFrame()) {
+  if (navigation_handle->IsInMainFrame() && !navigation_handle->IsSamePage()) {
     navigation_chain_.clear();
     activation_list_matches_.clear();
     navigation_chain_.push_back(navigation_handle->GetURL());
@@ -187,6 +187,7 @@ void ContentSubresourceFilterDriverFactory::RenderFrameDeleted(
 
 void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
+  DCHECK(!navigation_handle->IsSamePage());
   content::RenderFrameHost* render_frame_host =
       navigation_handle->GetRenderFrameHost();
   GURL url = navigation_handle->GetURL();

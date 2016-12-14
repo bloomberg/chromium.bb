@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/strings/string_piece.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/subresource_filter/test_ruleset_publisher.h"
@@ -30,6 +31,12 @@ namespace {
 
 const char kSubresourceFilterPromptHistogram[] =
     "SubresourceFilter.Prompt.NumVisibility";
+
+GURL GetURLWithFragment(const GURL& url, base::StringPiece fragment) {
+  GURL::Replacements replacements;
+  replacements.SetRefStr(fragment);
+  return url.ReplaceComponents(replacements);
+}
 
 }  // namespace
 
@@ -96,13 +103,30 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
     return nullptr;
   }
 
-  bool WasScriptResourceLoaded(content::RenderFrameHost* rfh) {
+  bool WasParsedScriptElementLoaded(content::RenderFrameHost* rfh) {
     DCHECK(rfh);
-    bool script_resource_was_loaded;
+    bool script_resource_was_loaded = false;
     EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
         rfh, "domAutomationController.send(!!document.scriptExecuted)",
         &script_resource_was_loaded));
     return script_resource_was_loaded;
+  }
+
+  bool IsDynamicScriptElementLoaded(content::RenderFrameHost* rfh) {
+    DCHECK(rfh);
+    bool script_resource_was_loaded = false;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+        rfh, "insertScriptElementAndReportSuccess()",
+        &script_resource_was_loaded));
+    return script_resource_was_loaded;
+  }
+
+  void InsertDynamicFrameWithScript() {
+    bool frame_was_loaded = false;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+        web_contents()->GetMainFrame(), "insertFrameWithScriptAndNotify()",
+        &frame_was_loaded));
+    ASSERT_TRUE(frame_was_loaded);
   }
 
   void SetRulesetToDisallowURLsWithPathSuffix(const std::string& suffix) {
@@ -122,17 +146,37 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, MainFrameActivation) {
   ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
       "suffix-that-does-not-match-anything"));
   ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_TRUE(WasScriptResourceLoaded(web_contents()->GetMainFrame()));
+  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
   ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_FALSE(WasScriptResourceLoaded(web_contents()->GetMainFrame()));
+  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 
   // The main frame document should never be filtered.
   SetRulesetToDisallowURLsWithPathSuffix("frame_with_included_script.html");
   ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_TRUE(WasScriptResourceLoaded(web_contents()->GetMainFrame()));
+  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
+}
+
+// There should be no document-level de-/reactivation happening on the renderer
+// side as a result of an in-page navigation.
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       DocumentActivationOutlivesSamePageNavigation) {
+  GURL url(GetTestUrl("subresource_filter/frame_with_delayed_script.html"));
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  // Deactivation would already detected by the IsDynamicScriptElementLoaded
+  // line alone. To ensure no reactivation, which would muddy up recorded
+  // histograms, also set a ruleset that allows everything. If there was
+  // reactivation, then this new ruleset would be picked up, once again causing
+  // the IsDynamicScriptElementLoaded check to fail.
+  ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
+      "suffix-that-does-not-match-anything"));
+  ui_test_utils::NavigateToURL(browser(), GetURLWithFragment(url, "ref"));
+  EXPECT_FALSE(IsDynamicScriptElementLoaded(web_contents()->GetMainFrame()));
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
@@ -146,9 +190,27 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
   for (const char* subframe_name : kSubframeNames) {
     content::RenderFrameHost* frame = FindFrameByName(subframe_name);
     ASSERT_TRUE(frame);
-    EXPECT_FALSE(WasScriptResourceLoaded(frame));
+    EXPECT_FALSE(WasParsedScriptElementLoaded(frame));
   }
   tester.ExpectBucketCount(kSubresourceFilterPromptHistogram, true, 1);
+}
+
+// The page-level activation state on the browser-side should not be reset when
+// a same-page navigation starts in the main frame. Verify this by dynamically
+// inserting a subframe afterwards, and still expecting activation.
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       PageLevelActivationOutlivesSamePageNavigation) {
+  GURL url(GetTestUrl("subresource_filter/frame_set.html"));
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  ui_test_utils::NavigateToURL(browser(), GetURLWithFragment(url, "ref"));
+
+  ASSERT_NO_FATAL_FAILURE(InsertDynamicFrameWithScript());
+  content::RenderFrameHost* dynamic_frame = FindFrameByName("dynamic");
+  ASSERT_TRUE(dynamic_frame);
+  EXPECT_FALSE(WasParsedScriptElementLoaded(dynamic_frame));
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
@@ -162,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   // Verify that the ruleset persisted in the previous session is used for this
   // page load right after start-up.
   ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_FALSE(WasScriptResourceLoaded(web_contents()->GetMainFrame()));
+  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
@@ -172,7 +234,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   GURL url(GetTestUrl("subresource_filter/frame_set.html"));
   base::HistogramTester tester;
   ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_TRUE(ExecuteScript(FindFrameByName("three"), "runny()"));
+  tester.ExpectBucketCount(kSubresourceFilterPromptHistogram, true, 1);
+  // Check that the bubble is not shown again for this navigation.
+  EXPECT_FALSE(IsDynamicScriptElementLoaded(FindFrameByName("three")));
   tester.ExpectBucketCount(kSubresourceFilterPromptHistogram, true, 1);
   // Check that bubble is shown for new navigation.
   ui_test_utils::NavigateToURL(browser(), url);

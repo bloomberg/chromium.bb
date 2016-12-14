@@ -121,6 +121,13 @@ class SubresourceFilterAgentTest : public ::testing::Test {
         true /* is_new_navigation */, false /* is_same_page_navigation */);
   }
 
+  void PerformSamePageNavigationWithoutSettingActivationState() {
+    agent_as_rfo()->DidStartProvisionalLoad();
+    agent_as_rfo()->DidCommitProvisionalLoad(
+        true /* is_new_navigation */, true /* is_same_page_navigation */);
+    // No DidFinishLoad is called in this case.
+  }
+
   void StartLoadAndSetActivationState(ActivationState activation_state,
                                       bool measure_performance = false) {
     agent_as_rfo()->DidStartProvisionalLoad();
@@ -238,10 +245,23 @@ TEST_F(SubresourceFilterAgentTest, Enabled_FilteringIsInEffectForOneLoad) {
   ExpectLoadAllowed(kTestSecondURL, true);
   FinishLoad();
 
+  // In-page navigation should not count as a new load.
+  ExpectNoSubresourceFilterGetsInjected();
+  ExpectNoSignalAboutFirstSubresourceDisallowed();
+  PerformSamePageNavigationWithoutSettingActivationState();
+  ExpectLoadAllowed(kTestFirstURL, false);
+  ExpectLoadAllowed(kTestSecondURL, true);
+
   ExpectNoSubresourceFilterGetsInjected();
   StartLoadWithoutSettingActivationState();
   FinishLoad();
 
+  // Resource loads after the in-page navigation should not be counted toward
+  // the figures below, as they came after the original page load event.
+  histogram_tester.ExpectUniqueSample(kSubresourcesTotal, 2, 1);
+  histogram_tester.ExpectUniqueSample(kSubresourcesEvaluated, 2, 1);
+  histogram_tester.ExpectUniqueSample(kSubresourcesMatchedRules, 1, 1);
+  histogram_tester.ExpectUniqueSample(kSubresourcesDisallowed, 1, 1);
   EXPECT_THAT(histogram_tester.GetAllSamples(kDocumentLoadActivationState),
               ::testing::ElementsAre(
                   base::Bucket(static_cast<int>(ActivationState::DISABLED), 1),
@@ -249,7 +269,7 @@ TEST_F(SubresourceFilterAgentTest, Enabled_FilteringIsInEffectForOneLoad) {
   histogram_tester.ExpectUniqueSample(kDocumentLoadRulesetIsAvailable, 1, 1);
 }
 
-TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamples) {
+TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamplesOverTwoLoads) {
   for (const bool measure_performance : {false, true}) {
     base::HistogramTester histogram_tester;
     ASSERT_NO_FATAL_FAILURE(

@@ -1,4 +1,16 @@
 <html>
+  <head>
+  <script type="text/javascript">
+     function insertFrameWithScriptAndNotify() {
+       var frame = document.createElement("iframe");
+       frame.name = "dynamic";
+       frame.src = "frame_with_included_script.html";
+       frame.onload = () => window.domAutomationController.send(true)
+       frame.onerror = () => window.domAutomationController.send(false)
+       document.body.appendChild(frame);
+     }
+  </script>
+  </head>
   <body>
     <iframe name="one" src="frame_with_included_script.html"></iframe>
     <iframe name="two" src="frame_with_included_script.html"></iframe>

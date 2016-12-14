@@ -143,6 +143,9 @@ void SubresourceFilterAgent::DidStartProvisionalLoad() {
 void SubresourceFilterAgent::DidCommitProvisionalLoad(
     bool is_new_navigation,
     bool is_same_page_navigation) {
+  if (is_same_page_navigation)
+    return;
+
   RecordHistogramsOnLoadCommitted();
   if (activation_state_for_provisional_load_ != ActivationState::DISABLED &&
       ruleset_dealer_->IsRulesetAvailable()) {
@@ -159,6 +162,7 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
     filter_for_last_committed_load_ = filter->AsWeakPtr();
     SetSubresourceFilterForCommittedLoad(std::move(filter));
   }
+
   activation_state_for_provisional_load_ = ActivationState::DISABLED;
 }
 
