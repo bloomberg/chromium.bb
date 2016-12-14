@@ -2006,26 +2006,30 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
-    @DisabledTest(message = "crbug.com/673684")
     @RetryOnFailure
     public void testPreventHandlingCurrentSelectionModification()
             throws InterruptedException, TimeoutException {
-        longPressNode("intelligence");
-        waitForPanelToPeek();
+        simulateLongPressSearch("search");
 
         // Dismiss the Contextual Search panel.
-        scrollBasePage();
-        assertPanelClosedOrUndefined();
-        assertEquals("Intelligence", getSelectedText());
+        closePanel();
+        assertEquals("Search", getSelectedText());
 
         // Simulate a selection change event and assert that the panel has not reappeared.
-        mManager.onSelectionEvent(SelectionEventType.SELECTION_HANDLE_DRAG_STARTED, 333, 450);
-        mManager.onSelectionEvent(SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED, 303, 450);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mManager.onSelectionEvent(
+                        SelectionEventType.SELECTION_HANDLE_DRAG_STARTED, 333, 450);
+                mManager.onSelectionEvent(
+                        SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED, 303, 450);
+            }
+        });
         assertPanelClosedOrUndefined();
 
         // Select a different word and assert that the panel has appeared.
-        longPressNode("states-far");
-        waitForPanelToPeek();
+        simulateLongPressSearch("resolution");
+        // The simulateLongPressSearch call will verify that the panel peeks.
     }
 
     /**
