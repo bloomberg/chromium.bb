@@ -5,7 +5,8 @@
 // https://wicg.github.io/budget-api/#budget-state-interface
 
 [
-    RuntimeEnabled=Budget
+    RuntimeEnabled=Budget,
+    Exposed=(Window,Worker)
 ] interface BudgetState {
     readonly attribute double budgetAt;
     readonly attribute DOMTimeStamp time;

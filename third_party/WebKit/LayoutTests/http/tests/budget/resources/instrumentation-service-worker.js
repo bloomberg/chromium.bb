@@ -54,7 +54,10 @@ self.addEventListener('message', function(workerEvent) {
               WorkerNavigator.prototype.hasOwnProperty('budget') &&
               BudgetService.prototype.hasOwnProperty('getCost') &&
               BudgetService.prototype.hasOwnProperty('getBudget') &&
-              BudgetService.prototype.hasOwnProperty('reserve')
+              BudgetService.prototype.hasOwnProperty('reserve') &&
+              'BudgetState' in self &&
+              BudgetState.prototype.hasOwnProperty('budgetAt') &&
+              BudgetState.prototype.hasOwnProperty('time');
         } catch(err) {
           message = err.message;
         }
