@@ -95,11 +95,14 @@ class SoftwareBrowserCompositorOutputSurfaceTest : public testing::Test {
 
 void SoftwareBrowserCompositorOutputSurfaceTest::SetUp() {
   bool enable_pixel_output = false;
-  ui::ContextFactory* context_factory =
-      ui::InitializeContextFactoryForTests(enable_pixel_output);
+  ui::ContextFactory* context_factory = nullptr;
+  ui::ContextFactoryPrivate* context_factory_private = nullptr;
 
-  compositor_.reset(
-      new ui::Compositor(context_factory, message_loop_.task_runner().get()));
+  ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
+                                       &context_factory_private);
+
+  compositor_.reset(new ui::Compositor(context_factory, context_factory_private,
+                                       message_loop_.task_runner().get()));
   compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
 }
 

@@ -228,9 +228,11 @@ void MirrorWindowController::UpdateWindow(
         reflector_->AddMirroringLayer(mirror_window->layer());
       } else {
         reflector_ =
-            aura::Env::GetInstance()->context_factory()->CreateReflector(
-                Shell::GetPrimaryRootWindow()->GetHost()->compositor(),
-                mirror_window->layer());
+            aura::Env::GetInstance()
+                ->context_factory_private()
+                ->CreateReflector(
+                    Shell::GetPrimaryRootWindow()->GetHost()->compositor(),
+                    mirror_window->layer());
       }
     } else {
       AshWindowTreeHost* ash_host =
@@ -284,7 +286,7 @@ void MirrorWindowController::Close(bool delay_host_deletion) {
 
   mirroring_host_info_map_.clear();
   if (reflector_) {
-    aura::Env::GetInstance()->context_factory()->RemoveReflector(
+    aura::Env::GetInstance()->context_factory_private()->RemoveReflector(
         reflector_.get());
     reflector_.reset();
   }

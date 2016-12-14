@@ -668,6 +668,11 @@ ui::ContextFactory* GpuProcessTransportFactory::GetContextFactory() {
   return this;
 }
 
+ui::ContextFactoryPrivate*
+GpuProcessTransportFactory::GetContextFactoryPrivate() {
+  return this;
+}
+
 cc::FrameSinkId GpuProcessTransportFactory::AllocateFrameSinkId() {
   return cc::FrameSinkId(0, next_sink_id_++);
 }

@@ -9,6 +9,7 @@
 
 namespace ui {
 class ContextFactory;
+class ContextFactoryPrivate;
 }
 
 namespace content {
@@ -16,6 +17,12 @@ namespace content {
 // Returns the singleton ContextFactory used by content. The return value is
 // owned by content.
 CONTENT_EXPORT ui::ContextFactory* GetContextFactory();
+
+// Returns the singleton ContextFactoryPrivate used by content. The return value
+// is owned by content.
+// TODO(fsamuel): Once Mus is used on all platforms, this private interface
+// should not be necessary.
+CONTENT_EXPORT ui::ContextFactoryPrivate* GetContextFactoryPrivate();
 
 }  // namespace content
 

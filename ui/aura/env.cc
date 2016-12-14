@@ -156,7 +156,8 @@ Env::Env(Mode mode)
       mouse_button_flags_(0),
       is_touch_down_(false),
       input_state_lookup_(InputStateLookup::Create()),
-      context_factory_(NULL) {
+      context_factory_(nullptr),
+      context_factory_private_(nullptr) {
   DCHECK(lazy_tls_ptr.Pointer()->Get() == NULL);
   lazy_tls_ptr.Pointer()->Set(this);
 }

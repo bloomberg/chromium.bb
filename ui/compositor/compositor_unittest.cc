@@ -70,10 +70,13 @@ class CompositorTest : public testing::Test {
   void SetUp() override {
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
-    ui::ContextFactory* context_factory =
-        ui::InitializeContextFactoryForTests(false);
+    ui::ContextFactory* context_factory = nullptr;
+    ui::ContextFactoryPrivate* context_factory_private = nullptr;
+    ui::InitializeContextFactoryForTests(false, &context_factory,
+                                         &context_factory_private);
 
-    compositor_.reset(new ui::Compositor(context_factory, task_runner_));
+    compositor_.reset(new ui::Compositor(
+        context_factory, context_factory_private, task_runner_));
     compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
   }
   void TearDown() override {

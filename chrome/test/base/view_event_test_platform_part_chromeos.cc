@@ -30,8 +30,9 @@ namespace {
 // ViewEventTestPlatformPart implementation for ChromeOS (chromeos=1).
 class ViewEventTestPlatformPartChromeOS : public ViewEventTestPlatformPart {
  public:
-  explicit ViewEventTestPlatformPartChromeOS(
-      ui::ContextFactory* context_factory);
+  ViewEventTestPlatformPartChromeOS(
+      ui::ContextFactory* context_factory,
+      ui::ContextFactoryPrivate* context_factory_private);
   ~ViewEventTestPlatformPartChromeOS() override;
 
   // Overridden from ViewEventTestPlatformPart:
@@ -47,7 +48,8 @@ class ViewEventTestPlatformPartChromeOS : public ViewEventTestPlatformPart {
 };
 
 ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
-    ui::ContextFactory* context_factory) {
+    ui::ContextFactory* context_factory,
+    ui::ContextFactoryPrivate* context_factory_private) {
   // Ash Shell can't just live on its own without a browser process, we need to
   // also create the message center.
   message_center::MessageCenter::Initialize();
@@ -65,6 +67,7 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
   ash::ShellInitParams init_params;
   init_params.delegate = shell_delegate;
   init_params.context_factory = context_factory;
+  init_params.context_factory_private = context_factory_private;
   init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kHostWindowBounds, "0+0-1280x800");
@@ -91,6 +94,8 @@ ViewEventTestPlatformPartChromeOS::~ViewEventTestPlatformPartChromeOS() {
 
 // static
 ViewEventTestPlatformPart* ViewEventTestPlatformPart::Create(
-    ui::ContextFactory* context_factory) {
-  return new ViewEventTestPlatformPartChromeOS(context_factory);
+    ui::ContextFactory* context_factory,
+    ui::ContextFactoryPrivate* context_factory_private) {
+  return new ViewEventTestPlatformPartChromeOS(context_factory,
+                                               context_factory_private);
 }

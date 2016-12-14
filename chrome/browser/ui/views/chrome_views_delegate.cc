@@ -479,6 +479,10 @@ ui::ContextFactory* ChromeViewsDelegate::GetContextFactory() {
   return content::GetContextFactory();
 }
 
+ui::ContextFactoryPrivate* ChromeViewsDelegate::GetContextFactoryPrivate() {
+  return content::GetContextFactoryPrivate();
+}
+
 std::string ChromeViewsDelegate::GetApplicationName() {
   return version_info::GetProductName();
 }

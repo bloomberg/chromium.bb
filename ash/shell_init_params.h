@@ -22,6 +22,7 @@ class ShellDelegate;
 struct ASH_EXPORT ShellInitParams {
   ShellDelegate* delegate = nullptr;
   ui::ContextFactory* context_factory = nullptr;
+  ui::ContextFactoryPrivate* context_factory_private = nullptr;
   base::SequencedWorkerPool* blocking_pool = nullptr;
 };
 

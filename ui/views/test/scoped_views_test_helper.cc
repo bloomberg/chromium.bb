@@ -33,17 +33,25 @@ ScopedViewsTestHelper::ScopedViewsTestHelper(
   bool enable_pixel_output = false;
 #if defined(USE_AURA)
   ui::ContextFactory* old_context_factory = nullptr;
+  ui::ContextFactoryPrivate* old_context_factory_private = nullptr;
   if (PlatformTestHelper::IsMus()) {
     old_context_factory = aura::Env::GetInstance()->context_factory();
     DCHECK(old_context_factory);
+    old_context_factory_private =
+        aura::Env::GetInstance()->context_factory_private();
   }
 #endif
-  ui::ContextFactory* context_factory =
-      ui::InitializeContextFactoryForTests(enable_pixel_output);
+  ui::ContextFactory* context_factory = nullptr;
+  ui::ContextFactoryPrivate* context_factory_private = nullptr;
+  ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
+                                       &context_factory_private);
+
   views_delegate_->set_context_factory(context_factory);
+  views_delegate_->set_context_factory_private(context_factory_private);
 
   test_helper_.reset(ViewsTestHelper::Create(base::MessageLoopForUI::current(),
-                                             context_factory));
+                                             context_factory,
+                                             context_factory_private));
   platform_test_helper_->OnTestHelperCreated(test_helper_.get());
   test_helper_->SetUp();
 
@@ -55,8 +63,11 @@ ScopedViewsTestHelper::ScopedViewsTestHelper(
   // the corresponding ui::Windows). So restore the context-factory (which
   // WindowManagerConnection would have set up), so that NativeWidgetMus
   // installs the correct context-factory that can talk to mus.
-  if (PlatformTestHelper::IsMus())
+  if (PlatformTestHelper::IsMus()) {
     aura::Env::GetInstance()->set_context_factory(old_context_factory);
+    aura::Env::GetInstance()->set_context_factory_private(
+        old_context_factory_private);
+  }
 #endif
 
   ui::InitializeInputMethodForTesting();

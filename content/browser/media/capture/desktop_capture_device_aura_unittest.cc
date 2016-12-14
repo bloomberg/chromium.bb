@@ -100,14 +100,16 @@ class DesktopCaptureDeviceAuraTest : public testing::Test {
  protected:
   void SetUp() override {
     // The ContextFactory must exist before any Compositors are created.
+
     bool enable_pixel_output = false;
-    ui::ContextFactory* context_factory =
-        ui::InitializeContextFactoryForTests(enable_pixel_output);
+    ui::ContextFactory* context_factory = nullptr;
+    ui::ContextFactoryPrivate* context_factory_private = nullptr;
+    ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
+                                         &context_factory_private);
     helper_.reset(
         new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
-    helper_->SetUp(context_factory);
+    helper_->SetUp(context_factory, context_factory_private);
     new wm::DefaultActivationClient(helper_->root_window());
-
     // We need a window to cover desktop area so that DesktopCaptureDeviceAura
     // can use gfx::NativeWindow::GetWindowAtScreenPoint() to locate the
     // root window associated with the primary display.

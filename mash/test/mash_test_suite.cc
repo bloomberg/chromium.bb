@@ -32,8 +32,14 @@ void MashTestSuite::Initialize() {
   env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);
   gl::GLSurfaceTestSupport::InitializeOneOff();
   const bool enable_pixel_output = false;
-  env_->set_context_factory(
-      ui::InitializeContextFactoryForTests(enable_pixel_output));
+
+  ui::ContextFactory* context_factory = nullptr;
+  ui::ContextFactoryPrivate* context_factory_private = nullptr;
+  ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
+                                       &context_factory_private);
+
+  env_->set_context_factory(context_factory);
+  env_->set_context_factory_private(context_factory_private);
 }
 
 void MashTestSuite::Shutdown() {

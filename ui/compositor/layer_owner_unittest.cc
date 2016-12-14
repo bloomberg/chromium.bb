@@ -71,10 +71,14 @@ void LayerOwnerTestWithCompositor::SetUp() {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       new base::NullTaskRunner();
 
-  ui::ContextFactory* context_factory =
-      ui::InitializeContextFactoryForTests(false);
+  ui::ContextFactory* context_factory = nullptr;
+  ui::ContextFactoryPrivate* context_factory_private = nullptr;
 
-  compositor_.reset(new ui::Compositor(context_factory, task_runner));
+  ui::InitializeContextFactoryForTests(false, &context_factory,
+                                       &context_factory_private);
+
+  compositor_.reset(new ui::Compositor(context_factory, context_factory_private,
+                                       task_runner));
   compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
 }
 

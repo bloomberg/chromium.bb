@@ -168,12 +168,14 @@ class LayerWithRealCompositorTest : public testing::Test {
   // Overridden from testing::Test:
   void SetUp() override {
     bool enable_pixel_output = true;
-    ui::ContextFactory* context_factory =
-        InitializeContextFactoryForTests(enable_pixel_output);
+    ui::ContextFactory* context_factory = nullptr;
+    ui::ContextFactoryPrivate* context_factory_private = nullptr;
+    InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
+                                     &context_factory_private);
 
     const gfx::Rect host_bounds(10, 10, 500, 500);
-    compositor_host_.reset(
-        TestCompositorHost::Create(host_bounds, context_factory));
+    compositor_host_.reset(TestCompositorHost::Create(
+        host_bounds, context_factory, context_factory_private));
     compositor_host_->Show();
   }
 
@@ -502,12 +504,15 @@ class LayerWithDelegateTest : public testing::Test {
   // Overridden from testing::Test:
   void SetUp() override {
     bool enable_pixel_output = false;
-    ui::ContextFactory* context_factory =
-        InitializeContextFactoryForTests(enable_pixel_output);
+    ui::ContextFactory* context_factory = nullptr;
+    ui::ContextFactoryPrivate* context_factory_private = nullptr;
+
+    InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
+                                     &context_factory_private);
 
     const gfx::Rect host_bounds(1000, 1000);
-    compositor_host_.reset(TestCompositorHost::Create(host_bounds,
-                                                      context_factory));
+    compositor_host_.reset(TestCompositorHost::Create(
+        host_bounds, context_factory, context_factory_private));
     compositor_host_->Show();
   }
 

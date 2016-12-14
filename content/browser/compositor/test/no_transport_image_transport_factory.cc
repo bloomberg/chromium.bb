@@ -33,6 +33,11 @@ ui::ContextFactory* NoTransportImageTransportFactory::GetContextFactory() {
   return context_factory_.get();
 }
 
+ui::ContextFactoryPrivate*
+NoTransportImageTransportFactory::GetContextFactoryPrivate() {
+  return context_factory_.get();
+}
+
 display_compositor::GLHelper* NoTransportImageTransportFactory::GetGLHelper() {
   if (!gl_helper_) {
     context_provider_ = context_factory_->SharedMainThreadContextProvider();

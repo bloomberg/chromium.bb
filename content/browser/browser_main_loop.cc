@@ -1381,6 +1381,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
       switches::kUseMusInRenderer);
   if (aura::Env::GetInstance() && !use_mus_in_renderer) {
     aura::Env::GetInstance()->set_context_factory(GetContextFactory());
+    aura::Env::GetInstance()->set_context_factory_private(
+        GetContextFactoryPrivate());
   }
 #endif  // defined(USE_AURA)
 #endif  // defined(OS_ANDROID)

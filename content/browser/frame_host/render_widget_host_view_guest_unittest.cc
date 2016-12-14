@@ -276,7 +276,7 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
 #if !defined(OS_ANDROID)
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     cc::SurfaceManager* manager =
-        factory->GetContextFactory()->GetSurfaceManager();
+        factory->GetContextFactoryPrivate()->GetSurfaceManager();
     cc::Surface* surface = manager->GetSurfaceForId(id);
     EXPECT_TRUE(surface);
     // There should be a SurfaceSequence created by the RWHVGuest.
@@ -300,7 +300,7 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
 #if !defined(OS_ANDROID)
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     cc::SurfaceManager* manager =
-        factory->GetContextFactory()->GetSurfaceManager();
+        factory->GetContextFactoryPrivate()->GetSurfaceManager();
     cc::Surface* surface = manager->GetSurfaceForId(id);
     EXPECT_TRUE(surface);
     // There should be a SurfaceSequence created by the RWHVGuest.

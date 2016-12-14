@@ -10,9 +10,9 @@ namespace views {
 
 TestViewsDelegate::TestViewsDelegate()
     : context_factory_(nullptr),
+      context_factory_private_(nullptr),
       use_desktop_native_widgets_(false),
-      use_transparent_windows_(false) {
-}
+      use_transparent_windows_(false) {}
 
 TestViewsDelegate::~TestViewsDelegate() {
 }
@@ -32,6 +32,10 @@ void TestViewsDelegate::OnBeforeWidgetInit(
 
 ui::ContextFactory* TestViewsDelegate::GetContextFactory() {
   return context_factory_;
+}
+
+ui::ContextFactoryPrivate* TestViewsDelegate::GetContextFactoryPrivate() {
+  return context_factory_private_;
 }
 
 }  // namespace views

@@ -498,7 +498,8 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     aura_test_helper_.reset(
         new aura::test::AuraTestHelper(base::MessageLoopForUI::current()));
     aura_test_helper_->SetUp(
-        ImageTransportFactory::GetInstance()->GetContextFactory());
+        ImageTransportFactory::GetInstance()->GetContextFactory(),
+        ImageTransportFactory::GetInstance()->GetContextFactoryPrivate());
     new wm::DefaultActivationClient(aura_test_helper_->root_window());
 
     browser_context_.reset(new TestBrowserContext);
@@ -1685,7 +1686,7 @@ TEST_F(RenderWidgetHostViewAuraTest, ResettingCompositorReturnsResources) {
   FakeSurfaceObserver manager_observer;
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   cc::SurfaceManager* manager =
-      factory->GetContextFactory()->GetSurfaceManager();
+      factory->GetContextFactoryPrivate()->GetSurfaceManager();
   manager->AddObserver(&manager_observer);
 
   gfx::Size view_size(100, 100);
@@ -1753,7 +1754,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TwoOutputSurfaces) {
   FakeSurfaceObserver manager_observer;
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   cc::SurfaceManager* manager =
-      factory->GetContextFactory()->GetSurfaceManager();
+      factory->GetContextFactoryPrivate()->GetSurfaceManager();
   manager->AddObserver(&manager_observer);
 
   gfx::Size view_size(100, 100);
@@ -1919,7 +1920,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MirrorLayers) {
   if (id.is_valid()) {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     cc::SurfaceManager* manager =
-        factory->GetContextFactory()->GetSurfaceManager();
+        factory->GetContextFactoryPrivate()->GetSurfaceManager();
     cc::Surface* surface = manager->GetSurfaceForId(id);
     EXPECT_TRUE(surface);
 

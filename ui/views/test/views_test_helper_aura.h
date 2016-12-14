@@ -31,7 +31,8 @@ namespace views {
 class ViewsTestHelperAura : public ViewsTestHelper {
  public:
   ViewsTestHelperAura(base::MessageLoopForUI* message_loop,
-                      ui::ContextFactory* context_factory);
+                      ui::ContextFactory* context_factory,
+                      ui::ContextFactoryPrivate* context_factory_private);
   ~ViewsTestHelperAura() override;
 
   void EnableMusWithWindowTreeClient(
@@ -44,6 +45,7 @@ class ViewsTestHelperAura : public ViewsTestHelper {
 
  private:
   ui::ContextFactory* context_factory_;
+  ui::ContextFactoryPrivate* context_factory_private_;
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;
 

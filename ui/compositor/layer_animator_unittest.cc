@@ -2607,13 +2607,15 @@ TEST(LayerAnimatorTest, AnimatorRemovedFromCollectionWhenLayerIsDestroyed) {
 
 TEST(LayerAnimatorTest, LayerMovedBetweenCompositorsDuringAnimation) {
   bool enable_pixel_output = false;
-  ui::ContextFactory* context_factory =
-      InitializeContextFactoryForTests(enable_pixel_output);
+  ui::ContextFactory* context_factory = nullptr;
+  ui::ContextFactoryPrivate* context_factory_private = nullptr;
+  InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
+                                   &context_factory_private);
   const gfx::Rect bounds(10, 10, 100, 100);
-  std::unique_ptr<TestCompositorHost> host_1(
-      TestCompositorHost::Create(bounds, context_factory));
-  std::unique_ptr<TestCompositorHost> host_2(
-      TestCompositorHost::Create(bounds, context_factory));
+  std::unique_ptr<TestCompositorHost> host_1(TestCompositorHost::Create(
+      bounds, context_factory, context_factory_private));
+  std::unique_ptr<TestCompositorHost> host_2(TestCompositorHost::Create(
+      bounds, context_factory, context_factory_private));
   host_1->Show();
   host_2->Show();
 
@@ -2655,11 +2657,13 @@ TEST(LayerAnimatorTest, LayerMovedBetweenCompositorsDuringAnimation) {
 
 TEST(LayerAnimatorTest, ThreadedAnimationSurvivesIfLayerRemovedAdded) {
   bool enable_pixel_output = false;
-  ui::ContextFactory* context_factory =
-      InitializeContextFactoryForTests(enable_pixel_output);
+  ui::ContextFactory* context_factory = nullptr;
+  ui::ContextFactoryPrivate* context_factory_private = nullptr;
+  InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
+                                   &context_factory_private);
   const gfx::Rect bounds(10, 10, 100, 100);
-  std::unique_ptr<TestCompositorHost> host(
-      TestCompositorHost::Create(bounds, context_factory));
+  std::unique_ptr<TestCompositorHost> host(TestCompositorHost::Create(
+      bounds, context_factory, context_factory_private));
   host->Show();
 
   Compositor* compositor = host->GetCompositor();

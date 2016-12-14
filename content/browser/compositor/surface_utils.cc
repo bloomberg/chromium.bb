@@ -164,7 +164,7 @@ cc::FrameSinkId AllocateFrameSinkId() {
   return ContextProviderFactoryImpl::GetInstance()->AllocateFrameSinkId();
 #else
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  return factory->GetContextFactory()->AllocateFrameSinkId();
+  return factory->GetContextFactoryPrivate()->AllocateFrameSinkId();
 #endif
 }
 
@@ -175,7 +175,7 @@ cc::SurfaceManager* GetSurfaceManager() {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   if (factory == NULL)
     return nullptr;
-  return factory->GetContextFactory()->GetSurfaceManager();
+  return factory->GetContextFactoryPrivate()->GetSurfaceManager();
 #endif
 }
 

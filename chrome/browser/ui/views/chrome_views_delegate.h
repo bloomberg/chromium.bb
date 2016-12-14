@@ -54,6 +54,7 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   bool WindowManagerProvidesTitleBar(bool maximized) override;
 #endif
   ui::ContextFactory* GetContextFactory() override;
+  ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
   std::string GetApplicationName() override;
 #if defined(OS_WIN)
   int GetAppbarAutohideEdges(HMONITOR monitor,

@@ -135,6 +135,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   ash::ShellInitParams init_params;
   init_params.delegate = delegate_;
   init_params.context_factory = content::GetContextFactory();
+  init_params.context_factory_private = content::GetContextFactoryPrivate();
   init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
   ash::Shell::CreateInstance(init_params);
   ash::WmShell::Get()->CreateShelf();

@@ -74,15 +74,17 @@ void AuraTestBase::SetUp() {
 
   // The ContextFactory must exist before any Compositors are created.
   bool enable_pixel_output = false;
-  ui::ContextFactory* context_factory =
-      ui::InitializeContextFactoryForTests(enable_pixel_output);
+  ui::ContextFactory* context_factory = nullptr;
+  ui::ContextFactoryPrivate* context_factory_private = nullptr;
+  ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
+                                       &context_factory_private);
 
   helper_.reset(new AuraTestHelper(&message_loop_));
   if (use_mus_) {
     helper_->EnableMusWithTestWindowTree(window_tree_client_delegate_,
                                          window_manager_delegate_);
   }
-  helper_->SetUp(context_factory);
+  helper_->SetUp(context_factory, context_factory_private);
 }
 
 void AuraTestBase::TearDown() {

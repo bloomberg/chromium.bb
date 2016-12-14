@@ -84,7 +84,8 @@ class TestCompositorHostMac : public TestCompositorHost,
                               public AppKitHost {
  public:
   TestCompositorHostMac(const gfx::Rect& bounds,
-                        ui::ContextFactory* context_factory);
+                        ui::ContextFactory* context_factory,
+                        ui::ContextFactoryPrivate* context_factory_private);
   ~TestCompositorHostMac() override;
 
  private:
@@ -104,11 +105,13 @@ class TestCompositorHostMac : public TestCompositorHost,
 
 TestCompositorHostMac::TestCompositorHostMac(
     const gfx::Rect& bounds,
-    ui::ContextFactory* context_factory)
+    ui::ContextFactory* context_factory,
+    ui::ContextFactoryPrivate* context_factory_private)
     : bounds_(bounds),
-      compositor_(context_factory, base::ThreadTaskRunnerHandle::Get()),
-      window_(nil) {
-}
+      compositor_(context_factory,
+                  context_factory_private,
+                  base::ThreadTaskRunnerHandle::Get()),
+      window_(nil) {}
 
 TestCompositorHostMac::~TestCompositorHostMac() {
   // Release reference to |compositor_|.  Important because the |compositor_|
@@ -150,8 +153,10 @@ ui::Compositor* TestCompositorHostMac::GetCompositor() {
 // static
 TestCompositorHost* TestCompositorHost::Create(
     const gfx::Rect& bounds,
-    ui::ContextFactory* context_factory) {
-  return new TestCompositorHostMac(bounds, context_factory);
+    ui::ContextFactory* context_factory,
+    ui::ContextFactoryPrivate* context_factory_private) {
+  return new TestCompositorHostMac(bounds, context_factory,
+                                   context_factory_private);
 }
 
 }  // namespace ui

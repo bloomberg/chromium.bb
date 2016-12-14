@@ -30,6 +30,7 @@ class NoTransportImageTransportFactory : public ImageTransportFactory {
 
   // ImageTransportFactory implementation.
   ui::ContextFactory* GetContextFactory() override;
+  ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
   display_compositor::GLHelper* GetGLHelper() override;
   void SetGpuChannelEstablishFactory(
       gpu::GpuChannelEstablishFactory* factory) override;

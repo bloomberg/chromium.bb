@@ -195,7 +195,7 @@ TEST_F(SurfaceTest, SetCrop) {
 const cc::CompositorFrame& GetFrameFromSurface(Surface* surface) {
   cc::SurfaceId surface_id = surface->GetSurfaceId();
   cc::SurfaceManager* surface_manager =
-      aura::Env::GetInstance()->context_factory()->GetSurfaceManager();
+      aura::Env::GetInstance()->context_factory_private()->GetSurfaceManager();
   const cc::CompositorFrame& frame =
       surface_manager->GetSurfaceForId(surface_id)->GetEligibleFrame();
   return frame;

@@ -16,9 +16,9 @@ namespace views {
 
 TestViewsDelegate::TestViewsDelegate()
     : context_factory_(nullptr),
+      context_factory_private_(nullptr),
       use_desktop_native_widgets_(false),
-      use_transparent_windows_(false) {
-}
+      use_transparent_windows_(false) {}
 
 TestViewsDelegate::~TestViewsDelegate() {
 }
@@ -48,6 +48,14 @@ ui::ContextFactory* TestViewsDelegate::GetContextFactory() {
     return context_factory_;
   if (aura::Env::GetInstance())
     return aura::Env::GetInstance()->context_factory();
+  return nullptr;
+}
+
+ui::ContextFactoryPrivate* TestViewsDelegate::GetContextFactoryPrivate() {
+  if (context_factory_private_)
+    return context_factory_private_;
+  if (aura::Env::GetInstance())
+    return aura::Env::GetInstance()->context_factory_private();
   return nullptr;
 }
 

@@ -249,8 +249,10 @@ void WindowTreeHost::CreateCompositor() {
   DCHECK(Env::GetInstance());
   ui::ContextFactory* context_factory = Env::GetInstance()->context_factory();
   DCHECK(context_factory);
-  compositor_.reset(
-      new ui::Compositor(context_factory, base::ThreadTaskRunnerHandle::Get()));
+  ui::ContextFactoryPrivate* context_factory_private =
+      Env::GetInstance()->context_factory_private();
+  compositor_.reset(new ui::Compositor(context_factory, context_factory_private,
+                                       base::ThreadTaskRunnerHandle::Get()));
   if (!dispatcher()) {
     window()->Init(ui::LAYER_NOT_DRAWN);
     window()->set_host(this);

@@ -5,6 +5,7 @@
 namespace ui {
 
 class ContextFactory;
+class ContextFactoryPrivate;
 
 // Set up the compositor ContextFactory for a test environment. Unit tests
 // that do not have a full content environment need to call this before
@@ -14,7 +15,11 @@ class ContextFactory;
 // called, the caller must call TerminateContextFactoryForTests() to clean up.
 // TODO(sky): this should return a scoped_ptr and then nuke
 // TerminateContextFactoryForTests().
-ui::ContextFactory* InitializeContextFactoryForTests(bool enable_pixel_output);
+void InitializeContextFactoryForTests(
+    bool enable_pixel_output,
+    ui::ContextFactory** context_factory,
+    ui::ContextFactoryPrivate** context_factory_private);
+
 void TerminateContextFactoryForTests();
 
 }  // namespace ui

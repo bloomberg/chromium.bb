@@ -24,7 +24,8 @@ class SurfaceManager;
 namespace ui {
 class InProcessContextProvider;
 
-class InProcessContextFactory : public ContextFactory {
+class InProcessContextFactory : public ContextFactory,
+                                public ContextFactoryPrivate {
  public:
   // surface_manager is owned by the creator of this and must outlive the
   // context factory.

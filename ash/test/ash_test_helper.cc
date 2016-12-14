@@ -83,8 +83,10 @@ void AshTestHelper::SetUp(bool start_session,
   ui::InitializeInputMethodForTesting();
 
   bool enable_pixel_output = false;
-  ui::ContextFactory* context_factory =
-      ui::InitializeContextFactoryForTests(enable_pixel_output);
+  ui::ContextFactory* context_factory = nullptr;
+  ui::ContextFactoryPrivate* context_factory_private = nullptr;
+  ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
+                                       &context_factory_private);
 
   // Creates Shell and hook with Desktop.
   if (!test_shell_delegate_)
@@ -131,6 +133,7 @@ void AshTestHelper::SetUp(bool start_session,
   ShellInitParams init_params;
   init_params.delegate = test_shell_delegate_;
   init_params.context_factory = context_factory;
+  init_params.context_factory_private = context_factory_private;
   init_params.blocking_pool = ash_test_environment_->GetBlockingPool();
   Shell::CreateInstance(init_params);
   aura::test::EnvTestHelper(aura::Env::GetInstance())

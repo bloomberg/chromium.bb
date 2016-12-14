@@ -86,14 +86,16 @@ SoftwareOutputDeviceOzoneTest::~SoftwareOutputDeviceOzoneTest() {
 }
 
 void SoftwareOutputDeviceOzoneTest::SetUp() {
-  ui::ContextFactory* context_factory =
-      ui::InitializeContextFactoryForTests(enable_pixel_output_);
+  ui::ContextFactory* context_factory = nullptr;
+  ui::ContextFactoryPrivate* context_factory_private = nullptr;
+  ui::InitializeContextFactoryForTests(enable_pixel_output_, &context_factory,
+                                       &context_factory_private);
 
   const gfx::Size size(500, 400);
   window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
       &window_delegate_, gfx::Rect(size));
-  compositor_.reset(
-      new ui::Compositor(context_factory, base::ThreadTaskRunnerHandle::Get()));
+  compositor_.reset(new ui::Compositor(context_factory, nullptr,
+                                       base::ThreadTaskRunnerHandle::Get()));
   compositor_->SetAcceleratedWidget(window_delegate_.GetAcceleratedWidget());
   compositor_->SetScaleAndSize(1.0f, size);
 

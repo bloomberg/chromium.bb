@@ -123,8 +123,11 @@ class ReflectorImplTest : public testing::Test {
  public:
   void SetUp() override {
     bool enable_pixel_output = false;
-    ui::ContextFactory* context_factory =
-        ui::InitializeContextFactoryForTests(enable_pixel_output);
+    ui::ContextFactory* context_factory = nullptr;
+    ui::ContextFactoryPrivate* context_factory_private = nullptr;
+
+    ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
+                                         &context_factory_private);
     ImageTransportFactory::InitializeForUnitTests(
         std::unique_ptr<ImageTransportFactory>(
             new NoTransportImageTransportFactory));
@@ -134,8 +137,9 @@ class ReflectorImplTest : public testing::Test {
     begin_frame_source_.reset(new cc::DelayBasedBeginFrameSource(
         base::MakeUnique<cc::DelayBasedTimeSource>(
             compositor_task_runner_.get())));
-    compositor_.reset(
-        new ui::Compositor(context_factory, compositor_task_runner_.get()));
+    compositor_.reset(new ui::Compositor(context_factory,
+                                         context_factory_private,
+                                         compositor_task_runner_.get()));
     compositor_->SetAcceleratedWidget(gfx::kNullAcceleratedWidget);
 
     auto context_provider = cc::TestContextProvider::Create();

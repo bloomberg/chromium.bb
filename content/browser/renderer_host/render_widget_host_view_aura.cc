@@ -391,7 +391,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   cc::FrameSinkId frame_sink_id =
       is_guest_view_hack_
-          ? factory->GetContextFactory()->AllocateFrameSinkId()
+          ? factory->GetContextFactoryPrivate()->AllocateFrameSinkId()
           : cc::FrameSinkId(
                 base::checked_cast<uint32_t>(host_->GetProcess()->GetID()),
                 base::checked_cast<uint32_t>(host_->GetRoutingID()));

@@ -144,16 +144,21 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 ////////////////////////////////////////////////////////////////////////////////
 // Surface, public:
 
+// TODO(fsamuel): exo should not use context_factory_private. Instead, we should
+// request a CompositorFrameSink from the aura::Window. Setting up the
+// BeginFrame hierarchy should be an internal implementation detail of aura or
+// mus in aura-mus.
 Surface::Surface()
     : window_(new aura::Window(new CustomWindowDelegate(this))),
-      frame_sink_id_(
-          aura::Env::GetInstance()->context_factory()->AllocateFrameSinkId()) {
+      frame_sink_id_(aura::Env::GetInstance()
+                         ->context_factory_private()
+                         ->AllocateFrameSinkId()) {
   cc::mojom::MojoCompositorFrameSinkClientPtr frame_sink_holder_ptr;
   cc::mojom::MojoCompositorFrameSinkClientRequest frame_sink_client_request =
       mojo::GetProxy(&frame_sink_holder_ptr);
   std::unique_ptr<CompositorFrameSink> frame_sink(new CompositorFrameSink(
       frame_sink_id_,
-      aura::Env::GetInstance()->context_factory()->GetSurfaceManager(),
+      aura::Env::GetInstance()->context_factory_private()->GetSurfaceManager(),
       std::move(frame_sink_holder_ptr)));
   compositor_frame_sink_holder_ = new CompositorFrameSinkHolder(
       this, std::move(frame_sink), std::move(frame_sink_client_request));

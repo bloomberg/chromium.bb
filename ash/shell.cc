@@ -652,6 +652,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   display_manager_->RefreshFontParams();
 
   aura::Env::GetInstance()->set_context_factory(init_params.context_factory);
+  aura::Env::GetInstance()->set_context_factory_private(
+      init_params.context_factory_private);
 
   // The WindowModalityController needs to be at the front of the input event
   // pretarget handler list to ensure that it processes input events when modal

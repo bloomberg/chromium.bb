@@ -74,12 +74,17 @@ void ViewEventTestBase::SetUp() {
 
   // The ContextFactory must exist before any Compositors are created.
   bool enable_pixel_output = false;
-  ui::ContextFactory* context_factory =
-      ui::InitializeContextFactoryForTests(enable_pixel_output);
+  ui::ContextFactory* context_factory = nullptr;
+  ui::ContextFactoryPrivate* context_factory_private = nullptr;
+
+  ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
+                                       &context_factory_private);
   views_delegate_.set_context_factory(context_factory);
+  views_delegate_.set_context_factory_private(context_factory_private);
   views_delegate_.set_use_desktop_native_widgets(true);
 
-  platform_part_.reset(ViewEventTestPlatformPart::Create(context_factory));
+  platform_part_.reset(ViewEventTestPlatformPart::Create(
+      context_factory, context_factory_private));
   gfx::NativeWindow context = platform_part_->GetContext();
   window_ = views::Widget::CreateWindowWithContext(this, context);
   window_->Show();

@@ -20,7 +20,8 @@ namespace ui {
 class TestCompositorHostOzone : public TestCompositorHost {
  public:
   TestCompositorHostOzone(const gfx::Rect& bounds,
-                          ui::ContextFactory* context_factory);
+                          ui::ContextFactory* context_factory,
+                          ui::ContextFactoryPrivate* context_factory_private);
   ~TestCompositorHostOzone() override;
 
  private:
@@ -37,9 +38,12 @@ class TestCompositorHostOzone : public TestCompositorHost {
 
 TestCompositorHostOzone::TestCompositorHostOzone(
     const gfx::Rect& bounds,
-    ui::ContextFactory* context_factory)
+    ui::ContextFactory* context_factory,
+    ui::ContextFactoryPrivate* context_factory_private)
     : bounds_(bounds),
-      compositor_(context_factory, base::ThreadTaskRunnerHandle::Get()) {}
+      compositor_(context_factory,
+                  context_factory_private,
+                  base::ThreadTaskRunnerHandle::Get()) {}
 
 TestCompositorHostOzone::~TestCompositorHostOzone() {}
 
@@ -63,8 +67,10 @@ ui::Compositor* TestCompositorHostOzone::GetCompositor() {
 // static
 TestCompositorHost* TestCompositorHost::Create(
     const gfx::Rect& bounds,
-    ui::ContextFactory* context_factory) {
-  return new TestCompositorHostOzone(bounds, context_factory);
+    ui::ContextFactory* context_factory,
+    ui::ContextFactoryPrivate* context_factory_private) {
+  return new TestCompositorHostOzone(bounds, context_factory,
+                                     context_factory_private);
 }
 
 }  // namespace ui

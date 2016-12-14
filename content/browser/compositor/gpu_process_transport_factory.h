@@ -31,9 +31,9 @@ namespace content {
 class ContextProviderCommandBuffer;
 class OutputDeviceBacking;
 
-class GpuProcessTransportFactory
-    : public ui::ContextFactory,
-      public ImageTransportFactory {
+class GpuProcessTransportFactory : public ui::ContextFactory,
+                                   public ui::ContextFactoryPrivate,
+                                   public ImageTransportFactory {
  public:
   GpuProcessTransportFactory();
 
@@ -42,16 +42,20 @@ class GpuProcessTransportFactory
   // ui::ContextFactory implementation.
   void CreateCompositorFrameSink(
       base::WeakPtr<ui::Compositor> compositor) override;
+  scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider() override;
+  uint32_t GetImageTextureTarget(gfx::BufferFormat format,
+                                 gfx::BufferUsage usage) override;
+  bool DoesCreateTestContexts() override;
+  gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
+  cc::TaskGraphRunner* GetTaskGraphRunner() override;
+  void AddObserver(ui::ContextFactoryObserver* observer) override;
+  void RemoveObserver(ui::ContextFactoryObserver* observer) override;
+
+  // ui::ContextFactoryPrivate implementation.
   std::unique_ptr<ui::Reflector> CreateReflector(ui::Compositor* source,
                                                  ui::Layer* target) override;
   void RemoveReflector(ui::Reflector* reflector) override;
   void RemoveCompositor(ui::Compositor* compositor) override;
-  scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider() override;
-  bool DoesCreateTestContexts() override;
-  uint32_t GetImageTextureTarget(gfx::BufferFormat format,
-                                 gfx::BufferUsage usage) override;
-  gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
-  cc::TaskGraphRunner* GetTaskGraphRunner() override;
   cc::FrameSinkId AllocateFrameSinkId() override;
   void SetDisplayVisible(ui::Compositor* compositor, bool visible) override;
   void ResizeDisplay(ui::Compositor* compositor,
@@ -64,11 +68,10 @@ class GpuProcessTransportFactory
                                  base::TimeTicks timebase,
                                  base::TimeDelta interval) override;
   void SetOutputIsSecure(ui::Compositor* compositor, bool secure) override;
-  void AddObserver(ui::ContextFactoryObserver* observer) override;
-  void RemoveObserver(ui::ContextFactoryObserver* observer) override;
 
   // ImageTransportFactory implementation.
   ui::ContextFactory* GetContextFactory() override;
+  ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
   cc::SurfaceManager* GetSurfaceManager() override;
   display_compositor::GLHelper* GetGLHelper() override;
   void SetGpuChannelEstablishFactory(

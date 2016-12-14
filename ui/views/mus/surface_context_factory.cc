@@ -16,21 +16,8 @@
 #include "ui/views/mus/native_widget_mus.h"
 
 namespace views {
-namespace {
 
-class FakeReflector : public ui::Reflector {
- public:
-  FakeReflector() {}
-  ~FakeReflector() override {}
-  void OnMirroringCompositorResized() override {}
-  void AddMirroringLayer(ui::Layer* layer) override {}
-  void RemoveMirroringLayer(ui::Layer* layer) override {}
-};
-
-}  // namespace
-
-SurfaceContextFactory::SurfaceContextFactory(ui::Gpu* gpu)
-    : next_sink_id_(1u), gpu_(gpu) {}
+SurfaceContextFactory::SurfaceContextFactory(ui::Gpu* gpu) : gpu_(gpu) {}
 
 SurfaceContextFactory::~SurfaceContextFactory() {}
 
@@ -45,17 +32,6 @@ void SurfaceContextFactory::CreateCompositorFrameSink(
                                       gpu_->EstablishGpuChannelSync())),
       gpu_->gpu_memory_buffer_manager());
   compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
-}
-
-std::unique_ptr<ui::Reflector> SurfaceContextFactory::CreateReflector(
-    ui::Compositor* mirroed_compositor,
-    ui::Layer* mirroring_layer) {
-  // NOTIMPLEMENTED();
-  return base::WrapUnique(new FakeReflector);
-}
-
-void SurfaceContextFactory::RemoveReflector(ui::Reflector* reflector) {
-  // NOTIMPLEMENTED();
 }
 
 scoped_refptr<cc::ContextProvider>
@@ -85,24 +61,6 @@ SurfaceContextFactory::GetGpuMemoryBufferManager() {
 
 cc::TaskGraphRunner* SurfaceContextFactory::GetTaskGraphRunner() {
   return raster_thread_helper_.task_graph_runner();
-}
-
-cc::FrameSinkId SurfaceContextFactory::AllocateFrameSinkId() {
-  return cc::FrameSinkId(0, next_sink_id_++);
-}
-
-cc::SurfaceManager* SurfaceContextFactory::GetSurfaceManager() {
-  return &surface_manager_;
-}
-
-void SurfaceContextFactory::SetDisplayVisible(ui::Compositor* compositor,
-                                              bool visible) {
-  // TODO(fsamuel): display[compositor]->SetVisible(visible);
-}
-
-void SurfaceContextFactory::ResizeDisplay(ui::Compositor* compositor,
-                                          const gfx::Size& size) {
-  // TODO(fsamuel): display[compositor]->Resize(size);
 }
 
 }  // namespace views

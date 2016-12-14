@@ -99,6 +99,7 @@ class RecyclableCompositorMac : public ui::CompositorObserver {
 RecyclableCompositorMac::RecyclableCompositorMac()
     : accelerated_widget_mac_(new ui::AcceleratedWidgetMac()),
       compositor_(content::GetContextFactory(),
+                  content::GetContextFactoryPrivate(),
                   ui::WindowResizeHelperMac::Get()->task_runner()) {
   compositor_.SetAcceleratedWidget(
       accelerated_widget_mac_->accelerated_widget());
@@ -175,7 +176,7 @@ BrowserCompositorMac::BrowserCompositorMac(
   root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   delegated_frame_host_.reset(new DelegatedFrameHost(
-      factory->GetContextFactory()->AllocateFrameSinkId(), this));
+      factory->GetContextFactoryPrivate()->AllocateFrameSinkId(), this));
 
   SetRenderWidgetHostIsHidden(render_widget_host_is_hidden);
   SetNSViewAttachedToWindow(ns_view_attached_to_window);

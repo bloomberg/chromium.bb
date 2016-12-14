@@ -191,12 +191,15 @@ class KeyboardControllerTest : public testing::Test,
   void SetUp() override {
     // The ContextFactory must exist before any Compositors are created.
     bool enable_pixel_output = false;
-    ui::ContextFactory* context_factory =
-        ui::InitializeContextFactoryForTests(enable_pixel_output);
+    ui::ContextFactory* context_factory = nullptr;
+    ui::ContextFactoryPrivate* context_factory_private = nullptr;
+
+    ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
+                                         &context_factory_private);
 
     ui::SetUpInputMethodFactoryForTesting();
     aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
-    aura_test_helper_->SetUp(context_factory);
+    aura_test_helper_->SetUp(context_factory, context_factory_private);
     new wm::DefaultActivationClient(aura_test_helper_->root_window());
     focus_controller_.reset(new TestFocusController(root_window()));
     ui_ = new TestKeyboardUI(aura_test_helper_->host()->GetInputMethod());

@@ -17,6 +17,7 @@
 
 namespace ui {
 class ContextFactory;
+class ContextFactoryPrivate;
 class PlatformEventSource;
 }
 namespace aura {
@@ -87,6 +88,14 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
   }
   ui::ContextFactory* context_factory() { return context_factory_; }
 
+  void set_context_factory_private(
+      ui::ContextFactoryPrivate* context_factory_private) {
+    context_factory_private_ = context_factory_private;
+  }
+  ui::ContextFactoryPrivate* context_factory_private() {
+    return context_factory_private_;
+  }
+
   // See CreateInstance() for description.
   void SetWindowTreeClient(WindowTreeClient* window_tree_client);
   bool HasWindowTreeClient() const { return window_tree_client_ != nullptr; }
@@ -143,6 +152,7 @@ class AURA_EXPORT Env : public ui::EventTarget, public base::SupportsUserData {
   std::unique_ptr<ui::PlatformEventSource> event_source_;
 
   ui::ContextFactory* context_factory_;
+  ui::ContextFactoryPrivate* context_factory_private_;
 
   Window* active_focus_client_root_ = nullptr;
   client::FocusClient* active_focus_client_ = nullptr;

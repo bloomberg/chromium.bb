@@ -76,7 +76,8 @@ void AuraTestHelper::EnableMusWithWindowTreeClient(
   window_tree_client_ = window_tree_client;
 }
 
-void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
+void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
+                           ui::ContextFactoryPrivate* context_factory_private) {
   setup_called_ = true;
 
   if (mode_ != Mode::MUS) {
@@ -100,6 +101,7 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
   env_helper.SetWindowTreeClient(window_tree_client_);
   Env::GetInstance()->SetActiveFocusClient(focus_client_.get(), nullptr);
   Env::GetInstance()->set_context_factory(context_factory);
+  Env::GetInstance()->set_context_factory_private(context_factory_private);
   // Unit tests generally don't want to query the system, rather use the state
   // from RootWindow.
   env_helper.SetInputStateLookup(nullptr);

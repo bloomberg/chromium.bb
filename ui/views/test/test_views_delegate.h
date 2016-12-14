@@ -34,6 +34,11 @@ class TestViewsDelegate : public ViewsDelegate {
     context_factory_ = context_factory;
   }
 
+  void set_context_factory_private(
+      ui::ContextFactoryPrivate* context_factory_private) {
+    context_factory_private_ = context_factory_private;
+  }
+
   // ViewsDelegate:
 #if defined(OS_WIN)
   HICON GetSmallWindowIcon() const override;
@@ -41,9 +46,11 @@ class TestViewsDelegate : public ViewsDelegate {
   void OnBeforeWidgetInit(Widget::InitParams* params,
                           internal::NativeWidgetDelegate* delegate) override;
   ui::ContextFactory* GetContextFactory() override;
+  ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
 
  private:
   ui::ContextFactory* context_factory_;
+  ui::ContextFactoryPrivate* context_factory_private_;
   bool use_desktop_native_widgets_;
   bool use_transparent_windows_;
 

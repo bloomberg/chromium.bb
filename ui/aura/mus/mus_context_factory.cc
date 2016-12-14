@@ -9,25 +9,15 @@
 #include "services/ui/public/cpp/gpu/gpu.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/compositor/reflector.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace aura {
 namespace {
 
-class FakeReflector : public ui::Reflector {
- public:
-  FakeReflector() {}
-  ~FakeReflector() override {}
-  void OnMirroringCompositorResized() override {}
-  void AddMirroringLayer(ui::Layer* layer) override {}
-  void RemoveMirroringLayer(ui::Layer* layer) override {}
-};
 
 }  // namespace
 
-MusContextFactory::MusContextFactory(ui::Gpu* gpu)
-    : next_sink_id_(1u), gpu_(gpu) {}
+MusContextFactory::MusContextFactory(ui::Gpu* gpu) : gpu_(gpu) {}
 
 MusContextFactory::~MusContextFactory() {}
 
@@ -43,17 +33,6 @@ void MusContextFactory::CreateCompositorFrameSink(
           new ui::ContextProvider(gpu_->EstablishGpuChannelSync())),
       gpu_->gpu_memory_buffer_manager());
   compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
-}
-
-std::unique_ptr<ui::Reflector> MusContextFactory::CreateReflector(
-    ui::Compositor* mirroed_compositor,
-    ui::Layer* mirroring_layer) {
-  // NOTIMPLEMENTED();
-  return base::WrapUnique(new FakeReflector);
-}
-
-void MusContextFactory::RemoveReflector(ui::Reflector* reflector) {
-  // NOTIMPLEMENTED();
 }
 
 scoped_refptr<cc::ContextProvider>
@@ -82,24 +61,6 @@ gpu::GpuMemoryBufferManager* MusContextFactory::GetGpuMemoryBufferManager() {
 
 cc::TaskGraphRunner* MusContextFactory::GetTaskGraphRunner() {
   return raster_thread_helper_.task_graph_runner();
-}
-
-cc::FrameSinkId MusContextFactory::AllocateFrameSinkId() {
-  return cc::FrameSinkId(0, next_sink_id_++);
-}
-
-cc::SurfaceManager* MusContextFactory::GetSurfaceManager() {
-  return &surface_manager_;
-}
-
-void MusContextFactory::SetDisplayVisible(ui::Compositor* compositor,
-                                          bool visible) {
-  // TODO(fsamuel): display[compositor]->SetVisible(visible);
-}
-
-void MusContextFactory::ResizeDisplay(ui::Compositor* compositor,
-                                      const gfx::Size& size) {
-  // TODO(fsamuel): display[compositor]->Resize(size);
 }
 
 }  // namespace aura
