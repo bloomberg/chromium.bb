@@ -4921,14 +4921,17 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
   TRACE_EVENT0("browser,navigation",
                "WebContentsImpl::CreateRenderViewForRenderManager");
 
-  if (proxy_routing_id == MSG_ROUTING_NONE)
-    CreateRenderWidgetHostViewForRenderManager(render_view_host);
+  RenderViewHostImpl* rvhi = static_cast<RenderViewHostImpl*>(render_view_host);
 
-  if (!static_cast<RenderViewHostImpl*>(render_view_host)
-           ->CreateRenderView(opener_frame_routing_id,
-                              proxy_routing_id,
-                              replicated_frame_state,
-                              created_with_opener_)) {
+  // We only create a RWHV for active RenderViewHosts. When an inactive RVH is
+  // reused, the RWHV is created in RenderFrameHostManager::CommitPending.
+  if (rvhi->is_active()) {
+    DCHECK_EQ(MSG_ROUTING_NONE, proxy_routing_id);
+    CreateRenderWidgetHostViewForRenderManager(render_view_host);
+  }
+
+  if (!rvhi->CreateRenderView(opener_frame_routing_id, proxy_routing_id,
+                              replicated_frame_state, created_with_opener_)) {
     return false;
   }
 

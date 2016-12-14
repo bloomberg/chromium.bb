@@ -1377,8 +1377,6 @@ void RenderFrameHostImpl::SwapOut(
   // TODO(nasko): If the frame is not live, the RFH should just be deleted by
   // simulating the receipt of swap out ack.
   is_waiting_for_swapout_ack_ = true;
-  if (frame_tree_node_->IsMainFrame())
-    render_view_host_->set_is_active(false);
 }
 
 void RenderFrameHostImpl::OnBeforeUnloadACK(
@@ -1544,13 +1542,6 @@ void RenderFrameHostImpl::OnSwappedOut() {
     swapout_event_monitor_timeout_->Stop();
 
   ClearAllWebUI();
-
-  // If this is a main frame RFH that's about to be deleted, update its RVH's
-  // swapped-out state here. https://crbug.com/505887
-  if (frame_tree_node_->IsMainFrame()) {
-    render_view_host_->set_is_active(false);
-    render_view_host_->set_is_swapped_out(true);
-  }
 
   bool deleted =
       frame_tree_node_->render_manager()->DeleteFromPendingList(this);

@@ -179,6 +179,10 @@ class RenderViewHostTestEnabler {
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestEnabler);
   friend class RenderViewHostTestHarness;
 
+#if defined(OS_ANDROID)
+  std::unique_ptr<MockGpuChannelEstablishFactory> gpu_channel_factory_;
+  std::unique_ptr<display::Screen> screen_;
+#endif
   std::unique_ptr<MockRenderProcessHostFactory> rph_factory_;
   std::unique_ptr<TestRenderViewHostFactory> rvh_factory_;
   std::unique_ptr<TestRenderFrameHostFactory> rfh_factory_;
@@ -280,11 +284,8 @@ class RenderViewHostTestHarness : public testing::Test {
 #if defined(USE_AURA)
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
 #endif
-#if defined(OS_ANDROID)
-  std::unique_ptr<MockGpuChannelEstablishFactory> gpu_channel_factory_;
-  std::unique_ptr<display::Screen> screen_;
-#endif
-  RenderViewHostTestEnabler rvh_test_enabler_;
+  std::unique_ptr<RenderViewHostTestEnabler> rvh_test_enabler_;
+  RenderProcessHostFactory* factory_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostTestHarness);
 };
