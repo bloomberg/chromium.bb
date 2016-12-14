@@ -10,6 +10,7 @@
 // Expose for testing.
 var adapterBroker = null;
 var devices = null;
+var sidebarObj = null;
 
 cr.define('bluetooth_internals', function() {
   /** @const */ var DevicesPage = devices_page.DevicesPage;
@@ -109,9 +110,9 @@ cr.define('bluetooth_internals', function() {
   }
 
   function setupPages() {
-    var sidebar = new window.sidebar.Sidebar($('sidebar'));
-    $('menu-btn').addEventListener('click', function() { sidebar.open(); });
-    PageManager.addObserver(sidebar);
+    sidebarObj = new window.sidebar.Sidebar($('sidebar'));
+    $('menu-btn').addEventListener('click', function() { sidebarObj.open(); });
+    PageManager.addObserver(sidebarObj);
     PageManager.addObserver(new PageObserver());
 
     devicesPage = new DevicesPage();

@@ -228,6 +228,7 @@ BluetoothInternalsTest.prototype = {
 TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
   var adapterFactory = null;
   var deviceTable = null;
+  var sidebarNode = null;
 
   var fakeDeviceInfo1 = this.fakeDeviceInfo1;
   var fakeDeviceInfo2 = this.fakeDeviceInfo2;
@@ -237,7 +238,6 @@ TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
   var setupPromise = this.setupResolver.promise.then(function() {
     adapterFactory = this.adapterFactory;
   }.bind(this));
-
 
   suite('BluetoothInternalsUITest', function() {
     var EXPECTED_DEVICES = 2;
@@ -255,6 +255,7 @@ TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
 
     setup(function() {
       deviceTable = document.querySelector('#devices table');
+      sidebarNode = document.querySelector('#sidebar');
       devices.splice(0, devices.length);
       adapterBroker.adapterClient_.deviceAdded(fakeDeviceInfo1());
       adapterBroker.adapterClient_.deviceAdded(fakeDeviceInfo2());
@@ -262,6 +263,7 @@ TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
 
     teardown(function() {
       adapterFactory.reset();
+      sidebarObj.close();
     });
 
     /**
@@ -424,6 +426,44 @@ TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
       newDeviceInfo3.rssi = {value: -17};
       adapterBroker.adapterClient_.deviceChanged(newDeviceInfo3);
       expectEquals('-17', rssiColumn.textContent);
+    });
+
+    /* Sidebar Tests */
+    test('Sidebar_Setup', function() {
+      var sidebarItems = Array.from(
+          sidebarNode.querySelectorAll('.sidebar-content li'));
+
+      ['devices'].forEach(function(pageName) {
+        expectTrue(sidebarItems.some(function(item) {
+          return item.dataset.pageName === pageName;
+        }));
+      });
+    });
+
+    test('Sidebar_DefaultState', function() {
+      // Sidebar should be closed by default.
+      expectFalse(sidebarNode.classList.contains('open'));
+    });
+
+    test('Sidebar_OpenClose', function() {
+      sidebarObj.open();
+      expectTrue(sidebarNode.classList.contains('open'));
+      sidebarObj.close();
+      expectFalse(sidebarNode.classList.contains('open'));
+    });
+
+    test('Sidebar_OpenTwice', function() {
+      // Multiple calls to open shouldn't change the state.
+      sidebarObj.open();
+      sidebarObj.open();
+      expectTrue(sidebarNode.classList.contains('open'));
+    });
+
+    test('Sidebar_CloseTwice', function() {
+      // Multiple calls to close shouldn't change the state.
+      sidebarObj.close();
+      sidebarObj.close();
+      expectFalse(sidebarNode.classList.contains('open'));
     });
   });
 
