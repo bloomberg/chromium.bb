@@ -198,24 +198,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // inherit
   struct InheritedData {
     bool operator==(const InheritedData& other) const {
-      return compareEqualIndependent(other) &&
-             compareEqualNonIndependent(other);
-    }
-
-    bool operator!=(const InheritedData& other) const {
-      return !(*this == other);
-    }
-
-    inline bool compareEqualIndependent(const InheritedData& other) const {
-      // These must match the properties tagged 'independent' in
-      // CSSProperties.in.
-      // TODO(napper): Remove this once all independent properties are
-      // generated and replace with a private function used only in
-      // stylePropagationDiff().
-      return (m_pointerEvents == other.m_pointerEvents);
-    }
-
-    inline bool compareEqualNonIndependent(const InheritedData& other) const {
       return (m_listStyleType == other.m_listStyleType) &&
              (m_textAlign == other.m_textAlign) &&
              (m_hasSimpleUnderline == other.m_hasSimpleUnderline) &&
@@ -225,6 +207,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
              (m_printColorAdjust == other.m_printColorAdjust) &&
              (m_insideLink == other.m_insideLink) &&
              (m_writingMode == other.m_writingMode);
+    }
+
+    bool operator!=(const InheritedData& other) const {
+      return !(*this == other);
     }
 
     unsigned m_listStyleType : 7;      // EListStyleType
@@ -238,7 +224,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     // non CSS2 inherited
     unsigned m_rtlOrdering : 1;       // EOrder
     unsigned m_printColorAdjust : 1;  // PrintColorAdjust
-    unsigned m_pointerEvents : 4;  // EPointerEvents
     unsigned m_insideLink : 2;     // EInsideLink
 
     // CSS Text Layout Module Level 3: Vertical writing support
@@ -324,25 +309,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
     mutable unsigned m_hasRemUnits : 1;
 
-    // For each independent inherited property, store a 1 if the stored
-    // value was inherited from its parent, or 0 if it is explicitly set on
-    // this element.
-    // Eventually, all properties will have a bit in here to store whether
-    // they were inherited from their parent or not.
-    // Although two ComputedStyles are equal if their nonInheritedData is
-    // equal regardless of the isInherited flags, this struct is stored next
-    // to the existing flags to take advantage of packing as much as possible.
-    // TODO(sashab): Move these flags closer to inheritedData so that it's
-    // clear which inherited properties have a flag stored and which don't.
-    // Keep this list of fields in sync with:
-    // - setBitDefaults()
-    // - The ComputedStyle setter, which must take an extra boolean parameter
-    //   and set this - propagateIndependentInheritedProperties() in
-    //   ComputedStyle.cpp
-    // - The compareEqual() methods in the corresponding class
-    // InheritedFlags
-    unsigned m_isPointerEventsInherited : 1;
-
     // If you add more style bits here, you will also need to update
     // ComputedStyle::copyNonInheritedFromCached() 68 bits
   } m_nonInheritedData;
@@ -360,8 +326,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_inheritedData.m_rtlOrdering = static_cast<unsigned>(initialRTLOrdering());
     m_inheritedData.m_printColorAdjust =
         static_cast<unsigned>(initialPrintColorAdjust());
-    m_inheritedData.m_pointerEvents =
-        static_cast<unsigned>(initialPointerEvents());
     m_inheritedData.m_insideLink = NotInsideLink;
     m_inheritedData.m_writingMode = initialWritingMode();
 
@@ -393,9 +357,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_nonInheritedData.m_affectedByDrag = false;
     m_nonInheritedData.m_isLink = false;
     m_nonInheritedData.m_hasRemUnits = false;
-
-    // All independently inherited properties default to being inherited.
-    m_nonInheritedData.m_isPointerEventsInherited = true;
   }
 
  private:
@@ -2128,18 +2089,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void setOverflowWrap(EOverflowWrap b) {
     SET_VAR(m_rareInheritedData, overflowWrap, b);
-  }
-
-  // pointer-events
-  static EPointerEvents initialPointerEvents() { return EPointerEvents::Auto; }
-  EPointerEvents pointerEvents() const {
-    return static_cast<EPointerEvents>(m_inheritedData.m_pointerEvents);
-  }
-  void setPointerEvents(EPointerEvents p) {
-    m_inheritedData.m_pointerEvents = static_cast<unsigned>(p);
-  }
-  void setPointerEventsIsInherited(bool isInherited) {
-    m_nonInheritedData.m_isPointerEventsInherited = isInherited;
   }
 
   // quotes

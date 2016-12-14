@@ -482,20 +482,6 @@ enum class EDisplay : unsigned {
 
 enum EInsideLink { NotInsideLink, InsideUnvisitedLink, InsideVisitedLink };
 
-enum class EPointerEvents : unsigned {
-  None,
-  Auto,
-  Stroke,
-  Fill,
-  Painted,
-  Visible,
-  VisibleStroke,
-  VisibleFill,
-  VisiblePainted,
-  BoundingBox,
-  All
-};
-
 enum ETransformStyle3D { TransformStyle3DFlat, TransformStyle3DPreserve3D };
 
 enum OffsetRotationType { OffsetRotationAuto, OffsetRotationFixed };

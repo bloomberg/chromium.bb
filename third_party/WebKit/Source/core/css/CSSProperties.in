@@ -324,7 +324,7 @@ padding-top interpolable, initial=initialPadding, converter=convertLength
 paint-order inherited, svg, converter=convertPaintOrder
 perspective interpolable, converter=convertPerspective
 perspective-origin interpolable, converter=convertPosition
-pointer-events inherited, independent
+pointer-events inherited, independent, keyword_only, keywords=[none|auto|stroke|fill|painted|visible|visibleStroke|visibleFill|visiblePainted|bounding-box|all], initial_keyword=auto
 position custom_inherit
 quotes inherited, converter=convertQuotes
 resize custom_value

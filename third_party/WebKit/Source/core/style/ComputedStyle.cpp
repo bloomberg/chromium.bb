@@ -235,8 +235,6 @@ StyleRecalcChange ComputedStyle::stylePropagationDiff(
 void ComputedStyle::propagateIndependentInheritedProperties(
     const ComputedStyle& parentStyle) {
   ComputedStyleBase::propagateIndependentInheritedProperties(parentStyle);
-  if (m_nonInheritedData.m_isPointerEventsInherited)
-    setPointerEvents(parentStyle.pointerEvents());
 }
 
 StyleSelfAlignmentData resolvedSelfAlignment(
@@ -418,11 +416,6 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other) {
   // m_nonInheritedData.m_affectedByDrag
   // m_nonInheritedData.m_isLink
 
-  // Any properties that are inherited on a style are also inherited on elements
-  // that share this style.
-  m_nonInheritedData.m_isPointerEventsInherited =
-      other.m_nonInheritedData.m_isPointerEventsInherited;
-
   if (m_svgStyle != other.m_svgStyle)
     m_svgStyle.access()->copyNonInheritedFromCached(other.m_svgStyle.get());
   DCHECK_EQ(zoom(), initialZoom());
@@ -501,14 +494,13 @@ bool ComputedStyle::inheritedEqual(const ComputedStyle& other) const {
 
 bool ComputedStyle::independentInheritedEqual(
     const ComputedStyle& other) const {
-  return ComputedStyleBase::independentInheritedEqual(other) &&
-         m_inheritedData.compareEqualIndependent(other.m_inheritedData);
+  return ComputedStyleBase::independentInheritedEqual(other);
 }
 
 bool ComputedStyle::nonIndependentInheritedEqual(
     const ComputedStyle& other) const {
   return ComputedStyleBase::nonIndependentInheritedEqual(other) &&
-         m_inheritedData.compareEqualNonIndependent(other.m_inheritedData) &&
+         m_inheritedData == other.m_inheritedData &&
          m_styleInheritedData == other.m_styleInheritedData &&
          m_svgStyle->inheritedEqual(*other.m_svgStyle) &&
          m_rareInheritedData == other.m_rareInheritedData;
