@@ -130,14 +130,22 @@ bool FetchHeaderList::containsNonSimpleHeader() const {
 void FetchHeaderList::sortAndCombine() {
   // https://fetch.spec.whatwg.org/#concept-header-list-sort-and-combine
   // "To sort and combine a header list..."
-
-  // TODO(jsbell): Implement the combining part - this currently just sorts.
+  if (m_headerList.isEmpty())
+    return;
 
   std::sort(
       m_headerList.begin(), m_headerList.end(),
       [](const std::unique_ptr<Header>& a, const std::unique_ptr<Header>& b) {
         return WTF::codePointCompareLessThan(a->first, b->first);
       });
+
+  for (size_t index = m_headerList.size() - 1; index > 0; --index) {
+    if (m_headerList[index - 1]->first == m_headerList[index]->first) {
+      m_headerList[index - 1]->second.append(",");
+      m_headerList[index - 1]->second.append(m_headerList[index]->second);
+      m_headerList.remove(index, 1);
+    }
+  }
 }
 
 bool FetchHeaderList::isValidHeaderName(const String& name) {

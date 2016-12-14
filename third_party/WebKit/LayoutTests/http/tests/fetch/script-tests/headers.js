@@ -133,6 +133,7 @@ test(function() {
     assert_equals(allValues.length, 1);
     assert_equals(size(headers), 4);
     headers.append('X-FETCH-TEST', 'response test field - append');
+    headers.append('X-FETCH-TEST-2', 'response test field - append');
     assert_equals(size(headers), 5, 'headers size should increase by 1.');
     assert_equals(headers.get('X-FETCH-Test'),
                   'response test field - updated',
@@ -142,18 +143,18 @@ test(function() {
     assert_equals(allValues[0], 'response test field - updated');
     assert_equals(allValues[1], 'response test field - append');
     headers.set('X-FETch-Test', 'response test field - set');
-    assert_equals(size(headers), 4, 'the second header should be deleted');
+    assert_equals(size(headers), 5, 'the second header should be deleted');
     allValues = headers.getAll('X-Fetch-Test');
     assert_equals(allValues.length, 1, 'the second header should be deleted');
     assert_equals(allValues[0], 'response test field - set');
     headers.append('X-Fetch-TEST', 'response test field - append');
-    assert_equals(size(headers), 5, 'headers size should increase by 1.');
+    assert_equals(size(headers), 5, 'headers size should not increase by 1.');
     headers.delete('X-FeTCH-Test');
-    assert_equals(size(headers), 3, 'two headers should be deleted.');
+    assert_equals(size(headers), 4, 'two headers should be deleted.');
 
     // new Headers with sequence<sequence<ByteString>>
     headers = new Headers([['a', 'b'], ['c', 'd'], ['c', 'e']]);
-    assert_equals(size(headers), 3, 'headers size should match');
+    assert_equals(size(headers), 2, 'headers size should match');
     assert_equals(headers.get('a'), 'b');
     assert_equals(headers.get('c'), 'd');
     assert_equals(headers.getAll('c')[0], 'd');
@@ -161,7 +162,7 @@ test(function() {
 
     // new Headers with Headers
     var headers2 = new Headers(headers);
-    assert_equals(size(headers2), 3, 'headers size should match');
+    assert_equals(size(headers2), 2, 'headers size should match');
     assert_equals(headers2.get('a'), 'b');
     assert_equals(headers2.get('c'), 'd');
     assert_equals(headers2.getAll('c')[0], 'd');
@@ -239,6 +240,8 @@ test(function(t) {
     headers.set('a', '1');
     headers.set('b', '2');
     headers.set('c', '3');
+    headers.append('a', '2');
+    headers.append('a', '3');
 
     const iterator = headers.entries();
 
@@ -246,11 +249,16 @@ test(function(t) {
     headers.set('d', '4');
 
     const keys = [];
-    for (let [key, value] of iterator)
+    const values = [];
+    for (let [key, value] of iterator) {
         keys.push(key);
+        values.push(value);
+    }
     assert_array_equals(keys, ['a', 'b', 'c'],
                         'The pairs to iterate over should be the return ' +
                         'value of an algorithm that implicitly makes a copy.');
+    assert_array_equals(values, ['1,2,3', '2', '3'],
+                        "The values should be combined and separated by ','.");
 }, 'Iteration mutation');
 
 done();
