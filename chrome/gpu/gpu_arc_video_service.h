@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "chrome/gpu/arc_video_accelerator.h"
 #include "components/arc/common/video_accelerator.mojom.h"
+#include "components/arc/video_accelerator/video_accelerator.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 
 namespace chromeos {
@@ -63,7 +64,7 @@ class GpuArcVideoService : public ::arc::mojom::VideoAcceleratorService,
   void BindDmabuf(::arc::mojom::PortType port,
                   uint32_t index,
                   mojo::ScopedHandle dmabuf_handle,
-                  std::vector<::arc::mojom::ArcVideoAcceleratorDmabufPlanePtr>
+                  std::vector<::arc::ArcVideoAcceleratorDmabufPlane>
                       dmabuf_planes) override;
   void UseBuffer(::arc::mojom::PortType port,
                  uint32_t index,

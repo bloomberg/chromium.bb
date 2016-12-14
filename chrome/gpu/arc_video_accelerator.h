@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/files/scoped_file.h"
+#include "components/arc/video_accelerator/video_accelerator.h"
 
 namespace chromeos {
 namespace arc {
@@ -81,13 +82,6 @@ class ArcVideoAccelerator {
     //                format of each VDA on Chromium is supported.
   };
 
-  struct DmabufPlane {
-    DmabufPlane(int32_t offset, int32_t stride)
-        : offset(offset), stride(stride) {}
-    int32_t offset;  // in bytes
-    int32_t stride;  // in bytes
-  };
-
   // The callbacks of the ArcVideoAccelerator. The user of this class should
   // implement this interface.
   class Client {
@@ -137,10 +131,12 @@ class ArcVideoAccelerator {
   // port and index. A buffer must be successfully bound before it can be
   // passed to the accelerator via UseBuffer(). Already bound buffers may be
   // reused multiple times without additional bindings.
-  virtual void BindDmabuf(PortType port,
-                          uint32_t index,
-                          base::ScopedFD dmabuf_fd,
-                          const std::vector<DmabufPlane>& dmabuf_planes) = 0;
+  virtual void BindDmabuf(
+      PortType port,
+      uint32_t index,
+      base::ScopedFD dmabuf_fd,
+      const std::vector<::arc::ArcVideoAcceleratorDmabufPlane>&
+          dmabuf_planes) = 0;
 
   // Passes a buffer to the accelerator. For input buffer, the accelerator
   // will process it. For output buffer, the accelerator will output content

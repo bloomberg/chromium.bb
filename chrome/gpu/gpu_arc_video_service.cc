@@ -245,9 +245,9 @@ void GpuArcVideoService::DeprecatedBindDmabuf(::arc::mojom::PortType port,
                                               uint32_t index,
                                               mojo::ScopedHandle dmabuf_handle,
                                               int32_t stride) {
-  std::vector<::arc::mojom::ArcVideoAcceleratorDmabufPlanePtr> planes(1);
-  planes[0]->offset = 0;
-  planes[0]->stride = stride;
+  std::vector<::arc::ArcVideoAcceleratorDmabufPlane> planes {
+    {0, stride}
+  };
 
   BindDmabuf(port, index, std::move(dmabuf_handle), std::move(planes));
 }
@@ -256,29 +256,15 @@ void GpuArcVideoService::BindDmabuf(
     ::arc::mojom::PortType port,
     uint32_t index,
     mojo::ScopedHandle dmabuf_handle,
-    std::vector<::arc::mojom::ArcVideoAcceleratorDmabufPlanePtr>
-        dmabuf_planes) {
+    std::vector<::arc::ArcVideoAcceleratorDmabufPlane> dmabuf_planes) {
   DVLOG(2) << "BindDmabuf port=" << port << ", index=" << index;
 
   base::ScopedFD fd = UnwrapFdFromMojoHandle(std::move(dmabuf_handle));
   if (!fd.is_valid())
     return;
 
-  std::vector<ArcVideoAccelerator::DmabufPlane> converted_planes;
-  // TODO(yusukes): Use mojo typemaps to simplify the code.
-  for (const auto& input : dmabuf_planes) {
-    if (input->offset < 0 || input->stride < 0) {
-      DVLOG(1) << "Invalid offset/stride: " << input->offset << "/"
-               << input->stride;
-      client_->OnError(
-          ::arc::mojom::VideoAcceleratorService::Result::INVALID_ARGUMENT);
-      return;
-    }
-    converted_planes.emplace_back(input->offset, input->stride);
-  }
-
   accelerator_->BindDmabuf(static_cast<PortType>(port), index, std::move(fd),
-                           std::move(converted_planes));
+                           std::move(dmabuf_planes));
 }
 
 void GpuArcVideoService::UseBuffer(::arc::mojom::PortType port,

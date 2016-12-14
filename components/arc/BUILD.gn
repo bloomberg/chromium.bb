@@ -64,6 +64,8 @@ static_library("arc") {
     "power/arc_power_bridge.h",
     "storage_manager/arc_storage_manager.cc",
     "storage_manager/arc_storage_manager.h",
+    "video_accelerator/video_accelerator_struct_traits.cc",
+    "video_accelerator/video_accelerator_struct_traits.h",
   ]
 
   public_deps = [
