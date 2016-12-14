@@ -42,6 +42,7 @@
 #include "core/dom/MutationCallback.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/MutationObserverInit.h"
+#include "core/dom/MutationRecord.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeListsNodeData.h"
 #include "core/dom/NodeTraversal.h"
@@ -1977,13 +1978,24 @@ class HTMLSelectElement::PopupUpdater : public MutationCallback {
   void dispose() { m_observer->disconnect(); }
 
  private:
-  void call(const HeapVector<Member<MutationRecord>>&,
+  void call(const HeapVector<Member<MutationRecord>>& records,
             MutationObserver*) override {
     // We disconnect the MutationObserver when a popuup is closed.  However
     // MutationObserver can call back after disconnection.
     if (!m_select->popupIsVisible())
       return;
-    m_select->didMutateSubtree();
+    for (const auto& record : records) {
+      if (record->type() == "attributes") {
+        const Element& element = *toElement(record->target());
+        if (record->oldValue() == element.getAttribute(record->attributeName()))
+          continue;
+      } else if (record->type() == "characterData") {
+        if (record->oldValue() == record->target()->nodeValue())
+          continue;
+      }
+      m_select->didMutateSubtree();
+      return;
+    }
   }
 
   ExecutionContext* getExecutionContext() const override {
@@ -2005,9 +2017,11 @@ HTMLSelectElement::PopupUpdater::PopupUpdater(HTMLSelectElement& select)
   filter.append(String("selected"));
   filter.append(String("value"));
   MutationObserverInit init;
+  init.setAttributeOldValue(true);
   init.setAttributes(true);
   init.setAttributeFilter(filter);
   init.setCharacterData(true);
+  init.setCharacterDataOldValue(true);
   init.setChildList(true);
   init.setSubtree(true);
   m_observer->observe(&select, init, ASSERT_NO_EXCEPTION);
