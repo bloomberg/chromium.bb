@@ -11,6 +11,8 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chromeos/attestation/attestation_constants.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -46,11 +48,14 @@ class CHROMEOS_EXPORT ServerProxy {
 // Implements the message flow for Chrome OS attestation tasks.  Generally this
 // consists of coordinating messages between the Chrome OS attestation service
 // and the Chrome OS Privacy CA server.  Sample usage:
+//
 //    AttestationFlow flow(AsyncMethodCaller::GetInstance(),
 //                         DBusThreadManager::Get().GetCryptohomeClient(),
 //                         std::move(my_server_proxy));
 //    AttestationFlow::CertificateCallback callback = base::Bind(&MyCallback);
 //    flow.GetCertificate(ENTERPRISE_USER_CERTIFICATE, false, callback);
+//
+// This class is not thread safe.
 class CHROMEOS_EXPORT AttestationFlow {
  public:
   typedef base::Callback<void(bool success,
@@ -82,6 +87,21 @@ class CHROMEOS_EXPORT AttestationFlow {
                   std::unique_ptr<ServerProxy> server_proxy);
   virtual ~AttestationFlow();
 
+  // Sets the timeout for attestation to be ready.
+  void set_ready_timeout(base::TimeDelta ready_timeout) {
+    ready_timeout_ = ready_timeout;
+  }
+  // Gets the timeout for attestation to be ready.
+  base::TimeDelta ready_timeout() const { return ready_timeout_; }
+
+  // Sets the retry delay.
+  void set_retry_delay(base::TimeDelta retry_delay) {
+    retry_delay_ = retry_delay;
+  }
+
+  // Returns the retry delay.
+  base::TimeDelta retry_delay() { return retry_delay_; }
+
   // Gets an attestation certificate for a hardware-protected key.  If a key for
   // the given profile does not exist, it will be generated and a certificate
   // request will be made to the Chrome OS Privacy CA to issue a certificate for
@@ -109,7 +129,19 @@ class CHROMEOS_EXPORT AttestationFlow {
                               const CertificateCallback& callback);
 
  private:
-  // Asynchronously initiates the attestation enrollment flow.
+  // Asynchronously waits for attestation to be ready and start enrollment once
+  // it is. If attestation is not ready by the time the flow's timeout is
+  // reached, fail.
+  //
+  // Parameters
+  //   retries_left - Number of retries left (-1 for infinite retries).
+  //   on_failure - Called if any failure occurs.
+  //   next_task - Called on successful enrollment.
+  void WaitForAttestationReadyAndStartEnroll(base::TimeTicks end_time,
+                                             const base::Closure& on_failure,
+                                             const base::Closure& next_task);
+
+  // Called when attestation is prepared, to start the actual enrollment flow.
   //
   // Parameters
   //   on_failure - Called if any failure occurs.
@@ -223,9 +255,24 @@ class CHROMEOS_EXPORT AttestationFlow {
                               const std::string& key_name,
                               const CertificateCallback& callback);
 
+  // Checks whether attestation is ready. If it is, runs |next_task|. If not,
+  // reschedules a check after a delay unless we are out of retry time, in
+  // which case we run |on_failure|.
+  //
+  // Parameters
+  //   end_time - The time at or past which we give up retrying.
+  //   on_failure - Called if any failure occurs or after we give up retrying.
+  //   next_task - Called when attestation is ready.
+  void CheckAttestationReadyAndReschedule(base::TimeTicks end_time,
+                                          const base::Closure& on_failure,
+                                          const base::Closure& next_task);
+
   cryptohome::AsyncMethodCaller* async_caller_;
   CryptohomeClient* cryptohome_client_;
   std::unique_ptr<ServerProxy> server_proxy_;
+
+  base::TimeDelta ready_timeout_;
+  base::TimeDelta retry_delay_;
 
   base::WeakPtrFactory<AttestationFlow> weak_factory_;
 
