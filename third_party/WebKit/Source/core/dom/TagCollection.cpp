@@ -42,7 +42,7 @@ TagCollection::~TagCollection() {}
 
 bool TagCollection::elementMatches(const Element& testNode) const {
   // Implements
-  // http://dvcs.w3.org/hg/domcore/raw-file/tip/Overview.html#concept-getelementsbytagnamens
+  // https://dom.spec.whatwg.org/#concept-getelementsbytagnamens
   if (m_localName != starAtom && m_localName != testNode.localName())
     return false;
 

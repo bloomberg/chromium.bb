@@ -67,9 +67,8 @@ inline void lastMatrixRow(Vector<float>& matrix) {
 Vector<float> grayscaleMatrix(double amount) {
   double oneMinusAmount = clampTo(1 - amount, 0.0, 1.0);
 
-  // See
-  // https://dvcs.w3.org/hg/FXTF/raw-file/tip/filters/index.html#grayscaleEquivalent
-  // for information on parameters.
+  // See https://drafts.fxtf.org/filters/#grayscaleEquivalent for information on
+  // parameters.
   Vector<float> matrix;
   matrix.reserveInitialCapacity(20);
 
@@ -95,9 +94,8 @@ Vector<float> grayscaleMatrix(double amount) {
 Vector<float> sepiaMatrix(double amount) {
   double oneMinusAmount = clampTo(1 - amount, 0.0, 1.0);
 
-  // See
-  // https://dvcs.w3.org/hg/FXTF/raw-file/tip/filters/index.html#sepiaEquivalent
-  // for information on parameters.
+  // See https://drafts.fxtf.org/filters/#sepiaEquivalent for information on
+  // parameters.
   Vector<float> matrix;
   matrix.reserveInitialCapacity(20);
 

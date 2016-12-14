@@ -14,7 +14,7 @@ dictionary MouseEventInit : EventModifierInit {
     EventTarget? relatedTarget = null;
 
     // Pointer Lock
-    // https://dvcs.w3.org/hg/pointerlock/raw-file/default/index.html#extensions-to-the-mouseeventinit-dictionary
+    // https://w3c.github.io/pointerlock/#extensions-to-the-mouseeventinit-dictionary
     long movementX = 0;
     long movementY = 0;
 

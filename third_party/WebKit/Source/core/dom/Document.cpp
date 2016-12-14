@@ -1519,7 +1519,7 @@ PageVisibilityState Document::pageVisibilityState() const {
   // The visibility of the document is inherited from the visibility of the
   // page. If there is no page associated with the document, we will assume
   // that the page is hidden, as specified by the spec:
-  // http://dvcs.w3.org/hg/webperf/raw-file/tip/specs/PageVisibility/Overview.html#dom-document-hidden
+  // https://w3c.github.io/page-visibility/#hidden-attribute
   if (!m_frame || !m_frame->page())
     return PageVisibilityStateHidden;
   // While visibilitychange is being dispatched during unloading it is

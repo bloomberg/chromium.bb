@@ -72,7 +72,7 @@
     ClientRect getBoundingClientRect();
 
     // DOM Parsing and Serialization
-    // https://dvcs.w3.org/hg/innerhtml/raw-file/tip/index.html#extensions-to-the-range-interface
+    // https://w3c.github.io/DOM-Parsing/#extensions-to-the-range-interface
     [NewObject, RaisesException, CEReactions, CustomElementCallbacks] DocumentFragment createContextualFragment(DOMString fragment);
 
     // Non-standard API

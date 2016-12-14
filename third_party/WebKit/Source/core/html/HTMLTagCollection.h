@@ -58,7 +58,7 @@ DEFINE_TYPE_CASTS(HTMLTagCollection,
 inline bool HTMLTagCollection::elementMatches(
     const Element& testElement) const {
   // Implements
-  // http://dvcs.w3.org/hg/domcore/raw-file/tip/Overview.html#concept-getelementsbytagname
+  // https://dom.spec.whatwg.org/#concept-getelementsbytagname
   if (m_localName != starAtom) {
     const AtomicString& localName =
         testElement.isHTMLElement() ? m_loweredLocalName : m_localName;

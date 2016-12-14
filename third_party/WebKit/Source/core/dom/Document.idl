@@ -149,7 +149,7 @@ interface Document : Node {
     readonly attribute Element? scrollingElement;
 
     // Pointer Lock
-    // https://dvcs.w3.org/hg/pointerlock/raw-file/default/index.html#extensions-to-the-document-interface
+    // https://w3c.github.io/pointerlock/#extensions-to-the-document-interface
     attribute EventHandler onpointerlockchange;
     attribute EventHandler onpointerlockerror;
     [MeasureAs=DocumentExitPointerLock] void exitPointerLock();

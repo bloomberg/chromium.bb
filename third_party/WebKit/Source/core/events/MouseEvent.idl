@@ -62,7 +62,7 @@
     [MeasureAs=MouseEventOffsetY] readonly attribute double offsetY;
 
     // Pointer Lock
-    // https://dvcs.w3.org/hg/pointerlock/raw-file/default/index.html#extensions-to-the-mouseevent-interface
+    // https://w3c.github.io/pointerlock/#extensions-to-the-mouseevent-interface
     [MeasureAs=MouseEventMovementX] readonly attribute long movementX;
     [MeasureAs=MouseEventMovementY] readonly attribute long movementY;
 

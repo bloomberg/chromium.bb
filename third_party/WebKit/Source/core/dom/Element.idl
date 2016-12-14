@@ -83,13 +83,13 @@ interface Element : Node {
     [ImplementedAs=assignedSlotForBinding] readonly attribute HTMLSlotElement? assignedSlot;
 
     // DOM Parsing and Serialization
-    // https://dvcs.w3.org/hg/innerhtml/raw-file/tip/index.html#extensions-to-the-element-interface
+    // https://w3c.github.io/DOM-Parsing/#extensions-to-the-element-interface
     [TreatNullAs=NullString, CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute DOMString innerHTML;
     [TreatNullAs=NullString, CEReactions, CustomElementCallbacks, RaisesException=Setter] attribute DOMString outerHTML;
     [CEReactions, CustomElementCallbacks, RaisesException] void insertAdjacentHTML(DOMString position, DOMString text);
 
     // Pointer Lock
-    // https://dvcs.w3.org/hg/pointerlock/raw-file/default/index.html#extensions-to-the-element-interface
+    // https://w3c.github.io/pointerlock/#extensions-to-the-element-interface
     [MeasureAs=ElementRequestPointerLock] void requestPointerLock();
 
     // CSSOM View Module

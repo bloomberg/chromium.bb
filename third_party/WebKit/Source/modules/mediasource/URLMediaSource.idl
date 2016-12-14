@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://dvcs.w3.org/hg/html-media/raw-file/tip/media-source/media-source.html#idl-def-URL
+// https://w3c.github.io/media-source/#url
 
 partial interface URL {
     [Exposed=(Window,DedicatedWorker,SharedWorker), CallWith=ExecutionContext] static DOMString createObjectURL(MediaSource source);
