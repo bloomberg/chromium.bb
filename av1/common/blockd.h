@@ -353,7 +353,12 @@ typedef struct MODE_INFO {
 } MODE_INFO;
 
 static INLINE PREDICTION_MODE get_y_mode(const MODE_INFO *mi, int block) {
+#if CONFIG_CB4X4
+  (void)block;
+  return mi->mbmi.mode;
+#else
   return mi->mbmi.sb_type < BLOCK_8X8 ? mi->bmi[block].as_mode : mi->mbmi.mode;
+#endif
 }
 
 static INLINE int is_inter_block(const MB_MODE_INFO *mbmi) {

@@ -170,7 +170,11 @@ void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
   ENTROPY_CONTEXT *const l = pd->left_context + loff;
   const int txs_wide = tx_size_wide_unit[tx_size];
   const int txs_high = tx_size_high_unit[tx_size];
+#if CONFIG_CB4X4
+  const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
+#else
   const BLOCK_SIZE bsize = AOMMAX(xd->mi[0]->mbmi.sb_type, BLOCK_8X8);
+#endif
   const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
 
   // above
