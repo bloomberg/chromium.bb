@@ -39,9 +39,10 @@
 #include "third_party/boringssl/src/include/openssl/nid.h"
 #include "third_party/boringssl/src/include/openssl/rsa.h"
 
-// TODO(davidben): Remove this after https://crbug.com/669240 is fixed.
 #if !defined(MAC_OS_X_VERSION_10_12) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_12
+    MAC_OS_X_VERSION_MIN_ALLOWED < MAC_OS_X_VERSION_10_12
+// Redeclare typedefs that only exist in 10.12+ to suppress
+// -Wpartial-availability warnings.
 typedef CFStringRef SecKeyAlgorithm;
 #endif
 
