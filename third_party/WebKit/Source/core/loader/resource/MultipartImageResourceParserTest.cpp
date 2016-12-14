@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/MultipartImageResourceParser.h"
+#include "core/loader/resource/MultipartImageResourceParser.h"
 
 #include "platform/network/ResourceResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"

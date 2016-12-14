@@ -29,7 +29,6 @@
 #include "core/layout/LayoutImage.h"
 
 #include "core/HTMLNames.h"
-#include "core/fetch/ImageResourceContent.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
@@ -37,6 +36,7 @@
 #include "core/html/HTMLImageElement.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutView.h"
+#include "core/loader/resource/ImageResourceContent.h"
 #include "core/paint/ImagePainter.h"
 #include "core/svg/graphics/SVGImage.h"
 

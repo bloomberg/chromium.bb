@@ -24,7 +24,7 @@
 #ifndef StyleFetchedImage_h
 #define StyleFetchedImage_h
 
-#include "core/fetch/ImageResourceObserver.h"
+#include "core/loader/resource/ImageResourceObserver.h"
 #include "core/style/StyleImage.h"
 #include "platform/weborigin/KURL.h"
 

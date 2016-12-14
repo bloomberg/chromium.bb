@@ -24,9 +24,9 @@
 #define ImageLoader_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/ImageResource.h"
-#include "core/fetch/ImageResourceContent.h"
-#include "core/fetch/ImageResourceObserver.h"
+#include "core/loader/resource/ImageResource.h"
+#include "core/loader/resource/ImageResourceContent.h"
+#include "core/loader/resource/ImageResourceObserver.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/WeakPtr.h"

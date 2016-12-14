@@ -22,8 +22,8 @@
 #define SVGFEImageElement_h
 
 #include "core/SVGNames.h"
-#include "core/fetch/ImageResourceContent.h"
-#include "core/fetch/ImageResourceObserver.h"
+#include "core/loader/resource/ImageResourceContent.h"
+#include "core/loader/resource/ImageResourceObserver.h"
 #include "core/svg/SVGAnimatedPreserveAspectRatio.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "core/svg/SVGURIReference.h"

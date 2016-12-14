@@ -10,9 +10,9 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/cssom/CSSResourceValue.h"
 #include "core/css/cssom/CSSStyleValue.h"
-#include "core/fetch/ImageResourceContent.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "core/imagebitmap/ImageBitmapSource.h"
+#include "core/loader/resource/ImageResourceContent.h"
 #include "core/style/StyleImage.h"
 
 namespace blink {

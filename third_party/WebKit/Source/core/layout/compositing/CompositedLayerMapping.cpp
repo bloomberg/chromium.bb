@@ -27,7 +27,6 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/DOMNodeIds.h"
-#include "core/fetch/ImageResourceContent.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/RemoteFrame.h"
@@ -48,6 +47,7 @@
 #include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
+#include "core/loader/resource/ImageResourceContent.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"

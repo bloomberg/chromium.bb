@@ -29,7 +29,6 @@
 #include "core/dom/RawDataDocumentParser.h"
 #include "core/events/EventListener.h"
 #include "core/events/MouseEvent.h"
-#include "core/fetch/ImageResource.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -48,6 +47,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/resource/ImageResource.h"
 #include "platform/HostWindow.h"
 #include "wtf/text/StringBuilder.h"
 #include <limits>

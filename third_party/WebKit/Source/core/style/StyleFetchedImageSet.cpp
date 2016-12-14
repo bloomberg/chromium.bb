@@ -26,8 +26,8 @@
 #include "core/style/StyleFetchedImageSet.h"
 
 #include "core/css/CSSImageSetValue.h"
-#include "core/fetch/ImageResourceContent.h"
 #include "core/layout/LayoutObject.h"
+#include "core/loader/resource/ImageResourceContent.h"
 #include "core/svg/graphics/SVGImageForContainer.h"
 
 namespace blink {

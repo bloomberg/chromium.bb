@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/ImageResourceContent.h"
+#include "core/loader/resource/ImageResourceContent.h"
 
-#include "core/fetch/ImageResource.h"
-#include "core/fetch/ImageResourceInfo.h"
-#include "core/fetch/ImageResourceObserver.h"
+#include "core/loader/resource/ImageResource.h"
+#include "core/loader/resource/ImageResourceInfo.h"
+#include "core/loader/resource/ImageResourceObserver.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -367,13 +367,15 @@ bool ImageResourceContent::shouldPauseAnimation(const blink::Image* image) {
   if (!image || image != m_image)
     return false;
 
-  for (const auto& it : m_finishedObservers)
+  for (const auto& it : m_finishedObservers) {
     if (it.key->willRenderImage())
       return false;
+  }
 
-  for (const auto& it : m_observers)
+  for (const auto& it : m_observers) {
     if (it.key->willRenderImage())
       return false;
+  }
 
   return true;
 }

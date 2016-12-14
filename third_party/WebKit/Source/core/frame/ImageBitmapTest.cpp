@@ -32,11 +32,11 @@
 
 #include "SkPixelRef.h"  // FIXME: qualify this skia header file.
 #include "core/dom/Document.h"
-#include "core/fetch/ImageResourceContent.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
+#include "core/loader/resource/ImageResourceContent.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/heap/Handle.h"

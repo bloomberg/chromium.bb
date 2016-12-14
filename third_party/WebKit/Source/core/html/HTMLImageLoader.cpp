@@ -24,12 +24,12 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Element.h"
 #include "core/events/Event.h"
-#include "core/fetch/ImageResourceContent.h"
 #include "core/fetch/ResourceLoadingLog.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
+#include "core/loader/resource/ImageResourceContent.h"
 
 namespace blink {
 

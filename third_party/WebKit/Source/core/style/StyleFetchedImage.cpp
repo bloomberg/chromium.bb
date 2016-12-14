@@ -24,8 +24,8 @@
 #include "core/style/StyleFetchedImage.h"
 
 #include "core/css/CSSImageValue.h"
-#include "core/fetch/ImageResourceContent.h"
 #include "core/layout/LayoutObject.h"
+#include "core/loader/resource/ImageResourceContent.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "core/svg/graphics/SVGImageForContainer.h"
 

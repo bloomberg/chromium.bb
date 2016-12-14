@@ -29,8 +29,8 @@
 #include "core/CoreExport.h"
 #include "core/css/CSSImageGeneratorValue.h"
 #include "core/css/CSSPrimitiveValue.h"
-#include "core/fetch/ImageResourceContent.h"
-#include "core/fetch/ImageResourceObserver.h"
+#include "core/loader/resource/ImageResourceContent.h"
+#include "core/loader/resource/ImageResourceObserver.h"
 #include "platform/graphics/Image.h"
 
 namespace blink {

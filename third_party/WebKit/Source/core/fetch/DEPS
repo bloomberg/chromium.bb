@@ -2,9 +2,4 @@ include_rules = [
     "-core",
     "+core/CoreExport.h",
     "+core/fetch",
-
-    # core/fetch/ shouldn't depend on anything else in core/,
-    # but has not been fully isolated yet.
-    # Do not add to this list.
-    "!core/svg/graphics/SVGImage.h",
 ]

@@ -24,9 +24,9 @@
 #define ImageResource_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/ImageResourceInfo.h"
-#include "core/fetch/MultipartImageResourceParser.h"
 #include "core/fetch/Resource.h"
+#include "core/loader/resource/ImageResourceInfo.h"
+#include "core/loader/resource/MultipartImageResourceParser.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include <memory>

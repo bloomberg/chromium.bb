@@ -28,16 +28,16 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/fetch/ImageResource.h"
+#include "core/loader/resource/ImageResource.h"
 
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/MemoryCache.h"
-#include "core/fetch/MockImageResourceClient.h"
 #include "core/fetch/MockResourceClient.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/fetch/UniqueIdentifier.h"
+#include "core/loader/resource/MockImageResourceClient.h"
 #include "platform/SharedBuffer.h"
 #include "platform/exported/WrappedResourceResponse.h"
 #include "platform/graphics/BitmapImage.h"
@@ -876,9 +876,8 @@ TEST(ImageResourceTest, FetchDisallowPlaceholder) {
   Persistent<MockImageResourceClient> client =
       new MockImageResourceClient(image);
 
-  image->loader()->didReceiveResponse(
-      WrappedResourceResponse(ResourceResponse(
-          testURL, "image/jpeg", sizeof(kJpegImage), nullAtom, String())));
+  image->loader()->didReceiveResponse(WrappedResourceResponse(ResourceResponse(
+      testURL, "image/jpeg", sizeof(kJpegImage), nullAtom, String())));
   image->loader()->didReceiveData(reinterpret_cast<const char*>(kJpegImage),
                                   sizeof(kJpegImage));
   image->loader()->didFinishLoading(0.0, sizeof(kJpegImage),
@@ -1017,9 +1016,8 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
 
   const char kBadData[] = "notanimageresponse";
 
-  image->loader()->didReceiveResponse(
-      WrappedResourceResponse(ResourceResponse(
-          testURL, "image/jpeg", sizeof(kBadData), nullAtom, String())));
+  image->loader()->didReceiveResponse(WrappedResourceResponse(ResourceResponse(
+      testURL, "image/jpeg", sizeof(kBadData), nullAtom, String())));
   image->loader()->didReceiveData(kBadData, sizeof(kBadData));
 
   // The dimensions could not be extracted, so the full original image should be
@@ -1032,9 +1030,8 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
   EXPECT_FALSE(client->notifyFinishedCalled());
   EXPECT_EQ(0, client->imageNotifyFinishedCount());
 
-  image->loader()->didReceiveResponse(
-      WrappedResourceResponse(ResourceResponse(
-          testURL, "image/jpeg", sizeof(kJpegImage), nullAtom, String())));
+  image->loader()->didReceiveResponse(WrappedResourceResponse(ResourceResponse(
+      testURL, "image/jpeg", sizeof(kJpegImage), nullAtom, String())));
   image->loader()->didReceiveData(reinterpret_cast<const char*>(kJpegImage),
                                   sizeof(kJpegImage));
   image->loader()->didFinishLoading(0.0, sizeof(kJpegImage),

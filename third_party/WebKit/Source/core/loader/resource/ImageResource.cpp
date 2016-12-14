@@ -21,15 +21,15 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include "core/fetch/ImageResource.h"
+#include "core/loader/resource/ImageResource.h"
 
-#include "core/fetch/ImageResourceContent.h"
-#include "core/fetch/ImageResourceInfo.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/fetch/ResourceLoader.h"
 #include "core/fetch/ResourceLoadingLog.h"
+#include "core/loader/resource/ImageResourceContent.h"
+#include "core/loader/resource/ImageResourceInfo.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"

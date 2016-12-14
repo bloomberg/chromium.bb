@@ -26,7 +26,7 @@
 #ifndef StyleFetchedImageSet_h
 #define StyleFetchedImageSet_h
 
-#include "core/fetch/ImageResourceObserver.h"
+#include "core/loader/resource/ImageResourceObserver.h"
 #include "core/style/StyleImage.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/weborigin/KURL.h"

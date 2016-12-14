@@ -5,10 +5,10 @@
 #ifndef MockImageResourceClient_h
 #define MockImageResourceClient_h
 
-#include "core/fetch/ImageResource.h"
-#include "core/fetch/ImageResourceContent.h"
-#include "core/fetch/ImageResourceObserver.h"
 #include "core/fetch/MockResourceClient.h"
+#include "core/loader/resource/ImageResource.h"
+#include "core/loader/resource/ImageResourceContent.h"
+#include "core/loader/resource/ImageResourceObserver.h"
 
 namespace blink {
 

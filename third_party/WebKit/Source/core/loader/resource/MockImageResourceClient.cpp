@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/MockImageResourceClient.h"
+#include "core/loader/resource/MockImageResourceClient.h"
 
-#include "core/fetch/ImageResource.h"
-#include "core/fetch/ImageResourceContent.h"
+#include "core/loader/resource/ImageResource.h"
+#include "core/loader/resource/ImageResourceContent.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

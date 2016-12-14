@@ -28,11 +28,13 @@
 #define CanvasImageSource_h
 
 #include "core/CoreExport.h"
+#include "platform/geometry/FloatSize.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "wtf/PassRefPtr.h"
 
 namespace blink {
 
+class FloatRect;
 class Image;
 class SecurityOrigin;
 

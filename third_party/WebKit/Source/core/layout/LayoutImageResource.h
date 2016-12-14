@@ -27,7 +27,7 @@
 #ifndef LayoutImageResource_h
 #define LayoutImageResource_h
 
-#include "core/fetch/ImageResourceContent.h"
+#include "core/loader/resource/ImageResourceContent.h"
 #include "core/style/StyleImage.h"
 
 namespace blink {

@@ -30,10 +30,10 @@
 #ifndef ShapeValue_h
 #define ShapeValue_h
 
-#include "core/fetch/ImageResourceContent.h"
+#include "core/loader/resource/ImageResourceContent.h"
 #include "core/style/BasicShapes.h"
-#include "core/style/DataEquivalency.h"
 #include "core/style/ComputedStyleConstants.h"
+#include "core/style/DataEquivalency.h"
 #include "core/style/StyleImage.h"
 #include "wtf/PassRefPtr.h"
 

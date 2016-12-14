@@ -5,11 +5,11 @@
 #ifndef LinkPreloadResourceClients_h
 #define LinkPreloadResourceClients_h
 
-#include "core/fetch/ImageResource.h"
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceOwner.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
 #include "core/loader/resource/FontResource.h"
+#include "core/loader/resource/ImageResource.h"
 #include "core/loader/resource/ScriptResource.h"
 #include "core/loader/resource/StyleSheetResourceClient.h"
 
