@@ -450,7 +450,8 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
   ArgumentSpec::RefMap refs;
 
   // Register a hook for the test.oneString method.
-  auto hooks = base::MakeUnique<APIBindingHooks>();
+  auto hooks = base::MakeUnique<APIBindingHooks>(
+      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
   bool did_call = false;
   auto hook = [](bool* did_call, const binding::APISignature* signature,
                  gin::Arguments* arguments) {
@@ -483,6 +484,59 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
   v8::Local<v8::Value> args[] = {binding_object};
   RunFunction(func, context, 1, args);
   EXPECT_TRUE(did_call);
+
+  // Other methods, like stringAndInt(), should behave normally.
+  ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]");
+}
+
+TEST_F(APIBindingUnittest, TestJSCustomHook) {
+  // Register a hook for the test.oneString method.
+  auto hooks = base::MakeUnique<APIBindingHooks>(
+      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+  const char kRegisterHook[] =
+      "(function(hooks) {\n"
+      "  hooks.setHandleRequest('oneString', function() {\n"
+      "    this.requestArguments = Array.from(arguments);\n"
+      "  });\n"
+      "})";
+  v8::Local<v8::String> source_string =
+      gin::StringToV8(isolate(), kRegisterHook);
+  v8::Local<v8::String> source_name =
+      gin::StringToV8(isolate(), "custom_hook");
+  hooks->RegisterJsSource(
+      v8::Global<v8::String>(isolate(), source_string),
+      v8::Global<v8::String>(isolate(), source_name));
+
+  std::unique_ptr<base::ListValue> functions = ListValueFromString(kFunctions);
+  ASSERT_TRUE(functions);
+  ArgumentSpec::RefMap refs;
+
+  APIBinding binding(
+      "test", *functions, nullptr, nullptr,
+      base::Bind(&APIBindingUnittest::OnFunctionCall, base::Unretained(this)),
+      std::move(hooks), &refs);
+  EXPECT_TRUE(refs.empty());
+
+  APIEventHandler event_handler(
+      base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
+  v8::Local<v8::Object> binding_object = binding.CreateInstance(
+      context, isolate(), &event_handler, base::Bind(&AllowAllAPIs));
+
+  // First try calling the oneString() method, which has a custom hook
+  // installed.
+  v8::Local<v8::Function> func =
+      FunctionFromString(context, "(function(obj) { obj.oneString('foo'); })");
+  v8::Local<v8::Value> args[] = {binding_object};
+  RunFunction(func, context, 1, args);
+
+  std::unique_ptr<base::Value> response_args =
+      GetBaseValuePropertyFromObject(context->Global(), context,
+                                     "requestArguments");
+  ASSERT_TRUE(response_args);
+  EXPECT_EQ("[\"foo\"]", ValueToString(*response_args));
 
   // Other methods, like stringAndInt(), should behave normally.
   ExpectPass(binding_object, "obj.stringAndInt('foo', 42);", "['foo',42]");

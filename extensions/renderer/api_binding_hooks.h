@@ -38,16 +38,29 @@ class APIBindingHooks {
   using HandleRequestHook =
       base::Callback<void(const binding::APISignature*, gin::Arguments*)>;
 
-  APIBindingHooks();
+  explicit APIBindingHooks(const binding::RunJSFunction& run_js);
   ~APIBindingHooks();
 
   // Register a custom binding to handle requests.
   void RegisterHandleRequest(const std::string& method_name,
                              const HandleRequestHook& hook);
 
-  // Returns the custom hook for the given method, or a null callback if none
-  // exists.
-  HandleRequestHook GetHandleRequest(const std::string& method_name);
+  // Registers a JS script to be compiled and run in order to initialize any JS
+  // hooks within a v8 context.
+  void RegisterJsSource(v8::Global<v8::String> source,
+                        v8::Global<v8::String> resource_name);
+
+  // Initializes JS hooks within a context.
+  void InitializeInContext(v8::Local<v8::Context> context,
+                           const std::string& api_name);
+
+  // Looks for a custom hook to handle the given request and, if one exists,
+  // runs it. Returns true if a hook was found and run.
+  bool HandleRequest(const std::string& api_name,
+                     const std::string& method_name,
+                     v8::Local<v8::Context> context,
+                     const binding::APISignature* signature,
+                     gin::Arguments* arguments);
 
  private:
   // Whether we've tried to use any hooks associated with this object.
@@ -55,6 +68,15 @@ class APIBindingHooks {
 
   // All registered request handlers.
   std::map<std::string, HandleRequestHook> request_hooks_;
+
+  // The script to run to initialize JS hooks, if any.
+  v8::Global<v8::String> js_hooks_source_;
+
+  // The name of the JS resource for the hooks. Used to create a ScriptOrigin
+  // to make exception stack traces more readable.
+  v8::Global<v8::String> js_resource_name_;
+
+  binding::RunJSFunction run_js_;
 
   DISALLOW_COPY_AND_ASSIGN(APIBindingHooks);
 };

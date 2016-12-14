@@ -290,6 +290,9 @@ v8::Local<v8::Object> APIBinding::CreateInstance(
     DCHECK(success.FromJust());
   }
 
+  if (binding_hooks_)
+    binding_hooks_->InitializeInContext(context, api_name_);
+
   return object;
 }
 
@@ -300,14 +303,15 @@ void APIBinding::HandleCall(const std::string& name,
   v8::Isolate* isolate = arguments->isolate();
   v8::HandleScope handle_scope(isolate);
 
-  if (binding_hooks_) {
-    // Check for a custom hook to handle the method.
-    APIBindingHooks::HandleRequestHook handler =
-        binding_hooks_->GetHandleRequest(name);
-    if (!handler.is_null()) {
-      handler.Run(signature, arguments);
-      return;
-    }
+  // Since this is called synchronously from the JS entry point,
+  // GetCurrentContext() should always be correct.
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+
+  // Check for a custom hook to handle the method.
+  if (binding_hooks_ &&
+      binding_hooks_->HandleRequest(api_name_, name, context,
+                                    signature, arguments)) {
+    return;  // Handled by a custom hook.
   }
 
   std::unique_ptr<base::ListValue> parsed_arguments;
@@ -327,10 +331,8 @@ void APIBinding::HandleCall(const std::string& name,
     return;
   }
 
-  // Since this is called synchronously from the JS entry point,
-  // GetCurrentContext() should always be correct.
   method_callback_.Run(name, std::move(parsed_arguments), isolate,
-                       isolate->GetCurrentContext(), callback);
+                       context, callback);
 }
 
 }  // namespace extensions

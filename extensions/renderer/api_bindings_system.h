@@ -109,6 +109,8 @@ class APIBindingsSystem {
   // performance concern?
   std::map<std::string, std::unique_ptr<APIBindingHooks>> binding_hooks_;
 
+  binding::RunJSFunction call_js_;
+
   // The method to retrieve the DictionaryValue describing a given extension
   // API. Curried in for testing purposes so we can use fake APIs.
   GetAPISchemaMethod get_api_schema_;

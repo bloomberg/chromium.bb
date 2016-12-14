@@ -19,6 +19,7 @@ APIBindingsSystem::APIBindingsSystem(const binding::RunJSFunction& call_js,
                                      const SendRequestMethod& send_request)
     : request_handler_(call_js),
       event_handler_(call_js),
+      call_js_(call_js),
       get_api_schema_(get_api_schema),
       send_request_(send_request) {}
 
@@ -79,7 +80,7 @@ APIBindingHooks* APIBindingsSystem::GetHooksForAPI(
       << "Hook registration must happen before creating any binding instances.";
   std::unique_ptr<APIBindingHooks>& hooks = binding_hooks_[api_name];
   if (!hooks)
-    hooks = base::MakeUnique<APIBindingHooks>();
+    hooks = base::MakeUnique<APIBindingHooks>(call_js_);
   return hooks.get();
 }
 
