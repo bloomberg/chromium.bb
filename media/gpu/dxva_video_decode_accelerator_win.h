@@ -221,6 +221,9 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // accepting requests in this state.
   void Invalidate();
 
+  // Stop and join on the decoder thread.
+  void StopDecoderThread();
+
   // Notifies the client that the input buffer identifed by input_buffer_id has
   // been processed.
   void NotifyInputBufferRead(int input_buffer_id);

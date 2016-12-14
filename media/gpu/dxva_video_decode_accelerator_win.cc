@@ -25,7 +25,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/debug/alias.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -189,21 +188,32 @@ constexpr const wchar_t* const kMediaFoundationVideoDecoderDLLs[] = {
 // ensure only the thread with the ScopedExceptionCatcher dumps anything.
 base::ThreadLocalStorage::StaticSlot g_catcher_tls_slot = TLS_INITIALIZER;
 
-base::subtle::Atomic32 g_dump_count;
+uint64_t GetCurrentQPC() {
+  LARGE_INTEGER perf_counter_now = {};
+  // Use raw QueryPerformanceCounter to avoid grabbing locks or allocating
+  // memory in an exception handler;
+  ::QueryPerformanceCounter(&perf_counter_now);
+  return perf_counter_now.QuadPart;
+}
+
+// This is information about the last exception. Writing into it may be racy,
+// but that should be ok because the information is only used for debugging.
+DWORD g_last_exception_code;
+uint64_t g_last_exception_time;
+uint64_t g_last_process_output_time;
+HRESULT g_last_unhandled_error;
 
 LONG CALLBACK VectoredCrashHandler(EXCEPTION_POINTERS* exception_pointers) {
   if (g_catcher_tls_slot.Get()) {
-    // Only dump first time to ensure we don't spend a lot of time doing this
-    // if the driver continually causes exceptions.
-    if (base::subtle::Barrier_AtomicIncrement(&g_dump_count, 1) == 1)
-      base::debug::DumpWithoutCrashing();
+    g_last_exception_code = exception_pointers->ExceptionRecord->ExceptionCode;
+    g_last_exception_time = GetCurrentQPC();
   }
   return EXCEPTION_CONTINUE_SEARCH;
 }
 
 // The MS VP9 MFT swallows driver exceptions and later hangs because it gets
-// into a weird state. Add a vectored exception handler so a dump will be
-// reported. See http://crbug.com/636158
+// into a weird state. Add a vectored exception handler so information about
+// the exception can be retrieved. See http://crbug.com/636158
 class ScopedExceptionCatcher {
  public:
   explicit ScopedExceptionCatcher(bool handle_exception) {
@@ -1180,7 +1190,7 @@ void DXVAVideoDecodeAccelerator::Reset() {
       (state == kNormal || state == kStopped || state == kFlushing),
       "Reset: invalid state: " << state, ILLEGAL_STATE, );
 
-  decoder_thread_.Stop();
+  StopDecoderThread();
 
   if (state == kFlushing)
     NotifyFlushDone();
@@ -1793,6 +1803,7 @@ void DXVAVideoDecodeAccelerator::DoDecode(const gfx::ColorSpace& color_space) {
   HRESULT hr;
   {
     ScopedExceptionCatcher catcher(using_ms_vp9_mft_);
+    g_last_process_output_time = GetCurrentQPC();
     hr = decoder_->ProcessOutput(0,  // No flags
                                  1,  // # of out streams to pull from
                                  &output_data_buffer, &status);
@@ -1824,6 +1835,7 @@ void DXVAVideoDecodeAccelerator::DoDecode(const gfx::ColorSpace& color_space) {
       return;
     } else {
       NOTREACHED() << "Unhandled error in DoDecode()";
+      g_last_unhandled_error = hr;
       return;
     }
   }
@@ -1995,7 +2007,7 @@ void DXVAVideoDecodeAccelerator::Invalidate() {
   // Best effort to make the GL context current.
   make_context_current_cb_.Run();
 
-  decoder_thread_.Stop();
+  StopDecoderThread();
   weak_this_factory_.InvalidateWeakPtrs();
   weak_ptr_ = weak_this_factory_.GetWeakPtr();
   pending_output_samples_.clear();
@@ -2035,6 +2047,23 @@ void DXVAVideoDecodeAccelerator::Invalidate() {
   }
   sent_drain_message_ = false;
   SetState(kUninitialized);
+}
+
+void DXVAVideoDecodeAccelerator::StopDecoderThread() {
+  // Try to determine what, if any exception last happened before a hang. See
+  // http://crbug.com/613701
+  DWORD last_exception_code = g_last_exception_code;
+  HRESULT last_unhandled_error = g_last_unhandled_error;
+  uint64_t last_exception_time = g_last_exception_time;
+  uint64_t last_process_output_time = g_last_process_output_time;
+  LARGE_INTEGER perf_frequency;
+  ::QueryPerformanceFrequency(&perf_frequency);
+  base::debug::Alias(&last_exception_code);
+  base::debug::Alias(&last_unhandled_error);
+  base::debug::Alias(&last_exception_time);
+  base::debug::Alias(&last_process_output_time);
+  base::debug::Alias(&perf_frequency.QuadPart);
+  decoder_thread_.Stop();
 }
 
 void DXVAVideoDecodeAccelerator::NotifyInputBufferRead(int input_buffer_id) {
