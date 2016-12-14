@@ -15,14 +15,12 @@ namespace arc {
 
 namespace {
 
-mojom::IntentFilterPtr GetIntentFilter(const std::string& host) {
-  mojom::IntentFilterPtr filter = mojom::IntentFilter::New();
-  mojom::AuthorityEntryPtr authority_entry = mojom::AuthorityEntry::New();
-  authority_entry->host = host;
-  authority_entry->port = -1;
-  filter->data_authorities = std::vector<mojom::AuthorityEntryPtr>();
-  filter->data_authorities->push_back(std::move(authority_entry));
-  return filter;
+IntentFilter GetIntentFilter(const std::string& host) {
+  std::vector<IntentFilter::AuthorityEntry> authorities;
+  authorities.emplace_back(host, -1);
+
+  return IntentFilter(std::move(authorities),
+                      std::vector<IntentFilter::PatternMatcher>());
 }
 
 }  // namespace
@@ -41,8 +39,8 @@ TEST(LocalActivityResolverTest, TestDefault) {
 TEST(LocalActivityResolverTest, TestSingleFilter) {
   scoped_refptr<LocalActivityResolver> resolver(new LocalActivityResolver());
 
-  std::vector<mojom::IntentFilterPtr> array;
-  array.push_back(GetIntentFilter("www.google.com"));
+  std::vector<IntentFilter> array;
+  array.emplace_back(GetIntentFilter("www.google.com"));
   resolver->UpdateIntentFilters(std::move(array));
 
   EXPECT_FALSE(resolver->ShouldChromeHandleUrl(GURL("http://www.google.com")));
@@ -56,10 +54,10 @@ TEST(LocalActivityResolverTest, TestSingleFilter) {
 TEST(LocalActivityResolverTest, TestMultipleFilters) {
   scoped_refptr<LocalActivityResolver> resolver(new LocalActivityResolver());
 
-  std::vector<mojom::IntentFilterPtr> array;
-  array.push_back(GetIntentFilter("www.google.com"));
-  array.push_back(GetIntentFilter("www.google.co.uk"));
-  array.push_back(GetIntentFilter("dev.chromium.org"));
+  std::vector<IntentFilter> array;
+  array.emplace_back(GetIntentFilter("www.google.com"));
+  array.emplace_back(GetIntentFilter("www.google.co.uk"));
+  array.emplace_back(GetIntentFilter("dev.chromium.org"));
   resolver->UpdateIntentFilters(std::move(array));
 
   EXPECT_FALSE(resolver->ShouldChromeHandleUrl(GURL("http://www.google.com")));
@@ -80,8 +78,8 @@ TEST(LocalActivityResolverTest, TestMultipleFilters) {
 TEST(LocalActivityResolverTest, TestNonHttp) {
   scoped_refptr<LocalActivityResolver> resolver(new LocalActivityResolver());
 
-  std::vector<mojom::IntentFilterPtr> array;
-  array.push_back(GetIntentFilter("www.google.com"));
+  std::vector<IntentFilter> array;
+  array.emplace_back(GetIntentFilter("www.google.com"));
   resolver->UpdateIntentFilters(std::move(array));
 
   EXPECT_TRUE(resolver->ShouldChromeHandleUrl(GURL("chrome://www.google.com")));
@@ -93,15 +91,15 @@ TEST(LocalActivityResolverTest, TestNonHttp) {
 TEST(LocalActivityResolverTest, TestMultipleUpdate) {
   scoped_refptr<LocalActivityResolver> resolver(new LocalActivityResolver());
 
-  std::vector<mojom::IntentFilterPtr> array;
-  array.push_back(GetIntentFilter("www.google.com"));
-  array.push_back(GetIntentFilter("dev.chromium.org"));
+  std::vector<IntentFilter> array;
+  array.emplace_back(GetIntentFilter("www.google.com"));
+  array.emplace_back(GetIntentFilter("dev.chromium.org"));
   resolver->UpdateIntentFilters(std::move(array));
 
-  std::vector<mojom::IntentFilterPtr> array2;
-  array2.push_back(GetIntentFilter("www.google.co.uk"));
-  array2.push_back(GetIntentFilter("dev.chromium.org"));
-  array2.push_back(GetIntentFilter("www.android.com"));
+  std::vector<IntentFilter> array2;
+  array2.emplace_back(GetIntentFilter("www.google.co.uk"));
+  array2.emplace_back(GetIntentFilter("dev.chromium.org"));
+  array2.emplace_back(GetIntentFilter("www.android.com"));
   resolver->UpdateIntentFilters(std::move(array2));
 
   EXPECT_TRUE(resolver->ShouldChromeHandleUrl(GURL("http://www.google.com")));

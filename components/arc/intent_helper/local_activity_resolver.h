@@ -29,7 +29,7 @@ class LocalActivityResolver : public base::RefCounted<LocalActivityResolver> {
   bool ShouldChromeHandleUrl(const GURL& url);
 
   // Called when the list of intent filters on ARC side is updated.
-  void UpdateIntentFilters(std::vector<mojom::IntentFilterPtr> intent_filters);
+  void UpdateIntentFilters(std::vector<IntentFilter> intent_filters);
 
  private:
   friend class base::RefCounted<LocalActivityResolver>;
