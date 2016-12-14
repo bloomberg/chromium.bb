@@ -7,15 +7,21 @@
 
 #include <memory>
 
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "net/base/completion_callback.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "url/gurl.h"
 
+namespace base {
+class File;
+class SequencedTaskRunner;
+}
+
 namespace net {
-class FileStream;
 class IOBuffer;
+class IOBufferWithSize;
 }
 
 namespace arc {
@@ -33,15 +39,53 @@ class ArcContentFileSystemFileStreamReader : public storage::FileStreamReader {
   int64_t GetLength(const net::Int64CompletionCallback& callback) override;
 
  private:
+  // Actually performs read.
+  void ReadInternal(net::IOBuffer* buffer,
+                    int buffer_length,
+                    const net::CompletionCallback& callback);
+
+  // Called when read completes.
+  void OnRead(const net::CompletionCallback& callback, int result);
+
+  // Called when GetFileSize() completes.
+  void OnGetFileSize(const net::Int64CompletionCallback& callback,
+                     int64_t size);
+
+  // Called when opening file completes.
   void OnOpenFile(scoped_refptr<net::IOBuffer> buf,
                   int buffer_length,
                   const net::CompletionCallback& callback,
                   mojo::ScopedHandle handle);
 
+  // Called when seek completes.
+  void OnSeekFile(scoped_refptr<net::IOBuffer> buf,
+                  int buffer_length,
+                  const net::CompletionCallback& callback,
+                  int seek_result);
+
+  // Reads the contents of the file to reach the offset.
+  void ConsumeFileContents(
+      scoped_refptr<net::IOBuffer> buf,
+      int buffer_length,
+      const net::CompletionCallback& callback,
+      scoped_refptr<net::IOBufferWithSize> temporary_buffer,
+      int64_t num_bytes_to_consume);
+
+  // Called to handle read result for ConsumeFileContents().
+  void OnConsumeFileContents(
+      scoped_refptr<net::IOBuffer> buf,
+      int buffer_length,
+      const net::CompletionCallback& callback,
+      scoped_refptr<net::IOBufferWithSize> temporary_buffer,
+      int64_t num_bytes_to_consume,
+      int read_result);
+
   GURL arc_url_;
   int64_t offset_;
 
-  std::unique_ptr<net::FileStream> file_stream_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  std::unique_ptr<base::File> file_;
 
   base::WeakPtrFactory<ArcContentFileSystemFileStreamReader> weak_ptr_factory_;
 

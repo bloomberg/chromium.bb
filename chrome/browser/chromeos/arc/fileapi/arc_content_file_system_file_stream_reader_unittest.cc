@@ -25,8 +25,32 @@ namespace arc {
 
 namespace {
 
-constexpr char kArcUrl[] = "content://org.chromium.foo/bar";
+// URL which returns a file descriptor of a regular file.
+constexpr char kArcUrlFile[] = "content://org.chromium.foo/file";
+
+// URL which returns a file descriptor of a pipe's read end.
+constexpr char kArcUrlPipe[] = "content://org.chromium.foo/pipe";
+
 constexpr char kData[] = "abcdefghijklmnopqrstuvwxyz";
+
+// Reads data from the reader to fill the buffer.
+bool ReadData(ArcContentFileSystemFileStreamReader* reader,
+              net::IOBufferWithSize* buffer) {
+  auto drainable_buffer =
+      make_scoped_refptr(new net::DrainableIOBuffer(buffer, buffer->size()));
+  while (drainable_buffer->BytesRemaining()) {
+    net::TestCompletionCallback callback;
+    int result = callback.GetResult(
+        reader->Read(drainable_buffer.get(), drainable_buffer->BytesRemaining(),
+                     callback.callback()));
+    if (result < 0) {
+      LOG(ERROR) << "Read failed: " << result;
+      return false;
+    }
+    drainable_buffer->DidConsume(result);
+  }
+  return true;
+}
 
 class ArcFileSystemInstanceTestImpl : public FakeFileSystemInstance {
  public:
@@ -37,7 +61,7 @@ class ArcFileSystemInstanceTestImpl : public FakeFileSystemInstance {
 
   void GetFileSize(const std::string& url,
                    const GetFileSizeCallback& callback) override {
-    EXPECT_EQ(kArcUrl, url);
+    EXPECT_EQ(kArcUrlFile, url);
     base::File::Info info;
     EXPECT_TRUE(base::GetFileInfo(file_path_, &info));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -46,13 +70,19 @@ class ArcFileSystemInstanceTestImpl : public FakeFileSystemInstance {
 
   void OpenFileToRead(const std::string& url,
                       const OpenFileToReadCallback& callback) override {
-    EXPECT_EQ(kArcUrl, url);
-
-    base::File file(file_path_, base::File::FLAG_OPEN | base::File::FLAG_READ);
-    EXPECT_TRUE(file.IsValid());
-
+    base::ScopedFD fd;
+    if (url == kArcUrlFile) {
+      fd = OpenRegularFileToRead();
+    } else if (url == kArcUrlPipe) {
+      fd = OpenPipeToRead();
+    } else {
+      LOG(ERROR) << "Unknown URL: " << url;
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(callback, base::Passed(mojo::ScopedHandle())));
+      return;
+    }
     mojo::edk::ScopedPlatformHandle platform_handle(
-        mojo::edk::PlatformHandle(file.TakePlatformFile()));
+        mojo::edk::PlatformHandle(fd.release()));
     MojoHandle wrapped_handle;
     EXPECT_EQ(MOJO_RESULT_OK, mojo::edk::CreatePlatformHandleWrapper(
                                   std::move(platform_handle), &wrapped_handle));
@@ -64,6 +94,35 @@ class ArcFileSystemInstanceTestImpl : public FakeFileSystemInstance {
   }
 
  private:
+  // Returns a ScopedFD to read |file_path_|.
+  base::ScopedFD OpenRegularFileToRead() {
+    base::File file(file_path_, base::File::FLAG_OPEN | base::File::FLAG_READ);
+    EXPECT_TRUE(file.IsValid());
+    return base::ScopedFD(file.TakePlatformFile());
+  }
+
+  // Returns a pipe's read end with |file_path_|'s contents written.
+  base::ScopedFD OpenPipeToRead() {
+    // Create a new pipe.
+    int fds[2];
+    if (pipe(fds) != 0) {
+      LOG(ERROR) << "pipe() failed.";
+      return base::ScopedFD();
+    }
+    base::ScopedFD fd_read(fds[0]);
+    base::ScopedFD fd_write(fds[1]);
+    // Put the file's contents to the pipe.
+    std::string contents;
+    if (!base::ReadFileToString(file_path_, &contents) ||
+        !base::WriteFileDescriptor(fd_write.get(), contents.data(),
+                                   contents.length())) {
+      LOG(ERROR) << "Failed to write the file contents to the pipe";
+      return base::ScopedFD();
+    }
+    // Return the read end.
+    return fd_read;
+  }
+
   base::FilePath file_path_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcFileSystemInstanceTestImpl);
@@ -101,27 +160,44 @@ class ArcContentFileSystemFileStreamReaderTest : public testing::Test {
 
 }  // namespace
 
-TEST_F(ArcContentFileSystemFileStreamReaderTest, Read) {
-  ArcContentFileSystemFileStreamReader reader(GURL(kArcUrl), 0);
-
-  auto base_buffer =
-      make_scoped_refptr(new net::IOBufferWithSize(arraysize(kData)));
-  auto drainable_buffer = make_scoped_refptr(
-      new net::DrainableIOBuffer(base_buffer.get(), base_buffer->size()));
-  while (drainable_buffer->BytesRemaining()) {
-    net::TestCompletionCallback callback;
-    int result = callback.GetResult(
-        reader.Read(drainable_buffer.get(), drainable_buffer->BytesRemaining(),
-                    callback.callback()));
-    ASSERT_GT(result, 0);
-    drainable_buffer->DidConsume(result);
-  }
+TEST_F(ArcContentFileSystemFileStreamReaderTest, ReadRegularFile) {
+  ArcContentFileSystemFileStreamReader reader(GURL(kArcUrlFile), 0);
+  auto buffer = make_scoped_refptr(new net::IOBufferWithSize(arraysize(kData)));
+  EXPECT_TRUE(ReadData(&reader, buffer.get()));
   EXPECT_EQ(base::StringPiece(kData, arraysize(kData)),
-            base::StringPiece(base_buffer->data(), base_buffer->size()));
+            base::StringPiece(buffer->data(), buffer->size()));
+}
+
+TEST_F(ArcContentFileSystemFileStreamReaderTest, ReadRegularFileWithOffset) {
+  constexpr size_t kOffset = 10;
+  ArcContentFileSystemFileStreamReader reader(GURL(kArcUrlFile), kOffset);
+  auto buffer =
+      make_scoped_refptr(new net::IOBufferWithSize(arraysize(kData) - kOffset));
+  EXPECT_TRUE(ReadData(&reader, buffer.get()));
+  EXPECT_EQ(base::StringPiece(kData + kOffset, arraysize(kData) - kOffset),
+            base::StringPiece(buffer->data(), buffer->size()));
+}
+
+TEST_F(ArcContentFileSystemFileStreamReaderTest, ReadPipe) {
+  ArcContentFileSystemFileStreamReader reader(GURL(kArcUrlPipe), 0);
+  auto buffer = make_scoped_refptr(new net::IOBufferWithSize(arraysize(kData)));
+  EXPECT_TRUE(ReadData(&reader, buffer.get()));
+  EXPECT_EQ(base::StringPiece(kData, arraysize(kData)),
+            base::StringPiece(buffer->data(), buffer->size()));
+}
+
+TEST_F(ArcContentFileSystemFileStreamReaderTest, ReadPipeWithOffset) {
+  constexpr size_t kOffset = 10;
+  ArcContentFileSystemFileStreamReader reader(GURL(kArcUrlPipe), kOffset);
+  auto buffer =
+      make_scoped_refptr(new net::IOBufferWithSize(arraysize(kData) - kOffset));
+  EXPECT_TRUE(ReadData(&reader, buffer.get()));
+  EXPECT_EQ(base::StringPiece(kData + kOffset, arraysize(kData) - kOffset),
+            base::StringPiece(buffer->data(), buffer->size()));
 }
 
 TEST_F(ArcContentFileSystemFileStreamReaderTest, GetLength) {
-  ArcContentFileSystemFileStreamReader reader(GURL(kArcUrl), 0);
+  ArcContentFileSystemFileStreamReader reader(GURL(kArcUrlFile), 0);
 
   net::TestInt64CompletionCallback callback;
   EXPECT_EQ(static_cast<int64_t>(arraysize(kData)),
