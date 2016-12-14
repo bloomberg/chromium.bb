@@ -9,6 +9,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.ResolveInfo;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 
@@ -95,7 +96,8 @@ public class ExternalNavigationDelegateImplTest extends ChromeActivityTestCaseBa
                                 resolveInfos, packageName).size());
     }
 
-    @SmallTest
+    // @SmallTest
+    @DisabledTest(message = "crbug.com/673680")
     public void testIsPackageSpecializeHandler_withEphemeralResolver() {
         String packageName = "";
         ResolveInfo info = new ResolveInfo();
