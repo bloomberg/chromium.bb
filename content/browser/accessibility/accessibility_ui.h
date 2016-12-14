@@ -22,8 +22,7 @@ class AccessibilityUI : public WebUIController {
 
  private:
   void ToggleAccessibility(const base::ListValue* args);
-  void ToggleGlobalAccessibility(const base::ListValue* args);
-  void ToggleInternalTree(const base::ListValue* args);
+  void SetGlobalFlag(const base::ListValue* args);
   void RequestAccessibilityTree(const base::ListValue* args);
 
   DISALLOW_COPY_AND_ASSIGN(AccessibilityUI);

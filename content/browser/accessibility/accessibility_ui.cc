@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,6 +32,7 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "net/base/escape.h"
 
@@ -43,6 +45,19 @@ static const char kNameField[]  = "name";
 static const char kFaviconUrlField[] = "favicon_url";
 static const char kPidField[]  = "pid";
 static const char kAccessibilityModeField[] = "a11y_mode";
+
+// Global flags
+static const char kInternal[] = "internal";
+static const char kNative[] = "native";
+static const char kWeb[] = "web";
+static const char kText[] = "text";
+static const char kScreenReader[] = "screenreader";
+static const char kHTML[] = "html";
+
+// Possible global flag values
+static const char kOff[]= "off";
+static const char kOn[] = "on";
+static const char kDisabled[] = "disabled";
 
 namespace content {
 
@@ -66,8 +81,9 @@ std::unique_ptr<base::DictionaryValue> BuildTargetDescriptor(
   target_data->SetString(kNameField, net::EscapeForHTML(name));
   target_data->SetInteger(kPidField, base::GetProcId(handle));
   target_data->SetString(kFaviconUrlField, favicon_url.spec());
-  target_data->SetInteger(kAccessibilityModeField,
-                          accessibility_mode);
+  target_data->SetBoolean(
+      kAccessibilityModeField,
+      0 != (accessibility_mode & ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS));
   return target_data;
 }
 
@@ -129,12 +145,29 @@ bool HandleRequestCallback(BrowserContext* current_context,
 
   base::DictionaryValue data;
   data.Set("list", rvh_list.release());
-  data.SetInteger(
-      "global_a11y_mode",
-      BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode());
-  data.SetBoolean(
-      "global_internal_tree_mode",
-      g_show_internal_accessibility_tree);
+  AccessibilityMode mode =
+      BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode();
+  bool disabled = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableRendererAccessibility);
+  bool native = 0 != (mode & ACCESSIBILITY_MODE_FLAG_NATIVE_APIS);
+  bool web = 0 != (mode & ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS);
+  bool text = 0 != (mode & ACCESSIBILITY_MODE_FLAG_INLINE_TEXT_BOXES);
+  bool screenreader = 0 != (mode & ACCESSIBILITY_MODE_FLAG_SCREEN_READER);
+  bool html = 0 != (mode & ACCESSIBILITY_MODE_FLAG_HTML);
+
+  // The "native" and "web" flags are disabled if
+  // --disable-renderer-accessibility is set.
+  data.SetString(kNative, disabled ? kDisabled : (native ? kOn : kOff));
+  data.SetString(kWeb, disabled ? kDisabled : (web ? kOn : kOff));
+
+  // The "text", "screenreader", and "html" flags are only meaningful if
+  // "web" is enabled.
+  data.SetString(kText, web ? (text ? kOn : kOff) : kDisabled);
+  data.SetString(kScreenReader, web ? (screenreader ? kOn : kOff) : kDisabled);
+  data.SetString(kHTML, web ? (html ? kOn : kOff) : kDisabled);
+
+  data.SetString(kInternal,
+                 g_show_internal_accessibility_tree ? kOn : kOff);
 
   std::string json_string;
   base::JSONWriter::Write(data, &json_string);
@@ -155,12 +188,8 @@ AccessibilityUI::AccessibilityUI(WebUI* web_ui) : WebUIController(web_ui) {
       base::Bind(&AccessibilityUI::ToggleAccessibility,
                  base::Unretained(this)));
   web_ui->RegisterMessageCallback(
-      "toggleGlobalAccessibility",
-      base::Bind(&AccessibilityUI::ToggleGlobalAccessibility,
-                 base::Unretained(this)));
-  web_ui->RegisterMessageCallback(
-      "toggleInternalTree",
-      base::Bind(&AccessibilityUI::ToggleInternalTree,
+      "setGlobalFlag",
+      base::Bind(&AccessibilityUI::SetGlobalFlag,
                  base::Unretained(this)));
   web_ui->RegisterMessageCallback(
       "requestAccessibilityTree",
@@ -210,18 +239,58 @@ void AccessibilityUI::ToggleAccessibility(const base::ListValue* args) {
   }
 }
 
-void AccessibilityUI::ToggleGlobalAccessibility(const base::ListValue* args) {
+void AccessibilityUI::SetGlobalFlag(const base::ListValue* args) {
+  std::string flag_name_str;
+  bool enabled;
+  CHECK_EQ(2U, args->GetSize());
+  CHECK(args->GetString(0, &flag_name_str));
+  CHECK(args->GetBoolean(1, &enabled));
+
+  if (flag_name_str == kInternal) {
+    g_show_internal_accessibility_tree = enabled;
+    LOG(ERROR) << "INTERNAL: " << g_show_internal_accessibility_tree;
+    return;
+  }
+
+  AccessibilityMode new_mode;
+  if (flag_name_str == kNative) {
+    new_mode = ACCESSIBILITY_MODE_FLAG_NATIVE_APIS;
+  } else if (flag_name_str == kWeb) {
+    new_mode = ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS;
+  } else if (flag_name_str == kText) {
+    new_mode = ACCESSIBILITY_MODE_FLAG_INLINE_TEXT_BOXES;
+  } else if (flag_name_str == kScreenReader) {
+    new_mode = ACCESSIBILITY_MODE_FLAG_SCREEN_READER;
+  } else if (flag_name_str == kHTML) {
+    new_mode = ACCESSIBILITY_MODE_FLAG_HTML;
+  } else {
+    NOTREACHED();
+    return;
+  }
+
+  // It doesn't make sense to enable one of the flags that depends on
+  // web contents without enabling web contents accessibility too.
+  if (enabled &&
+      (new_mode == ACCESSIBILITY_MODE_FLAG_INLINE_TEXT_BOXES ||
+       new_mode == ACCESSIBILITY_MODE_FLAG_SCREEN_READER ||
+       new_mode == ACCESSIBILITY_MODE_FLAG_HTML)) {
+    new_mode |= ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS;
+  }
+
+  // Similarly if you disable web accessibility we should remove all
+  // flags that depend on it.
+  if (!enabled && new_mode == ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS) {
+    new_mode |= ACCESSIBILITY_MODE_FLAG_INLINE_TEXT_BOXES;
+    new_mode |= ACCESSIBILITY_MODE_FLAG_SCREEN_READER;
+    new_mode |= ACCESSIBILITY_MODE_FLAG_HTML;
+  }
+
   BrowserAccessibilityStateImpl* state =
       BrowserAccessibilityStateImpl::GetInstance();
-  AccessibilityMode mode = state->accessibility_mode();
-  if ((mode & ACCESSIBILITY_MODE_COMPLETE) != ACCESSIBILITY_MODE_COMPLETE)
-    state->EnableAccessibility();
+  if (enabled)
+    state->AddAccessibilityModeFlags(new_mode);
   else
-    state->DisableAccessibility();
-}
-
-void AccessibilityUI::ToggleInternalTree(const base::ListValue* args) {
-  g_show_internal_accessibility_tree = !g_show_internal_accessibility_tree;
+    state->RemoveAccessibilityModeFlags(new_mode);
 }
 
 void AccessibilityUI::RequestAccessibilityTree(const base::ListValue* args) {

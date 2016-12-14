@@ -5,24 +5,6 @@
 cr.define('accessibility', function() {
   'use strict';
 
-  // Keep in sync with view_message_enums.h
-  var AccessibilityModeFlag = {
-    Platform: 1 << 0,
-    FullTree: 1 << 1
-  }
-
-  var AccessibilityMode = {
-    Off: 0,
-    Complete:
-        AccessibilityModeFlag.Platform | AccessibilityModeFlag.FullTree,
-    EditableTextOnly: AccessibilityModeFlag.Platform,
-    TreeOnly: AccessibilityModeFlag.FullTree
-  }
-
-  function isAccessibilityComplete(mode) {
-    return ((mode & AccessibilityMode.Complete) == AccessibilityMode.Complete);
-  }
-
   function requestData() {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', 'targets-data.json', false);
@@ -58,23 +40,16 @@ cr.define('accessibility', function() {
                 [String(data.processId), String(data.routeId)]);
   }
 
-  function toggleGlobalAccessibility() {
-    chrome.send('toggleGlobalAccessibility');
-    document.location.reload(); // FIXME see TODO above
-  }
-
-  function toggleInternalTree() {
-    chrome.send('toggleInternalTree');
-    document.location.reload(); // FIXME see TODO above
-  }
-
   function initialize() {
     console.log('initialize');
     var data = requestData();
 
-    addGlobalAccessibilityModeToggle(data['global_a11y_mode']);
-
-    addInternalTreeToggle(data['global_internal_tree_mode']);
+    bindCheckbox('native', data['native']);
+    bindCheckbox('web', data['web']);
+    bindCheckbox('text', data['text']);
+    bindCheckbox('screenreader', data['screenreader']);
+    bindCheckbox('html', data['html']);
+    bindCheckbox('internal', data['internal']);
 
     $('pages').textContent = '';
 
@@ -84,22 +59,17 @@ cr.define('accessibility', function() {
     }
   }
 
-  function addGlobalAccessibilityModeToggle(global_a11y_mode) {
-    var full_a11y_on = isAccessibilityComplete(global_a11y_mode);
-    $('toggle_global').textContent = (full_a11y_on ? 'on' : 'off');
-    $('toggle_global').setAttribute('aria-pressed',
-                                    (full_a11y_on ? 'true' : 'false'));
-    $('toggle_global').addEventListener('click',
-                                        toggleGlobalAccessibility);
-  }
-
-  function addInternalTreeToggle(global_internal_tree_mode) {
-    var on = global_internal_tree_mode;
-    $('toggle_internal').textContent = (on ? 'on' : 'off');
-    $('toggle_internal').setAttribute('aria-pressed',
-                                      (on ? 'true' : 'false'));
-    $('toggle_internal').addEventListener('click',
-                                          toggleInternalTree);
+  function bindCheckbox(name, value) {
+    if (value == 'on')
+      $(name).checked = true;
+    if (value == 'disabled') {
+      $(name).disabled = true;
+      $(name).labels[0].classList.add('disabled');
+    }
+    $(name).addEventListener('change', function() {
+      chrome.send('setGlobalFlag', [name, $(name).checked]);
+      document.location.reload(); // FIXME see TODO above
+    });
   }
 
   function addToPagesList(data) {
@@ -129,7 +99,7 @@ cr.define('accessibility', function() {
       row.appendChild(formatValue(data, properties[j]));
 
     row.appendChild(createToggleAccessibilityElement(data));
-    if (isAccessibilityComplete(data['a11y_mode'])) {
+    if (data['a11y_mode']) {
       row.appendChild(document.createTextNode(' | '));
       if ('tree' in data) {
         row.appendChild(createShowAccessibilityTreeElement(data, row, true));
@@ -169,7 +139,7 @@ cr.define('accessibility', function() {
   function createToggleAccessibilityElement(data) {
     var link = document.createElement('a', 'action-link');
     link.setAttribute('role', 'button');
-    var full_a11y_on = isAccessibilityComplete(data['a11y_mode']);
+    var full_a11y_on = data['a11y_mode'];
     link.textContent = 'accessibility ' + (full_a11y_on ? 'on' : 'off');
     link.setAttribute('aria-pressed', (full_a11y_on ? 'true' : 'false'));
     link.addEventListener('click',

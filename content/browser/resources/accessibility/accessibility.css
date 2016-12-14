@@ -7,7 +7,7 @@
 body {
   font-family: Arial, sans-serif;
   font-size: 12px;
-  margin: 10px;
+  margin: 10px 20px;
   min-width: 47em;
   padding-bottom: 65px;
 }
@@ -28,3 +28,45 @@ img {
   color: #A0A0A0;
 }
 
+p {
+  line-height: 1.2em;
+}
+
+.columns {
+  display: flex;
+}
+
+.column {
+  flex-basis: 50%;
+}
+
+.checkbox_row {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox_wrapper {
+  width: 32px;
+  margin: 0 0 2px 0;
+  padding: 0;
+  flex-grow: 0;
+}
+
+.secondary {
+  margin: 0 0 12px 32px;
+  color: #696969;
+}
+
+label {
+  margin: 0 0 2px 0;
+  padding: 0;
+  flex-grow: 1;
+}
+
+label.disabled {
+  color: #696969;
+}
+
+label input[type="checkbox"] {
+  margin-right: 6px;
+}
