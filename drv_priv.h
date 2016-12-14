@@ -46,6 +46,7 @@ struct map_info {
 	size_t length;
 	uint32_t handle;
 	int32_t refcount;
+	void *priv;
 };
 
 struct supported_combination {
@@ -67,6 +68,7 @@ struct backend
 	int (*bo_create)(struct bo *bo, uint32_t width, uint32_t height,
 			 uint32_t format, uint32_t flags);
 	void* (*bo_map)(struct bo *bo, struct map_info *data, size_t plane);
+	int (*bo_unmap)(struct bo *bo, struct map_info *data);
 	int (*bo_destroy)(struct bo *bo);
 	uint32_t (*resolve_format)(uint32_t format);
 	struct list_head combinations;
