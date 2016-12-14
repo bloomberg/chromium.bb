@@ -372,6 +372,11 @@ void DataReductionProxyCompressionStats::Init() {
         weak_factory_.GetWeakPtr()));
   }
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kClearDataReductionProxyDataSavings)) {
+    ClearDataSavingStatistics();
+  }
+
   if (delay_.is_zero())
     return;
 
@@ -420,11 +425,6 @@ void DataReductionProxyCompressionStats::Init() {
   InitListPref(prefs::kDailyHttpReceivedContentLength);
   InitListPref(prefs::kDailyOriginalContentLengthViaDataReductionProxy);
   InitListPref(prefs::kDailyOriginalContentLengthWithDataReductionProxyEnabled);
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kClearDataReductionProxyDataSavings)) {
-    ClearDataSavingStatistics();
-  }
 }
 
 void DataReductionProxyCompressionStats::UpdateDataSavings(
@@ -683,29 +683,28 @@ void DataReductionProxyCompressionStats::OnCurrentDataUsageLoaded(
 void DataReductionProxyCompressionStats::ClearDataSavingStatistics() {
   DeleteHistoricalDataUsage();
 
-  list_pref_map_.get(
-      prefs::kDailyContentLengthHttpsWithDataReductionProxyEnabled)->Clear();
-  list_pref_map_
-      .get(prefs::kDailyContentLengthLongBypassWithDataReductionProxyEnabled)
-      ->Clear();
-  list_pref_map_
-      .get(prefs::kDailyContentLengthShortBypassWithDataReductionProxyEnabled)
-      ->Clear();
-  list_pref_map_
-      .get(prefs::kDailyContentLengthUnknownWithDataReductionProxyEnabled)
-      ->Clear();
-  list_pref_map_.get(prefs::kDailyContentLengthViaDataReductionProxy)->Clear();
-  list_pref_map_.get(prefs::kDailyContentLengthWithDataReductionProxyEnabled)
-      ->Clear();
-  list_pref_map_.get(prefs::kDailyHttpOriginalContentLength)->Clear();
-  list_pref_map_.get(prefs::kDailyHttpReceivedContentLength)->Clear();
-  list_pref_map_.get(prefs::kDailyOriginalContentLengthViaDataReductionProxy)
-      ->Clear();
-  list_pref_map_
-      .get(prefs::kDailyOriginalContentLengthWithDataReductionProxyEnabled)
-      ->Clear();
+  pref_service_->ClearPref(
+      prefs::kDailyContentLengthHttpsWithDataReductionProxyEnabled);
+  pref_service_->ClearPref(
+      prefs::kDailyContentLengthLongBypassWithDataReductionProxyEnabled);
+  pref_service_->ClearPref(
+      prefs::kDailyContentLengthShortBypassWithDataReductionProxyEnabled);
+  pref_service_->ClearPref(
+      prefs::kDailyContentLengthUnknownWithDataReductionProxyEnabled);
+  pref_service_->ClearPref(prefs::kDailyContentLengthViaDataReductionProxy);
+  pref_service_->ClearPref(
+      prefs::kDailyContentLengthWithDataReductionProxyEnabled);
+  pref_service_->ClearPref(prefs::kDailyHttpOriginalContentLength);
+  pref_service_->ClearPref(prefs::kDailyHttpReceivedContentLength);
+  pref_service_->ClearPref(
+      prefs::kDailyOriginalContentLengthViaDataReductionProxy);
+  pref_service_->ClearPref(
+      prefs::kDailyOriginalContentLengthWithDataReductionProxyEnabled);
 
-  WritePrefs();
+  for (DataReductionProxyListPrefMap::iterator iter = list_pref_map_.begin();
+       iter != list_pref_map_.end(); ++iter) {
+    iter->second->Clear();
+  }
 }
 
 void DataReductionProxyCompressionStats::DelayedWritePrefs() {
