@@ -61,13 +61,11 @@ def _RemoveTestSuffix(filename):
   return base
 
 def _CppImplementation(filename):
-  include = '#include "' + _RemoveTestSuffix(filename) + '.h"'
-  return '\n'.join(['', include])
+  return '\n#include "' + _RemoveTestSuffix(filename) + '.h"\n'
 
 
 def _ObjCppImplementation(filename):
-  include = '#import "' + _RemoveTestSuffix(filename) + '.h"'
-  return '\n'.join(['', include])
+  return '\n#import "' + _RemoveTestSuffix(filename) + '.h"\n'
 
 
 def _CreateFile(filename):
