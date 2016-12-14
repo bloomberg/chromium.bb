@@ -2032,6 +2032,10 @@ crbug.com/667236 virtual/gpu/fast/canvas/fallback-content.html [ NeedsRebaseline
 crbug.com/659610 fast/css-grid-layout/grid-baseline.html [ Failure ]
 crbug.com/659610 fast/css-grid-layout/grid-baseline-margins.html [ Failure ]
 
+crbug.com/673109 [ Linux Win ] virtual/scalefactor150/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ NeedsRebaseline ]
+crbug.com/673109 [ Linux Win Mac ] virtual/scalefactor200/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ NeedsRebaseline ]
+crbug.com/673109 [ Linux Win ] virtual/scalefactor200withzoom/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ NeedsRebaseline ]
+
 # Due to a temporal revert these tests are failing:
 crbug.com/666688 fast/css-grid-layout/grid-change-intrinsic-size-with-auto-repeat-tracks.html [ Failure ]
 crbug.com/666688 fast/css-grid-layout/mozilla/grid-repeat-auto-fill-fit-001.html [ Failure ]

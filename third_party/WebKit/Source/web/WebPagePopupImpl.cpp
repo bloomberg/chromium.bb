@@ -55,6 +55,7 @@
 #include "platform/tracing/TraceEvent.h"
 #include "public/platform/WebCompositeAndReadbackAsyncCallback.h"
 #include "public/platform/WebCursorInfo.h"
+#include "public/platform/WebFloatRect.h"
 #include "public/web/WebAXObject.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebViewClient.h"
@@ -94,6 +95,12 @@ class PagePopupChromeClient final : public EmptyChromeClient {
     rectInScreen.x += windowRect.x;
     rectInScreen.y += windowRect.y;
     return rectInScreen;
+  }
+
+  float windowToViewportScalar(const float scalarValue) const override {
+    WebFloatRect viewportRect(0, 0, scalarValue, 0);
+    m_popup->widgetClient()->convertWindowToViewport(&viewportRect);
+    return viewportRect.width;
   }
 
   void addMessageToConsole(LocalFrame*,
