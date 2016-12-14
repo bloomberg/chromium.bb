@@ -981,11 +981,15 @@ void HTMLSelectElement::selectOption(HTMLOptionElement* element,
                                      SelectOptionFlags flags) {
   TRACE_EVENT0("blink", "HTMLSelectElement::selectOption");
 
+  bool shouldUpdatePopup = false;
+
   // selectedOption() is O(N).
   if (isAutofilled() && selectedOption() != element)
     setAutofilled(false);
 
   if (element) {
+    if (!element->selected())
+      shouldUpdatePopup = true;
     element->setSelectedState(true);
     if (flags & MakeOptionDirty)
       element->setDirty(true);
@@ -993,7 +997,7 @@ void HTMLSelectElement::selectOption(HTMLOptionElement* element,
 
   // deselectItemsWithoutValidation() is O(N).
   if (flags & DeselectOtherOptions)
-    deselectItemsWithoutValidation(element);
+    shouldUpdatePopup |= deselectItemsWithoutValidation(element);
 
   // We should update active selection after finishing OPTION state change
   // because setActiveSelectionAnchorIndex() stores OPTION's selection state.
@@ -1019,7 +1023,7 @@ void HTMLSelectElement::selectOption(HTMLOptionElement* element,
   if (LayoutObject* layoutObject = this->layoutObject())
     layoutObject->updateFromElement();
   // PopupMenu::updateFromElement() posts an O(N) task.
-  if (popupIsVisible())
+  if (popupIsVisible() && shouldUpdatePopup)
     m_popup->updateFromElement(PopupMenu::BySelectionChange);
 
   scrollToSelection();
@@ -1072,17 +1076,23 @@ void HTMLSelectElement::dispatchBlurEvent(
                                                      sourceCapabilities);
 }
 
-void HTMLSelectElement::deselectItemsWithoutValidation(
+// Returns true if selection state of any OPTIONs is changed.
+bool HTMLSelectElement::deselectItemsWithoutValidation(
     HTMLOptionElement* excludeElement) {
   if (!isMultiple() && usesMenuList() && m_lastOnChangeOption &&
       m_lastOnChangeOption != excludeElement) {
     m_lastOnChangeOption->setSelectedState(false);
-    return;
+    return true;
   }
+  bool didUpdateSelection = false;
   for (const auto& option : optionList()) {
-    if (option != excludeElement)
+    if (option != excludeElement) {
+      if (option->selected())
+        didUpdateSelection = true;
       option->setSelectedState(false);
+    }
   }
+  return didUpdateSelection;
 }
 
 FormControlState HTMLSelectElement::saveFormControlState() const {

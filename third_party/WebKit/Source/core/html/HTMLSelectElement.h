@@ -235,7 +235,7 @@ class CORE_EXPORT HTMLSelectElement final
   };
   typedef unsigned SelectOptionFlags;
   void selectOption(HTMLOptionElement*, SelectOptionFlags);
-  void deselectItemsWithoutValidation(
+  bool deselectItemsWithoutValidation(
       HTMLOptionElement* elementToExclude = nullptr);
   void parseMultipleAttribute(const AtomicString&);
   HTMLOptionElement* lastSelectedOption() const;
