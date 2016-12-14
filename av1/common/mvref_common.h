@@ -425,9 +425,13 @@ static INLINE int16_t av1_mode_context_analyzer(
 
   if (block >= 0) {
     mode_ctx = mode_context[rf[0]] & 0x00ff;
-
+#if !CONFIG_CB4X4
     if (block > 0 && bsize < BLOCK_8X8 && bsize > BLOCK_4X4)
       mode_ctx |= (1 << SKIP_NEARESTMV_SUB8X8_OFFSET);
+#else
+    (void)block;
+    (void)bsize;
+#endif
 
     return mode_ctx;
   }

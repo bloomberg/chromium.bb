@@ -22,6 +22,11 @@ static uint8_t add_ref_mv_candidate(
     CANDIDATE_MV *ref_mv_stack, const int use_hp, int len, int block, int col) {
   int index = 0, ref;
   int newmv_count = 0;
+#if CONFIG_CB4X4
+  const int unify_bsize = 1;
+#else
+  const int unify_bsize = 0;
+#endif
 
   if (rf[1] == NONE) {
     // single reference frame
@@ -51,7 +56,8 @@ static uint8_t add_ref_mv_candidate(
             ++newmv_count;
         }
 
-        if (candidate_mi->mbmi.sb_type < BLOCK_8X8 && block >= 0) {
+        if (candidate_mi->mbmi.sb_type < BLOCK_8X8 && block >= 0 &&
+            !unify_bsize) {
           int alt_block = 3 - block;
           this_refmv = get_sub_block_mv(candidate_mi, ref, col, alt_block);
           lower_mv_precision(&this_refmv.as_mv, use_hp);
@@ -116,7 +122,8 @@ static uint8_t add_ref_mv_candidate(
           ++newmv_count;
       }
 
-      if (candidate_mi->mbmi.sb_type < BLOCK_8X8 && block >= 0) {
+      if (candidate_mi->mbmi.sb_type < BLOCK_8X8 && block >= 0 &&
+          !unify_bsize) {
         int alt_block = 3 - block;
         this_refmv[0] = get_sub_block_mv(candidate_mi, 0, col, alt_block);
         this_refmv[1] = get_sub_block_mv(candidate_mi, 1, col, alt_block);
