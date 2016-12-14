@@ -1084,4 +1084,89 @@ TEST_P(CompositedLayerMappingTest, RootScrollerAncestorsNotClipped) {
   }
 }
 
+TEST_P(CompositedLayerMappingTest,
+       ScrollingLayerWithPerspectivePositionedCorrectly) {
+  // Test positioning of a scrolling layer within an offset parent, both with
+  // and without perspective.
+  //
+  // When a box shadow is used, the main graphics layer position is offset by
+  // the shadow. The scrolling contents then need to be offset in the other
+  // direction to compensate.  To make this a little clearer, for the first
+  // example here the layer positions are calculated as:
+  //
+  //   m_graphicsLayer x = left_pos - shadow_spread + shadow_x_offset
+  //                     = 50 - 10 - 10
+  //                     = 30
+  //
+  //   m_graphicsLayer y = top_pos - shadow_spread + shadow_y_offset
+  //                     = 50 - 10 + 0
+  //                     = 40
+  //
+  //   contents x = 50 - m_graphicsLayer x = 50 - 30 = 20
+  //   contents y = 50 - m_graphicsLayer y = 50 - 40 = 10
+  //
+  // The reason that perspective matters is that it affects which 'contents'
+  // layer is offset; m_childTransformLayer when using perspective, or
+  // m_scrollingLayer when there is no perspective.
+
+  setBodyInnerHTML(
+      "<div id='scroller' style='position: absolute; top: 50px; left: 50px; "
+      "width: 400px; height: 245px; overflow: auto; will-change: transform; "
+      "box-shadow: -10px 0 0 10px; perspective: 1px;'>"
+      "    <div style='position: absolute; top: 50px; bottom: 0; width: 200px; "
+      "height: 200px;'></div>"
+      "</div>"
+
+      "<div id='scroller2' style='position: absolute; top: 400px; left: 50px; "
+      "width: 400px; height: 245px; overflow: auto; will-change: transform; "
+      "box-shadow: -10px 0 0 10px;'>"
+      "    <div style='position: absolute; top: 50px; bottom: 0; width: 200px; "
+      "height: 200px;'></div>"
+      "</div>");
+
+  CompositedLayerMapping* mapping =
+      toLayoutBlock(getLayoutObjectByElementId("scroller"))
+          ->layer()
+          ->compositedLayerMapping();
+
+  CompositedLayerMapping* mapping2 =
+      toLayoutBlock(getLayoutObjectByElementId("scroller2"))
+          ->layer()
+          ->compositedLayerMapping();
+
+  ASSERT_TRUE(mapping);
+  ASSERT_TRUE(mapping2);
+
+  // The perspective scroller should have a child transform containing the
+  // positional offset, and a scrolling layer that has no offset.
+
+  GraphicsLayer* scrollingLayer = mapping->scrollingLayer();
+  GraphicsLayer* childTransformLayer = mapping->childTransformLayer();
+  GraphicsLayer* mainGraphicsLayer = mapping->mainGraphicsLayer();
+
+  ASSERT_TRUE(scrollingLayer);
+  ASSERT_TRUE(childTransformLayer);
+
+  EXPECT_FLOAT_EQ(30, mainGraphicsLayer->position().x());
+  EXPECT_FLOAT_EQ(40, mainGraphicsLayer->position().y());
+  EXPECT_FLOAT_EQ(0, scrollingLayer->position().x());
+  EXPECT_FLOAT_EQ(0, scrollingLayer->position().y());
+  EXPECT_FLOAT_EQ(20, childTransformLayer->position().x());
+  EXPECT_FLOAT_EQ(10, childTransformLayer->position().y());
+
+  // The non-perspective scroller should have no child transform and the
+  // offset on the scroller layer directly.
+
+  GraphicsLayer* scrollingLayer2 = mapping2->scrollingLayer();
+  GraphicsLayer* mainGraphicsLayer2 = mapping2->mainGraphicsLayer();
+
+  ASSERT_TRUE(scrollingLayer2);
+  ASSERT_FALSE(mapping2->childTransformLayer());
+
+  EXPECT_FLOAT_EQ(30, mainGraphicsLayer2->position().x());
+  EXPECT_FLOAT_EQ(390, mainGraphicsLayer2->position().y());
+  EXPECT_FLOAT_EQ(20, scrollingLayer2->position().x());
+  EXPECT_FLOAT_EQ(10, scrollingLayer2->position().y());
+}
+
 }  // namespace blink

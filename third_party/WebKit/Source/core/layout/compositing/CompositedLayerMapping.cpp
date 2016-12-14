@@ -1288,11 +1288,15 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(
     overflowClipRect.setSize(pixelSnappedIntRect(clipRect).size());
   }
 
-  FloatPoint scrollPosition =
-      m_owningLayer.getScrollableArea()->scrollPosition();
-  m_scrollingLayer->setPosition(FloatPoint(
-      overflowClipRect.location() - localCompositingBounds.location() +
-      roundedIntSize(m_owningLayer.subpixelAccumulation())));
+  // When a m_childTransformLayer exists, local content offsets for the
+  // m_scrollingLayer have already been applied. Otherwise, we apply them here.
+  IntSize localContentOffset(0, 0);
+  if (!m_childTransformLayer) {
+    localContentOffset = roundedIntPoint(m_owningLayer.subpixelAccumulation()) -
+                         localCompositingBounds.location();
+  }
+  m_scrollingLayer->setPosition(
+      FloatPoint(overflowClipRect.location() + localContentOffset));
   m_scrollingLayer->setSize(FloatSize(overflowClipRect.size()));
 
   IntSize oldScrollingLayerOffset = m_scrollingLayer->offsetFromLayoutObject();
@@ -1314,6 +1318,8 @@ void CompositedLayerMapping::updateScrollingLayerGeometry(
   if (overflowClipRectOffsetChanged)
     m_scrollingContentsLayer->setNeedsDisplay();
 
+  FloatPoint scrollPosition =
+      m_owningLayer.getScrollableArea()->scrollPosition();
   DoubleSize scrollingContentsOffset(
       overflowClipRect.location().x() - scrollPosition.x(),
       overflowClipRect.location().y() - scrollPosition.y());
