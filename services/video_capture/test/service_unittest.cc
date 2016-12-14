@@ -21,7 +21,7 @@ class MockCreateDeviceProxyCallback {
 
 // Tests that an answer arrives from the service when calling
 // EnumerateDeviceDescriptors().
-TEST_F(ServiceTest, EnumerateDeviceDescriptorsCallbackArrives) {
+TEST_F(ServiceTest, DISABLED_EnumerateDeviceDescriptorsCallbackArrives) {
   base::RunLoop wait_loop;
   EXPECT_CALL(descriptor_receiver_, OnEnumerateDeviceDescriptorsCallback(_))
       .Times(Exactly(1))
@@ -33,7 +33,7 @@ TEST_F(ServiceTest, EnumerateDeviceDescriptorsCallbackArrives) {
   wait_loop.Run();
 }
 
-TEST_F(ServiceTest, FakeDeviceFactoryEnumeratesOneDevice) {
+TEST_F(ServiceTest, DISABLED_FakeDeviceFactoryEnumeratesOneDevice) {
   base::RunLoop wait_loop;
   size_t num_devices_enumerated = 0;
   EXPECT_CALL(descriptor_receiver_, OnEnumerateDeviceDescriptorsCallback(_))
@@ -53,7 +53,7 @@ TEST_F(ServiceTest, FakeDeviceFactoryEnumeratesOneDevice) {
 
 // Tests that VideoCaptureDeviceFactory::CreateDeviceProxy() returns an error
 // code when trying to create a device for an invalid descriptor.
-TEST_F(ServiceTest, ErrorCodeOnCreateDeviceForInvalidDescriptor) {
+TEST_F(ServiceTest, DISABLED_ErrorCodeOnCreateDeviceForInvalidDescriptor) {
   const std::string invalid_device_id = "invalid";
   base::RunLoop wait_loop;
   mojom::DevicePtr fake_device_proxy;

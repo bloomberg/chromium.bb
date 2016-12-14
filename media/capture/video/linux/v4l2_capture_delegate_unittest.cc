@@ -170,9 +170,13 @@ class MockVideoCaptureDeviceClient : public VideoCaptureDevice::Client {
     DoOnIncomingCapturedBuffer();
   }
   MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
-  void OnIncomingCapturedVideoFrame(
+  void OnIncomingCapturedBufferExt(
       std::unique_ptr<Buffer> buffer,
-      scoped_refptr<media::VideoFrame> frame) override {
+      const VideoCaptureFormat& format,
+      base::TimeTicks reference_time,
+      base::TimeDelta timestamp,
+      gfx::Rect visible_rect,
+      const VideoFrameMetadata& additional_metadata) override {
     DoOnIncomingCapturedVideoFrame();
   }
   MOCK_METHOD0(DoOnIncomingCapturedVideoFrame, void(void));

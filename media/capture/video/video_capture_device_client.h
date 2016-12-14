@@ -65,9 +65,13 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
                                 const VideoCaptureFormat& format,
                                 base::TimeTicks reference_time,
                                 base::TimeDelta timestamp) override;
-  void OnIncomingCapturedVideoFrame(
+  void OnIncomingCapturedBufferExt(
       std::unique_ptr<Buffer> buffer,
-      scoped_refptr<media::VideoFrame> frame) override;
+      const VideoCaptureFormat& format,
+      base::TimeTicks reference_time,
+      base::TimeDelta timestamp,
+      gfx::Rect visible_rect,
+      const VideoFrameMetadata& additional_metadata) override;
   std::unique_ptr<Buffer> ResurrectLastOutputBuffer(
       const gfx::Size& dimensions,
       media::VideoPixelFormat format,

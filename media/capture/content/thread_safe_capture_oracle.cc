@@ -211,26 +211,33 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
 
   base::AutoLock guard(lock_);
 
-  if (oracle_.CompleteCapture(frame_number, success, &reference_time)) {
-    TRACE_EVENT_INSTANT0("gpu.capture", "CaptureSucceeded",
-                         TRACE_EVENT_SCOPE_THREAD);
+  if (!oracle_.CompleteCapture(frame_number, success, &reference_time))
+    return;
 
-    if (!client_)
-      return;  // Capture is stopped.
+  TRACE_EVENT_INSTANT0("gpu.capture", "CaptureSucceeded",
+                       TRACE_EVENT_SCOPE_THREAD);
 
-    frame->metadata()->SetDouble(VideoFrameMetadata::FRAME_RATE,
-                                 params_.requested_format.frame_rate);
-    frame->metadata()->SetTimeTicks(VideoFrameMetadata::CAPTURE_BEGIN_TIME,
-                                    capture_begin_time);
-    frame->metadata()->SetTimeTicks(VideoFrameMetadata::CAPTURE_END_TIME,
-                                    base::TimeTicks::Now());
-    frame->metadata()->SetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
-                                    estimated_frame_duration);
-    frame->metadata()->SetTimeTicks(VideoFrameMetadata::REFERENCE_TIME,
-                                    reference_time);
+  if (!client_)
+    return;  // Capture is stopped.
 
-    client_->OnIncomingCapturedVideoFrame(std::move(buffer), std::move(frame));
-  }
+  frame->metadata()->SetDouble(VideoFrameMetadata::FRAME_RATE,
+                               params_.requested_format.frame_rate);
+  frame->metadata()->SetTimeTicks(VideoFrameMetadata::CAPTURE_BEGIN_TIME,
+                                  capture_begin_time);
+  frame->metadata()->SetTimeTicks(VideoFrameMetadata::CAPTURE_END_TIME,
+                                  base::TimeTicks::Now());
+  frame->metadata()->SetTimeDelta(VideoFrameMetadata::FRAME_DURATION,
+                                  estimated_frame_duration);
+  frame->metadata()->SetTimeTicks(VideoFrameMetadata::REFERENCE_TIME,
+                                  reference_time);
+
+  DCHECK(frame->IsMappable());
+  media::VideoCaptureFormat format(frame->coded_size(),
+                                   params_.requested_format.frame_rate,
+                                   frame->format(), media::PIXEL_STORAGE_CPU);
+  client_->OnIncomingCapturedBufferExt(
+      std::move(buffer), format, reference_time, frame->timestamp(),
+      frame->visible_rect(), *frame->metadata());
 }
 
 void ThreadSafeCaptureOracle::OnConsumerReportingUtilization(
