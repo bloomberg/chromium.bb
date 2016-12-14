@@ -26,13 +26,18 @@ import java.nio.ByteBuffer;
  */
 public class FaceDetectionImpl implements FaceDetection {
     private static final String TAG = "FaceDetectionImpl";
-    // By default, there is no limit in the number of faces detected.
-    private static final int MAX_FACES = 10;
+    private static final int MAX_FACES = 32;
+    private final boolean mFastMode;
+    private final int mMaxFaces;
+
+    FaceDetectionImpl(FaceDetectorOptions options) {
+        mFastMode = options.fastMode;
+        mMaxFaces = Math.min(options.maxDetectedFaces, MAX_FACES);
+    }
 
     @Override
-    public void detect(SharedBufferHandle frameData, int width, int height,
-            FaceDetectorOptions options, DetectResponse callback) {
-
+    public void detect(
+            SharedBufferHandle frameData, int width, int height, DetectResponse callback) {
         final long numPixels = (long) width * height;
         // TODO(xianglu): https://crbug.com/670028 homogeneize overflow checking.
         if (!frameData.isValid() || width <= 0 || height <= 0 || numPixels > (Long.MAX_VALUE / 4)) {
@@ -72,9 +77,9 @@ public class FaceDetectionImpl implements FaceDetection {
         Bitmap unPremultipliedBitmap =
                 Bitmap.createBitmap(pixels, width, height, Bitmap.Config.RGB_565);
 
-        FaceDetector detector = new FaceDetector(width, height, MAX_FACES);
-        Face[] detectedFaces = new Face[MAX_FACES];
-        // findFaces() will stop at MAX_FACES.
+        FaceDetector detector = new FaceDetector(width, height, mMaxFaces);
+        Face[] detectedFaces = new Face[mMaxFaces];
+        // findFaces() will stop at |mMaxFaces|.
         final int numberOfFaces = detector.findFaces(unPremultipliedBitmap, detectedFaces);
 
         FaceDetectionResult faceDetectionResult = new FaceDetectionResult();

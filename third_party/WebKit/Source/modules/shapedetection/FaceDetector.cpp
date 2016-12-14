@@ -10,7 +10,9 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/canvas/CanvasImageSource.h"
 #include "modules/shapedetection/DetectedFace.h"
+#include "modules/shapedetection/FaceDetectorOptions.h"
 #include "public/platform/InterfaceProvider.h"
+#include "public/platform/modules/shapedetection/facedetection_provider.mojom-blink.h"
 
 namespace blink {
 
@@ -21,13 +23,18 @@ FaceDetector* FaceDetector::create(Document& document,
 
 FaceDetector::FaceDetector(LocalFrame& frame,
                            const FaceDetectorOptions& options)
-    : ShapeDetector(frame),
-      m_faceDetectorOptions(mojom::blink::FaceDetectorOptions::New()) {
-  frame.interfaceProvider()->getInterface(mojo::GetProxy(&m_faceService));
+    : ShapeDetector(frame) {
+  mojom::blink::FaceDetectorOptionsPtr faceDetectorOptions =
+      mojom::blink::FaceDetectorOptions::New();
+  faceDetectorOptions->max_detected_faces = options.maxDetectedFaces();
+  faceDetectorOptions->fast_mode = options.fastMode();
+  mojom::blink::FaceDetectionProviderPtr provider;
+  frame.interfaceProvider()->getInterface(mojo::GetProxy(&provider));
+  provider->CreateFaceDetection(mojo::GetProxy(&m_faceService),
+                                std::move(faceDetectorOptions));
+
   m_faceService.set_connection_error_handler(convertToBaseCallback(WTF::bind(
       &FaceDetector::onFaceServiceConnectionError, wrapWeakPersistent(this))));
-  m_faceDetectorOptions->max_detected_faces = options.maxDetectedFaces();
-  m_faceDetectorOptions->fast_mode = options.fastMode();
 }
 
 ScriptPromise FaceDetector::doDetect(
@@ -43,7 +50,6 @@ ScriptPromise FaceDetector::doDetect(
   }
   m_faceServiceRequests.add(resolver);
   m_faceService->Detect(std::move(sharedBufferHandle), imageWidth, imageHeight,
-                        m_faceDetectorOptions.Clone(),
                         convertToBaseCallback(WTF::bind(
                             &FaceDetector::onDetectFaces, wrapPersistent(this),
                             wrapPersistent(resolver))));

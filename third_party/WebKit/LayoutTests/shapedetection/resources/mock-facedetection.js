@@ -1,32 +1,58 @@
 "use strict";
 
-let mockFaceDetectionReady = define(
-  'mockFaceDetection',
+let mockFaceDetectionProviderReady = define(
+  'mockFaceDetectionProvider',
   ['third_party/WebKit/public/platform/modules/shapedetection/facedetection.mojom',
+   'third_party/WebKit/public/platform/modules/shapedetection/facedetection_provider.mojom',
    'mojo/public/js/bindings',
    'mojo/public/js/connection',
    'mojo/public/js/core',
    'content/public/renderer/frame_interfaces',
-  ], (faceDetection, bindings, connection, mojo, interfaces) => {
+  ], (faceDetection, faceDetectionProvider, bindings, connection, mojo, interfaces) => {
 
-  class MockFaceDetection {
+  class MockFaceDetectionProvider {
     constructor() {
       interfaces.addInterfaceOverrideForTesting(
-          faceDetection.FaceDetection.name,
+          faceDetectionProvider.FaceDetectionProvider.name,
           pipe => this.bindToPipe(pipe));
     }
 
     bindToPipe(pipe) {
-      this.stub_ = connection.bindHandleToStub(pipe,
-                                               faceDetection.FaceDetection);
+      this.stub_ = connection.bindHandleToStub(
+          pipe, faceDetectionProvider.FaceDetectionProvider);
       bindings.StubBindings(this.stub_).delegate = this;
     }
 
-    detect(frame_data, width, height, options) {
-      let receivedStruct = mojo.mapBuffer(frame_data, 0, width*height*4, 0);
-      this.buffer_data_ = new Uint32Array(receivedStruct.buffer);
+    createFaceDetection(request, options) {
+      this.mock_service_ = new MockFaceDetection(options);
+      this.mock_service_.stub_ = connection.bindHandleToStub(
+          request.handle, faceDetection.FaceDetection);
+      bindings.StubBindings(this.mock_service_.stub_).delegate =
+          this.mock_service_;
+    }
+
+    getFrameData() {
+      return this.mock_service_.buffer_data_;
+    }
+
+    getMaxDetectedFaces() {
+     return this.mock_service_.maxDetectedFaces_;
+    }
+
+    getFastMode () {
+      return this.mock_service_.fastMode_;
+    }
+  }
+
+  class MockFaceDetection {
+    constructor(options) {
       this.maxDetectedFaces_ = options.max_detected_faces;
       this.fastMode_ = options.fast_mode;
+    }
+
+    detect(frame_data, width, height) {
+      let receivedStruct = mojo.mapBuffer(frame_data, 0, width*height*4, 0);
+      this.buffer_data_ = new Uint32Array(receivedStruct.buffer);
       return Promise.resolve({
         result: {
           bounding_boxes: [
@@ -38,18 +64,6 @@ let mockFaceDetectionReady = define(
       });
       mojo.unmapBuffer(receivedStruct.buffer);
     }
-
-    getFrameData() {
-      return this.buffer_data_;
-    }
-
-    getMaxDetectedFaces() {
-     return this.maxDetectedFaces_;
-    }
-
-    getFastMode () {
-      return this.fastMode_;
-    }
   }
-  return new MockFaceDetection();
+  return new MockFaceDetectionProvider();
 });

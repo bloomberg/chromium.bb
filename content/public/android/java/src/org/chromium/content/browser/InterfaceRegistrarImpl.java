@@ -8,8 +8,8 @@ import android.content.Context;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.blink.mojom.FaceDetection;
-import org.chromium.content.browser.shapedetection.FaceDetectionFactory;
+import org.chromium.blink.mojom.FaceDetectionProvider;
+import org.chromium.content.browser.shapedetection.FaceDetectionProviderFactory;
 import org.chromium.content_public.browser.InterfaceRegistrar;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.device.BatteryMonitor;
@@ -58,8 +58,8 @@ class ContentContextInterfaceRegistrar implements InterfaceRegistrar<Context> {
                 VibrationManager.MANAGER, new VibrationManagerImpl.Factory(applicationContext));
         registry.addInterface(
                 BatteryMonitor.MANAGER, new BatteryMonitorFactory(applicationContext));
-        registry.addInterface(
-                FaceDetection.MANAGER, new FaceDetectionFactory(applicationContext));
+        registry.addInterface(FaceDetectionProvider.MANAGER,
+                new FaceDetectionProviderFactory(applicationContext));
         // TODO(avayvod): Register the PresentationService implementation here.
     }
 }

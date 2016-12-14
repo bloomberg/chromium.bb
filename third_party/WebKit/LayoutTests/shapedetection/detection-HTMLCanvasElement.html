@@ -66,14 +66,14 @@ generate_tests(createTestForCanvasElement, [
     "Face - HTMLCanvasElement",
     () => { return new FaceDetector(); },
     () => { return document.createElement("canvas"); },
-    () => { return mockFaceDetectionReady; },
+    () => { return mockFaceDetectionProviderReady; },
     FaceDetectorDetectionResultTest
   ],
   [
     "Face - OffscreenCanvas",
     () => { return new FaceDetector(); },
     () => { return new OffscreenCanvas(300, 150); },
-    () => { return mockFaceDetectionReady; },
+    () => { return mockFaceDetectionProviderReady; },
     FaceDetectorDetectionResultTest
   ],
   [

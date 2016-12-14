@@ -10,7 +10,7 @@
 async_test(function(t) {
   var img = document.getElementById("img");
   var theMock = null;
-  mockFaceDetectionReady
+  mockFaceDetectionProviderReady
     .then(mock => {
       theMock = mock;
       return new FaceDetector();

@@ -10,12 +10,12 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
-#include "modules/shapedetection/FaceDetectorOptions.h"
 #include "modules/shapedetection/ShapeDetector.h"
 #include "public/platform/modules/shapedetection/facedetection.mojom-blink.h"
 
 namespace blink {
 
+class FaceDetectorOptions;
 class LocalFrame;
 
 class MODULES_EXPORT FaceDetector final : public ShapeDetector,
@@ -40,7 +40,6 @@ class MODULES_EXPORT FaceDetector final : public ShapeDetector,
   void onFaceServiceConnectionError();
 
   mojom::blink::FaceDetectionPtr m_faceService;
-  mojom::blink::FaceDetectorOptionsPtr m_faceDetectorOptions;
 
   HeapHashSet<Member<ScriptPromiseResolver>> m_faceServiceRequests;
 };
