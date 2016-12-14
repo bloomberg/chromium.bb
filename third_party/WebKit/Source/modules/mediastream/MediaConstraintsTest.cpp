@@ -195,4 +195,70 @@ TEST(MediaTrackConstraintsTest, ConvertBlinkComplexStringConstraint) {
   ASSERT_EQ("foo", recycled.facingMode().getAsString());
 }
 
+TEST(MediaTrackConstraintsTest, NakedIsExactInAdvanced) {
+  MediaTrackConstraints input;
+  WebMediaConstraints output;
+  StringOrStringSequenceOrConstrainDOMStringParameters parameter;
+  parameter.setString("foo");
+  input.setFacingMode(parameter);
+  HeapVector<MediaTrackConstraintSet> advanced(1);
+  advanced[0].setFacingMode(parameter);
+  input.setAdvanced(advanced);
+  output = MediaConstraintsImpl::convertConstraintsToWeb(input);
+
+  ASSERT_TRUE(output.basic().facingMode.hasIdeal());
+  ASSERT_FALSE(output.basic().facingMode.hasExact());
+  ASSERT_EQ(1U, output.basic().facingMode.ideal().size());
+  ASSERT_EQ("foo", output.basic().facingMode.ideal()[0]);
+
+  ASSERT_FALSE(output.advanced()[0].facingMode.hasIdeal());
+  ASSERT_TRUE(output.advanced()[0].facingMode.hasExact());
+  ASSERT_EQ(1U, output.advanced()[0].facingMode.exact().size());
+  ASSERT_EQ("foo", output.advanced()[0].facingMode.exact()[0]);
+}
+
+TEST(MediaTrackConstraintsTest, IdealAndExactConvertToNaked) {
+  WebMediaConstraints input;
+  MediaTrackConstraints output;
+
+  WebVector<WebString> buffer(static_cast<size_t>(1u));
+
+  WebMediaTrackConstraintSet basic;
+  WebMediaTrackConstraintSet advancedElement1;
+  WebMediaTrackConstraintSet advancedElement2;
+  buffer[0] = "ideal";
+  basic.facingMode.setIdeal(buffer);
+  advancedElement1.facingMode.setIdeal(buffer);
+  buffer[0] = "exact";
+  advancedElement2.facingMode.setExact(buffer);
+  std::vector<WebMediaTrackConstraintSet> advanced;
+  advanced.push_back(advancedElement1);
+  advanced.push_back(advancedElement2);
+  input.initialize(basic, advanced);
+  MediaConstraintsImpl::convertConstraints(input, output);
+  // The first element should return a ConstrainDOMStringParameters
+  // with an "ideal" value containing a String value of "ideal".
+  // The second element should return a ConstrainDOMStringParameters
+  // with a String value of "exact".
+  ASSERT_TRUE(output.hasAdvanced());
+  ASSERT_EQ(2U, output.advanced().size());
+  MediaTrackConstraintSet element1 = output.advanced()[0];
+  MediaTrackConstraintSet element2 = output.advanced()[1];
+
+  ASSERT_TRUE(output.hasFacingMode());
+  ASSERT_TRUE(output.facingMode().isString());
+  EXPECT_EQ("ideal", output.facingMode().getAsString());
+
+  ASSERT_TRUE(element1.hasFacingMode());
+  ASSERT_TRUE(element1.facingMode().isConstrainDOMStringParameters());
+  EXPECT_EQ("ideal", element1.facingMode()
+                         .getAsConstrainDOMStringParameters()
+                         .ideal()
+                         .getAsString());
+
+  ASSERT_TRUE(element2.hasFacingMode());
+  ASSERT_TRUE(element2.facingMode().isString());
+  EXPECT_EQ("exact", element2.facingMode().getAsString());
+}
+
 }  // namespace blink

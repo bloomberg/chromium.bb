@@ -64,14 +64,14 @@ promise_test(function() {
   // These constraints are syntactically valid, but may cause rejection.
   // They are included in an "advanced" constraint.
   const ignorableConstraintSet = {
-    volume: { exact: 1.0 },
-    sampleRate: { exact: 42 },
-    sampleSize: { exact: 3 },
-    echoCancellation: { exact: false },
-    latency: { exact: 0.22 },
-    channelCount: { exact: 2 },
-    deviceId: { exact: ["foo", "fooz"] },
-    groupId: { exact: ["bar", "baz"] }
+    volume: { ideal: 1.0 },
+    sampleRate: { ideal: 42 },
+    sampleSize: { ideal: 3 },
+    echoCancellation: { ideal: false },
+    latency: { ideal: 0.22 },
+    channelCount: { ideal: 2 },
+    deviceId: { ideal: ["foo", "fooz"] },
+    groupId: { ideal: ["bar", "baz"] }
   };
   let complexConstraints = complexConstraintSet;
   complexConstraints.advanced = [ ignorableConstraintSet ];
@@ -86,6 +86,12 @@ promise_test(function() {
 }, 'All valid keys are returned for complex constraints');
 
 // Syntax tests for constraints.
+// These work by putting the constraints into an advanced constraint
+// (so that they can be ignored), calling getUserMedia, and then
+// inspecting the constraints.
+// In advanced constraints, naked values mean "exact", and "exact" values
+// are thus unwrapped, which is the opposite behavior from the "basic"
+// constraint set (outside advanced).
 
 function constraintSyntaxTestWithChange(name, constraints, expected_result) {
   promise_test(function() {
@@ -106,29 +112,29 @@ function constraintSyntaxTest(name, constraints) {
 }
 
 constraintSyntaxTest('Simple integer', { height: 42 });
-constraintSyntaxTest('Exact integer', { height: { exact: 42 }});
+constraintSyntaxTest('Ideal integer', { height: { ideal: 42 }});
 constraintSyntaxTest('Min/max integer', { height: { min: 42, max: 43 }});
-constraintSyntaxTestWithChange('Ideal unwrapped integer',
-    { height: { ideal: 42 } }, { height: 42 });
+constraintSyntaxTestWithChange('Exact unwrapped integer',
+    { height: { exact: 42 } }, { height: 42 });
 
 constraintSyntaxTest('Simple double', { aspectRatio: 1.5 });
-constraintSyntaxTest('Exact double', { aspectRatio: { exact: 1.5 }});
+constraintSyntaxTest('Ideal double', { aspectRatio: { ideal: 1.5 }});
 constraintSyntaxTest('Min/max double', { aspectRatio: { min: 1.5, max: 2.0 }});
-constraintSyntaxTestWithChange('Ideal unwrapped double',
-    { aspectRatio: { ideal: 1.5 } }, { aspectRatio: 1.5 });
+constraintSyntaxTestWithChange('Exact unwrapped double',
+    { aspectRatio: { exact: 1.5 } }, { aspectRatio: 1.5 });
 
 constraintSyntaxTest('Simple String', { facingMode: "user1" });
-constraintSyntaxTest('Exact String', { facingMode: { exact: "user2" }});
-constraintSyntaxTest('Multiple String in Brackets', { facingMode: { exact: ["user3", "left3"]}});
+constraintSyntaxTest('Ideal String', { facingMode: { ideal: "user2" }});
+constraintSyntaxTest('Multiple String in Brackets', { facingMode: { ideal: ["user3", "left3"]}});
 constraintSyntaxTest('Multiple Bracketed Naked String', { facingMode: ["user4", "left4"] });
 constraintSyntaxTestWithChange('Single Bracketed string unwrapped',
     { 'facingMode': ["user5"]}, { facingMode: "user5" });
 constraintSyntaxTest('Both Ideal and Exact string', { facingMode: { ideal: "user6", exact: "left6" }});
 
 constraintSyntaxTest('Simple boolean', { echoCancellation: true });
-constraintSyntaxTest('Exact boolean', { echoCancellation: { exact: true }});
-constraintSyntaxTestWithChange('Ideal unwrapped boolean',
-    { echoCancellation: { ideal: true } }, { echoCancellation: true });
+constraintSyntaxTest('Ideal boolean', { echoCancellation: { ideal: true }});
+constraintSyntaxTestWithChange('Exact unwrapped boolean',
+    { echoCancellation: { exact: true } }, { echoCancellation: true });
 
 </script>
 </body>
