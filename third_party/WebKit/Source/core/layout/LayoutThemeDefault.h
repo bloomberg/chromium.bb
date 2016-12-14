@@ -115,9 +115,9 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
                               const ComputedStyle&) const override;
   int popupInternalPaddingTop(const ComputedStyle&) const override;
   int popupInternalPaddingBottom(const ComputedStyle&) const override;
-  static int scrollbarThicknessInDIP();
-  static float clampedMenuListArrowPaddingSize(const HostWindow*,
-                                               const ComputedStyle&);
+  int scrollbarThicknessInDIP() const;
+  float clampedMenuListArrowPaddingSize(const HostWindow*,
+                                        const ComputedStyle&) const;
 
   // Provide a way to pass the default font size from the Settings object
   // to the layout theme. FIXME: http://b/1129186 A cleaner way would be
@@ -155,6 +155,7 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   static unsigned m_inactiveSelectionForegroundColor;
 
   ThemePainterDefault m_painter;
+  int m_scrollbarThicknessInDIP = 0;
 };
 
 }  // namespace blink

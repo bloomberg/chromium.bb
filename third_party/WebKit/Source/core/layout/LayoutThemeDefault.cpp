@@ -335,19 +335,21 @@ int LayoutThemeDefault::popupInternalPaddingBottom(
   return menuListInternalPadding(style, 1);
 }
 
-// static
-int LayoutThemeDefault::scrollbarThicknessInDIP() {
+int LayoutThemeDefault::scrollbarThicknessInDIP() const {
+  if (m_scrollbarThicknessInDIP > 0)
+    return m_scrollbarThicknessInDIP;
   int width = Platform::current()
                   ->themeEngine()
                   ->getSize(WebThemeEngine::PartScrollbarUpArrow)
                   .width;
-  return width > 0 ? width : 15;
+  const_cast<LayoutThemeDefault*>(this)->m_scrollbarThicknessInDIP =
+      width > 0 ? width : 15;
+  return m_scrollbarThicknessInDIP;
 }
 
-// static
 float LayoutThemeDefault::clampedMenuListArrowPaddingSize(
     const HostWindow* host,
-    const ComputedStyle& style) {
+    const ComputedStyle& style) const {
   int originalSize = scrollbarThicknessInDIP();
   int scaledSize =
       host ? host->windowToViewportScalar(originalSize) : originalSize;
