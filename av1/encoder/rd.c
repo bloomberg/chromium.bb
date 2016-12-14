@@ -319,6 +319,12 @@ static void set_block_thresholds(const AV1_COMMON *cm, RD_OPT *rd) {
       const int t = q * rd_thresh_block_size_factor[bsize];
       const int thresh_max = INT_MAX / t;
 
+#if CONFIG_CB4X4
+      for (i = 0; i < MAX_MODES; ++i)
+        rd->threshes[segment_id][bsize][i] = rd->thresh_mult[i] < thresh_max
+                                                 ? rd->thresh_mult[i] * t / 4
+                                                 : INT_MAX;
+#else
       if (bsize >= BLOCK_8X8) {
         for (i = 0; i < MAX_MODES; ++i)
           rd->threshes[segment_id][bsize][i] = rd->thresh_mult[i] < thresh_max
@@ -331,6 +337,7 @@ static void set_block_thresholds(const AV1_COMMON *cm, RD_OPT *rd) {
                   ? rd->thresh_mult_sub8x8[i] * t / 4
                   : INT_MAX;
       }
+#endif
     }
   }
 }
@@ -1152,7 +1159,11 @@ void av1_update_rd_thresh_fact(const AV1_COMMON *const cm,
                                int (*factor_buf)[MAX_MODES], int rd_thresh,
                                int bsize, int best_mode_index) {
   if (rd_thresh > 0) {
+#if CONFIG_CB4X4
+    const int top_mode = MAX_MODES;
+#else
     const int top_mode = bsize < BLOCK_8X8 ? MAX_REFS : MAX_MODES;
+#endif
     int mode;
     for (mode = 0; mode < top_mode; ++mode) {
       const BLOCK_SIZE min_size = AOMMAX(bsize - 1, BLOCK_4X4);
