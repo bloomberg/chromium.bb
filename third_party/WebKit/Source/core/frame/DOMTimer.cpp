@@ -110,7 +110,10 @@ DOMTimer::DOMTimer(ExecutionContext* context,
     startRepeating(intervalMilliseconds, BLINK_FROM_HERE);
 }
 
-DOMTimer::~DOMTimer() {}
+DOMTimer::~DOMTimer() {
+  if (m_action)
+    m_action->dispose();
+}
 
 void DOMTimer::stop() {
   InspectorInstrumentation::asyncTaskCanceled(getExecutionContext(), this);
@@ -118,6 +121,8 @@ void DOMTimer::stop() {
   // Need to release JS objects potentially protected by ScheduledAction
   // because they can form circular references back to the ExecutionContext
   // which will cause a memory leak.
+  if (m_action)
+    m_action->dispose();
   m_action = nullptr;
   SuspendableTimer::stop();
 }
@@ -175,6 +180,8 @@ void DOMTimer::fired() {
   executionContext->timers()->setTimerNestingLevel(0);
   // Eagerly unregister as ExecutionContext observer.
   clearContext();
+  // Eagerly clear out |action|'s resources.
+  action->dispose();
 }
 
 WebTaskRunner* DOMTimer::timerTaskRunner() const {
