@@ -15,11 +15,9 @@ void DraggedIsolatedFileSystem::init(
   s_prepareCallback = callback;
 }
 
-void DraggedIsolatedFileSystem::prepareForDataObject(
-    DataObject* dataObject,
-    const String& filesystemId) {
+void DraggedIsolatedFileSystem::prepareForDataObject(DataObject* dataObject) {
   ASSERT(s_prepareCallback);
-  (*s_prepareCallback)(dataObject, filesystemId);
+  (*s_prepareCallback)(dataObject);
 }
 
 }  // namespace blink

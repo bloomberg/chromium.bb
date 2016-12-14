@@ -20,10 +20,10 @@ class CORE_EXPORT DraggedIsolatedFileSystem {
   DraggedIsolatedFileSystem() {}
   virtual ~DraggedIsolatedFileSystem() {}
 
-  using FileSystemIdPreparationCallback = void (*)(DataObject*, const String&);
+  using FileSystemIdPreparationCallback = void (*)(DataObject*);
   static void init(FileSystemIdPreparationCallback);
 
-  static void prepareForDataObject(DataObject*, const String& filesystemId);
+  static void prepareForDataObject(DataObject*);
 
  private:
   static FileSystemIdPreparationCallback s_prepareCallback;

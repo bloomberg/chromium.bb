@@ -34,6 +34,7 @@
 #include "core/clipboard/DataObject.h"
 #include "core/clipboard/DraggedIsolatedFileSystem.h"
 #include "platform/heap/Handle.h"
+#include "platform/heap/HeapAllocator.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 
@@ -48,24 +49,21 @@ class DraggedIsolatedFileSystemImpl final
   USING_GARBAGE_COLLECTED_MIXIN(DraggedIsolatedFileSystemImpl);
 
  public:
-  static DraggedIsolatedFileSystemImpl* create(DataObject& host,
-                                               const String& filesystemId) {
-    return new DraggedIsolatedFileSystemImpl(host, filesystemId);
-  }
-
-  static DOMFileSystem* getDOMFileSystem(DataObject* host, ExecutionContext*);
+  static DOMFileSystem* getDOMFileSystem(DataObject* host,
+                                         ExecutionContext*,
+                                         const DataObjectItem&);
 
   static const char* supplementName();
   static DraggedIsolatedFileSystemImpl* from(DataObject*);
 
   DECLARE_TRACE();
 
-  static void prepareForDataObject(DataObject*, const String& filesystemId);
+  static void prepareForDataObject(DataObject*);
 
  private:
-  DraggedIsolatedFileSystemImpl(DataObject& host, const String& filesystemId);
+  DraggedIsolatedFileSystemImpl() = default;
 
-  Member<DOMFileSystem> m_filesystem;
+  HeapHashMap<String, Member<DOMFileSystem>> m_filesystems;
 };
 
 }  // namespace blink

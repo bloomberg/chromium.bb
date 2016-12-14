@@ -294,6 +294,7 @@ WebDragData DropDataToWebDragData(const DropData& drop_data) {
     item.storageType = WebDragData::Item::StorageTypeFileSystemFile;
     item.fileSystemURL = it->url;
     item.fileSystemFileSize = it->size;
+    item.fileSystemId = blink::WebString::fromASCII(it->filesystem_id);
     item_list.push_back(item);
   }
 

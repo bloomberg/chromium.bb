@@ -72,6 +72,7 @@ class CORE_EXPORT DataObject : public GarbageCollectedFinalized<DataObject>,
   // Returns null if an item already exists with the provided type.
   DataObjectItem* add(const String& data, const String& type);
   DataObjectItem* add(File*);
+  DataObjectItem* add(File*, const String& fileSystemId);
 
   // WebCore helpers.
   void clearData(const String& type);
@@ -88,7 +89,9 @@ class CORE_EXPORT DataObject : public GarbageCollectedFinalized<DataObject>,
   // Used for dragging in files from the desktop.
   bool containsFilenames() const;
   Vector<String> filenames() const;
-  void addFilename(const String& filename, const String& displayName);
+  void addFilename(const String& filename,
+                   const String& displayName,
+                   const String& fileSystemId);
 
   // Used for dragging in filesystem from the desktop.
   void setFilesystemId(const String& fileSystemId) {

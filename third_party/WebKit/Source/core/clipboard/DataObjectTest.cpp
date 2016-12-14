@@ -22,7 +22,7 @@ TEST_F(DataObjectTest, addItemWithFilenameAndNoTitle) {
   String filePath = testing::blinkRootDir();
   filePath.append("/Source/core/clipboard/DataObjectTest.cpp");
 
-  m_dataObject->addFilename(filePath, String());
+  m_dataObject->addFilename(filePath, String(), String());
   EXPECT_EQ(1U, m_dataObject->length());
 
   DataObjectItem* item = m_dataObject->item(0);
@@ -40,7 +40,7 @@ TEST_F(DataObjectTest, addItemWithFilenameAndTitle) {
   String filePath = testing::blinkRootDir();
   filePath.append("/Source/core/clipboard/DataObjectTest.cpp");
 
-  m_dataObject->addFilename(filePath, "name.cpp");
+  m_dataObject->addFilename(filePath, "name.cpp", String());
   EXPECT_EQ(1U, m_dataObject->length());
 
   DataObjectItem* item = m_dataObject->item(0);
@@ -53,6 +53,37 @@ TEST_F(DataObjectTest, addItemWithFilenameAndTitle) {
   EXPECT_EQ(File::IsUserVisible, file->getUserVisibility());
   EXPECT_EQ(filePath, file->path());
   EXPECT_EQ("name.cpp", file->name());
+}
+
+TEST_F(DataObjectTest, fileSystemId) {
+  String filePath = testing::blinkRootDir();
+  filePath.append("/Source/core/clipboard/DataObjectTest.cpp");
+  KURL url;
+
+  m_dataObject->addFilename(filePath, String(), String());
+  m_dataObject->addFilename(filePath, String(), "fileSystemIdForFilename");
+  m_dataObject->add(
+      File::createForFileSystemFile(url, FileMetadata(), File::IsUserVisible),
+      "fileSystemIdForFileSystemFile");
+
+  ASSERT_EQ(3U, m_dataObject->length());
+
+  {
+    DataObjectItem* item = m_dataObject->item(0);
+    EXPECT_FALSE(item->hasFileSystemId());
+  }
+
+  {
+    DataObjectItem* item = m_dataObject->item(1);
+    EXPECT_TRUE(item->hasFileSystemId());
+    EXPECT_EQ("fileSystemIdForFilename", item->fileSystemId());
+  }
+
+  {
+    DataObjectItem* item = m_dataObject->item(2);
+    EXPECT_TRUE(item->hasFileSystemId());
+    EXPECT_EQ("fileSystemIdForFileSystemFile", item->fileSystemId());
+  }
 }
 
 }  // namespace blink

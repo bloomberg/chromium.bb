@@ -31,6 +31,7 @@ struct CONTENT_EXPORT DropData {
 
     GURL url;
     int64_t size;
+    std::string filesystem_id;
   };
 
   enum class Kind {

@@ -245,6 +245,7 @@ void WriteFileSystemFilesToPickle(
   for (size_t i = 0; i < file_system_files.size(); ++i) {
     pickle->WriteString(file_system_files[i].url.spec());
     pickle->WriteInt64(file_system_files[i].size);
+    pickle->WriteString(file_system_files[i].filesystem_id);
   }
 }
 
@@ -262,8 +263,11 @@ bool ReadFileSystemFilesFromPickle(
   for (uint32_t i = 0; i < num_files; ++i) {
     std::string url_string;
     int64_t size = 0;
-    if (!iter.ReadString(&url_string) || !iter.ReadInt64(&size))
+    std::string filesystem_id;
+    if (!iter.ReadString(&url_string) || !iter.ReadInt64(&size) ||
+        !iter.ReadString(&filesystem_id)) {
       return false;
+    }
 
     GURL url(url_string);
     if (!url.is_valid())
@@ -271,6 +275,7 @@ bool ReadFileSystemFilesFromPickle(
 
     (*file_system_files)[i].url = url;
     (*file_system_files)[i].size = size;
+    (*file_system_files)[i].filesystem_id = filesystem_id;
   }
   return true;
 }

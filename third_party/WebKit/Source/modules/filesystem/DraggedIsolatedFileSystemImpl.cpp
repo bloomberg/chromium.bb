@@ -39,15 +39,21 @@ namespace blink {
 
 DOMFileSystem* DraggedIsolatedFileSystemImpl::getDOMFileSystem(
     DataObject* host,
-    ExecutionContext* executionContext) {
+    ExecutionContext* executionContext,
+    const DataObjectItem& item) {
+  if (!item.hasFileSystemId())
+    return nullptr;
+  const String fileSystemId = item.fileSystemId();
   DraggedIsolatedFileSystemImpl* draggedIsolatedFileSystem = from(host);
   if (!draggedIsolatedFileSystem)
-    return 0;
-  if (!draggedIsolatedFileSystem->m_filesystem)
-    draggedIsolatedFileSystem->m_filesystem =
-        DOMFileSystem::createIsolatedFileSystem(executionContext,
-                                                host->filesystemId());
-  return draggedIsolatedFileSystem->m_filesystem.get();
+    return nullptr;
+  auto it = draggedIsolatedFileSystem->m_filesystems.find(fileSystemId);
+  if (it != draggedIsolatedFileSystem->m_filesystems.end())
+    return it->value;
+  return draggedIsolatedFileSystem->m_filesystems
+      .add(fileSystemId, DOMFileSystem::createIsolatedFileSystem(
+                             executionContext, fileSystemId))
+      .storedValue->value;
 }
 
 // static
@@ -62,21 +68,15 @@ DraggedIsolatedFileSystemImpl* DraggedIsolatedFileSystemImpl::from(
       Supplement<DataObject>::from(dataObject, supplementName()));
 }
 
-DraggedIsolatedFileSystemImpl::DraggedIsolatedFileSystemImpl(
-    DataObject& host,
-    const String& filesystemId) {
-  host.setFilesystemId(filesystemId);
-}
-
 DEFINE_TRACE(DraggedIsolatedFileSystemImpl) {
-  visitor->trace(m_filesystem);
+  visitor->trace(m_filesystems);
   Supplement<DataObject>::trace(visitor);
 }
 
 void DraggedIsolatedFileSystemImpl::prepareForDataObject(
-    DataObject* dataObject,
-    const String& filesystemId) {
-  DraggedIsolatedFileSystemImpl* fileSystem = create(*dataObject, filesystemId);
+    DataObject* dataObject) {
+  DraggedIsolatedFileSystemImpl* fileSystem =
+      new DraggedIsolatedFileSystemImpl();
   DraggedIsolatedFileSystemImpl::provideTo(
       *dataObject, DraggedIsolatedFileSystemImpl::supplementName(), fileSystem);
 }

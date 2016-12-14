@@ -106,7 +106,17 @@ DataObjectItem* DataObject::add(File* file) {
     return nullptr;
 
   DataObjectItem* item = DataObjectItem::createFromFile(file);
-  m_itemList.push_back(item);
+  internalAddFileItem(item);
+  return item;
+}
+
+DataObjectItem* DataObject::add(File* file, const String& fileSystemId) {
+  if (!file)
+    return nullptr;
+
+  DataObjectItem* item =
+      DataObjectItem::createFromFileWithFileSystemId(file, fileSystemId);
+  internalAddFileItem(item);
   return item;
 }
 
@@ -206,9 +216,10 @@ Vector<String> DataObject::filenames() const {
 }
 
 void DataObject::addFilename(const String& filename,
-                             const String& displayName) {
-  internalAddFileItem(DataObjectItem::createFromFile(
-      File::createForUserProvidedFile(filename, displayName)));
+                             const String& displayName,
+                             const String& fileSystemId) {
+  internalAddFileItem(DataObjectItem::createFromFileWithFileSystemId(
+      File::createForUserProvidedFile(filename, displayName), fileSystemId));
 }
 
 void DataObject::addSharedBuffer(const String& name,
@@ -252,6 +263,7 @@ DEFINE_TRACE(DataObject) {
 
 DataObject* DataObject::create(WebDragData data) {
   DataObject* dataObject = create();
+  bool hasFileSystem = false;
 
   WebVector<WebDragData::Item> items = data.items();
   for (unsigned i = 0; i < items.size(); ++i) {
@@ -267,7 +279,9 @@ DataObject* DataObject::create(WebDragData data) {
           dataObject->setData(item.stringType, item.stringData);
         break;
       case WebDragData::Item::StorageTypeFilename:
-        dataObject->addFilename(item.filenameData, item.displayNameData);
+        hasFileSystem = true;
+        dataObject->addFilename(item.filenameData, item.displayNameData,
+                                data.filesystemId());
         break;
       case WebDragData::Item::StorageTypeBinaryData:
         // This should never happen when dragging in.
@@ -275,17 +289,23 @@ DataObject* DataObject::create(WebDragData data) {
       case WebDragData::Item::StorageTypeFileSystemFile: {
         // FIXME: The file system URL may refer a user visible file, see
         // http://crbug.com/429077
+        hasFileSystem = true;
         FileMetadata fileMetadata;
         fileMetadata.length = item.fileSystemFileSize;
-        dataObject->add(File::createForFileSystemFile(
-            item.fileSystemURL, fileMetadata, File::IsNotUserVisible));
+
+        dataObject->add(
+            File::createForFileSystemFile(item.fileSystemURL, fileMetadata,
+                                          File::IsNotUserVisible),
+            item.fileSystemId);
       } break;
     }
   }
 
-  if (!data.filesystemId().isNull())
-    DraggedIsolatedFileSystem::prepareForDataObject(dataObject,
-                                                    data.filesystemId());
+  dataObject->setFilesystemId(data.filesystemId());
+
+  if (hasFileSystem)
+    DraggedIsolatedFileSystem::prepareForDataObject(dataObject);
+
   return dataObject;
 }
 
@@ -318,6 +338,7 @@ WebDragData DataObject::toWebDragData() {
             item.storageType = WebDragData::Item::StorageTypeFileSystemFile;
             item.fileSystemURL = file->fileSystemURL();
             item.fileSystemFileSize = file->size();
+            item.fileSystemId = originalItem->fileSystemId();
           } else {
             // FIXME: support dragging constructed Files across renderers, see
             // http://crbug.com/394955

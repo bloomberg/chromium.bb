@@ -69,6 +69,7 @@ DropData DropDataBuilder::Build(const WebDragData& drag_data) {
         DropData::FileSystemFileInfo info;
         info.url = item.fileSystemURL;
         info.size = item.fileSystemFileSize;
+        info.filesystem_id = item.fileSystemId.ascii();
         result.file_system_files.push_back(info);
         break;
       }

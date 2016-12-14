@@ -80,6 +80,7 @@ class WebDragData {
     // Only valid when storageType == StorageTypeFileSystemFile.
     WebURL fileSystemURL;
     long long fileSystemFileSize;
+    WebString fileSystemId;
 
     // Only valid when stringType == "text/html".
     WebURL baseURL;

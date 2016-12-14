@@ -62,7 +62,8 @@ Entry* DataTransferItemFileSystem::webkitGetAsEntry(
 
   DOMFileSystem* domFileSystem =
       DraggedIsolatedFileSystemImpl::getDOMFileSystem(
-          item.getDataTransfer()->dataObject(), executionContext);
+          item.getDataTransfer()->dataObject(), executionContext,
+          *item.getDataObjectItem());
   if (!domFileSystem) {
     // IsolatedFileSystem may not be enabled.
     return 0;
