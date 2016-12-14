@@ -149,9 +149,21 @@ HRESULT InstallDriver(const base::FilePath& install_path) {
       NULL, inf_file.value().c_str(), NULL,
       UPDP_SILENT_UPLOAD | UPDP_UPLOAD_ALWAYS, NULL, package_path, &size);
   if (FAILED(result)) {
-    LOG(ERROR)
-        << "Uploading the printer driver package to the driver cache failed.";
-    return result;
+    LOG(WARNING)
+        << "Uploading the printer driver package to the driver cache silently "
+        << "failed. Will retry with user UI. HRESULT=0x" << std::setbase(16)
+        << result;
+
+    result = UploadPrinterDriverPackage(
+        NULL, inf_file.value().c_str(), NULL, UPDP_UPLOAD_ALWAYS,
+        GetForegroundWindow(), package_path, &size);
+
+    if (FAILED(result)) {
+      LOG(WARNING)
+          << "Uploading the printer driver package to the driver cache failed"
+          << "with user UI. Aborting.";
+      return result;
+    }
   }
 
   result = InstallPrinterDriverFromPackage(
