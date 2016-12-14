@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 var tabIds = [];
-var kFooUrl = "foo";
-var kBarUrl = "bar";
 
 chrome.test.runTests([
   function setUp() {
@@ -39,12 +37,12 @@ chrome.test.runTests([
       pass(function(tab) {
         chrome.tabs.update(
           undefined,
-          {"url": pageUrl(kFooUrl)},
+          {"url": pageUrl("d")},
           pass(function(tab) {
             chrome.tabs.get(
               tabIds[1],
               pass(function(tab) {
-                assertEq(pageUrl(kFooUrl), tab.url);
+                assertEq(pageUrl("d"), tab.url);
               }));
           }));
       }));
@@ -57,12 +55,12 @@ chrome.test.runTests([
       pass(function(tab) {
         chrome.tabs.update(
           null,
-          {"url": pageUrl(kBarUrl)},
+          {"url": pageUrl("e")},
           pass(function(tab) {
             chrome.tabs.get(
               tabIds[2],
               pass(function(tab) {
-                assertEq(pageUrl(kBarUrl), tab.url);
+                assertEq(pageUrl("e"), tab.url);
               }));
           }));
       }));
