@@ -358,6 +358,8 @@ void V4L2CaptureDelegate::AllocateAndStart(
     return;
   }
 
+  ResetUserAndCameraControlsToDefault(device_fd_.get());
+
   v4l2_capability cap = {};
   if (!((HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_QUERYCAP, &cap)) == 0) &&
         ((cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) &&
@@ -488,7 +490,6 @@ void V4L2CaptureDelegate::StopAndDeAllocate() {
   if (HANDLE_EINTR(ioctl(device_fd_.get(), VIDIOC_REQBUFS, &r_buffer)) < 0)
     SetErrorState(FROM_HERE, "Failed to VIDIOC_REQBUFS with count = 0");
 
-  ResetUserAndCameraControlsToDefault(device_fd_.get());
   // At this point we can close the device.
   // This is also needed for correctly changing settings later via VIDIOC_S_FMT.
   device_fd_.reset();
