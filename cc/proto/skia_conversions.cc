@@ -26,30 +26,6 @@ SkPoint ProtoToSkPoint(const proto::PointF& proto) {
 
 }  // namespace
 
-SkClipOp SkClipOpFromProto(proto::SkClipOp::Op op) {
-  switch (op) {
-    case proto::SkClipOp::DIFFERENCE_:
-      return SkClipOp::kDifference;
-    case proto::SkClipOp::INTERSECT:
-      return SkClipOp::kIntersect;
-    default:
-      break;
-  }
-  return SkClipOp::kDifference;
-}
-
-proto::SkClipOp::Op SkClipOpToProto(SkClipOp op) {
-  switch (op) {
-    case SkClipOp::kDifference:
-      return proto::SkClipOp::DIFFERENCE_;
-    case SkClipOp::kIntersect:
-      return proto::SkClipOp::INTERSECT;
-    default:
-      break;
-  }
-  return proto::SkClipOp::DIFFERENCE_;
-}
-
 SkBlendMode SkXfermodeModeFromProto(proto::SkXfermode::Mode mode) {
   switch (mode) {
     case proto::SkXfermode::CLEAR_:

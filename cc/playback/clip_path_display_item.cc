@@ -16,10 +16,9 @@
 namespace cc {
 
 ClipPathDisplayItem::ClipPathDisplayItem(const SkPath& clip_path,
-                                         SkClipOp clip_op,
                                          bool antialias)
     : DisplayItem(CLIP_PATH) {
-  SetNew(clip_path, clip_op, antialias);
+  SetNew(clip_path, antialias);
 }
 
 ClipPathDisplayItem::ClipPathDisplayItem(const proto::DisplayItem& proto)
@@ -27,7 +26,6 @@ ClipPathDisplayItem::ClipPathDisplayItem(const proto::DisplayItem& proto)
   DCHECK_EQ(proto::DisplayItem::Type_ClipPath, proto.type());
 
   const proto::ClipPathDisplayItem& details = proto.clip_path_item();
-  SkClipOp clip_op = SkClipOpFromProto(details.clip_op());
   bool antialias = details.antialias();
 
   SkPath clip_path;
@@ -37,17 +35,15 @@ ClipPathDisplayItem::ClipPathDisplayItem(const proto::DisplayItem& proto)
     DCHECK_EQ(details.clip_path().size(), bytes_read);
   }
 
-  SetNew(clip_path, clip_op, antialias);
+  SetNew(clip_path, antialias);
 }
 
 ClipPathDisplayItem::~ClipPathDisplayItem() {
 }
 
 void ClipPathDisplayItem::SetNew(const SkPath& clip_path,
-                                 SkClipOp clip_op,
                                  bool antialias) {
   clip_path_ = clip_path;
-  clip_op_ = clip_op;
   antialias_ = antialias;
 }
 
@@ -55,7 +51,6 @@ void ClipPathDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
   proto->set_type(proto::DisplayItem::Type_ClipPath);
 
   proto::ClipPathDisplayItem* details = proto->mutable_clip_path_item();
-  details->set_clip_op(SkClipOpToProto(clip_op_));
   details->set_antialias(antialias_);
 
   // Just use skia's serialization method for the SkPath for now.
@@ -70,7 +65,7 @@ void ClipPathDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
 void ClipPathDisplayItem::Raster(SkCanvas* canvas,
                                  SkPicture::AbortCallback* callback) const {
   canvas->save();
-  canvas->clipPath(clip_path_, clip_op_, antialias_);
+  canvas->clipPath(clip_path_, antialias_);
 }
 
 void ClipPathDisplayItem::AsValueInto(

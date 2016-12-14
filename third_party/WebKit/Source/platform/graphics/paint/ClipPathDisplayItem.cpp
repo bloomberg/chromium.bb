@@ -20,7 +20,7 @@ void BeginClipPathDisplayItem::replay(GraphicsContext& context) const {
 void BeginClipPathDisplayItem::appendToWebDisplayItemList(
     const IntRect& visualRect,
     WebDisplayItemList* list) const {
-  list->appendClipPathItem(m_clipPath, SkClipOp::kIntersect, true);
+  list->appendClipPathItem(m_clipPath, true);
 }
 
 void BeginClipPathDisplayItem::analyzeForGpuRasterization(

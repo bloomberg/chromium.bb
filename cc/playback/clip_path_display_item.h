@@ -12,7 +12,6 @@
 #include "base/memory/ptr_util.h"
 #include "cc/base/cc_export.h"
 #include "cc/playback/display_item.h"
-#include "third_party/skia/include/core/SkClipOp.h"
 #include "third_party/skia/include/core/SkPath.h"
 
 class SkCanvas;
@@ -21,7 +20,7 @@ namespace cc {
 
 class CC_EXPORT ClipPathDisplayItem : public DisplayItem {
  public:
-  ClipPathDisplayItem(const SkPath& path, SkClipOp clip_op, bool antialias);
+  ClipPathDisplayItem(const SkPath& path, bool antialias);
   explicit ClipPathDisplayItem(const proto::DisplayItem& proto);
   ~ClipPathDisplayItem() override;
 
@@ -39,10 +38,9 @@ class CC_EXPORT ClipPathDisplayItem : public DisplayItem {
   int ApproximateOpCount() const { return 1; }
 
  private:
-  void SetNew(const SkPath& path, SkClipOp clip_op, bool antialias);
+  void SetNew(const SkPath& path, bool antialias);
 
   SkPath clip_path_;
-  SkClipOp clip_op_;
   bool antialias_;
 };
 

@@ -21,9 +21,6 @@ class SkRRect;
 
 // TODO(dtrainor): Move these to a class and make them static
 // (crbug.com/548432).
-CC_EXPORT SkClipOp SkClipOpFromProto(proto::SkClipOp::Op op);
-CC_EXPORT proto::SkClipOp::Op SkClipOpToProto(SkClipOp op);
-
 CC_EXPORT SkBlendMode SkXfermodeModeFromProto(proto::SkXfermode::Mode mode);
 CC_EXPORT proto::SkXfermode::Mode SkXfermodeModeToProto(SkBlendMode mode);
 

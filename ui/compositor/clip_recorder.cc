@@ -49,14 +49,14 @@ void ClipRecorder::ClipRect(const gfx::Rect& clip_rect) {
 void ClipRecorder::ClipPath(const gfx::Path& clip_path) {
   bool antialias = false;
   context_.list_->CreateAndAppendPairedBeginItem<cc::ClipPathDisplayItem>(
-      clip_path, SkClipOp::kIntersect, antialias);
+      clip_path, antialias);
   RecordCloser(CLIP_PATH);
 }
 
 void ClipRecorder::ClipPathWithAntiAliasing(const gfx::Path& clip_path) {
   bool antialias = true;
   context_.list_->CreateAndAppendPairedBeginItem<cc::ClipPathDisplayItem>(
-      clip_path, SkClipOp::kIntersect, antialias);
+      clip_path, antialias);
   RecordCloser(CLIP_PATH);
 }
 

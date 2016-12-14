@@ -12,7 +12,6 @@
 #include "third_party/WebKit/public/platform/WebDisplayItemList.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
-#include "third_party/skia/include/core/SkClipOp.h"
 #include "ui/gfx/geometry/point_f.h"
 
 class SkColorFilter;
@@ -48,7 +47,6 @@ class WebDisplayItemListImpl : public blink::WebDisplayItemList {
       const blink::WebVector<SkRRect>& rounded_clip_rects) override;
   void appendEndClipItem() override;
   void appendClipPathItem(const SkPath& clip_path,
-                          SkClipOp clip_op,
                           bool antialias) override;
   void appendEndClipPathItem() override;
   void appendFloatClipItem(const blink::WebFloatRect& clip_rect) override;

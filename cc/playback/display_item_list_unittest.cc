@@ -200,8 +200,7 @@ TEST(DisplayItemListTest, SerializeClipPathItem) {
   // Build the ClipPathDisplayItem.
   SkPath path;
   path.addCircle(5.f, 5.f, 2.f, SkPath::Direction::kCW_Direction);
-  list->CreateAndAppendPairedBeginItem<ClipPathDisplayItem>(
-      path, SkClipOp::kIntersect, false);
+  list->CreateAndAppendPairedBeginItem<ClipPathDisplayItem>(path, false);
 
   // Build the second DrawingDisplayItem.
   AppendSecondSerializationTestPicture(list, layer_size);
