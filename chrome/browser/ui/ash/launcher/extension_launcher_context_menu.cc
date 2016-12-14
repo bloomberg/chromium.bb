@@ -53,11 +53,8 @@ void ExtensionLauncherContextMenu::Init() {
 
     AddPinMenu();
 
-    if (controller()->IsOpen(item().id) &&
-        !extension_misc::IsImeMenuExtensionId(
-            controller()->GetAppIDForShelfID(item().id))) {
+    if (controller()->IsOpen(item().id))
       AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
-    }
 
     if (!controller()->IsPlatformApp(item().id) &&
         item().type == ash::TYPE_APP_SHORTCUT) {
@@ -95,12 +92,8 @@ void ExtensionLauncherContextMenu::Init() {
     }
   } else if (item().type == ash::TYPE_DIALOG) {
     AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
-  } else {
-    if (controller()->IsOpen(item().id) &&
-        !extension_misc::IsImeMenuExtensionId(
-            controller()->GetAppIDForShelfID(item().id))) {
-      AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
-    }
+  } else if (controller()->IsOpen(item().id)) {
+    AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
   }
   AddSeparator(ui::NORMAL_SEPARATOR);
   if (item().type == ash::TYPE_APP_SHORTCUT || item().type == ash::TYPE_APP) {

@@ -113,30 +113,4 @@ TEST_F(MruWindowTrackerTest, DraggedWindowsInListOnlyOnce) {
   EXPECT_EQ(1, std::count(window_list.begin(), window_list.end(), w1));
 }
 
-// Tests that windows with propery of |kExcludeFromMruKey|==true are not in the
-// window list.
-TEST_F(MruWindowTrackerTest, ExcludedFromMru) {
-  std::unique_ptr<WindowOwner> w1_owner(CreateTestWindow());
-  WmWindow* w1 = w1_owner->window();
-  std::unique_ptr<WindowOwner> w2_owner(CreateTestWindow());
-  WmWindow* w2 = w2_owner->window();
-  std::unique_ptr<WindowOwner> w3_owner(CreateTestWindow());
-  WmWindow* w3 = w3_owner->window();
-
-  w1->GetWindowState()->SetExcludedFromMru(true);
-  w3->GetWindowState()->SetExcludedFromMru(true);
-
-  w3->Activate();
-  w2->Activate();
-  w1->Activate();
-
-  // Expect the windows with |kExcludeFromMruKey| property being true are not
-  // in the list.
-  WmWindow::Windows window_list = mru_window_tracker()->BuildMruWindowList();
-
-  // As |w1| and |w3| are excluded from the list, only |w2| should be present.
-  ASSERT_EQ(1u, window_list.size());
-  EXPECT_EQ(w2, window_list[0]);
-}
-
 }  // namespace ash

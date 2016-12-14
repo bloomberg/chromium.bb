@@ -14,12 +14,9 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/extensions/extension_keybinding_registry_views.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/zoom/page_zoom.h"
 #include "components/zoom/zoom_controller.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/aura/window.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
 
@@ -230,14 +227,6 @@ void ChromeNativeAppWindowViews::InitializePanelWindow(
   OnBeforePanelWidgetInit(use_default_bounds, &params, widget());
   widget()->Init(params);
   widget()->set_focus_on_creation(create_params.focused);
-#if defined(OS_CHROMEOS)
-  if (extension_misc::IsImeMenuExtensionId(app_window()->extension_id())) {
-    if (widget()->GetNativeView()) {
-      widget()->GetNativeView()->SetProperty(aura::client::kExcludeFromMruKey,
-                                             true);
-    }
-  }
-#endif
 }
 
 views::NonClientFrameView*

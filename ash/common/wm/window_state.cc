@@ -13,7 +13,6 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/wm_screen_util.h"
 #include "ash/common/wm_window.h"
-#include "ash/common/wm_window_property.h"
 #include "base/auto_reset.h"
 
 namespace ash {
@@ -111,10 +110,6 @@ bool WindowState::IsUserPositionable() const {
           window_->GetType() == ui::wm::WINDOW_TYPE_PANEL);
 }
 
-bool WindowState::ShouldBeExcludedFromMru() const {
-  return window_->GetBoolProperty(ash::WmWindowProperty::EXCLUDE_FROM_MRU);
-}
-
 bool WindowState::CanMaximize() const {
   // Window must allow maximization and have no maximum width or height.
   if (!window_->CanMaximize())
@@ -164,10 +159,6 @@ void WindowState::Minimize() {
 
 void WindowState::Unminimize() {
   window_->Unminimize();
-}
-
-void WindowState::SetExcludedFromMru(bool excluded_from_mru) {
-  window_->SetExcludedFromMru(excluded_from_mru);
 }
 
 void WindowState::Activate() {

@@ -24,9 +24,6 @@ enum class WmWindowProperty {
   // Type bool.
   DRAW_ATTENTION,
 
-  // Type bool. See aura::client:kExcludeFromMruKey for details.
-  EXCLUDE_FROM_MRU,
-
   // Type int, but cast to ui::ModalType.
   MODAL_TYPE,
 

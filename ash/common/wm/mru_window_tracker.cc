@@ -59,8 +59,7 @@ MruWindowTracker::WindowList BuildWindowListInternal(
   // Removes unfocusable windows.
   std::vector<WmWindow*>::iterator itr = windows.begin();
   while (itr != windows.end()) {
-    if (!should_include_window_predicate.Run(*itr) ||
-        (*itr)->GetWindowState()->ShouldBeExcludedFromMru())
+    if (!should_include_window_predicate.Run(*itr))
       itr = windows.erase(itr);
     else
       ++itr;

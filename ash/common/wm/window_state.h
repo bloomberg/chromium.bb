@@ -114,10 +114,6 @@ class ASH_EXPORT WindowState {
   // Returns true if the window's location can be controlled by the user.
   bool IsUserPositionable() const;
 
-  // Returns true is the window should be excluded from the most recently used
-  // windows list.
-  bool ShouldBeExcludedFromMru() const;
-
   // Checks if the window can change its state accordingly.
   bool CanMaximize() const;
   bool CanMinimize() const;
@@ -134,7 +130,6 @@ class ASH_EXPORT WindowState {
   void Maximize();
   void Minimize();
   void Unminimize();
-  void SetExcludedFromMru(bool excluded_from_mru);
 
   void Activate();
   void Deactivate();

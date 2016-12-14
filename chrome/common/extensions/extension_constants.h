@@ -250,12 +250,6 @@ extern const char kAppStateReadyToRun[];
 
 // The path part of the file system url used for media file systems.
 extern const char kMediaFileSystemPathPart[];
-
-#if defined(OS_CHROMEOS)
-// Returns true if |extension_id| is one of the IME extensions that will create
-// IME menu.
-bool IsImeMenuExtensionId(const std::string& extension_id);
-#endif
 }  // namespace extension_misc
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_CONSTANTS_H_

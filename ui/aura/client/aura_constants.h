@@ -53,10 +53,6 @@ AURA_EXPORT extern const WindowProperty<bool>* const kConstrainedWindowKey;
 // attention.
 AURA_EXPORT extern const aura::WindowProperty<bool>* const kDrawAttentionKey;
 
-// A property key to indicate that a window should be excluded from the most
-// recently used windows list.
-AURA_EXPORT extern const aura::WindowProperty<bool>* const kExcludeFromMruKey;
-
 // A property key to indicate that a window is being "mirrored" and its contents
 // should render regardless of its actual visibility state.
 AURA_EXPORT extern const aura::WindowProperty<bool>* const kMirroringEnabledKey;

@@ -168,7 +168,6 @@ class ASH_EXPORT WmWindowAura : public WmWindow,
   void Maximize() override;
   void Minimize() override;
   void Unminimize() override;
-  void SetExcludedFromMru(bool excluded_from_mru) override;
   std::vector<WmWindow*> GetChildren() override;
   void ShowResizeShadow(int component) override;
   void HideResizeShadow() override;

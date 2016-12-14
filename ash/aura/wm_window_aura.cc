@@ -299,9 +299,6 @@ bool WmWindowAura::GetBoolProperty(WmWindowProperty key) {
     case WmWindowProperty::ALWAYS_ON_TOP:
       return window_->GetProperty(aura::client::kAlwaysOnTopKey);
 
-    case WmWindowProperty::EXCLUDE_FROM_MRU:
-      return window_->GetProperty(aura::client::kExcludeFromMruKey);
-
     default:
       NOTREACHED();
       break;
@@ -745,10 +742,6 @@ void WmWindowAura::Unminimize() {
   window_->ClearProperty(aura::client::kRestoreShowStateKey);
 }
 
-void WmWindowAura::SetExcludedFromMru(bool excluded_from_mru) {
-  window_->SetProperty(aura::client::kExcludeFromMruKey, excluded_from_mru);
-}
-
 std::vector<WmWindow*> WmWindowAura::GetChildren() {
   return FromAuraWindows(window_->children());
 }
@@ -898,8 +891,6 @@ void WmWindowAura::OnWindowPropertyChanged(aura::Window* window,
     wm_property = WmWindowProperty::APP_ICON;
   } else if (key == aura::client::kDrawAttentionKey) {
     wm_property = WmWindowProperty::DRAW_ATTENTION;
-  } else if (key == aura::client::kExcludeFromMruKey) {
-    wm_property = WmWindowProperty::EXCLUDE_FROM_MRU;
   } else if (key == aura::client::kModalKey) {
     wm_property = WmWindowProperty::MODAL_TYPE;
   } else if (key == kPanelAttachedKey) {

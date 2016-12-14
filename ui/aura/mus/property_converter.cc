@@ -34,8 +34,6 @@ PropertyConverter::PropertyConverter() {
                    ui::mojom::WindowManager::kAlwaysOnTop_Property);
   RegisterProperty(client::kAppIdKey,
                    ui::mojom::WindowManager::kAppID_Property);
-  RegisterProperty(client::kExcludeFromMruKey,
-                   ui::mojom::WindowManager::kExcludeFromMru_Property);
   RegisterProperty(client::kNameKey, ui::mojom::WindowManager::kName_Property);
   RegisterProperty(client::kPreferredSize,
                    ui::mojom::WindowManager::kPreferredSize_Property);

@@ -282,7 +282,6 @@ class ASH_EXPORT WmWindow {
   virtual void Maximize() = 0;
   virtual void Minimize() = 0;
   virtual void Unminimize() = 0;
-  virtual void SetExcludedFromMru(bool excluded_from_mru) = 0;
 
   virtual bool CanMaximize() const = 0;
   virtual bool CanMinimize() const = 0;
