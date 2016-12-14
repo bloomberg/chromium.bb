@@ -126,6 +126,9 @@ enum FileSystemType {
   // A filesystem to provide access to contents managed by ARC.
   kFileSystemTypeArcContent,
 
+  // A filesystem to provide access to documents providers in ARC.
+  kFileSystemTypeArcDocumentsProvider,
+
   // --------------------------------------------------------------------
   // Marks the end of internal type enum. (This is not the actual fs type)
   // New internal filesystem types must be added above this line.

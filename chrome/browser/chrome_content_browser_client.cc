@@ -215,6 +215,7 @@
 #elif defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_backend_delegate.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
 #include "chrome/browser/chromeos/attestation/platform_verification_impl.h"
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
@@ -2813,6 +2814,7 @@ void ChromeContentBrowserClient::GetAdditionalFileSystemBackends(
       base::MakeUnique<chromeos::MTPFileSystemBackendDelegate>(
           storage_partition_path),
       base::MakeUnique<arc::ArcContentFileSystemBackendDelegate>(),
+      base::MakeUnique<arc::ArcDocumentsProviderBackendDelegate>(),
       external_mount_points, storage::ExternalMountPoints::GetSystemInstance());
   backend->AddSystemMountPoints();
   DCHECK(backend->CanHandleType(storage::kFileSystemTypeExternal));
