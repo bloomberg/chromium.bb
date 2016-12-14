@@ -1795,6 +1795,8 @@ split_static_library("ui") {
         "views/passwords/manage_passwords_icon_views.h",
         "views/payments/payment_request_dialog.cc",
         "views/payments/payment_request_dialog.h",
+        "views/payments/view_stack.cc",
+        "views/payments/view_stack.h",
         "views/process_singleton_dialog_linux.cc",
         "views/profiles/profile_indicator_icon.cc",
         "views/profiles/profile_indicator_icon.h",
