@@ -239,6 +239,8 @@
   };
 
   // An action to be taken on an accessibility node.
+  // In contrast to |AXSupportedAction|, these describe what happens to the
+  // object, e.g. "FOCUS".
   enum AXAction {
     blur,
 
@@ -294,6 +296,21 @@
     request_inline_text_boxes
   };
 
+  // Lists the actions that can be performed on a given node.
+  // In contrast to |AXAction|, these describe what the user can do on the
+  // object, e.g. "PRESS", not what happens to the object as a result.
+  // Only one action is supported for now.
+  enum AXSupportedAction {
+    activate,
+    check,
+    click,
+    jump,
+    open,
+    press,
+    select,
+    uncheck
+  };
+
   // A change to the accessibility tree.
   enum AXMutation {
     node_created,
@@ -304,7 +321,6 @@
 
   [cpp_enum_prefix_override="ax_attr"] enum AXStringAttribute {
     access_key,
-    action,
     // Only used when invalid_state == invalid_state_other.
     aria_invalid_value,
     auto_complete,
@@ -329,6 +345,7 @@
   };
 
   [cpp_enum_prefix_override="ax_attr"] enum AXIntAttribute {
+    action,
     // Scrollable container attributes.
     scroll_x,
     scroll_x_min,

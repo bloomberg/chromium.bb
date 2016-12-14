@@ -80,8 +80,6 @@ static int ToMessageID(WebLocalizedString::Name name) {
   switch (name) {
     case WebLocalizedString::AXAMPMFieldText:
       return IDS_AX_AM_PM_FIELD_TEXT;
-    case WebLocalizedString::AXButtonActionVerb:
-      return IDS_AX_BUTTON_ACTION_VERB;
     case WebLocalizedString::AXCalendarShowMonthSelector:
       return IDS_AX_CALENDAR_SHOW_MONTH_SELECTOR;
     case WebLocalizedString::AXCalendarShowNextMonth:
@@ -90,20 +88,14 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_CALENDAR_SHOW_PREVIOUS_MONTH;
     case WebLocalizedString::AXCalendarWeekDescription:
       return IDS_AX_CALENDAR_WEEK_DESCRIPTION;
-    case WebLocalizedString::AXCheckedCheckBoxActionVerb:
-      return IDS_AX_CHECKED_CHECK_BOX_ACTION_VERB;
     case WebLocalizedString::AXDayOfMonthFieldText:
       return IDS_AX_DAY_OF_MONTH_FIELD_TEXT;
-    case WebLocalizedString::AXDefaultActionVerb:
-      return IDS_AX_DEFAULT_ACTION_VERB;
     case WebLocalizedString::AXHeadingText:
       return IDS_AX_ROLE_HEADING;
     case WebLocalizedString::AXHourFieldText:
       return IDS_AX_HOUR_FIELD_TEXT;
     case WebLocalizedString::AXImageMapText:
       return IDS_AX_ROLE_IMAGE_MAP;
-    case WebLocalizedString::AXLinkActionVerb:
-      return IDS_AX_LINK_ACTION_VERB;
     case WebLocalizedString::AXLinkText:
       return IDS_AX_ROLE_LINK;
     case WebLocalizedString::AXListMarkerText:
@@ -192,16 +184,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
       return IDS_AX_MINUTE_FIELD_TEXT;
     case WebLocalizedString::AXMonthFieldText:
       return IDS_AX_MONTH_FIELD_TEXT;
-    case WebLocalizedString::AXPopUpButtonActionVerb:
-      return IDS_AX_POP_UP_BUTTON_ACTION_VERB;
-    case WebLocalizedString::AXRadioButtonActionVerb:
-      return IDS_AX_RADIO_BUTTON_ACTION_VERB;
     case WebLocalizedString::AXSecondFieldText:
       return IDS_AX_SECOND_FIELD_TEXT;
-    case WebLocalizedString::AXTextFieldActionVerb:
-      return IDS_AX_TEXT_FIELD_ACTION_VERB;
-    case WebLocalizedString::AXUncheckedCheckBoxActionVerb:
-      return IDS_AX_UNCHECKED_CHECK_BOX_ACTION_VERB;
     case WebLocalizedString::AXWebAreaText:
       return IDS_AX_ROLE_WEB_AREA;
     case WebLocalizedString::AXWeekOfYearFieldText:

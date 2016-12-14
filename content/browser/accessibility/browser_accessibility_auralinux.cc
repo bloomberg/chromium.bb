@@ -7,9 +7,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/accessibility/browser_accessibility_manager_auralinux.h"
 #include "content/common/accessibility_messages.h"
+#include "ui/accessibility/ax_text_utils.h"
 
 namespace content {
 
@@ -91,9 +93,14 @@ static const gchar* browser_accessibility_get_name(AtkAction* atk_action,
   BrowserAccessibilityAuraLinux* obj =
       ToBrowserAccessibilityAuraLinux(atk_action);
   if (!obj)
-    return 0;
+    return nullptr;
 
-  return obj->GetStringAttribute(ui::AX_ATTR_ACTION).c_str();
+  int action;
+  if (!obj->GetIntAttribute(ui::AX_ATTR_ACTION, &action))
+    return nullptr;
+  base::string16 action_verb =
+      ui::ActionToUnlocalizedString(static_cast<ui::AXSupportedAction>(action));
+  return base::UTF16ToUTF8(action_verb).c_str();
 }
 
 static const gchar* browser_accessibility_get_keybinding(AtkAction* atk_action,

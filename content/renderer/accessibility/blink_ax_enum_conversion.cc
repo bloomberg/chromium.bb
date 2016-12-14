@@ -409,6 +409,32 @@ ui::AXEvent AXEventFromBlink(blink::WebAXEvent event) {
   }
 }
 
+ui::AXSupportedAction AXSupportedActionFromBlink(
+    blink::WebAXSupportedAction supported_action) {
+  switch (supported_action) {
+    case blink::WebAXSupportedAction::None:
+      return ui::AX_SUPPORTED_ACTION_NONE;
+    case blink::WebAXSupportedAction::Activate:
+      return ui::AX_SUPPORTED_ACTION_ACTIVATE;
+    case blink::WebAXSupportedAction::Check:
+      return ui::AX_SUPPORTED_ACTION_CHECK;
+    case blink::WebAXSupportedAction::Click:
+      return ui::AX_SUPPORTED_ACTION_CLICK;
+    case blink::WebAXSupportedAction::Jump:
+      return ui::AX_SUPPORTED_ACTION_JUMP;
+    case blink::WebAXSupportedAction::Open:
+      return ui::AX_SUPPORTED_ACTION_OPEN;
+    case blink::WebAXSupportedAction::Press:
+      return ui::AX_SUPPORTED_ACTION_PRESS;
+    case blink::WebAXSupportedAction::Select:
+      return ui::AX_SUPPORTED_ACTION_SELECT;
+    case blink::WebAXSupportedAction::Uncheck:
+      return ui::AX_SUPPORTED_ACTION_UNCHECK;
+  }
+  NOTREACHED();
+  return ui::AX_SUPPORTED_ACTION_NONE;
+}
+
 ui::AXMarkerType AXMarkerTypeFromBlink(blink::WebAXMarkerType marker_type) {
   switch (marker_type) {
     case blink::WebAXMarkerTypeSpelling:

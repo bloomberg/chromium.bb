@@ -52,6 +52,15 @@ size_t AX_EXPORT
                                TextBoundaryDirection direction,
                                AXTextAffinity affinity);
 
+// Returns a string ID that corresponds to the name of the given action.
+base::string16 AX_EXPORT
+ActionToString(const AXSupportedAction supported_action);
+
+// Returns the non-localized string representation of a supported action.
+// Some APIs on Linux and Windows need to return non-localized action names.
+base::string16 AX_EXPORT
+ActionToUnlocalizedString(const AXSupportedAction supported_action);
+
 }  // namespace ui
 
 #endif  // UI_ACCESSIBILITY_AX_TEXT_UTILS_H_

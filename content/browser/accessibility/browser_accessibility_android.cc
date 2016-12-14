@@ -155,7 +155,7 @@ bool BrowserAccessibilityAndroid::IsChecked() const {
 
 bool BrowserAccessibilityAndroid::IsClickable() const {
   // If it has a default action, it's definitely clickable.
-  if (HasStringAttribute(ui::AX_ATTR_ACTION))
+  if (HasIntAttribute(ui::AX_ATTR_ACTION))
     return true;
 
   // Otherwise return true if it's focusable, but skip web areas and iframes.

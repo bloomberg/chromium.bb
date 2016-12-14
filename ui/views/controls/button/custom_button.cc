@@ -351,6 +351,10 @@ void CustomButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       // No additional accessibility node_data set for this button node_data.
       break;
   }
+  if (enabled()) {
+    node_data->AddIntAttribute(ui::AX_ATTR_ACTION,
+                               ui::AX_SUPPORTED_ACTION_PRESS);
+  }
 }
 
 void CustomButton::VisibilityChanged(View* starting_from, bool visible) {

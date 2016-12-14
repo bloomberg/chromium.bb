@@ -243,8 +243,7 @@ class WebAXObject {
                             WebVector<int>& ends) const;
 
   // Actions
-  BLINK_EXPORT WebString
-  actionVerb() const;  // The verb corresponding to performDefaultAction.
+  BLINK_EXPORT WebAXSupportedAction action() const;
   BLINK_EXPORT bool canDecrement() const;
   BLINK_EXPORT bool canIncrement() const;
   BLINK_EXPORT bool canPress() const;

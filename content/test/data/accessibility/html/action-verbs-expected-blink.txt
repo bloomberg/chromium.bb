@@ -5,18 +5,18 @@ rootWebArea name='Action verbs'
 ++heading name='Heading'
 ++++staticText name='Heading'
 ++++++inlineTextBox name='Heading'
-++button action='press' name='Button'
-++link action='jump' name='Link'
-++++staticText action='click' name='Link'
+++button name='Button' action=6
+++link name='Link' action=4
+++++staticText name='Link' action=3
 ++++++inlineTextBox name='Link'
 ++textField
-++checkBox action='check'
-++checkBox action='uncheck'
-++radioButton action='select'
-++switch action='check' name='ARIA Switch'
-++popUpButton action='open'
+++checkBox action=8
+++checkBox action=2
+++radioButton action=7
+++switch name='ARIA Switch' action=8
+++popUpButton action=5
 ++++menuListPopup
-++++++menuListOption action='click' name='Pop-up button'
-++div action='click'
-++++staticText action='click' name='Div with click handler'
+++++++menuListOption name='Pop-up button' action=3
+++div action=3
+++++staticText name='Div with click handler' action=3
 ++++++inlineTextBox name='Div with click handler'

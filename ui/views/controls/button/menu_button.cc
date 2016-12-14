@@ -7,7 +7,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -17,7 +16,6 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/resources/grit/ui_resources.h"
-#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/mouse_constants.h"
@@ -300,9 +298,11 @@ bool MenuButton::OnKeyReleased(const ui::KeyEvent& event) {
 void MenuButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   CustomButton::GetAccessibleNodeData(node_data);
   node_data->role = ui::AX_ROLE_POP_UP_BUTTON;
-  node_data->AddStringAttribute(
-      ui::AX_ATTR_ACTION, l10n_util::GetStringUTF8(IDS_APP_ACCACTION_PRESS));
   node_data->AddStateFlag(ui::AX_STATE_HASPOPUP);
+  if (enabled()) {
+    node_data->AddIntAttribute(ui::AX_ATTR_ACTION,
+                               ui::AX_SUPPORTED_ACTION_OPEN);
+  }
 }
 
 void MenuButton::PaintMenuMarker(gfx::Canvas* canvas) {

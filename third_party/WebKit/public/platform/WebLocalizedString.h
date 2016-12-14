@@ -36,18 +36,14 @@ namespace blink {
 struct WebLocalizedString {
   enum Name {
     AXAMPMFieldText,
-    AXButtonActionVerb,
     AXCalendarShowMonthSelector,
     AXCalendarShowNextMonth,
     AXCalendarShowPreviousMonth,
     AXCalendarWeekDescription,
-    AXCheckedCheckBoxActionVerb,
     AXDayOfMonthFieldText,
-    AXDefaultActionVerb,
     AXHeadingText,  // Deprecated.
     AXHourFieldText,
     AXImageMapText,  // Deprecated.
-    AXLinkActionVerb,
     AXLinkText,        // Deprecated.
     AXListMarkerText,  // Deprecated.
     AXMediaAudioElement,
@@ -92,11 +88,7 @@ struct WebLocalizedString {
     AXMillisecondFieldText,
     AXMinuteFieldText,
     AXMonthFieldText,
-    AXPopUpButtonActionVerb,
-    AXRadioButtonActionVerb,
     AXSecondFieldText,
-    AXTextFieldActionVerb,
-    AXUncheckedCheckBoxActionVerb,
     AXWebAreaText,  // Deprecated.
     AXWeekOfYearFieldText,
     AXYearFieldText,

@@ -61,6 +61,7 @@ component("accessibility") {
     "//ui/base",
     "//ui/gfx",
     "//ui/gfx/geometry",
+    "//ui/strings",
   ]
 
   if (is_win) {

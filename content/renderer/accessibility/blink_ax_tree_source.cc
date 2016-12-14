@@ -427,8 +427,9 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     dst->AddStringAttribute(ui::AX_ATTR_ACCESS_KEY, src.accessKey().utf8());
   }
 
-  if (src.actionVerb().length()) {
-    dst->AddStringAttribute(ui::AX_ATTR_ACTION, src.actionVerb().utf8());
+  if (src.action() != blink::WebAXSupportedAction::None) {
+    dst->AddIntAttribute(ui::AX_ATTR_ACTION,
+                         AXSupportedActionFromBlink(src.action()));
   }
 
   if (src.ariaAutoComplete().length()) {

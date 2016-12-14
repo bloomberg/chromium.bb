@@ -334,6 +334,16 @@ STATIC_ASSERT_ENUM(WebAXStateSelected, AXSelectedState);
 STATIC_ASSERT_ENUM(WebAXStateVertical, AXVerticalState);
 STATIC_ASSERT_ENUM(WebAXStateVisited, AXVisitedState);
 
+STATIC_ASSERT_ENUM(WebAXSupportedAction::None, AXSupportedAction::None);
+STATIC_ASSERT_ENUM(WebAXSupportedAction::Activate, AXSupportedAction::Activate);
+STATIC_ASSERT_ENUM(WebAXSupportedAction::Check, AXSupportedAction::Check);
+STATIC_ASSERT_ENUM(WebAXSupportedAction::Click, AXSupportedAction::Click);
+STATIC_ASSERT_ENUM(WebAXSupportedAction::Jump, AXSupportedAction::Jump);
+STATIC_ASSERT_ENUM(WebAXSupportedAction::Open, AXSupportedAction::Open);
+STATIC_ASSERT_ENUM(WebAXSupportedAction::Press, AXSupportedAction::Press);
+STATIC_ASSERT_ENUM(WebAXSupportedAction::Select, AXSupportedAction::Select);
+STATIC_ASSERT_ENUM(WebAXSupportedAction::Uncheck, AXSupportedAction::Uncheck);
+
 STATIC_ASSERT_ENUM(WebAXTextDirectionLR, AccessibilityTextDirectionLTR);
 STATIC_ASSERT_ENUM(WebAXTextDirectionRL, AccessibilityTextDirectionRTL);
 STATIC_ASSERT_ENUM(WebAXTextDirectionTB, AccessibilityTextDirectionTTB);

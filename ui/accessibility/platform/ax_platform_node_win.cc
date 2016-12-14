@@ -374,7 +374,22 @@ STDMETHODIMP AXPlatformNodeWin::get_accChildCount(LONG* child_count) {
 STDMETHODIMP AXPlatformNodeWin::get_accDefaultAction(
     VARIANT var_id, BSTR* def_action) {
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG(var_id, def_action);
-  return GetStringAttributeAsBstr(ui::AX_ATTR_ACTION, def_action);
+  int action;
+  if (!GetIntAttribute(AX_ATTR_ACTION, &action)) {
+    *def_action = nullptr;
+    return S_FALSE;
+  }
+
+  base::string16 action_verb =
+      ActionToString(static_cast<AXSupportedAction>(action));
+  if (action_verb.empty()) {
+    *def_action = nullptr;
+    return S_FALSE;
+  }
+
+  *def_action = SysAllocString(action_verb.c_str());
+  DCHECK(def_action);
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_accDescription(

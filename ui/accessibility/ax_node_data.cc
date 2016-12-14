@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_text_utils.h"
 #include "ui/gfx/transform.h"
 
 using base::DoubleToString;
@@ -394,6 +395,12 @@ std::string AXNodeData::ToString() const {
   for (size_t i = 0; i < int_attributes.size(); ++i) {
     std::string value = IntToString(int_attributes[i].second);
     switch (int_attributes[i].first) {
+      case AX_ATTR_ACTION:
+        result +=
+            " action=" +
+            base::UTF16ToUTF8(ActionToUnlocalizedString(
+                static_cast<AXSupportedAction>(int_attributes[i].second)));
+        break;
       case AX_ATTR_SCROLL_X:
         result += " scroll_x=" + value;
         break;
@@ -471,12 +478,14 @@ std::string AXNodeData::ToString() const {
         }
         break;
       case AX_ATTR_NAME_FROM:
-        result += " name_from=" + ui::ToString(
-            static_cast<ui::AXNameFrom>(int_attributes[i].second));
+        result +=
+            " name_from=" +
+            ui::ToString(static_cast<AXNameFrom>(int_attributes[i].second));
         break;
       case AX_ATTR_DESCRIPTION_FROM:
-        result += " description_from=" + ui::ToString(
-            static_cast<ui::AXDescriptionFrom>(int_attributes[i].second));
+        result += " description_from=" +
+                  ui::ToString(
+                      static_cast<AXDescriptionFrom>(int_attributes[i].second));
         break;
       case AX_ATTR_ACTIVEDESCENDANT_ID:
         result += " activedescendant=" + value;
@@ -596,9 +605,6 @@ std::string AXNodeData::ToString() const {
     switch (string_attributes[i].first) {
       case AX_ATTR_ACCESS_KEY:
         result += " access_key=" + value;
-        break;
-      case AX_ATTR_ACTION:
-        result += " action=" + value;
         break;
       case AX_ATTR_ARIA_INVALID_VALUE:
         result += " aria_invalid_value=" + value;

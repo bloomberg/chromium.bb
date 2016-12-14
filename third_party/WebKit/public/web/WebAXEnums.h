@@ -225,6 +225,18 @@ enum WebAXState {
   WebAXStateVisited,
 };
 
+enum class WebAXSupportedAction {
+  None = 0,
+  Activate,
+  Check,
+  Click,
+  Jump,
+  Open,
+  Press,
+  Select,
+  Uncheck
+};
+
 enum WebAXTextDirection {
   WebAXTextDirectionLR,
   WebAXTextDirectionRL,

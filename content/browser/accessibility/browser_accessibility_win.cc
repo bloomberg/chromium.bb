@@ -421,7 +421,7 @@ HRESULT BrowserAccessibilityWin::accDoDefaultAction(VARIANT var_id) {
     return E_INVALIDARG;
 
   // Return an error if it's not clickable.
-  if (!target->HasStringAttribute(ui::AX_ATTR_ACTION))
+  if (!target->HasIntAttribute(ui::AX_ATTR_ACTION))
     return DISP_E_MEMBERNOTFOUND;
 
   manager()->DoDefaultAction(*target);
@@ -577,8 +577,7 @@ STDMETHODIMP BrowserAccessibilityWin::get_accDefaultAction(VARIANT var_id,
   if (!target)
     return E_INVALIDARG;
 
-  return target->GetStringAttributeAsBstr(
-      ui::AX_ATTR_ACTION, def_action);
+  return target->get_localizedName(0, def_action);
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_accDescription(VARIANT var_id,
@@ -2839,7 +2838,7 @@ STDMETHODIMP BrowserAccessibilityWin::nActions(long* n_actions) {
   // |IsHyperlink| is required for |IAccessibleHyperlink::anchor/anchorTarget|
   // to work properly because the |IAccessibleHyperlink| interface inherits from
   // |IAccessibleAction|.
-  if (IsHyperlink() || HasStringAttribute(ui::AX_ATTR_ACTION)) {
+  if (IsHyperlink() || HasIntAttribute(ui::AX_ATTR_ACTION)) {
     *n_actions = 1;
   } else {
     *n_actions = 0;
@@ -2853,7 +2852,7 @@ STDMETHODIMP BrowserAccessibilityWin::doAction(long action_index) {
   if (!instance_active())
     return E_FAIL;
 
-  if (!HasStringAttribute(ui::AX_ATTR_ACTION) || action_index != 0)
+  if (!HasIntAttribute(ui::AX_ATTR_ACTION) || action_index != 0)
     return E_INVALIDARG;
 
   manager()->DoDefaultAction(*this);
@@ -2882,11 +2881,17 @@ STDMETHODIMP BrowserAccessibilityWin::get_name(long action_index, BSTR* name) {
   if (!name)
     return E_INVALIDARG;
 
-  base::string16 action_verb;
-  if (!GetString16Attribute(ui::AX_ATTR_ACTION, &action_verb) ||
-      action_index != 0) {
+  int action;
+  if (!GetIntAttribute(ui::AX_ATTR_ACTION, &action) || action_index != 0) {
     *name = nullptr;
     return E_INVALIDARG;
+  }
+
+  base::string16 action_verb =
+      ui::ActionToUnlocalizedString(static_cast<ui::AXSupportedAction>(action));
+  if (action_verb.empty() || action_verb == L"none") {
+    *name = nullptr;
+    return S_FALSE;
   }
 
   *name = SysAllocString(action_verb.c_str());
@@ -2898,7 +2903,28 @@ STDMETHODIMP
 BrowserAccessibilityWin::get_localizedName(long action_index,
                                            BSTR* localized_name) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_LOCALIZED_NAME);
-  return E_NOTIMPL;
+  if (!instance_active())
+    return E_FAIL;
+
+  if (!localized_name)
+    return E_INVALIDARG;
+
+  int action;
+  if (!GetIntAttribute(ui::AX_ATTR_ACTION, &action) || action_index != 0) {
+    *localized_name = nullptr;
+    return E_INVALIDARG;
+  }
+
+  base::string16 action_verb =
+      ui::ActionToString(static_cast<ui::AXSupportedAction>(action));
+  if (action_verb.empty()) {
+    *localized_name = nullptr;
+    return S_FALSE;
+  }
+
+  *localized_name = SysAllocString(action_verb.c_str());
+  DCHECK(localized_name);
+  return S_OK;
 }
 
 //

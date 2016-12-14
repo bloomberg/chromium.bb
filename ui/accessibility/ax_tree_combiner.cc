@@ -27,6 +27,7 @@ bool IsNodeIdIntAttribute(AXIntAttribute attr) {
     // add a new attribute without explicitly considering whether it's
     // a node id attribute or not.
     case AX_INT_ATTRIBUTE_NONE:
+    case AX_ATTR_ACTION:
     case AX_ATTR_SCROLL_X:
     case AX_ATTR_SCROLL_X_MIN:
     case AX_ATTR_SCROLL_X_MAX:

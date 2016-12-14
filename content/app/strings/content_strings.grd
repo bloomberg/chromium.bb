@@ -511,31 +511,7 @@ below:
           tree item
         </message>
       </if>
-      <message name="IDS_AX_BUTTON_ACTION_VERB" desc="Verb stating the action that will occur when a button is pressed, as used by accessibility.">
-        press
-      </message>
-      <message name="IDS_AX_RADIO_BUTTON_ACTION_VERB" desc="Verb stating the action that will occur when a radio button is clicked, as used by accessibility.">
-        select
-      </message>
-      <message name="IDS_AX_TEXT_FIELD_ACTION_VERB" desc="Verb stating the action that will occur when a text field is selected, as used by accessibility.">
-        activate
-      </message>
-      <message name="IDS_AX_CHECKED_CHECK_BOX_ACTION_VERB" desc="Verb stating the action that will occur when a checked checkbox is clicked, as used by accessibility.">
-        uncheck
-      </message>
-      <message name="IDS_AX_UNCHECKED_CHECK_BOX_ACTION_VERB" desc="Verb stating the action that will occur when an unchecked checkbox is clicked, as used by accessibility.">
-        check
-      </message>
-      <message name="IDS_AX_LINK_ACTION_VERB" desc="Verb stating the action that will occur when a link is clicked, as used by accessibility.">
-        jump
-      </message>
-      <message name="IDS_AX_POP_UP_BUTTON_ACTION_VERB" desc="Verb stating the action that will occur when a pop-up button is clicked, as used by accessibility.">
-        open
-      </message>
-      <message name="IDS_AX_DEFAULT_ACTION_VERB" desc="Verb stating the action that will occur when clicking on a generic clickable object, when we don't know what that action is, as used by accessibility.">
-        click
-      </message>
-
+      
       <message name="IDS_AX_AM_PM_FIELD_TEXT" desc="Accessible description of the AM/PM field in a date/time control">
         AM/PM
       </message>

@@ -317,10 +317,33 @@ need to be translated for each locale.-->
         Upload
       </message>
 
-      <!--Accessible name/action strings-->
-      <message name="IDS_APP_ACCACTION_PRESS" desc="The accessible default action for a button.">
-        Press
+      <!--Accessible action strings-->
+      <message name="IDS_AX_ACTIVATE_ACTION_VERB" desc="Verb stating the action that will occur when an element such as a text field is selected, as used by accessibility.">
+        activate
       </message>
+      <message name="IDS_AX_CHECK_ACTION_VERB" desc="Verb stating the action that will occur when an unchecked checkbox is clicked, as used by accessibility.">
+        check
+      </message>
+      <message name="IDS_AX_CLICK_ACTION_VERB" desc="Verb stating the action that will occur when clicking on a generic clickable object, when we don't know what that action is, as used by accessibility.">
+        click
+      </message>
+      <message name="IDS_AX_JUMP_ACTION_VERB" desc="Verb stating the action that will occur when an element such as an in-page link is activated, as used by accessibility.">
+        jump
+      </message>
+      <message name="IDS_AX_OPEN_ACTION_VERB" desc="Verb stating the action that will occur when an element such as a pop-up button is pressed, as used by accessibility.">
+        open
+      </message>
+<message name="IDS_AX_PRESS_ACTION_VERB" desc="Verb stating the action that will occur when an element such as a button is pressed, as used by accessibility.">
+        press
+      </message>
+      <message name="IDS_AX_SELECT_ACTION_VERB" desc="Verb stating the action that will occur when an element such as a radio button is selected, as used by accessibility.">
+        select
+      </message>
+      <message name="IDS_AX_UNCHECK_ACTION_VERB" desc="Verb stating the action that will occur when a checked checkbox is clicked, as used by accessibility.">
+        uncheck
+      </message>
+
+      <!--Accessible name strings-->
       <message name="IDS_APP_ACCNAME_CLOSE" desc="The accessible name for the Close button.">
         Close
       </message>

@@ -125,6 +125,15 @@ void Checkbox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_CHECK_BOX;
   if (checked())
     node_data->AddStateFlag(ui::AX_STATE_CHECKED);
+  if (enabled()) {
+    if (checked()) {
+      node_data->AddIntAttribute(ui::AX_ATTR_ACTION,
+                                 ui::AX_SUPPORTED_ACTION_UNCHECK);
+    } else {
+      node_data->AddIntAttribute(ui::AX_ATTR_ACTION,
+                                 ui::AX_SUPPORTED_ACTION_CHECK);
+    }
+  }
 }
 
 void Checkbox::OnPaint(gfx::Canvas* canvas) {

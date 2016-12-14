@@ -245,6 +245,18 @@ enum AXObjectInclusion {
   DefaultBehavior,
 };
 
+enum class AXSupportedAction {
+  None = 0,
+  Activate,
+  Check,
+  Click,
+  Jump,
+  Open,
+  Press,
+  Select,
+  Uncheck
+};
+
 enum AccessibilityButtonState {
   ButtonStateOff = 0,
   ButtonStateOn,
@@ -795,7 +807,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual void wordBoundaries(Vector<AXRange>&) const {}
 
   // Properties of interactive elements.
-  String actionVerb() const;
+  AXSupportedAction action() const;
   virtual AccessibilityButtonState checkboxOrRadioValue() const;
   virtual AriaCurrentState ariaCurrentState() const {
     return AriaCurrentStateUndefined;

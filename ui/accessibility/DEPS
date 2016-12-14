@@ -1,5 +1,7 @@
 include_rules = [
   "+third_party/iaccessible2",
+  "+ui/base/l10n",
   "+ui/base/win",
   "+ui/gfx",
+  "+ui/strings/grit/ui_strings.h",
 ]

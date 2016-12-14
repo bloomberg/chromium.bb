@@ -133,11 +133,11 @@ bool WebAXObject::updateLayoutAndCheckValidity() {
   return !isDetached();
 }
 
-WebString WebAXObject::actionVerb() const {
+WebAXSupportedAction WebAXObject::action() const {
   if (isDetached())
-    return WebString();
+    return WebAXSupportedAction::None;
 
-  return m_private->actionVerb();
+  return static_cast<WebAXSupportedAction>(m_private->action());
 }
 
 bool WebAXObject::canDecrement() const {

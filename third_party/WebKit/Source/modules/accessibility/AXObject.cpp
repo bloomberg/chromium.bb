@@ -904,33 +904,28 @@ AccessibilityOrientation AXObject::orientation() const {
   return AccessibilityOrientationUndefined;
 }
 
-static String queryString(WebLocalizedString::Name name) {
-  return Locale::defaultLocale().queryString(name);
-}
-
-String AXObject::actionVerb() const {
+AXSupportedAction AXObject::action() const {
   if (!actionElement())
-    return emptyString();
+    return AXSupportedAction::None;
 
   switch (roleValue()) {
     case ButtonRole:
     case ToggleButtonRole:
-      return queryString(WebLocalizedString::AXButtonActionVerb);
+      return AXSupportedAction::Press;
     case TextFieldRole:
-      return queryString(WebLocalizedString::AXTextFieldActionVerb);
+      return AXSupportedAction::Activate;
     case RadioButtonRole:
-      return queryString(WebLocalizedString::AXRadioButtonActionVerb);
+      return AXSupportedAction::Select;
     case CheckBoxRole:
     case SwitchRole:
-      return queryString(
-          isChecked() ? WebLocalizedString::AXCheckedCheckBoxActionVerb
-                      : WebLocalizedString::AXUncheckedCheckBoxActionVerb);
+      return isChecked() ? AXSupportedAction::Check
+                         : AXSupportedAction::Uncheck;
     case LinkRole:
-      return queryString(WebLocalizedString::AXLinkActionVerb);
+      return AXSupportedAction::Jump;
     case PopUpButtonRole:
-      return queryString(WebLocalizedString::AXPopUpButtonActionVerb);
+      return AXSupportedAction::Open;
     default:
-      return queryString(WebLocalizedString::AXDefaultActionVerb);
+      return AXSupportedAction::Click;
   }
 }
 

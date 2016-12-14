@@ -13,11 +13,9 @@
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
@@ -131,9 +129,11 @@ void ToolbarButton::OnGestureEvent(ui::GestureEvent* event) {
 void ToolbarButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   CustomButton::GetAccessibleNodeData(node_data);
   node_data->role = ui::AX_ROLE_BUTTON_DROP_DOWN;
-  node_data->AddStringAttribute(
-      ui::AX_ATTR_ACTION, l10n_util::GetStringUTF8(IDS_APP_ACCACTION_PRESS));
   node_data->AddStateFlag(ui::AX_STATE_HASPOPUP);
+  if (enabled()) {
+    node_data->AddIntAttribute(ui::AX_ATTR_ACTION,
+                               ui::AX_SUPPORTED_ACTION_PRESS);
+  }
 }
 
 std::unique_ptr<views::LabelButtonBorder> ToolbarButton::CreateDefaultBorder()
