@@ -345,9 +345,9 @@ function test()
             var parentWidget1 = new TestWidget("Parent");
             var parentWidget2 = new TestWidget("Parent");
             var childWidget = new TestWidget("Child");
-            childWidget.attach(parentWidget1);
+            childWidget.attach(parentWidget1, parentWidget2.element);
             try {
-                childWidget.showWidget(parentWidget2.element);
+                childWidget.showWidget();
             } catch (e) {
                 InspectorTest.addResult(e);
             }
