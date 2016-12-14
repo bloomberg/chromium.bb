@@ -1679,10 +1679,16 @@ public class CronetUrlRequestTest extends CronetTestBase {
         assertEquals(expectResponseInfo, callback.mResponseInfo != null);
         assertEquals(expectError, callback.mError != null);
         assertEquals(expectError, callback.mOnErrorCalled);
-        assertEquals(failureType == FailureType.CANCEL_SYNC
-                        || failureType == FailureType.CANCEL_ASYNC
-                        || failureType == FailureType.CANCEL_ASYNC_WITHOUT_PAUSE,
-                callback.mOnCanceledCalled);
+        // When failureType is FailureType.CANCEL_ASYNC_WITHOUT_PAUSE and failureStep is
+        // ResponseStep.ON_READ_COMPLETED, there might be an onSucceeded() task already posted. If
+        // that's the case, onCanceled() will not be invoked. See crbug.com/657415.
+        if (!(failureType == FailureType.CANCEL_ASYNC_WITHOUT_PAUSE
+                    && failureStep == ResponseStep.ON_READ_COMPLETED)) {
+            assertEquals(failureType == FailureType.CANCEL_SYNC
+                            || failureType == FailureType.CANCEL_ASYNC
+                            || failureType == FailureType.CANCEL_ASYNC_WITHOUT_PAUSE,
+                    callback.mOnCanceledCalled);
+        }
     }
 
     @SmallTest
