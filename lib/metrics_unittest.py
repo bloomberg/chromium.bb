@@ -137,6 +137,24 @@ class TestSecondsTimer(cros_test_lib.MockTestCase):
     self.assertEqual(metrics.SecondsDistribution.call_count, 1)
     self.assertEqual(self._mockMetric.add.call_count, 1)
 
+  def testContextManagerWithUpdate(self):
+    """Tests that timing context manager with a field update emits metric."""
+    with metrics.SecondsTimer('fooname', fields={'foo': 'bar'}) as c:
+      c['foo'] = 'qux'
+    self._mockMetric.add.assert_called_with(mock.ANY, fields={'foo': 'qux'})
+
+  def testContextManagerWithoutUpdate(self):
+    """Tests that the default value for fields is used when not updated."""
+    # pylint: disable=unused-variable
+    with metrics.SecondsTimer('fooname', fields={'foo': 'bar'}) as c:
+      pass
+    self._mockMetric.add.assert_called_with(mock.ANY, fields={'foo': 'bar'})
+
+  def testContextManagerIgnoresInvalidField(self):
+    """Test that we ignore fields that are set with no default."""
+    with metrics.SecondsTimer('fooname', fields={'foo': 'bar'}) as c:
+      c['qux'] = 'qwert'
+    self._mockMetric.add.assert_called_with(mock.ANY, fields={'foo': 'bar'})
 
 class TestRuntimeBreakdownTimer(cros_test_lib.MockTestCase):
   """Tests the behaviour of RuntimeBreakdownTimer."""

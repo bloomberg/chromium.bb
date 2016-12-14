@@ -215,23 +215,46 @@ def PercentageDistribution(name, num_buckets=1000, reset_after=False):
 def SecondsTimer(name, fields=None):
   """Record the time of an operation to a SecondsDistributionMetric.
 
+  Records the time taken inside of the context block, to the
+  SecondsDistribution named |name|, with the given fields.
+
   Usage:
 
+  # Time the doSomething() call, with field values that are independent of the
+  # results of the operation.
   with SecondsTimer('timer/name', fields={'foo': 'bar'}):
     doSomething()
 
-  Will record the time taken inside of the context block, to the
-  SecondsDistribution named 'timer/name', with the given fields.
+  # Time the doSomethingElse call, with field values that depend on the results
+  # of that operation. Note that it is important that a default value is
+  # specified for these fields, in case an exception is thrown by
+  # doSomethingElse()
+  f = {'success': False, 'foo': 'bar'}
+  with SecondsTimer('timer/name', fields=f) as c:
+    doSomethingElse()
+    c['success'] = True
 
-  Note that this helper can only be used if the field values are known
-  at timer-start time and to not depend on the result of the operation
-  being timed.
+  # Incorrect Usage!
+  with SecondsTimer('timer/name') as c:
+    doSomething()
+    c['foo'] = bar # 'foo' is not a valid field, because no default
+                   # value for it was specified in the context constructor.
+                   # It will be silently ignored.
   """
   m = SecondsDistribution(name)
+  f = fields or {}
+  f = dict(f)
+  keys = f.keys()
   t0 = datetime.datetime.now()
-  yield
+  yield f
   dt = (datetime.datetime.now() - t0).total_seconds()
-  m.add(dt, fields=fields)
+  # Filter out keys that were not part of the initial key set. This is to avoid
+  # inconsistent fields.
+  # TODO(akeshet): Doing this filtering isn't super efficient. Would be better
+  # to implement some key-restricted subclass or wrapper around dict, and just
+  # yield that above rather than yielding a regular dict.
+  f = {k: f[k] for k in keys}
+  m.add(dt, fields=f)
 
 
 def SecondsTimerDecorator(name, fields=None):
