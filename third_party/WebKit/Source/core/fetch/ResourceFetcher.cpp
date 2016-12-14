@@ -88,6 +88,7 @@ enum SriResourceIntegrityMismatchEvent {
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, MainResource)   \
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Manifest)       \
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Media)          \
+    DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Mock)           \
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Raw)            \
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, Script)         \
     DEFINE_SINGLE_RESOURCE_HISTOGRAM(prefix, SVGDocument)    \
@@ -132,6 +133,7 @@ ResourceLoadPriority typeToPriority(Resource::Type type) {
       // Also visible resources/images (set explicitly in loadPriority)
       return ResourceLoadPriorityHigh;
     case Resource::Manifest:
+    case Resource::Mock:
       // Also late-body scripts discovered by the preload scanner (set
       // explicitly in loadPriority)
       return ResourceLoadPriorityMedium;
@@ -237,6 +239,8 @@ static WebURLRequest::RequestContext requestContextFromType(
       return WebURLRequest::RequestContextVideo;
     case Resource::Manifest:
       return WebURLRequest::RequestContextManifest;
+    case Resource::Mock:
+      return WebURLRequest::RequestContextSubresource;
   }
   NOTREACHED();
   return WebURLRequest::RequestContextSubresource;
@@ -1371,6 +1375,9 @@ void ResourceFetcher::logPreloadStats(ClearPreloadsPolicy policy) {
       case Resource::Raw:
         raws++;
         rawMisses += missCount;
+        break;
+      case Resource::Mock:
+        // Do not count Resource::Mock because this type is only for testing.
         break;
       default:
         NOTREACHED();

@@ -81,9 +81,10 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
     TextTrack,
     ImportResource,
     Media,  // Audio or video file requested by a HTML5 media element
-    Manifest
+    Manifest,
+    Mock  // Only for testing
   };
-  static const int kLastResourceType = Manifest + 1;
+  static const int kLastResourceType = Mock + 1;
 
   using Status = ResourceStatus;
 

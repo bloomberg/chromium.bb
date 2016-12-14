@@ -1,0 +1,41 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "core/fetch/MockResource.h"
+
+#include "core/fetch/FetchRequest.h"
+#include "core/fetch/ResourceFetcher.h"
+#include "core/fetch/ResourceLoaderOptions.h"
+
+namespace blink {
+
+namespace {
+
+class MockResourceFactory final : public ResourceFactory {
+ public:
+  MockResourceFactory() : ResourceFactory(Resource::Mock) {}
+
+  Resource* create(const ResourceRequest& request,
+                   const ResourceLoaderOptions& options,
+                   const String&) const override {
+    return new MockResource(request, options);
+  }
+};
+
+}  // namespace
+
+// static
+MockResource* MockResource::fetch(FetchRequest& request,
+                                  ResourceFetcher* fetcher) {
+  request.mutableResourceRequest().setRequestContext(
+      WebURLRequest::RequestContextSubresource);
+  Resource* resource = fetcher->requestResource(request, MockResourceFactory());
+  return static_cast<MockResource*>(resource);
+}
+
+MockResource::MockResource(const ResourceRequest& request,
+                           const ResourceLoaderOptions& options)
+    : Resource(request, Resource::Mock, options) {}
+
+}  // namespace blink

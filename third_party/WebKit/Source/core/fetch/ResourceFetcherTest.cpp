@@ -33,9 +33,9 @@
 #include "core/fetch/FetchInitiatorInfo.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/FetchRequest.h"
-#include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/MockFetchContext.h"
+#include "core/fetch/MockResource.h"
 #include "core/fetch/MockResourceClient.h"
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourceLoader.h"
@@ -62,8 +62,9 @@
 namespace blink {
 
 namespace {
-const char testImageFilename[] = "white-1x1.png";
-const int testImageSize = 103;  // size of web/tests/data/white-1x1.png
+constexpr char kTestResourceFilename[] = "white-1x1.png";
+constexpr char kTestResourceMimeType[] = "image/png";
+constexpr int kTestResourceSize = 103;  // size of web/tests/data/white-1x1.png
 }
 
 class ResourceFetcherTest : public ::testing::Test {};
@@ -98,18 +99,18 @@ TEST_F(ResourceFetcherTest, UseExistingResource) {
   response.setHTTPStatusCode(200);
   response.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
   URLTestHelpers::registerMockedURLLoadWithCustomResponse(
-      url, testImageFilename, WebString::fromUTF8(""),
+      url, kTestResourceFilename, WebString::fromUTF8(""),
       WrappedResourceResponse(response));
 
   FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
-  Resource* resource = ImageResource::fetch(fetchRequest, fetcher);
+  Resource* resource = MockResource::fetch(fetchRequest, fetcher);
   ASSERT_TRUE(resource);
   Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
   Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
   EXPECT_TRUE(resource->isLoaded());
   EXPECT_TRUE(memoryCache()->contains(resource));
 
-  Resource* newResource = ImageResource::fetch(fetchRequest, fetcher);
+  Resource* newResource = MockResource::fetch(fetchRequest, fetcher);
   EXPECT_EQ(resource, newResource);
   memoryCache()->remove(resource);
 }
@@ -212,7 +213,7 @@ TEST_F(ResourceFetcherTest, VaryOnBack) {
   memoryCache()->remove(newResource);
 }
 
-TEST_F(ResourceFetcherTest, VaryImage) {
+TEST_F(ResourceFetcherTest, VaryResource) {
   ResourceFetcher* fetcher = ResourceFetcher::create(
       MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
 
@@ -223,17 +224,17 @@ TEST_F(ResourceFetcherTest, VaryImage) {
   response.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
   response.setHTTPHeaderField(HTTPNames::Vary, "*");
   URLTestHelpers::registerMockedURLLoadWithCustomResponse(
-      url, testImageFilename, WebString::fromUTF8(""),
+      url, kTestResourceFilename, WebString::fromUTF8(""),
       WrappedResourceResponse(response));
 
   FetchRequest fetchRequestOriginal = FetchRequest(url, FetchInitiatorInfo());
-  Resource* resource = ImageResource::fetch(fetchRequestOriginal, fetcher);
+  Resource* resource = MockResource::fetch(fetchRequestOriginal, fetcher);
   ASSERT_TRUE(resource);
   Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
   ASSERT_TRUE(resource->hasVaryHeader());
 
   FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
-  Resource* newResource = ImageResource::fetch(fetchRequest, fetcher);
+  Resource* newResource = MockResource::fetch(fetchRequest, fetcher);
   EXPECT_EQ(resource, newResource);
 
   memoryCache()->remove(newResource);
@@ -256,7 +257,7 @@ class RequestSameResourceOnComplete
     context->setCachePolicy(CachePolicyRevalidate);
     ResourceFetcher* fetcher2 = ResourceFetcher::create(context);
     FetchRequest fetchRequest2(m_resource->url(), FetchInitiatorInfo());
-    Resource* resource2 = ImageResource::fetch(fetchRequest2, fetcher2);
+    Resource* resource2 = MockResource::fetch(fetchRequest2, fetcher2);
     EXPECT_EQ(m_resource, resource2);
     m_notifyFinishedCalled = true;
   }
@@ -282,14 +283,14 @@ TEST_F(ResourceFetcherTest, RevalidateWhileFinishingLoading) {
   response.setHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
   response.setHTTPHeaderField(HTTPNames::ETag, "1234567890");
   URLTestHelpers::registerMockedURLLoadWithCustomResponse(
-      url, testImageFilename, WebString::fromUTF8(""),
+      url, kTestResourceFilename, WebString::fromUTF8(""),
       WrappedResourceResponse(response));
   ResourceFetcher* fetcher1 = ResourceFetcher::create(
       MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
   ResourceRequest request1(url);
   request1.setHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
   FetchRequest fetchRequest1 = FetchRequest(request1, FetchInitiatorInfo());
-  Resource* resource1 = ImageResource::fetch(fetchRequest1, fetcher1);
+  Resource* resource1 = MockResource::fetch(fetchRequest1, fetcher1);
   Persistent<RequestSameResourceOnComplete> client =
       new RequestSameResourceOnComplete(resource1);
   resource1->addClient(client);
@@ -364,7 +365,8 @@ class ServeRequestsOnCompleteClient final
 // network response, leading to an invalid state transition in ResourceLoader.
 TEST_F(ResourceFetcherTest, ResponseOnCancel) {
   KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.png");
-  URLTestHelpers::registerMockedURLLoad(url, testImageFilename, "image/png");
+  URLTestHelpers::registerMockedURLLoad(url, kTestResourceFilename,
+                                        kTestResourceMimeType);
 
   ResourceFetcher* fetcher = ResourceFetcher::create(
       MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
@@ -403,7 +405,7 @@ class ScopedMockRedirectRequester {
 
   void registerFinalResource(const WebString& url) {
     KURL finalURL(ParsedURLString, url);
-    URLTestHelpers::registerMockedURLLoad(finalURL, testImageFilename);
+    URLTestHelpers::registerMockedURLLoad(finalURL, kTestResourceFilename);
   }
 
   void request(const WebString& url) {
@@ -438,7 +440,7 @@ TEST_F(ResourceFetcherTest, SameOriginRedirect) {
   requester.registerFinalResource(finalURL);
   requester.request(redirectURL);
 
-  EXPECT_EQ(kRedirectResponseOverheadBytes + testImageSize,
+  EXPECT_EQ(kRedirectResponseOverheadBytes + kTestResourceSize,
             requester.context()->getTransferSize());
 }
 
@@ -450,7 +452,7 @@ TEST_F(ResourceFetcherTest, CrossOriginRedirect) {
   requester.registerFinalResource(finalURL);
   requester.request(redirectURL);
 
-  EXPECT_EQ(testImageSize, requester.context()->getTransferSize());
+  EXPECT_EQ(kTestResourceSize, requester.context()->getTransferSize());
 }
 
 TEST_F(ResourceFetcherTest, ComplexCrossOriginRedirect) {
@@ -465,12 +467,13 @@ TEST_F(ResourceFetcherTest, ComplexCrossOriginRedirect) {
   requester.registerFinalResource(finalURL);
   requester.request(redirectURL1);
 
-  EXPECT_EQ(testImageSize, requester.context()->getTransferSize());
+  EXPECT_EQ(kTestResourceSize, requester.context()->getTransferSize());
 }
 
 TEST_F(ResourceFetcherTest, SynchronousRequest) {
   KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.png");
-  URLTestHelpers::registerMockedURLLoad(url, testImageFilename, "image/png");
+  URLTestHelpers::registerMockedURLLoad(url, kTestResourceFilename,
+                                        kTestResourceMimeType);
 
   ResourceFetcher* fetcher = ResourceFetcher::create(
       MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
@@ -487,21 +490,22 @@ TEST_F(ResourceFetcherTest, SynchronousRequest) {
   memoryCache()->remove(resource);
 }
 
-TEST_F(ResourceFetcherTest, PreloadImageTwice) {
+TEST_F(ResourceFetcherTest, PreloadResourceTwice) {
   ResourceFetcher* fetcher = ResourceFetcher::create(
       MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
 
   KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.png");
-  URLTestHelpers::registerMockedURLLoad(url, testImageFilename, "image/png");
+  URLTestHelpers::registerMockedURLLoad(url, kTestResourceFilename,
+                                        kTestResourceMimeType);
 
   FetchRequest fetchRequestOriginal = FetchRequest(url, FetchInitiatorInfo());
-  Resource* resource = ImageResource::fetch(fetchRequestOriginal, fetcher);
+  Resource* resource = MockResource::fetch(fetchRequestOriginal, fetcher);
   ASSERT_TRUE(resource);
   Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
   fetcher->preloadStarted(resource);
 
   FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
-  Resource* newResource = ImageResource::fetch(fetchRequest, fetcher);
+  Resource* newResource = MockResource::fetch(fetchRequest, fetcher);
   EXPECT_EQ(resource, newResource);
   fetcher->preloadStarted(resource);
 
@@ -511,34 +515,35 @@ TEST_F(ResourceFetcherTest, PreloadImageTwice) {
   EXPECT_FALSE(resource->isPreloaded());
 }
 
-TEST_F(ResourceFetcherTest, LinkPreloadImageAndUse) {
+TEST_F(ResourceFetcherTest, LinkPreloadResourceAndUse) {
   ResourceFetcher* fetcher = ResourceFetcher::create(
       MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
 
   KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.png");
-  URLTestHelpers::registerMockedURLLoad(url, testImageFilename, "image/png");
+  URLTestHelpers::registerMockedURLLoad(url, kTestResourceFilename,
+                                        kTestResourceMimeType);
 
   // Link preload preload scanner
   FetchRequest fetchRequestOriginal = FetchRequest(url, FetchInitiatorInfo());
   fetchRequestOriginal.setLinkPreload(true);
-  Resource* resource = ImageResource::fetch(fetchRequestOriginal, fetcher);
+  Resource* resource = MockResource::fetch(fetchRequestOriginal, fetcher);
   ASSERT_TRUE(resource);
   EXPECT_TRUE(resource->isLinkPreload());
   Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
   fetcher->preloadStarted(resource);
 
-  // Image preload scanner
+  // Resource created by preload scanner
   FetchRequest fetchRequestPreloadScanner =
       FetchRequest(url, FetchInitiatorInfo());
-  Resource* imgPreloadScannerResource =
-      ImageResource::fetch(fetchRequestPreloadScanner, fetcher);
-  EXPECT_EQ(resource, imgPreloadScannerResource);
+  Resource* preloadScannerResource =
+      MockResource::fetch(fetchRequestPreloadScanner, fetcher);
+  EXPECT_EQ(resource, preloadScannerResource);
   EXPECT_FALSE(resource->isLinkPreload());
   fetcher->preloadStarted(resource);
 
-  // Image created by parser
+  // Resource created by parser
   FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
-  Resource* newResource = ImageResource::fetch(fetchRequest, fetcher);
+  Resource* newResource = MockResource::fetch(fetchRequest, fetcher);
   Persistent<MockResourceClient> client = new MockResourceClient(newResource);
   EXPECT_EQ(resource, newResource);
   EXPECT_FALSE(resource->isLinkPreload());
@@ -550,18 +555,19 @@ TEST_F(ResourceFetcherTest, LinkPreloadImageAndUse) {
   EXPECT_FALSE(resource->isPreloaded());
 }
 
-TEST_F(ResourceFetcherTest, LinkPreloadImageMultipleFetchersAndUse) {
+TEST_F(ResourceFetcherTest, LinkPreloadResourceMultipleFetchersAndUse) {
   ResourceFetcher* fetcher = ResourceFetcher::create(
       MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
   ResourceFetcher* fetcher2 = ResourceFetcher::create(
       MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
 
   KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.png");
-  URLTestHelpers::registerMockedURLLoad(url, testImageFilename, "image/png");
+  URLTestHelpers::registerMockedURLLoad(url, kTestResourceFilename,
+                                        kTestResourceMimeType);
 
   FetchRequest fetchRequestOriginal = FetchRequest(url, FetchInitiatorInfo());
   fetchRequestOriginal.setLinkPreload(true);
-  Resource* resource = ImageResource::fetch(fetchRequestOriginal, fetcher);
+  Resource* resource = MockResource::fetch(fetchRequestOriginal, fetcher);
   ASSERT_TRUE(resource);
   EXPECT_TRUE(resource->isLinkPreload());
   Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
@@ -569,7 +575,7 @@ TEST_F(ResourceFetcherTest, LinkPreloadImageMultipleFetchersAndUse) {
 
   FetchRequest fetchRequestSecond = FetchRequest(url, FetchInitiatorInfo());
   fetchRequestSecond.setLinkPreload(true);
-  Resource* secondResource = ImageResource::fetch(fetchRequestSecond, fetcher2);
+  Resource* secondResource = MockResource::fetch(fetchRequestSecond, fetcher2);
   ASSERT_TRUE(secondResource);
   EXPECT_TRUE(secondResource->isLinkPreload());
   Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
@@ -580,42 +586,43 @@ TEST_F(ResourceFetcherTest, LinkPreloadImageMultipleFetchersAndUse) {
       FetchRequest(url, FetchInitiatorInfo());
   fetchRequestLinkPreloadScanner.setLinkPreload(true);
   Resource* linkPreloadScannerResource =
-      ImageResource::fetch(fetchRequestLinkPreloadScanner, fetcher);
+      MockResource::fetch(fetchRequestLinkPreloadScanner, fetcher);
   EXPECT_EQ(resource, linkPreloadScannerResource);
   EXPECT_TRUE(resource->isLinkPreload());
   fetcher->preloadStarted(resource);
 
-  // Image preload scanner
+  // Resource created by preload scanner
   FetchRequest fetchRequestPreloadScanner =
       FetchRequest(url, FetchInitiatorInfo());
-  Resource* imgPreloadScannerResource =
-      ImageResource::fetch(fetchRequestPreloadScanner, fetcher);
-  EXPECT_EQ(resource, imgPreloadScannerResource);
+  Resource* preloadScannerResource =
+      MockResource::fetch(fetchRequestPreloadScanner, fetcher);
+  EXPECT_EQ(resource, preloadScannerResource);
   EXPECT_FALSE(resource->isLinkPreload());
   fetcher->preloadStarted(resource);
 
-  // Image preload scanner on the second fetcher
+  // Resource created by preload scanner on the second fetcher
   FetchRequest fetchRequestPreloadScanner2 =
       FetchRequest(url, FetchInitiatorInfo());
-  Resource* imgPreloadScannerResource2 =
-      ImageResource::fetch(fetchRequestPreloadScanner2, fetcher2);
-  EXPECT_EQ(resource, imgPreloadScannerResource2);
+  Resource* preloadScannerResource2 =
+      MockResource::fetch(fetchRequestPreloadScanner2, fetcher2);
+  EXPECT_EQ(resource, preloadScannerResource2);
   EXPECT_FALSE(resource->isLinkPreload());
   fetcher2->preloadStarted(resource);
 
-  // Image created by parser
+  // Resource created by parser
   FetchRequest fetchRequest = FetchRequest(url, FetchInitiatorInfo());
-  Resource* newResource = ImageResource::fetch(fetchRequest, fetcher);
+  Resource* newResource = MockResource::fetch(fetchRequest, fetcher);
   Persistent<MockResourceClient> client = new MockResourceClient(newResource);
   EXPECT_EQ(resource, newResource);
   EXPECT_FALSE(resource->isLinkPreload());
 
-  // Image created by parser on the second fetcher
+  // Resource created by parser on the second fetcher
   FetchRequest fetchRequest2 = FetchRequest(url, FetchInitiatorInfo());
-  Resource* newResource2 = ImageResource::fetch(fetchRequest, fetcher2);
+  Resource* newResource2 = MockResource::fetch(fetchRequest, fetcher2);
   Persistent<MockResourceClient> client2 = new MockResourceClient(newResource2);
   EXPECT_EQ(resource, newResource2);
   EXPECT_FALSE(resource->isLinkPreload());
+
   // DCL reached on first fetcher
   EXPECT_TRUE(resource->isPreloaded());
   fetcher->clearPreloads(ResourceFetcher::ClearSpeculativeMarkupPreloads);
@@ -655,25 +662,26 @@ TEST_F(ResourceFetcherTest, Revalidate304) {
   EXPECT_NE(resource, newResource);
 }
 
-TEST_F(ResourceFetcherTest, LinkPreloadImageMultipleFetchersAndMove) {
+TEST_F(ResourceFetcherTest, LinkPreloadResourceMultipleFetchersAndMove) {
   ResourceFetcher* fetcher = ResourceFetcher::create(
       MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
   ResourceFetcher* fetcher2 = ResourceFetcher::create(
       MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
 
   KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.png");
-  URLTestHelpers::registerMockedURLLoad(url, testImageFilename, "image/png");
+  URLTestHelpers::registerMockedURLLoad(url, kTestResourceFilename,
+                                        kTestResourceMimeType);
 
   FetchRequest fetchRequestOriginal = FetchRequest(url, FetchInitiatorInfo());
   fetchRequestOriginal.setLinkPreload(true);
-  Resource* resource = ImageResource::fetch(fetchRequestOriginal, fetcher);
+  Resource* resource = MockResource::fetch(fetchRequestOriginal, fetcher);
   ASSERT_TRUE(resource);
   EXPECT_TRUE(resource->isLinkPreload());
   fetcher->preloadStarted(resource);
 
-  // Image created by parser on the second fetcher
+  // Resource created by parser on the second fetcher
   FetchRequest fetchRequest2 = FetchRequest(url, FetchInitiatorInfo());
-  Resource* newResource2 = ImageResource::fetch(fetchRequest2, fetcher2);
+  Resource* newResource2 = MockResource::fetch(fetchRequest2, fetcher2);
   Persistent<MockResourceClient> client2 = new MockResourceClient(newResource2);
   EXPECT_EQ(resource, newResource2);
   EXPECT_FALSE(fetcher2->isFetching());

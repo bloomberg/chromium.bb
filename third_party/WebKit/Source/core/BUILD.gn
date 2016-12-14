@@ -1113,6 +1113,8 @@ source_set("unit_tests") {
     "fetch/MockFetchContext.h",
     "fetch/MockImageResourceClient.cpp",
     "fetch/MockImageResourceClient.h",
+    "fetch/MockResource.cpp",
+    "fetch/MockResource.h",
     "fetch/MockResourceClient.cpp",
     "fetch/MockResourceClient.h",
     "fetch/MultipartImageResourceParserTest.cpp",

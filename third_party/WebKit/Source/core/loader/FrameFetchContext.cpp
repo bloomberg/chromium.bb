@@ -663,6 +663,7 @@ ResourceRequestBlockedReason FrameFetchContext::canRequestInternal(
     case Resource::ImportResource:
     case Resource::Media:
     case Resource::Manifest:
+    case Resource::Mock:
       // By default these types of resources can be loaded from any origin.
       // FIXME: Are we sure about Resource::Font?
       if (originRestriction == FetchRequest::RestrictToSameOrigin &&

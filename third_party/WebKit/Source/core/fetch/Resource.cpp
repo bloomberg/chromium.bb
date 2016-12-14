@@ -1080,6 +1080,8 @@ const char* Resource::resourceTypeToString(
       return "Media";
     case Resource::Manifest:
       return "Manifest";
+    case Resource::Mock:
+      return "Mock";
   }
   NOTREACHED();
   return initatorTypeNameToString(initiatorInfo.name);
@@ -1105,6 +1107,7 @@ bool Resource::isLoadEventBlockingResourceType() const {
     case Resource::TextTrack:
     case Resource::Media:
     case Resource::Manifest:
+    case Resource::Mock:
       return false;
   }
   NOTREACHED();
