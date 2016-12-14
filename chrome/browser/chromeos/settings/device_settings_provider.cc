@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -64,6 +65,7 @@ const char* const kKnownSettings[] = {
     kDeviceDisabledMessage,
     kDeviceOwner,
     kDeviceQuirksDownloadEnabled,
+    kDeviceWallpaperImage,
     kDisplayRotationDefault,
     kExtensionCacheSize,
     kHeartbeatEnabled,
@@ -522,6 +524,14 @@ void DecodeGenericPolicies(
     new_values_cache->SetBoolean(
         kDeviceQuirksDownloadEnabled,
         policy.quirks_download_enabled().quirks_download_enabled());
+  }
+
+  if (policy.has_device_wallpaper_image() &&
+      policy.device_wallpaper_image().has_device_wallpaper_image()) {
+    std::unique_ptr<base::DictionaryValue> dict_val =
+        base::DictionaryValue::From(base::JSONReader::Read(
+            policy.device_wallpaper_image().device_wallpaper_image()));
+    new_values_cache->SetValue(kDeviceWallpaperImage, std::move(dict_val));
   }
 }
 

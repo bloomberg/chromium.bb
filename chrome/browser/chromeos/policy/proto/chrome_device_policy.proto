@@ -754,6 +754,12 @@ message LoginAppsProto {
   repeated string login_apps = 1;
 }
 
+// The url and hash that specified in JSON format that can be used to set the
+// device-level wallpaper on the login screen before any user logs in.
+message DeviceWallpaperImageProto {
+  optional string device_wallpaper_image = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -808,4 +814,5 @@ message ChromeDeviceSettingsProto {
       45;
   optional LoginAppsProto login_apps = 46;
   optional NetworkThrottlingEnabledProto network_throttling = 47;
+  optional DeviceWallpaperImageProto device_wallpaper_image = 48;
 }

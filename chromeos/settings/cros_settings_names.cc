@@ -227,4 +227,8 @@ const char kLoginVideoCaptureAllowedUrls[] =
 // A list pref storing the apps to install on the login page.
 const char kLoginApps[] = "cros.device.login_apps";
 
+// A string pref storing the url and cryptographic hash of the image in JSON
+// format allowed to set a device-level wallpaper before any user logs in.
+const char kDeviceWallpaperImage[] = "cros.device_wallpaper_image";
+
 }  // namespace chromeos

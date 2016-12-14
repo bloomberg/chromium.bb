@@ -840,6 +840,19 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
                     nullptr);
     }
   }
+
+  if (policy.has_device_wallpaper_image()) {
+    const em::DeviceWallpaperImageProto& container(
+        policy.device_wallpaper_image());
+    if (container.has_device_wallpaper_image()) {
+      std::unique_ptr<base::DictionaryValue> dict_val =
+          base::DictionaryValue::From(
+              base::JSONReader::Read(container.device_wallpaper_image()));
+      policies->Set(key::kDeviceWallpaperImage, POLICY_LEVEL_MANDATORY,
+                    POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+                    std::move(dict_val), nullptr);
+    }
+  }
 }
 
 }  // namespace

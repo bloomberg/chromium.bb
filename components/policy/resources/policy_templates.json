@@ -139,7 +139,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 356
+#   For your editing convenience: highest ID currently used: 357
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -9338,6 +9338,38 @@
           If this setting is configured to be true, or not configured, users can enter these PINs and will only get a warning display.''',
         },
       ],
+    },
+    {
+      'name': 'DeviceWallpaperImage',
+      'type': 'external',
+      'schema': {
+        'type': 'object',
+        'properties': {
+          'url': { "type": "string" },
+          'hash': { "type": "string" }
+        },
+      },
+      'supported_on': ['chrome_os:57-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': { "url": "https://example.com/device_wallpaper.jpg", "hash": "examplewallpaperexamplewallpaperexamplewallpaperexamplewallpaper" },
+      'max_size': 16777216,
+      'id': 357,
+      'caption': '''Device wallpaper image''',
+      'tags': [],
+      'desc': '''Configure device-level wallpaper image that is shown on the login screen if no user has yet signed in to the device. The policy is set by specifying the URL from which the Chrome OS device can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16MB. The URL must be accessible without any authentication. The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
+
+      The policy should be speicified as a string that expresses the URL and hash in JSON format, e.g.,
+      {
+        "url": "https://example.com/device_wallpaper.jpg",
+        "hash": "examplewallpaperhash"
+      }
+
+      If the device wallpaper policy is set, the Chrome OS device will download and use the wallpaper image on the login screen if no user has yet signed in to the device. Once the user logs in, the user's wallpaper policy kicks in.
+
+      If the device wallpaper policy is left not set, it's the user's wallpaper policy to decide what to show if the user's wallpaper policy is set.''',
     },
   ],
   'messages': {

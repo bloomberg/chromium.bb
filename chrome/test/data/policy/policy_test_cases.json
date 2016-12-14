@@ -3023,6 +3023,19 @@
     ]
   },
 
+  "DeviceWallpaperImage": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "DeviceWallpaperImage": {
+        "url": "http://localhost/",
+        "hash": "examplewallpaperhash"
+      }
+    },
+    "pref_mappings": [
+      { "pref": "cros.device_wallpaper_image" }
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {
