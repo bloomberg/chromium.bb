@@ -3333,7 +3333,7 @@ class ChangeDescription(object):
         parsed_footers[i] = (k.replace('Cr-', 'Cr-Original-'), v)
 
     # Add Position and Lineage footers based on the parent.
-    lineage = parent_footer_map.get('Cr-Branched-From', [])
+    lineage = list(reversed(parent_footer_map.get('Cr-Branched-From', [])))
     if parent_position[0] == dest_ref:
       # Same branch as parent.
       number = int(parent_position[1]) + 1

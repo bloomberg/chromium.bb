@@ -387,6 +387,32 @@ class TestGitClBasic(unittest.TestCase):
         'Cr-Branched-From: parenthash-refs/heads/branch@{#5}\n'
         'Cr-Branched-From: somehash-refs/heads/master@{#12}')
 
+  def test_git_number_ever_moooooooore_lineage(self):
+    self.maxDiff = 10000
+    actual = self._test_git_number(
+        'CQ commit on fresh new branch + numbering.\n'
+        '\n'
+        'NOTRY=True\n'
+        'NOPRESUBMIT=True\n'
+        'BUG=\n'
+        '\n'
+        'Review-Url: https://codereview.chromium.org/2577703003\n'
+        'Cr-Commit-Position: refs/heads/gnumb-test/br@{#1}\n'
+        'Cr-Branched-From: 0749ff9edc-refs/heads/gnumb-test/cq@{#4}\n'
+        'Cr-Branched-From: 5c49df2da6-refs/heads/master@{#41618}',
+        dest_ref='refs/heads/gnumb-test/cl',
+        child_msg='git cl on fresh new branch + numbering.\n'
+                  '\n'
+                  'Review-Url: https://codereview.chromium.org/2575043003 .\n')
+    self.assertEqualByLine(
+        actual,
+        'git cl on fresh new branch + numbering.\n'
+        '\n'
+        'Review-Url: https://codereview.chromium.org/2575043003 .\n'
+        'Cr-Commit-Position: refs/heads/gnumb-test/cl@{#1}\n'
+        'Cr-Branched-From: parenthash-refs/heads/gnumb-test/br@{#1}\n'
+        'Cr-Branched-From: 0749ff9edc-refs/heads/gnumb-test/cq@{#4}\n'
+        'Cr-Branched-From: 5c49df2da6-refs/heads/master@{#41618}')
 
   def test_git_number_cherry_pick(self):
     actual = self._test_git_number(
