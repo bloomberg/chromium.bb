@@ -33,17 +33,15 @@ class StyleDifference {
         m_layoutType(NoLayout),
         m_recomputeOverflow(false),
         m_propertySpecificDifferences(0),
-        m_scrollAnchorDisablingPropertyChanged(false),
-        m_needsPaintPropertyUpdate(false) {}
+        m_scrollAnchorDisablingPropertyChanged(false) {}
 
   bool hasDifference() const {
     bool result = m_paintInvalidationType || m_layoutType ||
                   m_propertySpecificDifferences;
     // m_recomputeOverflow, m_scrollAnchorDisablingPropertyChanged and
-    // m_needsPaintPropertyUpdate are never set without other flags set.
+    // are never set without other flags set.
     DCHECK(result ||
-           (!m_recomputeOverflow && !m_scrollAnchorDisablingPropertyChanged &&
-            !m_needsPaintPropertyUpdate));
+           (!m_recomputeOverflow && !m_scrollAnchorDisablingPropertyChanged));
     return result;
   }
 
@@ -140,9 +138,6 @@ class StyleDifference {
     m_scrollAnchorDisablingPropertyChanged = true;
   }
 
-  bool needsPaintPropertyUpdate() const { return m_needsPaintPropertyUpdate; }
-  void setNeedsPaintPropertyUpdate() { m_needsPaintPropertyUpdate = true; }
-
  private:
   enum PaintInvalidationType {
     NoPaintInvalidation = 0,
@@ -156,7 +151,6 @@ class StyleDifference {
   unsigned m_recomputeOverflow : 1;
   unsigned m_propertySpecificDifferences : 7;
   unsigned m_scrollAnchorDisablingPropertyChanged : 1;
-  unsigned m_needsPaintPropertyUpdate : 1;
 };
 
 }  // namespace blink

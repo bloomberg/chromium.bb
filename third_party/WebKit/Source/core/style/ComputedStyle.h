@@ -3918,8 +3918,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
       const ComputedStyle& other) const;
   void updatePropertySpecificDifferences(const ComputedStyle& other,
                                          StyleDifference&) const;
-  bool diffNeedsPaintPropertyUpdate(const ComputedStyle& other,
-                                    const StyleDifference&) const;
 
   bool requireTransformOrigin(ApplyTransformOrigin applyOrigin,
                               ApplyMotionPath) const;
