@@ -594,7 +594,9 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     const POSITION *const mv_ref = &mv_ref_search[i];
     if (is_inside(tile, mi_col, mi_row, mv_ref)) {
       const MB_MODE_INFO *const candidate =
-          &xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride]->mbmi;
+          !xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride]
+              ? NULL
+              : &xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride]->mbmi;
 #if CONFIG_REF_MV
       if (candidate == NULL) continue;
       if ((mi_row % MAX_MIB_SIZE) + mv_ref->row >= MAX_MIB_SIZE ||
@@ -646,7 +648,9 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       const POSITION *mv_ref = &mv_ref_search[i];
       if (is_inside(tile, mi_col, mi_row, mv_ref)) {
         const MB_MODE_INFO *const candidate =
-            &xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride]->mbmi;
+            !xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride]
+                ? NULL
+                : &xd->mi[mv_ref->col + mv_ref->row * xd->mi_stride]->mbmi;
 #if CONFIG_REF_MV
         if (candidate == NULL) continue;
         if ((mi_row % MAX_MIB_SIZE) + mv_ref->row >= MAX_MIB_SIZE ||
