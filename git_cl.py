@@ -2934,20 +2934,16 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       print('Adding self-LGTM (Code-Review +1) because of TBRs')
       refspec_opts.append('l=Code-Review+1')
 
-    title = options.title
-    if not title:
-      default = RunGit(['show', '-s', '--format=%s', 'HEAD']).strip()
-      title = ask_for_data('Title for patchset [%s]: ' % default) or default
-    if title:
-      if not re.match(r'^[\w ]+$', title):
-        title = re.sub(r'[^\w ]', '', title)
+    if options.title:
+      if not re.match(r'^[\w ]+$', options.title):
+        options.title = re.sub(r'[^\w ]', '', options.title)
         print('WARNING: Patchset title may only contain alphanumeric chars '
-              'and spaces. Cleaned up title:\n%s' % title)
+              'and spaces. Cleaned up title:\n%s' % options.title)
         if not options.force:
           ask_for_data('Press enter to continue, Ctrl+C to abort')
       # Per doc, spaces must be converted to underscores, and Gerrit will do the
       # reverse on its side.
-      refspec_opts.append('m=' + title.replace(' ', '_'))
+      refspec_opts.append('m=' + options.title.replace(' ', '_'))
 
     if options.send_mail:
       if not change_desc.get_reviewers():
