@@ -5,6 +5,7 @@
 package org.chromium.chrome.test.util.browser.notifications;
 
 import android.app.Notification;
+import android.service.notification.StatusBarNotification;
 
 import org.chromium.chrome.browser.notifications.NotificationManagerProxy;
 
@@ -99,6 +100,11 @@ public class MockNotificationManagerProxy implements NotificationManagerProxy {
     public void notify(@Nullable String tag, int id, Notification notification) {
         mNotifications.put(makeKey(id, tag), new NotificationEntry(notification, tag, id));
         mMutationCount++;
+    }
+
+    @Override
+    public StatusBarNotification[] getActiveNotifications() {
+        return null;
     }
 
     private static String makeKey(int id, @Nullable String tag) {
