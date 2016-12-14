@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "components/autofill/core/browser/webdata/autofill_metadata_change_list.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -67,12 +68,11 @@ AutocompleteSyncBridge::~AutocompleteSyncBridge() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-// syncer::ModelTypeService implementation.
 std::unique_ptr<syncer::MetadataChangeList>
 AutocompleteSyncBridge::CreateMetadataChangeList() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  NOTIMPLEMENTED();
-  return nullptr;
+  return base::MakeUnique<AutofillMetadataChangeList>(GetAutofillTable(),
+                                                      syncer::AUTOFILL);
 }
 
 syncer::SyncError AutocompleteSyncBridge::MergeSyncData(
@@ -90,6 +90,7 @@ syncer::SyncError AutocompleteSyncBridge::ApplySyncChanges(
   NOTIMPLEMENTED();
   return syncer::SyncError();
 }
+
 void AutocompleteSyncBridge::AutocompleteSyncBridge::GetData(
     StorageKeyList storage_keys,
     DataCallback callback) {
@@ -123,6 +124,10 @@ std::string AutocompleteSyncBridge::GetStorageKey(
 void AutocompleteSyncBridge::AutofillEntriesChanged(
     const AutofillChangeList& changes) {
   DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+AutofillTable* AutocompleteSyncBridge::GetAutofillTable() const {
+  return AutofillTable::FromWebDatabase(web_data_backend_->GetDatabase());
 }
 
 }  // namespace autofill

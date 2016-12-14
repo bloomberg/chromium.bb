@@ -19,6 +19,7 @@ class SyncError;
 
 namespace autofill {
 
+class AutofillTable;
 class AutofillWebDataBackend;
 class AutofillWebDataService;
 
@@ -64,6 +65,9 @@ class AutocompleteSyncBridge : public base::SupportsUserData::Data,
   void AutofillEntriesChanged(const AutofillChangeList& changes) override;
 
  private:
+  // Returns the table associated with the |web_data_backend_|.
+  AutofillTable* GetAutofillTable() const;
+
   base::ThreadChecker thread_checker_;
 
   // AutocompleteSyncBridge is owned by |web_data_backend_| through
