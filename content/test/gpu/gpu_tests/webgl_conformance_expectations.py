@@ -51,7 +51,7 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Skip('WebglExtension_WEBGL_compressed_texture_atc',
         ['win', 'mac', 'linux'])
     self.Skip('WebglExtension_WEBGL_compressed_texture_etc1',
-        ['mac', 'linux'])
+        ['win', 'mac', 'linux'])
     self.Skip('WebglExtension_WEBGL_compressed_texture_pvrtc',
         ['win', 'mac', 'linux'])
     self.Skip('WebglExtension_WEBGL_compressed_texture_s3tc_srgb',
@@ -61,8 +61,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('WebglExtension_EXT_disjoint_timer_query',
         ['win', 'd3d9'])
     self.Fail('WebglExtension_EXT_sRGB',
-        ['win', 'd3d9'])
-    self.Fail('WebglExtension_WEBGL_compressed_texture_etc1',
         ['win', 'd3d9'])
 
     self.Fail('WebglExtension_WEBGL_depth_texture',
