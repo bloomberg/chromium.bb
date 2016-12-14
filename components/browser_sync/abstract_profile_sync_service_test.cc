@@ -31,6 +31,11 @@ namespace browser_sync {
 
 namespace {
 
+std::unique_ptr<syncer::HttpPostProviderFactory> GetHttpPostProviderFactory(
+    syncer::CancelationSignal* signal) {
+  return base::MakeUnique<TestHttpBridgeFactory>();
+}
+
 class SyncEngineForProfileSyncTest : public SyncBackendHostImpl {
  public:
   SyncEngineForProfileSyncTest(
@@ -41,6 +46,8 @@ class SyncEngineForProfileSyncTest : public SyncBackendHostImpl {
       const base::Closure& callback);
   ~SyncEngineForProfileSyncTest() override;
 
+  void Initialize(InitParams params) override;
+
   void RequestConfigureSyncer(
       syncer::ConfigureReason reason,
       syncer::ModelTypeSet to_download,
@@ -48,9 +55,6 @@ class SyncEngineForProfileSyncTest : public SyncBackendHostImpl {
       const base::Callback<void(syncer::ModelTypeSet, syncer::ModelTypeSet)>&
           ready_task,
       const base::Closure& retry_callback) override;
-
- protected:
-  void InitCore(std::unique_ptr<syncer::DoInitializeOptions> options) override;
 
  private:
   // Invoked at the start of HandleSyncManagerInitializationOnFrontendLoop.
@@ -77,27 +81,26 @@ SyncEngineForProfileSyncTest::SyncEngineForProfileSyncTest(
 
 SyncEngineForProfileSyncTest::~SyncEngineForProfileSyncTest() {}
 
-void SyncEngineForProfileSyncTest::InitCore(
-    std::unique_ptr<syncer::DoInitializeOptions> options) {
-  options->http_bridge_factory = base::MakeUnique<TestHttpBridgeFactory>();
-  options->sync_manager_factory =
+void SyncEngineForProfileSyncTest::Initialize(InitParams params) {
+  params.http_factory_getter = base::Bind(&GetHttpPostProviderFactory);
+  params.sync_manager_factory =
       base::MakeUnique<syncer::SyncManagerFactoryForProfileSyncTest>(callback_);
-  options->credentials.email = "testuser@gmail.com";
-  options->credentials.sync_token = "token";
-  options->credentials.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
-  options->restored_key_for_bootstrapping.clear();
+  params.credentials.email = "testuser@gmail.com";
+  params.credentials.sync_token = "token";
+  params.credentials.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
+  params.restored_key_for_bootstrapping.clear();
 
   // It'd be nice if we avoided creating the EngineComponentsFactory in the
   // first place, but SyncEngine will have created one by now so we must free
   // it. Grab the switches to pass on first.
   syncer::EngineComponentsFactory::Switches factory_switches =
-      options->engine_components_factory->GetSwitches();
-  options->engine_components_factory =
+      params.engine_components_factory->GetSwitches();
+  params.engine_components_factory =
       base::MakeUnique<syncer::TestEngineComponentsFactory>(
           factory_switches, syncer::EngineComponentsFactory::STORAGE_IN_MEMORY,
           nullptr);
 
-  SyncBackendHostImpl::InitCore(std::move(options));
+  SyncBackendHostImpl::Initialize(std::move(params));
 }
 
 void SyncEngineForProfileSyncTest::RequestConfigureSyncer(

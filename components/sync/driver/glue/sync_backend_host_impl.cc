@@ -59,73 +59,21 @@ SyncBackendHostImpl::SyncBackendHostImpl(
 
 SyncBackendHostImpl::~SyncBackendHostImpl() {
   DCHECK(!core_.get() && !host_) << "Must call Shutdown before destructor.";
-  DCHECK(!registrar_.get());
+  DCHECK(!registrar_);
 }
 
-void SyncBackendHostImpl::Initialize(
-    SyncEngineHost* host,
-    scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner,
-    const WeakHandle<JsEventHandler>& event_handler,
-    const GURL& sync_service_url,
-    const std::string& sync_user_agent,
-    const SyncCredentials& credentials,
-    bool delete_sync_data_folder,
-    bool enable_local_sync_backend,
-    const base::FilePath& local_sync_backend_folder,
-    std::unique_ptr<SyncManagerFactory> sync_manager_factory,
-    const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
-    const base::Closure& report_unrecoverable_error_function,
-    const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
-    std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state) {
-  CHECK(sync_task_runner);
-  sync_task_runner_ = sync_task_runner;
+void SyncBackendHostImpl::Initialize(InitParams params) {
+  CHECK(params.sync_task_runner);
+  DCHECK(params.host);
+  DCHECK(params.registrar);
 
-  registrar_ = base::MakeUnique<SyncBackendRegistrar>(
-      name_, base::Bind(&SyncClient::CreateModelWorkerForGroup,
-                        base::Unretained(sync_client_)));
+  sync_task_runner_ = params.sync_task_runner;
+  host_ = params.host;
+  registrar_ = params.registrar.get();
 
-  DCHECK(host);
-  host_ = host;
-
-  std::vector<scoped_refptr<ModelSafeWorker>> workers;
-  registrar_->GetWorkers(&workers);
-
-  EngineComponentsFactory::Switches factory_switches = {
-      EngineComponentsFactory::ENCRYPTION_KEYSTORE,
-      EngineComponentsFactory::BACKOFF_NORMAL};
-
-  base::CommandLine* cl = base::CommandLine::ForCurrentProcess();
-  if (cl->HasSwitch(switches::kSyncShortInitialRetryOverride)) {
-    factory_switches.backoff_override =
-        EngineComponentsFactory::BACKOFF_SHORT_INITIAL_RETRY_OVERRIDE;
-  }
-  if (cl->HasSwitch(switches::kSyncEnableGetUpdateAvoidance)) {
-    factory_switches.pre_commit_updates_policy =
-        EngineComponentsFactory::FORCE_ENABLE_PRE_COMMIT_UPDATE_AVOIDANCE;
-  }
-  if (cl->HasSwitch(switches::kSyncShortNudgeDelayForTest)) {
-    factory_switches.nudge_delay =
-        EngineComponentsFactory::NudgeDelay::SHORT_NUDGE_DELAY;
-  }
-
-  std::map<ModelType, int64_t> invalidation_versions;
-  sync_prefs_->GetInvalidationVersions(&invalidation_versions);
-
-  std::unique_ptr<DoInitializeOptions> init_opts(new DoInitializeOptions(
-      sync_task_runner_, registrar_.get(), workers,
-      sync_client_->GetExtensionsActivity(), event_handler, sync_service_url,
-      sync_user_agent, http_post_provider_factory_getter.Run(
-                           core_->GetRequestContextCancelationSignal()),
-      credentials, invalidator_ ? invalidator_->GetInvalidatorClientId() : "",
-      std::move(sync_manager_factory), delete_sync_data_folder,
-      enable_local_sync_backend, local_sync_backend_folder,
-      sync_prefs_->GetEncryptionBootstrapToken(),
-      sync_prefs_->GetKeystoreEncryptionBootstrapToken(),
-      std::unique_ptr<EngineComponentsFactory>(
-          new EngineComponentsFactoryImpl(factory_switches)),
-      unrecoverable_error_handler, report_unrecoverable_error_function,
-      std::move(saved_nigori_state), invalidation_versions));
-  InitCore(std::move(init_opts));
+  sync_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&SyncBackendHostCore::DoInitialize, core_,
+                            base::Passed(&params)));
 }
 
 void SyncBackendHostImpl::TriggerRefresh(const ModelTypeSet& types) {
@@ -252,9 +200,7 @@ void SyncBackendHostImpl::Shutdown(ShutdownReason reason) {
   sync_task_runner_->PostTask(
       FROM_HERE, base::Bind(&SyncBackendHostCore::DoShutdown, core_, reason));
   core_ = nullptr;
-
-  // Destroy |registrar_|.
-  sync_task_runner_->DeleteSoon(FROM_HERE, registrar_.release());
+  registrar_ = nullptr;
 }
 
 void SyncBackendHostImpl::UnregisterInvalidationIds() {
@@ -428,7 +374,7 @@ bool SyncBackendHostImpl::HasUnsyncedItems() const {
 }
 
 bool SyncBackendHostImpl::IsNigoriEnabled() const {
-  return registrar_.get() && registrar_->IsNigoriEnabled();
+  return registrar_ && registrar_->IsNigoriEnabled();
 }
 
 PassphraseType SyncBackendHostImpl::GetPassphraseType() const {
@@ -448,7 +394,7 @@ bool SyncBackendHostImpl::IsCryptographerReady(
 void SyncBackendHostImpl::GetModelSafeRoutingInfo(
     ModelSafeRoutingInfo* out) const {
   if (initialized()) {
-    CHECK(registrar_.get());
+    CHECK(registrar_);
     registrar_->GetModelSafeRoutingInfo(out);
   } else {
     NOTREACHED();
@@ -489,13 +435,6 @@ void SyncBackendHostImpl::DisableDirectoryTypeDebugInfoForwarding() {
       FROM_HERE,
       base::Bind(&SyncBackendHostCore::DisableDirectoryTypeDebugInfoForwarding,
                  core_));
-}
-
-void SyncBackendHostImpl::InitCore(
-    std::unique_ptr<DoInitializeOptions> options) {
-  sync_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&SyncBackendHostCore::DoInitialize, core_,
-                            base::Passed(&options)));
 }
 
 void SyncBackendHostImpl::RequestConfigureSyncer(

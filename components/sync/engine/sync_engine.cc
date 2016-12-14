@@ -6,7 +6,11 @@
 
 namespace syncer {
 
-SyncEngine::SyncEngine() {}
-SyncEngine::~SyncEngine() {}
+SyncEngine::InitParams::InitParams() = default;
+SyncEngine::InitParams::InitParams(InitParams&& other) = default;
+SyncEngine::InitParams::~InitParams() = default;
+
+SyncEngine::SyncEngine() = default;
+SyncEngine::~SyncEngine() = default;
 
 }  // namespace syncer

@@ -9,6 +9,7 @@ include_rules = [
   "+components/sync/base",
   "+components/sync/device_info",
   "+components/sync/engine",
+  "+components/sync/js",
   "+components/sync/model",
   "+components/sync/protocol",
   "+components/sync/syncable",

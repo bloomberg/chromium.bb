@@ -103,23 +103,7 @@ class TestSyncServiceObserver : public syncer::SyncServiceObserver {
 // to initialized. Allows us to test things that could happen while backend init
 // is in progress.
 class SyncEngineNoReturn : public FakeSyncEngine {
-  void Initialize(
-      syncer::SyncEngineHost* host,
-      scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner,
-      const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
-      const GURL& service_url,
-      const std::string& sync_user_agent,
-      const syncer::SyncCredentials& credentials,
-      bool delete_sync_data_folder,
-      bool enable_local_sync_backend,
-      const base::FilePath& local_sync_backend_folder,
-      std::unique_ptr<syncer::SyncManagerFactory> sync_manager_factory,
-      const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
-          unrecoverable_error_handler,
-      const base::Closure& report_unrecoverable_error_function,
-      const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
-      std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
-          saved_nigori_state) override {}
+  void Initialize(InitParams params) override {}
 };
 
 class FakeSyncEngineCollectDeleteDirParam : public FakeSyncEngine {
@@ -128,31 +112,9 @@ class FakeSyncEngineCollectDeleteDirParam : public FakeSyncEngine {
       std::vector<bool>* delete_dir_param)
       : delete_dir_param_(delete_dir_param) {}
 
-  void Initialize(
-      syncer::SyncEngineHost* host,
-      scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner,
-      const syncer::WeakHandle<syncer::JsEventHandler>& event_handler,
-      const GURL& service_url,
-      const std::string& sync_user_agent,
-      const syncer::SyncCredentials& credentials,
-      bool delete_sync_data_folder,
-      bool enable_local_sync_backend,
-      const base::FilePath& local_sync_backend_folder,
-      std::unique_ptr<syncer::SyncManagerFactory> sync_manager_factory,
-      const syncer::WeakHandle<syncer::UnrecoverableErrorHandler>&
-          unrecoverable_error_handler,
-      const base::Closure& report_unrecoverable_error_function,
-      const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
-      std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
-          saved_nigori_state) override {
-    delete_dir_param_->push_back(delete_sync_data_folder);
-    FakeSyncEngine::Initialize(
-        host, std::move(sync_task_runner), event_handler, service_url,
-        sync_user_agent, credentials, delete_sync_data_folder,
-        enable_local_sync_backend, local_sync_backend_folder,
-        std::move(sync_manager_factory), unrecoverable_error_handler,
-        report_unrecoverable_error_function, http_post_provider_factory_getter,
-        std::move(saved_nigori_state));
+  void Initialize(InitParams params) override {
+    delete_dir_param_->push_back(params.delete_sync_data_folder);
+    FakeSyncEngine::Initialize(std::move(params));
   }
 
  private:

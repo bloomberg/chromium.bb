@@ -14,24 +14,10 @@ const char kTestCacheGuid[] = "test-guid";
 FakeSyncEngine::FakeSyncEngine() : fail_initial_download_(false) {}
 FakeSyncEngine::~FakeSyncEngine() {}
 
-void FakeSyncEngine::Initialize(
-    SyncEngineHost* host,
-    scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner,
-    const WeakHandle<JsEventHandler>& event_handler,
-    const GURL& service_url,
-    const std::string& sync_user_agent,
-    const SyncCredentials& credentials,
-    bool delete_sync_data_folder,
-    bool enable_local_sync_backend,
-    const base::FilePath& local_sync_backend_folder,
-    std::unique_ptr<SyncManagerFactory> sync_manager_factory,
-    const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
-    const base::Closure& report_unrecoverable_error_function,
-    const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
-    std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state) {
-  host->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
-                            WeakHandle<DataTypeDebugInfoListener>(),
-                            kTestCacheGuid, !fail_initial_download_);
+void FakeSyncEngine::Initialize(InitParams params) {
+  params.host->OnEngineInitialized(ModelTypeSet(), WeakHandle<JsBackend>(),
+                                   WeakHandle<DataTypeDebugInfoListener>(),
+                                   kTestCacheGuid, !fail_initial_download_);
 }
 
 void FakeSyncEngine::TriggerRefresh(const ModelTypeSet& types) {}

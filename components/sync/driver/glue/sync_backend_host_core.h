@@ -31,57 +31,6 @@ namespace syncer {
 
 class SyncBackendHostImpl;
 
-// Utility struct for holding initialization options.
-struct DoInitializeOptions {
-  DoInitializeOptions(
-      scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner,
-      SyncBackendRegistrar* registrar,
-      const std::vector<scoped_refptr<ModelSafeWorker>>& workers,
-      const scoped_refptr<ExtensionsActivity>& extensions_activity,
-      const WeakHandle<JsEventHandler>& event_handler,
-      const GURL& service_url,
-      const std::string& sync_user_agent,
-      std::unique_ptr<HttpPostProviderFactory> http_bridge_factory,
-      const SyncCredentials& credentials,
-      const std::string& invalidator_client_id,
-      std::unique_ptr<SyncManagerFactory> sync_manager_factory,
-      bool delete_sync_data_folder,
-      bool enable_local_sync_backend,
-      const base::FilePath& local_sync_backend_folder,
-      const std::string& restored_key_for_bootstrapping,
-      const std::string& restored_keystore_key_for_bootstrapping,
-      std::unique_ptr<EngineComponentsFactory> engine_components_factory,
-      const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
-      const base::Closure& report_unrecoverable_error_function,
-      std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state,
-      const std::map<ModelType, int64_t>& invalidation_versions);
-  ~DoInitializeOptions();
-
-  scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner;
-  SyncBackendRegistrar* registrar;
-  std::vector<scoped_refptr<ModelSafeWorker>> workers;
-  scoped_refptr<ExtensionsActivity> extensions_activity;
-  WeakHandle<JsEventHandler> event_handler;
-  GURL service_url;
-  std::string sync_user_agent;
-  // Overridden by tests.
-  std::unique_ptr<HttpPostProviderFactory> http_bridge_factory;
-  SyncCredentials credentials;
-  const std::string invalidator_client_id;
-  std::unique_ptr<SyncManagerFactory> sync_manager_factory;
-  std::string lsid;
-  bool delete_sync_data_folder;
-  bool enable_local_sync_backend;
-  const base::FilePath local_sync_backend_folder;
-  std::string restored_key_for_bootstrapping;
-  std::string restored_keystore_key_for_bootstrapping;
-  std::unique_ptr<EngineComponentsFactory> engine_components_factory;
-  const WeakHandle<UnrecoverableErrorHandler> unrecoverable_error_handler;
-  base::Closure report_unrecoverable_error_function;
-  std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
-  const std::map<ModelType, int64_t> invalidation_versions;
-};
-
 class SyncBackendHostCore
     : public base::RefCountedThreadSafe<SyncBackendHostCore>,
       public base::trace_event::MemoryDumpProvider,
@@ -150,7 +99,7 @@ class SyncBackendHostCore
   //
   // Called to perform initialization of the syncapi on behalf of
   // SyncEngine::Initialize.
-  void DoInitialize(std::unique_ptr<DoInitializeOptions> options);
+  void DoInitialize(SyncEngine::InitParams params);
 
   // Called to perform credential update on behalf of
   // SyncEngine::UpdateCredentials.
@@ -229,12 +178,6 @@ class SyncBackendHostCore
   // sync databases), as well as shutdown when you're no longer syncing.
   void DeleteSyncDataFolder();
 
-  // We expose this member because it's required in the construction of the
-  // HttpBridgeFactory.
-  CancelationSignal* GetRequestContextCancelationSignal() {
-    return &release_request_context_signal_;
-  }
-
   // Tell the sync manager to persist its state by writing to disk.
   // Called on the sync thread, both by a timer and, on Android, when the
   // application is backgrounded.
@@ -268,9 +211,8 @@ class SyncBackendHostCore
   // Our parent SyncBackendHostImpl.
   WeakHandle<SyncBackendHostImpl> host_;
 
-  // Our parent's registrar (not owned).  Non-null only between
-  // calls to DoInitialize() and DoShutdown().
-  SyncBackendRegistrar* registrar_ = nullptr;
+  // Non-null only between calls to DoInitialize() and DoShutdown().
+  std::unique_ptr<SyncBackendRegistrar> registrar_;
 
   // The timer used to periodically call SaveChanges.
   std::unique_ptr<base::RepeatingTimer> save_changes_timer_;

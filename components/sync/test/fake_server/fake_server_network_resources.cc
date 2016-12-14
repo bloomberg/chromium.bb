@@ -19,7 +19,8 @@ namespace fake_server {
 
 FakeServerNetworkResources::FakeServerNetworkResources(
     const base::WeakPtr<FakeServer>& fake_server)
-    : fake_server_(fake_server) {}
+    : fake_server_(fake_server),
+      fake_server_task_runner_(base::ThreadTaskRunnerHandle::Get()) {}
 
 FakeServerNetworkResources::~FakeServerNetworkResources() {}
 
@@ -28,9 +29,8 @@ FakeServerNetworkResources::GetHttpPostProviderFactory(
     const scoped_refptr<net::URLRequestContextGetter>& baseline_context_getter,
     const NetworkTimeUpdateCallback& network_time_update_callback,
     CancelationSignal* cancelation_signal) {
-  return base::WrapUnique<syncer::HttpPostProviderFactory>(
-      new FakeServerHttpPostProviderFactory(
-          fake_server_, base::ThreadTaskRunnerHandle::Get()));
+  return base::MakeUnique<FakeServerHttpPostProviderFactory>(
+      fake_server_, fake_server_task_runner_);
 }
 
 }  // namespace fake_server

@@ -5,19 +5,24 @@
 #ifndef COMPONENTS_SYNC_ENGINE_SYNC_ENGINE_H_
 #define COMPONENTS_SYNC_ENGINE_SYNC_ENGINE_H_
 
+#include <map>
 #include <memory>
 #include <string>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
+#include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/engine/configure_reason.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/engine/shutdown_reason.h"
+#include "components/sync/engine/sync_backend_registrar.h"
 #include "components/sync/engine/sync_manager.h"
 #include "components/sync/engine/sync_manager_factory.h"
 
@@ -42,7 +47,38 @@ class SyncEngine : public ModelTypeConfigurer {
       CancelationSignal*)>
       HttpPostProviderFactoryGetter;
 
-  // Stubs used by implementing classes.
+  // Utility struct for holding initialization options.
+  struct InitParams {
+    InitParams();
+    InitParams(InitParams&& other);
+    ~InitParams();
+
+    scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner;
+    SyncEngineHost* host = nullptr;
+    std::unique_ptr<SyncBackendRegistrar> registrar;
+    scoped_refptr<ExtensionsActivity> extensions_activity;
+    WeakHandle<JsEventHandler> event_handler;
+    GURL service_url;
+    std::string sync_user_agent;
+    SyncEngine::HttpPostProviderFactoryGetter http_factory_getter;
+    SyncCredentials credentials;
+    std::string invalidator_client_id;
+    std::unique_ptr<SyncManagerFactory> sync_manager_factory;
+    bool delete_sync_data_folder = false;
+    bool enable_local_sync_backend = false;
+    base::FilePath local_sync_backend_folder;
+    std::string restored_key_for_bootstrapping;
+    std::string restored_keystore_key_for_bootstrapping;
+    std::unique_ptr<EngineComponentsFactory> engine_components_factory;
+    WeakHandle<UnrecoverableErrorHandler> unrecoverable_error_handler;
+    base::Closure report_unrecoverable_error_function;
+    std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state;
+    std::map<ModelType, int64_t> invalidation_versions;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(InitParams);
+  };
+
   SyncEngine();
   ~SyncEngine() override;
 
@@ -51,22 +87,7 @@ class SyncEngine : public ModelTypeConfigurer {
   //
   // |saved_nigori_state| is optional nigori state to restore from a previous
   // engine instance. May be null.
-  virtual void Initialize(
-      SyncEngineHost* host,
-      scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner,
-      const WeakHandle<JsEventHandler>& event_handler,
-      const GURL& service_url,
-      const std::string& sync_user_agent,
-      const SyncCredentials& credentials,
-      bool delete_sync_data_folder,
-      bool enable_local_sync_backend,
-      const base::FilePath& local_sync_backend_folder,
-      std::unique_ptr<SyncManagerFactory> sync_manager_factory,
-      const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
-      const base::Closure& report_unrecoverable_error_function,
-      const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
-      std::unique_ptr<SyncEncryptionHandler::NigoriState>
-          saved_nigori_state) = 0;
+  virtual void Initialize(InitParams params) = 0;
 
   // Inform the engine to trigger a sync cycle for |types|.
   virtual void TriggerRefresh(const ModelTypeSet& types) = 0;

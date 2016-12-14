@@ -39,7 +39,7 @@
 #include "components/sync/driver/data_type_status_table.h"
 #include "components/sync/driver/startup_controller.h"
 #include "components/sync/driver/sync_client.h"
-#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_service_base.h"
 #include "components/sync/driver/sync_stopped_reporter.h"
 #include "components/sync/engine/events/protocol_event_observer.h"
 #include "components/sync/engine/model_safe_worker.h"
@@ -170,8 +170,7 @@ namespace browser_sync {
 //   Once first setup has completed and there are no outstanding
 //   setup-in-progress handles, CanConfigureDataTypes() will return true and
 //   datatype configuration can begin.
-class ProfileSyncService : public syncer::SyncService,
-                           public syncer::SyncEngineHost,
+class ProfileSyncService : public syncer::SyncServiceBase,
                            public syncer::SyncPrefObserver,
                            public syncer::DataTypeManagerObserver,
                            public syncer::UnrecoverableErrorHandler,
@@ -232,8 +231,8 @@ class ProfileSyncService : public syncer::SyncService,
   // explicitly defined.
   struct InitParams {
     InitParams();
+    InitParams(InitParams&& other);
     ~InitParams();
-    InitParams(InitParams&& other);  // NOLINT
 
     std::unique_ptr<syncer::SyncClient> sync_client;
     std::unique_ptr<SigninManagerWrapper> signin_wrapper;
@@ -588,6 +587,17 @@ class ProfileSyncService : public syncer::SyncService,
   // Triggers sync cycle with request to update specified |types|.
   void RefreshTypesForTest(syncer::ModelTypeSet types);
 
+ protected:
+  // SyncServiceBase implementation.
+  syncer::SyncCredentials GetCredentials() override;
+  syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler() override;
+  syncer::SyncEngine::HttpPostProviderFactoryGetter
+  MakeHttpPostProviderFactoryGetter() override;
+  std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
+  MoveSavedNigoriState() override;
+  syncer::WeakHandle<syncer::UnrecoverableErrorHandler>
+  GetUnrecoverableErrorHandler() override;
+
  private:
   enum UnrecoverableErrorReason {
     ERROR_REASON_UNSET,
@@ -632,11 +642,6 @@ class ProfileSyncService : public syncer::SyncService,
   // to claim ownership of sync thread from engine.
   void ShutdownImpl(syncer::ShutdownReason reason);
 
-  // Return SyncCredentials from the OAuth2TokenService.
-  syncer::SyncCredentials GetCredentials();
-
-  virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler();
-
   // Helper method for managing encryption UI.
   bool IsEncryptedDatatypeEnabled() const;
 
@@ -670,13 +675,6 @@ class ProfileSyncService : public syncer::SyncService,
   // when sync server returns AUTH_ERROR which indicates it is time to refresh
   // token.
   void RequestAccessToken();
-
-  // Return true if engine should start from a fresh sync DB.
-  bool ShouldDeleteSyncFolder();
-
-  // If |delete_sync_data_folder| is true, then this method will delete all
-  // previous "Sync Data" folders. (useful if the folder is partial/corrupt).
-  void InitializeEngine(bool delete_sync_data_folder);
 
   // Sets the last synced time to the current time.
   void UpdateLastSyncedTime();
@@ -770,22 +768,10 @@ class ProfileSyncService : public syncer::SyncService,
   // user.
   GoogleServiceAuthError last_auth_error_;
 
-  // Our asynchronous engine to communicate with sync components living on
-  // other threads.
-  std::unique_ptr<syncer::SyncEngine> engine_;
-
   // Was the last SYNC_PASSPHRASE_REQUIRED notification sent because it
   // was required for encryption, decryption with a cached passphrase, or
   // because a new passphrase is required?
   syncer::PassphraseRequiredReason passphrase_required_reason_;
-
-  // This profile's SyncClient, which abstracts away non-Sync dependencies and
-  // the Sync API component factory.
-  std::unique_ptr<syncer::SyncClient> sync_client_;
-
-  // The class that handles getting, setting, and persisting sync
-  // preferences.
-  syncer::SyncPrefs sync_prefs_;
 
   // TODO(ncarter): Put this in a profile, once there is UI for it.
   // This specifies where to find the sync server.
@@ -799,18 +785,8 @@ class ProfileSyncService : public syncer::SyncService,
   // Callback to update the network time; used for initializing the engine.
   syncer::NetworkTimeUpdateCallback network_time_update_callback_;
 
-  // The path to the base directory under which sync should store its
-  // information.
-  base::FilePath base_directory_;
-
   // The request context in which sync should operate.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
-
-  // An identifier representing this instance for debugging purposes.
-  std::string debug_identifier_;
-
-  // The product channel of the embedder.
-  version_info::Channel channel_;
 
   // Threading context.
   base::SequencedWorkerPool* blocking_pool_;
@@ -837,10 +813,6 @@ class ProfileSyncService : public syncer::SyncService,
   // Set to true if a signin has completed but we're still waiting for the
   // engine to refresh its credentials.
   bool is_auth_in_progress_;
-
-  // Encapsulates user signin - used to set/get the user's authenticated
-  // email address.
-  const std::unique_ptr<SigninManagerWrapper> signin_;
 
   // Information describing an unrecoverable error.
   UnrecoverableErrorReason unrecoverable_error_reason_;
@@ -906,12 +878,6 @@ class ProfileSyncService : public syncer::SyncService,
   // and association information.
   syncer::WeakHandle<syncer::DataTypeDebugInfoListener> debug_info_listener_;
 
-  // The thread where all the sync operations happen. This thread is kept alive
-  // until browser shutdown and reused if sync is turned off and on again. It is
-  // joined during the shutdown process, but there is an abort mechanism in
-  // place to prevent slow HTTP requests from blocking browser shutdown.
-  std::unique_ptr<base::Thread> sync_thread_;
-
   // ProfileSyncService uses this service to get access tokens.
   ProfileOAuth2TokenService* const oauth2_token_service_;
 
@@ -951,9 +917,6 @@ class ProfileSyncService : public syncer::SyncService,
 
   StartBehavior start_behavior_;
   std::unique_ptr<syncer::StartupController> startup_controller_;
-
-  // The full path to the sync data directory.
-  base::FilePath directory_path_;
 
   std::unique_ptr<syncer::SyncStoppedReporter> sync_stopped_reporter_;
 

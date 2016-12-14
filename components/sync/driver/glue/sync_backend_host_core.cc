@@ -55,53 +55,6 @@ namespace syncer {
 
 class EngineComponentsFactory;
 
-DoInitializeOptions::DoInitializeOptions(
-    scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner,
-    SyncBackendRegistrar* registrar,
-    const std::vector<scoped_refptr<ModelSafeWorker>>& workers,
-    const scoped_refptr<ExtensionsActivity>& extensions_activity,
-    const WeakHandle<JsEventHandler>& event_handler,
-    const GURL& service_url,
-    const std::string& sync_user_agent,
-    std::unique_ptr<HttpPostProviderFactory> http_bridge_factory,
-    const SyncCredentials& credentials,
-    const std::string& invalidator_client_id,
-    std::unique_ptr<SyncManagerFactory> sync_manager_factory,
-    bool delete_sync_data_folder,
-    bool enable_local_sync_backend,
-    const base::FilePath& local_sync_backend_folder,
-    const std::string& restored_key_for_bootstrapping,
-    const std::string& restored_keystore_key_for_bootstrapping,
-    std::unique_ptr<EngineComponentsFactory> engine_components_factory,
-    const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
-    const base::Closure& report_unrecoverable_error_function,
-    std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state,
-    const std::map<ModelType, int64_t>& invalidation_versions)
-    : sync_task_runner(std::move(sync_task_runner)),
-      registrar(registrar),
-      workers(workers),
-      extensions_activity(extensions_activity),
-      event_handler(event_handler),
-      service_url(service_url),
-      sync_user_agent(sync_user_agent),
-      http_bridge_factory(std::move(http_bridge_factory)),
-      credentials(credentials),
-      invalidator_client_id(invalidator_client_id),
-      sync_manager_factory(std::move(sync_manager_factory)),
-      delete_sync_data_folder(delete_sync_data_folder),
-      enable_local_sync_backend(enable_local_sync_backend),
-      local_sync_backend_folder(local_sync_backend_folder),
-      restored_key_for_bootstrapping(restored_key_for_bootstrapping),
-      restored_keystore_key_for_bootstrapping(
-          restored_keystore_key_for_bootstrapping),
-      engine_components_factory(std::move(engine_components_factory)),
-      unrecoverable_error_handler(unrecoverable_error_handler),
-      report_unrecoverable_error_function(report_unrecoverable_error_function),
-      saved_nigori_state(std::move(saved_nigori_state)),
-      invalidation_versions(invalidation_versions) {}
-
-DoInitializeOptions::~DoInitializeOptions() {}
-
 SyncBackendHostCore::SyncBackendHostCore(
     const std::string& name,
     const base::FilePath& sync_data_folder_path,
@@ -366,18 +319,12 @@ void SyncBackendHostCore::DoOnIncomingInvalidation(
              last_invalidation_versions_);
 }
 
-void SyncBackendHostCore::DoInitialize(
-    std::unique_ptr<DoInitializeOptions> options) {
+void SyncBackendHostCore::DoInitialize(SyncEngine::InitParams params) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
-  // Finish initializing the HttpBridgeFactory.  We do this here because
-  // building the user agent may block on some platforms.
-  options->http_bridge_factory->Init(options->sync_user_agent,
-                                     base::Bind(&BindFetcherToDataTracker));
 
   // Blow away the partial or corrupt sync data folder before doing any more
   // initialization, if necessary.
-  if (options->delete_sync_data_folder) {
+  if (params.delete_sync_data_folder) {
     DeleteSyncDataFolder();
   }
 
@@ -388,38 +335,42 @@ void SyncBackendHostCore::DoInitialize(
   }
 
   // Load the previously persisted set of invalidation versions into memory.
-  last_invalidation_versions_ = options->invalidation_versions;
+  last_invalidation_versions_ = params.invalidation_versions;
 
   DCHECK(!registrar_);
-  registrar_ = options->registrar;
+  registrar_ = std::move(params.registrar);
   DCHECK(registrar_);
 
-  sync_manager_ = options->sync_manager_factory->CreateSyncManager(name_);
+  sync_manager_ = params.sync_manager_factory->CreateSyncManager(name_);
   sync_manager_->AddObserver(this);
 
   SyncManager::InitArgs args;
   args.database_location = sync_data_folder_path_;
-  args.event_handler = options->event_handler;
-  args.service_url = options->service_url;
-  args.enable_local_sync_backend = options->enable_local_sync_backend;
-  args.local_sync_backend_folder = options->local_sync_backend_folder;
-  args.post_factory = std::move(options->http_bridge_factory);
-  args.workers = options->workers;
-  args.extensions_activity = options->extensions_activity.get();
-  args.change_delegate = options->registrar;  // as SyncManager::ChangeDelegate
-  args.credentials = options->credentials;
-  args.invalidator_client_id = options->invalidator_client_id;
-  args.restored_key_for_bootstrapping = options->restored_key_for_bootstrapping;
+  args.event_handler = params.event_handler;
+  args.service_url = params.service_url;
+  args.enable_local_sync_backend = params.enable_local_sync_backend;
+  args.local_sync_backend_folder = params.local_sync_backend_folder;
+  args.post_factory =
+      params.http_factory_getter.Run(&release_request_context_signal_);
+  // Finish initializing the HttpBridgeFactory.  We do this here because
+  // building the user agent may block on some platforms.
+  args.post_factory->Init(params.sync_user_agent,
+                          base::Bind(&BindFetcherToDataTracker));
+  registrar_->GetWorkers(&args.workers);
+  args.extensions_activity = params.extensions_activity.get();
+  args.change_delegate = registrar_.get();  // as SyncManager::ChangeDelegate
+  args.credentials = params.credentials;
+  args.invalidator_client_id = params.invalidator_client_id;
+  args.restored_key_for_bootstrapping = params.restored_key_for_bootstrapping;
   args.restored_keystore_key_for_bootstrapping =
-      options->restored_keystore_key_for_bootstrapping;
-  args.engine_components_factory =
-      std::move(options->engine_components_factory);
+      params.restored_keystore_key_for_bootstrapping;
+  args.engine_components_factory = std::move(params.engine_components_factory);
   args.encryptor = &encryptor_;
-  args.unrecoverable_error_handler = options->unrecoverable_error_handler;
+  args.unrecoverable_error_handler = params.unrecoverable_error_handler;
   args.report_unrecoverable_error_function =
-      options->report_unrecoverable_error_function;
+      params.report_unrecoverable_error_function;
   args.cancelation_signal = &stop_syncing_signal_;
-  args.saved_nigori_state = std::move(options->saved_nigori_state);
+  args.saved_nigori_state = std::move(params.saved_nigori_state);
   sync_manager_->Init(&args);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       this, "SyncDirectory", base::ThreadTaskRunnerHandle::Get());

@@ -20,7 +20,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram.h"
-#include "base/path_service.h"
 #include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
@@ -169,15 +168,8 @@ const net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
     false,
 };
 
-const base::FilePath::CharType kSyncDataFolderName[] =
-    FILE_PATH_LITERAL("Sync Data");
 const base::FilePath::CharType kLevelDBFolderName[] =
     FILE_PATH_LITERAL("LevelDB");
-
-#if defined(OS_WIN)
-const base::FilePath::CharType kLoopbackServerBackendFilename[] =
-    FILE_PATH_LITERAL("profile.pb");
-#endif
 
 // Perform the actual sync data folder deletion.
 // This should only be called on the sync thread.
@@ -191,42 +183,29 @@ void DeleteSyncDataFolder(const base::FilePath& directory_path) {
 }  // namespace
 
 ProfileSyncService::InitParams::InitParams() = default;
+ProfileSyncService::InitParams::InitParams(InitParams&& other) = default;
 ProfileSyncService::InitParams::~InitParams() = default;
-ProfileSyncService::InitParams::InitParams(InitParams&& other)  // NOLINT
-    : sync_client(std::move(other.sync_client)),
-      signin_wrapper(std::move(other.signin_wrapper)),
-      oauth2_token_service(other.oauth2_token_service),
-      gaia_cookie_manager_service(other.gaia_cookie_manager_service),
-      start_behavior(other.start_behavior),
-      network_time_update_callback(
-          std::move(other.network_time_update_callback)),
-      base_directory(std::move(other.base_directory)),
-      url_request_context(std::move(other.url_request_context)),
-      debug_identifier(std::move(other.debug_identifier)),
-      channel(other.channel),
-      blocking_pool(other.blocking_pool) {}
 
 ProfileSyncService::ProfileSyncService(InitParams init_params)
-    : OAuth2TokenService::Consumer("sync"),
+    : SyncServiceBase(std::move(init_params.sync_client),
+                      std::move(init_params.signin_wrapper),
+                      init_params.channel,
+                      init_params.base_directory,
+                      init_params.debug_identifier),
+      OAuth2TokenService::Consumer("sync"),
       last_auth_error_(AuthError::AuthErrorNone()),
       passphrase_required_reason_(syncer::REASON_PASSPHRASE_NOT_REQUIRED),
-      sync_client_(std::move(init_params.sync_client)),
-      sync_prefs_(sync_client_->GetPrefService()),
       sync_service_url_(
           syncer::GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
                                     init_params.channel)),
       network_time_update_callback_(
           std::move(init_params.network_time_update_callback)),
-      base_directory_(init_params.base_directory),
       url_request_context_(init_params.url_request_context),
-      debug_identifier_(std::move(init_params.debug_identifier)),
-      channel_(init_params.channel),
       blocking_pool_(init_params.blocking_pool),
       is_first_time_sync_configure_(false),
       engine_initialized_(false),
       sync_disabled_by_admin_(false),
       is_auth_in_progress_(false),
-      signin_(std::move(init_params.signin_wrapper)),
       unrecoverable_error_reason_(ERROR_REASON_UNSET),
       expect_sync_configuration_aborted_(false),
       encrypted_types_(syncer::SyncEncryptionHandler::SensitiveTypes()),
@@ -241,8 +220,6 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       gaia_cookie_manager_service_(init_params.gaia_cookie_manager_service),
       network_resources_(new syncer::HttpBridgeNetworkResources),
       start_behavior_(init_params.start_behavior),
-      directory_path_(
-          base_directory_.Append(base::FilePath(kSyncDataFolderName))),
       catch_up_configure_in_progress_(false),
       passphrase_prompt_triggered_by_version_(false),
       sync_enabled_weak_factory_(this),
@@ -519,66 +496,26 @@ SyncCredentials ProfileSyncService::GetCredentials() {
   return credentials;
 }
 
-bool ProfileSyncService::ShouldDeleteSyncFolder() {
-  return !IsFirstSetupComplete();
+syncer::WeakHandle<syncer::JsEventHandler>
+ProfileSyncService::GetJsEventHandler() {
+  return syncer::MakeWeakHandle(sync_js_controller_.AsWeakPtr());
 }
 
-void ProfileSyncService::InitializeEngine(bool delete_stale_data) {
-  if (!engine_) {
-    NOTREACHED();
-    return;
-  }
+syncer::SyncEngine::HttpPostProviderFactoryGetter
+ProfileSyncService::MakeHttpPostProviderFactoryGetter() {
+  return base::Bind(&syncer::NetworkResources::GetHttpPostProviderFactory,
+                    base::Unretained(network_resources_.get()),
+                    url_request_context_, network_time_update_callback_);
+}
 
-  if (!sync_thread_) {
-    sync_thread_ = base::MakeUnique<base::Thread>("Chrome_SyncThread");
-    base::Thread::Options options;
-    options.timer_slack = base::TIMER_SLACK_MAXIMUM;
-    CHECK(sync_thread_->StartWithOptions(options));
-  }
+std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
+ProfileSyncService::MoveSavedNigoriState() {
+  return std::move(saved_nigori_state_);
+}
 
-  SyncCredentials credentials = GetCredentials();
-
-  if (delete_stale_data)
-    ClearStaleErrors();
-
-  bool enable_local_sync_backend = false;
-  base::FilePath local_sync_backend_folder =
-      sync_prefs_.GetLocalSyncBackendDir();
-#if defined(OS_WIN)
-  enable_local_sync_backend = sync_prefs_.IsLocalSyncEnabled();
-  if (local_sync_backend_folder.empty()) {
-    // TODO(pastarmovj): Add DIR_ROAMING_USER_DATA to PathService to simplify
-    // this code and move the logic in its right place. See crbug/657810.
-    CHECK(
-        base::PathService::Get(base::DIR_APP_DATA, &local_sync_backend_folder));
-    local_sync_backend_folder =
-        local_sync_backend_folder.Append(FILE_PATH_LITERAL("Chrome/User Data"));
-  }
-  // This code as it is now will assume the same profile order is present on all
-  // machines, which is not a given. It is to be defined if only the Default
-  // profile should get this treatment or all profile as is the case now. The
-  // solution for now will be to assume profiles are created in the same order
-  // on all machines and in the future decide if only the Default one should be
-  // considered roamed.
-  local_sync_backend_folder =
-      local_sync_backend_folder.Append(base_directory_.BaseName());
-  local_sync_backend_folder =
-      local_sync_backend_folder.Append(kLoopbackServerBackendFilename);
-#endif  // defined(OS_WIN)
-
-  SyncEngine::HttpPostProviderFactoryGetter http_post_provider_factory_getter =
-      base::Bind(&syncer::NetworkResources::GetHttpPostProviderFactory,
-                 base::Unretained(network_resources_.get()),
-                 url_request_context_, network_time_update_callback_);
-
-  engine_->Initialize(
-      this, sync_thread_->task_runner(), GetJsEventHandler(), sync_service_url_,
-      local_device_->GetSyncUserAgent(), credentials, delete_stale_data,
-      enable_local_sync_backend, local_sync_backend_folder,
-      base::MakeUnique<syncer::SyncManagerFactory>(),
-      MakeWeakHandle(sync_enabled_weak_factory_.GetWeakPtr()),
-      base::Bind(syncer::ReportUnrecoverableError, channel_),
-      http_post_provider_factory_getter, std::move(saved_nigori_state_));
+syncer::WeakHandle<syncer::UnrecoverableErrorHandler>
+ProfileSyncService::GetUnrecoverableErrorHandler() {
+  return syncer::MakeWeakHandle(sync_enabled_weak_factory_.GetWeakPtr());
 }
 
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {
@@ -659,9 +596,11 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
       debug_identifier_, invalidator, sync_prefs_.AsWeakPtr(),
       directory_path_));
 
-  // Initialize the engine. Every time we start up a new SyncEngine, we'll want
-  // to start from a fresh SyncDB, so delete any old one that might be there.
-  InitializeEngine(ShouldDeleteSyncFolder());
+  // Clear any old errors the first time sync starts.
+  if (!IsFirstSetupComplete())
+    ClearStaleErrors();
+
+  InitializeEngine();
 
   UpdateFirstSyncTimePref();
 
@@ -2525,10 +2464,6 @@ bool ProfileSyncService::IsRetryingAccessTokenFetchForTest() const {
 std::string ProfileSyncService::GetAccessTokenForTest() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return access_token_;
-}
-
-WeakHandle<syncer::JsEventHandler> ProfileSyncService::GetJsEventHandler() {
-  return MakeWeakHandle(sync_js_controller_.AsWeakPtr());
 }
 
 syncer::SyncableService* ProfileSyncService::GetSessionsSyncableService() {

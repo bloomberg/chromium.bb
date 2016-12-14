@@ -213,13 +213,24 @@ class SyncEngineTest : public testing::Test {
             base::Bind(&NetworkResources::GetHttpPostProviderFactory,
                        base::Unretained(network_resources_.get()), nullptr,
                        base::Bind(&EmptyNetworkTimeUpdate));
-    backend_->Initialize(
-        &mock_host_, sync_thread_.task_runner(), WeakHandle<JsEventHandler>(),
-        GURL(std::string()), std::string(), credentials_, true, false,
-        base::FilePath(), std::move(fake_manager_factory_),
+
+    SyncEngine::InitParams params;
+    params.sync_task_runner = sync_thread_.task_runner();
+    params.host = &mock_host_;
+    params.registrar = base::MakeUnique<SyncBackendRegistrar>(
+        std::string(), base::Bind(&SyncClient::CreateModelWorkerForGroup,
+                                  base::Unretained(&sync_client_)));
+    params.http_factory_getter = http_post_provider_factory_getter;
+    params.credentials = credentials_;
+    params.sync_manager_factory = std::move(fake_manager_factory_);
+    params.delete_sync_data_folder = true;
+    params.unrecoverable_error_handler =
         MakeWeakHandle(test_unrecoverable_error_handler_.GetWeakPtr()),
-        base::Closure(), http_post_provider_factory_getter,
-        std::move(saved_nigori_state_));
+    params.saved_nigori_state = std::move(saved_nigori_state_);
+    sync_prefs_->GetInvalidationVersions(&params.invalidation_versions);
+
+    backend_->Initialize(std::move(params));
+
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_timeout());

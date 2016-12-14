@@ -31,8 +31,6 @@
 #include "components/sync/protocol/encryption.pb.h"
 #include "components/sync/protocol/sync_protocol_error.h"
 
-class GURL;
-
 namespace invalidation {
 class InvalidationService;
 }  // namespace invalidation
@@ -43,10 +41,7 @@ class ChangeProcessor;
 class SyncBackendHostCore;
 class SyncBackendRegistrar;
 class SyncClient;
-class SyncManagerFactory;
 class SyncPrefs;
-class UnrecoverableErrorHandler;
-struct DoInitializeOptions;
 
 // The only real implementation of the SyncEngine. See that interface's
 // definition for documentation of public methods.
@@ -63,22 +58,7 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   ~SyncBackendHostImpl() override;
 
   // SyncEngine implementation.
-  void Initialize(
-      SyncEngineHost* host,
-      scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner,
-      const WeakHandle<JsEventHandler>& event_handler,
-      const GURL& service_url,
-      const std::string& sync_user_agent,
-      const SyncCredentials& credentials,
-      bool delete_sync_data_folder,
-      bool enable_local_sync_backend,
-      const base::FilePath& local_sync_backend_folder,
-      std::unique_ptr<SyncManagerFactory> sync_manager_factory,
-      const WeakHandle<UnrecoverableErrorHandler>& unrecoverable_error_handler,
-      const base::Closure& report_unrecoverable_error_function,
-      const HttpPostProviderFactoryGetter& http_post_provider_factory_getter,
-      std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state)
-      override;
+  void Initialize(InitParams params) override;
   void TriggerRefresh(const ModelTypeSet& types) override;
   void UpdateCredentials(const SyncCredentials& credentials) override;
   void StartSyncingWithServer() override;
@@ -130,9 +110,6 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
  protected:
   // The types and functions below are protected so that test
   // subclasses can use them.
-
-  // Allows tests to perform alternate core initialization work.
-  virtual void InitCore(std::unique_ptr<DoInitializeOptions> options);
 
   // Request the syncer to reconfigure with the specfied params.
   // Virtual for testing.
@@ -300,11 +277,12 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
 
   const base::WeakPtr<SyncPrefs> sync_prefs_;
 
-  std::unique_ptr<SyncBackendRegistrar> registrar_;
-
   // The host which we serve (and are owned by). Set in Initialize() and nulled
   // out in StopSyncingForShutdown().
   SyncEngineHost* host_ = nullptr;
+
+  // A pointer to the registrar; owned by |core_|.
+  SyncBackendRegistrar* registrar_ = nullptr;
 
   // We cache the cryptographer's pending keys whenever NotifyPassphraseRequired
   // is called. This way, before the UI calls SetDecryptionPassphrase on the
