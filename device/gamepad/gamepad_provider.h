@@ -18,6 +18,7 @@
 #include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/gamepad_pad_state_provider.h"
 #include "device/gamepad/gamepad_shared_buffer.h"
+#include "mojo/public/cpp/system/buffer.h"
 
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 
@@ -56,10 +57,8 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   base::SharedMemoryHandle GetSharedMemoryHandleForProcess(
       base::ProcessHandle renderer_process);
 
-  // TODO(heke) Change to mojo::ScopedSharedBufferHandle GetSharedBufferHandle()
-  // See crbug/671928 for details.
-  // Returns the shared memory handle of the gamepad data.
-  base::SharedMemoryHandle GetSharedMemoryHandle();
+  // Returns a new mojo::ScopedSharedBufferHandle of the gamepad data.
+  mojo::ScopedSharedBufferHandle GetSharedBufferHandle();
 
   void AddGamepadDataFetcher(GamepadDataFetcher* fetcher);
   void RemoveGamepadDataFetcher(GamepadDataFetcher* fetcher);

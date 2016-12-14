@@ -15,7 +15,6 @@
 #include "device/gamepad/gamepad_consumer.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_provider.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace device {
 
@@ -151,12 +150,7 @@ base::SharedMemoryHandle GamepadService::GetSharedMemoryHandleForProcess(
 
 mojo::ScopedSharedBufferHandle GamepadService::GetSharedBufferHandle() {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
-
-  // TODO(heke): Use mojo::SharedBuffer rather than base::SharedMemory in
-  // GamepadSharedBuffer. See crbug.com/670655 for details.
-  return mojo::WrapSharedMemoryHandle(provider_->GetSharedMemoryHandle(),
-                                      sizeof(GamepadHardwareBuffer),
-                                      true /* read_only */);
+  return provider_->GetSharedBufferHandle();
 }
 
 void GamepadService::OnUserGesture() {

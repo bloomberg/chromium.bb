@@ -22,6 +22,7 @@
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_data_fetcher_manager.h"
 #include "device/gamepad/gamepad_user_gesture.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 using blink::WebGamepad;
 using blink::WebGamepads;
@@ -92,9 +93,13 @@ base::SharedMemoryHandle GamepadProvider::GetSharedMemoryHandleForProcess(
   return renderer_handle;
 }
 
-base::SharedMemoryHandle GamepadProvider::GetSharedMemoryHandle() {
-  return base::SharedMemory::DuplicateHandle(
+mojo::ScopedSharedBufferHandle GamepadProvider::GetSharedBufferHandle() {
+  // TODO(heke): Use mojo::SharedBuffer rather than base::SharedMemory in
+  // GamepadSharedBuffer. See crbug.com/670655 for details
+  base::SharedMemoryHandle handle = base::SharedMemory::DuplicateHandle(
       gamepad_shared_buffer_->shared_memory()->handle());
+  return mojo::WrapSharedMemoryHandle(handle, sizeof(GamepadHardwareBuffer),
+                                      true /* read_only */);
 }
 
 void GamepadProvider::GetCurrentGamepadData(WebGamepads* data) {
