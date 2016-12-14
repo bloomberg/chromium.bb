@@ -542,7 +542,8 @@ class IsolateServerGrpc(StorageApi):
     # array (like [0x01, 0x2a, 0xbc]).
     req_digest.digest = binascii.unhexlify(digest)
     expected_offset = 0
-    for response in self._stub.FetchBlobs(request):
+    for response in self._stub.FetchBlobs(request,
+                                          timeout=DOWNLOAD_READ_TIMEOUT):
       if not response.status.succeeded:
         raise IOError(
             'Error while fetching %s: %s' % (digest, response.status))
@@ -566,7 +567,8 @@ class IsolateServerGrpc(StorageApi):
     try:
       def chunker():
         # Returns one bit of content at a time
-        if not isinstance(content, collections.Iterable):
+        if (isinstance(content, str)
+            or not isinstance(content, collections.Iterable)):
           yield content
         else:
           for chunk in content:
@@ -581,7 +583,7 @@ class IsolateServerGrpc(StorageApi):
         for chunk in chunker():
           # Make sure we send at least one chunk for zero-length blobs
           has_sent_anything = False
-          while chunk and not has_sent_anything:
+          while chunk or not has_sent_anything:
             slice_len = min(len(chunk), NET_IO_FILE_CHUNK)
             request.data.data = chunk[:slice_len]
             yield request
