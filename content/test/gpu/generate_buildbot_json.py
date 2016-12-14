@@ -1442,9 +1442,6 @@ def tester_config_matches_tester(tester_name, tester_config, tc, is_fyi,
   return True
 
 def should_run_on_tester(tester_name, tester_config, test_config, is_fyi):
-  # TODO(jmadill): Re-enable when n5x fixed. See http://crbug.com/672502.
-  if 'Nexus 5X' in tester_name:
-    return False
   # Check if this config is disabled on this tester
   if 'disabled_tester_configs' in test_config:
     for dtc in test_config['disabled_tester_configs']:
