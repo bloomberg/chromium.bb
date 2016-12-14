@@ -25,6 +25,7 @@
 #include "components/previews/core/previews_opt_out_store.h"
 #include "components/previews/core/previews_ui_service.h"
 #include "components/variations/variations_associated_data.h"
+#include "net/base/load_flags.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "net/url_request/url_request.h"
@@ -212,12 +213,21 @@ TEST_F(PreviewsIODataTest, TestShouldAllowPreview) {
   network_quality_estimator.set_effective_connection_type(
       net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 
+  request->SetLoadFlags(net::LOAD_BYPASS_CACHE);
+  EXPECT_FALSE(io_data()->ShouldAllowPreview(*request, PreviewsType::OFFLINE));
+  histogram_tester.ExpectBucketCount(
+      "Previews.EligibilityReason.Offline",
+      static_cast<int>(
+          PreviewsEligibilityReason::RELOAD_DISALLOWED_FOR_OFFLINE),
+      1);
+
+  request->SetLoadFlags(0);
   EXPECT_TRUE(io_data()->ShouldAllowPreview(*request, PreviewsType::OFFLINE));
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.Offline",
       static_cast<int>(PreviewsEligibilityReason::ALLOWED), 1);
 
-  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.Offline", 6);
+  histogram_tester.ExpectTotalCount("Previews.EligibilityReason.Offline", 7);
 
   variations::testing::ClearAllVariationParams();
 }

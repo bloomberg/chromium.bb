@@ -15,6 +15,7 @@
 #include "components/previews/core/previews_black_list.h"
 #include "components/previews/core/previews_opt_out_store.h"
 #include "components/previews/core/previews_ui_service.h"
+#include "net/base/load_flags.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -115,6 +116,15 @@ bool PreviewsIOData::ShouldAllowPreview(const net::URLRequest& request,
       net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G) {
     LogPreviewsEligibilityReason(PreviewsEligibilityReason::NETWORK_NOT_SLOW,
                                  type);
+    return false;
+  }
+  // LOAD_VALIDATE_CACHE or LOAD_BYPASS_CACHE mean the user reloaded the page.
+  // If this is a query for offline previews, reloads should be disallowed.
+  if (type == PreviewsType::OFFLINE &&
+      request.load_flags() &
+          (net::LOAD_VALIDATE_CACHE | net::LOAD_BYPASS_CACHE)) {
+    LogPreviewsEligibilityReason(
+        PreviewsEligibilityReason::RELOAD_DISALLOWED_FOR_OFFLINE, type);
     return false;
   }
   LogPreviewsEligibilityReason(PreviewsEligibilityReason::ALLOWED, type);

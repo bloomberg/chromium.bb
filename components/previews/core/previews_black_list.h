@@ -49,7 +49,9 @@ enum class PreviewsEligibilityReason {
   NETWORK_QUALITY_UNAVAILABLE = 6,
   // The network was fast enough to not warrant previews.
   NETWORK_NOT_SLOW = 7,
-  LAST = 8,
+  // If the page was reloaded, the user should not be shown an offline preview.
+  RELOAD_DISALLOWED_FOR_OFFLINE = 8,
+  LAST = 9,
 };
 
 // Manages the state of black listed domains for the previews experiment. Loads
