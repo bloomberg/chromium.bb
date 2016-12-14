@@ -2073,3 +2073,14 @@ fuzzer_test("net_http_security_headers_hpkp_report_only_fuzzer") {
   ]
   dict = "data/fuzzer_dictionaries/net_http_security_headers_fuzzer.dict"
 }
+
+if (host_toolchain == current_toolchain) {
+  executable("domain_security_preload_generator") {
+    sources = gypi_values.net_domain_security_state_generator_sources
+    deps = [
+      "//base",
+      "//crypto",
+      "//third_party/boringssl",
+    ]
+  }
+}
