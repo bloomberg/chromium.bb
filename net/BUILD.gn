@@ -1344,6 +1344,7 @@ test("net_unittests") {
       "cert/internal/trust_store_nss_unittest.cc",
       "cert/nss_cert_database_unittest.cc",
       "ssl/client_cert_store_nss_unittest.cc",
+      "ssl/ssl_platform_key_nss_unittest.cc",
     ]
     if (is_chromeos) {  # Already removed for all non-ChromeOS builds.
       sources -= [
@@ -1554,6 +1555,11 @@ test("net_unittests") {
 
   if (is_win) {
     libs = [ "iphlpapi.lib" ]
+  }
+
+  if (is_chromecast && use_nss_certs) {
+    sources += [ "ssl/ssl_platform_key_chromecast_unittest.cc" ]
+    sources -= [ "ssl/ssl_platform_key_nss_unittest.cc" ]
   }
 }
 

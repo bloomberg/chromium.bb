@@ -41,11 +41,8 @@ class SSLPlatformKeyChromecast : public ThreadedSSLPrivateKey::Delegate {
   SSLPrivateKey::Type GetType() override { return SSLPrivateKey::Type::RSA; }
 
   std::vector<SSLPrivateKey::Hash> GetDigestPreferences() override {
-    static const SSLPrivateKey::Hash kHashes[] = {
-        SSLPrivateKey::Hash::SHA256, SSLPrivateKey::Hash::SHA1,
-        SSLPrivateKey::Hash::MD5_SHA1};
-    return std::vector<SSLPrivateKey::Hash>(kHashes,
-                                            kHashes + arraysize(kHashes));
+    return std::vector<SSLPrivateKey::Hash>{SSLPrivateKey::Hash::SHA256,
+                                            SSLPrivateKey::Hash::SHA1};
   }
 
   size_t GetMaxSignatureLengthInBytes() override {

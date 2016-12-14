@@ -2152,6 +2152,7 @@
       'ssl/ssl_connection_status_flags_unittest.cc',
       'ssl/ssl_platform_key_android_unittest.cc',
       'ssl/ssl_platform_key_mac_unittest.cc',
+      'ssl/ssl_platform_key_nss_unittest.cc',
       'ssl/ssl_platform_key_util_unittest.cc',
       'ssl/ssl_private_key_test_util.cc',
       'ssl/ssl_private_key_test_util.h',
