@@ -116,7 +116,12 @@ static INLINE void aom_write_bit(aom_writer *w, int bit) {
 
 static INLINE void aom_write_bit_record(aom_writer *w, int bit,
                                         TOKEN_STATS *token_stats) {
-  aom_write_record(w, bit, 128, token_stats);  // aom_prob_half
+  aom_write_bit(w, bit);
+#if CONFIG_RD_DEBUG
+  token_stats->cost += av1_cost_bit(128, bit);  // aom_prob_half
+#else
+  (void)token_stats;
+#endif
 }
 
 static INLINE void aom_write_literal(aom_writer *w, int data, int bits) {
