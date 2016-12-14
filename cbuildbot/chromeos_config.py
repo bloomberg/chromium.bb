@@ -715,9 +715,6 @@ _waterfall_config_map = {
 
         # Firmware Builders.
         'link-depthcharge-full-firmware',
-
-        # Experimental PFQ for generating AFDO data for llvm.
-        'chell-chrome-pfq',
     ]),
 }
 
@@ -3190,11 +3187,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'useflags': append_useflags(['-transparent_hugepage']),
           'hw_tests': ([hw_test_list.AFDORecordTest()] +
                        hw_test_list.SharedPoolPFQ()),
-      },
-
-      'chell-chrome-pfq': {
-          # Disable hugepages before collecting AFDO profile.
-          'useflags': append_useflags(['-transparent_hugepage']),
       },
 
       'cyan-chrome-pfq': {
