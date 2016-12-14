@@ -251,7 +251,7 @@ void DocumentMarkerController::addMarker(Node* node,
   RenderedDocumentMarker* newRenderedMarker =
       RenderedDocumentMarker::create(newMarker);
   if (list->isEmpty() || list->back()->endOffset() < newMarker.startOffset()) {
-    list->append(newRenderedMarker);
+    list->push_back(newRenderedMarker);
   } else {
     if (newMarker.type() != DocumentMarker::TextMatch &&
         newMarker.type() != DocumentMarker::Composition) {
@@ -449,7 +449,7 @@ DocumentMarkerVector DocumentMarkerController::markersFor(
       continue;
 
     for (size_t i = 0; i < list->size(); ++i)
-      result.append(list->at(i).get());
+      result.push_back(list->at(i).get());
   }
 
   std::sort(result.begin(), result.end(), compareByStart);
@@ -465,7 +465,7 @@ DocumentMarkerVector DocumentMarkerController::markers() {
          ++markerListIndex) {
       Member<MarkerList>& list = (*markers)[markerListIndex];
       for (size_t j = 0; list.get() && j < list->size(); ++j)
-        result.append(list->at(j).get());
+        result.push_back(list->at(j).get());
     }
   }
   std::sort(result.begin(), result.end(), compareByStart);
@@ -497,7 +497,7 @@ DocumentMarkerVector DocumentMarkerController::markersInRange(
         continue;
       if (node == endContainer && marker->startOffset() >= endOffset)
         continue;
-      foundMarkers.append(marker);
+      foundMarkers.push_back(marker);
     }
   }
   return foundMarkers;
@@ -530,7 +530,7 @@ Vector<IntRect> DocumentMarkerController::renderedRectsForMarkers(
         updateMarkerRenderedRectIfNeeded(node, *marker);
         if (!marker->isRendered())
           continue;
-        result.append(marker->renderedRect());
+        result.push_back(marker->renderedRect());
       }
     }
   }

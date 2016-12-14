@@ -170,7 +170,7 @@ TEST_F(InputMethodControllerTest, SetCompositionFromExistingText) {
       "<div id='sample' contenteditable>hello world</div>", "sample");
 
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
   controller().setCompositionFromExistingText(underlines, 0, 5);
 
   Range* range = controller().compositionRange();
@@ -189,7 +189,7 @@ TEST_F(InputMethodControllerTest, SetCompositionKeepingStyle) {
       "sample");
 
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(3, 12, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(3, 12, Color(255, 0, 0), false, 0));
   controller().setCompositionFromExistingText(underlines, 3, 12);
 
   // Subtract a character.
@@ -218,7 +218,7 @@ TEST_F(InputMethodControllerTest, SetCompositionWithEmojiKeepingStyle) {
       "<div id='sample' contenteditable><b>&#x1f3e0</b></div>", "sample");
 
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
 
   controller().setCompositionFromExistingText(underlines, 0, 2);
 
@@ -242,7 +242,7 @@ TEST_F(InputMethodControllerTest,
       "<div id='sample' contenteditable><b>&#xc03</b></div>", "sample");
 
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
   controller().setCompositionFromExistingText(underlines, 0, 1);
 
   // 0xE0 0xB0 0x83 0xE0 0xB0 0x83, a telugu character with 2 code points in
@@ -264,7 +264,7 @@ TEST_F(InputMethodControllerTest, FinishComposingTextKeepingStyle) {
       "sample");
 
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(3, 12, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(3, 12, Color(255, 0, 0), false, 0));
   controller().setCompositionFromExistingText(underlines, 3, 12);
 
   controller().setComposition(String("123hello789"), underlines, 11, 11);
@@ -281,7 +281,7 @@ TEST_F(InputMethodControllerTest, CommitTextKeepingStyle) {
       "sample");
 
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(3, 12, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(3, 12, Color(255, 0, 0), false, 0));
   controller().setCompositionFromExistingText(underlines, 3, 12);
 
   controller().commitText(String("123789"), 0);
@@ -293,7 +293,7 @@ TEST_F(InputMethodControllerTest, SelectionOnConfirmExistingText) {
                     "sample");
 
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
   controller().setCompositionFromExistingText(underlines, 0, 5);
 
   controller().finishComposingText(InputMethodController::KeepSelection);
@@ -320,7 +320,7 @@ TEST_F(InputMethodControllerTest, DeleteBySettingEmptyComposition) {
   EXPECT_STREQ("foo", input->value().utf8().data());
 
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 3, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 3, Color(255, 0, 0), false, 0));
   controller().setCompositionFromExistingText(underlines, 0, 3);
 
   controller().setComposition(String(""), underlines, 0, 3);
@@ -336,7 +336,7 @@ TEST_F(InputMethodControllerTest,
       "<div id='sample' contenteditable>\nhello world</div>", "sample");
 
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
   controller().setCompositionFromExistingText(underlines, 0, 5);
 
   Range* range = controller().compositionRange();
@@ -353,7 +353,7 @@ TEST_F(InputMethodControllerTest,
   insertHTMLElement("<div id='sample' contenteditable>test</div>", "sample");
 
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(7, 8, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(7, 8, Color(255, 0, 0), false, 0));
   controller().setCompositionFromExistingText(underlines, 7, 8);
 
   EXPECT_FALSE(controller().compositionRange());
@@ -364,7 +364,7 @@ TEST_F(InputMethodControllerTest, ConfirmPasswordComposition) {
       "<input id='sample' type='password' size='24'>", "sample"));
 
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
   controller().setComposition("foo", underlines, 0, 3);
   controller().finishComposingText(InputMethodController::KeepSelection);
 
@@ -698,7 +698,7 @@ TEST_F(InputMethodControllerTest, SetCompositionForInputWithNewCaretPositions) {
   EXPECT_EQ(2u, controller().getSelectionOffsets().end());
 
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
 
   // The caret exceeds left boundary.
   // "*heABllo", where * stands for caret.
@@ -762,7 +762,7 @@ TEST_F(InputMethodControllerTest,
   EXPECT_EQ(17u, controller().getSelectionOffsets().end());
 
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
 
   // The caret exceeds left boundary.
   // "*hello\nworld\n01234AB56789", where * stands for caret.
@@ -852,9 +852,9 @@ TEST_F(InputMethodControllerTest, SetCompositionWithEmptyText) {
   EXPECT_EQ(2u, controller().getSelectionOffsets().end());
 
   Vector<CompositionUnderline> underlines0;
-  underlines0.append(CompositionUnderline(0, 0, Color(255, 0, 0), false, 0));
+  underlines0.push_back(CompositionUnderline(0, 0, Color(255, 0, 0), false, 0));
   Vector<CompositionUnderline> underlines2;
-  underlines2.append(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
+  underlines2.push_back(CompositionUnderline(0, 2, Color(255, 0, 0), false, 0));
 
   controller().setComposition("AB", underlines2, 2, 2);
   // With previous composition.
@@ -875,7 +875,7 @@ TEST_F(InputMethodControllerTest, InsertLineBreakWhileComposingText) {
       insertHTMLElement("<div id='sample' contenteditable></div>", "sample");
 
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
   controller().setComposition("hello", underlines, 5, 5);
   EXPECT_STREQ("hello", div->innerText().utf8().data());
   EXPECT_EQ(5u, controller().getSelectionOffsets().start());
@@ -921,7 +921,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventIsComposing) {
 
   // Simulate composition in the |contentEditable|.
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
   editable->focus();
 
   document().setTitle(emptyString());
@@ -941,7 +941,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForReplace) {
 
   // Simulate composition in the |contentEditable|.
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
 
   document().setTitle(emptyString());
   controller().setComposition("hell", underlines, 4, 4);
@@ -960,7 +960,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForConfirm) {
 
   // Simulate composition in the |contentEditable|.
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
 
   document().setTitle(emptyString());
   controller().setComposition("hello", underlines, 5, 5);
@@ -980,7 +980,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForDelete) {
 
   // Simulate composition in the |contentEditable|.
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
 
   document().setTitle(emptyString());
   controller().setComposition("hello", underlines, 5, 5);
@@ -999,7 +999,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForInsert) {
 
   // Simulate composition in the |contentEditable|.
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
 
   // Insert new text without previous composition.
   document().setTitle(emptyString());
@@ -1027,7 +1027,7 @@ TEST_F(InputMethodControllerTest, CompositionInputEventForInsertEmptyText) {
 
   // Simulate composition in the |contentEditable|.
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
 
   // Insert empty text without previous composition.
   document().setTitle(emptyString());
@@ -1053,7 +1053,7 @@ TEST_F(InputMethodControllerTest, CompositionEndEventForConfirm) {
 
   // Simulate composition in the |contentEditable|.
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
 
   controller().setComposition("hello", underlines, 1, 1);
   document().updateStyleAndLayout();
@@ -1073,7 +1073,7 @@ TEST_F(InputMethodControllerTest, CompositionEndEventForInsert) {
 
   // Simulate composition in the |contentEditable|.
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
 
   controller().setComposition("n", underlines, 1, 1);
 
@@ -1091,7 +1091,7 @@ TEST_F(InputMethodControllerTest, CompositionEndEventWithRangeSelection) {
 
   // Simulate composition in the |contentEditable|.
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
 
   controller().setComposition("hello", underlines, 1, 1);
   document().updateStyleAndLayout();
@@ -1111,7 +1111,7 @@ TEST_F(InputMethodControllerTest, CompositionEndEventWithNoSelection) {
 
   // Simulate composition in the |contentEditable|.
   Vector<CompositionUnderline> underlines;
-  underlines.append(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
+  underlines.push_back(CompositionUnderline(0, 5, Color(255, 0, 0), false, 0));
 
   controller().setComposition("hello", underlines, 1, 1);
   document().updateStyleAndLayout();

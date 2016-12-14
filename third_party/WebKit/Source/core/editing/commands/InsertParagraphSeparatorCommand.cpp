@@ -141,7 +141,7 @@ void InsertParagraphSeparatorCommand::getAncestorsInsideBlock(
   if (insertionNode != outerBlock) {
     for (Element* n = insertionNode->parentElement(); n && n != outerBlock;
          n = n->parentElement())
-      ancestors.append(n);
+      ancestors.push_back(n);
   }
 }
 

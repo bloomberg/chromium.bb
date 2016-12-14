@@ -195,7 +195,7 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState) {
   HeapVector<Member<Element>> ancestors;
   for (Element* node = startNode->parentElement();
        node && node != topBlockquote; node = node->parentElement())
-    ancestors.append(node);
+    ancestors.push_back(node);
 
   // Insert a clone of the top blockquote after the break.
   Element* clonedBlockquote = topBlockquote->cloneElementWithoutChildren();

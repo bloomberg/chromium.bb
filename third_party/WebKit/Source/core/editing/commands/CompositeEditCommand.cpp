@@ -151,7 +151,7 @@ InputEvent::InputType EditCommandComposition::inputType() const {
 }
 
 void EditCommandComposition::append(SimpleEditCommand* command) {
-  m_commands.append(command);
+  m_commands.push_back(command);
 }
 
 void EditCommandComposition::append(EditCommandComposition* composition) {
@@ -287,7 +287,7 @@ void CompositeEditCommand::applyCommandToComposite(EditCommand* command,
     command->setParent(0);
     ensureComposition()->append(toSimpleEditCommand(command));
   }
-  m_commands.append(command);
+  m_commands.push_back(command);
 }
 
 void CompositeEditCommand::applyCommandToComposite(
@@ -301,7 +301,7 @@ void CompositeEditCommand::applyCommandToComposite(
   }
   command->doApply(editingState);
   if (!editingState->isAborted())
-    m_commands.append(command);
+    m_commands.push_back(command);
 }
 
 void CompositeEditCommand::appendCommandToComposite(

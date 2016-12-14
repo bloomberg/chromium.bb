@@ -204,7 +204,7 @@ RangeVector* RangesFromCurrentSelectionOrExtendCaret(
   // We only supports single selections.
   if (selectionModifier.selection().isNone())
     return ranges;
-  ranges->append(firstRangeOf(selectionModifier.selection()));
+  ranges->push_back(firstRangeOf(selectionModifier.selection()));
   return ranges;
 }
 

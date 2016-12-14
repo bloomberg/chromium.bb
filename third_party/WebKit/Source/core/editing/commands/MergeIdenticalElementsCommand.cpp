@@ -78,7 +78,7 @@ void MergeIdenticalElementsCommand::doUnapply() {
   HeapVector<Member<Node>> children;
   for (Node* child = m_element2->firstChild(); child && child != atChild;
        child = child->nextSibling())
-    children.append(child);
+    children.push_back(child);
 
   for (auto& child : children)
     m_element1->appendChild(child.release(), exceptionState);

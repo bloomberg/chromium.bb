@@ -1084,7 +1084,7 @@ Vector<TextCheckingResult> SpellChecker::findMisspellings(const String& text) {
       misspelling.decoration = TextDecorationTypeSpelling;
       misspelling.location = wordStart + misspellingLocation;
       misspelling.length = misspellingLength;
-      results.append(misspelling);
+      results.push_back(misspelling);
     }
     wordStart = wordEnd;
   }

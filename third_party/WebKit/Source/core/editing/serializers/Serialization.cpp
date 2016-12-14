@@ -107,7 +107,7 @@ static void completeURLs(DocumentFragment& fragment, const String& baseURL) {
     // AttributeCollection::iterator end = attributes.end();
     for (const auto& attribute : attributes) {
       if (element.isURLAttribute(attribute) && !attribute.value().isEmpty())
-        changes.append(AttributeChange(
+        changes.push_back(AttributeChange(
             &element, attribute.name(),
             KURL(parsedBaseURL, attribute.value()).getString()));
     }

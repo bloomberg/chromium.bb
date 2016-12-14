@@ -31,10 +31,10 @@ Vector<UChar> codePointsToCodeUnits(const Vector<UChar32>& codePoints) {
   Vector<UChar> out;
   for (const auto& codePoint : codePoints) {
     if (U16_LENGTH(codePoint) == 2) {
-      out.append(U16_LEAD(codePoint));
-      out.append(U16_TRAIL(codePoint));
+      out.push_back(U16_LEAD(codePoint));
+      out.push_back(U16_TRAIL(codePoint));
     } else {
-      out.append(static_cast<UChar>(codePoint));
+      out.push_back(static_cast<UChar>(codePoint));
     }
   }
   return out;

@@ -50,7 +50,7 @@ void SplitElementCommand::executeApply() {
   HeapVector<Member<Node>> children;
   for (Node* node = m_element2->firstChild(); node != m_atChild;
        node = node->nextSibling())
-    children.append(node);
+    children.push_back(node);
 
   DummyExceptionStateForTesting exceptionState;
 

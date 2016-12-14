@@ -77,7 +77,7 @@ void FullyClippedStateStackAlgorithm<Strategy>::setUpFullyClippedStack(
   HeapVector<Member<ContainerNode>, 100> ancestry;
   for (ContainerNode* parent = parentCrossingShadowBoundaries<Strategy>(*node);
        parent; parent = parentCrossingShadowBoundaries<Strategy>(*parent))
-    ancestry.append(parent);
+    ancestry.push_back(parent);
 
   // Call pushFullyClippedState on each node starting with the earliest
   // ancestor.

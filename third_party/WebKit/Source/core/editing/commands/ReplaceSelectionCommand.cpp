@@ -341,7 +341,7 @@ void ReplacementFragment::removeUnrenderedNodes(ContainerNode* holder) {
 
   for (Node& node : NodeTraversal::descendantsOf(*holder)) {
     if (!isNodeRendered(node) && !isTableStructureNode(&node))
-      unrendered.append(&node);
+      unrendered.push_back(&node);
   }
 
   for (auto& node : unrendered)

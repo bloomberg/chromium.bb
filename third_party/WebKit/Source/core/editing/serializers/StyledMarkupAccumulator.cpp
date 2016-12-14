@@ -181,7 +181,7 @@ void StyledMarkupAccumulator::wrapWithStyleNode(StylePropertySet* style) {
   MarkupFormatter::appendAttributeValue(openTag, style->asText(),
                                         m_document->isHTMLDocument());
   openTag.append("\">");
-  m_reversedPrecedingMarkup.append(openTag.toString());
+  m_reversedPrecedingMarkup.push_back(openTag.toString());
 
   m_result.append("</div>");
 }
@@ -229,7 +229,7 @@ bool StyledMarkupAccumulator::shouldAnnotate() const {
 }
 
 void StyledMarkupAccumulator::pushMarkup(const String& str) {
-  m_reversedPrecedingMarkup.append(str);
+  m_reversedPrecedingMarkup.push_back(str);
 }
 
 void StyledMarkupAccumulator::appendInterchangeNewline() {

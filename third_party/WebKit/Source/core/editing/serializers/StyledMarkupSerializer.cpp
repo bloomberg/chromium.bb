@@ -362,7 +362,7 @@ Node* StyledMarkupTraverser<Strategy>::traverse(Node* startNode,
 
         // If node has no children, close the tag now.
         if (Strategy::hasChildren(*n)) {
-          ancestorsToClose.append(toContainerNode(n));
+          ancestorsToClose.push_back(toContainerNode(n));
           continue;
         }
         appendEndMarkup(*n);

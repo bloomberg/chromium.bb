@@ -65,7 +65,7 @@ void SimplifyMarkupCommand::doApply(EditingState* editingState) {
     while (currentNode != rootNode) {
       if (currentNode->parentNode() != rootNode &&
           isRemovableBlock(currentNode))
-        nodesToRemove.append(currentNode);
+        nodesToRemove.push_back(currentNode);
 
       currentNode = currentNode->parentNode();
       if (!currentNode)
@@ -90,7 +90,7 @@ void SimplifyMarkupCommand::doApply(EditingState* editingState) {
       for (Node& node : NodeTraversal::inclusiveAncestorsOf(*startingNode)) {
         if (node == topNodeWithStartingStyle)
           break;
-        nodesToRemove.append(static_cast<ContainerNode*>(&node));
+        nodesToRemove.push_back(static_cast<ContainerNode*>(&node));
       }
     }
   }

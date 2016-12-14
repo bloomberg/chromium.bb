@@ -121,7 +121,7 @@ void GranularityStrategyTest::setInnerHTML(const char* htmlContent) {
 
 void GranularityStrategyTest::parseText(Text* text) {
   TextNodeVector textNodes;
-  textNodes.append(text);
+  textNodes.push_back(text);
   parseText(textNodes);
 }
 
@@ -132,7 +132,7 @@ void GranularityStrategyTest::parseText(const TextNodeVector& textNodes) {
     int wordStartIndexOffset = m_letterPos.size();
     String str = text->wholeText();
     for (size_t i = 0; i < str.length(); i++) {
-      m_letterPos.append(visiblePositionToContentsPoint(
+      m_letterPos.push_back(visiblePositionToContentsPoint(
           createVisiblePosition(Position(text, i))));
       char c = str[i];
       if (isASCIIAlphanumeric(c) && !wordStarted) {
@@ -143,7 +143,7 @@ void GranularityStrategyTest::parseText(const TextNodeVector& textNodes) {
                              m_letterPos[i + wordStartIndexOffset].x()) /
                                 2,
                             m_letterPos[wordStartIndex].y());
-        m_wordMiddles.append(wordMiddle);
+        m_wordMiddles.push_back(wordMiddle);
         wordStarted = false;
       }
     }
@@ -156,7 +156,7 @@ void GranularityStrategyTest::parseText(const TextNodeVector& textNodes) {
                    .x();
     IntPoint wordMiddle((m_letterPos[wordStartIndex].x() + xEnd) / 2,
                         m_letterPos[wordStartIndex].y());
-    m_wordMiddles.append(wordMiddle);
+    m_wordMiddles.push_back(wordMiddle);
   }
 }
 
@@ -256,9 +256,9 @@ void GranularityStrategyTest::setupTextSpan(String str1,
   Vector<IntPoint> wordMiddlePos;
 
   TextNodeVector textNodes;
-  textNodes.append(text1);
-  textNodes.append(text2);
-  textNodes.append(text3);
+  textNodes.push_back(text1);
+  textNodes.push_back(text2);
+  textNodes.push_back(text3);
   parseText(textNodes);
 
   Position p1;

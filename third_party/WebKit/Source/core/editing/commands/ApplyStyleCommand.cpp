@@ -508,7 +508,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(
     if (inlineStyle->isEmpty()) {
       removeElementAttribute(element, styleAttr);
       if (isSpanWithoutAttributesOrUnstyledStyleSpan(element))
-        unstyledSpans.append(element);
+        unstyledSpans.push_back(element);
     }
   }
 
@@ -1006,7 +1006,7 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(
     if (!shouldApplyInlineStyleToRun(style, runStart, pastEndNode))
       continue;
 
-    runs.append(InlineRunToApplyStyle(runStart, runEnd, pastEndNode));
+    runs.push_back(InlineRunToApplyStyle(runStart, runEnd, pastEndNode));
   }
 
   for (auto& run : runs) {
@@ -1339,7 +1339,7 @@ void ApplyStyleCommand::pushDownInlineStyleAroundNode(
     if (current->isStyledElement() &&
         isStyledInlineElementToRemove(toElement(current))) {
       styledElement = toElement(current);
-      elementsToPushDown.append(styledElement);
+      elementsToPushDown.push_back(styledElement);
     }
 
     EditingStyle* styleToPushDown = EditingStyle::create();
@@ -2001,7 +2001,7 @@ void ApplyStyleCommand::joinChildTextNodes(ContainerNode* node,
     if (!curr->isTextNode())
       continue;
 
-    textNodes.append(toText(curr));
+    textNodes.push_back(toText(curr));
   }
 
   for (const auto& textNode : textNodes) {
