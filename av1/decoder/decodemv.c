@@ -803,6 +803,15 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   mbmi->ref_frame[0] = INTRA_FRAME;
   mbmi->ref_frame[1] = NONE;
 
+#if CONFIG_CB4X4
+  (void)i;
+  mbmi->mode =
+#if CONFIG_DAALA_EC
+      read_intra_mode(r, get_y_mode_cdf(cm, mi, above_mi, left_mi, 0));
+#else
+      read_intra_mode(r, get_y_mode_probs(cm, mi, above_mi, left_mi, 0));
+#endif  // CONFIG_DAALA_EC
+#else
   switch (bsize) {
     case BLOCK_4X4:
       for (i = 0; i < 4; ++i)
@@ -850,6 +859,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
           read_intra_mode(r, get_y_mode_probs(cm, mi, above_mi, left_mi, 0));
 #endif
   }
+#endif
 
   mbmi->uv_mode = read_intra_mode_uv(cm, xd, r, mbmi->mode);
 #if CONFIG_EXT_INTRA
@@ -1127,6 +1137,10 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm,
   mbmi->ref_frame[0] = INTRA_FRAME;
   mbmi->ref_frame[1] = NONE;
 
+#if CONFIG_CB4X4
+  (void)i;
+  mbmi->mode = read_intra_mode_y(cm, xd, r, size_group_lookup[bsize]);
+#else
   switch (bsize) {
     case BLOCK_4X4:
       for (i = 0; i < 4; ++i)
@@ -1146,6 +1160,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm,
     default:
       mbmi->mode = read_intra_mode_y(cm, xd, r, size_group_lookup[bsize]);
   }
+#endif
 
   mbmi->uv_mode = read_intra_mode_uv(cm, xd, r, mbmi->mode);
 #if CONFIG_EXT_INTRA

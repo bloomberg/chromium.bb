@@ -1271,6 +1271,11 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
   const int is_inter = is_inter_block(mbmi);
   const int is_compound = has_second_ref(mbmi);
   int skip, ref;
+#if CONFIG_CB4X4
+  const int unify_bsize = 1;
+#else
+  const int unify_bsize = 0;
+#endif
 
   if (seg->update_map) {
     if (seg->temporal_update) {
@@ -1341,7 +1346,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
   }
 
   if (!is_inter) {
-    if (bsize >= BLOCK_8X8) {
+    if (bsize >= BLOCK_8X8 || unify_bsize) {
 #if CONFIG_DAALA_EC
       aom_write_symbol(w, av1_intra_mode_ind[mode],
                        cm->fc->y_mode_cdf[size_group_lookup[bsize]],
@@ -1399,7 +1404,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 
     // If segment skip is not enabled code the mode.
     if (!segfeature_active(seg, segment_id, SEG_LVL_SKIP)) {
-      if (bsize >= BLOCK_8X8) {
+      if (bsize >= BLOCK_8X8 || unify_bsize) {
 #if CONFIG_EXT_INTER
         if (is_inter_compound_mode(mode))
           write_inter_compound_mode(cm, w, mode, mode_ctx);
@@ -1422,7 +1427,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
     write_mb_interp_filter(cpi, xd, w);
 #endif  // !CONFIG_EXT_INTERP && !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
 
-    if (bsize < BLOCK_8X8) {
+    if (bsize < BLOCK_8X8 && !unify_bsize) {
       const int num_4x4_w = num_4x4_blocks_wide_lookup[bsize];
       const int num_4x4_h = num_4x4_blocks_high_lookup[bsize];
       int idx, idy;
@@ -1659,6 +1664,11 @@ static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
   const MODE_INFO *const left_mi = xd->left_mi;
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
+#if CONFIG_CB4X4
+  const int unify_bsize = 1;
+#else
+  const int unify_bsize = 0;
+#endif
 
   if (seg->update_map) write_segment_id(w, seg, segp, mbmi->segment_id);
 
@@ -1683,7 +1693,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
       !xd->lossless[mbmi->segment_id])
     write_selected_tx_size(cm, xd, w);
 
-  if (bsize >= BLOCK_8X8) {
+  if (bsize >= BLOCK_8X8 || unify_bsize) {
 #if CONFIG_DAALA_EC
     aom_write_symbol(w, av1_intra_mode_ind[mbmi->mode],
                      get_y_mode_cdf(cm, mi, above_mi, left_mi, 0), INTRA_MODES);
@@ -2206,6 +2216,12 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
   const int hbs = mi_size_wide[bsize] / 2;
   const PARTITION_TYPE partition = get_partition(cm, mi_row, mi_col, bsize);
   const BLOCK_SIZE subsize = get_subsize(bsize, partition);
+#if CONFIG_CB4X4
+  const int unify_bsize = 1;
+#else
+  const int unify_bsize = 0;
+#endif
+
 #if CONFIG_SUPERTX
   const int mi_offset = mi_row * cm->mi_stride + mi_col;
   MB_MODE_INFO *mbmi;
@@ -2233,7 +2249,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
     aom_write(w, supertx_enabled, prob);
   }
 #endif  // CONFIG_SUPERTX
-  if (subsize < BLOCK_8X8) {
+  if (subsize < BLOCK_8X8 && !unify_bsize) {
     write_modes_b_wrapper(cpi, tile, w, tok, tok_end, supertx_enabled, mi_row,
                           mi_col);
   } else {
