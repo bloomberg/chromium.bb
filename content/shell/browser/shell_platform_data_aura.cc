@@ -63,6 +63,7 @@ ShellPlatformDataAura::ShellPlatformDataAura(const gfx::Size& initial_size) {
   CHECK(aura::Env::GetInstance());
   host_.reset(aura::WindowTreeHost::Create(gfx::Rect(initial_size)));
   host_->InitHost();
+  host_->window()->Show();
   host_->window()->SetLayoutManager(new FillLayout(host_->window()));
 
   focus_client_.reset(new aura::test::TestFocusClient());

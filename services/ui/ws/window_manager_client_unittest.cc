@@ -704,6 +704,7 @@ TEST_F(WindowServerTest, EstablishConnectionViaFactory) {
   second_client.ConnectViaWindowTreeFactory();
   aura::WindowTreeHostMus window_tree_host_in_second_client(&second_client);
   window_tree_host_in_second_client.InitHost();
+  window_tree_host_in_second_client.window()->Show();
   ASSERT_TRUE(second_client.GetRoots().count(
                   window_tree_host_in_second_client.window()) > 0);
   // Wait for the window to appear in the wm.
@@ -731,6 +732,7 @@ TEST_F(WindowServerTest, OnWindowHierarchyChangedIncludesTransientParent) {
   second_client.ConnectViaWindowTreeFactory();
   aura::WindowTreeHostMus window_tree_host_in_second_client(&second_client);
   window_tree_host_in_second_client.InitHost();
+  window_tree_host_in_second_client.window()->Show();
   aura::Window* second_client_child = NewVisibleWindow(
       window_tree_host_in_second_client.window(), &second_client);
   std::unique_ptr<aura::WindowPortMus> window_port_mus =

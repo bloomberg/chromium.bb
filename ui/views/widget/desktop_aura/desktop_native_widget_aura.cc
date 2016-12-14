@@ -425,6 +425,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   desktop_window_tree_host_->Init(content_window_, params);
 
   host_->InitHost();
+  host_->window()->Show();
   host_->window()->AddChild(content_window_container_);
   host_->window()->SetProperty(kDesktopNativeWidgetAuraKey, this);
 

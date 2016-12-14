@@ -290,6 +290,7 @@ void BlimpEngineSession::Initialize() {
 
   screen_->set_window_tree_host(window_tree_host_.get());
   window_tree_host_->InitHost();
+  window_tree_host_->window()->Show();
   window_tree_host_->window()->SetLayoutManager(
       new BlimpLayoutManager(window_tree_host_->window()));
   focus_client_.reset(new wm::FocusController(new FocusRulesImpl));

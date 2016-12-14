@@ -73,7 +73,6 @@ class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   display::Display GetDisplay() const;
 
   // aura::WindowTreeHostPlatform:
-  void ShowImpl() override;
   void HideImpl() override;
   void SetBoundsInPixels(const gfx::Rect& bounds) override;
   void DispatchEvent(ui::Event* event) override;

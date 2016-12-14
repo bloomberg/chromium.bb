@@ -884,6 +884,7 @@ AshWindowTreeHost* WindowTreeHostManager::AddWindowTreeHostForDisplay(
   host->AddObserver(this);
   InitRootWindowSettings(host->window())->display_id = display.id();
   host->InitHost();
+  host->window()->Show();
 
   window_tree_hosts_[display.id()] = ash_host;
   SetDisplayPropertiesOnHost(ash_host, display);

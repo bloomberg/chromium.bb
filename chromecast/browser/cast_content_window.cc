@@ -82,6 +82,7 @@ void CastContentWindow::CreateWindowTree(content::WebContents* web_contents) {
   window_tree_host_.reset(
       aura::WindowTreeHost::Create(gfx::Rect(display_size)));
   window_tree_host_->InitHost();
+  window_tree_host_->window()->Show();
   window_tree_host_->window()->SetLayoutManager(
       new CastFillLayout(window_tree_host_->window()));
 

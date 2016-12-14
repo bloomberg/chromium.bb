@@ -192,6 +192,7 @@ void MirrorWindowController::UpdateWindow(
       // TODO(oshima): TouchHUD is using idkey.
       InitRootWindowSettings(host->window())->display_id = display_info.id();
       host->InitHost();
+      host->window()->Show();
 #if defined(USE_X11)
       if (!display_manager->IsInUnifiedMode()) {
         // Mirror window shouldn't handle input events.

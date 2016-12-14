@@ -56,6 +56,7 @@ WindowTreeHost* TestScreen::CreateHostForPrimaryDisplay() {
   host_->GetInputMethod()->OnFocus();
   host_->window()->AddObserver(this);
   host_->InitHost();
+  host_->window()->Show();
   return host_;
 }
 

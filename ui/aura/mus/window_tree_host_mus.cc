@@ -126,11 +126,6 @@ display::Display WindowTreeHostMus::GetDisplay() const {
   return display::Display();
 }
 
-void WindowTreeHostMus::ShowImpl() {
-  WindowTreeHostPlatform::ShowImpl();
-  window()->Show();
-}
-
 void WindowTreeHostMus::HideImpl() {
   WindowTreeHostPlatform::HideImpl();
   window()->Hide();

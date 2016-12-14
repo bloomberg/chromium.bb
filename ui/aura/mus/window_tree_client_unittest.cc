@@ -715,9 +715,8 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindow) {
   std::unique_ptr<WindowTreeHostMus> window_tree_host =
       base::MakeUnique<WindowTreeHostMus>(window_tree_client_impl());
   window_tree_host->InitHost();
+  EXPECT_FALSE(window_tree_host->window()->TargetVisibility());
   aura::Window* top_level = window_tree_host->window();
-  // TODO: need to check WindowTreeHost visibility.
-  // EXPECT_TRUE(WindowPrivate(root2).parent_drawn());
   EXPECT_NE(server_id(top_level), server_id(root_window()));
   EXPECT_EQ(initial_root_count + 1,
             window_tree_client_impl()->GetRoots().size());
@@ -735,8 +734,7 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindow) {
   window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
                                           display_id, false);
 
-  // TODO: need to check WindowTreeHost visibility.
-  // EXPECT_FALSE(WindowPrivate(root2).parent_drawn());
+  EXPECT_FALSE(window_tree_host->window()->TargetVisibility());
 
   // Should not be able to add a top level as a child of another window.
   // TODO(sky): decide how to handle this.
@@ -759,9 +757,8 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindowGetsPropertiesFromData) {
   EXPECT_FALSE(IsWindowHostVisible(top_level));
   EXPECT_FALSE(top_level->TargetVisibility());
 
-  // TODO(mfomitchev): crbug.com/672150 InitHost() currently makes the host
-  // visible, which shouldn't be the case.
   window_tree_host.InitHost();
+  EXPECT_FALSE(window_tree_host.window()->TargetVisibility());
 
   // Ack the request to the windowtree to create the new window.
   EXPECT_EQ(window_tree()->window_id(), server_id(top_level));
@@ -776,14 +773,11 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindowGetsPropertiesFromData) {
       WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
   window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
                                           display_id, true);
-  // TODO(mfomitchev): Uncomment while crbug.com/crbug.com/672150 is fixed
-  //  EXPECT_EQ(
-  //      0u,
-  //      window_tree()->GetChangeCountForType(WindowTreeChangeType::VISIBLE));
+  EXPECT_EQ(
+      0u, window_tree()->GetChangeCountForType(WindowTreeChangeType::VISIBLE));
 
   // Make sure all the properties took.
-  // TODO(mfomitchev): Uncomment while crbug.com/crbug.com/672150 is fixed
-  //  EXPECT_TRUE(IsWindowHostVisible(top_level));
+  EXPECT_TRUE(IsWindowHostVisible(top_level));
   EXPECT_TRUE(top_level->TargetVisibility());
   EXPECT_EQ(display_id, window_tree_host.display_id());
   EXPECT_EQ(gfx::Rect(0, 0, 3, 4), top_level->bounds());
@@ -1071,6 +1065,7 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindowGetsProperties) {
       base::MakeUnique<WindowTreeHostMus>(window_tree_client_impl(),
                                           &properties);
   window_tree_host->InitHost();
+  window_tree_host->window()->Show();
   // Verify the property made it to the window.
   EXPECT_EQ(property_value,
             window_tree_host->window()->GetProperty(kTestPropertyKey1));

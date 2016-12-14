@@ -1623,6 +1623,7 @@ TEST_P(WindowEventDispatcherTest, DeleteDispatcherDuringPreDispatch) {
   // on.
   WindowTreeHost* host = WindowTreeHost::Create(gfx::Rect(0, 0, 100, 100));
   host->InitHost();
+  host->window()->Show();
 
   // Create two windows.
   Window* w1 = CreateNormalWindow(1, host->window(), nullptr);
@@ -1700,6 +1701,7 @@ TEST_P(WindowEventDispatcherTest, ValidRootDuringDestruction) {
     std::unique_ptr<WindowTreeHost> host(
         WindowTreeHost::Create(gfx::Rect(0, 0, 100, 100)));
     host->InitHost();
+    host->window()->Show();
     // Owned by WindowEventDispatcher.
     Window* w1 = CreateNormalWindow(1, host->window(), NULL);
     w1->AddObserver(&observer);
@@ -1806,6 +1808,7 @@ TEST_P(WindowEventDispatcherTest, DeleteHostFromHeldMouseEvent) {
   // Should be deleted by |delegate|.
   WindowTreeHost* h2 = WindowTreeHost::Create(gfx::Rect(0, 0, 100, 100));
   h2->InitHost();
+  h2->window()->Show();
   DeleteHostFromHeldMouseEventDelegate delegate(h2);
   // Owned by |h2|.
   Window* w1 = CreateNormalWindow(1, h2->window(), &delegate);
@@ -2397,6 +2400,7 @@ TEST_P(WindowEventDispatcherTest, NestedEventDispatchTargetMoved) {
   std::unique_ptr<WindowTreeHost> second_host(
       WindowTreeHost::Create(gfx::Rect(20, 30, 100, 50)));
   second_host->InitHost();
+  second_host->window()->Show();
   Window* second_root = second_host->window();
 
   // Create two windows parented to |root_window()|.
@@ -2459,6 +2463,7 @@ TEST_P(WindowEventDispatcherTest,
   std::unique_ptr<WindowTreeHost> second_host(
       WindowTreeHost::Create(gfx::Rect(20, 30, 100, 50)));
   second_host->InitHost();
+  second_host->window()->Show();
   WindowEventDispatcher* second_dispatcher = second_host->dispatcher();
 
   // Install an InputStateLookup on the Env that always claims that a
@@ -2499,6 +2504,7 @@ TEST_P(WindowEventDispatcherTest,
   std::unique_ptr<WindowTreeHost> second_host(
       WindowTreeHost::Create(gfx::Rect(20, 30, 100, 50)));
   second_host->InitHost();
+  second_host->window()->Show();
   client::SetCaptureClient(second_host->window(),
                            client::GetCaptureClient(root_window()));
 

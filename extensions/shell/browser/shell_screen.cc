@@ -41,6 +41,7 @@ aura::WindowTreeHost* ShellScreen::CreateHostForPrimaryDisplay() {
       gfx::Rect(GetPrimaryDisplay().GetSizeInPixel()));
   host_->window()->AddObserver(this);
   host_->InitHost();
+  host_->window()->Show();
   return host_;
 }
 

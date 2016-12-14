@@ -720,6 +720,7 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
 
   window_tree_host_->AddObserver(this);
   window_tree_host_->InitHost();
+  window_tree_host_->window()->Show();
   hosted_window->SetProperty(kMusWindow, window_);
 
   // TODO(moshayedi): crbug.com/641039. Investigate whether there are any cases

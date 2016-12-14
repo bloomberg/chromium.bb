@@ -98,6 +98,7 @@ TEST_F(AshWindowTreeHostX11Test, MAYBE_DispatchTouchEventToOneRootWindow) {
   std::unique_ptr<aura::WindowTreeHostX11> window_tree_host(
       new AshWindowTreeHostX11(gfx::Rect(0, 0, 2560, 1700)));
   window_tree_host->InitHost();
+  window_tree_host->window()->Show();
   std::unique_ptr<RootWindowEventHandler> handler(
       new RootWindowEventHandler(window_tree_host.get()));
 
@@ -154,6 +155,7 @@ TEST_F(AshWindowTreeHostX11Test, DispatchTouchEventToTwoRootWindow) {
   std::unique_ptr<aura::WindowTreeHostX11> window_tree_host1(
       new AshWindowTreeHostX11(gfx::Rect(0, 0, 2560, 1700)));
   window_tree_host1->InitHost();
+  window_tree_host1->window()->Show();
   std::unique_ptr<RootWindowEventHandler> handler1(
       new RootWindowEventHandler(window_tree_host1.get()));
 
@@ -161,6 +163,7 @@ TEST_F(AshWindowTreeHostX11Test, DispatchTouchEventToTwoRootWindow) {
   std::unique_ptr<aura::WindowTreeHostX11> window_tree_host2(
       new AshWindowTreeHostX11(gfx::Rect(0, host2_y_offset, 1920, 1080)));
   window_tree_host2->InitHost();
+  window_tree_host2->window()->Show();
   std::unique_ptr<RootWindowEventHandler> handler2(
       new RootWindowEventHandler(window_tree_host2.get()));
 

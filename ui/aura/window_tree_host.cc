@@ -63,7 +63,6 @@ void WindowTreeHost::InitHost() {
   InitCompositor();
   UpdateRootWindowSizeInPixels(GetBoundsInPixels().size());
   Env::GetInstance()->NotifyHostInitialized(this);
-  window()->Show();
 }
 
 void WindowTreeHost::AddObserver(WindowTreeHostObserver* observer) {
@@ -207,6 +206,7 @@ void WindowTreeHost::Show() {
   DCHECK_EQ(compositor()->root_layer(), window()->layer());
   compositor()->SetVisible(true);
   ShowImpl();
+  window()->Show();
 }
 
 void WindowTreeHost::Hide() {

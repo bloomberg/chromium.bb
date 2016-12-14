@@ -399,6 +399,7 @@ void SimpleWM::OnWmNewDisplay(
   DCHECK(!window_root_);
   window_tree_host_ = std::move(window_tree_host);
   window_tree_host_->InitHost();
+  window_tree_host_->window()->Show();
   display_root_ = window_tree_host_->window();
   window_root_ = new aura::Window(nullptr);
   window_root_->Init(ui::LAYER_NOT_DRAWN);

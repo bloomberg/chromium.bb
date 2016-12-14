@@ -22,6 +22,7 @@
 #include "headless/lib/browser/headless_window_tree_host.h"
 #include "headless/lib/headless_content_main_delegate.h"
 #include "ui/aura/env.h"
+#include "ui/aura/window.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -125,6 +126,7 @@ void HeadlessBrowserImpl::RunOnStartCallback() {
   window_tree_host_.reset(
       new HeadlessWindowTreeHost(gfx::Rect(options()->window_size)));
   window_tree_host_->InitHost();
+  window_tree_host_->window()->Show();
 
   window_parenting_client_.reset(
       new HeadlessWindowParentingClient(window_tree_host_->window()));
