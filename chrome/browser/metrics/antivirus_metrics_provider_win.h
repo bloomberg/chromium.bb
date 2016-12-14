@@ -72,10 +72,17 @@ class AntiVirusMetricsProvider : public metrics::MetricsProvider {
   // interface is only available on Windows 8 and above.
   static ResultCode FillAntiVirusProductsFromWSC(
       std::vector<AvProduct>* products);
+
   // Query WMI ROOT\SecurityCenter2 for installed AV products. This interface is
   // only available on Windows Vista and above.
   static ResultCode FillAntiVirusProductsFromWMI(
       std::vector<AvProduct>* products);
+
+  // Query local machine configuration for other products that might not be
+  // registered in WMI or Security Center and add them to the product vector.
+  static void MaybeAddUnregisteredAntiVirusProducts(
+      std::vector<AvProduct>* products);
+
   static std::vector<AvProduct> GetAntiVirusProductsOnFileThread();
 
   // Called when metrics are done being gathered from the FILE thread.

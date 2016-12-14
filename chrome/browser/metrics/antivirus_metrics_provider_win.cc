@@ -176,6 +176,8 @@ AntiVirusMetricsProvider::GetAntiVirusProductsOnFileThread() {
       result = FillAntiVirusProductsFromWMI(&av_products);
   }
 
+  MaybeAddUnregisteredAntiVirusProducts(&av_products);
+
   UMA_HISTOGRAM_ENUMERATION("UMA.AntiVirusMetricsProvider.Result",
                             result,
                             RESULT_COUNT);
@@ -425,4 +427,49 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWMI(
   *products = std::move(result_list);
 
   return RESULT_SUCCESS;
+}
+
+void AntiVirusMetricsProvider::MaybeAddUnregisteredAntiVirusProducts(
+    std::vector<AvProduct>* products) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  // Trusteer Rapport does not register with WMI or Security Center so do some
+  // "best efforts" detection here.
+
+  // Rapport always installs into 32-bit Program Files in directory
+  // %DIR_PROGRAM_FILESX86%\Trusteer\Rapport
+  base::FilePath binary_path;
+  if (!PathService::Get(base::DIR_PROGRAM_FILESX86, &binary_path))
+    return;
+
+  binary_path = binary_path.AppendASCII("Trusteer")
+                    .AppendASCII("Rapport")
+                    .AppendASCII("bin")
+                    .AppendASCII("RapportService.exe");
+
+  if (!base::PathExists(binary_path))
+    return;
+
+  std::wstring mutable_path_str(binary_path.value());
+  std::string product_version;
+
+  if (!GetProductVersion(&mutable_path_str, &product_version))
+    return;
+
+  AvProduct av_product;
+
+  // Assume enabled, no easy way of knowing for sure.
+  av_product.set_product_state(metrics::SystemProfileProto::AntiVirusState::
+                                   SystemProfileProto_AntiVirusState_STATE_ON);
+
+  // Taken from Add/Remove programs as the product name.
+  std::string product_name("Trusteer Endpoint Protection");
+  if (ShouldReportFullNames()) {
+    av_product.set_product_name(product_name);
+    av_product.set_product_version(product_version);
+  }
+  av_product.set_product_name_hash(metrics::HashName(product_name));
+  av_product.set_product_version_hash(metrics::HashName(product_version));
+
+  products->push_back(av_product);
 }
