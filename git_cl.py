@@ -1421,9 +1421,11 @@ class Changelist(object):
         self.description = self._codereview_impl.FetchDescription()
       self.has_description = True
     if pretty:
-      wrapper = textwrap.TextWrapper()
+      # Set width to 72 columns + 2 space indent.
+      wrapper = textwrap.TextWrapper(width=74, replace_whitespace=True)
       wrapper.initial_indent = wrapper.subsequent_indent = '  '
-      return wrapper.fill(self.description)
+      lines = self.description.splitlines()
+      return '\n'.join([wrapper.fill(line) for line in lines])
     return self.description
 
   def GetPatchset(self):
