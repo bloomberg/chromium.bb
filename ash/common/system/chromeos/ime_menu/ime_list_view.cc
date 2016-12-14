@@ -140,15 +140,14 @@ class ImeListItemView : public ActionableView {
 
   // ActionableView:
   bool PerformAction(const ui::Event& event) override {
-    ime_list_view_->HandleViewClicked(this);
-
     if (ime_list_view_->should_focus_ime_after_selection_with_keyboard() &&
         event.type() == ui::EventType::ET_KEY_PRESSED) {
       ime_list_view_->set_last_item_selected_with_keyboard(true);
     } else {
-      ime_list_view_->CloseImeListView();
+      ime_list_view_->set_last_item_selected_with_keyboard(false);
     }
 
+    ime_list_view_->HandleViewClicked(this);
     return true;
   }
 
@@ -429,7 +428,12 @@ void ImeListView::HandleViewClicked(views::View* view) {
     const std::string key = property->second;
     last_selected_item_id_ = key;
     delegate->ActivateIMEProperty(key);
-  };
+  }
+
+  if (!should_focus_ime_after_selection_with_keyboard_ ||
+      !last_item_selected_with_keyboard_) {
+    CloseImeListView();
+  }
 }
 
 void ImeListView::HandleButtonPressed(views::Button* sender,
@@ -448,8 +452,17 @@ void ImeListView::FocusCurrentImeIfNeeded() {
     return;
 
   for (auto ime_map : ime_map_) {
-    if (ime_map.second == last_selected_item_id_)
+    if (ime_map.second == last_selected_item_id_) {
       (ime_map.first)->RequestFocus();
+      return;
+    }
+  }
+
+  for (auto property_map : property_map_) {
+    if (property_map.second == last_selected_item_id_) {
+      (property_map.first)->RequestFocus();
+      return;
+    }
   }
 }
 
