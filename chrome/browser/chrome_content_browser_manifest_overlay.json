@@ -21,6 +21,7 @@
           // Under classic ash the browser provides some of the ash interfaces
           // to itself.
           "app_list::mojom::AppList",
+          "app_list::mojom::AppListPresenter",
           "ash::mojom::AcceleratorController",
           "ash::mojom::CastConfig",
           "ash::mojom::LocaleNotificationController",
@@ -35,13 +36,16 @@
           "ash::mojom::VpnList",
           "keyboard::mojom::Keyboard"
         ],
+        "ime:ime_driver": [],
         "mash:launchable": [
           "mash::mojom::Launchable"
         ]
       },
       "requires": {
         "ash": [ "ash" ],
-        "image_decoder": [ "decode" ]
+        "image_decoder": [ "decode" ],
+        "accessibility_autoclick": [ "ash:autoclick" ],
+        "ui": [ "ime_registrar" ]
       }
     },
     "navigation:frame": {

@@ -29,7 +29,6 @@ source_set("mash") {
     "//url",
   ]
   data_deps = [
-    ":browser_manifest",
     ":mash_manifest",
     "//chrome/app:service_manifests",
   ]
@@ -72,14 +71,4 @@ service_manifest("mash_manifest") {
     deps += [ "//components/font_service:manifest" ]
     packaged_services += [ "font_service" ]
   }
-}
-
-service_manifest("browser_manifest") {
-  name = "content_browser"
-  source = "${root_out_dir}/Packages/chrome_content_browser/manifest.json"
-  output_name = "chrome_mash_content_browser"
-  deps = [
-    "//chrome/app:chrome_content_browser_manifest",
-  ]
-  overlays = [ "chrome_mash_content_browser_manifest_overlay.json" ]
 }

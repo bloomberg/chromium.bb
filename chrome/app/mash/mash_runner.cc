@@ -56,8 +56,7 @@ const char* kMashChild = "mash-child";
 
 const char kChromeMashServiceName[] = "chrome_mash";
 
-const char kChromeMashContentBrowserPackageName[] =
-    "chrome_mash_content_browser";
+const char kChromeContentBrowserPackageName[] = "chrome_content_browser";
 const char kChromeContentGpuPackageName[] = "chrome_content_gpu";
 const char kChromeContentRendererPackageName[] = "chrome_content_renderer";
 const char kChromeContentUtilityPackageName[] = "chrome_content_utility";
@@ -174,7 +173,7 @@ void MashRunner::RunMain() {
   catalog_connection->GetInterface(&catalog_control);
   CHECK(catalog_control->OverrideManifestPath(
       content::mojom::kBrowserServiceName,
-      GetPackageManifestPath(kChromeMashContentBrowserPackageName)));
+      GetPackageManifestPath(kChromeContentBrowserPackageName)));
   CHECK(catalog_control->OverrideManifestPath(
       content::mojom::kGpuServiceName,
       GetPackageManifestPath(kChromeContentGpuPackageName)));

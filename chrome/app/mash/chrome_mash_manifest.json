@@ -4,8 +4,7 @@
   // (i.e. "chrome --mash")
   //
   // If you need to require or provide capabilities from Chrome itself within
-  // the Mash environment, you should instead modify
-  // chrome_mash_content_browser_manifest_overlay.json.
+  // the you should instead modify chrome_content_browser_manifest_overlay.json.
   "name": "chrome_mash",
   "display_name": "Chrome Mash Packaged Services",
   "interface_provider_specs": {
