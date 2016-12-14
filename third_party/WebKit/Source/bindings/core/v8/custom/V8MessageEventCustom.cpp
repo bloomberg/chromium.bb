@@ -110,7 +110,7 @@ void V8MessageEvent::initMessageEventMethodCustom(
   v8::Local<v8::Value> dataArg = info[3];
   TOSTRING_VOID(V8StringResource<>, originArg, info[4]);
   TOSTRING_VOID(V8StringResource<>, lastEventIdArg, info[5]);
-  DOMWindow* sourceArg = toDOMWindow(info.GetIsolate(), info[6]);
+  EventTarget* sourceArg = toEventTarget(info.GetIsolate(), info[6]);
   MessagePortArray* portArray = nullptr;
   const int portArrayIndex = 7;
   if (!isUndefinedOrNull(info[portArrayIndex])) {

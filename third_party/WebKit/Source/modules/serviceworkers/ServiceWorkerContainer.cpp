@@ -41,6 +41,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MessagePort.h"
+#include "core/events/MessageEvent.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -49,7 +50,6 @@
 #include "modules/serviceworkers/ServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "modules/serviceworkers/ServiceWorkerError.h"
-#include "modules/serviceworkers/ServiceWorkerMessageEvent.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/SchemeRegistry.h"
@@ -454,9 +454,9 @@ void ServiceWorkerContainer::dispatchMessageEvent(
   RefPtr<SerializedScriptValue> value = SerializedScriptValue::create(message);
   ServiceWorker* source = ServiceWorker::from(
       getExecutionContext(), WTF::wrapUnique(handle.release()));
-  dispatchEvent(ServiceWorkerMessageEvent::create(
-      ports, value, source,
-      getExecutionContext()->getSecurityOrigin()->toString()));
+  dispatchEvent(MessageEvent::create(
+      ports, value, getExecutionContext()->getSecurityOrigin()->toString(),
+      String() /* lastEventId */, source, String() /* suborigin */));
 }
 
 const AtomicString& ServiceWorkerContainer::interfaceName() const {

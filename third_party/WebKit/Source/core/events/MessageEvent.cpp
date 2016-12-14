@@ -36,7 +36,8 @@
 namespace blink {
 
 static inline bool isValidSource(EventTarget* source) {
-  return !source || source->toLocalDOMWindow() || source->toMessagePort();
+  return !source || source->toLocalDOMWindow() || source->toMessagePort() ||
+         source->toServiceWorker();
 }
 
 MessageEvent::MessageEvent() : m_dataType(DataTypeScriptValue) {}
@@ -155,7 +156,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
                                     ScriptValue data,
                                     const String& origin,
                                     const String& lastEventId,
-                                    DOMWindow* source,
+                                    EventTarget* source,
                                     MessagePortArray* ports) {
   if (isBeingDispatched())
     return;
@@ -177,7 +178,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
                                     PassRefPtr<SerializedScriptValue> data,
                                     const String& origin,
                                     const String& lastEventId,
-                                    DOMWindow* source,
+                                    EventTarget* source,
                                     MessagePortArray* ports) {
   if (isBeingDispatched())
     return;

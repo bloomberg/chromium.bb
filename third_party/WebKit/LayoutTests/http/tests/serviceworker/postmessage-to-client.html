@@ -25,16 +25,26 @@ promise_test(t => {
         })
       .then(e => {
           var message = e.data;
-          assert_equals(e.origin, location.origin,
-            'origin of message should be origin of Service Worker');
+          assert_equals(e.constructor, w.MessageEvent,
+                        'message events should use MessageEvent interface.');
+          assert_equals(e.type, 'message', 'type should be "message".');
+          assert_equals(
+              e.origin, location.origin,
+              'origin of message should be origin of Service Worker.');
           assert_equals(e.lastEventId, '',
-            'lastEventId should be an empty string');
+                        'lastEventId should be an empty string.');
+          assert_equals(e.source.constructor, w.ServiceWorker,
+                        'source should use ServiceWorker interface.');
+          assert_equals(
+              e.source, w.navigator.serviceWorker.controller,
+              'source should be the service worker that sent the message.');
+          assert_equals(e.ports.length, 0, 'ports should be an empty array.');
           assert_equals(message, 'Sending message via clients');
           return new Promise(resolve => {
               w.navigator.serviceWorker.onmessage = resolve;
             });
         })
       .then(e => { assert_equals(e.data, 'quit'); });
-  }, 'postMessage from ServiceWorker to Client');
+  }, 'postMessage from ServiceWorker to Client.');
 
 </script>

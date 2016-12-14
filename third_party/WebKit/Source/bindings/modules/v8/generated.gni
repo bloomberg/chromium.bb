@@ -46,8 +46,6 @@ bindings_modules_generated_union_type_files = [
   "$bindings_modules_v8_output_dir/RenderingContext.h",
   "$bindings_modules_v8_output_dir/RequestOrUSVString.cpp",
   "$bindings_modules_v8_output_dir/RequestOrUSVString.h",
-  "$bindings_modules_v8_output_dir/ServiceWorkerOrMessagePort.cpp",
-  "$bindings_modules_v8_output_dir/ServiceWorkerOrMessagePort.h",
   "$bindings_modules_v8_output_dir/StringOrArrayBufferOrNFCMessage.cpp",
   "$bindings_modules_v8_output_dir/StringOrArrayBufferOrNFCMessage.h",
   "$bindings_modules_v8_output_dir/StringOrCanvasGradientOrCanvasPattern.cpp",

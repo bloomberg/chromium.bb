@@ -5365,14 +5365,6 @@ interface ServiceWorkerContainer : EventTarget
     method register
     setter oncontrollerchange
     setter onmessage
-interface ServiceWorkerMessageEvent : Event
-    attribute @@toStringTag
-    getter data
-    getter lastEventId
-    getter origin
-    getter ports
-    getter source
-    method constructor
 interface ServiceWorkerRegistration : EventTarget
     attribute @@toStringTag
     getter active

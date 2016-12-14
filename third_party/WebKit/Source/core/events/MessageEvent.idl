@@ -49,6 +49,6 @@
                                    [Default=Undefined] optional any dataArg,
                                    [Default=Undefined] optional DOMString originArg,
                                    [Default=Undefined] optional DOMString lastEventIdArg,
-                                   [Default=Undefined] optional Window sourceArg,
+                                   [Default=Undefined] optional EventTarget sourceArg,
                                    [Default=Undefined] optional sequence<MessagePort> portsArg);
 };

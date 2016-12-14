@@ -173,6 +173,10 @@ MessagePort* EventTarget::toMessagePort() {
   return nullptr;
 }
 
+ServiceWorker* EventTarget::toServiceWorker() {
+  return nullptr;
+}
+
 inline LocalDOMWindow* EventTarget::executingWindow() {
   if (ExecutionContext* context = getExecutionContext())
     return context->executingWindow();

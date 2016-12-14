@@ -37,7 +37,6 @@
 #include "core/events/EventTarget.h"
 #include "core/events/MessageEventInit.h"
 #include "core/fileapi/Blob.h"
-#include "core/frame/DOMWindow.h"
 #include "wtf/Compiler.h"
 #include <memory>
 
@@ -99,7 +98,7 @@ class CORE_EXPORT MessageEvent final : public Event {
                         ScriptValue data,
                         const String& origin,
                         const String& lastEventId,
-                        DOMWindow* source,
+                        EventTarget* source,
                         MessagePortArray*);
   void initMessageEvent(const AtomicString& type,
                         bool canBubble,
@@ -107,7 +106,7 @@ class CORE_EXPORT MessageEvent final : public Event {
                         PassRefPtr<SerializedScriptValue> data,
                         const String& origin,
                         const String& lastEventId,
-                        DOMWindow* source,
+                        EventTarget* source,
                         MessagePortArray*);
 
   const String& origin() const { return m_origin; }

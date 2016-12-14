@@ -69,6 +69,8 @@ class MODULES_EXPORT ServiceWorker final : public AbstractWorker,
   String state() const;
   DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange);
 
+  ServiceWorker* toServiceWorker() override { return this; }
+
   // ScriptWrappable overrides.
   bool hasPendingActivity() const final;
 
