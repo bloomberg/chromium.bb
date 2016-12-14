@@ -32,7 +32,9 @@
 #include "core/events/MouseEvent.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLMediaElement.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/html/shadow/MediaControlsMediaEventListener.h"
+#include "core/html/shadow/MediaControlsOrientationLockDelegate.h"
 #include "core/html/shadow/MediaControlsWindowEventListener.h"
 #include "core/html/track/TextTrackContainer.h"
 #include "core/html/track/TextTrackList.h"
@@ -127,6 +129,7 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
       m_windowEventListener(MediaControlsWindowEventListener::create(
           this,
           WTF::bind(&MediaControls::hideAllMenus, wrapWeakPersistent(this)))),
+      m_orientationLockDelegate(nullptr),
       m_hideMediaControlsTimer(this,
                                &MediaControls::hideMediaControlsTimerFired),
       m_hideTimerBehaviorFlags(IgnoreNone),
@@ -141,6 +144,15 @@ MediaControls* MediaControls::create(HTMLMediaElement& mediaElement) {
   MediaControls* controls = new MediaControls(mediaElement);
   controls->setShadowPseudoId(AtomicString("-webkit-media-controls"));
   controls->initializeControls();
+
+  // Initialize the orientation lock when going fullscreen feature.
+  if (RuntimeEnabledFeatures::videoFullscreenOrientationLockEnabled() &&
+      mediaElement.isHTMLVideoElement()) {
+    controls->m_orientationLockDelegate =
+        new MediaControlsOrientationLockDelegate(
+            toHTMLVideoElement(mediaElement));
+  }
+
   return controls;
 }
 
@@ -929,6 +941,7 @@ DEFINE_TRACE(MediaControls) {
   visitor->trace(m_overlayCastButton);
   visitor->trace(m_mediaEventListener);
   visitor->trace(m_windowEventListener);
+  visitor->trace(m_orientationLockDelegate);
   HTMLDivElement::trace(visitor);
 }
 

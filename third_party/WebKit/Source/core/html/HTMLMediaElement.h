@@ -732,6 +732,7 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   friend class MediaControlsTest;
   friend class HTMLMediaElementTest;
   friend class HTMLVideoElementTest;
+  friend class MediaControlsOrientationLockDelegateTest;
 
   Member<AutoplayUmaHelper> m_autoplayUmaHelper;
 

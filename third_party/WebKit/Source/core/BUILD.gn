@@ -1176,6 +1176,7 @@ source_set("unit_tests") {
     "html/parser/HTMLTreeBuilderSimulatorTest.cpp",
     "html/parser/HTMLViewSourceParserTest.cpp",
     "html/parser/TextResourceDecoderTest.cpp",
+    "html/shadow/MediaControlsOrientationLockDelegateTest.cpp",
     "html/shadow/MediaControlsTest.cpp",
     "html/track/TextTrackListTest.cpp",
     "html/track/vtt/BufferedLineReaderTest.cpp",

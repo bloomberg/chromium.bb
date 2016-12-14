@@ -34,6 +34,7 @@ namespace blink {
 
 class Event;
 class MediaControlsMediaEventListener;
+class MediaControlsOrientationLockDelegate;
 class MediaControlsWindowEventListener;
 
 class CORE_EXPORT MediaControls final : public HTMLDivElement {
@@ -106,6 +107,7 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
 
  private:
   friend class MediaControlsMediaEventListener;
+  friend class MediaControlsOrientationLockDelegateTest;
   friend class MediaControlsTest;
 
   void invalidate(Element*);
@@ -185,6 +187,7 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
 
   Member<MediaControlsMediaEventListener> m_mediaEventListener;
   Member<MediaControlsWindowEventListener> m_windowEventListener;
+  Member<MediaControlsOrientationLockDelegate> m_orientationLockDelegate;
 
   Timer<MediaControls> m_hideMediaControlsTimer;
   unsigned m_hideTimerBehaviorFlags;

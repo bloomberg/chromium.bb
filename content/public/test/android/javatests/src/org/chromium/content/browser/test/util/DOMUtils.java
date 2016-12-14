@@ -255,6 +255,18 @@ public class DOMUtils {
     }
 
     /**
+     * Click a given rect in the page. Does not move the rect into view.
+     * @param viewCore The ContentViewCore in which the node lives.
+     * @param rect The rect to click.
+     */
+    public static boolean clickRect(final ContentViewCore viewCore, Rect rect)
+            throws InterruptedException, TimeoutException {
+        int[] clickTarget = getClickTargetForBounds(viewCore, rect);
+        return TouchCommon.singleClickView(
+                viewCore.getContainerView(), clickTarget[0], clickTarget[1]);
+    }
+
+    /**
      * Long-press a DOM node by its id, scrolling it into view first.
      * @param activityTestCase The ActivityInstrumentationTestCase2 to instrument.
      * @param viewCore The ContentViewCore in which the node lives.

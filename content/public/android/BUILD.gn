@@ -414,6 +414,7 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/ScreenOrientationListenerTest.java",
     "javatests/src/org/chromium/content/browser/TestsJavaScriptEvalTest.java",
     "javatests/src/org/chromium/content/browser/TracingControllerAndroidTest.java",
+    "javatests/src/org/chromium/content/browser/VideoFullscreenOrientationLockTest.java",
     "javatests/src/org/chromium/content/browser/VSyncMonitorTest.java",
     "javatests/src/org/chromium/content/browser/VibrationManagerImplTest.java",
     "javatests/src/org/chromium/content/browser/ViewportTest.java",
@@ -434,7 +435,7 @@ android_library("content_javatests") {
 
   data = [
     "//content/test/data/android/",
-    "//content/test/data/media/session/",
+    "//content/test/data/media/",
   ]
   data_deps = [
     "//net:test_support",
