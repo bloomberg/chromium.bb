@@ -203,13 +203,13 @@ TEST_F(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
                           DisplayItem::kClipFrameToVisibleContentRect)));
 
   const PaintChunk& backgroundChunk = rootPaintController().paintChunks()[0];
-  EXPECT_TRUE(backgroundChunk.properties.scroll->isRoot());
+  EXPECT_TRUE(backgroundChunk.properties.propertyTreeState.scroll()->isRoot());
 
   const EffectPaintPropertyNode* effectNode = div.paintProperties()->effect();
   EXPECT_EQ(0.5f, effectNode->opacity());
   const PaintChunk& chunk = rootPaintController().paintChunks()[1];
   EXPECT_EQ(*div.layer(), chunk.id->client);
-  EXPECT_EQ(effectNode, chunk.properties.effect.get());
+  EXPECT_EQ(effectNode, chunk.properties.propertyTreeState.effect());
 
   EXPECT_FALSE(div.layer()->isJustCreated());
   // Client used by only paint chunks and non-cachaeable display items but not

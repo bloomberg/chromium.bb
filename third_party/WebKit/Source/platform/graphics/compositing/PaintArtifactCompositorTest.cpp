@@ -34,12 +34,10 @@ using ::blink::testing::createOpacityOnlyEffect;
 using ::testing::Pointee;
 
 PaintChunkProperties defaultPaintChunkProperties() {
-  PaintChunkProperties properties;
-  properties.transform = TransformPaintPropertyNode::root();
-  properties.clip = ClipPaintPropertyNode::root();
-  properties.effect = EffectPaintPropertyNode::root();
-  properties.scroll = ScrollPaintPropertyNode::root();
-  return properties;
+  PropertyTreeState propertyTreeState(
+      TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+      EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+  return PaintChunkProperties(propertyTreeState);
 }
 
 gfx::Transform translation(SkMScalar x, SkMScalar y) {

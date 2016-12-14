@@ -68,8 +68,8 @@ class SVGTransformContext : public TransformRecorder {
           auto& paintController = context.getPaintController();
           PaintChunkProperties properties(
               paintController.currentPaintChunkProperties());
-          properties.transform =
-              objectProperties->svgLocalToBorderBoxTransform();
+          properties.propertyTreeState.setTransform(
+              objectProperties->svgLocalToBorderBoxTransform());
           m_transformPropertyScope.emplace(paintController, object, properties);
         }
       } else {
@@ -83,7 +83,8 @@ class SVGTransformContext : public TransformRecorder {
           auto& paintController = context.getPaintController();
           PaintChunkProperties properties(
               paintController.currentPaintChunkProperties());
-          properties.transform = objectProperties->transform();
+          properties.propertyTreeState.setTransform(
+              objectProperties->transform());
           m_transformPropertyScope.emplace(paintController, object, properties);
         }
       }

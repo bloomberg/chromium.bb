@@ -57,10 +57,7 @@ void FramePainter::paint(GraphicsContext& context,
               m_frameView->totalPropertyTreeStateForContents()) {
         PaintChunkProperties properties(
             context.getPaintController().currentPaintChunkProperties());
-        properties.transform = contentsState->transform();
-        properties.clip = contentsState->clip();
-        properties.effect = contentsState->effect();
-        properties.scroll = contentsState->scroll();
+        properties.propertyTreeState = *contentsState;
         scopedPaintChunkProperties.emplace(context.getPaintController(),
                                            *frameView().layoutView(),
                                            properties);
@@ -101,13 +98,15 @@ void FramePainter::paint(GraphicsContext& context,
         // properties. This prevents the scrollbars from scrolling, for example.
         PaintChunkProperties properties(
             context.getPaintController().currentPaintChunkProperties());
-        properties.transform = m_frameView->preTranslation();
-        properties.clip = m_frameView->contentClip()->parent();
-        properties.effect = contentsState->effect();
+        properties.propertyTreeState.setTransform(
+            m_frameView->preTranslation());
+        properties.propertyTreeState.setClip(
+            m_frameView->contentClip()->parent());
+        properties.propertyTreeState.setEffect(contentsState->effect());
         auto* scrollBarScroll = contentsState->scroll();
         if (m_frameView->scroll())
           scrollBarScroll = m_frameView->scroll()->parent();
-        properties.scroll = scrollBarScroll;
+        properties.propertyTreeState.setScroll(scrollBarScroll);
         scopedPaintChunkProperties.emplace(context.getPaintController(),
                                            *frameView().layoutView(),
                                            properties);

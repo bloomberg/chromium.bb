@@ -45,7 +45,7 @@ BoxClipper::BoxClipper(const LayoutBox& box,
     if (objectProperties && objectProperties->overflowClip()) {
       PaintChunkProperties properties(
           paintInfo.context.getPaintController().currentPaintChunkProperties());
-      properties.clip = objectProperties->overflowClip();
+      properties.propertyTreeState.setClip(objectProperties->overflowClip());
       m_scopedClipProperty.emplace(paintInfo.context.getPaintController(), box,
                                    paintInfo.displayItemTypeForClipping(),
                                    properties);

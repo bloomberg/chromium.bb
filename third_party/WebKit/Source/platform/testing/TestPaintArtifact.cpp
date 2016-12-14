@@ -52,11 +52,9 @@ TestPaintArtifact& TestPaintArtifact::chunk(
     PassRefPtr<ClipPaintPropertyNode> clip,
     PassRefPtr<EffectPaintPropertyNode> effect,
     PassRefPtr<ScrollPaintPropertyNode> scroll) {
-  PaintChunkProperties properties;
-  properties.transform = transform;
-  properties.clip = clip;
-  properties.effect = effect;
-  properties.scroll = scroll;
+  PropertyTreeState propertyTreeState(transform.get(), clip.get(), effect.get(),
+                                      scroll.get());
+  PaintChunkProperties properties(propertyTreeState);
   return chunk(properties);
 }
 

@@ -208,8 +208,8 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo,
                                             .currentPaintChunkProperties());
         auto* scrollTranslation = objectProperties->scrollTranslation();
         DCHECK(scrollTranslation);
-        properties.transform = scrollTranslation;
-        properties.scroll = scroll;
+        properties.propertyTreeState.setTransform(scrollTranslation);
+        properties.propertyTreeState.setScroll(scroll);
         m_scopedScrollProperty.emplace(
             paintInfo.context.getPaintController(), m_layoutBlock,
             DisplayItem::paintPhaseToDrawingType(paintPhase), properties);

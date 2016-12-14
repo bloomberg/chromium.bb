@@ -60,33 +60,33 @@ void PrintTo(const PaintChunk& chunk, std::ostream* os) {
 void PrintTo(const PaintChunkProperties& properties, std::ostream* os) {
   *os << "PaintChunkProperties(";
   bool printedProperty = false;
-  if (properties.transform) {
+  if (properties.propertyTreeState.transform()) {
     *os << "transform=";
-    PrintTo(*properties.transform, os);
+    PrintTo(*properties.propertyTreeState.transform(), os);
     printedProperty = true;
   }
 
-  if (properties.clip) {
+  if (properties.propertyTreeState.clip()) {
     if (printedProperty)
       *os << ", ";
     *os << "clip=";
-    PrintTo(*properties.clip, os);
+    PrintTo(*properties.propertyTreeState.clip(), os);
     printedProperty = true;
   }
 
-  if (properties.effect) {
+  if (properties.propertyTreeState.effect()) {
     if (printedProperty)
       *os << ", ";
     *os << "effect=";
-    PrintTo(*properties.effect, os);
+    PrintTo(*properties.propertyTreeState.effect(), os);
     printedProperty = true;
   }
 
-  if (properties.scroll) {
+  if (properties.propertyTreeState.scroll()) {
     if (printedProperty)
       *os << ", ";
     *os << "scroll=";
-    PrintTo(*properties.scroll, os);
+    PrintTo(*properties.propertyTreeState.scroll(), os);
     printedProperty = true;
   }
 

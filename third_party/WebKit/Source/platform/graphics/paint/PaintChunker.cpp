@@ -38,10 +38,10 @@ bool PaintChunker::incrementDisplayItemIndex(const DisplayItem& item) {
     // properties created by a LayoutObject/FrameView, or be set to a non-null
     // root node. If these DCHECKs are hit we are missing a call to update the
     // properties. See: ScopedPaintChunkProperties.
-    DCHECK(m_currentProperties.transform);
-    DCHECK(m_currentProperties.clip);
-    DCHECK(m_currentProperties.effect);
-    DCHECK(m_currentProperties.scroll);
+    DCHECK(m_currentProperties.propertyTreeState.transform());
+    DCHECK(m_currentProperties.propertyTreeState.clip());
+    DCHECK(m_currentProperties.propertyTreeState.effect());
+    DCHECK(m_currentProperties.propertyTreeState.scroll());
   }
 #endif
 

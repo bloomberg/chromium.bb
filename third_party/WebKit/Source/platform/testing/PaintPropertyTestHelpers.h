@@ -24,11 +24,11 @@ static inline PassRefPtr<EffectPaintPropertyNode> createOpacityOnlyEffect(
 }
 
 static inline PaintChunkProperties defaultPaintChunkProperties() {
-  PaintChunkProperties defaultProperties;
-  defaultProperties.transform = TransformPaintPropertyNode::root();
-  defaultProperties.clip = ClipPaintPropertyNode::root();
-  defaultProperties.effect = EffectPaintPropertyNode::root();
-  defaultProperties.scroll = ScrollPaintPropertyNode::root();
+  PropertyTreeState propertyTreeState(
+      TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+      EffectPaintPropertyNode::root(), ScrollPaintPropertyNode::root());
+  PaintChunkProperties defaultProperties(propertyTreeState);
+
   return defaultProperties;
 }
 

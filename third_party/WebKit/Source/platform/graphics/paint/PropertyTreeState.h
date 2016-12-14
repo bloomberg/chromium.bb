@@ -28,12 +28,14 @@ class PropertyTreeState {
         m_clip(clip),
         m_effect(effect),
         m_scroll(scroll) {
-    DCHECK(!m_transform->hasOneRef() && !m_clip->hasOneRef() &&
-           !m_effect->hasOneRef() && !m_scroll->hasOneRef());
+    DCHECK(!m_transform || !m_transform->hasOneRef());
+    DCHECK(!m_clip || !m_clip->hasOneRef());
+    DCHECK(!m_effect || !m_effect->hasOneRef());
+    DCHECK(!m_scroll || !m_scroll->hasOneRef());
   }
 
   const TransformPaintPropertyNode* transform() const {
-    DCHECK(!m_transform->hasOneRef());
+    DCHECK(!m_transform || !m_transform->hasOneRef());
     return m_transform.get();
   }
   void setTransform(const TransformPaintPropertyNode* node) {
@@ -42,7 +44,7 @@ class PropertyTreeState {
   }
 
   const ClipPaintPropertyNode* clip() const {
-    DCHECK(!m_clip->hasOneRef());
+    DCHECK(!m_clip || !m_clip->hasOneRef());
     return m_clip.get();
   }
   void setClip(const ClipPaintPropertyNode* node) {
@@ -51,7 +53,7 @@ class PropertyTreeState {
   }
 
   const EffectPaintPropertyNode* effect() const {
-    DCHECK(!m_effect->hasOneRef());
+    DCHECK(!m_effect || !m_effect->hasOneRef());
     return m_effect.get();
   }
   void setEffect(const EffectPaintPropertyNode* node) {
@@ -60,7 +62,7 @@ class PropertyTreeState {
   }
 
   const ScrollPaintPropertyNode* scroll() const {
-    DCHECK(!m_scroll->hasOneRef());
+    DCHECK(!m_scroll || !m_scroll->hasOneRef());
     return m_scroll.get();
   }
   void setScroll(const ScrollPaintPropertyNode* node) {
@@ -74,6 +76,12 @@ class PropertyTreeState {
   RefPtr<const EffectPaintPropertyNode> m_effect;
   RefPtr<const ScrollPaintPropertyNode> m_scroll;
 };
+
+inline bool operator==(const PropertyTreeState& a, const PropertyTreeState& b) {
+  return a.transform() == b.transform() && a.clip() == b.clip() &&
+         a.effect() == b.effect() && a.scroll() == b.scroll();
+}
+
 }  // namespace blink
 
 #endif  // PropertyTreeState_h

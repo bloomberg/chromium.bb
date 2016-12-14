@@ -269,11 +269,7 @@ PaintResult PaintLayerPainter::paintLayerContents(
         context.getPaintController().currentPaintChunkProperties());
     auto& localBorderBoxProperties =
         *objectPaintProperties->localBorderBoxProperties();
-    properties.transform =
-        localBorderBoxProperties.propertyTreeState.transform();
-    properties.scroll = localBorderBoxProperties.propertyTreeState.scroll();
-    properties.clip = localBorderBoxProperties.propertyTreeState.clip();
-    properties.effect = localBorderBoxProperties.propertyTreeState.effect();
+    properties.propertyTreeState = localBorderBoxProperties.propertyTreeState;
     properties.backfaceHidden =
         m_paintLayer.layoutObject()->hasHiddenBackface();
     scopedPaintChunkProperties.emplace(context.getPaintController(),
@@ -476,11 +472,7 @@ PaintResult PaintLayerPainter::paintLayerContents(
           context.getPaintController().currentPaintChunkProperties());
       auto& localBorderBoxProperties =
           *objectPaintProperties->localBorderBoxProperties();
-      properties.transform =
-          localBorderBoxProperties.propertyTreeState.transform();
-      properties.scroll = localBorderBoxProperties.propertyTreeState.scroll();
-      properties.clip = localBorderBoxProperties.propertyTreeState.clip();
-      properties.effect = localBorderBoxProperties.propertyTreeState.effect();
+      properties.propertyTreeState = localBorderBoxProperties.propertyTreeState;
       properties.backfaceHidden =
           m_paintLayer.layoutObject()->hasHiddenBackface();
       contentScopedPaintChunkProperties.emplace(context.getPaintController(),

@@ -786,13 +786,13 @@ void PaintArtifactCompositor::update(
                                  : nullptr);
 
     int transformId = propertyTreeManager.compositorIdForTransformNode(
-        paintChunk.properties.transform.get());
+        paintChunk.properties.propertyTreeState.transform());
     int scrollId = propertyTreeManager.compositorIdForScrollNode(
-        paintChunk.properties.scroll.get());
+        paintChunk.properties.propertyTreeState.scroll());
     int clipId = propertyTreeManager.compositorIdForClipNode(
-        paintChunk.properties.clip.get());
+        paintChunk.properties.propertyTreeState.clip());
     int effectId = propertyTreeManager.switchToEffectNode(
-        *paintChunk.properties.effect.get());
+        *paintChunk.properties.propertyTreeState.effect());
 
     propertyTreeManager.updateScrollOffset(layer->id(), scrollId);
 

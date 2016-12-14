@@ -699,12 +699,14 @@ TEST_P(PaintControllerTest, UpdateClip) {
   FakeDisplayItemClient second("second", LayoutRect(100, 100, 200, 200));
   GraphicsContext context(getPaintController());
 
+  RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(
+      nullptr, nullptr, FloatRoundedRect(1, 1, 2, 2));
+
   {
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       PaintChunk::Id id(first, clipType);
       PaintChunkProperties properties = defaultPaintChunkProperties();
-      properties.clip = ClipPaintPropertyNode::create(
-          nullptr, nullptr, FloatRoundedRect(1, 1, 2, 2));
+      properties.propertyTreeState.setClip(clip.get());
       getPaintController().updateCurrentPaintChunkProperties(&id, properties);
     }
     ClipRecorder clipRecorder(context, first, clipType, IntRect(1, 1, 2, 2));
@@ -759,12 +761,16 @@ TEST_P(PaintControllerTest, UpdateClip) {
   second.setDisplayItemsUncached();
   drawRect(context, first, backgroundDrawingType,
            FloatRect(100, 100, 150, 150));
+
+  RefPtr<ClipPaintPropertyNode> clip2 = ClipPaintPropertyNode::create(
+      nullptr, nullptr, FloatRoundedRect(1, 1, 2, 2));
+
   {
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       PaintChunk::Id id(second, clipType);
       PaintChunkProperties properties = defaultPaintChunkProperties();
-      properties.clip = ClipPaintPropertyNode::create(
-          nullptr, nullptr, FloatRoundedRect(1, 1, 2, 2));
+      properties.propertyTreeState.setClip(clip2.get());
+
       getPaintController().updateCurrentPaintChunkProperties(&id, properties);
     }
     ClipRecorder clipRecorder(context, second, clipType, IntRect(1, 1, 2, 2));
@@ -1049,8 +1055,8 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
   {
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       PaintChunk::Id id(container1, backgroundDrawingType);
-      container1Properties.effect =
-          createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5);
+      container1Properties.propertyTreeState.setEffect(
+          createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5).get());
       getPaintController().updateCurrentPaintChunkProperties(
           &id, container1Properties);
     }
@@ -1067,8 +1073,8 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
   {
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       PaintChunk::Id id(container2, backgroundDrawingType);
-      container2Properties.effect =
-          createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5);
+      container2Properties.propertyTreeState.setEffect(
+          createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5).get());
       getPaintController().updateCurrentPaintChunkProperties(
           &id, container2Properties);
     }
@@ -1219,8 +1225,8 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
   {
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       PaintChunk::Id id(container1, backgroundDrawingType);
-      container1Properties.effect =
-          createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5);
+      container1Properties.propertyTreeState.setEffect(
+          createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5).get());
       getPaintController().updateCurrentPaintChunkProperties(
           &id, container1Properties);
     }
@@ -1232,8 +1238,8 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
   {
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       PaintChunk::Id id(container2, backgroundDrawingType);
-      container2Properties.effect =
-          createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5);
+      container2Properties.propertyTreeState.setEffect(
+          createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5).get());
       getPaintController().updateCurrentPaintChunkProperties(
           &id, container2Properties);
     }
@@ -1367,8 +1373,8 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
   {
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       PaintChunk::Id id(container1, backgroundDrawingType);
-      container1BackgroundProperties.effect =
-          createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5);
+      container1BackgroundProperties.propertyTreeState.setEffect(
+          createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5).get());
       getPaintController().updateCurrentPaintChunkProperties(
           &id, container1BackgroundProperties);
     }
@@ -1378,8 +1384,9 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
     {
       if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         PaintChunk::Id id(content1, backgroundDrawingType);
-        content1Properties.effect =
-            createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.6);
+        content1Properties.propertyTreeState.setEffect(
+            createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.6)
+                .get());
         getPaintController().updateCurrentPaintChunkProperties(
             &id, content1Properties);
       }
@@ -1391,8 +1398,8 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
     }
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       PaintChunk::Id id(container1, foregroundDrawingType);
-      container1ForegroundProperties.effect =
-          createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5);
+      container1ForegroundProperties.propertyTreeState.setEffect(
+          createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5).get());
       getPaintController().updateCurrentPaintChunkProperties(
           &id, container1ForegroundProperties);
     }
@@ -1402,8 +1409,8 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
   {
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
       PaintChunk::Id id(container2, backgroundDrawingType);
-      container2BackgroundProperties.effect =
-          createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.7);
+      container2BackgroundProperties.propertyTreeState.setEffect(
+          createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.7).get());
       getPaintController().updateCurrentPaintChunkProperties(
           &id, container2BackgroundProperties);
     }
@@ -1413,8 +1420,9 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
     {
       if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         PaintChunk::Id id(content2, backgroundDrawingType);
-        content2Properties.effect =
-            createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.8);
+        content2Properties.propertyTreeState.setEffect(
+            createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.8)
+                .get());
         getPaintController().updateCurrentPaintChunkProperties(
             &id, content2Properties);
       }
