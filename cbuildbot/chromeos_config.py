@@ -2889,8 +2889,7 @@ def ReleaseBuilders(site_config, ge_build_config):
       master=True,
       sync_chrome=False,
       chrome_sdk=False,
-      health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
-                               'tree'],
+      health_alert_recipients=['tree'],
       afdo_use=False,
       branch_util_test=True,
   )
