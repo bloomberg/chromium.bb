@@ -5,7 +5,6 @@
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #import "base/mac/mac_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -50,8 +49,6 @@
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -123,10 +120,6 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
           new ManagePasswordsDecoration(command_updater, this)),
       browser_(browser),
       location_bar_visible_(true),
-      should_show_secure_verbose_(false),
-      should_show_nonsecure_verbose_(false),
-      should_animate_secure_verbose_(false),
-      should_animate_nonsecure_verbose_(false),
       is_width_available_for_security_verbose_(false),
       security_level_(security_state::NONE),
       weak_ptr_factory_(this) {
@@ -149,39 +142,6 @@ LocationBarViewMac::LocationBarViewMac(AutocompleteTextField* field,
 
   [[field_ cell] setIsPopupMode:
       !browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP)];
-
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  std::string security_chip;
-  if (command_line->HasSwitch(switches::kSecurityChip)) {
-    security_chip = command_line->GetSwitchValueASCII(switches::kSecurityChip);
-  } else if (base::FeatureList::IsEnabled(features::kSecurityChip)) {
-    security_chip = variations::GetVariationParamValueByFeature(
-        features::kSecurityChip, kSecurityChipFeatureVisibilityParam);
-  }
-
-  if (security_chip == switches::kSecurityChipShowNonSecureOnly) {
-    should_show_nonsecure_verbose_ = true;
-  } else if (security_chip == switches::kSecurityChipShowAll) {
-    should_show_secure_verbose_ = true;
-    should_show_nonsecure_verbose_ = true;
-  }
-
-  std::string security_chip_animation;
-  if (command_line->HasSwitch(switches::kSecurityChipAnimation)) {
-    security_chip_animation =
-        command_line->GetSwitchValueASCII(switches::kSecurityChipAnimation);
-  } else if (base::FeatureList::IsEnabled(features::kSecurityChip)) {
-    security_chip_animation = variations::GetVariationParamValueByFeature(
-        features::kSecurityChip, kSecurityChipFeatureAnimationParam);
-  }
-
-  if (security_chip_animation ==
-      switches::kSecurityChipAnimationNonSecureOnly) {
-    should_animate_nonsecure_verbose_ = true;
-  } else if (security_chip_animation == switches::kSecurityChipAnimationAll) {
-    should_animate_secure_verbose_ = true;
-    should_animate_nonsecure_verbose_ = true;
-  }
 
   // Sets images for the decorations, and performs a layout. This call ensures
   // that this class is in a consistent state after initialization.
@@ -701,14 +661,10 @@ bool LocationBarViewMac::ShouldShowSecurityState() const {
   security_state::SecurityLevel security =
       GetToolbarModel()->GetSecurityLevel(false);
 
-  if (security == security_state::EV_SECURE)
-    return true;
-  else if (security == security_state::SECURE)
-    return should_show_secure_verbose_;
-
-  return should_show_nonsecure_verbose_ &&
-         (security == security_state::DANGEROUS ||
-          security == security_state::HTTP_SHOW_WARNING);
+  return security == security_state::EV_SECURE ||
+         security == security_state::SECURE ||
+         security == security_state::DANGEROUS ||
+         security == security_state::HTTP_SHOW_WARNING;
 }
 
 bool LocationBarViewMac::IsLocationBarDark() const {
@@ -925,15 +881,8 @@ void LocationBarViewMac::UpdateSecurityState(bool tab_changed) {
 
 bool LocationBarViewMac::CanAnimateSecurityLevel(
     security_state::SecurityLevel level) const {
-  using SecurityLevel = security_state::SecurityLevel;
-  if (IsSecureConnection(level)) {
-    return should_animate_secure_verbose_;
-  } else if (security_level_ == SecurityLevel::DANGEROUS ||
-             security_level_ == SecurityLevel::HTTP_SHOW_WARNING) {
-    return should_animate_nonsecure_verbose_;
-  } else {
-    return false;
-  }
+  return security_level_ == security_state::SecurityLevel::DANGEROUS ||
+         security_level_ == security_state::SecurityLevel::HTTP_SHOW_WARNING;
 }
 
 bool LocationBarViewMac::IsSecureConnection(

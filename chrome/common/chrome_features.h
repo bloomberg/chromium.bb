@@ -117,10 +117,6 @@ extern const base::Feature kSafeSearchUrlReporting;
 
 extern const base::Feature kSimplifiedFullscreenUI;
 
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-extern const base::Feature kSecurityChip;
-#endif
-
 #if defined(SYZYASAN)
 extern const base::Feature kSyzyasanDeferredFree;
 #endif

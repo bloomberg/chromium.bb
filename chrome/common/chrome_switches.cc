@@ -580,16 +580,6 @@ const char kLoadMediaRouterComponentExtension[] =
 // Makes Chrome default browser
 const char kMakeDefaultBrowser[]            = "make-default-browser";
 
-extern const char kSecurityChip[] = "security-chip";
-extern const char kSecurityChipShowNonSecureOnly[] = "show-nonsecure-only";
-extern const char kSecurityChipShowAll[] = "show-all";
-
-extern const char kSecurityChipAnimation[] = "security-chip-animation";
-extern const char kSecurityChipAnimationNone[] = "none";
-extern const char kSecurityChipAnimationNonSecureOnly[] =
-    "animate-nonsecure-only";
-extern const char kSecurityChipAnimationAll[] = "animate-all";
-
 // Forces the maximum disk space to be used by the media cache, in bytes.
 const char kMediaCacheSize[]                = "media-cache-size";
 

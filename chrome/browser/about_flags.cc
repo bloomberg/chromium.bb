@@ -597,25 +597,6 @@ const FeatureEntry::Choice kSSLVersionMaxChoices[] = {
     {IDS_FLAGS_SSL_VERSION_MAX_TLS13, switches::kSSLVersionMax, "tls1.3"},
 };
 
-const FeatureEntry::Choice kSecurityChipChoices[] = {
-    {IDS_FLAGS_SECURITY_CHIP_DEFAULT, "", ""},
-    {IDS_FLAGS_SECURITY_CHIP_SHOW_NONSECURE_ONLY, switches::kSecurityChip,
-     switches::kSecurityChipShowNonSecureOnly},
-    {IDS_FLAGS_SECURITY_CHIP_SHOW_ALL, switches::kSecurityChip,
-     switches::kSecurityChipShowAll},
-};
-
-const FeatureEntry::Choice kSecurityChipAnimationChoices[] = {
-    {IDS_FLAGS_SECURITY_CHIP_ANIMATION_DEFAULT, "", ""},
-    {IDS_FLAGS_SECURITY_CHIP_ANIMATION_NONE, switches::kSecurityChipAnimation,
-     switches::kSecurityChipAnimationNone},
-    {IDS_FLAGS_SECURITY_CHIP_ANIMATION_NONSECURE_ONLY,
-     switches::kSecurityChipAnimation,
-     switches::kSecurityChipAnimationNonSecureOnly},
-    {IDS_FLAGS_SECURITY_CHIP_ANIMATION_ALL, switches::kSecurityChipAnimation,
-     switches::kSecurityChipAnimationAll},
-};
-
 #if !defined(OS_ANDROID)
 const FeatureEntry::Choice kEnableDefaultMediaSessionChoices[] = {
     {IDS_FLAGS_ENABLE_DEFAULT_MEDIA_SESSION_DISABLED, "", ""},
@@ -2052,12 +2033,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_EXPENSIVE_BACKGROUND_TIMER_THROTTLING_NAME,
      IDS_FLAGS_EXPENSIVE_BACKGROUND_TIMER_THROTTLING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kExpensiveBackgroundTimerThrottling)},
-    {"security-chip", IDS_FLAGS_SECURITY_CHIP_NAME,
-     IDS_FLAGS_SECURITY_CHIP_DESCRIPTION, kOsDesktop,
-     MULTI_VALUE_TYPE(kSecurityChipChoices)},
-    {"security-chip-animation", IDS_FLAGS_SECURITY_CHIP_ANIMATION_NAME,
-     IDS_FLAGS_SECURITY_CHIP_ANIMATION_DESCRIPTION, kOsDesktop,
-     MULTI_VALUE_TYPE(kSecurityChipAnimationChoices)},
 #if defined(OS_CHROMEOS)
     {"enumerate-audio-devices", IDS_FLAGS_ENABLE_ENUMERATING_AUDIO_DEVICES_NAME,
      IDS_FLAGS_ENABLE_ENUMERATING_AUDIO_DEVICES_DESCRIPTION, kOsCrOS,

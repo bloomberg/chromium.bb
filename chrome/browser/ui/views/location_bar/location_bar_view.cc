@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <map>
 
-#include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -52,8 +51,6 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
-#include "chrome/common/chrome_features.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -140,11 +137,7 @@ LocationBarView::LocationBarView(Browser* browser,
       is_popup_mode_(is_popup_mode),
       show_focus_rect_(false),
       template_url_service_(NULL),
-      web_contents_null_at_last_refresh_(true),
-      should_show_secure_state_(false),
-      should_show_nonsecure_state_(false),
-      should_animate_secure_state_(false),
-      should_animate_nonsecure_state_(false) {
+      web_contents_null_at_last_refresh_(true) {
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarView::UpdateWithoutTabRestore,
@@ -152,38 +145,6 @@ LocationBarView::LocationBarView(Browser* browser,
 
   zoom::ZoomEventManager::GetForBrowserContext(profile)
       ->AddZoomEventManagerObserver(this);
-
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  std::string security_chip_visibility;
-  if (command_line->HasSwitch(switches::kSecurityChip)) {
-    security_chip_visibility =
-      command_line->GetSwitchValueASCII(switches::kSecurityChip);
-  } else if (base::FeatureList::IsEnabled(features::kSecurityChip)) {
-    security_chip_visibility =
-        variations::GetVariationParamValueByFeature(
-            features::kSecurityChip, kSecurityChipFeatureVisibilityParam);
-  }
-
-  should_show_secure_state_ =
-      security_chip_visibility == switches::kSecurityChipShowAll;
-  should_show_nonsecure_state_ =
-    should_show_secure_state_ ||
-    security_chip_visibility == switches::kSecurityChipShowNonSecureOnly;
-
-  std::string security_chip_animation;
-  if (command_line->HasSwitch(switches::kSecurityChipAnimation)) {
-    security_chip_animation =
-        command_line->GetSwitchValueASCII(switches::kSecurityChipAnimation);
-  } else if (base::FeatureList::IsEnabled(features::kSecurityChip)) {
-    security_chip_animation = variations::GetVariationParamValueByFeature(
-        features::kSecurityChip, kSecurityChipFeatureAnimationParam);
-  }
-
-  should_animate_secure_state_ =
-      security_chip_animation == switches::kSecurityChipAnimationAll;
-  should_animate_nonsecure_state_ =
-      should_animate_secure_state_ ||
-      security_chip_animation == switches::kSecurityChipAnimationNonSecureOnly;
 }
 
 LocationBarView::~LocationBarView() {
@@ -933,27 +894,16 @@ bool LocationBarView::ShouldShowKeywordBubble() const {
 bool LocationBarView::ShouldShowSecurityChip() const {
   using SecurityLevel = security_state::SecurityLevel;
   const SecurityLevel level = GetToolbarModel()->GetSecurityLevel(false);
-  if (level == SecurityLevel::EV_SECURE) {
-    return true;
-  } else if (level == SecurityLevel::SECURE) {
-    return should_show_secure_state_;
-  } else {
-    return should_show_nonsecure_state_ &&
-           (level == SecurityLevel::DANGEROUS ||
-            level == SecurityLevel::HTTP_SHOW_WARNING);
-  }
+  return level == SecurityLevel::EV_SECURE || level == SecurityLevel::SECURE ||
+         level == SecurityLevel::DANGEROUS ||
+         level == SecurityLevel::HTTP_SHOW_WARNING;
 }
 
 bool LocationBarView::ShouldAnimateSecurityChip() const {
   using SecurityLevel = security_state::SecurityLevel;
   SecurityLevel level = GetToolbarModel()->GetSecurityLevel(false);
-  if (!ShouldShowSecurityChip())
-    return false;
-  if (level == SecurityLevel::SECURE || level == SecurityLevel::EV_SECURE)
-    return should_animate_secure_state_;
-  return should_animate_nonsecure_state_ &&
-         (level == SecurityLevel::DANGEROUS ||
-          level == SecurityLevel::HTTP_SHOW_WARNING);
+  return level == SecurityLevel::DANGEROUS ||
+         level == SecurityLevel::HTTP_SHOW_WARNING;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
