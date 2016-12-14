@@ -319,6 +319,7 @@ if (enable_extensions) {
       "image_util_unittest.cc",
       "manifest_handler_unittest.cc",
       "manifest_handlers/content_capabilities_manifest_unittest.cc",
+      "manifest_handlers/csp_info_unittest.cc",
       "manifest_handlers/default_locale_manifest_unittest.cc",
       "manifest_handlers/externally_connectable_unittest.cc",
       "manifest_handlers/file_handler_manifest_unittest.cc",
