@@ -76,7 +76,6 @@ cr.define('options.passwordManager', function() {
       urlLink = item.ownerDocument.createElement('a');
       urlLink.href = item.url;
       urlLink.setAttribute('target', '_blank');
-      urlLink.dir = 'ltr';
     } else {
       urlLink = item.ownerDocument.createElement('span');
     }
