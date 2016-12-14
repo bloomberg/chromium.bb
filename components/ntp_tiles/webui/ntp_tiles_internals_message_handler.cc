@@ -110,9 +110,9 @@ void NTPTilesInternalsMessageHandler::SendSourceInfo() {
 
   if (client_->DoesSourceExist(NTPTileSource::POPULAR)) {
     auto popular_sites = client_->MakePopularSites();
-    value.SetString("popular.url", popular_sites->GetURLToUse().spec());
-    value.SetString("popular.country", popular_sites->GetCountryToUse());
-    value.SetString("popular.version", popular_sites->GetVersionToUse());
+    value.SetString("popular.url", popular_sites->GetURLToFetch().spec());
+    value.SetString("popular.country", popular_sites->GetCountryToFetch());
+    value.SetString("popular.version", popular_sites->GetVersionToFetch());
 
     value.SetString(
         "popular.overrideURL",

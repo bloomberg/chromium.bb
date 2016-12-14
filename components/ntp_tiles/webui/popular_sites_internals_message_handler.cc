@@ -152,7 +152,7 @@ void PopularSitesInternalsMessageHandler::SendSites() {
 
   base::DictionaryValue result;
   result.Set("sites", std::move(sites_list));
-  result.SetString("url", popular_sites_->LastURL().spec());
+  result.SetString("url", popular_sites_->GetLastURLFetched().spec());
   web_ui_->CallJavascriptFunction("chrome.popular_sites_internals.receiveSites",
                                   result);
 }

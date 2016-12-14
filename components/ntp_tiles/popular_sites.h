@@ -43,10 +43,9 @@ using ParseJSONCallback = base::Callback<void(
     const base::Callback<void(std::unique_ptr<base::Value>)>& success_callback,
     const base::Callback<void(const std::string&)>& error_callback)>;
 
-// Downloads and provides a list of suggested popular sites, for display on
-// the NTP when there are not enough personalized tiles. Caches the downloaded
-// file on disk to avoid re-downloading on every startup.
-class PopularSites : public net::URLFetcherDelegate {
+// Interface to provide a list of suggested popular sites, for display on the
+// NTP when there are not enough personalized tiles.
+class PopularSites {
  public:
   struct Site {
     Site(const base::string16& title,
@@ -64,15 +63,10 @@ class PopularSites : public net::URLFetcherDelegate {
     GURL thumbnail_url;
   };
 
+  using SitesVector = std::vector<Site>;
   using FinishedCallback = base::Callback<void(bool /* success */)>;
 
-  PopularSites(const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
-               PrefService* prefs,
-               const TemplateURLService* template_url_service,
-               variations::VariationsService* variations_service,
-               net::URLRequestContextGetter* download_context,
-               const base::FilePath& directory,
-               ParseJSONCallback parse_json);
+  virtual ~PopularSites() = default;
 
   // Starts the process of retrieving popular sites. When they are available,
   // invokes |callback| with the result, on the same thread as the caller. Never
@@ -83,21 +77,45 @@ class PopularSites : public net::URLFetcherDelegate {
   // if it already exists on disk.
   //
   // Must be called at most once on a given PopularSites object.
-  void StartFetch(bool force_download, const FinishedCallback& callback);
+  // TODO(mastiz): Remove this restriction?
+  virtual void StartFetch(bool force_download,
+                          const FinishedCallback& callback) = 0;
 
-  ~PopularSites() override;
+  // Returns the list of available sites.
+  virtual const SitesVector& sites() const = 0;
 
-  const std::vector<Site>& sites() const { return sites_; }
+  // Various internals exposed publicly for diagnostic pages only.
+  virtual GURL GetLastURLFetched() const = 0;
+  virtual const base::FilePath& local_path() const = 0;
+  virtual GURL GetURLToFetch() = 0;
+  virtual std::string GetCountryToFetch() = 0;
+  virtual std::string GetVersionToFetch() = 0;
+};
 
-  // The URL of the file that was last downloaded.
-  GURL LastURL() const;
+// Actual (non-test) implementation of the PopularSites interface. Caches the
+// downloaded file on disk to avoid re-downloading on every startup.
+class PopularSitesImpl : public PopularSites, public net::URLFetcherDelegate {
+ public:
+  PopularSitesImpl(
+      const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
+      PrefService* prefs,
+      const TemplateURLService* template_url_service,
+      variations::VariationsService* variations_service,
+      net::URLRequestContextGetter* download_context,
+      const base::FilePath& directory,
+      ParseJSONCallback parse_json);
 
-  const base::FilePath& local_path() const { return local_path_; }
+  ~PopularSitesImpl() override;
 
-  // Public for diagnostic pages only.
-  GURL GetURLToUse();
-  std::string GetCountryToUse();
-  std::string GetVersionToUse();
+  // PopularSites implementation.
+  void StartFetch(bool force_download,
+                  const FinishedCallback& callback) override;
+  const SitesVector& sites() const override;
+  GURL GetLastURLFetched() const override;
+  const base::FilePath& local_path() const override;
+  GURL GetURLToFetch() override;
+  std::string GetCountryToFetch() override;
+  std::string GetVersionToFetch() override;
 
   // Register preferences used by this class.
   static void RegisterProfilePrefs(
@@ -133,12 +151,12 @@ class PopularSites : public net::URLFetcherDelegate {
 
   std::unique_ptr<net::URLFetcher> fetcher_;
   bool is_fallback_;
-  std::vector<Site> sites_;
+  SitesVector sites_;
   GURL pending_url_;
 
-  base::WeakPtrFactory<PopularSites> weak_ptr_factory_;
+  base::WeakPtrFactory<PopularSitesImpl> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(PopularSites);
+  DISALLOW_COPY_AND_ASSIGN(PopularSitesImpl);
 };
 
 }  // namespace ntp_tiles

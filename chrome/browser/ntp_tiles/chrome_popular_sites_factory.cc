@@ -19,7 +19,7 @@ std::unique_ptr<ntp_tiles::PopularSites>
 ChromePopularSitesFactory::NewForProfile(Profile* profile) {
   base::FilePath directory;  // remains empty if PathService::Get() fails.
   PathService::Get(chrome::DIR_USER_DATA, &directory);
-  return base::MakeUnique<ntp_tiles::PopularSites>(
+  return base::MakeUnique<ntp_tiles::PopularSitesImpl>(
       content::BrowserThread::GetBlockingPool(), profile->GetPrefs(),
       TemplateURLServiceFactory::GetForProfile(profile),
       g_browser_process->variations_service(), profile->GetRequestContext(),

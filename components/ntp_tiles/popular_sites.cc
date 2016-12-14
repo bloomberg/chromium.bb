@@ -127,7 +127,7 @@ PopularSites::Site::Site(const Site& other) = default;
 
 PopularSites::Site::~Site() {}
 
-PopularSites::PopularSites(
+PopularSitesImpl::PopularSitesImpl(
     const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
     PrefService* prefs,
     const TemplateURLService* template_url_service,
@@ -148,10 +148,10 @@ PopularSites::PopularSites(
       is_fallback_(false),
       weak_ptr_factory_(this) {}
 
-PopularSites::~PopularSites() {}
+PopularSitesImpl::~PopularSitesImpl() {}
 
-void PopularSites::StartFetch(bool force_download,
-                              const FinishedCallback& callback) {
+void PopularSitesImpl::StartFetch(bool force_download,
+                                  const FinishedCallback& callback) {
   DCHECK(!callback_);
   callback_ = callback;
 
@@ -163,7 +163,7 @@ void PopularSites::StartFetch(bool force_download,
       base::TimeDelta::FromHours(kPopularSitesRedownloadIntervalHours);
   const bool download_time_is_future = base::Time::Now() < last_download_time;
 
-  pending_url_ = GetURLToUse();
+  pending_url_ = GetURLToFetch();
   const bool url_changed =
       pending_url_.spec() != prefs_->GetString(kPopularSitesURLPref);
 
@@ -186,17 +186,26 @@ void PopularSites::StartFetch(bool force_download,
   base::PostTaskAndReplyWithResult(
       blocking_runner_.get(), FROM_HERE,
       base::Bind(&base::ReadFileToString, local_path_, file_data_ptr),
-      base::Bind(&PopularSites::OnReadFileDone, weak_ptr_factory_.GetWeakPtr(),
+      base::Bind(&PopularSitesImpl::OnReadFileDone,
+                 weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(std::move(file_data))));
 }
 
-GURL PopularSites::LastURL() const {
+const PopularSites::SitesVector& PopularSitesImpl::sites() const {
+  return sites_;
+}
+
+GURL PopularSitesImpl::GetLastURLFetched() const {
   return GURL(prefs_->GetString(kPopularSitesURLPref));
 }
 
-GURL PopularSites::GetURLToUse() {
-  const std::string country = GetCountryToUse();
-  const std::string version = GetVersionToUse();
+const base::FilePath& PopularSitesImpl::local_path() const {
+  return local_path_;
+}
+
+GURL PopularSitesImpl::GetURLToFetch() {
+  const std::string country = GetCountryToFetch();
+  const std::string version = GetVersionToFetch();
 
   const GURL override_url =
       GURL(prefs_->GetString(ntp_tiles::prefs::kPopularSitesOverrideURL));
@@ -211,7 +220,7 @@ GURL PopularSites::GetURLToUse() {
 //   "--enable-ntp-search-engine-country-detection" switch is present).
 // - The country provided by the VariationsService.
 // - A default fallback.
-std::string PopularSites::GetCountryToUse() {
+std::string PopularSitesImpl::GetCountryToFetch() {
   std::string country_code =
       prefs_->GetString(ntp_tiles::prefs::kPopularSitesOverrideCountry);
 
@@ -239,7 +248,7 @@ std::string PopularSites::GetCountryToUse() {
 // - The explicit "override version" pref set by the user.
 // - The version from the field trial config (variation parameter).
 // - A default fallback.
-std::string PopularSites::GetVersionToUse() {
+std::string PopularSitesImpl::GetVersionToFetch() {
   std::string version =
       prefs_->GetString(ntp_tiles::prefs::kPopularSitesOverrideVersion);
 
@@ -253,7 +262,7 @@ std::string PopularSites::GetVersionToUse() {
 }
 
 // static
-void PopularSites::RegisterProfilePrefs(
+void PopularSitesImpl::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* user_prefs) {
   user_prefs->RegisterStringPref(ntp_tiles::prefs::kPopularSitesOverrideURL,
                                  std::string());
@@ -266,8 +275,8 @@ void PopularSites::RegisterProfilePrefs(
   user_prefs->RegisterStringPref(kPopularSitesURLPref, std::string());
 }
 
-void PopularSites::OnReadFileDone(std::unique_ptr<std::string> data,
-                                  bool success) {
+void PopularSitesImpl::OnReadFileDone(std::unique_ptr<std::string> data,
+                                      bool success) {
   if (success) {
     auto json = base::JSONReader::Read(*data, base::JSON_ALLOW_TRAILING_COMMAS);
     if (json) {
@@ -281,7 +290,7 @@ void PopularSites::OnReadFileDone(std::unique_ptr<std::string> data,
   }
 }
 
-void PopularSites::FetchPopularSites() {
+void PopularSitesImpl::FetchPopularSites() {
   fetcher_ = URLFetcher::Create(pending_url_, URLFetcher::GET, this);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher_.get(), data_use_measurement::DataUseUserData::NTP_TILES);
@@ -292,7 +301,7 @@ void PopularSites::FetchPopularSites() {
   fetcher_->Start();
 }
 
-void PopularSites::OnURLFetchComplete(const net::URLFetcher* source) {
+void PopularSitesImpl::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK_EQ(fetcher_.get(), source);
   std::unique_ptr<net::URLFetcher> free_fetcher = std::move(fetcher_);
 
@@ -304,29 +313,29 @@ void PopularSites::OnURLFetchComplete(const net::URLFetcher* source) {
     return;
   }
 
-  parse_json_.Run(
-      json_string,
-      base::Bind(&PopularSites::OnJsonParsed, weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&PopularSites::OnJsonParseFailed,
-                 weak_ptr_factory_.GetWeakPtr()));
+  parse_json_.Run(json_string, base::Bind(&PopularSitesImpl::OnJsonParsed,
+                                          weak_ptr_factory_.GetWeakPtr()),
+                  base::Bind(&PopularSitesImpl::OnJsonParseFailed,
+                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PopularSites::OnJsonParsed(std::unique_ptr<base::Value> json) {
+void PopularSitesImpl::OnJsonParsed(std::unique_ptr<base::Value> json) {
   const base::Value* json_ptr = json.get();
   base::PostTaskAndReplyWithResult(
       blocking_runner_.get(), FROM_HERE,
       base::Bind(&WriteJsonToFile, local_path_, json_ptr),
-      base::Bind(&PopularSites::OnFileWriteDone, weak_ptr_factory_.GetWeakPtr(),
+      base::Bind(&PopularSitesImpl::OnFileWriteDone,
+                 weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(std::move(json))));
 }
 
-void PopularSites::OnJsonParseFailed(const std::string& error_message) {
+void PopularSitesImpl::OnJsonParseFailed(const std::string& error_message) {
   DLOG(WARNING) << "JSON parsing failed: " << error_message;
   OnDownloadFailed();
 }
 
-void PopularSites::OnFileWriteDone(std::unique_ptr<base::Value> json,
-                                   bool success) {
+void PopularSitesImpl::OnFileWriteDone(std::unique_ptr<base::Value> json,
+                                       bool success) {
   if (success) {
     prefs_->SetInt64(kPopularSitesLastDownloadPref,
                      base::Time::Now().ToInternalValue());
@@ -339,7 +348,7 @@ void PopularSites::OnFileWriteDone(std::unique_ptr<base::Value> json,
   }
 }
 
-void PopularSites::ParseSiteList(std::unique_ptr<base::Value> json) {
+void PopularSitesImpl::ParseSiteList(std::unique_ptr<base::Value> json) {
   base::ListValue* list = nullptr;
   if (!json || !json->GetAsList(&list)) {
     DLOG(WARNING) << "JSON is not a list";
@@ -348,7 +357,7 @@ void PopularSites::ParseSiteList(std::unique_ptr<base::Value> json) {
     return;
   }
 
-  std::vector<PopularSites::Site> sites;
+  SitesVector sites;
   for (size_t i = 0; i < list->GetSize(); i++) {
     base::DictionaryValue* item;
     if (!list->GetDictionary(i, &item))
@@ -364,16 +373,16 @@ void PopularSites::ParseSiteList(std::unique_ptr<base::Value> json) {
     std::string large_icon_url;
     item->GetString("large_icon_url", &large_icon_url);
 
-    sites.push_back(PopularSites::Site(title, GURL(url), GURL(favicon_url),
-                                       GURL(large_icon_url),
-                                       GURL(thumbnail_url)));
+    sites.push_back(PopularSitesImpl::Site(title, GURL(url), GURL(favicon_url),
+                                           GURL(large_icon_url),
+                                           GURL(thumbnail_url)));
   }
 
   sites_.swap(sites);
   callback_.Run(true);
 }
 
-void PopularSites::OnDownloadFailed() {
+void PopularSitesImpl::OnDownloadFailed() {
   if (!is_fallback_) {
     DLOG(WARNING) << "Download country site list failed";
     is_fallback_ = true;

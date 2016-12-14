@@ -21,7 +21,7 @@ IOSPopularSitesFactory::NewForBrowserState(
     ios::ChromeBrowserState* browser_state) {
   base::FilePath popular_sites_path;
   base::PathService::Get(ios::DIR_USER_DATA, &popular_sites_path);
-  return base::MakeUnique<ntp_tiles::PopularSites>(
+  return base::MakeUnique<ntp_tiles::PopularSitesImpl>(
       web::WebThread::GetBlockingPool(), browser_state->GetPrefs(),
       ios::TemplateURLServiceFactory::GetForBrowserState(browser_state),
       GetApplicationContext()->GetVariationsService(),

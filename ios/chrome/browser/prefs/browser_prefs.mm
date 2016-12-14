@@ -93,7 +93,7 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ntp_snippets::RemoteSuggestionsProvider::RegisterProfilePrefs(registry);
   ntp_snippets::ContentSuggestionsService::RegisterProfilePrefs(registry);
   ntp_tiles::MostVisitedSites::RegisterProfilePrefs(registry);
-  ntp_tiles::PopularSites::RegisterProfilePrefs(registry);
+  ntp_tiles::PopularSitesImpl::RegisterProfilePrefs(registry);
   ios::NotificationPromo::RegisterProfilePrefs(registry);
   password_manager::PasswordManager::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);

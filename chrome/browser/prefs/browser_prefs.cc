@@ -564,7 +564,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
   variations::VariationsService::RegisterProfilePrefs(registry);
-  ntp_tiles::PopularSites::RegisterProfilePrefs(registry);
+  ntp_tiles::PopularSitesImpl::RegisterProfilePrefs(registry);
   NewTabPagePrefs::RegisterProfilePrefs(registry);
   PartnerBookmarksShim::RegisterProfilePrefs(registry);
 #else

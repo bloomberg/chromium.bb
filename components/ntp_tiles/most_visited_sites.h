@@ -75,8 +75,6 @@ class MostVisitedSitesSupervisor {
 class MostVisitedSites : public history::TopSitesObserver,
                          public MostVisitedSitesSupervisor::Observer {
  public:
-  using PopularSitesVector = std::vector<PopularSites::Site>;
-
   // The observer to be notified when the list of most visited sites changes.
   class Observer {
    public:

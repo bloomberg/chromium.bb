@@ -68,7 +68,7 @@ class PopularSitesTest : public ::testing::Test {
         },
         worker_pool_owner_(2, "PopularSitesTest."),
         url_fetcher_factory_(nullptr) {
-    PopularSites::RegisterProfilePrefs(prefs_.registry());
+    PopularSitesImpl::RegisterProfilePrefs(prefs_.registry());
     CHECK(scoped_cache_dir_.CreateUniqueTempDir());
     cache_dir_ = scoped_cache_dir_.GetPath();
   }
@@ -106,15 +106,15 @@ class PopularSitesTest : public ::testing::Test {
   }
 
   bool FetchPopularSites(bool force_download,
-                         std::vector<PopularSites::Site>* sites) {
+                         PopularSites::SitesVector* sites) {
     scoped_refptr<net::TestURLRequestContextGetter> url_request_context(
         new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get()));
-    PopularSites popular_sites(worker_pool_owner_.pool().get(), &prefs_,
-                               /*template_url_service=*/nullptr,
-                               /*variations_service=*/nullptr,
-                               url_request_context.get(), cache_dir_,
-                               base::Bind(JsonUnsafeParser::Parse));
+    PopularSitesImpl popular_sites(worker_pool_owner_.pool().get(), &prefs_,
+                                   /*template_url_service=*/nullptr,
+                                   /*variations_service=*/nullptr,
+                                   url_request_context.get(), cache_dir_,
+                                   base::Bind(JsonUnsafeParser::Parse));
 
     base::RunLoop loop;
     bool save_success = false;
@@ -149,7 +149,7 @@ TEST_F(PopularSitesTest, Basic) {
       "https://www.gstatic.com/chrome/ntp/suggested_sites_ZZ_9.json",
       {kWikipedia});
 
-  std::vector<PopularSites::Site> sites;
+  PopularSites::SitesVector sites;
   EXPECT_TRUE(FetchPopularSites(/*force_download=*/false, &sites));
 
   ASSERT_THAT(sites.size(), Eq(1u));
@@ -168,7 +168,7 @@ TEST_F(PopularSitesTest, Fallback) {
       "https://www.gstatic.com/chrome/ntp/suggested_sites_DEFAULT_5.json",
       {kYouTube, kChromium});
 
-  std::vector<PopularSites::Site> sites;
+  PopularSites::SitesVector sites;
   EXPECT_TRUE(FetchPopularSites(/*force_download=*/false, &sites));
 
   ASSERT_THAT(sites.size(), Eq(2u));
@@ -191,14 +191,14 @@ TEST_F(PopularSitesTest, Failure) {
   RespondWith404(
       "https://www.gstatic.com/chrome/ntp/suggested_sites_DEFAULT_5.json");
 
-  std::vector<PopularSites::Site> sites;
+  PopularSites::SitesVector sites;
   EXPECT_FALSE(FetchPopularSites(/*force_download=*/false, &sites));
   ASSERT_THAT(sites, IsEmpty());
 }
 
 TEST_F(PopularSitesTest, FailsWithoutFetchIfNoCacheDir) {
   SetCountryAndVersion("ZZ", "9");
-  std::vector<PopularSites::Site> sites;
+  PopularSites::SitesVector sites;
   cache_dir_ = base::FilePath();  // Override with invalid file path.
   EXPECT_FALSE(FetchPopularSites(/*force_download=*/false, &sites));
 }
@@ -210,7 +210,7 @@ TEST_F(PopularSitesTest, UsesCachedFile) {
       {kWikipedia});
 
   // First request succeeds and gets cached.
-  std::vector<PopularSites::Site> sites;
+  PopularSites::SitesVector sites;
   EXPECT_TRUE(FetchPopularSites(/*force_download=*/false, &sites));
 
   // File disappears from server, but we don't need it because it's cached.
@@ -229,7 +229,7 @@ TEST_F(PopularSitesTest, CachesEmptyFile) {
       {kWikipedia});
 
   // First request succeeds and caches empty suggestions list (no fallback).
-  std::vector<PopularSites::Site> sites;
+  PopularSites::SitesVector sites;
   EXPECT_TRUE(FetchPopularSites(/*force_download=*/false, &sites));
   EXPECT_THAT(sites, IsEmpty());
 
@@ -248,7 +248,7 @@ TEST_F(PopularSitesTest, DoesntUseCachedFileIfDownloadForced) {
       {kWikipedia});
 
   // First request succeeds and gets cached.
-  std::vector<PopularSites::Site> sites;
+  PopularSites::SitesVector sites;
   EXPECT_TRUE(FetchPopularSites(/*force_download=*/true, &sites));
   EXPECT_THAT(sites[0].url, URLEq("https://zz.m.wikipedia.org/"));
 
@@ -268,7 +268,7 @@ TEST_F(PopularSitesTest, RefetchesAfterCountryMoved) {
       "https://www.gstatic.com/chrome/ntp/suggested_sites_ZX_9.json",
       {kChromium});
 
-  std::vector<PopularSites::Site> sites;
+  PopularSites::SitesVector sites;
 
   // First request (in ZZ) saves Wikipedia.
   SetCountryAndVersion("ZZ", "9");
@@ -290,7 +290,7 @@ TEST_F(PopularSitesTest, DoesntCacheInvalidFile) {
       "https://www.gstatic.com/chrome/ntp/suggested_sites_DEFAULT_5.json");
 
   // First request falls back and gets nothing there either.
-  std::vector<PopularSites::Site> sites;
+  PopularSites::SitesVector sites;
   EXPECT_FALSE(FetchPopularSites(/*force_download=*/false, &sites));
 
   // Second request refetches ZZ_9, which now has data.
@@ -311,7 +311,7 @@ TEST_F(PopularSitesTest, RefetchesAfterFallback) {
       {kWikipedia});
 
   // First request falls back.
-  std::vector<PopularSites::Site> sites;
+  PopularSites::SitesVector sites;
   EXPECT_TRUE(FetchPopularSites(/*force_download=*/false, &sites));
   ASSERT_THAT(sites.size(), Eq(1u));
   EXPECT_THAT(sites[0].url, URLEq("https://zz.m.wikipedia.org/"));
