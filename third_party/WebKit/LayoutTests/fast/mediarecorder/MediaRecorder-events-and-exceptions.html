@@ -42,8 +42,6 @@ recorderOnResume = test.step_func(function() {
 
 recorderOnPause = test.step_func(function() {
     assert_equals(recorder.state, "paused");
-    assert_throws("InvalidStateError", function() { recorder.requestData() },
-                  "cannot requestData() if recorder is |paused|");
     recorder.onpause = recorderOnUnexpectedEvent;
     recorder.onresume = recorderOnResume;
     recorder.resume();

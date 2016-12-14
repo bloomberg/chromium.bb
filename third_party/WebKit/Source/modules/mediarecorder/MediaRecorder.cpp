@@ -274,7 +274,7 @@ void MediaRecorder::resume(ExceptionState& exceptionState) {
 }
 
 void MediaRecorder::requestData(ExceptionState& exceptionState) {
-  if (m_state != State::Recording) {
+  if (m_state == State::Inactive) {
     exceptionState.throwDOMException(
         InvalidStateError,
         "The MediaRecorder's state is '" + stateToString(m_state) + "'.");
