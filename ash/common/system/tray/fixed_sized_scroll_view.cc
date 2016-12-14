@@ -19,8 +19,10 @@ bool UseMd() {
 
 FixedSizedScrollView::FixedSizedScrollView() {
   set_notify_enter_exit_on_child(true);
-  if (UseMd())
+  if (UseMd()) {
     SetVerticalScrollBar(new views::OverlayScrollBar(false));
+    SetHorizontalScrollBar(new views::OverlayScrollBar(true));
+  }
 }
 
 FixedSizedScrollView::~FixedSizedScrollView() {}
@@ -60,7 +62,7 @@ void FixedSizedScrollView::Layout() {
     return views::ScrollView::Layout();
 
   gfx::Rect bounds = gfx::Rect(contents()->GetPreferredSize());
-  bounds.set_width(std::max(0, width() - GetScrollBarWidth()));
+  bounds.set_width(std::max(0, width() - GetScrollBarLayoutWidth()));
   // Keep the origin of the contents unchanged so that the list will not scroll
   // away from the current visible region user is viewing. ScrollView::Layout()
   // will make sure the contents line up with its viewport properly if
@@ -71,7 +73,7 @@ void FixedSizedScrollView::Layout() {
   views::ScrollView::Layout();
   if (!vertical_scroll_bar()->visible()) {
     gfx::Rect bounds = contents()->bounds();
-    bounds.set_width(bounds.width() + GetScrollBarWidth());
+    bounds.set_width(bounds.width() + GetScrollBarLayoutWidth());
     contents()->SetBoundsRect(bounds);
   }
 }
@@ -81,7 +83,7 @@ void FixedSizedScrollView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     return;
 
   gfx::Rect bounds = gfx::Rect(contents()->GetPreferredSize());
-  bounds.set_width(std::max(0, width() - GetScrollBarWidth()));
+  bounds.set_width(std::max(0, width() - GetScrollBarLayoutWidth()));
   contents()->SetBoundsRect(bounds);
 }
 

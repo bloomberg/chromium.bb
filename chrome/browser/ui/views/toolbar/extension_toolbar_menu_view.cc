@@ -61,7 +61,7 @@ gfx::Size ExtensionToolbarMenuView::GetPreferredSize() const {
   // views::ScrollView::GetPreferredSize() includes the contents' size, but
   // not the scrollbar width. Add it in if necessary.
   if (container_->GetPreferredSize().height() > max_height_)
-    s.Enlarge(GetScrollBarWidth(), 0);
+    s.Enlarge(GetScrollBarLayoutWidth(), 0);
   return s;
 }
 

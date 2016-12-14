@@ -74,10 +74,10 @@ class VIEWS_EXPORT ScrollView : public View, public ScrollBarController {
   // Returns whether or not the ScrollView is bounded (as set by ClipHeightTo).
   bool is_bounded() const { return max_height_ >= 0 && min_height_ >= 0; }
 
-  // Retrieves the width/height of scrollbars. These return 0 if the scrollbar
-  // has not yet been created.
-  int GetScrollBarWidth() const;
-  int GetScrollBarHeight() const;
+  // Retrieves the width/height reserved for scrollbars. These return 0 if the
+  // scrollbar has not yet been created or in the case of overlay scrollbars.
+  int GetScrollBarLayoutWidth() const;
+  int GetScrollBarLayoutHeight() const;
 
   // Returns the horizontal/vertical scrollbar. This may return NULL.
   const ScrollBar* horizontal_scroll_bar() const { return horiz_sb_; }

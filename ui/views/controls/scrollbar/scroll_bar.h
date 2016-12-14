@@ -81,14 +81,14 @@ class VIEWS_EXPORT ScrollBar : public View {
   // Returns the position of the scrollbar.
   virtual int GetPosition() const = 0;
 
-  // Get the width or height of this scrollbar, for use in layout calculations.
-  // For a vertical scrollbar, this is the width of the scrollbar, likewise it
-  // is the height for a horizontal scrollbar.
-  virtual int GetLayoutSize() const = 0;
+  // Get the width or height of this scrollbar. For a vertical scrollbar, this
+  // is the width of the scrollbar, likewise it is the height for a horizontal
+  // scrollbar.
+  virtual int GetThickness() const = 0;
 
-  // Get the width or height for this scrollbar which overlaps with the content.
-  // Default is 0.
-  virtual int GetContentOverlapSize() const;
+  // Returns true if the scrollbar should sit on top of the content area (e.g.
+  // for overlay scrollbars).
+  virtual bool OverlapsContent() const = 0;
 
   // Called when a ScrollEvent (in any, or no, direction) is seen by the parent
   // ScrollView. E.g., this may reveal an overlay scrollbar to indicate

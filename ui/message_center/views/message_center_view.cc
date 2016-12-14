@@ -95,6 +95,7 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
   scroller_ = new views::ScrollView();
   scroller_->ClipHeightTo(kMinScrollViewHeight, max_height - button_height);
   scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
+  scroller_->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
   scroller_->set_background(
       views::Background::CreateSolidBackground(kMessageCenterBackgroundColor));
 

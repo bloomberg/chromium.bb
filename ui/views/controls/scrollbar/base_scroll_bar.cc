@@ -400,6 +400,10 @@ int BaseScrollBar::GetPosition() const {
   return thumb_->GetPosition();
 }
 
+bool BaseScrollBar::OverlapsContent() const {
+  return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // BaseScrollBar, protected:
 

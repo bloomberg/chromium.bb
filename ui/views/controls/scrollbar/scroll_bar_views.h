@@ -39,7 +39,7 @@ class VIEWS_EXPORT ScrollBarViews : public BaseScrollBar,
   const char* GetClassName() const override;
 
   // ScrollBar overrides:
-  int GetLayoutSize() const override;
+  int GetThickness() const override;
 
   // BaseButton::ButtonListener overrides:
   void ButtonPressed(Button* sender, const ui::Event& event) override;

@@ -442,6 +442,7 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
 
   scroller_ = new views::ScrollView();
   scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
+  scroller_->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
   AddChildView(scroller_);
 
   std::vector<Notifier*> notifiers;
@@ -570,7 +571,7 @@ void NotifierSettingsView::Layout() {
   int content_width = width();
   int content_height = contents_view->GetHeightForWidth(content_width);
   if (title_height + content_height > height()) {
-    content_width -= scroller_->GetScrollBarWidth();
+    content_width -= scroller_->GetScrollBarLayoutWidth();
     content_height = contents_view->GetHeightForWidth(content_width);
   }
   contents_view->SetBounds(0, 0, content_width, content_height);
@@ -582,7 +583,7 @@ gfx::Size NotifierSettingsView::GetMinimumSize() const {
   int total_height = title_label_->GetPreferredSize().height() +
                      scroller_->contents()->GetPreferredSize().height();
   if (total_height > kMinimumHeight)
-    size.Enlarge(scroller_->GetScrollBarWidth(), 0);
+    size.Enlarge(scroller_->GetScrollBarLayoutWidth(), 0);
   return size;
 }
 

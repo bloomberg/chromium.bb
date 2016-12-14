@@ -208,12 +208,12 @@ gfx::Rect CocoaScrollBar::GetTrackBounds() const {
 //////////////////////////////////////////////////////////////////
 // CocoaScrollBar, ScrollBar:
 
-int CocoaScrollBar::GetLayoutSize() const {
-  return scroller_style_ == NSScrollerStyleOverlay ? 0 : ScrollbarThickness();
+int CocoaScrollBar::GetThickness() const {
+  return ScrollbarThickness();
 }
 
-int CocoaScrollBar::GetContentOverlapSize() const {
-  return scroller_style_ == NSScrollerStyleLegacy ? 0 : ScrollbarThickness();
+bool CocoaScrollBar::OverlapsContent() const {
+  return scroller_style_ == NSScrollerStyleOverlay;
 }
 
 //////////////////////////////////////////////////////////////////

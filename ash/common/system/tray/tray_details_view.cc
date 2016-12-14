@@ -536,7 +536,7 @@ void TrayDetailsView::Layout() {
     // row.
     gfx::Size scroller_size = scroll_content_->GetPreferredSize();
     scroller_->set_fixed_size(
-        gfx::Size(width() + scroller_->GetScrollBarWidth(),
+        gfx::Size(width() + scroller_->GetScrollBarLayoutWidth(),
                   scroller_size.height() - (size.height() - height())));
   }
 

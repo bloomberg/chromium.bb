@@ -128,12 +128,12 @@ gfx::Rect OverlayScrollBar::GetTrackBounds() const {
   return local;
 }
 
-int OverlayScrollBar::GetLayoutSize() const {
-  return 0;
+int OverlayScrollBar::GetThickness() const {
+  return kThumbThickness;
 }
 
-int OverlayScrollBar::GetContentOverlapSize() const {
-  return kThumbThickness;
+bool OverlayScrollBar::OverlapsContent() const {
+  return true;
 }
 
 void OverlayScrollBar::Layout() {
