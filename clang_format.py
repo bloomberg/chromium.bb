@@ -20,7 +20,7 @@ class NotFoundError(Exception):
   def __init__(self, e):
     Exception.__init__(self,
         'Problem while looking for clang-format in Chromium source tree:\n'
-        '  %s' % e)
+        '%s' % e)
 
 
 def FindClangFormatToolInChromiumTree():
@@ -28,7 +28,8 @@ def FindClangFormatToolInChromiumTree():
   bin_path = gclient_utils.GetBuildtoolsPlatformBinaryPath()
   if not bin_path:
     raise NotFoundError(
-        'Could not find checkout in any parent of the current path.')
+        'Could not find checkout in any parent of the current path.\n'
+        'Set CHROMIUM_BUILDTOOLS_PATH to use outside of a chromium checkout.')
 
   tool_path = os.path.join(bin_path,
                            'clang-format' + gclient_utils.GetExeSuffix())
@@ -42,7 +43,9 @@ def FindClangFormatScriptInChromiumTree(script_name):
   tools_path = gclient_utils.GetBuildtoolsPath()
   if not tools_path:
     raise NotFoundError(
-        'Could not find checkout in any parent of the current path.')
+        'Could not find checkout in any parent of the current path.\n',
+        'Set CHROMIUM_BUILDTOOLS_PATH to use outside of a chromium checkout.')
+
   script_path = os.path.join(tools_path, 'clang_format', 'script', script_name)
   if not os.path.exists(script_path):
     raise NotFoundError('File does not exist: %s' % script_path)
@@ -52,9 +55,9 @@ def FindClangFormatScriptInChromiumTree(script_name):
 def main(args):
   try:
     tool = FindClangFormatToolInChromiumTree()
-  except NotFoundError, e:
-    print >> sys.stderr, e
-    sys.exit(1)
+  except NotFoundError as e:
+    sys.stderr.write("%s\n" % str(e))
+    return 1
 
   # Add some visibility to --help showing where the tool lives, since this
   # redirection can be a little opaque.
