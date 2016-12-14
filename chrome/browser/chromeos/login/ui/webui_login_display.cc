@@ -227,8 +227,11 @@ void WebUILoginDisplay::LoadWallpaper(const AccountId& account_id) {
 }
 
 void WebUILoginDisplay::LoadSigninWallpaper() {
-  WallpaperManager::Get()->SetDefaultWallpaperDelayed(
-      user_manager::SignInAccountId());
+  if (!WallpaperManager::Get()->SetDeviceWallpaperIfApplicable(
+          user_manager::SignInAccountId())) {
+    WallpaperManager::Get()->SetDefaultWallpaperDelayed(
+        user_manager::SignInAccountId());
+  }
 }
 
 void WebUILoginDisplay::OnSigninScreenReady() {

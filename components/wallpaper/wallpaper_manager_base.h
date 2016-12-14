@@ -354,6 +354,14 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
   // Ruturns files identifier for the |account_id|.
   virtual WallpaperFilesId GetFilesId(const AccountId& account_id) const = 0;
 
+  // If the device is enterprise managed and we're at the login screen, set the
+  // device wallpaper as the login screen wallpaper. If the device is enterprise
+  // managed and we're in a user session, only set the device wallpaper if there
+  // is no user policy wallpaper and the user hasn't changed the default or the
+  // device wallpaper. Returns true if the device wallpaper should be set as the
+  // wallpaper, otherwise returns false.
+  virtual bool SetDeviceWallpaperIfApplicable(const AccountId& account_id) = 0;
+
  protected:
   friend class TestApi;
   friend class WallpaperManagerBrowserTest;
@@ -402,7 +410,8 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
       gfx::ImageSkia* large_wallpaper_image);
 
   // Initialize wallpaper for the specified user to default and saves this
-  // settings in local state.
+  // settings in local state. Note if the device policy controlled wallpaper
+  // exists, use the device wallpaper as the default wallpaper.
   virtual void InitInitialUserWallpaper(const AccountId& account_id,
                                         bool is_persistent);
 
@@ -471,6 +480,17 @@ class WALLPAPER_EXPORT WallpaperManagerBase {
   // false if wallpaper information is not found.
   virtual bool GetUserWallpaperInfo(const AccountId& account_id,
                                     WallpaperInfo* info) const = 0;
+
+  // Returns true if the device wallpaper should be set for the account.
+  virtual bool ShouldSetDeviceWallpaper(const AccountId& account_id,
+                                        std::string* url,
+                                        std::string* hash) = 0;
+
+  // Returns the file directory where the downloaded device wallpaper is saved.
+  virtual base::FilePath GetDeviceWallpaperDir() = 0;
+
+  // Returns the full path for the downloaded device wallpaper.
+  virtual base::FilePath GetDeviceWallpaperFilePath() = 0;
 
   // Sets wallpaper to the decoded wallpaper if |update_wallpaper| is true.
   // Otherwise, cache wallpaper to memory if not logged in.  (Takes a UserImage

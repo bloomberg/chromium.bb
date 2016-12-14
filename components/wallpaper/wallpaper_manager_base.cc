@@ -473,7 +473,13 @@ void WallpaperManagerBase::OnPolicyCleared(const std::string& policy,
   GetUserWallpaperInfo(account_id, &info);
   info.type = user_manager::User::DEFAULT;
   SetUserWallpaperInfo(account_id, info, true /* is_persistent */);
-  SetDefaultWallpaperNow(account_id);
+  // If the user's policy is cleared, try to set the device wallpaper first.
+  // Note We have to modify the user wallpaper info first. Otherwise, we won't
+  // be able to override the current user policy wallpaper. The wallpaper info
+  // will be set correctly if the device wallpaper is set successfully.
+  if (!SetDeviceWallpaperIfApplicable(account_id)) {
+    SetDefaultWallpaperNow(account_id);
+  }
 }
 
 // static
@@ -615,6 +621,15 @@ void WallpaperManagerBase::InitInitialUserWallpaper(const AccountId& account_id,
   current_user_wallpaper_info_.type = user_manager::User::DEFAULT;
   current_user_wallpaper_info_.date = base::Time::Now().LocalMidnight();
 
+  std::string device_wallpaper_url;
+  std::string device_wallpaper_hash;
+  if (ShouldSetDeviceWallpaper(account_id, &device_wallpaper_url,
+                               &device_wallpaper_hash)) {
+    current_user_wallpaper_info_.location =
+        GetDeviceWallpaperFilePath().value();
+    current_user_wallpaper_info_.type = user_manager::User::DEVICE;
+  }
+
   WallpaperInfo info = current_user_wallpaper_info_;
   SetUserWallpaperInfo(account_id, info, is_persistent);
 }
@@ -708,10 +723,15 @@ void WallpaperManagerBase::CacheUserWallpaper(const AccountId& account_id) {
     base::FilePath wallpaper_dir;
     base::FilePath wallpaper_path;
     if (info.type == user_manager::User::CUSTOMIZED ||
-        info.type == user_manager::User::POLICY) {
-      const char* sub_dir = GetCustomWallpaperSubdirForCurrentResolution();
-      base::FilePath wallpaper_path = GetCustomWallpaperDir(sub_dir);
-      wallpaper_path = wallpaper_path.Append(info.location);
+        info.type == user_manager::User::POLICY ||
+        info.type == user_manager::User::DEVICE) {
+      base::FilePath wallpaper_path;
+      if (info.type == user_manager::User::DEVICE) {
+        wallpaper_path = GetDeviceWallpaperFilePath();
+      } else {
+        const char* sub_dir = GetCustomWallpaperSubdirForCurrentResolution();
+        wallpaper_path = GetCustomWallpaperDir(sub_dir).Append(info.location);
+      }
       // Set the path to the cache.
       wallpaper_cache_[account_id] =
           CustomWallpaperElement(wallpaper_path, gfx::ImageSkia());

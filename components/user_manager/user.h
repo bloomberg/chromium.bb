@@ -78,7 +78,10 @@ class USER_MANAGER_EXPORT User : public UserInfo {
     ONLINE = 4,        // WallpaperInfo.location denotes an URL.
     POLICY = 5,        // Controlled by policy, can't be changed by the user.
     THIRDPARTY = 6,    // Current wallpaper is set by a third party app.
-    WALLPAPER_TYPE_COUNT = 7
+    DEVICE = 7,        // Current wallpaper is the device policy controlled
+                       // wallpaper. It shows on the login screen if the device
+                       // is an enterprise managed device.
+    WALLPAPER_TYPE_COUNT = 8
   };
 
   // Returns true if user type has gaia account.
