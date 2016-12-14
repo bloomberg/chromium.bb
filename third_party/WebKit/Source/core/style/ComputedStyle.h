@@ -221,7 +221,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
              (m_hasSimpleUnderline == other.m_hasSimpleUnderline) &&
              (m_cursorStyle == other.m_cursorStyle) &&
              (m_direction == other.m_direction) &&
-             (m_boxDirection == other.m_boxDirection) &&
              (m_rtlOrdering == other.m_rtlOrdering) &&
              (m_printColorAdjust == other.m_printColorAdjust) &&
              (m_insideLink == other.m_insideLink) &&
@@ -234,8 +233,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                                         // text decoration on this element.
     unsigned m_cursorStyle : 6;     // ECursor
     unsigned m_direction : 1;       // TextDirection
-    unsigned m_boxDirection : 1;  // EBoxDirection (CSS3 box_direction property,
-                                  // flexible box layout module)
     // 32 bits
 
     // non CSS2 inherited
@@ -361,8 +358,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
     m_inheritedData.m_direction = initialDirection();
     m_inheritedData.m_rtlOrdering = static_cast<unsigned>(initialRTLOrdering());
-    m_inheritedData.m_boxDirection =
-        static_cast<unsigned>(initialBoxDirection());
     m_inheritedData.m_printColorAdjust =
         static_cast<unsigned>(initialPrintColorAdjust());
     m_inheritedData.m_pointerEvents =
@@ -2337,15 +2332,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void setTextEmphasisPosition(TextEmphasisPosition position) {
     SET_VAR(m_rareInheritedData, textEmphasisPosition, position);
-  }
-
-  // -webkit-box-direction
-  static EBoxDirection initialBoxDirection() { return EBoxDirection::Normal; }
-  EBoxDirection boxDirection() const {
-    return static_cast<EBoxDirection>(m_inheritedData.m_boxDirection);
-  }
-  void setBoxDirection(EBoxDirection d) {
-    m_inheritedData.m_boxDirection = static_cast<unsigned>(d);
   }
 
   // -webkit-highlight

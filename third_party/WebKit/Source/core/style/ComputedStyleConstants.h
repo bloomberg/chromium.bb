@@ -214,7 +214,6 @@ enum EBoxPack { BoxPackStart, BoxPackCenter, BoxPackEnd, BoxPackJustify };
 enum EBoxAlignment { BSTRETCH, BSTART, BCENTER, BEND, BBASELINE };
 enum EBoxOrient { HORIZONTAL, VERTICAL };
 enum EBoxLines { SINGLE, MULTIPLE };
-enum class EBoxDirection : unsigned { Normal, Reverse };
 
 // CSS3 Flexbox Properties
 

@@ -385,7 +385,7 @@ y interpolable, svg, converter=convertLength
 -webkit-border-vertical-spacing interpolable, inherited, name_for_methods=VerticalBorderSpacing, converter=convertComputedLength<short>
 -webkit-box-align type_name=EBoxAlignment
 -webkit-box-decoration-break
--webkit-box-direction inherited
+-webkit-box-direction inherited, keyword_only, keywords=[normal|reverse], initial_keyword=normal
 -webkit-box-flex type_name=float
 -webkit-box-flex-group type_name=unsigned int
 -webkit-box-lines
