@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -29,7 +30,7 @@ namespace {
 const char kSocketFilename[] = "socket_for_testing";
 
 // Test security key request data.
-const unsigned char kRequestData[] = {
+const uint8_t kRequestData[] = {
     0x00, 0x00, 0x00, 0x9a, 0x65, 0x1e, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00,
     0x00, 0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x20, 0x60, 0x90,
     0x24, 0x71, 0xf8, 0xf2, 0xe5, 0xdf, 0x7f, 0x81, 0xc7, 0x49, 0xc4, 0xa3,
@@ -45,6 +46,8 @@ const unsigned char kRequestData[] = {
     0x5e, 0xa3, 0xbc, 0x02, 0x5b, 0xec, 0xe4, 0x4b, 0xae, 0x0e, 0xf2, 0xbd,
     0xc8, 0xaa};
 
+const uint8_t kSshErrorData[] = {0x00, 0x00, 0x00, 0x01, 0x05};
+
 void RunUntilIdle() {
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
@@ -56,7 +59,9 @@ class SecurityKeyAuthHandlerPosixTest : public testing::Test {
  public:
   SecurityKeyAuthHandlerPosixTest()
       : run_loop_(new base::RunLoop()),
-        file_thread_("SecurityKeyAuthHandlerPosixTest_FileThread") {
+        file_thread_("SecurityKeyAuthHandlerPosixTest_FileThread"),
+        expected_request_data_(reinterpret_cast<const char*>(kRequestData + 4),
+                               sizeof(kRequestData) - 4) {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
     socket_path_ = temp_dir_.GetPath().Append(kSocketFilename);
     remoting::SecurityKeyAuthHandler::SetSecurityKeySocketName(socket_path_);
@@ -97,10 +102,10 @@ class SecurityKeyAuthHandlerPosixTest : public testing::Test {
     run_loop_.reset(new base::RunLoop);
   }
 
-  void CheckHostDataMessage(int id, const std::string& expected_data) {
+  void CheckHostDataMessage(int id) {
     ASSERT_EQ(id, last_connection_id_received_);
-    ASSERT_EQ(expected_data.length(), last_message_received_.length());
-    ASSERT_EQ(expected_data, last_message_received_);
+    ASSERT_EQ(expected_request_data_.length(), last_message_received_.length());
+    ASSERT_EQ(expected_request_data_, last_message_received_);
   }
 
   void WriteRequestData(net::UnixDomainClientSocket* client_socket) {
@@ -125,17 +130,32 @@ class SecurityKeyAuthHandlerPosixTest : public testing::Test {
     ASSERT_EQ(request_len, bytes_written);
   }
 
-  void WaitForAndVerifyHostMessage(int connection_id) {
-    WaitForSendMessageToClient();
-    std::string expected_data;
-    expected_data.reserve(sizeof(kRequestData) - 4);
+  void WaitForResponseData(net::UnixDomainClientSocket* client_socket) {
+    // The request data is reused for the response data.
+    WaitForData(client_socket, sizeof(kRequestData));
+  }
 
-    // Skip first four bytes and build up the response string.
-    for (size_t i = 4; i < sizeof(kRequestData); ++i) {
-      expected_data.append(1, static_cast<unsigned char>(kRequestData[i]));
+  void WaitForErrorData(net::UnixDomainClientSocket* client_socket) {
+    WaitForData(client_socket, sizeof(kSshErrorData));
+  }
+
+  void WaitForData(net::UnixDomainClientSocket* socket, int request_len) {
+    scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(request_len));
+    scoped_refptr<net::DrainableIOBuffer> read_buffer(
+        new net::DrainableIOBuffer(buffer.get(), request_len));
+    net::TestCompletionCallback read_callback;
+    int bytes_read = 0;
+    while (bytes_read < request_len) {
+      int read_result =
+          socket->Read(read_buffer.get(), read_buffer->BytesRemaining(),
+                       read_callback.callback());
+      read_result = read_callback.GetResult(read_result);
+      ASSERT_GT(read_result, 0);
+      bytes_read += read_result;
+      ASSERT_LE(bytes_read, request_len);
+      read_buffer->DidConsume(bytes_read);
     }
-
-    CheckHostDataMessage(connection_id, expected_data);
+    ASSERT_EQ(request_len, bytes_read);
   }
 
  protected:
@@ -151,6 +171,8 @@ class SecurityKeyAuthHandlerPosixTest : public testing::Test {
 
   int last_connection_id_received_ = -1;
   std::string last_message_received_;
+
+  const std::string expected_request_data_;
 
   base::ScopedTempDir temp_dir_;
   base::FilePath socket_path_;
@@ -171,7 +193,11 @@ TEST_F(SecurityKeyAuthHandlerPosixTest, NotClosedAfterRequest) {
 
   // Write the request and verify the response.
   WriteRequestData(&client_socket);
-  WaitForAndVerifyHostMessage(1);
+  WaitForSendMessageToClient();
+  CheckHostDataMessage(1);
+
+  auth_handler_->SendClientResponse(1, expected_request_data_);
+  WaitForResponseData(&client_socket);
 
   // Verify the connection is now valid.
   ASSERT_TRUE(auth_handler_->IsValidConnectionId(1));
@@ -191,14 +217,29 @@ TEST_F(SecurityKeyAuthHandlerPosixTest, HandleTwoRequests) {
 
   // Write the request and verify the response.
   WriteRequestData(&client_socket);
-  WaitForAndVerifyHostMessage(1);
+  WaitForSendMessageToClient();
+  CheckHostDataMessage(1);
 
   // Verify the connection is now valid.
   ASSERT_TRUE(auth_handler_->IsValidConnectionId(1));
 
+  // Send a 'client' response to the socket and verify the data is received.
+  auth_handler_->SendClientResponse(1, expected_request_data_);
+  WaitForResponseData(&client_socket);
+
+  // Verify the connection is still valid.
+  ASSERT_TRUE(auth_handler_->IsValidConnectionId(1));
+
   // Repeat the request/response cycle.
   WriteRequestData(&client_socket);
-  WaitForAndVerifyHostMessage(1);
+  WaitForSendMessageToClient();
+  CheckHostDataMessage(1);
+
+  // Verify the connection is still valid.
+  ASSERT_TRUE(auth_handler_->IsValidConnectionId(1));
+
+  auth_handler_->SendClientResponse(1, expected_request_data_);
+  WaitForResponseData(&client_socket);
 
   // Verify the connection is still valid.
   ASSERT_TRUE(auth_handler_->IsValidConnectionId(1));
@@ -219,36 +260,58 @@ TEST_F(SecurityKeyAuthHandlerPosixTest, HandleTwoIndependentRequests) {
 
   // Write the request and verify the response.
   WriteRequestData(&client_socket);
-  WaitForAndVerifyHostMessage(1);
+  WaitForSendMessageToClient();
+  CheckHostDataMessage(1);
 
   // Verify the first connection is now valid.
   ASSERT_TRUE(auth_handler_->IsValidConnectionId(1));
 
+  // Send a 'client' response to the socket and verify the data is received.
+  auth_handler_->SendClientResponse(1, expected_request_data_);
+  WaitForResponseData(&client_socket);
+
+  // Verify the connection is still valid.
+  ASSERT_TRUE(auth_handler_->IsValidConnectionId(1));
+
   // Disconnect and establish a new connection.
   client_socket.Disconnect();
+
   rv = client_socket.Connect(connect_callback.callback());
   ASSERT_EQ(net::OK, connect_callback.GetResult(rv));
 
   // Repeat the request/response cycle.
   WriteRequestData(&client_socket);
-  WaitForAndVerifyHostMessage(2);
+  WaitForSendMessageToClient();
+  CheckHostDataMessage(2);
+
+  // Verify the connection is now valid.
+  ASSERT_TRUE(auth_handler_->IsValidConnectionId(2));
+
+  // Send a 'client' response to the socket and verify the data is received.
+  auth_handler_->SendClientResponse(2, expected_request_data_);
+  WaitForResponseData(&client_socket);
 
   // Verify the second connection is valid and the first is not.
   ASSERT_TRUE(auth_handler_->IsValidConnectionId(2));
   ASSERT_FALSE(auth_handler_->IsValidConnectionId(1));
-
-  // Verify that the initial socket was released properly.
   ASSERT_EQ(1u, auth_handler_->GetActiveConnectionCountForTest());
 }
 
-TEST_F(SecurityKeyAuthHandlerPosixTest, DidReadTimeout) {
+TEST_F(SecurityKeyAuthHandlerPosixTest, DoReadTimeout) {
   CreateSocketAndWait();
+
+  auth_handler_->SetRequestTimeoutForTest(base::TimeDelta());
 
   net::UnixDomainClientSocket client_socket(socket_path_.value(), false);
   net::TestCompletionCallback connect_callback;
   int rv = client_socket.Connect(connect_callback.callback());
   ASSERT_EQ(net::OK, connect_callback.GetResult(rv));
-  auth_handler_->SetRequestTimeoutForTest(base::TimeDelta());
+
+  // SSH Error should be received when the connection times out.
+  WaitForErrorData(&client_socket);
+
+  // Connection should no longer be valid.
+  ASSERT_FALSE(auth_handler_->IsValidConnectionId(1));
   ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
 }
 
@@ -260,8 +323,27 @@ TEST_F(SecurityKeyAuthHandlerPosixTest, ClientErrorMessageDelivered) {
   int rv = client_socket.Connect(connect_callback.callback());
   ASSERT_EQ(net::OK, connect_callback.GetResult(rv));
 
+  // Write the request and verify the response.  This ensures the socket has
+  // been created and is working before sending the error to tear it down.
+  WriteRequestData(&client_socket);
+  WaitForSendMessageToClient();
+  CheckHostDataMessage(1);
+
+  // Send a 'client' response to the socket and verify the data is received.
+  auth_handler_->SendClientResponse(1, expected_request_data_);
+  WaitForResponseData(&client_socket);
+
+  ASSERT_TRUE(auth_handler_->IsValidConnectionId(1));
+  ASSERT_EQ(1u, auth_handler_->GetActiveConnectionCountForTest());
+
   auth_handler_->SendErrorAndCloseConnection(1);
+
+  // Connection should be removed immediately.
+  ASSERT_FALSE(auth_handler_->IsValidConnectionId(1));
   ASSERT_EQ(0u, auth_handler_->GetActiveConnectionCountForTest());
+
+  // SSH Error should be received.
+  WaitForErrorData(&client_socket);
 }
 
 }  // namespace remoting

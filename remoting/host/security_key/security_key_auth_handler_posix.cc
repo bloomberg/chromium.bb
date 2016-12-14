@@ -192,35 +192,28 @@ void SecurityKeyAuthHandlerPosix::CreateSocket() {
   DoAccept();
 }
 
-bool SecurityKeyAuthHandlerPosix::IsValidConnectionId(
-    int security_key_connection_id) const {
-  return GetSocketForConnectionId(security_key_connection_id) !=
-         active_sockets_.end();
+bool SecurityKeyAuthHandlerPosix::IsValidConnectionId(int connection_id) const {
+  return GetSocketForConnectionId(connection_id) != active_sockets_.end();
 }
 
 void SecurityKeyAuthHandlerPosix::SendClientResponse(
-    int security_key_connection_id,
+    int connection_id,
     const std::string& response) {
-  ActiveSockets::const_iterator iter =
-      GetSocketForConnectionId(security_key_connection_id);
+  ActiveSockets::const_iterator iter = GetSocketForConnectionId(connection_id);
   if (iter != active_sockets_.end()) {
     iter->second->SendResponse(response);
   } else {
-    LOG(WARNING) << "Unknown gnubby-auth data connection: '"
-                 << security_key_connection_id << "'";
+    LOG(WARNING) << "Unknown gnubby-auth connection id: " << connection_id;
   }
 }
 
-void SecurityKeyAuthHandlerPosix::SendErrorAndCloseConnection(
-    int security_key_connection_id) {
-  ActiveSockets::const_iterator iter =
-      GetSocketForConnectionId(security_key_connection_id);
+void SecurityKeyAuthHandlerPosix::SendErrorAndCloseConnection(int id) {
+  ActiveSockets::const_iterator iter = GetSocketForConnectionId(id);
   if (iter != active_sockets_.end()) {
     HOST_LOG << "Sending security key error";
     SendErrorAndCloseActiveSocket(iter);
   } else {
-    LOG(WARNING) << "Unknown gnubby-auth data connection: '"
-                 << security_key_connection_id << "'";
+    LOG(WARNING) << "Unknown gnubby-auth connection id: " << id;
   }
 }
 
@@ -243,8 +236,9 @@ void SecurityKeyAuthHandlerPosix::DoAccept() {
   int result = auth_socket_->Accept(
       &accept_socket_, base::Bind(&SecurityKeyAuthHandlerPosix::OnAccepted,
                                   base::Unretained(this)));
-  if (result != net::ERR_IO_PENDING)
+  if (result != net::ERR_IO_PENDING) {
     OnAccepted(result);
+  }
 }
 
 void SecurityKeyAuthHandlerPosix::OnAccepted(int result) {
@@ -270,12 +264,10 @@ void SecurityKeyAuthHandlerPosix::OnAccepted(int result) {
   DoAccept();
 }
 
-void SecurityKeyAuthHandlerPosix::OnReadComplete(
-    int security_key_connection_id) {
+void SecurityKeyAuthHandlerPosix::OnReadComplete(int connection_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  ActiveSockets::const_iterator iter =
-      active_sockets_.find(security_key_connection_id);
+  ActiveSockets::const_iterator iter = active_sockets_.find(connection_id);
   DCHECK(iter != active_sockets_.end());
   std::string request_data;
   if (!iter->second->GetAndClearRequestData(&request_data)) {
@@ -284,17 +276,16 @@ void SecurityKeyAuthHandlerPosix::OnReadComplete(
   }
 
   HOST_LOG << "Received security key request: " << GetCommandCode(request_data);
-  send_message_callback_.Run(security_key_connection_id, request_data);
+  send_message_callback_.Run(connection_id, request_data);
 
   iter->second->StartReadingRequest(
       base::Bind(&SecurityKeyAuthHandlerPosix::OnReadComplete,
-                 base::Unretained(this), security_key_connection_id));
+                 base::Unretained(this), connection_id));
 }
 
 SecurityKeyAuthHandlerPosix::ActiveSockets::const_iterator
-SecurityKeyAuthHandlerPosix::GetSocketForConnectionId(
-    int security_key_connection_id) const {
-  return active_sockets_.find(security_key_connection_id);
+SecurityKeyAuthHandlerPosix::GetSocketForConnectionId(int connection_id) const {
+  return active_sockets_.find(connection_id);
 }
 
 void SecurityKeyAuthHandlerPosix::SendErrorAndCloseActiveSocket(
@@ -303,13 +294,12 @@ void SecurityKeyAuthHandlerPosix::SendErrorAndCloseActiveSocket(
   active_sockets_.erase(iter);
 }
 
-void SecurityKeyAuthHandlerPosix::RequestTimedOut(
-    int security_key_connection_id) {
-  HOST_LOG << "SecurityKey request timed out";
-  ActiveSockets::const_iterator iter =
-      active_sockets_.find(security_key_connection_id);
-  if (iter != active_sockets_.end())
+void SecurityKeyAuthHandlerPosix::RequestTimedOut(int connection_id) {
+  HOST_LOG << "SecurityKey request timed out: " << connection_id;
+  ActiveSockets::const_iterator iter = active_sockets_.find(connection_id);
+  if (iter != active_sockets_.end()) {
     SendErrorAndCloseActiveSocket(iter);
+  }
 }
 
 }  // namespace remoting

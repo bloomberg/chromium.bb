@@ -42,10 +42,12 @@ bool SecurityKeySocket::GetAndClearRequestData(std::string* data_out) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(read_completed_);
 
-  if (!read_completed_)
+  if (!read_completed_) {
     return false;
-  if (!IsRequestComplete() || IsRequestTooLarge())
+  }
+  if (!IsRequestComplete() || IsRequestTooLarge()) {
     return false;
+  }
   // The request size is not part of the data; don't send it.
   data_out->assign(request_data_.begin() + kRequestSizeBytes,
                    request_data_.end());
@@ -63,6 +65,8 @@ void SecurityKeySocket::SendResponse(const std::string& response_data) {
       new std::string(response_length_string + response_data));
   write_buffer_ = new net::DrainableIOBuffer(
       new net::StringIOBuffer(std::move(response)), response_len);
+
+  DCHECK(write_buffer_->BytesRemaining());
   DoWrite();
 }
 
@@ -91,6 +95,12 @@ void SecurityKeySocket::OnDataWritten(int result) {
   }
   ResetTimer();
   write_buffer_->DidConsume(result);
+
+  if (!write_buffer_->BytesRemaining()) {
+    write_buffer_ = nullptr;
+    return;
+  }
+
   DoWrite();
 }
 
@@ -98,23 +108,21 @@ void SecurityKeySocket::DoWrite() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(write_buffer_);
 
-  if (!write_buffer_->BytesRemaining()) {
-    write_buffer_ = nullptr;
-    return;
-  }
   int result = socket_->Write(
       write_buffer_.get(), write_buffer_->BytesRemaining(),
       base::Bind(&SecurityKeySocket::OnDataWritten, base::Unretained(this)));
-  if (result != net::ERR_IO_PENDING)
+  if (result != net::ERR_IO_PENDING) {
     OnDataWritten(result);
+  }
 }
 
 void SecurityKeySocket::OnDataRead(int result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (result <= 0) {
-    if (result < 0)
+    if (result < 0) {
       LOG(ERROR) << "Error reading request: " << result;
+    }
     read_completed_ = true;
     base::ResetAndReturn(&request_received_callback_).Run();
     return;
@@ -138,23 +146,26 @@ void SecurityKeySocket::DoRead() {
   int result = socket_->Read(
       read_buffer_.get(), kRequestReadBufferLength,
       base::Bind(&SecurityKeySocket::OnDataRead, base::Unretained(this)));
-  if (result != net::ERR_IO_PENDING)
+  if (result != net::ERR_IO_PENDING) {
     OnDataRead(result);
+  }
 }
 
 bool SecurityKeySocket::IsRequestComplete() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (request_data_.size() < kRequestSizeBytes)
+  if (request_data_.size() < kRequestSizeBytes) {
     return false;
+  }
   return GetRequestLength() <= request_data_.size();
 }
 
 bool SecurityKeySocket::IsRequestTooLarge() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (request_data_.size() < kRequestSizeBytes)
+  if (request_data_.size() < kRequestSizeBytes) {
     return false;
+  }
   return GetRequestLength() > kMaxRequestLength;
 }
 
@@ -181,8 +192,9 @@ std::string SecurityKeySocket::GetResponseLengthAsBytes(
 }
 
 void SecurityKeySocket::ResetTimer() {
-  if (timer_->IsRunning())
+  if (timer_->IsRunning()) {
     timer_->Reset();
+  }
 }
 
 }  // namespace remoting

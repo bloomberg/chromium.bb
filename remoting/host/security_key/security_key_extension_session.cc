@@ -171,8 +171,7 @@ void SecurityKeyExtensionSession::ProcessErrorMessage(
     HOST_LOG << "Sending security key error";
     security_key_auth_handler_->SendErrorAndCloseConnection(connection_id);
   } else {
-    LOG(WARNING) << "Unknown gnubby-auth data connection: '" << connection_id
-                 << "'";
+    LOG(WARNING) << "Unknown gnubby-auth connection id: " << connection_id;
   }
 }
 
