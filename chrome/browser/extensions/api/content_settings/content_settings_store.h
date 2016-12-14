@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_EXTENSIONS_API_CONTENT_SETTINGS_CONTENT_SETTINGS_STORE_H_
 
 #include <map>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -112,7 +114,9 @@ class ContentSettingsStore
 
   struct ExtensionEntry;
 
-  typedef std::multimap<base::Time, ExtensionEntry*> ExtensionEntryMap;
+  // A list of the entries, maintained in reverse-chronological order (most-
+  // recently installed items first) to facilitate search.
+  using ExtensionEntries = std::vector<std::unique_ptr<ExtensionEntry>>;
 
   virtual ~ContentSettingsStore();
 
@@ -129,10 +133,11 @@ class ContentSettingsStore
 
   bool OnCorrectThread();
 
-  ExtensionEntryMap::iterator FindEntry(const std::string& ext_id);
-  ExtensionEntryMap::const_iterator FindEntry(const std::string& ext_id) const;
+  ExtensionEntry* FindEntry(const std::string& ext_id) const;
+  ExtensionEntries::iterator FindIterator(const std::string& ext_id);
 
-  ExtensionEntryMap entries_;
+  // The entries.
+  ExtensionEntries entries_;
 
   base::ObserverList<Observer, false> observers_;
 
