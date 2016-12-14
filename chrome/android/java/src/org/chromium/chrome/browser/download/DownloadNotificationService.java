@@ -271,7 +271,7 @@ public class DownloadNotificationService extends Service {
 
         String contentText = mContext.getResources().getString(isDownloadPending
                 ? R.string.download_notification_pending : R.string.download_started);
-        int resId = isDownloadPending ? android.R.drawable.stat_sys_download_done
+        int resId = isDownloadPending ? R.drawable.ic_download_pending
                 : android.R.drawable.stat_sys_download;
         NotificationCompat.Builder builder = buildNotification(resId, fileName, contentText);
         builder.setOngoing(true);
@@ -374,7 +374,7 @@ public class DownloadNotificationService extends Service {
         String contentText = mContext.getResources().getString(
                 R.string.download_notification_paused);
         NotificationCompat.Builder builder = buildNotification(
-                android.R.drawable.ic_media_pause, entry.fileName, contentText);
+                R.drawable.ic_download_pause, entry.fileName, contentText);
 
         // Clicking on an in-progress download sends the user to see all their downloads.
         Intent downloadHomeIntent = buildActionIntent(
