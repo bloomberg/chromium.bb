@@ -451,9 +451,10 @@ const char* const kSafePermissionStrings[] = {
     // access to page content, which we can't allow.
     // "declarativeContent",
 
-    // Allow, but either (1) ask user for confirmation or (2) return blank
-    // capture.
-    // "desktopCapture",
+    // User is prompted when an extension requests desktopCapture whether they
+    // want to allow it. The request is made through
+    // chrome.desktopCapture.chooseDesktopMedia call.
+    "desktopCapture",
 
     // Haven't checked in detail what this does, but messing with devtools
     // usually comes with the ability to access page content.
@@ -626,9 +627,9 @@ const char* const kSafePermissionStrings[] = {
     // Enumerates removable storage.
     "system.storage",
 
-    // Provides access to screen contents, so block. Alternatively, (1) prompt
-    // for user consent or (2) return blank capture.
-    // "tabCapture",
+    // User is prompted (allow/deny) when an extension requests tabCapture. The
+    // request is made via chrome.tabCapture.capture call.
+    "tabCapture",
 
     // Privacy sensitive URL access.
     // "tabs",
