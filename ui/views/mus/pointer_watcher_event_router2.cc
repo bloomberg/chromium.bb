@@ -90,6 +90,7 @@ void PointerWatcherEventRouter2::OnPointerEventObserved(
     const ui::PointerEvent& event,
     aura::Window* target) {
   Widget* target_widget = nullptr;
+  ui::PointerEvent updated_event(event);
   if (target) {
     aura::Window* window = target;
     while (window && !target_widget) {
@@ -107,17 +108,27 @@ void PointerWatcherEventRouter2::OnPointerEventObserved(
       }
       window = window->parent();
     }
+    if (target_widget) {
+      gfx::Point widget_relative_location(event.location());
+      aura::Window::ConvertPointToTarget(target, target_widget->GetNativeView(),
+                                         &widget_relative_location);
+      updated_event.set_location(widget_relative_location);
+    }
   }
 
   // The mojo input events type converter uses the event root_location field
   // to store screen coordinates. Screen coordinates really should be returned
   // separately. See http://crbug.com/608547
-  gfx::Point location_in_screen = event.AsLocatedEvent()->root_location();
-  for (PointerWatcher& observer : move_watchers_)
-    observer.OnPointerEventObserved(event, location_in_screen, target_widget);
+  gfx::Point location_in_screen = event.root_location();
+  for (PointerWatcher& observer : move_watchers_) {
+    observer.OnPointerEventObserved(updated_event, location_in_screen,
+                                    target_widget);
+  }
   if (event.type() != ui::ET_POINTER_MOVED) {
-    for (PointerWatcher& observer : non_move_watchers_)
-      observer.OnPointerEventObserved(event, location_in_screen, target_widget);
+    for (PointerWatcher& observer : non_move_watchers_) {
+      observer.OnPointerEventObserved(updated_event, location_in_screen,
+                                      target_widget);
+    }
   }
 }
 

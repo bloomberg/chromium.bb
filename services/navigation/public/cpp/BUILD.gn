@@ -14,6 +14,6 @@ static_library("cpp") {
     "//base",
     "//mojo/public/cpp/bindings",
     "//services/navigation/public/interfaces",
-    "//services/ui/public/cpp",
+    "//ui/aura",
   ]
 }

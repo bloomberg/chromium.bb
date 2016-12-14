@@ -4,12 +4,20 @@
 
 #include "services/navigation/public/cpp/view.h"
 
+#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/navigation/public/cpp/view_delegate.h"
 #include "services/navigation/public/cpp/view_observer.h"
-#include "services/ui/public/cpp/window.h"
+#include "ui/aura/mus/window_port_mus.h"
+#include "ui/aura/window.h"
 
 namespace navigation {
+namespace {
+
+// Callback with result of Embed().
+void EmbedCallback(bool result) {}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // View, public:
@@ -85,10 +93,12 @@ void View::HideInterstitial() {
   view_->HideInterstitial();
 }
 
-void View::EmbedInWindow(ui::Window* parent) {
+void View::EmbedInWindow(aura::Window* parent) {
   ui::mojom::WindowTreeClientPtr client;
   view_->GetWindowTreeClient(GetProxy(&client));
-  parent->Embed(std::move(client));
+  const uint32_t embed_flags = 0u;  // Nothing special.
+  aura::WindowPortMus::Get(parent)->Embed(std::move(client), embed_flags,
+                                          base::Bind(&EmbedCallback));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

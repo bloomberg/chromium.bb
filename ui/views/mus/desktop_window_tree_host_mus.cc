@@ -31,6 +31,11 @@ namespace views {
 
 namespace {
 
+bool ShouldSetClientArea(views::Widget::InitParams::Type type) {
+  using WIP = views::Widget::InitParams;
+  return type == WIP::TYPE_WINDOW || type == WIP::TYPE_PANEL;
+}
+
 // As the window manager renderers the non-client decorations this class does
 // very little but honor the client area insets from the window manager.
 class ClientSideNonClientFrameView : public NonClientFrameView {
@@ -196,6 +201,9 @@ bool DesktopWindowTreeHostMus::IsDocked() const {
 }
 
 void DesktopWindowTreeHostMus::SendClientAreaToServer() {
+  if (!ShouldSetClientArea(desktop_native_widget_aura_->widget_type()))
+    return;
+
   NonClientView* non_client_view =
       native_widget_delegate_->AsWidget()->non_client_view();
   if (!non_client_view || !non_client_view->client_view())
@@ -253,6 +261,14 @@ void DesktopWindowTreeHostMus::OnNativeWidgetCreated(
     parent_->children_.insert(this);
   }
   native_widget_delegate_->OnNativeWidgetCreated(true);
+}
+
+void DesktopWindowTreeHostMus::OnWidgetInitDone() {
+  // Because of construction order it's possible the bounds have changed before
+  // the NonClientView was created, which means we may not have sent the
+  // client-area and hit-test-mask.
+  SendClientAreaToServer();
+  SendHitTestMaskToServer();
 }
 
 std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostMus::CreateTooltip() {
@@ -537,6 +553,9 @@ void DesktopWindowTreeHostMus::SetVisibilityChangedAnimationsEnabled(
 }
 
 NonClientFrameView* DesktopWindowTreeHostMus::CreateNonClientFrameView() {
+  if (!ShouldSetClientArea(desktop_native_widget_aura_->widget_type()))
+    return nullptr;
+
   return new ClientSideNonClientFrameView(native_widget_delegate_->AsWidget());
 }
 

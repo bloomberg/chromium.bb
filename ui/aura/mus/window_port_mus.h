@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "services/ui/public/interfaces/cursor.mojom.h"
+#include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/mus/mus_types.h"
@@ -53,6 +54,12 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   ui::mojom::Cursor predefined_cursor() const { return predefined_cursor_; }
   void SetPredefinedCursor(ui::mojom::Cursor cursor_id);
+
+  // Embeds a new client in this Window. See WindowTreeClient::Embed() for
+  // details on arguments.
+  void Embed(ui::mojom::WindowTreeClientPtr client,
+             uint32_t flags,
+             const ui::mojom::WindowTree::EmbedCallback& callback);
 
   std::unique_ptr<WindowCompositorFrameSink> RequestCompositorFrameSink(
       ui::mojom::CompositorFrameSinkType type,

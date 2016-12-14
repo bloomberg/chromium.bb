@@ -115,7 +115,10 @@ class AURA_EXPORT WindowTreeClient
                         bool visible,
                         mojo::TextInputStatePtr state);
 
-  // Embeds a new client in |window|.
+  // Embeds a new client in |window|. |flags| is a bitmask of the values defined
+  // by kEmbedFlag*; 0 gives default behavior. |callback| is called to indicate
+  // whether the embedding succeeded or failed and may be called immediately if
+  // the embedding is known to fail.
   void Embed(Window* window,
              ui::mojom::WindowTreeClientPtr client,
              uint32_t flags,

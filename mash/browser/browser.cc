@@ -27,9 +27,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_runner.h"
 #include "services/tracing/public/cpp/provider.h"
-#include "services/ui/public/cpp/window.h"
-#include "services/ui/public/cpp/window_tree_client.h"
-#include "ui/aura/mus/mus_util.h"
+#include "ui/aura/window.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/paint_throbber.h"
@@ -43,7 +41,7 @@
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/mus/aura_init.h"
-#include "ui/views/mus/window_manager_connection.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "url/gurl.h"
 
@@ -105,10 +103,13 @@ class Tab : public views::LabelButton,
 
   bool selected() const { return selected_; }
 
-  ui::Window* window() { return window_; }
-  void SetWindow(ui::Window* window) {
+  aura::Window* window() { return window_; }
+  void SetWindow(aura::Window* window) {
     window_ = window;
-    window_->SetVisible(selected_);
+    if (selected_)
+      window_->Show();
+    else
+      window_->Hide();
     view_->EmbedInWindow(window_);
   }
   navigation::View* view() { return view_.get(); }
@@ -136,11 +137,15 @@ class Tab : public views::LabelButton,
                  selected_ ? SK_ColorWHITE : SK_ColorBLACK);
     SetTextColor(views::Button::STATE_PRESSED,
                  selected_ ? SK_ColorWHITE : SK_ColorBLACK);
-    if (window_)
-      window_->SetVisible(selected_);
+    if (window_) {
+      if (selected_)
+        window_->Show();
+      else
+        window_->Hide();
+    }
   }
 
-  ui::Window* window_ = nullptr;
+  aura::Window* window_ = nullptr;
   std::unique_ptr<navigation::View> view_;
   bool selected_ = false;
 
@@ -186,11 +191,12 @@ class TabStrip : public views::View,
       RemoveObserver(tab);
   }
 
-  void SetContainerWindow(ui::Window* container) {
+  void SetContainerWindow(aura::Window* container) {
     DCHECK(!container_);
     container_ = container;
     for (auto* tab : tabs_) {
-      ui::Window* window = container_->window_tree()->NewWindow();
+      aura::Window* window = new aura::Window(nullptr);
+      window->Init(ui::LAYER_NOT_DRAWN);
       container_->AddChild(window);
       tab->SetWindow(window);
     }
@@ -201,7 +207,8 @@ class TabStrip : public views::View,
     Tab* tab = new Tab(std::move(view), this);
     // We won't have a WindowTree until we're added to a view hierarchy.
     if (container_) {
-      ui::Window* window = container_->window_tree()->NewWindow();
+      aura::Window* window = new aura::Window(nullptr);
+      window->Init(ui::LAYER_NOT_DRAWN);
       container_->AddChild(window);
       tab->SetWindow(window);
     }
@@ -293,7 +300,7 @@ class TabStrip : public views::View,
   std::vector<Tab*> tabs_;
   int selected_index_ = -1;
   base::ObserverList<TabStripObserver> observers_;
-  ui::Window* container_ = nullptr;
+  aura::Window* container_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };
@@ -681,9 +688,10 @@ class UI : public views::WidgetDelegateView,
   void ViewHierarchyChanged(
       const views::View::ViewHierarchyChangedDetails& details) override {
     if (details.is_add && GetWidget() && !content_area_) {
-      ui::Window* window = aura::GetMusWindow(GetWidget()->GetNativeWindow());
-      content_area_ = window->window_tree()->NewWindow(nullptr);
-      content_area_->SetVisible(true);
+      aura::Window* window = GetWidget()->GetNativeWindow();
+      content_area_ = new aura::Window(nullptr);
+      content_area_->Init(ui::LAYER_NOT_DRAWN);
+      content_area_->Show();
       window->AddChild(content_area_);
       tab_strip_->SetContainerWindow(content_area_);
     }
@@ -841,7 +849,7 @@ class UI : public views::WidgetDelegateView,
   Throbber* throbber_;
   ProgressBar* progress_bar_;
 
-  ui::Window* content_area_ = nullptr;
+  aura::Window* content_area_ = nullptr;
 
   DebugView* debug_view_;
   bool showing_debug_view_ = false;
@@ -875,9 +883,8 @@ void Browser::OnStart() {
   tracing_.Initialize(context()->connector(), context()->identity().name());
 
   aura_init_ = base::MakeUnique<views::AuraInit>(
-      context()->connector(), context()->identity(), "views_mus_resources.pak");
-  window_manager_connection_ = views::WindowManagerConnection::Create(
-      context()->connector(), context()->identity());
+      context()->connector(), context()->identity(), "views_mus_resources.pak",
+      std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);
 }
 
 bool Browser::OnConnect(const service_manager::ServiceInfo& remote_info,

@@ -53,6 +53,9 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
   // Invoked once the DesktopNativeWidgetAura has been created.
   virtual void OnNativeWidgetCreated(const Widget::InitParams& params) = 0;
 
+  // Called from DesktopNativeWidgetAura::OnWidgetInitDone().
+  virtual void OnWidgetInitDone() = 0;
+
   // Creates and returns the Tooltip implementation to use. Return value is
   // owned by DesktopNativeWidgetAura and lives as long as
   // DesktopWindowTreeHost.

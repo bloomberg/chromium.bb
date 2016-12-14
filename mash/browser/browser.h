@@ -21,7 +21,6 @@ class View;
 namespace views {
 class AuraInit;
 class Widget;
-class WindowManagerConnection;
 }
 
 namespace mash {
@@ -60,7 +59,6 @@ class Browser : public service_manager::Service,
 
   tracing::Provider tracing_;
   std::unique_ptr<views::AuraInit> aura_init_;
-  std::unique_ptr<views::WindowManagerConnection> window_manager_connection_;
 
   DISALLOW_COPY_AND_ASSIGN(Browser);
 };

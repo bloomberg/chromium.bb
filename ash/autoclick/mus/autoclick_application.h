@@ -20,7 +20,6 @@
 namespace views {
 class AuraInit;
 class Widget;
-class WindowManagerConnection;
 }
 
 namespace ash {
@@ -70,7 +69,6 @@ class AutoclickApplication
   mojo::Binding<mojom::AutoclickController> autoclick_binding_;
 
   std::unique_ptr<views::AuraInit> aura_init_;
-  std::unique_ptr<views::WindowManagerConnection> window_manager_connection_;
   std::unique_ptr<AutoclickControllerCommon> autoclick_controller_common_;
   std::unique_ptr<views::Widget> widget_;
 

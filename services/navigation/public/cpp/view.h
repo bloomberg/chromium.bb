@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/navigation/public/interfaces/view.mojom.h"
 
-namespace ui {
+namespace aura {
 class Window;
 }
 
@@ -67,7 +67,7 @@ class View : public mojom::ViewClient {
   void HideInterstitial();
 
   // Embed the View visually within |parent|.
-  void EmbedInWindow(ui::Window* parent);
+  void EmbedInWindow(aura::Window* parent);
 
  private:
   // mojom::ViewClient:

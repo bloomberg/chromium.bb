@@ -30,7 +30,7 @@
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/mus/aura_init.h"
-#include "ui/views/mus/window_manager_connection.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
 namespace mash {
@@ -222,9 +222,8 @@ void CatalogViewer::OnStart() {
   tracing_.Initialize(context()->connector(), context()->identity().name());
 
   aura_init_ = base::MakeUnique<views::AuraInit>(
-      context()->connector(), context()->identity(), "views_mus_resources.pak");
-  window_manager_connection_ = views::WindowManagerConnection::Create(
-      context()->connector(), context()->identity());
+      context()->connector(), context()->identity(), "views_mus_resources.pak",
+      std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);
 }
 
 bool CatalogViewer::OnConnect(const service_manager::ServiceInfo& remote_info,

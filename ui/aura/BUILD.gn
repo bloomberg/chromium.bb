@@ -168,6 +168,10 @@ component("aura") {
     "//ui/platform_window/stub",
   ]
 
+  data_deps = [
+    "//services/ui",
+  ]
+
   if (use_x11) {
     configs += [
       "//build/config/linux:x11",

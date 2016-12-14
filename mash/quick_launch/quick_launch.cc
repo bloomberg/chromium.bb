@@ -24,13 +24,9 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/mus/aura_init.h"
-#include "ui/views/mus/window_manager_connection.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "url/gurl.h"
-
-namespace views {
-class AuraInit;
-}
 
 namespace mash {
 namespace quick_launch {
@@ -174,9 +170,8 @@ void QuickLaunch::OnStart() {
   tracing_.Initialize(context()->connector(), context()->identity().name());
 
   aura_init_ = base::MakeUnique<views::AuraInit>(
-      context()->connector(), context()->identity(), "views_mus_resources.pak");
-  window_manager_connection_ = views::WindowManagerConnection::Create(
-      context()->connector(), context()->identity());
+      context()->connector(), context()->identity(), "views_mus_resources.pak",
+      std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);
 
   Launch(mojom::kWindow, mojom::LaunchMode::MAKE_NEW);
 }

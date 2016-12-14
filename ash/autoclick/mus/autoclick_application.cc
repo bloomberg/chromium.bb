@@ -13,10 +13,10 @@
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/mus/property_converter.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/views/mus/aura_init.h"
-#include "ui/views/mus/native_widget_mus.h"
-#include "ui/views/mus/pointer_watcher_event_router.h"
-#include "ui/views/mus/window_manager_connection.h"
+#include "ui/views/mus/mus_client.h"
+#include "ui/views/mus/pointer_watcher_event_router2.h"
 #include "ui/views/pointer_watcher.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -32,15 +32,14 @@ const int kDefaultAutoclickDelayMs = 1000;
 class AutoclickUI : public views::WidgetDelegateView,
                     public views::PointerWatcher {
  public:
-  AutoclickUI(views::WindowManagerConnection* window_manager_connection,
-              AutoclickControllerCommon* autoclick_controller_common)
-      : window_manager_connection_(window_manager_connection),
-        autoclick_controller_common_(autoclick_controller_common) {
-    window_manager_connection_->pointer_watcher_event_router()
-        ->AddPointerWatcher(this, true /* want_moves */);
+  explicit AutoclickUI(AutoclickControllerCommon* autoclick_controller_common)
+      : autoclick_controller_common_(autoclick_controller_common) {
+    views::MusClient::Get()->pointer_watcher_event_router()->AddPointerWatcher(
+        this, true /* want_moves */);
   }
   ~AutoclickUI() override {
-    window_manager_connection_->pointer_watcher_event_router()
+    views::MusClient::Get()
+        ->pointer_watcher_event_router()
         ->RemovePointerWatcher(this);
   }
 
@@ -55,6 +54,8 @@ class AutoclickUI : public views::WidgetDelegateView,
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               const gfx::Point& location_in_screen,
                               views::Widget* target) override {
+    // AutoclickControllerCommon won't work correctly with a target.
+    DCHECK(!event.target());
     if (event.IsTouchPointerEvent()) {
       autoclick_controller_common_->CancelAutoclick();
     } else if (event.IsMousePointerEvent()) {
@@ -62,12 +63,15 @@ class AutoclickUI : public views::WidgetDelegateView,
         autoclick_controller_common_->HandleMouseEvent(
             ui::MouseWheelEvent(event));
       } else {
-        autoclick_controller_common_->HandleMouseEvent(ui::MouseEvent(event));
+        ui::MouseEvent mouse_event(event);
+        // AutoclickControllerCommon wants screen coordinates when there isn't a
+        // target.
+        mouse_event.set_location(location_in_screen);
+        autoclick_controller_common_->HandleMouseEvent(mouse_event);
       }
     }
   }
 
-  views::WindowManagerConnection* window_manager_connection_;
   AutoclickControllerCommon* autoclick_controller_common_;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickUI);
@@ -80,9 +84,8 @@ AutoclickApplication::~AutoclickApplication() {}
 
 void AutoclickApplication::OnStart() {
   aura_init_ = base::MakeUnique<views::AuraInit>(
-      context()->connector(), context()->identity(), "views_mus_resources.pak");
-  window_manager_connection_ = views::WindowManagerConnection::Create(
-      context()->connector(), context()->identity());
+      context()->connector(), context()->identity(), "views_mus_resources.pak",
+      std::string(), nullptr, views::AuraInit::Mode::AURA_MUS);
   autoclick_controller_common_.reset(new AutoclickControllerCommon(
       base::TimeDelta::FromMilliseconds(kDefaultAutoclickDelayMs), this));
 }
@@ -104,21 +107,12 @@ void AutoclickApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
     params.accept_events = false;
-    params.delegate = new AutoclickUI(window_manager_connection_.get(),
-                                      autoclick_controller_common_.get());
+    params.delegate = new AutoclickUI(autoclick_controller_common_.get());
 
-    std::map<std::string, std::vector<uint8_t>> properties;
-    properties[ui::mojom::WindowManager::kContainerId_InitProperty] =
+    params.mus_properties[ui::mojom::WindowManager::kContainerId_InitProperty] =
         mojo::ConvertTo<std::vector<uint8_t>>(
             ash::kShellWindowId_OverlayContainer);
-    properties[ui::mojom::WindowManager::kShowState_Property] =
-        mojo::ConvertTo<std::vector<uint8_t>>(
-            static_cast<aura::PropertyConverter::PrimitiveType>(
-                ui::mojom::ShowState::FULLSCREEN));
-    ui::Window* window =
-        window_manager_connection_.get()->NewTopLevelWindow(properties);
-    params.native_widget = new views::NativeWidgetMus(
-        widget_.get(), window, ui::mojom::CompositorFrameSinkType::DEFAULT);
+    params.show_state = ui::SHOW_STATE_FULLSCREEN;
     widget_->Init(params);
   } else {
     widget_->Close();

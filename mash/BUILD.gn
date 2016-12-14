@@ -20,7 +20,11 @@ group("all") {
 
   # Build on platforms that support ash.
   if (is_chromeos) {
-    deps += [ "//mash:mash_unittests" ]
+    deps += [
+      "//ash/autoclick/mus:accessibility_autoclick",
+      "//ash/touch_hud/mus:touch_hud",
+      "//mash:mash_unittests",
+    ]
   }
 }
 

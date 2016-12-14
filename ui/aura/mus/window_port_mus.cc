@@ -65,6 +65,13 @@ void WindowPortMus::SetPredefinedCursor(ui::mojom::Cursor cursor_id) {
   predefined_cursor_ = cursor_id;
 }
 
+void WindowPortMus::Embed(
+    ui::mojom::WindowTreeClientPtr client,
+    uint32_t flags,
+    const ui::mojom::WindowTree::EmbedCallback& callback) {
+  window_tree_client_->Embed(window_, std::move(client), flags, callback);
+}
+
 std::unique_ptr<WindowCompositorFrameSink>
 WindowPortMus::RequestCompositorFrameSink(
     ui::mojom::CompositorFrameSinkType type,
