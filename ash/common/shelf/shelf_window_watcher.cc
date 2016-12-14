@@ -100,6 +100,11 @@ void ShelfWindowWatcher::UserWindowObserver::OnWindowDestroying(
 void ShelfWindowWatcher::UserWindowObserver::OnWindowVisibilityChanged(
     WmWindow* window,
     bool visible) {
+  // OnWindowVisibilityChanged() is called for descendants too. We only care
+  // about changes to the visibility of windows we know about.
+  if (!window_watcher_->observed_user_windows_.IsObserving(window))
+    return;
+
   // The tooltip behavior for panel windows depends on the panel visibility.
   window_watcher_->OnUserWindowPropertyChanged(window);
 }

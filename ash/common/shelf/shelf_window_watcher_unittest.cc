@@ -307,4 +307,30 @@ TEST_F(ShelfWindowWatcherTest, PanelWindow) {
   EXPECT_EQ(1, model_->item_count());
 }
 
+TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
+  const int initial_item_count = model_->item_count();
+
+  WmWindow* window = WmShell::Get()->NewWindow(ui::wm::WINDOW_TYPE_NORMAL,
+                                               ui::LAYER_NOT_DRAWN);
+  window->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_APP);
+  WmShell::Get()
+      ->GetPrimaryRootWindow()
+      ->GetChildByShellWindowId(kShellWindowId_DefaultContainer)
+      ->AddChild(window);
+  window->Show();
+  EXPECT_EQ(initial_item_count + 1, model_->item_count());
+
+  WmWindow* child_window = WmShell::Get()->NewWindow(ui::wm::WINDOW_TYPE_NORMAL,
+                                                     ui::LAYER_NOT_DRAWN);
+  child_window->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_APP);
+  window->AddChild(child_window);
+  child_window->Show();
+  // |child_window| should not result in adding a new entry.
+  EXPECT_EQ(initial_item_count + 1, model_->item_count());
+
+  child_window->Destroy();
+  window->Destroy();
+  EXPECT_EQ(initial_item_count, model_->item_count());
+}
+
 }  // namespace ash
