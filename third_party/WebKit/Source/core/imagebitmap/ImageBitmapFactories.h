@@ -31,7 +31,7 @@
 #ifndef ImageBitmapFactories_h
 #define ImageBitmapFactories_h
 
-#include "bindings/core/v8/HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmap.h"
+#include "bindings/core/v8/HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -55,7 +55,7 @@ class ImageBitmapSource;
 class ImageBitmapOptions;
 class WebTaskRunner;
 
-typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmap
+typedef HTMLImageElementOrHTMLVideoElementOrHTMLCanvasElementOrBlobOrImageDataOrImageBitmapOrOffscreenCanvas
     ImageBitmapSourceUnion;
 
 class ImageBitmapFactories final

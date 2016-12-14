@@ -35,7 +35,8 @@ typedef (HTMLImageElement or
          HTMLCanvasElement or
          Blob or
          ImageData or
-         ImageBitmap) ImageBitmapSource;
+         ImageBitmap or
+         OffscreenCanvas) ImageBitmapSource;
 
 [
     LegacyTreatAsPartialInterface,

@@ -7,6 +7,7 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
+#include "core/offscreencanvas/OffscreenCanvas.h"
 #include "platform/graphics/skia/SkiaUtils.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -687,6 +688,42 @@ ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas,
   m_image->setPremultiplied(parsedOptions.premultiplyAlpha);
 }
 
+ImageBitmap::ImageBitmap(OffscreenCanvas* offscreenCanvas,
+                         Optional<IntRect> cropRect,
+                         const ImageBitmapOptions& options) {
+  SourceImageStatus status;
+  RefPtr<Image> input = offscreenCanvas->getSourceImageForCanvas(
+      &status, PreferNoAcceleration, SnapshotReasonCreateImageBitmap,
+      FloatSize(offscreenCanvas->size()));
+  if (status != NormalSourceImageStatus)
+    return;
+  ParsedOptions parsedOptions =
+      parseOptions(options, cropRect, IntSize(input->width(), input->height()));
+  if (dstBufferSizeHasOverflow(parsedOptions))
+    return;
+
+  bool isPremultiplyAlphaReverted = false;
+  if (!parsedOptions.premultiplyAlpha) {
+    parsedOptions.premultiplyAlpha = true;
+    isPremultiplyAlphaReverted = true;
+  }
+  m_image = cropImageAndApplyColorSpaceConversion(
+      input.get(), parsedOptions, PremultiplyAlpha,
+      ColorBehavior::transformToGlobalTarget());
+  if (!m_image)
+    return;
+  if (isPremultiplyAlphaReverted) {
+    parsedOptions.premultiplyAlpha = false;
+    m_image = StaticBitmapImage::create(premulSkImageToUnPremul(
+        m_image->imageForCurrentFrame(ColorBehavior::transformToGlobalTarget())
+            .get()));
+  }
+  if (!m_image)
+    return;
+  m_image->setOriginClean(offscreenCanvas->originClean());
+  m_image->setPremultiplied(parsedOptions.premultiplyAlpha);
+}
+
 ImageBitmap::ImageBitmap(const void* pixelData,
                          uint32_t width,
                          uint32_t height,
@@ -944,6 +981,12 @@ ImageBitmap* ImageBitmap::create(HTMLCanvasElement* canvas,
                                  Optional<IntRect> cropRect,
                                  const ImageBitmapOptions& options) {
   return new ImageBitmap(canvas, cropRect, options);
+}
+
+ImageBitmap* ImageBitmap::create(OffscreenCanvas* offscreenCanvas,
+                                 Optional<IntRect> cropRect,
+                                 const ImageBitmapOptions& options) {
+  return new ImageBitmap(offscreenCanvas, cropRect, options);
 }
 
 ImageBitmap* ImageBitmap::create(ImageData* data,

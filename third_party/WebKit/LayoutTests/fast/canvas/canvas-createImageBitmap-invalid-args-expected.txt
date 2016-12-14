@@ -5,10 +5,10 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 PASS Rejected as expected: undefined
 PASS reason instanceof Error is true
-TypeError: Failed to execute 'createImageBitmap' on 'Window': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or Blob or ImageData or ImageBitmap)'
+TypeError: Failed to execute 'createImageBitmap' on 'Window': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or Blob or ImageData or ImageBitmap or OffscreenCanvas)'
 PASS Rejected as expected: null
 PASS reason instanceof Error is true
-TypeError: Failed to execute 'createImageBitmap' on 'Window': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or Blob or ImageData or ImageBitmap)'
+TypeError: Failed to execute 'createImageBitmap' on 'Window': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or Blob or ImageData or ImageBitmap or OffscreenCanvas)'
 PASS Rejected as expected: empty image
 PASS reason instanceof Error is true
 InvalidStateError: Failed to execute 'createImageBitmap' on 'Window': No image can be retrieved from the provided element.

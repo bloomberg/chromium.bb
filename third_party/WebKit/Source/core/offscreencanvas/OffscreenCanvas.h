@@ -27,7 +27,8 @@ typedef OffscreenCanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2Renderin
     OffscreenRenderingContext;
 
 class CORE_EXPORT OffscreenCanvas final : public EventTargetWithInlineData,
-                                          public CanvasImageSource {
+                                          public CanvasImageSource,
+                                          public ImageBitmapSource {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -102,6 +103,14 @@ class CORE_EXPORT OffscreenCanvas final : public EventTargetWithInlineData,
   ExecutionContext* getExecutionContext() const {
     return m_executionContext.get();
   }
+
+  // ImageBitmapSource implementation
+  IntSize bitmapSourceSize() const final;
+  ScriptPromise createImageBitmap(ScriptState*,
+                                  EventTarget&,
+                                  Optional<IntRect>,
+                                  const ImageBitmapOptions&,
+                                  ExceptionState&) final;
 
   // CanvasImageSource implementation
   PassRefPtr<Image> getSourceImageForCanvas(SourceImageStatus*,

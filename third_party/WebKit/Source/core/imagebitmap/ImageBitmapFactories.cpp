@@ -42,6 +42,7 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageData.h"
 #include "core/imagebitmap/ImageBitmapOptions.h"
+#include "core/offscreencanvas/OffscreenCanvas.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/CrossThreadFunctional.h"
@@ -93,6 +94,8 @@ static inline ImageBitmapSource* toImageBitmapSourceInternal(
     return value.getAsImageData();
   if (value.isImageBitmap())
     return value.getAsImageBitmap();
+  if (value.isOffscreenCanvas())
+    return value.getAsOffscreenCanvas();
   ASSERT_NOT_REACHED();
   return nullptr;
 }

@@ -6,7 +6,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 Starting worker: ./resources/canvas-createImageBitmap-invalid-args-in-workers.js
 PASS [Worker] Rejected as expected: null
 PASS [Worker] reason instanceof Error is true
-[Worker] TypeError: Failed to execute 'createImageBitmap' on 'WorkerGlobalScope': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or Blob or ImageData or ImageBitmap)'
+[Worker] TypeError: Failed to execute 'createImageBitmap' on 'WorkerGlobalScope': The provided value is not of type '(HTMLImageElement or HTMLVideoElement or HTMLCanvasElement or Blob or ImageData or ImageBitmap or OffscreenCanvas)'
 PASS [Worker] Rejected as expected: invalid area
 PASS [Worker] reason instanceof Error is true
 [Worker] IndexSizeError: Failed to execute 'createImageBitmap' on 'WorkerGlobalScope': The source height provided is 0.

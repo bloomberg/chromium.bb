@@ -25,6 +25,7 @@ class HTMLCanvasElement;
 class HTMLVideoElement;
 class ImageData;
 class ImageDecoder;
+class OffscreenCanvas;
 
 enum AlphaDisposition {
   PremultiplyAlpha,
@@ -56,6 +57,9 @@ class CORE_EXPORT ImageBitmap final
                              Document*,
                              const ImageBitmapOptions& = ImageBitmapOptions());
   static ImageBitmap* create(HTMLCanvasElement*,
+                             Optional<IntRect>,
+                             const ImageBitmapOptions& = ImageBitmapOptions());
+  static ImageBitmap* create(OffscreenCanvas*,
                              Optional<IntRect>,
                              const ImageBitmapOptions& = ImageBitmapOptions());
   static ImageBitmap* create(ImageData*,
@@ -144,6 +148,7 @@ class CORE_EXPORT ImageBitmap final
               Document*,
               const ImageBitmapOptions&);
   ImageBitmap(HTMLCanvasElement*, Optional<IntRect>, const ImageBitmapOptions&);
+  ImageBitmap(OffscreenCanvas*, Optional<IntRect>, const ImageBitmapOptions&);
   ImageBitmap(ImageData*, Optional<IntRect>, const ImageBitmapOptions&);
   ImageBitmap(ImageBitmap*, Optional<IntRect>, const ImageBitmapOptions&);
   ImageBitmap(PassRefPtr<StaticBitmapImage>);

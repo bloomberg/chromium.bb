@@ -6,6 +6,7 @@
 
 #include "core/dom/ExceptionCode.h"
 #include "core/fileapi/Blob.h"
+#include "core/frame/ImageBitmap.h"
 #include "core/html/ImageData.h"
 #include "core/html/canvas/CanvasAsyncBlobCreator.h"
 #include "core/html/canvas/CanvasContextCreationAttributes.h"
@@ -109,6 +110,30 @@ PassRefPtr<Image> OffscreenCanvas::getSourceImageForCanvas(
     *status = NormalSourceImageStatus;
   }
   return image.release();
+}
+
+IntSize OffscreenCanvas::bitmapSourceSize() const {
+  return m_size;
+}
+
+ScriptPromise OffscreenCanvas::createImageBitmap(
+    ScriptState* scriptState,
+    EventTarget&,
+    Optional<IntRect> cropRect,
+    const ImageBitmapOptions& options,
+    ExceptionState& exceptionState) {
+  if ((cropRect &&
+       !ImageBitmap::isSourceSizeValid(cropRect->width(), cropRect->height(),
+                                       exceptionState)) ||
+      !ImageBitmap::isSourceSizeValid(bitmapSourceSize().width(),
+                                      bitmapSourceSize().height(),
+                                      exceptionState))
+    return ScriptPromise();
+  if (!ImageBitmap::isResizeOptionValid(options, exceptionState))
+    return ScriptPromise();
+  return ImageBitmapSource::fulfillImageBitmap(
+      scriptState,
+      isPaintable() ? ImageBitmap::create(this, cropRect, options) : nullptr);
 }
 
 bool OffscreenCanvas::isOpaque() const {
