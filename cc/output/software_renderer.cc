@@ -145,7 +145,9 @@ void SoftwareRenderer::SetClipRect(const gfx::Rect& rect) {
   // Skia applies the current matrix to clip rects so we reset it temporary.
   SkMatrix current_matrix = current_canvas_->getTotalMatrix();
   current_canvas_->resetMatrix();
-  current_canvas_->clipRect(gfx::RectToSkRect(rect), SkClipOp::kReplace);
+  // TODO(fmalita) stop using kReplace (see crbug.com/673851)
+  current_canvas_->clipRect(gfx::RectToSkRect(rect),
+                            SkClipOp::kReplace_private_internal_do_not_use);
   current_canvas_->setMatrix(current_matrix);
 }
 

@@ -32,14 +32,8 @@ SkClipOp SkClipOpFromProto(proto::SkClipOp::Op op) {
       return SkClipOp::kDifference;
     case proto::SkClipOp::INTERSECT:
       return SkClipOp::kIntersect;
-    case proto::SkClipOp::UNION:
-      return SkClipOp::kUnion;
-    case proto::SkClipOp::XOR:
-      return SkClipOp::kXOR;
-    case proto::SkClipOp::REVERSE_DIFFERENCE:
-      return SkClipOp::kReverseDifference;
-    case proto::SkClipOp::REPLACE:
-      return SkClipOp::kReplace;
+    default:
+      break;
   }
   return SkClipOp::kDifference;
 }
@@ -50,14 +44,8 @@ proto::SkClipOp::Op SkClipOpToProto(SkClipOp op) {
       return proto::SkClipOp::DIFFERENCE_;
     case SkClipOp::kIntersect:
       return proto::SkClipOp::INTERSECT;
-    case SkClipOp::kUnion:
-      return proto::SkClipOp::UNION;
-    case SkClipOp::kXOR:
-      return proto::SkClipOp::XOR;
-    case SkClipOp::kReverseDifference:
-      return proto::SkClipOp::REVERSE_DIFFERENCE;
-    case SkClipOp::kReplace:
-      return proto::SkClipOp::REPLACE;
+    default:
+      break;
   }
   return proto::SkClipOp::DIFFERENCE_;
 }

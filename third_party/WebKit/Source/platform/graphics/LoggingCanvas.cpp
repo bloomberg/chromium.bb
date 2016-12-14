@@ -499,14 +499,6 @@ String clipOpName(SkClipOp op) {
       return "kDifference_Op";
     case SkClipOp::kIntersect:
       return "kIntersect_Op";
-    case SkClipOp::kUnion:
-      return "kUnion_Op";
-    case SkClipOp::kXOR:
-      return "kXOR_Op";
-    case SkClipOp::kReverseDifference:
-      return "kReverseDifference_Op";
-    case SkClipOp::kReplace:
-      return "kReplace_Op";
     default:
       return "Unknown type";
   };
