@@ -283,9 +283,12 @@ static const BLOCK_SIZE subsize_lookup[PARTITION_TYPES][BLOCK_SIZES] =
 #if CONFIG_CB4X4
     // 2X2,        2X4,           4X2,
     BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
-#endif
+    //                            4X4
+                                  BLOCK_4X2,
+#else
     //                            4X4
                                   BLOCK_INVALID,
+#endif
     // 4X8,        8X4,           8X8
     BLOCK_INVALID, BLOCK_INVALID, BLOCK_8X4,
     // 8X16,       16X8,          16X16
@@ -302,9 +305,12 @@ static const BLOCK_SIZE subsize_lookup[PARTITION_TYPES][BLOCK_SIZES] =
 #if CONFIG_CB4X4
     // 2X2,        2X4,           4X2,
     BLOCK_INVALID, BLOCK_INVALID, BLOCK_INVALID,
-#endif
+    //                            4X4
+                                  BLOCK_2X4,
+#else
     //                            4X4
                                   BLOCK_INVALID,
+#endif
     // 4X8,        8X4,           8X8
     BLOCK_INVALID, BLOCK_INVALID, BLOCK_4X8,
     // 8X16,       16X8,          16X16
@@ -784,10 +790,14 @@ static const BLOCK_SIZE ss_size_lookup[BLOCK_SIZES][2][2] = {
   { { BLOCK_2X2, BLOCK_INVALID }, { BLOCK_INVALID, BLOCK_INVALID } },
   { { BLOCK_2X4, BLOCK_INVALID }, { BLOCK_INVALID, BLOCK_INVALID } },
   { { BLOCK_4X2, BLOCK_INVALID }, { BLOCK_INVALID, BLOCK_INVALID } },
-#endif
+  { { BLOCK_4X4, BLOCK_4X2 }, { BLOCK_2X4, BLOCK_2X2 } },
+  { { BLOCK_4X8, BLOCK_4X4 }, { BLOCK_INVALID, BLOCK_2X4 } },
+  { { BLOCK_8X4, BLOCK_INVALID }, { BLOCK_4X4, BLOCK_4X2 } },
+#else
   { { BLOCK_4X4, BLOCK_INVALID }, { BLOCK_INVALID, BLOCK_INVALID } },
   { { BLOCK_4X8, BLOCK_4X4 }, { BLOCK_INVALID, BLOCK_INVALID } },
   { { BLOCK_8X4, BLOCK_INVALID }, { BLOCK_4X4, BLOCK_INVALID } },
+#endif
   { { BLOCK_8X8, BLOCK_8X4 }, { BLOCK_4X8, BLOCK_4X4 } },
   { { BLOCK_8X16, BLOCK_8X8 }, { BLOCK_INVALID, BLOCK_4X8 } },
   { { BLOCK_16X8, BLOCK_INVALID }, { BLOCK_8X8, BLOCK_8X4 } },
@@ -927,7 +937,7 @@ static const TX_SIZE uv_txsize_lookup[BLOCK_SIZES][TX_SIZES_ALL][2][2] = {
   {
 // BLOCK_8X8
 #if CONFIG_CB4X4
-      { { TX_4X4, TX_4X4 }, { TX_4X4, TX_4X4 } },
+      { { TX_2X2, TX_2X2 }, { TX_2X2, TX_2X2 } },
 #endif
       { { TX_4X4, TX_4X4 }, { TX_4X4, TX_4X4 } },
       { { TX_8X8, TX_4X4 }, { TX_4X4, TX_4X4 } },
