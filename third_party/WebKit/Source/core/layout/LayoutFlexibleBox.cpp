@@ -39,6 +39,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LengthFunctions.h"
+#include "wtf/AutoReset.h"
 #include "wtf/MathExtras.h"
 #include <limits>
 
@@ -68,7 +69,8 @@ LayoutFlexibleBox::LayoutFlexibleBox(Element* element)
     : LayoutBlock(element),
       m_orderIterator(this),
       m_numberOfInFlowChildrenOnFirstLine(-1),
-      m_hasDefiniteHeight(SizeDefiniteness::Unknown) {
+      m_hasDefiniteHeight(SizeDefiniteness::Unknown),
+      m_inLayout(false) {
   DCHECK(!childrenInline());
   if (!isAnonymous())
     UseCounter::count(document(), UseCounter::CSSFlexibleBox);
@@ -353,6 +355,8 @@ void LayoutFlexibleBox::layoutBlock(bool relayoutChildren) {
     return;
 
   m_relaidOutChildren.clear();
+  WTF::AutoReset<bool> reset1(&m_inLayout, true);
+  DCHECK_EQ(m_hasDefiniteHeight, SizeDefiniteness::Unknown);
 
   if (updateLogicalWidthAndColumnWidth())
     relayoutChildren = true;
@@ -391,15 +395,16 @@ void LayoutFlexibleBox::layoutBlock(bool relayoutChildren) {
 
   updateLayerTransformAfterLayout();
 
+  // We have to reset this, because changes to our ancestors' style can affect
+  // this value. Also, this needs to be before we call updateAfterLayout, as
+  // that function may re-enter this one.
+  m_hasDefiniteHeight = SizeDefiniteness::Unknown;
+
   // Update our scroll information if we're overflow:auto/scroll/hidden now
   // that we know if we overflow or not.
   updateAfterLayout();
 
   clearNeedsLayout();
-
-  // We have to reset this, because changes to our ancestors' style can affect
-  // this value.
-  m_hasDefiniteHeight = SizeDefiniteness::Unknown;
 }
 
 void LayoutFlexibleBox::paintChildren(const PaintInfo& paintInfo,
@@ -832,8 +837,12 @@ bool LayoutFlexibleBox::mainAxisLengthIsDefinite(
     if (m_hasDefiniteHeight == SizeDefiniteness::Indefinite)
       return false;
     bool definite = child.computePercentageLogicalHeight(flexBasis) != -1;
-    m_hasDefiniteHeight =
-        definite ? SizeDefiniteness::Definite : SizeDefiniteness::Indefinite;
+    if (m_inLayout) {
+      // We can reach this code even while we're not laying ourselves out, such
+      // as from mainSizeForPercentageResolution.
+      m_hasDefiniteHeight =
+          definite ? SizeDefiniteness::Definite : SizeDefiniteness::Indefinite;
+    }
     return definite;
   }
   return true;

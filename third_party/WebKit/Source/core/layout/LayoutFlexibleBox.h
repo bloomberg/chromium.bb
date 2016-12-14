@@ -254,6 +254,7 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   // This is SizeIsUnknown outside of layoutBlock()
   mutable SizeDefiniteness m_hasDefiniteHeight;
+  bool m_inLayout;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFlexibleBox, isFlexibleBox());
