@@ -395,7 +395,6 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
     RenderFrameHostImpl* host)
     : DevToolsAgentHostImpl(base::GenerateGUID()),
       input_handler_(new devtools::input::InputHandler()),
-      security_handler_(nullptr),
       service_worker_handler_(
           new devtools::service_worker::ServiceWorkerHandler()),
       storage_handler_(new devtools::storage::StorageHandler()),
@@ -411,11 +410,6 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
   dispatcher->SetServiceWorkerHandler(service_worker_handler_.get());
   dispatcher->SetStorageHandler(storage_handler_.get());
   dispatcher->SetTargetHandler(target_handler_.get());
-
-  if (!host->GetParent()) {
-    security_handler_.reset(new devtools::security::SecurityHandler());
-    dispatcher->SetSecurityHandler(security_handler_.get());
-  }
 
   SetPending(host);
   CommitPending();
@@ -511,6 +505,12 @@ void RenderFrameDevToolsAgentHost::Attach() {
   schema_handler_.reset(new protocol::SchemaHandler());
   schema_handler_->Wire(session()->dispatcher());
 
+  if (!frame_tree_node_->parent()) {
+    security_handler_.reset(new protocol::SecurityHandler());
+    security_handler_->Wire(session()->dispatcher());
+    security_handler_->SetRenderFrameHost(handlers_frame_host_);
+  }
+
   tracing_handler_.reset(new protocol::TracingHandler(
       protocol::TracingHandler::Renderer,
       frame_tree_node_->frame_tree_node_id(),
@@ -543,6 +543,10 @@ void RenderFrameDevToolsAgentHost::Detach() {
   }
   schema_handler_->Disable();
   schema_handler_.reset();
+  if (security_handler_) {
+    security_handler_->Disable();
+    security_handler_.reset();
+  }
   tracing_handler_->Disable();
   tracing_handler_.reset();
 

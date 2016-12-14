@@ -49,6 +49,9 @@
                 "domain": "Schema"
             },
             {
+                "domain": "Security"
+            },
+            {
                 "domain": "SystemInfo",
                 "async": ["getInfo"]
             },

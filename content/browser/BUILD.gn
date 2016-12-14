@@ -182,6 +182,8 @@ source_set("browser") {
     "$target_gen_dir/devtools/protocol/protocol.h",
     "$target_gen_dir/devtools/protocol/schema.cc",
     "$target_gen_dir/devtools/protocol/schema.h",
+    "$target_gen_dir/devtools/protocol/security.cc",
+    "$target_gen_dir/devtools/protocol/security.h",
     "$target_gen_dir/devtools/protocol/system_info.cc",
     "$target_gen_dir/devtools/protocol/system_info.h",
     "$target_gen_dir/devtools/protocol/tethering.cc",

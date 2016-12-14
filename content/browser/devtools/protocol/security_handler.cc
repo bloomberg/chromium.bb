@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/security_style_explanations.h"
@@ -15,10 +15,9 @@
 #include "content/public/browser/web_contents_delegate.h"
 
 namespace content {
-namespace devtools {
-namespace security {
+namespace protocol {
 
-typedef DevToolsProtocolClient::Response Response;
+using Explanations = protocol::Array<Security::SecurityStateExplanation>;
 
 namespace {
 
@@ -26,33 +25,32 @@ std::string SecurityStyleToProtocolSecurityState(
     blink::WebSecurityStyle security_style) {
   switch (security_style) {
     case blink::WebSecurityStyleUnknown:
-      return kSecurityStateUnknown;
+      return Security::SecurityStateEnum::Unknown;
     case blink::WebSecurityStyleUnauthenticated:
-      return kSecurityStateNeutral;
+      return Security::SecurityStateEnum::Neutral;
     case blink::WebSecurityStyleAuthenticationBroken:
-      return kSecurityStateInsecure;
+      return Security::SecurityStateEnum::Insecure;
     case blink::WebSecurityStyleWarning:
-      return kSecurityStateWarning;
+      return Security::SecurityStateEnum::Warning;
     case blink::WebSecurityStyleAuthenticated:
-      return kSecurityStateSecure;
+      return Security::SecurityStateEnum::Secure;
     default:
       NOTREACHED();
-      return kSecurityStateUnknown;
+      return Security::SecurityStateEnum::Unknown;
   }
 }
 
 void AddExplanations(
     const std::string& security_style,
     const std::vector<SecurityStyleExplanation>& explanations_to_add,
-    std::vector<scoped_refptr<SecurityStateExplanation>>* explanations) {
+    Explanations* explanations) {
   for (const auto& it : explanations_to_add) {
-    scoped_refptr<SecurityStateExplanation> explanation =
-        SecurityStateExplanation::Create()
-            ->set_security_state(security_style)
-            ->set_summary(it.summary)
-            ->set_description(it.description)
-            ->set_has_certificate(it.has_certificate);
-    explanations->push_back(explanation);
+    explanations->addItem(Security::SecurityStateExplanation::Create()
+        .SetSecurityState(security_style)
+        .SetSummary(it.summary)
+        .SetDescription(it.description)
+        .SetHasCertificate(it.has_certificate)
+        .Build());
   }
 }
 
@@ -66,8 +64,9 @@ SecurityHandler::SecurityHandler()
 SecurityHandler::~SecurityHandler() {
 }
 
-void SecurityHandler::SetClient(std::unique_ptr<Client> client) {
-  client_.swap(client);
+void SecurityHandler::Wire(UberDispatcher* dispatcher) {
+  frontend_.reset(new Security::Frontend(dispatcher->channel()));
+  Security::Dispatcher::wire(dispatcher, this);
 }
 
 void SecurityHandler::AttachToRenderFrameHost() {
@@ -80,7 +79,7 @@ void SecurityHandler::AttachToRenderFrameHost() {
   DidChangeVisibleSecurityState();
 }
 
-void SecurityHandler::SetRenderFrameHost(RenderFrameHost* host) {
+void SecurityHandler::SetRenderFrameHost(RenderFrameHostImpl* host) {
   host_ = host;
   if (enabled_ && host_)
     AttachToRenderFrameHost();
@@ -97,42 +96,42 @@ void SecurityHandler::DidChangeVisibleSecurityState() {
   const std::string security_state =
       SecurityStyleToProtocolSecurityState(security_style);
 
-  std::vector<scoped_refptr<SecurityStateExplanation>> explanations;
-  AddExplanations(kSecurityStateInsecure,
+  std::unique_ptr<Explanations> explanations = Explanations::create();
+  AddExplanations(Security::SecurityStateEnum::Insecure,
                   security_style_explanations.broken_explanations,
-                  &explanations);
-  AddExplanations(kSecurityStateNeutral,
+                  explanations.get());
+  AddExplanations(Security::SecurityStateEnum::Neutral,
                   security_style_explanations.unauthenticated_explanations,
-                  &explanations);
-  AddExplanations(kSecurityStateSecure,
+                  explanations.get());
+  AddExplanations(Security::SecurityStateEnum::Secure,
                   security_style_explanations.secure_explanations,
-                  &explanations);
-  AddExplanations(kSecurityStateInfo,
-                  security_style_explanations.info_explanations, &explanations);
+                  explanations.get());
+  AddExplanations(Security::SecurityStateEnum::Info,
+                  security_style_explanations.info_explanations,
+                  explanations.get());
 
-  scoped_refptr<InsecureContentStatus> insecure_content_status =
-      InsecureContentStatus::Create()
-          ->set_ran_mixed_content(security_style_explanations.ran_mixed_content)
-          ->set_displayed_mixed_content(
+  std::unique_ptr<Security::InsecureContentStatus> insecure_status =
+      Security::InsecureContentStatus::Create()
+          .SetRanMixedContent(security_style_explanations.ran_mixed_content)
+          .SetDisplayedMixedContent(
               security_style_explanations.displayed_mixed_content)
-          ->set_ran_content_with_cert_errors(
+          .SetRanContentWithCertErrors(
               security_style_explanations.ran_content_with_cert_errors)
-          ->set_displayed_content_with_cert_errors(
+          .SetDisplayedContentWithCertErrors(
               security_style_explanations.displayed_content_with_cert_errors)
-          ->set_ran_insecure_content_style(SecurityStyleToProtocolSecurityState(
+          .SetRanInsecureContentStyle(SecurityStyleToProtocolSecurityState(
               security_style_explanations.ran_insecure_content_style))
-          ->set_displayed_insecure_content_style(
+          .SetDisplayedInsecureContentStyle(
               SecurityStyleToProtocolSecurityState(
                   security_style_explanations
-                      .displayed_insecure_content_style));
+                      .displayed_insecure_content_style))
+          .Build();
 
-  client_->SecurityStateChanged(
-      SecurityStateChangedParams::Create()
-          ->set_security_state(security_state)
-          ->set_scheme_is_cryptographic(
-              security_style_explanations.scheme_is_cryptographic)
-          ->set_insecure_content_status(insecure_content_status)
-          ->set_explanations(explanations));
+  frontend_->SecurityStateChanged(
+      security_state,
+      Maybe<Explanations>(std::move(explanations)),
+      Maybe<Security::InsecureContentStatus>(std::move(insecure_status)),
+      Maybe<bool>(security_style_explanations.scheme_is_cryptographic));
 }
 
 Response SecurityHandler::Enable() {
@@ -151,17 +150,16 @@ Response SecurityHandler::Disable() {
 
 Response SecurityHandler::ShowCertificateViewer() {
   if (!host_)
-    return Response::InternalError("Could not connect to view");
+    return Response::InternalError();
   WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
   scoped_refptr<net::X509Certificate> certificate =
       web_contents->GetController().GetVisibleEntry()->GetSSL().certificate;
   if (!certificate)
-    return Response::InternalError("Could not find certificate");
+    return Response::Error("Could not find certificate");
   web_contents->GetDelegate()->ShowCertificateViewerInDevTools(
       web_contents, certificate);
   return Response::OK();
 }
 
-}  // namespace security
-}  // namespace devtools
+}  // namespace protocol
 }  // namespace content
