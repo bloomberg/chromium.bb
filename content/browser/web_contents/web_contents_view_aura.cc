@@ -41,6 +41,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view_delegate.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/drop_data.h"
@@ -76,6 +77,7 @@
 #include "ui/touch_selection/touch_selection_controller.h"
 
 namespace content {
+
 WebContentsView* CreateWebContentsView(
     WebContentsImpl* web_contents,
     WebContentsViewDelegate* delegate,
@@ -405,6 +407,10 @@ int ConvertAuraEventFlagsToWebInputEventModifiers(int aura_event_flags) {
   return web_input_event_modifiers;
 }
 
+GlobalRoutingID GetRenderViewHostID(RenderViewHost* rvh) {
+  return GlobalRoutingID(rvh->GetProcess()->GetID(), rvh->GetRoutingID());
+}
+
 }  // namespace
 
 class WebContentsViewAura::WindowObserver
@@ -520,7 +526,10 @@ WebContentsViewAura::WebContentsViewAura(WebContentsImpl* web_contents,
       delegate_(delegate),
       current_drag_op_(blink::WebDragOperationNone),
       drag_dest_delegate_(nullptr),
-      current_rvh_for_drag_(nullptr),
+      current_rvh_for_drag_(ChildProcessHost::kInvalidUniqueID,
+                            MSG_ROUTING_NONE),
+      drag_start_process_id_(ChildProcessHost::kInvalidUniqueID),
+      drag_start_view_id_(ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE),
       current_overscroll_gesture_(OVERSCROLL_NONE),
       completed_overscroll_gesture_(OVERSCROLL_NONE),
       navigation_overlay_(nullptr),
@@ -557,6 +566,10 @@ void WebContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
 
 void WebContentsViewAura::EndDrag(RenderWidgetHost* source_rwh,
                                   blink::WebDragOperationsMask ops) {
+  drag_start_process_id_ = ChildProcessHost::kInvalidUniqueID;
+  drag_start_view_id_ = GlobalRoutingID(ChildProcessHost::kInvalidUniqueID,
+                                        MSG_ROUTING_NONE);
+
   if (!web_contents_)
     return;
 
@@ -568,8 +581,8 @@ void WebContentsViewAura::EndDrag(RenderWidgetHost* source_rwh,
   if (screen_position_client)
     screen_position_client->ConvertPointFromScreen(window, &client_loc);
 
-  // TODO(paulmeyer): In the OOPIF case, should |client_loc| be converted to
-  // the coordinates local to |drag_start_rwh_|? See crbug.com/647249.
+  // TODO(paulmeyer): In the OOPIF case, should |client_loc| be converted to the
+  // coordinates local to |source_rwh|? See crbug.com/647249.
   web_contents_->DragSourceEndedAt(client_loc.x(), client_loc.y(),
                                    screen_loc.x(), screen_loc.y(), ops,
                                    source_rwh);
@@ -632,6 +645,13 @@ gfx::NativeView WebContentsViewAura::GetRenderWidgetHostViewParent() const {
   if (init_rwhv_with_null_parent_for_testing_)
     return nullptr;
   return window_.get();
+}
+
+bool WebContentsViewAura::IsValidDragTarget(
+    RenderWidgetHostImpl* target_rwh) const {
+  return target_rwh->GetProcess()->GetID() == drag_start_process_id_ ||
+      GetRenderViewHostID(web_contents_->GetRenderViewHost()) !=
+      drag_start_view_id_;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -912,6 +932,9 @@ void WebContentsViewAura::StartDragging(
   base::WeakPtr<RenderWidgetHostImpl> source_rwh_weak_ptr =
       source_rwh->GetWeakPtr();
 
+  drag_start_process_id_ = source_rwh->GetProcess()->GetID();
+  drag_start_view_id_ = GetRenderViewHostID(web_contents_->GetRenderViewHost());
+
   ui::TouchSelectionController* selection_controller = GetSelectionController();
   if (selection_controller)
     selection_controller->HideAndDisallowShowingAutomatically();
@@ -1135,12 +1158,17 @@ void WebContentsViewAura::OnMouseEvent(ui::MouseEvent* event) {
 
 void WebContentsViewAura::OnDragEntered(const ui::DropTargetEvent& event) {
   gfx::Point transformed_pt;
-  current_rwh_for_drag_ =
+  RenderWidgetHostImpl* target_rwh =
       web_contents_->GetInputEventRouter()->GetRenderWidgetHostAtPoint(
           web_contents_->GetRenderViewHost()->GetWidget()->GetView(),
-          event.location(), &transformed_pt)->GetWeakPtr();
-  current_rvh_for_drag_ = web_contents_->GetRenderViewHost();
+          event.location(), &transformed_pt);
 
+  if (!IsValidDragTarget(target_rwh))
+    return;
+
+  current_rwh_for_drag_ = target_rwh->GetWeakPtr();
+  current_rvh_for_drag_ =
+      GetRenderViewHostID(web_contents_->GetRenderViewHost());
   current_drop_data_.reset(new DropData());
   PrepareDropData(current_drop_data_.get(), event.data());
   current_rwh_for_drag_->FilterDropData(current_drop_data_.get());
@@ -1176,6 +1204,9 @@ int WebContentsViewAura::OnDragUpdated(const ui::DropTargetEvent& event) {
           web_contents_->GetRenderViewHost()->GetWidget()->GetView(),
           event.location(), &transformed_pt);
 
+  if (!IsValidDragTarget(target_rwh))
+    return ui::DragDropTypes::DRAG_NONE;
+
   if (target_rwh != current_rwh_for_drag_.get()) {
     if (current_rwh_for_drag_)
       current_rwh_for_drag_->DragTargetDragLeave();
@@ -1198,7 +1229,8 @@ int WebContentsViewAura::OnDragUpdated(const ui::DropTargetEvent& event) {
 }
 
 void WebContentsViewAura::OnDragExited() {
-  if (current_rvh_for_drag_ != web_contents_->GetRenderViewHost() ||
+  if (current_rvh_for_drag_ !=
+      GetRenderViewHostID(web_contents_->GetRenderViewHost()) ||
       !current_drop_data_) {
     return;
   }
@@ -1220,6 +1252,9 @@ int WebContentsViewAura::OnPerformDrop(const ui::DropTargetEvent& event) {
       web_contents_->GetInputEventRouter()->GetRenderWidgetHostAtPoint(
           web_contents_->GetRenderViewHost()->GetWidget()->GetView(),
           event.location(), &transformed_pt);
+
+  if (!IsValidDragTarget(target_rwh))
+    return ui::DragDropTypes::DRAG_NONE;
 
   if (target_rwh != current_rwh_for_drag_.get()) {
     if (current_rwh_for_drag_)

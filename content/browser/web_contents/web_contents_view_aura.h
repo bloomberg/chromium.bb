@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/loader/global_routing_id.h"
 #include "content/browser/renderer_host/overscroll_controller_delegate.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/web_contents/web_contents_view.h"
@@ -86,6 +87,11 @@ class CONTENT_EXPORT WebContentsViewAura
 
   // Returns GetNativeView unless overridden for testing.
   gfx::NativeView GetRenderWidgetHostViewParent() const;
+
+  // Returns whether |target_rwh| is a valid RenderWidgetHost to be dragging
+  // over. This enforces that same-page, cross-site drags are not allowed. See
+  // crbug.com/666858.
+  bool IsValidDragTarget(RenderWidgetHostImpl* target_rwh) const;
 
   // Overridden from WebContentsView:
   gfx::NativeView GetNativeView() const override;
@@ -198,10 +204,24 @@ class CONTENT_EXPORT WebContentsViewAura
   // during a drag, we need to re-send the DragEnter message.
   base::WeakPtr<RenderWidgetHostImpl> current_rwh_for_drag_;
 
-  // We also keep track of the RenderViewHost we're dragging over to avoid
-  // sending the drag exited message after leaving the current
-  // view. |current_rvh_for_drag_| should not be dereferenced.
-  void* current_rvh_for_drag_;
+  // We also keep track of the ID of the RenderViewHost we're dragging over to
+  // avoid sending the drag exited message after leaving the current view.
+  GlobalRoutingID current_rvh_for_drag_;
+
+  // We track the IDs of the source RenderProcessHost and RenderViewHost from
+  // which the current drag originated. These are used to ensure that drag
+  // events do not fire over a cross-site frame (with respect to the source
+  // frame) in the same page (see crbug.com/666858). Specifically, the
+  // RenderViewHost is used to check the "same page" property, while the
+  // RenderProcessHost is used to check the "cross-site" property. Note that the
+  // reason the RenderProcessHost is tracked instead of the RenderWidgetHost is
+  // so that we still allow drags between non-contiguous same-site frames (such
+  // frames will have the same process, but different widgets). Note also that
+  // the RenderViewHost may not be in the same process as the RenderProcessHost,
+  // since the view corresponds to the page, while the process is specific to
+  // the frame from which the drag started.
+  int drag_start_process_id_;
+  GlobalRoutingID drag_start_view_id_;
 
   // The overscroll gesture currently in progress.
   OverscrollMode current_overscroll_gesture_;

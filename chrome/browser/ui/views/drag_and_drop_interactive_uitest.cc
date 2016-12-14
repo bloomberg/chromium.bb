@@ -1158,6 +1158,10 @@ void DragAndDropBrowserTest::CrossSiteDrag_Step3(
                     "dragend"}));
 }
 
+// TODO(paulmeyer): Should test the case of navigation happening in the middle
+// of a drag operation, and cross-site drags should be allowed across a
+// navigation.
+
 INSTANTIATE_TEST_CASE_P(
     SameSiteSubframe, DragAndDropBrowserTest, ::testing::Values(false));
 
