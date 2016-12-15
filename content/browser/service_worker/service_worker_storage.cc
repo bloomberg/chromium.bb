@@ -627,11 +627,14 @@ void ServiceWorkerStorage::StoreUserData(
     const GURL& origin,
     const std::vector<std::pair<std::string, std::string>>& key_value_pairs,
     const StatusCallback& callback) {
-  DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
-  if (IsDisabled()) {
-    RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
+  if (!LazyInitialize(base::Bind(&ServiceWorkerStorage::StoreUserData,
+                                 weak_factory_.GetWeakPtr(), registration_id,
+                                 origin, key_value_pairs, callback))) {
+    if (state_ != INITIALIZING)
+      RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
     return;
   }
+  DCHECK_EQ(INITIALIZED, state_);
 
   if (registration_id == kInvalidServiceWorkerRegistrationId ||
       key_value_pairs.empty()) {
@@ -657,12 +660,16 @@ void ServiceWorkerStorage::StoreUserData(
 void ServiceWorkerStorage::GetUserData(int64_t registration_id,
                                        const std::vector<std::string>& keys,
                                        const GetUserDataCallback& callback) {
-  DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
-  if (IsDisabled()) {
-    RunSoon(FROM_HERE, base::Bind(callback, std::vector<std::string>(),
-                                  SERVICE_WORKER_ERROR_ABORT));
+  if (!LazyInitialize(base::Bind(&ServiceWorkerStorage::GetUserData,
+                                 weak_factory_.GetWeakPtr(), registration_id,
+                                 keys, callback))) {
+    if (state_ != INITIALIZING) {
+      RunSoon(FROM_HERE, base::Bind(callback, std::vector<std::string>(),
+                                    SERVICE_WORKER_ERROR_ABORT));
+    }
     return;
   }
+  DCHECK_EQ(INITIALIZED, state_);
 
   if (registration_id == kInvalidServiceWorkerRegistrationId || keys.empty()) {
     RunSoon(FROM_HERE, base::Bind(callback, std::vector<std::string>(),
@@ -688,7 +695,15 @@ void ServiceWorkerStorage::GetUserData(int64_t registration_id,
 void ServiceWorkerStorage::ClearUserData(int64_t registration_id,
                                          const std::vector<std::string>& keys,
                                          const StatusCallback& callback) {
-  DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
+  if (!LazyInitialize(base::Bind(&ServiceWorkerStorage::ClearUserData,
+                                 weak_factory_.GetWeakPtr(), registration_id,
+                                 keys, callback))) {
+    if (state_ != INITIALIZING)
+      RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
+    return;
+  }
+  DCHECK_EQ(INITIALIZED, state_);
+
   if (IsDisabled()) {
     RunSoon(FROM_HERE, base::Bind(callback, SERVICE_WORKER_ERROR_ABORT));
     return;

@@ -1096,6 +1096,35 @@ TEST_P(ServiceWorkerStorageTestP, StoreUserData) {
             GetUserDataForAllRegistrations(std::string(), &data_list_out));
 }
 
+// The *_BeforeInitialize tests exercise the API before LazyInitialize() is
+// called.
+TEST_P(ServiceWorkerStorageTestP, StoreUserData_BeforeInitialize) {
+  const int kRegistrationId = 0;
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
+            StoreUserData(kRegistrationId, GURL("https://example.com"),
+                          {{"key", "data"}}));
+}
+
+TEST_P(ServiceWorkerStorageTestP, GetUserData_BeforeInitialize) {
+  const int kRegistrationId = 0;
+  std::vector<std::string> data_out;
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
+            GetUserData(kRegistrationId, {"key"}, &data_out));
+}
+
+TEST_P(ServiceWorkerStorageTestP, ClearUserData_BeforeInitialize) {
+  const int kRegistrationId = 0;
+  EXPECT_EQ(SERVICE_WORKER_OK, ClearUserData(kRegistrationId, {"key"}));
+}
+
+TEST_P(ServiceWorkerStorageTestP,
+       GetUserDataForAllRegistrations_BeforeInitialize) {
+  std::vector<std::pair<int64_t, std::string>> data_list_out;
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            GetUserDataForAllRegistrations("key", &data_list_out));
+  EXPECT_TRUE(data_list_out.empty());
+}
+
 class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTestP {
  public:
   void SetUp() override {
