@@ -142,10 +142,11 @@ void RecordUMAHistogramForOOBEStepCompletionTime(std::string screen_name,
 }
 
 bool IsRemoraRequisition() {
-  return g_browser_process->platform_part()
-      ->browser_policy_connector_chromeos()
-      ->GetDeviceCloudPolicyManager()
-      ->IsRemoraRequisition();
+  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetDeviceCloudPolicyManager();
+  return policy_manager && policy_manager->IsRemoraRequisition();
 }
 
 bool IsSharkRequisition() {
