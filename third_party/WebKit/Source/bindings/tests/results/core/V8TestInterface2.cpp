@@ -637,8 +637,8 @@ void V8TestInterface2::installV8TestInterface2Template(v8::Isolate* isolate, con
 
   // Register DOM constants, attributes and operations.
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
-      const V8DOMConfiguration::ConstantConfiguration constantConstValue1Configuration = {"CONST_VALUE_1", 1, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
-      V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantConstValue1Configuration);
+    const V8DOMConfiguration::ConstantConfiguration constantConstValue1Configuration = {"CONST_VALUE_1", 1, 0, V8DOMConfiguration::ConstantTypeUnsignedShort};
+    V8DOMConfiguration::installConstant(isolate, interfaceTemplate, prototypeTemplate, constantConstValue1Configuration);
   }
   static_assert(1 == TestInterface2::kConstValue1, "the value of TestInterface2_kConstValue1 does not match with implementation");
   V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface2Methods, WTF_ARRAY_LENGTH(V8TestInterface2Methods));

@@ -392,11 +392,11 @@ void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Isolate* isolate
 
   // Register DOM constants, attributes and operations.
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
-      const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
-          {"PARTIAL3_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
-      };
-      V8DOMConfiguration::installConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants));
-      V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
+    const V8DOMConfiguration::ConstantConfiguration V8TestInterfaceConstants[] = {
+        {"PARTIAL3_UNSIGNED_SHORT", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},
+    };
+    V8DOMConfiguration::installConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants));
+    V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
   }
 }
 

@@ -45,7 +45,7 @@ def generate_indented_conditional(code, conditional):
     # Indent if statement to level of original code
     indent = re.match(' *', code).group(0)
     return ('%sif (%s) {\n' % (indent, conditional) +
-            '    %s\n' % '\n    '.join(code.splitlines()) +
+            '  %s\n' % '\n  '.join(code.splitlines()) +
             '%s}\n' % indent)
 
 

@@ -89,8 +89,8 @@ void V8TestInterface2Partial::installV8TestInterface2Template(v8::Isolate* isola
   V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface2Methods, WTF_ARRAY_LENGTH(V8TestInterface2Methods));
 
   if (RuntimeEnabledFeatures::interface2PartialFeatureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration voidMethodPartial1MethodConfiguration = {"voidMethodPartial1", TestInterface2PartialV8Internal::voidMethodPartial1MethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-      V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, voidMethodPartial1MethodConfiguration);
+    const V8DOMConfiguration::MethodConfiguration voidMethodPartial1MethodConfiguration = {"voidMethodPartial1", TestInterface2PartialV8Internal::voidMethodPartial1MethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+    V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, voidMethodPartial1MethodConfiguration);
   }
 }
 

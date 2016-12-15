@@ -10480,17 +10480,17 @@ static void partiallyRuntimeEnabledOverloadedVoidMethod4Method(const v8::Functio
 
 static int partiallyRuntimeEnabledOverloadedVoidMethodMethodLength() {
   if (RuntimeEnabledFeatures::featureName1Enabled()) {
-      return 1;
+    return 1;
   }
   if (RuntimeEnabledFeatures::featureName2Enabled()) {
-      return 1;
+    return 1;
   }
   return 2;
 }
 
 static int partiallyRuntimeEnabledOverloadedVoidMethodMethodMaxArg() {
   if (RuntimeEnabledFeatures::featureName3Enabled()) {
-      return 3;
+    return 3;
   }
   return 2;
 }
@@ -10500,16 +10500,16 @@ static void partiallyRuntimeEnabledOverloadedVoidMethodMethod(const v8::Function
   switch (std::min(TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodMaxArg(), info.Length())) {
     case 1:
       if (RuntimeEnabledFeatures::featureName2Enabled()) {
-          if (V8TestInterface::hasInstance(info[0], info.GetIsolate())) {
-            partiallyRuntimeEnabledOverloadedVoidMethod2Method(info);
-            return;
-          }
+        if (V8TestInterface::hasInstance(info[0], info.GetIsolate())) {
+          partiallyRuntimeEnabledOverloadedVoidMethod2Method(info);
+          return;
+        }
       }
       if (RuntimeEnabledFeatures::featureName1Enabled()) {
-          if (true) {
-            partiallyRuntimeEnabledOverloadedVoidMethod1Method(info);
-            return;
-          }
+        if (true) {
+          partiallyRuntimeEnabledOverloadedVoidMethod1Method(info);
+          return;
+        }
       }
       break;
     case 2:
@@ -10520,10 +10520,10 @@ static void partiallyRuntimeEnabledOverloadedVoidMethodMethod(const v8::Function
       break;
     case 3:
       if (RuntimeEnabledFeatures::featureName3Enabled()) {
-          if (true) {
-            partiallyRuntimeEnabledOverloadedVoidMethod4Method(info);
-            return;
-          }
+        if (true) {
+          partiallyRuntimeEnabledOverloadedVoidMethod4Method(info);
+          return;
+        }
       }
       break;
     default:
@@ -11616,20 +11616,20 @@ static void installV8TestObjectTemplate(v8::Isolate* isolate, const DOMWrapperWo
   V8DOMConfiguration::installMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
 
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration unscopableRuntimeEnabledVoidMethodMethodConfiguration = {"unscopableRuntimeEnabledVoidMethod", TestObjectV8Internal::unscopableRuntimeEnabledVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-      V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, unscopableRuntimeEnabledVoidMethodMethodConfiguration);
+    const V8DOMConfiguration::MethodConfiguration unscopableRuntimeEnabledVoidMethodMethodConfiguration = {"unscopableRuntimeEnabledVoidMethod", TestObjectV8Internal::unscopableRuntimeEnabledVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+    V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, unscopableRuntimeEnabledVoidMethodMethodConfiguration);
   }
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration runtimeEnabledVoidMethodMethodConfiguration = {"runtimeEnabledVoidMethod", TestObjectV8Internal::runtimeEnabledVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-      V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, runtimeEnabledVoidMethodMethodConfiguration);
+    const V8DOMConfiguration::MethodConfiguration runtimeEnabledVoidMethodMethodConfiguration = {"runtimeEnabledVoidMethod", TestObjectV8Internal::runtimeEnabledVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+    V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, runtimeEnabledVoidMethodMethodConfiguration);
   }
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration perWorldBindingsRuntimeEnabledVoidMethodMethodConfiguration = {"perWorldBindingsRuntimeEnabledVoidMethod", TestObjectV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallback, TestObjectV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-      V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, perWorldBindingsRuntimeEnabledVoidMethodMethodConfiguration);
+    const V8DOMConfiguration::MethodConfiguration perWorldBindingsRuntimeEnabledVoidMethodMethodConfiguration = {"perWorldBindingsRuntimeEnabledVoidMethod", TestObjectV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallback, TestObjectV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+    V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, perWorldBindingsRuntimeEnabledVoidMethodMethodConfiguration);
   }
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
-      const V8DOMConfiguration::MethodConfiguration runtimeEnabledOverloadedVoidMethodMethodConfiguration = {"runtimeEnabledOverloadedVoidMethod", TestObjectV8Internal::runtimeEnabledOverloadedVoidMethodMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-      V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, runtimeEnabledOverloadedVoidMethodMethodConfiguration);
+    const V8DOMConfiguration::MethodConfiguration runtimeEnabledOverloadedVoidMethodMethodConfiguration = {"runtimeEnabledOverloadedVoidMethod", TestObjectV8Internal::runtimeEnabledOverloadedVoidMethodMethodCallback, 0, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+    V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, runtimeEnabledOverloadedVoidMethodMethodConfiguration);
   }
   const V8DOMConfiguration::MethodConfiguration partiallyRuntimeEnabledOverloadedVoidMethodMethodConfiguration = {"partiallyRuntimeEnabledOverloadedVoidMethod", TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodCallback, 0, TestObjectV8Internal::partiallyRuntimeEnabledOverloadedVoidMethodMethodLength(), v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
   V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, partiallyRuntimeEnabledOverloadedVoidMethodMethodConfiguration);
@@ -11688,10 +11688,10 @@ void V8TestObject::preparePrototypeAndInterfaceObject(v8::Local<v8::Context> con
   unscopables->CreateDataProperty(context, v8AtomicString(isolate, "unscopableLongAttribute"), v8::True(isolate)).FromJust();
   unscopables->CreateDataProperty(context, v8AtomicString(isolate, "unscopableOriginTrialEnabledLongAttribute"), v8::True(isolate)).FromJust();
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
-      unscopables->CreateDataProperty(context, v8AtomicString(isolate, "unscopableRuntimeEnabledLongAttribute"), v8::True(isolate)).FromJust();
+    unscopables->CreateDataProperty(context, v8AtomicString(isolate, "unscopableRuntimeEnabledLongAttribute"), v8::True(isolate)).FromJust();
   }
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
-      unscopables->CreateDataProperty(context, v8AtomicString(isolate, "unscopableRuntimeEnabledVoidMethod"), v8::True(isolate)).FromJust();
+    unscopables->CreateDataProperty(context, v8AtomicString(isolate, "unscopableRuntimeEnabledVoidMethod"), v8::True(isolate)).FromJust();
   }
   unscopables->CreateDataProperty(context, v8AtomicString(isolate, "unscopableVoidMethod"), v8::True(isolate)).FromJust();
   prototypeObject->CreateDataProperty(context, unscopablesSymbol, unscopables).FromJust();

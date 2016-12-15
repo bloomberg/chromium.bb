@@ -909,14 +909,14 @@ static void installV8TestInterface5Template(v8::Isolate* isolate, const DOMWrapp
 
   // Register DOM constants, attributes and operations.
   if (RuntimeEnabledFeatures::featureNameEnabled()) {
-      const V8DOMConfiguration::ConstantConfiguration V8TestInterface5Constants[] = {
-          {"UNSIGNED_LONG", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedLong},
-          {"CONST_JAVASCRIPT", 1, 0, V8DOMConfiguration::ConstantTypeShort},
-      };
-      V8DOMConfiguration::installConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestInterface5Constants, WTF_ARRAY_LENGTH(V8TestInterface5Constants));
-      V8DOMConfiguration::installLazyDataAttributes(isolate, world, instanceTemplate, prototypeTemplate, V8TestInterface5LazyDataAttributes, WTF_ARRAY_LENGTH(V8TestInterface5LazyDataAttributes));
-      V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface5Accessors, WTF_ARRAY_LENGTH(V8TestInterface5Accessors));
-      V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface5Methods, WTF_ARRAY_LENGTH(V8TestInterface5Methods));
+    const V8DOMConfiguration::ConstantConfiguration V8TestInterface5Constants[] = {
+        {"UNSIGNED_LONG", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedLong},
+        {"CONST_JAVASCRIPT", 1, 0, V8DOMConfiguration::ConstantTypeShort},
+    };
+    V8DOMConfiguration::installConstants(isolate, interfaceTemplate, prototypeTemplate, V8TestInterface5Constants, WTF_ARRAY_LENGTH(V8TestInterface5Constants));
+    V8DOMConfiguration::installLazyDataAttributes(isolate, world, instanceTemplate, prototypeTemplate, V8TestInterface5LazyDataAttributes, WTF_ARRAY_LENGTH(V8TestInterface5LazyDataAttributes));
+    V8DOMConfiguration::installAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface5Accessors, WTF_ARRAY_LENGTH(V8TestInterface5Accessors));
+    V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface5Methods, WTF_ARRAY_LENGTH(V8TestInterface5Methods));
   }
 
   // Indexed properties
@@ -954,35 +954,35 @@ void V8TestInterface5::preparePrototypeAndInterfaceObject(v8::Local<v8::Context>
   ExecutionContext* executionContext = toExecutionContext(context);
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   if (executionContext && (executionContext->isWorkerGlobalScope())) {
-      const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"workerExposedAttribute", TestInterface5ImplementationV8Internal::workerExposedAttributeAttributeGetterCallback, TestInterface5ImplementationV8Internal::workerExposedAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-      V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
+    const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"workerExposedAttribute", TestInterface5ImplementationV8Internal::workerExposedAttributeAttributeGetterCallback, TestInterface5ImplementationV8Internal::workerExposedAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+    V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
   }
   if (executionContext && (executionContext->isDocument())) {
-      const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"windowExposedAttribute", TestInterface5ImplementationV8Internal::windowExposedAttributeAttributeGetterCallback, TestInterface5ImplementationV8Internal::windowExposedAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-      V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
+    const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {"windowExposedAttribute", TestInterface5ImplementationV8Internal::windowExposedAttributeAttributeGetterCallback, TestInterface5ImplementationV8Internal::windowExposedAttributeAttributeSetterCallback, 0, 0, nullptr, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+    V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
   }
   v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTemplate);
   ExecutionContext* executionContext = toExecutionContext(prototypeObject->CreationContext());
   DCHECK(executionContext);
   if (executionContext && (executionContext->isWorkerGlobalScope())) {
-      const V8DOMConfiguration::MethodConfiguration workerExposedMethodMethodConfiguration = {"workerExposedMethod", TestInterface5ImplementationV8Internal::workerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-      V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, workerExposedMethodMethodConfiguration);
+    const V8DOMConfiguration::MethodConfiguration workerExposedMethodMethodConfiguration = {"workerExposedMethod", TestInterface5ImplementationV8Internal::workerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+    V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, workerExposedMethodMethodConfiguration);
   }
   if (executionContext && (executionContext->isDocument())) {
-      const V8DOMConfiguration::MethodConfiguration windowExposedMethodMethodConfiguration = {"windowExposedMethod", TestInterface5ImplementationV8Internal::windowExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-      V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, windowExposedMethodMethodConfiguration);
+    const V8DOMConfiguration::MethodConfiguration windowExposedMethodMethodConfiguration = {"windowExposedMethod", TestInterface5ImplementationV8Internal::windowExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+    V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, windowExposedMethodMethodConfiguration);
   }
   if (executionContext && (executionContext->isWorkerGlobalScope())) {
-      const V8DOMConfiguration::MethodConfiguration workerExposedStaticMethodMethodConfiguration = {"workerExposedStaticMethod", TestInterface5ImplementationV8Internal::workerExposedStaticMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder};
-      V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, workerExposedStaticMethodMethodConfiguration);
+    const V8DOMConfiguration::MethodConfiguration workerExposedStaticMethodMethodConfiguration = {"workerExposedStaticMethod", TestInterface5ImplementationV8Internal::workerExposedStaticMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder};
+    V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, workerExposedStaticMethodMethodConfiguration);
   }
   if (executionContext && (executionContext->isDocument())) {
-      const V8DOMConfiguration::MethodConfiguration windowExposedStaticMethodMethodConfiguration = {"windowExposedStaticMethod", TestInterface5ImplementationV8Internal::windowExposedStaticMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder};
-      V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, windowExposedStaticMethodMethodConfiguration);
+    const V8DOMConfiguration::MethodConfiguration windowExposedStaticMethodMethodConfiguration = {"windowExposedStaticMethod", TestInterface5ImplementationV8Internal::windowExposedStaticMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnInterface, V8DOMConfiguration::CheckHolder};
+    V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, windowExposedStaticMethodMethodConfiguration);
   }
   if (executionContext && (executionContext->isDocument() || executionContext->isServiceWorkerGlobalScope())) {
-      const V8DOMConfiguration::MethodConfiguration windowAndServiceWorkerExposedMethodMethodConfiguration = {"windowAndServiceWorkerExposedMethod", TestInterface5ImplementationV8Internal::windowAndServiceWorkerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-      V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, windowAndServiceWorkerExposedMethodMethodConfiguration);
+    const V8DOMConfiguration::MethodConfiguration windowAndServiceWorkerExposedMethodMethodConfiguration = {"windowAndServiceWorkerExposedMethod", TestInterface5ImplementationV8Internal::windowAndServiceWorkerExposedMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
+    V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, windowAndServiceWorkerExposedMethodMethodConfiguration);
   }
 }
 
