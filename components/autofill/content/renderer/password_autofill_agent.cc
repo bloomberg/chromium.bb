@@ -243,8 +243,6 @@ void FindFormElements(content::RenderFrame* render_frame,
   DCHECK(results);
 
   blink::WebDocument doc = render_frame->GetWebFrame()->document();
-  if (!doc.isHTMLDocument())
-    return;
 
   if (data.origin != form_util::GetCanonicalOriginForDocument(doc))
     return;
