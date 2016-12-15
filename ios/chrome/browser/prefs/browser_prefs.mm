@@ -16,7 +16,7 @@
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/ntp_tiles/most_visited_sites.h"
-#include "components/ntp_tiles/popular_sites.h"
+#include "components/ntp_tiles/popular_sites_impl.h"
 #include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"

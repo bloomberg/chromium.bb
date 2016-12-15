@@ -32,6 +32,8 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
+class PrefService;
+
 namespace ntp_tiles {
 
 class IconCacher;

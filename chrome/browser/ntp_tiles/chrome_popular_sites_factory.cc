@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_paths.h"
-#include "components/ntp_tiles/popular_sites.h"
+#include "components/ntp_tiles/popular_sites_impl.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "content/public/browser/browser_thread.h"
 

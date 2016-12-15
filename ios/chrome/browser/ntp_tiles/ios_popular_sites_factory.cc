@@ -9,7 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "components/ntp_tiles/json_unsafe_parser.h"
-#include "components/ntp_tiles/popular_sites.h"
+#include "components/ntp_tiles/popular_sites_impl.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_paths.h"

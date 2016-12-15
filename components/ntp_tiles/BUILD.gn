@@ -23,8 +23,9 @@ static_library("ntp_tiles") {
     "ntp_tile.cc",
     "ntp_tile.h",
     "ntp_tile_source.h",
-    "popular_sites.cc",
     "popular_sites.h",
+    "popular_sites_impl.cc",
+    "popular_sites_impl.h",
     "pref_names.cc",
     "pref_names.h",
     "switches.cc",
@@ -84,7 +85,7 @@ source_set("unit_tests") {
     "icon_cacher_unittest.cc",
     "metrics_unittest.cc",
     "most_visited_sites_unittest.cc",
-    "popular_sites_unittest.cc",
+    "popular_sites_impl_unittest.cc",
   ]
 
   deps = [
