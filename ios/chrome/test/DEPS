@@ -1,7 +1,22 @@
 include_rules = [
-  "+components/content_settings/core/common",
+  "+breakpad/src/client/ios",
+  "+components/autofill/core/browser",
+  "+components/bookmarks",
+  "+components/browser_sync",
+  "+components/browsing_data/core",
+  "+components/content_settings/core",
+  "+components/history/core/browser",
+  "+components/keyed_service/core",
+  "+components/metrics",
   "+components/network_time",
   "+components/prefs",
+  "+components/signin/core/browser",
+  "+components/signin/core/common",
+  "+components/sync",
+  "+components/variations",
+  "+components/version_info",
+  "+google_apis",
+  "+ios/chrome/app",
   "+ios/chrome/browser",
   "+ios/public/provider/chrome",
   "+ios/public/test",
@@ -9,4 +24,9 @@ include_rules = [
   "+net/url_request",
   "+third_party/google_toolbox_for_mac",
   "+ui",
+
+  # Strings and resources.
+  "+components/grit",
+  "+components/strings/grit",
+  "+ios/chrome/grit",
 ]

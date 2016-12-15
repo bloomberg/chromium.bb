@@ -1,6 +1,4 @@
 include_rules = [
-  "+ios/chrome/browser",
-
   "+breakpad/src/client/ios",
   "+components/bookmarks/browser",
   "+components/bookmarks/test",
@@ -17,9 +15,17 @@ include_rules = [
   "+components/prefs",
   "+components/reading_list/core",
   "+components/signin/core/browser",
-  "+components/strings",
   "+components/suggestions",
   "+components/url_formatter",
   "+components/web_resource",
+  "+ios/chrome/browser",
+  "+ios/net",
+  "+ios/public/provider/chrome",
+  "+ios/web/public",
   "+mojo/edk/embedder/embedder.h",
+
+  # Strings and resources.
+  "+components/grit",
+  "+components/strings",
+  "+ios/chrome/grit",
 ]

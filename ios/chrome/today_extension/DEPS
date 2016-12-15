@@ -1,0 +1,12 @@
+include_rules = [
+  "+base/cpu.h",
+  "+base/i18n/icu_util.h",
+  "+base/metrics",
+  "+components/metrics",
+  "+components/open_from_clipboard",
+  "+components/prefs",
+  "+components/variations",
+  "+components/version_info",
+  "+ios/chrome/common",
+  "+ios/today_extension/grit",  # For generated headers
+]
