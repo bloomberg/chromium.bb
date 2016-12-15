@@ -2394,12 +2394,10 @@ class WaylandTouchDelegate : public TouchDelegate {
                        TimeTicksToMilliseconds(time_stamp), surface_resource,
                        id, wl_fixed_from_int(location.x()),
                        wl_fixed_from_int(location.y()));
-    wl_client_flush(client());
   }
   void OnTouchUp(base::TimeTicks time_stamp, int id) override {
     wl_touch_send_up(touch_resource_, next_serial(),
                      TimeTicksToMilliseconds(time_stamp), id);
-    wl_client_flush(client());
   }
   void OnTouchMotion(base::TimeTicks time_stamp,
                      int id,
@@ -2407,11 +2405,23 @@ class WaylandTouchDelegate : public TouchDelegate {
     wl_touch_send_motion(touch_resource_, TimeTicksToMilliseconds(time_stamp),
                          id, wl_fixed_from_int(location.x()),
                          wl_fixed_from_int(location.y()));
+  }
+  void OnTouchShape(int id, float major, float minor) override {
+    if (wl_resource_get_version(touch_resource_) >=
+        WL_TOUCH_SHAPE_SINCE_VERSION) {
+      wl_touch_send_shape(touch_resource_, id, wl_fixed_from_double(major),
+                          wl_fixed_from_double(minor));
+    }
+  }
+  void OnTouchFrame() override {
+    if (wl_resource_get_version(touch_resource_) >=
+        WL_TOUCH_FRAME_SINCE_VERSION) {
+      wl_touch_send_frame(touch_resource_);
+    }
     wl_client_flush(client());
   }
   void OnTouchCancel() override {
     wl_touch_send_cancel(touch_resource_);
-    wl_client_flush(client());
   }
 
  private:

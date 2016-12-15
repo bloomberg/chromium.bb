@@ -46,6 +46,8 @@ Touch::~Touch() {
 // ui::EventHandler overrides:
 
 void Touch::OnTouchEvent(ui::TouchEvent* event) {
+  bool send_details = false;
+
   switch (event->type()) {
     case ui::ET_TOUCH_PRESSED: {
       // Early out if event doesn't contain a valid target for touch device.
@@ -74,52 +76,64 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
       // be different from the target surface.
       delegate_->OnTouchDown(focus_, event->time_stamp(), event->touch_id(),
                              location);
+      send_details = true;
     } break;
     case ui::ET_TOUCH_RELEASED: {
       auto it = FindVectorItem(touch_points_, event->touch_id());
-      if (it != touch_points_.end()) {
-        touch_points_.erase(it);
+      if (it == touch_points_.end())
+        return;
+      touch_points_.erase(it);
 
-        // Reset focus surface if this is the last touch point.
-        if (touch_points_.empty()) {
-          DCHECK(focus_);
-          focus_->RemoveSurfaceObserver(this);
-          focus_ = nullptr;
-        }
-
-        delegate_->OnTouchUp(event->time_stamp(), event->touch_id());
-      }
-    } break;
-    case ui::ET_TOUCH_MOVED: {
-      auto it = FindVectorItem(touch_points_, event->touch_id());
-      if (it != touch_points_.end()) {
-        DCHECK(focus_);
-        // Convert location to focus surface coordinate space.
-        gfx::Point location = event->location();
-        aura::Window::ConvertPointToTarget(
-            static_cast<aura::Window*>(event->target()), focus_->window(),
-            &location);
-
-        delegate_->OnTouchMotion(event->time_stamp(), event->touch_id(),
-                                 location);
-      }
-    } break;
-    case ui::ET_TOUCH_CANCELLED: {
-      auto it = FindVectorItem(touch_points_, event->touch_id());
-      if (it != touch_points_.end()) {
+      // Reset focus surface if this is the last touch point.
+      if (touch_points_.empty()) {
         DCHECK(focus_);
         focus_->RemoveSurfaceObserver(this);
         focus_ = nullptr;
-
-        // Cancel the full set of touch sequences as soon as one is canceled.
-        touch_points_.clear();
-        delegate_->OnTouchCancel();
       }
+
+      delegate_->OnTouchUp(event->time_stamp(), event->touch_id());
+    } break;
+    case ui::ET_TOUCH_MOVED: {
+      auto it = FindVectorItem(touch_points_, event->touch_id());
+      if (it == touch_points_.end())
+        return;
+
+      DCHECK(focus_);
+      // Convert location to focus surface coordinate space.
+      gfx::Point location = event->location();
+      aura::Window::ConvertPointToTarget(
+          static_cast<aura::Window*>(event->target()), focus_->window(),
+          &location);
+
+      delegate_->OnTouchMotion(event->time_stamp(), event->touch_id(),
+                               location);
+      send_details = true;
+    } break;
+    case ui::ET_TOUCH_CANCELLED: {
+      auto it = FindVectorItem(touch_points_, event->touch_id());
+      if (it == touch_points_.end())
+        return;
+
+      DCHECK(focus_);
+      focus_->RemoveSurfaceObserver(this);
+      focus_ = nullptr;
+
+      // Cancel the full set of touch sequences as soon as one is canceled.
+      touch_points_.clear();
+      delegate_->OnTouchCancel();
     } break;
     default:
       NOTREACHED();
-      break;
+      return;
   }
+  if (send_details) {
+    delegate_->OnTouchShape(event->touch_id(),
+                            event->pointer_details().radius_x,
+                            event->pointer_details().radius_y);
+  }
+  // TODO(denniskempin): Extend ui::TouchEvent to signal end of sequence of
+  // touch events to send TouchFrame once after all touches have been updated.
+  delegate_->OnTouchFrame();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

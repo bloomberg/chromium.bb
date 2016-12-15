@@ -44,6 +44,12 @@ class TouchDelegate {
                              int id,
                              const gfx::Point& location) = 0;
 
+  // Called when a touch point has changed its shape.
+  virtual void OnTouchShape(int id, float major, float minor) = 0;
+
+  // Called when the client should apply all updated touches.
+  virtual void OnTouchFrame() = 0;
+
   // Called when the touch session has been canceled. Touch cancellation
   // applies to all touch points currently active.
   virtual void OnTouchCancel() = 0;

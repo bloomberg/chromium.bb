@@ -79,12 +79,6 @@ class TestTouchEvent : public ui::TouchEvent {
 
 const int kAllButtonMask = ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON;
 
-void ConvertToPenPointerEvent(ui::TouchEvent* event) {
-  auto details = event->pointer_details();
-  details.pointer_type = ui::EventPointerType::POINTER_TYPE_PEN;
-  event->set_pointer_details(details);
-}
-
 }  // namespace
 
 EventGeneratorDelegate* EventGenerator::default_delegate = NULL;
@@ -267,11 +261,17 @@ void EventGenerator::MoveMouseToCenterOf(EventTarget* window) {
 }
 
 void EventGenerator::EnterPenPointerMode() {
-  pen_pointer_mode_ = true;
+  touch_pointer_details_.pointer_type = ui::EventPointerType::POINTER_TYPE_PEN;
 }
 
 void EventGenerator::ExitPenPointerMode() {
-  pen_pointer_mode_ = false;
+  touch_pointer_details_.pointer_type =
+      ui::EventPointerType::POINTER_TYPE_TOUCH;
+}
+
+void EventGenerator::SetTouchRadius(float x, float y) {
+  touch_pointer_details_.radius_x = x;
+  touch_pointer_details_.radius_y = y;
 }
 
 void EventGenerator::PressTouch() {
@@ -585,6 +585,9 @@ void EventGenerator::Init(gfx::NativeWindow root_window,
   if (window_context)
     current_location_ = delegate()->CenterOfWindow(window_context);
   current_target_ = delegate()->GetTargetAt(current_location_);
+  touch_pointer_details_ =
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1.0, 1.0,
+                     std::numeric_limits<float>::quiet_NaN(), 0.0, 0.0);
 }
 
 void EventGenerator::DispatchKeyEvent(bool is_press,
@@ -660,8 +663,10 @@ gfx::Point EventGenerator::CenterOfWindow(const EventTarget* window) const {
 }
 
 void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
-  if (pen_pointer_mode_ && event->IsTouchEvent())
-    ConvertToPenPointerEvent(static_cast<ui::TouchEvent*>(event));
+  if (event->IsTouchEvent()) {
+    static_cast<ui::TouchEvent*>(event)->set_pointer_details(
+        touch_pointer_details_);
+  }
 
   if (async) {
     std::unique_ptr<ui::Event> pending_event = ui::Event::Clone(*event);
