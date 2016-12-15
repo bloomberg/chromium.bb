@@ -254,7 +254,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     private boolean mScreenshotCaptureSkippedForTesting;
 
     /**
-     * @param The {@link AppMenuHandlerFactory} for creating {@link mAppMenuHandler}
+     * @param factory The {@link AppMenuHandlerFactory} for creating {@link mAppMenuHandler}
      */
     @VisibleForTesting
     public static void setAppMenuHandlerFactoryForTesting(AppMenuHandlerFactory factory) {
@@ -828,12 +828,12 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             }
         });
 
+        final String simpleName = getClass().getSimpleName();
         DeferredStartupHandler.getInstance().addDeferredTask(new Runnable() {
             @Override
             public void run() {
                 if (isActivityDestroyed()) return;
                 if (mToolbarManager != null) {
-                    String simpleName = getClass().getSimpleName();
                     RecordHistogram.recordTimesHistogram(
                             "MobileStartup.ToolbarInflationTime." + simpleName,
                             mInflateInitialLayoutDurationMs, TimeUnit.MILLISECONDS);
