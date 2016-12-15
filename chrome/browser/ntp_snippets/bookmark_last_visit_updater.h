@@ -32,7 +32,7 @@ class BookmarkLastVisitUpdater
  public:
   ~BookmarkLastVisitUpdater() override;
 
-  static void CreateForWebContentsWithBookmarkModel(
+  static void MaybeCreateForWebContentsWithBookmarkModel(
       content::WebContents* web_contents,
       bookmarks::BookmarkModel* bookmark_model);
 

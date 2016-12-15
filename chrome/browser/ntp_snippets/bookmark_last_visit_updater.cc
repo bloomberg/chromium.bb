@@ -8,6 +8,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/ntp_snippets/bookmarks/bookmark_last_visit_utils.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 
 namespace {
@@ -25,17 +26,19 @@ bool IsMobilePlatform() {
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(BookmarkLastVisitUpdater);
 
 BookmarkLastVisitUpdater::~BookmarkLastVisitUpdater() {
-  // In unit-tests on desktop, the bookmark_model is null.
-  if (!bookmark_model_) {
-    return;
-  }
   bookmark_model_->RemoveObserver(this);
 }
 
 // static
-void BookmarkLastVisitUpdater::CreateForWebContentsWithBookmarkModel(
+void BookmarkLastVisitUpdater::MaybeCreateForWebContentsWithBookmarkModel(
     content::WebContents* web_contents,
     bookmarks::BookmarkModel* bookmark_model) {
+  // Do not create the helper for missing |bookmark_model| (in some unit-tests)
+  // or for incognito profiles where tracking bookmark visits is not desired.
+  content::BrowserContext* browser_context = web_contents->GetBrowserContext();
+  if (!bookmark_model || browser_context->IsOffTheRecord()) {
+    return;
+  }
   web_contents->SetUserData(UserDataKey(), new BookmarkLastVisitUpdater(
                                                web_contents, bookmark_model));
 }
@@ -46,11 +49,8 @@ BookmarkLastVisitUpdater::BookmarkLastVisitUpdater(
     : content::WebContentsObserver(web_contents),
       bookmark_model_(bookmark_model),
       web_contents_(web_contents) {
-  // In unit-tests on desktop, the bookmark_model is null.
-  if (!bookmark_model_) {
-    return;
-  }
-  bookmark_model->AddObserver(this);
+  DCHECK(bookmark_model_);
+  bookmark_model_->AddObserver(this);
 }
 
 void BookmarkLastVisitUpdater::DidStartNavigation(
@@ -68,9 +68,7 @@ void BookmarkLastVisitUpdater::DidRedirectNavigation(
 
 void BookmarkLastVisitUpdater::NewURLVisited(
     content::NavigationHandle* navigation_handle) {
-  // In unit-tests on desktop, the bookmark_model is null.
-  if (!navigation_handle->IsInMainFrame() || navigation_handle->IsErrorPage() ||
-      !bookmark_model_) {
+  if (!navigation_handle->IsInMainFrame() || navigation_handle->IsErrorPage()) {
     return;
   }
 
