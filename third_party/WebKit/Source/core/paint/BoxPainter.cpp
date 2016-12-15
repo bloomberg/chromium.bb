@@ -1084,7 +1084,7 @@ bool BoxPainter::shouldForceWhiteBackgroundForPrintEconomy(
     const ComputedStyle& style,
     const Document& document) {
   return document.printing() &&
-         style.getPrintColorAdjust() == PrintColorAdjust::Economy &&
+         style.printColorAdjust() == EPrintColorAdjust::Economy &&
          (!document.settings() ||
           !document.settings()->shouldPrintBackgrounds());
 }

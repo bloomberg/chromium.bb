@@ -946,8 +946,7 @@ bool ComputedStyle::diffNeedsPaintInvalidationSubtree(
 bool ComputedStyle::diffNeedsPaintInvalidationObject(
     const ComputedStyle& other) const {
   if (visibility() != other.visibility() ||
-      m_inheritedData.m_printColorAdjust !=
-          other.m_inheritedData.m_printColorAdjust ||
+      printColorAdjust() != other.printColorAdjust() ||
       m_inheritedData.m_insideLink != other.m_inheritedData.m_insideLink ||
       !m_surround->border.visuallyEqual(other.m_surround->border) ||
       *m_background != *other.m_background)

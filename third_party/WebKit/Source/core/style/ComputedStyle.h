@@ -204,7 +204,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
              (m_cursorStyle == other.m_cursorStyle) &&
              (m_direction == other.m_direction) &&
              (m_rtlOrdering == other.m_rtlOrdering) &&
-             (m_printColorAdjust == other.m_printColorAdjust) &&
              (m_insideLink == other.m_insideLink) &&
              (m_writingMode == other.m_writingMode);
     }
@@ -223,7 +222,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
     // non CSS2 inherited
     unsigned m_rtlOrdering : 1;       // EOrder
-    unsigned m_printColorAdjust : 1;  // PrintColorAdjust
     unsigned m_insideLink : 2;     // EInsideLink
 
     // CSS Text Layout Module Level 3: Vertical writing support
@@ -324,8 +322,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
     m_inheritedData.m_direction = initialDirection();
     m_inheritedData.m_rtlOrdering = static_cast<unsigned>(initialRTLOrdering());
-    m_inheritedData.m_printColorAdjust =
-        static_cast<unsigned>(initialPrintColorAdjust());
     m_inheritedData.m_insideLink = NotInsideLink;
     m_inheritedData.m_writingMode = initialWritingMode();
 
@@ -2297,17 +2293,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void setLineClamp(LineClampValue c) {
     SET_VAR(m_rareNonInheritedData, lineClamp, c);
-  }
-
-  // -webkit-print-color-adjust
-  static PrintColorAdjust initialPrintColorAdjust() {
-    return PrintColorAdjust::Economy;
-  }
-  PrintColorAdjust getPrintColorAdjust() const {
-    return static_cast<PrintColorAdjust>(m_inheritedData.m_printColorAdjust);
-  }
-  void setPrintColorAdjust(PrintColorAdjust value) {
-    m_inheritedData.m_printColorAdjust = static_cast<unsigned>(value);
   }
 
   // -webkit-rtl-ordering

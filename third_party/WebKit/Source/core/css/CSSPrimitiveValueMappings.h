@@ -195,31 +195,31 @@ inline ColumnSpan CSSIdentifierValue::convertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(PrintColorAdjust value)
+inline CSSIdentifierValue::CSSIdentifierValue(EPrintColorAdjust value)
     : CSSValue(IdentifierClass) {
   switch (value) {
-    case PrintColorAdjust::Exact:
+    case EPrintColorAdjust::Exact:
       m_valueID = CSSValueExact;
       break;
-    case PrintColorAdjust::Economy:
+    case EPrintColorAdjust::Economy:
       m_valueID = CSSValueEconomy;
       break;
   }
 }
 
 template <>
-inline PrintColorAdjust CSSIdentifierValue::convertTo() const {
+inline EPrintColorAdjust CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueEconomy:
-      return PrintColorAdjust::Economy;
+      return EPrintColorAdjust::Economy;
     case CSSValueExact:
-      return PrintColorAdjust::Exact;
+      return EPrintColorAdjust::Exact;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return PrintColorAdjust::Economy;
+  return EPrintColorAdjust::Economy;
 }
 
 template <>

@@ -2220,7 +2220,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
               ? style.visitedDependentColor(CSSPropertyColor).rgb()
               : style.color().rgb());
     case CSSPropertyWebkitPrintColorAdjust:
-      return CSSIdentifierValue::create(style.getPrintColorAdjust());
+      return CSSIdentifierValue::create(style.printColorAdjust());
     case CSSPropertyColumnCount:
       if (style.hasAutoColumnCount())
         return CSSIdentifierValue::create(CSSValueAuto);
