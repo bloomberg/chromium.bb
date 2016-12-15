@@ -98,6 +98,7 @@ class TabListSceneLayer : public SceneLayer {
       jint toolbar_background_color,
       jint close_button_color,
       jboolean anonymize_toolbar,
+      jboolean show_tab_title,
       jint toolbar_textbox_resource_id,
       jint toolbar_textbox_background_color,
       jfloat toolbar_textbox_alpha,

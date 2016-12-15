@@ -134,6 +134,7 @@ void TabListSceneLayer::PutTabLayer(
     jint toolbar_background_color,
     jint close_button_color,
     jboolean anonymize_toolbar,
+    jboolean show_tab_title,
     jint toolbar_textbox_resource_id,
     jint toolbar_textbox_background_color,
     jfloat toolbar_textbox_alpha,
@@ -172,9 +173,10 @@ void TabListSceneLayer::PutTabLayer(
         brightness, close_btn_width, static_to_view_blend, content_width,
         content_height, content_width, visible_content_height, show_toolbar,
         default_theme_color, toolbar_background_color,
-        close_button_color, anonymize_toolbar, toolbar_textbox_resource_id,
-        toolbar_textbox_background_color, toolbar_textbox_alpha, toolbar_alpha,
-        toolbar_y_offset, side_border_scale, inset_border);
+        close_button_color, anonymize_toolbar, show_tab_title,
+        toolbar_textbox_resource_id, toolbar_textbox_background_color,
+        toolbar_textbox_alpha, toolbar_alpha, toolbar_y_offset,
+        side_border_scale, inset_border);
   }
 
   gfx::RectF self(own_tree_->position(), gfx::SizeF(own_tree_->bounds()));

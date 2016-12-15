@@ -97,9 +97,10 @@ public class TabListSceneLayer extends SceneLayer {
                     LayoutTab.CLOSE_BUTTON_WIDTH_DP * dpToPx, t.getStaticToViewBlend(),
                     t.getBorderScale(), t.getSaturation(), t.getBrightness(), t.showToolbar(),
                     defaultThemeColor, t.getToolbarBackgroundColor(), closeButtonColor,
-                    t.anonymizeToolbar(), R.drawable.textbox, t.getTextBoxBackgroundColor(),
-                    t.getTextBoxAlpha(), t.getToolbarAlpha(), t.getToolbarYOffset() * dpToPx,
-                    t.getSideBorderScale(), t.insetBorderVertical());
+                    t.anonymizeToolbar(), t.isTitleNeeded(), R.drawable.textbox,
+                    t.getTextBoxBackgroundColor(), t.getTextBoxAlpha(), t.getToolbarAlpha(),
+                    t.getToolbarYOffset() * dpToPx, t.getSideBorderScale(),
+                    t.insetBorderVertical());
         }
         nativeFinishBuildingFrame(mNativePtr);
     }
@@ -149,7 +150,7 @@ public class TabListSceneLayer extends SceneLayer {
             float closeBtnWidth, float staticToViewBlend, float borderScale, float saturation,
             float brightness, boolean showToolbar, int defaultThemeColor,
             int toolbarBackgroundColor, int closeButtonColor, boolean anonymizeToolbar,
-            int toolbarTextBoxResource, int toolbarTextBoxBackgroundColor,
+            boolean showTabTitle, int toolbarTextBoxResource, int toolbarTextBoxBackgroundColor,
             float toolbarTextBoxAlpha, float toolbarAlpha, float toolbarYOffset,
             float sideBorderScale, boolean insetVerticalBorder);
 }
