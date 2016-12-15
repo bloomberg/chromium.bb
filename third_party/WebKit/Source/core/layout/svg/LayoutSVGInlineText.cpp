@@ -367,38 +367,40 @@ void LayoutSVGInlineText::updateMetricsList(bool& lastCharacterWasWhiteSpace) {
 }
 
 void LayoutSVGInlineText::updateScaledFont() {
-  computeNewScaledFontForStyle(this, m_scalingFactor, m_scaledFont);
+  computeNewScaledFontForStyle(*this, m_scalingFactor, m_scaledFont);
 }
 
 void LayoutSVGInlineText::computeNewScaledFontForStyle(
-    LayoutObject* layoutObject,
+    const LayoutObject& layoutObject,
     float& scalingFactor,
     Font& scaledFont) {
-  const ComputedStyle* style = layoutObject->style();
-  ASSERT(style);
-  ASSERT(layoutObject);
+  const ComputedStyle& style = layoutObject.styleRef();
 
   // Alter font-size to the right on-screen value to avoid scaling the glyphs
   // themselves, except when GeometricPrecision is specified.
   scalingFactor =
-      SVGLayoutSupport::calculateScreenFontSizeScalingFactor(layoutObject);
-  if (style->effectiveZoom() == 1 && (scalingFactor == 1 || !scalingFactor)) {
+      SVGLayoutSupport::calculateScreenFontSizeScalingFactor(&layoutObject);
+  if (!scalingFactor) {
     scalingFactor = 1;
-    scaledFont = style->font();
+    scaledFont = style.font();
     return;
   }
 
-  if (style->getFontDescription().textRendering() == GeometricPrecision)
+  const FontDescription& unscaledFontDescription = style.getFontDescription();
+  if (unscaledFontDescription.textRendering() == GeometricPrecision)
     scalingFactor = 1;
 
-  FontDescription fontDescription(style->getFontDescription());
+  Document& document = layoutObject.document();
+  float scaledFontSize = FontSize::getComputedSizeFromSpecifiedSize(
+      &document, scalingFactor, unscaledFontDescription.isAbsoluteSize(),
+      unscaledFontDescription.specifiedSize(), DoNotApplyMinimumForFontSize);
+  if (scaledFontSize == unscaledFontDescription.computedSize()) {
+    scaledFont = style.font();
+    return;
+  }
 
-  Document& document = layoutObject->document();
-  // FIXME: We need to better handle the case when we compute very small fonts
-  // below (below 1pt).
-  fontDescription.setComputedSize(FontSize::getComputedSizeFromSpecifiedSize(
-      &document, scalingFactor, fontDescription.isAbsoluteSize(),
-      fontDescription.specifiedSize(), DoNotUseSmartMinimumForFontSize));
+  FontDescription fontDescription = unscaledFontDescription;
+  fontDescription.setComputedSize(scaledFontSize);
 
   scaledFont = Font(fontDescription);
   scaledFont.update(document.styleEngine().fontSelector());

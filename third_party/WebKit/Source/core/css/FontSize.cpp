@@ -41,7 +41,7 @@ float FontSize::getComputedSizeFromSpecifiedSize(
     float zoomFactor,
     bool isAbsoluteSize,
     float specifiedSize,
-    ESmartMinimumForFontSize useSmartMinimumForFontSize) {
+    ApplyMinimumFontSize applyMinimumFontSize) {
   // Text with a 0px font size should not be visible and therefore needs to be
   // exempt from minimum font size rules. Acid3 relies on this for pixel-perfect
   // rendering. This is also compatible with other browsers that have minimum
@@ -65,24 +65,25 @@ float FontSize::getComputedSizeFromSpecifiedSize(
   if (!settings)
     return 1.0f;
 
-  int minSize = settings->minimumFontSize();
-  int minLogicalSize = settings->minimumLogicalFontSize();
   float zoomedSize = specifiedSize * zoomFactor;
+  if (applyMinimumFontSize) {
+    int minSize = settings->minimumFontSize();
+    int minLogicalSize = settings->minimumLogicalFontSize();
 
-  // Apply the hard minimum first. We only apply the hard minimum if after
-  // zooming we're still too small.
-  if (zoomedSize < minSize)
-    zoomedSize = minSize;
+    // Apply the hard minimum first. We only apply the hard minimum if after
+    // zooming we're still too small.
+    if (zoomedSize < minSize)
+      zoomedSize = minSize;
 
-  // Now apply the "smart minimum." This minimum is also only applied if we're
-  // still too small after zooming. The font size must either be relative to the
-  // user default or the original size must have been acceptable. In other
-  // words, we only apply the smart minimum whenever we're positive doing so
-  // won't disrupt the layout.
-  if (useSmartMinimumForFontSize && zoomedSize < minLogicalSize &&
-      (specifiedSize >= minLogicalSize || !isAbsoluteSize))
-    zoomedSize = minLogicalSize;
-
+    // Now apply the "smart minimum." This minimum is also only applied if we're
+    // still too small after zooming. The font size must either be relative to
+    // the user default or the original size must have been acceptable. In other
+    // words, we only apply the smart minimum whenever we're positive doing so
+    // won't disrupt the layout.
+    if (zoomedSize < minLogicalSize &&
+        (specifiedSize >= minLogicalSize || !isAbsoluteSize))
+      zoomedSize = minLogicalSize;
+  }
   // Also clamp to a reasonable maximum to prevent insane font sizes from
   // causing crashes on various platforms (I'm looking at you, Windows.)
   return std::min(maximumAllowedFontSize, zoomedSize);

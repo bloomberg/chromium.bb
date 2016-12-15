@@ -30,9 +30,9 @@ namespace blink {
 
 class Document;
 
-enum ESmartMinimumForFontSize {
-  DoNotUseSmartMinimumForFontSize,
-  UseSmartMinimumForFontSize
+enum ApplyMinimumFontSize {
+  DoNotApplyMinimumForFontSize,
+  ApplyMinimumForFontSize
 };
 
 class FontSize {
@@ -44,7 +44,7 @@ class FontSize {
       float zoomFactor,
       bool isAbsoluteSize,
       float specifiedSize,
-      ESmartMinimumForFontSize = UseSmartMinimumForFontSize);
+      ApplyMinimumFontSize = ApplyMinimumForFontSize);
 
   // Given a CSS keyword in the range (xx-small to -webkit-xxx-large), this
   // function returns

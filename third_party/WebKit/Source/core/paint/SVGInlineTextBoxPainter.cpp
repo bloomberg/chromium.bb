@@ -322,7 +322,7 @@ void SVGInlineTextBoxPainter::paintDecoration(const PaintInfo& paintInfo,
 
   float scalingFactor = 1;
   Font scaledFont;
-  LayoutSVGInlineText::computeNewScaledFontForStyle(decorationLayoutObject,
+  LayoutSVGInlineText::computeNewScaledFontForStyle(*decorationLayoutObject,
                                                     scalingFactor, scaledFont);
   DCHECK(scalingFactor);
 

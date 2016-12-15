@@ -45,7 +45,7 @@ class LayoutSVGInlineText final : public LayoutText {
   const Font& scaledFont() const { return m_scaledFont; }
   void updateScaledFont();
   void updateMetricsList(bool& lastCharacterWasWhiteSpace);
-  static void computeNewScaledFontForStyle(LayoutObject*,
+  static void computeNewScaledFontForStyle(const LayoutObject&,
                                            float& scalingFactor,
                                            Font& scaledFont);
 
