@@ -761,6 +761,8 @@ crbug.com/248938 [ Linux ] virtual/threaded/transitions/unprefixed-perspective-o
 crbug.com/248938 [ Mac ] virtual/threaded/transitions/interrupted-all-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/fill-mode-multiple-keyframes.html [ Pass Failure ]
 
+crbug.com/674715 [  Win7 Debug ] animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
+
 crbug.com/659123 [ Mac ] fast/css/text-overflow-ellipsis-button.html [ Pass Failure ]
 
 # TODO(oshima): Mac Android are currently not supported.
