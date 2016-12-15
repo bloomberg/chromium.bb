@@ -484,10 +484,13 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   }
 
   RenderViewHost* rvh = RenderViewHost::From(render_widget_host_);
+  bool needs_begin_frames = true;
+
   if (rvh) {
     // TODO(mostynb): actually use prefs.  Landing this as a separate CL
     // first to rebaseline some unreliable layout tests.
     ignore_result(rvh->GetWebkitPreferences());
+    needs_begin_frames = !rvh->GetDelegate()->IsNeverVisible();
   }
 
   if (GetTextInputManager())
@@ -497,10 +500,12 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   // in RenderMessageFilter::OnMessageReceived), SetNeedsBeginFrame
   // messages are not delayed on Mac.  This leads to creation-time
   // raciness where renderer sends a SetNeedsBeginFrame(true) before
-  // the renderer host is created to recieve it.  In general, all
-  // renderers want begin frames initially anyway, so start this value
-  // at true here to avoid startup raciness and decrease latency.
-  needs_begin_frames_ = true;
+  // the renderer host is created to recieve it.
+  //
+  // Any renderer that will produce frames needs to have begin frames sent to
+  // it. So unless it is never visible, start this value at true here to avoid
+  // startup raciness and decrease latency.
+  needs_begin_frames_ = needs_begin_frames;
   UpdateNeedsBeginFramesInternal();
 }
 
