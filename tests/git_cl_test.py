@@ -1364,7 +1364,7 @@ class TestGitCl(TestCase):
   def _gerrit_upload_calls(cls, description, reviewers, squash,
                            squash_mode='default',
                            expected_upstream_ref='origin/refs/heads/master',
-                           ref_suffix='', notify=False,
+                           ref_suffix='', title=None, notify=False,
                            post_amend_description=None, issue=None, cc=None):
     if post_amend_description is None:
       post_amend_description = description
@@ -1435,6 +1435,22 @@ class TestGitCl(TestCase):
             expected_upstream_ref + '..' + ref_to_push],), ''),
         ]
 
+
+    if not title:
+      if issue:
+        calls += [
+            ((['git', 'show', '-s', '--format=%s', 'HEAD'],), ''),
+            (('Title for patchset []: ',), 'User input'),
+        ]
+        title = 'User_input'
+      else:
+        title = 'Initial_upload'
+    if title:
+      if ref_suffix:
+        ref_suffix += ',m=' + title
+      else:
+        ref_suffix = '%m=' + title
+
     notify_suffix = 'notify=%s' % ('ALL' if notify else 'NONE')
     if ref_suffix:
       ref_suffix += ',' + notify_suffix
@@ -1488,6 +1504,7 @@ class TestGitCl(TestCase):
       squash_mode=None,
       expected_upstream_ref='origin/refs/heads/master',
       ref_suffix='',
+      title=None,
       notify=False,
       post_amend_description=None,
       issue=None,
@@ -1520,7 +1537,7 @@ class TestGitCl(TestCase):
         description, reviewers, squash,
         squash_mode=squash_mode,
         expected_upstream_ref=expected_upstream_ref,
-        ref_suffix=ref_suffix, notify=notify,
+        ref_suffix=ref_suffix, title=title, notify=notify,
         post_amend_description=post_amend_description,
         issue=issue, cc=cc)
     # Uncomment when debugging.
@@ -1560,7 +1577,7 @@ class TestGitCl(TestCase):
         'desc\n\nBUG=\n\nChange-Id: I123456789',
         squash=False,
         squash_mode='override_nosquash',
-        ref_suffix='%m=Dont_put_bad_chars')
+        title='Dont_put_bad_chars')
     self.assertIn(
         'WARNING: Patchset title may only contain alphanumeric chars '
         'and spaces. Cleaned up title:\nDont put bad chars\n',
