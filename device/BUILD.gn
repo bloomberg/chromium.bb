@@ -145,6 +145,7 @@ test("device_unittests") {
       "test/test_device_client.cc",
       "test/test_device_client.h",
       "test/usb_test_gadget_impl.cc",
+      "u2f/u2f_message_unittest.cc",
       "usb/mojo/device_impl_unittest.cc",
       "usb/mojo/device_manager_impl_unittest.cc",
       "usb/mojo/mock_permission_provider.cc",
@@ -159,6 +160,7 @@ test("device_unittests") {
     deps += [
       "//device/base",
       "//device/base:mocks",
+      "//device/u2f",
       "//device/usb",
       "//device/usb:test_support",
       "//device/usb/mojo",
