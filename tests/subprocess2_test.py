@@ -13,7 +13,7 @@ import time
 import unittest
 
 try:
-  import fcntl  # pylint: disable=F0401
+  import fcntl  # pylint: disable=import-error
 except ImportError:
   fcntl = None
 
@@ -25,7 +25,7 @@ import subprocess2
 from testing_support import auto_stub
 
 # Method could be a function
-# pylint: disable=R0201
+# pylint: disable=no-self-use
 
 
 # Create aliases for subprocess2 specific tests. They shouldn't be used for
@@ -77,7 +77,7 @@ class DefaultsTest(auto_stub.TestCase):
         results.update(kwargs)
         results['args'] = args
       @staticmethod
-      # pylint: disable=W0622
+      # pylint: disable=redefined-builtin
       def communicate(input=None, timeout=None, nag_max=None, nag_timer=None):
         return None, None
     self.mock(subprocess2, 'Popen', fake_Popen)
@@ -132,7 +132,7 @@ class DefaultsTest(auto_stub.TestCase):
     results = self._fake_subprocess_Popen()
     proc = subprocess2.Popen(['foo'], a=True)
     # Cleanup code in subprocess.py needs this member to be set.
-    # pylint: disable=W0201
+    # pylint: disable=attribute-defined-outside-init
     proc._child_created = None
     expected = {
         'args': ['foo'],
@@ -236,11 +236,11 @@ class RegressionTest(BaseTestCase):
       self.fail()
     except ValueError:
       pass
-    
+
     if (sys.version_info[0] * 10 + sys.version_info[1]) >= 27:
       # python 2.7+
       try:
-        # pylint: disable=E1101
+        # pylint: disable=no-member
         subprocess.check_output(self.exe, stdout=subprocess.PIPE)
         self.fail()
       except ValueError:
@@ -617,11 +617,11 @@ class S2Test(BaseTestCase):
                 'No output for 9 seconds from command:', proc.cmd_str]
     self.assertEquals(w, expected)
 
-    
+
 def child_main(args):
   if sys.platform == 'win32':
     # Annoying, make sure the output is not translated on Windows.
-    # pylint: disable=E1101,F0401
+    # pylint: disable=no-member,import-error
     import msvcrt
     msvcrt.setmode(sys.stdout.fileno(), os.O_BINARY)
     msvcrt.setmode(sys.stderr.fileno(), os.O_BINARY)

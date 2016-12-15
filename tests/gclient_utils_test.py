@@ -29,7 +29,7 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
     def __init__(self, test_string):
       self.stdout = StringIO.StringIO(test_string)
       self.pid = 9284
-    # pylint: disable=R0201
+    # pylint: disable=no-self-use
     def wait(self):
       return 0
 
@@ -39,7 +39,7 @@ class CheckCallAndFilterTestCase(GclientUtilBase):
         '\n________ running \'boo foo bar\' in \'bleh\'\n')
     for i in test_string:
       gclient_utils.sys.stdout.write(i)
-    # pylint: disable=E1101
+    # pylint: disable=no-member
     subprocess2.Popen(
         args,
         cwd=cwd,

@@ -69,7 +69,7 @@ class TestCaseUtils(object):
       diff = ([i for i in actual_members if i not in expected_members] +
               [i for i in expected_members if i not in actual_members])
       print >> sys.stderr, diff
-    # pylint: disable=E1101
+    # pylint: disable=no-member
     self.assertEqual(actual_members, expected_members)
 
   def setUp(self):
@@ -92,7 +92,7 @@ class StdoutCheck(object):
   def tearDown(self):
     try:
       # If sys.stdout was used, self.checkstdout() must be called.
-      # pylint: disable=E1101
+      # pylint: disable=no-member
       if not sys.stdout.closed:
         self.assertEquals('', sys.stdout.getvalue())
     except AttributeError:
@@ -102,7 +102,7 @@ class StdoutCheck(object):
   def checkstdout(self, expected):
     value = sys.stdout.getvalue()
     sys.stdout.close()
-    # pylint: disable=E1101
+    # pylint: disable=no-member
     self.assertEquals(expected, value)
 
 

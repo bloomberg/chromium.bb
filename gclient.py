@@ -746,7 +746,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     return bad_deps
 
   # Arguments number differs from overridden method
-  # pylint: disable=W0221
+  # pylint: disable=arguments-differ
   def run(self, revision_overrides, command, args, work_queue, options):
     """Runs |command| then parse the DEPS file."""
     logging.info('Dependency(%s).run()' % self.name)

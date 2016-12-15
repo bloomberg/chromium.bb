@@ -45,7 +45,7 @@ class SCMMock(object):
   def FullUrlForRelativeUrl(self, url):
     return self.url + url
 
-  # pylint: disable=R0201
+  # pylint: disable=no-self-use
   def DoesRemoteURLMatch(self, _):
     return True
 
@@ -247,7 +247,7 @@ class GclientTest(trial_dir.TestCase):
       ],
       [])
     # Make sure __str__() works fine.
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     obj.dependencies[0]._file_list.append('foo')
     str_obj = str(obj)
     self.assertEquals(370, len(str_obj), '%d\n%s' % (len(str_obj), str_obj))

@@ -116,7 +116,7 @@ class UploadTests(unittest.TestCase):
     work_queue.put((None, None))
     self.gsutil.add_expected(1, '', '')  # For the first ls call.
     self.gsutil.add_expected(20, '', 'Expected error message')
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     upload_to_google_storage._upload_worker(
         0,
         work_queue,

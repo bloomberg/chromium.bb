@@ -42,14 +42,10 @@ def strip_timestamps(value):
       lines[i] = m.group(1)
   return ''.join(lines)
 
-# Access to a protected member XXX of a client class
-# pylint: disable=W0212
-
 
 class GCBaseTestCase(object):
   def assertRaisesError(self, msg, fn, *args, **kwargs):
     """Like unittest's assertRaises() but checks for Gclient.Error."""
-    # pylint: disable=E1101
     try:
       fn(*args, **kwargs)
     except gclient_scm.gclient_utils.Error, e:
@@ -192,7 +188,7 @@ from :3
   def checkstdout(self, expected):
     value = sys.stdout.getvalue()
     sys.stdout.close()
-    # pylint: disable=E1101
+    # pylint: disable=no-member
     self.assertEquals(expected, strip_timestamps(value))
 
   @staticmethod
@@ -572,7 +568,7 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
   def checkstdout(self, expected):
     value = sys.stdout.getvalue()
     sys.stdout.close()
-    # pylint: disable=E1101
+    # pylint: disable=no-member
     self.assertEquals(expected, strip_timestamps(value))
 
   def setUp(self):
@@ -590,7 +586,7 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     BaseTestCase.tearDown(self)
 
   def testGetUsableRevGit(self):
-    # pylint: disable=E1101
+    # pylint: disable=no-member
     options = self.Options(verbose=True)
 
     self.mox.StubOutWithMock(gclient_scm.scm.GIT, 'IsValidRevision', True)
@@ -631,7 +627,7 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     gclient_scm.os.path.exists(os.path.join(self.base_path, '.git')
                                ).AndReturn(False)
     self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_Clone', True)
-    # pylint: disable=E1120
+    # pylint: disable=no-value-for-parameter
     gclient_scm.GitWrapper._Clone('refs/remotes/origin/master', self.url,
                                   options)
     self.mox.StubOutWithMock(gclient_scm.subprocess2, 'check_output', True)
@@ -662,7 +658,7 @@ class ManagedGitWrapperTestCaseMox(BaseTestCase):
     gclient_scm.os.path.exists(os.path.join(self.base_path, '.git')
                                ).AndReturn(False)
     self.mox.StubOutWithMock(gclient_scm.GitWrapper, '_Clone', True)
-    # pylint: disable=E1120
+    # pylint: disable=no-value-for-parameter
     gclient_scm.GitWrapper._Clone(
         'refs/remotes/origin/master', self.url, options
     ).AndRaise(gclient_scm.subprocess2.CalledProcessError(None, None, None,
@@ -693,13 +689,13 @@ class UnmanagedGitWrapperTestCase(BaseGitWrapperTestCase):
   def checkInStdout(self, expected):
     value = sys.stdout.getvalue()
     sys.stdout.close()
-    # pylint: disable=E1101
+    # pylint: disable=no-member
     self.assertIn(expected, value)
 
   def checkNotInStdout(self, expected):
     value = sys.stdout.getvalue()
     sys.stdout.close()
-    # pylint: disable=E1101
+    # pylint: disable=no-member
     self.assertNotIn(expected, value)
 
   def getCurrentBranch(self):

@@ -276,7 +276,7 @@ def gen_usage(parser, command):
 
 def main(args=None):
   # Do it late so all commands are listed.
-  # pylint: disable=E1101
+  # pylint: disable=no-member
   parser = OptionParser(version=__version__)
   if args is None:
     args = sys.argv[1:]

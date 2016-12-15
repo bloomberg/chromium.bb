@@ -282,7 +282,7 @@ class InputApi(object):
   know stuff about the change they're looking at.
   """
   # Method could be a function
-  # pylint: disable=R0201
+  # pylint: disable=no-self-use
 
   # File extensions that are considered source files from a style guide
   # perspective. Don't modify this list from a presubmit script!
@@ -401,7 +401,7 @@ class InputApi(object):
     # Replace <hash_map> and <hash_set> as headers that need to be included
     # with "base/containers/hash_tables.h" instead.
     # Access to a protected member _XX of a client class
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     self.cpplint._re_pattern_templates = [
       (a, b, 'base/containers/hash_tables.h')
         if header in ('<hash_map>', '<hash_set>') else (a, b, header)
@@ -606,7 +606,7 @@ class AffectedFile(object):
   DIFF_CACHE = _DiffCache
 
   # Method could be a function
-  # pylint: disable=R0201
+  # pylint: disable=no-self-use
   def __init__(self, path, action, repository_root, diff_cache):
     self._path = path
     self._action = action
@@ -695,7 +695,7 @@ class AffectedFile(object):
 class GitAffectedFile(AffectedFile):
   """Representation of a file in a change out of a git checkout."""
   # Method 'NNN' is abstract in class 'NNN' but is not overridden
-  # pylint: disable=W0223
+  # pylint: disable=abstract-method
 
   DIFF_CACHE = _GitDiffCache
 

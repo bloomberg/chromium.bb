@@ -4,11 +4,11 @@
 
 import sys
 
-import config_util  # pylint: disable=F0401
+import config_util  # pylint: disable=import-error
 
 
 # This class doesn't need an __init__ method, so we disable the warning
-# pylint: disable=W0232
+# pylint: disable=no-init
 class WebRTCIOS(config_util.Config):
   """Basic Config alias for iOS -> WebRTC."""
 

@@ -115,7 +115,7 @@ class WatchlistsMock(object):
 class CodereviewSettingsFileMock(object):
   def __init__(self):
     pass
-  # pylint: disable=R0201
+  # pylint: disable=no-self-use
   def read(self):
     return ("CODE_REVIEW_SERVER: gerrit.chromium.org\n" +
             "GERRIT_HOST: True\n")
@@ -142,7 +142,7 @@ def CookiesAuthenticatorMockFactory(hosts_with_creds=None, same_cookie=False):
                   CookiesAuthenticatorMockFactory(cookie='cookie'))
   """
   class CookiesAuthenticatorMock(git_cl.gerrit_util.CookiesAuthenticator):
-    def __init__(self):  # pylint: disable=W0231
+    def __init__(self):  # pylint: disable=super-init-not-called
       # Intentionally not calling super() because it reads actual cookie files.
       pass
     @classmethod

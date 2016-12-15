@@ -29,7 +29,7 @@ GC_AUTOPACKLIMIT = 50
 GIT_CACHE_CORRUPT_MESSAGE = 'WARNING: The Git cache is corrupt.'
 
 try:
-  # pylint: disable=E0602
+  # pylint: disable=undefined-variable
   WinErr = WindowsError
 except NameError:
   class WinErr(Exception):

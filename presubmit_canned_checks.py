@@ -154,7 +154,7 @@ def CheckChangeLintsClean(input_api, output_api, source_file_filter=None,
 
   cpplint = input_api.cpplint
   # Access to a protected member _XX of a client class
-  # pylint: disable=W0212
+  # pylint: disable=protected-access
   cpplint._cpplint_state.ResetErrorCounts()
 
   lint_filters = lint_filters or DEFAULT_LINT_FILTERS

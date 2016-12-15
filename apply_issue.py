@@ -159,7 +159,7 @@ def main():
     properties = None
     # Bad except clauses order (HTTPError is an ancestor class of
     # ClientLoginError)
-    # pylint: disable=E0701
+    # pylint: disable=bad-except-order
     try:
       properties = rietveld_obj.get_issue_properties(options.issue, False)
     except urllib2.HTTPError as e:

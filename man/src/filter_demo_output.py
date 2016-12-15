@@ -20,8 +20,8 @@ if not os.path.exists('ansi2html'):
 # if it doesn't exist, run ./make_docs.sh first
 sys.path.insert(0, 'ansi2html')
 
-import ansi2html            # pylint: disable=F0401, W0611
-import ansi2html.converter  # pylint: disable=F0401, W0611
+import ansi2html            # pylint: disable=import-error, W0611
+import ansi2html.converter  # pylint: disable=import-error, W0611
 
 def simpleXML(string):
   BRIGHT = 1

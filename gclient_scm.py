@@ -1162,7 +1162,7 @@ class GitWrapper(SCMWrapper):
       self._Fetch(options, prune=options.force)
 
   def _Run(self, args, options, show_header=True, **kwargs):
-    # Disable 'unused options' warning | pylint: disable=W0613
+    # Disable 'unused options' warning | pylint: disable=unused-argument
     kwargs.setdefault('cwd', self.checkout_path)
     kwargs.setdefault('stdout', self.out_fh)
     kwargs['filter_fn'] = self.filter

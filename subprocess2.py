@@ -58,7 +58,7 @@ def kill_pid(pid):
   """Kills a process by its process id."""
   try:
     # Unable to import 'module'
-    # pylint: disable=E1101,F0401
+    # pylint: disable=no-member,F0401
     import signal
     return os.kill(pid, signal.SIGKILL)
   except ImportError:
@@ -72,10 +72,10 @@ def kill_win(process):
   """
   try:
     # Unable to import 'module'
-    # pylint: disable=F0401
+    # pylint: disable=import-error
     import win32process
     # Access to a protected member _handle of a client class
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     return win32process.TerminateProcess(process._handle, -1)
   except ImportError:
     pass
@@ -261,7 +261,7 @@ class Popen(subprocess.Popen):
                     'Check that %s or %s exist and have execution permission.'
                     % (str(e), kwargs.get('cwd'), args[0]))
 
-  def _tee_threads(self, input):  # pylint: disable=W0622
+  def _tee_threads(self, input):  # pylint: disable=redefined-builtin
     """Does I/O for a process's pipes using threads.
 
     It's the simplest and slowest implementation. Expect very slow behavior.
@@ -391,7 +391,7 @@ class Popen(subprocess.Popen):
       if timed_out:
         self.returncode = TIMED_OUT
 
-  # pylint: disable=W0221,W0622
+  # pylint: disable=arguments-differ,W0622
   def communicate(self, input=None, timeout=None, nag_timer=None,
                   nag_max=None):
     """Adds timeout and callbacks support.

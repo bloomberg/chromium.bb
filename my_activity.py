@@ -46,14 +46,14 @@ import auth
 from third_party import httplib2
 
 try:
-  from dateutil.relativedelta import relativedelta # pylint: disable=F0401
+  from dateutil.relativedelta import relativedelta # pylint: disable=import-error
 except ImportError:
   print 'python-dateutil package required'
   exit(1)
 
 # python-keyring provides easy access to the system keyring.
 try:
-  import keyring  # pylint: disable=W0611,F0401
+  import keyring  # pylint: disable=unused-import,F0401
 except ImportError:
   print 'Consider installing python-keyring'
 
@@ -665,7 +665,7 @@ def main():
 
   # Remove description formatting
   parser.format_description = (
-      lambda _: parser.description)  # pylint: disable=E1101
+      lambda _: parser.description)  # pylint: disable=no-member
 
   options, args = parser.parse_args()
   options.local_user = os.environ.get('USER')

@@ -414,7 +414,7 @@ class ReadOnlyCheckout(object):
     return self.checkout.apply_patch(
         patches, post_processors or self.post_processors, verbose)
 
-  def commit(self, message, user):  # pylint: disable=R0201
+  def commit(self, message, user):  # pylint: disable=no-self-use
     logging.info('Would have committed for %s with message: %s' % (
         user, message))
     return 'FAKE'

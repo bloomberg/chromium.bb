@@ -5,7 +5,7 @@
 
 """Unit tests for watchlists.py."""
 
-# pylint: disable=E1103,E1120,W0212
+# pylint: disable=E1103,no-value-for-parameter,protected-access
 
 import os
 import sys

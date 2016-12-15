@@ -52,7 +52,7 @@ def cherry_pick(target_branch, commit, auth_config):
   ])
 
   rietveld = Rietveld(config('rietveld.server'), auth_config, author)
-  # pylint: disable=W0212
+  # pylint: disable=protected-access
   output = rietveld._send(
     '/upload',
     payload=payload,
@@ -92,7 +92,7 @@ def cherry_pick(target_branch, commit, auth_config):
         ('data', filename, content),
       ])
 
-      # pylint: disable=W0212
+      # pylint: disable=protected-access
       print '  Uploading base file for %s:' % filename, rietveld._send(
         '/%s/upload_content/%s/%s' % (issue, patchset, file_id),
         payload=payload,
@@ -115,14 +115,14 @@ def cherry_pick(target_branch, commit, auth_config):
         ('data', filename, content),
       ])
 
-      # pylint: disable=W0212
+      # pylint: disable=protected-access
       print '  Uploading %s:' % filename, rietveld._send(
         '/%s/upload_content/%s/%s' % (issue, patchset, file_id),
         payload=payload,
         content_type=content_type,
       )
 
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     print 'Finalizing upload:', rietveld._send('/%s/upload_complete/1' % issue)
 
 

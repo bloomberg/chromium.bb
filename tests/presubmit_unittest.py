@@ -5,7 +5,7 @@
 
 """Unit tests for presubmit_support.py and presubmit_canned_checks.py."""
 
-# pylint: disable=E1101,E1103
+# pylint: disable=no-member,E1103
 
 import StringIO
 import functools
@@ -32,7 +32,7 @@ presubmit_canned_checks = presubmit.presubmit_canned_checks
 
 
 # Access to a protected member XXX of a client class
-# pylint: disable=W0212
+# pylint: disable=protected-access
 
 
 class PresubmitTestsBase(SuperMoxTestBase):
@@ -1518,7 +1518,7 @@ class CannedChecksUnittest(PresubmitTestsBase):
   """Tests presubmit_canned_checks.py."""
 
   def MockInputApi(self, change, committing):
-    # pylint: disable=R0201
+    # pylint: disable=no-self-use
     input_api = self.mox.CreateMock(presubmit.InputApi)
     input_api.cStringIO = presubmit.cStringIO
     input_api.json = presubmit.json

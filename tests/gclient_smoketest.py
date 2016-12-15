@@ -52,7 +52,6 @@ class GClientSmokeBase(fake_repos.FakeReposTestBase):
     (stdout, stderr) = process.communicate()
     logging.debug("XXX: %s\n%s\nXXX" % (' '.join(cmd), stdout))
     logging.debug("YYY: %s\n%s\nYYY" % (' '.join(cmd), stderr))
-    # pylint: disable=E1103
     return (stdout.replace('\r\n', '\n'), stderr.replace('\r\n', '\n'),
             process.returncode)
 
@@ -565,7 +564,7 @@ class GClientSmokeGITMutates(GClientSmokeBase):
     new_deps = cur_deps.replace('repo_2@%s\'' % repo_2_hash,
                                 'repo_2@\' + Var(\'r2hash\')')
     new_deps = 'vars = {\'r2hash\': \'%s\'}\n%s' % (repo_2_hash, new_deps)
-    self.FAKE_REPOS._commit_git('repo_1', {  # pylint: disable=W0212
+    self.FAKE_REPOS._commit_git('repo_1', {  # pylint: disable=protected-access
       'DEPS': new_deps,
       'origin': 'git/repo_1@3\n',
     })
@@ -609,7 +608,7 @@ class GClientSmokeGITMutates(GClientSmokeBase):
     self.assertTree(tree)
 
     # Make a new commit object in the origin repo, to force reset to fetch.
-    self.FAKE_REPOS._commit_git('repo_2', {  # pylint: disable=W0212
+    self.FAKE_REPOS._commit_git('repo_2', {  # pylint: disable=protected-access
       'origin': 'git/repo_2@3\n',
     })
 
@@ -639,13 +638,13 @@ class GClientSmokeGITMutates(GClientSmokeBase):
     # Create an extra commit in repo_2 and point DEPS to its hash.
     cur_deps = self.FAKE_REPOS.git_hashes['repo_1'][-1][1]['DEPS']
     repo_2_hash_old = self.FAKE_REPOS.git_hashes['repo_2'][1][0][:7]
-    self.FAKE_REPOS._commit_git('repo_2', {  # pylint: disable=W0212
+    self.FAKE_REPOS._commit_git('repo_2', {  # pylint: disable=protected-access
       'last_file': 'file created in last commit',
     })
     repo_2_hash_new = self.FAKE_REPOS.git_hashes['repo_2'][-1][0]
     new_deps = cur_deps.replace(repo_2_hash_old, repo_2_hash_new)
     self.assertNotEqual(new_deps, cur_deps)
-    self.FAKE_REPOS._commit_git('repo_1', {  # pylint: disable=W0212
+    self.FAKE_REPOS._commit_git('repo_1', {  # pylint: disable=protected-access
       'DEPS': new_deps,
       'origin': 'git/repo_1@4\n',
     })

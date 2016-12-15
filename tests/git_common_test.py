@@ -741,7 +741,7 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
   def testStatus(self):
     def inner():
       dictified_status = lambda: {
-          k: dict(v._asdict())  # pylint: disable=W0212
+          k: dict(v._asdict())  # pylint: disable=protected-access
           for k, v in self.repo.run(self.gc.status)
       }
       self.repo.git('mv', 'file', 'cat')

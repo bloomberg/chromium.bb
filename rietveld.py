@@ -604,7 +604,7 @@ class JwtOAuth2Rietveld(Rietveld):
   access is restricted to service accounts.
   """
   # The parent__init__ is not called on purpose.
-  # pylint: disable=W0231
+  # pylint: disable=super-init-not-called
   def __init__(self,
                url,
                client_email,
@@ -718,7 +718,7 @@ class ReadOnlyRietveld(object):
             if not self._get_local_changes(issue).get('closed', False) and
             self._get_local_changes(issue).get('commit', True)]
 
-  def close_issue(self, issue):  # pylint:disable=R0201
+  def close_issue(self, issue):  # pylint:disable=no-self-use
     logging.info('ReadOnlyRietveld: closing issue %d' % issue)
     ReadOnlyRietveld._local_changes.setdefault(issue, {})['closed'] = True
 
@@ -736,18 +736,18 @@ class ReadOnlyRietveld(object):
   def get_patch(self, issue, patchset):
     return self._rietveld.get_patch(issue, patchset)
 
-  def update_description(self, issue, description):  # pylint:disable=R0201
+  def update_description(self, issue, description):  # pylint:disable=no-self-use
     logging.info('ReadOnlyRietveld: new description for issue %d: %s' %
         (issue, description))
 
-  def add_comment(self,  # pylint:disable=R0201
+  def add_comment(self,  # pylint:disable=no-self-use
                   issue,
                   message,
                   add_as_reviewer=False):
     logging.info('ReadOnlyRietveld: posting comment "%s" to issue %d' %
         (message, issue))
 
-  def set_flag(self, issue, patchset, flag, value):  # pylint:disable=R0201
+  def set_flag(self, issue, patchset, flag, value):  # pylint:disable=no-self-use
     logging.info('ReadOnlyRietveld: setting flag "%s" to "%s" for issue %d' %
         (flag, value, issue))
     ReadOnlyRietveld._local_changes.setdefault(issue, {})[flag] = value
@@ -756,13 +756,13 @@ class ReadOnlyRietveld(object):
     for flag, value in flags.iteritems():
       self.set_flag(issue, patchset, flag, value)
 
-  def trigger_try_jobs(  # pylint:disable=R0201
+  def trigger_try_jobs(  # pylint:disable=no-self-use
       self, issue, patchset, reason, clobber, revision, builders_and_tests,
       master=None, category='cq'):
     logging.info('ReadOnlyRietveld: triggering try jobs %r for issue %d' %
         (builders_and_tests, issue))
 
-  def trigger_distributed_try_jobs(  # pylint:disable=R0201
+  def trigger_distributed_try_jobs(  # pylint:disable=no-self-use
       self, issue, patchset, reason, clobber, revision, masters,
       category='cq'):
     logging.info('ReadOnlyRietveld: triggering try jobs %r for issue %d' %

@@ -33,64 +33,91 @@ load-plugins=
 # can either give multiple identifier separated by comma (,) or put this option
 # multiple time (only on the command line, not in the configuration file where
 # it should appear only once).
+#
+# These should get enabled, but the codebase has too many violations currently:
+#     bad-continuation
+#     anomalous-backslash-in-string
+#     bad-context-manager
+#     bad-indentation
+#     bad-str-strip-call
+#     bad-whitespace
+#     cell-var-from-loop
+#     deprecated-lambda
+#     eval-used
+#     function-redefined
+#     import-error
+#     locally-enabled
+#     missing-final-newline
+#     no-init
+#     no-name-in-module
+#     no-self-use
+#     not-callable
+#     old-style-class
+#     protected-access
+#     superfluous-parens
+#     super-on-old-class
+#     too-many-function-args
+#     trailing-whitespace
+#     unnecessary-semicolon
+#     unpacking-non-sequence
+#     unused-import
+#     useless-else-on-loop
+#
 # CHANGED:
-# C0103: Invalid name ""
-# C0111: Missing docstring
-# C0302: Too many lines in module (N)
-# I0010: Unable to consider inline option ''
-# I0011: Locally disabling WNNNN
-#
-# R0801: Similar lines in N files
-# R0901: Too many ancestors (8/7)
-# R0902: Too many instance attributes (N/7)
-# R0903: Too few public methods (N/2)
-# R0904: Too many public methods (N/20)
-# R0911: Too many return statements (N/6)
-# R0912: Too many branches (N/12)
-# R0913: Too many arguments (N/5)
-# R0914: Too many local variables (N/15)
-# R0915: Too many statements (N/50)
-# R0921: Abstract class not referenced
-# R0922: Abstract class is only referenced 1 times
-# W0122: Use of the exec statement
-# W0141: Used builtin function ''
-# W0142: Used * or ** magic
-# W0402: Uses of a deprecated module 'string'
-# W0404: 41: Reimport 'XX' (imported line NN)
-# W0511: TODO
-# W0603: Using the global statement
-# W0703: Catch "Exception"
-# W1201: Specify string format arguments as logging function parameters
-#
-# These should get enabled, but the codebase has too many violations currently.
-# bad-continuation
-# anomalous-backslash-in-string
-# bad-context-manager
-# bad-indentation
-# bad-str-strip-call
-# bad-whitespace
-# cell-var-from-loop
-# deprecated-lambda
-# eval-used
-# function-redefined
-# import-error
-# locally-enabled
-# missing-final-newline
-# no-init
-# no-name-in-module
-# no-self-use
-# not-callable
-# old-style-class
-# protected-access
-# superfluous-parens
-# super-on-old-class
-# too-many-function-args
-# trailing-whitespace
-# unnecessary-semicolon
-# unpacking-non-sequence
-# unused-import
-# useless-else-on-loop
-disable=C0103,C0111,C0302,I0010,I0011,R0801,R0901,R0902,R0903,R0904,R0911,R0912,R0913,R0914,R0915,R0921,R0922,W0122,W0141,W0142,W0402,W0404,W0511,W0603,W0703,W1201,bad-continuation,anomalous-backslash-in-string,bad-context-manager,bad-indentation,bad-str-strip-call,bad-whitespace,cell-var-from-loop,deprecated-lambda,eval-used,function-redefined,import-error,locally-enabled,missing-final-newline,no-init,no-name-in-module,no-self-use,not-callable,old-style-class,protected-access,superfluous-parens,super-on-old-class,too-many-function-args,trailing-whitespace,unnecessary-semicolon,unpacking-non-sequence,unused-import,useless-else-on-loop
+disable=
+    invalid-name,
+    missing-docstring,
+    too-many-lines,
+    bad-inline-option,
+    locally-disabled,
+    duplicate-code,
+    too-many-ancestors,
+    too-many-instance-attributes,
+    too-few-public-methods,
+    too-many-public-methods,
+    too-many-return-statements,
+    too-many-branches,
+    too-many-arguments,
+    too-many-locals,
+    too-many-statements,
+    abstract-class-not-used,
+    abstract-class-little-used,
+    exec-used,
+    bad-builtin,
+    star-args,
+    deprecated-module,
+    reimported,
+    fixme,
+    global-statement,
+    broad-except,
+    logging-not-lazy,
+    bad-continuation,
+    anomalous-backslash-in-string,
+    bad-context-manager,
+    bad-indentation,
+    bad-str-strip-call,
+    bad-whitespace,
+    cell-var-from-loop,
+    deprecated-lambda,
+    eval-used,
+    function-redefined,
+    import-error,
+    locally-enabled,
+    missing-final-newline,
+    no-init,
+    no-name-in-module,
+    no-self-use,
+    not-callable,
+    old-style-class,
+    protected-access,
+    superfluous-parens,
+    super-on-old-class,
+    too-many-function-args,
+    trailing-whitespace,
+    unnecessary-semicolon,
+    unpacking-non-sequence,
+    unused-import,
+    useless-else-on-loop
 
 
 [REPORTS]

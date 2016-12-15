@@ -346,7 +346,7 @@ class GerritTestCase(unittest.TestCase):
       except OSError as e:
         if e.errno == errno.ECHILD:
           # If gerrit shut down cleanly, os.waitpid will land here.
-          # pylint: disable=W0150
+          # pylint: disable=lost-exception
           return
 
       # If we get here, the gerrit process is still alive.  Send the process
@@ -357,7 +357,7 @@ class GerritTestCase(unittest.TestCase):
         if e.errno == errno.ESRCH:
           # os.kill raised an error because the process doesn't exist.  Maybe
           # gerrit shut down cleanly after all.
-          # pylint: disable=W0150
+          # pylint: disable=lost-exception
           return
 
       # Announce that gerrit didn't shut down cleanly.

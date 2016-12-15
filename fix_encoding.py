@@ -40,7 +40,7 @@ def fix_default_encoding():
   # Regenerate setdefaultencoding.
   reload(sys)
   # Module 'sys' has no 'setdefaultencoding' member
-  # pylint: disable=E1101
+  # pylint: disable=no-member
   sys.setdefaultencoding('utf-8')
   for attr in dir(locale):
     if attr[0:3] != 'LC_':
@@ -82,7 +82,7 @@ def fix_win_sys_argv(encoding):
     return False
 
   # These types are available on linux but not Mac.
-  # pylint: disable=E0611,F0401
+  # pylint: disable=no-name-in-module,F0401
   from ctypes import byref, c_int, POINTER, windll, WINFUNCTYPE
   from ctypes.wintypes import LPCWSTR, LPWSTR
 
@@ -189,10 +189,10 @@ class WinUnicodeConsoleOutput(WinUnicodeOutputBase):
 
     # Loads the necessary function.
     # These types are available on linux but not Mac.
-    # pylint: disable=E0611,F0401
+    # pylint: disable=no-name-in-module,F0401
     from ctypes import byref, GetLastError, POINTER, windll, WINFUNCTYPE
     from ctypes.wintypes import BOOL, DWORD, HANDLE, LPWSTR
-    from ctypes.wintypes import LPVOID  # pylint: disable=E0611
+    from ctypes.wintypes import LPVOID  # pylint: disable=no-name-in-module
 
     self._DWORD = DWORD
     self._byref = byref
@@ -271,7 +271,7 @@ class WinUnicodeOutput(WinUnicodeOutputBase):
 def win_handle_is_a_console(handle):
   """Returns True if a Windows file handle is a handle to a console."""
   # These types are available on linux but not Mac.
-  # pylint: disable=E0611,F0401
+  # pylint: disable=no-name-in-module,F0401
   from ctypes import byref, POINTER, windll, WINFUNCTYPE
   from ctypes.wintypes import BOOL, DWORD, HANDLE
 
@@ -304,7 +304,7 @@ def win_get_unicode_stream(stream, excepted_fileno, output_handle, encoding):
   old_fileno = getattr(stream, 'fileno', lambda: None)()
   if old_fileno == excepted_fileno:
     # These types are available on linux but not Mac.
-    # pylint: disable=E0611,F0401
+    # pylint: disable=no-name-in-module,F0401
     from ctypes import windll, WINFUNCTYPE
     from ctypes.wintypes import DWORD, HANDLE
 

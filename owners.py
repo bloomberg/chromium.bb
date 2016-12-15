@@ -71,7 +71,7 @@ BASIC_EMAIL_REGEXP = r'^[\w\-\+\%\.]+\@[\w\-\+\%\.]+$'
 def _assert_is_collection(obj):
   assert not isinstance(obj, basestring)
   # Module 'collections' has no 'Iterable' member
-  # pylint: disable=E1101
+  # pylint: disable=no-member
   if hasattr(collections, 'Iterable') and hasattr(collections, 'Sized'):
     assert (isinstance(obj, collections.Iterable) and
             isinstance(obj, collections.Sized))

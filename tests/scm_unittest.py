@@ -20,7 +20,7 @@ import subprocess2
 
 
 # Access to a protected member XXX of a client class
-# pylint: disable=W0212
+# pylint: disable=protected-access
 
 
 class BaseTestCase(SuperMoxTestBase):

@@ -87,7 +87,7 @@ class FakeRepos(fake_repos.FakeReposBase):
     return fs
 
 
-# pylint: disable=R0201
+# pylint: disable=no-self-use
 class BaseTest(fake_repos.FakeReposTestBase):
   name = 'foo'
   FAKE_REPOS_CLASS = FakeRepos
@@ -188,7 +188,7 @@ class GitBaseTest(BaseTest):
     self.assertTrue(self.enabled)
     self.previous_log = self._log()
 
-  # pylint: disable=W0221
+  # pylint: disable=arguments-differ
   def _log(self, log_from_local_repo=False):
     if log_from_local_repo:
       repo_root = os.path.join(self.root_dir, self.name)
@@ -231,7 +231,7 @@ class GitBaseTest(BaseTest):
         patches.filenames)
 
     # Hackish to verify _branches() internal function.
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     self.assertEquals(
         (['master', 'working_branch'], 'working_branch'),
         co._branches())

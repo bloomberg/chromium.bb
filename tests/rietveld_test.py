@@ -52,7 +52,7 @@ class BaseFixture(unittest.TestCase):
   def setUp(self):
     super(BaseFixture, self).setUp()
     # Access to a protected member XX of a client class
-    # pylint: disable=W0212
+    # pylint: disable=protected-access
     self.rietveld = self.TESTED_CLASS('url', None, 'email')
     self.rietveld._send = self._rietveld_send
     self.requests = []
@@ -276,8 +276,7 @@ class RietveldTest(BaseFixture):
         is_new=True)
 
   def test_svn_properties(self):
-    # Line too long (N/80)
-    # pylint: disable=C0301
+    # pylint: disable=line-too-long
 
     # To test one of these, run something like
     # import json, pprint, urllib

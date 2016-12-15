@@ -34,7 +34,7 @@ import webbrowser
 import zlib
 
 try:
-  import readline  # pylint: disable=F0401,W0611
+  import readline  # pylint: disable=import-error,W0611
 except ImportError:
   pass
 
@@ -3163,7 +3163,7 @@ class ChangeDescription(object):
     self._description_lines = (description or '').strip().splitlines()
 
   @property               # www.logilab.org/ticket/89786
-  def description(self):  # pylint: disable=E0202
+  def description(self):  # pylint: disable=method-hidden
     return '\n'.join(self._description_lines)
 
   def set_description(self, desc):
@@ -3738,7 +3738,7 @@ def upload_branch_deps(cl, args):
         if CMDupload(OptionParser(), args) != 0:
           print('Upload failed for %s!' % dependent_branch)
           failures[dependent_branch] = 1
-      except:  # pylint: disable=W0702
+      except:  # pylint: disable=bare-except
         failures[dependent_branch] = 1
       print()
   finally:
@@ -4156,7 +4156,7 @@ def CMDlint(parser, args):
   auth_config = auth.extract_auth_config_from_options(options)
 
   # Access to a protected member _XX of a client class
-  # pylint: disable=W0212
+  # pylint: disable=protected-access
   try:
     import cpplint
     import cpplint_chromium
@@ -4726,7 +4726,7 @@ def SendUpstream(parser, args, cmd):
         revision = re.match(
           '.*?\nCommitted r(\\d+)', output, re.DOTALL).group(1)
     logging.debug(output)
-  except:  # pylint: disable=W0702
+  except:  # pylint: disable=bare-except
     if _IS_BEING_TESTED:
       logging.exception('this is likely your ACTUAL cause of test failure.\n'
                         + '-' * 30 + '8<' + '-' * 30)

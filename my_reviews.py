@@ -338,7 +338,7 @@ def main():
   auth.add_auth_options(parser)
   # Remove description formatting
   parser.format_description = (
-      lambda _: parser.description)  # pylint: disable=E1101
+      lambda _: parser.description)  # pylint: disable=no-member
   options, args = parser.parse_args()
   auth_config = auth.extract_auth_config_from_options(options)
   if args:

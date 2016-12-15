@@ -1169,9 +1169,9 @@ def NumLocalCpus():
     try:
       import multiprocessing
       return multiprocessing.cpu_count()
-    except NotImplementedError:  # pylint: disable=W0702
+    except NotImplementedError:  # pylint: disable=bare-except
       # (UNIX) Query 'os.sysconf'.
-      # pylint: disable=E1101
+      # pylint: disable=no-member
       if hasattr(os, 'sysconf') and 'SC_NPROCESSORS_ONLN' in os.sysconf_names:
         return int(os.sysconf('SC_NPROCESSORS_ONLN'))
 

@@ -85,7 +85,7 @@ class OrderedSet(collections.MutableSet):
       prev[2] = nxt
       nxt[1] = prev
 
-  def pop(self, last=True):  # pylint: disable=W0221
+  def pop(self, last=True):  # pylint: disable=arguments-differ
     if not self:
       raise KeyError('set is empty')
     key = self.end[1][0] if last else self.end[2][0]
@@ -415,7 +415,7 @@ class GitRepo(object):
     stdout = sys.stdout
     stderr = sys.stderr
     try:
-      # "multiple statements on a line" pylint: disable=C0321
+      # "multiple statements on a line" pylint: disable=multiple-statements
       with tempfile.TemporaryFile() as out, tempfile.TemporaryFile() as err:
         sys.stdout = out
         sys.stderr = err
