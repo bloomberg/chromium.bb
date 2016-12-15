@@ -1135,7 +1135,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     @CalledByNative
     private void onScrollBeginEventAck() {
         setTouchScrollInProgress(true);
-        hidePastePopup();
         updateGestureStateListener(GestureEventType.SCROLL_START);
     }
 
@@ -1146,6 +1145,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
                 mGestureStateListenersIterator.hasNext();) {
             mGestureStateListenersIterator.next().onScrollUpdateGestureConsumed();
         }
+        hidePastePopup();
     }
 
     @SuppressWarnings("unused")
