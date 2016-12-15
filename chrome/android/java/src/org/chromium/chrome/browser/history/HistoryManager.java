@@ -5,7 +5,9 @@
 package org.chromium.chrome.browser.history;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
@@ -17,11 +19,14 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.ViewGroup;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataPreferences;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.chrome.browser.widget.selection.SelectableListLayout;
@@ -34,10 +39,14 @@ import java.util.List;
  * Displays and manages the UI for browsing history.
  */
 public class HistoryManager implements OnMenuItemClickListener {
+    private static final int FAVICON_MAX_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+    private static final int MEGABYTES_TO_BYTES =  1024 * 1024;
+
     private final Activity mActivity;
     private final SelectableListLayout mSelectableListLayout;
     private final HistoryAdapter mHistoryAdapter;
     private final SelectionDelegate<HistoryItem> mSelectionDelegate;
+    private LargeIconBridge mLargeIconBridge;
 
     /**
      * Creates a new HistoryManager.
@@ -76,6 +85,13 @@ public class HistoryManager implements OnMenuItemClickListener {
                     mHistoryAdapter.loadMoreItems();
                 }
             }});
+
+        mLargeIconBridge = new LargeIconBridge(Profile.getLastUsedProfile().getOriginalProfile());
+        ActivityManager activityManager = ((ActivityManager) ContextUtils
+                .getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE));
+        int maxSize = Math.min((activityManager.getMemoryClass() / 4) * MEGABYTES_TO_BYTES,
+                FAVICON_MAX_CACHE_SIZE_BYTES);
+        mLargeIconBridge.createCache(maxSize);
     }
 
     @Override
@@ -115,6 +131,8 @@ public class HistoryManager implements OnMenuItemClickListener {
     public void onDestroyed() {
         mSelectableListLayout.onDestroyed();
         mHistoryAdapter.onDestroyed();
+        mLargeIconBridge.destroy();
+        mLargeIconBridge = null;
     }
 
     /**
@@ -174,6 +192,13 @@ public class HistoryManager implements OnMenuItemClickListener {
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(mActivity,
                 ClearBrowsingDataPreferences.class.getName());
         IntentUtils.safeStartActivity(mActivity, intent);
+    }
+
+    /**
+     * @return The {@link LargeIconBridge} used to fetch large favicons.
+     */
+    public LargeIconBridge getLargeIconBridge() {
+        return mLargeIconBridge;
     }
 
     private void openItemsInNewTabs(List<HistoryItem> items, boolean isIncognito) {

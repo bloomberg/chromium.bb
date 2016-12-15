@@ -132,7 +132,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         SelectableItemViewHolder<HistoryItem> holder =
                 (SelectableItemViewHolder<HistoryItem>) current;
         holder.displayItem(item);
-        item.setHistoryManager(mManager);
+        ((HistoryItemView) holder.itemView).setHistoryManager(mManager);
     }
 
     @Override
