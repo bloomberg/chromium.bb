@@ -103,14 +103,15 @@ BorderImageLength animatableValueToBorderImageLength(
 }
 
 template <typename T>
-T animatableValueClampTo(const AnimatableValue* value,
-                         T min = defaultMinimumForClamp<T>(),
-                         T max = defaultMaximumForClamp<T>()) {
+T roundedClampTo(double value) {
   static_assert(std::is_integral<T>::value,
                 "should use integral type T when rounding values");
-  return clampTo<T>(
-      roundForImpreciseConversion<T>(toAnimatableDouble(value)->toDouble()),
-      min, max);
+  return clampTo<T>(roundForImpreciseConversion<T>(value));
+}
+
+template <typename T>
+T animatableValueClampTo(const AnimatableValue* value) {
+  return roundedClampTo<T>(toAnimatableDouble(value)->toDouble());
 }
 
 template <typename T>
