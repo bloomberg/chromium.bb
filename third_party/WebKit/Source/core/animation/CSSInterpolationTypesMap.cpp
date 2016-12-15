@@ -18,7 +18,7 @@
 #include "core/animation/CSSLengthListInterpolationType.h"
 #include "core/animation/CSSLengthPairInterpolationType.h"
 #include "core/animation/CSSNumberInterpolationType.h"
-#include "core/animation/CSSOffsetRotationInterpolationType.h"
+#include "core/animation/CSSOffsetRotateInterpolationType.h"
 #include "core/animation/CSSPaintInterpolationType.h"
 #include "core/animation/CSSPathInterpolationType.h"
 #include "core/animation/CSSPositionAxisListInterpolationType.h"
@@ -197,7 +197,7 @@ const InterpolationTypes& CSSInterpolationTypesMap::get(
     case CSSPropertyOffsetRotation:
     case CSSPropertyOffsetRotate:
       applicableTypes->push_back(
-          WTF::makeUnique<CSSOffsetRotationInterpolationType>(usedProperty));
+          WTF::makeUnique<CSSOffsetRotateInterpolationType>(usedProperty));
       break;
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:

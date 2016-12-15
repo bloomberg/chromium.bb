@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/animation/CSSOffsetRotationInterpolationType.h"
+#include "core/animation/CSSOffsetRotateInterpolationType.h"
 
 #include "core/css/resolver/StyleBuilderConverter.h"
 #include "core/style/StyleOffsetRotation.h"
@@ -90,7 +90,7 @@ InterpolationValue convertOffsetRotate(const StyleOffsetRotation& rotation) {
 
 }  // namespace
 
-InterpolationValue CSSOffsetRotationInterpolationType::maybeConvertNeutral(
+InterpolationValue CSSOffsetRotateInterpolationType::maybeConvertNeutral(
     const InterpolationValue& underlying,
     ConversionCheckers& conversionCheckers) const {
   OffsetRotationType underlyingRotationType =
@@ -101,13 +101,13 @@ InterpolationValue CSSOffsetRotationInterpolationType::maybeConvertNeutral(
   return convertOffsetRotate(StyleOffsetRotation(0, underlyingRotationType));
 }
 
-InterpolationValue CSSOffsetRotationInterpolationType::maybeConvertInitial(
+InterpolationValue CSSOffsetRotateInterpolationType::maybeConvertInitial(
     const StyleResolverState&,
     ConversionCheckers& conversionCheckers) const {
   return convertOffsetRotate(StyleOffsetRotation(0, OffsetRotationAuto));
 }
 
-InterpolationValue CSSOffsetRotationInterpolationType::maybeConvertInherit(
+InterpolationValue CSSOffsetRotateInterpolationType::maybeConvertInherit(
     const StyleResolverState& state,
     ConversionCheckers& conversionCheckers) const {
   OffsetRotationType inheritedRotationType =
@@ -117,15 +117,14 @@ InterpolationValue CSSOffsetRotationInterpolationType::maybeConvertInherit(
   return convertOffsetRotate(state.parentStyle()->offsetRotation());
 }
 
-InterpolationValue CSSOffsetRotationInterpolationType::maybeConvertValue(
+InterpolationValue CSSOffsetRotateInterpolationType::maybeConvertValue(
     const CSSValue& value,
     const StyleResolverState&,
     ConversionCheckers&) const {
   return convertOffsetRotate(StyleBuilderConverter::convertOffsetRotate(value));
 }
 
-PairwiseInterpolationValue
-CSSOffsetRotationInterpolationType::maybeMergeSingles(
+PairwiseInterpolationValue CSSOffsetRotateInterpolationType::maybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
   const OffsetRotationType& startType =
@@ -142,12 +141,12 @@ CSSOffsetRotationInterpolationType::maybeMergeSingles(
 }
 
 InterpolationValue
-CSSOffsetRotationInterpolationType::maybeConvertUnderlyingValue(
+CSSOffsetRotateInterpolationType::maybeConvertUnderlyingValue(
     const InterpolationEnvironment& environment) const {
   return convertOffsetRotate(environment.state().style()->offsetRotation());
 }
 
-void CSSOffsetRotationInterpolationType::composite(
+void CSSOffsetRotateInterpolationType::composite(
     UnderlyingValueOwner& underlyingValueOwner,
     double underlyingFraction,
     const InterpolationValue& value,
@@ -159,14 +158,15 @@ void CSSOffsetRotationInterpolationType::composite(
   const OffsetRotationType& rotationType =
       toCSSOffsetRotationNonInterpolableValue(*value.nonInterpolableValue)
           .rotationType();
-  if (underlyingType == rotationType)
+  if (underlyingType == rotationType) {
     underlyingValueOwner.mutableValue().interpolableValue->scaleAndAdd(
         underlyingFraction, *value.interpolableValue);
-  else
+  } else {
     underlyingValueOwner.set(*this, value);
+  }
 }
 
-void CSSOffsetRotationInterpolationType::apply(
+void CSSOffsetRotateInterpolationType::apply(
     const InterpolableValue& interpolableValue,
     const NonInterpolableValue* nonInterpolableValue,
     InterpolationEnvironment& environment) const {

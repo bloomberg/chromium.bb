@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CSSOffsetRotationInterpolationType_h
-#define CSSOffsetRotationInterpolationType_h
+#ifndef CSSOffsetRotateInterpolationType_h
+#define CSSOffsetRotateInterpolationType_h
 
 #include "core/animation/CSSInterpolationType.h"
 
 namespace blink {
 
-class CSSOffsetRotationInterpolationType : public CSSInterpolationType {
+class CSSOffsetRotateInterpolationType : public CSSInterpolationType {
  public:
-  CSSOffsetRotationInterpolationType(PropertyHandle property)
+  CSSOffsetRotateInterpolationType(PropertyHandle property)
       : CSSInterpolationType(property) {
     DCHECK(cssProperty() == CSSPropertyOffsetRotate ||
            cssProperty() == CSSPropertyOffsetRotation);
@@ -44,4 +44,4 @@ class CSSOffsetRotationInterpolationType : public CSSInterpolationType {
 
 }  // namespace blink
 
-#endif  // CSSOffsetRotationInterpolationType_h
+#endif  // CSSOffsetRotateInterpolationType_h
