@@ -17,6 +17,10 @@
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace base {
+class ListValue;
+}
+
 namespace blink {
 class WebInputEvent;
 }
@@ -77,7 +81,7 @@ class VrShellGl {
   void SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num);
   gvr::Sizei GetWebVRCompositorSurfaceSize();
 
-  UiScene* GetScene() { return scene_.get(); }
+  void UpdateScene(std::unique_ptr<base::ListValue> commands);
 
  private:
   bool InitializeGl();

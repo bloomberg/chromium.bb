@@ -278,7 +278,7 @@ void UiScene::RemoveAnimation(int element_id, int animation_id) {
   }
 }
 
-void UiScene::HandleCommands(const base::ListValue* commands,
+void UiScene::HandleCommands(std::unique_ptr<base::ListValue> commands,
                              int64_t time_in_micro) {
   for (auto& item : *commands) {
     base::DictionaryValue* dict;
@@ -350,11 +350,6 @@ UiScene::GetUiElements() const {
 UiScene::UiScene() = default;
 
 UiScene::~UiScene() = default;
-
-int64_t UiScene::TimeInMicroseconds() {
-  return std::chrono::duration_cast<std::chrono::microseconds>(
-      std::chrono::steady_clock::now().time_since_epoch()).count();
-}
 
 void UiScene::ApplyRecursiveTransforms(const ContentRectangle& element,
                                        ReversibleTransform* transform) {

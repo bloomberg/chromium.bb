@@ -169,6 +169,11 @@ int GetPixelEncodedPoseIndexByte() {
   return -1;
 }
 
+int64_t TimeInMicroseconds() {
+  return std::chrono::duration_cast<std::chrono::microseconds>(
+      std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+
 }  // namespace
 
 VrShellGl::VrShellGl(
@@ -630,7 +635,7 @@ void VrShellGl::DrawFrame() {
 
   // Update the render position of all UI elements (including desktop).
   const float screen_tilt = kDesktopScreenTiltDefault * M_PI / 180.0f;
-  scene_->UpdateTransforms(screen_tilt, UiScene::TimeInMicroseconds());
+  scene_->UpdateTransforms(screen_tilt, TimeInMicroseconds());
 
   UpdateController(GetForwardVector(head_pose));
 
@@ -981,6 +986,10 @@ void VrShellGl::ScheduleNextDrawFrame() {
 void VrShellGl::ForceExitVr() {
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::Bind(&VrShell::ForceExitVr, weak_vr_shell_));
+}
+
+void VrShellGl::UpdateScene(std::unique_ptr<base::ListValue> commands) {
+  scene_->HandleCommands(std::move(commands), TimeInMicroseconds());
 }
 
 }  // namespace vr_shell

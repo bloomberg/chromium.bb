@@ -9,6 +9,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/values.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
 #include "chrome/browser/android/vr_shell/vr_input_manager.h"
@@ -319,23 +320,19 @@ void VrShell::UIBoundsChanged(JNIEnv* env,
   ui_compositor_->SetWindowBounds(gfx::Size(width, height));
 }
 
-UiScene* VrShell::GetScene() {
-  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
-  // TODO(mthiesse): Remove this blocking wait. Queue up events if thread isn't
-  // finished starting?
-  thread->WaitUntilThreadStarted();
-  if (thread->GetVrShellGlUnsafe()) {
-    return thread->GetVrShellGlUnsafe()->GetScene();
-  }
-  return nullptr;
-}
-
 UiInterface* VrShell::GetUiInterface() {
   return html_interface_.get();
 }
 
-void VrShell::QueueTask(base::Callback<void()>& callback) {
-  gl_thread_->task_runner()->PostTask(FROM_HERE, callback);
+void VrShell::UpdateScene(const base::ListValue* args) {
+  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
+  // TODO(mthiesse): Remove this blocking wait. Queue up events if thread isn't
+  // finished starting?
+  thread->WaitUntilThreadStarted();
+  thread->task_runner()->PostTask(
+      FROM_HERE, base::Bind(&VrShellGl::UpdateScene,
+                            thread->GetVrShellGl(),
+                            base::Passed(args->CreateDeepCopy())));
 }
 
 void VrShell::DoUiAction(const UiAction action) {

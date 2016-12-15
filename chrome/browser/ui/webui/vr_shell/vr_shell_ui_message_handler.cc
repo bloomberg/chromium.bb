@@ -58,16 +58,7 @@ void VrShellUIMessageHandler::OnJavascriptAllowed() {
 void VrShellUIMessageHandler::HandleUpdateScene(const base::ListValue* args) {
   if (!vr_shell_)
     return;
-
-  // Copy the update instructions and handle them on the render thread.
-  // TODO(mthiesse): Clean this up.
-  auto cb = base::Bind(&vr_shell::UiScene::HandleCommands,
-                       // Unretained is safe because this callback will only be
-                       // run on the GL thread, which owns the scene.
-                       base::Unretained(vr_shell_->GetScene()),
-                       base::Owned(args->CreateDeepCopy().release()),
-                       vr_shell::UiScene::TimeInMicroseconds());
-  vr_shell_->QueueTask(cb);
+  vr_shell_->UpdateScene(args);
 }
 
 void VrShellUIMessageHandler::HandleDoAction(const base::ListValue* args) {

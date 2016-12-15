@@ -20,6 +20,7 @@
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
 
 namespace base {
+class ListValue;
 class Thread;
 }
 
@@ -34,7 +35,6 @@ class WindowAndroid;
 namespace vr_shell {
 
 class UiInterface;
-class UiScene;
 class VrCompositor;
 class VrInputManager;
 class VrMetricsHelper;
@@ -87,9 +87,6 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   static base::WeakPtr<VrShell> GetWeakPtr(
       const content::WebContents* web_contents);
 
-  // Returns a pointer to the scene owned by the GL thread. Do not dereference
-  // this pointer off of the GL thread.
-  UiScene* GetScene();
   // TODO(mthiesse): Clean up threading around UiInterface.
   UiInterface* GetUiInterface();
   void OnDomContentsLoaded();
@@ -119,9 +116,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
       const base::android::JavaParamRef<jobject>& object,
       jint width, jint height, jfloat dpr);
 
-  // Called from non-render thread to queue a callback onto the render thread.
-  // The render thread checks for callbacks and processes them between frames.
-  void QueueTask(base::Callback<void()>& callback);
+  void UpdateScene(const base::ListValue* args);
 
   // Perform a UI action triggered by the javascript API.
   void DoUiAction(const UiAction action);
