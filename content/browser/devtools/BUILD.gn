@@ -82,8 +82,6 @@ inspector_protocol_generate("protocol_sources") {
     "protocol/storage.h",
     "protocol/system_info.cc",
     "protocol/system_info.h",
-    "protocol/target.cc",
-    "protocol/target.h",
     "protocol/tethering.cc",
     "protocol/tethering.h",
     "protocol/tracing.cc",

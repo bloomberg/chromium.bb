@@ -62,9 +62,6 @@
                 "async": ["getInfo"]
             },
             {
-                "domain": "Target"
-            },
-            {
                 "domain": "Tethering",
                 "async": ["bind", "unbind"]
             },

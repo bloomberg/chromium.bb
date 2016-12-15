@@ -11,7 +11,10 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
 namespace content {
-namespace protocol {
+namespace devtools {
+namespace target {
+
+using Response = DevToolsProtocolClient::Response;
 
 namespace {
 
@@ -81,13 +84,12 @@ ServiceWorkerDevToolsAgentHost::Map GetMatchingServiceWorkers(
   return result;
 }
 
-std::unique_ptr<Target::TargetInfo> CreateInfo(DevToolsAgentHost* host) {
-  return Target::TargetInfo::Create()
-      .SetTargetId(host->GetId())
-      .SetTitle(host->GetTitle())
-      .SetUrl(host->GetURL().spec())
-      .SetType(host->GetType())
-      .Build();
+scoped_refptr<TargetInfo> CreateInfo(DevToolsAgentHost* host) {
+  return TargetInfo::Create()
+      ->set_target_id(host->GetId())
+      ->set_title(host->GetTitle())
+      ->set_url(host->GetURL().spec())
+      ->set_type(host->GetType());
 }
 
 }  // namespace
@@ -101,11 +103,7 @@ TargetHandler::TargetHandler()
 }
 
 TargetHandler::~TargetHandler() {
-}
-
-void TargetHandler::Wire(UberDispatcher* dispatcher) {
-  frontend_.reset(new Target::Frontend(dispatcher->channel()));
-  Target::Dispatcher::wire(dispatcher, this);
+  Detached();
 }
 
 void TargetHandler::SetRenderFrameHost(RenderFrameHostImpl* render_frame_host) {
@@ -113,13 +111,16 @@ void TargetHandler::SetRenderFrameHost(RenderFrameHostImpl* render_frame_host) {
   UpdateFrames();
 }
 
-Response TargetHandler::Disable() {
+void TargetHandler::SetClient(std::unique_ptr<Client> client) {
+  client_.swap(client);
+}
+
+void TargetHandler::Detached() {
   SetAutoAttach(false, false);
   SetDiscoverTargets(false);
   for (const auto& id_host : attached_hosts_)
     id_host.second->DetachClient(this);
   attached_hosts_.clear();
-  return Response::OK();
 }
 
 void TargetHandler::UpdateServiceWorkers() {
@@ -197,7 +198,8 @@ void TargetHandler::ReattachTargetsOfType(
 void TargetHandler::TargetCreatedInternal(DevToolsAgentHost* host) {
   if (reported_hosts_.find(host->GetId()) != reported_hosts_.end())
     return;
-  frontend_->TargetCreated(CreateInfo(host));
+  client_->TargetCreated(
+      TargetCreatedParams::Create()->set_target_info(CreateInfo(host)));
   reported_hosts_[host->GetId()] = host;
 }
 
@@ -206,7 +208,8 @@ void TargetHandler::TargetDestroyedInternal(
   auto it = reported_hosts_.find(host->GetId());
   if (it == reported_hosts_.end())
     return;
-  frontend_->TargetDestroyed(host->GetId());
+  client_->TargetDestroyed(TargetDestroyedParams::Create()
+      ->set_target_id(host->GetId()));
   reported_hosts_.erase(it);
 }
 
@@ -215,7 +218,9 @@ bool TargetHandler::AttachToTargetInternal(
   if (!host->AttachClient(this))
     return false;
   attached_hosts_[host->GetId()] = host;
-  frontend_->AttachedToTarget(CreateInfo(host), waiting_for_debugger);
+  client_->AttachedToTarget(AttachedToTargetParams::Create()
+      ->set_target_info(CreateInfo(host))
+      ->set_waiting_for_debugger(waiting_for_debugger));
   return true;
 }
 
@@ -224,7 +229,8 @@ void TargetHandler::DetachFromTargetInternal(DevToolsAgentHost* host) {
   if (it == attached_hosts_.end())
     return;
   host->DetachClient(this);
-  frontend_->DetachedFromTarget(host->GetId());
+  client_->DetachedFromTarget(DetachedFromTargetParams::Create()->
+      set_target_id(host->GetId()));
   attached_hosts_.erase(it);
 }
 
@@ -278,8 +284,8 @@ Response TargetHandler::SetAttachToFrames(bool value) {
 }
 
 Response TargetHandler::SetRemoteLocations(
-    std::unique_ptr<protocol::Array<Target::RemoteLocation>>) {
-  return Response::Error("Not supported");
+    const std::vector<std::unique_ptr<base::DictionaryValue>>& locations) {
+  return Response::ServerError("Not supported");
 }
 
 Response TargetHandler::AttachToTarget(const std::string& target_id,
@@ -288,7 +294,7 @@ Response TargetHandler::AttachToTarget(const std::string& target_id,
   scoped_refptr<DevToolsAgentHost> agent_host =
       DevToolsAgentHost::GetForId(target_id);
   if (!agent_host)
-    return Response::InvalidParams("No target with given id found");
+    return Response::ServerError("No target with given id found");
   *out_success = AttachToTargetInternal(agent_host.get(), false);
   return Response::OK();
 }
@@ -296,7 +302,7 @@ Response TargetHandler::AttachToTarget(const std::string& target_id,
 Response TargetHandler::DetachFromTarget(const std::string& target_id) {
   auto it = attached_hosts_.find(target_id);
   if (it == attached_hosts_.end())
-    return Response::Error("Not attached to the target");
+    return Response::InternalError("Not attached to the target");
   DevToolsAgentHost* agent_host = it->second.get();
   DetachFromTargetInternal(agent_host);
   return Response::OK();
@@ -314,7 +320,7 @@ Response TargetHandler::SendMessageToTarget(
 
 Response TargetHandler::GetTargetInfo(
     const std::string& target_id,
-    std::unique_ptr<Target::TargetInfo>* target_info) {
+    scoped_refptr<TargetInfo>* target_info) {
   // TODO(dgozman): only allow reported hosts.
   scoped_refptr<DevToolsAgentHost> agent_host(
       DevToolsAgentHost::GetForId(target_id));
@@ -339,42 +345,41 @@ Response TargetHandler::CloseTarget(const std::string& target_id,
   scoped_refptr<DevToolsAgentHost> agent_host =
       DevToolsAgentHost::GetForId(target_id);
   if (!agent_host)
-    return Response::InvalidParams("No target with given id found");
+    return Response::ServerError("No target with given id found");
   *out_success = agent_host->Close();
   return Response::OK();
 }
 
 Response TargetHandler::CreateBrowserContext(std::string* out_context_id) {
-  return Response::Error("Not supported");
+  return Response::ServerError("Not supported");
 }
 
 Response TargetHandler::DisposeBrowserContext(const std::string& context_id,
                                               bool* out_success) {
-  return Response::Error("Not supported");
+  return Response::ServerError("Not supported");
 }
 
 Response TargetHandler::CreateTarget(const std::string& url,
-                                     Maybe<int> width,
-                                     Maybe<int> height,
-                                     Maybe<std::string> context_id,
+                                     const int* width,
+                                     const int* height,
+                                     const std::string* context_id,
                                      std::string* out_target_id) {
   DevToolsManagerDelegate* delegate =
       DevToolsManager::GetInstance()->delegate();
   if (!delegate)
-    return Response::Error("Not supported");
+    return Response::ServerError("Not supported");
   scoped_refptr<content::DevToolsAgentHost> agent_host =
       delegate->CreateNewTarget(GURL(url));
   if (!agent_host)
-    return Response::Error("Not supported");
+    return Response::ServerError("Not supported");
   *out_target_id = agent_host->GetId();
   return Response::OK();
 }
 
 Response TargetHandler::GetTargets(
-    std::unique_ptr<protocol::Array<Target::TargetInfo>>* target_infos) {
-  *target_infos = protocol::Array<Target::TargetInfo>::create();
+    std::vector<scoped_refptr<TargetInfo>>* target_infos) {
   for (const auto& host : DevToolsAgentHost::GetOrCreateAll())
-    (*target_infos)->addItem(CreateInfo(host.get()));
+    target_infos->push_back(CreateInfo(host.get()));
   return Response::OK();
 }
 
@@ -387,13 +392,17 @@ void TargetHandler::DispatchProtocolMessage(
   if (it == attached_hosts_.end())
     return;  // Already disconnected.
 
-  frontend_->ReceivedMessageFromTarget(host->GetId(), message);
+  client_->ReceivedMessageFromTarget(
+      ReceivedMessageFromTargetParams::Create()->
+          set_target_id(host->GetId())->
+          set_message(message));
 }
 
 void TargetHandler::AgentHostClosed(
     DevToolsAgentHost* host,
     bool replaced_with_another_client) {
-  frontend_->DetachedFromTarget(host->GetId());
+  client_->DetachedFromTarget(DetachedFromTargetParams::Create()->
+      set_target_id(host->GetId()));
   attached_hosts_.erase(host->GetId());
 }
 
@@ -453,5 +462,6 @@ void TargetHandler::WorkerDestroyed(
   UpdateServiceWorkers();
 }
 
-}  // namespace protocol
+}  // namespace target
+}  // namespace devtools
 }  // namespace content

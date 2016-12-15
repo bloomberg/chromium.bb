@@ -190,8 +190,6 @@ source_set("browser") {
     "$target_gen_dir/devtools/protocol/storage.h",
     "$target_gen_dir/devtools/protocol/system_info.cc",
     "$target_gen_dir/devtools/protocol/system_info.h",
-    "$target_gen_dir/devtools/protocol/target.cc",
-    "$target_gen_dir/devtools/protocol/target.h",
     "$target_gen_dir/devtools/protocol/tethering.cc",
     "$target_gen_dir/devtools/protocol/tethering.h",
     "$target_gen_dir/devtools/protocol/tracing.cc",
