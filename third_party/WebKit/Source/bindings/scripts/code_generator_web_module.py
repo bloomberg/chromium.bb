@@ -22,7 +22,7 @@ DOM classes to the Web Modules layer.
 import os
 import posixpath
 
-from code_generator import CodeGeneratorBase
+from code_generator import CodeGeneratorBase, render_template
 # TODO(dglazkov): Move TypedefResolver to code_generator.py
 from code_generator_v8 import TypedefResolver
 
@@ -135,8 +135,8 @@ class CodeGeneratorWebModule(CodeGeneratorBase):
 
         cpp_template = self.get_template('cpp')
         header_template = self.get_template('h')
-        cpp_text = cpp_template.render(template_context)
-        header_text = header_template.render(template_context)
+        cpp_text = render_template(cpp_template, template_context)
+        header_text = render_template(header_template, template_context)
         header_path, cpp_path = self.output_paths(interface.name)
 
         return (

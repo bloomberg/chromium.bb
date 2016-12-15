@@ -48,7 +48,7 @@ Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 import os
 import posixpath
 
-from code_generator import CodeGeneratorBase, normalize_and_sort_includes
+from code_generator import CodeGeneratorBase, render_template, normalize_and_sort_includes
 from idl_definitions import Visitor
 from idl_types import IdlType
 import v8_callback_function
@@ -301,8 +301,8 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
         template_context['exported'] = self.info_provider.specifier_for_export
         name = shorten_union_name(union_type)
         template_context['this_include_header_name'] = name
-        header_text = header_template.render(template_context)
-        cpp_text = cpp_template.render(template_context)
+        header_text = render_template(header_template, template_context)
+        cpp_text = render_template(cpp_template, template_context)
         header_path = posixpath.join(self.output_dir, '%s.h' % name)
         cpp_path = posixpath.join(self.output_dir, '%s.cpp' % name)
         return (
@@ -356,8 +356,8 @@ class CodeGeneratorCallbackFunction(CodeGeneratorBase):
         template_context['header_includes'] = normalize_and_sort_includes(
             template_context['header_includes'])
         template_context['code_generator'] = MODULE_PYNAME
-        header_text = header_template.render(template_context)
-        cpp_text = cpp_template.render(template_context)
+        header_text = render_template(header_template, template_context)
+        cpp_text = render_template(cpp_template, template_context)
         header_path = posixpath.join(self.output_dir, '%s.h' % callback_function.name)
         cpp_path = posixpath.join(self.output_dir, '%s.cpp' % callback_function.name)
         return (

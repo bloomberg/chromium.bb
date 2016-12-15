@@ -103,6 +103,13 @@ def normalize_and_sort_includes(include_paths):
     return sorted(normalized_include_paths)
 
 
+def render_template(template, context):
+    filename = str(template.filename)
+    filename = filename[filename.rfind("third_party"):]
+    context["jinja_template_filename"] = filename
+    return template.render(context)
+
+
 class CodeGeneratorBase(object):
     """Base class for jinja-powered jinja template generation.
     """
@@ -143,8 +150,8 @@ class CodeGeneratorBase(object):
 
         template_context['cpp_includes'] = normalize_and_sort_includes(includes)
 
-        header_text = header_template.render(template_context)
-        cpp_text = cpp_template.render(template_context)
+        header_text = render_template(header_template, template_context)
+        cpp_text = render_template(cpp_template, template_context)
         return header_text, cpp_text
 
     def generate_code(self, definitions, definition_name):
