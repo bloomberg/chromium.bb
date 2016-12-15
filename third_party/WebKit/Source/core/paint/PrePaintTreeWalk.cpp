@@ -53,6 +53,14 @@ bool PrePaintTreeWalk::walk(FrameView& frameView,
   }
 
   PrePaintTreeWalkContext localContext(context);
+
+  if (frameView.shouldInvalidateAllPaintAndPaintProperties()) {
+    localContext.treeBuilderContext.forceSubtreeUpdate = true;
+    localContext.paintInvalidatorContext.forcedSubtreeInvalidationFlags |=
+        PaintInvalidatorContext::ForcedWholeTreeFullInvalidation;
+    frameView.clearShouldInvalidateAllPaintAndPaintProperties();
+  }
+
   m_propertyTreeBuilder.updateProperties(frameView,
                                          localContext.treeBuilderContext);
   m_paintInvalidator.invalidatePaintIfNeeded(

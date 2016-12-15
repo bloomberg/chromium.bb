@@ -49,6 +49,11 @@ struct PaintInvalidatorContext {
     // TODO(crbug.com/637313): This is temporary before we support filters in
     // paint property tree.
     ForcedSubtreeSlowPathRect = 1 << 5,
+    // For SPv1, all of the above flags don't cross paint invalidation container
+    // boundary. ForceWholeTreeFullInvalidation does.
+    // TODO(wangxianzhu): Combine this with ForcedSubtreeFullInvalidation when
+    // removing non-SPv2 code.
+    ForcedWholeTreeFullInvalidation = 1 << 6,
   };
   unsigned forcedSubtreeInvalidationFlags = 0;
 

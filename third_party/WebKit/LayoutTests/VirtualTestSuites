@@ -357,6 +357,11 @@
   },
   {
     "prefix": "spinvalidation",
+    "base": "printing",
+    "args": ["--enable-blink-features=SlimmingPaintInvalidation"]
+  },
+  {
+    "prefix": "spinvalidation",
     "base": "svg",
     "args": ["--enable-blink-features=SlimmingPaintInvalidation"]
   }

@@ -430,6 +430,7 @@ static void setShouldDoFullPaintInvalidationForViewAndAllDescendantsInternal(
 }
 
 void LayoutView::setShouldDoFullPaintInvalidationForViewAndAllDescendants() {
+  DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
   setShouldDoFullPaintInvalidationForViewAndAllDescendantsInternal(this);
 }
 

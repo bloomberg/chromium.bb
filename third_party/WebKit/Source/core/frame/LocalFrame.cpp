@@ -591,7 +591,8 @@ void LocalFrame::setPrinting(bool printing,
     if (LayoutView* layoutView = view()->layoutView()) {
       layoutView->setPreferredLogicalWidthsDirty();
       layoutView->setNeedsLayout(LayoutInvalidationReason::PrintingChanged);
-      layoutView->setShouldDoFullPaintInvalidationForViewAndAllDescendants();
+      if (!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+        layoutView->setShouldDoFullPaintInvalidationForViewAndAllDescendants();
     }
     view()->layout();
     view()->adjustViewSize();
@@ -603,6 +604,9 @@ void LocalFrame::setPrinting(bool printing,
     if (child->isLocalFrame())
       toLocalFrame(child)->setPrinting(printing, FloatSize(), FloatSize(), 0);
   }
+
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+    view()->setShouldInvalidateAllPaintAndPaintProperties();
 
   if (!printing)
     document()->setPrinting(Document::NotPrinting);
