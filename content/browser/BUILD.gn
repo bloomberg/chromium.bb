@@ -1405,6 +1405,8 @@ source_set("browser") {
     "webui/content_web_ui_controller_factory.h",
     "webui/generic_handler.cc",
     "webui/generic_handler.h",
+    "webui/i18n_source_stream.cc",
+    "webui/i18n_source_stream.h",
     "webui/shared_resources_data_source.cc",
     "webui/shared_resources_data_source.h",
     "webui/url_data_manager.cc",

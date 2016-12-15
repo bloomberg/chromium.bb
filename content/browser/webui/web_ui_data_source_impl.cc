@@ -224,6 +224,21 @@ void WebUIDataSourceImpl::DisableI18nAndUseGzipForAllPaths() {
   use_gzip_for_all_paths_ = true;
 }
 
+const ui::TemplateReplacements* WebUIDataSourceImpl::GetReplacements() const {
+  return &replacements_;
+}
+
+void WebUIDataSourceImpl::EnsureLoadTimeDataDefaultsAdded() {
+  if (!add_load_time_data_defaults_)
+    return;
+
+  add_load_time_data_defaults_ = false;
+  std::string locale = GetContentClient()->browser()->GetApplicationLocale();
+  base::DictionaryValue defaults;
+  webui::SetLoadTimeDataDefaults(locale, &defaults);
+  AddLocalizedStrings(defaults);
+}
+
 std::string WebUIDataSourceImpl::GetSource() const {
   return source_name_;
 }
@@ -259,13 +274,7 @@ void WebUIDataSourceImpl::StartDataRequest(
     return;
   }
 
-  if (add_load_time_data_defaults_) {
-    std::string locale = GetContentClient()->browser()->GetApplicationLocale();
-    base::DictionaryValue defaults;
-    webui::SetLoadTimeDataDefaults(locale, &defaults);
-    AddLocalizedStrings(defaults);
-    add_load_time_data_defaults_ = false;
-  }
+  EnsureLoadTimeDataDefaultsAdded();
 
   if (!json_path_.empty() && path == json_path_) {
     SendLocalizedStringsAsJSON(callback);
@@ -282,18 +291,6 @@ void WebUIDataSourceImpl::StartDataRequest(
   DCHECK_NE(resource_id, -1);
   scoped_refptr<base::RefCountedMemory> response(
       GetContentClient()->GetDataResourceBytes(resource_id));
-
-  // TODO(dschuyler): improve filtering of which resource to run template
-  // expansion upon. TODO(dbeam): make a streaming filter that works on gzipped
-  // content.
-  if (response.get() && GetMimeType(path) == "text/html" &&
-      !source()->IsGzipped(path)) {
-    std::string replaced = ui::ReplaceTemplateExpressions(
-        base::StringPiece(response->front_as<char>(), response->size()),
-        replacements_);
-    response = base::RefCountedString::TakeString(&replaced);
-  }
-
   callback.Run(response.get());
 }
 

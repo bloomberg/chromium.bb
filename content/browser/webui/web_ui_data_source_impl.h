@@ -50,6 +50,10 @@ class CONTENT_EXPORT WebUIDataSourceImpl
   void OverrideContentSecurityPolicyChildSrc(const std::string& data) override;
   void DisableDenyXFrameOptions() override;
   void DisableI18nAndUseGzipForAllPaths() override;
+  const ui::TemplateReplacements* GetReplacements() const override;
+
+  // Add the locale to the load time data defaults. May be called repeatedly.
+  void EnsureLoadTimeDataDefaultsAdded();
 
   // When DisableI18nAndUseGzipForAllPaths is enabled, exclude the given |path|.
   void ExcludePathFromGzip(const std::string& path);
@@ -93,10 +97,13 @@ class CONTENT_EXPORT WebUIDataSourceImpl
   std::string json_path_;
   std::map<std::string, int> path_to_idr_map_;
   std::unordered_set<std::string> excluded_paths_;
-  // The |replacements_| is intended to replace |localized_strings_|.
-  // TODO(dschuyler): phase out |localized_strings_| in Q1 2016. (Or rename
-  // to |load_time_flags_| if the usage is reduced to storing flags only).
+  // The replacements are initiallized in the main thread and then used in the
+  // IO thread. The map is safe to read from multiple threads as long as no
+  // futher changes are made to it after initialization.
   ui::TemplateReplacements replacements_;
+  // The |replacements_| is intended to replace |localized_strings_|.
+  // TODO(dschuyler): phase out |localized_strings_| in Q1 2017. (Or rename
+  // to |load_time_flags_| if the usage is reduced to storing flags only).
   base::DictionaryValue localized_strings_;
   WebUIDataSource::HandleRequestCallback filter_callback_;
   bool add_csp_;

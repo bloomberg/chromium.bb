@@ -31,6 +31,7 @@
 #include "content/browser/net/view_blob_internals_job_factory.h"
 #include "content/browser/net/view_http_cache_job_factory.h"
 #include "content/browser/resource_context_impl.h"
+#include "content/browser/webui/i18n_source_stream.h"
 #include "content/browser/webui/shared_resources_data_source.h"
 #include "content/browser/webui/url_data_source_impl.h"
 #include "content/browser/webui/web_ui_data_source_impl.h"
@@ -52,6 +53,7 @@
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_job_factory.h"
+#include "ui/base/template_expressions.h"
 #include "url/url_util.h"
 
 namespace content {
@@ -210,6 +212,10 @@ class URLRequestChromeJob : public net::URLRequestJob {
     is_gzipped_ = is_gzipped;
   }
 
+  void SetReplacements(const ui::TemplateReplacements* replacements) {
+    replacements_ = replacements;
+  }
+
   // Returns true when job was generated from an incognito profile.
   bool is_incognito() const {
     return is_incognito_;
@@ -280,6 +286,9 @@ class URLRequestChromeJob : public net::URLRequestJob {
   // resources in resources.pak use compress="gzip".
   bool is_gzipped_;
 
+  // Replacement dictionary for i18n.
+  const ui::TemplateReplacements* replacements_;
+
   // The backend is owned by net::URLRequestContext and always outlives us.
   URLDataManagerBackend* const backend_;
 
@@ -302,6 +311,7 @@ URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request,
       send_content_type_header_(false),
       is_incognito_(is_incognito),
       is_gzipped_(false),
+      replacements_(nullptr),
       backend_(backend),
       weak_factory_(this) {
   DCHECK(backend);
@@ -396,11 +406,20 @@ void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
 }
 
 std::unique_ptr<net::SourceStream> URLRequestChromeJob::SetUpSourceStream() {
-  std::unique_ptr<net::SourceStream> source =
+  std::unique_ptr<net::SourceStream> source_stream =
       net::URLRequestJob::SetUpSourceStream();
-  return is_gzipped_ ? net::GzipSourceStream::Create(
-                           std::move(source), net::SourceStream::TYPE_GZIP)
-                     : std::move(source);
+
+  if (is_gzipped_) {
+    source_stream = net::GzipSourceStream::Create(std::move(source_stream),
+                                                  net::SourceStream::TYPE_GZIP);
+  }
+
+  if (replacements_) {
+    source_stream = content::I18nSourceStream::Create(
+        std::move(source_stream), net::SourceStream::TYPE_NONE, replacements_);
+  }
+
+  return source_stream;
 }
 
 void URLRequestChromeJob::MimeTypeAvailable(const std::string& mime_type) {
@@ -711,6 +730,11 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
   job->set_send_content_type_header(
       source->source()->ShouldServeMimeTypeAsContentTypeHeader());
   job->set_is_gzipped(source->source()->IsGzipped(path));
+
+  // TODO(dschuyler): improve filtering of which resource to run template
+  // replacements upon.
+  if (source->source()->GetMimeType(path) == "text/html")
+    job->SetReplacements(source->GetReplacements());
 
   std::string origin = GetOriginHeaderValue(request);
   if (!origin.empty()) {
