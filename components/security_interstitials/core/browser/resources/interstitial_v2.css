@@ -166,6 +166,8 @@ input[type=checkbox]:focus ~ .checkbox {
 
 #extended-reporting-opt-in label {
   position: relative;
+  display: flex;
+  align-items: flex-start;
 }
 
 .nav-wrapper {
@@ -235,6 +237,10 @@ input[type=checkbox]:focus ~ .checkbox {
       url(images/2x/captive_portal_page_icon.png) 2x);
 }
 
+.checkboxes {
+  flex: 0 0 24px;
+}
+
 .checkbox {
   background: transparent;
   border: 1px solid white;
@@ -244,7 +250,7 @@ input[type=checkbox]:focus ~ .checkbox {
   left: 0;
   position: absolute;
   right: 0;
-  top: -1px;
+  top: 3px;
   width: 14px;
 }
 
