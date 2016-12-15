@@ -518,7 +518,7 @@
     "type": "windowed_test_launcher",
   },
   "ios_chrome_unittests": {
-    "label": "//ios/chrome:ios_chrome_unittests",
+    "label": "//ios/chrome/test:ios_chrome_unittests",
     "type": "raw",
     "args": [],
   },

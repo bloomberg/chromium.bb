@@ -5,6 +5,13 @@
 import("//ios/build/config.gni")
 import("//testing/test.gni")
 
+group("all_tests") {
+  testonly = true
+  deps = [
+    ":ocmock_support_unittest",
+  ]
+}
+
 source_set("ios_test_support") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true

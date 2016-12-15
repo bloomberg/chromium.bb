@@ -7,6 +7,14 @@ import("//ios/web/js_compile.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 
+group("all_tests") {
+  testonly = true
+  deps = [
+    ":ios_web_inttests",
+    ":ios_web_unittests",
+  ]
+}
+
 source_set("web_arc") {
   deps = [
     ":core",

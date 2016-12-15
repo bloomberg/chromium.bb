@@ -5,6 +5,13 @@
 import("//ios/build/config.gni")
 import("//ios/third_party/earl_grey/ios_eg_test.gni")
 
+group("all_tests") {
+  testonly = true
+  deps = [
+    ":ios_web_shell_egtests",
+  ]
+}
+
 ios_eg_test("ios_web_shell_egtests") {
   sources = [
     "context_menu_egtest.mm",

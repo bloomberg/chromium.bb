@@ -6,6 +6,13 @@ import("//ios/build/config.gni")
 import("//testing/test.gni")
 import("//url/features.gni")
 
+group("all_tests") {
+  testonly = true
+  deps = [
+    ":ios_net_unittests",
+  ]
+}
+
 source_set("net") {
   deps = [
     "//base",
