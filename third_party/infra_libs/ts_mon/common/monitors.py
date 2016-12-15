@@ -84,6 +84,7 @@ class Monitor(object):
   def send(self, metric_pb):
     raise NotImplementedError()
 
+
 class HttpsMonitor(Monitor):
 
   _SCOPES = [

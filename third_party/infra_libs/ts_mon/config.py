@@ -175,6 +175,7 @@ def add_argparse_options(parser):
       default=False, action='store_true',
       help='use the new proto schema (default: false)')
 
+
 def process_argparse_options(args):
   """Process command line arguments to initialize the global monitor.
 
