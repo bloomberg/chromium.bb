@@ -179,8 +179,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 - (void)setTabTrackingAreasEnabled:(BOOL)enabled;
 - (void)droppingURLsAt:(NSPoint)point
             givesIndex:(NSInteger*)index
-           disposition:(WindowOpenDisposition*)disposition
-           activateTab:(BOOL)activateTab;
+           disposition:(WindowOpenDisposition*)disposition;
 - (void)setNewTabButtonHoverState:(BOOL)showHover;
 - (void)themeDidChangeNotification:(NSNotification*)notification;
 - (BOOL)doesAnyOtherWebContents:(content::WebContents*)selected
@@ -2039,8 +2038,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 // to the left, it inserts to the left, and similarly for the right.
 - (void)droppingURLsAt:(NSPoint)point
             givesIndex:(NSInteger*)index
-           disposition:(WindowOpenDisposition*)disposition
-           activateTab:(BOOL)activateTab {
+           disposition:(WindowOpenDisposition*)disposition {
   // Proportion of the tab which is considered the "middle" (and causes things
   // to drop on that tab).
   const double kMiddleProportion = 0.5;
@@ -2071,11 +2069,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
     // Drop in a new tab before  tab |i|?
     if (isRTL ? point.x > rightEdge : point.x < leftEdge) {
       *index = i;
-      if (activateTab) {
-        *disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-      } else {
-        *disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
-      }
+      *disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
       return;
     }
 
@@ -2093,17 +2087,10 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 
   // If we've made it here, we want to append a new tab to the end.
   *index = -1;
-  if (activateTab) {
-    *disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  } else {
-    *disposition = WindowOpenDisposition::NEW_BACKGROUND_TAB;
-  }
+  *disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
 }
 
-- (void)openURL:(GURL*)url
-         inView:(NSView*)view
-             at:(NSPoint)point
-    activateTab:(BOOL)activateTab {
+- (void)openURL:(GURL*)url inView:(NSView*)view at:(NSPoint)point {
   // Security: Block JavaScript to prevent self-XSS.
   if (url->SchemeIs(url::kJavaScriptScheme))
     return;
@@ -2113,13 +2100,11 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   WindowOpenDisposition disposition;
   [self droppingURLsAt:point
             givesIndex:&index
-           disposition:&disposition
-           activateTab:activateTab];
+           disposition:&disposition];
 
   // Either insert a new tab or open in a current tab.
   switch (disposition) {
-    case WindowOpenDisposition::NEW_FOREGROUND_TAB:
-    case WindowOpenDisposition::NEW_BACKGROUND_TAB: {
+    case WindowOpenDisposition::NEW_FOREGROUND_TAB: {
       content::RecordAction(UserMetricsAction("Tab_DropURLBetweenTabs"));
       chrome::NavigateParams params(browser_, *url,
                                     ui::PAGE_TRANSITION_TYPED);
@@ -2152,22 +2137,19 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
     return;
   }
 
-  for (NSInteger index = [urls count] - 1; index >= 0; index--) {
-    // Refactor this code.
-    // https://crbug.com/665261.
-    GURL url = url_formatter::FixupURL(
-        base::SysNSStringToUTF8([urls objectAtIndex:index]), std::string());
+  //TODO(viettrungluu): dropping multiple URLs.
+  if ([urls count] > 1)
+    NOTIMPLEMENTED();
 
-    // If the URL isn't valid, don't bother.
-    if (!url.is_valid())
-      continue;
+  // Get the first URL and fix it up.
+  GURL url(GURL(url_formatter::FixupURL(
+      base::SysNSStringToUTF8([urls objectAtIndex:0]), std::string())));
 
-    if (index == static_cast<NSInteger>([urls count]) - 1) {
-      [self openURL:&url inView:view at:point activateTab:YES];
-    } else {
-      [self openURL:&url inView:view at:point activateTab:NO];
-    }
-  }
+  // If the URL isn't valid, don't bother.
+  if (!url.is_valid())
+    return;
+
+  [self openURL:&url inView:view at:point];
 }
 
 // (URLDropTargetController protocol)
@@ -2181,7 +2163,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
       metrics::OmniboxEventProto::BLANK, &match, NULL);
   GURL url(match.destination_url);
 
-  [self openURL:&url inView:view at:point activateTab:YES];
+  [self openURL:&url inView:view at:point];
 }
 
 // (URLDropTargetController protocol)
@@ -2196,8 +2178,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
   WindowOpenDisposition disposition;
   [self droppingURLsAt:point
             givesIndex:&index
-           disposition:&disposition
-           activateTab:YES];
+           disposition:&disposition];
 
   NSPoint arrowPos = NSMakePoint(0, arrowBaseY);
   if (index == -1) {
