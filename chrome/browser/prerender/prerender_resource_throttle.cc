@@ -12,14 +12,13 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;
+using content::ResourceRequestInfo;
 using content::ResourceType;
 
 namespace prerender {
@@ -49,7 +48,8 @@ class PrerenderThrottleInfo
     : public base::RefCountedThreadSafe<PrerenderThrottleInfo,
                                         BrowserThread::DeleteOnUIThread> {
  public:
-  PrerenderThrottleInfo() : manager_(nullptr) {}
+  PrerenderThrottleInfo()
+      : mode_(NO_PRERENDER), origin_(ORIGIN_NONE), manager_(nullptr) {}
 
   void Set(PrerenderMode mode, Origin origin, PrerenderManager* manager) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -94,8 +94,8 @@ void PrerenderResourceThrottle::WillStartRequest(bool* defer) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PrerenderResourceThrottle::WillStartRequestOnUI, AsWeakPtr(),
-                 request_->method(), info->GetResourceType(),
-                 info->GetChildID(), info->GetRenderFrameID(), request_->url(),
+                 request_->method(), info->GetResourceType(), request_->url(),
+                 info->GetWebContentsGetterForRequest(),
                  prerender_throttle_info_));
 }
 
@@ -112,8 +112,8 @@ void PrerenderResourceThrottle::WillRedirectRequest(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PrerenderResourceThrottle::WillRedirectRequestOnUI,
                  AsWeakPtr(), header, info->GetResourceType(), info->IsAsync(),
-                 IsNoStoreResponse(*request_), info->GetChildID(),
-                 info->GetRenderFrameID(), redirect_info.new_url));
+                 IsNoStoreResponse(*request_), redirect_info.new_url,
+                 info->GetWebContentsGetterForRequest()));
 }
 
 void PrerenderResourceThrottle::WillProcessResponse(bool* defer) {
@@ -131,7 +131,6 @@ void PrerenderResourceThrottle::WillProcessResponse(bool* defer) {
       base::Bind(&PrerenderResourceThrottle::WillProcessResponseOnUI,
                  content::IsResourceTypeFrame(info->GetResourceType()),
                  IsNoStoreResponse(*request_), redirect_count,
-                 info->GetChildID(), info->GetRenderFrameID(),
                  prerender_throttle_info_));
 }
 
@@ -148,13 +147,12 @@ void PrerenderResourceThrottle::WillStartRequestOnUI(
     const base::WeakPtr<PrerenderResourceThrottle>& throttle,
     const std::string& method,
     ResourceType resource_type,
-    int render_process_id,
-    int render_frame_id,
     const GURL& url,
+    const ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     scoped_refptr<PrerenderThrottleInfo> prerender_throttle_info) {
   bool cancel = false;
   PrerenderContents* prerender_contents =
-      PrerenderContentsFromRenderFrame(render_process_id, render_frame_id);
+      PrerenderContentsFromGetter(web_contents_getter);
   if (prerender_contents) {
     DCHECK(prerender_throttle_info);
     prerender_throttle_info->Set(prerender_contents->prerender_mode(),
@@ -172,7 +170,13 @@ void PrerenderResourceThrottle::WillStartRequestOnUI(
         prerender_contents->Destroy(FINAL_STATUS_INVALID_HTTP_METHOD);
       }
       cancel = true;
-    } else if (!PrerenderManager::DoesSubresourceURLHaveValidScheme(url)) {
+    } else if (!PrerenderManager::DoesSubresourceURLHaveValidScheme(url) &&
+               resource_type != content::RESOURCE_TYPE_MAIN_FRAME) {
+      // Destroying the prerender for unsupported scheme only for non-main
+      // resource to allow chrome://crash to actually crash in the
+      // *RendererCrash tests instead of being intercepted here. The unsupported
+      // scheme for the main resource is checked in WillRedirectRequestOnUI()
+      // and PrerenderContents::CheckURL(). See http://crbug.com/673771.
       prerender_contents->Destroy(FINAL_STATUS_UNSUPPORTED_SCHEME);
       ReportUnsupportedPrerenderScheme(url);
       cancel = true;
@@ -200,12 +204,11 @@ void PrerenderResourceThrottle::WillRedirectRequestOnUI(
     ResourceType resource_type,
     bool async,
     bool is_no_store,
-    int render_process_id,
-    int render_frame_id,
-    const GURL& new_url) {
+    const GURL& new_url,
+    const ResourceRequestInfo::WebContentsGetter& web_contents_getter) {
   bool cancel = false;
   PrerenderContents* prerender_contents =
-      PrerenderContentsFromRenderFrame(render_process_id, render_frame_id);
+      PrerenderContentsFromGetter(web_contents_getter);
   if (prerender_contents) {
     prerender_contents->prerender_manager()->RecordPrefetchResponseReceived(
         prerender_contents->origin(),
@@ -245,8 +248,6 @@ void PrerenderResourceThrottle::WillProcessResponseOnUI(
     bool is_main_resource,
     bool is_no_store,
     int redirect_count,
-    int render_process_id,
-    int render_frame_id,
     scoped_refptr<PrerenderThrottleInfo> prerender_throttle_info) {
   DCHECK(prerender_throttle_info);
   if (!prerender_throttle_info->manager())
@@ -263,15 +264,11 @@ void PrerenderResourceThrottle::WillProcessResponseOnUI(
 }
 
 // static
-PrerenderContents* PrerenderResourceThrottle::PrerenderContentsFromRenderFrame(
-    int render_process_id, int render_frame_id) {
+PrerenderContents* PrerenderResourceThrottle::PrerenderContentsFromGetter(
+    const ResourceRequestInfo::WebContentsGetter& web_contents_getter) {
   if (g_prerender_contents_for_testing)
     return g_prerender_contents_for_testing;
-  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
-      render_process_id, render_frame_id);
-  content::WebContents* web_contents =
-      content::WebContents::FromRenderFrameHost(rfh);
-  return PrerenderContents::FromWebContents(web_contents);
+  return PrerenderContents::FromWebContents(web_contents_getter.Run());
 }
 
 }  // namespace prerender

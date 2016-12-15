@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/common/resource_type.h"
 
@@ -55,9 +56,9 @@ class PrerenderResourceThrottle
       const base::WeakPtr<PrerenderResourceThrottle>& throttle,
       const std::string& method,
       content::ResourceType resource_type,
-      int render_process_id,
-      int render_frame_id,
       const GURL& url,
+      const content::ResourceRequestInfo::WebContentsGetter&
+          web_contents_getter,
       scoped_refptr<PrerenderThrottleInfo> prerender_throttle_info);
 
   static void WillRedirectRequestOnUI(
@@ -66,22 +67,21 @@ class PrerenderResourceThrottle
       content::ResourceType resource_type,
       bool async,
       bool is_no_store,
-      int render_process_id,
-      int render_frame_id,
-      const GURL& new_url);
+      const GURL& new_url,
+      const content::ResourceRequestInfo::WebContentsGetter&
+          web_contents_getter);
 
   static void WillProcessResponseOnUI(
       bool is_main_resource,
       bool is_no_store,
       int redirect_count,
-      int render_process_id,
-      int render_frame_id,
       scoped_refptr<PrerenderThrottleInfo> prerender_throttle_info);
 
-  // Helper to return the PrerenderContents given a render frame id. May return
-  // NULL if it's gone.
-  static PrerenderContents* PrerenderContentsFromRenderFrame(
-      int render_process_id, int render_frame_id);
+  // Helper to return the PrerenderContents given a WebContentsGetter. May
+  // return nullptr if it's gone.
+  static PrerenderContents* PrerenderContentsFromGetter(
+      const content::ResourceRequestInfo::WebContentsGetter&
+          web_contents_getter);
 
   net::URLRequest* request_;
 
