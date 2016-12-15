@@ -54,6 +54,10 @@ namespace {
 // you change this value, make sure to update comments where it is used.
 const int kStartupWaitSeconds = 60;
 
+// The minimum number of seconds there should be for the delay passed to
+// ScheduleNextCheck.
+const int kScheduleNextCheckMinGapSecs = 1;
+
 // For sanity checking on update frequency - enforced in release mode only.
 #if defined(NDEBUG)
 const int kMinUpdateFrequencySeconds = 30;
@@ -178,15 +182,15 @@ TimeDelta ExtensionUpdater::DetermineFirstCheckDelay() {
     return TimeDelta::FromSeconds(
         RandInt(kStartupWaitSeconds, frequency_seconds_));
 
-  Time saved_next = Time::FromInternalValue(prefs_->GetInt64(
-      pref_names::kNextUpdateCheck));
-
-  Time now = Time::Now();
-
   // Read the persisted next check time, and use that if it isn't in the past
   // or too far in the future (this can happen with system clock changes).
-  if (saved_next > now &&
-      saved_next < now + TimeDelta::FromSeconds(frequency_seconds_)) {
+  Time saved_next = Time::FromInternalValue(prefs_->GetInt64(
+      pref_names::kNextUpdateCheck));
+  Time now = Time::Now();
+  base::Time earliest =
+      now + TimeDelta::FromSeconds(kScheduleNextCheckMinGapSecs);
+  base::Time latest = now + TimeDelta::FromSeconds(frequency_seconds_);
+  if (saved_next > earliest && saved_next < latest) {
     return saved_next - now;
   }
 
@@ -225,7 +229,7 @@ void ExtensionUpdater::Stop() {
 void ExtensionUpdater::ScheduleNextCheck(const TimeDelta& target_delay) {
   DCHECK(alive_);
   DCHECK(!timer_.IsRunning());
-  DCHECK(target_delay >= TimeDelta::FromSeconds(1));
+  DCHECK(target_delay >= TimeDelta::FromSeconds(kScheduleNextCheckMinGapSecs));
 
   // Add +/- 10% random jitter.
   double delay_ms = target_delay.InMillisecondsF();

@@ -57,10 +57,12 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/pref_names.h"
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/browser/updater/extension_downloader_delegate.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/browser/updater/request_queue_impl.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_constants.h"
@@ -2257,6 +2259,22 @@ TEST_F(ExtensionUpdaterTest, TestUninstallWhileUpdateCheck) {
 
   service.set_extensions(ExtensionList(), ExtensionList());
   ASSERT_FALSE(service.GetExtensionById(id, false));
+}
+
+// Tests that we don't get a DCHECK failure when the next check time saved in
+// prefs happens to be within one second of startup.
+TEST_F(ExtensionUpdaterTest, TestPersistedNextCheckTime) {
+  base::Time next_check_time =
+      base::Time::Now() + base::TimeDelta::FromMilliseconds(500);
+  prefs_->pref_service()->SetInt64(pref_names::kNextUpdateCheck,
+                                   next_check_time.ToInternalValue());
+  ServiceForManifestTests service(prefs_.get());
+  ExtensionUpdater updater(&service, service.extension_prefs(),
+                           service.pref_service(), service.profile(),
+                           kDefaultUpdateFrequencySeconds, nullptr,
+                           service.GetDownloaderFactory());
+  updater.Start();
+  updater.Stop();
 }
 
 // TODO(asargent) - (http://crbug.com/12780) add tests for:
