@@ -4,10 +4,7 @@
 
 package org.chromium.chrome.browser.notifications;
 
-import android.annotation.TargetApi;
 import android.app.Notification;
-import android.os.Build;
-import android.service.notification.StatusBarNotification;
 
 /**
  * A proxy for the Android Notification Manager. This allows tests to be written without having to
@@ -21,7 +18,4 @@ public interface NotificationManagerProxy {
     void cancelAll();
     void notify(int id, Notification notification);
     void notify(String tag, int id, Notification notification);
-
-    @TargetApi(Build.VERSION_CODES.M)
-    StatusBarNotification[] getActiveNotifications();
 }

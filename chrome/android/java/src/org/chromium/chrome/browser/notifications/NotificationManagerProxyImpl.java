@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.notifications;
 
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.service.notification.StatusBarNotification;
 
 /**
  * Default implementation of the NotificationManagerProxy, which passes through all calls to the
@@ -42,10 +41,5 @@ public class NotificationManagerProxyImpl implements NotificationManagerProxy {
     @Override
     public void notify(String tag, int id, Notification notification) {
         mNotificationManager.notify(tag, id, notification);
-    }
-
-    @Override
-    public StatusBarNotification[] getActiveNotifications() {
-        return mNotificationManager.getActiveNotifications();
     }
 }
