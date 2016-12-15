@@ -4130,7 +4130,7 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState) {
 
   // Reload the page and end up at the same url. State should be propagated.
   webViewHelper.webView()->mainFrame()->reloadWithOverrideURL(
-      toKURL(m_baseURL + firstURL), WebFrameLoadType::Reload);
+      toKURL(m_baseURL + firstURL), WebFrameLoadType::ReloadMainResource);
   FrameTestHelpers::pumpPendingRequestsForFrameToLoad(
       webViewHelper.webView()->mainFrame());
   EXPECT_EQ(previousOffset.width,
@@ -4141,7 +4141,7 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState) {
 
   // Reload the page using the cache. State should not be propagated.
   webViewHelper.webView()->mainFrame()->reloadWithOverrideURL(
-      toKURL(m_baseURL + secondURL), WebFrameLoadType::Reload);
+      toKURL(m_baseURL + secondURL), WebFrameLoadType::ReloadMainResource);
   FrameTestHelpers::pumpPendingRequestsForFrameToLoad(
       webViewHelper.webView()->mainFrame());
   EXPECT_EQ(0, webViewHelper.webView()->mainFrame()->getScrollOffset().width);

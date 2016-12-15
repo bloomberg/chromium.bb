@@ -320,13 +320,12 @@ class WebFrame {
   // Reload the current document.
   // Note: reload() and reloadWithOverrideURL() will be deprecated.
   // Do not use these APIs any more, but use loadRequest() instead.
-  virtual void reload(WebFrameLoadType = WebFrameLoadType::Reload) = 0;
+  virtual void reload(WebFrameLoadType) = 0;
 
   // This is used for situations where we want to reload a different URL because
   // of a redirect.
-  virtual void reloadWithOverrideURL(
-      const WebURL& overrideUrl,
-      WebFrameLoadType = WebFrameLoadType::Reload) = 0;
+  virtual void reloadWithOverrideURL(const WebURL& overrideUrl,
+                                     WebFrameLoadType) = 0;
 
   // Load the given URL.
   virtual void loadRequest(const WebURLRequest&) = 0;
