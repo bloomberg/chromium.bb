@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
-#include "components/prefs/pref_change_registrar.h"
 
 namespace base {
 class ListValue;
@@ -51,9 +50,6 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   // Called when a clearing task finished. |webui_callback_id| is provided
   // by the WebUI action that initiated it.
   void OnClearingTaskFinished(const std::string& webui_callback_id);
-
-  // Updates UI when the pref to allow clearing history changes.
-  virtual void OnBrowsingHistoryPrefChanged();
 
   // Initializes the dialog UI. Called by JavaScript when the DOM is ready.
   void HandleInitialize(const base::ListValue* args);
@@ -95,9 +91,6 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   browser_sync::ProfileSyncService* sync_service_;
   ScopedObserver<browser_sync::ProfileSyncService, syncer::SyncServiceObserver>
       sync_service_observer_;
-
-  // Used to listen for pref changes to allow / disallow deleting browsing data.
-  PrefChangeRegistrar profile_pref_registrar_;
 
   // Whether the sentence about other forms of history stored in user's account
   // should be displayed in the footer. This value is retrieved asynchronously,

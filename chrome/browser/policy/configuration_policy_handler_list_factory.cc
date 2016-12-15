@@ -28,6 +28,7 @@
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/browsing_data/core/pref_names.h"
 #include "components/certificate_transparency/pref_names.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -696,6 +697,27 @@ class ForceYouTubeSafetyModePolicyHandler : public TypeCheckingPolicyHandler {
   DISALLOW_COPY_AND_ASSIGN(ForceYouTubeSafetyModePolicyHandler);
 };
 
+class BrowsingHistoryPolicyHandler : public TypeCheckingPolicyHandler {
+ public:
+  BrowsingHistoryPolicyHandler()
+      : TypeCheckingPolicyHandler(key::kAllowDeletingBrowserHistory,
+                                  base::Value::Type::BOOLEAN) {}
+  ~BrowsingHistoryPolicyHandler() override {}
+
+  void ApplyPolicySettings(const PolicyMap& policies,
+                           PrefValueMap* prefs) override {
+    const base::Value* value = policies.GetValue(policy_name());
+    bool deleting_history_allowed;
+    if (value && value->GetAsBoolean(&deleting_history_allowed) &&
+        !deleting_history_allowed) {
+      prefs->SetBoolean(
+          browsing_data::prefs::kDeleteBrowsingHistory, false);
+      prefs->SetBoolean(
+          browsing_data::prefs::kDeleteDownloadHistory, false);
+    }
+  }
+};
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 void GetExtensionAllowedTypesMap(
     std::vector<std::unique_ptr<StringMappingListPolicyHandler::MappingEntry>>*
@@ -803,6 +825,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       key::kEnableDeprecatedWebPlatformFeatures,
       prefs::kEnableDeprecatedWebPlatformFeatures,
       base::Bind(GetDeprecatedFeaturesMap)));
+
+  handlers->AddHandler(base::MakeUnique<BrowsingHistoryPolicyHandler>());
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   handlers->AddHandler(base::MakeUnique<extensions::ExtensionListPolicyHandler>(

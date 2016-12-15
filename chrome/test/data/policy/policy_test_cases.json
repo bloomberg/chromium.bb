@@ -198,7 +198,7 @@
   },
 
   "AllowDeletingBrowserHistory": {
-    "os": [],
+    "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "AllowDeletingBrowserHistory": false },
     "pref_mappings": [
       { "pref": "history.deleting_enabled" }

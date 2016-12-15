@@ -69,9 +69,6 @@ Polymer({
   ready: function() {
     this.$.clearFrom.menuOptions = this.clearFromOptions_;
     this.addWebUIListener(
-        'browsing-history-pref-changed',
-        this.setAllowDeletingHistory_.bind(this));
-    this.addWebUIListener(
         'update-footer',
         this.updateFooter_.bind(this));
     this.addWebUIListener(
@@ -86,19 +83,6 @@ Polymer({
     this.browserProxy_.initialize().then(function() {
       this.$.dialog.showModal();
     }.bind(this));
-  },
-
-  /**
-   * @param {boolean} allowed Whether the user is allowed to delete histories.
-   * @private
-   */
-  setAllowDeletingHistory_: function(allowed) {
-    this.$.browsingCheckbox.disabled = !allowed;
-    this.$.downloadCheckbox.disabled = !allowed;
-    if (!allowed) {
-      this.set('prefs.browser.clear_data.browsing_history.value', false);
-      this.set('prefs.browser.clear_data.download_history.value', false);
-    }
   },
 
   /**

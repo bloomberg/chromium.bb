@@ -100,13 +100,6 @@ void ClearBrowsingDataHandler::RegisterMessages() {
 }
 
 void ClearBrowsingDataHandler::OnJavascriptAllowed() {
-  PrefService* prefs = profile_->GetPrefs();
-  profile_pref_registrar_.Init(prefs);
-  profile_pref_registrar_.Add(
-      prefs::kAllowDeletingBrowserHistory,
-      base::Bind(&ClearBrowsingDataHandler::OnBrowsingHistoryPrefChanged,
-                 base::Unretained(this)));
-
   if (sync_service_)
     sync_service_observer_.Add(sync_service_);
 
@@ -118,7 +111,6 @@ void ClearBrowsingDataHandler::OnJavascriptAllowed() {
 }
 
 void ClearBrowsingDataHandler::OnJavascriptDisallowed() {
-  profile_pref_registrar_.RemoveAll();
   sync_service_observer_.RemoveAll();
   task_observer_.reset();
   counters_.clear();
@@ -250,15 +242,6 @@ void ClearBrowsingDataHandler::OnClearingTaskFinished(
       base::StringValue(webui_callback_id),
       base::FundamentalValue(show_notice));
   task_observer_.reset();
-}
-
-void ClearBrowsingDataHandler::OnBrowsingHistoryPrefChanged() {
-  CallJavascriptFunction(
-      "cr.webUIListenerCallback",
-      base::StringValue("browsing-history-pref-changed"),
-      base::FundamentalValue(
-          profile_->GetPrefs()->GetBoolean(
-              prefs::kAllowDeletingBrowserHistory)));
 }
 
 void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
