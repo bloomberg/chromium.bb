@@ -60,17 +60,17 @@ function getCSS()
 
 function test()
 {
-    function onStyleSheetParsed(rules)
+    function onRulesParsed(isLastChunk, rules)
     {
         for (var i = 0; i < rules.length; ++i)
             InspectorTest.addObject(rules[i]);
-        InspectorTest.completeTest();
+        if (isLastChunk)
+            InspectorTest.completeTest();
     }
 
     function onStyleFetched(result)
     {
-        var parser = new SDK.CSSParser();
-        parser.parse(result.value, onStyleSheetParsed);
+        Common.formatterWorkerPool.parseCSS(result.value, onRulesParsed);
     }
 
     InspectorTest.evaluateInPage("getCSS()", onStyleFetched);
