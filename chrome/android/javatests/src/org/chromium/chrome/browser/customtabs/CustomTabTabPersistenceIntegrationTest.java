@@ -28,7 +28,7 @@ public class CustomTabTabPersistenceIntegrationTest extends CustomTabActivityTes
     }
 
     @MediumTest
-    public void testTabFilesDeletedOnClose() throws InterruptedException {
+    public void testTabFilesDeletedOnClose() {
         Tab tab = getActivity().getActivityTab();
         String expectedTabFileName = TabState.getTabStateFilename(tab.getId(), false);
         String expectedMetadataFileName =
@@ -45,8 +45,7 @@ public class CustomTabTabPersistenceIntegrationTest extends CustomTabActivityTes
     }
 
     private void waitForFileExistState(
-            final boolean exists, final String fileName, final File filePath)
-                    throws InterruptedException {
+            final boolean exists, final String fileName, final File filePath) {
         CriteriaHelper.pollInstrumentationThread(new Criteria(
                 String.format(Locale.US, "File, %s, expected to exist: %b", fileName, exists)) {
             @Override

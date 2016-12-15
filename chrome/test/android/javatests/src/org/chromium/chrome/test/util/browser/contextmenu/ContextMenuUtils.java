@@ -148,7 +148,7 @@ public class ContextMenuUtils {
 
     private static void selectOpenContextMenuItem(
             final ActivityInstrumentationTestCase2<?> testCase, final ContextMenu menu,
-            final int itemId) throws InterruptedException {
+            final int itemId) {
         MenuItem item = menu.findItem(itemId);
         Assert.assertNotNull("Could not find '" + itemId + "' in menu", item);
         Assert.assertTrue("'" + itemId + "' is not visible", item.isVisible());

@@ -111,7 +111,7 @@ public class AwImeTest extends AwTestBase {
         mTestJavascriptInterface.getFocusCallbackHelper().waitForCallback(0);
     }
 
-    private void waitForNonNullInputConnection() throws InterruptedException {
+    private void waitForNonNullInputConnection() {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

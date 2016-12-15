@@ -64,7 +64,7 @@ public class InterstitialPageTest extends ContentShellTestBase {
         waitForActiveShellToBeDoneLoading();
     }
 
-    private void waitForInterstitial(final boolean shouldBeShown) throws InterruptedException {
+    private void waitForInterstitial(final boolean shouldBeShown) {
         CriteriaHelper.pollUiThread(
                 Criteria.equals(shouldBeShown, new Callable<Boolean>() {
                     @Override
@@ -80,7 +80,7 @@ public class InterstitialPageTest extends ContentShellTestBase {
     @LargeTest
     @Feature({"Navigation"})
     @RetryOnFailure
-    public void testCloseInterstitial() throws InterruptedException, ExecutionException {
+    public void testCloseInterstitial() throws ExecutionException {
         final String proceedCommand = "PROCEED";
         final String htmlContent = "<html>"
                 + "<head>"

@@ -83,7 +83,7 @@ public class WebappModeTest extends MultiActivityTestBase {
     }
 
     private void fireWebappIntent(String id, String url, String title, String icon,
-            boolean addMac) throws Exception {
+            boolean addMac) {
         Intent intent = createIntent(id, url, title, icon, addMac);
 
         getInstrumentation().getTargetContext().startActivity(intent);
@@ -122,7 +122,7 @@ public class WebappModeTest extends MultiActivityTestBase {
      */
     @MediumTest
     @Feature({"Webapps"})
-    public void testWebappLaunches() throws Exception {
+    public void testWebappLaunches() {
         final WebappActivity firstActivity =
                 startWebappActivity(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON);
         final int firstTabId = firstActivity.getActivityTab().getId();
@@ -160,7 +160,7 @@ public class WebappModeTest extends MultiActivityTestBase {
      */
     @MediumTest
     @Feature({"Webapps"})
-    public void testWebappTabIdsProperlyAssigned() throws Exception {
+    public void testWebappTabIdsProperlyAssigned() {
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = prefs.edit();
         editor.putInt(TabIdManager.PREF_NEXT_ID, 11684);
@@ -215,7 +215,7 @@ public class WebappModeTest extends MultiActivityTestBase {
      */
     @MediumTest
     @Feature({"Webapps"})
-    public void testWebappRequiresValidMac() throws Exception {
+    public void testWebappRequiresValidMac() {
         // Try to start a WebappActivity.  Fail because the Intent is insecure.
         fireWebappIntent(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, false);
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -312,8 +312,7 @@ public class WebappModeTest extends MultiActivityTestBase {
      * ActivityUtils.waitForActivity() because of the way WebappActivity is instanced on pre-L
      * devices.
      */
-    private WebappActivity startWebappActivity(String id, String url, String title, String icon)
-            throws Exception {
+    private WebappActivity startWebappActivity(String id, String url, String title, String icon) {
         fireWebappIntent(id, url, title, icon, true);
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override

@@ -208,11 +208,7 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
         super.setUp();
         cleanUpAllDownloads();
 
-        try {
-            ApplicationUtils.waitForLibraryDependencies(getInstrumentation());
-        } catch (InterruptedException e) {
-            fail("Library dependencies were never initialized.");
-        }
+        ApplicationUtils.waitForLibraryDependencies(getInstrumentation());
         final Context context = getInstrumentation().getTargetContext().getApplicationContext();
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {

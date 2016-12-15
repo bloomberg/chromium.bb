@@ -86,8 +86,7 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         }
     }
 
-    private void assertWaitForScroll(final boolean hugLeft, final boolean hugTop)
-            throws InterruptedException {
+    private void assertWaitForScroll(final boolean hugLeft, final boolean hugTop) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

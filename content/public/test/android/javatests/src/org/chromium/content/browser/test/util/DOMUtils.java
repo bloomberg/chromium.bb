@@ -100,8 +100,7 @@ public class DOMUtils {
      * @param webContents The WebContents in which the media element lives.
      * @param id The element's id to check.
      */
-    public static void waitForMediaPlay(final WebContents webContents, final String id)
-            throws InterruptedException {
+    public static void waitForMediaPlay(final WebContents webContents, final String id) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -125,8 +124,7 @@ public class DOMUtils {
      * @param webContents The WebContents in which the media element lives.
      * @param id The element's id to check.
      */
-    public static void waitForMediaPauseBeforeEnd(final WebContents webContents, final String id)
-            throws InterruptedException {
+    public static void waitForMediaPauseBeforeEnd(final WebContents webContents, final String id) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -357,8 +355,7 @@ public class DOMUtils {
      * @param nodeId The id of the node.
      */
     public static void waitForNonZeroNodeBounds(final WebContents webContents,
-            final String nodeId)
-            throws InterruptedException {
+            final String nodeId) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

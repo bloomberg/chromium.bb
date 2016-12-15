@@ -225,7 +225,7 @@ public class NavigationPopupTest extends ChromeActivityTestCaseBase<ChromeActivi
 
     @MediumTest
     @Feature({"Navigation"})
-    public void testFaviconFetching() throws InterruptedException {
+    public void testFaviconFetching() {
         final TestNavigationController controller = new TestNavigationController();
         final NavigationPopup popup = new NavigationPopup(
                 mProfile, getActivity(), controller, true);

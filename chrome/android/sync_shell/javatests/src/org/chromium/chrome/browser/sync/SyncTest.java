@@ -67,7 +67,7 @@ public class SyncTest extends SyncTestBase {
 
     @LargeTest
     @Feature({"Sync"})
-    public void testStopAndClear() throws InterruptedException {
+    public void testStopAndClear() {
         setUpTestAccountAndSignIn();
         CriteriaHelper.pollUiThread(
                 new Criteria("Timed out checking that isSignedInOnNative() == true") {
@@ -99,7 +99,7 @@ public class SyncTest extends SyncTestBase {
      * @Feature({"Sync"})
      */
     @DisabledTest(message = "crbug.com/588050,crbug.com/595893")
-    public void testRename() throws InterruptedException {
+    public void testRename() {
         // The two accounts object that would represent the account rename.
         final Account oldAccount = setUpTestAccountAndSignIn();
         final Account newAccount = SigninTestUtil.addTestAccount("test2@gmail.com");
@@ -146,7 +146,7 @@ public class SyncTest extends SyncTestBase {
 
     @LargeTest
     @Feature({"Sync"})
-    public void testStopAndStartSync() throws InterruptedException {
+    public void testStopAndStartSync() {
         Account account = setUpTestAccountAndSignIn();
 
         stopSync();
@@ -161,7 +161,7 @@ public class SyncTest extends SyncTestBase {
      * @Feature({"Sync"})
      */
     @FlakyTest(message = "crbug.com/594558")
-    public void testStopAndStartSyncThroughAndroid() throws InterruptedException {
+    public void testStopAndStartSyncThroughAndroid() {
         Account account = setUpTestAccountAndSignIn();
 
         String authority = AndroidSyncSettings.getContractAuthority(mContext);
@@ -198,7 +198,7 @@ public class SyncTest extends SyncTestBase {
 
     @LargeTest
     @Feature({"Sync"})
-    public void testMasterSyncBlocksSyncStart() throws InterruptedException {
+    public void testMasterSyncBlocksSyncStart() {
         setUpTestAccountAndSignIn();
         stopSync();
         assertFalse(SyncTestUtil.isSyncRequested());

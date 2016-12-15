@@ -58,7 +58,7 @@ public class NotificationPlatformBridgeIntentTest
      */
     @MediumTest
     @Feature({"Browser", "Notifications"})
-    public void testLaunchNotificationPreferencesForCategory() throws Exception {
+    public void testLaunchNotificationPreferencesForCategory() {
         assertFalse("The native library should not be loaded yet", LibraryLoader.isInitialized());
 
         final Context context = getInstrumentation().getTargetContext().getApplicationContext();
@@ -90,7 +90,7 @@ public class NotificationPlatformBridgeIntentTest
      */
     @MediumTest
     @Feature({"Browser", "Notifications"})
-    public void testLaunchNotificationPreferencesForWebsite() throws Exception {
+    public void testLaunchNotificationPreferencesForWebsite() {
         assertFalse("The native library should not be loaded yet", LibraryLoader.isInitialized());
 
         final Context context = getInstrumentation().getTargetContext().getApplicationContext();

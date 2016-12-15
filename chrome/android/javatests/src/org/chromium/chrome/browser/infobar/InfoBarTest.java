@@ -58,7 +58,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     private EmbeddedTestServer mTestServer;
     private InfoBarTestAnimationListener mListener;
 
-    private void waitUntilNoInfoBarsExist() throws InterruptedException {
+    private void waitUntilNoInfoBarsExist() {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -67,7 +67,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         });
     }
 
-    private void waitUntilDataReductionPromoInfoBarAppears() throws InterruptedException {
+    private void waitUntilDataReductionPromoInfoBarAppears() {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -208,7 +208,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @CommandLineFlags.Add("force-fieldtrials=DataCompressionProxyPromoVisibility/Enabled")
     @Feature({"Browser", "Main"})
     @RetryOnFailure
-    public void testDataReductionPromoInfoBar() throws InterruptedException {
+    public void testDataReductionPromoInfoBar() {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -269,7 +269,7 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @CommandLineFlags.Add("force-fieldtrials=DataCompressionProxyPromoVisibility/Enabled")
     @Feature({"Browser", "Main"})
     @RetryOnFailure
-    public void testDataReductionPromoInfoBarDismissed() throws InterruptedException {
+    public void testDataReductionPromoInfoBarDismissed() {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

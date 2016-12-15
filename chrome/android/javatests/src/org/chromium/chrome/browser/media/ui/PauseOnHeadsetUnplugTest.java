@@ -69,7 +69,7 @@ public class PauseOnHeadsetUnplugTest extends ChromeActivityTestCaseBase<ChromeA
         super.tearDown();
     }
 
-    private void waitForNotificationReady() throws InterruptedException {
+    private void waitForNotificationReady() {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

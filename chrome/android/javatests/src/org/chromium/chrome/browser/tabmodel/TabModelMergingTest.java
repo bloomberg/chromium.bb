@@ -155,7 +155,7 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
     }
 
     private void mergeTabsAndAssert(final ChromeTabbedActivity activity,
-            final String[] expectedTabUrls) throws InterruptedException {
+            final String[] expectedTabUrls) {
         String selectedTabUrl = activity.getTabModelSelector().getCurrentTab().getUrl();
         mergeTabsAndAssert(activity, expectedTabUrls, expectedTabUrls.length, selectedTabUrl);
     }
@@ -169,7 +169,7 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
      */
     private void mergeTabsAndAssert(final ChromeTabbedActivity activity,
             final String[] expectedTabUrls, final int expectedNumberOfTabs,
-            String expectedSelectedTabUrl) throws InterruptedException {
+            String expectedSelectedTabUrl) {
         // Merge tabs into the activity.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -208,8 +208,7 @@ public class TabModelMergingTest extends ChromeTabbedActivityTestBase {
      * @return The newly created ChromeTabbedActivity.
      */
     private ChromeTabbedActivity startNewChromeTabbedActivityAndAssert(Intent intent,
-            String expectedSelectedTabUrl, String[] expectedTabUrls)
-            throws InterruptedException {
+            String expectedSelectedTabUrl, String[] expectedTabUrls) {
         final ChromeTabbedActivity newActivity =
                 (ChromeTabbedActivity) getInstrumentation().startActivitySync(intent);
 

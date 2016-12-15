@@ -32,7 +32,7 @@ public class FirstRunIntegrationTest extends ChromeTabbedActivityTestBase {
     @Feature({"FirstRunExperience"})
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     @RetryOnFailure
-    public void testExitFirstRunExperience() throws InterruptedException {
+    public void testExitFirstRunExperience() {
         if (FirstRunStatus.getFirstRunFlowComplete()) {
             return;
         }

@@ -250,7 +250,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         return bundle;
     }
 
-    private void openAppMenuAndAssertMenuShown() throws InterruptedException {
+    private void openAppMenuAndAssertMenuShown() {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -1796,16 +1796,12 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
                         sessionReference.set(client.newSession(callback));
                     }
                 });
-        try {
-            CriteriaHelper.pollInstrumentationThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return sessionReference.get() != null;
-                }
-            });
-        } catch (InterruptedException e) {
-            fail();
-        }
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return sessionReference.get() != null;
+            }
+        });
         return sessionReference.get();
     }
 

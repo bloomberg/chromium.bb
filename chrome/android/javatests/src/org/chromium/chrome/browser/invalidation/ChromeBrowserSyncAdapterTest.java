@@ -86,7 +86,7 @@ public class ChromeBrowserSyncAdapterTest extends ChromeActivityTestCaseBase<Chr
                 AndroidSyncSettings.getContractAuthority(getActivity()), null, new SyncResult());
     }
 
-    private void sendChromeToBackground(Activity activity) throws InterruptedException {
+    private void sendChromeToBackground(Activity activity) {
         Intent intent = new Intent(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_HOME);
         activity.startActivity(intent);
@@ -136,7 +136,7 @@ public class ChromeBrowserSyncAdapterTest extends ChromeActivityTestCaseBase<Chr
     @MediumTest
     @Feature({"Sync"})
     @RetryOnFailure
-    public void testRequestSyncWhenChromeInBackground() throws InterruptedException {
+    public void testRequestSyncWhenChromeInBackground() {
         sendChromeToBackground(getActivity());
         performSyncWithBundle(new Bundle());
         assertFalse(mSyncAdapter.mInvalidatedAllTypes);
@@ -147,7 +147,7 @@ public class ChromeBrowserSyncAdapterTest extends ChromeActivityTestCaseBase<Chr
     @MediumTest
     @Feature({"Sync"})
     @RetryOnFailure
-    public void testRequestInitializeSync() throws InterruptedException {
+    public void testRequestInitializeSync() {
         Bundle extras = new Bundle();
         extras.putBoolean(ContentResolver.SYNC_EXTRAS_INITIALIZE, true);
         performSyncWithBundle(extras);

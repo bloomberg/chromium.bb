@@ -138,7 +138,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
     }
 
     private static void selectItem(final BluetoothChooserDialogWithFakeNatives chooserDialog,
-            int position) throws InterruptedException {
+            int position) {
         final Dialog dialog = chooserDialog.mItemChooserDialog.getDialogForTesting();
         final ListView items = (ListView) dialog.findViewById(R.id.items);
         final Button button = (Button) dialog.findViewById(R.id.positive);
@@ -182,7 +182,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
     }
 
     @LargeTest
-    public void testCancel() throws InterruptedException {
+    public void testCancel() {
         ItemChooserDialog itemChooser = mChooserDialog.mItemChooserDialog;
         Dialog dialog = itemChooser.getDialogForTesting();
         assertTrue(dialog.isShowing());
@@ -214,7 +214,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
     }
 
     @LargeTest
-    public void testSelectItem() throws InterruptedException {
+    public void testSelectItem() {
         Dialog dialog = mChooserDialog.mItemChooserDialog.getDialogForTesting();
 
         TextViewWithClickableSpans statusView =
@@ -249,7 +249,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
     }
 
     @LargeTest
-    public void testNoLocationPermission() throws InterruptedException {
+    public void testNoLocationPermission() {
         ItemChooserDialog itemChooser = mChooserDialog.mItemChooserDialog;
         Dialog dialog = itemChooser.getDialogForTesting();
         assertTrue(dialog.isShowing());
@@ -319,7 +319,7 @@ public class BluetoothChooserDialogTest extends ChromeActivityTestCaseBase<Chrom
     }
 
     @LargeTest
-    public void testNoLocationServices() throws InterruptedException {
+    public void testNoLocationServices() {
         ItemChooserDialog itemChooser = mChooserDialog.mItemChooserDialog;
         Dialog dialog = itemChooser.getDialogForTesting();
         assertTrue(dialog.isShowing());

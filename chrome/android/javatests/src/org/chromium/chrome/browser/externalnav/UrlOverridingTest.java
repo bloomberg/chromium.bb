@@ -325,7 +325,7 @@ public class UrlOverridingTest extends ChromeActivityTestCaseBase<ChromeActivity
 
     @SmallTest
     @RetryOnFailure
-    public void testRedirectionFromIntent() throws InterruptedException {
+    public void testRedirectionFromIntent() {
         Intent intent = new Intent(Intent.ACTION_VIEW,
                 Uri.parse(mTestServer.getURL(NAVIGATION_FROM_JAVA_REDIRECTION_PAGE)));
         Context targetContext = getInstrumentation().getTargetContext();

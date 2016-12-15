@@ -88,7 +88,7 @@ public class GmsCoreSyncListenerTest extends SyncTestBase {
         waitForCallCount(2);
     }
 
-    private void encryptWithPassphrase(final String passphrase) throws InterruptedException {
+    private void encryptWithPassphrase(final String passphrase) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -100,7 +100,7 @@ public class GmsCoreSyncListenerTest extends SyncTestBase {
         SyncTestUtil.triggerSyncAndWaitForCompletion();
     }
 
-    private void decryptWithPassphrase(final String passphrase) throws InterruptedException {
+    private void decryptWithPassphrase(final String passphrase) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -109,7 +109,7 @@ public class GmsCoreSyncListenerTest extends SyncTestBase {
         });
     }
 
-    private void waitForCryptographer() throws InterruptedException {
+    private void waitForCryptographer() {
         CriteriaHelper.pollUiThread(new Criteria(
                 "Timed out waiting for cryptographer to be ready.") {
             @Override
@@ -121,7 +121,7 @@ public class GmsCoreSyncListenerTest extends SyncTestBase {
         });
     }
 
-    private void waitForCallCount(int count) throws InterruptedException {
+    private void waitForCallCount(int count) {
         CriteriaHelper.pollUiThread(Criteria.equals(count, new Callable<Integer>() {
             @Override
             public Integer call() {

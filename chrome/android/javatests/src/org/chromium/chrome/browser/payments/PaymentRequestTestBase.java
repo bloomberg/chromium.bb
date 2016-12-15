@@ -573,7 +573,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
     }
 
     /** Verifies the contents of the test webpage. */
-    protected void expectResultContains(final String[] contents) throws InterruptedException {
+    protected void expectResultContains(final String[] contents) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -603,8 +603,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
     }
 
     /**  Will fail if the OptionRow at |index| is not selected in Contact Details.*/
-    protected void expectContactDetailsRowIsSelected(final int index)
-            throws ExecutionException, InterruptedException {
+    protected void expectContactDetailsRowIsSelected(final int index) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -620,8 +619,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
     }
 
     /**  Will fail if the OptionRow at |index| is not selected in Shipping Address section.*/
-    protected void expectShippingAddressRowIsSelected(final int index)
-            throws ExecutionException, InterruptedException {
+    protected void expectShippingAddressRowIsSelected(final int index) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -637,8 +635,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
     }
 
     /**  Will fail if the OptionRow at |index| is not selected in PaymentMethod section.*/
-    protected void expectPaymentMethodRowIsSelected(final int index)
-            throws ExecutionException, InterruptedException {
+    protected void expectPaymentMethodRowIsSelected(final int index) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

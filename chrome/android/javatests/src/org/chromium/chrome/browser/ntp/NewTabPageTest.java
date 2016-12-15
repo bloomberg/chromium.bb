@@ -114,7 +114,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
     @CommandLineFlags.Add("enable-features=NTPSnippets")
-    public void testRender() throws IOException, InterruptedException {
+    public void testRender() throws IOException {
         ViewRenderer viewRenderer = new ViewRenderer(getActivity(),
                 "chrome/test/data/android/render_tests", "NewTabPageTest");
         viewRenderer.renderAndCompare(mMostVisitedLayout, "most_visited");
@@ -404,8 +404,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    private void waitForUrlFocusAnimationsDisabledState(boolean disabled)
-            throws InterruptedException {
+    private void waitForUrlFocusAnimationsDisabledState(boolean disabled) {
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(disabled, new Callable<Boolean>() {
             @Override
             public Boolean call() {
@@ -414,7 +413,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         }));
     }
 
-    private void waitForTabLoading() throws InterruptedException {
+    private void waitForTabLoading() {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -427,8 +426,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
         waitForUrlFocusPercent(ntp, 1f);
     }
 
-    private void waitForUrlFocusPercent(final NewTabPage ntp, float percent)
-            throws InterruptedException {
+    private void waitForUrlFocusPercent(final NewTabPage ntp, float percent) {
         CriteriaHelper.pollUiThread(Criteria.equals(percent, new Callable<Float>() {
             @Override
             public Float call() {
@@ -460,8 +458,7 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     /**
      * Waits until the top of the fakebox reaches the given position.
      */
-    private void waitForFakeboxTopPosition(final NewTabPage ntp, int position)
-            throws InterruptedException {
+    private void waitForFakeboxTopPosition(final NewTabPage ntp, int position) {
         CriteriaHelper.pollUiThread(Criteria.equals(position, new Callable<Integer>() {
             @Override
             public Integer call() {

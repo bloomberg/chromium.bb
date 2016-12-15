@@ -132,17 +132,13 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
      */
     protected void waitUntilIdle() {
         getInstrumentation().waitForIdleSync();
-        try {
-            CriteriaHelper.pollInstrumentationThread(new Criteria() {
-                    @Override
-                    public boolean isSatisfied() {
-                        return getActivity().getActivityTab() != null
-                                && !getActivity().getActivityTab().isLoading();
-                    }
-                }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
-        } catch (InterruptedException exception) {
-            fail();
-        }
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+                @Override
+                public boolean isSatisfied() {
+                    return getActivity().getActivityTab() != null
+                            && !getActivity().getActivityTab().isLoading();
+                }
+            }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
         getInstrumentation().waitForIdleSync();
     }
@@ -191,7 +187,7 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
     /**
      * Waits for the splash screen to be hidden.
      */
-    protected void waitUntilSplashscreenHides() throws InterruptedException {
+    protected void waitUntilSplashscreenHides() {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -201,16 +197,12 @@ public abstract class WebappActivityTestBase extends ChromeActivityTestCaseBase<
     }
 
     protected ViewGroup waitUntilSplashScreenAppears() {
-        try {
-            CriteriaHelper.pollInstrumentationThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return getActivity().getSplashScreenForTests() != null;
-                }
-            });
-        } catch (InterruptedException e) {
-            fail();
-        }
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().getSplashScreenForTests() != null;
+            }
+        });
 
         ViewGroup splashScreen = getActivity().getSplashScreenForTests();
         if (splashScreen == null) {

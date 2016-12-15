@@ -103,8 +103,7 @@ public class FirstRunTest extends SyncTestBase {
      * @param showSettings Whether to show the settings page.
      * @return The Preferences activity if showSettings was YES; null otherwise.
      */
-    private Preferences processFirstRun(String account, ShowSettings showSettings)
-            throws InterruptedException {
+    private Preferences processFirstRun(String account, ShowSettings showSettings) {
         FirstRunSignInProcessor.setFirstRunFlowSignInComplete(mContext, false);
         Bundle data = new Bundle();
         data.putString(FirstRunActivity.RESULT_SIGNIN_ACCOUNT_NAME, account);

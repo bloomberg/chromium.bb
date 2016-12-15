@@ -24,7 +24,7 @@ public class NewTabPageTestUtils {
      * @param tab The tab to be monitored for NTP loading.
      */
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public static void waitForNtpLoaded(final Tab tab) throws InterruptedException {
+    public static void waitForNtpLoaded(final Tab tab) {
         CriteriaHelper.pollUiThread(new Criteria("NTP never fully loaded") {
             @Override
             public boolean isSatisfied() {

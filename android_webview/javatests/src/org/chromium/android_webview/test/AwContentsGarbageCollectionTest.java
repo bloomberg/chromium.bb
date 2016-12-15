@@ -228,7 +228,7 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
         });
     }
 
-    private void gcAndCheckAllAwContentsDestroyed() throws InterruptedException {
+    private void gcAndCheckAllAwContentsDestroyed() {
         Runtime.getRuntime().gc();
 
         Criteria criteria = new Criteria() {

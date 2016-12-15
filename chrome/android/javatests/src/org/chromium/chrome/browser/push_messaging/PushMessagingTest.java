@@ -312,7 +312,7 @@ public class PushMessagingTest
         }
     }
 
-    private InfoBar getInfobarBlocking() throws InterruptedException {
+    private InfoBar getInfobarBlocking() {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -324,7 +324,7 @@ public class PushMessagingTest
         return infoBars.get(0);
     }
 
-    private void waitForInfobarToClose() throws InterruptedException {
+    private void waitForInfobarToClose() {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

@@ -52,8 +52,7 @@ public class TemplateUrlServiceTest extends NativeLibraryTestBase {
     @SmallTest
     @Feature({"ContextualSearch"})
     @RetryOnFailure
-    public void testUrlForContextualSearchQueryValid()
-            throws InterruptedException, ExecutionException {
+    public void testUrlForContextualSearchQueryValid() throws ExecutionException {
         waitForTemplateUrlServiceToLoad();
 
         assertTrue(ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
@@ -96,7 +95,7 @@ public class TemplateUrlServiceTest extends NativeLibraryTestBase {
     @Feature({"SearchEngines"})
     @RetryOnFailure
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE) // see crbug.com/581268
-    public void testLoadUrlService() throws InterruptedException {
+    public void testLoadUrlService() {
         assertFalse(ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -116,7 +115,7 @@ public class TemplateUrlServiceTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Feature({"SearchEngines"})
-    public void testSetAndGetSearchEngine() throws InterruptedException {
+    public void testSetAndGetSearchEngine() {
         final TemplateUrlService templateUrlService = waitForTemplateUrlServiceToLoad();
 
         List<TemplateUrl> searchEngines =
@@ -155,7 +154,7 @@ public class TemplateUrlServiceTest extends NativeLibraryTestBase {
         assertEquals(searchEngines.get(1).getKeyword(), searchEngineKeyword);
     }
 
-    private TemplateUrlService waitForTemplateUrlServiceToLoad() throws InterruptedException {
+    private TemplateUrlService waitForTemplateUrlServiceToLoad() {
         final AtomicBoolean observerNotified = new AtomicBoolean(false);
         final LoadListener listener = new LoadListener() {
             @Override

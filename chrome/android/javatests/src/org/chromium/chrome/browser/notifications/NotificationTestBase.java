@@ -116,7 +116,7 @@ public class NotificationTestBase extends ChromeTabbedActivityTestBase {
      * Waits for a mutation to occur in the mocked notification manager. This indicates that Chrome
      * called into Android to notify or cancel a notification.
      */
-    protected void waitForNotificationManagerMutation() throws InterruptedException {
+    protected void waitForNotificationManagerMutation() {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

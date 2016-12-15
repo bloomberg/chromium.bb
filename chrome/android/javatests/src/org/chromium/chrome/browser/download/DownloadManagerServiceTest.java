@@ -100,17 +100,13 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
         }
 
         public void waitTillExpectedCallsComplete() {
-            try {
-                CriteriaHelper.pollInstrumentationThread(
-                        new Criteria("Failed while waiting for all calls to complete.") {
-                            @Override
-                            public boolean isSatisfied() {
-                                return mExpectedCalls.isEmpty();
-                            }
-                        });
-            } catch (InterruptedException e) {
-                fail("Failed while waiting for all calls to complete." + e);
-            }
+            CriteriaHelper.pollInstrumentationThread(
+                    new Criteria("Failed while waiting for all calls to complete.") {
+                        @Override
+                        public boolean isSatisfied() {
+                            return mExpectedCalls.isEmpty();
+                        }
+                    });
         }
 
         public MockDownloadNotifier andThen(MethodID method, Object param) {
@@ -187,17 +183,13 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
         }
 
         public void waitForSnackbarControllerToFinish(final boolean success) {
-            try {
-                CriteriaHelper.pollInstrumentationThread(
-                        new Criteria("Failed while waiting for all calls to complete.") {
-                            @Override
-                            public boolean isSatisfied() {
-                                return success ? mSucceeded : mFailed;
-                            }
-                        });
-            } catch (InterruptedException e) {
-                fail("Failed while waiting for all calls to complete." + e);
-            }
+            CriteriaHelper.pollInstrumentationThread(
+                    new Criteria("Failed while waiting for all calls to complete.") {
+                        @Override
+                        public boolean isSatisfied() {
+                            return success ? mSucceeded : mFailed;
+                        }
+                    });
         }
 
         @Override
@@ -540,7 +532,7 @@ public class DownloadManagerServiceTest extends NativeLibraryTestBase {
      */
     @MediumTest
     @Feature({"Download"})
-    public void testClearPendingOMADownloads() throws InterruptedException {
+    public void testClearPendingOMADownloads() {
         DownloadManager manager =
                 (DownloadManager) getTestContext().getSystemService(Context.DOWNLOAD_SERVICE);
         long downloadId = manager.addCompletedDownload(

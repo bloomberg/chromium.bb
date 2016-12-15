@@ -217,7 +217,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    private void waitUntilNoInfoBarsExist() throws Exception {
+    private void waitUntilNoInfoBarsExist() {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -226,7 +226,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    private void waitUntilAppDetailsRetrieved(final int numExpected) throws Exception {
+    private void waitUntilAppDetailsRetrieved(final int numExpected) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -237,7 +237,7 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    private void waitUntilAppBannerInfoBarAppears(final String title) throws Exception {
+    private void waitUntilAppBannerInfoBarAppears(final String title) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

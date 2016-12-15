@@ -127,8 +127,7 @@ public class ExternalPrerenderHandlerTest extends NativeLibraryTestBase {
         return ThreadUtils.runOnUiThreadBlocking(addPrerenderCallable);
     }
 
-    private void ensureCompletedPrerenderForUrl(final WebContents webContents, final String url)
-            throws Exception {
+    private void ensureCompletedPrerenderForUrl(final WebContents webContents, final String url) {
         CriteriaHelper.pollUiThread(new Criteria("No Prerender") {
             @Override
             public boolean isSatisfied() {

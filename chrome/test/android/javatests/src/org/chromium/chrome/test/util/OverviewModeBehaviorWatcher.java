@@ -71,9 +71,8 @@ public class OverviewModeBehaviorWatcher implements OverviewModeObserver {
     /**
      * Blocks until all of the expected events have occurred.  Once the events of this class
      * are met it will always return immediately from {@link #waitForBehavior()}.
-     * @throws InterruptedException
      */
-    public void waitForBehavior() throws InterruptedException {
+    public void waitForBehavior() {
         try {
             CriteriaHelper.pollUiThread(mCriteria);
         } finally {

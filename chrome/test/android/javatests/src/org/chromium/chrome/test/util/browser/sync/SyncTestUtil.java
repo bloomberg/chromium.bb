@@ -67,7 +67,7 @@ public final class SyncTestUtil {
     /**
      * Waits for sync to become active.
      */
-    public static void waitForSyncActive() throws InterruptedException {
+    public static void waitForSyncActive() {
         CriteriaHelper.pollUiThread(new Criteria("Timed out waiting for sync to become active.") {
             @Override
             public boolean isSatisfied() {
@@ -79,7 +79,7 @@ public final class SyncTestUtil {
     /**
      * Waits for sync's engine to be initialized.
      */
-    public static void waitForEngineInitialized() throws InterruptedException {
+    public static void waitForEngineInitialized() {
         CriteriaHelper.pollUiThread(
                 new Criteria("Timed out waiting for sync's engine to initialize.") {
                     @Override
@@ -110,7 +110,7 @@ public final class SyncTestUtil {
      * one that it triggered. Therefore this method should only be used where it can result in
      * false positives (e.g. checking that something doesn't sync), not false negatives.
      */
-    public static void triggerSyncAndWaitForCompletion() throws InterruptedException {
+    public static void triggerSyncAndWaitForCompletion() {
         final long oldSyncTime = getCurrentSyncTime();
         triggerSync();
         CriteriaHelper.pollInstrumentationThread(new Criteria(

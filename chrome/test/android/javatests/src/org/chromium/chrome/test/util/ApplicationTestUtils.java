@@ -75,7 +75,7 @@ public class ApplicationTestUtils {
      * The 'cache' directory is recreated as an empty directory.
      * @param context Target instrumentation context.
      */
-    public static void clearAppData(Context context) throws InterruptedException {
+    public static void clearAppData(Context context) {
         ApplicationData.clearAppData(context);
     }
 
@@ -99,7 +99,7 @@ public class ApplicationTestUtils {
     }
 
     /** Waits until Chrome is in the background. */
-    public static void waitUntilChromeInBackground() throws Exception {
+    public static void waitUntilChromeInBackground() {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -111,7 +111,7 @@ public class ApplicationTestUtils {
     }
 
     /** Waits until Chrome is in the foreground. */
-    public static void waitUntilChromeInForeground() throws Exception {
+    public static void waitUntilChromeInForeground() {
         CriteriaHelper.pollInstrumentationThread(
                 Criteria.equals(ApplicationState.HAS_RUNNING_ACTIVITIES, new Callable<Integer>() {
                     @Override
@@ -195,7 +195,7 @@ public class ApplicationTestUtils {
      * See {@link #assertWaitForPageScaleFactorMatch(ChromeActivity,float,long)}.
      */
     public static void assertWaitForPageScaleFactorMatch(
-            final ChromeActivity activity, final float expectedScale) throws InterruptedException {
+            final ChromeActivity activity, final float expectedScale) {
         assertWaitForPageScaleFactorMatch(activity, expectedScale, false);
     }
 
@@ -207,7 +207,7 @@ public class ApplicationTestUtils {
      * the default seems to be 1.0f.
      */
     public static void assertWaitForPageScaleFactorMatch(final ChromeActivity activity,
-            final float expectedScale, boolean waitLongerForLoad) throws InterruptedException {
+            final float expectedScale, boolean waitLongerForLoad) {
         long waitTimeInMs = waitLongerForLoad ? 10000 : CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override

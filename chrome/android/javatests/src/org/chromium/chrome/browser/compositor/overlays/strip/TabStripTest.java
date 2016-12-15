@@ -1113,8 +1113,7 @@ public class TabStripTest extends ChromeTabbedActivityTestBase {
      * @param expectsShown Whether shown status is expected.
      * @throws InterruptedException
      */
-    private void assertWaitForKeyboardStatus(final boolean expectsShown)
-            throws InterruptedException {
+    private void assertWaitForKeyboardStatus(final boolean expectsShown) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

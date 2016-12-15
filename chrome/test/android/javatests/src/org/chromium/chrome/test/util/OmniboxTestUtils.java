@@ -284,8 +284,7 @@ public class OmniboxTestUtils {
      * @param urlBar The UrlBar whose focus is being changed.
      * @param gainFocus Whether focus should be requested or cleared.
      */
-    public static void toggleUrlBarFocus(final UrlBar urlBar,
-                                         boolean gainFocus) throws InterruptedException {
+    public static void toggleUrlBarFocus(final UrlBar urlBar, boolean gainFocus) {
         if (gainFocus) {
             // During early startup (before completion of its first onDraw), the UrlBar
             // is not focusable. Tests have to wait for that to happen before trying to focus it.
@@ -313,8 +312,7 @@ public class OmniboxTestUtils {
      * @param urlBar The UrlBar whose focus is being inspected.
      * @param active Whether the UrlBar is expected to have focus or not.
      */
-    public static void waitForFocusAndKeyboardActive(final UrlBar urlBar, final boolean active)
-            throws InterruptedException {
+    public static void waitForFocusAndKeyboardActive(final UrlBar urlBar, final boolean active) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -329,8 +327,7 @@ public class OmniboxTestUtils {
      *
      * @param locationBar The LocationBar who owns the suggestions.
      */
-    public static void waitForOmniboxSuggestions(final LocationBarLayout locationBar)
-            throws InterruptedException {
+    public static void waitForOmniboxSuggestions(final LocationBarLayout locationBar) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -349,8 +346,7 @@ public class OmniboxTestUtils {
      * @param expectedCount The number of suggestions expected to be shown.
      */
     public static void waitForOmniboxSuggestions(
-            final LocationBarLayout locationBar, final int expectedCount)
-            throws InterruptedException {
+            final LocationBarLayout locationBar, final int expectedCount) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

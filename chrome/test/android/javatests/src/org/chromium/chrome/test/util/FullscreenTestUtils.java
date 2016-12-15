@@ -31,10 +31,9 @@ public class FullscreenTestUtils {
      * @param tab The {@link Tab} to toggle fullscreen on.
      * @param state Whether the tab should be set to fullscreen.
      * @param activity The {@link Activity} owning the tab.
-     * @throws InterruptedException
      */
     public static void togglePersistentFullscreenAndAssert(final Tab tab, final boolean state,
-            Activity activity) throws InterruptedException {
+            Activity activity) {
         final TabWebContentsDelegateAndroid delegate = tab.getTabWebContentsDelegateAndroid();
         FullscreenTestUtils.togglePersistentFullscreen(delegate, state);
         FullscreenTestUtils.waitForFullscreenFlag(tab, state, activity);
@@ -63,10 +62,9 @@ public class FullscreenTestUtils {
      * @param tab The {@link Tab} that is expected to have the flag set.
      * @param state Whether the tab should be to fullscreen.
      * @param activity The {@link Activity} owning the tab.
-     * @throws InterruptedException
      */
     public static void waitForFullscreenFlag(final Tab tab, final boolean state,
-            final Activity activity) throws InterruptedException {
+            final Activity activity) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -80,10 +78,9 @@ public class FullscreenTestUtils {
      *
      * @param delegate The {@link TabWebContentsDelegateAndroid} for the tab.
      * @param state Whether the tab should be set to fullscreen.
-     * @throws InterruptedException
      */
     public static void waitForPersistentFullscreen(final TabWebContentsDelegateAndroid delegate,
-            boolean state) throws InterruptedException {
+            boolean state) {
         CriteriaHelper.pollUiThread(Criteria.equals(state, new Callable<Boolean>() {
             @Override
             public Boolean call() {

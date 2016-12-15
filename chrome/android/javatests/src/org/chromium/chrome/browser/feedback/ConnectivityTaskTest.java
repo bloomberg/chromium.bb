@@ -31,7 +31,7 @@ public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
 
     @MediumTest
     @Feature({"Feedback"})
-    public void testNormalCaseShouldWork() throws InterruptedException {
+    public void testNormalCaseShouldWork() {
         final ConnectivityTask task = ThreadUtils.runOnUiThreadBlockingNoException(
                 new Callable<ConnectivityTask>() {
                     @Override
@@ -144,7 +144,7 @@ public class ConnectivityTaskTest extends ConnectivityCheckerTestBase {
 
     @MediumTest
     @Feature({"Feedback"})
-    public void testTwoTimeoutsShouldFillInTheRest() throws InterruptedException {
+    public void testTwoTimeoutsShouldFillInTheRest() {
         final ConnectivityTask task = ThreadUtils.runOnUiThreadBlockingNoException(
                 new Callable<ConnectivityTask>() {
                     @Override

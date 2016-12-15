@@ -64,11 +64,16 @@ public class CriteriaHelper {
      * @param checkIntervalMs The number of ms between checks.
      */
     public static void pollInstrumentationThread(Criteria criteria, long maxTimeoutMs,
-            long checkIntervalMs) throws InterruptedException {
+            long checkIntervalMs) {
         boolean isSatisfied = criteria.isSatisfied();
         long startTime = SystemClock.uptimeMillis();
         while (!isSatisfied && SystemClock.uptimeMillis() - startTime < maxTimeoutMs) {
-            Thread.sleep(checkIntervalMs);
+            try {
+                Thread.sleep(checkIntervalMs);
+            } catch (InterruptedException e) {
+                // Catch the InterruptedException. If the exception occurs before maxTimeoutMs
+                // and the criteria is not satisfied, the while loop will run again.
+            }
             isSatisfied = criteria.isSatisfied();
         }
         Assert.assertTrue(criteria.getFailureReason(), isSatisfied);
@@ -85,7 +90,7 @@ public class CriteriaHelper {
      *
      * @see #pollInstrumentationThread(Criteria, long, long)
      */
-    public static void pollInstrumentationThread(Criteria criteria) throws InterruptedException {
+    public static void pollInstrumentationThread(Criteria criteria) {
         pollInstrumentationThread(criteria, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
     }
 
@@ -101,7 +106,7 @@ public class CriteriaHelper {
      * @see #pollInstrumentationThread(Criteria)
      */
     public static void pollUiThread(final Criteria criteria, long maxTimeoutMs,
-            long checkIntervalMs) throws InterruptedException {
+            long checkIntervalMs) {
         final Callable<Boolean> callable = new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -129,7 +134,7 @@ public class CriteriaHelper {
      *
      * @see #pollInstrumentationThread(Criteria)
      */
-    public static void pollUiThread(final Criteria criteria) throws InterruptedException {
+    public static void pollUiThread(final Criteria criteria) {
         pollUiThread(criteria, DEFAULT_MAX_TIME_TO_POLL, DEFAULT_POLLING_INTERVAL);
     }
 }

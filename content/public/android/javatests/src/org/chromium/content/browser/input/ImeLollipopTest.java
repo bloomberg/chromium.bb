@@ -79,8 +79,7 @@ public class ImeLollipopTest extends ImeTest {
         });
     }
 
-    private void waitForUpdateCursorAnchorInfoComposingText(final String expected)
-            throws InterruptedException {
+    private void waitForUpdateCursorAnchorInfoComposingText(final String expected) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

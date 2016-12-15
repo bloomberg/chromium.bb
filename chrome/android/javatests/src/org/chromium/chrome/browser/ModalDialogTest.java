@@ -270,7 +270,7 @@ public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> 
      */
     @MediumTest
     @Feature({"Browser", "Main"})
-    public void testDialogDismissedAfterClosingTab() throws InterruptedException {
+    public void testDialogDismissedAfterClosingTab() {
         executeJavaScriptAndWaitForDialog("alert('Android')");
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -290,8 +290,7 @@ public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> 
      * Asynchronously executes the given code for spawning a dialog and waits
      * for the dialog to be visible.
      */
-    private OnEvaluateJavaScriptResultHelper executeJavaScriptAndWaitForDialog(String script)
-            throws InterruptedException {
+    private OnEvaluateJavaScriptResultHelper executeJavaScriptAndWaitForDialog(String script) {
         return executeJavaScriptAndWaitForDialog(new OnEvaluateJavaScriptResultHelper(), script);
     }
 
@@ -300,8 +299,7 @@ public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> 
      * code for spawning a dialog and waits for the dialog to be visible.
      */
     private OnEvaluateJavaScriptResultHelper executeJavaScriptAndWaitForDialog(
-            final OnEvaluateJavaScriptResultHelper helper, String script)
-            throws InterruptedException {
+            final OnEvaluateJavaScriptResultHelper helper, String script) {
         helper.evaluateJavaScriptForTests(
                 getActivity().getCurrentContentViewCore().getWebContents(),
                 script);

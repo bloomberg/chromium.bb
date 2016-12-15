@@ -68,8 +68,7 @@ public class PartnerDisableIncognitoModeIntegrationTest extends
         }
     }
 
-    private void waitForParentalControlsEnabledState(final boolean parentalControlsEnabled)
-            throws InterruptedException {
+    private void waitForParentalControlsEnabledState(final boolean parentalControlsEnabled) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

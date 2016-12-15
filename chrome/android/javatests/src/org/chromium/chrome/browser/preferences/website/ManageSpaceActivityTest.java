@@ -64,7 +64,7 @@ public class ManageSpaceActivityTest extends ChromeActivityTestCaseBase<ChromeAc
         return (ManageSpaceActivity) getInstrumentation().startActivitySync(intent);
     }
 
-    public void waitForClearButtonEnabled(final ManageSpaceActivity activity) throws Exception {
+    public void waitForClearButtonEnabled(final ManageSpaceActivity activity) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -82,7 +82,7 @@ public class ManageSpaceActivityTest extends ChromeActivityTestCaseBase<ChromeAc
         };
     }
 
-    public void waitForDialogShowing(final ManageSpaceActivity activity) throws Exception {
+    public void waitForDialogShowing(final ManageSpaceActivity activity) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

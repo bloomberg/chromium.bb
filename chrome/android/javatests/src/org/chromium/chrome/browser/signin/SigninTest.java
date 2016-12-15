@@ -31,7 +31,6 @@ import org.chromium.chrome.test.util.ChromeRestriction;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.signin.ChromeSigninController;
-import org.chromium.components.signin.test.util.MockAccountManager;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 
 /**
@@ -131,12 +130,10 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
         private final Object mLock = new Object();
         private boolean mIsLoaded;
         private boolean mAdded;
-        private boolean mAllUserNodesRemoved;
 
         public TestBookmarkModelObserver(BookmarkBridge bookmarks) {
             mIsLoaded = bookmarks.isBookmarkModelLoaded();
             mAdded = false;
-            mAllUserNodesRemoved = false;
         }
 
         public void waitForBookmarkModelToLoad() {
@@ -154,18 +151,6 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
         public void waitForBookmarkAdded() {
             synchronized (mLock) {
                 while (!mAdded) {
-                    try {
-                        mLock.wait();
-                    } catch (InterruptedException exception) {
-                        // Ignore.
-                    }
-                }
-            }
-        }
-
-        public void waitForAllUserBookmarksRemoved() {
-            synchronized (mLock) {
-                while (!mAllUserNodesRemoved) {
                     try {
                         mLock.wait();
                     } catch (InterruptedException exception) {
@@ -194,7 +179,6 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
         @Override
         public void bookmarkAllUserNodesRemoved() {
             synchronized (mLock) {
-                mAllUserNodesRemoved = true;
                 mLock.notify();
             }
         }
@@ -206,7 +190,6 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
     }
 
     private Context mContext;
-    private MockAccountManager mAccountManager;
     private SigninManager mSigninManager;
     private PrefServiceBridge mPrefService;
     private BookmarkBridge mBookmarks;
@@ -287,7 +270,7 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
-    public void testConsumerSignin() throws InterruptedException {
+    public void testConsumerSignin() {
         SigninTestUtil.addTestAccount();
         signInToSingleAccount();
 
@@ -377,7 +360,7 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
         assertTrue(ChromeSigninController.get(mContext).isSignedIn());
     }
 
-    private void signOut() throws InterruptedException {
+    private void signOut() {
         // Verify that we are currently signed in.
         assertTrue(ChromeSigninController.get(mContext).isSignedIn());
 
@@ -435,8 +418,7 @@ public class SigninTest extends ChromeTabbedActivityTestBase {
         signOutPref.getOnPreferenceClickListener().onPreferenceClick(signOutPref);
     }
 
-    private void acceptAlertDialogWithTag(Activity activity, String tag)
-            throws InterruptedException {
+    private void acceptAlertDialogWithTag(Activity activity, String tag) {
         getInstrumentation().waitForIdleSync();
         DialogFragment fragment = ActivityUtils.waitForFragment(activity, tag);
         AlertDialog dialog = (AlertDialog) fragment.getDialog();

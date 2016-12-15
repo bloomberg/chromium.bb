@@ -49,34 +49,34 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
         simulateUpdateTitle(mTab, "title1");
     }
 
-    private void doTestSessionStatePlaying() throws InterruptedException {
+    private void doTestSessionStatePlaying() {
         simulateMediaSessionStateChanged(mTab, true, false);
         assertTitleMatches("title1");
         simulateUpdateTitle(mTab, "title2");
         assertTitleMatches("title2");
     }
 
-    private void doTestSessionStatePaused() throws InterruptedException {
+    private void doTestSessionStatePaused() {
         simulateMediaSessionStateChanged(mTab, true, true);
         assertTitleMatches("title1");
         simulateUpdateTitle(mTab, "title2");
         assertTitleMatches("title2");
     }
 
-    private void doTestSessionStateUncontrollable() throws InterruptedException {
+    private void doTestSessionStateUncontrollable() {
         simulateMediaSessionStateChanged(mTab, true, false);
         assertTitleMatches("title1");
         simulateMediaSessionStateChanged(mTab, false, false);
         simulateUpdateTitle(mTab, "title2");
     }
 
-    private void doTestMediaMetadataSetsTitle() throws InterruptedException {
+    private void doTestMediaMetadataSetsTitle() {
         simulateMediaSessionStateChanged(mTab, true, false);
         simulateMediaSessionMetadataChanged(mTab, new MediaMetadata("title2", "", ""));
         assertTitleMatches("title2");
     }
 
-    private void doTestMediaMetadataOverridesTitle() throws InterruptedException {
+    private void doTestMediaMetadataOverridesTitle() {
         simulateMediaSessionStateChanged(mTab, true, false);
         simulateMediaSessionMetadataChanged(mTab, new MediaMetadata("title2", "", ""));
         assertTitleMatches("title2");
@@ -109,12 +109,12 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
     }
 
     @SmallTest
-    public void testSessionStatePlaying_MediaStyleNotification() throws InterruptedException {
+    public void testSessionStatePlaying_MediaStyleNotification() {
         doTestSessionStatePlaying();
     }
 
     @SmallTest
-    public void testSessionStatePaused_MediaStyleNotification() throws InterruptedException {
+    public void testSessionStatePaused_MediaStyleNotification() {
         doTestSessionStatePaused();
     }
 
@@ -125,13 +125,12 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
     }
 
     @SmallTest
-    public void testMediaMetadataSetsTitle_MediaStyleNotification() throws InterruptedException {
+    public void testMediaMetadataSetsTitle_MediaStyleNotification() {
         doTestMediaMetadataSetsTitle();
     }
 
     @SmallTest
-    public void testMediaMetadataOverridesTitle_MediaStyleNotification()
-            throws InterruptedException {
+    public void testMediaMetadataOverridesTitle_MediaStyleNotification() {
         doTestMediaMetadataOverridesTitle();
     }
 
@@ -186,7 +185,7 @@ public class NotificationTitleUpdatedTest extends ChromeActivityTestCaseBase<Chr
         }
     }
 
-    void assertTitleMatches(final String title) throws InterruptedException {
+    void assertTitleMatches(final String title) {
         // The service might still not be created which delays the creation of the notification
         // builder.
         CriteriaHelper.pollUiThread(new Criteria() {

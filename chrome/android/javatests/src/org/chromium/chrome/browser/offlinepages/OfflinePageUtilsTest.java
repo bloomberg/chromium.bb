@@ -103,18 +103,14 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
         }
 
         public void waitForSnackbarControllerToFinish() {
-            try {
-                CriteriaHelper.pollUiThread(
-                        new Criteria("Failed while waiting for snackbar calls to complete.") {
-                            @Override
-                            public boolean isSatisfied() {
-                                return mDismissed;
-                            }
-                        },
-                        SNACKBAR_TIMEOUT, POLLING_INTERVAL);
-            } catch (InterruptedException e) {
-                fail("Failed while waiting for snackbar calls to complete." + e);
-            }
+            CriteriaHelper.pollUiThread(
+                    new Criteria("Failed while waiting for snackbar calls to complete.") {
+                        @Override
+                        public boolean isSatisfied() {
+                            return mDismissed;
+                        }
+                    },
+                    SNACKBAR_TIMEOUT, POLLING_INTERVAL);
         }
 
         @Override
@@ -313,16 +309,12 @@ public class OfflinePageUtilsTest extends ChromeActivityTestCaseBase<ChromeActiv
             }
         });
 
-        try {
-            CriteriaHelper.pollInstrumentationThread(
-                    new Criteria("Failed while waiting for file operation to complete.") {
-                        @Override
-                        public boolean isSatisfied() {
-                            return !offlineSharingDir.exists();
-                        }
-                    });
-        } catch (InterruptedException e) {
-            fail("Failed while waiting for file operation to complete." + e);
-        }
+        CriteriaHelper.pollInstrumentationThread(
+                new Criteria("Failed while waiting for file operation to complete.") {
+                    @Override
+                    public boolean isSatisfied() {
+                        return !offlineSharingDir.exists();
+                    }
+                });
     }
 }

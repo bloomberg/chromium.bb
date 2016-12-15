@@ -306,7 +306,7 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
     // Wait and assert helper methods -------------------------------------------------------------
 
     private void waitForKeyboardShowRequest(final TestInputMethodManagerWrapper immw,
-            final int count) throws InterruptedException {
+            final int count) {
         CriteriaHelper.pollUiThread(
                 Criteria.equals(count, new Callable<Integer>() {
                     @Override
@@ -316,7 +316,7 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
                 }));
     }
 
-    private void waitForAnchorViewAdd(final ViewGroup view) throws InterruptedException {
+    private void waitForAnchorViewAdd(final ViewGroup view) {
         CriteriaHelper.pollUiThread(new Criteria(
                 "Autofill Popup anchor view was never added.") {
             @Override
@@ -326,7 +326,7 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
         });
     }
 
-    private void waitForAutofillPopopShow(final AutofillPopup popup) throws InterruptedException {
+    private void waitForAutofillPopopShow(final AutofillPopup popup) {
         CriteriaHelper.pollUiThread(
                 new Criteria("Autofill Popup anchor view was never added.") {
                     @Override
@@ -338,7 +338,7 @@ public class AutofillPopupTest extends ChromeActivityTestCaseBase<ChromeActivity
                 });
     }
 
-    private void waitForInputFieldFill(final WebContents webContents) throws InterruptedException {
+    private void waitForInputFieldFill(final WebContents webContents) {
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria("First name field was never filled.") {
                     @Override

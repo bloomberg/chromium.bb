@@ -651,8 +651,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         });
     }
 
-    private void waitForClipboardContents(final Context context, final String expectedContents)
-            throws InterruptedException {
+    private void waitForClipboardContents(final Context context, final String expectedContents) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -665,8 +664,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         });
     }
 
-    private void waitForSelectActionBarVisible(
-            final boolean visible) throws InterruptedException {
+    private void waitForSelectActionBarVisible(final boolean visible) {
         CriteriaHelper.pollUiThread(Criteria.equals(visible, new Callable<Boolean>() {
             @Override
             public Boolean call() {
@@ -721,7 +719,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         clipboardManager.setPrimaryClip(clip);
     }
 
-    private void waitForPastePopupStatus(final boolean show) throws InterruptedException {
+    private void waitForPastePopupStatus(final boolean show) {
         CriteriaHelper.pollUiThread(Criteria.equals(show, new Callable<Boolean>() {
             @Override
             public Boolean call() {
@@ -730,7 +728,7 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         }));
     }
 
-    private void waitForInsertion(final boolean show) throws InterruptedException {
+    private void waitForInsertion(final boolean show) {
         CriteriaHelper.pollUiThread(Criteria.equals(show, new Callable<Boolean>() {
             @Override
             public Boolean call() {

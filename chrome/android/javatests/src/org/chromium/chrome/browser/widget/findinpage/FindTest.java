@@ -61,7 +61,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
     /**
      * Returns the FindResults text.
      */
-    private String waitForFindResults(String expectedResult) throws InterruptedException {
+    private String waitForFindResults(String expectedResult) {
         final TextView findResults = (TextView) getActivity().findViewById(R.id.find_status);
         assertNotNull(expectedResult);
         assertNotNull(findResults);
@@ -87,7 +87,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
         waitForFindInPageVisibility(true);
     }
 
-    private void waitForFindInPageVisibility(final boolean visible) throws InterruptedException {
+    private void waitForFindInPageVisibility(final boolean visible) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -391,7 +391,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
         waitForFindInPageVisibility(false);
     }
 
-    private void waitForIME(final boolean imePresent) throws InterruptedException {
+    private void waitForIME(final boolean imePresent) {
         // Wait for IME to appear.
         CriteriaHelper.pollUiThread(new Criteria("IME is not getting shown!") {
             @Override

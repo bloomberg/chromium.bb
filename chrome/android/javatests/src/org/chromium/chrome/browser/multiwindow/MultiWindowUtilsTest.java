@@ -41,7 +41,7 @@ public class MultiWindowUtilsTest extends  ChromeTabbedActivityTestBase {
      */
     @SmallTest
     @Feature("MultiWindow")
-    public void testTabbedActivityForIntentWithExtraWindowId() throws InterruptedException {
+    public void testTabbedActivityForIntentWithExtraWindowId() {
         ChromeTabbedActivity activity1 = getActivity();
         createSecondChromeTabbedActivity(activity1);
 
@@ -60,7 +60,7 @@ public class MultiWindowUtilsTest extends  ChromeTabbedActivityTestBase {
      */
     @SmallTest
     @Feature("MultiWindow")
-    public void testTabbedActivityForIntentLastResumedActivity() throws InterruptedException {
+    public void testTabbedActivityForIntentLastResumedActivity() {
         ChromeTabbedActivity activity1 = getActivity();
         final ChromeTabbedActivity2 activity2 = createSecondChromeTabbedActivity(activity1);
 
@@ -91,8 +91,7 @@ public class MultiWindowUtilsTest extends  ChromeTabbedActivityTestBase {
     @SmallTest
     @Feature("MultiWindow")
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void testTabbedActivityForIntentOnlyActivity1IsRunning()
-            throws InterruptedException {
+    public void testTabbedActivityForIntentOnlyActivity1IsRunning() {
         ChromeTabbedActivity activity1 = getActivity();
         ChromeTabbedActivity2 activity2 = createSecondChromeTabbedActivity(activity1);
         activity2.finishAndRemoveTask();
@@ -110,8 +109,7 @@ public class MultiWindowUtilsTest extends  ChromeTabbedActivityTestBase {
     @SmallTest
     @Feature("MultiWindow")
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void testTabbedActivityForIntentOnlyActivity2IsRunning()
-            throws InterruptedException {
+    public void testTabbedActivityForIntentOnlyActivity2IsRunning() {
         ChromeTabbedActivity activity1 = getActivity();
         createSecondChromeTabbedActivity(activity1);
         activity1.finishAndRemoveTask();
@@ -146,7 +144,7 @@ public class MultiWindowUtilsTest extends  ChromeTabbedActivityTestBase {
     @SmallTest
     @Feature("MultiWindow")
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public void testTabbedActivity2TaskRunning() throws InterruptedException {
+    public void testTabbedActivity2TaskRunning() {
         ChromeTabbedActivity activity2 = createSecondChromeTabbedActivity(getActivity());
         assertTrue(MultiWindowUtils.getInstance().getTabbedActivity2TaskRunning());
 
@@ -156,8 +154,7 @@ public class MultiWindowUtilsTest extends  ChromeTabbedActivityTestBase {
         assertFalse(MultiWindowUtils.getInstance().getTabbedActivity2TaskRunning());
     }
 
-    public static ChromeTabbedActivity2 createSecondChromeTabbedActivity(Activity activity)
-            throws InterruptedException {
+    public static ChromeTabbedActivity2 createSecondChromeTabbedActivity(Activity activity) {
         // TODO(twellington): after there is test support for putting an activity into multi-window
         // mode, this should be changed to use the menu item for opening a new window.
 

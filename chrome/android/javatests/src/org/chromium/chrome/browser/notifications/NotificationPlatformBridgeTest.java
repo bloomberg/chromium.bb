@@ -70,7 +70,7 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
         }
     }
 
-    private InfoBar getInfobarBlocking() throws InterruptedException {
+    private InfoBar getInfobarBlocking() {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -82,7 +82,7 @@ public class NotificationPlatformBridgeTest extends NotificationTestBase {
         return infoBars.get(0);
     }
 
-    private void waitForInfobarToClose() throws InterruptedException {
+    private void waitForInfobarToClose() {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

@@ -56,7 +56,7 @@ public class WebappSplashScreenThemeColorTest extends WebappActivityTestBase {
     @Feature({"Webapps"})
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @RetryOnFailure
-    public void testThemeColorNotUsedIfPagesHasOne() throws InterruptedException {
+    public void testThemeColorNotUsedIfPagesHasOne() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
         ThreadUtils.runOnUiThread(new Runnable() {

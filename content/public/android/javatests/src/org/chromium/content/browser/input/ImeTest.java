@@ -467,8 +467,7 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals(after, getTextAfterCursor(100, 0));
     }
 
-    private void waitForKeyboardStates(int show, int hide, int restart, Integer[] history)
-            throws InterruptedException {
+    private void waitForKeyboardStates(int show, int hide, int restart, Integer[] history) {
         final String expected = stringifyKeyboardStates(show, hide, restart, history);
         CriteriaHelper.pollUiThread(Criteria.equals(expected, new Callable<String>() {
             @Override
@@ -1509,7 +1508,7 @@ public class ImeTest extends ContentShellTestBase {
                 });
     }
 
-    private void assertWaitForKeyboardStatus(final boolean show) throws InterruptedException {
+    private void assertWaitForKeyboardStatus(final boolean show) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -1525,8 +1524,7 @@ public class ImeTest extends ContentShellTestBase {
         });
     }
 
-    private void assertWaitForSelectActionBarStatus(
-            final boolean show) throws InterruptedException {
+    private void assertWaitForSelectActionBarStatus(final boolean show) {
         CriteriaHelper.pollUiThread(Criteria.equals(show, new Callable<Boolean>() {
             @Override
             public Boolean call() {
@@ -1536,8 +1534,7 @@ public class ImeTest extends ContentShellTestBase {
     }
 
     private void waitAndVerifyUpdateSelection(final int index, final int selectionStart,
-            final int selectionEnd, final int compositionStart, final int compositionEnd)
-            throws InterruptedException {
+            final int selectionEnd, final int compositionStart, final int compositionEnd) {
         final List<Pair<Range, Range>> states = mInputMethodManagerWrapper.getUpdateSelectionList();
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
@@ -1556,8 +1553,7 @@ public class ImeTest extends ContentShellTestBase {
         mInputMethodManagerWrapper.getUpdateSelectionList().clear();
     }
 
-    private void assertClipboardContents(final Activity activity, final String expectedContents)
-            throws InterruptedException {
+    private void assertClipboardContents(final Activity activity, final String expectedContents) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

@@ -51,7 +51,7 @@ public class ListUrlsActivityTest extends InstrumentationTestCase {
             super.startActivity(intent);
         }
 
-        public void waitForStartActivity(long timeout) throws InterruptedException {
+        public void waitForStartActivity(long timeout) {
             CriteriaHelper.pollInstrumentationThread(new Criteria() {
                 @Override
                 public boolean isSatisfied() {

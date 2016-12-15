@@ -60,7 +60,7 @@ public class WarmupManagerTest extends NativeLibraryTestBase {
 
     @SmallTest
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    public void testCreateAndTakeSpareRenderer() throws Exception {
+    public void testCreateAndTakeSpareRenderer() {
         final AtomicBoolean isRenderViewReady = new AtomicBoolean();
         final AtomicReference<WebContents> webContentsReference = new AtomicReference<>();
 

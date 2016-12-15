@@ -72,41 +72,35 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void checkForBrandColor(final int brandColor) {
-        try {
-            CriteriaHelper.pollUiThread(new Criteria(
-                    "The toolbar background doesn't contain the right color") {
-                @Override
-                public boolean isSatisfied() {
-                    if (mToolbarDataProvider.getPrimaryColor() != brandColor) return false;
-                    return mToolbarDataProvider.getPrimaryColor()
-                            == mToolbar.getBackgroundDrawable().getColor();
-                }
-            });
+        CriteriaHelper.pollUiThread(new Criteria(
+                "The toolbar background doesn't contain the right color") {
+            @Override
+            public boolean isSatisfied() {
+                if (mToolbarDataProvider.getPrimaryColor() != brandColor) return false;
+                return mToolbarDataProvider.getPrimaryColor()
+                        == mToolbar.getBackgroundDrawable().getColor();
+            }
+        });
+        CriteriaHelper.pollUiThread(
+                Criteria.equals(brandColor, new Callable<Integer>() {
+                    @Override
+                    public Integer call() {
+                        return mToolbar.getOverlayDrawable().getColor();
+                    }
+                }));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                && !SysUtils.isLowEndDevice()) {
+            final int expectedStatusBarColor = brandColor == mDefaultColor
+                    ? Color.BLACK
+                    : ColorUtils.getDarkenedColorForStatusBar(brandColor);
             CriteriaHelper.pollUiThread(
-                    Criteria.equals(brandColor, new Callable<Integer>() {
+                    Criteria.equals(expectedStatusBarColor, new Callable<Integer>() {
                         @Override
                         public Integer call() {
-                            return mToolbar.getOverlayDrawable().getColor();
+                            return getActivity().getWindow().getStatusBarColor();
                         }
                     }));
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                    && !SysUtils.isLowEndDevice()) {
-                final int expectedStatusBarColor = brandColor == mDefaultColor
-                        ? Color.BLACK
-                        : ColorUtils.getDarkenedColorForStatusBar(brandColor);
-                CriteriaHelper.pollUiThread(
-                        Criteria.equals(expectedStatusBarColor, new Callable<Integer>() {
-                            @Override
-                            public Integer call() {
-                                return getActivity().getWindow().getStatusBarColor();
-                            }
-                        }));
-            }
-
-        } catch (InterruptedException e) {
-            fail();
         }
-
     }
 
     @Override

@@ -71,7 +71,7 @@ public class MediaSessionTest extends ContentShellTestBase {
             mAudioFocusState = AudioManager.AUDIOFOCUS_LOSS;
         }
 
-        public void waitForFocusStateChange(int focusType) throws InterruptedException {
+        public void waitForFocusStateChange(int focusType) {
             CriteriaHelper.pollInstrumentationThread(
                     Criteria.equals(focusType, new Callable<Integer>() {
                         @Override

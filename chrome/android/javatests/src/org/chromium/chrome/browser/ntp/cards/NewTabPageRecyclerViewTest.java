@@ -299,7 +299,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
                 getInstrumentation().invokeContextMenuAction(getActivity(), contextMenuItemId, 0));
     }
 
-    private View waitForView(final int position) throws InterruptedException {
+    private View waitForView(final int position) {
         final NewTabPageRecyclerView recyclerView = getRecyclerView();
 
         CriteriaHelper.pollUiThread(new Criteria() {
@@ -349,7 +349,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         waitForStableRecyclerView();
     }
 
-    private void waitForStableRecyclerView() throws InterruptedException {
+    private void waitForStableRecyclerView() {
         final RecyclerView recyclerView = getRecyclerView();
 
         CriteriaHelper.pollUiThread(new Criteria() {

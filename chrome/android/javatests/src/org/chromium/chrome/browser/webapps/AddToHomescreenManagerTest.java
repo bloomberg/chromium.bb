@@ -320,7 +320,7 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
     /**
      * Spawns popup via window.open() at {@link url}.
      */
-    private Tab spawnPopupInBackground(final String url) throws InterruptedException {
+    private Tab spawnPopupInBackground(final String url) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

@@ -211,7 +211,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * Waits for the selected text string to be the given string, and asserts.
      * @param text The string to wait for the selection to become.
      */
-    public void waitForSelectionToBe(final String text) throws InterruptedException {
+    public void waitForSelectionToBe(final String text) {
         CriteriaHelper.pollInstrumentationThread(Criteria.equals(text, new Callable<String>() {
             @Override
             public String call() {
@@ -225,7 +225,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * @param search A given FakeTapSearch.
      */
     public void waitForSearchTermResolutionToStart(
-            final ContextualSearchFakeServer.FakeTapSearch search) throws InterruptedException {
+            final ContextualSearchFakeServer.FakeTapSearch search) {
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Fake Search Term Resolution never started.") {
                     @Override
@@ -240,7 +240,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * @param search A given FakeTapSearch.
      */
     public void waitForSearchTermResolutionToFinish(
-            final ContextualSearchFakeServer.FakeTapSearch search) throws InterruptedException {
+            final ContextualSearchFakeServer.FakeTapSearch search) {
         CriteriaHelper.pollInstrumentationThread(new Criteria("Fake Search was never ready.") {
             @Override
             public boolean isSatisfied() {
@@ -687,8 +687,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * @param state The {@link PanelState} to wait for.
      * @throws InterruptedException
      */
-    private void waitForPanelToEnterState(final PanelState state)
-            throws InterruptedException {
+    private void waitForPanelToEnterState(final PanelState state) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -729,7 +728,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * Tells the manager that a gesture has started, and then waits for it to complete.
      * @throws InterruptedException
      */
-    private void waitForGestureProcessing() throws InterruptedException {
+    private void waitForGestureProcessing() {
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria("Gesture processing did not complete.") {
                     @Override
@@ -760,7 +759,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      * This is needed because the renderer's notification of a selection going away is async,
      * and a subsequent tap may think there's a current selection until it has been dissolved.
      */
-    private void waitForSelectionDissolved() throws InterruptedException {
+    private void waitForSelectionDissolved() {
         CriteriaHelper.pollInstrumentationThread(new Criteria("Selection never dissolved.") {
             @Override
             public boolean isSatisfied() {
@@ -1703,7 +1702,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Asserts whether the App Menu is visible.
      */
-    private void assertAppMenuVisibility(final boolean isVisible) throws InterruptedException {
+    private void assertAppMenuVisibility(final boolean isVisible) {
         CriteriaHelper.pollInstrumentationThread(
                 Criteria.equals(isVisible, new Callable<Boolean>() {
                     @Override

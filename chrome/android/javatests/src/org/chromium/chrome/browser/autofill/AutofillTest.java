@@ -93,7 +93,7 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         public void deleteSuggestion(int listIndex) {
         }
 
-        public void waitForCallback() throws InterruptedException {
+        public void waitForCallback() {
             CriteriaHelper.pollInstrumentationThread(new Criteria() {
                 @Override
                 public boolean isSatisfied() {
@@ -131,8 +131,7 @@ public class AutofillTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         };
     }
 
-    public void openAutofillPopupAndWaitUntilReady(final AutofillSuggestion[] suggestions)
-            throws InterruptedException {
+    public void openAutofillPopupAndWaitUntilReady(final AutofillSuggestion[] suggestions) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

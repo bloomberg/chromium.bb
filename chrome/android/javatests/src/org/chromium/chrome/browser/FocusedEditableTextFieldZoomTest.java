@@ -46,7 +46,7 @@ public class FocusedEditableTextFieldZoomTest extends ChromeActivityTestCaseBase
         super.tearDown();
     }
 
-    void waitForInitialZoom() throws InterruptedException {
+    void waitForInitialZoom() {
         // The zoom level sometimes changes immediately after the page loads which makes grabbing
         // the initial value problematic. We solve this by explicitly specifying the initial zoom
         // level via the viewport tag and waiting for the zoom level to reach that value before we
@@ -60,8 +60,8 @@ public class FocusedEditableTextFieldZoomTest extends ChromeActivityTestCaseBase
         }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
     }
 
-    private void waitForZoomIn(final ContentViewCore contentViewCore, final float initialZoomLevel)
-            throws InterruptedException {
+    private void waitForZoomIn(final ContentViewCore contentViewCore,
+            final float initialZoomLevel) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

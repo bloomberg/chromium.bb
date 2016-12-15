@@ -42,7 +42,7 @@ public class PrerenderTestHelper {
      * make the tests run faster.
      */
     public static boolean waitForPrerenderUrl(final Tab tab, final String url,
-            boolean shortTimeout) throws InterruptedException {
+            boolean shortTimeout) {
         try {
             CriteriaHelper.pollInstrumentationThread(new Criteria() {
                 @Override
@@ -85,8 +85,7 @@ public class PrerenderTestHelper {
      * @param testUrl Url to prerender
      * @param tab The tab to add the prerender to.
      */
-    public static ExternalPrerenderHandler prerenderUrl(final String testUrl, Tab tab)
-            throws InterruptedException {
+    public static ExternalPrerenderHandler prerenderUrl(final String testUrl, Tab tab) {
         final Tab currentTab = tab;
 
         ExternalPrerenderHandler prerenderHandler = ThreadUtils.runOnUiThreadBlockingNoException(

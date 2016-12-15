@@ -50,7 +50,7 @@ public class SnackbarTest extends ChromeTabbedActivityTestBase {
 
     @MediumTest
     @RetryOnFailure
-    public void testStackQueueOrder() throws InterruptedException {
+    public void testStackQueueOrder() {
         final Snackbar stackbar = Snackbar.make("stack", mDefaultController,
                 Snackbar.TYPE_ACTION, Snackbar.UMA_TEST_SNACKBAR);
         final Snackbar queuebar = Snackbar.make("queue", mDefaultController,
@@ -92,7 +92,7 @@ public class SnackbarTest extends ChromeTabbedActivityTestBase {
 
     @SmallTest
     @RetryOnFailure
-    public void testQueueStackOrder() throws InterruptedException {
+    public void testQueueStackOrder() {
         final Snackbar stackbar = Snackbar.make("stack", mDefaultController,
                 Snackbar.TYPE_ACTION, Snackbar.UMA_TEST_SNACKBAR);
         final Snackbar queuebar = Snackbar.make("queue", mDefaultController,
@@ -132,7 +132,7 @@ public class SnackbarTest extends ChromeTabbedActivityTestBase {
     }
 
     @SmallTest
-    public void testDismissSnackbar() throws InterruptedException {
+    public void testDismissSnackbar() {
         final Snackbar snackbar = Snackbar.make("stack", mDismissController,
                 Snackbar.TYPE_ACTION, Snackbar.UMA_TEST_SNACKBAR);
         mDismissed = false;

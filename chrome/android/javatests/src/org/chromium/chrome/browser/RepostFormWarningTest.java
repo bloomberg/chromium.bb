@@ -154,7 +154,7 @@ public class RepostFormWarningTest extends ChromeActivityTestCaseBase<ChromeActi
                 });
     }
 
-    private AlertDialog waitForRepostFormWarningDialog() throws InterruptedException {
+    private AlertDialog waitForRepostFormWarningDialog() {
         CriteriaHelper.pollUiThread(
                 new Criteria("Form resubmission warning not shown") {
                     @Override

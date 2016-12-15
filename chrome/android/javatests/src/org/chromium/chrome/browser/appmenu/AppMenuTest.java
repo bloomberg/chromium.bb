@@ -122,7 +122,7 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @SmallTest
     @Feature({"Browser", "Main"})
-    public void testKeyboardMenuBoundaries() throws InterruptedException {
+    public void testKeyboardMenuBoundaries() {
         moveToBoundary(false, true);
         assertEquals(getCount() - 1, getCurrentFocusedRow());
         moveToBoundary(true, true);
@@ -136,7 +136,7 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @SmallTest
     @Feature({"Browser", "Main"})
-    public void testKeyboardMenuEnterOnOpen() throws InterruptedException {
+    public void testKeyboardMenuEnterOnOpen() {
         hitEnterAndAssertAppMenuDismissed();
     }
 
@@ -145,7 +145,7 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @SmallTest
     @Feature({"Browser", "Main"})
-    public void testKeyboardEnterAfterMovePastTopItem() throws InterruptedException {
+    public void testKeyboardEnterAfterMovePastTopItem() {
         moveToBoundary(true, true);
         assertEquals(0, getCurrentFocusedRow());
         hitEnterAndAssertAppMenuDismissed();
@@ -157,7 +157,7 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @SmallTest
     @Feature({"Browser", "Main"})
-    public void testKeyboardEnterAfterMovePastBottomItem() throws InterruptedException {
+    public void testKeyboardEnterAfterMovePastBottomItem() {
         moveToBoundary(false, true);
         assertEquals(getCount() - 1, getCurrentFocusedRow());
         hitEnterAndAssertAppMenuDismissed();
@@ -169,7 +169,7 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @SmallTest
     @Feature({"Browser", "Main"})
-    public void testKeyboardMenuEnterOnTopItemLandscape() throws InterruptedException {
+    public void testKeyboardMenuEnterOnTopItemLandscape() {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         showAppMenuAndAssertMenuShown();
         moveToBoundary(true, false);
@@ -182,7 +182,7 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @SmallTest
     @Feature({"Browser", "Main"})
-    public void testKeyboardMenuEnterOnTopItemPortrait() throws InterruptedException {
+    public void testKeyboardMenuEnterOnTopItemPortrait() {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         showAppMenuAndAssertMenuShown();
         moveToBoundary(true, false);
@@ -198,7 +198,7 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     @Feature({"Browser", "Main"})
     */
     @DisabledTest(message = "crbug.com/458193")
-    public void testChangingOrientationHidesMenu() throws InterruptedException {
+    public void testChangingOrientationHidesMenu() {
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         showAppMenuAndAssertMenuShown();
         getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -210,7 +210,7 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         });
     }
 
-    private void showAppMenuAndAssertMenuShown() throws InterruptedException {
+    private void showAppMenuAndAssertMenuShown() {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -225,7 +225,7 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         });
     }
 
-    private void hitEnterAndAssertAppMenuDismissed() throws InterruptedException {
+    private void hitEnterAndAssertAppMenuDismissed() {
         getInstrumentation().waitForIdleSync();
         pressKey(KeyEvent.KEYCODE_ENTER);
         CriteriaHelper.pollInstrumentationThread(new Criteria("AppMenu did not dismiss") {
@@ -236,7 +236,7 @@ public class AppMenuTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         });
     }
 
-    private void moveToBoundary(boolean towardsTop, boolean movePast) throws InterruptedException {
+    private void moveToBoundary(boolean towardsTop, boolean movePast) {
         // Move to the boundary.
         final int end = towardsTop ? 0 : getCount() - 1;
         int increment = towardsTop ? -1 : 1;

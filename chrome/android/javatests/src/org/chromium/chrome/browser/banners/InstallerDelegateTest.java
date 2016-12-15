@@ -88,12 +88,12 @@ public class InstallerDelegateTest extends InstrumentationTestCase
         super.tearDown();
     }
 
-    private void startMonitoring() throws InterruptedException {
+    private void startMonitoring() {
         mTestDelegate.start();
         mInstallStarted = true;
     }
 
-    private void checkResults(boolean expectedResult) throws InterruptedException {
+    private void checkResults(boolean expectedResult) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -110,7 +110,7 @@ public class InstallerDelegateTest extends InstrumentationTestCase
      * been installed.
      */
     @SmallTest
-    public void testInstallSuccessful() throws InterruptedException {
+    public void testInstallSuccessful() {
         mTestDelegate.setTimingForTests(1, 5000);
         startMonitoring();
 
@@ -126,7 +126,7 @@ public class InstallerDelegateTest extends InstrumentationTestCase
      * Tests what happens when the InstallerDelegate task is canceled.
      */
     @SmallTest
-    public void testInstallWaitUntilCancel() throws InterruptedException {
+    public void testInstallWaitUntilCancel() {
         mTestDelegate.setTimingForTests(1, 5000);
         startMonitoring();
 
@@ -142,7 +142,7 @@ public class InstallerDelegateTest extends InstrumentationTestCase
      * Tests what happens when the InstallerDelegate times out.
      */
     @SmallTest
-    public void testInstallTimeout() throws InterruptedException {
+    public void testInstallTimeout() {
         mTestDelegate.setTimingForTests(1, 50);
         startMonitoring();
         checkResults(false);
@@ -153,7 +153,7 @@ public class InstallerDelegateTest extends InstrumentationTestCase
      */
     @SmallTest
     @RetryOnFailure
-    public void testRunnableRaceCondition() throws InterruptedException {
+    public void testRunnableRaceCondition() {
         mPackageManager.isInstalled = true;
         mTestDelegate.setTimingForTests(1, 5000);
         startMonitoring();

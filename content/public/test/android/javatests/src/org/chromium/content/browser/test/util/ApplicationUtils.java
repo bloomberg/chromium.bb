@@ -20,8 +20,7 @@ public class ApplicationUtils {
      *
      * @param instrumentation The test instrumentation.
      */
-    public static void waitForLibraryDependencies(final Instrumentation instrumentation)
-            throws InterruptedException {
+    public static void waitForLibraryDependencies(final Instrumentation instrumentation) {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

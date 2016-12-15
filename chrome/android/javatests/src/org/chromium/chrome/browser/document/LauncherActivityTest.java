@@ -49,7 +49,7 @@ public class LauncherActivityTest extends ChromeActivityTestCaseBase<ChromeActiv
     }
 
     @SmallTest
-    public void testLaunchWithUrlNoScheme() throws InterruptedException {
+    public void testLaunchWithUrlNoScheme() {
         // Prepare intent
         final String intentUrl = "www.google.com";
         final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(intentUrl));
@@ -62,7 +62,7 @@ public class LauncherActivityTest extends ChromeActivityTestCaseBase<ChromeActiv
     }
 
     @SmallTest
-    public void testDoesNotCrashWithBadParcel() throws InterruptedException {
+    public void testDoesNotCrashWithBadParcel() {
         // Prepare bad intent
         final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"));
         final Parcel parcel = Parcel.obtain();
@@ -81,7 +81,7 @@ public class LauncherActivityTest extends ChromeActivityTestCaseBase<ChromeActiv
         assertEquals("Action was not preserved", intent.getAction(), activityIntent.getAction());
     }
 
-    private Activity tryLaunchingChrome(final Intent intent) throws InterruptedException {
+    private Activity tryLaunchingChrome(final Intent intent) {
         mContext.startActivity(intent);
 
         // Check that ChromeLauncher Activity successfully launched

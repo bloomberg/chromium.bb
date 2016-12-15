@@ -45,7 +45,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
     @MediumTest
     @Feature({"ProcessManagement"})
     @CommandLineFlags.Add(ChildProcessLauncher.SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING + "=4")
-    public void testServiceFailedToBind() throws InterruptedException, RemoteException {
+    public void testServiceFailedToBind() {
         assertEquals(0, allocatedChromeSandboxedConnectionsCount());
         assertEquals(0, ChildProcessLauncher.connectedServicesCountForTesting());
 
@@ -77,7 +77,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
      */
     @MediumTest
     @Feature({"ProcessManagement"})
-    public void testServiceCrashedBeforeSetup() throws InterruptedException, RemoteException {
+    public void testServiceCrashedBeforeSetup() throws RemoteException {
         assertEquals(0, allocatedChromeSandboxedConnectionsCount());
         assertEquals(0, ChildProcessLauncher.connectedServicesCountForTesting());
 
@@ -113,7 +113,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
      */
     @MediumTest
     @Feature({"ProcessManagement"})
-    public void testServiceCrashedAfterSetup() throws InterruptedException, RemoteException {
+    public void testServiceCrashedAfterSetup() throws RemoteException {
         assertEquals(0, allocatedChromeSandboxedConnectionsCount());
 
         // Start and connect to a new service.
@@ -166,7 +166,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
      */
     @MediumTest
     @Feature({"ProcessManagement"})
-    public void testPendingSpawnQueue() throws InterruptedException, RemoteException {
+    public void testPendingSpawnQueue() throws RemoteException {
         final Context appContext = getInstrumentation().getTargetContext();
         assertEquals(0, allocatedChromeSandboxedConnectionsCount());
 
@@ -241,7 +241,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
     @CommandLineFlags.Add({ChildProcessLauncher.SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING + "=4",
             ChildProcessLauncher.SWITCH_SANDBOXED_SERVICES_NAME_FOR_TESTING + "="
             + DEFAULT_SANDBOXED_PROCESS_SERVICE})
-    public void testServiceNumberAllocation() throws InterruptedException {
+    public void testServiceNumberAllocation() {
         Context appContext = getInstrumentation().getTargetContext();
         assertEquals(0, ChildProcessLauncher.allocatedSandboxedConnectionsCountForTesting(
                                 appContext, EXTERNAL_APK_PACKAGE_NAME));
@@ -276,7 +276,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
     @CommandLineFlags.Add({ChildProcessLauncher.SWITCH_NUM_SANDBOXED_SERVICES_FOR_TESTING + "=1",
             ChildProcessLauncher.SWITCH_SANDBOXED_SERVICES_NAME_FOR_TESTING + "="
             + DEFAULT_SANDBOXED_PROCESS_SERVICE})
-    public void testExceedMaximumConnectionNumber() throws InterruptedException, RemoteException {
+    public void testExceedMaximumConnectionNumber() {
         Context appContext = getInstrumentation().getTargetContext();
         assertEquals(0, ChildProcessLauncher.allocatedSandboxedConnectionsCountForTesting(
                                 appContext, EXTERNAL_APK_PACKAGE_NAME));
@@ -296,7 +296,7 @@ public class ChildProcessLauncherTest extends InstrumentationTestCase {
         assertNotNull(tabConnection);
     }
 
-    private ChildProcessConnectionImpl startConnection() throws InterruptedException {
+    private ChildProcessConnectionImpl startConnection() {
         // Allocate a new connection.
         Context context = getInstrumentation().getTargetContext();
         final ChildProcessConnectionImpl connection =

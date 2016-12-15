@@ -210,7 +210,7 @@ public class UpdateMenuItemHelperTest extends ChromeTabbedActivityTestBase {
                         R.id.update_menu_id).isVisible());
     }
 
-    private void showAppMenuAndAssertMenuShown() throws InterruptedException {
+    private void showAppMenuAndAssertMenuShown() {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -225,7 +225,7 @@ public class UpdateMenuItemHelperTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    private void hideAppMenuAndAssertMenuShown() throws InterruptedException {
+    private void hideAppMenuAndAssertMenuShown() {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
