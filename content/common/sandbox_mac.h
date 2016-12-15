@@ -18,14 +18,6 @@ namespace base {
 class FilePath;
 }
 
-#if __OBJC__
-@class NSArray;
-@class NSString;
-#else
-class NSArray;
-class NSString;
-#endif
-
 namespace content {
 
 // This class wraps the C-style sandbox APIs in a class to ensure proper
