@@ -67,6 +67,12 @@ NSString* const kEligibleDomainsKey = @"EligibleDomains";
                                                    ofType:@"plist"
                                               inDirectory:@"gm-config/ANY"];
   NSDictionary* configData = [NSDictionary dictionaryWithContentsOfFile:path];
+  if (!configData) {
+    // The plist is not packaged with Chromium builds.  This is not an error, so
+    // simply return early, since no domains are eligible for geolocation.
+    return;
+  }
+
   NSArray* eligibleDomains = base::mac::ObjCCastStrict<NSArray>(
       [configData objectForKey:kEligibleDomainsKey]);
   if (eligibleDomains) {
@@ -78,6 +84,7 @@ NSString* const kEligibleDomainsKey = @"EligibleDomains";
       }
     }
   }
+  // Make sure that if a plist exists, it contains at least one eligible domain.
   DCHECK(!_eligibleDomains.empty());
 }
 
