@@ -32,11 +32,7 @@ class AppLaunchTest : public service_manager::test::ServiceTest {
   DISALLOW_COPY_AND_ASSIGN(AppLaunchTest);
 };
 
-// Fails when the Ash material design shelf is enabled by default
-// (ash::MaterialDesignController::IsShelfMaterial()). See
-// crbug.com/660194 and crbug.com/642879.
-// TODO(rockot): Reenable this test.
-TEST_F(AppLaunchTest, DISABLED_TestQuickLaunch) {
+TEST_F(AppLaunchTest, TestQuickLaunch) {
   connector()->Connect("ash");
   connector()->Connect(mash::quick_launch::mojom::kServiceName);
 

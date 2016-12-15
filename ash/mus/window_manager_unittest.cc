@@ -17,6 +17,7 @@
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
+#include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/display_list.h"
@@ -76,11 +77,7 @@ void OnEmbed(bool success) {
   ASSERT_TRUE(success);
 }
 
-// Fails when the Ash material design shelf is enabled by default
-// (ash::MaterialDesignController::IsShelfMaterial()). See
-// crbug.com/660194 and crbug.com/642879.
-// TODO(rockot): Reenable this test.
-TEST_F(WindowManagerTest, DISABLED_OpenWindow) {
+TEST_F(WindowManagerTest, OpenWindow) {
   display::ScreenBase screen;
   screen.display_list().AddDisplay(
       display::Display(1, gfx::Rect(0, 0, 200, 200)),
@@ -95,12 +92,13 @@ TEST_F(WindowManagerTest, DISABLED_OpenWindow) {
   // |ash|, but is async.
   aura::WindowTreeClient client(connector(), &window_tree_delegate);
   client.ConnectViaWindowTreeFactory();
-  aura::Env::GetInstance()->SetWindowTreeClient(&client);
+  aura::test::EnvTestHelper().SetWindowTreeClient(&client);
   std::map<std::string, std::vector<uint8_t>> properties;
   properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(ui::mojom::WindowType::WINDOW));
   aura::WindowTreeHostMus window_tree_host_mus(&client, &properties);
+  window_tree_host_mus.InitHost();
   aura::Window* child_window = new aura::Window(nullptr);
   child_window->Init(ui::LAYER_NOT_DRAWN);
   window_tree_host_mus.window()->AddChild(child_window);
