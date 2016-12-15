@@ -70,6 +70,53 @@ public class AwServiceWorkerClientTest extends AwTestBase {
 
         TestAwServiceWorkerClient.ShouldInterceptRequestHelper helper =
                 mServiceWorkerClient.getShouldInterceptRequestHelper();
+
+        loadPage(fullIndexUrl, helper, 2);
+        // Check that the two service worker related callbacks were correctly intercepted.
+        List<AwWebResourceRequest> requests = helper.getAwWebResourceRequests();
+        assertEquals(2, requests.size());
+        assertEquals(fullSwUrl, requests.get(0).url);
+        assertEquals(fullFetchUrl, requests.get(1).url);
+    }
+
+    // Verify that WebView ServiceWorker code can properly handle http errors that happened
+    // in ServiceWorker fetches.
+    @SmallTest
+    public void testFetchHttpError() throws Throwable {
+        final String fullIndexUrl = mWebServer.setResponse("/index.html", INDEX_HTML, null);
+        final String fullSwUrl = mWebServer.setResponse("/sw.js", SW_HTML, null);
+        mWebServer.setResponseWithNotFoundStatus("/fetch.html");
+
+        TestAwServiceWorkerClient.ShouldInterceptRequestHelper helper =
+                mServiceWorkerClient.getShouldInterceptRequestHelper();
+
+        loadPage(fullIndexUrl, helper, 1);
+        // Check that the two service worker related callbacks were correctly intercepted.
+        List<AwWebResourceRequest> requests = helper.getAwWebResourceRequests();
+        assertEquals(2, requests.size());
+        assertEquals(fullSwUrl, requests.get(0).url);
+    }
+
+    // Verify that WebView ServiceWorker code can properly handle resource loading errors
+    // that happened in ServiceWorker fetches.
+    @SmallTest
+    public void testFetchResourceLoadingError() throws Throwable {
+        final String fullIndexUrl = mWebServer.setResponse("/index.html", INDEX_HTML, null);
+        final String fullSwUrl = mWebServer.setResponse("/sw.js",
+                "fetch('https://google.gov');", null);
+
+        TestAwServiceWorkerClient.ShouldInterceptRequestHelper helper =
+                mServiceWorkerClient.getShouldInterceptRequestHelper();
+        loadPage(fullIndexUrl, helper, 1);
+        // Check that the two service worker related callbacks were correctly intercepted.
+        List<AwWebResourceRequest> requests = helper.getAwWebResourceRequests();
+        assertEquals(2, requests.size());
+        assertEquals(fullSwUrl, requests.get(0).url);
+    }
+
+    private void loadPage(final String fullIndexUrl,
+            TestAwServiceWorkerClient.ShouldInterceptRequestHelper helper,
+            int expectedInterceptRequestCount) throws Exception {
         int currentShouldInterceptRequestCount = helper.getCallCount();
 
         TestCallbackHelperContainer.OnPageFinishedHelper onPageFinishedHelper =
@@ -85,14 +132,9 @@ public class AwServiceWorkerClientTest extends AwTestBase {
             }
         });
 
-        helper.waitForCallback(currentShouldInterceptRequestCount, 2);
-
-        // Check that the two service worker related callbacks were correctly intercepted.
-        List<AwWebResourceRequest> requests = helper.getAwWebResourceRequests();
-        assertEquals(2, requests.size());
-        assertEquals(fullSwUrl, requests.get(0).url);
-        assertEquals(fullFetchUrl, requests.get(1).url);
+        helper.waitForCallback(currentShouldInterceptRequestCount, expectedInterceptRequestCount);
     }
+
 
     private int getSuccessFromJS() {
         int result = -1;

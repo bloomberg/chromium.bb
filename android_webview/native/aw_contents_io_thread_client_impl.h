@@ -55,10 +55,6 @@ class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
   bool ShouldBlockFileUrls() const override;
   bool ShouldAcceptThirdPartyCookies() const override;
   bool ShouldBlockNetworkLoads() const override;
-  void OnReceivedError(const net::URLRequest* request) override;
-  void OnReceivedHttpError(
-      const net::URLRequest* request,
-      const net::HttpResponseHeaders* response_headers) override;
 
  private:
   bool pending_association_;

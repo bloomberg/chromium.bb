@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "android_webview/browser/net/aw_web_resource_request.h"
 #include "android_webview/common/devtools_instrumentation.h"
 #include "android_webview/native/aw_contents_background_thread_client.h"
 #include "android_webview/native/aw_web_resource_response_impl.h"
@@ -24,11 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "jni/AwContentsIoThreadClient_jni.h"
-#include "net/base/net_errors.h"
-#include "net/http/http_request_headers.h"
-#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
-#include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -43,7 +40,6 @@ using content::WebContents;
 using std::map;
 using std::pair;
 using std::string;
-using std::vector;
 
 namespace android_webview {
 
@@ -158,51 +154,6 @@ void ClientMapEntryUpdater::WebContentsDestroyed() {
   delete this;
 }
 
-struct WebResourceRequest {
-  std::string url;
-  std::string method;
-  bool is_main_frame;
-  bool has_user_gesture;
-  vector<string> header_names;
-  vector<string> header_values;
-
-  ScopedJavaLocalRef<jstring> jstring_url;
-  ScopedJavaLocalRef<jstring> jstring_method;
-  ScopedJavaLocalRef<jobjectArray> jstringArray_header_names;
-  ScopedJavaLocalRef<jobjectArray> jstringArray_header_values;
-
-  WebResourceRequest(const net::URLRequest* request)
-      : url(request->url().spec()),
-        method(request->method()) {
-    const content::ResourceRequestInfo* info =
-        content::ResourceRequestInfo::ForRequest(request);
-    is_main_frame =
-        info && info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME;
-    has_user_gesture = info && info->HasUserGesture();
-
-    net::HttpRequestHeaders headers;
-    if (!request->GetFullRequestHeaders(&headers))
-      headers = request->extra_request_headers();
-    net::HttpRequestHeaders::Iterator headers_iterator(headers);
-    while (headers_iterator.GetNext()) {
-      header_names.push_back(headers_iterator.name());
-      header_values.push_back(headers_iterator.value());
-    }
-  }
-
-  WebResourceRequest(JNIEnv* env, const net::URLRequest* request)
-      : WebResourceRequest(request) {
-    ConvertToJava(env);
-  }
-
-  void ConvertToJava(JNIEnv* env) {
-    jstring_url = ConvertUTF8ToJavaString(env, url);
-    jstring_method = ConvertUTF8ToJavaString(env, method);
-    jstringArray_header_names = ToJavaArrayOfStrings(env, header_names);
-    jstringArray_header_values = ToJavaArrayOfStrings(env, header_values);
-  }
-};
-
 } // namespace
 
 // AwContentsIoThreadClientImpl -----------------------------------------------
@@ -313,7 +264,7 @@ AwContentsIoThreadClientImpl::GetCacheMode() const {
 namespace {
 
 std::unique_ptr<AwWebResourceResponse> RunShouldInterceptRequest(
-    WebResourceRequest web_request,
+    const AwWebResourceRequest& request,
     JavaObjectWeakGlobalRef ref) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   JNIEnv* env = AttachCurrentThread();
@@ -321,16 +272,17 @@ std::unique_ptr<AwWebResourceResponse> RunShouldInterceptRequest(
   if (obj.is_null())
     return nullptr;
 
-  web_request.ConvertToJava(env);
+  AwWebResourceRequest::AwJavaWebResourceRequest java_web_resource_request;
+  AwWebResourceRequest::ConvertToJava(env, request, &java_web_resource_request);
 
   devtools_instrumentation::ScopedEmbedderCallbackTask embedder_callback(
       "shouldInterceptRequest");
   ScopedJavaLocalRef<jobject> ret =
       AwContentsBackgroundThreadClient::shouldInterceptRequest(
-          env, obj, web_request.jstring_url, web_request.is_main_frame,
-          web_request.has_user_gesture, web_request.jstring_method,
-          web_request.jstringArray_header_names,
-          web_request.jstringArray_header_values);
+          env, obj, java_web_resource_request.jurl, request.is_main_frame,
+          request.has_user_gesture, java_web_resource_request.jmethod,
+          java_web_resource_request.jheader_names,
+          java_web_resource_request.jheader_values);
   return std::unique_ptr<AwWebResourceResponse>(
       ret.is_null() ? nullptr : new AwWebResourceResponseImpl(ret));
 }
@@ -355,7 +307,7 @@ void AwContentsIoThreadClientImpl::ShouldInterceptRequestAsync(
   }
   if (!bg_thread_client_object_.is_null()) {
     get_response = base::Bind(
-        &RunShouldInterceptRequest, WebResourceRequest(request),
+        &RunShouldInterceptRequest, AwWebResourceRequest(*request),
         JavaObjectWeakGlobalRef(env, bg_thread_client_object_.obj()));
   }
   BrowserThread::PostTaskAndReplyWithResult(BrowserThread::FILE, FROM_HERE,
@@ -399,71 +351,6 @@ bool AwContentsIoThreadClientImpl::ShouldBlockNetworkLoads() const {
   JNIEnv* env = AttachCurrentThread();
   return Java_AwContentsIoThreadClient_shouldBlockNetworkLoads(env,
                                                                java_object_);
-}
-
-void AwContentsIoThreadClientImpl::OnReceivedError(
-    const net::URLRequest* request) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (java_object_.is_null())
-    return;
-
-  JNIEnv* env = AttachCurrentThread();
-  WebResourceRequest web_request(env, request);
-
-  int error_code = request->status().error();
-  ScopedJavaLocalRef<jstring> jstring_description = ConvertUTF8ToJavaString(
-      env, net::ErrorToString(request->status().error()));
-
-  Java_AwContentsIoThreadClient_onReceivedError(
-      env, java_object_, web_request.jstring_url, web_request.is_main_frame,
-      web_request.has_user_gesture, web_request.jstring_method,
-      web_request.jstringArray_header_names,
-      web_request.jstringArray_header_values, error_code, jstring_description);
-}
-
-void AwContentsIoThreadClientImpl::OnReceivedHttpError(
-    const net::URLRequest* request,
-    const net::HttpResponseHeaders* response_headers) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (java_object_.is_null())
-    return;
-
-  JNIEnv* env = AttachCurrentThread();
-  WebResourceRequest web_request(env, request);
-
-  vector<string> response_header_names;
-  vector<string> response_header_values;
-  {
-    size_t headers_iterator = 0;
-    string header_name, header_value;
-    while (response_headers->EnumerateHeaderLines(
-        &headers_iterator, &header_name, &header_value)) {
-      response_header_names.push_back(header_name);
-      response_header_values.push_back(header_value);
-    }
-  }
-
-  string mime_type, encoding;
-  response_headers->GetMimeTypeAndCharset(&mime_type, &encoding);
-  ScopedJavaLocalRef<jstring> jstring_mime_type =
-      ConvertUTF8ToJavaString(env, mime_type);
-  ScopedJavaLocalRef<jstring> jstring_encoding =
-      ConvertUTF8ToJavaString(env, encoding);
-  int status_code = response_headers->response_code();
-  ScopedJavaLocalRef<jstring> jstring_reason =
-      ConvertUTF8ToJavaString(env, response_headers->GetStatusText());
-  ScopedJavaLocalRef<jobjectArray> jstringArray_response_header_names =
-      ToJavaArrayOfStrings(env, response_header_names);
-  ScopedJavaLocalRef<jobjectArray> jstringArray_response_header_values =
-      ToJavaArrayOfStrings(env, response_header_values);
-
-  Java_AwContentsIoThreadClient_onReceivedHttpError(
-      env, java_object_, web_request.jstring_url, web_request.is_main_frame,
-      web_request.has_user_gesture, web_request.jstring_method,
-      web_request.jstringArray_header_names,
-      web_request.jstringArray_header_values, jstring_mime_type,
-      jstring_encoding, status_code, jstring_reason,
-      jstringArray_response_header_names, jstringArray_response_header_values);
 }
 
 } // namespace android_webview

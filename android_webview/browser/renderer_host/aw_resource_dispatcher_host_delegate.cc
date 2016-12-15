@@ -12,6 +12,7 @@
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_login_delegate.h"
 #include "android_webview/browser/aw_resource_context.h"
+#include "android_webview/browser/net/aw_web_resource_request.h"
 #include "android_webview/browser/renderer_host/auto_login_parser.h"
 #include "android_webview/common/url_constants.h"
 #include "base/memory/scoped_vector.h"
@@ -32,6 +33,7 @@
 
 using android_webview::AwContentsIoThreadClient;
 using android_webview::AwContentsClientBridgeBase;
+using android_webview::AwWebResourceRequest;
 using content::BrowserThread;
 using content::ResourceType;
 using content::WebContents;
@@ -82,6 +84,20 @@ void NewLoginRequestOnUIThread(
   if (!client)
     return;
   client->NewLoginRequest(realm, account, args);
+}
+
+void OnReceivedErrorOnUiThread(
+    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const AwWebResourceRequest& request,
+    int error_code) {
+  AwContentsClientBridgeBase* client =
+      AwContentsClientBridgeBase::FromWebContentsGetter(web_contents_getter);
+  if (!client) {
+    DLOG(WARNING) << "client is null, onReceivedError dropped for "
+                  << request.url;
+    return;
+  }
+  client->OnReceivedError(request, error_code);
 }
 
 }  // namespace
@@ -285,18 +301,14 @@ void AwResourceDispatcherHostDelegate::RequestComplete(
   if (request && !request->status().is_success()) {
     const content::ResourceRequestInfo* request_info =
         content::ResourceRequestInfo::ForRequest(request);
-    std::unique_ptr<AwContentsIoThreadClient> io_client =
-        AwContentsIoThreadClient::FromID(request_info->GetChildID(),
-                                         request_info->GetRenderFrameID());
-    if (io_client) {
-      io_client->OnReceivedError(request);
-    } else {
-      DLOG(WARNING) << "io_client is null, onReceivedError dropped for " <<
-          request->url();
-    }
+
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&OnReceivedErrorOnUiThread,
+                   request_info->GetWebContentsGetterForRequest(),
+                   AwWebResourceRequest(*request), request->status().error()));
   }
 }
-
 
 void AwResourceDispatcherHostDelegate::DownloadStarting(
     net::URLRequest* request,

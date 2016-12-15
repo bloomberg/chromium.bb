@@ -5,8 +5,10 @@
 #include "android_webview/browser/net/aw_network_delegate.h"
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "android_webview/browser/aw_contents_client_bridge_base.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
+#include "android_webview/browser/net/aw_web_resource_request.h"
 #include "base/android/build_info.h"
 #include "components/policy/core/browser/url_blacklist_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -21,6 +23,24 @@
 using content::BrowserThread;
 
 namespace android_webview {
+
+namespace {
+
+void OnReceivedHttpErrorOnUiThread(
+    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
+    const AwWebResourceRequest& request,
+    scoped_refptr<const net::HttpResponseHeaders> original_response_headers) {
+  AwContentsClientBridgeBase* client =
+      AwContentsClientBridgeBase::FromWebContentsGetter(web_contents_getter);
+  if (!client) {
+    DLOG(WARNING) << "client is null, onReceivedHttpError dropped for "
+                  << request.url;
+    return;
+  }
+  client->OnReceivedHttpError(request, original_response_headers);
+}
+
+}  // namespace
 
 AwNetworkDelegate::AwNetworkDelegate() : url_blacklist_manager_(nullptr) {
 }
@@ -64,15 +84,20 @@ int AwNetworkDelegate::OnHeadersReceived(
     scoped_refptr<net::HttpResponseHeaders>* override_response_headers,
     GURL* allowed_unsafe_redirect_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  int render_process_id, render_frame_id;
-  if (original_response_headers->response_code() >= 400 &&
-      content::ResourceRequestInfo::GetRenderFrameForRequest(
-          request, &render_process_id, &render_frame_id)) {
-    std::unique_ptr<AwContentsIoThreadClient> io_thread_client =
-        AwContentsIoThreadClient::FromID(render_process_id, render_frame_id);
-    if (io_thread_client.get()) {
-      io_thread_client->OnReceivedHttpError(request, original_response_headers);
-    }
+  if (original_response_headers->response_code() >= 400) {
+    const content::ResourceRequestInfo* request_info =
+        content::ResourceRequestInfo::ForRequest(request);
+    // A request info may not exist for requests not originating from content.
+    if (request_info == nullptr)
+        return net::OK;
+    // keep a ref before binding and posting to UI thread.
+    scoped_refptr<const net::HttpResponseHeaders> response_headers(
+        original_response_headers);
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(&OnReceivedHttpErrorOnUiThread,
+                   request_info->GetWebContentsGetterForRequest(),
+                   AwWebResourceRequest(*request), response_headers));
   }
   return net::OK;
 }

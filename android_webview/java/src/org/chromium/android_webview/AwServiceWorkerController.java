@@ -81,18 +81,6 @@ public class AwServiceWorkerController {
             // see e.g. AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies.
             return false;
         }
-
-        @Override
-        public void onReceivedError(AwContentsClient.AwWebResourceRequest request,
-                AwContentsClient.AwWebResourceError error) {
-            // TODO
-        }
-
-        @Override
-        public void onReceivedHttpError(AwContentsClient.AwWebResourceRequest request,
-                AwWebResourceResponse response) {
-            // TODO
-        }
     }
 
     private class ServiceWorkerBackgroundThreadClientImpl
