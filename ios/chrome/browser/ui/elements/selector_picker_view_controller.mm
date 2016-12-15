@@ -6,7 +6,11 @@
 
 #import "ios/chrome/browser/ui/elements/selector_view_controller_delegate.h"
 #include "base/logging.h"
-#import "base/mac/objc_property_releaser.h"
+#import "base/mac/foundation_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Font size of text in the picker view.
@@ -15,8 +19,6 @@ CGFloat kUIPickerFontSize = 26;
 
 @interface SelectorPickerViewController ()<UIPickerViewDelegate,
                                            UIPickerViewDataSource> {
-  base::mac::ObjCPropertyReleaser
-      _propertyReleaser_SelectorPickerViewController;
   __unsafe_unretained id<SelectorViewControllerDelegate> _delegate;
 }
 // Options to display.
@@ -24,9 +26,9 @@ CGFloat kUIPickerFontSize = 26;
 // The default option.
 @property(nonatomic, copy) NSString* defaultOption;
 // The displayed UINavigationBar. Exposed for testing.
-@property(nonatomic, retain) UINavigationBar* navigationBar;
+@property(nonatomic, strong) UINavigationBar* navigationBar;
 // The displayed UIPickerView. Exposed for testing.
-@property(nonatomic, retain) UIPickerView* pickerView;
+@property(nonatomic, strong) UIPickerView* pickerView;
 // Action for the "Done" button.
 - (void)doneButtonPressed;
 // Action for the "Cancel" button.
@@ -45,10 +47,8 @@ CGFloat kUIPickerFontSize = 26;
                         default:(NSString*)defaultOption {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
-    _propertyReleaser_SelectorPickerViewController.Init(
-        self, [SelectorPickerViewController class]);
-    _options = [options copy];
     _defaultOption = [defaultOption copy];
+    _options = [options copy];
   }
   return self;
 }
@@ -64,15 +64,12 @@ CGFloat kUIPickerFontSize = 26;
 }
 
 - (void)loadView {
-  self.pickerView =
-      [[[UIPickerView alloc] initWithFrame:CGRectZero] autorelease];
-  self.navigationBar =
-      [[[UINavigationBar alloc] initWithFrame:CGRectZero] autorelease];
+  self.pickerView = [[UIPickerView alloc] initWithFrame:CGRectZero];
+  self.navigationBar = [[UINavigationBar alloc] initWithFrame:CGRectZero];
   self.pickerView.translatesAutoresizingMaskIntoConstraints = NO;
   self.navigationBar.translatesAutoresizingMaskIntoConstraints = NO;
-  UIStackView* stackView = [[[UIStackView alloc]
-      initWithArrangedSubviews:@[ self.navigationBar, self.pickerView ]]
-      autorelease];
+  UIStackView* stackView = [[UIStackView alloc]
+      initWithArrangedSubviews:@[ self.navigationBar, self.pickerView ]];
   stackView.axis = UILayoutConstraintAxisVertical;
   self.view = stackView;
 }
@@ -91,15 +88,15 @@ CGFloat kUIPickerFontSize = 26;
   }
 
   UINavigationItem* navigationItem =
-      [[[UINavigationItem alloc] initWithTitle:@""] autorelease];
-  UIBarButtonItem* doneButton = [[[UIBarButtonItem alloc]
+      [[UINavigationItem alloc] initWithTitle:@""];
+  UIBarButtonItem* doneButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemDone
                            target:self
-                           action:@selector(doneButtonPressed)] autorelease];
-  UIBarButtonItem* cancelButton = [[[UIBarButtonItem alloc]
+                           action:@selector(doneButtonPressed)];
+  UIBarButtonItem* cancelButton = [[UIBarButtonItem alloc]
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                            target:self
-                           action:@selector(cancelButtonPressed)] autorelease];
+                           action:@selector(cancelButtonPressed)];
   [navigationItem setRightBarButtonItem:doneButton];
   [navigationItem setLeftBarButtonItem:cancelButton];
   [navigationItem setHidesBackButton:YES];
@@ -133,8 +130,8 @@ CGFloat kUIPickerFontSize = 26;
           reusingView:(UIView*)view {
   DCHECK_EQ(0, component);
   UILabel* label = [view isKindOfClass:[UILabel class]]
-                       ? (UILabel*)view
-                       : [[[UILabel alloc] init] autorelease];
+                       ? base::mac::ObjCCastStrict<UILabel>(view)
+                       : [[UILabel alloc] init];
   NSString* text = self.options[row];
   label.text = text;
   label.textAlignment = NSTextAlignmentCenter;

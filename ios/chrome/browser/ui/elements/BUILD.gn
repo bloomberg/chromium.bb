@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("elements") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "selector_coordinator.h",
     "selector_coordinator.mm",

@@ -4,13 +4,12 @@
 
 #import "ios/chrome/browser/ui/elements/selector_picker_presentation_controller.h"
 
-#import "base/mac/objc_property_releaser.h"
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
-@interface SelectorPickerPresentationController () {
-  base::mac::ObjCPropertyReleaser
-      _propertyReleaser_SelectorPickerPresentationController;
-}
-@property(nonatomic, retain) UIView* dimmingView;
+@interface SelectorPickerPresentationController ()
+@property(nonatomic, strong) UIView* dimmingView;
 @end
 
 @implementation SelectorPickerPresentationController
@@ -22,8 +21,6 @@
   self = [super initWithPresentedViewController:presented
                        presentingViewController:presenting];
   if (self) {
-    _propertyReleaser_SelectorPickerPresentationController.Init(
-        self, [SelectorPickerPresentationController class]);
     _dimmingView = [[UIView alloc] initWithFrame:CGRectZero];
     _dimmingView.backgroundColor = [UIColor colorWithWhite:0 alpha:0.4];
   }

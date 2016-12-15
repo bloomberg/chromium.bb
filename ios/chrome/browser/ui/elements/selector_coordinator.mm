@@ -4,19 +4,21 @@
 
 #import "ios/chrome/browser/ui/elements/selector_coordinator.h"
 
-#import "base/mac/objc_property_releaser.h"
 #import "ios/chrome/browser/ui/elements/selector_picker_view_controller.h"
 #import "ios/chrome/browser/ui/elements/selector_picker_presentation_controller.h"
 #import "ios/chrome/browser/ui/elements/selector_view_controller_delegate.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface SelectorCoordinator ()<SelectorViewControllerDelegate,
                                   UIViewControllerTransitioningDelegate> {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_SelectorCoordinator;
   __unsafe_unretained id<SelectorCoordinatorDelegate> _delegate;
 }
 
 // Redeclaration of infoBarPickerController as readwrite.
-@property(nonatomic, nullable, retain)
+@property(nonatomic, nullable, strong)
     SelectorPickerViewController* selectorPickerViewController;
 
 @end
@@ -28,20 +30,10 @@
 @synthesize delegate = _delegate;
 @synthesize selectorPickerViewController = _selectorPickerViewController;
 
-- (nullable instancetype)initWithBaseViewController:
-    (nullable UIViewController*)viewController {
-  self = [super initWithBaseViewController:viewController];
-  if (self) {
-    _propertyReleaser_SelectorCoordinator.Init(self,
-                                               [SelectorCoordinator class]);
-  }
-  return self;
-}
-
 - (void)start {
-  self.selectorPickerViewController = [[[SelectorPickerViewController alloc]
-      initWithOptions:self.options
-              default:self.defaultOption] autorelease];
+  self.selectorPickerViewController =
+      [[SelectorPickerViewController alloc] initWithOptions:self.options
+                                                    default:self.defaultOption];
   self.selectorPickerViewController.delegate = self;
 
   self.selectorPickerViewController.modalTransitionStyle =
@@ -75,9 +67,9 @@
 presentationControllerForPresentedViewController:(UIViewController*)presented
                         presentingViewController:(UIViewController*)presenting
                             sourceViewController:(UIViewController*)source {
-  return [[[SelectorPickerPresentationController alloc]
+  return [[SelectorPickerPresentationController alloc]
       initWithPresentedViewController:self.selectorPickerViewController
-             presentingViewController:self.baseViewController] autorelease];
+             presentingViewController:self.baseViewController];
 }
 
 @end
