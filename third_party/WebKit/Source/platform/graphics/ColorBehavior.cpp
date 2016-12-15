@@ -35,7 +35,7 @@ void ColorBehavior::setGlobalTargetColorProfile(
       SkColorSpace::MakeICC(profile.data(), profile.size()).release();
 
   // UMA statistics.
-  BitmapImageMetrics::countOutputGamma(gTargetColorSpace);
+  BitmapImageMetrics::countOutputGammaAndGamut(gTargetColorSpace);
 }
 
 void ColorBehavior::setGlobalTargetColorSpaceForTesting(

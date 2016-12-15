@@ -46,13 +46,30 @@ class PLATFORM_EXPORT BitmapImageMetrics {
     GammaEnd = GammaNamed + 1,
   };
 
+  enum Gamut {
+    // Values synced with 'Gamut' in src/tools/metrics/histograms/histograms.xml
+    GamutUnknown = 0,
+    GamutLessThanNTSC = 1,
+    GamutNTSC = 2,
+    GamutSRGB = 3,
+    GamutAlmostP3 = 4,
+    GamutP3 = 5,
+    GamutAdobeRGB = 6,
+    GamutWide = 7,
+    GamutBT2020 = 8,
+    GamutProPhoto = 9,
+    GamutUltraWide = 10,
+    GamutEnd
+  };
+
   static void countDecodedImageType(const String& type);
   static void countImageOrientation(const ImageOrientationEnum);
-  static void countImageGamma(SkColorSpace*);
-  static void countOutputGamma(SkColorSpace*);
+  static void countImageGammaAndGamut(SkColorSpace*);
+  static void countOutputGammaAndGamut(SkColorSpace*);
 
  private:
   static Gamma getColorSpaceGamma(SkColorSpace*);
+  static Gamut getColorSpaceGamut(SkColorSpace*);
 };
 
 }  // namespace blink

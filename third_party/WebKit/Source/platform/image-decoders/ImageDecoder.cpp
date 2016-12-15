@@ -175,7 +175,7 @@ ImageFrame* ImageDecoder::frameBufferAtIndex(size_t index) {
   }
 
   if (!m_hasHistogrammedColorSpace) {
-    BitmapImageMetrics::countImageGamma(m_embeddedColorSpace.get());
+    BitmapImageMetrics::countImageGammaAndGamut(m_embeddedColorSpace.get());
     m_hasHistogrammedColorSpace = true;
   }
 
