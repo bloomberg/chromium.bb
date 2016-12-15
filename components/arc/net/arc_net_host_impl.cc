@@ -100,23 +100,22 @@ arc::mojom::WiFiPtr TranslateONCWifi(const base::DictionaryValue* dict) {
   return wifi;
 }
 
-mojo::Array<mojo::String> TranslateStringArray(const base::ListValue* list) {
-  mojo::Array<mojo::String> strings = mojo::Array<mojo::String>::New(0);
+std::vector<std::string> TranslateStringArray(const base::ListValue* list) {
+  std::vector<std::string> strings;
 
   for (size_t i = 0; i < list->GetSize(); i++) {
     std::string value;
     list->GetString(i, &value);
     DCHECK(!value.empty());
-    strings.push_back(static_cast<mojo::String>(value));
+    strings.push_back(value);
   }
 
   return strings;
 }
 
-mojo::Array<arc::mojom::IPConfigurationPtr> TranslateONCIPConfigs(
+std::vector<arc::mojom::IPConfigurationPtr> TranslateONCIPConfigs(
     const base::ListValue* list) {
-  mojo::Array<arc::mojom::IPConfigurationPtr> configs =
-      mojo::Array<arc::mojom::IPConfigurationPtr>::New(0);
+  std::vector<arc::mojom::IPConfigurationPtr> configs;
 
   for (size_t i = 0; i < list->GetSize(); i++) {
     const base::DictionaryValue* ip_dict = nullptr;
@@ -370,8 +369,7 @@ void ArcNetHostImpl::GetNetworks(mojom::GetNetworksRequestType type,
   // Even if there's no WiFi, an empty (size=0) list must be returned and not a
   // null one. The explicitly sized New() constructor ensures the non-null
   // property.
-  mojo::Array<mojom::WifiConfigurationPtr> networks =
-      mojo::Array<mojom::WifiConfigurationPtr>::New(0);
+  std::vector<mojom::WifiConfigurationPtr> networks;
   for (const auto& value : *network_properties_list) {
     mojom::WifiConfigurationPtr wc = mojom::WifiConfiguration::New();
 
@@ -454,7 +452,7 @@ void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
   std::unique_ptr<base::DictionaryValue> properties(new base::DictionaryValue);
   std::unique_ptr<base::DictionaryValue> wifi_dict(new base::DictionaryValue);
 
-  if (cfg->hexssid.is_null() || !cfg->details) {
+  if (!cfg->hexssid.has_value() || !cfg->details) {
     callback.Run("");
     return;
   }
@@ -468,18 +466,18 @@ void ArcNetHostImpl::CreateNetwork(mojom::WifiConfigurationPtr cfg,
   properties->SetStringWithoutPathExpansion(onc::network_config::kType,
                                             onc::network_config::kWiFi);
   wifi_dict->SetStringWithoutPathExpansion(onc::wifi::kHexSSID,
-                                           cfg->hexssid.get());
+                                           cfg->hexssid.value());
   wifi_dict->SetBooleanWithoutPathExpansion(onc::wifi::kAutoConnect,
                                             details->autoconnect);
-  if (cfg->security.get().empty()) {
+  if (cfg->security.empty()) {
     wifi_dict->SetStringWithoutPathExpansion(onc::wifi::kSecurity,
                                              onc::wifi::kSecurityNone);
   } else {
     wifi_dict->SetStringWithoutPathExpansion(onc::wifi::kSecurity,
-                                             cfg->security.get());
-    if (!details->passphrase.is_null()) {
+                                             cfg->security);
+    if (details->passphrase.has_value()) {
       wifi_dict->SetStringWithoutPathExpansion(onc::wifi::kPassphrase,
-                                               details->passphrase.get());
+                                               details->passphrase.value());
     }
   }
   properties->SetWithoutPathExpansion(onc::network_config::kWiFi,
@@ -511,7 +509,7 @@ bool ArcNetHostImpl::GetNetworkPathFromGuid(const std::string& guid,
   }
 }
 
-void ArcNetHostImpl::ForgetNetwork(const mojo::String& guid,
+void ArcNetHostImpl::ForgetNetwork(const std::string& guid,
                                    const ForgetNetworkCallback& callback) {
   if (!IsDeviceOwner()) {
     callback.Run(mojom::NetworkResult::FAILURE);
@@ -530,7 +528,7 @@ void ArcNetHostImpl::ForgetNetwork(const mojo::String& guid,
       base::Bind(&ForgetNetworkFailureCallback, callback));
 }
 
-void ArcNetHostImpl::StartConnect(const mojo::String& guid,
+void ArcNetHostImpl::StartConnect(const std::string& guid,
                                   const StartConnectCallback& callback) {
   std::string path;
   if (!GetNetworkPathFromGuid(guid, &path)) {
@@ -543,7 +541,7 @@ void ArcNetHostImpl::StartConnect(const mojo::String& guid,
       base::Bind(&StartConnectFailureCallback, callback), false);
 }
 
-void ArcNetHostImpl::StartDisconnect(const mojo::String& guid,
+void ArcNetHostImpl::StartDisconnect(const std::string& guid,
                                      const StartDisconnectCallback& callback) {
   std::string path;
   if (!GetNetworkPathFromGuid(guid, &path)) {

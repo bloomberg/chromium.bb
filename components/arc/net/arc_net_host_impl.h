@@ -62,13 +62,13 @@ class ArcNetHostImpl : public ArcService,
   void CreateNetwork(mojom::WifiConfigurationPtr cfg,
                      const CreateNetworkCallback& callback) override;
 
-  void ForgetNetwork(const mojo::String& guid,
+  void ForgetNetwork(const std::string& guid,
                      const ForgetNetworkCallback& callback) override;
 
-  void StartConnect(const mojo::String& guid,
+  void StartConnect(const std::string& guid,
                     const StartConnectCallback& callback) override;
 
-  void StartDisconnect(const mojo::String& guid,
+  void StartDisconnect(const std::string& guid,
                        const StartDisconnectCallback& callback) override;
 
   // Overriden from chromeos::NetworkStateHandlerObserver.

@@ -121,20 +121,6 @@ static_library("arc_base") {
   ]
 }
 
-# TODO(crbug.com/662510): Remove this altogether.
-mojom("arc_bindings_old_types") {
-  sources = [
-    "common/net.mojom",
-  ]
-
-  public_deps = [
-    "//mojo/common:common_custom_types",
-    "//ui/gfx/geometry/mojo",
-  ]
-
-  use_new_wrapper_types = false
-}
-
 mojom("arc_bindings") {
   sources = [
     "common/app.mojom",
@@ -152,6 +138,7 @@ mojom("arc_bindings") {
     "common/intent_helper.mojom",
     "common/kiosk.mojom",
     "common/metrics.mojom",
+    "common/net.mojom",
     "common/notifications.mojom",
     "common/obb_mounter.mojom",
     "common/policy.mojom",
@@ -168,8 +155,8 @@ mojom("arc_bindings") {
   ]
 
   public_deps = [
-    ":arc_bindings_old_types",
     "//mojo/common:common_custom_types",
+    "//ui/gfx/geometry/mojo",
   ]
 }
 
