@@ -205,6 +205,7 @@ class Executive(object):
 
     def check_running_pid(self, pid):
         """Return True if pid is alive, otherwise return False."""
+        _log.debug('Checking whether pid %d is alive.', pid)
         if sys.platform == 'win32':
             return self._win32_check_running_pid(pid)
 
