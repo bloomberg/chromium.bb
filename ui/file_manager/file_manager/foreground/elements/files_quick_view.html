@@ -40,7 +40,7 @@
               <files-safe-media hidden="[[!contentUrl]]" type="image" class="content no-close-on-click" src="[[contentUrl]]"></files-safe-media>
               <template is="dom-if" if="[[!contentUrl]]">
                 <div generic-thumbnail="image"></div>
-                <div class="no-preivew">[[noPreviewText]]</div>
+                <div class="no-preview">[[noPreviewText]]</div>
               </template>
             </template>
             <!-- Video -->
@@ -66,7 +66,7 @@
             <template is="dom-if" if="[[isAudio_(type)]]">
               <template is="dom-if" if="[[!contentUrl]]">
                 <div generic-thumbnail="audio"></div>
-                <div class="no-preivew">[[noPlaybackText]]</div>
+                <div class="no-preview">[[noPlaybackText]]</div>
               </template>
             </template>
             <div hidden="[[!isUnsupported_(type, browsable)]]">
