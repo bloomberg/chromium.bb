@@ -221,6 +221,8 @@ component("gl") {
   }
   if (is_win) {
     sources += [
+      "gl_angle_util_win.cc",
+      "gl_angle_util_win.h",
       "gl_bindings_autogen_wgl.cc",
       "gl_bindings_autogen_wgl.h",
       "gl_context_wgl.cc",
@@ -243,6 +245,8 @@ component("gl") {
       "//third_party/angle:libGLESv2",
       "//third_party/mesa:osmesa",
     ]
+
+    deps += [ "//third_party/angle:includes" ]
   }
   if (is_mac) {
     sources += [

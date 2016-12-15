@@ -51,6 +51,7 @@
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
 #include "ui/gfx/color_space_win.h"
+#include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
@@ -344,80 +345,6 @@ HRESULT CreateCOMObjectFromDll(HMODULE dll,
 
   hr = factory->CreateInstance(NULL, iid, object);
   return hr;
-}
-
-// Helper function to query the ANGLE device object. The template argument T
-// identifies the device interface being queried. IDirect3DDevice9Ex for d3d9
-// and ID3D11Device for dx11.
-template <class T>
-base::win::ScopedComPtr<T> QueryDeviceObjectFromANGLE(int object_type) {
-  base::win::ScopedComPtr<T> device_object;
-
-  EGLDisplay egl_display = nullptr;
-  intptr_t egl_device = 0;
-  intptr_t device = 0;
-
-  {
-    TRACE_EVENT0("gpu", "QueryDeviceObjectFromANGLE. GetHardwareDisplay");
-    egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
-  }
-
-  RETURN_ON_FAILURE(gl::GLSurfaceEGL::HasEGLExtension("EGL_EXT_device_query"),
-                    "EGL_EXT_device_query missing", device_object);
-
-  PFNEGLQUERYDISPLAYATTRIBEXTPROC QueryDisplayAttribEXT = nullptr;
-
-  {
-    TRACE_EVENT0("gpu", "QueryDeviceObjectFromANGLE. eglGetProcAddress");
-
-    QueryDisplayAttribEXT = reinterpret_cast<PFNEGLQUERYDISPLAYATTRIBEXTPROC>(
-        eglGetProcAddress("eglQueryDisplayAttribEXT"));
-
-    RETURN_ON_FAILURE(
-        QueryDisplayAttribEXT,
-        "Failed to get the eglQueryDisplayAttribEXT function from ANGLE",
-        device_object);
-  }
-
-  PFNEGLQUERYDEVICEATTRIBEXTPROC QueryDeviceAttribEXT = nullptr;
-
-  {
-    TRACE_EVENT0("gpu", "QueryDeviceObjectFromANGLE. eglGetProcAddress");
-
-    QueryDeviceAttribEXT = reinterpret_cast<PFNEGLQUERYDEVICEATTRIBEXTPROC>(
-        eglGetProcAddress("eglQueryDeviceAttribEXT"));
-
-    RETURN_ON_FAILURE(
-        QueryDeviceAttribEXT,
-        "Failed to get the eglQueryDeviceAttribEXT function from ANGLE",
-        device_object);
-  }
-
-  {
-    TRACE_EVENT0("gpu", "QueryDeviceObjectFromANGLE. QueryDisplayAttribEXT");
-
-    RETURN_ON_FAILURE(
-        QueryDisplayAttribEXT(egl_display, EGL_DEVICE_EXT, &egl_device),
-        "The eglQueryDisplayAttribEXT function failed to get the EGL device",
-        device_object);
-  }
-
-  RETURN_ON_FAILURE(egl_device, "Failed to get the EGL device", device_object);
-
-  {
-    TRACE_EVENT0("gpu", "QueryDeviceObjectFromANGLE. QueryDisplayAttribEXT");
-
-    RETURN_ON_FAILURE(
-        QueryDeviceAttribEXT(reinterpret_cast<EGLDeviceEXT>(egl_device),
-                             object_type, &device),
-        "The eglQueryDeviceAttribEXT function failed to get the device",
-        device_object);
-
-    RETURN_ON_FAILURE(device, "Failed to get the ANGLE device", device_object);
-  }
-
-  device_object = reinterpret_cast<T*>(device);
-  return device_object;
 }
 
 H264ConfigChangeDetector::H264ConfigChangeDetector()
@@ -728,7 +655,7 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
                        false);
 
   base::win::ScopedComPtr<IDirect3DDevice9> angle_device =
-      QueryDeviceObjectFromANGLE<IDirect3DDevice9>(EGL_D3D9_DEVICE_ANGLE);
+      gl::QueryD3D9DeviceObjectFromANGLE();
   if (angle_device.get())
     using_angle_device_ = true;
 
@@ -868,8 +795,7 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
                                            d3d11_device_manager_.Receive());
   RETURN_ON_HR_FAILURE(hr, "MFCreateDXGIDeviceManager failed", false);
 
-  angle_device_ =
-      QueryDeviceObjectFromANGLE<ID3D11Device>(EGL_D3D11_DEVICE_ANGLE);
+  angle_device_ = gl::QueryD3D11DeviceObjectFromANGLE();
   if (!angle_device_)
     copy_nv12_textures_ = false;
   if (share_nv12_textures_) {
@@ -1371,7 +1297,7 @@ std::pair<int, int> DXVAVideoDecodeAccelerator::GetMaxH264Resolution() {
     TRACE_EVENT0("gpu,startup",
                  "GetMaxH264Resolution. QueryDeviceObjectFromANGLE");
 
-    device = QueryDeviceObjectFromANGLE<ID3D11Device>(EGL_D3D11_DEVICE_ANGLE);
+    device = gl::QueryD3D11DeviceObjectFromANGLE();
     if (!device.get())
       return max_resolution;
   }

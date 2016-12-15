@@ -19,12 +19,9 @@
 #include "media/gpu/d3d11_h264_accelerator.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/h264_dpb.h"
-#include "third_party/angle/include/EGL/egl.h"
-#include "third_party/angle/include/EGL/eglext.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gl/gl_angle_util_win.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_context.h"
-#include "ui/gl/gl_surface_egl.h"
 
 namespace media {
 
@@ -36,79 +33,6 @@ namespace media {
     }                                       \
   } while (0)
 
-// Helper function to query the ANGLE device object. The template argument T
-// identifies the device interface being queried. IDirect3DDevice9Ex for d3d9
-// and ID3D11Device for dx11.
-template <class T>
-base::win::ScopedComPtr<T> QueryDeviceObjectFromANGLE(int object_type) {
-  base::win::ScopedComPtr<T> device_object;
-
-  EGLDisplay egl_display = nullptr;
-  intptr_t egl_device = 0;
-  intptr_t device = 0;
-
-  {
-    TRACE_EVENT0("gpu", "QueryDeviceObjectFromANGLE. GetHardwareDisplay");
-    egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
-  }
-
-  RETURN_ON_FAILURE(gl::GLSurfaceEGL::HasEGLExtension("EGL_EXT_device_query"),
-                    "EGL_EXT_device_query missing", device_object);
-
-  PFNEGLQUERYDISPLAYATTRIBEXTPROC QueryDisplayAttribEXT = nullptr;
-
-  {
-    TRACE_EVENT0("gpu", "QueryDeviceObjectFromANGLE. eglGetProcAddress");
-
-    QueryDisplayAttribEXT = reinterpret_cast<PFNEGLQUERYDISPLAYATTRIBEXTPROC>(
-        eglGetProcAddress("eglQueryDisplayAttribEXT"));
-
-    RETURN_ON_FAILURE(
-        QueryDisplayAttribEXT,
-        "Failed to get the eglQueryDisplayAttribEXT function from ANGLE",
-        device_object);
-  }
-
-  PFNEGLQUERYDEVICEATTRIBEXTPROC QueryDeviceAttribEXT = nullptr;
-
-  {
-    TRACE_EVENT0("gpu", "QueryDeviceObjectFromANGLE. eglGetProcAddress");
-
-    QueryDeviceAttribEXT = reinterpret_cast<PFNEGLQUERYDEVICEATTRIBEXTPROC>(
-        eglGetProcAddress("eglQueryDeviceAttribEXT"));
-
-    RETURN_ON_FAILURE(
-        QueryDeviceAttribEXT,
-        "Failed to get the eglQueryDeviceAttribEXT function from ANGLE",
-        device_object);
-  }
-
-  {
-    TRACE_EVENT0("gpu", "QueryDeviceObjectFromANGLE. QueryDisplayAttribEXT");
-
-    RETURN_ON_FAILURE(
-        QueryDisplayAttribEXT(egl_display, EGL_DEVICE_EXT, &egl_device),
-        "The eglQueryDisplayAttribEXT function failed to get the EGL device",
-        device_object);
-  }
-
-  RETURN_ON_FAILURE(egl_device, "Failed to get the EGL device", device_object);
-
-  {
-    TRACE_EVENT0("gpu", "QueryDeviceObjectFromANGLE. QueryDisplayAttribEXT");
-
-    RETURN_ON_FAILURE(
-        QueryDeviceAttribEXT(reinterpret_cast<EGLDeviceEXT>(egl_device),
-                             object_type, &device),
-        "The eglQueryDeviceAttribEXT function failed to get the device",
-        device_object);
-
-    RETURN_ON_FAILURE(device, "Failed to get the ANGLE device", device_object);
-  }
-
-  device_object = reinterpret_cast<T*>(device);
-  return device_object;
-}
 
 D3D11VideoDecodeAccelerator::D3D11VideoDecodeAccelerator(
     const GetGLContextCallback& get_gl_context_cb,
@@ -123,7 +47,7 @@ bool D3D11VideoDecodeAccelerator::Initialize(const Config& config,
   client_ = client;
   make_context_current_cb_.Run();
 
-  device_ = QueryDeviceObjectFromANGLE<ID3D11Device>(EGL_D3D11_DEVICE_ANGLE);
+  device_ = gl::QueryD3D11DeviceObjectFromANGLE();
   device_->GetImmediateContext(device_context_.Receive());
 
   HRESULT hr = device_context_.QueryInterface(video_context_.Receive());

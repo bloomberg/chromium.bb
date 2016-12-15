@@ -17,4 +17,8 @@ specific_include_rules = {
   "angle_platform_impl.h": [
     "+third_party/angle/include/platform/Platform.h",
   ],
+  "gl_angle_util_win.cc": [
+    "+third_party/angle/include/EGL/egl.h",
+    "+third_party/angle/include/EGL/eglext.h",
+  ],
 }
