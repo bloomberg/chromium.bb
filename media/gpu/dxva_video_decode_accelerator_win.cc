@@ -25,6 +25,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/debug/alias.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -188,6 +189,8 @@ constexpr const wchar_t* const kMediaFoundationVideoDecoderDLLs[] = {
 // ensure only the thread with the ScopedExceptionCatcher dumps anything.
 base::ThreadLocalStorage::StaticSlot g_catcher_tls_slot = TLS_INITIALIZER;
 
+base::subtle::Atomic32 g_dump_count;
+
 uint64_t GetCurrentQPC() {
   LARGE_INTEGER perf_counter_now = {};
   // Use raw QueryPerformanceCounter to avoid grabbing locks or allocating
@@ -207,6 +210,14 @@ LONG CALLBACK VectoredCrashHandler(EXCEPTION_POINTERS* exception_pointers) {
   if (g_catcher_tls_slot.Get()) {
     g_last_exception_code = exception_pointers->ExceptionRecord->ExceptionCode;
     g_last_exception_time = GetCurrentQPC();
+    if (exception_pointers->ExceptionRecord->ExceptionCode ==
+        EXCEPTION_DEBUG_EVENT) {
+      base::debug::Alias(&exception_pointers);
+      // Only dump first time to ensure we don't spend a lot of time doing this
+      // if the driver continually causes exceptions.
+      if (base::subtle::Barrier_AtomicIncrement(&g_dump_count, 1) == 1)
+        base::debug::DumpWithoutCrashing();
+    }
   }
   return EXCEPTION_CONTINUE_SEARCH;
 }
