@@ -15,7 +15,7 @@
 # 2. Prepare a list of urls.
 # 3. Run the script (use -d when you have more than one device connected.)
 #   run_offline_page_evaluation_test.py --output-directory
-#   ~/offline_eval_short_output/ --user-requested=true -use-test-scheduler=true
+#   ~/offline_eval_short_output/ --user-requested -use-test-scheduler
 #   $CHROME_SRC/out/Default ~/offline_eval_urls.txt
 # 4. Check the results in the output directory.
 
@@ -26,7 +26,7 @@ import subprocess
 import sys
 
 DEFAULT_USER_REQUEST = True
-DEFAULT_USE_TEST_SCHEDULER = False
+DEFAULT_USE_TEST_SCHEDULER = True
 # 0 means the batch would be the whole list of urls.
 DEFAULT_BATCH_SIZE = 0
 DEFAULT_VERBOSE = False
@@ -59,12 +59,12 @@ def main(args):
       '--use-test-scheduler',
       dest='use_test_scheduler',
       action='store_true',
-      help='Use test scheduler to avoid real scheduling')
+      help='Use test scheduler to avoid real scheduling. Default option.')
   parser.add_argument(
       '--not-use-test-scheduler',
       dest='use_test_scheduler',
       action='store_false',
-      help='Use GCMNetworkManager for scheduling. Default option.')
+      help='Use GCMNetworkManager for scheduling.')
   parser.add_argument(
       '--batch-size',
       type=int,
@@ -92,11 +92,6 @@ def main(args):
       schedule_batch_size=DEFAULT_BATCH_SIZE,
       verbose=DEFAULT_VERBOSE)
 
-  def get_adb_command(args):
-    if options.device_id != None:
-      return ['adb', '-s', options.device_id] + args
-    return ['adb'] + args
-
   # Get the arguments and several paths.
   options, extra_args = parser.parse_known_args(args)
 
@@ -110,6 +105,17 @@ def main(args):
   test_runner_path = os.path.join(build_dir_path,
                                   'bin/run_chrome_public_test_apk')
   config_output_path = os.path.join(options.output_dir, CONFIG_FILENAME)
+
+  def get_adb_command(args):
+    adb_path = os.path.join(
+        build_dir_path,
+        '../../third_party/android_tools/sdk/platform-tools/adb')
+    if options.device_id != None:
+      return [adb_path, '-s', options.device_id] + args
+    return [adb_path] + args
+
+  # In case adb server is not started
+  subprocess.call(get_adb_command(['start-server']))
   external_dir = subprocess.check_output(
       get_adb_command(['shell', 'echo', '$EXTERNAL_STORAGE'])).strip()
 
@@ -131,11 +137,14 @@ def main(args):
           ['push', config_output_path, external_dir + '/paquete/test_config']))
   subprocess.call(
       get_adb_command([
-          'push', options.test_urls_file,
-          '/sdcard/paquete/offline_eval_urls.txt'
+          'push', options.test_urls_file, external_dir +
+          '/paquete/offline_eval_urls.txt'
       ]))
-  print 'Start running test...'
-
+  print 'Start running test with following configurations:'
+  print CONFIG_TEMPLATE.format(
+      is_user_requested=options.user_request,
+      use_test_scheduler=options.use_test_scheduler,
+      schedule_batch_size=options.schedule_batch_size)
   # Run test
   test_runner_cmd = [
       test_runner_path, '-f',
@@ -150,8 +159,8 @@ def main(args):
   if os.path.exists(archive_dir):
     shutil.rmtree(archive_dir)
   subprocess.call(
-      get_adb_command(
-          ['pull', external_dir + '/paquete/archives', archive_dir]))
+      get_adb_command(['pull', external_dir + '/paquete/archives', archive_dir
+                      ]))
   subprocess.call(
       get_adb_command([
           'pull', external_dir + '/paquete/offline_eval_results.txt',
