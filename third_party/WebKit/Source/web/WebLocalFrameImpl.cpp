@@ -949,12 +949,7 @@ void WebLocalFrameImpl::replaceSelection(const WebString& text) {
   // needs to be audited.  See http://crbug.com/590369 for more details.
   frame()->document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-  bool selectReplacement =
-      frame()->editor().behavior().shouldSelectReplacement();
-  bool smartReplace = true;
-  frame()->editor().replaceSelectionWithText(
-      text, selectReplacement, smartReplace,
-      InputEvent::InputType::InsertReplacementText);
+  frame()->editor().replaceSelection(text);
 }
 
 void WebLocalFrameImpl::setMarkedText(const WebString& text,

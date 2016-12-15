@@ -1665,6 +1665,14 @@ void Editor::tidyUpHTMLStructure(Document& document) {
   // TODO(tkent): Should we check and move Text node children of <html>?
 }
 
+void Editor::replaceSelection(const String& text) {
+  DCHECK(!frame().document()->needsLayoutTreeUpdate());
+  bool selectReplacement = behavior().shouldSelectReplacement();
+  bool smartReplace = true;
+  replaceSelectionWithText(text, selectReplacement, smartReplace,
+                           InputEvent::InputType::InsertReplacementText);
+}
+
 DEFINE_TRACE(Editor) {
   visitor->trace(m_frame);
   visitor->trace(m_lastEditCommand);

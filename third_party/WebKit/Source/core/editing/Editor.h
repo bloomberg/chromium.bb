@@ -261,7 +261,9 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
                                 bool smartReplace,
                                 InputEvent::InputType);
 
-  // TODO(xiaochengh): Replace |bool| parameters by |enum|.
+  // Implementation of WebLocalFrameImpl::replaceSelection.
+  void replaceSelection(const String&);
+
   void replaceSelectionAfterDragging(DocumentFragment*,
                                      InsertMode,
                                      DragSourceType);
