@@ -177,9 +177,10 @@ bool CopyDirectory(const FilePath& from_path, const FilePath& to_path,
   FilePath real_from_path = MakeAbsoluteFilePath(from_path);
   if (real_from_path.empty())
     return false;
+  // Note: it's important to use IsParent() here as string comparison would
+  // result in a false negative, e.g. on C:\bar\Foo versus C:\bar\FooOld.
   if (real_to_path.value().size() >= real_from_path.value().size() &&
-      real_to_path.value().compare(0, real_from_path.value().size(),
-                                   real_from_path.value()) == 0) {
+      real_from_path.IsParent(real_to_path)) {
     return false;
   }
 

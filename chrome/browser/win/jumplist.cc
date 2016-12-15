@@ -4,12 +4,9 @@
 
 #include "chrome/browser/win/jumplist.h"
 
-#include <windows.h>
-
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
@@ -17,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -58,18 +54,6 @@ namespace {
 
 // Delay jumplist updates to allow collapsing of redundant update requests.
 const int kDelayForJumplistUpdateInMS = 3500;
-
-// JumpList folder's move operation status.
-enum MoveOperationResult {
-  SUCCESS = 0,
-  MOVE_FILE_EX_FAILED = 1 << 0,
-  COPY_DIR_FAILED = 1 << 1,
-  DELETE_FILE_RECURSIVE_FAILED = 1 << 2,
-  DELETE_SOURCE_FOLDER_FAILED = 1 << 3,
-  DELETE_TARGET_FOLDER_FAILED = 1 << 4,
-  DELETE_DIR_READ_ONLY = 1 << 5,
-  END = 1 << 6
-};
 
 // Append the common switches to each shell link.
 void AppendCommonSwitches(ShellLinkItem* shell_link) {
@@ -228,266 +212,6 @@ bool UpdateJumpList(const wchar_t* app_id,
   return true;
 }
 
-// A wrapper function for recording UMA histogram.
-void RecordFolderMoveResult(int move_operation_status) {
-  UMA_HISTOGRAM_ENUMERATION("WinJumplist.DetailedFolderMoveResults",
-                            move_operation_status, MoveOperationResult::END);
-}
-
-// This function is an exact copy of //base for UMA debugging purpose of
-// DeleteFile() below.
-// Deletes all files and directories in a path.
-// Returns false on the first failure it encounters.
-bool DeleteFileRecursive(const base::FilePath& path,
-                         const base::FilePath::StringType& pattern,
-                         bool recursive) {
-  base::FileEnumerator traversal(
-      path, false,
-      base::FileEnumerator::FILES | base::FileEnumerator::DIRECTORIES, pattern);
-  for (base::FilePath current = traversal.Next(); !current.empty();
-       current = traversal.Next()) {
-    // Try to clear the read-only bit if we find it.
-    base::FileEnumerator::FileInfo info = traversal.GetInfo();
-    if ((info.find_data().dwFileAttributes & FILE_ATTRIBUTE_READONLY) &&
-        (recursive || !info.IsDirectory())) {
-      ::SetFileAttributes(
-          current.value().c_str(),
-          info.find_data().dwFileAttributes & ~FILE_ATTRIBUTE_READONLY);
-    }
-
-    if (info.IsDirectory()) {
-      if (recursive && (!DeleteFileRecursive(current, pattern, true) ||
-                        !::RemoveDirectory(current.value().c_str())))
-        return false;
-    } else if (!::DeleteFile(current.value().c_str())) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// This function is a copy from //base for UMA debugging purpose.
-// Deletes all files and directories in a path.
-// Returns false on the first failure it encounters.
-bool DeleteFile(const base::FilePath& path,
-                bool recursive,
-                int* move_operation_status) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  if (path.empty())
-    return true;
-
-  if (path.value().length() >= MAX_PATH)
-    return false;
-
-  // Handle any path with wildcards.
-  if (path.BaseName().value().find_first_of(L"*?") !=
-      base::FilePath::StringType::npos) {
-    bool ret =
-        DeleteFileRecursive(path.DirName(), path.BaseName().value(), recursive);
-    if (!ret) {
-      *move_operation_status |=
-          MoveOperationResult::DELETE_FILE_RECURSIVE_FAILED;
-      *move_operation_status |=
-          MoveOperationResult::DELETE_SOURCE_FOLDER_FAILED;
-    }
-    return ret;
-  }
-  DWORD attr = ::GetFileAttributes(path.value().c_str());
-  // We're done if we can't find the path.
-  if (attr == INVALID_FILE_ATTRIBUTES)
-    return true;
-  // We may need to clear the read-only bit.
-  if ((attr & FILE_ATTRIBUTE_READONLY) &&
-      !::SetFileAttributes(path.value().c_str(),
-                           attr & ~FILE_ATTRIBUTE_READONLY)) {
-    *move_operation_status |= MoveOperationResult::DELETE_DIR_READ_ONLY;
-    *move_operation_status |= MoveOperationResult::DELETE_FILE_RECURSIVE_FAILED;
-    *move_operation_status |= MoveOperationResult::DELETE_SOURCE_FOLDER_FAILED;
-    return false;
-  }
-  // Directories are handled differently if they're recursive.
-  if (!(attr & FILE_ATTRIBUTE_DIRECTORY))
-    return !!::DeleteFile(path.value().c_str());
-  // Handle a simple, single file delete.
-  if (!recursive || DeleteFileRecursive(path, L"*", true)) {
-    bool ret = !!::RemoveDirectory(path.value().c_str());
-    if (!ret)
-      *move_operation_status |=
-          MoveOperationResult::DELETE_SOURCE_FOLDER_FAILED;
-    return ret;
-  }
-
-  *move_operation_status |= MoveOperationResult::DELETE_FILE_RECURSIVE_FAILED;
-  *move_operation_status |= MoveOperationResult::DELETE_SOURCE_FOLDER_FAILED;
-  return false;
-}
-
-// This function is mostly copied from //base.
-// It has some issue when the dest dir string contains the src dir string.
-// Temporary fix by replacing the old logic with IsParent() call.
-bool CopyDirectoryTemp(const base::FilePath& from_path,
-                       const base::FilePath& to_path,
-                       bool recursive) {
-  // NOTE(maruel): Previous version of this function used to call
-  // SHFileOperation().  This used to copy the file attributes and extended
-  // attributes, OLE structured storage, NTFS file system alternate data
-  // streams, SECURITY_DESCRIPTOR. In practice, this is not what we want, we
-  // want the containing directory to propagate its SECURITY_DESCRIPTOR.
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  // NOTE: I suspect we could support longer paths, but that would involve
-  // analyzing all our usage of files.
-  if (from_path.value().length() >= MAX_PATH ||
-      to_path.value().length() >= MAX_PATH) {
-    return false;
-  }
-
-  // This function does not properly handle destinations within the source.
-  base::FilePath real_to_path = to_path;
-  if (base::PathExists(real_to_path)) {
-    real_to_path = base::MakeAbsoluteFilePath(real_to_path);
-    if (real_to_path.empty())
-      return false;
-  } else {
-    real_to_path = base::MakeAbsoluteFilePath(real_to_path.DirName());
-    if (real_to_path.empty())
-      return false;
-  }
-  base::FilePath real_from_path = base::MakeAbsoluteFilePath(from_path);
-  if (real_from_path.empty())
-    return false;
-
-  // Originally this CopyDirectory function returns false when to_path string
-  // contains from_path string. While this can be that the to_path is within
-  // the from_path, e.g., parent-child relationship in terms of folder, it
-  // also can be the two paths are in the same folder, just that one name
-  // contains
-  // the other, e.g. C:\\JumpListIcon and C:\\JumpListIconOld.
-  // We make this function not return false in the latter situation by calling
-  // IsParent() function.
-  if (real_to_path.value().size() >= real_from_path.value().size() &&
-      real_from_path.IsParent(real_to_path)) {
-    return false;
-  }
-
-  int traverse_type = base::FileEnumerator::FILES;
-  if (recursive)
-    traverse_type |= base::FileEnumerator::DIRECTORIES;
-  base::FileEnumerator traversal(from_path, recursive, traverse_type);
-
-  if (!base::PathExists(from_path)) {
-    DLOG(ERROR) << "CopyDirectory() couldn't stat source directory: "
-                << from_path.value().c_str();
-    return false;
-  }
-  // TODO(maruel): This is not necessary anymore.
-  DCHECK(recursive || base::DirectoryExists(from_path));
-
-  base::FilePath current = from_path;
-  bool from_is_dir = base::DirectoryExists(from_path);
-  bool success = true;
-  base::FilePath from_path_base = from_path;
-  if (recursive && base::DirectoryExists(to_path)) {
-    // If the destination already exists and is a directory, then the
-    // top level of source needs to be copied.
-    from_path_base = from_path.DirName();
-  }
-
-  while (success && !current.empty()) {
-    // current is the source path, including from_path, so append
-    // the suffix after from_path to to_path to create the target_path.
-    base::FilePath target_path(to_path);
-    if (from_path_base != current) {
-      if (!from_path_base.AppendRelativePath(current, &target_path)) {
-        success = false;
-        break;
-      }
-    }
-
-    if (from_is_dir) {
-      if (!base::DirectoryExists(target_path) &&
-          !::CreateDirectory(target_path.value().c_str(), NULL)) {
-        DLOG(ERROR) << "CopyDirectory() couldn't create directory: "
-                    << target_path.value().c_str();
-        success = false;
-      }
-    } else if (!base::CopyFile(current, target_path)) {
-      DLOG(ERROR) << "CopyDirectory() couldn't create file: "
-                  << target_path.value().c_str();
-      success = false;
-    }
-
-    current = traversal.Next();
-    if (!current.empty())
-      from_is_dir = traversal.GetInfo().IsDirectory();
-  }
-
-  return success;
-}
-
-// This function is a temporary fork of Move() and MoveUnsafe() in
-// base/files/file_util.h, where UMA functions are added to gather user data.
-// As //base is highly mature, we tend not to add this temporary function
-// in it. This change will be reverted after user data gathered.
-bool MoveDebugWithUMA(const base::FilePath& from_path,
-                      const base::FilePath& to_path,
-                      int folder_delete_fail) {
-  if (from_path.ReferencesParent() || to_path.ReferencesParent())
-    return false;
-
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  // This variable records the status of move operations.
-  int move_operation_status = MoveOperationResult::SUCCESS;
-  if (folder_delete_fail)
-    move_operation_status |= MoveOperationResult::DELETE_TARGET_FOLDER_FAILED;
-
-  // NOTE: I suspect we could support longer paths, but that would involve
-  // analyzing all our usage of files.
-  if (from_path.value().length() >= MAX_PATH ||
-      to_path.value().length() >= MAX_PATH) {
-    return false;
-  }
-  if (MoveFileEx(from_path.value().c_str(), to_path.value().c_str(),
-                 MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING) != 0) {
-    RecordFolderMoveResult(move_operation_status);
-    return true;
-  }
-
-  move_operation_status |= MoveOperationResult::MOVE_FILE_EX_FAILED;
-
-  // Keep the last error value from MoveFileEx around in case the below
-  // fails.
-  bool ret = false;
-  DWORD last_error = ::GetLastError();
-
-  if (base::DirectoryExists(from_path)) {
-    // MoveFileEx fails if moving directory across volumes. We will simulate
-    // the move by using Copy and Delete. Ideally we could check whether
-    // from_path and to_path are indeed in different volumes.
-    if (CopyDirectoryTemp(from_path, to_path, true)) {
-      if (DeleteFile(from_path, true, &move_operation_status))
-        ret = true;
-    } else {
-      move_operation_status |= MoveOperationResult::COPY_DIR_FAILED;
-      move_operation_status |=
-          MoveOperationResult::DELETE_FILE_RECURSIVE_FAILED;
-      move_operation_status |= MoveOperationResult::DELETE_SOURCE_FOLDER_FAILED;
-    }
-  }
-
-  if (!ret) {
-    // Leave a clue about what went wrong so that it can be (at least) picked
-    // up by a PLOG entry.
-    ::SetLastError(last_error);
-  }
-
-  RecordFolderMoveResult(move_operation_status);
-
-  return ret;
-}
-
 // Updates the jumplist, once all the data has been fetched.
 void RunUpdateOnFileThread(
     IncognitoModePrefs::Availability incognito_availability,
@@ -517,25 +241,36 @@ void RunUpdateOnFileThread(
 
   enum FolderOperationResult {
     SUCCESS = 0,
-    DELETE_FAILED = 1 << 0,
+    DELETE_DEST_FAILED = 1 << 0,
     MOVE_FAILED = 1 << 1,
-    CREATE_DIR_FAILED = 1 << 2,
+    DELETE_SRC_FAILED = 1 << 2,
+    CREATE_SRC_FAILED = 1 << 3,
     // This value is beyond the sum of all bit fields above and
     // should remain last (shifted by one more than the last value)
-    END = 1 << 3
+    END = 1 << 4
   };
 
   // This variable records the status of three folder operations.
   int folder_operation_status = FolderOperationResult::SUCCESS;
 
-  if (base::PathExists(icon_dir_old) && !base::DeleteFile(icon_dir_old, true))
-    folder_operation_status |= FolderOperationResult::DELETE_FAILED;
-  if (!MoveDebugWithUMA(icon_dir, icon_dir_old, folder_operation_status))
+  if (base::PathExists(icon_dir_old) && !base::DeleteFile(icon_dir_old, true)) {
+    folder_operation_status |= FolderOperationResult::DELETE_DEST_FAILED;
+    // If deletion of |icon_dir_old| fails, do not move |icon_dir| to
+    // |icon_dir_old|, instead, delete |icon_dir| directly to avoid bloating
+    // |icon_dir_old| by moving more things to it.
+    if (!base::DeleteFile(icon_dir, true))
+      folder_operation_status |= FolderOperationResult::DELETE_SRC_FAILED;
+  } else if (!base::Move(icon_dir, icon_dir_old)) {
     folder_operation_status |= FolderOperationResult::MOVE_FAILED;
+    // If Move() fails, delete |icon_dir| to avoid file accumulation in this
+    // directory, which can eventually lead the folder to be huge.
+    if (!base::DeleteFile(icon_dir, true))
+      folder_operation_status |= FolderOperationResult::DELETE_SRC_FAILED;
+  }
   if (!base::CreateDirectory(icon_dir))
-    folder_operation_status |= FolderOperationResult::CREATE_DIR_FAILED;
+    folder_operation_status |= FolderOperationResult::CREATE_SRC_FAILED;
 
-  UMA_HISTOGRAM_ENUMERATION("WinJumplist.FolderResults",
+  UMA_HISTOGRAM_ENUMERATION("WinJumplist.DetailedFolderResults",
                             folder_operation_status,
                             FolderOperationResult::END);
 
