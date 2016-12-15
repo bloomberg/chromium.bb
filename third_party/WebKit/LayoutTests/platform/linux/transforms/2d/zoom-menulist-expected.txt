@@ -7,8 +7,8 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,1) size 405x55
           text run at (0,1) width 405: "Zooming Menu List"
       LayoutBlockFlow (anonymous) at (0,89.16) size 776x83
-        LayoutMenuList {SELECT} at (0,0) size 264x83 [bgcolor=#C0C0C0] [border: (4px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (4,4) size 256x77
+        LayoutMenuList {SELECT} at (0,0) size 255x83 [bgcolor=#C0C0C0] [border: (4px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (4,4) size 247x77
             LayoutText (anonymous) at (18,5) size 113x67
               text run at (18,5) width 113: "One"
         LayoutText {#text} at (0,0) size 0x0

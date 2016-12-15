@@ -7,67 +7,67 @@ layer at (0,0) size 800x600
         text run at (0,0) width 256: "This tests that styled popups look right. "
         text run at (255,0) width 310: "(Aqua for now- later, we will honor the styling)."
       LayoutBR {BR} at (564,14) size 1x0
-      LayoutMenuList {SELECT} at (0,18) size 46x20 [bgcolor=#FF0000] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 44x18
+      LayoutMenuList {SELECT} at (0,18) size 44x20 [bgcolor=#FF0000] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 42x18
           LayoutText (anonymous) at (4,1) size 22x16
             text run at (4,1) width 22: "test"
-      LayoutText {#text} at (46,19) size 4x17
-        text run at (46,19) width 4: " "
-      LayoutBR {BR} at (50,33) size 0x0
+      LayoutText {#text} at (44,19) size 4x17
+        text run at (44,19) width 4: " "
+      LayoutBR {BR} at (48,33) size 0x0
       LayoutText {#text} at (0,38) size 541x17
         text run at (0,38) width 541: "This tests that background color is white by default regardless of the parent element."
       LayoutBR {BR} at (540,52) size 1x0
-      LayoutInline {SPAN} at (0,0) size 60x27 [bgcolor=#FF0000]
+      LayoutInline {SPAN} at (0,0) size 58x27 [bgcolor=#FF0000]
         LayoutText {#text} at (0,0) size 0x0
-        LayoutMenuList {SELECT} at (5,56) size 46x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,1) size 44x18
+        LayoutMenuList {SELECT} at (5,56) size 44x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 42x18
             LayoutText (anonymous) at (4,1) size 22x16
               text run at (4,1) width 22: "test"
-        LayoutText {#text} at (51,57) size 4x17
-          text run at (51,57) width 4: " "
+        LayoutText {#text} at (49,57) size 4x17
+          text run at (49,57) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
       LayoutBR {BR} at (0,0) size 0x0
       LayoutText {#text} at (0,76) size 642x17
         text run at (0,76) width 642: "This tests that background color is inherited from the parent if background-color:inherit is specified."
       LayoutBR {BR} at (641,90) size 1x0
-      LayoutInline {SPAN} at (0,0) size 60x27 [bgcolor=#FF0000]
+      LayoutInline {SPAN} at (0,0) size 58x27 [bgcolor=#FF0000]
         LayoutText {#text} at (0,0) size 0x0
-        LayoutMenuList {SELECT} at (5,94) size 46x20 [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,1) size 44x18
+        LayoutMenuList {SELECT} at (5,94) size 44x20 [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 42x18
             LayoutText (anonymous) at (4,1) size 22x16
               text run at (4,1) width 22: "test"
-        LayoutText {#text} at (51,95) size 4x17
-          text run at (51,95) width 4: " "
+        LayoutText {#text} at (49,95) size 4x17
+          text run at (49,95) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
       LayoutBR {BR} at (0,0) size 0x0
       LayoutText {#text} at (0,114) size 653x17
         text run at (0,114) width 653: "This tests that background color is the same as the parent if background-color:transparent is specified."
       LayoutBR {BR} at (652,128) size 1x0
-      LayoutInline {SPAN} at (0,0) size 60x27 [bgcolor=#FF0000]
+      LayoutInline {SPAN} at (0,0) size 58x27 [bgcolor=#FF0000]
         LayoutText {#text} at (0,0) size 0x0
-        LayoutMenuList {SELECT} at (5,132) size 46x20 [border: (1px solid #A9A9A9)]
-          LayoutBlockFlow (anonymous) at (1,1) size 44x18
+        LayoutMenuList {SELECT} at (5,132) size 44x20 [border: (1px solid #A9A9A9)]
+          LayoutBlockFlow (anonymous) at (1,1) size 42x18
             LayoutText (anonymous) at (4,1) size 22x16
               text run at (4,1) width 22: "test"
-        LayoutText {#text} at (51,133) size 4x17
-          text run at (51,133) width 4: " "
+        LayoutText {#text} at (49,133) size 4x17
+          text run at (49,133) width 4: " "
       LayoutText {#text} at (0,0) size 0x0
       LayoutBR {BR} at (0,0) size 0x0
       LayoutText {#text} at (0,152) size 509x17
         text run at (0,152) width 509: "This tests that background is white if only background-image:none is specified."
       LayoutBR {BR} at (508,166) size 1x0
-      LayoutMenuList {SELECT} at (0,170) size 46x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 44x18
+      LayoutMenuList {SELECT} at (0,170) size 44x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 42x18
           LayoutText (anonymous) at (4,1) size 22x16
             text run at (4,1) width 22: "test"
-      LayoutText {#text} at (46,171) size 4x17
-        text run at (46,171) width 4: " "
-      LayoutBR {BR} at (50,185) size 0x0
+      LayoutText {#text} at (44,171) size 4x17
+        text run at (44,171) width 4: " "
+      LayoutBR {BR} at (48,185) size 0x0
       LayoutText {#text} at (0,190) size 430x17
         text run at (0,190) width 430: "This tests that the image specified for background-image is visible."
       LayoutBR {BR} at (429,204) size 1x0
-      LayoutMenuList {SELECT} at (0,208) size 46x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-        LayoutBlockFlow (anonymous) at (1,1) size 44x18
+      LayoutMenuList {SELECT} at (0,208) size 44x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+        LayoutBlockFlow (anonymous) at (1,1) size 42x18
           LayoutText (anonymous) at (4,1) size 22x16
             text run at (4,1) width 22: "test"
       LayoutText {#text} at (0,0) size 0x0

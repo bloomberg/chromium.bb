@@ -9,12 +9,12 @@ layer at (0,0) size 800x600
       LayoutTable {TABLE} at (0,58.44) size 784x86 [border: (2px outset #808080)]
         LayoutTableSection {TBODY} at (2,2) size 780x82
           LayoutTableRow {TR} at (0,0) size 780x82
-            LayoutTableCell {TD} at (0,0) size 126x82 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
-              LayoutMenuList {SELECT} at (1,1) size 124x80 [bgcolor=#FFFFFF] [border: (40px solid #FF0000)]
-                LayoutBlockFlow (anonymous) at (40,40) size 44x18
+            LayoutTableCell {TD} at (0,0) size 124x82 [border: (1px inset #808080)] [r=0 c=0 rs=1 cs=1]
+              LayoutMenuList {SELECT} at (1,1) size 122x80 [bgcolor=#FFFFFF] [border: (40px solid #FF0000)]
+                LayoutBlockFlow (anonymous) at (40,40) size 42x18
                   LayoutText (anonymous) at (4,1) size 22x16
                     text run at (4,1) width 22: "Foo"
-            LayoutTableCell {TD} at (126,40) size 654x2 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
+            LayoutTableCell {TD} at (124,40) size 656x2 [border: (1px inset #808080)] [r=0 c=1 rs=1 cs=1]
       LayoutBlockFlow {P} at (0,160.44) size 784x24
         LayoutTable {TABLE} at (0,0) size 784x24 [border: (2px outset #808080)]
           LayoutTableSection {TBODY} at (2,2) size 780x20

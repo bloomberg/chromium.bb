@@ -22,17 +22,17 @@ layer at (0,0) size 800x600
                   LayoutBlockFlow (anonymous) at (8,3) size 71x16
                     LayoutText {#text} at (0,0) size 71x16
                       text run at (0,0) width 71: "Empty trash"
-              LayoutTableCell {TD} at (224,6) size 378x20 [r=0 c=3 rs=1 cs=1]
+              LayoutTableCell {TD} at (224,6) size 380x20 [r=0 c=3 rs=1 cs=1]
                 LayoutText {#text} at (1,1) size 4x17
                   text run at (1,1) width 4: " "
-              LayoutTableCell {TD} at (604,2) size 67x24 [r=0 c=4 rs=1 cs=1]
+              LayoutTableCell {TD} at (606,2) size 67x24 [r=0 c=4 rs=1 cs=1]
                 LayoutButton {INPUT} at (1,1) size 65x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
                   LayoutBlockFlow (anonymous) at (8,3) size 49x16
                     LayoutText {#text} at (0,0) size 49x16
                       text run at (0,0) width 49: "Move to:"
-              LayoutTableCell {TD} at (673,4) size 109x22 [r=0 c=5 rs=1 cs=1]
-                LayoutMenuList {SELECT} at (1,1) size 107x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-                  LayoutBlockFlow (anonymous) at (1,1) size 105x18
+              LayoutTableCell {TD} at (675,4) size 107x22 [r=0 c=5 rs=1 cs=1]
+                LayoutMenuList {SELECT} at (1,1) size 105x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+                  LayoutBlockFlow (anonymous) at (1,1) size 103x18
                     LayoutText (anonymous) at (4,1) size 83x16
                       text run at (4,1) width 83: "Choose folder "
                 LayoutText {#text} at (0,0) size 0x0

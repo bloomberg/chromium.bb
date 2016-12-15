@@ -28,8 +28,8 @@ layer at (0,0) size 800x600
                   LayoutText {#text} at (1,1) size 104x17
                     text run at (1,1) width 104: "Run Test Case:"
               LayoutTableCell {TD} at (110,29) size 490x22 [r=1 c=1 rs=1 cs=1]
-                LayoutMenuList {SELECT} at (1,1) size 269x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
-                  LayoutBlockFlow (anonymous) at (1,1) size 267x18
+                LayoutMenuList {SELECT} at (1,1) size 267x20 [bgcolor=#FFFFFF] [border: (1px solid #A9A9A9)]
+                  LayoutBlockFlow (anonymous) at (1,1) size 265x18
                     LayoutText (anonymous) at (4,1) size 77x16
                       text run at (4,1) width 77: "a_abortinstall"
                 LayoutText {#text} at (0,0) size 0x0
