@@ -3,11 +3,13 @@
 // found in the LICENSE file.
 
 #include "core/events/MessageEvent.h"
+#include "core/inspector/ConsoleMessageStorage.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/workers/DedicatedWorkerGlobalScope.h"
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/InProcessWorkerMessagingProxy.h"
 #include "core/workers/InProcessWorkerObjectProxy.h"
+#include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "core/workers/WorkerThreadTestHelper.h"
@@ -52,6 +54,33 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
         std::move(startupData->m_starterOriginPrivilegeData),
         std::move(startupData->m_workerClients));
   }
+
+  // Emulates API use on DedicatedWorkerGlobalScope.
+  void countFeature(UseCounter::Feature feature) {
+    EXPECT_TRUE(isCurrentThread());
+    globalScope()->countFeature(feature);
+    workerReportingProxy()
+        .getParentFrameTaskRunners()
+        ->get(TaskType::Internal)
+        ->postTask(BLINK_FROM_HERE, crossThreadBind(&testing::exitRunLoop));
+  }
+
+  // Emulates deprecated API use on DedicatedWorkerGlobalScope.
+  void countDeprecation(UseCounter::Feature feature) {
+    EXPECT_TRUE(isCurrentThread());
+    EXPECT_EQ(0u, consoleMessageStorage()->size());
+    globalScope()->countDeprecation(feature);
+
+    // countDeprecation() should add a warning message.
+    EXPECT_EQ(1u, consoleMessageStorage()->size());
+    String consoleMessage = consoleMessageStorage()->at(0)->message();
+    EXPECT_TRUE(consoleMessage.contains("deprecated"));
+
+    workerReportingProxy()
+        .getParentFrameTaskRunners()
+        ->get(TaskType::Internal)
+        ->postTask(BLINK_FROM_HERE, crossThreadBind(&testing::exitRunLoop));
+  }
 };
 
 class InProcessWorkerMessagingProxyForTest
@@ -71,8 +100,6 @@ class InProcessWorkerMessagingProxyForTest
     m_workerThread = WTF::wrapUnique(
         new DedicatedWorkerThreadForTest(m_mockWorkerLoaderProxyProvider.get(),
                                          workerObjectProxy(), threadHeapMode));
-    workerThreadCreated();
-
     m_mockWorkerThreadLifecycleObserver = new MockWorkerThreadLifecycleObserver(
         m_workerThread->getWorkerThreadLifecycleContext());
     EXPECT_CALL(*m_mockWorkerThreadLifecycleObserver, contextDestroyed())
@@ -83,6 +110,27 @@ class InProcessWorkerMessagingProxyForTest
     EXPECT_FALSE(m_blocking);
     m_workerThread->workerLoaderProxy()->detachProvider(
         m_mockWorkerLoaderProxyProvider.get());
+  }
+
+  void startWithSourceCode(const String& source) {
+    KURL scriptURL(ParsedURLString, "http://fake.url/");
+    m_securityOrigin = SecurityOrigin::create(scriptURL);
+    std::unique_ptr<Vector<CSPHeaderAndType>> headers =
+        WTF::makeUnique<Vector<CSPHeaderAndType>>();
+    CSPHeaderAndType headerAndType("contentSecurityPolicy",
+                                   ContentSecurityPolicyHeaderTypeReport);
+    headers->append(headerAndType);
+    workerThread()->start(WorkerThreadStartupData::create(
+        scriptURL, "fake user agent", source, nullptr /* cachedMetaData */,
+        DontPauseWorkerGlobalScopeOnStart, headers.get(),
+        "" /* referrerPolicy */, m_securityOrigin.get(),
+        nullptr /* workerClients */, WebAddressSpaceLocal,
+        nullptr /* originTrialTokens */, nullptr /* workerSettings */,
+        V8CacheOptionsDefault));
+
+    workerInspectorProxy()->workerThreadCreated(
+        toDocument(getExecutionContext()), m_workerThread.get(), scriptURL);
+    workerThreadCreated();
   }
 
   enum class Notification {
@@ -145,6 +193,7 @@ class InProcessWorkerMessagingProxyForTest
       m_mockWorkerLoaderProxyProvider;
   Persistent<MockWorkerThreadLifecycleObserver>
       m_mockWorkerThreadLifecycleObserver;
+  RefPtr<SecurityOrigin> m_securityOrigin;
 
   WTF::Deque<Notification> m_events;
   bool m_blocking = false;
@@ -162,29 +211,12 @@ class DedicatedWorkerTest
     m_workerMessagingProxy =
         WTF::wrapUnique(new InProcessWorkerMessagingProxyForTest(
             &m_page->document(), m_threadHeapMode));
-    m_securityOrigin =
-        SecurityOrigin::create(KURL(ParsedURLString, "http://fake.url/"));
   }
 
   void TearDown() override {
     workerThread()->terminate();
     EXPECT_EQ(Notification::ThreadTerminated,
               workerMessagingProxy()->waitForNotification());
-  }
-
-  void startWithSourceCode(const String& source) {
-    std::unique_ptr<Vector<CSPHeaderAndType>> headers =
-        WTF::makeUnique<Vector<CSPHeaderAndType>>();
-    CSPHeaderAndType headerAndType("contentSecurityPolicy",
-                                   ContentSecurityPolicyHeaderTypeReport);
-    headers->append(headerAndType);
-    workerThread()->start(WorkerThreadStartupData::create(
-        KURL(ParsedURLString, "http://fake.url/"), "fake user agent", source,
-        nullptr /* cachedMetaData */, DontPauseWorkerGlobalScopeOnStart,
-        headers.get(), "" /* referrerPolicy */, m_securityOrigin.get(),
-        nullptr /* workerClients */, WebAddressSpaceLocal,
-        nullptr /* originTrialTokens */, nullptr /* workerSettings */,
-        V8CacheOptionsDefault));
   }
 
   void dispatchMessageEvent() {
@@ -200,8 +232,9 @@ class DedicatedWorkerTest
     return m_workerMessagingProxy->workerThread();
   }
 
+  Document& document() { return m_page->document(); }
+
  private:
-  RefPtr<SecurityOrigin> m_securityOrigin;
   std::unique_ptr<DummyPageHolder> m_page;
   std::unique_ptr<InProcessWorkerMessagingProxyForTest> m_workerMessagingProxy;
   const BlinkGC::ThreadHeapMode m_threadHeapMode;
@@ -217,7 +250,7 @@ INSTANTIATE_TEST_CASE_P(PerThreadHeap,
 
 TEST_P(DedicatedWorkerTest, PendingActivity_NoActivity) {
   const String sourceCode = "// Do nothing";
-  startWithSourceCode(sourceCode);
+  workerMessagingProxy()->startWithSourceCode(sourceCode);
 
   // Worker initialization should be counted as a pending activity.
   EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
@@ -231,7 +264,7 @@ TEST_P(DedicatedWorkerTest, PendingActivity_NoActivity) {
 TEST_P(DedicatedWorkerTest, PendingActivity_SetTimeout) {
   // Start an oneshot timer on initial script evaluation.
   const String sourceCode = "setTimeout(function() {}, 0);";
-  startWithSourceCode(sourceCode);
+  workerMessagingProxy()->startWithSourceCode(sourceCode);
 
   // Worker initialization should be counted as a pending activity.
   EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
@@ -250,7 +283,7 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetInterval) {
   const String sourceCode =
       "var id = setInterval(function() {}, 50);"
       "addEventListener('message', function(event) { clearInterval(id); });";
-  startWithSourceCode(sourceCode);
+  workerMessagingProxy()->startWithSourceCode(sourceCode);
 
   // Worker initialization should be counted as a pending activity.
   EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
@@ -276,7 +309,7 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetTimeoutOnMessageEvent) {
       "addEventListener('message', function(event) {"
       "  setTimeout(function() {}, 0);"
       "});";
-  startWithSourceCode(sourceCode);
+  workerMessagingProxy()->startWithSourceCode(sourceCode);
 
   // Worker initialization should be counted as a pending activity.
   EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
@@ -314,7 +347,7 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetIntervalOnMessageEvent) {
       "    clearInterval(id);"
       "  }"
       "});";
-  startWithSourceCode(sourceCode);
+  workerMessagingProxy()->startWithSourceCode(sourceCode);
 
   // Worker initialization should be counted as a pending activity.
   EXPECT_TRUE(workerMessagingProxy()->hasPendingActivity());
@@ -352,6 +385,37 @@ TEST_P(DedicatedWorkerTest, PendingActivity_SetIntervalOnMessageEvent) {
   EXPECT_EQ(Notification::PendingActivityReported,
             workerMessagingProxy()->waitForNotification());
   EXPECT_FALSE(workerMessagingProxy()->hasPendingActivity());
+}
+
+TEST_P(DedicatedWorkerTest, UseCounter) {
+  const String sourceCode = "// Do nothing";
+  workerMessagingProxy()->startWithSourceCode(sourceCode);
+
+  // This feature is randomly selected.
+  const UseCounter::Feature feature1 = UseCounter::Feature::RequestFileSystem;
+
+  // API use on the DedicatedWorkerGlobalScope should be recorded in UseCounter
+  // on the Document.
+  EXPECT_FALSE(UseCounter::isCounted(document(), feature1));
+  workerThread()->postTask(
+      BLINK_FROM_HERE,
+      createCrossThreadTask(&DedicatedWorkerThreadForTest::countFeature,
+                            crossThreadUnretained(workerThread()), feature1));
+  testing::enterRunLoop();
+  EXPECT_TRUE(UseCounter::isCounted(document(), feature1));
+
+  // This feature is randomly selected from Deprecation::deprecationMessage().
+  const UseCounter::Feature feature2 = UseCounter::Feature::PrefixedStorageInfo;
+
+  // Deprecated API use on the DedicatedWorkerGlobalScope should be recorded in
+  // UseCounter on the Document.
+  EXPECT_FALSE(UseCounter::isCounted(document(), feature2));
+  workerThread()->postTask(
+      BLINK_FROM_HERE,
+      createCrossThreadTask(&DedicatedWorkerThreadForTest::countDeprecation,
+                            crossThreadUnretained(workerThread()), feature2));
+  testing::enterRunLoop();
+  EXPECT_TRUE(UseCounter::isCounted(document(), feature2));
 }
 
 }  // namespace blink
