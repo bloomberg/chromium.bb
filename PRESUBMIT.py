@@ -28,14 +28,6 @@ _EXCLUDED_PATHS = (
 )
 
 
-# The NetscapePlugIn library is excluded from pan-project as it will soon
-# be deleted together with the rest of the NPAPI and it's not worthwhile to
-# update the coding style until then.
-_TESTRUNNER_PATHS = (
-    r"^content[\\\/]shell[\\\/]tools[\\\/]plugin[\\\/].*",
-)
-
-
 # Fragment of a regular expression that matches C++ and Objective-C++
 # implementation files.
 _IMPLEMENTATION_EXTENSIONS = r'\.(cc|cpp|cxx|mm)$'
@@ -2057,7 +2049,7 @@ def _CommonChecks(input_api, output_api):
   results = []
   results.extend(input_api.canned_checks.PanProjectChecks(
       input_api, output_api,
-      excluded_paths=_EXCLUDED_PATHS + _TESTRUNNER_PATHS))
+      excluded_paths=_EXCLUDED_PATHS))
   results.extend(
       input_api.canned_checks.CheckAuthorizedAuthor(input_api, output_api))
   results.extend(
