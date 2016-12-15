@@ -1109,9 +1109,11 @@ if (target_cpu == "arm" && arm_version == 7 && !arm_use_neon) {
 }
 
 group("cronet_package") {
+  # Enforce building with ICU alternatives, crbug.com/611621.
   # Enforce that arm_use_neon==false when building for ARMv7 by
   # not including any deps in cronet_package target otherwise.
-  if (!(target_cpu == "arm" && arm_version == 7) || !arm_use_neon) {
+  if (use_platform_icu_alternatives &&
+      (!(target_cpu == "arm" && arm_version == 7) || !arm_use_neon)) {
     deps = [
       ":cronet_package_copy",
       ":cronet_package_copy_native_lib",
