@@ -64,6 +64,10 @@ class Conditions(object):
     return val == value
 
   @classmethod
+  def _GnAnySetTo(cls, flags_values, gn_args, _staging_flags):
+    return any(gn_args.get(flag) == value for flag, value in flags_values)
+
+  @classmethod
   def _StagingFlagSet(cls, flag, _gn_args, staging_flags):
     return flag in staging_flags
 
@@ -75,6 +79,10 @@ class Conditions(object):
   def GnSetTo(cls, flag, value):
     """Returns condition that tests a gn flag is set to a value."""
     return functools.partial(cls._GnSetTo, flag, value)
+
+  @classmethod
+  def GnAnySetTo(cls, flags_values):
+    return functools.partial(cls._GnAnySetTo, flags_values)
 
   @classmethod
   def StagingFlagSet(cls, flag):
@@ -292,6 +300,7 @@ class Path(object):
     return True
 
 _ENABLE_NACL = 'enable_nacl'
+_ENABLE_WIDEVINE = 'enable_widevine'
 _IS_CHROME_BRANDED = 'is_chrome_branded'
 _IS_COMPONENT_BUILD = 'is_component_build'
 
@@ -353,14 +362,14 @@ _COPY_PATHS_CHROME = (
     # play well with the binutils stripping tools, so skip stripping.
     Path('libwidevinecdmadapter.so',
          exe=True,
-         optional=True,
          strip=False,
-         cond=C.GnSetTo(_IS_CHROME_BRANDED, True)),
+         cond=C.GnAnySetTo(((_IS_CHROME_BRANDED, True),
+                            (_ENABLE_WIDEVINE, True)))),
     Path('libwidevinecdm.so',
          exe=True,
-         optional=True,
          strip=False,
-         cond=C.GnSetTo(_IS_CHROME_BRANDED, True)),
+         cond=C.GnAnySetTo(((_IS_CHROME_BRANDED, True),
+                            (_ENABLE_WIDEVINE, True)))),
     Path('*.so',
          exe=True,
          cond=C.GnSetTo(_IS_COMPONENT_BUILD, True)),
