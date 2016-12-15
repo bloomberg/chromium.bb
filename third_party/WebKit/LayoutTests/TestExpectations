@@ -2222,6 +2222,7 @@ crbug.com/674396 [ Win ] compositing/reflections/nested-reflection-transition.ht
 # Added 2016-12-15
 crbug.com/674466 [ Win10 ] fast/forms/select/menulist-appearance-rtl.html [ Pass Failure ]
 crbug.com/674468 [ Trusty ] compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
+crbug.com/674720 [ Debug Trusty ] http/tests/loading/preload-img-test.html [ Pass Failure ]
 
 # for Skia DEPS roll
 crbug.com/674509   compositing/overlap-blending/reflection-opacity-huge.html [ NeedsRebaseline ]
