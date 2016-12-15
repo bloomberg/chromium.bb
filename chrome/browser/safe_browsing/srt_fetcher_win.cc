@@ -950,11 +950,12 @@ class ReporterRunner : public chrome::BrowserListObserver {
   // Returns true if the experiment to send reporter logs is enabled, the user
   // opted into Safe Browsing extended reporting, and logs have been sent at
   // least |kSwReporterLastTimeSentReport| days ago.
-  bool ShouldSendReporterLogs(const PrefService& local_state) {
+  bool ShouldSendReporterLogs(const std::string& suffix,
+                              const PrefService& local_state) {
     if (!base::FeatureList::IsEnabled(kSwReporterExtendedSafeBrowsingFeature))
       return false;
 
-    UMAHistogramReporter uma;
+    UMAHistogramReporter uma(suffix);
     if (!SafeBrowsingExtendedReportingEnabled()) {
       uma.RecordLogsUploadEnabled(REPORTER_LOGS_UPLOADS_SBER_DISABLED);
       return false;
@@ -989,7 +990,8 @@ class ReporterRunner : public chrome::BrowserListObserver {
     PrefService* local_state = g_browser_process->local_state();
     if (next_invocation->BehaviourIsSupported(
             SwReporterInvocation::BEHAVIOUR_ALLOW_SEND_REPORTER_LOGS) &&
-        local_state && ShouldSendReporterLogs(*local_state)) {
+        local_state &&
+        ShouldSendReporterLogs(next_invocation->suffix, *local_state)) {
       next_invocation->logs_upload_enabled = true;
       AddSwitchesForExtendedReportingUser(next_invocation);
       // Set the local state value before the first attempt to run the
