@@ -203,7 +203,7 @@ PassRefPtr<SecurityOrigin> SecurityOrigin::isolatedCopy() const {
 
 void SecurityOrigin::setDomainFromDOM(const String& newDomain) {
   m_domainWasSetInDOM = true;
-  m_domain = newDomain.lower();
+  m_domain = newDomain;
 }
 
 bool SecurityOrigin::isSecure(const KURL& url) {
