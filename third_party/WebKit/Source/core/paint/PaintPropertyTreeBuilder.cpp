@@ -392,6 +392,9 @@ void PaintPropertyTreeBuilder::updateEffect(
     PaintPropertyTreeBuilderContext& context) {
   const ComputedStyle& style = object.styleRef();
 
+  // TODO(crbug.com/673500): style.isStackingContext() is only meaningful for
+  // HTML elements. What we really want to ask is whether the element starts
+  // an isolated group, and SVGs use a different rule.
   if (!style.isStackingContext()) {
     if (object.needsPaintPropertyUpdate() || context.forceSubtreeUpdate) {
       if (auto* properties = object.getMutableForPainting().paintProperties())
@@ -401,9 +404,25 @@ void PaintPropertyTreeBuilder::updateEffect(
   }
 
   // TODO(trchen): Can't omit effect node if we have 3D children.
-  // TODO(trchen): Can't omit effect node if we have blending children.
   if (object.needsPaintPropertyUpdate() || context.forceSubtreeUpdate) {
     bool effectNodeNeeded = false;
+
+    // Can't omit effect node if we have paint children with exotic blending.
+    if (object.isSVG()) {
+      // Yes, including LayoutSVGRoot, because SVG layout objects don't create
+      // PaintLayer so PaintLayer::hasNonIsolatedDescendantWithBlendMode()
+      // doesn't catch SVG descendants.
+      if (object.hasNonIsolatedBlendingDescendants())
+        effectNodeNeeded = true;
+    } else if (PaintLayer* layer = toLayoutBoxModelObject(object).layer()) {
+      if (layer->hasNonIsolatedDescendantWithBlendMode())
+        effectNodeNeeded = true;
+    }
+
+    SkBlendMode blendMode =
+        WebCoreCompositeToSkiaComposite(CompositeSourceOver, style.blendMode());
+    if (blendMode != SkBlendMode::kSrcOver)
+      effectNodeNeeded = true;
 
     float opacity = style.opacity();
     if (opacity != 1.0f)
@@ -449,7 +468,7 @@ void PaintPropertyTreeBuilder::updateEffect(
       auto& properties = object.getMutableForPainting().ensurePaintProperties();
       context.forceSubtreeUpdate |= properties.updateEffect(
           context.currentEffect, context.current.transform, outputClip,
-          std::move(filter), opacity);
+          std::move(filter), opacity, blendMode);
     } else {
       if (auto* properties = object.getMutableForPainting().paintProperties())
         context.forceSubtreeUpdate |= properties->clearEffect();

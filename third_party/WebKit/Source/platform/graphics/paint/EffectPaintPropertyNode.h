@@ -34,17 +34,19 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
       PassRefPtr<const TransformPaintPropertyNode> localTransformSpace,
       PassRefPtr<const ClipPaintPropertyNode> outputClip,
       CompositorFilterOperations filter,
-      float opacity) {
+      float opacity,
+      SkBlendMode blendMode) {
     return adoptRef(new EffectPaintPropertyNode(
         std::move(parent), std::move(localTransformSpace),
-        std::move(outputClip), std::move(filter), opacity));
+        std::move(outputClip), std::move(filter), opacity, blendMode));
   }
 
   void update(PassRefPtr<const EffectPaintPropertyNode> parent,
               PassRefPtr<const TransformPaintPropertyNode> localTransformSpace,
               PassRefPtr<const ClipPaintPropertyNode> outputClip,
               CompositorFilterOperations filter,
-              float opacity) {
+              float opacity,
+              SkBlendMode blendMode) {
     DCHECK(!isRoot());
     DCHECK(parent != this);
     m_parent = parent;
@@ -52,6 +54,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     m_outputClip = outputClip;
     m_filter = std::move(filter);
     m_opacity = opacity;
+    m_blendMode = blendMode;
   }
 
   const TransformPaintPropertyNode* localTransformSpace() const {
@@ -59,6 +62,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   }
   const ClipPaintPropertyNode* outputClip() const { return m_outputClip.get(); }
 
+  SkBlendMode blendMode() const { return m_blendMode; }
   float opacity() const { return m_opacity; }
   const CompositorFilterOperations& filter() const { return m_filter; }
 
@@ -72,8 +76,9 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   // The clone function is used by FindPropertiesNeedingUpdate.h for recording
   // an effect node before it has been updated, to later detect changes.
   PassRefPtr<EffectPaintPropertyNode> clone() const {
-    return adoptRef(new EffectPaintPropertyNode(
-        m_parent, m_localTransformSpace, m_outputClip, m_filter, m_opacity));
+    return adoptRef(new EffectPaintPropertyNode(m_parent, m_localTransformSpace,
+                                                m_outputClip, m_filter,
+                                                m_opacity, m_blendMode));
   }
 
   // The equality operator is used by FindPropertiesNeedingUpdate.h for checking
@@ -83,6 +88,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
     return m_parent == o.m_parent &&
            m_localTransformSpace == o.m_localTransformSpace &&
            m_outputClip == o.m_outputClip && m_opacity == o.m_opacity &&
+           m_blendMode == o.m_blendMode &&
            m_filter.equalsIgnoringReferenceFilters(o.m_filter);
   }
 #endif
@@ -95,12 +101,14 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
       PassRefPtr<const TransformPaintPropertyNode> localTransformSpace,
       PassRefPtr<const ClipPaintPropertyNode> outputClip,
       CompositorFilterOperations filter,
-      float opacity)
+      float opacity,
+      SkBlendMode blendMode)
       : m_parent(parent),
         m_localTransformSpace(localTransformSpace),
         m_outputClip(outputClip),
         m_filter(std::move(filter)),
-        m_opacity(opacity) {}
+        m_opacity(opacity),
+        m_blendMode(blendMode) {}
 
   RefPtr<const EffectPaintPropertyNode> m_parent;
   // The local transform space serves two purposes:
@@ -118,6 +126,7 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
   // === Begin of effects ===
   CompositorFilterOperations m_filter;
   float m_opacity;
+  SkBlendMode m_blendMode;
   // === End of effects ===
 
   // TODO(trchen): Remove the dummy layer.

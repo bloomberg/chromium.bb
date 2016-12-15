@@ -699,6 +699,8 @@ void PaintLayer::updateScrollingStateAfterCompositingChange() {
 
 void PaintLayer::updateDescendantDependentFlags() {
   if (m_needsDescendantDependentFlagsUpdate) {
+    bool oldHasNonIsolatedDescendantWithBlendMode =
+        m_hasNonIsolatedDescendantWithBlendMode;
     m_hasVisibleDescendant = false;
     m_hasNonIsolatedDescendantWithBlendMode = false;
     m_hasDescendantWithClipPath = false;
@@ -727,6 +729,10 @@ void PaintLayer::updateDescendantDependentFlags() {
                                             .rootScrollerPaintLayer());
     }
 
+    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
+        oldHasNonIsolatedDescendantWithBlendMode !=
+            static_cast<bool>(m_hasNonIsolatedDescendantWithBlendMode))
+      layoutObject()->setNeedsPaintPropertyUpdate();
     m_needsDescendantDependentFlagsUpdate = false;
   }
 

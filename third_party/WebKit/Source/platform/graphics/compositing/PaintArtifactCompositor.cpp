@@ -718,6 +718,14 @@ void PropertyTreeManager::buildEffectNodesRecursively(
   m_effectNodesConverted.add(nextEffect);
 #endif
 
+  // An effect node can't omit render surface if it has child with exotic
+  // blending mode. See comments below for more detail.
+  // TODO(crbug.com/504464): Remove premature optimization here.
+  if (nextEffect->blendMode() != SkBlendMode::kSrcOver) {
+    effectTree().Node(compositorIdForCurrentEffectNode())->has_render_surface =
+        true;
+  }
+
   // We currently create dummy layers to host effect nodes and corresponding
   // render surfaces. This should be removed once cc implements better support
   // for freestanding property trees.
@@ -732,17 +740,20 @@ void PropertyTreeManager::buildEffectNodesRecursively(
   effectNode.clip_id = outputClipId;
   // Every effect is supposed to have render surface enabled for grouping,
   // but we can get away without one if the effect is opacity-only and has only
-  // one compositing child. This is both for optimization and not introducing
-  // sub-pixel differences in layout tests.
-  // See PropertyTreeManager::switchToEffectNode() where we retrospectively
-  // enable render surface when more than one compositing child is detected.
+  // one compositing child with kSrcOver blend mode. This is both for
+  // optimization and not introducing sub-pixel differences in layout tests.
+  // See PropertyTreeManager::switchToEffectNode() and above where we
+  // retrospectively enable render surface when more than one compositing child
+  // or a child with exotic blend mode is detected.
   // TODO(crbug.com/504464): There is ongoing work in cc to delay render surface
   // decision until later phase of the pipeline. Remove premature optimization
   // here once the work is ready.
-  if (!nextEffect->filter().isEmpty())
+  if (!nextEffect->filter().isEmpty() ||
+      nextEffect->blendMode() != SkBlendMode::kSrcOver)
     effectNode.has_render_surface = true;
   effectNode.opacity = nextEffect->opacity();
   effectNode.filters = nextEffect->filter().asCcFilterOperations();
+  effectNode.blend_mode = nextEffect->blendMode();
   m_propertyTrees.effect_id_to_index_map[effectNode.owner_id] = effectNode.id;
   m_effectStack.append(BlinkEffectAndCcIdPair{nextEffect, effectNode.id});
 

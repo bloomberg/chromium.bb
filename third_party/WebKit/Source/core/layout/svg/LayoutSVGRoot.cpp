@@ -305,6 +305,8 @@ void LayoutSVGRoot::descendantIsolationRequirementsChanged(
       m_hasNonIsolatedBlendingDescendantsDirty = true;
       break;
   }
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled())
+    setNeedsPaintPropertyUpdate();
 }
 
 void LayoutSVGRoot::insertedIntoTree() {
