@@ -3,6 +3,7 @@ include_rules = [
     "+base/location.h",
     "+base/logging.h",
     "+base/metrics",
+    "+base/strings",
     "+base/trace_event",
     "-bindings",
     "+cc",

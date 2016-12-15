@@ -33,14 +33,13 @@
 
 #include "WebCommon.h"
 #include "WebPrivatePtr.h"
+#include "base/strings/latin1_string_conversions.h"
+#include "base/strings/nullable_string16.h"
+#include "base/strings/string16.h"
 #include <string>
 
 #if INSIDE_BLINK
 #include "wtf/Forward.h"
-#else
-#include <base/strings/latin1_string_conversions.h>
-#include <base/strings/nullable_string16.h>
-#include <base/strings/string16.h>
 #endif
 
 namespace WTF {
@@ -49,9 +48,32 @@ class StringImpl;
 
 namespace blink {
 
-// A UTF-16 string container.  It is inexpensive to copy a WebString
-// object.
+// Use either one of static methods to convert ASCII, Latin1, UTF-8 or
+// UTF-16 string into WebString:
 //
+// * WebString::fromASCII(const std::string& ascii)
+// * WebString::fromLatin1(const std::string& latin1)
+// * WebString::fromUTF8(const std::string& utf8)
+// * WebString::fromUTF16(const base::string16& utf16)
+// * WebString::fromUTF16(const base::NullableString16& utf16)
+//
+// Similarly, use either of following methods to convert WebString to
+// ASCII, Latin1, UTF-8 or UTF-16:
+//
+// * webstring.ascii()
+// * webstring.latin1()
+// * webstring.utf8()
+// * webstring.utf16()
+// * WebString::toNullableString16(webstring)
+//
+// Some types like GURL and base::FilePath can directly take either utf-8 or
+// utf-16 strings. Use following methods to convert WebString to/from GURL or
+// FilePath rather than going through intermediate string types:
+//
+// * GURL WebStringToGURL(const WebString&)
+// * base::FilePath WebStringToFilePath(const WebString&)
+//
+// It is inexpensive to copy a WebString object.
 // WARNING: It is not safe to pass a WebString across threads!!!
 //
 class WebString {
@@ -89,6 +111,18 @@ class WebString {
 
   static WebString fromUTF8(const std::string& s) {
     return fromUTF8(s.data(), s.length());
+  }
+
+  base::string16 utf16() const {
+    return base::Latin1OrUTF16ToUTF16(length(), data8(), data16());
+  }
+
+  BLINK_COMMON_EXPORT static WebString fromUTF16(const base::string16&);
+
+  BLINK_COMMON_EXPORT static WebString fromUTF16(const base::NullableString16&);
+
+  static base::NullableString16 toNullableString16(const WebString& s) {
+    return base::NullableString16(s.utf16(), s.isNull());
   }
 
   BLINK_COMMON_EXPORT std::string latin1() const;
@@ -133,6 +167,8 @@ class WebString {
   BLINK_COMMON_EXPORT WebString& operator=(const WTF::AtomicString&);
   BLINK_COMMON_EXPORT operator WTF::AtomicString() const;
 #else
+  // WARNING: implicit conversions to/from string16 are being deprecated,
+  // use fromUTF16() or utf16() instead in new changes.
   WebString(const base::string16& s) { assign(s.data(), s.length()); }
 
   WebString& operator=(const base::string16& s) {

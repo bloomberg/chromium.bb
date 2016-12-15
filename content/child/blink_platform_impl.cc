@@ -668,12 +668,14 @@ WebString BlinkPlatformImpl::queryLocalizedString(
   int message_id = ToMessageID(name);
   if (message_id < 0)
     return WebString();
-  return GetContentClient()->GetLocalizedString(message_id);
+  return WebString::fromUTF16(
+      GetContentClient()->GetLocalizedString(message_id));
 }
 
 WebString BlinkPlatformImpl::queryLocalizedString(
     WebLocalizedString::Name name, int numeric_value) {
-  return queryLocalizedString(name, base::IntToString16(numeric_value));
+  return queryLocalizedString(
+      name, WebString::fromUTF16(base::IntToString16(numeric_value)));
 }
 
 WebString BlinkPlatformImpl::queryLocalizedString(
@@ -681,8 +683,8 @@ WebString BlinkPlatformImpl::queryLocalizedString(
   int message_id = ToMessageID(name);
   if (message_id < 0)
     return WebString();
-  return base::ReplaceStringPlaceholders(
-      GetContentClient()->GetLocalizedString(message_id), value, NULL);
+  return WebString::fromUTF16(base::ReplaceStringPlaceholders(
+      GetContentClient()->GetLocalizedString(message_id), value.utf16(), NULL));
 }
 
 WebString BlinkPlatformImpl::queryLocalizedString(
@@ -694,10 +696,10 @@ WebString BlinkPlatformImpl::queryLocalizedString(
     return WebString();
   std::vector<base::string16> values;
   values.reserve(2);
-  values.push_back(value1);
-  values.push_back(value2);
-  return base::ReplaceStringPlaceholders(
-      GetContentClient()->GetLocalizedString(message_id), values, NULL);
+  values.push_back(value1.utf16());
+  values.push_back(value2.utf16());
+  return WebString::fromUTF16(base::ReplaceStringPlaceholders(
+      GetContentClient()->GetLocalizedString(message_id), values, NULL));
 }
 
 blink::WebThread* BlinkPlatformImpl::compositorThread() const {

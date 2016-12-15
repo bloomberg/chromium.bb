@@ -81,6 +81,21 @@ WebString WebString::fromUTF8(const char* data) {
   return String::fromUTF8(data);
 }
 
+WebString WebString::fromUTF16(const base::string16& s) {
+  WebString string;
+  string.assign(s.data(), s.length());
+  return string;
+}
+
+WebString WebString::fromUTF16(const base::NullableString16& s) {
+  WebString string;
+  if (s.is_null())
+    string.reset();
+  else
+    string.assign(s.string().data(), s.string().length());
+  return string;
+}
+
 std::string WebString::latin1() const {
   String string(m_private.get());
 
