@@ -66,6 +66,8 @@ class SVGAnimateMotionElement final : public SVGAnimationElement {
 
   void updateAnimationMode() override;
 
+  void invalidateForAnimateMotionTransformChange(LayoutObject& target);
+
   // Note: we do not support percentage values for to/from coords as the spec
   // implies we should (opera doesn't either)
   FloatPoint m_fromPoint;

@@ -164,10 +164,8 @@ void SVGAnimateMotionElement::clearAnimatedType() {
 
   transform->makeIdentity();
 
-  if (LayoutObject* targetLayoutObject = targetElement->layoutObject()) {
-    targetLayoutObject->setNeedsTransformUpdate();
-    markForLayoutAndParentResourceInvalidation(targetLayoutObject);
-  }
+  if (LayoutObject* targetLayoutObject = targetElement->layoutObject())
+    invalidateForAnimateMotionTransformChange(*targetLayoutObject);
 }
 
 bool SVGAnimateMotionElement::calculateToAtEndOfDurationValue(
@@ -208,7 +206,7 @@ void SVGAnimateMotionElement::calculateAnimatedValue(float percentage,
     return;
 
   if (LayoutObject* targetLayoutObject = targetElement->layoutObject())
-    targetLayoutObject->setNeedsTransformUpdate();
+    invalidateForAnimateMotionTransformChange(*targetLayoutObject);
 
   if (!isAdditive())
     transform->makeIdentity();
@@ -261,9 +259,6 @@ void SVGAnimateMotionElement::applyResultsToTarget() {
   if (!targetElement)
     return;
 
-  if (LayoutObject* layoutObject = targetElement->layoutObject())
-    markForLayoutAndParentResourceInvalidation(layoutObject);
-
   AffineTransform* t = targetElement->animateMotionTransform();
   if (!t)
     return;
@@ -277,10 +272,8 @@ void SVGAnimateMotionElement::applyResultsToTarget() {
     if (!transform)
       continue;
     transform->setMatrix(t->a(), t->b(), t->c(), t->d(), t->e(), t->f());
-    if (LayoutObject* layoutObject = shadowTreeElement->layoutObject()) {
-      layoutObject->setNeedsTransformUpdate();
-      markForLayoutAndParentResourceInvalidation(layoutObject);
-    }
+    if (LayoutObject* layoutObject = shadowTreeElement->layoutObject())
+      invalidateForAnimateMotionTransformChange(*layoutObject);
   }
 }
 
@@ -301,6 +294,12 @@ void SVGAnimateMotionElement::updateAnimationMode() {
     setAnimationMode(PathAnimation);
   else
     SVGAnimationElement::updateAnimationMode();
+}
+
+void SVGAnimateMotionElement::invalidateForAnimateMotionTransformChange(
+    LayoutObject& object) {
+  object.setNeedsTransformUpdate();
+  markForLayoutAndParentResourceInvalidation(&object);
 }
 
 }  // namespace blink
