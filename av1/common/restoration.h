@@ -65,20 +65,19 @@ extern "C" {
 
 #define SGRPROJ_BITS (SGRPROJ_PRJ_BITS * 2 + SGRPROJ_PARAMS_BITS)
 
-// Max of SGRPROJ_TMPBUF_SIZE and DOMAINTXFMRF_TMPBUF_SIZE
-#define RESTORATION_TMPBUF_SIZE (SGRPROJ_TMPBUF_SIZE)
+#define WIENER_HALFWIN 3
+#define WIENER_HALFWIN1 (WIENER_HALFWIN + 1)
+#define WIENER_WIN (2 * WIENER_HALFWIN + 1)
+#define WIENER_WIN2 ((WIENER_WIN) * (WIENER_WIN))
+#define WIENER_TMPBUF_SIZE (0)
 
-#define RESTORATION_HALFWIN 3
-#define RESTORATION_HALFWIN1 (RESTORATION_HALFWIN + 1)
-#define RESTORATION_WIN (2 * RESTORATION_HALFWIN + 1)
-#define RESTORATION_WIN2 ((RESTORATION_WIN) * (RESTORATION_WIN))
+#define WIENER_FILT_PREC_BITS 7
+#define WIENER_FILT_STEP (1 << WIENER_FILT_PREC_BITS)
 
-#define RESTORATION_FILT_BITS 7
-#define RESTORATION_FILT_STEP (1 << RESTORATION_FILT_BITS)
-
-#define WIENER_FILT_TAP0_MINV (-5)
-#define WIENER_FILT_TAP1_MINV (-23)
-#define WIENER_FILT_TAP2_MINV (-16)
+// Central values for the taps
+#define WIENER_FILT_TAP0_MIDV (3)
+#define WIENER_FILT_TAP1_MIDV (-7)
+#define WIENER_FILT_TAP2_MIDV (16)
 
 #define WIENER_FILT_TAP0_BITS 4
 #define WIENER_FILT_TAP1_BITS 5
@@ -87,16 +86,26 @@ extern "C" {
 #define WIENER_FILT_BITS \
   ((WIENER_FILT_TAP0_BITS + WIENER_FILT_TAP1_BITS + WIENER_FILT_TAP2_BITS) * 2)
 
+#define WIENER_FILT_TAP0_MINV \
+  (WIENER_FILT_TAP0_MIDV - (1 << WIENER_FILT_TAP0_BITS) / 2)
+#define WIENER_FILT_TAP1_MINV \
+  (WIENER_FILT_TAP1_MIDV - (1 << WIENER_FILT_TAP1_BITS) / 2)
+#define WIENER_FILT_TAP2_MINV \
+  (WIENER_FILT_TAP2_MIDV - (1 << WIENER_FILT_TAP2_BITS) / 2)
+
 #define WIENER_FILT_TAP0_MAXV \
-  (WIENER_FILT_TAP0_MINV - 1 + (1 << WIENER_FILT_TAP0_BITS))
+  (WIENER_FILT_TAP0_MIDV - 1 + (1 << WIENER_FILT_TAP0_BITS) / 2)
 #define WIENER_FILT_TAP1_MAXV \
-  (WIENER_FILT_TAP1_MINV - 1 + (1 << WIENER_FILT_TAP1_BITS))
+  (WIENER_FILT_TAP1_MIDV - 1 + (1 << WIENER_FILT_TAP1_BITS) / 2)
 #define WIENER_FILT_TAP2_MAXV \
-  (WIENER_FILT_TAP2_MINV - 1 + (1 << WIENER_FILT_TAP2_BITS))
+  (WIENER_FILT_TAP2_MIDV - 1 + (1 << WIENER_FILT_TAP2_BITS) / 2)
+
+// Max of SGRPROJ_TMPBUF_SIZE, DOMAINTXFMRF_TMPBUF_SIZE, WIENER_TMPBUF_SIZE
+#define RESTORATION_TMPBUF_SIZE (SGRPROJ_TMPBUF_SIZE)
 
 typedef struct {
   int level;
-  int vfilter[RESTORATION_WIN], hfilter[RESTORATION_WIN];
+  int vfilter[WIENER_WIN], hfilter[WIENER_WIN];
 } WienerInfo;
 
 typedef struct {
@@ -187,12 +196,12 @@ static INLINE void av1_get_rest_tile_limits(
                                                   : *v_start + subtile_height;
   }
   if (clamp_h) {
-    *h_start = AOMMAX(*h_start, RESTORATION_HALFWIN);
-    *h_end = AOMMIN(*h_end, im_width - RESTORATION_HALFWIN);
+    *h_start = AOMMAX(*h_start, clamp_h);
+    *h_end = AOMMIN(*h_end, im_width - clamp_h);
   }
   if (clamp_v) {
-    *v_start = AOMMAX(*v_start, RESTORATION_HALFWIN);
-    *v_end = AOMMIN(*v_end, im_height - RESTORATION_HALFWIN);
+    *v_start = AOMMAX(*v_start, clamp_v);
+    *v_end = AOMMIN(*v_end, im_height - clamp_v);
   }
 }
 

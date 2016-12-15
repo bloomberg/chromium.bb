@@ -451,9 +451,11 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
 
   aom_free_frame_buffer(&cpi->last_frame_uf);
 #if CONFIG_LOOP_RESTORATION
-  aom_free_frame_buffer(&cpi->last_frame_db);
-  aom_free(cpi->highprec_srcbuf);
   av1_free_restoration_buffers(cm);
+  aom_free_frame_buffer(&cpi->last_frame_db);
+  aom_free_frame_buffer(&cpi->trial_frame_rst);
+  aom_free(cpi->extra_rstbuf);
+  av1_free_restoration_struct(&cpi->rst_search);
 #endif  // CONFIG_LOOP_RESTORATION
   aom_free_frame_buffer(&cpi->scaled_source);
   aom_free_frame_buffer(&cpi->scaled_last_source);
@@ -727,11 +729,21 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
                                NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate last frame deblocked buffer");
-  cpi->highprec_srcbuf = (uint8_t *)aom_realloc(
-      cpi->highprec_srcbuf, RESTORATION_TILEPELS_MAX * sizeof(int64_t));
-  if (!cpi->highprec_srcbuf)
+  if (aom_realloc_frame_buffer(&cpi->trial_frame_rst, cm->width, cm->height,
+                               cm->subsampling_x, cm->subsampling_y,
+#if CONFIG_AOM_HIGHBITDEPTH
+                               cm->use_highbitdepth,
+#endif
+                               AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL,
+                               NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
-                       "Failed to allocate highprec srcbuf for restoration");
+                       "Failed to allocate trial restored frame buffer");
+  cpi->extra_rstbuf = (uint8_t *)aom_realloc(
+      cpi->extra_rstbuf, RESTORATION_TILEPELS_MAX * sizeof(int64_t));
+  if (!cpi->extra_rstbuf)
+    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                       "Failed to allocate extra rstbuf for restoration");
+  av1_alloc_restoration_struct(&cpi->rst_search, cm->width, cm->height);
 #endif  // CONFIG_LOOP_RESTORATION
 
   if (aom_realloc_frame_buffer(&cpi->scaled_source, cm->width, cm->height,

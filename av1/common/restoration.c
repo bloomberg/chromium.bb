@@ -113,17 +113,17 @@ void av1_loop_restoration_init(RestorationInternal *rst, RestorationInfo *rsi,
   if (rsi->frame_restoration_type == RESTORE_WIENER) {
     for (tile_idx = 0; tile_idx < rst->ntiles; ++tile_idx) {
       if (rsi->wiener_info[tile_idx].level) {
-        rsi->wiener_info[tile_idx].vfilter[RESTORATION_HALFWIN] =
-            rsi->wiener_info[tile_idx].hfilter[RESTORATION_HALFWIN] =
-                RESTORATION_FILT_STEP;
-        for (i = 0; i < RESTORATION_HALFWIN; ++i) {
-          rsi->wiener_info[tile_idx].vfilter[RESTORATION_WIN - 1 - i] =
+        rsi->wiener_info[tile_idx].vfilter[WIENER_HALFWIN] =
+            rsi->wiener_info[tile_idx].hfilter[WIENER_HALFWIN] =
+                WIENER_FILT_STEP;
+        for (i = 0; i < WIENER_HALFWIN; ++i) {
+          rsi->wiener_info[tile_idx].vfilter[WIENER_WIN - 1 - i] =
               rsi->wiener_info[tile_idx].vfilter[i];
-          rsi->wiener_info[tile_idx].hfilter[RESTORATION_WIN - 1 - i] =
+          rsi->wiener_info[tile_idx].hfilter[WIENER_WIN - 1 - i] =
               rsi->wiener_info[tile_idx].hfilter[i];
-          rsi->wiener_info[tile_idx].vfilter[RESTORATION_HALFWIN] -=
+          rsi->wiener_info[tile_idx].vfilter[WIENER_HALFWIN] -=
               2 * rsi->wiener_info[tile_idx].vfilter[i];
-          rsi->wiener_info[tile_idx].hfilter[RESTORATION_HALFWIN] -=
+          rsi->wiener_info[tile_idx].hfilter[WIENER_HALFWIN] -=
               2 * rsi->wiener_info[tile_idx].hfilter[i];
         }
       }
@@ -131,17 +131,17 @@ void av1_loop_restoration_init(RestorationInternal *rst, RestorationInfo *rsi,
   } else if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
     for (tile_idx = 0; tile_idx < rst->ntiles; ++tile_idx) {
       if (rsi->restoration_type[tile_idx] == RESTORE_WIENER) {
-        rsi->wiener_info[tile_idx].vfilter[RESTORATION_HALFWIN] =
-            rsi->wiener_info[tile_idx].hfilter[RESTORATION_HALFWIN] =
-                RESTORATION_FILT_STEP;
-        for (i = 0; i < RESTORATION_HALFWIN; ++i) {
-          rsi->wiener_info[tile_idx].vfilter[RESTORATION_WIN - 1 - i] =
+        rsi->wiener_info[tile_idx].vfilter[WIENER_HALFWIN] =
+            rsi->wiener_info[tile_idx].hfilter[WIENER_HALFWIN] =
+                WIENER_FILT_STEP;
+        for (i = 0; i < WIENER_HALFWIN; ++i) {
+          rsi->wiener_info[tile_idx].vfilter[WIENER_WIN - 1 - i] =
               rsi->wiener_info[tile_idx].vfilter[i];
-          rsi->wiener_info[tile_idx].hfilter[RESTORATION_WIN - 1 - i] =
+          rsi->wiener_info[tile_idx].hfilter[WIENER_WIN - 1 - i] =
               rsi->wiener_info[tile_idx].hfilter[i];
-          rsi->wiener_info[tile_idx].vfilter[RESTORATION_HALFWIN] -=
+          rsi->wiener_info[tile_idx].vfilter[WIENER_HALFWIN] -=
               2 * rsi->wiener_info[tile_idx].vfilter[i];
-          rsi->wiener_info[tile_idx].hfilter[RESTORATION_HALFWIN] -=
+          rsi->wiener_info[tile_idx].hfilter[WIENER_HALFWIN] -=
               2 * rsi->wiener_info[tile_idx].hfilter[i];
         }
       }
@@ -149,21 +149,20 @@ void av1_loop_restoration_init(RestorationInternal *rst, RestorationInfo *rsi,
   }
 }
 
-// Some filters do not write the outermost RESTORATION_HALFWIN pixels,
+// Some filters do not write the outermost WIENER_HALFWIN pixels,
 // so copy them over explicitly.
 static void copy_border(uint8_t *data, int width, int height, int stride,
                         uint8_t *dst, int dst_stride) {
   int i;
-  for (i = RESTORATION_HALFWIN; i < height - RESTORATION_HALFWIN; ++i) {
-    memcpy(dst + i * dst_stride, data + i * stride, RESTORATION_HALFWIN);
-    memcpy(dst + i * dst_stride + (width - RESTORATION_HALFWIN),
-           data + i * stride + (width - RESTORATION_HALFWIN),
-           RESTORATION_HALFWIN);
+  for (i = WIENER_HALFWIN; i < height - WIENER_HALFWIN; ++i) {
+    memcpy(dst + i * dst_stride, data + i * stride, WIENER_HALFWIN);
+    memcpy(dst + i * dst_stride + (width - WIENER_HALFWIN),
+           data + i * stride + (width - WIENER_HALFWIN), WIENER_HALFWIN);
   }
-  for (i = 0; i < RESTORATION_HALFWIN; ++i) {
+  for (i = 0; i < WIENER_HALFWIN; ++i) {
     memcpy(dst + i * dst_stride, data + i * stride, width);
   }
-  for (i = height - RESTORATION_HALFWIN; i < height; ++i)
+  for (i = height - WIENER_HALFWIN; i < height; ++i)
     memcpy(dst + i * dst_stride, data + i * stride, width);
 }
 
@@ -172,16 +171,16 @@ static void extend_frame(uint8_t *data, int width, int height, int stride) {
   int i;
   for (i = 0; i < height; ++i) {
     data_p = data + i * stride;
-    memset(data_p - RESTORATION_HALFWIN, data_p[0], RESTORATION_HALFWIN);
-    memset(data_p + width, data_p[width - 1], RESTORATION_HALFWIN);
+    memset(data_p - WIENER_HALFWIN, data_p[0], WIENER_HALFWIN);
+    memset(data_p + width, data_p[width - 1], WIENER_HALFWIN);
   }
-  data_p = data - RESTORATION_HALFWIN;
-  for (i = -RESTORATION_HALFWIN; i < 0; ++i) {
-    memcpy(data_p + i * stride, data_p, width + 2 * RESTORATION_HALFWIN);
+  data_p = data - WIENER_HALFWIN;
+  for (i = -WIENER_HALFWIN; i < 0; ++i) {
+    memcpy(data_p + i * stride, data_p, width + 2 * WIENER_HALFWIN);
   }
-  for (i = height; i < height + RESTORATION_HALFWIN; ++i) {
+  for (i = height; i < height + WIENER_HALFWIN; ++i) {
     memcpy(data_p + i * stride, data_p + (height - 1) * stride,
-           width + 2 * RESTORATION_HALFWIN);
+           width + 2 * WIENER_HALFWIN);
   }
 }
 
@@ -219,13 +218,13 @@ static void loop_wiener_filter_tile(uint8_t *data, int tile_idx, int width,
   }
   // TODO(david.barker): Store hfilter/vfilter as an InterpKernel
   // instead of the current format. Then this can be removed.
-  assert(RESTORATION_WIN == SUBPEL_TAPS - 1);
-  for (i = 0; i < RESTORATION_WIN; ++i) {
+  assert(WIENER_WIN == SUBPEL_TAPS - 1);
+  for (i = 0; i < WIENER_WIN; ++i) {
     hkernel[i] = rst->rsi->wiener_info[tile_idx].hfilter[i];
     vkernel[i] = rst->rsi->wiener_info[tile_idx].vfilter[i];
   }
-  hkernel[RESTORATION_WIN] = 0;
-  vkernel[RESTORATION_WIN] = 0;
+  hkernel[WIENER_WIN] = 0;
+  vkernel[WIENER_WIN] = 0;
   av1_get_rest_tile_limits(tile_idx, 0, 0, rst->nhtiles, rst->nvtiles,
                            tile_width, tile_height, width, height, 0, 0,
                            &h_start, &h_end, &v_start, &v_end);
@@ -749,17 +748,17 @@ static void loop_switchable_filter(uint8_t *data, int width, int height,
 static void copy_border_highbd(uint16_t *data, int width, int height,
                                int stride, uint16_t *dst, int dst_stride) {
   int i;
-  for (i = RESTORATION_HALFWIN; i < height - RESTORATION_HALFWIN; ++i) {
+  for (i = WIENER_HALFWIN; i < height - WIENER_HALFWIN; ++i) {
     memcpy(dst + i * dst_stride, data + i * stride,
-           RESTORATION_HALFWIN * sizeof(*dst));
-    memcpy(dst + i * dst_stride + (width - RESTORATION_HALFWIN),
-           data + i * stride + (width - RESTORATION_HALFWIN),
-           RESTORATION_HALFWIN * sizeof(*dst));
+           WIENER_HALFWIN * sizeof(*dst));
+    memcpy(dst + i * dst_stride + (width - WIENER_HALFWIN),
+           data + i * stride + (width - WIENER_HALFWIN),
+           WIENER_HALFWIN * sizeof(*dst));
   }
-  for (i = 0; i < RESTORATION_HALFWIN; ++i) {
+  for (i = 0; i < WIENER_HALFWIN; ++i) {
     memcpy(dst + i * dst_stride, data + i * stride, width * sizeof(*dst));
   }
-  for (i = height - RESTORATION_HALFWIN; i < height; ++i)
+  for (i = height - WIENER_HALFWIN; i < height; ++i)
     memcpy(dst + i * dst_stride, data + i * stride, width * sizeof(*dst));
 }
 
@@ -769,18 +768,18 @@ static void extend_frame_highbd(uint16_t *data, int width, int height,
   int i, j;
   for (i = 0; i < height; ++i) {
     data_p = data + i * stride;
-    for (j = -RESTORATION_HALFWIN; j < 0; ++j) data_p[j] = data_p[0];
-    for (j = width; j < width + RESTORATION_HALFWIN; ++j)
+    for (j = -WIENER_HALFWIN; j < 0; ++j) data_p[j] = data_p[0];
+    for (j = width; j < width + WIENER_HALFWIN; ++j)
       data_p[j] = data_p[width - 1];
   }
-  data_p = data - RESTORATION_HALFWIN;
-  for (i = -RESTORATION_HALFWIN; i < 0; ++i) {
+  data_p = data - WIENER_HALFWIN;
+  for (i = -WIENER_HALFWIN; i < 0; ++i) {
     memcpy(data_p + i * stride, data_p,
-           (width + 2 * RESTORATION_HALFWIN) * sizeof(uint16_t));
+           (width + 2 * WIENER_HALFWIN) * sizeof(uint16_t));
   }
-  for (i = height; i < height + RESTORATION_HALFWIN; ++i) {
+  for (i = height; i < height + WIENER_HALFWIN; ++i) {
     memcpy(data_p + i * stride, data_p + (height - 1) * stride,
-           (width + 2 * RESTORATION_HALFWIN) * sizeof(uint16_t));
+           (width + 2 * WIENER_HALFWIN) * sizeof(uint16_t));
   }
 }
 
@@ -819,13 +818,13 @@ static void loop_wiener_filter_tile_highbd(uint16_t *data, int tile_idx,
   }
   // TODO(david.barker): Store hfilter/vfilter as an InterpKernel
   // instead of the current format. Then this can be removed.
-  assert(RESTORATION_WIN == SUBPEL_TAPS - 1);
-  for (i = 0; i < RESTORATION_WIN; ++i) {
+  assert(WIENER_WIN == SUBPEL_TAPS - 1);
+  for (i = 0; i < WIENER_WIN; ++i) {
     hkernel[i] = rst->rsi->wiener_info[tile_idx].hfilter[i];
     vkernel[i] = rst->rsi->wiener_info[tile_idx].vfilter[i];
   }
-  hkernel[RESTORATION_WIN] = 0;
-  vkernel[RESTORATION_WIN] = 0;
+  hkernel[WIENER_WIN] = 0;
+  vkernel[WIENER_WIN] = 0;
   av1_get_rest_tile_limits(tile_idx, 0, 0, rst->nhtiles, rst->nvtiles,
                            tile_width, tile_height, width, height, 0, 0,
                            &h_start, &h_end, &v_start, &v_end);

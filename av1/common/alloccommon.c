@@ -1,4 +1,5 @@
 /*
+ *
  * Copyright (c) 2016, Alliance for Open Media. All rights reserved
  *
  * This source code is subject to the terms of the BSD 2 Clause License and
@@ -91,7 +92,9 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
   av1_alloc_restoration_struct(&cm->rst_info, cm->width, cm->height);
   cm->rst_internal.tmpbuf =
       (uint8_t *)aom_realloc(cm->rst_internal.tmpbuf, RESTORATION_TMPBUF_SIZE);
-  assert(cm->rst_internal.tmpbuf != NULL);
+  if (cm->rst_internal.tmpbuf == NULL)
+    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                       "Failed to allocate internal tmpbuf for restoration");
 }
 
 void av1_free_restoration_buffers(AV1_COMMON *cm) {

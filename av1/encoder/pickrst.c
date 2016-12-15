@@ -197,9 +197,9 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
                                           int dat_stride, uint8_t *src8,
                                           int src_stride, int bit_depth,
                                           int *eps, int *xqd, void *srcbuf,
-                                          void *tmpbuf) {
+                                          void *rstbuf) {
   int64_t *srd = (int64_t *)srcbuf;
-  int64_t *dgd = (int64_t *)tmpbuf;
+  int64_t *dgd = (int64_t *)rstbuf;
   int64_t *flt1 = dgd + RESTORATION_TILEPELS_MAX;
   int64_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
   uint8_t *tmpbuf2 = (uint8_t *)(flt2 + RESTORATION_TILEPELS_MAX);
@@ -266,7 +266,7 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   MACROBLOCK *x = &cpi->td.mb;
   AV1_COMMON *const cm = &cpi->common;
   const YV12_BUFFER_CONFIG *dgd = cm->frame_to_show;
-  RestorationInfo rsi;
+  RestorationInfo *rsi = &cpi->rst_search;
   int tile_idx, tile_width, tile_height, nhtiles, nvtiles;
   int h_start, h_end, v_start, v_end;
   // Allocate for the src buffer at high precision
@@ -278,13 +278,10 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
                         1, partial_frame);
   aom_yv12_copy_y(cm->frame_to_show, &cpi->last_frame_db);
 
-  rsi.frame_restoration_type = RESTORE_SGRPROJ;
-  rsi.sgrproj_info =
-      (SgrprojInfo *)aom_malloc(sizeof(*rsi.sgrproj_info) * ntiles);
-  assert(rsi.sgrproj_info != NULL);
+  rsi->frame_restoration_type = RESTORE_SGRPROJ;
 
   for (tile_idx = 0; tile_idx < ntiles; ++tile_idx)
-    rsi.sgrproj_info[tile_idx].level = 0;
+    rsi->sgrproj_info[tile_idx].level = 0;
   // Compute best Sgrproj filters for each tile
   for (tile_idx = 0; tile_idx < ntiles; ++tile_idx) {
     av1_get_rest_tile_limits(tile_idx, 0, 0, nhtiles, nvtiles, tile_width,
@@ -305,10 +302,10 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
 #else
         8,
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-        &rsi.sgrproj_info[tile_idx].ep, rsi.sgrproj_info[tile_idx].xqd,
-        cpi->highprec_srcbuf, cm->rst_internal.tmpbuf);
-    rsi.sgrproj_info[tile_idx].level = 1;
-    err = try_restoration_tile(src, cpi, &rsi, 1, partial_frame, tile_idx, 0, 0,
+        &rsi->sgrproj_info[tile_idx].ep, rsi->sgrproj_info[tile_idx].xqd,
+        cpi->extra_rstbuf, cm->rst_internal.tmpbuf);
+    rsi->sgrproj_info[tile_idx].level = 1;
+    err = try_restoration_tile(src, cpi, rsi, 1, partial_frame, tile_idx, 0, 0,
                                dst_frame);
     bits = SGRPROJ_BITS << AV1_PROB_COST_SHIFT;
     bits += av1_cost_bit(RESTORE_NONE_SGRPROJ_PROB, 1);
@@ -316,31 +313,29 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
     if (cost_sgrproj >= cost_norestore) {
       sgrproj_info[tile_idx].level = 0;
     } else {
-      memcpy(&sgrproj_info[tile_idx], &rsi.sgrproj_info[tile_idx],
+      memcpy(&sgrproj_info[tile_idx], &rsi->sgrproj_info[tile_idx],
              sizeof(sgrproj_info[tile_idx]));
       bits = SGRPROJ_BITS << AV1_PROB_COST_SHIFT;
       best_tile_cost[tile_idx] = RDCOST_DBL(
           x->rdmult, x->rddiv,
           (bits + cpi->switchable_restore_cost[RESTORE_SGRPROJ]) >> 4, err);
     }
-    rsi.sgrproj_info[tile_idx].level = 0;
+    rsi->sgrproj_info[tile_idx].level = 0;
   }
   // Cost for Sgrproj filtering
-  bits = frame_level_restore_bits[rsi.frame_restoration_type]
+  bits = frame_level_restore_bits[rsi->frame_restoration_type]
          << AV1_PROB_COST_SHIFT;
   for (tile_idx = 0; tile_idx < ntiles; ++tile_idx) {
     bits +=
         av1_cost_bit(RESTORE_NONE_SGRPROJ_PROB, sgrproj_info[tile_idx].level);
-    memcpy(&rsi.sgrproj_info[tile_idx], &sgrproj_info[tile_idx],
+    memcpy(&rsi->sgrproj_info[tile_idx], &sgrproj_info[tile_idx],
            sizeof(sgrproj_info[tile_idx]));
     if (sgrproj_info[tile_idx].level) {
       bits += (SGRPROJ_BITS << AV1_PROB_COST_SHIFT);
     }
   }
-  err = try_restoration_frame(src, cpi, &rsi, 1, partial_frame, dst_frame);
+  err = try_restoration_frame(src, cpi, rsi, 1, partial_frame, dst_frame);
   cost_sgrproj = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
-
-  aom_free(rsi.sgrproj_info);
 
   aom_yv12_copy_y(&cpi->last_frame_uf, cm->frame_to_show);
   return cost_sgrproj;
@@ -380,7 +375,8 @@ static int64_t compute_sse_highbd(uint16_t *dgd, int width, int height,
 static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
                                             int height, int dgd_stride,
                                             uint8_t *src8, int src_stride,
-                                            int bit_depth, int *sigma_r) {
+                                            int bit_depth, int *sigma_r,
+                                            void *fltbuf, void *rstbuf) {
   const int first_p_step = 8;
   const int second_p_range = first_p_step >> 1;
   const int second_p_step = 2;
@@ -389,15 +385,15 @@ static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
   int p, best_p0, best_p = -1;
   int64_t best_sse = INT64_MAX, sse;
   if (bit_depth == 8) {
-    uint8_t *tmp = (uint8_t *)aom_malloc(width * height * sizeof(*tmp));
-    int32_t *tmpbuf = (int32_t *)aom_malloc(DOMAINTXFMRF_TMPBUF_SIZE);
+    uint8_t *flt = (uint8_t *)fltbuf;
+    int32_t *tmpbuf = (int32_t *)rstbuf;
     uint8_t *dgd = dgd8;
     uint8_t *src = src8;
     // First phase
     for (p = first_p_step / 2; p < DOMAINTXFMRF_PARAMS; p += first_p_step) {
-      av1_domaintxfmrf_restoration(dgd, width, height, dgd_stride, p, tmp,
+      av1_domaintxfmrf_restoration(dgd, width, height, dgd_stride, p, flt,
                                    width, tmpbuf);
-      sse = compute_sse(tmp, width, height, width, src, src_stride);
+      sse = compute_sse(flt, width, height, width, src, src_stride);
       if (sse < best_sse || best_p == -1) {
         best_p = p;
         best_sse = sse;
@@ -408,9 +404,9 @@ static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
     for (p = best_p0 - second_p_range; p <= best_p0 + second_p_range;
          p += second_p_step) {
       if (p < 0 || p == best_p || p >= DOMAINTXFMRF_PARAMS) continue;
-      av1_domaintxfmrf_restoration(dgd, width, height, dgd_stride, p, tmp,
+      av1_domaintxfmrf_restoration(dgd, width, height, dgd_stride, p, flt,
                                    width, tmpbuf);
-      sse = compute_sse(tmp, width, height, width, src, src_stride);
+      sse = compute_sse(flt, width, height, width, src, src_stride);
       if (sse < best_sse) {
         best_p = p;
         best_sse = sse;
@@ -421,27 +417,25 @@ static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
     for (p = best_p0 - third_p_range; p <= best_p0 + third_p_range;
          p += third_p_step) {
       if (p < 0 || p == best_p || p >= DOMAINTXFMRF_PARAMS) continue;
-      av1_domaintxfmrf_restoration(dgd, width, height, dgd_stride, p, tmp,
+      av1_domaintxfmrf_restoration(dgd, width, height, dgd_stride, p, flt,
                                    width, tmpbuf);
-      sse = compute_sse(tmp, width, height, width, src, src_stride);
+      sse = compute_sse(flt, width, height, width, src, src_stride);
       if (sse < best_sse) {
         best_p = p;
         best_sse = sse;
       }
     }
-    aom_free(tmp);
-    aom_free(tmpbuf);
   } else {
 #if CONFIG_AOM_HIGHBITDEPTH
-    uint16_t *tmp = (uint16_t *)aom_malloc(width * height * sizeof(*tmp));
-    int32_t *tmpbuf = (int32_t *)aom_malloc(DOMAINTXFMRF_TMPBUF_SIZE);
+    uint16_t *flt = (uint16_t *)fltbuf;
+    int32_t *tmpbuf = (int32_t *)rstbuf;
     uint16_t *dgd = CONVERT_TO_SHORTPTR(dgd8);
     uint16_t *src = CONVERT_TO_SHORTPTR(src8);
     // First phase
     for (p = first_p_step / 2; p < DOMAINTXFMRF_PARAMS; p += first_p_step) {
       av1_domaintxfmrf_restoration_highbd(dgd, width, height, dgd_stride, p,
-                                          bit_depth, tmp, width, tmpbuf);
-      sse = compute_sse_highbd(tmp, width, height, width, src, src_stride);
+                                          bit_depth, flt, width, tmpbuf);
+      sse = compute_sse_highbd(flt, width, height, width, src, src_stride);
       if (sse < best_sse || best_p == -1) {
         best_p = p;
         best_sse = sse;
@@ -453,8 +447,8 @@ static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
          p += second_p_step) {
       if (p < 0 || p == best_p || p >= DOMAINTXFMRF_PARAMS) continue;
       av1_domaintxfmrf_restoration_highbd(dgd, width, height, dgd_stride, p,
-                                          bit_depth, tmp, width, tmpbuf);
-      sse = compute_sse_highbd(tmp, width, height, width, src, src_stride);
+                                          bit_depth, flt, width, tmpbuf);
+      sse = compute_sse_highbd(flt, width, height, width, src, src_stride);
       if (sse < best_sse) {
         best_p = p;
         best_sse = sse;
@@ -466,15 +460,13 @@ static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
          p += third_p_step) {
       if (p < 0 || p == best_p || p >= DOMAINTXFMRF_PARAMS) continue;
       av1_domaintxfmrf_restoration_highbd(dgd, width, height, dgd_stride, p,
-                                          bit_depth, tmp, width, tmpbuf);
-      sse = compute_sse_highbd(tmp, width, height, width, src, src_stride);
+                                          bit_depth, flt, width, tmpbuf);
+      sse = compute_sse_highbd(flt, width, height, width, src, src_stride);
       if (sse < best_sse) {
         best_p = p;
         best_sse = sse;
       }
     }
-    aom_free(tmp);
-    aom_free(tmpbuf);
 #else
     assert(0);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
@@ -493,7 +485,7 @@ static double search_domaintxfmrf(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   MACROBLOCK *x = &cpi->td.mb;
   AV1_COMMON *const cm = &cpi->common;
   const YV12_BUFFER_CONFIG *dgd = cm->frame_to_show;
-  RestorationInfo rsi;
+  RestorationInfo *rsi = &cpi->rst_search;
   int tile_idx, tile_width, tile_height, nhtiles, nvtiles;
   int h_start, h_end, v_start, v_end;
   const int ntiles = av1_get_rest_ntiles(cm->width, cm->height, &tile_width,
@@ -504,13 +496,11 @@ static double search_domaintxfmrf(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
                         1, partial_frame);
   aom_yv12_copy_y(cm->frame_to_show, &cpi->last_frame_db);
 
-  rsi.frame_restoration_type = RESTORE_DOMAINTXFMRF;
-  rsi.domaintxfmrf_info =
-      (DomaintxfmrfInfo *)aom_malloc(sizeof(*rsi.domaintxfmrf_info) * ntiles);
-  assert(rsi.domaintxfmrf_info != NULL);
+  rsi->frame_restoration_type = RESTORE_DOMAINTXFMRF;
+  rsi->domaintxfmrf_info = cpi->rst_search.domaintxfmrf_info;
 
   for (tile_idx = 0; tile_idx < ntiles; ++tile_idx)
-    rsi.domaintxfmrf_info[tile_idx].level = 0;
+    rsi->domaintxfmrf_info[tile_idx].level = 0;
   // Compute best Domaintxfm filters for each tile
   for (tile_idx = 0; tile_idx < ntiles; ++tile_idx) {
     av1_get_rest_tile_limits(tile_idx, 0, 0, nhtiles, nvtiles, tile_width,
@@ -532,10 +522,11 @@ static double search_domaintxfmrf(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
 #else
         8,
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-        &rsi.domaintxfmrf_info[tile_idx].sigma_r);
+        &rsi->domaintxfmrf_info[tile_idx].sigma_r, cpi->extra_rstbuf,
+        cm->rst_internal.tmpbuf);
 
-    rsi.domaintxfmrf_info[tile_idx].level = 1;
-    err = try_restoration_tile(src, cpi, &rsi, 1, partial_frame, tile_idx, 0, 0,
+    rsi->domaintxfmrf_info[tile_idx].level = 1;
+    err = try_restoration_tile(src, cpi, rsi, 1, partial_frame, tile_idx, 0, 0,
                                dst_frame);
     bits = DOMAINTXFMRF_PARAMS_BITS << AV1_PROB_COST_SHIFT;
     bits += av1_cost_bit(RESTORE_NONE_DOMAINTXFMRF_PROB, 1);
@@ -543,7 +534,7 @@ static double search_domaintxfmrf(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
     if (cost_domaintxfmrf >= cost_norestore) {
       domaintxfmrf_info[tile_idx].level = 0;
     } else {
-      memcpy(&domaintxfmrf_info[tile_idx], &rsi.domaintxfmrf_info[tile_idx],
+      memcpy(&domaintxfmrf_info[tile_idx], &rsi->domaintxfmrf_info[tile_idx],
              sizeof(domaintxfmrf_info[tile_idx]));
       bits = DOMAINTXFMRF_PARAMS_BITS << AV1_PROB_COST_SHIFT;
       best_tile_cost[tile_idx] = RDCOST_DBL(
@@ -551,24 +542,22 @@ static double search_domaintxfmrf(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
           (bits + cpi->switchable_restore_cost[RESTORE_DOMAINTXFMRF]) >> 4,
           err);
     }
-    rsi.domaintxfmrf_info[tile_idx].level = 0;
+    rsi->domaintxfmrf_info[tile_idx].level = 0;
   }
   // Cost for Domaintxfmrf filtering
-  bits = frame_level_restore_bits[rsi.frame_restoration_type]
+  bits = frame_level_restore_bits[rsi->frame_restoration_type]
          << AV1_PROB_COST_SHIFT;
   for (tile_idx = 0; tile_idx < ntiles; ++tile_idx) {
     bits += av1_cost_bit(RESTORE_NONE_DOMAINTXFMRF_PROB,
                          domaintxfmrf_info[tile_idx].level);
-    memcpy(&rsi.domaintxfmrf_info[tile_idx], &domaintxfmrf_info[tile_idx],
+    memcpy(&rsi->domaintxfmrf_info[tile_idx], &domaintxfmrf_info[tile_idx],
            sizeof(domaintxfmrf_info[tile_idx]));
     if (domaintxfmrf_info[tile_idx].level) {
       bits += (DOMAINTXFMRF_PARAMS_BITS << AV1_PROB_COST_SHIFT);
     }
   }
-  err = try_restoration_frame(src, cpi, &rsi, 1, partial_frame, dst_frame);
+  err = try_restoration_frame(src, cpi, rsi, 1, partial_frame, dst_frame);
   cost_domaintxfmrf = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
-
-  aom_free(rsi.domaintxfmrf_info);
 
   aom_yv12_copy_y(&cpi->last_frame_uf, cm->frame_to_show);
   return cost_domaintxfmrf;
@@ -589,29 +578,29 @@ static void compute_stats(uint8_t *dgd, uint8_t *src, int h_start, int h_end,
                           int v_start, int v_end, int dgd_stride,
                           int src_stride, double *M, double *H) {
   int i, j, k, l;
-  double Y[RESTORATION_WIN2];
+  double Y[WIENER_WIN2];
   const double avg =
       find_average(dgd, h_start, h_end, v_start, v_end, dgd_stride);
 
-  memset(M, 0, sizeof(*M) * RESTORATION_WIN2);
-  memset(H, 0, sizeof(*H) * RESTORATION_WIN2 * RESTORATION_WIN2);
+  memset(M, 0, sizeof(*M) * WIENER_WIN2);
+  memset(H, 0, sizeof(*H) * WIENER_WIN2 * WIENER_WIN2);
   for (i = v_start; i < v_end; i++) {
     for (j = h_start; j < h_end; j++) {
       const double X = (double)src[i * src_stride + j] - avg;
       int idx = 0;
-      for (k = -RESTORATION_HALFWIN; k <= RESTORATION_HALFWIN; k++) {
-        for (l = -RESTORATION_HALFWIN; l <= RESTORATION_HALFWIN; l++) {
+      for (k = -WIENER_HALFWIN; k <= WIENER_HALFWIN; k++) {
+        for (l = -WIENER_HALFWIN; l <= WIENER_HALFWIN; l++) {
           Y[idx] = (double)dgd[(i + l) * dgd_stride + (j + k)] - avg;
           idx++;
         }
       }
-      for (k = 0; k < RESTORATION_WIN2; ++k) {
+      for (k = 0; k < WIENER_WIN2; ++k) {
         M[k] += Y[k] * X;
-        H[k * RESTORATION_WIN2 + k] += Y[k] * Y[k];
-        for (l = k + 1; l < RESTORATION_WIN2; ++l) {
+        H[k * WIENER_WIN2 + k] += Y[k] * Y[k];
+        for (l = k + 1; l < WIENER_WIN2; ++l) {
           double value = Y[k] * Y[l];
-          H[k * RESTORATION_WIN2 + l] += value;
-          H[l * RESTORATION_WIN2 + k] += value;
+          H[k * WIENER_WIN2 + l] += value;
+          H[l * WIENER_WIN2 + k] += value;
         }
       }
     }
@@ -635,31 +624,31 @@ static void compute_stats_highbd(uint8_t *dgd8, uint8_t *src8, int h_start,
                                  int dgd_stride, int src_stride, double *M,
                                  double *H) {
   int i, j, k, l;
-  double Y[RESTORATION_WIN2];
+  double Y[WIENER_WIN2];
   uint16_t *src = CONVERT_TO_SHORTPTR(src8);
   uint16_t *dgd = CONVERT_TO_SHORTPTR(dgd8);
   const double avg =
       find_average_highbd(dgd, h_start, h_end, v_start, v_end, dgd_stride);
 
-  memset(M, 0, sizeof(*M) * RESTORATION_WIN2);
-  memset(H, 0, sizeof(*H) * RESTORATION_WIN2 * RESTORATION_WIN2);
+  memset(M, 0, sizeof(*M) * WIENER_WIN2);
+  memset(H, 0, sizeof(*H) * WIENER_WIN2 * WIENER_WIN2);
   for (i = v_start; i < v_end; i++) {
     for (j = h_start; j < h_end; j++) {
       const double X = (double)src[i * src_stride + j] - avg;
       int idx = 0;
-      for (k = -RESTORATION_HALFWIN; k <= RESTORATION_HALFWIN; k++) {
-        for (l = -RESTORATION_HALFWIN; l <= RESTORATION_HALFWIN; l++) {
+      for (k = -WIENER_HALFWIN; k <= WIENER_HALFWIN; k++) {
+        for (l = -WIENER_HALFWIN; l <= WIENER_HALFWIN; l++) {
           Y[idx] = (double)dgd[(i + l) * dgd_stride + (j + k)] - avg;
           idx++;
         }
       }
-      for (k = 0; k < RESTORATION_WIN2; ++k) {
+      for (k = 0; k < WIENER_WIN2; ++k) {
         M[k] += Y[k] * X;
-        H[k * RESTORATION_WIN2 + k] += Y[k] * Y[k];
-        for (l = k + 1; l < RESTORATION_WIN2; ++l) {
+        H[k * WIENER_WIN2 + k] += Y[k] * Y[k];
+        for (l = k + 1; l < WIENER_WIN2; ++l) {
           double value = Y[k] * Y[l];
-          H[k * RESTORATION_WIN2 + l] += value;
-          H[l * RESTORATION_WIN2 + k] += value;
+          H[k * WIENER_WIN2 + l] += value;
+          H[l * WIENER_WIN2 + k] += value;
         }
       }
     }
@@ -703,38 +692,37 @@ static int linsolve(int n, double *A, int stride, double *b, double *x) {
 }
 
 static INLINE int wrap_index(int i) {
-  return (i >= RESTORATION_HALFWIN1 ? RESTORATION_WIN - 1 - i : i);
+  return (i >= WIENER_HALFWIN1 ? WIENER_WIN - 1 - i : i);
 }
 
 // Fix vector b, update vector a
 static void update_a_sep_sym(double **Mc, double **Hc, double *a, double *b) {
   int i, j;
-  double S[RESTORATION_WIN];
-  double A[RESTORATION_WIN], B[RESTORATION_WIN2];
+  double S[WIENER_WIN];
+  double A[WIENER_WIN], B[WIENER_WIN2];
   int w, w2;
   memset(A, 0, sizeof(A));
   memset(B, 0, sizeof(B));
-  for (i = 0; i < RESTORATION_WIN; i++) {
-    for (j = 0; j < RESTORATION_WIN; ++j) {
+  for (i = 0; i < WIENER_WIN; i++) {
+    for (j = 0; j < WIENER_WIN; ++j) {
       const int jj = wrap_index(j);
       A[jj] += Mc[i][j] * b[i];
     }
   }
-  for (i = 0; i < RESTORATION_WIN; i++) {
-    for (j = 0; j < RESTORATION_WIN; j++) {
+  for (i = 0; i < WIENER_WIN; i++) {
+    for (j = 0; j < WIENER_WIN; j++) {
       int k, l;
-      for (k = 0; k < RESTORATION_WIN; ++k)
-        for (l = 0; l < RESTORATION_WIN; ++l) {
+      for (k = 0; k < WIENER_WIN; ++k)
+        for (l = 0; l < WIENER_WIN; ++l) {
           const int kk = wrap_index(k);
           const int ll = wrap_index(l);
-          B[ll * RESTORATION_HALFWIN1 + kk] +=
-              Hc[j * RESTORATION_WIN + i][k * RESTORATION_WIN2 + l] * b[i] *
-              b[j];
+          B[ll * WIENER_HALFWIN1 + kk] +=
+              Hc[j * WIENER_WIN + i][k * WIENER_WIN2 + l] * b[i] * b[j];
         }
     }
   }
   // Normalization enforcement in the system of equations itself
-  w = RESTORATION_WIN;
+  w = WIENER_WIN;
   w2 = (w >> 1) + 1;
   for (i = 0; i < w2 - 1; ++i)
     A[i] -=
@@ -756,31 +744,30 @@ static void update_a_sep_sym(double **Mc, double **Hc, double *a, double *b) {
 // Fix vector a, update vector b
 static void update_b_sep_sym(double **Mc, double **Hc, double *a, double *b) {
   int i, j;
-  double S[RESTORATION_WIN];
-  double A[RESTORATION_WIN], B[RESTORATION_WIN2];
+  double S[WIENER_WIN];
+  double A[WIENER_WIN], B[WIENER_WIN2];
   int w, w2;
   memset(A, 0, sizeof(A));
   memset(B, 0, sizeof(B));
-  for (i = 0; i < RESTORATION_WIN; i++) {
+  for (i = 0; i < WIENER_WIN; i++) {
     const int ii = wrap_index(i);
-    for (j = 0; j < RESTORATION_WIN; j++) A[ii] += Mc[i][j] * a[j];
+    for (j = 0; j < WIENER_WIN; j++) A[ii] += Mc[i][j] * a[j];
   }
 
-  for (i = 0; i < RESTORATION_WIN; i++) {
-    for (j = 0; j < RESTORATION_WIN; j++) {
+  for (i = 0; i < WIENER_WIN; i++) {
+    for (j = 0; j < WIENER_WIN; j++) {
       const int ii = wrap_index(i);
       const int jj = wrap_index(j);
       int k, l;
-      for (k = 0; k < RESTORATION_WIN; ++k)
-        for (l = 0; l < RESTORATION_WIN; ++l)
-          B[jj * RESTORATION_HALFWIN1 + ii] +=
-              Hc[i * RESTORATION_WIN + j][k * RESTORATION_WIN2 + l] * a[k] *
-              a[l];
+      for (k = 0; k < WIENER_WIN; ++k)
+        for (l = 0; l < WIENER_WIN; ++l)
+          B[jj * WIENER_HALFWIN1 + ii] +=
+              Hc[i * WIENER_WIN + j][k * WIENER_WIN2 + l] * a[k] * a[l];
     }
   }
   // Normalization enforcement in the system of equations itself
-  w = RESTORATION_WIN;
-  w2 = RESTORATION_HALFWIN1;
+  w = WIENER_WIN;
+  w2 = WIENER_HALFWIN1;
   for (i = 0; i < w2 - 1; ++i)
     A[i] -=
         A[w2 - 1] * 2 + B[i * w2 + w2 - 1] - 2 * B[(w2 - 1) * w2 + (w2 - 1)];
@@ -800,21 +787,21 @@ static void update_b_sep_sym(double **Mc, double **Hc, double *a, double *b) {
 
 static int wiener_decompose_sep_sym(double *M, double *H, double *a,
                                     double *b) {
-  static const double init_filt[RESTORATION_WIN] = {
+  static const double init_filt[WIENER_WIN] = {
     0.035623, -0.127154, 0.211436, 0.760190, 0.211436, -0.127154, 0.035623,
   };
   int i, j, iter;
-  double *Hc[RESTORATION_WIN2];
-  double *Mc[RESTORATION_WIN];
-  for (i = 0; i < RESTORATION_WIN; i++) {
-    Mc[i] = M + i * RESTORATION_WIN;
-    for (j = 0; j < RESTORATION_WIN; j++) {
-      Hc[i * RESTORATION_WIN + j] =
-          H + i * RESTORATION_WIN * RESTORATION_WIN2 + j * RESTORATION_WIN;
+  double *Hc[WIENER_WIN2];
+  double *Mc[WIENER_WIN];
+  for (i = 0; i < WIENER_WIN; i++) {
+    Mc[i] = M + i * WIENER_WIN;
+    for (j = 0; j < WIENER_WIN; j++) {
+      Hc[i * WIENER_WIN + j] =
+          H + i * WIENER_WIN * WIENER_WIN2 + j * WIENER_WIN;
     }
   }
-  memcpy(a, init_filt, sizeof(*a) * RESTORATION_WIN);
-  memcpy(b, init_filt, sizeof(*b) * RESTORATION_WIN);
+  memcpy(a, init_filt, sizeof(*a) * WIENER_WIN);
+  memcpy(b, init_filt, sizeof(*b) * WIENER_WIN);
 
   iter = 1;
   while (iter < 10) {
@@ -829,22 +816,20 @@ static int wiener_decompose_sep_sym(double *M, double *H, double *a,
 // against identity filters; Final score is defined as the difference between
 // the function values
 static double compute_score(double *M, double *H, int *vfilt, int *hfilt) {
-  double ab[RESTORATION_WIN * RESTORATION_WIN];
+  double ab[WIENER_WIN * WIENER_WIN];
   int i, k, l;
   double P = 0, Q = 0;
   double iP = 0, iQ = 0;
   double Score, iScore;
   int w;
-  double a[RESTORATION_WIN], b[RESTORATION_WIN];
-  w = RESTORATION_WIN;
-  a[RESTORATION_HALFWIN] = b[RESTORATION_HALFWIN] = 1.0;
-  for (i = 0; i < RESTORATION_HALFWIN; ++i) {
-    a[i] = a[RESTORATION_WIN - i - 1] =
-        (double)vfilt[i] / RESTORATION_FILT_STEP;
-    b[i] = b[RESTORATION_WIN - i - 1] =
-        (double)hfilt[i] / RESTORATION_FILT_STEP;
-    a[RESTORATION_HALFWIN] -= 2 * a[i];
-    b[RESTORATION_HALFWIN] -= 2 * b[i];
+  double a[WIENER_WIN], b[WIENER_WIN];
+  w = WIENER_WIN;
+  a[WIENER_HALFWIN] = b[WIENER_HALFWIN] = 1.0;
+  for (i = 0; i < WIENER_HALFWIN; ++i) {
+    a[i] = a[WIENER_WIN - i - 1] = (double)vfilt[i] / WIENER_FILT_STEP;
+    b[i] = b[WIENER_WIN - i - 1] = (double)hfilt[i] / WIENER_FILT_STEP;
+    a[WIENER_HALFWIN] -= 2 * a[i];
+    b[WIENER_HALFWIN] -= 2 * b[i];
   }
   for (k = 0; k < w; ++k) {
     for (l = 0; l < w; ++l) ab[k * w + l] = a[l] * b[k];
@@ -864,8 +849,8 @@ static double compute_score(double *M, double *H, int *vfilt, int *hfilt) {
 
 static void quantize_sym_filter(double *f, int *fi) {
   int i;
-  for (i = 0; i < RESTORATION_HALFWIN; ++i) {
-    fi[i] = RINT(f[i] * RESTORATION_FILT_STEP);
+  for (i = 0; i < WIENER_HALFWIN; ++i) {
+    fi[i] = RINT(f[i] * WIENER_FILT_STEP);
   }
   // Specialize for 7-tap filter
   fi[0] = CLIP(fi[0], WIENER_FILT_TAP0_MINV, WIENER_FILT_TAP0_MAXV);
@@ -879,14 +864,14 @@ static double search_wiener(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
                             YV12_BUFFER_CONFIG *dst_frame) {
   WienerInfo *wiener_info = info->wiener_info;
   AV1_COMMON *const cm = &cpi->common;
-  RestorationInfo rsi;
+  RestorationInfo *rsi = &cpi->rst_search;
   int64_t err;
   int bits;
   double cost_wiener, cost_norestore;
   MACROBLOCK *x = &cpi->td.mb;
-  double M[RESTORATION_WIN2];
-  double H[RESTORATION_WIN2 * RESTORATION_WIN2];
-  double vfilterd[RESTORATION_WIN], hfilterd[RESTORATION_WIN];
+  double M[WIENER_WIN2];
+  double H[WIENER_WIN2 * WIENER_WIN2];
+  double vfilterd[WIENER_WIN], hfilterd[WIENER_WIN];
   const YV12_BUFFER_CONFIG *dgd = cm->frame_to_show;
   const int width = cm->width;
   const int height = cm->height;
@@ -910,12 +895,10 @@ static double search_wiener(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
                         1, partial_frame);
   aom_yv12_copy_y(cm->frame_to_show, &cpi->last_frame_db);
 
-  rsi.frame_restoration_type = RESTORE_WIENER;
-  rsi.wiener_info = (WienerInfo *)aom_malloc(sizeof(*rsi.wiener_info) * ntiles);
-  assert(rsi.wiener_info != NULL);
+  rsi->frame_restoration_type = RESTORE_WIENER;
 
   for (tile_idx = 0; tile_idx < ntiles; ++tile_idx)
-    rsi.wiener_info[tile_idx].level = 0;
+    rsi->wiener_info[tile_idx].level = 0;
 
   // Compute best Wiener filters for each tile
   for (tile_idx = 0; tile_idx < ntiles; ++tile_idx) {
@@ -930,8 +913,9 @@ static double search_wiener(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
     best_tile_cost[tile_idx] = DBL_MAX;
 
     av1_get_rest_tile_limits(tile_idx, 0, 0, nhtiles, nvtiles, tile_width,
-                             tile_height, width, height, 1, 1, &h_start, &h_end,
-                             &v_start, &v_end);
+                             tile_height, width, height, WIENER_HALFWIN,
+                             WIENER_HALFWIN, &h_start, &h_end, &v_start,
+                             &v_end);
 #if CONFIG_AOM_HIGHBITDEPTH
     if (cm->use_highbitdepth)
       compute_stats_highbd(dgd->y_buffer, src->y_buffer, h_start, h_end,
@@ -946,21 +930,21 @@ static double search_wiener(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
       wiener_info[tile_idx].level = 0;
       continue;
     }
-    quantize_sym_filter(vfilterd, rsi.wiener_info[tile_idx].vfilter);
-    quantize_sym_filter(hfilterd, rsi.wiener_info[tile_idx].hfilter);
+    quantize_sym_filter(vfilterd, rsi->wiener_info[tile_idx].vfilter);
+    quantize_sym_filter(hfilterd, rsi->wiener_info[tile_idx].hfilter);
 
     // Filter score computes the value of the function x'*A*x - x'*b for the
     // learned filter and compares it against identity filer. If there is no
     // reduction in the function, the filter is reverted back to identity
-    score = compute_score(M, H, rsi.wiener_info[tile_idx].vfilter,
-                          rsi.wiener_info[tile_idx].hfilter);
+    score = compute_score(M, H, rsi->wiener_info[tile_idx].vfilter,
+                          rsi->wiener_info[tile_idx].hfilter);
     if (score > 0.0) {
       wiener_info[tile_idx].level = 0;
       continue;
     }
 
-    rsi.wiener_info[tile_idx].level = 1;
-    err = try_restoration_tile(src, cpi, &rsi, 1, partial_frame, tile_idx, 0, 0,
+    rsi->wiener_info[tile_idx].level = 1;
+    err = try_restoration_tile(src, cpi, rsi, 1, partial_frame, tile_idx, 0, 0,
                                dst_frame);
     bits = WIENER_FILT_BITS << AV1_PROB_COST_SHIFT;
     bits += av1_cost_bit(RESTORE_NONE_WIENER_PROB, 1);
@@ -969,35 +953,37 @@ static double search_wiener(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
       wiener_info[tile_idx].level = 0;
     } else {
       wiener_info[tile_idx].level = 1;
-      for (i = 0; i < RESTORATION_HALFWIN; ++i) {
-        wiener_info[tile_idx].vfilter[i] = rsi.wiener_info[tile_idx].vfilter[i];
-        wiener_info[tile_idx].hfilter[i] = rsi.wiener_info[tile_idx].hfilter[i];
+      for (i = 0; i < WIENER_HALFWIN; ++i) {
+        wiener_info[tile_idx].vfilter[i] =
+            rsi->wiener_info[tile_idx].vfilter[i];
+        wiener_info[tile_idx].hfilter[i] =
+            rsi->wiener_info[tile_idx].hfilter[i];
       }
       bits = WIENER_FILT_BITS << AV1_PROB_COST_SHIFT;
       best_tile_cost[tile_idx] = RDCOST_DBL(
           x->rdmult, x->rddiv,
           (bits + cpi->switchable_restore_cost[RESTORE_WIENER]) >> 4, err);
     }
-    rsi.wiener_info[tile_idx].level = 0;
+    rsi->wiener_info[tile_idx].level = 0;
   }
   // Cost for Wiener filtering
-  bits = frame_level_restore_bits[rsi.frame_restoration_type]
+  bits = frame_level_restore_bits[rsi->frame_restoration_type]
          << AV1_PROB_COST_SHIFT;
   for (tile_idx = 0; tile_idx < ntiles; ++tile_idx) {
     bits += av1_cost_bit(RESTORE_NONE_WIENER_PROB, wiener_info[tile_idx].level);
-    rsi.wiener_info[tile_idx].level = wiener_info[tile_idx].level;
+    rsi->wiener_info[tile_idx].level = wiener_info[tile_idx].level;
     if (wiener_info[tile_idx].level) {
       bits += (WIENER_FILT_BITS << AV1_PROB_COST_SHIFT);
-      for (i = 0; i < RESTORATION_HALFWIN; ++i) {
-        rsi.wiener_info[tile_idx].vfilter[i] = wiener_info[tile_idx].vfilter[i];
-        rsi.wiener_info[tile_idx].hfilter[i] = wiener_info[tile_idx].hfilter[i];
+      for (i = 0; i < WIENER_HALFWIN; ++i) {
+        rsi->wiener_info[tile_idx].vfilter[i] =
+            wiener_info[tile_idx].vfilter[i];
+        rsi->wiener_info[tile_idx].hfilter[i] =
+            wiener_info[tile_idx].hfilter[i];
       }
     }
   }
-  err = try_restoration_frame(src, cpi, &rsi, 1, partial_frame, dst_frame);
+  err = try_restoration_frame(src, cpi, rsi, 1, partial_frame, dst_frame);
   cost_wiener = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
-
-  aom_free(rsi.wiener_info);
 
   aom_yv12_copy_y(&cpi->last_frame_uf, cm->frame_to_show);
   return cost_wiener;
@@ -1089,24 +1075,12 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   double *tile_cost[RESTORE_SWITCHABLE_TYPES];
   double best_cost_restore;
   RestorationType r, best_restore;
-  YV12_BUFFER_CONFIG dst_frame;
 
   const int ntiles =
       av1_get_rest_ntiles(cm->width, cm->height, NULL, NULL, NULL, NULL);
 
   for (r = 0; r < RESTORE_SWITCHABLE_TYPES; r++)
     tile_cost[r] = (double *)aom_malloc(sizeof(*tile_cost[0]) * ntiles);
-
-  memset(&dst_frame, 0, sizeof(YV12_BUFFER_CONFIG));
-  if (aom_realloc_frame_buffer(&dst_frame, cm->width, cm->height,
-                               cm->subsampling_x, cm->subsampling_y,
-#if CONFIG_AOM_HIGHBITDEPTH
-                               cm->use_highbitdepth,
-#endif
-                               AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL,
-                               NULL, NULL) < 0)
-    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
-                       "Failed to allocate restoration dst buffer");
 
   lf->sharpness_level = cm->frame_type == KEY_FRAME ? 0 : cpi->oxcf.sharpness;
 
@@ -1150,7 +1124,7 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   for (r = 0; r < RESTORE_SWITCHABLE_TYPES; ++r) {
     cost_restore[r] = search_restore_fun[r](
         src, cpi, lf->filter_level, method == LPF_PICK_FROM_SUBIMAGE,
-        &cm->rst_info, tile_cost[r], &dst_frame);
+        &cm->rst_info, tile_cost[r], &cpi->trial_frame_rst);
   }
   cost_restore[RESTORE_SWITCHABLE] = search_switchable_restoration(
       cpi, lf->filter_level, method == LPF_PICK_FROM_SUBIMAGE, &cm->rst_info,
@@ -1172,5 +1146,4 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
          cost_restore[2], cost_restore[3], cost_restore[4]);
          */
   for (r = 0; r < RESTORE_SWITCHABLE_TYPES; r++) aom_free(tile_cost[r]);
-  aom_free_frame_buffer(&dst_frame);
 }
