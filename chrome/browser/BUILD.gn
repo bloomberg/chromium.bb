@@ -1296,6 +1296,8 @@ split_static_library("browser") {
     "usb/web_usb_permission_provider.h",
     "web_data_service_factory.cc",
     "web_data_service_factory.h",
+    "webshare/share_service_impl.cc",
+    "webshare/share_service_impl.h",
     "win/app_icon.cc",
     "win/app_icon.h",
     "win/browser_util.cc",

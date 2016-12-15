@@ -97,6 +97,7 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/browser/ui/webui/log_web_ui_url.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
+#include "chrome/browser/webshare/share_service_impl.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -3066,6 +3067,11 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
   }
 #endif
 
+#if defined(OS_LINUX) || defined(OS_WIN)
+  if (!ChromeOriginTrialPolicy().IsFeatureDisabled("WebShare")) {
+    registry->AddInterface(base::Bind(&ShareServiceImpl::Create));
+  }
+#endif
 }
 
 void ChromeContentBrowserClient::ExposeInterfacesToGpuProcess(

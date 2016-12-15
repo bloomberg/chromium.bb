@@ -3333,6 +3333,7 @@ test("unit_tests") {
     "../browser/ui/webui/local_state/local_state_ui_unittest.cc",
     "../browser/ui/webui/log_web_ui_url_unittest.cc",
     "../browser/update_client/chrome_update_query_params_delegate_unittest.cc",
+    "../browser/webshare/share_service_impl_unittest.cc",
     "../browser/win/chrome_elf_init_unittest.cc",
     "../browser/win/enumerate_modules_model_unittest.cc",
     "../common/chrome_content_client_unittest.cc",
