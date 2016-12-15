@@ -61,7 +61,7 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
                          public views::ButtonListener {
    public:
     NotifierButton(NotifierSettingsProvider* provider,
-                   Notifier* notifier,
+                   std::unique_ptr<Notifier> notifier,
                    views::ButtonListener* listener);
     ~NotifierButton() override;
 
@@ -84,7 +84,7 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
     void GridChanged(bool has_learn_more, bool has_icon_view);
 
     NotifierSettingsProvider* provider_;  // Weak.
-    const std::unique_ptr<Notifier> notifier_;
+    std::unique_ptr<Notifier> notifier_;
     // |icon_view_| is owned by us because sometimes we don't leave it
     // in the view hierarchy.
     std::unique_ptr<views::ImageView> icon_view_;
@@ -96,7 +96,7 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsView
   };
 
   // Given a new list of notifiers, updates the view to reflect it.
-  void UpdateContentsView(const std::vector<Notifier*>& notifiers);
+  void UpdateContentsView(std::vector<std::unique_ptr<Notifier>> notifiers);
 
   // Overridden from views::View:
   void Layout() override;

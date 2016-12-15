@@ -231,17 +231,17 @@ base::string16 NotifierGroupComboboxModel::GetItemAt(int index) {
 // showing 'icon'.
 NotifierSettingsView::NotifierButton::NotifierButton(
     NotifierSettingsProvider* provider,
-    Notifier* notifier,
+    std::unique_ptr<Notifier> notifier,
     views::ButtonListener* listener)
     : views::CustomButton(listener),
       provider_(provider),
-      notifier_(notifier),
+      notifier_(std::move(notifier)),
       icon_view_(new views::ImageView()),
       name_view_(new views::Label(notifier_->name)),
       checkbox_(new views::Checkbox(base::string16())),
       learn_more_(nullptr) {
-  DCHECK(provider);
-  DCHECK(notifier);
+  DCHECK(provider_);
+  DCHECK(notifier_);
 
   // Since there may never be an icon (but that could change at a later time),
   // we own the icon view here.
@@ -445,11 +445,11 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
   scroller_->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
   AddChildView(scroller_);
 
-  std::vector<Notifier*> notifiers;
+  std::vector<std::unique_ptr<Notifier>> notifiers;
   if (provider_)
     provider_->GetNotifierList(&notifiers);
 
-  UpdateContentsView(notifiers);
+  UpdateContentsView(std::move(notifiers));
 }
 
 NotifierSettingsView::~NotifierSettingsView() {
@@ -475,18 +475,18 @@ void NotifierSettingsView::UpdateIconImage(const NotifierId& notifier_id,
 }
 
 void NotifierSettingsView::NotifierGroupChanged() {
-  std::vector<Notifier*> notifiers;
+  std::vector<std::unique_ptr<Notifier>> notifiers;
   if (provider_)
     provider_->GetNotifierList(&notifiers);
 
-  UpdateContentsView(notifiers);
+  UpdateContentsView(std::move(notifiers));
 }
 
 void NotifierSettingsView::NotifierEnabledChanged(const NotifierId& notifier_id,
                                                   bool enabled) {}
 
 void NotifierSettingsView::UpdateContentsView(
-    const std::vector<Notifier*>& notifiers) {
+    std::vector<std::unique_ptr<Notifier>> notifiers) {
   buttons_.clear();
 
   views::View* contents_view = new views::View();
@@ -537,7 +537,8 @@ void NotifierSettingsView::UpdateContentsView(
 
   size_t notifier_count = notifiers.size();
   for (size_t i = 0; i < notifier_count; ++i) {
-    NotifierButton* button = new NotifierButton(provider_, notifiers[i], this);
+    NotifierButton* button =
+        new NotifierButton(provider_, std::move(notifiers[i]), this);
     EntryView* entry = new EntryView(button);
 
     // This code emulates separators using borders.  We will create an invisible

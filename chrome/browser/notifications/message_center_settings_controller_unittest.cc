@@ -278,7 +278,7 @@ TEST_F(MessageCenterSettingsControllerTest, NotifierSortOrder) {
   extension_service->AddExtension(baf_app.Build().get());
   CreateController();
 
-  std::vector<message_center::Notifier*> notifiers;
+  std::vector<std::unique_ptr<message_center::Notifier>> notifiers;
   controller()->GetNotifierList(&notifiers);
 
 #if !defined(OS_CHROMEOS)
@@ -292,8 +292,6 @@ TEST_F(MessageCenterSettingsControllerTest, NotifierSortOrder) {
 
   EXPECT_EQ(kBarId, notifiers[0]->notifier_id.id);
   EXPECT_EQ(kFooId, notifiers[1]->notifier_id.id);
-
-  base::STLDeleteElements(&notifiers);
 }
 
 TEST_F(MessageCenterSettingsControllerTest, SetWebPageNotifierEnabled) {

@@ -175,8 +175,6 @@ static_library("test_support") {
       "fake_message_center.h",
       "fake_message_center_tray_delegate.cc",
       "fake_message_center_tray_delegate.h",
-      "fake_notifier_settings_provider.cc",
-      "fake_notifier_settings_provider.h",
     ]
     deps = [
       "//base",

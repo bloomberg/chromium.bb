@@ -178,9 +178,9 @@ class MESSAGE_CENTER_EXPORT NotifierSettingsProvider {
   virtual const message_center::NotifierGroup& GetActiveNotifierGroup()
       const = 0;
 
-  // Collects the current notifier list and fills to |notifiers|. Caller takes
-  // the ownership of the elements of |notifiers|.
-  virtual void GetNotifierList(std::vector<Notifier*>* notifiers) = 0;
+  // Provides the current notifier list in |notifiers|.
+  virtual void GetNotifierList(
+      std::vector<std::unique_ptr<Notifier>>* notifiers) = 0;
 
   // Called when the |enabled| for the |notifier| has been changed by user
   // operation.
