@@ -12,8 +12,10 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/sys_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
+#include "components/cronet/ios/version.h"
 #include "components/cronet/url_request_context_config.h"
 #include "net/cert/cert_verifier.h"
 #include "net/url_request/url_request_context.h"
@@ -71,6 +73,10 @@ class CronetEnvironment {
   bool http2_enabled() const { return http2_enabled_; }
   bool quic_enabled() const { return quic_enabled_; }
 
+  void set_quic_user_agent_id(const std::string& quic_user_agent_id) {
+    quic_user_agent_id_ = quic_user_agent_id;
+  }
+
   void set_accept_language(const std::string& accept_language) {
     accept_language_ = accept_language;
   }
@@ -118,8 +124,11 @@ class CronetEnvironment {
   void SetHostResolverRulesOnNetworkThread(const std::string& rules,
                                            base::WaitableEvent* event);
 
+  std::string getDefaultQuicUserAgentId() const;
+
   bool http2_enabled_;
   bool quic_enabled_;
+  std::string quic_user_agent_id_;
   std::string accept_language_;
   std::string ssl_key_log_file_name_;
 

@@ -270,8 +270,10 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   cache_path = cache_path.Append(FILE_PATH_LITERAL("cronet"));
 
   std::unique_ptr<URLRequestContextConfig> config(new URLRequestContextConfig(
-      quic_enabled_,                  // Enable QUIC.
-      "",                             // QUIC User Agent ID.
+      quic_enabled_,  // Enable QUIC.
+      quic_enabled_ && quic_user_agent_id_.empty()
+          ? getDefaultQuicUserAgentId()
+          : quic_user_agent_id_,      // QUIC User Agent ID.
       http2_enabled_,                 // Enable SPDY.
       false,                          // Enable SDCH
       URLRequestContextConfig::DISK,  // Type of http cache.
@@ -356,6 +358,12 @@ void CronetEnvironment::SetHostResolverRulesOnNetworkThread(
   static_cast<net::MappedHostResolver*>(main_context_->host_resolver())
       ->SetRulesFromString(rules);
   event->Signal();
+}
+
+std::string CronetEnvironment::getDefaultQuicUserAgentId() const {
+  return base::SysNSStringToUTF8([[NSBundle mainBundle]
+             objectForInfoDictionaryKey:@"CFBundleDisplayName"]) +
+         " Cronet/" + CRONET_VERSION;
 }
 
 }  // namespace cronet
