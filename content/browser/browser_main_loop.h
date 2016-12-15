@@ -52,7 +52,7 @@ class DeviceMonitorMac;
 }  // namespace media
 
 namespace midi {
-class MidiManager;
+class MidiService;
 }  // namespace midi
 
 namespace mojo {
@@ -145,7 +145,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   device::TimeZoneMonitor* time_zone_monitor() const {
     return time_zone_monitor_.get();
   }
-  midi::MidiManager* midi_manager() const { return midi_manager_.get(); }
+  midi::MidiService* midi_service() const { return midi_service_.get(); }
   base::Thread* indexed_db_thread() const { return indexed_db_thread_.get(); }
 
   bool is_tracing_startup_for_duration() const {
@@ -291,7 +291,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<AudioManagerThread> audio_thread_;
   media::ScopedAudioManagerPtr audio_manager_;
 
-  std::unique_ptr<midi::MidiManager> midi_manager_;
+  std::unique_ptr<midi::MidiService> midi_service_;
 
 #if defined(OS_WIN)
   std::unique_ptr<media::SystemMessageWindowWin> system_message_window_;

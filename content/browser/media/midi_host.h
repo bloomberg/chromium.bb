@@ -24,7 +24,7 @@
 #include "media/midi/midi_service.mojom.h"
 
 namespace midi {
-class MidiManager;
+class MidiService;
 class MidiMessageQueue;
 }  // namespace midi
 
@@ -34,7 +34,7 @@ class CONTENT_EXPORT MidiHost : public BrowserMessageFilter,
                                 public midi::MidiManagerClient {
  public:
   // Called from UI thread from the owner of this object.
-  MidiHost(int renderer_process_id, midi::MidiManager* midi_manager);
+  MidiHost(int renderer_process_id, midi::MidiService* midi_service);
 
   // BrowserMessageFilter implementation.
   void OnChannelClosing() override;
@@ -80,12 +80,9 @@ class CONTENT_EXPORT MidiHost : public BrowserMessageFilter,
   // Represents if a session is requested to start.
   bool is_session_requested_;
 
-  // |midi_manager_| talks to the platform-specific MIDI APIs.
-  // It can be NULL if the platform (or our current implementation)
-  // does not support MIDI.  If not supported then a call to
-  // OnRequestAccess() will always refuse access and a call to
-  // OnSendData() will do nothing.
-  midi::MidiManager* midi_manager_;
+  // |midi_service_| manages a MidiManager instance that talks to
+  // platform-specific MIDI APIs.  It can be nullptr after detached.
+  midi::MidiService* midi_service_;
 
   // Buffers where data sent from each MIDI input port is stored.
   ScopedVector<midi::MidiMessageQueue> received_messages_queues_;

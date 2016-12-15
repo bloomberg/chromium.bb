@@ -1074,7 +1074,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       browser_context->GetResourceContext()->GetMediaDeviceIDSalt());
   AddFilter(audio_renderer_host_.get());
   AddFilter(
-      new MidiHost(GetID(), BrowserMainLoop::GetInstance()->midi_manager()));
+      new MidiHost(GetID(), BrowserMainLoop::GetInstance()->midi_service()));
   AddFilter(new AppCacheDispatcherHost(
       storage_partition_impl_->GetAppCacheService(), GetID()));
   AddFilter(new ClipboardMessageFilter(blob_storage_context));

@@ -28,6 +28,7 @@ namespace midi {
 // A MidiManagerClient registers with the MidiManager to receive MIDI data.
 // See MidiManager::RequestAccess() and MidiManager::ReleaseAccess()
 // for details.
+// TODO(toyoshim): Consider to have a MidiServiceClient interface.
 class MIDI_EXPORT MidiManagerClient {
  public:
   virtual ~MidiManagerClient() {}

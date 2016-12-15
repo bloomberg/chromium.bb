@@ -8,12 +8,14 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "content/common/media/midi_messages.h"
 #include "content/public/test/test_browser_thread.h"
 #include "media/midi/midi_manager.h"
+#include "media/midi/midi_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -60,9 +62,8 @@ class FakeMidiManager : public midi::MidiManager {
 
 class MidiHostForTesting : public MidiHost {
  public:
-  MidiHostForTesting(int renderer_process_id,
-                     midi::MidiManager* midi_manager)
-      : MidiHost(renderer_process_id, midi_manager) {}
+  MidiHostForTesting(int renderer_process_id, midi::MidiService* midi_service)
+      : MidiHost(renderer_process_id, midi_service) {}
 
  private:
   ~MidiHostForTesting() override {}
@@ -78,11 +79,14 @@ class MidiHostTest : public testing::Test {
  public:
   MidiHostTest()
       : io_browser_thread_(BrowserThread::IO, &message_loop_),
-        host_(new MidiHostForTesting(kRenderProcessId, &manager_)),
         data_(kNoteOn, kNoteOn + arraysize(kNoteOn)),
-        port_id_(0) {}
+        port_id_(0) {
+    manager_ = new FakeMidiManager;
+    service_.reset(new midi::MidiService(base::WrapUnique(manager_)));
+    host_ = new MidiHostForTesting(kRenderProcessId, service_.get());
+  }
   ~MidiHostTest() override {
-    manager_.Shutdown();
+    service_->Shutdown();
     RunLoopUntilIdle();
   }
 
@@ -104,15 +108,13 @@ class MidiHostTest : public testing::Test {
     host_->OnMessageReceived(*message.get());
   }
 
-  size_t GetEventSize() const {
-    return manager_.events_.size();
-  }
+  size_t GetEventSize() const { return manager_->events_.size(); }
 
   void CheckSendEventAt(size_t at, uint32_t port) {
-    EXPECT_EQ(DISPATCH_SEND_MIDI_DATA, manager_.events_[at].type);
-    EXPECT_EQ(port, manager_.events_[at].port_index);
-    EXPECT_EQ(data_, manager_.events_[at].data);
-    EXPECT_EQ(0.0, manager_.events_[at].timestamp);
+    EXPECT_EQ(DISPATCH_SEND_MIDI_DATA, manager_->events_[at].type);
+    EXPECT_EQ(port, manager_->events_[at].port_index);
+    EXPECT_EQ(data_, manager_->events_[at].data);
+    EXPECT_EQ(0.0, manager_->events_[at].timestamp);
   }
 
   void RunLoopUntilIdle() {
@@ -124,10 +126,11 @@ class MidiHostTest : public testing::Test {
   base::MessageLoop message_loop_;
   TestBrowserThread io_browser_thread_;
 
-  FakeMidiManager manager_;
-  scoped_refptr<MidiHostForTesting> host_;
   std::vector<uint8_t> data_;
   int32_t port_id_;
+  FakeMidiManager* manager_;  // Raw pointer for testing, owned by |service_|.
+  std::unique_ptr<midi::MidiService> service_;
+  scoped_refptr<MidiHostForTesting> host_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiHostTest);
 };
