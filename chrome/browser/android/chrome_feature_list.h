@@ -14,6 +14,7 @@ namespace android {
 
 // Alphabetical:
 extern const base::Feature kAndroidPayIntegrationV1;
+extern const base::Feature kAndroidPayIntegrationV2;
 extern const base::Feature kCCTExternalLinkHandling;
 extern const base::Feature kCCTPostMessageAPI;
 extern const base::Feature kChromeHomeFeature;

@@ -1960,6 +1960,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_ANDROID_PAY_INTEGRATION_V1_NAME,
      IDS_FLAGS_ENABLE_ANDROID_PAY_INTEGRATION_V1_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kAndroidPayIntegrationV1)},
+    {"enable-android-pay-integration-v2",
+     IDS_FLAGS_ENABLE_ANDROID_PAY_INTEGRATION_V2_NAME,
+     IDS_FLAGS_ENABLE_ANDROID_PAY_INTEGRATION_V2_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kAndroidPayIntegrationV2)},
 #endif  // OS_ANDROID
 #if defined(OS_CHROMEOS)
     {"disable-eol-notification", IDS_FLAGS_EOL_NOTIFICATION_NAME,
