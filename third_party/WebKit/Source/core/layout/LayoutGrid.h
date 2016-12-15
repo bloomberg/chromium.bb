@@ -131,7 +131,8 @@ class LayoutGrid final : public LayoutBlock {
       const Vector<size_t>& flexibleSizedTracksIndex,
       double flexFraction,
       Vector<LayoutUnit>& increments,
-      LayoutUnit& totalGrowth) const;
+      LayoutUnit& totalGrowth,
+      const GridSizingData&) const;
   LayoutUnit computeUsedBreadthOfMinLength(const GridTrackSize&,
                                            LayoutUnit maxBreadth) const;
   LayoutUnit computeUsedBreadthOfMaxLength(const GridTrackSize&,
@@ -223,16 +224,20 @@ class LayoutGrid final : public LayoutBlock {
       double flexFactorSum,
       LayoutUnit& leftOverSpace,
       const Vector<size_t, 8>& flexibleTracksIndexes,
+      const GridSizingData&,
       std::unique_ptr<TrackIndexSet> tracksToTreatAsInflexible = nullptr) const;
   double findFlexFactorUnitSize(const Vector<GridTrack>&,
                                 const GridSpan&,
                                 GridTrackSizingDirection,
-                                LayoutUnit leftOverSpace) const;
+                                LayoutUnit leftOverSpace,
+                                const GridSizingData&) const;
 
-  const GridTrackSize& rawGridTrackSize(GridTrackSizingDirection, size_t) const;
+  const GridTrackSize& rawGridTrackSize(GridTrackSizingDirection,
+                                        size_t,
+                                        const GridSizingData&) const;
   GridTrackSize gridTrackSize(GridTrackSizingDirection,
                               size_t,
-                              SizingOperation = TrackSizing) const;
+                              const GridSizingData&) const;
 
   bool updateOverrideContainingBlockContentSizeForChild(
       LayoutBox&,
@@ -269,7 +274,7 @@ class LayoutGrid final : public LayoutBlock {
       GridTrackSizingDirection,
       const GridSizingData&) const;
   LayoutUnit assumedRowsSizeForOrthogonalChild(const LayoutBox&,
-                                               SizingOperation) const;
+                                               const GridSizingData&) const;
 
   void applyStretchAlignmentToTracksIfNeeded(GridTrackSizingDirection,
                                              GridSizingData&);
@@ -322,7 +327,8 @@ class LayoutGrid final : public LayoutBlock {
 
   LayoutUnit gridGapForDirection(GridTrackSizingDirection,
                                  SizingOperation) const;
-  LayoutUnit guttersSize(GridTrackSizingDirection,
+  LayoutUnit guttersSize(const Grid&,
+                         GridTrackSizingDirection,
                          size_t startLine,
                          size_t span,
                          SizingOperation) const;
@@ -330,7 +336,7 @@ class LayoutGrid final : public LayoutBlock {
   size_t gridItemSpan(const LayoutBox&, GridTrackSizingDirection);
   bool spanningItemCrossesFlexibleSizedTracks(const GridSpan&,
                                               GridTrackSizingDirection,
-                                              SizingOperation) const;
+                                              const GridSizingData&) const;
 
   bool isOrthogonalChild(const LayoutBox&) const;
   GridTrackSizingDirection flowAwareDirectionForChild(
