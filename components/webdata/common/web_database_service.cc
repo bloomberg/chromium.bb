@@ -94,8 +94,8 @@ void WebDatabaseService::ScheduleDBTask(
     const tracked_objects::Location& from_here,
     const WriteTask& task) {
   DCHECK(web_db_backend_.get());
-  std::unique_ptr<WebDataRequest> request(
-      new WebDataRequest(NULL, web_db_backend_->request_manager().get()));
+  std::unique_ptr<WebDataRequest> request =
+      web_db_backend_->request_manager()->NewRequest(nullptr);
   db_thread_->PostTask(
       from_here, Bind(&WebDatabaseBackend::DBWriteTaskWrapper, web_db_backend_,
                       task, base::Passed(&request)));
@@ -107,8 +107,8 @@ WebDataServiceBase::Handle WebDatabaseService::ScheduleDBTaskWithResult(
     WebDataServiceConsumer* consumer) {
   DCHECK(consumer);
   DCHECK(web_db_backend_.get());
-  std::unique_ptr<WebDataRequest> request(
-      new WebDataRequest(consumer, web_db_backend_->request_manager().get()));
+  std::unique_ptr<WebDataRequest> request =
+      web_db_backend_->request_manager()->NewRequest(consumer);
   WebDataServiceBase::Handle handle = request->GetHandle();
   db_thread_->PostTask(
       from_here, Bind(&WebDatabaseBackend::DBReadTaskWrapper, web_db_backend_,

@@ -26,19 +26,33 @@ class WebDataRequestManager;
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// Webdata requests
+// WebData requests
 //
 // Every request is processed using a request object. The object contains
 // both the request parameters and the results.
 //////////////////////////////////////////////////////////////////////////////
 class WebDataRequest {
  public:
-  WebDataRequest(WebDataServiceConsumer* consumer,
-                 WebDataRequestManager* manager);
-
   virtual ~WebDataRequest();
 
+  // Returns the identifier for this request.
   WebDataServiceBase::Handle GetHandle() const;
+
+  // Returns |true| if the request is active and |false| if the request has been
+  // cancelled or has already completed.
+  bool IsActive() const;
+
+ private:
+  // For access to the web request mutable state under the manager's lock.
+  friend class WebDataRequestManager;
+
+  // Private constructor called for WebDataRequestManager::NewRequest.
+  WebDataRequest(WebDataRequestManager* manager,
+                 WebDataServiceConsumer* consumer);
+
+  // Internal debugging helper to assert that the request is active and that the
+  // manager's lock is held by the current thread.
+  void AssertThreadSafe() const;
 
   // Retrieves the |consumer_| set in the constructor.
   WebDataServiceConsumer* GetConsumer() const;
@@ -46,50 +60,30 @@ class WebDataRequest {
   // Retrieves the original task runner of the request.
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() const;
 
-  // Returns |true| if the request was cancelled via the |Cancel()| method.
-  bool IsCancelled() const;
-
-  // This can be invoked from any thread. From this point we assume that
-  // our consumer_ reference is invalid.
-  void Cancel();
-
-  // Invoked when the request has been completed.
-  void OnComplete();
-
-  // The result is owned by the request.
-  void SetResult(std::unique_ptr<WDTypedResult> r);
-
-  // Transfers ownership pof result to caller. Should only be called once per
-  // result.
-  std::unique_ptr<WDTypedResult> GetResult();
-
- private:
-  // Used to notify manager if request is cancelled. Uses a raw ptr instead of
-  // a ref_ptr so that it can be set to NULL when a request is cancelled.
-  WebDataRequestManager* manager_;
+  // Marks the current request as inactive, either due to cancellation or
+  // completion.
+  void MarkAsInactive();
 
   // Tracks task runner that the request originated on.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // Identifier for this request.
-  WebDataServiceBase::Handle handle_;
-
-  // A lock to protect against simultaneous cancellations of the request.
-  // Cancellation affects both the |cancelled_| flag and |consumer_|.
-  mutable base::Lock cancel_lock_;
-  bool cancelled_;
+  // Used to notify manager if request is cancelled. Uses a raw ptr instead of
+  // a ref_ptr so that it can be set to null when a request is cancelled or
+  // completed.
+  WebDataRequestManager* manager_;
 
   // The originator of the service request.
   WebDataServiceConsumer* consumer_;
 
-  std::unique_ptr<WDTypedResult> result_;
+  // Identifier for this request.
+  WebDataServiceBase::Handle handle_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDataRequest);
 };
 
 //////////////////////////////////////////////////////////////////////////////
 //
-// Webdata Request Manager
+// WebData Request Manager
 //
 // Tracks all WebDataRequests for a WebDataService.
 //
@@ -100,17 +94,19 @@ class WebDataRequestManager
  public:
   WebDataRequestManager();
 
+  // Factory function to create a new WebDataRequest.
+  std::unique_ptr<WebDataRequest> NewRequest(WebDataServiceConsumer* consumer);
+
   // Cancel any pending request.
   void CancelRequest(WebDataServiceBase::Handle h);
 
   // Invoked by the WebDataService when |request| has been completed.
-  void RequestCompleted(std::unique_ptr<WebDataRequest> request);
+  void RequestCompleted(std::unique_ptr<WebDataRequest> request,
+                        std::unique_ptr<WDTypedResult> result);
 
-  // Register the request as a pending request.
-  void RegisterRequest(WebDataRequest* request);
-
-  // Return the next request handle.
-  int GetNextRequestHandle();
+  // A debugging aid to assert that the pending_lock_ is held by the current
+  // thread.
+  void AssertLockedByCurrentThread() const;
 
  private:
   friend class base::RefCountedThreadSafe<WebDataRequestManager>;
@@ -119,7 +115,8 @@ class WebDataRequestManager
 
   // This will notify the consumer in whatever thread was used to create this
   // request.
-  void RequestCompletedOnThread(std::unique_ptr<WebDataRequest> request);
+  void RequestCompletedOnThread(std::unique_ptr<WebDataRequest> request,
+                                std::unique_ptr<WDTypedResult> result);
 
   // A lock to protect pending requests and next request handle.
   base::Lock pending_lock_;
