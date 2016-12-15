@@ -524,8 +524,9 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
   // No root scroller set, the documentElement should be the effective root
   // and the main FrameView's scroll layer should be the layer to use.
   {
-    EXPECT_EQ(mainController.rootScrollerLayer(),
-              mainFrameView()->layerForScrolling());
+    EXPECT_EQ(
+        mainController.rootScrollerLayer(),
+        mainFrameView()->layoutViewportScrollableArea()->layerForScrolling());
     EXPECT_TRUE(mainController.isViewportScrollCallback(
         mainFrame()->document()->documentElement()->getApplyScroll()));
   }
@@ -536,8 +537,9 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
     iframe->contentDocument()->setRootScroller(container, nonThrow);
     mainFrameView()->updateAllLifecyclePhases();
 
-    EXPECT_EQ(mainController.rootScrollerLayer(),
-              mainFrameView()->layerForScrolling());
+    EXPECT_EQ(
+        mainController.rootScrollerLayer(),
+        mainFrameView()->layoutViewportScrollableArea()->layerForScrolling());
     EXPECT_TRUE(mainController.isViewportScrollCallback(
         mainFrame()->document()->documentElement()->getApplyScroll()));
   }
@@ -568,7 +570,10 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
     iframe->contentDocument()->setRootScroller(nullptr, nonThrow);
     mainFrameView()->updateAllLifecyclePhases();
     EXPECT_EQ(mainController.rootScrollerLayer(),
-              iframe->contentDocument()->view()->layerForScrolling());
+              iframe->contentDocument()
+                  ->view()
+                  ->layoutViewportScrollableArea()
+                  ->layerForScrolling());
     EXPECT_FALSE(
         mainController.isViewportScrollCallback(container->getApplyScroll()));
     EXPECT_FALSE(mainController.isViewportScrollCallback(
@@ -582,8 +587,9 @@ TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
   {
     mainFrame()->document()->setRootScroller(nullptr, nonThrow);
     mainFrameView()->updateAllLifecyclePhases();
-    EXPECT_EQ(mainController.rootScrollerLayer(),
-              mainFrameView()->layerForScrolling());
+    EXPECT_EQ(
+        mainController.rootScrollerLayer(),
+        mainFrameView()->layoutViewportScrollableArea()->layerForScrolling());
     EXPECT_TRUE(mainController.isViewportScrollCallback(
         mainFrame()->document()->documentElement()->getApplyScroll()));
     EXPECT_FALSE(
@@ -729,6 +735,12 @@ TEST_F(RootScrollerTest, RemoteMainFrame) {
   m_helper.reset();
 }
 
+GraphicsLayer* scrollingLayer(LayoutView& layoutView) {
+  if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+    return layoutView.layer()->compositedLayerMapping()->scrollingLayer();
+  return layoutView.compositor()->rootContentLayer();
+}
+
 // Tests that clipping layers belonging to any compositors in the ancestor chain
 // of the global root scroller have their masking bit removed.
 TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers) {
@@ -745,10 +757,10 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers) {
   TopDocumentRootScrollerController& globalController =
       frameHost().globalRootScrollerController();
 
-  PaintLayerCompositor* mainCompositor =
-      mainFrameView()->layoutViewItem().compositor();
-  PaintLayerCompositor* childCompositor =
-      iframe->contentDocument()->view()->layoutViewItem().compositor();
+  LayoutView* mainLayoutView = mainFrameView()->layoutView();
+  LayoutView* childLayoutView = iframe->contentDocument()->layoutView();
+  PaintLayerCompositor* mainCompositor = mainLayoutView->compositor();
+  PaintLayerCompositor* childCompositor = childLayoutView->compositor();
 
   NonThrowableExceptionState nonThrow;
 
@@ -757,14 +769,14 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers) {
   // container layers should also clip.
   {
     EXPECT_TRUE(
-        mainCompositor->rootContentLayer()->platformLayer()->masksToBounds());
+        scrollingLayer(*mainLayoutView)->platformLayer()->masksToBounds());
     EXPECT_FALSE(
         mainCompositor->rootGraphicsLayer()->platformLayer()->masksToBounds());
     EXPECT_FALSE(
         mainCompositor->containerLayer()->platformLayer()->masksToBounds());
 
     EXPECT_TRUE(
-        childCompositor->rootContentLayer()->platformLayer()->masksToBounds());
+        scrollingLayer(*childLayoutView)->platformLayer()->masksToBounds());
     EXPECT_TRUE(
         childCompositor->rootGraphicsLayer()->platformLayer()->masksToBounds());
     EXPECT_TRUE(
@@ -783,14 +795,14 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers) {
     ASSERT_EQ(container, &childController.effectiveRootScroller());
 
     EXPECT_FALSE(
-        mainCompositor->rootContentLayer()->platformLayer()->masksToBounds());
+        scrollingLayer(*mainLayoutView)->platformLayer()->masksToBounds());
     EXPECT_FALSE(
         mainCompositor->rootGraphicsLayer()->platformLayer()->masksToBounds());
     EXPECT_FALSE(
         mainCompositor->containerLayer()->platformLayer()->masksToBounds());
 
     EXPECT_FALSE(
-        childCompositor->rootContentLayer()->platformLayer()->masksToBounds());
+        scrollingLayer(*childLayoutView)->platformLayer()->masksToBounds());
     EXPECT_FALSE(
         childCompositor->rootGraphicsLayer()->platformLayer()->masksToBounds());
     EXPECT_FALSE(
@@ -811,14 +823,14 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers) {
               globalController.globalRootScroller());
 
     EXPECT_FALSE(
-        mainCompositor->rootContentLayer()->platformLayer()->masksToBounds());
+        scrollingLayer(*mainLayoutView)->platformLayer()->masksToBounds());
     EXPECT_FALSE(
         mainCompositor->rootGraphicsLayer()->platformLayer()->masksToBounds());
     EXPECT_FALSE(
         mainCompositor->containerLayer()->platformLayer()->masksToBounds());
 
     EXPECT_TRUE(
-        childCompositor->rootContentLayer()->platformLayer()->masksToBounds());
+        scrollingLayer(*childLayoutView)->platformLayer()->masksToBounds());
     EXPECT_FALSE(
         childCompositor->rootGraphicsLayer()->platformLayer()->masksToBounds());
     EXPECT_FALSE(
@@ -842,14 +854,14 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers) {
               globalController.globalRootScroller());
 
     EXPECT_TRUE(
-        mainCompositor->rootContentLayer()->platformLayer()->masksToBounds());
+        scrollingLayer(*mainLayoutView)->platformLayer()->masksToBounds());
     EXPECT_FALSE(
         mainCompositor->rootGraphicsLayer()->platformLayer()->masksToBounds());
     EXPECT_FALSE(
         mainCompositor->containerLayer()->platformLayer()->masksToBounds());
 
     EXPECT_TRUE(
-        childCompositor->rootContentLayer()->platformLayer()->masksToBounds());
+        scrollingLayer(*childLayoutView)->platformLayer()->masksToBounds());
     EXPECT_TRUE(
         childCompositor->rootGraphicsLayer()->platformLayer()->masksToBounds());
     EXPECT_TRUE(
@@ -871,14 +883,14 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers) {
               globalController.globalRootScroller());
 
     EXPECT_FALSE(
-        mainCompositor->rootContentLayer()->platformLayer()->masksToBounds());
+        scrollingLayer(*mainLayoutView)->platformLayer()->masksToBounds());
     EXPECT_FALSE(
         mainCompositor->rootGraphicsLayer()->platformLayer()->masksToBounds());
     EXPECT_FALSE(
         mainCompositor->containerLayer()->platformLayer()->masksToBounds());
 
     EXPECT_TRUE(
-        childCompositor->rootContentLayer()->platformLayer()->masksToBounds());
+        scrollingLayer(*childLayoutView)->platformLayer()->masksToBounds());
     EXPECT_FALSE(
         childCompositor->rootGraphicsLayer()->platformLayer()->masksToBounds());
     EXPECT_FALSE(
@@ -896,14 +908,14 @@ TEST_F(RootScrollerTest, RemoveClippingOnCompositorLayers) {
     ASSERT_EQ(container, &childController.effectiveRootScroller());
 
     EXPECT_TRUE(
-        mainCompositor->rootContentLayer()->platformLayer()->masksToBounds());
+        scrollingLayer(*mainLayoutView)->platformLayer()->masksToBounds());
     EXPECT_FALSE(
         mainCompositor->rootGraphicsLayer()->platformLayer()->masksToBounds());
     EXPECT_FALSE(
         mainCompositor->containerLayer()->platformLayer()->masksToBounds());
 
     EXPECT_FALSE(
-        childCompositor->rootContentLayer()->platformLayer()->masksToBounds());
+        scrollingLayer(*childLayoutView)->platformLayer()->masksToBounds());
     EXPECT_FALSE(
         childCompositor->rootGraphicsLayer()->platformLayer()->masksToBounds());
     EXPECT_FALSE(
