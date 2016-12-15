@@ -109,7 +109,8 @@ bool AppShortcutLauncherItemController::IsVisible() const {
 
 void AppShortcutLauncherItemController::Launch(ash::LaunchSource source,
                                                int event_flags) {
-  launcher_controller()->LaunchApp(app_id(), source, event_flags);
+  launcher_controller()->LaunchAppWithLaunchId(app_id(), launch_id(), source,
+                                               event_flags);
 }
 
 ash::ShelfItemDelegate::PerformedAction

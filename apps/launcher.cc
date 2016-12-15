@@ -363,6 +363,19 @@ void LaunchPlatformAppWithCommandLine(Profile* profile,
                                       const base::FilePath& current_directory,
                                       extensions::AppLaunchSource source,
                                       PlayStoreStatus play_store_status) {
+  LaunchPlatformAppWithCommandLineAndLaunchId(profile, app, "", command_line,
+                                              current_directory, source,
+                                              play_store_status);
+}
+
+void LaunchPlatformAppWithCommandLineAndLaunchId(
+    Profile* profile,
+    const extensions::Extension* app,
+    const std::string& launch_id,
+    const base::CommandLine& command_line,
+    const base::FilePath& current_directory,
+    extensions::AppLaunchSource source,
+    PlayStoreStatus play_store_status) {
   // An app with "kiosk_only" should not be installed and launched
   // outside of ChromeOS kiosk mode in the first place. This is a defensive
   // check in case this scenario does occur.
@@ -374,7 +387,7 @@ void LaunchPlatformAppWithCommandLine(Profile* profile,
 #endif
     if (!in_kiosk_mode) {
       LOG(ERROR) << "App with 'kiosk_only' attribute must be run in "
-          << " ChromeOS kiosk mode.";
+                 << " ChromeOS kiosk mode.";
       NOTREACHED();
       return;
     }
@@ -397,6 +410,8 @@ void LaunchPlatformAppWithCommandLine(Profile* profile,
         base::MakeUnique<app_runtime::LaunchData>();
     if (play_store_status != PlayStoreStatus::PLAY_STORE_STATUS_UNKNOWN)
       launch_data->play_store_status = play_store_status;
+    if (!launch_id.empty())
+      launch_data->id.reset(new std::string(launch_id));
     AppRuntimeEventRouter::DispatchOnLaunchedEvent(profile, app, source,
                                                    std::move(launch_data));
     return;

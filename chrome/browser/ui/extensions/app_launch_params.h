@@ -40,6 +40,10 @@ struct AppLaunchParams {
   // The extension to load.
   std::string extension_id;
 
+  // An id that can be passed to an app when launched in order to support
+  // multiple shelf items per app.
+  std::string launch_id;
+
   // The container type to launch the application in.
   extensions::LaunchContainer container;
 

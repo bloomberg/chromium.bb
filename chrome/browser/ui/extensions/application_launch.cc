@@ -305,8 +305,8 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
   prefs->SetActiveBit(extension->id(), true);
 
   if (CanLaunchViaEvent(extension)) {
-    apps::LaunchPlatformAppWithCommandLine(
-        params.profile, extension, params.command_line,
+    apps::LaunchPlatformAppWithCommandLineAndLaunchId(
+        params.profile, extension, params.launch_id, params.command_line,
         params.current_directory, params.source, params.play_store_status);
     return NULL;
   }

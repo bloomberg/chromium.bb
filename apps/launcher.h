@@ -46,6 +46,19 @@ void LaunchPlatformAppWithCommandLine(
         extensions::api::app_runtime::PlayStoreStatus::
             PLAY_STORE_STATUS_UNKNOWN);
 
+// As above but includes |launch_id|, an id that can be passed to
+// an app when launched in order to support multiple shelf items per app.
+void LaunchPlatformAppWithCommandLineAndLaunchId(
+    Profile* profile,
+    const extensions::Extension* app,
+    const std::string& launch_id,
+    const base::CommandLine& command_line,
+    const base::FilePath& current_directory,
+    extensions::AppLaunchSource source,
+    extensions::api::app_runtime::PlayStoreStatus play_store_status =
+        extensions::api::app_runtime::PlayStoreStatus::
+            PLAY_STORE_STATUS_UNKNOWN);
+
 // Launches the platform app |app| by issuing an onLaunched event with the
 // contents of |file_path| available through the launch data.
 void LaunchPlatformAppWithPath(Profile* profile,

@@ -148,6 +148,13 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
                  ash::LaunchSource source,
                  int event_flags);
 
+  // As above but includes |launch_id|, an id that can be passed to an app when
+  // launched in order to support multiple shelf items per app.
+  void LaunchAppWithLaunchId(const std::string& app_id,
+                             const std::string& launch_id,
+                             ash::LaunchSource source,
+                             int event_flags);
+
   // If |app_id| is running, reactivates the app's most recently active window,
   // otherwise launches and activates the app.
   // Used by the app-list, and by pinned-app shelf items.

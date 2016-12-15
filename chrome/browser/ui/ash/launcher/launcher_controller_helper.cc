@@ -169,6 +169,14 @@ bool LauncherControllerHelper::IsValidIDForCurrentUser(
 void LauncherControllerHelper::LaunchApp(const std::string& app_id,
                                          ash::LaunchSource source,
                                          int event_flags) {
+  LaunchAppWithLaunchId(app_id, "", source, event_flags);
+}
+
+void LauncherControllerHelper::LaunchAppWithLaunchId(
+    const std::string& app_id,
+    const std::string& launch_id,
+    ash::LaunchSource source,
+    int event_flags) {
   const ArcAppListPrefs* arc_prefs = GetArcAppListPrefs();
   if (arc_prefs && arc_prefs->IsRegistered(app_id)) {
     arc::LaunchApp(profile_, app_id, event_flags);
@@ -204,6 +212,7 @@ void LauncherControllerHelper::LaunchApp(const std::string& app_id,
     params.override_url = net::AppendQueryParameter(
         extension_url, extension_urls::kWebstoreSourceField, source_value);
   }
+  params.launch_id = launch_id;
 
   OpenApplication(params);
 }

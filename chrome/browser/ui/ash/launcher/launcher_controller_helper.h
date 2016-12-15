@@ -45,6 +45,11 @@ class LauncherControllerHelper : public ExtensionEnableFlowDelegate {
                  ash::LaunchSource source,
                  int event_flags);
 
+  void LaunchAppWithLaunchId(const std::string& app_id,
+                             const std::string& launch_id,
+                             ash::LaunchSource source,
+                             int event_flags);
+
   virtual ArcAppListPrefs* GetArcAppListPrefs() const;
 
   Profile* profile() { return profile_; }
