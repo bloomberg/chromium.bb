@@ -1039,14 +1039,6 @@ void SpellChecker::cancelCheck() {
   m_spellCheckRequester->cancelCheck();
 }
 
-void SpellChecker::requestTextChecking(const Element& element) {
-  if (!element.isSpellCheckingEnabled())
-    return;
-  const EphemeralRange rangeToCheck = EphemeralRange::rangeOfContents(element);
-  m_spellCheckRequester->requestCheckingFor(
-      SpellCheckRequest::create(rangeToCheck));
-}
-
 DEFINE_TRACE(SpellChecker) {
   visitor->trace(m_frame);
   visitor->trace(m_spellCheckRequester);

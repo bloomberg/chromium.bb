@@ -83,7 +83,6 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   void updateMarkersForWordsAffectedByEditing(
       bool onlyHandleWordsContainingSelection);
   void cancelCheck();
-  void requestTextChecking(const Element&);
 
   // Exposed for testing only
   SpellCheckRequester& spellCheckRequester() const {
