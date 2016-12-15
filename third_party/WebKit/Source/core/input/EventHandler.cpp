@@ -361,9 +361,6 @@ void EventHandler::updateCursor() {
   // cursor update could be occluded by a different frame.
   ASSERT(m_frame == m_frame->localFrameRoot());
 
-  if (m_mouseEventManager->isMousePositionUnknown())
-    return;
-
   FrameView* view = m_frame->view();
   if (!view || !view->shouldSetCursor())
     return;
@@ -1903,7 +1900,8 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(
 
 void EventHandler::scheduleHoverStateUpdate() {
   // TODO(https://crbug.com/668758): Use a normal BeginFrame update for this.
-  if (!m_hoverTimer.isActive())
+  if (!m_hoverTimer.isActive() &&
+      !m_mouseEventManager->isMousePositionUnknown())
     m_hoverTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 

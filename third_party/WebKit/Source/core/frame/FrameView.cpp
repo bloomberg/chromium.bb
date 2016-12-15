@@ -1618,8 +1618,8 @@ IntPoint FrameView::lastKnownMousePosition() const {
 bool FrameView::shouldSetCursor() const {
   Page* page = frame().page();
   return page && page->visibilityState() != PageVisibilityStateHidden &&
-         page->focusController().isActive() &&
-         page->settings().deviceSupportsMouse();
+         !m_frame->eventHandler().isMousePositionUnknown() &&
+         page->focusController().isActive();
 }
 
 void FrameView::scrollContentsIfNeededRecursive() {
@@ -3580,7 +3580,7 @@ AXObjectCache* FrameView::axObjectCache() const {
 
 void FrameView::setCursor(const Cursor& cursor) {
   Page* page = frame().page();
-  if (!page || !page->settings().deviceSupportsMouse())
+  if (!page || m_frame->eventHandler().isMousePositionUnknown())
     return;
   page->chromeClient().setCursor(cursor, m_frame);
 }

@@ -934,7 +934,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setPrimaryHoverType(
       static_cast<blink::HoverType>(prefs.primary_hover_type));
   settings->setDeviceSupportsTouch(prefs.device_supports_touch);
-  settings->setDeviceSupportsMouse(prefs.device_supports_mouse);
   settings->setEnableTouchAdjustment(prefs.touch_adjustment_enabled);
 
   WebRuntimeFeatures::enableColorCorrectRendering(

@@ -335,7 +335,7 @@ bool Page::isPageVisible() const {
 }
 
 bool Page::isCursorVisible() const {
-  return m_isCursorVisible && settings().deviceSupportsMouse();
+  return m_isCursorVisible;
 }
 
 void Page::settingsChanged(SettingsDelegate::ChangeType changeType) {

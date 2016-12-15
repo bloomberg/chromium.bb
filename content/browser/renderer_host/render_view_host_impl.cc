@@ -466,8 +466,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
       ui::GetPrimaryHoverType(prefs.available_hover_types);
 
 #if defined(OS_ANDROID)
-  prefs.device_supports_mouse = false;
-
   prefs.video_fullscreen_orientation_lock_enabled =
       base::FeatureList::IsEnabled(media::kVideoFullscreenOrientationLock) &&
       ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_PHONE;

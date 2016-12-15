@@ -161,8 +161,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool touch_event_feature_detection_enabled;
   // TODO(mustaq): Nuke when the new API is ready
   bool device_supports_touch;
-  // TODO(mustaq): Nuke when the new API is ready
-  bool device_supports_mouse;
   bool touch_adjustment_enabled;
   int pointer_events_max_touch_points;
   int available_pointer_types;

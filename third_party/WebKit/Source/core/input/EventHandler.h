@@ -107,7 +107,10 @@ class CORE_EXPORT EventHandler final
       const LayoutSize& padding = LayoutSize());
 
   bool mousePressed() const { return m_mouseEventManager->mousePressed(); }
-
+  bool isMousePositionUnknown() const {
+    return m_mouseEventManager->isMousePositionUnknown();
+  }
+  void clearMouseEventManager() const { m_mouseEventManager->clear(); }
   void setCapturingMouseEventsNode(
       Node*);  // A caller is responsible for resetting capturing node to 0.
 

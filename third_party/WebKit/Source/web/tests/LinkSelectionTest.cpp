@@ -127,11 +127,8 @@ class LinkSelectionTest : public LinkSelectionTestBase {
         "foobar</a>"
         "<div id='page_text'>Lorem ipsum dolor sit amet</div>";
 
-    // We need to set deviceSupportsMouse setting to true and page's focus
-    // controller to active so that FrameView can set the mouse cursor.
-    m_webView = m_helper.initialize(
-        false, &m_testFrameClient, nullptr, nullptr,
-        [](WebSettings* settings) { settings->setDeviceSupportsMouse(true); });
+    m_webView = m_helper.initialize(false, &m_testFrameClient, nullptr, nullptr,
+                                    [](WebSettings* settings) {});
     m_mainFrame = m_webView->mainFrameImpl();
     FrameTestHelpers::loadHTMLString(
         m_mainFrame, kHTMLString, URLTestHelpers::toKURL("http://foobar.com"));

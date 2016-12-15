@@ -293,8 +293,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     private SelectPopup mSelectPopup;
     private long mNativeSelectPopupSourceFrame;
 
-    private Runnable mFakeMouseMoveRunnable = null;
-
     // Only valid when focused on a text / password field.
     private ImeAdapter mImeAdapter;
 
@@ -989,7 +987,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
         MotionEvent offsetEvent = createOffsetMotionEvent(event);
         try {
-            mContainerView.removeCallbacks(mFakeMouseMoveRunnable);
             if (mNativeContentViewCore == 0) return false;
 
             int eventAction = event.getActionMasked();
@@ -1578,7 +1575,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
                 if (!mEnableTouchHover.booleanValue()) return false;
             }
 
-            mContainerView.removeCallbacks(mFakeMouseMoveRunnable);
             if (mNativeContentViewCore != 0) {
                 nativeSendMouseEvent(mNativeContentViewCore, event.getEventTime(), eventAction,
                         offset.getX(), offset.getY(), event.getPointerId(0), event.getPressure(0),
@@ -1608,20 +1604,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
                             event.getAxisValue(MotionEvent.AXIS_HSCROLL),
                             event.getAxisValue(MotionEvent.AXIS_VSCROLL),
                             mRenderCoordinates.getWheelScrollFactor());
-
-                    // TODO(mustaq): Delete mFakeMouseMoveRunnable, see crbug.com/492738
-                    mContainerView.removeCallbacks(mFakeMouseMoveRunnable);
-                    // Send a delayed onMouseMove event so that we end
-                    // up hovering over the right position after the scroll.
-                    final MotionEvent eventFakeMouseMove = MotionEvent.obtain(event);
-                    mFakeMouseMoveRunnable = new Runnable() {
-                        @Override
-                        public void run() {
-                            onHoverEvent(eventFakeMouseMove);
-                            eventFakeMouseMove.recycle();
-                        }
-                    };
-                    mContainerView.postDelayed(mFakeMouseMoveRunnable, 250);
                     return true;
                 case MotionEvent.ACTION_BUTTON_PRESS:
                 case MotionEvent.ACTION_BUTTON_RELEASE:

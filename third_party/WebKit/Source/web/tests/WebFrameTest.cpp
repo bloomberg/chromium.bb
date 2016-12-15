@@ -10751,9 +10751,8 @@ TEST_F(WebFrameTest, HidingScrollbarsOnScrollableAreaDisablesScrollbars) {
 // elements below unless the scrollbar is faded out.
 TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
   FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initialize(
-      true, nullptr, nullptr, nullptr,
-      [](WebSettings* settings) { settings->setDeviceSupportsMouse(true); });
+  webViewHelper.initialize(true, nullptr, nullptr, nullptr,
+                           [](WebSettings* settings) {});
   webViewHelper.resize(WebSize(20, 20));
   WebViewImpl* webView = webViewHelper.webView();
 

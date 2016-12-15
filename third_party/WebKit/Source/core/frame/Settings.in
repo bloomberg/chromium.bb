@@ -120,7 +120,6 @@ shouldRespectImageOrientation initial=false
 # or uses it (i.e. Chromebook Pixel users generally don't want to give up
 # screen real estate just because they happen to have a touchscreen).
 deviceSupportsTouch initial=false
-deviceSupportsMouse initial=true
 
 # This value indicates the number of simultaneous multi-touch points supported
 # by the currently connected screen/digitizer that supports the most points.

@@ -283,8 +283,7 @@ void MouseEventManager::fakeMouseMoveEventTimerFired(TimerBase* timer) {
   DCHECK(timer == &m_fakeMouseMoveEventTimer);
   DCHECK(!m_mousePressed);
 
-  Settings* settings = m_frame->settings();
-  if (settings && !settings->deviceSupportsMouse())
+  if (m_isMousePositionUnknown)
     return;
 
   FrameView* view = m_frame->view();
@@ -528,10 +527,6 @@ void MouseEventManager::dispatchFakeMouseMoveEventSoon() {
     return;
 
   if (m_isMousePositionUnknown)
-    return;
-
-  Settings* settings = m_frame->settings();
-  if (settings && !settings->deviceSupportsMouse())
     return;
 
   // Reschedule the timer, to prevent dispatching mouse move events

@@ -8,6 +8,7 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
+#include "core/input/EventHandler.h"
 #include "core/page/Page.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -90,7 +91,6 @@ DevToolsEmulator::DevToolsEmulator(WebViewImpl* webViewImpl)
       m_touchEventEmulationEnabled(false),
       m_doubleTapToZoomEnabled(false),
       m_originalTouchEventFeatureDetectionEnabled(false),
-      m_originalDeviceSupportsMouse(false),
       m_originalDeviceSupportsTouch(false),
       m_originalMaxTouchPoints(0),
       m_embedderScriptEnabled(webViewImpl->page()->settings().scriptEnabled()),
@@ -448,8 +448,6 @@ void DevToolsEmulator::setTouchEventEmulationEnabled(bool enabled) {
   if (!m_touchEventEmulationEnabled) {
     m_originalTouchEventFeatureDetectionEnabled =
         RuntimeEnabledFeatures::touchEventFeatureDetectionEnabled();
-    m_originalDeviceSupportsMouse =
-        m_webViewImpl->page()->settings().deviceSupportsMouse();
     m_originalDeviceSupportsTouch =
         m_webViewImpl->page()->settings().deviceSupportsTouch();
     m_originalMaxTouchPoints =
@@ -458,8 +456,12 @@ void DevToolsEmulator::setTouchEventEmulationEnabled(bool enabled) {
   RuntimeEnabledFeatures::setTouchEventFeatureDetectionEnabled(
       enabled ? true : m_originalTouchEventFeatureDetectionEnabled);
   if (!m_originalDeviceSupportsTouch) {
-    m_webViewImpl->page()->settings().setDeviceSupportsMouse(
-        enabled ? false : m_originalDeviceSupportsMouse);
+    if (enabled && m_webViewImpl->mainFrameImpl()) {
+      m_webViewImpl->mainFrameImpl()
+          ->frame()
+          ->eventHandler()
+          .clearMouseEventManager();
+    }
     m_webViewImpl->page()->settings().setDeviceSupportsTouch(
         enabled ? true : m_originalDeviceSupportsTouch);
     // Currently emulation does not provide multiple touch points.

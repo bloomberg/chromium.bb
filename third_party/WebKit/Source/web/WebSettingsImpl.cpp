@@ -143,10 +143,6 @@ void WebSettingsImpl::setDeviceSupportsTouch(bool deviceSupportsTouch) {
   m_settings->setDeviceSupportsTouch(deviceSupportsTouch);
 }
 
-void WebSettingsImpl::setDeviceSupportsMouse(bool deviceSupportsMouse) {
-  m_settings->setDeviceSupportsMouse(deviceSupportsMouse);
-}
-
 void WebSettingsImpl::setAutoZoomFocusedNodeToLegibleScale(
     bool autoZoomFocusedNodeToLegibleScale) {
   m_autoZoomFocusedNodeToLegibleScale = autoZoomFocusedNodeToLegibleScale;

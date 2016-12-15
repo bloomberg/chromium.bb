@@ -229,8 +229,6 @@ WebViewImpl* WebViewHelper::initializeWithOpener(
   m_webView->settings()->setLoadsImagesAutomatically(true);
   if (updateSettingsFunc)
     updateSettingsFunc(m_webView->settings());
-  else
-    m_webView->settings()->setDeviceSupportsMouse(false);
   if (m_settingOverrider)
     m_settingOverrider->overrideSettings(m_webView->settings());
   m_webView->setDeviceScaleFactor(
