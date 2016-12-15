@@ -598,8 +598,6 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 
 	if (window->shsurf && window->name)
 		xwayland_interface->set_title(window->shsurf, window->name);
-	if (window->frame && window->name)
-		frame_set_title(window->frame, window->name);
 	if (window->shsurf && window->pid > 0)
 		xwayland_interface->set_pid(window->shsurf, window->pid);
 }
@@ -1136,6 +1134,7 @@ weston_wm_window_draw_decoration(void *data)
 		if (wm->focus_window == window)
 			flags |= THEME_FRAME_ACTIVE;
 
+		frame_set_title(window->frame, window->name);
 		frame_repaint(window->frame, cr);
 	} else {
 		cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
