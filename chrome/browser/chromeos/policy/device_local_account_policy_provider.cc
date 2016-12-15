@@ -159,10 +159,14 @@ void DeviceLocalAccountPolicyProvider::UpdateFromBroker() {
     bundle->CopyFrom(policies());
   }
 
+  PolicyMap& chrome_policy =
+      bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
+  // Apply the defaults for policies that haven't been configured by the
+  // administrator given that this is an enterprise user.
+  SetEnterpriseUsersDefaults(&chrome_policy);
+
   // Apply overrides.
   if (chrome_policy_overrides_) {
-    PolicyMap& chrome_policy =
-        bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
     for (const auto& policy_override : *chrome_policy_overrides_) {
       const PolicyMap::Entry& entry = policy_override.second;
       chrome_policy.Set(policy_override.first, entry.level, entry.scope,

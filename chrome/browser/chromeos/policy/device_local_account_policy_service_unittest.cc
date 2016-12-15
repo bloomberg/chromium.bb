@@ -824,6 +824,9 @@ void DeviceLocalAccountPolicyProviderTest::SetUp() {
       key::kFullscreenAllowed, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
       POLICY_SOURCE_PUBLIC_SESSION_OVERRIDE,
       base::MakeUnique<base::FundamentalValue>(false), nullptr);
+
+  // Policy defaults (for policies not set by admin).
+  SetEnterpriseUsersDefaults(&expected_policy_map_);
 }
 
 void DeviceLocalAccountPolicyProviderTest::TearDown() {
@@ -869,6 +872,16 @@ TEST_F(DeviceLocalAccountPolicyProviderTest, Policy) {
   expected_policy_bundle.Get(PolicyNamespace(
       POLICY_DOMAIN_CHROME, std::string())).CopyFrom(expected_policy_map_);
   EXPECT_TRUE(expected_policy_bundle.Equals(provider_->policies()));
+
+  // Make sure the Dinosaur game is disabled by default. This ensures the
+  // default policies have been set in Public Sessions.
+  bool allow_dinosaur_game = true;
+  auto policy_value =
+      provider_->policies()
+          .Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+          .GetValue(key::kAllowDinosaurEasterEgg);
+  EXPECT_TRUE(policy_value && policy_value->GetAsBoolean(&allow_dinosaur_game));
+  EXPECT_FALSE(allow_dinosaur_game);
 
   // Policy change should be reported.
   EXPECT_CALL(provider_observer_, OnUpdatePolicy(provider_.get()))
