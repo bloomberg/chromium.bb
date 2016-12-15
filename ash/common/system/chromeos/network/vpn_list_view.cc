@@ -113,20 +113,10 @@ class VPNListProviderEntryMd : public views::ButtonListener,
                          const std::string& name,
                          int button_accessible_name_id)
       : parent_(parent) {
-    // TODO(varkha): Make this a sticky section header.
+    TrayPopupUtils::ConfigureAsStickyHeader(this);
     SetLayoutManager(new views::FillLayout);
     TriView* tri_view = TrayPopupUtils::CreateSubHeaderRowView();
     AddChildView(tri_view);
-
-    // Sets up the border. When the provider header is the first item in the
-    // list (i.e. when the list was empty before adding the provider row) there
-    // is already |kMenuSeparatorVerticalPadding| padding at the top of the
-    //  scroll contents, so only add that padding when the list was not |empty|.
-    // TODO(varkha): Delete this special handling when we allow the header to be
-    // sticky and just use ConfigureAsStickyHeader() instead.
-    tri_view->SetBorder(
-        views::CreateEmptyBorder(top_item ? 0 : kMenuSeparatorVerticalPadding,
-                                 0, kMenuSeparatorVerticalPadding, 0));
 
     views::Label* label = TrayPopupUtils::CreateDefaultLabel();
     TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SUB_HEADER);
@@ -401,12 +391,6 @@ void VPNListView::Update() {
       ->network_state_handler()
       ->GetVisibleNetworkListByType(chromeos::NetworkTypePattern::VPN(),
                                     &networks);
-
-  if (!networks.empty() && IsConnectedOrConnecting(networks.front())) {
-    // If there is a connected or connecting network, show that network first.
-    AddNetwork(networks.front());
-    networks.erase(networks.begin());
-  }
 
   // Show all VPN providers and all networks that are currently disconnected.
   AddProvidersAndNetworks(networks);

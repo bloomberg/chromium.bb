@@ -100,6 +100,26 @@ class ScrollContentsView : public views::View,
     PositionHeaderRows();
   }
 
+  void ReorderChildLayers(ui::Layer* parent_layer) override {
+    views::View::ReorderChildLayers(parent_layer);
+    ui::Layer* topmost_layer = TopmostLayer(this, parent_layer);
+    if (!topmost_layer)
+      return;
+
+    // Keep the sticky headers with layers above the rest of the children's
+    // layers. Make sure to avoid changing the stacking order of the layers that
+    // are children of |parent_layer| but do not belong to the same parent view.
+    // Note: this assumes that all views that have id=VIEW_ID_STICKY_HEADER have
+    // a layer.
+    for (int i = child_count() - 1; i >= 0; --i) {
+      View* child = child_at(i);
+      if (child->id() == VIEW_ID_STICKY_HEADER &&
+          child->layer() != topmost_layer) {
+        parent_layer->StackAbove(child->layer(), topmost_layer);
+      }
+    }
+  }
+
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override {
     if (!details.is_add && details.parent == this) {
@@ -169,24 +189,31 @@ class ScrollContentsView : public views::View,
     Header* previous_header = nullptr;
     for (auto& header : base::Reversed(headers_)) {
       views::View* header_view = header.view;
-      header.draw_separator_below = false;
+      bool draw_separator_below = false;
       if (header.natural_offset >= scroll_offset) {
         previous_header = &header;
         header_view->SetY(header.natural_offset);
-        continue;
-      }
-      if (previous_header &&
-          previous_header->view->y() <= scroll_offset + header_view->height()) {
-        // Lower header displacing the header above.
-        header.draw_separator_below = true;
-        header_view->SetY(previous_header->view->y() - header_view->height());
       } else {
-        // A header becomes sticky.
-        header_view->SetY(scroll_offset);
-        header_view->Layout();
-        header_view->SchedulePaint();
+        if (previous_header &&
+            previous_header->view->y() <=
+                scroll_offset + header_view->height()) {
+          // Lower header displacing the header above.
+          draw_separator_below = true;
+          header_view->SetY(previous_header->view->y() - header_view->height());
+        } else {
+          // A header becomes sticky.
+          header_view->SetY(scroll_offset);
+          header_view->Layout();
+          header_view->SchedulePaint();
+        }
       }
-      break;
+      if (header.draw_separator_below != draw_separator_below) {
+        header.draw_separator_below = draw_separator_below;
+        TrayPopupUtils::ShowStickyHeaderSeparator(header_view,
+                                                  draw_separator_below);
+      }
+      if (header.natural_offset < scroll_offset)
+        break;
     }
   }
 
@@ -197,21 +224,10 @@ class ScrollContentsView : public views::View,
   bool PaintDelineation(const Header& header, const ui::PaintContext& context) {
     const View* view = header.view;
 
-    // If the header is where it normally belongs, draw nothing.
-    if (view->y() == header.natural_offset)
+    // If the header is where it normally belongs or If the header is pushed by
+    // a header directly below it, draw nothing.
+    if (view->y() == header.natural_offset || header.draw_separator_below)
       return false;
-
-    // If the header is pushed by a header directly below it, draw a separator.
-    if (header.draw_separator_below) {
-      // TODO(estade): look better at 1.5x scale.
-      ui::PaintRecorder recorder(context, size());
-      gfx::Canvas* canvas = recorder.canvas();
-      gfx::Rect separator = view->bounds();
-      separator.set_y(separator.bottom() - kSeparatorWidth);
-      separator.set_height(kSeparatorWidth);
-      canvas->FillRect(separator, kSeparatorColor);
-      return false;
-    }
 
     // Otherwise, draw a shadow below.
     DrawShadow(context,
@@ -232,6 +248,25 @@ class ScrollContentsView : public views::View,
     paint.setAntiAlias(true);
     canvas->ClipRect(shadowed_area, SkClipOp::kDifference);
     canvas->DrawRect(shadowed_area, paint);
+  }
+
+  // Recursively iterates through children to return the child layer that is
+  // stacked at the top. Only considers layers that are direct |parent_layer|'s
+  // children.
+  ui::Layer* TopmostLayer(views::View* view, ui::Layer* parent_layer) {
+    DCHECK(parent_layer);
+    // Iterate backwards through the children to find the topmost layer.
+    for (int i = view->child_count() - 1; i >= 0; --i) {
+      views::View* child = view->child_at(i);
+      ui::Layer* layer = TopmostLayer(child, parent_layer);
+      if (layer)
+        return layer;
+    }
+    if (view->layer() && view->layer() != parent_layer &&
+        view->layer()->parent() == parent_layer) {
+      return view->layer();
+    }
+    return nullptr;
   }
 
   views::BoxLayout* box_layout_;

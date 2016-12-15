@@ -114,6 +114,9 @@ class TrayPopupUtils {
   // Sets up |view| to be a sticky header in a tray detail scroll view.
   static void ConfigureAsStickyHeader(views::View* view);
 
+  // Configures a |view| to have a visible separator below.
+  static void ShowStickyHeaderSeparator(views::View* view, bool show_separator);
+
   // Configures |container_view| just like CreateDefaultRowView() would
   // configure |container| on its returned TriView. To be used when mutliple
   // targetable areas are required within a single row.

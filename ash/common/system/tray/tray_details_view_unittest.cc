@@ -4,6 +4,7 @@
 
 #include "ash/common/system/tray/tray_details_view.h"
 
+#include "ash/common/ash_view_ids.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/special_popup_row.h"
@@ -59,6 +60,8 @@ class TestDetailsView : public TrayDetailsView {
                                   IDS_ASH_STATUS_TRAY_BLUETOOTH);
     title_row()->AddViewToRowNonMd(tray_popup_header_button_, true);
   }
+
+  void CreateScrollerViews() { CreateScrollableList(); }
 
  private:
   TrayPopupHeaderButton* tray_popup_header_button_;
@@ -310,6 +313,46 @@ TEST_F(TrayDetailsViewTest, TrayPopupHeaderButtonMouseHoverFeedback) {
   generator.MoveMouseBy(1, 0);
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(button->background());
+}
+
+TEST_F(TrayDetailsViewTest, ScrollContentsTest) {
+  SystemTray* tray = GetPrimarySystemTray();
+  TestItem* test_item = new TestItem;
+  tray->AddTrayItem(test_item);
+  tray->ShowDefaultView(BUBBLE_CREATE_NEW);
+  RunAllPendingInMessageLoop();
+  tray->ShowDetailedView(test_item, 0, true, BUBBLE_USE_EXISTING);
+  RunAllPendingInMessageLoop();
+  test_item->detailed_view()->CreateScrollerViews();
+
+  test_item->detailed_view()->scroll_content()->SetPaintToLayer(true);
+  views::View* view1 = new views::View();
+  test_item->detailed_view()->scroll_content()->AddChildView(view1);
+  views::View* view2 = new views::View();
+  view2->SetPaintToLayer(true);
+  test_item->detailed_view()->scroll_content()->AddChildView(view2);
+  views::View* view3 = new views::View();
+  view3->SetPaintToLayer(true);
+  test_item->detailed_view()->scroll_content()->AddChildView(view3);
+
+  // Child layers should have same order as the child views.
+  const std::vector<ui::Layer*>& layers =
+      test_item->detailed_view()->scroll_content()->layer()->children();
+  EXPECT_EQ(2u, layers.size());
+  EXPECT_EQ(view2->layer(), layers[0]);
+  EXPECT_EQ(view3->layer(), layers[1]);
+
+  // Mark |view2| as sticky and add one more child (which will reorder layers).
+  view2->set_id(VIEW_ID_STICKY_HEADER);
+  views::View* view4 = new views::View();
+  view4->SetPaintToLayer(true);
+  test_item->detailed_view()->scroll_content()->AddChildView(view4);
+
+  // Sticky header layer should be above the last child's layer.
+  EXPECT_EQ(3u, layers.size());
+  EXPECT_EQ(view3->layer(), layers[0]);
+  EXPECT_EQ(view4->layer(), layers[1]);
+  EXPECT_EQ(view2->layer(), layers[2]);
 }
 
 }  // namespace test

@@ -287,6 +287,23 @@ void TrayPopupUtils::ConfigureAsStickyHeader(views::View* view) {
       views::Background::CreateSolidBackground(kBackgroundColor));
   view->SetBorder(
       views::CreateEmptyBorder(gfx::Insets(kMenuSeparatorVerticalPadding, 0)));
+  view->SetPaintToLayer(true);
+  view->layer()->SetFillsBoundsOpaquely(false);
+}
+
+void TrayPopupUtils::ShowStickyHeaderSeparator(views::View* view,
+                                               bool show_separator) {
+  if (show_separator) {
+    view->SetBorder(views::CreatePaddedBorder(
+        views::CreateSolidSidedBorder(0, 0, kSeparatorWidth, 0,
+                                      kHorizontalSeparatorColor),
+        gfx::Insets(kMenuSeparatorVerticalPadding, 0,
+                    kMenuSeparatorVerticalPadding - kSeparatorWidth, 0)));
+  } else {
+    view->SetBorder(views::CreateEmptyBorder(
+        gfx::Insets(kMenuSeparatorVerticalPadding, 0)));
+  }
+  view->SchedulePaint();
 }
 
 void TrayPopupUtils::ConfigureContainer(TriView::Container container,
