@@ -64,8 +64,11 @@ WelcomeWin10Handler::~WelcomeWin10Handler() {
       ->StartCheckIsDefault();
 
   if (pin_instructions_shown) {
+    // On error, call RecordPinnedResult() with |succeeded| == false.
+    base::Closure error_callback =
+        base::Bind(&RecordPinnedResult, histogram_suffix, false, false);
     shell_integration::win::GetIsPinnedToTaskbarState(
-        base::Closure(), base::Bind(&RecordPinnedResult, histogram_suffix));
+        error_callback, base::Bind(&RecordPinnedResult, histogram_suffix));
   }
 }
 
