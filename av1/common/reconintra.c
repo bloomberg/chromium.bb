@@ -79,7 +79,7 @@ static const uint8_t orders_16x16[64] = {
   40, 41, 44, 45, 56, 57, 60, 61, 42, 43, 46, 47, 58, 59, 62, 63,
 };
 
-#if CONFIG_EXT_PARTITION
+#if CONFIG_CB4X4 || CONFIG_EXT_PARTITION
 static const uint8_t orders_16x8[128] = {
   0,  2,  8,  10, 32,  34,  40,  42,  1,  3,  9,  11, 33,  35,  41,  43,
   4,  6,  12, 14, 36,  38,  44,  46,  5,  7,  13, 15, 37,  39,  45,  47,
@@ -120,7 +120,9 @@ static const uint8_t orders_8x8[256] = {
   170, 171, 174, 175, 186, 187, 190, 191, 234, 235, 238, 239, 250, 251, 254,
   255,
 };
+#endif  // CONFIG_CB4X4 || CONFIG_EXT_PARTITION
 
+#if CONFIG_EXT_PARTITION
 /* clang-format off */
 static const uint8_t *const orders[BLOCK_SIZES] = {
 #if CONFIG_CB4X4
@@ -146,12 +148,17 @@ static const uint8_t *const orders[BLOCK_SIZES] = {
 static const uint8_t *const orders[BLOCK_SIZES] = {
 #if CONFIG_CB4X4
   // 2X2,         2X4,            4X2
-  orders_16x16,   orders_16x16,   orders_16x16,
-#endif
+  orders_8x8,     orders_8x8,     orders_8x8,
+  //                              4X4
+                                  orders_8x8,
+  // 4X8,         8X4,            8X8
+  orders_8x16,    orders_16x8,    orders_16x16,
+#else
   //                              4X4
                                   orders_16x16,
   // 4X8,         8X4,            8X8
   orders_16x16,   orders_16x16,   orders_16x16,
+#endif
   // 8X16,        16X8,           16X16
   orders_16x32,   orders_32x16,   orders_32x32,
   // 16X32,       32X16,          32X32
@@ -241,6 +248,7 @@ static int av1_has_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
   const int w = AOMMAX(width >> ss_x, 1);
   const int step = tx_size_wide_unit[txsz];
 
+#if !CONFIG_CB4X4
   // TODO(bshacklett, huisu): Currently the RD loop traverses 4X8 blocks in
   // inverted N order while in the bitstream the subblocks are stored in Z
   // order. This discrepancy makes this function incorrect when considering 4X8
@@ -248,6 +256,7 @@ static int av1_has_right(BLOCK_SIZE bsize, int mi_row, int mi_col,
   // blocks. The correct solution is to change the bitstream to store these
   // blocks in inverted N order, and then update this function appropriately.
   if (bsize == BLOCK_4X8 && y == 1) return 0;
+#endif
 
   if (!right_available) return 0;
 
@@ -300,8 +309,10 @@ static int av1_has_bottom(BLOCK_SIZE bsize, int mi_row, int mi_col,
     const uint8_t *order = orders[bsize];
     int my_order, bl_order;
 
+#if !CONFIG_CB4X4
     // Handle block size 8x4 and 4x4
     if (ss_y == 0 && height < 2 && y == 0) return 1;
+#endif
 
     if (y + step < h) return 1;
 
