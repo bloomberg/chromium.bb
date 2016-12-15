@@ -89,8 +89,6 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         for property in self._properties.values():
             if property['keyword_only']:
                 property_name = property['name_for_methods']
-                if property['name_for_methods']:
-                    property_name = property['name_for_methods']
                 property_name_lower = property_name[0].lower() + property_name[1:]
 
                 # From the Blink style guide: Other data members should be prefixed by "m_". [names-data-members]
@@ -106,7 +104,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                 # If the property is independent, add the single-bit sized isInherited flag
                 # to the list of Fields as well.
                 if property['independent']:
-                    field_name_suffix_upper = property['name_for_methods'] + 'IsInherited'
+                    field_name_suffix_upper = property_name + 'IsInherited'
                     field_name_suffix_lower = property_name_lower + 'IsInherited'
                     self._fields.append(Field(
                         'inherited_flag',
