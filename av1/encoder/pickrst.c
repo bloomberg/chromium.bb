@@ -178,11 +178,11 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
                                           int dat_stride, uint8_t *src8,
                                           int src_stride, int bit_depth,
                                           int *eps, int *xqd, void *tmpbuf) {
-  int64_t *flt1 = (int64_t *)tmpbuf;
+  int64_t *srd = (int64_t *)tmpbuf;
+  int64_t *dgd = srd + RESTORATION_TILEPELS_MAX;
+  int64_t *flt1 = dgd + RESTORATION_TILEPELS_MAX;
   int64_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
   uint8_t *tmpbuf2 = (uint8_t *)(flt2 + RESTORATION_TILEPELS_MAX);
-  int64_t srd[RESTORATION_TILEPELS_MAX];
-  int64_t dgd[RESTORATION_TILEPELS_MAX];
   int i, j, ep, bestep = 0;
   int64_t err, besterr = -1;
   int exqd[2], bestxqd[2] = { 0, 0 };
@@ -249,7 +249,8 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   RestorationInfo rsi;
   int tile_idx, tile_width, tile_height, nhtiles, nvtiles;
   int h_start, h_end, v_start, v_end;
-  uint8_t *tmpbuf = aom_malloc(SGRPROJ_TMPBUF_SIZE);
+  uint8_t *tmpbuf = aom_malloc(SGRPROJ_TMPBUF_SIZE +
+                               RESTORATION_TILEPELS_MAX * sizeof(int64_t) * 2);
   const int ntiles = av1_get_rest_ntiles(cm->width, cm->height, &tile_width,
                                          &tile_height, &nhtiles, &nvtiles);
   //  Make a copy of the unfiltered / processed recon buffer
@@ -370,12 +371,14 @@ static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
   int64_t best_sse = INT64_MAX, sse;
   if (bit_depth == 8) {
     uint8_t *tmp = (uint8_t *)aom_malloc(width * height * sizeof(*tmp));
+    int32_t *tmpbuf =
+        (int32_t *)aom_malloc(RESTORATION_TILEPELS_MAX * sizeof(*tmpbuf));
     uint8_t *dgd = dgd8;
     uint8_t *src = src8;
     // First phase
     for (p = first_p_step / 2; p < DOMAINTXFMRF_PARAMS; p += first_p_step) {
       av1_domaintxfmrf_restoration(dgd, width, height, dgd_stride, p, tmp,
-                                   width);
+                                   width, tmpbuf);
       sse = compute_sse(tmp, width, height, width, src, src_stride);
       if (sse < best_sse || best_p == -1) {
         best_p = p;
@@ -388,7 +391,7 @@ static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
          p += second_p_step) {
       if (p < 0 || p == best_p || p >= DOMAINTXFMRF_PARAMS) continue;
       av1_domaintxfmrf_restoration(dgd, width, height, dgd_stride, p, tmp,
-                                   width);
+                                   width, tmpbuf);
       sse = compute_sse(tmp, width, height, width, src, src_stride);
       if (sse < best_sse) {
         best_p = p;
@@ -401,7 +404,7 @@ static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
          p += third_p_step) {
       if (p < 0 || p == best_p || p >= DOMAINTXFMRF_PARAMS) continue;
       av1_domaintxfmrf_restoration(dgd, width, height, dgd_stride, p, tmp,
-                                   width);
+                                   width, tmpbuf);
       sse = compute_sse(tmp, width, height, width, src, src_stride);
       if (sse < best_sse) {
         best_p = p;
@@ -412,12 +415,14 @@ static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
   } else {
 #if CONFIG_AOM_HIGHBITDEPTH
     uint16_t *tmp = (uint16_t *)aom_malloc(width * height * sizeof(*tmp));
+    int32_t *tmpbuf =
+        (int32_t *)aom_malloc(RESTORATION_TILEPELS_MAX * sizeof(*tmpbuf));
     uint16_t *dgd = CONVERT_TO_SHORTPTR(dgd8);
     uint16_t *src = CONVERT_TO_SHORTPTR(src8);
     // First phase
     for (p = first_p_step / 2; p < DOMAINTXFMRF_PARAMS; p += first_p_step) {
       av1_domaintxfmrf_restoration_highbd(dgd, width, height, dgd_stride, p,
-                                          bit_depth, tmp, width);
+                                          bit_depth, tmp, width, tmpbuf);
       sse = compute_sse_highbd(tmp, width, height, width, src, src_stride);
       if (sse < best_sse || best_p == -1) {
         best_p = p;
@@ -430,7 +435,7 @@ static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
          p += second_p_step) {
       if (p < 0 || p == best_p || p >= DOMAINTXFMRF_PARAMS) continue;
       av1_domaintxfmrf_restoration_highbd(dgd, width, height, dgd_stride, p,
-                                          bit_depth, tmp, width);
+                                          bit_depth, tmp, width, tmpbuf);
       sse = compute_sse_highbd(tmp, width, height, width, src, src_stride);
       if (sse < best_sse) {
         best_p = p;
@@ -443,7 +448,7 @@ static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
          p += third_p_step) {
       if (p < 0 || p == best_p || p >= DOMAINTXFMRF_PARAMS) continue;
       av1_domaintxfmrf_restoration_highbd(dgd, width, height, dgd_stride, p,
-                                          bit_depth, tmp, width);
+                                          bit_depth, tmp, width, tmpbuf);
       sse = compute_sse_highbd(tmp, width, height, width, src, src_stride);
       if (sse < best_sse) {
         best_p = p;

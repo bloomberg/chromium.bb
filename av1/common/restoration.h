@@ -193,11 +193,12 @@ void av1_selfguided_restoration(int64_t *dgd, int width, int height, int stride,
                                 int bit_depth, int r, int eps, void *tmpbuf);
 void av1_domaintxfmrf_restoration(uint8_t *dgd, int width, int height,
                                   int stride, int param, uint8_t *dst,
-                                  int dst_stride);
+                                  int dst_stride, int32_t *tmpbuf);
 #if CONFIG_AOM_HIGHBITDEPTH
 void av1_domaintxfmrf_restoration_highbd(uint16_t *dgd, int width, int height,
                                          int stride, int param, int bit_depth,
-                                         uint16_t *dst, int dst_stride);
+                                         uint16_t *dst, int dst_stride,
+                                         int32_t *tmpbuf);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 void decode_xq(int *xqd, int *xq);
 void av1_loop_restoration_init(RestorationInternal *rst, RestorationInfo *rsi,
