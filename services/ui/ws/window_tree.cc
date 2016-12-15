@@ -1406,9 +1406,8 @@ void WindowTree::AttachCompositorFrameSink(
     DVLOG(1) << "request to AttachCompositorFrameSink failed";
     return;
   }
-  window->CreateCompositorFrameSink(type, gfx::kNullAcceleratedWidget,
-                                    std::move(compositor_frame_sink),
-                                    std::move(client));
+  window->CreateOffscreenCompositorFrameSink(
+      type, std::move(compositor_frame_sink), std::move(client));
 }
 
 void WindowTree::SetWindowTextInputState(Id transport_window_id,

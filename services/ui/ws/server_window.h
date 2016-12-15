@@ -62,9 +62,12 @@ class ServerWindow {
   // |context_provider|. The window server should not know anything about them.
   // Instead, they should be a CompositorFrameSink service-side implementation
   // detail.
-  void CreateCompositorFrameSink(
-      mojom::CompositorFrameSinkType compositor_frame_sink_type,
+  void CreateDisplayCompositorFrameSink(
       gfx::AcceleratedWidget widget,
+      cc::mojom::MojoCompositorFrameSinkRequest request,
+      cc::mojom::MojoCompositorFrameSinkClientPtr client);
+  void CreateOffscreenCompositorFrameSink(
+      mojom::CompositorFrameSinkType compositor_frame_sink_type,
       cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 

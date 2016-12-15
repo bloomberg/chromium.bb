@@ -83,9 +83,14 @@ class DisplayCompositor : public cc::SurfaceObserver,
       bool destroy_compositor_frame_sink);
 
   // cc::mojom::DisplayCompositor implementation:
-  void CreateCompositorFrameSink(
+  void CreateDisplayCompositorFrameSink(
       const cc::FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
+      cc::mojom::MojoCompositorFrameSinkRequest request,
+      cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
+      cc::mojom::MojoCompositorFrameSinkClientPtr client) override;
+  void CreateOffscreenCompositorFrameSink(
+      const cc::FrameSinkId& frame_sink_id,
       cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client) override;
@@ -100,6 +105,15 @@ class DisplayCompositor : public cc::SurfaceObserver,
       const cc::FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
       cc::SyntheticBeginFrameSource* begin_frame_source);
+
+  void CreateCompositorFrameSinkInternal(
+      const cc::FrameSinkId& frame_sink_id,
+      gpu::SurfaceHandle surface_handle,
+      std::unique_ptr<cc::Display> display,
+      std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source,
+      cc::mojom::MojoCompositorFrameSinkRequest request,
+      cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
+      cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
   const cc::SurfaceId& GetRootSurfaceId() const;
 

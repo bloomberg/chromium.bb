@@ -49,9 +49,12 @@ class ServerWindowCompositorFrameSinkManager {
 
   // Creates a new CompositorFrameSink of the specified type, replacing the
   // existing one of the specified type.
-  void CreateCompositorFrameSink(
-      mojom::CompositorFrameSinkType compositor_frame_sink_type,
+  void CreateDisplayCompositorFrameSink(
       gfx::AcceleratedWidget widget,
+      cc::mojom::MojoCompositorFrameSinkRequest request,
+      cc::mojom::MojoCompositorFrameSinkClientPtr client);
+  void CreateOffscreenCompositorFrameSink(
+      mojom::CompositorFrameSinkType compositor_frame_sink_type,
       cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
@@ -88,6 +91,12 @@ class ServerWindowCompositorFrameSinkManager {
   // received a frame that is greater than the size of the window.
   bool IsCompositorFrameSinkReadyAndNonEmpty(
       mojom::CompositorFrameSinkType type) const;
+
+  void CreateCompositorFrameSinkInternal(
+      mojom::CompositorFrameSinkType compositor_frame_sink_type,
+      gfx::AcceleratedWidget widget,
+      cc::mojom::MojoCompositorFrameSinkRequest request,
+      cc::mojom::MojoCompositorFrameSinkClientPtr client);
 
   ServerWindow* window_;
 

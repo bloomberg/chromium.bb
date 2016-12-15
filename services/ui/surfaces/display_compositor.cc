@@ -22,7 +22,7 @@
 #include "services/ui/surfaces/display_output_surface_ozone.h"
 #endif
 
-namespace ui {
+    namespace ui {
 
 DisplayCompositor::DisplayCompositor(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
@@ -92,31 +92,32 @@ void DisplayCompositor::OnCompositorFrameSinkPrivateConnectionLost(
     compositor_frame_sinks_.erase(frame_sink_id);
 }
 
-void DisplayCompositor::CreateCompositorFrameSink(
-    const cc::FrameSinkId& frame_sink_id,
-    gpu::SurfaceHandle surface_handle,
+void DisplayCompositor::CreateDisplayCompositorFrameSink(
+    const cc::FrameSinkId& frame_sink_id, gpu::SurfaceHandle surface_handle,
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // We cannot create more than one CompositorFrameSink with a given
-  // |frame_sink_id|.
-  DCHECK_EQ(0u, compositor_frame_sinks_.count(frame_sink_id));
+  DCHECK_NE(surface_handle, gpu::kNullSurfaceHandle);
+  std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source(
+      new cc::DelayBasedBeginFrameSource(
+          base::MakeUnique<cc::DelayBasedTimeSource>(task_runner_.get())));
+  std::unique_ptr<cc::Display> display =
+      CreateDisplay(frame_sink_id, surface_handle, begin_frame_source.get());
+  CreateCompositorFrameSinkInternal(
+      frame_sink_id, surface_handle, std::move(display),
+      std::move(begin_frame_source), std::move(request),
+      std::move(private_request), std::move(client));
+}
 
-  std::unique_ptr<cc::Display> display;
-  std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source;
-  if (surface_handle != gpu::kNullSurfaceHandle) {
-    begin_frame_source.reset(new cc::DelayBasedBeginFrameSource(
-        base::MakeUnique<cc::DelayBasedTimeSource>(task_runner_.get())));
-    display =
-        CreateDisplay(frame_sink_id, surface_handle, begin_frame_source.get());
-  }
-
-  compositor_frame_sinks_[frame_sink_id] =
-      base::MakeUnique<GpuCompositorFrameSink>(
-          this, frame_sink_id, std::move(display),
-          std::move(begin_frame_source), std::move(request),
-          std::move(private_request), std::move(client));
+void DisplayCompositor::CreateOffscreenCompositorFrameSink(
+    const cc::FrameSinkId& frame_sink_id,
+    cc::mojom::MojoCompositorFrameSinkRequest request,
+    cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
+    cc::mojom::MojoCompositorFrameSinkClientPtr client) {
+  CreateCompositorFrameSinkInternal(
+      frame_sink_id, gpu::kNullSurfaceHandle, nullptr, nullptr,
+      std::move(request), std::move(private_request), std::move(client));
 }
 
 void DisplayCompositor::AddSurfaceReference(const cc::SurfaceReference& ref) {
@@ -216,6 +217,25 @@ std::unique_ptr<cc::Display> DisplayCompositor::CreateDisplay(
       cc::RendererSettings(), frame_sink_id, begin_frame_source,
       std::move(display_output_surface), std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner_.get()));
+}
+
+void DisplayCompositor::CreateCompositorFrameSinkInternal(
+    const cc::FrameSinkId& frame_sink_id, gpu::SurfaceHandle surface_handle,
+    std::unique_ptr<cc::Display> display,
+    std::unique_ptr<cc::SyntheticBeginFrameSource> begin_frame_source,
+    cc::mojom::MojoCompositorFrameSinkRequest request,
+    cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
+    cc::mojom::MojoCompositorFrameSinkClientPtr client) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  // We cannot create more than one CompositorFrameSink with a given
+  // |frame_sink_id|.
+  DCHECK_EQ(0u, compositor_frame_sinks_.count(frame_sink_id));
+
+  compositor_frame_sinks_[frame_sink_id] =
+      base::MakeUnique<GpuCompositorFrameSink>(
+          this, frame_sink_id, std::move(display),
+          std::move(begin_frame_source), std::move(request),
+          std::move(private_request), std::move(client));
 }
 
 const cc::SurfaceId& DisplayCompositor::GetRootSurfaceId() const {
