@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.offlinepages.evaluation;
 
+import android.os.AsyncTask;
+
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -61,6 +63,25 @@ public class OfflinePageEvaluationBridge {
          * @param request The changed request.
          */
         public void savePageRequestChanged(SavePageRequest request) {}
+    }
+
+    /**
+     * Class used for writing logs to external log file asynchronously to prevent violating strict
+     * mode during test.
+     */
+    private class LogTask extends AsyncTask<String, Void, Void> {
+        @Override
+        protected Void doInBackground(String... strings) {
+            try {
+                synchronized (mLogOutput) {
+                    mLogOutput.write(strings[0]);
+                    mLogOutput.flush();
+                }
+            } catch (IOException e) {
+                Log.e(TAG, e.getMessage(), e);
+            }
+            return null;
+        }
     }
 
     /**
@@ -166,6 +187,8 @@ public class OfflinePageEvaluationBridge {
     }
 
     public void setLogOutputFile(File outputFile) throws IOException {
+        // This open file operation shouldn't happen on UI thread.
+        assert !ThreadUtils.runningOnUiThread();
         mLogOutput = new FileWriter(outputFile);
     }
 
@@ -178,15 +201,13 @@ public class OfflinePageEvaluationBridge {
 
     @CalledByNative
     public void log(String sourceTag, String message) {
-        try {
-            Date date = new Date(System.currentTimeMillis());
-            SimpleDateFormat formatter =
-                    new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.getDefault());
-            mLogOutput.write(formatter.format(date) + ": " + sourceTag + " | " + message
-                    + System.getProperty("line.separator"));
-        } catch (IOException e) {
-            Log.e(TAG, e.getMessage(), e);
-        }
+        Date date = new Date(System.currentTimeMillis());
+        SimpleDateFormat formatter =
+                new SimpleDateFormat("MM-dd HH:mm:ss.SSS", Locale.getDefault());
+        String logString = formatter.format(date) + ": " + sourceTag + " | " + message
+                + System.getProperty("line.separator");
+        LogTask logTask = new LogTask();
+        logTask.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR, logString);
     }
 
     public void closeLog() {
