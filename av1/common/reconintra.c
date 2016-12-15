@@ -794,19 +794,28 @@ static void highbd_dr_prediction_z1(uint16_t *dst, ptrdiff_t stride, int bs,
                                     INTRA_FILTER filter_type,
 #endif  // CONFIG_INTRA_INTERP
                                     int dx, int dy, int bd) {
-  int r, c, x, y, base, shift, val;
+  int r, c, x, base, shift, val;
 
   (void)left;
   (void)dy;
   assert(dy == 1);
-  assert(dx < 0);
+  assert(dx > 0);
 
-  for (r = 0; r < bs; ++r) {
-    y = r + 1;
-    for (c = 0; c < bs; ++c) {
-      x = (c << 8) - y * dx;
-      base = x >> 8;
-      shift = x & 0xFF;
+  x = dx;
+  for (r = 0; r < bs; ++r, dst += stride, x += dx) {
+    base = x >> 8;
+    shift = x & 0xFF;
+
+    if (base >= 2 * bs - 1) {
+      int i;
+      for (i = r; i < bs; ++i) {
+        aom_memset16(dst, above[2 * bs - 1], bs);
+        dst += stride;
+      }
+      return;
+    }
+
+    for (c = 0; c < bs; ++c, ++base) {
       if (base < 2 * bs - 1) {
 #if CONFIG_INTRA_INTERP
         val = highbd_intra_subpel_interp(base, shift, above, 0, 2 * bs - 1,
@@ -820,7 +829,6 @@ static void highbd_dr_prediction_z1(uint16_t *dst, ptrdiff_t stride, int bs,
         dst[c] = above[2 * bs - 1];
       }
     }
-    dst += stride;
   }
 }
 
@@ -880,19 +888,19 @@ static void highbd_dr_prediction_z3(uint16_t *dst, ptrdiff_t stride, int bs,
                                     INTRA_FILTER filter_type,
 #endif  // CONFIG_INTRA_INTERP
                                     int dx, int dy, int bd) {
-  int r, c, x, y, base, shift, val;
+  int r, c, y, base, shift, val;
 
   (void)above;
   (void)dx;
   assert(dx == 1);
-  assert(dy < 0);
+  assert(dy > 0);
 
-  for (r = 0; r < bs; ++r) {
-    for (c = 0; c < bs; ++c) {
-      x = c + 1;
-      y = (r << 8) - x * dy;
-      base = y >> 8;
-      shift = y & 0xFF;
+  y = dy;
+  for (c = 0; c < bs; ++c, y += dy) {
+    base = y >> 8;
+    shift = y & 0xFF;
+
+    for (r = 0; r < bs; ++r, ++base) {
       if (base < 2 * bs - 1) {
 #if CONFIG_INTRA_INTERP
         val = highbd_intra_subpel_interp(base, shift, left, 0, 2 * bs - 1,
@@ -901,12 +909,12 @@ static void highbd_dr_prediction_z3(uint16_t *dst, ptrdiff_t stride, int bs,
         val = left[base] * (256 - shift) + left[base + 1] * shift;
         val = ROUND_POWER_OF_TWO(val, 8);
 #endif  // CONFIG_INTRA_INTERP
-        dst[c] = clip_pixel_highbd(val, bd);
+        dst[r * stride + c] = clip_pixel_highbd(val, bd);
       } else {
-        dst[c] = left[2 * bs - 1];
+        for (; r < bs; ++r) dst[r * stride + c] = left[2 * bs - 1];
+        break;
       }
     }
-    dst += stride;
   }
 }
 
