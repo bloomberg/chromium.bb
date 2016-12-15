@@ -324,7 +324,10 @@ const QualifiedName& HTMLLinkElement::subResourceAttributeName() const {
 }
 
 KURL HTMLLinkElement::href() const {
-  return document().completeURL(getAttribute(hrefAttr));
+  const String& url = getAttribute(hrefAttr);
+  if (url.isEmpty())
+    return KURL();
+  return document().completeURL(url);
 }
 
 const AtomicString& HTMLLinkElement::rel() const {
