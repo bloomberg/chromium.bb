@@ -342,15 +342,28 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
     return false;
   }
 
+  const XmlElement* attachments_tag =
+      jingle_tag->FirstNamed(QName(kChromotingXmlNamespace, "attachments"));
+  if (attachments_tag) {
+    attachments.reset(new XmlElement(*attachments_tag));
+  } else {
+    attachments.reset();
+  }
+
   if (action == SESSION_INFO) {
     // session-info messages may contain arbitrary information not
     // defined by the Jingle protocol. We don't need to parse it.
     const XmlElement* child = jingle_tag->FirstElement();
+    // Plugin messages are action independent, which should not be considered as
+    // session-info.
+    if (child == attachments_tag) {
+      child = child->NextElement();
+    }
     if (child) {
       // session-info is allowed to be empty.
       info.reset(new XmlElement(*child));
     } else {
-      info.reset(nullptr);
+      info.reset();
     }
     return true;
   }
@@ -374,8 +387,9 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
     }
   }
 
-  if (action == SESSION_TERMINATE)
+  if (action == SESSION_TERMINATE) {
     return true;
+  }
 
   const XmlElement* content_tag =
       jingle_tag->FirstNamed(QName(kJingleNamespace, "content"));
@@ -396,7 +410,7 @@ bool JingleMessage::ParseXml(const buzz::XmlElement* stanza,
     transport_info.reset(new buzz::XmlElement(*webrtc_transport_tag));
   }
 
-  description.reset(nullptr);
+  description.reset();
   if (action == SESSION_INITIATE || action == SESSION_ACCEPT) {
     const XmlElement* description_tag = content_tag->FirstNamed(
         QName(kChromotingXmlNamespace, "description"));
@@ -439,18 +453,25 @@ std::unique_ptr<buzz::XmlElement> JingleMessage::ToXml() const {
   SetAddress(root.get(), jingle_tag, from, true);
 
   const char* action_attr = ValueToName(kActionTypes, action);
-  if (!action_attr)
+  if (!action_attr) {
     LOG(FATAL) << "Invalid action value " << action;
+  }
   jingle_tag->AddAttr(QName(kEmptyNamespace, "action"), action_attr);
 
+  if (attachments) {
+    jingle_tag->AddElement(new XmlElement(*attachments));
+  }
+
   if (action == SESSION_INFO) {
-    if (info.get())
+    if (info.get()) {
       jingle_tag->AddElement(new XmlElement(*info.get()));
+    }
     return root;
   }
 
-  if (action == SESSION_INITIATE)
+  if (action == SESSION_INITIATE) {
     jingle_tag->AddAttr(QName(kEmptyNamespace, "initiator"), initiator);
+  }
 
   if (reason != UNKNOWN_REASON) {
     XmlElement* reason_tag = new XmlElement(QName(kJingleNamespace, "reason"));
@@ -475,8 +496,9 @@ std::unique_ptr<buzz::XmlElement> JingleMessage::ToXml() const {
                          ContentDescription::kChromotingContentName);
     content_tag->AddAttr(QName(kEmptyNamespace, "creator"), "initiator");
 
-    if (description)
+    if (description) {
       content_tag->AddElement(description->ToXml());
+    }
 
     if (transport_info) {
       content_tag->AddElement(new XmlElement(*transport_info));
@@ -573,8 +595,9 @@ std::unique_ptr<buzz::XmlElement> JingleMessageReply::ToXml(
       NOTREACHED();
   }
 
-  if (!text.empty())
+  if (!text.empty()) {
     error_text = text;
+  }
 
   error->SetAttr(QName(kEmptyNamespace, "type"), type);
 
@@ -604,8 +627,9 @@ IceTransportInfo::~IceTransportInfo() {}
 
 bool IceTransportInfo::ParseXml(
     const buzz::XmlElement* element) {
-  if (element->Name() != QName(kIceTransportNamespace, "transport"))
+  if (element->Name() != QName(kIceTransportNamespace, "transport")) {
     return false;
+  }
 
   ice_credentials.clear();
   candidates.clear();
@@ -615,8 +639,9 @@ bool IceTransportInfo::ParseXml(
        credentials_tag;
        credentials_tag = credentials_tag->NextNamed(qn_credentials)) {
     IceTransportInfo::IceCredentials credentials;
-    if (!ParseIceCredentials(credentials_tag, &credentials))
+    if (!ParseIceCredentials(credentials_tag, &credentials)) {
       return false;
+    }
     ice_credentials.push_back(credentials);
   }
 
@@ -624,8 +649,9 @@ bool IceTransportInfo::ParseXml(
   for (const XmlElement* candidate_tag = element->FirstNamed(qn_candidate);
        candidate_tag; candidate_tag = candidate_tag->NextNamed(qn_candidate)) {
     IceTransportInfo::NamedCandidate candidate;
-    if (!ParseIceCandidate(candidate_tag, &candidate))
+    if (!ParseIceCandidate(candidate_tag, &candidate)) {
       return false;
+    }
     candidates.push_back(candidate);
   }
 

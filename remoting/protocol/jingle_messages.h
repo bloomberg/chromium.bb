@@ -101,6 +101,10 @@ struct JingleMessage {
   // Content of session-info messages.
   std::unique_ptr<buzz::XmlElement> info;
 
+  // Content of plugin message. The node is read or written by all plugins, and
+  // ActionType independent.
+  std::unique_ptr<buzz::XmlElement> attachments;
+
   // Value from the <reason> tag if it is present in the
   // message. Useful mainly for session-terminate messages, but Jingle
   // spec allows it in any message.

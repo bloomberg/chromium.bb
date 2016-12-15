@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_util.h"
 #include "remoting/protocol/content_description.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -597,6 +598,71 @@ TEST(JingleMessageTest, RemotingErrorCode) {
     EXPECT_EQ(message.action, JingleMessage::SESSION_TERMINATE);
     EXPECT_EQ(message.reason, JingleMessage::DECLINE);
     EXPECT_EQ(message.error_code, error);
+  }
+}
+
+TEST(JingleMessageTest, AttachmentsMessage) {
+  // Ordering of the "attachments" tag and other tags are irrelevent. But the
+  // JingleMessage implementation always puts it before other tags, so we do the
+  // same thing in test cases.
+  const char* kMessageWithPluginTag =
+      "<cli:iq from='user@gmail.com/chromoting016DBB07' "
+      "to='user@gmail.com/chromiumsy5C6A652D' type='set' "
+      "xmlns:cli='jabber:client'><jingle action='$1' "
+      "sid='2227053353' xmlns='urn:xmpp:jingle:1'>"
+      "<gr:attachments xmlns:gr='google:remoting'>"
+      "<gr:sometag>some-message</gr:sometag>"
+      "</gr:attachments>$2</jingle></cli:iq>";
+  for (int i = JingleMessage::SESSION_INITIATE;
+       i <= JingleMessage::TRANSPORT_INFO; i++) {
+    JingleMessage::ActionType action_type =
+        static_cast<JingleMessage::ActionType>(i);
+    std::vector<std::string> substitutes = {
+        JingleMessage::GetActionName(action_type)
+    };
+    if (action_type == JingleMessage::SESSION_INFO) {
+      substitutes.push_back("<test-info>test-message</test-info>");
+    } else if (action_type == JingleMessage::SESSION_TERMINATE) {
+      substitutes.emplace_back();
+    } else if (action_type == JingleMessage::TRANSPORT_INFO) {
+      substitutes.push_back(
+          "<content name='chromoting' creator='initiator'>"
+            "<transport xmlns='google:remoting:webrtc'>"
+              "<credentials channel='event' ufrag='tPUyEAmQrEw3y7hi' "
+                           "password='2iRdhLfawKZC5ydJ'/>"
+              "<credentials channel='video' ufrag='EPK3CXo5sTLJSez0' "
+                           "password='eM0VUfUkZ+1Pyi0M'/>"
+              "<candidate name='event' foundation='725747215' "
+                         "address='172.23.164.186' port='59089' type='local' "
+                         "protocol='udp' priority='2122194688' generation='0'/>"
+              "<candidate name='video' foundation='3623806809' "
+                         "address='172.23.164.186' port='57040' type='local' "
+                         "protocol='udp' priority='2122194688' generation='0'/>"
+            "</transport>"
+          "</content>");
+    } else {
+      substitutes.push_back("<content name='chromoting' creator='initiator'>"
+                        "<description xmlns='google:remoting'>"
+                          "<authentication><auth-token>"
+                            "j7whCMii0Z0AAPwj7whCM/j7whCMii0Z0AAPw="
+                          "</auth-token></authentication>"
+                        "</description>"
+                        "<transport xmlns='google:remoting:webrtc' />"
+                      "</content>");
+    }
+    std::string message_str = base::ReplaceStringPlaceholders(
+        kMessageWithPluginTag, substitutes, nullptr);
+
+    JingleMessage message;
+    ParseFormatAndCompare(message_str.c_str(), &message);
+
+    EXPECT_TRUE(message.attachments);
+    XmlElement expected(QName("google:remoting", "attachments"));
+    expected.AddElement(new XmlElement(QName("google:remoting", "sometag")));
+    expected.FirstElement()->SetBodyText("some-message");
+    std::string error;
+    EXPECT_TRUE(VerifyXml(&expected, message.attachments.get(), &error))
+        << error;
   }
 }
 
