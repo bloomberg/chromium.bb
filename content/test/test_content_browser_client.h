@@ -20,6 +20,10 @@ class TestContentBrowserClient : public ContentBrowserClient {
   TestContentBrowserClient();
   ~TestContentBrowserClient() override;
   base::FilePath GetDefaultDownloadDirectory() override;
+  void GetQuotaSettings(
+      content::BrowserContext* context,
+      content::StoragePartition* partition,
+      const storage::OptionalQuotaSettingsCallback& callback) override;
 
  private:
   // Temporary directory for GetDefaultDownloadDirectory.

@@ -128,6 +128,13 @@ BrowserMainParts* LayoutTestContentBrowserClient::CreateBrowserMainParts(
   return shell_browser_main_parts();
 }
 
+void LayoutTestContentBrowserClient::GetQuotaSettings(
+    BrowserContext* context,
+    StoragePartition* partition,
+    const storage::OptionalQuotaSettingsCallback& callback) {
+  callback.Run(storage::GetHardCodedSettings(5 * 1024 * 1024));
+}
+
 PlatformNotificationService*
 LayoutTestContentBrowserClient::GetPlatformNotificationService() {
   return layout_test_notification_manager_.get();

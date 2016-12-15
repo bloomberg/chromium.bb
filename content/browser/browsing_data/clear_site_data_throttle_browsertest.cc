@@ -21,6 +21,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "storage/browser/quota/quota_settings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -40,6 +41,13 @@ class MockContentBrowserClient : public ContentBrowserClient {
                     bool remove_storage,
                     bool remove_cache,
                     const base::Closure& callback));
+
+  void GetQuotaSettings(
+      content::BrowserContext* context,
+      content::StoragePartition* partition,
+      const storage::OptionalQuotaSettingsCallback& callback) override {
+    callback.Run(storage::GetHardCodedSettings(100 * 1024 * 1024));
+  }
 };
 
 class TestContentBrowserClient : public MockContentBrowserClient {

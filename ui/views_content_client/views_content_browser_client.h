@@ -22,6 +22,10 @@ class ViewsContentBrowserClient : public content::ContentBrowserClient {
   // content::ContentBrowserClient:
   content::BrowserMainParts* CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
+  void GetQuotaSettings(
+      content::BrowserContext* context,
+      content::StoragePartition* partition,
+      const storage::OptionalQuotaSettingsCallback& callback) override;
 
  private:
   ViewsContentClientMainParts* views_content_main_parts_;

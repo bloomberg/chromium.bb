@@ -22,10 +22,12 @@
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/dom_storage_context.h"
 #include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/session_storage_usage_info.h"
+#include "content/public/common/content_client.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
@@ -363,36 +365,11 @@ void StoragePartitionImpl::DataDeletionHelper::ClearQuotaManagedDataOnIOThread(
 StoragePartitionImpl::StoragePartitionImpl(
     BrowserContext* browser_context,
     const base::FilePath& partition_path,
-    storage::QuotaManager* quota_manager,
-    ChromeAppCacheService* appcache_service,
-    storage::FileSystemContext* filesystem_context,
-    storage::DatabaseTracker* database_tracker,
-    DOMStorageContextWrapper* dom_storage_context,
-    IndexedDBContextImpl* indexed_db_context,
-    CacheStorageContextImpl* cache_storage_context,
-    ServiceWorkerContextWrapper* service_worker_context,
-    storage::SpecialStoragePolicy* special_storage_policy,
-    HostZoomLevelContext* host_zoom_level_context,
-    PlatformNotificationContextImpl* platform_notification_context,
-    BackgroundSyncContext* background_sync_context,
-    PaymentAppContextImpl* payment_app_context,
-    scoped_refptr<BroadcastChannelProvider> broadcast_channel_provider)
+    storage::SpecialStoragePolicy* special_storage_policy)
     : partition_path_(partition_path),
-      quota_manager_(quota_manager),
-      appcache_service_(appcache_service),
-      filesystem_context_(filesystem_context),
-      database_tracker_(database_tracker),
-      dom_storage_context_(dom_storage_context),
-      indexed_db_context_(indexed_db_context),
-      cache_storage_context_(cache_storage_context),
-      service_worker_context_(service_worker_context),
       special_storage_policy_(special_storage_policy),
-      host_zoom_level_context_(host_zoom_level_context),
-      platform_notification_context_(platform_notification_context),
-      background_sync_context_(background_sync_context),
-      payment_app_context_(payment_app_context),
-      broadcast_channel_provider_(std::move(broadcast_channel_provider)),
-      browser_context_(browser_context) {}
+      browser_context_(browser_context),
+      weak_factory_(this) {}
 
 StoragePartitionImpl::~StoragePartitionImpl() {
   browser_context_ = nullptr;
@@ -440,34 +417,38 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   base::FilePath partition_path =
       context->GetPath().Append(relative_partition_path);
 
+  std::unique_ptr<StoragePartitionImpl> partition =
+      base::WrapUnique(new StoragePartitionImpl(
+          context, partition_path, context->GetSpecialStoragePolicy()));
+
   // All of the clients have to be created and registered with the
   // QuotaManager prior to the QuotaManger being used. We do them
   // all together here prior to handing out a reference to anything
   // that utilizes the QuotaManager.
-  scoped_refptr<storage::QuotaManager> quota_manager =
-      new storage::QuotaManager(
-          in_memory, partition_path,
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get(),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::DB).get(),
-          context->GetSpecialStoragePolicy());
+  partition->quota_manager_ = new storage::QuotaManager(
+      in_memory, partition_path,
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get(),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::DB).get(),
+      context->GetSpecialStoragePolicy(),
+      base::Bind(&StoragePartitionImpl::GetQuotaSettings,
+                 partition->weak_factory_.GetWeakPtr()));
+  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy =
+      partition->quota_manager_->proxy();
 
   // Each consumer is responsible for registering its QuotaClient during
   // its construction.
-  scoped_refptr<storage::FileSystemContext> filesystem_context =
-      CreateFileSystemContext(
-          context, partition_path, in_memory, quota_manager->proxy());
+  partition->filesystem_context_ = CreateFileSystemContext(
+      context, partition_path, in_memory, quota_manager_proxy.get());
 
-  scoped_refptr<storage::DatabaseTracker> database_tracker =
-      new storage::DatabaseTracker(
-          partition_path, in_memory, context->GetSpecialStoragePolicy(),
-          quota_manager->proxy(),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get());
+  partition->database_tracker_ = new storage::DatabaseTracker(
+      partition_path, in_memory, context->GetSpecialStoragePolicy(),
+      quota_manager_proxy.get(),
+      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get());
 
-  scoped_refptr<DOMStorageContextWrapper> dom_storage_context =
-      new DOMStorageContextWrapper(
-          BrowserContext::GetConnectorFor(context),
-          in_memory ? base::FilePath() : context->GetPath(),
-          relative_partition_path, context->GetSpecialStoragePolicy());
+  partition->dom_storage_context_ = new DOMStorageContextWrapper(
+      BrowserContext::GetConnectorFor(context),
+      in_memory ? base::FilePath() : context->GetPath(),
+      relative_partition_path, context->GetSpecialStoragePolicy());
 
   // BrowserMainLoop may not be initialized in unit tests. Tests will
   // need to inject their own task runner into the IndexedDBContext.
@@ -481,60 +462,38 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
           : NULL;
 
   base::FilePath path = in_memory ? base::FilePath() : partition_path;
-  scoped_refptr<IndexedDBContextImpl> indexed_db_context =
-      new IndexedDBContextImpl(path,
-                               context->GetSpecialStoragePolicy(),
-                               quota_manager->proxy(),
-                               idb_task_runner);
+  partition->indexed_db_context_ =
+      new IndexedDBContextImpl(path, context->GetSpecialStoragePolicy(),
+                               quota_manager_proxy.get(), idb_task_runner);
 
-  scoped_refptr<CacheStorageContextImpl> cache_storage_context =
-      new CacheStorageContextImpl(context);
-  cache_storage_context->Init(path, make_scoped_refptr(quota_manager->proxy()));
+  partition->cache_storage_context_ = new CacheStorageContextImpl(context);
+  partition->cache_storage_context_->Init(path, quota_manager_proxy);
 
-  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context =
-      new ServiceWorkerContextWrapper(context);
-  service_worker_context->Init(path, quota_manager->proxy(),
-                               context->GetSpecialStoragePolicy());
+  partition->service_worker_context_ = new ServiceWorkerContextWrapper(context);
+  partition->service_worker_context_->Init(path, quota_manager_proxy.get(),
+                                           context->GetSpecialStoragePolicy());
+  partition->service_worker_context_->set_storage_partition(partition.get());
 
-  scoped_refptr<ChromeAppCacheService> appcache_service =
-      new ChromeAppCacheService(quota_manager->proxy());
+  partition->appcache_service_ =
+      new ChromeAppCacheService(quota_manager_proxy.get());
 
-  scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy(
-      context->GetSpecialStoragePolicy());
+  partition->host_zoom_level_context_ = new HostZoomLevelContext(
+      context->CreateZoomLevelDelegate(partition_path));
 
-  scoped_refptr<HostZoomLevelContext> host_zoom_level_context(
-      new HostZoomLevelContext(
-          context->CreateZoomLevelDelegate(partition_path)));
-
-  scoped_refptr<PlatformNotificationContextImpl> platform_notification_context =
+  partition->platform_notification_context_ =
       new PlatformNotificationContextImpl(path, context,
-                                          service_worker_context);
-  platform_notification_context->Initialize();
+                                          partition->service_worker_context_);
+  partition->platform_notification_context_->Initialize();
 
-  scoped_refptr<BackgroundSyncContext> background_sync_context =
-      new BackgroundSyncContext();
-  background_sync_context->Init(service_worker_context);
+  partition->background_sync_context_ = new BackgroundSyncContext();
+  partition->background_sync_context_->Init(partition->service_worker_context_);
 
-  scoped_refptr<PaymentAppContextImpl> payment_app_context =
-      new PaymentAppContextImpl(service_worker_context);
+  partition->payment_app_context_ = new PaymentAppContextImpl(
+      partition->service_worker_context_);
 
-  scoped_refptr<BroadcastChannelProvider>
-      broadcast_channel_provider = new BroadcastChannelProvider();
+  partition->broadcast_channel_provider_ = new BroadcastChannelProvider();
 
-  std::unique_ptr<StoragePartitionImpl> storage_partition(
-      new StoragePartitionImpl(
-          context, partition_path, quota_manager.get(), appcache_service.get(),
-          filesystem_context.get(), database_tracker.get(),
-          dom_storage_context.get(), indexed_db_context.get(),
-          cache_storage_context.get(), service_worker_context.get(),
-          special_storage_policy.get(), host_zoom_level_context.get(),
-          platform_notification_context.get(), background_sync_context.get(),
-          payment_app_context.get(),
-          std::move(broadcast_channel_provider)));
-
-  service_worker_context->set_storage_partition(storage_partition.get());
-
-  return storage_partition;
+  return partition;
 }
 
 base::FilePath StoragePartitionImpl::GetPath() {
@@ -932,6 +891,12 @@ void StoragePartitionImpl::SetURLRequestContext(
 void StoragePartitionImpl::SetMediaURLRequestContext(
     net::URLRequestContextGetter* media_url_request_context) {
   media_url_request_context_ = media_url_request_context;
+}
+
+void StoragePartitionImpl::GetQuotaSettings(
+    const storage::OptionalQuotaSettingsCallback& callback) {
+  GetContentClient()->browser()->GetQuotaSettings(browser_context_, this,
+                                                  callback);
 }
 
 }  // namespace content

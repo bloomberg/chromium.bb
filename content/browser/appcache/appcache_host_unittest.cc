@@ -110,7 +110,7 @@ class AppCacheHostTest : public testing::Test {
     void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
                           const GURL& origin,
                           storage::StorageType type,
-                          const GetUsageAndQuotaCallback& callback) override {}
+                          const UsageAndQuotaCallback& callback) override {}
 
     void NotifyOriginInUse(const GURL& origin) override { inuse_[origin] += 1; }
 

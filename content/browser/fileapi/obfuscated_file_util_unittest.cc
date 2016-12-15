@@ -167,7 +167,14 @@ class ObfuscatedFileUtilTest : public testing::Test {
     quota_manager_ = new storage::QuotaManager(
         false /* is_incognito */, data_dir_.GetPath(),
         base::ThreadTaskRunnerHandle::Get().get(),
-        base::ThreadTaskRunnerHandle::Get().get(), storage_policy_.get());
+        base::ThreadTaskRunnerHandle::Get().get(), storage_policy_.get(),
+        storage::GetQuotaSettingsFunc());
+    storage::QuotaSettings settings;
+    settings.per_host_quota = 25 * 1024 * 1024;
+    settings.pool_size = settings.per_host_quota * 5;
+    settings.must_remain_available = 10 * 1024 * 1024;
+    settings.refresh_interval = base::TimeDelta::Max();
+    quota_manager_->SetQuotaSettings(settings);
 
     // Every time we create a new sandbox_file_system helper,
     // it creates another context, which creates another path manager,

@@ -37,6 +37,7 @@
 #include "extensions/shell/browser/shell_extension_system.h"
 #include "extensions/shell/browser/shell_navigation_ui_data.h"
 #include "extensions/shell/browser/shell_speech_recognition_manager_delegate.h"
+#include "storage/browser/quota/quota_settings.h"
 #include "url/gurl.h"
 
 #if !defined(DISABLE_NACL)
@@ -118,6 +119,17 @@ bool ShellContentBrowserClient::ShouldUseProcessPerSite(
   // default behavior of ContentBrowserClient will lead to separate render
   // processes for the background page and each app window view.
   return true;
+}
+
+void ShellContentBrowserClient::GetQuotaSettings(
+    content::BrowserContext* context,
+    content::StoragePartition* partition,
+    const storage::OptionalQuotaSettingsCallback& callback) {
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&storage::CalculateNominalDynamicSettings,
+                 partition->GetPath(), context->IsOffTheRecord()),
+      callback);
 }
 
 bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {

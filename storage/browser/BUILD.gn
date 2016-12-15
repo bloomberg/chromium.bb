@@ -166,6 +166,8 @@ component("browser") {
     "quota/quota_manager.h",
     "quota/quota_manager_proxy.cc",
     "quota/quota_manager_proxy.h",
+    "quota/quota_settings.cc",
+    "quota/quota_settings.h",
     "quota/quota_task.cc",
     "quota/quota_task.h",
     "quota/quota_temporary_storage_evictor.cc",

@@ -39,6 +39,7 @@
 #include "content/shell/common/shell_switches.h"
 #include "grit/shell_resources.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -290,6 +291,13 @@ WebContentsViewDelegate* ShellContentBrowserClient::GetWebContentsViewDelegate(
 QuotaPermissionContext*
 ShellContentBrowserClient::CreateQuotaPermissionContext() {
   return new ShellQuotaPermissionContext();
+}
+
+void ShellContentBrowserClient::GetQuotaSettings(
+    BrowserContext* context,
+    StoragePartition* partition,
+    const storage::OptionalQuotaSettingsCallback& callback) {
+  callback.Run(storage::GetHardCodedSettings(100 * 1024 * 1024));
 }
 
 void ShellContentBrowserClient::SelectClientCertificate(

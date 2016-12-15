@@ -58,10 +58,8 @@ class QuotaInternalsProxy
   void ReportStatistics(const Statistics& stats);
 
   // Called on IO Thread by QuotaManager as callback.
-  void DidGetAvailableSpace(storage::QuotaStatusCode status, int64_t space);
-  void DidGetGlobalQuota(storage::StorageType type,
-                         storage::QuotaStatusCode status,
-                         int64_t quota);
+  void DidGetSettings(const storage::QuotaSettings& settings);
+  void DidGetCapacity(int64_t total_space, int64_t available_space);
   void DidGetGlobalUsage(storage::StorageType type,
                          int64_t usage,
                          int64_t unlimited_usage);

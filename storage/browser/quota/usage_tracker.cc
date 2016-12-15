@@ -136,6 +136,13 @@ void UsageTracker::UpdateUsageCache(QuotaClient::ID client_id,
   client_tracker->UpdateUsageCache(origin, delta);
 }
 
+int64_t UsageTracker::GetCachedUsage() const {
+  int64_t usage = 0;
+  for (const auto& client_id_and_tracker : client_tracker_map_)
+    usage += client_id_and_tracker.second->GetCachedUsage();
+  return usage;
+}
+
 void UsageTracker::GetCachedHostsUsage(
     std::map<std::string, int64_t>* host_usage) const {
   DCHECK(host_usage);

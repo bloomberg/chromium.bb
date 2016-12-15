@@ -52,6 +52,7 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   void GetGlobalUsage(const GlobalUsageCallback& callback);
   void GetHostUsage(const std::string& host, const UsageCallback& callback);
   void UpdateUsageCache(const GURL& origin, int64_t delta);
+  int64_t GetCachedUsage() const;
   void GetCachedHostsUsage(std::map<std::string, int64_t>* host_usage) const;
   void GetCachedOriginsUsage(std::map<GURL, int64_t>* origin_usage) const;
   void GetCachedOrigins(std::set<GURL>* origins) const;
