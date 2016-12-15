@@ -12,7 +12,7 @@ function GetEnvVar([string] $key, [scriptblock] $defaultFn) {
 }
 
 $cipdClientVer = GetEnvVar "CIPD_CLIENT_VER" {
-  Get-Content (Join-Path $myPath -ChildPath 'cipd_client_version') -First 1
+  Get-Content (Join-Path $myPath -ChildPath 'cipd_client_version') -TotalCount 1
 }
 $cipdClientSrv = GetEnvVar "CIPD_CLIENT_SRV" {
   "https://chrome-infra-packages.appspot.com"
