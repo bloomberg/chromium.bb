@@ -2216,3 +2216,4 @@ crbug.com/673539 [ Linux ] css3/filters/effect-contrast-hw.html [ Pass Failure ]
 # Added 2016-12-14
 crbug.com/674048 [ Linux ] virtual/mojo-loading/http/tests/navigation/image-load-in-unload-handler.html [ Pass Timeout ]
 crbug.com/674123 virtual/threaded/animations/animation-direction-normal.html [ Failure Timeout ]
+crbug.com/674396 [ Win ] compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
