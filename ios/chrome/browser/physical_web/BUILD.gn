@@ -19,9 +19,11 @@ source_set("physical_web") {
     "//components/physical_web/data_source",
     "//components/pref_registry",
     "//components/prefs",
+    "//components/search_engines",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/geolocation",
+    "//ios/chrome/browser/search_engines",
     "//ios/chrome/common/physical_web",
     "//url",
   ]

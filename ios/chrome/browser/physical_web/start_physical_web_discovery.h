@@ -13,13 +13,6 @@ class ChromeBrowserState;
 
 // Checks the environment and starts Physical Web discovery if the required
 // conditions are met.
-// Deprecated, use the version below that takes an ios::ChromeBrowserState.
-// TODO(mattreynolds): remove once downstream users have been switched to the
-// new method.
-void StartPhysicalWebDiscovery(PrefService* pref_service, bool is_incognito);
-
-// Checks the environment and starts Physical Web discovery if the required
-// conditions are met.
 void StartPhysicalWebDiscovery(PrefService* pref_service,
                                ios::ChromeBrowserState* browser_state);
 
