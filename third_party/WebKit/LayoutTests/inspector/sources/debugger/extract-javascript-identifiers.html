@@ -56,14 +56,13 @@ function test()
     {
         InspectorTest.addResult("Text:");
         InspectorTest.addResult("    " + text + "\n");
-        Common.formatterWorkerPool.runTask("javaScriptIdentifiers", {content: text})
+        Common.formatterWorkerPool.javaScriptIdentifiers(text)
             .then(onIdentifiers)
             .then(next);
     }
 
-    function onIdentifiers(event)
+    function onIdentifiers(ids)
     {
-        var ids = event ? event.data : [];
         InspectorTest.addResult("Identifiers:");
         for (var id of ids)
             InspectorTest.addResult(`    id: ${id.name}    offset: ${id.offset}`);

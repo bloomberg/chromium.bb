@@ -4,7 +4,6 @@
 <script src="../../http/tests/inspector/network-test.js"></script>
 <script>
 function test() {
-    var worker = new Common.Worker("formatter_worker");
     function check(jsonText)
     {
         var resultData = Network.JSONView._extractJSON(jsonText);
@@ -13,12 +12,10 @@ function test() {
             return;
         }
 
-        worker.onmessage = success;
-        worker.postMessage({method: "relaxedJSONParser", params:{content: resultData.data}});
+        Common.formatterWorkerPool.parseJSONRelaxed(resultData.data).then(success);
 
-        function success(event)
+        function success(data)
         {
-            var data = event.data;
             if (data === null) {
                 failure();
                 return;
@@ -60,7 +57,6 @@ function test() {
             currentTestIndex++;
             check(tests[currentTestIndex - 1]);
         } else {
-            worker.terminate();
             InspectorTest.completeTest();
         }
     }
