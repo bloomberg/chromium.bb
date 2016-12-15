@@ -4658,16 +4658,9 @@ TEST_F(ViewTest, DestroyLayerInClose) {
   EXPECT_FALSE(view.was_hidden());
 
   widget->Close();
-  if (IsAuraMusClient()) {
-    // Mus on Ozone doesn't send the visibility change during Close().
-    // See http://crbug.com/674003.
-    EXPECT_TRUE(view.layer());
-    EXPECT_FALSE(view.was_hidden());
-  } else {
-    EXPECT_FALSE(view.layer());
-    // Ensure the layer went away via VisibilityChanged().
-    EXPECT_TRUE(view.was_hidden());
-  }
+  EXPECT_FALSE(view.layer());
+  // Ensure the layer went away via VisibilityChanged().
+  EXPECT_TRUE(view.was_hidden());
 
   // Not removed from Widget until Close() completes.
   EXPECT_TRUE(view.GetWidget());

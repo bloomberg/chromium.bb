@@ -293,6 +293,10 @@ void DesktopWindowTreeHostMus::Close() {
   if (close_widget_factory_.HasWeakPtrs())
     return;
 
+  // Even though we don't close immediately, we need to hide immediately
+  // (otherwise events may be processed, which is unexpected).
+  Hide();
+
   // Close doesn't delete this immediately, as 'this' may still be on the stack
   // resulting in possible crashes when the stack unwindes.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -331,6 +335,8 @@ void DesktopWindowTreeHostMus::ShowWindowWithState(ui::WindowShowState state) {
   window()->Show();
   if (compositor())
     compositor()->SetVisible(true);
+
+  native_widget_delegate_->OnNativeWidgetVisibilityChanged(true);
 
   if (native_widget_delegate_->CanActivate()) {
     if (state != ui::SHOW_STATE_INACTIVE)
