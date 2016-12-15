@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
+#include "components/reading_list/core/reading_list_enable_flags.h"
 #include "components/sync/protocol/app_notification_specifics.pb.h"
 #include "components/sync/protocol/app_setting_specifics.pb.h"
 #include "components/sync/protocol/app_specifics.pb.h"
@@ -154,8 +155,12 @@ static_assert(arraysize(kModelTypeInfoMap) == MODEL_TYPE_COUNT,
 // 2) This list must be in the same order as the respective values in the
 //    ModelType enum.
 const char* kUserSelectableDataTypeNames[] = {
-    "bookmarks", "preferences", "passwords", "autofill", "themes",
-    "typedUrls", "extensions",  "apps",      "tabs",
+    "bookmarks",   "preferences", "passwords",  "autofill",
+    "themes",      "typedUrls",   "extensions", "apps",
+#if BUILDFLAG(ENABLE_READING_LIST)
+    "readingList",
+#endif
+    "tabs",
 };
 
 static_assert(
@@ -476,6 +481,9 @@ ModelTypeSet UserSelectableTypes() {
   set.Put(TYPED_URLS);
   set.Put(EXTENSIONS);
   set.Put(APPS);
+#if BUILDFLAG(ENABLE_READING_LIST)
+  set.Put(READING_LIST);
+#endif
   set.Put(PROXY_TABS);
   return set;
 }

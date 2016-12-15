@@ -32,6 +32,7 @@
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/json_pref_store.h"
+#include "components/reading_list/core/reading_list_enable_flags.h"
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -1626,15 +1627,18 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
   // the respective types in ModelType
   const syncer::user_selectable_type::UserSelectableSyncType
       user_selectable_types[] = {
-          syncer::user_selectable_type::BOOKMARKS,
-          syncer::user_selectable_type::PREFERENCES,
-          syncer::user_selectable_type::PASSWORDS,
-          syncer::user_selectable_type::AUTOFILL,
-          syncer::user_selectable_type::THEMES,
-          syncer::user_selectable_type::TYPED_URLS,
-          syncer::user_selectable_type::EXTENSIONS,
-          syncer::user_selectable_type::APPS,
-          syncer::user_selectable_type::PROXY_TABS,
+        syncer::user_selectable_type::BOOKMARKS,
+        syncer::user_selectable_type::PREFERENCES,
+        syncer::user_selectable_type::PASSWORDS,
+        syncer::user_selectable_type::AUTOFILL,
+        syncer::user_selectable_type::THEMES,
+        syncer::user_selectable_type::TYPED_URLS,
+        syncer::user_selectable_type::EXTENSIONS,
+        syncer::user_selectable_type::APPS,
+#if BUILDFLAG(ENABLE_READING_LIST)
+        syncer::user_selectable_type::READING_LIST,
+#endif
+        syncer::user_selectable_type::PROXY_TABS,
       };
 
   static_assert(39 == syncer::MODEL_TYPE_COUNT,

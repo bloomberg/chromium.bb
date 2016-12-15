@@ -36,6 +36,8 @@ enum UserSelectableSyncType {
   SYNCED_NOTIFICATIONS = 9,
   WIFI_CREDENTIAL = 10,
 
+  READING_LIST = 11,
+
   // The datatypes below are implicitly synced, and are not exposed via user
   // selectable checkboxes.
   // TODO(lgcheng) ARC_PACKAGE would be selectable.
@@ -59,10 +61,9 @@ enum UserSelectableSyncType {
   // SYNCED_NOTIFICATION_APP_INFO,
   // ARC_PACKAGE,
   // PRINTERS
-  // READING_LIST
 
   // Number of sync datatypes exposed to the user via checboxes in the UI.
-  SELECTABLE_DATATYPE_COUNT = 11,
+  SELECTABLE_DATATYPE_COUNT = 12,
 };
 
 }  // namespace user_selectable_type

@@ -34,6 +34,7 @@ static_library("browser_sync") {
     "//components/pref_registry",
     "//components/prefs",
     "//components/reading_list/core",
+    "//components/reading_list/core:reading_list_enable_flags",
     "//components/signin/core/browser",
     "//components/strings",
     "//components/sync_bookmarks",
