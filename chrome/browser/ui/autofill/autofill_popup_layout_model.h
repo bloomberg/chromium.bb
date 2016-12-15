@@ -127,9 +127,6 @@ class AutofillPopupLayoutModel {
   gfx::FontList smaller_font_list_;
   // Bold version of the normal font.
   gfx::FontList bold_font_list_;
-  // Font used for the warning dialog, which may be italic or not depending on
-  // the platform.
-  gfx::FontList warning_font_list_;
 #endif
 
   // The bounds of the Autofill popup.

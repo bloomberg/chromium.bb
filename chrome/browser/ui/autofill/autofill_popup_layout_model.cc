@@ -78,12 +78,6 @@ AutofillPopupLayoutModel::AutofillPopupLayoutModel(
   smaller_font_list_ =
       normal_font_list_.DeriveWithSizeDelta(kSmallerFontSizeDelta);
   bold_font_list_ = normal_font_list_.DeriveWithWeight(gfx::Font::Weight::BOLD);
-#if defined(OS_MACOSX)
-  // There is no italic version of the system font.
-  warning_font_list_ = normal_font_list_;
-#else
-  warning_font_list_ = normal_font_list_.DeriveWithStyle(gfx::Font::ITALIC);
-#endif
 #endif
 }
 
@@ -170,7 +164,6 @@ const gfx::FontList& AutofillPopupLayoutModel::GetValueFontListForRow(
   PopupItemId id = static_cast<PopupItemId>(suggestions[index].frontend_id);
   switch (id) {
     case POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
-      return warning_font_list_;
     case POPUP_ITEM_ID_CLEAR_FORM:
     case POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
     case POPUP_ITEM_ID_AUTOFILL_OPTIONS:

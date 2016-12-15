@@ -1629,8 +1629,8 @@ TEST_F(AutofillManagerTest,
       Suggestion("", "", "", POPUP_ITEM_ID_SEPARATOR),
 #endif
       Suggestion(
-          l10n_util::GetStringUTF8(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
-          "", "", POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE));
+          l10n_util::GetStringUTF8(IDS_AUTOFILL_WARNING_PAYMENT_DISABLED), "",
+          "", POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE));
 
   // Clear the test credit cards and try again -- we shouldn't return a warning.
   personal_data_.ClearCreditCards();

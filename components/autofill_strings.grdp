@@ -17,6 +17,9 @@
   <message name="IDS_AUTOFILL_WARNING_FORM_DISABLED" desc="Warning text to show when autofill is disabled by the website for a given form.">
     This webpage has disabled automatic filling for this form.
   </message>
+  <message name="IDS_AUTOFILL_WARNING_PAYMENT_DISABLED" desc="Warning text to show when credit card autofill is disabled because the website is not using a secure connection. This warning text is shown below a separate warning indicating that the form is not secure, so this message indicates just that payment autofilling has been disabled (not why).">
+    Payment autofilling disabled
+  </message>
   <message name="IDS_AUTOFILL_WARNING_INSECURE_CONNECTION" desc="Warning text to show when credit card autofill is disabled because the website is not using a secure connection.">
     Automatic credit card filling is disabled because this form does not use a secure connection.
   </message>

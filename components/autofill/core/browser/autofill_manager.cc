@@ -589,17 +589,21 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
       // provide them for secure pages with passive mixed content (see impl. of
       // IsContextSecure).
       if (is_filling_credit_card && !is_context_secure) {
+        bool is_http_warning_enabled = IsCreditCardAutofillHttpWarningEnabled();
         // Replace the suggestion content with a warning message explaining why
-        // Autofill is disabled for a website.
+        // Autofill is disabled for a website. The string is different if the
+        // credit card autofill HTTP warning experiment is enabled.
         Suggestion warning_suggestion(l10n_util::GetStringUTF16(
-            IDS_AUTOFILL_WARNING_INSECURE_CONNECTION));
+            is_http_warning_enabled
+                ? IDS_AUTOFILL_WARNING_PAYMENT_DISABLED
+                : IDS_AUTOFILL_WARNING_INSECURE_CONNECTION));
         warning_suggestion.frontend_id =
             POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE;
         suggestions.assign(1, warning_suggestion);
 
         // On top of the explanation message, first show a "Payment not secure"
         // message.
-        if (IsCreditCardAutofillHttpWarningEnabled()) {
+        if (is_http_warning_enabled) {
 #if !defined(OS_ANDROID)
           suggestions.insert(suggestions.begin(), Suggestion());
           suggestions.front().frontend_id = POPUP_ITEM_ID_SEPARATOR;
