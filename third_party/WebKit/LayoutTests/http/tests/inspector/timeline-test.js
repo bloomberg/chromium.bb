@@ -410,6 +410,40 @@ InspectorTest.dumpInvalidations = function(recordType, index, comment)
     InspectorTest.addArray(TimelineModel.InvalidationTracker.invalidationEventsFor(record._event), InspectorTest.InvalidationFormatters, "", comment);
 }
 
+InspectorTest.dumpFlameChartProvider = function(provider, includeGroups)
+{
+    var includeGroupsSet = includeGroups && new Set(includeGroups);
+    var timelineData = provider.timelineData();
+    var stackDepth = provider.maxStackDepth();
+    var entriesByLevel = new Multimap();
+
+    for (let i = 0; i < timelineData.entryLevels.length; ++i)
+        entriesByLevel.set(timelineData.entryLevels[i], i);
+
+    for (let groupIndex = 0; groupIndex < timelineData.groups.length; ++groupIndex) {
+        const group = timelineData.groups[groupIndex];
+        if (includeGroupsSet && !includeGroupsSet.has(group.name))
+            continue;
+        var maxLevel = groupIndex + 1 < timelineData.groups.length ? timelineData.groups[groupIndex + 1].firstLevel : stackDepth;
+        InspectorTest.addResult(`Group: ${group.name}`);
+        for (let level = group.startLevel; level < maxLevel; ++level) {
+            InspectorTest.addResult(`Level ${level - group.startLevel}`);
+            var entries = entriesByLevel.get(level);
+            for (const index of entries) {
+                const title = provider.entryTitle(index);
+                const color = provider.entryColor(index);
+                InspectorTest.addResult(`${title} (${color})`);
+            }
+        }
+    }
+}
+
+InspectorTest.dumpTimelineFlameChart = function(includeGroups) {
+    const provider = UI.panels.timeline._flameChart._dataProvider;
+    InspectorTest.addResult('Timeline Flame Chart');
+    InspectorTest.dumpFlameChartProvider(provider, includeGroups);
+}
+
 InspectorTest.FakeFileReader.prototype = {
     start: function(output)
     {

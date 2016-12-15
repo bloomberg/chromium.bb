@@ -43,13 +43,11 @@ function test()
         {
             InspectorTest.addResult("TimelineLifecycleDelegate.loadingComplete");
             InspectorTest.completeTest();
-        },
-
-        __proto__: Timeline.TimelineLifecycleDelegate
+        }
     };
 
     var controller = new Timeline.TimelineController(SDK.targetManager.mainTarget(), new TestTimelineLifecycleDelegate(), InspectorTest.createTracingModel());
-    controller.startRecording();
+    controller.startRecording({}, []);
 }
 
 </script>
