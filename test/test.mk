@@ -106,6 +106,7 @@ LIBAOM_TEST_SRCS-yes                   += av1_ext_tile_test.cc
 endif
 ifeq ($(CONFIG_ANS),yes)
 LIBAOM_TEST_SRCS-yes                   += ans_test.cc
+LIBAOM_TEST_SRCS-yes                   += ans_codec_test.cc
 else
 LIBAOM_TEST_SRCS-yes                   += boolcoder_test.cc
 ifeq ($(CONFIG_ACCOUNTING),yes)
