@@ -12,9 +12,9 @@
     // FIXME: Exposed=(Window,Worker)
     RuntimeEnabled=GeometryInterfaces,
 ] interface DOMMatrixReadOnly {
+    [RaisesException, NewObject] static DOMMatrixReadOnly fromMatrix(optional DOMMatrixInit other);
     [RaisesException, NewObject] static DOMMatrixReadOnly fromFloat32Array(Float32Array array32);
     [RaisesException, NewObject] static DOMMatrixReadOnly fromFloat64Array(Float64Array array64);
-    [RaisesException, NewObject] static DOMMatrixReadOnly fromMatrix(optional DOMMatrixInit other);
 
     // These attributes are simple aliases for certain elements of the 4x4 matrix
     readonly attribute unrestricted double a;
@@ -44,7 +44,6 @@
     readonly attribute boolean is2D;
     readonly attribute boolean isIdentity;
 
-    // TODO(zino): Should implement transformPoint() method (See: crbug.com/645885)
     // Immutable transform methods
     DOMMatrix translate(optional unrestricted double tx = 0,
                         optional unrestricted double ty = 0,
@@ -76,9 +75,8 @@
     DOMMatrix inverse();
 
     DOMPoint transformPoint(optional DOMPointInit point);
-
     Float32Array toFloat32Array();
     Float64Array toFloat64Array();
     stringifier;
-    serializer = {attribute};
+    serializer = { attribute };
 };

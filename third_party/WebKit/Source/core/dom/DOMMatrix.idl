@@ -9,13 +9,12 @@
     Constructor(DOMString transformList),
     Constructor(sequence<unrestricted double> numberSequence),
     RaisesException=Constructor,
-    // FIXME: Should implement more constructors (See: crbug.com/388780)
     // FIXME: Exposed=(Window,Worker)
     RuntimeEnabled=GeometryInterfaces,
 ] interface DOMMatrix : DOMMatrixReadOnly {
+    [RaisesException, NewObject] static DOMMatrix fromMatrix(optional DOMMatrixInit other);
     [RaisesException, NewObject] static DOMMatrix fromFloat32Array(Float32Array array32);
     [RaisesException, NewObject] static DOMMatrix fromFloat64Array(Float64Array array64);
-    [RaisesException, NewObject] static DOMMatrix fromMatrix(optional DOMMatrixInit other);
 
     // These attributes are simple aliases for certain elements of the 4x4 matrix
     inherit attribute unrestricted double a;
