@@ -13,6 +13,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_drag_dest_delegate.h"
+#include "content/public/common/child_process_host.h"
 #include "content/public/common/drop_data.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #import "third_party/mozilla/NSPasteboard+Utils.h"
@@ -57,6 +58,11 @@ int GetModifierFlags() {
   return modifier_state;
 }
 
+content::GlobalRoutingID GetRenderViewHostID(content::RenderViewHost* rvh) {
+  return content::GlobalRoutingID(rvh->GetProcess()->GetID(),
+                                  rvh->GetRoutingID());
+}
+
 }  // namespace
 
 @implementation WebDragDest
@@ -68,6 +74,9 @@ int GetModifierFlags() {
   if ((self = [super init])) {
     webContents_ = contents;
     canceled_ = false;
+    dragStartProcessID_ = content::ChildProcessHost::kInvalidUniqueID;
+    dragStartViewID_ = content::GlobalRoutingID(
+        content::ChildProcessHost::kInvalidUniqueID, MSG_ROUTING_NONE);
   }
   return self;
 }
@@ -141,9 +150,13 @@ int GetModifierFlags() {
     canceled_ = true;
     return NSDragOperationNone;
   }
-  currentRWHForDrag_ =
-      [self GetRenderWidgetHostAtPoint:viewPoint transformedPt:&transformedPt]
-          ->GetWeakPtr();
+
+  content::RenderWidgetHostImpl* targetRWH =
+      [self GetRenderWidgetHostAtPoint:viewPoint transformedPt:&transformedPt];
+  if (![self isValidDragTarget:targetRWH])
+    return NSDragOperationNone;
+
+  currentRWHForDrag_ = targetRWH->GetWeakPtr();
 
   // Fill out a DropData from pasteboard.
   std::unique_ptr<DropData> dropData;
@@ -224,6 +237,9 @@ int GetModifierFlags() {
   content::RenderWidgetHostImpl* targetRWH =
       [self GetRenderWidgetHostAtPoint:viewPoint transformedPt:&transformedPt];
 
+  if (![self isValidDragTarget:targetRWH])
+    return NSDragOperationNone;
+
   // TODO(paulmeyer): The dragging delegates may now by invoked multiple times
   // per drag, even without the drag ever leaving the window.
   if (targetRWH != currentRWHForDrag_.get()) {
@@ -262,6 +278,9 @@ int GetModifierFlags() {
   gfx::Point transformedPt;
   content::RenderWidgetHostImpl* targetRWH =
       [self GetRenderWidgetHostAtPoint:viewPoint transformedPt:&transformedPt];
+
+  if (![self isValidDragTarget:targetRWH])
+    return NO;
 
   if (targetRWH != currentRWHForDrag_.get()) {
     if (currentRWHForDrag_)
@@ -304,6 +323,17 @@ GetRenderWidgetHostAtPoint:(const NSPoint&)viewPoint
   return webContents_->GetInputEventRouter()->GetRenderWidgetHostAtPoint(
       webContents_->GetRenderViewHost()->GetWidget()->GetView(),
       gfx::Point(viewPoint.x, viewPoint.y), transformedPt);
+}
+
+- (void)setDragStartTrackersForProcess:(int)processID {
+  dragStartProcessID_ = processID;
+  dragStartViewID_ = GetRenderViewHostID(webContents_->GetRenderViewHost());
+}
+
+- (bool)isValidDragTarget:(content::RenderWidgetHostImpl*)targetRWH {
+  return targetRWH->GetProcess()->GetID() == dragStartProcessID_ ||
+         GetRenderViewHostID(webContents_->GetRenderViewHost()) !=
+             dragStartViewID_;
 }
 
 // Given |data|, which should not be nil, fill it in using the contents of the

@@ -549,6 +549,7 @@ void WebContentsViewMac::CloseTab() {
                        offset:(NSPoint)offset {
   if (![self webContents])
     return;
+  [dragDest_ setDragStartTrackersForProcess:sourceRWH->GetProcess()->GetID()];
   dragSource_.reset([[WebDragSource alloc]
        initWithContents:[self webContents]
                    view:self
