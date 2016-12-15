@@ -46,6 +46,12 @@ function test()
             fileSystemCode.setWorkingCopy("window.foo4 = 4;");
         },
 
+        function resetFileSystemWorkingCopy(next)
+        {
+            InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", dumpWorkingCopiesAndNext.bind(null, next));
+            fileSystemCode.resetWorkingCopy();
+        },
+
         function setNetworkRevision(next)
         {
             InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", dumpWorkingCopiesAndNext.bind(null, next));

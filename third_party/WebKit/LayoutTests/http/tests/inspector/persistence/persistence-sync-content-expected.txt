@@ -18,6 +18,10 @@ Running: addFileSystemWorkingCopy
 network code: 'window.foo4 = 4;'
 fileSystem code: 'window.foo4 = 4;'
 
+Running: resetFileSystemWorkingCopy
+network code: 'window.foo3 = 3;'
+fileSystem code: 'window.foo3 = 3;'
+
 Running: setNetworkRevision
 network code: 'window.foo2 = 2;'
 fileSystem code: 'window.foo2 = 2;'
