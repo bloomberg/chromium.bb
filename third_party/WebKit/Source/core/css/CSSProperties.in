@@ -357,7 +357,7 @@ stroke-opacity interpolable, inherited, svg, converter=convertNumberOrPercentage
 stroke-width interpolable, inherited, svg, converter=convertUnzoomedLength
 table-layout
 tab-size inherited, converter=convertLengthOrTabSpaces, type_name=TabSize
-text-align inherited, custom_value
+text-align inherited, custom_value, keyword_only, keywords=[left|right|center|justify|webkitLeft|webkitRight|webkitCenter|start|end], initial_keyword=start
 text-align-last inherited, type_name=TextAlignLast
 text-anchor inherited, svg
 text-combine-upright inherited, type_name=TextCombine, name_for_methods=TextCombine

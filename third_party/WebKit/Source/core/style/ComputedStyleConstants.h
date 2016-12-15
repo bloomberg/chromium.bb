@@ -325,20 +325,6 @@ enum QuoteType { OPEN_QUOTE, CLOSE_QUOTE, NO_OPEN_QUOTE, NO_CLOSE_QUOTE };
 
 enum EAnimPlayState { AnimPlayStatePlaying, AnimPlayStatePaused };
 
-// The order of this enum must match the order of the text align values in
-// CSSValueKeywords.in.
-enum class ETextAlign : unsigned {
-  Left,
-  Right,
-  Center,
-  Justify,
-  WebkitLeft,
-  WebkitRight,
-  WebkitCenter,
-  Start,
-  End,
-};
-
 static const size_t TextDecorationBits = 4;
 enum TextDecoration {
   TextDecorationNone = 0x0,

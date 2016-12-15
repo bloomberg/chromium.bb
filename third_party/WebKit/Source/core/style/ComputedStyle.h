@@ -199,7 +199,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   struct InheritedData {
     bool operator==(const InheritedData& other) const {
       return (m_listStyleType == other.m_listStyleType) &&
-             (m_textAlign == other.m_textAlign) &&
              (m_hasSimpleUnderline == other.m_hasSimpleUnderline) &&
              (m_cursorStyle == other.m_cursorStyle) &&
              (m_direction == other.m_direction) &&
@@ -213,7 +212,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     }
 
     unsigned m_listStyleType : 7;      // EListStyleType
-    unsigned m_textAlign : 4;          // ETextAlign
     unsigned m_hasSimpleUnderline : 1;  // True if 'underline solid' is the only
                                         // text decoration on this element.
     unsigned m_cursorStyle : 6;     // ECursor
@@ -317,7 +315,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     ComputedStyleBase::setBitDefaults();
     m_inheritedData.m_listStyleType =
         static_cast<unsigned>(initialListStyleType());
-    m_inheritedData.m_textAlign = static_cast<unsigned>(initialTextAlign());
     m_inheritedData.m_hasSimpleUnderline = false;
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
     m_inheritedData.m_direction = initialDirection();
@@ -2122,15 +2119,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   TabSize getTabSize() const { return m_rareInheritedData->m_tabSize; }
   void setTabSize(TabSize size) {
     SET_VAR(m_rareInheritedData, m_tabSize, size);
-  }
-
-  // text-align
-  static ETextAlign initialTextAlign() { return ETextAlign::Start; }
-  ETextAlign textAlign() const {
-    return static_cast<ETextAlign>(m_inheritedData.m_textAlign);
-  }
-  void setTextAlign(ETextAlign v) {
-    m_inheritedData.m_textAlign = static_cast<unsigned>(v);
   }
 
   // text-align-last
