@@ -88,15 +88,6 @@ base::string16 CriticalNotificationBubbleView::GetWindowTitle() const {
                            IDS_CRITICAL_NOTIFICATION_HEADLINE_ALTERNATE);
 }
 
-gfx::ImageSkia CriticalNotificationBubbleView::GetWindowIcon() {
-  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_UPDATE_MENU_SEVERITY_HIGH);
-}
-
-bool CriticalNotificationBubbleView::ShouldShowWindowIcon() const {
-  return true;
-}
-
 void CriticalNotificationBubbleView::WindowClosing() {
   refresh_timer_.Stop();
 }

@@ -13,13 +13,11 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/user_metrics.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/layout_constants.h"
@@ -98,15 +96,6 @@ void OutdatedUpgradeBubbleView::WindowClosing() {
 
 base::string16 OutdatedUpgradeBubbleView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_UPGRADE_BUBBLE_TITLE);
-}
-
-gfx::ImageSkia OutdatedUpgradeBubbleView::GetWindowIcon() {
-  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      IDR_UPDATE_MENU_SEVERITY_HIGH);
-}
-
-bool OutdatedUpgradeBubbleView::ShouldShowWindowIcon() const {
-  return true;
 }
 
 bool OutdatedUpgradeBubbleView::Cancel() {

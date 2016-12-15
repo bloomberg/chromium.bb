@@ -31,8 +31,6 @@ class OutdatedUpgradeBubbleView : public views::BubbleDialogDelegateView {
   // views::BubbleDialogDelegateView methods.
   void WindowClosing() override;
   base::string16 GetWindowTitle() const override;
-  gfx::ImageSkia GetWindowIcon() override;
-  bool ShouldShowWindowIcon() const override;
   bool Cancel() override;
   bool Accept() override;
   void UpdateButton(views::LabelButton* button, ui::DialogButton type) override;
