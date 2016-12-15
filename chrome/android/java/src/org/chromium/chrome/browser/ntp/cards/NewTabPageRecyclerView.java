@@ -82,6 +82,9 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
     /** Whether the above-the-fold left space for a peeking card to be displayed. */
     private boolean mHasSpaceForPeekingCard;
 
+    /** Whether the above-the-fold view has ever been rendered. */
+    private boolean mHasRenderedAboveTheFoldView;
+
     /**
      * Constructor needed to inflate from XML.
      */
@@ -108,6 +111,19 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
                 res.getDimensionPixelSize(R.dimen.snippets_peeking_card_bounce_distance);
 
         setHasFixedSize(true);
+
+        addOnChildAttachStateChangeListener(new OnChildAttachStateChangeListener() {
+            @Override
+            public void onChildViewAttachedToWindow(View view) {
+                if (view == mAboveTheFoldView) {
+                    mHasRenderedAboveTheFoldView = true;
+                    removeOnChildAttachStateChangeListener(this);
+                }
+            }
+
+            @Override
+            public void onChildViewDetachedFromWindow(View view) {}
+        });
     }
 
     public boolean isFirstItemVisible() {
@@ -207,8 +223,11 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
             return 0;
         }
 
-        // We have enough items to fill the view, since the above-the-fold item is not even visible.
-        if (firstVisiblePos > aboveTheFoldPosition) {
+        if (firstVisiblePos > aboveTheFoldPosition && mHasRenderedAboveTheFoldView) {
+            // We have enough items to fill the viewport, since we have scrolled past the
+            // above-the-fold item. We must check whether the above-the-fold view has been rendered
+            // at least once, because it's possible to skip right over it if the initial scroll
+            // position is not 0, in which case we may need the spacer to be taller than 0.
             return 0;
         }
 
