@@ -636,9 +636,15 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewWindow) {
   EXPECT_EQ(1, params.browser->tab_strip_model()->count());
 }
 
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on ASAN on Mac. See https://crbug.com/674497.
+#define MAYBE_Disposition_Incognito DISABLED_Disposition_Incognito
+#else
+#define MAYBE_Disposition_Incognito Disposition_Incognito
+#endif
 // This test verifies that navigating with WindowOpenDisposition = INCOGNITO
 // opens a new incognito window if no existing incognito window is present.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_Incognito) {
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, MAYBE_Disposition_Incognito) {
   chrome::NavigateParams params(MakeNavigateParams());
   params.disposition = WindowOpenDisposition::OFF_THE_RECORD;
   chrome::Navigate(&params);
