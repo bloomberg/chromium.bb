@@ -109,11 +109,17 @@ std::vector<em::VolumeInfo> GetVolumeInfo(
   std::vector<em::VolumeInfo> result;
   for (const std::string& mount_point : mount_points) {
     base::FilePath mount_path(mount_point);
+
+    // Non-native file systems do not have a mount point in the local file
+    // system. However, it's worth checking here, as it's easier than checking
+    // earlier which mount point is local, and which one is not.
+    if (mount_point.empty() || !base::PathExists(mount_path))
+      continue;
+
     int64_t free_size = base::SysInfo::AmountOfFreeDiskSpace(mount_path);
     int64_t total_size = base::SysInfo::AmountOfTotalDiskSpace(mount_path);
     if (free_size < 0 || total_size < 0) {
-      LOG_IF(ERROR, !mount_point.empty()) << "Unable to get volume status for "
-                                          << mount_point;
+      LOG(ERROR) << "Unable to get volume status for " << mount_point;
       continue;
     }
     em::VolumeInfo info;
