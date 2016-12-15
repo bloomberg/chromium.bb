@@ -101,9 +101,9 @@ class ServiceManager::Instance
     DCHECK_NE(mojom::kInvalidInstanceID, id_);
   }
 
-  ~Instance() override {
-    // Shutdown all bindings before we close the runner. This way the process
-    // should see the pipes closed and exit, as well as waking up any potential
+  void Stop() {
+    // Shutdown all bindings. This way the process should see the pipes closed
+    // and exit, as well as waking up any potential
     // sync/WaitForIncomingResponse().
     service_.reset();
     if (pid_receiver_binding_.is_bound())
@@ -118,26 +118,15 @@ class ServiceManager::Instance
       // Notify the ServiceManager that this Instance is really going away.
       service_manager_->OnInstanceStopped(identity_);
     }
+  }
+
+  ~Instance() override {
+    Stop();
 
     // Release |runner_| so that if we are called back to OnRunnerCompleted()
     // we know we're in the destructor.
     std::unique_ptr<NativeRunner> runner = std::move(runner_);
     runner.reset();
-  }
-
-  Instance* parent() const { return parent_; }
-
-  void AddChild(std::unique_ptr<Instance> child) {
-    child->parent_ = this;
-    children_.insert(std::make_pair(child.get(), std::move(child)));
-  }
-
-  void RemoveChild(Instance* child) {
-    auto it = children_.find(child);
-    DCHECK(it != children_.end());
-
-    // Deletes |child|.
-    children_.erase(it);
   }
 
   bool ConnectToService(std::unique_ptr<ConnectParams>* connect_params) {
@@ -473,8 +462,6 @@ class ServiceManager::Instance
   mojo::BindingSet<mojom::ServiceManager> service_manager_bindings_;
   mojo::AssociatedBinding<mojom::ServiceControl> control_binding_;
   base::ProcessId pid_ = base::kNullProcessId;
-  Instance* parent_ = nullptr;
-  InstanceMap children_;
   State state_;
 
   // The number of outstanding OnConnect requests which are in flight.
@@ -567,11 +554,20 @@ ServiceManager::~ServiceManager() {
   // hitting bindings DCHECKs, since the ServiceManager or Catalog may at any
   // given time own in-flight responders for Instances' Connector requests.
   std::unique_ptr<Instance> service_manager_instance;
-  auto iter = root_instances_.find(service_manager_instance_);
-  DCHECK(iter != root_instances_.end());
+  auto iter = instances_.find(service_manager_instance_);
+  DCHECK(iter != instances_.end());
   service_manager_instance = std::move(iter->second);
 
-  root_instances_.clear();
+  // Stop all of the instances before destroying any of them. This ensures that
+  // all Services will receive connection errors and avoids possible deadlock in
+  // the case where one Instance's destructor blocks waiting for its Runner to
+  // quit, while that Runner's corresponding Service blocks its shutdown on a
+  // distinct Service receiving a connection error.
+  for (const auto& instance : instances_)
+    instance.first->Stop();
+  service_manager_instance->Stop();
+
+  instances_.clear();
 }
 
 void ServiceManager::SetServiceOverrides(
@@ -642,16 +638,11 @@ void ServiceManager::OnInstanceError(Instance* instance) {
     return;
 
   EraseInstanceIdentity(instance);
-  if (instance->parent()) {
-    // Deletes |instance|.
-    instance->parent()->RemoveChild(instance);
-  } else {
-    auto it = root_instances_.find(instance);
-    DCHECK(it != root_instances_.end());
+  auto it = instances_.find(instance);
+  DCHECK(it != instances_.end());
 
-    // Deletes |instance|.
-    root_instances_.erase(it);
-  }
+  // Deletes |instance|.
+  instances_.erase(it);
 }
 
 void ServiceManager::OnInstanceUnreachable(Instance* instance) {
@@ -769,11 +760,7 @@ ServiceManager::Instance* ServiceManager::CreateInstance(
   auto instance = base::MakeUnique<Instance>(this, target, specs);
   Instance* raw_instance = instance.get();
 
-  Instance* source_instance = GetExistingInstance(source);
-  if (source_instance)
-    source_instance->AddChild(std::move(instance));
-  else
-    root_instances_.insert(std::make_pair(raw_instance, std::move(instance)));
+  instances_.insert(std::make_pair(raw_instance, std::move(instance)));
 
   // NOTE: |instance| has been passed elsewhere. Use |raw_instance| from this
   // point forward. It's safe for the extent of this method.
