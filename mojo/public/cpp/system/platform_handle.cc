@@ -66,6 +66,13 @@ ScopedSharedBufferHandle WrapSharedMemoryHandle(
     const base::SharedMemoryHandle& memory_handle,
     size_t size,
     bool read_only) {
+#if defined(OS_POSIX) && !(defined(OS_MACOSX) && !defined(OS_IOS))
+  if (memory_handle.fd == base::kInvalidPlatformFile)
+    return ScopedSharedBufferHandle();
+#else
+  if (!memory_handle.IsValid())
+    return ScopedSharedBufferHandle();
+#endif
   MojoPlatformHandle platform_handle;
   platform_handle.struct_size = sizeof(MojoPlatformHandle);
   platform_handle.type = kPlatformSharedBufferHandleType;
@@ -96,6 +103,8 @@ MojoResult UnwrapSharedMemoryHandle(ScopedSharedBufferHandle handle,
                                     base::SharedMemoryHandle* memory_handle,
                                     size_t* size,
                                     bool* read_only) {
+  if (!handle.is_valid())
+    return MOJO_RESULT_INVALID_ARGUMENT;
   MojoPlatformHandle platform_handle;
   platform_handle.struct_size = sizeof(MojoPlatformHandle);
 

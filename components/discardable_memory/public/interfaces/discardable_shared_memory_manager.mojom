@@ -10,7 +10,7 @@ interface DiscardableSharedMemoryManager {
   // Allocate a locked discardable shared memory segment.
   AllocateLockedDiscardableSharedMemory(
       uint32 size,
-      int32 id) => (handle<shared_buffer> memory);
+      int32 id) => (handle<shared_buffer>? memory);
   // Notify manager that a memory segment has been deleted.
   DeletedDiscardableSharedMemory(int32 id);
 };
