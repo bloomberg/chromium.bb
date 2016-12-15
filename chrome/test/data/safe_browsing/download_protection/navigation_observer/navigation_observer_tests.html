@@ -26,7 +26,7 @@
       tab.document.write('<META HTTP-EQUIV="refresh" content="0; url=../signed.exe">');
       tab.document.close();
     }
-    
+
     // Trigger download in a new tab and the download is from a data url.
     function downloadInNewTabWithDataURL() {
        var tab = window.open('');
@@ -34,7 +34,7 @@
        tab.document.write('<META HTTP-EQUIV="refresh" content="0; url=data:application/octet-stream;base64,a2poYWxrc2hkbGtoYXNka2xoYXNsa2RoYWxraGtoYWxza2hka2xzamFoZGxramhhc2xka2hhc2xrZGgKYXNrZGpoa2FzZGpoYWtzaGRrYXNoZGtoYXNrZGhhc2tkaGthc2hka2Foc2RraGFrc2hka2FzaGRraGFzCmFza2pkaGFrc2hkbSxjbmtzamFoZGtoYXNrZGhhc2tka2hrYXNkCjg3MzQ2ODEyNzQ2OGtqc2hka2FoZHNrZGhraApha3NqZGthc2Roa3NkaGthc2hka2FzaGtkaAohISomXkAqJl4qYWhpZGFzeWRpeWlhc1xcb1wKa2Fqc2Roa2FzaGRrYXNoZGsKYWtzamRoc2tkaAplbmQK">');
        tab.document.close();
     }
-    
+
     // Create a data blob and save it as a test.exe file in filesystem's
     // space with use URL filesystem:http://test_host/temporary/test.exe
     // to download it.
@@ -117,6 +117,14 @@
 
     <a id="html5_file_api" href="" onclick="downloadViaFileApi()">
       Download via HTML5 file system API
-    </a>
+    </a><br>
+
+    <a id="complete_referrer_chain" href="redirect_to_landing.html">
+      Click on landing referrer and landing page then reach download
+    </a><br>
+
+    <a id="attribution_within_two_user_gestures" href="page_before_landing_referrer.html">
+      Attribution should not trace back more than 2 user gestures.
+    </a><br>
   </body>
 </html>

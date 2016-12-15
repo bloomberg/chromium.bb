@@ -5,7 +5,10 @@
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
@@ -21,20 +24,36 @@ using content::WebContents;
 
 namespace safe_browsing {
 
+namespace {
+
+// Given when an event happened and its TTL, determine if it is already expired.
+// Note, if for some reason this event's timestamp is in the future, this
+// event's timestamp is invalid, hence we treat it as expired.
+bool IsEventExpired(const base::Time& event_time, double ttl_in_second) {
+  double current_time_in_second = base::Time::Now().ToDoubleT();
+  double event_time_in_second = event_time.ToDoubleT();
+  if (current_time_in_second <= event_time_in_second)
+    return true;
+  return current_time_in_second - event_time_in_second > ttl_in_second;
+}
+
+}  // namespace
+
 // The expiration period of a user gesture. Any user gesture that happened 1.0
-// second ago will be considered as expired and not relevant to upcoming
-// navigation events.
+// second ago is considered as expired and not relevant to upcoming navigation
+// events.
 static const double kUserGestureTTLInSecond = 1.0;
+// The expiration period of navigation events and resolved IP addresses. Any
+// navigation related records that happened 2 minutes ago are considered as
+// expired. So we clean up these navigation footprints every 2 minutes.
+static const double kNavigationFootprintTTLInSecond = 120.0;
+// The number of user gestures we trace back for download attribution.
+static const int kDownloadAttributionUserGestureLimit = 2;
 
 // static
 bool SafeBrowsingNavigationObserverManager::IsUserGestureExpired(
     const base::Time& timestamp) {
-  double now = base::Time::Now().ToDoubleT();
-  double timestamp_in_double = timestamp.ToDoubleT();
-
-  if (now <= timestamp_in_double)
-    return true;
-  return (now - timestamp_in_double) > kUserGestureTTLInSecond;
+  return IsEventExpired(timestamp, kUserGestureTTLInSecond);
 }
 
 // static
@@ -50,6 +69,9 @@ GURL SafeBrowsingNavigationObserverManager::ClearEmptyRef(const GURL& url) {
 SafeBrowsingNavigationObserverManager::SafeBrowsingNavigationObserverManager() {
   registrar_.Add(this, chrome::NOTIFICATION_RETARGETING,
                  content::NotificationService::AllSources());
+
+  // TODO(jialiul): call ScheduleNextCleanUpAfterInterval() when this class is
+  // ready to be hooked into SafeBrowsingService.
 }
 
 void SafeBrowsingNavigationObserverManager::RecordNavigationEvent(
@@ -104,7 +126,109 @@ void SafeBrowsingNavigationObserverManager::RecordHostToIpMapping(
 void SafeBrowsingNavigationObserverManager::OnWebContentDestroyed(
     content::WebContents* web_contents) {
   user_gesture_map_.erase(web_contents);
-  // TODO (jialiul): Will add other clean up tasks shortly.
+}
+
+void SafeBrowsingNavigationObserverManager::CleanUpStaleNavigationFootprints() {
+  CleanUpNavigationEvents();
+  CleanUpUserGestures();
+  CleanUpIpAddresses();
+  ScheduleNextCleanUpAfterInterval(
+      base::TimeDelta::FromSecondsD(kNavigationFootprintTTLInSecond));
+}
+
+SafeBrowsingNavigationObserverManager::AttributionResult
+SafeBrowsingNavigationObserverManager::IdentifyReferrerChain(
+    const GURL& target_url,
+    int target_tab_id,
+    int user_gesture_count_limit,
+    std::vector<ReferrerChainEntry>* out_referrer_chain) {
+  if (!target_url.is_valid())
+    return INVALID_URL;
+
+  NavigationEvent* nav_event = FindNavigationEvent(target_url, target_tab_id);
+  if (!nav_event) {
+    // We cannot find a single navigation event related to this download.
+    return NAVIGATION_EVENT_NOT_FOUND;
+  }
+
+  AddToReferrerChain(out_referrer_chain, nav_event,
+                     ReferrerChainEntry::DOWNLOAD_URL);
+  AttributionResult result = SUCCESS;
+  int user_gesture_count = 0;
+  while (user_gesture_count < user_gesture_count_limit) {
+    // Back trace to the next nav_event that was initiated by the user.
+    while (!nav_event->is_user_initiated) {
+      nav_event =
+          FindNavigationEvent(nav_event->source_url, nav_event->source_tab_id);
+      if (!nav_event)
+        return result;
+      AddToReferrerChain(out_referrer_chain, nav_event,
+                         nav_event->has_server_redirect
+                             ? ReferrerChainEntry::SERVER_REDIRECT
+                             : ReferrerChainEntry::CLIENT_REDIRECT);
+    }
+
+    user_gesture_count++;
+
+    // If the source_url and source_main_frame_url of current navigation event
+    // are empty, and is_user_initiated is true, this is a browser initiated
+    // navigation (e.g. trigged by typing in address bar, clicking on bookmark,
+    // etc). We reached the end of the referrer chain.
+    if (nav_event->source_url.is_empty() &&
+        nav_event->source_main_frame_url.is_empty()) {
+      DCHECK(nav_event->is_user_initiated);
+      return result;
+    }
+
+    nav_event =
+        FindNavigationEvent(nav_event->source_url, nav_event->source_tab_id);
+    if (!nav_event)
+      return result;
+
+    // Landing page of a download refers to the page user directly interacts
+    // with to trigger this download (e.g. clicking on download button). Landing
+    // referrer page is the one user interacts with right before navigating to
+    // the landing page.
+    // Since we are tracing navigations backwards, if we've encountered 1 user
+    // gesture before this navigation event, this is a navigation leading to the
+    // landing page. If we've encountered 2 user gestures, it leads to landing
+    // referrer page.
+    if (user_gesture_count == 1) {
+      AddToReferrerChain(out_referrer_chain, nav_event,
+                         ReferrerChainEntry::LANDING_PAGE);
+      result = SUCCESS_LANDING_PAGE;
+    } else if (user_gesture_count == 2) {
+      AddToReferrerChain(out_referrer_chain, nav_event,
+                         ReferrerChainEntry::LANDING_REFERRER);
+      result = SUCCESS_LANDING_REFERRER;
+    } else {
+      NOTREACHED();
+    }
+  }
+  return result;
+}
+
+void SafeBrowsingNavigationObserverManager::
+    AddReferrerChainToClientDownloadRequest(
+        const GURL& download_url,
+        content::WebContents* source_contents,
+        ClientDownloadRequest* out_request) {
+  int download_tab_id = SessionTabHelper::IdForTab(source_contents);
+  UMA_HISTOGRAM_BOOLEAN(
+      "SafeBrowsing.ReferrerHasInvalidTabID.DownloadAttribution",
+      download_tab_id == -1);
+  std::vector<ReferrerChainEntry> attribution_chain;
+  AttributionResult result = IdentifyReferrerChain(
+      download_url, download_tab_id, kDownloadAttributionUserGestureLimit,
+      &attribution_chain);
+  UMA_HISTOGRAM_COUNTS_100(
+      "SafeBrowsing.ReferrerURLChainSize.DownloadAttribution",
+      attribution_chain.size());
+  UMA_HISTOGRAM_ENUMERATION(
+      "SafeBrowsing.ReferrerAttributionResult.DownloadAttribution", result,
+      SafeBrowsingNavigationObserverManager::ATTRIBUTION_FAILURE_TYPE_MAX);
+  for (auto entry : attribution_chain)
+    *out_request->add_referrer_chain() = entry;
 }
 
 SafeBrowsingNavigationObserverManager::
@@ -164,6 +288,117 @@ void SafeBrowsingNavigationObserverManager::RecordRetargeting(
   auto insertion_result = navigation_map_.insert(
       std::make_pair(target_url, std::vector<NavigationEvent>()));
   insertion_result.first->second.push_back(std::move(nav_event));
+}
+
+void SafeBrowsingNavigationObserverManager::CleanUpNavigationEvents() {
+  // Remove any stale NavigationEnvent, if it is older than
+  // kNavigationFootprintTTLInSecond.
+  for (auto it = navigation_map_.begin(); it != navigation_map_.end();) {
+    it->second.erase(std::remove_if(it->second.begin(), it->second.end(),
+                                    [](const NavigationEvent& nav_event) {
+                                      return IsEventExpired(
+                                          nav_event.last_updated,
+                                          kNavigationFootprintTTLInSecond);
+                                    }),
+                     it->second.end());
+    if (it->second.size() == 0)
+      it = navigation_map_.erase(it);
+    else
+      ++it;
+  }
+}
+
+void SafeBrowsingNavigationObserverManager::CleanUpUserGestures() {
+  for (auto it = user_gesture_map_.begin(); it != user_gesture_map_.end();) {
+    if (IsEventExpired(it->second, kUserGestureTTLInSecond))
+      it = user_gesture_map_.erase(it);
+    else
+      ++it;
+  }
+}
+
+void SafeBrowsingNavigationObserverManager::CleanUpIpAddresses() {
+  for (auto it = host_to_ip_map_.begin(); it != host_to_ip_map_.end();) {
+    it->second.erase(std::remove_if(it->second.begin(), it->second.end(),
+                                    [](const ResolvedIPAddress& resolved_ip) {
+                                      return IsEventExpired(
+                                          resolved_ip.timestamp,
+                                          kNavigationFootprintTTLInSecond);
+                                    }),
+                     it->second.end());
+    if (it->second.size() == 0)
+      it = host_to_ip_map_.erase(it);
+    else
+      ++it;
+  }
+}
+
+bool SafeBrowsingNavigationObserverManager::IsCleanUpScheduled() const {
+  return cleanup_timer_.IsRunning();
+}
+
+void SafeBrowsingNavigationObserverManager::ScheduleNextCleanUpAfterInterval(
+    base::TimeDelta interval) {
+  DCHECK_GT(interval, base::TimeDelta());
+  cleanup_timer_.Stop();
+  cleanup_timer_.Start(
+      FROM_HERE, interval, this,
+      &SafeBrowsingNavigationObserverManager::CleanUpStaleNavigationFootprints);
+}
+
+NavigationEvent* SafeBrowsingNavigationObserverManager::FindNavigationEvent(
+    const GURL& target_url,
+    int target_tab_id) {
+  auto it = navigation_map_.find(target_url);
+  if (it == navigation_map_.end()) {
+    return nullptr;
+  }
+  // Since navigation events are recorded in chronological order, we traverse
+  // the vector in reverse order to get the latest match.
+  for (auto rit = it->second.rbegin(); rit != it->second.rend(); ++rit) {
+    // If tab id is not valid, we only compare url, otherwise we compare both.
+    if (rit->destination_url == target_url &&
+        (target_tab_id == -1 || rit->target_tab_id == target_tab_id)) {
+      // If both source_url and source_main_frame_url are empty, and this
+      // navigation is not triggered by user, a retargeting navigation probably
+      // causes this navigation. In this case, we skip this navigation event and
+      // looks for the retargeting navigation event.
+      if (rit->source_url.is_empty() && rit->source_main_frame_url.is_empty() &&
+          !rit->is_user_initiated) {
+        continue;
+      } else {
+        return &*rit;
+      }
+    }
+  }
+  return nullptr;
+}
+
+void SafeBrowsingNavigationObserverManager::AddToReferrerChain(
+    std::vector<ReferrerChainEntry>* referrer_chain,
+    NavigationEvent* nav_event,
+    ReferrerChainEntry::URLType type) {
+  ReferrerChainEntry referrer_chain_entry;
+  referrer_chain_entry.set_url(nav_event->destination_url.spec());
+  referrer_chain_entry.set_type(type);
+  auto ip_it = host_to_ip_map_.find(nav_event->destination_url.host());
+  if (ip_it != host_to_ip_map_.end()) {
+    for (ResolvedIPAddress entry : ip_it->second) {
+      referrer_chain_entry.add_ip_addresses(entry.ip);
+    }
+  }
+  // Since we only track navigation to landing referrer, we will not log the
+  // referrer of the landing referrer page.
+  if (type != ReferrerChainEntry::LANDING_REFERRER) {
+    referrer_chain_entry.set_referrer_url(nav_event->source_url.spec());
+    referrer_chain_entry.set_referrer_main_frame_url(
+        nav_event->source_main_frame_url.spec());
+  }
+  referrer_chain_entry.set_is_retargeting(nav_event->source_tab_id !=
+                                          nav_event->target_tab_id);
+  referrer_chain_entry.set_navigation_time_msec(
+      nav_event->last_updated.ToJavaTime());
+  referrer_chain->push_back(referrer_chain_entry);
 }
 
 }  // namespace safe_browsing

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_NAVIGATION_OBSERVER_MANAGER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_NAVIGATION_OBSERVER_MANAGER_H_
 
+#include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -17,7 +18,7 @@ struct NavigationEvent;
 struct ResolvedIPAddress;
 
 // Manager class for SafeBrowsingNavigationObserver, which is in charge of
-// cleaning up stale navigation events, and identifing landing page/landing
+// cleaning up stale navigation events, and identifying landing page/landing
 // referrer for a specific download.
 // TODO(jialiul): For now, SafeBrowsingNavigationObserverManager also listens to
 // NOTIFICATION_RETARGETING as a way to detect cross frame/tab navigation.
@@ -27,6 +28,18 @@ class SafeBrowsingNavigationObserverManager
     : public content::NotificationObserver,
       public base::RefCountedThreadSafe<SafeBrowsingNavigationObserverManager> {
  public:
+  // For UMA histogram counting. Do NOT change order.
+  enum AttributionResult {
+    SUCCESS = 1,                   // Identified referrer chain is not empty.
+    SUCCESS_LANDING_PAGE = 2,      // Successfully identified landing page.
+    SUCCESS_LANDING_REFERRER = 3,  // Successfully identified landing referrer.
+    INVALID_URL = 4,
+    NAVIGATION_EVENT_NOT_FOUND = 5,
+
+    // Always at the end.
+    ATTRIBUTION_FAILURE_TYPE_MAX
+  };
+
   // Helper function to check if user gesture is older than
   // kUserGestureTTLInSecond.
   static bool IsUserGestureExpired(const base::Time& timestamp);
@@ -47,10 +60,34 @@ class SafeBrowsingNavigationObserverManager
   void OnUserGestureConsumed(content::WebContents* web_contents,
                              const base::Time& timestamp);
   void RecordHostToIpMapping(const std::string& host, const std::string& ip);
+
   // Clean-ups need to be done when a WebContents gets destroyed.
   void OnWebContentDestroyed(content::WebContents* web_contents);
 
-  // TODO(jialiul): more functions are coming for managing navigation_map_.
+  // Remove all the observed NavigationEvents, user gestures, and resolved IP
+  // addresses that are older than kNavigationFootprintTTLInSecond.
+  void CleanUpStaleNavigationFootprints();
+
+  // Based on the |target_url| and |target_tab_id|, trace back the observed
+  // NavigationEvents in navigation_map_ to identify the sequence of navigations
+  // leading to the target, with the coverage limited to
+  // |user_gesture_count_limit| number of user gestures. Then convert these
+  // identified NavigationEvents into ReferrerChainEntrys and append them to
+  // |out_referrer_chain|.
+  AttributionResult IdentifyReferrerChain(
+      const GURL& target_url,
+      int target_tab_id,  // -1 if tab id is not valid
+      int user_gesture_count_limit,
+      std::vector<ReferrerChainEntry>* out_referrer_chain);
+
+  // Identify and add referrer chain info of a download to ClientDownloadRequest
+  // proto. This function also record UMA stats of download attribution result.
+  // TODO(jialiul): This function will be moved to DownloadProtectionService
+  // class shortly.
+  void AddReferrerChainToClientDownloadRequest(
+      const GURL& download_url,
+      content::WebContents* source_contents,
+      ClientDownloadRequest* out_request);
 
  private:
   friend class base::RefCountedThreadSafe<
@@ -84,6 +121,45 @@ class SafeBrowsingNavigationObserverManager
 
   HostToIpMap* host_to_ip_map() { return &host_to_ip_map_; }
 
+  // Remove stale entries from navigation_map_ if they are older than
+  // kNavigationFootprintTTLInSecond (2 minutes).
+  void CleanUpNavigationEvents();
+
+  // Remove stale entries from user_gesture_map_ if they are older than
+  // kUserGestureTTLInSecond (1 sec).
+  void CleanUpUserGestures();
+
+  // Remove stale entries from host_to_ip_map_ if they are older than
+  // kNavigationFootprintTTLInSecond (2 minutes).
+  void CleanUpIpAddresses();
+
+  bool IsCleanUpScheduled() const;
+
+  void ScheduleNextCleanUpAfterInterval(base::TimeDelta interval);
+
+  // Find the most recent navigation event that navigated to |target_url| in the
+  // tab with ID |target_tab_id|. If |target_tab_id| is not available (-1), we
+  // look for all tabs for the most recent navigation to |target_url|.
+  // For some cases, the most recent navigation to |target_url| may not be
+  // relevant.
+  // For example, url1 in window A opens url2 in window B, url1 then opens an
+  // about:blank page window C and injects script code in it to trigger a
+  // delayed download in Window D. Before the download occurs, url2 in window B
+  // opens a different about:blank page in window C.
+  // A ---- C - D
+  //   \   /
+  //     B
+  // In this case, FindNavigationEvent() will think url2 in Window B is the
+  // referrer of about::blank in Window C since this navigation is more recent.
+  // However, it does not prevent us to attribute url1 in Window A as the cause
+  // of all these navigations.
+  NavigationEvent* FindNavigationEvent(const GURL& target_url,
+                                       int target_tab_id);
+
+  void AddToReferrerChain(std::vector<ReferrerChainEntry>* referrer_chain,
+                          NavigationEvent* nav_event,
+                          ReferrerChainEntry::URLType type);
+
   // navigation_map_ keeps track of all the observed navigations. This map is
   // keyed on the resolved request url. In other words, in case of server
   // redirects, its key is the last server redirect url, otherwise, it is the
@@ -107,6 +183,8 @@ class SafeBrowsingNavigationObserverManager
   HostToIpMap host_to_ip_map_;
 
   content::NotificationRegistrar registrar_;
+
+  base::OneShotTimer cleanup_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingNavigationObserverManager);
 };

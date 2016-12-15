@@ -137,7 +137,10 @@ void SafeBrowsingNavigationObserver::DidStartNavigation(
   content::RenderFrameHost* current_frame_host =
       navigation_handle->GetWebContents()->FindFrameByFrameTreeNodeId(
           nav_event.frame_id);
-  if (current_frame_host &&
+  // For browser initiated navigation (e.g. from address bar or bookmark), we
+  // don't fill the source_url to prevent attributing navigation to the last
+  // committed navigation.
+  if (navigation_handle->IsRendererInitiated() && current_frame_host &&
       current_frame_host->GetLastCommittedURL().is_valid()) {
     nav_event.source_url = SafeBrowsingNavigationObserverManager::ClearEmptyRef(
         current_frame_host->GetLastCommittedURL());
@@ -210,17 +213,16 @@ void SafeBrowsingNavigationObserver::DidGetResourceResponseStart(
   }
   if (!details.url.is_valid() || details.socket_address.IsEmpty())
     return;
-
-  manager_->RecordHostToIpMapping(details.url.host(),
-                                  details.socket_address.host());
+  if (!details.url.host().empty()) {
+    manager_->RecordHostToIpMapping(details.url.host(),
+                                    details.socket_address.host());
+  }
 }
 
 void SafeBrowsingNavigationObserver::DidGetUserInteraction(
     const blink::WebInputEvent::Type type) {
   last_user_gesture_timestamp_ = base::Time::Now();
   has_user_gesture_ = true;
-  // TODO (jialiul): Refine user gesture logic when DidOpenRequestedURL
-  // covers all retargetting cases.
   manager_->RecordUserGestureForWebContents(web_contents(),
                                             last_user_gesture_timestamp_);
 }
