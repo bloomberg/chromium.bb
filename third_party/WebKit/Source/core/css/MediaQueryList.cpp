@@ -83,7 +83,8 @@ void MediaQueryList::removeListener(MediaQueryListListener* listener) {
 }
 
 bool MediaQueryList::hasPendingActivity() const {
-  return m_listeners.size() || hasEventListeners(EventTypeNames::change);
+  return getExecutionContext() &&
+         (m_listeners.size() || hasEventListeners(EventTypeNames::change));
 }
 
 void MediaQueryList::contextDestroyed() {

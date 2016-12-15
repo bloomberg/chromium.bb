@@ -101,12 +101,9 @@ void PresentationRequest::addedEventListener(
 }
 
 bool PresentationRequest::hasPendingActivity() const {
-  if (!getExecutionContext() || getExecutionContext()->isContextDestroyed())
-    return false;
-
   // Prevents garbage collecting of this object when not hold by another
   // object but still has listeners registered.
-  return hasEventListeners();
+  return getExecutionContext() && hasEventListeners();
 }
 
 ScriptPromise PresentationRequest::start(ScriptState* scriptState) {

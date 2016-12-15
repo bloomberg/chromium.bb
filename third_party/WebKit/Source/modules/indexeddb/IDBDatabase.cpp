@@ -558,7 +558,7 @@ bool IDBDatabase::hasPendingActivity() const {
   // The script wrapper must not be collected before the object is closed or
   // we can't fire a "versionchange" event to let script manually close the
   // connection.
-  return !m_closePending && hasEventListeners() && getExecutionContext();
+  return !m_closePending && getExecutionContext() && hasEventListeners();
 }
 
 void IDBDatabase::contextDestroyed() {

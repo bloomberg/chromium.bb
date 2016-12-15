@@ -652,8 +652,7 @@ bool FontFace::hadBlankText() const {
 }
 
 bool FontFace::hasPendingActivity() const {
-  return m_status == Loading && getExecutionContext() &&
-         !getExecutionContext()->isContextDestroyed();
+  return m_status == Loading && getExecutionContext();
 }
 
 }  // namespace blink

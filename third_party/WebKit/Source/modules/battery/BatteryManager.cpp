@@ -109,14 +109,14 @@ void BatteryManager::resume() {
 
 void BatteryManager::contextDestroyed() {
   m_hasEventListener = false;
-  m_batteryProperty.clear();
+  m_batteryProperty = nullptr;
   stopUpdating();
 }
 
 bool BatteryManager::hasPendingActivity() const {
   // Prevent V8 from garbage collecting the wrapper object if there are
   // event listeners attached to it.
-  return hasEventListeners();
+  return getExecutionContext() && hasEventListeners();
 }
 
 DEFINE_TRACE(BatteryManager) {

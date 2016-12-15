@@ -87,7 +87,7 @@ ExecutionContext* ImageCapture::getExecutionContext() const {
 }
 
 bool ImageCapture::hasPendingActivity() const {
-  return hasEventListeners();
+  return getExecutionContext() && hasEventListeners();
 }
 
 void ImageCapture::contextDestroyed() {

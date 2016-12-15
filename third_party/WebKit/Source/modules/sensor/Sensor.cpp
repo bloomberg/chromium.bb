@@ -132,7 +132,7 @@ bool Sensor::hasPendingActivity() const {
   if (m_state == Sensor::SensorState::Idle ||
       m_state == Sensor::SensorState::Errored)
     return false;
-  return hasEventListeners();
+  return getExecutionContext() && hasEventListeners();
 }
 
 auto Sensor::createSensorConfig() -> SensorConfigurationPtr {
