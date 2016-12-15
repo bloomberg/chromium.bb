@@ -29,8 +29,14 @@ namespace {
 const char kTestServiceName[] = "host_test_service";
 
 const base::FilePath::CharType kPackagesPath[] = FILE_PATH_LITERAL("Packages");
+
+#if defined(OS_WIN)
+const base::FilePath::CharType kServiceExtension[] =
+    FILE_PATH_LITERAL(".service.exe");
+#else
 const base::FilePath::CharType kServiceExtension[] =
     FILE_PATH_LITERAL(".service");
+#endif
 
 void ProcessReadyCallbackAdapater(const base::Closure& callback,
                                   base::ProcessId process_id) {

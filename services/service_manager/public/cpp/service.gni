@@ -53,12 +53,18 @@ template("service") {
     service_data_deps += invoker.data_deps
   }
 
+  if (is_win) {
+    executable_extension = "service.exe"
+  } else {
+    executable_extension = "service"
+  }
+
   executable_target_name = base_target_name + "_executable"
-  executable_name = base_target_name + ".service"
+  executable_name = base_target_name + "." + executable_extension
 
   executable(executable_target_name) {
     output_name = base_target_name
-    output_extension = "service"
+    output_extension = executable_extension
 
     if (defined(invoker.cflags)) {
       cflags = invoker.cflags

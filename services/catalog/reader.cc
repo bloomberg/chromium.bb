@@ -22,6 +22,12 @@
 namespace catalog {
 namespace {
 
+#if defined(OS_WIN)
+const char kServiceExecutableExtension[] = ".service.exe";
+#else
+const char kServiceExecutableExtension[] = ".service";
+#endif
+
 base::FilePath GetManifestPath(const base::FilePath& package_dir,
                                const std::string& name,
                                const std::string& package_name_override) {
@@ -34,7 +40,8 @@ base::FilePath GetManifestPath(const base::FilePath& package_dir,
 
 base::FilePath GetExecutablePath(const base::FilePath& package_dir,
                                  const std::string& name) {
-  return package_dir.AppendASCII(name + "/" + name + ".service");
+  return package_dir.AppendASCII(
+      name + "/" + name + kServiceExecutableExtension);
 }
 
 std::unique_ptr<Entry> ProcessManifest(
