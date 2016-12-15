@@ -318,6 +318,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('WebglExtension_OES_texture_half_float_linear',
         ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
 
+    # Win / Intel / Passthrough command decoder
+    self.Fail('conformance/renderbuffers/renderbuffer-initialization.html',
+        ['win', 'intel', 'passthrough', 'd3d11'], bug=1635) # angle bug ID
+
     # Mac failures
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
         ['mac'], bug=599272)
