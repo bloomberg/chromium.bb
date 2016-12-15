@@ -232,13 +232,10 @@ void UserSelectionScreen::FillMultiProfileUserPrefs(
 bool UserSelectionScreen::ShouldForceOnlineSignIn(
     const user_manager::User* user) {
   // Public sessions are always allowed to log in offline.
-  // Supervised user are allowed to log in offline if their OAuth token status
-  // is unknown or valid.
+  // Supervised users are always allowed to log in offline.
   // For all other users, force online sign in if:
   // * The flag to force online sign-in is set for the user.
-  // * The user's OAuth token is invalid.
-  // * The user's OAuth token status is unknown (except supervised users,
-  //   see above).
+  // * The user's OAuth token is invalid or unknown.
   if (user->is_logged_in())
     return false;
 
@@ -249,10 +246,8 @@ bool UserSelectionScreen::ShouldForceOnlineSignIn(
   const bool is_public_session =
       user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
 
-  if (is_supervised_user &&
-      token_status == user_manager::User::OAUTH_TOKEN_STATUS_UNKNOWN) {
+  if (is_supervised_user)
     return false;
-  }
 
   if (is_public_session)
     return false;
