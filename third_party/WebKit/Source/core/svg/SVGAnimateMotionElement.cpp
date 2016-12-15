@@ -299,6 +299,10 @@ void SVGAnimateMotionElement::updateAnimationMode() {
 void SVGAnimateMotionElement::invalidateForAnimateMotionTransformChange(
     LayoutObject& object) {
   object.setNeedsTransformUpdate();
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+    // The transform paint property relies on the SVG transform value.
+    object.setNeedsPaintPropertyUpdate();
+  }
   markForLayoutAndParentResourceInvalidation(&object);
 }
 
