@@ -130,7 +130,10 @@ public class CronetChunkedOutputStreamTest extends CronetTestBase {
             out.write(1);
             // Forces OutputStream implementation to flush. crbug.com/653072
             out.flush();
-            fail();
+            // System's implementation is flaky see crbug.com/653072.
+            if (!testingSystemHttpURLConnection()) {
+                fail();
+            }
         } catch (IOException e) {
             if (!testingSystemHttpURLConnection()) {
                 NetworkException requestException = (NetworkException) e;
