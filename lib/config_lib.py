@@ -119,6 +119,24 @@ def UseBuildbucketScheduler(config):
                          constants.PFQ_MASTER,
                          constants.PRE_CQ_LAUNCHER_NAME)
 
+def RetryAlreadyStartedSlaves(config):
+  """Returns True if wants to retry slaves which already start but fail.
+
+  For a slave scheduled by Buildbucket, if the slave started cbuildbot
+  and reported status to CIDB but failed to finish, its master may
+  still want to retry the slave.
+  """
+  return config.name == constants.CQ_MASTER
+
+def GetCriticalStageForRetry(config):
+  """Returns the name of the critical stage for retry decisions.
+
+  For a slave scheduled by Buildbucket, its master may want to retry it
+  if it didn't pass the critical stage.
+  """
+  if config.name == constants.CQ_MASTER:
+    return 'CommitQueueSync'
+
 def ScheduledByBuildbucket(config):
   """Returns True if this build is scheduled by Buildbucket."""
   return (config.build_type == constants.PALADIN_TYPE and

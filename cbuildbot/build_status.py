@@ -21,6 +21,11 @@ BuildbucketInfo = collections.namedtuple(
     'BuildbucketInfo',
     ['buildbucket_id', 'retry', 'status', 'result'])
 
+# Namedtupe to store CIDB status info.
+CIDBStatusInfo = collections.namedtuple(
+    'CIDBStatusInfo',
+    ['build_id', 'status'])
+
 
 class SlaveStatus(object):
   """Keep track of statuses of all slaves from CIDB and Buildbucket(optional).
@@ -31,6 +36,9 @@ class SlaveStatus(object):
   """
 
   BUILD_START_TIMEOUT_MIN = 5
+
+  ACCEPTED_STATUSES = (constants.BUILDER_STATUS_PASSED,
+                       constants.BUILDER_STATUS_SKIPPED,)
 
   def __init__(self, start_time, builders_array, master_build_id, db,
                config=None, metadata=None, buildbucket_client=None,
@@ -77,11 +85,11 @@ class SlaveStatus(object):
                        (in format of BuildbucketInfo).
 
     Returns:
-      A dict mapping the slave build config name to its status in CIDB
-      (a member of BuildStatus.ALL_STATUSES).
+      A dict mapping the slave build config name to its CIDBStatusInfo
+      (status information fetched from CIDB).
       The dict only contains builds not in completed_builds.
     """
-    status_dict = dict()
+    cidb_status = {}
     if self.db is not None:
       buildbucket_ids = None if build_info_dict is None else [
           info.buildbucket_id for info in build_info_dict.values()]
@@ -91,8 +99,8 @@ class SlaveStatus(object):
 
       for d in status_list:
         if d['build_config'] not in self.completed_builds:
-          status_dict[d['build_config']] = d['status']
-    return status_dict
+          cidb_status[d['build_config']] = CIDBStatusInfo(d['id'], d['status'])
+    return cidb_status
 
   def _GetSlaveStatusesFromBuildbucket(self):
     """Get statues of slaves (not in completed_builds set) from Buildbucket.
@@ -231,8 +239,19 @@ class SlaveStatus(object):
       # If build is in self.status, it means a build tuple has been
       # inserted into CIDB buildTable.
       if build in self.cidb_status:
-        logging.info('Not retriable build %s started already.', build)
-        continue
+        if not config_lib.RetryAlreadyStartedSlaves(self.config):
+          logging.info('Not retriable build %s started already.', build)
+          continue
+
+        assert self.db is not None
+
+        build_stages = self.db.GetBuildStages(self.cidb_status[build].build_id)
+        accepted_stages = {stage['name'] for stage in build_stages
+                           if stage['status'] in self.ACCEPTED_STATUSES}
+
+        # A failed build is not retriable if it passed the critical stage.
+        if config_lib.GetCriticalStageForRetry(self.config) in accepted_stages:
+          continue
 
       builds_to_retry.add(build)
 
@@ -245,10 +264,9 @@ class SlaveStatus(object):
       A set config names of builds to be retried.
     """
     if self.build_info_dict is not None:
-      current_completed_all = self.GetBuildbucketBuilds(
-          constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED)
-
-      return self._GetRetriableBuilds(current_completed_all)
+      return self._GetRetriableBuilds(
+          self.GetBuildbucketBuilds(
+              constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED))
     else:
       return None
 
@@ -269,14 +287,14 @@ class SlaveStatus(object):
     else:
       current_completed = set(
           b for b, s in self.cidb_status.iteritems()
-          if s in constants.BUILDER_COMPLETED_STATUSES and
+          if s.status in constants.BUILDER_COMPLETED_STATUSES and
           b in self.builders_array)
 
     # Logging of the newly complete builders.
     for build in current_completed:
       status = (self.build_info_dict[build].result
                 if self.build_info_dict is not None
-                else self.cidb_status[build])
+                else self.cidb_status[build].status)
       logging.info('Build config %s completed with status "%s".',
                    build, status)
 
