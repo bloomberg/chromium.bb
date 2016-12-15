@@ -112,11 +112,11 @@ TEST_P(SuperframeTest, TestSuperframeIndexIsOptional) {
 #endif  // CONFIG_EXT_REFS
 }
 
-// The superframe index is currently mandatory with ANS due to the decoder
-// starting at the end of the buffer.
+// The superframe index is currently mandatory with both ANS and DAALA_EC due
+// to the decoder starting at the end of the buffer.
 #if CONFIG_EXT_TILE
 // Single tile does not work with ANS (see comment above).
-#if CONFIG_ANS
+#if CONFIG_ANS || CONFIG_DAALA_EC
 const int tile_col_values[] = { 1, 2 };
 #else
 const int tile_col_values[] = { 1, 2, 32 };
