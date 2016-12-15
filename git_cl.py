@@ -2979,12 +2979,16 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
           'spaces not allowed in refspec: "%s"' % refspec_suffix)
     refspec = '%s:refs/for/%s%s' % (ref_to_push, branch, refspec_suffix)
 
-    push_stdout = gclient_utils.CheckCallAndFilter(
-        ['git', 'push', gerrit_remote, refspec],
-        print_stdout=True,
-        # Flush after every line: useful for seeing progress when running as
-        # recipe.
-        filter_fn=lambda _: sys.stdout.flush())
+    try:
+      push_stdout = gclient_utils.CheckCallAndFilter(
+          ['git', 'push', gerrit_remote, refspec],
+          print_stdout=True,
+          # Flush after every line: useful for seeing progress when running as
+          # recipe.
+          filter_fn=lambda _: sys.stdout.flush())
+    except subprocess2.CalledProcessError:
+      DieWithError('Failed to create a change. Please examine output above '
+                   'for the reason of the failure. ')
 
     if options.squash:
       regex = re.compile(r'remote:\s+https?://[\w\-\.\/]*/(\d+)\s.*')
