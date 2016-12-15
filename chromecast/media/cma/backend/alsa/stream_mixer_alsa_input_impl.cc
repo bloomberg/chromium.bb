@@ -83,6 +83,7 @@ StreamMixerAlsaInputImpl::StreamMixerAlsaInputImpl(
       fade_frames_remaining_(0),
       fade_out_frames_total_(0),
       zeroed_frames_(0),
+      is_underflowing_(false),
       weak_factory_(this) {
   LOG(INFO) << "Create " << this;
   DCHECK(delegate_);
@@ -237,6 +238,10 @@ void StreamMixerAlsaInputImpl::DidQueueData(bool end_of_stream) {
 
 void StreamMixerAlsaInputImpl::OnSkipped() {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
+  if (!is_underflowing_) {
+    LOG(WARNING) << "Underflow for " << this;
+    is_underflowing_ = true;
+  }
   if (state_ == kStateNormalPlayback) {
     // Fade in once this input starts providing data again.
     fade_frames_remaining_ = NormalFadeFrames();
@@ -316,6 +321,7 @@ void StreamMixerAlsaInputImpl::GetResampledData(::media::AudioBus* dest,
   DCHECK(dest);
   DCHECK_EQ(kNumOutputChannels, dest->channels());
   DCHECK_GE(dest->frames(), frames);
+  is_underflowing_ = false;
 
   if (state_ == kStatePaused || state_ == kStateDeleted) {
     dest->ZeroFramesPartial(0, frames);

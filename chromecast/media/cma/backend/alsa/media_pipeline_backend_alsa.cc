@@ -81,9 +81,9 @@ bool MediaPipelineBackendAlsa::Resume() {
 }
 
 bool MediaPipelineBackendAlsa::SetPlaybackRate(float rate) {
-  // TODO(kmackay) Implement this for rates other than 1.0.
-  if (rate != 1.0)
-    NOTIMPLEMENTED() << " unhandled rate: " << rate;
+  if (audio_decoder_) {
+    return audio_decoder_->SetPlaybackRate(rate);
+  }
   return true;
 }
 

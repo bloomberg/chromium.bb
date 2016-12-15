@@ -5,6 +5,9 @@
 #ifndef CHROMECAST_MEDIA_CMA_BACKEND_ALSA_AUDIO_DECODER_ALSA_H_
 #define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_AUDIO_DECODER_ALSA_H_
 
+#include <deque>
+#include <memory>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "chromecast/media/cma/backend/alsa/stream_mixer_alsa_input.h"
@@ -16,6 +19,11 @@
 namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
+
+namespace media {
+class AudioBus;
+class AudioRendererAlgorithm;
+}  // namespace media
 
 namespace chromecast {
 namespace media {
@@ -35,6 +43,7 @@ class AudioDecoderAlsa : public MediaPipelineBackend::AudioDecoder,
   void Stop();
   bool Pause();
   bool Resume();
+  bool SetPlaybackRate(float rate);
 
   int64_t current_pts() const { return current_pts_; }
 
@@ -48,6 +57,14 @@ class AudioDecoderAlsa : public MediaPipelineBackend::AudioDecoder,
   RenderingDelay GetRenderingDelay() override;
 
  private:
+  struct RateShifterInfo {
+    explicit RateShifterInfo(float playback_rate);
+
+    double rate;
+    double input_frames;
+    int64_t output_frames;
+  };
+
   // StreamMixerAlsaInput::Delegate implementation:
   void OnWritePcmCompletion(BufferStatus status,
                             const RenderingDelay& delay) override;
@@ -55,10 +72,13 @@ class AudioDecoderAlsa : public MediaPipelineBackend::AudioDecoder,
 
   void CleanUpPcm();
   void CreateDecoder();
+  void CreateRateShifter(int samples_per_second);
   void OnDecoderInitialized(bool success);
   void OnBufferDecoded(uint64_t input_bytes,
                        CastAudioDecoder::Status status,
                        const scoped_refptr<DecoderBufferBase>& decoded);
+  void PushRateShifted();
+  void PushMorePcm();
   void RunEos();
   bool BypassDecoder() const;
   bool ShouldStartClock() const;
@@ -69,17 +89,24 @@ class AudioDecoderAlsa : public MediaPipelineBackend::AudioDecoder,
   MediaPipelineBackend::Decoder::Delegate* delegate_;
 
   Statistics stats_;
-  bool is_eos_;
-  bool error_;
+
+  bool pending_buffer_complete_;
+  bool got_eos_;
+  bool pushed_eos_;
+  bool mixer_error_;
 
   AudioConfig config_;
   std::unique_ptr<CastAudioDecoder> decoder_;
 
+  std::unique_ptr<::media::AudioRendererAlgorithm> rate_shifter_;
+  std::deque<RateShifterInfo> rate_shifter_info_;
+  std::unique_ptr<::media::AudioBus> rate_shifter_output_;
+
   int64_t current_pts_;
-  int64_t last_buffer_pts_;
 
   std::unique_ptr<StreamMixerAlsaInput> mixer_input_;
-  RenderingDelay last_known_delay_;
+  RenderingDelay last_mixer_delay_;
+  int64_t pending_output_frames_;
   float volume_multiplier_;
 
   base::WeakPtrFactory<AudioDecoderAlsa> weak_factory_;

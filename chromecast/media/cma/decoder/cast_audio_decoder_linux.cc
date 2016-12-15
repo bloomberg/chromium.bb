@@ -86,7 +86,10 @@ class CastAudioDecoderImpl : public CastAudioDecoder {
 
     if (data->decrypt_context() != nullptr) {
       LOG(ERROR) << "Audio decoder doesn't support encrypted stream";
-      decode_callback.Run(kDecodeError, data);
+      // Post the task to ensure that |decode_callback| is not called from
+      // within a call to Decode().
+      task_runner_->PostTask(FROM_HERE,
+                             base::Bind(decode_callback, kDecodeError, data));
     } else if (!initialized_ || decode_pending_) {
       decode_queue_.push(std::make_pair(data, decode_callback));
     } else {

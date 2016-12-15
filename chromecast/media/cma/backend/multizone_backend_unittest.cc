@@ -55,7 +55,7 @@ class BufferFeeder : public MediaPipelineBackend::Decoder::Delegate {
                const base::Closure& eos_cb);
   ~BufferFeeder() override {}
 
-  void Initialize();
+  void Initialize(float playback_rate);
   void Start();
   void Stop();
 
@@ -102,6 +102,8 @@ class BufferFeeder : public MediaPipelineBackend::Decoder::Delegate {
   const AudioConfig config_;
   const bool effects_only_;
   const base::Closure eos_cb_;
+  double original_playback_rate_;
+  double playback_rate_;
   int64_t max_rendering_delay_error_us_;
   int64_t max_positive_rendering_delay_error_us_;
   int64_t max_negative_rendering_delay_error_us_;
@@ -123,7 +125,10 @@ class BufferFeeder : public MediaPipelineBackend::Decoder::Delegate {
 
 }  // namespace
 
-class MultizoneBackendTest : public testing::TestWithParam<int> {
+using TestParams = std::tr1::tuple<int,     // sample rate
+                                   float>;  // playback rate
+
+class MultizoneBackendTest : public testing::TestWithParam<TestParams> {
  public:
   MultizoneBackendTest();
   ~MultizoneBackendTest() override;
@@ -142,7 +147,7 @@ class MultizoneBackendTest : public testing::TestWithParam<int> {
 
   void AddEffectsStreams();
 
-  void Initialize(int sample_rate);
+  void Initialize(int sample_rate, float playback_rate);
   void Start();
   void OnEndOfStream();
 
@@ -161,6 +166,8 @@ BufferFeeder::BufferFeeder(const AudioConfig& config,
     : config_(config),
       effects_only_(effects_only),
       eos_cb_(eos_cb),
+      original_playback_rate_(1.0),
+      playback_rate_(1.0),
       max_rendering_delay_error_us_(0),
       max_positive_rendering_delay_error_us_(0),
       max_negative_rendering_delay_error_us_(0),
@@ -176,7 +183,8 @@ BufferFeeder::BufferFeeder(const AudioConfig& config,
   CHECK(!eos_cb_.is_null());
 }
 
-void BufferFeeder::Initialize() {
+void BufferFeeder::Initialize(float playback_rate) {
+  original_playback_rate_ = playback_rate_ = playback_rate;
   MediaPipelineDeviceParams params(
       MediaPipelineDeviceParams::kModeIgnorePts,
       effects_only_ ? MediaPipelineDeviceParams::kAudioStreamSoundEffects
@@ -191,6 +199,7 @@ void BufferFeeder::Initialize() {
   decoder_->SetDelegate(this);
 
   ASSERT_TRUE(backend_->Initialize());
+  ASSERT_TRUE(backend_->SetPlaybackRate(playback_rate));
 }
 
 void BufferFeeder::Start() {
@@ -201,7 +210,7 @@ void BufferFeeder::Start() {
 
 void BufferFeeder::Stop() {
   feeding_completed_ = true;
-  ASSERT_TRUE(backend_->Stop());
+  backend_->Stop();
 }
 
 void BufferFeeder::FeedBuffer() {
@@ -209,17 +218,28 @@ void BufferFeeder::FeedBuffer() {
   if (feeding_completed_)
     return;
 
+  if (!effects_only_ && pushed_us_ >= push_limit_us_ / 2 &&
+      playback_rate_ == original_playback_rate_) {
+    if (original_playback_rate_ < 1.0) {
+      playback_rate_ = original_playback_rate_ * 2;
+      ASSERT_TRUE(backend_->SetPlaybackRate(playback_rate_));
+    } else {
+      playback_rate_ = original_playback_rate_ / 2;
+      ASSERT_TRUE(backend_->SetPlaybackRate(playback_rate_));
+    }
+  }
+
   if (!effects_only_ && pushed_us_ >= push_limit_us_) {
     pending_buffer_ = new media::DecoderBufferAdapter(
         ::media::DecoderBuffer::CreateEOSBuffer());
     feeding_completed_ = true;
     last_push_length_us_ = 0;
   } else {
-    int size_bytes = (rand() % 128 + 16) * 16;
+    int size_bytes = (rand() % 96 + 32) * 16;
     int num_samples =
         size_bytes / (config_.bytes_per_channel * config_.channel_number);
-    last_push_length_us_ =
-        num_samples * kMicrosecondsPerSecond / config_.samples_per_second;
+    last_push_length_us_ = num_samples * kMicrosecondsPerSecond /
+                           (config_.samples_per_second * playback_rate_);
     scoped_refptr<::media::DecoderBuffer> silence_buffer(
         new ::media::DecoderBuffer(size_bytes));
     memset(silence_buffer->writable_data(), 0, silence_buffer->data_size());
@@ -242,9 +262,9 @@ void BufferFeeder::OnEndOfStream() {
 void BufferFeeder::OnPushBufferComplete(BufferStatus status) {
   DCHECK(thread_checker_.CalledOnValidThread());
   pending_buffer_ = nullptr;
-  ASSERT_NE(status, MediaPipelineBackend::kBufferFailed);
 
   if (!effects_only_) {
+    ASSERT_NE(status, MediaPipelineBackend::kBufferFailed);
     MediaPipelineBackend::AudioDecoder::RenderingDelay delay =
         decoder_->GetRenderingDelay();
 
@@ -259,6 +279,7 @@ void BufferFeeder::OnPushBufferComplete(BufferStatus status) {
             delay.timestamp_microseconds + delay.delay_microseconds;
         int64_t error = next_push_playback_timestamp_ -
                         expected_next_push_playback_timestamp;
+
         max_rendering_delay_error_us_ =
             std::max(max_rendering_delay_error_us_, std::abs(error));
         total_rendering_delay_error_us_ += std::abs(error);
@@ -288,7 +309,7 @@ MultizoneBackendTest::MultizoneBackendTest() {}
 
 MultizoneBackendTest::~MultizoneBackendTest() {}
 
-void MultizoneBackendTest::Initialize(int sample_rate) {
+void MultizoneBackendTest::Initialize(int sample_rate, float playback_rate) {
   AudioConfig config;
   config.codec = kCodecPCM;
   config.sample_format = kSampleFormatS32;
@@ -300,7 +321,7 @@ void MultizoneBackendTest::Initialize(int sample_rate) {
       new BufferFeeder(config, false /* effects_only */,
                        base::Bind(&MultizoneBackendTest::OnEndOfStream,
                                   base::Unretained(this))));
-  audio_feeder_->Initialize();
+  audio_feeder_->Initialize(playback_rate);
 }
 
 void MultizoneBackendTest::AddEffectsStreams() {
@@ -314,7 +335,7 @@ void MultizoneBackendTest::AddEffectsStreams() {
   for (int i = 0; i < kNumEffectsStreams; ++i) {
     std::unique_ptr<BufferFeeder> feeder(new BufferFeeder(
         effects_config, true /* effects_only */, base::Bind(&IgnoreEos)));
-    feeder->Initialize();
+    feeder->Initialize(1.0f);
     effects_feeders_.push_back(std::move(feeder));
   }
 }
@@ -345,28 +366,35 @@ void MultizoneBackendTest::OnEndOfStream() {
 
 TEST_P(MultizoneBackendTest, RenderingDelay) {
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
+  const TestParams& params = GetParam();
+  int sample_rate = testing::get<0>(params);
+  float playback_rate = testing::get<1>(params);
 
-  Initialize(GetParam());
+  Initialize(sample_rate, playback_rate);
   AddEffectsStreams();
   Start();
   base::RunLoop().Run();
 }
 
-INSTANTIATE_TEST_CASE_P(Required,
-                        MultizoneBackendTest,
-                        ::testing::Values(8000,
-                                          11025,
-                                          12000,
-                                          16000,
-                                          22050,
-                                          24000,
-                                          32000,
-                                          44100,
-                                          48000));
+INSTANTIATE_TEST_CASE_P(
+    Required,
+    MultizoneBackendTest,
+    testing::Combine(::testing::Values(8000,
+                                       11025,
+                                       12000,
+                                       16000,
+                                       22050,
+                                       24000,
+                                       32000,
+                                       44100,
+                                       48000),
+                     ::testing::Values(0.5f, 0.99f, 1.0f, 1.01f, 2.0f)));
 
-INSTANTIATE_TEST_CASE_P(Optional,
-                        MultizoneBackendTest,
-                        ::testing::Values(64000, 88200, 96000));
+INSTANTIATE_TEST_CASE_P(
+    Optional,
+    MultizoneBackendTest,
+    testing::Combine(::testing::Values(64000, 88200, 96000),
+                     ::testing::Values(0.5f, 0.99f, 1.0f, 1.01f, 2.0f)));
 
 }  // namespace media
 }  // namespace chromecast
