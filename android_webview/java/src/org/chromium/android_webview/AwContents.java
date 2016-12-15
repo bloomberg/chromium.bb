@@ -1452,7 +1452,9 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
         }
 
         LoadUrlParams params = new LoadUrlParams(url);
-        if (additionalHttpHeaders != null) params.setExtraHeaders(additionalHttpHeaders);
+        if (additionalHttpHeaders != null) {
+            params.setExtraHeaders(new HashMap<String, String>(additionalHttpHeaders));
+        }
         loadUrl(params);
     }
 

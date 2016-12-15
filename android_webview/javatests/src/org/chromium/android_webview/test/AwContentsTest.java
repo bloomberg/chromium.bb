@@ -19,9 +19,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.AwSwitches;
@@ -36,6 +33,7 @@ import org.chromium.base.test.util.parameter.ParameterizedTest;
 import org.chromium.content.browser.BindingManager;
 import org.chromium.content.browser.ChildProcessConnection;
 import org.chromium.content.browser.ChildProcessLauncher;
+import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.io.InputStream;
@@ -440,31 +438,35 @@ public class AwContentsTest extends AwTestBase {
                 createAwTestContainerViewOnMainSync(mContentsClient);
         final AwContents awContents = testContainer.getAwContents();
 
-        TestWebServer webServer = TestWebServer.start();
+        enableJavaScriptOnUiThread(awContents);
+
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+
         try {
-            final String pagePath = "/test_can_inject_headers.html";
-            final String pageUrl = webServer.setResponse(
-                    pagePath, "<html><body>foo</body></html>", null);
+            String url = testServer.getURL("/echoheader?X-foo");
 
             final Map<String, String> extraHeaders = new HashMap<String, String>();
-            extraHeaders.put("Referer", "foo");
             extraHeaders.put("X-foo", "bar");
-            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(),
-                    webServer.getResponseUrl(pagePath), extraHeaders);
+            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), url, extraHeaders);
 
-            assertEquals(1, webServer.getRequestCount(pagePath));
+            String xfoo = maybeStripDoubleQuotes(JSUtils.executeJavaScriptAndWaitForResult(this,
+                    awContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
+                    "document.body.textContent"));
+            assertEquals("bar", xfoo);
 
-            HttpRequest request = webServer.getLastRequest(pagePath);
-            assertNotNull(request);
+            url = testServer.getURL("/echoheader?Referer");
 
-            for (Map.Entry<String, String> value : extraHeaders.entrySet()) {
-                String header = value.getKey();
-                Header[] matchingHeaders = request.getHeaders(header);
-                assertEquals("header " + header + " not found", 1, matchingHeaders.length);
-                assertEquals(value.getValue(), matchingHeaders[0].getValue());
-            }
+            extraHeaders.clear();
+            extraHeaders.put("Referer", "http://www.example.com/");
+            loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), url, extraHeaders);
+
+            String referer = maybeStripDoubleQuotes(JSUtils.executeJavaScriptAndWaitForResult(this,
+                    awContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
+                    "document.body.textContent"));
+            assertEquals("http://www.example.com/", referer);
         } finally {
-            webServer.shutdown();
+            testServer.stopAndDestroyServer();
         }
     }
 

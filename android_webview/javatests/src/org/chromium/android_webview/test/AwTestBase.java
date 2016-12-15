@@ -42,6 +42,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A base class for android_webview tests. WebView only runs on KitKat and later,
@@ -71,6 +73,7 @@ public class AwTestBase
     public static final long WAIT_TIMEOUT_MS = scaleTimeout(15000);
     public static final int CHECK_INTERVAL = 100;
     private static final String TAG = "AwTestBase";
+    private static final Pattern MAYBE_QUOTED_STRING = Pattern.compile("^(\"?)(.*)\\1$");
 
     // The browser context needs to be a process-wide singleton.
     private AwBrowserContext mBrowserContext;
@@ -501,6 +504,17 @@ public class AwTestBase
                 return awContents.getSettings();
             }
         });
+    }
+
+    /**
+     * Verify double quotes in both sides of the raw string. Strip the double quotes and
+     * returns rest of the string.
+     */
+    protected String maybeStripDoubleQuotes(String raw) {
+        assertNotNull(raw);
+        Matcher m = MAYBE_QUOTED_STRING.matcher(raw);
+        assertTrue(m.matches());
+        return m.group(2);
     }
 
     /**
