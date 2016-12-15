@@ -16,6 +16,8 @@ class Profile;
 
 namespace chromeos {
 
+class IdleDetector;
+
 class ChromeSessionManager : public session_manager::SessionManager {
  public:
   ChromeSessionManager();
@@ -38,6 +40,9 @@ class ChromeSessionManager : public session_manager::SessionManager {
                           bool browser_restart) override;
 
  private:
+  // Used to preload the lock screen when the user is inactive.
+  std::unique_ptr<IdleDetector> idle_detector_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeSessionManager);
 };
 

@@ -55,6 +55,10 @@ class WebUIScreenLocker : public WebUILoginView,
                           public display::DisplayObserver,
                           public content::WebContentsObserver {
  public:
+  // Returns true if the lock screen should be shared.
+  static bool ShouldShareLockScreen();
+  static void Preload();
+
   explicit WebUIScreenLocker(ScreenLocker* screen_locker);
   ~WebUIScreenLocker() override;
 

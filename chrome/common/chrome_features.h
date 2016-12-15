@@ -115,6 +115,10 @@ extern const base::Feature kRunAllFlashInAllowMode;
 
 extern const base::Feature kSafeSearchUrlReporting;
 
+#if defined(OS_CHROMEOS)
+extern const base::Feature kSharedLockScreen;
+#endif
+
 extern const base::Feature kSimplifiedFullscreenUI;
 
 #if defined(SYZYASAN)

@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/system/chromeos/power/power_event_observer.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -16,19 +17,29 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/ui/shared_web_view.h"
+#include "chrome/browser/chromeos/login/ui/shared_web_view_factory.h"
+#include "chrome/browser/chromeos/login/ui/web_view_handle.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
+#include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/user.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -53,15 +64,61 @@ void ResetKeyboardOverscrollOverride() {
       keyboard::KEYBOARD_OVERSCROLL_OVERRIDE_NONE);
 }
 
+chromeos::WebUILoginView::WebViewSettings BuildSettings() {
+  chromeos::WebUILoginView::WebViewSettings settings;
+  if (chromeos::WebUIScreenLocker::ShouldShareLockScreen()) {
+    settings.preloaded_url = GURL(kLoginURL);
+    settings.web_view_title =
+        l10n_util::GetStringUTF16(IDS_LOCK_SCREEN_TASK_MANAGER_NAME);
+  }
+  return settings;
+}
+
 }  // namespace
 
 namespace chromeos {
+
+// static
+bool WebUIScreenLocker::ShouldShareLockScreen() {
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(
+      user_manager::UserManager::Get()->GetActiveUser());
+
+  // We only want to share the lock screen if the user is likely to see the lock
+  // screen (since caching the lock screen uses memory). Without preloading,
+  // showing the lock screen can take so long we will timeout and crash the
+  // browser process (which currently takes down all of Chrome). See
+  // crbug.com/452599 for more context.
+  //
+  // prefs::kEnableAutoScreenLock controls if the lock screen is shown on
+  // suspend, so that is our primary hueristic.
+
+  // Note that |profile| can be null in tests.
+  return base::FeatureList::IsEnabled(features::kSharedLockScreen) && profile &&
+         profile->GetPrefs()->GetBoolean(prefs::kEnableAutoScreenLock);
+}
+
+// static
+void WebUIScreenLocker::Preload() {
+  DCHECK(ShouldShareLockScreen());
+  VLOG(1) << "Preloading lock screen";
+
+  SharedWebView* shared_web_view =
+      SharedWebViewFactory::GetForProfile(ProfileHelper::GetSigninProfile());
+
+  scoped_refptr<WebViewHandle> web_view_handle;
+  if (!shared_web_view->Get(GURL(kLoginURL), &web_view_handle)) {
+    web_view_handle->web_view()->LoadInitialURL(GURL(kLoginURL));
+    InitializeWebView(
+        web_view_handle->web_view(),
+        l10n_util::GetStringUTF16(IDS_LOCK_SCREEN_TASK_MANAGER_NAME));
+  }
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // WebUIScreenLocker implementation.
 
 WebUIScreenLocker::WebUIScreenLocker(ScreenLocker* screen_locker)
-    : WebUILoginView(WebViewSettings()),
+    : WebUILoginView(BuildSettings()),
       screen_locker_(screen_locker),
       network_state_helper_(new login::NetworkStateHelper),
       weak_factory_(this) {

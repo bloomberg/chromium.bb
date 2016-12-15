@@ -194,6 +194,13 @@ const base::Feature kRunAllFlashInAllowMode{"RunAllFlashInAllowMode",
 const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_CHROMEOS)
+// The lock screen will be preloaded and shared so it is instantly available
+// when the user locks the Chromebook device.
+const base::Feature kSharedLockScreen{"SharedLockScreen",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // A new user experience for transitioning into fullscreen and mouse pointer
 // lock states.
 const base::Feature kSimplifiedFullscreenUI{"ViewsSimplifiedFullscreenUI",
