@@ -21,7 +21,8 @@ namespace {
 
 // Dialog size.
 const int kDialogWidth = 448;
-const int kDialogHeight = 250;
+const int kDialogMinHeight = 200;
+const int kDialogMaxHeight = 700;
 
 // Dialog action key;
 const char kActionKey[] = "action";
@@ -74,7 +75,10 @@ void SigninEmailConfirmationDialog::AskForConfirmation(
 }
 
 void SigninEmailConfirmationDialog::Show() {
-  dialog_delegate_ = ShowConstrainedWebDialog(profile_, this, web_contents_);
+  gfx::Size minSize(kDialogWidth, kDialogMinHeight);
+  gfx::Size maxSize(kDialogWidth, kDialogMaxHeight);
+  dialog_delegate_ = ShowConstrainedWebDialogWithAutoResize(
+      profile_, this, web_contents_, minSize, maxSize);
 }
 
 ui::ModalType SigninEmailConfirmationDialog::GetDialogModalType() const {
@@ -95,7 +99,8 @@ void SigninEmailConfirmationDialog::GetWebUIMessageHandlers(
 }
 
 void SigninEmailConfirmationDialog::GetDialogSize(gfx::Size* size) const {
-  size->SetSize(kDialogWidth, kDialogHeight);
+  // Avoid setting a dialog size in here as this dialog auto-resizes (see
+  // method |SigninEmailConfirmationDialog::Show|.
 }
 
 std::string SigninEmailConfirmationDialog::GetDialogArgs() const {
