@@ -313,60 +313,56 @@ void DecodeEndCallback(png_struct* png_ptr, png_info* info) {
   state->done = true;
 }
 
-// Automatically destroys the given read structs on destruction to make
-// cleanup and error handling code cleaner.
-class PngReadStructDestroyer {
+// Holds png struct and info ensuring the proper destruction.
+class PngReadStructInfo {
  public:
-  PngReadStructDestroyer(png_struct** ps, png_info** pi) : ps_(ps), pi_(pi) {
+  PngReadStructInfo(): png_ptr_(nullptr), info_ptr_(nullptr) {
   }
-  ~PngReadStructDestroyer() {
-    png_destroy_read_struct(ps_, pi_, NULL);
+  ~PngReadStructInfo() {
+    png_destroy_read_struct(&png_ptr_, &info_ptr_, NULL);
   }
+
+  bool Build(const unsigned char* input, size_t input_size) {
+    if (input_size < 8)
+      return false;  // Input data too small to be a png
+
+    // Have libpng check the signature, it likes the first 8 bytes.
+    if (png_sig_cmp(const_cast<unsigned char*>(input), 0, 8) != 0)
+      return false;
+
+    png_ptr_ = png_create_read_struct(
+        PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    if (!png_ptr_)
+      return false;
+
+    info_ptr_ = png_create_info_struct(png_ptr_);
+    if (!info_ptr_) {
+      return false;
+    }
+    return true;
+  }
+
+  png_struct* png_ptr_;
+  png_info* info_ptr_;
  private:
-  png_struct** ps_;
-  png_info** pi_;
-  DISALLOW_COPY_AND_ASSIGN(PngReadStructDestroyer);
+  DISALLOW_COPY_AND_ASSIGN(PngReadStructInfo);
 };
 
-// Automatically destroys the given write structs on destruction to make
-// cleanup and error handling code cleaner.
-class PngWriteStructDestroyer {
+// Holds png struct and info ensuring the proper destruction.
+class PngWriteStructInfo {
  public:
-  explicit PngWriteStructDestroyer(png_struct** ps) : ps_(ps), pi_(0) {
+  PngWriteStructInfo() : png_ptr_(nullptr), info_ptr_(nullptr) {
   }
-  ~PngWriteStructDestroyer() {
-    png_destroy_write_struct(ps_, pi_);
+
+  ~PngWriteStructInfo() {
+    png_destroy_write_struct(&png_ptr_, &info_ptr_);
   }
-  void SetInfoStruct(png_info** pi) {
-    pi_ = pi;
-  }
+
+  png_struct* png_ptr_;
+  png_info* info_ptr_;
  private:
-  png_struct** ps_;
-  png_info** pi_;
-  DISALLOW_COPY_AND_ASSIGN(PngWriteStructDestroyer);
+  DISALLOW_COPY_AND_ASSIGN(PngWriteStructInfo);
 };
-
-bool BuildPNGStruct(const unsigned char* input, size_t input_size,
-                    png_struct** png_ptr, png_info** info_ptr) {
-  if (input_size < 8)
-    return false;  // Input data too small to be a png
-
-  // Have libpng check the signature, it likes the first 8 bytes.
-  if (png_sig_cmp(const_cast<unsigned char*>(input), 0, 8) != 0)
-    return false;
-
-  *png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-  if (!*png_ptr)
-    return false;
-
-  *info_ptr = png_create_info_struct(*png_ptr);
-  if (!*info_ptr) {
-    png_destroy_read_struct(png_ptr, NULL, NULL);
-    return false;
-  }
-
-  return true;
-}
 
 // Libpng user error and warning functions which allows us to print libpng
 // errors and warnings using Chrome's logging facilities instead of stderr.
@@ -395,13 +391,11 @@ void LogLibPNGEncodeWarning(png_structp png_ptr, png_const_charp warning_msg) {
 bool PNGCodec::Decode(const unsigned char* input, size_t input_size,
                       ColorFormat format, std::vector<unsigned char>* output,
                       int* w, int* h) {
-  png_struct* png_ptr = NULL;
-  png_info* info_ptr = NULL;
-  if (!BuildPNGStruct(input, input_size, &png_ptr, &info_ptr))
+  PngReadStructInfo si;
+  if (!si.Build(input, input_size))
     return false;
 
-  PngReadStructDestroyer destroyer(&png_ptr, &info_ptr);
-  if (setjmp(png_jmpbuf(png_ptr))) {
+  if (setjmp(png_jmpbuf(si.png_ptr_))) {
     // The destroyer will ensure that the structures are cleaned up in this
     // case, even though we may get here as a jump from random parts of the
     // PNG library called below.
@@ -410,11 +404,12 @@ bool PNGCodec::Decode(const unsigned char* input, size_t input_size,
 
   PngDecoderState state(format, output);
 
-  png_set_error_fn(png_ptr, NULL, LogLibPNGDecodeError, LogLibPNGDecodeWarning);
-  png_set_progressive_read_fn(png_ptr, &state, &DecodeInfoCallback,
+  png_set_error_fn(si.png_ptr_, NULL,
+                   LogLibPNGDecodeError, LogLibPNGDecodeWarning);
+  png_set_progressive_read_fn(si.png_ptr_, &state, &DecodeInfoCallback,
                               &DecodeRowCallback, &DecodeEndCallback);
-  png_process_data(png_ptr,
-                   info_ptr,
+  png_process_data(si.png_ptr_,
+                   si.info_ptr_,
                    const_cast<unsigned char*>(input),
                    input_size);
 
@@ -434,13 +429,11 @@ bool PNGCodec::Decode(const unsigned char* input, size_t input_size,
 bool PNGCodec::Decode(const unsigned char* input, size_t input_size,
                       SkBitmap* bitmap) {
   DCHECK(bitmap);
-  png_struct* png_ptr = NULL;
-  png_info* info_ptr = NULL;
-  if (!BuildPNGStruct(input, input_size, &png_ptr, &info_ptr))
+  PngReadStructInfo si;
+  if (!si.Build(input, input_size))
     return false;
 
-  PngReadStructDestroyer destroyer(&png_ptr, &info_ptr);
-  if (setjmp(png_jmpbuf(png_ptr))) {
+  if (setjmp(png_jmpbuf(si.png_ptr_))) {
     // The destroyer will ensure that the structures are cleaned up in this
     // case, even though we may get here as a jump from random parts of the
     // PNG library called below.
@@ -449,10 +442,10 @@ bool PNGCodec::Decode(const unsigned char* input, size_t input_size,
 
   PngDecoderState state(bitmap);
 
-  png_set_progressive_read_fn(png_ptr, &state, &DecodeInfoCallback,
+  png_set_progressive_read_fn(si.png_ptr_, &state, &DecodeInfoCallback,
                               &DecodeRowCallback, &DecodeEndCallback);
-  png_process_data(png_ptr,
-                   info_ptr,
+  png_process_data(si.png_ptr_,
+                   si.info_ptr_,
                    const_cast<unsigned char*>(input),
                    input_size);
 
@@ -708,20 +701,20 @@ bool EncodeWithCompressionLevel(const unsigned char* input,
   // Row stride should be at least as long as the length of the data.
   DCHECK(input_color_components * size.width() <= row_byte_width);
 
-  png_struct* png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,
-                                                NULL, NULL, NULL);
-  if (!png_ptr)
+  PngWriteStructInfo si;
+  si.png_ptr_ = png_create_write_struct(PNG_LIBPNG_VER_STRING,
+                                        NULL, NULL, NULL);
+  if (!si.png_ptr_)
     return false;
-  PngWriteStructDestroyer destroyer(&png_ptr);
-  png_info* info_ptr = png_create_info_struct(png_ptr);
-  if (!info_ptr)
+
+  si.info_ptr_ = png_create_info_struct(si.png_ptr_);
+  if (!si.info_ptr_)
     return false;
-  destroyer.SetInfoStruct(&info_ptr);
 
   output->clear();
 
   PngEncoderState state(output);
-  bool success = DoLibpngWrite(png_ptr, info_ptr, &state,
+  bool success = DoLibpngWrite(si.png_ptr_, si.info_ptr_, &state,
                                size.width(), size.height(), row_byte_width,
                                input, compression_level, png_output_color_type,
                                output_color_components, converter, comments);
