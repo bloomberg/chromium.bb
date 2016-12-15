@@ -11,8 +11,6 @@ class ArcIntentHelperObserver {
  public:
   // Called when app's intent filter is updated.
   virtual void OnAppsUpdated() = 0;
-
- protected:
   virtual ~ArcIntentHelperObserver() = default;
 };
 

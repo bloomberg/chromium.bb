@@ -6,11 +6,13 @@
 
 #include <utility>
 
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_bridge_service_impl.h"
+#include "components/arc/intent_helper/arc_intent_helper_observer.h"
 
 namespace arc {
 
@@ -24,9 +26,33 @@ ArcBridgeService* g_arc_bridge_service_for_testing = nullptr;
 
 }  // namespace
 
+class ArcServiceManager::IntentHelperObserverImpl
+    : public ArcIntentHelperObserver {
+ public:
+  explicit IntentHelperObserverImpl(ArcServiceManager* manager);
+  ~IntentHelperObserverImpl() override = default;
+
+ private:
+  void OnAppsUpdated() override;
+  ArcServiceManager* const manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(IntentHelperObserverImpl);
+};
+
+ArcServiceManager::IntentHelperObserverImpl::IntentHelperObserverImpl(
+    ArcServiceManager* manager)
+    : manager_(manager) {}
+
+void ArcServiceManager::IntentHelperObserverImpl::OnAppsUpdated() {
+  DCHECK(manager_->thread_checker_.CalledOnValidThread());
+  for (auto& observer : manager_->observer_list_)
+    observer.OnAppsUpdated();
+}
+
 ArcServiceManager::ArcServiceManager(
     scoped_refptr<base::TaskRunner> blocking_task_runner)
     : blocking_task_runner_(blocking_task_runner),
+      intent_helper_observer_(base::MakeUnique<IntentHelperObserverImpl>(this)),
       icon_loader_(new ActivityIconLoader()),
       activity_resolver_(new LocalActivityResolver()) {
   DCHECK(!g_arc_service_manager);
@@ -83,12 +109,6 @@ void ArcServiceManager::AddObserver(Observer* observer) {
 void ArcServiceManager::RemoveObserver(Observer* observer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   observer_list_.RemoveObserver(observer);
-}
-
-void ArcServiceManager::OnAppsUpdated() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  for (auto& observer : observer_list_)
-    observer.OnAppsUpdated();
 }
 
 void ArcServiceManager::Shutdown() {

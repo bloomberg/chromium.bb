@@ -101,9 +101,10 @@ void ArcServiceLauncher::Initialize() {
   auto intent_helper = base::MakeUnique<ArcIntentHelperBridge>(
       arc_bridge_service, arc_service_manager_->icon_loader(),
       arc_service_manager_->activity_resolver());
-  // We don't have to remove observer since
-  // ArcServiceManager always outlives ArcIntentHelperBridge.
-  intent_helper->AddObserver(arc_service_manager_.get());
+  // We don't have to call ArcIntentHelperBridge::RemoveObserver() in
+  // ~ArcServiceManager() since the observer in ArcServiceManager always
+  // outlives the ArcIntentHelperBridge object.
+  intent_helper->AddObserver(arc_service_manager_->intent_helper_observer());
   arc_service_manager_->AddService(std::move(intent_helper));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcImeService>(arc_bridge_service));

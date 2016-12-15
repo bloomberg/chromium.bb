@@ -14,17 +14,17 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
-#include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/arc/intent_helper/local_activity_resolver.h"
 
 namespace arc {
 
 class ArcBridgeService;
+class ArcIntentHelperObserver;
 class ArcService;
 
 // Manages creation and destruction of services that communicate with the ARC
 // instance via the ArcBridgeService.
-class ArcServiceManager : public arc::ArcIntentHelperObserver {
+class ArcServiceManager {
  public:
   class Observer {
    public:
@@ -37,7 +37,7 @@ class ArcServiceManager : public arc::ArcIntentHelperObserver {
 
   explicit ArcServiceManager(
       scoped_refptr<base::TaskRunner> blocking_task_runner);
-  ~ArcServiceManager() override;
+  ~ArcServiceManager();
 
   // |arc_bridge_service| can only be accessed on the thread that this
   // class was created on.
@@ -55,9 +55,6 @@ class ArcServiceManager : public arc::ArcIntentHelperObserver {
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-
-  // arc::ArcIntentHelperObserver overrides.
-  void OnAppsUpdated() override;
 
   // Called to shut down all ARC services.
   void Shutdown();
@@ -79,9 +76,19 @@ class ArcServiceManager : public arc::ArcIntentHelperObserver {
     return activity_resolver_;
   }
 
+  // Returns the IntentHelperObserver instance owned by ArcServiceManager.
+  ArcIntentHelperObserver* intent_helper_observer() {
+    return intent_helper_observer_.get();
+  }
+
  private:
+  class IntentHelperObserverImpl;  // implemented in arc_service_manager.cc.
+
   base::ThreadChecker thread_checker_;
   scoped_refptr<base::TaskRunner> blocking_task_runner_;
+
+  // An object for observing the ArcIntentHelper instance in |services_|.
+  std::unique_ptr<ArcIntentHelperObserver> intent_helper_observer_;
 
   std::unique_ptr<ArcBridgeService> arc_bridge_service_;
   std::vector<std::unique_ptr<ArcService>> services_;
