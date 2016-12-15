@@ -9,6 +9,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "content/browser/memory/memory_monitor.h"
+#include "content/browser/memory/memory_state_updater.h"
 #include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -82,12 +83,13 @@ class MemoryCoordinatorImplTest : public testing::Test {
 };
 
 TEST_F(MemoryCoordinatorImplTest, CalculateNextState) {
-  coordinator_->expected_renderer_size_ = 10;
-  coordinator_->new_renderers_until_throttled_ = 4;
-  coordinator_->new_renderers_until_suspended_ = 2;
-  coordinator_->new_renderers_back_to_normal_ = 5;
-  coordinator_->new_renderers_back_to_throttled_ = 3;
-  DCHECK(coordinator_->ValidateParameters());
+  auto* state_updater = coordinator_->state_updater_.get();
+  state_updater->expected_renderer_size_ = 10;
+  state_updater->new_renderers_until_throttled_ = 4;
+  state_updater->new_renderers_until_suspended_ = 2;
+  state_updater->new_renderers_back_to_normal_ = 5;
+  state_updater->new_renderers_back_to_throttled_ = 3;
+  DCHECK(state_updater->ValidateParameters());
 
   // The default state is NORMAL.
   EXPECT_EQ(base::MemoryState::NORMAL, coordinator_->GetCurrentMemoryState());
@@ -103,11 +105,11 @@ TEST_F(MemoryCoordinatorImplTest, CalculateNextState) {
                 GetCurrentMemoryState());
 
   GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(50);
-  EXPECT_EQ(base::MemoryState::NORMAL, coordinator_->CalculateNextState());
+  EXPECT_EQ(base::MemoryState::NORMAL, state_updater->CalculateNextState());
   GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(40);
-  EXPECT_EQ(base::MemoryState::THROTTLED, coordinator_->CalculateNextState());
+  EXPECT_EQ(base::MemoryState::THROTTLED, state_updater->CalculateNextState());
   GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(20);
-  EXPECT_EQ(base::MemoryState::SUSPENDED, coordinator_->CalculateNextState());
+  EXPECT_EQ(base::MemoryState::SUSPENDED, state_updater->CalculateNextState());
 
   // Transitions from THROTTLED
   coordinator_->current_state_ = base::MemoryState::THROTTLED;
@@ -118,11 +120,11 @@ TEST_F(MemoryCoordinatorImplTest, CalculateNextState) {
                 GetCurrentMemoryState());
 
   GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(40);
-  EXPECT_EQ(base::MemoryState::THROTTLED, coordinator_->CalculateNextState());
+  EXPECT_EQ(base::MemoryState::THROTTLED, state_updater->CalculateNextState());
   GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(50);
-  EXPECT_EQ(base::MemoryState::NORMAL, coordinator_->CalculateNextState());
+  EXPECT_EQ(base::MemoryState::NORMAL, state_updater->CalculateNextState());
   GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(20);
-  EXPECT_EQ(base::MemoryState::SUSPENDED, coordinator_->CalculateNextState());
+  EXPECT_EQ(base::MemoryState::SUSPENDED, state_updater->CalculateNextState());
 
   // Transitions from SUSPENDED
   coordinator_->current_state_ = base::MemoryState::SUSPENDED;
@@ -135,20 +137,21 @@ TEST_F(MemoryCoordinatorImplTest, CalculateNextState) {
                 GetCurrentMemoryState());
 
   GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(20);
-  EXPECT_EQ(base::MemoryState::SUSPENDED, coordinator_->CalculateNextState());
+  EXPECT_EQ(base::MemoryState::SUSPENDED, state_updater->CalculateNextState());
   GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(30);
-  EXPECT_EQ(base::MemoryState::THROTTLED, coordinator_->CalculateNextState());
+  EXPECT_EQ(base::MemoryState::THROTTLED, state_updater->CalculateNextState());
   GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(50);
-  EXPECT_EQ(base::MemoryState::NORMAL, coordinator_->CalculateNextState());
+  EXPECT_EQ(base::MemoryState::NORMAL, state_updater->CalculateNextState());
 }
 
 TEST_F(MemoryCoordinatorImplTest, UpdateState) {
-  coordinator_->expected_renderer_size_ = 10;
-  coordinator_->new_renderers_until_throttled_ = 4;
-  coordinator_->new_renderers_until_suspended_ = 2;
-  coordinator_->new_renderers_back_to_normal_ = 5;
-  coordinator_->new_renderers_back_to_throttled_ = 3;
-  DCHECK(coordinator_->ValidateParameters());
+  auto* state_updater = coordinator_->state_updater_.get();
+  state_updater->expected_renderer_size_ = 10;
+  state_updater->new_renderers_until_throttled_ = 4;
+  state_updater->new_renderers_until_suspended_ = 2;
+  state_updater->new_renderers_back_to_normal_ = 5;
+  state_updater->new_renderers_back_to_throttled_ = 3;
+  DCHECK(state_updater->ValidateParameters());
 
   {
     // Transition happens (NORMAL -> THROTTLED).
@@ -156,7 +159,7 @@ TEST_F(MemoryCoordinatorImplTest, UpdateState) {
     base::MemoryCoordinatorClientRegistry::GetInstance()->Register(&client);
     coordinator_->current_state_ = base::MemoryState::NORMAL;
     GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(40);
-    coordinator_->UpdateState();
+    state_updater->UpdateState();
     base::RunLoop loop;
     loop.RunUntilIdle();
     EXPECT_TRUE(client.is_called());
@@ -170,7 +173,7 @@ TEST_F(MemoryCoordinatorImplTest, UpdateState) {
     base::MemoryCoordinatorClientRegistry::GetInstance()->Register(&client);
     coordinator_->current_state_ = base::MemoryState::NORMAL;
     GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(50);
-    coordinator_->UpdateState();
+    state_updater->UpdateState();
     base::RunLoop loop;
     loop.RunUntilIdle();
     EXPECT_FALSE(client.is_called());
@@ -180,12 +183,13 @@ TEST_F(MemoryCoordinatorImplTest, UpdateState) {
 }
 
 TEST_F(MemoryCoordinatorImplTest, SetMemoryStateForTesting) {
-  coordinator_->expected_renderer_size_ = 10;
-  coordinator_->new_renderers_until_throttled_ = 4;
-  coordinator_->new_renderers_until_suspended_ = 2;
-  coordinator_->new_renderers_back_to_normal_ = 5;
-  coordinator_->new_renderers_back_to_throttled_ = 3;
-  DCHECK(coordinator_->ValidateParameters());
+  auto* state_updater = coordinator_->state_updater_.get();
+  state_updater->expected_renderer_size_ = 10;
+  state_updater->new_renderers_until_throttled_ = 4;
+  state_updater->new_renderers_until_suspended_ = 2;
+  state_updater->new_renderers_back_to_normal_ = 5;
+  state_updater->new_renderers_back_to_throttled_ = 3;
+  DCHECK(state_updater->ValidateParameters());
 
   MockMemoryCoordinatorClient client;
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(&client);
@@ -220,18 +224,19 @@ TEST_F(MemoryCoordinatorImplTest, SetMemoryStateForTesting) {
 }
 
 TEST_F(MemoryCoordinatorImplTest, ForceSetGlobalState) {
-  coordinator_->expected_renderer_size_ = 10;
-  coordinator_->new_renderers_until_throttled_ = 4;
-  coordinator_->new_renderers_until_suspended_ = 2;
-  coordinator_->new_renderers_back_to_normal_ = 5;
-  coordinator_->new_renderers_back_to_throttled_ = 3;
-  DCHECK(coordinator_->ValidateParameters());
+  auto* state_updater = coordinator_->state_updater_.get();
+  state_updater->expected_renderer_size_ = 10;
+  state_updater->new_renderers_until_throttled_ = 4;
+  state_updater->new_renderers_until_suspended_ = 2;
+  state_updater->new_renderers_back_to_normal_ = 5;
+  state_updater->new_renderers_back_to_throttled_ = 3;
+  DCHECK(state_updater->ValidateParameters());
   GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(50);
 
   base::TimeDelta interval = base::TimeDelta::FromSeconds(5);
   base::TimeDelta minimum_transition = base::TimeDelta::FromSeconds(30);
-  coordinator_->monitoring_interval_ = interval;
-  coordinator_->minimum_transition_period_ = minimum_transition;
+  state_updater->monitoring_interval_ = interval;
+  state_updater->minimum_transition_period_ = minimum_transition;
 
   // Starts updating states. The initial state should be NORMAL with above
   // configuration.

@@ -7,7 +7,6 @@
 
 #include "base/callback.h"
 #include "base/memory/singleton.h"
-#include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
 #include "base/time/time.h"
@@ -19,40 +18,32 @@ namespace content {
 
 class MemoryMonitor;
 class MemoryCoordinatorImplTest;
+class MemoryStateUpdater;
 struct MemoryCoordinatorSingletonTraits;
 
-// MemoryCoordinatorImpl is an internal implementation of MemoryCoordinator
-// which uses a heuristic to determine a single global memory state.
-// In the current implementation browser process and renderer processes share
-// the global state; the memory coordinator will notify the global state to
-// all background renderers if the state has changed.
-//
-// State calculation:
-// MemoryCoordinatorImpl uses followings to determine the global state:
-// * Compute "number of renderers which can be created until the system will
-//   be in a critical state". Call this N.
-//   (See memory_monitor.h for the definition of "critical")
-// * Covert N to a memory state using some thresholds/hysteresis for each state.
-//   Once a state is changed to a limited state, larger N will be needed to go
-//   back to a relaxed state. (e.g. THROTTLED -> NORMAL)
-// * Once a state is changed, it remains the same for a certain period of time.
+// MemoryCoordinatorImpl is an implementation of MemoryCoordinator.
+// The current implementation uses MemoryStateUpdater to update the global
+// memory state. See comments in MemoryStateUpdater for details.
 class CONTENT_EXPORT MemoryCoordinatorImpl : public MemoryCoordinator,
                                              public NotificationObserver,
                                              public base::NonThreadSafe {
  public:
+  using MemoryState = base::MemoryState;
+
   MemoryCoordinatorImpl(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                         std::unique_ptr<MemoryMonitor> monitor);
   ~MemoryCoordinatorImpl() override;
+
+  MemoryMonitor* memory_monitor() { return memory_monitor_.get(); }
+  MemoryStateUpdater* state_updater() { return state_updater_.get(); }
 
   // MemoryCoordinator implementations:
   void Start() override;
   void OnChildAdded(int render_process_id) override;
 
-  MemoryMonitor* memory_monitor() { return memory_monitor_.get(); }
-
-  base::MemoryState GetGlobalMemoryState() const override;
-  base::MemoryState GetCurrentMemoryState() const override;
-  void SetCurrentMemoryStateForTesting(base::MemoryState memory_state) override;
+  MemoryState GetGlobalMemoryState() const override;
+  MemoryState GetCurrentMemoryState() const override;
+  void SetCurrentMemoryStateForTesting(MemoryState memory_state) override;
 
   // NotificationObserver implementation:
   void Observe(int type,
@@ -65,6 +56,11 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public MemoryCoordinator,
   void ForceSetGlobalState(base::MemoryState new_state,
                            base::TimeDelta duration);
 
+  // Changes the global state and notifies state changes to clients (lives in
+  // the browser) and child processes (renderers) if needed. Returns true when
+  // the state is actually changed.
+  bool ChangeStateIfNeeded(MemoryState prev_state, MemoryState next_state);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, CalculateNextState);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, UpdateState);
@@ -72,20 +68,6 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public MemoryCoordinator,
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, ForceSetGlobalState);
 
   friend struct MemoryCoordinatorSingletonTraits;
-
-  using MemoryState = base::MemoryState;
-
-  // Changes the global state and notifies state changes to clients (lives in
-  // the browser) and child processes (renderers) if needed. Returns true when
-  // the state is actually changed.
-  bool ChangeStateIfNeeded(MemoryState prev_state, MemoryState next_state);
-
-  // Calculates the next global state from the amount of free memory using
-  // a heuristic.
-  MemoryState CalculateNextState();
-
-  // Periodically called to update the global state.
-  void UpdateState();
 
   // Notifies a state change to in-process clients.
   void NotifyStateToClients();
@@ -98,51 +80,11 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public MemoryCoordinator,
                          MemoryState next_state,
                          base::TimeDelta duration);
 
-  // Schedules a task to update the global state. The task will be executed
-  // after |delay| has passed.
-  void ScheduleUpdateState(base::TimeDelta delay);
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  NotificationRegistrar notification_registrar_;
   std::unique_ptr<MemoryMonitor> memory_monitor_;
-  base::CancelableClosure update_state_closure_;
-  base::MemoryState current_state_ = MemoryState::NORMAL;
+  NotificationRegistrar notification_registrar_;
+  std::unique_ptr<MemoryStateUpdater> state_updater_;
+  MemoryState current_state_ = MemoryState::NORMAL;
   base::TimeTicks last_state_change_;
-
-  // Sets up parameters for the heuristic.
-  void InitializeParameters();
-
-  // Validates parameters defined below.
-  bool ValidateParameters();
-
-  // Parameters to control the heuristic.
-
-  // The median size of a renderer on the current platform. This is used to
-  // convert the amount of free memory to an expected number of new renderers
-  // that could be started before hitting critical memory pressure.
-  int expected_renderer_size_;
-  // When in a NORMAL state and the potential number of new renderers drops
-  // below this level, the coordinator will transition to a THROTTLED state.
-  int new_renderers_until_throttled_;
-  // When in a NORMAL/THROTTLED state and the potential number of new renderers
-  // drops below this level, the coordinator will transition to a SUSPENDED
-  // state.
-  int new_renderers_until_suspended_;
-  // When in a THROTTLED/SUSPENDED state and the potential number of new
-  // renderers rises above this level, the coordinator will transition to a
-  // NORMAL state.
-  int new_renderers_back_to_normal_;
-  // When in a SUSPENDED state and the potential number of new renderers rises
-  // above this level, the coordinator will transition to a SUSPENDED state.
-  int new_renderers_back_to_throttled_;
-  // The memory coordinator stays in the same state at least this duration even
-  // when there are considerable changes in the amount of free memory to prevent
-  // thrashing.
-  base::TimeDelta minimum_transition_period_;
-  // The interval of checking the amount of free memory.
-  base::TimeDelta monitoring_interval_;
-
-  base::WeakPtrFactory<MemoryCoordinatorImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryCoordinatorImpl);
 };
