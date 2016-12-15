@@ -519,6 +519,7 @@ _x86_internal_release_boards = frozenset([
     'parrot_ivb',
     'pbody',
     'peppy',
+    'poppy',
     'pyro',
     'quawks',
     'rambi',
@@ -628,6 +629,7 @@ _cheets_x86_boards = _cheets_boards | frozenset([
     'kunimitsu',
     'lars',
     'lulu',
+    'poppy',
     'pyro',
     'reef',
     'reks',
@@ -712,6 +714,7 @@ _waterfall_config_map = {
         # Experimental Paladins.
         'gale-paladin',
         'lakitu_next-paladin',
+        'poppy-paladin',
 
         # Firmware Builders.
         'link-depthcharge-full-firmware',
