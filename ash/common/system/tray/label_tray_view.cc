@@ -25,7 +25,6 @@ namespace {
 // TODO(tdanderson): Remove this once material design is enabled by
 // default. See crbug.com/614453.
 const gfx::VectorIcon& ResourceIdToVectorIcon(int resource_id) {
-#if defined(OS_CHROMEOS)
   switch (resource_id) {
     case IDR_AURA_UBER_TRAY_ENTERPRISE:
       return kSystemMenuBusinessIcon;
@@ -39,8 +38,6 @@ const gfx::VectorIcon& ResourceIdToVectorIcon(int resource_id) {
       NOTREACHED();
       break;
   }
-#endif  // defined(OS_CHROMEOS)
-
   return gfx::kNoneIcon;
 }
 

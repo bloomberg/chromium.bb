@@ -29,10 +29,8 @@ const gfx::VectorIcon& ResourceIdToVectorIcon(int resource_id) {
   switch (resource_id) {
     case IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK:
       return kSystemMenuAccessibilityIcon;
-#if defined(OS_CHROMEOS)
     case IDR_AURA_UBER_TRAY_SMS:
       return kSystemMenuSmsIcon;
-#endif
     default:
       NOTREACHED();
       break;

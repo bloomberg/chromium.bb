@@ -14,8 +14,27 @@
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
+#include "ash/common/system/chromeos/audio/tray_audio.h"
+#include "ash/common/system/chromeos/bluetooth/tray_bluetooth.h"
+#include "ash/common/system/chromeos/brightness/tray_brightness.h"
+#include "ash/common/system/chromeos/cast/tray_cast.h"
+#include "ash/common/system/chromeos/enterprise/tray_enterprise.h"
+#include "ash/common/system/chromeos/media_security/multi_profile_media_tray_item.h"
+#include "ash/common/system/chromeos/network/tray_network.h"
+#include "ash/common/system/chromeos/network/tray_sms.h"
+#include "ash/common/system/chromeos/network/tray_vpn.h"
+#include "ash/common/system/chromeos/power/power_status.h"
+#include "ash/common/system/chromeos/power/tray_power.h"
+#include "ash/common/system/chromeos/screen_security/screen_capture_tray_item.h"
+#include "ash/common/system/chromeos/screen_security/screen_share_tray_item.h"
+#include "ash/common/system/chromeos/session/tray_session_length_limit.h"
+#include "ash/common/system/chromeos/settings/tray_settings.h"
+#include "ash/common/system/chromeos/supervised/tray_supervised_user.h"
+#include "ash/common/system/chromeos/tray_caps_lock.h"
+#include "ash/common/system/chromeos/tray_tracing.h"
 #include "ash/common/system/date/tray_date.h"
 #include "ash/common/system/date/tray_system_info.h"
+#include "ash/common/system/ime/tray_ime_chromeos.h"
 #include "ash/common/system/tiles/tray_tiles.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -36,7 +55,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/strings/utf_string_conversions.h"
 #include "base/timer/timer.h"
 #include "grit/ash_strings.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -47,34 +65,12 @@
 #include "ui/events/event_constants.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/common/system/chromeos/audio/tray_audio.h"
-#include "ash/common/system/chromeos/bluetooth/tray_bluetooth.h"
-#include "ash/common/system/chromeos/brightness/tray_brightness.h"
-#include "ash/common/system/chromeos/cast/tray_cast.h"
-#include "ash/common/system/chromeos/enterprise/tray_enterprise.h"
-#include "ash/common/system/chromeos/media_security/multi_profile_media_tray_item.h"
-#include "ash/common/system/chromeos/network/tray_network.h"
-#include "ash/common/system/chromeos/network/tray_sms.h"
-#include "ash/common/system/chromeos/network/tray_vpn.h"
-#include "ash/common/system/chromeos/power/power_status.h"
-#include "ash/common/system/chromeos/power/tray_power.h"
-#include "ash/common/system/chromeos/screen_security/screen_capture_tray_item.h"
-#include "ash/common/system/chromeos/screen_security/screen_share_tray_item.h"
-#include "ash/common/system/chromeos/session/tray_session_length_limit.h"
-#include "ash/common/system/chromeos/settings/tray_settings.h"
-#include "ash/common/system/chromeos/supervised/tray_supervised_user.h"
-#include "ash/common/system/chromeos/tray_caps_lock.h"
-#include "ash/common/system/chromeos/tray_tracing.h"
-#include "ash/common/system/ime/tray_ime_chromeos.h"
-#include "ui/message_center/message_center.h"
-#endif
 
 using views::TrayBubbleView;
 
@@ -258,7 +254,7 @@ void SystemTray::Shutdown() {
 
 void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   const bool use_md = MaterialDesignController::IsSystemTrayMenuMaterial();
-#if !defined(OS_WIN)
+
   // Create user items for each possible user.
   int maximum_user_profiles = WmShell::Get()
                                   ->GetSessionStateDelegate()
@@ -276,14 +272,12 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
     // menu if more than one user is logged in.
     AddTrayItem(new TrayUserSeparator(this));
   }
-#endif
 
   tray_accessibility_ = new TrayAccessibility(this);
   if (!use_md)
     tray_date_ = new TrayDate(this);
   tray_update_ = new TrayUpdate(this);
 
-#if defined(OS_CHROMEOS)
   AddTrayItem(new TraySessionLengthLimit(this));
   AddTrayItem(new TrayEnterprise(this));
   AddTrayItem(new TraySupervisedUser(this));
@@ -321,18 +315,11 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
     AddTrayItem(tray_tiles_);
     tray_system_info_ = new TraySystemInfo(this);
     AddTrayItem(tray_system_info_);
+    // Leading padding.
+    AddTrayItem(new PaddingTrayItem());
   } else {
     AddTrayItem(tray_date_);
   }
-#elif defined(OS_WIN)
-  AddTrayItem(tray_accessibility_);
-  AddTrayItem(tray_update_);
-  if (!use_md)
-    AddTrayItem(tray_date_);
-#endif
-  // Leading padding.
-  if (use_md)
-    AddTrayItem(new PaddingTrayItem());
 }
 
 void SystemTray::AddTrayItem(SystemTrayItem* item) {
@@ -527,10 +514,7 @@ void SystemTray::DestroyNotificationBubble() {
 
 base::string16 SystemTray::GetAccessibleNameForTray() {
   base::string16 time = GetAccessibleTimeString(base::Time::Now());
-  base::string16 battery = base::ASCIIToUTF16("");
-#if defined(OS_CHROMEOS)
-  battery = PowerStatus::Get()->GetAccessibleNameString(false);
-#endif
+  base::string16 battery = PowerStatus::Get()->GetAccessibleNameString(false);
   return l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_ACCESSIBLE_DESCRIPTION,
                                     time, battery);
 }

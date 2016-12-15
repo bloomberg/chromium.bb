@@ -11,22 +11,16 @@
 #include "ash/common/accessibility_types.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-
-#if defined(OS_CHROMEOS)
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#endif
 
 namespace ash {
 
 class AccessibilityObserver;
-class ClockObserver;
-class IMEObserver;
-class UserObserver;
-
-#if defined(OS_CHROMEOS)
 class BluetoothObserver;
+class ClockObserver;
 class EnterpriseDomainObserver;
+class IMEObserver;
 class LastWindowClosedObserver;
 class LogoutButtonObserver;
 class NetworkObserver;
@@ -35,8 +29,8 @@ class ScreenCaptureObserver;
 class ScreenShareObserver;
 class SessionLengthLimitObserver;
 class TracingObserver;
+class UserObserver;
 class VirtualKeyboardObserver;
-#endif
 
 namespace mojom {
 enum class UpdateSeverity;
@@ -54,6 +48,12 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifyAccessibilityModeChanged(
       AccessibilityNotificationVisibility notify);
 
+  // Bluetooth.
+  void AddBluetoothObserver(BluetoothObserver* observer);
+  void RemoveBluetoothObserver(BluetoothObserver* observer);
+  void NotifyRefreshBluetooth();
+  void NotifyBluetoothDiscoveringChanged();
+
   // Date and time.
   void AddClockObserver(ClockObserver* observer);
   void RemoveClockObserver(ClockObserver* observer);
@@ -62,29 +62,16 @@ class ASH_EXPORT SystemTrayNotifier {
   void NotifySystemClockTimeUpdated();
   void NotifySystemClockCanSetTimeChanged(bool can_set_time);
 
+  // Enterprise domain.
+  void AddEnterpriseDomainObserver(EnterpriseDomainObserver* observer);
+  void RemoveEnterpriseDomainObserver(EnterpriseDomainObserver* observer);
+  void NotifyEnterpriseDomainChanged();
+
   // Input methods.
   void AddIMEObserver(IMEObserver* observer);
   void RemoveIMEObserver(IMEObserver* observer);
   void NotifyRefreshIME();
   void NotifyRefreshIMEMenu(bool is_active);
-
-  // User.
-  void AddUserObserver(UserObserver* observer);
-  void RemoveUserObserver(UserObserver* observer);
-  void NotifyUserUpdate();
-  void NotifyUserAddedToSession();
-
-#if defined(OS_CHROMEOS)
-  // Bluetooth.
-  void AddBluetoothObserver(BluetoothObserver* observer);
-  void RemoveBluetoothObserver(BluetoothObserver* observer);
-  void NotifyRefreshBluetooth();
-  void NotifyBluetoothDiscoveringChanged();
-
-  // Enterprise domain.
-  void AddEnterpriseDomainObserver(EnterpriseDomainObserver* observer);
-  void RemoveEnterpriseDomainObserver(EnterpriseDomainObserver* observer);
-  void NotifyEnterpriseDomainChanged();
 
   // Last window closed.
   void AddLastWindowClosedObserver(LastWindowClosedObserver* observer);
@@ -134,21 +121,23 @@ class ASH_EXPORT SystemTrayNotifier {
   void RemoveTracingObserver(TracingObserver* observer);
   void NotifyTracingModeChanged(bool value);
 
+  // User.
+  void AddUserObserver(UserObserver* observer);
+  void RemoveUserObserver(UserObserver* observer);
+  void NotifyUserUpdate();
+  void NotifyUserAddedToSession();
+
   // Virtual keyboard.
   void AddVirtualKeyboardObserver(VirtualKeyboardObserver* observer);
   void RemoveVirtualKeyboardObserver(VirtualKeyboardObserver* observer);
   void NotifyVirtualKeyboardSuppressionChanged(bool suppressed);
-#endif
 
  private:
   base::ObserverList<AccessibilityObserver> accessibility_observers_;
-  base::ObserverList<ClockObserver> clock_observers_;
-  base::ObserverList<IMEObserver> ime_observers_;
-  base::ObserverList<UserObserver> user_observers_;
-
-#if defined(OS_CHROMEOS)
   base::ObserverList<BluetoothObserver> bluetooth_observers_;
+  base::ObserverList<ClockObserver> clock_observers_;
   base::ObserverList<EnterpriseDomainObserver> enterprise_domain_observers_;
+  base::ObserverList<IMEObserver> ime_observers_;
   base::ObserverList<LastWindowClosedObserver> last_window_closed_observers_;
   base::ObserverList<LogoutButtonObserver> logout_button_observers_;
   base::ObserverList<NetworkObserver> network_observers_;
@@ -159,8 +148,8 @@ class ASH_EXPORT SystemTrayNotifier {
   base::ObserverList<SessionLengthLimitObserver>
       session_length_limit_observers_;
   base::ObserverList<TracingObserver> tracing_observers_;
+  base::ObserverList<UserObserver> user_observers_;
   base::ObserverList<VirtualKeyboardObserver> virtual_keyboard_observers_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayNotifier);
 };

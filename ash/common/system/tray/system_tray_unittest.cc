@@ -35,10 +35,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 namespace ash {
 namespace test {
 
@@ -121,15 +117,9 @@ TEST_F(SystemTrayTest, NotRecordedtemsAreNotRecorded) {
   RunAllPendingInMessageLoop();
 }
 
-// TODO(bruthig): Re-enable.  See https://crbug.com/665960.
-#if defined(OS_WIN)
-#define MAYBE_NullDefaultViewIsNotRecorded DISABLED_NullDefaultViewIsNotRecorded
-#else
-#define MAYBE_NullDefaultViewIsNotRecorded NullDefaultViewIsNotRecorded
-#endif
 // Verifies null default views are not recorded in the
 // "Ash.SystemMenu.DefaultView.VisibleItems" histogram.
-TEST_F(SystemTrayTest, MAYBE_NullDefaultViewIsNotRecorded) {
+TEST_F(SystemTrayTest, NullDefaultViewIsNotRecorded) {
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -391,13 +381,8 @@ TEST_F(SystemTrayTest, SystemTrayNotifications) {
   ASSERT_TRUE(test_item->notification_view() != NULL);
 }
 
-// Test is flaky on Win7 and Cros (crbug.com/637978).
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
-#define MAYBE_BubbleCreationTypesTest DISABLED_BubbleCreationTypesTest
-#else
-#define MAYBE_BubbleCreationTypesTest BubbleCreationTypesTest
-#endif
-TEST_F(SystemTrayTest, MAYBE_BubbleCreationTypesTest) {
+// Test is flaky. http://crbug.com/637978
+TEST_F(SystemTrayTest, DISABLED_BubbleCreationTypesTest) {
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -523,13 +508,7 @@ TEST_F(SystemTrayTest, PersistentBubble) {
   EXPECT_TRUE(tray->HasSystemBubble());
 }
 
-#if defined(OS_CHROMEOS)
-// Accessibility/Settings tray items are available only on cros.
-#define MAYBE_WithSystemModal WithSystemModal
-#else
-#define MAYBE_WithSystemModal DISABLED_WithSystemModal
-#endif
-TEST_F(SystemTrayTest, MAYBE_WithSystemModal) {
+TEST_F(SystemTrayTest, WithSystemModal) {
   // Check if the accessibility item is created even with system modal dialog.
   WmShell::Get()->accessibility_delegate()->SetVirtualKeyboardEnabled(true);
   std::unique_ptr<views::Widget> widget(CreateTestWidget(
@@ -589,7 +568,6 @@ TEST_F(SystemTrayTest, SetVisibleDuringHideAnimation) {
   EXPECT_EQ(1.0f, tray->layer()->GetTargetOpacity());
 }
 
-#if defined(OS_CHROMEOS)
 // Tests that touch on an item in the system bubble triggers it to become
 // active.
 TEST_F(SystemTrayTest, TrayPopupItemContainerTouchFeedback) {
@@ -664,7 +642,6 @@ TEST_F(SystemTrayTest, SystemTrayHeightWithBubble) {
 
   EXPECT_EQ(0, notification_tray->tray_bubble_height_for_test());
 }
-#endif  // OS_CHROMEOS
 
 }  // namespace test
 }  // namespace ash

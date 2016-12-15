@@ -29,18 +29,16 @@ const gfx::VectorIcon& ResourceIdToVectorIcon(int resource_id) {
   switch (resource_id) {
     case IDR_AURA_UBER_TRAY_ACCESSIBILITY:
       return kSystemTrayAccessibilityIcon;
-    case IDR_AURA_UBER_TRAY_UPDATE:
-      return kSystemTrayUpdateIcon;
-    case IDR_AURA_UBER_TRAY_VOLUME_MUTE:
-      return kSystemTrayVolumeMuteIcon;
-#if defined(OS_CHROMEOS)
     case IDR_AURA_UBER_TRAY_AUTO_ROTATION_LOCKED:
       return kSystemTrayRotationLockLockedIcon;
     case IDR_AURA_UBER_TRAY_CAPS_LOCK:
       return kSystemTrayCapsLockIcon;
     case IDR_AURA_UBER_TRAY_TRACING:
       return kSystemTrayTracingIcon;
-#endif
+    case IDR_AURA_UBER_TRAY_UPDATE:
+      return kSystemTrayUpdateIcon;
+    case IDR_AURA_UBER_TRAY_VOLUME_MUTE:
+      return kSystemTrayVolumeMuteIcon;
     default:
       NOTREACHED();
       break;
