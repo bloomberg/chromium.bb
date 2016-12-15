@@ -77,7 +77,7 @@
           </cr-expand-button>
         </template>
         <template is="dom-if"
-            if="[[!expandIsVisible_(deviceState, networkStateList)]]">
+            if="[[showDetailsIsVisible_(deviceState, networkStateList)]]">
           <button class="subpage-arrow" is="paper-icon-button-light"
               on-tap="onShowDetailsTap_">
           </button>

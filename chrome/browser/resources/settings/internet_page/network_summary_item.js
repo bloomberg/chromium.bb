@@ -203,6 +203,16 @@ Polymer({
   },
 
   /**
+   * @return {boolean} Whether or not to show the UI to show details.
+   * @private
+   */
+  showDetailsIsVisible_: function() {
+    if (this.expandIsVisible_())
+      return false;
+    return this.deviceIsEnabled_();
+  },
+
+  /**
    * @return {boolean} True if the known networks button should be shown.
    * @private
    */
