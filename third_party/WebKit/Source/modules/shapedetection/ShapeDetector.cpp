@@ -11,7 +11,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
-#include "core/html/canvas/CanvasImageSource.h"
+#include "core/html/ImageData.h"
 #include "core/loader/resource/ImageResourceContent.h"
 #include "platform/graphics/Image.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -53,9 +53,13 @@ ShapeDetector::ShapeDetector(LocalFrame& frame) {
 }
 
 ScriptPromise ShapeDetector::detect(ScriptState* scriptState,
-                                    const CanvasImageSourceUnion& imageSource) {
+                                    const ImageBitmapSourceUnion& imageSource) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
+
+  // ImageDatas cannot be tainted by definition.
+  if (imageSource.isImageData())
+    return detectShapesOnImageData(resolver, imageSource.getAsImageData());
 
   CanvasImageSource* canvasImageSource;
   if (imageSource.isHTMLImageElement()) {
@@ -141,11 +145,29 @@ ScriptPromise ShapeDetector::detect(ScriptState* scriptState,
                   image->height());
 }
 
+ScriptPromise ShapeDetector::detectShapesOnImageData(
+    ScriptPromiseResolver* resolver,
+    ImageData* imageData) {
+  ScriptPromise promise = resolver->promise();
+
+  uint8_t* const data = imageData->data()->data();
+  WTF::CheckedNumeric<int> allocationSize = imageData->size().area() * 4;
+
+  mojo::ScopedSharedBufferHandle sharedBufferHandle =
+      getSharedBufferOnData(resolver, data, allocationSize.ValueOrDefault(0));
+  if (!sharedBufferHandle->is_valid())
+    return promise;
+
+  return doDetect(resolver, std::move(sharedBufferHandle), imageData->width(),
+                  imageData->height());
+}
+
 ScriptPromise ShapeDetector::detectShapesOnImageElement(
     ScriptPromiseResolver* resolver,
     const HTMLImageElement* img) {
   ScriptPromise promise = resolver->promise();
 
+  // TODO(mcasas): reconsider this resolve(), https://crbug.com/674306.
   if (img->bitmapSourceSize().isZero()) {
     resolver->resolve(HeapVector<Member<DOMRect>>());
     return promise;

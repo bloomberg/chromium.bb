@@ -10,5 +10,5 @@
     Exposed=(Window,Worker),
     RuntimeEnabled=ShapeDetection,
 ] interface BarcodeDetector {
-    [CallWith=ScriptState, Measure] Promise<sequence<DetectedBarcode>> detect(CanvasImageSource image);
+    [CallWith=ScriptState, Measure] Promise<sequence<DetectedBarcode>> detect(ImageBitmapSource image);
 };

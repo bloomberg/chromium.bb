@@ -7,6 +7,7 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/imagebitmap/ImageBitmapFactories.h"
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 
@@ -22,10 +23,11 @@ class MODULES_EXPORT ShapeDetector
   explicit ShapeDetector(LocalFrame&);
   virtual ~ShapeDetector() = default;
 
-  ScriptPromise detect(ScriptState*, const CanvasImageSourceUnion&);
+  ScriptPromise detect(ScriptState*, const ImageBitmapSourceUnion&);
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
  private:
+  ScriptPromise detectShapesOnImageData(ScriptPromiseResolver*, ImageData*);
   ScriptPromise detectShapesOnImageElement(ScriptPromiseResolver*,
                                            const HTMLImageElement*);
 

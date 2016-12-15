@@ -10,5 +10,5 @@
     Exposed=(Window,Worker),
     RuntimeEnabled=ShapeDetection,
 ] interface FaceDetector {
-    [CallWith=ScriptState, Measure] Promise<sequence<DetectedFace>> detect(CanvasImageSource image);
+    [CallWith=ScriptState, Measure] Promise<sequence<DetectedFace>> detect(ImageBitmapSource image);
 };
