@@ -5,13 +5,15 @@
 #import "ios/chrome/browser/web/resubmit_data_controller.h"
 
 #import "base/logging.h"
-#include "base/mac/scoped_block.h"
-#import "base/mac/scoped_nsobject.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface ResubmitDataController () {
-  base::scoped_nsobject<UIAlertController> _alertController;
+  UIAlertController* _alertController;
 }
 @end
 
@@ -36,15 +38,13 @@
         l10n_util::GetNSString(IDS_HTTP_POST_WARNING_RESEND);
     NSString* cancelTitle = l10n_util::GetNSString(IDS_CANCEL);
 
-    _alertController.reset([[UIAlertController
+    _alertController = [UIAlertController
         alertControllerWithTitle:nil
                          message:message
-                  preferredStyle:UIAlertControllerStyleActionSheet] retain]);
-
+                  preferredStyle:UIAlertControllerStyleActionSheet];
     // Make sure the blocks are located on the heap.
-    base::mac::ScopedBlock<ProceduralBlock> guaranteeOnHeap;
-    guaranteeOnHeap.reset([continueBlock copy]);
-    guaranteeOnHeap.reset([cancelBlock copy]);
+    continueBlock = [continueBlock copy];
+    cancelBlock = [cancelBlock copy];
 
     UIAlertAction* cancelAction =
         [UIAlertAction actionWithTitle:cancelTitle
@@ -65,9 +65,9 @@
 }
 
 - (void)presentActionSheetFromRect:(CGRect)rect inView:(UIView*)view {
-  _alertController.get().modalPresentationStyle = UIModalPresentationPopover;
+  _alertController.modalPresentationStyle = UIModalPresentationPopover;
   UIPopoverPresentationController* popPresenter =
-      _alertController.get().popoverPresentationController;
+      _alertController.popoverPresentationController;
   popPresenter.sourceView = view;
   popPresenter.sourceRect = rect;
 
@@ -80,9 +80,8 @@
 }
 
 - (void)dismissActionSheet {
-  [_alertController.get().presentingViewController
-      dismissViewControllerAnimated:YES
-                         completion:nil];
+  [_alertController.presentingViewController dismissViewControllerAnimated:YES
+                                                                completion:nil];
 }
 
 @end

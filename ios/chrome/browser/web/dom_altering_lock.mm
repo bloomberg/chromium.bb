@@ -7,6 +7,10 @@
 #include "base/logging.h"
 #include "ios/web/public/web_thread.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 DEFINE_WEB_STATE_USER_DATA_KEY(DOMAlteringLock);
 
 DOMAlteringLock::DOMAlteringLock(web::WebState* web_state) {
