@@ -118,9 +118,13 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
- private:
-  friend class MostVisitedSitesTest;
+  // Workhorse for SaveNewTiles. Implemented as a separate static and public
+  // method for ease of testing.
+  static NTPTilesVector MergeTiles(NTPTilesVector personal_tiles,
+                                   NTPTilesVector whitelist_tiles,
+                                   NTPTilesVector popular_tiles);
 
+ private:
   void BuildCurrentTiles();
 
   // Initialize the query to Top Sites. Called if the SuggestionsService
@@ -151,12 +155,6 @@ class MostVisitedSites : public history::TopSitesObserver,
   // Takes the personal tiles, creates and merges in whitelist and popular tiles
   // if appropriate, and saves the new tiles.
   void SaveNewTiles(NTPTilesVector personal_tiles);
-
-  // Workhorse for SaveNewTiles above. Implemented as a separate static method
-  // for ease of testing.
-  static NTPTilesVector MergeTiles(NTPTilesVector personal_tiles,
-                                   NTPTilesVector whitelist_tiles,
-                                   NTPTilesVector popular_tiles);
 
   // Notifies the observer about the availability of tiles.
   // Also records impressions UMA if not done already.
