@@ -200,17 +200,18 @@ public class TabWebContentsObserver extends WebContentsObserver {
     public void didCommitProvisionalLoadForFrame(long frameId, boolean isMainFrame, String url,
             int transitionType) {
         if (isMainFrame && UmaUtils.isRunningApplicationStart()) {
-            // Currently it takes about 2000ms to commit a navigation if the measurement
-            // begins very early in the browser start. How many buckets (b) are needed to
-            // explore the _typical_ values with granularity 100ms and a maximum duration
-            // of 1 minute?
-            //   s^{n+1} / s^{n} = 2100 / 2000
-            //   s = 1.05
-            //   s^b = 60000
-            //   b = ln(60000) / ln(1.05) ~= 225
-            RecordHistogram.recordCustomTimesHistogram("Startup.FirstCommitNavigationTime2",
+            // Current median is 550ms, and long tail is very long. ZoomedIn gives good view of the
+            // median and ZoomedOut gives a good overview.
+            RecordHistogram.recordCustomTimesHistogram(
+                    "Startup.FirstCommitNavigationTime2.ZoomedIn",
                     SystemClock.uptimeMillis() - UmaUtils.getForegroundStartTime(),
-                    1, 60000 /* 1 minute */, TimeUnit.MILLISECONDS, 225);
+                    200, 1000, TimeUnit.MILLISECONDS, 100);
+            // For ZoomedOut very rarely is it under 50ms and this range matches
+            // CustomTabs.IntentToFirstCommitNavigationTime2.ZoomedOut.
+            RecordHistogram.recordCustomTimesHistogram(
+                    "Startup.FirstCommitNavigationTime2.ZoomedOut",
+                    SystemClock.uptimeMillis() - UmaUtils.getForegroundStartTime(),
+                    50, TimeUnit.MINUTES.toMillis(10), TimeUnit.MILLISECONDS, 50);
             UmaUtils.setRunningApplicationStart(false);
         }
 
