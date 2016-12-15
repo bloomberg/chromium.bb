@@ -18,9 +18,7 @@ std::unique_ptr<ThreadedWorkletObjectProxy> ThreadedWorkletObjectProxy::create(
       messagingProxyWeakPtr, parentFrameTaskRunners));
 }
 
-ThreadedWorkletObjectProxy::~ThreadedWorkletObjectProxy() {
-  DCHECK(m_messagingProxyWeakPtr);
-}
+ThreadedWorkletObjectProxy::~ThreadedWorkletObjectProxy() {}
 
 ThreadedWorkletObjectProxy::ThreadedWorkletObjectProxy(
     const WeakPtr<ThreadedWorkletMessagingProxy>& messagingProxyWeakPtr,

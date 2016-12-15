@@ -39,6 +39,8 @@ class CORE_EXPORT ThreadedWorkletGlobalScope : public WorkletGlobalScope {
                              WorkerThread*);
 
  private:
+  friend class ThreadedWorkletThreadForTest;
+
   WorkerThread* m_thread;
 };
 

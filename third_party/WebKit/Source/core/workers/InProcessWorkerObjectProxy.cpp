@@ -96,27 +96,6 @@ void InProcessWorkerObjectProxy::startPendingActivityTimer() {
   m_nextIntervalInSec = std::min(m_nextIntervalInSec * 1.5, m_maxIntervalInSec);
 }
 
-void InProcessWorkerObjectProxy::countFeature(UseCounter::Feature feature) {
-  // TODO(nhiroki): Move this to ThreadedObjectProxyBase so that
-  // ThreadedWorklets can record API use (https://crbug.com/667357).
-  getParentFrameTaskRunners()
-      ->get(TaskType::Internal)
-      ->postTask(BLINK_FROM_HERE,
-                 crossThreadBind(&InProcessWorkerMessagingProxy::countFeature,
-                                 m_messagingProxyWeakPtr, feature));
-}
-
-void InProcessWorkerObjectProxy::countDeprecation(UseCounter::Feature feature) {
-  // TODO(nhiroki): Move this to ThreadedObjectProxyBase so that
-  // ThreadedWorklets can record API use (https://crbug.com/667357).
-  getParentFrameTaskRunners()
-      ->get(TaskType::Internal)
-      ->postTask(
-          BLINK_FROM_HERE,
-          crossThreadBind(&InProcessWorkerMessagingProxy::countDeprecation,
-                          m_messagingProxyWeakPtr, feature));
-}
-
 void InProcessWorkerObjectProxy::reportException(
     const String& errorMessage,
     std::unique_ptr<SourceLocation> location,

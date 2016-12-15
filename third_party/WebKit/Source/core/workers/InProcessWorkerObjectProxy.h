@@ -70,8 +70,6 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public ThreadedObjectProxyBase {
   void startPendingActivityTimer();
 
   // ThreadedMessagingProxyBase overrides.
-  void countFeature(UseCounter::Feature) final;
-  void countDeprecation(UseCounter::Feature) final;
   void reportException(const String& errorMessage,
                        std::unique_ptr<SourceLocation>,
                        int exceptionId) override;

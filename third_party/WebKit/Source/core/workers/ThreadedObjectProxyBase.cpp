@@ -16,6 +16,22 @@
 
 namespace blink {
 
+void ThreadedObjectProxyBase::countFeature(UseCounter::Feature feature) {
+  getParentFrameTaskRunners()
+      ->get(TaskType::Internal)
+      ->postTask(BLINK_FROM_HERE,
+                 crossThreadBind(&ThreadedMessagingProxyBase::countFeature,
+                                 messagingProxyWeakPtr(), feature));
+}
+
+void ThreadedObjectProxyBase::countDeprecation(UseCounter::Feature feature) {
+  getParentFrameTaskRunners()
+      ->get(TaskType::Internal)
+      ->postTask(BLINK_FROM_HERE,
+                 crossThreadBind(&ThreadedMessagingProxyBase::countDeprecation,
+                                 messagingProxyWeakPtr(), feature));
+}
+
 void ThreadedObjectProxyBase::reportConsoleMessage(MessageSource source,
                                                    MessageLevel level,
                                                    const String& message,

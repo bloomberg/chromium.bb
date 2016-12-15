@@ -86,6 +86,8 @@ class CORE_EXPORT ThreadedMessagingProxyBase
 
  private:
   friend class InProcessWorkerMessagingProxyForTest;
+  friend class ThreadedWorkletMessagingProxyForTest;
+
   void parentObjectDestroyedInternal();
 
   Persistent<ExecutionContext> m_executionContext;
