@@ -120,6 +120,11 @@ void HTMLIFrameElement::parseAttribute(const QualifiedName& name,
     m_allowFullscreen = !value.isNull();
     if (m_allowFullscreen != oldAllowFullscreen)
       frameOwnerPropertiesChanged();
+  } else if (name == allowpaymentrequestAttr) {
+    bool oldAllowPaymentRequest = m_allowPaymentRequest;
+    m_allowPaymentRequest = !value.isNull();
+    if (m_allowPaymentRequest != oldAllowPaymentRequest)
+      frameOwnerPropertiesChanged();
   } else if (name == permissionsAttr) {
     if (initializePermissionsAttribute())
       m_permissions->setValue(value);

@@ -86,6 +86,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   int marginWidth() const override { return -1; }
   int marginHeight() const override { return -1; }
   bool allowFullscreen() const override { return false; }
+  bool allowPaymentRequest() const override { return false; }
   AtomicString csp() const override { return nullAtom; }
   const WebVector<WebPermissionType>& delegatedPermissions() const override;
 

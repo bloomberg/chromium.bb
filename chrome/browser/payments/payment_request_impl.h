@@ -26,7 +26,7 @@ class PaymentRequestImpl : payments::mojom::PaymentRequest,
             std::vector<payments::mojom::PaymentMethodDataPtr> methodData,
             payments::mojom::PaymentDetailsPtr details,
             payments::mojom::PaymentOptionsPtr options) override;
-  void Show() override {}
+  void Show() override;
   void UpdateWith(payments::mojom::PaymentDetailsPtr details) override {}
   void Abort() override {}
   void Complete(payments::mojom::PaymentComplete result) override {}

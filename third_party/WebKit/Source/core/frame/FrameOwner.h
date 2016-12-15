@@ -42,6 +42,7 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
   virtual int marginWidth() const = 0;
   virtual int marginHeight() const = 0;
   virtual bool allowFullscreen() const = 0;
+  virtual bool allowPaymentRequest() const = 0;
   virtual AtomicString csp() const = 0;
   virtual const WebVector<WebPermissionType>& delegatedPermissions() const = 0;
 };
@@ -67,6 +68,7 @@ class CORE_EXPORT DummyFrameOwner
   int marginWidth() const override { return -1; }
   int marginHeight() const override { return -1; }
   bool allowFullscreen() const override { return false; }
+  bool allowPaymentRequest() const override { return false; }
   AtomicString csp() const override { return nullAtom; }
   const WebVector<WebPermissionType>& delegatedPermissions() const override {
     DEFINE_STATIC_LOCAL(WebVector<WebPermissionType>, permissions, ());

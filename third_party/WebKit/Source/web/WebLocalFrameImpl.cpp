@@ -1590,7 +1590,8 @@ LocalFrame* WebLocalFrameImpl::createChildFrame(
   WebFrameOwnerProperties ownerProperties(
       ownerElement->scrollingMode(), ownerElement->marginWidth(),
       ownerElement->marginHeight(), ownerElement->allowFullscreen(),
-      ownerElement->csp(), ownerElement->delegatedPermissions());
+      ownerElement->allowPaymentRequest(), ownerElement->csp(),
+      ownerElement->delegatedPermissions());
   // FIXME: Using subResourceAttributeName as fallback is not a perfect
   // solution. subResourceAttributeName returns just one attribute name. The
   // element might not have the attribute, and there might be other attributes

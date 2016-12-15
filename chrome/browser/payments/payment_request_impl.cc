@@ -62,6 +62,9 @@ void PaymentRequestImpl::Init(
     payments::mojom::PaymentOptionsPtr options) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   client_ = std::move(client);
+}
+
+void PaymentRequestImpl::Show() {
   chrome::ShowPaymentRequestDialog(this);
 }
 

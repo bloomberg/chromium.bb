@@ -10,7 +10,8 @@ FrameOwnerProperties::FrameOwnerProperties()
     : scrolling_mode(blink::WebFrameOwnerProperties::ScrollingMode::Auto),
       margin_width(-1),
       margin_height(-1),
-      allow_fullscreen(false) {}
+      allow_fullscreen(false),
+      allow_payment_request(false) {}
 
 FrameOwnerProperties::FrameOwnerProperties(const FrameOwnerProperties& other) =
     default;
@@ -21,6 +22,7 @@ FrameOwnerProperties::FrameOwnerProperties(
       margin_width(web_frame_owner_properties.marginWidth),
       margin_height(web_frame_owner_properties.marginHeight),
       allow_fullscreen(web_frame_owner_properties.allowFullscreen),
+      allow_payment_request(web_frame_owner_properties.allowPaymentRequest),
       required_csp(web_frame_owner_properties.requiredCsp.utf8()),
       delegated_permissions(
           web_frame_owner_properties.delegatedPermissions.begin(),
@@ -36,6 +38,7 @@ blink::WebFrameOwnerProperties FrameOwnerProperties::ToWebFrameOwnerProperties()
   result.marginWidth = margin_width;
   result.marginHeight = margin_height;
   result.allowFullscreen = allow_fullscreen;
+  result.allowPaymentRequest = allow_payment_request;
   result.requiredCsp = blink::WebString::fromUTF8(required_csp);
   result.delegatedPermissions =
       blink::WebVector<blink::WebPermissionType>(delegated_permissions);
@@ -48,6 +51,7 @@ bool FrameOwnerProperties::operator==(const FrameOwnerProperties& other) const {
          margin_width == other.margin_width &&
          margin_height == other.margin_height &&
          allow_fullscreen == other.allow_fullscreen &&
+         allow_payment_request == other.allow_payment_request &&
          required_csp == other.required_csp &&
          std::equal(delegated_permissions.begin(), delegated_permissions.end(),
                     other.delegated_permissions.begin());

@@ -34,6 +34,7 @@ struct CONTENT_EXPORT FrameOwnerProperties {
   int margin_width;
   int margin_height;
   bool allow_fullscreen;
+  bool allow_payment_request;
 
   // An experimental attribute to be used by a parent frame to enforce CSP on a
   // subframe. This is different from replicated CSP headers kept in

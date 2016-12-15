@@ -19,6 +19,7 @@ RemoteFrameOwner::RemoteFrameOwner(
       m_marginWidth(frameOwnerProperties.marginWidth),
       m_marginHeight(frameOwnerProperties.marginHeight),
       m_allowFullscreen(frameOwnerProperties.allowFullscreen),
+      m_allowPaymentRequest(frameOwnerProperties.allowPaymentRequest),
       m_csp(frameOwnerProperties.requiredCsp) {}
 
 DEFINE_TRACE(RemoteFrameOwner) {

@@ -482,12 +482,8 @@ bool allowedToUsePaymentRequest(const Frame* frame) {
   // is an iframe element with an |allowpaymentrequest| attribute specified, and
   // whose node document is allowed to use the feature indicated by
   // |allowpaymentrequest|, then return true.
-  HTMLFrameOwnerElement* ownerElement = toHTMLFrameOwnerElement(frame->owner());
-  if (ownerElement && isHTMLIFrameElement(ownerElement)) {
-    HTMLIFrameElement* iframe = toHTMLIFrameElement(ownerElement);
-    if (HTMLIFrameElementPayments::from(*iframe).allowPaymentRequest(*iframe))
-      return allowedToUsePaymentRequest(frame->tree().parent());
-  }
+  if (frame->owner() && frame->owner()->allowPaymentRequest())
+    return allowedToUsePaymentRequest(frame->tree().parent());
 
   // 4. Return false.
   return false;

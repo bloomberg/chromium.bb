@@ -76,6 +76,7 @@ class CORE_EXPORT HTMLIFrameElement final
   ReferrerPolicy referrerPolicyAttribute() override;
 
   bool allowFullscreen() const override { return m_allowFullscreen; }
+  bool allowPaymentRequest() const override { return m_allowPaymentRequest; }
 
   AtomicString csp() const override { return m_csp; }
 
@@ -89,6 +90,7 @@ class CORE_EXPORT HTMLIFrameElement final
   AtomicString m_csp;
   bool m_didLoadNonEmptyDocument;
   bool m_allowFullscreen;
+  bool m_allowPaymentRequest;
   Member<HTMLIFrameElementSandbox> m_sandbox;
   Member<HTMLIFrameElementPermissions> m_permissions;
 

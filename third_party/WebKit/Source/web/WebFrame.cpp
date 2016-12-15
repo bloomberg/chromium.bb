@@ -153,6 +153,7 @@ void WebFrame::setFrameOwnerProperties(
   owner->setMarginWidth(properties.marginWidth);
   owner->setMarginHeight(properties.marginHeight);
   owner->setAllowFullscreen(properties.allowFullscreen);
+  owner->setAllowPaymentRequest(properties.allowPaymentRequest);
   owner->setCsp(properties.requiredCsp);
   owner->setDelegatedpermissions(properties.delegatedPermissions);
 }

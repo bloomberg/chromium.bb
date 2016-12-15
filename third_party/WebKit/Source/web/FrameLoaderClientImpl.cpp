@@ -898,7 +898,8 @@ void FrameLoaderClientImpl::didChangeFrameOwnerProperties(
       WebFrameOwnerProperties(
           frameElement->scrollingMode(), frameElement->marginWidth(),
           frameElement->marginHeight(), frameElement->allowFullscreen(),
-          frameElement->csp(), frameElement->delegatedPermissions()));
+          frameElement->allowPaymentRequest(), frameElement->csp(),
+          frameElement->delegatedPermissions()));
 }
 
 void FrameLoaderClientImpl::dispatchWillStartUsingPeerConnectionHandler(
