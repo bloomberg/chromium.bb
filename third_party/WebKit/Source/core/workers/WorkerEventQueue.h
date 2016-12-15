@@ -33,11 +33,11 @@
 namespace blink {
 
 class Event;
-class ExecutionContext;
+class WorkerGlobalScope;
 
 class WorkerEventQueue final : public EventQueue {
  public:
-  static WorkerEventQueue* create(ExecutionContext*);
+  static WorkerEventQueue* create(WorkerGlobalScope*);
   ~WorkerEventQueue() override;
   DECLARE_TRACE();
 
@@ -47,11 +47,11 @@ class WorkerEventQueue final : public EventQueue {
   void close() override;
 
  private:
-  explicit WorkerEventQueue(ExecutionContext*);
+  explicit WorkerEventQueue(WorkerGlobalScope*);
   bool removeEvent(Event*);
-  void dispatchEvent(Event*, ExecutionContext*);
+  void dispatchEvent(Event*);
 
-  Member<ExecutionContext> m_executionContext;
+  Member<WorkerGlobalScope> m_workerGlobalScope;
   bool m_isClosed;
 
   HeapHashSet<Member<Event>> m_pendingEvents;

@@ -26,26 +26,28 @@
 
 #include "core/workers/WorkerEventQueue.h"
 
-#include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/workers/WorkerGlobalScope.h"
 
 namespace blink {
 
-WorkerEventQueue* WorkerEventQueue::create(ExecutionContext* context) {
-  return new WorkerEventQueue(context);
+WorkerEventQueue* WorkerEventQueue::create(
+    WorkerGlobalScope* workerGlobalScope) {
+  return new WorkerEventQueue(workerGlobalScope);
 }
 
-WorkerEventQueue::WorkerEventQueue(ExecutionContext* context)
-    : m_executionContext(context), m_isClosed(false) {}
+WorkerEventQueue::WorkerEventQueue(WorkerGlobalScope* workerGlobalScope)
+    : m_workerGlobalScope(workerGlobalScope), m_isClosed(false) {}
 
 WorkerEventQueue::~WorkerEventQueue() {
   DCHECK(m_pendingEvents.isEmpty());
 }
 
 DEFINE_TRACE(WorkerEventQueue) {
-  visitor->trace(m_executionContext);
+  visitor->trace(m_workerGlobalScope);
   visitor->trace(m_pendingEvents);
   EventQueue::trace(visitor);
 }
@@ -56,7 +58,7 @@ bool WorkerEventQueue::enqueueEvent(Event* event) {
   InspectorInstrumentation::asyncTaskScheduled(
       event->target()->getExecutionContext(), event->type(), event);
   m_pendingEvents.add(event);
-  m_executionContext->postTask(
+  m_workerGlobalScope->postTask(
       BLINK_FROM_HERE,
       createSameThreadTask(&WorkerEventQueue::dispatchEvent,
                            wrapPersistent(this), wrapWeakPersistent(event)));
@@ -87,12 +89,11 @@ bool WorkerEventQueue::removeEvent(Event* event) {
   return true;
 }
 
-void WorkerEventQueue::dispatchEvent(Event* event,
-                                     ExecutionContext* executionContext) {
+void WorkerEventQueue::dispatchEvent(Event* event) {
   if (!event || !removeEvent(event))
     return;
 
-  InspectorInstrumentation::AsyncTask asyncTask(executionContext, event);
+  InspectorInstrumentation::AsyncTask asyncTask(m_workerGlobalScope, event);
   event->target()->dispatchEvent(event);
 }
 
