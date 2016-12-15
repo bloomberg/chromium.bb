@@ -81,9 +81,6 @@ class FakeTabController : public TabController {
   }
   void UpdateTabAccessibilityState(const Tab* tab,
                                    ui::AXNodeData* node_data) override{};
-  base::string16 GetAccessibleTabName() const override {
-    return base::string16();
-  }
 
  private:
   ui::ListSelectionModel selection_model_;

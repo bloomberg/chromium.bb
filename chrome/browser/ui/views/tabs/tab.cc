@@ -19,11 +19,8 @@
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/view_ids.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/tabs/alert_indicator_button.h"
-#include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
-#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
@@ -497,8 +494,7 @@ bool Tab::ThrobberView::CanProcessEventsWithinSubtree() const {
 
 void Tab::ThrobberView::OnPaint(gfx::Canvas* canvas) {
   const TabRendererData::NetworkState state = owner_->data().network_state;
-  if (state == TabRendererData::NETWORK_STATE_NONE ||
-      state == TabRendererData::NETWORK_STATE_ERROR)
+  if (state == TabRendererData::NETWORK_STATE_NONE)
     return;
 
   const ui::ThemeProvider* tp = GetThemeProvider();
@@ -678,10 +674,9 @@ void Tab::SetData(const TabRendererData& data) {
 
 void Tab::UpdateLoadingAnimation(TabRendererData::NetworkState state) {
   if (state == data_.network_state &&
-      (state == TabRendererData::NETWORK_STATE_NONE ||
-       state == TabRendererData::NETWORK_STATE_ERROR)) {
-    // If the network state is none or is a network error and hasn't changed,
-    // do nothing. Otherwise we need to advance the animation frame.
+      state == TabRendererData::NETWORK_STATE_NONE) {
+    // If the network state is none and hasn't changed, do nothing. Otherwise we
+    // need to advance the animation frame.
     return;
   }
 
@@ -1104,7 +1099,7 @@ void Tab::OnGestureEvent(ui::GestureEvent* event) {
 
 void Tab::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ui::AX_ROLE_TAB;
-  node_data->SetName(controller_->GetAccessibleTabName());
+  node_data->SetName(data_.title);
   node_data->AddStateFlag(ui::AX_STATE_MULTISELECTABLE);
   node_data->AddStateFlag(ui::AX_STATE_SELECTABLE);
   controller_->UpdateTabAccessibilityState(this, node_data);
@@ -1189,8 +1184,7 @@ void Tab::PaintImmersiveTab(gfx::Canvas* canvas) {
   // Paint network activity indicator.
   // TODO(jamescook): Replace this placeholder animation with a real one.
   // For now, let's go with a Cylon eye effect, but in blue.
-  if (data().network_state != TabRendererData::NETWORK_STATE_NONE &&
-      data().network_state != TabRendererData::NETWORK_STATE_ERROR) {
+  if (data().network_state != TabRendererData::NETWORK_STATE_NONE) {
     const SkColor kEyeColor = SkColorSetARGB(alpha, 71, 138, 217);
     int eye_width = bar_rect.width() / 3;
     int eye_offset = bar_rect.width() * immersive_loading_step_ /
@@ -1395,10 +1389,9 @@ void Tab::PaintIcon(gfx::Canvas* canvas) {
     return;
 
   // Throbber will do its own painting.
-  if (data().network_state != TabRendererData::NETWORK_STATE_NONE &&
-      data().network_state != TabRendererData::NETWORK_STATE_ERROR) {
+  if (data().network_state != TabRendererData::NETWORK_STATE_NONE)
     return;
-  }
+
   // Ensure that |favicon_| is created.
   if (favicon_.isNull()) {
     ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
@@ -1448,8 +1441,7 @@ void Tab::AdvanceLoadingAnimation() {
     return;
   }
 
-  if (state == TabRendererData::NETWORK_STATE_NONE ||
-      state == TabRendererData::NETWORK_STATE_ERROR) {
+  if (state == TabRendererData::NETWORK_STATE_NONE) {
     throbber_->ResetStartTimes();
     throbber_->SetVisible(false);
     ScheduleIconPaint();

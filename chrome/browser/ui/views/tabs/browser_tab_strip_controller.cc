@@ -34,9 +34,6 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/user_metrics.h"
@@ -57,17 +54,8 @@ namespace {
 
 TabRendererData::NetworkState TabContentsNetworkState(
     WebContents* contents) {
-  if (!contents)
+  if (!contents || !contents->IsLoadingToDifferentDocument())
     return TabRendererData::NETWORK_STATE_NONE;
-
-  if (!contents->IsLoadingToDifferentDocument()) {
-    content::NavigationEntry* entry =
-        contents->GetController().GetLastCommittedEntry();
-    if (entry && (entry->GetPageType() == content::PAGE_TYPE_ERROR))
-      return TabRendererData::NETWORK_STATE_ERROR;
-    return TabRendererData::NETWORK_STATE_NONE;
-  }
-
   if (contents->IsWaitingForResponse())
     return TabRendererData::NETWORK_STATE_WAITING;
   return TabRendererData::NETWORK_STATE_LOADING;
@@ -430,11 +418,6 @@ void BrowserTabStripController::CheckFileSupported(const GURL& url) {
 SkColor BrowserTabStripController::GetToolbarTopSeparatorColor() const {
   return BrowserView::GetBrowserViewForBrowser(browser_)->frame()
       ->GetFrameView()->GetToolbarTopSeparatorColor();
-}
-
-base::string16 BrowserTabStripController::GetAccessibleTabName() const {
-  return BrowserView::GetBrowserViewForBrowser(browser_)
-      ->GetAccessibleWindowTitle();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -129,9 +129,6 @@ class TabController {
   virtual void UpdateTabAccessibilityState(const Tab* tab,
                                            ui::AXNodeData* node_data) = 0;
 
-  // Returns the accessible tab name for this tab.
-  virtual base::string16 GetAccessibleTabName() const = 0;
-
  protected:
   virtual ~TabController() {}
 };

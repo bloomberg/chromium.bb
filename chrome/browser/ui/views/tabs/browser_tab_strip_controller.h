@@ -76,7 +76,6 @@ class BrowserTabStripController : public TabStripController,
   void OnStoppedDraggingTabs() override;
   void CheckFileSupported(const GURL& url) override;
   SkColor GetToolbarTopSeparatorColor() const override;
-  base::string16 GetAccessibleTabName() const override;
 
   // TabStripModelObserver implementation:
   void TabInsertedAt(TabStripModel* tab_strip_model,
@@ -102,8 +101,6 @@ class BrowserTabStripController : public TabStripController,
   void TabBlockedStateChanged(content::WebContents* contents,
                               int model_index) override;
 
-  const Browser* browser() const { return browser_; }
-
  protected:
   // The context in which SetTabRendererDataFromModel is being called.
   enum TabStatus {
@@ -120,6 +117,8 @@ class BrowserTabStripController : public TabStripController,
   Profile* profile() const { return model_->profile(); }
 
   const TabStrip* tabstrip() const { return tabstrip_; }
+
+  const Browser* browser() const { return browser_; }
 
  private:
   class TabContextMenuContents;

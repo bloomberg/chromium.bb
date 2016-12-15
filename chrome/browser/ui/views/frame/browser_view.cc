@@ -1595,64 +1595,12 @@ base::string16 BrowserView::GetWindowTitle() const {
 
 base::string16 BrowserView::GetAccessibleWindowTitle() const {
   const bool include_app_name = false;
-  Tab* current_tab =
-      tabstrip_->tab_at(browser_->tab_strip_model()->active_index());
-
   if (IsIncognito()) {
     return l10n_util::GetStringFUTF16(
         IDS_ACCESSIBLE_INCOGNITO_WINDOW_TITLE_FORMAT,
-        GetAccessibleTabLabel(include_app_name, current_tab->data()));
+        browser_->GetWindowTitleForCurrentTab(include_app_name));
   }
-  return GetAccessibleTabLabel(include_app_name, current_tab->data());
-}
-
-base::string16 BrowserView::GetAccessibleTabLabel(
-    bool include_app_name,
-    const TabRendererData& data) const {
-  base::string16 window_title =
-      browser_->GetWindowTitleForCurrentTab(include_app_name);
-  base::string16 tab_label;
-  if (data.IsCrashed()) {
-    // Tab has crashed.
-    tab_label = l10n_util::GetStringFUTF16(IDS_TAB_AX_LABEL_CRASHED_FORMAT,
-                                           window_title);
-  } else if (data.network_state == TabRendererData::NETWORK_STATE_ERROR) {
-    // Network error interstitial.
-    tab_label = l10n_util::GetStringFUTF16(
-        IDS_TAB_AX_LABEL_NETWORK_ERROR_FORMAT, window_title);
-  } else {
-    // Alert tab states.
-    switch (data.alert_state) {
-      case TabAlertState::AUDIO_PLAYING:
-        tab_label = l10n_util::GetStringFUTF16(
-            IDS_TAB_AX_LABEL_AUDIO_PLAYING_FORMAT, window_title);
-        break;
-      case TabAlertState::USB_CONNECTED:
-        tab_label = l10n_util::GetStringFUTF16(
-            IDS_TAB_AX_LABEL_USB_CONNECTED_FORMAT, window_title);
-        break;
-      case TabAlertState::BLUETOOTH_CONNECTED:
-        tab_label = l10n_util::GetStringFUTF16(
-            IDS_TAB_AX_LABEL_BLUETOOTH_CONNECTED_FORMAT, window_title);
-        break;
-      case TabAlertState::MEDIA_RECORDING:
-        tab_label = l10n_util::GetStringFUTF16(
-            IDS_TAB_AX_LABEL_MEDIA_RECORDING_FORMAT, window_title);
-        break;
-      case TabAlertState::AUDIO_MUTING:
-        tab_label = l10n_util::GetStringFUTF16(
-            IDS_TAB_AX_LABEL_AUDIO_MUTING_FORMAT, window_title);
-        break;
-      case TabAlertState::TAB_CAPTURING:
-        tab_label = l10n_util::GetStringFUTF16(
-            IDS_TAB_AX_LABEL_TAB_CAPTURING_FORMAT, window_title);
-        break;
-      case TabAlertState::NONE:
-        tab_label = window_title;
-        break;
-    }
-  }
-  return tab_label;
+  return browser_->GetWindowTitleForCurrentTab(include_app_name);
 }
 
 views::View* BrowserView::GetInitiallyFocusedView() {
