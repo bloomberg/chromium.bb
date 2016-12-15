@@ -150,8 +150,8 @@ class TestNavigationThrottle : public NavigationThrottle {
     NavigationHandleImpl* navigation_handle_impl =
         static_cast<NavigationHandleImpl*>(navigation_handle());
     CHECK_NE(REQUEST_CONTEXT_TYPE_UNSPECIFIED,
-             navigation_handle_impl->GetRequestContextType());
-    request_context_type_ = navigation_handle_impl->GetRequestContextType();
+             navigation_handle_impl->request_context_type());
+    request_context_type_ = navigation_handle_impl->request_context_type();
 
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, did_call_will_start_);
     return will_start_result_;
@@ -161,7 +161,7 @@ class TestNavigationThrottle : public NavigationThrottle {
     NavigationHandleImpl* navigation_handle_impl =
         static_cast<NavigationHandleImpl*>(navigation_handle());
     CHECK_EQ(request_context_type_,
-             navigation_handle_impl->GetRequestContextType());
+             navigation_handle_impl->request_context_type());
 
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             did_call_will_redirect_);
@@ -172,7 +172,7 @@ class TestNavigationThrottle : public NavigationThrottle {
     NavigationHandleImpl* navigation_handle_impl =
         static_cast<NavigationHandleImpl*>(navigation_handle());
     CHECK_EQ(request_context_type_,
-             navigation_handle_impl->GetRequestContextType());
+             navigation_handle_impl->request_context_type());
 
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                             did_call_will_process_);

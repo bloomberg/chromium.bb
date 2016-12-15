@@ -140,11 +140,6 @@ NavigatorDelegate* NavigationHandleImpl::GetDelegate() const {
   return frame_tree_node_->navigator()->GetDelegate();
 }
 
-RequestContextType NavigationHandleImpl::GetRequestContextType() const {
-  DCHECK_GE(state_, WILL_SEND_REQUEST);
-  return request_context_type_;
-}
-
 const GURL& NavigationHandleImpl::GetURL() {
   return url_;
 }

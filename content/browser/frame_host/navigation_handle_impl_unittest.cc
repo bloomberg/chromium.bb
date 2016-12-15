@@ -197,21 +197,21 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
 TEST_F(NavigationHandleImplTest, SimpleDataChecks) {
   SimulateWillStartRequest();
   EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
-            test_handle()->GetRequestContextType());
+            test_handle()->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
             test_handle()->GetConnectionInfo());
 
   test_handle()->Resume();
   SimulateWillRedirectRequest();
   EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
-            test_handle()->GetRequestContextType());
+            test_handle()->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1,
             test_handle()->GetConnectionInfo());
 
   test_handle()->Resume();
   SimulateWillProcessResponse();
   EXPECT_EQ(REQUEST_CONTEXT_TYPE_LOCATION,
-            test_handle()->GetRequestContextType());
+            test_handle()->request_context_type());
   EXPECT_EQ(net::HttpResponseInfo::CONNECTION_INFO_QUIC_35,
             test_handle()->GetConnectionInfo());
 }

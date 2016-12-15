@@ -150,7 +150,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // expose the NavigationHandle when navigating to an InterstialPage.
   NavigatorDelegate* GetDelegate() const;
 
-  RequestContextType GetRequestContextType() const;
+  RequestContextType request_context_type() const {
+    DCHECK_GE(state_, WILL_SEND_REQUEST);
+    return request_context_type_;
+  }
 
   // Get the unique id from the NavigationEntry associated with this
   // NavigationHandle. Note that a synchronous, renderer-initiated navigation
