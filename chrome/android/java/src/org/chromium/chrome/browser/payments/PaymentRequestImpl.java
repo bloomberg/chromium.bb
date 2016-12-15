@@ -357,107 +357,11 @@ public class PaymentRequestImpl
         }
 
         if (requestShipping) {
-            List<AutofillAddress> addresses = new ArrayList<>();
-
-            for (int i = 0; i < profiles.size(); i++) {
-                AutofillProfile profile = profiles.get(i);
-                mAddressEditor.addPhoneNumberIfValid(profile.getPhoneNumber());
-
-                // Only suggest addresses that have a street address.
-                if (!TextUtils.isEmpty(profile.getStreetAddress())) {
-                    addresses.add(new AutofillAddress(mContext, profile));
-                }
-            }
-
-            // Suggest complete addresses first.
-            Collections.sort(addresses, COMPLETENESS_COMPARATOR);
-
-            // Limit the number of suggestions.
-            addresses = addresses.subList(0, Math.min(addresses.size(), SUGGESTIONS_LIMIT));
-
-            // Load the validation rules for each unique region code.
-            Set<String> uniqueCountryCodes = new HashSet<>();
-            for (int i = 0; i < addresses.size(); ++i) {
-                String countryCode = AutofillAddress.getCountryCode(addresses.get(i).getProfile());
-                if (!uniqueCountryCodes.contains(countryCode)) {
-                    uniqueCountryCodes.add(countryCode);
-                    PersonalDataManager.getInstance().loadRulesForRegion(countryCode);
-                }
-            }
-
-            // Log the number of suggested shipping addresses.
-            mJourneyLogger.setNumberOfSuggestionsShown(
-                    PaymentRequestJourneyLogger.SECTION_SHIPPING_ADDRESS, addresses.size());
-
-            // Automatically select the first address if one is complete and if the merchant does
-            // not require a shipping address to calculate shipping costs.
-            int firstCompleteAddressIndex = SectionInformation.NO_SELECTION;
-            if (mUiShippingOptions.getSelectedItem() != null && !addresses.isEmpty()
-                    && addresses.get(0).isComplete()) {
-                firstCompleteAddressIndex = 0;
-
-                // The initial label for the selected shipping address should not include the
-                // country.
-                addresses.get(firstCompleteAddressIndex).setShippingAddressLabelWithoutCountry();
-            }
-
-            mShippingAddressesSection = new SectionInformation(
-                    PaymentRequestUI.TYPE_SHIPPING_ADDRESSES,
-                    firstCompleteAddressIndex, addresses);
+            createShippingSection(profiles);
         }
 
         if (requestPayerName || requestPayerPhone || requestPayerEmail) {
-            Set<String> uniqueContactInfos = new HashSet<>();
-            mContactEditor = new ContactEditor(
-                    requestPayerName, requestPayerPhone, requestPayerEmail);
-            List<AutofillContact> contacts = new ArrayList<>();
-
-            for (int i = 0; i < profiles.size(); i++) {
-                AutofillProfile profile = profiles.get(i);
-                String name = requestPayerName && !TextUtils.isEmpty(profile.getFullName())
-                        ? profile.getFullName() : null;
-                String phone = requestPayerPhone && !TextUtils.isEmpty(profile.getPhoneNumber())
-                        ? profile.getPhoneNumber() : null;
-                String email = requestPayerEmail && !TextUtils.isEmpty(profile.getEmailAddress())
-                        ? profile.getEmailAddress() : null;
-                mContactEditor.addPayerNameIfValid(name);
-                mContactEditor.addPhoneNumberIfValid(phone);
-                mContactEditor.addEmailAddressIfValid(email);
-
-                if (name != null || phone != null || email != null) {
-                    // Different profiles can have identical contact info. Do not add the same
-                    // contact info to the list twice.
-                    String uniqueContactInfo = name + phone + email;
-                    if (!uniqueContactInfos.contains(uniqueContactInfo)) {
-                        uniqueContactInfos.add(uniqueContactInfo);
-
-                        @ContactEditor.CompletionStatus
-                        int completionStatus =
-                                mContactEditor.checkContactCompletionStatus(name, phone, email);
-                        contacts.add(new AutofillContact(
-                                mContext, profile, name, phone, email, completionStatus));
-                    }
-                }
-            }
-
-            // Suggest complete contact infos first.
-            Collections.sort(contacts, COMPLETENESS_COMPARATOR);
-
-            // Limit the number of suggestions.
-            contacts = contacts.subList(0, Math.min(contacts.size(), SUGGESTIONS_LIMIT));
-
-            // Log the number of suggested contact infos.
-            mJourneyLogger.setNumberOfSuggestionsShown(
-                    PaymentRequestJourneyLogger.SECTION_CONTACT_INFO, contacts.size());
-
-            // Automatically select the first address if it is complete.
-            int firstCompleteContactIndex = SectionInformation.NO_SELECTION;
-            if (!contacts.isEmpty() && contacts.get(0).isComplete()) {
-                firstCompleteContactIndex = 0;
-            }
-
-            mContactSection = new SectionInformation(
-                    PaymentRequestUI.TYPE_CONTACT_DETAILS, firstCompleteContactIndex, contacts);
+            createContactSection(profiles, requestPayerName, requestPayerPhone, requestPayerEmail);
         }
 
         mUI = new PaymentRequestUI(mContext, this, requestShipping,
@@ -479,6 +383,112 @@ public class PaymentRequestImpl
 
         PaymentRequestMetrics.recordRequestedInformationHistogram(requestPayerEmail,
                 requestPayerPhone, requestShipping, requestPayerName);
+    }
+
+    private void createShippingSection(List<AutofillProfile> profiles) {
+        List<AutofillAddress> addresses = new ArrayList<>();
+
+        for (int i = 0; i < profiles.size(); i++) {
+            AutofillProfile profile = profiles.get(i);
+            mAddressEditor.addPhoneNumberIfValid(profile.getPhoneNumber());
+
+            // Only suggest addresses that have a street address.
+            if (!TextUtils.isEmpty(profile.getStreetAddress())) {
+                addresses.add(new AutofillAddress(mContext, profile));
+            }
+        }
+
+        // Suggest complete addresses first.
+        Collections.sort(addresses, COMPLETENESS_COMPARATOR);
+
+        // Limit the number of suggestions.
+        addresses = addresses.subList(0, Math.min(addresses.size(), SUGGESTIONS_LIMIT));
+
+        // Load the validation rules for each unique region code.
+        Set<String> uniqueCountryCodes = new HashSet<>();
+        for (int i = 0; i < addresses.size(); ++i) {
+            String countryCode = AutofillAddress.getCountryCode(addresses.get(i).getProfile());
+            if (!uniqueCountryCodes.contains(countryCode)) {
+                uniqueCountryCodes.add(countryCode);
+                PersonalDataManager.getInstance().loadRulesForRegion(countryCode);
+            }
+        }
+
+        // Log the number of suggested shipping addresses.
+        mJourneyLogger.setNumberOfSuggestionsShown(
+                PaymentRequestJourneyLogger.SECTION_SHIPPING_ADDRESS, addresses.size());
+
+        // Automatically select the first address if one is complete and if the merchant does
+        // not require a shipping address to calculate shipping costs.
+        int firstCompleteAddressIndex = SectionInformation.NO_SELECTION;
+        if (mUiShippingOptions.getSelectedItem() != null && !addresses.isEmpty()
+                && addresses.get(0).isComplete()) {
+            firstCompleteAddressIndex = 0;
+
+            // The initial label for the selected shipping address should not include the
+            // country.
+            addresses.get(firstCompleteAddressIndex).setShippingAddressLabelWithoutCountry();
+        }
+
+        mShippingAddressesSection = new SectionInformation(
+                PaymentRequestUI.TYPE_SHIPPING_ADDRESSES, firstCompleteAddressIndex, addresses);
+    }
+
+    private void createContactSection(List<AutofillProfile> profiles, boolean requestName,
+            boolean requestPhone, boolean requestEmail) {
+        Set<String> uniqueContactInfos = new HashSet<>();
+        mContactEditor = new ContactEditor(requestName, requestPhone, requestEmail);
+        List<AutofillContact> contacts = new ArrayList<>();
+
+        for (int i = 0; i < profiles.size(); i++) {
+            AutofillProfile profile = profiles.get(i);
+            String name = requestName && !TextUtils.isEmpty(profile.getFullName())
+                    ? profile.getFullName()
+                    : null;
+            String phone = requestPhone && !TextUtils.isEmpty(profile.getPhoneNumber())
+                    ? profile.getPhoneNumber()
+                    : null;
+            String email = requestEmail && !TextUtils.isEmpty(profile.getEmailAddress())
+                    ? profile.getEmailAddress()
+                    : null;
+            mContactEditor.addPayerNameIfValid(name);
+            mContactEditor.addPhoneNumberIfValid(phone);
+            mContactEditor.addEmailAddressIfValid(email);
+
+            if (name != null || phone != null || email != null) {
+                // Different profiles can have identical contact info. Do not add the same
+                // contact info to the list twice.
+                String uniqueContactInfo = name + phone + email;
+                if (!uniqueContactInfos.contains(uniqueContactInfo)) {
+                    uniqueContactInfos.add(uniqueContactInfo);
+
+                    @ContactEditor.CompletionStatus
+                    int completionStatus =
+                            mContactEditor.checkContactCompletionStatus(name, phone, email);
+                    contacts.add(new AutofillContact(
+                            mContext, profile, name, phone, email, completionStatus));
+                }
+            }
+        }
+
+        // Suggest complete contact infos first.
+        Collections.sort(contacts, COMPLETENESS_COMPARATOR);
+
+        // Limit the number of suggestions.
+        contacts = contacts.subList(0, Math.min(contacts.size(), SUGGESTIONS_LIMIT));
+
+        // Log the number of suggested contact infos.
+        mJourneyLogger.setNumberOfSuggestionsShown(
+                PaymentRequestJourneyLogger.SECTION_CONTACT_INFO, contacts.size());
+
+        // Automatically select the first address if it is complete.
+        int firstCompleteContactIndex = SectionInformation.NO_SELECTION;
+        if (!contacts.isEmpty() && contacts.get(0).isComplete()) {
+            firstCompleteContactIndex = 0;
+        }
+
+        mContactSection = new SectionInformation(
+                PaymentRequestUI.TYPE_CONTACT_DETAILS, firstCompleteContactIndex, contacts);
     }
 
     /**
