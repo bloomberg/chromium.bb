@@ -9,6 +9,7 @@
 #include "core/frame/Settings.h"
 #include "core/layout/LayoutInline.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/compositing/CompositingReasonFinder.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/paint/FindPropertiesNeedingUpdate.h"
 #include "core/paint/ObjectPaintProperties.h"
@@ -312,6 +313,19 @@ void PaintPropertyTreeBuilder::updateTransformForNonRootSVG(
   }
 }
 
+static CompositingReasons compositingReasonsForTransform(
+    const LayoutObject& object) {
+  CompositingReasons compositingReasons = CompositingReasonNone;
+  if (CompositingReasonFinder::requiresCompositingForTransform(object))
+    compositingReasons |= CompositingReason3DTransform;
+
+  if (object.styleRef().hasWillChangeCompositingHint() &&
+      !object.styleRef().subtreeWillChangeContents())
+    compositingReasons |= CompositingReasonWillChangeCompositingHint;
+
+  return compositingReasons;
+}
+
 void PaintPropertyTreeBuilder::updateTransform(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
@@ -322,7 +336,16 @@ void PaintPropertyTreeBuilder::updateTransform(
 
   if (object.needsPaintPropertyUpdate() || context.forceSubtreeUpdate) {
     const ComputedStyle& style = object.styleRef();
-    if (object.isBox() && (style.hasTransform() || style.preserves3D())) {
+
+    CompositingReasons compositingReasons =
+        compositingReasonsForTransform(object);
+
+    // A transform node is allocated for transforms, preserves-3d and any
+    // direct compositing reason. The latter is required because this is the
+    // only way to represent compositing both an element and its stacking
+    // descendants.
+    if (object.isBox() && (style.hasTransform() || style.preserves3D() ||
+                           compositingReasons != CompositingReasonNone)) {
       TransformationMatrix matrix;
       style.applyTransform(
           matrix, toLayoutBox(object).size(),
@@ -342,7 +365,8 @@ void PaintPropertyTreeBuilder::updateTransform(
       context.forceSubtreeUpdate |= properties.updateTransform(
           context.current.transform, matrix,
           transformOrigin(toLayoutBox(object)),
-          context.current.shouldFlattenInheritedTransform, renderingContextID);
+          context.current.shouldFlattenInheritedTransform, renderingContextID,
+          compositingReasons);
     } else {
       if (auto* properties = object.getMutableForPainting().paintProperties())
         context.forceSubtreeUpdate |= properties->clearTransform();

@@ -74,7 +74,7 @@ CompositingReasonFinder::potentialCompositingReasonsFromStyle(
 
   const ComputedStyle& style = layoutObject->styleRef();
 
-  if (requiresCompositingForTransform(layoutObject))
+  if (requiresCompositingForTransform(*layoutObject))
     reasons |= CompositingReason3DTransform;
 
   if (style.backfaceVisibility() == BackfaceVisibilityHidden)
@@ -132,12 +132,12 @@ CompositingReasonFinder::potentialCompositingReasonsFromStyle(
 }
 
 bool CompositingReasonFinder::requiresCompositingForTransform(
-    LayoutObject* layoutObject) const {
+    const LayoutObject& layoutObject) {
   // Note that we ask the layoutObject if it has a transform, because the style
   // may have transforms, but the layoutObject may be an inline that doesn't
   // support them.
-  return layoutObject->hasTransformRelatedProperty() &&
-         layoutObject->style()->has3DTransform();
+  return layoutObject.hasTransformRelatedProperty() &&
+         layoutObject.styleRef().has3DTransform();
 }
 
 CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(
@@ -171,7 +171,7 @@ CompositingReasons CompositingReasonFinder::nonStyleDeterminedDirectReasons(
 }
 
 bool CompositingReasonFinder::requiresCompositingForAnimation(
-    const ComputedStyle& style) const {
+    const ComputedStyle& style) {
   if (style.subtreeWillChangeContents())
     return style.isRunningAnimationOnCompositor();
 

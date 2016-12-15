@@ -334,7 +334,12 @@ TEST_P(PaintPropertyTreeBuilderTest, Perspective) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, Transform) {
-  loadTestData("transform.html");
+  setBodyInnerHTML(
+      "<style> body { margin: 0 } </style>"
+      "<div id='transform' style='margin-left: 50px; margin-top: 100px;"
+      "    width: 400px; height: 300px;"
+      "    transform: translate3D(123px, 456px, 789px)'>"
+      "</div>");
 
   Element* transform = document().getElementById("transform");
   const ObjectPaintProperties* transformProperties =
@@ -349,7 +354,84 @@ TEST_P(PaintPropertyTreeBuilderTest, Transform) {
             transformProperties->paintOffsetTranslation()->matrix());
   EXPECT_EQ(frameScrollTranslation(),
             transformProperties->paintOffsetTranslation()->parent());
+
+  EXPECT_TRUE(transformProperties->transform()->hasDirectCompositingReasons());
+  EXPECT_FALSE(frameScrollTranslation()->hasDirectCompositingReasons());
+
   CHECK_EXACT_VISUAL_RECT(LayoutRect(173, 556, 400, 300),
+                          transform->layoutObject(),
+                          document().view()->layoutView());
+
+  transform->setAttribute(
+      HTMLNames::styleAttr,
+      "margin-left: 50px; margin-top: 100px; width: 400px; height: 300px;");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(nullptr, transform->layoutObject()->paintProperties()->transform());
+
+  transform->setAttribute(
+      HTMLNames::styleAttr,
+      "margin-left: 50px; margin-top: 100px; width: 400px; height: 300px; "
+      "transform: translate3D(123px, 456px, 789px)");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(
+      TransformationMatrix().translate3d(123, 456, 789),
+      transform->layoutObject()->paintProperties()->transform()->matrix());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
+  setBodyInnerHTML(
+      "<style> body { margin: 0 } </style>"
+      "<div id='transform' style='margin-left: 50px; margin-top: 100px;"
+      "    width: 400px; height: 300px;"
+      "    will-change: transform'>"
+      "</div>");
+
+  Element* transform = document().getElementById("transform");
+  const ObjectPaintProperties* transformProperties =
+      transform->layoutObject()->paintProperties();
+
+  EXPECT_EQ(TransformationMatrix(), transformProperties->transform()->matrix());
+  EXPECT_EQ(FloatPoint3D(200, 150, 0),
+            transformProperties->transform()->origin());
+  EXPECT_EQ(nullptr, transformProperties->paintOffsetTranslation());
+  EXPECT_TRUE(transformProperties->transform()->hasDirectCompositingReasons());
+
+  CHECK_EXACT_VISUAL_RECT(LayoutRect(50, 100, 400, 300),
+                          transform->layoutObject(),
+                          document().view()->layoutView());
+
+  transform->setAttribute(
+      HTMLNames::styleAttr,
+      "margin-left: 50px; margin-top: 100px; width: 400px; height: 300px;");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(nullptr, transform->layoutObject()->paintProperties()->transform());
+
+  transform->setAttribute(
+      HTMLNames::styleAttr,
+      "margin-left: 50px; margin-top: 100px; width: 400px; height: 300px; "
+      "will-change: transform");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(
+      TransformationMatrix(),
+      transform->layoutObject()->paintProperties()->transform()->matrix());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, WillChangeContents) {
+  setBodyInnerHTML(
+      "<style> body { margin: 0 } </style>"
+      "<div id='transform' style='margin-left: 50px; margin-top: 100px;"
+      "    width: 400px; height: 300px;"
+      "    will-change: transform, contents'>"
+      "</div>");
+
+  Element* transform = document().getElementById("transform");
+  const ObjectPaintProperties* transformProperties =
+      transform->layoutObject()->paintProperties();
+
+  EXPECT_EQ(nullptr, transformProperties->transform());
+  EXPECT_EQ(nullptr, transformProperties->paintOffsetTranslation());
+
+  CHECK_EXACT_VISUAL_RECT(LayoutRect(50, 100, 400, 300),
                           transform->layoutObject(),
                           document().view()->layoutView());
 }

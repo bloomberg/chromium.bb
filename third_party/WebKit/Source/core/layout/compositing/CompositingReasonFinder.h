@@ -31,14 +31,13 @@ class CompositingReasonFinder {
 
   bool hasOverflowScrollTrigger() const;
   bool requiresCompositingForScrollableFrame() const;
-  bool requiresCompositingForAnimation(const ComputedStyle&) const;
+  static bool requiresCompositingForAnimation(const ComputedStyle&);
+  static bool requiresCompositingForTransform(const LayoutObject&);
 
  private:
   bool isMainFrame() const;
 
   CompositingReasons nonStyleDeterminedDirectReasons(const PaintLayer*) const;
-
-  bool requiresCompositingForTransform(LayoutObject*) const;
   bool requiresCompositingForScrollDependentPosition(const PaintLayer*) const;
 
   LayoutView& m_layoutView;
