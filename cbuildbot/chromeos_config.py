@@ -1045,6 +1045,7 @@ def CreateBuilderTemplates(site_config, ge_build_config):
       'moblab',
       image_test=False,
       vm_tests=[],
+      vm_tests_override=None,
   )
 
   site_config.AddTemplate(

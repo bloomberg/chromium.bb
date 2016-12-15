@@ -10742,7 +10742,8 @@
         "useflags": [
             "chrome_internal"
         ],
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "guado_moblab-payloads": {
         "_template": "payloads",
@@ -10787,7 +10788,8 @@
         "paygen_skip_delta_payloads": true,
         "paygen_skip_testing": true,
         "signer_tests": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "guado_moblab-release-afdo": {
         "_template": "release_afdo_generate",
@@ -10803,7 +10805,8 @@
                 "grouped": true,
                 "image_test": false,
                 "name": "guado_moblab-release-afdo-generate",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             },
             {
                 "_template": "release_afdo_use",
@@ -10813,11 +10816,13 @@
                 "grouped": true,
                 "image_test": false,
                 "name": "guado_moblab-release-afdo-use",
-                "vm_tests": []
+                "vm_tests": [],
+                "vm_tests_override": null
             }
         ],
         "image_test": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "guado_moblab-release-afdo-generate": {
         "_template": "release_afdo_generate",
@@ -10825,7 +10830,8 @@
             "guado_moblab"
         ],
         "image_test": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "guado_moblab-release-afdo-use": {
         "_template": "release_afdo_use",
@@ -10833,7 +10839,8 @@
             "guado_moblab"
         ],
         "image_test": false,
-        "vm_tests": []
+        "vm_tests": [],
+        "vm_tests_override": null
     },
     "guado_moblab-tot-chrome-pfq-informational": {
         "_template": "chrome_pfq_informational",
