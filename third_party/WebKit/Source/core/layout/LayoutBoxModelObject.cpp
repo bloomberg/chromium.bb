@@ -129,6 +129,12 @@ BackgroundPaintLocation LayoutBoxModelObject::backgroundPaintLocation() const {
   if (!style()->hasAutoClip())
     return BackgroundPaintInGraphicsLayer;
 
+  // TODO(flackr): Remove this when box shadows are still painted correctly when
+  // painting into the composited scrolling contents layer.
+  // https://crbug.com/646464
+  if (style()->boxShadow())
+    return BackgroundPaintInGraphicsLayer;
+
   // Assume optimistically that the background can be painted in the scrolling
   // contents until we find otherwise.
   BackgroundPaintLocation paintLocation = BackgroundPaintInScrollingContents;
