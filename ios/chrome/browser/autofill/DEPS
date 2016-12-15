@@ -1,0 +1,6 @@
+specific_include_rules = {
+  # TODO(crbug.com/619783): Remove this exception.
+  "^form_suggestion_controller_unittest\.mm$": [
+    "+ios/web/web_state/ui/crw_web_controller.h",
+  ],
+}

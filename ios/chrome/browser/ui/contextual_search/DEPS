@@ -1,0 +1,6 @@
+specific_include_rules = {
+  "^contextual_search_results_view.mm$": [
+    # TODO(crbug.com/620884): Remove this exception.
+    "+ios/web/web_state/ui/crw_web_controller.h",
+  ],
+}

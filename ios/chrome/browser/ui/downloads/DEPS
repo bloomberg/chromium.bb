@@ -1,0 +1,6 @@
+specific_include_rules = {
+  # TODO(crbug.com/620887): Move NetworkActivityIndicator code to chrome.
+  "^download_manager_controller\.mm$": [
+    "+ios/web/crw_network_activity_indicator_manager.h",
+  ],
+}

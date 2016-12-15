@@ -1,0 +1,7 @@
+specific_include_rules = {
+  # TODO(crbug.com/621692): Remove this exception.
+  "^tab_switcher_controller\.mm$": [
+    "+ios/web/web_state/ui/crw_web_controller.h",
+  ],
+
+}

@@ -1,0 +1,12 @@
+specific_include_rules = {
+  "^tab_usage_recorder.mm$": [
+    # TODO(crbug.com/619971): Remove this exception.
+    "+ios/web/web_state/ui/crw_web_controller.h",
+  ],
+
+  "^tab_usage_recorder_unittest.mm$": [
+    # TODO(crbug.com/619971): Remove this exception.
+    "+ios/web/web_state/ui/crw_web_controller.h",
+  ],
+
+}

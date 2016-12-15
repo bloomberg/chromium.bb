@@ -1,0 +1,6 @@
+specific_include_rules = {
+  # TODO(crbug.com/621250): Remove this exception.
+  "^card_set\.mm$": [
+    "+ios/web/web_state/ui/crw_web_controller.h",
+  ],
+}

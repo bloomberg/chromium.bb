@@ -1,4 +1,16 @@
 specific_include_rules = {
+  # TODO(crbug.com/622072): Remove this exception.
+  "^blocked_popup_handler\.h$": [
+    "+ios/web/web_state/blocked_popup_info.h",
+  ],
+  # TODO(crbug.com/622485): Remove this exception.
+  "^error_page_content_unittest\.mm$": [
+    "+ios/web/web_state/error_translation_util.h",
+  ],
+  # TODO(crbug.com/623125): Remove this exception.
+  "^early_page_script_perftest\.mm$": [
+    "+ios/web/web_state/js/page_script_util.h",
+  ],
   # TODO(crbug.com/546231): Remove this exception.
   "^web_controller_provider_impl\.mm$": [
     "+ios/web/web_state/ui/crw_web_controller.h",

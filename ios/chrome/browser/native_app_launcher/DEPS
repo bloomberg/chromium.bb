@@ -1,0 +1,6 @@
+specific_include_rules = {
+  # TODO(crbug.com/619984): Remove this exception.
+  "^native_app_navigation_controller\.mm$": [
+    "+ios/web/navigation/navigation_manager_impl.h",
+  ],
+}
