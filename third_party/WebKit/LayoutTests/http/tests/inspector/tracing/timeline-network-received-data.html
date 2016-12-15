@@ -8,11 +8,13 @@ function performActions()
 {
     var image = new Image();
     var imagePromise = new Promise((fulfill) => image.onload = fulfill);
-    image.src = "resources/anImage.png";
+    // Use random urls to avoid caching.
+    const random = Math.random();
+    image.src = "resources/anImage.png?random=" + random;
 
     var scriptPromise = new Promise((fulfill) => window.timelineNetworkResourceEvaluated = fulfill);
     var script = document.createElement("script");
-    script.src = "resources/timeline-network-resource.js";
+    script.src = "resources/timeline-network-resource.js?randome=" + random;
     document.body.appendChild(script);
 
     return Promise.all([imagePromise, scriptPromise]);

@@ -10,13 +10,15 @@ function performActions()
     var promise = new Promise((fulfill) => callback = fulfill);
     var image = new Image();
     image.onload = bar;
-    image.src = "resources/anImage.png";
+    // Use random urls to avoid caching.
+    const random = Math.random();
+    image.src = "resources/anImage.png?random=" + random;
 
     function bar()
     {
         var image = new Image();
         image.onload = function(event) { callback(); }  // do not pass event argument to the callback.
-        image.src = "resources/anotherImage.png";
+        image.src = "resources/anotherImage.png?random=" + random;
     }
     return promise;
 }
