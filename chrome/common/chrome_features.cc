@@ -226,7 +226,7 @@ const base::Feature kOptInImeMenu{"OptInImeMenu",
 
 // Enables or disables PIN quick unlock settings integration.
 const base::Feature kQuickUnlockPin{"QuickUnlockPin",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables emoji, handwriting and voice input on opt-in IME menu.
 const base::Feature kEHVInputOnImeMenu{"EmojiHandwritingVoiceInput",
