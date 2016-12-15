@@ -50,40 +50,6 @@ class SecurityFilterPeer : public content::RequestPeer {
   DISALLOW_COPY_AND_ASSIGN(SecurityFilterPeer);
 };
 
-// The BufferedPeer reads all the data of the request into an internal buffer.
-// Subclasses should implement DataReady() to process the data as necessary.
-class BufferedPeer : public SecurityFilterPeer {
- public:
-  BufferedPeer(std::unique_ptr<content::RequestPeer> peer,
-               const std::string& mime_type);
-  ~BufferedPeer() override;
-
-  // content::RequestPeer Implementation.
-  void OnReceivedResponse(const content::ResourceResponseInfo& info) override;
-  void OnReceivedData(std::unique_ptr<ReceivedData> data) override;
-  void OnCompletedRequest(int error_code,
-                          bool was_ignored_by_handler,
-                          bool stale_copy_in_cache,
-                          const base::TimeTicks& completion_time,
-                          int64_t total_transfer_size,
-                          int64_t encoded_body_size) override;
-
- protected:
-  // Invoked when the entire request has been processed before the data is sent
-  // to the original peer, giving an opportunity to subclasses to process the
-  // data in data_.  If this method returns true, the data is fed to the
-  // original peer, if it returns false, an error is sent instead.
-  virtual bool DataReady() = 0;
-
-  content::ResourceResponseInfo response_info_;
-  std::string data_;
-
- private:
-  std::string mime_type_;
-
-  DISALLOW_COPY_AND_ASSIGN(BufferedPeer);
-};
-
 // The ReplaceContentPeer cancels the request and serves the provided data as
 // content instead.
 // TODO(jcampan): For now the resource is still being fetched, but ignored, as
