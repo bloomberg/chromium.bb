@@ -706,8 +706,8 @@ void Surface::UpdateSurface(bool full_damage) {
 
   const int kRenderPassId = 1;
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
-  render_pass->SetAll(kRenderPassId, gfx::Rect(contents_surface_size),
-                      damage_rect, gfx::Transform(), true);
+  render_pass->SetNew(kRenderPassId, gfx::Rect(contents_surface_size),
+                      damage_rect, gfx::Transform());
 
   gfx::Rect quad_rect = gfx::Rect(contents_surface_size);
   cc::SharedQuadState* quad_state =

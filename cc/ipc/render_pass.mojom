@@ -4,6 +4,7 @@
 
 module cc.mojom;
 
+import "cc/ipc/filter_operations.mojom";
 import "cc/ipc/quads.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/transform.mojom";
@@ -14,6 +15,8 @@ struct RenderPass {
   gfx.mojom.Rect output_rect;
   gfx.mojom.Rect damage_rect;
   gfx.mojom.Transform transform_to_root_target;
+  cc.mojom.FilterOperations filters;
+  cc.mojom.FilterOperations background_filters;
   bool has_transparent_background;
   array<DrawQuad> quad_list;
 };

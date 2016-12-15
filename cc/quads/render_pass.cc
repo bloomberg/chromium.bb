@@ -89,11 +89,8 @@ RenderPass::~RenderPass() {
 std::unique_ptr<RenderPass> RenderPass::Copy(int new_id) const {
   std::unique_ptr<RenderPass> copy_pass(
       Create(shared_quad_state_list.size(), quad_list.size()));
-  copy_pass->SetAll(new_id,
-                    output_rect,
-                    damage_rect,
-                    transform_to_root_target,
-                    has_transparent_background);
+  copy_pass->SetAll(new_id, output_rect, damage_rect, transform_to_root_target,
+                    filters, background_filters, has_transparent_background);
   return copy_pass;
 }
 
@@ -105,7 +102,7 @@ std::unique_ptr<RenderPass> RenderPass::DeepCopy() const {
   std::unique_ptr<RenderPass> copy_pass(
       Create(shared_quad_state_list.size(), quad_list.size()));
   copy_pass->SetAll(id, output_rect, damage_rect, transform_to_root_target,
-                    has_transparent_background);
+                    filters, background_filters, has_transparent_background);
   for (auto* shared_quad_state : shared_quad_state_list) {
     SharedQuadState* copy_shared_quad_state =
         copy_pass->CreateAndAppendSharedQuadState();
@@ -165,6 +162,8 @@ void RenderPass::SetAll(int id,
                         const gfx::Rect& output_rect,
                         const gfx::Rect& damage_rect,
                         const gfx::Transform& transform_to_root_target,
+                        const FilterOperations& filters,
+                        const FilterOperations& background_filters,
                         bool has_transparent_background) {
   DCHECK(id);
 
@@ -172,6 +171,8 @@ void RenderPass::SetAll(int id,
   this->output_rect = output_rect;
   this->damage_rect = damage_rect;
   this->transform_to_root_target = transform_to_root_target;
+  this->filters = filters;
+  this->background_filters = background_filters;
   this->has_transparent_background = has_transparent_background;
 
   DCHECK(quad_list.empty());
@@ -185,6 +186,14 @@ void RenderPass::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetBoolean("has_transparent_background", has_transparent_background);
   value->SetInteger("copy_requests",
                     base::saturated_cast<int>(copy_requests.size()));
+
+  value->BeginArray("filters");
+  filters.AsValueInto(value);
+  value->EndArray();
+
+  value->BeginArray("background_filters");
+  background_filters.AsValueInto(value);
+  value->EndArray();
 
   value->BeginArray("shared_quad_state_list");
   for (auto* shared_quad_state : shared_quad_state_list) {

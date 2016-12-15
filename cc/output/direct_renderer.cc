@@ -253,6 +253,18 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
 
   BeginDrawingFrame(&frame);
 
+  for (const auto& pass : *render_passes_in_draw_order) {
+    if (!pass->filters.IsEmpty())
+      render_pass_filters_.push_back(std::make_pair(pass->id, &pass->filters));
+    if (!pass->background_filters.IsEmpty()) {
+      render_pass_background_filters_.push_back(
+          std::make_pair(pass->id, &pass->background_filters));
+    }
+    std::sort(render_pass_filters_.begin(), render_pass_filters_.end());
+    std::sort(render_pass_background_filters_.begin(),
+              render_pass_background_filters_.end());
+  }
+
   // Draw all non-root render passes except for the root render pass.
   for (const auto& pass : *render_passes_in_draw_order) {
     if (pass.get() == root_render_pass)
@@ -276,7 +288,8 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
   // Attempt to replace some or all of the quads of the root render pass with
   // overlays.
   overlay_processor_->ProcessForOverlays(
-      resource_provider_, root_render_pass, &frame.overlay_list,
+      resource_provider_, root_render_pass, render_pass_filters_,
+      render_pass_background_filters_, &frame.overlay_list,
       &frame.ca_layer_overlay_list, &frame.root_damage_rect);
 
   // We can skip all drawing if the damage rect is now empty.
@@ -304,6 +317,8 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
 
   FinishDrawingFrame(&frame);
   render_passes_in_draw_order->clear();
+  render_pass_filters_.clear();
+  render_pass_background_filters_.clear();
 }
 
 gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
@@ -402,6 +417,28 @@ void DirectRenderer::DoDrawPolygon(const DrawPolygon& poly,
   for (size_t i = 0; i < quads.size(); ++i) {
     DoDrawQuad(frame, poly.original_ref(), &quads[i]);
   }
+}
+
+const FilterOperations* DirectRenderer::FiltersForPass(
+    int render_pass_id) const {
+  auto it = std::lower_bound(
+      render_pass_filters_.begin(), render_pass_filters_.end(),
+      std::pair<int, FilterOperations*>(render_pass_id, nullptr));
+  if (it != render_pass_filters_.end() && it->first == render_pass_id)
+    return it->second;
+  return nullptr;
+}
+
+const FilterOperations* DirectRenderer::BackgroundFiltersForPass(
+    int render_pass_id) const {
+  auto it = std::lower_bound(
+      render_pass_background_filters_.begin(),
+      render_pass_background_filters_.end(),
+      std::pair<int, FilterOperations*>(render_pass_id, nullptr));
+  if (it != render_pass_background_filters_.end() &&
+      it->first == render_pass_id)
+    return it->second;
+  return nullptr;
 }
 
 void DirectRenderer::FlushPolygons(

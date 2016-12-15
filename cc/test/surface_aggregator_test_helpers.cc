@@ -53,8 +53,7 @@ void AddRenderPassQuad(RenderPass* pass, int render_pass_id) {
   RenderPassDrawQuad* quad =
       pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_state, output_rect, output_rect, render_pass_id, 0,
-               gfx::Vector2dF(), gfx::Size(), FilterOperations(),
-               gfx::Vector2dF(), gfx::PointF(), FilterOperations());
+               gfx::Vector2dF(), gfx::Size(), gfx::Vector2dF(), gfx::PointF());
 }
 
 void AddQuadInPass(RenderPass* pass, Quad desc) {
@@ -80,8 +79,8 @@ void AddPasses(RenderPassList* pass_list,
   gfx::Transform root_transform;
   for (size_t i = 0; i < pass_count; ++i) {
     Pass pass = passes[i];
-    RenderPass* test_pass =
-        AddRenderPass(pass_list, pass.id, output_rect, root_transform);
+    RenderPass* test_pass = AddRenderPass(pass_list, pass.id, output_rect,
+                                          root_transform, FilterOperations());
     for (size_t j = 0; j < pass.quad_count; ++j) {
       AddQuadInPass(test_pass, pass.quads[j]);
     }

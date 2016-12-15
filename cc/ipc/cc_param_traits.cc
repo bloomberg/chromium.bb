@@ -326,6 +326,8 @@ void ParamTraits<cc::RenderPass>::Write(base::Pickle* m, const param_type& p) {
   WriteParam(m, p.output_rect);
   WriteParam(m, p.damage_rect);
   WriteParam(m, p.transform_to_root_target);
+  WriteParam(m, p.filters);
+  WriteParam(m, p.background_filters);
   WriteParam(m, p.has_transparent_background);
   WriteParam(m, base::checked_cast<uint32_t>(p.quad_list.size()));
 
@@ -407,6 +409,12 @@ static size_t ReserveSizeForRenderPassWrite(const cc::RenderPass& p) {
 
   // The largest quad type, verified by a unit test.
   to_reserve += p.quad_list.size() * cc::LargestDrawQuadSize();
+
+  base::PickleSizer sizer;
+  GetParamSize(&sizer, p.filters);
+  GetParamSize(&sizer, p.background_filters);
+  to_reserve += sizer.payload_size();
+
   return to_reserve;
 }
 
@@ -427,18 +435,22 @@ bool ParamTraits<cc::RenderPass>::Read(const base::Pickle* m,
   gfx::Rect output_rect;
   gfx::Rect damage_rect;
   gfx::Transform transform_to_root_target;
+  cc::FilterOperations filters;
+  cc::FilterOperations background_filters;
   bool has_transparent_background;
   uint32_t quad_list_size;
 
   if (!ReadParam(m, iter, &id) || !ReadParam(m, iter, &output_rect) ||
       !ReadParam(m, iter, &damage_rect) ||
       !ReadParam(m, iter, &transform_to_root_target) ||
+      !ReadParam(m, iter, &filters) ||
+      !ReadParam(m, iter, &background_filters) ||
       !ReadParam(m, iter, &has_transparent_background) ||
       !ReadParam(m, iter, &quad_list_size))
     return false;
 
-  p->SetAll(id, output_rect, damage_rect, transform_to_root_target,
-            has_transparent_background);
+  p->SetAll(id, output_rect, damage_rect, transform_to_root_target, filters,
+            background_filters, has_transparent_background);
 
   for (uint32_t i = 0; i < quad_list_size; ++i) {
     cc::DrawQuad::Material material;
@@ -520,6 +532,10 @@ void ParamTraits<cc::RenderPass>::Log(const param_type& p, std::string* l) {
   LogParam(p.damage_rect, l);
   l->append(", ");
   LogParam(p.transform_to_root_target, l);
+  l->append(", ");
+  LogParam(p.filters, l);
+  l->append(", ");
+  LogParam(p.background_filters, l);
   l->append(", ");
   LogParam(p.has_transparent_background, l);
   l->append(", ");

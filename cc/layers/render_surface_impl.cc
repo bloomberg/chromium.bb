@@ -338,6 +338,8 @@ void RenderSurfaceImpl::AppendRenderPasses(RenderPassSink* pass_sink) {
                gfx::IntersectRects(content_rect(),
                                    damage_tracker_->current_damage_rect()),
                draw_properties_.screen_space_transform);
+  pass->filters = Filters();
+  pass->background_filters = BackgroundFilters();
   pass_sink->AppendRenderPass(std::move(pass));
 }
 
@@ -393,8 +395,8 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
       render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_quad_state, content_rect(), visible_layer_rect,
                GetRenderPassId(), mask_resource_id, mask_uv_scale,
-               mask_texture_size, Filters(), owning_layer_to_target_scale,
-               FiltersOrigin(), BackgroundFilters());
+               mask_texture_size, owning_layer_to_target_scale,
+               FiltersOrigin());
 }
 
 }  // namespace cc

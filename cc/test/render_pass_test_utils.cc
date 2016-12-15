@@ -25,9 +25,11 @@ namespace cc {
 RenderPass* AddRenderPass(RenderPassList* pass_list,
                           int render_pass_id,
                           const gfx::Rect& output_rect,
-                          const gfx::Transform& root_transform) {
+                          const gfx::Transform& root_transform,
+                          const FilterOperations& filters) {
   std::unique_ptr<RenderPass> pass(RenderPass::Create());
   pass->SetNew(render_pass_id, output_rect, output_rect, root_transform);
+  pass->filters = filters;
   RenderPass* saved = pass.get();
   pass_list->push_back(std::move(pass));
   return saved;
@@ -78,14 +80,12 @@ void AddRenderPassQuad(RenderPass* to_pass, RenderPass* contributing_pass) {
   RenderPassDrawQuad* quad =
       to_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   quad->SetNew(shared_state, output_rect, output_rect, contributing_pass->id, 0,
-               gfx::Vector2dF(), gfx::Size(), FilterOperations(),
-               gfx::Vector2dF(), gfx::PointF(), FilterOperations());
+               gfx::Vector2dF(), gfx::Size(), gfx::Vector2dF(), gfx::PointF());
 }
 
 void AddRenderPassQuad(RenderPass* to_pass,
                        RenderPass* contributing_pass,
                        ResourceId mask_resource_id,
-                       const FilterOperations& filters,
                        gfx::Transform transform,
                        SkBlendMode blend_mode) {
   gfx::Rect output_rect = contributing_pass->output_rect;
@@ -103,8 +103,7 @@ void AddRenderPassQuad(RenderPass* to_pass,
   gfx::Size arbitrary_nonzero_size(1, 1);
   quad->SetNew(shared_state, output_rect, output_rect, contributing_pass->id,
                mask_resource_id, gfx::Vector2dF(1.f, 1.f),
-               arbitrary_nonzero_size, filters, gfx::Vector2dF(), gfx::PointF(),
-               FilterOperations());
+               arbitrary_nonzero_size, gfx::Vector2dF(), gfx::PointF());
 }
 
 static void EmptyReleaseCallback(const gpu::SyncToken& sync_token,
@@ -176,10 +175,9 @@ void AddOneOfEveryQuadType(RenderPass* to_pass,
   if (child_pass_id) {
     RenderPassDrawQuad* render_pass_quad =
         to_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
-    render_pass_quad->SetNew(
-        shared_state, rect, visible_rect, child_pass_id, resource5,
-        gfx::Vector2dF(1.f, 1.f), resource5_size, FilterOperations(),
-        gfx::Vector2dF(), gfx::PointF(), FilterOperations());
+    render_pass_quad->SetNew(shared_state, rect, visible_rect, child_pass_id,
+                             resource5, gfx::Vector2dF(1.f, 1.f),
+                             resource5_size, gfx::Vector2dF(), gfx::PointF());
   }
 
   SolidColorDrawQuad* solid_color_quad =

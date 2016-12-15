@@ -7,11 +7,13 @@
 
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/output/ca_layer_overlay.h"
+#include "cc/output/filter_operations.h"
 #include "cc/output/overlay_processor.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/resource_provider.h"
@@ -137,6 +139,9 @@ class CC_EXPORT DirectRenderer {
                      const gfx::Rect& render_pass_scissor,
                      bool use_render_pass_scissor);
 
+  const FilterOperations* FiltersForPass(int render_pass_id) const;
+  const FilterOperations* BackgroundFiltersForPass(int render_pass_id) const;
+
   // Private interface implemented by subclasses for use by DirectRenderer.
   virtual bool CanPartialSwap() = 0;
   virtual void BindFramebufferToOutputSurface(DrawingFrame* frame) = 0;
@@ -188,6 +193,9 @@ class CC_EXPORT DirectRenderer {
   std::unordered_map<int, std::unique_ptr<ScopedResource>>
       render_pass_textures_;
   std::unordered_map<int, TileDrawQuad> render_pass_bypass_quads_;
+
+  RenderPassFilterList render_pass_filters_;
+  RenderPassFilterList render_pass_background_filters_;
 
   bool visible_ = false;
 

@@ -163,6 +163,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       DrawingFrame* frame,
       const RenderPassDrawQuad* quad,
       const gfx::Transform& contents_device_transform,
+      const FilterOperations* filters,
+      const FilterOperations* background_filters,
       const gfx::QuadF* clip_region,
       bool use_aa,
       gfx::Rect* unclipped_rect);
@@ -170,11 +172,15 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
       DrawingFrame* frame,
       const gfx::Rect& bounding_rect);
 
-  static bool ShouldApplyBackgroundFilters(const RenderPassDrawQuad* quad);
-  sk_sp<SkImage> ApplyBackgroundFilters(const RenderPassDrawQuad* quad,
-                                        ScopedResource* background_texture,
-                                        const gfx::RectF& rect,
-                                        const gfx::RectF& unclipped_rect);
+  static bool ShouldApplyBackgroundFilters(
+      const RenderPassDrawQuad* quad,
+      const FilterOperations* background_filters);
+  sk_sp<SkImage> ApplyBackgroundFilters(
+      const RenderPassDrawQuad* quad,
+      const FilterOperations& background_filters,
+      ScopedResource* background_texture,
+      const gfx::RectF& rect,
+      const gfx::RectF& unclipped_rect);
 
   const TileDrawQuad* CanPassBeDrawnDirectly(const RenderPass* pass) override;
 

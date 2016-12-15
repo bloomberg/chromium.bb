@@ -78,9 +78,7 @@ void MusBrowserCompositorOutputSurface::SwapBuffers(
   frame.latency_info.clear();
   const int render_pass_id = 1;
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
-  const bool has_transparent_background = true;
-  pass->SetAll(render_pass_id, bounds, bounds, gfx::Transform(),
-               has_transparent_background);
+  pass->SetNew(render_pass_id, bounds, bounds, gfx::Transform());
   // The SharedQuadState is owned by the SharedQuadStateList
   // shared_quad_state_list.
   cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();

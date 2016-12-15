@@ -72,10 +72,13 @@ typedef std::vector<CALayerOverlay> CALayerOverlayList;
 
 // Returns true if all quads in the root render pass have been replaced by
 // CALayerOverlays.
-bool ProcessForCALayerOverlays(ResourceProvider* resource_provider,
-                               const gfx::RectF& display_rect,
-                               const QuadList& quad_list,
-                               CALayerOverlayList* ca_layer_overlays);
+bool ProcessForCALayerOverlays(
+    ResourceProvider* resource_provider,
+    const gfx::RectF& display_rect,
+    const QuadList& quad_list,
+    const RenderPassFilterList& render_pass_filters,
+    const RenderPassFilterList& render_pass_background_filters,
+    CALayerOverlayList* ca_layer_overlays);
 
 }  // namespace cc
 

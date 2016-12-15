@@ -194,7 +194,8 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
   const gfx::Rect bounds(m_width, m_height);
   const int renderPassId = 1;
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
-  pass->SetAll(renderPassId, bounds, bounds, gfx::Transform(), false);
+  pass->SetNew(renderPassId, bounds, bounds, gfx::Transform());
+  pass->has_transparent_background = false;
 
   cc::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
   sqs->SetAll(gfx::Transform(), bounds.size(), bounds, bounds, false, 1.f,

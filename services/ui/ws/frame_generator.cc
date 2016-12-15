@@ -141,14 +141,12 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
     shared_state->SetAll(gfx::Transform(), output_rect.size(), output_rect,
                          output_rect, false, 1.f, SkBlendMode::kSrcOver, 0);
     auto* quad = invert_pass->CreateAndAppendDrawQuad<cc::RenderPassDrawQuad>();
-    cc::FilterOperations filters;
-    filters.Append(cc::FilterOperation::CreateInvertFilter(1.f));
+    render_pass->filters.Append(cc::FilterOperation::CreateInvertFilter(1.f));
     quad->SetNew(shared_state, output_rect, output_rect, render_pass_id,
                  0 /* mask_resource_id */, gfx::Vector2dF() /* mask_uv_scale */,
-                 gfx::Size() /* mask_texture_size */, filters,
+                 gfx::Size() /* mask_texture_size */,
                  gfx::Vector2dF() /* filters_scale */,
-                 gfx::PointF() /* filters_origin */,
-                 cc::FilterOperations() /* background_filters */);
+                 gfx::PointF() /* filters_origin */);
     frame.render_pass_list.push_back(std::move(invert_pass));
   }
 

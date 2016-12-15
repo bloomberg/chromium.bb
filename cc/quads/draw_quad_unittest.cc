@@ -395,21 +395,20 @@ void CompareDrawQuad(DrawQuad* quad,
   }                                                                           \
   SETUP_AND_COPY_QUAD_NEW(Type, quad_new);
 
-#define CREATE_QUAD_ALL_RP(Type, a, b, c, d, e, f, g, h, copy_a)              \
+#define CREATE_QUAD_ALL_RP(Type, a, b, c, d, e, f, copy_a)                    \
   Type* quad_all = render_pass->CreateAndAppendDrawQuad<Type>();              \
   {                                                                           \
     QUAD_DATA quad_all->SetAll(shared_state, quad_rect, quad_opaque_rect,     \
                                quad_visible_rect, needs_blending, a, b, c, d, \
-                               e, f, g, h);                                   \
+                               e, f);                                         \
   }                                                                           \
   SETUP_AND_COPY_QUAD_ALL_RP(Type, quad_all, copy_a);
 
-#define CREATE_QUAD_NEW_RP(Type, a, b, c, d, e, f, g, h, i, copy_a)          \
-  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();             \
-  {                                                                          \
-    QUAD_DATA quad_new->SetNew(shared_state, quad_rect, a, b, c, d, e, f, g, \
-                               h, i);                                        \
-  }                                                                          \
+#define CREATE_QUAD_NEW_RP(Type, a, b, c, d, e, f, g, copy_a)                 \
+  Type* quad_new = render_pass->CreateAndAppendDrawQuad<Type>();              \
+  {                                                                           \
+    QUAD_DATA quad_new->SetNew(shared_state, quad_rect, a, b, c, d, e, f, g); \
+  }                                                                           \
   SETUP_AND_COPY_QUAD_NEW_RP(Type, quad_new, copy_a);
 
 TEST(DrawQuadTest, CopyDebugBorderDrawQuad) {
@@ -436,21 +435,15 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   ResourceId mask_resource_id = 78;
   gfx::Vector2dF mask_uv_scale(33.f, 19.f);
   gfx::Size mask_texture_size(128, 134);
-  FilterOperations filters;
-  filters.Append(FilterOperation::CreateBlurFilter(1.f));
   gfx::Vector2dF filters_scale;
   gfx::PointF filters_origin;
-  FilterOperations background_filters;
-  background_filters.Append(
-      FilterOperation::CreateGrayscaleFilter(1.f));
 
   int copied_render_pass_id = 235;
   CREATE_SHARED_STATE();
 
   CREATE_QUAD_NEW_RP(RenderPassDrawQuad, visible_rect, render_pass_id,
                      mask_resource_id, mask_uv_scale, mask_texture_size,
-                     filters, filters_scale, filters_origin, background_filters,
-                     copied_render_pass_id);
+                     filters_scale, filters_origin, copied_render_pass_id);
   EXPECT_EQ(DrawQuad::RENDER_PASS, copy_quad->material);
   EXPECT_EQ(visible_rect, copy_quad->visible_rect);
   EXPECT_EQ(copied_render_pass_id, copy_quad->render_pass_id);
@@ -458,24 +451,20 @@ TEST(DrawQuadTest, CopyRenderPassDrawQuad) {
   EXPECT_EQ(mask_uv_scale.ToString(), copy_quad->mask_uv_scale.ToString());
   EXPECT_EQ(mask_texture_size.ToString(),
             copy_quad->mask_texture_size.ToString());
-  EXPECT_EQ(filters, copy_quad->filters);
   EXPECT_EQ(filters_scale, copy_quad->filters_scale);
   EXPECT_EQ(filters_origin, copy_quad->filters_origin);
-  EXPECT_EQ(background_filters, copy_quad->background_filters);
 
   CREATE_QUAD_ALL_RP(RenderPassDrawQuad, render_pass_id, mask_resource_id,
-                     mask_uv_scale, mask_texture_size, filters, filters_scale,
-                     filters_origin, background_filters, copied_render_pass_id);
+                     mask_uv_scale, mask_texture_size, filters_scale,
+                     filters_origin, copied_render_pass_id);
   EXPECT_EQ(DrawQuad::RENDER_PASS, copy_quad->material);
   EXPECT_EQ(copied_render_pass_id, copy_quad->render_pass_id);
   EXPECT_EQ(mask_resource_id, copy_quad->mask_resource_id());
   EXPECT_EQ(mask_uv_scale.ToString(), copy_quad->mask_uv_scale.ToString());
   EXPECT_EQ(mask_texture_size.ToString(),
             copy_quad->mask_texture_size.ToString());
-  EXPECT_EQ(filters, copy_quad->filters);
   EXPECT_EQ(filters_scale, copy_quad->filters_scale);
   EXPECT_EQ(filters_origin, copy_quad->filters_origin);
-  EXPECT_EQ(background_filters, copy_quad->background_filters);
 }
 
 TEST(DrawQuadTest, CopySolidColorDrawQuad) {
@@ -757,21 +746,15 @@ TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   ResourceId mask_resource_id = 78;
   gfx::Vector2dF mask_uv_scale(33.f, 19.f);
   gfx::Size mask_texture_size(128, 134);
-  FilterOperations filters;
-  filters.Append(FilterOperation::CreateBlurFilter(1.f));
   gfx::Vector2dF filters_scale(2.f, 3.f);
   gfx::PointF filters_origin(0.f, 0.f);
-  FilterOperations background_filters;
-  background_filters.Append(
-      FilterOperation::CreateGrayscaleFilter(1.f));
 
   int copied_render_pass_id = 235;
 
   CREATE_SHARED_STATE();
   CREATE_QUAD_NEW_RP(RenderPassDrawQuad, visible_rect, render_pass_id,
                      mask_resource_id, mask_uv_scale, mask_texture_size,
-                     filters, filters_scale, filters_origin, background_filters,
-                     copied_render_pass_id);
+                     filters_scale, filters_origin, copied_render_pass_id);
   EXPECT_EQ(mask_resource_id, quad_new->mask_resource_id());
   EXPECT_EQ(1, IterateAndCount(quad_new));
   EXPECT_EQ(mask_resource_id + 1, quad_new->mask_resource_id());
@@ -780,7 +763,7 @@ TEST_F(DrawQuadIteratorTest, RenderPassDrawQuad) {
   gfx::Rect quad_rect(30, 40, 50, 60);
   quad_new->SetNew(shared_state, quad_rect, visible_rect, render_pass_id,
                    new_mask_resource_id, mask_uv_scale, mask_texture_size,
-                   filters, filters_scale, filters_origin, background_filters);
+                   filters_scale, filters_origin);
   EXPECT_EQ(0, IterateAndCount(quad_new));
   EXPECT_EQ(0u, quad_new->mask_resource_id());
 }

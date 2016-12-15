@@ -159,12 +159,6 @@ struct StructTraits<cc::mojom::RenderPassQuadStateDataView, cc::DrawQuad> {
     return quad->mask_texture_size;
   }
 
-  static const cc::FilterOperations& filters(const cc::DrawQuad& input) {
-    const cc::RenderPassDrawQuad* quad =
-        cc::RenderPassDrawQuad::MaterialCast(&input);
-    return quad->filters;
-  }
-
   static const gfx::Vector2dF& filters_scale(const cc::DrawQuad& input) {
     const cc::RenderPassDrawQuad* quad =
         cc::RenderPassDrawQuad::MaterialCast(&input);
@@ -175,13 +169,6 @@ struct StructTraits<cc::mojom::RenderPassQuadStateDataView, cc::DrawQuad> {
     const cc::RenderPassDrawQuad* quad =
         cc::RenderPassDrawQuad::MaterialCast(&input);
     return quad->filters_origin;
-  }
-
-  static const cc::FilterOperations& background_filters(
-      const cc::DrawQuad& input) {
-    const cc::RenderPassDrawQuad* quad =
-        cc::RenderPassDrawQuad::MaterialCast(&input);
-    return quad->background_filters;
   }
 
   static bool Read(cc::mojom::RenderPassQuadStateDataView data,

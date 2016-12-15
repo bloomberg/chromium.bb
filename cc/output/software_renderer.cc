@@ -471,15 +471,17 @@ void SoftwareRenderer::DrawRenderPassQuad(const DrawingFrame* frame,
   const SkBitmap* content = lock.sk_bitmap();
 
   sk_sp<SkImage> filter_image;
-  if (!quad->filters.IsEmpty()) {
-    sk_sp<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
-        quad->filters, gfx::SizeF(content_texture->size()));
-    if (filter) {
+  const FilterOperations* filters = FiltersForPass(quad->render_pass_id);
+  if (filters) {
+    DCHECK(!filters->IsEmpty());
+    sk_sp<SkImageFilter> image_filter = RenderSurfaceFilters::BuildImageFilter(
+        *filters, gfx::SizeF(content_texture->size()));
+    if (image_filter) {
       SkIRect result_rect;
       // TODO(ajuma): Apply the filter in the same pass as the content where
       // possible (e.g. when there's no origin offset). See crbug.com/308201.
       filter_image =
-          ApplyImageFilter(filter.get(), quad, *content, &result_rect);
+          ApplyImageFilter(image_filter.get(), quad, *content, &result_rect);
       if (result_rect.isEmpty()) {
         return;
       }
@@ -589,9 +591,11 @@ void SoftwareRenderer::DidChangeVisibility() {
 }
 
 bool SoftwareRenderer::ShouldApplyBackgroundFilters(
-    const RenderPassDrawQuad* quad) const {
-  if (quad->background_filters.IsEmpty())
+    const RenderPassDrawQuad* quad,
+    const FilterOperations* background_filters) const {
+  if (!background_filters)
     return false;
+  DCHECK(!background_filters->IsEmpty());
 
   // TODO(hendrikw): Look into allowing background filters to see pixels from
   // other render targets.  See crbug.com/314867.
@@ -655,15 +659,15 @@ gfx::Rect SoftwareRenderer::GetBackdropBoundingBoxForRenderPassQuad(
     const DrawingFrame* frame,
     const RenderPassDrawQuad* quad,
     const gfx::Transform& contents_device_transform,
+    const FilterOperations* background_filters,
     gfx::Rect* unclipped_rect) const {
-  DCHECK(ShouldApplyBackgroundFilters(quad));
+  DCHECK(ShouldApplyBackgroundFilters(quad, background_filters));
   gfx::Rect backdrop_rect = gfx::ToEnclosingRect(
       MathUtil::MapClippedRect(contents_device_transform, QuadVertexRect()));
 
   SkMatrix matrix;
   matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
-  backdrop_rect =
-      quad->background_filters.MapRectReverse(backdrop_rect, matrix);
+  backdrop_rect = background_filters->MapRectReverse(backdrop_rect, matrix);
 
   *unclipped_rect = backdrop_rect;
   backdrop_rect.Intersect(MoveFromDrawToWindowSpace(
@@ -676,7 +680,9 @@ sk_sp<SkShader> SoftwareRenderer::GetBackgroundFilterShader(
     const DrawingFrame* frame,
     const RenderPassDrawQuad* quad,
     SkShader::TileMode content_tile_mode) const {
-  if (!ShouldApplyBackgroundFilters(quad))
+  const FilterOperations* background_filters =
+      BackgroundFiltersForPass(quad->render_pass_id);
+  if (!ShouldApplyBackgroundFilters(quad, background_filters))
     return nullptr;
 
   gfx::Transform quad_rect_matrix;
@@ -689,7 +695,8 @@ sk_sp<SkShader> SoftwareRenderer::GetBackgroundFilterShader(
 
   gfx::Rect unclipped_rect;
   gfx::Rect backdrop_rect = GetBackdropBoundingBoxForRenderPassQuad(
-      frame, quad, contents_device_transform, &unclipped_rect);
+      frame, quad, contents_device_transform, background_filters,
+      &unclipped_rect);
 
   // Figure out the transformations to move it back to pixel space.
   gfx::Transform contents_device_transform_inverse;
@@ -707,7 +714,7 @@ sk_sp<SkShader> SoftwareRenderer::GetBackgroundFilterShader(
       (unclipped_rect.top_right() - backdrop_rect.top_right()) +
       (backdrop_rect.bottom_left() - unclipped_rect.bottom_left());
   sk_sp<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
-      quad->background_filters,
+      *background_filters,
       gfx::SizeF(backdrop_bitmap.width(), backdrop_bitmap.height()),
       clipping_offset);
   sk_sp<SkImage> filter_backdrop_image =

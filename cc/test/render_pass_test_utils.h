@@ -27,7 +27,8 @@ class RenderPass;
 RenderPass* AddRenderPass(RenderPassList* pass_list,
                           int render_pass_id,
                           const gfx::Rect& output_rect,
-                          const gfx::Transform& root_transform);
+                          const gfx::Transform& root_transform,
+                          const FilterOperations& filters);
 
 // Adds a solid quad to a given render pass.
 SolidColorDrawQuad* AddQuad(RenderPass* pass,
@@ -52,7 +53,6 @@ void AddRenderPassQuad(RenderPass* to_pass, RenderPass* contributing_pass);
 void AddRenderPassQuad(RenderPass* to_pass,
                        RenderPass* contributing_pass,
                        ResourceId mask_resource_id,
-                       const FilterOperations& filters,
                        gfx::Transform transform,
                        SkBlendMode blend_mode);
 

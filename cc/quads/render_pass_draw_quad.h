@@ -32,10 +32,8 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               ResourceId mask_resource_id,
               const gfx::Vector2dF& mask_uv_scale,
               const gfx::Size& mask_texture_size,
-              const FilterOperations& filters,
               const gfx::Vector2dF& filters_scale,
-              const gfx::PointF& filters_origin,
-              const FilterOperations& background_filters);
+              const gfx::PointF& filters_origin);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
@@ -46,17 +44,12 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
               ResourceId mask_resource_id,
               const gfx::Vector2dF& mask_uv_scale,
               const gfx::Size& mask_texture_size,
-              const FilterOperations& filters,
               const gfx::Vector2dF& filters_scale,
-              const gfx::PointF& filters_origin,
-              const FilterOperations& background_filters);
+              const gfx::PointF& filters_origin);
 
   int render_pass_id;
   gfx::Vector2dF mask_uv_scale;
   gfx::Size mask_texture_size;
-
-  // Post-processing filters, applied to the pixels in the render pass' texture.
-  FilterOperations filters;
 
   // The scale from layer space of the root layer of the render pass to
   // the render pass physical pixels. This scale is applied to the filter
@@ -67,10 +60,6 @@ class CC_EXPORT RenderPassDrawQuad : public DrawQuad {
   // The origin for post-processing filters which will be used to offset
   // crop rects, lights, etc.
   gfx::PointF filters_origin;
-
-  // Post-processing filters, applied to the pixels showing through the
-  // background of the render pass, from behind it.
-  FilterOperations background_filters;
 
   // Helper function to generate the normalized uv rect.
   gfx::RectF MaskUVRect() const;

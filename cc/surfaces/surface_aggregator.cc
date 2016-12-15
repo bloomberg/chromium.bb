@@ -207,7 +207,8 @@ void SurfaceAggregator::HandleSurfaceQuad(
     int remapped_pass_id = RemapPassId(source.id, surface_id);
 
     copy_pass->SetAll(remapped_pass_id, source.output_rect, source.output_rect,
-                      source.transform_to_root_target,
+                      source.transform_to_root_target, source.filters,
+                      source.background_filters,
                       source.has_transparent_background);
 
     MoveMatchingRequests(source.id, &copy_requests, &copy_pass->copy_requests);
@@ -276,8 +277,8 @@ void SurfaceAggregator::HandleSurfaceQuad(
         dest_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
     quad->SetNew(shared_quad_state, surface_quad->rect,
                  surface_quad->visible_rect, remapped_pass_id, 0,
-                 gfx::Vector2dF(), gfx::Size(), FilterOperations(),
-                 gfx::Vector2dF(), gfx::PointF(), FilterOperations());
+                 gfx::Vector2dF(), gfx::Size(), gfx::Vector2dF(),
+                 gfx::PointF());
   }
 
   referenced_surfaces_.erase(it);
@@ -473,7 +474,8 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
     int remapped_pass_id = RemapPassId(source.id, surface->surface_id());
 
     copy_pass->SetAll(remapped_pass_id, source.output_rect, source.output_rect,
-                      source.transform_to_root_target,
+                      source.transform_to_root_target, source.filters,
+                      source.background_filters,
                       source.has_transparent_background);
 
     CopyQuadsToPass(source.quad_list, source.shared_quad_state_list,
@@ -518,7 +520,7 @@ void SurfaceAggregator::ProcessAddedAndRemovedSurfaces() {
 // surface and its descendants, check if there are any copy requests, and
 // return the combined damage rect.
 gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
-                                         bool in_moved_pixel_pass,
+                                         bool in_moved_pixel_surface,
                                          int parent_pass_id,
                                          PrewalkResult* result) {
   // This is for debugging a possible use after free.
@@ -560,13 +562,22 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   if (!frame.render_pass_list.empty()) {
     int remapped_pass_id =
         RemapPassId(frame.render_pass_list.back()->id, surface_id);
-    if (in_moved_pixel_pass)
+    if (in_moved_pixel_surface)
       moved_pixel_passes_.insert(remapped_pass_id);
     if (parent_pass_id)
       render_pass_dependencies_[parent_pass_id].insert(remapped_pass_id);
   }
 
   struct SurfaceInfo {
+    SurfaceInfo(const SurfaceId& id,
+                bool has_moved_pixels,
+                int parent_pass_id,
+                const gfx::Transform& target_to_surface_transform)
+        : id(id),
+          has_moved_pixels(has_moved_pixels),
+          parent_pass_id(parent_pass_id),
+          target_to_surface_transform(target_to_surface_transform) {}
+
     SurfaceId id;
     bool has_moved_pixels;
     int parent_pass_id;
@@ -574,9 +585,22 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   };
   std::vector<SurfaceInfo> child_surfaces;
 
+  std::unordered_set<int> pixel_moving_background_filter_passes;
+  for (const auto& render_pass : frame.render_pass_list) {
+    if (render_pass->background_filters.HasFilterThatMovesPixels()) {
+      pixel_moving_background_filter_passes.insert(
+          RemapPassId(render_pass->id, surface_id));
+    }
+  }
+
   for (const auto& render_pass : base::Reversed(frame.render_pass_list)) {
     int remapped_pass_id = RemapPassId(render_pass->id, surface_id);
-    bool in_moved_pixel_pass = !!moved_pixel_passes_.count(remapped_pass_id);
+    bool has_pixel_moving_filter =
+        render_pass->filters.HasFilterThatMovesPixels();
+    if (has_pixel_moving_filter)
+      moved_pixel_passes_.insert(remapped_pass_id);
+    bool in_moved_pixel_pass = has_pixel_moving_filter ||
+                               !!moved_pixel_passes_.count(remapped_pass_id);
     for (auto* quad : render_pass->quad_list) {
       if (quad->material == DrawQuad::SURFACE_CONTENT) {
         const SurfaceDrawQuad* surface_quad =
@@ -584,18 +608,18 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
         gfx::Transform target_to_surface_transform(
             render_pass->transform_to_root_target,
             surface_quad->shared_quad_state->quad_to_target_transform);
-        child_surfaces.push_back(
-            SurfaceInfo{surface_quad->surface_id, in_moved_pixel_pass,
-                        remapped_pass_id, target_to_surface_transform});
+        child_surfaces.emplace_back(surface_quad->surface_id,
+                                    in_moved_pixel_pass, remapped_pass_id,
+                                    target_to_surface_transform);
       } else if (quad->material == DrawQuad::RENDER_PASS) {
         const RenderPassDrawQuad* render_pass_quad =
             RenderPassDrawQuad::MaterialCast(quad);
-        if (in_moved_pixel_pass ||
-            render_pass_quad->filters.HasFilterThatMovesPixels()) {
+        if (in_moved_pixel_pass) {
           moved_pixel_passes_.insert(
               RemapPassId(render_pass_quad->render_pass_id, surface_id));
         }
-        if (render_pass_quad->background_filters.HasFilterThatMovesPixels()) {
+        if (pixel_moving_background_filter_passes.count(
+                render_pass_quad->render_pass_id)) {
           in_moved_pixel_pass = true;
         }
         render_pass_dependencies_[remapped_pass_id].insert(

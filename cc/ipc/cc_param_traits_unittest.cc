@@ -53,6 +53,28 @@ class CCParamTraitsTest : public testing::Test {
     EXPECT_EQ(a->output_rect.ToString(), b->output_rect.ToString());
     EXPECT_EQ(a->damage_rect.ToString(), b->damage_rect.ToString());
     EXPECT_EQ(a->transform_to_root_target, b->transform_to_root_target);
+    EXPECT_EQ(a->filters.size(), b->filters.size());
+    for (size_t i = 0; i < a->filters.size(); ++i) {
+      if (a->filters.at(i).type() != cc::FilterOperation::REFERENCE) {
+        EXPECT_EQ(a->filters.at(i), b->filters.at(i));
+      } else {
+        EXPECT_EQ(b->filters.at(i).type(), cc::FilterOperation::REFERENCE);
+        EXPECT_EQ(a->filters.at(i).image_filter()->countInputs(),
+                  b->filters.at(i).image_filter()->countInputs());
+      }
+    }
+    EXPECT_EQ(a->background_filters.size(), b->background_filters.size());
+    for (size_t i = 0; i < a->background_filters.size(); ++i) {
+      if (a->background_filters.at(i).type() !=
+          cc::FilterOperation::REFERENCE) {
+        EXPECT_EQ(a->background_filters.at(i), b->background_filters.at(i));
+      } else {
+        EXPECT_EQ(b->background_filters.at(i).type(),
+                  cc::FilterOperation::REFERENCE);
+        EXPECT_EQ(a->background_filters.at(i).image_filter()->countInputs(),
+                  b->background_filters.at(i).image_filter()->countInputs());
+      }
+    }
     EXPECT_EQ(a->has_transparent_background, b->has_transparent_background);
   }
 
@@ -128,19 +150,8 @@ class CCParamTraitsTest : public testing::Test {
     EXPECT_EQ(a->mask_resource_id(), b->mask_resource_id());
     EXPECT_EQ(a->mask_uv_scale.ToString(), b->mask_uv_scale.ToString());
     EXPECT_EQ(a->mask_texture_size.ToString(), b->mask_texture_size.ToString());
-    EXPECT_EQ(a->filters.size(), b->filters.size());
-    for (size_t i = 0; i < a->filters.size(); ++i) {
-      if (a->filters.at(i).type() != cc::FilterOperation::REFERENCE) {
-        EXPECT_EQ(a->filters.at(i), b->filters.at(i));
-      } else {
-        EXPECT_EQ(b->filters.at(i).type(), cc::FilterOperation::REFERENCE);
-        EXPECT_EQ(a->filters.at(i).image_filter()->countInputs(),
-                  b->filters.at(i).image_filter()->countInputs());
-      }
-    }
     EXPECT_EQ(a->filters_scale, b->filters_scale);
     EXPECT_EQ(a->filters_origin, b->filters_origin);
-    EXPECT_EQ(a->background_filters, b->background_filters);
   }
 
   void Compare(const SolidColorDrawQuad* a, const SolidColorDrawQuad* b) {
@@ -286,15 +297,17 @@ TEST_F(CCParamTraitsTest, AllQuads) {
 
   std::unique_ptr<RenderPass> child_pass_in = RenderPass::Create();
   child_pass_in->SetAll(child_id, arbitrary_rect2, arbitrary_rect3,
-                        arbitrary_matrix2, arbitrary_bool2);
+                        arbitrary_matrix2, arbitrary_filters1,
+                        arbitrary_filters2, arbitrary_bool2);
 
   std::unique_ptr<RenderPass> child_pass_cmp = RenderPass::Create();
   child_pass_cmp->SetAll(child_id, arbitrary_rect2, arbitrary_rect3,
-                         arbitrary_matrix2, arbitrary_bool2);
+                         arbitrary_matrix2, arbitrary_filters1,
+                         arbitrary_filters2, arbitrary_bool2);
 
   std::unique_ptr<RenderPass> pass_in = RenderPass::Create();
   pass_in->SetAll(root_id, arbitrary_rect1, arbitrary_rect2, arbitrary_matrix1,
-                  arbitrary_bool1);
+                  arbitrary_filters2, arbitrary_filters1, arbitrary_bool1);
 
   SharedQuadState* shared_state1_in = pass_in->CreateAndAppendSharedQuadState();
   shared_state1_in->SetAll(arbitrary_matrix1, arbitrary_size1, arbitrary_rect1,
@@ -303,7 +316,7 @@ TEST_F(CCParamTraitsTest, AllQuads) {
 
   std::unique_ptr<RenderPass> pass_cmp = RenderPass::Create();
   pass_cmp->SetAll(root_id, arbitrary_rect1, arbitrary_rect2, arbitrary_matrix1,
-                   arbitrary_bool1);
+                   arbitrary_filters2, arbitrary_filters1, arbitrary_bool1);
 
   SharedQuadState* shared_state1_cmp =
       pass_cmp->CreateAndAppendSharedQuadState();
@@ -332,8 +345,7 @@ TEST_F(CCParamTraitsTest, AllQuads) {
       shared_state2_in, arbitrary_rect1, arbitrary_rect2_inside_rect1,
       arbitrary_rect1_inside_rect1, arbitrary_bool1, child_id,
       arbitrary_resourceid2, arbitrary_vector2df1, arbitrary_size1,
-      arbitrary_filters1, arbitrary_vector2df2, arbitrary_pointf2,
-      arbitrary_filters2);
+      arbitrary_vector2df2, arbitrary_pointf2);
   pass_cmp->CopyFromAndAppendRenderPassDrawQuad(
       renderpass_in, renderpass_in->shared_quad_state,
       renderpass_in->render_pass_id);
@@ -480,7 +492,8 @@ TEST_F(CCParamTraitsTest, AllQuads) {
 
 TEST_F(CCParamTraitsTest, UnusedSharedQuadStates) {
   std::unique_ptr<RenderPass> pass_in = RenderPass::Create();
-  pass_in->SetAll(1, gfx::Rect(100, 100), gfx::Rect(), gfx::Transform(), false);
+  pass_in->SetAll(1, gfx::Rect(100, 100), gfx::Rect(), gfx::Transform(),
+                  FilterOperations(), FilterOperations(), false);
 
   // The first SharedQuadState is used.
   SharedQuadState* shared_state1_in = pass_in->CreateAndAppendSharedQuadState();

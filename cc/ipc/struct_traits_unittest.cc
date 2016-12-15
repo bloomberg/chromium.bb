@@ -446,21 +446,14 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   const int render_pass_id = 1234;
   const gfx::Vector2dF mask_uv_scale(1337.1f, 1234.2f);
   const gfx::Size mask_texture_size(1234, 5678);
-  FilterOperations filters;
-  filters.Append(FilterOperation::CreateBlurFilter(0.f));
-  filters.Append(FilterOperation::CreateZoomFilter(2.0f, 1));
   gfx::Vector2dF filters_scale(1234.1f, 4321.2f);
   gfx::PointF filters_origin(8765.4f, 4567.8f);
-  FilterOperations background_filters;
-  background_filters.Append(FilterOperation::CreateSaturateFilter(4.f));
-  background_filters.Append(FilterOperation::CreateZoomFilter(2.0f, 1));
-  background_filters.Append(FilterOperation::CreateSaturateFilter(2.f));
 
   RenderPassDrawQuad* render_pass_quad =
       render_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
   render_pass_quad->SetNew(sqs, rect4, rect4, render_pass_id, resource_id4,
-                           mask_uv_scale, mask_texture_size, filters,
-                           filters_scale, filters_origin, background_filters);
+                           mask_uv_scale, mask_texture_size, filters_scale,
+                           filters_origin);
 
   const gfx::Rect rect5(123, 567, 91011, 131415);
   const ResourceId resource_id5(1337);
@@ -527,15 +520,7 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   EXPECT_EQ(render_pass_id, out_render_pass_draw_quad->render_pass_id);
   EXPECT_EQ(resource_id4, out_render_pass_draw_quad->mask_resource_id());
   EXPECT_EQ(mask_texture_size, out_render_pass_draw_quad->mask_texture_size);
-  EXPECT_EQ(filters.size(), out_render_pass_draw_quad->filters.size());
-  for (size_t i = 0; i < filters.size(); ++i)
-    EXPECT_EQ(filters.at(i), out_render_pass_draw_quad->filters.at(i));
   EXPECT_EQ(filters_scale, out_render_pass_draw_quad->filters_scale);
-  EXPECT_EQ(background_filters.size(),
-            out_render_pass_draw_quad->background_filters.size());
-  for (size_t i = 0; i < background_filters.size(); ++i)
-    EXPECT_EQ(background_filters.at(i),
-              out_render_pass_draw_quad->background_filters.at(i));
 
   const TextureDrawQuad* out_texture_draw_quad =
       TextureDrawQuad::MaterialCast(output->quad_list.ElementAt(4));
@@ -575,10 +560,17 @@ TEST_F(StructTraitsTest, RenderPass) {
   const gfx::Transform transform_to_root =
       gfx::Transform(1.0, 0.5, 0.5, -0.5, -1.0, 0.0);
   const gfx::Rect damage_rect(56, 123, 19, 43);
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateBlurFilter(0.f));
+  filters.Append(FilterOperation::CreateZoomFilter(2.0f, 1));
+  FilterOperations background_filters;
+  background_filters.Append(FilterOperation::CreateSaturateFilter(4.f));
+  background_filters.Append(FilterOperation::CreateZoomFilter(2.0f, 1));
+  background_filters.Append(FilterOperation::CreateSaturateFilter(2.f));
   const bool has_transparent_background = true;
   std::unique_ptr<RenderPass> input = RenderPass::Create();
-  input->SetAll(id, output_rect, damage_rect, transform_to_root,
-                has_transparent_background);
+  input->SetAll(id, output_rect, damage_rect, transform_to_root, filters,
+                background_filters, has_transparent_background);
 
   SharedQuadState* shared_state_1 = input->CreateAndAppendSharedQuadState();
   shared_state_1->SetAll(
@@ -628,6 +620,8 @@ TEST_F(StructTraitsTest, RenderPass) {
   EXPECT_EQ(damage_rect, output->damage_rect);
   EXPECT_EQ(transform_to_root, output->transform_to_root_target);
   EXPECT_EQ(has_transparent_background, output->has_transparent_background);
+  EXPECT_EQ(filters, output->filters);
+  EXPECT_EQ(background_filters, output->background_filters);
 
   SharedQuadState* out_sqs1 = output->shared_quad_state_list.ElementAt(0);
   EXPECT_EQ(shared_state_1->quad_to_target_transform,
@@ -687,6 +681,7 @@ TEST_F(StructTraitsTest, RenderPassWithEmptySharedQuadStateList) {
   const bool has_transparent_background = true;
   std::unique_ptr<RenderPass> input = RenderPass::Create();
   input->SetAll(id, output_rect, damage_rect, transform_to_root,
+                FilterOperations(), FilterOperations(),
                 has_transparent_background);
 
   // Unlike the previous test, don't add any quads to the list; we need to

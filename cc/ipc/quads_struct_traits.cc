@@ -73,10 +73,8 @@ bool StructTraits<cc::mojom::RenderPassQuadStateDataView, cc::DrawQuad>::Read(
     return false;
   return data.ReadMaskUvScale(&quad->mask_uv_scale) &&
          data.ReadMaskTextureSize(&quad->mask_texture_size) &&
-         data.ReadFilters(&quad->filters) &&
          data.ReadFiltersScale(&quad->filters_scale) &&
-         data.ReadFiltersOrigin(&quad->filters_origin) &&
-         data.ReadBackgroundFilters(&quad->background_filters);
+         data.ReadFiltersOrigin(&quad->filters_origin);
 }
 
 // static

@@ -93,7 +93,7 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
       RenderPass* dest_pass,
       const SurfaceId& surface_id);
   gfx::Rect PrewalkTree(const SurfaceId& surface_id,
-                        bool in_moved_pixel_pass,
+                        bool in_moved_pixel_surface,
                         int parent_pass,
                         PrewalkResult* result);
   void CopyUndrawnSurfaces(PrewalkResult* prewalk);

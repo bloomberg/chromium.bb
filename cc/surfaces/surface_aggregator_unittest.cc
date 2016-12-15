@@ -961,8 +961,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
   gfx::Rect output_rect(SurfaceSize());
   gfx::Rect damage_rect(SurfaceSize());
   gfx::Transform transform_to_root_target;
-  grandchild_pass->SetNew(
-      pass_id, output_rect, damage_rect, transform_to_root_target);
+  grandchild_pass->SetNew(pass_id, output_rect, damage_rect,
+                          transform_to_root_target);
   AddSolidColorQuadWithBlendMode(
       SurfaceSize(), grandchild_pass.get(), blend_modes[2]);
   QueuePassAsFrame(std::move(grandchild_pass), grandchild_local_frame_id,
@@ -976,8 +976,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
                                           SurfaceFactory::DrawCallback());
 
   std::unique_ptr<RenderPass> child_one_pass = RenderPass::Create();
-  child_one_pass->SetNew(
-      pass_id, output_rect, damage_rect, transform_to_root_target);
+  child_one_pass->SetNew(pass_id, output_rect, damage_rect,
+                         transform_to_root_target);
   AddSolidColorQuadWithBlendMode(
       SurfaceSize(), child_one_pass.get(), blend_modes[1]);
   SurfaceDrawQuad* grandchild_surface_quad =
@@ -999,16 +999,16 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, AggregateSharedQuadStateProperties) {
                                           SurfaceFactory::DrawCallback());
 
   std::unique_ptr<RenderPass> child_two_pass = RenderPass::Create();
-  child_two_pass->SetNew(
-      pass_id, output_rect, damage_rect, transform_to_root_target);
+  child_two_pass->SetNew(pass_id, output_rect, damage_rect,
+                         transform_to_root_target);
   AddSolidColorQuadWithBlendMode(
       SurfaceSize(), child_two_pass.get(), blend_modes[5]);
   QueuePassAsFrame(std::move(child_two_pass), child_two_local_frame_id,
                    &child_two_factory);
 
   std::unique_ptr<RenderPass> root_pass = RenderPass::Create();
-  root_pass->SetNew(
-      pass_id, output_rect, damage_rect, transform_to_root_target);
+  root_pass->SetNew(pass_id, output_rect, damage_rect,
+                    transform_to_root_target);
 
   AddSolidColorQuadWithBlendMode(
       SurfaceSize(), root_pass.get(), blend_modes[0]);
@@ -1678,26 +1678,26 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
   }
 
   // Root surface has smaller damage rect, but filter on render pass means all
-  // of it should be aggregated.
+  // of it and its descendant passes should be aggregated.
   {
-    int root_pass_ids[] = {1, 2};
+    int root_pass_ids[] = {1, 2, 3};
     test::Quad root_quads1[] = {test::Quad::SurfaceQuad(child_surface_id, 1.f)};
     test::Quad root_quads2[] = {test::Quad::RenderPassQuad(root_pass_ids[0])};
+    test::Quad root_quads3[] = {test::Quad::RenderPassQuad(root_pass_ids[1])};
     test::Pass root_passes[] = {
         test::Pass(root_quads1, arraysize(root_quads1), root_pass_ids[0]),
-        test::Pass(root_quads2, arraysize(root_quads2), root_pass_ids[1])};
+        test::Pass(root_quads2, arraysize(root_quads2), root_pass_ids[1]),
+        test::Pass(root_quads3, arraysize(root_quads3), root_pass_ids[2])};
 
     RenderPassList root_pass_list;
     AddPasses(&root_pass_list, gfx::Rect(SurfaceSize()), root_passes,
               arraysize(root_passes));
 
-    RenderPass* pass = root_pass_list[0].get();
-    pass->shared_quad_state_list.front()->quad_to_target_transform.Translate(
-        10, 10);
-    RenderPass* root_pass = root_pass_list[1].get();
-    RenderPassDrawQuad* quad =
-        static_cast<RenderPassDrawQuad*>(root_pass->quad_list.front());
-    quad->filters.Append(FilterOperation::CreateBlurFilter(2));
+    RenderPass* filter_pass = root_pass_list[1].get();
+    filter_pass->shared_quad_state_list.front()
+        ->quad_to_target_transform.Translate(10, 10);
+    RenderPass* root_pass = root_pass_list[2].get();
+    filter_pass->filters.Append(FilterOperation::CreateBlurFilter(2));
     root_pass->damage_rect = gfx::Rect(10, 10, 2, 2);
     SubmitPassListAsFrame(&factory_, root_local_frame_id_, &root_pass_list);
   }
@@ -1708,16 +1708,18 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
     const RenderPassList& aggregated_pass_list =
         aggregated_frame.render_pass_list;
 
-    ASSERT_EQ(3u, aggregated_pass_list.size());
+    ASSERT_EQ(4u, aggregated_pass_list.size());
 
     EXPECT_EQ(gfx::Rect(SurfaceSize()), aggregated_pass_list[0]->damage_rect);
     EXPECT_EQ(gfx::Rect(SurfaceSize()), aggregated_pass_list[1]->damage_rect);
-    EXPECT_EQ(gfx::Rect(10, 10, 2, 2), aggregated_pass_list[2]->damage_rect);
+    EXPECT_EQ(gfx::Rect(SurfaceSize()), aggregated_pass_list[2]->damage_rect);
+    EXPECT_EQ(gfx::Rect(10, 10, 2, 2), aggregated_pass_list[3]->damage_rect);
     EXPECT_EQ(1u, aggregated_pass_list[0]->quad_list.size());
     EXPECT_EQ(1u, aggregated_pass_list[1]->quad_list.size());
+    EXPECT_EQ(1u, aggregated_pass_list[2]->quad_list.size());
     // First render pass draw quad is outside damage rect, so shouldn't be
     // drawn.
-    EXPECT_EQ(0u, aggregated_pass_list[2]->quad_list.size());
+    EXPECT_EQ(0u, aggregated_pass_list[3]->quad_list.size());
   }
 
   // Root surface has smaller damage rect. Background filter on render pass
@@ -1738,12 +1740,11 @@ TEST_F(SurfaceAggregatorPartialSwapTest, IgnoreOutside) {
     AddPasses(&root_pass_list, gfx::Rect(SurfaceSize()), root_passes,
               arraysize(root_passes));
 
+    RenderPass* pass = root_pass_list[0].get();
     RenderPass* root_pass = root_pass_list[1].get();
     root_pass->shared_quad_state_list.ElementAt(1)
         ->quad_to_target_transform.Translate(10, 10);
-    RenderPassDrawQuad* quad =
-        static_cast<RenderPassDrawQuad*>(root_pass->quad_list.front());
-    quad->background_filters.Append(FilterOperation::CreateBlurFilter(2));
+    pass->background_filters.Append(FilterOperation::CreateBlurFilter(2));
     root_pass->damage_rect = gfx::Rect(10, 10, 2, 2);
     SubmitPassListAsFrame(&factory_, root_local_frame_id_, &root_pass_list);
   }

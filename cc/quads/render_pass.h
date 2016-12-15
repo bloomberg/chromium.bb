@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/list_container.h"
+#include "cc/output/filter_operations.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/largest_draw_quad.h"
 #include "ui/gfx/geometry/rect.h"
@@ -81,6 +82,8 @@ class CC_EXPORT RenderPass {
               const gfx::Rect& output_rect,
               const gfx::Rect& damage_rect,
               const gfx::Transform& transform_to_root_target,
+              const FilterOperations& filters,
+              const FilterOperations& background_filters,
               bool has_transparent_background);
 
   void AsValueInto(base::trace_event::TracedValue* dict) const;
@@ -110,6 +113,13 @@ class CC_EXPORT RenderPass {
   // render pass' |output_rect|.
   gfx::Transform transform_to_root_target;
 
+  // Post-processing filters, applied to the pixels in the render pass' texture.
+  FilterOperations filters;
+
+  // Post-processing filters, applied to the pixels showing through the
+  // background of the render pass, from behind it.
+  FilterOperations background_filters;
+
   // If false, the pixels in the render pass' texture are all opaque.
   bool has_transparent_background = true;
 
@@ -137,6 +147,10 @@ class CC_EXPORT RenderPass {
 };
 
 using RenderPassList = std::vector<std::unique_ptr<RenderPass>>;
+
+// List of pairs of render pass id and filter, sorted by render pass id so that
+// it can be searched using std::lower_bound.
+using RenderPassFilterList = std::vector<std::pair<int, FilterOperations*>>;
 
 }  // namespace cc
 

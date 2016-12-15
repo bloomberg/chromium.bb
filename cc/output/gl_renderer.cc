@@ -167,6 +167,8 @@ struct DrawRenderPassDrawQuadParams {
   gfx::Transform window_matrix;
   gfx::Transform projection_matrix;
   gfx::Transform quad_to_target_transform;
+  const FilterOperations* filters = nullptr;
+  const FilterOperations* background_filters = nullptr;
 
   // |frame| is only used for background effects.
   DirectRenderer::DrawingFrame* frame = nullptr;
@@ -792,9 +794,12 @@ void GLRenderer::RestoreBlendFuncToDefault(SkBlendMode blend_mode) {
   }
 }
 
-bool GLRenderer::ShouldApplyBackgroundFilters(const RenderPassDrawQuad* quad) {
-  if (quad->background_filters.IsEmpty())
+bool GLRenderer::ShouldApplyBackgroundFilters(
+    const RenderPassDrawQuad* quad,
+    const FilterOperations* background_filters) {
+  if (!background_filters)
     return false;
+  DCHECK(!background_filters->IsEmpty());
 
   // TODO(hendrikw): Look into allowing background filters to see pixels from
   // other render targets.  See crbug.com/314867.
@@ -843,6 +848,8 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
     DrawingFrame* frame,
     const RenderPassDrawQuad* quad,
     const gfx::Transform& contents_device_transform,
+    const FilterOperations* filters,
+    const FilterOperations* background_filters,
     const gfx::QuadF* clip_region,
     bool use_aa,
     gfx::Rect* unclipped_rect) {
@@ -854,7 +861,7 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   gfx::Rect backdrop_rect = gfx::ToEnclosingRect(MathUtil::MapClippedRect(
       contents_device_transform, scaled_region.BoundingBox()));
 
-  if (ShouldApplyBackgroundFilters(quad)) {
+  if (ShouldApplyBackgroundFilters(quad, background_filters)) {
     SkMatrix matrix;
     matrix.setScale(quad->filters_scale.x(), quad->filters_scale.y());
     if (FlippedFramebuffer(frame)) {
@@ -863,8 +870,7 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
       // frame->window_matrix and contents_device_transform?
       matrix.postScale(1, -1);
     }
-    backdrop_rect =
-        quad->background_filters.MapRectReverse(backdrop_rect, matrix);
+    backdrop_rect = background_filters->MapRectReverse(backdrop_rect, matrix);
   }
 
   if (!backdrop_rect.IsEmpty() && use_aa) {
@@ -872,7 +878,8 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
     backdrop_rect.Inset(-kOutsetForAntialiasing, -kOutsetForAntialiasing);
   }
 
-  if (!quad->filters.IsEmpty()) {
+  if (filters) {
+    DCHECK(!filters->IsEmpty());
     // If we have filters, grab an extra one-pixel border around the
     // background, so texture edge clamping gives us a transparent border
     // in case the filter expands the result.
@@ -904,17 +911,18 @@ std::unique_ptr<ScopedResource> GLRenderer::GetBackdropTexture(
 
 sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
     const RenderPassDrawQuad* quad,
+    const FilterOperations& background_filters,
     ScopedResource* background_texture,
     const gfx::RectF& rect,
     const gfx::RectF& unclipped_rect) {
-  DCHECK(ShouldApplyBackgroundFilters(quad));
+  DCHECK(ShouldApplyBackgroundFilters(quad, &background_filters));
   auto use_gr_context = ScopedUseGrContext::Create(this);
 
   gfx::Vector2dF clipping_offset =
       (rect.top_right() - unclipped_rect.top_right()) +
       (rect.bottom_left() - unclipped_rect.bottom_left());
   sk_sp<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
-      quad->background_filters, gfx::SizeF(background_texture->size()),
+      background_filters, gfx::SizeF(background_texture->size()),
       clipping_offset);
 
   // TODO(senorblanco): background filters should be moved to the
@@ -1090,7 +1098,11 @@ bool GLRenderer::InitializeRPDQParameters(
   SkMatrix local_matrix;
   local_matrix.setTranslate(quad->filters_origin.x(), quad->filters_origin.y());
   local_matrix.postScale(quad->filters_scale.x(), quad->filters_scale.y());
-  gfx::Rect dst_rect = quad->filters.MapRect(quad->rect, local_matrix);
+  params->filters = FiltersForPass(quad->render_pass_id);
+  params->background_filters = BackgroundFiltersForPass(quad->render_pass_id);
+  gfx::Rect dst_rect = params->filters
+                           ? params->filters->MapRect(quad->rect, local_matrix)
+                           : quad->rect;
   params->dst_rect.SetRect(static_cast<float>(dst_rect.x()),
                            static_cast<float>(dst_rect.y()),
                            static_cast<float>(dst_rect.width()),
@@ -1131,7 +1143,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
   SkBlendMode blend_mode = quad->shared_quad_state->blend_mode;
   params->use_shaders_for_blending =
       !CanApplyBlendModeUsingBlendFunc(blend_mode) ||
-      ShouldApplyBackgroundFilters(quad) ||
+      ShouldApplyBackgroundFilters(quad, params->background_filters) ||
       settings_->force_blending_with_shaders;
 
   if (params->use_shaders_for_blending) {
@@ -1140,8 +1152,9 @@ void GLRenderer::UpdateRPDQShadersForBlending(
     // the quad.
     gfx::Rect unclipped_rect;
     params->background_rect = GetBackdropBoundingBoxForRenderPassQuad(
-        params->frame, quad, params->contents_device_transform,
-        params->clip_region, params->use_aa, &unclipped_rect);
+        params->frame, quad, params->contents_device_transform, params->filters,
+        params->background_filters, params->clip_region, params->use_aa,
+        &unclipped_rect);
 
     if (!params->background_rect.IsEmpty()) {
       // The pixels from the filtered background should completely replace the
@@ -1156,11 +1169,12 @@ void GLRenderer::UpdateRPDQShadersForBlending(
       params->background_texture =
           GetBackdropTexture(params->frame, params->background_rect);
 
-      if (ShouldApplyBackgroundFilters(quad) && params->background_texture) {
+      if (ShouldApplyBackgroundFilters(quad, params->background_filters) &&
+          params->background_texture) {
         // Apply the background filters to R, so that it is applied in the
         // pixels' coordinate space.
         params->background_image = ApplyBackgroundFilters(
-            quad, params->background_texture.get(),
+            quad, *params->background_filters, params->background_texture.get(),
             gfx::RectF(params->background_rect), gfx::RectF(unclipped_rect));
         if (params->background_image) {
           params->background_image_id =
@@ -1181,7 +1195,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
       if (!quad->mask_resource_id())
         params->background_texture.reset();
     } else if (CanApplyBlendModeUsingBlendFunc(blend_mode) &&
-               ShouldApplyBackgroundFilters(quad)) {
+               ShouldApplyBackgroundFilters(quad, params->background_filters)) {
       // Something went wrong with applying background filters to the backdrop.
       params->use_shaders_for_blending = false;
       params->background_texture.reset();
@@ -1200,9 +1214,10 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
     DrawRenderPassDrawQuadParams* params) {
   const RenderPassDrawQuad* quad = params->quad;
   // Apply filters to the contents texture.
-  if (!quad->filters.IsEmpty()) {
+  if (params->filters) {
+    DCHECK(!params->filters->IsEmpty());
     sk_sp<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
-        quad->filters, gfx::SizeF(params->contents_texture->size()));
+        *params->filters, gfx::SizeF(params->contents_texture->size()));
     if (filter) {
       SkColorFilter* colorfilter_rawptr = NULL;
       filter->asColorFilter(&colorfilter_rawptr);
