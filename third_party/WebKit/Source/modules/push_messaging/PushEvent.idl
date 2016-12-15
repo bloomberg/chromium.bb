@@ -9,5 +9,5 @@
     Exposed=ServiceWorker,
     RuntimeEnabled=PushMessaging,
 ] interface PushEvent : ExtendableEvent {
-    readonly attribute PushMessageData data;
+    readonly attribute PushMessageData? data;
 };

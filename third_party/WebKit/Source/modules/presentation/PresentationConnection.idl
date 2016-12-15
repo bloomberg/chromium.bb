@@ -13,7 +13,7 @@ enum PresentationConnectionState {
 [
     RuntimeEnabled=Presentation
 ] interface PresentationConnection : EventTarget {
-    readonly attribute DOMString? id;
+    readonly attribute DOMString id;
     readonly attribute PresentationConnectionState state;
     [MeasureAs=PresentationConnectionClose] void close();
     [MeasureAs=PresentationConnectionTerminate] void terminate();

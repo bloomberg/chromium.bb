@@ -25,5 +25,5 @@ interface ProcessingInstruction : CharacterData {
 
     // ProcessingInstruction implements LinkStyle
     // https://dev.w3.org/csswg/cssom/#requirements-on-user-agents-implementing-the-xml-stylesheet-processing-instruction
-    readonly attribute StyleSheet sheet;
+    readonly attribute StyleSheet? sheet;
 };
