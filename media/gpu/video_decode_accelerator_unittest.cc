@@ -49,6 +49,8 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/launcher/unit_test_launcher.h"
+#include "base/test/test_suite.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -192,7 +194,7 @@ void ReadGoldenThumbnailMD5s(const TestVideoFile* video_file,
   base::FilePath filepath(video_file->file_name);
   filepath = filepath.AddExtension(FILE_PATH_LITERAL(".md5"));
   std::string all_md5s;
-  base::ReadFileToString(filepath, &all_md5s);
+  base::ReadFileToString(base::MakeAbsoluteFilePath(filepath), &all_md5s);
   *md5_strings = base::SplitString(all_md5s, "\n", base::TRIM_WHITESPACE,
                                    base::SPLIT_WANT_ALL);
   // Check these are legitimate MD5s.
@@ -1185,7 +1187,8 @@ void VideoDecodeAcceleratorTest::ParseAndReadTestVideoData(
 
     // Read in the video data.
     base::FilePath filepath(video_file->file_name);
-    LOG_ASSERT(base::ReadFileToString(filepath, &video_file->data_str))
+    LOG_ASSERT(base::ReadFileToString(base::MakeAbsoluteFilePath(filepath),
+                                      &video_file->data_str))
         << "test_video_file: " << filepath.MaybeAsASCII();
 
     test_video_files->push_back(std::move(video_file));
@@ -1655,9 +1658,19 @@ INSTANTIATE_TEST_CASE_P(
                         false,
                         false)));
 
+// Allow MAYBE macro substitution.
+#define WRAPPED_INSTANTIATE_TEST_CASE_P(a, b, c) \
+  INSTANTIATE_TEST_CASE_P(a, b, c)
+
+#if defined(OS_WIN)
+// There are no reference images for windows.
+#define MAYBE_Thumbnail DISABLED_Thumbnail
+#else
+#define MAYBE_Thumbnail Thumbnail
+#endif
 // Thumbnailing test
-INSTANTIATE_TEST_CASE_P(
-    Thumbnail,
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    MAYBE_Thumbnail,
     VideoDecodeAcceleratorParamTest,
     ::testing::Values(
         std::make_tuple(1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false, true)));
@@ -1717,16 +1730,39 @@ TEST_F(VideoDecodeAcceleratorTest, TestDecodeTimeMedian) {
 // - Test failure conditions.
 // - Test frame size changes mid-stream
 
+class VDATestSuite : public base::TestSuite {
+ public:
+  VDATestSuite(int argc, char** argv) : base::TestSuite(argc, argv) {}
+
+  int Run() {
+#if defined(OS_WIN) || defined(USE_OZONE)
+    // For windows the decoding thread initializes the media foundation decoder
+    // which uses COM. We need the thread to be a UI thread.
+    // On Ozone, the backend initializes the event system using a UI
+    // thread.
+    base::MessageLoopForUI main_loop;
+#else
+    base::MessageLoop main_loop;
+#endif  // OS_WIN || USE_OZONE
+
+#if defined(USE_OZONE)
+    ui::OzonePlatform::InitializeForUI();
+#endif
+
+#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
+    media::VaapiWrapper::PreSandboxInitialization();
+#elif defined(OS_WIN)
+    media::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
+#endif
+    return base::TestSuite::Run();
+  }
+};
+
 }  // namespace
 }  // namespace media
 
 int main(int argc, char** argv) {
-  testing::InitGoogleTest(&argc, argv);  // Removes gtest-specific args.
-#if defined(OS_WIN)
-  base::CommandLine::InitUsingArgvForTesting(argc, argv);
-#else
-  base::CommandLine::Init(argc, argv);
-#endif
+  media::VDATestSuite test_suite(argc, argv);
 
   // Needed to enable DVLOG through --vmodule.
   logging::LoggingSettings settings;
@@ -1783,34 +1819,16 @@ int main(int argc, char** argv) {
       media::g_test_import = true;
       continue;
     }
-    LOG(FATAL) << "Unexpected switch: " << it->first << ":" << it->second;
   }
 
   base::ShadowingAtExitManager at_exit_manager;
-#if defined(OS_WIN) || defined(USE_OZONE)
-  // For windows the decoding thread initializes the media foundation decoder
-  // which uses COM. We need the thread to be a UI thread.
-  // On Ozone, the backend initializes the event system using a UI
-  // thread.
-  base::MessageLoopForUI main_loop;
-#else
-  base::MessageLoop main_loop;
-#endif  // OS_WIN || USE_OZONE
-
-#if defined(USE_OZONE)
-  ui::OzonePlatform::InitializeForUI();
-#endif
-
-#if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
-  media::VaapiWrapper::PreSandboxInitialization();
-#elif defined(OS_WIN)
-  media::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
-#endif
 
   media::g_env =
       reinterpret_cast<media::VideoDecodeAcceleratorTestEnvironment*>(
           testing::AddGlobalTestEnvironment(
               new media::VideoDecodeAcceleratorTestEnvironment()));
 
-  return RUN_ALL_TESTS();
+  return base::LaunchUnitTestsSerially(
+      argc, argv,
+      base::Bind(&media::VDATestSuite::Run, base::Unretained(&test_suite)));
 }
