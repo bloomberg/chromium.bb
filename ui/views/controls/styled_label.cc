@@ -256,15 +256,24 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
   base::string16 remaining_string = text_;
   StyleRanges::const_iterator current_range = style_ranges_.begin();
 
+  bool first_loop_iteration = true;
+
   // Iterate over the text, creating a bunch of labels and links and laying them
   // out in the appropriate positions.
   while (!remaining_string.empty()) {
-    // Don't put whitespace at beginning of a line with an exception for the
-    // first line (so the text's leading whitespace is respected).
-    if (x == 0 && line > 0) {
-      base::TrimWhitespace(remaining_string, base::TRIM_LEADING,
-                           &remaining_string);
+    if (x == 0 && !first_loop_iteration) {
+      if (remaining_string.front() == L'\n') {
+        // Wrapped to the next line on \n, remove it. Other whitespace,
+        // eg, spaces to indent next line, are preserved.
+        remaining_string.erase(0, 1);
+      } else {
+        // Wrapped on whitespace character or characters in the middle of the
+        // line - none of them are needed at the beginning of the next line.
+        base::TrimWhitespace(remaining_string, base::TRIM_LEADING,
+                             &remaining_string);
+      }
     }
+    first_loop_iteration = false;
 
     gfx::Range range(gfx::Range::InvalidRange());
     if (current_range != style_ranges_.end())
@@ -290,22 +299,18 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
                             gfx::WRAP_LONG_WORDS,
                             &substrings);
 
-    if (substrings.empty() || substrings[0].empty()) {
-      // Nothing fits on this line. Start a new line.
-      // If x is 0, first line may have leading whitespace that doesn't fit in a
-      // single line, so try trimming those. Otherwise there is no room for
-      // anything; abort.
-      if (x == 0) {
-        if (line == 0) {
-          base::TrimWhitespace(remaining_string, base::TRIM_LEADING,
-                               &remaining_string);
-          continue;
-        }
-        break;
-      }
-
+    if (substrings.empty()) {
+      // there is no room for anything; abort.
+      break;
+    }
+    if (substrings[0].empty()) {
       x = 0;
-      line++;
+      // Nothing fits on this line. Start a new line.
+      // As for the first line, don't advance line number so that it will be
+      // handled again at the beginning of the loop.
+      if (line > 0) {
+        ++line;
+      }
       continue;
     }
 
@@ -320,7 +325,7 @@ gfx::Size StyledLabel::CalculateAndDoLayout(int width, bool dry_run) {
         // If the chunk should not be wrapped, try to fit it entirely on the
         // next line.
         x = 0;
-        line++;
+        ++line;
         continue;
       }
 
