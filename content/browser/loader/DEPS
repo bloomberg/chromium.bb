@@ -20,6 +20,7 @@ specific_include_rules = {
     "+content/browser/loader/resource_message_delegate.h",
     "+content/browser/loader/resource_message_filter.h",
     "+content/browser/loader/resource_request_info_impl.h",
+    "+content/browser/loader/upload_progress_tracker.h",
     "+content/common/content_export.h",
     "+content/public/browser/resource_dispatcher_host_delegate.h",
     "+content/public/common/resource_response.h",
@@ -335,6 +336,10 @@ specific_include_rules = {
     "+content/common/url_loader.mojom.h",
     "+content/common/url_loader_factory.mojom.h",
     "+content/public/common/resource_response.h",
+  ],
+  "upload_progress_tracker\.(cc|h)": [
+    "-content",
+    "+content/browser/loader/upload_progress_tracker.h",
   ],
   "url_loader_factory_impl\.(cc|h)": [
     "-content",

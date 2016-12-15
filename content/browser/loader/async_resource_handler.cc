@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -23,6 +24,7 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
+#include "content/browser/loader/upload_progress_tracker.h"
 #include "content/common/resource_messages.h"
 #include "content/common/resource_request_completion_status.h"
 #include "content/common/view_messages.h"
@@ -43,8 +45,6 @@ namespace {
 static int kBufferSize = 1024 * 512;
 static int kMinAllocationSize = 1024 * 4;
 static int kMaxAllocationSize = 1024 * 32;
-// The interval for calls to ReportUploadProgress.
-static int kUploadProgressIntervalMsec = 100;
 
 // Used when kOptimizeLoadingIPCForSmallResources is enabled.
 // Small resource typically issues two Read call: one for the content itself
@@ -204,8 +204,6 @@ AsyncResourceHandler::AsyncResourceHandler(
       sent_received_response_msg_(false),
       sent_data_buffer_msg_(false),
       inlining_helper_(new InliningHelper),
-      last_upload_position_(0),
-      waiting_for_upload_progress_ack_(false),
       reported_transfer_size_(0) {
   DCHECK(GetRequestInfo()->requester_info()->IsRenderer());
   InitializeResourceBufferConstants();
@@ -247,44 +245,8 @@ void AsyncResourceHandler::OnDataReceivedACK(int request_id) {
 }
 
 void AsyncResourceHandler::OnUploadProgressACK(int request_id) {
-  waiting_for_upload_progress_ack_ = false;
-}
-
-void AsyncResourceHandler::ReportUploadProgress() {
-  DCHECK(GetRequestInfo()->is_upload_progress_enabled());
-  if (waiting_for_upload_progress_ack_)
-    return;  // Send one progress event at a time.
-
-  net::UploadProgress progress = request()->GetUploadProgress();
-  if (!progress.size())
-    return;  // Nothing to upload.
-
-  if (progress.position() == last_upload_position_)
-    return;  // No progress made since last time.
-
-  const uint64_t kHalfPercentIncrements = 200;
-  const TimeDelta kOneSecond = TimeDelta::FromMilliseconds(1000);
-
-  uint64_t amt_since_last = progress.position() - last_upload_position_;
-  TimeDelta time_since_last = TimeTicks::Now() - last_upload_ticks_;
-
-  bool is_finished = (progress.size() == progress.position());
-  bool enough_new_progress =
-      (amt_since_last > (progress.size() / kHalfPercentIncrements));
-  bool too_much_time_passed = time_since_last > kOneSecond;
-
-  if (is_finished || enough_new_progress || too_much_time_passed) {
-    ResourceMessageFilter* filter = GetFilter();
-    if (filter) {
-      filter->Send(
-        new ResourceMsg_UploadProgress(GetRequestID(),
-                                       progress.position(),
-                                       progress.size()));
-    }
-    waiting_for_upload_progress_ack_ = true;
-    last_upload_ticks_ = TimeTicks::Now();
-    last_upload_position_ = progress.position();
-  }
+  if (upload_progress_tracker_)
+    upload_progress_tracker_->OnAckReceived();
 }
 
 bool AsyncResourceHandler::OnRequestRedirected(
@@ -321,24 +283,23 @@ bool AsyncResourceHandler::OnResponseStarted(ResourceResponse* response,
 
   response_started_ticks_ = base::TimeTicks::Now();
 
-  progress_timer_.Stop();
-  ResourceMessageFilter* filter = GetFilter();
-  if (!filter)
-    return false;
-
-  const ResourceRequestInfoImpl* info = GetRequestInfo();
   // We want to send a final upload progress message prior to sending the
   // response complete message even if we're waiting for an ack to to a
   // previous upload progress message.
-  if (info->is_upload_progress_enabled()) {
-    waiting_for_upload_progress_ack_ = false;
-    ReportUploadProgress();
+  if (upload_progress_tracker_) {
+    upload_progress_tracker_->OnUploadCompleted();
+    upload_progress_tracker_ = nullptr;
   }
 
+  const ResourceRequestInfoImpl* info = GetRequestInfo();
   if (rdh_->delegate()) {
     rdh_->delegate()->OnResponseStarted(request(), info->GetContext(),
                                         response);
   }
+
+  ResourceMessageFilter* filter = GetFilter();
+  if (!filter)
+    return false;
 
   NetLogObserver::PopulateResponseInfo(request(), response);
   response->head.encoded_data_length = request()->raw_header_size();
@@ -369,14 +330,17 @@ bool AsyncResourceHandler::OnResponseStarted(ResourceResponse* response,
 }
 
 bool AsyncResourceHandler::OnWillStart(const GURL& url, bool* defer) {
+  ResourceMessageFilter* filter = GetFilter();
+  if (!filter)
+    return false;
+
   if (GetRequestInfo()->is_upload_progress_enabled() &&
       request()->has_upload()) {
-    ReportUploadProgress();
-    progress_timer_.Start(
+    upload_progress_tracker_ = base::MakeUnique<UploadProgressTracker>(
         FROM_HERE,
-        base::TimeDelta::FromMilliseconds(kUploadProgressIntervalMsec),
-        this,
-        &AsyncResourceHandler::ReportUploadProgress);
+        base::BindRepeating(&AsyncResourceHandler::SendUploadProgress,
+                            base::Unretained(this)),
+        request());
   }
   return true;
 }
@@ -472,6 +436,14 @@ void AsyncResourceHandler::OnResponseCompleted(
   ResourceMessageFilter* filter = GetFilter();
   if (!filter)
     return;
+
+  // Ensure sending the final upload progress message here, since
+  // OnResponseCompleted can be called without OnResponseStarted on cancellation
+  // or error cases.
+  if (upload_progress_tracker_) {
+    upload_progress_tracker_->OnUploadCompleted();
+    upload_progress_tracker_ = nullptr;
+  }
 
   // If we crash here, figure out what URL the renderer was requesting.
   // http://crbug.com/107692
@@ -579,6 +551,15 @@ void AsyncResourceHandler::RecordHistogram() {
   }
 
   inlining_helper_->RecordHistogram(elapsed_time);
+}
+
+void AsyncResourceHandler::SendUploadProgress(int64_t current_position,
+                                              int64_t total_size) {
+  ResourceMessageFilter* filter = GetFilter();
+  if (!filter)
+    return;
+  filter->Send(new ResourceMsg_UploadProgress(
+      GetRequestID(), current_position, total_size));
 }
 
 }  // namespace content
