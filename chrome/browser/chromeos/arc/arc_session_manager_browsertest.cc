@@ -84,7 +84,7 @@ class ArcSessionManagerShutdownObserver : public ArcSessionManager::Observer {
   }
 
   // ArcSessionManager::Observer:
-  void OnShutdownBridge() override {
+  void OnArcBridgeShutdown() override {
     if (!run_loop_)
       return;
     run_loop_->Quit();

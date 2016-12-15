@@ -104,13 +104,13 @@ class ArcSessionManager : public ArcService,
     virtual ~Observer() = default;
 
     // Called to notify that ARC bridge is shut down.
-    virtual void OnShutdownBridge() {}
+    virtual void OnArcBridgeShutdown() {}
 
     // Called to notify that ARC enabled state has been updated.
-    virtual void OnOptInEnabled(bool enabled) {}
+    virtual void OnArcOptInChanged(bool enabled) {}
 
     // Called to notify that ARC has been initialized successfully.
-    virtual void OnInitialStart() {}
+    virtual void OnArcInitialStart() {}
 
     // Called to notify that Android data has been removed. Used in
     // browser_tests

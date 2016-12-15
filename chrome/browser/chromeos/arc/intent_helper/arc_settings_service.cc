@@ -102,7 +102,7 @@ class ArcSettingsServiceImpl
                              bool powered) override;
 
   // ArcSessionManager::Observer:
-  void OnInitialStart() override;
+  void OnArcInitialStart() override;
 
   // NetworkStateHandlerObserver:
   void DefaultNetworkChanged(const chromeos::NetworkState* network) override;
@@ -224,7 +224,7 @@ void ArcSettingsServiceImpl::OnBluetoothAdapterInitialized(
   AdapterPoweredChanged(adapter.get(), adapter->IsPowered());
 }
 
-void ArcSettingsServiceImpl::OnInitialStart() {
+void ArcSettingsServiceImpl::OnArcInitialStart() {
   SyncInitialSettings();
 }
 

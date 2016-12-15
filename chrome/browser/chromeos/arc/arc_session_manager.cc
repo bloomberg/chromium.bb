@@ -327,7 +327,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
     }
 
     for (auto& observer : observer_list_)
-      observer.OnInitialStart();
+      observer.OnArcInitialStart();
     return;
   }
 
@@ -535,7 +535,7 @@ void ArcSessionManager::OnOptInPreferenceChanged() {
 
   const bool arc_enabled = IsArcEnabled();
   for (auto& observer : observer_list_)
-    observer.OnOptInEnabled(arc_enabled);
+    observer.OnArcOptInChanged(arc_enabled);
 
   if (!arc_enabled) {
     // Reset any pending request to re-enable Arc.
@@ -622,7 +622,7 @@ void ArcSessionManager::ShutdownBridge() {
   if (state_ != State::NOT_INITIALIZED && state_ != State::REMOVING_DATA_DIR)
     SetState(State::STOPPED);
   for (auto& observer : observer_list_)
-    observer.OnShutdownBridge();
+    observer.OnArcBridgeShutdown();
 }
 
 void ArcSessionManager::AddObserver(Observer* observer) {

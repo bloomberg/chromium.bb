@@ -140,7 +140,7 @@ void ArcAppDeferredLauncherController::OnAppRemoved(const std::string& app_id) {
   Close(app_id);
 }
 
-void ArcAppDeferredLauncherController::OnOptInEnabled(bool enabled) {
+void ArcAppDeferredLauncherController::OnArcOptInChanged(bool enabled) {
   if (enabled)
     return;
 

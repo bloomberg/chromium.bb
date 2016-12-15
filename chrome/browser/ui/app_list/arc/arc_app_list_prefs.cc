@@ -269,7 +269,7 @@ void ArcAppListPrefs::StartPrefs() {
 
   if (arc_session_manager->state() !=
       arc::ArcSessionManager::State::NOT_INITIALIZED)
-    OnOptInEnabled(arc_session_manager->IsArcEnabled());
+    OnArcOptInChanged(arc_session_manager->IsArcEnabled());
   arc_session_manager->AddObserver(this);
 
   app_instance_holder_->AddObserver(this);
@@ -593,7 +593,7 @@ void ArcAppListPrefs::RemoveAllApps() {
   DCHECK(ready_apps_.empty());
 }
 
-void ArcAppListPrefs::OnOptInEnabled(bool enabled) {
+void ArcAppListPrefs::OnArcOptInChanged(bool enabled) {
   UpdateDefaultAppsHiddenState();
 
   if (enabled)
