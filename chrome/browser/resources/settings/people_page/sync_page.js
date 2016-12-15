@@ -292,6 +292,14 @@ Polymer({
   },
 
   /**
+   * @param {!Event} e
+   * @private
+   */
+  onSyncLearnMoreTap_: function(e) {
+    e.stopPropagation();
+  },
+
+  /**
    * Sends the newly created custom sync passphrase to the browser.
    * @private
    */
