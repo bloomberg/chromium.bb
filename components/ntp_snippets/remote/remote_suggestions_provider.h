@@ -11,6 +11,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -47,20 +48,65 @@ namespace ntp_snippets {
 class RemoteSuggestionsDatabase;
 class UserClassifier;
 
+// CachedImageFetcher takes care of fetching images from the network and caching
+// them in the database.
+// TODO(tschumann): Move into a separate library and inject the
+// CachedImageFetcher into the RemoteSuggestionsProvider. This allows us to get
+// rid of exposing this member for testing and lets us test the caching logic
+// separately.
+class CachedImageFetcher : public image_fetcher::ImageFetcherDelegate {
+ public:
+  // |pref_service| and |database| need to outlive the created image fetcher
+  // instance.
+  CachedImageFetcher(std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
+                     std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
+                     PrefService* pref_service,
+                     RemoteSuggestionsDatabase* database);
+  ~CachedImageFetcher() override;
+
+  // Fetches the image for a suggestion. The fetcher will first issue a lookup
+  // to the underlying cache with a fallback to the network.
+  void FetchSuggestionImage(const ContentSuggestion::ID& suggestion_id,
+                            const GURL& image_url,
+                            const ImageFetchedCallback& callback);
+
+ private:
+  // image_fetcher::ImageFetcherDelegate implementation.
+  void OnImageDataFetched(const std::string& id_within_category,
+                          const std::string& image_data) override;
+  void OnImageDecodingDone(const ImageFetchedCallback& callback,
+                           const std::string& id_within_category,
+                           const gfx::Image& image);
+  void OnSnippetImageFetchedFromDatabase(
+      const ImageFetchedCallback& callback,
+      const ContentSuggestion::ID& suggestion_id,
+      const GURL& image_url,
+      // SnippetImageCallback requires nonconst reference
+      std::string data);
+  void OnSnippetImageDecodedFromDatabase(
+      const ImageFetchedCallback& callback,
+      const ContentSuggestion::ID& suggestion_id,
+      const GURL& url,
+      const gfx::Image& image);
+  void FetchSnippetImageFromNetwork(const ContentSuggestion::ID& suggestion_id,
+                                    const GURL& url,
+                                    const ImageFetchedCallback& callback);
+
+  std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
+  std::unique_ptr<image_fetcher::ImageDecoder> image_decoder_;
+  RemoteSuggestionsDatabase* database_;
+  // Request throttler for limiting requests to thumbnail images.
+  RequestThrottler thumbnail_requests_throttler_;
+
+  DISALLOW_COPY_AND_ASSIGN(CachedImageFetcher);
+};
+
 // Retrieves fresh content data (articles) from the server, stores them and
 // provides them as content suggestions.
 // This class is final because it does things in its constructor which make it
 // unsafe to derive from it.
 // TODO(treib): Introduce two-phase initialization and make the class not final?
-// TODO(jkrcal): this class grows really, really large. The fact that
-// NTPSnippetService also implements ImageFetcherDelegate adds unnecessary
-// complexity (and after all the Service is conceptually not an
-// ImagerFetcherDeletage ;-)). Instead, the cleaner solution would  be to define
-// a CachedImageFetcher class that handles the caching aspects and looks like an
-// image fetcher to the NTPSnippetService.
-class RemoteSuggestionsProvider final
-    : public ContentSuggestionsProvider,
-      public image_fetcher::ImageFetcherDelegate {
+class RemoteSuggestionsProvider final : public ContentSuggestionsProvider {
  public:
   // |application_language_code| should be a ISO 639-1 compliant string, e.g.
   // 'en' or 'en-US'. Note that this code should only specify the language, not
@@ -150,6 +196,10 @@ class RemoteSuggestionsProvider final
   void SetClockForTesting(std::unique_ptr<base::Clock> clock) {
     clock_ = std::move(clock);
   }
+
+  // TODO(tschumann): remove this method as soon as we inject the fetcher into
+  // the constructor.
+  CachedImageFetcher& GetImageFetcherForTesting() { return image_fetcher_; }
 
  private:
   friend class RemoteSuggestionsProviderTest;
@@ -250,10 +300,6 @@ class RemoteSuggestionsProvider final
   // otherwise.
   GURL FindSnippetImageUrl(const ContentSuggestion::ID& suggestion_id) const;
 
-  // image_fetcher::ImageFetcherDelegate implementation.
-  void OnImageDataFetched(const std::string& id_within_category,
-                          const std::string& image_data) override;
-
   // Callbacks for the RemoteSuggestionsDatabase.
   void OnDatabaseLoaded(NTPSnippet::PtrVector snippets);
   void OnDatabaseError();
@@ -307,23 +353,6 @@ class RemoteSuggestionsProvider final
   // Completes the initialization phase of the service, registering the last
   // observers. This is done after construction, once the database is loaded.
   void FinishInitialization();
-
-  void OnSnippetImageFetchedFromDatabase(
-      const ImageFetchedCallback& callback,
-      const ContentSuggestion::ID& suggestion_id,
-      std::string data);
-
-  void OnSnippetImageDecodedFromDatabase(
-      const ImageFetchedCallback& callback,
-      const ContentSuggestion::ID& suggestion_id,
-      const gfx::Image& image);
-
-  void FetchSnippetImageFromNetwork(const ContentSuggestion::ID& suggestion_id,
-                                    const ImageFetchedCallback& callback);
-
-  void OnSnippetImageDecodedFromNetwork(const ImageFetchedCallback& callback,
-                                        const std::string& id_within_category,
-                                        const gfx::Image& image);
 
   // Triggers a state transition depending on the provided status. This method
   // is called when a change is detected by |status_service_|.
@@ -388,12 +417,12 @@ class RemoteSuggestionsProvider final
   // The snippets fetcher.
   std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher_;
 
-  std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
-  std::unique_ptr<image_fetcher::ImageDecoder> image_decoder_;
-
   // The database for persisting snippets.
   std::unique_ptr<RemoteSuggestionsDatabase> database_;
   base::TimeTicks database_load_start_;
+
+  // The image fetcher.
+  CachedImageFetcher image_fetcher_;
 
   // The service that provides events and data about the signin and sync state.
   std::unique_ptr<RemoteSuggestionsStatusService> status_service_;
@@ -406,9 +435,6 @@ class RemoteSuggestionsProvider final
   // The nuke will be executed once the service finishes initialization or
   // enters the READY state.
   bool nuke_when_initialized_;
-
-  // Request throttler for limiting requests to thumbnail images.
-  RequestThrottler thumbnail_requests_throttler_;
 
   // A clock for getting the time. This allows to inject a clock in tests.
   std::unique_ptr<base::Clock> clock_;
