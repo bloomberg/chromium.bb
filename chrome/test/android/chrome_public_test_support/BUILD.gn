@@ -6,6 +6,8 @@ import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 
 android_apk("chrome_public_test_support_apk") {
+  # Used as an additional_apk in test scripts.
+  never_incremental = true
   deps = [
     "//chrome/test/android/cast_emulator:cast_emulator",
   ]

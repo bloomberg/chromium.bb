@@ -6,6 +6,8 @@ import("//build/config/android/rules.gni")
 
 # Implements service which uses {@link WebApkServiceImpl} for testing.
 android_apk("apk_with_webapk_service") {
+  # Used as an additional_apk in test scripts.
+  never_incremental = true
   android_manifest = "AndroidManifest.xml"
   apk_name = "ApkWithWebApkService"
   java_files = [ "src/org/chromium/webapk/lib/runtime_library/test/TestWebApkServiceImplWrapper.java" ]

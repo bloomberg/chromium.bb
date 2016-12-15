@@ -41,7 +41,7 @@ template("chrome_public_apk_tmpl") {
         rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)
     native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
     native_lib_version_rule = "//build/util:chrome_version_json"
-    
+
     if (is_java_debug) {
       enable_multidex = true
     } else {
@@ -98,6 +98,9 @@ template("monochrome_public_apk_tmpl") {
     requires_sdk_api_level_23 = true
     enable_relocation_packing = true
     extensions_to_not_compress = ".lpak,.pak,.bin,.dat"
+
+    # Incremental install doesn't work for monochrome. See crbug.com/663492.
+    never_incremental = true
 
     # Configrations to make android load shared library from APK.
     uncompress_shared_libraries = true
