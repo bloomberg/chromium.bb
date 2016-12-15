@@ -24,15 +24,13 @@ class WorkletThreadHolder {
     return s_threadHolderInstance;
   }
 
-  static void ensureInstance(const char* threadName,
-                             BlinkGC::ThreadHeapMode threadHeapMode) {
+  static void ensureInstance(const char* threadName) {
     DCHECK(isMainThread());
     MutexLocker locker(holderInstanceMutex());
     if (s_threadHolderInstance)
       return;
     s_threadHolderInstance = new WorkletThreadHolder<DerivedWorkletThread>;
-    s_threadHolderInstance->initialize(
-        WorkerBackingThread::create(threadName, threadHeapMode));
+    s_threadHolderInstance->initialize(WorkerBackingThread::create(threadName));
   }
 
   static void ensureInstance(WebThread* thread) {
@@ -44,13 +42,12 @@ class WorkletThreadHolder {
     s_threadHolderInstance->initialize(WorkerBackingThread::create(thread));
   }
 
-  static void createForTest(const char* threadName,
-                            BlinkGC::ThreadHeapMode threadHeapMode) {
+  static void createForTest(const char* threadName) {
     MutexLocker locker(holderInstanceMutex());
     DCHECK(!s_threadHolderInstance);
     s_threadHolderInstance = new WorkletThreadHolder<DerivedWorkletThread>;
     s_threadHolderInstance->initialize(
-        WorkerBackingThread::createForTest(threadName, threadHeapMode));
+        WorkerBackingThread::createForTest(threadName));
   }
 
   static void createForTest(WebThread* thread) {

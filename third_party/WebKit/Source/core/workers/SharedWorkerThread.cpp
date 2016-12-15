@@ -51,9 +51,7 @@ SharedWorkerThread::SharedWorkerThread(
     PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
     WorkerReportingProxy& workerReportingProxy)
     : WorkerThread(std::move(workerLoaderProxy), workerReportingProxy),
-      m_workerBackingThread(
-          WorkerBackingThread::create("SharedWorker Thread",
-                                      BlinkGC::PerThreadHeapMode)),
+      m_workerBackingThread(WorkerBackingThread::create("SharedWorker Thread")),
       m_name(name.isolatedCopy()) {}
 
 SharedWorkerThread::~SharedWorkerThread() {}

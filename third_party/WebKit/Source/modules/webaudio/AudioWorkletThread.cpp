@@ -63,8 +63,7 @@ void AudioWorkletThread::collectAllGarbage() {
 
 void AudioWorkletThread::ensureSharedBackingThread() {
   DCHECK(isMainThread());
-  WorkletThreadHolder<AudioWorkletThread>::ensureInstance(
-      "AudioWorkletThread", BlinkGC::PerThreadHeapMode);
+  WorkletThreadHolder<AudioWorkletThread>::ensureInstance("AudioWorkletThread");
 }
 
 void AudioWorkletThread::clearSharedBackingThread() {
@@ -73,8 +72,7 @@ void AudioWorkletThread::clearSharedBackingThread() {
 }
 
 void AudioWorkletThread::createSharedBackingThreadForTest() {
-  WorkletThreadHolder<AudioWorkletThread>::createForTest(
-      "AudioWorkletThread", BlinkGC::PerThreadHeapMode);
+  WorkletThreadHolder<AudioWorkletThread>::createForTest("AudioWorkletThread");
 }
 
 WorkerOrWorkletGlobalScope* AudioWorkletThread::createWorkerGlobalScope(

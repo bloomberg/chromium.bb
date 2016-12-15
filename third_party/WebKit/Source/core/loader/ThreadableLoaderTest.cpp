@@ -98,7 +98,6 @@ KURL redirectLoopURL() {
 enum ThreadableLoaderToTest {
   DocumentThreadableLoaderTest,
   WorkerThreadableLoaderTest,
-  PerThreadHeapEnabledWorkerThreadableLoaderTest
 };
 
 class ThreadableLoaderTestHelper {
@@ -168,10 +167,8 @@ class DocumentThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
 class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
                                          public WorkerLoaderProxyProvider {
  public:
-  explicit WorkerThreadableLoaderTestHelper(
-      BlinkGC::ThreadHeapMode threadHeapMode)
-      : m_dummyPageHolder(DummyPageHolder::create(IntSize(1, 1))),
-        m_threadHeapMode(threadHeapMode) {}
+  WorkerThreadableLoaderTestHelper()
+      : m_dummyPageHolder(DummyPageHolder::create(IntSize(1, 1))) {}
 
   void createLoader(
       ThreadableLoaderClient* client,
@@ -242,8 +239,8 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
     m_securityOrigin = document().getSecurityOrigin();
     m_parentFrameTaskRunners =
         ParentFrameTaskRunners::create(&m_dummyPageHolder->frame());
-    m_workerThread = WTF::wrapUnique(new WorkerThreadForTest(
-        this, *m_mockWorkerReportingProxy, m_threadHeapMode));
+    m_workerThread = WTF::wrapUnique(
+        new WorkerThreadForTest(this, *m_mockWorkerReportingProxy));
 
     expectWorkerLifetimeReportingCalls();
     m_workerThread->startWithSourceCode(m_securityOrigin.get(),
@@ -355,7 +352,6 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper,
   Checkpoint m_checkpoint;
   // |m_loader| must be touched only from the worker thread only.
   CrossThreadPersistent<ThreadableLoader> m_loader;
-  const BlinkGC::ThreadHeapMode m_threadHeapMode;
 };
 
 class ThreadableLoaderTest
@@ -367,12 +363,7 @@ class ThreadableLoaderTest
         m_helper = WTF::wrapUnique(new DocumentThreadableLoaderTestHelper);
         break;
       case WorkerThreadableLoaderTest:
-        m_helper = WTF::wrapUnique(
-            new WorkerThreadableLoaderTestHelper(BlinkGC::MainThreadHeapMode));
-        break;
-      case PerThreadHeapEnabledWorkerThreadableLoaderTest:
-        m_helper = WTF::wrapUnique(
-            new WorkerThreadableLoaderTestHelper(BlinkGC::PerThreadHeapMode));
+        m_helper = WTF::wrapUnique(new WorkerThreadableLoaderTestHelper());
         break;
     }
   }
@@ -473,11 +464,6 @@ INSTANTIATE_TEST_CASE_P(Document,
 INSTANTIATE_TEST_CASE_P(Worker,
                         ThreadableLoaderTest,
                         ::testing::Values(WorkerThreadableLoaderTest));
-
-INSTANTIATE_TEST_CASE_P(
-    PerThreadHeapEnabledWorker,
-    ThreadableLoaderTest,
-    ::testing::Values(PerThreadHeapEnabledWorkerThreadableLoaderTest));
 
 TEST_P(ThreadableLoaderTest, StartAndStop) {}
 

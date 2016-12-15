@@ -45,9 +45,9 @@ static void removeWorkerIsolate(v8::Isolate* isolate) {
 }
 
 WorkerBackingThread::WorkerBackingThread(const char* name,
-                                         bool shouldCallGCOnShutdown,
-                                         BlinkGC::ThreadHeapMode threadHeapMode)
-    : m_backingThread(WebThreadSupportingGC::create(name, threadHeapMode)),
+                                         bool shouldCallGCOnShutdown)
+    : m_backingThread(
+          WebThreadSupportingGC::create(name, BlinkGC::PerThreadHeapMode)),
       m_isOwningThread(true),
       m_shouldCallGCOnShutdown(shouldCallGCOnShutdown) {}
 

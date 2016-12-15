@@ -50,8 +50,7 @@ ServiceWorkerThread::ServiceWorkerThread(
     WorkerReportingProxy& workerReportingProxy)
     : WorkerThread(std::move(workerLoaderProxy), workerReportingProxy),
       m_workerBackingThread(
-          WorkerBackingThread::create("ServiceWorker Thread",
-                                      BlinkGC::PerThreadHeapMode)) {}
+          WorkerBackingThread::create("ServiceWorker Thread")) {}
 
 ServiceWorkerThread::~ServiceWorkerThread() {}
 

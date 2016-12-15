@@ -54,8 +54,7 @@ DedicatedWorkerThread::DedicatedWorkerThread(
     double timeOrigin)
     : WorkerThread(std::move(workerLoaderProxy), workerObjectProxy),
       m_workerBackingThread(
-          WorkerBackingThread::create("DedicatedWorker Thread",
-                                      BlinkGC::PerThreadHeapMode)),
+          WorkerBackingThread::create("DedicatedWorker Thread")),
       m_workerObjectProxy(workerObjectProxy),
       m_timeOrigin(timeOrigin) {}
 

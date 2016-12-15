@@ -119,13 +119,11 @@ class MockWorkerThreadLifecycleObserver final
 class WorkerThreadForTest : public WorkerThread {
  public:
   WorkerThreadForTest(WorkerLoaderProxyProvider* mockWorkerLoaderProxyProvider,
-                      WorkerReportingProxy& mockWorkerReportingProxy,
-                      BlinkGC::ThreadHeapMode threadHeapMode)
+                      WorkerReportingProxy& mockWorkerReportingProxy)
       : WorkerThread(WorkerLoaderProxy::create(mockWorkerLoaderProxyProvider),
                      mockWorkerReportingProxy),
         m_workerBackingThread(
-            WorkerBackingThread::createForTest("Test thread", threadHeapMode)) {
-  }
+            WorkerBackingThread::createForTest("Test thread")) {}
 
   ~WorkerThreadForTest() override {}
 
