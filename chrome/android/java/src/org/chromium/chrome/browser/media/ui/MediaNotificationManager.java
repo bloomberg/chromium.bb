@@ -270,6 +270,7 @@ public class MediaNotificationManager {
      */
     public static final class PlaybackListenerService extends ListenerService {
         private static final int NOTIFICATION_ID = R.id.media_playback_notification;
+        private static final String NOTIFICATION_GROUP_NAME = "MediaPlayback";
 
         @Override
         public void onCreate() {
@@ -309,6 +310,7 @@ public class MediaNotificationManager {
      */
     public static final class PresentationListenerService extends ListenerService {
         private static final int NOTIFICATION_ID = R.id.presentation_notification;
+        private static final String NOTIFICATION_GROUP_NAME = "MediaPresentation";
 
         @Override
         @Nullable
@@ -322,6 +324,7 @@ public class MediaNotificationManager {
      */
     public static final class CastListenerService extends ListenerService {
         private static final int NOTIFICATION_ID = R.id.remote_notification;
+        private static final String NOTIFICATION_GROUP_NAME = "MediaRemote";
 
         @Override
         @Nullable
@@ -383,14 +386,24 @@ public class MediaNotificationManager {
     private String getButtonReceiverClassName() {
         if (mMediaNotificationInfo.id == PlaybackListenerService.NOTIFICATION_ID) {
             return PlaybackMediaButtonReceiver.class.getName();
-        }
-
-        if (mMediaNotificationInfo.id == PresentationListenerService.NOTIFICATION_ID) {
+        } else if (mMediaNotificationInfo.id == PresentationListenerService.NOTIFICATION_ID) {
             return PresentationMediaButtonReceiver.class.getName();
+        } else if (mMediaNotificationInfo.id == CastListenerService.NOTIFICATION_ID) {
+            return CastMediaButtonReceiver.class.getName();
         }
 
-        if (mMediaNotificationInfo.id == CastListenerService.NOTIFICATION_ID) {
-            return CastMediaButtonReceiver.class.getName();
+        assert false;
+        return null;
+    }
+
+    // Returns the notification group name used to prevent automatic grouping.
+    private String getNotificationGroupName() {
+        if (mMediaNotificationInfo.id == PlaybackListenerService.NOTIFICATION_ID) {
+            return PlaybackListenerService.NOTIFICATION_GROUP_NAME;
+        } else if (mMediaNotificationInfo.id == PresentationListenerService.NOTIFICATION_ID) {
+            return PresentationListenerService.NOTIFICATION_GROUP_NAME;
+        } else if (mMediaNotificationInfo.id == CastListenerService.NOTIFICATION_ID) {
+            return CastListenerService.NOTIFICATION_GROUP_NAME;
         }
 
         assert false;
@@ -717,6 +730,8 @@ public class MediaNotificationManager {
         mNotificationBuilder.setSmallIcon(mMediaNotificationInfo.icon);
         mNotificationBuilder.setAutoCancel(false);
         mNotificationBuilder.setLocalOnly(true);
+        mNotificationBuilder.setGroup(getNotificationGroupName());
+        mNotificationBuilder.setGroupSummary(true);
 
         if (mMediaNotificationInfo.supportsSwipeAway()) {
             mNotificationBuilder.setOngoing(!mMediaNotificationInfo.isPaused);
