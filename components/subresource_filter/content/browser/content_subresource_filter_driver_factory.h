@@ -61,7 +61,6 @@ class ContentSubresourceFilterDriverFactory
       content::RenderFrameHost* render_frame_host);
 
   bool IsWhitelisted(const GURL& url) const;
-  bool IsBlacklisted(const GURL& url) const;
 
   // Whitelists the host of |url|, so that page loads with the main-frame
   // document being loaded from this host will be exempted from subresource

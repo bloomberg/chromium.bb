@@ -117,11 +117,14 @@ void ContentSubresourceFilterDriverFactory::AddHostOfURLToWhitelistSet(
 
 bool ContentSubresourceFilterDriverFactory::ShouldActivateForMainFrameURL(
     const GURL& url) const {
-  if (GetCurrentActivationScope() == ActivationScope::ALL_SITES)
-    return !IsWhitelisted(url);
-  else if (GetCurrentActivationScope() == ActivationScope::ACTIVATION_LIST)
-    return DidURLMatchCurrentActivationList(url) && !IsWhitelisted(url);
-  return false;
+  switch (GetCurrentActivationScope()) {
+    case ActivationScope::ALL_SITES:
+      return !IsWhitelisted(url);
+    case ActivationScope::ACTIVATION_LIST:
+      return DidURLMatchCurrentActivationList(url) && !IsWhitelisted(url);
+    default:
+      return false;
+  }
 }
 
 void ContentSubresourceFilterDriverFactory::ActivateForFrameHostIfNeeded(
