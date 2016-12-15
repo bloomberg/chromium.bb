@@ -180,20 +180,36 @@ IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
       base::Closure(), content::BackgroundTracingManager::NO_DATA_FILTERING));
 }
 
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on ASAN on Mac. See https://crbug.com/674497.
+#define MAYBE_ExistingIncognitoSessionBlockingTraceStart \
+  DISABLED_ExistingIncognitoSessionBlockingTraceStart
+#else
+#define MAYBE_ExistingIncognitoSessionBlockingTraceStart \
+  ExistingIncognitoSessionBlockingTraceStart
+#endif
 // If we need a PII-stripped trace, any existing OTR session should block the
 // trace.
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
-                       ExistingIncognitoSessionBlockingTraceStart) {
+                       MAYBE_ExistingIncognitoSessionBlockingTraceStart) {
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_NEW_INCOGNITO_WINDOW));
   EXPECT_TRUE(BrowserList::IsIncognitoSessionActive());
   EXPECT_FALSE(StartPreemptiveScenario(
       base::Closure(), content::BackgroundTracingManager::ANONYMIZE_DATA));
 }
 
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on ASAN on Mac. See https://crbug.com/674497.
+#define MAYBE_NewIncognitoSessionBlockingTraceFinalization \
+  DISABLED_NewIncognitoSessionBlockingTraceFinalization
+#else
+#define MAYBE_NewIncognitoSessionBlockingTraceFinalization \
+  NewIncognitoSessionBlockingTraceFinalization
+#endif
 // If we need a PII-stripped trace, any new OTR session during tracing should
 // block the finalization of the trace.
 IN_PROC_BROWSER_TEST_F(ChromeTracingDelegateBrowserTest,
-                       NewIncognitoSessionBlockingTraceFinalization) {
+                       MAYBE_NewIncognitoSessionBlockingTraceFinalization) {
   EXPECT_TRUE(StartPreemptiveScenario(
       base::Closure(), content::BackgroundTracingManager::ANONYMIZE_DATA));
 

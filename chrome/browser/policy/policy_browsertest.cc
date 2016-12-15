@@ -2094,7 +2094,13 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, HomepageLocation) {
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), contents->GetURL());
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, IncognitoEnabled) {
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on ASAN on Mac. See https://crbug.com/674497.
+#define MAYBE_IncognitoEnabled DISABLED_IncognitoEnabled
+#else
+#define MAYBE_IncognitoEnabled IncognitoEnabled
+#endif
+IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_IncognitoEnabled) {
   // Verifies that incognito windows can't be opened when disabled by policy.
 
   const BrowserList* active_browser_list = BrowserList::GetInstance();

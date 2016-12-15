@@ -11,8 +11,14 @@ typedef options::OptionsUIBrowserTest ContentSettingsExceptionsAreaBrowserTest;
 // open. If this test fails it could indicate that a new content setting has
 // been added but is not being dealt with correctly by the content settings
 // handling WebUI code.
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on ASAN on Mac. See https://crbug.com/674497.
+#define MAYBE_OpenIncognitoWindow DISABLED_OpenIncognitoWindow
+#else
+#define MAYBE_OpenIncognitoWindow OpenIncognitoWindow
+#endif
 IN_PROC_BROWSER_TEST_F(ContentSettingsExceptionsAreaBrowserTest,
-                       OpenIncognitoWindow) {
+                       MAYBE_OpenIncognitoWindow) {
   NavigateToSettingsSubpage("contentExceptions");
   chrome::NewIncognitoWindow(browser());
 }
