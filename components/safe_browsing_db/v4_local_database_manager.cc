@@ -17,6 +17,7 @@
 #include "components/safe_browsing_db/v4_feature_list.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
 #include "content/public/browser/browser_thread.h"
+#include "crypto/sha2.h"
 
 using content::BrowserThread;
 using base::TimeTicks;
@@ -312,8 +313,10 @@ bool V4LocalDatabaseManager::MatchModuleWhitelistString(
     return true;
   }
 
+  // str is the module's filename.  Convert to hash.
+  FullHash hash = crypto::SHA256HashString(str);
   return HandleHashSynchronously(
-      str, StoresToCheck({GetChromeFilenameClientIncidentId()}));
+      hash, StoresToCheck({GetChromeFilenameClientIncidentId()}));
 }
 
 ThreatSource V4LocalDatabaseManager::GetThreatSource() const {

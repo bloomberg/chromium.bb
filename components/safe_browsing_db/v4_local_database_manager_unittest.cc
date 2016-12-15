@@ -11,6 +11,7 @@
 #include "components/safe_browsing_db/v4_local_database_manager.h"
 #include "components/safe_browsing_db/v4_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "crypto/sha2.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/platform_test.h"
 
@@ -405,6 +406,29 @@ TEST_F(V4LocalDatabaseManagerTest, TestMatchMalwareIP) {
   EXPECT_TRUE(v4_local_database_manager_->MatchMalwareIP("192.168.1.2"));
   EXPECT_FALSE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
       v4_local_database_manager_));
+}
+
+TEST_F(V4LocalDatabaseManagerTest, TestMatchModuleWhitelist) {
+  StopLocalDatabaseManager();
+  v4_local_database_manager_ =
+      make_scoped_refptr(new FakeV4LocalDatabaseManager(base_dir_.GetPath()));
+  SetTaskRunnerForTest();
+  StartLocalDatabaseManager();
+  WaitForTasksOnTaskRunner();
+
+  StoreAndHashPrefixes store_and_hash_prefixes;
+  store_and_hash_prefixes.emplace_back(GetChromeFilenameClientIncidentId(),
+                                       crypto::SHA256HashString("chrome.dll"));
+
+  ReplaceV4Database(store_and_hash_prefixes);
+
+  // No match -- i.e. not whitelisted
+  EXPECT_FALSE(
+      v4_local_database_manager_->MatchModuleWhitelistString("badstuff.dll"));
+
+  // Whitelisted.
+  EXPECT_TRUE(
+      v4_local_database_manager_->MatchModuleWhitelistString("chrome.dll"));
 }
 
 }  // namespace safe_browsing
