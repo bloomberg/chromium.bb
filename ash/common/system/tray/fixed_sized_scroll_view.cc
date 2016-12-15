@@ -5,7 +5,6 @@
 #include "ash/common/system/tray/fixed_sized_scroll_view.h"
 
 #include "ash/common/material_design/material_design_controller.h"
-#include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 
 namespace ash {
 
@@ -19,10 +18,6 @@ bool UseMd() {
 
 FixedSizedScrollView::FixedSizedScrollView() {
   set_notify_enter_exit_on_child(true);
-  if (UseMd()) {
-    SetVerticalScrollBar(new views::OverlayScrollBar(false));
-    SetHorizontalScrollBar(new views::OverlayScrollBar(true));
-  }
 }
 
 FixedSizedScrollView::~FixedSizedScrollView() {}

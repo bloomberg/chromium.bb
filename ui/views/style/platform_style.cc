@@ -17,7 +17,9 @@
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/scrollbar/scroll_bar_views.h"
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+#include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
+#elif defined(OS_LINUX)
 #define DESKTOP_LINUX
 #endif
 
@@ -56,7 +58,11 @@ gfx::ImageSkia PlatformStyle::CreateComboboxArrow(bool is_enabled,
 
 // static
 std::unique_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
+#if defined(OS_CHROMEOS)
+  return base::MakeUnique<OverlayScrollBar>(is_horizontal);
+#else
   return base::MakeUnique<ScrollBarViews>(is_horizontal);
+#endif
 }
 
 // static
