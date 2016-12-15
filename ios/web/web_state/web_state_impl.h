@@ -244,6 +244,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void ShowTransientContentView(CRWContentView* content_view) override;
   bool IsShowingWebInterstitial() const override;
   WebInterstitial* GetWebInterstitial() const override;
+  void OnPasswordInputShownOnHttp() override;
   void AddScriptCommandCallback(const ScriptCommandCallback& callback,
                                 const std::string& command_prefix) override;
   void RemoveScriptCommandCallback(const std::string& command_prefix) override;

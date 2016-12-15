@@ -361,6 +361,10 @@ WebInterstitial* WebStateImpl::GetWebInterstitial() const {
   return interstitial_;
 }
 
+void WebStateImpl::OnPasswordInputShownOnHttp() {
+  [web_controller_ didShowPasswordInputOnHTTP];
+}
+
 net::HttpResponseHeaders* WebStateImpl::GetHttpResponseHeaders() const {
   return http_response_headers_.get();
 }

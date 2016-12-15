@@ -55,5 +55,9 @@ IOSSecurityStateTabHelper::GetVisibleSecurityState() const {
   state->displayed_mixed_content =
       (ssl.content_status & web::SSLStatus::DISPLAYED_INSECURE_CONTENT) ? true
                                                                         : false;
+  state->displayed_password_field_on_http =
+      (ssl.content_status & web::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP)
+          ? true
+          : false;
   return state;
 }

@@ -28,7 +28,10 @@
 #import "ios/chrome/browser/autofill/form_suggestion_controller.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/passwords/js_password_manager.h"
+#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/web_state/web_state.h"
+#include "ios/web/public/ssl_status.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 #import "ios/web/public/test/test_web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -981,6 +984,10 @@ TEST_F(PasswordControllerTest, FLAKY_DontFillReadOnly) {
        "</form>"));
 }
 
+// An HTML page without a password form.
+static NSString* kHtmlWithoutPasswordForm =
+    @"<h2>The rain in Spain stays <i>mainly</i> in the plain.</h2>";
+
 // An HTML page containing one password form.  The username input field
 // also has custom event handlers.  We need to verify that those event
 // handlers are still triggered even though we override them with our own.
@@ -1285,4 +1292,48 @@ TEST(PasswordControllerTestSimple, SaveOnNonHTMLLandingPage) {
   web_state.SetContentIsHTML(false);
   web_state.SetCurrentURL(GURL("https://example.com"));
   [passwordController webStateDidLoadPage:&web_state];
+}
+
+// Tests that an HTTP page without a password field does not update the SSL
+// status to indicate DISPLAYED_PASSWORD_FIELD_ON_HTTP.
+TEST_F(PasswordControllerTest, HTTPNoPassword) {
+  LoadHtml(kHtmlWithoutPasswordForm, GURL("http://chromium.test"));
+
+  web::SSLStatus ssl_status =
+      web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
+  EXPECT_FALSE(ssl_status.content_status &
+               web::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+}
+
+// Tests that an HTTP page with a password field updates the SSL status
+// to indicate DISPLAYED_PASSWORD_FIELD_ON_HTTP.
+TEST_F(PasswordControllerTest, HTTPPassword) {
+  LoadHtml(kHtmlWithPasswordForm, GURL("http://chromium.test"));
+
+  web::SSLStatus ssl_status =
+      web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
+  EXPECT_TRUE(ssl_status.content_status &
+              web::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+}
+
+// Tests that an HTTPS page without a password field does not update the SSL
+// status to indicate DISPLAYED_PASSWORD_FIELD_ON_HTTP.
+TEST_F(PasswordControllerTest, HTTPSNoPassword) {
+  LoadHtml(kHtmlWithoutPasswordForm, GURL("https://chromium.test"));
+
+  web::SSLStatus ssl_status =
+      web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
+  EXPECT_FALSE(ssl_status.content_status &
+               web::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+}
+
+// Tests that an HTTPS page with a password field does not update the SSL status
+// to indicate DISPLAYED_PASSWORD_FIELD_ON_HTTP.
+TEST_F(PasswordControllerTest, HTTPSPassword) {
+  LoadHtml(kHtmlWithPasswordForm, GURL("https://chromium.test"));
+
+  web::SSLStatus ssl_status =
+      web_state()->GetNavigationManager()->GetLastCommittedItem()->GetSSL();
+  EXPECT_FALSE(ssl_status.content_status &
+               web::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
 }

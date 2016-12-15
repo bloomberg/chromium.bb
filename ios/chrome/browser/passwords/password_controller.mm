@@ -39,6 +39,7 @@
 #import "ios/chrome/browser/passwords/js_password_manager.h"
 #import "ios/chrome/browser/passwords/password_generation_agent.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
+#import "ios/web/public/origin_util.h"
 #include "ios/web/public/url_scheme_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/web_state.h"
@@ -548,6 +549,15 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
     return;
 
   if (!forms.empty()) {
+    // Notify web_state about password forms, so that this can be taken into
+    // account for the security state.
+    if (webStateObserverBridge_) {
+      web::WebState* web_state = webStateObserverBridge_->web_state();
+      if (web_state && !web::IsOriginSecure(web_state->GetLastCommittedURL())) {
+        web_state->OnPasswordInputShownOnHttp();
+      }
+    }
+
     // Invoke the password manager callback to autofill password forms
     // on the loaded page.
     passwordManager_->OnPasswordFormsParsed(passwordManagerDriver_.get(),

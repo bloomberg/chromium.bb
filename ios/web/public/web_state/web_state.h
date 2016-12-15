@@ -200,6 +200,10 @@ class WebState : public base::SupportsUserData {
   // Returns the currently visible WebInterstitial if one is shown.
   virtual WebInterstitial* GetWebInterstitial() const = 0;
 
+  // Tells the WebState that the current page is an HTTP page
+  // containing a password field.
+  virtual void OnPasswordInputShownOnHttp() = 0;
+
   // Callback used to handle script commands.
   // The callback must return true if the command was handled, and false
   // otherwise.

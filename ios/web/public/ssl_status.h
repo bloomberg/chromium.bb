@@ -18,13 +18,17 @@ struct SSLStatus {
   // Flags used for the page security content status.
   enum ContentStatusFlags {
     // HTTP page, or HTTPS page with no insecure content.
-    NORMAL_CONTENT             = 0,
+    NORMAL_CONTENT = 0,
 
     // HTTPS page containing "displayed" HTTP resources (e.g. images, CSS).
     DISPLAYED_INSECURE_CONTENT = 1 << 0,
 
     // The RAN_INSECURE_CONTENT flag is intentionally omitted on iOS because
     // there is no way to tell when insecure content is run in a web view.
+
+    // HTTP page containing a password input, used to adjust UI on nonsecure
+    // pages that collect sensitive data.
+    DISPLAYED_PASSWORD_FIELD_ON_HTTP = 1 << 4,
   };
 
   SSLStatus();

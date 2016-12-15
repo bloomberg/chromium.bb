@@ -758,6 +758,19 @@ TEST_F(CRWWebControllerNavigationTest, GoToEntryWithoutDocumentChange) {
               session_controller.currentEntry);
 }
 
+// Tests that didShowPasswordInputOnHTTP updates the SSLStatus to indicate that
+// a password field has been displayed on an HTTP page.
+TEST_F(CRWWebControllerNavigationTest, HTTPPassword) {
+  LoadHtml(@"<html><body></body></html>", GURL("http://chromium.test"));
+  NavigationManagerImpl& nav_manager =
+      web_controller().webStateImpl->GetNavigationManagerImpl();
+  EXPECT_FALSE(nav_manager.GetLastCommittedItem()->GetSSL().content_status &
+               web::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+  [web_controller() didShowPasswordInputOnHTTP];
+  EXPECT_TRUE(nav_manager.GetLastCommittedItem()->GetSSL().content_status &
+              web::SSLStatus::DISPLAYED_PASSWORD_FIELD_ON_HTTP);
+}
+
 // Real WKWebView is required for CRWWebControllerJSExecutionTest.
 typedef web::WebTestWithWebController CRWWebControllerJSExecutionTest;
 

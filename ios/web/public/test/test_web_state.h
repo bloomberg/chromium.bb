@@ -58,6 +58,7 @@ class TestWebState : public WebState {
   CRWWebViewProxyType GetWebViewProxy() const override;
   bool IsShowingWebInterstitial() const override;
   WebInterstitial* GetWebInterstitial() const override;
+  void OnPasswordInputShownOnHttp() override {}
 
   void AddObserver(WebStateObserver* observer) override;
 
