@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
@@ -157,6 +158,11 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   void TransferNavigationHandleOwnership(
       RenderFrameHostImpl* render_frame_host);
 
+  void set_on_start_checks_complete_closure_for_testing(
+      const base::Closure& closure) {
+    on_start_checks_complete_closure_ = closure;
+  }
+
  private:
   NavigationRequest(FrameTreeNode* frame_tree_node,
                     const CommonNavigationParams& common_params,
@@ -229,6 +235,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // the WillProcessResponse checks are performed by the NavigationHandle.
   scoped_refptr<ResourceResponse> response_;
   std::unique_ptr<StreamHandle> body_;
+
+  base::Closure on_start_checks_complete_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationRequest);
 };

@@ -5,6 +5,7 @@
 #include "content/test/test_render_frame_host.h"
 
 #include "base/guid.h"
+#include "base/run_loop.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
@@ -117,6 +118,12 @@ void TestRenderFrameHost::SimulateNavigationStart(const GURL& url) {
 void TestRenderFrameHost::SimulateRedirect(const GURL& new_url) {
   if (IsBrowserSideNavigationEnabled()) {
     NavigationRequest* request = frame_tree_node_->navigation_request();
+    if (!request->loader_for_testing()) {
+      base::RunLoop loop;
+      request->set_on_start_checks_complete_closure_for_testing(
+          loop.QuitClosure());
+      loop.Run();
+    }
     TestNavigationURLLoader* url_loader =
         static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
     CHECK(url_loader);
@@ -182,6 +189,12 @@ void TestRenderFrameHost::SimulateNavigationError(const GURL& url,
     if (request->state() == NavigationRequest::WAITING_FOR_RENDERER_RESPONSE) {
       static_cast<TestRenderFrameHost*>(frame_tree_node()->current_frame_host())
           ->SendBeforeUnloadACK(true);
+    }
+    if (!request->loader_for_testing()) {
+      base::RunLoop loop;
+      request->set_on_start_checks_complete_closure_for_testing(
+          loop.QuitClosure());
+      loop.Run();
     }
     TestNavigationURLLoader* url_loader =
         static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
@@ -446,6 +459,13 @@ void TestRenderFrameHost::PrepareForCommitWithServerRedirect(
     return;  // |request| is destructed by now.
 
   CHECK(request->state() == NavigationRequest::STARTED);
+
+  if (!request->loader_for_testing()) {
+    base::RunLoop loop;
+    request->set_on_start_checks_complete_closure_for_testing(
+        loop.QuitClosure());
+    loop.Run();
+  }
 
   TestNavigationURLLoader* url_loader =
       static_cast<TestNavigationURLLoader*>(request->loader_for_testing());

@@ -520,6 +520,9 @@ void NavigationRequest::OnStartChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
   CHECK(result != NavigationThrottle::DEFER);
 
+  if (on_start_checks_complete_closure_)
+    on_start_checks_complete_closure_.Run();
+
   // Abort the request if needed. This will destroy the NavigationRequest.
   if (result == NavigationThrottle::CANCEL_AND_IGNORE ||
       result == NavigationThrottle::CANCEL) {

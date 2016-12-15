@@ -169,6 +169,16 @@ class NetErrorTabHelperTest : public ChromeRenderViewHostTestHarness {
     }
   }
 
+#if BUILDFLAG(ANDROID_JAVA_UI)
+  void NoDownloadPageLaterForNonHttpSchemes(const char* url_string,
+                                            bool succeeded) {
+    GURL url(url_string);
+    LoadURL(url, succeeded);
+    tab_helper()->DownloadPageLater();
+    EXPECT_EQ(0, tab_helper()->times_download_page_later_invoked());
+  }
+#endif
+
   bool probe_running() { return tab_helper_->mock_probe_running(); }
   DnsProbeStatus last_status_sent() { return tab_helper_->last_status_sent(); }
   int sent_count() { return tab_helper_->mock_sent_count(); }
@@ -379,18 +389,21 @@ TEST_F(NetErrorTabHelperTest, NoDownloadPageLaterOnNonErrorPage) {
 
 // Makes sure that "Download page later" isn't run on URLs with non-HTTP/HTTPS
 // schemes.
-TEST_F(NetErrorTabHelperTest, NoDownloadPageLaterForNonHttpSchemes) {
-  const char* kUrls[] = {
-    "file:///blah/blah",
-    "chrome://blah/",
-    "about:blank",
-  };
-
-  for (const char* url_string : kUrls) {
-    GURL url(url_string);
-    LoadURL(url, false /*succeeded*/);
-    tab_helper()->DownloadPageLater();
-    EXPECT_EQ(0, tab_helper()->times_download_page_later_invoked());
-  }
+// NOTE: the test harness code in this file and in TestRendererHost don't always
+// deal with pending RFH correctly. This works because most tests only load
+// once. So workaround it by puting each test case in a separate test.
+TEST_F(NetErrorTabHelperTest, NoDownloadPageLaterForNonHttpSchemes1) {
+  NoDownloadPageLaterForNonHttpSchemes("file:///blah/blah", false);
 }
+
+TEST_F(NetErrorTabHelperTest, NoDownloadPageLaterForNonHttpSchemes2) {
+  NoDownloadPageLaterForNonHttpSchemes("chrome://blah/", false);
+}
+
+TEST_F(NetErrorTabHelperTest, NoDownloadPageLaterForNonHttpSchemes3) {
+  // about:blank always succeeds, and the test harness won't handle URLs that
+  // don't go to the network failing.
+  NoDownloadPageLaterForNonHttpSchemes("about:blank", true);
+}
+
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
