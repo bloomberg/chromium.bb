@@ -218,8 +218,12 @@ void PaintPropertyTreeBuilder::updatePaintOffsetTranslation(
   } else if (object.isBoxModelObject() &&
              context.current.paintOffset != LayoutPoint()) {
     // TODO(trchen): Eliminate PaintLayer dependency.
+    // TODO(chrishtr): When changing the condition here, make sure to update
+    // the condition in LayoutBoxModelObject::styleDidChange() above
+    // setNeedsPaintPropertyUpdate().
     PaintLayer* layer = toLayoutBoxModelObject(object).layer();
-    if (layer && layer->paintsWithTransform(GlobalPaintNormalPhase))
+    if (layer &&
+        layer->paintsWithTransform(GlobalPaintFlattenCompositingLayers))
       usesPaintOffsetTranslation = true;
   }
 

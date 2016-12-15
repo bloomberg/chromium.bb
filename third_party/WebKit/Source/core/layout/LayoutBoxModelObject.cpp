@@ -298,6 +298,20 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff,
     }
   }
 
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+    // hasLayer status will affect whether to create localBorderBoxProperties.
+    if (hadLayer != hasLayer()) {
+      setNeedsPaintPropertyUpdate();
+    } else if (oldStyle && oldStyle->position() != styleRef().position() &&
+               (oldStyle->position() == FixedPosition ||
+                styleRef().position() == FixedPosition)) {
+      // Fixed-position status affects whether to create paintOffsetTranslation.
+      // TODO(chrishtr): Update the condition here when changing the condition
+      // in PaintPropertyTreeBuilder::updatePaintOffsetTranslation().
+      setNeedsPaintPropertyUpdate();
+    }
+  }
+
   if (layer()) {
     layer()->styleDidChange(diff, oldStyle);
     if (hadLayer && layer()->isSelfPaintingLayer() != layerWasSelfPainting)
