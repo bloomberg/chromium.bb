@@ -452,8 +452,6 @@ static void
 weston_wm_window_read_properties(struct weston_wm_window *window)
 {
 	struct weston_wm *wm = window->wm;
-	const struct weston_desktop_xwayland_interface *xwayland_interface =
-		wm->server->compositor->xwayland_interface;
 
 #define F(field) (&window->field)
 	const struct {
@@ -595,11 +593,6 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 		if (!window->machine || strcmp(window->machine, name))
 			window->pid = 0;
 	}
-
-	if (window->shsurf && window->name)
-		xwayland_interface->set_title(window->shsurf, window->name);
-	if (window->shsurf && window->pid > 0)
-		xwayland_interface->set_pid(window->shsurf, window->pid);
 }
 
 #undef TYPE_WM_PROTOCOLS
@@ -1023,6 +1016,19 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 
 	weston_wm_window_read_properties(window);
 
+	/* For a new Window, MapRequest happens before the Window is realized
+	 * in Xwayland. We do the real xcb_map_window() here as a response to
+	 * MapRequest. The Window will get realized (wl_surface created in
+	 * Wayland and WL_SURFACE_ID sent in X11) when it has been mapped for
+	 * real.
+	 *
+	 * MapRequest only happens for (X11) unmapped Windows. On UnmapNotify,
+	 * we reset shsurf to NULL, so even if X11 connection races far ahead
+	 * of the Wayland connection and the X11 client is repeatedly mapping
+	 * and unmapping, we will never have shsurf set on MapRequest.
+	 */
+	assert(!window->shsurf);
+
 	if (window->frame_id == XCB_WINDOW_NONE)
 		weston_wm_window_create_frame(window);
 
@@ -1182,6 +1188,10 @@ weston_wm_window_draw_decoration(void *data)
 
 		xwayland_interface->set_window_geometry(window->shsurf,
 							input_x, input_y, input_w, input_h);
+		if (window->name)
+			xwayland_interface->set_title(window->shsurf, window->name);
+		if (window->pid > 0)
+			xwayland_interface->set_pid(window->shsurf, window->pid);
 	}
 }
 
