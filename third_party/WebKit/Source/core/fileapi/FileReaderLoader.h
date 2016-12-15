@@ -49,7 +49,6 @@ class BlobDataHandle;
 class DOMArrayBuffer;
 class ExecutionContext;
 class FileReaderLoaderClient;
-class Stream;
 class TextResourceDecoder;
 class ThreadableLoader;
 
@@ -76,7 +75,6 @@ class CORE_EXPORT FileReaderLoader final : public ThreadableLoaderClient {
   ~FileReaderLoader() override;
 
   void start(ExecutionContext*, PassRefPtr<BlobDataHandle>);
-  void start(ExecutionContext*, const Stream&, unsigned readSize);
   void cancel();
 
   // ThreadableLoaderClient
@@ -113,9 +111,6 @@ class CORE_EXPORT FileReaderLoader final : public ThreadableLoaderClient {
  private:
   FileReaderLoader(ReadType, FileReaderLoaderClient*);
 
-  void startInternal(ExecutionContext&,
-                     const Stream*,
-                     PassRefPtr<BlobDataHandle>);
   void cleanup();
 
   void failed(FileError::ErrorCode);
@@ -130,7 +125,6 @@ class CORE_EXPORT FileReaderLoader final : public ThreadableLoaderClient {
   String m_dataType;
 
   KURL m_urlForReading;
-  bool m_urlForReadingIsStream;
   Persistent<ThreadableLoader> m_loader;
 
   std::unique_ptr<ArrayBufferBuilder> m_rawData;

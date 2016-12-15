@@ -37,7 +37,6 @@
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/loader/ThreadableLoader.h"
-#include "core/streams/Stream.h"
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"
 #include "platform/network/ResourceError.h"
@@ -58,7 +57,6 @@ FileReaderLoader::FileReaderLoader(ReadType readType,
                                    FileReaderLoaderClient* client)
     : m_readType(readType),
       m_client(client),
-      m_urlForReadingIsStream(false),
       m_isRawDataConverted(false),
       m_stringResult(""),
       m_finishedLoading(false),
@@ -72,39 +70,28 @@ FileReaderLoader::FileReaderLoader(ReadType readType,
 FileReaderLoader::~FileReaderLoader() {
   cleanup();
   if (!m_urlForReading.isEmpty()) {
-    if (m_urlForReadingIsStream)
-      BlobRegistry::unregisterStreamURL(m_urlForReading);
-    else
-      BlobRegistry::revokePublicBlobURL(m_urlForReading);
+    BlobRegistry::revokePublicBlobURL(m_urlForReading);
   }
 }
 
-void FileReaderLoader::startInternal(ExecutionContext& executionContext,
-                                     const Stream* stream,
-                                     PassRefPtr<BlobDataHandle> blobData) {
+void FileReaderLoader::start(ExecutionContext* executionContext,
+                             PassRefPtr<BlobDataHandle> blobData) {
+  DCHECK(executionContext);
   // The blob is read by routing through the request handling layer given a
   // temporary public url.
   m_urlForReading =
-      BlobURL::createPublicURL(executionContext.getSecurityOrigin());
+      BlobURL::createPublicURL(executionContext->getSecurityOrigin());
   if (m_urlForReading.isEmpty()) {
     failed(FileError::kSecurityErr);
     return;
   }
 
-  if (blobData) {
-    ASSERT(!stream);
-    BlobRegistry::registerPublicBlobURL(executionContext.getSecurityOrigin(),
-                                        m_urlForReading, std::move(blobData));
-  } else {
-    ASSERT(stream);
-    BlobRegistry::registerStreamURL(executionContext.getSecurityOrigin(),
-                                    m_urlForReading, stream->url());
-  }
-
+  BlobRegistry::registerPublicBlobURL(executionContext->getSecurityOrigin(),
+                                      m_urlForReading, std::move(blobData));
   // Construct and load the request.
   ResourceRequest request(m_urlForReading);
   request.setExternalRequestStateFromRequestorAddressSpace(
-      executionContext.securityContext().addressSpace());
+      executionContext->securityContext().addressSpace());
 
   // FIXME: Should this really be 'internal'? Do we know anything about the
   // actual request that generated this fetch?
@@ -128,34 +115,14 @@ void FileReaderLoader::startInternal(ExecutionContext& executionContext,
   resourceLoaderOptions.allowCredentials = AllowStoredCredentials;
 
   if (m_client) {
-    m_loader = ThreadableLoader::create(executionContext, this, options,
+    DCHECK(!m_loader);
+    m_loader = ThreadableLoader::create(*executionContext, this, options,
                                         resourceLoaderOptions);
     m_loader->start(request);
   } else {
     ThreadableLoader::loadResourceSynchronously(
-        executionContext, request, *this, options, resourceLoaderOptions);
+        *executionContext, request, *this, options, resourceLoaderOptions);
   }
-}
-
-void FileReaderLoader::start(ExecutionContext* executionContext,
-                             PassRefPtr<BlobDataHandle> blobData) {
-  ASSERT(executionContext);
-  m_urlForReadingIsStream = false;
-  startInternal(*executionContext, 0, std::move(blobData));
-}
-
-void FileReaderLoader::start(ExecutionContext* executionContext,
-                             const Stream& stream,
-                             unsigned readSize) {
-  ASSERT(executionContext);
-  if (readSize > 0) {
-    m_hasRange = true;
-    m_rangeStart = 0;
-    m_rangeEnd = readSize - 1;  // End is inclusive so (0,0) is a 1-byte read.
-  }
-
-  m_urlForReadingIsStream = true;
-  startInternal(*executionContext, &stream, nullptr);
 }
 
 void FileReaderLoader::cancel() {
