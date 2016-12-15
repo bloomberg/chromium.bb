@@ -5,7 +5,6 @@
 #ifndef DEVICE_VR_ANDROID_GVR_DELEGATE_H
 #define DEVICE_VR_ANDROID_GVR_DELEGATE_H
 
-#include "base/memory/weak_ptr.h"
 #include "device/vr/android/gvr/gvr_device_provider.h"
 #include "device/vr/vr_export.h"
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr_types.h"
@@ -37,12 +36,11 @@ class DEVICE_VR_EXPORT GvrDelegateProvider {
   static void SetInstance(GvrDelegateProvider* delegate_provider);
   static GvrDelegateProvider* GetInstance();
 
-  virtual void SetDeviceProvider(
-      base::WeakPtr<GvrDeviceProvider> device_provider) = 0;
+  virtual void SetDeviceProvider(GvrDeviceProvider* device_provider) = 0;
   virtual void RequestWebVRPresent(
       const base::Callback<void(bool)>& callback) = 0;
   virtual void ExitWebVRPresent() = 0;
-  virtual base::WeakPtr<GvrDelegate> GetNonPresentingDelegate() = 0;
+  virtual GvrDelegate* GetNonPresentingDelegate() = 0;
   virtual void DestroyNonPresentingDelegate() = 0;
   virtual void SetListeningForActivate(bool listening) = 0;
 

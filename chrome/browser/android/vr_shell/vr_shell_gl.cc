@@ -8,7 +8,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/vr_shell/ui_elements.h"
-#include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
@@ -177,14 +176,14 @@ int64_t TimeInMicroseconds() {
 }  // namespace
 
 VrShellGl::VrShellGl(
-    VrShell* vr_shell,
     const base::WeakPtr<VrShell>& weak_vr_shell,
     const base::WeakPtr<VrInputManager>& content_input_manager,
     const base::WeakPtr<VrInputManager>& ui_input_manager,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
-    gvr_context* gvr_api)
-      : task_runner_(base::ThreadTaskRunnerHandle::Get()),
-        vr_shell_(vr_shell),
+    gvr_context* gvr_api,
+    bool initially_web_vr)
+      : web_vr_mode_(initially_web_vr),
+        task_runner_(base::ThreadTaskRunnerHandle::Get()),
         weak_vr_shell_(weak_vr_shell),
         content_input_manager_(content_input_manager),
         ui_input_manager_(ui_input_manager),
@@ -387,28 +386,16 @@ void VrShellGl::InitializeRenderer() {
 void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
   controller_->UpdateState();
 
-#if defined(ENABLE_VR_SHELL)
-  // TODO(mthiesse): Fix menu button handling, which should be posted to the UI
-  // thread instead of handled here.
 
   // Note that button up/down state is transient, so ButtonUpHappened only
   // returns true for a single frame (and we're guaranteed not to miss it).
   if (controller_->ButtonUpHappened(
           gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP)) {
-//    html_interface_->SetMenuMode(!html_interface_->GetMenuMode());
-
-    // TODO(mthiesse): The page is no longer visible when in menu mode. We
-    // should unfocus or otherwise let it know it's hidden.
-//    if (html_interface_->GetMode() == UiInterface::Mode::WEB_VR) {
-//      const auto&& task = html_interface_->GetMenuMode() ?
-//          &device::GvrDeviceProvider::OnDisplayBlur :
-//          &device::GvrDeviceProvider::OnDisplayFocus;
-//      main_thread_task_runner_->PostTask(
-//          FROM_HERE, base::Bind(task, delegate_->GetDeviceProvider()));
-//    }
+    main_thread_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&VrShell::AppButtonPressed, weak_vr_shell_));
   }
-#endif
-  if (vr_shell_->GetUiInterface()->GetMode() == UiInterface::Mode::WEB_VR) {
+
+  if (web_vr_mode_) {
     // Process screen touch events for Cardboard button compatibility.
     // Also send tap events for controller "touchpad click" events.
     if (touch_pending_ || controller_->ButtonUpHappened(
@@ -639,7 +626,7 @@ void VrShellGl::DrawFrame() {
 
   UpdateController(GetForwardVector(head_pose));
 
-  if (vr_shell_->GetUiInterface()->GetMode() == UiInterface::Mode::WEB_VR) {
+  if (web_vr_mode_) {
     DrawWebVr();
 
     // When using async reprojection, we need to know which pose was used in
@@ -697,7 +684,7 @@ void VrShellGl::DrawVrShell(const gvr::Mat4f& head_pose,
     }
   }
 
-  if (vr_shell_->GetUiInterface()->GetMode() == UiInterface::Mode::WEB_VR) {
+  if (web_vr_mode_) {
     // WebVR is incompatible with 3D world compositing since the
     // depth buffer was already populated with unknown scaling - the
     // WebVR app has full control over zNear/zFar. Just leave the
@@ -773,8 +760,7 @@ void VrShellGl::DrawUiView(const gvr::Mat4f* head_pose,
         view_matrix);
 
     DrawElements(render_matrix, elements);
-    if (head_pose != nullptr &&
-        vr_shell_->GetUiInterface()->GetMode() != UiInterface::Mode::WEB_VR) {
+    if (head_pose != nullptr && !web_vr_mode_) {
       DrawCursor(render_matrix);
     }
   }
@@ -916,11 +902,7 @@ void VrShellGl::OnResume() {
 }
 
 void VrShellGl::SetWebVrMode(bool enabled) {
-  if (enabled) {
-    vr_shell_->GetUiInterface()->SetMode(UiInterface::Mode::WEB_VR);
-  } else {
-    vr_shell_->GetUiInterface()->SetMode(UiInterface::Mode::STANDARD);
-  }
+  web_vr_mode_ = enabled;
 }
 
 void VrShellGl::UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,

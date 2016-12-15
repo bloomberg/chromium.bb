@@ -25,8 +25,7 @@ static const uint64_t kPredictionTimeWithoutVsyncNanos = 50000000;
 
 }  // namespace
 
-GvrDevice::GvrDevice(GvrDeviceProvider* provider,
-                     const base::WeakPtr<GvrDelegate>& delegate)
+GvrDevice::GvrDevice(GvrDeviceProvider* provider, GvrDelegate* delegate)
     : VRDevice(), delegate_(delegate), gvr_provider_(provider) {}
 
 GvrDevice::~GvrDevice() {}
@@ -91,8 +90,10 @@ mojom::VRDisplayInfoPtr GvrDevice::GetVRDevice() {
 
     // Tell the delegate not to draw yet, to avoid a race condition
     // (and visible wobble) on entering VR.
-    delegate_->SetWebVRRenderSurfaceSize(kInvalidRenderTargetSize.width,
-                                         kInvalidRenderTargetSize.height);
+    if (delegate_) {
+      delegate_->SetWebVRRenderSurfaceSize(kInvalidRenderTargetSize.width,
+                                           kInvalidRenderTargetSize.height);
+    }
 
     return device;
   }
@@ -141,8 +142,10 @@ mojom::VRDisplayInfoPtr GvrDevice::GetVRDevice() {
   right_eye->offset[1] = -right_eye_mat.m[1][3];
   right_eye->offset[2] = -right_eye_mat.m[2][3];
 
-  delegate_->SetWebVRRenderSurfaceSize(2 * left_eye->renderWidth,
-                                       left_eye->renderHeight);
+  if (delegate_) {
+    delegate_->SetWebVRRenderSurfaceSize(2 * left_eye->renderWidth,
+                                         left_eye->renderHeight);
+  }
 
   return device;
 }
@@ -258,7 +261,7 @@ void GvrDevice::UpdateLayerBounds(mojom::VRLayerBoundsPtr left_bounds,
   delegate_->UpdateWebVRTextureBounds(left_gvr_bounds, right_gvr_bounds);
 }
 
-void GvrDevice::SetDelegate(const base::WeakPtr<GvrDelegate>& delegate) {
+void GvrDevice::SetDelegate(GvrDelegate* delegate) {
   delegate_ = delegate;
 
   // Notify the clients that this device has changed

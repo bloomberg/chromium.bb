@@ -17,7 +17,7 @@ namespace vr_shell {
 // A non presenting delegate for magic window mode.
 class GvrNonPresentingDelegate : public device::GvrDelegate {
  public:
-  explicit GvrNonPresentingDelegate(jlong context) : weak_ptr_factory_(this) {
+  explicit GvrNonPresentingDelegate(jlong context) {
     gvr_api_ =
         gvr::GvrApi::WrapNonOwned(reinterpret_cast<gvr_context*>(context));
   }
@@ -35,22 +35,20 @@ class GvrNonPresentingDelegate : public device::GvrDelegate {
   gvr::Sizei GetWebVRCompositorSurfaceSize() override {
     return device::kInvalidRenderTargetSize; }
   gvr::GvrApi* gvr_api() override { return gvr_api_.get(); }
-  base::WeakPtr<GvrNonPresentingDelegate> GetWeakPtr() {
-    return weak_ptr_factory_.GetWeakPtr();
-  }
  private:
   std::unique_ptr<gvr::GvrApi> gvr_api_;
-  base::WeakPtrFactory<GvrNonPresentingDelegate> weak_ptr_factory_;
 };
 
-VrShellDelegate::VrShellDelegate(JNIEnv* env, jobject obj)
-    : device_provider_(nullptr) {
+VrShellDelegate::VrShellDelegate(JNIEnv* env, jobject obj) {
   j_vr_shell_delegate_.Reset(env, obj);
   GvrDelegateProvider::SetInstance(this);
 }
 
 VrShellDelegate::~VrShellDelegate() {
   GvrDelegateProvider::SetInstance(nullptr);
+  if (device_provider_) {
+    device_provider_->OnNonPresentingDelegateRemoved();
+  }
 }
 
 VrShellDelegate* VrShellDelegate::GetNativeDelegate(
@@ -59,21 +57,20 @@ VrShellDelegate* VrShellDelegate::GetNativeDelegate(
   return reinterpret_cast<VrShellDelegate*>(native_delegate);
 }
 
-void VrShellDelegate::SetDelegate(
-    const base::WeakPtr<device::GvrDelegate>& delegate) {
+void VrShellDelegate::SetDelegate(device::GvrDelegate* delegate) {
   // TODO(mthiesse): There's no reason for this delegate to be a WeakPtr
   // anymore.
   delegate_ = delegate;
-  if (device_provider_.get()) {
+  if (device_provider_) {
     device_provider_->OnGvrDelegateReady(delegate_);
   }
 }
 
 void VrShellDelegate::RemoveDelegate() {
-  delegate_.reset();
-  if (device_provider_.get()) {
+  if (device_provider_) {
     device_provider_->OnGvrDelegateRemoved();
   }
+  delegate_ = nullptr;
 }
 
 void VrShellDelegate::SetPresentResult(JNIEnv* env, jobject obj,
@@ -90,9 +87,9 @@ void VrShellDelegate::DisplayActivate(JNIEnv* env, jobject obj) {
 }
 
 void VrShellDelegate::SetDeviceProvider(
-    base::WeakPtr<device::GvrDeviceProvider> device_provider) {
+    device::GvrDeviceProvider* device_provider) {
   device_provider_ = device_provider;
-  if (delegate_.get()) {
+  if (device_provider_ && delegate_) {
     device_provider_->OnGvrDelegateReady(delegate_);
   }
 }
@@ -125,7 +122,7 @@ void VrShellDelegate::ForceExitVr() {
   Java_VrShellDelegate_forceExitVr(env, j_vr_shell_delegate_.obj());
 }
 
-base::WeakPtr<device::GvrDelegate> VrShellDelegate::GetNonPresentingDelegate() {
+device::GvrDelegate* VrShellDelegate::GetNonPresentingDelegate() {
   if (!non_presenting_delegate_) {
     JNIEnv* env = AttachCurrentThread();
     jlong context = Java_VrShellDelegate_createNonPresentingNativeContext(
@@ -135,8 +132,7 @@ base::WeakPtr<device::GvrDelegate> VrShellDelegate::GetNonPresentingDelegate() {
 
     non_presenting_delegate_.reset(new GvrNonPresentingDelegate(context));
   }
-  return static_cast<GvrNonPresentingDelegate*>(non_presenting_delegate_.get())
-      ->GetWeakPtr();
+  return static_cast<GvrNonPresentingDelegate*>(non_presenting_delegate_.get());
 }
 
 void VrShellDelegate::DestroyNonPresentingDelegate() {

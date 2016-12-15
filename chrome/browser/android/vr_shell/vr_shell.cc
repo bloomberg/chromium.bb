@@ -43,18 +43,19 @@ static const char kVrShellUIURL[] = "chrome://vr-shell-ui";
 
 class GLThread : public base::Thread {
  public:
-  GLThread(VrShell* vr_shell, const base::WeakPtr<VrShell>& weak_vr_shell,
+  GLThread(const base::WeakPtr<VrShell>& weak_vr_shell,
            const base::WeakPtr<VrInputManager>& content_input_manager,
            const base::WeakPtr<VrInputManager>& ui_input_manager,
            scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
-           gvr_context* gvr_api)
+           gvr_context* gvr_api,
+           bool initially_web_vr)
       : base::Thread("VrShellGL"),
-        vr_shell_(vr_shell),
         weak_vr_shell_(weak_vr_shell),
         content_input_manager_(content_input_manager),
         ui_input_manager_(ui_input_manager),
         main_thread_task_runner_(std::move(main_thread_task_runner)),
-        gvr_api_(gvr_api) {}
+        gvr_api_(gvr_api),
+        initially_web_vr_(initially_web_vr) {}
 
   ~GLThread() override {
     Stop();
@@ -64,12 +65,12 @@ class GLThread : public base::Thread {
 
  protected:
   void Init() override {
-    vr_shell_gl_.reset(new VrShellGl(vr_shell_,
-                                     std::move(weak_vr_shell_),
+    vr_shell_gl_.reset(new VrShellGl(std::move(weak_vr_shell_),
                                      std::move(content_input_manager_),
                                      std::move(ui_input_manager_),
                                      std::move(main_thread_task_runner_),
-                                     gvr_api_));
+                                     gvr_api_,
+                                     initially_web_vr_));
     weak_vr_shell_gl_ = vr_shell_gl_->GetWeakPtr();
     if (!vr_shell_gl_->Initialize()) {
       vr_shell_gl_.reset();
@@ -84,14 +85,12 @@ class GLThread : public base::Thread {
   std::unique_ptr<VrShellGl> vr_shell_gl_;
   base::WeakPtr<VrShellGl> weak_vr_shell_gl_;
 
-  // Created on main thread.
-  // TODO(mthiesse): Remove vr_shell_.
-  VrShell* vr_shell_;
   base::WeakPtr<VrShell> weak_vr_shell_;
   base::WeakPtr<VrInputManager> content_input_manager_;
   base::WeakPtr<VrInputManager> ui_input_manager_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   gvr_context* gvr_api_;
+  bool initially_web_vr_;
 };
 
 }  // namespace
@@ -124,11 +123,12 @@ VrShell::VrShell(JNIEnv* env,
   content_compositor_->SetLayer(main_contents_);
   ui_compositor_->SetLayer(ui_contents_);
 
-  gl_thread_.reset(new GLThread(this, weak_ptr_factory_.GetWeakPtr(),
+  gl_thread_.reset(new GLThread(weak_ptr_factory_.GetWeakPtr(),
                                 content_input_manager_->GetWeakPtr(),
                                 ui_input_manager_->GetWeakPtr(),
                                 main_thread_task_runner_,
-                                gvr_api));
+                                gvr_api,
+                                for_web_vr));
 
   base::Thread::Options options(base::MessageLoop::TYPE_DEFAULT, 0);
   options.priority = base::ThreadPriority::DISPLAY;
@@ -178,6 +178,13 @@ VrShell::~VrShell() {
   }
   delegate_->RemoveDelegate();
   g_instance = nullptr;
+}
+
+void VrShell::PostToGlThreadWhenReady(const base::Closure& task) {
+  // TODO(mthiesse): Remove this blocking wait. Queue up events if thread isn't
+  // finished starting?
+  gl_thread_->WaitUntilThreadStarted();
+  gl_thread_->task_runner()->PostTask(FROM_HERE, task);
 }
 
 void VrShell::OnTriggerEvent(JNIEnv* env,
@@ -232,6 +239,9 @@ void VrShell::SetWebVrMode(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
                            bool enabled) {
   metrics_helper_->SetWebVREnabled(enabled);
+  GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
+  PostToGlThreadWhenReady(
+      base::Bind(&VrShellGl::SetWebVrMode, thread->GetVrShellGl(), enabled));
   if (enabled) {
     html_interface_->SetMode(UiInterface::Mode::WEB_VR);
   } else {
@@ -241,9 +251,11 @@ void VrShell::SetWebVrMode(JNIEnv* env,
 
 void VrShell::SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num) {
   GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
-  thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VrShellGl::SetGvrPoseForWebVr,
-                            thread->GetVrShellGl(), pose, pose_num));
+  if (thread->IsRunning()) {
+    thread->task_runner()->PostTask(
+        FROM_HERE, base::Bind(&VrShellGl::SetGvrPoseForWebVr,
+                              thread->GetVrShellGl(), pose, pose_num));
+  }
 }
 
 void VrShell::SetWebVRRenderSurfaceSize(int width, int height) {
@@ -266,9 +278,9 @@ void VrShell::SubmitWebVRFrame() {}
 void VrShell::UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,
                                        const gvr::Rectf& right_bounds) {
   GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
-  thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VrShellGl::UpdateWebVRTextureBounds,
-                            thread->GetVrShellGl(), left_bounds, right_bounds));
+  PostToGlThreadWhenReady(base::Bind(&VrShellGl::UpdateWebVRTextureBounds,
+                                     thread->GetVrShellGl(), left_bounds,
+                                     right_bounds));
 }
 
 // TODO(mthiesse): Do not expose GVR API outside of GL thread.
@@ -288,7 +300,25 @@ void VrShell::SurfacesChanged(jobject content_surface, jobject ui_surface) {
 }
 
 void VrShell::GvrDelegateReady() {
-  delegate_->SetDelegate(weak_ptr_factory_.GetWeakPtr());
+  delegate_->SetDelegate(this);
+}
+
+void VrShell::AppButtonPressed() {
+#if defined(ENABLE_VR_SHELL)
+  html_interface_->SetMenuMode(!html_interface_->GetMenuMode());
+
+  // TODO(mthiesse): The page is no longer visible when in menu mode. We
+  // should unfocus or otherwise let it know it's hidden.
+  if (html_interface_->GetMode() == UiInterface::Mode::WEB_VR) {
+    if (delegate_->device_provider()) {
+      if (html_interface_->GetMenuMode()) {
+        delegate_->device_provider()->OnDisplayBlur();
+      } else {
+        delegate_->device_provider()->OnDisplayFocus();
+      }
+    }
+  }
+#endif
 }
 
 void VrShell::ContentBoundsChanged(JNIEnv* env,
@@ -296,13 +326,8 @@ void VrShell::ContentBoundsChanged(JNIEnv* env,
                                    jint width, jint height, jfloat dpr) {
   TRACE_EVENT0("gpu", "VrShell::ContentBoundsChanged");
   GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
-  // TODO(mthiesse): Remove this blocking wait. Queue up events if thread isn't
-  // finished starting?
-  thread->WaitUntilThreadStarted();
-  CHECK(thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VrShellGl::ContentPhysicalBoundsChanged,
-                            thread->GetVrShellGl(),
-                            width, height)));
+  PostToGlThreadWhenReady(base::Bind(&VrShellGl::ContentPhysicalBoundsChanged,
+                                     thread->GetVrShellGl(), width, height));
   content_compositor_->SetWindowBounds(gfx::Size(width, height));
 }
 
@@ -310,13 +335,8 @@ void VrShell::UIBoundsChanged(JNIEnv* env,
                               const JavaParamRef<jobject>& object,
                               jint width, jint height, jfloat dpr) {
   GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
-  // TODO(mthiesse): Remove this blocking wait. Queue up events if thread isn't
-  // finished starting?
-  thread->WaitUntilThreadStarted();
-  thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VrShellGl::UIPhysicalBoundsChanged,
-                            thread->GetVrShellGl(),
-                            width, height));
+  PostToGlThreadWhenReady(base::Bind(&VrShellGl::UIPhysicalBoundsChanged,
+                                     thread->GetVrShellGl(), width, height));
   ui_compositor_->SetWindowBounds(gfx::Size(width, height));
 }
 
@@ -326,13 +346,9 @@ UiInterface* VrShell::GetUiInterface() {
 
 void VrShell::UpdateScene(const base::ListValue* args) {
   GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
-  // TODO(mthiesse): Remove this blocking wait. Queue up events if thread isn't
-  // finished starting?
-  thread->WaitUntilThreadStarted();
-  thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VrShellGl::UpdateScene,
-                            thread->GetVrShellGl(),
-                            base::Passed(args->CreateDeepCopy())));
+  PostToGlThreadWhenReady(base::Bind(&VrShellGl::UpdateScene,
+                                     thread->GetVrShellGl(),
+                                     base::Passed(args->CreateDeepCopy())));
 }
 
 void VrShell::DoUiAction(const UiAction action) {
@@ -377,26 +393,18 @@ void VrShell::MainFrameWasResized(bool width_changed) {
   display::Display display = display::Screen::GetScreen()
       ->GetDisplayNearestWindow(ui_contents_->GetNativeView());
   GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
-  // TODO(mthiesse): Remove this blocking wait. Queue up events if thread isn't
-  // finished starting?
-  thread->WaitUntilThreadStarted();
-  thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VrShellGl::UIBoundsChanged,
-                            thread->GetVrShellGl(),
-                            display.size().width(), display.size().height()));
+  PostToGlThreadWhenReady(
+      base::Bind(&VrShellGl::UIBoundsChanged, thread->GetVrShellGl(),
+                 display.size().width(), display.size().height()));
 }
 
 void VrShell::ContentFrameWasResized(bool width_changed) {
   display::Display display = display::Screen::GetScreen()
       ->GetDisplayNearestWindow(main_contents_->GetNativeView());
   GLThread* thread = static_cast<GLThread*>(gl_thread_.get());
-  // TODO(mthiesse): Remove this blocking wait. Queue up events if thread isn't
-  // finished starting?
-  thread->WaitUntilThreadStarted();
-  thread->task_runner()->PostTask(
-      FROM_HERE, base::Bind(&VrShellGl::ContentBoundsChanged,
-                            thread->GetVrShellGl(),
-                            display.size().width(), display.size().height()));
+  PostToGlThreadWhenReady(
+      base::Bind(&VrShellGl::ContentBoundsChanged, thread->GetVrShellGl(),
+                 display.size().width(), display.size().height()));
 }
 
 void VrShell::WebContentsDestroyed() {

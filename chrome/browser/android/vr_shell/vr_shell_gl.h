@@ -52,12 +52,12 @@ class VrShellGl {
   };
 
   VrShellGl(
-      VrShell* vr_shell,
       const base::WeakPtr<VrShell>& weak_vr_shell,
       const base::WeakPtr<VrInputManager>& content_input_manager,
       const base::WeakPtr<VrInputManager>& ui_input_manager,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
-      gvr_context* gvr_api);
+      gvr_context* gvr_api,
+      bool initially_web_vr);
   ~VrShellGl();
 
   bool Initialize();
@@ -161,7 +161,8 @@ class VrShellGl {
   static constexpr int kPoseRingBufferSize = 8;
   std::vector<gvr::Mat4f> webvr_head_pose_;
   std::vector<bool> webvr_head_pose_valid_;
-  jint webvr_texture_id_ = 0;
+  int webvr_texture_id_ = 0;
+  bool web_vr_mode_;
 
   std::unique_ptr<VrController> controller_;
 
@@ -170,8 +171,6 @@ class VrShellGl {
   base::TimeTicks vsync_timebase_;
   base::TimeDelta vsync_interval_;
 
-  // TODO(mthiesse): Remove thread-unsafe VrShell usage.
-  VrShell* vr_shell_;
   base::WeakPtr<VrShell> weak_vr_shell_;
   base::WeakPtr<VrInputManager> content_input_manager_;
   base::WeakPtr<VrInputManager> ui_input_manager_;

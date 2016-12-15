@@ -105,6 +105,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
 
   void SurfacesChanged(jobject content_surface, jobject ui_surface);
   void GvrDelegateReady();
+  void AppButtonPressed();
 
   void ContentBoundsChanged(
       JNIEnv* env,
@@ -131,6 +132,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
  private:
   ~VrShell() override;
   void SetShowingOverscrollGlow(bool showing_glow);
+  void PostToGlThreadWhenReady(const base::Closure& task);
 
   // content::WebContentsObserver implementation. All called on UI thread.
   void RenderViewHostChanged(content::RenderViewHost* old_host,
