@@ -136,6 +136,8 @@ void DesktopWindowTreeHostWin::Init(aura::Window* content_window,
   }
   CreateCompositor();
   OnAcceleratedWidgetAvailable();
+  InitHost();
+  window()->Show();
 }
 
 void DesktopWindowTreeHostWin::OnNativeWidgetCreated(

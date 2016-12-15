@@ -252,6 +252,7 @@ void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
   cursor_manager_ = base::MakeUnique<wm::CursorManager>(
       base::MakeUnique<NativeCursorManagerMus>(window()));
   aura::client::SetCursorClient(window(), cursor_manager_.get());
+  InitHost();
 }
 
 void DesktopWindowTreeHostMus::OnNativeWidgetCreated(
@@ -657,6 +658,7 @@ void DesktopWindowTreeHostMus::ShowImpl() {
 void DesktopWindowTreeHostMus::HideImpl() {
   native_widget_delegate_->OnNativeWidgetVisibilityChanging(false);
   WindowTreeHostMus::HideImpl();
+  window()->Hide();
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(false);
 }
 

@@ -275,6 +275,7 @@ test("views_aura_mus_unittests") {
   testonly = true
 
   sources = [
+    "desktop_window_tree_host_mus_unittest.cc",
     "pointer_watcher_event_router2_unittest.cc",
     "run_all_unittests_aura_mus.cc",
     "screen_mus_unittest.cc",

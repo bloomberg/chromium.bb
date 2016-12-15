@@ -453,6 +453,8 @@ void DesktopWindowTreeHostX11::Init(aura::Window* content_window,
     sanitized_params.bounds.set_height(100);
 
   InitX11Window(sanitized_params);
+  InitHost();
+  window()->Show();
 }
 
 void DesktopWindowTreeHostX11::OnNativeWidgetCreated(

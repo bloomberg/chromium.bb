@@ -47,6 +47,7 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
       DesktopNativeWidgetAura* desktop_native_widget_aura);
 
   // Sets up resources needed before the WindowEventDispatcher has been created.
+  // It is expected this calls InitHost() on the WindowTreeHost.
   virtual void Init(aura::Window* content_window,
                     const Widget::InitParams& params) = 0;
 
