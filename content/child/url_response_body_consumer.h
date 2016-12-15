@@ -38,7 +38,7 @@ class CONTENT_EXPORT URLResponseBodyConsumer final
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // Starts watching the handle.
-  void Start(base::SingleThreadTaskRunner* task_runner);
+  void Start();
 
   // Sets the completion status. The completion status is dispatched to the
   // ResourceDispatcher when the both following conditions hold:
@@ -66,10 +66,12 @@ class CONTENT_EXPORT URLResponseBodyConsumer final
   mojo::ScopedDataPipeConsumerHandle handle_;
   mojo::Watcher handle_watcher_;
   ResourceRequestCompletionStatus completion_status_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   bool has_received_completion_ = false;
   bool has_been_cancelled_ = false;
   bool has_seen_end_of_data_;
+  bool is_in_on_readable_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(URLResponseBodyConsumer);
 };

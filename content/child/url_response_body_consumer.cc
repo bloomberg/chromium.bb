@@ -4,6 +4,7 @@
 
 #include "content/child/url_response_body_consumer.h"
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -45,17 +46,18 @@ URLResponseBodyConsumer::URLResponseBodyConsumer(
       resource_dispatcher_(resource_dispatcher),
       handle_(std::move(handle)),
       handle_watcher_(task_runner),
+      task_runner_(task_runner),
       has_seen_end_of_data_(!handle_.is_valid()) {}
 
 URLResponseBodyConsumer::~URLResponseBodyConsumer() {}
 
-void URLResponseBodyConsumer::Start(base::SingleThreadTaskRunner* task_runner) {
+void URLResponseBodyConsumer::Start() {
   if (has_been_cancelled_)
     return;
   handle_watcher_.Start(
       handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::Bind(&URLResponseBodyConsumer::OnReadable, base::Unretained(this)));
-  task_runner->PostTask(
+  task_runner_->PostTask(
       FROM_HERE, base::Bind(&URLResponseBodyConsumer::OnReadable, AsWeakPtr(),
                             MOJO_RESULT_OK));
 }
@@ -77,14 +79,24 @@ void URLResponseBodyConsumer::Cancel() {
 void URLResponseBodyConsumer::Reclaim(uint32_t size) {
   MojoResult result = mojo::EndReadDataRaw(handle_.get(), size);
   DCHECK_EQ(MOJO_RESULT_OK, result);
+
+  if (is_in_on_readable_)
+    return;
+
+  task_runner_->PostTask(
+      FROM_HERE, base::Bind(&URLResponseBodyConsumer::OnReadable, AsWeakPtr(),
+                            MOJO_RESULT_OK));
 }
 
 void URLResponseBodyConsumer::OnReadable(MojoResult unused) {
+  DCHECK(!is_in_on_readable_);
+
   if (has_been_cancelled_ || has_seen_end_of_data_)
     return;
 
   // Protect |this| as RequestPeer::OnReceivedData may call deref.
   scoped_refptr<URLResponseBodyConsumer> protect(this);
+  base::AutoReset<bool> is_in_on_readable(&is_in_on_readable_, true);
 
   // TODO(yhirano): Suppress notification when deferred.
   while (!has_been_cancelled_) {
@@ -92,7 +104,7 @@ void URLResponseBodyConsumer::OnReadable(MojoResult unused) {
     uint32_t available = 0;
     MojoResult result = mojo::BeginReadDataRaw(
         handle_.get(), &buffer, &available, MOJO_READ_DATA_FLAG_NONE);
-    if (result == MOJO_RESULT_SHOULD_WAIT)
+    if (result == MOJO_RESULT_SHOULD_WAIT || result == MOJO_RESULT_BUSY)
       return;
     if (result == MOJO_RESULT_FAILED_PRECONDITION) {
       has_seen_end_of_data_ = true;

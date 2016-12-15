@@ -45,7 +45,11 @@ function makeXHRForJSONArguments(jsonArgs)
 
 function makeFetch(url, requestInitializer)
 {
-    return fetch(url, requestInitializer).catch(e => e);
+    return fetch(url, requestInitializer).then(res => {
+        // Call text(). Otherwise the backpressure mechanism may block loading.
+        res.text();
+        return res;
+    }).catch(e => e);
 }
 
 var initialize_NetworkTest = function() {

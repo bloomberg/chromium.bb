@@ -95,7 +95,7 @@ class URLLoaderClientImpl final : public mojom::URLLoaderClient {
       mojom::DownloadedTempFilePtr downloaded_file) override {
     has_received_response_ = true;
     if (body_consumer_)
-      body_consumer_->Start(task_runner_.get());
+      body_consumer_->Start();
     downloaded_file_ = std::move(downloaded_file);
     resource_dispatcher_->OnMessageReceived(
         ResourceMsg_ReceivedResponse(request_id_, response_head));
@@ -120,7 +120,7 @@ class URLLoaderClientImpl final : public mojom::URLLoaderClient {
     body_consumer_ = new URLResponseBodyConsumer(
         request_id_, resource_dispatcher_, std::move(body), task_runner_);
     if (has_received_response_)
-      body_consumer_->Start(task_runner_.get());
+      body_consumer_->Start();
   }
 
   void OnComplete(const ResourceRequestCompletionStatus& status) override {
