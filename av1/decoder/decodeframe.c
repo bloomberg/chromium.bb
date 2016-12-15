@@ -2319,18 +2319,7 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
   const int ntiles =
       av1_get_rest_ntiles(cm->width, cm->height, NULL, NULL, NULL, NULL);
   if (rsi->frame_restoration_type != RESTORE_NONE) {
-    rsi->restoration_type = (RestorationType *)aom_realloc(
-        rsi->restoration_type, sizeof(*rsi->restoration_type) * ntiles);
     if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
-      rsi->wiener_info = (WienerInfo *)aom_realloc(
-          rsi->wiener_info, sizeof(*rsi->wiener_info) * ntiles);
-      assert(rsi->wiener_info != NULL);
-      rsi->sgrproj_info = (SgrprojInfo *)aom_realloc(
-          rsi->sgrproj_info, sizeof(*rsi->sgrproj_info) * ntiles);
-      assert(rsi->sgrproj_info != NULL);
-      rsi->domaintxfmrf_info = (DomaintxfmrfInfo *)aom_realloc(
-          rsi->domaintxfmrf_info, sizeof(*rsi->domaintxfmrf_info) * ntiles);
-      assert(rsi->domaintxfmrf_info != NULL);
       for (i = 0; i < ntiles; ++i) {
         rsi->restoration_type[i] =
             aom_read_tree(rb, av1_switchable_restore_tree,
@@ -2347,9 +2336,6 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
         }
       }
     } else if (rsi->frame_restoration_type == RESTORE_WIENER) {
-      rsi->wiener_info = (WienerInfo *)aom_realloc(
-          rsi->wiener_info, sizeof(*rsi->wiener_info) * ntiles);
-      assert(rsi->wiener_info != NULL);
       for (i = 0; i < ntiles; ++i) {
         if (aom_read(rb, RESTORE_NONE_WIENER_PROB, ACCT_STR)) {
           rsi->restoration_type[i] = RESTORE_WIENER;
@@ -2361,9 +2347,6 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
         }
       }
     } else if (rsi->frame_restoration_type == RESTORE_SGRPROJ) {
-      rsi->sgrproj_info = (SgrprojInfo *)aom_realloc(
-          rsi->sgrproj_info, sizeof(*rsi->sgrproj_info) * ntiles);
-      assert(rsi->sgrproj_info != NULL);
       for (i = 0; i < ntiles; ++i) {
         if (aom_read(rb, RESTORE_NONE_SGRPROJ_PROB, ACCT_STR)) {
           rsi->restoration_type[i] = RESTORE_SGRPROJ;
@@ -2375,9 +2358,6 @@ static void decode_restoration(AV1_COMMON *cm, aom_reader *rb) {
         }
       }
     } else if (rsi->frame_restoration_type == RESTORE_DOMAINTXFMRF) {
-      rsi->domaintxfmrf_info = (DomaintxfmrfInfo *)aom_realloc(
-          rsi->domaintxfmrf_info, sizeof(*rsi->domaintxfmrf_info) * ntiles);
-      assert(rsi->domaintxfmrf_info != NULL);
       for (i = 0; i < ntiles; ++i) {
         if (aom_read(rb, RESTORE_NONE_DOMAINTXFMRF_PROB, ACCT_STR)) {
           rsi->restoration_type[i] = RESTORE_DOMAINTXFMRF;
@@ -3986,6 +3966,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   setup_clpf(pbi, rb);
 #endif
 #if CONFIG_LOOP_RESTORATION
+  av1_alloc_restoration_buffers(cm);
   decode_restoration_mode(cm, rb);
 #endif  // CONFIG_LOOP_RESTORATION
   setup_quantization(cm, rb);
@@ -4572,11 +4553,8 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
     *p_data_end = decode_tiles(pbi, data + first_partition_size, data_end);
   }
 #if CONFIG_LOOP_RESTORATION
-  if (cm->rst_info.restoration_type != RESTORE_NONE) {
-    av1_loop_restoration_init(&cm->rst_internal, &cm->rst_info,
-                              cm->frame_type == KEY_FRAME, cm->width,
-                              cm->height);
-    av1_loop_restoration_rows(new_fb, cm, 0, cm->mi_rows, 0, NULL);
+  if (cm->rst_info.frame_restoration_type != RESTORE_NONE) {
+    av1_loop_restoration_frame(new_fb, cm, &cm->rst_info, 0, 0, NULL);
   }
 #endif  // CONFIG_LOOP_RESTORATION
 

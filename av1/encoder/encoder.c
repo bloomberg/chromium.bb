@@ -452,6 +452,7 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   aom_free_frame_buffer(&cpi->last_frame_uf);
 #if CONFIG_LOOP_RESTORATION
   aom_free_frame_buffer(&cpi->last_frame_db);
+  aom_free(cpi->highprec_srcbuf);
   av1_free_restoration_buffers(cm);
 #endif  // CONFIG_LOOP_RESTORATION
   aom_free_frame_buffer(&cpi->scaled_source);
@@ -726,6 +727,11 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
                                NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate last frame deblocked buffer");
+  cpi->highprec_srcbuf = (uint8_t *)aom_realloc(
+      cpi->highprec_srcbuf, RESTORATION_TILEPELS_MAX * sizeof(int64_t));
+  if (!cpi->highprec_srcbuf)
+    aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
+                       "Failed to allocate highprec srcbuf for restoration");
 #endif  // CONFIG_LOOP_RESTORATION
 
   if (aom_realloc_frame_buffer(&cpi->scaled_source, cm->width, cm->height,
@@ -3428,14 +3434,11 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   }
 #endif
 #if CONFIG_LOOP_RESTORATION
-  if (cm->rst_info.restoration_type != RESTORE_NONE) {
-    av1_loop_restoration_init(&cm->rst_internal, &cm->rst_info,
-                              cm->frame_type == KEY_FRAME, cm->width,
-                              cm->height);
-    av1_loop_restoration_rows(cm->frame_to_show, cm, 0, cm->mi_rows, 0, NULL);
+  if (cm->rst_info.frame_restoration_type != RESTORE_NONE) {
+    av1_loop_restoration_frame(cm->frame_to_show, cm, &cm->rst_info, 0, 0,
+                               NULL);
   }
 #endif  // CONFIG_LOOP_RESTORATION
-
   aom_extend_frame_inner_borders(cm->frame_to_show);
 }
 
@@ -3830,6 +3833,9 @@ static void set_frame_size(AV1_COMP *cpi) {
 
   alloc_util_frame_buffers(cpi);
   init_motion_estimation(cpi);
+#if CONFIG_LOOP_RESTORATION
+  av1_alloc_restoration_buffers(cm);
+#endif  // CONFIG_LOOP_RESTORATION
 
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
     RefBuffer *const ref_buf = &cm->frame_refs[ref_frame - LAST_FRAME];

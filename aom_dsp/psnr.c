@@ -194,6 +194,14 @@ int64_t aom_get_y_sse(const YV12_BUFFER_CONFIG *a,
                  a->y_crop_width, a->y_crop_height);
 }
 
+int64_t aom_get_u_sse_part(const YV12_BUFFER_CONFIG *a,
+                           const YV12_BUFFER_CONFIG *b, int hstart, int width,
+                           int vstart, int height) {
+  return get_sse(a->u_buffer + vstart * a->uv_stride + hstart, a->uv_stride,
+                 b->u_buffer + vstart * b->uv_stride + hstart, b->uv_stride,
+                 width, height);
+}
+
 int64_t aom_get_u_sse(const YV12_BUFFER_CONFIG *a,
                       const YV12_BUFFER_CONFIG *b) {
   assert(a->uv_crop_width == b->uv_crop_width);
@@ -201,6 +209,14 @@ int64_t aom_get_u_sse(const YV12_BUFFER_CONFIG *a,
 
   return get_sse(a->u_buffer, a->uv_stride, b->u_buffer, b->uv_stride,
                  a->uv_crop_width, a->uv_crop_height);
+}
+
+int64_t aom_get_v_sse_part(const YV12_BUFFER_CONFIG *a,
+                           const YV12_BUFFER_CONFIG *b, int hstart, int width,
+                           int vstart, int height) {
+  return get_sse(a->v_buffer + vstart * a->uv_stride + hstart, a->uv_stride,
+                 b->v_buffer + vstart * b->uv_stride + hstart, b->uv_stride,
+                 width, height);
 }
 
 int64_t aom_get_v_sse(const YV12_BUFFER_CONFIG *a,
@@ -232,6 +248,15 @@ int64_t aom_highbd_get_y_sse(const YV12_BUFFER_CONFIG *a,
                         a->y_crop_width, a->y_crop_height);
 }
 
+int64_t aom_highbd_get_u_sse_part(const YV12_BUFFER_CONFIG *a,
+                                  const YV12_BUFFER_CONFIG *b, int hstart,
+                                  int width, int vstart, int height) {
+  return highbd_get_sse(a->u_buffer + vstart * a->uv_stride + hstart,
+                        a->uv_stride,
+                        b->u_buffer + vstart * b->uv_stride + hstart,
+                        b->uv_stride, width, height);
+}
+
 int64_t aom_highbd_get_u_sse(const YV12_BUFFER_CONFIG *a,
                              const YV12_BUFFER_CONFIG *b) {
   assert(a->uv_crop_width == b->uv_crop_width);
@@ -241,6 +266,15 @@ int64_t aom_highbd_get_u_sse(const YV12_BUFFER_CONFIG *a,
 
   return highbd_get_sse(a->u_buffer, a->uv_stride, b->u_buffer, b->uv_stride,
                         a->uv_crop_width, a->uv_crop_height);
+}
+
+int64_t aom_highbd_get_v_sse_part(const YV12_BUFFER_CONFIG *a,
+                                  const YV12_BUFFER_CONFIG *b, int hstart,
+                                  int width, int vstart, int height) {
+  return highbd_get_sse(a->v_buffer + vstart * a->uv_stride + hstart,
+                        a->uv_stride,
+                        b->v_buffer + vstart * b->uv_stride + hstart,
+                        b->uv_stride, width, height);
 }
 
 int64_t aom_highbd_get_v_sse(const YV12_BUFFER_CONFIG *a,

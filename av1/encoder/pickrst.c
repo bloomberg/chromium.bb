@@ -40,25 +40,39 @@ const int frame_level_restore_bits[RESTORE_TYPES] = { 2, 2, 3, 3, 2 };
 static int64_t sse_restoration_tile(const YV12_BUFFER_CONFIG *src,
                                     const YV12_BUFFER_CONFIG *dst,
                                     const AV1_COMMON *cm, int h_start,
-                                    int width, int v_start, int height) {
+                                    int width, int v_start, int height,
+                                    int y_only) {
   int64_t filt_err;
 #if CONFIG_AOM_HIGHBITDEPTH
   if (cm->use_highbitdepth) {
     filt_err =
         aom_highbd_get_y_sse_part(src, dst, h_start, width, v_start, height);
-  } else {
-    filt_err = aom_get_y_sse_part(src, dst, h_start, width, v_start, height);
+    if (!y_only) {
+      filt_err += aom_highbd_get_u_sse_part(
+          src, dst, h_start >> cm->subsampling_x, width >> cm->subsampling_x,
+          v_start >> cm->subsampling_y, height >> cm->subsampling_y);
+      filt_err += aom_highbd_get_v_sse_part(
+          src, dst, h_start >> cm->subsampling_x, width >> cm->subsampling_x,
+          v_start >> cm->subsampling_y, height >> cm->subsampling_y);
+    }
+    return filt_err;
   }
-#else
-  (void)cm;
-  filt_err = aom_get_y_sse_part(src, dst, h_start, width, v_start, height);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
+  filt_err = aom_get_y_sse_part(src, dst, h_start, width, v_start, height);
+  if (!y_only) {
+    filt_err += aom_get_u_sse_part(
+        src, dst, h_start >> cm->subsampling_x, width >> cm->subsampling_x,
+        v_start >> cm->subsampling_y, height >> cm->subsampling_y);
+    filt_err += aom_get_u_sse_part(
+        src, dst, h_start >> cm->subsampling_x, width >> cm->subsampling_x,
+        v_start >> cm->subsampling_y, height >> cm->subsampling_y);
+  }
   return filt_err;
 }
 
 static int64_t try_restoration_tile(const YV12_BUFFER_CONFIG *src,
                                     AV1_COMP *const cpi, RestorationInfo *rsi,
-                                    int partial_frame, int tile_idx,
+                                    int y_only, int partial_frame, int tile_idx,
                                     int subtile_idx, int subtile_bits,
                                     YV12_BUFFER_CONFIG *dst_frame) {
   AV1_COMMON *const cm = &cpi->common;
@@ -69,36 +83,41 @@ static int64_t try_restoration_tile(const YV12_BUFFER_CONFIG *src,
                                          &tile_height, &nhtiles, &nvtiles);
   (void)ntiles;
 
-  av1_loop_restoration_frame(cm->frame_to_show, cm, rsi, 1, partial_frame,
+  av1_loop_restoration_frame(cm->frame_to_show, cm, rsi, y_only, partial_frame,
                              dst_frame);
   av1_get_rest_tile_limits(tile_idx, subtile_idx, subtile_bits, nhtiles,
                            nvtiles, tile_width, tile_height, cm->width,
                            cm->height, 0, 0, &h_start, &h_end, &v_start,
                            &v_end);
   filt_err = sse_restoration_tile(src, dst_frame, cm, h_start, h_end - h_start,
-                                  v_start, v_end - v_start);
+                                  v_start, v_end - v_start, y_only);
 
   return filt_err;
 }
 
 static int64_t try_restoration_frame(const YV12_BUFFER_CONFIG *src,
                                      AV1_COMP *const cpi, RestorationInfo *rsi,
-                                     int partial_frame,
+                                     int y_only, int partial_frame,
                                      YV12_BUFFER_CONFIG *dst_frame) {
   AV1_COMMON *const cm = &cpi->common;
   int64_t filt_err;
-  av1_loop_restoration_frame(cm->frame_to_show, cm, rsi, 1, partial_frame,
+  av1_loop_restoration_frame(cm->frame_to_show, cm, rsi, y_only, partial_frame,
                              dst_frame);
 #if CONFIG_AOM_HIGHBITDEPTH
   if (cm->use_highbitdepth) {
     filt_err = aom_highbd_get_y_sse(src, dst_frame);
-  } else {
-    filt_err = aom_get_y_sse(src, dst_frame);
+    if (!y_only) {
+      filt_err += aom_highbd_get_u_sse(src, dst_frame);
+      filt_err += aom_highbd_get_v_sse(src, dst_frame);
+    }
+    return filt_err;
   }
-#else
-  filt_err = aom_get_y_sse(src, dst_frame);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-
+  filt_err = aom_get_y_sse(src, dst_frame);
+  if (!y_only) {
+    filt_err += aom_get_u_sse(src, dst_frame);
+    filt_err += aom_get_v_sse(src, dst_frame);
+  }
   return filt_err;
 }
 
@@ -177,9 +196,10 @@ void encode_xq(int *xq, int *xqd) {
 static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
                                           int dat_stride, uint8_t *src8,
                                           int src_stride, int bit_depth,
-                                          int *eps, int *xqd, void *tmpbuf) {
-  int64_t *srd = (int64_t *)tmpbuf;
-  int64_t *dgd = srd + RESTORATION_TILEPELS_MAX;
+                                          int *eps, int *xqd, void *srcbuf,
+                                          void *tmpbuf) {
+  int64_t *srd = (int64_t *)srcbuf;
+  int64_t *dgd = (int64_t *)tmpbuf;
   int64_t *flt1 = dgd + RESTORATION_TILEPELS_MAX;
   int64_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
   uint8_t *tmpbuf2 = (uint8_t *)(flt2 + RESTORATION_TILEPELS_MAX);
@@ -249,8 +269,7 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   RestorationInfo rsi;
   int tile_idx, tile_width, tile_height, nhtiles, nvtiles;
   int h_start, h_end, v_start, v_end;
-  uint8_t *tmpbuf = aom_malloc(SGRPROJ_TMPBUF_SIZE +
-                               RESTORATION_TILEPELS_MAX * sizeof(int64_t) * 2);
+  // Allocate for the src buffer at high precision
   const int ntiles = av1_get_rest_ntiles(cm->width, cm->height, &tile_width,
                                          &tile_height, &nhtiles, &nvtiles);
   //  Make a copy of the unfiltered / processed recon buffer
@@ -272,7 +291,7 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
                              tile_height, cm->width, cm->height, 0, 0, &h_start,
                              &h_end, &v_start, &v_end);
     err = sse_restoration_tile(src, cm->frame_to_show, cm, h_start,
-                               h_end - h_start, v_start, v_end - v_start);
+                               h_end - h_start, v_start, v_end - v_start, 1);
     // #bits when a tile is not restored
     bits = av1_cost_bit(RESTORE_NONE_SGRPROJ_PROB, 0);
     cost_norestore = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
@@ -286,9 +305,10 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
 #else
         8,
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-        &rsi.sgrproj_info[tile_idx].ep, rsi.sgrproj_info[tile_idx].xqd, tmpbuf);
+        &rsi.sgrproj_info[tile_idx].ep, rsi.sgrproj_info[tile_idx].xqd,
+        cpi->highprec_srcbuf, cm->rst_internal.tmpbuf);
     rsi.sgrproj_info[tile_idx].level = 1;
-    err = try_restoration_tile(src, cpi, &rsi, partial_frame, tile_idx, 0, 0,
+    err = try_restoration_tile(src, cpi, &rsi, 1, partial_frame, tile_idx, 0, 0,
                                dst_frame);
     bits = SGRPROJ_BITS << AV1_PROB_COST_SHIFT;
     bits += av1_cost_bit(RESTORE_NONE_SGRPROJ_PROB, 1);
@@ -317,11 +337,10 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
       bits += (SGRPROJ_BITS << AV1_PROB_COST_SHIFT);
     }
   }
-  err = try_restoration_frame(src, cpi, &rsi, partial_frame, dst_frame);
+  err = try_restoration_frame(src, cpi, &rsi, 1, partial_frame, dst_frame);
   cost_sgrproj = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
 
   aom_free(rsi.sgrproj_info);
-  aom_free(tmpbuf);
 
   aom_yv12_copy_y(&cpi->last_frame_uf, cm->frame_to_show);
   return cost_sgrproj;
@@ -371,8 +390,7 @@ static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
   int64_t best_sse = INT64_MAX, sse;
   if (bit_depth == 8) {
     uint8_t *tmp = (uint8_t *)aom_malloc(width * height * sizeof(*tmp));
-    int32_t *tmpbuf =
-        (int32_t *)aom_malloc(RESTORATION_TILEPELS_MAX * sizeof(*tmpbuf));
+    int32_t *tmpbuf = (int32_t *)aom_malloc(DOMAINTXFMRF_TMPBUF_SIZE);
     uint8_t *dgd = dgd8;
     uint8_t *src = src8;
     // First phase
@@ -412,11 +430,11 @@ static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
       }
     }
     aom_free(tmp);
+    aom_free(tmpbuf);
   } else {
 #if CONFIG_AOM_HIGHBITDEPTH
     uint16_t *tmp = (uint16_t *)aom_malloc(width * height * sizeof(*tmp));
-    int32_t *tmpbuf =
-        (int32_t *)aom_malloc(RESTORATION_TILEPELS_MAX * sizeof(*tmpbuf));
+    int32_t *tmpbuf = (int32_t *)aom_malloc(DOMAINTXFMRF_TMPBUF_SIZE);
     uint16_t *dgd = CONVERT_TO_SHORTPTR(dgd8);
     uint16_t *src = CONVERT_TO_SHORTPTR(src8);
     // First phase
@@ -456,6 +474,7 @@ static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
       }
     }
     aom_free(tmp);
+    aom_free(tmpbuf);
 #else
     assert(0);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
@@ -498,7 +517,7 @@ static double search_domaintxfmrf(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
                              tile_height, cm->width, cm->height, 0, 0, &h_start,
                              &h_end, &v_start, &v_end);
     err = sse_restoration_tile(src, cm->frame_to_show, cm, h_start,
-                               h_end - h_start, v_start, v_end - v_start);
+                               h_end - h_start, v_start, v_end - v_start, 1);
     // #bits when a tile is not restored
     bits = av1_cost_bit(RESTORE_NONE_DOMAINTXFMRF_PROB, 0);
     cost_norestore = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
@@ -516,7 +535,7 @@ static double search_domaintxfmrf(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
         &rsi.domaintxfmrf_info[tile_idx].sigma_r);
 
     rsi.domaintxfmrf_info[tile_idx].level = 1;
-    err = try_restoration_tile(src, cpi, &rsi, partial_frame, tile_idx, 0, 0,
+    err = try_restoration_tile(src, cpi, &rsi, 1, partial_frame, tile_idx, 0, 0,
                                dst_frame);
     bits = DOMAINTXFMRF_PARAMS_BITS << AV1_PROB_COST_SHIFT;
     bits += av1_cost_bit(RESTORE_NONE_DOMAINTXFMRF_PROB, 1);
@@ -546,7 +565,7 @@ static double search_domaintxfmrf(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
       bits += (DOMAINTXFMRF_PARAMS_BITS << AV1_PROB_COST_SHIFT);
     }
   }
-  err = try_restoration_frame(src, cpi, &rsi, partial_frame, dst_frame);
+  err = try_restoration_frame(src, cpi, &rsi, 1, partial_frame, dst_frame);
   cost_domaintxfmrf = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
 
   aom_free(rsi.domaintxfmrf_info);
@@ -904,7 +923,7 @@ static double search_wiener(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
                              tile_height, width, height, 0, 0, &h_start, &h_end,
                              &v_start, &v_end);
     err = sse_restoration_tile(src, cm->frame_to_show, cm, h_start,
-                               h_end - h_start, v_start, v_end - v_start);
+                               h_end - h_start, v_start, v_end - v_start, 1);
     // #bits when a tile is not restored
     bits = av1_cost_bit(RESTORE_NONE_WIENER_PROB, 0);
     cost_norestore = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
@@ -941,7 +960,7 @@ static double search_wiener(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
     }
 
     rsi.wiener_info[tile_idx].level = 1;
-    err = try_restoration_tile(src, cpi, &rsi, partial_frame, tile_idx, 0, 0,
+    err = try_restoration_tile(src, cpi, &rsi, 1, partial_frame, tile_idx, 0, 0,
                                dst_frame);
     bits = WIENER_FILT_BITS << AV1_PROB_COST_SHIFT;
     bits += av1_cost_bit(RESTORE_NONE_WIENER_PROB, 1);
@@ -975,7 +994,7 @@ static double search_wiener(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
       }
     }
   }
-  err = try_restoration_frame(src, cpi, &rsi, partial_frame, dst_frame);
+  err = try_restoration_frame(src, cpi, &rsi, 1, partial_frame, dst_frame);
   cost_wiener = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
 
   aom_free(rsi.wiener_info);
@@ -1010,14 +1029,14 @@ static double search_norestore(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
                              tile_height, cm->width, cm->height, 0, 0, &h_start,
                              &h_end, &v_start, &v_end);
     err = sse_restoration_tile(src, cm->frame_to_show, cm, h_start,
-                               h_end - h_start, v_start, v_end - v_start);
+                               h_end - h_start, v_start, v_end - v_start, 1);
     best_tile_cost[tile_idx] =
         RDCOST_DBL(x->rdmult, x->rddiv,
                    (cpi->switchable_restore_cost[RESTORE_NONE] >> 4), err);
   }
   // RD cost associated with no restoration
   err = sse_restoration_tile(src, cm->frame_to_show, cm, 0, cm->width, 0,
-                             cm->height);
+                             cm->height, 1);
   bits = frame_level_restore_bits[RESTORE_NONE] << AV1_PROB_COST_SHIFT;
   cost_norestore = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
   aom_yv12_copy_y(&cpi->last_frame_uf, cm->frame_to_show);
@@ -1074,19 +1093,6 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
 
   const int ntiles =
       av1_get_rest_ntiles(cm->width, cm->height, NULL, NULL, NULL, NULL);
-  cm->rst_info.restoration_type = (RestorationType *)aom_realloc(
-      cm->rst_info.restoration_type,
-      sizeof(*cm->rst_info.restoration_type) * ntiles);
-  cm->rst_info.wiener_info = (WienerInfo *)aom_realloc(
-      cm->rst_info.wiener_info, sizeof(*cm->rst_info.wiener_info) * ntiles);
-  assert(cm->rst_info.wiener_info != NULL);
-  cm->rst_info.sgrproj_info = (SgrprojInfo *)aom_realloc(
-      cm->rst_info.sgrproj_info, sizeof(*cm->rst_info.sgrproj_info) * ntiles);
-  assert(cm->rst_info.sgrproj_info != NULL);
-  cm->rst_info.domaintxfmrf_info = (DomaintxfmrfInfo *)aom_realloc(
-      cm->rst_info.domaintxfmrf_info,
-      sizeof(*cm->rst_info.domaintxfmrf_info) * ntiles);
-  assert(cm->rst_info.domaintxfmrf_info != NULL);
 
   for (r = 0; r < RESTORE_SWITCHABLE_TYPES; r++)
     tile_cost[r] = (double *)aom_malloc(sizeof(*tile_cost[0]) * ntiles);
@@ -1166,4 +1172,5 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
          cost_restore[2], cost_restore[3], cost_restore[4]);
          */
   for (r = 0; r < RESTORE_SWITCHABLE_TYPES; r++) aom_free(tile_cost[r]);
+  aom_free_frame_buffer(&dst_frame);
 }
