@@ -211,7 +211,7 @@ URLRequestJob* URLRequestHttpJob::Factory(URLRequest* request,
 
 #if defined(OS_ANDROID)
     // Check whether the app allows cleartext traffic to this host, and return
-    // ERR_BLOCKED_BY_CLIENT if not.
+    // ERR_CLEARTEXT_NOT_PERMITTED if not.
     if (request->context()->check_cleartext_permitted() &&
         !android::IsCleartextPermitted(url.host())) {
       return new URLRequestErrorJob(request, network_delegate,
