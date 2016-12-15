@@ -4,6 +4,7 @@
 
 import argparse
 import json
+import logging
 import os
 import re
 import socket
@@ -17,9 +18,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
   os.pardir, 'third_party', 'webdriver', 'pylib'))
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
-
-# TODO(robertogden): Add logging.
-
 
 def ParseFlags():
   """Parses the given command line arguments.
@@ -45,7 +43,7 @@ def ParseFlags():
     'will be used.')
   parser.add_argument('--disable_buffer', help='Causes stdout and stderr from '
     'tests to output normally. Otherwise, the standard output and standard '
-    'error streams are buffered during the test run, and output during a '
+    'error streams are buffered during the test run, and output from a '
     'passing test is discarded. Output will always be echoed normally on test '
     'fail or error and is added to the failure messages.', action='store_true')
   parser.add_argument('-c', '--catch', help='Control-C during the test run '
@@ -54,9 +52,53 @@ def ParseFlags():
     action='store_true')
   parser.add_argument('-f', '--failfast', help='Stop the test run on the first '
     'error or failure.', action='store_true')
-  # TODO(robertogden): Log sys.argv here.
+  parser.add_argument('--logging_level', choices=['DEBUG', 'INFO', 'WARN',
+    'ERROR', 'CRIT'], default='ERROR', help='The logging verbosity for log '
+    'messages, printed to stderr. To see stderr logging output during a '
+    'successful test run, also pass --disable_buffer. Default=ERROR')
+  parser.add_argument('--log_file', help='If given, write logging statements '
+    'to the given file instead of stderr.')
   return parser.parse_args(sys.argv[1:])
 
+def GetLogger(name='common'):
+  """Creates a Logger instance with the given name and returns it.
+
+  If a logger has already been created with the same name, that instance is
+  returned instead.
+
+  Args:
+    name: The name of the logger to return.
+  Returns:
+    A logger with the given name.
+  """
+  logger = logging.getLogger(name)
+  if hasattr(logger, "initialized"):
+    return logger
+  logging_level = ParseFlags().logging_level
+  if logging_level == 'DEBUG':
+    logger.setLevel(logging.DEBUG)
+  elif logging_level == 'INFO':
+    logger.setLevel(logging.INFO)
+  elif logging_level == 'WARN':
+    logger.setLevel(logging.WARNING)
+  elif logging_level == 'ERROR':
+    logger.setLevel(logging.ERROR)
+  elif logging_level == 'CRIT':
+    logger.setLevel(logging.CRITICAL)
+  else:
+    logger.setLevel(logging.NOTSET)
+  formatter = logging.Formatter('%(asctime)s %(funcName)s() %(levelname)s: '
+    '%(message)s')
+  if ParseFlags().log_file:
+    fh = logging.FileHandler(ParseFlags().log_file)
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
+  else:
+    ch = logging.StreamHandler(sys.stderr)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+  logger.initialized = True
+  return logger
 
 class TestDriver:
   """The main driver for an integration test.
@@ -78,6 +120,7 @@ class TestDriver:
     self._driver = None
     self._chrome_args = set()
     self._url = ''
+    self._logger = GetLogger(name='TestDriver')
 
   def __enter__(self):
     return self
@@ -106,7 +149,9 @@ class TestDriver:
         arg_key = GetDictKey(override_arg)
         if arg_key in original_args:
           self._chrome_args.remove(original_args[arg_key])
+          self._logger.info('Removed Chrome flag. %s', original_args[arg_key])
         self._chrome_args.add(override_arg)
+        self._logger.info('Added Chrome flag. %s', override_arg)
     # Always add the flag that allows histograms to be queried in javascript.
     self._chrome_args.add('--enable-stats-collection-bindings')
 
@@ -126,8 +171,15 @@ class TestDriver:
       capabilities['chromeOptions'].update({
         'androidPackage': self._flags.android_package,
       })
+      self._logger.debug('Will use Chrome on Android')
     elif self._flags.chrome_exec:
       capabilities['chrome.binary'] = self._flags.chrome_exec
+      self._logger.info('Using the Chrome binary at this path: %s',
+        self._flags.chrome_exec)
+    self._logger.info('Starting Chrome with these flags: %s',
+      str(self._chrome_args))
+    self._logger.debug('Starting ChromeDriver with these capabilities: %s',
+      json.dumps(capabilities))
     driver = webdriver.Chrome(executable_path=self._flags.chrome_driver,
       desired_capabilities=capabilities)
     driver.command_executor._commands.update({
@@ -138,6 +190,7 @@ class TestDriver:
   def _StopDriver(self):
     """Nicely stops the ChromeDriver.
     """
+    self._logger.debug('Stopping ChromeDriver')
     self._driver.quit()
     self._driver = None
 
@@ -157,6 +210,7 @@ class TestDriver:
       arg: a string argument to pass to Chrome at start
     """
     self._chrome_args.add(arg)
+    self._logger.debug('Adding Chrome arg: %s', arg)
 
   def RemoveChromeArgs(self, args):
     """Removes multiple arguments that will no longer be passed to Chromium at
@@ -177,11 +231,13 @@ class TestDriver:
       arg: A string flag to no longer use the next time Chrome starts.
     """
     self._chrome_args.discard(arg)
+    self._logger.debug('Removing Chrome arg: %s', arg)
 
   def ClearChromeArgs(self):
     """Removes all arguments from Chromium at start.
     """
     self._chrome_args.clear()
+    self._logger.debug('Clearing all Chrome args')
 
   def ClearCache(self):
     """Clears the browser cache.
@@ -189,10 +245,11 @@ class TestDriver:
     Important note: ChromeDriver automatically starts
     a clean copy of Chrome on every instantiation.
     """
-    self.ExecuteJavascript('if(window.chrome && chrome.benchmarking && '
+    res = self.ExecuteJavascript('if(window.chrome && chrome.benchmarking && '
       'chrome.benchmarking.clearCache){chrome.benchmarking.clearCache(); '
       'chrome.benchmarking.clearPredictorCache();chrome.benchmarking.'
       'clearHostResolverCache();}')
+    self._logger.info('Cleared browser cache. Returned=%s', str(res))
 
   def LoadURL(self, url, timeout=30):
     """Starts Chromium with any arguments previously given and navigates to the
@@ -206,7 +263,9 @@ class TestDriver:
     if not self._driver:
       self._StartDriver()
     self._driver.set_page_load_timeout(timeout)
+    self._logger.debug('Set page load timeout to %f seconds', timeout)
     self._driver.get(self._url)
+    self._logger.debug('Loaded page %s', url)
 
   def ExecuteJavascript(self, script, timeout=30):
     """Executes the given javascript in the browser's current page in an
@@ -227,8 +286,11 @@ class TestDriver:
     # crbug/672114 is fixed.
     default_timeout = socket.getdefaulttimeout()
     socket.setdefaulttimeout(timeout)
+    self._logger.debug('Set socket timeout to %f seconds', timeout)
     script_result = self._driver.execute_script(script)
+    self._logger.debug('Executed Javascript in browser: %s', script)
     socket.setdefaulttimeout(default_timeout)
+    self._logger.debug('Set socket timeout to %s', str(default_timeout))
     return script_result
 
   def ExecuteJavascriptStatement(self, script, timeout=30):
@@ -247,6 +309,7 @@ class TestDriver:
   def GetHistogram(self, histogram):
     js_query = 'statsCollectionController.getBrowserHistogram("%s")' % histogram
     string_response = self.ExecuteJavascriptStatement(js_query)
+    self._logger.debug('Got %s histogram=%s', histogram, string_response)
     return json.loads(string_response)
 
   def WaitForJavascriptExpression(self, expression, timeout, min_poll=0.1,
@@ -262,6 +325,7 @@ class TestDriver:
     Returns: The result of the expression.
     """
     poll_interval = max(min(max_poll, float(timeout) / 10.0), min_poll)
+    self._logger.debug('Poll interval=%f seconds', poll_interval)
     result = self.ExecuteJavascriptStatement(expression)
     total_waited_time = 0
     while not result and total_waited_time < timeout:
@@ -269,6 +333,7 @@ class TestDriver:
       total_waited_time += poll_interval
       result = self.ExecuteJavascriptStatement(expression)
     if not result:
+      self._logger.error('%s not true after %f seconds' % (expression, timeout))
       raise Exception('%s not true after %f seconds' % (expression, timeout))
     return result
 
@@ -285,8 +350,11 @@ class TestDriver:
     all_messages = []
     for log in self._driver.execute('getLog', {'type': 'performance'})['value']:
       message = json.loads(log['message'])['message']
+      self._logger.debug('Got Performance log: %s', log['message'])
       if re.match(method_filter, message['method']):
         all_messages.append(message)
+    self._logger.info('Got %d performance logs with filter method=%s',
+      len(all_messages), method_filter)
     return all_messages
 
   def GetHTTPResponses(self, include_favicon=False):
@@ -322,9 +390,13 @@ class TestDriver:
     all_responses = []
     for message in self.GetPerformanceLogs():
       response = MakeHTTPResponse(message)
+      self._logger.debug('New HTTPResponse: %s', str(response))
       is_favicon = response.url.endswith('favicon.ico')
       if not is_favicon or include_favicon:
         all_responses.append(response)
+    self._logger.info('%d new HTTPResponse objects found in the logs %s '
+      'favicons', len(all_responses), ('including' if include_favicon else
+      'not including'))
     return all_responses
 
 class HTTPResponse:
@@ -447,9 +519,12 @@ class IntegrationTest(unittest.TestCase):
   def RunAllTests():
     """A simple helper method to run all tests using unittest.main().
     """
+    flags = ParseFlags()
+    logger = GetLogger()
+    logger.debug('Command line args: %s', str(sys.argv))
+    logger.info('sys.argv parsed to %s', str(flags))
     # The unittest library uses sys.argv itself and is easily confused by our
     # command line options. Pass it a simpler argv instead, while working in the
     # unittest command line args functionality.
-    flags = ParseFlags()
     unittest.main(argv=[sys.argv[0]], verbosity=2, failfast=flags.failfast,
       catchbreak=flags.catch, buffer=(not flags.disable_buffer))
