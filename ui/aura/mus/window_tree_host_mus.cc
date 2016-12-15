@@ -108,9 +108,11 @@ void WindowTreeHostMus::SetBoundsFromServer(const gfx::Rect& bounds) {
   SetBoundsInPixels(bounds);
 }
 
-void WindowTreeHostMus::SetClientArea(const gfx::Insets& insets) {
+void WindowTreeHostMus::SetClientArea(
+    const gfx::Insets& insets,
+    const std::vector<gfx::Rect>& additional_client_area) {
   delegate_->OnWindowTreeHostClientAreaWillChange(this, insets,
-                                                  std::vector<gfx::Rect>());
+                                                  additional_client_area);
 }
 
 void WindowTreeHostMus::SetHitTestMask(const base::Optional<gfx::Rect>& rect) {

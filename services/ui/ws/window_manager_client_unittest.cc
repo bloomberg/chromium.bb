@@ -652,7 +652,8 @@ TEST_F(WindowServerTest, ClientAreaChanged) {
 
   // Verify change from embedded makes it to parent.
   const gfx::Insets insets(1, 2, 3, 4);
-  embed_result->window_tree_host->SetClientArea(insets);
+  embed_result->window_tree_host->SetClientArea(insets,
+                                                std::vector<gfx::Rect>());
   std::unique_ptr<ClientAreaChange> client_area_change =
       WaitForClientAreaToChange();
   ASSERT_TRUE(client_area_change);

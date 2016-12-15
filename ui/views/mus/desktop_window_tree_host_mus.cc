@@ -31,11 +31,6 @@ namespace views {
 
 namespace {
 
-bool ShouldSetClientArea(views::Widget::InitParams::Type type) {
-  using WIP = views::Widget::InitParams;
-  return type == WIP::TYPE_WINDOW || type == WIP::TYPE_PANEL;
-}
-
 // As the window manager renderers the non-client decorations this class does
 // very little but honor the client area insets from the window manager.
 class ClientSideNonClientFrameView : public NonClientFrameView {
@@ -201,7 +196,7 @@ bool DesktopWindowTreeHostMus::IsDocked() const {
 }
 
 void DesktopWindowTreeHostMus::SendClientAreaToServer() {
-  if (!ShouldSetClientArea(desktop_native_widget_aura_->widget_type()))
+  if (!ShouldSendClientAreaToServer())
     return;
 
   NonClientView* non_client_view =
@@ -210,10 +205,12 @@ void DesktopWindowTreeHostMus::SendClientAreaToServer() {
     return;
 
   const gfx::Rect client_area_rect(non_client_view->client_view()->bounds());
-  SetClientArea(gfx::Insets(
-      client_area_rect.y(), client_area_rect.x(),
-      non_client_view->bounds().height() - client_area_rect.bottom(),
-      non_client_view->bounds().width() - client_area_rect.right()));
+  SetClientArea(
+      gfx::Insets(
+          client_area_rect.y(), client_area_rect.x(),
+          non_client_view->bounds().height() - client_area_rect.bottom(),
+          non_client_view->bounds().width() - client_area_rect.right()),
+      std::vector<gfx::Rect>());
 }
 
 void DesktopWindowTreeHostMus::SendHitTestMaskToServer() {
@@ -239,6 +236,15 @@ float DesktopWindowTreeHostMus::GetScaleFactor() const {
 
 void DesktopWindowTreeHostMus::SetBoundsInDIP(const gfx::Rect& bounds_in_dip) {
   SetBoundsInPixels(gfx::ConvertRectToPixel(GetScaleFactor(), bounds_in_dip));
+}
+
+bool DesktopWindowTreeHostMus::ShouldSendClientAreaToServer() const {
+  if (!auto_update_client_area_)
+    return false;
+
+  using WIP = views::Widget::InitParams;
+  const WIP::Type type = desktop_native_widget_aura_->widget_type();
+  return type == WIP::TYPE_WINDOW || type == WIP::TYPE_PANEL;
 }
 
 void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
@@ -554,7 +560,7 @@ void DesktopWindowTreeHostMus::SetVisibilityChangedAnimationsEnabled(
 }
 
 NonClientFrameView* DesktopWindowTreeHostMus::CreateNonClientFrameView() {
-  if (!ShouldSetClientArea(desktop_native_widget_aura_->widget_type()))
+  if (!ShouldSendClientAreaToServer())
     return nullptr;
 
   return new ClientSideNonClientFrameView(native_widget_delegate_->AsWidget());

@@ -37,6 +37,11 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   // Called when the window was deleted on the server.
   void ServerDestroyedWindow() { CloseNow(); }
 
+  // Controls whether the client area is automatically updated as necessary.
+  void set_auto_update_client_area(bool value) {
+    auto_update_client_area_ = value;
+  }
+
  private:
   bool IsDocked() const;
 
@@ -47,6 +52,9 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   float GetScaleFactor() const;
 
   void SetBoundsInDIP(const gfx::Rect& bounds_in_dip);
+
+  // Returns true if the client area should be set on this.
+  bool ShouldSendClientAreaToServer() const;
 
   // DesktopWindowTreeHost:
   void Init(aura::Window* content_window,
@@ -141,6 +149,8 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   bool is_active_ = false;
 
   std::unique_ptr<wm::CursorManager> cursor_manager_;
+
+  bool auto_update_client_area_ = true;
 
   // Used so that Close() isn't immediate.
   base::WeakPtrFactory<DesktopWindowTreeHostMus> close_widget_factory_;

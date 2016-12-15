@@ -61,7 +61,8 @@ class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   InputMethodMus* input_method() { return input_method_.get(); }
 
   // Sets the client area on the underlying mus window.
-  void SetClientArea(const gfx::Insets& insets);
+  void SetClientArea(const gfx::Insets& insets,
+                     const std::vector<gfx::Rect>& additional_client_area);
 
   // Sets the hit test mask on the underlying mus window. Pass base::nullopt to
   // clear.
