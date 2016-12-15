@@ -1052,7 +1052,8 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/clip-rect-vrl-008.xht [
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/line-box-direction-vrl-009.xht [ Failure ]
 
 crbug.com/637255 [ Win10 ] media/video-transformed.html [ Pass Failure ]
-crbug.com/637255 [ Win10 ] media/video-layer-crash.html [ Pass Failure ]
+# TODO(robertphillips@) restore this suppression after Skia DEPS roll
+#crbug.com/637255 [ Win10 ] media/video-layer-crash.html [ Pass Failure ]
 
 crbug.com/670307 virtual/threaded/http/tests/worklet/animation-worklet-import.html [ Skip ]
 
@@ -2220,3 +2221,14 @@ crbug.com/674396 [ Win ] compositing/reflections/nested-reflection-transition.ht
 crbug.com/674466 [ Win10 ] fast/forms/select/menulist-appearance-rtl.html [ Pass Failure ]
 crbug.com/674468 [ Trusty ] compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
 
+# for Skia DEPS roll
+crbug.com/674509   compositing/overlap-blending/reflection-opacity-huge.html [ NeedsManualRebaseline ]
+crbug.com/674509   compositing/reflections/animation-inside-reflection.html [ NeedsManualRebaseline ]
+crbug.com/674509   compositing/reflections/deeply-nested-reflections.html [ NeedsManualRebaseline ]
+crbug.com/674509   compositing/reflections/load-video-in-reflection.html [ NeedsManualRebaseline ]
+crbug.com/674509   compositing/reflections/nested-reflection-anchor-point.html [ NeedsManualRebaseline ]
+crbug.com/674509   compositing/reflections/nested-reflection-animated.html [ NeedsManualRebaseline ]
+crbug.com/674509   compositing/reflections/nested-reflection-mask-change.html [ NeedsManualRebaseline ]
+crbug.com/674509   compositing/reflections/nested-reflection-opacity.html [ NeedsManualRebaseline ]
+# TODO(robertphillips@) restore other suppression after Skia DEPS roll
+crbug.com/674509   media/video-layer-crash.html [ NeedsManualRebaseline ]
