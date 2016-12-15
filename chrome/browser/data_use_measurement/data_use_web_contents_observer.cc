@@ -72,4 +72,18 @@ void DataUseWebContentsObserver::ReadyToCommitNavigation(
   service_->ReadyToCommitNavigation(navigation_handle);
 }
 
+void DataUseWebContentsObserver::WasShown() {
+  service_->WasShownOrHidden(web_contents()->GetMainFrame(), true);
+}
+
+void DataUseWebContentsObserver::WasHidden() {
+  service_->WasShownOrHidden(web_contents()->GetMainFrame(), false);
+}
+
+void DataUseWebContentsObserver::RenderFrameHostChanged(
+    content::RenderFrameHost* old_host,
+    content::RenderFrameHost* new_host) {
+  service_->RenderFrameHostChanged(old_host, new_host);
+}
+
 }  // namespace data_use_measurement

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DATA_USE_MEASUREMENT_CHROME_DATA_USE_ASCRIBER_SERVICE_H_
 
 #include <list>
+#include <unordered_set>
 
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -53,6 +54,15 @@ class ChromeDataUseAscriberService : public KeyedService {
   // methods cannot be called on the IO thread, so the pointer is cast to void*.
   void ReadyToCommitNavigation(content::NavigationHandle* navigation_handle);
 
+  // Called every time the WebContents changes visibility. Propagates the event
+  // to the |ascriber_| on the IO thread.
+  void WasShownOrHidden(content::RenderFrameHost* main_render_frame_host,
+                        bool visible);
+
+  // Called when one of the render frames of a WebContents is swapped.
+  void RenderFrameHostChanged(content::RenderFrameHost* old_host,
+                              content::RenderFrameHost* new_host);
+
  private:
   friend class ChromeDataUseAscriberServiceTest;
 
@@ -71,6 +81,11 @@ class ChromeDataUseAscriberService : public KeyedService {
   // is set. The RenderFrameHost pointers in the queues are valid for the
   // duration that they are in the queue.
   std::list<content::RenderFrameHost*> pending_frames_queue_;
+
+  // WebContents visibility change events might arrive from the UI thread before
+  // |ascriber_| is set. Sucn pending main render frame visibile events are
+  // maintained in this set and propagated immediately after |ascriber_| is set.
+  std::unordered_set<content::RenderFrameHost*> pending_visible_main_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDataUseAscriberService);
 };

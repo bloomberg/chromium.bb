@@ -91,6 +91,16 @@ class ChromeDataUseAscriber : public DataUseAscriber {
       bool is_same_page_navigation,
       void* navigation_handle);
 
+  // Called every time the WebContents changes visibility.
+  void WasShownOrHidden(int main_render_process_id,
+                        int main_render_frame_id,
+                        bool visible);
+
+  // Called whenever one of the render frames of a WebContents is swapped.
+  void RenderFrameHostChanged(int old_render_process_id,
+                              int old_render_frame_id,
+                              int new_render_process_id,
+                              int new_render_frame_id);
 
  private:
   friend class ChromeDataUseAscriberTest;
@@ -155,6 +165,9 @@ class ChromeDataUseAscriber : public DataUseAscriber {
                      DataUseRecorderEntry,
                      GlobalRequestIDHash>
       pending_navigation_data_use_map_;
+
+  // Contains the mainframe IDs that are currently visible.
+  base::hash_set<RenderFrameHostID> visible_main_render_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDataUseAscriber);
 };

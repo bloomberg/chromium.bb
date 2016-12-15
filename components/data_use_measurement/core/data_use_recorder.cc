@@ -8,7 +8,8 @@
 
 namespace data_use_measurement {
 
-DataUseRecorder::DataUseRecorder() : main_url_request_(nullptr) {}
+DataUseRecorder::DataUseRecorder()
+    : main_url_request_(nullptr), is_visible_(false) {}
 
 DataUseRecorder::~DataUseRecorder() {}
 

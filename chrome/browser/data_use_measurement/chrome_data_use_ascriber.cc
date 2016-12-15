@@ -239,6 +239,7 @@ void ChromeDataUseAscriber::RenderFrameDeleted(int render_process_id,
     main_render_frame_data_use_map_.erase(frame_iter);
   }
   subframe_to_mainframe_map_.erase(key);
+  visible_main_render_frames_.erase(key);
 }
 
 void ChromeDataUseAscriber::DidStartMainFrameNavigation(
@@ -324,6 +325,12 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
     if (old_frame_entry->IsDataUseComplete()) {
       OnDataUseCompleted(old_frame_entry);
       data_use_recorders_.erase(old_frame_entry);
+
+      if (visible_main_render_frames_.find(
+              RenderFrameHostID(render_process_id, render_frame_id)) !=
+          visible_main_render_frames_.end()) {
+        entry->set_is_visible(true);
+      }
     }
 
     DataUse& data_use = entry->data_use();
@@ -360,6 +367,35 @@ ChromeDataUseAscriber::CreateNewDataUseRecorder(net::URLRequest* request) {
                          new DataUseRecorderEntryAsUserData(entry));
   }
   return entry;
+}
+
+void ChromeDataUseAscriber::WasShownOrHidden(int main_render_process_id,
+                                             int main_render_frame_id,
+                                             bool visible) {
+  RenderFrameHostID main_render_frame_host_id(main_render_process_id,
+                                              main_render_frame_id);
+
+  auto frame_iter =
+      main_render_frame_data_use_map_.find(main_render_frame_host_id);
+  if (frame_iter != main_render_frame_data_use_map_.end())
+    frame_iter->second->set_is_visible(visible);
+
+  if (visible) {
+    visible_main_render_frames_.insert(main_render_frame_host_id);
+  } else {
+    visible_main_render_frames_.erase(main_render_frame_host_id);
+  }
+}
+
+void ChromeDataUseAscriber::RenderFrameHostChanged(int old_render_process_id,
+                                                   int old_render_frame_id,
+                                                   int new_render_process_id,
+                                                   int new_render_frame_id) {
+  if (visible_main_render_frames_.find(
+          RenderFrameHostID(old_render_process_id, old_render_frame_id)) !=
+      visible_main_render_frames_.end()) {
+    WasShownOrHidden(new_render_process_id, new_render_frame_id, true);
+  }
 }
 
 }  // namespace data_use_measurement

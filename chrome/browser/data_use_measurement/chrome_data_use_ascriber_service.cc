@@ -173,8 +173,50 @@ void ChromeDataUseAscriberService::SetDataUseAscriber(
 
   for (auto& it : pending_frames_queue_) {
     RenderFrameCreated(it);
+    if (pending_visible_main_frames_.find(it) !=
+        pending_visible_main_frames_.end()) {
+      WasShownOrHidden(it, true);
+    }
   }
   pending_frames_queue_.clear();
+  pending_visible_main_frames_.clear();
+}
+
+void ChromeDataUseAscriberService::WasShownOrHidden(
+    content::RenderFrameHost* main_render_frame_host,
+    bool visible) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!ascriber_) {
+    if (visible)
+      pending_visible_main_frames_.insert(main_render_frame_host);
+    else
+      pending_visible_main_frames_.erase(main_render_frame_host);
+    return;
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&ChromeDataUseAscriber::WasShownOrHidden,
+                 base::Unretained(ascriber_),
+                 main_render_frame_host->GetProcess()->GetID(),
+                 main_render_frame_host->GetRoutingID(), visible));
+}
+
+void ChromeDataUseAscriberService::RenderFrameHostChanged(
+    content::RenderFrameHost* old_host,
+    content::RenderFrameHost* new_host) {
+  if (!ascriber_)
+    return;
+
+  if (old_host) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::IO, FROM_HERE,
+        base::Bind(&ChromeDataUseAscriber::RenderFrameHostChanged,
+                   base::Unretained(ascriber_), old_host->GetProcess()->GetID(),
+                   old_host->GetRoutingID(), new_host->GetProcess()->GetID(),
+                   new_host->GetRoutingID()));
+  }
 }
 
 }  // namespace data_use_measurement

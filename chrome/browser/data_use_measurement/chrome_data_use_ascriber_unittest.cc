@@ -101,4 +101,82 @@ TEST_F(ChromeDataUseAscriberTest, NoRecorderWithoutFrame) {
   ascriber()->RenderFrameDeleted(kRenderProcessId, kRenderFrameId, -1, -1);
 }
 
+TEST_F(ChromeDataUseAscriberTest, RenderFrameShownAndHidden) {
+  if (content::IsBrowserSideNavigationEnabled())
+    return;
+
+  std::unique_ptr<net::URLRequest> request = CreateNewRequest(
+      "http://test.com", true, kRequestId, kRenderProcessId, kRenderFrameId);
+
+  ascriber()->RenderFrameCreated(kRenderProcessId, kRenderFrameId, -1, -1);
+  ascriber()->OnBeforeUrlRequest(request.get());
+  ascriber()->ReadyToCommitMainFrameNavigation(
+      GURL("http://test.com"), content::GlobalRequestID(kRenderProcessId, 0),
+      kRenderProcessId, kRenderFrameId, true, (void*)request.get());
+  ascriber()->WasShownOrHidden(kRenderProcessId, kRenderFrameId, true);
+
+  EXPECT_TRUE(
+      ascriber()->GetDataUseRecorder(request.get(), true)->is_visible());
+
+  // Hide the frame, and the visibility should be updated.
+  ascriber()->WasShownOrHidden(kRenderProcessId, kRenderFrameId, false);
+  EXPECT_FALSE(
+      ascriber()->GetDataUseRecorder(request.get(), true)->is_visible());
+
+  ascriber()->RenderFrameDeleted(kRenderProcessId, kRenderFrameId, -1, -1);
+}
+
+TEST_F(ChromeDataUseAscriberTest, RenderFrameHiddenAndShown) {
+  if (content::IsBrowserSideNavigationEnabled())
+    return;
+
+  std::unique_ptr<net::URLRequest> request = CreateNewRequest(
+      "http://test.com", true, kRequestId, kRenderProcessId, kRenderFrameId);
+
+  ascriber()->RenderFrameCreated(kRenderProcessId, kRenderFrameId, -1, -1);
+  ascriber()->OnBeforeUrlRequest(request.get());
+  ascriber()->ReadyToCommitMainFrameNavigation(
+      GURL("http://test.com"), content::GlobalRequestID(kRenderProcessId, 0),
+      kRenderProcessId, kRenderFrameId, true, (void*)request.get());
+  ascriber()->WasShownOrHidden(kRenderProcessId, kRenderFrameId, false);
+
+  EXPECT_FALSE(
+      ascriber()->GetDataUseRecorder(request.get(), true)->is_visible());
+
+  // Show the frame, and the visibility should be updated.
+  ascriber()->WasShownOrHidden(kRenderProcessId, kRenderFrameId, true);
+  EXPECT_TRUE(
+      ascriber()->GetDataUseRecorder(request.get(), true)->is_visible());
+
+  ascriber()->RenderFrameDeleted(kRenderProcessId, kRenderFrameId, -1, -1);
+}
+
+TEST_F(ChromeDataUseAscriberTest, RenderFrameHostChanged) {
+  if (content::IsBrowserSideNavigationEnabled())
+    return;
+
+  std::unique_ptr<net::URLRequest> request = CreateNewRequest(
+      "http://test.com", true, kRequestId, kRenderProcessId, kRenderFrameId);
+
+  ascriber()->RenderFrameCreated(kRenderProcessId, kRenderFrameId, -1, -1);
+  ascriber()->OnBeforeUrlRequest(request.get());
+  ascriber()->ReadyToCommitMainFrameNavigation(
+      GURL("http://test.com"), content::GlobalRequestID(kRenderProcessId, 0),
+      kRenderProcessId, kRenderFrameId, true, (void*)request.get());
+  ascriber()->WasShownOrHidden(kRenderProcessId, kRenderFrameId, true);
+  EXPECT_TRUE(
+      ascriber()->GetDataUseRecorder(request.get(), true)->is_visible());
+
+  // Create a new render frame and swap it.
+  ascriber()->RenderFrameCreated(kRenderProcessId + 1, kRenderFrameId + 1, -1,
+                                 -1);
+  ascriber()->RenderFrameHostChanged(kRenderProcessId, kRenderFrameId,
+                                     kRenderProcessId + 1, kRenderFrameId + 1);
+  ascriber()->RenderFrameDeleted(kRenderProcessId, kRenderFrameId, -1, -1);
+
+  ascriber()->WasShownOrHidden(kRenderProcessId + 1, kRenderFrameId + 1, true);
+  ascriber()->RenderFrameDeleted(kRenderProcessId + 1, kRenderFrameId + 1, -1,
+                                 -1);
+}
+
 }  // namespace data_use_measurement

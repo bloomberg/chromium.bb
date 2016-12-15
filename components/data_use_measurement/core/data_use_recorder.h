@@ -39,6 +39,10 @@ class DataUseRecorder {
     main_url_request_ = request;
   }
 
+  bool is_visible() const { return is_visible_; }
+
+  void set_is_visible(bool is_visible) { is_visible_ = is_visible; }
+
   // Returns whether data use is complete and no additional data can be used
   // by the entity tracked by this recorder. For example,
   bool IsDataUseComplete();
@@ -90,6 +94,9 @@ class DataUseRecorder {
 
   // The network data use measured by this DataUseRecorder.
   DataUse data_use_;
+
+  // Whether the entity that owns this data use is currently visible.
+  bool is_visible_;
 
   DISALLOW_COPY_AND_ASSIGN(DataUseRecorder);
 };
