@@ -191,6 +191,12 @@ FolderShortcutsDataModel.prototype = {
   load_: function() {
     this.queue_.run(function(callback) {
       chrome.storage.sync.get(FolderShortcutsDataModel.NAME, function(value) {
+        if (chrome.runtime.lastError) {
+          console.error('Failed to load shortcut paths from chrome.storage: ' +
+              chrome.runtime.lastError.message);
+          callback();
+          return;
+        }
         var shortcutPaths = value[FolderShortcutsDataModel.NAME] || [];
 
         // Record metrics.

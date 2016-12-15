@@ -387,7 +387,11 @@ util.saveAppState = function() {
   var items = {};
 
   items[window.appID] = JSON.stringify(window.appState);
-  chrome.storage.local.set(items);
+  chrome.storage.local.set(items, function() {
+    if (chrome.runtime.lastError)
+      console.error('Failed to save app state: ' +
+          chrome.runtime.lastError.message);
+  });
 };
 
 /**

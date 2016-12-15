@@ -52,6 +52,11 @@ function Banners(
             DOWNLOADS_WARNING_DISMISSED_KEY
           ],
           function(values) {
+            if (chrome.runtime.lastError) {
+              reject('Failed to load banner data from chrome.storage: ' +
+                  chrome.runtime.lastError.message);
+              return;
+            }
             this.welcomeHeaderCounter_ =
                 parseInt(values[WELCOME_HEADER_COUNTER_KEY], 10) || 0;
             this.warningDismissedCounter_ =
@@ -75,7 +80,9 @@ function Banners(
         resolve();
       }.bind(this));
     }.bind(this))
-  ]);
+  ]).catch(function(error) {
+    console.error(error);
+  });
 
   // Authentication failed banner.
   this.authFailedBanner_ =
