@@ -203,12 +203,13 @@ QuickViewController.prototype.updateQuickView_ = function() {
  */
 QuickViewController.prototype.onMetadataLoaded_ = function(entry, items) {
   return this.getQuickViewParameters_(entry, items).then(function(params) {
-    this.quickView_.contentUrl = params.contentUrl || '';
     this.quickView_.type = params.type || '';
     this.quickView_.filePath = params.filePath || '';
+    this.quickView_.contentUrl = params.contentUrl || '';
     this.quickView_.videoPoster = params.videoPoster || '';
     this.quickView_.audioArtwork = params.audioArtwork || '';
     this.quickView_.autoplay = params.autoplay || false;
+    this.quickView_.browsable = params.browsable || false;
   }.bind(this));
 };
 
@@ -219,7 +220,8 @@ QuickViewController.prototype.onMetadataLoaded_ = function(entry, items) {
  *   contentUrl: (string|undefined),
  *   videoPoster: (string|undefined),
  *   audioArtwork: (string|undefined),
- *   autoplay: (boolean|undefined)
+ *   autoplay: (boolean|undefined),
+ *   browsable: (boolean|undefined),
  * }}
  */
 var QuickViewParams;
@@ -311,7 +313,27 @@ QuickViewController.prototype.getQuickViewParameters_ = function(entry, items) {
           });
     }
   }
-  return Promise.resolve(params);
+  if (item.externalFileUrl || type === '.folder') {
+    return Promise.resolve(params);
+  }
+  return Promise
+      .all([
+        getFile(entry),
+        new Promise(function(resolve) {
+          chrome.fileManagerPrivate.getFileTasks([entry], resolve);
+        })
+      ])
+      .then(function(values) {
+        var file = values[0];
+        var tasks = values[1];
+        var browsable = tasks.some(function(task) {
+          return ['view-in-browser', 'view-pdf'].includes(
+              task.taskId.split('|')[2]);
+        });
+        params.browsable = browsable;
+        params.contentUrl = browsable && URL.createObjectURL(file);
+        return params;
+      });
 };
 
 /**

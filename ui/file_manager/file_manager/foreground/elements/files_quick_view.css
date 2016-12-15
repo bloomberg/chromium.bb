@@ -50,7 +50,9 @@ paper-button:focus:not(:active) {
 
 #contentPanel {
   background-color: transparent;
+  display: flex;
   height: 100%;
+  justify-content: center;
   position: relative;
 }
 
@@ -76,25 +78,26 @@ paper-button:focus:not(:active) {
   color: white;
   display: flex;
   flex-direction: column;
-  height: 70%;
   justify-content: center;
-  margin: auto;
   outline: none;
+  padding: 24px 15%;
   position: relative;
   text-align: center;
-  top: 15%;
-  width: 70%;
+  width: 100%;
+}
+
+#innerContentPanel[type="audio"],
+#innerContentPanel[type="image"],
+#innerContentPanel[type="video"] {
+  align-self: center;
+  height: 70%;
+  padding-bottom: initial;
+  padding-top: initial;
 }
 
 .content {
-  bottom: 0;
-  left: 0;
-  margin: auto;
-  max-height: 100%;
-  max-width: 100%;
-  position: absolute;
-  right: 0;
-  top: 0;
+  height: 100%;
+  width: 100%;
 }
 
 #toolbar {

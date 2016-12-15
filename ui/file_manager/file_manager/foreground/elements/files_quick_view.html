@@ -21,7 +21,7 @@
       <paper-toolbar id="toolbar">
         <div>[[filePath]]</div>
         <div id="buttons">
-           <paper-button id="open-button" on-tap="onOpenInNewButtonTap" hidden$="[[isUnsupported_(type)]]" i18n-values="aria-label:QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL" tabindex="0" has-tooltip>
+           <paper-button id="open-button" on-tap="onOpenInNewButtonTap" hidden$="[[isUnsupported_(type, browsable)]]" i18n-values="aria-label:QUICK_VIEW_OPEN_IN_NEW_BUTTON_LABEL" tabindex="0" has-tooltip>
              <iron-icon icon="files:open-in-new"></iron-icon>
            </paper-button>
            <files-icon-button toggles id="metadata-button" on-tap="onMetadataButtonTap_" active="{{metadataBoxActive}}" i18n-values="aria-label:QUICK_VIEW_TOGGLE_METADATA_BOX_BUTTON_LABEL" tabindex="0" has-tooltip>
@@ -30,11 +30,14 @@
       </paper-toolbar>
       <div id="mainPanel">
         <div id="contentPanel" metadata-box-active$="[[metadataBoxActive]]" on-tap="onContentPanelTap_">
-          <div id="innerContentPanel" tabindex="0">
+          <div id="innerContentPanel" type$="[[type]]" tabindex="0">
+            <!-- PDF, Text -->
+            <template is="dom-if" if="[[browsable]]">
+              <webview class="content" src="[[contentUrl]]"></webview>
+            </template>
+            <!-- Image -->
             <template is="dom-if" if="[[isImage_(type)]]">
-              <div hidden="[[!contentUrl]]">
-                <files-safe-media type="image" class="content no-close-on-click" src="[[contentUrl]]"></files-safe-media>
-              </div>
+              <files-safe-media hidden="[[!contentUrl]]" type="image" class="content no-close-on-click" src="[[contentUrl]]"></files-safe-media>
               <template is="dom-if" if="[[!contentUrl]]">
                 <div generic-thumbnail="image"></div>
                 <div class="no-preivew">[[noPreviewText]]</div>
@@ -67,7 +70,7 @@
               </template>
             </template>
             <!-- TODO(oka): Support folder icon -->
-            <div hidden="[[!isUnsupported_(type)]]">
+            <div hidden="[[!isUnsupported_(type, browsable)]]">
               <div generic-thumbnail></div>
               <div class="no-preview">[[noPreviewText]]</div>
             </div>
