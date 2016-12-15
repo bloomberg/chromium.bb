@@ -4,12 +4,14 @@
 
 #include "mash/test/mash_test_suite.h"
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/test/context_factories_for_test.h"
+#include "ui/gl/gl_switches.h"
 #include "ui/gl/test/gl_surface_test_support.h"
 
 namespace mash {
@@ -21,6 +23,9 @@ MashTestSuite::~MashTestSuite() {}
 
 void MashTestSuite::Initialize() {
   base::TestSuite::Initialize();
+
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kOverrideUseGLWithOSMesaForTests);
 
   // Load ash mus strings and resources; not 'common' (Chrome) resources.
   base::FilePath resources;

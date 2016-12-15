@@ -22,6 +22,7 @@
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/window.h"
+#include "ui/gl/gl_switches.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_client.h"
 #include "ui/views/mus/test_utils.h"
@@ -198,6 +199,8 @@ void ViewsAuraMusTestSuite::Initialize() {
   // command line flag to avoid making blocking calls to other processes for
   // setup for tests (e.g. to unlock the screen in the window manager).
   EnsureCommandLineSwitch(ui::switches::kUseTestConfig);
+
+  EnsureCommandLineSwitch(switches::kOverrideUseGLWithOSMesaForTests);
 
   ViewsTestSuite::Initialize();
   service_manager_connections_ = base::MakeUnique<ServiceManagerConnection>();
