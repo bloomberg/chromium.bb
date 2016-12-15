@@ -13,15 +13,15 @@ GEN_INCLUDE(['settings_page_browsertest.js']);
  * @constructor
  * @extends {SettingsPageBrowserTest}
  *
- * @param {string} pageId 'basic' or 'advanced'.
- * @param {!Array<string>} subPages
+ * @param {string} pageId Just 'basic'. TODO(michaelpg): Add 'about' if we want
+ *     to, but that requires wrapping its sole <settings-section> in a dom-if.
  */
-function SettingsSubPageBrowserTest(pageId, subPages) {
+function SettingsSubPageBrowserTest(pageId) {
   /** @type {string} */
   this.pageId = pageId;
 
   /** @type {!Array<string>} */
-  this.subPages = subPages;
+  this.subPages = [];
 }
 
 SettingsSubPageBrowserTest.prototype = {
@@ -39,25 +39,19 @@ SettingsSubPageBrowserTest.prototype = {
   /** @override */
   setUp: function() {
     SettingsPageBrowserTest.prototype.setUp.call(this);
-    // Explicitly hide all of the pages (not strictly required but is more
-    // clear than relying on undefined -> hidden).
-    this.toggleAdvanced();
-    this.hideSubPages_();
+    this.verifySubPagesHidden_();
   },
 
   /*
-   * This will hide all subpages in |this.subPages|. Note: any existing subpages
-   * not listed in |this.subPages| will be shown.
+   * Checks all subpages are hidden first.
+   * @private
    */
-  hideSubPages_: function() {
+  verifySubPagesHidden_: function() {
     var page = this.getPage(this.pageId);
-    var visibility = {};
-    this.subPages.forEach(function(subPage) {
-      visibility[subPage] = false;
-    });
     assertEquals(0, Object.keys(page.pageVisibility).length);
-    page.pageVisibility = visibility;
-    // Ensure all pages are hidden.
+
+    // Ensure all pages are still hidden after the dom-ifs compute their |if|.
+    Polymer.dom.flush();
     var sections = page.shadowRoot.querySelectorAll('settings-section');
     assertTrue(!!sections);
     assertEquals(0, sections.length);
@@ -70,7 +64,7 @@ SettingsSubPageBrowserTest.prototype = {
    * @param {Node} page
    * @param {string} subpage
    */
-  testPage: function(page, subPage) {
+  testSubPage: function(page, subPage) {
     Polymer.dom.flush();
     expectFalse(!!this.getSection(page, subPage));
     var startTime = window.performance.now();
@@ -85,39 +79,28 @@ SettingsSubPageBrowserTest.prototype = {
   },
 
   testSubPages: function() {
-    Polymer.dom.flush();
     var page = this.getPage(this.pageId);
     this.subPages.forEach(function(subPage) {
-      if (this.includePage(subPage))
-        test(subPage, this.testPage.bind(this, page, subPage));
+      test(subPage, this.testSubPage.bind(this, page, subPage));
     }.bind(this));
-  },
-
-  /**
-   * @param {string} id
-   * @return {boolean}
-   */
-  includePage: function(id) {
-    if (cr.isChromeOS)
-      return id != 'people' && id != 'defaultBrowser';
-    return id != 'internet' && id != 'users' && id != 'device' &&
-           id != 'dateTime' && id != 'bluetooth' && id != 'a11y';
   },
 };
 
 /** @constructor @extends {SettingsSubPageBrowserTest} */
 function SettingsBasicSubPageBrowserTest() {
-  var subPages = [
+  SettingsSubPageBrowserTest.call(this, 'basic');
+
+  /** @override */
+  this.subPages = [
     'people',
-    'internet',
     'appearance',
     'onStartup',
     'search',
-    'defaultBrowser',
-    'device'
   ];
-
-  SettingsSubPageBrowserTest.call(this, 'basic', subPages);
+  if (cr.isChromeOS)
+    this.subPages.push('device', 'internet');
+  else
+    this.subPages.push('defaultBrowser');
 }
 
 SettingsBasicSubPageBrowserTest.prototype = {
@@ -131,22 +114,33 @@ TEST_F('SettingsBasicSubPageBrowserTest', 'SubPages', function() {
 
 /** @constructor @extends {SettingsSubPageBrowserTest} */
 function SettingsAdvancedSubPageBrowserTest() {
-  var subPages = [
-    'dateTime',
+  // "Advanced" sections live in the settings-basic-page.
+  SettingsSubPageBrowserTest.call(this, 'basic');
+
+  /** @override */
+  this.subPages = [
     'privacy',
-    'bluetooth',
     'passwordsAndForms',
     'languages',
     'downloads',
+    'printing',
+    'a11y',
     'reset',
-    'a11y'
   ];
-
-  SettingsSubPageBrowserTest.call(this, 'advanced', subPages);
+  if (cr.isChromeOS)
+    this.subPages.push('dateTime', 'bluetooth');
+  else
+    this.subPages.push('system');
 };
 
 SettingsAdvancedSubPageBrowserTest.prototype = {
   __proto__: SettingsSubPageBrowserTest.prototype,
+
+  /** @override */
+  setUp: function() {
+    this.toggleAdvanced();
+    SettingsSubPageBrowserTest.prototype.setUp.call(this);
+  },
 };
 
 TEST_F('SettingsAdvancedSubPageBrowserTest', 'SubPages', function() {

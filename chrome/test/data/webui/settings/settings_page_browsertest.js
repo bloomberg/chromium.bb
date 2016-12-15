@@ -46,12 +46,12 @@ SettingsPageBrowserTest.prototype = {
   toggleAdvanced: function() {
     var settingsMain = document.querySelector('* /deep/ settings-main');
     assert(!!settingsMain);
-    settingsMain.toggleAdvancedPage_();
+    settingsMain.advancedToggleExpanded = !settingsMain.advancedToggleExpanded;
     Polymer.dom.flush();
   },
 
   /**
-   * @param {string} type The settings page type, e.g. 'advanced' or 'basic'.
+   * @param {string} type The settings page type, e.g. 'about' or 'basic'.
    * @return {!PolymerElement} The PolymerElement for the page.
    */
   getPage: function(type) {

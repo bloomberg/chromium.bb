@@ -47,7 +47,7 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
     testing.Test.disableAnimationsAndTransitions();
 
     this.toggleAdvanced();
-    var advanced = this.getPage('advanced');
+    var page = this.getPage('basic');
 
     var languagesSection;
     var languagesPage;
@@ -81,10 +81,10 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
     }
 
     suiteSetup(function() {
-      advanced.set('pageVisibility.languages', true);
+      page.set('pageVisibility.languages', true);
       Polymer.dom.flush();
 
-      languagesSection = assert(this.getSection(advanced, 'languages'));
+      languagesSection = assert(this.getSection(page, 'languages'));
       languagesPage = assert(
           languagesSection.querySelector('settings-languages-page'));
       languagesCollapse = languagesPage.$.languagesCollapse;

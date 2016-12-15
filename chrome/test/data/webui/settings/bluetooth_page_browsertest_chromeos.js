@@ -60,9 +60,9 @@ TEST_F('SettingsBluetoothPageBrowserTest', 'MAYBE_Bluetooth', function() {
   var self = this;
 
   self.toggleAdvanced();
-  var advanced = self.getPage('advanced');
-  assertTrue(!!advanced);
-  advanced.set('pageVisibility.bluetooth', true);
+  var page = self.getPage('basic');
+  assertTrue(!!page);
+  page.set('pageVisibility.bluetooth', true);
   Polymer.dom.flush();
 
   /** @type {!Array<!chrome.bluetooth.Device>} */ var fakeDevices_ = [
@@ -94,7 +94,7 @@ TEST_F('SettingsBluetoothPageBrowserTest', 'MAYBE_Bluetooth', function() {
   suite('SettingsBluetoothPage', function() {
     test('enable', function() {
       assertFalse(self.bluetoothApi_.adapterState.powered);
-      var bluetoothSection = self.getSection(advanced, 'bluetooth');
+      var bluetoothSection = self.getSection(page, 'bluetooth');
       assertTrue(!!bluetoothSection);
       var bluetooth =
           bluetoothSection.querySelector('settings-bluetooth-page');
@@ -119,7 +119,7 @@ TEST_F('SettingsBluetoothPageBrowserTest', 'MAYBE_Bluetooth', function() {
     });
 
     test('device list', function() {
-      var bluetoothSection = self.getSection(advanced, 'bluetooth');
+      var bluetoothSection = self.getSection(page, 'bluetooth');
       var bluetooth =
           bluetoothSection.querySelector('settings-bluetooth-page');
       assertTrue(!!bluetooth);
@@ -153,7 +153,7 @@ TEST_F('SettingsBluetoothPageBrowserTest', 'MAYBE_Bluetooth', function() {
     });
 
     test('device dialog', function() {
-      var bluetoothSection = self.getSection(advanced, 'bluetooth');
+      var bluetoothSection = self.getSection(page, 'bluetooth');
       var bluetooth =
           bluetoothSection.querySelector('settings-bluetooth-page');
       assertTrue(!!bluetooth);

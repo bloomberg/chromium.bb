@@ -65,15 +65,6 @@
       <structure name="IDR_SETTINGS_ADD_SITE_DIALOG_JS"
                  file="site_settings/add_site_dialog.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_ADVANCED_PAGE_JS"
-                 file="advanced_page/advanced_page.js"
-                 flattenhtml="true"
-                 type="chrome_html" />
-      <structure name="IDR_SETTINGS_ADVANCED_PAGE_HTML"
-                 file="advanced_page/advanced_page.html"
-                 type="chrome_html"
-                 flattenhtml="true"
-                 allowexternalscript="true" />
       <structure name="IDR_SETTINGS_ALL_SITES_HTML"
                  file="site_settings/all_sites.html"
                  type="chrome_html" />
@@ -123,6 +114,7 @@
                  flattenhtml="true" />
       <structure name="IDR_SETTINGS_BASIC_PAGE_JS"
                  file="basic_page/basic_page.js"
+                 flattenhtml="true"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_BASIC_PAGE_HTML"
                  file="basic_page/basic_page.html"

@@ -362,8 +362,8 @@ cr.define('settings', function() {
      * @private
      */
     setSectionsVisibility_: function(visible) {
-      var sections = Polymer.dom(
-          this.node.root).querySelectorAll('settings-section');
+      var sections = this.node.querySelectorAll('settings-section');
+
       for (var i = 0; i < sections.length; i++)
         sections[i].hiddenBySearch = !visible;
     },

@@ -104,20 +104,40 @@ cr.define('settings_main_page', function() {
         });
       });
 
+      /** @return {!HTMLElement} */
+      function getToggleContainer() {
+        var page = settingsMain.$$('settings-basic-page');
+        assertTrue(!!page);
+        var toggleContainer = page.$$('#toggleContainer');
+        assertTrue(!!toggleContainer);
+        return toggleContainer;
+      }
+
+      /**
+       * Asserts that the Advanced toggle container exists in the combined
+       * settings page and asserts whether it should be visible.
+       * @param {boolean} expectedVisible
+       */
+      function assertToggleContainerVisible(expectedVisible) {
+        var toggleContainer = getToggleContainer();
+        if (expectedVisible)
+          assertNotEquals('none', toggleContainer.style.display);
+        else
+          assertEquals('none', toggleContainer.style.display);
+      }
+
       test('no results page shows and hides', function() {
         Polymer.dom.flush();
         var noSearchResults = settingsMain.$.noSearchResults;
         assertTrue(!!noSearchResults);
         assertTrue(noSearchResults.hidden);
 
-        var toggleContainer = settingsMain.$$('#toggleContainer');
-        assertTrue(!!toggleContainer);
-        assertNotEquals('none', toggleContainer.style.display);
+        assertToggleContainerVisible(true);
 
         searchManager.setMatchesFound(false);
         return settingsMain.searchContents('Query1').then(function() {
           assertFalse(noSearchResults.hidden);
-          assertEquals('none', toggleContainer.style.display);
+          assertToggleContainerVisible(false);
 
           searchManager.setMatchesFound(true);
           return settingsMain.searchContents('Query2');
@@ -134,18 +154,35 @@ cr.define('settings_main_page', function() {
         assertTrue(!!noSearchResults);
         assertTrue(noSearchResults.hidden);
 
-        var toggleContainer = settingsMain.$$('#toggleContainer');
-        assertTrue(!!toggleContainer);
-        assertNotEquals('none', toggleContainer.style.display);
+        assertToggleContainerVisible(true);
 
         searchManager.setMatchesFound(false);
         // Clearing the search box is effectively a search for the empty string.
         return settingsMain.searchContents('').then(function() {
           Polymer.dom.flush();
           assertTrue(noSearchResults.hidden);
-          assertNotEquals('none', toggleContainer.style.display);
+          assertToggleContainerVisible(true);
         });
       });
+
+      /**
+       * Asserts the visibility of the basic and advanced pages.
+       * @param {string} Expected 'display' value for the basic page.
+       * @param {string} Expected 'display' value for the advanced page.
+       */
+      function assertPageVisibility(expectedBasic, expectedAdvanced) {
+        Polymer.dom.flush();
+        var page = settingsMain.$$('settings-basic-page');
+        assertEquals(
+            expectedBasic, page.$$('#basicPage').style.display);
+        assertEquals(
+            expectedAdvanced, page.$$('#advancedPage').style.display);
+      }
+
+      // TODO(michaelpg): It would be better not to drill into
+      // settings-basic-page. If search should indeed only work in Settings
+      // (as opposed to Advanced), perhaps some of this logic should be
+      // delegated to settings-basic-page now instead of settings-main.
 
       /**
        * Asserts the visibility of the basic and advanced pages after exiting
@@ -161,13 +198,7 @@ cr.define('settings_main_page', function() {
           searchManager.setMatchesFound(false);
           return settingsMain.searchContents('');
         }).then(function() {
-          Polymer.dom.flush();
-          assertEquals(
-              expectedBasic,
-              settingsMain.$$('settings-basic-page').style.display);
-          assertEquals(
-              expectedAdvanced,
-              settingsMain.$$('settings-advanced-page').style.display);
+          assertPageVisibility(expectedBasic, expectedAdvanced);
         });
       }
 
@@ -202,39 +233,36 @@ cr.define('settings_main_page', function() {
           Polymer.dom.flush();
 
           // Simulate clicking the left arrow to go back to the search results.
-          settingsMain.currentRouteChanged(settings.Route.BASIC);
-          Polymer.dom.flush();
-          assertEquals(
-              '', settingsMain.$$('settings-basic-page').style.display);
-          assertEquals(
-              '', settingsMain.$$('settings-advanced-page').style.display);
+          settings.navigateTo(settings.Route.BASIC);
+          assertPageVisibility('', '');
         });
       });
 
+      // TODO(michaelpg): Move these to a new test for settings-basic-page.
       test('can collapse advanced on advanced section route', function() {
         settings.navigateTo(settings.Route.PRIVACY);
         Polymer.dom.flush();
 
-        var advancedToggle = settingsMain.$$('#advancedToggle');
+        var advancedToggle =
+            getToggleContainer().querySelector('#advancedToggle');
         assertTrue(!!advancedToggle);
 
         MockInteractions.tap(advancedToggle);
         Polymer.dom.flush();
 
-        assertFalse(settingsMain.showPages_.advanced);
+        assertPageVisibility('', 'none');
       });
 
       test('navigating to a basic page does not collapse advanced', function() {
         settings.navigateTo(settings.Route.PRIVACY);
         Polymer.dom.flush();
 
-        var advancedToggle = settingsMain.$$('#advancedToggle');
-        assertTrue(!!advancedToggle);
+        assertToggleContainerVisible(true);
 
         settings.navigateTo(settings.Route.PEOPLE);
         Polymer.dom.flush();
 
-        assertTrue(settingsMain.showPages_.advanced);
+        assertPageVisibility('', '');
       });
     });
   }

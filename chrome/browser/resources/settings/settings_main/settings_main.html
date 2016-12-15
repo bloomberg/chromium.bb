@@ -4,47 +4,15 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="/about_page/about_page.html">
-<link rel="import" href="/advanced_page/advanced_page.html">
 <link rel="import" href="/basic_page/basic_page.html">
 <link rel="import" href="/route.html">
-<link rel="import" href="/settings_page/main_page_behavior.html">
 <link rel="import" href="/settings_vars_css.html">
 
 <dom-module id="settings-main">
   <template>
     <style>
-      #advancedToggle {
-        --paper-button: {
-          text-transform: none;
-        }
-        @apply(--settings-actionable);
-        align-items: center;
-        display: flex;
-        margin-bottom: 3px;
-        margin-top: 12px;  /* Part of a 48px spacer (33px + 12px + 3px). */
-        min-height: 32px;
-        padding: 0 12px;
-      }
-
       #overscroll {
         margin-top: 64px;
-      }
-
-      #toggleContainer {
-        align-items: center;
-        display: flex;
-        font: inherit;
-        justify-content: center;
-        margin-bottom: 0;
-        margin-top: 0;
-      }
-
-      #toggleSpacer {
-        padding-top: 33px;  /* Part of a 48px spacer (33px + 12px + 3px). */
-      }
-
-      iron-icon {
-        -webkit-margin-start: 16px;
       }
 
       #noSearchResults {
@@ -64,37 +32,14 @@
       <div>$i18n{searchNoResults}</div>
       <div>$i18nRaw{searchNoResultsHelp}</div>
     </div>
-    <template is="dom-if" if="[[showBasicPage_(
-        showPages_.basic, inSearchMode_, hasExpandedSection_)]]">
+    <template is="dom-if" if="[[showPages_.settings]]">
       <settings-basic-page prefs="{{prefs}}"
           page-visibility="[[pageVisibility]]"
           show-android-apps="[[showAndroidApps]]"
           on-subpage-expand="onSubpageExpand_"
-          in-search-mode="[[inSearchMode_]]">
+          in-search-mode="[[inSearchMode_]]"
+          advanced-toggle-expanded="{{advancedToggleExpanded}}">
       </settings-basic-page>
-    </template>
-    <template is="dom-if"
-        if="[[showAdvancedSettings_(pageVisibility.advancedSettings)]]">
-      <template is="dom-if" if="[[showAdvancedToggle_(
-          showPages_.basic, hasExpandedSection_, inSearchMode_)]]">
-        <div id="toggleSpacer"></div>
-        <h2 id="toggleContainer">
-          <paper-button id="advancedToggle" active="{{advancedToggleExpanded}}"
-              aria-active-attribute="aria-expanded" toggles>
-            <span>$i18n{advancedPageTitle}</span>
-            <iron-icon icon="[[arrowState_(advancedToggleExpanded)]]">
-            </iron-icon>
-          </paper-button>
-        </h2>
-      </template>
-      <template is="dom-if" if="[[showAdvancedPage_(
-          showPages_.advanced, inSearchMode_, hasExpandedSection_)]]">
-        <settings-advanced-page prefs="{{prefs}}"
-            page-visibility="[[pageVisibility]]"
-            on-subpage-expand="onSubpageExpand_"
-            in-search-mode="[[inSearchMode_]]">
-        </settings-advanced-page>
-      </template>
     </template>
     <template is="dom-if" if="[[showPages_.about]]">
       <settings-about-page in-search-mode="[[inSearchMode_]]">

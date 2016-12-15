@@ -101,9 +101,6 @@ var MainPageBehaviorImpl = {
       // If the section shouldn't be expanded, collapse it.
       if (!currentRoute.isSubpage() || expandedSection != currentSection) {
         promise = this.collapseSection_(expandedSection);
-        // Scroll to the collapsed section.
-        if (currentSection && scrollToSection)
-          currentSection.scrollIntoView();
       } else {
         // Scroll to top while sliding to another subpage.
         this.scroller.scrollTop = 0;
@@ -253,7 +250,11 @@ var MainPageBehaviorImpl = {
         var newSection = settings.getCurrentRoute().section &&
             this.getSection(settings.getCurrentRoute().section);
 
-        this.scroller.scrollTop = this.origScrollTop_;
+        // Scroll to the new section or the original position.
+        if (newSection && !settings.lastRouteChangeWasPopstate())
+          newSection.scrollIntoView();
+        else
+          this.scroller.scrollTop = this.origScrollTop_;
 
         this.currentAnimation_ = section.animateCollapse(
             /** @type {!HTMLElement} */(this.scroller));
