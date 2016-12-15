@@ -1304,12 +1304,6 @@ void DevToolsWindow::DoAction(const DevToolsToggleAction& action) {
                                     NULL);
       break;
     }
-    case DevToolsToggleAction::kShowSecurityPanel: {
-      base::StringValue panel_name("security");
-      bindings_->CallClientFunction("DevToolsAPI.showPanel", &panel_name, NULL,
-                                    NULL);
-      break;
-    }
     case DevToolsToggleAction::kInspect:
       bindings_->CallClientFunction(
           "DevToolsAPI.enterInspectElementMode", NULL, NULL, NULL);

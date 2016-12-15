@@ -45,11 +45,6 @@ DevToolsToggleAction DevToolsToggleAction::ShowConsole() {
 }
 
 // static
-DevToolsToggleAction DevToolsToggleAction::ShowSecurityPanel() {
-  return DevToolsToggleAction(kShowSecurityPanel);
-}
-
-// static
 DevToolsToggleAction DevToolsToggleAction::Inspect() {
   return DevToolsToggleAction(kInspect);
 }
