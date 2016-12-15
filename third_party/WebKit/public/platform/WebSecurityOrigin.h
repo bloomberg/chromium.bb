@@ -123,8 +123,8 @@ class WebSecurityOrigin {
   operator url::Origin() const {
     return isUnique() ? url::Origin()
                       : url::Origin::CreateFromNormalizedTupleWithSuborigin(
-                            protocol().utf8(), host().utf8(), effectivePort(),
-                            suborigin().utf8());
+                            protocol().ascii(), host().ascii(), effectivePort(),
+                            suborigin().ascii());
   }
 
   WebSecurityOrigin(const url::Origin& origin) : m_private(0) {
