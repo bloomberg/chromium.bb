@@ -287,13 +287,6 @@ void AutofillPopupControllerImpl::AcceptSuggestion(size_t index) {
                                  index);
 }
 
-bool AutofillPopupControllerImpl::IsWarning(size_t index) const {
-  return suggestions_[index].frontend_id ==
-             POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE ||
-         suggestions_[index].frontend_id ==
-             POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE;
-}
-
 gfx::Rect AutofillPopupControllerImpl::popup_bounds() const {
   return layout_model_.popup_bounds();
 }

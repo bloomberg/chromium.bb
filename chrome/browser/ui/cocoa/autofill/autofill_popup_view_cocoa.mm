@@ -197,11 +197,8 @@ using autofill::AutofillPopupLayoutModel;
          rightAlign:(BOOL)rightAlign
              bounds:(NSRect)bounds
         textYOffset:(CGFloat)textYOffset {
-  // TODO(crbug.com/666189): Use
-  // AutofillPopupLayoutModel::GetValueFontColorForRow() instead and remove
-  // IsWarning() method.
-  NSColor* nameColor =
-      controller_->IsWarning(index) ? [self warningColor] : [self nameColor];
+  NSColor* nameColor = skia::SkColorToSRGBNSColor(
+      controller_->layout_model().GetValueFontColorForRow(index));
   NSDictionary* nameAttributes = [NSDictionary
       dictionaryWithObjectsAndKeys:controller_->layout_model()
                                        .GetValueFontListForRow(index)

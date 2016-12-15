@@ -76,7 +76,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   bool AcceptSelectedLine() override;
   void SelectionCleared() override;
   void AcceptSuggestion(size_t index) override;
-  bool IsWarning(size_t index) const override;
   gfx::Rect popup_bounds() const override;
   gfx::NativeView container_view() override;
   const gfx::RectF& element_bounds() const override;

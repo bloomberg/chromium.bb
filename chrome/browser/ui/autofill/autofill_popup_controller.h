@@ -29,10 +29,6 @@ class AutofillPopupController : public AutofillPopupViewDelegate {
   // Accepts the suggestion at |index|.
   virtual void AcceptSuggestion(size_t index) = 0;
 
-  // Returns true if the given index refers to an element that is a warning
-  // rather than an Autofill suggestion.
-  virtual bool IsWarning(size_t index) const = 0;
-
   // Returns the number of lines of data that there are.
   virtual size_t GetLineCount() const = 0;
 

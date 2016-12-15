@@ -24,7 +24,6 @@ class AutofillPopupViewDelegate;
 - (NSColor*)nameColor;
 - (NSColor*)separatorColor;
 - (NSColor*)subtextColor;
-- (NSColor*)warningColor;
 
 - (id)initWithDelegate:(autofill::AutofillPopupViewDelegate*)delegate
                  frame:(NSRect)frame;

@@ -41,14 +41,6 @@
                                    alpha:1.0];
 }
 
-- (NSColor*)warningColor {
-  // Represents #646464.
-  return [NSColor colorWithCalibratedRed:100.0 / 255.0
-                                   green:100.0 / 255.0
-                                    blue:100.0 / 255.0
-                                   alpha:1.0];
-}
-
 #pragma mark -
 #pragma mark Public methods
 
