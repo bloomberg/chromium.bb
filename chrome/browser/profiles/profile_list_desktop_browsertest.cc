@@ -50,8 +50,9 @@ class ProfileListDesktopBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ProfileListDesktopBrowserTest);
 };
 
-#if defined(OS_WIN)
-// SignOut is flaky. So far only observed on Windows. crbug.com/357329.
+#if defined(OS_WIN) || (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
+// SignOut is flaky on Windows, crbug.com/357329,
+// and Mac with ASAN, crbug.com/674497.
 #define MAYBE_SignOut DISABLED_SignOut
 #elif defined(OS_CHROMEOS)
 // This test doesn't make sense for Chrome OS since it has a different
