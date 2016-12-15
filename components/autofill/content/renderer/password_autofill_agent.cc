@@ -177,7 +177,8 @@ bool FindFormInputElement(
     // fields.
     const blink::WebInputElement input_element =
         control_element.toConst<blink::WebInputElement>();
-    if (input_element.isPasswordField() != is_password_field)
+    if (!input_element.isTextField() ||
+        input_element.isPasswordField() != is_password_field)
       continue;
 
     // For change password form with ambiguous or empty names keep only the
