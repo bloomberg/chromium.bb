@@ -275,7 +275,7 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
 
 // A safebrowsing hit is sent after a blocking page for malware/phishing
 // or after the warning dialog for download urls, only for
-// UMA || extended_reporting users.
+// extended-reporting users.
 void SafeBrowsingUIManager::MaybeReportSafeBrowsingHit(
     const HitReport& hit_report) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
