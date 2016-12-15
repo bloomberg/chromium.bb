@@ -176,6 +176,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'd3d9'], bug=617148)
     self.Flaky('conformance/glsl/matrices/glsl-mat3-construction.html',
         ['win', 'd3d9'], bug=617148)
+    self.Skip('conformance/glsl/misc/large-loop-compile.html',
+        ['win', 'd3d9'], bug=674572)
 
     # WIN / D3D9 / Intel failures
     self.Fail('conformance/ogles/GL/cos/cos_001_to_006.html',
