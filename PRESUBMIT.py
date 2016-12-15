@@ -1925,7 +1925,7 @@ def _CheckSingletonInHeaders(input_api, output_api):
   return []
 
 
-def _CheckNoDeprecatedCompiledResourcesGYP(input_api, output_api):
+def _CheckNoDeprecatedCompiledResourcesGyp(input_api, output_api):
   """Checks for old style compiled_resources.gyp files."""
   is_compiled_resource = lambda fp: fp.endswith('compiled_resources.gyp')
 
@@ -1969,7 +1969,7 @@ _DEPRECATED_CSS = [
   ( "-webkit-repeating-radial-gradient", "repeating-radial-gradient" ),
 ]
 
-def _CheckNoDeprecatedCSS(input_api, output_api):
+def _CheckNoDeprecatedCss(input_api, output_api):
   """ Make sure that we don't use deprecated CSS
       properties, functions or values. Our external
       documentation and iOS CSS for dom distiller
@@ -2004,7 +2004,7 @@ _DEPRECATED_JS = [
   ( "__defineSetter__", "Object.defineProperty" ),
 ]
 
-def _CheckNoDeprecatedJS(input_api, output_api):
+def _CheckNoDeprecatedJs(input_api, output_api):
   """Make sure that we don't use deprecated JS in Chrome code."""
   results = []
   file_inclusion_pattern = (r".+\.js$",)  # TODO(dbeam): .html?
@@ -2020,6 +2020,27 @@ def _CheckNoDeprecatedJS(input_api, output_api):
               "%s:%d: Use of deprecated JS %s, use %s instead" %
               (fpath.LocalPath(), lnum, deprecated, replacement)))
   return results
+
+
+def _CheckForRiskyJsFeatures(input_api, output_api):
+  maybe_ios_js = (r"^(ios|components|ui\/webui\/resources)\/.+\.js$", )
+  file_filter = lambda f: input_api.FilterSourceFile(f, white_list=maybe_ios_js)
+
+  arrow_lines = []
+  for f in input_api.AffectedFiles(file_filter=file_filter):
+    for lnum, line in f.ChangedContents():
+      if ' => ' in line:
+        arrow_lines.append((f.LocalPath(), lnum))
+
+  if not arrow_lines:
+    return []
+
+  return [output_api.PresubmitPromptWarning("""
+Use of => operator detected in:
+%s
+Please ensure your code does not run on iOS9 (=> (arrow) does not work there).
+https://chromium.googlesource.com/chromium/src/+/master/docs/es6_chromium.md#Arrow-Functions
+""" % "\n".join("  %s:%d\n" % line for line in arrow_lines))]
 
 
 def _AndroidSpecificOnUploadChecks(input_api, output_api):
@@ -2070,18 +2091,19 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckForAnonymousVariables(input_api, output_api))
   results.extend(_CheckCygwinShell(input_api, output_api))
   results.extend(_CheckUserActionUpdate(input_api, output_api))
-  results.extend(_CheckNoDeprecatedCSS(input_api, output_api))
-  results.extend(_CheckNoDeprecatedJS(input_api, output_api))
+  results.extend(_CheckNoDeprecatedCss(input_api, output_api))
+  results.extend(_CheckNoDeprecatedJs(input_api, output_api))
   results.extend(_CheckParseErrors(input_api, output_api))
   results.extend(_CheckForIPCRules(input_api, output_api))
   results.extend(_CheckForWindowsLineEndings(input_api, output_api))
   results.extend(_CheckSingletonInHeaders(input_api, output_api))
-  results.extend(_CheckNoDeprecatedCompiledResourcesGYP(input_api, output_api))
+  results.extend(_CheckNoDeprecatedCompiledResourcesGyp(input_api, output_api))
   results.extend(_CheckPydepsNeedsUpdating(input_api, output_api))
   results.extend(_CheckJavaStyle(input_api, output_api))
   results.extend(_CheckIpcOwners(input_api, output_api))
   results.extend(_CheckMojoUsesNewWrapperTypes(input_api, output_api))
   results.extend(_CheckUselessForwardDeclarations(input_api, output_api))
+  results.extend(_CheckForRiskyJsFeatures(input_api, output_api))
 
   if any('PRESUBMIT.py' == f.LocalPath() for f in input_api.AffectedFiles()):
     results.extend(input_api.canned_checks.RunUnitTestsInDirectory(

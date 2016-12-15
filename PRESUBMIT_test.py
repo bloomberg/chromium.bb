@@ -412,16 +412,16 @@ class CheckSingletonInHeadersTest(unittest.TestCase):
     self.assertEqual(0, len(warnings))
 
 
-class CheckNoDeprecatedCompiledResourcesGYPTest(unittest.TestCase):
-  def testNoDeprecatedCompiledResourcsGYP(self):
+class CheckNoDeprecatedCompiledResourcesGypTest(unittest.TestCase):
+  def testNoDeprecatedCompiledResourcsGyp(self):
     mock_input_api = MockInputApi()
     mock_input_api.files = [MockFile('some/js/compiled_resources.gyp', [])]
-    errors = PRESUBMIT._CheckNoDeprecatedCompiledResourcesGYP(mock_input_api,
+    errors = PRESUBMIT._CheckNoDeprecatedCompiledResourcesGyp(mock_input_api,
                                                               MockOutputApi())
     self.assertEquals(1, len(errors))
 
     mock_input_api.files = [MockFile('some/js/compiled_resources2.gyp', [])]
-    errors = PRESUBMIT._CheckNoDeprecatedCompiledResourcesGYP(mock_input_api,
+    errors = PRESUBMIT._CheckNoDeprecatedCompiledResourcesGyp(mock_input_api,
                                                               MockOutputApi())
     self.assertEquals(0, len(errors))
 
@@ -1186,6 +1186,42 @@ class ForwardDeclarationTest(unittest.TestCase):
     warnings = PRESUBMIT._CheckUselessForwardDeclarations(mock_input_api,
       MockOutputApi())
     self.assertEqual(4, len(warnings))
+
+
+class RiskyJsTest(unittest.TestCase):
+  def testArrowWarnInIos9Code(self):
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.files = [
+      MockAffectedFile('components/blah.js', ["shouldn't use => here"]),
+    ]
+    warnings = PRESUBMIT._CheckForRiskyJsFeatures(
+        mock_input_api, mock_output_api)
+    self.assertEqual(1, len(warnings))
+
+    mock_input_api.files = [
+      MockAffectedFile('ios/blee.js', ['might => break folks']),
+    ]
+    warnings = PRESUBMIT._CheckForRiskyJsFeatures(
+        mock_input_api, mock_output_api)
+    self.assertEqual(1, len(warnings))
+
+    mock_input_api.files = [
+      MockAffectedFile('ui/webui/resources/blarg.js', ['on => iOS9']),
+    ]
+    warnings = PRESUBMIT._CheckForRiskyJsFeatures(
+        mock_input_api, mock_output_api)
+    self.assertEqual(1, len(warnings))
+
+  def testArrowsAllowedInChromeCode(self):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockAffectedFile('chrome/browser/resources/blah.js', 'arrow => OK here'),
+    ]
+    warnings = PRESUBMIT._CheckForRiskyJsFeatures(
+        mock_input_api, MockOutputApi())
+    self.assertEqual(0, len(warnings))
 
 
 if __name__ == '__main__':
