@@ -192,12 +192,10 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      * Show (activate) android action mode by starting it.
      *
      * <p>Action mode in floating mode is tried first, and then falls back to
-     * a normal one if allowed.
-     * @param allowFallback A flag indicating if we allow for falling back to
-     *    normal action mode in case floating action mode creation fails.
+     * a normal one.
      * @return {@code true} if the action mode started successfully or is already on.
      */
-    public boolean showActionMode(boolean allowFallback) {
+    public boolean showActionMode() {
         if (isEmpty()) return false;
 
         // Just refreshes the view if it is already showing.
@@ -211,7 +209,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         if (mView.getParent() != null) {
             assert mWebContents != null;
             if (supportsFloatingActionMode()) actionMode = startFloatingActionMode();
-            if (actionMode == null && allowFallback) actionMode = mView.startActionMode(mCallback);
+            if (actionMode == null) actionMode = mView.startActionMode(mCallback);
         }
         if (actionMode != null) {
             // This is to work around an LGE email issue. See crbug.com/651706 for more details.
@@ -764,7 +762,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     void restoreSelectionPopupsIfNecessary() {
         if (mHasSelection && !isActionModeValid()) {
-            if (!showActionMode(true)) clearSelection();
+            if (!showActionMode()) clearSelection();
         }
     }
 
@@ -781,7 +779,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                 mSelectionRect.set(left, top, right, bottom);
                 mHasSelection = true;
                 mUnselectAllOnDismiss = true;
-                if (!showActionMode(true)) clearSelection();
+                if (!showActionMode()) clearSelection();
                 break;
 
             case SelectionEventType.SELECTION_HANDLES_MOVED:

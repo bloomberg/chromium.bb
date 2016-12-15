@@ -1801,8 +1801,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         return mSelectionPopupController;
     }
 
-    private void showSelectActionMode(boolean allowFallback) {
-        if (!mSelectionPopupController.showActionMode(allowFallback)) clearSelection();
+    private void showSelectActionMode() {
+        if (!mSelectionPopupController.showActionMode()) clearSelection();
     }
 
     public void clearSelection() {
@@ -2727,7 +2727,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
                 && mSelectionPopupController.isActionModeValid()) {
             hidePopupsAndPreserveSelection();
-            showSelectActionMode(true);
+            showSelectActionMode();
         }
 
         int rotationDegrees = 0;
