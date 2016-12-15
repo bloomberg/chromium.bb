@@ -6965,9 +6965,7 @@ static int64_t build_and_cost_compound_wedge(
     model_rd_for_sb(cpi, bsize, x, xd, 0, 0, &rate_sum, &dist_sum,
                     &tmp_skip_txfm_sb, &tmp_skip_sse_sb);
     rd = RDCOST(x->rdmult, x->rddiv, rs2 + *out_rate_mv + rate_sum, dist_sum);
-    if (rd < best_rd_cur) {
-      best_rd_cur = rd;
-    } else {
+    if (rd >= best_rd_cur) {
       mbmi->mv[0].as_int = cur_mv[0].as_int;
       mbmi->mv[1].as_int = cur_mv[1].as_int;
       *out_rate_mv = rate_mv;
