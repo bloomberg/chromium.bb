@@ -196,6 +196,11 @@ var kRTCIceCandidatePairStats = new RTCStats_(null, {
   readable: 'boolean',
   bytesSent: 'number',
   bytesReceived: 'number',
+  totalRoundTripTime: 'number',
+  currentRoundTripTime: 'number',
+  // TODO(hbos): *Rtt have been renamed to *RoundTripTime, both listed at the
+  // moment. As soon as https://codereview.webrtc.org/2576383002/ has rolled in,
+  // remove the *Rtt ones. crbug.com/627816
   totalRtt: 'number',
   currentRtt: 'number',
   availableOutgoingBitrate: 'number',
