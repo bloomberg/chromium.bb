@@ -77,6 +77,8 @@ void StatusAreaWidget::CreateTrayViews() {
   web_notification_tray_->Initialize();
 #if defined(OS_CHROMEOS)
   logout_button_tray_->Initialize();
+  if (palette_tray_)
+    palette_tray_->Initialize();
   virtual_keyboard_tray_->Initialize();
   ime_menu_tray_->Initialize();
 #endif

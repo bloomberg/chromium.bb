@@ -204,13 +204,6 @@ PaletteTray::PaletteTray(WmShelf* wm_shelf)
         base::Bind(&PaletteTray::OnStylusStateChanged,
                    weak_factory_.GetWeakPtr()));
   }
-
-  // OnPaletteEnabledPrefChanged will get called with the initial pref value,
-  // which will take care of showing the palette.
-  palette_enabled_subscription_ =
-      WmShell::Get()->palette_delegate()->AddPaletteEnableListener(
-          base::Bind(&PaletteTray::OnPaletteEnabledPrefChanged,
-                     weak_factory_.GetWeakPtr()));
 }
 
 PaletteTray::~PaletteTray() {
@@ -411,6 +404,15 @@ void PaletteTray::SetShelfAlignment(ShelfAlignment alignment) {
 void PaletteTray::AnchorUpdated() {
   if (bubble_)
     bubble_->bubble_view()->UpdateBubble();
+}
+
+void PaletteTray::Initialize() {
+  // OnPaletteEnabledPrefChanged will get called with the initial pref value,
+  // which will take care of showing the palette.
+  palette_enabled_subscription_ =
+      WmShell::Get()->palette_delegate()->AddPaletteEnableListener(
+          base::Bind(&PaletteTray::OnPaletteEnabledPrefChanged,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void PaletteTray::SetIconBorderForShelfAlignment() {

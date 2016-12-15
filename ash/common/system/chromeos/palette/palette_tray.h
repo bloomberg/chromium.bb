@@ -58,6 +58,7 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   void HideBubbleWithView(const views::TrayBubbleView* bubble_view) override;
   void SetShelfAlignment(ShelfAlignment alignment) override;
   void AnchorUpdated() override;
+  void Initialize() override;
 
   // PaletteToolManager::Delegate:
   void HidePalette() override;
