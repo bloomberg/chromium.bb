@@ -157,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(CrashRestoreComplexTest, RestoreSessionForThreeUsers) {
   EXPECT_EQ(account_id3_, user->GetAccountId());
   EXPECT_EQ(CryptohomeClient::GetStubSanitizedUsername(cryptohome_id3_),
             user->username_hash());
-  const user_manager::UserList& users = user_manager->GetLoggedInUsers();
+  const user_manager::UserList& users = user_manager->GetLRULoggedInUsers();
   ASSERT_EQ(3UL, users.size());
 
   // User that becomes active moves to the beginning of the list.

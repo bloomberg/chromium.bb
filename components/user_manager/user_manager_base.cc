@@ -182,14 +182,18 @@ void UserManagerBase::UserLoggedIn(const AccountId& account_id,
   active_user_->set_is_active(true);
   active_user_->set_username_hash(username_hash);
 
-  // Place user who just signed in to the top of the logged in users.
-  logged_in_users_.insert(logged_in_users_.begin(), active_user_);
+  logged_in_users_.push_back(active_user_);
   SetLRUUser(active_user_);
 
   if (!primary_user_) {
     primary_user_ = active_user_;
     if (primary_user_->HasGaiaAccount())
       SendGaiaUserLoginMetrics(account_id);
+  } else if (primary_user_ != active_user_) {
+    // This is only needed for tests where a new user session is created
+    // for non-existent user.
+    SetIsCurrentUserNew(true);
+    NotifyUserAddedToSession(active_user_, true /* user switch pending */);
   }
 
   UMA_HISTOGRAM_ENUMERATION(

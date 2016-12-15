@@ -90,9 +90,6 @@ void StartRestoreAfterCrashSession(Profile* user_profile,
                                    const std::string& login_user_id) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
-  session_manager::SessionManager::Get()->SetSessionState(
-      session_manager::SessionState::ACTIVE);
-
   // TODO(xiyuan): Identify tests that do not set this kLoginUser flag but
   // still rely on "stub user" session. Keeping existing behavior to avoid
   // breaking tests.
@@ -152,9 +149,6 @@ void StartRestoreAfterCrashSession(Profile* user_profile,
 // Starts a user session with stub user.
 void StartStubLoginSession(Profile* user_profile,
                            const std::string& login_user_id) {
-  session_manager::SessionManager::Get()->SetSessionState(
-      session_manager::SessionState::ACTIVE);
-
   // For dev machines and stub user emulate as if sync has been initialized.
   SigninManagerFactory::GetForProfile(user_profile)
       ->SetAuthenticatedAccountInfo(login_user_id, login_user_id);
