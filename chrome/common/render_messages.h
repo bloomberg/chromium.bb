@@ -252,7 +252,7 @@ IPC_MESSAGE_ROUTED2(ChromeViewMsg_ChromeIdentityCheckResult,
                     base::string16 /* identity */,
                     bool /* identity_match */)
 
-// Sent in response to FrameHostMsg_DidBlockRunningInsecureContent.
+// Sent to allow or forbid the running of insecure mixed-content.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetAllowRunningInsecureContent,
                     bool /* allowed */)
 

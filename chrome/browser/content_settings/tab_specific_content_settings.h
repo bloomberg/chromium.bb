@@ -28,6 +28,10 @@
 
 class HostContentSettingsMap;
 
+namespace content {
+class NavigationHandle;
+}
+
 namespace net {
 class CookieOptions;
 }
