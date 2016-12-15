@@ -101,7 +101,7 @@ void TimerBase::moveToNewTaskRunner(WebTaskRunner* taskRunner) {
   m_webTaskRunner = taskRunner->clone();
 
   double now = timerMonotonicallyIncreasingTime();
-  double nextFireTime = m_nextFireTime;
+  double nextFireTime = std::max(m_nextFireTime, now);
   m_nextFireTime = 0;
 
   setNextFireTime(now, nextFireTime - now);
