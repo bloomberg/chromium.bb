@@ -26,7 +26,7 @@ Through a comedy of history, each binary is stored and retrieved differently.
 
 ### Git
 
-Git installs are mirrored versions of the offical Git-for-Windows Portable
+Git installs are mirrored versions of the official Git-for-Windows Portable
 releases.
   * Original: `https://github.com/git-for-windows/git/releases`
   * Mirror: `gs://chrome-infra/PortableGit*.7z.exe`

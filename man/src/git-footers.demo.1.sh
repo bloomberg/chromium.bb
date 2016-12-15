@@ -4,7 +4,7 @@
 add deleted_file
 add unstaged_deleted_file
 add modified_file
-c 'I commited this and am proud of it.
+c 'I committed this and am proud of it.
 
 Cr-Commit-Position: refs/heads/master@{#292272}
 Tech-Debt-Introduced: 17 microMSOffices

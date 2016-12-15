@@ -14,7 +14,7 @@ SYNOPSIS
 DESCRIPTION
 -----------
 
-Shows a diff beween your current branch and it's upstream. This is 'roughly' the
+Shows a diff between your current branch and it's upstream. This is 'roughly' the
 same as:
 
 ----

@@ -55,7 +55,7 @@ class GSUtilApi(recipe_api.RecipeApi):
 
     if use_retry_wrapper:
       # The -- argument for the wrapped gsutil.py is escaped as ---- as python
-      # 2.7.3 removes all occurences of --, not only the first. It is unescaped
+      # 2.7.3 removes all occurrences of --, not only the first. It is unescaped
       # in gsutil_wrapper.py and then passed as -- to gsutil.py.
       # Note, that 2.7.6 doesn't have this problem, but it doesn't hurt.
       cmd_prefix.append('----')

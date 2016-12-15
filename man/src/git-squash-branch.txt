@@ -17,7 +17,7 @@ DESCRIPTION
 `git squash-branch` is a simple helper command. It takes all the commits on the
 current branch from the 'merge_base' to HEAD, and reduces them to a single
 commit. The new commit will contain a summary of all the commits which were
-squashed, preceeded by a header message indicating that it's the result of a
+squashed, preceded by a header message indicating that it's the result of a
 squash (or the message you pass on the command line.).
 
 Squashing branches is useful when trying to rebase-update over branches which

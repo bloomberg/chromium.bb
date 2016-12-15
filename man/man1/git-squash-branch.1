@@ -2,12 +2,12 @@
 .\"     Title: git-squash-branch
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 07/21/2016
+.\"      Date: 12/15/2016
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools bf2a341
+.\"    Source: depot_tools f72f1ad
 .\"  Language: English
 .\"
-.TH "GIT\-SQUASH\-BRANCH" "1" "07/21/2016" "depot_tools bf2a341" "Chromium depot_tools Manual"
+.TH "GIT\-SQUASH\-BRANCH" "1" "12/15/2016" "depot_tools f72f1ad" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -37,7 +37,7 @@ git-squash-branch \- Takes all commits in a single branch and replaces them with
 .sp
 .SH "DESCRIPTION"
 .sp
-git squash\-branch is a simple helper command\&. It takes all the commits on the current branch from the \fImerge_base\fR to HEAD, and reduces them to a single commit\&. The new commit will contain a summary of all the commits which were squashed, preceeded by a header message indicating that it\(cqs the result of a squash (or the message you pass on the command line\&.)\&.
+git squash\-branch is a simple helper command\&. It takes all the commits on the current branch from the \fImerge_base\fR to HEAD, and reduces them to a single commit\&. The new commit will contain a summary of all the commits which were squashed, preceded by a header message indicating that it\(cqs the result of a squash (or the message you pass on the command line\&.)\&.
 .sp
 Squashing branches is useful when trying to rebase\-update over branches which were pushed to their upsteram (or committed by the \fICommit Queue\fR), and then conflicting changes landed in upstream on top of the push/commit\&. If you know that your branch was committed but \fBgit-rebase-update\fR(1) isn\(cqt able to automatically clean it, you can squash the troublesome branch before git rebase\-update, and then when git rebase\-update presents the conflict, you can verify that the conflict diff is what you expected (and then skip it with git rebase \-\-skip)\&.
 .SH "OPTIONS"
@@ -125,5 +125,5 @@ Part of the chromium \fBdepot_tools\fR(7) suite\&. These tools are meant to assi
 .IP " 1." 4
 here
 .RS 4
-\%https://chromium.googlesource.com/chromium/tools/depot_tools
+\%https://chromium.googlesource.com/chromium/tools/depot_tools.git
 .RE

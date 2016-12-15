@@ -53,7 +53,7 @@ To contribute change for review:
     # Edit change description if needed.
     git cl desc
 
-    # If change is approved, flag it to be commited.
+    # If change is approved, flag it to be committed.
     git cl set-commit
 
     # If change needs more work.

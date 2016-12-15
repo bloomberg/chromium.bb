@@ -1055,7 +1055,7 @@ class _GitNumbererState(object):
       # Early exit to avoid extra fetches for repos that aren't using gnumbd.
       return cls(cls._get_pending_prefix_fallback(), None)
 
-    # This pollutes local ref space, but the amount of objects is neglible.
+    # This pollutes local ref space, but the amount of objects is negligible.
     error, _ = cls._run_git_with_code([
         'fetch', remote_url,
         '+refs/meta/config:refs/git_cl/meta/config',
@@ -2553,7 +2553,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       * 'unsent'   - no reviewers added
       * 'waiting'  - waiting for review
       * 'reply'    - waiting for owner to reply to review
-      * 'not lgtm' - Code-Review disaproval from at least one valid reviewer
+      * 'not lgtm' - Code-Review disapproval from at least one valid reviewer
       * 'lgtm'     - Code-Review approval from at least one valid reviewer
       * 'commit'   - in the commit queue
       * 'closed'   - abandoned

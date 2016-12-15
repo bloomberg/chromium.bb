@@ -25,7 +25,7 @@ case "$OS" in
       i?86|x86_64)
         LONG_BIT=$(getconf LONG_BIT)
         # We know we are on x86 but we need to use getconf to determine
-        # bittage of the userspace install (e.g. when runing 32-bit userspace
+        # bittage of the userspace install (e.g. when running 32-bit userspace
         # on x86_64 kernel)
         exec "${THIS_DIR}/ninja-linux${LONG_BIT}" "$@";;
       *)

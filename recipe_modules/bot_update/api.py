@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 
-"""Recipe module to ensure a checkout is consistant on a bot."""
+"""Recipe module to ensure a checkout is consistent on a bot."""
 
 from recipe_engine import recipe_api
 

@@ -350,7 +350,7 @@ class S2Test(BaseTestCase):
     - CR output with universal_newlines=True
     - CRLF output with universal_newlines=True
 
-    First |function| argument is the convertion for the origianl expected LF
+    First |function| argument is the conversion for the origianl expected LF
     string to the right EOL.
     Second |function| argument is the executable and initial flag to run, to
     control what EOL is used by the child process.

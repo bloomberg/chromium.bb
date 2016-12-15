@@ -17,7 +17,7 @@ to the development flow, in the sense that you cannot successfully develop
 Chromium without them.
 
 Other tools are merely 'helper' tools. Not required, but they can substantially
-ease the develpment workflow.
+ease the development workflow.
 
 A listing of both categories of tools follows.
 

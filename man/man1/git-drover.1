@@ -2,12 +2,12 @@
 .\"     Title: git-drover
 .\"    Author: [FIXME: author] [see http://docbook.sf.net/el/author]
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 07/21/2016
+.\"      Date: 12/15/2016
 .\"    Manual: Chromium depot_tools Manual
-.\"    Source: depot_tools bf2a341
+.\"    Source: depot_tools f72f1ad
 .\"  Language: English
 .\"
-.TH "GIT\-DROVER" "1" "07/21/2016" "depot_tools bf2a341" "Chromium depot_tools Manual"
+.TH "GIT\-DROVER" "1" "12/15/2016" "depot_tools f72f1ad" "Chromium depot_tools Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -101,7 +101,7 @@ Before working with branches, you must \fIgclient sync \-\-with_branch_heads\fR 
 .nf
 # Here\*(Aqs a commit (from some\&.committer) that we want to \*(Aqdrover\*(Aq\&.
 \fB$ git log \-n 1 \-\-pretty=fuller\fR
-commit 26e52487417bedec18e38b4937c721769275ac89
+commit 067e08ebd511040fa9d5350da54112300d9c1801
 Author:     some\&.committer <some\&.committer@chromium\&.org>
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
 Commit:     some\&.committer <some\&.committer@chromium\&.org>
@@ -110,10 +110,10 @@ CommitDate: Thu Apr 10 08:54:46 2014 +0000
     This change needs to go to branch 9999
 
 # Now do the \*(Aqdrover\*(Aq\&.
-\fB$ git drover \-\-branch 9999 \-\-cherry\-pick 26e52487417bedec18e38b4937c721769275ac89\fR
+\fB$ git drover \-\-branch 9999 \-\-cherry\-pick 067e08ebd511040fa9d5350da54112300d9c1801\fR
 Going to cherry\-pick
 """
-commit 26e52487417bedec18e38b4937c721769275ac89
+commit 067e08ebd511040fa9d5350da54112300d9c1801
 Author: some\&.committer <some\&.committer@chromium\&.org>
 Date:   Thu Apr 10 08:54:46 2014 +0000
 
@@ -148,7 +148,7 @@ About to land on 9999\&. Continue (y/n)? y
 .nf
 # Here\*(Aqs a commit (from some\&.committer) that we want to \*(Aqdrover\*(Aq\&.
 \fB$ git log \-n 1 \-\-pretty=fuller\fR
-commit 0a1d0509ed8d7c486107d7288287b3c05b97a916
+commit e4fdcfa1a16c8b7265fb74a20cd029aa75cecaa8
 Author:     some\&.committer <some\&.committer@chromium\&.org>
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
 Commit:     some\&.committer <some\&.committer@chromium\&.org>
@@ -157,10 +157,10 @@ CommitDate: Thu Apr 10 08:54:46 2014 +0000
     This change needs to go to branch 9999
 
 # Now do the \*(Aqdrover\*(Aq\&.
-\fB$ git drover \-\-branch 9999 \-\-cherry\-pick 0a1d0509ed8d7c486107d7288287b3c05b97a916\fR
+\fB$ git drover \-\-branch 9999 \-\-cherry\-pick e4fdcfa1a16c8b7265fb74a20cd029aa75cecaa8\fR
 Going to cherry\-pick
 """
-commit 0a1d0509ed8d7c486107d7288287b3c05b97a916
+commit e4fdcfa1a16c8b7265fb74a20cd029aa75cecaa8
 Author: some\&.committer <some\&.committer@chromium\&.org>
 Date:   Thu Apr 10 08:54:46 2014 +0000
 
@@ -219,24 +219,24 @@ Branch drover_9999 set up to track remote ref refs/branch\-heads/9999\&.
 
 # Here\*(Aqs the commit we want to revert\&.
 \fB$ git log \-n 1\fR
-commit 0a9dc1b7ec5b1fe48217c5b88a55f4110bc3f4f0
+commit 00b47037e6732455c6b90f8800f4ffe5fbe7326d
 Author: some\&.committer <some\&.committer@chromium\&.org>
 Date:   Thu Apr 10 08:54:46 2014 +0000
 
     This change is horribly broken\&.
 
 # Now do the revert\&.
-\fB$ git revert 0a9dc1b7ec5b1fe48217c5b88a55f4110bc3f4f0\fR
+\fB$ git revert 00b47037e6732455c6b90f8800f4ffe5fbe7326d\fR
 
 # That reverted the change and committed the revert\&.
 \fB$ git log \-n 1\fR
-commit 84f214d895434bee2ab9aa08562f71a25891a31d
+commit e31cae25b69f773e05ea206848d1479315f2e349
 Author: you <you@chromium\&.org>
 Date:   Thu Apr 10 09:11:36 2014 +0000
 
     Revert "This change is horribly broken\&."
 
-    This reverts commit 0a9dc1b7ec5b1fe48217c5b88a55f4110bc3f4f0\&.
+    This reverts commit 00b47037e6732455c6b90f8800f4ffe5fbe7326d\&.
 
 # As with old drover, reverts are generally OK to commit without LGTM\&.
 \fB$ git cl upload \-r some\&.committer@chromium\&.org \-\-send\-mail\fR
@@ -268,7 +268,7 @@ Using 50% similarity for rename/copy detection\&. Override with \-\-similarity\&
 
 # Here\*(Aqs a commit (from some\&.committer) that we want to \*(Aqdrover\*(Aq\&.
 \fB$ git log \-n 1 \-\-pretty=fuller\fR
-commit aecb0b589f95d2efd6a32294cc6e6afb085f6b87
+commit 87e5c05985d9c2ee235c6b7b5d29cc50f45783db
 Author:     some\&.committer <some\&.committer@chromium\&.org>
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
 Commit:     some\&.committer <some\&.committer@chromium\&.org>
@@ -282,8 +282,8 @@ Branch drover_9999 set up to track remote ref refs/branch\-heads/9999\&.
 
 # Now do the \*(Aqdrover\*(Aq\&.
 # IMPORTANT!!! Do Not leave off the \*(Aq\-x\*(Aq flag
-\fB$ git cherry\-pick \-x aecb0b589f95d2efd6a32294cc6e6afb085f6b87\fR
-[drover_9999 3f113b7] This change needs to go to branch 9999
+\fB$ git cherry\-pick \-x 87e5c05985d9c2ee235c6b7b5d29cc50f45783db\fR
+[drover_9999 5c879cc] This change needs to go to branch 9999
  Author: some\&.committer <some\&.committer@chromium\&.org>
  Date: Thu Apr 10 08:54:46 2014 +0000
  1 file changed, 1 insertion(+)
@@ -292,7 +292,7 @@ Branch drover_9999 set up to track remote ref refs/branch\-heads/9999\&.
 # That took the code authored by some\&.committer and committed it to
 # the branch by the person who drovered it (i\&.e\&. you)\&.
 \fB$ git log \-n 1 \-\-pretty=fuller\fR
-commit 3f113b79d87aadfbbc6d4ff8de038c69c94dc9b2
+commit 5c879cc29a19045571b08d9b058b8306bf7dee6c
 Author:     some\&.committer <some\&.committer@chromium\&.org>
 AuthorDate: Thu Apr 10 08:54:46 2014 +0000
 Commit:     you <you@chromium\&.org>
@@ -300,7 +300,7 @@ CommitDate: Thu Apr 10 09:11:36 2014 +0000
 
     This change needs to go to branch 9999
 
-    (cherry picked from commit aecb0b589f95d2efd6a32294cc6e6afb085f6b87)
+    (cherry picked from commit 87e5c05985d9c2ee235c6b7b5d29cc50f45783db)
 
 # Looks good\&. Ship it!
 \fB$ git cl upload\fR
@@ -324,5 +324,5 @@ Part of the chromium \fBdepot_tools\fR(7) suite\&. These tools are meant to assi
 .IP " 1." 4
 here
 .RS 4
-\%https://chromium.googlesource.com/chromium/tools/depot_tools
+\%https://chromium.googlesource.com/chromium/tools/depot_tools.git
 .RE

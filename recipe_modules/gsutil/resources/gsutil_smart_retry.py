@@ -34,7 +34,7 @@ def main(argv):
   args = parser.parse_args()
 
   # The -- argument for the wrapped gsutil.py is escaped as ---- as python
-  # 2.7.3 removes all occurences of --, not only the first.
+  # 2.7.3 removes all occurrences of --, not only the first.
   if '----' in args.command:
     args.command[args.command.index('----')] = '--'
 
