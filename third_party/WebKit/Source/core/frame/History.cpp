@@ -145,14 +145,19 @@ void History::go(ExecutionContext* context, int delta) {
   if (!NavigationDisablerForUnload::isNavigationAllowed())
     return;
 
-  // We intentionally call reload() for the current frame if delta is zero.
-  // Otherwise, navigation happens on the root frame.
-  // This behavior is designed in the following spec.
-  // https://html.spec.whatwg.org/multipage/browsers.html#dom-history-go
-  if (delta)
+  if (delta) {
     frame()->loader().client()->navigateBackForward(delta);
-  else
-    frame()->reload(FrameLoadTypeReload, ClientRedirectPolicy::ClientRedirect);
+  } else {
+    // We intentionally call reload() for the current frame if delta is zero.
+    // Otherwise, navigation happens on the root frame.
+    // This behavior is designed in the following spec.
+    // https://html.spec.whatwg.org/multipage/browsers.html#dom-history-go
+    FrameLoadType reloadType =
+        RuntimeEnabledFeatures::fasterLocationReloadEnabled()
+            ? FrameLoadTypeReloadMainResource
+            : FrameLoadTypeReload;
+    frame()->reload(reloadType, ClientRedirectPolicy::ClientRedirect);
+  }
 }
 
 KURL History::urlForState(const String& urlString) {

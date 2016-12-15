@@ -248,7 +248,11 @@ void Location::reload(LocalDOMWindow* currentWindow) {
     return;
   if (protocolIsJavaScript(toLocalFrame(m_frame)->document()->url()))
     return;
-  m_frame->reload(FrameLoadTypeReload, ClientRedirectPolicy::ClientRedirect);
+  FrameLoadType reloadType =
+      RuntimeEnabledFeatures::fasterLocationReloadEnabled()
+          ? FrameLoadTypeReloadMainResource
+          : FrameLoadTypeReload;
+  m_frame->reload(reloadType, ClientRedirectPolicy::ClientRedirect);
 }
 
 void Location::setLocation(const String& url,

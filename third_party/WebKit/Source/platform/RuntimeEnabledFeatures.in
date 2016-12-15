@@ -95,6 +95,7 @@ DocumentWriteEvaluator
 DOMConvenienceAPI status=stable
 DurableStorage status=stable
 ExpensiveBackgroundTimerThrottling status=experimental
+FasterLocationReload status=experimental
 FontCacheScaling status=test
 ForceDisplayList2dCanvas
 // See crbug.com/585250.
