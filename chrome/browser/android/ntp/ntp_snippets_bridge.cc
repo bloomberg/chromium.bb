@@ -22,7 +22,9 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_metrics.h"
+#include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
+#include "components/prefs/pref_service.h"
 #include "jni/SnippetsBridge_jni.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -350,9 +352,15 @@ void NTPSnippetsBridge::OnSuggestionShown(JNIEnv* env,
                                           jint category_position,
                                           jlong publish_timestamp_ms,
                                           jfloat score) {
+  PrefService* pref_service = ProfileManager::GetLastUsedProfile()->GetPrefs();
+  base::Time last_background_fetch_time =
+      base::Time::FromInternalValue(pref_service->GetInt64(
+          ntp_snippets::prefs::kLastSuccessfulBackgroundFetchTime));
+
   ntp_snippets::metrics::OnSuggestionShown(
       global_position, CategoryFromIDValue(j_category_id), category_position,
-      base::Time::FromJavaTime(publish_timestamp_ms), score);
+      base::Time::FromJavaTime(publish_timestamp_ms),
+      last_background_fetch_time, score);
   if (global_position == 0) {
     content_suggestions_service_->user_classifier()->OnEvent(
         ntp_snippets::UserClassifier::Metric::SUGGESTIONS_SHOWN);

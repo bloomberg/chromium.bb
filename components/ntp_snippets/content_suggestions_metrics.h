@@ -23,6 +23,7 @@ void OnSuggestionShown(int global_position,
                        Category category,
                        int category_position,
                        base::Time publish_date,
+                       base::Time last_background_fetch_time,
                        float score);
 
 void OnSuggestionOpened(int global_position,

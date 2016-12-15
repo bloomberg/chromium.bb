@@ -51,6 +51,8 @@ const char kHistogramMoreButtonClicked[] =
     "NewTabPage.ContentSuggestions.MoreButtonClicked";
 const char kHistogramCategoryDismissed[] =
     "NewTabPage.ContentSuggestions.CategoryDismissed";
+const char kHistogramContentSuggestionsTimeSinceLastBackgroundFetch[] =
+    "NewTabPage.ContentSuggestions.TimeSinceLastBackgroundFetch";
 
 const char kPerCategoryHistogramFormat[] = "%s.%s";
 
@@ -248,6 +250,7 @@ void OnSuggestionShown(int global_position,
                        Category category,
                        int category_position,
                        base::Time publish_date,
+                       base::Time last_background_fetch_time,
                        float score) {
   UMA_HISTOGRAM_ENUMERATION(kHistogramShown, global_position,
                             kMaxSuggestionsTotal);
@@ -259,11 +262,21 @@ void OnSuggestionShown(int global_position,
 
   LogCategoryHistogramScore(kHistogramShownScore, category, score);
 
+  // TODO(markusheintz): Discuss whether the code below should be move into a
+  // separate method called OnSuggestionsListShown.
   // When the first of the articles suggestions is shown, then we count this as
   // a single usage of content suggestions.
   if (category.IsKnownCategory(KnownCategories::ARTICLES) &&
       category_position == 0) {
     RecordContentSuggestionsUsage();
+
+    // Records the time since the last background fetch of the remote content
+    // suggestions.
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        kHistogramContentSuggestionsTimeSinceLastBackgroundFetch,
+        base::Time::Now() - last_background_fetch_time,
+        base::TimeDelta::FromSeconds(1), base::TimeDelta::FromDays(7),
+        /*bucket_count=*/100);
   }
 }
 
