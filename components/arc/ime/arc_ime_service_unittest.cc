@@ -138,6 +138,9 @@ class ArcImeServiceTest : public testing::Test {
   std::unique_ptr<ArcImeService> instance_;
   FakeArcImeBridge* fake_arc_ime_bridge_;  // Owned by |instance_|
 
+  FakeArcWindowDetector* fake_window_detector_; // Owned by |instance_|
+  std::unique_ptr<aura::Window> arc_win_;
+
  private:
   void SetUp() override {
     arc_bridge_service_ = base::MakeUnique<ArcBridgeService>();
@@ -147,9 +150,16 @@ class ArcImeServiceTest : public testing::Test {
 
     fake_input_method_ = base::MakeUnique<FakeInputMethod>();
     instance_->SetInputMethodForTesting(fake_input_method_.get());
+
+    fake_window_detector_ = new FakeArcWindowDetector();
+    instance_->SetArcWindowDetectorForTesting(
+        base::WrapUnique(fake_window_detector_));
+    arc_win_ = fake_window_detector_->CreateFakeArcTopLevelWindow();
   }
 
   void TearDown() override {
+    arc_win_.reset();
+    fake_window_detector_ = nullptr;
     fake_arc_ime_bridge_ = nullptr;
     instance_.reset();
     arc_bridge_service_.reset();
@@ -157,6 +167,8 @@ class ArcImeServiceTest : public testing::Test {
 };
 
 TEST_F(ArcImeServiceTest, HasCompositionText) {
+  instance_->OnWindowFocused(arc_win_.get(), nullptr);
+
   ui::CompositionText composition;
   composition.text = base::UTF8ToUTF16("nonempty text");
 
@@ -184,7 +196,8 @@ TEST_F(ArcImeServiceTest, HasCompositionText) {
 }
 
 TEST_F(ArcImeServiceTest, ShowImeIfNeeded) {
-  fake_input_method_->SetFocusedTextInputClient(instance_.get());
+  instance_->OnWindowFocused(arc_win_.get(), nullptr);
+
   instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_NONE);
   ASSERT_EQ(0, fake_input_method_->count_show_ime_if_needed());
 
@@ -197,14 +210,15 @@ TEST_F(ArcImeServiceTest, ShowImeIfNeeded) {
 }
 
 TEST_F(ArcImeServiceTest, CancelComposition) {
+  instance_->OnWindowFocused(arc_win_.get(), nullptr);
+
   // The bridge should forward the cancel event to the input method.
-  fake_input_method_->SetFocusedTextInputClient(instance_.get());
   instance_->OnCancelComposition();
   EXPECT_EQ(1, fake_input_method_->count_cancel_composition());
 }
 
 TEST_F(ArcImeServiceTest, InsertChar) {
-  fake_input_method_->SetFocusedTextInputClient(instance_.get());
+  instance_->OnWindowFocused(arc_win_.get(), nullptr);
 
   // When text input type is NONE, the event is not forwarded.
   instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_NONE);
@@ -218,22 +232,18 @@ TEST_F(ArcImeServiceTest, InsertChar) {
 }
 
 TEST_F(ArcImeServiceTest, WindowFocusTracking) {
-  auto window_detector = base::MakeUnique<FakeArcWindowDetector>();
-  std::unique_ptr<aura::Window> arc_win1 =
-      window_detector->CreateFakeArcTopLevelWindow();
   std::unique_ptr<aura::Window> arc_win2 =
-      window_detector->CreateFakeArcTopLevelWindow();
+      fake_window_detector_->CreateFakeArcTopLevelWindow();
   std::unique_ptr<aura::Window> nonarc_win =
-      window_detector->CreateFakeNonArcTopLevelWindow();
-  instance_->SetArcWindowDetectorForTesting(std::move(window_detector));
+      fake_window_detector_->CreateFakeNonArcTopLevelWindow();
 
   // ARC window is focused. ArcImeService is set as the text input client.
-  instance_->OnWindowFocused(arc_win1.get(), nullptr);
+  instance_->OnWindowFocused(arc_win_.get(), nullptr);
   EXPECT_EQ(instance_.get(), fake_input_method_->GetTextInputClient());
   EXPECT_EQ(1, fake_input_method_->count_set_focused_text_input_client());
 
   // Focus is moving between ARC windows. No state change should happen.
-  instance_->OnWindowFocused(arc_win2.get(), arc_win1.get());
+  instance_->OnWindowFocused(arc_win2.get(), arc_win_.get());
   EXPECT_EQ(instance_.get(), fake_input_method_->GetTextInputClient());
   EXPECT_EQ(1, fake_input_method_->count_set_focused_text_input_client());
 
@@ -243,12 +253,12 @@ TEST_F(ArcImeServiceTest, WindowFocusTracking) {
   EXPECT_EQ(1, fake_input_method_->count_set_focused_text_input_client());
 
   // Focus came back to an ARC window. ArcImeService is re-attached.
-  instance_->OnWindowFocused(arc_win1.get(), nonarc_win.get());
+  instance_->OnWindowFocused(arc_win_.get(), nonarc_win.get());
   EXPECT_EQ(instance_.get(), fake_input_method_->GetTextInputClient());
   EXPECT_EQ(2, fake_input_method_->count_set_focused_text_input_client());
 
   // Focus is moving out.
-  instance_->OnWindowFocused(nullptr, arc_win1.get());
+  instance_->OnWindowFocused(nullptr, arc_win_.get());
   EXPECT_EQ(nullptr, fake_input_method_->GetTextInputClient());
   EXPECT_EQ(2, fake_input_method_->count_set_focused_text_input_client());
 }

@@ -84,10 +84,11 @@ void ArcImeService::SetArcWindowDetectorForTesting(
 }
 
 ui::InputMethod* ArcImeService::GetInputMethod() {
-  if (test_input_method_)
-    return test_input_method_;
   if (focused_arc_window_.windows().empty())
     return nullptr;
+
+  if (test_input_method_)
+    return test_input_method_;
   return focused_arc_window_.windows().front()->GetHost()->GetInputMethod();
 }
 
@@ -114,7 +115,7 @@ void ArcImeService::OnWindowInitialized(aura::Window* new_window) {
 // Overridden from exo::WMHelper::FocusChangeObserver:
 
 void ArcImeService::OnWindowFocused(aura::Window* gained_focus,
-                                   aura::Window* lost_focus) {
+                                    aura::Window* lost_focus) {
   // The Aura focus may or may not be on sub-window of the toplevel ARC++ frame.
   // To handle all cases, judge the state by always climbing up to the toplevel.
   gained_focus = gained_focus ? gained_focus->GetToplevelWindow() : nullptr;
@@ -125,20 +126,31 @@ void ArcImeService::OnWindowFocused(aura::Window* gained_focus,
   const bool detach = (lost_focus && focused_arc_window_.Contains(lost_focus));
   const bool attach =
       (gained_focus && arc_window_detector_->IsArcTopLevelWindow(gained_focus));
+
+  // TODO(kinaba): Implicit dependency in GetInputMethod as described below is
+  // confusing. Consider getting InputMethod directly from lost_ or gained_focus
+  // variables. For that, we need to change how to inject testing InputMethod.
+  //
+  // GetInputMethod() retrieves the input method associated to
+  // |forcused_arc_window_|. Hence, to get the object we are detaching from, we
+  // must call the method before updating the forcused ARC window.
+  ui::InputMethod* const detaching_ime = detach ? GetInputMethod() : nullptr;
+
   if (detach)
     focused_arc_window_.Remove(lost_focus);
   if (attach)
     focused_arc_window_.Add(gained_focus);
 
+  ui::InputMethod* const attaching_ime = attach ? GetInputMethod() : nullptr;
+
   // Notify to the input method, either when this service is detached or
   // attached. Do nothing when the focus is moving between ARC windows,
   // to avoid unpexpected context reset in ARC.
-  ui::InputMethod* const input_method = GetInputMethod();
-  if (input_method) {
-    if (detach && !attach)
-      input_method->DetachTextInputClient(this);
-    if (!detach && attach)
-      input_method->SetFocusedTextInputClient(this);
+  if (detaching_ime != attaching_ime) {
+    if (detaching_ime)
+      detaching_ime->DetachTextInputClient(this);
+    if (attaching_ime)
+      attaching_ime->SetFocusedTextInputClient(this);
   }
 }
 
