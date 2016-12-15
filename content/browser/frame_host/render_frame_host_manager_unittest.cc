@@ -1170,7 +1170,7 @@ TEST_F(RenderFrameHostManagerTest, PageDoesBackAndReload) {
   TestRenderFrameHost* evil_rfh = contents()->GetMainFrame();
 
   // Now let's simulate the evil page calling history.back().
-  contents()->OnGoToEntryAtOffset(-1);
+  contents()->OnGoToEntryAtOffset(evil_rfh->GetRenderViewHost(), -1);
   contents()->GetMainFrame()->PrepareForCommit();
   // We should have a new pending RFH.
   // Note that in this case, the navigation has not committed, so evil_rfh will

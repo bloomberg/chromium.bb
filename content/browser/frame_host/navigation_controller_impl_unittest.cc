@@ -4596,7 +4596,7 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   process()->sink().ClearMessages();
 
   // Simulate the page calling history.back(). It should create a pending entry.
-  contents()->OnGoToEntryAtOffset(-1);
+  contents()->OnGoToEntryAtOffset(test_rvh(), -1);
   EXPECT_EQ(0, controller.GetPendingEntryIndex());
   // The actual cross-navigation is suspended until the current RVH tells us
   // it unloaded, simulate that.
@@ -4608,7 +4608,7 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   process()->sink().ClearMessages();
 
   // Now test history.forward()
-  contents()->OnGoToEntryAtOffset(2);
+  contents()->OnGoToEntryAtOffset(test_rvh(), 2);
   EXPECT_EQ(2, controller.GetPendingEntryIndex());
   // The actual cross-navigation is suspended until the current RVH tells us
   // it unloaded, simulate that.
@@ -4621,7 +4621,7 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   controller.DiscardNonCommittedEntries();
 
   // Make sure an extravagant history.go() doesn't break.
-  contents()->OnGoToEntryAtOffset(120);  // Out of bounds.
+  contents()->OnGoToEntryAtOffset(test_rvh(), 120);  // Out of bounds.
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_FALSE(HasNavigationRequest());
 }

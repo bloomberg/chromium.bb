@@ -348,8 +348,9 @@ void InterstitialPageImpl::Observe(
   }
 }
 
-bool InterstitialPageImpl::OnMessageReceived(RenderFrameHost* render_frame_host,
-                                             const IPC::Message& message) {
+bool InterstitialPageImpl::OnMessageReceived(
+    RenderFrameHostImpl* render_frame_host,
+    const IPC::Message& message) {
   if (render_frame_host->GetRenderViewHost() != render_view_host_) {
     DCHECK(!render_view_host_)
         << "We expect an interstitial page to have only a single RVH";
@@ -357,7 +358,8 @@ bool InterstitialPageImpl::OnMessageReceived(RenderFrameHost* render_frame_host,
   }
 
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(InterstitialPageImpl, message)
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(InterstitialPageImpl, message,
+                                   render_frame_host)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DomOperationResponse,
                         OnDomOperationResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -366,8 +368,9 @@ bool InterstitialPageImpl::OnMessageReceived(RenderFrameHost* render_frame_host,
   return handled;
 }
 
-bool InterstitialPageImpl::OnMessageReceived(RenderViewHost* render_view_host,
-                                             const IPC::Message& message) {
+bool InterstitialPageImpl::OnMessageReceived(
+    RenderViewHostImpl* render_view_host,
+    const IPC::Message& message) {
   return false;
 }
 
@@ -842,6 +845,7 @@ void InterstitialPageImpl::TakeActionOnResourceDispatcher(
 }
 
 void InterstitialPageImpl::OnDomOperationResponse(
+    RenderFrameHostImpl* source,
     const std::string& json_string) {
   std::string json = json_string;
   // Needed by test code.

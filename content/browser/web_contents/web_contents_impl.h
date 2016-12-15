@@ -430,7 +430,7 @@ class CONTENT_EXPORT WebContentsImpl
   bool Send(IPC::Message* message) override;
 
   // RenderFrameHostDelegate ---------------------------------------------------
-  bool OnMessageReceived(RenderFrameHost* render_frame_host,
+  bool OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                          const IPC::Message& message) override;
   void OnAssociatedInterfaceRequest(
       RenderFrameHost* render_frame_host,
@@ -488,7 +488,7 @@ class CONTENT_EXPORT WebContentsImpl
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
-  bool OnMessageReceived(RenderViewHost* render_view_host,
+  bool OnMessageReceived(RenderViewHostImpl* render_view_host,
                          const IPC::Message& message) override;
   // RenderFrameHostDelegate has the same method, so list it there because this
   // interface is going away.
@@ -913,92 +913,117 @@ class CONTENT_EXPORT WebContentsImpl
                       bool success,
                       const base::string16& user_input);
 
-  bool OnMessageReceived(RenderViewHost* render_view_host,
-                         RenderFrameHost* render_frame_host,
-                         const IPC::Message& message);
-
-  // Checks whether render_frame_message_source_ is set to non-null value,
-  // otherwise it terminates the main frame renderer process.
-  bool HasValidFrameSource();
-
   // IPC message handlers.
-  void OnThemeColorChanged(SkColor theme_color);
-  void OnDidLoadResourceFromMemoryCache(const GURL& url,
+  void OnThemeColorChanged(RenderFrameHostImpl* source, SkColor theme_color);
+  void OnDidLoadResourceFromMemoryCache(RenderFrameHostImpl* source,
+                                        const GURL& url,
                                         const std::string& http_request,
                                         const std::string& mime_type,
                                         ResourceType resource_type);
-  void OnDidDisplayInsecureContent();
-  void OnDidRunInsecureContent(const GURL& security_origin,
+  void OnDidDisplayInsecureContent(RenderFrameHostImpl* source);
+  void OnDidRunInsecureContent(RenderFrameHostImpl* source,
+                               const GURL& security_origin,
                                const GURL& target_url);
-  void OnDidDisplayContentWithCertificateErrors(const GURL& url);
-  void OnDidRunContentWithCertificateErrors(const GURL& url);
-  void OnDocumentLoadedInFrame();
-  void OnDidFinishLoad(const GURL& url);
-  void OnGoToEntryAtOffset(int offset);
-  void OnUpdateZoomLimits(int minimum_percent,
+  void OnDidDisplayContentWithCertificateErrors(RenderFrameHostImpl* source,
+                                                const GURL& url);
+  void OnDidRunContentWithCertificateErrors(RenderFrameHostImpl* source,
+                                            const GURL& url);
+  void OnDocumentLoadedInFrame(RenderFrameHostImpl* source);
+  void OnDidFinishLoad(RenderFrameHostImpl* source, const GURL& url);
+  void OnGoToEntryAtOffset(RenderViewHostImpl* source, int offset);
+  void OnUpdateZoomLimits(RenderViewHostImpl* source,
+                          int minimum_percent,
                           int maximum_percent);
-  void OnPageScaleFactorChanged(float page_scale_factor);
-  void OnEnumerateDirectory(int request_id, const base::FilePath& path);
+  void OnPageScaleFactorChanged(RenderViewHostImpl* source,
+                                float page_scale_factor);
+  void OnEnumerateDirectory(RenderViewHostImpl* source,
+                            int request_id,
+                            const base::FilePath& path);
 
-  void OnRegisterProtocolHandler(const std::string& protocol,
+  void OnRegisterProtocolHandler(RenderFrameHostImpl* source,
+                                 const std::string& protocol,
                                  const GURL& url,
                                  const base::string16& title,
                                  bool user_gesture);
-  void OnUnregisterProtocolHandler(const std::string& protocol,
+  void OnUnregisterProtocolHandler(RenderFrameHostImpl* source,
+                                   const std::string& protocol,
                                    const GURL& url,
                                    bool user_gesture);
-  void OnFindReply(int request_id,
+  void OnFindReply(RenderFrameHostImpl* source,
+                   int request_id,
                    int number_of_matches,
                    const gfx::Rect& selection_rect,
                    int active_match_ordinal,
                    bool final_update);
 #if defined(OS_ANDROID)
-  void OnFindMatchRectsReply(int version,
+  void OnFindMatchRectsReply(RenderFrameHostImpl* source,
+                             int version,
                              const std::vector<gfx::RectF>& rects,
                              const gfx::RectF& active_rect);
-  void OnGetNearestFindResultReply(int request_id, float distance);
+  void OnGetNearestFindResultReply(RenderFrameHostImpl* source,
+                                   int request_id,
+                                   float distance);
   void OnOpenDateTimeDialog(
+      RenderViewHostImpl* source,
       const ViewHostMsg_DateTimeDialogValue_Params& value);
 #endif
-  void OnDomOperationResponse(const std::string& json_string);
-  void OnAppCacheAccessed(const GURL& manifest_url, bool blocked_by_policy);
-  void OnOpenColorChooser(int color_chooser_id,
+  void OnDomOperationResponse(RenderFrameHostImpl* source,
+                              const std::string& json_string);
+  void OnAppCacheAccessed(RenderViewHostImpl* source,
+                          const GURL& manifest_url,
+                          bool blocked_by_policy);
+  void OnOpenColorChooser(RenderFrameHostImpl* source,
+                          int color_chooser_id,
                           SkColor color,
                           const std::vector<ColorSuggestion>& suggestions);
-  void OnEndColorChooser(int color_chooser_id);
-  void OnSetSelectedColorInColorChooser(int color_chooser_id, SkColor color);
-  void OnWebUISend(const GURL& source_url,
+  void OnEndColorChooser(RenderFrameHostImpl* source, int color_chooser_id);
+  void OnSetSelectedColorInColorChooser(RenderFrameHostImpl* source,
+                                        int color_chooser_id,
+                                        SkColor color);
+  void OnWebUISend(RenderViewHostImpl* source,
+                   const GURL& source_url,
                    const std::string& name,
                    const base::ListValue& args);
-  void OnUpdatePageImportanceSignals(const PageImportanceSignals& signals);
+  void OnUpdatePageImportanceSignals(RenderFrameHostImpl* source,
+                                     const PageImportanceSignals& signals);
 #if BUILDFLAG(ENABLE_PLUGINS)
-  void OnPepperInstanceCreated(int32_t pp_instance);
-  void OnPepperInstanceDeleted(int32_t pp_instance);
-  void OnPepperPluginHung(int plugin_child_id,
+  void OnPepperInstanceCreated(RenderFrameHostImpl* source,
+                               int32_t pp_instance);
+  void OnPepperInstanceDeleted(RenderFrameHostImpl* source,
+                               int32_t pp_instance);
+  void OnPepperPluginHung(RenderFrameHostImpl* source,
+                          int plugin_child_id,
                           const base::FilePath& path,
                           bool is_hung);
-  void OnPepperStartsPlayback(int32_t pp_instance);
-  void OnPepperStopsPlayback(int32_t pp_instance);
-  void OnPluginCrashed(const base::FilePath& plugin_path,
+  void OnPepperStartsPlayback(RenderFrameHostImpl* source, int32_t pp_instance);
+  void OnPepperStopsPlayback(RenderFrameHostImpl* source, int32_t pp_instance);
+  void OnPluginCrashed(RenderFrameHostImpl* source,
+                       const base::FilePath& plugin_path,
                        base::ProcessId plugin_pid);
-  void OnRequestPpapiBrokerPermission(int routing_id,
+  void OnRequestPpapiBrokerPermission(RenderViewHostImpl* source,
+                                      int ppb_broker_route_id,
                                       const GURL& url,
                                       const base::FilePath& plugin_path);
 
   // Callback function when requesting permission to access the PPAPI broker.
   // |result| is true if permission was granted.
-  void OnPpapiBrokerPermissionResult(int routing_id, bool result);
+  void SendPpapiBrokerPermissionResult(int process_id,
+                                       int ppb_broker_route_id,
+                                       bool result);
 
   void OnBrowserPluginMessage(RenderFrameHost* render_frame_host,
                               const IPC::Message& message);
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
-  void OnUpdateFaviconURL(const std::vector<FaviconURL>& candidates);
-  void OnFirstVisuallyNonEmptyPaint();
-  void OnShowValidationMessage(const gfx::Rect& anchor_in_root_view,
+  void OnUpdateFaviconURL(RenderViewHostImpl* source,
+                          const std::vector<FaviconURL>& candidates);
+  void OnFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source);
+  void OnShowValidationMessage(RenderViewHostImpl* source,
+                               const gfx::Rect& anchor_in_root_view,
                                const base::string16& main_text,
                                const base::string16& sub_text);
-  void OnHideValidationMessage();
-  void OnMoveValidationMessage(const gfx::Rect& anchor_in_root_view);
+  void OnHideValidationMessage(RenderViewHostImpl* source);
+  void OnMoveValidationMessage(RenderViewHostImpl* source,
+                               const gfx::Rect& anchor_in_root_view);
 
   // Called by derived classes to indicate that we're no longer waiting for a
   // response. This won't actually update the throbber, but it will get picked
@@ -1334,6 +1359,8 @@ class CONTENT_EXPORT WebContentsImpl
                      int identifier);
     ~ColorChooserInfo();
 
+    bool Matches(RenderFrameHostImpl* render_frame_host, int color_chooser_id);
+
     int render_process_id;
     int render_frame_id;
 
@@ -1368,12 +1395,6 @@ class CONTENT_EXPORT WebContentsImpl
   // This must be at the end, or else we might get notifications and use other
   // member variables that are gone.
   NotificationRegistrar registrar_;
-
-  // Used during IPC message dispatching from the RenderView/RenderFrame so that
-  // the handlers can get a pointer to the RVH through which the message was
-  // received.
-  RenderViewHost* render_view_message_source_;
-  RenderFrameHost* render_frame_message_source_;
 
   // All live RenderWidgetHostImpls that are created by this object and may
   // outlive it.

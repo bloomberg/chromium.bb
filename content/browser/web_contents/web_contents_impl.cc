@@ -351,6 +351,14 @@ WebContentsImpl::ColorChooserInfo::ColorChooserInfo(int render_process_id,
 WebContentsImpl::ColorChooserInfo::~ColorChooserInfo() {
 }
 
+bool WebContentsImpl::ColorChooserInfo::Matches(
+    RenderFrameHostImpl* render_frame_host,
+    int color_chooser_id) {
+  return this->render_process_id == render_frame_host->GetProcess()->GetID() &&
+         this->render_frame_id == render_frame_host->GetRoutingID() &&
+         this->identifier == color_chooser_id;
+}
+
 // WebContentsImpl::WebContentsTreeNode ----------------------------------------
 WebContentsImpl::WebContentsTreeNode::WebContentsTreeNode()
     : outer_web_contents_(nullptr),
@@ -437,8 +445,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       minimum_zoom_percent_(static_cast<int>(kMinimumZoomFactor * 100)),
       maximum_zoom_percent_(static_cast<int>(kMaximumZoomFactor * 100)),
       zoom_scroll_remainder_(0),
-      render_view_message_source_(NULL),
-      render_frame_message_source_(NULL),
       fullscreen_widget_process_id_(ChildProcessHost::kInvalidUniqueID),
       fullscreen_widget_routing_id_(MSG_ROUTING_NONE),
       fullscreen_widget_had_focus_at_shutdown_(false),
@@ -664,48 +670,62 @@ RenderFrameHostManager* WebContentsImpl::GetRenderManagerForTesting() {
   return GetRenderManager();
 }
 
-bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
+bool WebContentsImpl::OnMessageReceived(RenderViewHostImpl* render_view_host,
                                         const IPC::Message& message) {
-  return OnMessageReceived(render_view_host, NULL, message);
-}
-
-bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
-                                        RenderFrameHost* render_frame_host,
-                                        const IPC::Message& message) {
-  DCHECK(render_view_host || render_frame_host);
-
-  if (render_view_host) {
-    RenderFrameHost* main_frame = render_view_host->GetMainFrame();
-    if (main_frame) {
-      WebUIImpl* web_ui =
-          static_cast<RenderFrameHostImpl*>(main_frame)->web_ui();
-      if (web_ui && web_ui->OnMessageReceived(message))
-        return true;
-    }
+  RenderFrameHost* main_frame = render_view_host->GetMainFrame();
+  if (main_frame) {
+    WebUIImpl* web_ui = static_cast<RenderFrameHostImpl*>(main_frame)->web_ui();
+    if (web_ui && web_ui->OnMessageReceived(message))
+      return true;
   }
 
-  if (render_frame_host) {
-    for (auto& observer : observers_) {
-      if (observer.OnMessageReceived(message, render_frame_host))
-        return true;
-    }
-  } else {
-    for (auto& observer : observers_) {
-      if (observer.OnMessageReceived(message))
-        return true;
-    }
+  for (auto& observer : observers_) {
+    // TODO(nick, creis): Replace all uses of this variant of OnMessageReceived
+    // with the version that takes a RenderFrameHost, and delete it.
+    if (observer.OnMessageReceived(message))
+      return true;
   }
-
-  // Message handlers should be aware of which
-  // RenderViewHost/RenderFrameHost sent the message, which is temporarily
-  // stored in render_(view|frame)_message_source_.
-  if (render_frame_host)
-    render_frame_message_source_ = render_frame_host;
-  else
-    render_view_message_source_ = render_view_host;
 
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(WebContentsImpl, message)
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(WebContentsImpl, message, render_view_host)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidFirstVisuallyNonEmptyPaint,
+                        OnFirstVisuallyNonEmptyPaint)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_PageScaleFactorChanged,
+                        OnPageScaleFactorChanged)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_EnumerateDirectory, OnEnumerateDirectory)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
+#if BUILDFLAG(ENABLE_PLUGINS)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
+                        OnRequestPpapiBrokerPermission)
+#endif
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowValidationMessage,
+                        OnShowValidationMessage)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_HideValidationMessage,
+                        OnHideValidationMessage)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_MoveValidationMessage,
+                        OnMoveValidationMessage)
+#if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenDateTimeDialog, OnOpenDateTimeDialog)
+#endif
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+
+  return handled;
+}
+
+bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
+                                        const IPC::Message& message) {
+  for (auto& observer : observers_) {
+    if (observer.OnMessageReceived(message, render_frame_host))
+      return true;
+  }
+
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(WebContentsImpl, message, render_frame_host)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DomOperationResponse,
                         OnDomOperationResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeThemeColor,
@@ -717,8 +737,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(FrameHostMsg_EndColorChooser, OnEndColorChooser)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SetSelectedColorInColorChooser,
                         OnSetSelectedColorInColorChooser)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_DidFirstVisuallyNonEmptyPaint,
-                        OnFirstVisuallyNonEmptyPaint)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidDisplayInsecureContent,
@@ -729,11 +747,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnDidDisplayContentWithCertificateErrors)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidRunContentWithCertificateErrors,
                         OnDidRunContentWithCertificateErrors)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_GoToEntryAtOffset, OnGoToEntryAtOffset)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateZoomLimits, OnUpdateZoomLimits)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PageScaleFactorChanged,
-                        OnPageScaleFactorChanged)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_EnumerateDirectory, OnEnumerateDirectory)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RegisterProtocolHandler,
                         OnRegisterProtocolHandler)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UnregisterProtocolHandler,
@@ -741,8 +754,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdatePageImportanceSignals,
                         OnUpdatePageImportanceSignals)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Find_Reply, OnFindReply)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
 #if BUILDFLAG(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PepperInstanceCreated,
                         OnPepperInstanceCreated)
@@ -754,44 +765,20 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(FrameHostMsg_PepperStopsPlayback,
                         OnPepperStopsPlayback)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PluginCrashed, OnPluginCrashed)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_RequestPpapiBrokerPermission,
-                        OnRequestPpapiBrokerPermission)
     IPC_MESSAGE_HANDLER_GENERIC(BrowserPluginHostMsg_Attach,
                                 OnBrowserPluginMessage(render_frame_host,
                                                        message))
 #endif
-    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ShowValidationMessage,
-                        OnShowValidationMessage)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_HideValidationMessage,
-                        OnHideValidationMessage)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MoveValidationMessage,
-                        OnMoveValidationMessage)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FindMatchRects_Reply,
                         OnFindMatchRectsReply)
     IPC_MESSAGE_HANDLER(FrameHostMsg_GetNearestFindResult_Reply,
                         OnGetNearestFindResultReply)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_OpenDateTimeDialog,
-                        OnOpenDateTimeDialog)
 #endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
-  render_view_message_source_ = NULL;
-  render_frame_message_source_ = NULL;
 
   return handled;
-}
-
-bool WebContentsImpl::HasValidFrameSource() {
-  if (!render_frame_message_source_) {
-    DCHECK(render_view_message_source_);
-    bad_message::ReceivedBadMessage(GetRenderProcessHost(),
-                                    bad_message::WC_INVALID_FRAME_SOURCE);
-    return false;
-  }
-
-  return true;
 }
 
 NavigationControllerImpl& WebContentsImpl::GetController() {
@@ -2442,21 +2429,26 @@ ScreenOrientationProvider* WebContentsImpl::GetScreenOrientationProvider() {
 }
 
 void WebContentsImpl::OnShowValidationMessage(
+    RenderViewHostImpl* source,
     const gfx::Rect& anchor_in_root_view,
     const base::string16& main_text,
     const base::string16& sub_text) {
+  // TODO(nick): Should we consider |source| here or pass it to the delegate?
   if (delegate_)
     delegate_->ShowValidationMessage(
         this, anchor_in_root_view, main_text, sub_text);
 }
 
-void WebContentsImpl::OnHideValidationMessage() {
+void WebContentsImpl::OnHideValidationMessage(RenderViewHostImpl* source) {
+  // TODO(nick): Should we consider |source| here or pass it to the delegate?
   if (delegate_)
     delegate_->HideValidationMessage(this);
 }
 
 void WebContentsImpl::OnMoveValidationMessage(
+    RenderViewHostImpl* source,
     const gfx::Rect& anchor_in_root_view) {
+  // TODO(nick): Should we consider |source| here or pass it to the delegate?
   if (delegate_)
     delegate_->MoveValidationMessage(this, anchor_in_root_view);
 }
@@ -3482,7 +3474,13 @@ bool WebContentsImpl::CanOverscrollContent() const {
   return false;
 }
 
-void WebContentsImpl::OnThemeColorChanged(SkColor theme_color) {
+void WebContentsImpl::OnThemeColorChanged(RenderFrameHostImpl* source,
+                                          SkColor theme_color) {
+  if (source != GetMainFrame()) {
+    // Only the main frame may control the theme.
+    return;
+  }
+
   // Update the theme color. This is to be published to observers after the
   // first visually non-empty paint.
   theme_color_ = theme_color;
@@ -3496,6 +3494,7 @@ void WebContentsImpl::OnThemeColorChanged(SkColor theme_color) {
 }
 
 void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
+    RenderFrameHostImpl* source,
     const GURL& url,
     const std::string& http_method,
     const std::string& mime_type,
@@ -3504,26 +3503,30 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
     observer.DidLoadResourceFromMemoryCache(url, mime_type, resource_type);
 
   if (url.is_valid() && url.SchemeIsHTTPOrHTTPS()) {
+    StoragePartition* partition = source->GetProcess()->GetStoragePartition();
     scoped_refptr<net::URLRequestContextGetter> request_context(
-        resource_type == RESOURCE_TYPE_MEDIA ?
-            GetRenderProcessHost()->GetStoragePartition()->
-                GetMediaURLRequestContext() :
-            GetRenderProcessHost()->GetStoragePartition()->
-                GetURLRequestContext());
+        resource_type == RESOURCE_TYPE_MEDIA
+            ? partition->GetMediaURLRequestContext()
+            : partition->GetURLRequestContext());
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
+        BrowserThread::IO, FROM_HERE,
         base::Bind(&NotifyCacheOnIO, request_context, url, http_method));
   }
 }
 
-void WebContentsImpl::OnDidDisplayInsecureContent() {
+void WebContentsImpl::OnDidDisplayInsecureContent(RenderFrameHostImpl* source) {
+  // Any frame can trigger display of insecure content, so we don't check
+  // |source| here.
   RecordAction(base::UserMetricsAction("SSL.DisplayedInsecureContent"));
   controller_.ssl_manager()->DidDisplayMixedContent();
 }
 
-void WebContentsImpl::OnDidRunInsecureContent(const GURL& security_origin,
+void WebContentsImpl::OnDidRunInsecureContent(RenderFrameHostImpl* source,
+                                              const GURL& security_origin,
                                               const GURL& target_url) {
+  // TODO(nick, estark): Should we call FilterURL using |source|'s process on
+  // these parameters? |target_url| seems unused, except for a log message. And
+  // |security_origin| might be replaceable with the origin of the main frame.
   LOG(WARNING) << security_origin << " ran insecure content from "
                << target_url.possibly_invalid_spec();
   RecordAction(base::UserMetricsAction("SSL.RanInsecureContent"));
@@ -3534,12 +3537,16 @@ void WebContentsImpl::OnDidRunInsecureContent(const GURL& security_origin,
 }
 
 void WebContentsImpl::OnDidDisplayContentWithCertificateErrors(
+    RenderFrameHostImpl* source,
     const GURL& url) {
+  // TODO(nick): |url| is unused; get rid of it.
   controller_.ssl_manager()->DidDisplayContentWithCertErrors();
 }
 
 void WebContentsImpl::OnDidRunContentWithCertificateErrors(
+    RenderFrameHostImpl* source,
     const GURL& url) {
+  // TODO(nick, estark): Do we need to consider |source| here somehow?
   NavigationEntry* entry = controller_.GetVisibleEntry();
   if (!entry)
     return;
@@ -3550,43 +3557,36 @@ void WebContentsImpl::OnDidRunContentWithCertificateErrors(
       entry->GetURL().GetOrigin());
 }
 
-void WebContentsImpl::OnDocumentLoadedInFrame() {
-  if (!HasValidFrameSource())
-    return;
-
-  RenderFrameHostImpl* rfh =
-      static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
+void WebContentsImpl::OnDocumentLoadedInFrame(RenderFrameHostImpl* source) {
   for (auto& observer : observers_)
-    observer.DocumentLoadedInFrame(rfh);
+    observer.DocumentLoadedInFrame(source);
 }
 
-void WebContentsImpl::OnDidFinishLoad(const GURL& url) {
-  if (!HasValidFrameSource())
-    return;
-
+void WebContentsImpl::OnDidFinishLoad(RenderFrameHostImpl* source,
+                                      const GURL& url) {
   GURL validated_url(url);
-  RenderProcessHost* render_process_host =
-      render_frame_message_source_->GetProcess();
-  render_process_host->FilterURL(false, &validated_url);
+  source->GetProcess()->FilterURL(false, &validated_url);
 
-  RenderFrameHostImpl* rfh =
-      static_cast<RenderFrameHostImpl*>(render_frame_message_source_);
   for (auto& observer : observers_)
-    observer.DidFinishLoad(rfh, validated_url);
+    observer.DidFinishLoad(source, validated_url);
 }
 
-void WebContentsImpl::OnGoToEntryAtOffset(int offset) {
+void WebContentsImpl::OnGoToEntryAtOffset(RenderViewHostImpl* source,
+                                          int offset) {
+  // All frames are allowed to navigate the global history.
   if (!delegate_ || delegate_->OnGoToEntryOffset(offset))
     controller_.GoToOffset(offset);
 }
 
-void WebContentsImpl::OnUpdateZoomLimits(int minimum_percent,
+void WebContentsImpl::OnUpdateZoomLimits(RenderViewHostImpl* source,
+                                         int minimum_percent,
                                          int maximum_percent) {
   minimum_zoom_percent_ = minimum_percent;
   maximum_zoom_percent_ = maximum_percent;
 }
 
-void WebContentsImpl::OnPageScaleFactorChanged(float page_scale_factor) {
+void WebContentsImpl::OnPageScaleFactorChanged(RenderViewHostImpl* source,
+                                               float page_scale_factor) {
   bool is_one = page_scale_factor == 1.f;
   if (is_one != page_scale_factor_is_one_) {
     page_scale_factor_is_one_ = is_one;
@@ -3594,9 +3594,9 @@ void WebContentsImpl::OnPageScaleFactorChanged(float page_scale_factor) {
     HostZoomMapImpl* host_zoom_map =
         static_cast<HostZoomMapImpl*>(HostZoomMap::GetForWebContents(this));
 
-    if (host_zoom_map && GetRenderProcessHost()) {
+    if (host_zoom_map) {
       host_zoom_map->SetPageScaleFactorIsOneForView(
-          GetRenderProcessHost()->GetID(), GetRenderViewHost()->GetRoutingID(),
+          source->GetProcess()->GetID(), source->GetRoutingID(),
           page_scale_factor_is_one_);
     }
   }
@@ -3605,21 +3605,27 @@ void WebContentsImpl::OnPageScaleFactorChanged(float page_scale_factor) {
     observer.OnPageScaleFactorChanged(page_scale_factor);
 }
 
-void WebContentsImpl::OnEnumerateDirectory(int request_id,
+void WebContentsImpl::OnEnumerateDirectory(RenderViewHostImpl* source,
+                                           int request_id,
                                            const base::FilePath& path) {
   if (!delegate_)
     return;
 
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
-  if (policy->CanReadFile(GetRenderProcessHost()->GetID(), path))
+  if (policy->CanReadFile(source->GetProcess()->GetID(), path)) {
+    // TODO(nick): |this| param in the call below ought to be a RenderFrameHost.
     delegate_->EnumerateDirectory(this, request_id, path);
+  }
 }
 
-void WebContentsImpl::OnRegisterProtocolHandler(const std::string& protocol,
+void WebContentsImpl::OnRegisterProtocolHandler(RenderFrameHostImpl* source,
+                                                const std::string& protocol,
                                                 const GURL& url,
                                                 const base::string16& title,
                                                 bool user_gesture) {
+  // TODO(nick): Should we consider |source| here or pass it to the delegate?
+  // TODO(nick): Do we need to apply FilterURL to |url|?
   if (!delegate_)
     return;
 
@@ -3631,9 +3637,12 @@ void WebContentsImpl::OnRegisterProtocolHandler(const std::string& protocol,
   delegate_->RegisterProtocolHandler(this, protocol, url, user_gesture);
 }
 
-void WebContentsImpl::OnUnregisterProtocolHandler(const std::string& protocol,
+void WebContentsImpl::OnUnregisterProtocolHandler(RenderFrameHostImpl* source,
+                                                  const std::string& protocol,
                                                   const GURL& url,
                                                   bool user_gesture) {
+  // TODO(nick): Should we consider |source| here or pass it to the delegate?
+  // TODO(nick): Do we need to apply FilterURL to |url|?
   if (!delegate_)
     return;
 
@@ -3646,74 +3655,78 @@ void WebContentsImpl::OnUnregisterProtocolHandler(const std::string& protocol,
 }
 
 void WebContentsImpl::OnUpdatePageImportanceSignals(
+    RenderFrameHostImpl* source,
     const PageImportanceSignals& signals) {
+  // TODO(nick, kouhei): Fix this for oopifs; currently all frames' state gets
+  // written to this one field.
   page_importance_signals_ = signals;
 }
 
-void WebContentsImpl::OnFindReply(int request_id,
+void WebContentsImpl::OnFindReply(RenderFrameHostImpl* source,
+                                  int request_id,
                                   int number_of_matches,
                                   const gfx::Rect& selection_rect,
                                   int active_match_ordinal,
                                   bool final_update) {
   // Forward the find reply to the FindRequestManager, along with the
   // RenderFrameHost associated with the frame that the reply came from.
-  GetOrCreateFindRequestManager()->OnFindReply(render_frame_message_source_,
-                                               request_id,
-                                               number_of_matches,
-                                               selection_rect,
-                                               active_match_ordinal,
-                                               final_update);
+  GetOrCreateFindRequestManager()->OnFindReply(
+      source, request_id, number_of_matches, selection_rect,
+      active_match_ordinal, final_update);
 }
 
 #if defined(OS_ANDROID)
 void WebContentsImpl::OnFindMatchRectsReply(
+    RenderFrameHostImpl* source,
     int version,
     const std::vector<gfx::RectF>& rects,
     const gfx::RectF& active_rect) {
-  GetOrCreateFindRequestManager()->OnFindMatchRectsReply(
-      render_frame_message_source_, version, rects, active_rect);
+  GetOrCreateFindRequestManager()->OnFindMatchRectsReply(source, version, rects,
+                                                         active_rect);
 }
 
-void WebContentsImpl::OnGetNearestFindResultReply(int request_id,
+void WebContentsImpl::OnGetNearestFindResultReply(RenderFrameHostImpl* source,
+                                                  int request_id,
                                                   float distance) {
   GetOrCreateFindRequestManager()->OnGetNearestFindResultReply(
-      render_frame_message_source_, request_id, distance);
+      source, request_id, distance);
 }
 
 void WebContentsImpl::OnOpenDateTimeDialog(
+    RenderViewHostImpl* source,
     const ViewHostMsg_DateTimeDialogValue_Params& value) {
-  date_time_chooser_->ShowDialog(GetTopLevelNativeWindow(),
-                                 GetRenderViewHost(),
-                                 value.dialog_type,
-                                 value.dialog_value,
-                                 value.minimum,
-                                 value.maximum,
-                                 value.step,
-                                 value.suggestions);
+  date_time_chooser_->ShowDialog(
+      GetTopLevelNativeWindow(), source, value.dialog_type, value.dialog_value,
+      value.minimum, value.maximum, value.step, value.suggestions);
 }
 #endif
 
-void WebContentsImpl::OnDomOperationResponse(const std::string& json_string) {
+void WebContentsImpl::OnDomOperationResponse(RenderFrameHostImpl* source,
+                                             const std::string& json_string) {
+  // TODO(nick, lukasza): The notification below should probably be updated to
+  // include |source|.
   std::string json = json_string;
   NotificationService::current()->Notify(NOTIFICATION_DOM_OPERATION_RESPONSE,
                                          Source<WebContents>(this),
                                          Details<std::string>(&json));
 }
 
-void WebContentsImpl::OnAppCacheAccessed(const GURL& manifest_url,
+void WebContentsImpl::OnAppCacheAccessed(RenderViewHostImpl* source,
+                                         const GURL& manifest_url,
                                          bool blocked_by_policy) {
+  // TODO(nick): Should we consider |source| here? Should we call FilterURL on
+  // |manifest_url|?
+
   // Notify observers about navigation.
   for (auto& observer : observers_)
     observer.AppCacheAccessed(manifest_url, blocked_by_policy);
 }
 
 void WebContentsImpl::OnOpenColorChooser(
+    RenderFrameHostImpl* source,
     int color_chooser_id,
     SkColor color,
     const std::vector<ColorSuggestion>& suggestions) {
-  if (!HasValidFrameSource())
-    return;
-
   ColorChooser* new_color_chooser = delegate_ ?
       delegate_->OpenColorChooser(this, color, suggestions) :
       NULL;
@@ -3723,50 +3736,57 @@ void WebContentsImpl::OnOpenColorChooser(
     color_chooser_info_->chooser->End();
 
   color_chooser_info_.reset(new ColorChooserInfo(
-      render_frame_message_source_->GetProcess()->GetID(),
-      render_frame_message_source_->GetRoutingID(),
-      new_color_chooser,
+      source->GetProcess()->GetID(), source->GetRoutingID(), new_color_chooser,
       color_chooser_id));
 }
 
-void WebContentsImpl::OnEndColorChooser(int color_chooser_id) {
+void WebContentsImpl::OnEndColorChooser(RenderFrameHostImpl* source,
+                                        int color_chooser_id) {
   if (color_chooser_info_ &&
-      color_chooser_id == color_chooser_info_->identifier)
+      color_chooser_info_->Matches(source, color_chooser_id))
     color_chooser_info_->chooser->End();
 }
 
-void WebContentsImpl::OnSetSelectedColorInColorChooser(int color_chooser_id,
-                                                       SkColor color) {
+void WebContentsImpl::OnSetSelectedColorInColorChooser(
+    RenderFrameHostImpl* source,
+    int color_chooser_id,
+    SkColor color) {
   if (color_chooser_info_ &&
-      color_chooser_id == color_chooser_info_->identifier)
+      color_chooser_info_->Matches(source, color_chooser_id))
     color_chooser_info_->chooser->SetSelectedColor(color);
 }
 
 // This exists for render views that don't have a WebUI, but do have WebUI
 // bindings enabled.
-void WebContentsImpl::OnWebUISend(const GURL& source_url,
+void WebContentsImpl::OnWebUISend(RenderViewHostImpl* source,
+                                  const GURL& source_url,
                                   const std::string& name,
                                   const base::ListValue& args) {
+  // TODO(nick): Should we consider |source| here or pass it to the delegate?
+  // TODO(nick): Should FilterURL be applied to |source_url|?
+  // TODO(nick): This IPC should be ported to FrameHostMsg_, and |source_url|
+  // should be eliminated (use last_committed_url() on the RFH instead).
   if (delegate_)
     delegate_->WebUISend(this, source_url, name, args);
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-void WebContentsImpl::OnPepperInstanceCreated(int32_t pp_instance) {
+void WebContentsImpl::OnPepperInstanceCreated(RenderFrameHostImpl* source,
+                                              int32_t pp_instance) {
   for (auto& observer : observers_)
     observer.PepperInstanceCreated();
-  pepper_playback_observer_->PepperInstanceCreated(
-      render_frame_message_source_, pp_instance);
+  pepper_playback_observer_->PepperInstanceCreated(source, pp_instance);
 }
 
-void WebContentsImpl::OnPepperInstanceDeleted(int32_t pp_instance) {
+void WebContentsImpl::OnPepperInstanceDeleted(RenderFrameHostImpl* source,
+                                              int32_t pp_instance) {
   for (auto& observer : observers_)
     observer.PepperInstanceDeleted();
-  pepper_playback_observer_->PepperInstanceDeleted(
-      render_frame_message_source_, pp_instance);
+  pepper_playback_observer_->PepperInstanceDeleted(source, pp_instance);
 }
 
-void WebContentsImpl::OnPepperPluginHung(int plugin_child_id,
+void WebContentsImpl::OnPepperPluginHung(RenderFrameHostImpl* source,
+                                         int plugin_child_id,
                                          const base::FilePath& path,
                                          bool is_hung) {
   UMA_HISTOGRAM_COUNTS("Pepper.PluginHung", 1);
@@ -3775,43 +3795,55 @@ void WebContentsImpl::OnPepperPluginHung(int plugin_child_id,
     observer.PluginHungStatusChanged(plugin_child_id, path, is_hung);
 }
 
-void WebContentsImpl::OnPepperStartsPlayback(int32_t pp_instance) {
-  pepper_playback_observer_->PepperStartsPlayback(
-      render_frame_message_source_, pp_instance);
+void WebContentsImpl::OnPepperStartsPlayback(RenderFrameHostImpl* source,
+                                             int32_t pp_instance) {
+  pepper_playback_observer_->PepperStartsPlayback(source, pp_instance);
 }
 
-void WebContentsImpl::OnPepperStopsPlayback(int32_t pp_instance) {
-  pepper_playback_observer_->PepperStopsPlayback(
-      render_frame_message_source_, pp_instance);
+void WebContentsImpl::OnPepperStopsPlayback(RenderFrameHostImpl* source,
+                                            int32_t pp_instance) {
+  pepper_playback_observer_->PepperStopsPlayback(source, pp_instance);
 }
 
-void WebContentsImpl::OnPluginCrashed(const base::FilePath& plugin_path,
+void WebContentsImpl::OnPluginCrashed(RenderFrameHostImpl* source,
+                                      const base::FilePath& plugin_path,
                                       base::ProcessId plugin_pid) {
+  // TODO(nick): Eliminate the |plugin_pid| parameter, which can't be trusted,
+  // and is only used by BlinkTestController.
   for (auto& observer : observers_)
     observer.PluginCrashed(plugin_path, plugin_pid);
 }
 
 void WebContentsImpl::OnRequestPpapiBrokerPermission(
-    int routing_id,
+    RenderViewHostImpl* source,
+    int ppb_broker_route_id,
     const GURL& url,
     const base::FilePath& plugin_path) {
+  base::Callback<void(bool)> permission_result_callback = base::Bind(
+      &WebContentsImpl::SendPpapiBrokerPermissionResult, base::Unretained(this),
+      source->GetProcess()->GetID(), ppb_broker_route_id);
   if (!delegate_) {
-    OnPpapiBrokerPermissionResult(routing_id, false);
+    permission_result_callback.Run(false);
     return;
   }
 
-  if (!delegate_->RequestPpapiBrokerPermission(
-      this, url, plugin_path,
-      base::Bind(&WebContentsImpl::OnPpapiBrokerPermissionResult,
-                 base::Unretained(this), routing_id))) {
+  if (!delegate_->RequestPpapiBrokerPermission(this, url, plugin_path,
+                                               permission_result_callback)) {
     NOTIMPLEMENTED();
-    OnPpapiBrokerPermissionResult(routing_id, false);
+    permission_result_callback.Run(false);
   }
 }
 
-void WebContentsImpl::OnPpapiBrokerPermissionResult(int routing_id,
-                                                    bool result) {
-  Send(new ViewMsg_PpapiBrokerPermissionResult(routing_id, result));
+void WebContentsImpl::SendPpapiBrokerPermissionResult(int process_id,
+                                                      int ppb_broker_route_id,
+                                                      bool result) {
+  RenderProcessHost* rph = RenderProcessHost::FromID(process_id);
+  if (rph) {
+    // TODO(nick): Convert this from ViewMsg_ to a Ppapi msg, since it
+    // is not routed to a RenderView.
+    rph->Send(
+        new ViewMsg_PpapiBrokerPermissionResult(ppb_broker_route_id, result));
+  }
 }
 
 void WebContentsImpl::OnBrowserPluginMessage(RenderFrameHost* render_frame_host,
@@ -3823,14 +3855,13 @@ void WebContentsImpl::OnBrowserPluginMessage(RenderFrameHost* render_frame_host,
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 void WebContentsImpl::OnUpdateFaviconURL(
+    RenderViewHostImpl* source,
     const std::vector<FaviconURL>& candidates) {
   // We get updated favicon URLs after the page stops loading. If a cross-site
   // navigation occurs while a page is still loading, the initial page
   // may stop loading and send us updated favicon URLs after the navigation
   // for the new page has committed.
-  RenderViewHostImpl* rvhi =
-      static_cast<RenderViewHostImpl*>(render_view_message_source_);
-  if (!rvhi->is_active())
+  if (!source->is_active())
     return;
 
   for (auto& observer : observers_)
@@ -3853,7 +3884,9 @@ void WebContentsImpl::SetIsOverlayContent(bool is_overlay_content) {
   is_overlay_content_ = is_overlay_content;
 }
 
-void WebContentsImpl::OnFirstVisuallyNonEmptyPaint() {
+void WebContentsImpl::OnFirstVisuallyNonEmptyPaint(RenderViewHostImpl* source) {
+  // TODO(nick): When this is ported to FrameHostMsg_, we should only listen if
+  // |source| is the main frame.
   for (auto& observer : observers_)
     observer.DidFirstVisuallyNonEmptyPaint();
 
@@ -4040,11 +4073,6 @@ void WebContentsImpl::NotifyNavigationEntryCommitted(
     const LoadCommittedDetails& load_details) {
   for (auto& observer : observers_)
     observer.NavigationEntryCommitted(load_details);
-}
-
-bool WebContentsImpl::OnMessageReceived(RenderFrameHost* render_frame_host,
-                                        const IPC::Message& message) {
-  return OnMessageReceived(NULL, render_frame_host, message);
 }
 
 void WebContentsImpl::OnAssociatedInterfaceRequest(

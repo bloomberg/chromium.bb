@@ -102,7 +102,7 @@ class CONTENT_EXPORT InterstitialPageImpl
                const NotificationDetails& details) override;
 
   // RenderFrameHostDelegate implementation:
-  bool OnMessageReceived(RenderFrameHost* render_frame_host,
+  bool OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                          const IPC::Message& message) override;
   void RenderFrameCreated(RenderFrameHost* render_frame_host) override;
   void UpdateTitle(RenderFrameHost* render_frame_host,
@@ -117,7 +117,7 @@ class CONTENT_EXPORT InterstitialPageImpl
 
   // RenderViewHostDelegate implementation:
   RenderViewHostDelegateView* GetDelegateView() override;
-  bool OnMessageReceived(RenderViewHost* render_view_host,
+  bool OnMessageReceived(RenderViewHostImpl* render_view_host,
                          const IPC::Message& message) override;
   const GURL& GetMainFrameLastCommittedURL() const override;
   void RenderViewTerminated(RenderViewHost* render_view_host,
@@ -212,7 +212,8 @@ class CONTENT_EXPORT InterstitialPageImpl
   void TakeActionOnResourceDispatcher(ResourceRequestAction action);
 
   // IPC message handlers.
-  void OnDomOperationResponse(const std::string& json_string);
+  void OnDomOperationResponse(RenderFrameHostImpl* source,
+                              const std::string& json_string);
 
   // Creates the RenderViewHost containing the interstitial content.
   RenderViewHostImpl* CreateRenderViewHost();

@@ -3307,8 +3307,7 @@ TEST_F(WebContentsImplTest, ThemeColorChangeDependingOnFirstVisiblePaint) {
 
   // Theme color changes should not propagate past the WebContentsImpl before
   // the first visually non-empty paint has occurred.
-  RenderViewHostTester::TestOnMessageReceived(
-      test_rvh(),
+  rfh->OnMessageReceived(
       FrameHostMsg_DidChangeThemeColor(rfh->GetRoutingID(), SK_ColorRED));
 
   EXPECT_EQ(SK_ColorRED, contents()->GetThemeColor());
@@ -3318,14 +3317,13 @@ TEST_F(WebContentsImplTest, ThemeColorChangeDependingOnFirstVisiblePaint) {
   // propagate the current theme color to the delegates.
   RenderViewHostTester::TestOnMessageReceived(
       test_rvh(),
-      ViewHostMsg_DidFirstVisuallyNonEmptyPaint(rfh->GetRoutingID()));
+      ViewHostMsg_DidFirstVisuallyNonEmptyPaint(test_rvh()->GetRoutingID()));
 
   EXPECT_EQ(SK_ColorRED, contents()->GetThemeColor());
   EXPECT_EQ(SK_ColorRED, observer.last_theme_color());
 
   // Additional changes made by the web contents should propagate as well.
-  RenderViewHostTester::TestOnMessageReceived(
-      test_rvh(),
+  rfh->OnMessageReceived(
       FrameHostMsg_DidChangeThemeColor(rfh->GetRoutingID(), SK_ColorGREEN));
 
   EXPECT_EQ(SK_ColorGREEN, contents()->GetThemeColor());
