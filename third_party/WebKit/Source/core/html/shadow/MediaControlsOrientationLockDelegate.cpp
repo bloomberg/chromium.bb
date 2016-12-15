@@ -8,12 +8,48 @@
 #include "core/frame/ScreenOrientationController.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/page/ChromeClient.h"
+#include "platform/Histogram.h"
 #include "public/platform/WebScreenInfo.h"
 #include "public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
 
 namespace blink {
 
 namespace {
+
+// These values are used for histograms. Do not reorder.
+enum class MetadataAvailabilityMetrics {
+  Available = 0,  // Available when lock was attempted.
+  Missing = 1,    // Missing when lock was attempted.
+  Received = 2,   // Received after being missing in order to lock.
+
+  // Keep at the end.
+  Max = 3
+};
+
+// These values are used for histograms. Do not reorder.
+enum class LockResultMetrics {
+  AlreadyLocked = 0,  // Frame already has a lock.
+  Portrait = 1,       // Locked to portrait.
+  Landscape = 2,      // Locked to landscape.
+
+  // Keep at the end.
+  Max = 3
+};
+
+void recordMetadataAvailability(MetadataAvailabilityMetrics metrics) {
+  DEFINE_STATIC_LOCAL(
+      EnumerationHistogram, metadataHistogram,
+      ("Media.Video.FullscreenOrientationLock.MetadataAvailability",
+       static_cast<int>(MetadataAvailabilityMetrics::Max)));
+  metadataHistogram.count(static_cast<int>(metrics));
+}
+
+void recordLockResult(LockResultMetrics metrics) {
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, lockResultHistogram,
+                      ("Media.Video.FullscreenOrientationLock.LockResult",
+                       static_cast<int>(LockResultMetrics::Max)));
+  lockResultHistogram.count(static_cast<int>(metrics));
+}
 
 // WebLockOrientationCallback implementation that will not react to a success
 // nor a failure.
@@ -43,9 +79,15 @@ void MediaControlsOrientationLockDelegate::maybeLockOrientation() {
   DCHECK(m_state != State::MaybeLockedFullscreen);
 
   if (videoElement().getReadyState() == HTMLMediaElement::kHaveNothing) {
+    recordMetadataAvailability(MetadataAvailabilityMetrics::Missing);
     m_state = State::PendingMetadata;
     return;
   }
+
+  if (m_state == State::PendingMetadata)
+    recordMetadataAvailability(MetadataAvailabilityMetrics::Received);
+  else
+    recordMetadataAvailability(MetadataAvailabilityMetrics::Available);
 
   m_state = State::MaybeLockedFullscreen;
 
@@ -53,12 +95,20 @@ void MediaControlsOrientationLockDelegate::maybeLockOrientation() {
     return;
 
   auto controller = ScreenOrientationController::from(*document().frame());
-  if (controller->maybeHasActiveLock())
+  if (controller->maybeHasActiveLock()) {
+    recordLockResult(LockResultMetrics::AlreadyLocked);
     return;
+  }
 
-  controller->lock(computeOrientationLock(),
+  WebScreenOrientationLockType orientationLock = computeOrientationLock();
+  controller->lock(orientationLock,
                    WTF::wrapUnique(new DummyScreenOrientationCallback));
   m_shouldUnlockOrientation = true;
+
+  if (orientationLock == WebScreenOrientationLockLandscape)
+    recordLockResult(LockResultMetrics::Landscape);
+  else
+    recordLockResult(LockResultMetrics::Portrait);
 }
 
 void MediaControlsOrientationLockDelegate::maybeUnlockOrientation() {
