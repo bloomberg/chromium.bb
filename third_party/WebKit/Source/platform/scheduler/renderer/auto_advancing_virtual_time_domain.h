@@ -27,7 +27,7 @@ class BLINK_PLATFORM_EXPORT AutoAdvancingVirtualTimeDomain
   ~AutoAdvancingVirtualTimeDomain() override;
 
   // TimeDomain implementation:
-  bool MaybeAdvanceTime() override;
+  base::Optional<base::TimeDelta> DelayTillNextTask(LazyNow* lazy_now) override;
   void RequestWakeup(base::TimeTicks now, base::TimeDelta delay) override;
   const char* GetName() const override;
 

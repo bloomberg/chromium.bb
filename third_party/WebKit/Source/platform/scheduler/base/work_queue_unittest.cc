@@ -28,7 +28,8 @@ class WorkQueueTest : public testing::Test {
         new TaskQueueImpl(nullptr, time_domain_.get(),
                           TaskQueue::Spec(TaskQueue::QueueType::TEST), "", ""));
 
-    work_queue_.reset(new WorkQueue(task_queue_.get(), "test"));
+    work_queue_.reset(new WorkQueue(task_queue_.get(), "test",
+                                    WorkQueue::QueueType::IMMEDIATE));
     work_queue_sets_.reset(new WorkQueueSets(1, "test"));
     work_queue_sets_->AddQueue(work_queue_.get(), 0);
 

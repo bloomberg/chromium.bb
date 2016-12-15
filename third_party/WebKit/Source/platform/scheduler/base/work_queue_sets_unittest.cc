@@ -35,7 +35,8 @@ class WorkQueueSetsTest : public testing::Test {
   };
 
   WorkQueue* NewTaskQueue(const char* queue_name) {
-    WorkQueue* queue = new WorkQueue(nullptr, "test");
+    WorkQueue* queue =
+        new WorkQueue(nullptr, "test", WorkQueue::QueueType::IMMEDIATE);
     work_queues_.push_back(base::WrapUnique(queue));
     work_queue_sets_->AddQueue(queue, TaskQueue::CONTROL_PRIORITY);
     return queue;

@@ -21,7 +21,7 @@ class BLINK_PLATFORM_EXPORT VirtualTimeDomain : public TimeDomain {
   // TimeDomain implementation:
   LazyNow CreateLazyNow() const override;
   base::TimeTicks Now() const override;
-  bool MaybeAdvanceTime() override;
+  base::Optional<base::TimeDelta> DelayTillNextTask(LazyNow* lazy_now) override;
   const char* GetName() const override;
 
   // Advances this time domain to |now|. NOTE |now| is supposed to be

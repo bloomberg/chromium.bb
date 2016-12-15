@@ -56,6 +56,12 @@ class BLINK_PLATFORM_EXPORT WorkQueueSets {
   bool GetOldestQueueInSet(size_t set_index, WorkQueue** out_work_queue) const;
 
   // O(1)
+  bool GetOldestQueueAndEnqueueOrderInSet(
+      size_t set_index,
+      WorkQueue** out_work_queue,
+      EnqueueOrder* out_enqueue_order) const;
+
+  // O(1)
   bool IsSetEmpty(size_t set_index) const;
 
 #if DCHECK_IS_ON() || !defined(NDEBUG)

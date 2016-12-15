@@ -1179,6 +1179,7 @@ component("platform") {
     "scheduler/base/intrusive_heap.h",
     "scheduler/base/lazy_now.cc",
     "scheduler/base/lazy_now.h",
+    "scheduler/base/moveable_auto_lock.h",
     "scheduler/base/pollable_thread_safe_flag.cc",
     "scheduler/base/pollable_thread_safe_flag.h",
     "scheduler/base/queueing_time_estimator.cc",

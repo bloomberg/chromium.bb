@@ -130,6 +130,9 @@ class OrderedSimpleTaskRunner : public base::SingleThreadTaskRunner {
   // Advance Now() to the next task to run.
   base::Callback<bool(void)> AdvanceNow();
 
+  // Removes all tasks whose weak pointer has been revoked.
+  void RemoveCancelledTasks();
+
  protected:
   static bool TaskRunCountBelowCallback(size_t max_tasks, size_t* task_run);
   bool TaskExistedInitiallyCallback(
