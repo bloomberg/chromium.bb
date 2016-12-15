@@ -365,15 +365,6 @@
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_WARNING_MAJOR" file="common/pageinfo_warning_major.png" />
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_WARNING_MINOR" file="common/pageinfo_warning_minor.png" />
       <structure type="chrome_scaled_image" name="IDR_PAGEINFO_ENTERPRISE_MANAGED" file="common/pageinfo_enterprise_managed.png" />
-      <structure type="chrome_scaled_image" name="IDR_PANEL_CLOSE" file="panel_close.png" />
-      <structure type="chrome_scaled_image" name="IDR_PANEL_CLOSE_C" file="panel_close_click.png" />
-      <structure type="chrome_scaled_image" name="IDR_PANEL_CLOSE_H" file="panel_close_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_PANEL_MINIMIZE" file="panel_minimize.png" />
-      <structure type="chrome_scaled_image" name="IDR_PANEL_MINIMIZE_C" file="panel_minimize_click.png" />
-      <structure type="chrome_scaled_image" name="IDR_PANEL_MINIMIZE_H" file="panel_minimize_hover.png" />
-      <structure type="chrome_scaled_image" name="IDR_PANEL_RESTORE" file="panel_restore.png" />
-      <structure type="chrome_scaled_image" name="IDR_PANEL_RESTORE_C" file="panel_restore_click.png" />
-      <structure type="chrome_scaled_image" name="IDR_PANEL_RESTORE_H" file="panel_restore_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_PLUGINS_FAVICON" file="common/favicon_extensions.png" />
       <structure type="chrome_scaled_image" name="IDR_PRERENDER" file="common/prerender_succeed_icon.png" />
       <if expr="chromeos">
