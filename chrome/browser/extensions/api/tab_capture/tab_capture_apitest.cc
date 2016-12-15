@@ -166,9 +166,15 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, ApiTests) {
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "api_tests.html")) << message_;
 }
 
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on ASAN on Mac. See https://crbug.com/674497.
+#define MAYBE_MaxOffscreenTabs DISABLED_MaxOffscreenTabs
+#else
+#define MAYBE_MaxOffscreenTabs MaxOffscreenTabs
+#endif
 // Tests that there is a maximum limitation to the number of simultaneous
 // off-screen tabs.
-IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MaxOffscreenTabs) {
+IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_MaxOffscreenTabs) {
   AddExtensionToCommandLineWhitelist();
   ASSERT_TRUE(RunExtensionSubtest("tab_capture", "max_offscreen_tabs.html"))
       << message_;
