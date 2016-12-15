@@ -59,7 +59,7 @@ TEST_F(FirstMeaningfulPaintDetectorTest, NoFirstPaint) {
 }
 
 TEST_F(FirstMeaningfulPaintDetectorTest, OneLayout) {
-  paintTiming().markFirstPaint();
+  paintTiming().markFirstContentfulPaint();
   simulateLayoutAndPaint(1);
   double afterPaint = monotonicallyIncreasingTime();
   EXPECT_EQ(paintTiming().firstMeaningfulPaint(), 0.0);
@@ -69,7 +69,7 @@ TEST_F(FirstMeaningfulPaintDetectorTest, OneLayout) {
 }
 
 TEST_F(FirstMeaningfulPaintDetectorTest, TwoLayoutsSignificantSecond) {
-  paintTiming().markFirstPaint();
+  paintTiming().markFirstContentfulPaint();
   simulateLayoutAndPaint(1);
   double afterLayout1 = monotonicallyIncreasingTime();
   simulateLayoutAndPaint(10);
@@ -80,7 +80,7 @@ TEST_F(FirstMeaningfulPaintDetectorTest, TwoLayoutsSignificantSecond) {
 }
 
 TEST_F(FirstMeaningfulPaintDetectorTest, TwoLayoutsSignificantFirst) {
-  paintTiming().markFirstPaint();
+  paintTiming().markFirstContentfulPaint();
   simulateLayoutAndPaint(10);
   double afterLayout1 = monotonicallyIncreasingTime();
   simulateLayoutAndPaint(1);
@@ -90,7 +90,7 @@ TEST_F(FirstMeaningfulPaintDetectorTest, TwoLayoutsSignificantFirst) {
 }
 
 TEST_F(FirstMeaningfulPaintDetectorTest, FirstMeaningfulPaintCandidate) {
-  paintTiming().markFirstPaint();
+  paintTiming().markFirstContentfulPaint();
   EXPECT_EQ(paintTiming().firstMeaningfulPaintCandidate(), 0.0);
   simulateLayoutAndPaint(1);
   double afterPaint = monotonicallyIncreasingTime();
@@ -103,6 +103,17 @@ TEST_F(FirstMeaningfulPaintDetectorTest, FirstMeaningfulPaintCandidate) {
   // The third candidate gets ignored since we already saw the first candidate.
   simulateLayoutAndPaint(10);
   EXPECT_EQ(paintTiming().firstMeaningfulPaintCandidate(), candidate);
+}
+
+TEST_F(FirstMeaningfulPaintDetectorTest,
+       NetworkStableBeforeFirstContentfulPaint) {
+  paintTiming().markFirstPaint();
+  simulateLayoutAndPaint(1);
+  simulateNetworkStable();
+  EXPECT_EQ(paintTiming().firstMeaningfulPaint(), 0.0);
+  paintTiming().markFirstContentfulPaint();
+  simulateNetworkStable();
+  EXPECT_NE(paintTiming().firstMeaningfulPaint(), 0.0);
 }
 
 }  // namespace blink

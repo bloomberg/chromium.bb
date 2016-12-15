@@ -115,7 +115,8 @@ void FirstMeaningfulPaintDetector::checkNetworkStable() {
 
 void FirstMeaningfulPaintDetector::networkStableTimerFired(TimerBase*) {
   if (m_state == Reported || !document() ||
-      document()->fetcher()->hasPendingRequest())
+      document()->fetcher()->hasPendingRequest() ||
+      !m_paintTiming->firstContentfulPaint())
     return;
 
   if (m_provisionalFirstMeaningfulPaint)
