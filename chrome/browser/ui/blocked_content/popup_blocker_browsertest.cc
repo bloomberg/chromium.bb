@@ -250,8 +250,16 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
       DontCheckTitle);
 }
 
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// Flaky on ASAN on Mac. See https://crbug.com/674497.
+#define MAYBE_BlockWebContentsCreationIncognito \
+  DISABLED_BlockWebContentsCreationIncognito
+#else
+#define MAYBE_BlockWebContentsCreationIncognito \
+  BlockWebContentsCreationIncognito
+#endif
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
-                       BlockWebContentsCreationIncognito) {
+                       MAYBE_BlockWebContentsCreationIncognito) {
   RunCheckTest(
       CreateIncognitoBrowser(),
       "/popup_blocker/popup-blocked-to-post-blank.html",
