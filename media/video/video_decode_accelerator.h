@@ -288,7 +288,10 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   // Resets the decoder: all pending inputs are dropped immediately and the
   // decoder returned to a state ready for further Decode()s, followed by
   // NotifyResetDone() being called on the client.  Can be used to implement
-  // "seek".
+  // "seek". After Flush is called, it is OK to call Reset before receiving
+  // NotifyFlushDone() and VDA should cancel the flush. Note NotifyFlushDone()
+  // may be on the way to the client. If client gets NotifyFlushDone(), it
+  // should be before NotifyResetDone().
   virtual void Reset() = 0;
 
   // An optional graphics surface that the VDA should render to. For setting
