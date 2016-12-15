@@ -36,6 +36,9 @@ Polymer({
      * @private {!chrome.settingsPrivate.PrefObject|undefined}
      */
     hotwordSearchEnablePref_: Object,
+
+    /** @private */
+    googleNowAvailable_: Boolean,
   },
 
   /** @private {?settings.SearchEnginesBrowserProxy} */
@@ -60,6 +63,14 @@ Polymer({
         'hotword-info-update', this.hotwordInfoUpdate_.bind(this));
     this.browserProxy_.getHotwordInfo().then(function(hotwordInfo) {
       this.hotwordInfoUpdate_(hotwordInfo);
+    }.bind(this));
+
+    // Google Now cards in the launcher
+    cr.addWebUIListener(
+        'google-now-availability-changed',
+        this.googleNowAvailabilityUpdate_.bind(this));
+    this.browserProxy_.getGoogleNowAvailability().then(function(available) {
+        this.googleNowAvailabilityUpdate_(available);
     }.bind(this));
   },
 
@@ -101,6 +112,14 @@ Polymer({
       type: chrome.settingsPrivate.PrefType.BOOLEAN,
       value: this.hotwordInfo_.enabled,
     };
+  },
+
+  /**
+   * @param {boolean} available
+   * @private
+   */
+  googleNowAvailabilityUpdate_: function(available) {
+    this.googleNowAvailable_ = available;
   },
 
   /**

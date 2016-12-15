@@ -54,7 +54,7 @@ class SearchEnginesHandler : public SettingsPageUIHandler,
   void OnJavascriptDisallowed() override;
 
  private:
-  // Retrieves all search engines and returns the to WebUI.
+  // Retrieves all search engines and returns them to WebUI.
   void HandleGetSearchEnginesList(const base::ListValue* args);
 
   std::unique_ptr<base::DictionaryValue> GetSearchEnginesList();
@@ -98,6 +98,9 @@ class SearchEnginesHandler : public SettingsPageUIHandler,
 
   // WebUI call to request a dictionary of hotword related properties.
   void HandleGetHotwordInfo(const base::ListValue* args);
+
+  // WebUI call to request the availability of Google Now cards.
+  void HandleGetGoogleNowAvailability(const base::ListValue* args);
 
   // Constructs a SearchPageHotwordInfo dictionary.
   std::unique_ptr<base::DictionaryValue> GetHotwordInfo();

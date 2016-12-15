@@ -28,7 +28,7 @@
       iron-icon {
         -webkit-padding-end: 16px;
       }
- 
+
       .indented {
         -webkit-margin-start: var(--settings-indent-width);
       }
@@ -64,9 +64,19 @@
           </template>
         </div>
 
+        <template is="dom-if" if="[[googleNowAvailable_]]">
+          <!-- Google Now cards in the launcher -->
+          <div class="settings-box continuation">
+            <settings-checkbox id="googleNowEnable"
+                label="$i18n{searchEnableGoogleNowLabel}"
+                pref="{{prefs.google_now_launcher.enabled}}">
+            </settings-checkbox>
+          </div>
+        </template>
+
         <template is="dom-if" if="[[hotwordInfo_.allowed]]">
           <!-- Hotword (OK Google) -->
-          <div class="settings-box two-line">
+          <div class="settings-box two-line continuation">
             <settings-checkbox id="hotwordSearchEnable" class="start"
                 label="$i18n{searchOkGoogleLabel}"
                 sub-label="[[getHotwordSearchEnableSubLabel_(

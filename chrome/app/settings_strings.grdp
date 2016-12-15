@@ -1644,6 +1644,9 @@
   <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_RETRAIN" desc="Text for button to retrain the OK Google hotword voice model.">
     Retrain
   </message>
+  <message name="IDS_SETTINGS_SEARCH_ENABLE_GOOGLE_NOW" desc="Label for the checkbox which enables the Google Now in the launcher.">
+    Show Google Now cards in the launcher
+  </message>
 
   <!-- Search Engines Page -->
   <message name="IDS_SETTINGS_SEARCH_ENGINES" desc="Name of the settings page which manages search engines.">

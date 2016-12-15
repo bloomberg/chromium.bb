@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -69,6 +70,12 @@ bool GetHotwordAlwaysOn(Profile* profile) {
          HotwordServiceFactory::IsAlwaysOnAvailable();
 }
 
+bool IsGoogleNowAvailable(Profile* profile) {
+  std::string group = base::FieldTrialList::FindFullName("GoogleNowExtension");
+  bool has_field_trial = !group.empty() && group != "Disabled";
+  return has_field_trial && IsGoogleDefaultSearch(profile);
+}
+
 }  // namespace
 
 namespace settings {
@@ -119,6 +126,10 @@ void SearchEnginesHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "setHotwordSearchEnabled",
       base::Bind(&SearchEnginesHandler::HandleSetHotwordSearchEnabled,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getGoogleNowAvailability",
+      base::Bind(&SearchEnginesHandler::HandleGetGoogleNowAvailability,
                  base::Unretained(this)));
 }
 
@@ -186,6 +197,11 @@ void SearchEnginesHandler::OnModelChanged() {
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("search-engines-changed"),
                          *GetSearchEnginesList());
+  // Google Now availability may have changed.
+  CallJavascriptFunction(
+      "cr.webUIListenerCallback",
+      base::StringValue("google-now-availability-changed"),
+      base::FundamentalValue(IsGoogleNowAvailable(profile_)));
 }
 
 void SearchEnginesHandler::OnItemsChanged(int start, int length) {
@@ -430,6 +446,16 @@ void SearchEnginesHandler::HandleGetHotwordInfo(const base::ListValue* args) {
           base::Bind(&SearchEnginesHandler::OnGetHotwordAudioHistoryEnabled,
                      weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback_id),
                      base::Passed(&status)));
+}
+
+void SearchEnginesHandler::HandleGetGoogleNowAvailability(
+    const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+  AllowJavascript();
+  ResolveJavascriptCallback(
+      *callback_id, base::FundamentalValue(IsGoogleNowAvailable(profile_)));
 }
 
 std::unique_ptr<base::DictionaryValue> SearchEnginesHandler::GetHotwordInfo() {
