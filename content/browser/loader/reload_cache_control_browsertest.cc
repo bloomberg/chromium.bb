@@ -8,10 +8,9 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "content/public/common/content_switches.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -189,8 +188,7 @@ IN_PROC_BROWSER_TEST_F(ReloadCacheControlBrowserTest, NavigateToSame) {
 
   // TODO(crbug.com/671545): This test does not work correctly if browser-side
   // navigation is enabled.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableBrowserSideNavigation))
+  if (IsBrowserSideNavigationEnabled())
     return;
 
   // The second navigation is the same page navigation. This should be handled
