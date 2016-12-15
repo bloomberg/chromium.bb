@@ -949,6 +949,8 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(
       base::MakeUnique<ExternalDataPolicyHandler>(key::kUserAvatarImage));
   handlers->AddHandler(
+      base::MakeUnique<ExternalDataPolicyHandler>(key::kDeviceWallpaperImage));
+  handlers->AddHandler(
       base::MakeUnique<ExternalDataPolicyHandler>(key::kWallpaperImage));
   handlers->AddHandler(base::WrapUnique(new SimpleSchemaValidatingPolicyHandler(
       key::kSessionLocales, NULL, chrome_schema, SCHEMA_STRICT,
