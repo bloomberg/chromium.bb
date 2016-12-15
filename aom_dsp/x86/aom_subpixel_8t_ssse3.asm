@@ -15,6 +15,7 @@
 
 SECTION_RODATA
 pw_64:    times 8 dw 64
+even_byte_mask: times 8 dw 0x00ff
 
 ; %define USE_PMULHRSW
 ; NOTE: pmulhrsw has a latency of 5 cycles.  Tests showed a performance loss
@@ -142,6 +143,14 @@ cglobal filter_block1d4_%1, 6, 6, 11, LOCAL_VARS_SIZE_H4, \
     paddsw              m0, m1
     paddsw              m0, krd
     psraw               m0, 7
+%ifidn %1, h8_add_src
+    pxor                 m3, m3
+    movu                 m4, [srcq]
+    movu                 m5, [srcq + sstrideq]
+    punpckldq            m4, m5 ; Bytes 0,1,2,3 from row 0, then 0,1,2,3 from row 2
+    punpcklbw            m4, m3
+    paddsw               m0, m4
+%endif
     packuswb            m0, m0
     psrldq              m1, m0, 4
 
@@ -178,6 +187,12 @@ cglobal filter_block1d4_%1, 6, 6, 11, LOCAL_VARS_SIZE_H4, \
     paddsw              m0, m1
     paddsw              m0, krd
     psraw               m0, 7
+%ifidn %1, h8_add_src
+    pxor                m3, m3
+    movu                m4, [srcq]
+    punpcklbw           m4, m3
+    paddsw              m0, m4
+%endif
     packuswb            m0, m0
 %ifidn %1, h8_avg
     movd                m4, [dstq]
@@ -235,6 +250,15 @@ cglobal filter_block1d8_%1, 6, 6, 14, LOCAL_VARS_SIZE, \
     paddsw               m6, m0
     paddsw               m6, krd
     psraw                m6, 7
+%ifidn %1, h8_add_src
+    pxor                 m3, m3
+    movu                 m4, [srcq]
+    movu                 m5, [srcq + sstrideq]
+    punpcklbw            m4, m3
+    punpcklbw            m5, m3
+    paddsw               m1, m4
+    paddsw               m6, m5
+%endif
     packuswb             m1, m6
 %ifidn %1, h8_avg
     pavgb                m1, m2
@@ -269,6 +293,12 @@ cglobal filter_block1d8_%1, 6, 6, 14, LOCAL_VARS_SIZE, \
     paddsw               m1, m4
     paddsw               m1, krd
     psraw                m1, 7
+%ifidn %1, h8_add_src
+    pxor                 m6, m6
+    movu                 m5, [srcq]
+    punpcklbw            m5, m6
+    paddsw               m1, m5
+%endif
     packuswb             m1, m1
 %ifidn %1, h8_avg
     movh                 m0, [dstq]
@@ -315,6 +345,14 @@ cglobal filter_block1d16_%1, 6, 6, 14, LOCAL_VARS_SIZE, \
     paddsw        m4, krd
     psraw         m0, 7
     psraw         m4, 7
+%ifidn %1, h8_add_src
+    movu          m5, [srcq]
+    mova          m7, m5
+    pand          m5, [even_byte_mask]
+    psrlw         m7, 8
+    paddsw        m0, m5
+    paddsw        m4, m7
+%endif
     packuswb      m0, m0
     packuswb      m4, m4
     punpcklbw     m0, m4
@@ -336,6 +374,12 @@ SUBPIX_HFILTER8  h8
 SUBPIX_HFILTER8  h8_avg
 SUBPIX_HFILTER4  h8
 SUBPIX_HFILTER4  h8_avg
+
+%if CONFIG_LOOP_RESTORATION
+SUBPIX_HFILTER16 h8_add_src
+SUBPIX_HFILTER8  h8_add_src
+SUBPIX_HFILTER4  h8_add_src
+%endif
 
 ;-------------------------------------------------------------------------------
 
@@ -413,12 +457,23 @@ cglobal filter_block1d%2_%1, 6, NUM_GENERAL_REG_USED, 15, LOCAL_VARS_SIZE, \
     paddsw                   m0, krd
     psraw                    m0, 7
     paddsw                   m1, m5
+%ifidn %1, v8_add_src
+    pxor                     m6, m6
+    movu                     m4, [srcq]
+    punpcklbw                m4, m6
+    paddsw                   m0, m4
+%endif
     packuswb                 m0, m0
 
     paddsw                   m3, m7
     paddsw                   m1, m3
     paddsw                   m1, krd
     psraw                    m1, 7
+%ifidn %1, v8_add_src
+    movu                     m4, [src1q]
+    punpcklbw                m4, m6
+    paddsw                   m1, m4
+%endif
     lea                    srcq, [srcq + sstrideq * 2 ]
     lea                   src1q, [src1q + sstrideq * 2]
     packuswb                 m1, m1
@@ -462,6 +517,12 @@ cglobal filter_block1d%2_%1, 6, NUM_GENERAL_REG_USED, 15, LOCAL_VARS_SIZE, \
     paddsw                   m0, m2
     paddsw                   m0, krd
     psraw                    m0, 7
+%ifidn %1, v8_add_src
+    pxor                     m6, m6
+    movu                     m4, [srcq]
+    punpcklbw                m4, m6
+    paddsw                   m0, m4
+%endif
     packuswb                 m0, m0
 %ifidn %1, v8_avg
     movx                     m1, [dstq]
@@ -643,6 +704,15 @@ cglobal filter_block1d16_%1, 6, NUM_GENERAL_REG_USED, 16, LOCAL_VARS_SIZE, \
     paddsw                   m3, m7
     paddsw                   m3, krd
     psraw                    m3, 7
+%ifidn %1, v8_add_src
+    pxor                     m6, m6
+    movu                     m4, [src1q + 2 * sstrideq] ; Fetch from 3 rows down
+    mova                     m5, m4
+    punpcklbw                m4, m6
+    punpckhbw                m5, m6
+    paddsw                   m0, m4
+    paddsw                   m3, m5
+%endif
     packuswb                 m0, m3
 
     add                    srcq, sstrideq
@@ -804,3 +874,10 @@ SUBPIX_VFILTER       v8, 8
 SUBPIX_VFILTER   v8_avg, 8
 SUBPIX_VFILTER       v8, 4
 SUBPIX_VFILTER   v8_avg, 4
+
+%if (ARCH_X86 || X86_SUBPIX_VFILTER_PREFER_SLOW_CELERON) && \
+    CONFIG_LOOP_RESTORATION
+SUBPIX_VFILTER16 v8_add_src
+SUBPIX_VFILTER   v8_add_src, 8
+SUBPIX_VFILTER   v8_add_src, 4
+%endif

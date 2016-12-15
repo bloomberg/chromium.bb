@@ -291,6 +291,14 @@ filter8_1dfunction aom_filter_block1d8_v8_avg_ssse3;
 filter8_1dfunction aom_filter_block1d8_h8_avg_ssse3;
 filter8_1dfunction aom_filter_block1d4_v8_avg_ssse3;
 filter8_1dfunction aom_filter_block1d4_h8_avg_ssse3;
+#if CONFIG_LOOP_RESTORATION
+filter8_1dfunction aom_filter_block1d16_v8_add_src_ssse3;
+filter8_1dfunction aom_filter_block1d16_h8_add_src_ssse3;
+filter8_1dfunction aom_filter_block1d8_v8_add_src_ssse3;
+filter8_1dfunction aom_filter_block1d8_h8_add_src_ssse3;
+filter8_1dfunction aom_filter_block1d4_v8_add_src_ssse3;
+filter8_1dfunction aom_filter_block1d4_h8_add_src_ssse3;
+#endif
 
 filter8_1dfunction aom_filter_block1d16_v2_ssse3;
 filter8_1dfunction aom_filter_block1d16_h2_ssse3;
@@ -330,6 +338,13 @@ FUN_CONV_1D(vert, y_step_q4, filter_y, v, src - src_stride * 3, , ssse3);
 FUN_CONV_1D(avg_horiz, x_step_q4, filter_x, h, src, avg_, ssse3);
 FUN_CONV_1D(avg_vert, y_step_q4, filter_y, v, src - src_stride * 3, avg_,
             ssse3);
+
+#if CONFIG_LOOP_RESTORATION
+FUN_CONV_1D_NO_BILINEAR(add_src_horiz, x_step_q4, filter_x, h, src, add_src_,
+                        ssse3);
+FUN_CONV_1D_NO_BILINEAR(add_src_vert, y_step_q4, filter_y, v,
+                        src - src_stride * 3, add_src_, ssse3);
+#endif
 
 #define TRANSPOSE_8X8(in0, in1, in2, in3, in4, in5, in6, in7, out0, out1, \
                       out2, out3, out4, out5, out6, out7)                 \
@@ -900,3 +915,6 @@ void aom_scaled_2d_ssse3(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst,
 //                              int w, int h);
 FUN_CONV_2D(, ssse3);
 FUN_CONV_2D(avg_, ssse3);
+#if CONFIG_LOOP_RESTORATION
+FUN_CONV_2D_NO_BILINEAR(add_src_, add_src_, ssse3);
+#endif
