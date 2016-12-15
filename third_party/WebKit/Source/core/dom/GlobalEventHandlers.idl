@@ -97,7 +97,7 @@
     attribute EventHandler onwaiting;
 
     // auxclick
-    // https://navidz.github.io/auxclick/
+    // https://wicg.github.io/auxclick/
     [RuntimeEnabled=Auxclick] attribute EventHandler onauxclick;
 
     // Pointer Events
