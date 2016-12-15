@@ -70,7 +70,6 @@ using base::UserMetricsAction;
 using content::GlobalRequestID;
 using content::RenderFrameHost;
 using content::RenderProcessHost;
-using content::ResourceType;
 using content::StoragePartition;
 using content::WebContents;
 using guest_view::GuestViewBase;

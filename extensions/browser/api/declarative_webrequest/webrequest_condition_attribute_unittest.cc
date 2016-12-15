@@ -28,7 +28,6 @@ using base::FundamentalValue;
 using base::ListValue;
 using base::StringValue;
 using base::Value;
-using content::ResourceType;
 
 namespace extensions {
 

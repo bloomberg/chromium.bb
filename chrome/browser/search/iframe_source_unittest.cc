@@ -23,8 +23,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using content::ResourceType;
-
 const int kNonInstantRendererPID = 0;
 const char kNonInstantOrigin[] = "http://evil";
 const int kInstantRendererPID = 1;

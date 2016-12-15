@@ -1221,10 +1221,7 @@ void ResourceDispatcherHostImpl::CompleteTransfer(
   DCHECK(request_data.transferred_request_child_id != -1 ||
          request_data.transferred_request_request_id != -1);
 
-  bool is_navigational_request =
-      request_data.resource_type == RESOURCE_TYPE_MAIN_FRAME ||
-      request_data.resource_type == RESOURCE_TYPE_SUB_FRAME;
-  if (!is_navigational_request) {
+  if (!IsResourceTypeFrame(request_data.resource_type)) {
     // Transfers apply only to navigational requests - the renderer seems to
     // have sent bogus IPC data.
     bad_message::ReceivedBadMessage(

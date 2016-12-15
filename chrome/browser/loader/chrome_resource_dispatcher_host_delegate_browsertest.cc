@@ -138,7 +138,7 @@ class TestDispatcherHostDelegate : public ChromeResourceDispatcherHostDelegate {
   void AppendStandardResourceThrottles(
       net::URLRequest* request,
       content::ResourceContext* resource_context,
-      content::ResourceType resource_type,
+      ResourceType resource_type,
       ScopedVector<content::ResourceThrottle>* throttles) override {
     ++times_stardard_throttles_added_for_url_[request->url()];
     ChromeResourceDispatcherHostDelegate::AppendStandardResourceThrottles(

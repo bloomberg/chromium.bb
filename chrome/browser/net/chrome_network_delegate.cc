@@ -48,6 +48,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/process_type.h"
+#include "content/public/common/resource_type.h"
 #include "extensions/features/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -79,7 +80,6 @@
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::ResourceRequestInfo;
-using content::ResourceType;
 
 // By default we don't allow access to all file:// urls on ChromeOS and
 // Android.

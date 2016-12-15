@@ -19,8 +19,6 @@
 #include "components/safe_browsing_db/v4_update_protocol_manager.h"
 #include "url/gurl.h"
 
-using content::ResourceType;
-
 namespace safe_browsing {
 
 typedef unsigned ThreatSeverity;

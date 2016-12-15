@@ -355,7 +355,7 @@ void LogMainFrameMetricsOnUIThread(const GURL& url,
 void NotifyUIThreadOfRequestComplete(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const GURL& url,
-    content::ResourceType resource_type,
+    ResourceType resource_type,
     bool was_cached,
     int net_error,
     int64_t total_received_bytes,
