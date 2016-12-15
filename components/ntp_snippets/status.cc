@@ -6,10 +6,12 @@
 
 namespace ntp_snippets {
 
-Status::Status(StatusCode status, const std::string& message)
-    : status(status), message(message) {}
+Status::Status(StatusCode status_code, const std::string& message)
+    : code(status_code), message(message) {}
 
-Status::Status(StatusCode status) : Status(status, std::string()) {}
+Status Status::Success() {
+  return Status(StatusCode::SUCCESS, std::string());
+}
 
 Status::~Status() = default;
 

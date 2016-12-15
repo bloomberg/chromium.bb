@@ -307,13 +307,13 @@ class RemoteSuggestionsProvider final : public ContentSuggestionsProvider {
   // Callback for fetch-more requests with the NTPSnippetsFetcher.
   void OnFetchMoreFinished(
       const FetchDoneCallback& fetching_callback,
-      NTPSnippetsFetcher::FetchResult fetch_result,
+      Status status,
       NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories);
 
   // Callback for regular fetch requests with the NTPSnippetsFetcher.
   void OnFetchFinished(
       bool interactive_request,
-      NTPSnippetsFetcher::FetchResult fetch_status,
+      Status status,
       NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories);
 
   // Moves all snippets from |to_archive| into the archive of the |content|.

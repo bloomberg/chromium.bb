@@ -113,6 +113,32 @@ std::string FetchResultToString(NTPSnippetsFetcher::FetchResult result) {
   return "Unknown error";
 }
 
+Status FetchResultToStatus(NTPSnippetsFetcher::FetchResult result) {
+  switch (result) {
+    case NTPSnippetsFetcher::FetchResult::SUCCESS:
+      return Status::Success();
+    // Permanent errors occur if it is more likely that the error originated
+    // from the client.
+    case NTPSnippetsFetcher::FetchResult::DEPRECATED_EMPTY_HOSTS:
+    case NTPSnippetsFetcher::FetchResult::OAUTH_TOKEN_ERROR:
+      return Status(StatusCode::PERMANENT_ERROR, FetchResultToString(result));
+    // Temporary errors occur if it's more likely that the client behaved
+    // correctly but the server failed to respond as expected.
+    // TODO(fhorschig): Revisit HTTP_ERROR once the rescheduling was reworked.
+    case NTPSnippetsFetcher::FetchResult::HTTP_ERROR:
+    case NTPSnippetsFetcher::FetchResult::INTERACTIVE_QUOTA_ERROR:
+    case NTPSnippetsFetcher::FetchResult::NON_INTERACTIVE_QUOTA_ERROR:
+    case NTPSnippetsFetcher::FetchResult::URL_REQUEST_STATUS_ERROR:
+    case NTPSnippetsFetcher::FetchResult::INVALID_SNIPPET_CONTENT_ERROR:
+    case NTPSnippetsFetcher::FetchResult::JSON_PARSE_ERROR:
+      return Status(StatusCode::TEMPORARY_ERROR, FetchResultToString(result));
+    case NTPSnippetsFetcher::FetchResult::RESULT_MAX:
+      break;
+  }
+  NOTREACHED();
+  return Status(StatusCode::PERMANENT_ERROR, std::string());
+}
+
 std::string GetFetchEndpoint() {
   std::string endpoint = variations::GetVariationParamValue(
       ntp_snippets::kStudyName, kContentSuggestionsBackend);
@@ -994,19 +1020,20 @@ void NTPSnippetsFetcher::JsonRequestDone(std::unique_ptr<JsonRequest> request,
 
 void NTPSnippetsFetcher::FetchFinished(OptionalFetchedCategories categories,
                                        SnippetsAvailableCallback callback,
-                                       FetchResult status_code,
+                                       FetchResult fetch_result,
                                        const std::string& error_details) {
-  DCHECK(status_code == FetchResult::SUCCESS || !categories.has_value());
+  DCHECK(fetch_result == FetchResult::SUCCESS || !categories.has_value());
 
-  last_status_ = FetchResultToString(status_code) + error_details;
+  last_status_ = FetchResultToString(fetch_result) + error_details;
 
   UMA_HISTOGRAM_ENUMERATION("NewTabPage.Snippets.FetchResult",
-                            static_cast<int>(status_code),
+                            static_cast<int>(fetch_result),
                             static_cast<int>(FetchResult::RESULT_MAX));
 
   DVLOG(1) << "Fetch finished: " << last_status_;
 
-  std::move(callback).Run(status_code, std::move(categories));
+  std::move(callback).Run(FetchResultToStatus(fetch_result),
+                          std::move(categories));
 }
 
 bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,

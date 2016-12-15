@@ -70,6 +70,16 @@ MATCHER(HasValue, "") {
   return static_cast<bool>(*arg);
 }
 
+// TODO(fhorschig): When there are more helpers for the Status class, consider a
+// helpers file.
+MATCHER_P(HasCode, code, "") {
+  return arg.code == code;
+}
+
+MATCHER(IsSuccess, "") {
+  return arg.IsSuccess();
+}
+
 MATCHER(IsEmptyArticleList, "is an empty list of articles") {
   NTPSnippetsFetcher::OptionalFetchedCategories& fetched_categories = *arg;
   return fetched_categories && fetched_categories->size() == 1 &&
@@ -151,14 +161,14 @@ class MockSnippetsAvailableCallback {
  public:
   // Workaround for gMock's lack of support for movable arguments.
   void WrappedRun(
-      NTPSnippetsFetcher::FetchResult fetch_result,
+      Status status,
       NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories) {
-    Run(fetch_result, &fetched_categories);
+    Run(status, &fetched_categories);
   }
 
   MOCK_METHOD2(
       Run,
-      void(NTPSnippetsFetcher::FetchResult fetch_result,
+      void(Status status,
            NTPSnippetsFetcher::OptionalFetchedCategories* fetched_categories));
 };
 
@@ -690,7 +700,7 @@ TEST_F(ChromeReaderSnippetsFetcherTest, ShouldFetchSuccessfully) {
   SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(),
-              Run(NTPSnippetsFetcher::FetchResult::SUCCESS,
+              Run(IsSuccess(),
                   AllOf(IsSingleArticle("http://localhost/foobar"),
                         FirstCategoryHasInfo(IsCategoryInfoForArticles()))));
   snippets_fetcher().FetchSnippets(
@@ -727,7 +737,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ShouldFetchSuccessfully) {
   SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   EXPECT_CALL(mock_callback(),
-              Run(NTPSnippetsFetcher::FetchResult::SUCCESS,
+              Run(IsSuccess(),
                   AllOf(IsSingleArticle("http://localhost/foobar"),
                         FirstCategoryHasInfo(IsCategoryInfoForArticles()))));
   snippets_fetcher().FetchSnippets(
@@ -751,8 +761,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, EmptyCategoryIsOK) {
       "}]}";
   SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(mock_callback(), Run(NTPSnippetsFetcher::FetchResult::SUCCESS,
-                                   IsEmptyArticleList()));
+  EXPECT_CALL(mock_callback(), Run(IsSuccess(), IsEmptyArticleList()));
   snippets_fetcher().FetchSnippets(
       test_params(), ToSnippetsAvailableCallback(&mock_callback()));
   FastForwardUntilNoTasksRemain();
@@ -803,7 +812,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ServerCategories) {
   SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories;
-  EXPECT_CALL(mock_callback(), Run(NTPSnippetsFetcher::FetchResult::SUCCESS, _))
+  EXPECT_CALL(mock_callback(), Run(IsSuccess(), _))
       .WillOnce(MoveArgument1PointeeTo(&fetched_categories));
   snippets_fetcher().FetchSnippets(
       test_params(), ToSnippetsAvailableCallback(&mock_callback()));
@@ -865,7 +874,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest,
   SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories;
-  EXPECT_CALL(mock_callback(), Run(NTPSnippetsFetcher::FetchResult::SUCCESS, _))
+  EXPECT_CALL(mock_callback(), Run(IsSuccess(), _))
       .WillOnce(MoveArgument1PointeeTo(&fetched_categories));
   snippets_fetcher().FetchSnippets(
       test_params(), ToSnippetsAvailableCallback(&mock_callback()));
@@ -929,7 +938,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ExclusiveCategoryOnly) {
   SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
   NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories;
-  EXPECT_CALL(mock_callback(), Run(NTPSnippetsFetcher::FetchResult::SUCCESS, _))
+  EXPECT_CALL(mock_callback(), Run(IsSuccess(), _))
       .WillOnce(MoveArgument1PointeeTo(&fetched_categories));
 
   NTPSnippetsFetcher::Params params = test_params();
@@ -973,8 +982,7 @@ TEST_F(ChromeReaderSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {
   const std::string kJsonStr = "{\"recos\": []}";
   SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(mock_callback(), Run(NTPSnippetsFetcher::FetchResult::SUCCESS,
-                                   IsEmptyArticleList()));
+  EXPECT_CALL(mock_callback(), Run(IsSuccess(), IsEmptyArticleList()));
   snippets_fetcher().FetchSnippets(
       test_params(), ToSnippetsAvailableCallback(&mock_callback()));
   FastForwardUntilNoTasksRemain();
@@ -1036,9 +1044,8 @@ TEST_F(ChromeReaderSnippetsFetcherTest,
 TEST_F(ChromeReaderSnippetsFetcherTest, ShouldReportUrlStatusError) {
   SetFakeResponse(/*response_data=*/std::string(), net::HTTP_NOT_FOUND,
                   net::URLRequestStatus::FAILED);
-  EXPECT_CALL(mock_callback(),
-              Run(NTPSnippetsFetcher::FetchResult::URL_REQUEST_STATUS_ERROR,
-                  /*snippets=*/Not(HasValue())))
+  EXPECT_CALL(mock_callback(), Run(HasCode(StatusCode::TEMPORARY_ERROR),
+                                   /*snippets=*/Not(HasValue())))
       .Times(1);
   snippets_fetcher().FetchSnippets(
       test_params(), ToSnippetsAvailableCallback(&mock_callback()));
@@ -1059,7 +1066,7 @@ TEST_F(ChromeReaderSnippetsFetcherTest, ShouldReportUrlStatusError) {
 TEST_F(ChromeReaderSnippetsFetcherTest, ShouldReportHttpError) {
   SetFakeResponse(/*response_data=*/std::string(), net::HTTP_NOT_FOUND,
                   net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(mock_callback(), Run(NTPSnippetsFetcher::FetchResult::HTTP_ERROR,
+  EXPECT_CALL(mock_callback(), Run(HasCode(StatusCode::TEMPORARY_ERROR),
                                    /*snippets=*/Not(HasValue())))
       .Times(1);
   snippets_fetcher().FetchSnippets(
@@ -1080,9 +1087,8 @@ TEST_F(ChromeReaderSnippetsFetcherTest, ShouldReportJsonError) {
   const std::string kInvalidJsonStr = "{ \"recos\": []";
   SetFakeResponse(/*response_data=*/kInvalidJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(mock_callback(),
-              Run(NTPSnippetsFetcher::FetchResult::JSON_PARSE_ERROR,
-                  /*snippets=*/Not(HasValue())))
+  EXPECT_CALL(mock_callback(), Run(HasCode(StatusCode::TEMPORARY_ERROR),
+                                   /*snippets=*/Not(HasValue())))
       .Times(1);
   snippets_fetcher().FetchSnippets(
       test_params(), ToSnippetsAvailableCallback(&mock_callback()));
@@ -1104,9 +1110,8 @@ TEST_F(ChromeReaderSnippetsFetcherTest, ShouldReportJsonError) {
 TEST_F(ChromeReaderSnippetsFetcherTest, ShouldReportJsonErrorForEmptyResponse) {
   SetFakeResponse(/*response_data=*/std::string(), net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(mock_callback(),
-              Run(NTPSnippetsFetcher::FetchResult::JSON_PARSE_ERROR,
-                  /*snippets=*/Not(HasValue())))
+  EXPECT_CALL(mock_callback(), Run(HasCode(StatusCode::TEMPORARY_ERROR),
+                                   /*snippets=*/Not(HasValue())))
       .Times(1);
   snippets_fetcher().FetchSnippets(
       test_params(), ToSnippetsAvailableCallback(&mock_callback()));
@@ -1125,10 +1130,8 @@ TEST_F(ChromeReaderSnippetsFetcherTest, ShouldReportInvalidListError) {
       "{\"recos\": [{ \"contentInfo\": { \"foo\" : \"bar\" }}]}";
   SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(
-      mock_callback(),
-      Run(NTPSnippetsFetcher::FetchResult::INVALID_SNIPPET_CONTENT_ERROR,
-          /*snippets=*/Not(HasValue())))
+  EXPECT_CALL(mock_callback(), Run(HasCode(StatusCode::TEMPORARY_ERROR),
+                                   /*snippets=*/Not(HasValue())))
       .Times(1);
   snippets_fetcher().FetchSnippets(
       test_params(), ToSnippetsAvailableCallback(&mock_callback()));
@@ -1149,9 +1152,8 @@ TEST_F(ChromeReaderSnippetsFetcherTest, ShouldReportInvalidListError) {
 TEST_F(ChromeReaderSnippetsFetcherTest,
        ShouldReportHttpErrorForMissingBakedResponse) {
   InitFakeURLFetcherFactory();
-  EXPECT_CALL(mock_callback(),
-              Run(NTPSnippetsFetcher::FetchResult::URL_REQUEST_STATUS_ERROR,
-                  /*snippets=*/Not(HasValue())))
+  EXPECT_CALL(mock_callback(), Run(HasCode(StatusCode::TEMPORARY_ERROR),
+                                   /*snippets=*/Not(HasValue())))
       .Times(1);
   snippets_fetcher().FetchSnippets(
       test_params(), ToSnippetsAvailableCallback(&mock_callback()));
@@ -1162,9 +1164,7 @@ TEST_F(ChromeReaderSnippetsFetcherTest, ShouldProcessConcurrentFetches) {
   const std::string kJsonStr = "{ \"recos\": [] }";
   SetFakeResponse(/*response_data=*/kJsonStr, net::HTTP_OK,
                   net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(mock_callback(), Run(NTPSnippetsFetcher::FetchResult::SUCCESS,
-                                   IsEmptyArticleList()))
-      .Times(5);
+  EXPECT_CALL(mock_callback(), Run(IsSuccess(), IsEmptyArticleList())).Times(5);
   snippets_fetcher().FetchSnippets(
       test_params(), ToSnippetsAvailableCallback(&mock_callback()));
   // More calls to FetchSnippets() do not interrupt the previous.

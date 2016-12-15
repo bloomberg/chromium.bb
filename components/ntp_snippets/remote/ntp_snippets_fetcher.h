@@ -21,6 +21,7 @@
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
 #include "components/ntp_snippets/remote/request_throttler.h"
+#include "components/ntp_snippets/status.h"
 #include "components/translate/core/browser/language_model.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/http/http_request_headers.h"
@@ -100,7 +101,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // occur, |snippets| contains no value (no actual vector in base::Optional).
   // Error details can be retrieved using last_status().
   using SnippetsAvailableCallback =
-      base::OnceCallback<void(FetchResult fetch_result,
+      base::OnceCallback<void(Status status,
                               OptionalFetchedCategories fetched_categories)>;
 
   // Enumeration listing all possible variants of dealing with personalization.

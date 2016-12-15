@@ -108,7 +108,7 @@ void PhysicalWebPageSuggestionsProvider::Fetch(
   DCHECK_EQ(category, provided_category_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(callback, Status(StatusCode::SUCCESS),
+      base::Bind(callback, Status::Success(),
                  base::Passed(GetMostRecentPhysicalWebPagesWithFilter(
                      kMaxSuggestionsCount, known_suggestion_ids))));
 }

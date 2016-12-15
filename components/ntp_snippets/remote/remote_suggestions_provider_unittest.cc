@@ -81,7 +81,7 @@ MATCHER_P(IsCategory, id, "") {
 }
 
 MATCHER_P(HasCode, code, "") {
-  return arg.status == code;
+  return arg.code == code;
 }
 
 const base::Time::Exploded kDefaultCreationTime = {2015, 11, 4, 25, 13, 46, 45};
@@ -517,6 +517,13 @@ class RemoteSuggestionsProviderTest : public ::testing::Test {
   // Provide the json to be returned by the fake fetcher.
   void SetUpFetchResponse(const std::string& json) {
     fake_url_fetcher_factory_.SetFakeResponse(test_url_, json, net::HTTP_OK,
+                                              net::URLRequestStatus::SUCCESS);
+  }
+
+  // Have the fake fetcher fail due to a HTTP error like a 404.
+  void SetUpHttpError() {
+    fake_url_fetcher_factory_.SetFakeResponse(test_url_, /*json=*/std::string(),
+                                              net::HTTP_NOT_FOUND,
                                               net::URLRequestStatus::SUCCESS);
   }
 
@@ -1111,8 +1118,58 @@ void SuggestionsLoaded(
 TEST_F(RemoteSuggestionsProviderTest, ReturnFetchRequestEmptyBeforeInit) {
   auto service = MakeSnippetsServiceWithoutInitialization();
   MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
-  EXPECT_CALL(loaded, Call(HasCode(StatusCode::TEMPORARY_ERROR), SizeIs(0)));
+  EXPECT_CALL(loaded, Call(HasCode(StatusCode::TEMPORARY_ERROR), IsEmpty()));
   service->Fetch(articles_category(), std::set<std::string>(),
+                 base::Bind(&SuggestionsLoaded, &loaded));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(RemoteSuggestionsProviderTest, ReturnTemporaryErrorForInvalidJson) {
+  auto service = MakeSnippetsService();
+
+  MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
+  EXPECT_CALL(loaded, Call(HasCode(StatusCode::TEMPORARY_ERROR), IsEmpty()));
+  LoadMoreFromJSONString(service.get(), articles_category(),
+                         "invalid json string}]}",
+                         /*known_ids=*/std::set<std::string>(),
+                         base::Bind(&SuggestionsLoaded, &loaded));
+  EXPECT_THAT(service->snippets_fetcher()->last_status(),
+              StartsWith("Received invalid JSON"));
+}
+
+TEST_F(RemoteSuggestionsProviderTest, ReturnTemporaryErrorForInvalidSnippet) {
+  auto service = MakeSnippetsService();
+
+  MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
+  EXPECT_CALL(loaded, Call(HasCode(StatusCode::TEMPORARY_ERROR), IsEmpty()));
+  LoadMoreFromJSONString(service.get(), articles_category(),
+                         GetTestJson({GetIncompleteSnippet()}),
+                         /*known_ids=*/std::set<std::string>(),
+                         base::Bind(&SuggestionsLoaded, &loaded));
+  EXPECT_THAT(service->snippets_fetcher()->last_status(),
+              StartsWith("Invalid / empty list"));
+}
+
+TEST_F(RemoteSuggestionsProviderTest, ReturnTemporaryErrorForRequestFailure) {
+  // Created SnippetsService will fail by default with unsuccessful request.
+  auto service = MakeSnippetsService(/*set_empty_response=*/false);
+
+  MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
+  EXPECT_CALL(loaded, Call(HasCode(StatusCode::TEMPORARY_ERROR), IsEmpty()));
+  service->Fetch(articles_category(),
+                 /*known_ids=*/std::set<std::string>(),
+                 base::Bind(&SuggestionsLoaded, &loaded));
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(RemoteSuggestionsProviderTest, ReturnTemporaryErrorForHttpFailure) {
+  auto service = MakeSnippetsService();
+  SetUpHttpError();
+
+  MockFunction<void(Status, const std::vector<ContentSuggestion>&)> loaded;
+  EXPECT_CALL(loaded, Call(HasCode(StatusCode::TEMPORARY_ERROR), IsEmpty()));
+  service->Fetch(articles_category(),
+                 /*known_ids=*/std::set<std::string>(),
                  base::Bind(&SuggestionsLoaded, &loaded));
   base::RunLoop().RunUntilIdle();
 }
@@ -1570,7 +1627,7 @@ TEST_F(RemoteSuggestionsProviderTest, ClearHistoryRemovesAllSuggestions) {
 
 TEST_F(RemoteSuggestionsProviderTest, SuggestionsFetchedOnSignInAndSignOut) {
   auto service = MakeSnippetsService();
-  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), SizeIs(0));
+  EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 
   // |MakeSnippetsService()| creates a service where user is signed in already,
   // so we start by signing out.

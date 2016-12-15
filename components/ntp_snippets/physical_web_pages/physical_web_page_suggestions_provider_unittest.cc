@@ -51,11 +51,11 @@ MATCHER_P(HasUrl, url, "") {
 
 void CompareFetchMoreResult(
     const base::Closure& done_closure,
-    Status expected_status_code,
+    Status expected_status,
     const std::vector<std::string>& expected_suggestion_urls,
-    Status actual_status_code,
+    Status actual_status,
     std::vector<ContentSuggestion> actual_suggestions) {
-  EXPECT_EQ(expected_status_code.status, actual_status_code.status);
+  EXPECT_EQ(expected_status.code, actual_status.code);
   std::vector<std::string> actual_suggestion_urls;
   for (const ContentSuggestion& suggestion : actual_suggestions) {
     actual_suggestion_urls.push_back(suggestion.url().spec());
@@ -218,10 +218,9 @@ TEST_F(PhysicalWebPageSuggestionsProviderTest,
 
   // Added to wait for |Fetch| callback to be called.
   base::RunLoop run_loop;
-  provider()->Fetch(
-      provided_category(), known_ids,
-      base::Bind(CompareFetchMoreResult, run_loop.QuitClosure(),
-                 Status(StatusCode::SUCCESS), expected_suggestion_urls));
+  provider()->Fetch(provided_category(), known_ids,
+                    base::Bind(CompareFetchMoreResult, run_loop.QuitClosure(),
+                               Status::Success(), expected_suggestion_urls));
   // Wait for the callback to be called.
   run_loop.Run();
 }

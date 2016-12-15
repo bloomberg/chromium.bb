@@ -19,13 +19,15 @@ enum class StatusCode {
 // This struct provides the status code of a request and an optional message
 // describing the status (esp. failures) in detail.
 struct Status {
-  Status(StatusCode status, const std::string& message);
-  // TODO(tschumann): Change this into a a Success() factory method. Error
-  // states should always have a message.
-  explicit Status(StatusCode status);
+  Status(StatusCode status_code, const std::string& message);
   ~Status();
 
-  StatusCode status;
+  // Errors always need a message but a success does not.
+  static Status Success();
+
+  bool IsSuccess() const { return code == StatusCode::SUCCESS; }
+
+  StatusCode code;
   // The message is not meant to be displayed to the user.
   std::string message;
 

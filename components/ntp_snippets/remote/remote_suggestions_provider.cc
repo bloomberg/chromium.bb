@@ -437,9 +437,6 @@ void RemoteSuggestionsProvider::Fetch(
   params.interactive_request = true;
   params.exclusive_category = category;
 
-  // TODO(tschumann): NTPSnippetsFetcher does not support concurrent requests
-  // yet. If a background fetch happens while we fetch-more data, the callback
-  // will never get called.
   snippets_fetcher_->FetchSnippets(
       params, base::BindOnce(&RemoteSuggestionsProvider::OnFetchMoreFinished,
                              base::Unretained(this), callback));
@@ -694,14 +691,11 @@ void RemoteSuggestionsProvider::OnDatabaseError() {
 
 void RemoteSuggestionsProvider::OnFetchMoreFinished(
     const FetchDoneCallback& fetching_callback,
-    NTPSnippetsFetcher::FetchResult fetch_result,
+    Status status,
     NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories) {
   if (!fetched_categories) {
-    // TODO(fhorschig): Disambiguate the kind of error that led here.
-    CallWithEmptyResults(fetching_callback,
-                         Status(StatusCode::PERMANENT_ERROR,
-                                "The NTPSnippetsFetcher did not "
-                                "complete the fetching successfully."));
+    DCHECK(!status.IsSuccess());
+    CallWithEmptyResults(fetching_callback, status);
     return;
   }
   if (fetched_categories->size() != 1u) {
@@ -751,13 +745,13 @@ void RemoteSuggestionsProvider::OnFetchMoreFinished(
   // status.
   UpdateCategoryStatus(category, CategoryStatus::AVAILABLE);
   // Notify callers and observers.
-  fetching_callback.Run(Status(StatusCode::SUCCESS), std::move(result));
+  fetching_callback.Run(Status::Success(), std::move(result));
   NotifyNewSuggestions(category, *existing_content);
 }
 
 void RemoteSuggestionsProvider::OnFetchFinished(
     bool interactive_request,
-    NTPSnippetsFetcher::FetchResult fetch_result,
+    Status status,
     NTPSnippetsFetcher::OptionalFetchedCategories fetched_categories) {
   if (!ready()) {
     // TODO(tschumann): What happens if this was a user-triggered, interactive
@@ -766,8 +760,7 @@ void RemoteSuggestionsProvider::OnFetchFinished(
   }
 
   // Record the fetch time of a successfull background fetch.
-  if (!interactive_request &&
-      fetch_result == NTPSnippetsFetcher::FetchResult::SUCCESS) {
+  if (!interactive_request && status.IsSuccess()) {
     pref_service_->SetInt64(prefs::kLastSuccessfulBackgroundFetchTime,
                             clock_->Now().ToInternalValue());
   }
