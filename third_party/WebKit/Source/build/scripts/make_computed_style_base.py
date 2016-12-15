@@ -88,7 +88,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         self._fields = []
         for property in self._properties.values():
             if property['keyword_only']:
-                property_name = property['upper_camel_name']
+                property_name = property['name_for_methods']
                 if property['name_for_methods']:
                     property_name = property['name_for_methods']
                 property_name_lower = property_name[0].lower() + property_name[1:]
@@ -106,7 +106,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                 # If the property is independent, add the single-bit sized isInherited flag
                 # to the list of Fields as well.
                 if property['independent']:
-                    field_name_suffix_upper = property['upper_camel_name'] + 'IsInherited'
+                    field_name_suffix_upper = property['name_for_methods'] + 'IsInherited'
                     field_name_suffix_lower = property_name_lower + 'IsInherited'
                     self._fields.append(Field(
                         'inherited_flag',
