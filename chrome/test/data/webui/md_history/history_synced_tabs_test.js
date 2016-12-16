@@ -225,7 +225,8 @@ suite('<history-synced-device-manager>', function() {
     });
   });
 
-  test('focus and keyboard nav', function() {
+  // Fails on Mac, http://crbug.com/640862
+  test.skip('focus and keyboard nav', function() {
     var sessionList = [
       createSession('Nexus 5', [createWindow([
                       'http://www.example.com', 'http://www.google.com'

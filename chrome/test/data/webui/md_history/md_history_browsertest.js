@@ -214,8 +214,7 @@ MaterialHistorySyncedTabsTest.prototype = {
   ]),
 };
 
-// Fails on Mac, http://crbug.com/640862
-TEST_F('MaterialHistorySyncedTabsTest', 'DISABLED_All', function() {
+TEST_F('MaterialHistorySyncedTabsTest', 'All', function() {
   mocha.run();
 });
 
