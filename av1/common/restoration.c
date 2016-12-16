@@ -149,23 +149,6 @@ void av1_loop_restoration_init(RestorationInternal *rst, RestorationInfo *rsi,
   }
 }
 
-// Some filters do not write the outermost WIENER_HALFWIN pixels,
-// so copy them over explicitly.
-static void copy_border(uint8_t *data, int width, int height, int stride,
-                        uint8_t *dst, int dst_stride) {
-  int i;
-  for (i = WIENER_HALFWIN; i < height - WIENER_HALFWIN; ++i) {
-    memcpy(dst + i * dst_stride, data + i * stride, WIENER_HALFWIN);
-    memcpy(dst + i * dst_stride + (width - WIENER_HALFWIN),
-           data + i * stride + (width - WIENER_HALFWIN), WIENER_HALFWIN);
-  }
-  for (i = 0; i < WIENER_HALFWIN; ++i) {
-    memcpy(dst + i * dst_stride, data + i * stride, width);
-  }
-  for (i = height - WIENER_HALFWIN; i < height; ++i)
-    memcpy(dst + i * dst_stride, data + i * stride, width);
-}
-
 static void extend_frame(uint8_t *data, int width, int height, int stride) {
   uint8_t *data_p;
   int i;
@@ -715,7 +698,6 @@ static void loop_switchable_filter(uint8_t *data, int width, int height,
                                    uint8_t *dst, int dst_stride) {
   int tile_idx;
   extend_frame(data, width, height, stride);
-  copy_border(data, width, height, stride, dst, dst_stride);
   for (tile_idx = 0; tile_idx < rst->ntiles; ++tile_idx) {
     if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
       loop_copy_tile(data, tile_idx, 0, 0, width, height, stride, rst, dst,
@@ -734,23 +716,6 @@ static void loop_switchable_filter(uint8_t *data, int width, int height,
 }
 
 #if CONFIG_AOM_HIGHBITDEPTH
-static void copy_border_highbd(uint16_t *data, int width, int height,
-                               int stride, uint16_t *dst, int dst_stride) {
-  int i;
-  for (i = WIENER_HALFWIN; i < height - WIENER_HALFWIN; ++i) {
-    memcpy(dst + i * dst_stride, data + i * stride,
-           WIENER_HALFWIN * sizeof(*dst));
-    memcpy(dst + i * dst_stride + (width - WIENER_HALFWIN),
-           data + i * stride + (width - WIENER_HALFWIN),
-           WIENER_HALFWIN * sizeof(*dst));
-  }
-  for (i = 0; i < WIENER_HALFWIN; ++i) {
-    memcpy(dst + i * dst_stride, data + i * stride, width * sizeof(*dst));
-  }
-  for (i = height - WIENER_HALFWIN; i < height; ++i)
-    memcpy(dst + i * dst_stride, data + i * stride, width * sizeof(*dst));
-}
-
 static void extend_frame_highbd(uint16_t *data, int width, int height,
                                 int stride) {
   uint16_t *data_p;
@@ -838,7 +803,6 @@ static void loop_wiener_filter_highbd(uint8_t *data8, int width, int height,
   uint16_t *data = CONVERT_TO_SHORTPTR(data8);
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
   int tile_idx;
-  copy_border_highbd(data, width, height, stride, dst, dst_stride);
   extend_frame_highbd(data, width, height, stride);
   for (tile_idx = 0; tile_idx < rst->ntiles; ++tile_idx) {
     loop_wiener_filter_tile_highbd(data, tile_idx, width, height, stride, rst,
@@ -1062,7 +1026,6 @@ static void loop_switchable_filter_highbd(uint8_t *data8, int width, int height,
   uint16_t *data = CONVERT_TO_SHORTPTR(data8);
   uint16_t *dst = CONVERT_TO_SHORTPTR(dst8);
   int tile_idx;
-  copy_border_highbd(data, width, height, stride, dst, dst_stride);
   extend_frame_highbd(data, width, height, stride);
   for (tile_idx = 0; tile_idx < rst->ntiles; ++tile_idx) {
     if (rst->rsi->restoration_type[tile_idx] == RESTORE_NONE) {
