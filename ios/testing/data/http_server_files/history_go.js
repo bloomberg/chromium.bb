@@ -12,7 +12,8 @@ window.onload = function() {
 // Populates pop-state-received-div and state-object-div upon a popstate event.
 var onPopstate = function(e) {
   updatePopStateReceivedText(true);
-  updateStateObjectText(e.state);
+  var stateText = e.state ? e.state : '(NO STATE OBJECT)';
+  updateStateObjectText(stateText);
 };
 
 // Populates hash-change-received-div upon receiving of a hashchange event.
@@ -64,6 +65,16 @@ var goZero = function() {
   window.history.go(0);
 }
 
+var goBack = function() {
+  onButtonTapped();
+  window.history.back();
+}
+
+var goForward = function() {
+  onButtonTapped();
+  window.history.forward();
+}
+
 var go2 = function() {
   onButtonTapped();
   window.history.go(2);
@@ -72,4 +83,9 @@ var go2 = function() {
 var goBack2 = function() {
   onButtonTapped();
   window.history.go(-2);
+}
+
+var pushStateWithHash = function() {
+  onButtonTapped();
+  window.history.pushState('STATE_OBJECT', 'Title', '#hash');
 }
