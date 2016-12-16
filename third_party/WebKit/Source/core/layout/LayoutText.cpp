@@ -34,6 +34,7 @@
 #include "core/layout/LayoutTableCell.h"
 #include "core/layout/LayoutTextCombine.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/TextAutosizer.h"
 #include "core/layout/api/LineLayoutBox.h"
 #include "core/layout/line/AbstractInlineTextBox.h"
 #include "core/layout/line/EllipsisBox.h"
@@ -210,6 +211,10 @@ void LayoutText::styleDidChange(StyleDifference diff,
   // This is an optimization that kicks off font load before layout.
   if (!text().containsOnlyWhitespace())
     newStyle.font().willUseFontData(text());
+
+  TextAutosizer* textAutosizer = document().textAutosizer();
+  if (!oldStyle && textAutosizer)
+    textAutosizer->record(this);
 }
 
 void LayoutText::removeAndDestroyTextBoxes() {
@@ -1668,6 +1673,10 @@ void LayoutText::setText(PassRefPtr<StringImpl> text, bool force) {
 
   if (AXObjectCache* cache = document().existingAXObjectCache())
     cache->textChanged(this);
+
+  TextAutosizer* textAutosizer = document().textAutosizer();
+  if (textAutosizer)
+    textAutosizer->record(this);
 }
 
 void LayoutText::dirtyOrDeleteLineBoxesIfNeeded(bool fullLayout) {

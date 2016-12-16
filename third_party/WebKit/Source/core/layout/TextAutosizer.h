@@ -47,6 +47,7 @@ class IntSize;
 class LayoutBlock;
 class LayoutObject;
 class LayoutTable;
+class LayoutText;
 class LocalFrame;
 class Page;
 class SubtreeLayoutScope;
@@ -67,8 +68,9 @@ class CORE_EXPORT TextAutosizer final
 
   void updatePageInfoInAllFrames();
   void updatePageInfo();
-  void record(const LayoutBlock*);
-  void destroy(const LayoutBlock*);
+  void record(LayoutBlock*);
+  void record(LayoutText*);
+  void destroy(LayoutBlock*);
 
   bool pageNeedsAutosizing() const;
 
@@ -105,7 +107,8 @@ class CORE_EXPORT TextAutosizer final
   };
 
  private:
-  typedef HashSet<const LayoutBlock*> BlockSet;
+  typedef HashSet<LayoutBlock*> BlockSet;
+  typedef HashSet<const LayoutBlock*> ConstBlockSet;
 
   enum HasEnoughTextToAutosize {
     UnknownAmountOfText,
@@ -137,6 +140,12 @@ class CORE_EXPORT TextAutosizer final
     SUPPRESSING = 1 << 4
   };
 
+  enum InheritParentMultiplier {
+    Unknown,
+    InheritMultiplier,
+    DontInheritMultiplier
+  };
+
   typedef unsigned BlockFlags;
 
   // A supercluster represents autosizing information about a set of two or
@@ -150,11 +159,13 @@ class CORE_EXPORT TextAutosizer final
     explicit Supercluster(const BlockSet* roots)
         : m_roots(roots),
           m_hasEnoughTextToAutosize(UnknownAmountOfText),
-          m_multiplier(0) {}
+          m_multiplier(0),
+          m_inheritParentMultiplier(Unknown) {}
 
-    const BlockSet* const m_roots;
+    const BlockSet* m_roots;
     HasEnoughTextToAutosize m_hasEnoughTextToAutosize;
     float m_multiplier;
+    InheritParentMultiplier m_inheritParentMultiplier;
   };
 
   struct Cluster {
@@ -208,30 +219,40 @@ class CORE_EXPORT TextAutosizer final
                 "sizeof(FingerprintSourceData) must be a multiple of UChar");
 
   typedef unsigned Fingerprint;
-  typedef HashMap<Fingerprint, std::unique_ptr<Supercluster>> SuperclusterMap;
   typedef Vector<std::unique_ptr<Cluster>> ClusterStack;
 
   // Fingerprints are computed during style recalc, for (some subset of)
   // blocks that will become cluster roots.
+  // Clusters whose roots share the same fingerprint use the same multiplier
   class FingerprintMapper {
     DISALLOW_NEW();
 
    public:
-    void add(const LayoutObject*, Fingerprint);
-    void addTentativeClusterRoot(const LayoutBlock*, Fingerprint);
+    void add(LayoutObject*, Fingerprint);
+    void addTentativeClusterRoot(LayoutBlock*, Fingerprint);
     // Returns true if any BlockSet was modified or freed by the removal.
-    bool remove(const LayoutObject*);
+    bool remove(LayoutObject*);
     Fingerprint get(const LayoutObject*);
     BlockSet* getTentativeClusterRoots(Fingerprint);
+    Supercluster* createSuperclusterIfNeeded(LayoutBlock*);
     bool hasFingerprints() const { return !m_fingerprints.isEmpty(); }
+    HashSet<Supercluster*>& getPotentiallyInconsistentSuperclusters() {
+      return m_potentiallyInconsistentSuperclusters;
+    }
 
    private:
     typedef HashMap<const LayoutObject*, Fingerprint> FingerprintMap;
     typedef HashMap<Fingerprint, std::unique_ptr<BlockSet>>
         ReverseFingerprintMap;
+    typedef HashMap<Fingerprint, std::unique_ptr<Supercluster>> SuperclusterMap;
 
     FingerprintMap m_fingerprints;
     ReverseFingerprintMap m_blocksForFingerprint;
+    // Maps fingerprints to superclusters. Superclusters persist across layouts.
+    SuperclusterMap m_superclusters;
+    // Superclusters that need to be checked for consistency at the start of the
+    // next layout.
+    HashSet<Supercluster*> m_potentiallyInconsistentSuperclusters;
 #if ENABLE(ASSERT)
     void assertMapsAreConsistent();
 #endif
@@ -268,23 +289,23 @@ class CORE_EXPORT TextAutosizer final
                 float multiplier = 0);
   bool shouldHandleLayout() const;
   IntSize windowSize() const;
-  void setAllTextNeedsLayout();
+  void setAllTextNeedsLayout(LayoutBlock* container = nullptr);
   void resetMultipliers();
-  BeginLayoutBehavior prepareForLayout(const LayoutBlock*);
-  void prepareClusterStack(const LayoutObject*);
+  BeginLayoutBehavior prepareForLayout(LayoutBlock*);
+  void prepareClusterStack(LayoutObject*);
   bool clusterHasEnoughTextToAutosize(
       Cluster*,
       const LayoutBlock* widthProvider = nullptr);
   bool superclusterHasEnoughTextToAutosize(
       Supercluster*,
-      const LayoutBlock* widthProvider = nullptr);
+      const LayoutBlock* widthProvider = nullptr,
+      bool skipLayoutedNodes = false);
   bool clusterWouldHaveEnoughTextToAutosize(
       const LayoutBlock* root,
       const LayoutBlock* widthProvider = nullptr);
-  Fingerprint getFingerprint(const LayoutObject*);
+  Fingerprint getFingerprint(LayoutObject*);
   Fingerprint computeFingerprint(const LayoutObject*);
-  Cluster* maybeCreateCluster(const LayoutBlock*);
-  Supercluster* getSupercluster(const LayoutBlock*);
+  Cluster* maybeCreateCluster(LayoutBlock*);
   float clusterMultiplier(Cluster*);
   float superclusterMultiplier(Cluster*);
   // A cluster's width provider is typically the deepest block containing all
@@ -292,7 +313,7 @@ class CORE_EXPORT TextAutosizer final
   // table itself for width.
   const LayoutBlock* clusterWidthProvider(const LayoutBlock*) const;
   const LayoutBlock* maxClusterWidthProvider(
-      const Supercluster*,
+      Supercluster*,
       const LayoutBlock* currentRoot) const;
   // Typically this returns a block's computed width. In the case of tables
   // layout, this width is not yet known so the fixed width is used if it's
@@ -319,19 +340,20 @@ class CORE_EXPORT TextAutosizer final
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
   void writeClusterDebugInfo(Cluster*);
 #endif
+  // Must be called at the start of layout.
+  void checkSuperclusterConsistency();
+  // Mark the nearest non-inheritance supercluser
+  void markSuperclusterForConsistencyCheck(LayoutObject*);
 
   Member<const Document> m_document;
   const LayoutBlock* m_firstBlockToBeginLayout;
 #if ENABLE(ASSERT)
   // Used to ensure we don't compute properties of a block before beginLayout()
   // is called on it.
-  BlockSet m_blocksThatHaveBegunLayout;
+  ConstBlockSet m_blocksThatHaveBegunLayout;
 #endif
 
-  // Clusters are created and destroyed during layout. The map key is the
-  // cluster root. Clusters whose roots share the same fingerprint use the
-  // same multiplier.
-  SuperclusterMap m_superclusters;
+  // Clusters are created and destroyed during layout
   ClusterStack m_clusterStack;
   FingerprintMapper m_fingerprintMapper;
   Vector<RefPtr<ComputedStyle>> m_stylesRetainedDuringLayout;

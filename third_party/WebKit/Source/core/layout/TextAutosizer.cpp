@@ -124,7 +124,7 @@ void TextAutosizer::writeClusterDebugInfo(Cluster* cluster) {
 }
 #endif
 
-static const LayoutObject* parentElementLayoutObject(
+static LayoutObject* parentElementLayoutObject(
     const LayoutObject* layoutObject) {
   // At style recalc, the layoutObject's parent may not be attached,
   // so we need to obtain this from the DOM tree.
@@ -290,13 +290,20 @@ static bool hasExplicitWidth(const LayoutBlock* block) {
   return block->style() && block->style()->width().isSpecified();
 }
 
+static LayoutObject* getParent(const LayoutObject* object) {
+  LayoutObject* parent = nullptr;
+  // LayoutObject haven't added to layout tree yet
+  if (object->node() && object->node()->parentNode())
+    parent = object->node()->parentNode()->layoutObject();
+  return parent;
+}
+
 TextAutosizer::TextAutosizer(const Document* document)
     : m_document(document),
       m_firstBlockToBeginLayout(nullptr),
 #if ENABLE(ASSERT)
       m_blocksThatHaveBegunLayout(),
 #endif
-      m_superclusters(),
       m_clusterStack(),
       m_fingerprintMapper(),
       m_pageInfo(),
@@ -305,20 +312,37 @@ TextAutosizer::TextAutosizer(const Document* document)
 
 TextAutosizer::~TextAutosizer() {}
 
-void TextAutosizer::record(const LayoutBlock* block) {
+void TextAutosizer::record(LayoutBlock* block) {
   if (!m_pageInfo.m_settingEnabled)
     return;
 
   ASSERT(!m_blocksThatHaveBegunLayout.contains(block));
-
-  if (!classifyBlock(block, INDEPENDENT | EXPLICIT_WIDTH))
+  if (!classifyBlock(block, INDEPENDENT | EXPLICIT_WIDTH)) {
+    // !everHadLayout() means the object hasn't layout yet
+    // which means this object is new added.
+    // We only deal with new added block here.
+    // If parent is new added, no need to check its children.
+    LayoutObject* parent = getParent(block);
+    if (!block->everHadLayout() && parent && parent->everHadLayout())
+      markSuperclusterForConsistencyCheck(parent);
     return;
+  }
 
   if (Fingerprint fingerprint = computeFingerprint(block))
     m_fingerprintMapper.addTentativeClusterRoot(block, fingerprint);
+
+  markSuperclusterForConsistencyCheck(block);
 }
 
-void TextAutosizer::destroy(const LayoutBlock* block) {
+void TextAutosizer::record(LayoutText* text) {
+  if (!text || !shouldHandleLayout())
+    return;
+  LayoutObject* parent = getParent(text);
+  if (parent && parent->everHadLayout())
+    markSuperclusterForConsistencyCheck(parent);
+}
+
+void TextAutosizer::destroy(LayoutBlock* block) {
   if (!m_pageInfo.m_settingEnabled && !m_fingerprintMapper.hasFingerprints())
     return;
 
@@ -330,12 +354,11 @@ void TextAutosizer::destroy(const LayoutBlock* block) {
     // Speculative fix for http://crbug.com/369485.
     m_firstBlockToBeginLayout = nullptr;
     m_clusterStack.clear();
-    m_superclusters.clear();
   }
 }
 
 TextAutosizer::BeginLayoutBehavior TextAutosizer::prepareForLayout(
-    const LayoutBlock* block) {
+    LayoutBlock* block) {
 #if ENABLE(ASSERT)
   m_blocksThatHaveBegunLayout.add(block);
 #endif
@@ -343,6 +366,8 @@ TextAutosizer::BeginLayoutBehavior TextAutosizer::prepareForLayout(
   if (!m_firstBlockToBeginLayout) {
     m_firstBlockToBeginLayout = block;
     prepareClusterStack(block->parent());
+    if (block->isLayoutView())
+      checkSuperclusterConsistency();
   } else if (block == currentCluster()->m_root) {
     // Ignore beginLayout on the same block twice.
     // This can happen with paginated overflow.
@@ -352,13 +377,13 @@ TextAutosizer::BeginLayoutBehavior TextAutosizer::prepareForLayout(
   return ContinueLayout;
 }
 
-void TextAutosizer::prepareClusterStack(const LayoutObject* layoutObject) {
+void TextAutosizer::prepareClusterStack(LayoutObject* layoutObject) {
   if (!layoutObject)
     return;
   prepareClusterStack(layoutObject->parent());
 
   if (layoutObject->isLayoutBlock()) {
-    const LayoutBlock* block = toLayoutBlock(layoutObject);
+    LayoutBlock* block = toLayoutBlock(layoutObject);
 #if ENABLE(ASSERT)
     m_blocksThatHaveBegunLayout.add(block);
 #endif
@@ -425,7 +450,6 @@ void TextAutosizer::endLayout(LayoutBlock* block) {
   if (block == m_firstBlockToBeginLayout) {
     m_firstBlockToBeginLayout = nullptr;
     m_clusterStack.clear();
-    m_superclusters.clear();
     m_stylesRetainedDuringLayout.clear();
 #if ENABLE(ASSERT)
     m_blocksThatHaveBegunLayout.clear();
@@ -511,6 +535,43 @@ bool TextAutosizer::shouldHandleLayout() const {
 
 bool TextAutosizer::pageNeedsAutosizing() const {
   return m_pageInfo.m_pageNeedsAutosizing;
+}
+
+void TextAutosizer::markSuperclusterForConsistencyCheck(LayoutObject* object) {
+  if (!object || !shouldHandleLayout())
+    return;
+
+  Supercluster* lastSupercluster = nullptr;
+  LayoutBlock* block = nullptr;
+  while (object) {
+    if (object->isLayoutBlock()) {
+      block = toLayoutBlock(object);
+      if (block->isTableCell() ||
+          classifyBlock(block, INDEPENDENT | EXPLICIT_WIDTH)) {
+        // If supercluster hasn't been created yet, create one.
+        Supercluster* supercluster =
+            m_fingerprintMapper.createSuperclusterIfNeeded(block);
+        if (supercluster &&
+            supercluster->m_inheritParentMultiplier == DontInheritMultiplier) {
+          if (supercluster->m_hasEnoughTextToAutosize != HasEnoughText) {
+            m_fingerprintMapper.getPotentiallyInconsistentSuperclusters().add(
+                supercluster);
+          }
+          return;
+        }
+        if (supercluster)
+          lastSupercluster = supercluster;
+      }
+    }
+    object = getParent(object);
+  }
+
+  // If we didn't add any supercluster, we should add one.
+  if (lastSupercluster &&
+      lastSupercluster->m_hasEnoughTextToAutosize != HasEnoughText) {
+    m_fingerprintMapper.getPotentiallyInconsistentSuperclusters().add(
+        lastSupercluster);
+  }
 }
 
 void TextAutosizer::updatePageInfoInAllFrames() {
@@ -626,13 +687,21 @@ void TextAutosizer::resetMultipliers() {
   }
 }
 
-void TextAutosizer::setAllTextNeedsLayout() {
-  LayoutItem layoutItem = m_document->layoutViewItem();
-  while (!layoutItem.isNull()) {
-    if (layoutItem.isText())
-      layoutItem.setNeedsLayoutAndFullPaintInvalidation(
-          LayoutInvalidationReason::TextAutosizing);
-    layoutItem = layoutItem.nextInPreOrder();
+void TextAutosizer::setAllTextNeedsLayout(LayoutBlock* container) {
+  if (!container)
+    container = m_document->layoutView();
+  LayoutObject* object = container;
+  while (object) {
+    if (!object->everHadLayout()) {
+      // Object is new added node, so no need to deal with its children
+      object = object->nextInPreOrderAfterChildren(container);
+    } else {
+      if (object->isText()) {
+        object->setNeedsLayoutAndFullPaintInvalidation(
+            LayoutInvalidationReason::TextAutosizing);
+      }
+      object = object->nextInPreOrder(container);
+    }
   }
 }
 
@@ -724,7 +793,7 @@ bool TextAutosizer::clusterHasEnoughTextToAutosize(
 }
 
 TextAutosizer::Fingerprint TextAutosizer::getFingerprint(
-    const LayoutObject* layoutObject) {
+    LayoutObject* layoutObject) {
   Fingerprint result = m_fingerprintMapper.get(layoutObject);
   if (!result) {
     result = computeFingerprint(layoutObject);
@@ -740,7 +809,7 @@ TextAutosizer::Fingerprint TextAutosizer::computeFingerprint(
     return 0;
 
   FingerprintSourceData data;
-  if (const LayoutObject* parent = parentElementLayoutObject(layoutObject))
+  if (LayoutObject* parent = parentElementLayoutObject(layoutObject))
     data.m_parentHash = getFingerprint(parent);
 
   data.m_qualifiedNameHash =
@@ -772,8 +841,7 @@ TextAutosizer::Fingerprint TextAutosizer::computeFingerprint(
       sizeof data / sizeof(UChar));
 }
 
-TextAutosizer::Cluster* TextAutosizer::maybeCreateCluster(
-    const LayoutBlock* block) {
+TextAutosizer::Cluster* TextAutosizer::maybeCreateCluster(LayoutBlock* block) {
   BlockFlags flags = classifyBlock(block);
   if (!(flags & POTENTIAL_ROOT))
     return nullptr;
@@ -791,7 +859,8 @@ TextAutosizer::Cluster* TextAutosizer::maybeCreateCluster(
     return nullptr;
 
   Cluster* cluster =
-      new Cluster(block, flags, parentCluster, getSupercluster(block));
+      new Cluster(block, flags, parentCluster,
+                  m_fingerprintMapper.createSuperclusterIfNeeded(block));
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
   // Non-SUPPRESSING clusters are annotated in clusterMultiplier.
   if (flags & SUPPRESSING)
@@ -800,13 +869,14 @@ TextAutosizer::Cluster* TextAutosizer::maybeCreateCluster(
   return cluster;
 }
 
-TextAutosizer::Supercluster* TextAutosizer::getSupercluster(
-    const LayoutBlock* block) {
-  Fingerprint fingerprint = m_fingerprintMapper.get(block);
+TextAutosizer::Supercluster*
+TextAutosizer::FingerprintMapper::createSuperclusterIfNeeded(
+    LayoutBlock* block) {
+  Fingerprint fingerprint = get(block);
   if (!fingerprint)
     return nullptr;
 
-  BlockSet* roots = m_fingerprintMapper.getTentativeClusterRoots(fingerprint);
+  BlockSet* roots = getTentativeClusterRoots(fingerprint);
   if (!roots || roots->size() < 2 || !roots->contains(block))
     return nullptr;
 
@@ -829,9 +899,11 @@ float TextAutosizer::clusterMultiplier(Cluster* cluster) {
     cluster->m_flags |= WIDER_OR_NARROWER;
 
   if (cluster->m_flags & (INDEPENDENT | WIDER_OR_NARROWER)) {
-    if (cluster->m_supercluster)
+    if (cluster->m_supercluster) {
       cluster->m_multiplier = superclusterMultiplier(cluster);
-    else if (clusterHasEnoughTextToAutosize(cluster))
+      cluster->m_supercluster->m_inheritParentMultiplier =
+          DontInheritMultiplier;
+    } else if (clusterHasEnoughTextToAutosize(cluster))
       cluster->m_multiplier =
           multiplierFromBlock(clusterWidthProvider(cluster->m_root));
     else
@@ -839,6 +911,8 @@ float TextAutosizer::clusterMultiplier(Cluster* cluster) {
   } else {
     cluster->m_multiplier =
         cluster->m_parent ? clusterMultiplier(cluster->m_parent) : 1.0f;
+    if (cluster->m_supercluster)
+      cluster->m_supercluster->m_inheritParentMultiplier = InheritMultiplier;
   }
 
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
@@ -851,11 +925,14 @@ float TextAutosizer::clusterMultiplier(Cluster* cluster) {
 
 bool TextAutosizer::superclusterHasEnoughTextToAutosize(
     Supercluster* supercluster,
-    const LayoutBlock* widthProvider) {
+    const LayoutBlock* widthProvider,
+    const bool skipLayoutedNodes) {
   if (supercluster->m_hasEnoughTextToAutosize != UnknownAmountOfText)
     return supercluster->m_hasEnoughTextToAutosize == HasEnoughText;
 
   for (auto* root : *supercluster->m_roots) {
+    if (skipLayoutedNodes && !root->normalChildNeedsLayout())
+      continue;
     if (clusterWouldHaveEnoughTextToAutosize(root, widthProvider)) {
       supercluster->m_hasEnoughTextToAutosize = HasEnoughText;
       return true;
@@ -870,8 +947,9 @@ float TextAutosizer::superclusterMultiplier(Cluster* cluster) {
   if (!supercluster->m_multiplier) {
     const LayoutBlock* widthProvider =
         maxClusterWidthProvider(cluster->m_supercluster, cluster->m_root);
+    RELEASE_ASSERT(widthProvider);
     supercluster->m_multiplier =
-        superclusterHasEnoughTextToAutosize(supercluster, widthProvider)
+        superclusterHasEnoughTextToAutosize(supercluster, widthProvider, false)
             ? multiplierFromBlock(widthProvider)
             : 1.0f;
   }
@@ -888,10 +966,15 @@ const LayoutBlock* TextAutosizer::clusterWidthProvider(
 }
 
 const LayoutBlock* TextAutosizer::maxClusterWidthProvider(
-    const Supercluster* supercluster,
+    Supercluster* supercluster,
     const LayoutBlock* currentRoot) const {
-  const LayoutBlock* result = clusterWidthProvider(currentRoot);
-  float maxWidth = widthFromBlock(result);
+  const LayoutBlock* result = nullptr;
+  if (currentRoot)
+    result = clusterWidthProvider(currentRoot);
+
+  float maxWidth = 0;
+  if (result)
+    maxWidth = widthFromBlock(result);
 
   const BlockSet* roots = supercluster->m_roots;
   for (const auto* root : *roots) {
@@ -904,7 +987,6 @@ const LayoutBlock* TextAutosizer::maxClusterWidthProvider(
       result = widthProvider;
     }
   }
-  RELEASE_ASSERT(result);
   return result;
 }
 
@@ -1171,7 +1253,7 @@ void TextAutosizer::FingerprintMapper::assertMapsAreConsistent() {
 }
 #endif
 
-void TextAutosizer::FingerprintMapper::add(const LayoutObject* layoutObject,
+void TextAutosizer::FingerprintMapper::add(LayoutObject* layoutObject,
                                            Fingerprint fingerprint) {
   remove(layoutObject);
 
@@ -1182,7 +1264,7 @@ void TextAutosizer::FingerprintMapper::add(const LayoutObject* layoutObject,
 }
 
 void TextAutosizer::FingerprintMapper::addTentativeClusterRoot(
-    const LayoutBlock* block,
+    LayoutBlock* block,
     Fingerprint fingerprint) {
   add(block, fingerprint);
 
@@ -1196,8 +1278,7 @@ void TextAutosizer::FingerprintMapper::addTentativeClusterRoot(
 #endif
 }
 
-bool TextAutosizer::FingerprintMapper::remove(
-    const LayoutObject* layoutObject) {
+bool TextAutosizer::FingerprintMapper::remove(LayoutObject* layoutObject) {
   Fingerprint fingerprint = m_fingerprints.take(layoutObject);
   if (!fingerprint || !layoutObject->isLayoutBlock())
     return false;
@@ -1209,8 +1290,18 @@ bool TextAutosizer::FingerprintMapper::remove(
 
   BlockSet& blocks = *blocksIter->value;
   blocks.remove(toLayoutBlock(layoutObject));
-  if (blocks.isEmpty())
+  if (blocks.isEmpty()) {
     m_blocksForFingerprint.remove(blocksIter);
+
+    SuperclusterMap::iterator superclusterIter =
+        m_superclusters.find(fingerprint);
+
+    if (superclusterIter != m_superclusters.end()) {
+      Supercluster* supercluster = superclusterIter->value.get();
+      m_potentiallyInconsistentSuperclusters.remove(supercluster);
+      m_superclusters.remove(superclusterIter);
+    }
+  }
 #if ENABLE(ASSERT)
   assertMapsAreConsistent();
 #endif
@@ -1300,6 +1391,40 @@ float TextAutosizer::computeAutosizedFontSize(float specifiedSize,
       computedSize = specifiedSize;
   }
   return computedSize;
+}
+
+void TextAutosizer::checkSuperclusterConsistency() {
+  HashSet<Supercluster*> potentiallyInconsistentSuperclusters =
+      m_fingerprintMapper.getPotentiallyInconsistentSuperclusters();
+  if (potentiallyInconsistentSuperclusters.isEmpty())
+    return;
+
+  for (Supercluster* supercluster : potentiallyInconsistentSuperclusters) {
+    if (HasEnoughText == supercluster->m_hasEnoughTextToAutosize)
+      continue;
+
+    float oldMultipiler = supercluster->m_multiplier;
+    supercluster->m_multiplier = 0;
+    supercluster->m_hasEnoughTextToAutosize = UnknownAmountOfText;
+    const LayoutBlock* widthProvider =
+        maxClusterWidthProvider(supercluster, nullptr);
+    if (!widthProvider)
+      continue;
+
+    if (superclusterHasEnoughTextToAutosize(supercluster, widthProvider,
+                                            true) == HasEnoughText) {
+      for (auto* root : *supercluster->m_roots) {
+        if (!root->everHadLayout())
+          continue;
+
+        DCHECK(root);
+        setAllTextNeedsLayout(root);
+      }
+    } else {
+      supercluster->m_multiplier = oldMultipiler;
+    }
+  }
+  potentiallyInconsistentSuperclusters.clear();
 }
 
 DEFINE_TRACE(TextAutosizer) {
