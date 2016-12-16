@@ -347,7 +347,7 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   // When the user hits enter in the Omnibox without changing the URL, Blink
   // behaves similarly to a reload and does not change the item and document
   // sequence numbers. Simulate this behavior here too.
-  if (transition == ui::PAGE_TRANSITION_TYPED) {
+  if (PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED)) {
     const NavigationEntryImpl* entry =
         static_cast<NavigationEntryImpl*>(frame_tree_node()
                                               ->navigator()

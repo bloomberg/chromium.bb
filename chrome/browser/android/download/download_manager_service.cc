@@ -80,15 +80,18 @@ DownloadManagerService* DownloadManagerService::GetInstance() {
 // static
 ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
     JNIEnv* env, content::DownloadItem* item) {
-  ui::PageTransition base_transition =
-      ui::PageTransitionStripQualifier(item->GetTransitionType());
   bool user_initiated =
       (item->GetTransitionType() & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) ||
-      base_transition == ui::PAGE_TRANSITION_TYPED ||
-      base_transition == ui::PAGE_TRANSITION_AUTO_BOOKMARK ||
-      base_transition == ui::PAGE_TRANSITION_GENERATED ||
-      base_transition == ui::PAGE_TRANSITION_RELOAD ||
-      base_transition == ui::PAGE_TRANSITION_KEYWORD;
+      PageTransitionCoreTypeIs(item->GetTransitionType(),
+                               ui::PAGE_TRANSITION_TYPED) ||
+      PageTransitionCoreTypeIs(item->GetTransitionType(),
+                               ui::PAGE_TRANSITION_AUTO_BOOKMARK) ||
+      PageTransitionCoreTypeIs(item->GetTransitionType(),
+                               ui::PAGE_TRANSITION_GENERATED) ||
+      PageTransitionCoreTypeIs(item->GetTransitionType(),
+                               ui::PAGE_TRANSITION_RELOAD) ||
+      PageTransitionCoreTypeIs(item->GetTransitionType(),
+                               ui::PAGE_TRANSITION_KEYWORD);
   bool has_user_gesture = item->HasUserGesture() || user_initiated;
 
   base::TimeDelta time_delta;

@@ -49,9 +49,9 @@ TEST(PageTransitionUtilTest, TestShouldIgnoreNavigationWithCoreTypes) {
   EXPECT_TRUE(ShouldIgnoreNavigation(ui::PAGE_TRANSITION_KEYWORD_GENERATED,
                                      true, true));
 
-  static_assert(
-      ui::PAGE_TRANSITION_KEYWORD_GENERATED == ui::PAGE_TRANSITION_LAST_CORE,
-      "Not all core transition types are covered here");
+  static_assert(static_cast<int32_t>(ui::PAGE_TRANSITION_KEYWORD_GENERATED) ==
+                    static_cast<int32_t>(ui::PAGE_TRANSITION_LAST_CORE),
+                "Not all core transition types are covered here");
 }
 
 // Tests that ShouldIgnoreNavigation returns true when no qualifiers except
@@ -173,15 +173,15 @@ TEST(PageTransitionUtilTest, TestShouldIgnoreNavigationWithClientRedirect) {
 TEST(PageTransitionUtilTest, TestMaskOutPageTransition) {
   ui::PageTransition page_transition = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CLIENT_REDIRECT);
-  EXPECT_EQ(ui::PAGE_TRANSITION_LINK,
-            MaskOutPageTransition(page_transition,
-                                  ui::PAGE_TRANSITION_CLIENT_REDIRECT));
+  EXPECT_EQ(static_cast<int>(ui::PAGE_TRANSITION_LINK),
+            static_cast<int>(MaskOutPageTransition(
+                page_transition, ui::PAGE_TRANSITION_CLIENT_REDIRECT)));
 
   page_transition = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_SERVER_REDIRECT);
-  EXPECT_EQ(ui::PAGE_TRANSITION_LINK,
-            MaskOutPageTransition(page_transition,
-                                  ui::PAGE_TRANSITION_SERVER_REDIRECT));
+  EXPECT_EQ(static_cast<int>(ui::PAGE_TRANSITION_LINK),
+            static_cast<int>(MaskOutPageTransition(
+                page_transition, ui::PAGE_TRANSITION_SERVER_REDIRECT)));
 }
 
 // Test mixed variants between |allow_form_submit| and |allow_client_redirect|.
