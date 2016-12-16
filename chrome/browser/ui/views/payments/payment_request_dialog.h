@@ -5,21 +5,28 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_DIALOG_H_
 #define CHROME_BROWSER_UI_VIEWS_PAYMENTS_PAYMENT_REQUEST_DIALOG_H_
 
-#include "chrome/browser/ui/views/payments/view_stack.h"
-#include "ui/views/controls/button/button.h"
-#include "ui/views/window/dialog_delegate.h"
+#include <map>
+#include <memory>
 
-class ViewStack;
+#include "base/macros.h"
+#include "chrome/browser/ui/views/payments/view_stack.h"
+#include "ui/views/window/dialog_delegate.h"
 
 namespace payments {
 
 class PaymentRequestImpl;
+class PaymentRequestSheetController;
+
+// Maps views owned by PaymentRequestDialog::view_stack_ to their controller.
+// PaymentRequestDialog is responsible for listening for those views being
+// removed from the hierarchy and delete the associated controllers.
+using ControllerMap =
+    std::map<views::View*, std::unique_ptr<PaymentRequestSheetController>>;
 
 // The dialog delegate that represents a desktop WebPayments dialog. This class
 // is responsible for displaying the view associated with the current state of
 // the WebPayments flow and managing the transition between those states.
-class PaymentRequestDialog : public views::DialogDelegateView,
-                             public views::ButtonListener {
+class PaymentRequestDialog : public views::DialogDelegateView {
  public:
   explicit PaymentRequestDialog(PaymentRequestImpl* impl);
   ~PaymentRequestDialog() override;
@@ -27,25 +34,26 @@ class PaymentRequestDialog : public views::DialogDelegateView,
   // views::WidgetDelegate
   ui::ModalType GetModalType() const override;
 
-  // views::View
-  gfx::Size GetPreferredSize() const override;
-
   // views::DialogDelegate
   bool Cancel() override;
 
+  void GoBack();
+  void ShowOrderSummary();
+
  private:
   void ShowInitialPaymentSheet();
-  void ShowOrderSummary();
-  void GoBack();
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  // views::View
+  gfx::Size GetPreferredSize() const override;
+  void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details)
+      override;
 
   // Non-owned reference to the PaymentRequestImpl that initiated this dialog.
   // Since the PaymentRequestImpl object always outlives this one, the pointer
   // should always be valid even though there is no direct ownership
   // relationship between the two.
   PaymentRequestImpl* impl_;
+  ControllerMap controller_map_;
   ViewStack view_stack_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestDialog);

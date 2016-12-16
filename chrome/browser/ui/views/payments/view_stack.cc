@@ -12,6 +12,11 @@ ViewStack::ViewStack()
   SetLayoutManager(new views::FillLayout());
 
   slide_out_animator_->AddObserver(this);
+  // Paint to a layer and Mask to Bounds, otherwise descendant views that paint
+  // to a layer themselves will still paint while they're being animated out and
+  // are out of bounds of their parent.
+  SetPaintToLayer(true);
+  layer()->SetMasksToBounds(true);
 }
 
 ViewStack::~ViewStack() {}
@@ -19,6 +24,7 @@ ViewStack::~ViewStack() {}
 void ViewStack::Push(std::unique_ptr<views::View> view, bool animate) {
   gfx::Rect destination = bounds();
   destination.set_origin(gfx::Point(0, 0));
+
   if (animate) {
     // First add the new view out of bounds since it'll slide in from right to
     // left.
