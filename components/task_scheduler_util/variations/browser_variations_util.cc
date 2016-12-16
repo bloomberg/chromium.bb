@@ -136,7 +136,20 @@ void MaybePerformBrowserTaskSchedulerRedirection() {
           switches::kDisableBrowserTaskScheduler) &&
       sequenced_worker_pool_param != variation_params.end() &&
       sequenced_worker_pool_param->second == "true") {
-    base::SequencedWorkerPool::EnableWithRedirectionToTaskSchedulerForProcess();
+    // Check a variation that allows capping all redirections at USER_VISIBLE
+    // (no USER_BLOCKING) to observe the side-effects of multiple priority
+    // levels in the foreground IO pool.
+    const auto sequenced_worker_pool_cap_priority_param =
+        variation_params.find("CapSequencedWorkerPoolsAtUserVisible");
+
+    const base::TaskPriority max_task_priority =
+        sequenced_worker_pool_cap_priority_param != variation_params.end() &&
+        sequenced_worker_pool_cap_priority_param->second == "true"
+            ? base::TaskPriority::USER_VISIBLE
+            : base::TaskPriority::HIGHEST;
+
+    base::SequencedWorkerPool::EnableWithRedirectionToTaskSchedulerForProcess(
+        max_task_priority);
   } else {
     base::SequencedWorkerPool::EnableForProcess();
   }
