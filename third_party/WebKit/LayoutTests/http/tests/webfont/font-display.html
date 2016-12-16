@@ -60,11 +60,16 @@ window.onload = function() {
             tr.appendChild(td);
         }
         table.appendChild(tr);
-        setTimeout((function(tr){tr.classList.remove('hidden')}).bind(null, tr), maxTime - config.time);
+        if (config.time == 0) {
+            setTimeout((function(tr){
+                tr.classList.remove('hidden');
+                if (window.testRunner)
+                    testRunner.notifyDone();
+            }).bind(null, tr), maxTime);
+        } else {
+            setTimeout((function(tr){tr.classList.remove('hidden')}).bind(null, tr), maxTime - config.time);
+        }
     }
-
-    if (window.testRunner)
-        setTimeout(function() { testRunner.notifyDone(); }, maxTime);
 }
 
 </script>
