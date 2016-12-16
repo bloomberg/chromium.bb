@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/display/screen_base.h"
@@ -120,9 +119,6 @@ class MusDemo : public service_manager::Service,
 
   // Destroys itself when the window gets destroyed.
   aura_extra::ImageWindowDelegate* window_delegate_ = nullptr;
-
-  // Bitmap that is the same size as our client window area.
-  SkBitmap bitmap_;
 
   // Timer for calling DrawFrame().
   base::RepeatingTimer timer_;

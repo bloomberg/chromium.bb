@@ -9,6 +9,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/public/cpp/gpu/gpu.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
@@ -224,21 +225,22 @@ void MusDemo::DrawFrame() {
   if (angle_ >= 360.0)
     angle_ = 0.0;
 
-  // Re-initialize the bitmap
-  bitmap_.reset();
-  const gfx::Rect bounds = bitmap_window_->bounds();
+  const gfx::Rect& bounds = bitmap_window_->bounds();
+
+  // Allocate a bitmap of correct size.
+  SkBitmap bitmap;
   SkImageInfo image_info = SkImageInfo::MakeN32(bounds.width(), bounds.height(),
                                                 kPremul_SkAlphaType);
-  bitmap_.allocPixels(image_info);
+  bitmap.allocPixels(image_info);
 
   // Draw the rotated square on background in bitmap.
-  SkCanvas canvas(bitmap_);
+  SkCanvas canvas(bitmap);
   canvas.clear(kBgColor);
   // TODO(kylechar): Add GL drawing instead of software rasterization in future.
   DrawSquare(bounds, angle_, &canvas);
   canvas.flush();
 
-  gfx::ImageSkiaRep image_skia_rep(bitmap_, 1);
+  gfx::ImageSkiaRep image_skia_rep(bitmap, 1);
   gfx::ImageSkia image_skia(image_skia_rep);
   gfx::Image image(image_skia);
 
