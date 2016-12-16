@@ -940,6 +940,10 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
 
       if (!instance->StartWithFilePath(package_path)) {
         OnInstanceError(instance);
+        if (!params->connect_callback().is_null()) {
+          params->connect_callback().Run(
+              mojom::ConnectResult::INVALID_ARGUMENT, "");
+        }
         return;
       }
     }
