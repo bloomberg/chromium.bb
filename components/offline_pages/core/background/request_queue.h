@@ -97,6 +97,9 @@ class RequestQueue {
       DeviceConditions& conditions,
       std::set<int64_t>& disabled_requests);
 
+  // Reconcile any requests that were active the last time chrome exited.
+  void ReconcileRequests(const UpdateCallback& callback);
+
   // Cleanup requests that have expired, exceeded the start or completed retry
   // limit.
   void CleanupRequestQueue();

@@ -88,11 +88,6 @@ void CleanupTask::GetExpiredRequestIds(
         OfflinerPolicyUtils::CheckRequestExpirationStatus(request.get(),
                                                           policy_);
 
-    // TODO(petewil): The strategy of checking the state below relies on a
-    // reconciliation task, so at startup we convert any OFFLINING requests to
-    // AVAILABLE.  Otherwise, requests in the OFFLINING state when chromium dies
-    // will never be cleaned up.
-
     // If we are not working on this request in an offliner, and it is not
     // valid, put it on a list for removal.  We make the exception for current
     // requests because the request might expire after being chosen and before

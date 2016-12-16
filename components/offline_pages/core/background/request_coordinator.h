@@ -237,6 +237,8 @@ class RequestCoordinator : public KeyedService,
   void UpdateMultipleRequestsCallback(
       std::unique_ptr<UpdateRequestsResult> result);
 
+  void ReconcileCallback(std::unique_ptr<UpdateRequestsResult> result);
+
   void HandleRemovedRequestsAndCallback(
       const RemoveRequestsCallback& callback,
       RequestNotifier::BackgroundSavePageResult status,

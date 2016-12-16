@@ -17,6 +17,7 @@
 #include "components/offline_pages/core/background/mark_attempt_completed_task.h"
 #include "components/offline_pages/core/background/mark_attempt_started_task.h"
 #include "components/offline_pages/core/background/pick_request_task.h"
+#include "components/offline_pages/core/background/reconcile_task.h"
 #include "components/offline_pages/core/background/remove_requests_task.h"
 #include "components/offline_pages/core/background/request_queue_store.h"
 #include "components/offline_pages/core/background/save_page_request.h"
@@ -135,6 +136,13 @@ void RequestQueue::PickNextRequest(
 
   // Queue up the picking task, it will call one of the callbacks when it
   // completes.
+  task_queue_.AddTask(std::move(task));
+}
+
+void RequestQueue::ReconcileRequests(const UpdateCallback& callback) {
+  std::unique_ptr<Task> task(new ReconcileTask(store_.get(), callback));
+
+  // Queue up the reconcile task.
   task_queue_.AddTask(std::move(task));
 }
 

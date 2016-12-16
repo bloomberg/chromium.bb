@@ -184,7 +184,13 @@ RequestCoordinator::RequestCoordinator(
   std::unique_ptr<CleanupTaskFactory> cleanup_factory(
       new CleanupTaskFactory(policy_.get(), this, &event_logger_));
   queue_->SetCleanupFactory(std::move(cleanup_factory));
-  // Do a cleanup at startup time.
+  // If we exited with any items left in the OFFLINING state, move them back to
+  // the AVAILABLE state, and update the UI by sending notifications.  Do this
+  // before we cleanup, so any requests that are now OFFLINING which have
+  // expired can be legitimate candidates for cleanup.
+  queue_->ReconcileRequests(base::Bind(&RequestCoordinator::ReconcileCallback,
+                                       weak_ptr_factory_.GetWeakPtr()));
+  // Do a cleanup of expired or over tried requests at startup time.
   queue_->CleanupRequestQueue();
 }
 
@@ -464,6 +470,12 @@ void RequestCoordinator::UpdateMultipleRequestsCallback(
 
   if (available_user_request)
     StartImmediatelyIfConnected();
+}
+
+void RequestCoordinator::ReconcileCallback(
+    std::unique_ptr<UpdateRequestsResult> result) {
+  for (const auto& request : result->updated_items)
+    NotifyChanged(request);
 }
 
 void RequestCoordinator::HandleRemovedRequestsAndCallback(
