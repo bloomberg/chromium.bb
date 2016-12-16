@@ -218,14 +218,13 @@ TestDataReductionProxyIOData::TestDataReductionProxyIOData(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     std::unique_ptr<DataReductionProxyConfig> config,
     std::unique_ptr<DataReductionProxyEventCreator> event_creator,
-    std::unique_ptr<TestDataReductionProxyRequestOptions> request_options,
+    std::unique_ptr<DataReductionProxyRequestOptions> request_options,
     std::unique_ptr<DataReductionProxyConfigurator> configurator,
     net::NetLog* net_log,
     bool enabled)
     : DataReductionProxyIOData(),
       service_set_(false),
-      pingback_reporting_fraction_(0.0f),
-      test_request_options_(request_options.get()) {
+      pingback_reporting_fraction_(0.0f) {
   io_task_runner_ = task_runner;
   ui_task_runner_ = task_runner;
   config_ = std::move(config);
@@ -444,15 +443,14 @@ DataReductionProxyTestContext::Builder::Build() {
         event_creator.get()));
   }
 
-  std::unique_ptr<TestDataReductionProxyRequestOptions> request_options;
-
+  std::unique_ptr<DataReductionProxyRequestOptions> request_options;
   if (use_mock_request_options_) {
     test_context_flags |= USE_MOCK_REQUEST_OPTIONS;
     request_options.reset(
         new MockDataReductionProxyRequestOptions(client_, config.get()));
   } else {
-    request_options.reset(new TestDataReductionProxyRequestOptions(
-        client_, "1.2.3.4", config.get()));
+    request_options.reset(
+        new DataReductionProxyRequestOptions(client_, config.get()));
   }
 
   std::unique_ptr<DataReductionProxySettings> settings(
@@ -615,7 +613,8 @@ DataReductionProxyTestContext::CreateDataReductionProxyServiceInternal(
 }
 
 void DataReductionProxyTestContext::AttachToURLRequestContext(
-    net::URLRequestContextStorage* request_context_storage) const {
+    net::URLRequestContextStorage* request_context_storage,
+    bool exclude_chrome_proxy_header_for_testing) const {
   DCHECK(request_context_storage);
 
   // |request_context_storage| takes ownership of the network delegate.
@@ -623,6 +622,8 @@ void DataReductionProxyTestContext::AttachToURLRequestContext(
       io_data()->CreateNetworkDelegate(
           base::MakeUnique<net::TestNetworkDelegate>(), true);
 
+  network_delegate->exclude_chrome_proxy_header_for_testing_ =
+      exclude_chrome_proxy_header_for_testing;
   request_context_storage->set_network_delegate(std::move(network_delegate));
 
   request_context_storage->set_job_factory(

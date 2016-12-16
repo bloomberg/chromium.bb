@@ -181,7 +181,8 @@ DataReductionProxyNetworkDelegate::DataReductionProxyNetworkDelegate(
       data_reduction_proxy_bypass_stats_(nullptr),
       data_reduction_proxy_request_options_(request_options),
       data_reduction_proxy_io_data_(nullptr),
-      configurator_(configurator) {
+      configurator_(configurator),
+      exclude_chrome_proxy_header_for_testing_(false) {
   DCHECK(data_reduction_proxy_config_);
   DCHECK(data_reduction_proxy_request_options_);
   DCHECK(configurator_);
@@ -325,7 +326,8 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
   }
   MaybeAddBrotliToAcceptEncodingHeader(proxy_info, headers, *request);
 
-  data_reduction_proxy_request_options_->AddRequestHeader(headers);
+  if (!exclude_chrome_proxy_header_for_testing_)
+    data_reduction_proxy_request_options_->AddRequestHeader(headers);
   if (lofi_decider)
     lofi_decider->MaybeSetIgnorePreviewsBlacklistDirective(headers);
 }

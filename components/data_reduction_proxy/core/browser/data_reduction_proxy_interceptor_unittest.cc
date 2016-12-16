@@ -289,7 +289,7 @@ class DataReductionProxyInterceptorEndToEndTest : public testing::Test {
             .WithURLRequestContext(&context_)
             .WithMockClientSocketFactory(&mock_socket_factory_)
             .Build();
-    drp_test_context_->AttachToURLRequestContext(&context_storage_);
+    drp_test_context_->AttachToURLRequestContext(&context_storage_, false);
     context_.set_client_socket_factory(&mock_socket_factory_);
     proxy_delegate_ = drp_test_context_->io_data()->CreateProxyDelegate();
     context_.set_proxy_delegate(proxy_delegate_.get());
