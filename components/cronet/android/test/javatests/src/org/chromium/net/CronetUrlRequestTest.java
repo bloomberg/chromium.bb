@@ -4,6 +4,7 @@
 
 package org.chromium.net;
 
+import android.os.Build;
 import android.os.ConditionVariable;
 import android.os.StrictMode;
 import android.test.MoreAsserts;
@@ -2092,5 +2093,25 @@ public class CronetUrlRequestTest extends CronetTestBase {
                     "Unexpected response state: " + ResponseStep.ON_FAILED, callback.mError);
         }
         assertEquals(ResponseStep.ON_CANCELED, callback.mResponseStep);
+    }
+
+    @SmallTest
+    @Feature({"Cronet"})
+    @OnlyRunNativeCronet
+    public void testCleartextTrafficBlocked() throws Exception {
+        // This feature only works starting from N.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            final int cleartextNotPermitted = -29;
+            // This hostname needs to match the one in network_security_config.xml and the one used
+            // by QuicTestServer.
+            // https requests to it are tested in QuicTest, so this checks that we're only blocking
+            // cleartext.
+            final String url = "http://example.com/simple.txt";
+            TestUrlRequestCallback callback = startAndWaitForComplete(url);
+            assertNull(callback.mResponseInfo);
+            assertNotNull(callback.mError);
+            assertEquals(cleartextNotPermitted,
+                    ((NetworkException) callback.mError).getCronetInternalErrorCode());
+        }
     }
 }

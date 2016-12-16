@@ -631,6 +631,9 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   }
 
   context_ = context_builder.Build();
+
+  context_->set_check_cleartext_permitted(true);
+
   if (network_quality_estimator_)
     context_->set_network_quality_estimator(network_quality_estimator_.get());
 
