@@ -58,6 +58,10 @@ public class CustomTabIntentDataProvider {
     public static final String EXTRA_IS_MEDIA_VIEWER =
             "org.chromium.chrome.browser.customtabs.IS_MEDIA_VIEWER";
 
+    /** Indicates that the Custom Tab should style itself as an info page. */
+    public static final String EXTRA_IS_INFO_PAGE =
+            "org.chromium.chrome.browser.customtabs.IS_INFO_PAGE";
+
     /** Extra that defines the initial background color (RGB color stored as an integer). */
     public static final String EXTRA_INITIAL_BACKGROUND_COLOR =
             "org.chromium.chrome.browser.customtabs.EXTRA_INITIAL_BACKGROUND_COLOR";
@@ -81,6 +85,7 @@ public class CustomTabIntentDataProvider {
     private final Intent mKeepAliveServiceIntent;
     private final int mTitleVisibilityState;
     private final boolean mIsMediaViewer;
+    private final boolean mIsInfoPage;
     private final int mInitialBackgroundColor;
 
     private int mToolbarColor;
@@ -162,6 +167,8 @@ public class CustomTabIntentDataProvider {
                 CustomTabsIntent.EXTRA_REMOTEVIEWS_PENDINGINTENT);
         mIsMediaViewer = mIsTrustedIntent
                 && IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_MEDIA_VIEWER, false);
+        mIsInfoPage = mIsTrustedIntent
+                && IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_INFO_PAGE, false);
     }
 
     /**
@@ -460,6 +467,14 @@ public class CustomTabIntentDataProvider {
      */
     boolean isMediaViewer() {
         return mIsMediaViewer;
+    }
+
+    /**
+     * @return If the Custom Tab is an info page.
+     * See {@link #EXTRA_IS_INFO_PAGE}.
+     */
+    boolean isInfoPage() {
+        return mIsInfoPage;
     }
 
     /**

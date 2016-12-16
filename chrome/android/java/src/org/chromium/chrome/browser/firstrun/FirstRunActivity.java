@@ -20,7 +20,7 @@ import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.EmbedContentViewActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -546,7 +546,7 @@ public class FirstRunActivity extends AppCompatActivity implements FirstRunPageD
     }
 
     @Override
-    public void showEmbedContentViewActivity(int title, int url) {
-        EmbedContentViewActivity.show(this, title, url);
+    public void showInfoPage(int url) {
+        CustomTabActivity.showInfoPage(this, getString(url));
     }
 }

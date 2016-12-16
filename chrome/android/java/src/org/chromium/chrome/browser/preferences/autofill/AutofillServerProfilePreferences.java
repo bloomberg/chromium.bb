@@ -4,15 +4,16 @@
 
 package org.chromium.chrome.browser.preferences.autofill;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.EmbedContentViewActivity;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 
 /**
  * Fragment for settings page that allows user to view and edit a single server-provided address.
@@ -55,8 +56,9 @@ public class AutofillServerProfilePreferences
     @Override
     public boolean onPreferenceClick(Preference preference) {
         assert preference.getKey().equals(PREF_SERVER_PROFILE_EDIT_LINK);
-        EmbedContentViewActivity.show(preference.getContext(), R.string.autofill_edit_profile,
-                R.string.autofill_manage_wallet_addresses_url);
+        Context context = preference.getContext();
+        CustomTabActivity.showInfoPage(
+                context, context.getString(R.string.autofill_manage_wallet_addresses_url));
         return true;
     }
 }

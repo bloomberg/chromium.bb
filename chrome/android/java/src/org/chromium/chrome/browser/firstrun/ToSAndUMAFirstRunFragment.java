@@ -73,8 +73,7 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
             @Override
             public void onClick(View widget) {
                 if (!isAdded()) return;
-                getPageDelegate().showEmbedContentViewActivity(R.string.terms_of_service_title,
-                        R.string.chrome_terms_of_service_url);
+                getPageDelegate().showInfoPage(R.string.chrome_terms_of_service_url);
             }
         };
 
@@ -82,8 +81,7 @@ public class ToSAndUMAFirstRunFragment extends FirstRunPage {
             @Override
             public void onClick(View widget) {
                 if (!isAdded()) return;
-                getPageDelegate().showEmbedContentViewActivity(R.string.privacy_notice_title,
-                        R.string.chrome_privacy_notice_url);
+                getPageDelegate().showInfoPage(R.string.chrome_privacy_notice_url);
             }
         };
         mTosAndPrivacy.setText(SpanApplier.applySpans(getString(R.string.fre_tos_and_privacy),

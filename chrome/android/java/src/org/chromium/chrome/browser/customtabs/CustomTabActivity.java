@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -16,6 +17,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.StrictMode;
+import android.provider.Browser;
 import android.support.customtabs.CustomTabsCallback;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.customtabs.CustomTabsSessionToken;
@@ -369,7 +371,7 @@ public class CustomTabActivity extends ChromeActivity {
 
     @Override
     public void finishNativeInitialization() {
-        FirstRunSignInProcessor.start(this);
+        if (!mIntentDataProvider.isInfoPage()) FirstRunSignInProcessor.start(this);
 
         final CustomTabsConnection connection = CustomTabsConnection.getInstance(getApplication());
         // If extra headers have been passed, cancel any current prerender, as
@@ -932,7 +934,11 @@ public class CustomTabActivity extends ChromeActivity {
             StrictMode.allowThreadDiskReads();
             StrictMode.allowThreadDiskWrites();
             try {
-                startActivity(intent, startActivityOptions);
+                if (mIntentDataProvider.isInfoPage()) {
+                    IntentHandler.startChromeLauncherActivityForTrustedIntent(intent, this);
+                } else {
+                    startActivity(intent, startActivityOptions);
+                }
             } finally {
                 StrictMode.setThreadPolicy(oldPolicy);
             }
@@ -987,5 +993,30 @@ public class CustomTabActivity extends ChromeActivity {
     protected void initializeToolbar() {
         super.initializeToolbar();
         if (mIntentDataProvider.isMediaViewer()) getToolbarManager().disableShadow();
+    }
+
+    /**
+     * Show the web page with CustomTabActivity, without any navigation control.
+     * Used in showing the terms of services page or help pages for Chrome.
+     * @param context The current activity context.
+     * @param url The url of the web page.
+     */
+    public static void showInfoPage(Context context, String url) {
+        // TODO(xingliu): The title text will be the html document title, figure out if we want to
+        // use Chrome strings here as EmbedContentViewActivity does.
+        CustomTabsIntent customTabIntent = new CustomTabsIntent.Builder()
+                .setShowTitle(true)
+                .setToolbarColor(context.getResources().getColor(R.color.dark_action_bar_color))
+                .build();
+        customTabIntent.intent.setData(Uri.parse(url));
+
+        Intent intent = ChromeLauncherActivity.createCustomTabActivityIntent(
+                context, customTabIntent.intent, false);
+        intent.setPackage(context.getPackageName());
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_INFO_PAGE, true);
+        intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
+        IntentHandler.addTrustedIntentExtras(intent, context);
+
+        context.startActivity(intent);
     }
 }

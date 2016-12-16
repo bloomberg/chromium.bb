@@ -18,7 +18,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.EmbedContentViewActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sessions.SessionTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
@@ -183,8 +183,7 @@ public class DataUseTabUIManager {
         learnMore.setOnClickListener(new android.view.View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                EmbedContentViewActivity.show(activity,
-                        getDataUseUIString(DataUseUIMessage.DATA_USE_LEARN_MORE_TITLE),
+                CustomTabActivity.showInfoPage(activity,
                         getDataUseUIString(DataUseUIMessage.DATA_USE_LEARN_MORE_LINK_URL));
                 recordDataUseUIAction(DataUsageUIAction.DIALOG_LEARN_MORE_CLICKED);
             }

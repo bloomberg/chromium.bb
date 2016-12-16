@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.snackbar;
 
 import android.content.Context;
 
-import org.chromium.chrome.browser.EmbedContentViewActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager;
 import org.chromium.chrome.browser.datausage.DataUseTabUIManager.DataUsageUIAction;
 import org.chromium.chrome.browser.datausage.DataUseUIMessage;
@@ -84,10 +84,9 @@ public class DataUseSnackbarController implements SnackbarManager.SnackbarContro
      */
     @Override
     public void onAction(Object actionData) {
-        EmbedContentViewActivity.show(mContext,
-                DataUseTabUIManager.getDataUseUIString(DataUseUIMessage.DATA_USE_LEARN_MORE_TITLE),
-                DataUseTabUIManager.getDataUseUIString(
-                        DataUseUIMessage.DATA_USE_LEARN_MORE_LINK_URL));
+        CustomTabActivity.showInfoPage(
+                mContext, DataUseTabUIManager.getDataUseUIString(
+                                  DataUseUIMessage.DATA_USE_LEARN_MORE_LINK_URL));
 
         if (actionData == null) return;
         int snackbarType = (int) actionData;

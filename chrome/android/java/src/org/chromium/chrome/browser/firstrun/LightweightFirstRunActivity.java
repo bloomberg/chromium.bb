@@ -17,7 +17,7 @@ import android.widget.TextView;
 import org.chromium.base.CommandLine;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.EmbedContentViewActivity;
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -40,15 +40,15 @@ public class LightweightFirstRunActivity extends FirstRunActivity {
         NoUnderlineClickableSpan clickableTermsSpan = new NoUnderlineClickableSpan() {
             @Override
             public void onClick(View widget) {
-                EmbedContentViewActivity.show(LightweightFirstRunActivity.this,
-                        R.string.terms_of_service_title, R.string.chrome_terms_of_service_url);
+                CustomTabActivity.showInfoPage(LightweightFirstRunActivity.this,
+                        getString(R.string.chrome_terms_of_service_url));
             }
         };
         NoUnderlineClickableSpan clickablePrivacySpan = new NoUnderlineClickableSpan() {
             @Override
             public void onClick(View widget) {
-                EmbedContentViewActivity.show(LightweightFirstRunActivity.this,
-                        R.string.privacy_notice_title, R.string.chrome_privacy_notice_url);
+                CustomTabActivity.showInfoPage(LightweightFirstRunActivity.this,
+                        getString(R.string.chrome_privacy_notice_url));
             }
         };
         ((TextView) findViewById(R.id.lightweight_fre_tos_and_privacy))

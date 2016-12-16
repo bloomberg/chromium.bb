@@ -17,6 +17,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -107,6 +108,10 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                     openInChromeItem.setTitle(
                             mActivity.getString(R.string.menu_open_in_product_default));
                 }
+            }
+
+            if (!FirstRunStatus.getFirstRunFlowComplete()) {
+                openInChromeItem.setVisible(false);
             }
 
             // Add custom menu items. Make sure they are only added once.
