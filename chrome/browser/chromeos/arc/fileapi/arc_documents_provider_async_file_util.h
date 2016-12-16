@@ -5,20 +5,21 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_DOCUMENTS_PROVIDER_ASYNC_FILE_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_DOCUMENTS_PROVIDER_ASYNC_FILE_UTIL_H_
 
-#include <memory>
-
 #include "base/callback.h"
 #include "base/macros.h"
 #include "storage/browser/fileapi/async_file_util.h"
 
 namespace arc {
 
+class ArcDocumentsProviderRootMap;
+
 // The implementation of storage::AsyncFileUtil for media view.
 //
 // All of the methods must be called on the IO thread.
 class ArcDocumentsProviderAsyncFileUtil : public storage::AsyncFileUtil {
  public:
-  ArcDocumentsProviderAsyncFileUtil();
+  explicit ArcDocumentsProviderAsyncFileUtil(
+      ArcDocumentsProviderRootMap* roots);
   ~ArcDocumentsProviderAsyncFileUtil() override;
 
   // storage::AsyncFileUtil overrides.
@@ -89,6 +90,9 @@ class ArcDocumentsProviderAsyncFileUtil : public storage::AsyncFileUtil {
       const CreateSnapshotFileCallback& callback) override;
 
  private:
+  // Owned by ArcDocumentsProviderBackendDelegate.
+  ArcDocumentsProviderRootMap* const roots_;
+
   DISALLOW_COPY_AND_ASSIGN(ArcDocumentsProviderAsyncFileUtil);
 };
 

@@ -4,19 +4,26 @@
 
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_async_file_util.h"
 
-#include "base/callback.h"
+#include <utility>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/blob/shareable_file_reference.h"
+#include "storage/browser/fileapi/file_system_operation_context.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 using content::BrowserThread;
 
 namespace arc {
 
-ArcDocumentsProviderAsyncFileUtil::ArcDocumentsProviderAsyncFileUtil() =
-    default;
+ArcDocumentsProviderAsyncFileUtil::ArcDocumentsProviderAsyncFileUtil(
+    ArcDocumentsProviderRootMap* roots)
+    : roots_(roots) {}
 
 ArcDocumentsProviderAsyncFileUtil::~ArcDocumentsProviderAsyncFileUtil() =
     default;
@@ -59,8 +66,16 @@ void ArcDocumentsProviderAsyncFileUtil::GetFileInfo(
     int fields,
     const GetFileInfoCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  NOTIMPLEMENTED();  // TODO(crbug.com/671511): Implement this function.
-  callback.Run(base::File::FILE_ERROR_NOT_FOUND, base::File::Info());
+  DCHECK_EQ(storage::kFileSystemTypeArcDocumentsProvider, url.type());
+
+  base::FilePath path;
+  ArcDocumentsProviderRoot* root = roots_->ParseAndLookup(url, &path);
+  if (!root) {
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND, base::File::Info());
+    return;
+  }
+
+  root->GetFileInfo(path, callback);
 }
 
 void ArcDocumentsProviderAsyncFileUtil::ReadDirectory(
@@ -68,9 +83,16 @@ void ArcDocumentsProviderAsyncFileUtil::ReadDirectory(
     const storage::FileSystemURL& url,
     const ReadDirectoryCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  NOTIMPLEMENTED();  // TODO(crbug.com/671511): Implement this function.
-  callback.Run(base::File::FILE_ERROR_NOT_FOUND, EntryList(),
-               false /* has_more */);
+  DCHECK_EQ(storage::kFileSystemTypeArcDocumentsProvider, url.type());
+
+  base::FilePath path;
+  ArcDocumentsProviderRoot* root = roots_->ParseAndLookup(url, &path);
+  if (!root) {
+    callback.Run(base::File::FILE_ERROR_NOT_FOUND, EntryList(), false);
+    return;
+  }
+
+  root->ReadDirectory(path, callback);
 }
 
 void ArcDocumentsProviderAsyncFileUtil::Touch(

@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_async_file_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend_delegate.h"
 
 namespace arc {
@@ -39,6 +40,7 @@ class ArcDocumentsProviderBackendDelegate
                                  const storage::URLCallback& callback) override;
 
  private:
+  ArcDocumentsProviderRootMap roots_;
   ArcDocumentsProviderAsyncFileUtil async_file_util_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcDocumentsProviderBackendDelegate);

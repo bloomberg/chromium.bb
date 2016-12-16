@@ -16,8 +16,8 @@ using content::BrowserThread;
 
 namespace arc {
 
-ArcDocumentsProviderBackendDelegate::ArcDocumentsProviderBackendDelegate() =
-    default;
+ArcDocumentsProviderBackendDelegate::ArcDocumentsProviderBackendDelegate()
+    : async_file_util_(&roots_) {}
 
 ArcDocumentsProviderBackendDelegate::~ArcDocumentsProviderBackendDelegate() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
