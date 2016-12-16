@@ -48,6 +48,10 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         String profile3 = helper.setProfile(new AutofillProfile("", "https://example.com", true,
                 "Tom Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "", "US",
                 "310-310-6000", "jon.doe@gmail.com", "en-US"));
+        // This card has no billing address selected.
+        helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jane Doe",
+                "4242424242424242", "1111", "12", "2050", "visa", R.drawable.pr_visa,
+                "" /* billingAddressId */, "" /* serverId */));
 
         // Assign use stats so that profile2 has the highest frecency and profile3 has the lowest.
         helper.setProfileUseStatsForTesting(profile1, 5, 5);
@@ -113,6 +117,63 @@ public class PaymentRequestBillingAddressTest extends PaymentRequestTestBase {
         // There should still only be 4 suggestions, the 3 saved addresses and the option to add a
         // new address.
         assertEquals(4, getSpinnerItemCountInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX));
+    }
+
+    /**
+     * Tests that for a card that already has a billing address, adding a new one and cancelling
+     * maintains the previous selection. */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testAddBillingAddressOnCardAndCancel_MaintainsPreviousSelection()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        // Edit the only card.
+        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        clickInPaymentMethodAndWait(R.id.payments_open_editor_pencil_button, mReadyToEdit);
+
+        // Jon Doe is selected as the billing address.
+        assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
+                           .equals("Jon Doe, 340 Main St, Los Angeles, CA 90291"));
+
+        // Select the "+ ADD ADDRESS" option for the billing address.
+        setSpinnerSelectionsInCardEditorAndWait(
+                new int[] {DECEMBER, NEXT_YEAR, ADD_BILLING_ADDRESS}, mReadyToEdit);
+
+        // Cancel the creation of a new billing address.
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToEdit);
+
+        // Jon Doe is STILL selected as the billing address.
+        assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
+                           .equals("Jon Doe, 340 Main St, Los Angeles, CA 90291"));
+    }
+
+    /**
+     * Tests that adding a billing address for a card that has none, and cancelling then returns
+     * to the proper selection (Select...).
+     */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testAddBillingAddressOnCardWithNoBillingAndCancel_MaintainsPreviousSelection()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        // Edit the second card.
+        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        clickOnPaymentMethodSuggestionOptionAndWait(1, mReadyForInput);
+
+        // Now in Card Editor to add a billing address. "Select" is selected in the dropdown.
+        assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
+                           .equals("Select"));
+
+        // Select the "+ ADD ADDRESS" option for the billing address.
+        setSpinnerSelectionsInCardEditorAndWait(
+                new int[] {DECEMBER, NEXT_YEAR, ADD_BILLING_ADDRESS}, mReadyToEdit);
+
+        // Cancel the creation of a new billing address.
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToEdit);
+
+        // "Select" is STILL selected as the billing address.
+        assertTrue(getSpinnerSelectionTextInCardEditor(BILLING_ADDRESS_DROPDOWN_INDEX)
+                           .equals("Select"));
     }
 
     /**

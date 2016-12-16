@@ -597,8 +597,14 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                     @Override
                     public void onResult(AutofillAddress billingAddress) {
                         if (billingAddress == null) {
-                            // User has cancelled the address editor.
-                            mBillingAddressField.setValue(null);
+                            // User cancelled out of the "add flow". Restore the selection to the
+                            // card's billing address, if any, else clear the selection.
+                            if (mBillingAddressField.getDropdownKeys().contains(
+                                        card.getBillingAddressId())) {
+                                mBillingAddressField.setValue(card.getBillingAddressId());
+                            } else {
+                                mBillingAddressField.setValue(null);
+                            }
                         } else {
                             // Set the billing address label.
                             billingAddress.setBillingAddressLabel();
