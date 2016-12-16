@@ -39,9 +39,6 @@ using URLToActivationListsMap =
 
 // Controls the activation of subresource filtering for each page load in a
 // WebContents and manufactures the per-frame ContentSubresourceFilterDrivers.
-// TODO(melandory): Once https://crbug.com/621856 is fixed this class should
-// take care of passing the activation information not only to the main frame,
-// but also to the subframes.
 class ContentSubresourceFilterDriverFactory
     : public base::SupportsUserData::Data,
       public content::WebContentsObserver {
@@ -56,11 +53,6 @@ class ContentSubresourceFilterDriverFactory
       content::WebContents* web_contents,
       std::unique_ptr<SubresourceFilterClient> client);
   ~ContentSubresourceFilterDriverFactory() override;
-
-  ContentSubresourceFilterDriver* DriverFromFrameHost(
-      content::RenderFrameHost* render_frame_host);
-
-  bool IsWhitelisted(const GURL& url) const;
 
   // Whitelists the host of |url|, so that page loads with the main-frame
   // document being loaded from this host will be exempted from subresource
@@ -77,21 +69,11 @@ class ContentSubresourceFilterDriverFactory
       safe_browsing::SBThreatType threat_type,
       safe_browsing::ThreatPatternType threat_type_metadata);
 
-  // Reloads the page and inserts the url to the whitelist.
+  // Reloads the page and inserts the host of its URL to the whitelist.
   void OnReloadRequested();
-
-  const HostPathSet& whitelisted_set() const { return whitelisted_hosts_; }
-
-  ActivationState activation_state() { return activation_state_; }
-
-  const URLToActivationListsMap& safe_browsing_blacklisted_patterns_set()
-      const {
-    return activation_list_matches_;
-  }
 
  private:
   friend class ContentSubresourceFilterDriverFactoryTest;
-  friend class SubresourceFilterNavigationThrottleTest;
   friend class safe_browsing::SafeBrowsingServiceTest;
 
   typedef std::map<content::RenderFrameHost*,
@@ -104,8 +86,12 @@ class ContentSubresourceFilterDriverFactory
 
   void CreateDriverForFrameHostIfNeeded(
       content::RenderFrameHost* render_frame_host);
+  ContentSubresourceFilterDriver* DriverFromFrameHost(
+      content::RenderFrameHost* render_frame_host);
 
   void OnFirstSubresourceLoadDisallowed();
+
+  bool IsWhitelisted(const GURL& url) const;
 
   // content::WebContentsObserver:
   void DidStartNavigation(
@@ -135,8 +121,6 @@ class ContentSubresourceFilterDriverFactory
 
   void AddActivationListMatch(const GURL& url, ActivationList match_type);
   void RecordRedirectChainMatchPattern() const;
-
-  static const char kWebContentsUserDataKey[];
 
   FrameHostToOwnedDriverMap frame_drivers_;
   std::unique_ptr<SubresourceFilterClient> client_;

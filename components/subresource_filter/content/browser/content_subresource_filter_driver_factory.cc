@@ -21,6 +21,9 @@ namespace subresource_filter {
 
 namespace {
 
+const char kWebContentsUserDataKey[] =
+    "web_contents_subresource_filter_driver_factory";
+
 std::string DistillURLToHostAndPath(const GURL& url) {
   return url.host() + url.path();
 }
@@ -30,10 +33,6 @@ bool ShouldMeasurePerformance(double rate) {
 }
 
 }  // namespace
-
-// static
-const char ContentSubresourceFilterDriverFactory::kWebContentsUserDataKey[] =
-    "web_contents_subresource_filter_driver_factory";
 
 // static
 void ContentSubresourceFilterDriverFactory::CreateForWebContents(
@@ -80,7 +79,7 @@ void ContentSubresourceFilterDriverFactory::CreateDriverForFrameHostIfNeeded(
 }
 
 void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
-  client_->ToggleNotificationVisibility(activation_state() ==
+  client_->ToggleNotificationVisibility(activation_state_ ==
                                         ActivationState::ENABLED);
 }
 
@@ -111,7 +110,7 @@ void ContentSubresourceFilterDriverFactory::
 
 void ContentSubresourceFilterDriverFactory::AddHostOfURLToWhitelistSet(
     const GURL& url) {
-  if (!url.host().empty() && url.SchemeIsHTTPOrHTTPS())
+  if (url.has_host() && url.SchemeIsHTTPOrHTTPS())
     whitelisted_hosts_.insert(url.host());
 }
 
@@ -140,7 +139,7 @@ void ContentSubresourceFilterDriverFactory::ActivateForFrameHostIfNeeded(
 
 void ContentSubresourceFilterDriverFactory::OnReloadRequested() {
   UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.Prompt.NumReloads", true);
-  const GURL whitelist_url(web_contents()->GetLastCommittedURL());
+  const GURL& whitelist_url = web_contents()->GetLastCommittedURL();
   AddHostOfURLToWhitelistSet(whitelist_url);
   web_contents()->GetController().Reload(true);
 }
@@ -175,7 +174,9 @@ void ContentSubresourceFilterDriverFactory::DidStartNavigation(
 
 void ContentSubresourceFilterDriverFactory::DidRedirectNavigation(
     content::NavigationHandle* navigation_handle) {
-  navigation_chain_.push_back(navigation_handle->GetURL());
+  DCHECK(!navigation_handle->IsSamePage());
+  if (navigation_handle->IsInMainFrame())
+    navigation_chain_.push_back(navigation_handle->GetURL());
 }
 
 void ContentSubresourceFilterDriverFactory::RenderFrameCreated(
