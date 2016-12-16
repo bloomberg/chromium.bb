@@ -214,6 +214,7 @@ android_library("ui_java") {
     ":ui_java_resources",
     "//base:base_java",
     "//third_party/android_tools:android_support_annotations_java",
+    "//third_party/android_tools:android_support_v7_appcompat_java",
   ]
   srcjar_deps = [ ":java_enums_srcjar" ]
 }

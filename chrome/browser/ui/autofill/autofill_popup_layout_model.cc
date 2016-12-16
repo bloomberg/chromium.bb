@@ -265,11 +265,6 @@ int AutofillPopupLayoutModel::GetIconResourceID(
     }
   }
 
-#if defined(OS_ANDROID) && !defined(USE_AURA)
-  if (result == IDR_AUTOFILL_CC_SCAN_NEW && IsKeyboardAccessoryEnabled())
-    result = IDR_AUTOFILL_CC_SCAN_NEW_KEYBOARD_ACCESSORY;
-#endif
-
   return result;
 }
 

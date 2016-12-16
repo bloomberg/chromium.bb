@@ -7,6 +7,7 @@ package org.chromium.ui;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.Typeface;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.text.TextUtils;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -172,10 +173,11 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
         }
 
         ImageView iconView = item.isIconAtStart() ? iconViewStart : iconViewEnd;
-        if (item.getIconId() == DropdownItem.NO_ICON) {
+        if (item.getVectorDrawableIconId() == DropdownItem.NO_ICON) {
             iconView.setVisibility(View.GONE);
         } else {
-            iconView.setImageResource(item.getIconId());
+            iconView.setImageDrawable(VectorDrawableCompat.create(mContext.getResources(),
+                    item.getVectorDrawableIconId(), mContext.getTheme()));
             iconView.setVisibility(View.VISIBLE);
         }
 

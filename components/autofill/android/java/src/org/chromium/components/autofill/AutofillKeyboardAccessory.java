@@ -7,6 +7,7 @@ package org.chromium.components.autofill;
 import android.annotation.SuppressLint;
 import android.graphics.Typeface;
 import android.os.Build;
+import android.support.graphics.drawable.VectorDrawableCompat;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -71,14 +72,15 @@ public class AutofillKeyboardAccessory extends LinearLayout
             assert !TextUtils.isEmpty(suggestion.getLabel());
 
             View touchTarget;
-            if (!suggestion.isFillable() && suggestion.getIconId() != 0) {
+            if (!suggestion.isFillable() && suggestion.getVectorDrawableIconId() != 0) {
                 touchTarget = LayoutInflater.from(getContext()).inflate(
                         R.layout.autofill_keyboard_accessory_icon, this, false);
 
                 if (separatorPosition == -1) separatorPosition = i;
 
                 ImageView icon = (ImageView) touchTarget;
-                icon.setImageResource(suggestion.getIconId());
+                icon.setImageDrawable(VectorDrawableCompat.create(getResources(),
+                        suggestion.getVectorDrawableIconId(), getContext().getTheme()));
                 icon.setContentDescription(suggestion.getLabel());
             } else {
                 touchTarget = LayoutInflater.from(getContext()).inflate(
@@ -96,9 +98,11 @@ public class AutofillKeyboardAccessory extends LinearLayout
                     label.setTypeface(Typeface.DEFAULT_BOLD);
                 }
 
-                if (suggestion.getIconId() != 0) {
+                if (suggestion.getVectorDrawableIconId() != 0) {
                     ApiCompatibilityUtils.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                            label, suggestion.getIconId(), 0, 0, 0);
+                            label, VectorDrawableCompat.create(getResources(),
+                                    suggestion.getVectorDrawableIconId(), getContext().getTheme()),
+                                    null /* top */, null /* end */, null /* bottom */);
                 }
 
                 if (!TextUtils.isEmpty(suggestion.getSublabel())) {

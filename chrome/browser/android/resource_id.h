@@ -63,22 +63,28 @@ LINK_RESOURCE_ID(IDR_PAGEINFO_INFO, R.drawable.pageinfo_warning)
 LINK_RESOURCE_ID(IDR_PAGEINFO_WARNING_MAJOR, R.drawable.pageinfo_warning)
 
 // Autofill popup and keyboard accessory images.
+// We use Android's |VectorDrawableCompat| for the following images that are
+// displayed using |DropdownAdapter|.
 LINK_RESOURCE_ID(IDR_AUTOFILL_CC_AMEX, R.drawable.amex_card)
+LINK_RESOURCE_ID(IDR_AUTOFILL_CC_DINERS, R.drawable.ic_credit_card_black)
 LINK_RESOURCE_ID(IDR_AUTOFILL_CC_DISCOVER, R.drawable.discover_card)
-LINK_RESOURCE_ID(IDR_AUTOFILL_CC_GENERIC, R.drawable.generic_card)
+LINK_RESOURCE_ID(IDR_AUTOFILL_CC_GENERIC, R.drawable.ic_credit_card_black)
+LINK_RESOURCE_ID(IDR_AUTOFILL_CC_JCB, R.drawable.ic_credit_card_black)
 LINK_RESOURCE_ID(IDR_AUTOFILL_CC_MASTERCARD, R.drawable.mc_card)
 LINK_RESOURCE_ID(IDR_AUTOFILL_CC_MIR, R.drawable.mir_card)
 LINK_RESOURCE_ID(IDR_AUTOFILL_CC_VISA, R.drawable.visa_card)
-LINK_RESOURCE_ID(IDR_AUTOFILL_CC_SCAN_NEW, android.R.drawable.ic_menu_camera)
-LINK_RESOURCE_ID(IDR_AUTOFILL_CC_SCAN_NEW_KEYBOARD_ACCESSORY,
-                 org.chromium.chrome.R.drawable.ic_photo_camera)
+LINK_RESOURCE_ID(IDR_AUTOFILL_CC_SCAN_NEW, R.drawable.ic_photo_camera_black)
+LINK_RESOURCE_ID(IDR_AUTOFILL_HTTP_WARNING, R.drawable.ic_info_outline_black)
+LINK_RESOURCE_ID(IDR_AUTOFILL_HTTPS_INVALID_WARNING,
+                 R.drawable.ic_warning_black)
+
+// We display settings icon for keyboard accessory using Android's
+// |VectorDrawableCompat|. We do not display settings icon for autofill popup.
+LINK_RESOURCE_ID(IDR_AUTOFILL_SETTINGS, R.drawable.ic_settings_black)
+
+// We use PNG files for the following images.
 LINK_RESOURCE_ID(IDR_CREDIT_CARD_CVC_HINT, R.drawable.cvc_icon)
 LINK_RESOURCE_ID(IDR_CREDIT_CARD_CVC_HINT_AMEX, R.drawable.cvc_icon_amex)
-LINK_RESOURCE_ID(IDR_AUTOFILL_SETTINGS,
-                 org.chromium.chrome.R.drawable.ic_settings)
-LINK_RESOURCE_ID(IDR_AUTOFILL_HTTP_WARNING, R.drawable.omnibox_info)
-LINK_RESOURCE_ID(IDR_AUTOFILL_HTTPS_INVALID_WARNING,
-                 R.drawable.omnibox_https_invalid)
 
 // PaymentRequest images.
 LINK_RESOURCE_ID(IDR_AUTOFILL_PR_AMEX, R.drawable.pr_amex)

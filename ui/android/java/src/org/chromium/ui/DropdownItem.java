@@ -20,9 +20,9 @@ public interface DropdownItem {
      */
     String getSublabel();
     /**
-     * Returns the drawable id of the icon that should be shown in the dropdown, or NO_ICON.
+     * Returns the vector drawable id of the icon that should be shown in the dropdown, or NO_ICON.
      */
-    int getIconId();
+    int getVectorDrawableIconId();
     /**
      * Returns true if the item should be enabled in the dropdown.
      */

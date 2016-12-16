@@ -61,7 +61,7 @@ public class AutofillSuggestion extends DropdownItemBase {
     }
 
     @Override
-    public int getIconId() {
+    public int getVectorDrawableIconId() {
         return mIconId;
     }
 

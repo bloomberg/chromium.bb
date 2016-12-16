@@ -13,6 +13,7 @@ android_library("autofill_java") {
   deps = [
     ":autofill_java_resources",
     "//base:base_java",
+    "//third_party/android_tools:android_support_v7_appcompat_java",
     "//ui/android:ui_java",
   ]
   java_files = [
