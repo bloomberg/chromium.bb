@@ -144,6 +144,9 @@ std::string SanitizeFrontendQueryParam(
   if (key == "dockSide" && value == "undocked")
     return value;
 
+  if (key == "panel" && (value == "elements" || value == "console"))
+    return value;
+
   if (key == "remoteBase")
     return SanitizeRemoteBase(value);
 

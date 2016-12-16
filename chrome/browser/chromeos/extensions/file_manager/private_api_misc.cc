@@ -413,8 +413,8 @@ FileManagerPrivateOpenInspectorFunction::Run() {
       break;
     case extensions::api::file_manager_private::INSPECTION_TYPE_CONSOLE:
       // Open inspector for foreground page and bring focus to the console.
-      DevToolsWindow::OpenDevToolsWindow(GetSenderWebContents(),
-                                         DevToolsToggleAction::ShowConsole());
+      DevToolsWindow::OpenDevToolsWindow(
+          GetSenderWebContents(), DevToolsToggleAction::ShowConsolePanel());
       break;
     case extensions::api::file_manager_private::INSPECTION_TYPE_ELEMENT:
       // Open inspector for foreground page in inspect element mode.

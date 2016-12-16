@@ -1075,7 +1075,7 @@ void FocusPreviousPane(Browser* browser) {
 }
 
 void ToggleDevToolsWindow(Browser* browser, DevToolsToggleAction action) {
-  if (action.type() == DevToolsToggleAction::kShowConsole)
+  if (action.type() == DevToolsToggleAction::kShowConsolePanel)
     content::RecordAction(UserMetricsAction("DevTools_ToggleConsole"));
   else
     content::RecordAction(UserMetricsAction("DevTools_ToggleWindow"));

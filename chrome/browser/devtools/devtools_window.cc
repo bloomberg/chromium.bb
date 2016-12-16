@@ -464,7 +464,8 @@ void DevToolsWindow::OpenDevToolsWindowForWorker(
 DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
     Profile* profile) {
   content::RecordAction(base::UserMetricsAction("DevTools_InspectWorker"));
-  return Create(profile, GURL(), NULL, true, false, std::string(), false, "");
+  return Create(profile, GURL(), NULL, true, false, std::string(), false, "",
+                "");
 }
 
 // static
@@ -524,7 +525,8 @@ void DevToolsWindow::OpenDevToolsWindowForFrame(
   DevToolsWindow* window = FindDevToolsWindow(agent_host.get());
   if (!window) {
     window = DevToolsWindow::Create(profile, GURL(), nullptr, false, false,
-                                    std::string(), false, std::string());
+                                    std::string(), false, std::string(),
+                                    std::string());
     if (!window)
       return;
     window->bindings_->AttachTo(agent_host);
@@ -558,7 +560,8 @@ void DevToolsWindow::OpenExternalFrontend(
   DevToolsWindow* window = FindDevToolsWindow(agent_host.get());
   if (!window) {
     window = Create(profile, GURL(), nullptr, is_worker, is_v8_only,
-        DevToolsUI::GetProxyURL(frontend_url).spec(), false, std::string());
+                    DevToolsUI::GetProxyURL(frontend_url).spec(), false,
+                    std::string(), std::string());
     if (!window)
       return;
     window->bindings_->AttachTo(agent_host);
@@ -583,8 +586,23 @@ void DevToolsWindow::ToggleDevToolsWindow(
         inspected_web_contents->GetBrowserContext());
     content::RecordAction(
         base::UserMetricsAction("DevTools_InspectRenderer"));
-    window = Create(profile, GURL(), inspected_web_contents,
-                    false, false, std::string(), true, settings);
+    std::string panel = "";
+    switch (action.type()) {
+      case DevToolsToggleAction::kInspect:
+      case DevToolsToggleAction::kShowElementsPanel:
+        panel = "elements";
+        break;
+      case DevToolsToggleAction::kShowConsolePanel:
+        panel = "console";
+        break;
+      case DevToolsToggleAction::kShow:
+      case DevToolsToggleAction::kToggle:
+      case DevToolsToggleAction::kReveal:
+      case DevToolsToggleAction::kNoOp:
+        break;
+    }
+    window = Create(profile, GURL(), inspected_web_contents, false, false,
+                    std::string(), true, settings, panel);
     if (!window)
       return;
     window->bindings_->AttachTo(agent.get());
@@ -614,7 +632,8 @@ void DevToolsWindow::InspectElement(
   // TODO(loislo): we should initiate DevTools window opening from within
   // renderer. Otherwise, we still can hit a race condition here.
   if (agent->GetType() == content::DevToolsAgentHost::kTypePage) {
-    OpenDevToolsWindow(agent->GetWebContents());
+    OpenDevToolsWindow(agent->GetWebContents(),
+                       DevToolsToggleAction::ShowElementsPanel());
   } else {
     OpenDevToolsWindowForFrame(Profile::FromBrowserContext(
                                    agent->GetBrowserContext()), agent);
@@ -649,7 +668,6 @@ void DevToolsWindow::Show(const DevToolsToggleAction& action) {
 
   if (action.type() == DevToolsToggleAction::kNoOp)
     return;
-
   if (is_docked_) {
     DCHECK(can_dock_);
     Browser* inspected_browser = NULL;
@@ -840,7 +858,8 @@ DevToolsWindow* DevToolsWindow::Create(
     bool v8_only_frontend,
     const std::string& remote_frontend,
     bool can_dock,
-    const std::string& settings) {
+    const std::string& settings,
+    const std::string& panel) {
   if (profile->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode))
     return nullptr;
@@ -857,11 +876,8 @@ DevToolsWindow* DevToolsWindow::Create(
   }
 
   // Create WebContents with devtools.
-  GURL url(GetDevToolsURL(profile, frontend_url,
-                          shared_worker_frontend,
-                          v8_only_frontend,
-                          remote_frontend,
-                          can_dock));
+  GURL url(GetDevToolsURL(profile, frontend_url, shared_worker_frontend,
+                          v8_only_frontend, remote_frontend, can_dock, panel));
   std::unique_ptr<WebContents> main_web_contents(
       WebContents::Create(WebContents::CreateParams(profile)));
   main_web_contents->GetController().LoadURL(
@@ -883,7 +899,8 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
                                     bool shared_worker_frontend,
                                     bool v8_only_frontend,
                                     const std::string& remote_frontend,
-                                    bool can_dock) {
+                                    bool can_dock,
+                                    const std::string& panel) {
   // Compatibility errors are encoded with data urls, pass them
   // through with no decoration.
   if (base_url.SchemeIs("data"))
@@ -907,6 +924,8 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
   }
   if (can_dock)
     url_string += "&can_dock=true";
+  if (panel.size())
+    url_string += "&panel=" + panel;
   return DevToolsUI::SanitizeFrontendURL(GURL(url_string));
 }
 
@@ -1298,17 +1317,12 @@ BrowserWindow* DevToolsWindow::GetInspectedBrowserWindow() {
 
 void DevToolsWindow::DoAction(const DevToolsToggleAction& action) {
   switch (action.type()) {
-    case DevToolsToggleAction::kShowConsole: {
-      base::StringValue panel_name("console");
-      bindings_->CallClientFunction("DevToolsAPI.showPanel", &panel_name, NULL,
-                                    NULL);
-      break;
-    }
     case DevToolsToggleAction::kInspect:
-      bindings_->CallClientFunction(
-          "DevToolsAPI.enterInspectElementMode", NULL, NULL, NULL);
+      bindings_->CallClientFunction("DevToolsAPI.enterInspectElementMode", NULL,
+                                    NULL, NULL);
       break;
 
+    case DevToolsToggleAction::kShowConsolePanel:
     case DevToolsToggleAction::kShow:
     case DevToolsToggleAction::kToggle:
       // Do nothing.

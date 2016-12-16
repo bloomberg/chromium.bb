@@ -200,7 +200,7 @@ void ExtensionPopup::ShowBubble() {
   host()->host_contents()->Focus();
 
   if (inspect_with_devtools_) {
-    DevToolsWindow::OpenDevToolsWindow(host()->host_contents(),
-                                       DevToolsToggleAction::ShowConsole());
+    DevToolsWindow::OpenDevToolsWindow(
+        host()->host_contents(), DevToolsToggleAction::ShowConsolePanel());
   }
 }
