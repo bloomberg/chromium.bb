@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.payments;
 
 import android.test.suitebuilder.annotation.MediumTest;
 
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
@@ -20,7 +19,6 @@ import java.util.concurrent.TimeoutException;
  * A payment integration test for checking whether user can make a payment via either payment
  * app or a credit card. This user has a complete credit card on file.
  */
-@CommandLineFlags.Add("enable-blink-features=CanMakePayment")
 public class PaymentRequestCanMakePaymentQueryTest extends PaymentRequestTestBase {
     public PaymentRequestCanMakePaymentQueryTest() {
         super("payment_request_can_make_payment_query_test.html");

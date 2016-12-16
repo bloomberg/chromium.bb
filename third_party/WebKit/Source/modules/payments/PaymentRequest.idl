@@ -15,6 +15,7 @@
 ] interface PaymentRequest : EventTarget {
     [CallWith=ScriptState] Promise<PaymentResponse> show();
     [CallWith=ScriptState] Promise<void> abort();
+    [CallWith=ScriptState, RuntimeEnabled=CanMakePayment] Promise<boolean> canMakePayment();
 
     [ImplementedAs=getShippingAddress] readonly attribute PaymentAddress? shippingAddress;
     readonly attribute DOMString? shippingOption;
@@ -22,7 +23,4 @@
 
     attribute EventHandler onshippingaddresschange;
     attribute EventHandler onshippingoptionchange;
-
-    // https://github.com/w3c/browser-payment-api/issues/310
-    [CallWith=ScriptState, RuntimeEnabled=CanMakePayment] Promise<boolean> canMakePayment();
 };

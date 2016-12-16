@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.payments;
 
 import android.test.suitebuilder.annotation.MediumTest;
 
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 
 import java.util.concurrent.ExecutionException;
@@ -15,7 +14,6 @@ import java.util.concurrent.TimeoutException;
 /**
  * A payment integration test for checking whether user can make a payment using a payment app.
  */
-@CommandLineFlags.Add("enable-blink-features=CanMakePayment")
 public class PaymentRequestPaymentAppCanMakePaymentQueryTest extends PaymentRequestTestBase {
     public PaymentRequestPaymentAppCanMakePaymentQueryTest() {
         super("payment_request_can_make_payment_query_bobpay_test.html");
