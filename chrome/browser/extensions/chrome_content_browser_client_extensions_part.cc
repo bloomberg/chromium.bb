@@ -506,7 +506,6 @@ bool ChromeContentBrowserClientExtensionsPart::AllowServiceWorker(
     int render_process_id,
     int render_frame_id) {
   // We only care about extension urls.
-  // TODO(devlin): Also address chrome-extension-resource.
   if (!first_party_url.SchemeIs(kExtensionScheme))
     return true;
 

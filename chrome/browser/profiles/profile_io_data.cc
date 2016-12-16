@@ -114,7 +114,6 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/extension_cookie_monster_delegate.h"
-#include "chrome/browser/extensions/extension_resource_protocols.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_throttle_manager.h"
@@ -736,7 +735,6 @@ bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
     dom_distiller::kDomDistillerScheme,
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     extensions::kExtensionScheme,
-    extensions::kExtensionResourceScheme,
 #endif
     content::kChromeUIScheme,
     url::kDataScheme,
@@ -1197,10 +1195,6 @@ ProfileIOData::SetUpJobFactoryDefaults(
       extensions::kExtensionScheme,
       extensions::CreateExtensionProtocolHandler(is_incognito,
                                                  extension_info_map_.get()));
-  DCHECK(set_protocol);
-  set_protocol = job_factory->SetProtocolHandler(
-      extensions::kExtensionResourceScheme,
-      CreateExtensionResourceProtocolHandler());
   DCHECK(set_protocol);
 #endif
   set_protocol = job_factory->SetProtocolHandler(

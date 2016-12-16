@@ -247,37 +247,33 @@ Dispatcher::Dispatcher(DispatcherDelegate* delegate)
 
   RenderThread::Get()->RegisterExtension(SafeBuiltins::CreateV8Extension());
 
-  // WebSecurityPolicy whitelists. They should be registered for both
-  // chrome-extension: and chrome-extension-resource.
-  using RegisterFunction = void (*)(const WebString&);
-  RegisterFunction register_functions[] = {
-      // Treat as secure because communication with them is entirely in the
-      // browser, so there is no danger of manipulation or eavesdropping on
-      // communication with them by third parties.
-      WebSecurityPolicy::registerURLSchemeAsSecure,
-      // As far as Blink is concerned, they should be allowed to receive CORS
-      // requests. At the Extensions layer, requests will actually be blocked
-      // unless overridden by the web_accessible_resources manifest key.
-      // TODO(kalman): See what happens with a service worker.
-      WebSecurityPolicy::registerURLSchemeAsCORSEnabled,
-      // Resources should bypass Content Security Policy checks when included in
-      // protected resources. TODO(kalman): What are "protected resources"?
-      WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy,
-      // Extension resources are HTTP-like and safe to expose to the fetch API.
-      // The rules for the fetch API are consistent with XHR.
-      WebSecurityPolicy::registerURLSchemeAsSupportingFetchAPI,
-      // Extension resources, when loaded as the top-level document, should
-      // bypass Blink's strict first-party origin checks.
-      WebSecurityPolicy::registerURLSchemeAsFirstPartyWhenTopLevel,
-  };
-
+  // Register WebSecurityPolicy whitelists for the chrome-extension:// scheme.
   WebString extension_scheme(base::ASCIIToUTF16(kExtensionScheme));
-  WebString extension_resource_scheme(base::ASCIIToUTF16(
-      kExtensionResourceScheme));
-  for (RegisterFunction func : register_functions) {
-    func(extension_scheme);
-    func(extension_resource_scheme);
-  }
+
+  // Treat as secure because communication with them is entirely in the browser,
+  // so there is no danger of manipulation or eavesdropping on communication
+  // with them by third parties.
+  WebSecurityPolicy::registerURLSchemeAsSecure(extension_scheme);
+
+  // As far as Blink is concerned, they should be allowed to receive CORS
+  // requests. At the Extensions layer, requests will actually be blocked unless
+  // overridden by the web_accessible_resources manifest key.
+  // TODO(kalman): See what happens with a service worker.
+  WebSecurityPolicy::registerURLSchemeAsCORSEnabled(extension_scheme);
+
+  // Resources should bypass Content Security Policy checks when included in
+  // protected resources. TODO(kalman): What are "protected resources"?
+  WebSecurityPolicy::registerURLSchemeAsBypassingContentSecurityPolicy(
+      extension_scheme);
+
+  // Extension resources are HTTP-like and safe to expose to the fetch API. The
+  // rules for the fetch API are consistent with XHR.
+  WebSecurityPolicy::registerURLSchemeAsSupportingFetchAPI(extension_scheme);
+
+  // Extension resources, when loaded as the top-level document, should bypass
+  // Blink's strict first-party origin checks.
+  WebSecurityPolicy::registerURLSchemeAsFirstPartyWhenTopLevel(
+      extension_scheme);
 
   // For extensions, we want to ensure we call the IdleHandler every so often,
   // even if the extension keeps up activity.
@@ -400,12 +396,11 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
     const GURL& url) {
   const base::TimeTicks start_time = base::TimeTicks::Now();
 
-  if (!url.SchemeIs(kExtensionScheme) &&
-      !url.SchemeIs(kExtensionResourceScheme)) {
-    // Early-out if this isn't a chrome-extension:// or resource scheme,
-    // because looking up the extension registry is unnecessary if it's not.
-    // Checking this will also skip over hosted apps, which is the desired
-    // behavior - hosted app service workers are not our concern.
+  if (!url.SchemeIs(kExtensionScheme)) {
+    // Early-out if this isn't a chrome-extension:// scheme, because looking up
+    // the extension registry is unnecessary if it's not. Checking this will
+    // also skip over hosted apps, which is the desired behavior - hosted app
+    // service workers are not our concern.
     return;
   }
 
@@ -532,8 +527,7 @@ void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     v8::Local<v8::Context> v8_context,
     int64_t service_worker_version_id,
     const GURL& url) {
-  if (url.SchemeIs(kExtensionScheme) ||
-      url.SchemeIs(kExtensionResourceScheme)) {
+  if (url.SchemeIs(kExtensionScheme)) {
     // See comment in DidInitializeServiceWorkerContextOnWorkerThread.
     g_worker_script_context_set.Get().Remove(v8_context, url);
     // TODO(devlin): We're not calling

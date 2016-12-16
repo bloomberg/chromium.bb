@@ -31,8 +31,7 @@ const char kObjectSrc[] = "object-src";
 const char kPluginTypes[] = "plugin-types";
 
 const char kObjectSrcDefaultDirective[] = "object-src 'self';";
-const char kScriptSrcDefaultDirective[] =
-    "script-src 'self' chrome-extension-resource:;";
+const char kScriptSrcDefaultDirective[] = "script-src 'self';";
 
 const char kSandboxDirectiveName[] = "sandbox";
 const char kAllowSameOriginToken[] = "allow-same-origin";
@@ -176,12 +175,17 @@ void GetSecureDirectiveValues(const std::string& directive_name,
                          std::string(extensions::kExtensionScheme) +
                              url::kStandardSchemeSeparator,
                          false) ||
-        IsHashSource(source_literal) ||
-        base::StartsWith(source_lower, "chrome-extension-resource:",
-                         base::CompareCase::SENSITIVE)) {
+        IsHashSource(source_literal)) {
       is_secure_csp_token = true;
     } else if ((options & OPTIONS_ALLOW_UNSAFE_EVAL) &&
                source_lower == "'unsafe-eval'") {
+      is_secure_csp_token = true;
+    } else if (base::StartsWith(source_lower, "chrome-extension-resource:",
+                                base::CompareCase::SENSITIVE)) {
+      // The "chrome-extension-resource" scheme has been removed from the
+      // codebase, but it may still appear in existing CSPs. We continue to
+      // allow it here for compatibility. Requests on this scheme will not
+      // return any kind of network response.
       is_secure_csp_token = true;
     }
 

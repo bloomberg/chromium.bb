@@ -357,10 +357,8 @@ extern const char kPowerOptionsSubPage[];
 // Extensions sub pages.
 extern const char kExtensionConfigureCommandsSubPage[];
 
-// URLs used to indicate that an extension resource load request
-// was invalid.
+// URL used to indicate that an extension resource load request was invalid.
 extern const char kExtensionInvalidRequestURL[];
-extern const char kExtensionResourceInvalidRequestURL[];
 
 extern const char kSyncGoogleDashboardURL[];
 

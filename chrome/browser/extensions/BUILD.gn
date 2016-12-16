@@ -608,8 +608,6 @@ static_library("extensions") {
     "extension_migrator.h",
     "extension_reenabler.cc",
     "extension_reenabler.h",
-    "extension_resource_protocols.cc",
-    "extension_resource_protocols.h",
     "extension_service.cc",
     "extension_service.h",
     "extension_special_storage_policy.cc",

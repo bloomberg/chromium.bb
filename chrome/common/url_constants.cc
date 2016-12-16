@@ -385,8 +385,6 @@ const char kPowerOptionsSubPage[] = "power-overlay";
 const char kExtensionConfigureCommandsSubPage[] = "configureCommands";
 
 const char kExtensionInvalidRequestURL[] = "chrome-extension://invalid/";
-const char kExtensionResourceInvalidRequestURL[] =
-    "chrome-extension-resource://invalid/";
 
 const char kSyncGoogleDashboardURL[] =
     "https://www.google.com/settings/chrome/sync/";

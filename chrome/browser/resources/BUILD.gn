@@ -74,15 +74,6 @@ grit("translate_internals_resources") {
   output_dir = "$root_gen_dir/chrome"
 }
 
-copy("extension_resource_demo") {
-  sources = [
-    "extension_resource/demo/library.js",
-  ]
-  outputs = [
-    "$root_out_dir/resources/extension/demo/library.js",
-  ]
-}
-
 if (!is_ios) {
   grit("component_extension_resources") {
     source = "component_extension_resources.grd"

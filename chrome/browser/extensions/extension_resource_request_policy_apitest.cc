@@ -209,16 +209,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
       &result));
   EXPECT_EQ("Image failed to load", result);
 
-  GURL nonaccessible_cer_resource(embedded_test_server()->GetURL(
-      "/extensions/api_test/extension_resource_request_policy/"
-      "web_accessible/nonaccessible_chrome_resource_scheme.html"));
-  ui_test_utils::NavigateToURL(browser(), nonaccessible_cer_resource);
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "window.domAutomationController.send(document.title)",
-      &result));
-  EXPECT_EQ("Loading CER:// failed.", result);
-
   GURL newtab_page("chrome://newtab");
   GURL accessible_newtab_override(embedded_test_server()->GetURL(
       "/extensions/api_test/extension_resource_request_policy/"
@@ -325,16 +315,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, Iframe) {
   EXPECT_TRUE(RunExtensionSubtest(
       "extension_resource_request_policy/web_accessible",
       "iframe.html")) << message_;
-}
-
-#if defined(OS_MACOSX)
-#define MAYBE_ExtensionAccessibleResources DISABLED_ExtensionAccessibleResources
-#else
-#define MAYBE_ExtensionAccessibleResources ExtensionAccessibleResources
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
-                       MAYBE_ExtensionAccessibleResources) {
-  ASSERT_TRUE(RunExtensionSubtest("accessible_cer", "main.html")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,

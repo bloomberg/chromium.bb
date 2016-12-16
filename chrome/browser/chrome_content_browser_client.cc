@@ -2348,8 +2348,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
     return true;
   }
 
-  if (target_url.SchemeIs(extensions::kExtensionScheme) ||
-      target_url.SchemeIs(extensions::kExtensionResourceScheme)) {
+  if (target_url.SchemeIs(extensions::kExtensionScheme)) {
     // Intentionally duplicating |io_data| and |map| code from above because we
     // want to reduce calls to retrieve them as this function is a SYNC IPC
     // handler.

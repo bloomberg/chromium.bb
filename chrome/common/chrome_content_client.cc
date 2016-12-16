@@ -556,20 +556,13 @@ void ChromeContentClient::AddContentDecryptionModules(
   // TODO(jrummell): Add External Clear Key CDM for testing, if it's available.
 }
 
+static const url::SchemeWithType kChromeStandardURLSchemes[] = {
+    {extensions::kExtensionScheme, url::SCHEME_WITHOUT_PORT},
+    {chrome::kChromeNativeScheme, url::SCHEME_WITHOUT_PORT},
+    {chrome::kChromeSearchScheme, url::SCHEME_WITHOUT_PORT},
+    {dom_distiller::kDomDistillerScheme, url::SCHEME_WITHOUT_PORT},
 #if defined(OS_CHROMEOS)
-static const int kNumChromeStandardURLSchemes = 6;
-#else
-static const int kNumChromeStandardURLSchemes = 5;
-#endif
-static const url::SchemeWithType kChromeStandardURLSchemes[
-    kNumChromeStandardURLSchemes] = {
-  {extensions::kExtensionScheme, url::SCHEME_WITHOUT_PORT},
-  {chrome::kChromeNativeScheme, url::SCHEME_WITHOUT_PORT},
-  {extensions::kExtensionResourceScheme, url::SCHEME_WITHOUT_PORT},
-  {chrome::kChromeSearchScheme, url::SCHEME_WITHOUT_PORT},
-  {dom_distiller::kDomDistillerScheme, url::SCHEME_WITHOUT_PORT},
-#if defined(OS_CHROMEOS)
-  {chrome::kCrosScheme, url::SCHEME_WITHOUT_PORT},
+    {chrome::kCrosScheme, url::SCHEME_WITHOUT_PORT},
 #endif
 };
 
@@ -577,8 +570,8 @@ void ChromeContentClient::AddAdditionalSchemes(
     std::vector<url::SchemeWithType>* standard_schemes,
     std::vector<url::SchemeWithType>* referrer_schemes,
     std::vector<std::string>* savable_schemes) {
-  for (int i = 0; i < kNumChromeStandardURLSchemes; i++)
-    standard_schemes->push_back(kChromeStandardURLSchemes[i]);
+  for (const url::SchemeWithType& standard_scheme : kChromeStandardURLSchemes)
+    standard_schemes->push_back(standard_scheme);
 
 #if defined(OS_ANDROID)
   referrer_schemes->push_back(
@@ -586,7 +579,6 @@ void ChromeContentClient::AddAdditionalSchemes(
 #endif
 
   savable_schemes->push_back(extensions::kExtensionScheme);
-  savable_schemes->push_back(extensions::kExtensionResourceScheme);
   savable_schemes->push_back(chrome::kChromeSearchScheme);
   savable_schemes->push_back(dom_distiller::kDomDistillerScheme);
 }
@@ -654,7 +646,6 @@ void ChromeContentClient::AddSecureSchemesAndOrigins(
   schemes->insert(chrome::kChromeSearchScheme);
   schemes->insert(content::kChromeUIScheme);
   schemes->insert(extensions::kExtensionScheme);
-  schemes->insert(extensions::kExtensionResourceScheme);
   GetSecureOriginWhitelist(origins);
 }
 
@@ -669,8 +660,7 @@ void ChromeContentClient::AddServiceWorkerSchemes(
 bool ChromeContentClient::AllowScriptExtensionForServiceWorker(
     const GURL& script_url) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  return script_url.SchemeIs(extensions::kExtensionScheme) ||
-         script_url.SchemeIs(extensions::kExtensionResourceScheme);
+  return script_url.SchemeIs(extensions::kExtensionScheme);
 #else
   return false;
 #endif

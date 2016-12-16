@@ -1059,14 +1059,9 @@ void BrowserProcessImpl::PreCreateThreads() {
     // commit (including in iframes) in extension processes.
     ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeIsolatedScheme(
         extensions::kExtensionScheme, true);
-    // TODO(nick): Kill off kExtensionResourceScheme.
-    ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeIsolatedScheme(
-        extensions::kExtensionResourceScheme, false);
   } else {
     ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
         extensions::kExtensionScheme);
-    ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
-        extensions::kExtensionResourceScheme);
   }
 #endif
 

@@ -114,24 +114,4 @@ bool ResourceRequestPolicy::CanRequestResource(
   return true;
 }
 
-bool ResourceRequestPolicy::CanRequestExtensionResourceScheme(
-    const blink::WebURL& resource_url,
-    blink::WebFrame* frame) {
-  CHECK(resource_url.protocolIs(kExtensionResourceScheme));
-
-  GURL frame_url = frame->document().url();
-  if (!frame_url.is_empty() && !frame_url.SchemeIs(kExtensionScheme)) {
-    std::string message = base::StringPrintf(
-        "Denying load of %s. chrome-extension-resources:// can only be "
-        "loaded from extensions.",
-        resource_url.string().utf8().c_str());
-    frame->addMessageToConsole(
-        blink::WebConsoleMessage(blink::WebConsoleMessage::LevelError,
-                                  blink::WebString::fromUTF8(message)));
-    return false;
-  }
-
-  return true;
-}
-
 }  // namespace extensions

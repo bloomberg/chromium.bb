@@ -124,15 +124,13 @@ TEST(ExtensionCSPValidator, IsLegal) {
 }
 
 TEST(ExtensionCSPValidator, IsSecure) {
-  EXPECT_TRUE(CheckSanitizeCSP(
-      std::string(), OPTIONS_ALLOW_UNSAFE_EVAL,
-      "script-src 'self' chrome-extension-resource:; object-src 'self';",
-      MissingSecureSrcWarning("script-src"),
-      MissingSecureSrcWarning("object-src")));
+  EXPECT_TRUE(CheckSanitizeCSP(std::string(), OPTIONS_ALLOW_UNSAFE_EVAL,
+                               "script-src 'self'; object-src 'self';",
+                               MissingSecureSrcWarning("script-src"),
+                               MissingSecureSrcWarning("object-src")));
   EXPECT_TRUE(CheckSanitizeCSP(
       "img-src https://google.com", OPTIONS_ALLOW_UNSAFE_EVAL,
-      "img-src https://google.com; script-src 'self'"
-      " chrome-extension-resource:; object-src 'self';",
+      "img-src https://google.com; script-src 'self'; object-src 'self';",
       MissingSecureSrcWarning("script-src"),
       MissingSecureSrcWarning("object-src")));
   EXPECT_TRUE(CheckSanitizeCSP(

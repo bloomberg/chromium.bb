@@ -7,7 +7,6 @@
 namespace extensions {
 
 const char kExtensionScheme[] = "chrome-extension";
-const char kExtensionResourceScheme[] = "chrome-extension-resource";
 
 const base::FilePath::CharType kManifestFilename[] =
     FILE_PATH_LITERAL("manifest.json");

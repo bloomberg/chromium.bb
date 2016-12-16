@@ -460,28 +460,6 @@ base::FilePath ExtensionURLToRelativeFilePath(const GURL& url) {
   return path;
 }
 
-base::FilePath ExtensionResourceURLToFilePath(const GURL& url,
-                                              const base::FilePath& root) {
-  std::string host = net::UnescapeURLComponent(
-      url.host(),
-      net::UnescapeRule::SPACES |
-          net::UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS);
-  if (host.empty())
-    return base::FilePath();
-
-  base::FilePath relative_path = ExtensionURLToRelativeFilePath(url);
-  if (relative_path.empty())
-    return base::FilePath();
-
-  base::FilePath path = root.AppendASCII(host).Append(relative_path);
-  if (!base::PathExists(path))
-    return base::FilePath();
-  path = base::MakeAbsoluteFilePath(path);
-  if (path.empty() || !root.IsParent(path))
-    return base::FilePath();
-  return path;
-}
-
 bool ValidateExtensionIconSet(const ExtensionIconSet& icon_set,
                               const Extension* extension,
                               int error_message_id,

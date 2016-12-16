@@ -270,7 +270,6 @@ source_set("chrome_extensions_browsertests") {
     "//base:i18n",
     "//base/test:test_support",
     "//chrome/browser",
-    "//chrome/browser/resources:extension_resource_demo",
     "//chrome/common/extensions/api",
     "//chrome/renderer",
     "//components/autofill/content/browser:risk_proto",

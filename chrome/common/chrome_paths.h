@@ -97,7 +97,6 @@ enum {
   FILE_RESOURCES_PACK,          // Full path to the .pak file containing
                                 // binary data (e.g., html files and images
                                 // used by internal pages).
-  DIR_RESOURCES_EXTENSION,      // Full path to extension resources.
 #if defined(OS_CHROMEOS)
   DIR_CHROMEOS_WALLPAPERS,      // Directory where downloaded chromeos
                                 // wallpapers reside.

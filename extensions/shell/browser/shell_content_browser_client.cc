@@ -146,10 +146,9 @@ bool ShellContentBrowserClient::IsHandledURL(const GURL& url) {
       url::kFileScheme,
       url::kFileSystemScheme,
       kExtensionScheme,
-      kExtensionResourceScheme,
   };
-  for (size_t i = 0; i < arraysize(kProtocolList); ++i) {
-    if (url.scheme() == kProtocolList[i])
+  for (const char* scheme : kProtocolList) {
+    if (url.SchemeIs(scheme))
       return true;
   }
   return false;

@@ -219,13 +219,6 @@ bool ChromeExtensionsRendererClient::WillSendRequest(
     return true;
   }
 
-  if (url.protocolIs(extensions::kExtensionResourceScheme) &&
-      !resource_request_policy_->CanRequestExtensionResourceScheme(url,
-                                                                   frame)) {
-    *new_url = GURL(chrome::kExtensionResourceInvalidRequestURL);
-    return true;
-  }
-
   return false;
 }
 

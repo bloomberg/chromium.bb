@@ -411,8 +411,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
       chrome_search_scheme);
 
   // chrome-search: resources shouldn't trigger insecure content warnings. Note
-  // that chrome-extension: and chrome-extension-resource: schemes are taken
-  // care of in extensions::Dispatcher.
+  // that the chrome-extension: scheme is registered by extensions::Dispatcher.
   WebSecurityPolicy::registerURLSchemeAsSecure(chrome_search_scheme);
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)

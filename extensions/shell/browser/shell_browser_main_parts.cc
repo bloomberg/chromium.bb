@@ -130,8 +130,6 @@ int ShellBrowserMainParts::PreCreateThreads() {
 
   content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
       kExtensionScheme);
-  content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
-      kExtensionResourceScheme);
 
   // Return no error.
   return 0;

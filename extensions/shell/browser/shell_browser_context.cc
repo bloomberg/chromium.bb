@@ -54,9 +54,7 @@ net::URLRequestContextGetter* ShellBrowserContext::CreateRequestContext(
       content::ProtocolHandlerMap* protocol_handlers,
       content::URLRequestInterceptorScopedVector request_interceptors) {
   DCHECK(!url_request_context_getter());
-  // Handle only chrome-extension:// requests. app_shell does not support
-  // chrome-extension-resource:// requests (it does not store shared extension
-  // data in its installation directory).
+  // Handle only chrome-extension:// requests.
   InfoMap* extension_info_map =
       browser_main_parts_->extension_system()->info_map();
   (*protocol_handlers)[kExtensionScheme] =
