@@ -53,6 +53,10 @@ void InitializeCrashpad(bool initial_client, const std::string& process_type);
 // line argument of --type=crashpad-handler.
 void InitializeCrashpadWithEmbeddedHandler(bool initial_client,
                                            const std::string& process_type);
+
+// Waits until the handler has successfully completed startup or failed, and
+// logs an error in that case.
+void BlockUntilHandlerStarted();
 #endif  // OS_WIN
 
 // Enables or disables crash report upload, taking the given consent to upload

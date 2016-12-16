@@ -206,7 +206,6 @@ int main() {
 #endif
   install_static::InstallDetails::InitializeFromPrimaryModule(
       chrome::kChromeElfDllName);
-  SignalInitializeCrashReporting();
 
   // Initialize the CommandLine singleton from the environment.
   base::CommandLine::Init(0, nullptr);

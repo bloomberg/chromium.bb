@@ -11,5 +11,4 @@ EXPORTS
   GetUserDataDirectoryThunk
   IsBlacklistInitialized
   SignalChromeElf
-  SignalInitializeCrashReporting
   SuccessfullyBlocked

@@ -212,6 +212,7 @@
 #include "chrome/installer/util/helper.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/shell_util.h"
+#include "components/crash/content/app/crashpad.h"
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 #endif  // defined(OS_WIN)
@@ -1401,6 +1402,18 @@ void ChromeBrowserMainParts::PostBrowserStart() {
 
 int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreMainMessageLoopRunImpl");
+
+#if defined(OS_WIN)
+  HMODULE chrome_elf = GetModuleHandle(chrome::kChromeElfDllName);
+  if (chrome_elf) {
+    auto block_until_handler_started = reinterpret_cast<void (*)()>(
+        GetProcAddress(chrome_elf, "BlockUntilHandlerStartedImpl"));
+    if (block_until_handler_started) {
+      SCOPED_UMA_HISTOGRAM_TIMER("Startup.BlockForCrashpadHandlerStartupTime");
+      block_until_handler_started();
+    }
+  }
+#endif
 
   SCOPED_UMA_HISTOGRAM_LONG_TIMER("Startup.PreMainMessageLoopRunImplLongTime");
   const base::TimeTicks start_time_step1 = base::TimeTicks::Now();
