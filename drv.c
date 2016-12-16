@@ -35,6 +35,7 @@ extern struct backend backend_marvell;
 #ifdef DRV_MEDIATEK
 extern struct backend backend_mediatek;
 #endif
+extern struct backend backend_nouveau;
 #ifdef DRV_ROCKCHIP
 extern struct backend backend_rockchip;
 #endif
@@ -74,6 +75,7 @@ static struct backend *drv_get_backend(int fd)
 #ifdef DRV_MEDIATEK
 		&backend_mediatek,
 #endif
+		&backend_nouveau,
 #ifdef DRV_ROCKCHIP
 		&backend_rockchip,
 #endif
