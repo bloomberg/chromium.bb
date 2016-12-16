@@ -77,6 +77,11 @@ class PaintArtifactCompositor::ContentLayerClientImpl
   }
   void SetPaintableRegion(gfx::Rect region) { m_paintableRegion = region; }
 
+  void addPaintChunkDebugData(std::unique_ptr<JSONArray> json) {
+    m_paintChunkDebugData.append(std::move(json));
+  }
+  void clearPaintChunkDebugData() { m_paintChunkDebugData.clear(); }
+
   // cc::ContentLayerClient
   gfx::Rect PaintableRegion() override { return m_paintableRegion; }
   scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
@@ -130,7 +135,7 @@ class PaintArtifactCompositor::ContentLayerClientImpl
     }
   }
 
-  std::unique_ptr<JSONObject> layerAsJSON() {
+  std::unique_ptr<JSONObject> layerAsJSON(LayerTreeFlags flags) {
     std::unique_ptr<JSONObject> json = JSONObject::create();
     json->setString("name", m_debugName);
     IntSize bounds(m_ccPictureLayer->bounds().width(),
@@ -139,6 +144,14 @@ class PaintArtifactCompositor::ContentLayerClientImpl
       json->setArray("bounds", sizeAsJSONArray(bounds));
     json->setBoolean("contentsOpaque", m_ccPictureLayer->contents_opaque());
     json->setBoolean("drawsContent", m_ccPictureLayer->DrawsContent());
+
+    if (flags & LayerTreeIncludesDebugInfo) {
+      std::unique_ptr<JSONArray> paintChunkContentsArray = JSONArray::create();
+      for (const auto& debugData : m_paintChunkDebugData) {
+        paintChunkContentsArray->pushValue(debugData->clone());
+      }
+      json->setArray("paintChunkContents", std::move(paintChunkContentsArray));
+    }
 
     ccLayersRasterInvalidationTrackingMap().asJSON(m_ccPictureLayer.get(),
                                                    json.get());
@@ -157,6 +170,7 @@ class PaintArtifactCompositor::ContentLayerClientImpl
   scoped_refptr<cc::PictureLayer> m_ccPictureLayer;
   scoped_refptr<cc::DisplayItemList> m_ccDisplayItemList;
   gfx::Rect m_paintableRegion;
+  Vector<std::unique_ptr<JSONArray>> m_paintChunkDebugData;
 };
 
 PaintArtifactCompositor::PaintArtifactCompositor() {
@@ -193,7 +207,7 @@ std::unique_ptr<JSONObject> PaintArtifactCompositor::layersAsJSON(
     LayerTreeFlags flags) const {
   std::unique_ptr<JSONArray> layersJSON = JSONArray::create();
   for (const auto& client : m_contentLayerClients) {
-    layersJSON->pushObject(client->layerAsJSON());
+    layersJSON->pushObject(client->layerAsJSON(flags));
   }
   std::unique_ptr<JSONObject> json = JSONObject::create();
   json->setArray("layers", std::move(layersJSON));
@@ -301,7 +315,8 @@ scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(
     const PaintChunk& paintChunk,
     gfx::Vector2dF& layerOffset,
     Vector<std::unique_ptr<ContentLayerClientImpl>>& newContentLayerClients,
-    RasterInvalidationTracking* tracking) {
+    RasterInvalidationTracking* tracking,
+    bool storeDebugInfo) {
   DCHECK(paintChunk.size());
 
   // If the paint chunk is a foreign layer, just return that layer.
@@ -329,6 +344,16 @@ scoped_refptr<cc::Layer> PaintArtifactCompositor::layerForPaintChunk(
   DCHECK(!tracking ||
          tracking->trackedRasterInvalidations.size() ==
              paintChunk.rasterInvalidationRects.size());
+
+  contentLayerClient->clearPaintChunkDebugData();
+  if (storeDebugInfo) {
+    contentLayerClient->addPaintChunkDebugData(
+        paintArtifact.getDisplayItemList().subsequenceAsJSON(
+            paintChunk.beginIndex, paintChunk.endIndex,
+            DisplayItemList::SkipNonDrawings |
+                DisplayItemList::ShownOnlyDisplayItemTypes));
+  }
+
   for (unsigned index = 0; index < paintChunk.rasterInvalidationRects.size();
        ++index) {
     IntRect rect(enclosingIntRect(paintChunk.rasterInvalidationRects[index]));
@@ -768,7 +793,8 @@ void PropertyTreeManager::buildEffectNodesRecursively(
 
 void PaintArtifactCompositor::update(
     const PaintArtifact& paintArtifact,
-    RasterInvalidationTrackingMap<const PaintChunk>* rasterChunkInvalidations) {
+    RasterInvalidationTrackingMap<const PaintChunk>* rasterChunkInvalidations,
+    bool storeDebugInfo) {
   DCHECK(m_rootLayer);
 
   cc::LayerTree* layerTree = m_rootLayer->GetLayerTree();
@@ -794,7 +820,8 @@ void PaintArtifactCompositor::update(
     scoped_refptr<cc::Layer> layer = layerForPaintChunk(
         paintArtifact, paintChunk, layerOffset, newContentLayerClients,
         rasterChunkInvalidations ? rasterChunkInvalidations->find(&paintChunk)
-                                 : nullptr);
+                                 : nullptr,
+        storeDebugInfo);
 
     int transformId = propertyTreeManager.compositorIdForTransformNode(
         paintChunk.properties.propertyTreeState.transform());

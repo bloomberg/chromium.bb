@@ -358,6 +358,10 @@ class CORE_EXPORT FrameView final
 
   static void setInitialTracksPaintInvalidationsForTesting(bool);
 
+  void setIsStoringCompositedLayerDebugInfo(bool val) {
+    m_isStoringCompositedLayerDebugInfo = val;
+  }
+
   // These methods are for testing.
   void setTracksPaintInvalidations(bool);
   bool isTrackingPaintInvalidations() const {
@@ -1146,6 +1150,7 @@ class CORE_EXPORT FrameView final
   // For Slimming Paint v2 only.
   std::unique_ptr<PaintController> m_paintController;
   std::unique_ptr<PaintArtifactCompositor> m_paintArtifactCompositor;
+  bool m_isStoringCompositedLayerDebugInfo;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count) {

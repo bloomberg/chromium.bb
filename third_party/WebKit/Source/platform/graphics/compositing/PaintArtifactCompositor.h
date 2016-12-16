@@ -48,9 +48,13 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   }
 
   // Updates the layer tree to match the provided paint artifact.
+  // If |storeDebugInfo| is true, stores detailed debugging information in
+  // the layers that will be output as part of a call to layersAsJSON
+  // (if LayerTreeIncludesDebugInfo is specified).
   void update(
       const PaintArtifact&,
-      RasterInvalidationTrackingMap<const PaintChunk>* paintChunkInvalidations);
+      RasterInvalidationTrackingMap<const PaintChunk>* paintChunkInvalidations,
+      bool storeDebugInfo);
 
   // The root layer of the tree managed by this object.
   cc::Layer* rootLayer() const { return m_rootLayer.get(); }
@@ -93,7 +97,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
       const PaintChunk&,
       gfx::Vector2dF& layerOffset,
       Vector<std::unique_ptr<ContentLayerClientImpl>>& newContentLayerClients,
-      RasterInvalidationTracking*);
+      RasterInvalidationTracking*,
+      bool storeDebugInfo);
 
   // Finds a client among the current vector of clients that matches the paint
   // chunk's id, or otherwise allocates a new one.

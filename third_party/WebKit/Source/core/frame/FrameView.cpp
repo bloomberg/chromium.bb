@@ -3058,7 +3058,8 @@ void FrameView::pushPaintArtifactToCompositor() {
 
   m_paintArtifactCompositor->update(
       m_paintController->paintArtifact(),
-      m_paintController->paintChunksRasterInvalidationTrackingMap());
+      m_paintController->paintChunksRasterInvalidationTrackingMap(),
+      m_isStoringCompositedLayerDebugInfo);
 }
 
 std::unique_ptr<JSONObject> FrameView::compositedLayersAsJSON(

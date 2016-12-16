@@ -72,8 +72,9 @@ class PLATFORM_EXPORT DisplayItemList
   enum JsonOptions {
     Default = 0,
     ShowPictures = 1,
-    SkipNonDrawings = 2,
-    ShowClientDebugName = 4,
+    SkipNonDrawings = 1 << 1,
+    ShowClientDebugName = 1 << 2,
+    ShownOnlyDisplayItemTypes = 1 << 3
   };
   typedef unsigned JsonFlags;
 

@@ -94,7 +94,7 @@ class PaintArtifactCompositorTestWithPropertyTrees : public ::testing::Test {
   }
 
   void update(const PaintArtifact& artifact) {
-    m_paintArtifactCompositor->update(artifact, nullptr);
+    m_paintArtifactCompositor->update(artifact, nullptr, false);
     m_webLayerTreeView->layerTreeHost()->LayoutAndUpdateLayers();
   }
 

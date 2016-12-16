@@ -66,7 +66,14 @@ std::unique_ptr<JSONArray> DisplayItemList::subsequenceAsJSON(
 #ifndef NDEBUG
     StringBuilder stringBuilder;
     displayItem.dumpPropertiesAsDebugString(stringBuilder);
-    json->setString("properties", stringBuilder.toString());
+
+    if (options & ShownOnlyDisplayItemTypes) {
+      json->setString("type",
+                      DisplayItem::typeAsDebugString(displayItem.getType()));
+    } else {
+      json->setString("properties", stringBuilder.toString());
+    }
+
 #endif
     if (displayItem.hasValidClient()) {
 #if CHECK_DISPLAY_ITEM_CLIENT_ALIVENESS
@@ -77,12 +84,10 @@ std::unique_ptr<JSONArray> DisplayItemList::subsequenceAsJSON(
 
       if (options & ShowClientDebugName) {
 #endif
-#ifdef NDEBUG
         json->setString(
             "clientDebugName",
             String::format("clientDebugName: \"%s\"",
                            displayItem.client().debugName().ascii().data()));
-#endif
       }
 #ifndef NDEBUG
       if ((options & ShowPictures) && displayItem.isDrawing()) {
