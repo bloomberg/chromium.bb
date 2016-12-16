@@ -61,6 +61,7 @@ struct VideoDecodeAcceleratorSupportedProfile {
 
 // gpu::VideoDecodeAcceleratorCapabilities
 struct VideoDecodeAcceleratorCapabilities {
+  array<VideoDecodeAcceleratorSupportedProfile> supported_profiles;
   uint32 flags;
 };
 

@@ -197,6 +197,8 @@ bool StructTraits<gpu::mojom::VideoDecodeAcceleratorCapabilitiesDataView,
                   gpu::VideoDecodeAcceleratorCapabilities>::
     Read(gpu::mojom::VideoDecodeAcceleratorCapabilitiesDataView data,
          gpu::VideoDecodeAcceleratorCapabilities* out) {
+  if (!data.ReadSupportedProfiles(&out->supported_profiles))
+    return false;
   out->flags = data.flags();
   return true;
 }

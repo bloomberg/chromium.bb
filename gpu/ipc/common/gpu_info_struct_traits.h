@@ -96,6 +96,11 @@ struct StructTraits<gpu::mojom::VideoDecodeAcceleratorCapabilitiesDataView,
   static uint32_t flags(const gpu::VideoDecodeAcceleratorCapabilities& input) {
     return input.flags;
   }
+
+  static std::vector<gpu::VideoDecodeAcceleratorSupportedProfile>
+      supported_profiles(const gpu::VideoDecodeAcceleratorCapabilities& input) {
+    return input.supported_profiles;
+  }
 };
 
 template <>

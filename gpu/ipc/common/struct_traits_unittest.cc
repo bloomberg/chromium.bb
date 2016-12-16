@@ -389,11 +389,16 @@ TEST_F(StructTraitsTest, VideoDecodeAcceleratorCapabilities) {
 
   gpu::VideoDecodeAcceleratorCapabilities input;
   input.flags = flags;
+  input.supported_profiles.push_back(
+      gpu::VideoDecodeAcceleratorSupportedProfile());
+  input.supported_profiles.push_back(
+      gpu::VideoDecodeAcceleratorSupportedProfile());
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   gpu::VideoDecodeAcceleratorCapabilities output;
   proxy->EchoVideoDecodeAcceleratorCapabilities(input, &output);
   EXPECT_EQ(flags, output.flags);
+  EXPECT_EQ(input.supported_profiles.size(), output.supported_profiles.size());
 }
 
 TEST_F(StructTraitsTest, VideoEncodeAcceleratorSupportedProfile) {
