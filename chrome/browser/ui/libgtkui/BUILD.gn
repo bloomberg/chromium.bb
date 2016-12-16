@@ -46,8 +46,6 @@ common_sources = [
   "libgtkui_export.h",
   "menu_util.cc",
   "menu_util.h",
-  "native_theme_gtk.cc",
-  "native_theme_gtk.h",
   "print_dialog_gtk.cc",
   "print_dialog_gtk.h",
   "printing_gtk_util.cc",
@@ -129,7 +127,10 @@ group("libgtkui") {
 }
 
 component("libgtk2ui") {
-  sources = common_sources
+  sources = common_sources + [
+              "native_theme_gtk2.cc",
+              "native_theme_gtk2.h",
+            ]
   configs += common_configs
   defines = [ "LIBGTKUI_IMPLEMENTATION" ]
 
@@ -152,7 +153,10 @@ component("libgtk2ui") {
 # This is compiled with "all" even when it's not referenced to ensure that
 # GTK3 continues to build. GTK3 is explicitly specified by some distros.
 component("libgtk3ui") {
-  sources = common_sources
+  sources = common_sources + [
+              "native_theme_gtk3.cc",
+              "native_theme_gtk3.h",
+            ]
   configs += common_configs
   defines = [ "LIBGTKUI_IMPLEMENTATION" ]
 

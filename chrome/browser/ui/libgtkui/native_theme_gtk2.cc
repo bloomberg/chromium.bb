@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/libgtkui/native_theme_gtk.h"
+#include "chrome/browser/ui/libgtkui/native_theme_gtk2.h"
 
 #include <gtk/gtk.h>
 
@@ -26,61 +26,6 @@ namespace libgtkui {
 
 namespace {
 
-// Theme colors returned by GetSystemColor().
-const SkColor kInvalidColorIdColor = SkColorSetRGB(255, 0, 128);
-const SkColor kURLTextColor = SkColorSetRGB(0x0b, 0x80, 0x43);
-
-// Generates the normal URL color, a green color used in unhighlighted URL
-// text. It is a mix of |kURLTextColor| and the current text color.  Unlike the
-// selected text color, it is more important to match the qualities of the
-// foreground typeface color instead of taking the background into account.
-SkColor NormalURLColor(SkColor foreground) {
-  color_utils::HSL fg_hsl, hue_hsl;
-  color_utils::SkColorToHSL(foreground, &fg_hsl);
-  color_utils::SkColorToHSL(kURLTextColor, &hue_hsl);
-
-  // Only allow colors that have a fair amount of saturation in them (color vs
-  // white). This means that our output color will always be fairly green.
-  double s = std::max(0.5, fg_hsl.s);
-
-  // Make sure the luminance is at least as bright as the |kURLTextColor| green
-  // would be if we were to use that.
-  double l;
-  if (fg_hsl.l < hue_hsl.l)
-    l = hue_hsl.l;
-  else
-    l = (fg_hsl.l + hue_hsl.l) / 2;
-
-  color_utils::HSL output = {hue_hsl.h, s, l};
-  return color_utils::HSLToSkColor(output, 255);
-}
-
-// Generates the selected URL color, a green color used on URL text in the
-// currently highlighted entry in the autocomplete popup. It's a mix of
-// |kURLTextColor|, the current text color, and the background color (the
-// select highlight). It is more important to contrast with the background
-// saturation than to look exactly like the foreground color.
-SkColor SelectedURLColor(SkColor foreground, SkColor background) {
-  color_utils::HSL fg_hsl, bg_hsl, hue_hsl;
-  color_utils::SkColorToHSL(foreground, &fg_hsl);
-  color_utils::SkColorToHSL(background, &bg_hsl);
-  color_utils::SkColorToHSL(kURLTextColor, &hue_hsl);
-
-  // The saturation of the text should be opposite of the background, clamped
-  // to 0.2-0.8. We make sure it's greater than 0.2 so there's some color, but
-  // less than 0.8 so it's not the oversaturated neon-color.
-  double opposite_s = 1 - bg_hsl.s;
-  double s = std::max(0.2, std::min(0.8, opposite_s));
-
-  // The luminance should match the luminance of the foreground text.  Again,
-  // we clamp so as to have at some amount of color (green) in the text.
-  double opposite_l = fg_hsl.l;
-  double l = std::max(0.1, std::min(0.9, opposite_l));
-
-  color_utils::HSL output = {hue_hsl.h, s, l};
-  return color_utils::HSLToSkColor(output, 255);
-}
-
 enum WidgetState {
   NORMAL = 0,
   ACTIVE = 1,
@@ -89,14 +34,10 @@ enum WidgetState {
   INSENSITIVE = 4,
 };
 
-#if GTK_MAJOR_VERSION == 2
 // Same order as enum WidgetState above
 const GtkStateType stateMap[] = {
-  GTK_STATE_NORMAL,
-  GTK_STATE_ACTIVE,
-  GTK_STATE_PRELIGHT,
-  GTK_STATE_SELECTED,
-  GTK_STATE_INSENSITIVE,
+    GTK_STATE_NORMAL,   GTK_STATE_ACTIVE,      GTK_STATE_PRELIGHT,
+    GTK_STATE_SELECTED, GTK_STATE_INSENSITIVE,
 };
 
 SkColor GetFGColor(GtkWidget* widget, WidgetState state) {
@@ -115,47 +56,6 @@ SkColor GetTextAAColor(GtkWidget* widget, WidgetState state) {
 SkColor GetBaseColor(GtkWidget* widget, WidgetState state) {
   return GdkColorToSkColor(gtk_rc_get_style(widget)->base[stateMap[state]]);
 }
-
-#else
-// Same order as enum WidgetState above
-const GtkStateFlags stateMap[] = {
-    GTK_STATE_FLAG_NORMAL,      GTK_STATE_FLAG_ACTIVE,
-    GTK_STATE_FLAG_PRELIGHT,    GTK_STATE_FLAG_SELECTED,
-    GTK_STATE_FLAG_INSENSITIVE,
-};
-
-SkColor GetFGColor(GtkWidget* widget, WidgetState state) {
-  GdkRGBA color;
-  gtk_style_context_get_color(gtk_widget_get_style_context(widget),
-                              stateMap[state], &color);
-  return SkColorSetRGB(color.red * 255, color.green * 255, color.blue * 255);
-}
-SkColor GetBGColor(GtkWidget* widget, WidgetState state) {
-  GdkRGBA color;
-
-  G_GNUC_BEGIN_IGNORE_DEPRECATIONS
-  gtk_style_context_get_background_color(gtk_widget_get_style_context(widget),
-                                         stateMap[state], &color);
-  G_GNUC_END_IGNORE_DEPRECATIONS
-
-  // Hack for default color
-  if (color.alpha == 0.0)
-    color = {1, 1, 1, 1};
-
-  return SkColorSetRGB(color.red * 255, color.green * 255, color.blue * 255);
-}
-
-SkColor GetTextColor(GtkWidget* widget, WidgetState state) {
-  return GetFGColor(widget, state);
-}
-SkColor GetTextAAColor(GtkWidget* widget, WidgetState state) {
-  return GetFGColor(widget, state);
-}
-SkColor GetBaseColor(GtkWidget* widget, WidgetState state) {
-  return GetBGColor(widget, state);
-}
-
-#endif
 
 }  // namespace
 
@@ -282,7 +182,12 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
       return SkColorSetA(GetSystemColor(kColorId_LinkEnabled), 0xBB);
     case kColorId_LinkEnabled: {
       SkColor link_color = SK_ColorTRANSPARENT;
-      GetChromeStyleColor("link-color", &link_color);
+      GdkColor* style_color = nullptr;
+      gtk_widget_style_get(GetWindow(), "link-color", &style_color, nullptr);
+      if (style_color) {
+        link_color = GdkColorToSkColor(*style_color);
+        gdk_color_free(style_color);
+      }
       if (link_color != SK_ColorTRANSPARENT)
         return link_color;
       // Default color comes from gtklinkbutton.c.
@@ -321,7 +226,6 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
     case kColorId_TextfieldDefaultBackground:
       return GetBaseColor(GetEntry(), NORMAL);
 
-#if GTK_MAJOR_VERSION == 2
     case kColorId_TextfieldReadOnlyColor:
       return GetTextColor(GetEntry(), ACTIVE);
     case kColorId_TextfieldReadOnlyBackground:
@@ -330,16 +234,6 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
       return GetTextColor(GetEntry(), SELECTED);
     case kColorId_TextfieldSelectionBackgroundFocused:
       return GetBaseColor(GetEntry(), SELECTED);
-#else
-    case kColorId_TextfieldReadOnlyColor:
-      return GetTextColor(GetEntry(), SELECTED);
-    case kColorId_TextfieldReadOnlyBackground:
-      return GetBaseColor(GetEntry(), SELECTED);
-    case kColorId_TextfieldSelectionColor:
-      return GetTextColor(GetLabel(), SELECTED);
-    case kColorId_TextfieldSelectionBackgroundFocused:
-      return GetBaseColor(GetLabel(), SELECTED);
-#endif
 
     // Tooltips
     case kColorId_TooltipBackground:
@@ -454,22 +348,6 @@ SkColor NativeThemeGtk2::GetSystemColor(ColorId color_id) const {
   }
 
   return kInvalidColorIdColor;
-}
-
-// Get ChromeGtkFrame theme colors. No-op in GTK3.
-bool NativeThemeGtk2::GetChromeStyleColor(const char* style_property,
-                                          SkColor* ret_color) const {
-#if GTK_MAJOR_VERSION == 2
-  GdkColor* style_color = nullptr;
-  gtk_widget_style_get(GetWindow(), style_property, &style_color, nullptr);
-  if (style_color) {
-    *ret_color = GdkColorToSkColor(*style_color);
-    gdk_color_free(style_color);
-    return true;
-  }
-#endif
-
-  return false;
 }
 
 GtkWidget* NativeThemeGtk2::GetWindow() const {

@@ -146,6 +146,15 @@ class Gtk2UI : public views::LinuxUI {
   // Updates |default_font_*|.
   void UpdateDefaultFont();
 
+  // Gets a ChromeGtkFrame theme color; returns true on success.  No-op on gtk3.
+  bool GetChromeStyleColor(const char* sytle_property,
+                           SkColor* ret_color) const;
+
+  ui::NativeTheme* native_theme_;
+
+  // A GtkWindow object with the class "ChromeGtkFrame".
+  GtkWidget* fake_window_;
+
   // Colors calculated by LoadGtkValues() that are given to the
   // caller while |use_gtk_| is true.
   ColorMap colors_;

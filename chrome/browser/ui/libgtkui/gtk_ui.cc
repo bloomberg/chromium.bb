@@ -25,11 +25,11 @@
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/libgtkui/app_indicator_icon.h"
+#include "chrome/browser/ui/libgtkui/chrome_gtk_frame.h"
 #include "chrome/browser/ui/libgtkui/gtk_event_loop.h"
 #include "chrome/browser/ui/libgtkui/gtk_key_bindings_handler.h"
 #include "chrome/browser/ui/libgtkui/gtk_status_icon.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
-#include "chrome/browser/ui/libgtkui/native_theme_gtk.h"
 #include "chrome/browser/ui/libgtkui/print_dialog_gtk.h"
 #include "chrome/browser/ui/libgtkui/printing_gtk_util.h"
 #include "chrome/browser/ui/libgtkui/select_file_dialog_impl.h"
@@ -60,6 +60,12 @@
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/linux_ui/window_button_order_observer.h"
 #include "ui/views/resources/grit/views_resources.h"
+
+#if GTK_MAJOR_VERSION == 2
+#include "chrome/browser/ui/libgtkui/native_theme_gtk2.h"  // nogncheck
+#elif GTK_MAJOR_VERSION == 3
+#include "chrome/browser/ui/libgtkui/native_theme_gtk3.h"  // nogncheck
+#endif
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
 #include "printing/printing_context_linux.h"
@@ -311,12 +317,9 @@ gfx::FontRenderParams GetGtkFontRenderParams() {
   gint hinting = 0;
   gchar* hint_style = NULL;
   gchar* rgba = NULL;
-  g_object_get(gtk_settings,
-               "gtk-xft-antialias", &antialias,
-               "gtk-xft-hinting", &hinting,
-               "gtk-xft-hintstyle", &hint_style,
-               "gtk-xft-rgba", &rgba,
-               NULL);
+  g_object_get(gtk_settings, "gtk-xft-antialias", &antialias, "gtk-xft-hinting",
+               &hinting, "gtk-xft-hintstyle", &hint_style, "gtk-xft-rgba",
+               &rgba, NULL);
 
   gfx::FontRenderParams params;
   params.antialiasing = antialias != 0;
@@ -412,9 +415,22 @@ views::LinuxUI::NonClientMiddleClickAction GetDefaultMiddleClickAction() {
 
 Gtk2UI::Gtk2UI() : middle_click_action_(GetDefaultMiddleClickAction()) {
   GtkInitFromCommandLine(*base::CommandLine::ForCurrentProcess());
+#if GTK_MAJOR_VERSION == 2
+  native_theme_ = NativeThemeGtk2::instance();
+  fake_window_ = chrome_gtk_frame_new();
+  gtk_widget_realize(fake_window_);  // Is this necessary?
+#elif GTK_MAJOR_VERSION == 3
+  native_theme_ = NativeThemeGtk3::instance();
+#else
+#error "Unsupported GTK version"
+#endif
 }
 
-Gtk2UI::~Gtk2UI() {}
+Gtk2UI::~Gtk2UI() {
+#if GTK_MAJOR_VERSION == 2
+  gtk_widget_destroy(fake_window_);
+#endif
+}
 
 void OnThemeChanged(GObject* obj, GParamSpec* param, Gtk2UI* gtkui) {
   gtkui->ResetStyle();
@@ -522,10 +538,8 @@ double Gtk2UI::GetCursorBlinkInterval() const {
 
   gint cursor_blink_time = kGtkDefaultCursorBlinkTime;
   gboolean cursor_blink = TRUE;
-  g_object_get(gtk_settings_get_default(),
-               "gtk-cursor-blink-time", &cursor_blink_time,
-               "gtk-cursor-blink", &cursor_blink,
-               NULL);
+  g_object_get(gtk_settings_get_default(), "gtk-cursor-blink-time",
+               &cursor_blink_time, "gtk-cursor-blink", &cursor_blink, NULL);
   return cursor_blink ? (cursor_blink_time / kGtkCursorBlinkCycleFactor) : 0.0;
 }
 
@@ -537,7 +551,7 @@ ui::NativeTheme* Gtk2UI::GetNativeTheme(aura::Window* window) const {
   if (native_theme_override)
     return native_theme_override;
 
-  return NativeThemeGtk2::instance();
+  return native_theme_;
 }
 
 void Gtk2UI::SetNativeThemeOverride(const NativeThemeGetter& callback) {
@@ -622,7 +636,7 @@ gfx::Image Gtk2UI::GetIconForContentType(const std::string& content_type,
 std::unique_ptr<views::Border> Gtk2UI::CreateNativeBorder(
     views::LabelButton* owning_button,
     std::unique_ptr<views::LabelButtonBorder> border) {
-  if (owning_button->GetNativeTheme() != NativeThemeGtk2::instance())
+  if (owning_button->GetNativeTheme() != native_theme_)
     return std::move(border);
 
   std::unique_ptr<views::LabelButtonAssetBorder> gtk_border(
@@ -776,12 +790,9 @@ void Gtk2UI::SetScrollbarColors() {
   thumb_inactive_color_ = SkColorSetRGB(234, 234, 234);
   track_color_ = SkColorSetRGB(211, 211, 211);
 
-  NativeThemeGtk2::instance()->GetChromeStyleColor(
-      "scrollbar-slider-prelight-color", &thumb_active_color_);
-  NativeThemeGtk2::instance()->GetChromeStyleColor(
-      "scrollbar-slider-normal-color", &thumb_inactive_color_);
-  NativeThemeGtk2::instance()->GetChromeStyleColor("scrollbar-trough-color",
-                                                   &track_color_);
+  GetChromeStyleColor("scrollbar-slider-prelight-color", &thumb_active_color_);
+  GetChromeStyleColor("scrollbar-slider-normal-color", &thumb_inactive_color_);
+  GetChromeStyleColor("scrollbar-trough-color", &track_color_);
 }
 
 void Gtk2UI::LoadGtkValues() {
@@ -790,12 +801,10 @@ void Gtk2UI::LoadGtkValues() {
   // regress startup time. Figure out how to do that when we can't access the
   // prefs system from here.
 
-  NativeThemeGtk2* theme = NativeThemeGtk2::instance();
-
   SkColor toolbar_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
-  SkColor label_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
+      native_theme_->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
+  SkColor label_color = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelEnabledColor);
 
   colors_[ThemeProperties::COLOR_CONTROL_BACKGROUND] = toolbar_color;
   colors_[ThemeProperties::COLOR_TOOLBAR] = toolbar_color;
@@ -821,10 +830,10 @@ void Gtk2UI::LoadGtkValues() {
   // provides sufficient contrast to |toolbar_color|. Try this out with
   // Darklooks, HighContrastInverse or ThinIce.
 
-  SkColor ntp_background = theme->GetSystemColor(
+  SkColor ntp_background = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldDefaultBackground);
-  SkColor ntp_foreground =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_TextfieldDefaultColor);
+  SkColor ntp_foreground = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultColor);
 
   colors_[ThemeProperties::COLOR_NTP_BACKGROUND] = ntp_background;
   colors_[ThemeProperties::COLOR_NTP_TEXT] = ntp_foreground;
@@ -842,7 +851,7 @@ void Gtk2UI::LoadGtkValues() {
   colors_[ThemeProperties::COLOR_NTP_SECTION_TEXT] = label_color;
 
   SkColor link_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_LinkEnabled);
+      native_theme_->GetSystemColor(ui::NativeTheme::kColorId_LinkEnabled);
   colors_[ThemeProperties::COLOR_NTP_LINK] = link_color;
   colors_[ThemeProperties::COLOR_NTP_LINK_UNDERLINE] = link_color;
   colors_[ThemeProperties::COLOR_NTP_SECTION_LINK] = link_color;
@@ -855,19 +864,21 @@ void Gtk2UI::LoadGtkValues() {
 
   // Some GTK themes only define the text selection colors on the GtkEntry
   // class, so we need to use that for getting selection colors.
-  active_selection_bg_color_ = theme->GetSystemColor(
+  active_selection_bg_color_ = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldSelectionBackgroundFocused);
-  active_selection_fg_color_ =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_TextfieldSelectionColor);
-  inactive_selection_bg_color_ = theme->GetSystemColor(
+  active_selection_fg_color_ = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldSelectionColor);
+  inactive_selection_bg_color_ = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldReadOnlyBackground);
-  inactive_selection_fg_color_ =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_TextfieldReadOnlyColor);
+  inactive_selection_fg_color_ = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldReadOnlyColor);
 
   colors_[ThemeProperties::COLOR_TAB_THROBBER_SPINNING] =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_ThrobberSpinningColor);
+      native_theme_->GetSystemColor(
+          ui::NativeTheme::kColorId_ThrobberSpinningColor);
   colors_[ThemeProperties::COLOR_TAB_THROBBER_WAITING] =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_ThrobberWaitingColor);
+      native_theme_->GetSystemColor(
+          ui::NativeTheme::kColorId_ThrobberWaitingColor);
 }
 
 void Gtk2UI::LoadCursorTheme() {
@@ -875,10 +886,8 @@ void Gtk2UI::LoadCursorTheme() {
 
   gchar* theme = nullptr;
   gint size = 0;
-  g_object_get(settings,
-               "gtk-cursor-theme-name", &theme,
-               "gtk-cursor-theme-size", &size,
-               nullptr);
+  g_object_get(settings, "gtk-cursor-theme-name", &theme,
+               "gtk-cursor-theme-size", &size, nullptr);
 
   if (theme)
     XcursorSetTheme(gfx::GetXDisplay(), theme);
@@ -890,27 +899,26 @@ void Gtk2UI::LoadCursorTheme() {
 
 void Gtk2UI::BuildFrameColors() {
 #if GTK_MAJOR_VERSION == 2
-  NativeThemeGtk2* theme = NativeThemeGtk2::instance();
   color_utils::HSL kDefaultFrameShift = {-1, -1, 0.4};
   SkColor frame_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground);
+      native_theme_->GetSystemColor(ui::NativeTheme::kColorId_WindowBackground);
   frame_color = color_utils::HSLShift(frame_color, kDefaultFrameShift);
-  theme->GetChromeStyleColor("frame-color", &frame_color);
+  GetChromeStyleColor("frame-color", &frame_color);
   colors_[ThemeProperties::COLOR_FRAME] = frame_color;
 
-  GtkStyle* style = gtk_rc_get_style(theme->GetWindow());
+  GtkStyle* style = gtk_rc_get_style(fake_window_);
   SkColor temp_color = color_utils::HSLShift(
       GdkColorToSkColor(style->bg[GTK_STATE_INSENSITIVE]), kDefaultFrameShift);
-  theme->GetChromeStyleColor("inactive-frame-color", &temp_color);
+  GetChromeStyleColor("inactive-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INACTIVE] = temp_color;
 
   temp_color = color_utils::HSLShift(frame_color, kDefaultTintFrameIncognito);
-  theme->GetChromeStyleColor("incognito-frame-color", &temp_color);
+  GetChromeStyleColor("incognito-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO] = temp_color;
 
   temp_color =
       color_utils::HSLShift(frame_color, kDefaultTintFrameIncognitoInactive);
-  theme->GetChromeStyleColor("incognito-inactive-frame-color", &temp_color);
+  GetChromeStyleColor("incognito-inactive-frame-color", &temp_color);
   colors_[ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE] = temp_color;
 #else
   auto set_frame_color = [this](int color_id) {
@@ -969,26 +977,22 @@ void Gtk2UI::BuildFrameColors() {
 }
 
 void Gtk2UI::GetNormalButtonTintHSL(color_utils::HSL* tint) const {
-  NativeThemeGtk2* theme = NativeThemeGtk2::instance();
-
-  SkColor accent_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_ProminentButtonColor);
-  SkColor text_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor);
+  SkColor accent_color = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_ProminentButtonColor);
+  SkColor text_color = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_LabelEnabledColor);
   SkColor base_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
+      native_theme_->GetSystemColor(ui::NativeTheme::kColorId_DialogBackground);
 
   PickButtonTintFromColors(accent_color, text_color, base_color, tint);
 }
 
 void Gtk2UI::GetNormalEntryForegroundHSL(color_utils::HSL* tint) const {
-  NativeThemeGtk2* theme = NativeThemeGtk2::instance();
-
-  SkColor accent_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_ProminentButtonColor);
-  SkColor text_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_TextfieldDefaultColor);
-  SkColor base_color = theme->GetSystemColor(
+  SkColor accent_color = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_ProminentButtonColor);
+  SkColor text_color = native_theme_->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultColor);
+  SkColor base_color = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldDefaultBackground);
 
   PickButtonTintFromColors(accent_color, text_color, base_color, tint);
@@ -998,15 +1002,16 @@ void Gtk2UI::GetSelectedEntryForegroundHSL(color_utils::HSL* tint) const {
   // The simplest of all the tints. We just use the selected text in the entry
   // since the icons tinted this way will only be displayed against
   // base[GTK_STATE_SELECTED].
-  SkColor color = NativeThemeGtk2::instance()->GetSystemColor(
+  SkColor color = native_theme_->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldSelectionColor);
 
   color_utils::SkColorToHSL(color, tint);
 }
 
 void Gtk2UI::UpdateDefaultFont() {
-  PangoContext* pc =
-      gtk_widget_get_pango_context(NativeThemeGtk2::instance()->GetLabel());
+  GtkWidget* fake_label = gtk_label_new(nullptr);
+  g_object_ref_sink(fake_label);  // Remove the floating reference.
+  PangoContext* pc = gtk_widget_get_pango_context(fake_label);
   const PangoFontDescription* desc = pango_context_get_font_description(pc);
 
   // Use gfx::FontRenderParams to select a family and determine the rendering
@@ -1029,7 +1034,7 @@ void Gtk2UI::UpdateDefaultFont() {
                                static_cast<double>(PANGO_SCALE);
     default_font_size_pixels_ = static_cast<int>(
         GetFontSizePixelsInPoint(GetDeviceScaleFactor()) * size_points);
-   query.point_size = static_cast<int>(size_points);
+    query.point_size = static_cast<int>(size_points);
   }
 
   query.style = gfx::Font::NORMAL;
@@ -1042,11 +1047,29 @@ void Gtk2UI::UpdateDefaultFont() {
   default_font_render_params_ =
       gfx::GetFontRenderParams(query, &default_font_family_);
   default_font_style_ = query.style;
+
+  gtk_widget_destroy(fake_label);
+  g_object_unref(fake_label);
+}
+
+bool Gtk2UI::GetChromeStyleColor(const char* style_property,
+                                 SkColor* ret_color) const {
+#if GTK_MAJOR_VERSION == 2
+  GdkColor* style_color = nullptr;
+  gtk_widget_style_get(fake_window_, style_property, &style_color, nullptr);
+  if (style_color) {
+    *ret_color = GdkColorToSkColor(*style_color);
+    gdk_color_free(style_color);
+    return true;
+  }
+#endif
+
+  return false;
 }
 
 void Gtk2UI::ResetStyle() {
   LoadGtkValues();
-  NativeThemeGtk2::instance()->NotifyObservers();
+  native_theme_->NotifyObservers();
 }
 
 void Gtk2UI::UpdateDeviceScaleFactor() {
