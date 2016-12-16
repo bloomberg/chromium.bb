@@ -34,7 +34,6 @@ namespace {
 
 const char kKeyId[] = "id";
 const char kKeyTitle[] = "title";
-const char kKeyIcon[] = "icon";
 const char kKeyType[] = "type";
 const char kKeyHasChildren[] = "hasChildren";
 
@@ -101,14 +100,10 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
   switch (node.GetDetailedInfo().node_type) {
     case CookieTreeNode::DetailedInfo::TYPE_HOST: {
       dict->SetString(kKeyType, "origin");
-#if defined(OS_MACOSX)
-      dict->SetString(kKeyIcon, "chrome://theme/IDR_BOOKMARK_BAR_FOLDER");
-#endif
       break;
     }
     case CookieTreeNode::DetailedInfo::TYPE_COOKIE: {
       dict->SetString(kKeyType, "cookie");
-      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_ICON");
 
       const net::CanonicalCookie& cookie = *node.GetDetailedInfo().cookie;
 
@@ -133,7 +128,6 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
     }
     case CookieTreeNode::DetailedInfo::TYPE_DATABASE: {
       dict->SetString(kKeyType, "database");
-      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_STORAGE_ICON");
 
       const BrowsingDataDatabaseHelper::DatabaseInfo& database_info =
           *node.GetDetailedInfo().database_info;
@@ -150,7 +144,6 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
     }
     case CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE: {
       dict->SetString(kKeyType, "local_storage");
-      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_STORAGE_ICON");
 
       const BrowsingDataLocalStorageHelper::LocalStorageInfo&
          local_storage_info = *node.GetDetailedInfo().local_storage_info;
@@ -165,7 +158,6 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
     }
     case CookieTreeNode::DetailedInfo::TYPE_APPCACHE: {
       dict->SetString(kKeyType, "app_cache");
-      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_STORAGE_ICON");
 
       const content::AppCacheInfo& appcache_info =
           *node.GetDetailedInfo().appcache_info;
@@ -181,7 +173,6 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
     }
     case CookieTreeNode::DetailedInfo::TYPE_INDEXED_DB: {
       dict->SetString(kKeyType, "indexed_db");
-      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_STORAGE_ICON");
 
       const content::IndexedDBInfo& indexed_db_info =
           *node.GetDetailedInfo().indexed_db_info;
@@ -195,7 +186,6 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
     }
     case CookieTreeNode::DetailedInfo::TYPE_FILE_SYSTEM: {
       dict->SetString(kKeyType, "file_system");
-      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_STORAGE_ICON");
 
       const BrowsingDataFileSystemHelper::FileSystemInfo& file_system_info =
           *node.GetDetailedInfo().file_system_info;
@@ -222,7 +212,6 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
         return false;
 
       dict->SetString(kKeyType, "quota");
-      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_STORAGE_ICON");
 
       const BrowsingDataQuotaHelper::QuotaInfo& quota_info =
           *node.GetDetailedInfo().quota_info;
@@ -245,7 +234,6 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
     }
     case CookieTreeNode::DetailedInfo::TYPE_CHANNEL_ID: {
       dict->SetString(kKeyType, "channel_id");
-      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_ICON");
 
       const net::ChannelIDStore::ChannelID& channel_id =
           *node.GetDetailedInfo().channel_id;
@@ -260,7 +248,6 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
     }
     case CookieTreeNode::DetailedInfo::TYPE_SERVICE_WORKER: {
       dict->SetString(kKeyType, "service_worker");
-      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_STORAGE_ICON");
 
       const content::ServiceWorkerUsageInfo& service_worker_info =
           *node.GetDetailedInfo().service_worker_info;
@@ -280,7 +267,6 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
     }
     case CookieTreeNode::DetailedInfo::TYPE_CACHE_STORAGE: {
       dict->SetString(kKeyType, "cache_storage");
-      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_STORAGE_ICON");
 
       const content::CacheStorageUsageInfo& cache_storage_info =
           *node.GetDetailedInfo().cache_storage_info;
@@ -295,14 +281,12 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
     }
     case CookieTreeNode::DetailedInfo::TYPE_FLASH_LSO: {
       dict->SetString(kKeyType, "flash_lso");
-      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_ICON");
 
       dict->SetString(kKeyDomain, node.GetDetailedInfo().flash_lso_domain);
       break;
     }
     case CookieTreeNode::DetailedInfo::TYPE_MEDIA_LICENSE: {
       dict->SetString(kKeyType, "media_license");
-      dict->SetString(kKeyIcon, "chrome://theme/IDR_COOKIE_STORAGE_ICON");
 
       const BrowsingDataMediaLicenseHelper::MediaLicenseInfo&
           media_license_info = *node.GetDetailedInfo().media_license_info;
@@ -314,9 +298,6 @@ bool CookiesTreeModelUtil::GetCookieTreeNodeDictionary(
       break;
     }
     default:
-#if defined(OS_MACOSX)
-      dict->SetString(kKeyIcon, "chrome://theme/IDR_BOOKMARK_BAR_FOLDER");
-#endif
       break;
   }
 
