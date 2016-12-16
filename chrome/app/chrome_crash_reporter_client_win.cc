@@ -40,6 +40,7 @@ constexpr size_t kExtensionIDMaxCount = 10;
 constexpr char kExtensionID[] = "extension-%" PRIuS;
 
 constexpr char kShutdownType[] = "shutdown-type";
+constexpr char kBrowserUnpinTrace[] = "browser-unpin-trace";
 
 constexpr char kGPUVendorID[] = "gpu-venid";
 constexpr char kGPUDeviceID[] = "gpu-devid";
@@ -97,6 +98,7 @@ size_t RegisterCrashKeysHelper() {
       {kVariations, kLargeSize},
       {kNumExtensionsCount, kSmallSize},
       {kShutdownType, kSmallSize},
+      {kBrowserUnpinTrace, kMediumSize},
       {kGPUVendorID, kSmallSize},
       {kGPUDeviceID, kSmallSize},
       {kGPUDriverVersion, kSmallSize},

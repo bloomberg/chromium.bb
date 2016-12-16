@@ -33,6 +33,7 @@ const char kExtensionID[] = "extension-%" PRIuS;
 const char kNumExtensionsCount[] = "num-extensions";
 
 const char kShutdownType[] = "shutdown-type";
+const char kBrowserUnpinTrace[] = "browser-unpin-trace";
 
 #if !defined(OS_ANDROID)
 const char kGPUVendorID[] = "gpu-venid";
@@ -118,6 +119,7 @@ size_t RegisterChromeCrashKeys() {
     { kVariations, kLargeSize },
     { kNumExtensionsCount, kSmallSize },
     { kShutdownType, kSmallSize },
+    { kBrowserUnpinTrace, kMediumSize },
 #if !defined(OS_ANDROID)
     { kGPUVendorID, kSmallSize },
     { kGPUDeviceID, kSmallSize },

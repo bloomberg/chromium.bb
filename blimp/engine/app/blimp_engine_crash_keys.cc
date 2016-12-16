@@ -25,6 +25,7 @@ size_t RegisterEngineCrashKeys() {
       { crash_keys::kVariations, crash_keys::kLargeSize },
 
       // browser/:
+      { "browser-unpin-trace", crash_keys::kMediumSize},
       { "third-party-modules-loaded", crash_keys::kSmallSize },
       { "third-party-modules-not-loaded", crash_keys::kSmallSize },
       { "enrolled-to-domain", crash_keys::kSmallSize },

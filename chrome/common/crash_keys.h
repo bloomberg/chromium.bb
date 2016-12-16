@@ -68,6 +68,11 @@ extern const char kNumExtensionsCount[];
 // "exit" for BROWSER_EXIT, or "end" for END_SESSION.
 extern const char kShutdownType[];
 
+// Stack trace associated to the browser being unpinned and starting the
+// shutdown sequence. The value is set when we trigger a browser crash due to an
+// invalid attempt to Pin the browser process after that.
+extern const char kBrowserUnpinTrace[];
+
 // GPU information.
 #if !defined(OS_ANDROID)
 extern const char kGPUVendorID[];

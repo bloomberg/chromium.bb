@@ -15,7 +15,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/debug/alias.h"
+#include "base/debug/crash_logging.h"
 #include "base/debug/leak_annotations.h"
 #include "base/files/file_path.h"
 #include "base/location.h"
@@ -77,6 +77,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/crash_keys.h"
 #include "chrome/common/extensions/chrome_extensions_client.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/features.h"
@@ -1314,10 +1315,9 @@ void BrowserProcessImpl::Pin() {
 
   // CHECK(!IsShuttingDown());
   if (IsShuttingDown()) {
-    // Copy the stacktrace which released the final reference onto our stack so
-    // it will be available in the crash report for inspection.
-    base::debug::StackTrace callstack = release_last_reference_callstack_;
-    base::debug::Alias(&callstack);
+    // TODO(crbug.com/113031, crbug.com/625646): Temporary instrumentation.
+    base::debug::SetCrashKeyToStackTrace(crash_keys::kBrowserUnpinTrace,
+                                         release_last_reference_callstack_);
     CHECK(false);
   }
 }
