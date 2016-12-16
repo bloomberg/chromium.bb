@@ -79,7 +79,7 @@ void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
       render_pass->CreateAndAppendSharedQuadState();
 
   if (stretch_content_to_fill_bounds_) {
-    // Strecthes the surface contents to exactly fill the layer bounds,
+    // Stretches the surface contents to exactly fill the layer bounds,
     // regardless of scale or aspect ratio differences.
     float scale_x =
         static_cast<float>(surface_size_.width()) / bounds().width();

@@ -55,7 +55,7 @@ scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
       base::Bind(&SatisfyCallback, surface_manager->GetWeakPtr()),
       base::Bind(&RequireCallback, surface_manager->GetWeakPtr()));
   layer->SetSurfaceId(surface_id, 1.f, surface_size,
-                      false /* strecth_content_to_fill_bounds */);
+                      false /* stretch_content_to_fill_bounds */);
   layer->SetBounds(surface_size);
   layer->SetIsDrawable(true);
   layer->SetContentsOpaque(surface_opaque);

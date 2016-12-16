@@ -336,7 +336,7 @@ void BlimpCompositor::SubmitCompositorFrame(cc::CompositorFrame frame) {
         base::Bind(&RequireCallback, surface_manager->GetWeakPtr()));
     content_layer->SetSurfaceId(
         cc::SurfaceId(surface_factory_->frame_sink_id(), local_frame_id_), 1.f,
-        surface_size, false /* strecth_content_to_fill_bounds */);
+        surface_size, false /* stretch_content_to_fill_bounds */);
     content_layer->SetBounds(current_surface_size_);
     content_layer->SetIsDrawable(true);
     content_layer->SetContentsOpaque(true);
