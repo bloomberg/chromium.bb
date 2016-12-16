@@ -2257,21 +2257,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
-                    "params": {
-                        "enable_update_menu_item": "true"
-                    }
-                },
-                {
-                    "name": "EnabledWithBadge",
+                    "name": "EnabledWithNewerVersionAvailableSummary",
                     "params": {
                         "enable_update_badge": "true",
-                        "enable_update_menu_item": "true"
-                    }
-                },
-                {
-                    "name": "EnabledWithSummary",
-                    "params": {
                         "enable_update_menu_item": "true",
                         "show_summary": "true"
                     }
@@ -2280,22 +2268,9 @@
                     "name": "EnabledWithCustomSummary",
                     "params": {
                         "custom_summary": "Custom update summary",
-                        "enable_update_menu_item": "true",
-                        "show_summary": "true"
-                    }
-                },
-                {
-                    "name": "EnabledWithSummaryAndBadge",
-                    "params": {
                         "enable_update_badge": "true",
                         "enable_update_menu_item": "true",
                         "show_summary": "true"
-                    }
-                },
-                {
-                    "name": "Default",
-                    "params": {
-                        "enable_update_menu_item": "false"
                     }
                 }
             ]
