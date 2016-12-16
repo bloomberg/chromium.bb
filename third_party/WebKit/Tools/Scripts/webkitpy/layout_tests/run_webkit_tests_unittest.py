@@ -186,7 +186,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_basic(self):
         options, args = parse_args(
-            extra_args=['--json-test-results', '/tmp/json_test_results.json'],
+            extra_args=['--json-test-results', '/tmp/json_test_results.json', '--order', 'natural'],
             tests_included=True)
         logging_stream = StringIO.StringIO()
         stdout = StringIO.StringIO()
@@ -263,7 +263,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(tests_run, [])
 
     def test_enable_sanitizer(self):
-        self.assertTrue(passing_run(['--enable-sanitizer', 'failures/expected/text.html']))
+        self.assertTrue(passing_run(['--enable-sanitizer', '--order', 'natural', 'failures/expected/text.html']))
 
     def test_exception_raised(self):
         # Exceptions raised by a worker are treated differently depending on
@@ -294,7 +294,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_full_results_html(self):
         host = MockHost()
-        details, _, _ = logging_run(['--full-results-html'], host=host)
+        details, _, _ = logging_run(['--full-results-html', '--order=natural'], host=host)
         self.assertEqual(details.exit_code, 0)
         self.assertEqual(len(host.user.opened_urls), 1)
 
@@ -416,7 +416,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_repeat_each(self):
         tests_to_run = ['passes/image.html', 'passes/text.html']
-        tests_run = get_tests_run(['--repeat-each', '2'] + tests_to_run)
+        tests_run = get_tests_run(['--repeat-each', '2', '--order', 'natural'] + tests_to_run)
         self.assertEqual(tests_run, ['passes/image.html', 'passes/image.html', 'passes/text.html', 'passes/text.html'])
 
     def test_ignore_flag(self):
@@ -447,7 +447,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_iterations(self):
         tests_to_run = ['passes/image.html', 'passes/text.html']
-        tests_run = get_tests_run(['--iterations', '2'] + tests_to_run)
+        tests_run = get_tests_run(['--iterations', '2', '--order', 'natural'] + tests_to_run)
         self.assertEqual(tests_run, ['passes/image.html', 'passes/text.html', 'passes/image.html', 'passes/text.html'])
 
     def test_repeat_each_iterations_num_tests(self):
@@ -462,13 +462,13 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_run_chunk(self):
         # Test that we wrap around if the number of tests is not evenly divisible by the chunk size
         tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html']
-        chunk_tests_run = get_tests_run(['--run-chunk', '1:3'] + tests_to_run)
+        chunk_tests_run = get_tests_run(['--run-chunk', '1:3', '--order', 'natural'] + tests_to_run)
         self.assertEqual(['passes/text.html', 'passes/error.html', 'passes/image.html'], chunk_tests_run)
 
     def test_run_part(self):
         # Test that we actually select the right part
         tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html']
-        tests_run = get_tests_run(['--run-part', '1:2'] + tests_to_run)
+        tests_run = get_tests_run(['--run-part', '1:2', '--order', 'natural'] + tests_to_run)
         self.assertEqual(['passes/error.html', 'passes/image.html'], tests_run)
 
         # Test that we wrap around if the number of tests is not evenly divisible by the chunk size
@@ -510,7 +510,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_reftest_crash_log_is_saved(self):
         host = MockHost()
-        self.assertTrue(logging_run(['failures/unexpected/crash-reftest.html'], tests_included=True, host=host))
+        self.assertTrue(logging_run(['--order', 'natural', 'failures/unexpected/crash-reftest.html'],
+                                    tests_included=True, host=host))
         self.assertEqual(host.filesystem.read_text_file('/tmp/layout-test-results/failures/unexpected/crash-reftest-crash-log.txt'),
                          'reftest crash log')
 
@@ -538,7 +539,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
         host.environ['GTEST_SHARD_INDEX'] = '0'
         host.environ['GTEST_TOTAL_SHARDS'] = '1'
-        shard_0_tests_run = get_tests_run(tests_to_run, host=host)
+        shard_0_tests_run = get_tests_run(['--order=natural'] + tests_to_run, host=host)
         self.assertEqual(shard_0_tests_run, ['passes/error.html', 'passes/image.html'])
 
         host.environ['GTEST_SHARD_INDEX'] = '1'
@@ -552,29 +553,29 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         host.filesystem.write_text_file(smoke_test_filename, 'passes/text.html\n')
 
         # Test the default smoke testing.
-        tests_run = get_tests_run(['--smoke'], host=host)
+        tests_run = get_tests_run(['--smoke', '--order', 'natural'], host=host)
         self.assertEqual(['passes/text.html'], tests_run)
 
         # Test running the smoke tests plus some manually-specified tests.
-        tests_run = get_tests_run(['--smoke', 'passes/image.html'], host=host)
+        tests_run = get_tests_run(['--smoke', 'passes/image.html', '--order', 'natural'], host=host)
         self.assertEqual(['passes/image.html', 'passes/text.html'], tests_run)
 
         # Test running the smoke tests plus some manually-specified tests.
-        tests_run = get_tests_run(['--no-smoke', 'passes/image.html'], host=host)
+        tests_run = get_tests_run(['--no-smoke', 'passes/image.html', '--order', 'natural'], host=host)
         self.assertEqual(['passes/image.html'], tests_run)
 
         # Test that we don't run just the smoke tests by default on a normal test port.
-        tests_run = get_tests_run([], host=host)
+        tests_run = get_tests_run(['--order', 'natural'], host=host)
         self.assertNotEqual(['passes/text.html'], tests_run)
 
         # Create a port that does run only the smoke tests by default, and verify that works as expected.
         port_obj = host.port_factory.get('test')
         port_obj.default_smoke_test_only = lambda: True
-        tests_run = get_tests_run([], host=host, port_obj=port_obj)
+        tests_run = get_tests_run(['--order', 'natural'], host=host, port_obj=port_obj)
         self.assertEqual(['passes/text.html'], tests_run)
 
         # Verify that --no-smoke continues to work on a smoke-by-default port.
-        tests_run = get_tests_run(['--no-smoke'], host=host, port_obj=port_obj)
+        tests_run = get_tests_run(['--no-smoke', '--order', 'natural'], host=host, port_obj=port_obj)
         self.assertNotEqual(['passes/text.html'], tests_run)
 
     def test_missing_and_unexpected_results(self):
@@ -643,7 +644,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_exit_after_n_failures_upload(self):
         host = MockHost()
         details, regular_output, _ = logging_run(
-            ['failures/unexpected/text-image-checksum.html', 'passes/text.html', '--exit-after-n-failures', '1'],
+            ['failures/unexpected/text-image-checksum.html', 'passes/text.html',
+             '--exit-after-n-failures', '1', '--order', 'natural'],
             tests_included=True, host=host)
 
         # By returning False, we know that the incremental results were generated and then deleted.
@@ -664,7 +666,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
     def test_exit_after_n_failures(self):
         # Unexpected failures should result in tests stopping.
         tests_run = get_tests_run(['failures/unexpected/text-image-checksum.html',
-                                   'passes/text.html', '--exit-after-n-failures', '1'])
+                                   'passes/text.html', '--exit-after-n-failures', '1',
+                                   '--order', 'natural'])
         self.assertEqual(['failures/unexpected/text-image-checksum.html'], tests_run)
 
         # But we'll keep going for expected ones.
@@ -673,7 +676,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_exit_after_n_crashes(self):
         # Unexpected crashes should result in tests stopping.
-        tests_run = get_tests_run(['failures/unexpected/crash.html', 'passes/text.html', '--exit-after-n-crashes-or-timeouts', '1'])
+        tests_run = get_tests_run(['--order', 'natural', 'failures/unexpected/crash.html',
+                                   'passes/text.html', '--exit-after-n-crashes-or-timeouts', '1'])
         self.assertEqual(['failures/unexpected/crash.html'], tests_run)
 
         # Same with timeouts.
@@ -691,7 +695,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
         host = MockHost()
         with host.filesystem.mkdtemp() as tmpdir:
-            _, _, user = logging_run(['--results-directory=' + str(tmpdir)], tests_included=True, host=host)
+            _, _, user = logging_run(['--results-directory=' + str(tmpdir), '--order', 'natural'],
+                                     tests_included=True, host=host)
             self.assertEqual(user.opened_urls, [])
 
     def test_results_directory_default(self):
@@ -699,7 +704,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # look for what the output results url was.
 
         # This is the default location.
-        _, _, user = logging_run(tests_included=True)
+        _, _, user = logging_run(['--order', 'natural'], tests_included=True)
         self.assertEqual(user.opened_urls, [])
 
     def test_results_directory_relative(self):
@@ -708,7 +713,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         host = MockHost()
         host.filesystem.maybe_make_directory('/tmp/cwd')
         host.filesystem.chdir('/tmp/cwd')
-        _, _, user = logging_run(['--results-directory=foo'], tests_included=True, host=host)
+        _, _, user = logging_run(['--results-directory=foo', '--order', 'natural'], tests_included=True, host=host)
         self.assertEqual(user.opened_urls, [])
 
     def test_retrying_default_value(self):
@@ -727,7 +732,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         host = MockHost()
         filename = '/tmp/foo.txt'
         host.filesystem.write_text_file(filename, 'failures/unexpected/text-image-checksum.html\nfailures/unexpected/crash.html')
-        details, err, _ = logging_run(['--debug-rwt-logging', '--test-list=%s' % filename], tests_included=True, host=host)
+        details, err, _ = logging_run(['--debug-rwt-logging', '--test-list=%s' % filename, '--order', 'natural'],
+                                      tests_included=True, host=host)
         self.assertEqual(details.exit_code, 2)
         self.assertNotIn('Retrying', err.getvalue())
 
@@ -819,14 +825,14 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # These next tests test that we run the tests in ascending alphabetical
         # order per directory. HTTP tests are sharded separately from other tests,
         # so we have to test both.
-        tests_run = get_tests_run(['-i', 'passes/virtual_passes', 'passes'])
+        tests_run = get_tests_run(['--order', 'natural', '-i', 'passes/virtual_passes', 'passes'])
         self.assertEqual(tests_run, sorted(tests_run))
 
         tests_run = get_tests_run(['http/tests/passes'])
         self.assertEqual(tests_run, sorted(tests_run))
 
     def test_virtual(self):
-        self.assertTrue(passing_run(['passes/text.html', 'passes/args.html',
+        self.assertTrue(passing_run(['--order', 'natural', 'passes/text.html', 'passes/args.html',
                                      'virtual/passes/text.html', 'virtual/passes/args.html']))
 
     def test_reftest_run(self):
@@ -928,10 +934,11 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(test_failures.determine_result_type(test_result.failures), test_expectations.IMAGE_PLUS_TEXT)
 
     def test_additional_platform_directory(self):
-        self.assertTrue(passing_run(['--additional-platform-directory', '/tmp/foo']))
-        self.assertTrue(passing_run(['--additional-platform-directory', '/tmp/../foo']))
-        self.assertTrue(passing_run(['--additional-platform-directory', '/tmp/foo', '--additional-platform-directory', '/tmp/bar']))
-        self.assertTrue(passing_run(['--additional-platform-directory', 'foo']))
+        self.assertTrue(passing_run(['--additional-platform-directory', '/tmp/foo', '--order', 'natural']))
+        self.assertTrue(passing_run(['--additional-platform-directory', '/tmp/../foo', '--order', 'natural']))
+        self.assertTrue(passing_run(['--additional-platform-directory', '/tmp/foo', '--additional-platform-directory',
+                                     '/tmp/bar', '--order', 'natural']))
+        self.assertTrue(passing_run(['--additional-platform-directory', 'foo', '--order', 'natural']))
 
     def test_additional_expectations(self):
         host = MockHost()
@@ -1019,7 +1026,8 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
 
     def test_write_full_results_to(self):
         host = MockHost()
-        details, _, _ = logging_run(['--write-full-results-to', '/tmp/full_results.json'], host=host)
+        details, _, _ = logging_run(['--write-full-results-to', '/tmp/full_results.json',
+                                     '--order', 'natural'], host=host)
         self.assertEqual(details.exit_code, 0)
         self.assertTrue(host.filesystem.exists('/tmp/full_results.json'))
 
@@ -1027,6 +1035,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         stdout = StringIO.StringIO()
         stderr = StringIO.StringIO()
         res = run_webkit_tests.main(['--platform', 'test', '--exit-after-n-failures', '1',
+                                     '--order', 'natural',
                                      'failures/unexpected/missing_text.html',
                                      'failures/unexpected/missing_image.html'],
                                     stdout, stderr)
