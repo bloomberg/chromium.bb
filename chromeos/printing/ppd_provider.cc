@@ -7,6 +7,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/json/json_parser.h"
@@ -308,7 +309,7 @@ class PpdProviderImpl : public PpdProvider {
       ppd_contents->clear();
       return false;
     }
-    return true;
+    return base::Base64Decode(*ppd_contents, ppd_contents);
   }
 
   // Return the ResolveFetchData associated with |source|.

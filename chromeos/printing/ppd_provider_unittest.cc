@@ -27,9 +27,11 @@ const char kTestAPIKey[] = "BOGUSAPIKEY";
 const char kLocalPpdUrl[] = "/some/path";
 const char kTestManufacturer[] = "Bogus Printer Corp";
 const char kTestModel[] = "MegaPrint 9000";
+// The compressedPPD contents here comes from running the command
+// echo -n "This is the quirks ppd" | base64
 const char kQuirksResponse[] =
     "{\n"
-    "  \"compressedPpd\": \"This is the quirks ppd\",\n"
+    "  \"compressedPpd\": \"VGhpcyBpcyB0aGUgcXVpcmtzIHBwZA==\",\n"
     "  \"lastUpdatedTime\": \"1\"\n"
     "}\n";
 const char kQuirksPpd[] = "This is the quirks ppd";
