@@ -279,16 +279,15 @@ TEST_F(WinAudioInputTest, WASAPIAudioInputStreamHardwareSampleRate) {
   ABORT_AUDIO_TEST_IF_NOT(HasCoreAudioAndInputDevices(audio_manager_.get()));
 
   // Retrieve a list of all available input devices.
-  media::AudioDeviceNames device_names;
-  audio_manager_->GetAudioInputDeviceNames(&device_names);
+  media::AudioDeviceDescriptions device_descriptions;
+  audio_manager_->GetAudioInputDeviceDescriptions(&device_descriptions);
 
   // Scan all available input devices and repeat the same test for all of them.
-  for (media::AudioDeviceNames::const_iterator it = device_names.begin();
-       it != device_names.end(); ++it) {
+  for (const auto& device : device_descriptions) {
     // Retrieve the hardware sample rate given a specified audio input device.
     AudioParameters params;
     ASSERT_TRUE(SUCCEEDED(CoreAudioUtil::GetPreferredAudioParameters(
-        it->unique_id, false, &params)));
+        device.unique_id, false, &params)));
     EXPECT_GE(params.sample_rate(), 0);
   }
 }

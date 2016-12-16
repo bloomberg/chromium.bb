@@ -55,18 +55,14 @@ MediaDeviceInfoArray EnumerateAudioDevicesOnDeviceThread(
   DCHECK(audio_manager->GetTaskRunner()->BelongsToCurrentThread());
 
   MediaDeviceInfoArray snapshot;
-  media::AudioDeviceNames device_names;
+  media::AudioDeviceDescriptions device_descriptions;
   if (is_input)
-    audio_manager->GetAudioInputDeviceNames(&device_names);
+    audio_manager->GetAudioInputDeviceDescriptions(&device_descriptions);
   else
-    audio_manager->GetAudioOutputDeviceNames(&device_names);
+    audio_manager->GetAudioOutputDeviceDescriptions(&device_descriptions);
 
-  for (const media::AudioDeviceName& name : device_names) {
-    snapshot.emplace_back(
-        name.unique_id, name.device_name,
-        is_input ? audio_manager->GetGroupIDInput(name.unique_id)
-                 : audio_manager->GetGroupIDOutput(name.unique_id));
-  }
+  for (const media::AudioDeviceDescription& description : device_descriptions)
+    snapshot.emplace_back(description);
 
   return snapshot;
 }

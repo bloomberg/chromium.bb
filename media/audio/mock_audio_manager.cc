@@ -32,15 +32,11 @@ base::string16 MockAudioManager::GetAudioInputDeviceModel() {
 void MockAudioManager::ShowAudioInputSettings() {
 }
 
-void MockAudioManager::GetAudioInputDeviceNames(
-    AudioDeviceNames* device_names) {
-  // Do not inject fake devices here, use
-  // AudioInputDeviceManager::GetFakeDeviceNames() instead.
-}
+void MockAudioManager::GetAudioInputDeviceDescriptions(
+    AudioDeviceDescriptions* device_descriptions) {}
 
-void MockAudioManager::GetAudioOutputDeviceNames(
-    AudioDeviceNames* device_names) {
-}
+void MockAudioManager::GetAudioOutputDeviceDescriptions(
+    AudioDeviceDescriptions* device_descriptions) {}
 
 media::AudioOutputStream* MockAudioManager::MakeAudioOutputStream(
     const media::AudioParameters& params,
@@ -90,14 +86,6 @@ AudioParameters MockAudioManager::GetInputStreamParameters(
 std::string MockAudioManager::GetAssociatedOutputDeviceID(
     const std::string& input_device_id) {
   return std::string();
-}
-
-std::string MockAudioManager::GetGroupIDOutput(const std::string& output_id) {
-  return "";
-}
-
-std::string MockAudioManager::GetGroupIDInput(const std::string& input_id) {
-  return "";
 }
 
 std::unique_ptr<AudioLog> MockAudioManager::CreateAudioLog(

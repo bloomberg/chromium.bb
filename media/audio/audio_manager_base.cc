@@ -103,6 +103,30 @@ base::string16 AudioManagerBase::GetAudioInputDeviceModel() {
   return base::string16();
 }
 
+void AudioManagerBase::GetAudioInputDeviceDescriptions(
+    AudioDeviceDescriptions* device_descriptions) {
+  CHECK(GetTaskRunner()->BelongsToCurrentThread());
+  AudioDeviceNames device_names;
+  GetAudioInputDeviceNames(&device_names);
+
+  for (const media::AudioDeviceName& name : device_names) {
+    device_descriptions->emplace_back(name.device_name, name.unique_id,
+                                      GetGroupIDInput(name.unique_id));
+  }
+}
+
+void AudioManagerBase::GetAudioOutputDeviceDescriptions(
+    AudioDeviceDescriptions* device_descriptions) {
+  CHECK(GetTaskRunner()->BelongsToCurrentThread());
+  AudioDeviceNames device_names;
+  GetAudioOutputDeviceNames(&device_names);
+
+  for (const media::AudioDeviceName& name : device_names) {
+    device_descriptions->emplace_back(name.device_name, name.unique_id,
+                                      GetGroupIDOutput(name.unique_id));
+  }
+}
+
 AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
     const AudioParameters& params,
     const std::string& device_id,
@@ -392,6 +416,7 @@ std::string AudioManagerBase::GetDefaultOutputDeviceID() {
   return "";
 }
 
+// static
 int AudioManagerBase::GetUserBufferSize() {
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   int buffer_size = 0;

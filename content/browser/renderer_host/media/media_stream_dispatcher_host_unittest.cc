@@ -64,10 +64,10 @@ namespace content {
 namespace {
 
 void AudioInputDevicesEnumerated(base::Closure quit_closure,
-                                 media::AudioDeviceNames* out,
+                                 media::AudioDeviceDescriptions* out,
                                  const MediaDeviceEnumeration& enumeration) {
   for (const auto& info : enumeration[MEDIA_DEVICE_TYPE_AUDIO_INPUT]) {
-    out->emplace_back(info.label, info.device_id);
+    out->emplace_back(info.label, info.device_id, info.group_id);
   }
   quit_closure.Run();
 }
@@ -347,24 +347,17 @@ class MediaStreamDispatcherHostTest : public testing::Test {
 
   bool DoesContainRawIds(const StreamDeviceInfoArray& devices) {
     for (size_t i = 0; i < devices.size(); ++i) {
-      media::AudioDeviceNames::const_iterator audio_it =
-          physical_audio_devices_.begin();
-      for (; audio_it != physical_audio_devices_.end(); ++audio_it) {
-        // Skip default and communications audio devices, whose IDs are not
-        // translated.
-        if (devices[i].device.id ==
-                media::AudioDeviceDescription::kDefaultDeviceId ||
-            devices[i].device.id ==
-                media::AudioDeviceDescription::kCommunicationsDeviceId) {
-          continue;
+      if (devices[i].device.id !=
+              media::AudioDeviceDescription::kDefaultDeviceId &&
+          devices[i].device.id !=
+              media::AudioDeviceDescription::kCommunicationsDeviceId) {
+        for (const auto& audio_device : physical_audio_devices_) {
+          if (audio_device.unique_id == devices[i].device.id)
+            return true;
         }
-        if (audio_it->unique_id == devices[i].device.id)
-          return true;
       }
-      media::VideoCaptureDeviceDescriptors::const_iterator video_it =
-          physical_video_devices_.begin();
-      for (; video_it != physical_video_devices_.end(); ++video_it) {
-        if (video_it->device_id == devices[i].device.id)
+      for (const auto& video_device : physical_video_devices_) {
+        if (video_device.device_id == devices[i].device.id)
           return true;
       }
     }
@@ -375,7 +368,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
                                  const url::Origin& origin) {
     for (size_t i = 0; i < devices.size(); ++i) {
       bool found_match = false;
-      media::AudioDeviceNames::const_iterator audio_it =
+      media::AudioDeviceDescriptions::const_iterator audio_it =
           physical_audio_devices_.begin();
       for (; audio_it != physical_audio_devices_.end(); ++audio_it) {
         if (content::DoesMediaDeviceIDMatchHMAC(
@@ -430,7 +423,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   ContentBrowserClient* old_browser_client_;
   std::unique_ptr<ContentClient> content_client_;
   content::TestBrowserContext browser_context_;
-  media::AudioDeviceNames physical_audio_devices_;
+  media::AudioDeviceDescriptions physical_audio_devices_;
   media::VideoCaptureDeviceDescriptors physical_video_devices_;
   url::Origin origin_;
   media::FakeVideoCaptureDeviceFactory* video_capture_device_factory_;
@@ -600,7 +593,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithSourceId) {
   ASSERT_GE(physical_audio_devices_.size(), 1u);
   ASSERT_GE(physical_video_devices_.size(), 1u);
 
-  media::AudioDeviceNames::const_iterator audio_it =
+  media::AudioDeviceDescriptions::const_iterator audio_it =
       physical_audio_devices_.begin();
   for (; audio_it != physical_audio_devices_.end(); ++audio_it) {
     std::string source_id = content::GetHMACForMediaDeviceID(

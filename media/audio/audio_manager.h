@@ -14,7 +14,7 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "media/audio/audio_device_name.h"
+#include "media/audio/audio_device_description.h"
 #include "media/audio/audio_logging.h"
 #include "media/base/audio_parameters.h"
 
@@ -117,21 +117,23 @@ class MEDIA_EXPORT AudioManager {
   // threads to avoid blocking the rest of the application.
   virtual void ShowAudioInputSettings() = 0;
 
-  // Appends a list of available input devices to |device_names|,
+  // Appends a list of available input devices to |device_descriptions|,
   // which must initially be empty. It is not guaranteed that all the
   // devices in the list support all formats and sample rates for
   // recording.
   //
   // Not threadsafe; in production this should only be called from the
   // Audio worker thread (see GetTaskRunner()).
-  virtual void GetAudioInputDeviceNames(AudioDeviceNames* device_names) = 0;
+  virtual void GetAudioInputDeviceDescriptions(
+      AudioDeviceDescriptions* device_descriptions) = 0;
 
-  // Appends a list of available output devices to |device_names|,
+  // Appends a list of available output devices to |device_descriptions|,
   // which must initially be empty.
   //
   // Not threadsafe; in production this should only be called from the
   // Audio worker thread (see GetTaskRunner()).
-  virtual void GetAudioOutputDeviceNames(AudioDeviceNames* device_names) = 0;
+  virtual void GetAudioOutputDeviceDescriptions(
+      AudioDeviceDescriptions* device_descriptions) = 0;
 
   // Log callback used for sending log messages from a stream to the object
   // that manages the stream.
@@ -240,13 +242,6 @@ class MEDIA_EXPORT AudioManager {
   // GetTaskRunner()).
   virtual std::string GetAssociatedOutputDeviceID(
       const std::string& input_device_id) = 0;
-
-  // These functions assign group ids to devices based on their device ids.
-  // The default implementation is an attempt to do this based on
-  // GetAssociatedOutputDeviceID. Must be called on the audio worker thread
-  // (see GetTaskRunner()).
-  virtual std::string GetGroupIDOutput(const std::string& output_device_id) = 0;
-  virtual std::string GetGroupIDInput(const std::string& input_device_id) = 0;
 
   // Create a new AudioLog object for tracking the behavior for one or more
   // instances of the given component.  See AudioLogFactory for more details.

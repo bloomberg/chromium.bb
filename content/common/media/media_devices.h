@@ -10,6 +10,10 @@
 
 #include "content/common/content_export.h"
 
+namespace media {
+struct AudioDeviceDescription;
+}
+
 namespace content {
 
 enum MediaDeviceType {
@@ -24,6 +28,9 @@ struct CONTENT_EXPORT MediaDeviceInfo {
   MediaDeviceInfo(const std::string& device_id,
                   const std::string& label,
                   const std::string& group_id);
+  explicit MediaDeviceInfo(
+      const media::AudioDeviceDescription& device_description);
+
   std::string device_id;
   std::string label;
   std::string group_id;

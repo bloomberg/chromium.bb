@@ -46,4 +46,9 @@ std::string AudioDeviceDescription::GetCommunicationsDeviceName() {
 #endif
 }
 
+AudioDeviceDescription::AudioDeviceDescription(const std::string& device_name,
+                                               const std::string& unique_id,
+                                               const std::string& group_id)
+    : device_name(device_name), unique_id(unique_id), group_id(group_id) {}
+
 }  // namespace media

@@ -6,13 +6,13 @@
 #define MEDIA_AUDIO_AUDIO_DEVICE_DESCRIPTION_H_
 
 #include <string>
+#include <vector>
 #include "media/base/media_export.h"
 
 namespace media {
 
 // Provides common information on audio device names and ids.
-class MEDIA_EXPORT AudioDeviceDescription {
- public:
+struct MEDIA_EXPORT AudioDeviceDescription {
   // Unique Id of the generic "default" device. Associated with the localized
   // name returned from GetDefaultDeviceName().
   static const char kDefaultDeviceId[];
@@ -53,10 +53,19 @@ class MEDIA_EXPORT AudioDeviceDescription {
   // This device is not supported on all platforms.
   static std::string GetCommunicationsDeviceName();
 
- private:
-  AudioDeviceDescription() {}
-  ~AudioDeviceDescription() {}
+  AudioDeviceDescription(const AudioDeviceDescription& other) = default;
+  AudioDeviceDescription(const std::string& device_name,
+                         const std::string& unique_id,
+                         const std::string& group_id);
+
+  ~AudioDeviceDescription() = default;
+
+  std::string device_name;  // Friendly name of the device.
+  std::string unique_id;    // Unique identifier for the device.
+  std::string group_id;     // Group identifier.
 };
+
+typedef std::vector<AudioDeviceDescription> AudioDeviceDescriptions;
 
 }  // namespace media
 

@@ -93,9 +93,10 @@ double ExpectedTimeBetweenCallbacks(AudioParameters params) {
 
 // Helper method which verifies that the device list starts with a valid
 // default device name followed by non-default device names.
-void CheckDeviceNames(const AudioDeviceNames& device_names) {
-  DVLOG(2) << "Got " << device_names.size() << " audio devices.";
-  if (device_names.empty()) {
+void CheckDeviceDescriptions(
+    const AudioDeviceDescriptions& device_descriptions) {
+  DVLOG(2) << "Got " << device_descriptions.size() << " audio devices.";
+  if (device_descriptions.empty()) {
     // Log a warning so we can see the status on the build bots.  No need to
     // break the test though since this does successfully test the code and
     // some failure cases.
@@ -103,7 +104,7 @@ void CheckDeviceNames(const AudioDeviceNames& device_names) {
     return;
   }
 
-  AudioDeviceNames::const_iterator it = device_names.begin();
+  AudioDeviceDescriptions::const_iterator it = device_descriptions.begin();
 
   // The first device in the list should always be the default device.
   EXPECT_EQ(AudioDeviceDescription::GetDefaultDeviceName(), it->device_name);
@@ -113,11 +114,12 @@ void CheckDeviceNames(const AudioDeviceNames& device_names) {
 
   // Other devices should have non-empty name and id and should not contain
   // default name or id.
-  while (it != device_names.end()) {
+  while (it != device_descriptions.end()) {
     EXPECT_FALSE(it->device_name.empty());
     EXPECT_FALSE(it->unique_id.empty());
-    DVLOG(2) << "Device ID(" << it->unique_id
-             << "), label: " << it->device_name;
+    EXPECT_FALSE(it->group_id.empty());
+    DVLOG(2) << "Device ID(" << it->unique_id << "), label: " << it->device_name
+             << " group: " << it->group_id;
     EXPECT_NE(AudioDeviceDescription::GetDefaultDeviceName(), it->device_name);
     EXPECT_NE(std::string(AudioDeviceDescription::kDefaultDeviceId),
               it->unique_id);
@@ -739,25 +741,21 @@ TEST_F(AudioAndroidOutputTest, GetDefaultOutputStreamParameters) {
 }
 
 // Verify input device enumeration.
-TEST_F(AudioAndroidInputTest, GetAudioInputDeviceNames) {
+TEST_F(AudioAndroidInputTest, GetAudioInputDeviceDescriptions) {
   ABORT_AUDIO_TEST_IF_NOT(audio_manager()->HasAudioInputDevices());
-  AudioDeviceNames devices;
-  RunOnAudioThread(
-      base::Bind(&AudioManager::GetAudioInputDeviceNames,
-                 base::Unretained(audio_manager()),
-                 &devices));
-  CheckDeviceNames(devices);
+  AudioDeviceDescriptions devices;
+  RunOnAudioThread(base::Bind(&AudioManager::GetAudioInputDeviceDescriptions,
+                              base::Unretained(audio_manager()), &devices));
+  CheckDeviceDescriptions(devices);
 }
 
 // Verify output device enumeration.
-TEST_F(AudioAndroidOutputTest, GetAudioOutputDeviceNames) {
+TEST_F(AudioAndroidOutputTest, GetAudioOutputDeviceDescriptions) {
   ABORT_AUDIO_TEST_IF_NOT(audio_manager()->HasAudioOutputDevices());
-  AudioDeviceNames devices;
-  RunOnAudioThread(
-      base::Bind(&AudioManager::GetAudioOutputDeviceNames,
-                 base::Unretained(audio_manager()),
-                 &devices));
-  CheckDeviceNames(devices);
+  AudioDeviceDescriptions devices;
+  RunOnAudioThread(base::Bind(&AudioManager::GetAudioOutputDeviceDescriptions,
+                              base::Unretained(audio_manager()), &devices));
+  CheckDeviceDescriptions(devices);
 }
 
 // Ensure that a default input stream can be created and closed.

@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_device_name.h"
 #include "media/audio/audio_output_proxy.h"
 #include "media/audio/audio_unittest_util.h"
 #include "media/audio/fake_audio_log_factory.h"
@@ -253,10 +254,11 @@ class AudioManagerTest : public ::testing::Test {
 
   // Helper method which verifies that the device list starts with a valid
   // default record followed by non-default device names.
-  static void CheckDeviceNames(const AudioDeviceNames& device_names) {
-    DVLOG(2) << "Got " << device_names.size() << " audio devices.";
-    if (!device_names.empty()) {
-      AudioDeviceNames::const_iterator it = device_names.begin();
+  static void CheckDeviceDescriptions(
+      const AudioDeviceDescriptions& device_descriptions) {
+    DVLOG(2) << "Got " << device_descriptions.size() << " audio devices.";
+    if (!device_descriptions.empty()) {
+      AudioDeviceDescriptions::const_iterator it = device_descriptions.begin();
 
       // The first device in the list should always be the default device.
       EXPECT_EQ(AudioDeviceDescription::GetDefaultDeviceName(),
@@ -267,11 +269,13 @@ class AudioManagerTest : public ::testing::Test {
 
       // Other devices should have non-empty name and id and should not contain
       // default name or id.
-      while (it != device_names.end()) {
+      while (it != device_descriptions.end()) {
         EXPECT_FALSE(it->device_name.empty());
         EXPECT_FALSE(it->unique_id.empty());
+        EXPECT_FALSE(it->group_id.empty());
         DVLOG(2) << "Device ID(" << it->unique_id
-                 << "), label: " << it->device_name;
+                 << "), label: " << it->device_name
+                 << "group: " << it->group_id;
         EXPECT_NE(AudioDeviceDescription::GetDefaultDeviceName(),
                   it->device_name);
         EXPECT_NE(std::string(AudioDeviceDescription::kDefaultDeviceId),
@@ -289,12 +293,12 @@ class AudioManagerTest : public ::testing::Test {
 #if defined(USE_CRAS)
   // Helper method for (USE_CRAS) which verifies that the device list starts
   // with a valid default record followed by physical device names.
-  static void CheckDeviceNamesCras(
-      const AudioDeviceNames& device_names,
+  static void CheckDeviceDescriptionsCras(
+      const AudioDeviceDescriptions& device_descriptions,
       const std::map<uint64_t, std::string>& expectation) {
-    DVLOG(2) << "Got " << device_names.size() << " audio devices.";
-    if (!device_names.empty()) {
-      AudioDeviceNames::const_iterator it = device_names.begin();
+    DVLOG(2) << "Got " << device_descriptions.size() << " audio devices.";
+    if (!device_descriptions.empty()) {
+      AudioDeviceDescriptions::const_iterator it = device_descriptions.begin();
 
       // The first device in the list should always be the default device.
       EXPECT_EQ(AudioDeviceDescription::GetDefaultDeviceName(),
@@ -302,17 +306,20 @@ class AudioManagerTest : public ::testing::Test {
       EXPECT_EQ(std::string(AudioDeviceDescription::kDefaultDeviceId),
                 it->unique_id);
 
-      // |device_names|'size should be |expectation|'s size plus one because of
+      // |device_descriptions|'size should be |expectation|'s size plus one
+      // because of
       // default device.
-      EXPECT_EQ(device_names.size(), expectation.size() + 1);
+      EXPECT_EQ(device_descriptions.size(), expectation.size() + 1);
       ++it;
       // Check other devices that should have non-empty name and id, and should
       // be contained in expectation.
-      while (it != device_names.end()) {
+      while (it != device_descriptions.end()) {
         EXPECT_FALSE(it->device_name.empty());
         EXPECT_FALSE(it->unique_id.empty());
+        EXPECT_FALSE(it->group_id.empty());
         DVLOG(2) << "Device ID(" << it->unique_id
-                 << "), label: " << it->device_name;
+                 << "), label: " << it->device_name
+                 << "group: " << it->group_id;
         uint64_t key;
         EXPECT_TRUE(base::StringToUint64(it->unique_id, &key));
         EXPECT_TRUE(expectation.find(key) != expectation.end());
@@ -389,9 +396,9 @@ TEST_F(AudioManagerTest, DISABLED_EnumerateInputDevicesCras) {
 
   DVLOG(2) << "Testing AudioManagerCras.";
   CreateAudioManagerForTesting<AudioManagerCras>();
-  AudioDeviceNames device_names;
-  audio_manager_->GetAudioInputDeviceNames(&device_names);
-  CheckDeviceNamesCras(device_names, expectation);
+  AudioDeviceDescriptions device_descriptions;
+  audio_manager_->GetAudioInputDeviceDescriptions(&device_descriptions);
+  CheckDeviceDescriptionsCras(device_descriptions, expectation);
 }
 
 // TODO(warx): enable the test once crbug.com/554168 is fixed.
@@ -417,9 +424,9 @@ TEST_F(AudioManagerTest, DISABLED_EnumerateOutputDevicesCras) {
 
   DVLOG(2) << "Testing AudioManagerCras.";
   CreateAudioManagerForTesting<AudioManagerCras>();
-  AudioDeviceNames device_names;
-  audio_manager_->GetAudioOutputDeviceNames(&device_names);
-  CheckDeviceNamesCras(device_names, expectation);
+  AudioDeviceDescriptions device_descriptions;
+  audio_manager_->GetAudioOutputDeviceDescriptions(&device_descriptions);
+  CheckDeviceDescriptionsCras(device_descriptions, expectation);
 }
 #else  // !defined(USE_CRAS)
 
@@ -435,18 +442,18 @@ TEST_F(AudioManagerTest, HandleDefaultDeviceIDs) {
 TEST_F(AudioManagerTest, EnumerateInputDevices) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
 
-  AudioDeviceNames device_names;
-  audio_manager_->GetAudioInputDeviceNames(&device_names);
-  CheckDeviceNames(device_names);
+  AudioDeviceDescriptions device_descriptions;
+  audio_manager_->GetAudioInputDeviceDescriptions(&device_descriptions);
+  CheckDeviceDescriptions(device_descriptions);
 }
 
 // Test that devices can be enumerated.
 TEST_F(AudioManagerTest, EnumerateOutputDevices) {
   ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
 
-  AudioDeviceNames device_names;
-  audio_manager_->GetAudioOutputDeviceNames(&device_names);
-  CheckDeviceNames(device_names);
+  AudioDeviceDescriptions device_descriptions;
+  audio_manager_->GetAudioOutputDeviceDescriptions(&device_descriptions);
+  CheckDeviceDescriptions(device_descriptions);
 }
 
 // Run additional tests for Windows since enumeration can be done using
@@ -459,27 +466,27 @@ TEST_F(AudioManagerTest, EnumerateOutputDevices) {
 TEST_F(AudioManagerTest, EnumerateInputDevicesWinMMDevice) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
 
-  AudioDeviceNames device_names;
+  AudioDeviceDescriptions device_descriptions;
   if (!SetMMDeviceEnumeration()) {
     // Usage of MMDevice will fail on XP and lower.
     LOG(WARNING) << "MM device enumeration is not supported.";
     return;
   }
-  audio_manager_->GetAudioInputDeviceNames(&device_names);
-  CheckDeviceNames(device_names);
+  audio_manager_->GetAudioInputDeviceDescriptions(&device_descriptions);
+  CheckDeviceDescriptions(device_descriptions);
 }
 
 TEST_F(AudioManagerTest, EnumerateOutputDevicesWinMMDevice) {
   ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
 
-  AudioDeviceNames device_names;
+  AudioDeviceDescriptions device_descriptions;
   if (!SetMMDeviceEnumeration()) {
     // Usage of MMDevice will fail on XP and lower.
     LOG(WARNING) << "MM device enumeration is not supported.";
     return;
   }
-  audio_manager_->GetAudioOutputDeviceNames(&device_names);
-  CheckDeviceNames(device_names);
+  audio_manager_->GetAudioOutputDeviceDescriptions(&device_descriptions);
+  CheckDeviceDescriptions(device_descriptions);
 }
 
 // Override default enumeration API and force usage of Windows Wave.
@@ -487,34 +494,33 @@ TEST_F(AudioManagerTest, EnumerateOutputDevicesWinMMDevice) {
 TEST_F(AudioManagerTest, EnumerateInputDevicesWinWave) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
 
-  AudioDeviceNames device_names;
+  AudioDeviceDescriptions device_descriptions;
   SetWaveEnumeration();
-  audio_manager_->GetAudioInputDeviceNames(&device_names);
-  CheckDeviceNames(device_names);
+  audio_manager_->GetAudioInputDeviceDescriptions(&device_descriptions);
+  CheckDeviceDescriptions(device_descriptions);
 }
 
 TEST_F(AudioManagerTest, EnumerateOutputDevicesWinWave) {
   ABORT_AUDIO_TEST_IF_NOT(OutputDevicesAvailable());
 
-  AudioDeviceNames device_names;
+  AudioDeviceDescriptions device_descriptions;
   SetWaveEnumeration();
-  audio_manager_->GetAudioOutputDeviceNames(&device_names);
-  CheckDeviceNames(device_names);
+  audio_manager_->GetAudioOutputDeviceDescriptions(&device_descriptions);
+  CheckDeviceDescriptions(device_descriptions);
 }
 
 TEST_F(AudioManagerTest, WinXPDeviceIdUnchanged) {
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable());
 
-  AudioDeviceNames xp_device_names;
+  AudioDeviceDescriptions xp_device_descriptions;
   SetWaveEnumeration();
-  audio_manager_->GetAudioInputDeviceNames(&xp_device_names);
-  CheckDeviceNames(xp_device_names);
+  audio_manager_->GetAudioInputDeviceDescriptions(&xp_device_descriptions);
+  CheckDeviceDescriptions(xp_device_descriptions);
 
   // Device ID should remain unchanged, including the default device ID.
-  for (AudioDeviceNames::iterator i = xp_device_names.begin();
-       i != xp_device_names.end(); ++i) {
-    EXPECT_EQ(i->unique_id,
-              GetDeviceIdFromPCMWaveInAudioInputStream(i->unique_id));
+  for (const auto& description : xp_device_descriptions) {
+    EXPECT_EQ(description.unique_id,
+              GetDeviceIdFromPCMWaveInAudioInputStream(description.unique_id));
   }
 }
 
@@ -527,15 +533,15 @@ TEST_F(AudioManagerTest, ConvertToWinXPInputDeviceId) {
     return;
   }
 
-  AudioDeviceNames device_names;
-  audio_manager_->GetAudioInputDeviceNames(&device_names);
-  CheckDeviceNames(device_names);
+  AudioDeviceDescriptions device_descriptions;
+  audio_manager_->GetAudioInputDeviceDescriptions(&device_descriptions);
+  CheckDeviceDescriptions(device_descriptions);
 
-  for (AudioDeviceNames::iterator i = device_names.begin();
-       i != device_names.end(); ++i) {
+  for (AudioDeviceDescriptions::iterator i = device_descriptions.begin();
+       i != device_descriptions.end(); ++i) {
     std::string converted_id =
         GetDeviceIdFromPCMWaveInAudioInputStream(i->unique_id);
-    if (i == device_names.begin()) {
+    if (i == device_descriptions.begin()) {
       // The first in the list is the default device ID, which should not be
       // changed when passed to PCMWaveInAudioInputStream.
       EXPECT_EQ(i->unique_id, converted_id);
@@ -559,9 +565,9 @@ TEST_F(AudioManagerTest, EnumerateInputDevicesPulseaudio) {
 
   CreateAudioManagerForTesting<AudioManagerPulse>();
   if (audio_manager_.get()) {
-    AudioDeviceNames device_names;
-    audio_manager_->GetAudioInputDeviceNames(&device_names);
-    CheckDeviceNames(device_names);
+    AudioDeviceDescriptions device_descriptions;
+    audio_manager_->GetAudioInputDeviceDescriptions(&device_descriptions);
+    CheckDeviceDescriptions(device_descriptions);
   } else {
     LOG(WARNING) << "No pulseaudio on this system.";
   }
@@ -572,9 +578,9 @@ TEST_F(AudioManagerTest, EnumerateOutputDevicesPulseaudio) {
 
   CreateAudioManagerForTesting<AudioManagerPulse>();
   if (audio_manager_.get()) {
-    AudioDeviceNames device_names;
-    audio_manager_->GetAudioOutputDeviceNames(&device_names);
-    CheckDeviceNames(device_names);
+    AudioDeviceDescriptions device_descriptions;
+    audio_manager_->GetAudioOutputDeviceDescriptions(&device_descriptions);
+    CheckDeviceDescriptions(device_descriptions);
   } else {
     LOG(WARNING) << "No pulseaudio on this system.";
   }
@@ -591,9 +597,9 @@ TEST_F(AudioManagerTest, EnumerateInputDevicesAlsa) {
 
   DVLOG(2) << "Testing AudioManagerAlsa.";
   CreateAudioManagerForTesting<AudioManagerAlsa>();
-  AudioDeviceNames device_names;
-  audio_manager_->GetAudioInputDeviceNames(&device_names);
-  CheckDeviceNames(device_names);
+  AudioDeviceDescriptions device_descriptions;
+  audio_manager_->GetAudioInputDeviceDescriptions(&device_descriptions);
+  CheckDeviceDescriptions(device_descriptions);
 }
 
 TEST_F(AudioManagerTest, EnumerateOutputDevicesAlsa) {
@@ -601,9 +607,9 @@ TEST_F(AudioManagerTest, EnumerateOutputDevicesAlsa) {
 
   DVLOG(2) << "Testing AudioManagerAlsa.";
   CreateAudioManagerForTesting<AudioManagerAlsa>();
-  AudioDeviceNames device_names;
-  audio_manager_->GetAudioOutputDeviceNames(&device_names);
-  CheckDeviceNames(device_names);
+  AudioDeviceDescriptions device_descriptions;
+  audio_manager_->GetAudioOutputDeviceDescriptions(&device_descriptions);
+  CheckDeviceDescriptions(device_descriptions);
 }
 #endif  // defined(USE_ALSA)
 
@@ -621,18 +627,17 @@ TEST_F(AudioManagerTest, GetAssociatedOutputDeviceID) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   ABORT_AUDIO_TEST_IF_NOT(InputDevicesAvailable() && OutputDevicesAvailable());
 
-  AudioDeviceNames device_names;
-  audio_manager_->GetAudioInputDeviceNames(&device_names);
+  AudioDeviceDescriptions device_descriptions;
+  audio_manager_->GetAudioInputDeviceDescriptions(&device_descriptions);
   bool found_an_associated_device = false;
-  for (AudioDeviceNames::iterator it = device_names.begin();
-       it != device_names.end();
-       ++it) {
-    EXPECT_FALSE(it->unique_id.empty());
-    EXPECT_FALSE(it->device_name.empty());
+  for (const auto& description : device_descriptions) {
+    EXPECT_FALSE(description.unique_id.empty());
+    EXPECT_FALSE(description.device_name.empty());
+    EXPECT_FALSE(description.group_id.empty());
     std::string output_device_id;
-    GetAssociatedOutputDeviceID(it->unique_id, &output_device_id);
+    GetAssociatedOutputDeviceID(description.unique_id, &output_device_id);
     if (!output_device_id.empty()) {
-      DVLOG(2) << it->unique_id << " matches with " << output_device_id;
+      DVLOG(2) << description.unique_id << " matches with " << output_device_id;
       found_an_associated_device = true;
     }
   }
@@ -654,20 +659,6 @@ class TestAudioManager : public FakeAudioManager {
       AudioLogFactory* audio_log_factory)
       : FakeAudioManager(task_runner, worker_task_runner, audio_log_factory) {}
 
-  void GetAudioInputDeviceNames(AudioDeviceNames* device_names) override {
-    device_names->emplace_back("Input 1", "input1");
-    device_names->emplace_back("Input 2", "input2");
-    device_names->emplace_back("Input 3", "input3");
-    device_names->push_front(AudioDeviceName::CreateDefault());
-  }
-
-  void GetAudioOutputDeviceNames(AudioDeviceNames* device_names) override {
-    device_names->emplace_back("Output 1", "output1");
-    device_names->emplace_back("Output 2", "output2");
-    device_names->emplace_back("Output 4", "output4");
-    device_names->push_front(AudioDeviceName::CreateDefault());
-  }
-
   std::string GetDefaultOutputDeviceID() override { return "output4"; }
 
   std::string GetAssociatedOutputDeviceID(
@@ -680,29 +671,45 @@ class TestAudioManager : public FakeAudioManager {
       return "output1";
     return "";
   }
+
+ private:
+  void GetAudioInputDeviceNames(AudioDeviceNames* device_names) override {
+    device_names->emplace_back("Input 1", "input1");
+    device_names->emplace_back("Input 2", "input2");
+    device_names->emplace_back("Input 3", "input3");
+    device_names->push_front(AudioDeviceName::CreateDefault());
+  }
+
+  void GetAudioOutputDeviceNames(AudioDeviceNames* device_names) override {
+    device_names->emplace_back("Output 1", "output1");
+    device_names->emplace_back("Output 2", "output2");
+    device_names->emplace_back("Output 3", "output3");
+    device_names->emplace_back("Output 4", "output4");
+    device_names->push_front(AudioDeviceName::CreateDefault());
+  }
 };
 
-TEST_F(AudioManagerTest, GetGroupId) {
+TEST_F(AudioManagerTest, GroupId) {
   CreateAudioManagerForTesting<TestAudioManager>();
   // Groups:
-  // 0: input1, output1, default input
-  // 1: input2, output2
-  // 2: input3,
-  // 3: output4, default output
-  std::vector<std::string> group;
-  group.push_back(audio_manager_->GetGroupIDInput("input1"));
-  group.push_back(audio_manager_->GetGroupIDInput("input2"));
-  group.push_back(audio_manager_->GetGroupIDInput("input3"));
-  group.push_back(audio_manager_->GetGroupIDOutput("output4"));
-  for (size_t i = 0; i < group.size(); ++i) {
-    for (size_t j = i + 1; j < group.size(); ++j) {
-      EXPECT_NE(group[i], group[j]);
-    }
-  }
-  EXPECT_EQ(group[0], audio_manager_->GetGroupIDOutput("output1"));
-  EXPECT_EQ(group[0], audio_manager_->GetGroupIDInput("default"));
-  EXPECT_EQ(group[1], audio_manager_->GetGroupIDOutput("output2"));
-  EXPECT_EQ(group[3], audio_manager_->GetGroupIDOutput("default"));
+  // input1, output1, default input
+  // input2, output2
+  // input3,
+  // output3
+  // output4, default output
+  AudioDeviceDescriptions inputs;
+  audio_manager_->GetAudioInputDeviceDescriptions(&inputs);
+  AudioDeviceDescriptions outputs;
+  audio_manager_->GetAudioOutputDeviceDescriptions(&outputs);
+  EXPECT_EQ(inputs[0].group_id, outputs[1].group_id);
+  EXPECT_EQ(inputs[1].group_id, outputs[1].group_id);
+  EXPECT_EQ(inputs[2].group_id, outputs[2].group_id);
+  EXPECT_NE(inputs[3].group_id, outputs[3].group_id);
+  EXPECT_EQ(outputs[4].group_id, outputs[0].group_id);
+  EXPECT_NE(inputs[0].group_id, outputs[0].group_id);
+  EXPECT_NE(inputs[1].group_id, outputs[2].group_id);
+  EXPECT_NE(inputs[2].group_id, outputs[3].group_id);
+  EXPECT_NE(inputs[1].group_id, outputs[3].group_id);
 }
 
 }  // namespace media
