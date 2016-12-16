@@ -9,6 +9,9 @@
 import unittest
 
 from code_generator_web_module import InterfaceContextBuilder
+from idl_definitions import IdlAttribute
+from idl_definitions import IdlOperation
+from idl_types import IdlType
 
 
 # TODO(dglazkov): Convert to use actual objects, not stubs.
@@ -17,24 +20,16 @@ class IdlTestingHelper(object):
     """A collection of stub makers and helper utils to make testing code
     generation easy."""
 
-    def make_stub_object(self):
-        return type('', (), {})()
-
-    def add_idl_type_to_stub(self, stub, return_type):
-        stub.idl_type = self.make_stub_object()
-        stub.idl_type.preprocessed_type = self.make_stub_object()
-        stub.idl_type.preprocessed_type.base_type = return_type
-
     def make_stub_idl_attribute(self, name, return_type):
-        idl_attribute_stub = self.make_stub_object()
+        idl_attribute_stub = IdlAttribute()
         idl_attribute_stub.name = name
-        self.add_idl_type_to_stub(idl_attribute_stub, return_type)
+        idl_attribute_stub.idl_type = IdlType(return_type)
         return idl_attribute_stub
 
     def make_stub_idl_operation(self, name, return_type):
-        idl_operation_stub = self.make_stub_object()
+        idl_operation_stub = IdlOperation()
         idl_operation_stub.name = name
-        self.add_idl_type_to_stub(idl_operation_stub, return_type)
+        idl_operation_stub.idl_type = IdlType(return_type)
         return idl_operation_stub
 
 

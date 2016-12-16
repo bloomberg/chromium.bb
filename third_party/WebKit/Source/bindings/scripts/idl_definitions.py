@@ -441,23 +441,23 @@ class IdlException(IdlInterface):
 ################################################################################
 
 class IdlAttribute(TypedObject):
-    def __init__(self, node):
-        self.is_read_only = bool(node.GetProperty('READONLY'))
-        self.is_static = bool(node.GetProperty('STATIC'))
-        self.name = node.GetName()
-        # Defaults, overridden below
+    def __init__(self, node=None):
+        self.is_read_only = bool(node.GetProperty('READONLY')) if node else False
+        self.is_static = bool(node.GetProperty('STATIC')) if node else False
+        self.name = node.GetName() if node else None
         self.idl_type = None
         self.extended_attributes = {}
 
-        children = node.GetChildren()
-        for child in children:
-            child_class = child.GetClass()
-            if child_class == 'Type':
-                self.idl_type = type_node_to_type(child)
-            elif child_class == 'ExtAttributes':
-                self.extended_attributes = ext_attributes_node_to_extended_attributes(child)
-            else:
-                raise ValueError('Unrecognized node class: %s' % child_class)
+        if node:
+            children = node.GetChildren()
+            for child in children:
+                child_class = child.GetClass()
+                if child_class == 'Type':
+                    self.idl_type = type_node_to_type(child)
+                elif child_class == 'ExtAttributes':
+                    self.extended_attributes = ext_attributes_node_to_extended_attributes(child)
+                else:
+                    raise ValueError('Unrecognized node class: %s' % child_class)
 
     def accept(self, visitor):
         visitor.visit_attribute(self)
