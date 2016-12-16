@@ -812,7 +812,8 @@ public class AwContents implements SmartClipProvider, PostMessageSender.PostMess
             WindowAndroid windowAndroid) {
         contentViewCore.initialize(viewDelegate, internalDispatcher, webContents, windowAndroid);
         contentViewCore.setActionModeCallback(
-                new AwActionModeCallback(this, contentViewCore.getActionModeCallbackHelper()));
+                new AwActionModeCallback(mContext, this,
+                        contentViewCore.getActionModeCallbackHelper()));
         contentViewCore.addGestureStateListener(gestureStateListener);
         contentViewCore.setContentViewClient(contentViewClient);
     }
