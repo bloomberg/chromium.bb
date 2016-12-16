@@ -3064,7 +3064,7 @@ TEST_F(ChunkDemuxerTest, DifferentStreamTimecodesOutOfRange) {
 TEST_F(ChunkDemuxerTest, CodecPrefixMatching) {
   ChunkDemuxer::Status expected = ChunkDemuxer::kNotSupported;
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
 #if defined(OS_ANDROID)
   if (HasPlatformDecoderSupport())
     expected = ChunkDemuxer::kOk;
@@ -3081,7 +3081,7 @@ TEST_F(ChunkDemuxerTest, CodecPrefixMatching) {
 TEST_F(ChunkDemuxerTest, CodecIDsThatAreNotRFC6381Compliant) {
   ChunkDemuxer::Status expected = ChunkDemuxer::kNotSupported;
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
   expected = ChunkDemuxer::kOk;
 #endif
   const char* codec_ids[] = {
@@ -3392,7 +3392,7 @@ TEST_F(ChunkDemuxerTest, IsParsingMediaSegmentMidMediaSegment) {
   ASSERT_FALSE(demuxer_->IsParsingMediaSegment(kSourceId));
 }
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
 #if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 namespace {
 const char* kMp2tMimeType = "video/mp2t";
@@ -4766,7 +4766,7 @@ class ChunkDemuxerMp4Vp9Test : public ChunkDemuxerTest,
 TEST_P(ChunkDemuxerMp4Vp9Test, CodecSupport) {
   ChunkDemuxer::Status expected = ChunkDemuxer::kNotSupported;
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
   const bool enable_mp4_vp9_demuxing = GetParam();
   if (enable_mp4_vp9_demuxing) {
     expected = ChunkDemuxer::kOk;

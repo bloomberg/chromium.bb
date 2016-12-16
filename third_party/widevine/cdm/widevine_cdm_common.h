@@ -5,7 +5,6 @@
 #ifndef WIDEVINE_CDM_WIDEVINE_CDM_COMMON_H_
 #define WIDEVINE_CDM_WIDEVINE_CDM_COMMON_H_
 
-#include "media/media_features.h"
 #include "ppapi/features/features.h"
 
 // This file defines constants common to all Widevine CDM versions.
@@ -55,9 +54,9 @@ const char kCdmSupportedCodecsParamName[] = "codecs";
 const char kCdmSupportedCodecsValueDelimiter = ',';
 const char kCdmSupportedCodecVp8[] = "vp8";
 const char kCdmSupportedCodecVp9[] = "vp9.0";
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
 const char kCdmSupportedCodecAvc1[] = "avc1";
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+#endif  // defined(USE_PROPRIETARY_CODECS)
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
 // CDM is installed by the component installer instead of the Chrome installer.

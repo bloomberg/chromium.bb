@@ -22,7 +22,6 @@
 #include "media/base/timestamp_constants.h"
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/filters/file_data_source.h"
-#include "media/media_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 
@@ -240,11 +239,11 @@ TEST(DemuxerPerfTest, MAYBE_Demuxer) {
   RunDemuxerBenchmark("bear-640x360.webm");
   RunDemuxerBenchmark("sfx_s16le.wav");
   RunDemuxerBenchmark("bear.flac");
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
   RunDemuxerBenchmark("bear-1280x720.mp4");
   RunDemuxerBenchmark("sfx.mp3");
 #endif
-#if BUILDFLAG(USE_PROPRIETARY_CODECS) && defined(OS_CHROMEOS)
+#if defined(USE_PROPRIETARY_CODECS) && defined(OS_CHROMEOS)
   RunDemuxerBenchmark("bear.avi");
 #endif
 }

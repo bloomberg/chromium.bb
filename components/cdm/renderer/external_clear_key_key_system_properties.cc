@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "media/base/eme_constants.h"
-#include "media/media_features.h"
 #include "ppapi/features/features.h"
 
 namespace cdm {
@@ -33,11 +32,11 @@ bool ExternalClearKeyProperties::IsSupportedInitDataType(
       return true;
 
     case media::EmeInitDataType::CENC:
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
       return true;
 #else
       return false;
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+#endif  // defined(USE_PROPRIETARY_CODECS)
 
     case media::EmeInitDataType::UNKNOWN:
       return false;
@@ -47,7 +46,7 @@ bool ExternalClearKeyProperties::IsSupportedInitDataType(
 }
 
 media::SupportedCodecs ExternalClearKeyProperties::GetSupportedCodecs() const {
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
   return media::EME_CODEC_MP4_ALL | media::EME_CODEC_WEBM_ALL;
 #else
   return media::EME_CODEC_WEBM_ALL;

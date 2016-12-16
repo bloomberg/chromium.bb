@@ -42,7 +42,6 @@
 #include "media/base/video_decoder_config.h"
 #include "media/ffmpeg/ffmpeg_deleters.h"
 #include "media/filters/blocking_url_protocol.h"
-#include "media/media_features.h"
 
 // FFmpeg forward declarations.
 struct AVFormatContext;
@@ -192,7 +191,7 @@ class FFmpegDemuxerStream : public DemuxerStream {
   ReadCB read_cb_;
   StreamStatusChangeCB stream_status_change_cb_;
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
   std::unique_ptr<FFmpegBitstreamConverter> bitstream_converter_;
 #endif
 

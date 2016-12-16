@@ -25,7 +25,6 @@ buildflag_header("media_features") {
     "ENABLE_MSE_MPEG2TS_STREAM_PARSER=$enable_mse_mpeg2ts_stream_parser",
     "ENABLE_MEDIA_REMOTING=$enable_media_remoting",
     "ENABLE_WEBRTC=$enable_webrtc",
-    "USE_PROPRIETARY_CODECS=$proprietary_codecs",
   ]
 }
 
@@ -275,30 +274,11 @@ component("media") {
   defines = []
   deps = [
     ":cdm_api",
-    "//base",
-    "//base:i18n",
-    "//base/third_party/dynamic_annotations",
-    "//crypto",
-    "//crypto:platform",
-    "//gpu/command_buffer/client:gles2_interface",
-    "//gpu/command_buffer/common",
-    "//skia",
-    "//third_party/libwebm",
-    "//third_party/libyuv",
-    "//ui/events:events_base",
-    "//ui/gfx",
-    "//ui/gfx/geometry",
-    "//ui/gl:gl",
-    "//url",
   ]
 
   public_configs = [ "//third_party/libwebm:libwebm_config" ]
   public_deps = [
     ":filters_common",
-    ":media_features",
-    ":shared_memory_support",
-    "//media/audio",
-    "//media/base",
   ]
 
   include_dirs = [ "." ]
@@ -516,6 +496,31 @@ component("media") {
       "device_monitors/device_monitor_udev.h",
     ]
   }
+
+  public_deps += [
+    ":media_features",
+    ":shared_memory_support",
+    "//media/audio",
+    "//media/base",
+  ]
+
+  deps += [
+    "//base",
+    "//base:i18n",
+    "//base/third_party/dynamic_annotations",
+    "//crypto",
+    "//crypto:platform",
+    "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/common",
+    "//skia",
+    "//third_party/libwebm",
+    "//third_party/libyuv",
+    "//ui/events:events_base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//ui/gl:gl",
+    "//url",
+  ]
 }
 
 static_library("cdm_paths") {

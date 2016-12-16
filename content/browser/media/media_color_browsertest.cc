@@ -6,7 +6,6 @@
 #include "content/browser/media/media_browsertest.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/test_data_util.h"
-#include "media/media_features.h"
 
 namespace content {
 
@@ -43,7 +42,7 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv444pVp9) {
   RunColorTest("yuv444p.webm");
 }
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
 
 // This fails on some Android devices: http://crbug.com/649199,
 // http://crbug.com/649185.
@@ -100,6 +99,6 @@ IN_PROC_BROWSER_TEST_F(MediaColorTest, Yuv420pMpeg4) {
   RunColorTest("yuv420p.avi");
 }
 #endif  // defined(OS_CHROMEOS)
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+#endif  // defined(USE_PROPRIETARY_CODECS)
 
 }  // namespace content

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "media/base/test_data_util.h"
-#include "media/media_features.h"
 #include "media/test/pipeline_integration_test_base.h"
 #include "testing/perf/perf_test.h"
 
@@ -63,7 +62,7 @@ TEST(PipelineIntegrationPerfTest, AudioPlaybackBenchmark) {
   RunAudioPlaybackBenchmark("sfx_s24le.wav", "clockless_playback");
   RunAudioPlaybackBenchmark("sfx_s16le.wav", "clockless_playback");
   RunAudioPlaybackBenchmark("sfx_u8.wav", "clockless_playback");
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
   RunAudioPlaybackBenchmark("sfx.mp3", "clockless_playback");
 #endif
 }
@@ -85,7 +84,7 @@ TEST(PipelineIntegrationPerfTest, TheoraPlaybackBenchmark) {
 #endif
 
 // PipelineIntegrationTests can't play h264 content.
-#if BUILDFLAG(USE_PROPRIETARY_CODECS) && !defined(OS_ANDROID)
+#if defined(USE_PROPRIETARY_CODECS) && !defined(OS_ANDROID)
 TEST(PipelineIntegrationPerfTest, MP4PlaybackBenchmark) {
   RunVideoPlaybackBenchmark("bear_silent.mp4", "clockless_video_playback_mp4");
 }

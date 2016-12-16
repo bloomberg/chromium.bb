@@ -20,7 +20,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
-#include "media/media_features.h"
 #include "ppapi/features/features.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 
@@ -65,12 +64,12 @@ const char kWebMVP8VideoOnly[] = "video/webm; codecs=\"vp8\"";
 const char kWebMVorbisAudioVP8Video[] = "video/webm; codecs=\"vorbis, vp8\"";
 const char kWebMOpusAudioVP9Video[] = "video/webm; codecs=\"opus, vp9\"";
 const char kWebMVP9VideoOnly[] = "video/webm; codecs=\"vp9\"";
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
 const char kMP4AudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"";
 const char kMP4VideoOnly[] = "video/mp4; codecs=\"avc1.4D000C\"";
 const char kMP4VideoVp9Only[] =
     "video/mp4; codecs=\"vp09.00.01.08.02.01.01.00\"";
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+#endif  // defined(USE_PROPRIETARY_CODECS)
 
 // Sessions to load.
 const char kNoSessionToLoad[] = "";
@@ -529,7 +528,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, FrameSizeChangeVideo) {
   TestFrameSizeChange();
 }
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
 // Crashes on Mac only.  http://crbug.com/621857
 #if defined(OS_MACOSX)
 #define MAYBE_Playback_VideoOnly_MP4 DISABLED_Playback_VideoOnly_MP4
@@ -607,7 +606,7 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
   TestDifferentContainers(EncryptedContainer::ENCRYPTED_WEBM,
                           EncryptedContainer::ENCRYPTED_MP4);
 }
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+#endif  // defined(USE_PROPRIETARY_CODECS)
 
 #if defined(WIDEVINE_CDM_AVAILABLE)
 // The parent key system cannot be used when creating MediaKeys.

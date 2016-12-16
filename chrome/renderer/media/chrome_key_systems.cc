@@ -20,7 +20,6 @@
 #include "content/public/renderer/render_thread.h"
 #include "media/base/eme_constants.h"
 #include "media/base/key_system_properties.h"
-#include "media/media_features.h"
 #include "ppapi/features/features.h"
 
 #if defined(OS_ANDROID)
@@ -181,21 +180,21 @@ static void AddPepperBasedWidevine(
   // as those may offer a higher level of protection.
   supported_codecs |= media::EME_CODEC_WEBM_OPUS;
   supported_codecs |= media::EME_CODEC_WEBM_VORBIS;
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
   supported_codecs |= media::EME_CODEC_MP4_AAC;
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+#endif  // defined(USE_PROPRIETARY_CODECS)
 
   for (size_t i = 0; i < codecs.size(); ++i) {
     if (codecs[i] == kCdmSupportedCodecVp8)
       supported_codecs |= media::EME_CODEC_WEBM_VP8;
     if (codecs[i] == kCdmSupportedCodecVp9)
       supported_codecs |= media::EME_CODEC_WEBM_VP9;
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
     if (codecs[i] == kCdmSupportedCodecAvc1)
       supported_codecs |= media::EME_CODEC_MP4_AVC1;
     if (codecs[i] == kCdmSupportedCodecVp9)
       supported_codecs |= media::EME_CODEC_MP4_VP9;
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+#endif  // defined(USE_PROPRIETARY_CODECS)
   }
 
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;

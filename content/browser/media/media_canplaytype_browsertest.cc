@@ -22,7 +22,7 @@ const char kProbably[] = "probably";
 const char kMaybe[] = "maybe";
 const char kNot[] = "";
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+#if defined(USE_PROPRIETARY_CODECS)
 const char* kPropProbably = kProbably;
 const char* kPropMaybe = kMaybe;
 #else
