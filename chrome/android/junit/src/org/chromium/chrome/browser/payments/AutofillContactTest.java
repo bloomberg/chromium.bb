@@ -71,7 +71,7 @@ public class AutofillContactTest {
         });
     }
 
-    private static final String IMCOMPLETE_MESSAGE = "incomplete";
+    private static final String INCOMPLETE_MESSAGE = "incomplete";
 
     private final Context mContext;
     private final String mPayerName;
@@ -90,7 +90,7 @@ public class AutofillContactTest {
             String expectedTertiaryLabel, String expectedPayerName, String expectedPayerPhone,
             String expectedPayerEmail) {
         mContext = spy(RuntimeEnvironment.application);
-        doReturn(IMCOMPLETE_MESSAGE).when(mContext).getString(anyInt());
+        doReturn(INCOMPLETE_MESSAGE).when(mContext).getString(anyInt());
         mPayerName = payerName;
         mPayerPhone = payerPhone;
         mPayerEmail = payerEmail;
@@ -140,9 +140,9 @@ public class AutofillContactTest {
         Assert.assertEquals("TertiaryLabel should be " + expectedTertiaryLabel,
                 expectedTertiaryLabel, actual.getTertiaryLabel());
 
-        Assert.assertEquals("EditTitle should be " + IMCOMPLETE_MESSAGE, IMCOMPLETE_MESSAGE,
+        Assert.assertEquals("EditTitle should be " + INCOMPLETE_MESSAGE, INCOMPLETE_MESSAGE,
                 actual.getEditTitle());
-        String editMessage = actual.isComplete() ? null : IMCOMPLETE_MESSAGE;
+        String editMessage = actual.isComplete() ? null : INCOMPLETE_MESSAGE;
         Assert.assertEquals(
                 "EditMessage should be " + editMessage, editMessage, actual.getEditMessage());
     }

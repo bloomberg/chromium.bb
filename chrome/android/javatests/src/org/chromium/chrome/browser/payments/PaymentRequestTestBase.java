@@ -302,6 +302,16 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         });
     }
 
+    /** Gets the button state for the contact details section. */
+    protected int getContactDetailsButtonState() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(new Callable<Integer>() {
+            @Override
+            public Integer call() {
+                return mUI.getContactDetailsSectionForTest().getEditButtonState();
+            }
+        });
+    }
+
     /**  Returns the label corresponding to the payment instrument at the specified |index|. */
     protected String getPaymentInstrumentLabel(final int index) throws ExecutionException {
         return ThreadUtils.runOnUiThreadBlocking(new Callable<String>() {

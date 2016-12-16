@@ -939,19 +939,32 @@ public class PaymentRequestImpl
             public void onResult(AutofillAddress editedAddress) {
                 if (mUI == null) return;
 
-                // |editedAddress| could be null if something went wrong or user was adding a new
-                // address and cancelled out.
-                if (editedAddress == null) {
-                    providePaymentInformation();
-                } else {
-                    // Set the shipping address label.
+                if (editedAddress != null) {
+                    // Sets or updates the shipping address label.
                     editedAddress.setShippingAddressLabelWithCountry();
 
-                    // We add a new item if the user was in the "add" flow and the result in
-                    // |editedAddress| is non-null.
-                    if (toEdit == null) mShippingAddressesSection.addAndSelectItem(editedAddress);
                     mCardEditor.updateBillingAddressIfComplete(editedAddress);
-                    mClient.onShippingAddressChange(editedAddress.toPaymentAddress());
+
+                    // A partial or complete address came back from the editor (could have been from
+                    // adding/editing or cancelling out of the edit flow).
+                    if (!editedAddress.isComplete()) {
+                        // If the address is not complete, unselect it (editor can return incomplete
+                        // information when cancelled).
+                        mShippingAddressesSection.setSelectedItemIndex(
+                                SectionInformation.NO_SELECTION);
+                        providePaymentInformation();
+                    } else {
+                        if (toEdit == null) {
+                            // Address is complete and we were in the "Add flow": add an item to the
+                            // list.
+                            mShippingAddressesSection.addAndSelectItem(editedAddress);
+                        }
+                        // This updates the line items and the shipping options asynchronously by
+                        // sending the new address to the merchant website.
+                        mClient.onShippingAddressChange(editedAddress.toPaymentAddress());
+                    }
+                } else {
+                    providePaymentInformation();
                 }
             }
         });
@@ -968,13 +981,23 @@ public class PaymentRequestImpl
             public void onResult(AutofillContact editedContact) {
                 if (mUI == null) return;
 
-                // |editedContact| could be null if something went wrong or user was adding a
-                // contact and cancelled out of that flow. In the following block we add an item to
-                // the list if we were in the "add" flow, and the result in |editedContact| is
-                // non-null.
-                if (toEdit == null && editedContact != null) {
-                    mContactSection.addAndSelectItem(editedContact);
+                if (editedContact != null) {
+                    // A partial or complete contact came back from the editor (could have been from
+                    // adding/editing or cancelling out of the edit flow).
+                    if (!editedContact.isComplete()) {
+                        // If the contact is not complete according to the requirements of the flow,
+                        // unselect it (editor can return incomplete information when cancelled).
+                        mContactSection.setSelectedItemIndex(SectionInformation.NO_SELECTION);
+                    } else if (toEdit == null) {
+                        // Contact is complete and we were in the "Add flow": add an item to the
+                        // list.
+                        mContactSection.addAndSelectItem(editedContact);
+                    }
+                    // If contact is complete and (toEdit != null), no action needed: the contact
+                    // was already selected in the UI.
                 }
+                // If |editedContact| is null, the user has cancelled out of the "Add flow". No
+                // action to take (if a contact was selected in the UI, it will stay selected).
 
                 mUI.updateSection(PaymentRequestUI.TYPE_CONTACT_DETAILS, mContactSection);
             }
@@ -992,12 +1015,24 @@ public class PaymentRequestImpl
             public void onResult(AutofillPaymentInstrument editedCard) {
                 if (mUI == null) return;
 
-                // |editedCard| could be null if something went wrong or user was adding a card
-                // and cancelled out of that flow. In the following block we add an item to the list
-                // if we were in the "add" flow and the result in |editedCard| is non-null.
-                if (toEdit == null && editedCard != null) {
-                    mPaymentMethodsSection.addAndSelectItem(editedCard);
+                if (editedCard != null) {
+                    // A partial or complete card came back from the editor (could have been from
+                    // adding/editing or cancelling out of the edit flow).
+                    if (!editedCard.isComplete()) {
+                        // If the card is not complete, unselect it (editor can return incomplete
+                        // information when cancelled).
+                        mPaymentMethodsSection.setSelectedItemIndex(
+                                SectionInformation.NO_SELECTION);
+                    } else if (toEdit == null) {
+                        // Card is complete and we were in the "Add flow": add an item to the list.
+                        mPaymentMethodsSection.addAndSelectItem(editedCard);
+                    }
+                    // If card is complete and (toEdit != null), no action needed: the card was
+                    // already selected in the UI.
                 }
+                // If |editedCard| is null, the user has cancelled out of the "Add flow". No action
+                // to take (if another card was selected prior to the add flow, it will stay
+                // selected).
 
                 updateInstrumentModifiedTotals();
                 mUI.updateSection(PaymentRequestUI.TYPE_PAYMENT_METHODS, mPaymentMethodsSection);

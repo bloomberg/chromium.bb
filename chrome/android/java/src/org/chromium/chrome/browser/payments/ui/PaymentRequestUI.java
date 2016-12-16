@@ -679,6 +679,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
      * @param section The shipping options.
      */
     public void updateSection(@DataType int whichSection, SectionInformation section) {
+        mIsEditingPaymentItem = false;
         if (whichSection == TYPE_SHIPPING_ADDRESSES) {
             mShippingAddressSectionInformation = section;
             mShippingAddressSection.update(section);
@@ -692,7 +693,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             mPaymentMethodSectionInformation = section;
             mPaymentMethodSection.update(section);
         }
-        mIsEditingPaymentItem = false;
         updateSectionButtons();
         updatePayButtonEnabled();
     }
@@ -1111,7 +1111,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     /**
-     * Updates the enabled/disbled state of each section's edit button.
+     * Updates the enabled/disabled state of each section's edit button.
      *
      * Only the top-most button is enabled -- the others are disabled so the user is directed
      * through the form from top to bottom.
@@ -1386,7 +1386,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     @VisibleForTesting
-    public ViewGroup getContactDetailsSectionForTest() {
+    public PaymentRequestSection getContactDetailsSectionForTest() {
         return mContactDetailsSection;
     }
 

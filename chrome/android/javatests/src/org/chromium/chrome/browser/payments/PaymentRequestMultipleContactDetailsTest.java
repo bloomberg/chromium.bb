@@ -77,6 +77,8 @@ public class PaymentRequestMultipleContactDetailsTest extends PaymentRequestTest
         for (int i = 0; i < guids.size(); i++) {
             helper.setProfileUseStatsForTesting(guids.get(i), mCountsToSet[i], mDatesToSet[i]);
         }
+
+        installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
     }
 
     /**

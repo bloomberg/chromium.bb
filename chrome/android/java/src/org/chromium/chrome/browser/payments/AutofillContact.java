@@ -65,6 +65,11 @@ public class AutofillContact extends PaymentOption {
         return mProfile;
     }
 
+    /** @return Whether the contact is complete and ready to be sent to the merchant as-is. */
+    public boolean isComplete() {
+        return mIsComplete;
+    }
+
     /**
      * Updates the profile guid, payer name, email address, and phone number and marks this
      * information "complete." Called after the user has edited this contact information.

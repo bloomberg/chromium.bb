@@ -10,7 +10,6 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -100,10 +99,11 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
 
     /** Attempt to add an invalid credit card number and cancel payment. */
     @MediumTest
-    @FlakyTest(message = "crbug.com/673371")
     @Feature({"Payments"})
     public void testAddInvalidCardNumberAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
+        // Attempting to add an invalid card and cancelling out of the flow will result in the user
+        // still being ready to pay with the previously selected credit card.
         fillNewCardForm("123", "Bob", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
         clickInCardEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
         clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
@@ -111,25 +111,14 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
         expectResultContains(new String[] {"Request cancelled"});
     }
 
-    private void fillNewCardForm(String cardNumber, String nameOnCard, int month, int year,
-            int billingAddress) throws InterruptedException, ExecutionException, TimeoutException {
-        triggerUIAndWait(mReadyToPay);
-        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
-        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
-        setTextInCardEditorAndWait(new String[] {cardNumber, nameOnCard}, mEditorTextUpdate);
-        setSpinnerSelectionsInCardEditorAndWait(
-                new int[] {month, year, billingAddress}, mBillingAddressChangeProcessed);
-    }
-
     /** Attempt to add a credit card with an empty name on card and cancel payment. */
     @MediumTest
-    @FlakyTest(message = "crbug.com/673371")
     @Feature({"Payments"})
     public void testAddEmptyNameOnCardAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
         fillNewCardForm("5454-5454-5454-5454", "", DECEMBER, NEXT_YEAR, FIRST_BILLING_ADDRESS);
         clickInCardEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
+        clickInCardEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -162,6 +151,16 @@ public class PaymentRequestNoShippingTest extends PaymentRequestTestBase {
         setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
         clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
         expectResultContains(new String[] {"5454545454545454", "12", "Bob"});
+    }
+
+    private void fillNewCardForm(String cardNumber, String nameOnCard, int month, int year,
+            int billingAddress) throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyToPay);
+        clickInPaymentMethodAndWait(R.id.payments_section, mReadyForInput);
+        clickInPaymentMethodAndWait(R.id.payments_add_option_button, mReadyToEdit);
+        setTextInCardEditorAndWait(new String[] {cardNumber, nameOnCard}, mEditorTextUpdate);
+        setSpinnerSelectionsInCardEditorAndWait(
+                new int[] {month, year, billingAddress}, mBillingAddressChangeProcessed);
     }
 
     /** Add a new card together with a new billing address and pay. */

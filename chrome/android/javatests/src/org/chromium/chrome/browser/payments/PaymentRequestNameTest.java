@@ -9,7 +9,6 @@ import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
@@ -53,7 +52,6 @@ public class PaymentRequestNameTest extends PaymentRequestTestBase {
 
     /** Attempt to add an invalid payer name and cancel the transaction. */
     @MediumTest
-    @FlakyTest(message = "crbug.com/673371")
     @Feature({"Payments"})
     public void testAddInvalidNameAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {

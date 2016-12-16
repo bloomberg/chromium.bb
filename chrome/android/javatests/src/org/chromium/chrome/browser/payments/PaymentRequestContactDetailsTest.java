@@ -4,17 +4,14 @@
 
 package org.chromium.chrome.browser.payments;
 
-import android.content.DialogInterface;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
-import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -33,12 +30,11 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
             throws InterruptedException, ExecutionException, TimeoutException {
         AutofillTestHelper helper = new AutofillTestHelper();
         // The user has valid payer name, phone number and email address on disk.
-        String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
-                true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
-                "US", "555-555-5555", "jon.doe@google.com", "en-US"));
-        helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
-                "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
-                billingAddressId, "" /* serverId */));
+        helper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
+                "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "555-555-5555",
+                "jon.doe@google.com", "en-US"));
+
+        installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
     }
 
     /** Provide the existing valid payer name, phone number and email address to the merchant. */
@@ -46,15 +42,12 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
     @Feature({"Payments"})
     public void testPay() throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        clickAndWait(R.id.button_primary, mDismissed);
         expectResultContains(new String[] {"Jon Doe", "555-555-5555", "jon.doe@google.com"});
     }
 
     /** Attempt to add invalid contact information and cancel the transaction. */
     @MediumTest
-    @FlakyTest(message = "crbug.com/673371")
     @Feature({"Payments"})
     public void testAddInvalidContactAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
@@ -79,9 +72,8 @@ public class PaymentRequestContactDetailsTest extends PaymentRequestTestBase {
         setTextInEditorAndWait(new String[] {"Jane Jones", "999-999-9999", "jane.jones@google.com"},
                 mEditorTextUpdate);
         clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
-        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
-        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
-        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+
+        clickAndWait(R.id.button_primary, mDismissed);
         expectResultContains(new String[] {"Jane Jones", "999-999-9999", "jane.jones@google.com"});
     }
 

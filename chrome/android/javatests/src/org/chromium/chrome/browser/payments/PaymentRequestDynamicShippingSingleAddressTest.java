@@ -57,6 +57,9 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
     public void testSelectValidAddressAndPay()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyForInput);
+        // Check that there is a selected payment method (makes sure we are not ready to pay because
+        // of the Shipping Address).
+        expectPaymentMethodRowIsSelected(0);
         clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
         clickInShippingAddressAndWait(R.id.payments_first_radio_button, mReadyToPay);
         clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
@@ -67,16 +70,71 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
                 "californiaShippingOption"});
     }
 
+    /** Expand the shipping address section, select an address, edit it and click "Pay." */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testSelectValidAddressEditItAndPay()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyForInput);
+        // Check that there is a selected payment method (makes sure we are not ready to pay because
+        // of the Shipping Address).
+        expectPaymentMethodRowIsSelected(0);
+        clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
+        clickInShippingAddressAndWait(R.id.payments_first_radio_button, mReadyToPay);
+        expectShippingAddressRowIsSelected(0);
+        clickInShippingAddressAndWait(R.id.payments_open_editor_pencil_button, mReadyToEdit);
+        setTextInEditorAndWait(new String[] {"Jane Doe"}, mEditorTextUpdate);
+        clickInEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
+        expectShippingAddressRowIsSelected(0);
+
+        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        expectResultContains(new String[] {"Jane Doe", "4111111111111111", "12", "2050", "visa",
+                "123", "Google", "340 Main St", "CA", "Los Angeles", "90291", "US", "en",
+                "californiaShippingOption"});
+    }
+
+    /** Expand the shipping address section, select address, edit but cancel editing, and "Pay". */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testSelectValidAddressEditItAndCancelAndPay()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        triggerUIAndWait(mReadyForInput);
+        // Check that there is a selected payment method (makes sure we are not ready to pay because
+        // of the Shipping Address).
+        expectPaymentMethodRowIsSelected(0);
+        clickInShippingAddressAndWait(R.id.payments_section, mReadyForInput);
+        clickInShippingAddressAndWait(R.id.payments_first_radio_button, mReadyToPay);
+        expectShippingAddressRowIsSelected(0);
+        clickInShippingAddressAndWait(R.id.payments_open_editor_pencil_button, mReadyToEdit);
+        setTextInEditorAndWait(new String[] {"Jane Doe"}, mEditorTextUpdate);
+        // Cancel the edit.
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
+        expectShippingAddressRowIsSelected(0);
+
+        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mReadyToUnmask);
+        clickCardUnmaskButtonAndWait(DialogInterface.BUTTON_POSITIVE, mDismissed);
+        expectResultContains(new String[] {"Jon Doe", "4111111111111111", "12", "2050", "visa",
+                "123", "Google", "340 Main St", "CA", "Los Angeles", "90291", "US", "en",
+                "californiaShippingOption"});
+    }
+
     /** Attempt to add an invalid address and cancel the transaction. */
-    @FlakyTest(message = "crbug.com/673371")
+    @MediumTest
     @Feature({"Payments"})
     public void testAddInvalidAddressAndCancel()
             throws InterruptedException, ExecutionException, TimeoutException {
         triggerUIAndWait(mReadyForInput);
+        // Check that there is a selected payment method (makes sure we are not ready to pay because
+        // of the Shipping Address).
+        expectPaymentMethodRowIsSelected(0);
         clickInShippingSummaryAndWait(R.id.payments_section, mReadyForInput);
         clickInShippingAddressAndWait(R.id.payments_add_option_button, mReadyToEdit);
         clickInEditorAndWait(R.id.payments_edit_done_button, mEditorValidationError);
-        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyToPay);
+        clickInEditorAndWait(R.id.payments_edit_cancel_button, mReadyForInput);
+
         clickAndWait(R.id.close_button, mDismissed);
         expectResultContains(new String[] {"Request cancelled"});
     }
@@ -105,7 +163,6 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
 
     /** Quickly pressing "add address" and then [X] should not crash. */
     @MediumTest
-    @FlakyTest(message = "crbug.com/673371")
     @Feature({"Payments"})
     public void testQuickAddAddressAndCloseShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
@@ -154,7 +211,6 @@ public class PaymentRequestDynamicShippingSingleAddressTest extends PaymentReque
 
     /** Quickly pressing "add address" and then "cancel" should not crash. */
     @MediumTest
-    @FlakyTest(message = "crbug.com/673371")
     @Feature({"Payments"})
     public void testQuickAddAddressAndCancelShouldNotCrash()
             throws InterruptedException, ExecutionException, TimeoutException {
