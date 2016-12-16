@@ -498,26 +498,27 @@ bool DevToolsEmulator::handleInputEvent(const WebInputEvent& inputEvent) {
                  inputEvent.type == WebInputEvent::GesturePinchEnd;
   if (isPinch && m_touchEventEmulationEnabled) {
     FrameView* frameView = page->deprecatedLocalMainFrame()->view();
-    PlatformGestureEventBuilder gestureEvent(
+    WebGestureEvent scaledEvent = TransformWebGestureEvent(
         frameView, static_cast<const WebGestureEvent&>(inputEvent));
     float pageScaleFactor = page->pageScaleFactor();
-    if (gestureEvent.type() == PlatformEvent::GesturePinchBegin) {
-      m_lastPinchAnchorCss = WTF::wrapUnique(new IntPoint(roundedIntPoint(
-          gestureEvent.position() + frameView->getScrollOffset())));
+    if (scaledEvent.type == WebInputEvent::GesturePinchBegin) {
+      WebFloatPoint gesturePosition = scaledEvent.positionInRootFrame();
+      m_lastPinchAnchorCss = WTF::wrapUnique(new IntPoint(
+          roundedIntPoint(gesturePosition + frameView->getScrollOffset())));
       m_lastPinchAnchorDip =
-          WTF::wrapUnique(new IntPoint(gestureEvent.position()));
+          WTF::wrapUnique(new IntPoint(flooredIntPoint(gesturePosition)));
       m_lastPinchAnchorDip->scale(pageScaleFactor, pageScaleFactor);
     }
-    if (gestureEvent.type() == PlatformEvent::GesturePinchUpdate &&
+    if (scaledEvent.type == WebInputEvent::GesturePinchUpdate &&
         m_lastPinchAnchorCss) {
-      float newPageScaleFactor = pageScaleFactor * gestureEvent.scale();
+      float newPageScaleFactor = pageScaleFactor * scaledEvent.pinchScale();
       IntPoint anchorCss(*m_lastPinchAnchorDip.get());
       anchorCss.scale(1.f / newPageScaleFactor, 1.f / newPageScaleFactor);
       m_webViewImpl->setPageScaleFactor(newPageScaleFactor);
       m_webViewImpl->mainFrame()->setScrollOffset(
           toIntSize(*m_lastPinchAnchorCss.get() - toIntSize(anchorCss)));
     }
-    if (gestureEvent.type() == PlatformEvent::GesturePinchEnd) {
+    if (scaledEvent.type == WebInputEvent::GesturePinchEnd) {
       m_lastPinchAnchorCss.reset();
       m_lastPinchAnchorDip.reset();
     }

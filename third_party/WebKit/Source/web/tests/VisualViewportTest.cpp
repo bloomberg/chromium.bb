@@ -17,7 +17,6 @@
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/page/Page.h"
 #include "core/paint/PaintLayer.h"
-#include "platform/PlatformGestureEvent.h"
 #include "platform/geometry/DoublePoint.h"
 #include "platform/geometry/DoubleRect.h"
 #include "platform/graphics/CompositorElementId.h"
@@ -1865,13 +1864,15 @@ TEST_P(VisualViewportTest, SlowScrollAfterImplScroll) {
   EXPECT_SIZE_EQ(FloatSize(300, 200), visualViewport.getScrollOffset());
 
   // Send a scroll event on the main thread path.
-  PlatformGestureEvent gsu(PlatformEvent::GestureScrollUpdate, IntPoint(0, 0),
-                           IntPoint(0, 0), IntSize(5, 5), TimeTicks(),
-                           PlatformEvent::NoModifiers,
-                           PlatformGestureSourceTouchpad);
-  gsu.setScrollGestureData(-50, -60, ScrollByPrecisePixel, 1, 1,
-                           ScrollInertialPhaseUnknown, false,
-                           -1 /* null plugin id */);
+  WebGestureEvent gsu;
+  gsu.setFrameScale(1);
+  gsu.type = WebInputEvent::GestureScrollUpdate;
+  gsu.sourceDevice = WebGestureDeviceTouchpad;
+  gsu.data.scrollUpdate.deltaX = -50;
+  gsu.data.scrollUpdate.deltaY = -60;
+  gsu.data.scrollUpdate.deltaUnits = WebGestureEvent::PrecisePixels;
+  gsu.data.scrollUpdate.velocityX = 1;
+  gsu.data.scrollUpdate.velocityY = 1;
 
   frame()->eventHandler().handleGestureEvent(gsu);
 

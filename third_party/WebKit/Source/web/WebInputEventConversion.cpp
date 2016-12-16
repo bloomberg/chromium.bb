@@ -50,14 +50,43 @@
 namespace blink {
 
 namespace {
-float scaleDeltaToWindow(const Widget* widget, float delta) {
+float frameScale(const Widget* widget) {
   float scale = 1;
   if (widget) {
     FrameView* rootView = toFrameView(widget->root());
     if (rootView)
       scale = rootView->inputEventsScaleFactor();
   }
-  return delta / scale;
+  return scale;
+}
+
+FloatPoint frameTranslation(const Widget* widget) {
+  float scale = 1;
+  FloatSize offset;
+  IntPoint visualViewport;
+  FloatSize overscrollOffset;
+  if (widget) {
+    FrameView* rootView = toFrameView(widget->root());
+    if (rootView) {
+      scale = rootView->inputEventsScaleFactor();
+      offset = FloatSize(rootView->inputEventsOffsetForEmulation());
+      visualViewport = flooredIntPoint(rootView->page()
+                                           ->frameHost()
+                                           .visualViewport()
+                                           .visibleRect()
+                                           .location());
+      overscrollOffset =
+          rootView->page()->frameHost().chromeClient().elasticOverscroll();
+    }
+  }
+  return FloatPoint(
+      -offset.width() / scale + visualViewport.x() + overscrollOffset.width(),
+      -offset.height() / scale + visualViewport.y() +
+          overscrollOffset.height());
+}
+
+float scaleDeltaToWindow(const Widget* widget, float delta) {
+  return delta / frameScale(widget);
 }
 
 FloatSize scaleSizeToWindow(const Widget* widget, FloatSize size) {
@@ -132,59 +161,6 @@ unsigned toPlatformModifierFrom(WebMouseEvent::Button button) {
       PlatformEvent::RightButtonDown};
 
   return webMouseButtonToPlatformModifier[static_cast<int>(button)];
-}
-
-ScrollGranularity toPlatformScrollGranularity(
-    WebGestureEvent::ScrollUnits units) {
-  switch (units) {
-    case WebGestureEvent::ScrollUnits::PrecisePixels:
-      return ScrollGranularity::ScrollByPrecisePixel;
-    case WebGestureEvent::ScrollUnits::Pixels:
-      return ScrollGranularity::ScrollByPixel;
-    case WebGestureEvent::ScrollUnits::Page:
-      return ScrollGranularity::ScrollByPage;
-    default:
-      NOTREACHED();
-      return ScrollGranularity::ScrollByPrecisePixel;
-  }
-}
-
-ScrollInertialPhase toPlatformScrollInertialPhase(
-    WebGestureEvent::InertialPhaseState state) {
-  static_assert(
-      ScrollInertialPhaseUnknown == static_cast<ScrollInertialPhase>(
-                                        WebGestureEvent::UnknownMomentumPhase),
-      "Inertial phases not equal");
-  static_assert(
-      ScrollInertialPhaseNonMomentum ==
-          static_cast<ScrollInertialPhase>(WebGestureEvent::NonMomentumPhase),
-      "Inertial phases not equal");
-  static_assert(
-      ScrollInertialPhaseMomentum ==
-          static_cast<ScrollInertialPhase>(WebGestureEvent::MomentumPhase),
-      "Inertial phases not equal");
-
-  return static_cast<ScrollInertialPhase>(state);
-}
-
-WebGestureEvent::InertialPhaseState toWebGestureInertialPhaseState(
-    ScrollInertialPhase state) {
-  return static_cast<WebGestureEvent::InertialPhaseState>(state);
-}
-
-WebGestureEvent::ScrollUnits toWebGestureScrollUnits(
-    ScrollGranularity granularity) {
-  switch (granularity) {
-    case ScrollGranularity::ScrollByPrecisePixel:
-      return WebGestureEvent::ScrollUnits::PrecisePixels;
-    case ScrollGranularity::ScrollByPixel:
-      return WebGestureEvent::ScrollUnits::Pixels;
-    case ScrollGranularity::ScrollByPage:
-      return WebGestureEvent::ScrollUnits::Page;
-    default:
-      NOTREACHED();
-      return WebGestureEvent::ScrollUnits::PrecisePixels;
-  }
 }
 
 }  // namespace
@@ -266,129 +242,12 @@ PlatformWheelEventBuilder::PlatformWheelEventBuilder(
 
 // PlatformGestureEventBuilder -----------------------------------------------
 
-PlatformGestureEventBuilder::PlatformGestureEventBuilder(
-    Widget* widget,
-    const WebGestureEvent& e) {
-  switch (e.type) {
-    case WebInputEvent::GestureScrollBegin:
-      m_type = PlatformEvent::GestureScrollBegin;
-      m_data.m_scroll.m_resendingPluginId = e.resendingPluginId;
-      m_data.m_scroll.m_deltaX = e.data.scrollBegin.deltaXHint;
-      m_data.m_scroll.m_deltaY = e.data.scrollBegin.deltaYHint;
-      m_data.m_scroll.m_deltaUnits =
-          toPlatformScrollGranularity(e.data.scrollBegin.deltaHintUnits);
-      m_data.m_scroll.m_inertialPhase =
-          toPlatformScrollInertialPhase(e.data.scrollBegin.inertialPhase);
-      m_data.m_scroll.m_synthetic = e.data.scrollBegin.synthetic;
-      break;
-    case WebInputEvent::GestureScrollEnd:
-      m_type = PlatformEvent::GestureScrollEnd;
-      m_data.m_scroll.m_resendingPluginId = e.resendingPluginId;
-      m_data.m_scroll.m_deltaUnits =
-          toPlatformScrollGranularity(e.data.scrollEnd.deltaUnits);
-      m_data.m_scroll.m_inertialPhase =
-          toPlatformScrollInertialPhase(e.data.scrollEnd.inertialPhase);
-      m_data.m_scroll.m_synthetic = e.data.scrollEnd.synthetic;
-      break;
-    case WebInputEvent::GestureFlingStart:
-      m_type = PlatformEvent::GestureFlingStart;
-      m_data.m_scroll.m_velocityX = e.data.flingStart.velocityX;
-      m_data.m_scroll.m_velocityY = e.data.flingStart.velocityY;
-      break;
-    case WebInputEvent::GestureScrollUpdate:
-      m_type = PlatformEvent::GestureScrollUpdate;
-      m_data.m_scroll.m_resendingPluginId = e.resendingPluginId;
-      m_data.m_scroll.m_deltaX =
-          scaleDeltaToWindow(widget, e.data.scrollUpdate.deltaX);
-      m_data.m_scroll.m_deltaY =
-          scaleDeltaToWindow(widget, e.data.scrollUpdate.deltaY);
-      m_data.m_scroll.m_velocityX = e.data.scrollUpdate.velocityX;
-      m_data.m_scroll.m_velocityY = e.data.scrollUpdate.velocityY;
-      m_data.m_scroll.m_preventPropagation =
-          e.data.scrollUpdate.preventPropagation;
-      m_data.m_scroll.m_inertialPhase =
-          toPlatformScrollInertialPhase(e.data.scrollUpdate.inertialPhase);
-      m_data.m_scroll.m_deltaUnits =
-          toPlatformScrollGranularity(e.data.scrollUpdate.deltaUnits);
-      break;
-    case WebInputEvent::GestureTap:
-      m_type = PlatformEvent::GestureTap;
-      m_area = expandedIntSize(scaleSizeToWindow(
-          widget, FloatSize(e.data.tap.width, e.data.tap.height)));
-      m_data.m_tap.m_tapCount = e.data.tap.tapCount;
-      break;
-    case WebInputEvent::GestureTapUnconfirmed:
-      m_type = PlatformEvent::GestureTapUnconfirmed;
-      m_area = expandedIntSize(scaleSizeToWindow(
-          widget, FloatSize(e.data.tap.width, e.data.tap.height)));
-      break;
-    case WebInputEvent::GestureTapDown:
-      m_type = PlatformEvent::GestureTapDown;
-      m_area = expandedIntSize(scaleSizeToWindow(
-          widget, FloatSize(e.data.tapDown.width, e.data.tapDown.height)));
-      break;
-    case WebInputEvent::GestureShowPress:
-      m_type = PlatformEvent::GestureShowPress;
-      m_area = expandedIntSize(scaleSizeToWindow(
-          widget, FloatSize(e.data.showPress.width, e.data.showPress.height)));
-      break;
-    case WebInputEvent::GestureTapCancel:
-      m_type = PlatformEvent::GestureTapDownCancel;
-      break;
-    case WebInputEvent::GestureDoubleTap:
-      // DoubleTap gesture is now handled as PlatformEvent::GestureTap with
-      // tap_count = 2. So no need to convert to a Platfrom DoubleTap gesture.
-      // But in WebViewImpl::handleGestureEvent all WebGestureEvent are
-      // converted to PlatformGestureEvent, for completeness and not reach the
-      // NOTREACHED() at the end, convert the DoubleTap to a NoType.
-      m_type = PlatformEvent::NoType;
-      break;
-    case WebInputEvent::GestureTwoFingerTap:
-      m_type = PlatformEvent::GestureTwoFingerTap;
-      m_area = expandedIntSize(scaleSizeToWindow(
-          widget, FloatSize(e.data.twoFingerTap.firstFingerWidth,
-                            e.data.twoFingerTap.firstFingerHeight)));
-      break;
-    case WebInputEvent::GestureLongPress:
-      m_type = PlatformEvent::GestureLongPress;
-      m_area = expandedIntSize(scaleSizeToWindow(
-          widget, FloatSize(e.data.longPress.width, e.data.longPress.height)));
-      break;
-    case WebInputEvent::GestureLongTap:
-      m_type = PlatformEvent::GestureLongTap;
-      m_area = expandedIntSize(scaleSizeToWindow(
-          widget, FloatSize(e.data.longPress.width, e.data.longPress.height)));
-      break;
-    case WebInputEvent::GesturePinchBegin:
-      m_type = PlatformEvent::GesturePinchBegin;
-      break;
-    case WebInputEvent::GesturePinchEnd:
-      m_type = PlatformEvent::GesturePinchEnd;
-      break;
-    case WebInputEvent::GesturePinchUpdate:
-      m_type = PlatformEvent::GesturePinchUpdate;
-      m_data.m_pinchUpdate.m_scale = e.data.pinchUpdate.scale;
-      break;
-    default:
-      NOTREACHED();
-  }
-  m_position = widget->convertFromRootFrame(flooredIntPoint(
-      convertHitPointToRootFrame(widget, FloatPoint(e.x, e.y))));
-  m_globalPosition = IntPoint(e.globalX, e.globalY);
-  m_timestamp = TimeTicks::FromSeconds(e.timeStampSeconds);
-  m_modifiers = e.modifiers;
-  switch (e.sourceDevice) {
-    case WebGestureDeviceTouchpad:
-      m_source = PlatformGestureSourceTouchpad;
-      break;
-    case WebGestureDeviceTouchscreen:
-      m_source = PlatformGestureSourceTouchscreen;
-      break;
-    case WebGestureDeviceUninitialized:
-      NOTREACHED();
-  }
-
-  m_uniqueTouchEventId = e.uniqueTouchEventId;
+WebGestureEvent TransformWebGestureEvent(Widget* widget,
+                                         const WebGestureEvent& event) {
+  WebGestureEvent result = event;
+  result.setFrameScale(frameScale(widget));
+  result.setFrameTranslate(frameTranslation(widget));
+  return result;
 }
 
 inline PlatformEvent::EventType toPlatformTouchEventType(
@@ -767,70 +626,6 @@ WebTouchEventBuilder::WebTouchEventBuilder(const LayoutItem layoutItem,
   addTouchPointsUpdateStateIfNecessary(
       toWebTouchPointState(event.type()), event.changedTouches(), touches,
       &touchesLength, layoutItem, event.pointerType());
-}
-
-WebGestureEventBuilder::WebGestureEventBuilder(const LayoutItem layoutItem,
-                                               const GestureEvent& event) {
-  if (event.type() == EventTypeNames::gestureshowpress) {
-    type = GestureShowPress;
-  } else if (event.type() == EventTypeNames::gesturelongpress) {
-    type = GestureLongPress;
-  } else if (event.type() == EventTypeNames::gesturetapdown) {
-    type = GestureTapDown;
-  } else if (event.type() == EventTypeNames::gesturescrollstart) {
-    type = GestureScrollBegin;
-    resendingPluginId = event.resendingPluginId();
-    data.scrollBegin.deltaXHint = event.deltaX();
-    data.scrollBegin.deltaYHint = event.deltaY();
-    data.scrollBegin.deltaHintUnits =
-        toWebGestureScrollUnits(event.deltaUnits());
-    data.scrollBegin.inertialPhase =
-        toWebGestureInertialPhaseState(event.inertialPhase());
-    data.scrollBegin.synthetic = event.synthetic();
-  } else if (event.type() == EventTypeNames::gesturescrollend) {
-    type = GestureScrollEnd;
-    resendingPluginId = event.resendingPluginId();
-    data.scrollEnd.deltaUnits = toWebGestureScrollUnits(event.deltaUnits());
-    data.scrollEnd.inertialPhase =
-        toWebGestureInertialPhaseState(event.inertialPhase());
-    data.scrollEnd.synthetic = event.synthetic();
-  } else if (event.type() == EventTypeNames::gesturescrollupdate) {
-    type = GestureScrollUpdate;
-    data.scrollUpdate.deltaUnits = toWebGestureScrollUnits(event.deltaUnits());
-    data.scrollUpdate.deltaX = event.deltaX();
-    data.scrollUpdate.deltaY = event.deltaY();
-    data.scrollUpdate.inertialPhase =
-        toWebGestureInertialPhaseState(event.inertialPhase());
-    resendingPluginId = event.resendingPluginId();
-  } else if (event.type() == EventTypeNames::gestureflingstart) {
-    type = GestureFlingStart;
-    data.flingStart.velocityX = event.velocityX();
-    data.flingStart.velocityY = event.velocityY();
-  } else if (event.type() == EventTypeNames::gesturetap) {
-    type = GestureTap;
-    data.tap.tapCount = 1;
-  }
-
-  timeStampSeconds = event.platformTimeStamp().InSeconds();
-  modifiers = event.modifiers();
-
-  globalX = event.screenX();
-  globalY = event.screenY();
-  IntPoint localPoint = convertAbsoluteLocationForLayoutObjectInt(
-      event.absoluteLocation(), layoutItem);
-  x = localPoint.x();
-  y = localPoint.y();
-
-  switch (event.source()) {
-    case GestureSourceTouchpad:
-      sourceDevice = WebGestureDeviceTouchpad;
-      break;
-    case GestureSourceTouchscreen:
-      sourceDevice = WebGestureDeviceTouchscreen;
-      break;
-    case GestureSourceUninitialized:
-      NOTREACHED();
-  }
 }
 
 Vector<PlatformMouseEvent> createPlatformMouseEventVector(

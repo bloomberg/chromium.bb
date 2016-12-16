@@ -640,15 +640,14 @@ bool MouseEventManager::handleDragDropIfPossible(
     const GestureEventWithHitTestResults& targetedEvent) {
   if (m_frame->settings() && m_frame->settings()->touchDragDropEnabled() &&
       m_frame->view()) {
-    const PlatformGestureEvent& gestureEvent = targetedEvent.event();
-    IntPoint adjustedPoint = gestureEvent.position();
-    unsigned modifiers = gestureEvent.getModifiers();
+    const WebGestureEvent& gestureEvent = targetedEvent.event();
+    unsigned modifiers = gestureEvent.modifiers;
 
     // TODO(mustaq): Suppressing long-tap MouseEvents could break
     // drag-drop. Will do separately because of the risk. crbug.com/606938.
     PlatformMouseEvent mouseDownEvent(
-        adjustedPoint, gestureEvent.globalPosition(),
-        WebPointerProperties::Button::Left, PlatformEvent::MousePressed, 1,
+        gestureEvent, WebPointerProperties::Button::Left,
+        PlatformEvent::MousePressed, 1,
         static_cast<PlatformEvent::Modifiers>(modifiers |
                                               PlatformEvent::LeftButtonDown),
         PlatformMouseEvent::FromTouch, TimeTicks::Now(),
@@ -656,8 +655,8 @@ bool MouseEventManager::handleDragDropIfPossible(
     m_mouseDown = mouseDownEvent;
 
     PlatformMouseEvent mouseDragEvent(
-        adjustedPoint, gestureEvent.globalPosition(),
-        WebPointerProperties::Button::Left, PlatformEvent::MouseMoved, 1,
+        gestureEvent, WebPointerProperties::Button::Left,
+        PlatformEvent::MouseMoved, 1,
         static_cast<PlatformEvent::Modifiers>(modifiers |
                                               PlatformEvent::LeftButtonDown),
         PlatformMouseEvent::FromTouch, TimeTicks::Now(),

@@ -55,12 +55,12 @@ namespace blink {
 
 GestureEventWithHitTestResults getTargetedEvent(WebViewImpl* webViewImpl,
                                                 WebGestureEvent& touchEvent) {
-  PlatformGestureEventBuilder platformEvent(
+  WebGestureEvent scaledEvent = TransformWebGestureEvent(
       webViewImpl->mainFrameImpl()->frameView(), touchEvent);
   return webViewImpl->page()
       ->deprecatedLocalMainFrame()
       ->eventHandler()
-      .targetGestureEvent(platformEvent, true);
+      .targetGestureEvent(scaledEvent, true);
 }
 
 TEST(LinkHighlightImplTest, verifyWebViewImplIntegration) {

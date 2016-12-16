@@ -27,7 +27,9 @@
 #define PlatformMouseEvent_h
 
 #include "platform/PlatformEvent.h"
+#include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntPoint.h"
+#include "public/platform/WebGestureEvent.h"
 #include "public/platform/WebPointerProperties.h"
 #include "wtf/text/WTFString.h"
 
@@ -86,6 +88,27 @@ class PlatformMouseEvent : public PlatformEvent {
     m_pointerProperties.pointerType = pointerType;
     m_pointerProperties.button = button;
   }
+
+#if INSIDE_BLINK
+  PlatformMouseEvent(const WebGestureEvent& gestureEvent,
+                     WebPointerProperties::Button button,
+                     EventType type,
+                     int clickCount,
+                     Modifiers modifiers,
+                     SyntheticEventType synthesized,
+                     TimeTicks timestamp,
+                     WebPointerProperties::PointerType pointerType =
+                         WebPointerProperties::PointerType::Unknown)
+      : PlatformMouseEvent(flooredIntPoint(gestureEvent.positionInRootFrame()),
+                           IntPoint(gestureEvent.globalX, gestureEvent.globalY),
+                           button,
+                           type,
+                           clickCount,
+                           modifiers,
+                           synthesized,
+                           timestamp,
+                           pointerType) {}
+#endif
 
   const WebPointerProperties& pointerProperties() const {
     return m_pointerProperties;

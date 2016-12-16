@@ -81,9 +81,11 @@ Node* hoveredNodeForPoint(LocalFrame* frame,
 }
 
 Node* hoveredNodeForEvent(LocalFrame* frame,
-                          const PlatformGestureEvent& event,
+                          const WebGestureEvent& event,
                           bool ignorePointerEventsNone) {
-  return hoveredNodeForPoint(frame, event.position(), ignorePointerEventsNone);
+  return hoveredNodeForPoint(frame,
+                             roundedIntPoint(event.positionInRootFrame()),
+                             ignorePointerEventsNone);
 }
 
 Node* hoveredNodeForEvent(LocalFrame* frame,
@@ -234,16 +236,15 @@ bool InspectorOverlay::handleInputEvent(const WebInputEvent& inputEvent) {
 
   if (WebInputEvent::isGestureEventType(inputEvent.type) &&
       inputEvent.type == WebInputEvent::GestureTap) {
-    // Only let GestureTab in (we only need it and we know
-    // PlatformGestureEventBuilder supports it).
-    PlatformGestureEvent gestureEvent = PlatformGestureEventBuilder(
+    // We only have a use for gesture tap.
+    WebGestureEvent scaledEvent = TransformWebGestureEvent(
         m_frameImpl->frameView(),
         static_cast<const WebGestureEvent&>(inputEvent));
-    handled = handleGestureEvent(gestureEvent);
+    handled = handleGestureEvent(scaledEvent);
     if (handled)
       return true;
 
-    overlayMainFrame()->eventHandler().handleGestureEvent(gestureEvent);
+    overlayMainFrame()->eventHandler().handleGestureEvent(scaledEvent);
   }
   if (WebInputEvent::isMouseEventType(inputEvent.type) &&
       inputEvent.type != WebInputEvent::MouseEnter) {
@@ -757,8 +758,8 @@ bool InspectorOverlay::handleMousePress() {
   return false;
 }
 
-bool InspectorOverlay::handleGestureEvent(const PlatformGestureEvent& event) {
-  if (!shouldSearchForNode() || event.type() != PlatformEvent::GestureTap)
+bool InspectorOverlay::handleGestureEvent(const WebGestureEvent& event) {
+  if (!shouldSearchForNode() || event.type != WebInputEvent::GestureTap)
     return false;
   Node* node = hoveredNodeForEvent(m_frameImpl->frame(), event, false);
   if (node && m_inspectModeHighlightConfig) {

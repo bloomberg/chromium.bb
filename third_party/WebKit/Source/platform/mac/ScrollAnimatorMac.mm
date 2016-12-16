@@ -25,7 +25,6 @@
 
 #include "platform/mac/ScrollAnimatorMac.h"
 
-#include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformWheelEvent.h"
 #include "platform/Timer.h"
 #include "platform/animation/TimingFunction.h"

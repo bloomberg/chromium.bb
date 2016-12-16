@@ -36,7 +36,7 @@ class CORE_EXPORT GestureManager
   void clear();
 
   HitTestRequest::HitTestRequestType getHitTypeForGestureType(
-      PlatformEvent::EventType);
+      WebInputEvent::Type);
   WebInputEventResult handleGestureEventInFrame(
       const GestureEventWithHitTestResults&);
 

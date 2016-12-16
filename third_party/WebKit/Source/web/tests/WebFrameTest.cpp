@@ -1911,10 +1911,12 @@ TEST_F(WebFrameTest,
   ASSERT_NE(nullptr, element);
   EXPECT_EQ(String("oldValue"), element->innerText());
 
-  PlatformGestureEvent gestureEvent(PlatformEvent::EventType::GestureTap,
-                                    hitPoint, hitPoint, IntSize(0, 0),
-                                    TimeTicks(), PlatformEvent::NoModifiers,
-                                    PlatformGestureSourceTouchscreen);
+  WebGestureEvent gestureEvent;
+  gestureEvent.setFrameScale(1);
+  gestureEvent.type = WebInputEvent::GestureTap;
+  gestureEvent.x = gestureEvent.globalX = hitPoint.x();
+  gestureEvent.y = gestureEvent.globalY = hitPoint.y();
+  gestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
   webViewHelper.webView()
       ->mainFrameImpl()
       ->frame()

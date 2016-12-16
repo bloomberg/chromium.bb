@@ -5,6 +5,7 @@
 #ifndef WebGestureEvent_h
 #define WebGestureEvent_h
 
+#include "WebFloatSize.h"
 #include "WebGestureDevice.h"
 #include "WebInputEvent.h"
 
@@ -162,6 +163,63 @@ class WebGestureEvent : public WebInputEvent {
         globalY(0),
         sourceDevice(WebGestureDeviceUninitialized),
         resendingPluginId(-1) {}
+
+#if INSIDE_BLINK
+  BLINK_PLATFORM_EXPORT float deltaXInRootFrame() const;
+  BLINK_PLATFORM_EXPORT float deltaYInRootFrame() const;
+  BLINK_PLATFORM_EXPORT ScrollUnits deltaUnits() const;
+  BLINK_PLATFORM_EXPORT WebFloatPoint positionInRootFrame() const;
+  BLINK_PLATFORM_EXPORT float pinchScale() const;
+  BLINK_PLATFORM_EXPORT InertialPhaseState inertialPhase() const;
+  BLINK_PLATFORM_EXPORT bool synthetic() const;
+
+  BLINK_PLATFORM_EXPORT float velocityX() const;
+  BLINK_PLATFORM_EXPORT float velocityY() const;
+
+  BLINK_PLATFORM_EXPORT WebFloatSize tapAreaInRootFrame() const;
+  BLINK_PLATFORM_EXPORT int tapCount() const;
+
+  BLINK_PLATFORM_EXPORT void applyTouchAdjustment(
+      WebFloatPoint rootFrameCoords);
+
+  // Sets any scaled values to be their computed values and sets |frameScale|
+  // back to 1 and |translateX|, |translateY| back to 0.
+  BLINK_PLATFORM_EXPORT void flattenTransform();
+
+  bool preventPropagation() const {
+    // TODO(tdresser) Once we've decided if we're getting rid of scroll
+    // chaining, we should remove all scroll chaining related logic. See
+    // crbug.com/526462 for details.
+    DCHECK(type == WebInputEvent::GestureScrollUpdate);
+    return true;
+  }
+
+  bool isScrollEvent() const {
+    switch (type) {
+      case GestureScrollBegin:
+      case GestureScrollEnd:
+      case GestureScrollUpdate:
+      case GestureFlingStart:
+      case GesturePinchBegin:
+      case GesturePinchEnd:
+      case GesturePinchUpdate:
+        return true;
+      case GestureTap:
+      case GestureTapUnconfirmed:
+      case GestureTapDown:
+      case GestureShowPress:
+      case GestureTapCancel:
+      case GestureTwoFingerTap:
+      case GestureLongPress:
+      case GestureLongTap:
+        return false;
+      default:
+        NOTREACHED();
+        return false;
+    }
+  }
+
+#endif
 };
 
 #pragma pack(pop)

@@ -33,17 +33,18 @@ class EventHandlerTest : public ::testing::Test {
   std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
 };
 
-class TapEventBuilder : public PlatformGestureEvent {
+class TapEventBuilder : public WebGestureEvent {
  public:
-  TapEventBuilder(IntPoint position, int tapCount)
-      : PlatformGestureEvent(PlatformEvent::GestureTap,
-                             position,
-                             position,
-                             IntSize(5, 5),
-                             TimeTicks::Now(),
-                             static_cast<PlatformEvent::Modifiers>(0),
-                             PlatformGestureSourceTouchscreen) {
-    m_data.m_tap.m_tapCount = tapCount;
+  TapEventBuilder(IntPoint position, int tapCount) : WebGestureEvent() {
+    type = WebInputEvent::GestureTap;
+    x = globalX = position.x();
+    y = globalY = position.y();
+    timeStampSeconds = TimeTicks::Now().InSeconds();
+    sourceDevice = WebGestureDeviceTouchscreen;
+    data.tap.tapCount = tapCount;
+    data.tap.width = 5;
+    data.tap.height = 5;
+    m_frameScale = 1;
   }
 };
 

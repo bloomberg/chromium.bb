@@ -63,7 +63,6 @@ class HitTestResult;
 class LayoutBox;
 class LayoutScrollbarPart;
 class PaintLayer;
-class PlatformEvent;
 class StickyPositionScrollingConstraints;
 class SubtreeLayoutScope;
 
@@ -338,7 +337,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   LayoutScrollbarPart* scrollCorner() const override { return m_scrollCorner; }
 
-  void resize(const PlatformEvent&, const LayoutSize&);
+  void resize(const IntPoint& pos, const LayoutSize& oldOffset);
   IntSize offsetFromResizeCorner(const IntPoint& absolutePoint) const;
 
   bool inResizeMode() const { return m_inResizeMode; }

@@ -70,7 +70,6 @@
 #include "modules/plugins/PluginOcclusionSupport.h"
 #include "platform/HostWindow.h"
 #include "platform/KeyboardCodes.h"
-#include "platform/PlatformGestureEvent.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/exported/WrappedResourceResponse.h"
@@ -835,14 +834,25 @@ void WebPluginContainerImpl::handleTouchEvent(TouchEvent* event) {
 }
 
 void WebPluginContainerImpl::handleGestureEvent(GestureEvent* event) {
-  WebGestureEventBuilder webEvent(LayoutItem(m_element->layoutObject()),
-                                  *event);
-  if (webEvent.type == WebInputEvent::Undefined)
+  if (event->nativeEvent().type == WebInputEvent::Undefined)
     return;
-  if (event->type() == EventTypeNames::gesturetapdown)
+  if (event->nativeEvent().type == WebInputEvent::GestureTapDown)
     focusPlugin();
+
+  // Take a copy of the event and translate it into the coordinate
+  // system of the plugin.
+  WebGestureEvent translatedEvent = event->nativeEvent();
+  WebFloatPoint absoluteRootFrameLocation =
+      event->nativeEvent().positionInRootFrame();
+  IntPoint localPoint =
+      roundedIntPoint(m_element->layoutObject()->absoluteToLocal(
+          absoluteRootFrameLocation, UseTransforms));
+  translatedEvent.flattenTransform();
+  translatedEvent.x = localPoint.x();
+  translatedEvent.y = localPoint.y();
+
   WebCursorInfo cursorInfo;
-  if (m_webPlugin->handleInputEvent(webEvent, cursorInfo) !=
+  if (m_webPlugin->handleInputEvent(translatedEvent, cursorInfo) !=
       WebInputEventResult::NotHandled) {
     event->setDefaultHandled();
     return;

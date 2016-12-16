@@ -31,11 +31,10 @@
 #ifndef WebInputEventConversion_h
 #define WebInputEventConversion_h
 
-#include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/PlatformTouchEvent.h"
 #include "platform/PlatformWheelEvent.h"
-#include "public/platform/WebGestureEvent.h"
+#include "platform/scroll/ScrollTypes.h"
 #include "public/platform/WebInputEvent.h"
 #include "web/WebExport.h"
 #include "wtf/Compiler.h"
@@ -43,16 +42,15 @@
 
 namespace blink {
 
-class GestureEvent;
 class KeyboardEvent;
 class MouseEvent;
 class LayoutItem;
 class TouchEvent;
+class WebGestureEvent;
 class WebMouseEvent;
 class WebMouseWheelEvent;
 class WebKeyboardEvent;
 class WebTouchEvent;
-class WebGestureEvent;
 class WheelEvent;
 class Widget;
 
@@ -69,12 +67,6 @@ class WEB_EXPORT PlatformWheelEventBuilder
     : NON_EXPORTED_BASE(public PlatformWheelEvent) {
  public:
   PlatformWheelEventBuilder(Widget*, const WebMouseWheelEvent&);
-};
-
-class WEB_EXPORT PlatformGestureEventBuilder
-    : NON_EXPORTED_BASE(public PlatformGestureEvent) {
- public:
-  PlatformGestureEventBuilder(Widget*, const WebGestureEvent&);
 };
 
 // Converts a WebTouchPoint to a PlatformTouchPoint.
@@ -129,13 +121,10 @@ class WEB_EXPORT WebTouchEventBuilder
   WebTouchEventBuilder(const LayoutItem, const TouchEvent&);
 };
 
-// Converts GestureEvent to a corresponding WebGestureEvent.
-// NOTE: If event mapping fails, the type will be set to Undefined.
-class WEB_EXPORT WebGestureEventBuilder
-    : NON_EXPORTED_BASE(public WebGestureEvent) {
- public:
-  WebGestureEventBuilder(const LayoutItem, const GestureEvent&);
-};
+// Return a new transformed WebGestureEvent by applying the Widget's scale
+// and translation.
+WEB_EXPORT WebGestureEvent TransformWebGestureEvent(Widget*,
+                                                    const WebGestureEvent&);
 
 Vector<PlatformMouseEvent> WEB_EXPORT
 createPlatformMouseEventVector(Widget*,

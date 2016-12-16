@@ -470,8 +470,8 @@ WebInputEventResult WebPagePopupImpl::handleGestureEvent(
     return WebInputEventResult::NotHandled;
   }
   LocalFrame& frame = *toLocalFrame(m_page->mainFrame());
-  return frame.eventHandler().handleGestureEvent(
-      PlatformGestureEventBuilder(frame.view(), event));
+  WebGestureEvent scaledEvent = TransformWebGestureEvent(frame.view(), event);
+  return frame.eventHandler().handleGestureEvent(scaledEvent);
 }
 
 void WebPagePopupImpl::handleMouseDown(LocalFrame& mainFrame,

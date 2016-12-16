@@ -63,8 +63,7 @@ class CORE_EXPORT SelectionController final
   bool handleMouseReleaseEvent(const MouseEventWithHitTestResults&,
                                const LayoutPoint&);
   bool handlePasteGlobalSelection(const PlatformMouseEvent&);
-  bool handleGestureLongPress(const PlatformGestureEvent&,
-                              const HitTestResult&);
+  bool handleGestureLongPress(const WebGestureEvent&, const HitTestResult&);
   void handleGestureTwoFingerTap(const GestureEventWithHitTestResults&);
   void handleGestureLongTap(const GestureEventWithHitTestResults&);
 

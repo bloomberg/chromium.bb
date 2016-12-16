@@ -39,10 +39,10 @@ namespace blink {
 class GraphicsContext;
 class HostWindow;
 class IntRect;
-class PlatformGestureEvent;
 class PlatformMouseEvent;
 class ScrollableArea;
 class ScrollbarTheme;
+class WebGestureEvent;
 
 class PLATFORM_EXPORT Scrollbar : public Widget,
                                   public ScrollbarThemeClient,
@@ -138,7 +138,7 @@ class PLATFORM_EXPORT Scrollbar : public Widget,
   // Return if the gesture event was handled. |shouldUpdateCapture|
   // will be set to true if the handler should update the capture
   // state for this scrollbar.
-  bool gestureEvent(const PlatformGestureEvent&, bool* shouldUpdateCapture);
+  bool gestureEvent(const WebGestureEvent&, bool* shouldUpdateCapture);
 
   // These methods are used for platform scrollbars to give :hover feedback.
   // They will not get called when the mouse went down in a scrollbar, since it

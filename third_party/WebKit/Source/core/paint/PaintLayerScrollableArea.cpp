@@ -75,7 +75,6 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/PaintLayerFragment.h"
-#include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/graphics/CompositorMutableProperties.h"
 #include "platform/graphics/GraphicsLayer.h"
@@ -1522,7 +1521,7 @@ IntSize PaintLayerScrollableArea::offsetFromResizeCorner(
   return localPoint - resizerPoint;
 }
 
-void PaintLayerScrollableArea::resize(const PlatformEvent& evt,
+void PaintLayerScrollableArea::resize(const IntPoint& pos,
                                       const LayoutSize& oldOffset) {
   // FIXME: This should be possible on generated content but is not right now.
   if (!inResizeMode() || !box().canResize() || !box().node())
@@ -1532,25 +1531,6 @@ void PaintLayerScrollableArea::resize(const PlatformEvent& evt,
   Element* element = toElement(box().node());
 
   Document& document = element->document();
-
-  IntPoint pos;
-  const PlatformGestureEvent* gevt = 0;
-
-  switch (evt.type()) {
-    case PlatformEvent::MouseMoved:
-      if (!document.frame()->eventHandler().mousePressed())
-        return;
-      pos = static_cast<const PlatformMouseEvent*>(&evt)->position();
-      break;
-    case PlatformEvent::GestureScrollUpdate:
-      pos = static_cast<const PlatformGestureEvent*>(&evt)->position();
-      gevt = static_cast<const PlatformGestureEvent*>(&evt);
-      pos = gevt->position();
-      pos.move(gevt->deltaX(), gevt->deltaY());
-      break;
-    default:
-      ASSERT_NOT_REACHED();
-  }
 
   float zoomFactor = box().style()->effectiveZoom();
 

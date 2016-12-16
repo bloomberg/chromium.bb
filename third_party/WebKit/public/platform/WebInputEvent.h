@@ -268,13 +268,34 @@ class WebInputEvent {
 
   BLINK_COMMON_EXPORT static const char* GetName(WebInputEvent::Type);
 
+  float frameScale() const { return m_frameScale; }
+  void setFrameScale(float scale) { m_frameScale = scale; }
+
+  WebFloatPoint frameTranslate() const { return m_frameTranslate; }
+  void setFrameTranslate(WebFloatPoint translate) {
+    m_frameTranslate = translate;
+  }
+
  protected:
+  // The root frame scale.
+  float m_frameScale;
+
+  // The root frame translation (applied post scale).
+  WebFloatPoint m_frameTranslate;
+
   explicit WebInputEvent(unsigned sizeParam) {
     memset(this, 0, sizeParam);
     timeStampSeconds = 0.0;
     size = sizeParam;
     type = Undefined;
     modifiers = 0;
+#if DCHECK_IS_ON()
+    // If dcheck is on force failures if frame scale is not initialized
+    // correctly by causing DIV0.
+    m_frameScale = 0;
+#else
+    m_frameScale = 1;
+#endif
   }
 };
 

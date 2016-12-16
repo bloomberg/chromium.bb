@@ -31,85 +31,61 @@
 namespace blink {
 
 GestureEvent* GestureEvent::create(AbstractView* view,
-                                   const PlatformGestureEvent& event) {
+                                   const WebGestureEvent& event) {
   AtomicString eventType;
-  float deltaX = 0;
-  float deltaY = 0;
-  float velocityX = 0;
-  float velocityY = 0;
-  ScrollInertialPhase inertialPhase =
-      ScrollInertialPhase::ScrollInertialPhaseUnknown;
-  bool synthetic = false;
-  ScrollGranularity deltaUnits = ScrollGranularity::ScrollByPrecisePixel;
 
-  GestureSource source = GestureSourceUninitialized;
-  switch (event.source()) {
-    case PlatformGestureSourceTouchpad:
-      source = GestureSourceTouchpad;
-      break;
-    case PlatformGestureSourceTouchscreen:
-      source = GestureSourceTouchscreen;
-      break;
-    default:
-      NOTREACHED();
-  }
-
-  switch (event.type()) {
-    case PlatformEvent::GestureScrollBegin:
+  switch (event.type) {
+    case WebInputEvent::GestureScrollBegin:
       eventType = EventTypeNames::gesturescrollstart;
-      synthetic = event.synthetic();
-      deltaUnits = event.deltaUnits();
-      inertialPhase = event.inertialPhase();
       break;
-    case PlatformEvent::GestureScrollEnd:
+    case WebInputEvent::GestureScrollEnd:
       eventType = EventTypeNames::gesturescrollend;
-      synthetic = event.synthetic();
-      deltaUnits = event.deltaUnits();
-      inertialPhase = event.inertialPhase();
       break;
-    case PlatformEvent::GestureScrollUpdate:
-      // Only deltaX/Y are used when converting this
-      // back to a PlatformGestureEvent.
+    case WebInputEvent::GestureScrollUpdate:
       eventType = EventTypeNames::gesturescrollupdate;
-      deltaX = event.deltaX();
-      deltaY = event.deltaY();
-      inertialPhase = event.inertialPhase();
-      deltaUnits = event.deltaUnits();
       break;
-    case PlatformEvent::GestureTap:
+    case WebInputEvent::GestureTap:
       eventType = EventTypeNames::gesturetap;
       break;
-    case PlatformEvent::GestureTapUnconfirmed:
+    case WebInputEvent::GestureTapUnconfirmed:
       eventType = EventTypeNames::gesturetapunconfirmed;
       break;
-    case PlatformEvent::GestureTapDown:
+    case WebInputEvent::GestureTapDown:
       eventType = EventTypeNames::gesturetapdown;
       break;
-    case PlatformEvent::GestureShowPress:
+    case WebInputEvent::GestureShowPress:
       eventType = EventTypeNames::gestureshowpress;
       break;
-    case PlatformEvent::GestureLongPress:
+    case WebInputEvent::GestureLongPress:
       eventType = EventTypeNames::gesturelongpress;
       break;
-    case PlatformEvent::GestureFlingStart:
+    case WebInputEvent::GestureFlingStart:
       eventType = EventTypeNames::gestureflingstart;
-      velocityX = event.velocityX();
-      velocityY = event.velocityY();
       break;
-    case PlatformEvent::GestureTwoFingerTap:
-    case PlatformEvent::GesturePinchBegin:
-    case PlatformEvent::GesturePinchEnd:
-    case PlatformEvent::GesturePinchUpdate:
-    case PlatformEvent::GestureTapDownCancel:
+    case WebInputEvent::GestureTwoFingerTap:
+    case WebInputEvent::GesturePinchBegin:
+    case WebInputEvent::GesturePinchEnd:
+    case WebInputEvent::GesturePinchUpdate:
+    case WebInputEvent::GestureTapCancel:
     default:
       return nullptr;
   }
-  return new GestureEvent(
-      eventType, view, event.globalPosition().x(), event.globalPosition().y(),
-      event.position().x(), event.position().y(), event.getModifiers(), deltaX,
-      deltaY, velocityX, velocityY, inertialPhase, synthetic, deltaUnits,
-      event.timestamp(), event.resendingPluginId(), source);
+  return new GestureEvent(eventType, view, event);
 }
+
+GestureEvent::GestureEvent(const AtomicString& eventType,
+                           AbstractView* view,
+                           const WebGestureEvent& event)
+    : UIEventWithKeyState(
+          eventType,
+          true,
+          true,
+          view,
+          0,
+          static_cast<PlatformEvent::Modifiers>(event.modifiers),
+          TimeTicks::FromSeconds(event.timeStampSeconds),
+          nullptr),
+      m_nativeEvent(event) {}
 
 const AtomicString& GestureEvent::interfaceName() const {
   // FIXME: when a GestureEvent.idl interface is defined, return the string
@@ -122,46 +98,8 @@ bool GestureEvent::isGestureEvent() const {
   return true;
 }
 
-GestureEvent::GestureEvent(const AtomicString& type,
-                           AbstractView* view,
-                           int screenX,
-                           int screenY,
-                           int clientX,
-                           int clientY,
-                           PlatformEvent::Modifiers modifiers,
-                           float deltaX,
-                           float deltaY,
-                           float velocityX,
-                           float velocityY,
-                           ScrollInertialPhase inertialPhase,
-                           bool synthetic,
-                           ScrollGranularity deltaUnits,
-                           TimeTicks platformTimeStamp,
-                           int resendingPluginId,
-                           GestureSource source)
-    : MouseRelatedEvent(type,
-                        true,
-                        true,
-                        view,
-                        0,
-                        IntPoint(screenX, screenY),
-                        IntPoint(clientX, clientY),
-                        IntPoint(0, 0),
-                        modifiers,
-                        platformTimeStamp,
-                        PositionType::Position),
-      m_deltaX(deltaX),
-      m_deltaY(deltaY),
-      m_velocityX(velocityX),
-      m_velocityY(velocityY),
-      m_inertialPhase(inertialPhase),
-      m_synthetic(synthetic),
-      m_deltaUnits(deltaUnits),
-      m_source(source),
-      m_resendingPluginId(resendingPluginId) {}
-
 DEFINE_TRACE(GestureEvent) {
-  MouseRelatedEvent::trace(visitor);
+  UIEvent::trace(visitor);
 }
 
 }  // namespace blink

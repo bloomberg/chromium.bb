@@ -40,7 +40,7 @@
 namespace blink {
 
 struct SameSizeAsWebInputEvent {
-  int inputData[5];
+  int inputData[8];
 };
 
 struct SameSizeAsWebKeyboardEvent : public SameSizeAsWebInputEvent {

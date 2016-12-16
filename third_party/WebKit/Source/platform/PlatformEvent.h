@@ -46,23 +46,6 @@ class PlatformEvent {
     // PlatformWheelEvent
     Wheel,
 
-    // PlatformGestureEvent
-    GestureScrollBegin,
-    GestureScrollEnd,
-    GestureScrollUpdate,
-    GestureTap,
-    GestureTapUnconfirmed,
-    GestureTapDown,
-    GestureShowPress,
-    GestureTapDownCancel,
-    GestureTwoFingerTap,
-    GestureLongPress,
-    GestureLongTap,
-    GesturePinchBegin,
-    GesturePinchEnd,
-    GesturePinchUpdate,
-    GestureFlingStart,
-
     // PlatformTouchEvent
     TouchStart,
     TouchMove,

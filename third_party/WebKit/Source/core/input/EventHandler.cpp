@@ -87,7 +87,6 @@
 #include "core/style/ComputedStyle.h"
 #include "core/style/CursorData.h"
 #include "core/svg/SVGDocumentExtensions.h"
-#include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformTouchEvent.h"
 #include "platform/PlatformWheelEvent.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -1333,9 +1332,10 @@ WebInputEventResult EventHandler::handleWheelEvent(
 }
 
 WebInputEventResult EventHandler::handleGestureEvent(
-    const PlatformGestureEvent& gestureEvent) {
+    const WebGestureEvent& gestureEvent) {
   // Propagation to inner frames is handled below this function.
   ASSERT(m_frame == m_frame->localFrameRoot());
+  DCHECK_NE(0, gestureEvent.frameScale());
 
   // Scrolling-related gesture events invoke EventHandler recursively for each
   // frame down the chain, doing a single-frame hit-test per frame. This matches
@@ -1368,7 +1368,7 @@ WebInputEventResult EventHandler::handleGestureEvent(
 
   // Update mouseout/leave/over/enter events before jumping directly to the
   // inner most frame.
-  if (targetedEvent.event().type() == PlatformEvent::GestureTap)
+  if (targetedEvent.event().type == WebInputEvent::GestureTap)
     updateGestureTargetNodeForMouseEvent(targetedEvent);
 
   // Route to the correct frame.
@@ -1386,7 +1386,7 @@ WebInputEventResult EventHandler::handleGestureEventInFrame(
 }
 
 WebInputEventResult EventHandler::handleGestureScrollEvent(
-    const PlatformGestureEvent& gestureEvent) {
+    const WebGestureEvent& gestureEvent) {
   TRACE_EVENT0("input", "EventHandler::handleGestureScrollEvent");
   if (!m_frame->host())
     return WebInputEventResult::NotHandled;
@@ -1395,10 +1395,9 @@ WebInputEventResult EventHandler::handleGestureScrollEvent(
 }
 
 WebInputEventResult EventHandler::handleGestureScrollEnd(
-    const PlatformGestureEvent& gestureEvent) {
+    const WebGestureEvent& gestureEvent) {
   if (!m_frame->host())
     return WebInputEventResult::NotHandled;
-
   return m_scrollManager->handleGestureScrollEnd(gestureEvent);
 }
 
@@ -1411,10 +1410,10 @@ bool EventHandler::isScrollbarHandlingGestures() const {
 }
 
 bool EventHandler::shouldApplyTouchAdjustment(
-    const PlatformGestureEvent& event) const {
+    const WebGestureEvent& event) const {
   if (m_frame->settings() && !m_frame->settings()->touchAdjustmentEnabled())
     return false;
-  return !event.area().isEmpty();
+  return !event.tapAreaInRootFrame().isEmpty();
 }
 
 bool EventHandler::bestClickableNodeForHitTestResult(
@@ -1619,13 +1618,14 @@ void EventHandler::updateGestureTargetNodeForMouseEvent(
     exitedFrameInDocument = nextExitedFrameInDocument;
   }
 
-  const PlatformGestureEvent& gestureEvent = targetedEvent.event();
-  unsigned modifiers = gestureEvent.getModifiers();
+  const WebGestureEvent& gestureEvent = targetedEvent.event();
+  unsigned modifiers = gestureEvent.modifiers;
   PlatformMouseEvent fakeMouseMove(
-      gestureEvent.position(), gestureEvent.globalPosition(),
-      WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved,
+      gestureEvent, WebPointerProperties::Button::NoButton,
+      PlatformEvent::MouseMoved,
       /* clickCount */ 0, static_cast<PlatformEvent::Modifiers>(modifiers),
-      PlatformMouseEvent::FromTouch, gestureEvent.timestamp(),
+      PlatformMouseEvent::FromTouch,
+      TimeTicks::FromSeconds(gestureEvent.timeStampSeconds),
       WebPointerProperties::PointerType::Mouse);
 
   // Update the mouseout/mouseleave event
@@ -1651,7 +1651,7 @@ void EventHandler::updateGestureTargetNodeForMouseEvent(
 }
 
 GestureEventWithHitTestResults EventHandler::targetGestureEvent(
-    const PlatformGestureEvent& gestureEvent,
+    const WebGestureEvent& gestureEvent,
     bool readOnly) {
   TRACE_EVENT0("input", "EventHandler::targetGestureEvent");
 
@@ -1660,12 +1660,12 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(
   ASSERT(!gestureEvent.isScrollEvent());
 
   HitTestRequest::HitTestRequestType hitType =
-      m_gestureManager->getHitTypeForGestureType(gestureEvent.type());
+      m_gestureManager->getHitTypeForGestureType(gestureEvent.type);
   TimeDelta activeInterval;
   bool shouldKeepActiveForMinInterval = false;
   if (readOnly) {
     hitType |= HitTestRequest::ReadOnly;
-  } else if (gestureEvent.type() == PlatformEvent::GestureTap) {
+  } else if (gestureEvent.type == WebInputEvent::GestureTap) {
     // If the Tap is received very shortly after ShowPress, we want to
     // delay clearing of the active state so that it's visible to the user
     // for at least a couple of frames.
@@ -1698,17 +1698,17 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(
 }
 
 GestureEventWithHitTestResults EventHandler::hitTestResultForGestureEvent(
-    const PlatformGestureEvent& gestureEvent,
+    const WebGestureEvent& gestureEvent,
     HitTestRequest::HitTestRequestType hitType) {
   // Perform the rect-based hit-test (or point-based if adjustment is disabled).
   // Note that we don't yet apply hover/active state here because we need to
   // resolve touch adjustment first so that we apply hover/active it to the
   // final adjusted node.
-  IntPoint hitTestPoint =
-      m_frame->view()->rootFrameToContents(gestureEvent.position());
+  IntPoint hitTestPoint = m_frame->view()->rootFrameToContents(
+      flooredIntPoint(gestureEvent.positionInRootFrame()));
   LayoutSize padding;
   if (shouldApplyTouchAdjustment(gestureEvent)) {
-    padding = LayoutSize(gestureEvent.area());
+    padding = LayoutSize(gestureEvent.tapAreaInRootFrame());
     if (!padding.isEmpty()) {
       padding.scale(1.f / 2);
       hitType |= HitTestRequest::ListBased;
@@ -1719,7 +1719,7 @@ GestureEventWithHitTestResults EventHandler::hitTestResultForGestureEvent(
 
   // Adjust the location of the gesture to the most likely nearby node, as
   // appropriate for the type of event.
-  PlatformGestureEvent adjustedEvent = gestureEvent;
+  WebGestureEvent adjustedEvent = gestureEvent;
   applyTouchAdjustment(&adjustedEvent, &hitTestResult);
 
   // Do a new hit-test at the (adjusted) gesture co-ordinates. This is necessary
@@ -1733,8 +1733,8 @@ GestureEventWithHitTestResults EventHandler::hitTestResultForGestureEvent(
     if (!hitFrame)
       hitFrame = m_frame;
     hitTestResult = EventHandlingUtil::hitTestResultInFrame(
-        hitFrame,
-        hitFrame->view()->rootFrameToContents(adjustedEvent.position()),
+        hitFrame, hitFrame->view()->rootFrameToContents(
+                      flooredIntPoint(adjustedEvent.positionInRootFrame())),
         (hitType | HitTestRequest::ReadOnly) & ~HitTestRequest::ListBased);
   }
 
@@ -1746,25 +1746,25 @@ GestureEventWithHitTestResults EventHandler::hitTestResultForGestureEvent(
   return GestureEventWithHitTestResults(adjustedEvent, hitTestResult);
 }
 
-void EventHandler::applyTouchAdjustment(PlatformGestureEvent* gestureEvent,
+void EventHandler::applyTouchAdjustment(WebGestureEvent* gestureEvent,
                                         HitTestResult* hitTestResult) {
   if (!shouldApplyTouchAdjustment(*gestureEvent))
     return;
 
   Node* adjustedNode = nullptr;
-  IntPoint adjustedPoint = gestureEvent->position();
+  IntPoint adjustedPoint = flooredIntPoint(gestureEvent->positionInRootFrame());
   bool adjusted = false;
-  switch (gestureEvent->type()) {
-    case PlatformEvent::GestureTap:
-    case PlatformEvent::GestureTapUnconfirmed:
-    case PlatformEvent::GestureTapDown:
-    case PlatformEvent::GestureShowPress:
+  switch (gestureEvent->type) {
+    case WebInputEvent::GestureTap:
+    case WebInputEvent::GestureTapUnconfirmed:
+    case WebInputEvent::GestureTapDown:
+    case WebInputEvent::GestureShowPress:
       adjusted = bestClickableNodeForHitTestResult(*hitTestResult,
                                                    adjustedPoint, adjustedNode);
       break;
-    case PlatformEvent::GestureLongPress:
-    case PlatformEvent::GestureLongTap:
-    case PlatformEvent::GestureTwoFingerTap:
+    case WebInputEvent::GestureLongPress:
+    case WebInputEvent::GestureLongTap:
+    case WebInputEvent::GestureTwoFingerTap:
       adjusted = bestContextMenuNodeForHitTestResult(
           *hitTestResult, adjustedPoint, adjustedNode);
       break;
@@ -1779,7 +1779,8 @@ void EventHandler::applyTouchAdjustment(PlatformGestureEvent* gestureEvent,
   if (adjusted) {
     hitTestResult->resolveRectBasedTest(
         adjustedNode, m_frame->view()->rootFrameToContents(adjustedPoint));
-    gestureEvent->applyTouchAdjustment(adjustedPoint);
+    gestureEvent->applyTouchAdjustment(
+        WebFloatPoint(adjustedPoint.x(), adjustedPoint.y()));
   }
 }
 

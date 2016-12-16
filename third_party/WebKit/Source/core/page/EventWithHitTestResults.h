@@ -23,8 +23,8 @@
 
 #include "core/layout/HitTestResult.h"
 #include "platform/PlatformEvent.h"
-#include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
+#include "public/platform/WebGestureEvent.h"
 
 namespace blink {
 
@@ -55,8 +55,7 @@ class EventWithHitTestResults {
 using MouseEventWithHitTestResults =
     EventWithHitTestResults<PlatformMouseEvent>;
 
-using GestureEventWithHitTestResults =
-    EventWithHitTestResults<PlatformGestureEvent>;
+using GestureEventWithHitTestResults = EventWithHitTestResults<WebGestureEvent>;
 
 }  // namespace blink
 

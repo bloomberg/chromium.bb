@@ -98,7 +98,6 @@
 #include "platform/Cursor.h"
 #include "platform/Histogram.h"
 #include "platform/KeyboardCodes.h"
-#include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
@@ -728,14 +727,14 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
       mainFrameImpl()->frameWidget()->scheduleAnimation();
       eventResult = WebInputEventResult::HandledSystem;
 
+      WebGestureEvent scaledEvent =
+          TransformWebGestureEvent(mainFrameImpl()->frameView(), event);
       // Plugins may need to see GestureFlingStart to balance
       // GestureScrollBegin (since the former replaces GestureScrollEnd when
       // transitioning to a fling).
-      PlatformGestureEventBuilder platformEvent(mainFrameImpl()->frameView(),
-                                                event);
       // TODO(dtapuska): Why isn't the response used?
       mainFrameImpl()->frame()->eventHandler().handleGestureScrollEvent(
-          platformEvent);
+          scaledEvent);
 
       m_client->didHandleGestureEvent(event, eventCancelled);
       return WebInputEventResult::HandledSystem;
@@ -750,8 +749,8 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
       break;
   }
 
-  PlatformGestureEventBuilder platformEvent(mainFrameImpl()->frameView(),
-                                            event);
+  WebGestureEvent scaledEvent =
+      TransformWebGestureEvent(mainFrameImpl()->frameView(), event);
 
   // Special handling for double tap and scroll events as we don't want to
   // hit test for them.
@@ -760,7 +759,8 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
       if (m_webSettings->doubleTapToZoomEnabled() &&
           minimumPageScaleFactor() != maximumPageScaleFactor()) {
         m_client->cancelScheduledContentIntents();
-        animateDoubleTapZoom(platformEvent.position());
+        animateDoubleTapZoom(
+            flooredIntPoint(scaledEvent.positionInRootFrame()));
       }
       // GestureDoubleTap is currently only used by Android for zooming. For
       // WebCore, GestureTap with tap count = 2 is used instead. So we drop
@@ -780,7 +780,7 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
       // other gesture events.
       eventResult =
           mainFrameImpl()->frame()->eventHandler().handleGestureScrollEvent(
-              platformEvent);
+              scaledEvent);
       m_client->didHandleGestureEvent(event, eventCancelled);
       return eventResult;
     case WebInputEvent::GesturePinchBegin:
@@ -795,7 +795,7 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
   // event type.
   GestureEventWithHitTestResults targetedEvent =
       m_page->deprecatedLocalMainFrame()->eventHandler().targetGestureEvent(
-          platformEvent);
+          scaledEvent);
 
   // Handle link highlighting outside the main switch to avoid getting lost in
   // the complicated set of cases handled below.
@@ -1957,17 +1957,8 @@ void WebViewImpl::beginFrame(double lastFrameTimeMonotonic) {
       WebGestureDevice lastFlingSourceDevice = m_flingSourceDevice;
       endActiveFlingAnimation();
 
-      PlatformGestureEvent endScrollEvent(
-          PlatformEvent::GestureScrollEnd, m_positionOnFlingStart,
-          m_globalPositionOnFlingStart, IntSize(), TimeTicks(),
-          PlatformEvent::NoModifiers,
-          lastFlingSourceDevice == WebGestureDeviceTouchpad
-              ? PlatformGestureSourceTouchpad
-              : PlatformGestureSourceTouchscreen);
-      endScrollEvent.setScrollGestureData(0, 0, ScrollByPrecisePixel, 0, 0,
-                                          ScrollInertialPhaseMomentum, false,
-                                          -1 /* null plugin id */);
-
+      WebGestureEvent endScrollEvent = createGestureScrollEventFromFling(
+          WebInputEvent::GestureScrollEnd, lastFlingSourceDevice);
       mainFrameImpl()->frame()->eventHandler().handleGestureScrollEnd(
           endScrollEvent);
     }
@@ -3808,14 +3799,14 @@ WebHitTestResult WebViewImpl::hitTestResultForTap(
   tapEvent.data.tap.width = tapArea.width;
   tapEvent.data.tap.height = tapArea.height;
 
-  PlatformGestureEventBuilder platformEvent(mainFrameImpl()->frameView(),
-                                            tapEvent);
+  WebGestureEvent scaledEvent =
+      TransformWebGestureEvent(mainFrameImpl()->frameView(), tapEvent);
 
   HitTestResult result =
       m_page->deprecatedLocalMainFrame()
           ->eventHandler()
           .hitTestResultForGestureEvent(
-              platformEvent, HitTestRequest::ReadOnly | HitTestRequest::Active)
+              scaledEvent, HitTestRequest::ReadOnly | HitTestRequest::Active)
           .hitTestResult();
 
   result.setToShadowHostIfInUserAgentShadowRoot();

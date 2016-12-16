@@ -863,8 +863,8 @@ WebInputEventResult WebFrameWidgetImpl::handleGestureEvent(
       NOTREACHED();
   }
   LocalFrame* frame = m_localRoot->frame();
-  eventResult = frame->eventHandler().handleGestureEvent(
-      PlatformGestureEventBuilder(frame->view(), event));
+  WebGestureEvent scaledEvent = TransformWebGestureEvent(frame->view(), event);
+  eventResult = frame->eventHandler().handleGestureEvent(scaledEvent);
   m_client->didHandleGestureEvent(event, eventCancelled);
   return eventResult;
 }

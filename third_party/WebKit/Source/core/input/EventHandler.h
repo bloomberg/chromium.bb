@@ -69,13 +69,13 @@ class LayoutObject;
 class LocalFrame;
 class Node;
 class OptionalCursor;
-class PlatformGestureEvent;
 class PlatformTouchEvent;
 class PlatformWheelEvent;
 class ScrollableArea;
 class Scrollbar;
 class SelectionController;
 class TextEvent;
+class WebGestureEvent;
 
 class CORE_EXPORT EventHandler final
     : public GarbageCollectedFinalized<EventHandler> {
@@ -152,7 +152,7 @@ class CORE_EXPORT EventHandler final
   WebInputEventResult handleWheelEvent(const PlatformWheelEvent&);
 
   // Called on the local root frame exactly once per gesture event.
-  WebInputEventResult handleGestureEvent(const PlatformGestureEvent&);
+  WebInputEventResult handleGestureEvent(const WebGestureEvent&);
   WebInputEventResult handleGestureEvent(const GestureEventWithHitTestResults&);
 
   // Clear the old hover/active state within frames before moving the hover
@@ -165,10 +165,10 @@ class CORE_EXPORT EventHandler final
   // frame.
   // Note: This is similar to (the less clearly named) prepareMouseEvent.
   // FIXME: Remove readOnly param when there is only ever a single call to this.
-  GestureEventWithHitTestResults targetGestureEvent(const PlatformGestureEvent&,
+  GestureEventWithHitTestResults targetGestureEvent(const WebGestureEvent&,
                                                     bool readOnly = false);
   GestureEventWithHitTestResults hitTestResultForGestureEvent(
-      const PlatformGestureEvent&,
+      const WebGestureEvent&,
       HitTestRequest::HitTestRequestType);
   // Handle the provided non-scroll gesture event. Should be called only on the
   // inner frame.
@@ -177,8 +177,8 @@ class CORE_EXPORT EventHandler final
 
   // Handle the provided scroll gesture event, propagating down to child frames
   // as necessary.
-  WebInputEventResult handleGestureScrollEvent(const PlatformGestureEvent&);
-  WebInputEventResult handleGestureScrollEnd(const PlatformGestureEvent&);
+  WebInputEventResult handleGestureScrollEvent(const WebGestureEvent&);
+  WebInputEventResult handleGestureScrollEnd(const WebGestureEvent&);
   bool isScrollbarHandlingGestures() const;
 
   bool bestClickableNodeForHitTestResult(const HitTestResult&,
@@ -269,7 +269,7 @@ class CORE_EXPORT EventHandler final
 
   HitTestRequest::HitTestRequestType getHitTypeForGestureType(
       PlatformEvent::EventType);
-  void applyTouchAdjustment(PlatformGestureEvent*, HitTestResult*);
+  void applyTouchAdjustment(WebGestureEvent*, HitTestResult*);
   WebInputEventResult handleGestureTapDown(
       const GestureEventWithHitTestResults&);
   WebInputEventResult handleGestureTap(const GestureEventWithHitTestResults&);
@@ -281,7 +281,7 @@ class CORE_EXPORT EventHandler final
   void updateGestureTargetNodeForMouseEvent(
       const GestureEventWithHitTestResults&);
 
-  bool shouldApplyTouchAdjustment(const PlatformGestureEvent&) const;
+  bool shouldApplyTouchAdjustment(const WebGestureEvent&) const;
 
   OptionalCursor selectCursor(const HitTestResult&);
   OptionalCursor selectAutoCursor(const HitTestResult&,

@@ -27,6 +27,7 @@
 #define ScrollTypes_h
 
 #include "platform/geometry/FloatPoint.h"
+#include "public/platform/WebGestureEvent.h"
 #include "wtf/Assertions.h"
 
 namespace blink {
@@ -247,6 +248,21 @@ inline ScrollOffset toScrollDelta(ScrollDirectionPhysical dir, float delta) {
 
   return (dir == ScrollLeft || dir == ScrollRight) ? ScrollOffset(delta, 0)
                                                    : ScrollOffset(0, delta);
+}
+
+inline ScrollGranularity toPlatformScrollGranularity(
+    WebGestureEvent::ScrollUnits units) {
+  switch (units) {
+    case WebGestureEvent::ScrollUnits::PrecisePixels:
+      return ScrollGranularity::ScrollByPrecisePixel;
+    case WebGestureEvent::ScrollUnits::Pixels:
+      return ScrollGranularity::ScrollByPixel;
+    case WebGestureEvent::ScrollUnits::Page:
+      return ScrollGranularity::ScrollByPage;
+    default:
+      NOTREACHED();
+      return ScrollGranularity::ScrollByPrecisePixel;
+  }
 }
 
 typedef unsigned ScrollbarControlPartMask;

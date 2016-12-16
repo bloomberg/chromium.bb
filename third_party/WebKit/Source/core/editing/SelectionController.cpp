@@ -881,7 +881,7 @@ bool SelectionController::handlePasteGlobalSelection(
 }
 
 bool SelectionController::handleGestureLongPress(
-    const PlatformGestureEvent& gestureEvent,
+    const WebGestureEvent& gestureEvent,
     const HitTestResult& hitTestResult) {
   if (!selection().isAvailable())
     return false;
