@@ -28,8 +28,8 @@ class ArcServiceManager {
  public:
   class Observer {
    public:
-    // Called when app's intent filter is updated.
-    virtual void OnAppsUpdated() = 0;
+    // Called when intent filters are added or removed.
+    virtual void OnIntentFiltersUpdated() = 0;
 
    protected:
     virtual ~Observer() = default;

@@ -143,7 +143,7 @@ TEST_F(ArcIntentHelperTest, TestObserver) {
   class FakeObserver : public ArcIntentHelperObserver {
    public:
     FakeObserver() = default;
-    void OnAppsUpdated() override { updated_ = true; }
+    void OnIntentFiltersUpdated() override { updated_ = true; }
     bool IsUpdated() { return updated_; }
     void Reset() { updated_ = false; }
 

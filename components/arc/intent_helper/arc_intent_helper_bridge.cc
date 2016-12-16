@@ -178,7 +178,7 @@ void ArcIntentHelperBridge::OnIntentFiltersUpdated(
   activity_resolver_->UpdateIntentFilters(std::move(filters));
 
   for (auto& observer : observer_list_)
-    observer.OnAppsUpdated();
+    observer.OnIntentFiltersUpdated();
 }
 
 }  // namespace arc

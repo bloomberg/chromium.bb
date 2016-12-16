@@ -33,7 +33,7 @@ class ArcServiceManager::IntentHelperObserverImpl
   ~IntentHelperObserverImpl() override = default;
 
  private:
-  void OnAppsUpdated() override;
+  void OnIntentFiltersUpdated() override;
   ArcServiceManager* const manager_;
 
   DISALLOW_COPY_AND_ASSIGN(IntentHelperObserverImpl);
@@ -43,10 +43,10 @@ ArcServiceManager::IntentHelperObserverImpl::IntentHelperObserverImpl(
     ArcServiceManager* manager)
     : manager_(manager) {}
 
-void ArcServiceManager::IntentHelperObserverImpl::OnAppsUpdated() {
+void ArcServiceManager::IntentHelperObserverImpl::OnIntentFiltersUpdated() {
   DCHECK(manager_->thread_checker_.CalledOnValidThread());
   for (auto& observer : manager_->observer_list_)
-    observer.OnAppsUpdated();
+    observer.OnIntentFiltersUpdated();
 }
 
 ArcServiceManager::ArcServiceManager(

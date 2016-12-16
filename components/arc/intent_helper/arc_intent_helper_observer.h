@@ -9,9 +9,9 @@ namespace arc {
 
 class ArcIntentHelperObserver {
  public:
-  // Called when app's intent filter is updated.
-  virtual void OnAppsUpdated() = 0;
   virtual ~ArcIntentHelperObserver() = default;
+  // Called when intent filters are added or removed.
+  virtual void OnIntentFiltersUpdated() = 0;
 };
 
 }  // namespace arc
