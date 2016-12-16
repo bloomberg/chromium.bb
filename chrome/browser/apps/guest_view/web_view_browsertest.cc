@@ -1481,7 +1481,13 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestNestedCrossOriginSubframes) {
              "web_view/shim", NEEDS_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestNestedSubframes) {
+#if defined(OS_MACOSX)
+// Flaky on Mac. See https://crbug.com/674904.
+#define MAYBE_Shim_TestNestedSubframes DISABLED_Shim_TestNestedSubframes
+#else
+#define MAYBE_Shim_TestNestedSubframes Shim_TestNestedSubframes
+#endif
+IN_PROC_BROWSER_TEST_P(WebViewTest, MAYBE_Shim_TestNestedSubframes) {
   TestHelper("testNestedSubframes", "web_view/shim", NO_TEST_SERVER);
 }
 
