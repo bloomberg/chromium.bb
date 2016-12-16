@@ -280,6 +280,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   latency_info.AddLatencyNumber(
       ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT, 1337, 7331);
   std::vector<ui::LatencyInfo> latency_infos = {latency_info};
+  std::vector<uint32_t> satisfies_sequences = {1234, 1337};
   std::vector<SurfaceId> referenced_surfaces;
   SurfaceId id(FrameSinkId(1234, 4321),
                LocalFrameId(5678, base::UnguessableToken::Create()));
@@ -305,6 +306,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   input.root_background_color = root_background_color;
   input.selection = selection;
   input.latency_info = latency_infos;
+  input.satisfies_sequences = satisfies_sequences;
   input.referenced_surfaces = referenced_surfaces;
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
@@ -334,6 +336,9 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
       ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT, 1337,
       &component));
   EXPECT_EQ(7331, component.sequence_number);
+  EXPECT_EQ(satisfies_sequences.size(), output.satisfies_sequences.size());
+  for (uint32_t i = 0; i < satisfies_sequences.size(); ++i)
+    EXPECT_EQ(satisfies_sequences[i], output.satisfies_sequences[i]);
   EXPECT_EQ(referenced_surfaces.size(), output.referenced_surfaces.size());
   for (uint32_t i = 0; i < referenced_surfaces.size(); ++i)
     EXPECT_EQ(referenced_surfaces[i], output.referenced_surfaces[i]);

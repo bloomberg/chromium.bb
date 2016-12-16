@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/location.h"
-#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
@@ -112,7 +111,6 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
 
   // Layer was removed so sequence from second LayerTreeHost should be
   // satisfied.
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(blank_change == expected2);
 
   // Set of sequences that need to be satisfied should include sequences from
@@ -128,7 +126,6 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
 
   // Layer was removed so sequence from first LayerTreeHost should be
   // satisfied.
-  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(blank_change == expected1);
 
   // No more SurfaceSequences should have been generated that need to have be
@@ -206,7 +203,6 @@ class SurfaceLayerSwapPromiseWithDraw : public SurfaceLayerSwapPromise {
         layer_tree()->SetRootLayer(blank_layer_);
         break;
       case 2:
-        EndTest();
         break;
       default:
         NOTREACHED();
@@ -214,12 +210,28 @@ class SurfaceLayerSwapPromiseWithDraw : public SurfaceLayerSwapPromise {
     }
   }
 
+  void DisplayReceivedCompositorFrameOnThread(
+      const CompositorFrame& frame) override {
+    const std::vector<uint32_t>& satisfied = frame.metadata.satisfies_sequences;
+    EXPECT_LE(satisfied.size(), 1u);
+    if (satisfied.size() == 1) {
+      // Eventually the one SurfaceSequence should be satisfied, but only
+      // after the layer was removed from the tree, and only once.
+      EXPECT_EQ(1u, satisfied[0]);
+      EXPECT_LE(1, commit_count_);
+      EXPECT_FALSE(sequence_was_satisfied_);
+      sequence_was_satisfied_ = true;
+      EndTest();
+    }
+  }
+
   void AfterTest() override {
     EXPECT_TRUE(required_id_ == SurfaceId(kArbitraryFrameSinkId,
                                           LocalFrameId(1, kArbitraryToken)));
     EXPECT_EQ(1u, required_set_.size());
-    EXPECT_TRUE(satisfied_sequence_ ==
-                SurfaceSequence(kArbitraryFrameSinkId, 1u));
+    // Sequence should have been satisfied through Swap, not with the
+    // callback.
+    EXPECT_FALSE(satisfied_sequence_.is_valid());
   }
 };
 
@@ -257,6 +269,7 @@ class SurfaceLayerSwapPromiseWithoutDraw : public SurfaceLayerSwapPromise {
     EXPECT_TRUE(required_id_ == SurfaceId(kArbitraryFrameSinkId,
                                           LocalFrameId(1, kArbitraryToken)));
     EXPECT_EQ(1u, required_set_.size());
+    // Sequence should have been satisfied with the callback.
     EXPECT_TRUE(satisfied_sequence_ ==
                 SurfaceSequence(kArbitraryFrameSinkId, 1u));
   }

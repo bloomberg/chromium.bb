@@ -40,16 +40,14 @@ namespace client {
 
 namespace {
 
-void SatisfyCallback(base::WeakPtr<cc::SurfaceManager> manager,
+void SatisfyCallback(cc::SurfaceManager* manager,
                      const cc::SurfaceSequence& sequence) {
-  if (!manager)
-    return;
   std::vector<uint32_t> sequences;
   sequences.push_back(sequence.sequence);
   manager->DidSatisfySequences(sequence.frame_sink_id, &sequences);
 }
 
-void RequireCallback(base::WeakPtr<cc::SurfaceManager> manager,
+void RequireCallback(cc::SurfaceManager* manager,
                      const cc::SurfaceId& id,
                      const cc::SurfaceSequence& sequence) {
   cc::Surface* surface = manager->GetSurfaceForId(id);
@@ -332,8 +330,8 @@ void BlimpCompositor::SubmitCompositorFrame(cc::CompositorFrame frame) {
     cc::SurfaceManager* surface_manager =
         GetEmbedderDeps()->GetSurfaceManager();
     scoped_refptr<cc::SurfaceLayer> content_layer = cc::SurfaceLayer::Create(
-        base::Bind(&SatisfyCallback, surface_manager->GetWeakPtr()),
-        base::Bind(&RequireCallback, surface_manager->GetWeakPtr()));
+        base::Bind(&SatisfyCallback, base::Unretained(surface_manager)),
+        base::Bind(&RequireCallback, base::Unretained(surface_manager)));
     content_layer->SetSurfaceId(
         cc::SurfaceId(surface_factory_->frame_sink_id(), local_frame_id_), 1.f,
         surface_size, false /* strecth_content_to_fill_bounds */);

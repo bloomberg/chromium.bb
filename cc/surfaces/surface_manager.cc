@@ -31,8 +31,7 @@ SurfaceManager::FrameSinkSourceMapping::~FrameSinkSourceMapping() {
 SurfaceManager::SurfaceManager(LifetimeType lifetime_type)
     : lifetime_type_(lifetime_type),
       root_surface_id_(FrameSinkId(0u, 0u),
-                       LocalFrameId(1u, base::UnguessableToken::Create())),
-      weak_factory_(this) {
+                       LocalFrameId(1u, base::UnguessableToken::Create())) {
   thread_checker_.DetachFromThread();
 }
 
@@ -498,10 +497,6 @@ void SurfaceManager::SurfaceCreated(const SurfaceId& surface_id,
   CHECK(thread_checker_.CalledOnValidThread());
   for (auto& observer : observer_list_)
     observer.OnSurfaceCreated(surface_id, frame_size, device_scale_factor);
-}
-
-base::WeakPtr<SurfaceManager> SurfaceManager::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace cc

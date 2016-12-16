@@ -75,6 +75,10 @@ class CC_EXPORT CompositorFrameMetadata {
 
   std::vector<ui::LatencyInfo> latency_info;
 
+  // A set of SurfaceSequences that this frame satisfies (always in the same
+  // namespace as the current Surface).
+  std::vector<uint32_t> satisfies_sequences;
+
   // This is the set of Surfaces that are referenced by this frame.
   std::vector<SurfaceId> referenced_surfaces;
 

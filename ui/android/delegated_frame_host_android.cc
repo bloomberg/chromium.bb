@@ -25,16 +25,14 @@ namespace ui {
 
 namespace {
 
-void SatisfyCallback(base::WeakPtr<cc::SurfaceManager> manager,
+void SatisfyCallback(cc::SurfaceManager* manager,
                      const cc::SurfaceSequence& sequence) {
-  if (!manager)
-    return;
   std::vector<uint32_t> sequences;
   sequences.push_back(sequence.sequence);
   manager->DidSatisfySequences(sequence.frame_sink_id, &sequences);
 }
 
-void RequireCallback(base::WeakPtr<cc::SurfaceManager> manager,
+void RequireCallback(cc::SurfaceManager* manager,
                      const cc::SurfaceId& id,
                      const cc::SurfaceSequence& sequence) {
   cc::Surface* surface = manager->GetSurfaceForId(id);
@@ -52,8 +50,8 @@ scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
     bool surface_opaque) {
   // manager must outlive compositors using it.
   scoped_refptr<cc::SurfaceLayer> layer = cc::SurfaceLayer::Create(
-      base::Bind(&SatisfyCallback, surface_manager->GetWeakPtr()),
-      base::Bind(&RequireCallback, surface_manager->GetWeakPtr()));
+      base::Bind(&SatisfyCallback, base::Unretained(surface_manager)),
+      base::Bind(&RequireCallback, base::Unretained(surface_manager)));
   layer->SetSurfaceId(surface_id, 1.f, surface_size,
                       false /* strecth_content_to_fill_bounds */);
   layer->SetBounds(surface_size);
