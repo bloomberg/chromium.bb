@@ -7,17 +7,16 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
-#include "ui/views/mus/native_widget_mus.h"
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
+class BrowserFrame;
 class BrowserView;
 
 class BrowserFrameMus : public NativeBrowserFrame,
-                        public views::NativeWidgetMus {
+                        public views::DesktopNativeWidgetAura {
  public:
   BrowserFrameMus(BrowserFrame* browser_frame, BrowserView* browser_view);
   ~BrowserFrameMus() override;
-
-  ui::Window* mus_window();
 
  private:
   // Overridden from NativeBrowserFrame:
@@ -33,9 +32,7 @@ class BrowserFrameMus : public NativeBrowserFrame,
       const content::NativeWebKeyboardEvent& event) override;
   int GetMinimizeButtonOffset() const override;
 
-  // Overriden from NativeWidgetMus:
-  void UpdateClientArea() override;
-
+  BrowserFrame* browser_frame_;
   BrowserView* browser_view_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameMus);

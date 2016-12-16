@@ -9,8 +9,8 @@
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
-#include "ui/views/mus/pointer_watcher_event_router.h"
-#include "ui/views/mus/window_manager_connection.h"
+#include "ui/views/mus/mus_client.h"
+#include "ui/views/mus/pointer_watcher_event_router2.h"
 
 namespace {
 
@@ -80,16 +80,14 @@ void AppListPresenterDelegateMus::Init(app_list::AppListView* view,
 }
 
 void AppListPresenterDelegateMus::OnShown(int64_t display_id) {
-  views::WindowManagerConnection::Get()
-      ->pointer_watcher_event_router()
-      ->AddPointerWatcher(this, false);
+  views::MusClient::Get()->pointer_watcher_event_router()->AddPointerWatcher(
+      this, false);
   DCHECK(presenter_->GetTargetVisibility());
 }
 
 void AppListPresenterDelegateMus::OnDismissed() {
-  views::WindowManagerConnection::Get()
-      ->pointer_watcher_event_router()
-      ->RemovePointerWatcher(this);
+  views::MusClient::Get()->pointer_watcher_event_router()->RemovePointerWatcher(
+      this);
   DCHECK(!presenter_->GetTargetVisibility());
 }
 

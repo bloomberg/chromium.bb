@@ -6,9 +6,9 @@
 
 #include "content/public/common/service_manager_connection.h"  // nogncheck
 #include "services/service_manager/runner/common/client_util.h"  // nogncheck
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
-#include "ui/views/mus/native_widget_mus.h"
-#include "ui/views/mus/window_manager_connection.h"
+#include "ui/views/mus/mus_client.h"
 
 bool GetLocalProcessWindowAtPointMus(
     const gfx::Point& screen_point,
@@ -20,14 +20,14 @@ bool GetLocalProcessWindowAtPointMus(
   if (!service_manager_connection || !service_manager::ServiceManagerIsRemote())
     return false;
 
-  std::set<ui::Window*> mus_windows =
-      views::WindowManagerConnection::Get()->GetRoots();
+  std::set<aura::Window*> root_windows =
+      views::MusClient::Get()->window_tree_client()->GetRoots();
   // TODO(erg): Needs to deal with stacking order here.
 
   // For every mus window, look at the associated aura window and see if we're
   // in that.
-  for (ui::Window* mus : mus_windows) {
-    views::Widget* widget = views::NativeWidgetMus::GetWidgetForWindow(mus);
+  for (aura::Window* root : root_windows) {
+    views::Widget* widget = views::Widget::GetWidgetForNativeView(root);
     if (widget && widget->GetWindowBoundsInScreen().Contains(screen_point)) {
       aura::Window* content_window = widget->GetNativeWindow();
 

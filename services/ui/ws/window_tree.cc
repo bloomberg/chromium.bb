@@ -283,13 +283,35 @@ bool WindowTree::AddWindow(const ClientWindowId& parent_id,
                            const ClientWindowId& child_id) {
   ServerWindow* parent = GetWindowByClientId(parent_id);
   ServerWindow* child = GetWindowByClientId(child_id);
-  if (parent && child && child->parent() != parent &&
-      !child->Contains(parent) && access_policy_->CanAddWindow(parent, child)) {
-    Operation op(this, window_server_, OperationType::ADD_WINDOW);
-    parent->Add(child);
-    return true;
+  DVLOG(3) << "add window client=" << id_
+           << " client parent window_id=" << parent_id.id
+           << " global window_id="
+           << (parent ? WindowIdToTransportId(parent->id()) : 0)
+           << " client child window_id= " << child_id.id << " global window_id="
+           << (child ? WindowIdToTransportId(child->id()) : 0);
+  if (!parent) {
+    DVLOG(1) << "add failed, no parent";
+    return false;
   }
-  return false;
+  if (!child) {
+    DVLOG(1) << "add failed, no child";
+    return false;
+  }
+  if (child->parent() == parent) {
+    DVLOG(1) << "add failed, already has parent";
+    return false;
+  }
+  if (child->Contains(parent)) {
+    DVLOG(1) << "add failed, child contains parent";
+    return false;
+  }
+  if (!access_policy_->CanAddWindow(parent, child)) {
+    DVLOG(1) << "add failed, access policy denied add";
+    return false;
+  }
+  Operation op(this, window_server_, OperationType::ADD_WINDOW);
+  parent->Add(child);
+  return true;
 }
 
 bool WindowTree::AddTransientWindow(const ClientWindowId& window_id,

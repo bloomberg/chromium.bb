@@ -8,9 +8,15 @@
 #include "ash/shared/immersive_context.h"
 #include "base/macros.h"
 
+namespace aura {
+namespace client {
+class CaptureClient;
+}
+}
+
 class ImmersiveContextMus : public ash::ImmersiveContext {
  public:
-  ImmersiveContextMus();
+  explicit ImmersiveContextMus(aura::client::CaptureClient* capture_client);
   ~ImmersiveContextMus() override;
 
   // ash::ImmersiveContext:
@@ -27,6 +33,8 @@ class ImmersiveContextMus : public ash::ImmersiveContext {
   bool IsMouseEventsEnabled() override;
 
  private:
+  aura::client::CaptureClient* capture_client_;
+
   DISALLOW_COPY_AND_ASSIGN(ImmersiveContextMus);
 };
 

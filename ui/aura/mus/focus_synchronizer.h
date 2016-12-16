@@ -17,6 +17,7 @@ class WindowTree;
 
 namespace aura {
 
+class Env;
 class FocusSynchronizerDelegate;
 class WindowMus;
 
@@ -52,6 +53,7 @@ class FocusSynchronizer : public client::FocusChangeObserver,
 
   // Overrided from EnvObserver:
   void OnWindowInitialized(Window* window) override;
+  void OnWillDestroyEnv() override;
   void OnActiveFocusClientChanged(client::FocusClient* focus_client,
                                   Window* window) override;
 
@@ -63,6 +65,9 @@ class FocusSynchronizer : public client::FocusChangeObserver,
   bool setting_focus_ = false;
   WindowMus* window_setting_focus_to_ = nullptr;
   WindowMus* focused_window_ = nullptr;
+
+  // Cached so we can detect if Env is destroyed before us.
+  Env* env_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusSynchronizer);
 };

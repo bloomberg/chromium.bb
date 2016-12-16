@@ -58,17 +58,24 @@ class MusClientTestApi;
 
 // MusClient establishes a connection to mus and sets up necessary state so that
 // aura and views target mus. This class is useful for typical clients, not the
-// WindowManager. This class is created by AuraInit when
-// AuraInit::Mode::AURA_MUS is passed as the mode.
-// AuraInit::Mode::AURA to AuraInit and MusClient will be created for us.
+// WindowManager. Most clients don't create this directly, rather use
+// AuraInit.
 class VIEWS_MUS_EXPORT MusClient
     : public aura::WindowTreeClientDelegate,
       public ScreenMusDelegate,
       public ui::OSExchangeDataProviderFactory::Factory {
  public:
+  // Most clients should use AuraInit, which creates a MusClient.
+  // |create_wm_state| indicates whether MusClient should create a wm::WMState.
+  MusClient(
+      service_manager::Connector* connector,
+      const service_manager::Identity& identity,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr,
+      bool create_wm_state = true);
   ~MusClient() override;
 
   static MusClient* Get() { return instance_; }
+  static bool Exists() { return instance_ != nullptr; }
 
   // Returns true if a DesktopNativeWidgetAura should be created given the
   // specified params. If this returns false a NativeWidgetAura should be
@@ -88,6 +95,8 @@ class VIEWS_MUS_EXPORT MusClient
     return pointer_watcher_event_router_.get();
   }
 
+  ui::Gpu* gpu() { return gpu_.get(); }
+
   // Creates DesktopNativeWidgetAura with DesktopWindowTreeHostMus. This is
   // set as the factory function used for creating NativeWidgets when a
   //  NativeWidget has not been explicitly set.
@@ -100,11 +109,6 @@ class VIEWS_MUS_EXPORT MusClient
  private:
   friend class AuraInit;
   friend class test::MusClientTestApi;
-
-  MusClient(
-      service_manager::Connector* connector,
-      const service_manager::Identity& identity,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr);
 
   // aura::WindowTreeClientDelegate:
   void OnEmbed(
@@ -130,6 +134,8 @@ class VIEWS_MUS_EXPORT MusClient
 
   base::ObserverList<MusClientObserver> observer_list_;
 
+  // NOTE: this may be null (creation is based on argument supplied to
+  // constructor).
   std::unique_ptr<wm::WMState> wm_state_;
 
   std::unique_ptr<ScreenMus> screen_;

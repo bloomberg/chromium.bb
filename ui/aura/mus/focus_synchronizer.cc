@@ -16,13 +16,16 @@ namespace aura {
 
 FocusSynchronizer::FocusSynchronizer(FocusSynchronizerDelegate* delegate,
                                      ui::mojom::WindowTree* window_tree)
-    : delegate_(delegate), window_tree_(window_tree) {
-  Env::GetInstance()->AddObserver(this);
+    : delegate_(delegate), window_tree_(window_tree), env_(Env::GetInstance()) {
+  DCHECK(env_);
+  env_->AddObserver(this);
 }
 
 FocusSynchronizer::~FocusSynchronizer() {
-  SetActiveFocusClient(nullptr);
-  Env::GetInstance()->RemoveObserver(this);
+  if (env_) {
+    SetActiveFocusClient(nullptr);
+    env_->RemoveObserver(this);
+  }
 }
 
 void FocusSynchronizer::SetFocusFromServer(WindowMus* window) {
@@ -80,6 +83,13 @@ void FocusSynchronizer::OnWindowFocused(Window* gained_focus,
 }
 
 void FocusSynchronizer::OnWindowInitialized(Window* window) {}
+
+void FocusSynchronizer::OnWillDestroyEnv() {
+  // TODO(sky): this override should not be necessary. http://crbug.com/674803.
+  SetActiveFocusClient(nullptr);
+  env_->RemoveObserver(this);
+  env_ = nullptr;
+}
 
 void FocusSynchronizer::OnActiveFocusClientChanged(
     client::FocusClient* focus_client,
