@@ -314,10 +314,9 @@ void MediaKeySystemAccessInitializer::checkCapabilities(
     UseCounter::count(m_resolver->getExecutionContext(),
                       UseCounter::EncryptedMediaCapabilityProvided);
   } else {
-    // TODO(jrummell): Switch to deprecation message once we understand
-    // current usage. http://crbug.com/616233.
-    UseCounter::count(m_resolver->getExecutionContext(),
-                      UseCounter::EncryptedMediaCapabilityNotProvided);
+    Deprecation::countDeprecation(
+        m_resolver->getExecutionContext(),
+        UseCounter::EncryptedMediaCapabilityNotProvided);
   }
 }
 

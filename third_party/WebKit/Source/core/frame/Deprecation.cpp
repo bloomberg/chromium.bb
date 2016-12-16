@@ -384,6 +384,14 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
           "Please specify the desired codec(s) as part of the contentType.",
           milestoneString(M58));
 
+    case UseCounter::EncryptedMediaCapabilityNotProvided:
+      return String::format(
+          "EME requires that one of 'audioCapabilities' and "
+          "'videoCapabilities' must be non-empty. Non-standard support for "
+          "this will be removed in %s. Please specify at least one valid "
+          "capability for 'audioCapabilities' or 'videoCapabilities'.",
+          milestoneString(M58));
+
     case UseCounter::VRDeprecatedFieldOfView:
       return replacedBy("VREyeParameters.fieldOfView",
                         "projection matrices provided by VRFrameData");
