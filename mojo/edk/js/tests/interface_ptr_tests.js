@@ -5,11 +5,13 @@
 define([
     "gin/test/expect",
     "mojo/public/js/bindings",
+    "mojo/public/js/core",
     "mojo/public/interfaces/bindings/tests/math_calculator.mojom",
     "mojo/public/js/threading",
     "gc",
 ], function(expect,
             bindings,
+            core,
             math,
             threading,
             gc) {
@@ -18,6 +20,7 @@ define([
       .then(testReusable)
       .then(testConnectionError)
       .then(testPassInterface)
+      .then(testBindRawHandle)
       .then(function() {
     this.result = "PASS";
     gc.collectGarbage();  // should not crash
@@ -133,6 +136,22 @@ define([
       return newCalc.add(2);
     }).then(function(response) {
       expect(response.value).toBe(4);
+      return Promise.resolve();
+    });
+
+    return promise;
+  }
+
+  function testBindRawHandle() {
+    var pipe = core.createMessagePipe();
+    var calc = new math.CalculatorPtr(pipe.handle0);
+    var newCalc = null;
+    var calcBinding = new bindings.Binding(math.Calculator,
+                                           new CalculatorImpl(),
+                                           pipe.handle1);
+
+    var promise = calc.add(2).then(function(response) {
+      expect(response.value).toBe(2);
       return Promise.resolve();
     });
 

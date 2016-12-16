@@ -20,7 +20,8 @@ define("mojo/public/js/bindings", [
 
   // Operations used to setup/configure an interface pointer. Exposed as the
   // |ptr| field of generated interface pointer classes.
-  function InterfacePtrController(interfaceType) {
+  // |ptrInfoOrHandle| could be omitted and passed into bind() later.
+  function InterfacePtrController(interfaceType, ptrInfoOrHandle) {
     this.version = 0;
 
     this.interfaceType_ = interfaceType;
@@ -28,13 +29,20 @@ define("mojo/public/js/bindings", [
     // |connection_| is lazily initialized. |handle_| is valid between bind()
     // and the initialization of |connection_|.
     this.handle_ = null;
+
+    if (ptrInfoOrHandle)
+      this.bind(ptrInfoOrHandle);
   }
 
-  InterfacePtrController.prototype.bind = function(interfacePtrInfo) {
+  InterfacePtrController.prototype.bind = function(ptrInfoOrHandle) {
     this.reset();
 
-    this.version = interfacePtrInfo.version;
-    this.handle_ = interfacePtrInfo.handle;
+    if (ptrInfoOrHandle instanceof types.InterfacePtrInfo) {
+      this.version = ptrInfoOrHandle.version;
+      this.handle_ = ptrInfoOrHandle.handle;
+    } else {
+      this.handle_ = ptrInfoOrHandle;
+    }
   };
 
   InterfacePtrController.prototype.isBound = function() {
@@ -101,8 +109,6 @@ define("mojo/public/js/bindings", [
   // ---------------------------------------------------------------------------
 
   // |request| could be omitted and passed into bind() later.
-  // NOTE: |impl| shouldn't hold a reference to this object, because that
-  // results in circular references.
   //
   // Example:
   //
@@ -115,13 +121,13 @@ define("mojo/public/js/bindings", [
   //    var request = makeRequest(fooPtr);
   //    var binding = new Binding(mojom.Foo, new FooImpl(), request);
   //    fooPtr.fooMethod1();
-  function Binding(interfaceType, impl, request) {
+  function Binding(interfaceType, impl, requestOrHandle) {
     this.interfaceType_ = interfaceType;
     this.impl_ = impl;
     this.stub_ = null;
 
-    if (request)
-      this.bind(request);
+    if (requestOrHandle)
+      this.bind(requestOrHandle);
   }
 
   Binding.prototype.isBound = function() {
@@ -135,11 +141,13 @@ define("mojo/public/js/bindings", [
     return ptr;
   }
 
-  Binding.prototype.bind = function(request) {
+  Binding.prototype.bind = function(requestOrHandle) {
     this.close();
-    if (request.isValid()) {
-      this.stub_ = connection.bindHandleToStub(request.handle,
-                                               this.interfaceType_);
+
+    var handle = requestOrHandle instanceof types.InterfaceRequest ?
+        requestOrHandle.handle : requestOrHandle;
+    if (core.isHandle(handle)) {
+      this.stub_ = connection.bindHandleToStub(handle, this.interfaceType_);
       connection.StubBindings(this.stub_).delegate = this.impl_;
     }
   };
@@ -172,12 +180,65 @@ define("mojo/public/js/bindings", [
     return result;
   };
 
+  // ---------------------------------------------------------------------------
+
+  function BindingSetEntry(bindingSet, interfaceType, impl, requestOrHandle,
+                           bindingId) {
+    this.bindingSet_ = bindingSet;
+    this.bindingId_ = bindingId;
+    this.binding_ = new Binding(interfaceType, impl, requestOrHandle);
+
+    this.binding_.setConnectionErrorHandler(
+        () => this.bindingSet_.onConnectionError(bindingId));
+  }
+
+  BindingSetEntry.prototype.close = function() {
+    this.binding_.close();
+  };
+
+  function BindingSet(interfaceType) {
+    this.interfaceType_ = interfaceType;
+    this.nextBindingId_ = 0;
+    this.bindings_ = new Map();
+    this.errorHandler_ = null;
+  }
+
+  BindingSet.prototype.isEmpty = function() {
+    return this.bindings_.size == 0;
+  };
+
+  BindingSet.prototype.addBinding = function(impl, requestOrHandle) {
+    this.bindings_.set(
+        this.nextBindingId_,
+        new BindingSetEntry(this, this.interfaceType_, impl, requestOrHandle,
+                            this.nextBindingId_));
+    ++this.nextBindingId_;
+  };
+
+  BindingSet.prototype.closeAllBindings = function() {
+    for (var entry of this.bindings_.values())
+      entry.close();
+    this.bindings_.clear();
+  };
+
+  BindingSet.prototype.setConnectionErrorHandler = function(callback) {
+    this.errorHandler_ = callback;
+  };
+
+  BindingSet.prototype.onConnectionError = function(bindingId) {
+    this.bindings_.delete(bindingId);
+
+    if (this.errorHandler_)
+      this.errorHandler_();
+  };
+
   var exports = {};
   exports.InterfacePtrInfo = types.InterfacePtrInfo;
   exports.InterfaceRequest = types.InterfaceRequest;
   exports.makeRequest = makeRequest;
   exports.InterfacePtrController = InterfacePtrController;
   exports.Binding = Binding;
+  exports.BindingSet = BindingSet;
 
   // TODO(yzshen): Remove the following exports.
   exports.EmptyProxy = connection.EmptyProxy;

@@ -8,6 +8,9 @@ define("mojo/public/js/connection", [
   "mojo/public/js/router",
 ], function(connector, core, router) {
 
+  // TODO(yzshen): This module should only be used by the JS bindings internally
+  // and it will be removed soon.
+
   var Router = router.Router;
   var TestConnector = connector.TestConnector;
   var TestRouter = router.TestRouter;

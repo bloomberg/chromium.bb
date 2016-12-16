@@ -2,8 +2,9 @@
   var k{{interface.name}}_{{method.name}}_Name = {{method.ordinal}};
 {%- endfor %}
 
-  function {{interface.name}}Ptr() {
-    this.ptr = new bindings.InterfacePtrController({{interface.name}});
+  function {{interface.name}}Ptr(handleOrPtrInfo) {
+    this.ptr = new bindings.InterfacePtrController({{interface.name}},
+                                                   handleOrPtrInfo);
   }
 
   function {{interface.name}}Proxy(receiver) {

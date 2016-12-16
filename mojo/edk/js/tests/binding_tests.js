@@ -17,6 +17,7 @@ define([
       .then(testReusable)
       .then(testConnectionError)
       .then(testUnbind)
+      .then(testBindingSet)
       .then(function() {
     this.result = "PASS";
     gc.collectGarbage();  // should not crash
@@ -113,6 +114,43 @@ define([
       return calc.add(2);
     }).then(function(response) {
       expect(response.value).toBe(2);
+      return Promise.resolve();
+    });
+
+    return promise;
+  }
+
+  function testBindingSet() {
+    var calc1 = new math.CalculatorPtr();
+    var calc2 = new math.CalculatorPtr();
+    var calcImpl = new CalculatorImpl();
+
+    var bindingSet = new bindings.BindingSet(math.Calculator);
+    expect(bindingSet.isEmpty()).toBeTruthy();
+    bindingSet.addBinding(calcImpl, bindings.makeRequest(calc1));
+    bindingSet.addBinding(calcImpl, bindings.makeRequest(calc2));
+    expect(bindingSet.isEmpty()).toBeFalsy();
+
+    var promise = calc1.add(3).then(function(response) {
+      expect(response.value).toBe(3);
+      return calc2.add(4);
+    }).then(function(response) {
+      expect(response.value).toBe(7);
+
+      var promiseOfConnectionError = new Promise(function(resolve, reject) {
+        bindingSet.setConnectionErrorHandler(function() {
+          resolve();
+        });
+      });
+      calc1.ptr.reset();
+      return promiseOfConnectionError;
+    }).then(function() {
+      return calc2.add(5);
+    }).then(function(response) {
+      expect(response.value).toBe(12);
+
+      bindingSet.closeAllBindings();
+      expect(bindingSet.isEmpty()).toBeTruthy();
       return Promise.resolve();
     });
 

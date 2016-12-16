@@ -6,10 +6,9 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
   'console',
   'mojo/edk/js/tests/js_to_cpp.mojom',
   'mojo/public/js/bindings',
-  'mojo/public/js/connection',
   'mojo/public/js/connector',
   'mojo/public/js/core',
-], function (console, jsToCpp, bindings, connection, connector, core) {
+], function (console, jsToCpp, bindings, connector, core) {
   var retainedJsSide;
   var retainedJsSideStub;
   var sampleData;
@@ -22,10 +21,8 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
   };
 
   function JsSideConnection() {
+    this.binding = new bindings.Binding(jsToCpp.JsSide, this);
   }
-
-  JsSideConnection.prototype =
-      Object.create(jsToCpp.JsSide.stubClass.prototype);
 
   JsSideConnection.prototype.setCppSide = function(cppSide) {
     this.cppSide_ = cppSide;
@@ -220,9 +217,7 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
     for (i = 0; i < sampleMessage.length; ++i) {
       sampleMessage[i] = 255 - i;
     }
-    retainedJsSideStub =
-        connection.bindHandleToStub(jsSideRequestHandle, jsToCpp.JsSide);
     retainedJsSide = new JsSideConnection;
-    bindings.StubBindings(retainedJsSideStub).delegate = retainedJsSide;
+    retainedJsSide.binding.bind(jsSideRequestHandle);
   };
 });
