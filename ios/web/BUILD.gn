@@ -319,8 +319,6 @@ source_set("core") {
   ]
 
   sources = [
-    "crw_network_activity_indicator_manager.h",
-    "crw_network_activity_indicator_manager.mm",
     "history_state_util.cc",
     "history_state_util.h",
   ]
@@ -509,7 +507,6 @@ test("ios_web_unittests") {
     "active_state_manager_impl_unittest.mm",
     "alloc_with_zone_interceptor_unittest.mm",
     "browser_state_unittest.cc",
-    "crw_network_activity_indicator_manager_unittest.mm",
     "history_state_util_unittest.mm",
     "navigation/crw_session_controller_unittest.mm",
     "navigation/crw_session_entry_unittest.mm",

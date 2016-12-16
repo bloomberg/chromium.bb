@@ -20,7 +20,6 @@
 #include "base/synchronization/lock.h"
 #import "ios/net/clients/crn_forwarding_network_client.h"
 #import "ios/net/clients/crn_forwarding_network_client_factory.h"
-#import "ios/web/crw_network_activity_indicator_manager.h"
 #import "ios/web/history_state_util.h"
 #import "ios/web/net/crw_request_tracker_delegate.h"
 #include "ios/web/public/browser_state.h"
@@ -480,16 +479,6 @@ void RequestTrackerImpl::StartRequest(net::URLRequest* request) {
   DCHECK(!counts_by_request_.count(request));
   DCHECK_EQ(is_for_static_file_requests_, request->url().SchemeIsFile());
 
-  bool addedRequest = live_requests_.insert(request).second;
-  if (!is_for_static_file_requests_ && addedRequest) {
-    NSString* networkActivityKey = GetNetworkActivityKey();
-    web::WebThread::PostTask(
-        web::WebThread::UI, FROM_HERE, base::BindBlockArc(^{
-          [[CRWNetworkActivityIndicatorManager sharedInstance]
-              startNetworkTaskForGroup:networkActivityKey];
-        }));
-  }
-
   if (new_estimate_round_) {
     // Starting a new estimate round. Ignore the previous requests for the
     // calculation.
@@ -560,16 +549,6 @@ void RequestTrackerImpl::CaptureReceivedBytes(const net::URLRequest* request,
 void RequestTrackerImpl::StopRequest(net::URLRequest* request) {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
-  int removedRequests = live_requests_.erase(request);
-  if (!is_for_static_file_requests_ && removedRequests > 0) {
-    NSString* networkActivityKey = GetNetworkActivityKey();
-    web::WebThread::PostTask(
-        web::WebThread::UI, FROM_HERE, base::BindBlockArc(^{
-          [[CRWNetworkActivityIndicatorManager sharedInstance]
-              stopNetworkTaskForGroup:networkActivityKey];
-        }));
-  }
-
   if (counts_by_request_.count(request)) {
     StopRedirectedRequest(request);
     Notify();
@@ -578,16 +557,6 @@ void RequestTrackerImpl::StopRequest(net::URLRequest* request) {
 
 void RequestTrackerImpl::StopRedirectedRequest(net::URLRequest* request) {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
-
-  int removedRequests = live_requests_.erase(request);
-  if (!is_for_static_file_requests_ && removedRequests > 0) {
-    NSString* networkActivityKey = GetNetworkActivityKey();
-    web::WebThread::PostTask(
-        web::WebThread::UI, FROM_HERE, base::BindBlockArc(^{
-          [[CRWNetworkActivityIndicatorManager sharedInstance]
-              stopNetworkTaskForGroup:networkActivityKey];
-        }));
-  }
 
   if (counts_by_request_.count(request)) {
     TrackerCounts* counts = counts_by_request_[request];
@@ -1274,12 +1243,6 @@ NSString* RequestTrackerImpl::UnsafeDescription() {
                                     [urls componentsJoinedByString:@"\n"]];
 }
 
-NSString* RequestTrackerImpl::GetNetworkActivityKey() {
-  return [NSString
-      stringWithFormat:@"RequestTrackerImpl.NetworkActivityIndicatorKey.%@",
-                       request_group_id_.get()];
-  }
-
 void RequestTrackerImpl::CancelRequests() {
   DCHECK_CURRENTLY_ON(web::WebThread::IO);
   std::set<net::URLRequest*>::iterator it;
@@ -1292,16 +1255,7 @@ void RequestTrackerImpl::CancelRequests() {
   for (it = live_requests_.begin(); it != live_requests_.end(); ++it)
     (*it)->Cancel();
 
-  int removedRequests = live_requests_.size();
   live_requests_.clear();
-  if (!is_for_static_file_requests_ && removedRequests > 0) {
-    NSString* networkActivityKey = GetNetworkActivityKey();
-    web::WebThread::PostTask(
-        web::WebThread::UI, FROM_HERE, base::BindBlockArc(^{
-          [[CRWNetworkActivityIndicatorManager sharedInstance]
-              clearNetworkTasksForGroup:networkActivityKey];
-        }));
-  }
 }
 
 void RequestTrackerImpl::SetCertificatePolicyCacheForTest(

@@ -39,7 +39,6 @@
 #include "components/url_formatter/url_formatter.h"
 #import "ios/net/http_response_headers_util.h"
 #import "ios/net/nsurlrequest_util.h"
-#import "ios/web/crw_network_activity_indicator_manager.h"
 #import "ios/web/history_state_util.h"
 #include "ios/web/interstitials/web_interstitial_impl.h"
 #import "ios/web/navigation/crw_session_certificate_policy_manager.h"
@@ -490,8 +489,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 @property(nonatomic, readwrite) id<CRWNativeContent> nativeController;
 // Returns NavigationManager's session controller.
 @property(nonatomic, readonly) CRWSessionController* sessionController;
-// Activity indicator group ID for this web controller.
-@property(nonatomic, readonly) NSString* activityIndicatorGroupID;
 // Dictionary where keys are the names of WKWebView properties and values are
 // selector names which should be called when a corresponding property has
 // changed. e.g. @{ @"URL" : @"webViewURLDidChange" } means that
@@ -542,10 +539,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (void)clearTransientContentView;
 // Returns a lazily created CRWTouchTrackingRecognizer.
 - (CRWTouchTrackingRecognizer*)touchTrackingRecognizer;
-// Adds an activity indicator tasks for this web controller.
-- (void)addActivityIndicatorTask;
-// Clears all activity indicator tasks for this web controller.
-- (void)clearActivityIndicatorTasks;
 // Shows placeholder overlay.
 - (void)addPlaceholderOverlay;
 // Removes placeholder overlay.
@@ -1172,12 +1165,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   [_containerView displayNativeContent:nativeController];
   [self setNativeControllerWebUsageEnabled:_webUsageEnabled];
-}
-
-- (NSString*)activityIndicatorGroupID {
-  return [NSString
-      stringWithFormat:@"WebController.NetworkActivityIndicatorKey.%@",
-                       self.webStateImpl->GetRequestGroupID()];
 }
 
 - (NSDictionary*)WKWebViewObservers {
@@ -3943,16 +3930,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
           kMaximumDelayForUserInteractionInSeconds);
 }
 
-- (void)addActivityIndicatorTask {
-  [[CRWNetworkActivityIndicatorManager sharedInstance]
-      startNetworkTaskForGroup:[self activityIndicatorGroupID]];
-}
-
-- (void)clearActivityIndicatorTasks {
-  [[CRWNetworkActivityIndicatorManager sharedInstance]
-      clearNetworkTasksForGroup:[self activityIndicatorGroupID]];
-}
-
 #pragma mark Placeholder Overlay Methods
 
 - (void)addPlaceholderOverlay {
@@ -4784,7 +4761,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   for (NSString* keyPath in self.WKWebViewObservers) {
     [_webView removeObserver:self forKeyPath:keyPath];
   }
-  [self clearActivityIndicatorTasks];
 
   _webView.reset([webView retain]);
 
@@ -5433,13 +5409,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (void)webViewLoadingStateDidChange {
-  if ([_webView isLoading]) {
-    [self addActivityIndicatorTask];
-    return;
-  }
-
-  [self clearActivityIndicatorTasks];
-  if (![self isCurrentNavigationBackForward]) {
+  if ([_webView isLoading] || ![self isCurrentNavigationBackForward]) {
     return;
   }
 

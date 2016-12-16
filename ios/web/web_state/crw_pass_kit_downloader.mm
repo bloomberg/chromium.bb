@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/web/crw_network_activity_indicator_manager.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -54,18 +53,12 @@ enum DownloadPassKitResult {
 // NSData and passes the result to |_completionHandler|.
 - (void)didFinishDownload;
 
-// Returns key for CRWNetworkActivityIndicatorManager.
-- (NSString*)networkActivityKey;
-
 // Reports Download.IOSDownloadPassKitResult UMA metric.
 - (void)reportUMAPassKitResult:(DownloadPassKitResult)result;
 
 @end
 
 namespace {
-
-// Unique ID for CRWNetworkActivityIndicatorManager.
-int g_pass_kit_downloader_class_id = 0;
 
 // A delegate for the URLFetcher to tell the CRWPassKitDownloader that the
 // download is complete.
@@ -98,9 +91,6 @@ class PassKitFetcherDelegate : public URLFetcherDelegate {
   // Context getter which is passed to the URLFetcher, as required by
   // URLFetcher API.
   scoped_refptr<URLRequestContextGetter> _requestContextGetter;
-
-  // Network activity ID for this instance of CRWPassKitDownloader.
-  int _passKitDownloaderID;
 }
 
 #pragma mark - Public Methods
@@ -114,7 +104,6 @@ class PassKitFetcherDelegate : public URLFetcherDelegate {
     _completionHandler.reset([handler copy]);
     _fetcherDelegate.reset(new PassKitFetcherDelegate(self));
     _requestContextGetter = getter;
-    _passKitDownloaderID = g_pass_kit_downloader_class_id++;
   }
   return self;
 }
@@ -124,11 +113,6 @@ class PassKitFetcherDelegate : public URLFetcherDelegate {
   return nil;
 }
 
-- (void)dealloc {
-  [[CRWNetworkActivityIndicatorManager sharedInstance]
-      clearNetworkTasksForGroup:[self networkActivityKey]];
-}
-
 - (BOOL)isMIMETypePassKitType:(NSString*)MIMEType {
   return [MIMEType isEqualToString:@"application/vnd.apple.pkpass"];
 }
@@ -136,30 +120,16 @@ class PassKitFetcherDelegate : public URLFetcherDelegate {
 - (void)downloadPassKitFileWithURL:(const GURL&)URL {
   _fetcher = URLFetcher::Create(URL, URLFetcher::GET, _fetcherDelegate.get());
   _fetcher->SetRequestContext(_requestContextGetter.get());
-  CRWNetworkActivityIndicatorManager* sharedManager =
-      [CRWNetworkActivityIndicatorManager sharedInstance];
-  // Verifies that there are not any network tasks associated with this instance
-  // before starting another task, so that this method is idempotent.
-  if (![sharedManager numNetworkTasksForGroup:[self networkActivityKey]])
-    [sharedManager startNetworkTaskForGroup:[self networkActivityKey]];
   _fetcher->Start();
 }
 
 - (void)cancelPendingDownload {
   _fetcher.reset();
-  CRWNetworkActivityIndicatorManager* sharedManager =
-      [CRWNetworkActivityIndicatorManager sharedInstance];
-  // Verifies that there is a network task associated with this instance
-  // before stopping a task, so that this method is idempotent.
-  if ([sharedManager numNetworkTasksForGroup:[self networkActivityKey]])
-    [sharedManager stopNetworkTaskForGroup:[self networkActivityKey]];
 }
 
 #pragma mark - Private Methods
 
 - (void)didFinishDownload {
-  [[CRWNetworkActivityIndicatorManager sharedInstance]
-      stopNetworkTaskForGroup:[self networkActivityKey]];
   int responseCode = _fetcher->GetResponseCode();
   std::string response;
   // If the download failed, pass nil to |_completionHandler| and log which
@@ -189,12 +159,6 @@ class PassKitFetcherDelegate : public URLFetcherDelegate {
   NSData* data =
       [NSData dataWithBytes:response.c_str() length:response.length()];
   _completionHandler.get()(data);
-}
-
-- (NSString*)networkActivityKey {
-  return [NSString
-      stringWithFormat:@"PassKitDownloader.NetworkActivityIndicatorKey.%d",
-                       _passKitDownloaderID];
 }
 
 - (void)reportUMAPassKitResult:(DownloadPassKitResult)result {

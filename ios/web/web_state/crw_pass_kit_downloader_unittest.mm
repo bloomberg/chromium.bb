@@ -80,9 +80,6 @@ TEST_F(CRWPassKitDownloaderTest, TestDownloadPassKitSuccess) {
   GURL test_url(kTestUrlString);
   [downloader_ downloadPassKitFileWithURL:test_url];
 
-  UIApplication* shared_app = [UIApplication sharedApplication];
-  EXPECT_TRUE([shared_app isNetworkActivityIndicatorVisible]);
-
   net::TestURLFetcher* fetcher = fetcher_factory_->GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   ASSERT_EQ(test_url, fetcher->GetOriginalURL());
@@ -90,7 +87,6 @@ TEST_F(CRWPassKitDownloaderTest, TestDownloadPassKitSuccess) {
   fetcher->SetResponseString(kExpectedString);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 
-  EXPECT_FALSE([shared_app isNetworkActivityIndicatorVisible]);
   EXPECT_TRUE(completion_handler_success_);
 }
 
@@ -100,9 +96,6 @@ TEST_F(CRWPassKitDownloaderTest, TestDownloadPassKitBadErrorCodeFailure) {
   GURL test_url(kTestUrlString);
   [downloader_ downloadPassKitFileWithURL:test_url];
 
-  UIApplication* shared_app = [UIApplication sharedApplication];
-  EXPECT_TRUE([shared_app isNetworkActivityIndicatorVisible]);
-
   net::TestURLFetcher* fetcher = fetcher_factory_->GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   ASSERT_EQ(test_url, fetcher->GetOriginalURL());
@@ -110,7 +103,6 @@ TEST_F(CRWPassKitDownloaderTest, TestDownloadPassKitBadErrorCodeFailure) {
   fetcher->SetResponseString(kExpectedString);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 
-  EXPECT_FALSE([shared_app isNetworkActivityIndicatorVisible]);
   EXPECT_FALSE(completion_handler_success_);
 }
 
@@ -120,9 +112,6 @@ TEST_F(CRWPassKitDownloaderTest, TestDownloadPassKitStatusFailedFailure) {
   GURL test_url(kTestUrlString);
   [downloader_ downloadPassKitFileWithURL:test_url];
 
-  UIApplication* shared_app = [UIApplication sharedApplication];
-  EXPECT_TRUE([shared_app isNetworkActivityIndicatorVisible]);
-
   net::TestURLFetcher* fetcher = fetcher_factory_->GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   ASSERT_EQ(test_url, fetcher->GetOriginalURL());
@@ -131,7 +120,6 @@ TEST_F(CRWPassKitDownloaderTest, TestDownloadPassKitStatusFailedFailure) {
   fetcher->SetResponseString(kExpectedString);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 
-  EXPECT_FALSE([shared_app isNetworkActivityIndicatorVisible]);
   EXPECT_FALSE(completion_handler_success_);
 }
 
@@ -141,16 +129,12 @@ TEST_F(CRWPassKitDownloaderTest, TestDownloadPassKitNoResponseFailure) {
   GURL test_url(kTestUrlString);
   [downloader_ downloadPassKitFileWithURL:test_url];
 
-  UIApplication* shared_app = [UIApplication sharedApplication];
-  EXPECT_TRUE([shared_app isNetworkActivityIndicatorVisible]);
-
   net::TestURLFetcher* fetcher = fetcher_factory_->GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
   ASSERT_EQ(test_url, fetcher->GetOriginalURL());
   SetUpFetcher(fetcher, URLRequestStatus(), 200, kPassKitMimeType);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 
-  EXPECT_FALSE([shared_app isNetworkActivityIndicatorVisible]);
   EXPECT_FALSE(completion_handler_success_);
 }
 

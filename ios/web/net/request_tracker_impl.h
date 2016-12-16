@@ -329,10 +329,6 @@ class RequestTrackerImpl
   // only from the IO thread.
   NSString* UnsafeDescription();
 
-  // Generates a string unique to this RequestTrackerImpl to use with the
-  // CRWNetworkActivityIndicatorManager.
-  NSString* GetNetworkActivityKey();
-
 #pragma mark Non thread-safe fields, only accessed from the main thread.
   // The RequestTrackerImpl delegate. All changes and access to this object
   // should be done on the main thread.
