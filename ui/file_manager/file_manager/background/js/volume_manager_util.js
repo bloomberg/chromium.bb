@@ -8,11 +8,19 @@
 var volumeManagerUtil = {};
 
 /**
- * Time in milliseconds that we wait a response for. If no response on
+ * Time in milliseconds that we wait a response for general volume operations
+ * such as mount, unmount, and requestFileSystem. If no response on
  * mount/unmount received the request supposed failed.
  * @const {number}
  */
 volumeManagerUtil.TIMEOUT = 15 * 60 * 1000;
+
+/**
+ * Time in milliseconds that we wait a response for
+ * chrome.fileManagerPrivate.resolveIsolatedEntries.
+ * @const {number}
+ */
+volumeManagerUtil.TIMEOUT_FOR_RESOLVE_ISOLATED_ENTRIES = 1 * 60 * 1000;
 
 /**
  * @const {string}
@@ -102,7 +110,7 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
                       resolve(entries[0].filesystem);
                   });
             }),
-            volumeManagerUtil.TIMEOUT,
+            volumeManagerUtil.TIMEOUT_FOR_RESOLVE_ISOLATED_ENTRIES,
             volumeManagerUtil.TIMEOUT_STR_RESOLVE_ISOLATED_ENTRIES +
                 ': ' + volumeMetadata.volumeId);
        })
