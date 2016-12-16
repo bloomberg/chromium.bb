@@ -209,6 +209,7 @@ bool ScreenOrientationControllerImpl::hasLastData() {
 }
 
 void ScreenOrientationControllerImpl::frameDestroyed() {
+  stopUpdating();
   m_client = nullptr;
   DOMWindowProperty::frameDestroyed();
   m_activeLock = false;
