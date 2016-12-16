@@ -6,11 +6,14 @@
 
 #include <gtk/gtk.h>
 
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/ui/libgtkui/chrome_gtk_frame.h"
 #include "chrome/browser/ui/libgtkui/chrome_gtk_menu_subclasses.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "chrome/browser/ui/libgtkui/skia_utils_gtk.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
 
 namespace libgtkui {
@@ -61,6 +64,63 @@ SkColor GetTextAAColor(GtkWidget* widget, WidgetState state) {
 }
 SkColor GetBaseColor(GtkWidget* widget, WidgetState state) {
   return GetBGColor(widget, state);
+}
+
+void PaintWidget(SkCanvas* canvas,
+                 const gfx::Rect& rect,
+                 const char* css_selector,
+                 GtkStateFlags state) {
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(rect.width(), rect.height());
+  bitmap.eraseColor(0);
+
+  cairo_surface_t* surface = cairo_image_surface_create_for_data(
+      static_cast<unsigned char*>(bitmap.getAddr(0, 0)), CAIRO_FORMAT_ARGB32,
+      rect.width(), rect.height(),
+      cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, rect.width()));
+  cairo_t* cr = cairo_create(surface);
+
+  GtkWidgetPath* path = gtk_widget_path_new();
+  for (const auto& widget_type :
+       base::SplitString(css_selector, base::kWhitespaceASCII,
+                         base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
+    gtk_widget_path_append_type(path, G_TYPE_NONE);
+    for (const auto& widget_class :
+         base::SplitString(widget_type, ".", base::TRIM_WHITESPACE,
+                           base::SPLIT_WANT_NONEMPTY)) {
+      gtk_widget_path_iter_add_class(path, -1, widget_class.c_str());
+    }
+  }
+
+  GtkStyleContext* context = gtk_style_context_new();
+  gtk_style_context_set_path(context, path);
+  gtk_style_context_set_state(context, state);
+
+  gtk_render_background(context, cr, 0, 0, rect.width(), rect.height());
+  gtk_render_frame(context, cr, 0, 0, rect.width(), rect.height());
+  cairo_destroy(cr);
+  cairo_surface_destroy(surface);
+  canvas->drawBitmap(bitmap, rect.x(), rect.y());
+
+  g_object_unref(context);
+  gtk_widget_path_unref(path);
+}
+
+GtkStateFlags StateToStateFlags(NativeThemeGtk3::State state) {
+  switch (state) {
+    case NativeThemeGtk3::kDisabled:
+      return GTK_STATE_FLAG_INSENSITIVE;
+    case NativeThemeGtk3::kHovered:
+      return GTK_STATE_FLAG_PRELIGHT;
+    case NativeThemeGtk3::kNormal:
+      return GTK_STATE_FLAG_NORMAL;
+    case NativeThemeGtk3::kPressed:
+      return static_cast<GtkStateFlags>(GTK_STATE_FLAG_PRELIGHT |
+                                        GTK_STATE_FLAG_ACTIVE);
+    default:
+      NOTREACHED();
+      return GTK_STATE_FLAG_NORMAL;
+  }
 }
 
 }  // namespace
@@ -299,6 +359,21 @@ SkColor NativeThemeGtk3::GetSystemColor(ColorId color_id) const {
   }
 
   return kInvalidColorIdColor;
+}
+
+void NativeThemeGtk3::PaintMenuPopupBackground(
+    SkCanvas* canvas,
+    const gfx::Size& size,
+    const MenuBackgroundExtraParams& menu_background) const {
+  PaintWidget(canvas, gfx::Rect(size), "menu", GTK_STATE_FLAG_NORMAL);
+}
+
+void NativeThemeGtk3::PaintMenuItemBackground(
+    SkCanvas* canvas,
+    State state,
+    const gfx::Rect& rect,
+    const MenuItemExtraParams& menu_item) const {
+  PaintWidget(canvas, rect, "menu menuitem", StateToStateFlags(state));
 }
 
 GtkWidget* NativeThemeGtk3::GetWindow() const {

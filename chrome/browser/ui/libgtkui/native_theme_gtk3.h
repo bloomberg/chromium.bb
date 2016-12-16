@@ -19,6 +19,15 @@ class NativeThemeGtk3 : public ui::NativeThemeBase {
 
   // Overridden from ui::NativeThemeBase:
   SkColor GetSystemColor(ColorId color_id) const override;
+  void PaintMenuPopupBackground(
+      SkCanvas* canvas,
+      const gfx::Size& size,
+      const MenuBackgroundExtraParams& menu_background) const override;
+  void PaintMenuItemBackground(
+      SkCanvas* canvas,
+      State state,
+      const gfx::Rect& rect,
+      const MenuItemExtraParams& menu_item) const override;
 
  private:
   NativeThemeGtk3();
