@@ -29,7 +29,8 @@ source_set("navigation") {
     "//mojo/public/cpp/bindings",
     "//services/navigation/public/interfaces",
     "//services/service_manager/public/cpp",
-    "//services/ui/public/cpp",
+    "//services/ui/public/interfaces",
+    "//ui/aura",
   ]
 
   deps = [

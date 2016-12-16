@@ -17,7 +17,7 @@
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
-#include "services/ui/public/cpp/window_tree_client_delegate.h"
+#include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -31,7 +31,7 @@ namespace navigation {
 class ViewImpl : public mojom::View,
                  public content::WebContentsDelegate,
                  public content::NotificationObserver,
-                 public ui::WindowTreeClientDelegate,
+                 public aura::WindowTreeClientDelegate,
                  public views::WidgetDelegate {
  public:
   ViewImpl(std::unique_ptr<service_manager::Connector> connector,
@@ -41,6 +41,8 @@ class ViewImpl : public mojom::View,
   ~ViewImpl() override;
 
  private:
+  void DeleteTreeAndWidget();
+
   // mojom::View:
   void NavigateTo(const GURL& url) override;
   void GoBack() override;
@@ -76,12 +78,15 @@ class ViewImpl : public mojom::View,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  // ui::WindowTreeClientDelegate:
-  void OnEmbed(ui::Window* root) override;
-  void OnEmbedRootDestroyed(ui::Window* root) override;
-  void OnLostConnection(ui::WindowTreeClient* client) override;
+  // aura::WindowTreeClientDelegate:
+  void OnEmbed(
+      std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) override;
+  void OnEmbedRootDestroyed(aura::WindowTreeHostMus* window_tree_host) override;
+  void OnLostConnection(aura::WindowTreeClient* client) override;
   void OnPointerEventObserved(const ui::PointerEvent& event,
-                              ui::Window* target) override;
+                              aura::Window* target) override;
+  aura::client::CaptureClient* GetCaptureClient() override;
+  aura::PropertyConverter* GetPropertyConverter() override;
 
   // views::WidgetDelegate:
   views::View* GetContentsView() override;
@@ -92,7 +97,7 @@ class ViewImpl : public mojom::View,
   mojom::ViewClientPtr client_;
   std::unique_ptr<service_manager::ServiceContextRef> ref_;
 
-  std::unique_ptr<ui::WindowTreeClient> window_tree_client_;
+  std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
 
   views::WebView* web_view_;
 
@@ -100,6 +105,7 @@ class ViewImpl : public mojom::View,
 
   content::NotificationRegistrar registrar_;
 
+  std::unique_ptr<aura::WindowTreeHostMus> window_tree_host_;
   std::unique_ptr<views::Widget> widget_;
 
   DISALLOW_COPY_AND_ASSIGN(ViewImpl);
