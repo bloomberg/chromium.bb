@@ -5,6 +5,7 @@
 #include "headless/lib/headless_content_main_delegate.h"
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/trace_event/trace_event.h"
@@ -109,10 +110,17 @@ HeadlessContentMainDelegate* HeadlessContentMainDelegate::GetInstance() {
 
 // static
 void HeadlessContentMainDelegate::InitializeResourceBundle() {
+  base::FilePath dir_module;
   base::FilePath pak_file;
-  bool result = PathService::Get(base::DIR_MODULE, &pak_file);
+  bool result = PathService::Get(base::DIR_MODULE, &dir_module);
   DCHECK(result);
-  pak_file = pak_file.Append(FILE_PATH_LITERAL("headless_lib.pak"));
+  // Try loading the headless library pak file first. If it doesn't exist (i.e.,
+  // when we're running with the --headless switch), fall back to the browser's
+  // resource pak.
+  pak_file = dir_module.Append(FILE_PATH_LITERAL("headless_lib.pak"));
+  if (!base::PathExists(pak_file))
+    pak_file = dir_module.Append(FILE_PATH_LITERAL("resources.pak"));
+  // TODO(skyostil): Use the locale-based loader instead.
   ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
 }
 

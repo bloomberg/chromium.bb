@@ -157,6 +157,10 @@ template("chrome_extra_paks") {
         "//ui/file_manager:resources",
       ]
     }
+    if (is_linux) {
+      sources += [ "$root_gen_dir/headless/headless_lib_resources.pak" ]
+      deps += [ "//headless:resources" ]
+    }
     if (enable_extensions) {
       sources += [
         "$root_gen_dir/extensions/extensions_renderer_resources.pak",

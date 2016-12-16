@@ -43,7 +43,7 @@ repack("pak") {
   }
 
   deps = [
-    ":headless_lib_resources_grit",
+    ":resources",
     "//components/strings",
     "//content:resources",
     "//content/app/resources",
@@ -60,7 +60,7 @@ repack("pak") {
   output = "$root_out_dir/headless_lib.pak"
 }
 
-grit("headless_lib_resources_grit") {
+grit("resources") {
   source = "lib/resources/headless_lib_resources.grd"
   outputs = [
     "grit/headless_lib_resources.h",
