@@ -33,6 +33,9 @@ function updateCrashList(
   $('disabledMode').hidden = enabled;
   $('crashUploadStatus').hidden = !enabled || !dynamicBackend;
 
+  // Make the height fixed while clearing the
+  // element in order to maintain scroll position.
+  crashSection.style.height = getComputedStyle(crashSection).height;
   // Clear any previous list.
   crashSection.textContent = '';
 
@@ -141,6 +144,8 @@ function updateCrashList(
     crashSection.appendChild(crashBlock);
   }
 
+  // Reset the height, in order to accommodate for the new content.
+  crashSection.style.height = "";
   $('noCrashes').hidden = crashes.length != 0;
 }
 
