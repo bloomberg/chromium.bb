@@ -677,6 +677,20 @@ typedef enum {
 } MDOSPlatform;
 
 typedef struct {
+  uint64_t base_of_image;
+  uint32_t size_of_image;
+  uint32_t checksum;
+  uint32_t time_date_stamp;
+  MDRVA module_name_rva;
+} MDRawUnloadedModule;
+
+typedef struct {
+  uint32_t size_of_header;
+  uint32_t size_of_entry;
+  uint32_t number_of_entries;
+} MDRawUnloadedModuleList;  /* MINIDUMP_UNLOADED_MODULE_LIST */
+
+typedef struct {
   uint16_t year;
   uint16_t month;
   uint16_t day_of_week;

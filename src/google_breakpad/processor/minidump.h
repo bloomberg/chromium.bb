@@ -752,6 +752,118 @@ class MinidumpSystemInfo : public MinidumpStream {
 };
 
 
+// MinidumpUnloadedModule wraps MDRawUnloadedModule
+class MinidumpUnloadedModule : public MinidumpObject,
+                               public CodeModule {
+ public:
+  ~MinidumpUnloadedModule() override;
+
+  const MDRawUnloadedModule* module() const {
+    return valid_ ? &unloaded_module_ : NULL;
+  }
+
+  // CodeModule implementation
+  uint64_t base_address() const override {
+    return valid_ ? unloaded_module_.base_of_image : 0;
+  }
+  uint64_t size() const override {
+    return valid_ ? unloaded_module_.size_of_image : 0;
+  }
+  string code_file() const override;
+  string code_identifier() const override;
+  string debug_file() const override;
+  string debug_identifier() const override;
+  string version() const override;
+  CodeModule* Copy() const override;
+  uint64_t shrink_down_delta() const override;
+  void SetShrinkDownDelta(uint64_t shrink_down_delta) override;
+
+ protected:
+  explicit MinidumpUnloadedModule(Minidump* minidump);
+
+ private:
+  // These objects are managed by MinidumpUnloadedModuleList
+  friend class MinidumpUnloadedModuleList;
+
+  // This works like MinidumpStream::Read, but is driven by
+  // MinidumpUnloadedModuleList.
+  bool Read(uint32_t expected_size);
+
+  // Reads the module name. This is done separately from Read to
+  // allow contiguous reading of code modules by MinidumpUnloadedModuleList.
+  bool ReadAuxiliaryData();
+
+  // True after a successful Read. This is different from valid_, which
+  // is not set true until ReadAuxiliaryData also completes successfully.
+  // module_valid_ is only used by ReadAuxiliaryData and the functions it
+  // calls to determine whether the object is ready for auxiliary data to
+  // be read.
+  bool module_valid_;
+
+  MDRawUnloadedModule unloaded_module_;
+
+  // Cached module name
+  const string* name_;
+};
+
+
+// MinidumpUnloadedModuleList contains all the unloaded code modules for a
+// process in the form of MinidumpUnloadedModules. It maintains a map of
+// these modules so that it may easily provide a code module corresponding
+// to a specific address. If multiple modules in the list have identical
+// ranges, only the first module encountered is recorded in the range map.
+class MinidumpUnloadedModuleList : public MinidumpStream,
+                                   public CodeModules {
+ public:
+  ~MinidumpUnloadedModuleList() override;
+
+  static void set_max_modules(uint32_t max_modules) {
+    max_modules_ = max_modules;
+  }
+  static uint32_t max_modules() { return max_modules_; }
+
+  // CodeModules implementation.
+  unsigned int module_count() const override {
+    return valid_ ? module_count_ : 0;
+  }
+  const MinidumpUnloadedModule*
+      GetModuleForAddress(uint64_t address) const override;
+  const MinidumpUnloadedModule* GetMainModule() const override;
+  const MinidumpUnloadedModule*
+      GetModuleAtSequence(unsigned int sequence) const override;
+  const MinidumpUnloadedModule*
+      GetModuleAtIndex(unsigned int index) const override;
+  const CodeModules* Copy() const override;
+  vector<linked_ptr<const CodeModule>> GetShrunkRangeModules() const override;
+  bool IsModuleShrinkEnabled() const override;
+
+ protected:
+  explicit MinidumpUnloadedModuleList(Minidump* minidump_);
+
+ private:
+  friend class Minidump;
+
+  typedef vector<MinidumpUnloadedModule> MinidumpUnloadedModules;
+
+  static const uint32_t kStreamType = MD_UNLOADED_MODULE_LIST_STREAM;
+
+
+  bool Read(uint32_t expected_size_);
+
+  // The largest number of modules that will be read from a minidump.  The
+  // default is 1024.
+  static uint32_t max_modules_;
+
+  // Access to module indices using addresses as the key.
+  RangeMap<uint64_t, unsigned int> *range_map_;
+
+  MinidumpUnloadedModules *unloaded_modules_;
+  uint32_t module_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(MinidumpUnloadedModuleList);
+};
+
+
 // MinidumpMiscInfo wraps MDRawMiscInfo and provides information about
 // the process that generated the minidump, and optionally additional system
 // information.  See also MinidumpSystemInfo.
@@ -1041,6 +1153,7 @@ class Minidump {
   virtual MinidumpException* GetException();
   virtual MinidumpAssertion* GetAssertion();
   virtual MinidumpSystemInfo* GetSystemInfo();
+  virtual MinidumpUnloadedModuleList* GetUnloadedModuleList();
   virtual MinidumpMiscInfo* GetMiscInfo();
   virtual MinidumpBreakpadInfo* GetBreakpadInfo();
   virtual MinidumpMemoryInfoList* GetMemoryInfoList();
