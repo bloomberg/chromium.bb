@@ -885,6 +885,7 @@ public class MediaNotificationManager {
         // https://crbug.com/667500
         if (mMediaNotificationInfo.supportsPlayPause()) {
             actions.addAll(mMediaNotificationInfo.mediaSessionActions);
+            actions.remove(MediaSessionAction.PLAY_PAUSE);
             if (mMediaNotificationInfo.isPaused) {
                 actions.remove(MediaSessionAction.PAUSE);
                 actions.add(MediaSessionAction.PLAY);
@@ -969,6 +970,8 @@ public class MediaNotificationManager {
         assert !actions.contains(MediaSessionAction.PLAY)
                 || !actions.contains(MediaSessionAction.PAUSE);
 
+        assert !actions.contains(MediaSessionAction.PLAY_PAUSE);
+
         int[] actionByOrder = {
                 MediaSessionAction.PREVIOUS_TRACK,
                 MediaSessionAction.SEEK_BACKWARD,
@@ -1032,6 +1035,8 @@ public class MediaNotificationManager {
         // PLAY and PAUSE cannot coexist.
         assert !actions.contains(MediaSessionAction.PLAY)
                 || !actions.contains(MediaSessionAction.PAUSE);
+
+        assert !actions.contains(MediaSessionAction.PLAY_PAUSE);
 
         if (actions.size() <= COMPACT_VIEW_ACTIONS_COUNT) {
             // If the number of actions is less than |COMPACT_VIEW_ACTIONS_COUNT|, just return an
