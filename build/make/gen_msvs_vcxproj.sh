@@ -34,7 +34,7 @@ Options:
     --name=project_name         Name of the project (required)
     --proj-guid=GUID            GUID to use for the project
     --module-def=filename       File containing export definitions (for DLLs)
-    --ver=version               Version (10,11,12,14) of visual studio to generate for
+    --ver=version               Version (12,14) of visual studio to generate for
     --src-path-bare=dir         Path to root of source tree
     -Ipath/to/include           Additional include directories
     -DFLAG[=value]              Preprocessor macros to define
@@ -168,7 +168,7 @@ for opt in "$@"; do
         --ver=*)
             vs_ver="$optval"
             case "$optval" in
-                10|11|12|14)
+                12|14)
                 ;;
                 *) die Unrecognized Visual Studio Version in $opt
                 ;;
@@ -217,8 +217,8 @@ outfile=${outfile:-/dev/stdout}
 guid=${guid:-`generate_uuid`}
 asm_use_custom_step=false
 uses_asm=${uses_asm:-false}
-case "${vs_ver:-11}" in
-    10|11|12|14)
+case "${vs_ver:-12}" in
+    12|14)
        asm_use_custom_step=$uses_asm
     ;;
 esac
@@ -295,7 +295,7 @@ generate_vcxproj() {
         tag_content ProjectGuid "{${guid}}"
         tag_content RootNamespace ${name}
         tag_content Keyword ManagedCProj
-        if [ $vs_ver -ge 12 ] && [ "${platforms[0]}" = "ARM" ]; then
+        if [ "${platforms[0]}" = "ARM" ]; then
             tag_content AppContainerApplication true
             # The application type can be one of "Windows Store",
             # "Windows Phone" or "Windows Phone Silverlight". The
@@ -323,20 +323,6 @@ generate_vcxproj() {
                 tag_content ConfigurationType DynamicLibrary
             else
                 tag_content ConfigurationType StaticLibrary
-            fi
-            if [ "$vs_ver" = "11" ]; then
-                if [ "$plat" = "ARM" ]; then
-                    # Setting the wp80 toolchain automatically sets the
-                    # WINAPI_FAMILY define, which is required for building
-                    # code for arm with the windows headers. Alternatively,
-                    # one could add AppContainerApplication=true in the Globals
-                    # section and add PrecompiledHeader=NotUsing and
-                    # CompileAsWinRT=false in ClCompile and SubSystem=Console
-                    # in Link.
-                    tag_content PlatformToolset v110_wp80
-                else
-                    tag_content PlatformToolset v110
-                fi
             fi
             if [ "$vs_ver" = "12" ]; then
                 # Setting a PlatformToolset indicating windows phone isn't
@@ -420,13 +406,11 @@ generate_vcxproj() {
             if ${werror:-false}; then
                 tag_content TreatWarningAsError true
             fi
-            if [ $vs_ver -ge 11 ]; then
-                # We need to override the defaults for these settings
-                # if AppContainerApplication is set.
-                tag_content CompileAsWinRT false
-                tag_content PrecompiledHeader NotUsing
-                tag_content SDLCheck false
-            fi
+            # We need to override the defaults for these settings
+            # if AppContainerApplication is set.
+            tag_content CompileAsWinRT false
+            tag_content PrecompiledHeader NotUsing
+            tag_content SDLCheck false
             close_tag ClCompile
             case "$proj_kind" in
             exe)

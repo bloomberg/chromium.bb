@@ -56,7 +56,6 @@ COMPILING THE APPLICATIONS/LIBRARIES:
     armv7-linux-rvct
     armv7-linux-gcc
     armv7-none-rvct
-    armv7-win32-vs11
     armv7-win32-vs12
     armv7-win32-vs14
     armv7s-darwin-gcc
@@ -79,8 +78,6 @@ COMPILING THE APPLICATIONS/LIBRARIES:
     x86-os2-gcc
     x86-solaris-gcc
     x86-win32-gcc
-    x86-win32-vs10
-    x86-win32-vs11
     x86-win32-vs12
     x86-win32-vs14
     x86_64-android-gcc
@@ -95,8 +92,6 @@ COMPILING THE APPLICATIONS/LIBRARIES:
     x86_64-linux-icc
     x86_64-solaris-gcc
     x86_64-win64-gcc
-    x86_64-win64-vs10
-    x86_64-win64-vs11
     x86_64-win64-vs12
     x86_64-win64-vs14
     generic-gnu
