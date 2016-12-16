@@ -116,6 +116,7 @@ def UseBuildbucketScheduler(config):
   """Returns True if this build uses Buildbucket to schedule builds."""
   return config.name in (constants.CQ_MASTER,
                          constants.CANARY_MASTER,
+                         constants.PFQ_MASTER,
                          constants.PRE_CQ_LAUNCHER_NAME)
 
 def ScheduledByBuildbucket(config):

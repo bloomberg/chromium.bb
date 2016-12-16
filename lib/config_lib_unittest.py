@@ -886,8 +886,13 @@ class ConfigLibHelperTests(cros_test_lib.TestCase):
 
     pfq_master_config = config_lib.BuildConfig(
         name=constants.PFQ_MASTER)
-    self.assertFalse(config_lib.UseBuildbucketScheduler(
+    self.assertTrue(config_lib.UseBuildbucketScheduler(
         pfq_master_config))
+
+    pre_cq_config = config_lib.BuildConfig(
+        name=constants.BINHOST_PRE_CQ)
+    self.assertFalse(config_lib.UseBuildbucketScheduler(
+        pre_cq_config))
 
   def testScheduledByBuildbucket(self):
     """Test ScheduledByBuildbucket."""
