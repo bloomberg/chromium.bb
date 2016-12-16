@@ -66,7 +66,9 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
       addButtonWithTitle:l10n_util::GetNSStringFWithFixup(
                    IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT, appName)];
   [allowButton setKeyEquivalent:@""];  // disallow as default
-  [alert_ addButtonWithTitle:l10n_util::GetNSStringWithFixup(IDS_CANCEL)];
+  [alert_ addButtonWithTitle:
+      l10n_util::GetNSStringWithFixup(
+                   IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT)];
 
   [alert_ setShowsSuppressionButton:YES];
   [[alert_ suppressionButton]

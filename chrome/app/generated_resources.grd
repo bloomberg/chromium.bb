@@ -11328,8 +11328,11 @@ I don't think this site should be blocked!
         <message name="IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT" desc="Button in External Protocol Dialog that launches the application associated with the protocol">
           Open <ph name="APPLICATION">$1<ex>Adobe Acrobat</ex></ph>
         </message>
-        <message name="IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT" desc="Checkbox to remember the user's decision.">
-          Always open links for <ph name="APPLICATION">$1<ex>Adobe Acrobat</ex></ph>
+        <message name="IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT" desc="Button in External Protocol Dialog that does not launch the application associated with the protocol">
+          Don't open
+        </message>
+        <message name="IDS_EXTERNAL_PROTOCOL_CHECKBOX_TEXT" desc="Checkbox to ask the user whether they would like their decision remembered.">
+          Remember my choice for <ph name="APPLICATION">$1<ex>Adobe Acrobat</ex></ph> links
         </message>
       </if>
       <if expr="chromeos">

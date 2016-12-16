@@ -41,7 +41,7 @@ base::string16 ExternalProtocolDialogDelegate::GetDialogButtonLabel(
     return l10n_util::GetStringFUTF16(IDS_EXTERNAL_PROTOCOL_OK_BUTTON_TEXT,
                                       ElideCommandName(program_name_));
   }
-  return l10n_util::GetStringUTF16(IDS_CANCEL);
+  return l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT);
 }
 
 base::string16 ExternalProtocolDialogDelegate::GetMessageText() const {
