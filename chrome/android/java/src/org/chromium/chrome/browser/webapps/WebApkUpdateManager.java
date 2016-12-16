@@ -210,13 +210,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
             return true;
         }
 
-        // Updating WebAPKs requires "installation from unknown sources" to be enabled. It is
-        // confusing for a user to see a dialog asking them to enable "installation from unknown
-        // sources" when they are in the middle of using the WebAPK (as opposed to after requesting
-        // to add a WebAPK to the homescreen).
-        if (!installingFromUnknownSourcesAllowed()) {
-            return false;
-        }
+        if (!ChromeWebApkHost.areUpdatesEnabled()) return false;
 
         if (isShellApkVersionOutOfDate(info)) return true;
 

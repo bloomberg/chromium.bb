@@ -47,6 +47,17 @@ public class ChromeWebApkHost {
         return isEnabledInPrefs();
     }
 
+    // Returns whether updating the WebAPK is enabled.
+    public static boolean areUpdatesEnabled() {
+        if (!isEnabled()) return false;
+
+        // Updating a WebAPK without going through Google Play requires "installation from unknown
+        // sources" to be enabled. It is confusing for a user to see a dialog asking them to enable
+        // "installation from unknown sources" when they are in the middle of using the WebAPK (as
+        // opposed to after requesting to add a WebAPK to the homescreen).
+        return installingFromUnknownSourcesAllowed() || canUseGooglePlayToInstallWebApk();
+    }
+
     /** Return whether installing WebAPKs using Google Play is enabled. */
     public static boolean canUseGooglePlayToInstallWebApk() {
         if (!isEnabled()) return false;

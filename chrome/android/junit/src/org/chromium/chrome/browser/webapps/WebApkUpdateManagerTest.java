@@ -319,6 +319,7 @@ public class WebApkUpdateManagerTest {
     public void setUp() {
         ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
         CommandLine.init(null);
+        ChromeWebApkHost.initForTesting(true);
 
         registerWebApk(defaultManifestData(), WebApkVersion.CURRENT_SHELL_APK_VERSION);
         Settings.Secure.putInt(RuntimeEnvironment.application.getContentResolver(),
