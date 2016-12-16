@@ -202,11 +202,6 @@
         <structure type="chrome_scaled_image" name="IDR_GOOGLE_ICON" file="google_chrome/google_icon.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_HELP_MENU" file="common/help_16.png" />
-      <if expr="is_macosx or is_ios">
-        <structure type="chrome_scaled_image" name="IDR_HOME" file="common/browser_home_normal.png" />
-        <structure type="chrome_scaled_image" name="IDR_HOME_H" file="common/browser_home_hover.png" />
-        <structure type="chrome_scaled_image" name="IDR_HOME_P" file="common/browser_home_pressed.png" />
-      </if>
       <structure type="chrome_scaled_image" name="IDR_HOTWORD_NOTIFICATION_ICON" file="common/notification_hotword_icon.png" />
       <if expr="not is_android and not is_ios">
         <!-- TODO(estade): replace with vector image when one's available. -->
@@ -301,7 +296,6 @@
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_WELCOME_ICON" file="common/notification_welcome_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_WELCOME_LEARN_MORE" file="common/notification_welcome_learn_more.png" />
       <structure type="chrome_scaled_image" name="IDR_NOTIFIER_BLOCK_BUTTON" file="common/block_notifier.png" />
-      <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CALCULATOR_SELECTED" file="common/omnibox_calculator_selected.png" />
       <if expr="is_macosx">
         <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_BOTTOM" file="common/omnibox_content_setting_bubble_bottom.png" />
         <structure type="chrome_scaled_image" name="IDR_OMNIBOX_CONTENT_SETTING_BUBBLE_BOTTOM_LEFT" file="common/omnibox_content_setting_bubble_bottom_left.png" />
