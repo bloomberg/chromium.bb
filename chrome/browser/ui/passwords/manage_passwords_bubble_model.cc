@@ -173,16 +173,23 @@ void ManagePasswordsBubbleModel::InteractionKeeper::ReportInteractions(
   }
 
   if (model->state() == password_manager::ui::CHROME_SIGN_IN_PROMO_STATE) {
-    metrics_util::LogAutoSigninPromoUserAction(sign_in_promo_dismissal_reason_);
-    if (sign_in_promo_dismissal_reason_ ==
-            password_manager::metrics_util::CHROME_SIGNIN_OK ||
-        sign_in_promo_dismissal_reason_ ==
-            password_manager::metrics_util::CHROME_SIGNIN_CANCEL) {
-      UMA_HISTOGRAM_COUNTS_100("PasswordManager.SignInPromoCountTilClick",
-                               sign_in_promo_shown_count);
-    } else {
-      UMA_HISTOGRAM_COUNTS_100("PasswordManager.SignInPromoDismissalCount",
-                               sign_in_promo_shown_count);
+    metrics_util::LogSyncSigninPromoUserAction(sign_in_promo_dismissal_reason_);
+    switch (sign_in_promo_dismissal_reason_) {
+      case password_manager::metrics_util::CHROME_SIGNIN_OK:
+        UMA_HISTOGRAM_COUNTS_100("PasswordManager.SignInPromoCountTilSignIn",
+                                 sign_in_promo_shown_count);
+        break;
+      case password_manager::metrics_util::CHROME_SIGNIN_CANCEL:
+        UMA_HISTOGRAM_COUNTS_100("PasswordManager.SignInPromoCountTilNoThanks",
+                                 sign_in_promo_shown_count);
+        break;
+      case password_manager::metrics_util::CHROME_SIGNIN_DISMISSED:
+        UMA_HISTOGRAM_COUNTS_100("PasswordManager.SignInPromoDismissalCount",
+                                 sign_in_promo_shown_count);
+        break;
+      case password_manager::metrics_util::CHROME_SIGNIN_ACTION_COUNT:
+        NOTREACHED();
+        break;
     }
   } else if (model->state() !=
              password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {

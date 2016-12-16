@@ -99,7 +99,7 @@ void LogAccountChooserUserActionManyAccounts(AccountChooserUserAction action) {
       ACCOUNT_CHOOSER_ACTION_COUNT);
 }
 
-void LogAutoSigninPromoUserAction(SyncSignInUserAction action) {
+void LogSyncSigninPromoUserAction(SyncSignInUserAction action) {
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.SignInPromo", action,
                             CHROME_SIGNIN_ACTION_COUNT);
 }

@@ -214,7 +214,7 @@ void LogAccountChooserUserActionOneAccount(AccountChooserUserAction action);
 void LogAccountChooserUserActionManyAccounts(AccountChooserUserAction action);
 
 // Log a user action on showing the Chrome sign in promo.
-void LogAutoSigninPromoUserAction(SyncSignInUserAction action);
+void LogSyncSigninPromoUserAction(SyncSignInUserAction action);
 
 // Log if the account chooser has empty username or duplicate usernames.
 void LogAccountChooserUsability(AccountChooserUsabilityMetric usability);
