@@ -35,6 +35,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/test/result_catcher.h"
 #include "media/base/test_data_util.h"
+#include "media/media_features.h"
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
 #include "chrome/browser/media_galleries/fileapi/picasa_finder.h"
@@ -463,7 +464,7 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest, GetMetadata) {
   AddFileToSingleFakeGallery(media::GetTestDataFilePath("id3_png_test.mp3"));
 
   base::ListValue custom_args;
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   custom_args.AppendBoolean(true);
 #else
   custom_args.AppendBoolean(false);

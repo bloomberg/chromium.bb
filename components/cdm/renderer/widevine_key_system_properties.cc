@@ -4,6 +4,7 @@
 
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 
+#include "media/media_features.h"
 #include "ppapi/features/features.h"
 #include "widevine_cdm_version.h"  // In SHARED_INTERMEDIATE_DIR.
 
@@ -72,10 +73,10 @@ bool WidevineKeySystemProperties::IsSupportedInitDataType(
   // |init_data_type| x |container| pairings.
   if (init_data_type == EmeInitDataType::WEBM)
     return (supported_codecs_ & media::EME_CODEC_WEBM_ALL) != 0;
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   if (init_data_type == EmeInitDataType::CENC)
     return (supported_codecs_ & media::EME_CODEC_MP4_ALL) != 0;
-#endif  // defined(USE_PROPRIETARY_CODECS)
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
   return false;
 }

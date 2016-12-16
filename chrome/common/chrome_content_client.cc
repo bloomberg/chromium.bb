@@ -43,6 +43,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/features/features.h"
 #include "gpu/config/gpu_info.h"
+#include "media/media_features.h"
 #include "net/http/http_util.h"
 #include "pdf/features.h"
 #include "ppapi/features/features.h"
@@ -135,9 +136,9 @@ bool IsWidevineAvailable(base::FilePath* adapter_path,
       // This list must match the CDM that is being bundled with Chrome.
       codecs_supported->push_back(kCdmSupportedCodecVp8);
       codecs_supported->push_back(kCdmSupportedCodecVp9);
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
       codecs_supported->push_back(kCdmSupportedCodecAvc1);
-#endif  // defined(USE_PROPRIETARY_CODECS)
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
       return true;
     }
   }

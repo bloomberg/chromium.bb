@@ -371,7 +371,7 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
     }
   }
 
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   // Convert the packet if there is a bitstream filter.
   if (packet->data && bitstream_converter_ &&
       !bitstream_converter_->ConvertPacket(packet.get())) {
@@ -655,7 +655,7 @@ void FFmpegDemuxerStream::Read(const ReadCB& read_cb) {
 void FFmpegDemuxerStream::EnableBitstreamConverter() {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   InitBitstreamConverter();
 #else
   NOTREACHED() << "Proprietary codecs not enabled.";
@@ -663,14 +663,14 @@ void FFmpegDemuxerStream::EnableBitstreamConverter() {
 }
 
 void FFmpegDemuxerStream::ResetBitstreamConverter() {
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   if (bitstream_converter_)
     InitBitstreamConverter();
-#endif  // defined(USE_PROPRIETARY_CODECS)
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 }
 
 void FFmpegDemuxerStream::InitBitstreamConverter() {
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   switch (stream_->codecpar->codec_id) {
     case AV_CODEC_ID_H264:
       // Clear |extra_data| so that future (fallback) decoders will know that
@@ -698,7 +698,7 @@ void FFmpegDemuxerStream::InitBitstreamConverter() {
     default:
       break;
   }
-#endif  // defined(USE_PROPRIETARY_CODECS)
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 }
 
 bool FFmpegDemuxerStream::SupportsConfigChanges() { return false; }

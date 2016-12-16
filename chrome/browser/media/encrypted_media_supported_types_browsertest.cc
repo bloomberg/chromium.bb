@@ -72,7 +72,7 @@ const char kUnexpectedResult[] = "unexpected result";
 #define EXPECT_UNKNOWN_KEYSYSTEM(test) EXPECT_EQ(kUnsupportedResult, test)
 #define EXPECT_NO_MATCH(test) EXPECT_EQ(kNoMatchResult, test)
 
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #define EXPECT_PROPRIETARY EXPECT_SUCCESS
 #else
 #define EXPECT_PROPRIETARY EXPECT_NO_MATCH

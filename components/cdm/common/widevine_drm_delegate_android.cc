@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "media/cdm/cenc_utils.h"
+#include "media/media_features.h"
 
 namespace cdm {
 
@@ -34,7 +35,7 @@ bool WidevineDrmDelegateAndroid::OnCreateSession(
   if (init_data_type != media::EmeInitDataType::CENC)
     return true;
 
-#if defined(USE_PROPRIETARY_CODECS)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   // Widevine MediaDrm plugin only accepts the "data" part of the PSSH box as
   // the init data when using MP4 container.
   return media::GetPsshData(init_data, GetUUID(), init_data_out);
