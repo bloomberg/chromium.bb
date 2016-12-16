@@ -518,7 +518,8 @@ TEST_F('PrintPreviewWebUITest', 'PrintToPDFSelectedCapabilities', function() {
   };
   this.setCapabilities(device);
 
-  checkSectionVisible($('other-options-settings'), false);
+  var otherOptions = $('other-options-settings');
+  checkSectionVisible(otherOptions, false);
   checkSectionVisible($('media-size-settings'), false);
   checkSectionVisible($('scaling-settings'), false);
 
@@ -533,7 +534,7 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsHTMLCapabilities', function() {
   this.setCapabilities(getCddTemplate("FooDevice"));
 
   var otherOptions = $('other-options-settings');
-  var fitToPage = otherOptions.querySelector('.fit-to-page-container');
+  var fitToPage = otherOptions.querySelector('#fit-to-page-container');
   var mediaSize = $('media-size-settings');
   var scalingSettings = $('scaling-settings');
 
@@ -563,12 +564,13 @@ TEST_F('PrintPreviewWebUITest', 'SourceIsPDFCapabilities', function() {
 
   var otherOptions = $('other-options-settings');
   var scalingSettings = $('scaling-settings');
+  var fitToPageContainer =
+      otherOptions.querySelector('#fit-to-page-container');
 
   checkSectionVisible(otherOptions, true);
-  checkElementDisplayed(
-      otherOptions.querySelector('.fit-to-page-container'), true);
+  checkElementDisplayed(fitToPageContainer, true);
   expectTrue(
-      otherOptions.querySelector('.fit-to-page-checkbox').checked);
+      fitToPageContainer.querySelector('.checkbox').checked);
   this.expandMoreSettings();
   checkSectionVisible($('media-size-settings'), true);
   checkSectionVisible(scalingSettings, true);
@@ -588,10 +590,11 @@ TEST_F('PrintPreviewWebUITest', 'ScalingUnchecksFitToPage', function() {
   var scalingSettings = $('scaling-settings');
 
   checkSectionVisible(otherOptions, true);
-  checkElementDisplayed(
-      otherOptions.querySelector('.fit-to-page-container'), true);
+  var fitToPageContainer =
+      otherOptions.querySelector('#fit-to-page-container');
+  checkElementDisplayed(fitToPageContainer, true);
   expectTrue(
-      otherOptions.querySelector('.fit-to-page-checkbox').checked);
+      fitToPageContainer.querySelector('.checkbox').checked);
   this.expandMoreSettings();
   checkSectionVisible($('media-size-settings'), true);
   checkSectionVisible(scalingSettings, true);
@@ -608,7 +611,7 @@ TEST_F('PrintPreviewWebUITest', 'ScalingUnchecksFitToPage', function() {
   enter.keyCode = 'Enter';
   scalingInput.dispatchEvent(enter);
   expectFalse(
-      otherOptions.querySelector('.fit-to-page-checkbox').checked);
+      fitToPageContainer.querySelector('.checkbox').checked);
 
   this.waitForAnimationToEnd('other-options-collapsible');
 });
@@ -658,8 +661,9 @@ TEST_F('PrintPreviewWebUITest', 'CheckDuplexPrintPreset', function() {
 
   var otherOptions = $('other-options-settings');
   checkSectionVisible(otherOptions, true);
-  checkElementDisplayed(otherOptions.querySelector('.duplex-container'), true);
-  expectTrue(otherOptions.querySelector('.duplex-checkbox').checked);
+  var duplexContainer = otherOptions.querySelector('#duplex-container');
+  checkElementDisplayed(duplexContainer, true);
+  expectTrue(duplexContainer.querySelector('.checkbox').checked);
 
   this.waitForAnimationToEnd('other-options-collapsible');
 });
@@ -691,7 +695,7 @@ TEST_F('PrintPreviewWebUITest', 'PageLayoutHasNoMarginsHideHeaderFooter',
   this.setCapabilities(getCddTemplate("FooDevice"));
 
   var otherOptions = $('other-options-settings');
-  var headerFooter = otherOptions.querySelector('.header-footer-container');
+  var headerFooter = otherOptions.querySelector('#header-footer-container');
 
   // Check that options are collapsed (section is visible, because duplex is
   // available).
@@ -720,7 +724,7 @@ TEST_F('PrintPreviewWebUITest', 'PageLayoutHasMarginsShowHeaderFooter',
   this.setCapabilities(getCddTemplate("FooDevice"));
 
   var otherOptions = $('other-options-settings');
-  var headerFooter = otherOptions.querySelector('.header-footer-container');
+  var headerFooter = otherOptions.querySelector('#header-footer-container');
 
   // Check that options are collapsed (section is visible, because duplex is
   // available).
@@ -750,7 +754,7 @@ TEST_F('PrintPreviewWebUITest',
   this.setCapabilities(getCddTemplate("FooDevice"));
 
   var otherOptions = $('other-options-settings');
-  var headerFooter = otherOptions.querySelector('.header-footer-container');
+  var headerFooter = otherOptions.querySelector('#header-footer-container');
 
   // Check that options are collapsed (section is visible, because duplex is
   // available).
@@ -781,7 +785,7 @@ TEST_F('PrintPreviewWebUITest',
   this.setCapabilities(getCddTemplate("FooDevice"));
 
   var otherOptions = $('other-options-settings');
-  var headerFooter = otherOptions.querySelector('.header-footer-container');
+  var headerFooter = otherOptions.querySelector('#header-footer-container');
 
   // Check that options are collapsed (section is visible, because duplex is
   // available).
@@ -955,8 +959,9 @@ TEST_F('PrintPreviewWebUITest', 'TestDuplexSettingsTrue', function() {
 
   var otherOptions = $('other-options-settings');
   checkSectionVisible(otherOptions, true);
-  expectFalse(otherOptions.querySelector('.duplex-container').hidden);
-  expectFalse(otherOptions.querySelector('.duplex-checkbox').checked);
+  duplexContainer = otherOptions.querySelector('#duplex-container');
+  expectFalse(duplexContainer.hidden);
+  expectFalse(duplexContainer.querySelector('.checkbox').checked);
 
   this.waitForAnimationToEnd('more-settings');
 });
@@ -978,7 +983,7 @@ TEST_F('PrintPreviewWebUITest', 'TestDuplexSettingsFalse', function() {
 
   // Now it should be visible.
   checkSectionVisible(otherOptions, true);
-  expectTrue(otherOptions.querySelector('.duplex-container').hidden);
+  expectTrue(otherOptions.querySelector('#duplex-container').hidden);
 
   this.waitForAnimationToEnd('more-settings');
 });
@@ -992,8 +997,8 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
   var previewGenerator = mock(print_preview.PreviewGenerator);
   printPreview.previewArea_.previewGenerator_ = previewGenerator.proxy();
 
-  // TODO (rbpotter): Figure out why this is 7 with the addition of scaling,
-  // and if it is a problem.
+  // The number of settings that can change due to a change in the destination
+  // that will therefore dispatch ticket item change events.
   previewGenerator.expects(exactly(7)).requestPreview();
 
   var barDestination;
