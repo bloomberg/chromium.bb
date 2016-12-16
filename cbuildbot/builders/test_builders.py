@@ -77,7 +77,7 @@ class SignerTestsBuilder(generic_builders.Builder):
 
   def GetSyncInstance(self):
     """Returns an instance of a SyncStage that should be run."""
-    return self._GetStageInstance(sync_stages.ManifestVersionedSyncStage)
+    return self._GetStageInstance(sync_stages.PreCQSyncStage)
 
   def RunStages(self):
     """Run something after sync/reexec."""
