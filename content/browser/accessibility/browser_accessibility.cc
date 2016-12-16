@@ -455,8 +455,13 @@ gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start, int len)
 
     const std::vector<int32_t>& character_offsets =
         child->GetIntListAttribute(ui::AX_ATTR_CHARACTER_OFFSETS);
-    if (static_cast<int>(character_offsets.size()) != child_length)
-      continue;
+    int character_offsets_length = static_cast<int>(character_offsets.size());
+    if (character_offsets_length < child_length) {
+      // Blink might not return pixel offsets for all characters.
+      // Clamp the character range to be within the number of provided pixels.
+      local_start = std::min(local_start, character_offsets_length);
+      local_end = std::min(local_end, character_offsets_length);
+    }
     int start_pixel_offset =
         local_start > 0 ? character_offsets[local_start - 1] : 0;
     int end_pixel_offset =
@@ -496,8 +501,6 @@ gfx::Rect BrowserAccessibility::GetPageBoundsForRange(int start, int len)
                                        child_rect.width(), bottom - top);
         break;
       }
-      default:
-        NOTREACHED();
     }
 
     if (bounds.width() == 0 && bounds.height() == 0)
