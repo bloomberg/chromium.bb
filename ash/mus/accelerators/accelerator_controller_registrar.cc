@@ -14,8 +14,6 @@
 #include "ash/mus/window_manager.h"
 #include "base/logging.h"
 #include "services/ui/common/accelerator_util.h"
-#include "services/ui/public/cpp/window_manager_delegate.h"
-#include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/base/accelerators/accelerator_history.h"
 
 namespace ash {

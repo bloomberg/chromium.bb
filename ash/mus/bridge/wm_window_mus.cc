@@ -13,7 +13,6 @@
 #include "ash/common/wm_transient_window_observer.h"
 #include "ash/common/wm_window_observer.h"
 #include "ash/common/wm_window_property.h"
-#include "ash/mus/bridge/mus_layout_manager_adapter.h"
 #include "ash/mus/bridge/wm_root_window_controller_mus.h"
 #include "ash/mus/bridge/wm_shell_mus.h"
 #include "ash/mus/property_util.h"

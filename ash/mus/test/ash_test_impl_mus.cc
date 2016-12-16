@@ -8,8 +8,6 @@
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "base/memory/ptr_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
-#include "services/ui/public/cpp/window.h"
-#include "services/ui/public/cpp/window_property.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/wm/core/window_util.h"
 
