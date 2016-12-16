@@ -121,10 +121,10 @@ static int64_t try_restoration_frame(const YV12_BUFFER_CONFIG *src,
   return filt_err;
 }
 
-static int64_t get_pixel_proj_error(int64_t *src, int width, int height,
-                                    int src_stride, int64_t *dgd,
-                                    int dgd_stride, int64_t *flt1,
-                                    int flt1_stride, int64_t *flt2,
+static int64_t get_pixel_proj_error(int32_t *src, int width, int height,
+                                    int src_stride, int32_t *dgd,
+                                    int dgd_stride, int32_t *flt1,
+                                    int flt1_stride, int32_t *flt2,
                                     int flt2_stride, int *xqd) {
   int i, j;
   int64_t err = 0;
@@ -132,12 +132,12 @@ static int64_t get_pixel_proj_error(int64_t *src, int width, int height,
   decode_xq(xqd, xq);
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
-      const int64_t s = (int64_t)src[i * src_stride + j];
-      const int64_t u = (int64_t)dgd[i * dgd_stride + j];
-      const int64_t f1 = (int64_t)flt1[i * flt1_stride + j] - u;
-      const int64_t f2 = (int64_t)flt2[i * flt2_stride + j] - u;
+      const int32_t s = (int32_t)src[i * src_stride + j];
+      const int32_t u = (int32_t)dgd[i * dgd_stride + j];
+      const int32_t f1 = (int32_t)flt1[i * flt1_stride + j] - u;
+      const int32_t f2 = (int32_t)flt2[i * flt2_stride + j] - u;
       const int64_t v = xq[0] * f1 + xq[1] * f2 + (u << SGRPROJ_PRJ_BITS);
-      const int64_t e =
+      const int32_t e =
           ROUND_POWER_OF_TWO(v, SGRPROJ_RST_BITS + SGRPROJ_PRJ_BITS) -
           ROUND_POWER_OF_TWO(s, SGRPROJ_RST_BITS);
       err += e * e;
@@ -146,9 +146,9 @@ static int64_t get_pixel_proj_error(int64_t *src, int width, int height,
   return err;
 }
 
-static void get_proj_subspace(int64_t *src, int width, int height,
-                              int src_stride, int64_t *dgd, int dgd_stride,
-                              int64_t *flt1, int flt1_stride, int64_t *flt2,
+static void get_proj_subspace(int32_t *src, int width, int height,
+                              int src_stride, int32_t *dgd, int dgd_stride,
+                              int32_t *flt1, int flt1_stride, int32_t *flt2,
                               int flt2_stride, int *xq) {
   int i, j;
   double H[2][2] = { { 0, 0 }, { 0, 0 } };
@@ -198,10 +198,10 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
                                           int src_stride, int bit_depth,
                                           int *eps, int *xqd, void *srcbuf,
                                           void *rstbuf) {
-  int64_t *srd = (int64_t *)srcbuf;
-  int64_t *dgd = (int64_t *)rstbuf;
-  int64_t *flt1 = dgd + RESTORATION_TILEPELS_MAX;
-  int64_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
+  int32_t *srd = (int32_t *)srcbuf;
+  int32_t *dgd = (int32_t *)rstbuf;
+  int32_t *flt1 = dgd + RESTORATION_TILEPELS_MAX;
+  int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
   uint8_t *tmpbuf2 = (uint8_t *)(flt2 + RESTORATION_TILEPELS_MAX);
   int i, j, ep, bestep = 0;
   int64_t err, besterr = -1;
@@ -213,11 +213,11 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
       uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
       for (i = 0; i < height; ++i) {
         for (j = 0; j < width; ++j) {
-          flt1[i * width + j] = (int64_t)dat[i * dat_stride + j];
-          flt2[i * width + j] = (int64_t)dat[i * dat_stride + j];
-          dgd[i * width + j] = (int64_t)dat[i * dat_stride + j]
+          flt1[i * width + j] = (int32_t)dat[i * dat_stride + j];
+          flt2[i * width + j] = (int32_t)dat[i * dat_stride + j];
+          dgd[i * width + j] = (int32_t)dat[i * dat_stride + j]
                                << SGRPROJ_RST_BITS;
-          srd[i * width + j] = (int64_t)src[i * src_stride + j]
+          srd[i * width + j] = (int32_t)src[i * src_stride + j]
                                << SGRPROJ_RST_BITS;
         }
       }
@@ -228,10 +228,10 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
         for (j = 0; j < width; ++j) {
           const int k = i * width + j;
           const int l = i * dat_stride + j;
-          flt1[k] = (int64_t)dat[l];
-          flt2[k] = (int64_t)dat[l];
-          dgd[k] = (int64_t)dat[l] << SGRPROJ_RST_BITS;
-          srd[k] = (int64_t)src[i * src_stride + j] << SGRPROJ_RST_BITS;
+          flt1[k] = (int32_t)dat[l];
+          flt2[k] = (int32_t)dat[l];
+          dgd[k] = (int32_t)dat[l] << SGRPROJ_RST_BITS;
+          srd[k] = (int32_t)src[i * src_stride + j] << SGRPROJ_RST_BITS;
         }
       }
     }

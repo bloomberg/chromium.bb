@@ -739,7 +739,7 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate trial restored frame buffer");
   cpi->extra_rstbuf = (uint8_t *)aom_realloc(
-      cpi->extra_rstbuf, RESTORATION_TILEPELS_MAX * sizeof(int64_t));
+      cpi->extra_rstbuf, RESTORATION_TILEPELS_MAX * sizeof(int32_t));
   if (!cpi->extra_rstbuf)
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate extra rstbuf for restoration");

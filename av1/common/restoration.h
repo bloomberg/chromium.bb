@@ -42,11 +42,10 @@ extern "C" {
 #define DOMAINTXFMRF_TMPBUF_SIZE (RESTORATION_TILEPELS_MAX * sizeof(int32_t))
 #define DOMAINTXFMRF_BITS (DOMAINTXFMRF_PARAMS_BITS)
 
-// 6 highprecision 64-bit buffers needed for the filter:
+// 6 highprecision buffers needed for the filter:
 // 1 for the degraded frame, 2 for the restored versions and
 // 3 for each restoration operation
-// TODO(debargha): Explore if we can use 32-bit buffers
-#define SGRPROJ_TMPBUF_SIZE (RESTORATION_TILEPELS_MAX * 6 * sizeof(int64_t))
+#define SGRPROJ_TMPBUF_SIZE (RESTORATION_TILEPELS_MAX * 6 * sizeof(int32_t))
 #define SGRPROJ_PARAMS_BITS 3
 #define SGRPROJ_PARAMS (1 << SGRPROJ_PARAMS_BITS)
 
@@ -211,7 +210,7 @@ int av1_alloc_restoration_struct(RestorationInfo *rst_info, int width,
                                  int height);
 void av1_free_restoration_struct(RestorationInfo *rst_info);
 
-void av1_selfguided_restoration(int64_t *dgd, int width, int height, int stride,
+void av1_selfguided_restoration(int32_t *dgd, int width, int height, int stride,
                                 int bit_depth, int r, int eps, void *tmpbuf);
 void av1_domaintxfmrf_restoration(uint8_t *dgd, int width, int height,
                                   int stride, int param, uint8_t *dst,
