@@ -63,15 +63,6 @@ std::string BuildOSCpuInfo() {
 #endif
 
 #if defined(OS_WIN)
-  std::string windows_version_str;
-  if (os_major_version >= 10) {
-    base::StringAppendF(&windows_version_str, "%d.%d.%d",
-      os_major_version, os_minor_version, os_bugfix_version);
-  } else {
-    base::StringAppendF(
-      &windows_version_str, "%d.%d", os_major_version, os_minor_version);
-  }
-
   std::string architecture_token;
   base::win::OSInfo* os_info = base::win::OSInfo::GetInstance();
   if (os_info->wow64_status() == base::win::OSInfo::WOW64_ENABLED) {
@@ -117,8 +108,9 @@ std::string BuildOSCpuInfo() {
   base::StringAppendF(
       &os_cpu,
 #if defined(OS_WIN)
-      "Windows NT %s%s",
-      windows_version_str.c_str(),
+      "Windows NT %d.%d%s",
+      os_major_version,
+      os_minor_version,
       architecture_token.c_str()
 #elif defined(OS_MACOSX)
       "Intel Mac OS X %d_%d_%d",
