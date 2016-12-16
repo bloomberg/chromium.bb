@@ -156,6 +156,10 @@ class TestSecondsTimer(cros_test_lib.MockTestCase):
       c['qux'] = 'qwert'
     self._mockMetric.add.assert_called_with(mock.ANY, fields={'foo': 'bar'})
 
+class ClientException(Exception):
+  """An exception that client of the metrics module raises."""
+
+
 class TestRuntimeBreakdownTimer(cros_test_lib.MockTestCase):
   """Tests the behaviour of RuntimeBreakdownTimer."""
 
@@ -233,16 +237,47 @@ class TestRuntimeBreakdownTimer(cros_test_lib.MockTestCase):
     self.assertGreater(error, 9.6)
     self.assertLess(error, 10.2)
 
-  def testNestedStepsRaise(self):
-    """Tests that trying to enter nested .Step contexts raises."""
-    with self.assertRaises(metrics.MetricsException):
-      self._EnterNestedSteps()
+  def testStepsWithClientCodeException(self):
+    """Test that breakdown is reported correctly when client code raises."""
+    with self.assertRaises(ClientException):
+      with metrics.RuntimeBreakdownTimer('fubar') as runtime:
+        with runtime.Step('step1'):
+          self._IncrementFakeTime(1)
+          raise ClientException()
 
-  def _EnterNestedSteps(self):
+    self.assertEqual(metrics.PercentageDistribution.call_count, 2)
+    breakdown_names = [x[0][0] for x in
+                       metrics.PercentageDistribution.call_args_list]
+    self.assertEqual(set(breakdown_names),
+                     {'fubar/breakdown/step1', 'fubar/breakdown_unaccounted'})
+
+  def testNestedStepIgnored(self):
+    """Tests that trying to enter nested .Step contexts raises."""
     with metrics.RuntimeBreakdownTimer('fubar') as runtime:
       with runtime.Step('step1'):
         with runtime.Step('step2'):
-          pass
+          self._IncrementFakeTime(1)
+
+    self.assertEqual(metrics.PercentageDistribution.call_count, 2)
+    breakdown_names = [x[0][0] for x in
+                       metrics.PercentageDistribution.call_args_list]
+    self.assertEqual(set(breakdown_names),
+                     {'fubar/breakdown/step1', 'fubar/breakdown_unaccounted'})
+
+  def testNestedStepsWithClientCodeException(self):
+    """Test that breakdown is reported correctly when client code raises."""
+    with self.assertRaises(ClientException):
+      with metrics.RuntimeBreakdownTimer('fubar') as runtime:
+        with runtime.Step('step1'):
+          with runtime.Step('step2'):
+            self._IncrementFakeTime(1)
+            raise ClientException()
+
+    self.assertEqual(metrics.PercentageDistribution.call_count, 2)
+    breakdown_names = [x[0][0] for x in
+                       metrics.PercentageDistribution.call_args_list]
+    self.assertEqual(set(breakdown_names),
+                     {'fubar/breakdown/step1', 'fubar/breakdown_unaccounted'})
 
   def _GetFakeTime(self):
     return self._fake_time

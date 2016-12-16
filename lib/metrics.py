@@ -47,10 +47,6 @@ MetricCall = namedtuple(
     'reset_after')
 
 
-class MetricsException(Exception):
-  """A generic exception raised by the Metrics classes in this module."""
-
-
 class ProxyMetric(object):
   """Redirects any method calls to the message queue."""
   def __init__(self, metric, metric_args, metric_kwargs):
@@ -367,7 +363,10 @@ class RuntimeBreakdownTimer(object):
       step_name: The name of the step being timed.
     """
     if self._inside_step:
-      raise MetricsException('Attempted to create a nested Step.')
+      logging.error('RuntimeBreakdownTimer.Step is not reentrant. '
+                    'Dropping step: %s', step_name)
+      yield
+      return
 
     self._inside_step = True
     t0 = datetime.datetime.now()
