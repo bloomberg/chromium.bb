@@ -331,7 +331,7 @@ bool Editor::deleteWithDirection(EditCommandSource source,
     if (isTypingAction) {
       DCHECK(frame().document());
       TypingCommand::deleteKeyPressed(
-          *frame().document(),
+          *frame().document(), source,
           canSmartCopyOrDelete() ? TypingCommand::SmartDelete : 0, granularity);
       revealSelectionAfterEditingOperation();
     } else {
@@ -353,13 +353,13 @@ bool Editor::deleteWithDirection(EditCommandSource source,
       case DeleteDirection::Forward:
         DCHECK(frame().document());
         TypingCommand::forwardDeleteKeyPressed(
-            *frame().document(), &editingState, options, granularity);
+            *frame().document(), source, &editingState, options, granularity);
         if (editingState.isAborted())
           return false;
         break;
       case DeleteDirection::Backward:
         DCHECK(frame().document());
-        TypingCommand::deleteKeyPressed(*frame().document(), options,
+        TypingCommand::deleteKeyPressed(*frame().document(), source, options,
                                         granularity);
         break;
     }
@@ -375,9 +375,8 @@ bool Editor::deleteWithDirection(EditCommandSource source,
   return true;
 }
 
-// TODO(chongz): Pass |EditCommandSource| to |CompositeEditCommand|.
 void Editor::deleteSelectionWithSmartDelete(
-    EditCommandSource,
+    EditCommandSource source,
     DeleteMode deleteMode,
     InputEvent::InputType inputType,
     const Position& referenceMovePosition) {
@@ -392,7 +391,7 @@ void Editor::deleteSelectionWithSmartDelete(
       *frame().document(), deleteMode == DeleteMode::Smart,
       kMergeBlocksAfterDelete, kExpandForSpecialElements, kSanitizeMarkup,
       inputType, referenceMovePosition)
-      ->apply();
+      ->apply(source);
 }
 
 void Editor::pasteAsPlainText(const String& pastingText, bool smartReplace) {
@@ -570,8 +569,7 @@ bool Editor::canSmartReplaceWithPasteboard(Pasteboard* pasteboard) {
   return smartInsertDeleteEnabled() && pasteboard->canSmartReplace();
 }
 
-// TODO(chongz): Pass |EditCommandSource| to |CompositeEditCommand|.
-void Editor::replaceSelectionWithFragment(EditCommandSource,
+void Editor::replaceSelectionWithFragment(EditCommandSource source,
                                           DocumentFragment* fragment,
                                           bool selectReplacement,
                                           bool smartReplace,
@@ -594,7 +592,7 @@ void Editor::replaceSelectionWithFragment(EditCommandSource,
   DCHECK(frame().document());
   ReplaceSelectionCommand::create(*frame().document(), fragment, options,
                                   inputType)
-      ->apply();
+      ->apply(source);
   revealSelectionAfterEditingOperation();
 }
 
@@ -622,7 +620,7 @@ void Editor::replaceSelectionAfterDragging(DocumentFragment* fragment,
   DCHECK(frame().document());
   ReplaceSelectionCommand::create(*frame().document(), fragment, options,
                                   InputEvent::InputType::InsertFromDrop)
-      ->apply();
+      ->apply(EditCommandSource::kMenuOrKeyBinding);
 }
 
 bool Editor::deleteSelectionAfterDraggingWithEvents(
@@ -709,10 +707,9 @@ void Editor::respondToChangedContents(const VisibleSelection& endingSelection) {
   client().respondToChangedContents();
 }
 
-// TODO(chongz): Pass |EditCommandSource| to |CompositeEditCommand|.
-void Editor::removeFormattingAndStyle(EditCommandSource) {
+void Editor::removeFormattingAndStyle(EditCommandSource source) {
   DCHECK(frame().document());
-  RemoveFormatCommand::create(*frame().document())->apply();
+  RemoveFormatCommand::create(*frame().document())->apply(source);
 }
 
 void Editor::registerCommandGroup(CompositeEditCommand* commandGroupWrapper) {
@@ -751,14 +748,13 @@ void Editor::applyStyle(EditCommandSource source,
         DCHECK(frame().document());
         ApplyStyleCommand::create(*frame().document(),
                                   EditingStyle::create(style), inputType)
-            ->apply();
+            ->apply(source);
       }
       break;
   }
 }
 
-// TODO(chongz): Pass |EditCommandSource| to |CompositeEditCommand|.
-void Editor::applyParagraphStyle(EditCommandSource,
+void Editor::applyParagraphStyle(EditCommandSource source,
                                  StylePropertySet* style,
                                  InputEvent::InputType inputType) {
   if (frame().selection().isNone() || !style)
@@ -766,7 +762,7 @@ void Editor::applyParagraphStyle(EditCommandSource,
   DCHECK(frame().document());
   ApplyStyleCommand::create(*frame().document(), EditingStyle::create(style),
                             inputType, ApplyStyleCommand::ForceBlockProperties)
-      ->apply();
+      ->apply(source);
 }
 
 void Editor::applyStyleToSelection(EditCommandSource source,
@@ -986,7 +982,7 @@ bool Editor::insertTextWithoutSendingTextEvent(EditCommandSource source,
 
   // Insert the text
   TypingCommand::insertText(
-      *selection.start().document(), text, selection,
+      *selection.start().document(), source, text, selection,
       selectInsertedText ? TypingCommand::SelectInsertedText : 0,
       triggeringEvent && triggeringEvent->isComposition()
           ? TypingCommand::TextCompositionConfirm
@@ -1012,7 +1008,11 @@ bool Editor::insertLineBreak() {
   VisiblePosition caret = frame().selection().selection().visibleStart();
   bool alignToEdge = isEndOfEditableOrNonEditableContent(caret);
   DCHECK(frame().document());
-  if (!TypingCommand::insertLineBreak(*frame().document()))
+  // we can pass |EditCommandSource::kMenuOrKeyBinding| because
+  // |insertLineBreak()| is only used by |Editor::handleTextEvent()| and
+  // |Editor::insertParagraphSeparator()|.
+  if (!TypingCommand::insertLineBreak(*frame().document(),
+                                      EditCommandSource::kMenuOrKeyBinding))
     return false;
   revealSelectionAfterEditingOperation(
       alignToEdge ? ScrollAlignment::alignToEdgeIfNeeded
@@ -1032,7 +1032,11 @@ bool Editor::insertParagraphSeparator() {
   bool alignToEdge = isEndOfEditableOrNonEditableContent(caret);
   DCHECK(frame().document());
   EditingState editingState;
-  if (!TypingCommand::insertParagraphSeparator(*frame().document()))
+  // We can |EditCommandSource::kMenuOrKeyBinding| because
+  // |Editor::insertParagraphSeparator()| is only used by
+  // |Editor::handleTextEvent()|.
+  if (!TypingCommand::insertParagraphSeparator(
+          *frame().document(), EditCommandSource::kMenuOrKeyBinding))
     return false;
   revealSelectionAfterEditingOperation(
       alignToEdge ? ScrollAlignment::alignToEdgeIfNeeded
@@ -1417,8 +1421,7 @@ IntRect Editor::firstRectForRange(const EphemeralRange& range) const {
                  startCaretRect.height());
 }
 
-// TODO(chongz): Pass |EditCommandSource| to |CompositeEditCommand|.
-void Editor::computeAndSetTypingStyle(EditCommandSource,
+void Editor::computeAndSetTypingStyle(EditCommandSource source,
                                       StylePropertySet* style,
                                       InputEvent::InputType inputType) {
   if (!style || style->isEmpty()) {
@@ -1444,7 +1447,7 @@ void Editor::computeAndSetTypingStyle(EditCommandSource,
   if (!blockStyle->isEmpty()) {
     DCHECK(frame().document());
     ApplyStyleCommand::create(*frame().document(), blockStyle, inputType)
-        ->apply();
+        ->apply(source);
   }
 
   // Set the remaining style as the typing style.

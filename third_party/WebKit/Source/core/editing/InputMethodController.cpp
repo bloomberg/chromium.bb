@@ -144,8 +144,9 @@ void insertTextDuringCompositionWithEvents(
   switch (compositionType) {
     case TypingCommand::TextCompositionType::TextCompositionUpdate:
     case TypingCommand::TextCompositionType::TextCompositionConfirm:
-      TypingCommand::insertText(*frame.document(), text, options,
-                                compositionType, isIncrementalInsertion);
+      TypingCommand::insertText(
+          *frame.document(), EditCommandSource::kMenuOrKeyBinding, text,
+          options, compositionType, isIncrementalInsertion);
       break;
     case TypingCommand::TextCompositionType::TextCompositionCancel:
       // TODO(chongz): Use TypingCommand::insertText after TextEvent was
@@ -299,8 +300,10 @@ bool InputMethodController::replaceComposition(const String& text) {
   // If text is empty, then delete the old composition here. If text is
   // non-empty, InsertTextCommand::input will delete the old composition with
   // an optimized replace operation.
-  if (text.isEmpty())
-    TypingCommand::deleteSelection(document(), 0);
+  if (text.isEmpty()) {
+    TypingCommand::deleteSelection(document(),
+                                   EditCommandSource::kMenuOrKeyBinding, 0);
+  }
 
   clear();
 
@@ -499,6 +502,7 @@ void InputMethodController::setComposition(
       // composition, however some IME (e.g. Japanese IBus-Anthy) did this, so
       // we simply delete selection without sending extra events.
       TypingCommand::deleteSelection(document(),
+                                     EditCommandSource::kMenuOrKeyBinding,
                                      TypingCommand::PreventSpellChecking);
     }
 
@@ -776,7 +780,8 @@ void InputMethodController::extendSelectionAndDelete(int before, int after) {
   dispatchBeforeInputEditorCommand(
       document().focusedElement(), InputEvent::InputType::DeleteContentBackward,
       new RangeVector(1, m_frame->selection().firstRange()));
-  TypingCommand::deleteSelection(document());
+  TypingCommand::deleteSelection(document(),
+                                 EditCommandSource::kMenuOrKeyBinding);
 }
 
 // TODO(yabinh): We should reduce the number of selectionchange events.
@@ -811,7 +816,8 @@ void InputMethodController::deleteSurroundingText(int before, int after) {
     const int adjustedStart = start - static_cast<int>(diff);
     if (!setSelectionOffsets(PlainTextRange(adjustedStart, selectionStart)))
       return;
-    TypingCommand::deleteSelection(document());
+    TypingCommand::deleteSelection(document(),
+                                   EditCommandSource::kMenuOrKeyBinding);
 
     selectionEnd = selectionEnd - (selectionStart - adjustedStart);
     selectionStart = adjustedStart;
@@ -836,7 +842,8 @@ void InputMethodController::deleteSurroundingText(int before, int after) {
     const int adjustedEnd = end + static_cast<int>(diff);
     if (!setSelectionOffsets(PlainTextRange(selectionEnd, adjustedEnd)))
       return;
-    TypingCommand::deleteSelection(document());
+    TypingCommand::deleteSelection(document(),
+                                   EditCommandSource::kMenuOrKeyBinding);
   }
 
   setSelectionOffsets(PlainTextRange(selectionStart, selectionEnd));

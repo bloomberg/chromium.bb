@@ -47,7 +47,8 @@ TEST_F(ReplaceSelectionCommandTest, pastingEmptySpan) {
   ReplaceSelectionCommand* command =
       ReplaceSelectionCommand::create(document(), fragment, options);
 
-  EXPECT_TRUE(command->apply()) << "the replace command should have succeeded";
+  EXPECT_TRUE(command->apply(EditCommandSource::kMenuOrKeyBinding))
+      << "the replace command should have succeeded";
   EXPECT_EQ("foo", document().body()->innerHTML()) << "no DOM tree mutation";
 }
 
@@ -70,7 +71,8 @@ TEST_F(ReplaceSelectionCommandTest, pasteSpanInText) {
   ReplaceSelectionCommand* command =
       ReplaceSelectionCommand::create(document(), fragment, options);
 
-  EXPECT_TRUE(command->apply()) << "the replace command should have succeeded";
+  EXPECT_TRUE(command->apply(EditCommandSource::kMenuOrKeyBinding))
+      << "the replace command should have succeeded";
   EXPECT_EQ("<b>t</b>bar<b>ext</b>", document().body()->innerHTML())
       << "'bar' should have been inserted";
 }
@@ -93,7 +95,8 @@ TEST_F(ReplaceSelectionCommandTest, styleTagsInPastedHeadIncludedInContent) {
   ReplaceSelectionCommand::CommandOptions options = 0;
   ReplaceSelectionCommand* command =
       ReplaceSelectionCommand::create(document(), fragment, options);
-  EXPECT_TRUE(command->apply()) << "the replace command should have succeeded";
+  EXPECT_TRUE(command->apply(EditCommandSource::kMenuOrKeyBinding))
+      << "the replace command should have succeeded";
 
   EXPECT_EQ(
       "<head><style>foo { bar: baz; }</style></head>"

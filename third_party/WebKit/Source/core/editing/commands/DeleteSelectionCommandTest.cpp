@@ -51,7 +51,8 @@ TEST_F(DeleteSelectionCommandTest, deleteListFromTable) {
       kNoExpandForSpecialElements, kSanitizeMarkup,
       InputEvent::InputType::DeleteByCut);
 
-  EXPECT_TRUE(command->apply()) << "the delete command should have succeeded";
+  EXPECT_TRUE(command->apply(EditCommandSource::kMenuOrKeyBinding))
+      << "the delete command should have succeeded";
   EXPECT_EQ("<div contenteditable=\"true\"><br></div>",
             document().body()->innerHTML());
   EXPECT_TRUE(frame->selection().isCaret());

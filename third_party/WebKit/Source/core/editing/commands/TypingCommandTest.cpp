@@ -50,7 +50,8 @@ TEST_F(TypingCommandTest, insertLineBreakWithIllFormedHTML) {
                                       .build());
 
   // Inserting line break should not crash or hit assertion.
-  TypingCommand::insertLineBreak(document());
+  TypingCommand::insertLineBreak(document(),
+                                 EditCommandSource::kMenuOrKeyBinding);
 }
 
 }  // namespace blink

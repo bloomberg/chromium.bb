@@ -96,7 +96,7 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
   ~CompositeEditCommand() override;
 
   // Returns |false| if the command failed.  e.g. It's aborted.
-  bool apply();
+  bool apply(EditCommandSource);
   bool isFirstCommand(EditCommand* command) {
     return !m_commands.isEmpty() && m_commands.front() == command;
   }

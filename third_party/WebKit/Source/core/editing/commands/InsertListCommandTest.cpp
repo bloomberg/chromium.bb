@@ -42,7 +42,7 @@ TEST_F(InsertListCommandTest, ShouldCleanlyRemoveSpuriousTextNode) {
   InsertListCommand* command =
       InsertListCommand::create(document(), InsertListCommand::OrderedList);
   // This should not DCHECK.
-  EXPECT_TRUE(command->apply())
+  EXPECT_TRUE(command->apply(EditCommandSource::kMenuOrKeyBinding))
       << "The insert ordered list command should have succeeded";
   EXPECT_EQ("<ol><li>d</li></ol>", document().body()->innerHTML());
 }

@@ -187,7 +187,8 @@ CompositeEditCommand::~CompositeEditCommand() {
   DCHECK(isTopLevelCommand() || !m_composition);
 }
 
-bool CompositeEditCommand::apply() {
+// TODO(chongz): Fire 'beforeinput' based on |EditCommandSource|.
+bool CompositeEditCommand::apply(EditCommandSource) {
   DCHECK(!isCommandGroupWrapper());
   if (!endingSelection().isContentRichlyEditable()) {
     switch (inputType()) {

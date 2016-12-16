@@ -148,7 +148,9 @@ TypingCommand::TypingCommand(Document& document,
   updatePreservesTypingStyle(m_commandType);
 }
 
-void TypingCommand::deleteSelection(Document& document, Options options) {
+void TypingCommand::deleteSelection(Document& document,
+                                    EditCommandSource source,
+                                    Options options) {
   LocalFrame* frame = document.frame();
   DCHECK(frame);
 
@@ -168,10 +170,11 @@ void TypingCommand::deleteSelection(Document& document, Options options) {
     return;
   }
 
-  TypingCommand::create(document, DeleteSelection, "", options)->apply();
+  TypingCommand::create(document, DeleteSelection, "", options)->apply(source);
 }
 
 void TypingCommand::deleteKeyPressed(Document& document,
+                                     EditCommandSource source,
                                      Options options,
                                      TextGranularity granularity) {
   if (granularity == CharacterGranularity) {
@@ -194,10 +197,12 @@ void TypingCommand::deleteKeyPressed(Document& document,
     }
   }
 
-  TypingCommand::create(document, DeleteKey, "", options, granularity)->apply();
+  TypingCommand::create(document, DeleteKey, "", options, granularity)
+      ->apply(source);
 }
 
 void TypingCommand::forwardDeleteKeyPressed(Document& document,
+                                            EditCommandSource source,
                                             EditingState* editingState,
                                             Options options,
                                             TextGranularity granularity) {
@@ -217,7 +222,7 @@ void TypingCommand::forwardDeleteKeyPressed(Document& document,
   }
 
   TypingCommand::create(document, ForwardDeleteKey, "", options, granularity)
-      ->apply();
+      ->apply(source);
 }
 
 String TypingCommand::textDataForInputEvent() const {
@@ -239,6 +244,7 @@ void TypingCommand::updateSelectionIfDifferentFromCurrentSelection(
 }
 
 void TypingCommand::insertText(Document& document,
+                               EditCommandSource source,
                                const String& text,
                                Options options,
                                TextCompositionType composition,
@@ -250,7 +256,7 @@ void TypingCommand::insertText(Document& document,
     document.frame()->spellChecker().updateMarkersForWordsAffectedByEditing(
         isSpaceOrNewline(text[0]));
 
-  insertText(document, text, frame->selection().selection(), options,
+  insertText(document, source, text, frame->selection().selection(), options,
              composition, isIncrementalInsertion);
 }
 
@@ -278,6 +284,7 @@ void TypingCommand::adjustSelectionAfterIncrementalInsertion(
 // FIXME: We shouldn't need to take selectionForInsertion. It should be
 // identical to FrameSelection's current selection.
 void TypingCommand::insertText(Document& document,
+                               EditCommandSource source,
                                const String& text,
                                const VisibleSelection& selectionForInsertion,
                                Options options,
@@ -351,7 +358,7 @@ void TypingCommand::insertText(Document& document,
     command->setEndingVisibleSelection(selectionForInsertion);
   }
   command->m_isIncrementalInsertion = isIncrementalInsertion;
-  const bool aborted = !(command->apply());
+  const bool aborted = !(command->apply(source));
 
   if (changeSelection) {
     command->setEndingVisibleSelection(currentSelection);
@@ -371,7 +378,8 @@ void TypingCommand::insertText(Document& document,
   }
 }
 
-bool TypingCommand::insertLineBreak(Document& document) {
+bool TypingCommand::insertLineBreak(Document& document,
+                                    EditCommandSource source) {
   if (TypingCommand* lastTypingCommand =
           lastTypingCommandIfStillOpenForTyping(document.frame())) {
     lastTypingCommand->setShouldRetainAutocorrectionIndicator(false);
@@ -380,11 +388,12 @@ bool TypingCommand::insertLineBreak(Document& document) {
     return !editingState.isAborted();
   }
 
-  return TypingCommand::create(document, InsertLineBreak, "", 0)->apply();
+  return TypingCommand::create(document, InsertLineBreak, "", 0)->apply(source);
 }
 
 bool TypingCommand::insertParagraphSeparatorInQuotedContent(
-    Document& document) {
+    Document& document,
+    EditCommandSource source) {
   if (TypingCommand* lastTypingCommand =
           lastTypingCommandIfStillOpenForTyping(document.frame())) {
     EditingState editingState;
@@ -394,10 +403,11 @@ bool TypingCommand::insertParagraphSeparatorInQuotedContent(
 
   return TypingCommand::create(document,
                                InsertParagraphSeparatorInQuotedContent)
-      ->apply();
+      ->apply(source);
 }
 
-bool TypingCommand::insertParagraphSeparator(Document& document) {
+bool TypingCommand::insertParagraphSeparator(Document& document,
+                                             EditCommandSource source) {
   if (TypingCommand* lastTypingCommand =
           lastTypingCommandIfStillOpenForTyping(document.frame())) {
     lastTypingCommand->setShouldRetainAutocorrectionIndicator(false);
@@ -407,7 +417,7 @@ bool TypingCommand::insertParagraphSeparator(Document& document) {
   }
 
   return TypingCommand::create(document, InsertParagraphSeparator, "", 0)
-      ->apply();
+      ->apply(source);
 }
 
 TypingCommand* TypingCommand::lastTypingCommandIfStillOpenForTyping(

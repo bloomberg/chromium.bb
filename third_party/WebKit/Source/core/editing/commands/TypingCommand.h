@@ -58,28 +58,33 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   };
   typedef unsigned Options;
 
-  static void deleteSelection(Document&, Options = 0);
+  static void deleteSelection(Document&, EditCommandSource, Options = 0);
   static void deleteKeyPressed(Document&,
+                               EditCommandSource,
                                Options,
                                TextGranularity = CharacterGranularity);
   static void forwardDeleteKeyPressed(Document&,
+                                      EditCommandSource,
                                       EditingState*,
                                       Options = 0,
                                       TextGranularity = CharacterGranularity);
   static void insertText(Document&,
+                         EditCommandSource,
                          const String&,
                          Options,
                          TextCompositionType = TextCompositionNone,
                          const bool isIncrementalInsertion = false);
   static void insertText(Document&,
+                         EditCommandSource,
                          const String&,
                          const VisibleSelection&,
                          Options,
                          TextCompositionType = TextCompositionNone,
                          const bool isIncrementalInsertion = false);
-  static bool insertLineBreak(Document&);
-  static bool insertParagraphSeparator(Document&);
-  static bool insertParagraphSeparatorInQuotedContent(Document&);
+  static bool insertLineBreak(Document&, EditCommandSource);
+  static bool insertParagraphSeparator(Document&, EditCommandSource);
+  static bool insertParagraphSeparatorInQuotedContent(Document&,
+                                                      EditCommandSource);
   static void closeTyping(LocalFrame*);
 
   void insertText(const String& text, bool selectInsertedText, EditingState*);

@@ -46,7 +46,7 @@ TEST_F(ApplyBlockElementCommandTest, selectionCrossingOverBody) {
 
   FormatBlockCommand* command =
       FormatBlockCommand::create(document(), HTMLNames::footerTag);
-  command->apply();
+  command->apply(EditCommandSource::kMenuOrKeyBinding);
 
   EXPECT_EQ(
       "<body contenteditable=\"false\">\n"
@@ -70,7 +70,7 @@ TEST_F(ApplyBlockElementCommandTest, visibilityChangeDuringCommand) {
 
   IndentOutdentCommand* command =
       IndentOutdentCommand::create(document(), IndentOutdentCommand::Indent);
-  command->apply();
+  command->apply(EditCommandSource::kMenuOrKeyBinding);
 
   EXPECT_EQ(
       "<head><style>li:first-child { visibility:visible; }</style></head>"
