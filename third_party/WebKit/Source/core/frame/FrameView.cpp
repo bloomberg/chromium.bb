@@ -2873,8 +2873,6 @@ void FrameView::updateLifecyclePhasesInternal(
       if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
         view.compositor()->updateIfNeededRecursive();
       } else {
-        DocumentAnimations::updateAnimations(layoutView()->document());
-
         forAllNonThrottledFrameViews([](FrameView& frameView) {
           frameView.layoutView()->layer()->updateDescendantDependentFlags();
           frameView.layoutView()->commitPendingSelection();
@@ -2903,6 +2901,9 @@ void FrameView::updateLifecyclePhasesInternal(
     if (targetState >= DocumentLifecycle::PrePaintClean) {
       updatePaintProperties();
     }
+
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+      DocumentAnimations::updateAnimations(layoutView()->document());
 
     if (targetState == DocumentLifecycle::PaintClean) {
       if (!m_frame->document()->printing())
