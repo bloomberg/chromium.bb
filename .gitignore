@@ -14,7 +14,7 @@ cscope.out
 /config/
 
 # Chromite virtualenv.
-/.venv/
+*.egg-info/
 
 # Obsolete
 /virtualenv/

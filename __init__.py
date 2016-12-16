@@ -11,7 +11,7 @@ import sys
 # modules in there automatically.  This isn't normal, so don't replicate
 # this pattern elsewhere.
 _chromite_dir = os.path.normpath(os.path.dirname(os.path.realpath(__file__)))
-_venv_dir = os.path.join(_chromite_dir, '.venv')
+_venv_dir = os.path.join(_chromite_dir, 'venv', '.venv')
 _containing_dir = os.path.dirname(_chromite_dir)
 _third_party_dirs = [os.path.join(_chromite_dir, 'third_party')]
 # If chromite is living inside the Chrome checkout under

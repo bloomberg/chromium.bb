@@ -12,11 +12,12 @@ from chromite.lib import cros_test_lib
 from chromite.scripts import virtualenv_wrapper
 
 _MODULE_DIR = os.path.dirname(os.path.realpath(__file__))
-_VENV_DIR = os.path.abspath(os.path.join(_MODULE_DIR, '..', '.venv'))
 
 
 class VirtualEnvTest(cros_test_lib.TestCase):
   """Test that we are running in a virtualenv."""
+
+  # pylint: disable=protected-access
 
 
   def testModuleIsFromVenv(self):
@@ -25,7 +26,7 @@ class VirtualEnvTest(cros_test_lib.TestCase):
     # be provided inside the chromite virtualenv.
     six = __import__('six')
     req_path = os.path.dirname(os.path.realpath(six.__file__))
-    self.assertIn(_VENV_DIR, req_path)
+    self.assertIn(virtualenv_wrapper._VENV_DIR, req_path)
 
 
   def testInsideVenv(self):

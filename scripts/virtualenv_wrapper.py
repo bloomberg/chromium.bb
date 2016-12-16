@@ -28,7 +28,7 @@ _VIRTUALENV_DIR = os.path.join(_CHROMITE_DIR, '..', 'infra_virtualenv')
 _CREATE_VENV_PATH = os.path.join(_VIRTUALENV_DIR, 'create_venv')
 
 # _VENV_DIR is the virtualenv dir that contains bin/activate.
-_VENV_DIR = os.path.join(_CHROMITE_DIR, '.venv')
+_VENV_DIR = os.path.join(_CHROMITE_DIR, 'venv', '.venv')
 _VENV_PYTHON = os.path.join(_VENV_DIR, 'bin', 'python')
 _REQUIREMENTS = os.path.join(_CHROMITE_DIR, 'venv', 'requirements.txt')
 
