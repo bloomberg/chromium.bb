@@ -8,6 +8,7 @@ import("//build/config/android/rules.gni")
 import("//build/util/process_version.gni")
 import("//build/util/version.gni")
 import("//testing/test.gni")
+import("//third_party/netty4/netty4.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//url/features.gni")
 
@@ -790,7 +791,9 @@ test("cronet_unittests") {
 }
 
 _package_dir = "$root_out_dir/cronet"
+_test_package_dir = "$root_out_dir/cronet/test"
 _extract_cronet_jars_dir = "$target_gen_dir/cronet_jar_extract"
+_extract_cronet_test_jars_dir = "$target_gen_dir/cronet_test_jar_extract"
 
 action("extract_cronet_jars") {
   # extract_from_jars.py deletes the target directory before extracting.
@@ -846,6 +849,75 @@ action("repackage_extracted_jars") {
 
   deps = [
     ":extract_cronet_jars",
+  ]
+}
+
+action("extract_cronet_test_jars") {
+  # extract_from_jars.py deletes the target directory before extracting.
+  script = "//components/cronet/tools/extract_from_jars.py"
+  depfile = "$target_gen_dir/$target_name.d"
+  testonly = true
+
+  sources = [
+    "$root_out_dir/lib.java/base/base_java.jar",
+    "$root_out_dir/lib.java/base/base_java_test_support.jar",
+    "$root_out_dir/lib.java/components/cronet/android/cronet_javatests.jar",
+    "$root_out_dir/lib.java/components/cronet/android/cronet_test_apk_java.jar",
+    "$root_out_dir/lib.java/net/android/net_java.jar",
+    "$root_out_dir/lib.java/net/android/net_java_test_support.jar",
+    "$root_out_dir/lib.java/third_party/netty-tcnative/netty-tcnative_java.jar",
+    "$root_out_dir/lib.java/url/url_java.jar",
+    NETTY4_JAR_FILE,
+  ]
+
+  _stamp_file = "$target_gen_dir/$target_name.stamp"
+  outputs = [
+    _stamp_file,
+  ]
+
+  _rebased_sources = rebase_path(sources, root_build_dir)
+
+  args = [
+    "--classes-dir",
+    rebase_path(_extract_cronet_test_jars_dir, root_build_dir),
+    "--jars=${_rebased_sources}",
+    "--depfile",
+    rebase_path(depfile, root_build_dir),
+    "--stamp",
+    rebase_path(_stamp_file, root_build_dir),
+  ]
+
+  deps = [
+    ":cronet_javatests",
+    ":cronet_test_apk_java",
+    "//base:base_java",
+    "//base:base_java_test_support",
+    "//net/android:net_java",
+    "//net/android:net_java_test_support",
+    "//third_party/netty-tcnative:netty-tcnative_java",
+    "//third_party/netty4:netty_all_java",
+    "//url:url_java",
+  ]
+}
+
+action("repackage_extracted_test_jars") {
+  _output_jar = "$_test_package_dir/cronet_tests_java.jar"
+  testonly = true
+
+  script = "//build/android/gyp/jar.py"
+  outputs = [
+    _output_jar,
+  ]
+
+  args = [
+    "--classes-dir",
+    rebase_path(_extract_cronet_test_jars_dir, root_build_dir),
+    "--jar-path",
+    rebase_path(_output_jar, root_build_dir),
+  ]
+
+  deps = [
+    ":extract_cronet_test_jars",
   ]
 }
 
@@ -1084,6 +1156,78 @@ copy("cronet_package_copy_native_lib_unstripped") {
   ]
 }
 
+copy("cronet_package_copy_native_test_lib") {
+  testonly = true
+  sources = [
+    "$root_out_dir/libcronet_tests.so",
+    "$root_out_dir/libnetty-tcnative.so",
+  ]
+  outputs = [
+    "$_test_package_dir/libs/${android_app_abi}/{{source_file_part}}",
+  ]
+  deps = [
+    ":cronet_tests",
+    "//third_party/netty-tcnative:netty-tcnative-so",
+  ]
+}
+
+copy("cronet_package_copy_native_test_lib_unstripped") {
+  testonly = true
+  sources = [
+    "$root_out_dir/lib.unstripped/libcronet_tests.so",
+    "$root_out_dir/lib.unstripped/libnetty-tcnative.so",
+  ]
+  outputs = [
+    "$_test_package_dir/symbols/${android_app_abi}/{{source_file_part}}",
+  ]
+  deps = [
+    ":cronet_tests",
+    "//third_party/netty-tcnative:netty-tcnative-so",
+  ]
+}
+
+copy("cronet_package_copy_test_assets") {
+  testonly = true
+  sources = [
+    "test/assets",
+  ]
+  outputs = [
+    "$_test_package_dir/assets",
+  ]
+}
+
+copy("cronet_package_copy_test_support_apks") {
+  testonly = true
+  sources = [
+    # Provides EmbeddedTestServer.
+    "$root_out_dir/apks/ChromiumNetTestSupport.apk",
+  ]
+  outputs = [
+    "$_test_package_dir/apks/${android_app_abi}/{{source_file_part}}",
+  ]
+  deps = [
+    "//net/android:net_test_support_apk",
+  ]
+}
+
+copy("cronet_package_copy_test_files") {
+  testonly = true
+  sources = [
+    "//net/data/ssl/certificates/quic_test.example.com.crt",
+    "//net/data/ssl/certificates/quic_test.example.com.key",
+    "//net/data/ssl/certificates/quic_test.example.com.key.pkcs8",
+    "//net/data/ssl/certificates/quic_test.example.com.key.sct",
+  ]
+  outputs = [
+    "$_test_package_dir/assets/test_files/net/data/ssl/certificates/{{source_file_part}}",
+  ]
+  deps = [
+    # Not really dependent, but builds can fail if these two targets attempt
+    # to create the "assets" subdirectory simultaneously.
+    ":cronet_package_copy_test_assets",
+  ]
+}
+
 # Enforce that ARM Neon is not used when building for ARMv7
 if (target_cpu == "arm" && arm_version == 7 && !arm_use_neon) {
   action("enforce_no_neon") {
@@ -1109,6 +1253,9 @@ if (target_cpu == "arm" && arm_version == 7 && !arm_use_neon) {
 }
 
 group("cronet_package") {
+  # Marked as testonly as it contains test-only targets too.
+  testonly = true
+
   # Enforce building with ICU alternatives, crbug.com/611621.
   # Enforce that arm_use_neon==false when building for ARMv7 by
   # not including any deps in cronet_package target otherwise.
@@ -1118,6 +1265,7 @@ group("cronet_package") {
       ":cronet_package_copy",
       ":cronet_package_copy_native_lib",
       ":cronet_package_copy_native_lib_unstripped",
+      ":cronet_test_package",
       ":generate_javadoc",
       ":generate_licenses",
       ":jar_cronet_api_source",
@@ -1130,5 +1278,21 @@ group("cronet_package") {
     if (current_cpu == "arm" && arm_version == 7) {
       deps += [ ":enforce_no_neon" ]
     }
+  }
+}
+
+group("cronet_test_package") {
+  testonly = true
+
+  # Don't build for MIPS where tests aren't run.
+  if (current_cpu != "mipsel" && current_cpu != "mips64el") {
+    deps = [
+      ":cronet_package_copy_native_test_lib",
+      ":cronet_package_copy_native_test_lib_unstripped",
+      ":cronet_package_copy_test_assets",
+      ":cronet_package_copy_test_files",
+      ":cronet_package_copy_test_support_apks",
+      ":repackage_extracted_test_jars",
+    ]
   }
 }

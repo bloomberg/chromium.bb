@@ -5,7 +5,8 @@
 # References prebuilt Netty Jar file. See http://netty.io/
 
 import("//build/config/android/rules.gni")
+import("netty4.gni")
 
 android_java_prebuilt("netty_all_java") {
-  jar_path = "src/jar/all-in-one/netty-all-4.1.0.CR1-20160111.120759-50.jar"
+  jar_path = NETTY4_JAR_FILE
 }
