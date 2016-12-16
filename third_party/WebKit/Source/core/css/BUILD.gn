@@ -306,8 +306,6 @@ blink_core_sources("css") {
     "invalidation/PendingInvalidations.h",
     "invalidation/StyleInvalidator.cpp",
     "invalidation/StyleInvalidator.h",
-    "invalidation/StyleSheetInvalidationAnalysis.cpp",
-    "invalidation/StyleSheetInvalidationAnalysis.h",
     "parser/CSSAtRuleID.cpp",
     "parser/CSSAtRuleID.h",
     "parser/CSSLazyParsingState.cpp",
