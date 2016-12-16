@@ -37,6 +37,7 @@ class CSSPropertyAPIWriter(make_style_builder.StyleBuilderWriter):
                 continue
             classname = get_classname(property)
             properties_for_class[classname].append(property['property_id'])
+            self._outputs[classname + '.h'] = self.generate_property_api_h_builder(classname)
 
         # Stores a list of classes with elements (index, classname, [propertyIDs, ..]).
         self._api_classes = []
@@ -54,6 +55,16 @@ class CSSPropertyAPIWriter(make_style_builder.StyleBuilderWriter):
         return {
             'api_classes': self._api_classes,
         }
+
+    # Provides a function object given the classname of the property.
+    # This returned function generates a .h file for the specified property.
+    def generate_property_api_h_builder(self, api_classname):
+        @template_expander.use_jinja('CSSPropertyAPIFiles.h.tmpl')
+        def generate_property_api_h():
+            return {
+                'api_classname': api_classname,
+            }
+        return generate_property_api_h
 
 if __name__ == '__main__':
     in_generator.Maker(CSSPropertyAPIWriter).main(sys.argv)

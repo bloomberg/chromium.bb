@@ -346,7 +346,6 @@ blink_core_sources("css") {
     "parser/SizesCalcParser.cpp",
     "properties/CSSPropertyAPI.h",
     "properties/CSSPropertyAPIWebkitPadding.cpp",
-    "properties/CSSPropertyAPIWebkitPadding.h",
     "properties/CSSPropertyDescriptor.h",
     "resolver/AnimatedStyleBuilder.cpp",
     "resolver/AnimatedStyleBuilder.h",
