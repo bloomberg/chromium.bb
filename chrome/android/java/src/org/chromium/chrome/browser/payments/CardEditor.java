@@ -67,6 +67,16 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
         }
     }
 
+    /** The support credit card names. */
+    private static final String AMEX = "amex";
+    private static final String DINERS = "diners";
+    private static final String DISCOVER = "discover";
+    private static final String JCB = "jcb";
+    private static final String MASTERCARD = "mastercard";
+    private static final String MIR = "mir";
+    private static final String UNIONPAY = "unionpay";
+    private static final String VISA = "visa";
+
     /** The dropdown key that triggers the address editor to add a new billing address. */
     private static final String BILLING_ADDRESS_ADD_NEW = "add";
 
@@ -161,22 +171,18 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
         }
 
         mCardTypes = new HashMap<>();
-        mCardTypes.put("amex",
-                new CardTypeInfo(R.drawable.pr_amex, R.string.autofill_cc_amex));
-        mCardTypes.put("diners",
-                new CardTypeInfo(R.drawable.pr_dinersclub, R.string.autofill_cc_diners));
-        mCardTypes.put("discover",
-                new CardTypeInfo(R.drawable.pr_discover, R.string.autofill_cc_discover));
-        mCardTypes.put("jcb",
-                new CardTypeInfo(R.drawable.pr_jcb, R.string.autofill_cc_jcb));
-        mCardTypes.put("mastercard",
-                new CardTypeInfo(R.drawable.pr_mc, R.string.autofill_cc_mastercard));
-        mCardTypes.put("mir",
-                new CardTypeInfo(R.drawable.pr_mir, R.string.autofill_cc_mir));
-        mCardTypes.put("unionpay",
-                new CardTypeInfo(R.drawable.pr_unionpay, R.string.autofill_cc_union_pay));
-        mCardTypes.put("visa",
-                new CardTypeInfo(R.drawable.pr_visa, R.string.autofill_cc_visa));
+        mCardTypes.put(AMEX, new CardTypeInfo(R.drawable.pr_amex, R.string.autofill_cc_amex));
+        mCardTypes.put(
+                DINERS, new CardTypeInfo(R.drawable.pr_dinersclub, R.string.autofill_cc_diners));
+        mCardTypes.put(
+                DISCOVER, new CardTypeInfo(R.drawable.pr_discover, R.string.autofill_cc_discover));
+        mCardTypes.put(JCB, new CardTypeInfo(R.drawable.pr_jcb, R.string.autofill_cc_jcb));
+        mCardTypes.put(
+                MASTERCARD, new CardTypeInfo(R.drawable.pr_mc, R.string.autofill_cc_mastercard));
+        mCardTypes.put(MIR, new CardTypeInfo(R.drawable.pr_mir, R.string.autofill_cc_mir));
+        mCardTypes.put(
+                UNIONPAY, new CardTypeInfo(R.drawable.pr_unionpay, R.string.autofill_cc_union_pay));
+        mCardTypes.put(VISA, new CardTypeInfo(R.drawable.pr_visa, R.string.autofill_cc_visa));
 
         mAcceptedCardTypes = new HashSet<>();
         mAcceptedCardTypeInfos = new ArrayList<>();
@@ -189,6 +195,11 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                         && mAcceptedCardTypes.contains(
                                    PersonalDataManager.getInstance().getBasicCardPaymentType(
                                            value.toString(), true));
+            }
+
+            @Override
+            public boolean isLengthMaximum(@Nullable CharSequence value) {
+                return isCardNumberLengthMaximum(value);
             }
         };
 
@@ -211,6 +222,32 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
             }
         };
         mCalendar.execute();
+    }
+
+    private boolean isCardNumberLengthMaximum(@Nullable CharSequence value) {
+        if (TextUtils.isEmpty(value)) return false;
+        String cardType =
+                PersonalDataManager.getInstance().getBasicCardPaymentType(value.toString(), false);
+        if (TextUtils.isEmpty(cardType)) return false;
+
+        // Below maximum values are consistent with the values used to check the validity of the
+        // credit card number in autofill::IsValidCreditCardNumber.
+        String cardNumber = removeSpaceAndBar(value);
+        switch (cardType) {
+            case AMEX:
+                return cardNumber.length() == 15;
+            case DINERS:
+                return cardNumber.length() == 14;
+            case UNIONPAY:
+                return cardNumber.length() == 19;
+            default:
+                // Valid DISCOVER, JCB, MASTERCARD, MIR and VISA cards have at most 16 digits.
+                return cardNumber.length() == 16;
+        }
+    }
+
+    private static String removeSpaceAndBar(CharSequence value) {
+        return value.toString().replace(" ", "").replace("-", "");
     }
 
     /**
@@ -430,6 +467,11 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                         return year > mCurrentYear
                               || (year == mCurrentYear && month >= mCurrentMonth);
                     }
+
+                    @Override
+                    public boolean isLengthMaximum(@Nullable CharSequence value) {
+                        return false;
+                    }
                 };
             }
 
@@ -612,7 +654,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
             return;
         }
 
-        card.setNumber(mNumberField.getValue().toString().replace(" ", "").replace("-", ""));
+        card.setNumber(removeSpaceAndBar(mNumberField.getValue()));
         card.setName(mNameField.getValue().toString());
         card.setMonth(mMonthField.getValue().toString());
         card.setYear(mYearField.getValue().toString());

@@ -227,6 +227,11 @@ public class ContactEditor extends EditorBase<AutofillContact> {
                             && PhoneNumberUtils.isGlobalPhoneNumber(
                                        PhoneNumberUtils.stripSeparators(value.toString()));
                 }
+
+                @Override
+                public boolean isLengthMaximum(@Nullable CharSequence value) {
+                    return false;
+                }
             };
         }
         return mPhoneValidator;
@@ -238,6 +243,11 @@ public class ContactEditor extends EditorBase<AutofillContact> {
                 @Override
                 public boolean isValid(@Nullable CharSequence value) {
                     return value != null && Patterns.EMAIL_ADDRESS.matcher(value).matches();
+                }
+
+                @Override
+                public boolean isLengthMaximum(@Nullable CharSequence value) {
+                    return false;
                 }
             };
         }

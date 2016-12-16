@@ -34,6 +34,15 @@ public class EditorFieldModel {
          * @return True if the value is valid.
          */
         boolean isValid(@Nullable CharSequence value);
+
+        /**
+         * Called to check whehter the length of the field value is maximum.
+         *
+         * @param value The value of the field to check.
+         * @return True if the field value length is maximum among all the possible valid values in
+         *         this field.
+         */
+        boolean isLengthMaximum(@Nullable CharSequence value);
     }
 
     /**
@@ -496,6 +505,16 @@ public class EditorFieldModel {
 
         mErrorMessage = null;
         return true;
+    }
+
+    /**
+     * Returns true if the field value length is maximum among all the possible valid values in this
+     * field.
+     *
+     * @Return Whether the field value length is maximum.
+     */
+    public boolean isLengthMaximum() {
+        return mValidator == null ? false : mValidator.isLengthMaximum(mValue);
     }
 
     /**

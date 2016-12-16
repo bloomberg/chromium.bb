@@ -9,10 +9,12 @@ import android.text.Editable;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
+import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.FrameLayout;
@@ -32,6 +34,7 @@ import javax.annotation.Nullable;
 @VisibleForTesting
 public class EditorTextField extends FrameLayout implements EditorFieldView, View.OnClickListener {
     private EditorFieldModel mEditorFieldModel;
+    private OnEditorActionListener mEditorActionListener;
     private CompatibilityTextInputLayout mInputLayout;
     private AutoCompleteTextView mInput;
     private View mIconsLayer;
@@ -42,11 +45,12 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
     @Nullable private PaymentRequestObserverForTest mObserverForTest;
 
     public EditorTextField(Context context, final EditorFieldModel fieldModel,
-            OnEditorActionListener actionlistener, @Nullable InputFilter filter,
+            OnEditorActionListener actionListener, @Nullable InputFilter filter,
             @Nullable TextWatcher formatter, @Nullable PaymentRequestObserverForTest observer) {
         super(context);
         assert fieldModel.getInputTypeHint() != EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN;
         mEditorFieldModel = fieldModel;
+        mEditorActionListener = actionListener;
         mObserverForTest = observer;
 
         LayoutInflater.from(context).inflate(R.layout.payments_request_editor_textview, this, true);
@@ -60,7 +64,7 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
         mInput = (AutoCompleteTextView) mInputLayout.findViewById(R.id.text_view);
         mInput.setText(fieldModel.getValue());
         mInput.setContentDescription(label);
-        mInput.setOnEditorActionListener(actionlistener);
+        mInput.setOnEditorActionListener(mEditorActionListener);
 
         mIconsLayer = findViewById(R.id.icons_layer);
         mIconsLayer.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
@@ -113,6 +117,13 @@ public class EditorTextField extends FrameLayout implements EditorFieldView, Vie
                 updateFieldValueIcon(false);
                 if (mObserverForTest != null) {
                     mObserverForTest.onPaymentRequestEditorTextUpdate();
+                }
+                if (!mEditorFieldModel.isLengthMaximum()) return;
+                updateDisplayedError(true);
+                if (isValid()) {
+                    // Simulate editor action to select next selectable field.
+                    mEditorActionListener.onEditorAction(mInput, EditorInfo.IME_ACTION_NEXT,
+                            new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ENTER));
                 }
             }
 

@@ -43,6 +43,7 @@ bool IsValidCreditCardNumber(const base::string16& text) {
   // defined sizes.
   // [1] http://www.merriampark.com/anatomycc.htm
   // [2] http://en.wikipedia.org/wiki/Bank_card_number
+  // CardEditor.isCardNumberLengthMaxium() needs to be kept in sync.
   const char* const type = CreditCard::GetCreditCardType(text);
   if (type == kAmericanExpressCard && number.size() != 15)
     return false;

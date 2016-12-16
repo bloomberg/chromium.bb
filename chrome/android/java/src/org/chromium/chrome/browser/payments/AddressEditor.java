@@ -308,6 +308,11 @@ public class AddressEditor extends EditorBase<AutofillAddress> {
                             && PhoneNumberUtils.isGlobalPhoneNumber(
                                     PhoneNumberUtils.stripSeparators(value.toString()));
                 }
+
+                @Override
+                public boolean isLengthMaximum(@Nullable CharSequence value) {
+                    return false;
+                }
             };
         }
         return mPhoneValidator;
