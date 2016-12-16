@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_ARC_TEST_FAKE_INTENT_HELPER_INSTANCE_H_
 #define COMPONENTS_ARC_TEST_FAKE_INTENT_HELPER_INSTANCE_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -34,9 +35,31 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
     std::string extras;
   };
 
+  // Parameters passed to HandleIntent().
+  struct HandledIntent {
+    HandledIntent(mojom::IntentInfoPtr intent,
+                  mojom::ActivityNamePtr activity);
+    HandledIntent(HandledIntent&& other);
+    HandledIntent& operator=(HandledIntent&& other);
+    ~HandledIntent();
+
+    mojom::IntentInfoPtr intent;
+    mojom::ActivityNamePtr activity;
+  };
+
   void clear_broadcasts() { broadcasts_.clear(); }
+  void clear_handled_intents() { handled_intents_.clear(); }
 
   const std::vector<Broadcast>& broadcasts() const { return broadcasts_; }
+  const std::vector<HandledIntent>& handled_intents() const {
+    return handled_intents_;
+  }
+
+  // Sets a list of intent handlers to be returned in response to
+  // RequestIntentHandlerList() calls with intents containing |action|.
+  void SetIntentHandlers(
+      const std::string& action,
+      std::vector<mojom::IntentHandlerInfoPtr> handlers);
 
   // mojom::IntentHelperInstance:
   ~FakeIntentHelperInstance() override;
@@ -87,6 +110,14 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
 
  private:
   std::vector<Broadcast> broadcasts_;
+
+  // Information about calls to HandleIntent().
+  std::vector<HandledIntent> handled_intents_;
+
+  // Map from action names to intent handlers to be returned by
+  // RequestIntentHandlerList().
+  std::map<std::string, std::vector<mojom::IntentHandlerInfoPtr>>
+      intent_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeIntentHelperInstance);
 };
