@@ -281,11 +281,10 @@ void AppendTabs(const StartupTabs& from, StartupTabs* to) {
 }
 
 // Determines whether the Consolidated startup flow should be used, based on
-// OS, OS version, and the kUseConsolidatedStartupFlow Feature.
+// the kUseConsolidatedStartupFlow Feature. Not enabled on Windows 10+.
 bool UseConsolidatedFlow() {
 #if defined(OS_WIN)
-  // TODO(tmartino): Enable for Windows 10+ once relevant Win 10-specific logic
-  // is added to StartupTabProvider.
+  // TODO(tmartino): Add a Win10+ specific experiment.
   if (base::win::GetVersion() >= base::win::VERSION_WIN10)
     return false;
 #endif  // defined(OS_WIN)

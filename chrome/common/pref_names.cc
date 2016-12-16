@@ -1321,6 +1321,11 @@ const char kWebRTCUDPPortRange[] = "webrtc.udp_port_range";
 const char kHasSeenWelcomePage[] = "browser.has_seen_welcome_page";
 #endif
 
+#if defined(OS_WIN)
+// Whether or not this profile has been shown the Win10 promo page.
+const char kHasSeenWin10PromoPage[] = "browser.has_seen_win10_promo_page";
+#endif
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

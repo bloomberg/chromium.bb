@@ -458,6 +458,10 @@ extern const char kWebRTCUDPPortRange[];
 extern const char kHasSeenWelcomePage[];
 #endif
 
+#if defined(OS_WIN)
+extern const char kHasSeenWin10PromoPage[];
+#endif
+
 extern const char kGLVendorString[];
 extern const char kGLRendererString[];
 extern const char kGLVersionString[];

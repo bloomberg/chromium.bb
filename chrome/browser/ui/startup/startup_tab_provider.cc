@@ -21,32 +21,39 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/shell_integration.h"
 #endif
 
 StartupTabs StartupTabProviderImpl::GetOnboardingTabs(Profile* profile) const {
-#if defined(OS_WIN)
-  // Windows 10 has unique onboarding policies and content.
-  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
-    // TODO(tmartino): * Add a function, GetWin10SystemState, which gathers
-    //                   system state relevant to Win10 Onboarding and returns
-    //                   a struct.
-    //                 * Add a function, CheckWin10OnboardingTabPolicy, which
-    //                   takes such a struct as input and returns StartupTabs.
-    return StartupTabs();
-  }
-#endif
-
   if (!profile)
     return StartupTabs();
 
+  bool is_first_run = first_run::IsChromeFirstRun();
   PrefService* prefs = profile->GetPrefs();
   bool has_seen_welcome_page =
       prefs && prefs->GetBoolean(prefs::kHasSeenWelcomePage);
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile);
   bool is_signed_in = signin_manager && signin_manager->IsAuthenticated();
-  return CheckStandardOnboardingTabPolicy(first_run::IsChromeFirstRun(),
-                                          has_seen_welcome_page, is_signed_in);
+
+#if defined(OS_WIN)
+  // Windows 10 has unique onboarding policies and content.
+  if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+    PrefService* local_state = g_browser_process->local_state();
+    bool has_seen_win10_promo =
+        local_state && local_state->GetBoolean(prefs::kHasSeenWin10PromoPage);
+    bool is_default_browser =
+        g_browser_process->CachedDefaultWebClientState() ==
+        shell_integration::IS_DEFAULT;
+    return CheckWin10OnboardingTabPolicy(is_first_run, has_seen_welcome_page,
+                                         has_seen_win10_promo, is_signed_in,
+                                         is_default_browser);
+  }
+#endif
+
+  return CheckStandardOnboardingTabPolicy(is_first_run, has_seen_welcome_page,
+                                          is_signed_in);
 }
 
 StartupTabs StartupTabProviderImpl::GetDistributionFirstRunTabs(
@@ -100,6 +107,23 @@ StartupTabs StartupTabProviderImpl::CheckStandardOnboardingTabPolicy(
     tabs.emplace_back(GetWelcomePageUrl(!is_first_run), false);
   return tabs;
 }
+
+#if defined(OS_WIN)
+// static
+StartupTabs StartupTabProviderImpl::CheckWin10OnboardingTabPolicy(
+    bool is_first_run,
+    bool has_seen_welcome_page,
+    bool has_seen_win10_promo,
+    bool is_signed_in,
+    bool is_default_browser) {
+  StartupTabs tabs;
+  if (!has_seen_win10_promo && !is_default_browser)
+    tabs.emplace_back(GetWin10WelcomePageUrl(!is_first_run), false);
+  else if (!has_seen_welcome_page && !is_signed_in)
+    tabs.emplace_back(GetWelcomePageUrl(!is_first_run), false);
+  return tabs;
+}
+#endif
 
 // static
 StartupTabs StartupTabProviderImpl::CheckMasterPrefsTabPolicy(
@@ -168,6 +192,17 @@ GURL StartupTabProviderImpl::GetWelcomePageUrl(bool use_later_run_variant) {
              ? net::AppendQueryParameter(url, "variant", "everywhere")
              : url;
 }
+
+#if defined(OS_WIN)
+// static
+GURL StartupTabProviderImpl::GetWin10WelcomePageUrl(
+    bool use_later_run_variant) {
+  GURL url(chrome::kChromeUIWelcomeWin10URL);
+  return use_later_run_variant
+             ? net::AppendQueryParameter(url, "text", "faster")
+             : url;
+}
+#endif
 
 // static
 GURL StartupTabProviderImpl::GetTriggeredResetSettingsUrl() {

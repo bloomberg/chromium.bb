@@ -10,12 +10,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/startup/startup_features.h"
 #include "chrome/browser/ui/webui/welcome_win10_handler.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -89,6 +91,11 @@ WelcomeWin10UI::WelcomeWin10UI(content::WebUI* web_ui, const GURL& url)
   static const char kCssFilePath[] = "welcome.css";
   static const char kJsFilePath[] = "welcome.js";
 
+  Profile* profile = Profile::FromWebUI(web_ui);
+
+  // Store that this profile has been shown the Win10 promo page.
+  profile->GetPrefs()->SetBoolean(prefs::kHasSeenWin10PromoPage, true);
+
   // Determine which variation to show.
   bool is_first_run = !UrlContainsKeyValueInQuery(url, "text", "faster");
   bool is_inline_style = ShouldShowInlineStyleVariant(url);
@@ -116,7 +123,7 @@ WelcomeWin10UI::WelcomeWin10UI(content::WebUI* web_ui, const GURL& url)
   html_source->AddResourcePath("logo-large.png", IDR_PRODUCT_LOGO_64);
   html_source->AddResourcePath("logo-large2x.png", IDR_PRODUCT_LOGO_128);
 
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), html_source);
+  content::WebUIDataSource::Add(profile, html_source);
 }
 
 WelcomeWin10UI::~WelcomeWin10UI() = default;
