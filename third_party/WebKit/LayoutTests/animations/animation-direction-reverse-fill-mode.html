@@ -1,117 +1,40 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <title>Test animation direction reverse with fill modes</title>
-  <style>
+<!DOCTYPE html>
+<title>Test of animation-direction</title>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<style>
     .box {
-      position: relative;
-      left: 100px;
-      height: 100px;
-      width: 100px;
-      animation-delay: 0.1s;
-      animation-duration: 0.1s;
-      animation-timing-function: linear;
-      animation-name: anim;
+      animation-delay: 1s;
       animation-direction: reverse;
+      animation-duration: 1s;
+      animation-name: anim;
+      animation-timing-function: linear;
+      height: 100px;
+      left: 100px;
+      position: relative;
+      width: 100px;
     }
     @keyframes anim {
         from { left: 200px; }
         to   { left: 300px; }
     }
     #none {
-      background-color: blue;
       animation-fill-mode: none;
+      background-color: blue;
     }
     #backwards {
-      background-color: red;
       animation-fill-mode: backwards;
+      background-color: red;
     }
     #forwards {
-      background-color: green;
       animation-fill-mode: forwards;
+      background-color: green;
     }
     #both {
+      animation-fill-mode: both;
       background-color: yellow;
-      animation-fill-mode: both;
     }
-    #both_iterating {
-      background-color: cyan;
-      animation-fill-mode: both;
-      animation-iteration-count: 2;
-      animation-direction: alternate;
-    }
-    #both_iterating_reverse {
-      background-color: #999;
-      animation-fill-mode: both;
-      animation-iteration-count: 2;
-      animation-direction: alternate-reverse;
-    }
-  </style>
-  <script src="resources/animation-test-helpers.js"></script>
-  <script type="text/javascript" charset="utf-8">
-    const numAnims = 6;
-    var animsFinished = 0;
-    const allowance = 5;
-    const expectedValues = [
-      {id: "none",                   start: "100px", end: "100px"},
-      {id: "backwards",              start: "300px", end: "100px"},
-      {id: "forwards",               start: "100px", end: "200px"},
-      {id: "both",                   start: "300px", end: "200px"},
-      {id: "both_iterating",         start: "200px", end: "200px"},
-      {id: "both_iterating_reverse", start: "300px", end: "300px"}
-    ];
-    var result = "";
-
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-        testRunner.waitUntilDone();
-    }
-
-    function animationEnded(event) {
-        if (++animsFinished == numAnims) {
-            // This call to setTimeout should be ok in the test environment
-            // since we're just giving style a chance to resolve.
-            setTimeout(endTest, 0);
-        }
-    };
-
-    function endTest() {
-        for (var i = 0; i < expectedValues.length; i++) {
-            var realValue = getPropertyValue("left", expectedValues[i].id);
-            var expectedValue = expectedValues[i].end;
-            if (comparePropertyValue(realValue, expectedValue, allowance))
-                result += "PASS";
-            else
-                result += "FAIL";
-            result += " - end of animation - id: " + expectedValues[i].id + " expected: " + expectedValue + " actual: " + realValue + "<br>";
-        }
-        document.getElementById('result').innerHTML = result;
-
-        if (window.testRunner)
-            testRunner.notifyDone();
-    }
-
-    window.onload = function () {
-        for (var i = 0; i < expectedValues.length; i++) {
-            var realValue = getPropertyValue("left", expectedValues[i].id);
-            var expectedValue = expectedValues[i].start;
-            if (comparePropertyValue(realValue, expectedValue, allowance))
-                result += "PASS";
-            else
-                result += "FAIL";
-            result += " - start of animation - id: " + expectedValues[i].id + " expected: " + expectedValue + " actual: " + realValue + "<br>";
-        }
-        document.addEventListener("animationend", animationEnded, false);
-    };
-  </script>
-</head>
-<body>
-<div>
-  This test performs an animation of the left property with direction reverse
-  and four different fill modes. It animates over 0.1 seconds with a 0.1
-  second delay. It takes snapshots at document load and the end of the
-  animation.
-</div>
+</style>
 <div id="none" class="box">
   None
 </div>
@@ -124,13 +47,32 @@
 <div id="both" class="box">
   Both
 </div>
-<div id="both_iterating" class="box">
-  Both iterating
-</div>
-<div id="both_iterating_reverse" class="box">
-  Both iterating reverse
-</div>
-<div id="result">
-</div>
-</body>
-</html>
+<script>
+  'use strict';
+  test(function() {
+    none.style.animationDelay = '1s';
+    assert_equals(getComputedStyle(none).left, '100px');
+
+    backwards.style.animationDelay = '1s';
+    assert_equals(getComputedStyle(backwards).left, '300px');
+
+    forwards.style.animationDelay = '1s';
+    assert_equals(getComputedStyle(forwards).left, '100px');
+
+    both.style.animationDelay = '1s';
+    assert_equals(getComputedStyle(both).left, '300px');
+
+
+    none.style.animationDelay = '-5s';
+    assert_equals(getComputedStyle(none).left, '100px');
+
+    backwards.style.animationDelay = '-5s';
+    assert_equals(getComputedStyle(backwards).left, '100px');
+
+    forwards.style.animationDelay = '-5s';
+    assert_equals(getComputedStyle(forwards).left, '200px');
+
+    both.style.animationDelay = '-5s';
+    assert_equals(getComputedStyle(both).left, '200px');
+  }, "animation directions work with fill modes");
+</script>

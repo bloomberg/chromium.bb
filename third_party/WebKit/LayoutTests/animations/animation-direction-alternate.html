@@ -4,7 +4,7 @@
 <script src="../resources/testharnessreport.js"></script>
 <style>
     #target {
-      animation-direction: alternate-reverse;
+      animation-direction: alternate;
       animation-duration: 2s;
       animation-iteration-count: 2;
       animation-name: move;
@@ -30,27 +30,21 @@
   'use strict';
   test(function() {
     target.style.animationDelay = '1s';
-    assert_equals(getComputedStyle(target).left, '400px');
-
-    target.style.animationDelay = '-0.5s';
-    assert_equals(getComputedStyle(target).left, '300px');
-
-    target.style.animationDelay = '-1s';
-    assert_equals(getComputedStyle(target).left, '200px');
-
-    target.style.animationDelay = '-2s';
     assert_equals(getComputedStyle(target).left, '0px');
 
-    target.style.animationDelay = '-2.5s';
+    target.style.animationDelay = '-0.5s';
     assert_equals(getComputedStyle(target).left, '100px');
 
-    target.style.animationDelay = '-3s';
-    assert_equals(getComputedStyle(target).left, '200px');
+    target.style.animationDelay = '-1.5s';
+    assert_equals(getComputedStyle(target).left, '300px');
 
-    target.style.animationDelay = '-4s';
-    assert_equals(getComputedStyle(target).left, '400px');
+    target.style.animationDelay = '-2.5s';
+    assert_equals(getComputedStyle(target).left, '300px');
+
+    target.style.animationDelay = '-3.5s';
+    assert_equals(getComputedStyle(target).left, '100px');
 
     target.style.animationDelay = '-5s';
-    assert_equals(getComputedStyle(target).left, '400px');
-  }, "animation-direction alternate-reverse plays backwards, then forwards");
+    assert_equals(getComputedStyle(target).left, '0px');
+  }, "animation-direction alternate plays forwards, then backwards");
 </script>

@@ -1,22 +1,17 @@
-<!doctype html>
-<html>
-<head>
-  <title>Test of animation-direction reverse on non-composited elements</title>
-  <style>
-    body {
-      margin: 0;
-    }
-
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<style>
     .box {
-      position: relative;
-      left: 20px;
-      top: 10px;
-      height: 50px;
-      width: 250px;
-      margin-bottom: 10px;
       animation-duration: 2s;
-      animation-timing-function: linear;
       animation-iteration-count: 8;
+      animation-timing-function: linear;
+      height: 50px;
+      left: 20px;
+      margin-bottom: 10px;
+      position: relative;
+      top: 10px;
+      width: 250px;
     }
     
     .move1 {
@@ -57,34 +52,7 @@
       60% { left: 120px; }
       100% { left: 200px; }
     }
-  </style>
-  <script src="resources/animation-test-helpers.js"></script>
-  <script>
-    const expectedValues = [
-      // [time, element-id, property, expected-value, tolerance]
-      [0.2, "box1", "left",  20, 20],
-      [0.2, "box2", "left",  20, 20],
-      [0.2, "box3", "left",  180, 20],
-      [0.2, "box4", "left",  180, 20],
-      [2.2, "box1", "left",  20, 20],
-      [2.2, "box2", "left",  180, 20],
-      [2.2, "box3", "left",  180, 20],
-      [2.2, "box4", "left",  20, 20],
-      [0.2, "box5", "left",  40, 20],
-      [0.2, "box6", "left",  40, 20],
-      [0.2, "box7", "left",  180, 20],
-      [0.2, "box8", "left",  180, 20],
-      [2.2, "box5", "left",  40, 20],
-      [2.2, "box6", "left",  180, 20],
-      [2.2, "box7", "left",  180, 20],
-      [2.2, "box8", "left",  40, 20],
-    ];
-
-    runAnimationTest(expectedValues);
-
-  </script>
-</head>
-<body>
+</style>
 <div id="box1" class="box move1 normal">2 keyframes: normal</div>
 <div id="box2" class="box move1 alternate">2 keyframes: alternate</div>
 <div id="box3" class="box move1 reverse">2 keyframes: reverse</div>
@@ -93,7 +61,58 @@
 <div id="box6" class="box move2 alternate">4 keyframes: alternate</div>
 <div id="box7" class="box move2 reverse">4 keyframes: reverse</div>
 <div id="box8" class="box move2 alternate-reverse">4 keyframes: alternate-reverse</div>
-<div id="result"></div>
-</div>
-</body>
-</html>
+<script>
+  'use strict';
+  test(function() {
+    box1.style.animationDelay = '-0.2s';
+    assert_equals(getComputedStyle(box1).left, '20px');
+
+    box2.style.animationDelay = '-0.2s';
+    assert_equals(getComputedStyle(box2).left, '20px');
+
+    box3.style.animationDelay = '-0.2s';
+    assert_equals(getComputedStyle(box3).left, '180px');
+
+    box4.style.animationDelay = '-0.2s';
+    assert_equals(getComputedStyle(box4).left, '180px');
+
+
+    box1.style.animationDelay = '-2.2s';
+    assert_equals(getComputedStyle(box1).left, '20px');
+
+    box2.style.animationDelay = '-2.2s';
+    assert_equals(getComputedStyle(box2).left, '180px');
+
+    box3.style.animationDelay = '-2.2s';
+    assert_equals(getComputedStyle(box3).left, '180px');
+
+    box4.style.animationDelay = '-2.2s';
+    assert_equals(getComputedStyle(box4).left, '20px');
+
+
+    box5.style.animationDelay = '-0.2s';
+    assert_equals(getComputedStyle(box5).left, '40px');
+
+    box6.style.animationDelay = '-0.2s';
+    assert_equals(getComputedStyle(box6).left, '40px');
+
+    box7.style.animationDelay = '-0.2s';
+    assert_equals(getComputedStyle(box7).left, '180px');
+
+    box8.style.animationDelay = '-0.2s';
+    assert_equals(getComputedStyle(box8).left, '180px');
+
+
+    box5.style.animationDelay = '-2.2s';
+    assert_equals(getComputedStyle(box5).left, '40px');
+
+    box6.style.animationDelay = '-2.2s';
+    assert_equals(getComputedStyle(box6).left, '180px');
+
+    box7.style.animationDelay = '-2.2s';
+    assert_equals(getComputedStyle(box7).left, '180px');
+
+    box8.style.animationDelay = '-2.2s';
+    assert_equals(getComputedStyle(box8).left, '40px');
+  }, "animation-direction works with multiple keyframes");
+</script>
