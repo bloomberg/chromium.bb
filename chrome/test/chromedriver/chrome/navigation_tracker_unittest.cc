@@ -271,24 +271,24 @@ TEST(NavigationTracker, DiscardScheduledNavigationsOnMainFrameCommit) {
   base::DictionaryValue params_scheduled;
   params_scheduled.SetString("frameId", "subframe");
   params_scheduled.SetInteger("delay", 0);
-  ASSERT_EQ(
-      kOk,
-      tracker.OnEvent(
-          &client, "Page.frameScheduledNavigation", params_scheduled).code());
+  Status status = tracker.OnEvent(&client,
+                                  "Page.frameScheduledNavigation",
+                                  params_scheduled);
+  ASSERT_EQ(kOk, status.code()) << status.message();
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "subframe", true));
 
   base::DictionaryValue params_navigated;
   params_navigated.SetString("frame.parentId", "something");
   params_navigated.SetString("frame.name", std::string());
   params_navigated.SetString("frame.url", "http://abc.xyz");
-  ASSERT_EQ(
-      kOk,
-      tracker.OnEvent(&client, "Page.frameNavigated", params_navigated).code());
+  status = tracker.OnEvent(&client, "Page.frameNavigated", params_navigated);
+  ASSERT_EQ(kOk, status.code()) << status.message();
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "subframe", true));
   params_navigated.Clear();
-  ASSERT_EQ(
-      kOk,
-      tracker.OnEvent(&client, "Page.frameNavigated", params_navigated).code());
+  params_navigated.SetString("frame.id", "something");
+  params_navigated.SetString("frame.url", "http://abc.xyz");
+  status = tracker.OnEvent(&client, "Page.frameNavigated", params_navigated);
+  ASSERT_EQ(kOk, status.code()) << status.message();
   ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "subframe", false));
 }
 

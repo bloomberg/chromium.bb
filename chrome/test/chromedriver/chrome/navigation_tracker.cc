@@ -433,10 +433,10 @@ bool NavigationTracker::IsExpectingFrameLoadingEvents() {
   // PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToLoadAfterClick from
   // the Selenium test suite.
   // TODO(samuong): Remove this once we stop supporting M43.
-  if (browser_info_->browser_name == "chrome")
-    return browser_info_->build_no < 2358;
-  else
+  if (browser_info_->browser_name == "webview")
     return browser_info_->major_version < 44;
+  else
+    return browser_info_->build_no < 2358;
 }
 
 bool NavigationTracker::IsEventLoopPausedByDialogs() {
@@ -446,8 +446,8 @@ bool NavigationTracker::IsEventLoopPausedByDialogs() {
   // will block and timeout. For details refer to
   // https://bugs.chromium.org/p/chromedriver/issues/detail?id=1381.
   // TODO(samuong): Remove this once we stop supporting M51.
-  if (browser_info_->browser_name == "chrome")
-    return browser_info_->build_no >= 2743;
-  else
+  if (browser_info_->browser_name == "webview")
     return browser_info_->major_version >= 52;
+  else
+    return browser_info_->build_no >= 2743;
 }
