@@ -218,10 +218,9 @@ void TaskQueueManager::MaybeScheduleImmediateWorkLocked(
 
 void TaskQueueManager::MaybeScheduleDelayedWork(
     const tracked_objects::Location& from_here,
-    base::TimeTicks now,
-    base::TimeDelta delay) {
+    LazyNow* lazy_now,
+    base::TimeTicks run_time) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  DCHECK_GE(delay, base::TimeDelta());
   {
     base::AutoLock lock(any_thread_lock_);
 
@@ -236,17 +235,29 @@ void TaskQueueManager::MaybeScheduleDelayedWork(
   }
 
   // De-duplicate DoWork posts.
-  base::TimeTicks run_time = now + delay;
   if (next_delayed_do_work_ <= run_time && !next_delayed_do_work_.is_null())
     return;
+
+  cancelable_delayed_do_work_closure_.Reset(delayed_do_work_closure_);
+
+  base::TimeDelta delay =
+      std::max(base::TimeDelta(), run_time - lazy_now->Now());
+  next_delayed_do_work_ = lazy_now->Now() + delay;
 
   TRACE_EVENT1(tracing_category_, "MaybeScheduleDelayedWorkInternal",
                "delay_ms", delay.InMillisecondsF());
 
-  cancelable_delayed_do_work_closure_.Reset(delayed_do_work_closure_);
-  next_delayed_do_work_ = run_time;
   delegate_->PostDelayedTask(
       from_here, cancelable_delayed_do_work_closure_.callback(), delay);
+}
+
+void TaskQueueManager::CancelDelayedWork(base::TimeTicks run_time) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  if (next_delayed_do_work_ != run_time)
+    return;
+
+  cancelable_delayed_do_work_closure_.Cancel();
+  next_delayed_do_work_ = base::TimeTicks();
 }
 
 void TaskQueueManager::DoWork(bool delayed) {

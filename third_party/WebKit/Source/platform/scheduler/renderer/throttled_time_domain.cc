@@ -17,10 +17,14 @@ const char* ThrottledTimeDomain::GetName() const {
   return "ThrottledTimeDomain";
 }
 
-void ThrottledTimeDomain::RequestWakeup(base::TimeTicks now,
-                                        base::TimeDelta delay) {
+void ThrottledTimeDomain::RequestWakeupAt(LazyNow* lazy_now,
+                                          base::TimeTicks run_time) {
   // We assume the owner (i.e. TaskQueueThrottler) will manage wakeups on our
   // behalf.
+}
+
+void ThrottledTimeDomain::CancelWakeupAt(base::TimeTicks run_time) {
+  // We ignore this because RequestWakeupAt is a NOP.
 }
 
 base::Optional<base::TimeDelta> ThrottledTimeDomain::DelayTillNextTask(

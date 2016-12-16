@@ -74,8 +74,12 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   // runner. These delayed tasks are de-duplicated. Must be called on the thread
   // this class was created on.
   void MaybeScheduleDelayedWork(const tracked_objects::Location& from_here,
-                                base::TimeTicks now,
-                                base::TimeDelta delay);
+                                LazyNow* lazy_now,
+                                base::TimeTicks run_time);
+
+  // Cancels a delayed task to process work at |run_time|, previously requested
+  // with MaybeScheduleDelayedWork.
+  void CancelDelayedWork(base::TimeTicks run_time);
 
   // Set the number of tasks executed in a single invocation of the task queue
   // manager. Increasing the batch size can reduce the overhead of yielding

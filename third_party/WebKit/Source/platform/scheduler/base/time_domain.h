@@ -95,7 +95,10 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
   // registered wakeup for |queue|.
   void ScheduleDelayedWork(internal::TaskQueueImpl* queue,
                            base::TimeTicks delayed_run_time,
-                           base::TimeTicks now);
+                           LazyNow* lazy_now);
+
+  // Cancels any delayed work requested for |queue|.
+  void CancelDelayedWork(internal::TaskQueueImpl* queue);
 
   // Registers the |queue|.
   void RegisterQueue(internal::TaskQueueImpl* queue);
@@ -111,12 +114,17 @@ class BLINK_PLATFORM_EXPORT TimeDomain {
   virtual void OnRegisterWithTaskQueueManager(
       TaskQueueManager* task_queue_manager) = 0;
 
-  // The implementaion will secedule task processing to run with |delay| with
-  // respect to the TimeDomain's time source.  Always called on the main thread.
+  // The implementation will schedule task processing to run at time |run_time|
+  // within the TimeDomain's time line. Only called from the main thread.
   // NOTE this is only called by ScheduleDelayedWork if the scheduled runtime
   // is sooner than any previously sheduled work or if there is no other
   // scheduled work.
-  virtual void RequestWakeup(base::TimeTicks now, base::TimeDelta delay) = 0;
+  virtual void RequestWakeupAt(LazyNow* lazy_now, base::TimeTicks run_time) = 0;
+
+  // The implementation will cancel a wake up previously requested by
+  // RequestWakeupAt.  It's expected this will be a NOP for most virtual time
+  // domains.
+  virtual void CancelWakeupAt(base::TimeTicks run_time) = 0;
 
   // For implementation specific tracing.
   virtual void AsValueIntoInternal(
