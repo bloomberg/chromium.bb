@@ -1284,6 +1284,8 @@ split_static_library("browser") {
     "undo/bookmark_undo_service_factory.h",
     "update_client/chrome_update_query_params_delegate.cc",
     "update_client/chrome_update_query_params_delegate.h",
+    "usb/usb_blocklist.cc",
+    "usb/usb_blocklist.h",
     "usb/usb_chooser_context.cc",
     "usb/usb_chooser_context.h",
     "usb/usb_chooser_context_factory.cc",

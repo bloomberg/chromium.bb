@@ -16,6 +16,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/usb/usb_blocklist.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/web_usb_histograms.h"
@@ -223,6 +224,7 @@ void UsbChooserController::GotUsbDeviceList(
 bool UsbChooserController::DisplayDevice(
     scoped_refptr<device::UsbDevice> device) const {
   return device::UsbDeviceFilter::MatchesAny(device, filters_) &&
+         !UsbBlocklist::Get().IsExcluded(device) &&
          (base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kDisableWebUsbSecurity) ||
           device::FindInWebUsbAllowedOrigins(

@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/usb/usb_blocklist.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/browser/usb/usb_tab_helper.h"
@@ -59,6 +60,10 @@ bool WebUSBPermissionProvider::HasDevicePermission(
     content::RenderFrameHost* render_frame_host,
     scoped_refptr<const device::UsbDevice> device) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (UsbBlocklist::Get().IsExcluded(device))
+    return false;
+
   WebContents* web_contents =
       WebContents::FromRenderFrameHost(render_frame_host);
   GURL embedding_origin =
