@@ -17,7 +17,7 @@
 
 namespace ui {
 
-class CursorLoader;
+class ImageCursors;
 class PlatformWindow;
 
 namespace ws {
@@ -73,7 +73,7 @@ class PlatformDisplayDefault : public PlatformDisplay,
   const int64_t display_id_;
 
 #if !defined(OS_ANDROID)
-  std::unique_ptr<ui::CursorLoader> cursor_loader_;
+  std::unique_ptr<ui::ImageCursors> image_cursors_;
 #endif
 
   PlatformDisplayDelegate* delegate_ = nullptr;

@@ -5,6 +5,10 @@
 #ifndef SERVICES_UI_WS_PLATFORM_DISPLAY_DELEGATE_H_
 #define SERVICES_UI_WS_PLATFORM_DISPLAY_DELEGATE_H_
 
+namespace display {
+class Display;
+}
+
 namespace ui {
 
 class Event;
@@ -18,6 +22,9 @@ class ServerWindow;
 /// and responses to changes in viewport size.
 class PlatformDisplayDelegate {
  public:
+  // Returns a display::Display for this display.
+  virtual display::Display GetDisplay() = 0;
+
   // Returns the root window of this display.
   virtual ServerWindow* GetRootWindow() = 0;
 

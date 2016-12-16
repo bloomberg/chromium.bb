@@ -164,6 +164,7 @@ class Display : public PlatformDisplayDelegate,
   void CreateRootWindow(const gfx::Size& size);
 
   // PlatformDisplayDelegate:
+  display::Display GetDisplay() override;
   ServerWindow* GetRootWindow() override;
   void OnAcceleratedWidgetAvailable() override;
   bool IsInHighContrastMode() override;

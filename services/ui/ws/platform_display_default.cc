@@ -8,7 +8,7 @@
 #include "services/ui/display/screen_manager.h"
 #include "services/ui/ws/platform_display_init_params.h"
 #include "services/ui/ws/server_window.h"
-#include "ui/base/cursor/cursor_loader.h"
+#include "ui/base/cursor/image_cursors.h"
 #include "ui/display/display.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -32,7 +32,7 @@ PlatformDisplayDefault::PlatformDisplayDefault(
     const PlatformDisplayInitParams& init_params)
     : display_id_(init_params.display_id),
 #if !defined(OS_ANDROID)
-      cursor_loader_(ui::CursorLoader::Create()),
+      image_cursors_(new ImageCursors),
 #endif
       frame_generator_(new FrameGenerator(this, init_params.root_window)),
       metrics_(init_params.metrics) {
@@ -73,6 +73,10 @@ void PlatformDisplayDefault::Init(PlatformDisplayDelegate* delegate) {
 #endif
 
   platform_window_->Show();
+#if !defined(OS_ANDROID)
+  image_cursors_->SetDisplay(delegate_->GetDisplay(),
+                             metrics_.device_scale_factor);
+#endif
 }
 
 int64_t PlatformDisplayDefault::GetId() const {
@@ -103,7 +107,7 @@ void PlatformDisplayDefault::SetCursorById(mojom::Cursor cursor_id) {
   //
   // We probably also need to deal with different DPIs.
   ui::Cursor cursor(static_cast<int32_t>(cursor_id));
-  cursor_loader_->SetPlatformCursor(&cursor);
+  image_cursors_->SetPlatformCursor(&cursor);
   platform_window_->SetCursor(cursor.platform());
 #endif
 }

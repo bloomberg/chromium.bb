@@ -262,6 +262,10 @@ void Display::CreateRootWindow(const gfx::Size& size) {
   focus_controller_->AddObserver(this);
 }
 
+display::Display Display::GetDisplay() {
+  return ToDisplay();
+}
+
 ServerWindow* Display::GetRootWindow() {
   return root_.get();
 }
