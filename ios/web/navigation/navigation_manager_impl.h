@@ -18,7 +18,6 @@
 #include "url/gurl.h"
 
 @class CRWSessionController;
-@class CRWSessionEntry;
 
 namespace web {
 class BrowserState;

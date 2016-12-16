@@ -72,7 +72,7 @@ class NavigationManager {
   virtual WebState* GetWebState() const = 0;
 
   // Returns the NavigationItem that should be used when displaying info about
-  // the current entry to the user. It ignores certain pending entries, to
+  // the current item to the user. It ignores certain pending entries, to
   // prevent spoofing attacks using slow-loading navigations.
   virtual NavigationItem* GetVisibleItem() const = 0;
 
@@ -80,8 +80,8 @@ class NavigationManager {
   // are no committed entries.
   virtual NavigationItem* GetLastCommittedItem() const = 0;
 
-  // Returns the pending entry corresponding to the navigation that is
-  // currently in progress, or null if there is none.
+  // Returns the pending item corresponding to the navigation that is currently
+  // in progress, or null if there is none.
   virtual NavigationItem* GetPendingItem() const = 0;
 
   // Returns the transient item if any. This is an item which is removed and
@@ -143,10 +143,10 @@ class NavigationManager {
   // Navigates to the specified absolute index.
   virtual void GoToIndex(int index) = 0;
 
-  // Reloads the current entry. If |check_for_repost| is true and the current
-  // entry has POST data the user is prompted to see if they really want to
-  // reload the page. In nearly all cases pass in true.  If a transient entry
-  // is showing, initiates a new navigation to its URL.
+  // Reloads the current item. If |check_for_repost| is true and the current
+  // item has POST data the user is prompted to see if they really want to
+  // reload the page. In nearly all cases pass in true.  If a transient item is
+  // showing, initiates a new navigation to its URL.
   virtual void Reload(bool check_for_repost) = 0;
 };
 

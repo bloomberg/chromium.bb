@@ -312,7 +312,7 @@ void NavigationManagerImpl::GoToIndex(int index) {
 }
 
 void NavigationManagerImpl::Reload(bool check_for_reposts) {
-  // Navigation manager may be empty if the only pending entry failed to load
+  // Navigation manager may be empty if the only pending item failed to load
   // with SSL error and the user has decided not to proceed.
   NavigationItem* item = GetVisibleItem();
   GURL url = item ? item->GetURL() : GURL(url::kAboutBlankURL);
@@ -345,7 +345,7 @@ int NavigationManagerImpl::GetIndexForOffset(int offset) const {
 
   if (offset < 0) {
     if (GetTransientItem()) {
-      // Going back from transient entry is a matter of discarding it and there
+      // Going back from transient item is a matter of discarding it and there
       // is no need to move navigation index back.
       offset++;
     }
@@ -353,7 +353,7 @@ int NavigationManagerImpl::GetIndexForOffset(int offset) const {
     while (offset < 0 && result > 0) {
       // To stop the user getting 'stuck' on redirecting pages they weren't
       // even aware existed, it is necessary to pass over pages that would
-      // immediately result in a redirect (the entry *before* the redirected
+      // immediately result in a redirect (the item *before* the redirected
       // page).
       while (result > 0 && IsRedirectItemAtIndex(result)) {
         --result;
@@ -372,7 +372,7 @@ int NavigationManagerImpl::GetIndexForOffset(int offset) const {
       // pending navigation in progress. Returning invalid index indicates that
       // forward navigation will not be allowed (and |INT_MAX| works for that).
       // This is different from other platforms which allow forward navigation
-      // if pending entry exist.
+      // if pending item exist.
       // TODO(crbug.com/661858): Remove this once back-forward navigation uses
       // pending index.
       return INT_MAX;
