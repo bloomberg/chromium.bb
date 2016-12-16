@@ -307,8 +307,7 @@ LinkStyle::LoadReturnValue LinkStyle::loadStylesheetIfNeeded(
   String title = m_owner->title();
   if (!title.isEmpty() && !m_owner->isAlternate() &&
       m_disabledState != EnabledViaScript && m_owner->isInDocumentTree()) {
-    document().styleEngine().setPreferredStylesheetSetNameIfNotSet(
-        title, StyleEngine::DontUpdateActiveSheets);
+    document().styleEngine().setPreferredStylesheetSetNameIfNotSet(title);
   }
 
   bool mediaQueryMatches = true;
@@ -396,9 +395,7 @@ void LinkStyle::process() {
   }
 }
 
-void LinkStyle::setSheetTitle(
-    const String& title,
-    StyleEngine::ActiveSheetsUpdate updateActiveSheets) {
+void LinkStyle::setSheetTitle(const String& title) {
   if (!m_owner->isInDocumentTree() || !m_owner->relAttribute().isStyleSheet())
     return;
 
@@ -409,10 +406,8 @@ void LinkStyle::setSheetTitle(
     return;
 
   const KURL& href = m_owner->getNonEmptyURLAttribute(hrefAttr);
-  if (href.isValid() && !href.isEmpty()) {
-    document().styleEngine().setPreferredStylesheetSetNameIfNotSet(
-        title, updateActiveSheets);
-  }
+  if (href.isValid() && !href.isEmpty())
+    document().styleEngine().setPreferredStylesheetSetNameIfNotSet(title);
 }
 
 void LinkStyle::ownerRemoved() {

@@ -124,14 +124,13 @@ class CORE_EXPORT StyleEngine final
   void updateActiveStyle();
   void markAllTreeScopesDirty() { m_allTreeScopesDirty = true; }
 
-  enum ActiveSheetsUpdate { DontUpdateActiveSheets, UpdateActiveSheets };
   String preferredStylesheetSetName() const {
     return m_preferredStylesheetSetName;
   }
   String selectedStylesheetSetName() const {
     return m_selectedStylesheetSetName;
   }
-  void setPreferredStylesheetSetNameIfNotSet(const String&, ActiveSheetsUpdate);
+  void setPreferredStylesheetSetNameIfNotSet(const String&);
   void setSelectedStylesheetSetName(const String&);
   void setHttpDefaultStyle(const String&);
 

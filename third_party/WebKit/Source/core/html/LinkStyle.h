@@ -45,9 +45,7 @@ class LinkStyle final : public LinkResource, ResourceOwner<StyleSheetResource> {
   bool sheetLoaded();
 
   void setDisabledState(bool);
-  void setSheetTitle(
-      const String&,
-      StyleEngine::ActiveSheetsUpdate = StyleEngine::DontUpdateActiveSheets);
+  void setSheetTitle(const String&);
 
   bool styleSheetIsLoading() const;
   bool hasSheet() const { return m_sheet; }

@@ -204,8 +204,7 @@ void ProcessingInstruction::setCSSStyleSheet(
   cssSheet->setDisabled(m_alternate);
   cssSheet->setTitle(m_title);
   if (!m_alternate && !m_title.isEmpty())
-    document().styleEngine().setPreferredStylesheetSetNameIfNotSet(
-        m_title, StyleEngine::DontUpdateActiveSheets);
+    document().styleEngine().setPreferredStylesheetSetNameIfNotSet(m_title);
   cssSheet->setMediaQueries(MediaQuerySet::create(m_media));
 
   m_sheet = cssSheet;

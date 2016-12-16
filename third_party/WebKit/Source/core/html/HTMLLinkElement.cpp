@@ -99,7 +99,7 @@ void HTMLLinkElement::parseAttribute(const QualifiedName& name,
   } else {
     if (name == titleAttr) {
       if (LinkStyle* link = linkStyle())
-        link->setSheetTitle(value, StyleEngine::UpdateActiveSheets);
+        link->setSheetTitle(value);
     }
 
     HTMLElement::parseAttribute(name, oldValue, value);

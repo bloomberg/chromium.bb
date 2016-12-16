@@ -552,8 +552,7 @@ CSSStyleSheet* StyleEngine::createSheet(Element& element,
   DCHECK(styleSheet);
   if (!element.isInShadowTree()) {
     styleSheet->setTitle(element.title());
-    setPreferredStylesheetSetNameIfNotSet(element.title(),
-                                          DontUpdateActiveSheets);
+    setPreferredStylesheetSetNameIfNotSet(element.title());
   }
   return styleSheet;
 }
@@ -901,9 +900,7 @@ void StyleEngine::setStatsEnabled(bool enabled) {
     m_styleResolverStats->reset();
 }
 
-void StyleEngine::setPreferredStylesheetSetNameIfNotSet(
-    const String& name,
-    ActiveSheetsUpdate activeSheetsUpdate) {
+void StyleEngine::setPreferredStylesheetSetNameIfNotSet(const String& name) {
   if (!m_preferredStylesheetSetName.isEmpty())
     return;
   m_preferredStylesheetSetName = name;
@@ -913,14 +910,7 @@ void StyleEngine::setPreferredStylesheetSetNameIfNotSet(
   // and either only collects persistent style, or additionally preferred
   // style when present.
   m_selectedStylesheetSetName = name;
-
-  // TODO(rune@opera.com): For async stylesheet update, we should always mark
-  // the TreeScope dirty here, and the synchronous active stylesheet update
-  // (resolverChanged) should go away.
-  if (activeSheetsUpdate == UpdateActiveSheets) {
-    markDocumentDirty();
-    resolverChanged(AnalyzedStyleUpdate);
-  }
+  markDocumentDirty();
 }
 
 void StyleEngine::setSelectedStylesheetSetName(const String& name) {
@@ -933,7 +923,7 @@ void StyleEngine::setSelectedStylesheetSetName(const String& name) {
 }
 
 void StyleEngine::setHttpDefaultStyle(const String& content) {
-  setPreferredStylesheetSetNameIfNotSet(content, UpdateActiveSheets);
+  setPreferredStylesheetSetNameIfNotSet(content);
 }
 
 void StyleEngine::ensureUAStyleForFullscreen() {
