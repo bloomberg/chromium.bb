@@ -73,17 +73,16 @@ void CopyOutputRequestCallback(
 
 }  // namespace
 
-DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
-    ui::ViewAndroid* view,
-    SkColor background_color,
-    ReturnResourcesCallback return_resources_callback)
+DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(ui::ViewAndroid* view,
+                                                     SkColor background_color,
+                                                     Client* client)
     : frame_sink_id_(
           ui::ContextProviderFactory::GetInstance()->AllocateFrameSinkId()),
       view_(view),
-      return_resources_callback_(return_resources_callback),
+      client_(client),
       background_layer_(cc::SolidColorLayer::Create()) {
   DCHECK(view_);
-  DCHECK(!return_resources_callback_.is_null());
+  DCHECK(client_);
 
   surface_manager_ =
       ui::ContextProviderFactory::GetInstance()->GetSurfaceManager();
@@ -245,13 +244,12 @@ void DelegatedFrameHostAndroid::UnregisterFrameSinkHierarchy() {
 
 void DelegatedFrameHostAndroid::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
-  return_resources_callback_.Run(resources);
+  client_->ReturnResources(resources);
 }
 
 void DelegatedFrameHostAndroid::SetBeginFrameSource(
     cc::BeginFrameSource* begin_frame_source) {
-  // TODO(enne): hook this up instead of making RWHVAndroid a
-  // WindowAndroidObserver.
+  client_->SetBeginFrameSource(begin_frame_source);
 }
 
 void DelegatedFrameHostAndroid::UpdateBackgroundLayer() {

@@ -15,8 +15,6 @@ class UI_ANDROID_EXPORT WindowAndroidObserver {
   virtual void OnRootWindowVisibilityChanged(bool visible) = 0;
   virtual void OnAttachCompositor() = 0;
   virtual void OnDetachCompositor() = 0;
-  virtual void OnVSync(base::TimeTicks frame_time,
-                       base::TimeDelta vsync_period) = 0;
   virtual void OnAnimate(base::TimeTicks frame_begin_time) {}
 
   // Note that activity state callbacks will only be made if the WindowAndroid
