@@ -3898,6 +3898,10 @@ interface MediaMetadata
     getter artwork
     getter title
     method constructor
+    setter album
+    setter artist
+    setter artwork
+    setter title
 interface MediaQueryList : EventTarget
     attribute @@toStringTag
     getter matches

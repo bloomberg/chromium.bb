@@ -9,8 +9,8 @@
     Constructor(MediaMetadataInit metadata),
     RuntimeEnabled=MediaSession,
 ] interface MediaMetadata {
-    readonly attribute DOMString title;
-    readonly attribute DOMString artist;
-    readonly attribute DOMString album;
-    readonly attribute FrozenArray<MediaImage> artwork;
+    attribute DOMString title;
+    attribute DOMString artist;
+    attribute DOMString album;
+    attribute FrozenArray<MediaImage> artwork;
 };

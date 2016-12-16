@@ -21,7 +21,7 @@
       metadata = new MediaMetadata(42);
     } catch (e) {
       exception = true;
-  }
+    }
     assert_true(exception);
   }, 'Test that MediaMetadata is constructed using a dictionary');
 
@@ -57,5 +57,28 @@
     var metadata = new MediaMetadata({ randomValueThatWillNotBeAdded: '... hopefully ;)' });
     assert_equals(metadata.randomValueThatWillNotBeAdded, undefined);
   }, 'Test that passing unknown values to the dictionary is a no-op');
+
+  test(function() {
+    var metadata = new MediaMetadata({
+        title: 'foo', album: 'bar', artist: 'plop',
+        artwork: [ { src: 'src1', sizes: 'sizes1', type: 'type1'},
+                   { src: 'src2', sizes: 'sizes2', type: 'type2'} ] });
+
+    metadata.title = 'something else';
+    assert_equals(metadata.title, 'something else');
+
+    metadata.album = 'other value';
+    assert_equals(metadata.album, 'other value');
+
+    metadata.artist = 'someone else';
+    assert_equals(metadata.artist, 'someone else');
+
+    var image = new MediaImage({ src: 'http://example.com/', sizes: '40x40', type: 'image/png' });
+    metadata.artwork = [ image ];
+    assert_equals(metadata.artwork.length, 1);
+    assert_equals(metadata.artwork[0].src, 'http://example.com/');
+    assert_equals(metadata.artwork[0].sizes, '40x40');
+    assert_equals(metadata.artwork[0].type, 'image/png');
+  }, "Test that MediaMetadata is read/write");
 
 </script>

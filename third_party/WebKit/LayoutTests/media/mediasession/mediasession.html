@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<title>MediaSession interface</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script>
+test(function() {
+  var metadata = new MediaMetadata({});
+  navigator.mediaSession.metadata = metadata;
+  assert_equals(navigator.mediaSession.metadata, metadata);
+}, "Test that mediaSession.metadata is properly set");
+
+test(function() {
+  var metadata = new MediaMetadata({});
+  navigator.mediaSession.metadata = metadata;
+  metadata.title = 'foo';
+  assert_equals(navigator.mediaSession.metadata.title, 'foo');
+}, "Test that changes to metadata propagate properly");
+
+test(function() {
+  var metadata = new MediaMetadata({});
+  navigator.mediaSession.metadata = metadata;
+  navigator.mediaSession.metadata = null;
+  assert_equals(navigator.mediaSession.metadata, null);
+}, "Test that resetting metadata to null is reflected");
+</script>

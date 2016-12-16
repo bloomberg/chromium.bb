@@ -80,14 +80,27 @@ void MediaSession::dispose() {
 }
 
 void MediaSession::setMetadata(MediaMetadata* metadata) {
-  if (mojom::blink::MediaSessionService* service = getService()) {
-    service->SetMetadata(MediaMetadataSanitizer::sanitizeAndConvertToMojo(
-        metadata, getExecutionContext()));
-  }
+  if (metadata)
+    metadata->setSession(this);
+
+  if (m_metadata)
+    m_metadata->setSession(nullptr);
+
+  m_metadata = metadata;
+  onMetadataChanged();
 }
 
 MediaMetadata* MediaSession::metadata() const {
   return m_metadata;
+}
+
+void MediaSession::onMetadataChanged() {
+  mojom::blink::MediaSessionService* service = getService();
+  if (!service)
+    return;
+
+  service->SetMetadata(MediaMetadataSanitizer::sanitizeAndConvertToMojo(
+      m_metadata, getExecutionContext()));
 }
 
 const WTF::AtomicString& MediaSession::interfaceName() const {

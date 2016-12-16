@@ -39,6 +39,10 @@ class MODULES_EXPORT MediaSession final
   const WTF::AtomicString& interfaceName() const override;
   ExecutionContext* getExecutionContext() const override;
 
+  // Called by the MediaMetadata owned by |this| when it has updates. Also used
+  // internally when a new MediaMetadata object is set.
+  void onMetadataChanged();
+
   DEFINE_ATTRIBUTE_EVENT_LISTENER(play);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(pause);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(playpause);
