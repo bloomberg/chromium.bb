@@ -316,6 +316,14 @@ class UserManagerProfileDialogDelegate
     webContents_.reset(content::WebContents::Create(
         content::WebContents::CreateParams(profile)));
     window.contentView = webContents_->GetNativeView();
+
+    // When a window has layer-backed subviews, its contentView must be
+    // layer-backed or it won't mask the subviews to its rounded corners. See
+    // https://crbug.com/620049
+    // The static_cast is just needed for the 10.10 SDK. It can be removed when
+    // we move to a newer one.
+    static_cast<NSView*>(window.contentView).wantsLayer = YES;
+
     webContentsDelegate_.reset(new UserManagerWebContentsDelegate());
     webContents_->SetDelegate(webContentsDelegate_.get());
 
