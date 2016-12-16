@@ -740,7 +740,7 @@ void RenderingHelper::RenderContent() {
         static_cast<base::WaitableEvent*>(NULL)));
   }
 
-  int tex_flip = 1;
+  int tex_flip = !gl_surface_->FlipsVertically();
 #if defined(USE_OZONE)
   // Ozone surfaceless renders flipped from normal GL, so there's no need to
   // do an extra flip.
