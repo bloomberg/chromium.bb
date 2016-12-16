@@ -127,6 +127,8 @@ public abstract class UserRecoverableErrorHandler {
          */
         private final Activity mActivity;
 
+        private Dialog mDialog;
+
         /**
          * Create a new Modal Dialog handler for the specified activity and error code. The
          * specified activity may be used to launch the dialog via
@@ -141,19 +143,25 @@ public abstract class UserRecoverableErrorHandler {
 
         /**
          * Displays the dialog in a modal manner using
-         * {@link GoogleApiAvailability#showErrorDialog(int, Activity, int)}.
+         * {@link GoogleApiAvailability#getErrorDialog(Activity, int, int)}.
          * @param context the context in which the error was encountered
          * @param errorCode the error code from Google Play Services
          */
         @Override
         protected final void handle(final Context context, final int errorCode) {
-            final Dialog dialog = GoogleApiAvailability.getInstance().getErrorDialog(
+            mDialog = GoogleApiAvailability.getInstance().getErrorDialog(
                     mActivity, errorCode, NO_RESPONSE_REQUIRED);
-            if (dialog != null) {
+            if (mDialog != null) {
                 // This can happen if |errorCode| is ConnectionResult.SERVICE_INVALID.
-                dialog.show();
+                mDialog.show();
             }
             sErrorHandlerActionHistogramSample.record(ERROR_HANDLER_ACTION_MODAL_DIALOG);
+        }
+
+        public void cancelDialog() {
+            if (mDialog != null) {
+                mDialog.cancel();
+            }
         }
     }
 }

@@ -49,6 +49,7 @@ import java.util.List;
  */
 
 public class AccountSigninView extends FrameLayout implements ProfileDownloader.Observer {
+
     /**
      * Callbacks for various account selection events.
      */
@@ -117,6 +118,7 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
     private int mCancelButtonTextId;
     private boolean mIsChildAccount;
     private boolean mIsGooglePlayServicesOutOfDate;
+    private UserRecoverableErrorHandler.ModalDialog mGooglePlayServicesUpdateErrorHandler;
 
     private AccountSigninConfirmationView mSigninConfirmationView;
     private ImageView mSigninAccountImage;
@@ -196,6 +198,10 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
         super.onWindowVisibilityChanged(visibility);
         if (visibility == View.VISIBLE) {
             updateAccounts();
+            return;
+        }
+        if (visibility == View.INVISIBLE && mGooglePlayServicesUpdateErrorHandler != null) {
+            mGooglePlayServicesUpdateErrorHandler.cancelDialog();
         }
     }
 
@@ -300,8 +306,10 @@ public class AccountSigninView extends FrameLayout implements ProfileDownloader.
 
     private boolean checkGooglePlayServicesAvailable() {
         ExternalAuthUtils extAuthUtils = ExternalAuthUtils.getInstance();
+        mGooglePlayServicesUpdateErrorHandler = new UserRecoverableErrorHandler.ModalDialog(
+                mDelegate.getActivity());
         int resultCode = extAuthUtils.canUseGooglePlayServicesResultCode(
-                getContext(), new UserRecoverableErrorHandler.ModalDialog(mDelegate.getActivity()));
+                getContext(), mGooglePlayServicesUpdateErrorHandler);
         if (extAuthUtils.isGooglePlayServicesUpdateRequiredError(resultCode)) {
             mIsGooglePlayServicesOutOfDate = true;
         }
