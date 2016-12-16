@@ -122,15 +122,30 @@ static std::string FourccToString(uint32_t fourcc) {
                             (fourcc >> 16) & 0xFF, (fourcc >> 24) & 0xFF);
 }
 
-// Creates a mojom::RangePtr with the range of values (min, max, current) of the
-// user control associated with |control_id|. Returns an empty Range otherwise.
+// Running ioctl() on some devices, especially shortly after (re)opening the
+// device file descriptor or (re)starting streaming, can fail but works after
+// retrying (https://crbug.com/670262).
+// Returns false if the |request| ioctl fails too many times.
+static bool RunIoctl(int fd, int request, void* argp) {
+  int num_retries = 0;
+  for (; HANDLE_EINTR(ioctl(fd, request, argp)) < 0 &&
+         num_retries < kMaxIOCtrlRetries;
+       ++num_retries) {
+    DPLOG(WARNING) << "ioctl";
+  }
+  DPLOG_IF(ERROR, num_retries != kMaxIOCtrlRetries);
+  return num_retries != kMaxIOCtrlRetries;
+}
+
+// Creates a mojom::RangePtr with the (min, max, current, step) values of the
+// control associated with |control_id|. Returns an empty Range otherwise.
 static mojom::RangePtr RetrieveUserControlRange(int device_fd, int control_id) {
   mojom::RangePtr capability = mojom::Range::New();
 
   v4l2_queryctrl range = {};
   range.id = control_id;
   range.type = V4L2_CTRL_TYPE_INTEGER;
-  if (HANDLE_EINTR(ioctl(device_fd, VIDIOC_QUERYCTRL, &range)) < 0)
+  if (!RunIoctl(device_fd, VIDIOC_QUERYCTRL, &range))
     return mojom::Range::New();
   capability->max = range.maximum;
   capability->min = range.minimum;
@@ -138,7 +153,7 @@ static mojom::RangePtr RetrieveUserControlRange(int device_fd, int control_id) {
 
   v4l2_control current = {};
   current.id = control_id;
-  if (HANDLE_EINTR(ioctl(device_fd, VIDIOC_G_CTRL, &current)) < 0)
+  if (!RunIoctl(device_fd, VIDIOC_G_CTRL, &current))
     return mojom::Range::New();
   capability->current = current.value;
 
@@ -166,18 +181,8 @@ static void ResetUserAndCameraControlsToDefault(int device_fd) {
   v4l2_control auto_white_balance = {};
   auto_white_balance.id = V4L2_CID_AUTO_WHITE_BALANCE;
   auto_white_balance.value = false;
-  int num_retries = 0;
-  // Setting up the first control right after stopping streaming seems
-  // not to the work the first time, so retry a few times.
-  for (; num_retries < kMaxIOCtrlRetries &&
-         HANDLE_EINTR(ioctl(device_fd, VIDIOC_S_CTRL, &auto_white_balance)) < 0;
-       ++num_retries) {
-    DPLOG(WARNING) << "VIDIOC_S_CTRL";
-  }
-  if (num_retries == kMaxIOCtrlRetries) {
-    DLOG(ERROR) << "Cannot access device controls";
+  if (!RunIoctl(device_fd, VIDIOC_S_CTRL, &auto_white_balance))
     return;
-  }
 
   std::vector<struct v4l2_ext_control> special_camera_controls;
   // Set V4L2_CID_EXPOSURE_AUTO to V4L2_EXPOSURE_MANUAL.
