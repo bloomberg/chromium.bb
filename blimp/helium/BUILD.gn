@@ -10,6 +10,8 @@ component("helium") {
     "errors.h",
     "lazy_syncable_adapter.h",
     "lww_register.h",
+    "object_sync_state.cc",
+    "object_sync_state.h",
     "owned_register.h",
     "result.cc",
     "result.h",
@@ -27,6 +29,8 @@ component("helium") {
     "syncable_common.cc",
     "syncable_common.h",
     "transport.h",
+    "update_scheduler.cc",
+    "update_scheduler.h",
     "version_vector.cc",
     "version_vector.h",
   ]
@@ -59,11 +63,14 @@ source_set("unit_tests") {
     "helium_test.h",
     "lazy_syncable_adapter_unittest.cc",
     "lww_register_unittest.cc",
+    "mock_objects.cc",
+    "mock_objects.h",
     "owned_register_unittest.cc",
     "result_unittest.cc",
     "revision_generator_unittest.cc",
     "serializable_struct_unittest.cc",
     "stream_helpers_unittest.cc",
+    "update_scheduler_unittest.cc",
     "version_vector_unittest.cc",
   ]
 

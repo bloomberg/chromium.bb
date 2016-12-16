@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "blimp/helium/helium_test.h"
+#include "blimp/helium/mock_objects.h"
 #include "blimp/helium/serializable_struct.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,40 +23,6 @@ namespace helium {
 namespace {
 
 constexpr Revision kRevision = 42;
-
-struct TestSyncableChangeset : public SerializableStruct {
-  TestSyncableChangeset() : value(this) {}
-  ~TestSyncableChangeset() override {}
-
-  TestSyncableChangeset& operator=(const TestSyncableChangeset& other) {
-    value.Set(other.value());
-    return *this;
-  }
-
-  Field<int32_t> value;
-};
-
-class MockSyncable : public LazySyncable<TestSyncableChangeset> {
- public:
-  MockSyncable() {}
-  ~MockSyncable() = default;
-
-  // LazySyncable implementation.
-  MOCK_CONST_METHOD1(CreateChangesetMock, TestSyncableChangeset*(Revision));
-  MOCK_METHOD1(ApplyChangeset, void(const TestSyncableChangeset&));
-  MOCK_METHOD1(SetLocalUpdateCallback, void(const base::Closure&));
-  MOCK_CONST_METHOD1(ValidateChangeset, bool(const TestSyncableChangeset&));
-  MOCK_METHOD1(ReleaseBefore, void(Revision));
-  MOCK_CONST_METHOD0(GetRevision, Revision());
-  MOCK_METHOD2(PrepareToCreateChangeset, void(Revision, base::Closure));
-
-  std::unique_ptr<TestSyncableChangeset> CreateChangeset(Revision from) const {
-    return base::WrapUnique<TestSyncableChangeset>(CreateChangesetMock(from));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockSyncable);
-};
 
 class LazySyncableAdapterTest : public HeliumTest {
  public:
