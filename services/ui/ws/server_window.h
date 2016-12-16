@@ -106,6 +106,8 @@ class ServerWindow {
   const ServerWindow* parent() const { return parent_; }
   ServerWindow* parent() { return parent_; }
 
+  // NOTE: this returns null if the window does not have an ancestor associated
+  // with a display.
   const ServerWindow* GetRoot() const;
   ServerWindow* GetRoot() {
     return const_cast<ServerWindow*>(
@@ -205,6 +207,10 @@ class ServerWindow {
  private:
   // Implementation of removing a window. Doesn't send any notification.
   void RemoveImpl(ServerWindow* window);
+
+  // Called when the root window changes from |old_root| to |new_root|. This is
+  // called after the window is moved from |old_root| to |new_root|.
+  void ProcessRootChanged(ServerWindow* old_root, ServerWindow* new_root);
 
   // Called when this window's stacking order among its siblings is changed.
   void OnStackingChanged();

@@ -33,6 +33,7 @@ struct CompositorFrameSinkData {
   cc::mojom::MojoCompositorFrameSinkPrivatePtr compositor_frame_sink;
   cc::mojom::MojoCompositorFrameSinkPrivateRequest
       pending_compositor_frame_sink_request;
+  cc::FrameSinkId frame_sink_id;
 };
 
 // ServerWindowCompositorFrameSinkManager tracks the surfaces associated with a
@@ -82,6 +83,8 @@ class ServerWindowCompositorFrameSinkManager {
   void SetLatestSurfaceInfo(mojom::CompositorFrameSinkType type,
                             const cc::SurfaceId& surface_id,
                             const gfx::Size& frame_size);
+
+  void OnRootChanged(ServerWindow* old_root, ServerWindow* new_root);
 
  private:
   friend class ServerWindowCompositorFrameSinkManagerTestApi;
