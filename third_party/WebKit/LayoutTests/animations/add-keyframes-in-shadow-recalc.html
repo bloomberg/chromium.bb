@@ -21,10 +21,7 @@
                 to { color: orange }
             }`));
         root.appendChild(sheet);
-        // TODO(rune@opera.com): This count should be 1 when async stylesheet
-        // update with RuleSet invalidations land. Currently we always do a
-        // subtree recalc for stylesheet mutations in shadow trees.
-        assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 5,
+        assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1,
             "Recalc for shadow tree, including host and inserted style element.");
     }, "Check that adding @keyframes does not cause a style recalc of the host element when no animations are running.");
 </script>

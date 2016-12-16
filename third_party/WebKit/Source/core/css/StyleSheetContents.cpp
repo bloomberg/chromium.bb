@@ -617,10 +617,14 @@ RuleSet& StyleSheetContents::ensureRuleSet(const MediaQueryEvaluator& medium,
   return *m_ruleSet.get();
 }
 
-static void clearResolvers(HeapHashSet<WeakMember<CSSStyleSheet>>& clients) {
+static void setNeedsActiveStyleUpdateForClients(
+    HeapHashSet<WeakMember<CSSStyleSheet>>& clients) {
   for (const auto& sheet : clients) {
-    if (Document* document = sheet->ownerDocument())
-      document->styleEngine().clearResolver();
+    Document* document = sheet->ownerDocument();
+    Node* node = sheet->ownerNode();
+    if (!document || !node || !node->isConnected())
+      continue;
+    document->styleEngine().setNeedsActiveStyleUpdate(node->treeScope());
   }
 }
 
@@ -628,18 +632,12 @@ void StyleSheetContents::clearRuleSet() {
   if (StyleSheetContents* parentSheet = parentStyleSheet())
     parentSheet->clearRuleSet();
 
-  // Don't want to clear the StyleResolver if the RuleSet hasn't been created
-  // since we only clear the StyleResolver so that it's members are properly
-  // updated in ScopedStyleResolver::addRulesFromSheet.
   if (!m_ruleSet)
     return;
 
-  // Clearing the ruleSet means we need to recreate the styleResolver data
-  // structures. See the StyleResolver calls in
-  // ScopedStyleResolver::addRulesFromSheet.
-  clearResolvers(m_loadingClients);
-  clearResolvers(m_completedClients);
   m_ruleSet.clear();
+  setNeedsActiveStyleUpdateForClients(m_loadingClients);
+  setNeedsActiveStyleUpdateForClients(m_completedClients);
 }
 
 static void removeFontFaceRules(HeapHashSet<WeakMember<CSSStyleSheet>>& clients,

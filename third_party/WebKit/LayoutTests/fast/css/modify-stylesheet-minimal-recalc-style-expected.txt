@@ -2,11 +2,11 @@ PASS internals.updateStyleAndReturnAffectedElementCount() is 0
 PASS internals.updateStyleAndReturnAffectedElementCount() is 6
 PASS internals.updateStyleAndReturnAffectedElementCount() is 6
 PASS internals.updateStyleAndReturnAffectedElementCount() is 6
-PASS internals.updateStyleAndReturnAffectedElementCount() is 43
+PASS internals.updateStyleAndReturnAffectedElementCount() is 6
 PASS getComputedStyle(document.querySelector('.foo')).color is "rgb(0, 0, 0)"
 PASS getComputedStyle(document.querySelector('.baz')).color is "rgb(255, 0, 0)"
 PASS getComputedStyle(document.querySelector('.bar')).color is "rgb(0, 0, 0)"
-PASS internals.updateStyleAndReturnAffectedElementCount() is 59
+PASS internals.updateStyleAndReturnAffectedElementCount() is 6
 PASS getComputedStyle(document.querySelector('.foo')).color is "rgb(255, 0, 0)"
 PASS getComputedStyle(document.querySelector('.baz')).color is "rgb(255, 0, 0)"
 PASS getComputedStyle(document.querySelector('.bar')).color is "rgb(0, 0, 0)"

@@ -30,7 +30,6 @@
 #include "core/MediaTypeNames.h"
 #include "core/animation/DocumentAnimations.h"
 #include "core/css/FontFaceSet.h"
-#include "core/css/resolver/StyleResolver.h"
 #include "core/dom/AXObjectCache.h"
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/ElementVisibilityObserver.h"
@@ -38,6 +37,7 @@
 #include "core/dom/IntersectionObserverCallback.h"
 #include "core/dom/IntersectionObserverController.h"
 #include "core/dom/IntersectionObserverInit.h"
+#include "core/dom/StyleChangeReason.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
@@ -1476,6 +1476,10 @@ void FrameView::adjustMediaTypeForPrinting(bool printing) {
       setMediaType(m_mediaTypeWhenNotPrinting);
     m_mediaTypeWhenNotPrinting = nullAtom;
   }
+
+  m_frame->document()->setNeedsStyleRecalc(
+      SubtreeStyleChange,
+      StyleChangeReasonForTracing::create(StyleChangeReason::StyleSheetChange));
 }
 
 bool FrameView::contentsInCompositedLayer() const {

@@ -99,7 +99,7 @@ class CORE_EXPORT StyleEngine final
   }
   CSSStyleSheet* inspectorStyleSheet() const { return m_inspectorStyleSheet; }
 
-  const HeapVector<Member<CSSStyleSheet>> activeStyleSheetsForInspector() const;
+  const ActiveStyleSheetVector activeStyleSheetsForInspector();
 
   bool needsActiveStyleUpdate() const;
   void setNeedsActiveStyleUpdate(TreeScope&);
@@ -121,7 +121,6 @@ class CORE_EXPORT StyleEngine final
   RuleSet* ruleSetForSheet(CSSStyleSheet&);
   void mediaQueryAffectingValueChanged();
   void updateStyleSheetsInImport(DocumentStyleSheetCollector& parentCollector);
-  void updateActiveStyleSheets(StyleResolverUpdateMode);
   void updateActiveStyle();
   void markAllTreeScopesDirty() { m_allTreeScopesDirty = true; }
 
@@ -183,20 +182,13 @@ class CORE_EXPORT StyleEngine final
 
   StyleResolver& ensureResolver() {
     updateActiveStyle();
-    if (!m_resolver) {
+    if (!m_resolver)
       createResolver();
-    } else if (m_resolver->hasPendingAuthorStyleSheets()) {
-      m_resolver->appendPendingAuthorStyleSheets();
-      finishAppendAuthorStyleSheets();
-    } else if (m_globalRuleSet.isDirty()) {
-      m_globalRuleSet.update(document());
-    }
     return *m_resolver;
   }
 
   bool hasResolver() const { return m_resolver; }
   void clearResolver();
-  void clearMasterResolver();
 
   StyleInvalidator& styleInvalidator() { return m_styleInvalidator; }
   bool mediaQueryAffectedByViewportChange();
@@ -216,8 +208,7 @@ class CORE_EXPORT StyleEngine final
   void updateGenericFontFamilySettings();
 
   void didDetach();
-  bool shouldClearResolver() const;
-  void resolverChanged(StyleResolverUpdateMode);
+  void resolverChanged(StyleResolverUpdateMode) {}
 
   CSSStyleSheet* createSheet(Element&,
                              const String& text,
@@ -298,8 +289,6 @@ class CORE_EXPORT StyleEngine final
   }
 
   void createResolver();
-  void appendActiveAuthorStyleSheets();
-  void finishAppendAuthorStyleSheets();
 
   CSSStyleSheet* parseSheet(Element&,
                             const String& text,
@@ -316,7 +305,6 @@ class CORE_EXPORT StyleEngine final
   }
 
   void updateActiveStyleSheetsInShadow(
-      StyleResolverUpdateMode,
       TreeScope*,
       UnorderedTreeScopeSet& treeScopesRemoved);
 
@@ -348,9 +336,9 @@ class CORE_EXPORT StyleEngine final
 
   Member<StyleRuleUsageTracker> m_tracker;
 
-  typedef HeapHashMap<WeakMember<TreeScope>,
-                      Member<ShadowTreeStyleSheetCollection>>
-      StyleSheetCollectionMap;
+  using StyleSheetCollectionMap =
+      HeapHashMap<WeakMember<TreeScope>,
+                  Member<ShadowTreeStyleSheetCollection>>;
   StyleSheetCollectionMap m_styleSheetCollectionMap;
 
   bool m_documentScopeDirty = true;
@@ -366,7 +354,6 @@ class CORE_EXPORT StyleEngine final
 
   bool m_usesRemUnits = false;
   bool m_ignorePendingStylesheets = false;
-  bool m_didCalculateResolver = false;
 
   Member<StyleResolver> m_resolver;
   Member<ViewportStyleResolver> m_viewportResolver;
