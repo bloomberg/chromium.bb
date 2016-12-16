@@ -2,17 +2,113 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""For running module as script."""
+"""Send system monitoring data to the timeseries monitoring API."""
 
 from __future__ import print_function
 
-import sys
+import random
+import time
 
+import psutil
+
+from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
-from chromite.scripts import sysmon
+from chromite.lib import metrics
+from chromite.lib import ts_mon_config
+from chromite.scripts.sysmon import puppet_metrics
+from chromite.scripts.sysmon import system_metrics
+from infra_libs.ts_mon.common import interface
 
-try:
-  sysmon.main(sys.argv[1:])
-except Exception:
-  logging.exception('sysmon throws an error')
-  raise
+DEFAULT_LOG_LEVEL = 'DEBUG'
+DEFAULT_INTERVAL = 60  # 1 minute
+
+logger = logging.getLogger(__name__)
+
+
+class _MainLoop(object):
+  """Main loop for sysmon."""
+
+  def __init__(self, loop_func, interval=60):
+    """Initialize instance.
+
+    Args:
+      loop_func: Function to call on each loop.
+      interval: Time between loops in seconds.
+    """
+    self._loop_func = loop_func
+    self._interval = interval
+    self._cycles = 0
+
+  def loop_once(self):
+    """Do actions for a single loop."""
+    try:
+      self._loop_func(self._cycles)
+    except Exception:
+      logger.exception('Error during loop.')
+
+  def loop_forever(self):
+    while True:
+      self.loop_once()
+      _force_sleep(self._interval)
+      self._cycles = (self._cycles + 1) % 60
+
+
+def _force_sleep(secs):
+  """Force sleep for at least the given number of seconds."""
+  now = time.time()
+  finished_time = now + secs
+  while now < finished_time:
+    remaining = finished_time - now
+    logger.debug('Sleeping for %d, %d remaining', secs, remaining)
+    time.sleep(remaining)
+    now = time.time()
+
+
+def collect_metrics(cycles):
+  system_metrics.get_uptime()
+  system_metrics.get_cpu_info()
+  system_metrics.get_disk_info()
+  system_metrics.get_mem_info()
+  system_metrics.get_net_info()
+  system_metrics.get_proc_info()
+  system_metrics.get_load_avg()
+  puppet_metrics.get_puppet_summary()
+  if cycles == 0:
+    system_metrics.get_os_info()
+  system_metrics.get_unix_time()  # must be just before flush
+  metrics.Flush()
+
+
+def main():
+  parser = commandline.ArgumentParser(
+      description=__doc__,
+      default_log_level=DEFAULT_LOG_LEVEL)
+  parser.add_argument(
+      '--interval',
+      default=DEFAULT_INTERVAL, type=int,
+      help='time (in seconds) between sampling system metrics')
+  opts = parser.parse_args()
+  opts.Freeze()
+
+  # This returns a 0 value the first time it's called.  Call it now and
+  # discard the return value.
+  psutil.cpu_times_percent()
+
+  # Wait a random amount of time before starting the loop in case sysmon
+  # is started at exactly the same time on all machines.
+  time.sleep(random.uniform(0, opts.interval))
+
+  # This call returns a context manager that doesn't do anything, so we
+  # ignore the return value.
+  ts_mon_config.SetupTsMonGlobalState('sysmon', auto_flush=False)
+  # The default prefix is '/chrome/infra/'.
+  interface.state.metric_name_prefix = (interface.state.metric_name_prefix
+                                        + 'chromeos/sysmon/')
+
+  mainloop = _MainLoop(loop_func=collect_metrics,
+                       interval=opts.interval)
+  mainloop.loop_forever()
+
+
+if __name__ == '__main__':
+  main()
