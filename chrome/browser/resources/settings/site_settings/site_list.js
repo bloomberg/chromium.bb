@@ -35,15 +35,6 @@ Polymer({
     },
 
     /**
-     * The site that was selected by the user in the dropdown list.
-     * @type {SiteException}
-     */
-    selectedSite: {
-      type: Object,
-      notify: true,
-    },
-
-    /**
      * The site serving as the model for the currently open action menu.
      * @private {?SiteException}
      */
@@ -404,9 +395,8 @@ Polymer({
   onOriginTap_: function(event) {
     if (!this.enableSiteSettings_)
       return;
-    this.selectedSite = event.model.item;
     settings.navigateTo(settings.Route.SITE_SETTINGS_SITE_DETAILS,
-        new URLSearchParams('site=' + this.selectedSite.origin));
+        new URLSearchParams('site=' + event.model.item.origin));
   },
 
   /**

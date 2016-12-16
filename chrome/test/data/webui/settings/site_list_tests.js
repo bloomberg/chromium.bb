@@ -625,7 +625,7 @@ cr.define('site_list', function() {
               assertNotEquals(undefined, clickable);
               MockInteractions.tap(clickable);
               assertEquals(prefs.exceptions.geolocation[0].origin,
-                  testElement.selectedSite.origin);
+                  settings.getQueryParameters().get('site'));
             });
       });
 
@@ -748,7 +748,7 @@ cr.define('site_list', function() {
                 assertNotEquals(undefined, clickable);
                 MockInteractions.tap(clickable);
                 assertEquals(prefsVarious.exceptions.geolocation[0].origin,
-                    testElement.selectedSite.origin);
+                    settings.getQueryParameters().get('site'));
               });
             });
       });
@@ -800,7 +800,7 @@ cr.define('site_list', function() {
                       prefsMixedOriginAndPattern.exceptions.
                                                  geolocation[0].
                                                  origin,
-                      testElement.selectedSite.displayName);
+                      testElement.sites[0].displayName);
                 }
               });
             });

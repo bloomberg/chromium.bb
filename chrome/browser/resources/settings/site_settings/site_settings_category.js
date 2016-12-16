@@ -21,15 +21,6 @@ Polymer({
     categoryEnabled: Boolean,
 
     /**
-     * The site that is passed down to the site list.
-     * @type {SiteException}
-     */
-    selectedSite: {
-      type: Object,
-      notify: true,
-    },
-
-    /**
      * The description to be shown next to the slider.
      * @private
      */

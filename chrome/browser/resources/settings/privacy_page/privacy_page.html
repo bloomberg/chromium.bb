@@ -80,17 +80,14 @@
           <p class="privacy-explanation">
             $i18nRaw{improveBrowsingExperience}
           </p>
-          <settings-checkbox
-              pref="{{prefs.alternate_error_pages.enabled}}"
+          <settings-checkbox pref="{{prefs.alternate_error_pages.enabled}}"
               label="$i18n{linkDoctorPref}">
           </settings-checkbox>
-          <settings-checkbox
-              pref="{{prefs.search.suggest_enabled}}"
+          <settings-checkbox pref="{{prefs.search.suggest_enabled}}"
               label="$i18n{searchSuggestPref}"
               hidden="[[!pageVisibility.searchPrediction]]">
           </settings-checkbox>
-          <settings-checkbox
-              pref="{{prefs.net.network_prediction_options}}"
+          <settings-checkbox pref="{{prefs.net.network_prediction_options}}"
               label="$i18n{networkPredictionEnabled}"
               hidden="[[!pageVisibility.networkPrediction]]">
           </settings-checkbox>
@@ -106,8 +103,7 @@
           </settings-checkbox>
 <if expr="_google_chrome">
 <if expr="chromeos">
-          <settings-checkbox
-              pref="{{prefs.cros.metrics.reportingEnabled}}"
+          <settings-checkbox pref="{{prefs.cros.metrics.reportingEnabled}}"
               label="$i18n{enableLogging}">
           </settings-checkbox>
 </if><!-- chromeos -->
@@ -209,7 +205,7 @@
 
       <template is="dom-if" route-path="/content/all" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryAllSites}">
-          <all-sites selected-site="{{selectedSite}}"></all-sites>
+          <all-sites></all-sites>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/automaticDownloads" no-search>
@@ -217,7 +213,6 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
-              selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.AUTOMATIC_DOWNLOADS}}">
           </site-settings-category>
         </settings-subpage>
@@ -228,7 +223,6 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
-              selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.BACKGROUND_SYNC}}">
           </site-settings-category>
         </settings-subpage>
@@ -238,9 +232,7 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <media-picker type="camera"></media-picker>
-          <site-settings-category
-              selected-site="{{selectedSite}}"
-              category="{{ContentSettingsTypes.CAMERA}}">
+          <site-settings-category category="{{ContentSettingsTypes.CAMERA}}">
           </site-settings-category>
         </settings-subpage>
       </template>
@@ -248,9 +240,7 @@
         <settings-subpage page-title="$i18n{siteSettingsCategoryCookies}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
-          <site-settings-category
-              selected-site="{{selectedSite}}"
-              category="{{ContentSettingsTypes.COOKIES}}">
+          <site-settings-category category="{{ContentSettingsTypes.COOKIES}}">
             <div class="settings-box extra-options">
               <settings-toggle-button class="start"
                   label="$i18n{thirdPartyCookie}"
@@ -266,9 +256,7 @@
         <settings-subpage page-title="$i18n{siteSettingsCategoryImages}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
-          <site-settings-category
-              selected-site="{{selectedSite}}"
-              category="{{ContentSettingsTypes.IMAGES}}">
+          <site-settings-category category="{{ContentSettingsTypes.IMAGES}}">
           </site-settings-category>
         </settings-subpage>
       </template>
@@ -277,7 +265,6 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
-              selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.GEOLOCATION}}">
           </site-settings-category>
         </settings-subpage>
@@ -302,7 +289,6 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
-              selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.JAVASCRIPT}}">
           </site-settings-category>
         </settings-subpage>
@@ -311,9 +297,7 @@
         <settings-subpage page-title="$i18n{siteSettingsKeygen}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
-          <site-settings-category
-              selected-site="{{selectedSite}}"
-              category="{{ContentSettingsTypes.KEYGEN}}">
+          <site-settings-category category="{{ContentSettingsTypes.KEYGEN}}">
           </site-settings-category>
         </settings-subpage>
       </template>
@@ -322,9 +306,7 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <media-picker type="mic"></media-picker>
-          <site-settings-category
-              selected-site="{{selectedSite}}"
-              category="{{ContentSettingsTypes.MIC}}">
+          <site-settings-category category="{{ContentSettingsTypes.MIC}}">
           </site-settings-category>
         </settings-subpage>
       </template>
@@ -333,7 +315,6 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
-              selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.NOTIFICATIONS}}">
           </site-settings-category>
         </settings-subpage>
@@ -342,9 +323,7 @@
         <settings-subpage page-title="$i18n{siteSettingsFlash}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
-          <site-settings-category
-              selected-site="{{selectedSite}}"
-              category="{{ContentSettingsTypes.PLUGINS}}">
+          <site-settings-category category="{{ContentSettingsTypes.PLUGINS}}">
 <if expr="chromeos">
             <div actionable class="settings-box extra-options"
                 on-tap="onAdobeFlashStorageClicked_">
@@ -358,9 +337,7 @@
         <settings-subpage page-title="$i18n{siteSettingsCategoryPopups}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
-          <site-settings-category
-              selected-site="{{selectedSite}}"
-              category="{{ContentSettingsTypes.POPUPS}}">
+          <site-settings-category category="{{ContentSettingsTypes.POPUPS}}">
           </site-settings-category>
         </settings-subpage>
       </template>
@@ -369,7 +346,6 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <site-settings-category
-              selected-site="{{selectedSite}}"
               category="{{ContentSettingsTypes.UNSANDBOXED_PLUGINS}}">
           </site-settings-category>
         </settings-subpage>
@@ -381,7 +357,7 @@
       </template>
       <template is="dom-if" route-path="/content/siteDetails" no-search>
         <settings-subpage page-title="$i18n{siteSettingsSiteDetails}">
-          <site-details site="[[selectedSite]]"></site-details>
+          <site-details></site-details>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/cookies/detail"
