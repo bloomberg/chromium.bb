@@ -216,6 +216,10 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_IGNORE_GPU_DITHER
 #endif
 
+#ifndef    SK_SUPPORT_LEGACY_PREROLL
+#   define SK_SUPPORT_LEGACY_PREROLL
+#endif
+
 #ifndef    SK_SUPPORT_LEGACY_EVAL_CUBIC
 #   define SK_SUPPORT_LEGACY_EVAL_CUBIC
 #endif
