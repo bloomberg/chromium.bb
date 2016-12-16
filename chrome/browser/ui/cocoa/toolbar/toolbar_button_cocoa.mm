@@ -7,6 +7,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/sdk_forward_declarations.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
+#import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/nsview_additions.h"
@@ -204,11 +205,14 @@ const NSSize kMDButtonIconSize = NSMakeSize(16, 16);
 }
 
 - (gfx::VectorIconId)vectorIconId {
+  BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
   switch ([self viewID]) {
     case VIEW_ID_BACK_BUTTON:
-      return gfx::VectorIconId::NAVIGATE_BACK;
+      return isRTL ? gfx::VectorIconId::NAVIGATE_FORWARD
+                   : gfx::VectorIconId::NAVIGATE_BACK;
     case VIEW_ID_FORWARD_BUTTON:
-      return gfx::VectorIconId::NAVIGATE_FORWARD;
+      return isRTL ? gfx::VectorIconId::NAVIGATE_BACK
+                   : gfx::VectorIconId::NAVIGATE_FORWARD;
     case VIEW_ID_HOME_BUTTON:
       return gfx::VectorIconId::NAVIGATE_HOME;
     case VIEW_ID_APP_MENU:
