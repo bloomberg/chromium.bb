@@ -350,8 +350,11 @@ void FrameView::dispose() {
 
   // FIXME: Do we need to do something here for OOPI?
   HTMLFrameOwnerElement* ownerElement = m_frame->deprecatedLocalOwner();
-  // TODO(dcheng): It seems buggy that we can have an owner element that
-  // points to another Widget.
+  // TODO(dcheng): It seems buggy that we can have an owner element that points
+  // to another Widget. This can happen when a plugin element loads a frame
+  // (widget A of type FrameView) and then loads a plugin (widget B of type
+  // WebPluginContainerImpl). In this case, the frame's view is A and the frame
+  // element's owned widget is B. See https://crbug.com/673170 for an example.
   if (ownerElement && ownerElement->ownedWidget() == this)
     ownerElement->setWidget(nullptr);
 
