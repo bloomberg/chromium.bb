@@ -8,7 +8,7 @@
 #include <map>
 #include <set>
 
-#include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
+#include "content/browser/devtools/protocol/target.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/public/browser/devtools_agent_host_client.h"
 #include "content/public/browser/devtools_agent_host_observer.h"
@@ -17,48 +17,52 @@ namespace content {
 
 class RenderFrameHostImpl;
 
-namespace devtools {
-namespace target {
+namespace protocol {
 
-class TargetHandler : public DevToolsAgentHostClient,
+class TargetHandler : public Target::Backend,
+                      public DevToolsAgentHostClient,
                       public ServiceWorkerDevToolsManager::Observer,
                       public DevToolsAgentHostObserver {
  public:
-  using Response = DevToolsProtocolClient::Response;
-
   TargetHandler();
   ~TargetHandler() override;
 
+  void Wire(UberDispatcher*);
   void SetRenderFrameHost(RenderFrameHostImpl* render_frame_host);
-  void SetClient(std::unique_ptr<Client> client);
-  void Detached();
+  Response Disable() override;
 
   void UpdateServiceWorkers();
   void UpdateFrames();
 
   // Domain implementation.
-  Response SetDiscoverTargets(bool discover);
-  Response SetAutoAttach(bool auto_attach, bool wait_for_debugger_on_start);
-  Response SetAttachToFrames(bool value);
+  Response SetDiscoverTargets(bool discover) override;
+  Response SetAutoAttach(bool auto_attach,
+                         bool wait_for_debugger_on_start) override;
+  Response SetAttachToFrames(bool value) override;
   Response SetRemoteLocations(
-      const std::vector<std::unique_ptr<base::DictionaryValue>>&);
-  Response AttachToTarget(const std::string& target_id, bool* out_success);
-  Response DetachFromTarget(const std::string& target_id);
+      std::unique_ptr<protocol::Array<Target::RemoteLocation>>) override;
+  Response AttachToTarget(const std::string& target_id,
+                          bool* out_success) override;
+  Response DetachFromTarget(const std::string& target_id) override;
   Response SendMessageToTarget(const std::string& target_id,
-                               const std::string& message);
-  Response GetTargetInfo(const std::string& target_id,
-                         scoped_refptr<TargetInfo>* target_info);
-  Response ActivateTarget(const std::string& target_id);
-  Response CloseTarget(const std::string& target_id, bool* out_success);
-  Response CreateBrowserContext(std::string* out_context_id);
+                               const std::string& message) override;
+  Response GetTargetInfo(
+      const std::string& target_id,
+      std::unique_ptr<Target::TargetInfo>* target_info) override;
+  Response ActivateTarget(const std::string& target_id) override;
+  Response CloseTarget(const std::string& target_id,
+                       bool* out_success) override;
+  Response CreateBrowserContext(std::string* out_context_id) override;
   Response DisposeBrowserContext(const std::string& context_id,
-                                 bool* out_success);
+                                 bool* out_success) override;
   Response CreateTarget(const std::string& url,
-                        const int* width,
-                        const int* height,
-                        const std::string* context_id,
-                        std::string* out_target_id);
-  Response GetTargets(std::vector<scoped_refptr<TargetInfo>>* target_infos);
+                        Maybe<int> width,
+                        Maybe<int> height,
+                        Maybe<std::string> context_id,
+                        std::string* out_target_id) override;
+  Response GetTargets(
+      std::unique_ptr<protocol::Array<Target::TargetInfo>>* target_infos)
+      override;
 
  private:
   using HostsMap = std::map<std::string, scoped_refptr<DevToolsAgentHost>>;
@@ -92,7 +96,7 @@ class TargetHandler : public DevToolsAgentHostClient,
   void AgentHostClosed(DevToolsAgentHost* agent_host,
                        bool replaced_with_another_client) override;
 
-  std::unique_ptr<Client> client_;
+  std::unique_ptr<Target::Frontend> frontend_;
   bool discover_;
   bool auto_attach_;
   bool wait_for_debugger_on_start_;
@@ -105,8 +109,7 @@ class TargetHandler : public DevToolsAgentHostClient,
   DISALLOW_COPY_AND_ASSIGN(TargetHandler);
 };
 
-}  // namespace target
-}  // namespace devtools
+}  // namespace protocol
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVTOOLS_PROTOCOL_TARGET_HANDLER_H_

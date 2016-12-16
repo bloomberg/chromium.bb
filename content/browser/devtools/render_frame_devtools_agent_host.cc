@@ -395,7 +395,6 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
     RenderFrameHostImpl* host)
     : DevToolsAgentHostImpl(base::GenerateGUID()),
       input_handler_(new devtools::input::InputHandler()),
-      target_handler_(new devtools::target::TargetHandler()),
       frame_trace_recorder_(nullptr),
       protocol_handler_(new DevToolsProtocolHandler(this)),
       handlers_frame_host_(nullptr),
@@ -404,7 +403,6 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
       frame_tree_node_(host->frame_tree_node()) {
   DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
   dispatcher->SetInputHandler(input_handler_.get());
-  dispatcher->SetTargetHandler(target_handler_.get());
 
   SetPending(host);
   CommitPending();
@@ -514,6 +512,10 @@ void RenderFrameDevToolsAgentHost::Attach() {
   storage_handler_->Wire(session()->dispatcher());
   storage_handler_->SetRenderFrameHost(handlers_frame_host_);
 
+  target_handler_.reset(new protocol::TargetHandler());
+  target_handler_->Wire(session()->dispatcher());
+  target_handler_->SetRenderFrameHost(handlers_frame_host_);
+
   tracing_handler_.reset(new protocol::TracingHandler(
       protocol::TracingHandler::Renderer,
       frame_tree_node_->frame_tree_node_id(),
@@ -554,6 +556,8 @@ void RenderFrameDevToolsAgentHost::Detach() {
   service_worker_handler_.reset();
   storage_handler_->Disable();
   storage_handler_.reset();
+  target_handler_->Disable();
+  target_handler_.reset();
   tracing_handler_->Disable();
   tracing_handler_.reset();
 
@@ -618,7 +622,6 @@ void RenderFrameDevToolsAgentHost::OnClientDetached() {
 #if defined(OS_ANDROID)
   power_save_blocker_.reset();
 #endif
-  target_handler_->Detached();
   frame_trace_recorder_.reset();
   in_navigation_protocol_message_buffer_.clear();
 }
@@ -692,7 +695,7 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
   DispatchBufferedProtocolMessagesIfNecessary();
 
   DCHECK(CheckConsistency());
-  if (navigation_handle->HasCommitted())
+  if (target_handler_ && navigation_handle->HasCommitted())
     target_handler_->UpdateServiceWorkers();
 }
 
@@ -738,7 +741,8 @@ void RenderFrameDevToolsAgentHost::RenderFrameHostChanged(
   // CommitPending may destruct |this|.
   scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
 
-  target_handler_->UpdateFrames();
+  if (target_handler_)
+    target_handler_->UpdateFrames();
 
   if (IsBrowserSideNavigationEnabled())
     return;
@@ -905,7 +909,8 @@ void RenderFrameDevToolsAgentHost::DidCommitProvisionalLoadForFrame(
   if (pending_ && pending_->host() == render_frame_host)
     CommitPending();
   DCHECK(CheckConsistency());
-  target_handler_->UpdateServiceWorkers();
+  if (target_handler_)
+    target_handler_->UpdateServiceWorkers();
 }
 
 void RenderFrameDevToolsAgentHost::DidFailProvisionalLoad(
@@ -972,7 +977,8 @@ void RenderFrameDevToolsAgentHost::UpdateProtocolHandlers(
     security_handler_->SetRenderFrameHost(host);
   if (storage_handler_)
     storage_handler_->SetRenderFrameHost(host);
-  target_handler_->SetRenderFrameHost(host);
+  if (target_handler_)
+    target_handler_->SetRenderFrameHost(host);
 }
 
 void RenderFrameDevToolsAgentHost::DisconnectWebContents() {
