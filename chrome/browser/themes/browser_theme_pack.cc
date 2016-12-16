@@ -28,7 +28,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/base/resource/data_pack.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/safe_integer_conversions.h"
@@ -1239,54 +1238,31 @@ void BrowserThemePack::CropImages(ImageCache* images) const {
 }
 
 void BrowserThemePack::CreateFrameImages(ImageCache* images) const {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-
   // Create all the output images in a separate cache and move them back into
   // the input images because there can be name collisions.
   ImageCache temp_output;
 
   for (size_t i = 0; i < arraysize(kFrameTintMap); ++i) {
     int prs_id = kFrameTintMap[i].key;
-    gfx::Image frame;
-    // If there's no frame image provided for the specified id, then load
-    // the default provided frame. If that's not provided, skip this whole
-    // thing and just use the default images.
-    int prs_base_id = 0;
+    if (!images->count(prs_id)) {
+      // Fall back from inactive incognito to active incognito.
+      if (prs_id == PRS_THEME_FRAME_INCOGNITO_INACTIVE)
+        prs_id = PRS_THEME_FRAME_INCOGNITO;
 
-    if (!prs_base_id) {
-      if (prs_id == PRS_THEME_FRAME_INCOGNITO_INACTIVE) {
-        prs_base_id = images->count(PRS_THEME_FRAME_INCOGNITO) ?
-                      PRS_THEME_FRAME_INCOGNITO : PRS_THEME_FRAME;
-      } else if (prs_id == PRS_THEME_FRAME_OVERLAY_INACTIVE) {
-        prs_base_id = PRS_THEME_FRAME_OVERLAY;
-      } else if (prs_id == PRS_THEME_FRAME_INACTIVE) {
-        prs_base_id = PRS_THEME_FRAME;
-      } else if (prs_id == PRS_THEME_FRAME_INCOGNITO &&
-                 !images->count(PRS_THEME_FRAME_INCOGNITO)) {
-        prs_base_id = PRS_THEME_FRAME;
-      } else {
-        prs_base_id = prs_id;
-      }
+      // From there, fall back to the normal frame.
+      if (!images->count(prs_id))
+        prs_id = PRS_THEME_FRAME;
+
+      // Fall back from inactive overlay to overlay, but stop there.
+      if (prs_id == PRS_THEME_FRAME_OVERLAY_INACTIVE)
+        prs_id = PRS_THEME_FRAME_OVERLAY;
     }
+
+    // Note that if the original ID and all the fallbacks are absent, the caller
+    // will rely on the frame colors instead.
     if (images->count(prs_id)) {
-      frame = (*images)[prs_id];
-    } else if (prs_base_id != prs_id && images->count(prs_base_id)) {
-      frame = (*images)[prs_base_id];
-    } else if (prs_base_id == PRS_THEME_FRAME_OVERLAY) {
-      if (images->count(PRS_THEME_FRAME)) {
-        // If there is no theme overlay, don't tint the default frame,
-        // because it will overwrite the custom frame image when we cache and
-        // reload from disk.
-        frame = gfx::Image();
-      }
-    } else {
-      // If the theme doesn't specify an image, then apply the tint to
-      // the default frame.
-      frame = rb.GetImageNamed(IDR_THEME_FRAME);
-    }
-    if (!frame.IsEmpty()) {
-      temp_output[prs_id] = CreateHSLShiftedImage(
-          frame, GetTintInternal(kFrameTintMap[i].value));
+      temp_output[kFrameTintMap[i].key] = CreateHSLShiftedImage(
+          (*images)[prs_id], GetTintInternal(kFrameTintMap[i].value));
     }
   }
   MergeImageCaches(temp_output, images);
