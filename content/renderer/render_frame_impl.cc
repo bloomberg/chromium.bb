@@ -3232,9 +3232,15 @@ void RenderFrameImpl::loadURLExternally(const blink::WebURLRequest& request,
                                         bool should_replace_current_entry) {
   Referrer referrer(RenderViewImpl::GetReferrerFromRequest(frame_, request));
   if (policy == blink::WebNavigationPolicyDownload) {
-    Send(new FrameHostMsg_DownloadUrl(render_view_->GetRoutingID(),
-                                      GetRoutingID(), request.url(), referrer,
-                                      suggested_name));
+    FrameHostMsg_DownloadUrl_Params params;
+    params.render_view_id = render_view_->GetRoutingID();
+    params.render_frame_id = GetRoutingID();
+    params.url = request.url();
+    params.referrer = referrer;
+    params.initiator_origin = request.requestorOrigin();
+    params.suggested_name = suggested_name;
+
+    Send(new FrameHostMsg_DownloadUrl(params));
   } else {
     OpenURL(request.url(), IsHttpPost(request),
             GetRequestBodyForWebURLRequest(request),

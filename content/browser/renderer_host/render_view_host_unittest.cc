@@ -283,6 +283,7 @@ class TestSaveImageFromDataURL : public RenderFrameMessageFilter {
                    int render_frame_id,
                    const GURL& url,
                    const Referrer& referrer,
+                   const url::Origin& initiator,
                    const base::string16& suggested_name,
                    const bool use_prompt) const override {
     url_string_ = url.spec();

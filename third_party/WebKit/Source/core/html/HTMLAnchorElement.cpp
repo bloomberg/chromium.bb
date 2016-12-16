@@ -422,6 +422,7 @@ void HTMLAnchorElement::handleClick(Event* event) {
         document().getSecurityOrigin()->canRequest(completedURL);
     const AtomicString& suggestedName =
         (isSameOrigin ? fastGetAttribute(downloadAttr) : nullAtom);
+    request.setRequestorOrigin(SecurityOrigin::create(document().url()));
 
     frame->loader().client()->loadURLExternally(
         request, NavigationPolicyDownload, suggestedName, false);

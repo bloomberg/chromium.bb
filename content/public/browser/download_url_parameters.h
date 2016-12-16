@@ -15,12 +15,14 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/common/referrer.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -105,6 +107,12 @@ class CONTENT_EXPORT DownloadUrlParameters {
   void set_referrer(const Referrer& referrer) { referrer_ = referrer; }
   void set_referrer_encoding(const std::string& referrer_encoding) {
     referrer_encoding_ = referrer_encoding;
+  }
+
+  // The origin of the context which initiated the request. See
+  // net::URLRequest::initiator().
+  void set_initiator(const base::Optional<url::Origin>& initiator) {
+    initiator_ = initiator;
   }
 
   // If this is a request for resuming an HTTP/S download, |last_modified|
@@ -210,6 +218,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   bool prefer_cache() const { return prefer_cache_; }
   const Referrer& referrer() const { return referrer_; }
   const std::string& referrer_encoding() const { return referrer_encoding_; }
+  const base::Optional<url::Origin>& initiator() const { return initiator_; }
 
   // These will be -1 if the request is not associated with a frame. See
   // the constructors for more.
@@ -257,6 +266,7 @@ class CONTENT_EXPORT DownloadUrlParameters {
   int64_t post_id_;
   bool prefer_cache_;
   Referrer referrer_;
+  base::Optional<url::Origin> initiator_;
   std::string referrer_encoding_;
   int render_process_host_id_;
   int render_view_host_routing_id_;

@@ -50,6 +50,7 @@
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/shell/browser/shell_network_delegate.h"
 #include "device/power_save_blocker/power_save_blocker.h"
+#include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -2482,6 +2483,85 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeBlobURL) {
 
   EXPECT_STREQ(FILE_PATH_LITERAL("suggested-filename.txt"),
                download->GetTargetFilePath().BaseName().value().c_str());
+}
+
+IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeSameSiteCookie) {
+  base::ThreadRestrictions::ScopedAllowIO allow_io_during_test;
+
+  const std::string kOriginOne = "one.example";
+  const std::string kOriginTwo = "two.example";
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const std::string real_host = embedded_test_server()->host_port_pair().host();
+  host_resolver()->AddRule(kOriginOne, real_host);
+  host_resolver()->AddRule(kOriginTwo, real_host);
+
+  GURL echo_cookie_url =
+      embedded_test_server()->GetURL(kOriginOne, "/echoheader?cookie");
+
+  // download-attribute-same-site-cookie sets two cookies. One "A=B" is set with
+  // SameSite=Strict. The other one "B=C" doesn't have this flag. In general
+  // a[download] should behave the same as a top level navigation.
+  //
+  // The page then simulates a click on an <a download> link whose target is the
+  // /echoheader handler on the same origin.
+  DownloadItem* download = StartDownloadAndReturnItem(
+      shell(),
+      embedded_test_server()->GetURL(
+          kOriginOne,
+          std::string(
+              "/download/download-attribute-same-site-cookie.html?target=") +
+              echo_cookie_url.spec()));
+  WaitForCompletion(download);
+
+  std::string file_contents;
+  ASSERT_TRUE(
+      base::ReadFileToString(download->GetTargetFilePath(), &file_contents));
+
+  // Initiator and target are same-origin. Both cookies should have been
+  // included in the request.
+  EXPECT_STREQ("A=B; B=C", file_contents.c_str());
+
+  // The test isn't complete without verifying that the initiator isn't being
+  // incorrectly set to be the same as the resource origin. The
+  // download-attribute test page doesn't set any cookies but creates a download
+  // via a <a download> link to the target URL. In this case:
+  //
+  //  Initiator origin: kOriginTwo
+  //  Resource origin: kOriginOne
+  //  First-party origin: kOriginOne
+  download = StartDownloadAndReturnItem(
+      shell(),
+      embedded_test_server()->GetURL(
+          kOriginTwo, std::string("/download/download-attribute.html?target=") +
+                          echo_cookie_url.spec()));
+  WaitForCompletion(download);
+
+  ASSERT_TRUE(
+      base::ReadFileToString(download->GetTargetFilePath(), &file_contents));
+
+  // The initiator and the target are not same-origin. Only the second cookie
+  // should be sent along with the request.
+  EXPECT_STREQ("B=C", file_contents.c_str());
+
+  // OriginOne redirects through OriginTwo.
+  //
+  //  Initiator origin: kOriginOne
+  //  Resource origin: kOriginOne
+  //  First-party origin: kOriginOne
+  GURL redirect_url = embedded_test_server()->GetURL(
+      kOriginTwo, std::string("/server-redirect?") + echo_cookie_url.spec());
+  download = StartDownloadAndReturnItem(
+      shell(),
+      embedded_test_server()->GetURL(
+          kOriginOne, std::string("/download/download-attribute.html?target=") +
+                          redirect_url.spec()));
+  WaitForCompletion(download);
+
+  ASSERT_TRUE(
+      base::ReadFileToString(download->GetTargetFilePath(), &file_contents));
+  EXPECT_STREQ("A=B; B=C", file_contents.c_str());
 }
 
 // The file empty.bin is served with a MIME type of application/octet-stream.

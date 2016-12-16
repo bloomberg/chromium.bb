@@ -270,6 +270,7 @@ void RenderFrameMessageFilter::DownloadUrl(int render_view_id,
                                            int render_frame_id,
                                            const GURL& url,
                                            const Referrer& referrer,
+                                           const url::Origin& initiator,
                                            const base::string16& suggested_name,
                                            const bool use_prompt) const {
   if (!resource_context_)
@@ -282,6 +283,7 @@ void RenderFrameMessageFilter::DownloadUrl(int render_view_id,
   parameters->set_suggested_name(suggested_name);
   parameters->set_prompt(use_prompt);
   parameters->set_referrer(referrer);
+  parameters->set_initiator(initiator);
 
   if (url.SchemeIsBlob()) {
     ChromeBlobStorageContext* blob_context =
@@ -342,12 +344,9 @@ void RenderFrameMessageFilter::CheckPolicyForCookies(
 }
 
 void RenderFrameMessageFilter::OnDownloadUrl(
-    int render_view_id,
-    int render_frame_id,
-    const GURL& url,
-    const Referrer& referrer,
-    const base::string16& suggested_name) {
-  DownloadUrl(render_view_id, render_frame_id, url, referrer, suggested_name,
+    const FrameHostMsg_DownloadUrl_Params& params) {
+  DownloadUrl(params.render_view_id, params.render_frame_id, params.url,
+              params.referrer, params.initiator_origin, params.suggested_name,
               false);
 }
 
@@ -364,7 +363,7 @@ void RenderFrameMessageFilter::OnSaveImageFromDataURL(
     return;
 
   DownloadUrl(render_view_id, render_frame_id, data_url, Referrer(),
-              base::string16(), true);
+              url::Origin(), base::string16(), true);
 }
 
 void RenderFrameMessageFilter::OnAre3DAPIsBlocked(int render_frame_id,

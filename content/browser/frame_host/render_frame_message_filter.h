@@ -23,6 +23,7 @@
 #endif
 
 struct FrameHostMsg_CreateChildFrame_Params;
+struct FrameHostMsg_DownloadUrl_Params;
 class GURL;
 
 namespace net {
@@ -71,6 +72,7 @@ class CONTENT_EXPORT RenderFrameMessageFilter
                            int render_frame_id,
                            const GURL& url,
                            const Referrer& referrer,
+                           const url::Origin& initiator,
                            const base::string16& suggested_name,
                            const bool use_prompt) const;
 
@@ -97,11 +99,8 @@ class CONTENT_EXPORT RenderFrameMessageFilter
                              const GetCookiesCallback& callback,
                              const net::CookieList& cookie_list);
 
-  void OnDownloadUrl(int render_view_id,
-                     int render_frame_id,
-                     const GURL& url,
-                     const Referrer& referrer,
-                     const base::string16& suggested_name);
+  void OnDownloadUrl(const FrameHostMsg_DownloadUrl_Params& params);
+
   void OnSaveImageFromDataURL(int render_view_id,
                               int render_frame_id,
                               const std::string& url_str);
