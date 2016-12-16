@@ -30,7 +30,6 @@ class ScriptWrappable;
   X(MessageEvent, CachedData)           \
   X(MutationObserver, Callback)         \
   X(PerformanceObserver, Callback)      \
-  X(PrivateScriptRunner, IsInitialized) \
   X(SameObject, NotificationActions)    \
   X(SameObject, NotificationData)       \
   X(SameObject, NotificationVibrate)    \

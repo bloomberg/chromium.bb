@@ -31,7 +31,6 @@
       <include name="IDR_UASTYLE_VIEWPORT_TELEVISION_CSS" file="../Source/core/css/viewportTelevision.css" type="BINDATA"/>
 
       <include name="IDR_INSPECTOR_OVERLAY_PAGE_HTML" file="../Source/core/inspector/InspectorOverlayPage.html" type="BINDATA"/>
-      <include name="IDR_PRIVATE_SCRIPT_DOCUMENTEXECCOMMAND_JS" file="../Source/core/editing/js/DocumentExecCommand.js" type="BINDATA"/>
       <include name="IDR_DOCUMENTXMLTREEVIEWER_CSS" file="../Source/core/xml/DocumentXMLTreeViewer.css" type="BINDATA"/>
       <include name="IDR_DOCUMENTXMLTREEVIEWER_JS" file="../Source/core/xml/DocumentXMLTreeViewer.js" type="BINDATA"/>
       <if expr="not is_android">

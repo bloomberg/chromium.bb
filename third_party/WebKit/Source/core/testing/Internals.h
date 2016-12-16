@@ -66,7 +66,6 @@ class Location;
 class Node;
 class OriginTrialsTest;
 class Page;
-class PrivateScriptTest;
 class Range;
 class SerializedScriptValue;
 class ShadowRoot;
@@ -379,7 +378,6 @@ class Internals final : public GarbageCollected<Internals>,
       const String& scheme);
 
   TypeConversions* typeConversions() const;
-  PrivateScriptTest* privateScriptTest() const;
   DictionaryTest* dictionaryTest() const;
   UnionTypesTest* unionTypesTest() const;
   OriginTrialsTest* originTrialsTest() const;
