@@ -25,7 +25,14 @@ NetworkActivityIndicatorTabHelper::NetworkActivityIndicatorTabHelper(
     NSString* tab_id)
     : web::WebStateObserver(web_state), network_activity_key_([tab_id copy]) {}
 
-NetworkActivityIndicatorTabHelper::~NetworkActivityIndicatorTabHelper() {}
+NetworkActivityIndicatorTabHelper::~NetworkActivityIndicatorTabHelper() {
+  NetworkActivityIndicatorManager* shared_manager =
+      [NetworkActivityIndicatorManager sharedInstance];
+  // Verifies that there is a network task associated with this instance
+  // before stopping a task, so that this method is idempotent.
+  if ([shared_manager numNetworkTasksForGroup:network_activity_key_])
+    [shared_manager stopNetworkTaskForGroup:network_activity_key_];
+}
 
 void NetworkActivityIndicatorTabHelper::DidStartLoading() {
   NetworkActivityIndicatorManager* shared_manager =
