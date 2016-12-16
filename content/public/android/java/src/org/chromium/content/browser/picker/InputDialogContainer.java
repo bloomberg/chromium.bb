@@ -6,6 +6,8 @@ package org.chromium.content.browser.picker;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog.OnDateSetListener;
+import android.app.TimePickerDialog;
+import android.app.TimePickerDialog.OnTimeSetListener;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
@@ -210,12 +212,16 @@ public class InputDialogContainer {
             dialog.setTitle(mContext.getText(R.string.date_picker_dialog_title));
             mDialog = dialog;
         } else if (dialogType == TextInputType.TIME) {
-            mDialog = new MultiFieldTimePickerDialog(
-                mContext, 0 /* theme */ ,
-                hourOfDay, minute, second, millis,
-                (int) min, (int) max, stepTime,
-                DateFormat.is24HourFormat(mContext),
-                new FullTimeListener(dialogType));
+            // If user doesn't need to set seconds and milliseconds, show the default clock style
+            // time picker dialog. Otherwise, show a full spinner style time picker.
+            if (stepTime < 0 || stepTime >= 60000 /* milliseconds in a minute */) {
+                mDialog = new TimePickerDialog(mContext, new TimeListener(dialogType), hourOfDay,
+                        minute, DateFormat.is24HourFormat(mContext));
+            } else {
+                mDialog = new MultiFieldTimePickerDialog(mContext, 0 /* theme */, hourOfDay, minute,
+                        second, millis, (int) min, (int) max, stepTime,
+                        DateFormat.is24HourFormat(mContext), new FullTimeListener(dialogType));
+            }
         } else if (dialogType == TextInputType.DATE_TIME
                 || dialogType == TextInputType.DATE_TIME_LOCAL) {
             mDialog = new DateTimePickerDialog(mContext,
@@ -282,6 +288,18 @@ public class InputDialogContainer {
         @Override
         public void onDateSet(DatePicker view, int year, int month, int monthDay) {
             setFieldDateTimeValue(mDialogType, year, month, monthDay, 0, 0, 0, 0, 0);
+        }
+    }
+
+    private class TimeListener implements OnTimeSetListener {
+        private final int mDialogType;
+        TimeListener(int dialogType) {
+            mDialogType = dialogType;
+        }
+
+        @Override
+        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+            setFieldDateTimeValue(mDialogType, 0, 0, 0, hourOfDay, minute, 0, 0, 0);
         }
     }
 
