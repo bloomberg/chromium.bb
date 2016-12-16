@@ -287,4 +287,5 @@ public abstract class WebsitePreferenceBridge {
     static native boolean nativeUrlMatchesContentSettingsPattern(String url, String pattern);
     static native void nativeGetUsbOrigins(Object list);
     static native void nativeRevokeUsbPermission(String origin, String embedder, String object);
+    static native void nativeClearBannerData(String origin);
 }

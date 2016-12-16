@@ -668,12 +668,15 @@ public class SingleWebsitePreferences extends PreferenceFragment
             if (preference != null) screen.removePreference(preference);
         }
 
+        String origin = mSite.getAddress().getOrigin();
+        WebsitePreferenceBridge.nativeClearCookieData(origin);
+        WebsitePreferenceBridge.nativeClearBannerData(origin);
+
         // Clear the permissions.
         mSite.setAutoplayPermission(ContentSetting.DEFAULT);
         mSite.setBackgroundSyncPermission(ContentSetting.DEFAULT);
         mSite.setCameraPermission(ContentSetting.DEFAULT);
         mSite.setCookiePermission(ContentSetting.DEFAULT);
-        WebsitePreferenceBridge.nativeClearCookieData(mSite.getAddress().getTitle());
         mSite.setGeolocationPermission(ContentSetting.DEFAULT);
         mSite.setJavaScriptPermission(ContentSetting.DEFAULT);
         mSite.setKeygenPermission(ContentSetting.DEFAULT);
@@ -682,6 +685,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
         mSite.setNotificationPermission(ContentSetting.DEFAULT);
         mSite.setPopupPermission(ContentSetting.DEFAULT);
         mSite.setProtectedMediaIdentifierPermission(ContentSetting.DEFAULT);
+
         for (UsbInfo info : mSite.getUsbInfo()) info.revoke();
 
         // Clear the storage and finish the activity if necessary.

@@ -39,12 +39,12 @@ public class WebsiteAddressTest extends NativeLibraryTestBase {
         assertEquals("https://a.google.com", httpsAddress.getTitle());
 
         WebsiteAddress hostAddress = WebsiteAddress.create("a.google.com");
-        assertEquals(null, hostAddress.getOrigin());
+        assertEquals("http://a.google.com", hostAddress.getOrigin());
         assertEquals("a.google.com", hostAddress.getHost());
         assertEquals("a.google.com", hostAddress.getTitle());
 
         WebsiteAddress anySubdomainAddress = WebsiteAddress.create("[*.]google.com");
-        assertEquals(null, anySubdomainAddress.getOrigin());
+        assertEquals("http://google.com", anySubdomainAddress.getOrigin());
         assertEquals("google.com", anySubdomainAddress.getHost());
         assertEquals("google.com", anySubdomainAddress.getTitle());
     }

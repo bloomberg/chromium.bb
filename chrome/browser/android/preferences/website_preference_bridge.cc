@@ -23,6 +23,7 @@
 #include "chrome/browser/browsing_data/browsing_data_quota_helper.h"
 #include "chrome/browser/browsing_data/cookies_tree_model.h"
 #include "chrome/browser/browsing_data/local_data_container.h"
+#include "chrome/browser/browsing_data/origin_filter_builder.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -44,6 +45,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/common/quota/quota_status_code.h"
+#include "url/origin.h"
 #include "url/url_constants.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -71,6 +73,13 @@ Profile* GetActiveUserProfile(bool is_incognito) {
 HostContentSettingsMap* GetHostContentSettingsMap(bool is_incognito) {
   return HostContentSettingsMapFactory::GetForProfile(
       GetActiveUserProfile(is_incognito));
+}
+
+bool ForwardPrimaryPatternCallback(
+    const base::Callback<bool(const ContentSettingsPattern&)> predicate,
+    const ContentSettingsPattern& primary_pattern,
+    const ContentSettingsPattern& secondary_pattern) {
+  return predicate.Run(primary_pattern);
 }
 
 typedef void (*InfoListInsertionFunction)(
@@ -766,6 +775,18 @@ static void ClearCookieData(JNIEnv* env,
   scoped_refptr<SiteDataDeleteHelper> site_data_deleter(
       new SiteDataDeleteHelper(profile, url));
   site_data_deleter->Run();
+}
+
+static void ClearBannerData(JNIEnv* env,
+                            const JavaParamRef<jclass>& clazz,
+                            const JavaParamRef<jstring>& jorigin) {
+  OriginFilterBuilder builder(OriginFilterBuilder::WHITELIST);
+  builder.AddOrigin(url::Origin(GURL(ConvertJavaStringToUTF8(env, jorigin))));
+  GetHostContentSettingsMap(false)
+          ->ClearSettingsForOneTypeWithPredicate(
+              CONTENT_SETTINGS_TYPE_APP_BANNER,
+              base::Bind(&ForwardPrimaryPatternCallback,
+                         builder.BuildWebsiteSettingsPatternMatchesFilter()));
 }
 
 // Register native methods
