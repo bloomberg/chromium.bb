@@ -296,7 +296,7 @@ void TableLayoutAlgorithmFixed::layout() {
     }
   } else {
     // Divide the remaining width among the auto columns.
-    ASSERT(autoSpan >= numAuto);
+    DCHECK_GE(autoSpan, numAuto);
     int remainingWidth = tableLogicalWidth - totalFixedWidth -
                          totalPercentWidth - hspacing * (autoSpan - numAuto);
     int lastAuto = 0;
@@ -310,7 +310,7 @@ void TableLayoutAlgorithmFixed::layout() {
           break;
         lastAuto = i;
         numAuto--;
-        ASSERT(autoSpan >= span);
+        DCHECK_GE(autoSpan, span);
         autoSpan -= span;
       }
     }

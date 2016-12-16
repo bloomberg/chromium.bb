@@ -26,9 +26,11 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/HTMLNames.h"
+#include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutTableCol.h"
+#include <algorithm>
 
 namespace blink {
 
@@ -69,6 +71,7 @@ void HTMLTableColElement::parseAttribute(const QualifiedName& name,
       // zero, set it to 1.
       newSpan = 1;
     }
+    newSpan = std::min(newSpan, HTMLTableCellElement::maxColSpan());
     m_span = newSpan;
     if (layoutObject() && layoutObject()->isLayoutTableCol())
       layoutObject()->updateFromElement();

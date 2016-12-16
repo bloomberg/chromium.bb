@@ -41,9 +41,9 @@ var arabicIndicDigitOne = String.fromCharCode(0x661);
 shouldBe('spanAttributeEffect(arabicIndicDigitOne)', '1');
 shouldBe('spanAttributeEffect("2" + arabicIndicDigitOne)', '2');
 
-shouldBe('spanAttributeEffect("2147483647")', '2147483647');
-shouldBe('spanAttributeEffect("2147483648")', '2147483648');
-shouldBe('spanAttributeEffect("4294967295")', '4294967295');
+shouldBe('spanAttributeEffect("2147483647")', '8190');
+shouldBe('spanAttributeEffect("2147483648")', '8190');
+shouldBe('spanAttributeEffect("4294967295")', '8190');
 shouldBe('spanAttributeEffect("4294967296")', '1');
 </script>
 </body>

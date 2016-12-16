@@ -122,6 +122,8 @@ void LayoutTableCell::willBeRemovedFromTree() {
 
 unsigned LayoutTableCell::parseColSpanFromDOM() const {
   ASSERT(node());
+  // TODO(dgrogan): HTMLTableCellElement::colSpan() already clamps to something
+  // smaller than maxColumnIndex; can we just DCHECK here?
   if (isHTMLTableCellElement(*node()))
     return std::min<unsigned>(toHTMLTableCellElement(*node()).colSpan(),
                               maxColumnIndex);

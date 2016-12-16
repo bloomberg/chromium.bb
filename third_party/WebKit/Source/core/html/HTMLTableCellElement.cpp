@@ -34,16 +34,8 @@
 #include "core/layout/LayoutTableCell.h"
 
 using namespace std;
-using namespace std;
 
 namespace blink {
-
-// Rowspan: match Firefox's limit of 65,534. Edge has a higher limit, at
-// least 2^17.
-// Colspan: Firefox uses a limit of 1,000 for colspan and resets the value to 1.
-// TODO(dgrogan): Determine Edge's colspan limit.
-static const unsigned maxColSpan = 8190;
-static const unsigned maxRowSpan = 65534;
 
 using namespace HTMLNames;
 
@@ -59,7 +51,7 @@ unsigned HTMLTableCellElement::colSpan() const {
   if (colSpanValue.isEmpty() ||
       !parseHTMLNonNegativeInteger(colSpanValue, value))
     return 1;
-  return max(1u, min(value, maxColSpan));
+  return max(1u, min(value, maxColSpan()));
 }
 
 unsigned HTMLTableCellElement::rowSpan() const {
@@ -68,7 +60,7 @@ unsigned HTMLTableCellElement::rowSpan() const {
   if (rowSpanValue.isEmpty() ||
       !parseHTMLNonNegativeInteger(rowSpanValue, value))
     return 1;
-  return max(1u, min(value, maxRowSpan));
+  return max(1u, min(value, maxRowSpan()));
 }
 
 int HTMLTableCellElement::cellIndex() const {
@@ -120,10 +112,7 @@ void HTMLTableCellElement::collectStyleForPresentationAttribute(
 void HTMLTableCellElement::parseAttribute(const QualifiedName& name,
                                           const AtomicString& oldValue,
                                           const AtomicString& value) {
-  if (name == rowspanAttr) {
-    if (layoutObject() && layoutObject()->isTableCell())
-      toLayoutTableCell(layoutObject())->colSpanOrRowSpanChanged();
-  } else if (name == colspanAttr) {
+  if (name == rowspanAttr || name == colspanAttr) {
     if (layoutObject() && layoutObject()->isTableCell())
       toLayoutTableCell(layoutObject())->colSpanOrRowSpanChanged();
   } else {

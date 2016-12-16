@@ -30,10 +30,12 @@ PASS colgroup.className (<colgroup class>): 32 tests
 PASS colgroup.hidden: 33 tests
 PASS colgroup.accessKey: 32 tests
 PASS colgroup.tabIndex: 24 tests
-PASS colgroup.span: 9 tests
-FAIL colgroup.span: setAttribute() to 2147483648 assert_equals: IDL get expected 1 but got 2147483648
-FAIL colgroup.span: setAttribute() to 4294967295 assert_equals: IDL get expected 1 but got 4294967295
-PASS colgroup.span: 46 tests
+PASS colgroup.span: 8 tests
+FAIL colgroup.span: setAttribute() to 2147483647 assert_equals: IDL get expected 2147483647 but got 8190
+FAIL colgroup.span: setAttribute() to 2147483648 assert_equals: IDL get expected 1 but got 8190
+FAIL colgroup.span: setAttribute() to 4294967295 assert_equals: IDL get expected 1 but got 8190
+PASS colgroup.span: 45 tests
+FAIL colgroup.span: IDL set to 2147483647 assert_equals: IDL get expected 2147483647 but got 8190
 FAIL colgroup.span: IDL set to 2147483648 assert_equals: getAttribute() expected "1" but got "0"
 FAIL colgroup.span: IDL set to 4294967295 assert_equals: getAttribute() expected "1" but got "0"
 PASS colgroup.align: 32 tests
@@ -48,10 +50,12 @@ PASS col.className (<col class>): 32 tests
 PASS col.hidden: 33 tests
 PASS col.accessKey: 32 tests
 PASS col.tabIndex: 24 tests
-PASS col.span: 9 tests
-FAIL col.span: setAttribute() to 2147483648 assert_equals: IDL get expected 1 but got 2147483648
-FAIL col.span: setAttribute() to 4294967295 assert_equals: IDL get expected 1 but got 4294967295
-PASS col.span: 46 tests
+PASS col.span: 8 tests
+FAIL col.span: setAttribute() to 2147483647 assert_equals: IDL get expected 2147483647 but got 8190
+FAIL col.span: setAttribute() to 2147483648 assert_equals: IDL get expected 1 but got 8190
+FAIL col.span: setAttribute() to 4294967295 assert_equals: IDL get expected 1 but got 8190
+PASS col.span: 45 tests
+FAIL col.span: IDL set to 2147483647 assert_equals: IDL get expected 2147483647 but got 8190
 FAIL col.span: IDL set to 2147483648 assert_equals: getAttribute() expected "1" but got "0"
 FAIL col.span: IDL set to 4294967295 assert_equals: getAttribute() expected "1" but got "0"
 PASS col.align: 32 tests
