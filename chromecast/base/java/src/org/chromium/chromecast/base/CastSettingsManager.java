@@ -4,6 +4,7 @@
 
 package org.chromium.chromecast.base;
 
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.ContentObserver;
@@ -35,7 +36,7 @@ public final class CastSettingsManager {
     private static final String DEVICE_NAME_SETTING_KEY = "device_name";
     private static final String DEVICE_PROVISIONED_SETTING_KEY = Settings.Global.DEVICE_PROVISIONED;
 
-    private final Context mContext;
+    private final ContentResolver mContentResolver;
     private final SharedPreferences mSettings;
     private SharedPreferences.OnSharedPreferenceChangeListener mSharedPreferenceListener;
     private ContentObserver mDeviceNameObserver;
@@ -57,18 +58,19 @@ public final class CastSettingsManager {
      * Creates a fully-featured CastSettingsManager instance. Will fail if called from a
      * sandboxed process.
      */
-    public static CastSettingsManager createCastSettingsManager(Context context,
-            OnSettingChangedListener listener) {
-        return new CastSettingsManager(context, listener);
+    public static CastSettingsManager createCastSettingsManager(
+            Context context, OnSettingChangedListener listener) {
+        ContentResolver contentResolver = context.getContentResolver();
+        SharedPreferences settings = context.getSharedPreferences(PREFS_FILE_NAME, 0);
+        return new CastSettingsManager(contentResolver, listener, settings);
     }
 
-    private CastSettingsManager(Context context) {
-        mContext = context;
-        mSettings = context.getSharedPreferences(PREFS_FILE_NAME, 0);
-    }
-
-    private CastSettingsManager(final Context context, OnSettingChangedListener listener) {
-        this(context);
+    private CastSettingsManager(
+            ContentResolver contentResolver,
+            OnSettingChangedListener listener,
+            SharedPreferences settings) {
+        mContentResolver = contentResolver;
+        mSettings = settings;
         mListener = listener;
 
         mSharedPreferenceListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
@@ -92,9 +94,8 @@ public final class CastSettingsManager {
                 mListener.onDeviceNameChanged(getDeviceName());
             }
         };
-        mContext.getContentResolver().registerContentObserver(
-                Settings.Global.getUriFor(DEVICE_NAME_SETTING_KEY), true,
-                mDeviceNameObserver);
+        mContentResolver.registerContentObserver(
+                Settings.Global.getUriFor(DEVICE_NAME_SETTING_KEY), true, mDeviceNameObserver);
 
         if (!isCastEnabled()) {
             mIsDeviceProvisionedObserver = new ContentObserver(new Handler()) {
@@ -104,7 +105,7 @@ public final class CastSettingsManager {
                     mListener.onCastEnabledChanged(isCastEnabled());
                 }
             };
-            mContext.getContentResolver().registerContentObserver(
+            mContentResolver.registerContentObserver(
                     Settings.Global.getUriFor(DEVICE_PROVISIONED_SETTING_KEY), true,
                     mIsDeviceProvisionedObserver);
         }
@@ -113,11 +114,11 @@ public final class CastSettingsManager {
     public void dispose() {
         mSettings.unregisterOnSharedPreferenceChangeListener(mSharedPreferenceListener);
         mSharedPreferenceListener = null;
-        mContext.getContentResolver().unregisterContentObserver(mDeviceNameObserver);
+        mContentResolver.unregisterContentObserver(mDeviceNameObserver);
         mDeviceNameObserver = null;
 
         if (mIsDeviceProvisionedObserver != null) {
-            mContext.getContentResolver().unregisterContentObserver(mIsDeviceProvisionedObserver);
+            mContentResolver.unregisterContentObserver(mIsDeviceProvisionedObserver);
             mIsDeviceProvisionedObserver = null;
         }
     }
@@ -125,7 +126,7 @@ public final class CastSettingsManager {
     public boolean isCastEnabled() {
         // However, Cast is disabled until the device is provisioned (see b/18950240).
         return Settings.Global.getInt(
-                mContext.getContentResolver(), DEVICE_PROVISIONED_SETTING_KEY, 0) == 1;
+                mContentResolver, DEVICE_PROVISIONED_SETTING_KEY, 0) == 1;
     }
 
     public boolean isSendUsageStatsEnabled() {
@@ -137,8 +138,7 @@ public final class CastSettingsManager {
     }
 
     public String getDeviceName() {
-        String deviceName = Settings.Global.getString(mContext.getContentResolver(),
-                DEVICE_NAME_SETTING_KEY);
+        String deviceName = Settings.Global.getString(mContentResolver, DEVICE_NAME_SETTING_KEY);
         return (deviceName != null) ? deviceName : DEFAULT_DEVICE_NAME;
     }
 
