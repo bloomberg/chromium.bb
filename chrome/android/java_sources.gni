@@ -668,6 +668,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/omnibox/geo/GeolocationHeader.java",
   "java/src/org/chromium/chrome/browser/omnibox/geo/GeolocationSnackbarController.java",
   "java/src/org/chromium/chrome/browser/omnibox/geo/GeolocationTracker.java",
+  "java/src/org/chromium/chrome/browser/pageinfo/CertificateChainHelper.java",
   "java/src/org/chromium/chrome/browser/pageinfo/CertificateViewer.java",
   "java/src/org/chromium/chrome/browser/pageinfo/ConnectionInfoPopup.java",
   "java/src/org/chromium/chrome/browser/pageinfo/WebsiteSettingsPopup.java",

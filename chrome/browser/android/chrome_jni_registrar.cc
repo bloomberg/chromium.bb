@@ -154,6 +154,7 @@
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
 #include "chrome/browser/ui/android/omnibox/omnibox_url_emphasizer.h"
 #include "chrome/browser/ui/android/omnibox/omnibox_view_util.h"
+#include "chrome/browser/ui/android/page_info/certificate_chain_helper.h"
 #include "chrome/browser/ui/android/page_info/certificate_viewer_android.h"
 #include "chrome/browser/ui/android/page_info/connection_info_popup_android.h"
 #include "chrome/browser/ui/android/page_info/website_settings_popup_android.h"
@@ -244,6 +245,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"BrowsingHistoryBridge", RegisterBrowsingHistoryBridge},
     {"CardUnmaskPrompt", autofill::CardUnmaskPromptViewAndroid::Register},
     {"CertificateViewer", RegisterCertificateViewer},
+    {"CertificateChainHelper", RegisterCertificateChainHelper},
     {"ChildAccountService", RegisterChildAccountService},
     {"ChromeApplication", chrome::android::ChromeApplication::RegisterBindings},
     {"ChromeBackupAgent", chrome::android::RegisterBackupAgent},

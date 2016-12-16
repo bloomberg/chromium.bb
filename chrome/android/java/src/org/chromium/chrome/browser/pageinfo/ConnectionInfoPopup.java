@@ -207,7 +207,7 @@ public class ConnectionInfoPopup implements OnClickListener {
             nativeResetCertDecisions(mNativeConnectionInfoPopup, mWebContents);
             mDialog.dismiss();
         } else if (mCertificateViewer == v) {
-            byte[][] certChain = nativeGetCertificateChain(mWebContents);
+            byte[][] certChain = CertificateChainHelper.getCertificateChain(mWebContents);
             if (certChain == null) {
                 // The WebContents may have been destroyed/invalidated. If so,
                 // ignore this request.
@@ -247,5 +247,4 @@ public class ConnectionInfoPopup implements OnClickListener {
     private native void nativeDestroy(long nativeConnectionInfoPopupAndroid);
     private native void nativeResetCertDecisions(
             long nativeConnectionInfoPopupAndroid, WebContents webContents);
-    private native byte[][] nativeGetCertificateChain(WebContents webContents);
 }

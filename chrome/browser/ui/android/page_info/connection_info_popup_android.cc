@@ -32,39 +32,6 @@ using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 using content::WebContents;
 
-static ScopedJavaLocalRef<jobjectArray> GetCertificateChain(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& java_web_contents) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(java_web_contents);
-  if (!web_contents)
-    return ScopedJavaLocalRef<jobjectArray>();
-
-  scoped_refptr<net::X509Certificate> cert =
-      web_contents->GetController().GetVisibleEntry()->GetSSL().certificate;
-
-  std::vector<std::string> cert_chain;
-  net::X509Certificate::OSCertHandles cert_handles =
-      cert->GetIntermediateCertificates();
-  // Make sure the peer's own cert is the first in the chain, if it's not
-  // already there.
-  if (cert_handles.empty() || cert_handles[0] != cert->os_cert_handle())
-    cert_handles.insert(cert_handles.begin(), cert->os_cert_handle());
-
-  cert_chain.reserve(cert_handles.size());
-  for (net::X509Certificate::OSCertHandles::const_iterator it =
-           cert_handles.begin();
-       it != cert_handles.end();
-       ++it) {
-    std::string cert_bytes;
-    net::X509Certificate::GetDEREncoded(*it, &cert_bytes);
-    cert_chain.push_back(cert_bytes);
-  }
-
-  return base::android::ToJavaArrayOfByteArray(env, cert_chain);
-}
-
 // static
 static jlong Init(JNIEnv* env,
                   const JavaParamRef<jclass>& clazz,

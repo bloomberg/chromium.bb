@@ -3984,6 +3984,7 @@ if (android_java_ui) {
       "../android/java/src/org/chromium/chrome/browser/omnibox/OmniboxUrlEmphasizer.java",
       "../android/java/src/org/chromium/chrome/browser/omnibox/OmniboxViewUtil.java",
       "../android/java/src/org/chromium/chrome/browser/omnibox/geo/GeolocationHeader.java",
+      "../android/java/src/org/chromium/chrome/browser/pageinfo/CertificateChainHelper.java",
       "../android/java/src/org/chromium/chrome/browser/pageinfo/CertificateViewer.java",
       "../android/java/src/org/chromium/chrome/browser/pageinfo/ConnectionInfoPopup.java",
       "../android/java/src/org/chromium/chrome/browser/pageinfo/WebsiteSettingsPopup.java",
