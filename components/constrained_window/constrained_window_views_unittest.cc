@@ -5,10 +5,13 @@
 #include "components/constrained_window/constrained_window_views.h"
 
 #include <memory>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/constrained_window/constrained_window_views_client.h"
 #include "components/web_modal/test_web_contents_modal_dialog_host.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -226,6 +229,40 @@ TEST_F(ConstrainedWindowViewsTest, NullModalParent) {
   widget->Show();
   EXPECT_TRUE(widget->IsVisible());
   widget->CloseNow();
+}
+
+// Make sure dialogs presented off-screen are properly clamped to the nearest
+// screen.
+TEST_F(ConstrainedWindowViewsTest, ClampDialogToNearestDisplay) {
+  // Make sure the dialog will fit fully on the display
+  contents()->set_preferred_size(gfx::Size(200, 100));
+
+  // First, make sure the host and dialog are sized and positioned.
+  UpdateWebContentsModalDialogPosition(dialog(), dialog_host());
+
+  const display::Screen* screen = display::Screen::GetScreen();
+  const display::Display display = screen->GetPrimaryDisplay();
+  // Within the tests there is only 1 display. Error if that ever changes.
+  EXPECT_EQ(screen->GetNumDisplays(), 1);
+  const gfx::Rect extents = display.work_area();
+
+  // Move the host completely off the screen.
+  views::Widget* host_widget =
+      views::Widget::GetWidgetForNativeView(dialog_host()->GetHostView());
+  gfx::Rect host_bounds = host_widget->GetWindowBoundsInScreen();
+  host_bounds.set_origin(gfx::Point(extents.right(), extents.bottom()));
+  host_widget->SetBounds(host_bounds);
+
+  // Make sure the host is fully off the screen.
+  EXPECT_FALSE(extents.Intersects(host_widget->GetWindowBoundsInScreen()));
+
+  // Now reposition the modal dialog into the display.
+  UpdateWebContentsModalDialogPosition(dialog(), dialog_host());
+
+  const gfx::Rect dialog_bounds = dialog()->GetRootView()->GetBoundsInScreen();
+
+  // The dialog should now be fully on the display.
+  EXPECT_TRUE(extents.Contains(dialog_bounds));
 }
 
 }  // namespace constrained_window

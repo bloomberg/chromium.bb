@@ -13,6 +13,8 @@
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/web_modal/web_contents_modal_dialog_manager_delegate.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/views/border.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -108,8 +110,20 @@ void UpdateModalDialogPosition(views::Widget* widget,
     position.set_y(position.y() - border->GetInsets().top());
   }
 
-  if (widget->is_top_level())
+  if (widget->is_top_level()) {
     position += host_widget->GetClientAreaBoundsInScreen().OffsetFromOrigin();
+    // If the dialog extends partially off any display, clamp its position to
+    // be fully visible within that display. If the dialog doesn't intersect
+    // with any display clamp its position to be fully on the nearest display.
+    gfx::Rect display_rect = gfx::Rect(position, size);
+    const display::Display display =
+        display::Screen::GetScreen()->GetDisplayNearestWindow(
+            dialog_host->GetHostView());
+    const gfx::Rect work_area = display.work_area();
+    if (!work_area.Contains(display_rect))
+      display_rect.AdjustToFit(work_area);
+    position = display_rect.origin();
+  }
 
   widget->SetBounds(gfx::Rect(position, size));
 }
