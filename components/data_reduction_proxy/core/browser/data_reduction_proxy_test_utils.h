@@ -72,6 +72,8 @@ class TestDataReductionProxyRequestOptions
   // Time after the unix epoch that Now() reports.
   void set_offset(const base::TimeDelta& now_offset);
 
+  using DataReductionProxyRequestOptions::GetHeaderValueForTesting;
+
  private:
   base::TimeDelta now_offset_;
 };
@@ -187,7 +189,7 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
       std::unique_ptr<DataReductionProxyConfig> config,
       std::unique_ptr<DataReductionProxyEventCreator> event_creator,
-      std::unique_ptr<DataReductionProxyRequestOptions> request_options,
+      std::unique_ptr<TestDataReductionProxyRequestOptions> request_options,
       std::unique_ptr<DataReductionProxyConfigurator> configurator,
       net::NetLog* net_log,
       bool enabled);
@@ -206,6 +208,10 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
   }
   DataReductionProxyConfigServiceClient* config_client() const {
     return config_client_.get();
+  }
+
+  TestDataReductionProxyRequestOptions* test_request_options() const {
+    return test_request_options_;
   }
 
   void set_proxy_delegate(
@@ -235,6 +241,8 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
 
   // Reporting fraction last set via SetPingbackReportingFraction.
   float pingback_reporting_fraction_;
+
+  TestDataReductionProxyRequestOptions* test_request_options_;
 };
 
 // Test version of |DataStore|. Uses an in memory hash map to store data.
@@ -371,11 +379,9 @@ class DataReductionProxyTestContext {
   // This creates a |DataReductionProxyNetworkDelegate| and
   // |DataReductionProxyInterceptor|, using them in the |net::URLRequestContext|
   // for |request_context_storage|. |request_context_storage| takes ownership of
-  // the created objects. If |exclude_chrome_proxy_header_for_testing| is set
-  // to true, chrome-proxy header would not be added to the request headers.
+  // the created objects.
   void AttachToURLRequestContext(
-      net::URLRequestContextStorage* request_context_storage,
-      bool exclude_chrome_proxy_header_for_testing) const;
+      net::URLRequestContextStorage* request_context_storage) const;
 
   // Enable the Data Reduction Proxy, simulating a successful secure proxy
   // check. This can only be called if not built with WithTestConfigurator,

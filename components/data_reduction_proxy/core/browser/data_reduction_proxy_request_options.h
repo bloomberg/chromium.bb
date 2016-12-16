@@ -98,6 +98,10 @@ class DataReductionProxyRequestOptions {
                                    const std::string& version,
                                    DataReductionProxyConfig* config);
 
+  // Returns the chrome proxy header. Protected so that it is available for
+  // testing.
+  std::string GetHeaderValueForTesting() const;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyRequestOptionsTest,
                            AuthHashForSalt);
