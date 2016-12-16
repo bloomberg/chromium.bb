@@ -20,7 +20,12 @@
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
 using ::testing::StrictMock;
+
+MATCHER(NotEmpty, "") {
+  return !arg.empty();
+}
 
 namespace media {
 
@@ -29,11 +34,18 @@ namespace {
 const char kClearKeyKeySystem[] = "org.w3.clearkey";
 const char kTestSecurityOrigin[] = "https://www.test.com";
 
+// Random key ID used to create a session.
+const uint8_t kKeyId[] = {
+    // base64 equivalent is AQIDBAUGBwgJCgsMDQ4PEA
+    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+    0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10,
+};
+
 }  // namespace
 
 class MojoCdmTest : public ::testing::Test {
  public:
-  enum ExpectedResult { SUCCESS, CONNECTION_ERROR };
+  enum ExpectedResult { SUCCESS, CONNECTION_ERROR, FAILURE };
 
   MojoCdmTest()
       : mojo_cdm_service_(base::MakeUnique<MojoCdmService>(
@@ -43,12 +55,14 @@ class MojoCdmTest : public ::testing::Test {
 
   virtual ~MojoCdmTest() {}
 
-  void Initialize(ExpectedResult expected_result) {
+  void Initialize(const std::string& key_system,
+                  ExpectedResult expected_result) {
     mojom::ContentDecryptionModulePtr remote_cdm;
     auto cdm_request = mojo::GetProxy(&remote_cdm);
 
     switch (expected_result) {
       case SUCCESS:
+      case FAILURE:
         cdm_binding_.Bind(std::move(cdm_request));
         break;
       case CONNECTION_ERROR:
@@ -56,7 +70,7 @@ class MojoCdmTest : public ::testing::Test {
         break;
     }
 
-    MojoCdm::Create(kClearKeyKeySystem, GURL(kTestSecurityOrigin), CdmConfig(),
+    MojoCdm::Create(key_system, GURL(kTestSecurityOrigin), CdmConfig(),
                     std::move(remote_cdm),
                     base::Bind(&MockCdmClient::OnSessionMessage,
                                base::Unretained(&cdm_client_)),
@@ -70,24 +84,70 @@ class MojoCdmTest : public ::testing::Test {
                                base::Unretained(this), expected_result));
 
     base::RunLoop().RunUntilIdle();
-
-    if (expected_result == SUCCESS) {
-      EXPECT_TRUE(mojo_cdm_);
-    } else {
-      EXPECT_FALSE(mojo_cdm_);
-    }
   }
 
   void OnCdmCreated(ExpectedResult expected_result,
                     const scoped_refptr<ContentDecryptionModule>& cdm,
                     const std::string& error_message) {
     if (!cdm) {
+      EXPECT_NE(SUCCESS, expected_result);
       DVLOG(1) << error_message;
       return;
     }
 
     EXPECT_EQ(SUCCESS, expected_result);
     mojo_cdm_ = cdm;
+  }
+
+  void ForceConnectionError() {
+    // If there is an existing session it will get closed when the connection
+    // is broken.
+    if (!session_id_.empty()) {
+      EXPECT_CALL(cdm_client_, OnSessionClosed(session_id_));
+    }
+
+    cdm_binding_.CloseWithReason(2, "Test closed connection.");
+
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SetServerCertificateAndExpect(const std::vector<uint8_t>& certificate,
+                                     ExpectedResult expected_result) {
+    mojo_cdm_->SetServerCertificate(
+        certificate,
+        base::MakeUnique<MockCdmPromise>(expected_result == SUCCESS));
+
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void CreateSessionAndExpect(EmeInitDataType data_type,
+                              const std::vector<uint8_t>& key_id,
+                              ExpectedResult expected_result) {
+    if (expected_result == SUCCESS) {
+      EXPECT_CALL(cdm_client_, OnSessionMessage(NotEmpty(), _, _));
+    }
+
+    mojo_cdm_->CreateSessionAndGenerateRequest(
+        ContentDecryptionModule::SessionType::TEMPORARY_SESSION, data_type,
+        key_id, base::MakeUnique<MockCdmSessionPromise>(
+                    expected_result == SUCCESS, &session_id_));
+
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void CloseSessionAndExpect(ExpectedResult expected_result) {
+    DCHECK(!session_id_.empty()) << "CloseSessionAndExpect() must be called "
+                                    "after a successful "
+                                    "CreateSessionAndExpect()";
+
+    if (expected_result == SUCCESS) {
+      EXPECT_CALL(cdm_client_, OnSessionClosed(session_id_));
+    }
+
+    mojo_cdm_->CloseSession(session_id_, base::MakeUnique<MockCdmPromise>(
+                                             expected_result == SUCCESS));
+
+    base::RunLoop().RunUntilIdle();
   }
 
   // Fixture members.
@@ -104,18 +164,55 @@ class MojoCdmTest : public ::testing::Test {
   mojo::Binding<mojom::ContentDecryptionModule> cdm_binding_;
   scoped_refptr<ContentDecryptionModule> mojo_cdm_;
 
+  // |session_id_| is the latest successful result of calling CreateSession().
+  std::string session_id_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MojoCdmTest);
 };
 
 TEST_F(MojoCdmTest, Create_Success) {
-  Initialize(SUCCESS);
+  Initialize(kClearKeyKeySystem, SUCCESS);
 }
 
 TEST_F(MojoCdmTest, Create_ConnectionError) {
-  Initialize(CONNECTION_ERROR);
+  Initialize(kClearKeyKeySystem, CONNECTION_ERROR);
 }
 
-// TODO(xhwang): Add more test cases!
+TEST_F(MojoCdmTest, Create_Failure) {
+  // This fails as DefaultCdmFactory only supports Clear Key.
+  Initialize("org.random.cdm", FAILURE);
+}
+
+TEST_F(MojoCdmTest, SetServerCertificate_AfterConnectionError) {
+  Initialize(kClearKeyKeySystem, SUCCESS);
+  ForceConnectionError();
+  SetServerCertificateAndExpect({0, 1, 2}, FAILURE);
+}
+
+TEST_F(MojoCdmTest, CreateSessionAndGenerateRequest_AfterConnectionError) {
+  std::vector<uint8_t> key_id(kKeyId, kKeyId + arraysize(kKeyId));
+
+  Initialize(kClearKeyKeySystem, SUCCESS);
+  ForceConnectionError();
+  CreateSessionAndExpect(EmeInitDataType::WEBM, key_id, FAILURE);
+}
+
+TEST_F(MojoCdmTest, CloseSession_Success) {
+  std::vector<uint8_t> key_id(kKeyId, kKeyId + arraysize(kKeyId));
+
+  Initialize(kClearKeyKeySystem, SUCCESS);
+  CreateSessionAndExpect(EmeInitDataType::WEBM, key_id, SUCCESS);
+  CloseSessionAndExpect(SUCCESS);
+}
+
+TEST_F(MojoCdmTest, CloseSession_AfterConnectionError) {
+  std::vector<uint8_t> key_id(kKeyId, kKeyId + arraysize(kKeyId));
+
+  Initialize(kClearKeyKeySystem, SUCCESS);
+  CreateSessionAndExpect(EmeInitDataType::WEBM, key_id, SUCCESS);
+  ForceConnectionError();
+  CloseSessionAndExpect(FAILURE);
+}
 
 }  // namespace media

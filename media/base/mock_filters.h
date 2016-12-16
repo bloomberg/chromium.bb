@@ -17,6 +17,7 @@
 #include "media/base/audio_renderer.h"
 #include "media/base/cdm_context.h"
 #include "media/base/cdm_key_information.h"
+#include "media/base/cdm_promise.h"
 #include "media/base/content_decryption_module.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decryptor.h"
@@ -412,6 +413,37 @@ class MockCdmContext : public CdmContext {
   int cdm_id_ = CdmContext::kInvalidCdmId;
 
   DISALLOW_COPY_AND_ASSIGN(MockCdmContext);
+};
+
+class MockCdmPromise : public SimpleCdmPromise {
+ public:
+  // |expect_success| is true if resolve() should be called, false if reject()
+  // is expected.
+  explicit MockCdmPromise(bool expect_success);
+  ~MockCdmPromise() override;
+
+  MOCK_METHOD0(resolve, void());
+  MOCK_METHOD3(reject,
+               void(CdmPromise::Exception, uint32_t, const std::string&));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockCdmPromise);
+};
+
+class MockCdmSessionPromise : public NewSessionCdmPromise {
+ public:
+  // |expect_success| is true if resolve() should be called, false if reject()
+  // is expected. |new_session_id| is updated with the new session's ID on
+  // resolve().
+  MockCdmSessionPromise(bool expect_success, std::string* new_session_id);
+  ~MockCdmSessionPromise() override;
+
+  MOCK_METHOD1(resolve, void(const std::string&));
+  MOCK_METHOD3(reject,
+               void(CdmPromise::Exception, uint32_t, const std::string&));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockCdmSessionPromise);
 };
 
 class MockStreamParser : public StreamParser {

@@ -7,9 +7,12 @@
 #include "base/logging.h"
 
 using ::testing::_;
-using ::testing::Invoke;
-using ::testing::NotNull;
 using ::testing::Return;
+using ::testing::SaveArg;
+
+MATCHER(NotEmpty, "") {
+  return !arg.empty();
+}
 
 namespace media {
 
@@ -144,6 +147,37 @@ int MockCdmContext::GetCdmId() const {
 
 void MockCdmContext::set_cdm_id(int cdm_id) {
   cdm_id_ = cdm_id;
+}
+
+MockCdmPromise::MockCdmPromise(bool expect_success) {
+  if (expect_success) {
+    EXPECT_CALL(*this, resolve());
+    EXPECT_CALL(*this, reject(_, _, _)).Times(0);
+  } else {
+    EXPECT_CALL(*this, resolve()).Times(0);
+    EXPECT_CALL(*this, reject(_, _, NotEmpty()));
+  }
+}
+
+MockCdmPromise::~MockCdmPromise() {
+  // The EXPECT calls will verify that the promise is in fact fulfilled.
+  MarkPromiseSettled();
+}
+
+MockCdmSessionPromise::MockCdmSessionPromise(bool expect_success,
+                                             std::string* new_session_id) {
+  if (expect_success) {
+    EXPECT_CALL(*this, resolve(_)).WillOnce(SaveArg<0>(new_session_id));
+    EXPECT_CALL(*this, reject(_, _, _)).Times(0);
+  } else {
+    EXPECT_CALL(*this, resolve(_)).Times(0);
+    EXPECT_CALL(*this, reject(_, _, NotEmpty()));
+  }
+}
+
+MockCdmSessionPromise::~MockCdmSessionPromise() {
+  // The EXPECT calls will verify that the promise is in fact fulfilled.
+  MarkPromiseSettled();
 }
 
 MockStreamParser::MockStreamParser() {}
