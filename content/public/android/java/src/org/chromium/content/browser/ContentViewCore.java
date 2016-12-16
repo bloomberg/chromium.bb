@@ -1110,7 +1110,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     private void setTouchScrollInProgress(boolean inProgress) {
         if (mTouchScrollInProgress == inProgress) return;
         mTouchScrollInProgress = inProgress;
-        mSelectionPopupController.updateActionModeVisibility(inProgress);
+        mSelectionPopupController.hideActionMode(inProgress);
     }
 
     @SuppressWarnings("unused")

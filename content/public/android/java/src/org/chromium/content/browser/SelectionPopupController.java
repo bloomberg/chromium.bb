@@ -87,7 +87,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     private View mView;
     private ActionMode mActionMode;
-    private boolean mDraggingSelection;
 
     // Bit field for mappings from menu item to a flag indicating it is allowed.
     private int mAllowedMenuItems;
@@ -361,7 +360,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      * side-effects if the underlying ActionMode supports hiding.
      * @param hide whether to hide or show the ActionMode.
      */
-    private void hideActionMode(boolean hide) {
+    void hideActionMode(boolean hide) {
         if (!canHideActionMode()) return;
         if (mHidden == hide) return;
         mHidden = hide;
@@ -789,17 +788,14 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                 mUnselectAllOnDismiss = false;
                 mSelectionRect.setEmpty();
                 finishActionMode();
-                mDraggingSelection = false;
                 break;
 
             case SelectionEventType.SELECTION_HANDLE_DRAG_STARTED:
-                mDraggingSelection = true;
-                updateActionModeVisibility(touchScrollInProgress);
+                hideActionMode(true);
                 break;
 
             case SelectionEventType.SELECTION_HANDLE_DRAG_STOPPED:
-                mDraggingSelection = false;
-                updateActionModeVisibility(touchScrollInProgress);
+                hideActionMode(false);
                 break;
 
             case SelectionEventType.INSERTION_HANDLE_SHOWN:
@@ -917,13 +913,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     @VisibleForTesting
     public boolean hasSelection() {
         return mHasSelection;
-    }
-
-    void updateActionModeVisibility(boolean touchScrollInProgress) {
-        // The active fling count isn't reliable with WebView, so only use the
-        // active touch scroll signal for hiding. The fling animation movement
-        // will naturally hide the ActionMode by invalidating its content rect.
-        hideActionMode(mDraggingSelection || touchScrollInProgress);
     }
 
     @Override
