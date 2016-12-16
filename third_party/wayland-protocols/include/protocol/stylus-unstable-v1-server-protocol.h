@@ -109,6 +109,16 @@ extern const struct wl_interface zcr_stylus_v1_interface;
  */
 extern const struct wl_interface zcr_pointer_stylus_v1_interface;
 
+#ifndef ZCR_STYLUS_V1_ERROR_ENUM
+#define ZCR_STYLUS_V1_ERROR_ENUM
+enum zcr_stylus_v1_error {
+	/**
+	 * the pointer already has a pointer_stylus object associated
+	 */
+	ZCR_STYLUS_V1_ERROR_POINTER_STYLUS_EXISTS = 0,
+};
+#endif /* ZCR_STYLUS_V1_ERROR_ENUM */
+
 /**
  * @ingroup iface_zcr_stylus_v1
  * @struct zcr_stylus_v1_interface
@@ -118,7 +128,9 @@ struct zcr_stylus_v1_interface {
 	 * get stylus interface for pointer
 	 *
 	 * Create pointer_stylus object. See zcr_pointer_stylus_v1
-	 * interface for details.
+	 * interface for details. If the given wl_pointer already has a
+	 * pointer_stylus object associated, the pointer_stylus_exists
+	 * protocol error is raised.
 	 */
 	void (*get_pointer_stylus)(struct wl_client *client,
 				   struct wl_resource *resource,

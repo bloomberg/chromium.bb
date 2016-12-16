@@ -24,7 +24,7 @@
     DEALINGS IN THE SOFTWARE.
   </copyright>
 
-  <interface name="zcr_stylus_v1" version="1">
+  <interface name="zcr_stylus_v1" version="2">
     <description summary="extends wl_pointer with events for on-screen stylus">
       Allows a wl_pointer to represent an on-screen stylus. The client can
       interpret the on-screen stylus like any other mouse device, and use
@@ -44,10 +44,16 @@
       interface version number is reset.
     </description>
 
+    <enum name="error">
+      <entry name="pointer_stylus_exists" value="0"
+             summary="the pointer already has a pointer_stylus object associated"/>
+    </enum>
+
     <request name="get_pointer_stylus">
       <description summary="get stylus interface for pointer">
         Create pointer_stylus object. See zcr_pointer_stylus_v1 interface for
-        details.
+        details. If the given wl_pointer already has a pointer_stylus object
+        associated, the pointer_stylus_exists protocol error is raised.
       </description>
       <arg name="id" type="new_id" interface="zcr_pointer_stylus_v1"/>
       <arg name="pointer" type="object" interface="wl_pointer"/>
