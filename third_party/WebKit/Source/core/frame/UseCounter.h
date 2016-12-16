@@ -481,10 +481,6 @@ class CORE_EXPORT UseCounter {
     AudioContextDecodeAudioData = 649,
     AudioContextResume = 650,
     AudioContextSuspend = 651,
-    AudioContext = 652,
-    OfflineAudioContext = 653,
-    PrefixedAudioContext = 654,
-    PrefixedOfflineAudioContext = 655,
     MixedContentInNonHTTPSFrameThatRestrictsMixedContent = 661,
     MixedContentInSecureFrameThatDoesNotRestrictMixedContent = 662,
     MixedContentWebSocket = 663,
@@ -1385,6 +1381,8 @@ class CORE_EXPORT UseCounter {
     V8FaceDetector_Detect_Method = 1695,
     FullscreenAllowedByOrientationChange = 1696,
     ServiceWorkerRespondToNavigationRequestWithRedirectedResponse = 1697,
+    V8AudioContext_Constructor = 1698,
+    V8OfflineAudioContext_Constructor = 1699,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

@@ -271,12 +271,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
     case UseCounter::PrefixedWindowURL:
       return replacedBy("'webkitURL'", "'URL'");
 
-    case UseCounter::PrefixedAudioContext:
-      return replacedBy("'webkitAudioContext'", "'AudioContext'");
-
-    case UseCounter::PrefixedOfflineAudioContext:
-      return replacedBy("'webkitOfflineAudioContext'", "'OfflineAudioContext'");
-
     case UseCounter::RangeExpand:
       return replacedBy("'Range.expand()'", "'Selection.modify()'");
 

@@ -1,5 +1,3 @@
-CONSOLE WARNING: line 94: 'webkitOfflineAudioContext' is deprecated. Please use 'OfflineAudioContext' instead.
-CONSOLE WARNING: line 94: 'webkitAudioContext' is deprecated. Please use 'AudioContext' instead.
 CONSOLE WARNING: line 94: 'webkitURL' is deprecated. Please use 'URL' instead.
 This test documents all interface attributes and methods on the global window object and element instances.
 
@@ -8413,11 +8411,6 @@ interface XSLTProcessor
     method setParameter
     method transformToDocument
     method transformToFragment
-interface webkitAudioContext : BaseAudioContext
-    attribute @@toStringTag
-    method close
-    method constructor
-    method suspend
 interface webkitMediaStream : EventTarget
     attribute @@toStringTag
     getter active
@@ -8438,14 +8431,6 @@ interface webkitMediaStream : EventTarget
     setter onaddtrack
     setter oninactive
     setter onremovetrack
-interface webkitOfflineAudioContext : BaseAudioContext
-    attribute @@toStringTag
-    getter length
-    getter oncomplete
-    method constructor
-    method startRendering
-    method suspend
-    setter oncomplete
 interface webkitRTCPeerConnection : EventTarget
     static method generateCertificate
     attribute @@toStringTag
