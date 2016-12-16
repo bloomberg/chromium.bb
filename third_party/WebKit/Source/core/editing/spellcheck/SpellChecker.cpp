@@ -854,8 +854,7 @@ void SpellChecker::replaceMisspelledRange(const String& text) {
 
   if (cancel)
     return;
-  frame().editor().replaceSelectionWithText(
-      text, false, false, InputEvent::InputType::InsertReplacementText);
+  frame().editor().replaceSelectionForSpellChecker(text);
 }
 
 static bool shouldCheckOldSelection(const Position& oldSelectionStart) {

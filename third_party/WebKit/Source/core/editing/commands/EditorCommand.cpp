@@ -250,10 +250,10 @@ static bool applyCommandToFrame(LocalFrame& frame,
   // good reason for that?
   switch (source) {
     case EditCommandSource::kMenuOrKeyBinding:
-      frame.editor().applyStyleToSelection(style, inputType);
+      frame.editor().applyStyleToSelection(source, style, inputType);
       return true;
     case EditCommandSource::kDOM:
-      frame.editor().applyStyle(style, inputType);
+      frame.editor().applyStyle(source, style, inputType);
       return true;
   }
   NOTREACHED();
@@ -353,10 +353,10 @@ static bool executeApplyParagraphStyle(LocalFrame& frame,
   // good reason for that?
   switch (source) {
     case EditCommandSource::kMenuOrKeyBinding:
-      frame.editor().applyParagraphStyleToSelection(style, inputType);
+      frame.editor().applyParagraphStyleToSelection(source, style, inputType);
       return true;
     case EditCommandSource::kDOM:
-      frame.editor().applyParagraphStyle(style, inputType);
+      frame.editor().applyParagraphStyle(source, style, inputType);
       return true;
   }
   NOTREACHED();
@@ -364,6 +364,7 @@ static bool executeApplyParagraphStyle(LocalFrame& frame,
 }
 
 static bool executeInsertFragment(LocalFrame& frame,
+                                  EditCommandSource,
                                   DocumentFragment* fragment) {
   DCHECK(frame.document());
   return ReplaceSelectionCommand::create(
@@ -373,14 +374,16 @@ static bool executeInsertFragment(LocalFrame& frame,
       ->apply();
 }
 
-static bool executeInsertElement(LocalFrame& frame, HTMLElement* content) {
+static bool executeInsertElement(LocalFrame& frame,
+                                 EditCommandSource source,
+                                 HTMLElement* content) {
   DCHECK(frame.document());
   DocumentFragment* fragment = DocumentFragment::create(*frame.document());
   DummyExceptionStateForTesting exceptionState;
   fragment->appendChild(content, exceptionState);
   if (exceptionState.hadException())
     return false;
-  return executeInsertFragment(frame, fragment);
+  return executeInsertFragment(frame, source, fragment);
 }
 
 static bool expandSelectionToGranularity(LocalFrame& frame,
@@ -580,7 +583,7 @@ static bool executeDelete(LocalFrame& frame,
   switch (source) {
     case EditCommandSource::kMenuOrKeyBinding: {
       // Doesn't modify the text if the current selection isn't a range.
-      frame.editor().performDelete();
+      frame.editor().performDelete(source);
       return true;
     }
     case EditCommandSource::kDOM:
@@ -601,9 +604,9 @@ static bool executeDelete(LocalFrame& frame,
 
 static bool executeDeleteBackward(LocalFrame& frame,
                                   Event*,
-                                  EditCommandSource,
+                                  EditCommandSource source,
                                   const String&) {
-  frame.editor().deleteWithDirection(DeleteDirection::Backward,
+  frame.editor().deleteWithDirection(source, DeleteDirection::Backward,
                                      CharacterGranularity, false, true);
   return true;
 }
@@ -611,68 +614,68 @@ static bool executeDeleteBackward(LocalFrame& frame,
 static bool executeDeleteBackwardByDecomposingPreviousCharacter(
     LocalFrame& frame,
     Event*,
-    EditCommandSource,
+    EditCommandSource source,
     const String&) {
   DLOG(ERROR) << "DeleteBackwardByDecomposingPreviousCharacter is not "
                  "implemented, doing DeleteBackward instead";
-  frame.editor().deleteWithDirection(DeleteDirection::Backward,
+  frame.editor().deleteWithDirection(source, DeleteDirection::Backward,
                                      CharacterGranularity, false, true);
   return true;
 }
 
 static bool executeDeleteForward(LocalFrame& frame,
                                  Event*,
-                                 EditCommandSource,
+                                 EditCommandSource source,
                                  const String&) {
-  frame.editor().deleteWithDirection(DeleteDirection::Forward,
+  frame.editor().deleteWithDirection(source, DeleteDirection::Forward,
                                      CharacterGranularity, false, true);
   return true;
 }
 
 static bool executeDeleteToBeginningOfLine(LocalFrame& frame,
                                            Event*,
-                                           EditCommandSource,
+                                           EditCommandSource source,
                                            const String&) {
-  frame.editor().deleteWithDirection(DeleteDirection::Backward, LineBoundary,
-                                     true, false);
+  frame.editor().deleteWithDirection(source, DeleteDirection::Backward,
+                                     LineBoundary, true, false);
   return true;
 }
 
 static bool executeDeleteToBeginningOfParagraph(LocalFrame& frame,
                                                 Event*,
-                                                EditCommandSource,
+                                                EditCommandSource source,
                                                 const String&) {
-  frame.editor().deleteWithDirection(DeleteDirection::Backward,
+  frame.editor().deleteWithDirection(source, DeleteDirection::Backward,
                                      ParagraphBoundary, true, false);
   return true;
 }
 
 static bool executeDeleteToEndOfLine(LocalFrame& frame,
                                      Event*,
-                                     EditCommandSource,
+                                     EditCommandSource source,
                                      const String&) {
   // Despite its name, this command should delete the newline at the end of a
   // paragraph if you are at the end of a paragraph (like
   // DeleteToEndOfParagraph).
-  frame.editor().deleteWithDirection(DeleteDirection::Forward, LineBoundary,
-                                     true, false);
+  frame.editor().deleteWithDirection(source, DeleteDirection::Forward,
+                                     LineBoundary, true, false);
   return true;
 }
 
 static bool executeDeleteToEndOfParagraph(LocalFrame& frame,
                                           Event*,
-                                          EditCommandSource,
+                                          EditCommandSource source,
                                           const String&) {
   // Despite its name, this command should delete the newline at the end of
   // a paragraph if you are at the end of a paragraph.
-  frame.editor().deleteWithDirection(DeleteDirection::Forward,
+  frame.editor().deleteWithDirection(source, DeleteDirection::Forward,
                                      ParagraphBoundary, true, false);
   return true;
 }
 
 static bool executeDeleteToMark(LocalFrame& frame,
                                 Event*,
-                                EditCommandSource,
+                                EditCommandSource source,
                                 const String&) {
   const EphemeralRange mark =
       frame.editor().mark().toNormalizedEphemeralRange();
@@ -685,26 +688,26 @@ static bool executeDeleteToMark(LocalFrame& frame,
     if (!selected)
       return false;
   }
-  frame.editor().performDelete();
+  frame.editor().performDelete(source);
   frame.editor().setMark(frame.selection().selection());
   return true;
 }
 
 static bool executeDeleteWordBackward(LocalFrame& frame,
                                       Event*,
-                                      EditCommandSource,
+                                      EditCommandSource source,
                                       const String&) {
-  frame.editor().deleteWithDirection(DeleteDirection::Backward, WordGranularity,
-                                     true, false);
+  frame.editor().deleteWithDirection(source, DeleteDirection::Backward,
+                                     WordGranularity, true, false);
   return true;
 }
 
 static bool executeDeleteWordForward(LocalFrame& frame,
                                      Event*,
-                                     EditCommandSource,
+                                     EditCommandSource source,
                                      const String&) {
-  frame.editor().deleteWithDirection(DeleteDirection::Forward, WordGranularity,
-                                     true, false);
+  frame.editor().deleteWithDirection(source, DeleteDirection::Forward,
+                                     WordGranularity, true, false);
   return true;
 }
 
@@ -778,7 +781,7 @@ static bool executeForwardDelete(LocalFrame& frame,
   EditingState editingState;
   switch (source) {
     case EditCommandSource::kMenuOrKeyBinding:
-      frame.editor().deleteWithDirection(DeleteDirection::Forward,
+      frame.editor().deleteWithDirection(source, DeleteDirection::Forward,
                                          CharacterGranularity, false, true);
       return true;
     case EditCommandSource::kDOM:
@@ -816,8 +819,10 @@ static bool executeIndent(LocalFrame& frame,
 
 static bool executeInsertBacktab(LocalFrame& frame,
                                  Event* event,
-                                 EditCommandSource,
+                                 EditCommandSource source,
                                  const String&) {
+  DCHECK_EQ(source, EditCommandSource::kMenuOrKeyBinding)
+      << "|TextInputEvent| should only be triggered from user action.";
   return targetFrame(frame, event)
       ->eventHandler()
       .handleTextInputEvent("\t", event, TextEventInputBackTab);
@@ -825,33 +830,33 @@ static bool executeInsertBacktab(LocalFrame& frame,
 
 static bool executeInsertHorizontalRule(LocalFrame& frame,
                                         Event*,
-                                        EditCommandSource,
+                                        EditCommandSource source,
                                         const String& value) {
   DCHECK(frame.document());
   HTMLHRElement* rule = HTMLHRElement::create(*frame.document());
   if (!value.isEmpty())
     rule->setIdAttribute(AtomicString(value));
-  return executeInsertElement(frame, rule);
+  return executeInsertElement(frame, source, rule);
 }
 
 static bool executeInsertHTML(LocalFrame& frame,
                               Event*,
-                              EditCommandSource,
+                              EditCommandSource source,
                               const String& value) {
   DCHECK(frame.document());
   return executeInsertFragment(
-      frame, createFragmentFromMarkup(*frame.document(), value, ""));
+      frame, source, createFragmentFromMarkup(*frame.document(), value, ""));
 }
 
 static bool executeInsertImage(LocalFrame& frame,
                                Event*,
-                               EditCommandSource,
+                               EditCommandSource source,
                                const String& value) {
   DCHECK(frame.document());
   HTMLImageElement* image = HTMLImageElement::create(*frame.document());
   if (!value.isEmpty())
     image->setSrc(value);
-  return executeInsertElement(frame, image);
+  return executeInsertElement(frame, source, image);
 }
 
 static bool executeInsertLineBreak(LocalFrame& frame,
@@ -877,8 +882,10 @@ static bool executeInsertLineBreak(LocalFrame& frame,
 
 static bool executeInsertNewline(LocalFrame& frame,
                                  Event* event,
-                                 EditCommandSource,
+                                 EditCommandSource source,
                                  const String&) {
+  DCHECK_EQ(source, EditCommandSource::kMenuOrKeyBinding)
+      << "|TextInputEvent| should only be triggered from user action.";
   LocalFrame* targetFrame = blink::targetFrame(frame, event);
   return targetFrame->eventHandler().handleTextInputEvent(
       "\n", event, targetFrame->editor().canEditRichly()
@@ -915,8 +922,10 @@ static bool executeInsertParagraph(LocalFrame& frame,
 
 static bool executeInsertTab(LocalFrame& frame,
                              Event* event,
-                             EditCommandSource,
+                             EditCommandSource source,
                              const String&) {
+  DCHECK_EQ(source, EditCommandSource::kMenuOrKeyBinding)
+      << "|TextInputEvent| should only be triggered from user action.";
   return targetFrame(frame, event)
       ->eventHandler()
       .handleTextInputEvent("\t", event);
@@ -979,38 +988,38 @@ static bool executeJustifyRight(LocalFrame& frame,
 
 static bool executeMakeTextWritingDirectionLeftToRight(LocalFrame& frame,
                                                        Event*,
-                                                       EditCommandSource,
+                                                       EditCommandSource source,
                                                        const String&) {
   MutableStylePropertySet* style =
       MutableStylePropertySet::create(HTMLQuirksMode);
   style->setProperty(CSSPropertyUnicodeBidi, CSSValueIsolate);
   style->setProperty(CSSPropertyDirection, CSSValueLtr);
-  frame.editor().applyStyle(style,
+  frame.editor().applyStyle(source, style,
                             InputEvent::InputType::FormatSetBlockTextDirection);
   return true;
 }
 
 static bool executeMakeTextWritingDirectionNatural(LocalFrame& frame,
                                                    Event*,
-                                                   EditCommandSource,
+                                                   EditCommandSource source,
                                                    const String&) {
   MutableStylePropertySet* style =
       MutableStylePropertySet::create(HTMLQuirksMode);
   style->setProperty(CSSPropertyUnicodeBidi, CSSValueNormal);
-  frame.editor().applyStyle(style,
+  frame.editor().applyStyle(source, style,
                             InputEvent::InputType::FormatSetBlockTextDirection);
   return true;
 }
 
 static bool executeMakeTextWritingDirectionRightToLeft(LocalFrame& frame,
                                                        Event*,
-                                                       EditCommandSource,
+                                                       EditCommandSource source,
                                                        const String&) {
   MutableStylePropertySet* style =
       MutableStylePropertySet::create(HTMLQuirksMode);
   style->setProperty(CSSPropertyUnicodeBidi, CSSValueIsolate);
   style->setProperty(CSSPropertyDirection, CSSValueRtl);
-  frame.editor().applyStyle(style,
+  frame.editor().applyStyle(source, style,
                             InputEvent::InputType::FormatSetBlockTextDirection);
   return true;
 }
@@ -1541,17 +1550,17 @@ static bool executePrint(LocalFrame& frame,
 
 static bool executeRedo(LocalFrame& frame,
                         Event*,
-                        EditCommandSource,
+                        EditCommandSource source,
                         const String&) {
-  frame.editor().redo();
+  frame.editor().redo(source);
   return true;
 }
 
 static bool executeRemoveFormat(LocalFrame& frame,
                                 Event*,
-                                EditCommandSource,
+                                EditCommandSource source,
                                 const String&) {
-  frame.editor().removeFormattingAndStyle();
+  frame.editor().removeFormattingAndStyle(source);
   return true;
 }
 
@@ -1738,9 +1747,9 @@ static bool executeToggleItalic(LocalFrame& frame,
 
 static bool executeTranspose(LocalFrame& frame,
                              Event*,
-                             EditCommandSource,
+                             EditCommandSource source,
                              const String&) {
-  frame.editor().transpose();
+  frame.editor().transpose(source);
   return true;
 }
 
@@ -1756,9 +1765,9 @@ static bool executeUnderline(LocalFrame& frame,
 
 static bool executeUndo(LocalFrame& frame,
                         Event*,
-                        EditCommandSource,
+                        EditCommandSource source,
                         const String&) {
-  frame.editor().undo();
+  frame.editor().undo(source);
   return true;
 }
 
@@ -1788,20 +1797,20 @@ static bool executeUnselect(LocalFrame& frame,
 
 static bool executeYank(LocalFrame& frame,
                         Event*,
-                        EditCommandSource,
+                        EditCommandSource source,
                         const String&) {
   frame.editor().insertTextWithoutSendingTextEvent(
-      frame.editor().killRing().yank(), false, 0);
+      source, frame.editor().killRing().yank(), false, 0);
   frame.editor().killRing().setToYankedState();
   return true;
 }
 
 static bool executeYankAndSelect(LocalFrame& frame,
                                  Event*,
-                                 EditCommandSource,
+                                 EditCommandSource source,
                                  const String&) {
   frame.editor().insertTextWithoutSendingTextEvent(
-      frame.editor().killRing().yank(), true, 0);
+      source, frame.editor().killRing().yank(), true, 0);
   frame.editor().killRing().setToYankedState();
   return true;
 }
@@ -2554,9 +2563,11 @@ bool Editor::executeCommand(const String& commandName) {
   // Specially handling commands that Editor::execCommand does not directly
   // support.
   if (commandName == "DeleteToEndOfParagraph") {
-    if (!deleteWithDirection(DeleteDirection::Forward, ParagraphBoundary, true,
+    if (!deleteWithDirection(EditCommandSource::kMenuOrKeyBinding,
+                             DeleteDirection::Forward, ParagraphBoundary, true,
                              false))
-      deleteWithDirection(DeleteDirection::Forward, CharacterGranularity, true,
+      deleteWithDirection(EditCommandSource::kMenuOrKeyBinding,
+                          DeleteDirection::Forward, CharacterGranularity, true,
                           false);
     return true;
   }
