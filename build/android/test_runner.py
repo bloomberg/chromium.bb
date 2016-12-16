@@ -555,6 +555,10 @@ def AddPerfTestOptions(parser):
   group.add_argument(
       '--write-buildbot-json', action='store_true',
       help='Whether to output buildbot json.')
+  # TODO(rnephew): Move up to top level options when implemented on all tests.
+  group.add_argument(
+      '--trace-output', metavar='FILENAME', type=os.path.realpath,
+      help='Path to save test_runner trace data to.')
   AddCommonOptions(parser)
   AddDeviceOptions(parser)
 
