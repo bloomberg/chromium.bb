@@ -57,6 +57,7 @@ class AutoplayUmaHelperTest : public testing::Test {
     HTMLMediaElement& element = mediaElement();
     m_umaHelper = new MockAutoplayUmaHelper(&element);
     element.m_autoplayUmaHelper = m_umaHelper;
+    ::testing::Mock::AllowLeak(&umaHelper());
   }
 
   void TearDown() override { m_umaHelper.clear(); }
