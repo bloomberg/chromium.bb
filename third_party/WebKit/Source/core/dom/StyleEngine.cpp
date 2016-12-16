@@ -189,10 +189,8 @@ void StyleEngine::removePendingSheet(Node& styleSheetCandidateNode,
 }
 
 void StyleEngine::setNeedsActiveStyleUpdate(TreeScope& treeScope) {
-  if (!document().isActive() && isMaster())
-    return;
-
-  markTreeScopeDirty(treeScope);
+  if (document().isActive() || !isMaster())
+    markTreeScopeDirty(treeScope);
 }
 
 void StyleEngine::addStyleSheetCandidateNode(Node& node) {
@@ -630,9 +628,6 @@ void StyleEngine::classChangedForElement(const SpaceSplitString& changedClasses,
     return;
   InvalidationLists invalidationLists;
   unsigned changedSize = changedClasses.size();
-  // TODO(rune@opera.com): ensureResolver() can be removed once stylesheet
-  // updates are async. https://crbug.com/567021
-  ensureResolver();
   const RuleFeatureSet& features = ruleFeatureSet();
   for (unsigned i = 0; i < changedSize; ++i) {
     features.collectInvalidationSetsForClass(invalidationLists, element,
@@ -659,9 +654,6 @@ void StyleEngine::classChangedForElement(const SpaceSplitString& oldClasses,
   remainingClassBits.ensureSize(oldClasses.size());
 
   InvalidationLists invalidationLists;
-  // TODO(rune@opera.com): ensureResolver() can be removed once stylesheet
-  // updates are async. https://crbug.com/567021
-  ensureResolver();
   const RuleFeatureSet& features = ruleFeatureSet();
 
   for (unsigned i = 0; i < newClasses.size(); ++i) {
@@ -700,9 +692,6 @@ void StyleEngine::attributeChangedForElement(const QualifiedName& attributeName,
     return;
 
   InvalidationLists invalidationLists;
-  // TODO(rune@opera.com): ensureResolver() can be removed once stylesheet
-  // updates are async. https://crbug.com/567021
-  ensureResolver();
   ruleFeatureSet().collectInvalidationSetsForAttribute(invalidationLists,
                                                        element, attributeName);
   m_styleInvalidator.scheduleInvalidationSetsForNode(invalidationLists,
@@ -716,9 +705,6 @@ void StyleEngine::idChangedForElement(const AtomicString& oldId,
     return;
 
   InvalidationLists invalidationLists;
-  // TODO(rune@opera.com): ensureResolver() can be removed once stylesheet
-  // updates are async. https://crbug.com/567021
-  ensureResolver();
   const RuleFeatureSet& features = ruleFeatureSet();
   if (!oldId.isEmpty())
     features.collectInvalidationSetsForId(invalidationLists, element, oldId);
@@ -735,9 +721,6 @@ void StyleEngine::pseudoStateChangedForElement(
     return;
 
   InvalidationLists invalidationLists;
-  // TODO(rune@opera.com): ensureResolver() can be removed once stylesheet
-  // updates are async. https://crbug.com/567021
-  ensureResolver();
   ruleFeatureSet().collectInvalidationSetsForPseudoClass(invalidationLists,
                                                          element, pseudoType);
   m_styleInvalidator.scheduleInvalidationSetsForNode(invalidationLists,
@@ -752,9 +735,6 @@ void StyleEngine::scheduleSiblingInvalidationsForElement(
 
   InvalidationLists invalidationLists;
 
-  // TODO(rune@opera.com): ensureResolver() can be removed once stylesheet
-  // updates are async. https://crbug.com/567021
-  ensureResolver();
   const RuleFeatureSet& features = ruleFeatureSet();
 
   if (element.hasID()) {
@@ -824,9 +804,6 @@ void StyleEngine::scheduleInvalidationsForRemovedSibling(
 
 void StyleEngine::scheduleNthPseudoInvalidations(ContainerNode& nthParent) {
   InvalidationLists invalidationLists;
-  // TODO(rune@opera.com): ensureResolver() can be removed once stylesheet
-  // updates are async. https://crbug.com/567021
-  ensureResolver();
   ruleFeatureSet().collectNthInvalidationSet(invalidationLists);
   m_styleInvalidator.scheduleInvalidationSetsForNode(invalidationLists,
                                                      nthParent);
