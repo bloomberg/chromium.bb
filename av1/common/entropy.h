@@ -156,9 +156,7 @@ void av1_partial_adapt_probs(struct AV1Common *cm, int mi_row, int mi_col);
 
 DECLARE_ALIGNED(16, extern const uint8_t,
                 av1_coefband_trans_8x8plus[MAX_TX_SQUARE]);
-#if CONFIG_EXT_TX
 DECLARE_ALIGNED(16, extern const uint8_t, av1_coefband_trans_4x8_8x4[32]);
-#endif  // CONFIG_EXT_TX
 DECLARE_ALIGNED(16, extern const uint8_t, av1_coefband_trans_4x4[16]);
 
 DECLARE_ALIGNED(16, extern const uint16_t, band_count_table[TX_SIZES_ALL][8]);
@@ -168,9 +166,8 @@ DECLARE_ALIGNED(16, extern const uint16_t,
 static INLINE const uint8_t *get_band_translate(TX_SIZE tx_size) {
   switch (tx_size) {
     case TX_4X4: return av1_coefband_trans_4x4;
-#if CONFIG_EXT_TX
+    case TX_8X4:
     case TX_4X8: return av1_coefband_trans_4x8_8x4;
-#endif  // CONFIG_EXT_TX
     default: return av1_coefband_trans_8x8plus;
   }
 }
