@@ -11,6 +11,7 @@ import os
 import re
 import shutil
 import time
+import urlparse
 
 from chromite.lib import config_lib
 from chromite.cbuildbot import commands
@@ -52,6 +53,20 @@ def IsInternalRepoCheckout(root):
   return (os.path.splitext(os.path.basename(manifest_url))[0] ==
           os.path.splitext(os.path.basename(
               site_config.params.MANIFEST_INT_URL))[0])
+
+
+def _IsLocalPath(url):
+  """Returns whether the url is a local path.
+
+  Args:
+    url: The url string to parse.
+
+  Returns:
+    True if the url actually refers to a local path (with prefix
+      'file://' or '/'); else, False.
+  """
+  o = urlparse.urlparse(url)
+  return o.scheme in ('file', '')
 
 
 def CloneGitRepo(working_dir, repo_url, reference=None, bare=False,
@@ -456,8 +471,10 @@ class RepoRepository(object):
         cmd.append('--cache-dir=%s' % self.git_cache_dir)
       # Do the network half of the sync; retry as necessary to get the content.
       try:
-        fields = {'manifest_repo': self.manifest_repo_url}
-        metrics.Counter(constants.MON_REPO_SYNC_COUNT).increment(fields=fields)
+        if not _IsLocalPath(self.manifest_repo_url):
+          fields = {'manifest_repo': self.manifest_repo_url}
+          metrics.Counter(constants.MON_REPO_SYNC_COUNT).increment(
+              fields=fields)
 
         cros_build_lib.RunCommand(cmd + ['-n'], cwd=self.directory)
       except cros_build_lib.RunCommandError:

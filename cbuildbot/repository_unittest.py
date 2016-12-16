@@ -19,6 +19,7 @@ from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import cros_build_lib
 
+# pylint: disable=protected-access
 
 site_config = config_lib.GetConfig()
 
@@ -49,6 +50,15 @@ class RepositoryTests(cros_build_lib_unittest.RunCommandTestCase):
     for test in tests:
       self.rc.SetDefaultCmdResult(output=test)
       self.assertTrue(repository.IsInternalRepoCheckout('.'))
+
+  def testIsLocalPath(self):
+    """test IsLocalPath."""
+    self.assertTrue(repository._IsLocalPath('/tmp/chromiumos/'))
+    self.assertTrue(repository._IsLocalPath('file:///chromiumos/'))
+    self.assertFalse(repository._IsLocalPath('https://chromiumos/'))
+    self.assertFalse(repository._IsLocalPath('http://chromiumos/'))
+    self.assertFalse(repository._IsLocalPath('ssh://chromiumos/'))
+    self.assertFalse(repository._IsLocalPath('git://chromiumos/'))
 
 
 class RepoInitTests(cros_test_lib.TempDirTestCase, cros_test_lib.MockTestCase):
