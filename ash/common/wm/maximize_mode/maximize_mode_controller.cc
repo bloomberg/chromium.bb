@@ -133,14 +133,6 @@ MaximizeModeController::~MaximizeModeController() {
 #endif  // OS_CHROMEOS
 }
 
-void MaximizeModeController::AddObserver(Observer* observer) {
-  observers_.AddObserver(observer);
-}
-
-void MaximizeModeController::RemoveObserver(Observer* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 bool MaximizeModeController::CanEnterMaximizeMode() {
   // If we have ever seen accelerometer data, then HandleHingeRotation may
   // trigger maximize mode at some point in the future.
@@ -172,7 +164,7 @@ void MaximizeModeController::EnableMaximizeModeWindowManager(
     shell->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_ENABLED);
     shell->OnMaximizeModeStarted();
 
-    touchview_observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
+    observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
       observer->OnTouchViewToggled(true);
     });
 
@@ -181,7 +173,7 @@ void MaximizeModeController::EnableMaximizeModeWindowManager(
     shell->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_DISABLED);
     shell->OnMaximizeModeEnded();
 
-    touchview_observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
+    observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
       observer->OnTouchViewToggled(false);
     });
   }
@@ -349,9 +341,6 @@ void MaximizeModeController::EnterMaximizeMode() {
   if (IsMaximizeModeWindowManagerEnabled())
     return;
   EnableMaximizeModeWindowManager(true);
-
-  for (auto& observer : observers_)
-    observer.OnEnterMaximizeMode();
 }
 
 void MaximizeModeController::LeaveMaximizeMode() {
@@ -367,9 +356,6 @@ void MaximizeModeController::LeaveMaximizeMode() {
   if (!IsMaximizeModeWindowManagerEnabled())
     return;
   EnableMaximizeModeWindowManager(false);
-
-  for (auto& observer : observers_)
-    observer.OnLeaveMaximizeMode();
 }
 
 // Called after maximize mode has started, windows might still animate though.
@@ -421,7 +407,7 @@ MaximizeModeController::CurrentTouchViewIntervalType() {
 
 void MaximizeModeController::AddObserver(mojom::TouchViewObserverPtr observer) {
   observer->OnTouchViewToggled(IsMaximizeModeWindowManagerEnabled());
-  touchview_observers_.AddPtr(std::move(observer));
+  observers_.AddPtr(std::move(observer));
 }
 
 void MaximizeModeController::OnAppTerminating() {

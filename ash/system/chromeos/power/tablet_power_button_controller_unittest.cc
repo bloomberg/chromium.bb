@@ -415,7 +415,7 @@ TEST_F(TabletPowerButtonControllerTest,
 
   power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
   EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
-  tablet_controller_->OnEnterMaximizeMode();
+  tablet_controller_->OnMaximizeModeStarted();
   EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1500));
   power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
@@ -425,7 +425,7 @@ TEST_F(TabletPowerButtonControllerTest,
   power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
   test_api_->TriggerShutdownTimeout();
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
-  tablet_controller_->OnEnterMaximizeMode();
+  tablet_controller_->OnMaximizeModeStarted();
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(2500));
   power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
@@ -434,7 +434,7 @@ TEST_F(TabletPowerButtonControllerTest,
 
   power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
   EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
-  tablet_controller_->OnLeaveMaximizeMode();
+  tablet_controller_->OnMaximizeModeEnded();
   EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(3500));
   power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
@@ -444,7 +444,7 @@ TEST_F(TabletPowerButtonControllerTest,
   power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
   test_api_->TriggerShutdownTimeout();
   EXPECT_TRUE(lock_state_test_api_->shutdown_timer_is_running());
-  tablet_controller_->OnLeaveMaximizeMode();
+  tablet_controller_->OnMaximizeModeEnded();
   EXPECT_FALSE(lock_state_test_api_->shutdown_timer_is_running());
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(4500));
   power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());

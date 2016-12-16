@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
+#include "ash/common/shell_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/tick_clock.h"
@@ -26,7 +26,7 @@ class LockStateController;
 // instantiated and used in PowerButtonController.
 class ASH_EXPORT TabletPowerButtonController
     : public chromeos::PowerManagerClient::Observer,
-      public MaximizeModeController::Observer,
+      public ShellObserver,
       public ui::EventHandler,
       public ui::InputDeviceEventObserver {
  public:
@@ -63,9 +63,9 @@ class ASH_EXPORT TabletPowerButtonController
   void BrightnessChanged(int level, bool user_initiated) override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
-  // Overridden from MaximizeModeController::Observer:
-  void OnEnterMaximizeMode() override;
-  void OnLeaveMaximizeMode() override;
+  // Overridden from ShellObserver:
+  void OnMaximizeModeStarted() override;
+  void OnMaximizeModeEnded() override;
 
   // Overridden from ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;

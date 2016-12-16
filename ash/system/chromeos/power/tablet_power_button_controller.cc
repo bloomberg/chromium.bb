@@ -7,6 +7,7 @@
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_delegate.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wm/lock_state_controller.h"
@@ -72,8 +73,7 @@ TabletPowerButtonController::TabletPowerButtonController(
       weak_ptr_factory_(this) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
-  if (WmShell::Get()->maximize_mode_controller())
-    WmShell::Get()->maximize_mode_controller()->AddObserver(this);
+  WmShell::Get()->AddShellObserver(this);
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
   Shell::GetInstance()->PrependPreTargetHandler(this);
 
@@ -83,8 +83,7 @@ TabletPowerButtonController::TabletPowerButtonController(
 TabletPowerButtonController::~TabletPowerButtonController() {
   Shell::GetInstance()->RemovePreTargetHandler(this);
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
-  if (WmShell::Get()->maximize_mode_controller())
-    WmShell::Get()->maximize_mode_controller()->RemoveObserver(this);
+  WmShell::Get()->RemoveShellObserver(this);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
 }
@@ -142,13 +141,13 @@ void TabletPowerButtonController::SuspendDone(
   last_resume_time_ = tick_clock_->NowTicks();
 }
 
-void TabletPowerButtonController::OnEnterMaximizeMode() {
+void TabletPowerButtonController::OnMaximizeModeStarted() {
   shutdown_timer_.Stop();
   if (controller_->CanCancelShutdownAnimation())
     controller_->CancelShutdownAnimation();
 }
 
-void TabletPowerButtonController::OnLeaveMaximizeMode() {
+void TabletPowerButtonController::OnMaximizeModeEnded() {
   shutdown_timer_.Stop();
   if (controller_->CanCancelShutdownAnimation())
     controller_->CancelShutdownAnimation();

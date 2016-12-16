@@ -13,7 +13,6 @@
 #include "ash/public/interfaces/touch_view.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -57,24 +56,8 @@ class ASH_EXPORT MaximizeModeController :
     public ShellObserver,
     public WmDisplayObserver {
  public:
-  // Interface for observing changes from MaximizeModeController.
-  class Observer {
-   public:
-    virtual ~Observer() {}
-
-    // Called when device enters maximize mode.
-    virtual void OnEnterMaximizeMode() {}
-
-    // Called when device leaves maximize mode.
-    virtual void OnLeaveMaximizeMode() {}
-  };
-
   MaximizeModeController();
   ~MaximizeModeController() override;
-
-  // Adds and removes the |observer|.
-  void AddObserver(Observer* observer);
-  void RemoveObserver(Observer* observer);
 
   // True if it is possible to enter maximize mode in the current
   // configuration. If this returns false, it should never be the case that
@@ -210,9 +193,7 @@ class ASH_EXPORT MaximizeModeController :
   mojo::BindingSet<mojom::TouchViewManager> bindings_;
 
   // The set of touchview observers to be notified about mode changes.
-  mojo::InterfacePtrSet<mojom::TouchViewObserver> touchview_observers_;
-
-  base::ObserverList<Observer> observers_;
+  mojo::InterfacePtrSet<mojom::TouchViewObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MaximizeModeController);
 };
