@@ -100,6 +100,13 @@ bool AreExtraHeadersCompatibleWithPrerenderContents(
   return parsed_headers.IsEmpty();
 }
 
+// Returns true if prerendering is forced, because it is needed as a feature, as
+// opposed to a performance optimization.
+bool IsPrerenderingForced(Origin origin) {
+  return origin == ORIGIN_OFFLINE ||
+         origin == ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR;
+}
+
 }  // namespace
 
 class PrerenderManager::OnCloseWebContentsDeleter
@@ -609,13 +616,15 @@ bool PrerenderManager::IsPrerenderingPossible() {
 }
 
 // static
-bool PrerenderManager::IsNoStatePrefetch() {
-  return GetMode() == PRERENDER_MODE_NOSTATE_PREFETCH;
+bool PrerenderManager::IsNoStatePrefetch(Origin origin) {
+  return !IsPrerenderingForced(origin) &&
+         GetMode() == PRERENDER_MODE_NOSTATE_PREFETCH;
 }
 
 // static
-bool PrerenderManager::IsSimpleLoadExperiment() {
-  return GetMode() == PRERENDER_MODE_SIMPLE_LOAD_EXPERIMENT;
+bool PrerenderManager::IsSimpleLoadExperiment(Origin origin) {
+  return !IsPrerenderingForced(origin) &&
+         GetMode() == PRERENDER_MODE_SIMPLE_LOAD_EXPERIMENT;
 }
 
 bool PrerenderManager::IsWebContentsPrerendering(
@@ -952,7 +961,7 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
   // enable metrics comparisons.
   prefetches_.emplace_back(url, GetCurrentTimeTicks(), origin);
 
-  if (IsSimpleLoadExperiment()) {
+  if (IsSimpleLoadExperiment(origin)) {
     // Exit after adding the url to prefetches_, so that no prefetching occurs
     // but the page is still tracked as "would have been prefetched".
     return nullptr;
@@ -962,7 +971,7 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
       CreatePrerenderContents(url, referrer, origin);
   DCHECK(prerender_contents);
   PrerenderContents* prerender_contents_ptr = prerender_contents.get();
-  if (IsNoStatePrefetch())
+  if (IsNoStatePrefetch(origin))
     prerender_contents_ptr->SetPrerenderMode(PREFETCH_ONLY);
   active_prerenders_.push_back(
       base::MakeUnique<PrerenderData>(this, std::move(prerender_contents),

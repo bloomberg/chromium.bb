@@ -490,6 +490,80 @@ TEST_F(PrerenderTest, OfflinePrerenderIgnoresThirdPartyCookiesPref) {
   EXPECT_EQ(ORIGIN_OFFLINE, prerender_handle->contents()->origin());
 }
 
+// Checks that the prerender mode affects "normal" origins such as omnibox, but
+// not offline origin.
+TEST_F(PrerenderTest, PrerenderModePerOrigin) {
+  RestorePrerenderMode restore_prerender_mode;
+
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+  EXPECT_TRUE(PrerenderManager::IsPrerenderingPossible());
+  EXPECT_FALSE(PrerenderManager::IsNoStatePrefetch(ORIGIN_OFFLINE));
+  EXPECT_TRUE(PrerenderManager::IsNoStatePrefetch(ORIGIN_OMNIBOX));
+  EXPECT_FALSE(PrerenderManager::IsSimpleLoadExperiment(ORIGIN_OFFLINE));
+  EXPECT_FALSE(PrerenderManager::IsSimpleLoadExperiment(ORIGIN_OMNIBOX));
+
+  prerender_manager()->SetMode(PrerenderManager::PRERENDER_MODE_ENABLED);
+  EXPECT_TRUE(PrerenderManager::IsPrerenderingPossible());
+  EXPECT_FALSE(PrerenderManager::IsNoStatePrefetch(ORIGIN_OFFLINE));
+  EXPECT_FALSE(PrerenderManager::IsNoStatePrefetch(ORIGIN_OMNIBOX));
+  EXPECT_FALSE(PrerenderManager::IsSimpleLoadExperiment(ORIGIN_OFFLINE));
+  EXPECT_FALSE(PrerenderManager::IsSimpleLoadExperiment(ORIGIN_OMNIBOX));
+
+  prerender_manager()->SetMode(PrerenderManager::PRERENDER_MODE_DISABLED);
+  EXPECT_FALSE(PrerenderManager::IsPrerenderingPossible());
+
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_SIMPLE_LOAD_EXPERIMENT);
+  EXPECT_TRUE(PrerenderManager::IsPrerenderingPossible());
+  EXPECT_FALSE(PrerenderManager::IsNoStatePrefetch(ORIGIN_OFFLINE));
+  EXPECT_FALSE(PrerenderManager::IsNoStatePrefetch(ORIGIN_OMNIBOX));
+  EXPECT_FALSE(PrerenderManager::IsSimpleLoadExperiment(ORIGIN_OFFLINE));
+  EXPECT_TRUE(PrerenderManager::IsSimpleLoadExperiment(ORIGIN_OMNIBOX));
+}
+
+TEST_F(PrerenderTest, PrerenderRespectsPrerenderModeNoStatePrefetch) {
+  GURL url("http://www.google.com/");
+  RestorePrerenderMode restore_prerender_mode;
+
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          url, FINAL_STATUS_MANAGER_SHUTDOWN);
+  EXPECT_TRUE(AddSimplePrerender(url));
+  EXPECT_EQ(PREFETCH_ONLY, prerender_contents->prerender_mode());
+}
+
+TEST_F(PrerenderTest, PrerenderRespectsPrerenderModeSimpleLoad) {
+  GURL url("http://www.google.com/");
+  RestorePrerenderMode restore_prerender_mode;
+
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_SIMPLE_LOAD_EXPERIMENT);
+  EXPECT_FALSE(AddSimplePrerender(url));
+}
+
+// Checks that a full prerender happens in offline mode, even if no-state
+// prefetch is enabled.
+TEST_F(PrerenderTest, OfflinePrerenderIgnoresPrerenderMode) {
+  GURL url("http://www.google.com/");
+  RestorePrerenderMode restore_prerender_mode;
+
+  prerender_manager()->SetMode(
+      PrerenderManager::PRERENDER_MODE_NOSTATE_PREFETCH);
+
+  ASSERT_TRUE(PrerenderManager::IsPrerenderingPossible());
+
+  DummyPrerenderContents* prerender_contents =
+      prerender_manager()->CreateNextPrerenderContents(
+          url, ORIGIN_OFFLINE, FINAL_STATUS_MANAGER_SHUTDOWN);
+  std::unique_ptr<PrerenderHandle> prerender_handle(
+      prerender_manager()->AddPrerenderForOffline(url, nullptr, kSize));
+  EXPECT_EQ(FULL_PRERENDER, prerender_contents->prerender_mode());
+}
+
 TEST_F(PrerenderTest, PrerenderDisabledOnLowEndDevice) {
   GURL url("http://www.google.com/");
   ASSERT_TRUE(PrerenderManager::IsPrerenderingPossible());

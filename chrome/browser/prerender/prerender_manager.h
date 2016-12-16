@@ -217,8 +217,8 @@ class PrerenderManager : public content::NotificationObserver,
   static PrerenderManagerMode GetMode();
   static void SetMode(PrerenderManagerMode mode);
   static bool IsPrerenderingPossible();
-  static bool IsNoStatePrefetch();
-  static bool IsSimpleLoadExperiment();
+  static bool IsNoStatePrefetch(Origin origin);
+  static bool IsSimpleLoadExperiment(Origin origin);
 
   // Query the list of current prerender pages to see if the given web contents
   // is prerendering a page. The optional parameter |origin| is an output
