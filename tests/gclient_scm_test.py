@@ -496,8 +496,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     file_path = join(self.base_path, '.git', 'index.lock')
     with open(file_path, 'w'):
       pass
-    with self.assertRaisesRegexp(subprocess2.CalledProcessError,
-                                 'Unable to create.*/index.lock'):
+    with self.assertRaises(subprocess2.CalledProcessError):
       scm.update(options, (), [])
     sys.stdout.close()
 
