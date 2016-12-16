@@ -44,7 +44,6 @@ namespace blink {
 
 class AnimatableValue;
 class CSSRuleList;
-class CSSStyleSheet;
 class CSSValue;
 class Document;
 class Element;
@@ -102,18 +101,6 @@ class CORE_EXPORT StyleResolver final
   PassRefPtr<ComputedStyle> styleForText(Text*);
 
   static PassRefPtr<ComputedStyle> styleForDocument(Document&);
-
-  // FIXME: It could be better to call appendAuthorStyleSheets() directly after
-  // we factor StyleResolver further.
-  // https://bugs.webkit.org/show_bug.cgi?id=108890
-  void appendAuthorStyleSheets(const HeapVector<Member<CSSStyleSheet>>&);
-  void lazyAppendAuthorStyleSheets(unsigned firstNew,
-                                   const HeapVector<Member<CSSStyleSheet>>&);
-  void removePendingAuthorStyleSheets(const HeapVector<Member<CSSStyleSheet>>&);
-  void appendPendingAuthorStyleSheets();
-  bool hasPendingAuthorStyleSheets() const {
-    return m_pendingStyleSheets.size() > 0;
-  }
 
   // TODO(esprehn): StyleResolver should probably not contain tree walking
   // state, instead we should pass a context object during recalcStyle.
@@ -181,8 +168,6 @@ class CORE_EXPORT StyleResolver final
 
   void loadPendingResources(StyleResolverState&);
   void adjustComputedStyle(StyleResolverState&, Element*);
-
-  void appendCSSStyleSheet(CSSStyleSheet&);
 
   void collectPseudoRulesForElement(const Element&,
                                     ElementRuleCollector&,
@@ -319,8 +304,6 @@ class CORE_EXPORT StyleResolver final
   MatchedPropertiesCache m_matchedPropertiesCache;
   Member<Document> m_document;
   SelectorFilter m_selectorFilter;
-
-  HeapListHashSet<Member<CSSStyleSheet>, 16> m_pendingStyleSheets;
 
   Member<StyleRuleUsageTracker> m_tracker;
 

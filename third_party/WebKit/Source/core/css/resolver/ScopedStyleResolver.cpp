@@ -83,24 +83,6 @@ void ScopedStyleResolver::addFontFaceRules(const RuleSet& ruleSet) {
     document.styleResolver()->invalidateMatchedPropertiesCache();
 }
 
-void ScopedStyleResolver::appendCSSStyleSheet(CSSStyleSheet& cssSheet) {
-  RuleSet* ruleSet =
-      treeScope().document().styleEngine().ruleSetForSheet(cssSheet);
-
-  m_viewportDependentMediaQueryResults.appendVector(
-      cssSheet.viewportDependentMediaQueryResults());
-  m_deviceDependentMediaQueryResults.appendVector(
-      cssSheet.deviceDependentMediaQueryResults());
-  if (!ruleSet)
-    return;
-
-  unsigned index = m_authorStyleSheets.size();
-  m_authorStyleSheets.push_back(&cssSheet);
-  addKeyframeRules(*ruleSet);
-  addFontFaceRules(*ruleSet);
-  addTreeBoundaryCrossingRules(*ruleSet, &cssSheet, index);
-}
-
 void ScopedStyleResolver::appendActiveStyleSheets(
     unsigned index,
     const ActiveStyleSheetVector& activeSheets) {

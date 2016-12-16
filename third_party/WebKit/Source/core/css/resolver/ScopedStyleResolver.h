@@ -57,7 +57,6 @@ class ScopedStyleResolver final : public GarbageCollected<ScopedStyleResolver> {
   StyleRuleKeyframes* keyframeStylesForAnimation(
       const StringImpl* animationName);
 
-  void appendCSSStyleSheet(CSSStyleSheet&);
   void appendActiveStyleSheets(unsigned index, const ActiveStyleSheetVector&);
   void collectMatchingAuthorRules(ElementRuleCollector&,
                                   CascadeOrder = ignoreCascadeOrder);

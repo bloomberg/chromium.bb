@@ -192,62 +192,6 @@ void StyleResolver::setRuleUsageTracker(StyleRuleUsageTracker* tracker) {
   m_tracker = tracker;
 }
 
-void StyleResolver::lazyAppendAuthorStyleSheets(
-    unsigned firstNew,
-    const HeapVector<Member<CSSStyleSheet>>& styleSheets) {
-  unsigned size = styleSheets.size();
-  for (unsigned i = firstNew; i < size; ++i)
-    m_pendingStyleSheets.add(styleSheets[i].get());
-}
-
-void StyleResolver::removePendingAuthorStyleSheets(
-    const HeapVector<Member<CSSStyleSheet>>& styleSheets) {
-  for (unsigned i = 0; i < styleSheets.size(); ++i)
-    m_pendingStyleSheets.remove(styleSheets[i].get());
-}
-
-void StyleResolver::appendCSSStyleSheet(CSSStyleSheet& cssSheet) {
-  DCHECK(!cssSheet.disabled());
-  DCHECK(cssSheet.ownerDocument());
-  DCHECK(cssSheet.ownerNode());
-  DCHECK(isHTMLStyleElement(cssSheet.ownerNode()) ||
-         isSVGStyleElement(cssSheet.ownerNode()) ||
-         cssSheet.ownerNode()->isConnected());
-
-  TreeScope* treeScope = &cssSheet.ownerNode()->treeScope();
-  // TODO(rune@opera.com): This is a workaround for crbug.com/559292
-  // when we're in the middle of removing a subtree with a style element
-  // and the treescope has been changed but inDocument and isInShadowTree
-  // are not.
-  //
-  // This check can be removed when crbug.com/567021 is fixed.
-  if (cssSheet.ownerNode()->isInShadowTree() &&
-      treeScope->rootNode().isDocumentNode())
-    return;
-
-  // Sheets in the document scope of HTML imports apply to the main document
-  // (m_document), so we override it for all document scoped sheets.
-  if (treeScope->rootNode().isDocumentNode())
-    treeScope = m_document;
-  treeScope->ensureScopedStyleResolver().appendCSSStyleSheet(cssSheet);
-}
-
-void StyleResolver::appendPendingAuthorStyleSheets() {
-  for (const auto& styleSheet : m_pendingStyleSheets)
-    appendCSSStyleSheet(*styleSheet);
-
-  m_pendingStyleSheets.clear();
-}
-
-void StyleResolver::appendAuthorStyleSheets(
-    const HeapVector<Member<CSSStyleSheet>>& styleSheets) {
-  // This handles sheets added to the end of the stylesheet list only. In other
-  // cases the style resolver needs to be reconstructed. To handle insertions
-  // too the rule order numbers would need to be updated.
-  for (const auto& styleSheet : styleSheets)
-    appendCSSStyleSheet(*styleSheet);
-}
-
 void StyleResolver::addToStyleSharingList(Element& element) {
   DCHECK(RuntimeEnabledFeatures::styleSharingEnabled());
   // Never add elements to the style sharing list if we're not in a recalcStyle,
@@ -682,7 +626,6 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(
     RuleMatchingBehavior matchingBehavior) {
   DCHECK(document().frame());
   DCHECK(document().settings());
-  DCHECK(!hasPendingAuthorStyleSheets());
 
   // Once an element has a layoutObject, we don't try to destroy it, since
   // otherwise the layoutObject will vanish if a style recalc happens during
@@ -1020,7 +963,6 @@ PassRefPtr<ComputedStyle> StyleResolver::pseudoStyleForElement(
 }
 
 PassRefPtr<ComputedStyle> StyleResolver::styleForPage(int pageIndex) {
-  DCHECK(!hasPendingAuthorStyleSheets());
   // m_rootElementStyle will be set to the document style.
   StyleResolverState state(document(), document().documentElement());
 
@@ -1984,7 +1926,6 @@ DEFINE_TRACE(StyleResolver) {
   visitor->trace(m_matchedPropertiesCache);
   visitor->trace(m_selectorFilter);
   visitor->trace(m_styleSharingLists);
-  visitor->trace(m_pendingStyleSheets);
   visitor->trace(m_document);
   visitor->trace(m_tracker);
 }
