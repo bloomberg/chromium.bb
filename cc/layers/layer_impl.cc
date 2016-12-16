@@ -177,14 +177,18 @@ void LayerImpl::PopulateSharedQuadState(SharedQuadState* state) const {
                 draw_blend_mode_, sorting_context_id_);
 }
 
-void LayerImpl::PopulateScaledSharedQuadState(SharedQuadState* state,
-                                              float scale) const {
+void LayerImpl::PopulateScaledSharedQuadState(
+    SharedQuadState* state,
+    float layer_to_content_scale_x,
+    float layer_to_content_scale_y) const {
   gfx::Transform scaled_draw_transform =
       draw_properties_.target_space_transform;
-  scaled_draw_transform.Scale(SK_MScalar1 / scale, SK_MScalar1 / scale);
-  gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(bounds(), scale);
-  gfx::Rect scaled_visible_layer_rect =
-      gfx::ScaleToEnclosingRect(visible_layer_rect(), scale);
+  scaled_draw_transform.Scale(SK_MScalar1 / layer_to_content_scale_x,
+                              SK_MScalar1 / layer_to_content_scale_y);
+  gfx::Size scaled_bounds = gfx::ScaleToCeiledSize(
+      bounds(), layer_to_content_scale_x, layer_to_content_scale_y);
+  gfx::Rect scaled_visible_layer_rect = gfx::ScaleToEnclosingRect(
+      visible_layer_rect(), layer_to_content_scale_x, layer_to_content_scale_y);
   scaled_visible_layer_rect.Intersect(gfx::Rect(scaled_bounds));
 
   state->SetAll(scaled_draw_transform, scaled_bounds, scaled_visible_layer_rect,

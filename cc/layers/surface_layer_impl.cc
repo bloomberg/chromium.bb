@@ -16,7 +16,7 @@
 namespace cc {
 
 SurfaceLayerImpl::SurfaceLayerImpl(LayerTreeImpl* tree_impl, int id)
-    : LayerImpl(tree_impl, id), surface_scale_(0.f) {
+    : LayerImpl(tree_impl, id) {
   layer_tree_impl()->AddSurfaceLayer(this);
 }
 
@@ -53,6 +53,14 @@ void SurfaceLayerImpl::SetSurfaceSize(const gfx::Size& size) {
   NoteLayerPropertyChanged();
 }
 
+void SurfaceLayerImpl::SetStretchContentToFillBounds(bool stretch_content) {
+  if (stretch_content_to_fill_bounds_ == stretch_content)
+    return;
+
+  stretch_content_to_fill_bounds_ = stretch_content;
+  NoteLayerPropertyChanged();
+}
+
 void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
   SurfaceLayerImpl* layer_impl = static_cast<SurfaceLayerImpl*>(layer);
@@ -60,6 +68,7 @@ void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer_impl->SetSurfaceId(surface_id_);
   layer_impl->SetSurfaceSize(surface_size_);
   layer_impl->SetSurfaceScale(surface_scale_);
+  layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
 }
 
 void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
@@ -68,7 +77,19 @@ void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
 
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  PopulateScaledSharedQuadState(shared_quad_state, surface_scale_);
+
+  if (stretch_content_to_fill_bounds_) {
+    // Strecthes the surface contents to exactly fill the layer bounds,
+    // regardless of scale or aspect ratio differences.
+    float scale_x =
+        static_cast<float>(surface_size_.width()) / bounds().width();
+    float scale_y =
+        static_cast<float>(surface_size_.height()) / bounds().height();
+    PopulateScaledSharedQuadState(shared_quad_state, scale_x, scale_y);
+  } else {
+    PopulateScaledSharedQuadState(shared_quad_state, surface_scale_,
+                                  surface_scale_);
+  }
 
   if (!surface_id_.is_valid())
     return;
@@ -77,6 +98,7 @@ void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
   gfx::Rect visible_quad_rect =
       draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
           quad_rect);
+
   if (visible_quad_rect.IsEmpty())
     return;
   SurfaceDrawQuad* quad =

@@ -202,7 +202,8 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
   }
 
   float max_contents_scale = MaximumTilingContentsScale();
-  PopulateScaledSharedQuadState(shared_quad_state, max_contents_scale);
+  PopulateScaledSharedQuadState(shared_quad_state, max_contents_scale,
+                                max_contents_scale);
   Occlusion scaled_occlusion =
       draw_properties()
           .occlusion_in_content_space.GetOcclusionWithGivenDrawTransform(

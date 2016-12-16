@@ -142,6 +142,20 @@ def ExperimentalCanvasFeaturesPages(base_name):
 
   return [
     PixelTestPage(
+      'pixel_offscreenCanvas_transfer_after_style_resize.html',
+      base_name + '_OffscreenCanvasTransferAfterStyleResize',
+      test_rect=[0, 0, 350, 350],
+      revision=1,
+      browser_args=browser_args),
+
+    PixelTestPage(
+      'pixel_offscreenCanvas_transfer_before_style_resize.html',
+      base_name + '_OffscreenCanvasTransferBeforeStyleResize',
+      test_rect=[0, 0, 350, 350],
+      revision=1,
+      browser_args=browser_args),
+
+    PixelTestPage(
       'pixel_offscreenCanvas_transferToImageBitmap_main.html',
       base_name + '_OffscreenCanvasTransferToImageBitmap',
       test_rect=[0, 0, 300, 300],

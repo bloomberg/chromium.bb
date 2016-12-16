@@ -80,7 +80,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
       base::Bind(&RequireCallback, &required_id, &required_seq)));
   layer->SetSurfaceId(
       SurfaceId(kArbitraryFrameSinkId, LocalFrameId(1, kArbitraryToken)), 1.f,
-      gfx::Size(1, 1));
+      gfx::Size(1, 1), false);
   layer_tree_host_->GetSurfaceSequenceGenerator()->set_frame_sink_id(
       FrameSinkId(1, 1));
   layer_tree_->SetRootLayer(layer);
@@ -94,7 +94,7 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
       base::Bind(&RequireCallback, &required_id, &required_seq)));
   layer2->SetSurfaceId(
       SurfaceId(kArbitraryFrameSinkId, LocalFrameId(1, kArbitraryToken)), 1.f,
-      gfx::Size(1, 1));
+      gfx::Size(1, 1), false);
   layer_tree_host2->GetSurfaceSequenceGenerator()->set_frame_sink_id(
       FrameSinkId(2, 2));
   layer_tree_host2->SetRootLayer(layer2);
@@ -147,7 +147,7 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
         base::Bind(&RequireCallback, &required_id_, &required_set_));
     layer_->SetSurfaceId(
         SurfaceId(kArbitraryFrameSinkId, LocalFrameId(1, kArbitraryToken)), 1.f,
-        gfx::Size(1, 1));
+        gfx::Size(1, 1), false);
 
     // Layer hasn't been added to tree so no SurfaceSequence generated yet.
     EXPECT_EQ(0u, required_set_.size());

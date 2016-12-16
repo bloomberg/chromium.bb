@@ -136,7 +136,8 @@ void HeadsUpDisplayLayerImpl::AppendQuads(
 
   SharedQuadState* shared_quad_state =
       render_pass->CreateAndAppendSharedQuadState();
-  PopulateScaledSharedQuadState(shared_quad_state, internal_contents_scale_);
+  PopulateScaledSharedQuadState(shared_quad_state, internal_contents_scale_,
+                                internal_contents_scale_);
 
   gfx::Rect quad_rect(internal_content_bounds_);
   gfx::Rect opaque_rect(contents_opaque() ? quad_rect : gfx::Rect());

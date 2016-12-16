@@ -26,6 +26,7 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   void SetSurfaceId(const SurfaceId& surface_id);
   void SetSurfaceScale(float scale);
   void SetSurfaceSize(const gfx::Size& size);
+  void SetStretchContentToFillBounds(bool stretch_content);
   const SurfaceId& surface_id() const { return surface_id_; }
 
   // LayerImpl overrides.
@@ -45,7 +46,8 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
 
   SurfaceId surface_id_;
   gfx::Size surface_size_;
-  float surface_scale_;
+  float surface_scale_ = 0.f;
+  bool stretch_content_to_fill_bounds_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceLayerImpl);
 };

@@ -665,7 +665,8 @@ void Layer::SetShowSurface(
 
   scoped_refptr<cc::SurfaceLayer> new_layer =
       cc::SurfaceLayer::Create(satisfy_callback, require_callback);
-  new_layer->SetSurfaceId(surface_id, scale, surface_size_in_pixels);
+  new_layer->SetSurfaceId(surface_id, scale, surface_size_in_pixels,
+                          false /* stretch_content_to_fill_bounds */);
   SwitchToLayer(new_layer);
   surface_layer_ = new_layer;
 

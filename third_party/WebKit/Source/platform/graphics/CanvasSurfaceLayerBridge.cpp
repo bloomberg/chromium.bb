@@ -37,7 +37,8 @@ bool CanvasSurfaceLayerBridge::createSurfaceLayer(int canvasWidth,
   m_surfaceLayer = cc::SurfaceLayer::Create(std::move(satisfyCallback),
                                             std::move(requireCallback));
   m_surfaceLayer->SetSurfaceId(m_surfaceId, 1.f,
-                               gfx::Size(canvasWidth, canvasHeight));
+                               gfx::Size(canvasWidth, canvasHeight),
+                               true /* scale layer bounds with surface size */);
 
   m_webLayer = Platform::current()->compositorSupport()->createLayerFromCCLayer(
       m_surfaceLayer.get());

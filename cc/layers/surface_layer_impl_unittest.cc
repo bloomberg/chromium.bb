@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "cc/layers/append_quads_data.h"
 #include "cc/test/layer_test_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,6 +65,64 @@ TEST(SurfaceLayerImplTest, Occlusion) {
     EXPECT_EQ(1u, impl.quad_list().size());
     EXPECT_EQ(1u, partially_occluded_count);
   }
+}
+
+TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
+  LayerTestCommon::LayerImplTest impl;
+  SurfaceLayerImpl* surface_layer_impl =
+      impl.AddChildToRoot<SurfaceLayerImpl>();
+  const LocalFrameId kArbitraryLocalFrameId(9,
+                                            base::UnguessableToken::Create());
+
+  // Given condition: layer and surface have different size and different
+  // aspect ratios.
+  gfx::Size layer_size(400, 100);
+  gfx::Size surface_size(300, 300);
+  float surface_scale = 1.f;
+  gfx::Transform target_space_transform(
+      surface_layer_impl->draw_properties().target_space_transform);
+
+  // The following code is mimicking the PushPropertiesTo from pending to
+  // active tree.
+  surface_layer_impl->SetBounds(layer_size);
+  surface_layer_impl->SetDrawsContent(true);
+  SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalFrameId);
+  surface_layer_impl->SetSurfaceId(surface_id);
+  surface_layer_impl->SetSurfaceScale(surface_scale);
+  surface_layer_impl->SetSurfaceSize(surface_size);
+  surface_layer_impl->SetStretchContentToFillBounds(true);
+
+  std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
+  AppendQuadsData data;
+  surface_layer_impl->AppendQuads(render_pass.get(), &data);
+
+  const QuadList& quads = render_pass->quad_list;
+  ASSERT_EQ(1u, quads.size());
+  const SharedQuadState* shared_quad_state = quads.front()->shared_quad_state;
+
+  // We expect that the transform for the quad stretches the quad to cover the
+  // entire bounds of the layer.
+  gfx::Transform expected_transform(target_space_transform);
+  float scale_x = static_cast<float>(surface_size.width()) / layer_size.width();
+  float scale_y =
+      static_cast<float>(surface_size.height()) / layer_size.height();
+  expected_transform.Scale(SK_MScalar1 / scale_x, SK_MScalar1 / scale_y);
+  EXPECT_EQ(expected_transform, shared_quad_state->quad_to_target_transform);
+
+  // Obtain quad rect in target space by applying SQS->quad_to_target_transform
+  // to quad_rect
+  gfx::RectF quad_rect(quads.front()->rect);
+  gfx::RectF transformed_quad_rect =
+      MathUtil::MapClippedRect(expected_transform, quad_rect);
+
+  // Obtain layer rect in target space by applying target_space_transform on
+  // layer rect.
+  gfx::RectF layer_rect(layer_size.width(), layer_size.height());
+  gfx::RectF transformed_layer_rect =
+      MathUtil::MapClippedRect(target_space_transform, layer_rect);
+
+  // Check if quad rect in target space matches layer rect in target space
+  EXPECT_EQ(transformed_quad_rect, transformed_layer_rect);
 }
 
 }  // namespace

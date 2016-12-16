@@ -205,7 +205,8 @@ void ChildFrameCompositingHelper::OnSetSurface(
   if (IsUseZoomForDSFEnabled())
     scale_factor = 1.0f;
 
-  surface_layer->SetSurfaceId(surface_id, scale_factor, frame_size);
+  surface_layer->SetSurfaceId(surface_id, scale_factor, frame_size,
+                              false /* stretch_content_to_fill_bounds */);
   surface_layer->SetMasksToBounds(true);
   std::unique_ptr<cc_blink::WebLayerImpl> layer(
       new cc_blink::WebLayerImpl(surface_layer));
