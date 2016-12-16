@@ -22,8 +22,9 @@ struct Referrer;
 // A CRWSessionController is similar to a NavigationController object in desktop
 // Chrome. It maintains information needed to save/restore a tab with its
 // complete session history. There is one of these for each tab.
-// TODO(stuartmorgan): Move under NavigationManager, and consider merging into
-// NavigationManager.
+// DEPRECATED, do not use this class and do not add any methods to it.
+// Use web::NavigationManager instead.
+// TODO(crbug.com/454984): Remove this class.
 @interface CRWSessionController : NSObject<NSCoding, NSCopying>
 
 @property(nonatomic, readonly, copy) NSString* tabId;

@@ -27,6 +27,9 @@ struct Referrer;
 }
 
 // Methods implemented by the delegate of the CRWWebController.
+// DEPRECATED, do not conform to this protocol and do not add any methods to it.
+// Use web::WebStateDelegate instead.
+// TODO(crbug.com/674991): Remove this protocol.
 @protocol CRWWebDelegate<NSObject>
 
 // Called when the page wants to open a new window by DOM (e.g. with

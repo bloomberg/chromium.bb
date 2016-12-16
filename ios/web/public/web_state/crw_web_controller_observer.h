@@ -10,9 +10,9 @@
 @class CRWWebController;
 @protocol CRWWebViewProxy;
 
-// NOTE: When adding new methods to CRWWebControllerObserver, consider adding
-// them to WebStateObserver instead if they need to be surfaced to the public
-// API.
+// DEPRECATED, do not conform to this protocol and do not add any methods to it.
+// Use web::WebStateObserver instead.
+// TODO(crbug.com/675005): Remove this protocol.
 @protocol CRWWebControllerObserver<NSObject>
 
 @optional

@@ -58,7 +58,9 @@ extern NSString* const kSessionEntryUseDesktopUserAgentKey;
 // It maintains the information needed to save/restore a single entry in session
 // history (i.e., one site) for a tab. A tab may have multiple of these objects
 // comprising its entire session history.
-// TODO(rohitrao): Fold CRWSessionEntry's logic into NavigationItem.
+// DEPRECATED, do not use this class and do not add any methods to it.
+// Use web::NavigationItem instead.
+// TODO(crbug.com/454984): Remove this class.
 @interface CRWSessionEntry : NSObject<NSCoding, NSCopying>
 
 @property(nonatomic, readonly) const GURL& originalUrl;

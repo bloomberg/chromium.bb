@@ -10,6 +10,9 @@
 @class CRWWebController;
 class GURL;
 
+// DEPRECATED, do not conform to this protocol and do not add any methods to it.
+// Use web::WebStateDelegate instead.
+// TODO(crbug.com/675001): Remove this protocol.
 @protocol CRWWebUserInterfaceDelegate<NSObject>
 
  @optional
