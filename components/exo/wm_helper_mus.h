@@ -7,22 +7,16 @@
 
 #include "base/macros.h"
 #include "components/exo/wm_helper.h"
+#include "services/ui/public/cpp/window_tree_client_observer.h"
 #include "ui/aura/client/focus_change_observer.h"
-#include "ui/aura/env_observer.h"
 #include "ui/events/devices/input_device_event_observer.h"
-
-namespace aura {
-namespace client {
-class ActivationClient;
-}
-}
 
 namespace exo {
 
 // A helper class for accessing WindowManager related features.
 class WMHelperMus : public WMHelper,
                     public ui::InputDeviceEventObserver,
-                    public aura::EnvObserver,
+                    public ui::WindowTreeClientObserver,
                     public aura::client::FocusChangeObserver {
  public:
   WMHelperMus();
@@ -44,10 +38,9 @@ class WMHelperMus : public WMHelper,
   bool IsSpokenFeedbackEnabled() const override;
   void PlayEarcon(int sound_key) const override;
 
-  // Overriden from aura::EnvObserver:
-  void OnWindowInitialized(aura::Window* window) override;
-  void OnActiveFocusClientChanged(aura::client::FocusClient* focus_client,
-                                  aura::Window* window) override;
+  // Overriden from ui::WindowTreeClientObserver:
+  void OnWindowTreeFocusChanged(ui::Window* gained_focus,
+                                ui::Window* lost_focus) override;
 
   // Overriden from ui::client::FocusChangeObserver:
   void OnWindowFocused(aura::Window* gained_focus,
@@ -57,19 +50,8 @@ class WMHelperMus : public WMHelper,
   void OnKeyboardDeviceConfigurationChanged() override;
 
  private:
-  void SetActiveFocusClient(aura::client::FocusClient* focus_client,
-                            aura::Window* window);
-  void SetActiveWindow(aura::Window* window);
-  void SetFocusedWindow(aura::Window* window);
-
-  aura::client::ActivationClient* GetActivationClient();
-
-  // Current FocusClient.
-  aura::client::FocusClient* active_focus_client_ = nullptr;
-  // This is the window that |active_focus_client_| comes from (may be null).
-  aura::Window* root_with_active_focus_client_ = nullptr;
-  aura::Window* active_window_ = nullptr;
-  aura::Window* focused_window_ = nullptr;
+  aura::Window* active_window_;
+  aura::Window* focused_window_;
 
   DISALLOW_COPY_AND_ASSIGN(WMHelperMus);
 };

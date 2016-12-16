@@ -58,6 +58,7 @@ source_set("exo") {
     "//device/gamepad",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",
+    "//services/ui/public/cpp",
     "//skia",
     "//ui/aura",
     "//ui/compositor",
@@ -139,7 +140,7 @@ source_set("unit_tests") {
     "//ui/keyboard",
     "//ui/message_center",
     "//ui/views",
-    "//ui/wm",
+    "//ui/wm:wm",
   ]
 
   if (use_ozone) {

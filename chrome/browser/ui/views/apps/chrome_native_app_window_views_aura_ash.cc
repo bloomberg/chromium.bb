@@ -24,11 +24,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_context_menu.h"
-#include "services/service_manager/runner/common/client_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/cpp/window.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/mus/window_tree_host_mus.h"
+#include "ui/aura/mus/mus_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/hit_test.h"
@@ -342,7 +342,7 @@ void ChromeNativeAppWindowViewsAuraAsh::UpdateDraggableRegions(
   SkRegion* draggable_region = GetDraggableRegion();
   // Set the NativeAppWindow's draggable region on the mus window.
   if (draggable_region && !draggable_region->isEmpty() && widget() &&
-      service_manager::ServiceManagerIsRemote()) {
+      GetMusWindow(widget()->GetNativeWindow())) {
     // Supply client area insets that encompass all draggable regions.
     gfx::Insets insets(draggable_region->getBounds().bottom(), 0, 0, 0);
 
@@ -354,11 +354,8 @@ void ChromeNativeAppWindowViewsAuraAsh::UpdateDraggableRegions(
     for (SkRegion::Iterator i(inverted_region); !i.done(); i.next())
       additional_client_regions.push_back(gfx::SkIRectToRect(i.rect()));
 
-    aura::WindowTreeHostMus* window_tree_host =
-        static_cast<aura::WindowTreeHostMus*>(
-            widget()->GetNativeWindow()->GetHost());
-    window_tree_host->SetClientArea(insets,
-                                    std::move(additional_client_regions));
+    GetMusWindow(widget()->GetNativeWindow())
+        ->SetClientArea(insets, std::move(additional_client_regions));
   }
 }
 

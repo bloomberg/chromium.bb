@@ -12,7 +12,6 @@
 #include "extensions/grit/extensions_browser_resources.h"
 #include "mojo/common/common_type_converters.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/events/event_constants.h"
 
 class ChromeShelfItemDelegate : public ash::mojom::ShelfItemDelegate {
  public:

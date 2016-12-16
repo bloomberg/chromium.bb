@@ -18,7 +18,6 @@
 #include "chrome/app/mash/mash_runner.h"
 #include "chrome/common/channel_info.h"
 #include "components/version_info/version_info.h"
-#include "services/service_manager/runner/common/client_util.h"
 #endif
 
 #if defined(OS_WIN)
@@ -104,8 +103,6 @@ int ChromeMain(int argc, const char** argv) {
     if (command_line->HasSwitch("mash"))
       return MashMain();
     WaitForMashDebuggerIfNecessary();
-    if (service_manager::ServiceManagerIsRemote())
-      params.env_mode = aura::Env::Mode::MUS;
   }
 #endif  // BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
 

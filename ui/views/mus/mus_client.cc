@@ -55,45 +55,6 @@ namespace views {
 // static
 MusClient* MusClient::instance_ = nullptr;
 
-MusClient::MusClient(service_manager::Connector* connector,
-                     const service_manager::Identity& identity,
-                     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-                     bool create_wm_state)
-    : identity_(identity) {
-  DCHECK(!instance_);
-  instance_ = this;
-  // TODO(msw): Avoid this... use some default value? Allow clients to extend?
-  property_converter_ = base::MakeUnique<aura::PropertyConverter>();
-
-  if (create_wm_state)
-    wm_state_ = base::MakeUnique<wm::WMState>();
-
-  gpu_ = ui::Gpu::Create(connector, std::move(io_task_runner));
-  compositor_context_factory_ =
-      base::MakeUnique<aura::MusContextFactory>(gpu_.get());
-  aura::Env::GetInstance()->set_context_factory(
-      compositor_context_factory_.get());
-  window_tree_client_ =
-      base::MakeUnique<aura::WindowTreeClient>(connector, this);
-  aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client_.get());
-  window_tree_client_->ConnectViaWindowTreeFactory();
-
-  pointer_watcher_event_router_ =
-      base::MakeUnique<PointerWatcherEventRouter2>(window_tree_client_.get());
-
-  screen_ = base::MakeUnique<ScreenMus>(this);
-  screen_->Init(connector);
-
-  std::unique_ptr<ClipboardMus> clipboard = base::MakeUnique<ClipboardMus>();
-  clipboard->Init(connector);
-  ui::Clipboard::SetClipboardForCurrentThread(std::move(clipboard));
-
-  ui::OSExchangeDataProviderFactory::SetFactory(this);
-
-  ViewsDelegate::GetInstance()->set_native_widget_factory(
-      base::Bind(&MusClient::CreateNativeWidget, base::Unretained(this)));
-}
-
 MusClient::~MusClient() {
   // ~WindowTreeClient calls back to us (we're its delegate), destroy it while
   // we are still valid.
@@ -205,6 +166,43 @@ void MusClient::AddObserver(MusClientObserver* observer) {
 
 void MusClient::RemoveObserver(MusClientObserver* observer) {
   observer_list_.RemoveObserver(observer);
+}
+
+MusClient::MusClient(service_manager::Connector* connector,
+                     const service_manager::Identity& identity,
+                     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
+    : identity_(identity) {
+  DCHECK(!instance_);
+  instance_ = this;
+  // TODO(msw): Avoid this... use some default value? Allow clients to extend?
+  property_converter_ = base::MakeUnique<aura::PropertyConverter>();
+
+  wm_state_ = base::MakeUnique<wm::WMState>();
+
+  gpu_ = ui::Gpu::Create(connector, std::move(io_task_runner));
+  compositor_context_factory_ =
+      base::MakeUnique<aura::MusContextFactory>(gpu_.get());
+  aura::Env::GetInstance()->set_context_factory(
+      compositor_context_factory_.get());
+  window_tree_client_ =
+      base::MakeUnique<aura::WindowTreeClient>(connector, this);
+  aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client_.get());
+  window_tree_client_->ConnectViaWindowTreeFactory();
+
+  pointer_watcher_event_router_ =
+      base::MakeUnique<PointerWatcherEventRouter2>(window_tree_client_.get());
+
+  screen_ = base::MakeUnique<ScreenMus>(this);
+  screen_->Init(connector);
+
+  std::unique_ptr<ClipboardMus> clipboard = base::MakeUnique<ClipboardMus>();
+  clipboard->Init(connector);
+  ui::Clipboard::SetClipboardForCurrentThread(std::move(clipboard));
+
+  ui::OSExchangeDataProviderFactory::SetFactory(this);
+
+  ViewsDelegate::GetInstance()->set_native_widget_factory(
+      base::Bind(&MusClient::CreateNativeWidget, base::Unretained(this)));
 }
 
 void MusClient::OnEmbed(

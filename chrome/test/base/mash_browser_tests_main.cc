@@ -17,7 +17,6 @@
 #include "chrome/test/base/chrome_test_launcher.h"
 #include "chrome/test/base/chrome_test_suite.h"
 #include "chrome/test/base/mojo_test_connector.h"
-#include "content/public/app/content_main.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/test/test_launcher.h"
 #include "mash/package/mash_packaged_service.h"
@@ -28,7 +27,6 @@
 #include "services/service_manager/public/cpp/standalone_service/standalone_service.h"
 #include "services/service_manager/runner/common/switches.h"
 #include "services/service_manager/runner/init.h"
-#include "ui/aura/env.h"
 
 namespace {
 
@@ -79,7 +77,6 @@ class MashTestLauncherDelegate : public ChromeTestLauncherDelegate {
   // ChromeTestLauncherDelegate:
   int RunTestSuite(int argc, char** argv) override {
     test_suite_.reset(new MashTestSuite(argc, argv));
-    content::GetContentMainParams()->env_mode = aura::Env::Mode::MUS;
     const int result = test_suite_->Run();
     test_suite_.reset();
     return result;

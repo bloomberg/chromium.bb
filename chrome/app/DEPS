@@ -33,7 +33,6 @@ include_rules = [
   "+native_client/src/trusted/service_runtime/osx",
   "+remoting/client/plugin",
   "+sandbox",
-  "+services/service_manager/runner/common/client_util.h",
   "+syzygy/kasko/api",
   "+third_party/crashpad/crashpad",
   "+third_party/kasko",

@@ -180,11 +180,6 @@ DesktopWindowTreeHostMus::DesktopWindowTreeHostMus(
       close_widget_factory_(this) {
   aura::Env::GetInstance()->AddObserver(this);
   MusClient::Get()->AddObserver(this);
-  // DesktopNativeWidgetAura registers the association between |content_window_|
-  // and Widget, but code may also want to go from the root (window()) to the
-  // Widget. This call enables that.
-  NativeWidgetAura::RegisterNativeWidgetForWindow(desktop_native_widget_aura,
-                                                  window());
   // TODO: use display id and bounds if available, likely need to pass in
   // InitParams for that.
 }

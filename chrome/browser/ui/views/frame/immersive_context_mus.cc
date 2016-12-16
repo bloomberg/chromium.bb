@@ -4,14 +4,12 @@
 
 #include "chrome/browser/ui/views/frame/immersive_context_mus.h"
 
-#include "ui/aura/client/capture_client.h"
-#include "ui/views/mus/mus_client.h"
-#include "ui/views/mus/pointer_watcher_event_router2.h"
+#include "services/ui/public/cpp/window_tree_client.h"
+#include "ui/views/mus/pointer_watcher_event_router.h"
+#include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/pointer_watcher.h"
 
-ImmersiveContextMus::ImmersiveContextMus(
-    aura::client::CaptureClient* capture_client)
-    : capture_client_(capture_client) {}
+ImmersiveContextMus::ImmersiveContextMus() {}
 
 ImmersiveContextMus::~ImmersiveContextMus() {}
 
@@ -39,17 +37,21 @@ void ImmersiveContextMus::AddPointerWatcher(
     views::PointerWatcher* watcher,
     views::PointerWatcherEventTypes events) {
   // TODO: http://crbug.com/641164
-  views::MusClient::Get()->pointer_watcher_event_router()->AddPointerWatcher(
-      watcher, events == views::PointerWatcherEventTypes::MOVES);
+  views::WindowManagerConnection::Get()
+      ->pointer_watcher_event_router()
+      ->AddPointerWatcher(watcher,
+                          events == views::PointerWatcherEventTypes::MOVES);
 }
 
 void ImmersiveContextMus::RemovePointerWatcher(views::PointerWatcher* watcher) {
-  views::MusClient::Get()->pointer_watcher_event_router()->RemovePointerWatcher(
-      watcher);
+  views::WindowManagerConnection::Get()
+      ->pointer_watcher_event_router()
+      ->RemovePointerWatcher(watcher);
 }
 
 bool ImmersiveContextMus::DoesAnyWindowHaveCapture() {
-  return capture_client_->GetGlobalCaptureWindow() != nullptr;
+  return views::WindowManagerConnection::Get()->client()->GetCaptureWindow() !=
+         nullptr;
 }
 
 bool ImmersiveContextMus::IsMouseEventsEnabled() {

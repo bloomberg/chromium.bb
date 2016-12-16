@@ -12,8 +12,12 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/settings_window_manager.h"
 #include "components/strings/grit/components_strings.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/cpp/window.h"
+#include "services/ui/public/cpp/window_property.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/mus/mus_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -38,10 +42,37 @@ class AuraWindowSettingsTitleTracker : public aura::WindowTracker {
   DISALLOW_COPY_AND_ASSIGN(AuraWindowSettingsTitleTracker);
 };
 
+// This class is only used in mash (mus+ash) to rename the Settings window.
+class UiWindowSettingsTitleTracker : public ui::WindowTracker {
+ public:
+  UiWindowSettingsTitleTracker() {}
+  ~UiWindowSettingsTitleTracker() override {}
+
+  // ui::WindowTracker:
+  void OnWindowSharedPropertyChanged(
+      ui::Window* window,
+      const std::string& name,
+      const std::vector<uint8_t>* old_data,
+      const std::vector<uint8_t>* new_data) override {
+    if (name == ui::mojom::WindowManager::kWindowTitle_Property) {
+      // Name the window "Settings" instead of "Google Chrome - Settings".
+      window->SetSharedProperty<base::string16>(
+          ui::mojom::WindowManager::kWindowTitle_Property,
+          l10n_util::GetStringUTF16(IDS_SETTINGS_TITLE));
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UiWindowSettingsTitleTracker);
+};
+
 }  // namespace
 
 SettingsWindowObserver::SettingsWindowObserver() {
-  aura_window_tracker_ = base::MakeUnique<AuraWindowSettingsTitleTracker>();
+  if (chrome::IsRunningInMash())
+    ui_window_tracker_.reset(new UiWindowSettingsTitleTracker);
+  else
+    aura_window_tracker_.reset(new AuraWindowSettingsTitleTracker);
   chrome::SettingsWindowManager::GetInstance()->AddObserver(this);
 }
 
@@ -57,5 +88,9 @@ void SettingsWindowObserver::OnNewSettingsWindow(Browser* settings_browser) {
   gfx::ImageSkia* icon = rb.GetImageSkiaNamed(IDR_ASH_SHELF_ICON_SETTINGS);
   // The new gfx::ImageSkia instance is owned by the window itself.
   window->SetProperty(aura::client::kWindowIconKey, new gfx::ImageSkia(*icon));
-  aura_window_tracker_->Add(window);
+
+  if (chrome::IsRunningInMash())
+    ui_window_tracker_->Add(aura::GetMusWindow(window));
+  else
+    aura_window_tracker_->Add(window);
 }

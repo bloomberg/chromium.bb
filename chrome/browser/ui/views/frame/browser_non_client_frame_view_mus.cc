@@ -22,6 +22,7 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/web_contents.h"
+#include "services/ui/public/cpp/window.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -35,7 +36,6 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/layout_constants.h"
-#include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -333,16 +333,19 @@ gfx::ImageSkia BrowserNonClientFrameViewMus::GetFaviconForTabIconView() {
 // BrowserNonClientFrameView:
 void BrowserNonClientFrameViewMus::UpdateProfileIcons() {
 #if defined(FRAME_AVATAR_BUTTON)
-  if (browser_view()->IsRegularOrGuestSession()) {
+  if (browser_view()->IsRegularOrGuestSession())
     profile_switcher_.Update(AvatarButtonStyle::NATIVE);
-    return;
-  }
+  else
 #endif
-  UpdateProfileIndicatorIcon();
+    UpdateProfileIndicatorIcon();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewMus, private:
+
+ui::Window* BrowserNonClientFrameViewMus::mus_window() {
+  return static_cast<BrowserFrameMus*>(frame()->native_widget())->window();
+}
 
 void BrowserNonClientFrameViewMus::UpdateClientArea() {
   std::vector<gfx::Rect> additional_client_area;
@@ -353,10 +356,9 @@ void BrowserNonClientFrameViewMus::UpdateClientArea() {
       additional_client_area.push_back(tab_strip_bounds);
     }
   }
-  static_cast<aura::WindowTreeHostMus*>(
-      GetWidget()->GetNativeWindow()->GetHost())
-      ->SetClientArea(views::WindowManagerFrameValues::instance().normal_insets,
-                      additional_client_area);
+  mus_window()->SetClientArea(
+      views::WindowManagerFrameValues::instance().normal_insets,
+      additional_client_area);
 }
 
 void BrowserNonClientFrameViewMus::TabStripMaxXChanged(TabStrip* tab_strip) {
