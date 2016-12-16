@@ -16,15 +16,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/image/image.h"
 
-#if defined(OS_WIN)
-// On Windows, we group files by their extension, with several exceptions:
-// .dll, .exe, .ico. See IconManager.h for explanation.
-typedef std::wstring IconGroupID;
-#elif defined(OS_POSIX)
-// On POSIX, we group files by MIME type.
-typedef std::string IconGroupID;
-#endif
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // A facility to read a file containing an icon asynchronously in the IO
@@ -33,6 +24,14 @@ typedef std::string IconGroupID;
 ////////////////////////////////////////////////////////////////////////////////
 class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
  public:
+  // An IconGroup is a class of files that all share the same icon. For all
+  // platforms but Windows, and for most files on Windows, it is the file type
+  // (e.g. all .mp3 files share an icon, all .html files share an icon). On
+  // Windows, for certain file types (.exe, .dll, etc), each file of that type
+  // is assumed to have a unique icon. In that case, each of those files is a
+  // group to itself.
+  using IconGroup = base::FilePath::StringType;
+
   enum IconSize {
     SMALL = 0,  // 16x16
     NORMAL,     // 32x32
@@ -42,17 +41,12 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
 
   class Delegate {
    public:
-    // Invoked when an icon group has been read, but before the icon data
-    // is read. If the icon is already cached, this method should call and
-    // return the results of OnImageLoaded with the cached image.
-    virtual bool OnGroupLoaded(IconLoader* source,
-                               const IconGroupID& group) = 0;
     // Invoked when an icon has been read. |source| is the IconLoader. If the
-    // icon has been successfully loaded, result is non-null. This method must
-    // return true if it is taking ownership of the returned image.
-    virtual bool OnImageLoaded(IconLoader* source,
-                               gfx::Image* result,
-                               const IconGroupID& group) = 0;
+    // icon has been successfully loaded, |result| is non-null. |group| is the
+    // determined group from the original requested path.
+    virtual void OnImageLoaded(IconLoader* source,
+                               std::unique_ptr<gfx::Image> result,
+                               const IconGroup& group) = 0;
 
    protected:
     virtual ~Delegate() {}
@@ -70,12 +64,8 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
 
   virtual ~IconLoader();
 
-  // Get the identifying string for the given file. The implementation
-  // is in icon_loader_[platform].cc.
-  static IconGroupID ReadGroupIDFromFilepath(const base::FilePath& path);
-
-  // Some icons (exe's on windows) can change as they're loaded.
-  static bool IsIconMutableFromFilepath(const base::FilePath& path);
+  // Given a file path, get the group for the given file.
+  static IconGroup GroupForFilepath(const base::FilePath& file_path);
 
   // The thread ReadIcon() should be called on.
   static content::BrowserThread::ID ReadIconThreadID();
@@ -91,7 +81,7 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
 
   base::FilePath file_path_;
 
-  IconGroupID group_;
+  IconGroup group_;
 
   IconSize icon_size_;
 

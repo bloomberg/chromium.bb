@@ -34,7 +34,7 @@
 //   2. An asynchronous icon load from a file on the file thread:
 //      IconManager::LoadIcon()
 //
-// When using the second (asychronous) method, callers must supply a callback
+// When using the second (asynchronous) method, callers must supply a callback
 // which will be run once the icon has been extracted. The icon manager will
 // cache the results of the icon extraction so that subsequent lookups will be
 // fast.
@@ -46,6 +46,7 @@
 #define CHROME_BROWSER_ICON_MANAGER_H_
 
 #include <map>
+#include <memory>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
@@ -59,14 +60,14 @@ class IconManager : public IconLoader::Delegate {
   ~IconManager() override;
 
   // Synchronous call to examine the internal caches for the icon. Returns the
-  // icon if we have already loaded it, NULL if we don't have it and must load
-  // it via 'LoadIcon'. The returned bitmap is owned by the IconManager and must
-  // not be free'd by the caller. If the caller needs to modify the icon, it
-  // must make a copy and modify the copy.
-  gfx::Image* LookupIconFromFilepath(const base::FilePath& file_name,
+  // icon if we have already loaded it, or null if we don't have it and must
+  // load it via LoadIcon(). The returned bitmap is owned by the IconManager and
+  // must not be free'd by the caller. If the caller needs to modify the icon,
+  // it must make a copy and modify the copy.
+  gfx::Image* LookupIconFromFilepath(const base::FilePath& file_path,
                                      IconLoader::IconSize size);
 
-  typedef base::Callback<void(gfx::Image*)> IconRequestCallback;
+  using IconRequestCallback = base::Callback<void(gfx::Image*)>;
 
   // Asynchronous call to lookup and return the icon associated with file. The
   // work is done on the file thread, with the callbacks running on the thread
@@ -76,7 +77,7 @@ class IconManager : public IconLoader::Delegate {
   // 1. This does *not* check the cache.
   // 2. The returned bitmap pointer is *not* owned by callback. So callback
   //    should never keep it or delete it.
-  // 3. The gfx::Image pointer passed to the callback may be NULL if decoding
+  // 3. The gfx::Image pointer passed to the callback will be null if decoding
   //    failed.
   base::CancelableTaskTracker::TaskId LoadIcon(
       const base::FilePath& file_name,
@@ -84,36 +85,28 @@ class IconManager : public IconLoader::Delegate {
       const IconRequestCallback& callback,
       base::CancelableTaskTracker* tracker);
 
-  // IconLoader::Delegate interface.
-  bool OnGroupLoaded(IconLoader* loader, const IconGroupID& group) override;
-  bool OnImageLoaded(IconLoader* loader,
-                     gfx::Image* result,
-                     const IconGroupID& group) override;
-
  private:
+  // IconLoader::Delegate interface.
+  void OnImageLoaded(IconLoader* loader,
+                     std::unique_ptr<gfx::Image> result,
+                     const IconLoader::IconGroup& group) override;
+
   struct CacheKey {
-    CacheKey(const IconGroupID& group, IconLoader::IconSize size);
+    CacheKey(const IconLoader::IconGroup& group, IconLoader::IconSize size);
 
     // Used as a key in the map below, so we need this comparator.
     bool operator<(const CacheKey &other) const;
 
-    IconGroupID group;
+    IconLoader::IconGroup group;
     IconLoader::IconSize size;
   };
 
-  gfx::Image* LookupIconFromGroup(const IconGroupID& group,
-                                  IconLoader::IconSize size);
-
-  typedef std::map<CacheKey, gfx::Image*> IconMap;
-  IconMap icon_cache_;
-
-  typedef std::map<base::FilePath, IconGroupID> GroupMap;
-  GroupMap group_cache_;
+  std::map<base::FilePath, IconLoader::IconGroup> group_cache_;
+  std::map<CacheKey, std::unique_ptr<gfx::Image>> icon_cache_;
 
   // Asynchronous requests that have not yet been completed.
   struct ClientRequest;
-  typedef std::map<IconLoader*, ClientRequest> ClientRequests;
-  ClientRequests requests_;
+  std::map<IconLoader*, ClientRequest> requests_;
 
   DISALLOW_COPY_AND_ASSIGN(IconManager);
 };

@@ -6,14 +6,10 @@
 #include "chrome/browser/icon_loader.h"
 
 // static
-IconGroupID IconLoader::ReadGroupIDFromFilepath(
-    const base::FilePath& filepath) {
+IconLoader::IconGroup IconLoader::GroupForFilepath(
+    const base::FilePath& file_path) {
   NOTIMPLEMENTED();
-  return 0;
-}
-
-bool IconLoader::IsIconMutableFromFilepath(const base::FilePath&) {
-  return false;
+  return IconLoader::IconGroup();
 }
 
 // static

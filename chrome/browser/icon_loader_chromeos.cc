@@ -183,14 +183,9 @@ int IconSizeToDIPSize(IconLoader::IconSize size) {
 }  // namespace
 
 // static
-IconGroupID IconLoader::ReadGroupIDFromFilepath(
-    const base::FilePath& filepath) {
-  return base::ToLowerASCII(filepath.Extension());
-}
-
-// static
-bool IconLoader::IsIconMutableFromFilepath(const base::FilePath&) {
-  return false;
+IconLoader::IconGroup IconLoader::GroupForFilepath(
+    const base::FilePath& file_path) {
+  return base::ToLowerASCII(file_path.Extension());
 }
 
 // static

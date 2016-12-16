@@ -13,8 +13,7 @@ using content::BrowserThread;
 IconLoader::IconLoader(const base::FilePath& file_path,
                        IconSize size,
                        Delegate* delegate)
-    : target_task_runner_(NULL),
-      file_path_(file_path),
+    : file_path_(file_path),
       icon_size_(size),
       delegate_(delegate) {}
 
@@ -30,20 +29,14 @@ void IconLoader::Start() {
 }
 
 void IconLoader::ReadGroup() {
-  group_ = ReadGroupIDFromFilepath(file_path_);
+  group_ = GroupForFilepath(file_path_);
 }
 
 void IconLoader::OnReadGroup() {
-  if (IsIconMutableFromFilepath(file_path_) ||
-      !delegate_->OnGroupLoaded(this, group_)) {
-    BrowserThread::PostTask(ReadIconThreadID(), FROM_HERE,
-        base::Bind(&IconLoader::ReadIcon, this));
-  }
+  BrowserThread::PostTask(ReadIconThreadID(), FROM_HERE,
+                          base::Bind(&IconLoader::ReadIcon, this));
 }
 
 void IconLoader::NotifyDelegate() {
-  // If the delegate takes ownership of the Image, release it from the scoped
-  // pointer.
-  if (delegate_->OnImageLoaded(this, image_.get(), group_))
-    ignore_result(image_.release());  // Can't ignore return value.
+  delegate_->OnImageLoaded(this, std::move(image_), group_);
 }

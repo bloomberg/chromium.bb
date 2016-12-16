@@ -15,14 +15,9 @@
 #include "ui/gfx/image/image_skia_util_mac.h"
 
 // static
-IconGroupID IconLoader::ReadGroupIDFromFilepath(
-    const base::FilePath& filepath) {
-  return filepath.Extension();
-}
-
-// static
-bool IconLoader::IsIconMutableFromFilepath(const base::FilePath&) {
-  return false;
+IconLoader::IconGroup IconLoader::GroupForFilepath(
+    const base::FilePath& file_path) {
+  return file_path.Extension();
 }
 
 // static
