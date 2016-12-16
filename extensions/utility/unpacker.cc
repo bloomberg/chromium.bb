@@ -172,7 +172,7 @@ std::unique_ptr<base::DictionaryValue> Unpacker::ReadManifest(
   return base::DictionaryValue::From(std::move(root));
 }
 
-bool Unpacker::ReadAllMessageCatalogs(const std::string& default_locale) {
+bool Unpacker::ReadAllMessageCatalogs() {
   base::FilePath locales_path = extension_dir_.Append(kLocaleFolder);
 
   // Not all folders under _locales have to be valid locales.
@@ -231,7 +231,7 @@ bool Unpacker::Run() {
   // Parse all message catalogs (if any).
   parsed_catalogs_.reset(new base::DictionaryValue);
   if (!LocaleInfo::GetDefaultLocale(extension.get()).empty()) {
-    if (!ReadAllMessageCatalogs(LocaleInfo::GetDefaultLocale(extension.get())))
+    if (!ReadAllMessageCatalogs())
       return false;  // Error was already reported.
   }
 
