@@ -49,8 +49,7 @@ class ResizeArea;
 //   r: An invisible resize area.  This is
 //      GetLayoutConstant(TOOLBAR_STANDARD_SPACING) pixels wide and directly
 //      adjacent to the omnibox. Only shown for the main container.
-//   I: An icon. In material design this has a width of 28. Otherwise it is as
-//      wide as the IDR_BROWSER_ACTION image.
+//   I: An icon. This has a width of 28.
 //   _: ToolbarActionsBar::PlatformSettings::item_spacing pixels of empty space.
 //   s: GetLayoutConstant(TOOLBAR_STANDARD_SPACING) pixels of empty space
 //      (before the app menu).

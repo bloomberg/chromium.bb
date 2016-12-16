@@ -324,10 +324,8 @@
 
       <if expr="enable_service_discovery">
         <include name="IDR_LOCAL_DISCOVERY_HTML" file="resources\local_discovery\local_discovery.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_LOCAL_DISCOVERY_CSS" file="resources\local_discovery\local_discovery.css" type="BINDATA" />
+        <include name="IDR_LOCAL_DISCOVERY_CSS" file="resources\local_discovery\local_discovery.css" flattenhtml="true" type="BINDATA" />
         <include name="IDR_LOCAL_DISCOVERY_JS" file="resources\local_discovery\local_discovery.js" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_LOCAL_DISCOVERY_DEVICE_PNG" file="resources\local_discovery\device.png" type="BINDATA" />
-        <include name="IDR_LOCAL_DISCOVERY_PRINTER_PNG" file="resources\local_discovery\printer.png" type="BINDATA" />
       </if>
 
       <include name="IDR_INSTANT_IFRAME_VALIDATION_JS" file="resources\local_ntp\instant_iframe_validation.js" type="BINDATA" />

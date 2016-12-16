@@ -115,7 +115,10 @@ section {
 }
 
 #back-link {
-  background: url(chrome://theme/IDR_CHEVRON_LEFT) left no-repeat;
+  background: -webkit-image-set(
+      url(chevron_left-1x.png) 1x,
+      url(chevron_left-2x.png) 2x)
+      no-repeat;
   margin-bottom: 25px;
   margin-top: 6px;
   padding-left: 23px;
