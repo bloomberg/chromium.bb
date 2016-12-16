@@ -103,13 +103,13 @@ EasyUnlockServiceRegular::GetProximityAuthPrefManager() {
 }
 
 void EasyUnlockServiceRegular::LoadRemoteDevices() {
-  if (device_manager_->unlock_keys().empty()) {
+  if (device_manager_->GetUnlockKeys().empty()) {
     SetProximityAuthDevices(GetAccountId(), cryptauth::RemoteDeviceList());
     return;
   }
 
   remote_device_loader_.reset(new proximity_auth::RemoteDeviceLoader(
-      device_manager_->unlock_keys(), proximity_auth_client()->GetAccountId(),
+      device_manager_->GetUnlockKeys(), proximity_auth_client()->GetAccountId(),
       enrollment_manager_->GetUserPrivateKey(),
       proximity_auth_client()->CreateSecureMessageDelegate(),
       pref_manager_.get()));
@@ -317,7 +317,7 @@ void EasyUnlockServiceRegular::SetRemoteBleDevices(
           return;
         }
         const std::vector<cryptauth::ExternalDeviceInfo> unlock_keys =
-            GetCryptAuthDeviceManager()->unlock_keys();
+            GetCryptAuthDeviceManager()->GetUnlockKeys();
         auto iterator = std::find_if(
             unlock_keys.begin(), unlock_keys.end(),
             [&public_key](const cryptauth::ExternalDeviceInfo& unlock_key) {

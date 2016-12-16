@@ -341,7 +341,7 @@ void ProximityAuthWebUIHandler::ToggleConnection(const base::ListValue* args) {
     return;
   }
 
-  for (const auto& unlock_key : device_manager->unlock_keys()) {
+  for (const auto& unlock_key : device_manager->GetUnlockKeys()) {
     if (unlock_key.public_key() == public_key) {
       if (life_cycle_ && selected_remote_device_.public_key == public_key) {
         CleanUpRemoteDeviceLifeCycle();
@@ -463,7 +463,7 @@ ProximityAuthWebUIHandler::GetUnlockKeysList() {
   if (!device_manager)
     return unlock_keys;
 
-  for (const auto& unlock_key : device_manager->unlock_keys()) {
+  for (const auto& unlock_key : device_manager->GetUnlockKeys()) {
     unlock_keys->Append(ExternalDeviceInfoToDictionary(unlock_key));
   }
 
@@ -514,13 +514,13 @@ ProximityAuthWebUIHandler::ExternalDeviceInfoToDictionary(
   // status updates).
   std::string public_key = device_info.public_key();
   auto iterator = std::find_if(
-      device_manager->unlock_keys().begin(),
-      device_manager->unlock_keys().end(),
+      device_manager->GetUnlockKeys().begin(),
+      device_manager->GetUnlockKeys().end(),
       [&public_key](const cryptauth::ExternalDeviceInfo& unlock_key) {
         return unlock_key.public_key() == public_key;
       });
 
-  if (iterator == device_manager->unlock_keys().end() ||
+  if (iterator == device_manager->GetUnlockKeys().end() ||
       selected_remote_device_.public_key != device_info.public_key())
     return dictionary;
 

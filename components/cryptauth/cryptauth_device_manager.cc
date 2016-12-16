@@ -367,23 +367,45 @@ bool CryptAuthDeviceManager::IsRecoveringFromFailure() const {
          SyncScheduler::Strategy::AGGRESSIVE_RECOVERY;
 }
 
+std::vector<ExternalDeviceInfo>
+CryptAuthDeviceManager::GetSyncedDevices() const {
+  return synced_devices_;
+}
+
+std::vector<ExternalDeviceInfo> CryptAuthDeviceManager::GetUnlockKeys() const {
+  std::vector<ExternalDeviceInfo> unlock_keys;
+  for (const auto& device : synced_devices_) {
+    if (device.unlock_key()) {
+      unlock_keys.push_back(device);
+    }
+  }
+  return unlock_keys;
+}
+
+std::vector<ExternalDeviceInfo> CryptAuthDeviceManager::GetTetherHosts() const {
+  std::vector<ExternalDeviceInfo> tether_hosts;
+  for (const auto& device : synced_devices_) {
+    if (device.mobile_hotspot_supported()) {
+      tether_hosts.push_back(device);
+    }
+  }
+  return tether_hosts;
+}
+
 void CryptAuthDeviceManager::OnGetMyDevicesSuccess(
     const cryptauth::GetMyDevicesResponse& response) {
-  // Update the unlock keys stored in the user's prefs.
-  std::unique_ptr<base::ListValue> unlock_keys_pref(new base::ListValue());
+  // Update the synced devices stored in the user's prefs.
   std::unique_ptr<base::ListValue> devices_as_list(new base::ListValue());
   for (const auto& device : response.devices()) {
     devices_as_list->Append(UnlockKeyToDictionary(device));
-    if (device.unlock_key())
-      unlock_keys_pref->Append(UnlockKeyToDictionary(device));
   }
   PA_LOG(INFO) << "Devices Synced:\n" << *devices_as_list;
 
-  bool unlock_keys_changed = !unlock_keys_pref->Equals(
+  bool unlock_keys_changed = !devices_as_list->Equals(
       pref_service_->GetList(prefs::kCryptAuthDeviceSyncUnlockKeys));
   {
     ListPrefUpdate update(pref_service_, prefs::kCryptAuthDeviceSyncUnlockKeys);
-    update.Get()->Swap(unlock_keys_pref.get());
+    update.Get()->Swap(devices_as_list.get());
   }
   UpdateUnlockKeysFromPrefs();
 
@@ -431,13 +453,13 @@ void CryptAuthDeviceManager::OnResyncMessage() {
 void CryptAuthDeviceManager::UpdateUnlockKeysFromPrefs() {
   const base::ListValue* unlock_key_list =
       pref_service_->GetList(prefs::kCryptAuthDeviceSyncUnlockKeys);
-  unlock_keys_.clear();
+  synced_devices_.clear();
   for (size_t i = 0; i < unlock_key_list->GetSize(); ++i) {
     const base::DictionaryValue* unlock_key_dictionary;
     if (unlock_key_list->GetDictionary(i, &unlock_key_dictionary)) {
       cryptauth::ExternalDeviceInfo unlock_key;
       if (DictionaryToUnlockKey(*unlock_key_dictionary, &unlock_key)) {
-        unlock_keys_.push_back(unlock_key);
+        synced_devices_.push_back(unlock_key);
       } else {
         PA_LOG(ERROR) << "Unable to deserialize unlock key dictionary "
                       << "(index=" << i << "):\n" << *unlock_key_dictionary;

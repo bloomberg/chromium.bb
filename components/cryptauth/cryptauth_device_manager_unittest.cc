@@ -48,11 +48,15 @@ const char kStoredDeviceName[] = "iPhone 6";
 const char kStoredBluetoothAddress[] = "12:34:56:78:90:AB";
 const bool kStoredUnlockKey = true;
 const bool kStoredUnlockable = false;
+const bool kStoredMobileHotspotSupported = true;
 
 // ExternalDeviceInfo fields for the synced unlock key.
 const char kPublicKey1[] = "GOOG";
 const char kDeviceName1[] = "Nexus 5";
 const char kBluetoothAddress1[] = "aa:bb:cc:ee:dd:ff";
+const bool kUnlockKey1 = true;
+const bool kUnlockable1 = false;
+const bool kMobileHotspotSupported1 = true;
 const char kBeaconSeed1Data[] = "beaconSeed1Data";
 const int64_t kBeaconSeed1StartTime = 123456;
 const int64_t kBeaconSeed1EndTime = 123457;
@@ -63,6 +67,9 @@ const int64_t kBeaconSeed2EndTime = 234568;
 // ExternalDeviceInfo fields for a non-synced unlockable device.
 const char kPublicKey2[] = "MSFT";
 const char kDeviceName2[] = "Surface Pro 3";
+const bool kUnlockKey2 = false;
+const bool kUnlockable2 = true;
+const bool kMobileHotspotSupported2 = false;
 const char kBeaconSeed3Data[] = "beaconSeed3Data";
 const int64_t kBeaconSeed3StartTime = 123456;
 const int64_t kBeaconSeed3EndTime = 123457;
@@ -70,64 +77,62 @@ const char kBeaconSeed4Data[] = "beaconSeed4Data";
 const int64_t kBeaconSeed4StartTime = 234567;
 const int64_t kBeaconSeed4EndTime = 234568;
 
-// Validates that |unlock_keys| and the corresponding preferences stored by
-// |pref_service| are equal to |expected_unlock_keys|.
-void ExpectUnlockKeysAndPrefAreEqual(
-    const std::vector<cryptauth::ExternalDeviceInfo>& expected_unlock_keys,
-    const std::vector<cryptauth::ExternalDeviceInfo>& unlock_keys,
-    const PrefService& pref_service) {
-  ASSERT_EQ(expected_unlock_keys.size(), unlock_keys.size());
-  for (size_t i = 0; i < unlock_keys.size(); ++i) {
+// Validates that |devices| is equal to |expected_devices|.
+void ExpectSyncedDevicesAreEqual(
+    const std::vector<cryptauth::ExternalDeviceInfo>& expected_devices,
+    const std::vector<cryptauth::ExternalDeviceInfo>& devices) {
+  ASSERT_EQ(expected_devices.size(), devices.size());
+  for (size_t i = 0; i < devices.size(); ++i) {
     SCOPED_TRACE(
         base::StringPrintf("Compare protos at index=%d", static_cast<int>(i)));
-    const auto& expected_unlock_key = expected_unlock_keys[i];
-    const auto& unlock_key = unlock_keys.at(i);
-    EXPECT_TRUE(expected_unlock_key.has_public_key());
-    EXPECT_TRUE(unlock_key.has_public_key());
-    EXPECT_EQ(expected_unlock_key.public_key(),
-              unlock_key.public_key());
+    const auto& expected_device = expected_devices[i];
+    const auto& device = devices.at(i);
+    EXPECT_TRUE(expected_device.has_public_key());
+    EXPECT_TRUE(device.has_public_key());
+    EXPECT_EQ(expected_device.public_key(),
+              device.public_key());
 
-    EXPECT_EQ(expected_unlock_key.has_friendly_device_name(),
-              unlock_key.has_friendly_device_name());
-    EXPECT_EQ(expected_unlock_key.friendly_device_name(),
-              unlock_key.friendly_device_name());
+    EXPECT_EQ(expected_device.has_friendly_device_name(),
+              device.has_friendly_device_name());
+    EXPECT_EQ(expected_device.friendly_device_name(),
+              device.friendly_device_name());
 
-    EXPECT_EQ(expected_unlock_key.has_bluetooth_address(),
-              unlock_key.has_bluetooth_address());
-    EXPECT_EQ(expected_unlock_key.bluetooth_address(),
-              unlock_key.bluetooth_address());
+    EXPECT_EQ(expected_device.has_bluetooth_address(),
+              device.has_bluetooth_address());
+    EXPECT_EQ(expected_device.bluetooth_address(),
+              device.bluetooth_address());
 
-    EXPECT_EQ(expected_unlock_key.has_unlock_key(),
-              unlock_key.has_unlock_key());
-    EXPECT_EQ(expected_unlock_key.unlock_key(),
-              unlock_key.unlock_key());
+    EXPECT_EQ(expected_device.has_unlock_key(),
+              device.has_unlock_key());
+    EXPECT_EQ(expected_device.unlock_key(),
+              device.unlock_key());
 
-    EXPECT_EQ(expected_unlock_key.has_unlockable(),
-              unlock_key.has_unlockable());
-    EXPECT_EQ(expected_unlock_key.unlockable(),
-              unlock_key.unlockable());
+    EXPECT_EQ(expected_device.has_unlockable(),
+              device.has_unlockable());
+    EXPECT_EQ(expected_device.unlockable(),
+              device.unlockable());
 
-    EXPECT_EQ(expected_unlock_key.has_last_update_time_millis(),
-              unlock_key.has_last_update_time_millis());
-    EXPECT_EQ(expected_unlock_key.last_update_time_millis(),
-              unlock_key.last_update_time_millis());
+    EXPECT_EQ(expected_device.has_last_update_time_millis(),
+              device.has_last_update_time_millis());
+    EXPECT_EQ(expected_device.last_update_time_millis(),
+              device.last_update_time_millis());
 
-    EXPECT_EQ(expected_unlock_key.has_mobile_hotspot_supported(),
-              unlock_key.has_mobile_hotspot_supported());
-    EXPECT_EQ(expected_unlock_key.mobile_hotspot_supported(),
-              unlock_key.mobile_hotspot_supported());
+    EXPECT_EQ(expected_device.has_mobile_hotspot_supported(),
+              device.has_mobile_hotspot_supported());
+    EXPECT_EQ(expected_device.mobile_hotspot_supported(),
+              device.mobile_hotspot_supported());
 
-    EXPECT_EQ(expected_unlock_key.has_device_type(),
-              unlock_key.has_device_type());
-    EXPECT_EQ(expected_unlock_key.device_type(),
-              unlock_key.device_type());
+    EXPECT_EQ(expected_device.has_device_type(),
+              device.has_device_type());
+    EXPECT_EQ(expected_device.device_type(),
+              device.device_type());
 
-    ASSERT_EQ(expected_unlock_key.beacon_seeds_size(),
-              unlock_key.beacon_seeds_size());
-    for (int i = 0; i < expected_unlock_key.beacon_seeds_size(); i++) {
+    ASSERT_EQ(expected_device.beacon_seeds_size(),
+              device.beacon_seeds_size());
+    for (int i = 0; i < expected_device.beacon_seeds_size(); i++) {
       const cryptauth::BeaconSeed expected_seed =
-          expected_unlock_key.beacon_seeds(i);
-      const cryptauth::BeaconSeed seed = unlock_key.beacon_seeds(i);
+          expected_device.beacon_seeds(i);
+      const cryptauth::BeaconSeed seed = device.beacon_seeds(i);
       EXPECT_TRUE(expected_seed.has_data());
       EXPECT_TRUE(seed.has_data());
       EXPECT_EQ(expected_seed.data(), seed.data());
@@ -141,104 +146,113 @@ void ExpectUnlockKeysAndPrefAreEqual(
       EXPECT_EQ(expected_seed.end_time_millis(), seed.end_time_millis());
     }
   }
+}
 
-  const base::ListValue* unlock_keys_pref =
+// Validates that |devices| and the corresponding preferences stored by
+// |pref_service| are equal to |expected_devices|.
+void ExpectSyncedDevicesAndPrefAreEqual(
+    const std::vector<cryptauth::ExternalDeviceInfo>& expected_devices,
+    const std::vector<cryptauth::ExternalDeviceInfo>& devices,
+    const PrefService& pref_service) {
+  ExpectSyncedDevicesAreEqual(expected_devices, devices);
+
+  const base::ListValue* synced_devices_pref =
       pref_service.GetList(prefs::kCryptAuthDeviceSyncUnlockKeys);
-  ASSERT_EQ(expected_unlock_keys.size(), unlock_keys_pref->GetSize());
-  for (size_t i = 0; i < unlock_keys_pref->GetSize(); ++i) {
+  ASSERT_EQ(expected_devices.size(), synced_devices_pref->GetSize());
+  for (size_t i = 0; i < synced_devices_pref->GetSize(); ++i) {
     SCOPED_TRACE(base::StringPrintf("Compare pref dictionary at index=%d",
                                     static_cast<int>(i)));
-    const base::DictionaryValue* unlock_key_dictionary;
-    EXPECT_TRUE(unlock_keys_pref->GetDictionary(i, &unlock_key_dictionary));
+    const base::DictionaryValue* device_dictionary;
+    EXPECT_TRUE(synced_devices_pref->GetDictionary(i, &device_dictionary));
 
-    const auto& expected_unlock_key = expected_unlock_keys[i];
+    const auto& expected_device = expected_devices[i];
 
     std::string public_key_b64, public_key;
     EXPECT_TRUE(
-        unlock_key_dictionary->GetString("public_key", &public_key_b64));
+        device_dictionary->GetString("public_key", &public_key_b64));
     EXPECT_TRUE(base::Base64UrlDecode(
         public_key_b64, base::Base64UrlDecodePolicy::REQUIRE_PADDING,
         &public_key));
-    EXPECT_TRUE(expected_unlock_key.has_public_key());
-    EXPECT_EQ(expected_unlock_key.public_key(), public_key);
+    EXPECT_TRUE(expected_device.has_public_key());
+    EXPECT_EQ(expected_device.public_key(), public_key);
 
     std::string device_name_b64, device_name;
-    if (unlock_key_dictionary->GetString("device_name", &device_name_b64)) {
+    if (device_dictionary->GetString("device_name", &device_name_b64)) {
       EXPECT_TRUE(base::Base64UrlDecode(
           device_name_b64, base::Base64UrlDecodePolicy::REQUIRE_PADDING,
           &device_name));
-      EXPECT_TRUE(expected_unlock_key.has_friendly_device_name());
-      EXPECT_EQ(expected_unlock_key.friendly_device_name(), device_name);
+      EXPECT_TRUE(expected_device.has_friendly_device_name());
+      EXPECT_EQ(expected_device.friendly_device_name(), device_name);
     } else {
-      EXPECT_FALSE(expected_unlock_key.has_friendly_device_name());
+      EXPECT_FALSE(expected_device.has_friendly_device_name());
     }
 
     std::string bluetooth_address_b64, bluetooth_address;
-    if (unlock_key_dictionary->GetString("bluetooth_address",
+    if (device_dictionary->GetString("bluetooth_address",
                                          &bluetooth_address_b64)) {
       EXPECT_TRUE(base::Base64UrlDecode(
           bluetooth_address_b64, base::Base64UrlDecodePolicy::REQUIRE_PADDING,
           &bluetooth_address));
-      EXPECT_TRUE(expected_unlock_key.has_bluetooth_address());
-      EXPECT_EQ(expected_unlock_key.bluetooth_address(), bluetooth_address);
+      EXPECT_TRUE(expected_device.has_bluetooth_address());
+      EXPECT_EQ(expected_device.bluetooth_address(), bluetooth_address);
     } else {
-      EXPECT_FALSE(expected_unlock_key.has_bluetooth_address());
+      EXPECT_FALSE(expected_device.has_bluetooth_address());
     }
 
     bool unlock_key;
-    if (unlock_key_dictionary->GetBoolean("unlock_key", &unlock_key)) {
-      EXPECT_TRUE(expected_unlock_key.has_unlock_key());
-      EXPECT_EQ(expected_unlock_key.unlock_key(), unlock_key);
+    if (device_dictionary->GetBoolean("unlock_key", &unlock_key)) {
+      EXPECT_TRUE(expected_device.has_unlock_key());
+      EXPECT_EQ(expected_device.unlock_key(), unlock_key);
     } else {
-      EXPECT_FALSE(expected_unlock_key.has_unlock_key());
+      EXPECT_FALSE(expected_device.has_unlock_key());
     }
 
     bool unlockable;
-    if (unlock_key_dictionary->GetBoolean("unlockable", &unlockable)) {
-      EXPECT_TRUE(expected_unlock_key.has_unlockable());
-      EXPECT_EQ(expected_unlock_key.unlockable(), unlockable);
+    if (device_dictionary->GetBoolean("unlockable", &unlockable)) {
+      EXPECT_TRUE(expected_device.has_unlockable());
+      EXPECT_EQ(expected_device.unlockable(), unlockable);
     } else {
-      EXPECT_FALSE(expected_unlock_key.has_unlockable());
+      EXPECT_FALSE(expected_device.has_unlockable());
     }
 
     std::string last_update_time_millis_str;
-    if (unlock_key_dictionary->GetString("last_update_time_millis",
+    if (device_dictionary->GetString("last_update_time_millis",
                                          &last_update_time_millis_str)) {
       int64_t last_update_time_millis;
       EXPECT_TRUE(base::StringToInt64(last_update_time_millis_str,
                                       &last_update_time_millis));
-      EXPECT_TRUE(expected_unlock_key.has_last_update_time_millis());
-      EXPECT_EQ(expected_unlock_key.last_update_time_millis(),
+      EXPECT_TRUE(expected_device.has_last_update_time_millis());
+      EXPECT_EQ(expected_device.last_update_time_millis(),
                 last_update_time_millis);
     } else {
-      EXPECT_FALSE(expected_unlock_key.has_last_update_time_millis());
+      EXPECT_FALSE(expected_device.has_last_update_time_millis());
     }
 
     bool mobile_hotspot_supported;
-    if (unlock_key_dictionary->GetBoolean("mobile_hotspot_supported",
+    if (device_dictionary->GetBoolean("mobile_hotspot_supported",
                                           &mobile_hotspot_supported)) {
-      EXPECT_TRUE(expected_unlock_key.has_mobile_hotspot_supported());
-      EXPECT_EQ(expected_unlock_key.mobile_hotspot_supported(),
+      EXPECT_TRUE(expected_device.has_mobile_hotspot_supported());
+      EXPECT_EQ(expected_device.mobile_hotspot_supported(),
                 mobile_hotspot_supported);
     } else {
-      EXPECT_FALSE(expected_unlock_key.has_mobile_hotspot_supported());
+      EXPECT_FALSE(expected_device.has_mobile_hotspot_supported());
     }
 
     int device_type;
-    if (unlock_key_dictionary->GetInteger("device_type",
+    if (device_dictionary->GetInteger("device_type",
                                           &device_type)) {
-      EXPECT_TRUE(expected_unlock_key.has_device_type());
-      EXPECT_EQ(expected_unlock_key.device_type(),
+      EXPECT_TRUE(expected_device.has_device_type());
+      EXPECT_EQ(expected_device.device_type(),
                 device_type);
     } else {
-      EXPECT_FALSE(expected_unlock_key.has_device_type());
+      EXPECT_FALSE(expected_device.has_device_type());
     }
 
     const base::ListValue* beacon_seeds_from_prefs;
-    if (unlock_key_dictionary->GetList("beacon_seeds",
+    if (device_dictionary->GetList("beacon_seeds",
                                        &beacon_seeds_from_prefs)) {
       ASSERT_EQ(
-          (size_t) expected_unlock_key.beacon_seeds_size(),
+          (size_t) expected_device.beacon_seeds_size(),
           beacon_seeds_from_prefs->GetSize());
       for (size_t i = 0; i < beacon_seeds_from_prefs->GetSize(); i++) {
         const base::DictionaryValue* seed;
@@ -250,7 +264,7 @@ void ExpectUnlockKeysAndPrefAreEqual(
         EXPECT_TRUE(seed->GetString("beacon_seed_end_ms", &end_ms));
 
         const cryptauth::BeaconSeed& expected_seed =
-            expected_unlock_key.beacon_seeds((int) i);
+            expected_device.beacon_seeds((int) i);
         EXPECT_TRUE(expected_seed.has_data());
         EXPECT_EQ(expected_seed.data(), data);
 
@@ -261,7 +275,7 @@ void ExpectUnlockKeysAndPrefAreEqual(
         EXPECT_EQ(expected_seed.end_time_millis(), std::stol(end_ms));
       }
     } else {
-      EXPECT_FALSE(expected_unlock_key.beacon_seeds_size());
+      EXPECT_FALSE(expected_device.beacon_seeds_size());
     }
   }
 }
@@ -319,6 +333,39 @@ class CryptAuthDeviceManagerTest
             MockCryptAuthClientFactory::MockType::MAKE_STRICT_MOCKS)),
         gcm_manager_("existing gcm registration id") {
     client_factory_->AddObserver(this);
+
+    cryptauth::ExternalDeviceInfo unlock_key;
+    unlock_key.set_public_key(kPublicKey1);
+    unlock_key.set_friendly_device_name(kDeviceName1);
+    unlock_key.set_bluetooth_address(kBluetoothAddress1);
+    unlock_key.set_unlock_key(kUnlockKey1);
+    unlock_key.set_unlockable(kUnlockable1);
+    unlock_key.set_mobile_hotspot_supported(kMobileHotspotSupported1);
+    cryptauth::BeaconSeed* seed1 = unlock_key.add_beacon_seeds();
+    seed1->set_data(kBeaconSeed1Data);
+    seed1->set_start_time_millis(kBeaconSeed1StartTime);
+    seed1->set_end_time_millis(kBeaconSeed1EndTime);
+    cryptauth::BeaconSeed* seed2 = unlock_key.add_beacon_seeds();
+    seed2->set_data(kBeaconSeed2Data);
+    seed2->set_start_time_millis(kBeaconSeed2StartTime);
+    seed2->set_end_time_millis(kBeaconSeed2EndTime);
+    devices_in_response_.push_back(unlock_key);
+
+    cryptauth::ExternalDeviceInfo unlockable_device;
+    unlockable_device.set_public_key(kPublicKey2);
+    unlockable_device.set_friendly_device_name(kDeviceName2);
+    unlockable_device.set_unlock_key(kUnlockKey2);
+    unlockable_device.set_unlockable(kUnlockable2);
+    unlockable_device.set_mobile_hotspot_supported(kMobileHotspotSupported2);
+    cryptauth::BeaconSeed* seed3 = unlockable_device.add_beacon_seeds();
+    seed3->set_data(kBeaconSeed3Data);
+    seed3->set_start_time_millis(kBeaconSeed3StartTime);
+    seed3->set_end_time_millis(kBeaconSeed3EndTime);
+    cryptauth::BeaconSeed* seed4 = unlockable_device.add_beacon_seeds();
+    seed4->set_data(kBeaconSeed4Data);
+    seed4->set_start_time_millis(kBeaconSeed4StartTime);
+    seed4->set_end_time_millis(kBeaconSeed4EndTime);
+    devices_in_response_.push_back(unlockable_device);
   }
 
   ~CryptAuthDeviceManagerTest() {
@@ -339,7 +386,7 @@ class CryptAuthDeviceManagerTest
         prefs::kCryptAuthDeviceSyncReason,
         new base::FundamentalValue(cryptauth::INVOCATION_REASON_UNKNOWN));
 
-    std::unique_ptr<base::DictionaryValue> unlock_key_dictionary(
+    std::unique_ptr<base::DictionaryValue> device_dictionary(
         new base::DictionaryValue());
 
     std::string public_key_b64, device_name_b64, bluetooth_address_b64;
@@ -353,18 +400,20 @@ class CryptAuthDeviceManagerTest
                           base::Base64UrlEncodePolicy::INCLUDE_PADDING,
                           &bluetooth_address_b64);
 
-    unlock_key_dictionary->SetString("public_key", public_key_b64);
-    unlock_key_dictionary->SetString("device_name", device_name_b64);
-    unlock_key_dictionary->SetString("bluetooth_address",
+    device_dictionary->SetString("public_key", public_key_b64);
+    device_dictionary->SetString("device_name", device_name_b64);
+    device_dictionary->SetString("bluetooth_address",
                                      bluetooth_address_b64);
-    unlock_key_dictionary->SetBoolean("unlock_key", kStoredUnlockKey);
-    unlock_key_dictionary->SetBoolean("unlockable", kStoredUnlockable);
-    unlock_key_dictionary->Set("beacon_seeds",
+    device_dictionary->SetBoolean("unlock_key", kStoredUnlockKey);
+    device_dictionary->SetBoolean("unlockable", kStoredUnlockable);
+    device_dictionary->Set("beacon_seeds",
                                base::WrapUnique(new base::ListValue()));
+    device_dictionary->SetBoolean("mobile_hotspot_supported",
+                                  kStoredMobileHotspotSupported);
     {
       ListPrefUpdate update(&pref_service_,
                             prefs::kCryptAuthDeviceSyncUnlockKeys);
-      update.Get()->Append(std::move(unlock_key_dictionary));
+      update.Get()->Append(std::move(device_dictionary));
     }
 
     device_manager_.reset(new TestCryptAuthDeviceManager(
@@ -372,37 +421,8 @@ class CryptAuthDeviceManagerTest
         &gcm_manager_, &pref_service_));
     device_manager_->AddObserver(this);
 
-    cryptauth::ExternalDeviceInfo unlock_key;
-    unlock_key.set_public_key(kPublicKey1);
-    unlock_key.set_friendly_device_name(kDeviceName1);
-    unlock_key.set_bluetooth_address(kBluetoothAddress1);
-    unlock_key.set_unlock_key(true);
-    unlock_key.set_unlockable(false);
-    cryptauth::BeaconSeed* seed1 = unlock_key.add_beacon_seeds();
-    seed1->set_data(kBeaconSeed1Data);
-    seed1->set_start_time_millis(kBeaconSeed1StartTime);
-    seed1->set_end_time_millis(kBeaconSeed1EndTime);
-    cryptauth::BeaconSeed* seed2 = unlock_key.add_beacon_seeds();
-    seed2->set_data(kBeaconSeed2Data);
-    seed2->set_start_time_millis(kBeaconSeed2StartTime);
-    seed2->set_end_time_millis(kBeaconSeed2EndTime);
-
-    cryptauth::ExternalDeviceInfo unlockable_device;
-    unlockable_device.set_public_key(kPublicKey2);
-    unlockable_device.set_friendly_device_name(kDeviceName2);
-    unlockable_device.set_unlock_key(false);
-    unlockable_device.set_unlockable(true);
-    cryptauth::BeaconSeed* seed3 = unlockable_device.add_beacon_seeds();
-    seed3->set_data(kBeaconSeed3Data);
-    seed3->set_start_time_millis(kBeaconSeed3StartTime);
-    seed3->set_end_time_millis(kBeaconSeed3EndTime);
-    cryptauth::BeaconSeed* seed4 = unlockable_device.add_beacon_seeds();
-    seed4->set_data(kBeaconSeed4Data);
-    seed4->set_start_time_millis(kBeaconSeed4StartTime);
-    seed4->set_end_time_millis(kBeaconSeed4EndTime);
-
-    get_my_devices_response_.add_devices()->CopyFrom(unlock_key);
-    get_my_devices_response_.add_devices()->CopyFrom(unlockable_device);
+    get_my_devices_response_.add_devices()->CopyFrom(devices_in_response_[0]);
+    get_my_devices_response_.add_devices()->CopyFrom(devices_in_response_[1]);
 
     ON_CALL(*sync_scheduler(), GetStrategy())
         .WillByDefault(Return(SyncScheduler::Strategy::PERIODIC_REFRESH));
@@ -469,6 +489,8 @@ class CryptAuthDeviceManagerTest
   FakeCryptAuthGCMManager gcm_manager_;
 
   std::unique_ptr<TestCryptAuthDeviceManager> device_manager_;
+
+  std::vector<cryptauth::ExternalDeviceInfo> devices_in_response_;
 
   cryptauth::GetMyDevicesResponse get_my_devices_response_;
 
@@ -537,7 +559,7 @@ TEST_F(CryptAuthDeviceManagerTest, InitWithDefaultPrefs) {
       Start(elapsed_time, SyncScheduler::Strategy::AGGRESSIVE_RECOVERY));
   device_manager.Start();
   EXPECT_TRUE(device_manager.GetLastSyncTime().is_null());
-  EXPECT_EQ(0u, device_manager.unlock_keys().size());
+  EXPECT_EQ(0u, device_manager.GetSyncedDevices().size());
 }
 
 TEST_F(CryptAuthDeviceManagerTest, InitWithExistingPrefs) {
@@ -550,12 +572,13 @@ TEST_F(CryptAuthDeviceManagerTest, InitWithExistingPrefs) {
   EXPECT_EQ(base::Time::FromDoubleT(kLastSyncTimeSeconds),
             device_manager_->GetLastSyncTime());
 
-  auto unlock_keys = device_manager_->unlock_keys();
-  ASSERT_EQ(1u, unlock_keys.size());
-  EXPECT_EQ(kStoredPublicKey, unlock_keys[0].public_key());
-  EXPECT_EQ(kStoredDeviceName, unlock_keys[0].friendly_device_name());
-  EXPECT_EQ(kStoredBluetoothAddress, unlock_keys[0].bluetooth_address());
-  EXPECT_TRUE(unlock_keys[0].unlock_key());
+  auto synced_devices = device_manager_->GetSyncedDevices();
+  ASSERT_EQ(1u, synced_devices.size());
+  EXPECT_EQ(kStoredPublicKey, synced_devices[0].public_key());
+  EXPECT_EQ(kStoredDeviceName, synced_devices[0].friendly_device_name());
+  EXPECT_EQ(kStoredBluetoothAddress, synced_devices[0].bluetooth_address());
+  EXPECT_EQ(kStoredUnlockKey, synced_devices[0].unlock_key());
+  EXPECT_EQ(kStoredUnlockable, synced_devices[0].unlockable());
 }
 
 TEST_F(CryptAuthDeviceManagerTest, SyncSucceedsForFirstTime) {
@@ -573,10 +596,9 @@ TEST_F(CryptAuthDeviceManagerTest, SyncSucceedsForFirstTime) {
   success_callback_.Run(get_my_devices_response_);
   EXPECT_EQ(clock_->Now(), device_manager_->GetLastSyncTime());
 
-  ExpectUnlockKeysAndPrefAreEqual(std::vector<cryptauth::ExternalDeviceInfo>(
-                                      1, get_my_devices_response_.devices(0)),
-                                  device_manager_->unlock_keys(),
-                                  pref_service_);
+  ExpectSyncedDevicesAndPrefAreEqual(devices_in_response_,
+                                     device_manager_->GetSyncedDevices(),
+                                     pref_service_);
 }
 
 TEST_F(CryptAuthDeviceManagerTest, ForceSync) {
@@ -594,10 +616,9 @@ TEST_F(CryptAuthDeviceManagerTest, ForceSync) {
   success_callback_.Run(get_my_devices_response_);
   EXPECT_EQ(clock_->Now(), device_manager_->GetLastSyncTime());
 
-  ExpectUnlockKeysAndPrefAreEqual(std::vector<cryptauth::ExternalDeviceInfo>(
-                                      1, get_my_devices_response_.devices(0)),
-                                  device_manager_->unlock_keys(),
-                                  pref_service_);
+  ExpectSyncedDevicesAndPrefAreEqual(devices_in_response_,
+                                     device_manager_->GetSyncedDevices(),
+                                     pref_service_);
 }
 
 TEST_F(CryptAuthDeviceManagerTest, ForceSyncFailsThenSucceeds) {
@@ -633,10 +654,9 @@ TEST_F(CryptAuthDeviceManagerTest, ForceSyncFailsThenSucceeds) {
   success_callback_.Run(get_my_devices_response_);
   EXPECT_EQ(clock_->Now(), device_manager_->GetLastSyncTime());
 
-  ExpectUnlockKeysAndPrefAreEqual(std::vector<cryptauth::ExternalDeviceInfo>(
-                                      1, get_my_devices_response_.devices(0)),
-                                  device_manager_->unlock_keys(),
-                                  pref_service_);
+  ExpectSyncedDevicesAndPrefAreEqual(devices_in_response_,
+                                     device_manager_->GetSyncedDevices(),
+                                     pref_service_);
 
   EXPECT_FLOAT_EQ(
       clock_->Now().ToDoubleT(),
@@ -674,10 +694,9 @@ TEST_F(CryptAuthDeviceManagerTest, PeriodicSyncFailsThenSucceeds) {
   success_callback_.Run(get_my_devices_response_);
   EXPECT_EQ(clock_->Now(), device_manager_->GetLastSyncTime());
 
-  ExpectUnlockKeysAndPrefAreEqual(std::vector<cryptauth::ExternalDeviceInfo>(
-                                      1, get_my_devices_response_.devices(0)),
-                                  device_manager_->unlock_keys(),
-                                  pref_service_);
+  ExpectSyncedDevicesAndPrefAreEqual(devices_in_response_,
+                                     device_manager_->GetSyncedDevices(),
+                                     pref_service_);
 
   EXPECT_FLOAT_EQ(
       clock_->Now().ToDoubleT(),
@@ -688,7 +707,7 @@ TEST_F(CryptAuthDeviceManagerTest, PeriodicSyncFailsThenSucceeds) {
 
 TEST_F(CryptAuthDeviceManagerTest, SyncSameDevice) {
   device_manager_->Start();
-  auto original_unlock_keys = device_manager_->unlock_keys();
+  auto original_devices = device_manager_->GetSyncedDevices();
 
   // Sync new devices.
   FireSchedulerForSync(cryptauth::INVOCATION_REASON_PERIODIC);
@@ -699,26 +718,27 @@ TEST_F(CryptAuthDeviceManagerTest, SyncSameDevice) {
                   CryptAuthDeviceManager::DeviceChangeResult::UNCHANGED));
 
   // Sync the same device.
-  cryptauth::ExternalDeviceInfo synced_unlock_key;
-  synced_unlock_key.set_public_key(kStoredPublicKey);
-  synced_unlock_key.set_friendly_device_name(kStoredDeviceName);
-  synced_unlock_key.set_bluetooth_address(kStoredBluetoothAddress);
-  synced_unlock_key.set_unlock_key(kStoredUnlockKey);
-  synced_unlock_key.set_unlockable(kStoredUnlockable);
+  cryptauth::ExternalDeviceInfo synced_device;
+  synced_device.set_public_key(kStoredPublicKey);
+  synced_device.set_friendly_device_name(kStoredDeviceName);
+  synced_device.set_bluetooth_address(kStoredBluetoothAddress);
+  synced_device.set_unlock_key(kStoredUnlockKey);
+  synced_device.set_unlockable(kStoredUnlockable);
+  synced_device.set_mobile_hotspot_supported(kStoredMobileHotspotSupported);
   cryptauth::GetMyDevicesResponse get_my_devices_response;
-  get_my_devices_response.add_devices()->CopyFrom(synced_unlock_key);
+  get_my_devices_response.add_devices()->CopyFrom(synced_device);
   success_callback_.Run(get_my_devices_response);
 
-  // Check that unlock keys are still the same after sync.
-  ExpectUnlockKeysAndPrefAreEqual(
-      original_unlock_keys, device_manager_->unlock_keys(), pref_service_);
+  // Check that devices are still the same after sync.
+  ExpectSyncedDevicesAndPrefAreEqual(
+      original_devices, device_manager_->GetSyncedDevices(), pref_service_);
 }
 
 TEST_F(CryptAuthDeviceManagerTest, SyncEmptyDeviceList) {
   cryptauth::GetMyDevicesResponse empty_response;
 
   device_manager_->Start();
-  EXPECT_EQ(1u, device_manager_->unlock_keys().size());
+  EXPECT_EQ(1u, device_manager_->GetSyncedDevices().size());
 
   FireSchedulerForSync(cryptauth::INVOCATION_REASON_PERIODIC);
   ASSERT_FALSE(success_callback_.is_null());
@@ -727,26 +747,28 @@ TEST_F(CryptAuthDeviceManagerTest, SyncEmptyDeviceList) {
                          CryptAuthDeviceManager::DeviceChangeResult::CHANGED));
   success_callback_.Run(empty_response);
 
-  ExpectUnlockKeysAndPrefAreEqual(std::vector<cryptauth::ExternalDeviceInfo>(),
-                                  device_manager_->unlock_keys(),
-                                  pref_service_);
+  ExpectSyncedDevicesAndPrefAreEqual(
+      std::vector<cryptauth::ExternalDeviceInfo>(),
+      device_manager_->GetSyncedDevices(),
+      pref_service_);
 }
 
-TEST_F(CryptAuthDeviceManagerTest, SyncTwoUnlockKeys) {
+TEST_F(CryptAuthDeviceManagerTest, SyncThreeDevices) {
   cryptauth::GetMyDevicesResponse response(get_my_devices_response_);
-  cryptauth::ExternalDeviceInfo unlock_key2;
-  unlock_key2.set_public_key("new public key");
-  unlock_key2.set_friendly_device_name("new device name");
-  unlock_key2.set_bluetooth_address("aa:bb:cc:dd:ee:ff");
-  unlock_key2.set_unlock_key(true);
-  response.add_devices()->CopyFrom(unlock_key2);
+  cryptauth::ExternalDeviceInfo synced_device2;
+  synced_device2.set_public_key("new public key");
+  synced_device2.set_friendly_device_name("new device name");
+  synced_device2.set_bluetooth_address("aa:bb:cc:dd:ee:ff");
+  synced_device2.set_unlock_key(true);
+  response.add_devices()->CopyFrom(synced_device2);
 
-  std::vector<cryptauth::ExternalDeviceInfo> expected_unlock_keys;
-  expected_unlock_keys.push_back(get_my_devices_response_.devices(0));
-  expected_unlock_keys.push_back(unlock_key2);
+  std::vector<cryptauth::ExternalDeviceInfo> expected_devices;
+  expected_devices.push_back(devices_in_response_[0]);
+  expected_devices.push_back(devices_in_response_[1]);
+  expected_devices.push_back(synced_device2);
 
   device_manager_->Start();
-  EXPECT_EQ(1u, device_manager_->unlock_keys().size());
+  EXPECT_EQ(1u, device_manager_->GetSyncedDevices().size());
   EXPECT_EQ(1u, pref_service_.GetList(prefs::kCryptAuthDeviceSyncUnlockKeys)
                     ->GetSize());
 
@@ -757,8 +779,8 @@ TEST_F(CryptAuthDeviceManagerTest, SyncTwoUnlockKeys) {
                          CryptAuthDeviceManager::DeviceChangeResult::CHANGED));
   success_callback_.Run(response);
 
-  ExpectUnlockKeysAndPrefAreEqual(
-      expected_unlock_keys, device_manager_->unlock_keys(), pref_service_);
+  ExpectSyncedDevicesAndPrefAreEqual(
+      expected_devices, device_manager_->GetSyncedDevices(), pref_service_);
 }
 
 TEST_F(CryptAuthDeviceManagerTest, SyncOnGCMPushMessage) {
@@ -774,10 +796,9 @@ TEST_F(CryptAuthDeviceManagerTest, SyncOnGCMPushMessage) {
                          CryptAuthDeviceManager::DeviceChangeResult::CHANGED));
   success_callback_.Run(get_my_devices_response_);
 
-  ExpectUnlockKeysAndPrefAreEqual(std::vector<cryptauth::ExternalDeviceInfo>(
-                                      1, get_my_devices_response_.devices(0)),
-                                  device_manager_->unlock_keys(),
-                                  pref_service_);
+  ExpectSyncedDevicesAndPrefAreEqual(devices_in_response_,
+                                     device_manager_->GetSyncedDevices(),
+                                     pref_service_);
 }
 
 TEST_F(CryptAuthDeviceManagerTest, SyncDeviceWithNoContents) {
@@ -793,10 +814,9 @@ TEST_F(CryptAuthDeviceManagerTest, SyncDeviceWithNoContents) {
                          CryptAuthDeviceManager::DeviceChangeResult::CHANGED));
   success_callback_.Run(get_my_devices_response_);
 
-  ExpectUnlockKeysAndPrefAreEqual(std::vector<cryptauth::ExternalDeviceInfo>(
-                                      1, get_my_devices_response_.devices(0)),
-                                  device_manager_->unlock_keys(),
-                                  pref_service_);
+  ExpectSyncedDevicesAndPrefAreEqual(devices_in_response_,
+                                     device_manager_->GetSyncedDevices(),
+                                     pref_service_);
 }
 
 TEST_F(CryptAuthDeviceManagerTest, SyncFullyDetailedExternalDeviceInfos) {
@@ -837,9 +857,9 @@ TEST_F(CryptAuthDeviceManagerTest, SyncFullyDetailedExternalDeviceInfos) {
   device_with_all_fields.add_beacon_seeds()->CopyFrom(seed2);
   response.add_devices()->CopyFrom(device_with_all_fields);
 
-  std::vector<cryptauth::ExternalDeviceInfo> expected_unlock_keys;
-  expected_unlock_keys.push_back(device_with_only_public_key);
-  expected_unlock_keys.push_back(device_with_all_fields);
+  std::vector<cryptauth::ExternalDeviceInfo> expected_devices;
+  expected_devices.push_back(device_with_only_public_key);
+  expected_devices.push_back(device_with_all_fields);
 
   device_manager_->Start();
   FireSchedulerForSync(cryptauth::INVOCATION_REASON_PERIODIC);
@@ -849,8 +869,36 @@ TEST_F(CryptAuthDeviceManagerTest, SyncFullyDetailedExternalDeviceInfos) {
                          CryptAuthDeviceManager::DeviceChangeResult::CHANGED));
   success_callback_.Run(response);
 
-  ExpectUnlockKeysAndPrefAreEqual(
-      expected_unlock_keys, device_manager_->unlock_keys(), pref_service_);
+  ExpectSyncedDevicesAndPrefAreEqual(
+      expected_devices, device_manager_->GetSyncedDevices(), pref_service_);
+}
+
+TEST_F(CryptAuthDeviceManagerTest, SubsetsOfSyncedDevices) {
+  device_manager_->Start();
+
+  FireSchedulerForSync(cryptauth::INVOCATION_REASON_PERIODIC);
+  ASSERT_FALSE(success_callback_.is_null());
+  EXPECT_CALL(*this,
+              OnSyncFinishedProxy(
+                  CryptAuthDeviceManager::SyncResult::SUCCESS,
+                  CryptAuthDeviceManager::DeviceChangeResult::CHANGED));
+  success_callback_.Run(get_my_devices_response_);
+
+  // All synced devices.
+  ExpectSyncedDevicesAndPrefAreEqual(
+      devices_in_response_,
+      device_manager_->GetSyncedDevices(),
+      pref_service_);
+
+  // Only unlock keys.
+  ExpectSyncedDevicesAreEqual(
+      std::vector<cryptauth::ExternalDeviceInfo>(1, devices_in_response_[0]),
+      device_manager_->GetUnlockKeys());
+
+  // Only tether hosts.
+  ExpectSyncedDevicesAreEqual(
+      std::vector<cryptauth::ExternalDeviceInfo>(1, devices_in_response_[0]),
+      device_manager_->GetTetherHosts());
 }
 
 }  // namespace cryptauth

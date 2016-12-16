@@ -730,7 +730,7 @@ EasyUnlockPrivateGetRemoteDevicesFunction::GetUnlockKeys() {
       EasyUnlockService::Get(profile)->proximity_auth_client();
   cryptauth::CryptAuthDeviceManager* device_manager =
       client->GetCryptAuthDeviceManager();
-  return device_manager->unlock_keys();
+  return device_manager->GetUnlockKeys();
 }
 
 void EasyUnlockPrivateGetRemoteDevicesFunction::ReturnDevicesForExperiment() {
