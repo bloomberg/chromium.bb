@@ -37,7 +37,15 @@ namespace {
 const char kDaemonScript[] =
     "/opt/google/chrome-remote-desktop/chrome-remote-desktop";
 
+// The name of the command-line switch used to specify the host configuration
+// file to use.
+const char kHostConfigSwitchName[] = "host-config";
+
 base::FilePath GetConfigPath() {
+  base::CommandLine* current_process = base::CommandLine::ForCurrentProcess();
+  if (current_process->HasSwitch(kHostConfigSwitchName)) {
+    return current_process->GetSwitchValuePath(kHostConfigSwitchName);
+  }
   std::string filename =
       "host#" + base::MD5String(net::GetHostName()) + ".json";
   base::FilePath homedir;
