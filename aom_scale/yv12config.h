@@ -21,7 +21,6 @@ extern "C" {
 #include "aom/aom_frame_buffer.h"
 #include "aom/aom_integer.h"
 
-#define VP8BORDERINPIXELS 32
 #if CONFIG_EXT_PARTITION
 #define AOMINNERBORDERINPIXELS 160
 #else
