@@ -207,7 +207,6 @@ class CORE_EXPORT StyleEngine final
   void updateGenericFontFamilySettings();
 
   void didDetach();
-  void resolverChanged(StyleResolverUpdateMode) {}
 
   CSSStyleSheet* createSheet(Element&,
                              const String& text,

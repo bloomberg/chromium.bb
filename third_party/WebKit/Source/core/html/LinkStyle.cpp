@@ -389,9 +389,6 @@ void LinkStyle::process() {
     // we no longer contain a stylesheet, e.g. perhaps rel or type was changed
     clearSheet();
     document().styleEngine().setNeedsActiveStyleUpdate(m_owner->treeScope());
-    // TODO(rune@opera.com): resolverChanged() can be removed once stylesheet
-    // updates are async. https://crbug.com/567021
-    document().styleEngine().resolverChanged(FullStyleUpdate);
   }
 }
 

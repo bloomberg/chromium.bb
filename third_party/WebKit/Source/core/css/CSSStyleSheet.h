@@ -42,8 +42,6 @@ class MediaQuerySet;
 class SecurityOrigin;
 class StyleSheetContents;
 
-enum StyleSheetUpdateType { PartialRuleUpdate, EntireStyleSheetUpdate };
-
 class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   DEFINE_WRAPPERTYPEINFO();
   WTF_MAKE_NONCOPYABLE(CSSStyleSheet);
@@ -129,7 +127,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
 
   void willMutateRules();
   void didMutateRules();
-  void didMutate(StyleSheetUpdateType = PartialRuleUpdate);
+  void didMutate();
 
   StyleSheetContents* contents() const { return m_contents.get(); }
 

@@ -58,9 +58,6 @@ void HTMLStyleElement::parseAttribute(const QualifiedName& name,
              m_sheet) {
     m_sheet->setMediaQueries(MediaQuerySet::create(value));
     document().styleEngine().mediaQueriesChangedInScope(treeScope());
-    // TODO(rune@opera.com): resolverChanged() can be removed once stylesheet
-    // updates are async. https://crbug.com/567021
-    document().styleEngine().resolverChanged(FullStyleUpdate);
   } else {
     HTMLElement::parseAttribute(name, oldValue, value);
   }

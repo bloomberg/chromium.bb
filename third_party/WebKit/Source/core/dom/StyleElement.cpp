@@ -82,14 +82,8 @@ void StyleElement::removedFrom(Element& element,
     m_registeredAsCandidate = false;
   }
 
-  if (m_sheet) {
+  if (m_sheet)
     clearSheet(element);
-    if (element.isConnected()) {
-      // TODO(rune@opera.com): resolverChanged() can be removed once stylesheet
-      // updates are async. https://crbug.com/567021
-      document.styleEngine().resolverChanged(AnalyzedStyleUpdate);
-    }
-  }
 }
 
 StyleElement::ProcessingResult StyleElement::childrenChanged(Element& element) {

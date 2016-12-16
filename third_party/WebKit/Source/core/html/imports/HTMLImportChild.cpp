@@ -60,9 +60,6 @@ void HTMLImportChild::ownerInserted() {
   DCHECK(root());
   DCHECK(root()->document());
   root()->document()->styleEngine().htmlImportAddedOrRemoved();
-  // TODO(rune@opera.com): resolverChanged() can be removed once stylesheet
-  // updates are async. https://crbug.com/567021
-  root()->document()->styleEngine().resolverChanged(AnalyzedStyleUpdate);
 }
 
 void HTMLImportChild::didShareLoader() {

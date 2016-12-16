@@ -180,14 +180,6 @@ using MouseEventWithHitTestResults =
     EventWithHitTestResults<PlatformMouseEvent>;
 using ExceptionCode = int;
 
-enum StyleResolverUpdateMode {
-  // Discards the StyleResolver and rebuilds it.
-  FullStyleUpdate,
-  // Attempts to use StyleInvalidationAnalysis to avoid discarding the entire
-  // StyleResolver.
-  AnalyzedStyleUpdate
-};
-
 enum NodeListInvalidationType {
   DoNotInvalidateOnAttributeChanges = 0,
   InvalidateOnClassAttrChange,

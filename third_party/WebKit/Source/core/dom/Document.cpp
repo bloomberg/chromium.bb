@@ -3787,8 +3787,6 @@ void Document::notifyResizeForViewportUnits() {
 }
 
 void Document::styleResolverMayHaveChanged() {
-  styleEngine().resolverChanged(AnalyzedStyleUpdate);
-
   if (hasNodesWithPlaceholderStyle()) {
     setNeedsStyleRecalc(SubtreeStyleChange,
                         StyleChangeReasonForTracing::create(

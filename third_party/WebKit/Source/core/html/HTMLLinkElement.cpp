@@ -218,13 +218,8 @@ void HTMLLinkElement::removedFrom(ContainerNode* insertionPoint) {
   }
   document().styleEngine().removeStyleSheetCandidateNode(*this,
                                                          *insertionPoint);
-
   if (m_link)
     m_link->ownerRemoved();
-
-  // TODO(rune@opera.com): resolverChanged() can be removed once stylesheet
-  // updates are async. https://crbug.com/567021
-  document().styleEngine().resolverChanged(AnalyzedStyleUpdate);
 }
 
 void HTMLLinkElement::finishParsingChildren() {

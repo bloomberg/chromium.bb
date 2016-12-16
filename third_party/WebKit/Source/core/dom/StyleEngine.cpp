@@ -140,7 +140,6 @@ void StyleEngine::injectAuthorSheet(StyleSheetContents* authorSheet) {
   m_injectedAuthorStyleSheets.push_back(TraceWrapperMember<CSSStyleSheet>(
       this, CSSStyleSheet::create(authorSheet, *m_document)));
   markDocumentDirty();
-  resolverChanged(AnalyzedStyleUpdate);
 }
 
 CSSStyleSheet& StyleEngine::ensureInspectorStyleSheet() {
@@ -232,11 +231,8 @@ void StyleEngine::removeStyleSheetCandidateNode(Node& node,
 }
 
 void StyleEngine::modifiedStyleSheetCandidateNode(Node& node) {
-  if (!node.isConnected())
-    return;
-
-  markTreeScopeDirty(node.treeScope());
-  resolverChanged(AnalyzedStyleUpdate);
+  if (node.isConnected())
+    markTreeScopeDirty(node.treeScope());
 }
 
 void StyleEngine::mediaQueriesChangedInScope(TreeScope& treeScope) {
