@@ -17,7 +17,14 @@ promise_test(test => {
       .then(state => {
           assert_equals(state, 'activated');
           return registration.paymentAppManager.setManifest({
-              label: 'Payment App'
+              name: 'Payment App',
+              icon: 'payment-app-icon',
+              options: [{
+                name: 'Visa ****',
+                icon: 'payment-app-icon',
+                id: 'payment-app-id',
+                enabledMethods: ['visa']
+              }]
             });
         })
       .then(result => {
@@ -40,7 +47,14 @@ promise_test(test => {
       .then(state => {
           assert_equals(state, 'installed');
           return registration.paymentAppManager.setManifest({
-              label: 'Payment App'
+              name: 'Payment App',
+              icon: 'payment-app-icon',
+              options: [{
+                name: 'Visa ****',
+                icon: 'payment-app-icon',
+                id: 'payment-app-id',
+                enabledMethods: ['visa']
+              }]
             });
         })
       .then(result => {
@@ -67,7 +81,14 @@ promise_test(test => {
           assert_equals(registration.waiting, null);
           assert_equals(registration.active, null);
           return registration.paymentAppManager.setManifest({
-              label: 'Payment App'
+              name: 'Payment App',
+              icon: 'payment-app-icon',
+              options: [{
+                name: 'Visa ****',
+                icon: 'payment-app-icon',
+                id: 'payment-app-id',
+                enabledMethods: ['visa']
+              }]
             });
         })
       .then(unreached_fulfillment(test))
@@ -82,10 +103,10 @@ promise_test(test => {
     var script_url = 'resources/empty-worker.js';
     var scope = 'resources/';
     var manifest = {
-        label: 'Payment App',
+        name: 'Payment App',
         icon: 'payment-app-icon',
         options: [{
-          label: 'Visa ****',
+          name: 'Visa ****',
           icon: 'payment-app-icon',
           id: 'payment-app-id',
           enabledMethods: ['visa2']
@@ -116,10 +137,10 @@ promise_test(test => {
     var script_url = 'resources/empty-worker.js';
     var scope = 'resources/';
     var manifest = {
-        label: 'Payment App',
+        name: 'Payment App',
         icon: 'payment-app-icon',
         options: [{
-          label: 'Visa ****',
+          name: 'Visa ****',
           icon: 'payment-app-icon',
           id: 'payment-app-id',
           enabledMethods: ['visa2']

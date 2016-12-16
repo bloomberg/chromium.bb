@@ -25,7 +25,7 @@ template <>
 struct TypeConverter<PaymentAppOptionPtr, blink::PaymentAppOption> {
   static PaymentAppOptionPtr Convert(const blink::PaymentAppOption& input) {
     PaymentAppOptionPtr output = PaymentAppOption::New();
-    output->label = input.hasLabel() ? input.label() : WTF::emptyString();
+    output->name = input.hasName() ? input.name() : WTF::emptyString();
     output->icon = input.hasIcon() ? input.icon() : WTF::String();
     output->id = input.hasId() ? input.id() : WTF::emptyString();
     output->enabled_methods = WTF::Vector<WTF::String>(input.enabledMethods());
@@ -37,7 +37,7 @@ template <>
 struct TypeConverter<PaymentAppManifestPtr, blink::PaymentAppManifest> {
   static PaymentAppManifestPtr Convert(const blink::PaymentAppManifest& input) {
     PaymentAppManifestPtr output = PaymentAppManifest::New();
-    output->label = input.hasLabel() ? input.label() : WTF::emptyString();
+    output->name = input.hasName() ? input.name() : WTF::emptyString();
     output->icon = input.hasIcon() ? input.icon() : WTF::String();
     if (input.hasOptions()) {
       for (size_t i = 0; i < input.options().size(); ++i) {
@@ -52,7 +52,7 @@ template <>
 struct TypeConverter<blink::PaymentAppManifest, PaymentAppManifestPtr> {
   static blink::PaymentAppManifest Convert(const PaymentAppManifestPtr& input) {
     blink::PaymentAppManifest output;
-    output.setLabel(input->label);
+    output.setName(input->name);
     output.setIcon(input->icon);
     blink::HeapVector<blink::PaymentAppOption> options;
     for (const auto& option : input->options) {
@@ -67,7 +67,7 @@ template <>
 struct TypeConverter<blink::PaymentAppOption, PaymentAppOptionPtr> {
   static blink::PaymentAppOption Convert(const PaymentAppOptionPtr& input) {
     blink::PaymentAppOption output;
-    output.setLabel(input->label);
+    output.setName(input->name);
     output.setIcon(input->icon);
     output.setId(input->id);
     Vector<WTF::String> enabledMethods;

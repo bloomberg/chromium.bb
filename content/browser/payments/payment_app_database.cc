@@ -64,13 +64,13 @@ void PaymentAppDatabase::DidFindRegistrationToWriteManifest(
   }
 
   PaymentAppManifestProto manifest_proto;
-  manifest_proto.set_label(manifest->label);
+  manifest_proto.set_name(manifest->name);
   if (manifest->icon)
     manifest_proto.set_icon(manifest->icon.value());
 
   for (const auto& option : manifest->options) {
     PaymentAppOptionProto* option_proto = manifest_proto.add_options();
-    option_proto->set_label(option->label);
+    option_proto->set_name(option->name);
     if (option->icon)
       option_proto->set_icon(option->icon.value());
     option_proto->set_id(option->id);
@@ -138,13 +138,13 @@ void PaymentAppDatabase::DidReadManifest(const ReadManifestCallback& callback,
 
   payments::mojom::PaymentAppManifestPtr manifest =
       payments::mojom::PaymentAppManifest::New();
-  manifest->label = manifest_proto.label();
+  manifest->name = manifest_proto.name();
   if (manifest_proto.has_icon())
     manifest->icon = manifest_proto.icon();
   for (const auto& option_proto : manifest_proto.options()) {
     payments::mojom::PaymentAppOptionPtr option =
         payments::mojom::PaymentAppOption::New();
-    option->label = option_proto.label();
+    option->name = option_proto.name();
     if (option_proto.has_icon())
       option->icon = option_proto.icon();
     option->id = option_proto.id();

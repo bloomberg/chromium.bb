@@ -9,14 +9,14 @@ option optimize_for = LITE_RUNTIME;
 package content;
 
 message PaymentAppManifestProto {
-  required string label = 1;
+  optional string name = 1;
   optional string icon = 2;
   repeated PaymentAppOptionProto options = 3;
 }
 
 message PaymentAppOptionProto {
-  required string label = 1;
+  optional string name = 1;
   optional string icon = 2;
-  required string id = 3;
+  optional string id = 3;
   repeated string enabled_methods = 4;
 }

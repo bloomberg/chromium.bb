@@ -32,14 +32,14 @@ static ScopedJavaLocalRef<jobject> GetAllAppManifests(
     ScopedJavaLocalRef<jobject> java_manifest =
         Java_ServiceWorkerPaymentAppBridge_createAndAddManifest(
             env, java_manifests, ConvertUTF8ToJavaString(env, scope_url),
-            ConvertUTF8ToJavaString(env, manifest->label),
+            ConvertUTF8ToJavaString(env, manifest->name),
             manifest->icon ? ConvertUTF8ToJavaString(env, *manifest->icon)
                            : nullptr);
     for (const auto& option : manifest->options) {
       ScopedJavaLocalRef<jobject> java_option =
           Java_ServiceWorkerPaymentAppBridge_createAndAddOption(
               env, java_manifest, ConvertUTF8ToJavaString(env, option->id),
-              ConvertUTF8ToJavaString(env, option->label),
+              ConvertUTF8ToJavaString(env, option->name),
               option->icon ? ConvertUTF8ToJavaString(env, *option->icon)
                            : nullptr);
       for (const auto& enabled_method : option->enabled_methods) {

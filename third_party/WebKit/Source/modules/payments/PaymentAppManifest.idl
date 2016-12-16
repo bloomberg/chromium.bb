@@ -5,7 +5,7 @@
 // https://w3c.github.io/webpayments-payment-apps-api/#idl-def-paymentappmanifest
 
 dictionary PaymentAppManifest {
-    DOMString label;
+    required DOMString name;
     DOMString? icon;
-    sequence<PaymentAppOption> options;
+    required sequence<PaymentAppOption> options;
 };

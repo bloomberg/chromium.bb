@@ -12,14 +12,14 @@ enum PaymentAppManifestError {
 };
 
 struct PaymentAppOption {
-  string label;
+  string name;
   string? icon;
   string id;
   array<string> enabled_methods;
 };
 
 struct PaymentAppManifest {
-  string label;
+  string name;
   string? icon;
   array<PaymentAppOption> options;
 };
