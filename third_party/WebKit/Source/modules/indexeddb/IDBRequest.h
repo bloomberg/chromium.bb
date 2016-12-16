@@ -57,7 +57,7 @@ struct IDBDatabaseMetadata;
 class IDBValue;
 
 class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
-                                  public ActiveScriptWrappable,
+                                  public ActiveScriptWrappable<IDBRequest>,
                                   public SuspendableObject {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(IDBRequest);

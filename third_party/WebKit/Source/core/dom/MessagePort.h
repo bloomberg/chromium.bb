@@ -52,7 +52,7 @@ class SerializedScriptValue;
 typedef Vector<WebMessagePortChannelUniquePtr, 1> MessagePortChannelArray;
 
 class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
-                                public ActiveScriptWrappable,
+                                public ActiveScriptWrappable<MessagePort>,
                                 public SuspendableObject,
                                 public WebMessagePortChannelClient {
   DEFINE_WRAPPERTYPEINFO();

@@ -75,11 +75,12 @@ class WebInbandTextTrack;
 class WebLayer;
 class WebRemotePlaybackClient;
 
-class CORE_EXPORT HTMLMediaElement : public HTMLElement,
-                                     public Supplementable<HTMLMediaElement>,
-                                     public ActiveScriptWrappable,
-                                     public SuspendableObject,
-                                     private WebMediaPlayerClient {
+class CORE_EXPORT HTMLMediaElement
+    : public HTMLElement,
+      public Supplementable<HTMLMediaElement>,
+      public ActiveScriptWrappable<HTMLMediaElement>,
+      public SuspendableObject,
+      private WebMediaPlayerClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(HTMLMediaElement);
   USING_PRE_FINALIZER(HTMLMediaElement, dispose);

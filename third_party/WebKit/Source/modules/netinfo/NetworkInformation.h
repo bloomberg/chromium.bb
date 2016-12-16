@@ -17,7 +17,7 @@ class ExecutionContext;
 
 class NetworkInformation final
     : public EventTargetWithInlineData,
-      public ActiveScriptWrappable,
+      public ActiveScriptWrappable<NetworkInformation>,
       public SuspendableObject,
       public NetworkStateNotifier::NetworkStateObserver {
   USING_GARBAGE_COLLECTED_MIXIN(NetworkInformation);

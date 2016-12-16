@@ -25,7 +25,7 @@ class ScriptPromiseResolver;
 // change. The object will only listen to changes when required.
 class MODULES_EXPORT PresentationAvailability final
     : public EventTargetWithInlineData,
-      public ActiveScriptWrappable,
+      public ActiveScriptWrappable<PresentationAvailability>,
       public SuspendableObject,
       public PageVisibilityObserver,
       public WebPresentationAvailabilityObserver {

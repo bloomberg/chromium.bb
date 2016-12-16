@@ -133,7 +133,7 @@ Notification* Notification::create(ExecutionContext* context,
 Notification::Notification(ExecutionContext* context,
                            Type type,
                            const WebNotificationData& data)
-    : ActiveScriptWrappable(this),
+    : ActiveScriptWrappable<Notification>(this),
       SuspendableObject(context),
       m_type(type),
       m_state(State::Loading),

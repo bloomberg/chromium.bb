@@ -43,7 +43,7 @@
 
 namespace blink {
 
-class ActiveScriptWrappable;
+class ActiveScriptWrappableBase;
 class DOMDataStore;
 class StringCache;
 class ThreadDebugger;
@@ -160,8 +160,8 @@ class CORE_EXPORT V8PerIsolateData {
   ThreadDebugger* threadDebugger();
 
   using ActiveScriptWrappableSet =
-      HeapHashSet<WeakMember<ActiveScriptWrappable>>;
-  void addActiveScriptWrappable(ActiveScriptWrappable*);
+      HeapHashSet<WeakMember<ActiveScriptWrappableBase>>;
+  void addActiveScriptWrappable(ActiveScriptWrappableBase*);
   const ActiveScriptWrappableSet* activeScriptWrappables() const {
     return m_activeScriptWrappables.get();
   }

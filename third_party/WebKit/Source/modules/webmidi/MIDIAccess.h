@@ -52,7 +52,7 @@ class MIDIOutput;
 class MIDIOutputMap;
 
 class MIDIAccess final : public EventTargetWithInlineData,
-                         public ActiveScriptWrappable,
+                         public ActiveScriptWrappable<MIDIAccess>,
                          public SuspendableObject,
                          public MIDIAccessorClient {
   DEFINE_WRAPPERTYPEINFO();

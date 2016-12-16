@@ -113,7 +113,7 @@ MediaSource* MediaSource::create(ExecutionContext* context) {
 }
 
 MediaSource::MediaSource(ExecutionContext* context)
-    : ActiveScriptWrappable(this),
+    : ActiveScriptWrappable<MediaSource>(this),
       SuspendableObject(context),
       m_readyState(closedKeyword()),
       m_asyncEventQueue(GenericEventQueue::create(this)),

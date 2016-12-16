@@ -70,14 +70,13 @@ MediaDevices* MediaDevices::create(ExecutionContext* context) {
 }
 
 MediaDevices::MediaDevices(ExecutionContext* context)
-    : ActiveScriptWrappable(this),
+    : ActiveScriptWrappable<MediaDevices>(this),
       SuspendableObject(context),
       m_observing(false),
       m_stopped(false),
       m_dispatchScheduledEventRunner(AsyncMethodRunner<MediaDevices>::create(
           this,
-          &MediaDevices::dispatchScheduledEvent)) {
-}
+          &MediaDevices::dispatchScheduledEvent)) {}
 
 MediaDevices::~MediaDevices() {}
 

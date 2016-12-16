@@ -56,7 +56,7 @@ class ExceptionState;
 class TreeScope;
 
 class CORE_EXPORT Animation final : public EventTargetWithInlineData,
-                                    public ActiveScriptWrappable,
+                                    public ActiveScriptWrappable<Animation>,
                                     public SuspendableObject,
                                     public CompositorAnimationDelegate,
                                     public CompositorAnimationPlayerClient {

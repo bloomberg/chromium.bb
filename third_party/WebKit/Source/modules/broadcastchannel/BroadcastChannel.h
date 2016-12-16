@@ -15,7 +15,7 @@
 namespace blink {
 
 class BroadcastChannel final : public EventTargetWithInlineData,
-                               public ActiveScriptWrappable,
+                               public ActiveScriptWrappable<BroadcastChannel>,
                                public ContextLifecycleObserver,
                                public mojom::blink::BroadcastChannelClient {
   DEFINE_WRAPPERTYPEINFO();

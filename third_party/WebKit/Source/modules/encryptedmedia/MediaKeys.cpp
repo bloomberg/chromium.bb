@@ -139,7 +139,7 @@ MediaKeys::MediaKeys(
     ExecutionContext* context,
     const WebVector<WebEncryptedMediaSessionType>& supportedSessionTypes,
     std::unique_ptr<WebContentDecryptionModule> cdm)
-    : ActiveScriptWrappable(this),
+    : ActiveScriptWrappable<MediaKeys>(this),
       SuspendableObject(context),
       m_supportedSessionTypes(supportedSessionTypes),
       m_cdm(std::move(cdm)),

@@ -60,7 +60,7 @@ MediaStreamTrack* MediaStreamTrack::create(ExecutionContext* context,
 
 MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
                                    MediaStreamComponent* component)
-    : ActiveScriptWrappable(this),
+    : ActiveScriptWrappable<MediaStreamTrack>(this),
       SuspendableObject(context),
       m_readyState(MediaStreamSource::ReadyStateLive),
       m_isIteratingRegisteredMediaStreams(false),

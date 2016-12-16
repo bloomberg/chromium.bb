@@ -391,7 +391,7 @@ ThreadDebugger* V8PerIsolateData::threadDebugger() {
 }
 
 void V8PerIsolateData::addActiveScriptWrappable(
-    ActiveScriptWrappable* wrappable) {
+    ActiveScriptWrappableBase* wrappable) {
   if (!m_activeScriptWrappables)
     m_activeScriptWrappables = new ActiveScriptWrappableSet();
 

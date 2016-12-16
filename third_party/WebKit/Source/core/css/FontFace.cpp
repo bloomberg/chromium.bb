@@ -154,7 +154,7 @@ FontFace* FontFace::create(Document* document,
 }
 
 FontFace::FontFace(ExecutionContext* context)
-    : ActiveScriptWrappable(this),
+    : ActiveScriptWrappable<FontFace>(this),
       SuspendableObject(context),
       m_status(Unloaded) {
   suspendIfNeeded();

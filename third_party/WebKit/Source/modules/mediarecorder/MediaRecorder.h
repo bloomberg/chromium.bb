@@ -23,10 +23,11 @@ class Blob;
 class BlobData;
 class ExceptionState;
 
-class MODULES_EXPORT MediaRecorder final : public EventTargetWithInlineData,
-                                           public WebMediaRecorderHandlerClient,
-                                           public ActiveScriptWrappable,
-                                           public SuspendableObject {
+class MODULES_EXPORT MediaRecorder final
+    : public EventTargetWithInlineData,
+      public WebMediaRecorderHandlerClient,
+      public ActiveScriptWrappable<MediaRecorder>,
+      public SuspendableObject {
   USING_GARBAGE_COLLECTED_MIXIN(MediaRecorder);
   DEFINE_WRAPPERTYPEINFO();
 

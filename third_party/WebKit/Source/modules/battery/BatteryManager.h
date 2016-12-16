@@ -18,7 +18,7 @@
 namespace blink {
 
 class BatteryManager final : public EventTargetWithInlineData,
-                             public ActiveScriptWrappable,
+                             public ActiveScriptWrappable<BatteryManager>,
                              public SuspendableObject,
                              public PlatformEventController {
   DEFINE_WRAPPERTYPEINFO();

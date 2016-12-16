@@ -57,7 +57,7 @@ class StyleRuleFontFace;
 
 class FontFace : public GarbageCollectedFinalized<FontFace>,
                  public ScriptWrappable,
-                 public ActiveScriptWrappable,
+                 public ActiveScriptWrappable<FontFace>,
                  public SuspendableObject {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(FontFace);

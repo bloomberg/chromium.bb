@@ -160,7 +160,7 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
                              MediaStream* stream,
                              const MediaRecorderOptions& options,
                              ExceptionState& exceptionState)
-    : ActiveScriptWrappable(this),
+    : ActiveScriptWrappable<MediaRecorder>(this),
       SuspendableObject(context),
       m_stream(stream),
       m_streamAmountOfTracks(stream->getTracks().size()),

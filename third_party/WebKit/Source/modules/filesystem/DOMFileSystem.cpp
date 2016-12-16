@@ -94,7 +94,7 @@ DOMFileSystem::DOMFileSystem(ExecutionContext* context,
                              FileSystemType type,
                              const KURL& rootURL)
     : DOMFileSystemBase(context, name, type, rootURL),
-      ActiveScriptWrappable(this),
+      ActiveScriptWrappable<DOMFileSystem>(this),
       SuspendableObject(context),
       m_numberOfPendingCallbacks(0),
       m_rootEntry(DirectoryEntry::create(this, DOMFilePath::root)) {}

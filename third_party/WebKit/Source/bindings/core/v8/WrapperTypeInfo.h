@@ -61,7 +61,7 @@ typedef v8::Local<v8::FunctionTemplate> (
     *DomTemplateFunction)(v8::Isolate*, const DOMWrapperWorld&);
 typedef void (*TraceFunction)(Visitor*, ScriptWrappable*);
 typedef void (*TraceWrappersFunction)(WrapperVisitor*, ScriptWrappable*);
-typedef ActiveScriptWrappable* (*ToActiveScriptWrappableFunction)(
+typedef ActiveScriptWrappableBase* (*ToActiveScriptWrappableFunction)(
     v8::Local<v8::Object>);
 typedef void (*ResolveWrapperReachabilityFunction)(
     v8::Isolate*,

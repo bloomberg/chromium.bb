@@ -65,7 +65,7 @@ const unsigned long long EventSource::defaultReconnectDelay = 3000;
 inline EventSource::EventSource(ExecutionContext* context,
                                 const KURL& url,
                                 const EventSourceInit& eventSourceInit)
-    : ActiveScriptWrappable(this),
+    : ActiveScriptWrappable<EventSource>(this),
       SuspendableObject(context),
       m_url(url),
       m_currentURL(url),

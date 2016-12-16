@@ -336,7 +336,7 @@ ScriptProcessorNode::ScriptProcessorNode(BaseAudioContext& context,
                                          size_t bufferSize,
                                          unsigned numberOfInputChannels,
                                          unsigned numberOfOutputChannels)
-    : AudioNode(context), ActiveScriptWrappable(this) {
+    : AudioNode(context), ActiveScriptWrappable<ScriptProcessorNode>(this) {
   setHandler(ScriptProcessorHandler::create(*this, sampleRate, bufferSize,
                                             numberOfInputChannels,
                                             numberOfOutputChannels));

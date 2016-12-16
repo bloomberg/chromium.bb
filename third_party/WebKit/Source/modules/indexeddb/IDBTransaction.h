@@ -53,9 +53,10 @@ class IDBOpenDBRequest;
 class IDBRequest;
 class ScriptState;
 
-class MODULES_EXPORT IDBTransaction final : public EventTargetWithInlineData,
-                                            public ActiveScriptWrappable,
-                                            public SuspendableObject {
+class MODULES_EXPORT IDBTransaction final
+    : public EventTargetWithInlineData,
+      public ActiveScriptWrappable<IDBTransaction>,
+      public SuspendableObject {
   USING_GARBAGE_COLLECTED_MIXIN(IDBTransaction);
   DEFINE_WRAPPERTYPEINFO();
 

@@ -223,7 +223,7 @@ XMLHttpRequest* XMLHttpRequest::create(ExecutionContext* context) {
 XMLHttpRequest::XMLHttpRequest(
     ExecutionContext* context,
     PassRefPtr<SecurityOrigin> isolatedWorldSecurityOrigin)
-    : ActiveScriptWrappable(this),
+    : ActiveScriptWrappable<XMLHttpRequest>(this),
       SuspendableObject(context),
       m_timeoutMilliseconds(0),
       m_responseBlob(this, nullptr),

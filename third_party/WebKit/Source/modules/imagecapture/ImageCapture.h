@@ -24,9 +24,10 @@ class WebImageCaptureFrameGrabber;
 
 // TODO(mcasas): Consideradding a LayoutTest checking that this class is not
 // garbage collected while it has event listeners.
-class MODULES_EXPORT ImageCapture final : public EventTargetWithInlineData,
-                                          public ActiveScriptWrappable,
-                                          public ContextLifecycleObserver {
+class MODULES_EXPORT ImageCapture final
+    : public EventTargetWithInlineData,
+      public ActiveScriptWrappable<ImageCapture>,
+      public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ImageCapture);
   DEFINE_WRAPPERTYPEINFO();
 

@@ -62,7 +62,7 @@ class ExecutionContext;
 class StringOrStringSequence;
 
 class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
-                                    public ActiveScriptWrappable,
+                                    public ActiveScriptWrappable<DOMWebSocket>,
                                     public SuspendableObject,
                                     public WebSocketChannelClient {
   DEFINE_WRAPPERTYPEINFO();

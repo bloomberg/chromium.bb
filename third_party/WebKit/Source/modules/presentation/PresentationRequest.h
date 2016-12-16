@@ -17,9 +17,10 @@ namespace blink {
 
 // Implements the PresentationRequest interface from the Presentation API from
 // which websites can start or join presentation connections.
-class PresentationRequest final : public EventTargetWithInlineData,
-                                  public ActiveScriptWrappable,
-                                  public SuspendableObject {
+class PresentationRequest final
+    : public EventTargetWithInlineData,
+      public ActiveScriptWrappable<PresentationRequest>,
+      public SuspendableObject {
   USING_GARBAGE_COLLECTED_MIXIN(PresentationRequest);
   DEFINE_WRAPPERTYPEINFO();
 

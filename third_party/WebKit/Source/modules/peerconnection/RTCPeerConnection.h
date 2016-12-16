@@ -64,7 +64,7 @@ struct WebRTCConfiguration;
 
 class RTCPeerConnection final : public EventTargetWithInlineData,
                                 public WebRTCPeerConnectionHandlerClient,
-                                public ActiveScriptWrappable,
+                                public ActiveScriptWrappable<RTCPeerConnection>,
                                 public SuspendableObject {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RTCPeerConnection);

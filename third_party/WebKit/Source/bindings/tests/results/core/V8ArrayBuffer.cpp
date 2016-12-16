@@ -41,8 +41,8 @@ const WrapperTypeInfo& TestArrayBuffer::s_wrapperTypeInfo = V8ArrayBuffer::wrapp
 
 // not [ActiveScriptWrappable]
 static_assert(
-    !std::is_base_of<ActiveScriptWrappable, TestArrayBuffer>::value,
-    "TestArrayBuffer inherits from ActiveScriptWrappable, but is not specifying "
+    !std::is_base_of<ActiveScriptWrappableBase, TestArrayBuffer>::value,
+    "TestArrayBuffer inherits from ActiveScriptWrappable<>, but is not specifying "
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 static_assert(

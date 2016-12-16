@@ -50,7 +50,7 @@ class ExecutionContext;
 class StringOrArrayBuffer;
 
 class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
-                                     public ActiveScriptWrappable,
+                                     public ActiveScriptWrappable<FileReader>,
                                      public SuspendableObject,
                                      public FileReaderLoaderClient {
   DEFINE_WRAPPERTYPEINFO();
@@ -102,9 +102,9 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  explicit FileReader(ExecutionContext*);
-
   class ThrottlingController;
+
+  explicit FileReader(ExecutionContext*);
 
   void terminate();
   void readInternal(Blob*, FileReaderLoader::ReadType, ExceptionState&);

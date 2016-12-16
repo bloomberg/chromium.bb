@@ -42,11 +42,12 @@ class ImageCandidate;
 class ShadowRoot;
 class ImageBitmapOptions;
 
-class CORE_EXPORT HTMLImageElement final : public HTMLElement,
-                                           public CanvasImageSource,
-                                           public ImageBitmapSource,
-                                           public ActiveScriptWrappable,
-                                           public FormAssociated {
+class CORE_EXPORT HTMLImageElement final
+    : public HTMLElement,
+      public CanvasImageSource,
+      public ImageBitmapSource,
+      public ActiveScriptWrappable<HTMLImageElement>,
+      public FormAssociated {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(HTMLImageElement);
 

@@ -124,8 +124,9 @@ class AudioScheduledSourceHandler : public AudioHandler {
   int m_playbackState;
 };
 
-class AudioScheduledSourceNode : public AudioSourceNode,
-                                 public ActiveScriptWrappable {
+class AudioScheduledSourceNode
+    : public AudioSourceNode,
+      public ActiveScriptWrappable<AudioScheduledSourceNode> {
   USING_GARBAGE_COLLECTED_MIXIN(AudioScheduledSourceNode);
 
  public:

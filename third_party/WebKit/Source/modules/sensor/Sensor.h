@@ -23,7 +23,7 @@ class SensorReading;
 class SensorUpdateNotificationStrategy;
 
 class Sensor : public EventTargetWithInlineData,
-               public ActiveScriptWrappable,
+               public ActiveScriptWrappable<Sensor>,
                public ContextLifecycleObserver,
                public SensorProxy::Observer {
   USING_GARBAGE_COLLECTED_MIXIN(Sensor);

@@ -70,7 +70,7 @@ typedef int ExceptionCode;
 class XMLHttpRequest final : public XMLHttpRequestEventTarget,
                              private ThreadableLoaderClient,
                              public DocumentParserClient,
-                             public ActiveScriptWrappable,
+                             public ActiveScriptWrappable<XMLHttpRequest>,
                              public SuspendableObject {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);

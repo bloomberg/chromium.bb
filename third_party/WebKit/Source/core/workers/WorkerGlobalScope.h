@@ -55,12 +55,13 @@ class WorkerLocation;
 class WorkerNavigator;
 class WorkerThread;
 
-class CORE_EXPORT WorkerGlobalScope : public EventTargetWithInlineData,
-                                      public ActiveScriptWrappable,
-                                      public SecurityContext,
-                                      public WorkerOrWorkletGlobalScope,
-                                      public Supplementable<WorkerGlobalScope>,
-                                      public DOMWindowBase64 {
+class CORE_EXPORT WorkerGlobalScope
+    : public EventTargetWithInlineData,
+      public ActiveScriptWrappable<WorkerGlobalScope>,
+      public SecurityContext,
+      public WorkerOrWorkletGlobalScope,
+      public Supplementable<WorkerGlobalScope>,
+      public DOMWindowBase64 {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScope);
 

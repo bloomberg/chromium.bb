@@ -46,7 +46,7 @@ MIDIPort::MIDIPort(MIDIAccess* access,
                    TypeCode type,
                    const String& version,
                    PortState state)
-    : ActiveScriptWrappable(this),
+    : ActiveScriptWrappable<MIDIPort>(this),
       SuspendableObject(access->getExecutionContext()),
       m_id(id),
       m_manufacturer(manufacturer),

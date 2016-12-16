@@ -63,7 +63,7 @@ class MediaKeys;
 // The WebContentDecryptionModuleSession has the same lifetime as this object.
 class MediaKeySession final
     : public EventTargetWithInlineData,
-      public ActiveScriptWrappable,
+      public ActiveScriptWrappable<MediaKeySession>,
       public SuspendableObject,
       private WebContentDecryptionModuleSession::Client {
   DEFINE_WRAPPERTYPEINFO();

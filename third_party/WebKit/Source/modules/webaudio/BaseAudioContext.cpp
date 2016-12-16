@@ -89,7 +89,7 @@ BaseAudioContext* BaseAudioContext::create(Document& document,
 
 // Constructor for rendering to the audio hardware.
 BaseAudioContext::BaseAudioContext(Document* document)
-    : ActiveScriptWrappable(this),
+    : ActiveScriptWrappable<BaseAudioContext>(this),
       SuspendableObject(document),
       m_destinationNode(nullptr),
       m_isCleared(false),

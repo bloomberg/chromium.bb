@@ -29,7 +29,7 @@ class ScriptState;
 // implementation.
 class MODULES_EXPORT Body : public GarbageCollected<Body>,
                             public ScriptWrappable,
-                            public ActiveScriptWrappable,
+                            public ActiveScriptWrappable<Body>,
                             public ContextLifecycleObserver {
   WTF_MAKE_NONCOPYABLE(Body);
   DEFINE_WRAPPERTYPEINFO();

@@ -48,7 +48,7 @@ class ExecutionContext;
 
 class FileWriter final : public EventTargetWithInlineData,
                          public FileWriterBase,
-                         public ActiveScriptWrappable,
+                         public ActiveScriptWrappable<FileWriter>,
                          public SuspendableObject,
                          public WebFileWriterClient {
   DEFINE_WRAPPERTYPEINFO();

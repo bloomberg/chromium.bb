@@ -28,7 +28,7 @@ class ScriptState;
 // via WebServiceWorkerRegistration::Handle object.
 class ServiceWorkerRegistration final
     : public EventTargetWithInlineData,
-      public ActiveScriptWrappable,
+      public ActiveScriptWrappable<ServiceWorkerRegistration>,
       public SuspendableObject,
       public WebServiceWorkerRegistrationProxy,
       public Supplementable<ServiceWorkerRegistration> {

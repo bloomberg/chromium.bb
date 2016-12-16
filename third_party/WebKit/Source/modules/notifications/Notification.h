@@ -57,10 +57,11 @@ class NotificationPermissionCallback;
 class NotificationResourcesLoader;
 class ScriptState;
 
-class MODULES_EXPORT Notification final : public EventTargetWithInlineData,
-                                          public ActiveScriptWrappable,
-                                          public SuspendableObject,
-                                          public WebNotificationDelegate {
+class MODULES_EXPORT Notification final
+    : public EventTargetWithInlineData,
+      public ActiveScriptWrappable<Notification>,
+      public SuspendableObject,
+      public WebNotificationDelegate {
   USING_GARBAGE_COLLECTED_MIXIN(Notification);
   DEFINE_WRAPPERTYPEINFO();
 

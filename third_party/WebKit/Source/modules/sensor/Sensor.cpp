@@ -22,7 +22,7 @@ Sensor::Sensor(ExecutionContext* executionContext,
                const SensorOptions& sensorOptions,
                ExceptionState& exceptionState,
                SensorType type)
-    : ActiveScriptWrappable(this),
+    : ActiveScriptWrappable<Sensor>(this),
       ContextLifecycleObserver(executionContext),
       m_sensorOptions(sensorOptions),
       m_type(type),

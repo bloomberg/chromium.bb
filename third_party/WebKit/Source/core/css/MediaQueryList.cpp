@@ -38,7 +38,7 @@ MediaQueryList* MediaQueryList::create(ExecutionContext* context,
 MediaQueryList::MediaQueryList(ExecutionContext* context,
                                MediaQueryMatcher* matcher,
                                MediaQuerySet* media)
-    : ActiveScriptWrappable(this),
+    : ActiveScriptWrappable<MediaQueryList>(this),
       SuspendableObject(context),
       m_matcher(matcher),
       m_media(media),

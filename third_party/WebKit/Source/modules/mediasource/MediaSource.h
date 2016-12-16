@@ -51,7 +51,7 @@ class WebSourceBuffer;
 
 class MediaSource final : public EventTargetWithInlineData,
                           public HTMLMediaSource,
-                          public ActiveScriptWrappable,
+                          public ActiveScriptWrappable<MediaSource>,
                           public SuspendableObject {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MediaSource);

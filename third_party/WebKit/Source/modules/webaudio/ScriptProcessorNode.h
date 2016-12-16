@@ -107,8 +107,9 @@ class ScriptProcessorHandler final : public AudioHandler {
   FRIEND_TEST_ALL_PREFIXES(ScriptProcessorNodeTest, BufferLifetime);
 };
 
-class ScriptProcessorNode final : public AudioNode,
-                                  public ActiveScriptWrappable {
+class ScriptProcessorNode final
+    : public AudioNode,
+      public ActiveScriptWrappable<ScriptProcessorNode> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(ScriptProcessorNode);
 

@@ -21,7 +21,7 @@ BatteryManager* BatteryManager::create(ExecutionContext* context) {
 BatteryManager::~BatteryManager() {}
 
 BatteryManager::BatteryManager(ExecutionContext* context)
-    : ActiveScriptWrappable(this),
+    : ActiveScriptWrappable<BatteryManager>(this),
       SuspendableObject(context),
       PlatformEventController(toDocument(context)->page()) {}
 

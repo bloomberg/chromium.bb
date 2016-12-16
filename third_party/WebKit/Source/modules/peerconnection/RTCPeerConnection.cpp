@@ -487,7 +487,7 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
                                      const WebRTCConfiguration& configuration,
                                      WebMediaConstraints constraints,
                                      ExceptionState& exceptionState)
-    : ActiveScriptWrappable(this),
+    : ActiveScriptWrappable<RTCPeerConnection>(this),
       SuspendableObject(context),
       m_signalingState(SignalingStateStable),
       m_iceGatheringState(ICEGatheringStateNew),

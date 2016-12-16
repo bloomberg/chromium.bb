@@ -54,7 +54,7 @@ class VideoTrackList;
 class WebSourceBuffer;
 
 class SourceBuffer final : public EventTargetWithInlineData,
-                           public ActiveScriptWrappable,
+                           public ActiveScriptWrappable<SourceBuffer>,
                            public SuspendableObject,
                            public WebSourceBufferClient {
   USING_GARBAGE_COLLECTED_MIXIN(SourceBuffer);

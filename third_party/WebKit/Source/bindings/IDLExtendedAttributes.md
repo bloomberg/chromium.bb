@@ -518,7 +518,7 @@ If a given DOM object needs to be kept alive as long as the DOM object has pendi
 If you use `[ActiveScriptWrappable]`, the corresponding Blink class needs to inherit ActiveScriptWrappable and override hasPendingActivity(). For example, in case of XMLHttpRequest, core/xml/XMLHttpRequest.h would look like this:
 
 ```c++
-class XMLHttpRequest : public ActiveScriptWrappable
+class XMLHttpRequest : public ActiveScriptWrappable<XMLHttpRequest>
 {
     // Returns true if the object needs to be kept alive.
     bool hasPendingActivity() const override { return ...; }

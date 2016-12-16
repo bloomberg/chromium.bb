@@ -50,10 +50,11 @@ class BlobCallback;
 class FileEntry;
 class FileWriterCallback;
 
-class MODULES_EXPORT DOMFileSystem final : public DOMFileSystemBase,
-                                           public ScriptWrappable,
-                                           public ActiveScriptWrappable,
-                                           public SuspendableObject {
+class MODULES_EXPORT DOMFileSystem final
+    : public DOMFileSystemBase,
+      public ScriptWrappable,
+      public ActiveScriptWrappable<DOMFileSystem>,
+      public SuspendableObject {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DOMFileSystem);
 

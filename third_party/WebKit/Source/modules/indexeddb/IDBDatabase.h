@@ -55,9 +55,10 @@ class ExecutionContext;
 class IDBObserver;
 struct WebIDBObservation;
 
-class MODULES_EXPORT IDBDatabase final : public EventTargetWithInlineData,
-                                         public ActiveScriptWrappable,
-                                         public SuspendableObject {
+class MODULES_EXPORT IDBDatabase final
+    : public EventTargetWithInlineData,
+      public ActiveScriptWrappable<IDBDatabase>,
+      public SuspendableObject {
   USING_GARBAGE_COLLECTED_MIXIN(IDBDatabase);
   DEFINE_WRAPPERTYPEINFO();
 

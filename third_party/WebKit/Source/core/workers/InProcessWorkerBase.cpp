@@ -17,7 +17,7 @@ namespace blink {
 
 InProcessWorkerBase::InProcessWorkerBase(ExecutionContext* context)
     : AbstractWorker(context),
-      ActiveScriptWrappable(this),
+      ActiveScriptWrappable<InProcessWorkerBase>(this),
       m_contextProxy(nullptr) {}
 
 InProcessWorkerBase::~InProcessWorkerBase() {

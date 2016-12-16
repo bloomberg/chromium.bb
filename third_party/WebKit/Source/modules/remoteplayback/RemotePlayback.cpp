@@ -201,9 +201,6 @@ String RemotePlayback::state() const {
 }
 
 bool RemotePlayback::hasPendingActivity() const {
-  // TODO(haraken): This check should be moved to ActiveScriptWrappable.
-  if (getExecutionContext()->isContextDestroyed())
-    return false;
   return hasEventListeners() || !m_availabilityCallbacks.isEmpty() ||
          m_promptPromiseResolver;
 }

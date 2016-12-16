@@ -50,8 +50,8 @@ const WrapperTypeInfo& {{cpp_class}}::s_wrapperTypeInfo = {{v8_class}}::wrapperT
 {% if active_scriptwrappable %}
 // [ActiveScriptWrappable]
 static_assert(
-    std::is_base_of<ActiveScriptWrappable, {{cpp_class}}>::value,
-    "{{cpp_class}} does not inherit from ActiveScriptWrappable, but specifying "
+    std::is_base_of<ActiveScriptWrappableBase, {{cpp_class}}>::value,
+    "{{cpp_class}} does not inherit from ActiveScriptWrappable<>, but specifying "
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 static_assert(
@@ -63,8 +63,8 @@ static_assert(
 {% else %}
 // not [ActiveScriptWrappable]
 static_assert(
-    !std::is_base_of<ActiveScriptWrappable, {{cpp_class}}>::value,
-    "{{cpp_class}} inherits from ActiveScriptWrappable, but is not specifying "
+    !std::is_base_of<ActiveScriptWrappableBase, {{cpp_class}}>::value,
+    "{{cpp_class}} inherits from ActiveScriptWrappable<>, but is not specifying "
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 static_assert(

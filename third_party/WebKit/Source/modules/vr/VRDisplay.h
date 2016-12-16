@@ -39,7 +39,7 @@ class WebGLRenderingContextBase;
 enum VREye { VREyeNone, VREyeLeft, VREyeRight };
 
 class VRDisplay final : public EventTargetWithInlineData,
-                        public ActiveScriptWrappable,
+                        public ActiveScriptWrappable<VRDisplay>,
                         public ContextLifecycleObserver,
                         public device::mojom::blink::VRDisplayClient {
   DEFINE_WRAPPERTYPEINFO();

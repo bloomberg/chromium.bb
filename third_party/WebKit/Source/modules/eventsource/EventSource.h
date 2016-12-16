@@ -51,11 +51,12 @@ class EventSourceInit;
 class ExceptionState;
 class ResourceResponse;
 
-class MODULES_EXPORT EventSource final : public EventTargetWithInlineData,
-                                         private ThreadableLoaderClient,
-                                         public ActiveScriptWrappable,
-                                         public SuspendableObject,
-                                         public EventSourceParser::Client {
+class MODULES_EXPORT EventSource final
+    : public EventTargetWithInlineData,
+      private ThreadableLoaderClient,
+      public ActiveScriptWrappable<EventSource>,
+      public SuspendableObject,
+      public EventSourceParser::Client {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(EventSource);
 

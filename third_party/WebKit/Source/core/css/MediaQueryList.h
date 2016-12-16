@@ -41,9 +41,10 @@ class MediaQuerySet;
 // to retrieve the current value of the given media query and to add/remove
 // listeners that will be called whenever the value of the query changes.
 
-class CORE_EXPORT MediaQueryList final : public EventTargetWithInlineData,
-                                         public ActiveScriptWrappable,
-                                         public SuspendableObject {
+class CORE_EXPORT MediaQueryList final
+    : public EventTargetWithInlineData,
+      public ActiveScriptWrappable<MediaQueryList>,
+      public SuspendableObject {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MediaQueryList);
   WTF_MAKE_NONCOPYABLE(MediaQueryList);

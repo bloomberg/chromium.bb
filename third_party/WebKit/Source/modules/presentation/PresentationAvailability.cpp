@@ -47,7 +47,7 @@ PresentationAvailability::PresentationAvailability(
     ExecutionContext* executionContext,
     const KURL& url,
     bool value)
-    : ActiveScriptWrappable(this),
+    : ActiveScriptWrappable<PresentationAvailability>(this),
       SuspendableObject(executionContext),
       PageVisibilityObserver(toDocument(executionContext)->page()),
       m_url(url),

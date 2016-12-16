@@ -22,7 +22,7 @@ class ReadableStreamController;
 class CORE_EXPORT UnderlyingSourceBase
     : public GarbageCollectedFinalized<UnderlyingSourceBase>,
       public ScriptWrappable,
-      public ActiveScriptWrappable,
+      public ActiveScriptWrappable<UnderlyingSourceBase>,
       public SuspendableObject {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(UnderlyingSourceBase);
@@ -50,7 +50,7 @@ class CORE_EXPORT UnderlyingSourceBase
 
  protected:
   explicit UnderlyingSourceBase(ScriptState* scriptState)
-      : ActiveScriptWrappable(this),
+      : ActiveScriptWrappable<UnderlyingSourceBase>(this),
         SuspendableObject(scriptState->getExecutionContext()) {
     this->suspendIfNeeded();
   }

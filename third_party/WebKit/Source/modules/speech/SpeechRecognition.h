@@ -46,9 +46,10 @@ class Page;
 class SpeechRecognitionController;
 class SpeechRecognitionError;
 
-class MODULES_EXPORT SpeechRecognition final : public EventTargetWithInlineData,
-                                               public ActiveScriptWrappable,
-                                               public SuspendableObject {
+class MODULES_EXPORT SpeechRecognition final
+    : public EventTargetWithInlineData,
+      public ActiveScriptWrappable<SpeechRecognition>,
+      public SuspendableObject {
   USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognition);
   DEFINE_WRAPPERTYPEINFO();
 

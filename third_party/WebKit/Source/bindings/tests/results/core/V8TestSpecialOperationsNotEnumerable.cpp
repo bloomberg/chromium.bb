@@ -39,8 +39,8 @@ const WrapperTypeInfo& TestSpecialOperationsNotEnumerable::s_wrapperTypeInfo = V
 
 // not [ActiveScriptWrappable]
 static_assert(
-    !std::is_base_of<ActiveScriptWrappable, TestSpecialOperationsNotEnumerable>::value,
-    "TestSpecialOperationsNotEnumerable inherits from ActiveScriptWrappable, but is not specifying "
+    !std::is_base_of<ActiveScriptWrappableBase, TestSpecialOperationsNotEnumerable>::value,
+    "TestSpecialOperationsNotEnumerable inherits from ActiveScriptWrappable<>, but is not specifying "
     "[ActiveScriptWrappable] extended attribute in the IDL file.  "
     "Be consistent.");
 static_assert(

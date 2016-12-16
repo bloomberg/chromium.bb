@@ -45,7 +45,7 @@ void ScriptWrappableVisitor::TracePrologue() {
 void ScriptWrappableVisitor::EnterFinalPause() {
   CHECK(ThreadState::current());
   CHECK(!ThreadState::current()->isWrapperTracingForbidden());
-  ActiveScriptWrappable::traceActiveScriptWrappables(m_isolate, this);
+  ActiveScriptWrappableBase::traceActiveScriptWrappables(m_isolate, this);
 }
 
 void ScriptWrappableVisitor::TraceEpilogue() {

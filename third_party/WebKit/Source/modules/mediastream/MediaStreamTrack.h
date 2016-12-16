@@ -44,10 +44,11 @@ class MediaTrackConstraints;
 class MediaStream;
 class MediaTrackSettings;
 
-class MODULES_EXPORT MediaStreamTrack : public EventTargetWithInlineData,
-                                        public ActiveScriptWrappable,
-                                        public SuspendableObject,
-                                        public MediaStreamSource::Observer {
+class MODULES_EXPORT MediaStreamTrack
+    : public EventTargetWithInlineData,
+      public ActiveScriptWrappable<MediaStreamTrack>,
+      public SuspendableObject,
+      public MediaStreamSource::Observer {
   USING_GARBAGE_COLLECTED_MIXIN(MediaStreamTrack);
   DEFINE_WRAPPERTYPEINFO();
 
