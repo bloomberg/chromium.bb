@@ -466,7 +466,7 @@ TEST_P(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   // Set up alternative_service for www.google.com:65536.
   std::unique_ptr<base::DictionaryValue> alternative_service_dict(
       new base::DictionaryValue);
-  alternative_service_dict->SetString("protocol_str", "npn-h2");
+  alternative_service_dict->SetString("protocol_str", "h2");
   alternative_service_dict->SetInteger("port", 80);
   base::ListValue* alternative_service_list = new base::ListValue;
   alternative_service_list->Append(std::move(alternative_service_dict));
@@ -549,7 +549,7 @@ TEST_P(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
   // Set up alternative_service for www.google.com:80.
   std::unique_ptr<base::DictionaryValue> alternative_service_dict(
       new base::DictionaryValue);
-  alternative_service_dict->SetString("protocol_str", "npn-h2");
+  alternative_service_dict->SetString("protocol_str", "h2");
   alternative_service_dict->SetInteger("port", 65536);
   base::ListValue* alternative_service_list = new base::ListValue;
   alternative_service_list->Append(std::move(alternative_service_dict));
@@ -1045,7 +1045,7 @@ TEST_P(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
       "{\"alternative_service\":[{\"port\":443,\"protocol_str\":\"h2\"},"
       "{\"port\":123,\"protocol_str\":\"quic\","
       "\"expiration\":\"9223372036854775807\"},{\"host\":\"example.org\","
-      "\"port\":1234,\"protocol_str\":\"npn-h2\","
+      "\"port\":1234,\"protocol_str\":\"h2\","
       "\"expiration\":\"13758804000000000\"}]}");
   ASSERT_TRUE(server_value);
   base::DictionaryValue* server_dict;
@@ -1092,7 +1092,7 @@ TEST_P(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
 // Regression test for https://crbug.com/615497.
 TEST_P(HttpServerPropertiesManagerTest, DoNotLoadAltSvcForInsecureOrigins) {
   std::unique_ptr<base::Value> server_value = base::JSONReader::Read(
-      "{\"alternative_service\":[{\"port\":443,\"protocol_str\":\"npn-h2\","
+      "{\"alternative_service\":[{\"port\":443,\"protocol_str\":\"h2\","
       "\"expiration\":\"9223372036854775807\"}]}");
   ASSERT_TRUE(server_value);
   base::DictionaryValue* server_dict;
@@ -1180,7 +1180,7 @@ TEST_P(HttpServerPropertiesManagerTest, DoNotLoadExpiredAlternativeService) {
       new base::ListValue);
   std::unique_ptr<base::DictionaryValue> expired_dict(
       new base::DictionaryValue);
-  expired_dict->SetString("protocol_str", "npn-h2");
+  expired_dict->SetString("protocol_str", "h2");
   expired_dict->SetString("host", "expired.example.com");
   expired_dict->SetInteger("port", 443);
   base::Time time_one_day_ago =
@@ -1190,7 +1190,7 @@ TEST_P(HttpServerPropertiesManagerTest, DoNotLoadExpiredAlternativeService) {
   alternative_service_list->Append(std::move(expired_dict));
 
   std::unique_ptr<base::DictionaryValue> valid_dict(new base::DictionaryValue);
-  valid_dict->SetString("protocol_str", "npn-h2");
+  valid_dict->SetString("protocol_str", "h2");
   valid_dict->SetString("host", "valid.example.com");
   valid_dict->SetInteger("port", 443);
   valid_dict->SetString(
