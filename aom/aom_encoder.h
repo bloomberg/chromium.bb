@@ -652,7 +652,7 @@ aom_codec_err_t aom_codec_enc_init_multi_ver(
  *
  * \param[in]    iface     Pointer to the algorithm interface to use.
  * \param[out]   cfg       Configuration buffer to populate.
- * \param[in]    reserved  Must set to 0 for VP8 and AV1.
+ * \param[in]    reserved  Must set to 0.
  *
  * \retval #AOM_CODEC_OK
  *     The configuration was populated.

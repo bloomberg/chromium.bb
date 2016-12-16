@@ -518,7 +518,7 @@ typedef enum {
   AOM_CONTENT_INVALID
 } aom_tune_content;
 
-/*!\brief VP8 model tuning parameters
+/*!\brief Model tuning parameters
  *
  * Changes the encoder to tune for certain types of input material.
  *
@@ -526,9 +526,9 @@ typedef enum {
 typedef enum { AOM_TUNE_PSNR, AOM_TUNE_SSIM } aom_tune_metric;
 
 /*!\cond */
-/*!\brief VP8 encoder control function parameter type
+/*!\brief Encoder control function parameter type
  *
- * Defines the data types that VP8E control functions take. Note that
+ * Defines the data types that AOME/AV1E control functions take. Note that
  * additional common controls are defined in aom.h
  *
  */
