@@ -92,16 +92,17 @@ class PresentationSessionMessagesObserver : public RouteMessageObserver {
 
   void OnMessagesReceived(const std::vector<RouteMessage>& messages) final {
     DVLOG(2) << __func__ << ", number of messages : " << messages.size();
-    ScopedVector<content::PresentationConnectionMessage> presentation_messages;
+    std::vector<std::unique_ptr<content::PresentationConnectionMessage>>
+        presentation_messages;
     for (const RouteMessage& message : messages) {
       if (message.type == RouteMessage::TEXT && message.text) {
         presentation_messages.push_back(
-            new content::PresentationConnectionMessage(
+            base::MakeUnique<content::PresentationConnectionMessage>(
                 content::PresentationMessageType::TEXT));
         presentation_messages.back()->message = *message.text;
       } else if (message.type == RouteMessage::BINARY && message.binary) {
         presentation_messages.push_back(
-            new content::PresentationConnectionMessage(
+            base::MakeUnique<content::PresentationConnectionMessage>(
                 content::PresentationMessageType::BINARY));
         presentation_messages.back()->data.reset(
             new std::vector<uint8_t>(*message.binary));

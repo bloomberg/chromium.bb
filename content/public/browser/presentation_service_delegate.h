@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/presentation_connection_message.h"
 #include "content/public/browser/presentation_session.h"
@@ -29,8 +28,9 @@ using PresentationSessionErrorCallback =
 // Param #0: a vector of messages that are received.
 // Param #1: tells the callback handler that it may reuse strings or buffers
 //           in the messages contained within param #0.
-using PresentationConnectionMessageCallback = base::Callback<
-    void(const ScopedVector<content::PresentationConnectionMessage>&, bool)>;
+using PresentationConnectionMessageCallback = base::Callback<void(
+    const std::vector<std::unique_ptr<content::PresentationConnectionMessage>>&,
+    bool)>;
 
 struct PresentationConnectionStateChangeInfo {
   explicit PresentationConnectionStateChangeInfo(

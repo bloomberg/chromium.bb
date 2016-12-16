@@ -351,7 +351,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     run_loop.Run();
     }
 
-    ScopedVector<PresentationConnectionMessage> messages;
+    std::vector<std::unique_ptr<PresentationConnectionMessage>> messages;
     std::unique_ptr<content::PresentationConnectionMessage> message;
     message.reset(new content::PresentationConnectionMessage(
         PresentationMessageType::TEXT));

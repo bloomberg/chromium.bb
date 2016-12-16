@@ -232,7 +232,8 @@ class CONTENT_EXPORT PresentationServiceImpl
   // later invocation when session messages arrive.
   void OnConnectionMessages(
       const content::PresentationSessionInfo& session,
-      const ScopedVector<PresentationConnectionMessage>& messages,
+      const std::vector<std::unique_ptr<PresentationConnectionMessage>>&
+          messages,
       bool pass_ownership);
 
   // Associates a JoinSession |callback| with a unique request ID and

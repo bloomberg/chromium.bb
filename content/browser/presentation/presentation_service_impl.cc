@@ -455,17 +455,19 @@ void PresentationServiceImpl::ListenForConnectionMessages(
 
 void PresentationServiceImpl::OnConnectionMessages(
     const PresentationSessionInfo& session,
-    const ScopedVector<PresentationConnectionMessage>& messages,
+    const std::vector<std::unique_ptr<PresentationConnectionMessage>>& messages,
     bool pass_ownership) {
   DCHECK(client_);
 
   DVLOG(2) << "OnConnectionMessages";
   std::vector<blink::mojom::ConnectionMessagePtr> mojo_messages(
       messages.size());
-  std::transform(messages.begin(), messages.end(), mojo_messages.begin(),
-                 [pass_ownership](PresentationConnectionMessage* message) {
-                   return ToMojoConnectionMessage(message, pass_ownership);
-                 });
+  std::transform(
+      messages.begin(), messages.end(), mojo_messages.begin(),
+      [pass_ownership](
+          const std::unique_ptr<PresentationConnectionMessage>& message) {
+        return ToMojoConnectionMessage(message.get(), pass_ownership);
+      });
 
   client_->OnConnectionMessagesReceived(
       blink::mojom::PresentationSessionInfo::From(session),
