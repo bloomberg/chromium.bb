@@ -22,6 +22,8 @@ import static org.mockito.Mockito.when;
 
 import static org.chromium.base.test.util.Matchers.greaterThanOrEqualTo;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.createDummySuggestions;
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.registerCategory;
+import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.viewTypeToString;
 
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.AdapterDataObserver;
@@ -62,6 +64,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Unit tests for {@link NewTabPageAdapter}.
@@ -120,11 +123,14 @@ public class NewTabPageAdapterTest {
 
         public void expect(@ItemViewType int expectedItemType) {
             if (mCurrentIndex >= mTreeNode.getItemCount()) {
-                fail("Expected item of type " + expectedItemType + " but encountered end of list");
+                fail("Expected item of type " + viewTypeToString(expectedItemType)
+                        + " but encountered end of list\n"
+                        + explainFailedExpectation(mTreeNode, mCurrentIndex, expectedItemType));
             }
-            @ItemViewType
-            int itemType = mTreeNode.getItemViewType(mCurrentIndex);
-            assertEquals("Type mismatch at position " + mCurrentIndex, expectedItemType, itemType);
+            if (mTreeNode.getItemViewType(mCurrentIndex) != expectedItemType) {
+                fail("Type mismatch at position " + mCurrentIndex + "\n"
+                        + explainFailedExpectation(mTreeNode, mCurrentIndex, expectedItemType));
+            }
             mCurrentIndex++;
         }
 
@@ -934,20 +940,33 @@ public class NewTabPageAdapterTest {
         return mAdapter.getFirstPositionForType(ItemViewType.PROMO) != RecyclerView.NO_POSITION;
     }
 
-    /** Registers the category with the reload action */
-    private void registerCategory(FakeSuggestionsSource suggestionsSource,
-            @CategoryInt int category, int suggestionCount) {
-        // FakeSuggestionSource does not provide suggestions if the category's status is not
-        // AVAILABLE.
-        suggestionsSource.setStatusForCategory(category, CategoryStatus.AVAILABLE);
-        // Important: showIfEmpty flag to true.
-        suggestionsSource.setInfoForCategory(category,
-                new CategoryInfoBuilder(category).withReloadAction().showIfEmpty().build());
-        suggestionsSource.setSuggestionsForCategory(
-                category, createDummySuggestions(suggestionCount));
-    }
-
     private int getCategory(TreeNode item) {
         return ((SuggestionsSection) item).getCategory();
+    }
+
+    private static String explainFailedExpectation(
+            TreeNode root, int errorIndex, @ItemViewType int expectedType) {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        stringBuilder.append("explainFailedExpectation -- START -- \n");
+        for (int i = 0; i < root.getItemCount(); ++i) {
+            if (errorIndex == i) {
+                addLine(stringBuilder, "%d - %s <= expected: %s", i,
+                        viewTypeToString(root.getItemViewType(i)), viewTypeToString(expectedType));
+            } else {
+                addLine(stringBuilder, "%d - %s", i, viewTypeToString(root.getItemViewType(i)));
+            }
+        }
+        if (errorIndex >= root.getItemCount()) {
+            addLine(stringBuilder, "<end of list>");
+            addLine(stringBuilder, "%d - <NONE> <= expected: %s", errorIndex,
+                    viewTypeToString(expectedType));
+        }
+        addLine(stringBuilder, "explainFailedExpectation -- END --");
+        return stringBuilder.toString();
+    }
+
+    private static void addLine(StringBuilder stringBuilder, String template, Object... args) {
+        stringBuilder.append(String.format(Locale.US, template + "\n", args));
     }
 }

@@ -5,8 +5,10 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
+import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.ContentSuggestionsCardLayoutEnum;
+import org.chromium.chrome.browser.ntp.snippets.FakeSuggestionsSource;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
@@ -25,6 +27,45 @@ public final class ContentSuggestionsTestUtils {
                     "https://site.com/url" + index, "https://amp.site.com/url" + index, 0, 0, 0));
         }
         return suggestions;
+    }
+
+    /** Registers a category that has a reload action and is shown if empty. */
+    public static void registerCategory(FakeSuggestionsSource suggestionsSource,
+            @CategoryInt int category, int suggestionCount) {
+        // FakeSuggestionSource does not provide suggestions if the category's status is not
+        // AVAILABLE.
+        suggestionsSource.setStatusForCategory(category, CategoryStatus.AVAILABLE);
+        // Important: showIfEmpty flag to true.
+        suggestionsSource.setInfoForCategory(category,
+                new CategoryInfoBuilder(category).withReloadAction().showIfEmpty().build());
+        suggestionsSource.setSuggestionsForCategory(
+                category, createDummySuggestions(suggestionCount));
+    }
+
+    public static String viewTypeToString(@ItemViewType int viewType) {
+        switch (viewType) {
+            case ItemViewType.ABOVE_THE_FOLD:
+                return "ABOVE_THE_FOLD";
+            case ItemViewType.HEADER:
+                return "HEADER";
+            case ItemViewType.SNIPPET:
+                return "SNIPPET";
+            case ItemViewType.SPACING:
+                return "SPACING";
+            case ItemViewType.STATUS:
+                return "STATUS";
+            case ItemViewType.PROGRESS:
+                return "PROGRESS";
+            case ItemViewType.ACTION:
+                return "ACTION";
+            case ItemViewType.FOOTER:
+                return "FOOTER";
+            case ItemViewType.PROMO:
+                return "PROMO";
+            case ItemViewType.ALL_DISMISSED:
+                return "ALL_DISMISSED";
+        }
+        throw new AssertionError();
     }
 
     /**
