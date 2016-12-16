@@ -630,6 +630,37 @@ const FeatureEntry::FeatureVariation kNoStatePrefetchFeatureVariations[] = {
     {"Simple load", kNoStatePrefetchSimpleLoad,
      arraysize(kNoStatePrefetchSimpleLoad), nullptr}};
 
+#if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam
+kAutofillCreditCardPopupLayoutFeatureVariationIconAtStart[] = {
+  {"is_credit_card_icon_at_start", "true"}};
+
+const FeatureEntry::FeatureParam
+kAutofillCreditCardPopupLayoutFeatureVariationDropdownItemHeight[] = {
+  {"dropdown_item_height", "56"}};
+
+const FeatureEntry::FeatureParam
+kAutofillCreditCardPopupLayoutFeatureVariationExpanded[] = {
+  {"is_credit_card_icon_at_start", "true"},
+  {"dropdown_item_height", "56"}};
+
+const FeatureEntry::FeatureVariation
+kAutofillCreditCardPopupLayoutFeatureVariations[] = {
+    {"Display credit card icon at start",
+     kAutofillCreditCardPopupLayoutFeatureVariationIconAtStart,
+     arraysize(kAutofillCreditCardPopupLayoutFeatureVariationIconAtStart),
+     nullptr},
+    {"Increase dropdown item height",
+     kAutofillCreditCardPopupLayoutFeatureVariationDropdownItemHeight,
+     arraysize(
+         kAutofillCreditCardPopupLayoutFeatureVariationDropdownItemHeight),
+     nullptr},
+    {"Display credit card icon at start and increase dropdown item height",
+     kAutofillCreditCardPopupLayoutFeatureVariationExpanded,
+     arraysize(kAutofillCreditCardPopupLayoutFeatureVariationExpanded),
+     nullptr}};
+#endif  // OS_ANDROID
+
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
 // The first line of the entry is the internal name.
@@ -2102,6 +2133,17 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_CROS_COMP_UPDATES_DESCRIPTION, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kCrosCompUpdates)},
 #endif
+
+#if defined(OS_ANDROID)
+    {"enable-expanded-autofill-credit-card-popup",
+     IDS_FLAGS_ENABLE_EXPANDED_AUTOFILL_CREDIT_CARD_POPUP_LAYOUT,
+     IDS_FLAGS_ENABLE_EXPANDED_AUTOFILL_CREDIT_CARD_POPUP_LAYOUT_DESCRIPTION,
+     kOsAndroid,
+     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+         autofill::kAutofillCreditCardPopupLayout,
+         kAutofillCreditCardPopupLayoutFeatureVariations,
+         "AutofillCreditCardPopupLayout")},
+#endif  // OS_ANDROID
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

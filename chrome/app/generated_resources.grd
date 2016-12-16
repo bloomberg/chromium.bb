@@ -15253,6 +15253,15 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
     </if>
 
+    <if expr="is_android">
+      <message name="IDS_FLAGS_ENABLE_EXPANDED_AUTOFILL_CREDIT_CARD_POPUP_LAYOUT" desc="Name for the flag to enable expanded autofill poup layout for credit cards.">
+        Use expanded autofill credit card popup layout.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_EXPANDED_AUTOFILL_CREDIT_CARD_POPUP_LAYOUT_DESCRIPTION" desc="Description for the flag to enable expanded autofill poup layout for credit cards.">
+        If enabled, displays autofill credit card popup using expanded layout.
+      </message>
+    </if>
+
     <if expr="not is_android and _google_chrome">
       <message name="IDS_FLAGS_GOOGLE_BRANDED_CONTEXT_MENU_NAME" desc="Name for the flag to enable Google branding in the context menu.">
         Google branding in the context menu
