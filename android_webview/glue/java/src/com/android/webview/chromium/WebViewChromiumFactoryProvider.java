@@ -309,6 +309,11 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     }
 
     public static boolean preloadInZygote() {
+        try {
+            LibraryLoader.get(LibraryProcessType.PROCESS_WEBVIEW_CHILD);
+        } catch (ProcessInitException e) {
+            throw new RuntimeException("Failed to init LibraryLoader", e);
+        }
         for (String library : NativeLibraries.LIBRARIES) {
             System.loadLibrary(library);
         }
