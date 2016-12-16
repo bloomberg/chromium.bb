@@ -104,8 +104,9 @@ Performance::Performance(LocalFrame* frame)
       ContextLifecycleObserver(frame ? frame->document() : nullptr) {}
 
 Performance::~Performance() {
-  if (frame())
-    frame()->performanceMonitor()->unsubscribeAll(this);
+  // contextDestryoed() should have been called and the performance
+  // monitors should have been unsubscribed.
+  DCHECK(!frame());
 }
 
 void Performance::contextDestroyed() {
