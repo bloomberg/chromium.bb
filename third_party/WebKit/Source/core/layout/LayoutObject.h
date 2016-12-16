@@ -1657,9 +1657,12 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // Convenience mutator that clears paint invalidation flags and this object
     // and its descendants' needs-paint-property-update flags.
     void clearPaintFlags() {
+      DCHECK_EQ(m_layoutObject.document().lifecycle().state(),
+                DocumentLifecycle::InPrePaint);
       m_layoutObject.clearPaintInvalidationFlags();
-      m_layoutObject.clearNeedsPaintPropertyUpdate();
-      m_layoutObject.clearDescendantNeedsPaintPropertyUpdate();
+      m_layoutObject.m_bitfields.setNeedsPaintPropertyUpdate(false);
+      m_layoutObject.m_bitfields.setSubtreeNeedsPaintPropertyUpdate(false);
+      m_layoutObject.m_bitfields.setDescendantNeedsPaintPropertyUpdate(false);
     }
     void setShouldDoFullPaintInvalidation(PaintInvalidationReason reason) {
       m_layoutObject.setShouldDoFullPaintInvalidation(reason);
@@ -1696,6 +1699,16 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     void setNeedsPaintPropertyUpdate() {
       m_layoutObject.setNeedsPaintPropertyUpdate();
     }
+#if DCHECK_IS_ON()
+    // Same as setNeedsPaintPropertyUpdate() but does not mark ancestors as
+    // having a descendant needing a paint property update.
+    void setOnlyThisNeedsPaintPropertyUpdateForTesting() {
+      m_layoutObject.m_bitfields.setNeedsPaintPropertyUpdate(true);
+    }
+    void clearNeedsPaintPropertyUpdateForTesting() {
+      m_layoutObject.m_bitfields.setNeedsPaintPropertyUpdate(false);
+    }
+#endif
 
    protected:
     friend class PaintPropertyTreeBuilder;
@@ -1728,26 +1741,18 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // updated, setNeedsPaintPropertyUpdate marks all ancestors as having a
   // descendant needing a paint property update too.
   void setNeedsPaintPropertyUpdate();
-#if DCHECK_IS_ON()
-  // Same as setNeedsPaintPropertyUpdate() but does not mark ancestors as
-  // having a descendant needing a paint property update.
-  void setOnlyThisNeedsPaintPropertyUpdateForTesting() {
-    m_bitfields.setNeedsPaintPropertyUpdate(true);
-  }
-#endif
   bool needsPaintPropertyUpdate() const {
     return m_bitfields.needsPaintPropertyUpdate();
   }
-  void clearNeedsPaintPropertyUpdate() {
-    DCHECK_EQ(document().lifecycle().state(), DocumentLifecycle::InPrePaint);
-    m_bitfields.setNeedsPaintPropertyUpdate(false);
+  void setSubtreeNeedsPaintPropertyUpdate() {
+    m_bitfields.setSubtreeNeedsPaintPropertyUpdate(true);
+    m_bitfields.setNeedsPaintPropertyUpdate(true);
+  }
+  bool subtreeNeedsPaintPropertyUpdate() const {
+    return m_bitfields.subtreeNeedsPaintPropertyUpdate();
   }
   bool descendantNeedsPaintPropertyUpdate() const {
     return m_bitfields.descendantNeedsPaintPropertyUpdate();
-  }
-  void clearDescendantNeedsPaintPropertyUpdate() {
-    DCHECK_EQ(document().lifecycle().state(), DocumentLifecycle::InPrePaint);
-    m_bitfields.setDescendantNeedsPaintPropertyUpdate(false);
   }
   // Main thread scrolling reasons require fully updating paint propeties of all
   // ancestors (see: ScrollPaintPropertyNode.h).
@@ -2149,6 +2154,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           m_hasPreviousSelectionVisualRect(false),
           m_hasPreviousBoxGeometries(false),
           m_needsPaintPropertyUpdate(true),
+          m_subtreeNeedsPaintPropertyUpdate(true),
           m_descendantNeedsPaintPropertyUpdate(true),
           m_backgroundChangedSinceLastPaintInvalidation(false),
           m_positionedState(IsStaticallyPositioned),
@@ -2322,6 +2328,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // Whether the paint properties need to be updated. For more details, see
     // LayoutObject::needsPaintPropertyUpdate().
     ADD_BOOLEAN_BITFIELD(needsPaintPropertyUpdate, NeedsPaintPropertyUpdate);
+    // Whether paint properties of the whole subtree need to be updated.
+    ADD_BOOLEAN_BITFIELD(subtreeNeedsPaintPropertyUpdate,
+                         SubtreeNeedsPaintPropertyUpdate)
     // Whether the paint properties of a descendant need to be updated. For more
     // details, see LayoutObject::descendantNeedsPaintPropertyUpdate().
     ADD_BOOLEAN_BITFIELD(descendantNeedsPaintPropertyUpdate,
@@ -2332,7 +2341,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
    protected:
     // Use protected to avoid warning about unused variable.
-    unsigned m_unusedBits : 7;
+    unsigned m_unusedBits : 6;
 
    private:
     // This is the cached 'position' value of this object

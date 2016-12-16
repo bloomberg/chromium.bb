@@ -961,6 +961,8 @@ void PaintPropertyTreeBuilder::updatePropertiesForChildren(
   updateSvgLocalToBorderBoxTransform(object, context);
   updateScrollAndScrollTranslation(object, context);
   updateOutOfFlowContext(object, context);
+
+  context.forceSubtreeUpdate |= object.subtreeNeedsPaintPropertyUpdate();
 }
 
 }  // namespace blink

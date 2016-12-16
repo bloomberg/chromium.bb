@@ -103,6 +103,7 @@ crbug.com/646176 virtual/spinvalidation/fast/dynamic/static-to-relative-with-abs
 crbug.com/646176 virtual/spinvalidation/compositing/geometry/layer-due-to-layer-children-deep-switch.html [ Pass ]
 crbug.com/646176 virtual/spinvalidation/compositing/contents-opaque/visibility-hidden.html [ Pass ]
 crbug.com/646176 virtual/spinvalidation/compositing/composited-iframe-hidden.html [ Pass ]
+crbug.com/646176 virtual/spinvalidation/fast/layers/remove-layer-with-nested-stacking.html [ Pass ]
 crbug.com/646176 virtual/spinvalidation/printing/fixed-positioned-scrolled.html [ Pass ]
 crbug.com/646176 virtual/spinvalidation/printing/overflow-auto.html [ Pass ]
 

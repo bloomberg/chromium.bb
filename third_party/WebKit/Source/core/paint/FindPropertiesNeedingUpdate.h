@@ -116,7 +116,7 @@ class FindObjectPropertiesNeedingUpdateScope {
       return;
 
     // Mark the properties as needing an update to ensure they are rebuilt.
-    const_cast<LayoutObject&>(m_object)
+    m_object.getMutableForPainting()
         .setOnlyThisNeedsPaintPropertyUpdateForTesting();
 
     if (const auto* properties = m_object.paintProperties())
@@ -193,7 +193,7 @@ class FindObjectPropertiesNeedingUpdateScope {
       DCHECK_EQ(!!m_originalProperties, !!objectProperties);
     }
     // Restore original clean bit.
-    const_cast<LayoutObject&>(m_object).clearNeedsPaintPropertyUpdate();
+    m_object.getMutableForPainting().clearNeedsPaintPropertyUpdateForTesting();
   }
 
  private:

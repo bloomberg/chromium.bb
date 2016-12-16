@@ -184,6 +184,7 @@ void LayoutObjectChildList::insertChildNode(LayoutObject* owner,
       LayoutInvalidationReason::AddedToLayout);
   newChild->setShouldDoFullPaintInvalidation(
       PaintInvalidationLayoutObjectInsertion);
+  newChild->setSubtreeNeedsPaintPropertyUpdate();
   if (!owner->normalChildNeedsLayout())
     owner->setChildNeedsLayout();  // We may supply the static position for an
                                    // absolute positioned child.
