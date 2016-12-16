@@ -251,9 +251,9 @@ void RunUpdateOnFileThread(
   };
 
   // This variable records the status of three folder operations.
-  int folder_operation_status = FolderOperationResult::SUCCESS;
+  uint32_t folder_operation_status = FolderOperationResult::SUCCESS;
 
-  if (base::PathExists(icon_dir_old) && !base::DeleteFile(icon_dir_old, true)) {
+  if (!base::DeleteFile(icon_dir_old, true)) {
     folder_operation_status |= FolderOperationResult::DELETE_DEST_FAILED;
     // If deletion of |icon_dir_old| fails, do not move |icon_dir| to
     // |icon_dir_old|, instead, delete |icon_dir| directly to avoid bloating
