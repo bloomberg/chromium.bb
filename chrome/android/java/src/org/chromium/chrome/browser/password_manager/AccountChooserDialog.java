@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.password_manager;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.support.v7.app.AlertDialog;
 import android.text.SpannableString;
@@ -14,18 +15,23 @@ import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.signin.AccountManagementFragment;
+import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.widget.Toast;
 
 /**
  *  A dialog offers the user the ability to choose credentials for authentication. User is
@@ -138,6 +144,24 @@ public class AccountChooserDialog
                     secondaryNameView.setVisibility(View.VISIBLE);
                 }
 
+                ImageButton pslInfoButton =
+                        (ImageButton) convertView.findViewById(R.id.psl_info_btn);
+                final String originUrl = credential.getOriginUrl();
+
+                if (!originUrl.isEmpty()) {
+                    pslInfoButton.setVisibility(View.VISIBLE);
+                    pslInfoButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            showTooltip(
+                                    view,
+                                    UrlFormatter.formatUrlForSecurityDisplay(
+                                        originUrl, true /* showScheme */),
+                                    R.layout.material_tooltip);
+                        }
+                    });
+                }
+
                 return convertView;
             }
         };
@@ -179,6 +203,39 @@ public class AccountChooserDialog
         mDialog = builder.create();
         mDialog.setOnDismissListener(this);
         mDialog.show();
+    }
+
+    private void showTooltip(View view, String message, int layoutId) {
+        Context context = view.getContext();
+        Resources resources = context.getResources();
+        LayoutInflater inflater = LayoutInflater.from(context);
+
+        TextView text = (TextView) inflater.inflate(layoutId, null);
+        text.setText(message);
+        text.announceForAccessibility(message);
+
+        final int screenWidth = resources.getDisplayMetrics().widthPixels;
+        final int screenHeight = resources.getDisplayMetrics().heightPixels;
+
+        final int[] screenPos = new int[2];
+        view.getLocationOnScreen(screenPos);
+
+        final int width = view.getWidth();
+        final int tooltipMargin = resources.getDimensionPixelSize(R.dimen.psl_info_tooltip_margin);
+
+        // The toast should be shown above and to the left (right for RTL) of the info button.
+        // In order to avoid measuring the size of the toast offsets are specified with regard
+        // to the bottom right / left corner of the screen.
+        final int xOffset = ApiCompatibilityUtils.isLayoutRtl(view)
+                ? screenPos[0]
+                : screenWidth - screenPos[0] - width;
+        final int yOffset = screenHeight - screenPos[1] + tooltipMargin;
+
+        Toast toast = new Toast(context);
+        toast.setGravity(Gravity.BOTTOM | Gravity.END, xOffset, yOffset);
+        toast.setDuration(Toast.LENGTH_SHORT);
+        toast.setView(text);
+        toast.show();
     }
 
     @CalledByNative

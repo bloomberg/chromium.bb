@@ -15,6 +15,7 @@ import org.chromium.base.annotations.CalledByNative;
 public class Credential {
     private final String mUsername;
     private final String mDisplayName;
+    private final String mOriginUrl;
     private final String mFederation;
     private final int mIndex;
     private Bitmap mAvatar;
@@ -24,12 +25,15 @@ public class Credential {
      *                 The value is PasswordForm::username_value.
      * @param displayName user friendly name to show in the UI. It can be empty.
      *                    The value is PasswordForm::display_name.
+     * @param originUrl The origin URL for this credential, only set for PSL matches.
      * @param federation Identity provider name for this credential (empty for local credentials).
      * @param index position in array of credentials.
      */
-    public Credential(String username, String displayName, String federation, int index) {
+    public Credential(String username, String displayName, String originUrl, String federation,
+            int index) {
         mUsername = username;
         mDisplayName = displayName;
+        mOriginUrl = originUrl;
         mFederation = federation;
         mIndex = index;
         mAvatar = null;
@@ -41,6 +45,10 @@ public class Credential {
 
     public String getDisplayName() {
         return mDisplayName;
+    }
+
+    public String getOriginUrl() {
+        return mOriginUrl;
     }
 
     public String getFederation() {
@@ -61,8 +69,8 @@ public class Credential {
 
     @CalledByNative
     private static Credential createCredential(
-            String username, String displayName, String federation, int index) {
-        return new Credential(username, displayName, federation, index);
+            String username, String displayName, String originUrl, String federation, int index) {
+        return new Credential(username, displayName, originUrl, federation, index);
     }
 
     @CalledByNative

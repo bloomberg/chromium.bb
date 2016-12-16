@@ -7,6 +7,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:gravity="center_vertical"
     android:minHeight="64dp"
     android:paddingStart="@dimen/account_chooser_dialog_item_margin"
     android:paddingEnd="@dimen/account_chooser_dialog_item_margin"
@@ -15,12 +16,10 @@
         android:id="@+id/profile_image"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_gravity="center_vertical"
         android:contentDescription="@null"/>
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
         android:layout_margin="8dp"
         android:layout_marginStart="16dp"
         android:orientation="vertical">
@@ -43,4 +42,18 @@
             android:textColor="@color/descriptive_text_color"
             android:textSize="@dimen/account_chooser_dialog_title_descriptive_text_size"/>
     </LinearLayout>
+    <!-- Needed to make the following ImageButton align to the right. -->
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+    <ImageButton
+        android:id="@+id/psl_info_btn"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:contentDescription="@null"
+        android:padding="4dp"
+        android:src="@drawable/btn_info"
+        android:visibility="gone"/>
 </LinearLayout>

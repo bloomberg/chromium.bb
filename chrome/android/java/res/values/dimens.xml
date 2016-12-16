@@ -339,9 +339,12 @@
 
     <!-- Account chooser dialog dimensions -->
     <dimen name="account_chooser_dialog_margin">24dp</dimen>
-    <dimen name="account_chooser_dialog_item_margin">20dp</dimen>
+    <dimen name="account_chooser_dialog_item_margin">24dp</dimen>
     <dimen name="account_chooser_dialog_title_main_text_size">18sp</dimen>
     <dimen name="account_chooser_dialog_title_descriptive_text_size">16sp</dimen>
+
+    <!-- Public Suffix List (PSL) info button and tooltip dimensions -->
+    <dimen name="psl_info_tooltip_margin">8dp</dimen>
 
     <!-- Clear browsing data preferences dimensions -->
     <dimen name="clear_browsing_data_checkbox_height">56dp</dimen>
