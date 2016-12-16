@@ -872,10 +872,10 @@ To obtain new licenses, connect to the internet and play your downloaded content
 
       <!-- Data Saver Promo and FRE card -->
       <message name="IDS_DATA_REDUCTION_PROMO_TITLE" desc="The title for the promo inviting users to enable Data Saver" >
-        Browse more for less
+        Save data and browse faster
       </message>
       <message name="IDS_DATA_REDUCTION_PROMO_SUMMARY" desc="Description for the promo inviting users to enable Data Saver" >
-        Spend less on data by using Google to optimize the pages you visit. Pages accessed using private connections (HTTPS) or in Incognito tabs will not be optimized or seen by Google.
+        Use up to 60% less data and speed up the web. Google servers will optimize the pages you visit.
       </message>
       <message name="IDS_DATA_REDUCTION_ENABLE_BUTTON" desc="Button the user presses if they want to enable Data Saver" >
         Turn on Data Saver
