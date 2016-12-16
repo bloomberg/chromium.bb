@@ -235,7 +235,7 @@ syncer::SyncError ReadingListStore::MergeSyncData(
       // Write to the store.
       std::unique_ptr<reading_list::ReadingListLocal> entry_local_pb =
           merged_entry->AsReadingListLocal();
-      batch_->WriteData(entry->URL().spec(),
+      batch_->WriteData(merged_entry->URL().spec(),
                         entry_local_pb->SerializeAsString());
 
       // Send to sync
