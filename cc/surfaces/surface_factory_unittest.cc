@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
@@ -525,11 +526,9 @@ TEST_F(SurfaceFactoryTest, DestroySequence) {
   factory2->EvictSurface();
 
   CompositorFrame frame;
-  frame.metadata.satisfies_sequences.push_back(6);
-  frame.metadata.satisfies_sequences.push_back(4);
   DCHECK(manager_.GetSurfaceForId(id2));
-  factory_->SubmitCompositorFrame(local_frame_id_, std::move(frame),
-                                  SurfaceFactory::DrawCallback());
+  std::vector<uint32_t> sequences = {4, 6};
+  manager_.DidSatisfySequences(kArbitraryFrameSinkId, &sequences);
   DCHECK(!manager_.GetSurfaceForId(id2));
 
   // Check that waiting after the sequence is satisfied works.

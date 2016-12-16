@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/surface_layer_impl.h"
 #include "cc/output/swap_promise.h"
@@ -18,27 +19,36 @@ namespace cc {
 
 class SatisfySwapPromise : public SwapPromise {
  public:
-  SatisfySwapPromise(SurfaceSequence sequence,
-                     const SurfaceLayer::SatisfyCallback& satisfy_callback)
-      : sequence_(sequence), satisfy_callback_(satisfy_callback) {}
+  SatisfySwapPromise(
+      const SurfaceSequence& sequence,
+      const SurfaceLayer::SatisfyCallback& satisfy_callback,
+      scoped_refptr<base::SingleThreadTaskRunner> main_task_runner)
+      : sequence_(sequence),
+        satisfy_callback_(satisfy_callback),
+        main_task_runner_(std::move(main_task_runner)) {}
 
   ~SatisfySwapPromise() override {}
 
  private:
   void DidActivate() override {}
-  void WillSwap(CompositorFrameMetadata* metadata) override {
-    metadata->satisfies_sequences.push_back(sequence_.sequence);
+  void WillSwap(CompositorFrameMetadata* metadata) override {}
+  void DidSwap() override {
+    // DidSwap could run on compositor thread but satisfy callback must
+    // run on the main thread.
+    main_task_runner_->PostTask(FROM_HERE,
+                                base::Bind(satisfy_callback_, sequence_));
   }
-  void DidSwap() override {}
 
   DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
-    satisfy_callback_.Run(sequence_);
+    main_task_runner_->PostTask(FROM_HERE,
+                                base::Bind(satisfy_callback_, sequence_));
     return DidNotSwapAction::BREAK_PROMISE;
   }
   int64_t TraceId() const override { return 0; }
 
   SurfaceSequence sequence_;
   SurfaceLayer::SatisfyCallback satisfy_callback_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(SatisfySwapPromise);
 };
@@ -120,8 +130,9 @@ void SurfaceLayer::SatisfyDestroySequence() {
   if (!layer_tree_host())
     return;
   DCHECK(destroy_sequence_.is_valid());
-  std::unique_ptr<SatisfySwapPromise> satisfy(
-      new SatisfySwapPromise(destroy_sequence_, satisfy_callback_));
+  auto satisfy =
+      base::MakeUnique<SatisfySwapPromise>(destroy_sequence_, satisfy_callback_,
+                                           base::ThreadTaskRunnerHandle::Get());
   layer_tree_host()->GetSwapPromiseManager()->QueueSwapPromise(
       std::move(satisfy));
   destroy_sequence_ = SurfaceSequence();

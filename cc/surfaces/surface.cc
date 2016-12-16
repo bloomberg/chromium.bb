@@ -65,9 +65,6 @@ void Surface::QueueFrame(CompositorFrame frame, const DrawCallback& callback) {
 
   previous_frame_surface_id_ = surface_id();
 
-  std::vector<SurfaceId> new_referenced_surfaces;
-  new_referenced_surfaces = current_frame_->metadata.referenced_surfaces;
-
   if (previous_frame)
     UnrefFrameResources(*previous_frame);
 
@@ -75,19 +72,7 @@ void Surface::QueueFrame(CompositorFrame frame, const DrawCallback& callback) {
     draw_callback_.Run();
   draw_callback_ = callback;
 
-  bool referenced_surfaces_changed =
-      (referenced_surfaces_ != new_referenced_surfaces);
-  referenced_surfaces_ = new_referenced_surfaces;
-  std::vector<uint32_t> satisfies_sequences =
-      std::move(current_frame_->metadata.satisfies_sequences);
-
-  if (referenced_surfaces_changed || !satisfies_sequences.empty()) {
-    // Notify the manager that sequences were satisfied either if some new
-    // sequences were satisfied, or if the set of referenced surfaces changed
-    // to force a GC to happen.
-    factory_->manager()->DidSatisfySequences(surface_id_.frame_sink_id(),
-                                             &satisfies_sequences);
-  }
+  referenced_surfaces_ = current_frame_->metadata.referenced_surfaces;
 }
 
 void Surface::EvictFrame() {

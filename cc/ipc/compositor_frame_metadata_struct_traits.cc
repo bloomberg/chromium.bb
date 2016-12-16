@@ -40,7 +40,6 @@ bool StructTraits<cc::mojom::CompositorFrameMetadataDataView,
   out->root_background_color = data.root_background_color();
   return data.ReadSelection(&out->selection) &&
          data.ReadLatencyInfo(&out->latency_info) &&
-         data.ReadSatisfiesSequences(&out->satisfies_sequences) &&
          data.ReadReferencedSurfaces(&out->referenced_surfaces);
 }
 

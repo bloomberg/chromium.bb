@@ -29,6 +29,5 @@ struct CompositorFrameMetadata {
   uint32 root_background_color;
   Selection selection;
   array<ui.mojom.LatencyInfo> latency_info;
-  array<uint32> satisfies_sequences;
   array<SurfaceId> referenced_surfaces;
 };
