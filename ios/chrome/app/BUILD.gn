@@ -7,18 +7,6 @@ import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
 
-# This empty target is there to help with upstreaming by removing a manual
-# step from the process (updating the //ios:all target). It will be changed
-# to a real target as part of upstreaming.
-group("chrome") {
-}
-
-# This empty target is there to help with upstreaming by removing a manual
-# step from the process (updating the //ios:all target). It will be changed
-# to a real target as part of upstreaming.
-group("chrome_clean_skeleton") {
-}
-
 source_set("app") {
   sources = [
     "deferred_initialization_runner.h",
