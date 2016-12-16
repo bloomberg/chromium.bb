@@ -103,6 +103,12 @@ the file like OWNERS or README.chromium at `third_party/<project_name>`. If you
 have a wrong path in DEPS and want to change the path of the existing library in
 DEPS, please ask the infrastructure team before committing the change.
 
+### Checking in large files
+_Accessible to Googlers only. Non-Googlers can email one of the people in
+third_party/OWNERS for help._
+
+See [Moving large files to Google Storage](https://goto.google.com/checking-in-large-files)
+
 ## Setting up ignore
 
 If your code is synced via DEPS, you should add the new directory to Chromium's
