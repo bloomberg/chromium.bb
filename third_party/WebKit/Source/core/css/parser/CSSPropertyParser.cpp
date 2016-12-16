@@ -3062,6 +3062,12 @@ static CSSValue* consumeGridLine(CSSParserTokenRange& range) {
     return nullptr;  // An <integer> value of zero makes the declaration
                      // invalid.
 
+  if (numericValue) {
+    numericValue = CSSPrimitiveValue::create(
+        clampTo(numericValue->getIntValue(), -kGridMaxTracks, kGridMaxTracks),
+        CSSPrimitiveValue::UnitType::Integer);
+  }
+
   CSSValueList* values = CSSValueList::createSpaceSeparated();
   if (spanValue)
     values->append(*spanValue);

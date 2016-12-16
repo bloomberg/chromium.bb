@@ -156,4 +156,69 @@ TEST(CSSPropertyParserTest, GridTrackLimit16) {
   EXPECT_EQ(computeNumberOfTracks(toCSSValueList(value)), 999999);
 }
 
+static int getGridPositionInteger(const CSSValue& value) {
+  DCHECK(value.isValueList());
+  const auto& list = toCSSValueList(value);
+  DCHECK_EQ(list.length(), static_cast<size_t>(1));
+  const auto& primitiveValue = toCSSPrimitiveValue(list.item(0));
+  DCHECK(primitiveValue.isNumber());
+  return primitiveValue.getIntValue();
+}
+
+TEST(CSSPropertyParserTest, GridPositionLimit1) {
+  const CSSValue* value =
+      CSSParser::parseSingleValue(CSSPropertyGridColumnStart, "999999");
+  DCHECK(value);
+  EXPECT_EQ(getGridPositionInteger(*value), 999999);
+}
+
+TEST(CSSPropertyParserTest, GridPositionLimit2) {
+  const CSSValue* value =
+      CSSParser::parseSingleValue(CSSPropertyGridColumnEnd, "1000000");
+  DCHECK(value);
+  EXPECT_EQ(getGridPositionInteger(*value), 1000000);
+}
+
+TEST(CSSPropertyParserTest, GridPositionLimit3) {
+  const CSSValue* value =
+      CSSParser::parseSingleValue(CSSPropertyGridRowStart, "1000001");
+  DCHECK(value);
+  EXPECT_EQ(getGridPositionInteger(*value), 1000000);
+}
+
+TEST(CSSPropertyParserTest, GridPositionLimit4) {
+  const CSSValue* value =
+      CSSParser::parseSingleValue(CSSPropertyGridRowEnd, "5000000000");
+  DCHECK(value);
+  EXPECT_EQ(getGridPositionInteger(*value), 1000000);
+}
+
+TEST(CSSPropertyParserTest, GridPositionLimit5) {
+  const CSSValue* value =
+      CSSParser::parseSingleValue(CSSPropertyGridColumnStart, "-999999");
+  DCHECK(value);
+  EXPECT_EQ(getGridPositionInteger(*value), -999999);
+}
+
+TEST(CSSPropertyParserTest, GridPositionLimit6) {
+  const CSSValue* value =
+      CSSParser::parseSingleValue(CSSPropertyGridColumnEnd, "-1000000");
+  DCHECK(value);
+  EXPECT_EQ(getGridPositionInteger(*value), -1000000);
+}
+
+TEST(CSSPropertyParserTest, GridPositionLimit7) {
+  const CSSValue* value =
+      CSSParser::parseSingleValue(CSSPropertyGridRowStart, "-1000001");
+  DCHECK(value);
+  EXPECT_EQ(getGridPositionInteger(*value), -1000000);
+}
+
+TEST(CSSPropertyParserTest, GridPositionLimit8) {
+  const CSSValue* value =
+      CSSParser::parseSingleValue(CSSPropertyGridRowEnd, "-5000000000");
+  DCHECK(value);
+  EXPECT_EQ(getGridPositionInteger(*value), -1000000);
+}
+
 }  // namespace blink
