@@ -124,11 +124,12 @@ public class CompositorViewHolder extends CoordinatorLayout
     private boolean mHasDrawnOnce;
 
     /**
-     * The desired size of this view in {@link MeasureSpec}. Set by the host
-     * when it should be different from that of the parent.
+     * The information about {@link ContentView} for overlay panel. Used to adjust the backing
+     * size of the content accordingly.
      */
-    private int mDesiredWidthMeasureSpec = ContentView.DEFAULT_MEASURE_SPEC;
-    private int mDesiredHeightMeasureSpec = ContentView.DEFAULT_MEASURE_SPEC;
+    private ContentView mOverlayContentView;
+    private int mOverlayContentWidthMeasureSpec = ContentView.DEFAULT_MEASURE_SPEC;
+    private int mOverlayContentHeightMeasureSpec = ContentView.DEFAULT_MEASURE_SPEC;
 
     /**
      * This view is created on demand to display debugging information.
@@ -247,13 +248,15 @@ public class CompositorViewHolder extends CoordinatorLayout
     }
 
     /**
-     * Set the desired size of the view. The values are in {@link MeasureSpec}.
-     * @param width The width of the content view.
-     * @param height The height of the content view.
+     * Set the desired size of the overlay content view.
+     * @param overlayContentView {@link ContentView} used for overlay panel.
+     * @param width The width of the content view in {@link MeasureSpec}.
+     * @param height The height of the content view in {@link MeasureSpec}.
      */
-    public void setDesiredMeasureSpec(int width, int height) {
-        mDesiredWidthMeasureSpec = width;
-        mDesiredHeightMeasureSpec = height;
+    public void setOverlayContentInfo(ContentView overlayContentView, int width, int height) {
+        mOverlayContentView = overlayContentView;
+        mOverlayContentWidthMeasureSpec = width;
+        mOverlayContentHeightMeasureSpec = height;
     }
 
     /**
@@ -943,11 +946,10 @@ public class CompositorViewHolder extends CoordinatorLayout
      * @param height The default height.
      */
     private void adjustPhysicalBackingSize(ContentViewCore contentViewCore, int width, int height) {
-        if (mDesiredWidthMeasureSpec != ContentView.DEFAULT_MEASURE_SPEC) {
-            width = MeasureSpec.getSize(mDesiredWidthMeasureSpec);
-        }
-        if (mDesiredHeightMeasureSpec != ContentView.DEFAULT_MEASURE_SPEC) {
-            height = MeasureSpec.getSize(mDesiredHeightMeasureSpec);
+        ContentView contentView = (ContentView) contentViewCore.getContainerView();
+        if (contentView == mOverlayContentView) {
+            width = MeasureSpec.getSize(mOverlayContentWidthMeasureSpec);
+            height = MeasureSpec.getSize(mOverlayContentHeightMeasureSpec);
         }
         contentViewCore.onPhysicalBackingSizeChanged(width, height);
     }

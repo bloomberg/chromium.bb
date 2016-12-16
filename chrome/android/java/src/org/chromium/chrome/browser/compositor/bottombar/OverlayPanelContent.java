@@ -247,7 +247,7 @@ public class OverlayPanelContent {
             int height = mContentViewHeight == 0 ? ContentView.DEFAULT_MEASURE_SPEC
                     : MeasureSpec.makeMeasureSpec(mContentViewHeight, MeasureSpec.EXACTLY);
             cv.setDesiredMeasureSpec(width, height);
-            mActivity.getCompositorViewHolder().setDesiredMeasureSpec(width, height);
+            mActivity.getCompositorViewHolder().setOverlayContentInfo(cv, width, height);
         }
 
         // Creates an initially hidden WebContents which gets shown when the panel is opened.
