@@ -14,7 +14,6 @@ namespace blink {
 // Main class for the implementation of idle time spell checker.
 class IdleSpellCheckCallback final : public IdleRequestCallback {
  public:
-  // TODO(xiaochengh): Make each LocalFrame own an IdleSpellCheckCallback.
   static IdleSpellCheckCallback* create(LocalFrame&);
   ~IdleSpellCheckCallback() override;
 

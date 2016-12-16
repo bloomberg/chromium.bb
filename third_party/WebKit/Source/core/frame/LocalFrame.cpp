@@ -40,6 +40,7 @@
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/serializers/Serialization.h"
+#include "core/editing/spellcheck/IdleSpellCheckCallback.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/events/Event.h"
 #include "core/fetch/ResourceFetcher.h"
@@ -345,6 +346,7 @@ DEFINE_TRACE(LocalFrame) {
   visitor->trace(m_eventHandler);
   visitor->trace(m_console);
   visitor->trace(m_inputMethodController);
+  visitor->trace(m_idleSpellCheckCallback);
   Frame::trace(visitor);
   Supplementable<LocalFrame>::trace(visitor);
 }
@@ -885,6 +887,7 @@ inline LocalFrame::LocalFrame(FrameLoaderClient* client,
       m_eventHandler(new EventHandler(*this)),
       m_console(FrameConsole::create(*this)),
       m_inputMethodController(InputMethodController::create(*this)),
+      m_idleSpellCheckCallback(IdleSpellCheckCallback::create(*this)),
       m_navigationDisableCount(0),
       m_pageZoomFactor(parentPageZoomFactor(this)),
       m_textZoomFactor(parentTextZoomFactor(this)),

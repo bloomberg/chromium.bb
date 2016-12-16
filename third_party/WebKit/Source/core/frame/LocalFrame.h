@@ -58,6 +58,7 @@ class FloatSize;
 class FrameConsole;
 class FrameSelection;
 class FrameView;
+class IdleSpellCheckCallback;
 class InputMethodController;
 class InstrumentingAgents;
 class InterfaceProvider;
@@ -144,6 +145,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   ScriptController& script() const;
   SpellChecker& spellChecker() const;
   FrameConsole& console() const;
+  IdleSpellCheckCallback& idleSpellCheckCallback() const;
 
   // This method is used to get the highest level LocalFrame in this
   // frame's in-process subtree.
@@ -258,6 +260,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   const Member<EventHandler> m_eventHandler;
   const Member<FrameConsole> m_console;
   const Member<InputMethodController> m_inputMethodController;
+  const Member<IdleSpellCheckCallback> m_idleSpellCheckCallback;
 
   int m_navigationDisableCount;
 
@@ -325,6 +328,11 @@ inline void LocalFrame::setInViewSourceMode(bool mode) {
 inline EventHandler& LocalFrame::eventHandler() const {
   ASSERT(m_eventHandler);
   return *m_eventHandler;
+}
+
+inline IdleSpellCheckCallback& LocalFrame::idleSpellCheckCallback() const {
+  DCHECK(m_idleSpellCheckCallback);
+  return *m_idleSpellCheckCallback;
 }
 
 DEFINE_TYPE_CASTS(LocalFrame,
