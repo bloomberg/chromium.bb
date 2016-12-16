@@ -231,7 +231,8 @@ int GpuMain(const MainFunctionParams& parameters) {
     std::unique_ptr<base::MessagePump> pump(new base::MessagePumpCFRunLoop());
     main_message_loop.reset(new base::MessageLoop(std::move(pump)));
 #else
-    main_message_loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
+    main_message_loop.reset(
+        new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
 #endif
   }
 
