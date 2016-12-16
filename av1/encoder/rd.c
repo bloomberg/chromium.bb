@@ -168,7 +168,7 @@ void av1_fill_token_costs(av1_coeff_cost *c,
                           av1_coeff_probs_model (*p)[PLANE_TYPES]) {
   int i, j, k, l;
   TX_SIZE t;
-  for (t = TX_4X4; t < TX_SIZES; ++t)
+  for (t = 0; t < TX_SIZES; ++t)
     for (i = 0; i < PLANE_TYPES; ++i)
       for (j = 0; j < REF_TYPES; ++j)
         for (k = 0; k < COEF_BANDS; ++k)
