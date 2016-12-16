@@ -340,6 +340,10 @@ interface BlobEvent : Event
     attribute @@toStringTag
     getter data
     method constructor
+interface Bluetooth
+    attribute @@toStringTag
+    method constructor
+    method requestDevice
 interface BluetoothCharacteristicProperties
     attribute @@toStringTag
     getter authenticatedSignedWrites

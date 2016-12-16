@@ -5,7 +5,6 @@
 // https://webbluetoothcg.github.io/web-bluetooth/#bluetooth
 
 [
-    NoInterfaceObject,
     RuntimeEnabled=WebBluetooth,
 ] interface Bluetooth {
     [CallWith=ScriptState, RaisesException, MeasureAs=WebBluetoothRequestDevice] Promise<BluetoothDevice> requestDevice (
