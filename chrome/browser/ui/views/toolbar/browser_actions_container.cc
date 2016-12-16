@@ -94,9 +94,6 @@ BrowserActionsContainer::BrowserActionsContainer(
     resize_area_ = new views::ResizeArea(this);
     AddChildView(resize_area_);
 
-    const int kInfoImages[] = IMAGE_GRID(IDR_TOOLBAR_ACTION_HIGHLIGHT);
-    info_highlight_painter_.reset(
-        views::Painter::CreateImageGridPainter(kInfoImages));
     const int kWarningImages[] = IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT);
     warning_highlight_painter_.reset(
         views::Painter::CreateImageGridPainter(kWarningImages));
@@ -606,13 +603,8 @@ void BrowserActionsContainer::OnPaint(gfx::Canvas* canvas) {
   // paint (one will be triggered by entering highlight mode).
   if (toolbar_actions_bar_->is_highlighting() &&
       !toolbar_action_views_.empty() && !ShownInsideMenu()) {
-    ToolbarActionsModel::HighlightType highlight_type =
-        toolbar_actions_bar_->highlight_type();
-    views::Painter* painter =
-        highlight_type == ToolbarActionsModel::HIGHLIGHT_INFO
-            ? info_highlight_painter_.get()
-            : warning_highlight_painter_.get();
-    views::Painter::PaintPainterAt(canvas, painter, GetLocalBounds());
+    views::Painter::PaintPainterAt(canvas, warning_highlight_painter_.get(),
+                                   GetLocalBounds());
   }
 
   // TODO(sky/glen): Instead of using a drop indicator, animate the icons while

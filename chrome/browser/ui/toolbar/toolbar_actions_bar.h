@@ -74,7 +74,6 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
 
   enum HighlightType {
     HIGHLIGHT_NONE,
-    HIGHLIGHT_INFO,
     HIGHLIGHT_WARNING,
   };
 

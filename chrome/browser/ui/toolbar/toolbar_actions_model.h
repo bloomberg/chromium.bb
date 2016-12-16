@@ -49,7 +49,6 @@ class ToolbarActionsModel
   // The different options for highlighting.
   enum HighlightType {
     HIGHLIGHT_NONE,
-    HIGHLIGHT_INFO,
     HIGHLIGHT_WARNING,
   };
 

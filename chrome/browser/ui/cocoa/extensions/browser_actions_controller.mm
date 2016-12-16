@@ -434,13 +434,8 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 
   std::unique_ptr<ui::NinePartImageIds> highlight;
   if (toolbarActionsBar_->is_highlighting()) {
-    if (toolbarActionsBar_->highlight_type() ==
-        ToolbarActionsModel::HIGHLIGHT_INFO)
-      highlight.reset(
-          new ui::NinePartImageIds(IMAGE_GRID(IDR_TOOLBAR_ACTION_HIGHLIGHT)));
-    else
-      highlight.reset(
-          new ui::NinePartImageIds(IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT)));
+    highlight.reset(
+        new ui::NinePartImageIds(IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT)));
   }
   [containerView_ setHighlight:std::move(highlight)];
 
