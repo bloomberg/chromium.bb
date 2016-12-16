@@ -1024,7 +1024,7 @@ bool Editor::insertParagraphSeparator() {
   return true;
 }
 
-void Editor::cut(EditorCommandSource source) {
+void Editor::cut(EditCommandSource source) {
   if (tryDHTMLCut())
     return;  // DHTML did the whole operation
   if (!canCut())
@@ -1048,7 +1048,7 @@ void Editor::cut(EditorCommandSource source) {
       writeSelectionToPasteboard();
     }
 
-    if (source == CommandFromMenuOrKeyBinding) {
+    if (source == EditCommandSource::kMenuOrKeyBinding) {
       if (dispatchBeforeInputDataTransfer(findEventTargetFromSelection(),
                                           InputEvent::InputType::DeleteByCut,
                                           nullptr, nullptr) !=
@@ -1092,7 +1092,7 @@ void Editor::copy() {
   }
 }
 
-void Editor::paste(EditorCommandSource source) {
+void Editor::paste(EditCommandSource source) {
   DCHECK(frame().document());
   if (tryDHTMLPaste(AllMimeTypes))
     return;  // DHTML did the whole operation
@@ -1106,7 +1106,7 @@ void Editor::paste(EditorCommandSource source) {
                             ? AllMimeTypes
                             : PlainTextOnly;
 
-  if (source == CommandFromMenuOrKeyBinding) {
+  if (source == EditCommandSource::kMenuOrKeyBinding) {
     DataTransfer* dataTransfer =
         DataTransfer::create(DataTransfer::CopyAndPaste, DataTransferReadable,
                              DataObject::createFromPasteboard(pasteMode));
@@ -1127,7 +1127,7 @@ void Editor::paste(EditorCommandSource source) {
     pasteAsPlainTextWithPasteboard(Pasteboard::generalPasteboard());
 }
 
-void Editor::pasteAsPlainText(EditorCommandSource source) {
+void Editor::pasteAsPlainText(EditCommandSource source) {
   if (tryDHTMLPaste(PlainTextOnly))
     return;
   if (!canPaste())

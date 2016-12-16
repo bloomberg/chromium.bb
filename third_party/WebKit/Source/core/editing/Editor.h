@@ -57,12 +57,12 @@ class StylePropertySet;
 class TextEvent;
 class UndoStack;
 
+enum class EditCommandSource;
 enum class DeleteDirection;
 enum class DeleteMode { Simple, Smart };
 enum class InsertMode { Simple, Smart };
 enum class DragSourceType { HTMLSource, PlainTextSource };
 
-enum EditorCommandSource { CommandFromMenuOrKeyBinding, CommandFromDOM };
 enum EditorParagraphSeparator {
   EditorParagraphSeparatorIsDiv,
   EditorParagraphSeparatorIsP
@@ -94,10 +94,10 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
   bool canDelete() const;
   bool canSmartCopyOrDelete() const;
 
-  void cut(EditorCommandSource);
+  void cut(EditCommandSource);
   void copy();
-  void paste(EditorCommandSource);
-  void pasteAsPlainText(EditorCommandSource);
+  void paste(EditCommandSource);
+  void pasteAsPlainText(EditCommandSource);
   void performDelete();
 
   static void countEvent(ExecutionContext*, const Event*);
@@ -142,7 +142,7 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
 
    public:
     Command();
-    Command(const EditorInternalCommand*, EditorCommandSource, LocalFrame*);
+    Command(const EditorInternalCommand*, EditCommandSource, LocalFrame*);
 
     bool execute(const String& parameter = String(),
                  Event* triggeringEvent = nullptr) const;
@@ -170,13 +170,13 @@ class CORE_EXPORT Editor final : public GarbageCollectedFinalized<Editor> {
     RangeVector* getTargetRanges() const;
 
     const EditorInternalCommand* m_command;
-    EditorCommandSource m_source;
+    EditCommandSource m_source;
     Member<LocalFrame> m_frame;
   };
-  Command createCommand(
-      const String&
-          commandName);  // Command source is CommandFromMenuOrKeyBinding.
-  Command createCommand(const String& commandName, EditorCommandSource);
+  // Command source is |EditCommandSource::kMenuOrKeyBinding|.
+  Command createCommand(const String& commandName);
+  // Command source is |EditCommandSource::kDOM|.
+  Command createCommandFromDOM(const String& commandName);
 
   // |Editor::executeCommand| is implementation of |WebFrame::executeCommand|
   // rather than |Document::execCommand|.

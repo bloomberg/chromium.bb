@@ -4965,7 +4965,7 @@ static Editor::Command command(Document* document, const String& commandName) {
     return Editor::Command();
 
   document->updateStyleAndLayoutTree();
-  return frame->editor().createCommand(commandName, CommandFromDOM);
+  return frame->editor().createCommandFromDOM(commandName);
 }
 
 bool Document::execCommand(const String& commandName,

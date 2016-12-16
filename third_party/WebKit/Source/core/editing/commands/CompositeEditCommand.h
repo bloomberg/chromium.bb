@@ -42,6 +42,8 @@ class HTMLElement;
 class HTMLSpanElement;
 class Text;
 
+enum class EditCommandSource { kMenuOrKeyBinding, kDOM };
+
 class EditCommandComposition final : public UndoStep {
  public:
   static EditCommandComposition* create(Document*,
