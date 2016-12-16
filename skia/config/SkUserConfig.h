@@ -240,6 +240,12 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_BITMAP_SETPIXELREF
 #endif
 
+// Remove this after we fixed all the issues related to the new SDF algorithm
+// (https://codereview.chromium.org/1643143002)
+#ifndef    SK_USE_LEGACY_DISTANCE_FIELDS
+#   define SK_USE_LEGACY_DISTANCE_FIELDS
+#endif
+
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
