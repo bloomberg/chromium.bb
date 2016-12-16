@@ -40,14 +40,16 @@ namespace content {
 
 namespace {
 
-void SatisfyCallback(cc::SurfaceManager* manager,
+void SatisfyCallback(base::WeakPtr<cc::SurfaceManager> manager,
                      const cc::SurfaceSequence& sequence) {
+  if (!manager)
+    return;
   std::vector<uint32_t> sequences;
   sequences.push_back(sequence.sequence);
   manager->DidSatisfySequences(sequence.frame_sink_id, &sequences);
 }
 
-void RequireCallback(cc::SurfaceManager* manager,
+void RequireCallback(base::WeakPtr<cc::SurfaceManager> manager,
                      const cc::SurfaceId& id,
                      const cc::SurfaceSequence& sequence) {
   cc::Surface* surface = manager->GetSurfaceForId(id);
@@ -513,8 +515,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
       // manager must outlive compositors using it.
       client_->DelegatedFrameHostGetLayer()->SetShowSurface(
           cc::SurfaceId(frame_sink_id_, local_frame_id_),
-          base::Bind(&SatisfyCallback, base::Unretained(manager)),
-          base::Bind(&RequireCallback, base::Unretained(manager)), frame_size,
+          base::Bind(&SatisfyCallback, manager->GetWeakPtr()),
+          base::Bind(&RequireCallback, manager->GetWeakPtr()), frame_size,
           frame_device_scale_factor);
       current_surface_size_ = frame_size;
       current_scale_factor_ = frame_device_scale_factor;
