@@ -55,6 +55,14 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/textures/misc/' +
         'integer-cubemap-specification-order-bug.html',
         bug=483282) # owner:cwallez, test might be buggy
+
+    # This is temporary until the error tolerance is fixed in the test.
+    # see https://codereview.chromium.org/2577293002/.
+    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
+        ['mac', 'linux'], bug=662802)
+    # self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
+    #     ['linux', 'amd'], bug=483282)
+
     # Windows only.
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
         ['win'], bug=644740)
@@ -699,8 +707,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/texturespecification/' +
         'texstorage3d_format_size.html',
-        ['linux', 'amd'], bug=483282)
-    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('deqp/functional/gles3/vertexarrays/' +
         'single_attribute.output_type.unsigned_int.html',

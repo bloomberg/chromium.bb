@@ -3756,14 +3756,7 @@ TEST_P(GLES2DecoderTest, ImplementationReadColorFormatAndType) {
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(_))
-      .WillOnce(Return(GL_FRAMEBUFFER_COMPLETE))
-      .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, GetIntegerv(_, _)).Times(1).RetiresOnSaturation();
   cmd.Init(GL_IMPLEMENTATION_COLOR_READ_FORMAT,
            shared_memory_id_,
            shared_memory_offset_);
@@ -3775,13 +3768,7 @@ TEST_P(GLES2DecoderTest, ImplementationReadColorFormatAndType) {
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
-      .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
-  EXPECT_CALL(*gl_, CheckFramebufferStatusEXT(_))
-      .Times(0);
-  EXPECT_CALL(*gl_, GetIntegerv(_, _)).Times(1).RetiresOnSaturation();
   cmd.Init(GL_IMPLEMENTATION_COLOR_READ_TYPE,
            shared_memory_id_,
            shared_memory_offset_);

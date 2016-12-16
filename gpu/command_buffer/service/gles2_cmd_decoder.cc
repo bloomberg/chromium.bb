@@ -1936,8 +1936,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   }
 
   // Gets the framebuffer info for a particular target.
-  Framebuffer* GetFramebufferInfoForTarget(GLenum target) {
-    Framebuffer* framebuffer = NULL;
+  Framebuffer* GetFramebufferInfoForTarget(GLenum target) const {
+    Framebuffer* framebuffer = nullptr;
     switch (target) {
       case GL_FRAMEBUFFER:
       case GL_DRAW_FRAMEBUFFER_EXT:
@@ -2134,6 +2134,30 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   // Helper method to call glClear workaround.
   void ClearFramebufferForWorkaround(GLbitfield mask);
+
+  bool SupportsSeparateFramebufferBinds() const {
+    return (feature_info_->feature_flags().chromium_framebuffer_multisample ||
+            feature_info_->IsWebGL2OrES3Context());
+  }
+
+  GLenum GetDrawFramebufferTarget() const {
+    return SupportsSeparateFramebufferBinds() ?
+        GL_DRAW_FRAMEBUFFER : GL_FRAMEBUFFER;
+  }
+
+  GLenum GetReadFramebufferTarget() const {
+    return SupportsSeparateFramebufferBinds() ?
+        GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
+  }
+
+  Framebuffer* GetBoundDrawFramebuffer() const {
+    return framebuffer_state_.bound_draw_framebuffer.get();
+  }
+
+  Framebuffer* GetBoundReadFramebuffer() const {
+    GLenum target = GetReadFramebufferTarget();
+    return GetFramebufferInfoForTarget(target);
+  }
 
   bool InitializeCopyTexImageBlitter(const char* function_name);
   bool InitializeCopyTextureCHROMIUM(const char* function_name);
@@ -4008,16 +4032,12 @@ void GLES2DecoderImpl::DeleteBuffersHelper(GLsizei n,
 void GLES2DecoderImpl::DeleteFramebuffersHelper(
     GLsizei n,
     const volatile GLuint* client_ids) {
-  bool supports_separate_framebuffer_binds =
-     features().chromium_framebuffer_multisample;
-
   for (GLsizei ii = 0; ii < n; ++ii) {
     GLuint client_id = client_ids[ii];
     Framebuffer* framebuffer = GetFramebuffer(client_id);
     if (framebuffer && !framebuffer->IsDeleted()) {
       if (framebuffer == framebuffer_state_.bound_draw_framebuffer.get()) {
-        GLenum target = supports_separate_framebuffer_binds ?
-            GL_DRAW_FRAMEBUFFER_EXT : GL_FRAMEBUFFER;
+        GLenum target = GetDrawFramebufferTarget();
 
         // Unbind attachments on FBO before deletion.
         if (workarounds().unbind_attachments_on_bound_render_fbo_delete)
@@ -4029,8 +4049,7 @@ void GLES2DecoderImpl::DeleteFramebuffersHelper(
       }
       if (framebuffer == framebuffer_state_.bound_read_framebuffer.get()) {
         framebuffer_state_.bound_read_framebuffer = NULL;
-        GLenum target = supports_separate_framebuffer_binds ?
-            GL_READ_FRAMEBUFFER_EXT : GL_FRAMEBUFFER;
+        GLenum target = GetReadFramebufferTarget();
         glBindFramebufferEXT(target, GetBackbufferServiceId());
       }
       OnFboChanged();
@@ -4075,8 +4094,7 @@ void GLES2DecoderImpl::DeleteRenderbuffersHelper(
 
 void GLES2DecoderImpl::DeleteTexturesHelper(GLsizei n,
                                             const volatile GLuint* client_ids) {
-  bool supports_separate_framebuffer_binds =
-     features().chromium_framebuffer_multisample;
+  bool supports_separate_framebuffer_binds = SupportsSeparateFramebufferBinds();
   for (GLsizei ii = 0; ii < n; ++ii) {
     GLuint client_id = client_ids[ii];
     TextureRef* texture_ref = GetTexture(client_id);
@@ -4218,7 +4236,7 @@ static void RebindCurrentFramebuffer(
 void GLES2DecoderImpl::RestoreCurrentFramebufferBindings() {
   framebuffer_state_.clear_state_dirty = true;
 
-  if (!features().chromium_framebuffer_multisample) {
+  if (!SupportsSeparateFramebufferBinds()) {
     RebindCurrentFramebuffer(
         GL_FRAMEBUFFER,
         framebuffer_state_.bound_draw_framebuffer.get(),
@@ -4306,15 +4324,14 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
 }
 
 bool GLES2DecoderImpl::CheckBoundDrawFramebufferValid(const char* func_name) {
-  GLenum target = features().chromium_framebuffer_multisample ?
-      GL_DRAW_FRAMEBUFFER : GL_FRAMEBUFFER;
-  Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
+  Framebuffer* framebuffer = GetBoundDrawFramebuffer();
   bool valid = CheckFramebufferValid(
-      framebuffer, target, GL_INVALID_FRAMEBUFFER_OPERATION, func_name);
+      framebuffer, GetDrawFramebufferTarget(),
+      GL_INVALID_FRAMEBUFFER_OPERATION, func_name);
   if (!valid)
     return false;
 
-  if (!features().chromium_framebuffer_multisample)
+  if (!SupportsSeparateFramebufferBinds())
     OnUseFramebuffer();
 
   UpdateFramebufferSRGB(framebuffer);
@@ -4346,26 +4363,21 @@ void GLES2DecoderImpl::UpdateFramebufferSRGB(Framebuffer* framebuffer) {
 
 bool GLES2DecoderImpl::CheckBoundReadFramebufferValid(
     const char* func_name, GLenum gl_error) {
-  GLenum target = features().chromium_framebuffer_multisample ?
-      GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
-  Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
+  Framebuffer* framebuffer = GetBoundReadFramebuffer();
   bool valid = CheckFramebufferValid(
-      framebuffer, target, gl_error, func_name);
+      framebuffer, GetReadFramebufferTarget(), gl_error, func_name);
   return valid;
 }
 
 bool GLES2DecoderImpl::CheckBoundFramebufferValid(const char* func_name) {
-  GLenum target = features().chromium_framebuffer_multisample ?
-      GL_DRAW_FRAMEBUFFER : GL_FRAMEBUFFER;
-  Framebuffer* draw_framebuffer = GetFramebufferInfoForTarget(target);
+  GLenum gl_error = GL_INVALID_FRAMEBUFFER_OPERATION;
+  Framebuffer* draw_framebuffer = GetBoundDrawFramebuffer();
   bool valid = CheckFramebufferValid(
-      draw_framebuffer, target, GL_INVALID_FRAMEBUFFER_OPERATION, func_name);
+      draw_framebuffer, GetDrawFramebufferTarget(), gl_error, func_name);
 
-  target = features().chromium_framebuffer_multisample ?
-      GL_READ_FRAMEBUFFER : GL_FRAMEBUFFER;
-  Framebuffer* read_framebuffer = GetFramebufferInfoForTarget(target);
+  Framebuffer* read_framebuffer = GetBoundReadFramebuffer();
   valid = valid && CheckFramebufferValid(
-      read_framebuffer, target, GL_INVALID_FRAMEBUFFER_OPERATION, func_name);
+      read_framebuffer, GetReadFramebufferTarget(), gl_error, func_name);
   return valid;
 }
 
@@ -4384,9 +4396,7 @@ GLint GLES2DecoderImpl::GetColorEncodingFromInternalFormat(
 
 bool GLES2DecoderImpl::FormsTextureCopyingFeedbackLoop(
     TextureRef* texture, GLint level, GLint layer) {
-  Framebuffer* framebuffer = features().chromium_framebuffer_multisample ?
-      framebuffer_state_.bound_read_framebuffer.get() :
-      framebuffer_state_.bound_draw_framebuffer.get();
+  Framebuffer* framebuffer = GetBoundReadFramebuffer();
   if (!framebuffer)
     return false;
   const Framebuffer::Attachment* attachment =
@@ -4397,9 +4407,8 @@ bool GLES2DecoderImpl::FormsTextureCopyingFeedbackLoop(
 }
 
 gfx::Size GLES2DecoderImpl::GetBoundReadFramebufferSize() {
-  Framebuffer* framebuffer =
-      GetFramebufferInfoForTarget(GL_READ_FRAMEBUFFER_EXT);
-  if (framebuffer != NULL) {
+  Framebuffer* framebuffer = GetBoundReadFramebuffer();
+  if (framebuffer) {
     const Framebuffer::Attachment* attachment =
         framebuffer->GetReadBufferAttachment();
     if (attachment) {
@@ -4414,8 +4423,7 @@ gfx::Size GLES2DecoderImpl::GetBoundReadFramebufferSize() {
 }
 
 GLuint GLES2DecoderImpl::GetBoundReadFramebufferServiceId() {
-  Framebuffer* framebuffer =
-    GetFramebufferInfoForTarget(GL_READ_FRAMEBUFFER_EXT);
+  Framebuffer* framebuffer = GetBoundReadFramebuffer();
   if (framebuffer) {
     return framebuffer->service_id();
   }
@@ -4432,8 +4440,7 @@ GLuint GLES2DecoderImpl::GetBoundReadFramebufferServiceId() {
 }
 
 GLuint GLES2DecoderImpl::GetBoundDrawFramebufferServiceId() {
-  Framebuffer* framebuffer =
-    GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+  Framebuffer* framebuffer = GetBoundDrawFramebuffer();
   if (framebuffer) {
     return framebuffer->service_id();
   }
@@ -4447,8 +4454,7 @@ GLuint GLES2DecoderImpl::GetBoundDrawFramebufferServiceId() {
 }
 
 GLenum GLES2DecoderImpl::GetBoundReadFramebufferTextureType() {
-  Framebuffer* framebuffer =
-    GetFramebufferInfoForTarget(GL_READ_FRAMEBUFFER_EXT);
+  Framebuffer* framebuffer = GetBoundReadFramebuffer();
   if (framebuffer) {
     return framebuffer->GetReadBufferTextureType();
   } else {  // Back buffer.
@@ -4459,8 +4465,7 @@ GLenum GLES2DecoderImpl::GetBoundReadFramebufferTextureType() {
 }
 
 GLenum GLES2DecoderImpl::GetBoundReadFramebufferInternalFormat() {
-  Framebuffer* framebuffer =
-      GetFramebufferInfoForTarget(GL_READ_FRAMEBUFFER_EXT);
+  Framebuffer* framebuffer = GetBoundReadFramebuffer();
   if (framebuffer) {
     return framebuffer->GetReadBufferInternalFormat();
   } else {  // Back buffer.
@@ -4476,7 +4481,7 @@ GLenum GLES2DecoderImpl::GetBoundReadFramebufferInternalFormat() {
 GLenum GLES2DecoderImpl::GetBoundColorDrawBufferType(GLint drawbuffer_i) {
   DCHECK(drawbuffer_i >= 0 &&
          drawbuffer_i < static_cast<GLint>(group_->max_draw_buffers()));
-  Framebuffer* framebuffer = GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER);
+  Framebuffer* framebuffer = GetBoundDrawFramebuffer();
   if (!framebuffer) {
     return 0;
   }
@@ -4497,7 +4502,7 @@ GLenum GLES2DecoderImpl::GetBoundColorDrawBufferInternalFormat(
     GLint drawbuffer_i) {
   DCHECK(drawbuffer_i >= 0 &&
          drawbuffer_i < static_cast<GLint>(group_->max_draw_buffers()));
-  Framebuffer* framebuffer = GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER);
+  Framebuffer* framebuffer = GetBoundDrawFramebuffer();
   if (!framebuffer) {
     return 0;
   }
@@ -4564,7 +4569,7 @@ GLenum GLES2DecoderImpl::GetBoundFramebufferStencilFormat(
 
 void GLES2DecoderImpl::MarkDrawBufferAsCleared(
     GLenum buffer, GLint drawbuffer_i) {
-  Framebuffer* framebuffer = GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER);
+  Framebuffer* framebuffer = GetBoundDrawFramebuffer();
   if (!framebuffer)
     return;
   GLenum attachment  = 0;
@@ -5442,8 +5447,7 @@ void GLES2DecoderImpl::DoBindBufferRange(GLenum target, GLuint index,
 }
 
 bool GLES2DecoderImpl::BoundFramebufferAllowsChangesToAlphaChannel() {
-  Framebuffer* framebuffer =
-      GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+  Framebuffer* framebuffer = GetBoundDrawFramebuffer();
   if (framebuffer)
     return framebuffer->HasAlphaMRT();
   if (back_buffer_draw_buffer_ == GL_NONE)
@@ -5458,8 +5462,7 @@ bool GLES2DecoderImpl::BoundFramebufferAllowsChangesToAlphaChannel() {
 }
 
 bool GLES2DecoderImpl::BoundFramebufferHasDepthAttachment() {
-  Framebuffer* framebuffer =
-      GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+  Framebuffer* framebuffer = GetBoundDrawFramebuffer();
   if (framebuffer) {
     return framebuffer->HasDepthAttachment();
   }
@@ -5470,8 +5473,7 @@ bool GLES2DecoderImpl::BoundFramebufferHasDepthAttachment() {
 }
 
 bool GLES2DecoderImpl::BoundFramebufferHasStencilAttachment() {
-  Framebuffer* framebuffer =
-      GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+  Framebuffer* framebuffer = GetBoundDrawFramebuffer();
   if (framebuffer) {
     return framebuffer->HasStencilAttachment();
   }
@@ -5527,7 +5529,7 @@ void GLES2DecoderImpl::RestoreFramebufferBindings() const {
       framebuffer_state_.bound_draw_framebuffer.get()
           ? framebuffer_state_.bound_draw_framebuffer->service_id()
           : GetBackbufferServiceId();
-  if (!features().chromium_framebuffer_multisample) {
+  if (!SupportsSeparateFramebufferBinds()) {
     glBindFramebufferEXT(GL_FRAMEBUFFER, service_id);
   } else {
     glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, service_id);
@@ -6209,31 +6211,30 @@ bool GLES2DecoderImpl::GetHelper(
   switch (pname) {
     case GL_IMPLEMENTATION_COLOR_READ_FORMAT:
     case GL_IMPLEMENTATION_COLOR_READ_TYPE:
-      // They are not supported on Desktop GL until 4.1, but could be exposed
-      // through GL_OES_read_format extension. However, a conflicting extension
-      // GL_ARB_ES2_compatibility specifies an error case when requested on
-      // integer/floating point buffers.
-      // To simpify the handling, we just query and check for GL errors. If an
-      // GL error occur, we fall back to our internal implementation.
       *num_written = 1;
-      if (!CheckBoundReadFramebufferValid("glGetIntegerv",
-                                          GL_INVALID_OPERATION)) {
-        if (params) {
-          *params = 0;
+      {
+        Framebuffer* framebuffer = GetBoundReadFramebuffer();
+        if (framebuffer &&
+            framebuffer->IsPossiblyComplete(feature_info_.get()) !=
+            GL_FRAMEBUFFER_COMPLETE) {
+          // Here we avoid querying the driver framebuffer status because the
+          // above should cover most cases. This is an effort to reduce crashes
+          // on MacOSX. See crbug.com/662802.
+          LOCAL_SET_GL_ERROR(
+              GL_INVALID_OPERATION, "glGetIntegerv", "incomplete framebuffer");
+          if (params) {
+            *params = 0;
+          }
+          return true;
         }
-        return true;
       }
       if (params) {
-        ScopedGLErrorSuppressor suppressor("GLES2DecoderImpl::GetHelper",
-                                           GetErrorState());
-        glGetIntegerv(pname, params);
-        bool is_valid = glGetError() == GL_NO_ERROR;
-        if (is_valid) {
-          is_valid = pname == GL_IMPLEMENTATION_COLOR_READ_FORMAT ?
-              validators_->read_pixel_format.IsValid(*params) :
-              validators_->read_pixel_type.IsValid(*params);
-        }
-        if (!is_valid) {
+        if (feature_info_->gl_version_info().is_es) {
+          glGetIntegerv(pname, params);
+        } else {
+          // On Desktop GL where these two enums can be queried, instead of
+          // returning the second pair of read format/type, the preferred pair
+          // is returned. So this semantic is different from GL ES.
           if (pname == GL_IMPLEMENTATION_COLOR_READ_FORMAT) {
             *params = GLES2Util::GetGLReadPixelsImplementationFormat(
                 GetBoundReadFramebufferInternalFormat(),
@@ -6306,8 +6307,7 @@ bool GLES2DecoderImpl::GetHelper(
       case GL_READ_BUFFER:
         *num_written = 1;
         if (params) {
-          Framebuffer* framebuffer =
-              GetFramebufferInfoForTarget(GL_READ_FRAMEBUFFER);
+          Framebuffer* framebuffer = GetBoundReadFramebuffer();
           GLenum read_buffer;
           if (framebuffer) {
             read_buffer = framebuffer->read_buffer();
@@ -6384,8 +6384,7 @@ bool GLES2DecoderImpl::GetHelper(
       *num_written = 1;
       if (params) {
         GLint v = 0;
-        Framebuffer* framebuffer =
-            GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+        Framebuffer* framebuffer = GetBoundDrawFramebuffer();
         if (framebuffer) {
           if (framebuffer->HasAlphaMRT() &&
               framebuffer->HasSameInternalFormatsMRT()) {
@@ -6413,8 +6412,7 @@ bool GLES2DecoderImpl::GetHelper(
       if (params) {
         GLint v = 0;
         if (gl_version_info().is_desktop_core_profile) {
-          Framebuffer* framebuffer =
-              GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+          Framebuffer* framebuffer = GetBoundDrawFramebuffer();
           if (framebuffer) {
             if (framebuffer->HasDepthAttachment()) {
               glGetFramebufferAttachmentParameterivEXT(
@@ -6437,8 +6435,7 @@ bool GLES2DecoderImpl::GetHelper(
       if (params) {
         GLint v = 0;
         if (gl_version_info().is_desktop_core_profile) {
-          Framebuffer* framebuffer =
-              GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+          Framebuffer* framebuffer = GetBoundDrawFramebuffer();
           if (framebuffer) {
             if (framebuffer->HasSameInternalFormatsMRT()) {
               GLenum framebuffer_enum = 0;
@@ -6476,8 +6473,7 @@ bool GLES2DecoderImpl::GetHelper(
       if (params) {
         GLint v = 0;
         if (gl_version_info().is_desktop_core_profile) {
-          Framebuffer* framebuffer =
-              GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER_EXT);
+          Framebuffer* framebuffer = GetBoundDrawFramebuffer();
           if (framebuffer) {
             if (framebuffer->HasStencilAttachment()) {
               glGetFramebufferAttachmentParameterivEXT(
@@ -7504,8 +7500,7 @@ void GLES2DecoderImpl::ClearUnclearedAttachments(
       this, texture_manager());
 
   bool cleared_int_renderbuffers = false;
-  Framebuffer* draw_framebuffer =
-      GetFramebufferInfoForTarget(GL_DRAW_FRAMEBUFFER);
+  Framebuffer* draw_framebuffer = GetBoundDrawFramebuffer();
   if (framebuffer->HasUnclearedIntRenderbufferAttachments()) {
     if (target == GL_READ_FRAMEBUFFER && draw_framebuffer != framebuffer) {
       // TODO(zmo): There is no guarantee that an FBO that is complete on the
@@ -14124,9 +14119,7 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
           GetBoundReadFramebufferInternalFormat());
     } else if (use_workaround) {
       GLenum dest_texture_target = target;
-      GLenum framebuffer_target = features().chromium_framebuffer_multisample
-                                      ? GL_READ_FRAMEBUFFER_EXT
-                                      : GL_FRAMEBUFFER;
+      GLenum framebuffer_target = GetReadFramebufferTarget();
 
       GLenum temp_internal_format = 0;
       if (channels_exist == GLES2Util::kRGBA) {
@@ -18796,11 +18789,7 @@ bool GLES2DecoderImpl::NeedsCopyTextureImageWorkaround(
   if (internal_format == GL_RGB || internal_format == GL_RGBA)
     return false;
 
-  GLenum framebuffer_target = features().chromium_framebuffer_multisample
-                                  ? GL_READ_FRAMEBUFFER_EXT
-                                  : GL_FRAMEBUFFER;
-  Framebuffer* framebuffer =
-      GetFramebufferInfoForTarget(framebuffer_target);
+  Framebuffer* framebuffer = GetBoundReadFramebuffer();
   if (!framebuffer)
     return false;
 
