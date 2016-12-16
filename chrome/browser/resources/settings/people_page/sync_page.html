@@ -187,7 +187,9 @@
               <span>[[syncPrefs.fullEncryptionBody]]</span>
             </template>
             <template is="dom-if" if="[[!syncPrefs.fullEncryptionBody]]">
-              <span>$i18nRaw{encryptWithSyncPassphraseLabel}</span>
+              <span on-tap="onLearnMoreTap_">
+                $i18nRaw{encryptWithSyncPassphraseLabel}
+              </span>
             </template>
           </paper-radio-button>
         </paper-radio-group>
@@ -228,8 +230,7 @@
           <div class="list-item">
             <span>
               [[enterPassphrasePrompt_(syncPrefs.passphraseTypeIsCustom)]]
-              <a href="$i18nRaw{syncErrorHelpUrl}" target="_blank"
-                  on-tap="onSyncLearnMoreTap_">
+              <a href="$i18nRaw{syncErrorHelpUrl}" target="_blank">
                 $i18n{learnMore}
               </a>
             </span>

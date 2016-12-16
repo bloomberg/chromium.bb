@@ -287,6 +287,23 @@ cr.define('settings_people_page_sync_page', function() {
         assertTrue(encryptWithPassphrase.checked);
       });
 
+      test('ClickingLinkDoesNotChangeRadioValue', function() {
+        assertFalse(encryptWithPassphrase.disabled);
+        assertFalse(encryptWithPassphrase.checked);
+
+        var link = encryptWithPassphrase.querySelector('a[href]');
+        assertTrue(!!link);
+
+        // Suppress opening a new tab, since then the test will continue running
+        // on a background tab (which has throttled timers) and will timeout.
+        link.target = '';
+        link.href = '#';
+
+        MockInteractions.tap(link);
+
+        assertFalse(encryptWithPassphrase.checked);
+      });
+
       test('SaveButtonDisabledWhenPassphraseOrConfirmationEmpty', function() {
         MockInteractions.tap(encryptWithPassphrase);
         Polymer.dom.flush();

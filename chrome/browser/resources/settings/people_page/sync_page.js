@@ -47,7 +47,6 @@ Polymer({
   is: 'settings-sync-page',
 
   behaviors: [
-    I18nBehavior,
     WebUIListenerBehavior,
     settings.RouteObserverBehavior,
   ],
@@ -292,14 +291,6 @@ Polymer({
   },
 
   /**
-   * @param {!Event} e
-   * @private
-   */
-  onSyncLearnMoreTap_: function(e) {
-    e.stopPropagation();
-  },
-
-  /**
    * Sends the newly created custom sync passphrase to the browser.
    * @private
    */
@@ -434,9 +425,11 @@ Polymer({
    * @private
    */
   onLearnMoreTap_: function(event) {
-    // Stop the propagation of events, so that clicking on links inside
-    // checkbox labels won't change the checkbox value.
-    event.stopPropagation();
+    if (event.target.tagName == 'A') {
+      // Stop the propagation of events, so that clicking on links inside
+      // checkboxes or radio buttons won't change the value.
+      event.stopPropagation();
+    }
   }
 });
 
