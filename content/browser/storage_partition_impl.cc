@@ -488,8 +488,8 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   partition->background_sync_context_ = new BackgroundSyncContext();
   partition->background_sync_context_->Init(partition->service_worker_context_);
 
-  partition->payment_app_context_ = new PaymentAppContextImpl(
-      partition->service_worker_context_);
+  partition->payment_app_context_ = new PaymentAppContextImpl();
+  partition->payment_app_context_->Init(partition->service_worker_context_);
 
   partition->broadcast_channel_provider_ = new BroadcastChannelProvider();
 

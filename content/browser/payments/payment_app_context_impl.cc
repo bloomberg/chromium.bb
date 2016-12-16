@@ -9,47 +9,57 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
+#include "content/browser/payments/payment_app_database.h"
 #include "content/browser/payments/payment_app_manager.h"
-#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
 
-PaymentAppContextImpl::PaymentAppContextImpl(
-    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context)
-    : service_worker_context_(std::move(service_worker_context)) {
+PaymentAppContextImpl::PaymentAppContextImpl() : is_shutdown_(false) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
+void PaymentAppContextImpl::Init(
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(!is_shutdown_);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PaymentAppContextImpl::CreatePaymentAppDatabaseOnIO, this,
+                 service_worker_context));
 }
 
 void PaymentAppContextImpl::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  BrowserThread::PostTask(
+  BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PaymentAppContextImpl::ShutdownOnIO, this));
+      base::Bind(&PaymentAppContextImpl::ShutdownOnIO, this),
+      base::Bind(&PaymentAppContextImpl::DidShutdown, this));
 }
 
-void PaymentAppContextImpl::CreateService(
+void PaymentAppContextImpl::CreatePaymentAppManager(
     mojo::InterfaceRequest<payments::mojom::PaymentAppManager> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&PaymentAppContextImpl::CreateServiceOnIOThread, this,
+      base::Bind(&PaymentAppContextImpl::CreatePaymentAppManagerOnIO, this,
                  base::Passed(&request)));
 }
 
-void PaymentAppContextImpl::ServiceHadConnectionError(
-    PaymentAppManager* service) {
+void PaymentAppContextImpl::PaymentAppManagerHadConnectionError(
+    PaymentAppManager* payment_app_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(base::ContainsKey(services_, service));
+  DCHECK(base::ContainsKey(payment_app_managers_, payment_app_manager));
 
-  services_.erase(service);
+  payment_app_managers_.erase(payment_app_manager);
 }
 
-ServiceWorkerContextWrapper* PaymentAppContextImpl::service_worker_context()
-    const {
-  return service_worker_context_.get();
+PaymentAppDatabase* PaymentAppContextImpl::payment_app_database() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return payment_app_database_.get();
 }
 
 void PaymentAppContextImpl::GetAllManifests(
@@ -58,20 +68,37 @@ void PaymentAppContextImpl::GetAllManifests(
 }
 
 PaymentAppContextImpl::~PaymentAppContextImpl() {
-  DCHECK(services_.empty());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(is_shutdown_);
 }
 
-void PaymentAppContextImpl::CreateServiceOnIOThread(
+void PaymentAppContextImpl::CreatePaymentAppDatabaseOnIO(
+    scoped_refptr<ServiceWorkerContextWrapper> service_worker_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  payment_app_database_ =
+      base::MakeUnique<PaymentAppDatabase>(service_worker_context);
+}
+
+void PaymentAppContextImpl::CreatePaymentAppManagerOnIO(
     mojo::InterfaceRequest<payments::mojom::PaymentAppManager> request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  PaymentAppManager* service = new PaymentAppManager(this, std::move(request));
-  services_[service] = base::WrapUnique(service);
+  PaymentAppManager* payment_app_manager =
+      new PaymentAppManager(this, std::move(request));
+  payment_app_managers_[payment_app_manager] =
+      base::WrapUnique(payment_app_manager);
 }
 
 void PaymentAppContextImpl::ShutdownOnIO() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  services_.clear();
+  payment_app_managers_.clear();
+  payment_app_database_.reset();
+}
+
+void PaymentAppContextImpl::DidShutdown() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  is_shutdown_ = true;
 }
 
 }  // namespace content
