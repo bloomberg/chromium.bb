@@ -16311,6 +16311,12 @@
             "url": "/touch-events/touch-touchevent-constructor.html"
           }
         ],
+        "uievents/constructors/inputevent-constructor.html": [
+          {
+            "path": "uievents/constructors/inputevent-constructor.html",
+            "url": "/uievents/constructors/inputevent-constructor.html"
+          }
+        ],
         "uievents/legacy-domevents-tests/approved/ProcessingInstruction.DOMCharacterDataModified.html": [
           {
             "path": "uievents/legacy-domevents-tests/approved/ProcessingInstruction.DOMCharacterDataModified.html",
