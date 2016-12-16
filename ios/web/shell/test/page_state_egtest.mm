@@ -57,9 +57,15 @@ using web::test::HttpServer;
 
 @implementation PageStateTestCase
 
+// TODO(crbug.com/675015): Re-enable this test on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testScrollPositionRestoring testScrollPositionRestoring
+#else
+#define MAYBE_testScrollPositionRestoring FLAKY_testScrollPositionRestoring
+#endif
 // Tests that page scroll position of a page is restored upon returning to the
 // page via the back/forward buttons.
-- (void)testScrollPositionRestoring {
+- (void)MAYBE_testScrollPositionRestoring {
   // TODO(crbug.com/670700): Re-enable this test.
   if (!base::ios::IsRunningOnIOS10OrLater()) {
     EARL_GREY_TEST_DISABLED(@"Test disabled on pre-iOS 10");

@@ -33,8 +33,14 @@ using testing::elementToDismissContextMenu;
 
 @implementation ContextMenuTestCase
 
+// TODO(crbug.com/675015): Re-enable this test on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testContextMenu testContextMenu
+#else
+#define MAYBE_testContextMenu FLAKY_testContextMenu
+#endif
 // Tests context menu appears on a regular link.
-- (void)testContextMenu {
+- (void)MAYBE_testContextMenu {
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
   GURL initialURL = web::test::HttpServer::MakeUrl("http://contextMenuOpen");
@@ -69,8 +75,16 @@ using testing::elementToDismissContextMenu;
   [[EarlGrey selectElementWithMatcher:copyItem] assertWithMatcher:grey_nil()];
 }
 
+// TODO(crbug.com/675015): Re-enable this test on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testContextMenuWebkitTouchCalloutNone \
+  testContextMenuWebkitTouchCalloutNone
+#else
+#define MAYBE_testContextMenuWebkitTouchCalloutNone \
+  FLAKY_testContextMenuWebkitTouchCalloutNone
+#endif
 // Tests context menu on element that has WebkitTouchCallout set to none.
-- (void)testContextMenuWebkitTouchCalloutNone {
+- (void)MAYBE_testContextMenuWebkitTouchCalloutNone {
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
   GURL initialURL =
@@ -98,9 +112,17 @@ using testing::elementToDismissContextMenu;
   [[EarlGrey selectElementWithMatcher:copyItem] assertWithMatcher:grey_nil()];
 }
 
+// TODO(crbug.com/675015): Re-enable this test on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testContextMenuWebkitTouchCalloutNoneFromAncestor \
+  testContextMenuWebkitTouchCalloutNoneFromAncestor
+#else
+#define MAYBE_testContextMenuWebkitTouchCalloutNoneFromAncestor \
+  FLAKY_testContextMenuWebkitTouchCalloutNoneFromAncestor
+#endif
 // Tests context menu on element that has WebkitTouchCallout set to none from an
 // ancestor.
-- (void)testContextMenuWebkitTouchCalloutNoneFromAncestor {
+- (void)MAYBE_testContextMenuWebkitTouchCalloutNoneFromAncestor {
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
   GURL initialURL =
@@ -129,9 +151,17 @@ using testing::elementToDismissContextMenu;
   [[EarlGrey selectElementWithMatcher:copyItem] assertWithMatcher:grey_nil()];
 }
 
+// TODO(crbug.com/675015): Re-enable this test on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_testContextMenuWebkitTouchCalloutOverride \
+  testContextMenuWebkitTouchCalloutOverride
+#else
+#define MAYBE_testContextMenuWebkitTouchCalloutOverride \
+  FLAKY_testContextMenuWebkitTouchCalloutOverride
+#endif
 // Tests context menu on element that has WebkitTouchCallout set to none from an
 // ancestor and overridden.
-- (void)testContextMenuWebkitTouchCalloutOverride {
+- (void)MAYBE_testContextMenuWebkitTouchCalloutOverride {
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
   GURL initialURL =
