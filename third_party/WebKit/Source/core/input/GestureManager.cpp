@@ -318,7 +318,9 @@ WebInputEventResult GestureManager::handleGestureLongPress(
     return WebInputEventResult::HandledSystem;
   }
 
-  if (m_selectionController->handleGestureLongPress(gestureEvent,
+  Node* innerNode = hitTestResult.innerNode();
+  if (innerNode && innerNode->layoutObject() &&
+      m_selectionController->handleGestureLongPress(gestureEvent,
                                                     hitTestResult)) {
     m_mouseEventManager->focusDocumentView();
     return WebInputEventResult::HandledSystem;
@@ -332,7 +334,9 @@ WebInputEventResult GestureManager::handleGestureLongTap(
 #if !OS(ANDROID)
   if (m_longTapShouldInvokeContextMenu) {
     m_longTapShouldInvokeContextMenu = false;
-    m_selectionController->handleGestureLongTap(targetedEvent);
+    Node* innerNode = targetedEvent.hitTestResult().innerNode();
+    if (innerNode && innerNode->layoutObject())
+      m_selectionController->handleGestureLongTap(targetedEvent);
     return sendContextMenuEventForGesture(targetedEvent);
   }
 #endif
@@ -341,7 +345,9 @@ WebInputEventResult GestureManager::handleGestureLongTap(
 
 WebInputEventResult GestureManager::handleGestureTwoFingerTap(
     const GestureEventWithHitTestResults& targetedEvent) {
-  m_selectionController->handleGestureTwoFingerTap(targetedEvent);
+  Node* innerNode = targetedEvent.hitTestResult().innerNode();
+  if (innerNode && innerNode->layoutObject())
+    m_selectionController->handleGestureTwoFingerTap(targetedEvent);
   return sendContextMenuEventForGesture(targetedEvent);
 }
 

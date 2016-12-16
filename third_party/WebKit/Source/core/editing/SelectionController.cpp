@@ -652,9 +652,6 @@ void SelectionController::setNonDirectionalSelectionIfNeeded(
 void SelectionController::setCaretAtHitTestResult(
     const HitTestResult& hitTestResult) {
   Node* innerNode = hitTestResult.innerNode();
-  if (!innerNode)
-    return;
-
   const VisiblePositionInFlatTree& visibleHitPos =
       visiblePositionOfHitTestResult(hitTestResult);
   const VisiblePositionInFlatTree& visiblePos =
@@ -892,8 +889,6 @@ bool SelectionController::handleGestureLongPress(
     return false;
 
   Node* innerNode = hitTestResult.innerNode();
-  if (!innerNode)
-    return false;
   innerNode->document().updateStyleAndLayoutTree();
   bool innerNodeIsSelectable = hasEditableStyle(*innerNode) ||
                                innerNode->isTextNode() ||
