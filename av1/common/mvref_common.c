@@ -171,10 +171,14 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const TileInfo *const tile = &xd->tile;
   int i;
   uint8_t newmv_count = 0;
-  const int mi_offset = mi_size_wide[BLOCK_8X8];
 #if CONFIG_CB4X4
+  const int bsize = xd->mi[0]->mbmi.sb_type;
+  const int mi_offset =
+      bsize < BLOCK_8X8 ? mi_size_wide[BLOCK_4X4] : mi_size_wide[BLOCK_8X8];
   // TODO(jingning): Revisit this part after cb4x4 is stable.
-  row_offset *= 2;
+  if (bsize >= BLOCK_8X8) row_offset *= 2;
+#else
+  const int mi_offset = mi_size_wide[BLOCK_8X8];
 #endif
 
   for (i = 0; i < xd->n8_w && *refmv_count < MAX_REF_MV_STACK_SIZE;) {
@@ -215,9 +219,13 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   const TileInfo *const tile = &xd->tile;
   int i;
   uint8_t newmv_count = 0;
-  const int mi_offset = mi_size_wide[BLOCK_8X8];
 #if CONFIG_CB4X4
-  col_offset *= 2;
+  const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
+  const int mi_offset =
+      (bsize < BLOCK_8X8) ? mi_size_high[BLOCK_4X4] : mi_size_high[BLOCK_8X8];
+  if (bsize >= BLOCK_8X8) col_offset *= 2;
+#else
+  const int mi_offset = mi_size_wide[BLOCK_8X8];
 #endif
 
   for (i = 0; i < xd->n8_h && *refmv_count < MAX_REF_MV_STACK_SIZE;) {
@@ -414,8 +422,13 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       rf[1] == NONE) {
     int blk_row, blk_col;
     int coll_blk_count = 0;
+#if CONFIG_CB4X4
+    const int mi_step = (xd->n8_w == 1 || xd->n8_h == 1)
+                            ? mi_size_wide[BLOCK_8X8]
+                            : mi_size_wide[BLOCK_16X16];
+#else
     const int mi_step = mi_size_wide[BLOCK_16X16];
-
+#endif
     for (blk_row = 0; blk_row < xd->n8_h; blk_row += mi_step) {
       for (blk_col = 0; blk_col < xd->n8_w; blk_col += mi_step) {
         coll_blk_count += add_col_ref_mv(
