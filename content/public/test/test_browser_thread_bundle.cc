@@ -4,6 +4,7 @@
 
 #include "content/public/test/test_browser_thread_bundle.h"
 
+#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "content/browser/browser_thread_impl.h"
@@ -27,29 +28,35 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   BrowserThreadImpl::FlushThreadPoolHelperForTesting();
 
   // To ensure a clean teardown, each thread's message loop must be flushed
-  // just before the thread is destroyed. But destroying a fake thread does not
+  // just before the thread is destroyed. But stopping a fake thread does not
   // automatically flush the message loop, so we have to do it manually.
   // See http://crbug.com/247525 for discussion.
   base::RunLoop().RunUntilIdle();
-  io_thread_.reset();
+  io_thread_->Stop();
   base::RunLoop().RunUntilIdle();
-  cache_thread_.reset();
+  cache_thread_->Stop();
   base::RunLoop().RunUntilIdle();
-  process_launcher_thread_.reset();
+  process_launcher_thread_->Stop();
   base::RunLoop().RunUntilIdle();
-  file_user_blocking_thread_.reset();
+  file_user_blocking_thread_->Stop();
   base::RunLoop().RunUntilIdle();
-  file_thread_.reset();
+  file_thread_->Stop();
   base::RunLoop().RunUntilIdle();
-  db_thread_.reset();
+  db_thread_->Stop();
   base::RunLoop().RunUntilIdle();
   // This is the point at which we normally shut down the thread pool. So flush
   // it again in case any shutdown tasks have been posted to the pool from the
   // threads above.
   BrowserThreadImpl::FlushThreadPoolHelperForTesting();
   base::RunLoop().RunUntilIdle();
-  ui_thread_.reset();
+  ui_thread_->Stop();
   base::RunLoop().RunUntilIdle();
+
+  // |message_loop_| needs to explicitly go away before fake threads in order
+  // for DestructionObservers hooked to |message_loop_| to be able to invoke
+  // BrowserThread::CurrentlyOn() -- ref. ~TestBrowserThread().
+  CHECK(message_loop_->IsIdleForTesting());
+  message_loop_.reset();
 }
 
 void TestBrowserThreadBundle::Init() {

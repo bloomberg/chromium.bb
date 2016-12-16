@@ -324,8 +324,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       std::vector<base::SchedulerWorkerPoolParams>* params_vector,
       base::TaskScheduler::WorkerPoolIndexForTraitsCallback*
           index_to_traits_callback) override;
-
   void PerformExperimentalTaskSchedulerRedirections() override;
+  bool RedirectNonUINonIOBrowserThreadsToTaskScheduler() override;
 
  private:
   friend class DisableWebRtcEncryptionFlagTest;

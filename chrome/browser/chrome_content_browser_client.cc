@@ -3372,7 +3372,13 @@ void ChromeContentBrowserClient::
       MaybePerformBrowserTaskSchedulerRedirection();
 }
 
-//static
+bool ChromeContentBrowserClient::
+    RedirectNonUINonIOBrowserThreadsToTaskScheduler() {
+  return variations::GetVariationParamValue(
+             "BrowserScheduler", "RedirectNonUINonIOBrowserThreads") == "true";
+}
+
+// static
 void ChromeContentBrowserClient::SetDefaultQuotaSettingsForTesting(
     const storage::QuotaSettings* settings) {
   g_default_quota_settings = settings;

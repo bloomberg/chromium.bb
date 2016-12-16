@@ -26,10 +26,10 @@ namespace base {
 class CommandLine;
 class FilePath;
 class HighResolutionTimerManager;
+class MemoryPressureMonitor;
 class MessageLoop;
 class PowerMonitor;
 class SystemMonitor;
-class MemoryPressureMonitor;
 namespace trace_event {
 class TraceEventSystemStatsMonitor;
 }  // namespace trace_event
@@ -273,6 +273,9 @@ class CONTENT_EXPORT BrowserMainLoop {
 #endif
 
   // Members initialized in |CreateThreads()| ----------------------------------
+  // Note: some |*_thread_| members below may never be initialized when
+  // redirection to TaskScheduler is enabled. (ref.
+  // ContentBrowserClient::RedirectNonUINonIOBrowserThreadsToTaskScheduler()).
   std::unique_ptr<BrowserProcessSubThread> db_thread_;
   std::unique_ptr<BrowserProcessSubThread> file_user_blocking_thread_;
   std::unique_ptr<BrowserProcessSubThread> file_thread_;

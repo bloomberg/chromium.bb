@@ -30,8 +30,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/system_monitor/system_monitor.h"
 #include "base/task_scheduler/initialization_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_traits.h"
@@ -309,35 +311,57 @@ MSVC_PUSH_DISABLE_WARNING(4748)
 NOINLINE void ResetThread_DB(std::unique_ptr<BrowserProcessSubThread> thread) {
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  thread.reset();
+  if (thread) {
+    thread.reset();
+  } else {
+    BrowserThreadImpl::StopRedirectionOfThreadID(BrowserThread::DB);
+  }
 }
 
 NOINLINE void ResetThread_FILE(
     std::unique_ptr<BrowserProcessSubThread> thread) {
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  thread.reset();
+  if (thread) {
+    thread.reset();
+  } else {
+    BrowserThreadImpl::StopRedirectionOfThreadID(BrowserThread::FILE);
+  }
 }
 
 NOINLINE void ResetThread_FILE_USER_BLOCKING(
     std::unique_ptr<BrowserProcessSubThread> thread) {
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  thread.reset();
+  if (thread) {
+    thread.reset();
+  } else {
+    BrowserThreadImpl::StopRedirectionOfThreadID(
+        BrowserThread::FILE_USER_BLOCKING);
+  }
 }
 
 NOINLINE void ResetThread_PROCESS_LAUNCHER(
     std::unique_ptr<BrowserProcessSubThread> thread) {
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  thread.reset();
+  if (thread) {
+    thread.reset();
+  } else {
+    BrowserThreadImpl::StopRedirectionOfThreadID(
+        BrowserThread::PROCESS_LAUNCHER);
+  }
 }
 
 NOINLINE void ResetThread_CACHE(
     std::unique_ptr<BrowserProcessSubThread> thread) {
   volatile int inhibit_comdat = __LINE__;
   ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  thread.reset();
+  if (thread) {
+    thread.reset();
+  } else {
+    BrowserThreadImpl::StopRedirectionOfThreadID(BrowserThread::CACHE);
+  }
 }
 
 NOINLINE void ResetThread_IO(std::unique_ptr<BrowserProcessSubThread> thread) {
@@ -963,62 +987,118 @@ int BrowserMainLoop::CreateThreads() {
   base::Thread::Options ui_message_loop_options;
   ui_message_loop_options.message_loop_type = base::MessageLoop::TYPE_UI;
 
-  // Start threads in the order they occur in the BrowserThread::ID
-  // enumeration, except for BrowserThread::UI which is the main
-  // thread.
+  const bool redirect_nonUInonIO_browser_threads =
+      GetContentClient()
+          ->browser()
+          ->RedirectNonUINonIOBrowserThreadsToTaskScheduler();
+
+  // Start threads in the order they occur in the BrowserThread::ID enumeration,
+  // except for BrowserThread::UI which is the main thread.
   //
   // Must be size_t so we can increment it.
   for (size_t thread_id = BrowserThread::UI + 1;
        thread_id < BrowserThread::ID_COUNT;
        ++thread_id) {
-    std::unique_ptr<BrowserProcessSubThread>* thread_to_start = NULL;
+    // If this thread ID is backed by a real thread, |thread_to_start| will be
+    // set to the appropriate BrowserProcessSubThread*. And |options| can be
+    // updated away from its default.
+    std::unique_ptr<BrowserProcessSubThread>* thread_to_start = nullptr;
     base::Thread::Options options;
+
+    // Otherwise this thread ID will be backed by a SingleThreadTaskRunner using
+    // |non_ui_non_io_task_runner_traits| (which can be augmented below).
+    // TODO(gab): Existing non-UI/non-IO BrowserThreads allow waiting so the
+    // initial redirection will as well but they probably don't need to.
+    base::TaskTraits non_ui_non_io_task_runner_traits =
+        base::TaskTraits().WithFileIO().WithWait();
 
     switch (thread_id) {
       case BrowserThread::DB:
         TRACE_EVENT_BEGIN1("startup",
             "BrowserMainLoop::CreateThreads:start",
             "Thread", "BrowserThread::DB");
-        thread_to_start = &db_thread_;
-        options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+        if (redirect_nonUInonIO_browser_threads) {
+          non_ui_non_io_task_runner_traits
+              .WithPriority(base::TaskPriority::USER_VISIBLE)
+              .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN);
+        } else {
+          thread_to_start = &db_thread_;
+          options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+        }
         break;
       case BrowserThread::FILE_USER_BLOCKING:
         TRACE_EVENT_BEGIN1("startup",
             "BrowserMainLoop::CreateThreads:start",
             "Thread", "BrowserThread::FILE_USER_BLOCKING");
-        thread_to_start = &file_user_blocking_thread_;
+        if (redirect_nonUInonIO_browser_threads) {
+          non_ui_non_io_task_runner_traits
+              .WithPriority(base::TaskPriority::USER_BLOCKING)
+              .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN);
+        } else {
+          thread_to_start = &file_user_blocking_thread_;
+        }
         break;
       case BrowserThread::FILE:
         TRACE_EVENT_BEGIN1("startup",
             "BrowserMainLoop::CreateThreads:start",
             "Thread", "BrowserThread::FILE");
-        thread_to_start = &file_thread_;
+
 #if defined(OS_WIN)
-        // On Windows, the FILE thread needs to be have a UI message loop
-        // which pumps messages in such a way that Google Update can
-        // communicate back to us.
+        // On Windows, the FILE thread needs to have a UI message loop which
+        // pumps messages in such a way that Google Update can communicate back
+        // to us.
+        // TODO(robliao): Need to support COM in TaskScheduler before
+        // redirecting the FILE thread on Windows. http://crbug.com/662122
+        thread_to_start = &file_thread_;
         options = ui_message_loop_options;
 #else
-        options = io_message_loop_options;
+        if (redirect_nonUInonIO_browser_threads) {
+          non_ui_non_io_task_runner_traits
+              .WithPriority(base::TaskPriority::BACKGROUND)
+              .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN);
+        } else {
+          thread_to_start = &file_thread_;
+          options = io_message_loop_options;
+          options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+        }
 #endif
-        options.timer_slack = base::TIMER_SLACK_MAXIMUM;
         break;
       case BrowserThread::PROCESS_LAUNCHER:
         TRACE_EVENT_BEGIN1("startup",
             "BrowserMainLoop::CreateThreads:start",
             "Thread", "BrowserThread::PROCESS_LAUNCHER");
-        thread_to_start = &process_launcher_thread_;
-        options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+        if (redirect_nonUInonIO_browser_threads) {
+          non_ui_non_io_task_runner_traits
+              .WithPriority(base::TaskPriority::USER_BLOCKING)
+              .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN);
+        } else {
+          thread_to_start = &process_launcher_thread_;
+          options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+        }
         break;
       case BrowserThread::CACHE:
         TRACE_EVENT_BEGIN1("startup",
             "BrowserMainLoop::CreateThreads:start",
             "Thread", "BrowserThread::CACHE");
-        thread_to_start = &cache_thread_;
 #if defined(OS_WIN)
+        // TaskScheduler doesn't support async I/O on Windows as CACHE thread is
+        // the only user and this use case is going away in
+        // https://codereview.chromium.org/2216583003/.
+        // TODO(gavinp): Remove this ifdef (and thus enable redirection of the
+        // CACHE thread on Windows) once that CL lands.
+        thread_to_start = &cache_thread_;
         options = io_message_loop_options;
-#endif  // defined(OS_WIN)
         options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+#else  // OS_WIN
+        if (redirect_nonUInonIO_browser_threads) {
+          non_ui_non_io_task_runner_traits
+              .WithPriority(base::TaskPriority::USER_BLOCKING)
+              .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN);
+        } else {
+          thread_to_start = &cache_thread_;
+          options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+        }
+#endif  // OS_WIN
         break;
       case BrowserThread::IO:
         TRACE_EVENT_BEGIN1("startup",
@@ -1032,9 +1112,8 @@ int BrowserMainLoop::CreateThreads() {
         options.priority = base::ThreadPriority::DISPLAY;
 #endif
         break;
-      case BrowserThread::UI:
-      case BrowserThread::ID_COUNT:
-      default:
+      case BrowserThread::UI:        // Falls through.
+      case BrowserThread::ID_COUNT:  // Falls through.
         NOTREACHED();
         break;
     }
@@ -1043,11 +1122,15 @@ int BrowserMainLoop::CreateThreads() {
 
     if (thread_to_start) {
       (*thread_to_start).reset(new BrowserProcessSubThread(id));
-      if (!(*thread_to_start)->StartWithOptions(options)) {
+      if (!(*thread_to_start)->StartWithOptions(options))
         LOG(FATAL) << "Failed to start the browser thread: id == " << id;
-      }
     } else {
-      NOTREACHED();
+      scoped_refptr<base::SingleThreadTaskRunner> redirection_task_runner =
+          base::CreateSingleThreadTaskRunnerWithTraits(
+              non_ui_non_io_task_runner_traits);
+      DCHECK(redirection_task_runner);
+      BrowserThreadImpl::RedirectThreadIDToTaskRunner(
+          id, std::move(redirection_task_runner));
     }
 
     TRACE_EVENT_END0("startup", "BrowserMainLoop::CreateThreads:start");
@@ -1203,8 +1286,8 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       }
       case BrowserThread::FILE: {
         TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:FileThread");
-        // Clean up state that lives on or uses the file_thread_ before
-        // it goes away.
+        // Clean up state that lives on or uses the FILE thread before it goes
+        // away.
         save_file_manager_->Shutdown();
         ResetThread_FILE(std::move(file_thread_));
         break;
@@ -1232,7 +1315,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
       }
       case BrowserThread::UI:
       case BrowserThread::ID_COUNT:
-      default:
         NOTREACHED();
         break;
     }

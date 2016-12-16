@@ -5,7 +5,8 @@
 #ifndef CONTENT_BROWSER_BROWSER_THREAD_IMPL_H_
 #define CONTENT_BROWSER_BROWSER_THREAD_IMPL_H_
 
-#include "base/threading/platform_thread.h"
+#include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_thread.h"
@@ -32,7 +33,25 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread,
   bool StartWithOptions(const Options& options);
   bool StartAndWaitForTesting();
 
+  // Redirects tasks posted to |identifier| to |task_runner|.
+  static void RedirectThreadIDToTaskRunner(
+      BrowserThread::ID identifier,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  // Makes this |identifier| no longer accept tasks and synchronously flushes
+  // any tasks previously posted to it.
+  // Can only be called after a matching RedirectThreadIDToTaskRunner call.
+  static void StopRedirectionOfThreadID(BrowserThread::ID identifier);
+
   static void ShutdownThreadPool();
+
+  // Resets globals for |identifier|. Used in tests to clear global state that
+  // would otherwise leak to the next test. Globals are not otherwise fully
+  // cleaned up in ~BrowserThreadImpl() as there are subtle differences between
+  // UNINITIALIZED and SHUTDOWN state (e.g. globals.task_runners are kept around
+  // on shutdown). Must be called after ~BrowserThreadImpl() for the given
+  // |identifier|.
+  static void ResetGlobalsForTesting(BrowserThread::ID identifier);
 
  protected:
   void Init() override;

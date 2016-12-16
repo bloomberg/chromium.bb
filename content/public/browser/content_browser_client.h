@@ -814,6 +814,10 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Performs any necessary PostTask API redirection to the task scheduler.
   virtual void PerformExperimentalTaskSchedulerRedirections() {}
+
+  // If this returns true, all BrowserThreads (but UI/IO) that support it on
+  // this platform will experimentally be redirected to TaskScheduler.
+  virtual bool RedirectNonUINonIOBrowserThreadsToTaskScheduler();
 };
 
 }  // namespace content

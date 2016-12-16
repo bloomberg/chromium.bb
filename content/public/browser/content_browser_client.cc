@@ -441,4 +441,8 @@ ContentBrowserClient::GetMemoryCoordinatorDelegate() {
   return nullptr;
 }
 
+bool ContentBrowserClient::RedirectNonUINonIOBrowserThreadsToTaskScheduler() {
+  return false;
+}
+
 }  // namespace content

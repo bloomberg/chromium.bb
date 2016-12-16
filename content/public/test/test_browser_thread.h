@@ -52,6 +52,8 @@ class TestBrowserThread {
  private:
   std::unique_ptr<TestBrowserThreadImpl> impl_;
 
+  const BrowserThread::ID identifier_;
+
   DISALLOW_COPY_AND_ASSIGN(TestBrowserThread);
 };
 
