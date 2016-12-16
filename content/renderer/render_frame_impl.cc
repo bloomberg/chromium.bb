@@ -2866,6 +2866,9 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
   remoting_controller_ptr->SetSwitchRendererCallback(base::Bind(
       &media::WebMediaPlayerImpl::ScheduleRestart, media_player->AsWeakPtr()));
+  remoting_controller_ptr->SetRemoteSinkAvailableChangedCallback(base::Bind(
+      &media::WebMediaPlayerImpl::ActivateViewportIntersectionMonitoring,
+      media_player->AsWeakPtr()));
 #endif
   return media_player;
 }

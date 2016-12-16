@@ -26,7 +26,10 @@ class MediaElementFillingViewportTest : public SimTest {
   }
 
   void checkViewportIntersectionChanged(HTMLMediaElement* element) {
-    element->checkViewportIntersectionChanged();
+    element->activateViewportIntersectionMonitoring(true);
+    EXPECT_TRUE(element->m_checkViewportIntersectionTimer.isActive());
+    // TODO(xjz): Mock the time and wait for 1s instead.
+    element->checkViewportIntersectionTimerFired(nullptr);
   }
 
   std::unique_ptr<SimRequest> createMainResource() {

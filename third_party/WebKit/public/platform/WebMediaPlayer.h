@@ -262,7 +262,9 @@ class WebMediaPlayer {
   virtual void exitedFullscreen() {}
 
   // Inform WebMediaPlayer when the element starts/stops being the dominant
-  // visible content.
+  // visible content. This will only be called after the monitoring of the
+  // intersection with viewport is activated by calling
+  // WebMediaPlayerClient::activateViewportIntersectionMonitoring().
   virtual void becameDominantVisibleContent(bool isDominant) {}
 
   virtual void enabledAudioTracksChanged(

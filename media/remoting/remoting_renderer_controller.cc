@@ -43,7 +43,27 @@ void RemotingRendererController::OnSessionStateChanged() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   VLOG(1) << "OnSessionStateChanged: " << remoting_source_->state();
+  if (!sink_available_changed_cb_.is_null())
+    sink_available_changed_cb_.Run(IsRemoteSinkAvailable());
+
   UpdateAndMaybeSwitch();
+}
+
+bool RemotingRendererController::IsRemoteSinkAvailable() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  switch (remoting_source_->state()) {
+    case SESSION_CAN_START:
+    case SESSION_STARTING:
+    case SESSION_STARTED:
+      return true;
+    case SESSION_UNAVAILABLE:
+    case SESSION_STOPPING:
+    case SESSION_PERMANENTLY_STOPPED:
+      return false;
+  }
+
+  return false;  // To suppress compile warning.
 }
 
 void RemotingRendererController::OnEnteredFullscreen() {
@@ -94,6 +114,15 @@ void RemotingRendererController::SetSwitchRendererCallback(
 
   switch_renderer_cb_ = cb;
   UpdateAndMaybeSwitch();
+}
+
+void RemotingRendererController::SetRemoteSinkAvailableChangedCallback(
+    const base::Callback<void(bool)>& cb) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  sink_available_changed_cb_ = cb;
+  if (!sink_available_changed_cb_.is_null())
+    sink_available_changed_cb_.Run(IsRemoteSinkAvailable());
 }
 
 base::WeakPtr<remoting::RpcBroker> RemotingRendererController::GetRpcBroker()

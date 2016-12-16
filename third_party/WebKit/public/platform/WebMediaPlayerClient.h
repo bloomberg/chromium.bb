@@ -95,6 +95,11 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   virtual void cancelledRemotePlaybackRequest() = 0;
   virtual void remotePlaybackStarted() = 0;
 
+  // After the monitoring is activated, the client will inform WebMediaPlayer
+  // when the element becomes/stops being the dominant visible content by
+  // calling WebMediaPlayer::becameDominantVisibleContent(bool).
+  virtual void activateViewportIntersectionMonitoring(bool) {}
+
   // Returns whether the media element is in an autoplay muted state.
   virtual bool isAutoplayingMuted() = 0;
 

@@ -2004,4 +2004,10 @@ bool WebMediaPlayerImpl::IsHidden() const {
   return delegate_ && delegate_->IsHidden();
 }
 
+void WebMediaPlayerImpl::ActivateViewportIntersectionMonitoring(bool activate) {
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  client_->activateViewportIntersectionMonitoring(activate);
+}
+
 }  // namespace media

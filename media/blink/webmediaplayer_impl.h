@@ -220,6 +220,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // then seek to resume playback at the current position.
   void ScheduleRestart();
 
+  // Called when requests to activate monitoring changes on viewport
+  // intersection.
+  void ActivateViewportIntersectionMonitoring(bool activate);
+
   // Distinct states that |delegate_| can be in.
   // TODO(sandersd): This should move into WebMediaPlayerDelegate.
   // (Public for testing.)

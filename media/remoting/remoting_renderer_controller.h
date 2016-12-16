@@ -41,6 +41,8 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   void OnRemotePlaybackDisabled(bool disabled) override;
 
   void SetSwitchRendererCallback(const base::Closure& cb);
+  void SetRemoteSinkAvailableChangedCallback(
+      const base::Callback<void(bool)>& cb);
 
   base::WeakPtr<RemotingRendererController> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
@@ -84,6 +86,7 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
 
   bool IsVideoCodecSupported();
   bool IsAudioCodecSupported();
+  bool IsRemoteSinkAvailable();
 
   // Helper to decide whether to enter or leave Remoting mode.
   bool ShouldBeRemoting();
@@ -119,6 +122,9 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
 
   // The callback to switch the media renderer.
   base::Closure switch_renderer_cb_;
+
+  // Called when remoting sink availability is changed.
+  base::Callback<void(bool)> sink_available_changed_cb_;
 
   // This is initially the RemotingSourceImpl passed to the ctor, and might be
   // replaced with a different instance later if OnSetCdm() is called.
