@@ -200,7 +200,8 @@ void SuggestionsSource::StartDataRequest(
     suggestions_service->FetchSuggestionsData();
 
   SuggestionsProfile suggestions_profile =
-      suggestions_service->GetSuggestionsDataFromCache();
+      suggestions_service->GetSuggestionsDataFromCache().value_or(
+          SuggestionsProfile());
   size_t size = suggestions_profile.suggestions_size();
   if (!size) {
     std::string output = RenderOutputHtmlNoSuggestions(is_refresh);

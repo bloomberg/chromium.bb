@@ -162,7 +162,8 @@ void MostVisitedSites::BuildCurrentTiles() {
   // Get the current suggestions from cache. If the cache is empty, this will
   // fall back to TopSites.
   OnSuggestionsProfileAvailable(
-      suggestions_service_->GetSuggestionsDataFromCache());
+      suggestions_service_->GetSuggestionsDataFromCache().value_or(
+          SuggestionsProfile()));
 }
 
 void MostVisitedSites::InitiateTopSitesQuery() {

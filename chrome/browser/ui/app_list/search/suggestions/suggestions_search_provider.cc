@@ -44,8 +44,9 @@ void SuggestionsSearchProvider::Start(bool /*is_voice_query*/,
   if (!query.empty())
     return;
 
-  const suggestions::SuggestionsProfile& suggestions_profile =
-      suggestions_service_->GetSuggestionsDataFromCache();
+  const suggestions::SuggestionsProfile suggestions_profile =
+      suggestions_service_->GetSuggestionsDataFromCache().value_or(
+          suggestions::SuggestionsProfile());
   for (int i = 0; i < suggestions_profile.suggestions_size(); ++i) {
     const suggestions::ChromeSuggestion& suggestion =
         suggestions_profile.suggestions(i);
