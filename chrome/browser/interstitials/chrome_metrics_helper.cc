@@ -9,7 +9,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/features.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/features/features.h"
 
@@ -31,10 +30,7 @@ ChromeMetricsHelper::ChromeMetricsHelper(
           settings,
           HistoryServiceFactory::GetForProfile(
               Profile::FromBrowserContext(web_contents->GetBrowserContext()),
-              ServiceAccessType::EXPLICIT_ACCESS),
-          g_browser_process->rappor_service()
-              ? g_browser_process->rappor_service()->AsWeakPtr()
-              : base::WeakPtr<rappor::RapporService>()),
+              ServiceAccessType::EXPLICIT_ACCESS)),
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION) || BUILDFLAG(ENABLE_EXTENSIONS)
       web_contents_(web_contents),
 #endif

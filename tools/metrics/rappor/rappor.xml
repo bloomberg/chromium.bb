@@ -2159,8 +2159,8 @@ now we are only interested in H264, VP8 and VP9.
   <owner>dominickn@chromium.org</owner>
   <owner>nparker@chromium.org</owner>
   <summary>
-    The domain+registry of a URL that triggered a safe-browsing UWS
-    interstitial.
+    **DEPRECATED as of M57. The domain+registry of a URL that triggered a
+    safe-browsing UWS interstitial.
   </summary>
   <string-field name="domain">
     <summary>
@@ -2186,8 +2186,8 @@ now we are only interested in H264, VP8 and VP9.
   </summary>
   <string-field name="domain">
     <summary>
-      The domain+registry of a URL that triggered a safe-browsing malware
-      interstitial.
+      **DEPRECATED as of M57. The domain+registry of a URL that triggered a
+      safe-browsing malware interstitial.
     </summary>
   </string-field>
   <flags-field name="flags">
@@ -2249,8 +2249,8 @@ now we are only interested in H264, VP8 and VP9.
   <owner>dominickn@chromium.org</owner>
   <owner>nparker@chromium.org</owner>
   <summary>
-    The domain+registry of a URL that triggered a safe-browsing phishing
-    interstitial.
+    **DEPRECATED as of M57. The domain+registry of a URL that triggered a
+    safe-browsing phishing interstitial.
   </summary>
   <string-field name="domain">
     <summary>
@@ -2300,7 +2300,8 @@ now we are only interested in H264, VP8 and VP9.
   <owner>dominickn@chromium.org</owner>
   <owner>nparker@chromium.org</owner>
   <summary>
-    The domain+registry of a URL that triggered an SSL interstitial.
+    **DEPRECATED as of M57. The domain+registry of a URL that triggered an SSL
+    interstitial.
   </summary>
   <string-field name="domain">
     <summary>

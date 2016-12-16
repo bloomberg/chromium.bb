@@ -27,6 +27,7 @@ class ChromeControllerClient : public security_interstitials::ControllerClient {
   bool CanLaunchDateAndTimeSettings() override;
   void LaunchDateAndTimeSettings() override;
   void GoBack() override;
+  void GoBackAfterNavigationCommitted() override;
   void Proceed() override;
   void Reload() override;
   void OpenUrlInCurrentTab(const GURL& url) override;

@@ -44,6 +44,10 @@ void IOSChromeControllerClient::GoBack() {
   web_interstitial_->DontProceed();
 }
 
+void IOSChromeControllerClient::GoBackAfterNavigationCommitted() {
+  NOTREACHED();
+}
+
 void IOSChromeControllerClient::Proceed() {
   DCHECK(web_interstitial_);
   web_interstitial_->Proceed();

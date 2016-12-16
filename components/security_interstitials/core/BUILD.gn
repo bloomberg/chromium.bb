@@ -12,6 +12,8 @@ static_library("core") {
     "controller_client.h",
     "metrics_helper.cc",
     "metrics_helper.h",
+    "safe_browsing_error_ui.cc",
+    "safe_browsing_error_ui.h",
     "ssl_error_ui.cc",
     "ssl_error_ui.h",
   ]
@@ -23,7 +25,6 @@ static_library("core") {
     "//components/history/core/browser",
     "//components/metrics",
     "//components/prefs",
-    "//components/rappor",
     "//components/ssl_errors",
     "//components/strings",
     "//components/url_formatter",

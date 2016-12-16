@@ -40,6 +40,7 @@
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/interstitials/security_interstitial_page.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "components/security_interstitials/core/safe_browsing_error_ui.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
 
@@ -51,6 +52,7 @@ class ThreatDetails;
 class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
  public:
   typedef security_interstitials::UnsafeResource UnsafeResource;
+  typedef security_interstitials::SafeBrowsingErrorUI SafeBrowsingErrorUI;
   typedef std::vector<UnsafeResource> UnsafeResourceList;
   typedef std::map<content::WebContents*, UnsafeResourceList> UnsafeResourceMap;
 
@@ -92,6 +94,7 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   static bool ShouldReportThreatDetails(SBThreatType threat_type);
 
  protected:
+  friend class SafeBrowsingBlockingPageFactoryImpl;
   friend class SafeBrowsingBlockingPageTest;
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
                            ProceedThenDontProceed);
@@ -101,6 +104,8 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
                            MalwareReportsToggling);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
                            ExtendedReportingNotShownOnSecurePage);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
+                           MalwareReportsTransitionDisabled);
   FRIEND_TEST_ALL_PREFIXES(
       SafeBrowsingBlockingPageTest,
       ExtendedReportingNotShownOnSecurePageWithSecureSubresource);
@@ -133,9 +138,6 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   // milliseconds), in order to get data from the blocked resource itself.
   int64_t threat_details_proceed_delay_ms_;
 
-  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
-                           MalwareReportsTransitionDisabled);
-
   // Checks if we should even show the threat details option. For example, we
   // don't show it in incognito mode.
   bool CanShowThreatDetailsOption();
@@ -156,16 +158,11 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   static bool IsMainPageLoadBlocked(
       const UnsafeResourceList& unsafe_resources);
 
-  friend class SafeBrowsingBlockingPageFactoryImpl;
-
   // For reporting back user actions.
   SafeBrowsingUIManager* ui_manager_;
 
-  // True if the interstitial is blocking the main page because it is on one
-  // of our lists.  False if a subresource is being blocked, or in the case of
-  // client-side detection where the interstitial is shown after page load
-  // finishes.
-  bool is_main_frame_load_blocked_;
+  // For displaying safe browsing interstitial.
+  std::unique_ptr<SafeBrowsingErrorUI> sb_error_ui_;
 
   // The URL of the main frame that caused the warning.
   GURL main_frame_url_;
@@ -185,12 +182,7 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   bool proceeded_;
 
   // Which type of Safe Browsing interstitial this is.
-  enum SBInterstitialReason {
-    SB_REASON_MALWARE,
-    SB_REASON_HARMFUL,
-    SB_REASON_PHISHING,
-  };
-  SBInterstitialReason interstitial_reason_;
+  SafeBrowsingErrorUI::SBInterstitialReason interstitial_reason_;
 
   // The factory used to instantiate SafeBrowsingBlockingPage objects.
   // Useful for tests, so they can provide their own implementation of
@@ -198,24 +190,15 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   static SafeBrowsingBlockingPageFactory* factory_;
 
  private:
-  // Fills the passed dictionary with the values to be passed to the template
-  // when creating the HTML.
-  void PopulateExtendedReportingOption(base::DictionaryValue* load_time_data);
-  void PopulateMalwareLoadTimeData(base::DictionaryValue* load_time_data);
-  void PopulateHarmfulLoadTimeData(base::DictionaryValue* load_time_data);
-  void PopulatePhishingLoadTimeData(base::DictionaryValue* load_time_data);
-
-  static std::string GetMetricPrefix(const UnsafeResourceList& unsafe_resources,
-                                     SBInterstitialReason interstitial_reason);
+  static std::string GetMetricPrefix(
+      const UnsafeResourceList& unsafe_resources,
+      SafeBrowsingErrorUI::SBInterstitialReason interstitial_reason);
   static std::string GetExtraMetricsSuffix(
       const UnsafeResourceList& unsafe_resources);
-  static std::string GetRapporPrefix(SBInterstitialReason interstitial_reason);
-  static std::string GetDeprecatedRapporPrefix(
-      SBInterstitialReason interstitial_reason);
   static std::string GetSamplingEventName(
-      SBInterstitialReason interstitial_reason);
+      SafeBrowsingErrorUI::SBInterstitialReason interstitial_reason);
 
-  static SBInterstitialReason GetInterstitialReason(
+  static SafeBrowsingErrorUI::SBInterstitialReason GetInterstitialReason(
       const UnsafeResourceList& unsafe_resources);
 
   static std::unique_ptr<ChromeMetricsHelper> CreateMetricsHelper(

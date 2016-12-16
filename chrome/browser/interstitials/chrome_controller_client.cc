@@ -13,6 +13,7 @@
 #include "chrome/browser/interstitials/chrome_metrics_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
@@ -27,7 +28,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/common/url_constants.h"
 #endif
 
 #if defined(OS_WIN)
@@ -158,6 +158,19 @@ void ChromeControllerClient::LaunchDateAndTimeSettings() {
 
 void ChromeControllerClient::GoBack() {
   interstitial_page_->DontProceed();
+}
+
+// If the offending entry has committed, go back or to a safe page without
+// closing the error page. This error page will be closed when the new page
+// commits.
+void ChromeControllerClient::GoBackAfterNavigationCommitted() {
+  if (web_contents_->GetController().CanGoBack()) {
+    web_contents_->GetController().GoBack();
+  } else {
+    web_contents_->GetController().LoadURL(
+        GURL(chrome::kChromeUINewTabURL), content::Referrer(),
+        ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
+  }
 }
 
 void ChromeControllerClient::Proceed() {

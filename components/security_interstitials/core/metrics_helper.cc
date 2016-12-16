@@ -11,8 +11,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 using base::RecordAction;
@@ -21,13 +19,6 @@ using base::UserMetricsAction;
 namespace security_interstitials {
 
 namespace {
-
-// Used for setting bits in Rappor's "interstitial.*.flags"
-enum InterstitialFlagBits {
-  DID_PROCEED = 0,
-  IS_REPEAT_VISIT = 1,
-  HIGHEST_USED_BIT = 1
-};
 
 // Directly adds to the UMA histograms, using the same properties as
 // UMA_HISTOGRAM_ENUMERATION, because the macro doesn't allow non-constant
@@ -108,27 +99,18 @@ void MaybeRecordInteractionAsAction(MetricsHelper::Interaction interaction,
 
 MetricsHelper::~MetricsHelper() {}
 
-MetricsHelper::ReportDetails::ReportDetails()
-    : rappor_report_type(rappor::NUM_RAPPOR_TYPES) {}
+MetricsHelper::ReportDetails::ReportDetails() {}
 
 MetricsHelper::ReportDetails::ReportDetails(const ReportDetails& other) =
     default;
 
 MetricsHelper::ReportDetails::~ReportDetails() {}
 
-MetricsHelper::MetricsHelper(
-    const GURL& request_url,
-    const ReportDetails settings,
-    history::HistoryService* history_service,
-    const base::WeakPtr<rappor::RapporService>& rappor_service)
-    : request_url_(request_url),
-      settings_(settings),
-      rappor_service_(rappor_service),
-      num_visits_(-1) {
+MetricsHelper::MetricsHelper(const GURL& request_url,
+                             const ReportDetails settings,
+                             history::HistoryService* history_service)
+    : request_url_(request_url), settings_(settings), num_visits_(-1) {
   DCHECK(!settings_.metric_prefix.empty());
-  if (settings_.rappor_report_type == rappor::NUM_RAPPOR_TYPES)  // Default.
-    rappor_service_.reset();
-  DCHECK(!rappor_service_ || !settings_.rappor_prefix.empty());
   if (history_service) {
     history_service->GetVisibleVisitCountToHost(
         request_url_,
@@ -150,10 +132,6 @@ void MetricsHelper::RecordUserDecision(Decision decision) {
   }
 
   MaybeRecordDecisionAsAction(decision, settings_.metric_prefix);
-  RecordUserDecisionToRappor(decision, settings_.rappor_report_type,
-                             settings_.rappor_prefix);
-  RecordUserDecisionToRappor(decision, settings_.deprecated_rappor_report_type,
-                             settings_.deprecated_rappor_prefix);
   RecordExtraUserDecisionMetrics(decision);
 }
 
@@ -166,36 +144,6 @@ void MetricsHelper::RecordUserDecisionToMetrics(
     RecordSingleDecisionToMetrics(
         decision, histogram_name + "." + settings_.extra_suffix);
   }
-}
-
-void MetricsHelper::RecordUserDecisionToRappor(
-    Decision decision,
-    const rappor::RapporType rappor_report_type,
-    const std::string& rappor_prefix) {
-  if (!rappor_service_ || (decision != PROCEED && decision != DONT_PROCEED))
-    return;
-
-  std::unique_ptr<rappor::Sample> sample =
-      rappor_service_->CreateSample(rappor_report_type);
-
-  // This will populate, for example, "intersitial.malware2.domain" or
-  // "interstitial.ssl3.domain". The domain will be empty for hosts w/o TLDs.
-  sample->SetStringField(
-      "domain", rappor::GetDomainAndRegistrySampleFromGURL(request_url_));
-
-  // Only report history and decision if we have history data.
-  if (num_visits_ >= 0) {
-    int flags = 0;
-    if (decision == PROCEED)
-      flags |= 1 << InterstitialFlagBits::DID_PROCEED;
-    if (num_visits_ > 0)
-      flags |= 1 << InterstitialFlagBits::IS_REPEAT_VISIT;
-    // e.g. "interstitial.malware.flags"
-    sample->SetFlagsField("flags", flags,
-                          InterstitialFlagBits::HIGHEST_USED_BIT + 1);
-  }
-  rappor_service_->RecordSample("interstitial." + rappor_prefix,
-                                std::move(sample));
 }
 
 void MetricsHelper::RecordUserInteraction(Interaction interaction) {

@@ -25,7 +25,7 @@ class CaptivePortalMetricsRecorder;
 
 // This class adds desktop-Chrome-specific metrics (extension experience
 // sampling) to the security_interstitials::MetricsHelper. Together, they
-// record UMA, Rappor, and experience sampling metrics.
+// record UMA, and experience sampling metrics.
 
 // This class is meant to be used on the UI thread for captive portal metrics.
 class ChromeMetricsHelper : public security_interstitials::MetricsHelper {

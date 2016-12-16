@@ -26,10 +26,7 @@ IOSChromeMetricsHelper::IOSChromeMetricsHelper(
           ios::HistoryServiceFactory::GetForBrowserState(
               ios::ChromeBrowserState::FromBrowserState(
                   web_state->GetBrowserState()),
-              ServiceAccessType::EXPLICIT_ACCESS),
-          GetApplicationContext()->GetRapporServiceImpl()
-              ? GetApplicationContext()->GetRapporServiceImpl()->AsWeakPtr()
-              : base::WeakPtr<rappor::RapporService>()) {}
+              ServiceAccessType::EXPLICIT_ACCESS)) {}
 
 IOSChromeMetricsHelper::~IOSChromeMetricsHelper() {}
 
