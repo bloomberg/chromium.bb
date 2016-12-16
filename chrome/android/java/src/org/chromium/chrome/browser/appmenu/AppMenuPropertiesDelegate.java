@@ -136,8 +136,10 @@ public class AppMenuPropertiesDelegate {
             menu.findItem(R.id.update_menu_id).setVisible(
                     UpdateMenuItemHelper.getInstance().shouldShowMenuItem(mActivity));
 
+            boolean hasMoreThanOneTab = mActivity.getTabModelSelector().getTotalTabCount() > 1;
             menu.findItem(R.id.move_to_other_window_menu_id).setVisible(
-                    MultiWindowUtils.getInstance().isOpenInOtherWindowSupported(mActivity));
+                    MultiWindowUtils.getInstance().isOpenInOtherWindowSupported(mActivity)
+                    && hasMoreThanOneTab);
 
             MenuItem recentTabsMenuItem = menu.findItem(R.id.recent_tabs_menu_id);
             recentTabsMenuItem.setVisible(!isIncognito);
