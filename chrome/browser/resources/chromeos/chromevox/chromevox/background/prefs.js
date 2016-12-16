@@ -60,6 +60,7 @@ cvox.ChromeVoxPrefs = function() {
  */
 cvox.ChromeVoxPrefs.DEFAULT_PREFS = {
   'active': true,
+  'autoRead': false,
   'brailleCaptions': false,
   'brailleSideBySide': true,
   // TODO(dtseng): Leaking state about multiple key maps here until we have a

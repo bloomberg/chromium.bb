@@ -297,6 +297,15 @@ DesktopAutomationHandler.prototype = {
       // ChromeVox.
       this.createTextEditHandlerIfNeeded_(focus);
 
+      // If auto read is set, skip focus recovery and start reading from the top.
+      if (localStorage['autoRead'] == 'true' &&
+          AutomationUtil.getTopLevelRoot(evt.target) == evt.target) {
+        ChromeVoxState.instance.setCurrentRange(cursors.Range.fromNode(evt.target));
+        cvox.ChromeVox.tts.stop();
+        CommandHandler.onCommand('readFromHere');
+        return;
+      }
+
       // If initial focus was already placed on this page (e.g. if a user starts
       // tabbing before load complete), then don't move ChromeVox's position on
       // the page.

@@ -474,6 +474,9 @@
       <message desc="An option to use more verbose feedback for the user." name="IDS_CHROMEVOX_OPTIONS_VERBOSITY_VERBOSE">
         Enable verbose descriptions.
       </message>
+      <message desc="An option to automatically read the page after it loads." name="IDS_CHROMEVOX_OPTIONS_AUTO_READ">
+        Automatically read page after it finishes loading.
+      </message>
       <message desc="An option to show the cursor between characters." name="IDS_CHROMEVOX_OPTIONS_CURSOR_BETWEEN_CHARACTERS">
         Place cursor between characters when editing text (like Mac OS X).
       </message>
