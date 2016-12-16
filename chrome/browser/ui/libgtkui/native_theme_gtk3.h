@@ -33,6 +33,8 @@ class NativeThemeGtk3 : public ui::NativeThemeBase {
   NativeThemeGtk3();
   ~NativeThemeGtk3() override;
 
+  SkColor LookupGtkThemeColor(ColorId color_id) const;
+
   // Returns various widgets for theming use.
   // TODO(thomasanderson): Remove all of these.
   GtkWidget* GetWindow() const;
