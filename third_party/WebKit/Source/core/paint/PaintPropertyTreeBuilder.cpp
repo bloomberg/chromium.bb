@@ -824,7 +824,7 @@ void PaintPropertyTreeBuilder::updateOutOfFlowContext(
 // tree-walk order of "columns" -> spanner placeholder -> spanner -> absolute.
 // Here we rebuild a ContainingBlockContext based on the properties of
 // "relative" for "absolute".
-static void overrideContaineringBlockContextFromRealContainingBlock(
+static void overrideContainingBlockContextFromRealContainingBlock(
     const LayoutBlock& containingBlock,
     PaintPropertyTreeBuilderContext::ContainingBlockContext& context) {
   const auto* properties =
@@ -863,10 +863,10 @@ void PaintPropertyTreeBuilder::updateContextForBoxPosition(
           context.containerForAbsolutePosition =
               toLayoutBoxModelObject(container);
           // The container is never a LayoutInline. In the example above
-          // overrideContaineringBlockContextFromRealContainingBlock(), if we
+          // overrideContainingBlockContextFromRealContainingBlock(), if we
           // change the container to an inline, there will be an anonymous
           // blocks created because the spanner is always a block.
-          overrideContaineringBlockContextFromRealContainingBlock(
+          overrideContainingBlockContextFromRealContainingBlock(
               toLayoutBlock(*container), context.current);
         }
       } else {
@@ -894,7 +894,7 @@ void PaintPropertyTreeBuilder::updateContextForBoxPosition(
       if (context.isUnderMultiColumnSpanner) {
         // The container of the fixed-position object may or may not be in the
         // normal tree-walk order.
-        overrideContaineringBlockContextFromRealContainingBlock(
+        overrideContainingBlockContextFromRealContainingBlock(
             toLayoutBlock(*boxModelObject.container()), context.current);
       } else {
         context.current = context.fixedPosition;
