@@ -107,25 +107,35 @@ def origin_trial_features(interface, constants, attributes, methods):
     to be installed on every instance of the interface. This list is the union
     of the sets of features used for constants, attributes and methods.
     """
+    KEY = 'origin_trial_feature_name'  # pylint: disable=invalid-name
+
+    def member_filter(members):
+        return sorted([member for member in members if member.get(KEY) and not member.get('exposed_test')])
+
+    def member_filter_by_name(members, name):
+        return [member for member in members if member[KEY] == name]
 
     # Collect all members visible on this interface with a defined origin trial
-    origin_trial_members = (
-        [constant for constant in constants if constant['origin_trial_feature_name']] +
-        [attribute for attribute in attributes if attribute['origin_trial_feature_name']] +
-        [method for method in methods if (
-            v8_methods.method_is_visible(method, interface.is_partial) and
-            method['origin_trial_feature_name'])]
-    )
-    # Group members by origin_trial_feature_name
-    members_by_name = itertools.groupby(sorted(origin_trial_members,
-                                               key=itemgetter('origin_trial_feature_name')),
-                                        itemgetter('origin_trial_feature_name'))
+    origin_trial_constants = member_filter(constants)
+    origin_trial_attributes = member_filter(attributes)
+    origin_trial_methods = member_filter([method for method in methods
+                                          if v8_methods.method_is_visible(method, interface.is_partial) and
+                                          not v8_methods.conditionally_exposed(method) and
+                                          not v8_methods.custom_registration(method)])
+
+    feature_names = set([member[KEY] for member in origin_trial_constants + origin_trial_attributes + origin_trial_methods])
+
     # Construct the list of dictionaries. 'needs_instance' will be true if any
     # member for the feature has 'on_instance' defined as true.
     features = [{'name': name,
-                 'needs_instance': reduce(or_, (member.get('on_instance', False)
-                                                for member in members))}
-                for name, members in members_by_name]
+                 'constants': member_filter_by_name(origin_trial_constants, name),
+                 'attributes': member_filter_by_name(origin_trial_attributes, name),
+                 'methods': member_filter_by_name(origin_trial_methods, name)}
+                for name in feature_names]
+    for feature in features:
+        members = feature['constants'] + feature['attributes'] + feature['methods']
+        feature['needs_instance'] = reduce(or_, (member.get('on_instance', False) for member in members))
+
     if features:
         includes.add('bindings/core/v8/ScriptState.h')
         includes.add('core/origin_trials/OriginTrials.h')

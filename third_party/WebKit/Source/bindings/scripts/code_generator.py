@@ -16,7 +16,7 @@ from v8_globals import includes
 from v8_interface import constant_filters
 from v8_types import set_component_dirs
 from v8_methods import method_filters
-from v8_utilities import capitalize, for_origin_trial_feature, unique_by
+from v8_utilities import capitalize, unique_by
 from utilities import (idl_filename_to_component, is_valid_component_dependency,
                        format_remove_duplicates, format_blink_cpp_source_code)
 
@@ -82,7 +82,6 @@ def initialize_jinja_env(cache_dir):
     jinja_env.filters.update({
         'blink_capitalize': capitalize,
         'exposed': exposed_if,
-        'for_origin_trial_feature': for_origin_trial_feature,
         'format_blink_cpp_source_code': format_blink_cpp_source_code,
         'format_remove_duplicates': format_remove_duplicates,
         'runtime_enabled': runtime_enabled_if,

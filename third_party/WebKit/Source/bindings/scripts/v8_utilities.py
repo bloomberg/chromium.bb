@@ -123,13 +123,6 @@ def unique_by(dict_list, key):
     return filtered_list
 
 
-def for_origin_trial_feature(items, feature_name):
-    """Filters the list of attributes or constants, and returns those defined for the named origin trial feature."""
-    return [item for item in items if
-            item['origin_trial_feature_name'] == feature_name and
-            not item.get('exposed_test')]
-
-
 ################################################################################
 # C++
 ################################################################################

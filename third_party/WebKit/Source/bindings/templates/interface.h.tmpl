@@ -148,12 +148,12 @@ class {{v8_class}} {
   {% endfor %}
   {% endif %}
 
-  {% for origin_trial_feature in origin_trial_features %}
+  {% for feature in origin_trial_features %}
 
-  static void install{{origin_trial_feature.name}}(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
-  static void install{{origin_trial_feature.name}}(ScriptState*, v8::Local<v8::Object> instance);
-  {% if not origin_trial_feature.needs_instance %}
-  static void install{{origin_trial_feature.name}}(ScriptState*);
+  static void install{{feature.name}}(v8::Isolate*, const DOMWrapperWorld&, v8::Local<v8::Object> instance, v8::Local<v8::Object> prototype, v8::Local<v8::Function> interface);
+  static void install{{feature.name}}(ScriptState*, v8::Local<v8::Object> instance);
+  {% if not feature.needs_instance %}
+  static void install{{feature.name}}(ScriptState*);
   {% endif %}
   {% endfor %}
   {% if has_partial_interface %}

@@ -85,20 +85,10 @@ def filter_method_configuration(methods, interface_is_partial):
             not custom_registration(method)]
 
 
-def method_for_origin_trial_feature(methods, feature_name, interface_is_partial):
-    """Filters the list of methods, and returns those defined for the named origin trial feature."""
-    return [method for method in methods if
-            method_is_visible(method, interface_is_partial) and
-            method['origin_trial_feature_name'] == feature_name and
-            not conditionally_exposed(method) and
-            not custom_registration(method)]
-
-
 def method_filters():
     return {'conditionally_exposed': filter_conditionally_exposed,
             'custom_registration': filter_custom_registration,
-            'has_method_configuration': filter_method_configuration,
-            'method_for_origin_trial_feature': method_for_origin_trial_feature}
+            'has_method_configuration': filter_method_configuration}
 
 
 def use_local_result(method):
