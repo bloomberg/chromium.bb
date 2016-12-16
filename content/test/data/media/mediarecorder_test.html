@@ -168,11 +168,10 @@ function testStartStopAndRecorderState() {
 // Tests that when MediaRecorder's start(0) function is called, some data is
 // made available by media recorder via dataavailable events, containing non
 // empty blob data.
-function testStartAndDataAvailable(codec) {
+function testStartAndDataAvailable(mimeType) {
   var videoSize = 0;
   var emptyBlobs = 0;
   var timeStamps = [];
-  const mimeType = codec ? "video/webm;codecs=" + String(codec) : "";
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(stream) {
         return createAndStartMediaRecorder(stream, mimeType);
@@ -207,14 +206,14 @@ function testStartAndDataAvailable(codec) {
 
 // Tests that when MediaRecorder's start(timeSlice) is called, some data
 // available events are fired containing non empty blob data.
-function testStartWithTimeSlice(codec) {
+function testStartWithTimeSlice(mimeType) {
   var videoSize = 0;
   var emptyBlobs = 0;
   var timeStamps = [];
-  const mimeType = codec ? "video/webm;codecs=" + String(codec) : "";
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(stream) {
-        return createAndStartMediaRecorder(stream, mimeType,                                       DEFAULT_TIME_SLICE);
+        return createAndStartMediaRecorder(stream, mimeType,
+                                           DEFAULT_TIME_SLICE);
       })
       .then(function(recorder) {
         recorder.ondataavailable = function(event) {
@@ -287,10 +286,9 @@ function testIllegalResumeThrowsDOMError() {
 }
 
 // Tests that MediaRecorder sends data blobs when resume() is called.
-function testResumeAndDataAvailable(codec) {
+function testResumeAndDataAvailable(mimeType) {
   var videoSize = 0;
   var emptyBlobs = 0;
-  const mimeType = codec ? "video/webm;codecs=" + String(codec) : "";
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(stream) {
         return createAndStartMediaRecorder(stream, mimeType);
@@ -413,10 +411,9 @@ function testIllegalPauseThrowsDOMError() {
 }
 
 // Tests that a remote peer connection stream can be successfully recorded.
-function testRecordRemotePeerConnection(codec) {
+function testRecordRemotePeerConnection(mimeType) {
   var videoSize = 0;
   var timeStamps = [];
-  const mimeType = codec ? "video/webm;codecs=" + String(codec) : "";
   navigator.mediaDevices.getUserMedia(DEFAULT_CONSTRAINTS)
       .then(function(localStream) {
         return setupPeerConnection(localStream);

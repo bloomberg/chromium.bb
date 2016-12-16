@@ -74,16 +74,18 @@ bool MediaRecorderHandler::canSupportMimeType(
     return true;
 
   const std::string type(web_type.utf8());
-  const bool video = base::EqualsCaseInsensitiveASCII(type, "video/webm");
+  const bool video = base::EqualsCaseInsensitiveASCII(type, "video/webm") ||
+                     base::EqualsCaseInsensitiveASCII(type, "video/x-matroska");
   const bool audio =
       video ? false : base::EqualsCaseInsensitiveASCII(type, "audio/webm");
   if (!video && !audio)
     return false;
 
   // Both |video| and |audio| support empty |codecs|; |type| == "video" supports
-  // vp8, vp9 or opus; |type| = "audio", supports only opus.
+  // vp8, vp9, h264 and avc1 or opus; |type| = "audio", supports only opus.
   // http://www.webmproject.org/docs/container Sec:"HTML5 Video Type Parameters"
-  static const char* const kVideoCodecs[] = { "vp8", "vp9", "h264", "opus" };
+  static const char* const kVideoCodecs[] = {"vp8", "vp9", "h264", "avc1",
+                                             "opus"};
   static const char* const kAudioCodecs[] = { "opus" };
   const char* const* codecs = video ? &kVideoCodecs[0] : &kAudioCodecs[0];
   const int codecs_count =
@@ -128,6 +130,8 @@ bool MediaRecorderHandler::initialize(
     codec_id_ = VideoTrackRecorder::CodecId::VP9;
 #if BUILDFLAG(RTC_USE_H264)
   else if (codecs_str.find("h264") != std::string::npos)
+    codec_id_ = VideoTrackRecorder::CodecId::H264;
+  else if (codecs_str.find("avc1") != std::string::npos)
     codec_id_ = VideoTrackRecorder::CodecId::H264;
 #endif
 

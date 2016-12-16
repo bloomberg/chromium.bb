@@ -20,6 +20,7 @@ test(function() {
   assert_true(MediaRecorder.isTypeSupported("video/webm;codecs=vp9.0"));
   assert_true(MediaRecorder.isTypeSupported("video/webm;codecs=h264"));
   assert_true(MediaRecorder.isTypeSupported("video/webm;codecs=H264"));
+  assert_true(MediaRecorder.isTypeSupported("video/webm;codecs=avc1"));
   // "video/webm" supports audio codec specification, see
   // http://www.webmproject.org/docs/container/
   assert_true(MediaRecorder.isTypeSupported("video/webm;codecs=vp8,opus"));
@@ -28,6 +29,8 @@ test(function() {
   assert_true(MediaRecorder.isTypeSupported("video/webm;codecs=vp8,vp9,opus"));
   assert_true(MediaRecorder.isTypeSupported("video/webm;codecs=h264,opus"));
   assert_true(MediaRecorder.isTypeSupported("video/webm;codecs=h264,vp9,opus"));
+  // https://matroska.org/technical/specs/notes.html#MIME
+  assert_true(MediaRecorder.isTypeSupported("video/x-matroska;codecs=avc1"));
 }, 'check MediaRecorder.isTypeSupported() with valid video MIME types');
 
 test(function() {

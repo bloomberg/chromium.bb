@@ -18,10 +18,12 @@ static const char kMediaRecorderHtmlFile[] = "/media/mediarecorder_test.html";
 
 static struct EncodingParameters {
   bool disable_accelerator;
-  std::string video_codec;
+  std::string mime_type;
 } const kEncodingParameters[] = {
-    {true, "VP8"},  {true, "VP9"},  {true, "H264"},
-    {false, "VP8"}, {false, "VP9"}, {false, "H264"},
+    {true, "video/webm;codecs=VP8"},   {true, "video/webm;codecs=VP9"},
+    {true, "video/webm;codecs=avc1"},  {true, "video/x-matroska;codecs=AVC1"},
+    {false, "video/webm;codecs=VP8"},  {false, "video/webm;codecs=VP9"},
+    {false, "video/webm;codecs=H264"},
 };
 
 }  // namespace
@@ -71,14 +73,14 @@ IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest, StartAndStop) {
 IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest, StartAndDataAvailable) {
   MaybeForceDisableEncodeAccelerator(GetParam().disable_accelerator);
   MakeTypicalCall(base::StringPrintf("testStartAndDataAvailable(\"%s\");",
-                                     GetParam().video_codec.c_str()),
+                                     GetParam().mime_type.c_str()),
                   kMediaRecorderHtmlFile);
 }
 
 IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest, StartWithTimeSlice) {
   MaybeForceDisableEncodeAccelerator(GetParam().disable_accelerator);
   MakeTypicalCall(base::StringPrintf("testStartWithTimeSlice(\"%s\");",
-                                     GetParam().video_codec.c_str()),
+                                     GetParam().mime_type.c_str()),
                   kMediaRecorderHtmlFile);
 }
 
@@ -93,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest, NoResumeWhenRecorderInactive) {
 IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest, ResumeAndDataAvailable) {
   MaybeForceDisableEncodeAccelerator(GetParam().disable_accelerator);
   MakeTypicalCall(base::StringPrintf("testResumeAndDataAvailable(\"%s\");",
-                                     GetParam().video_codec.c_str()),
+                                     GetParam().mime_type.c_str()),
                   kMediaRecorderHtmlFile);
 }
 
@@ -150,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
 IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest, MAYBE_PeerConnection) {
   MaybeForceDisableEncodeAccelerator(GetParam().disable_accelerator);
   MakeTypicalCall(base::StringPrintf("testRecordRemotePeerConnection(\"%s\");",
-                                     GetParam().video_codec.c_str()),
+                                     GetParam().mime_type.c_str()),
                   kMediaRecorderHtmlFile);
 }
 
