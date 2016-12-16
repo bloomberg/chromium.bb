@@ -16,6 +16,9 @@ SecurityStyleExplanations::SecurityStyleExplanations()
       scheme_is_cryptographic(false),
       pkp_bypassed(false) {}
 
+SecurityStyleExplanations::SecurityStyleExplanations(
+    const SecurityStyleExplanations& other) = default;
+
 SecurityStyleExplanations::~SecurityStyleExplanations() {
 }
 

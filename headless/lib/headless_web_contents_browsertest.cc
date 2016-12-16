@@ -88,7 +88,6 @@ class HeadlessWebContentsSecurityTest
   void OnSecurityStateChanged(
       const security::SecurityStateChangedParams& params) override {
     EXPECT_EQ(security::SecurityState::NEUTRAL, params.GetSecurityState());
-    EXPECT_TRUE(params.HasExplanations());
 
     FinishAsynchronousTest();
   }

@@ -129,9 +129,10 @@ void SecurityHandler::DidChangeVisibleSecurityState() {
 
   frontend_->SecurityStateChanged(
       security_state,
-      Maybe<Explanations>(std::move(explanations)),
-      Maybe<Security::InsecureContentStatus>(std::move(insecure_status)),
-      Maybe<bool>(security_style_explanations.scheme_is_cryptographic));
+      security_style_explanations.scheme_is_cryptographic,
+      std::move(explanations),
+      std::move(insecure_status),
+      Maybe<std::string>(security_style_explanations.summary));
 }
 
 Response SecurityHandler::Enable() {

@@ -27,6 +27,8 @@ namespace content {
 // levels.
 struct SecurityStyleExplanations {
   CONTENT_EXPORT SecurityStyleExplanations();
+  CONTENT_EXPORT SecurityStyleExplanations(
+      const SecurityStyleExplanations& other);
   CONTENT_EXPORT ~SecurityStyleExplanations();
 
   // True if the page was loaded over HTTPS and ran mixed (HTTP) content
@@ -62,6 +64,10 @@ struct SecurityStyleExplanations {
 
   // True if PKP was bypassed due to a local trust anchor.
   bool pkp_bypassed;
+
+  // User-visible summary of the security style, set only when
+  // the style cannot be determined from HTTPS status alone.
+  std::string summary;
 
   // Explanations corresponding to each security level. The embedder should
   // display explanations in the order: broken, unauthenticated, secure, info.

@@ -211,6 +211,12 @@ blink::WebSecurityStyle GetSecurityStyle(
       SecurityLevelToSecurityStyle(
           security_state::kDisplayedInsecureContentLevel);
 
+  if (security_info.malicious_content_status !=
+      security_state::MALICIOUS_CONTENT_STATUS_NONE) {
+    security_style_explanations->summary =
+        l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING);
+  }
+
   // Check if the page is HTTP; if so, no more explanations are needed. Note
   // that SecurityStyleUnauthenticated does not necessarily mean that
   // the page is loaded over HTTP, because the security style merely

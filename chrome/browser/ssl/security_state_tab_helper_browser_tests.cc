@@ -1544,6 +1544,7 @@ IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
   EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
   EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
+  EXPECT_TRUE(observer.latest_explanations().summary.empty());
 
   // Visit an (otherwise valid) HTTPS page that displays mixed content.
   std::string replacement_path;
@@ -1566,6 +1567,7 @@ IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
   EXPECT_TRUE(mixed_content_explanation.scheme_is_cryptographic);
   EXPECT_FALSE(observer.latest_explanations().pkp_bypassed);
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
+  EXPECT_TRUE(observer.latest_explanations().summary.empty());
   EXPECT_TRUE(mixed_content_explanation.displayed_mixed_content);
   EXPECT_FALSE(mixed_content_explanation.ran_mixed_content);
   EXPECT_EQ(blink::WebSecurityStyleUnauthenticated,
@@ -1591,6 +1593,7 @@ IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
   EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
   EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
+  EXPECT_TRUE(observer.latest_explanations().summary.empty());
 
   // Before clicking through, navigate to a different page, and then go
   // back to the interstitial.
@@ -1609,6 +1612,7 @@ IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
   EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
   EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
+  EXPECT_TRUE(observer.latest_explanations().summary.empty());
 
   // After going back to the interstitial, an event for a broken lock
   // icon should fire again.
@@ -1625,6 +1629,7 @@ IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
   EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
   EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
+  EXPECT_TRUE(observer.latest_explanations().summary.empty());
 
   // Since the next expected style is the same as the previous, clear
   // the observer (to make sure that the event fires twice and we don't
@@ -1645,6 +1650,7 @@ IN_PROC_BROWSER_TEST_F(DidChangeVisibleSecurityStateTest,
   EXPECT_TRUE(observer.latest_explanations().info_explanations.empty());
   EXPECT_FALSE(observer.latest_explanations().displayed_mixed_content);
   EXPECT_FALSE(observer.latest_explanations().ran_mixed_content);
+  EXPECT_TRUE(observer.latest_explanations().summary.empty());
 }
 
 // Visit a valid HTTPS page, then a broken HTTPS page, and then go back,

@@ -31,7 +31,7 @@ function test()
         }
     ];
 
-    InspectorTest.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.Secure, explanations, insecureContentStatus, true));
+    InspectorTest.mainTarget.model(Security.SecurityModel).dispatchEventToListeners(Security.SecurityModel.Events.SecurityStateChanged, new Security.PageSecurityState(Protocol.Security.SecurityState.Secure, true, explanations, insecureContentStatus, null));
 
     var request = new SDK.NetworkRequest(InspectorTest.mainTarget, 0, "http://foo.test", "https://foo.test", 0, 0, null);
     InspectorTest.dispatchRequestFinished(request);

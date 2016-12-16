@@ -43,6 +43,7 @@
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
 #include "components/security_state/core/security_state.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -58,6 +59,7 @@
 #include "net/cert/mock_cert_verifier.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using chrome_browser_interstitials::SecurityInterstitialIDNTest;
 using content::BrowserThread;
@@ -1117,21 +1119,27 @@ class SecurityStyleTestObserver : public content::WebContentsObserver {
  public:
   explicit SecurityStyleTestObserver(content::WebContents* web_contents)
       : content::WebContentsObserver(web_contents),
-        latest_security_style_(blink::WebSecurityStyleUnknown) {}
+        latest_security_style_(blink::WebSecurityStyleUnknown),
+        latest_security_style_explanations_() {}
 
   blink::WebSecurityStyle latest_security_style() const {
     return latest_security_style_;
   }
 
+  content::SecurityStyleExplanations latest_security_style_explanations()
+      const {
+    return latest_security_style_explanations_;
+  }
+
   // WebContentsObserver:
   void DidChangeVisibleSecurityState() override {
-    content::SecurityStyleExplanations security_style_explanations;
     latest_security_style_ = web_contents()->GetDelegate()->GetSecurityStyle(
-        web_contents(), &security_style_explanations);
+        web_contents(), &latest_security_style_explanations_);
   }
 
  private:
   blink::WebSecurityStyle latest_security_style_;
+  content::SecurityStyleExplanations latest_security_style_explanations_;
   DISALLOW_COPY_AND_ASSIGN(SecurityStyleTestObserver);
 };
 
@@ -1150,6 +1158,9 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   ExpectSecurityIndicatorDowngrade(error_tab, 0u);
   EXPECT_EQ(blink::WebSecurityStyleAuthenticationBroken,
             observer.latest_security_style());
+  // Security style summary for Developer Tools should contain a warning.
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING),
+            observer.latest_security_style_explanations().summary);
 
   // The security indicator should still be downgraded post-interstitial.
   EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
@@ -1267,11 +1278,17 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
 // HTTPS (meaning that the SB state overrides the HTTPS state).
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
                        SecurityState_ValidHTTPS) {
-  // The security indicator should be downgraded while the interstitial shows.
-  SetupWarningAndNavigateToValidHTTPS();
   WebContents* error_tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(error_tab);
+  SecurityStyleTestObserver observer(error_tab);
+
+  // The security indicator should be downgraded while the interstitial shows.
+  SetupWarningAndNavigateToValidHTTPS();
   ExpectSecurityIndicatorDowngrade(error_tab, 0u);
+
+  // Security style summary for Developer Tools should contain a warning.
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING),
+            observer.latest_security_style_explanations().summary);
 
   // The security indicator should still be downgraded post-interstitial.
   EXPECT_TRUE(ClickAndWaitForDetach("proceed-link"));
@@ -1279,6 +1296,10 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
   WebContents* post_tab = browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(post_tab);
   ExpectSecurityIndicatorDowngrade(post_tab, 0u);
+
+  // Security style summary for Developer Tools should still contain a warning.
+  EXPECT_EQ(l10n_util::GetStringUTF8(IDS_SAFEBROWSING_WARNING),
+            observer.latest_security_style_explanations().summary);
 }
 
 // Test that the security indicator is still downgraded after two interstitials
