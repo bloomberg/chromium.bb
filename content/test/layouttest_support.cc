@@ -305,10 +305,11 @@ class CopyRequestSwapPromise : public cc::SwapPromise {
     DCHECK(compositor_frame_sink_from_commit_);
   }
   void DidActivate() override {}
-  void DidSwap(cc::CompositorFrameMetadata*) override {
+  void WillSwap(cc::CompositorFrameMetadata*) override {
     compositor_frame_sink_from_commit_->RequestCopyOfOutput(
         std::move(copy_request_));
   }
+  void DidSwap() override {}
   DidNotSwapAction DidNotSwap(DidNotSwapReason r) override {
     // The compositor should always swap in layout test mode.
     NOTREACHED() << "did not swap for reason " << r;

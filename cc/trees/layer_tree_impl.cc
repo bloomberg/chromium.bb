@@ -1515,10 +1515,17 @@ void LayerTreeImpl::AppendSwapPromises(
 
 void LayerTreeImpl::FinishSwapPromises(CompositorFrameMetadata* metadata) {
   for (const auto& swap_promise : swap_promise_list_)
-    swap_promise->DidSwap(metadata);
+    swap_promise->WillSwap(metadata);
+  for (const auto& swap_promise : pinned_swap_promise_list_)
+    swap_promise->WillSwap(metadata);
+}
+
+void LayerTreeImpl::ClearSwapPromises() {
+  for (const auto& swap_promise : swap_promise_list_)
+    swap_promise->DidSwap();
   swap_promise_list_.clear();
   for (const auto& swap_promise : pinned_swap_promise_list_)
-    swap_promise->DidSwap(metadata);
+    swap_promise->DidSwap();
   pinned_swap_promise_list_.clear();
 }
 

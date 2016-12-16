@@ -57,7 +57,7 @@ void QueueMessageSwapPromise::DidActivate() {
   }
 }
 
-void QueueMessageSwapPromise::DidSwap(cc::CompositorFrameMetadata* metadata) {
+void QueueMessageSwapPromise::WillSwap(cc::CompositorFrameMetadata* metadata) {
 #if DCHECK_IS_ON()
   DCHECK(!completed_);
 #endif
@@ -65,6 +65,8 @@ void QueueMessageSwapPromise::DidSwap(cc::CompositorFrameMetadata* metadata) {
   // The OutputSurface will take care of the Drain+Send.
   PromiseCompleted();
 }
+
+void QueueMessageSwapPromise::DidSwap() {}
 
 cc::SwapPromise::DidNotSwapAction QueueMessageSwapPromise::DidNotSwap(
     DidNotSwapReason reason) {

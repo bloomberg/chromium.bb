@@ -31,7 +31,8 @@ class MockSwapPromise : public SwapPromise {
   ~MockSwapPromise() override {}
 
   void DidActivate() override {}
-  void DidSwap(CompositorFrameMetadata* metadata) override {}
+  void WillSwap(CompositorFrameMetadata* metadata) override {}
+  void DidSwap() override {}
   DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
     return DidNotSwapAction::BREAK_PROMISE;
   }

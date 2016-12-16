@@ -35,10 +35,12 @@ LatencyInfoSwapPromise::LatencyInfoSwapPromise(const ui::LatencyInfo& latency)
 LatencyInfoSwapPromise::~LatencyInfoSwapPromise() {
 }
 
-void LatencyInfoSwapPromise::DidSwap(CompositorFrameMetadata* metadata) {
+void LatencyInfoSwapPromise::WillSwap(CompositorFrameMetadata* metadata) {
   DCHECK(!latency_.terminated());
   metadata->latency_info.push_back(latency_);
 }
+
+void LatencyInfoSwapPromise::DidSwap() {}
 
 SwapPromise::DidNotSwapAction LatencyInfoSwapPromise::DidNotSwap(
     DidNotSwapReason reason) {

@@ -20,8 +20,9 @@ namespace cc {
 // If the commit results in a successful activation of the pending layer tree,
 // SwapPromise::DidActivate() will be called.
 //
-// If the new compositor state is sent to the output, SwapPromise::DidSwap()
-// will be called.
+// If the new compositor state is goint to be sent to the output,
+// SwapPromise::WillSwap() will be called before the swap and
+// SwapPromise::DidSwap() will be called once the swap is over.
 //
 // If the scheduler fails to activate the pending tree, or the compositor
 // fails to send its new state to the output, SwapPromise::DidNotSwap() will
@@ -30,13 +31,13 @@ namespace cc {
 // Promises complete afer either DidSwap() or DidNotSwap() is called, thus
 // there are three possible call sequences:
 //   DidNotSwap()
-//   DidActivate() ; DidSwap()
+//   DidActivate() ; WillSwap(); DidSwap()
 //   DidActivate() ; DidNotSwap()
 //
 // Clients that wish to use SwapPromise should have a subclass that defines
-// the behavior of DidActivate(), DidSwap() and DidNotSwap(). Notice that the
-// promise can be broken at either main or impl thread, e.g. commit fails on
-// main thread, new frame data has no actual damage so
+// the behavior of DidActivate(), WillSwap(), DidSwap() and DidNotSwap(). Notice
+// that the promise can be broken at either main or impl thread, e.g. commit
+// fails on main thread, new frame data has no actual damage so
 // LayerTreeHostImpl::SwapBuffers() bails out early on impl thread, so don't
 // assume that Did*() methods are called at a particular thread. It is better
 // to let the subclass carry thread-safe member data and operate on that
@@ -59,7 +60,8 @@ class CC_EXPORT SwapPromise {
   virtual ~SwapPromise() {}
 
   virtual void DidActivate() = 0;
-  virtual void DidSwap(CompositorFrameMetadata* metadata) = 0;
+  virtual void WillSwap(CompositorFrameMetadata* metadata) = 0;
+  virtual void DidSwap() = 0;
   // Return |KEEP_ACTIVE| if this promise should remain active (should not be
   // broken by the owner).
   virtual DidNotSwapAction DidNotSwap(DidNotSwapReason reason) = 0;

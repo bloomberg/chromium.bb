@@ -26,9 +26,10 @@ class SatisfySwapPromise : public SwapPromise {
 
  private:
   void DidActivate() override {}
-  void DidSwap(CompositorFrameMetadata* metadata) override {
+  void WillSwap(CompositorFrameMetadata* metadata) override {
     metadata->satisfies_sequences.push_back(sequence_.sequence);
   }
+  void DidSwap() override {}
 
   DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
     satisfy_callback_.Run(sequence_);

@@ -73,10 +73,10 @@ class BlimpCompositor::FrameTrackingSwapPromise : public cc::SwapPromise {
 
   // cc::SwapPromise implementation.
   void DidActivate() override {}
-  void DidSwap(cc::CompositorFrameMetadata* metadata) override {
-    // DidSwap is called right before the CompositorFrame is submitted to the
-    // CompositorFrameSink, so we make sure to delay the copy request till that
-    // frame is submitted.
+  void WillSwap(cc::CompositorFrameMetadata* metadata) override {}
+  void DidSwap() override {
+    // DidSwap could be called on compositor thread and we need this to run on
+    // the main thread.
     main_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&BlimpCompositor::MakeCopyRequestOnNextSwap,

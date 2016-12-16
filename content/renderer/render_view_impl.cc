@@ -511,10 +511,12 @@ class AlwaysDrawSwapPromise : public cc::SwapPromise {
 
   void DidActivate() override {}
 
-  void DidSwap(cc::CompositorFrameMetadata* metadata) override {
+  void WillSwap(cc::CompositorFrameMetadata* metadata) override {
     DCHECK(!latency_info_.terminated());
     metadata->latency_info.push_back(latency_info_);
   }
+
+  void DidSwap() override {}
 
   DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
     return reason == DidNotSwapReason::SWAP_FAILS

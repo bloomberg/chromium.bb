@@ -2313,7 +2313,8 @@ class PersistentSwapPromise
   ~PersistentSwapPromise() override = default;
 
   void DidActivate() override {}
-  MOCK_METHOD1(DidSwap, void(CompositorFrameMetadata* metadata));
+  MOCK_METHOD1(WillSwap, void(CompositorFrameMetadata* metadata));
+  MOCK_METHOD0(DidSwap, void());
 
   DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
     return DidNotSwapAction::KEEP_ACTIVE;
@@ -2331,7 +2332,8 @@ class NotPersistentSwapPromise
   ~NotPersistentSwapPromise() override = default;
 
   void DidActivate() override {}
-  void DidSwap(CompositorFrameMetadata* metadata) override {}
+  void WillSwap(CompositorFrameMetadata* metadata) override {}
+  void DidSwap() override {}
 
   DidNotSwapAction DidNotSwap(DidNotSwapReason reason) override {
     return DidNotSwapAction::BREAK_PROMISE;
@@ -2368,7 +2370,7 @@ TEST_F(LayerTreeImplTest, PersistentSwapPromisesAreKeptAlive) {
   for (size_t i = 0; i < persistent_promises.size(); ++i) {
     SCOPED_TRACE(testing::Message() << "While checking case #" << i);
     ASSERT_TRUE(persistent_promises[i]);
-    EXPECT_CALL(*persistent_promises[i], DidSwap(testing::_));
+    EXPECT_CALL(*persistent_promises[i], WillSwap(testing::_));
   }
   host_impl().active_tree()->FinishSwapPromises(nullptr);
 }
