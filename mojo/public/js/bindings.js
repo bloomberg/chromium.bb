@@ -188,8 +188,9 @@ define("mojo/public/js/bindings", [
     this.bindingId_ = bindingId;
     this.binding_ = new Binding(interfaceType, impl, requestOrHandle);
 
-    this.binding_.setConnectionErrorHandler(
-        () => this.bindingSet_.onConnectionError(bindingId));
+    this.binding_.setConnectionErrorHandler(function() {
+      this.bindingSet_.onConnectionError(bindingId);
+    }.bind(this));
   }
 
   BindingSetEntry.prototype.close = function() {
