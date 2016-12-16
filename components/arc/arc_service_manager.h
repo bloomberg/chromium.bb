@@ -51,6 +51,9 @@ class ArcServiceManager {
   static ArcServiceManager* Get();
 
   // Returns if the ARC Service Manager instance exists.
+  // DO NOT CALL THIS. This function is a dirty workaround for properly shutting
+  // down chrome/browser/chromeos/extensions/file_manager/event_router.cc, and
+  // will likely be removed in the future.
   static bool IsInitialized();
 
   void AddObserver(Observer* observer);
