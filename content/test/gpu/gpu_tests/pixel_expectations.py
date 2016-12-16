@@ -14,6 +14,7 @@ class PixelExpectations(GpuTestExpectations):
 
     # TODO(robertphillips) remove once rebaselines are complete
     self.Fail('Pixel_CSSFilterEffects', bug=672527)
+    self.Fail('Pixel_CSSFilterEffects_NoOverlays', bug=672527)
 
     # Software compositing is not supported on Android; so we skip these tests
     # that disables gpu compositing on Android platforms.
