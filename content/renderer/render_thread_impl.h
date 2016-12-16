@@ -762,7 +762,6 @@ class CONTENT_EXPORT RenderThreadImpl
       thread_safe_render_message_filter_;
 
   base::CancelableClosure record_purge_suspend_metric_closure_;
-  bool is_renderer_suspended_;
 
   int32_t client_id_;
 

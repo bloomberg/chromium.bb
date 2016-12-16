@@ -916,7 +916,6 @@ void RenderThreadImpl::Init(
 
   record_purge_suspend_metric_closure_.Reset(base::Bind(
       &RenderThreadImpl::RecordPurgeAndSuspendMetrics, base::Unretained(this)));
-  is_renderer_suspended_ = false;
 
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 
@@ -1779,16 +1778,13 @@ void RenderThreadImpl::OnProcessBackgrounded(bool backgrounded) {
     record_purge_suspend_metric_closure_.Reset(
         base::Bind(&RenderThreadImpl::RecordPurgeAndSuspendMetrics,
                    base::Unretained(this)));
-    is_renderer_suspended_ = false;
   }
 }
 
 void RenderThreadImpl::OnProcessPurgeAndSuspend() {
   ChildThreadImpl::OnProcessPurgeAndSuspend();
-  DCHECK(!is_renderer_suspended_);
   if (!RendererIsHidden())
     return;
-  is_renderer_suspended_ = true;
   if (base::FeatureList::IsEnabled(features::kPurgeAndSuspend)) {
     // TODO(tasak): After enabling MemoryCoordinator, remove this Notify
     // and follow MemoryCoordinator's request.
@@ -1847,7 +1843,7 @@ static size_t GetMallocUsage() {
 // before and after purging by using memory-infra.
 void RenderThreadImpl::RecordPurgeAndSuspendMetrics() const {
   // If this renderer is resumed, we should not update UMA.
-  if (!is_renderer_suspended_)
+  if (!RendererIsHidden())
     return;
 
   // TODO(tasak): Compare memory metrics between purge-enabled renderers and
@@ -1898,8 +1894,8 @@ void RenderThreadImpl::RecordPurgeAndSuspendMetrics() const {
 void RenderThreadImpl::OnProcessResume() {
   ChildThreadImpl::OnProcessResume();
 
-  DCHECK(is_renderer_suspended_);
-  is_renderer_suspended_ = false;
+  if (!RendererIsHidden())
+    return;
   if (base::FeatureList::IsEnabled(features::kPurgeAndSuspend)) {
     // TODO(tasak): after enabling MemoryCoordinator, remove this Notify
     // and follow MemoryCoordinator's request.
