@@ -192,8 +192,7 @@ FileReader* FileReader::create(ExecutionContext* context) {
 }
 
 FileReader::FileReader(ExecutionContext* context)
-    : ActiveScriptWrappable(this),
-      SuspendableObject(context),
+    : SuspendableObject(context),
       m_state(kEmpty),
       m_loadingState(LoadingStateNone),
       m_stillFiringEvents(false),

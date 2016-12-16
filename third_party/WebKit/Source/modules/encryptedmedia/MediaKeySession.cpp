@@ -364,8 +364,7 @@ MediaKeySession* MediaKeySession::create(
 MediaKeySession::MediaKeySession(ScriptState* scriptState,
                                  MediaKeys* mediaKeys,
                                  WebEncryptedMediaSessionType sessionType)
-    : ActiveScriptWrappable<MediaKeySession>(this),
-      SuspendableObject(scriptState->getExecutionContext()),
+    : SuspendableObject(scriptState->getExecutionContext()),
       m_asyncEventQueue(GenericEventQueue::create(this)),
       m_mediaKeys(mediaKeys),
       m_sessionType(sessionType),

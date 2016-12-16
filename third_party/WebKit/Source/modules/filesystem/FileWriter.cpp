@@ -50,8 +50,7 @@ FileWriter* FileWriter::create(ExecutionContext* context) {
 }
 
 FileWriter::FileWriter(ExecutionContext* context)
-    : ActiveScriptWrappable<FileWriter>(this),
-      SuspendableObject(context),
+    : SuspendableObject(context),
       m_readyState(kInit),
       m_operationInProgress(OperationNone),
       m_queuedOperation(OperationNone),

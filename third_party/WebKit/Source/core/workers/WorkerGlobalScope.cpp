@@ -304,8 +304,7 @@ WorkerGlobalScope::WorkerGlobalScope(
     double timeOrigin,
     std::unique_ptr<SecurityOrigin::PrivilegeData> starterOriginPrivilageData,
     WorkerClients* workerClients)
-    : ActiveScriptWrappable(this),
-      m_url(url),
+    : m_url(url),
       m_userAgent(userAgent),
       m_v8CacheOptions(V8CacheOptionsDefault),
       m_scriptController(

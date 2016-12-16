@@ -50,8 +50,7 @@ class CORE_EXPORT UnderlyingSourceBase
 
  protected:
   explicit UnderlyingSourceBase(ScriptState* scriptState)
-      : ActiveScriptWrappable<UnderlyingSourceBase>(this),
-        SuspendableObject(scriptState->getExecutionContext()) {
+      : SuspendableObject(scriptState->getExecutionContext()) {
     this->suspendIfNeeded();
   }
 

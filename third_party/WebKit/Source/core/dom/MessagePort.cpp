@@ -51,10 +51,7 @@ MessagePort* MessagePort::create(ExecutionContext& executionContext) {
 }
 
 MessagePort::MessagePort(ExecutionContext& executionContext)
-    : ActiveScriptWrappable(this),
-      SuspendableObject(&executionContext),
-      m_started(false),
-      m_closed(false) {}
+    : SuspendableObject(&executionContext), m_started(false), m_closed(false) {}
 
 MessagePort::~MessagePort() {
   DCHECK(!m_started || !isEntangled());

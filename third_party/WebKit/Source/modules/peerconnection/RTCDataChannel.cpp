@@ -84,8 +84,7 @@ RTCDataChannel* RTCDataChannel::create(
 RTCDataChannel::RTCDataChannel(
     ExecutionContext* context,
     std::unique_ptr<WebRTCDataChannelHandler> handler)
-    : ActiveScriptWrappable(this),
-      SuspendableObject(context),
+    : SuspendableObject(context),
       m_handler(std::move(handler)),
       m_readyState(ReadyStateConnecting),
       m_binaryType(BinaryTypeArrayBuffer),

@@ -132,8 +132,7 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState) {
 ServiceWorkerRegistration::ServiceWorkerRegistration(
     ExecutionContext* executionContext,
     std::unique_ptr<WebServiceWorkerRegistration::Handle> handle)
-    : ActiveScriptWrappable<ServiceWorkerRegistration>(this),
-      SuspendableObject(executionContext),
+    : SuspendableObject(executionContext),
       m_handle(std::move(handle)),
       m_stopped(false) {
   ASSERT(m_handle);

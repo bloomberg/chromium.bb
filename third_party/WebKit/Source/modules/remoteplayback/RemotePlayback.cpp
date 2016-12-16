@@ -46,8 +46,7 @@ RemotePlayback* RemotePlayback::create(HTMLMediaElement& element) {
 }
 
 RemotePlayback::RemotePlayback(HTMLMediaElement& element)
-    : ActiveScriptWrappable(this),
-      m_state(element.isPlayingRemotely()
+    : m_state(element.isPlayingRemotely()
                   ? WebRemotePlaybackState::Connected
                   : WebRemotePlaybackState::Disconnected),
       m_availability(WebRemotePlaybackAvailability::Unknown),

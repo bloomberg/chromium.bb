@@ -64,8 +64,7 @@ MIDIAccess::MIDIAccess(
     bool sysexEnabled,
     const Vector<MIDIAccessInitializer::PortDescriptor>& ports,
     ExecutionContext* executionContext)
-    : ActiveScriptWrappable<MIDIAccess>(this),
-      SuspendableObject(executionContext),
+    : SuspendableObject(executionContext),
       m_accessor(std::move(accessor)),
       m_sysexEnabled(sysexEnabled),
       m_hasPendingActivity(false) {

@@ -361,7 +361,6 @@ bool HTMLMediaElement::mediaTracksEnabledInternally() {
 HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
                                    Document& document)
     : HTMLElement(tagName, document),
-      ActiveScriptWrappable(this),
       SuspendableObject(&document),
       m_loadTimer(this, &HTMLMediaElement::loadTimerFired),
       m_progressEventTimer(this, &HTMLMediaElement::progressEventTimerFired),

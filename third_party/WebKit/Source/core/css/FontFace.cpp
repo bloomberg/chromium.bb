@@ -154,19 +154,14 @@ FontFace* FontFace::create(Document* document,
 }
 
 FontFace::FontFace(ExecutionContext* context)
-    : ActiveScriptWrappable<FontFace>(this),
-      SuspendableObject(context),
-      m_status(Unloaded) {
+    : SuspendableObject(context), m_status(Unloaded) {
   suspendIfNeeded();
 }
 
 FontFace::FontFace(ExecutionContext* context,
                    const AtomicString& family,
                    const FontFaceDescriptors& descriptors)
-    : ActiveScriptWrappable(this),
-      SuspendableObject(context),
-      m_family(family),
-      m_status(Unloaded) {
+    : SuspendableObject(context), m_family(family), m_status(Unloaded) {
   Document* document = toDocument(context);
   setPropertyFromString(document, descriptors.style(), CSSPropertyFontStyle);
   setPropertyFromString(document, descriptors.weight(), CSSPropertyFontWeight);

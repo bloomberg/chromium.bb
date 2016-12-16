@@ -665,7 +665,6 @@ PaymentRequest::PaymentRequest(Document& document,
                                const PaymentOptions& options,
                                ExceptionState& exceptionState)
     : ContextLifecycleObserver(&document),
-      ActiveScriptWrappable<PaymentRequest>(this),
       m_options(options),
       m_clientBinding(this),
       m_completeTimer(this, &PaymentRequest::onCompleteTimeout) {

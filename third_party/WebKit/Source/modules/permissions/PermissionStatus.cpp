@@ -36,8 +36,7 @@ PermissionStatus* PermissionStatus::createAndListen(
 PermissionStatus::PermissionStatus(ExecutionContext* executionContext,
                                    MojoPermissionStatus status,
                                    MojoPermissionDescriptor descriptor)
-    : ActiveScriptWrappable<PermissionStatus>(this),
-      SuspendableObject(executionContext),
+    : SuspendableObject(executionContext),
       m_status(status),
       m_descriptor(std::move(descriptor)) {}
 

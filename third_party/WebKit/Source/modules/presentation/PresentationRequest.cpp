@@ -207,8 +207,6 @@ DEFINE_TRACE(PresentationRequest) {
 
 PresentationRequest::PresentationRequest(ExecutionContext* executionContext,
                                          const KURL& url)
-    : ActiveScriptWrappable(this),
-      SuspendableObject(executionContext),
-      m_url(url) {}
+    : SuspendableObject(executionContext), m_url(url) {}
 
 }  // namespace blink

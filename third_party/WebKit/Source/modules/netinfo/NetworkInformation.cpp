@@ -146,8 +146,7 @@ void NetworkInformation::stopObserving() {
 }
 
 NetworkInformation::NetworkInformation(ExecutionContext* context)
-    : ActiveScriptWrappable<NetworkInformation>(this),
-      SuspendableObject(context),
+    : SuspendableObject(context),
       m_type(networkStateNotifier().connectionType()),
       m_downlinkMaxMbps(networkStateNotifier().maxBandwidth()),
       m_observing(false),

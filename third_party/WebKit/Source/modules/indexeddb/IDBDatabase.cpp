@@ -101,8 +101,7 @@ IDBDatabase* IDBDatabase::create(ExecutionContext* context,
 IDBDatabase::IDBDatabase(ExecutionContext* context,
                          std::unique_ptr<WebIDBDatabase> backend,
                          IDBDatabaseCallbacks* callbacks)
-    : ActiveScriptWrappable(this),
-      SuspendableObject(context),
+    : SuspendableObject(context),
       m_backend(std::move(backend)),
       m_databaseCallbacks(callbacks) {
   m_databaseCallbacks->connect(this);

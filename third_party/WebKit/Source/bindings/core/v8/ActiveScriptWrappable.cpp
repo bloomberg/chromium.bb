@@ -13,8 +13,7 @@
 
 namespace blink {
 
-ActiveScriptWrappableBase::ActiveScriptWrappableBase(ScriptWrappable* self)
-    : m_scriptWrappable(self) {
+ActiveScriptWrappableBase::ActiveScriptWrappableBase() {
   ASSERT(ThreadState::current());
   v8::Isolate* isolate = ThreadState::current()->isolate();
   V8PerIsolateData* isolateData = V8PerIsolateData::from(isolate);
@@ -31,8 +30,7 @@ void ActiveScriptWrappableBase::traceActiveScriptWrappables(
   }
 
   for (auto activeWrappable : *activeScriptWrappables) {
-    auto scriptWrappable = activeWrappable->toScriptWrappable();
-    if (!scriptWrappable->hasPendingActivity()) {
+    if (!activeWrappable->dispatchHasPendingActivity(activeWrappable)) {
       continue;
     }
 
@@ -52,6 +50,8 @@ void ActiveScriptWrappableBase::traceActiveScriptWrappables(
     if (activeWrappable->isContextDestroyed(activeWrappable)) {
       continue;
     }
+
+    auto scriptWrappable = activeWrappable->toScriptWrappable(activeWrappable);
     auto wrapperTypeInfo =
         const_cast<WrapperTypeInfo*>(scriptWrappable->wrapperTypeInfo());
     visitor->RegisterV8Reference(

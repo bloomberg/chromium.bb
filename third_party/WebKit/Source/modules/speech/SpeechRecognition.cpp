@@ -162,8 +162,7 @@ bool SpeechRecognition::hasPendingActivity() const {
 }
 
 SpeechRecognition::SpeechRecognition(Page* page, ExecutionContext* context)
-    : ActiveScriptWrappable<SpeechRecognition>(this),
-      SuspendableObject(context),
+    : SuspendableObject(context),
       m_grammars(SpeechGrammarList::create()),  // FIXME: The spec is not clear
                                                 // on the default value for the
                                                 // grammars attribute.

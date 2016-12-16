@@ -79,8 +79,7 @@ class VRDisplayFrameRequestCallback : public FrameRequestCallback {
 VRDisplay::VRDisplay(NavigatorVR* navigatorVR,
                      device::mojom::blink::VRDisplayPtr display,
                      device::mojom::blink::VRDisplayClientRequest request)
-    : ActiveScriptWrappable(this),
-      ContextLifecycleObserver(navigatorVR->document()),
+    : ContextLifecycleObserver(navigatorVR->document()),
       m_navigatorVR(navigatorVR),
       m_isConnected(false),
       m_isPresenting(false),
@@ -96,8 +95,7 @@ VRDisplay::VRDisplay(NavigatorVR* navigatorVR,
       m_animationCallbackRequested(false),
       m_inAnimationFrame(false),
       m_display(std::move(display)),
-      m_binding(this, std::move(request)) {
-}
+      m_binding(this, std::move(request)) {}
 
 VRDisplay::~VRDisplay() {}
 

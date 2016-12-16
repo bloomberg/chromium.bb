@@ -153,7 +153,6 @@ ServiceWorker* ServiceWorker::getOrCreate(
 ServiceWorker::ServiceWorker(ExecutionContext* executionContext,
                              std::unique_ptr<WebServiceWorker::Handle> handle)
     : AbstractWorker(executionContext),
-      ActiveScriptWrappable<ServiceWorker>(this),
       m_handle(std::move(handle)),
       m_wasStopped(false) {
   ASSERT(m_handle);

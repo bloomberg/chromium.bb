@@ -218,8 +218,7 @@ const char* DOMWebSocket::subprotocolSeperator() {
 }
 
 DOMWebSocket::DOMWebSocket(ExecutionContext* context)
-    : ActiveScriptWrappable<DOMWebSocket>(this),
-      SuspendableObject(context),
+    : SuspendableObject(context),
       m_state(kConnecting),
       m_bufferedAmount(0),
       m_consumedBufferedAmount(0),

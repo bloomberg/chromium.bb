@@ -116,8 +116,7 @@ SourceBuffer* SourceBuffer::create(
 SourceBuffer::SourceBuffer(std::unique_ptr<WebSourceBuffer> webSourceBuffer,
                            MediaSource* source,
                            GenericEventQueue* asyncEventQueue)
-    : ActiveScriptWrappable<SourceBuffer>(this),
-      SuspendableObject(source->getExecutionContext()),
+    : SuspendableObject(source->getExecutionContext()),
       m_webSourceBuffer(std::move(webSourceBuffer)),
       m_source(source),
       m_trackDefaults(TrackDefaultList::create()),

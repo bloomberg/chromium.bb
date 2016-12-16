@@ -236,8 +236,7 @@ void AudioScheduledSourceHandler::notifyEnded() {
 // ----------------------------------------------------------------
 
 AudioScheduledSourceNode::AudioScheduledSourceNode(BaseAudioContext& context)
-    : AudioSourceNode(context),
-      ActiveScriptWrappable<AudioScheduledSourceNode>(this) {}
+    : AudioSourceNode(context) {}
 
 AudioScheduledSourceHandler&
 AudioScheduledSourceNode::audioScheduledSourceHandler() const {

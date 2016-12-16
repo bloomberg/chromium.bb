@@ -125,8 +125,7 @@ void BroadcastChannel::onError() {
 
 BroadcastChannel::BroadcastChannel(ExecutionContext* executionContext,
                                    const String& name)
-    : ActiveScriptWrappable<BroadcastChannel>(this),
-      ContextLifecycleObserver(executionContext),
+    : ContextLifecycleObserver(executionContext),
       m_origin(executionContext->getSecurityOrigin()),
       m_name(name),
       m_binding(this) {

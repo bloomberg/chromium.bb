@@ -268,9 +268,7 @@ ScriptPromise ImageCapture::grabFrame(ScriptState* scriptState,
 }
 
 ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
-    : ActiveScriptWrappable(this),
-      ContextLifecycleObserver(context),
-      m_streamTrack(track) {
+    : ContextLifecycleObserver(context), m_streamTrack(track) {
   DCHECK(m_streamTrack);
   DCHECK(!m_service.is_bound());
 

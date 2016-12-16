@@ -89,8 +89,7 @@ BaseAudioContext* BaseAudioContext::create(Document& document,
 
 // Constructor for rendering to the audio hardware.
 BaseAudioContext::BaseAudioContext(Document* document)
-    : ActiveScriptWrappable<BaseAudioContext>(this),
-      SuspendableObject(document),
+    : SuspendableObject(document),
       m_destinationNode(nullptr),
       m_isCleared(false),
       m_isResolvingResumePromises(false),
@@ -122,8 +121,7 @@ BaseAudioContext::BaseAudioContext(Document* document,
                                    unsigned numberOfChannels,
                                    size_t numberOfFrames,
                                    float sampleRate)
-    : ActiveScriptWrappable(this),
-      SuspendableObject(document),
+    : SuspendableObject(document),
       m_destinationNode(nullptr),
       m_isCleared(false),
       m_isResolvingResumePromises(false),

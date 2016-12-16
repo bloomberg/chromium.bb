@@ -86,10 +86,8 @@ class HTMLImageElement::ViewportChangeListener final
   Member<HTMLImageElement> m_element;
 };
 
-HTMLImageElement::HTMLImageElement(Document& document,
-                                   bool createdByParser)
+HTMLImageElement::HTMLImageElement(Document& document, bool createdByParser)
     : HTMLElement(imgTag, document),
-      ActiveScriptWrappable(this),
       m_imageLoader(HTMLImageLoader::create(this)),
       m_imageDevicePixelRatio(1.0f),
       m_source(nullptr),

@@ -66,8 +66,7 @@ IDBRequest* IDBRequest::create(ScriptState* scriptState,
 IDBRequest::IDBRequest(ScriptState* scriptState,
                        IDBAny* source,
                        IDBTransaction* transaction)
-    : ActiveScriptWrappable(this),
-      SuspendableObject(scriptState->getExecutionContext()),
+    : SuspendableObject(scriptState->getExecutionContext()),
       m_transaction(transaction),
       m_source(source) {}
 
