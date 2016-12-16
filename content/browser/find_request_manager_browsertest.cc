@@ -425,8 +425,16 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(CharacterByCharacter)) {
   EXPECT_EQ(1, results.active_match_ordinal);
 }
 
+// TODO(crbug.com/615291): This test frequently fails on Android.
+// TODO(crbug.com/674742): This test is flaky on Win
+#if defined(OS_ANDROID) || defined(OS_WIN)
+#define MAYBE_RapidFire DISABLED_RapidFire
+#else
+#define MAYBE_RapidFire RapidFire
+#endif
+
 // Tests sending a large number of find requests subsequently.
-IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(RapidFire)) {
+IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE_RapidFire) {
   LoadAndWait("/find_in_page.html");
   if (GetParam())
     MakeChildFrameCrossProcess();
