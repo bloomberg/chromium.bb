@@ -278,7 +278,7 @@
 #if defined(USE_AURA)
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/ui/public/cpp/gpu/gpu.h"
-#include "ui/views/mus/window_manager_connection.h"
+#include "ui/views/mus/mus_client.h"
 #endif
 
 #if defined(USE_ASH)
@@ -914,14 +914,13 @@ content::BrowserMainParts* ChromeContentBrowserClient::CreateBrowserMainParts(
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && !defined(USE_OZONE)
   main_parts->AddParts(new ChromeBrowserMainExtraPartsViewsLinux());
 #else
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsViews());
-#endif
-#endif
-
-// TODO(oshima): Athena on chrome currently requires USE_ASH to build.
-// We should reduce the dependency as much as possible.
+  ChromeBrowserMainExtraPartsViews* extra_parts_views =
+      new ChromeBrowserMainExtraPartsViews;
+  main_parts->AddParts(extra_parts_views);
 #if defined(USE_ASH)
-  main_parts->AddParts(new ChromeBrowserMainExtraPartsAsh());
+  main_parts->AddParts(new ChromeBrowserMainExtraPartsAsh(extra_parts_views));
+#endif
+#endif
 #endif
 
 #if defined(USE_X11)
@@ -2736,8 +2735,8 @@ content::BrowserPpapiHost*
 gpu::GpuChannelEstablishFactory*
 ChromeContentBrowserClient::GetGpuChannelEstablishFactory() {
 #if defined(USE_AURA)
-  if (views::WindowManagerConnection::Exists())
-    return views::WindowManagerConnection::Get()->gpu();
+  if (views::MusClient::Exists())
+    return views::MusClient::Get()->gpu();
 #endif
   return nullptr;
 }

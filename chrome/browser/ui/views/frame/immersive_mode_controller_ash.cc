@@ -20,15 +20,13 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "services/ui/public/cpp/property_type_converters.h"
-#include "services/ui/public/cpp/window_tree_client.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/mus/mus_util.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/compositor/paint_recorder.h"
-#include "ui/views/mus/native_widget_mus.h"
-#include "ui/views/mus/window_manager_connection.h"
+#include "ui/views/mus/mus_client.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
@@ -230,24 +228,17 @@ void ImmersiveModeControllerAsh::CreateMashRevealWidget() {
     return;
 
   DCHECK(!mash_reveal_widget_);
-  mash_reveal_widget_.reset(new views::Widget);
+  mash_reveal_widget_ = base::MakeUnique<views::Widget>();
   views::Widget::InitParams init_params(views::Widget::InitParams::TYPE_POPUP);
-  std::map<std::string, std::vector<uint8_t>> window_properties;
-  window_properties[ui::mojom::WindowManager::kRenderParentTitleArea_Property] =
+  init_params.mus_properties
+      [ui::mojom::WindowManager::kRenderParentTitleArea_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<aura::PropertyConverter::PrimitiveType>(true));
-  window_properties[ui::mojom::WindowManager::kName_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(
-          std::string("ChromeImmersiveRevealWindow"));
-  init_params.native_widget = new views::NativeWidgetMus(
-      mash_reveal_widget_.get(),
-      views::WindowManagerConnection::Get()->client()->NewWindow(
-          &window_properties),
-      ui::mojom::CompositorFrameSinkType::DEFAULT);
+  init_params.name = "ChromeImmersiveRevealWindow";
   init_params.accept_events = false;
   init_params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
-  init_params.parent_mus = GetMusWindow(native_window_);
+  init_params.parent = native_window_;
   const gfx::Rect& top_container_bounds =
       browser_view_->top_container()->bounds();
   init_params.bounds =

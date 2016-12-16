@@ -5,7 +5,6 @@ include_rules = [
   "+device/gamepad",
   "+gpu",
   "+mojo/public/cpp",
-  "+services/ui/public/cpp",
   "+third_party/khronos",
   "+third_party/skia",
   "+ui",

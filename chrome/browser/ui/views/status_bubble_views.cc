@@ -18,6 +18,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"
+#include "services/service_manager/runner/common/client_util.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/pathops/SkPathOps.h"
@@ -663,8 +664,13 @@ void StatusBubbleViews::Init() {
     popup_->SetOpacity(0.f);
     popup_->SetContentsView(view_);
 #if defined(USE_ASH)
-    ash::wm::GetWindowState(popup_->GetNativeWindow())->
-        set_ignored_by_shelf(true);
+    // TODO: http://crbug.com/671729 convert to WindowProperty (and then can
+    // remove explicit kWindowIgnoredByShelf_Property above and make this ifdef
+    // USE_AURA).
+    if (!service_manager::ServiceManagerIsRemote()) {
+      ash::wm::GetWindowState(popup_->GetNativeWindow())
+          ->set_ignored_by_shelf(true);
+    }
 #endif
     RepositionPopup();
   }

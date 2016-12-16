@@ -54,11 +54,11 @@ source_set("exo") {
     "//ash/public/cpp",
     "//base",
     "//cc",
-    "//cc/surfaces:surfaces",
+    "//cc/ipc:interfaces",
+    "//cc/surfaces",
     "//device/gamepad",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",
-    "//services/ui/public/cpp",
     "//skia",
     "//ui/aura",
     "//ui/compositor",
@@ -69,7 +69,7 @@ source_set("exo") {
     "//ui/gl",
     "//ui/views",
     "//ui/views/mus",
-    "//ui/wm:wm",
+    "//ui/wm",
   ]
 
   if (is_chromeos) {
@@ -140,7 +140,7 @@ source_set("unit_tests") {
     "//ui/keyboard",
     "//ui/message_center",
     "//ui/views",
-    "//ui/wm:wm",
+    "//ui/wm",
   ]
 
   if (use_ozone) {

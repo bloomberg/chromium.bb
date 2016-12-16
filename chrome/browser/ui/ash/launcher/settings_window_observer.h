@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_UI_ASH_LAUNCHER_SETTINGS_WINDOW_OBSERVER_H_
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_SETTINGS_WINDOW_OBSERVER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "chrome/browser/ui/settings_window_manager_observer.h"
-#include "services/ui/public/cpp/window_tracker.h"
 #include "ui/aura/window_tracker.h"
 
 // Sets the window title and shelf item properties for settings windows.
@@ -21,9 +22,8 @@ class SettingsWindowObserver : public chrome::SettingsWindowManagerObserver {
   void OnNewSettingsWindow(Browser* settings_browser) override;
 
  private:
-  // Window trackers that rename the Settings window in classic ash and mash.
+  // Set of windows whose title is forced to 'Settings.'
   std::unique_ptr<aura::WindowTracker> aura_window_tracker_;
-  std::unique_ptr<ui::WindowTracker> ui_window_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(SettingsWindowObserver);
 };

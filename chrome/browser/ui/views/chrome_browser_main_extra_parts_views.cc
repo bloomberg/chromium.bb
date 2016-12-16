@@ -20,7 +20,7 @@
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/input_devices/input_device_server.mojom.h"
 #include "ui/display/screen.h"
-#include "ui/views/mus/window_manager_connection.h"
+#include "ui/views/mus/mus_client.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 #include "ui/wm/core/wm_state.h"
 #endif  // defined(USE_AURA)
@@ -113,10 +113,13 @@ void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
                                                    &server);
     input_device_client_->Connect(std::move(server));
 
-    window_manager_connection_ = views::WindowManagerConnection::Create(
+    // WMState is owned as a member, so don't have MusClient create it.
+    const bool create_wm_state = false;
+    mus_client_ = base::MakeUnique<views::MusClient>(
         connection->GetConnector(), connection->GetIdentity(),
         content::BrowserThread::GetTaskRunnerForThread(
-            content::BrowserThread::IO));
+            content::BrowserThread::IO),
+        create_wm_state);
   }
 #endif  // defined(USE_AURA)
 }
