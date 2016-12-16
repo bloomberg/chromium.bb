@@ -198,8 +198,8 @@ void EventHandlerRegistry::didMoveBetweenFrameHosts(EventTarget& target,
     for (unsigned count = targets->count(&target); count > 0; --count)
       newFrameHost->eventHandlerRegistry().didAddEventHandler(target,
                                                               handlerClass);
-    oldFrameHost->eventHandlerRegistry().didRemoveAllEventHandlers(target);
   }
+  oldFrameHost->eventHandlerRegistry().didRemoveAllEventHandlers(target);
 }
 
 void EventHandlerRegistry::didRemoveAllEventHandlers(EventTarget& target) {
