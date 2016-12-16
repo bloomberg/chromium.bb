@@ -163,11 +163,8 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
   EXPECT_EQ(kOffset, output.offset);
   EXPECT_EQ(kStride, output.stride);
 
-#if !defined(OS_MACOSX) && !defined(OS_IOS)
-  // TODO: Add support for mach_port on mac.
   base::SharedMemory output_memory(output.handle, true);
   EXPECT_TRUE(output_memory.Map(1024));
-#endif
 
 #if defined(USE_OZONE)
   const uint64_t kSize = kOffset + kStride;

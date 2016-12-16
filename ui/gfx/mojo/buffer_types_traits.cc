@@ -65,15 +65,24 @@ mojo::ScopedHandle StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
     shared_memory_handle(const gfx::GpuMemoryBufferHandle& handle) {
   if (handle.type != gfx::SHARED_MEMORY_BUFFER)
     return mojo::ScopedHandle();
+#if defined(OS_MACOSX)
+  base::SharedMemoryHandle shm_handle = handle.handle;
+  size_t num_bytes = 0;
+  if (!shm_handle.GetSize(&num_bytes))
+    return mojo::ScopedHandle();
+  mojo::ScopedSharedBufferHandle scoped_handle =
+      mojo::WrapSharedMemoryHandle(shm_handle, num_bytes, false);
+  mojo::Handle mojo_handle = scoped_handle.release();
+  return mojo::MakeScopedHandle(mojo_handle);
+#else  // defined(OS_MACOSX)
   base::PlatformFile platform_file = base::kInvalidPlatformFile;
 #if defined(OS_WIN)
   platform_file = handle.handle.GetHandle();
-#elif defined(OS_MACOSX) || defined(OS_IOS)
-  NOTIMPLEMENTED();
 #else
   platform_file = handle.handle.fd;
 #endif
   return mojo::WrapPlatformFile(platform_file);
+#endif  // defined(OS_MACOSX)
 }
 
 const gfx::NativePixmapHandle&
@@ -110,6 +119,15 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
   if (out->type == gfx::SHARED_MEMORY_BUFFER) {
     mojo::ScopedHandle handle = data.TakeSharedMemoryHandle();
     if (handle.is_valid()) {
+#if defined(OS_MACOSX)
+      mojo::Handle mojo_handle = handle.release();
+      mojo::ScopedSharedBufferHandle buffer_handle =
+          mojo::MakeScopedHandle(mojo::SharedBufferHandle(mojo_handle.value()));
+      MojoResult unwrap_result = mojo::UnwrapSharedMemoryHandle(
+          std::move(buffer_handle), &out->handle, nullptr, nullptr);
+      if (unwrap_result != MOJO_RESULT_OK)
+        return false;
+#else  // defined(OS_MACOSX)
       base::PlatformFile platform_file;
       MojoResult unwrap_result =
           mojo::UnwrapPlatformFile(std::move(handle), &platform_file);
@@ -118,12 +136,10 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
 #if defined(OS_WIN)
       out->handle =
           base::SharedMemoryHandle(platform_file, base::GetCurrentProcId());
-#elif defined(OS_MACOSX) || defined(OS_IOS)
-      // TODO: Add support for mach_port on mac.
-      out->handle = base::SharedMemoryHandle();
 #else
       out->handle = base::SharedMemoryHandle(platform_file, true);
 #endif
+#endif  // defined(OS_MACOSX)
     }
 
     out->offset = data.offset();
