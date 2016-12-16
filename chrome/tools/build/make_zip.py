@@ -21,16 +21,16 @@ def main(args):
   cwd = os.getcwd()
   os.chdir(build_dir)
 
-  files = []
+  files = set()
   for file_spec in exec_globals['FILES']:
     pattern = file_spec['filename']
     for glob_match in glob.glob(pattern):
       if os.path.isfile(glob_match):
-        files.append(glob_match)
+        files.add(glob_match)
       elif os.path.isdir(glob_match):
         for root, dirs, filenames in os.walk(glob_match):
           for f in filenames:
-            files.append(os.path.join(root, f));
+            files.add(os.path.join(root, f));
 
   os.chdir(cwd)
   if not len(files):
@@ -38,8 +38,8 @@ def main(args):
     return 1
 
   with zipfile.ZipFile(output_file, mode = 'w',
-      compression = zipfile.ZIP_DEFLATED) as output:
-    for f in files:
+      compression = zipfile.ZIP_DEFLATED, allowZip64 = True) as output:
+    for f in sorted(files):
       sys.stdout.write("%s\r" % f[:40].ljust(40, ' '))
       sys.stdout.flush()
       output.write(os.path.join(build_dir, f), f)
