@@ -2939,7 +2939,7 @@ static void update_coef_probs(AV1_COMP *cpi, aom_writer *w) {
   }
 #endif  // CONFIG_ENTROPY
 
-  for (tx_size = TX_4X4; tx_size <= max_tx_size; ++tx_size) {
+  for (tx_size = 0; tx_size <= max_tx_size; ++tx_size) {
     av1_coeff_stats frame_branch_ct[PLANE_TYPES];
     av1_coeff_probs_model frame_coef_probs[PLANE_TYPES];
     if (cpi->td.counts->tx_size_totals[tx_size] <= 20 ||
