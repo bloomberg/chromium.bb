@@ -269,8 +269,7 @@ class {{class_name}}_{{method.name}}_ProxyToResponder {
 
   void Run(
       {{interface_macros.declare_responder_params(
-          "in_", method.response_parameters, for_blink,
-          use_new_wrapper_types)}});
+          "in_", method.response_parameters, for_blink)}});
 
   uint64_t request_id_;
   bool is_sync_;
@@ -283,8 +282,7 @@ class {{class_name}}_{{method.name}}_ProxyToResponder {
 
 void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
     {{interface_macros.declare_responder_params(
-        "in_", method.response_parameters, for_blink,
-        use_new_wrapper_types)}}) {
+        "in_", method.response_parameters, for_blink)}}) {
   {{struct_macros.get_serialized_size(response_params_struct, "in_%s",
                                       "&serialization_context_")}}
   mojo::internal::ResponseMessageBuilder builder(

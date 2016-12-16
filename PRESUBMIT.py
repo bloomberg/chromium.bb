@@ -1542,32 +1542,6 @@ def _CheckIpcOwners(input_api, output_api):
   return results
 
 
-def _CheckMojoUsesNewWrapperTypes(input_api, output_api):
-  """Checks to make sure that all newly added mojom targets map array/map/string
-     to STL (for chromium) or WTF (for blink) types.
-     TODO(yzshen): remove this check once crbug.com/624136 is completed.
-  """
-  files = []
-  pattern = input_api.re.compile(r'use_new_wrapper_types.*false',
-                                 input_api.re.MULTILINE)
-
-  for f in input_api.AffectedFiles():
-    if not f.LocalPath().endswith(('.gyp', '.gypi', 'gn', 'gni')):
-      continue
-
-    for _, line in f.ChangedContents():
-      if pattern.search(line):
-        files.append(f)
-        break
-
-  if len(files):
-    return [output_api.PresubmitError(
-        'Do not introduce new mojom targets with use_new_wrapper_types set to '
-        'false. The mode is deprecated and will be removed soon.',
-        files)]
-  return []
-
-
 def _CheckUselessForwardDeclarations(input_api, output_api):
   """Checks that added or removed lines in non third party affected
      header files do not lead to new useless class or struct forward
@@ -2084,7 +2058,6 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckPydepsNeedsUpdating(input_api, output_api))
   results.extend(_CheckJavaStyle(input_api, output_api))
   results.extend(_CheckIpcOwners(input_api, output_api))
-  results.extend(_CheckMojoUsesNewWrapperTypes(input_api, output_api))
   results.extend(_CheckUselessForwardDeclarations(input_api, output_api))
   results.extend(_CheckForRiskyJsFeatures(input_api, output_api))
 

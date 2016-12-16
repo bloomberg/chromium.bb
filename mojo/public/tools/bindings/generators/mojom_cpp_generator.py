@@ -36,7 +36,6 @@ _kind_to_cpp_literal_suffix = {
 # generator library code so that filters can use the generator as context.
 _current_typemap = {}
 _for_blink = False
-_use_new_wrapper_types = False
 # TODO(rockot, yzshen): The variant handling is kind of a hack currently. Make
 # it right.
 _variant = None
@@ -142,11 +141,6 @@ def DefaultValue(field):
       if not IsTypemappedKind(field.kind):
         return "%s::New()" % GetNameForKind(field.kind)
     return ExpressionToText(field.default, kind=field.kind)
-  if not _use_new_wrapper_types:
-    if mojom.IsArrayKind(field.kind) or mojom.IsMapKind(field.kind):
-      return "nullptr";
-    if mojom.IsStringKind(field.kind):
-      return "" if _for_blink else "nullptr"
   return ""
 
 def NamespaceToArray(namespace):
@@ -245,24 +239,16 @@ def GetCppWrapperType(kind, add_same_module_namespaces=False):
     return "%sPtr" % GetNameForKind(
         kind, add_same_module_namespaces=add_same_module_namespaces)
   if mojom.IsArrayKind(kind):
-    pattern = None
-    if _use_new_wrapper_types:
-      pattern = "WTF::Vector<%s>" if _for_blink else "std::vector<%s>"
-      if mojom.IsNullableKind(kind):
-        pattern = _AddOptional(pattern)
-    else:
-      pattern = "mojo::WTFArray<%s>" if _for_blink else "mojo::Array<%s>"
+    pattern = "WTF::Vector<%s>" if _for_blink else "std::vector<%s>"
+    if mojom.IsNullableKind(kind):
+      pattern = _AddOptional(pattern)
     return pattern % GetCppWrapperType(
         kind.kind, add_same_module_namespaces=add_same_module_namespaces)
   if mojom.IsMapKind(kind):
-    pattern = None
-    if _use_new_wrapper_types:
-      pattern = ("WTF::HashMap<%s, %s>" if _for_blink else
-                 "std::unordered_map<%s, %s>")
-      if mojom.IsNullableKind(kind):
-        pattern = _AddOptional(pattern)
-    else:
-      pattern = "mojo::WTFMap<%s, %s>" if _for_blink else "mojo::Map<%s, %s>"
+    pattern = ("WTF::HashMap<%s, %s>" if _for_blink else
+               "std::unordered_map<%s, %s>")
+    if mojom.IsNullableKind(kind):
+      pattern = _AddOptional(pattern)
     return pattern % (
         GetCppWrapperType(
             kind.key_kind,
@@ -285,8 +271,6 @@ def GetCppWrapperType(kind, add_same_module_namespaces=False):
   if mojom.IsStringKind(kind):
     if _for_blink:
       return "WTF::String"
-    if not _use_new_wrapper_types:
-      return "mojo::String"
     type_name = "std::string"
     return _AddOptional(type_name) if mojom.IsNullableKind(kind) else type_name
   if mojom.IsGenericHandleKind(kind):
@@ -311,9 +295,9 @@ def IsMoveOnlyKind(kind):
   if mojom.IsStructKind(kind) or mojom.IsUnionKind(kind):
     return True
   if mojom.IsArrayKind(kind):
-    return IsMoveOnlyKind(kind.kind) if _use_new_wrapper_types else True
+    return IsMoveOnlyKind(kind.kind)
   if mojom.IsMapKind(kind):
-    return IsMoveOnlyKind(kind.value_kind) if _use_new_wrapper_types else True
+    return IsMoveOnlyKind(kind.value_kind)
   if mojom.IsAnyHandleOrInterfaceKind(kind):
     return True
   return False
@@ -621,7 +605,6 @@ class Generator(generator.Generator):
       "extra_traits_headers": self.GetExtraTraitsHeaders(),
       "extra_public_headers": self.GetExtraPublicHeaders(),
       "for_blink": self.for_blink,
-      "use_new_wrapper_types": self.use_new_wrapper_types,
       "use_once_callback": self.use_once_callback,
       "export_attribute": self.export_attribute,
       "export_header": self.export_header,
@@ -669,8 +652,6 @@ class Generator(generator.Generator):
       _current_typemap = self.typemap
       global _for_blink
       _for_blink = self.for_blink
-      global _use_new_wrapper_types
-      _use_new_wrapper_types = self.use_new_wrapper_types
       global _use_once_callback
       _use_once_callback = self.use_once_callback
       global _variant

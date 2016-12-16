@@ -87,15 +87,6 @@ foreach(configuration, _bindings_configurations) {
 #
 #   visibility (optional)
 #
-#   use_new_wrapper_types (optional)
-#       If set to true, mojom array/map/string will be mapped to STL (for
-#       chromium variant) or WTF (for blink) types. Otherwise, they will be
-#       mapped to mojo::Array/Map/String/etc.
-#       Default value is true.
-#       TODO(yzshen):
-#         - convert all users to use the new mode;
-#         - remove support for the old mode.
-#
 #   use_once_callback (optional)
 #       If set to true, generated classes will use base::OnceCallback instead of
 #       base::RepeatingCallback.
@@ -361,11 +352,6 @@ template("mojom") {
               invoker.export_header,
             ]
           }
-        }
-
-        if (!defined(invoker.use_new_wrapper_types) ||
-            invoker.use_new_wrapper_types) {
-          args += [ "--use_new_wrapper_types" ]
         }
 
         if (defined(invoker.use_once_callback) && invoker.use_once_callback) {
