@@ -45,29 +45,28 @@ void PrePaintTreeWalk::walk(FrameView& rootFrame) {
 }
 
 bool PrePaintTreeWalk::walk(FrameView& frameView,
-                            const PrePaintTreeWalkContext& context) {
+                            const PrePaintTreeWalkContext& parentContext) {
   if (frameView.shouldThrottleRendering()) {
     // The walk was interrupted by throttled rendering so this subtree was not
     // fully updated.
     return false;
   }
 
-  PrePaintTreeWalkContext localContext(context);
+  PrePaintTreeWalkContext context(parentContext);
 
   if (frameView.shouldInvalidateAllPaintAndPaintProperties()) {
-    localContext.treeBuilderContext.forceSubtreeUpdate = true;
-    localContext.paintInvalidatorContext.forcedSubtreeInvalidationFlags |=
+    context.treeBuilderContext.forceSubtreeUpdate = true;
+    context.paintInvalidatorContext.forcedSubtreeInvalidationFlags |=
         PaintInvalidatorContext::ForcedWholeTreeFullInvalidation;
     frameView.clearShouldInvalidateAllPaintAndPaintProperties();
   }
 
-  m_propertyTreeBuilder.updateProperties(frameView,
-                                         localContext.treeBuilderContext);
-  m_paintInvalidator.invalidatePaintIfNeeded(
-      frameView, localContext.paintInvalidatorContext);
+  m_propertyTreeBuilder.updateProperties(frameView, context.treeBuilderContext);
+  m_paintInvalidator.invalidatePaintIfNeeded(frameView,
+                                             context.paintInvalidatorContext);
 
   LayoutView* view = frameView.layoutView();
-  bool descendantsFullyUpdated = view ? walk(*view, localContext) : true;
+  bool descendantsFullyUpdated = view ? walk(*view, context) : true;
   if (descendantsFullyUpdated) {
 #if DCHECK_IS_ON()
     frameView.layoutView()->assertSubtreeClearedPaintInvalidationFlags();
@@ -79,17 +78,15 @@ bool PrePaintTreeWalk::walk(FrameView& frameView,
   return descendantsFullyUpdated;
 }
 
-static void updateAuxiliaryObjectProperties(
-    const LayoutObject& object,
-    PrePaintTreeWalkContext& localContext) {
+static void updateAuxiliaryObjectProperties(const LayoutObject& object,
+                                            PrePaintTreeWalkContext& context) {
   PaintLayer* paintLayer = nullptr;
 
   if (object.isBoxModelObject() && object.hasLayer())
     paintLayer = object.enclosingLayer();
 
   if (paintLayer) {
-    paintLayer->updateAncestorOverflowLayer(
-        localContext.ancestorOverflowPaintLayer);
+    paintLayer->updateAncestorOverflowLayer(context.ancestorOverflowPaintLayer);
   }
 
   if (object.styleRef().position() == StickyPosition && paintLayer) {
@@ -105,13 +102,13 @@ static void updateAuxiliaryObjectProperties(
 
   if (object.hasOverflowClip() || (paintLayer && paintLayer->isRootLayer())) {
     DCHECK(paintLayer);
-    localContext.ancestorOverflowPaintLayer = paintLayer;
+    context.ancestorOverflowPaintLayer = paintLayer;
   }
 }
 
 bool PrePaintTreeWalk::walk(const LayoutObject& object,
-                            const PrePaintTreeWalkContext& context) {
-  PrePaintTreeWalkContext localContext(context);
+                            const PrePaintTreeWalkContext& parentContext) {
+  PrePaintTreeWalkContext context(parentContext);
 
   // TODO(pdr): Ensure multi column works with incremental property tree
   // construction.
@@ -120,10 +117,10 @@ bool PrePaintTreeWalk::walk(const LayoutObject& object,
     // Set the flag so that the tree builder can specially handle out-of-flow
     // positioned descendants if their containers are between the multi-column
     // container and the spanner. See PaintPropertyTreeBuilder for details.
-    localContext.treeBuilderContext.isUnderMultiColumnSpanner = true;
+    context.treeBuilderContext.isUnderMultiColumnSpanner = true;
     const auto& placeholder = toLayoutMultiColumnSpannerPlaceholder(object);
     bool descendantsFullyUpdated =
-        walk(*placeholder.layoutObjectInFlowThread(), localContext);
+        walk(*placeholder.layoutObjectInFlowThread(), context);
     if (descendantsFullyUpdated) {
       // If descendants were not fully updated, do not clear flags. During the
       // next PrePaintTreeWalk, these flags will be used again.
@@ -134,25 +131,19 @@ bool PrePaintTreeWalk::walk(const LayoutObject& object,
 
   // This must happen before updateContextForBoxPosition, because the
   // latter reads some of the state computed uere.
-  updateAuxiliaryObjectProperties(object, localContext);
+  updateAuxiliaryObjectProperties(object, context);
 
-  // Ensure the current context takes into account the box position. This can
-  // change the current context's paint offset so it must precede the paint
-  // offset property update check.
-  m_propertyTreeBuilder.updateContextForBoxPosition(
-      object, localContext.treeBuilderContext);
-  // Many paint properties depend on paint offset so we force an update of
-  // properties if the paint offset changes.
-  if (object.previousPaintOffset() !=
-      localContext.treeBuilderContext.current.paintOffset) {
-    object.getMutableForPainting().setNeedsPaintPropertyUpdate();
-  }
+  // Ensure the current context takes into account the box's position. This can
+  // force a subtree update due to paint offset changes and must precede any
+  // early out from the treewalk.
+  m_propertyTreeBuilder.updateContextForBoxPosition(object,
+                                                    context.treeBuilderContext);
 
   // Early out from the treewalk if possible.
   if (!object.needsPaintPropertyUpdate() &&
       !object.descendantNeedsPaintPropertyUpdate() &&
-      !localContext.treeBuilderContext.forceSubtreeUpdate &&
-      !localContext.paintInvalidatorContext.forcedSubtreeInvalidationFlags &&
+      !context.treeBuilderContext.forceSubtreeUpdate &&
+      !context.paintInvalidatorContext.forcedSubtreeInvalidationFlags &&
       !object
            .shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState()) {
     // Even though the subtree was not walked, we know that a walk will not
@@ -160,12 +151,12 @@ bool PrePaintTreeWalk::walk(const LayoutObject& object,
     return true;
   }
 
-  m_propertyTreeBuilder.updatePropertiesForSelf(
-      object, localContext.treeBuilderContext);
-  m_paintInvalidator.invalidatePaintIfNeeded(
-      object, localContext.paintInvalidatorContext);
-  m_propertyTreeBuilder.updatePropertiesForChildren(
-      object, localContext.treeBuilderContext);
+  m_propertyTreeBuilder.updatePropertiesForSelf(object,
+                                                context.treeBuilderContext);
+  m_paintInvalidator.invalidatePaintIfNeeded(object,
+                                             context.paintInvalidatorContext);
+  m_propertyTreeBuilder.updatePropertiesForChildren(object,
+                                                    context.treeBuilderContext);
 
   bool descendantsFullyUpdated = true;
   for (const LayoutObject* child = object.slowFirstChild(); child;
@@ -173,7 +164,7 @@ bool PrePaintTreeWalk::walk(const LayoutObject& object,
     // Column spanners are walked through their placeholders. See above.
     if (child->isColumnSpanAll())
       continue;
-    bool childFullyUpdated = walk(*child, localContext);
+    bool childFullyUpdated = walk(*child, context);
     if (!childFullyUpdated)
       descendantsFullyUpdated = false;
   }
@@ -182,12 +173,12 @@ bool PrePaintTreeWalk::walk(const LayoutObject& object,
     const LayoutPart& layoutPart = toLayoutPart(object);
     Widget* widget = layoutPart.widget();
     if (widget && widget->isFrameView()) {
-      localContext.treeBuilderContext.current.paintOffset +=
+      context.treeBuilderContext.current.paintOffset +=
           layoutPart.replacedContentRect().location() -
           widget->frameRect().location();
-      localContext.treeBuilderContext.current.paintOffset =
-          roundedIntPoint(localContext.treeBuilderContext.current.paintOffset);
-      bool frameFullyUpdated = walk(*toFrameView(widget), localContext);
+      context.treeBuilderContext.current.paintOffset =
+          roundedIntPoint(context.treeBuilderContext.current.paintOffset);
+      bool frameFullyUpdated = walk(*toFrameView(widget), context);
       if (!frameFullyUpdated)
         descendantsFullyUpdated = false;
     }

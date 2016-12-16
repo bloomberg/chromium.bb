@@ -921,6 +921,11 @@ void PaintPropertyTreeBuilder::updateContextForBoxPosition(
           -toLayoutBox(parentRow)->physicalLocation());
     }
   }
+
+  // Many paint properties depend on paint offset so we force an update of
+  // the entire subtree on paint offset changes.
+  if (object.previousPaintOffset() != context.current.paintOffset)
+    context.forceSubtreeUpdate = true;
 }
 
 void PaintPropertyTreeBuilder::updatePropertiesForSelf(
