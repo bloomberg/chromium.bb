@@ -20,8 +20,6 @@ blink_modules_sources("quota") {
     "NavigatorStorageQuota.h",
     "StorageErrorCallback.cpp",
     "StorageErrorCallback.h",
-    "StorageInfo.cpp",
-    "StorageInfo.h",
     "StorageManager.cpp",
     "StorageManager.h",
     "StorageQuota.cpp",

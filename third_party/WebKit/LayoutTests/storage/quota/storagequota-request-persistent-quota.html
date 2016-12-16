@@ -6,6 +6,7 @@
 <script type="text/javascript">
 description("This tests navigator.storageQuota.requestPersistentQuota.");
 
+var info;
 var usage;
 var grantedQuota;
 
@@ -19,6 +20,10 @@ function onrejected(error) {
 function runRequestQuotaTest() {
     debug("* Requesting persistent quota.");
     navigator.storageQuota.requestPersistentQuota(1024).then(function(storageInfo) {
+
+        info = storageInfo;
+        shouldBe("info.__proto__", "Object.prototype");
+
         usage = storageInfo.usage;
         grantedQuota = storageInfo.quota;
 
@@ -42,6 +47,9 @@ function runRequestQuotaWithMisingArgumentTest() {
 function runRequestQuotaWithNegativeValueTest() {
     debug("* Requesting persistent quota with negative value.");
     navigator.storageQuota.requestPersistentQuota(-1024).then(function(storageInfo) {
+        info = storageInfo;
+        shouldBe("info.__proto__", "Object.prototype");
+
         usage = storageInfo.usage;
         grantedQuota = storageInfo.quota;
 

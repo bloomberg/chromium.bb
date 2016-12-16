@@ -44,13 +44,19 @@ StorageQuotaCallbacksImpl::~StorageQuotaCallbacksImpl() {}
 void StorageQuotaCallbacksImpl::didQueryStorageUsageAndQuota(
     unsigned long long usageInBytes,
     unsigned long long quotaInBytes) {
-  m_resolver->resolve(StorageInfo::create(usageInBytes, quotaInBytes));
+  StorageInfo info;
+  info.setUsage(usageInBytes);
+  info.setQuota(quotaInBytes);
+  m_resolver->resolve(info);
 }
 
 void StorageQuotaCallbacksImpl::didGrantStorageQuota(
     unsigned long long usageInBytes,
     unsigned long long grantedQuotaInBytes) {
-  m_resolver->resolve(StorageInfo::create(usageInBytes, grantedQuotaInBytes));
+  StorageInfo info;
+  info.setUsage(usageInBytes);
+  info.setQuota(grantedQuotaInBytes);
+  m_resolver->resolve(info);
 }
 
 void StorageQuotaCallbacksImpl::didFail(WebStorageQuotaError error) {

@@ -6,6 +6,7 @@
 <script type="text/javascript">
 description("This tests navigator.storageQuota.queryInfo.");
 
+var info;
 var usage;
 var quota;
 
@@ -19,6 +20,9 @@ function onrejected(error) {
 function runQueryTemporaryTest() {
     debug("* Querying about temporary storage.");
     navigator.storageQuota.queryInfo("temporary").then(function(storageInfo) {
+        info = storageInfo;
+        shouldBe("info.__proto__", "Object.prototype");
+
         usage = storageInfo.usage;
         quota = storageInfo.quota;
 
@@ -33,6 +37,9 @@ function runQueryTemporaryTest() {
 function runQueryPersistentTest() {
     debug("* Querying about persistent storage.");
     navigator.storageQuota.queryInfo("persistent").then(function(storageInfo) {
+        info = storageInfo;
+        shouldBe("info.__proto__", "Object.prototype");
+
         usage = storageInfo.usage;
         quota = storageInfo.quota;
 

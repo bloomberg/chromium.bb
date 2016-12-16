@@ -4,9 +4,11 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 
 
 * Querying about temporary storage.
+PASS info.__proto__ is Object.prototype
 PASS usage is >= 0
 PASS quota is >= usage
 * Querying about persistent storage.
+PASS info.__proto__ is Object.prototype
 PASS usage is >= 0
 PASS quota is >= usage
 * Querying about unknown storage.
