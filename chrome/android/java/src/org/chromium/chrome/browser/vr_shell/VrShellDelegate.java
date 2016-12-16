@@ -28,7 +28,6 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.content_public.common.BrowserControlsState;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -476,7 +475,7 @@ public class VrShellDelegate {
         mInVr = false;
         mTab.removeObserver(mTabObserver);
         mTab.updateFullscreenEnabledState();
-        mTab.updateBrowserControlsState(BrowserControlsState.SHOWN, true);
+        mActivity.getFullscreenManager().setPositionsForTabToNonFullscreen();
     }
 
     private boolean isVrCoreCompatible() {

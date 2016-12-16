@@ -10,7 +10,6 @@ import android.graphics.Point;
 import android.os.StrictMode;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import com.google.vr.ndk.base.AndroidCompat;
@@ -25,7 +24,6 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabContentViewParent;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
@@ -63,7 +61,6 @@ public class VrShellImpl extends GvrLayout implements VrShell {
 
     private long mNativeVrShell;
 
-    private FrameLayout mContentCVCContainer;
     private FrameLayout mUiCVCContainer;
     private FrameLayout mPresentationView;
 
@@ -72,14 +69,7 @@ public class VrShellImpl extends GvrLayout implements VrShell {
 
     // The ContentViewCore for the main content rect in VR.
     private ContentViewCore mContentCVC;
-    private TabContentViewParent mTabParent;
-    private ViewGroup mTabParentParent;
-
-    // TODO(mthiesse): Instead of caching these values, make tab reparenting work for this case.
-    private int mOriginalTabParentIndex;
-    private ViewGroup.LayoutParams mOriginalLayoutParams;
     private WindowAndroid mOriginalWindowAndroid;
-
     private VrWindowAndroid mContentVrWindowAndroid;
 
     private WebContents mUiContents;
@@ -89,19 +79,12 @@ public class VrShellImpl extends GvrLayout implements VrShell {
     public VrShellImpl(Activity activity) {
         super(activity);
         mActivity = activity;
-        mContentCVCContainer = new FrameLayout(getContext()) {
-            @Override
-            public boolean dispatchTouchEvent(MotionEvent event) {
-                return true;
-            }
-        };
         mUiCVCContainer = new FrameLayout(getContext()) {
             @Override
             public boolean dispatchTouchEvent(MotionEvent event) {
                 return true;
             }
         };
-        addView(mContentCVCContainer, 0, new FrameLayout.LayoutParams(0, 0));
         addView(mUiCVCContainer, 0, new FrameLayout.LayoutParams(0, 0));
 
         mPresentationView = new FrameLayout(mActivity);
@@ -170,34 +153,8 @@ public class VrShellImpl extends GvrLayout implements VrShell {
         mUiCVC.setTopControlsHeight(0, false);
         mUiVrWindowAndroid.onVisibilityChanged(true);
 
-        reparentContentWindow();
-    }
-
-    private void reparentContentWindow() {
         mOriginalWindowAndroid = mContentCVC.getWindowAndroid();
-
         mTab.updateWindowAndroid(mContentVrWindowAndroid);
-
-        mTabParent = mTab.getView();
-        mTabParentParent = (ViewGroup) mTabParent.getParent();
-        mOriginalTabParentIndex = mTabParentParent.indexOfChild(mTabParent);
-        mOriginalLayoutParams = mTabParent.getLayoutParams();
-        mTabParentParent.removeView(mTabParent);
-
-        mContentCVCContainer.addView(mTabParent, new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-    }
-
-    private void restoreContentWindow() {
-        mTab.updateWindowAndroid(mOriginalWindowAndroid);
-
-        // If the tab's view has changed, the necessary view reparenting has already been done.
-        if (mTab.getView() == mTabParent) {
-            mContentCVCContainer.removeView(mTabParent);
-            mTabParentParent.addView(mTabParent, mOriginalTabParentIndex, mOriginalLayoutParams);
-            mTabParent.requestFocus();
-        }
-        mTabParent = null;
     }
 
     @CalledByNative
@@ -212,8 +169,7 @@ public class VrShellImpl extends GvrLayout implements VrShell {
 
         Point size = new Point(surfaceWidth, surfaceHeight);
         mUiVirtualDisplay.update(size, size, dpr, null, null, null);
-
-        mUiCVCContainer.setLayoutParams(new FrameLayout.LayoutParams(surfaceWidth, surfaceHeight));
+        mUiCVC.onSizeChanged(surfaceWidth, surfaceHeight, 0, 0);
         mUiCVC.onPhysicalBackingSizeChanged(surfaceWidth, surfaceHeight);
         nativeUIBoundsChanged(mNativeVrShell, surfaceWidth, surfaceHeight, dpr);
     }
@@ -226,9 +182,7 @@ public class VrShellImpl extends GvrLayout implements VrShell {
 
         Point size = new Point(surfaceWidth, surfaceHeight);
         mContentVirtualDisplay.update(size, size, dpr, null, null, null);
-
-        mContentCVCContainer.setLayoutParams(new FrameLayout.LayoutParams(
-                surfaceWidth,  surfaceHeight));
+        mContentCVC.onSizeChanged(surfaceWidth, surfaceHeight, 0, 0);
         mContentCVC.onPhysicalBackingSizeChanged(surfaceWidth, surfaceHeight);
         nativeContentBoundsChanged(mNativeVrShell, surfaceWidth, surfaceHeight, dpr);
     }
@@ -274,7 +228,9 @@ public class VrShellImpl extends GvrLayout implements VrShell {
             nativeDestroy(mNativeVrShell);
             mNativeVrShell = 0;
         }
-        restoreContentWindow();
+        mTab.updateWindowAndroid(mOriginalWindowAndroid);
+        mContentCVC.onSizeChanged(mContentCVC.getContainerView().getWidth(),
+                mContentCVC.getContainerView().getHeight(), 0, 0);
         mUiContents.destroy();
         mContentVirtualDisplay.destroy();
         mUiVirtualDisplay.destroy();
