@@ -7912,6 +7912,10 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     return;
   }
 
+  // Detect that designated read/depth/stencil buffer in read framebuffer miss
+  // image, and the corresponding buffers in draw framebuffer have image.
+  bool read_framebuffer_miss_image = false;
+
   // Check whether read framebuffer and draw framebuffer have identical image
   // TODO(yunchao): consider doing something like CheckFramebufferStatus().
   // We cache the validation results, and if read_framebuffer doesn't change,
@@ -7935,6 +7939,18 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     is_feedback_loop = FeedbackLoopTrue;
   } else if (!read_framebuffer || !draw_framebuffer) {
     is_feedback_loop = FeedbackLoopFalse;
+    if (read_framebuffer) {
+      if (((mask & GL_COLOR_BUFFER_BIT) != 0 &&
+          !GetBoundReadFramebufferInternalFormat()) ||
+          ((mask & GL_DEPTH_BUFFER_BIT) != 0 &&
+          !read_framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT) &&
+          BoundFramebufferHasDepthAttachment()) ||
+          ((mask & GL_STENCIL_BUFFER_BIT) != 0 &&
+          !read_framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT) &&
+          BoundFramebufferHasStencilAttachment())) {
+        read_framebuffer_miss_image = true;
+      }
+    }
   } else {
     DCHECK(read_framebuffer && draw_framebuffer);
     if ((mask & GL_DEPTH_BUFFER_BIT) != 0) {
@@ -7944,6 +7960,9 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
           draw_framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT);
       if (!depth_buffer_draw || !depth_buffer_read) {
         mask &= ~GL_DEPTH_BUFFER_BIT;
+        if (depth_buffer_draw) {
+          read_framebuffer_miss_image = true;
+        }
       } else if (depth_buffer_draw->IsSameAttachment(depth_buffer_read)) {
         is_feedback_loop = FeedbackLoopTrue;
       }
@@ -7955,11 +7974,14 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
           draw_framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT);
       if (!stencil_buffer_draw || !stencil_buffer_read) {
         mask &= ~GL_STENCIL_BUFFER_BIT;
+        if (stencil_buffer_draw) {
+          read_framebuffer_miss_image = true;
+        }
       } else if (stencil_buffer_draw->IsSameAttachment(stencil_buffer_read)) {
         is_feedback_loop = FeedbackLoopTrue;
       }
     }
-    if (!mask)
+    if (!mask && !read_framebuffer_miss_image)
       return;
   }
 
@@ -7994,6 +8016,9 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
       GLenum dst_type = GetBoundColorDrawBufferType(static_cast<GLint>(ii));
       if (dst_format == 0)
         continue;
+      if (!src_internal_format) {
+        read_framebuffer_miss_image = true;
+      }
       if (GetColorEncodingFromInternalFormat(dst_format) == GL_SRGB)
         draw_buffers_has_srgb = true;
       if (read_buffer_samples > 0 &&
@@ -8031,6 +8056,11 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
   if (is_feedback_loop == FeedbackLoopTrue) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
         "source buffer and destination buffers are identical");
+    return;
+  }
+  if (read_framebuffer_miss_image == true) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+       "The designated attachment point(s) in read framebuffer miss image");
     return;
   }
 
