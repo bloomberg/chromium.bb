@@ -70,6 +70,9 @@ MainThreadEventQueue::MainThreadEventQueue(
       last_touch_start_forced_nonblocking_due_to_fling_(false),
       enable_fling_passive_listener_flag_(base::FeatureList::IsEnabled(
           features::kPassiveEventListenersDueToFling)),
+      enable_non_blocking_due_to_main_thread_responsiveness_flag_(
+          base::FeatureList::IsEnabled(
+              features::kMainThreadBusyScrollIntervention)),
       handle_raf_aligned_touch_input_(
           base::FeatureList::IsEnabled(features::kRafAlignedTouchInputEvents)),
       handle_raf_aligned_mouse_input_(
@@ -121,10 +124,22 @@ bool MainThreadEventQueue::HandleEvent(
         last_touch_start_forced_nonblocking_due_to_fling_ = true;
       }
     }
+
     // If handling rAF aligned touch input ACK non-cancelable events right
     // away.
     if (!non_blocking && IsRafAlignedEvent(*touch_event))
       non_blocking = true;
+
+    if (enable_non_blocking_due_to_main_thread_responsiveness_flag_ &&
+        touch_event->dispatchType == blink::WebInputEvent::Blocking) {
+      bool passive_due_to_unresponsive_main =
+          renderer_scheduler_->MainThreadSeemsUnresponsive();
+      if (passive_due_to_unresponsive_main) {
+        touch_event->dispatchType = blink::WebInputEvent::
+            ListenersForcedNonBlockingDueToMainThreadResponsiveness;
+        non_blocking = true;
+      }
+    }
   }
   if (is_wheel && non_blocking) {
     // Adjust the |dispatchType| on the event since the compositor

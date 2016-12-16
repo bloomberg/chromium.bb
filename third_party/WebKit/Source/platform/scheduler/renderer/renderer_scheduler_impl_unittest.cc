@@ -208,7 +208,10 @@ class RendererSchedulerImplForTest : public RendererSchedulerImpl {
 
   RendererSchedulerImplForTest(
       scoped_refptr<SchedulerTqmDelegate> main_task_runner)
-      : RendererSchedulerImpl(main_task_runner), update_policy_count_(0) {}
+      : RendererSchedulerImpl(main_task_runner), update_policy_count_(0) {
+    main_thread_responsiveness_threshold_ =
+        base::TimeDelta::FromMilliseconds(200);
+  }
 
   void UpdatePolicyLocked(UpdateType update_type) override {
     update_policy_count_++;
@@ -542,6 +545,22 @@ class RendererSchedulerImplTest : public testing::Test {
 
   int NavigationTaskExpectedCount() {
     return scheduler_->MainThreadOnly().navigation_task_expected_count;
+  }
+
+  void AdvanceTimeWithTask(double duration) {
+    double start = (clock_->NowTicks() - base::TimeTicks()).InSecondsF();
+    clock_->Advance(base::TimeDelta::FromSecondsD(duration));
+    double end = (clock_->NowTicks() - base::TimeTicks()).InSecondsF();
+    scheduler_->willProcessTask(scheduler_->TimerTaskRunner().get(), start);
+    scheduler_->didProcessTask(scheduler_->TimerTaskRunner().get(), start, end);
+  }
+
+  void GetQueueingTimeEstimatorLock() {
+    scheduler_->seqlock_queueing_time_estimator_.seqlock.WriteBegin();
+  }
+
+  void DropQueueingTimeEstimatorLock() {
+    scheduler_->seqlock_queueing_time_estimator_.seqlock.WriteEnd();
   }
 
   // Helper for posting several tasks of specific types. |task_descriptor| is a
@@ -3619,6 +3638,47 @@ TEST_F(RendererSchedulerImplTest,
   EXPECT_THAT(run_times,
               testing::ElementsAre(base::TimeTicks() +
                                    base::TimeDelta::FromMilliseconds(1300)));
+}
+
+TEST_F(RendererSchedulerImplTest, UnresponsiveMainThread) {
+  EXPECT_FALSE(scheduler_->MainThreadSeemsUnresponsive());
+
+  // Add one second long task.
+  AdvanceTimeWithTask(1);
+  EXPECT_TRUE(scheduler_->MainThreadSeemsUnresponsive());
+
+  // Wait a second.
+  clock_->Advance(base::TimeDelta::FromSecondsD(2));
+
+  AdvanceTimeWithTask(0.5);
+  EXPECT_FALSE(scheduler_->MainThreadSeemsUnresponsive());
+}
+
+TEST_F(RendererSchedulerImplTest, ResponsiveMainThreadDuringTask) {
+  EXPECT_FALSE(scheduler_->MainThreadSeemsUnresponsive());
+  clock_->Advance(base::TimeDelta::FromSecondsD(2));
+  scheduler_->willProcessTask(
+      scheduler_->TimerTaskRunner().get(),
+      (clock_->NowTicks() - base::TimeTicks()).InSecondsF());
+  EXPECT_FALSE(scheduler_->MainThreadSeemsUnresponsive());
+}
+
+TEST_F(RendererSchedulerImplTest, UnresponsiveMainThreadWithContention) {
+  // Process a long task, lock the queueing time estimator, and check that we
+  // still report the main thread is unresponsive.
+  AdvanceTimeWithTask(1);
+  EXPECT_TRUE(scheduler_->MainThreadSeemsUnresponsive());
+  GetQueueingTimeEstimatorLock();
+  EXPECT_TRUE(scheduler_->MainThreadSeemsUnresponsive());
+
+  // Advance the clock, so that in the last second, we were responsive.
+  clock_->Advance(base::TimeDelta::FromSecondsD(2));
+  // While the queueing time estimator is locked, we believe the thread to still
+  // be unresponsive.
+  EXPECT_TRUE(scheduler_->MainThreadSeemsUnresponsive());
+  // Once we've dropped the lock, we realize the main thread is responsive.
+  DropQueueingTimeEstimatorLock();
+  EXPECT_FALSE(scheduler_->MainThreadSeemsUnresponsive());
 }
 
 }  // namespace scheduler

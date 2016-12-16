@@ -197,7 +197,7 @@ class WebInputEvent {
   };
 
   // Indicates whether the browser needs to block on the ACK result for
-  // this event, and if not why note (for metrics/diagnostics purposes).
+  // this event, and if not, why (for metrics/diagnostics purposes).
   // These values are direct mappings of the values in PlatformEvent
   // so the values can be cast between the enumerations. static_asserts
   // checking this are in web/WebInputEventConversion.cpp.
@@ -211,6 +211,10 @@ class WebInputEvent {
     // This value represents a state which would have normally blocking
     // but was forced to be non-blocking during fling; not cancelable.
     ListenersForcedNonBlockingDueToFling,
+    // This value represents a state which would have normally blocking but
+    // was forced to be non-blocking due to the main thread being
+    // unresponsive.
+    ListenersForcedNonBlockingDueToMainThreadResponsiveness,
   };
 
   // The rail mode for a wheel event specifies the axis on which scrolling is

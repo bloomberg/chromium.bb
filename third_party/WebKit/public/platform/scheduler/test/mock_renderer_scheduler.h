@@ -58,6 +58,7 @@ class MockRendererScheduler : public RendererScheduler {
   MOCK_METHOD1(SetTimerQueueSuspensionWhenBackgroundedEnabled, void(bool));
   MOCK_METHOD1(SetTopLevelBlameContext, void(base::trace_event::BlameContext*));
   MOCK_METHOD1(SetRAILModeObserver, void(RAILModeObserver*));
+  MOCK_METHOD0(MainThreadSeemsUnresponsive, bool());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockRendererScheduler);

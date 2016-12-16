@@ -27,20 +27,36 @@ class BLINK_PLATFORM_EXPORT QueueingTimeEstimator {
     DISALLOW_COPY_AND_ASSIGN(Client);
   };
 
-  QueueingTimeEstimator(Client* client, base::TimeDelta window_duration);
+  class State {
+   public:
+    base::TimeDelta current_expected_queueing_time;
+    base::TimeDelta window_duration;
+    base::TimeTicks window_start_time;
+    base::TimeTicks current_task_start_time;
+    void OnTopLevelTaskStarted(base::TimeTicks task_start_time);
+    void OnTopLevelTaskCompleted(Client* client, base::TimeTicks task_end_time);
 
-  void OnToplevelTaskCompleted(base::TimeTicks task_start_time,
-                               base::TimeTicks task_end_time);
+   private:
+    bool TimePastWindowEnd(base::TimeTicks task_end_time);
+  };
+
+  QueueingTimeEstimator(Client* client, base::TimeDelta window_duration);
+  explicit QueueingTimeEstimator(const State& state);
+
+  void OnTopLevelTaskStarted(base::TimeTicks task_start_time);
+  void OnTopLevelTaskCompleted(base::TimeTicks task_end_time);
+
+  // Returns all state except for the current |client_|.
+  const State& state() const { return state_; }
+
+  base::TimeDelta EstimateQueueingTimeIncludingCurrentTask(
+      base::TimeTicks now) const;
 
  private:
-  bool TimePastWindowEnd(base::TimeTicks task_end_time);
   Client* client_;  // NOT OWNED.
+  State state_;
 
-  base::TimeDelta current_expected_queueing_time_;
-  base::TimeDelta window_duration_;
-  base::TimeTicks window_start_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(QueueingTimeEstimator);
+  DISALLOW_ASSIGN(QueueingTimeEstimator);
 };
 
 }  // namespace scheduler

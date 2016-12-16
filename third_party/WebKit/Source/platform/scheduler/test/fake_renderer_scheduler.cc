@@ -121,5 +121,9 @@ void FakeRendererScheduler::SetTopLevelBlameContext(
 
 void FakeRendererScheduler::SetRAILModeObserver(RAILModeObserver* observer) {}
 
+bool FakeRendererScheduler::MainThreadSeemsUnresponsive() {
+  return false;
+}
+
 }  // namespace scheduler
 }  // namespace blink

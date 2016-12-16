@@ -114,6 +114,10 @@ const base::Feature kMemoryCoordinator {
 // Kill switch for Web Notification content images.
 const base::Feature kNotificationContentImage{"NotificationContentImage",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+// An experiment forcing events to be non-blocking when the main thread is
+// deemed unresponsive.  See crbug.com/599609.
+const base::Feature kMainThreadBusyScrollIntervention{
+    "MainThreadBusyScrollIntervention", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // An experiment to optimize resource loading IPC for small resources.
 // http://crbug.com/580928
@@ -134,7 +138,7 @@ const base::Feature kPassiveDocumentEventListeners{
     "PassiveDocumentEventListeners", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Whether we should force a touchstart and first touchmove per scroll event
-// listeners to be 'passive' during fling.
+// listeners to be non-blocking during fling.
 const base::Feature kPassiveEventListenersDueToFling{
     "PassiveEventListenersDueToFling", base::FEATURE_ENABLED_BY_DEFAULT};
 

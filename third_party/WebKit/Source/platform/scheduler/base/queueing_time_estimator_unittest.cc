@@ -43,15 +43,16 @@ TEST_F(QueueingTimeEstimatorTest, AllTasksWithinWindow) {
   QueueingTimeEstimatorForTest estimator(&client,
                                          base::TimeDelta::FromSeconds(5));
   for (int i = 0; i < 3; ++i) {
-    estimator.OnToplevelTaskCompleted(
-        time, time + base::TimeDelta::FromMilliseconds(1000));
-    time += base::TimeDelta::FromMilliseconds(1500);
+    estimator.OnTopLevelTaskStarted(time);
+    time += base::TimeDelta::FromMilliseconds(1000);
+    estimator.OnTopLevelTaskCompleted(time);
   }
 
   // Flush the data by adding a task in the next window.
   time += base::TimeDelta::FromMilliseconds(5000);
-  estimator.OnToplevelTaskCompleted(
-      time, time + base::TimeDelta::FromMilliseconds(500));
+  estimator.OnTopLevelTaskStarted(time);
+  time += base::TimeDelta::FromMilliseconds(500);
+  estimator.OnTopLevelTaskCompleted(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
               testing::ElementsAre(base::TimeDelta::FromMilliseconds(300)));
@@ -70,18 +71,20 @@ TEST_F(QueueingTimeEstimatorTest, MultiWindowTask) {
                                          base::TimeDelta::FromSeconds(5));
   base::TimeTicks time;
   time += base::TimeDelta::FromMilliseconds(5000);
-  estimator.OnToplevelTaskCompleted(time, time);
+  estimator.OnTopLevelTaskStarted(time);
+  estimator.OnTopLevelTaskCompleted(time);
 
   time += base::TimeDelta::FromMilliseconds(3000);
 
-  estimator.OnToplevelTaskCompleted(
-      time, time + base::TimeDelta::FromMilliseconds(20000));
+  estimator.OnTopLevelTaskStarted(time);
+  time += base::TimeDelta::FromMilliseconds(20000);
+  estimator.OnTopLevelTaskCompleted(time);
 
   // Flush the data by adding a task in the next window.
-  time += base::TimeDelta::FromMilliseconds(25000);
-
-  estimator.OnToplevelTaskCompleted(
-      time, time + base::TimeDelta::FromMilliseconds(500));
+  time += base::TimeDelta::FromMilliseconds(5000);
+  estimator.OnTopLevelTaskStarted(time);
+  time += base::TimeDelta::FromMilliseconds(500);
+  estimator.OnTopLevelTaskCompleted(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
               testing::ElementsAre(base::TimeDelta::FromMilliseconds(7600),
@@ -89,6 +92,57 @@ TEST_F(QueueingTimeEstimatorTest, MultiWindowTask) {
                                    base::TimeDelta::FromMilliseconds(10500),
                                    base::TimeDelta::FromMilliseconds(5500),
                                    base::TimeDelta::FromMilliseconds(900)));
+}
+
+// The main thread is considered unresponsive during a single long task. In this
+// case, the single long task is 3 seconds long.
+// Probability of being with the task = 3/5. Expected delay within task:
+// avg(0, 3). Total expected queueing time = 3/5 * 3/2 = 0.9s.
+// In this example, the queueing time comes from the current, incomplete window.
+TEST_F(QueueingTimeEstimatorTest,
+       EstimateQueueingTimeDuringSingleLongTaskIncompleteWindow) {
+  TestQueueingTimeEstimatorClient client;
+  QueueingTimeEstimatorForTest estimator(&client,
+                                         base::TimeDelta::FromSeconds(5));
+  base::TimeTicks time;
+  time += base::TimeDelta::FromMilliseconds(5000);
+  estimator.OnTopLevelTaskStarted(time);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  base::TimeTicks start_time = time;
+  estimator.OnTopLevelTaskStarted(start_time);
+
+  time += base::TimeDelta::FromMilliseconds(3000);
+
+  base::TimeDelta estimatedQueueingTime =
+      estimator.EstimateQueueingTimeIncludingCurrentTask(time);
+
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(900), estimatedQueueingTime);
+}
+
+// The main thread is considered unresponsive during a single long task, which
+// exceeds the size of one window. We report the queueing time of the most
+// recent window. Probability of being within the task = 100%, as the task
+// fills the whole window. Expected delay within this task = avg(8, 3) = 5.5.
+TEST_F(QueueingTimeEstimatorTest,
+       EstimateQueueingTimeDuringSingleLongTaskExceedingWindow) {
+  TestQueueingTimeEstimatorClient client;
+  QueueingTimeEstimatorForTest estimator(&client,
+                                         base::TimeDelta::FromSeconds(5));
+  base::TimeTicks time;
+  time += base::TimeDelta::FromMilliseconds(5000);
+  estimator.OnTopLevelTaskStarted(time);
+  estimator.OnTopLevelTaskCompleted(time);
+
+  base::TimeTicks start_time = time;
+  estimator.OnTopLevelTaskStarted(start_time);
+
+  time += base::TimeDelta::FromMilliseconds(13000);
+
+  base::TimeDelta estimatedQueueingTime =
+      estimator.EstimateQueueingTimeIncludingCurrentTask(time);
+
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(5500), estimatedQueueingTime);
 }
 
 }  // namespace scheduler

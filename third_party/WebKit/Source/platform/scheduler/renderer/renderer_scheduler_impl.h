@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/trace_log.h"
+#include "device/base/synchronization/shared_memory_seqlock_buffer.h"
 #include "platform/scheduler/base/pollable_thread_safe_flag.h"
 #include "platform/scheduler/base/queueing_time_estimator.h"
 #include "platform/scheduler/base/thread_load_tracker.h"
@@ -125,6 +126,7 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   void SetTopLevelBlameContext(
       base::trace_event::BlameContext* blame_context) override;
   void SetRAILModeObserver(RAILModeObserver* observer) override;
+  bool MainThreadSeemsUnresponsive() override;
 
   // RenderWidgetSignals::Observer implementation:
   void SetAllRenderWidgetsHidden(bool hidden) override;
@@ -137,7 +139,7 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
                                    const base::PendingTask& task) override;
 
   // TaskTimeObserver implementation:
-  void willProcessTask(TaskQueue* task_queue, double start_time) override{};
+  void willProcessTask(TaskQueue* task_queue, double start_time) override;
   void didProcessTask(TaskQueue* task_queue,
                       double start_time,
                       double end_time) override;
@@ -400,6 +402,11 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   CancelableClosureHolder end_renderer_hidden_idle_period_closure_;
   CancelableClosureHolder suspend_timers_when_backgrounded_closure_;
 
+  using SeqLockQueueingTimeEstimator =
+      device::SharedMemorySeqLockBuffer<QueueingTimeEstimator>;
+
+  SeqLockQueueingTimeEstimator seqlock_queueing_time_estimator_;
+
   // We have decided to improve thread safety at the cost of some boilerplate
   // (the accessors) for the following data members.
 
@@ -412,7 +419,6 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
 
     TaskCostEstimator loading_task_cost_estimator;
     TaskCostEstimator timer_task_cost_estimator;
-    QueueingTimeEstimator queueing_time_estimator;
     IdleTimeEstimator idle_time_estimator;
     ThreadLoadTracker background_main_thread_load_tracker;
     ThreadLoadTracker foreground_main_thread_load_tracker;
@@ -420,6 +426,7 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
     Policy current_policy;
     base::TimeTicks current_policy_expiration_time;
     base::TimeTicks estimated_next_frame_begin;
+    base::TimeTicks current_task_start_time;
     base::TimeDelta compositor_frame_interval;
     base::TimeDelta longest_jank_free_task_duration;
     base::Optional<base::TimeTicks> last_audio_state_change;
@@ -469,6 +476,7 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
     ~CompositorThreadOnly();
 
     WebInputEvent::Type last_input_type;
+    bool main_thread_seems_unresponsive;
     std::unique_ptr<base::ThreadChecker> compositor_thread_checker;
 
     void CheckOnValidThread() {
@@ -513,6 +521,10 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   }
 
   PollableThreadSafeFlag policy_may_need_update_;
+  // The maximum expected queueing time before the main thread is considered
+  // unresponsive.
+  base::TimeDelta main_thread_responsiveness_threshold_;
+
   base::WeakPtrFactory<RendererSchedulerImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererSchedulerImpl);

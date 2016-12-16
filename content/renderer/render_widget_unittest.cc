@@ -32,6 +32,8 @@ namespace {
 
 const char* EVENT_LISTENER_RESULT_HISTOGRAM = "Event.PassiveListeners";
 
+// Keep in sync with enum defined in
+// RenderWidgetInputHandler::LogPassiveEventListenersUma.
 enum {
   PASSIVE_LISTENER_UMA_ENUM_PASSIVE,
   PASSIVE_LISTENER_UMA_ENUM_UNCANCELABLE,
@@ -39,6 +41,7 @@ enum {
   PASSIVE_LISTENER_UMA_ENUM_CANCELABLE,
   PASSIVE_LISTENER_UMA_ENUM_CANCELABLE_AND_CANCELED,
   PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_FLING,
+  PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_MAIN_THREAD_RESPONSIVENESS,
   PASSIVE_LISTENER_UMA_ENUM_COUNT
 };
 
@@ -292,7 +295,7 @@ TEST_F(RenderWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
   touch.touchStartOrFirstTouchMove = true;
 
   EXPECT_CALL(*widget()->mock_webwidget(), handleInputEvent(_))
-      .Times(5)
+      .Times(7)
       .WillRepeatedly(
           ::testing::Return(blink::WebInputEventResult::NotHandled));
 
@@ -327,6 +330,24 @@ TEST_F(RenderWidgetUnittest, RenderWidgetInputEventUmaMetrics) {
   histogram_tester().ExpectBucketCount(
       EVENT_LISTENER_RESULT_HISTOGRAM,
       PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_FLING, 2);
+
+  touch.dispatchType = blink::WebInputEvent::DispatchType::
+      ListenersForcedNonBlockingDueToMainThreadResponsiveness;
+  widget()->SendInputEvent(touch);
+  histogram_tester().ExpectBucketCount(
+      EVENT_LISTENER_RESULT_HISTOGRAM,
+      PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_MAIN_THREAD_RESPONSIVENESS,
+      1);
+
+  touch.MovePoint(0, 10, 10);
+  touch.touchStartOrFirstTouchMove = true;
+  touch.dispatchType = blink::WebInputEvent::DispatchType::
+      ListenersForcedNonBlockingDueToMainThreadResponsiveness;
+  widget()->SendInputEvent(touch);
+  histogram_tester().ExpectBucketCount(
+      EVENT_LISTENER_RESULT_HISTOGRAM,
+      PASSIVE_LISTENER_UMA_ENUM_FORCED_NON_BLOCKING_DUE_TO_MAIN_THREAD_RESPONSIVENESS,
+      2);
 
   EXPECT_CALL(*widget()->mock_webwidget(), handleInputEvent(_))
       .WillOnce(

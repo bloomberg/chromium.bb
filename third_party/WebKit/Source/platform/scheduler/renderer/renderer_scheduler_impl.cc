@@ -47,6 +47,9 @@ constexpr base::TimeDelta kThreadLoadTrackerWaitingPeriodBeforeReporting =
 // We do not throttle anything while audio is played and shortly after that.
 constexpr base::TimeDelta kThrottlingDelayAfterAudioIsPlayed =
     base::TimeDelta::FromSeconds(5);
+// Maximum task queueing time before the main thread is considered unresponsive.
+constexpr base::TimeDelta kMainThreadResponsivenessThreshold =
+    base::TimeDelta::FromMilliseconds(200);
 
 void ReportForegroundRendererTaskLoad(base::TimeTicks time, double load) {
   int load_percentage = static_cast<int>(load * 100);
@@ -66,8 +69,8 @@ void ReportBackgroundRendererTaskLoad(base::TimeTicks time, double load) {
 
 base::TimeTicks MonotonicTimeInSecondsToTimeTicks(
     double monotonicTimeInSeconds) {
-  return base::TimeTicks() + base::TimeDelta::FromSecondsD(
-      monotonicTimeInSeconds);
+  return base::TimeTicks() +
+         base::TimeDelta::FromSecondsD(monotonicTimeInSeconds);
 }
 
 std::string PointerToId(void* pointer) {
@@ -101,11 +104,14 @@ RendererSchedulerImpl::RendererSchedulerImpl(
           base::Bind(&RendererSchedulerImpl::UpdatePolicy,
                      base::Unretained(this)),
           helper_.ControlTaskRunner()),
+      seqlock_queueing_time_estimator_(
+          QueueingTimeEstimator(this, base::TimeDelta::FromSeconds(1))),
       main_thread_only_(this,
                         compositor_task_runner_,
                         helper_.scheduler_tqm_delegate().get(),
                         helper_.scheduler_tqm_delegate()->NowTicks()),
       policy_may_need_update_(&any_thread_lock_),
+      main_thread_responsiveness_threshold_(kMainThreadResponsivenessThreshold),
       weak_factory_(this) {
   task_queue_throttler_.reset(
       new TaskQueueThrottler(this, "renderer.scheduler"));
@@ -176,8 +182,6 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       timer_task_cost_estimator(time_source,
                                 kTimerTaskEstimationSampleCount,
                                 kTimerTaskEstimationPercentile),
-      queueing_time_estimator(renderer_scheduler_impl,
-                              base::TimeDelta::FromSeconds(1)),
       idle_time_estimator(compositor_task_runner,
                           time_source,
                           kShortIdlePeriodDurationSampleCount,
@@ -230,7 +234,8 @@ RendererSchedulerImpl::AnyThread::AnyThread()
 RendererSchedulerImpl::AnyThread::~AnyThread() {}
 
 RendererSchedulerImpl::CompositorThreadOnly::CompositorThreadOnly()
-    : last_input_type(blink::WebInputEvent::Undefined) {}
+    : last_input_type(blink::WebInputEvent::Undefined),
+      main_thread_seems_unresponsive(false) {}
 
 RendererSchedulerImpl::CompositorThreadOnly::~CompositorThreadOnly() {}
 
@@ -1601,6 +1606,41 @@ void RendererSchedulerImpl::SetRAILModeObserver(RAILModeObserver* observer) {
   MainThreadOnly().rail_mode_observer = observer;
 }
 
+bool RendererSchedulerImpl::MainThreadSeemsUnresponsive() {
+  base::TimeTicks now = tick_clock()->NowTicks();
+  base::TimeDelta estimated_queueing_time;
+
+  bool can_read = false;
+  QueueingTimeEstimator::State queueing_time_estimator_state;
+
+  base::subtle::Atomic32 version;
+  seqlock_queueing_time_estimator_.seqlock.TryRead(&can_read, &version);
+
+  // If we fail to determine if the main thread is busy, assume whether or not
+  // it's busy hasn't change since the last time we asked.
+  if (!can_read)
+    return CompositorThreadOnly().main_thread_seems_unresponsive;
+
+  queueing_time_estimator_state = seqlock_queueing_time_estimator_.data.state();
+
+  // If we fail to determine if the main thread is busy, assume whether or not
+  // it's busy hasn't change since the last time we asked.
+  if (seqlock_queueing_time_estimator_.seqlock.ReadRetry(version))
+    return CompositorThreadOnly().main_thread_seems_unresponsive;
+
+  QueueingTimeEstimator queueing_time_estimator(queueing_time_estimator_state);
+
+  estimated_queueing_time =
+      queueing_time_estimator.EstimateQueueingTimeIncludingCurrentTask(now);
+
+  bool main_thread_seems_unresponsive =
+      estimated_queueing_time > main_thread_responsiveness_threshold_;
+  CompositorThreadOnly().main_thread_seems_unresponsive =
+      main_thread_seems_unresponsive;
+
+  return main_thread_seems_unresponsive;
+}
+
 void RendererSchedulerImpl::RegisterTimeDomain(TimeDomain* time_domain) {
   helper_.RegisterTimeDomain(time_domain);
 }
@@ -1665,9 +1705,20 @@ void RendererSchedulerImpl::OnTriedToExecuteBlockedTask(
         "Blink deferred a task in order to make scrolling smoother. "
         "Your timer and network tasks should take less than 50ms to run "
         "to avoid this. Please see "
-        "https://developers.google.com/web/tools/chrome-devtools/profile/evaluate-performance/rail"
+        "https://developers.google.com/web/tools/chrome-devtools/profile/"
+        "evaluate-performance/rail"
         " and https://crbug.com/574343#c40 for more information.");
   }
+}
+
+void RendererSchedulerImpl::willProcessTask(TaskQueue* task_queue,
+                                            double start_time) {
+  base::TimeTicks start_time_ticks =
+      MonotonicTimeInSecondsToTimeTicks(start_time);
+  MainThreadOnly().current_task_start_time = start_time_ticks;
+  seqlock_queueing_time_estimator_.seqlock.WriteBegin();
+  seqlock_queueing_time_estimator_.data.OnTopLevelTaskStarted(start_time_ticks);
+  seqlock_queueing_time_estimator_.seqlock.WriteEnd();
 }
 
 void RendererSchedulerImpl::didProcessTask(TaskQueue* task_queue,
@@ -1679,8 +1730,9 @@ void RendererSchedulerImpl::didProcessTask(TaskQueue* task_queue,
       MonotonicTimeInSecondsToTimeTicks(start_time);
   base::TimeTicks end_time_ticks = MonotonicTimeInSecondsToTimeTicks(end_time);
 
-  MainThreadOnly().queueing_time_estimator.OnToplevelTaskCompleted(
-      start_time_ticks, end_time_ticks);
+  seqlock_queueing_time_estimator_.seqlock.WriteBegin();
+  seqlock_queueing_time_estimator_.data.OnTopLevelTaskCompleted(end_time_ticks);
+  seqlock_queueing_time_estimator_.seqlock.WriteEnd();
 
   task_queue_throttler()->OnTaskRunTimeReported(task_queue, start_time_ticks,
                                                 end_time_ticks);
@@ -1692,9 +1744,9 @@ void RendererSchedulerImpl::didProcessTask(TaskQueue* task_queue,
   MainThreadOnly().background_main_thread_load_tracker.RecordTaskTime(
       start_time_ticks, end_time_ticks);
   // TODO(altimin): Per-page metrics should also be considered.
-  UMA_HISTOGRAM_CUSTOM_COUNTS("RendererScheduler.TaskTime",
-                              (end_time_ticks - start_time_ticks).InMicroseconds(), 1,
-                              1000000, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(
+      "RendererScheduler.TaskTime",
+      (end_time_ticks - start_time_ticks).InMicroseconds(), 1, 1000000, 50);
   UMA_HISTOGRAM_ENUMERATION("RendererScheduler.NumberOfTasksPerQueueType",
                             static_cast<int>(task_queue->GetQueueType()),
                             static_cast<int>(TaskQueue::QueueType::COUNT));

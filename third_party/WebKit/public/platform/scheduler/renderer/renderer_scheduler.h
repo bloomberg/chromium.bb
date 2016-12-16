@@ -185,6 +185,11 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   // https://developers.google.com/web/tools/chrome-devtools/profile/evaluate-performance/rail
   virtual void SetRAILModeObserver(RAILModeObserver* observer) = 0;
 
+  // Returns whether or not the main thread appears unresponsive, based on the
+  // length and frequency of recent main thread tasks. To be called from the
+  // compositor thread.
+  virtual bool MainThreadSeemsUnresponsive() = 0;
+
  protected:
   RendererScheduler();
   DISALLOW_COPY_AND_ASSIGN(RendererScheduler);

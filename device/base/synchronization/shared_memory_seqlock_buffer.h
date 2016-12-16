@@ -21,6 +21,8 @@ namespace device {
 template <class Data>
 class SharedMemorySeqLockBuffer {
  public:
+  SharedMemorySeqLockBuffer() {}
+  explicit SharedMemorySeqLockBuffer(const Data& data) : data(data) {}
   OneWriterSeqLock seqlock;
   Data data;
 };

@@ -18,8 +18,8 @@ namespace device {
 //   http://www.concurrencykit.org/doc/ck_sequence.html
 // This implementation is based on ck_sequence.h from http://concurrencykit.org.
 //
-// Currently this type of lock is used in two implementations (gamepad and
-// device motion, in particular see e.g. shared_memory_seqlock_buffer.h).
+// Currently this type of lock is used in at least two implementations (gamepad
+// and device motion, in particular see e.g. shared_memory_seqlock_buffer.h).
 // It may make sense to generalize this lock to multiple writers.
 //
 // You must be very careful not to operate on potentially inconsistent read
@@ -32,6 +32,7 @@ class OneWriterSeqLock {
  public:
   OneWriterSeqLock();
   base::subtle::Atomic32 ReadBegin() const;
+  void TryRead(bool* can_read, base::subtle::Atomic32* version) const;
   bool ReadRetry(base::subtle::Atomic32 version) const;
   void WriteBegin();
   void WriteEnd();
