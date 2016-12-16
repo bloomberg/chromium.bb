@@ -495,12 +495,11 @@ void aom_d45_predictor_2x2_c(uint8_t *dst, ptrdiff_t stride,
   const int B = above[1];
   const int C = above[2];
   const int D = above[3];
-  const int E = above[4];
   (void)stride;
   (void)left;
   DST(0, 0) = AVG3(A, B, C);
   DST(1, 0) = DST(0, 1) = AVG3(B, C, D);
-  DST(1, 1) = AVG3(C, D, E);
+  DST(1, 1) = AVG3(C, D, D);
 }
 
 void aom_d45e_predictor_2x2_c(uint8_t *dst, ptrdiff_t stride,
@@ -509,12 +508,12 @@ void aom_d45e_predictor_2x2_c(uint8_t *dst, ptrdiff_t stride,
   const int B = above[1];
   const int C = above[2];
   const int D = above[3];
-  const int E = above[4];
   (void)stride;
   (void)left;
+
   DST(0, 0) = AVG3(A, B, C);
   DST(1, 0) = DST(0, 1) = AVG3(B, C, D);
-  DST(1, 1) = AVG3(C, D, E);
+  DST(1, 1) = AVG3(C, D, D);
 }
 
 void aom_d117_predictor_2x2_c(uint8_t *dst, ptrdiff_t stride,
