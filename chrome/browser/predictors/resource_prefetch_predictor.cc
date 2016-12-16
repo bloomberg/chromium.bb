@@ -1106,8 +1106,7 @@ void ResourcePrefetchPredictor::OnURLsDeleted(
     const history::URLRows& deleted_rows,
     const std::set<GURL>& favicon_urls) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (INITIALIZED != initialization_state_)
-    return;
+  DCHECK(initialization_state_ == INITIALIZED);
 
   if (all_history) {
     DeleteAllUrls();
@@ -1124,8 +1123,9 @@ void ResourcePrefetchPredictor::OnURLsDeleted(
 
 void ResourcePrefetchPredictor::OnHistoryServiceLoaded(
     history::HistoryService* history_service) {
-  OnHistoryAndCacheLoaded();
-  history_service_observer_.Remove(history_service);
+  if (initialization_state_ == INITIALIZING) {
+    OnHistoryAndCacheLoaded();
+  }
 }
 
 void ResourcePrefetchPredictor::ConnectToHistoryService() {
@@ -1135,14 +1135,12 @@ void ResourcePrefetchPredictor::ConnectToHistoryService() {
                                            ServiceAccessType::EXPLICIT_ACCESS);
   if (!history_service)
     return;
+  DCHECK(!history_service_observer_.IsObserving(history_service));
+  history_service_observer_.Add(history_service);
   if (history_service->BackendLoaded()) {
     // HistoryService is already loaded. Continue with Initialization.
     OnHistoryAndCacheLoaded();
-    return;
   }
-  DCHECK(!history_service_observer_.IsObserving(history_service));
-  history_service_observer_.Add(history_service);
-  return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

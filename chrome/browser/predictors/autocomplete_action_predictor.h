@@ -187,8 +187,8 @@ class AutocompleteActionPredictor
       std::vector<AutocompleteActionPredictorTable::Row>* row_buffer);
 
   // Attempts to call DeleteOldEntries if the in-memory database has been loaded
-  // by |service|. Returns success as a boolean.
-  bool TryDeleteOldEntries(history::HistoryService* service);
+  // by |service|.
+  void TryDeleteOldEntries(history::HistoryService* service);
 
   // Called to delete any old or invalid entries from the database. Called after
   // the local caches are created once the history service is available.

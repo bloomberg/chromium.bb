@@ -91,7 +91,7 @@ class AutocompleteActionPredictorTest : public testing::Test {
         db_thread_(BrowserThread::DB, &loop_),
         file_thread_(BrowserThread::FILE, &loop_),
         profile_(new TestingProfile()),
-        predictor_(new AutocompleteActionPredictor(profile_.get())) {
+        predictor_(nullptr) {
   }
 
   ~AutocompleteActionPredictorTest() override {
@@ -105,8 +105,9 @@ class AutocompleteActionPredictorTest : public testing::Test {
         switches::kPrerenderFromOmnibox,
         switches::kPrerenderFromOmniboxSwitchValueEnabled);
 
-    predictor_->CreateLocalCachesFromDatabase();
     ASSERT_TRUE(profile_->CreateHistoryService(true, false));
+    predictor_.reset(new AutocompleteActionPredictor(profile_.get()));
+    predictor_->CreateLocalCachesFromDatabase();
     profile_->BlockUntilHistoryProcessesPendingRequests();
 
     ASSERT_TRUE(predictor_->initialized_);
@@ -115,8 +116,8 @@ class AutocompleteActionPredictorTest : public testing::Test {
   }
 
   void TearDown() override {
-    profile_->DestroyHistoryService();
     predictor_->Shutdown();
+    profile_->DestroyHistoryService();
   }
 
  protected:
