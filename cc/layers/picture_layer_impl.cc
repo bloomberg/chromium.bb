@@ -1325,6 +1325,32 @@ void PictureLayerImpl::AsValueInto(
     state->EndDictionary();
   }
   state->EndArray();
+
+  state->BeginDictionary("can_have_tilings_state");
+  state->SetBoolean("can_have_tilings", CanHaveTilings());
+  state->SetBoolean("raster_source_solid_color",
+                    raster_source_->IsSolidColor());
+  state->SetBoolean("draws_content", DrawsContent());
+  state->SetBoolean("raster_source_has_recordings",
+                    raster_source_->HasRecordings());
+  state->SetDouble("max_contents_scale", MaximumTilingContentsScale());
+  state->SetDouble("min_contents_scale", MinimumContentsScale());
+  state->EndDictionary();
+
+  state->BeginDictionary("raster_scales");
+  state->SetDouble("page_scale", raster_page_scale_);
+  state->SetDouble("device_scale", raster_device_scale_);
+  state->SetDouble("source_scale", raster_source_scale_);
+  state->SetDouble("contents_scale", raster_contents_scale_);
+  state->SetDouble("low_res_contents_scale", low_res_raster_contents_scale_);
+  state->EndDictionary();
+
+  state->BeginDictionary("ideal_scales");
+  state->SetDouble("page_scale", ideal_page_scale_);
+  state->SetDouble("device_scale", ideal_device_scale_);
+  state->SetDouble("source_scale", ideal_source_scale_);
+  state->SetDouble("contents_scale", ideal_contents_scale_);
+  state->EndDictionary();
 }
 
 size_t PictureLayerImpl::GPUMemoryUsageInBytes() const {
