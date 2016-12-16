@@ -373,6 +373,7 @@ void ShellDevToolsFrontend::SendMessageAck(int request_id,
 
 void ShellDevToolsFrontend::AgentHostClosed(
     DevToolsAgentHost* agent_host, bool replaced) {
+  agent_host_ = nullptr;
   frontend_shell_->Close();
 }
 

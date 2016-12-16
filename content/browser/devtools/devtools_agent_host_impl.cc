@@ -265,7 +265,7 @@ void DevToolsAgentHostImpl::HostClosed() {
   DevToolsAgentHostClient* client = client_;
   client_ = NULL;
   client->AgentHostClosed(this, false);
-  NotifyDetached();
+  InnerDetach();
 }
 
 void DevToolsAgentHostImpl::InspectElement(int x, int y) {
