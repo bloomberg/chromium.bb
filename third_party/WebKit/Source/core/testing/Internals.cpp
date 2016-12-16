@@ -67,6 +67,7 @@
 #include "core/editing/markers/DocumentMarker.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/editing/serializers/Serialization.h"
+#include "core/editing/spellcheck/IdleSpellCheckCallback.h"
 #include "core/editing/spellcheck/SpellCheckRequester.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/fetch/MemoryCache.h"
@@ -197,7 +198,9 @@ static WTF::Optional<DocumentMarker::MarkerTypes> markerTypesFrom(
 static SpellCheckRequester* spellCheckRequester(Document* document) {
   if (!document || !document->frame())
     return 0;
-  return &document->frame()->spellChecker().spellCheckRequester();
+  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    return &document->frame()->spellChecker().spellCheckRequester();
+  return &document->frame()->idleSpellCheckCallback().spellCheckRequester();
 }
 
 static ScrollableArea* scrollableAreaForNode(Node* node) {

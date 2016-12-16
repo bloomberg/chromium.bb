@@ -49,9 +49,20 @@ IdleSpellCheckCallback::IdleSpellCheckCallback(LocalFrame& frame)
       m_frame(frame),
       m_coldModeTimer(this, &IdleSpellCheckCallback::coldModeTimerFired) {}
 
+SpellCheckRequester& IdleSpellCheckCallback::spellCheckRequester() const {
+  // TODO(xiaochengh): decouple with SpellChecker after SpellCheckRequester is
+  // moved to IdleSpellCheckCallback.
+  return frame().spellChecker().spellCheckRequester();
+}
+
 bool IdleSpellCheckCallback::isSpellCheckingEnabled() const {
   // TODO(xiaochengh): decouple with SpellChecker.
   return frame().spellChecker().isSpellCheckingEnabled();
+}
+
+void IdleSpellCheckCallback::prepareForLeakDetection() {
+  if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    spellCheckRequester().prepareForLeakDetection();
 }
 
 void IdleSpellCheckCallback::requestInvocation() {

@@ -798,7 +798,8 @@ void SpellChecker::didEndEditingOnTextField(Element* e) {
 
   // Remove markers when deactivating a selection in an <input type="text"/>.
   // Prevent new ones from appearing too.
-  m_spellCheckRequester->cancelCheck();
+  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    m_spellCheckRequester->cancelCheck();
   TextControlElement* textControlElement = toTextControlElement(e);
   HTMLElement* innerEditor = textControlElement->innerEditorElement();
   DocumentMarker::MarkerTypes markerTypes(DocumentMarker::Spelling);
@@ -1034,6 +1035,9 @@ void SpellChecker::removeMarkers(const VisibleSelection& selection,
   frame().document()->markers().removeMarkers(range, markerTypes);
 }
 
+// TODO(xiaochengh): This function is only used by unit tests. We should move it
+// to IdleSpellCheckCallback and modify unit tests to cope with idle time spell
+// checker.
 void SpellChecker::cancelCheck() {
   m_spellCheckRequester->cancelCheck();
 }
@@ -1044,7 +1048,8 @@ DEFINE_TRACE(SpellChecker) {
 }
 
 void SpellChecker::prepareForLeakDetection() {
-  m_spellCheckRequester->prepareForLeakDetection();
+  if (!RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+    m_spellCheckRequester->prepareForLeakDetection();
 }
 
 Vector<TextCheckingResult> SpellChecker::findMisspellings(const String& text) {

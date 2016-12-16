@@ -6,13 +6,15 @@
 #define IdleSpellCheckCallback_h
 
 #include "core/dom/IdleRequestCallback.h"
-#include "core/frame/LocalFrame.h"
 #include "platform/Timer.h"
 
 namespace blink {
 
+class LocalFrame;
+class SpellCheckRequester;
+
 // Main class for the implementation of idle time spell checker.
-class IdleSpellCheckCallback final : public IdleRequestCallback {
+class CORE_EXPORT IdleSpellCheckCallback final : public IdleRequestCallback {
  public:
   static IdleSpellCheckCallback* create(LocalFrame&);
   ~IdleSpellCheckCallback() override;
@@ -31,6 +33,17 @@ class IdleSpellCheckCallback final : public IdleRequestCallback {
   // document is detached or spellchecking is globally disabled.
   // TODO(xiaochengh): Add proper call sites.
   void deactivate();
+
+  // Exposed for testing only.
+  SpellCheckRequester& spellCheckRequester() const;
+
+  // The leak detector will report leaks should queued requests be posted
+  // while it GCs repeatedly, as the requests keep their associated element
+  // alive.
+  //
+  // Hence allow the leak detector to effectively stop the spell checker to
+  // ensure leak reporting stability.
+  void prepareForLeakDetection();
 
   DECLARE_VIRTUAL_TRACE();
 

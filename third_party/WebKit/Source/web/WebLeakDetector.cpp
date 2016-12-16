@@ -31,6 +31,7 @@
 #include "public/web/WebLeakDetector.h"
 
 #include "bindings/core/v8/V8GCController.h"
+#include "core/editing/spellcheck/IdleSpellCheckCallback.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/workers/InProcessWorkerMessagingProxy.h"
@@ -94,8 +95,10 @@ void WebLeakDetectorImpl::prepareForLeakDetection(WebFrame* frame) {
   // Stop the spellchecker to prevent this.
   if (frame->isWebLocalFrame()) {
     WebLocalFrameImpl* localFrame = toWebLocalFrameImpl(frame);
-    SpellChecker& spellChecker = localFrame->frame()->spellChecker();
-    spellChecker.prepareForLeakDetection();
+    if (RuntimeEnabledFeatures::idleTimeSpellCheckingEnabled())
+      localFrame->frame()->idleSpellCheckCallback().prepareForLeakDetection();
+    else
+      localFrame->frame()->spellChecker().prepareForLeakDetection();
   }
 
   // FIXME: HTML5 Notification should be closed because notification affects the
