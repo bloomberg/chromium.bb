@@ -401,8 +401,13 @@ EventRouter::EventRouter(Profile* profile)
 
 EventRouter::~EventRouter() = default;
 
+void EventRouter::OnArcShutdown() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  arc::ArcServiceManager::Get()->RemoveObserver(this);
+}
+
 void EventRouter::OnIntentFiltersUpdated() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BroadcastEvent(profile_,
                  extensions::events::FILE_MANAGER_PRIVATE_ON_APPS_UPDATED,
                  file_manager_private::OnAppsUpdated::kEventName,
@@ -411,9 +416,6 @@ void EventRouter::OnIntentFiltersUpdated() {
 
 void EventRouter::Shutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  if (arc::ArcServiceManager::IsInitialized())
-    arc::ArcServiceManager::Get()->RemoveObserver(this);
 
   chromeos::system::TimezoneSettings::GetInstance()->RemoveObserver(this);
 
