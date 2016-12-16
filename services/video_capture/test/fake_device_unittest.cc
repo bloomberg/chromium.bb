@@ -30,7 +30,7 @@ struct FrameInfo {
 
 namespace video_capture {
 
-TEST_F(FakeDeviceTest, DISABLED_FrameCallbacksArrive) {
+TEST_F(FakeDeviceTest, FrameCallbacksArrive) {
   base::RunLoop wait_loop;
   const int kNumFramesToWaitFor = 3;
   int num_frames_arrived = 0;
@@ -51,7 +51,7 @@ TEST_F(FakeDeviceTest, DISABLED_FrameCallbacksArrive) {
 
 // Tests that frames received from a fake capture device match the requested
 // format and have increasing timestamps.
-TEST_F(FakeDeviceTest, DISABLED_ReceiveFramesFromFakeCaptureDevice) {
+TEST_F(FakeDeviceTest, ReceiveFramesFromFakeCaptureDevice) {
   base::RunLoop wait_loop;
   mojom::ReceiverPtr receiver_proxy;
   constexpr int num_frames_to_receive = 2;
