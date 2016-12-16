@@ -395,8 +395,6 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
     RenderFrameHostImpl* host)
     : DevToolsAgentHostImpl(base::GenerateGUID()),
       input_handler_(new devtools::input::InputHandler()),
-      service_worker_handler_(
-          new devtools::service_worker::ServiceWorkerHandler()),
       target_handler_(new devtools::target::TargetHandler()),
       frame_trace_recorder_(nullptr),
       protocol_handler_(new DevToolsProtocolHandler(this)),
@@ -406,7 +404,6 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
       frame_tree_node_(host->frame_tree_node()) {
   DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
   dispatcher->SetInputHandler(input_handler_.get());
-  dispatcher->SetServiceWorkerHandler(service_worker_handler_.get());
   dispatcher->SetTargetHandler(target_handler_.get());
 
   SetPending(host);
@@ -509,6 +506,10 @@ void RenderFrameDevToolsAgentHost::Attach() {
     security_handler_->SetRenderFrameHost(handlers_frame_host_);
   }
 
+  service_worker_handler_.reset(new protocol::ServiceWorkerHandler());
+  service_worker_handler_->Wire(session()->dispatcher());
+  service_worker_handler_->SetRenderFrameHost(handlers_frame_host_);
+
   storage_handler_.reset(new protocol::StorageHandler());
   storage_handler_->Wire(session()->dispatcher());
   storage_handler_->SetRenderFrameHost(handlers_frame_host_);
@@ -549,6 +550,8 @@ void RenderFrameDevToolsAgentHost::Detach() {
     security_handler_->Disable();
     security_handler_.reset();
   }
+  service_worker_handler_->Disable();
+  service_worker_handler_.reset();
   storage_handler_->Disable();
   storage_handler_.reset();
   tracing_handler_->Disable();
@@ -615,7 +618,6 @@ void RenderFrameDevToolsAgentHost::OnClientDetached() {
 #if defined(OS_ANDROID)
   power_save_blocker_.reset();
 #endif
-  service_worker_handler_->Detached();
   target_handler_->Detached();
   frame_trace_recorder_.reset();
   in_navigation_protocol_message_buffer_.clear();
@@ -964,7 +966,8 @@ void RenderFrameDevToolsAgentHost::UpdateProtocolHandlers(
     network_handler_->SetRenderFrameHost(host);
   if (page_handler_)
     page_handler_->SetRenderFrameHost(host);
-  service_worker_handler_->SetRenderFrameHost(host);
+  if (service_worker_handler_)
+    service_worker_handler_->SetRenderFrameHost(host);
   if (security_handler_)
     security_handler_->SetRenderFrameHost(host);
   if (storage_handler_)
