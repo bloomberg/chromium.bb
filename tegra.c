@@ -94,7 +94,7 @@ static void compute_layout_blocklinear(int width, int height, int format,
 static void compute_layout_linear(int width, int height, int format,
 				  uint32_t *stride, uint32_t *size)
 {
-	*stride = drv_stride_from_format(format, width, 0);
+	*stride = ALIGN(drv_stride_from_format(format, width, 0), 64);
 	*size = *stride * height;
 }
 
