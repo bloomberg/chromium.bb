@@ -28,8 +28,8 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
   ~ThreadedWorkletThreadForTest() override{};
 
   WorkerBackingThread& workerBackingThread() override {
-    auto workletThreadHolder = WorkletThreadHolder<
-        ThreadedWorkletThreadForTest>::threadHolderInstance();
+    auto workletThreadHolder =
+        WorkletThreadHolder<ThreadedWorkletThreadForTest>::getInstance();
     DCHECK(workletThreadHolder);
     return *workletThreadHolder->thread();
   }

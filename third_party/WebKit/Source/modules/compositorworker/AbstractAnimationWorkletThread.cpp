@@ -25,8 +25,7 @@ AbstractAnimationWorkletThread::AbstractAnimationWorkletThread(
 AbstractAnimationWorkletThread::~AbstractAnimationWorkletThread() {}
 
 WorkerBackingThread& AbstractAnimationWorkletThread::workerBackingThread() {
-  return *WorkletThreadHolder<
-              AbstractAnimationWorkletThread>::threadHolderInstance()
+  return *WorkletThreadHolder<AbstractAnimationWorkletThread>::getInstance()
               ->thread();
 }
 
@@ -38,12 +37,11 @@ void collectAllGarbageOnThread(WaitableEvent* doneEvent) {
 void AbstractAnimationWorkletThread::collectAllGarbage() {
   DCHECK(isMainThread());
   WaitableEvent doneEvent;
-  WorkletThreadHolder<AbstractAnimationWorkletThread>* threadHolderInstance =
-      WorkletThreadHolder<
-          AbstractAnimationWorkletThread>::threadHolderInstance();
-  if (!threadHolderInstance)
+  WorkletThreadHolder<AbstractAnimationWorkletThread>* workletThreadHolder =
+      WorkletThreadHolder<AbstractAnimationWorkletThread>::getInstance();
+  if (!workletThreadHolder)
     return;
-  threadHolderInstance->thread()->backingThread().postTask(
+  workletThreadHolder->thread()->backingThread().postTask(
       BLINK_FROM_HERE, crossThreadBind(&collectAllGarbageOnThread,
                                        crossThreadUnretained(&doneEvent)));
   doneEvent.wait();

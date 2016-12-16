@@ -19,7 +19,7 @@ namespace blink {
 template <class DerivedWorkletThread>
 class WorkletThreadHolder {
  public:
-  static WorkletThreadHolder<DerivedWorkletThread>* threadHolderInstance() {
+  static WorkletThreadHolder<DerivedWorkletThread>* getInstance() {
     MutexLocker locker(holderInstanceMutex());
     return s_threadHolderInstance;
   }

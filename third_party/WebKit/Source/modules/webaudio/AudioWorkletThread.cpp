@@ -39,8 +39,7 @@ AudioWorkletThread::AudioWorkletThread(
 AudioWorkletThread::~AudioWorkletThread() {}
 
 WorkerBackingThread& AudioWorkletThread::workerBackingThread() {
-  return *WorkletThreadHolder<AudioWorkletThread>::threadHolderInstance()
-              ->thread();
+  return *WorkletThreadHolder<AudioWorkletThread>::getInstance()->thread();
 }
 
 void collectAllGarbageOnAudioWorkletThread(WaitableEvent* doneEvent) {
@@ -51,11 +50,11 @@ void collectAllGarbageOnAudioWorkletThread(WaitableEvent* doneEvent) {
 void AudioWorkletThread::collectAllGarbage() {
   DCHECK(isMainThread());
   WaitableEvent doneEvent;
-  WorkletThreadHolder<AudioWorkletThread>* threadHolderInstance =
-      WorkletThreadHolder<AudioWorkletThread>::threadHolderInstance();
-  if (!threadHolderInstance)
+  WorkletThreadHolder<AudioWorkletThread>* workletThreadHolder =
+      WorkletThreadHolder<AudioWorkletThread>::getInstance();
+  if (!workletThreadHolder)
     return;
-  threadHolderInstance->thread()->backingThread().postTask(
+  workletThreadHolder->thread()->backingThread().postTask(
       BLINK_FROM_HERE, crossThreadBind(&collectAllGarbageOnAudioWorkletThread,
                                        crossThreadUnretained(&doneEvent)));
   doneEvent.wait();
