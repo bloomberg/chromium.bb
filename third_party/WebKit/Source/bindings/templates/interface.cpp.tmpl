@@ -917,8 +917,8 @@ if (v8CallBoolean(prototypeObject->HasOwnProperty(context, unscopablesSymbol)))
   unscopables = prototypeObject->Get(context, unscopablesSymbol).ToLocalChecked().As<v8::Object>();
 else
   unscopables = v8::Object::New(isolate);
-{% for name, runtime_enabled_function in unscopables %}
-{% filter runtime_enabled(runtime_enabled_function) %}
+{% for name, runtime_enabled_feature_name in unscopables %}
+{% filter runtime_enabled(runtime_enabled_feature_name) %}
 unscopables->CreateDataProperty(context, v8AtomicString(isolate, "{{name}}"), v8::True(isolate)).FromJust();
 {% endfilter %}
 {% endfor %}
@@ -934,7 +934,7 @@ v8::Local<v8::Signature> signature = v8::Signature::New(isolate, interfaceTempla
 {% for attribute in attributes if (attribute.exposed_test or attribute.secure_context_test) and attribute.on_prototype %}
 {% filter exposed(attribute.exposed_test) %}
 {% filter secure_context(attribute.secure_context_test) %}
-{% filter runtime_enabled(attribute.runtime_enabled_function) %}
+{% filter runtime_enabled(attribute.runtime_enabled_feature_name) %}
 const V8DOMConfiguration::AccessorConfiguration accessorConfiguration = {{attribute_configuration(attribute)}};
 V8DOMConfiguration::installAccessor(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, accessorConfiguration);
 {% endfilter %}{# runtime_enabled #}

@@ -46,7 +46,7 @@ import v8_methods
 import v8_types
 import v8_utilities
 from v8_utilities import (cpp_name_or_partial, cpp_name, has_extended_attribute_value,
-                          runtime_enabled_function_name, is_legacy_interface_type_checking)
+                          runtime_enabled_feature_name, is_legacy_interface_type_checking)
 
 
 INTERFACE_H_INCLUDES = frozenset([
@@ -72,7 +72,7 @@ def filter_has_constant_configuration(constants):
     return [constant for constant in constants if
             not constant['measure_as'] and
             not constant['deprecate_as'] and
-            not constant['runtime_enabled_function'] and
+            not constant['runtime_enabled_feature_name'] and
             not constant['origin_trial_feature_name']]
 
 
@@ -84,7 +84,7 @@ def filter_has_special_getter(constants):
 
 def filter_runtime_enabled(constants):
     return [constant for constant in constants if
-            constant['runtime_enabled_function']]
+            constant['runtime_enabled_feature_name']]
 
 
 def filter_origin_trial_enabled(constants):
@@ -283,7 +283,7 @@ def interface_context(interface, interfaces):
         'parent_interface': parent_interface,
         'pass_cpp_type': cpp_name(interface) + '*',
         'active_scriptwrappable': active_scriptwrappable,
-        'runtime_enabled_function': runtime_enabled_function_name(interface),  # [RuntimeEnabled]
+        'runtime_enabled_feature_name': runtime_enabled_feature_name(interface),  # [RuntimeEnabled]
         'set_wrapper_reference_from': set_wrapper_reference_from,
         'set_wrapper_reference_to': set_wrapper_reference_to,
         'v8_class': v8_class_name,
@@ -337,10 +337,10 @@ def interface_context(interface, interfaces):
     unscopables = []
     for attribute in interface.attributes:
         if 'Unscopable' in attribute.extended_attributes:
-            unscopables.append((attribute.name, v8_utilities.runtime_enabled_function_name(attribute)))
+            unscopables.append((attribute.name, runtime_enabled_feature_name(attribute)))
     for method in interface.operations:
         if 'Unscopable' in method.extended_attributes:
-            unscopables.append((method.name, v8_utilities.runtime_enabled_function_name(method)))
+            unscopables.append((method.name, runtime_enabled_feature_name(method)))
 
     # [CEReactions]
     setter_or_deleters = (
@@ -721,8 +721,7 @@ def constant_context(constant, interface):
         'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(constant),  # [OriginTrialEnabled]
         # FIXME: use 'reflected_name' as correct 'name'
         'reflected_name': extended_attributes.get('Reflect', reflected_name(constant.name)),
-        'runtime_enabled_function': runtime_enabled_function_name(constant),  # [RuntimeEnabled]
-        'runtime_feature_name': v8_utilities.runtime_feature_name(constant),  # [RuntimeEnabled]
+        'runtime_enabled_feature_name': runtime_enabled_feature_name(constant),  # [RuntimeEnabled]
         'value': constant.value,
     }
 
@@ -800,26 +799,26 @@ def overloads_context(interface, overloads):
 
     # The special case handling below is not needed if all overloads are
     # runtime enabled by the same feature.
-    if not common_value(overloads, 'runtime_enabled_function'):
+    if not common_value(overloads, 'runtime_enabled_feature_name'):
         # Check if all overloads with the shortest acceptable arguments list are
         # runtime enabled, in which case we need to have a runtime determined
         # Function.length.
         shortest_overloads = effective_overloads_by_length[0][1]
-        if (all(method.get('runtime_enabled_function')
+        if (all(method.get('runtime_enabled_feature_name')
                 for method, _, _ in shortest_overloads)):
-            # Generate a list of (length, runtime_enabled_functions) tuples.
+            # Generate a list of (length, runtime_enabled_feature_names) tuples.
             runtime_determined_lengths = []
             for length, effective_overloads in effective_overloads_by_length:
-                runtime_enabled_functions = set(
-                    method['runtime_enabled_function']
+                runtime_enabled_feature_names = set(
+                    method['runtime_enabled_feature_name']
                     for method, _, _ in effective_overloads
-                    if method.get('runtime_enabled_function'))
-                if not runtime_enabled_functions:
+                    if method.get('runtime_enabled_feature_name'))
+                if not runtime_enabled_feature_names:
                     # This "length" is unconditionally enabled, so stop here.
                     runtime_determined_lengths.append((length, [None]))
                     break
                 runtime_determined_lengths.append(
-                    (length, sorted(runtime_enabled_functions)))
+                    (length, sorted(runtime_enabled_feature_names)))
             function_length = ('%sV8Internal::%sMethodLength()'
                                % (cpp_name_or_partial(interface), name))
 
@@ -827,22 +826,22 @@ def overloads_context(interface, overloads):
         # runtime enabled, in which case we need to have a runtime determined
         # maximum distinguishing argument index.
         longest_overloads = effective_overloads_by_length[-1][1]
-        if (not common_value(overloads, 'runtime_enabled_function') and
-                all(method.get('runtime_enabled_function')
+        if (not common_value(overloads, 'runtime_enabled_feature_name') and
+                all(method.get('runtime_enabled_feature_name')
                     for method, _, _ in longest_overloads)):
-            # Generate a list of (length, runtime_enabled_functions) tuples.
+            # Generate a list of (length, runtime_enabled_feature_name) tuples.
             runtime_determined_maxargs = []
             for length, effective_overloads in reversed(effective_overloads_by_length):
-                runtime_enabled_functions = set(
-                    method['runtime_enabled_function']
+                runtime_enabled_feature_names = set(
+                    method['runtime_enabled_feature_name']
                     for method, _, _ in effective_overloads
-                    if method.get('runtime_enabled_function'))
-                if not runtime_enabled_functions:
+                    if method.get('runtime_enabled_feature_name'))
+                if not runtime_enabled_feature_names:
                     # This "length" is unconditionally enabled, so stop here.
                     runtime_determined_maxargs.append((length, [None]))
                     break
                 runtime_determined_maxargs.append(
-                    (length, sorted(runtime_enabled_functions)))
+                    (length, sorted(runtime_enabled_feature_names)))
             maxarg = ('%sV8Internal::%sMethodMaxArg()'
                       % (cpp_name_or_partial(interface), name))
 
@@ -879,7 +878,7 @@ def overloads_context(interface, overloads):
         'returns_promise_all': promise_overload_count > 0,
         'runtime_determined_lengths': runtime_determined_lengths,
         'runtime_determined_maxargs': runtime_determined_maxargs,
-        'runtime_enabled_function_all': common_value(overloads, 'runtime_enabled_function'),  # [RuntimeEnabled]
+        'runtime_enabled_all': common_value(overloads, 'runtime_enabled_feature_name'),  # [RuntimeEnabled]
         'secure_context_test_all': common_value(overloads, 'secure_context_test'),  # [SecureContext]
         'valid_arities': (lengths
                           # Only need to report valid arities if there is a gap in the

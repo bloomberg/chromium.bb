@@ -68,8 +68,8 @@ def custom_registration(method):
         return True
     if 'overloads' in method:
         return (method['overloads']['runtime_determined_lengths'] or
-                (method['overloads']['runtime_enabled_function_all'] and not conditionally_exposed(method)))
-    return method['runtime_enabled_function'] and not conditionally_exposed(method)
+                (method['overloads']['runtime_enabled_all'] and not conditionally_exposed(method)))
+    return method['runtime_enabled_feature_name'] and not conditionally_exposed(method)
 
 
 def filter_custom_registration(methods, interface_is_partial):
@@ -215,7 +215,7 @@ def method_context(interface, method, is_visible=True):
         'origin_trial_feature_name': v8_utilities.origin_trial_feature_name(method),  # [OriginTrialEnabled]
         'property_attributes': property_attributes(interface, method),
         'returns_promise': method.returns_promise,
-        'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(method),  # [RuntimeEnabled]
+        'runtime_enabled_feature_name': v8_utilities.runtime_enabled_feature_name(method),  # [RuntimeEnabled]
         'secure_context_test': v8_utilities.secure_context(method, interface),  # [SecureContext]
         'use_output_parameter_for_result': idl_type.use_output_parameter_for_result,
         'use_local_result': use_local_result(method),

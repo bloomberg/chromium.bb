@@ -16,6 +16,7 @@ from v8_globals import includes
 from v8_interface import constant_filters
 from v8_types import set_component_dirs
 from v8_methods import method_filters
+import v8_utilities
 from v8_utilities import capitalize, unique_by
 from utilities import (idl_filename_to_component, is_valid_component_dependency,
                        format_remove_duplicates, format_blink_cpp_source_code)
@@ -64,10 +65,12 @@ def secure_context_if(code, secure_context_test):
 
 
 # [RuntimeEnabled]
-def runtime_enabled_if(code, runtime_enabled_function_name):
-    if not runtime_enabled_function_name:
+def runtime_enabled_if(code, name):
+    if not name:
         return code
-    return generate_indented_conditional(code, '%s()' % runtime_enabled_function_name)
+
+    function = 'RuntimeEnabledFeatures::%sEnabled()' % v8_utilities.uncapitalize(name)
+    return generate_indented_conditional(code, function)
 
 
 def initialize_jinja_env(cache_dir):

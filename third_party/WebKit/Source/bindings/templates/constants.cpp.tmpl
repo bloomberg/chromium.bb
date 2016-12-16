@@ -30,8 +30,8 @@ const V8DOMConfiguration::ConstantConfiguration {{v8_class}}Constants[] = {
 V8DOMConfiguration::installConstants(isolate, interfaceTemplate, prototypeTemplate, {{v8_class}}Constants, WTF_ARRAY_LENGTH({{v8_class}}Constants));
 {% endif %}
 {# Runtime-enabled constants #}
-{% for group in constants | runtime_enabled_constants | groupby('runtime_feature_name') %}
-{% filter runtime_enabled(group.list[0].runtime_enabled_function) %}
+{% for group in constants | runtime_enabled_constants | groupby('runtime_enabled_feature_name') %}
+{% filter runtime_enabled(group.list[0].runtime_enabled_feature_name) %}
 {% for constant in group.list %}
 {% set constant_name = constant.name.title().replace('_', '') %}
 const V8DOMConfiguration::ConstantConfiguration constant{{constant_name}}Configuration = {{constant_configuration(constant)}};

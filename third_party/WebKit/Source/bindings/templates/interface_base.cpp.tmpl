@@ -427,7 +427,7 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   {% endif %}
 
   // Register DOM constants, attributes and operations.
-  {% filter runtime_enabled(runtime_enabled_function) %}
+  {% filter runtime_enabled(runtime_enabled_feature_name) %}
   {% if constants %}
   {{install_constants() | indent(2)}}
   {% endif %}
@@ -454,18 +454,18 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   instanceTemplate->SetAccessCheckCallbackAndHandler({{cpp_class}}V8Internal::securityCheck, v8::NamedPropertyHandlerConfiguration({{cross_origin_named_getter}}, {{cross_origin_named_setter}}, nullptr, nullptr, {{cross_origin_named_enumerator}}), v8::IndexedPropertyHandlerConfiguration({{cross_origin_indexed_getter}}), v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
   {% endif %}
 
-  {% for group in runtime_enabled_attributes | groupby('runtime_feature_name') %}
-  if ({{group.list[0].runtime_enabled_function}}()) {
-    {% for attribute in group.list | unique_by('name') | sort %}
-    {% if attribute.is_data_type_property %}
-    const V8DOMConfiguration::AttributeConfiguration attribute{{attribute.name}}Configuration = {{attribute_configuration(attribute)}};
-    V8DOMConfiguration::installAttribute(isolate, world, instanceTemplate, prototypeTemplate, attribute{{attribute.name}}Configuration);
-    {% else %}
-    const V8DOMConfiguration::AccessorConfiguration accessor{{attribute.name}}Configuration = {{attribute_configuration(attribute)}};
-    V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessor{{attribute.name}}Configuration);
-    {% endif %}
-    {% endfor %}
-  }
+  {% for group in runtime_enabled_attributes | groupby('runtime_enabled_feature_name') %}
+  {% filter runtime_enabled(group.list[0].runtime_enabled_feature_name) %}
+  {% for attribute in group.list | unique_by('name') | sort %}
+  {% if attribute.is_data_type_property %}
+  const V8DOMConfiguration::AttributeConfiguration attribute{{attribute.name}}Configuration = {{attribute_configuration(attribute)}};
+  V8DOMConfiguration::installAttribute(isolate, world, instanceTemplate, prototypeTemplate, attribute{{attribute.name}}Configuration);
+  {% else %}
+  const V8DOMConfiguration::AccessorConfiguration accessor{{attribute.name}}Configuration = {{attribute_configuration(attribute)}};
+  V8DOMConfiguration::installAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessor{{attribute.name}}Configuration);
+  {% endif %}
+  {% endfor %}
+  {% endfilter %}
   {% endfor %}
 
   {% if (indexed_property_getter or named_property_getter) and not is_partial %}
@@ -484,7 +484,7 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
 
   {% if iterator_method %}
   {% filter exposed(iterator_method.exposed_test) %}
-  {% filter runtime_enabled(iterator_method.runtime_enabled_function) %}
+  {% filter runtime_enabled(iterator_method.runtime_enabled_feature_name) %}
   // Iterator (@@iterator)
   const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, {{cpp_class_or_partial}}V8Internal::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::OnPrototype };
   V8DOMConfiguration::installMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
@@ -508,8 +508,8 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   {# install_custom_signature #}
   {% filter exposed(method.overloads.exposed_test_all
                     if method.overloads else method.exposed_test) %}
-  {% filter runtime_enabled(method.overloads.runtime_enabled_function_all
-                            if method.overloads else method.runtime_enabled_function) %}
+  {% filter runtime_enabled(method.overloads.runtime_enabled_all
+                            if method.overloads else method.runtime_enabled_feature_name) %}
   {% if method.is_cross_origin %}
   {# TODO(dcheng): Currently, bindings must create a function object for each
      realm as a hack to support the incumbent realm. Remove this when Blink

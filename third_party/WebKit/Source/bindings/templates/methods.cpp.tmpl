@@ -318,9 +318,9 @@ V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToE
 {##############################################################################}
 {% macro runtime_determined_length_method(overloads) %}
 static int {{overloads.name}}MethodLength() {
-  {% for length, runtime_enabled_functions in overloads.runtime_determined_lengths %}
-  {% for runtime_enabled_function in runtime_enabled_functions %}
-  {% filter runtime_enabled(runtime_enabled_function) %}
+  {% for length, runtime_enabled_features in overloads.runtime_determined_lengths %}
+  {% for runtime_enabled_feature in runtime_enabled_features %}
+  {% filter runtime_enabled(runtime_enabled_feature) %}
   return {{length}};
   {% endfilter %}
   {% endfor %}
@@ -332,9 +332,9 @@ static int {{overloads.name}}MethodLength() {
 {##############################################################################}
 {% macro runtime_determined_maxarg_method(overloads) %}
 static int {{overloads.name}}MethodMaxArg() {
-  {% for length, runtime_enabled_functions in overloads.runtime_determined_maxargs %}
-  {% for runtime_enabled_function in runtime_enabled_functions %}
-  {% filter runtime_enabled(runtime_enabled_function) %}
+  {% for length, runtime_enabled_features in overloads.runtime_determined_maxargs %}
+  {% for name in runtime_enabled_features %}
+  {% filter runtime_enabled(name) %}
   return {{length}};
   {% endfilter %}
   {% endfor %}
@@ -368,8 +368,7 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
       {# Then resolve by testing argument #}
       {% for test, method in tests_methods %}
       {% if method.visible %}
-      {% filter runtime_enabled(not overloads.runtime_enabled_function_all and
-                                method.runtime_enabled_function) %}
+      {% filter runtime_enabled(not overloads.runtime_enabled_all and method.runtime_enabled_feature_name) %}
       if ({{test}}) {
         {% if method.measure_as and not overloads.measure_all_as %}
         UseCounter::count(currentExecutionContext(info.GetIsolate()), UseCounter::{{method.measure_as('Method')}});
@@ -634,9 +633,9 @@ DCHECK(executionContext);
 {% filter exposed(method.overloads.exposed_test_all
                   if method.overloads else
                   method.exposed_test) %}
-{% filter runtime_enabled(method.overloads.runtime_enabled_function_all
+{% filter runtime_enabled(method.overloads.runtime_enabled_all
                           if method.overloads else
-                          method.runtime_enabled_function) %}
+                          method.runtime_enabled_feature_name) %}
 const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration = {{method_configuration(method)}};
 V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, {{method.name}}MethodConfiguration);
 {% endfilter %}{# runtime_enabled() #}

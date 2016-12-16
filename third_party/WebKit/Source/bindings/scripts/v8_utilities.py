@@ -427,31 +427,13 @@ def origin_trial_feature_name(definition_or_member):
     return extended_attributes.get('OriginTrialEnabled') or extended_attributes.get('FeaturePolicy')
 
 
-def runtime_feature_name(definition_or_member):
+# [RuntimeEnabled]
+def runtime_enabled_feature_name(definition_or_member):
     extended_attributes = definition_or_member.extended_attributes
     if 'RuntimeEnabled' not in extended_attributes:
         return None
-    return extended_attributes['RuntimeEnabled']
-
-
-# [RuntimeEnabled]
-def runtime_enabled_function_name(definition_or_member):
-    """Returns the name of the RuntimeEnabledFeatures function.
-
-    The returned function checks if a method/attribute is enabled.
-    Given extended attribute RuntimeEnabled=FeatureName, return:
-        RuntimeEnabledFeatures::{featureName}Enabled
-
-    If the RuntimeEnabled extended attribute is found, the includes
-    are also updated as a side-effect.
-    """
-    feature_name = runtime_feature_name(definition_or_member)
-
-    if not feature_name:
-        return
-
     includes.add('platform/RuntimeEnabledFeatures.h')
-    return 'RuntimeEnabledFeatures::%sEnabled' % uncapitalize(feature_name)
+    return extended_attributes['RuntimeEnabled']
 
 
 # [Unforgeable]

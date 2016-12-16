@@ -180,8 +180,7 @@ def attribute_context(interface, attribute, interfaces):
         'reflect_invalid': extended_attributes.get('ReflectInvalid', ''),
         'reflect_missing': extended_attributes.get('ReflectMissing'),
         'reflect_only': extended_attribute_value_as_list(attribute, 'ReflectOnly'),
-        'runtime_enabled_function': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]
-        'runtime_feature_name': v8_utilities.runtime_feature_name(attribute),  # [RuntimeEnabled]
+        'runtime_enabled_feature_name': v8_utilities.runtime_enabled_feature_name(attribute),  # [RuntimeEnabled]
         'secure_context_test': v8_utilities.secure_context(attribute, interface),  # [SecureContext]
         'cached_accessor_name': '%s%sCachedAccessor' % (interface.name, attribute.name.capitalize()),
         'world_suffixes': (
@@ -217,7 +216,7 @@ def filter_accessors(attributes):
             not (attribute['exposed_test'] or
                  attribute['secure_context_test'] or
                  attribute['origin_trial_enabled_function'] or
-                 attribute['runtime_enabled_function']) and
+                 attribute['runtime_enabled_feature_name']) and
             not attribute['is_data_type_property']]
 
 
@@ -225,7 +224,7 @@ def is_data_attribute(attribute):
     return (not (attribute['exposed_test'] or
                  attribute['secure_context_test'] or
                  attribute['origin_trial_enabled_function'] or
-                 attribute['runtime_enabled_function']) and
+                 attribute['runtime_enabled_feature_name']) and
             attribute['is_data_type_property'])
 
 
@@ -251,7 +250,7 @@ def filter_runtime_enabled(attributes):
     return [attribute for attribute in attributes if
             not (attribute['exposed_test'] or
                  attribute['secure_context_test']) and
-            attribute['runtime_feature_name']]
+            attribute['runtime_enabled_feature_name']]
 
 
 ################################################################################
