@@ -7,18 +7,70 @@
   ],
   "xcode version": "8.0",
   "gn_args": [
+    "additional_target_cpus=[\"x86\"]",
     "ios_enable_code_signing=false",
     "is_component_build=false",
+    "is_debug=true",
     "llvm_force_head_revision=true",
-    "target_cpu=\"arm\"",
+    "target_cpu=\"x64\"",
     "target_os=\"ios\""
   ],
   "env": {
     "LLVM_FORCE_HEAD_REVISION": "YES"
   },
   "compiler": "ninja",
-  "configuration": "Release",
-  "sdk": "iphoneos10.0",
+  "configuration": "Debug",
+  "sdk": "iphonesimulator10.0",
   "tests": [
+    {
+      "include": "common_tests.json",
+      "device type": "iPhone 6s Plus",
+      "os": "10.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPhone 6s",
+      "os": "10.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPhone 5",
+      "os": "10.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPad Air 2",
+      "os": "10.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPad Retina",
+      "os": "10.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPhone 6s Plus",
+      "os": "9.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPhone 6s",
+      "os": "9.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPhone 5",
+      "os": "9.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPad Air 2",
+      "os": "9.0"
+    },
+    {
+      "include": "common_tests.json",
+      "device type": "iPad Retina",
+      "os": "9.0"
+    }
   ]
 }
