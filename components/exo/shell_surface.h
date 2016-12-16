@@ -170,6 +170,9 @@ class ShellSurface : public SurfaceDelegate,
   // Set origin in screen coordinate space.
   void SetOrigin(const gfx::Point& origin);
 
+  // Set activatable state for surface.
+  void SetActivatable(bool activatable);
+
   // Set container for surface.
   void SetContainer(int container);
 

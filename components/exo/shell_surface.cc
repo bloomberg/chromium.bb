@@ -635,6 +635,13 @@ void ShellSurface::SetOrigin(const gfx::Point& origin) {
   initial_bounds_ = gfx::Rect(origin, gfx::Size(1, 1));
 }
 
+void ShellSurface::SetActivatable(bool activatable) {
+  TRACE_EVENT1("exo", "ShellSurface::SetActivatable", "activatable",
+               activatable);
+
+  activatable_ = activatable;
+}
+
 void ShellSurface::SetContainer(int container) {
   TRACE_EVENT1("exo", "ShellSurface::SetContainer", "container", container);
 

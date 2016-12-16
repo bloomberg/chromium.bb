@@ -923,6 +923,7 @@ void shell_surface_set_transient(wl_client* client,
   if (flags & WL_SHELL_SURFACE_TRANSIENT_INACTIVE) {
     shell_surface->SetOrigin(origin);
     shell_surface->SetContainer(ash::kShellWindowId_SystemModalContainer);
+    shell_surface->SetActivatable(false);
   } else {
     shell_surface->SetFrame(true);
     shell_surface->SetParent(parent_shell_surface);
