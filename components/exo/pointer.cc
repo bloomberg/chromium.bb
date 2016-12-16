@@ -123,6 +123,10 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
         focus_->window()->GetCursor(gfx::ToFlooredPoint(location_)));
 }
 
+bool Pointer::HasStylusDelegate() const {
+  return !!stylus_delegate_;
+}
+
 void Pointer::SetStylusDelegate(PointerStylusDelegate* delegate) {
   stylus_delegate_ = delegate;
 }

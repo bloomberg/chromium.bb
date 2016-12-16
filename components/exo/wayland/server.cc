@@ -2996,8 +2996,13 @@ void stylus_get_pointer_stylus(wl_client* client,
                                wl_resource* resource,
                                uint32_t id,
                                wl_resource* pointer_resource) {
-  // TODO(yhanada): Produce an erorr if a delegate already exists.
   Pointer* pointer = GetUserDataAs<Pointer>(pointer_resource);
+  if (pointer->HasStylusDelegate()) {
+    wl_resource_post_error(
+        resource, ZCR_STYLUS_V1_ERROR_POINTER_STYLUS_EXISTS,
+        "pointer has already been associated with a stylus object");
+    return;
+  }
 
   wl_resource* stylus_resource =
       wl_resource_create(client, &zcr_pointer_stylus_v1_interface, 1, id);
@@ -3142,7 +3147,7 @@ Server::Server(Display* display)
                    remote_shell_version, display_, bind_remote_shell);
   wl_global_create(wl_display_.get(), &zcr_gaming_input_v1_interface, 1,
                    display_, bind_gaming_input);
-  wl_global_create(wl_display_.get(), &zcr_stylus_v1_interface, 1, display_,
+  wl_global_create(wl_display_.get(), &zcr_stylus_v1_interface, 2, display_,
                    bind_stylus);
   wl_global_create(wl_display_.get(), &zcr_keyboard_configuration_v1_interface,
                    2, display_, bind_keyboard_configuration);
