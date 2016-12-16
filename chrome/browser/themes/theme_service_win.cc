@@ -15,7 +15,7 @@
 #include "ui/gfx/geometry/safe_integer_conversions.h"
 
 ThemeServiceWin::ThemeServiceWin() {
-  // This just checks for Windows 10 instead of calling ShouldUseDwmFrameColor()
+  // This just checks for Windows 10 instead of calling DwmColorsAllowed()
   // because we want to monitor the frame color even when a custom frame is in
   // use, so that it will be correct if at any time the user switches to the
   // native frame.
@@ -39,37 +39,49 @@ bool ThemeServiceWin::ShouldUseNativeFrame() const {
 }
 
 SkColor ThemeServiceWin::GetDefaultColor(int id, bool incognito) const {
-  if (ShouldUseDwmFrameColor()) {
-    // Active native windows on Windows 10 may have a custom frame color.
-    if (id == ThemeProperties::COLOR_FRAME)
-      return dwm_frame_color_;
-
+  if (DwmColorsAllowed()) {
     if (id == ThemeProperties::COLOR_ACCENT_BORDER)
       return dwm_accent_border_color_;
 
-    // Inactive native windows on Windows 10 always have a white frame.
-    if (id == ThemeProperties::COLOR_FRAME_INACTIVE)
-        return SK_ColorWHITE;
+    if (use_dwm_frame_color_) {
+      // Incognito frame is the same as normal when we're using DWM colors.
+      if (id == ThemeProperties::COLOR_FRAME)
+        return dwm_frame_color_;
+      if (id == ThemeProperties::COLOR_FRAME_INACTIVE)
+        return dwm_inactive_frame_color_;
+    }
   }
 
   return ThemeService::GetDefaultColor(id, incognito);
 }
 
-bool ThemeServiceWin::ShouldUseDwmFrameColor() const {
+bool ThemeServiceWin::DwmColorsAllowed() const {
   return ShouldUseNativeFrame() &&
          (base::win::GetVersion() >= base::win::VERSION_WIN10);
 }
 
 void ThemeServiceWin::OnDwmKeyUpdated() {
-  // Attempt to read the accent color.
   DWORD accent_color, color_prevalence;
-  dwm_frame_color_ =
-      ((dwm_key_->ReadValueDW(L"ColorPrevalence", &color_prevalence) ==
-        ERROR_SUCCESS) &&
-       (color_prevalence == 1) &&
-       (dwm_key_->ReadValueDW(L"AccentColor", &accent_color) == ERROR_SUCCESS))
-          ? skia::COLORREFToSkColor(accent_color)
-          : SK_ColorWHITE;
+  use_dwm_frame_color_ =
+      dwm_key_->ReadValueDW(L"AccentColor", &accent_color) == ERROR_SUCCESS &&
+      dwm_key_->ReadValueDW(L"ColorPrevalence", &color_prevalence) ==
+          ERROR_SUCCESS &&
+      color_prevalence == 1;
+  if (use_dwm_frame_color_) {
+    dwm_frame_color_ = skia::COLORREFToSkColor(accent_color);
+    DWORD accent_color_inactive;
+    if (dwm_key_->ReadValueDW(L"AccentColorInactive", &accent_color_inactive) ==
+        ERROR_SUCCESS) {
+      dwm_inactive_frame_color_ =
+          skia::COLORREFToSkColor(accent_color_inactive);
+    } else {
+      // Tint to create inactive color. Always use the non-incognito version of
+      // the tint, since the frame should look the same in both modes.
+      dwm_inactive_frame_color_ = color_utils::HSLShift(
+          dwm_frame_color_,
+          GetTint(ThemeProperties::TINT_FRAME_INACTIVE, false));
+    }
+  }
 
   dwm_accent_border_color_ = SK_ColorWHITE;
   DWORD colorization_color, colorization_color_balance;

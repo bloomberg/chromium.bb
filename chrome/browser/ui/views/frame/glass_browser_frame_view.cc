@@ -555,7 +555,10 @@ bool GlassBrowserFrameView::ShowSystemIcon() const {
 }
 
 SkColor GlassBrowserFrameView::GetTitlebarColor() const {
-  return GetThemeProvider()->GetColor(ThemeProperties::COLOR_FRAME);
+  const ui::ThemeProvider* tp = GetThemeProvider();
+  return ShouldPaintAsActive()
+             ? tp->GetColor(ThemeProperties::COLOR_FRAME)
+             : tp->GetColor(ThemeProperties::COLOR_FRAME_INACTIVE);
 }
 
 Windows10CaptionButton* GlassBrowserFrameView::CreateCaptionButton(

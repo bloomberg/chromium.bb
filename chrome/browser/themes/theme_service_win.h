@@ -8,6 +8,9 @@
 #include "base/win/registry.h"
 #include "chrome/browser/themes/theme_service.h"
 
+// Tracks updates to the native colors on Windows 10 and calcuates the values we
+// should use (which are not always what Windows uses). None of the values here
+// are relevant to earlier versions of Windows.
 class ThemeServiceWin : public ThemeService {
  public:
   ThemeServiceWin();
@@ -18,20 +21,27 @@ class ThemeServiceWin : public ThemeService {
   bool ShouldUseNativeFrame() const override;
   SkColor GetDefaultColor(int id, bool incognito) const override;
 
-  // Returns true if the window frame color is determined by the DWM, i.e. this
-  // is a native frame on Windows 10.
-  bool ShouldUseDwmFrameColor() const;
+  // Returns true if colors from DWM can be used, i.e. this is a native frame
+  // on Windows 10.
+  bool DwmColorsAllowed() const;
 
-  // Callback executed when |dwm_key_| is updated.  This re-reads the active
-  // frame color and updates |dwm_frame_color_|.
+  // Callback executed when |dwm_key_| is updated. This re-reads the active
+  // frame color and updates |use_dwm_frame_color_|, |dwm_frame_color_| and
+  // |dwm_inactive_frame_color_|.
   void OnDwmKeyUpdated();
 
   // Registry key containing the params that determine the DWM frame color.
-  // This is only initialized on Windows 10.
   std::unique_ptr<base::win::RegKey> dwm_key_;
 
-  // The DWM frame color, if available; white otherwise.
+  // True if the frame should be colored using the DWM values here. False if the
+  // default frame colors should be used instead.
+  bool use_dwm_frame_color_;
+
+  // The frame color when active.
   SkColor dwm_frame_color_;
+
+  // The frame color when inactive.
+  SkColor dwm_inactive_frame_color_;
 
   // The DWM accent border color, if available; white otherwise.
   SkColor dwm_accent_border_color_;
