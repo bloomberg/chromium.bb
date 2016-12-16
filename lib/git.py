@@ -70,6 +70,9 @@ GIT_TRANSIENT_ERRORS = (
 
     # crbug.com/535306
     r'Service Temporarily Unavailable',
+
+    # crbug.com/675262
+    r'Connection refused',
 )
 
 GIT_TRANSIENT_ERRORS_RE = re.compile('|'.join(GIT_TRANSIENT_ERRORS),
