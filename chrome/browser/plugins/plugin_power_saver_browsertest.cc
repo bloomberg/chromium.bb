@@ -411,7 +411,13 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, EssentialPlugins) {
                               "medium_16_9_cross_origin");
 }
 
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallCrossOrigin) {
+// This test fail on macOS 10.12. https://crbug.com/599484.
+#if defined(OS_MACOSX)
+#define MAYBE_SmallCrossOrigin DISABLED_SmallCrossOrigin
+#else
+#define MAYBE_SmallCrossOrigin SmallCrossOrigin
+#endif
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, MAYBE_SmallCrossOrigin) {
   LoadHTML("/small_cross_origin.html");
 
   VerifyPluginIsThrottled(GetActiveWebContents(), "plugin");
@@ -453,7 +459,13 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, SmallerThanPlayIcon) {
       VerifySnapshot(FILE_PATH_LITERAL("smaller_than_play_icon_expected.png")));
 }
 
-IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, PosterTests) {
+// This test fail on macOS 10.12. https://crbug.com/599484.
+#if defined(OS_MACOSX)
+#define MAYBE_PosterTests DISABLED_PosterTests
+#else
+#define MAYBE_PosterTests PosterTests
+#endif
+IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, MAYBE_PosterTests) {
   // This test simultaneously verifies the varied supported poster syntaxes,
   // as well as verifies that the poster is rendered correctly with various
   // mismatched aspect ratios and sizes, following the same rules as VIDEO.
