@@ -51,6 +51,9 @@ void PaintLayerResourceInfo::resourceContentChanged() {
   DCHECK(m_layer);
   LayoutObject* layoutObject = m_layer->layoutObject();
   layoutObject->setShouldDoFullPaintInvalidation();
+  // The effect paint property nodes depend on SVG filters so we need
+  // to update these properties when filter resources change.
+  layoutObject->setNeedsPaintPropertyUpdate();
   const ComputedStyle& style = layoutObject->styleRef();
   if (style.hasFilter() && style.filter().hasReferenceFilter())
     invalidateFilterChain();
@@ -60,6 +63,9 @@ void PaintLayerResourceInfo::resourceElementChanged() {
   DCHECK(m_layer);
   LayoutObject* layoutObject = m_layer->layoutObject();
   layoutObject->setShouldDoFullPaintInvalidation();
+  // The effect paint property nodes depend on SVG filters so we need
+  // to update these properties when filter resources change.
+  layoutObject->setNeedsPaintPropertyUpdate();
   const ComputedStyle& style = layoutObject->styleRef();
   if (style.hasFilter() && style.filter().hasReferenceFilter())
     invalidateFilterChain();

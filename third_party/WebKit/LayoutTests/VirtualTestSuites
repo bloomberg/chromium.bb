@@ -347,6 +347,11 @@
   },
   {
     "prefix": "spinvalidation",
+    "base": "css3",
+    "args": ["--enable-blink-features=SlimmingPaintInvalidation"]
+  },
+  {
+    "prefix": "spinvalidation",
     "base": "fast",
     "args": ["--enable-blink-features=SlimmingPaintInvalidation"]
   },

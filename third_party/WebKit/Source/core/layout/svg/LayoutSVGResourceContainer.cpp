@@ -178,6 +178,8 @@ void LayoutSVGResourceContainer::markClientForInvalidation(
       // entire <text>/<tspan>/... subtree.
       client->setShouldDoFullPaintInvalidation(
           PaintInvalidationSVGResourceChange);
+      // Invalidate paint properties to update effects if any.
+      client->setNeedsPaintPropertyUpdate();
       break;
     case ParentOnlyInvalidation:
       break;

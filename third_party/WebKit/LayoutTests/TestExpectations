@@ -106,6 +106,8 @@ crbug.com/646176 virtual/spinvalidation/compositing/composited-iframe-hidden.htm
 crbug.com/646176 virtual/spinvalidation/fast/layers/remove-layer-with-nested-stacking.html [ Pass ]
 crbug.com/646176 virtual/spinvalidation/printing/fixed-positioned-scrolled.html [ Pass ]
 crbug.com/646176 virtual/spinvalidation/printing/overflow-auto.html [ Pass ]
+crbug.com/646176 virtual/spinvalidation/css3/filters/effect-reference-rename.html [ Pass ]
+crbug.com/646176 virtual/spinvalidation/css3/filters/effect-reference-rename-2.html [ Pass ]
 
 crbug.com/645667 virtual/spinvalidation/paint/invalidation/filter-repaint-accelerated-on-accelerated-filter.html [ Crash ]
 crbug.com/645667 virtual/spinvalidation/paint/invalidation/compositing/resize-repaint.html [ Crash ]
