@@ -46,6 +46,13 @@ namespace {
 const double kDefaultRefreshRate = 60.0;
 const double kTestRefreshRate = 200.0;
 
+// TODO(mfomitchev, fsamuel): Look at removing this when transition from
+// SurfaceSequence to SurfaceReference is fully complete.
+// Used when ui::Compositor is created with null ContextFactoryPrivate.
+// Compositor needs a valid FrameSinkId, so that cc::SurfaceLayer can create
+// valid SurfaceSequences.
+constexpr cc::FrameSinkId kDefaultFrameSinkId(1, 1);
+
 }  // namespace
 
 namespace ui {
@@ -85,7 +92,7 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
       compositor_frame_sink_requested_(false),
       frame_sink_id_(context_factory_private
                          ? context_factory_private->AllocateFrameSinkId()
-                         : cc::FrameSinkId()),
+                         : kDefaultFrameSinkId),
       task_runner_(task_runner),
       vsync_manager_(new CompositorVSyncManager()),
       device_scale_factor_(0.0f),
