@@ -1,11 +1,11 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Suite of tests for site-settings-category. */
-cr.define('site_settings_category', function() {
+/** @fileoverview Suite of tests for category-default-setting. */
+cr.define('category_default_setting', function() {
   function registerTests() {
-    suite('SiteSettingsCategory', function() {
+    suite('CategoryDefaultSetting', function() {
       /**
        * A site settings category created before each test.
        * @type {SiteSettingsCategory}
@@ -80,7 +80,7 @@ cr.define('site_settings_category', function() {
       // Import necessary html before running suite.
       suiteSetup(function() {
         return PolymerTest.importHtml(
-           'chrome://md-settings/site_settings/site_settings_category.html');
+           'chrome://md-settings/site_settings/category_default_setting.html');
       });
 
       // Initialize a site-settings-category before each test.
@@ -88,7 +88,8 @@ cr.define('site_settings_category', function() {
         browserProxy = new TestSiteSettingsPrefsBrowserProxy();
         settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
         PolymerTest.clearBody();
-        testElement = document.createElement('site-settings-category');
+        testElement = document.createElement('category-default-setting');
+        testElement.subOptionLabel = "test label";
         document.body.appendChild(testElement);
       });
 
@@ -186,7 +187,6 @@ cr.define('site_settings_category', function() {
         return browserProxy.whenCalled('getDefaultValueForContentType').then(
           function(contentType) {
             Polymer.dom.flush();
-
             secondaryToggle = testElement.$$(secondaryToggleId);
             assertTrue(!!secondaryToggle);
 
@@ -278,13 +278,13 @@ cr.define('site_settings_category', function() {
       test('test special tri-state Flash category', function() {
         return testTristateCategory(
             prefsFlashDetect, settings.ContentSettingsTypes.PLUGINS,
-            settings.PermissionValues.IMPORTANT_CONTENT, '#flashAskToggle');
+            settings.PermissionValues.IMPORTANT_CONTENT, '#subOptionToggle');
       });
 
       test('test special tri-state Cookies category', function() {
         return testTristateCategory(
             prefsCookesSessionOnly, settings.ContentSettingsTypes.COOKIES,
-            settings.PermissionValues.SESSION_ONLY, '#sessionOnlyToggle');
+            settings.PermissionValues.SESSION_ONLY, '#subOptionToggle');
       });
     });
   }

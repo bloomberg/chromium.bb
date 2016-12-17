@@ -14,12 +14,13 @@
 <link rel="import" href="/settings_page/settings_subpage.html">
 <link rel="import" href="/settings_shared_css.html">
 <link rel="import" href="/site_settings/all_sites.html">
+<link rel="import" href="/site_settings/category_default_setting.html">
+<link rel="import" href="/site_settings/category_setting_exceptions.html">
 <link rel="import" href="/site_settings/constants.html">
 <link rel="import" href="/site_settings/media_picker.html">
 <link rel="import" href="/site_settings/pdf_documents.html">
 <link rel="import" href="/site_settings/protocol_handlers.html">
 <link rel="import" href="/site_settings/site_data_details_subpage.html">
-<link rel="import" href="/site_settings/site_settings_category.html">
 <link rel="import" href="/site_settings/usb_devices.html">
 <link rel="import" href="/site_settings/site_data.html">
 <link rel="import" href="/site_settings/zoom_levels.html">
@@ -77,9 +78,7 @@
     <settings-animated-pages id="pages" section="privacy">
       <neon-animatable route-path="default">
         <div class="settings-box block first">
-          <p class="privacy-explanation">
-            $i18nRaw{improveBrowsingExperience}
-          </p>
+          <p class="privacy-explanation">$i18nRaw{improveBrowsingExperience}</p>
           <settings-checkbox pref="{{prefs.alternate_error_pages.enabled}}"
               label="$i18n{linkDoctorPref}">
           </settings-checkbox>
@@ -212,19 +211,24 @@
         <settings-subpage page-title="$i18n{siteSettingsAutomaticDownloads}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
-          <site-settings-category
+          <category-default-setting
               category="{{ContentSettingsTypes.AUTOMATIC_DOWNLOADS}}">
-          </site-settings-category>
+          </category-default-setting>
+          <category-setting-exceptions
+              category="{{ContentSettingsTypes.AUTOMATIC_DOWNLOADS}}">
+          </category-setting-exceptions>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/backgroundSync" no-search>
-          no-search>
         <settings-subpage page-title="$i18n{siteSettingsBackgroundSync}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
-          <site-settings-category
+          <category-default-setting
               category="{{ContentSettingsTypes.BACKGROUND_SYNC}}">
-          </site-settings-category>
+          </category-default-setting>
+          <category-setting-exceptions
+              category="{{ContentSettingsTypes.BACKGROUND_SYNC}}">
+          </category-setting-exceptions>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/camera" no-search>
@@ -232,23 +236,31 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <media-picker type="camera"></media-picker>
-          <site-settings-category category="{{ContentSettingsTypes.CAMERA}}">
-          </site-settings-category>
+          <category-default-setting category="{{ContentSettingsTypes.CAMERA}}">
+          </category-default-setting>
+          <category-setting-exceptions
+              category="{{ContentSettingsTypes.CAMERA}}">
+          </category-setting-exceptions>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/cookies" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryCookies}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
-          <site-settings-category category="{{ContentSettingsTypes.COOKIES}}">
-            <div class="settings-box extra-options">
-              <settings-toggle-button class="start"
-                  label="$i18n{thirdPartyCookie}"
-                  sub-label="$i18n{thirdPartyCookieSublabel}"
-                  pref="{{prefs.profile.block_third_party_cookies}}">
-              </settings-toggle-button>
-            </div>
-          </site-settings-category>
+          <category-default-setting category="{{ContentSettingsTypes.COOKIES}}"
+              sub-option-label="$i18n{deleteDataPostSession}"
+              sub-option-secondary=""><!-- To work with :empty. -->
+          </category-default-setting>
+          <div class="settings-box">
+            <settings-toggle-button class="start"
+                label="$i18n{thirdPartyCookie}"
+                sub-label="$i18n{thirdPartyCookieSublabel}"
+                pref="{{prefs.profile.block_third_party_cookies}}">
+            </settings-toggle-button>
+          </div>
+          <category-setting-exceptions
+              category="{{ContentSettingsTypes.COOKIES}}">
+          </category-setting-exceptions>
           <site-data></site-data>
         </settings-subpage>
       </template>
@@ -256,17 +268,23 @@
         <settings-subpage page-title="$i18n{siteSettingsCategoryImages}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
-          <site-settings-category category="{{ContentSettingsTypes.IMAGES}}">
-          </site-settings-category>
+          <category-default-setting category="{{ContentSettingsTypes.IMAGES}}">
+          </category-default-setting>
+          <category-setting-exceptions
+              category="{{ContentSettingsTypes.IMAGES}}">
+          </category-setting-exceptions>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/location" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryLocation}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
-          <site-settings-category
+          <category-default-setting
               category="{{ContentSettingsTypes.GEOLOCATION}}">
-          </site-settings-category>
+          </category-default-setting>
+          <category-setting-exceptions
+              category="{{ContentSettingsTypes.GEOLOCATION}}">
+          </category-setting-exceptions>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/handlers" no-search>
@@ -288,17 +306,23 @@
         <settings-subpage page-title="$i18n{siteSettingsCategoryJavascript}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
-          <site-settings-category
+          <category-default-setting
               category="{{ContentSettingsTypes.JAVASCRIPT}}">
-          </site-settings-category>
+          </category-default-setting>
+          <category-setting-exceptions
+              category="{{ContentSettingsTypes.JAVASCRIPT}}">
+          </category-setting-exceptions>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/keygen" no-search>
         <settings-subpage page-title="$i18n{siteSettingsKeygen}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
-          <site-settings-category category="{{ContentSettingsTypes.KEYGEN}}">
-          </site-settings-category>
+          <category-default-setting category="{{ContentSettingsTypes.KEYGEN}}">
+          </category-default-setting>
+          <category-setting-exceptions
+              category="{{ContentSettingsTypes.KEYGEN}}">
+          </category-setting-exceptions>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/microphone" no-search>
@@ -306,48 +330,64 @@
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
           <media-picker type="mic"></media-picker>
-          <site-settings-category category="{{ContentSettingsTypes.MIC}}">
-          </site-settings-category>
+          <category-default-setting category="{{ContentSettingsTypes.MIC}}">
+          </category-default-setting>
+          <category-setting-exceptions category="{{ContentSettingsTypes.MIC}}">
+          </category-setting-exceptions>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/notifications" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryNotifications}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
-          <site-settings-category
+          <category-default-setting
               category="{{ContentSettingsTypes.NOTIFICATIONS}}">
-          </site-settings-category>
+          </category-default-setting>
+          <category-setting-exceptions
+              category="{{ContentSettingsTypes.NOTIFICATIONS}}">
+          </category-setting-exceptions>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/flash" no-search>
         <settings-subpage page-title="$i18n{siteSettingsFlash}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
-          <site-settings-category category="{{ContentSettingsTypes.PLUGINS}}">
+          <category-default-setting category="{{ContentSettingsTypes.PLUGINS}}"
+              sub-option-label="$i18n{siteSettingsFlashAskBefore}"
+              sub-option-secondary="$i18n{siteSettingsFlashAskBeforeSubtitle}">
+          </category-default-setting>
 <if expr="chromeos">
-            <div actionable class="settings-box extra-options"
-                on-tap="onAdobeFlashStorageClicked_">
-              <div class="list-item list-button">$i18n{adobeFlashStorage}</div>
-            </div>
+          <div actionable class="settings-box"
+              on-tap="onAdobeFlashStorageClicked_">
+            <div class="list-item list-button">$i18n{adobeFlashStorage}</div>
+          </div>
 </if>
-          </site-settings-category>
+          <category-setting-exceptions
+              category="{{ContentSettingsTypes.PLUGINS}}">
+          </category-setting-exceptions>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/popups" no-search>
         <settings-subpage page-title="$i18n{siteSettingsCategoryPopups}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
-          <site-settings-category category="{{ContentSettingsTypes.POPUPS}}">
-          </site-settings-category>
+          <category-default-setting category="{{ContentSettingsTypes.POPUPS}}">
+          </category-default-setting>
+          <category-setting-exceptions
+              category="{{ContentSettingsTypes.POPUPS}}">
+          </category-setting-exceptions>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/unsandboxedPlugins" no-search>
         <settings-subpage page-title="$i18n{siteSettingsUnsandboxedPlugins}">
           <button class="icon-help subpage-title-extra"
               is="paper-icon-button-light" on-tap="onHelpTap_"></button>
-          <site-settings-category
+          <category-default-setting
               category="{{ContentSettingsTypes.UNSANDBOXED_PLUGINS}}">
-          </site-settings-category>
+          </category-default-setting>
+          <category-setting-exceptions
+              category="{{ContentSettingsTypes.UNSANDBOXED_PLUGINS}}">
+          </category-setting-exceptions>
         </settings-subpage>
       </template>
       <template is="dom-if" route-path="/content/usbDevices" no-search>
@@ -360,8 +400,7 @@
           <site-details></site-details>
         </settings-subpage>
       </template>
-      <template is="dom-if" route-path="/cookies/detail"
-          no-search>
+      <template is="dom-if" route-path="/cookies/detail" no-search>
         <settings-subpage page-title="[[pageTitle]]">
           <paper-button class="subpage-title-extra"
               on-tap="onRemoveAllCookiesFromSite_">

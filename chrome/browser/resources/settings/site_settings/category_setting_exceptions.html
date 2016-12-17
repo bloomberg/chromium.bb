@@ -1,0 +1,37 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="/settings_shared_css.html">
+<link rel="import" href="/site_settings/constants.html">
+<link rel="import" href="/site_settings/site_list.html">
+
+<dom-module id="category-setting-exceptions">
+  <template>
+    <style include="settings-shared">
+      site-list {
+        border-bottom: 1px solid var(--paper-grey-300);
+      }
+
+      site-list:last-of-type {
+        border-bottom: none;
+      }
+    </style>
+    <site-list
+        category="[[category]]"
+        category-subtype="[[PermissionValues.BLOCK]]"
+        category-enabled="[[categoryEnabled]]"
+        category-header="$i18n{siteSettingsBlock}">
+    </site-list>
+    <site-list
+        category="[[category]]"
+        category-subtype="[[PermissionValues.SESSION_ONLY]]"
+        category-enabled="[[categoryEnabled]]"
+        category-header="$i18n{siteSettingsSessionOnly}">
+    </site-list>
+    <site-list
+        category="[[category]]"
+        category-subtype="[[PermissionValues.ALLOW]]"
+        category-enabled="[[categoryEnabled]]"
+        category-header="$i18n{siteSettingsAllow}">
+    </site-list>
+  </template>
+  <script src="category_setting_exceptions.js"></script>
+</dom-module>

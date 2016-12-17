@@ -25,6 +25,30 @@
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'category_default_setting',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
+        '<(EXTERNS_GYP):settings_private',
+        '../settings_page/compiled_resources2.gyp:settings_animated_pages',
+        'constants',
+        'site_settings_behavior',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'category_setting_exceptions',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+        '<(EXTERNS_GYP):settings_private',
+        '../settings_page/compiled_resources2.gyp:settings_animated_pages',
+        'constants',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'constants',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
@@ -156,19 +180,6 @@
         '<(EXTERNS_GYP):settings_private',
         'constants',
         'site_settings_prefs_browser_proxy',
-      ],
-      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
-      'target_name': 'site_settings_category',
-      'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:web_ui_listener_behavior',
-        '<(EXTERNS_GYP):settings_private',
-        '../settings_page/compiled_resources2.gyp:settings_animated_pages',
-        'constants',
-        'site_settings_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

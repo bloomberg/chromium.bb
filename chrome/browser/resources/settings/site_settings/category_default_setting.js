@@ -1,14 +1,14 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 /**
  * @fileoverview
- * 'site-settings-category' is the polymer element for showing a certain
+ * 'category-default-setting' is the polymer element for showing a certain
  * category under Site Settings.
  */
 Polymer({
-  is: 'site-settings-category',
+  is: 'category-default-setting',
 
   behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
 
@@ -27,21 +27,10 @@ Polymer({
     sliderDescription_: String,
 
     /**
-     * Used only for the Flash to persist the Ask First checkbox state.
-     * Defaults to true, as the checkbox should be checked unless the user
-     * has explicitly unchecked it or has the ALLOW setting on Flash.
+     * A sub-option toggle is used to represent tri-state categories.
+     * @private
      */
-    flashAskFirst_: {
-      type: Boolean,
-      value: true,
-    },
-
-    /**
-     * Used only for Cookies to keep track of the Session Only state.
-     * Defaults to true, as the checkbox should be checked unless the user
-     * has explicitly unchecked it or has the ALLOW setting on Cookies.
-     */
-    cookiesSessionOnly_: {
+    subOptionEnabled_: {
       type: Boolean,
       value: true,
     },
@@ -103,7 +92,7 @@ Polymer({
         // browser quits".
         var value = settings.PermissionValues.BLOCK;
         if (this.categoryEnabled) {
-          value = this.cookiesSessionOnly_ ?
+          value = this.subOptionEnabled_ ?
               settings.PermissionValues.SESSION_ONLY :
               settings.PermissionValues.ALLOW;
         }
@@ -113,7 +102,7 @@ Polymer({
         // This category is tri-state: "Allow", "Block", "Ask before running".
         var value = settings.PermissionValues.BLOCK;
         if (this.categoryEnabled) {
-          value = this.flashAskFirst_ ?
+          value = this.subOptionEnabled_ ?
               settings.PermissionValues.IMPORTANT_CONTENT :
               settings.PermissionValues.ALLOW;
         }
@@ -129,49 +118,39 @@ Polymer({
    * @private
    */
   onCategoryChanged_: function() {
-    settings.SiteSettingsPrefsBrowserProxyImpl.getInstance()
-        .getDefaultValueForContentType(
-            this.category).then(function(defaultValue) {
-              var setting = defaultValue.setting;
-              this.categoryEnabled = this.computeIsSettingEnabled(setting);
+    this.browserProxy
+      .getDefaultValueForContentType(this.category)
+        .then(function(defaultValue) {
+          var setting = defaultValue.setting;
+          this.categoryEnabled = this.computeIsSettingEnabled(setting);
 
-              // Flash only shows ALLOW or BLOCK descriptions on the slider.
-              var sliderSetting = setting;
-              if (this.category == settings.ContentSettingsTypes.PLUGINS &&
-                  setting == settings.PermissionValues.IMPORTANT_CONTENT) {
-                sliderSetting = settings.PermissionValues.ALLOW;
-              } else if (
-                  this.category == settings.ContentSettingsTypes.COOKIES &&
-                  setting == settings.PermissionValues.SESSION_ONLY) {
-                sliderSetting = settings.PermissionValues.ALLOW;
-              }
-              this.sliderDescription_ =
-                  this.computeCategoryDesc(this.category, sliderSetting, true);
+          // Flash only shows ALLOW or BLOCK descriptions on the slider.
+          var sliderSetting = setting;
+          if (this.category == settings.ContentSettingsTypes.PLUGINS &&
+              setting == settings.PermissionValues.IMPORTANT_CONTENT) {
+            sliderSetting = settings.PermissionValues.ALLOW;
+          } else if (
+              this.category == settings.ContentSettingsTypes.COOKIES &&
+              setting == settings.PermissionValues.SESSION_ONLY) {
+            sliderSetting = settings.PermissionValues.ALLOW;
+          }
+          this.sliderDescription_ =
+              this.computeCategoryDesc(this.category, sliderSetting, true);
 
-              if (this.category == settings.ContentSettingsTypes.PLUGINS) {
-                // The checkbox should only be cleared when the Flash setting
-                // is explicitly set to ALLOW.
-                if (setting == settings.PermissionValues.ALLOW)
-                  this.flashAskFirst_ = false;
-                if (setting == settings.PermissionValues.IMPORTANT_CONTENT)
-                  this.flashAskFirst_ = true;
-              } else if (
-                  this.category == settings.ContentSettingsTypes.COOKIES) {
-                if (setting == settings.PermissionValues.ALLOW)
-                  this.cookiesSessionOnly_ = false;
-                else if (setting == settings.PermissionValues.SESSION_ONLY)
-                  this.cookiesSessionOnly_ = true;
-              }
-            }.bind(this));
-  },
-
-  /** @private */
-  isFlashCategory_: function(category) {
-    return category == settings.ContentSettingsTypes.PLUGINS;
-  },
-
-  /** @private */
-  isCookiesCategory_: function(category) {
-    return category == settings.ContentSettingsTypes.COOKIES;
+          if (this.category == settings.ContentSettingsTypes.PLUGINS) {
+            // The checkbox should only be cleared when the Flash setting
+            // is explicitly set to ALLOW.
+            if (setting == settings.PermissionValues.ALLOW)
+              this.subOptionEnabled_ = false;
+            if (setting == settings.PermissionValues.IMPORTANT_CONTENT)
+              this.subOptionEnabled_ = true;
+          } else if (
+              this.category == settings.ContentSettingsTypes.COOKIES) {
+            if (setting == settings.PermissionValues.ALLOW)
+              this.subOptionEnabled_ = false;
+            else if (setting == settings.PermissionValues.SESSION_ONLY)
+              this.subOptionEnabled_ = true;
+          }
+        }.bind(this));
   },
 });

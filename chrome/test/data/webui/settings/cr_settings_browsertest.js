@@ -651,10 +651,11 @@ CrSettingsSiteSettingsTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'category_default_setting_tests.js',
+    'category_setting_exceptions_tests.js',
     'site_details_tests.js',
     'site_details_permission_tests.js',
     'site_list_tests.js',
-    'site_settings_category_tests.js',
     'test_browser_proxy.js',
     'test_site_settings_prefs_browser_proxy.js',
     'zoom_levels_tests.js',
@@ -664,10 +665,11 @@ CrSettingsSiteSettingsTest.prototype = {
 };
 
 TEST_F('CrSettingsSiteSettingsTest', 'SiteSettings', function() {
+  category_default_setting.registerTests();
+  category_setting_exceptions.registerTests();
   site_details.registerTests();
   site_details_permission.registerTests();
   site_list.registerTests();
-  site_settings_category.registerTests();
   zoom_levels.registerTests();
   usb_devices.registerTests();
   protocol_handlers.registerTests();
