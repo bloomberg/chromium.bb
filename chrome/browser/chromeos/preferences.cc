@@ -287,6 +287,8 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kLaunchPaletteOnEjectEvent, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  // Don't sync the note-taking app; it may not be installed on other devices.
+  registry->RegisterStringPref(prefs::kNoteTakingAppId, std::string());
 
   // We don't sync wake-on-wifi related prefs because they are device specific.
   registry->RegisterBooleanPref(prefs::kWakeOnWifiDarkConnect, true);
