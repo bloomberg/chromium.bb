@@ -150,6 +150,10 @@ class ExtensionMessageBubbleController : public chrome::BrowserListObserver {
   // Obtains a list of all extensions (by id) the controller knows about.
   const ExtensionIdList& GetExtensionIdList();
 
+  // Checks if each extension entry is installed, and if not, removes it from
+  // the list.
+  void UpdateExtensionIdList();
+
   // Whether to close the bubble when it loses focus.
   bool CloseOnDeactivate();
 

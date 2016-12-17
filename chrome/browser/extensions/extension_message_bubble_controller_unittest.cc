@@ -1048,4 +1048,26 @@ TEST_F(ExtensionMessageBubbleTest, TestBubbleOutlivesBrowser) {
   controller.reset();
 }
 
+// Tests if that ShouldShow() returns false if the bubble's associated extension
+// has been removed.
+TEST_F(ExtensionMessageBubbleTest, TestShouldShowMethod) {
+  Init();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  ASSERT_TRUE(LoadExtensionOverridingNtp("1", kId1, Manifest::UNPACKED));
+  ASSERT_TRUE(registry->enabled_extensions().GetByID(kId1));
+
+  std::unique_ptr<TestExtensionMessageBubbleController> ntp_bubble_controller(
+      new TestExtensionMessageBubbleController(
+          new NtpOverriddenBubbleDelegate(browser()->profile()), browser()));
+
+  EXPECT_TRUE(ntp_bubble_controller->ShouldShow());
+  ASSERT_EQ(1u, ntp_bubble_controller->GetExtensionIdList().size());
+  EXPECT_EQ(kId1, ntp_bubble_controller->GetExtensionIdList()[0]);
+
+  // Disable the extension for being from outside the webstore.
+  service_->DisableExtension(kId1, extensions::Extension::DISABLE_NOT_VERIFIED);
+  EXPECT_TRUE(registry->disabled_extensions().GetByID(kId1));
+  EXPECT_FALSE(ntp_bubble_controller->ShouldShow());
+}
+
 }  // namespace extensions

@@ -122,10 +122,14 @@ Profile* ExtensionMessageBubbleController::profile() {
 }
 
 bool ExtensionMessageBubbleController::ShouldShow() {
+  // In the case when there are multiple extensions in the list, we need to
+  // check if each extension entry is still installed, and, if not, remove it
+  // from the list.
+  UpdateExtensionIdList();
   std::set<Profile*>* profiles = GetProfileSet();
   return !profiles->count(profile()->GetOriginalProfile()) &&
          (!model_->has_active_bubble() || is_active_bubble_) &&
-         !GetExtensionList().empty();
+         !GetExtensionIdList().empty();
 }
 
 std::vector<base::string16>
@@ -139,10 +143,7 @@ ExtensionMessageBubbleController::GetExtensionList() {
   for (const std::string& id : *list) {
     const Extension* extension =
         registry->GetExtensionById(id, ExtensionRegistry::EVERYTHING);
-    // The extension may have been removed, since showing the bubble is an
-    // asynchronous process.
-    if (extension)
-      return_value.push_back(base::UTF8ToUTF16(extension->name()));
+    return_value.push_back(base::UTF8ToUTF16(extension->name()));
   }
   return return_value;
 }
@@ -168,6 +169,22 @@ base::string16 ExtensionMessageBubbleController::GetExtensionListForDisplay() {
 
 const ExtensionIdList& ExtensionMessageBubbleController::GetExtensionIdList() {
   return *GetOrCreateExtensionList();
+}
+
+void ExtensionMessageBubbleController::UpdateExtensionIdList() {
+  ExtensionIdList* extension_ids = GetOrCreateExtensionList();
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  int include_mask = delegate_->ShouldLimitToEnabledExtensions()
+                         ? ExtensionRegistry::ENABLED
+                         : ExtensionRegistry::EVERYTHING;
+  for (auto iter = extension_ids->begin(); iter != extension_ids->end();) {
+    const Extension* extension =
+        registry->GetExtensionById(*iter, include_mask);
+    if (extension)
+      ++iter;
+    else
+      iter = extension_ids->erase(iter);
+  }
 }
 
 bool ExtensionMessageBubbleController::CloseOnDeactivate() {
