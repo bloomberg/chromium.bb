@@ -46,6 +46,8 @@ source_set("alsa_cma_backend") {
     "stream_mixer_alsa_input.h",
     "stream_mixer_alsa_input_impl.cc",
     "stream_mixer_alsa_input_impl.h",
+    "video_decoder_alsa.cc",
+    "video_decoder_alsa.h",
   ]
 
   libs = [ "asound" ]
@@ -56,7 +58,6 @@ source_set("alsa_cma_backend") {
     ":slew_volume",
     "//base",
     "//chromecast/base",
-    "//chromecast/media/cma/backend",
     "//chromecast/media/cma/base",
     "//chromecast/media/cma/decoder",
     "//chromecast/public/media",
@@ -120,7 +121,6 @@ test("cast_alsa_cma_backend_unittests") {
     "//base",
     "//base/test:run_all_unittests",
     "//chromecast/media/base",
-    "//chromecast/media/base:libcast_media_1.0_default_core",
     "//media",
     "//media:shared_memory_support",
     "//testing/gmock",

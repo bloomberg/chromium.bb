@@ -8,7 +8,7 @@
 
 #include "chromecast/base/task_runner_impl.h"
 #include "chromecast/media/cma/backend/alsa/audio_decoder_alsa.h"
-#include "chromecast/media/cma/backend/video_decoder_default.h"
+#include "chromecast/media/cma/backend/alsa/video_decoder_alsa.h"
 
 namespace chromecast {
 namespace media {
@@ -35,7 +35,7 @@ MediaPipelineBackendAlsa::CreateVideoDecoder() {
   DCHECK_EQ(kStateUninitialized, state_);
   if (video_decoder_)
     return nullptr;
-  video_decoder_.reset(new VideoDecoderDefault());
+  video_decoder_.reset(new VideoDecoderAlsa());
   return video_decoder_.get();
 }
 

@@ -9,11 +9,9 @@
 namespace chromecast {
 namespace media {
 
-void CastMediaShlib::Initialize(const std::vector<std::string>& argv) {
-}
+void CastMediaShlib::Initialize(const std::vector<std::string>& argv) {}
 
-void CastMediaShlib::Finalize() {
-}
+void CastMediaShlib::Finalize() {}
 
 VideoPlane* CastMediaShlib::GetVideoPlane() {
   return nullptr;

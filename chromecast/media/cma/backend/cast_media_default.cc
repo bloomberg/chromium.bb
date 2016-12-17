@@ -24,8 +24,7 @@ class DefaultVideoPlane : public VideoPlane {
  public:
   ~DefaultVideoPlane() override {}
 
-  void SetGeometry(const RectF& display_rect,
-                   Transform transform) override {}
+  void SetGeometry(const RectF& display_rect, Transform transform) override {}
 };
 
 DefaultVideoPlane* g_video_plane = nullptr;

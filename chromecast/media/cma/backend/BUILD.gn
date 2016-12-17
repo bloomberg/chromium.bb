@@ -2,20 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromecast_build.gni")
+
 source_set("backend") {
   sources = [
-    "audio_decoder_default.cc",
-    "audio_decoder_default.h",
     "audio_decoder_wrapper.cc",
     "audio_decoder_wrapper.h",
-    "media_pipeline_backend_default.cc",
-    "media_pipeline_backend_default.h",
     "media_pipeline_backend_manager.cc",
     "media_pipeline_backend_manager.h",
     "media_pipeline_backend_wrapper.cc",
     "media_pipeline_backend_wrapper.h",
-    "video_decoder_default.cc",
-    "video_decoder_default.h",
   ]
 
   public_deps = [
@@ -26,5 +22,57 @@ source_set("backend") {
   deps = [
     "//base",
     "//chromecast:chromecast_features",
+  ]
+
+  if (is_android) {
+    sources += [ "cast_media_android.cc" ]
+  } else {
+    deps += [ ":libcast_media_1.0" ]
+  }
+}
+
+# Target for OEM partners to override media shared library, i.e.
+# libcast_media_1.0.so. This target is only used to build executables
+# with correct linkage information.
+shared_library("libcast_media_1.0") {
+  if (is_cast_desktop_build) {
+    deps = [
+      ":default",
+    ]
+  } else {
+    deps = [
+      ":dummy",
+    ]
+  }
+}
+
+# Default implementation of media backend used on desktop.
+source_set("default") {
+  sources = [
+    "audio_decoder_default.cc",
+    "audio_decoder_default.h",
+    "cast_media_default.cc",
+    "media_pipeline_backend_default.cc",
+    "media_pipeline_backend_default.h",
+    "video_decoder_default.cc",
+    "video_decoder_default.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/base",
+    "//chromecast/public/media",
+  ]
+}
+
+# Dummy implementation of media backend used on chromecast devices.
+# Must not depend on anything outside //chromecast/public.
+source_set("dummy") {
+  sources = [
+    "cast_media_dummy.cc",
+  ]
+
+  deps = [
+    "//chromecast/public",
   ]
 }
