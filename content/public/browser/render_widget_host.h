@@ -243,13 +243,12 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
   virtual void AddMouseEventCallback(const MouseEventCallback& callback) = 0;
   virtual void RemoveMouseEventCallback(const MouseEventCallback& callback) = 0;
 
-  // Observer for WebInputEvents.
+  // Observer for WebInputEvents (but not input event acks).
   class InputEventObserver {
    public:
     virtual ~InputEventObserver() {}
 
-    virtual void OnInputEvent(const blink::WebInputEvent&) {};
-    virtual void OnInputEventAck(const blink::WebInputEvent&) {};
+    virtual void OnInputEvent(const blink::WebInputEvent&) = 0;
   };
 
   // Add/remove an input event observer.

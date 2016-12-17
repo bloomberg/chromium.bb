@@ -10,7 +10,6 @@
 #include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
-#include "content/public/browser/render_widget_host.h"
 #include "ui/gfx/geometry/size_f.h"
 
 namespace cc {
@@ -24,20 +23,18 @@ class RenderWidgetHostImpl;
 namespace devtools {
 namespace input {
 
-class InputHandler : public RenderWidgetHost::InputEventObserver {
+class InputHandler {
  public:
   typedef DevToolsProtocolClient::Response Response;
 
   InputHandler();
-  ~InputHandler() override;
+  virtual ~InputHandler();
 
   void SetRenderWidgetHost(RenderWidgetHostImpl* host);
   void SetClient(std::unique_ptr<Client> client);
   void OnSwapCompositorFrame(const cc::CompositorFrameMetadata& frame_metadata);
-  void Detached();
 
-  Response DispatchKeyEvent(DevToolsCommandId command_id,
-                            const std::string& type,
+  Response DispatchKeyEvent(const std::string& type,
                             const int* modifiers,
                             const double* timestamp,
                             const std::string* text,
@@ -51,8 +48,7 @@ class InputHandler : public RenderWidgetHost::InputEventObserver {
                             const bool* is_keypad,
                             const bool* is_system_key);
 
-  Response DispatchMouseEvent(DevToolsCommandId command_id,
-                              const std::string& type,
+  Response DispatchMouseEvent(const std::string& type,
                               int x,
                               int y,
                               const int* modifiers,
@@ -105,13 +101,6 @@ class InputHandler : public RenderWidgetHost::InputEventObserver {
       const double* timestamp);
 
  private:
-  // InputEventObserver
-  void OnInputEvent(const blink::WebInputEvent& event) override;
-  void OnInputEventAck(const blink::WebInputEvent& event) override;
-
-  void SendDispatchKeyEventResponse(DevToolsCommandId command_id);
-  void SendDispatchMouseEventResponse(DevToolsCommandId command_id);
-
   void SendSynthesizePinchGestureResponse(DevToolsCommandId command_id,
                                           SyntheticGesture::Result result);
 
@@ -136,16 +125,8 @@ class InputHandler : public RenderWidgetHost::InputEventObserver {
                         DevToolsCommandId command_id,
                         SyntheticGesture::Result result);
 
-  void ClearPendingKeyCommands();
-  void ClearPendingMouseCommands();
-
   RenderWidgetHostImpl* host_;
   std::unique_ptr<Client> client_;
-  // DevToolsCommandIds for calls to Input.dispatchKey/MouseEvent that have been
-  // sent to the renderer, but that we haven't yet received an ack for.
-  bool input_queued_;
-  std::deque<DevToolsCommandId> pending_key_command_ids_;
-  std::deque<DevToolsCommandId> pending_mouse_command_ids_;
   float page_scale_factor_;
   gfx::SizeF scrollable_viewport_size_;
   base::WeakPtrFactory<InputHandler> weak_factory_;

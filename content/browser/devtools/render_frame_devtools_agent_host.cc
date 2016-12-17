@@ -628,7 +628,6 @@ void RenderFrameDevToolsAgentHost::OnClientAttached() {
 }
 
 void RenderFrameDevToolsAgentHost::OnClientDetached() {
-  input_handler_->Detached();
 #if defined(OS_ANDROID)
   power_save_blocker_.reset();
 #endif

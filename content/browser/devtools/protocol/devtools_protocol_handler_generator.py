@@ -646,8 +646,6 @@ fields_init = []
 browser_domains_list = ["Input"]
 browser_commands_list = []
 async_commands_list = [
-    "Input.dispatchKeyEvent",
-    "Input.dispatchMouseEvent",
     "Input.synthesizePinchGesture",
     "Input.synthesizeScrollGesture",
     "Input.synthesizeTapGesture"]

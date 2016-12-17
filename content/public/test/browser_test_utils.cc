@@ -1530,13 +1530,9 @@ bool InputMsgWatcher::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
-bool InputMsgWatcher::HasReceivedAck() const {
-  return ack_result_ != INPUT_EVENT_ACK_STATE_UNKNOWN;
-}
-
 uint32_t InputMsgWatcher::WaitForAck() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (HasReceivedAck())
+  if (ack_result_ != INPUT_EVENT_ACK_STATE_UNKNOWN)
     return ack_result_;
   base::RunLoop run_loop;
   base::AutoReset<base::Closure> reset_quit(&quit_, run_loop.QuitClosure());

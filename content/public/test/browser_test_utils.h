@@ -556,8 +556,6 @@ class InputMsgWatcher : public BrowserMessageFilter {
   InputMsgWatcher(RenderWidgetHost* render_widget_host,
                   blink::WebInputEvent::Type type);
 
-  bool HasReceivedAck() const;
-
   // Wait until ack message occurs, returning the ack result from
   // the message.
   uint32_t WaitForAck();
