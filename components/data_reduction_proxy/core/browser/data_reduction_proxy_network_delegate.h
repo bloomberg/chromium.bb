@@ -181,10 +181,6 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
 
   std::unique_ptr<DataUseGroupProvider> data_use_group_provider_;
 
-  // If |exclude_chrome_proxy_header_for_testing_| is set to true, chrome-proxy
-  // header would not be added to the request headers.
-  bool exclude_chrome_proxy_header_for_testing_;
-
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyNetworkDelegate);

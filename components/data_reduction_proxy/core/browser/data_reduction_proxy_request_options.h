@@ -52,7 +52,7 @@ class DataReductionProxyRequestOptions {
 
   // Sets |key_| to the default key and initializes the credentials, version,
   // client, and lo-fi header values. Generates the |header_value_| string,
-  // which is concatenated to the Chrome-proxy header.
+  // which is concatenated to the Chrome-proxy header. Called on the UI thread.
   void Init();
 
   // Adds a 'Chrome-Proxy' header to |request_headers| with the data reduction
@@ -97,6 +97,10 @@ class DataReductionProxyRequestOptions {
   DataReductionProxyRequestOptions(Client client,
                                    const std::string& version,
                                    DataReductionProxyConfig* config);
+
+  // Returns the chrome proxy header. Protected so that it is available for
+  // testing.
+  std::string GetHeaderValueForTesting() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyRequestOptionsTest,

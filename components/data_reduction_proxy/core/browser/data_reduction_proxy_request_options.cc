@@ -77,17 +77,23 @@ DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
       data_reduction_proxy_config_(config) {
   DCHECK(data_reduction_proxy_config_);
   util::GetChromiumBuildAndPatch(version, &build_, &patch_);
-  // Constructed on the UI thread, but should be checked on the IO thread.
-  thread_checker_.DetachFromThread();
 }
 
 DataReductionProxyRequestOptions::~DataReductionProxyRequestOptions() {
 }
 
 void DataReductionProxyRequestOptions::Init() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   key_ = GetDefaultKey(),
   UpdateCredentials();
   UpdateExperiments();
+  // Called on the UI thread, but should be checked on the IO thread.
+  thread_checker_.DetachFromThread();
+}
+
+std::string DataReductionProxyRequestOptions::GetHeaderValueForTesting() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return header_value_;
 }
 
 void DataReductionProxyRequestOptions::UpdateExperiments() {
@@ -133,16 +139,19 @@ base::string16 DataReductionProxyRequestOptions::AuthHashForSalt(
 }
 
 base::Time DataReductionProxyRequestOptions::Now() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return base::Time::Now();
 }
 
 void DataReductionProxyRequestOptions::RandBytes(void* output,
                                                  size_t length) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   crypto::RandBytes(output, length);
 }
 
 void DataReductionProxyRequestOptions::AddRequestHeader(
     net::HttpRequestHeaders* request_headers) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   base::Time now = Now();
   // Authorization credentials must be regenerated if they are expired.
   if (!use_assigned_credentials_ && (now > credentials_expiration_time_))
@@ -207,10 +216,12 @@ void DataReductionProxyRequestOptions::SetSecureSession(
 }
 
 void DataReductionProxyRequestOptions::Invalidate() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   SetSecureSession(std::string());
 }
 
 std::string DataReductionProxyRequestOptions::GetDefaultKey() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   std::string key =
