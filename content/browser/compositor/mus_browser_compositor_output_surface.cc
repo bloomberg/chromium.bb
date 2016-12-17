@@ -19,6 +19,7 @@
 #include "ui/aura/mus/window_compositor_frame_sink.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window.h"
+#include "ui/display/screen.h"
 
 namespace content {
 
@@ -73,6 +74,9 @@ void MusBrowserCompositorOutputSurface::SwapBuffers(
   const gfx::Rect bounds = ui_window_ ? gfx::Rect(ui_window_->bounds().size())
                                       : gfx::Rect(window_->bounds().size());
   cc::CompositorFrame ui_frame;
+  ui_frame.metadata.device_scale_factor = display::Screen::GetScreen()
+                                              ->GetDisplayNearestWindow(window_)
+                                              .device_scale_factor();
   ui_frame.metadata.latency_info = std::move(frame.latency_info);
   // Reset latency_info to known empty state after moving contents.
   frame.latency_info.clear();

@@ -149,6 +149,7 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
                  gfx::PointF() /* filters_origin */);
     frame.render_pass_list.push_back(std::move(invert_pass));
   }
+  frame.metadata.device_scale_factor = device_scale_factor_;
 
   return frame;
 }

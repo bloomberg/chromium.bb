@@ -46,6 +46,10 @@ class FrameGenerator : public ServerWindowTracker,
   FrameGenerator(FrameGeneratorDelegate* delegate, ServerWindow* root_window);
   ~FrameGenerator() override;
 
+  void set_device_scale_factor(float device_scale_factor) {
+    device_scale_factor_ = device_scale_factor;
+  }
+
   // Schedules a redraw for the provided region.
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget);
 
@@ -118,6 +122,7 @@ class FrameGenerator : public ServerWindowTracker,
 
   FrameGeneratorDelegate* delegate_;
   ServerWindow* const root_window_;
+  float device_scale_factor_ = 1.f;
 
   gfx::Size last_submitted_frame_size_;
   cc::LocalFrameId local_frame_id_;

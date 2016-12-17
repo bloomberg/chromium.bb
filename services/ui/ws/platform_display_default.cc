@@ -36,6 +36,8 @@ PlatformDisplayDefault::PlatformDisplayDefault(
 #endif
       frame_generator_(new FrameGenerator(this, init_params.root_window)),
       metrics_(init_params.metrics) {
+  frame_generator_->set_device_scale_factor(
+      init_params.metrics.device_scale_factor);
 }
 
 PlatformDisplayDefault::~PlatformDisplayDefault() {
@@ -145,6 +147,7 @@ bool PlatformDisplayDefault::UpdateViewportMetrics(
   }
 
   metrics_ = metrics;
+  frame_generator_->set_device_scale_factor(metrics_.device_scale_factor);
   return true;
 }
 

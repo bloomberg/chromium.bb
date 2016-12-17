@@ -246,6 +246,7 @@ void DisplayCompositor::OnSurfaceCreated(const cc::SurfaceId& surface_id,
                                          const gfx::Size& frame_size,
                                          float device_scale_factor) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_GT(device_scale_factor, 0.0f);
   // We can get into a situation where multiple CompositorFrames arrive for a
   // CompositorFrameSink before the DisplayCompositorClient can add any
   // references for the frame. When the second frame with a new size arrives,

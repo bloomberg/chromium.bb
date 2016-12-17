@@ -84,6 +84,8 @@ void FrameGeneratorTest::SetUp() {
   PlatformDisplayInitParams init_params;
   frame_generator_ = base::MakeUnique<FrameGenerator>(
       frame_generator_delegate_.get(), root_window_.get());
+  frame_generator_->set_device_scale_factor(
+      init_params.metrics.device_scale_factor);
   InitWindow(root_window());
 }
 
