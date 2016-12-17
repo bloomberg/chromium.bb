@@ -33,7 +33,7 @@ WebPresentationClient* presentationClient(ExecutionContext* executionContext) {
 
 // static
 PresentationAvailability* PresentationAvailability::take(
-    ScriptPromiseResolver* resolver,
+    PresentationAvailabilityProperty* resolver,
     const KURL& url,
     bool value) {
   PresentationAvailability* presentationAvailability =

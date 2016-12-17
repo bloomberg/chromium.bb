@@ -189,11 +189,16 @@ ScriptPromise PresentationRequest::getAvailability(ScriptState* scriptState) {
             InvalidStateError,
             "The PresentationRequest is no longer associated to a frame."));
 
-  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  client->getAvailability(
-      m_url,
-      WTF::makeUnique<PresentationAvailabilityCallbacks>(resolver, m_url));
-  return resolver->promise();
+  if (!m_availabilityProperty) {
+    m_availabilityProperty = new PresentationAvailabilityProperty(
+        scriptState->getExecutionContext(), this,
+        PresentationAvailabilityProperty::Ready);
+
+    client->getAvailability(m_url,
+                            WTF::makeUnique<PresentationAvailabilityCallbacks>(
+                                m_availabilityProperty, m_url));
+  }
+  return m_availabilityProperty->promise(scriptState->world());
 }
 
 const KURL& PresentationRequest::url() const {
@@ -201,6 +206,7 @@ const KURL& PresentationRequest::url() const {
 }
 
 DEFINE_TRACE(PresentationRequest) {
+  visitor->trace(m_availabilityProperty);
   EventTargetWithInlineData::trace(visitor);
   SuspendableObject::trace(visitor);
 }

@@ -9,6 +9,8 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/SuspendableObject.h"
 #include "core/events/EventTarget.h"
+#include "modules/ModulesExport.h"
+#include "modules/presentation/PresentationPromiseProperty.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 #include "platform/weborigin/KURL.h"
@@ -17,7 +19,7 @@ namespace blink {
 
 // Implements the PresentationRequest interface from the Presentation API from
 // which websites can start or join presentation connections.
-class PresentationRequest final
+class MODULES_EXPORT PresentationRequest final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<PresentationRequest>,
       public SuspendableObject {
@@ -56,6 +58,7 @@ class PresentationRequest final
  private:
   PresentationRequest(ExecutionContext*, const KURL&);
 
+  Member<PresentationAvailabilityProperty> m_availabilityProperty;
   KURL m_url;
 };
 

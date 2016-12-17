@@ -5,6 +5,7 @@
 #ifndef PresentationAvailabilityCallbacks_h
 #define PresentationAvailabilityCallbacks_h
 
+#include "modules/presentation/PresentationPromiseProperty.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebCallbacks.h"
@@ -12,7 +13,6 @@
 
 namespace blink {
 
-class ScriptPromiseResolver;
 struct WebPresentationError;
 
 // PresentationAvailabilityCallback extends WebCallbacks to resolve the
@@ -21,14 +21,15 @@ struct WebPresentationError;
 class PresentationAvailabilityCallbacks final
     : public WebCallbacks<bool, const WebPresentationError&> {
  public:
-  PresentationAvailabilityCallbacks(ScriptPromiseResolver*, const KURL&);
+  PresentationAvailabilityCallbacks(PresentationAvailabilityProperty*,
+                                    const KURL&);
   ~PresentationAvailabilityCallbacks() override;
 
   void onSuccess(bool value) override;
   void onError(const WebPresentationError&) override;
 
  private:
-  Persistent<ScriptPromiseResolver> m_resolver;
+  Persistent<PresentationAvailabilityProperty> m_resolver;
   const KURL m_url;
 
   WTF_MAKE_NONCOPYABLE(PresentationAvailabilityCallbacks);

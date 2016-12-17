@@ -6,9 +6,11 @@
 
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "core/dom/DOMException.h"
 #include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
 #include "core/testing/DummyPageHolder.h"
+#include "modules/presentation/PresentationRequest.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/weborigin/KURL.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,8 +22,10 @@ namespace {
 TEST(PresentationAvailabilityTest, NoPageVisibilityChangeAfterDetach) {
   V8TestingScope scope;
   const KURL url = URLTestHelpers::toKURL("https://example.com");
-  Persistent<ScriptPromiseResolver> resolver =
-      ScriptPromiseResolver::create(scope.getScriptState());
+  Persistent<PresentationAvailabilityProperty> resolver =
+      new PresentationAvailabilityProperty(
+          scope.getExecutionContext(), nullptr,
+          PresentationAvailabilityProperty::Ready);
   Persistent<PresentationAvailability> availability =
       PresentationAvailability::take(resolver, url, false);
 

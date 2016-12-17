@@ -8,12 +8,13 @@
 #include "core/dom/DOMException.h"
 #include "modules/presentation/PresentationAvailability.h"
 #include "modules/presentation/PresentationError.h"
+#include "modules/presentation/PresentationRequest.h"
 #include "public/platform/modules/presentation/WebPresentationError.h"
 
 namespace blink {
 
 PresentationAvailabilityCallbacks::PresentationAvailabilityCallbacks(
-    ScriptPromiseResolver* resolver,
+    PresentationAvailabilityProperty* resolver,
     const KURL& url)
     : m_resolver(resolver), m_url(url) {
   ASSERT(m_resolver);
@@ -34,7 +35,7 @@ void PresentationAvailabilityCallbacks::onError(
   if (!m_resolver->getExecutionContext() ||
       m_resolver->getExecutionContext()->isContextDestroyed())
     return;
-  m_resolver->reject(PresentationError::take(m_resolver.get(), error));
+  m_resolver->reject(PresentationError::take(error));
 }
 
 }  // namespace blink

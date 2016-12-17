@@ -28,6 +28,7 @@ blink_modules_sources("presentation") {
     "PresentationController.h",
     "PresentationError.cpp",
     "PresentationError.h",
+    "PresentationPromiseProperty.h",
     "PresentationReceiver.cpp",
     "PresentationReceiver.h",
     "PresentationRequest.cpp",

@@ -23,6 +23,13 @@ test(function() {
   assert_not_equals(navigator.presentation.defaultRequest.onconnectionavailable, undefined);
 }, "Test that navigator.presentation.defaultRequest.onconnectionavailable isn't reset after gc()");
 
+test(function() {
+  var request = new PresentationRequest("http://example.com");
+  var promise_1 = request.getAvailability();
+  var promise_2 = request.getAvailability();
+  assert_true(promise_1 === promise_2);
+}, "Test that the PresentationRequest.getAvailability() returns same promise object.");
+
 </script>
 </body>
 </html>

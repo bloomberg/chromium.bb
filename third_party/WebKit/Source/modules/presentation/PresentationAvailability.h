@@ -10,6 +10,7 @@
 #include "core/events/EventTarget.h"
 #include "core/page/PageVisibilityObserver.h"
 #include "modules/ModulesExport.h"
+#include "modules/presentation/PresentationPromiseProperty.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/modules/presentation/WebPresentationAvailabilityObserver.h"
@@ -17,7 +18,6 @@
 namespace blink {
 
 class ExecutionContext;
-class ScriptPromiseResolver;
 
 // Expose whether there is a presentation display available for |url|. The
 // object will be initialized with a default value passed via ::take() and will
@@ -33,7 +33,7 @@ class MODULES_EXPORT PresentationAvailability final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PresentationAvailability* take(ScriptPromiseResolver*,
+  static PresentationAvailability* take(PresentationAvailabilityProperty*,
                                         const KURL&,
                                         bool);
   ~PresentationAvailability() override;

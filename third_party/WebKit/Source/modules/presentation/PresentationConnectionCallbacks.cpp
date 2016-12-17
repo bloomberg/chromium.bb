@@ -42,7 +42,7 @@ void PresentationConnectionCallbacks::onError(
   if (!m_resolver->getExecutionContext() ||
       m_resolver->getExecutionContext()->isContextDestroyed())
     return;
-  m_resolver->reject(PresentationError::take(m_resolver.get(), error));
+  m_resolver->reject(PresentationError::take(error));
 }
 
 }  // namespace blink
