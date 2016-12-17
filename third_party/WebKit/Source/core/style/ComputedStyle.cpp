@@ -1045,7 +1045,11 @@ void ComputedStyle::updatePropertySpecificDifferences(
     diff.setZIndexChanged();
 
   if (m_rareNonInheritedData.get() != other.m_rareNonInheritedData.get()) {
-    if (!transformDataEquivalent(other))
+    if (!transformDataEquivalent(other) ||
+        m_rareNonInheritedData->m_perspective !=
+            other.m_rareNonInheritedData->m_perspective ||
+        m_rareNonInheritedData->m_perspectiveOrigin !=
+            other.m_rareNonInheritedData->m_perspectiveOrigin)
       diff.setTransformChanged();
 
     if (m_rareNonInheritedData->opacity !=

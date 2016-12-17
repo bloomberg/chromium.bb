@@ -307,8 +307,15 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameScrollingTraditional) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, Perspective) {
-  loadTestData("perspective.html");
-
+  setBodyInnerHTML(
+      "<style>"
+      "  #perspective { position: absolute; left: 50px; top: 100px;"
+      "    width: 400px; height: 300px; perspective: 100px }"
+      "  #inner { transform: translateZ(0); width: 100px; height: 200px; }"
+      "</style>"
+      "<div id='perspective'>"
+      "  <div id='inner'></div>"
+      "</div>");
   Element* perspective = document().getElementById("perspective");
   const ObjectPaintProperties* perspectiveProperties =
       perspective->layoutObject()->paintProperties();
@@ -332,6 +339,24 @@ TEST_P(PaintPropertyTreeBuilderTest, Perspective) {
             innerProperties->paintOffsetTranslation()->parent());
   CHECK_EXACT_VISUAL_RECT(LayoutRect(50, 100, 100, 200), inner->layoutObject(),
                           document().view()->layoutView());
+
+  perspective->setAttribute(HTMLNames::styleAttr, "perspective: 200px");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(TransformationMatrix().applyPerspective(200),
+            perspectiveProperties->perspective()->matrix());
+  EXPECT_EQ(FloatPoint3D(250, 250, 0),
+            perspectiveProperties->perspective()->origin());
+  EXPECT_EQ(framePreTranslation(),
+            perspectiveProperties->perspective()->parent());
+
+  perspective->setAttribute(HTMLNames::styleAttr, "perspective-origin: 5% 20%");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(TransformationMatrix().applyPerspective(100),
+            perspectiveProperties->perspective()->matrix());
+  EXPECT_EQ(FloatPoint3D(70, 160, 0),
+            perspectiveProperties->perspective()->origin());
+  EXPECT_EQ(framePreTranslation(),
+            perspectiveProperties->perspective()->parent());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, Transform) {

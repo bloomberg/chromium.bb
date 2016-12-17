@@ -241,7 +241,7 @@ void LayoutBoxModelObject::styleWillChange(StyleDifference diff,
 DISABLE_CFI_PERF
 void LayoutBoxModelObject::styleDidChange(StyleDifference diff,
                                           const ComputedStyle* oldStyle) {
-  bool hadTransform = hasTransformRelatedProperty();
+  bool hadTransformRelatedProperty = hasTransformRelatedProperty();
   bool hadLayer = hasLayer();
   bool layerWasSelfPainting = hadLayer && layer()->isSelfPaintingLayer();
   bool wasFloatingBeforeStyleChanged =
@@ -295,9 +295,10 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff,
     layer()->removeOnlyThisLayerAfterStyleChange();
     if (wasFloatingBeforeStyleChanged && isFloating())
       setChildNeedsLayout();
-    if (hadTransform)
+    if (hadTransformRelatedProperty) {
       setNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
           LayoutInvalidationReason::StyleChange);
+    }
     if (!needsLayout()) {
       // FIXME: We should call a specialized version of this function.
       parentLayer->updateLayerPositionsAfterLayout();
@@ -306,7 +307,9 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff,
 
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
     // hasLayer status will affect whether to create localBorderBoxProperties.
-    if (hadLayer != hasLayer()) {
+    // hasTransformRelatedProperty will affect whether to create transform node.
+    if (hadLayer != hasLayer() ||
+        hadTransformRelatedProperty != hasTransformRelatedProperty()) {
       setNeedsPaintPropertyUpdate();
     } else if (oldStyle && oldStyle->position() != styleRef().position() &&
                (oldStyle->position() == FixedPosition ||
