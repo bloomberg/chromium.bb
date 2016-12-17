@@ -10,6 +10,7 @@
 #include "core/loader/EmptyClients.h"
 #include "core/paint/StubChromeClientForSPv2.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
@@ -89,10 +90,13 @@ class StubFrameLoaderClient : public EmptyFrameLoaderClient {
   }
 };
 
-class VideoPainterTestForSPv2 : public ::testing::Test {
+class VideoPainterTestForSPv2 : public ::testing::Test,
+                                private ScopedSlimmingPaintV2ForTest {
+ public:
+  VideoPainterTestForSPv2() : ScopedSlimmingPaintV2ForTest(true) {}
+
  protected:
   void SetUp() override {
-    RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
     m_chromeClient = new StubChromeClientForSPv2();
     m_frameLoaderClient = new StubFrameLoaderClient;
     Page::PageClients clients;
@@ -108,15 +112,12 @@ class VideoPainterTestForSPv2 : public ::testing::Test {
     document().setURL(KURL(KURL(), "https://example.com/"));
   }
 
-  void TearDown() override { m_featuresBackup.restore(); }
-
   Document& document() { return m_pageHolder->document(); }
   bool hasLayerAttached(const WebLayer& layer) {
     return m_chromeClient->hasLayer(layer);
   }
 
  private:
-  RuntimeEnabledFeatures::Backup m_featuresBackup;
   Persistent<StubChromeClientForSPv2> m_chromeClient;
   Persistent<StubFrameLoaderClient> m_frameLoaderClient;
   std::unique_ptr<DummyPageHolder> m_pageHolder;

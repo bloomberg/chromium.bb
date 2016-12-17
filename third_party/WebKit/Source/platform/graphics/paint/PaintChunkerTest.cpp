@@ -4,8 +4,8 @@
 
 #include "platform/graphics/paint/PaintChunker.h"
 
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/testing/PaintPropertyTestHelpers.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -16,13 +16,10 @@ using ::testing::ElementsAre;
 namespace blink {
 namespace {
 
-class PaintChunkerTest : public ::testing::Test {
- protected:
-  void SetUp() override {
-    RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
-  }
-
-  void TearDown() override { m_featuresBackup.restore(); }
+class PaintChunkerTest : public ::testing::Test,
+                         private ScopedSlimmingPaintV2ForTest {
+ public:
+  PaintChunkerTest() : ScopedSlimmingPaintV2ForTest(true) {}
 
  protected:
   class TestDisplayItemClient : public DisplayItemClient {
@@ -30,9 +27,6 @@ class PaintChunkerTest : public ::testing::Test {
     LayoutRect visualRect() const final { return LayoutRect(); }
   };
   TestDisplayItemClient m_client;
-
- private:
-  RuntimeEnabledFeatures::Backup m_featuresBackup;
 };
 
 class TestDisplayItem : public DisplayItem {

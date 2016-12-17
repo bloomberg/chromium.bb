@@ -15,12 +15,12 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
 #include "platform/testing/PaintPropertyTestHelpers.h"
 #include "platform/testing/PictureMatchers.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/TestPaintArtifact.h"
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -59,15 +59,16 @@ class WebLayerTreeViewWithCompositorFrameSink
   }
 };
 
-class PaintArtifactCompositorTestWithPropertyTrees : public ::testing::Test {
+class PaintArtifactCompositorTestWithPropertyTrees
+    : public ::testing::Test,
+      private ScopedSlimmingPaintV2ForTest {
  protected:
   PaintArtifactCompositorTestWithPropertyTrees()
-      : m_taskRunner(new base::TestSimpleTaskRunner),
+      : ScopedSlimmingPaintV2ForTest(true),
+        m_taskRunner(new base::TestSimpleTaskRunner),
         m_taskRunnerHandle(m_taskRunner) {}
 
   void SetUp() override {
-    RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
-
     // Delay constructing the compositor until after the feature is set.
     m_paintArtifactCompositor = PaintArtifactCompositor::create();
     m_paintArtifactCompositor->enableExtraDataForTesting();
@@ -80,8 +81,6 @@ class PaintArtifactCompositorTestWithPropertyTrees : public ::testing::Test {
         WTF::makeUnique<WebLayerTreeViewWithCompositorFrameSink>(settings);
     m_webLayerTreeView->setRootLayer(*m_paintArtifactCompositor->getWebLayer());
   }
-
-  void TearDown() override { m_featuresBackup.restore(); }
 
   const cc::PropertyTrees& propertyTrees() {
     return *m_webLayerTreeView->layerTreeHost()
@@ -112,7 +111,6 @@ class PaintArtifactCompositorTestWithPropertyTrees : public ::testing::Test {
   }
 
  private:
-  RuntimeEnabledFeatures::Backup m_featuresBackup;
   std::unique_ptr<PaintArtifactCompositor> m_paintArtifactCompositor;
   scoped_refptr<base::TestSimpleTaskRunner> m_taskRunner;
   base::ThreadTaskRunnerHandle m_taskRunnerHandle;
