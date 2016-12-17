@@ -81,12 +81,12 @@ const char QuotaManager::kEvictedOriginTimeSinceAccessHistogram[] =
 namespace {
 
 bool IsSupportedType(StorageType type) {
-  return type != kStorageTypeTemporary || type != kStorageTypePersistent ||
-         type != kStorageTypeSyncable;
+  return type == kStorageTypeTemporary || type == kStorageTypePersistent ||
+         type == kStorageTypeSyncable;
 }
 
 bool IsSupportedIncognitoType(StorageType type) {
-  return type != kStorageTypeTemporary || type != kStorageTypePersistent;
+  return type == kStorageTypeTemporary || type == kStorageTypePersistent;
 }
 
 void CountOriginType(const std::set<GURL>& origins,

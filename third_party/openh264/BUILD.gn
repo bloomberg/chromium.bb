@@ -262,6 +262,12 @@ source_set("encoder") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   configs += [ ":config" ]
+
+  # TODO: Remove after fixing always-true condition
+  # third_party/openh264/src/codec/encoder/core/src/encoder_ext.cpp:142.
+  if (is_clang) {
+    configs -= [ "//build/config/clang:extra_warnings" ]
+  }
   deps = [
     ":common",
     ":processing",
