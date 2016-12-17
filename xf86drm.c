@@ -2838,7 +2838,7 @@ out_close_dir:
     char buf[PATH_MAX + 1];
     const char *dev_name;
     unsigned int maj, min;
-    int n;
+    int n, base;
 
     if (fstat(fd, &sbuf))
         return NULL;
@@ -2863,7 +2863,11 @@ out_close_dir:
         return NULL;
     };
 
-    n = snprintf(buf, sizeof(buf), dev_name, DRM_DIR_NAME, min);
+    base = drmGetMinorBase(type);
+    if (base < 0)
+        return NULL;
+
+    n = snprintf(buf, sizeof(buf), dev_name, DRM_DIR_NAME, min - base);
     if (n == -1 || n >= sizeof(buf))
         return NULL;
 
@@ -3262,7 +3266,7 @@ int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
     char             node[PATH_MAX + 1];
     const char      *dev_name;
     int              node_type, subsystem_type;
-    int              maj, min, n, ret;
+    int              maj, min, n, ret, base;
 
     if (fd == -1 || device == NULL)
         return -EINVAL;
@@ -3294,7 +3298,11 @@ int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
         return -EINVAL;
     };
 
-    n = snprintf(node, PATH_MAX, dev_name, DRM_DIR_NAME, min);
+    base = drmGetMinorBase(node_type);
+    if (base < 0)
+        return -EINVAL;
+
+    n = snprintf(node, PATH_MAX, dev_name, DRM_DIR_NAME, min - base);
     if (n == -1 || n >= PATH_MAX)
       return -errno;
     if (stat(node, &sbuf))
