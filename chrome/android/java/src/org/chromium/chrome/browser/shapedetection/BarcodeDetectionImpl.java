@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.shapedetection;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.SparseArray;
 
@@ -18,6 +19,7 @@ import org.chromium.blink.mojom.BarcodeDetection;
 import org.chromium.blink.mojom.BarcodeDetectionResult;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
+import org.chromium.gfx.mojom.PointF;
 import org.chromium.gfx.mojom.RectF;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.mojo.system.SharedBufferHandle;
@@ -35,7 +37,6 @@ public class BarcodeDetectionImpl implements BarcodeDetection {
     private BarcodeDetector mBarcodeDetector;
 
     public BarcodeDetectionImpl(Context context) {
-        Log.d(TAG, "BarcodeDetectionImpl ctor()");
         mContext = context;
         mBarcodeDetector = new BarcodeDetector.Builder(mContext).build();
     }
@@ -101,6 +102,13 @@ public class BarcodeDetectionImpl implements BarcodeDetection {
             barcodeArray[i].boundingBox.y = rect.top;
             barcodeArray[i].boundingBox.width = rect.width();
             barcodeArray[i].boundingBox.height = rect.height();
+            final Point[] corners = barcode.cornerPoints;
+            barcodeArray[i].cornerPoints = new PointF[corners.length];
+            for (int j = 0; j < corners.length; j++) {
+                barcodeArray[i].cornerPoints[j] = new PointF();
+                barcodeArray[i].cornerPoints[j].x = corners[j].x;
+                barcodeArray[i].cornerPoints[j].y = corners[j].y;
+            }
         }
         callback.call(barcodeArray);
     }

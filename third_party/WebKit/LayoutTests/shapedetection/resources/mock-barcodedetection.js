@@ -29,11 +29,23 @@ let mockBarcodeDetectionReady = define(
         results: [
           {
             raw_value : "cats",
-            bounding_box: { x : 1.0, y: 1.0, width: 100.0, height: 100.0 },
+            bounding_box: { x: 1.0, y: 1.0, width: 100.0, height: 100.0 },
+            corner_points: [
+              { x: 1.0, y: 1.0 },
+              { x: 101.0, y: 1.0 },
+              { x: 101.0, y: 101.0 },
+              { x: 1.0, y: 101.0 }
+            ],
           },
           {
             raw_value : "dogs",
-            bounding_box: { x : 2.0, y: 2.0, width: 50.0, height: 50.0 },
+            bounding_box: { x: 2.0, y: 2.0, width: 50.0, height: 50.0 },
+            corner_points: [
+              { x: 2.0, y: 2.0 },
+              { x: 52.0, y: 2.0 },
+              { x: 52.0, y: 52.0 },
+              { x: 2.0, y: 52.0 }
+            ],
           },
         ],
       });

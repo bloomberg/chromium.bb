@@ -13,6 +13,7 @@ struct BarcodeDetectionResult {
   // https://github.com/zxing/zxing/wiki/Barcode-Contents).
   string raw_value;
   gfx.mojom.RectF bounding_box;
+  array<gfx.mojom.PointF> corner_points;
 };
 
 interface BarcodeDetection {

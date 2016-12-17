@@ -9,6 +9,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/html/canvas/CanvasImageSource.h"
+#include "modules/imagecapture/Point2D.h"
 #include "modules/shapedetection/DetectedBarcode.h"
 #include "public/platform/InterfaceProvider.h"
 
@@ -53,11 +54,19 @@ void BarcodeDetector::onDetectBarcodes(
 
   HeapVector<Member<DetectedBarcode>> detectedBarcodes;
   for (const auto& barcode : barcodeDetectionResults) {
+    HeapVector<Point2D> cornerPoints;
+    for (const auto& corner_point : barcode->corner_points) {
+      Point2D point;
+      point.setX(corner_point->x);
+      point.setY(corner_point->y);
+      cornerPoints.append(point);
+    }
     detectedBarcodes.append(DetectedBarcode::create(
         barcode->raw_value,
         DOMRect::create(barcode->bounding_box->x, barcode->bounding_box->y,
                         barcode->bounding_box->width,
-                        barcode->bounding_box->height)));
+                        barcode->bounding_box->height),
+        cornerPoints));
   }
 
   resolver->resolve(detectedBarcodes);

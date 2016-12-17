@@ -1234,6 +1234,7 @@ interface DelayNode : AudioNode
 interface DetectedBarcode
     attribute @@toStringTag
     getter boundingBox
+    getter cornerPoints
     getter rawValue
     method constructor
 interface DetectedFace
