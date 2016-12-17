@@ -12,10 +12,6 @@
 #include "device/geolocation/wifi_data_provider.h"
 #include "device/geolocation/wifi_polling_policy.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace device {
 
 class DEVICE_GEOLOCATION_EXPORT WifiDataProviderChromeOs
@@ -32,9 +28,8 @@ class DEVICE_GEOLOCATION_EXPORT WifiDataProviderChromeOs
   friend class GeolocationChromeOsWifiDataProviderTest;
   ~WifiDataProviderChromeOs() override;
 
-  // UI thread
-  void DoWifiScanTaskOnUIThread();  // The polling task
-  void DoStartTaskOnUIThread();
+  // NetworkHandler thread
+  void DoWifiScanTaskOnNetworkHandlerThread();
 
   // Client thread
   void DidWifiScanTaskNoResults();
@@ -63,9 +58,6 @@ class DEVICE_GEOLOCATION_EXPORT WifiDataProviderChromeOs
 
   // Whether we've successfully completed a scan for WiFi data. (client thread)
   bool is_first_scan_complete_;
-
-  // Used to PostTask()s from the geolocation thread to creation thread.
-  const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderChromeOs);
 };
