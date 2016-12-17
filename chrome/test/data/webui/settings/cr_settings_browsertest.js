@@ -939,7 +939,8 @@ TEST_F('CrSettingsRouteDynamicParametersTest', 'MAYBE_All', function() {
 
 // Times out on Windows Tests (dbg). See https://crbug.com/651296.
 // Times out / crashes on chromium.linux/Linux Tests (dbg) crbug.com/667882
-GEN('#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)');
+GEN('#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)' +
+    ' || defined(OS_MACOSX)');
 GEN('#define MAYBE_MainPage_All DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_MainPage_All All');
