@@ -377,6 +377,11 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         });
     }
 
+    /** Returns the focused view in the card editor view. */
+    protected View getCardEditorFocusedView() {
+        return mUI.getCardEditorView().getCurrentFocus();
+    }
+
     /**
      *  Clicks on the label corresponding to the shipping address suggestion at the specified
      *  |suggestionIndex|.
