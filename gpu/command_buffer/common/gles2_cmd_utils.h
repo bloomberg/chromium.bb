@@ -140,6 +140,7 @@ class GLES2_UTILS_EXPORT GLES2Util {
   // function is called. If 0 is returned the id is invalid.
   int GLGetNumValuesReturned(int id) const;
 
+  static int ElementsPerGroup(int format, int type);
   // Computes the size of a single group of elements from a format and type pair
   static uint32_t ComputeImageGroupSize(int format, int type);
 

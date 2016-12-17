@@ -890,6 +890,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
       const void* data,
       ContextState::Dimension dimension);
 
+  bool ValidateCopyTexFormatHelper(GLenum internal_format,
+                                   GLenum read_format,
+                                   GLenum read_type,
+                                   std::string* output_error_msg);
   // Validate if |format| is valid for CopyTex{Sub}Image functions.
   // If not, generate a GL error and return false.
   bool ValidateCopyTexFormat(const char* func_name, GLenum internal_format,
@@ -2009,7 +2013,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   bool ValidateCopyTextureCHROMIUMTextures(const char* function_name,
                                            TextureRef* source_texture_ref,
                                            TextureRef* dest_texture_ref);
-  bool ValidateCopyTextureCHROMIUMInternalFormats(
+  CopyTextureMethod ValidateCopyTextureCHROMIUMInternalFormats(
       const char* function_name,
       TextureRef* source_texture_ref,
       GLenum dest_internal_format);
@@ -13874,12 +13878,14 @@ error::Error GLES2DecoderImpl::DoCompressedTexSubImage(
   return error::kNoError;
 }
 
-bool GLES2DecoderImpl::ValidateCopyTexFormat(
-    const char* func_name, GLenum internal_format,
-    GLenum read_format, GLenum read_type) {
+bool GLES2DecoderImpl::ValidateCopyTexFormatHelper(
+    GLenum internal_format,
+    GLenum read_format,
+    GLenum read_type,
+    std::string* output_error_msg) {
+  DCHECK(output_error_msg);
   if (read_format == 0) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, func_name, "no valid color image");
+    *output_error_msg = std::string("no valid color image");
     return false;
   }
   // Check we have compatible formats.
@@ -13887,8 +13893,7 @@ bool GLES2DecoderImpl::ValidateCopyTexFormat(
   uint32_t channels_needed = GLES2Util::GetChannelsForFormat(internal_format);
   if (!channels_needed ||
       (channels_needed & channels_exist) != channels_needed) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, func_name, "incompatible format");
+    *output_error_msg = std::string("incompatible format");
     return false;
   }
   if (feature_info_->IsWebGL2OrES3Context()) {
@@ -13903,15 +13908,13 @@ bool GLES2DecoderImpl::ValidateCopyTexFormat(
          GLES2Util::IsSignedIntegerFormat(read_format)) ||
         (GLES2Util::IsUnsignedIntegerFormat(internal_format) !=
          GLES2Util::IsUnsignedIntegerFormat(read_format))) {
-      LOCAL_SET_GL_ERROR(
-          GL_INVALID_OPERATION, func_name, "incompatible format");
+      *output_error_msg = std::string("incompatible format");
       return false;
     }
   }
   if ((channels_needed & (GLES2Util::kDepth | GLES2Util::kStencil)) != 0) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        func_name, "can not be used with depth or stencil textures");
+    *output_error_msg =
+        std::string("can not be used with depth or stencil textures");
     return false;
   }
   if (feature_info_->IsWebGL2OrES3Context()) {
@@ -13928,12 +13931,24 @@ bool GLES2DecoderImpl::ValidateCopyTexFormat(
           (dg > 0 && sg != dg) ||
           (db > 0 && sb != db) ||
           (da > 0 && sa != da)) {
-        LOCAL_SET_GL_ERROR(
-            GL_INVALID_OPERATION,
-            func_name, "incompatible color component sizes");
+        *output_error_msg = std::string("incompatible color component sizes");
         return false;
       }
     }
+  }
+  return true;
+}
+
+bool GLES2DecoderImpl::ValidateCopyTexFormat(const char* func_name,
+                                             GLenum internal_format,
+                                             GLenum read_format,
+                                             GLenum read_type) {
+  std::string output_error_msg;
+  if (!ValidateCopyTexFormatHelper(internal_format, read_format, read_type,
+                                   &output_error_msg)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+                       output_error_msg.c_str());
+    return false;
   }
   return true;
 }
@@ -16140,7 +16155,7 @@ bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUMTextures(
   return true;
 }
 
-bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUMInternalFormats(
+CopyTextureMethod GLES2DecoderImpl::ValidateCopyTextureCHROMIUMInternalFormats(
     const char* function_name,
     TextureRef* source_texture_ref,
     GLenum dest_internal_format) {
@@ -16150,14 +16165,59 @@ bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUMInternalFormats(
   source_texture->GetLevelType(source_texture->target(), 0, &source_type,
                                &source_internal_format);
 
-  // The destination format should be GL_RGB, or GL_RGBA. GL_ALPHA,
-  // GL_LUMINANCE, and GL_LUMINANCE_ALPHA are not supported because they are not
-  // renderable on some platforms.
-  bool valid_dest_format =
-      dest_internal_format == GL_RGB || dest_internal_format == GL_RGBA ||
-      dest_internal_format == GL_RGB8 || dest_internal_format == GL_RGBA8 ||
-      dest_internal_format == GL_BGRA_EXT ||
-      dest_internal_format == GL_BGRA8_EXT;
+  bool valid_dest_format = false;
+  // TODO(qiankun.miao@intel.com): ALPHA, LUMINANCE and LUMINANCE_ALPHA formats
+  // are not supported on GL core profile. See crbug.com/577144. Enable the
+  // workaround for glCopyTexImage and glCopyTexSubImage in
+  // gles2_cmd_copy_tex_image.cc for glCopyTextureCHROMIUM implementation.
+  switch (dest_internal_format) {
+    case GL_RGB:
+    case GL_RGBA:
+    case GL_RGB8:
+    case GL_RGBA8:
+      valid_dest_format = true;
+      break;
+    case GL_BGRA_EXT:
+    case GL_BGRA8_EXT:
+      valid_dest_format =
+          feature_info_->feature_flags().ext_texture_format_bgra8888;
+      break;
+    case GL_SRGB_EXT:
+    case GL_SRGB_ALPHA_EXT:
+      valid_dest_format = feature_info_->feature_flags().ext_srgb;
+      break;
+    case GL_R8:
+    case GL_R8UI:
+    case GL_RG8:
+    case GL_RG8UI:
+    case GL_SRGB8:
+    case GL_RGB565:
+    case GL_RGB8UI:
+    case GL_SRGB8_ALPHA8:
+    case GL_RGB5_A1:
+    case GL_RGBA4:
+    case GL_RGBA8UI:
+      valid_dest_format = feature_info_->IsWebGL2OrES3Context();
+      break;
+    case GL_RGB9_E5:
+      valid_dest_format = !gl_version_info().is_es;
+      break;
+    case GL_R16F:
+    case GL_R32F:
+    case GL_RG16F:
+    case GL_RG32F:
+    case GL_RGB16F:
+    case GL_RGB32F:
+    case GL_RGBA16F:
+    case GL_RGBA32F:
+    case GL_R11F_G11F_B10F:
+      valid_dest_format = feature_info_->ext_color_buffer_float_available();
+      break;
+    default:
+      valid_dest_format = false;
+      break;
+  }
+
   bool valid_source_format =
       source_internal_format == GL_RED || source_internal_format == GL_ALPHA ||
       source_internal_format == GL_RGB || source_internal_format == GL_RGBA ||
@@ -16173,16 +16233,38 @@ bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUMInternalFormats(
         GLES2Util::GetStringEnum(source_internal_format);
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
                        msg.c_str());
-    return false;
+    return NOT_COPYABLE;
   }
   if (!valid_dest_format) {
     std::string msg = "invalid dest internal format " +
         GLES2Util::GetStringEnum(dest_internal_format);
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
                        msg.c_str());
-    return false;
+    return NOT_COPYABLE;
   }
-  return true;
+
+  bool source_format_color_renderable =
+      Texture::ColorRenderable(GetFeatureInfo(), source_internal_format, false);
+  bool dest_format_color_renderable =
+      Texture::ColorRenderable(GetFeatureInfo(), dest_internal_format, false);
+  std::string output_error_msg;
+
+  // CopyTexImage* should not allow internalformat of GL_BGRA_EXT and
+  // GL_BGRA8_EXT. crbug.com/663086.
+  bool copy_tex_image_format_valid =
+      source_internal_format != GL_BGRA_EXT &&
+      dest_internal_format != GL_BGRA_EXT &&
+      source_internal_format != GL_BGRA8_EXT &&
+      dest_internal_format != GL_BGRA8_EXT &&
+      ValidateCopyTexFormatHelper(dest_internal_format, source_internal_format,
+                                  source_type, &output_error_msg);
+  if (source_format_color_renderable && copy_tex_image_format_valid)
+    return DIRECT_COPY;
+
+  if (dest_format_color_renderable)
+    return DIRECT_DRAW;
+
+  return DRAW_AND_COPY;
 }
 
 bool GLES2DecoderImpl::ValidateCompressedCopyTextureCHROMIUM(
@@ -16246,18 +16328,8 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   TextureRef* source_texture_ref = GetTexture(source_id);
   TextureRef* dest_texture_ref = GetTexture(dest_id);
 
-  if (!texture_manager()->ValidateTextureParameters(
-          GetErrorState(), kFunctionName, true, internal_format, dest_type,
-          internal_format, 0))
-    return;
-
   if (!ValidateCopyTextureCHROMIUMTextures(kFunctionName, source_texture_ref,
                                            dest_texture_ref)) {
-    return;
-  }
-
-  if (!ValidateCopyTextureCHROMIUMInternalFormats(
-          kFunctionName, source_texture_ref, internal_format)) {
     return;
   }
 
@@ -16265,6 +16337,34 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
   Texture* dest_texture = dest_texture_ref->texture();
   GLenum source_target = source_texture->target();
   GLenum dest_target = dest_texture->target();
+
+  GLenum source_type = 0;
+  GLenum source_internal_format = 0;
+  source_texture->GetLevelType(source_target, 0, &source_type,
+                               &source_internal_format);
+  GLenum format =
+      TextureManager::ExtractFormatFromStorageFormat(internal_format);
+  if (!texture_manager()->ValidateTextureParameters(
+          GetErrorState(), kFunctionName, true, format, dest_type,
+          internal_format, 0)) {
+    return;
+  }
+
+  CopyTextureMethod method = ValidateCopyTextureCHROMIUMInternalFormats(
+      kFunctionName, source_texture_ref, internal_format);
+  // INVALID_OPERATION is already generated by
+  // ValidateCopyTextureCHROMIUMInternalFormats.
+  if (NOT_COPYABLE == method) {
+    return;
+  }
+
+  if (feature_info_->feature_flags().desktop_srgb_support) {
+    bool enable_framebuffer_srgb =
+        GetColorEncodingFromInternalFormat(source_internal_format) == GL_SRGB ||
+        GetColorEncodingFromInternalFormat(internal_format) == GL_SRGB;
+    state_.EnableDisableFramebufferSRGB(enable_framebuffer_srgb);
+  }
+
   int source_width = 0;
   int source_height = 0;
   gl::GLImage* image =
@@ -16295,11 +16395,6 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
       return;
     }
   }
-
-  GLenum source_type = 0;
-  GLenum source_internal_format = 0;
-  source_texture->GetLevelType(source_target, 0, &source_type,
-                               &source_internal_format);
 
   if (dest_texture->IsImmutable()) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
@@ -16337,26 +16432,24 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     // Ensure that the glTexImage2D succeeds.
     LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(kFunctionName);
     glBindTexture(dest_target, dest_texture->service_id());
-    glTexImage2D(
-        dest_target, 0, TextureManager::AdjustTexInternalFormat(
-                            feature_info_.get(), internal_format),
-        source_width, source_height, 0,
-        TextureManager::AdjustTexFormat(feature_info_.get(), internal_format),
-        dest_type, NULL);
+    glTexImage2D(dest_target, 0, TextureManager::AdjustTexInternalFormat(
+                                     feature_info_.get(), internal_format),
+                 source_width, source_height, 0,
+                 TextureManager::AdjustTexFormat(feature_info_.get(), format),
+                 dest_type, NULL);
     GLenum error = LOCAL_PEEK_GL_ERROR(kFunctionName);
     if (error != GL_NO_ERROR) {
       RestoreCurrentTextureBindings(&state_, dest_target);
       return;
     }
 
-    texture_manager()->SetLevelInfo(
-        dest_texture_ref, dest_target, 0, internal_format, source_width,
-        source_height, 1, 0, internal_format, dest_type,
-        gfx::Rect(source_width, source_height));
+    texture_manager()->SetLevelInfo(dest_texture_ref, dest_target, 0,
+                                    internal_format, source_width,
+                                    source_height, 1, 0, format, dest_type,
+                                    gfx::Rect(source_width, source_height));
     dest_texture->ApplyFormatWorkarounds(feature_info_.get());
   } else {
-    texture_manager()->SetLevelCleared(dest_texture_ref, dest_target, 0,
-                                       true);
+    texture_manager()->SetLevelCleared(dest_texture_ref, dest_target, 0, true);
   }
 
   // Try using GLImage::CopyTexImage when possible.
@@ -16379,18 +16472,21 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
       GLfloat transform_matrix[16];
       image->GetTextureMatrix(transform_matrix);
       copy_texture_CHROMIUM_->DoCopyTextureWithTransform(
-          this, source_target, source_texture->service_id(), dest_target,
-          dest_texture->service_id(), source_width, source_height,
+          this, source_target, source_texture->service_id(),
+          source_internal_format, dest_target, dest_texture->service_id(),
+          internal_format, source_width, source_height,
           unpack_flip_y == GL_TRUE, unpack_premultiply_alpha == GL_TRUE,
           unpack_unmultiply_alpha == GL_TRUE, transform_matrix);
       return;
     }
   }
+
   copy_texture_CHROMIUM_->DoCopyTexture(
       this, source_target, source_texture->service_id(), source_internal_format,
       dest_target, dest_texture->service_id(), internal_format, source_width,
       source_height, unpack_flip_y == GL_TRUE,
-      unpack_premultiply_alpha == GL_TRUE, unpack_unmultiply_alpha == GL_TRUE);
+      unpack_premultiply_alpha == GL_TRUE, unpack_unmultiply_alpha == GL_TRUE,
+      method);
 }
 
 void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
@@ -16492,9 +16588,19 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
     return;
   }
 
-  if (!ValidateCopyTextureCHROMIUMInternalFormats(
-          kFunctionName, source_texture_ref, dest_internal_format)) {
+  CopyTextureMethod method = ValidateCopyTextureCHROMIUMInternalFormats(
+      kFunctionName, source_texture_ref, dest_internal_format);
+  // INVALID_OPERATION is already generated by
+  // ValidateCopyTextureCHROMIUMInternalFormats.
+  if (NOT_COPYABLE == method) {
     return;
+  }
+
+  if (feature_info_->feature_flags().desktop_srgb_support) {
+    bool enable_framebuffer_srgb =
+        GetColorEncodingFromInternalFormat(source_internal_format) == GL_SRGB ||
+        GetColorEncodingFromInternalFormat(dest_internal_format) == GL_SRGB;
+    state_.EnableDisableFramebufferSRGB(enable_framebuffer_srgb);
   }
 
   // Clear the source texture if necessary.
@@ -16575,7 +16681,8 @@ void GLES2DecoderImpl::DoCopySubTextureCHROMIUM(
       dest_target, dest_texture->service_id(), dest_internal_format, xoffset,
       yoffset, x, y, width, height, dest_width, dest_height, source_width,
       source_height, unpack_flip_y == GL_TRUE,
-      unpack_premultiply_alpha == GL_TRUE, unpack_unmultiply_alpha == GL_TRUE);
+      unpack_premultiply_alpha == GL_TRUE, unpack_unmultiply_alpha == GL_TRUE,
+      method);
 }
 
 bool GLES2DecoderImpl::InitializeCopyTexImageBlitter(
@@ -16750,7 +16857,7 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLuint source_id,
       this, source_texture->target(), source_texture->service_id(),
       source_internal_format, dest_texture->target(),
       dest_texture->service_id(), GL_RGBA, source_width, source_height, false,
-      false, false);
+      false, false, DIRECT_DRAW);
 }
 
 void GLES2DecoderImpl::TexStorageImpl(GLenum target,
