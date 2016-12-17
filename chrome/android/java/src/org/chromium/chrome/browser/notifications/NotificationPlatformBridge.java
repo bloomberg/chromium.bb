@@ -15,6 +15,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.service.notification.StatusBarNotification;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -43,6 +44,8 @@ import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -572,6 +575,15 @@ public class NotificationPlatformBridge {
                 makeDefaults(vibrationPattern.length, silent, vibrateEnabled));
         notificationBuilder.setVibrate(makeVibrationPattern(vibrationPattern));
 
+        // The extras bundle is available from API 20 but it's currenlty only used to retrieve
+        // notifications which is only available from 23 (Marshmallow) onwards.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Bundle extras = new Bundle();
+            extras.putString(NotificationConstants.EXTRA_NOTIFICATION_ID, notificationId);
+            extras.putString(NotificationConstants.EXTRA_NOTIFICATION_INFO_PROFILE_ID, profileId);
+            notificationBuilder.setExtras(extras);
+        }
+
         String platformTag = makePlatformTag(notificationId, origin, tag);
         if (webApkPackage.isEmpty()) {
             mNotificationManager.notify(platformTag, PLATFORM_ID, notificationBuilder.build());
@@ -673,6 +685,39 @@ public class NotificationPlatformBridge {
         } else {
             WebApkNotificationClient.cancelNotification(webApkPackage, platformTag, PLATFORM_ID);
         }
+    }
+
+    /**
+     * Returns the notification ids on disply for a given |profileId|.
+     *
+     * @param profileId of the profile to retrieve notifications for.
+     */
+    @CalledByNative
+    private String[] getNotificationsForProfile(String profileId) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return null;
+        }
+
+        if (mNotificationManager.getActiveNotifications() == null) {
+            return null;
+        }
+
+        StatusBarNotification[] displayedNotifications =
+                mNotificationManager.getActiveNotifications();
+        List<String> notifications = new ArrayList<String>();
+        for (StatusBarNotification notification : displayedNotifications) {
+            Bundle extras = notification.getNotification().extras;
+            String notificationId = extras.getString(NotificationConstants.EXTRA_NOTIFICATION_ID);
+            String notificationProfileId =
+                    extras.getString(NotificationConstants.EXTRA_NOTIFICATION_INFO_PROFILE_ID);
+            if (notificationId != null && profileId.equals(notificationProfileId)) {
+                notifications.add(notificationId);
+            }
+        }
+        if (notifications.size() == 0) return null;
+
+        String[] result = new String[notifications.size()];
+        return notifications.toArray(result);
     }
 
     /**

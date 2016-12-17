@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/android/build_info.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/command_line.h"
@@ -315,8 +316,30 @@ bool NotificationPlatformBridgeAndroid::GetDisplayed(
     const std::string& profile_id,
     bool incognito,
     std::set<std::string>* notifications) const {
-  // TODO(miguelg): This can actually be implemented for M+
-  return false;
+  DCHECK(notifications);
+  JNIEnv* env = AttachCurrentThread();
+
+  // Android only supports retrieving existing notifications from M+
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_MARSHMALLOW) {
+    return false;
+  }
+
+  const ScopedJavaLocalRef<jstring> j_profile_id =
+      ConvertUTF8ToJavaString(env, profile_id);
+
+  ScopedJavaLocalRef<jobjectArray> j_notification_ids =
+      Java_NotificationPlatformBridge_getNotificationsForProfile(
+          env, java_object_, j_profile_id);
+  if (j_notification_ids.obj()) {
+    std::vector<std::string> notification_ids;
+    base::android::AppendJavaStringArrayToStringVector(
+        env, j_notification_ids.obj(), &notification_ids);
+    for (const auto& id : notification_ids) {
+      notifications->insert(id);
+    }
+  }
+  return true;
 }
 
 // static
