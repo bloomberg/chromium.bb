@@ -1,20 +1,16 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/runner/host/child_process_host.h"
-
-#include <stdint.h>
+#include "services/service_manager/runner/host/service_process_launcher.h"
 
 #include <utility>
 
 #include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/kill.h"
@@ -25,7 +21,6 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/system/core.h"
-#include "services/service_manager/native_runner_delegate.h"
 #include "services/service_manager/public/cpp/standalone_service/switches.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
@@ -66,15 +61,13 @@ class ScopedDllDirectoryOverride {
 
 namespace service_manager {
 
-ChildProcessHost::ChildProcessHost(base::TaskRunner* launch_process_runner,
-                                   NativeRunnerDelegate* delegate,
-                                   bool start_sandboxed,
-                                   const Identity& target,
-                                   const base::FilePath& service_path)
+ServiceProcessLauncher::ServiceProcessLauncher(
+    base::TaskRunner* launch_process_runner,
+    Delegate* delegate,
+    const base::FilePath& service_path)
     : launch_process_runner_(launch_process_runner),
       delegate_(delegate),
-      start_sandboxed_(start_sandboxed),
-      target_(target),
+      start_sandboxed_(false),
       service_path_(service_path),
       child_token_(mojo::edk::GenerateRandomToken()),
       start_child_process_event_(
@@ -85,16 +78,18 @@ ChildProcessHost::ChildProcessHost(base::TaskRunner* launch_process_runner,
     service_path_ = base::CommandLine::ForCurrentProcess()->GetProgram();
 }
 
-ChildProcessHost::~ChildProcessHost() {
-  DCHECK(!mojo_ipc_channel_)
-      << "Destroying ChildProcessHost before calling Join";
+ServiceProcessLauncher::~ServiceProcessLauncher() {
+  Join();
 }
 
-mojom::ServicePtr ChildProcessHost::Start(
+mojom::ServicePtr ServiceProcessLauncher::Start(
     const Identity& target,
-    const ProcessReadyCallback& callback,
-    const base::Closure& quit_closure) {
+    bool start_sandboxed,
+    const ProcessReadyCallback& callback) {
   DCHECK(!child_process_.IsValid());
+
+  start_sandboxed_ = start_sandboxed;
+  target_ = target;
 
   const base::CommandLine& parent_command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -118,18 +113,17 @@ mojom::ServicePtr ChildProcessHost::Start(
       child_command_line.get(), &handle_passing_info_);
 
   mojom::ServicePtr client =
-      PassServiceRequestOnCommandLine(child_command_line.get(),
-                                          child_token_);
+      PassServiceRequestOnCommandLine(child_command_line.get(), child_token_);
   launch_process_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&ChildProcessHost::DoLaunch, base::Unretained(this),
+      base::Bind(&ServiceProcessLauncher::DoLaunch, base::Unretained(this),
                  base::Passed(&child_command_line)),
-      base::Bind(&ChildProcessHost::DidStart,
+      base::Bind(&ServiceProcessLauncher::DidStart,
                  weak_factory_.GetWeakPtr(), callback));
   return client;
 }
 
-void ChildProcessHost::Join() {
+void ServiceProcessLauncher::Join() {
   if (mojo_ipc_channel_)
     start_child_process_event_.Wait();
   mojo_ipc_channel_.reset();
@@ -141,7 +135,7 @@ void ChildProcessHost::Join() {
   }
 }
 
-void ChildProcessHost::DidStart(const ProcessReadyCallback& callback) {
+void ServiceProcessLauncher::DidStart(const ProcessReadyCallback& callback) {
   if (child_process_.IsValid()) {
     callback.Run(child_process_.Pid());
   } else {
@@ -151,7 +145,7 @@ void ChildProcessHost::DidStart(const ProcessReadyCallback& callback) {
   }
 }
 
-void ChildProcessHost::DoLaunch(
+void ServiceProcessLauncher::DoLaunch(
     std::unique_ptr<base::CommandLine> child_command_line) {
   if (delegate_) {
     delegate_->AdjustCommandLineArgumentsForTarget(target_,

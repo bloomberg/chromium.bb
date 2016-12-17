@@ -99,8 +99,8 @@ class BackgroundServiceManager::MojoThread : public base::SimpleThread {
     if (init_params_) {
       context_init_params->catalog_store =
           std::move(init_params_->catalog_store);
-      context_init_params->native_runner_delegate =
-          init_params_->native_runner_delegate;
+      context_init_params->service_process_launcher_delegate =
+          init_params_->service_process_launcher_delegate;
       context_init_params->init_edk = init_params_->init_edk;
     }
     if (context_init_params->init_edk)

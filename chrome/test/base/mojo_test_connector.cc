@@ -19,12 +19,12 @@
 #include "mojo/edk/embedder/process_delegate.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/catalog/store.h"
-#include "services/service_manager/native_runner_delegate.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
+#include "services/service_manager/runner/host/service_process_launcher.h"
 #include "services/service_manager/service_manager.h"
 #include "services/service_manager/switches.h"
 
@@ -200,16 +200,16 @@ void RemoveMashFromBrowserTests(base::CommandLine* command_line) {
 
 }  // namespace
 
-// NativeRunnerDelegate that makes exe:mash_browser_tests to exe:browser_tests,
-// and removes '--run-in-mash'.
-class MojoTestConnector::NativeRunnerDelegateImpl
-    : public service_manager::NativeRunnerDelegate {
+// ServiceProcessLauncher::Delegate that makes exe:mash_browser_tests to
+// exe:browser_tests and removes '--run-in-mash'.
+class MojoTestConnector::ServiceProcessLauncherDelegateImpl
+    : public service_manager::ServiceProcessLauncher::Delegate {
  public:
-  NativeRunnerDelegateImpl() {}
-  ~NativeRunnerDelegateImpl() override {}
+  ServiceProcessLauncherDelegateImpl() {}
+  ~ServiceProcessLauncherDelegateImpl() override {}
 
  private:
-  // service_manager::NativeRunnerDelegate:
+  // service_manager::ServiceProcessLauncherDelegate:
   void AdjustCommandLineArgumentsForTarget(
       const service_manager::Identity& target,
       base::CommandLine* command_line) override {
@@ -231,7 +231,7 @@ class MojoTestConnector::NativeRunnerDelegateImpl
     *command_line = base::CommandLine(argv);
   }
 
-  DISALLOW_COPY_AND_ASSIGN(NativeRunnerDelegateImpl);
+  DISALLOW_COPY_AND_ASSIGN(ServiceProcessLauncherDelegateImpl);
 };
 
 // static
@@ -242,14 +242,17 @@ const char MojoTestConnector::kMashApp[] = "mash-app";
 MojoTestConnector::MojoTestConnector() {}
 
 service_manager::mojom::ServiceRequest MojoTestConnector::Init() {
-  native_runner_delegate_ = base::MakeUnique<NativeRunnerDelegateImpl>();
+  service_process_launcher_delegate_ =
+      base::MakeUnique<ServiceProcessLauncherDelegateImpl>();
 
   std::unique_ptr<service_manager::BackgroundServiceManager::InitParams>
-      init_params(new service_manager::BackgroundServiceManager::InitParams);
+      init_params = base::MakeUnique<
+          service_manager::BackgroundServiceManager::InitParams>();
   // When running in single_process mode chrome initializes the edk.
   init_params->init_edk = !base::CommandLine::ForCurrentProcess()->HasSwitch(
       content::kSingleProcessTestsFlag);
-  init_params->native_runner_delegate = native_runner_delegate_.get();
+  init_params->service_process_launcher_delegate =
+      service_process_launcher_delegate_.get();
   background_service_manager_.Init(std::move(init_params));
   return background_service_manager_.CreateServiceRequest(kTestRunnerName);
 }

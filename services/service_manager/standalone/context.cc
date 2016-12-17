@@ -38,7 +38,7 @@
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/connect_util.h"
 #include "services/service_manager/runner/common/switches.h"
-#include "services/service_manager/runner/host/out_of_process_native_runner.h"
+#include "services/service_manager/runner/host/service_process_launcher.h"
 #include "services/service_manager/standalone/tracer.h"
 #include "services/service_manager/switches.h"
 #include "services/tracing/public/cpp/provider.h"
@@ -71,6 +71,25 @@ class Setup {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Setup);
+};
+
+class ServiceProcessLauncherFactoryImpl : public ServiceProcessLauncherFactory {
+ public:
+  ServiceProcessLauncherFactoryImpl(base::TaskRunner* launch_process_runner,
+                                    ServiceProcessLauncher::Delegate* delegate)
+      : launch_process_runner_(launch_process_runner),
+        delegate_(delegate) {
+  }
+
+ private:
+   std::unique_ptr<ServiceProcessLauncher> Create(
+      const base::FilePath& service_path) override {
+    return base::MakeUnique<ServiceProcessLauncher>(
+        launch_process_runner_, delegate_, service_path);
+  }
+
+  base::TaskRunner* launch_process_runner_;
+  ServiceProcessLauncher::Delegate* delegate_;
 };
 
 std::unique_ptr<base::Thread> CreateIOThread(const char* name) {
@@ -136,17 +155,20 @@ void Context::Init(std::unique_ptr<InitParams> init_params) {
 #endif
   }
 
-  std::unique_ptr<NativeRunnerFactory> runner_factory =
-      base::MakeUnique<OutOfProcessNativeRunnerFactory>(
+  std::unique_ptr<ServiceProcessLauncherFactory>
+      service_process_launcher_factory =
+      base::MakeUnique<ServiceProcessLauncherFactoryImpl>(
           blocking_pool_.get(),
-          init_params ? init_params->native_runner_delegate : nullptr);
+          init_params ? init_params->service_process_launcher_delegate
+                      : nullptr);
   std::unique_ptr<catalog::Store> store;
   if (init_params)
     store = std::move(init_params->catalog_store);
   catalog_.reset(
       new catalog::Catalog(blocking_pool_.get(), std::move(store), nullptr));
-  service_manager_.reset(new ServiceManager(std::move(runner_factory),
-                                            catalog_->TakeService()));
+  service_manager_.reset(
+      new ServiceManager(std::move(service_process_launcher_factory),
+                         catalog_->TakeService()));
 
   if (command_line.HasSwitch(::switches::kServiceOverrides)) {
     base::FilePath overrides_file(GetPathFromCommandLineSwitch(

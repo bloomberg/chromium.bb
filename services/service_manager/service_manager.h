@@ -14,7 +14,6 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/service_manager/connect_params.h"
-#include "services/service_manager/native_runner.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/interface_provider_spec.h"
@@ -24,6 +23,7 @@
 #include "services/service_manager/public/interfaces/service.mojom.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
+#include "services/service_manager/runner/host/service_process_launcher.h"
 #include "services/service_manager/service_overrides.h"
 
 namespace service_manager {
@@ -50,12 +50,11 @@ class ServiceManager {
     DISALLOW_COPY_AND_ASSIGN(TestAPI);
   };
 
-  // |native_runner_factory| is an instance of an object capable of vending
-  // implementations of NativeRunner, e.g. for in or out-of-process execution.
-  // See native_runner.h and RunNativeApplication().
-  // |file_task_runner| provides access to a thread to perform file copy
-  // operations on.
-  ServiceManager(std::unique_ptr<NativeRunnerFactory> native_runner_factory,
+  // |service_process_launcher_factory| is an instance of an object capable of
+  // vending implementations of ServiceProcessLauncher, e.g. for out-of-process
+  // execution.
+  ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
+                     service_process_launcher_factory,
                  mojom::ServicePtr catalog);
   ~ServiceManager();
 
@@ -182,7 +181,8 @@ class ServiceManager {
   std::map<Identity, mojom::ResolverPtr> identity_to_resolver_;
   mojo::InterfacePtrSet<mojom::ServiceManagerListener> listeners_;
   base::Callback<void(const Identity&)> instance_quit_callback_;
-  std::unique_ptr<NativeRunnerFactory> native_runner_factory_;
+  std::unique_ptr<ServiceProcessLauncherFactory>
+      service_process_launcher_factory_;
   std::unique_ptr<ServiceContext> service_context_;
   base::WeakPtrFactory<ServiceManager> weak_ptr_factory_;
 

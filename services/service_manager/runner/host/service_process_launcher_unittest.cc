@@ -2,9 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Note: This file also tests child_process.*.
-
-#include "services/service_manager/runner/host/child_process_host.h"
+#include "services/service_manager/runner/host/service_process_launcher.h"
 
 #include <memory>
 #include <utility>
@@ -20,7 +18,6 @@
 #include "base/threading/thread.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/process_delegate.h"
-#include "services/service_manager/native_runner_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace service_manager {
@@ -53,10 +50,11 @@ class ProcessDelegate : public mojo::edk::ProcessDelegate {
   DISALLOW_COPY_AND_ASSIGN(ProcessDelegate);
 };
 
-class NativeRunnerDelegateImpl : public NativeRunnerDelegate {
+class ServiceProcessLauncherDelegateImpl
+    : public ServiceProcessLauncher::Delegate {
  public:
-  NativeRunnerDelegateImpl() {}
-  ~NativeRunnerDelegateImpl() override {}
+  ServiceProcessLauncherDelegateImpl() {}
+  ~ServiceProcessLauncherDelegateImpl() override {}
 
   size_t get_and_clear_adjust_count() {
     size_t count = 0;
@@ -65,7 +63,7 @@ class NativeRunnerDelegateImpl : public NativeRunnerDelegate {
   }
 
  private:
-  // NativeRunnerDelegate:
+  // ServiceProcessLauncher::Delegate:
   void AdjustCommandLineArgumentsForTarget(
       const Identity& target,
       base::CommandLine* command_line) override {
@@ -74,7 +72,7 @@ class NativeRunnerDelegateImpl : public NativeRunnerDelegate {
 
   size_t adjust_count_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(NativeRunnerDelegateImpl);
+  DISALLOW_COPY_AND_ASSIGN(ServiceProcessLauncherDelegateImpl);
 };
 
 #if defined(OS_ANDROID)
@@ -83,7 +81,7 @@ class NativeRunnerDelegateImpl : public NativeRunnerDelegate {
 #else
 #define MAYBE_StartJoin StartJoin
 #endif  // defined(OS_ANDROID)
-TEST(ChildProcessHostTest, MAYBE_StartJoin) {
+TEST(ServieProcessLauncherTest, MAYBE_StartJoin) {
   base::FilePath service_manager_dir;
   PathService::Get(base::DIR_MODULE, &service_manager_dir);
   base::MessageLoop message_loop;
@@ -103,21 +101,21 @@ TEST(ChildProcessHostTest, MAYBE_StartJoin) {
       base::FilePath(kPackagesPath).AppendASCII(kTestServiceName)
           .AppendASCII(kTestServiceName) .AddExtension(kServiceExtension);
 
-  NativeRunnerDelegateImpl native_runner_delegate;
-  ChildProcessHost child_process_host(blocking_pool.get(),
-                                      &native_runner_delegate, false,
-                                      Identity(), test_service_path);
+  ServiceProcessLauncherDelegateImpl service_process_launcher_delegate;
+  ServiceProcessLauncher launcher(blocking_pool.get(),
+                                  &service_process_launcher_delegate,
+                                  test_service_path);
   base::RunLoop run_loop;
-  child_process_host.Start(
+  launcher.Start(
       Identity(),
-      base::Bind(&ProcessReadyCallbackAdapater, run_loop.QuitClosure()),
-      base::Bind(&base::DoNothing));
+      false,
+      base::Bind(&ProcessReadyCallbackAdapater, run_loop.QuitClosure()));
   run_loop.Run();
 
-  child_process_host.Join();
+  launcher.Join();
   blocking_pool->Shutdown();
   mojo::edk::ShutdownIPCSupport();
-  EXPECT_EQ(1u, native_runner_delegate.get_and_clear_adjust_count());
+  EXPECT_EQ(1u, service_process_launcher_delegate.get_and_clear_adjust_count());
 }
 
 }  // namespace

@@ -7,21 +7,10 @@ import("//services/service_manager/public/service_manifest.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
-group("host") {
-  testonly = true
-
-  deps = [
-    ":lib",
-    ":mojo_runner_host_unittests",
-  ]
-}
-
 source_set("lib") {
   sources = [
-    "child_process_host.cc",
-    "child_process_host.h",
-    "out_of_process_native_runner.cc",
-    "out_of_process_native_runner.h",
+    "service_process_launcher.cc",
+    "service_process_launcher.h",
   ]
 
   deps = [
@@ -37,8 +26,6 @@ source_set("lib") {
     "//base",
     "//mojo/edk/system",
     "//mojo/public/cpp/system",
-    "//services/service_manager",
-    "//services/service_manager/public/interfaces",
   ]
 
   if (is_linux && !is_android) {
@@ -46,10 +33,10 @@ source_set("lib") {
   }
 }
 
-test("mojo_runner_host_unittests") {
+source_set("unittests") {
+  testonly = true
   sources = [
-    "child_process_host_unittest.cc",
-    "host_unittests.cc",
+    "service_process_launcher_unittest.cc",
   ]
 
   deps = [

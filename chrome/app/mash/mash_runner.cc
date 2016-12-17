@@ -32,7 +32,6 @@
 #include "services/catalog/public/interfaces/catalog.mojom.h"
 #include "services/catalog/public/interfaces/constants.mojom.h"
 #include "services/service_manager/background/background_service_manager.h"
-#include "services/service_manager/native_runner_delegate.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -87,16 +86,17 @@ void InitializeResources() {
       locale, nullptr, ui::ResourceBundle::LOAD_COMMON_RESOURCES);
 }
 
-class NativeRunnerDelegateImpl : public service_manager::NativeRunnerDelegate {
+class ServiceProcessLauncherDelegateImpl
+    : public service_manager::ServiceProcessLauncher::Delegate {
  public:
-  NativeRunnerDelegateImpl() {}
-  ~NativeRunnerDelegateImpl() override {}
+  ServiceProcessLauncherDelegateImpl() {}
+  ~ServiceProcessLauncherDelegateImpl() override {}
 
  private:
-  // service_manager::NativeRunnerDelegate:
+  // service_manager::ServiceProcessLauncher::Delegate:
   void AdjustCommandLineArgumentsForTarget(
-      const service_manager::Identity& target,
-      base::CommandLine* command_line) override {
+        const service_manager::Identity& target,
+        base::CommandLine* command_line) override {
     if (target.name() == kChromeMashServiceName ||
         target.name() == content::mojom::kBrowserServiceName) {
       base::FilePath exe_path;
@@ -124,7 +124,7 @@ class NativeRunnerDelegateImpl : public service_manager::NativeRunnerDelegate {
     *command_line = base::CommandLine(new_argv);
   }
 
-  DISALLOW_COPY_AND_ASSIGN(NativeRunnerDelegateImpl);
+  DISALLOW_COPY_AND_ASSIGN(ServiceProcessLauncherDelegateImpl);
 };
 
 }  // namespace
@@ -148,11 +148,12 @@ void MashRunner::RunMain() {
   // TODO(sky): refactor BackgroundServiceManager so can supply own context, we
   // shouldn't we using context as it has a lot of stuff we don't really want
   // in chrome.
-  NativeRunnerDelegateImpl native_runner_delegate;
+  ServiceProcessLauncherDelegateImpl service_process_launcher_delegate;
   service_manager::BackgroundServiceManager background_service_manager;
   std::unique_ptr<service_manager::BackgroundServiceManager::InitParams>
       init_params(new service_manager::BackgroundServiceManager::InitParams);
-  init_params->native_runner_delegate = &native_runner_delegate;
+  init_params->service_process_launcher_delegate =
+      &service_process_launcher_delegate;
   background_service_manager.Init(std::move(init_params));
   context_.reset(new service_manager::ServiceContext(
       base::MakeUnique<mash::MashPackagedService>(),

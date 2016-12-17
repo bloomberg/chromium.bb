@@ -30,8 +30,6 @@ namespace service_manager {
 
 constexpr size_t kThreadPoolMaxThreads = 3;
 
-class NativeRunnerDelegate;
-
 // The "global" context for the service manager's main process.
 class Context : public mojo::edk::ProcessDelegate {
  public:
@@ -39,7 +37,8 @@ class Context : public mojo::edk::ProcessDelegate {
     InitParams();
     ~InitParams();
 
-    NativeRunnerDelegate* native_runner_delegate = nullptr;
+    ServiceProcessLauncher::Delegate*
+        service_process_launcher_delegate = nullptr;
     std::unique_ptr<catalog::Store> catalog_store;
     // If true the edk is initialized.
     bool init_edk = true;

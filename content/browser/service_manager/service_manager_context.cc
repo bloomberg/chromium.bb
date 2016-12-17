@@ -32,7 +32,6 @@
 #include "services/catalog/store.h"
 #include "services/file/public/interfaces/constants.mojom.h"
 #include "services/service_manager/connect_params.h"
-#include "services/service_manager/native_runner.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
@@ -133,20 +132,21 @@ class BuiltinManifestProvider : public catalog::ManifestProvider {
   DISALLOW_COPY_AND_ASSIGN(BuiltinManifestProvider);
 };
 
-class NullNativeRunnerFactory : public service_manager::NativeRunnerFactory {
+class NullServiceProcessLauncherFactory
+    : public service_manager::ServiceProcessLauncherFactory {
  public:
-  NullNativeRunnerFactory() {}
-  ~NullNativeRunnerFactory() override {}
+  NullServiceProcessLauncherFactory() {}
+  ~NullServiceProcessLauncherFactory() override {}
 
-  std::unique_ptr<service_manager::NativeRunner> Create(
+ private:
+  std::unique_ptr<service_manager::ServiceProcessLauncher> Create(
       const base::FilePath& service_path) override {
     LOG(ERROR) << "Attempting to run unsupported native service: "
                << service_path.value();
     return nullptr;
   }
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(NullNativeRunnerFactory);
+  DISALLOW_COPY_AND_ASSIGN(NullServiceProcessLauncherFactory);
 };
 
 }  // namespace
@@ -189,10 +189,11 @@ class ServiceManagerContext::InProcessServiceManagerContext
     manifest_provider_ = std::move(manifest_provider);
 
     base::SequencedWorkerPool* blocking_pool = BrowserThread::GetBlockingPool();
-    catalog_.reset(
-        new catalog::Catalog(blocking_pool, nullptr, manifest_provider_.get()));
-    service_manager_.reset(new service_manager::ServiceManager(
-        base::MakeUnique<NullNativeRunnerFactory>(), catalog_->TakeService()));
+    catalog_ = base::MakeUnique<catalog::Catalog>(
+        blocking_pool, nullptr, manifest_provider_.get());
+    service_manager_ = base::MakeUnique<service_manager::ServiceManager>(
+        base::MakeUnique<NullServiceProcessLauncherFactory>(),
+        catalog_->TakeService());
 
     service_manager::mojom::ServiceRequest request =
         service_manager_->StartEmbedderService(mojom::kBrowserServiceName);

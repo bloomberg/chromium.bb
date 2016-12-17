@@ -11,7 +11,6 @@ group("all") {
   deps = [
     ":service_manager",
     "//services/service_manager/background",
-    "//services/service_manager/runner",
     "//services/service_manager/standalone",
     "//services/service_manager/tests",
   ]
@@ -23,8 +22,6 @@ source_set("service_manager") {
     "connect_params.h",
     "connect_util.cc",
     "connect_util.h",
-    "native_runner.h",
-    "native_runner_delegate.h",
     "service_manager.cc",
     "service_manager.h",
     "service_overrides.cc",
@@ -41,6 +38,7 @@ source_set("service_manager") {
     "//services/catalog/public/interfaces:constants",
     "//services/service_manager/public/cpp:sources",
     "//services/service_manager/public/interfaces",
+    "//services/service_manager/runner/host:lib",
     "//services/tracing/public/interfaces:constants",
   ]
 

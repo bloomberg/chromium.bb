@@ -45,9 +45,10 @@ class MojoTestConnector {
       base::TestLauncher::LaunchOptions* test_launch_options);
 
  private:
-  class NativeRunnerDelegateImpl;
+  class ServiceProcessLauncherDelegateImpl;
 
-  std::unique_ptr<NativeRunnerDelegateImpl> native_runner_delegate_;
+  std::unique_ptr<ServiceProcessLauncherDelegateImpl>
+      service_process_launcher_delegate_;
 
   service_manager::BackgroundServiceManager background_service_manager_;
 

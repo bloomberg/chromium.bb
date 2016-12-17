@@ -28,6 +28,7 @@ test("service_manager_unittests") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:run_all_service_tests",
     "//services/service_manager/public/interfaces",
+    "//services/service_manager/runner/host:unittests",
     "//services/service_manager/tests/connect",
     "//services/service_manager/tests/lifecycle",
     "//services/service_manager/tests/service_manager",

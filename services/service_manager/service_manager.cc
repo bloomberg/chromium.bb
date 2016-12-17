@@ -122,11 +122,6 @@ class ServiceManager::Instance
 
   ~Instance() override {
     Stop();
-
-    // Release |runner_| so that if we are called back to OnRunnerCompleted()
-    // we know we're in the destructor.
-    std::unique_ptr<NativeRunner> runner = std::move(runner_);
-    runner.reset();
   }
 
   bool ConnectToService(std::unique_ptr<ConnectParams>* connect_params) {
@@ -182,14 +177,13 @@ class ServiceManager::Instance
   bool StartWithFilePath(const base::FilePath& path) {
     DCHECK(!service_);
     DCHECK(!path.empty());
-    runner_ = service_manager_->native_runner_factory_->Create(path);
+    runner_ = service_manager_->service_process_launcher_factory_->Create(path);
     if (!runner_)
       return false;
     bool start_sandboxed = false;
     mojom::ServicePtr service = runner_->Start(
         identity_, start_sandboxed,
-        base::Bind(&Instance::PIDAvailable, weak_factory_.GetWeakPtr()),
-        base::Bind(&Instance::OnRunnerCompleted, weak_factory_.GetWeakPtr()));
+        base::Bind(&Instance::PIDAvailable, weak_factory_.GetWeakPtr()));
     StartWithService(std::move(service));
     return true;
   }
@@ -430,14 +424,6 @@ class ServiceManager::Instance
     service_manager_->NotifyServiceStarted(identity_, pid_);
   }
 
-  // Callback when NativeRunner completes.
-  void OnRunnerCompleted() {
-    if (!runner_.get())
-      return;  // We're in the destructor.
-
-    service_manager_->OnInstanceError(this);
-  }
-
   // mojom::ServiceControl:
   void RequestQuit() override {
     // If quit is requested, oblige when there are no pending OnConnects.
@@ -455,7 +441,7 @@ class ServiceManager::Instance
   const InterfaceProviderSpecMap interface_provider_specs_;
   const InterfaceProviderSpec empty_spec_;
   const bool allow_any_application_;
-  std::unique_ptr<NativeRunner> runner_;
+  std::unique_ptr<ServiceProcessLauncher> runner_;
   mojom::ServicePtr service_;
   mojo::Binding<mojom::PIDReceiver> pid_receiver_binding_;
   mojo::BindingSet<mojom::Connector> connectors_;
@@ -521,9 +507,11 @@ bool ServiceManager::TestAPI::HasRunningInstanceForName(
 // ServiceManager, public:
 
 ServiceManager::ServiceManager(
-    std::unique_ptr<NativeRunnerFactory> native_runner_factory,
+    std::unique_ptr<ServiceProcessLauncherFactory>
+        service_process_launcher_factory,
     mojom::ServicePtr catalog)
-    : native_runner_factory_(std::move(native_runner_factory)),
+    : service_process_launcher_factory_(
+          std::move(service_process_launcher_factory)),
       weak_ptr_factory_(this) {
   mojom::ServicePtr service;
   mojom::ServiceRequest request = mojo::GetProxy(&service);
