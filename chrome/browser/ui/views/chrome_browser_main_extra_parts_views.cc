@@ -15,7 +15,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/runner/common/client_util.h"
-#include "services/ui/public/cpp/gpu/gpu.h"
+#include "services/ui/public/cpp/gpu/gpu.h"  // nogncheck
 #include "services/ui/public/cpp/input_devices/input_device_client.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/input_devices/input_device_server.mojom.h"

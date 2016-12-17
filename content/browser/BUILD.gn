@@ -665,6 +665,8 @@ source_set("browser") {
     "gpu/browser_gpu_memory_buffer_manager.h",
     "gpu/compositor_util.cc",
     "gpu/compositor_util.h",
+    "gpu/gpu_client.cc",
+    "gpu/gpu_client.h",
     "gpu/gpu_data_manager_impl.cc",
     "gpu/gpu_data_manager_impl.h",
     "gpu/gpu_data_manager_impl_private.cc",

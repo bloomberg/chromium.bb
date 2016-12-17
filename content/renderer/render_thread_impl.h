@@ -109,7 +109,6 @@ class AudioRendererMixerManager;
 class BlobMessageFilter;
 class BrowserPluginManager;
 class CacheStorageDispatcher;
-class ChildGpuMemoryBufferManager;
 class ChildSharedBitmapManager;
 class CompositorForwardingMessageFilter;
 class ContextProviderCommandBuffer;
@@ -156,7 +155,6 @@ class SynchronousCompositorFilter;
 class CONTENT_EXPORT RenderThreadImpl
     : public RenderThread,
       public ChildThreadImpl,
-      public gpu::GpuChannelHostFactory,
       public blink::scheduler::RendererScheduler::RAILModeObserver,
       public ChildMemoryCoordinatorDelegate,
       public base::MemoryCoordinatorClient,
@@ -503,11 +501,7 @@ class CONTENT_EXPORT RenderThreadImpl
   void RecordAction(const base::UserMetricsAction& action) override;
   void RecordComputedAction(const std::string& action) override;
 
-  // GpuChannelHostFactory implementation:
-  bool IsMainThread() override;
-  scoped_refptr<base::SingleThreadTaskRunner> GetIOThreadTaskRunner() override;
-  std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
-      size_t size) override;
+  bool IsMainThread();
 
   // Purges memory and suspends the renderer.
   void SuspendRenderer();
@@ -641,10 +635,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // The channel from the renderer process to the GPU process.
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
 
-  // Cache of variables that are needed on the compositor thread by
-  // GpuChannelHostFactory methods.
-  scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
-
   // The message loop of the renderer main thread.
   // This message loop should be destructed before the RenderThreadImpl
   // shuts down Blink.
@@ -655,8 +645,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // May be null if overridden by ContentRendererClient.
   std::unique_ptr<blink::scheduler::WebThreadBase> compositor_thread_;
-
-  std::unique_ptr<ChildGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
   // Utility class to provide GPU functionalities to media.
   // TODO(dcastagna): This should be just one scoped_ptr once
@@ -699,9 +687,7 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<MemoryObserver> memory_observer_;
   std::unique_ptr<ChildMemoryCoordinatorImpl> memory_coordinator_;
 
-#if defined(USE_AURA)
   std::unique_ptr<ui::Gpu> gpu_;
-#endif
 
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_compositor_task_runner_;

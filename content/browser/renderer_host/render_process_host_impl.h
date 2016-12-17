@@ -36,6 +36,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
+#include "services/ui/public/interfaces/gpu.mojom.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gpu_switching_observer.h"
 
@@ -53,6 +54,7 @@ namespace content {
 class AudioInputRendererHost;
 class AudioRendererHost;
 class ChildConnection;
+class GpuClient;
 class InProcessChildThreadParams;
 class MessagePortMessageFilter;
 class NotificationMessageFilter;
@@ -330,6 +332,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const std::string& name,
       mojom::AssociatedInterfaceAssociatedRequest request) override;
 
+  void CreateMusGpuRequest(ui::mojom::GpuRequest request);
   void CreateStoragePartitionService(
       mojo::InterfaceRequest<mojom::StoragePartitionService> request);
 
@@ -577,6 +580,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 #endif
 
   scoped_refptr<ResourceMessageFilter> resource_message_filter_;
+  std::unique_ptr<GpuClient, BrowserThread::DeleteOnIOThread> gpu_client_;
 
   mojom::RouteProviderAssociatedPtr remote_route_provider_;
   mojom::RendererAssociatedPtr renderer_interface_;

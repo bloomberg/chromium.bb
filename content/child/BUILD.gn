@@ -55,8 +55,6 @@ target(link_target_type, "child") {
     "blob_storage/webblobregistry_impl.h",
     "browser_font_resource_trusted.cc",
     "browser_font_resource_trusted.h",
-    "child_gpu_memory_buffer_manager.cc",
-    "child_gpu_memory_buffer_manager.h",
     "child_histogram_message_filter.cc",
     "child_histogram_message_filter.h",
     "child_message_filter.cc",

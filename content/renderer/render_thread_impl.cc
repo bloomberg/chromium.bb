@@ -53,7 +53,6 @@
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
 #include "content/child/blob_storage/blob_message_filter.h"
-#include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/child/child_histogram_message_filter.h"
 #include "content/child/child_resource_message_filter.h"
 #include "content/child/child_shared_bitmap_manager.h"
@@ -198,12 +197,10 @@
 #include "v8/src/third_party/vtune/v8-vtune.h"
 #endif
 
-#if defined(USE_AURA)
 #include "content/public/common/service_manager_connection.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
 #include "content/renderer/mus/render_widget_window_tree_client_factory.h"
 #include "services/ui/public/cpp/gpu/gpu.h"
-#endif
 
 #if defined(ENABLE_IPC_FUZZER)
 #include "content/common/external_ipc_dumper.h"
@@ -653,14 +650,13 @@ void RenderThreadImpl::Init(
   // Register this object as the main thread.
   ChildProcess::current()->set_main_thread(this);
 
-#if defined(USE_AURA)
   if (IsRunningInMash()) {
     gpu_ = ui::Gpu::Create(GetServiceManagerConnection()->GetConnector(),
                            ChildProcess::current()->io_task_runner());
+  } else {
+    gpu_ = ui::Gpu::Create(GetRemoteInterfaces(),
+                           ChildProcess::current()->io_task_runner());
   }
-#endif
-  gpu_memory_buffer_manager_ =
-      base::MakeUnique<ChildGpuMemoryBufferManager>(thread_safe_sender());
 
   thread_safe_associated_interface_ptr_provider_ =
       base::MakeUnique<ThreadSafeAssociatedInterfacePtrProvider>(channel());
@@ -1658,11 +1654,7 @@ RenderThreadImpl::GetCompositorImplThreadTaskRunner() {
 }
 
 gpu::GpuMemoryBufferManager* RenderThreadImpl::GetGpuMemoryBufferManager() {
-#if defined(USE_AURA)
-  if (gpu_)
-    return gpu_->gpu_memory_buffer_manager();
-#endif
-  return gpu_memory_buffer_manager_.get();
+  return gpu_->gpu_memory_buffer_manager();
 }
 
 blink::scheduler::RendererScheduler* RenderThreadImpl::GetRendererScheduler() {
@@ -1718,16 +1710,6 @@ void RenderThreadImpl::OnRAILModeChanged(v8::RAILMode rail_mode) {
 
 bool RenderThreadImpl::IsMainThread() {
   return !!current();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-RenderThreadImpl::GetIOThreadTaskRunner() {
-  return io_thread_task_runner_;
-}
-
-std::unique_ptr<base::SharedMemory> RenderThreadImpl::AllocateSharedMemory(
-    size_t size) {
-  return HostAllocateSharedMemoryBuffer(size);
 }
 
 void RenderThreadImpl::OnChannelError() {
@@ -1919,34 +1901,9 @@ scoped_refptr<gpu::GpuChannelHost> RenderThreadImpl::EstablishGpuChannelSync() {
     gpu_channel_ = nullptr;
   }
 
-  if (!IsRunningInMash()) {
-    int client_id = 0;
-    IPC::ChannelHandle channel_handle;
-    gpu::GPUInfo gpu_info;
-    // Ask the browser for the channel name.
-    if (!Send(new ChildProcessHostMsg_EstablishGpuChannel(
-            &client_id, &channel_handle, &gpu_info)) ||
-        !channel_handle.mojo_handle.is_valid()) {
-      // Otherwise cancel the connection.
-      return nullptr;
-    }
-    GetContentClient()->SetGpuInfo(gpu_info);
-
-    // Cache some variables that are needed on the compositor thread for our
-    // implementation of GpuChannelHostFactory.
-    io_thread_task_runner_ = ChildProcess::current()->io_task_runner();
-
-    gpu_channel_ =
-        gpu::GpuChannelHost::Create(this, client_id, gpu_info, channel_handle,
-                                    ChildProcess::current()->GetShutDownEvent(),
-                                    GetGpuMemoryBufferManager());
-  } else {
-#if defined(USE_AURA)
-    gpu_channel_ = gpu_->EstablishGpuChannelSync();
-#else
-    NOTREACHED();
-#endif
-  }
+  gpu_channel_ = gpu_->EstablishGpuChannelSync();
+  if (gpu_channel_)
+    GetContentClient()->SetGpuInfo(gpu_channel_->gpu_info());
   return gpu_channel_;
 }
 

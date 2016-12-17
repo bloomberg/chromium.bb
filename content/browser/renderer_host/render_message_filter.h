@@ -48,14 +48,6 @@
 class GURL;
 struct FontDescriptor;
 
-namespace gfx {
-struct GpuMemoryBufferHandle;
-}
-
-namespace gpu {
-struct SyncToken;
-}
-
 namespace media {
 struct MediaLogEvent;
 }
@@ -134,12 +126,8 @@ class CONTENT_EXPORT RenderMessageFilter
   void DeletedSharedBitmap(const cc::SharedBitmapId& id) override;
 
   // Message handlers called on the browser IO thread:
-  void OnEstablishGpuChannel(IPC::Message* reply);
   void OnHasGpuProcess(IPC::Message* reply);
   // Helper callbacks for the message handlers.
-  void EstablishChannelCallback(std::unique_ptr<IPC::Message> reply,
-                                const IPC::ChannelHandle& channel,
-                                const gpu::GPUInfo& gpu_info);
   void GetGpuProcessHandlesCallback(
       std::unique_ptr<IPC::Message> reply,
       const std::list<base::ProcessHandle>& handles);
@@ -183,17 +171,6 @@ class CONTENT_EXPORT RenderMessageFilter
 
   bool CheckBenchmarkingEnabled() const;
   bool CheckPreparsedJsCachingEnabled() const;
-
-  void OnAllocateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                                 uint32_t width,
-                                 uint32_t height,
-                                 gfx::BufferFormat format,
-                                 gfx::BufferUsage usage,
-                                 IPC::Message* reply);
-  void GpuMemoryBufferAllocated(IPC::Message* reply,
-                                const gfx::GpuMemoryBufferHandle& handle);
-  void OnDeletedGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                                const gpu::SyncToken& sync_token);
 
   // Cached resource request dispatcher host, guaranteed to be non-null. We do
   // not own it; it is managed by the BrowserProcess, which has a wider scope

@@ -19,6 +19,7 @@
 
 namespace service_manager {
 class Connector;
+class InterfaceProvider;
 }
 
 namespace ui {
@@ -38,6 +39,9 @@ class Gpu : public gpu::GpuChannelHostFactory,
   static std::unique_ptr<Gpu> Create(
       service_manager::Connector* connector,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner = nullptr);
+  static std::unique_ptr<Gpu> Create(
+      service_manager::InterfaceProvider*,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner = nullptr);
 
   // gpu::GpuChannelEstablishFactory:
   void EstablishGpuChannel(
@@ -49,6 +53,7 @@ class Gpu : public gpu::GpuChannelHostFactory,
   friend struct base::DefaultSingletonTraits<Gpu>;
 
   Gpu(service_manager::Connector* connector,
+      service_manager::InterfaceProvider* provider,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   scoped_refptr<gpu::GpuChannelHost> GetGpuChannel();
@@ -66,11 +71,12 @@ class Gpu : public gpu::GpuChannelHostFactory,
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   service_manager::Connector* connector_;
+  service_manager::InterfaceProvider* interface_provider_;
   base::WaitableEvent shutdown_event_;
   std::unique_ptr<base::Thread> io_thread_;
   std::unique_ptr<ClientGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
-  ui::mojom::GpuPtr gpu_service_;
+  ui::mojom::GpuPtr gpu_;
   scoped_refptr<gpu::GpuChannelHost> gpu_channel_;
   std::vector<gpu::GpuChannelEstablishedCallback> establish_callbacks_;
 

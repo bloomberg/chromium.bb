@@ -12,7 +12,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/unguessable_token.h"
 #include "cc/output/context_provider.h"
-#include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/render_thread_impl.h"

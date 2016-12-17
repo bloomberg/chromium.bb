@@ -71,6 +71,7 @@
 #include "content/browser/frame_host/render_frame_message_filter.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/gpu/gpu_client.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/gpu/shader_cache_factory.h"
@@ -1286,6 +1287,9 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
   registry->AddInterface(base::Bind(&device::GamepadMonitor::Create));
 
+  registry->AddInterface(base::Bind(&RenderProcessHostImpl::CreateMusGpuRequest,
+                                    base::Unretained(this)));
+
   registry->AddInterface(
       base::Bind(&VideoCaptureHost::Create,
                  BrowserMainLoop::GetInstance()->media_stream_manager()));
@@ -1331,6 +1335,13 @@ void RenderProcessHostImpl::GetAssociatedInterface(
   IPC::Listener* listener = listeners_.Lookup(routing_id);
   if (listener)
     listener->OnAssociatedInterfaceRequest(name, request.PassHandle());
+}
+
+void RenderProcessHostImpl::CreateMusGpuRequest(ui::mojom::GpuRequest request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!gpu_client_)
+    gpu_client_.reset(new GpuClient(GetID()));
+  gpu_client_->Add(std::move(request));
 }
 
 void RenderProcessHostImpl::CreateStoragePartitionService(

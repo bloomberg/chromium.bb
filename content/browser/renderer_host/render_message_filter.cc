@@ -30,7 +30,6 @@
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -157,10 +156,6 @@ RenderMessageFilter::RenderMessageFilter(
 RenderMessageFilter::~RenderMessageFilter() {
   // This function should be called on the IO thread.
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserGpuMemoryBufferManager* gpu_memory_buffer_manager =
-      BrowserGpuMemoryBufferManager::current();
-  if (gpu_memory_buffer_manager)
-    gpu_memory_buffer_manager->ProcessRemoved(render_process_id_);
 }
 
 bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -180,18 +175,8 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
         ViewHostMsg_SetNeedsBeginFrames,
         ResizeHelperPostMsgToUIThread(render_process_id_, message))
 #endif
-    // NB: The SyncAllocateGpuMemoryBuffer and DeletedGpuMemoryBuffer IPCs are
-    // handled here for renderer processes. For non-renderer child processes,
-    // they are handled in ChildProcessHostImpl.
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(
-        ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
-        OnAllocateGpuMemoryBuffer)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(ChildProcessHostMsg_EstablishGpuChannel,
-                                    OnEstablishGpuChannel)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ChildProcessHostMsg_HasGpuProcess,
                                     OnHasGpuProcess)
-    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DeletedGpuMemoryBuffer,
-                        OnDeletedGpuMemoryBuffer)
 #if defined(OS_LINUX)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SetThreadPriority,
                         OnSetThreadPriority)
@@ -499,78 +484,11 @@ void RenderMessageFilter::OnMediaLogEvents(
     media_internals_->OnMediaEvents(render_process_id_, events);
 }
 
-void RenderMessageFilter::OnAllocateGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
-                                                    uint32_t width,
-                                                    uint32_t height,
-                                                    gfx::BufferFormat format,
-                                                    gfx::BufferUsage usage,
-                                                    IPC::Message* reply) {
-  DCHECK(BrowserGpuMemoryBufferManager::current());
-
-  base::CheckedNumeric<int> size = width;
-  size *= height;
-  if (!size.IsValid()) {
-    GpuMemoryBufferAllocated(reply, gfx::GpuMemoryBufferHandle());
-    return;
-  }
-
-  BrowserGpuMemoryBufferManager::current()
-      ->AllocateGpuMemoryBufferForChildProcess(
-          id, gfx::Size(width, height), format, usage, render_process_id_,
-          base::Bind(&RenderMessageFilter::GpuMemoryBufferAllocated, this,
-                     reply));
-}
-
-void RenderMessageFilter::GpuMemoryBufferAllocated(
-    IPC::Message* reply,
-    const gfx::GpuMemoryBufferHandle& handle) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer::WriteReplyParams(reply,
-                                                                    handle);
-  Send(reply);
-}
-
-void RenderMessageFilter::OnEstablishGpuChannel(
-    IPC::Message* reply_ptr) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::unique_ptr<IPC::Message> reply(reply_ptr);
-
-  GpuProcessHost* host =
-      GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED);
-  if (!host) {
-    reply->set_reply_error();
-    Send(reply.release());
-    return;
-  }
-
-  bool preempts = false;
-  bool allow_view_command_buffers = false;
-  bool allow_real_time_streams = false;
-  host->EstablishGpuChannel(
-      render_process_id_,
-      ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
-          render_process_id_),
-      preempts, allow_view_command_buffers, allow_real_time_streams,
-      base::Bind(&RenderMessageFilter::EstablishChannelCallback,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&reply)));
-}
-
 void RenderMessageFilter::OnHasGpuProcess(IPC::Message* reply_ptr) {
   std::unique_ptr<IPC::Message> reply(reply_ptr);
   GpuProcessHost::GetProcessHandles(
       base::Bind(&RenderMessageFilter::GetGpuProcessHandlesCallback,
                  weak_ptr_factory_.GetWeakPtr(), base::Passed(&reply)));
-}
-
-void RenderMessageFilter::EstablishChannelCallback(
-    std::unique_ptr<IPC::Message> reply,
-    const IPC::ChannelHandle& channel,
-    const gpu::GPUInfo& gpu_info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  ChildProcessHostMsg_EstablishGpuChannel::WriteReplyParams(
-      reply.get(), render_process_id_, channel, gpu_info);
-  Send(reply.release());
 }
 
 void RenderMessageFilter::GetGpuProcessHandlesCallback(
@@ -580,15 +498,6 @@ void RenderMessageFilter::GetGpuProcessHandlesCallback(
   ChildProcessHostMsg_HasGpuProcess::WriteReplyParams(reply.get(),
                                                       has_gpu_process);
   Send(reply.release());
-}
-
-void RenderMessageFilter::OnDeletedGpuMemoryBuffer(
-    gfx::GpuMemoryBufferId id,
-    const gpu::SyncToken& sync_token) {
-  DCHECK(BrowserGpuMemoryBufferManager::current());
-
-  BrowserGpuMemoryBufferManager::current()->ChildProcessDeletedGpuMemoryBuffer(
-      id, render_process_id_, sync_token);
 }
 
 }  // namespace content

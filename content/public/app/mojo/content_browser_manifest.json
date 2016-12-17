@@ -9,7 +9,8 @@
         ],
         "plugin": [
           "device::mojom::PowerMonitor",
-          "discardable_memory::mojom::DiscardableSharedMemoryManager"
+          "discardable_memory::mojom::DiscardableSharedMemoryManager",
+          "ui::mojom::Gpu"
         ],
         "renderer": [
           "blink::mojom::BackgroundSyncService",
@@ -38,7 +39,8 @@
           "discardable_memory::mojom::DiscardableSharedMemoryManager",
           "media::mojom::ImageCapture",
           "memory_coordinator::mojom::MemoryCoordinatorHandle",
-          "payments::mojom::PaymentAppManager"
+          "payments::mojom::PaymentAppManager",
+          "ui::mojom::Gpu"
         ],
         "service_manager:service_factory": [
           "service_manager::mojom::ServiceFactory"
@@ -91,7 +93,8 @@
           "media::mojom::RemoterFactory",
           "media::mojom::Renderer",
           "mojom::MediaDevicesDispatcherHost",
-          "payments::mojom::PaymentRequest"
+          "payments::mojom::PaymentRequest",
+          "ui::mojom::Gpu"
         ]
       },
       "requires": {

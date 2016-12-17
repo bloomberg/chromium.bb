@@ -137,14 +137,6 @@ IPC_MESSAGE_CONTROL0(ChildProcessMsg_Resume)
 ////////////////////////////////////////////////////////////////////////////////
 // Messages sent from the child process to the browser.
 
-// A renderer sends this when it wants to create a connection to the GPU
-// process. The browser will create the GPU process if necessary, and will
-// return a handle to the channel via a GpuChannelEstablished message.
-IPC_SYNC_MESSAGE_CONTROL0_3(ChildProcessHostMsg_EstablishGpuChannel,
-                            int /* client id */,
-                            IPC::ChannelHandle /* handle to channel */,
-                            gpu::GPUInfo /* stats about GPU process*/)
-
 // A renderer sends this when it wants to know whether a gpu process exists.
 IPC_SYNC_MESSAGE_CONTROL0_1(ChildProcessHostMsg_HasGpuProcess,
                             bool /* result */)
@@ -178,20 +170,6 @@ IPC_SYNC_MESSAGE_CONTROL1_0(ChildProcessHostMsg_PreCacheFont,
 // Release the cached font
 IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ReleaseCachedFonts)
 #endif  // defined(OS_WIN)
-
-// Asks the browser to create a gpu memory buffer.
-IPC_SYNC_MESSAGE_CONTROL5_1(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
-                            gfx::GpuMemoryBufferId /* new_id */,
-                            uint32_t /* width */,
-                            uint32_t /* height */,
-                            gfx::BufferFormat,
-                            gfx::BufferUsage,
-                            gfx::GpuMemoryBufferHandle)
-
-// Informs the browser that the child deleted a gpu memory buffer.
-IPC_MESSAGE_CONTROL2(ChildProcessHostMsg_DeletedGpuMemoryBuffer,
-                     gfx::GpuMemoryBufferId,
-                     gpu::SyncToken /* sync_token */)
 
 #if defined(OS_LINUX)
 // Asks the browser to change the priority of thread.

@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
-#include "content/child/child_gpu_memory_buffer_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"

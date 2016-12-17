@@ -445,6 +445,7 @@ target(link_target_type, "renderer") {
     "//sandbox",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
+    "//services/ui/public/cpp/gpu",
     "//skia",
     "//storage/common",
     "//third_party/WebKit/public:blink",
