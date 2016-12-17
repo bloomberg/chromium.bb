@@ -156,6 +156,15 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   headers->SetHeaderIfMissing(net::HttpRequestHeaders::kUserAgent,
                               GetContentClient()->GetUserAgent());
 
+  // Check whether DevTools wants to override user agent for this request
+  // after setting the default user agent.
+  std::string devtools_user_agent =
+      RenderFrameDevToolsAgentHost::UserAgentOverride(frame_tree_node);
+  if (!devtools_user_agent.empty()) {
+    headers->SetHeader(net::HttpRequestHeaders::kUserAgent,
+                       devtools_user_agent);
+  }
+
   // Tack an 'Upgrade-Insecure-Requests' header to outgoing navigational
   // requests, as described in
   // https://w3c.github.io/webappsec/specs/upgrade/#feature-detect

@@ -289,6 +289,7 @@ Response NetworkHandler::Enable(Maybe<int> max_total_size,
 
 Response NetworkHandler::Disable() {
   enabled_ = false;
+  user_agent_ = std::string();
   return Response::FallThrough();
 }
 
@@ -381,9 +382,23 @@ void NetworkHandler::DeleteCookie(
       base::Passed(std::move(callback))));
 }
 
+Response NetworkHandler::SetUserAgentOverride(const std::string& user_agent) {
+  if (user_agent.find('\n') != std::string::npos ||
+      user_agent.find('\r') != std::string::npos ||
+      user_agent.find('\0') != std::string::npos) {
+    return Response::InvalidParams("Invalid characters found in userAgent");
+  }
+  user_agent_ = user_agent;
+  return Response::FallThrough();
+}
+
 Response NetworkHandler::CanEmulateNetworkConditions(bool* result) {
   *result = false;
   return Response::OK();
+}
+
+std::string NetworkHandler::UserAgentOverride() const {
+  return enabled_ ? user_agent_ : std::string();
 }
 
 }  // namespace protocol

@@ -383,6 +383,15 @@ bool RenderFrameDevToolsAgentHost::IsNetworkHandlerEnabled(
 }
 
 // static
+std::string RenderFrameDevToolsAgentHost::UserAgentOverride(
+    FrameTreeNode* frame_tree_node) {
+  RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
+  if (agent_host && agent_host->network_handler_)
+    return agent_host->network_handler_->UserAgentOverride();
+  return std::string();
+}
+
+// static
 void RenderFrameDevToolsAgentHost::WebContentsCreated(
     WebContents* web_contents) {
   if (ShouldForceCreation()) {

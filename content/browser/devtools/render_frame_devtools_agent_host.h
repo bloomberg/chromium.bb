@@ -72,6 +72,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   static std::unique_ptr<NavigationThrottle> CreateThrottleForNavigation(
       NavigationHandle* navigation_handle);
   static bool IsNetworkHandlerEnabled(FrameTreeNode* frame_tree_node);
+  static std::string UserAgentOverride(FrameTreeNode* frame_tree_node);
 
   static void WebContentsCreated(WebContents* web_contents);
 

@@ -32,7 +32,7 @@
             },
             {
                 "domain": "Network",
-                "include": ["enable", "disable", "clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookie", "setCookie", "canEmulateNetworkConditions"],
+                "include": ["enable", "disable", "clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookie", "setCookie", "setUserAgentOverride", "canEmulateNetworkConditions"],
                 "include_types": ["CookieSameSite", "Cookie"],
                 "include_events": [],
                 "async": ["getCookies", "getAllCookies", "deleteCookie", "setCookie"]

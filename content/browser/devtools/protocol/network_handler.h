@@ -47,13 +47,16 @@ class NetworkHandler : public Network::Backend {
       Maybe<double> expires,
       std::unique_ptr<SetCookieCallback> callback) override;
 
+  Response SetUserAgentOverride(const std::string& user_agent) override;
   Response CanEmulateNetworkConditions(bool* result) override;
 
   bool enabled() const { return enabled_; }
+  std::string UserAgentOverride() const;
 
  private:
   RenderFrameHostImpl* host_;
   bool enabled_;
+  std::string user_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkHandler);
 };
