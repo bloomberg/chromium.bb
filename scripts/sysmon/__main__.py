@@ -20,9 +20,6 @@ from chromite.scripts.sysmon import system_metrics
 from chromite.scripts.sysmon import loop
 from infra_libs.ts_mon.common import interface
 
-DEFAULT_LOG_LEVEL = 'DEBUG'
-DEFAULT_INTERVAL = 60  # 1 minute
-
 logger = logging.getLogger(__name__)
 
 
@@ -44,10 +41,11 @@ def collect_metrics(cycles):
 def main():
   parser = commandline.ArgumentParser(
       description=__doc__,
-      default_log_level=DEFAULT_LOG_LEVEL)
+      default_log_level='DEBUG')
   parser.add_argument(
       '--interval',
-      default=DEFAULT_INTERVAL, type=int,
+      default=60,
+      type=int,
       help='time (in seconds) between sampling system metrics')
   opts = parser.parse_args()
   opts.Freeze()
