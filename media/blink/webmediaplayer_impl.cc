@@ -250,9 +250,6 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
   force_video_overlays_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kForceVideoOverlays);
 
-  disable_fullscreen_video_overlays_ =
-      !base::FeatureList::IsEnabled(media::kOverlayFullscreenVideo);
-
   if (delegate_)
     delegate_id_ = delegate_->AddObserver(this);
 
@@ -312,6 +309,10 @@ void WebMediaPlayerImpl::load(LoadType load_type,
   DoLoad(load_type, url, cors_mode);
 }
 
+void WebMediaPlayerImpl::SetEnableFullscreenOverlays(bool enable_overlays) {
+  enable_fullscreen_video_overlays_ = enable_overlays;
+}
+
 bool WebMediaPlayerImpl::supportsOverlayFullscreenVideo() {
 #if defined(OS_ANDROID)
   return true;
@@ -345,14 +346,14 @@ void WebMediaPlayerImpl::DisableOverlay() {
 }
 
 void WebMediaPlayerImpl::enteredFullscreen() {
-  if (!force_video_overlays_ && !disable_fullscreen_video_overlays_)
+  if (!force_video_overlays_ && enable_fullscreen_video_overlays_)
     EnableOverlay();
   if (observer_)
     observer_->OnEnteredFullscreen();
 }
 
 void WebMediaPlayerImpl::exitedFullscreen() {
-  if (!force_video_overlays_ && !disable_fullscreen_video_overlays_)
+  if (!force_video_overlays_ && enable_fullscreen_video_overlays_)
     DisableOverlay();
   if (observer_)
     observer_->OnExitedFullscreen();

@@ -178,6 +178,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       blink::WebContentDecryptionModule* cdm,
       blink::WebContentDecryptionModuleResult result) override;
 
+  void SetEnableFullscreenOverlays(bool enable_overlays);
   bool supportsOverlayFullscreenVideo() override;
   void enteredFullscreen() override;
   void exitedFullscreen() override;
@@ -536,12 +537,15 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // cleared by the decoder.
   SurfaceCreatedCB set_surface_cb_;
 
-  // Force to use SurfaceView instead of SurfaceTexture on Android.
+  // On Android an overlay surface means using
+  // SurfaceView instead of SurfaceTexture.
+
+  // Use overlays for all video.
   bool force_video_overlays_;
 
-  // Prevent use of SurfaceView on Android. (Ignored when
-  // |force_video_overlays_| is true.)
-  bool disable_fullscreen_video_overlays_;
+  // Use overlays for fullscreen video.
+  // (Implied if |force_video_overlays_| is true.)
+  bool enable_fullscreen_video_overlays_;
 
   // Suppresses calls to OnPipelineError() after destruction / shutdown has been
   // started; prevents us from spuriously logging errors that are transient or
