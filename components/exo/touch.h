@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "components/exo/surface_observer.h"
 #include "ui/events/event_handler.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace ui {
 class TouchEvent;
@@ -17,6 +18,7 @@ class TouchEvent;
 
 namespace exo {
 class TouchDelegate;
+class TouchStylusDelegate;
 
 // This class implements a client touch device that represents one or more
 // touch devices.
@@ -24,6 +26,10 @@ class Touch : public ui::EventHandler, public SurfaceObserver {
  public:
   explicit Touch(TouchDelegate* delegate);
   ~Touch() override;
+
+  // Set delegate for stylus events.
+  void SetStylusDelegate(TouchStylusDelegate* delegate);
+  bool HasStylusDelegate() const;
 
   // Overridden from ui::EventHandler:
   void OnTouchEvent(ui::TouchEvent* event) override;
@@ -37,6 +43,9 @@ class Touch : public ui::EventHandler, public SurfaceObserver {
 
   // The delegate instance that all events are dispatched to.
   TouchDelegate* const delegate_;
+
+  // The delegate instance that all stylus related events are dispatched to.
+  TouchStylusDelegate* stylus_delegate_ = nullptr;
 
   // The current focus surface for the touch device.
   Surface* focus_ = nullptr;

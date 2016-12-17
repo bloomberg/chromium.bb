@@ -6,6 +6,7 @@
 
 #include "components/exo/surface.h"
 #include "components/exo/touch_delegate.h"
+#include "components/exo/touch_stylus_delegate.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/window.h"
 #include "ui/events/event.h"
@@ -42,6 +43,14 @@ Touch::~Touch() {
   WMHelper::GetInstance()->RemovePreTargetHandler(this);
 }
 
+void Touch::SetStylusDelegate(TouchStylusDelegate* delegate) {
+  stylus_delegate_ = delegate;
+}
+
+bool Touch::HasStylusDelegate() const {
+  return !!stylus_delegate_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ui::EventHandler overrides:
 
@@ -76,6 +85,12 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
       // be different from the target surface.
       delegate_->OnTouchDown(focus_, event->time_stamp(), event->touch_id(),
                              location);
+      if (stylus_delegate_ &&
+          event->pointer_details().pointer_type !=
+              ui::EventPointerType::POINTER_TYPE_TOUCH) {
+        stylus_delegate_->OnTouchTool(event->touch_id(),
+                                      event->pointer_details().pointer_type);
+      }
       send_details = true;
     } break;
     case ui::ET_TOUCH_RELEASED: {
@@ -130,6 +145,19 @@ void Touch::OnTouchEvent(ui::TouchEvent* event) {
     delegate_->OnTouchShape(event->touch_id(),
                             event->pointer_details().radius_x,
                             event->pointer_details().radius_y);
+
+    if (stylus_delegate_ &&
+        event->pointer_details().pointer_type !=
+            ui::EventPointerType::POINTER_TYPE_TOUCH) {
+      if (!std::isnan(event->pointer_details().force)) {
+        stylus_delegate_->OnTouchForce(event->time_stamp(), event->touch_id(),
+                                       event->pointer_details().force);
+      }
+      stylus_delegate_->OnTouchTilt(
+          event->time_stamp(), event->touch_id(),
+          gfx::Vector2dF(event->pointer_details().tilt_x,
+                         event->pointer_details().tilt_y));
+    }
   }
   // TODO(denniskempin): Extend ui::TouchEvent to signal end of sequence of
   // touch events to send TouchFrame once after all touches have been updated.

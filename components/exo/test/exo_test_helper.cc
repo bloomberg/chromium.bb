@@ -4,9 +4,17 @@
 
 #include "components/exo/test/exo_test_helper.h"
 
+#include "ash/aura/wm_window_aura.h"
+#include "ash/common/wm/window_positioner.h"
+#include "ash/common/wm/window_positioning_utils.h"
+#include "ash/public/cpp/shell_window_ids.h"
+#include "components/exo/buffer.h"
+#include "components/exo/shell_surface.h"
+#include "components/exo/surface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "ui/aura/env.h"
 #include "ui/compositor/compositor.h"
+#include "ui/views/widget/widget.h"
 
 namespace exo {
 namespace test {
@@ -14,7 +22,41 @@ namespace test {
 ////////////////////////////////////////////////////////////////////////////////
 // ExoTestHelper, public:
 
-ExoTestHelper::ExoTestHelper() {}
+ExoTestWindow::ExoTestWindow(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_buffer,
+                             bool is_modal) {
+  surface_.reset(new Surface());
+  int container = is_modal ? ash::kShellWindowId_SystemModalContainer
+                           : ash::kShellWindowId_DefaultContainer;
+  shell_surface_.reset(new ShellSurface(surface_.get(), nullptr,
+                                        gfx::Rect(gpu_buffer->GetSize()), true,
+                                        false, container));
+
+  buffer_.reset(new Buffer(std::move(gpu_buffer)));
+  surface_->Attach(buffer_.get());
+  surface_->Commit();
+
+  ash::wm::CenterWindow(
+      ash::WmWindowAura::Get(shell_surface_->GetWidget()->GetNativeWindow()));
+}
+
+ExoTestWindow::ExoTestWindow(ExoTestWindow&& other) {
+  surface_ = std::move(other.surface_);
+  buffer_ = std::move(other.buffer_);
+  shell_surface_ = std::move(other.shell_surface_);
+}
+
+ExoTestWindow::~ExoTestWindow() {}
+
+gfx::Point ExoTestWindow::origin() {
+  return surface_->window()->GetBoundsInScreen().origin();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ExoTestHelper, public:
+
+ExoTestHelper::ExoTestHelper() {
+  ash::WindowPositioner::DisableAutoPositioning(true);
+}
 
 ExoTestHelper::~ExoTestHelper() {}
 
@@ -26,6 +68,13 @@ std::unique_ptr<gfx::GpuMemoryBuffer> ExoTestHelper::CreateGpuMemoryBuffer(
       ->CreateGpuMemoryBuffer(size, gfx::BufferFormat::RGBA_8888,
                               gfx::BufferUsage::GPU_READ,
                               gpu::kNullSurfaceHandle);
+}
+
+ExoTestWindow ExoTestHelper::CreateWindow(int width,
+                                          int height,
+                                          bool is_modal) {
+  return ExoTestWindow(CreateGpuMemoryBuffer(gfx::Size(width, height)),
+                       is_modal);
 }
 
 }  // namespace test

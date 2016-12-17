@@ -321,6 +321,7 @@ TEST_F(PointerTest, IgnorePointerEventDuringModal) {
   shell_surface2->SetSystemModal(true);
   EXPECT_TRUE(ash::WmShell::Get()->IsSystemModalWindowOpen());
 
+  EXPECT_CALL(delegate, OnPointerFrame()).Times(testing::AnyNumber());
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface2.get()))

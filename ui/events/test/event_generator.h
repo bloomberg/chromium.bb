@@ -239,6 +239,17 @@ class EventGenerator {
   // Set radius of touch PointerDetails.
   void SetTouchRadius(float x, float y);
 
+  // Set tilt of touch PointerDetails.
+  void SetTouchTilt(float x, float y);
+
+  // Set pointer type of touch PointerDetails.
+  void SetTouchPointerType(ui::EventPointerType type) {
+    touch_pointer_details_.pointer_type = type;
+  }
+
+  // Set force of touch PointerDetails.
+  void SetTouchForce(float force) { touch_pointer_details_.force = force; }
+
   // Generates a touch press event.
   void PressTouch();
 

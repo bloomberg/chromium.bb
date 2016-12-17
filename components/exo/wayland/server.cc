@@ -19,6 +19,7 @@
 #include <remote-shell-unstable-v1-server-protocol.h>            // NOLINT
 #include <secure-output-unstable-v1-server-protocol.h>           // NOLINT
 #include <stylus-unstable-v1-server-protocol.h>                  // NOLINT
+#include <stylus-unstable-v2-server-protocol.h>                  // NOLINT
 #include <vsync-feedback-unstable-v1-server-protocol.h>          // NOLINT
 #include <xdg-shell-unstable-v5-server-protocol.h>               // NOLINT
 
@@ -53,7 +54,6 @@
 #include "components/exo/notification_surface_manager.h"
 #include "components/exo/pointer.h"
 #include "components/exo/pointer_delegate.h"
-#include "components/exo/pointer_stylus_delegate.h"
 #include "components/exo/shared_memory.h"
 #include "components/exo/shell_surface.h"
 #include "components/exo/sub_surface.h"
@@ -61,6 +61,7 @@
 #include "components/exo/surface_property.h"
 #include "components/exo/touch.h"
 #include "components/exo/touch_delegate.h"
+#include "components/exo/touch_stylus_delegate.h"
 #include "components/exo/wm_helper.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/window_property.h"
@@ -2941,86 +2942,131 @@ void bind_gaming_input(wl_client* client,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// pointer_stylus interface:
+// touch_stylus interface:
 
-class WaylandPointerStylusDelegate : public PointerStylusDelegate {
+class WaylandTouchStylusDelegate : public TouchStylusDelegate {
  public:
-  WaylandPointerStylusDelegate(wl_resource* resource, Pointer* pointer)
-      : resource_(resource), pointer_(pointer) {
-    pointer_->SetStylusDelegate(this);
+  WaylandTouchStylusDelegate(wl_resource* resource, Touch* touch)
+      : resource_(resource), touch_(touch) {
+    touch_->SetStylusDelegate(this);
   }
-  ~WaylandPointerStylusDelegate() override {
-    if (pointer_ != nullptr)
-      pointer_->SetStylusDelegate(nullptr);
+  ~WaylandTouchStylusDelegate() override {
+    if (touch_ != nullptr)
+      touch_->SetStylusDelegate(nullptr);
   }
-  void OnPointerDestroying(Pointer* pointer) override { pointer_ = nullptr; }
-  void OnPointerToolChange(ui::EventPointerType type) override {
-    uint wayland_type = ZCR_POINTER_STYLUS_V1_TOOL_TYPE_MOUSE;
+  void OnTouchDestroying(Touch* touch) override { touch_ = nullptr; }
+  void OnTouchTool(int touch_id, ui::EventPointerType type) override {
+    uint wayland_type = ZCR_TOUCH_STYLUS_V2_TOOL_TYPE_TOUCH;
     if (type == ui::EventPointerType::POINTER_TYPE_PEN)
-      wayland_type = ZCR_POINTER_STYLUS_V1_TOOL_TYPE_PEN;
+      wayland_type = ZCR_TOUCH_STYLUS_V2_TOOL_TYPE_PEN;
     else if (type == ui::EventPointerType::POINTER_TYPE_ERASER)
-      wayland_type = ZCR_POINTER_STYLUS_V1_TOOL_TYPE_ERASER;
-    zcr_pointer_stylus_v1_send_tool_change(resource_, wayland_type);
+      wayland_type = ZCR_TOUCH_STYLUS_V2_TOOL_TYPE_ERASER;
+    zcr_touch_stylus_v2_send_tool(resource_, touch_id, wayland_type);
   }
-  void OnPointerForce(base::TimeTicks time_stamp, float force) override {
-    zcr_pointer_stylus_v1_send_force(resource_,
-                                     TimeTicksToMilliseconds(time_stamp),
-                                     wl_fixed_from_double(force));
+  void OnTouchForce(base::TimeTicks time_stamp,
+                    int touch_id,
+                    float force) override {
+    zcr_touch_stylus_v2_send_force(resource_,
+                                   TimeTicksToMilliseconds(time_stamp),
+                                   touch_id, wl_fixed_from_double(force));
   }
-  void OnPointerTilt(base::TimeTicks time_stamp, gfx::Vector2dF tilt) override {
-    zcr_pointer_stylus_v1_send_tilt(
-        resource_, TimeTicksToMilliseconds(time_stamp),
+  void OnTouchTilt(base::TimeTicks time_stamp,
+                   int touch_id,
+                   const gfx::Vector2dF& tilt) override {
+    zcr_touch_stylus_v2_send_tilt(
+        resource_, TimeTicksToMilliseconds(time_stamp), touch_id,
         wl_fixed_from_double(tilt.x()), wl_fixed_from_double(tilt.y()));
   }
 
  private:
   wl_resource* resource_;
-  Pointer* pointer_;
+  Touch* touch_;
 
-  // The client who own this pointer stylus instance.
-  wl_client* client() const { return wl_resource_get_client(resource_); }
-
-  DISALLOW_COPY_AND_ASSIGN(WaylandPointerStylusDelegate);
+  DISALLOW_COPY_AND_ASSIGN(WaylandTouchStylusDelegate);
 };
 
-void pointer_stylus_destroy(wl_client* client, wl_resource* resource) {
+void touch_stylus_destroy(wl_client* client, wl_resource* resource) {
   wl_resource_destroy(resource);
 }
 
-const struct zcr_pointer_stylus_v1_interface pointer_stylus_implementation = {
-    pointer_stylus_destroy};
+const struct zcr_touch_stylus_v2_interface touch_stylus_implementation = {
+    touch_stylus_destroy};
 
 ////////////////////////////////////////////////////////////////////////////////
-// stylus interface:
+// stylus_v2 interface:
 
-void stylus_get_pointer_stylus(wl_client* client,
-                               wl_resource* resource,
-                               uint32_t id,
-                               wl_resource* pointer_resource) {
-  Pointer* pointer = GetUserDataAs<Pointer>(pointer_resource);
-  if (pointer->HasStylusDelegate()) {
+void stylus_get_touch_stylus(wl_client* client,
+                             wl_resource* resource,
+                             uint32_t id,
+                             wl_resource* touch_resource) {
+  Touch* touch = GetUserDataAs<Touch>(touch_resource);
+  if (touch->HasStylusDelegate()) {
     wl_resource_post_error(
-        resource, ZCR_STYLUS_V1_ERROR_POINTER_STYLUS_EXISTS,
-        "pointer has already been associated with a stylus object");
+        resource, ZCR_STYLUS_V2_ERROR_TOUCH_STYLUS_EXISTS,
+        "touch has already been associated with a stylus object");
     return;
   }
 
   wl_resource* stylus_resource =
-      wl_resource_create(client, &zcr_pointer_stylus_v1_interface, 1, id);
+      wl_resource_create(client, &zcr_touch_stylus_v2_interface, 1, id);
 
   SetImplementation(
-      stylus_resource, &pointer_stylus_implementation,
-      base::MakeUnique<WaylandPointerStylusDelegate>(stylus_resource, pointer));
+      stylus_resource, &touch_stylus_implementation,
+      base::MakeUnique<WaylandTouchStylusDelegate>(stylus_resource, touch));
 }
 
-const struct zcr_stylus_v1_interface stylus_implementation = {
-    stylus_get_pointer_stylus};
+const struct zcr_stylus_v2_interface stylus_v2_implementation = {
+    stylus_get_touch_stylus};
 
-void bind_stylus(wl_client* client, void* data, uint32_t version, uint32_t id) {
+void bind_stylus_v2(wl_client* client,
+                    void* data,
+                    uint32_t version,
+                    uint32_t id) {
+  wl_resource* resource =
+      wl_resource_create(client, &zcr_stylus_v2_interface, version, id);
+  wl_resource_set_implementation(resource, &stylus_v2_implementation, data,
+                                 nullptr);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// pointer_stylus interface (deprecated)
+// TODO(denniskempin): Remove once client no longer depends on this interface.
+
+void pointer_stylus_destroy_DEPRECATED(wl_client* client,
+                                       wl_resource* resource) {
+  wl_resource_destroy(resource);
+}
+
+const struct zcr_pointer_stylus_v1_interface
+    pointer_stylus_implementation_DEPRECATED = {
+        pointer_stylus_destroy_DEPRECATED};
+
+////////////////////////////////////////////////////////////////////////////////
+// stylus_v1 interface (deprecated):
+// TODO(denniskempin): Remove once client no longer depends on this interface.
+
+void stylus_get_pointer_stylus_DEPRECATED(wl_client* client,
+                                          wl_resource* resource,
+                                          uint32_t id,
+                                          wl_resource* pointer_resource) {
+  wl_resource* stylus_resource =
+      wl_resource_create(client, &zcr_pointer_stylus_v1_interface, 1, id);
+  wl_resource_set_implementation(stylus_resource,
+                                 &pointer_stylus_implementation_DEPRECATED,
+                                 nullptr, nullptr);
+}
+
+const struct zcr_stylus_v1_interface stylus_v1_implementation_DEPRECATED = {
+    stylus_get_pointer_stylus_DEPRECATED};
+
+void bind_stylus_v1_DEPRECATED(wl_client* client,
+                               void* data,
+                               uint32_t version,
+                               uint32_t id) {
   wl_resource* resource =
       wl_resource_create(client, &zcr_stylus_v1_interface, version, id);
-  wl_resource_set_implementation(resource, &stylus_implementation, data,
-                                 nullptr);
+  wl_resource_set_implementation(resource, &stylus_v1_implementation_DEPRECATED,
+                                 data, nullptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -3149,7 +3195,9 @@ Server::Server(Display* display)
   wl_global_create(wl_display_.get(), &zcr_gaming_input_v1_interface, 1,
                    display_, bind_gaming_input);
   wl_global_create(wl_display_.get(), &zcr_stylus_v1_interface, 2, display_,
-                   bind_stylus);
+                   bind_stylus_v1_DEPRECATED);
+  wl_global_create(wl_display_.get(), &zcr_stylus_v2_interface, 1, display_,
+                   bind_stylus_v2);
   wl_global_create(wl_display_.get(), &zcr_keyboard_configuration_v1_interface,
                    2, display_, bind_keyboard_configuration);
 }

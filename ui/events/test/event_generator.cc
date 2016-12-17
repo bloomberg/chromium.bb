@@ -274,6 +274,11 @@ void EventGenerator::SetTouchRadius(float x, float y) {
   touch_pointer_details_.radius_y = y;
 }
 
+void EventGenerator::SetTouchTilt(float x, float y) {
+  touch_pointer_details_.tilt_x = x;
+  touch_pointer_details_.tilt_y = y;
+}
+
 void EventGenerator::PressTouch() {
   PressTouchId(0);
 }
