@@ -19,6 +19,8 @@ import psutil
 from chromite.lib import cros_logging as logging
 from infra_libs import ts_mon
 
+logger = logging.getLogger(__name__)
+
 
 _cpu_count_metric = ts_mon.GaugeMetric(
     'dev/cpu/count',
@@ -239,7 +241,7 @@ def get_net_info():
         # This normally shouldn't happen, but might if the network
         # driver module is reloaded, so log an error and continue
         # instead of raising an exception.
-        logging.warning(str(ex))
+        logger.warning(str(ex))
 
 
 def get_proc_info():
@@ -252,8 +254,8 @@ def get_proc_info():
     elif _is_sysmon(proc):
       sysmon_count += 1
     total += 1
-  logging.debug('autoserv_count: %s', autoserv_count)
-  logging.debug('sysmon_count: %s', sysmon_count)
+  logger.debug('autoserv_count: %s', autoserv_count)
+  logger.debug('sysmon_count: %s', sysmon_count)
   _autoserv_proc_count_metric.set(autoserv_count)
   _sysmon_proc_count_metric.set(sysmon_count)
   _proc_count_metric.set(total)

@@ -1,0 +1,39 @@
+#!/bin/sh
+# Copyright 2016 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+#
+# Run chromite tests using a full virtualenv.
+#
+# Without arguments, runs all tests.  You can specify a specific
+# module’s tests to run:
+#
+# $ run_tests chromite.lib.metadata_lib_unittest
+#
+# This will also discover all tests under a package.  For example:
+#
+# $ run_tests chromite.lib.paygen
+#
+# This command will run all tests in the paygen package/directory.
+#
+# This uses the full virtualenv to allow the unittest module to
+# discover tests by import path.  See the README in the chromite/venv
+# directory for more information about full virtualenv.
+#
+# TODO(ayatane): Running all tests should be considered experimental
+# for now.  It needs to be checked that the exit status properly
+# reflects failures, and the UI/test output should be evaluated and
+# probably cleaned up.
+set -eu
+cd "$(dirname "$(readlink -f "$0")")"
+. ./find_virtualenv.sh
+
+unittest_discover() {
+    exec_python_module unittest discover -p '*_unittest.py' "$@"
+}
+
+if [ "$#" -gt 0 ]; then
+    unittest_discover "$@"
+else
+    unittest_discover chromite
+fi
