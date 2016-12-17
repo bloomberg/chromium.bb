@@ -38,7 +38,7 @@ function test()
     function dumpSearchResults(next)
     {
         var searchConfig = new Workspace.SearchConfig("window.foo f:foo", true, false);
-        InspectorTest.runSearchAndDumpResults(scope, searchConfig, true, next);
+        InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
     }
 
     InspectorFrontendHost.searchInPath = function(requestId, path, query)

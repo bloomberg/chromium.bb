@@ -2234,7 +2234,6 @@ crbug.com/674720 [ Debug Trusty ] http/tests/loading/preload-img-test.html [ Pas
 # Added 2016-12-16
 crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-2d-printing.html [ Pass Failure Crash ]
 crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-webgl-printing.html [ Pass Failure Crash ]
-crbug.com/674917 http/tests/inspector/search/sources-search-scope-many-projects.html [ Pass Failure ]
 crbug.com/675055 [ Trusty Debug ] virtual/android/fullscreen/full-screen-stacking-context.html [ Failure ]
 
 # for Skia DEPS roll

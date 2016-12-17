@@ -97,7 +97,7 @@ function test()
         {
             var query = "searchTest" + "UniqueString";
             var searchConfig = new Workspace.SearchConfig(query, true, false);
-            InspectorTest.runSearchAndDumpResults(scope, searchConfig, false, next);
+            InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
         },
 
         function testDirtyFiles(next)
@@ -107,7 +107,7 @@ function test()
 
             var query = "searchTest" + "UniqueString";
             var searchConfig = new Workspace.SearchConfig(query, true, false);
-            InspectorTest.runSearchAndDumpResults(scope, searchConfig, false, next);
+            InspectorTest.runSearchAndDumpResults(scope, searchConfig, next);
         }
     ];
 }

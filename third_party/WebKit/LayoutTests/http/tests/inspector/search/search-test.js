@@ -26,7 +26,7 @@ InspectorTest.dumpSearchMatches = function(searchMatches)
     InspectorTest.addResult("");
 };
 
-InspectorTest.runSearchAndDumpResults = function(scope, searchConfig, sortByURI, callback)
+InspectorTest.runSearchAndDumpResults = function(scope, searchConfig, callback)
 {
     var searchResults = [];
     var progress = new Common.Progress();
@@ -43,8 +43,7 @@ InspectorTest.runSearchAndDumpResults = function(scope, searchConfig, sortByURI,
         {
             return searchResultA.uiSourceCode.url().compareTo(searchResultB.uiSourceCode.url());
         }
-        if (sortByURI)
-            searchResults.sort(comparator);
+        searchResults.sort(comparator);
 
         for (var i = 0; i < searchResults.length; ++i) {
             var searchResult = searchResults[i];
