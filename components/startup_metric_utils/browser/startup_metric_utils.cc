@@ -609,13 +609,6 @@ void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
         process_creation_ticks, ticks);
   }
 
-  // TODO(fdoray): Remove histograms that are only recorded after 7 minutes of
-  // OS uptime once M54 hits stable. These histograms are kept for now to allow
-  // regressions to be caught reliably in M54, to be removed in M55.
-  // crbug.com/634408
-  const bool is_seven_minutes_after_boot =
-      base::SysInfo::Uptime() < base::TimeDelta::FromMinutes(7);
-
   // Record timing between the shared library's main() entry and the browser
   // main message loop start.
   if (is_first_run) {
@@ -623,23 +616,11 @@ void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
         UMA_HISTOGRAM_LONG_TIMES,
         "Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun2",
         g_browser_main_entry_point_ticks.Get(), ticks);
-    if (is_seven_minutes_after_boot) {
-      UMA_HISTOGRAM_WITH_TEMPERATURE(
-          UMA_HISTOGRAM_LONG_TIMES,
-          "Startup.BrowserMessageLoopStartTimeFromMainEntry.FirstRun",
-          ticks - g_browser_main_entry_point_ticks.Get());
-    }
   } else {
     UMA_HISTOGRAM_AND_TRACE_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
         UMA_HISTOGRAM_LONG_TIMES,
         "Startup.BrowserMessageLoopStartTimeFromMainEntry2",
         g_browser_main_entry_point_ticks.Get(), ticks);
-    if (is_seven_minutes_after_boot) {
-      UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
-          UMA_HISTOGRAM_LONG_TIMES,
-          "Startup.BrowserMessageLoopStartTimeFromMainEntry",
-          ticks - g_browser_main_entry_point_ticks.Get());
-    }
   }
 
   // Record timings between process creation, the main() in the executable being
@@ -665,18 +646,6 @@ void RecordBrowserMainMessageLoopStart(const base::TimeTicks& ticks,
     UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
         UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToDllMain2",
         main_entry_ticks - process_creation_ticks);
-
-    if (is_seven_minutes_after_boot) {
-      UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
-          UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToExeMain",
-          exe_main_ticks - process_creation_ticks);
-      UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
-          UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ExeMainToDllMain",
-          main_entry_ticks - exe_main_ticks);
-      UMA_HISTOGRAM_WITH_TEMPERATURE_AND_SAME_VERSION_COUNT(
-          UMA_HISTOGRAM_LONG_TIMES, "Startup.LoadTime.ProcessCreateToDllMain",
-          main_entry_ticks - process_creation_ticks);
-    }
   }
 }
 
