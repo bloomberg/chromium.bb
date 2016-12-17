@@ -159,6 +159,8 @@ cr.define('device_page_tests', function() {
       settings.display.systemDisplayApi = fakeSystemDisplay;
 
       PolymerTest.clearBody();
+      settings.navigateTo(settings.Route.BASIC);
+
       devicePage = document.createElement('settings-device-page');
       devicePage.prefs = getFakePrefs();
       settings.DevicePageBrowserProxyImpl.instance_ =

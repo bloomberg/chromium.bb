@@ -16,23 +16,20 @@ Polymer({
   ],
 
   properties: {
-    /** Preferences state. */
     prefs: {
       type: Object,
       notify: true,
     },
 
-    /** @private */
-    hasMouse_: {
-      type: Boolean,
-      value: false,
-    },
+    /**
+     * |hasMouse_| and |hasTouchpad_| start undefined so observers don't trigger
+     * until both have been populated.
+     * @private
+     */
+    hasMouse_: Boolean,
 
     /** @private */
-    hasTouchpad_: {
-      type: Boolean,
-      value: false,
-    },
+    hasTouchpad_: Boolean,
 
     /** @private */
     stylusAllowed_: {
@@ -48,11 +45,17 @@ Polymer({
     'pointersChanged_(hasMouse_, hasTouchpad_)',
   ],
 
+  /** @override */
   ready: function() {
-    cr.addWebUIListener('has-mouse-changed', this.set.bind(this, 'hasMouse_'));
-    cr.addWebUIListener(
-        'has-touchpad-changed', this.set.bind(this, 'hasTouchpad_'));
     settings.DevicePageBrowserProxyImpl.getInstance().initializePointers();
+  },
+
+  /** @override */
+  attached: function() {
+    this.addWebUIListener(
+        'has-mouse-changed', this.set.bind(this, 'hasMouse_'));
+    this.addWebUIListener(
+        'has-touchpad-changed', this.set.bind(this, 'hasTouchpad_'));
   },
 
   /**
@@ -141,7 +144,8 @@ Polymer({
    * @private
    */
   checkPointerSubpage_: function() {
-    if (!this.hasMouse_ && !this.hasTouchpad_ &&
+    // Check that the properties have explicitly been set to false.
+    if (this.hasMouse_ === false && this.hasTouchpad_ === false &&
         settings.getCurrentRoute() == settings.Route.POINTERS) {
       settings.navigateTo(settings.Route.DEVICE);
     }
