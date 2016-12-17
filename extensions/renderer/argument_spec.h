@@ -32,6 +32,7 @@ enum class ArgumentType {
   FUNCTION,
   ANY,
   REF,
+  CHOICES,
 };
 
 // A description of a given Argument to an Extension.
@@ -108,6 +109,10 @@ class ArgumentSpec {
 
   // The type of item that should be in the list; present only for lists.
   std::unique_ptr<ArgumentSpec> list_element_type_;
+
+  // The different possible specs this argument can map to. Only populated for
+  // arguments of type CHOICES.
+  std::vector<std::unique_ptr<ArgumentSpec>> choices_;
 
   // The possible enum values, if defined for this argument.
   std::set<std::string> enum_values_;

@@ -286,4 +286,32 @@ TEST_F(ArgumentSpecUnitTest, TypeRefsTest) {
   }
 }
 
+TEST_F(ArgumentSpecUnitTest, TypeChoicesTest) {
+  {
+    const char kSimpleChoices[] =
+        "{'choices': [{'type': 'string'}, {'type': 'integer'}]}";
+    ArgumentSpec spec(*ValueFromString(kSimpleChoices));
+    ExpectSuccess(spec, "'alpha'", "'alpha'");
+    ExpectSuccess(spec, "42", "42");
+    ExpectFailure(spec, "true");
+  }
+
+  {
+    const char kComplexChoices[] =
+        "{"
+        "  'choices': ["
+        "    {'type': 'array', 'items': {'type': 'string'}},"
+        "    {'type': 'object', 'properties': {'prop1': {'type': 'string'}}}"
+        "  ]"
+        "}";
+    ArgumentSpec spec(*ValueFromString(kComplexChoices));
+    ExpectSuccess(spec, "['alpha']", "['alpha']");
+    ExpectSuccess(spec, "['alpha', 'beta']", "['alpha','beta']");
+    ExpectSuccess(spec, "({prop1: 'alpha'})", "{'prop1':'alpha'}");
+    ExpectFailure(spec, "({prop1: 1})");
+    ExpectFailure(spec, "'alpha'");
+    ExpectFailure(spec, "42");
+  }
+}
+
 }  // namespace extensions

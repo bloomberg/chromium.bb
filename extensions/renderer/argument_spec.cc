@@ -47,6 +47,18 @@ void ArgumentSpec::InitializeType(const base::DictionaryValue* dict) {
     return;
   }
 
+  {
+    const base::ListValue* choices = nullptr;
+    if (dict->GetList("choices", &choices)) {
+      DCHECK(!choices->empty());
+      type_ = ArgumentType::CHOICES;
+      choices_.reserve(choices->GetSize());
+      for (const auto& choice : *choices)
+        choices_.push_back(base::MakeUnique<ArgumentSpec>(*choice));
+      return;
+    }
+  }
+
   std::string type_string;
   CHECK(dict->GetString("type", &type_string));
   if (type_string == "integer")
@@ -120,6 +132,17 @@ std::unique_ptr<base::Value> ArgumentSpec::ConvertArgument(
     auto iter = refs.find(ref_.value());
     DCHECK(iter != refs.end()) << ref_.value();
     return iter->second->ConvertArgument(context, value, refs, error);
+  }
+
+  if (type_ == ArgumentType::CHOICES) {
+    for (const auto& choice : choices_) {
+      std::unique_ptr<base::Value> result =
+          choice->ConvertArgument(context, value, refs, error);
+      if (result)
+        return result;
+    }
+    *error = "Did not match any of the choices";
+    return nullptr;
   }
 
   if (IsFundamentalType())
