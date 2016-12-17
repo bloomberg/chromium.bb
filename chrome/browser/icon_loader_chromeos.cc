@@ -203,5 +203,6 @@ void IconLoader::ReadIcon() {
   image_skia.MakeThreadSafe();
   image_.reset(new gfx::Image(image_skia));
   target_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&IconLoader::NotifyDelegate, this));
+      FROM_HERE, base::Bind(callback_, base::Passed(&image_), group_));
+  delete this;
 }

@@ -10,33 +10,35 @@
 
 using content::BrowserThread;
 
-IconLoader::IconLoader(const base::FilePath& file_path,
-                       IconSize size,
-                       Delegate* delegate)
-    : file_path_(file_path),
-      icon_size_(size),
-      delegate_(delegate) {}
-
-IconLoader::~IconLoader() {
+// static
+IconLoader* IconLoader::Create(const base::FilePath& file_path,
+                               IconSize size,
+                               IconLoadedCallback callback) {
+  return new IconLoader(file_path, size, callback);
 }
 
 void IconLoader::Start() {
   target_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
-  BrowserThread::PostTaskAndReply(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&IconLoader::ReadGroup, this),
-      base::Bind(&IconLoader::OnReadGroup, this));
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(&IconLoader::ReadGroup, base::Unretained(this)),
+      base::Bind(&IconLoader::OnReadGroup, base::Unretained(this)));
 }
+
+IconLoader::IconLoader(const base::FilePath& file_path,
+                       IconSize size,
+                       IconLoadedCallback callback)
+    : file_path_(file_path), icon_size_(size), callback_(callback) {}
+
+IconLoader::~IconLoader() {}
 
 void IconLoader::ReadGroup() {
   group_ = GroupForFilepath(file_path_);
 }
 
 void IconLoader::OnReadGroup() {
-  BrowserThread::PostTask(ReadIconThreadID(), FROM_HERE,
-                          base::Bind(&IconLoader::ReadIcon, this));
-}
-
-void IconLoader::NotifyDelegate() {
-  delegate_->OnImageLoaded(this, std::move(image_), group_);
+  BrowserThread::PostTask(
+      ReadIconThreadID(), FROM_HERE,
+      base::Bind(&IconLoader::ReadIcon, base::Unretained(this)));
 }

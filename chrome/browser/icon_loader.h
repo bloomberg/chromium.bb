@@ -8,9 +8,9 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,7 +22,7 @@
 // thread. Returns the icon in the form of an ImageSkia.
 //
 ////////////////////////////////////////////////////////////////////////////////
-class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
+class IconLoader {
  public:
   // An IconGroup is a class of files that all share the same icon. For all
   // platforms but Windows, and for most files on Windows, it is the file type
@@ -39,30 +39,29 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
     ALL,        // All sizes available
   };
 
-  class Delegate {
-   public:
-    // Invoked when an icon has been read. |source| is the IconLoader. If the
-    // icon has been successfully loaded, |result| is non-null. |group| is the
-    // determined group from the original requested path.
-    virtual void OnImageLoaded(IconLoader* source,
-                               std::unique_ptr<gfx::Image> result,
-                               const IconGroup& group) = 0;
+  // The callback invoked when an icon has been read. The parameters are:
+  // - The icon that was loaded, or null if there was a failure to load it.
+  // - The determined group from the original requested path.
+  using IconLoadedCallback =
+      base::Callback<void(std::unique_ptr<gfx::Image>, const IconGroup&)>;
 
-   protected:
-    virtual ~Delegate() {}
-  };
+  // Creates an IconLoader, which owns itself. If the IconLoader might outlive
+  // the caller, be sure to use a weak pointer in the |callback|.
+  static IconLoader* Create(const base::FilePath& file_path,
+                            IconSize size,
+                            IconLoadedCallback callback);
 
-  IconLoader(const base::FilePath& file_path,
-             IconSize size,
-             Delegate* delegate);
-
-  // Start reading the icon on the file thread.
+  // Starts the process of reading the icon. When the reading of the icon is
+  // complete, the IconLoadedCallback callback will be fulfilled, and the
+  // IconLoader will delete itself.
   void Start();
 
  private:
-  friend class base::RefCountedThreadSafe<IconLoader>;
+  IconLoader(const base::FilePath& file_path,
+             IconSize size,
+             IconLoadedCallback callback);
 
-  virtual ~IconLoader();
+  ~IconLoader();
 
   // Given a file path, get the group for the given file.
   static IconGroup GroupForFilepath(const base::FilePath& file_path);
@@ -73,8 +72,6 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
   void ReadGroup();
   void OnReadGroup();
   void ReadIcon();
-
-  void NotifyDelegate();
 
   // The task runner object of the thread in which we notify the delegate.
   scoped_refptr<base::SingleThreadTaskRunner> target_task_runner_;
@@ -87,7 +84,7 @@ class IconLoader : public base::RefCountedThreadSafe<IconLoader> {
 
   std::unique_ptr<gfx::Image> image_;
 
-  Delegate* delegate_;
+  IconLoadedCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(IconLoader);
 };

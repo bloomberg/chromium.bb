@@ -46,5 +46,6 @@ void IconLoader::ReadIcon() {
   }
 
   target_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&IconLoader::NotifyDelegate, this));
+      FROM_HERE, base::Bind(callback_, base::Passed(&image_), group_));
+  delete this;
 }

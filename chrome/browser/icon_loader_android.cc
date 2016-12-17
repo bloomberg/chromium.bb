@@ -20,4 +20,5 @@ content::BrowserThread::ID IconLoader::ReadIconThreadID() {
 
 void IconLoader::ReadIcon() {
   NOTIMPLEMENTED();
+  delete this;
 }

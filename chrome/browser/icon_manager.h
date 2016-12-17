@@ -50,14 +50,15 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/icon_loader.h"
 #include "ui/gfx/image/image.h"
 
-class IconManager : public IconLoader::Delegate {
+class IconManager {
  public:
   IconManager();
-  ~IconManager() override;
+  ~IconManager();
 
   // Synchronous call to examine the internal caches for the icon. Returns the
   // icon if we have already loaded it, or null if we don't have it and must
@@ -86,10 +87,11 @@ class IconManager : public IconLoader::Delegate {
       base::CancelableTaskTracker* tracker);
 
  private:
-  // IconLoader::Delegate interface.
-  void OnImageLoaded(IconLoader* loader,
-                     std::unique_ptr<gfx::Image> result,
-                     const IconLoader::IconGroup& group) override;
+  void OnIconLoaded(IconRequestCallback callback,
+                    base::FilePath file_path,
+                    IconLoader::IconSize size,
+                    std::unique_ptr<gfx::Image> result,
+                    const IconLoader::IconGroup& group);
 
   struct CacheKey {
     CacheKey(const IconLoader::IconGroup& group, IconLoader::IconSize size);
@@ -104,9 +106,7 @@ class IconManager : public IconLoader::Delegate {
   std::map<base::FilePath, IconLoader::IconGroup> group_cache_;
   std::map<CacheKey, std::unique_ptr<gfx::Image>> icon_cache_;
 
-  // Asynchronous requests that have not yet been completed.
-  struct ClientRequest;
-  std::map<IconLoader*, ClientRequest> requests_;
+  base::WeakPtrFactory<IconManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(IconManager);
 };
