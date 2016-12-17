@@ -884,8 +884,8 @@ def DefaultSettings(site_params):
   return defaults
 
 
-def CreateBuilderTemplates(site_config, ge_build_config):
-  """CreateBuilderTemplates defines all BuildConfig templates.
+def GeneralTemplates(site_config, ge_build_config):
+  """Defines templates that are shared between categories of builders.
 
   Args:
     site_config: A SiteConfig object to add the templates too.
@@ -1989,88 +1989,26 @@ def AndroidPfqBuilders(site_config, ge_build_config):
   )
 
 
-def _GetConfig(site_config, ge_build_config):
-  """Method with un-refactored build configs/templates.
+def FullBuilders(site_config, ge_build_config):
+  """Create all full builders.
 
   Args:
     site_config: config_lib.SiteConfig to be modified by adding templates
                  and configs.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  board_configs = CreateBoardConfigs(site_config, ge_build_config)
+  external_board_configs = CreateBoardConfigs(site_config, ge_build_config)
 
-  site_config.Add(
-      'master-chromium-pfq',
-      site_config.templates.chromium_pfq,
-      boards=[],
-      master=True,
-      binhost_test=True,
-      push_overlays=constants.BOTH_OVERLAYS,
-      afdo_update_ebuild=True,
-      chrome_sdk=False,
-      health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
-                               'tree',
-                               'chrome'],
-  )
-
-  _chromium_pfq_important_boards = frozenset([
-      'arm-generic',
-      'daisy',
-      'veyron_jerry',
-      'x86-generic',
-      'amd64-generic',
-  ])
-
-  def _AddFullConfigs():
-    """Add x86 and arm full configs."""
-    site_config.AddForBoards(
-        config_lib.CONFIG_TYPE_FULL,
-        _all_full_boards,
-        board_configs,
-        site_config.templates.full,
-        site_config.templates.build_external_chrome,
-        internal=False,
-        manifest_repo_url=site_config.params['MANIFEST_URL'],
-        overlays=constants.PUBLIC_OVERLAYS,
-        prebuilts=constants.PUBLIC)
-    # TODO: Move to Informational
-    site_config.AddForBoards(
-        'tot-chromium-pfq-informational',
-        _all_full_boards,
-        board_configs,
-        site_config.templates.chromium_pfq_informational,
-        site_config.templates.build_external_chrome,
-        important=False,
-        internal=False,
-        manifest_repo_url=site_config.params['MANIFEST_URL'],
-        overlays=constants.PUBLIC_OVERLAYS)
-    # TODO: Move to Informational
-    site_config.AddForBoards(
-        'tot-chromium-pfq-informational-gn',
-        _all_full_boards,
-        board_configs,
-        site_config.templates.chromium_pfq_informational_gn,
-        site_config.templates.build_external_chrome,
-        important=False,
-        internal=False,
-        manifest_repo_url=site_config.params['MANIFEST_URL'],
-        overlays=constants.PUBLIC_OVERLAYS)
-    # Create important configs, then non-important configs.
-    site_config.AddForBoards(
-        'chromium-pfq',
-        _chromium_pfq_important_boards,
-        board_configs,
-        site_config.templates.chromium_pfq,
-        site_config.templates.build_external_chrome)
-    site_config.AddForBoards(
-        'chromium-pfq',
-        _all_full_boards - _chromium_pfq_important_boards,
-        board_configs,
-        site_config.templates.chromium_pfq,
-        site_config.templates.build_external_chrome,
-        important=False)
-
-  _AddFullConfigs()
+  site_config.AddForBoards(
+      config_lib.CONFIG_TYPE_FULL,
+      _all_full_boards,
+      external_board_configs,
+      site_config.templates.full,
+      site_config.templates.build_external_chrome,
+      internal=False,
+      manifest_repo_url=site_config.params['MANIFEST_URL'],
+      overlays=constants.PUBLIC_OVERLAYS,
+      prebuilts=constants.PUBLIC)
 
 
 def CqBuilders(site_config, ge_build_config):
@@ -2456,7 +2394,7 @@ def CqBuilders(site_config, ge_build_config):
   ShardHWTestsBetweenBuilders('elm-paladin', None)
 
 
-def Incrementals(site_config, ge_build_config):
+def IncrementalBuilders(site_config, ge_build_config):
   """Create all incremental build configs.
 
   Args:
@@ -2538,7 +2476,7 @@ def Incrementals(site_config, ge_build_config):
   )
 
 
-def ReleaseAfdoTryjobs(site_config, ge_build_config):
+def ReleaseAfdoBuilders(site_config, ge_build_config):
   """Create AFDO Performance tryjobs.
 
   Args:
@@ -2586,7 +2524,7 @@ def ReleaseAfdoTryjobs(site_config, ge_build_config):
     )
 
 
-def Informational(site_config, ge_build_config):
+def InformationalBuilders(site_config, ge_build_config):
   """Create all informational builders.
 
   We have a number of informational builders that are built, but whose output is
@@ -2597,7 +2535,10 @@ def Informational(site_config, ge_build_config):
                  and configs.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+  external_board_configs = CreateBoardConfigs(site_config, ge_build_config)
+  internal_board_configs = CreateInternalBoardConfigs(
+      site_config, ge_build_config)
+
   hw_test_list = HWTestList(ge_build_config)
 
   _chrome_informational_hwtest_boards = frozenset([
@@ -2612,7 +2553,7 @@ def Informational(site_config, ge_build_config):
   site_config.AddForBoards(
       'tot-chrome-pfq-informational',
       _chrome_informational_hwtest_boards,
-      board_configs,
+      internal_board_configs,
       site_config.templates.chrome_pfq_informational,
       important=False,
       hw_tests=hw_test_list.DefaultListPFQ(
@@ -2622,19 +2563,19 @@ def Informational(site_config, ge_build_config):
   site_config.AddForBoards(
       'tot-chrome-pfq-informational',
       informational_boards-_chrome_informational_hwtest_boards,
-      board_configs,
+      internal_board_configs,
       site_config.templates.chrome_pfq_informational,
       important=False)
   site_config.AddForBoards(
       'tot-chrome-pfq-informational-gn',
       informational_boards,
-      board_configs,
+      internal_board_configs,
       site_config.templates.chrome_pfq_informational_gn,
       important=False)
   site_config.AddForBoards(
       'tot-chrome-pfq-cheets-informational',
       _cheets_boards,
-      board_configs,
+      internal_board_configs,
       site_config.templates.chrome_pfq_cheets_informational,
       important=False)
 
@@ -2668,7 +2609,7 @@ def Informational(site_config, ge_build_config):
   site_config.AddForBoards(
       'chrome-perf',
       _chrome_perf_boards,
-      board_configs,
+      internal_board_configs,
       site_config.templates.chrome_perf,
       trybot_list=True,
   )
@@ -2676,11 +2617,33 @@ def Informational(site_config, ge_build_config):
   site_config.AddForBoards(
       'telem-chromium-pfq-informational',
       ['x86-generic', 'amd64-generic'],
-      board_configs,
+      internal_board_configs,
       site_config.templates.chromium_pfq_informational,
       site_config.templates.telemetry,
       site_config.templates.chrome_try,
   )
+
+  site_config.AddForBoards(
+      'tot-chromium-pfq-informational',
+      _all_full_boards,
+      external_board_configs,
+      site_config.templates.chromium_pfq_informational,
+      site_config.templates.build_external_chrome,
+      important=False,
+      internal=False,
+      manifest_repo_url=site_config.params['MANIFEST_URL'],
+      overlays=constants.PUBLIC_OVERLAYS)
+
+  site_config.AddForBoards(
+      'tot-chromium-pfq-informational-gn',
+      _all_full_boards,
+      external_board_configs,
+      site_config.templates.chromium_pfq_informational_gn,
+      site_config.templates.build_external_chrome,
+      important=False,
+      internal=False,
+      manifest_repo_url=site_config.params['MANIFEST_URL'],
+      overlays=constants.PUBLIC_OVERLAYS)
 
   _telemetry_boards = frozenset([
       'amd64-generic',
@@ -2691,7 +2654,7 @@ def Informational(site_config, ge_build_config):
   site_config.AddForBoards(
       'telemetry',
       _telemetry_boards,
-      board_configs,
+      internal_board_configs,
       site_config.templates.telemetry,
   )
 
@@ -2708,7 +2671,7 @@ def Informational(site_config, ge_build_config):
   )
 
 
-def ChromePfq(site_config, ge_build_config):
+def ChromePfqBuilders(site_config, ge_build_config):
   """Create all Chrome PFQ build configs.
 
   Args:
@@ -2716,7 +2679,46 @@ def ChromePfq(site_config, ge_build_config):
                  and configs.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  board_configs = CreateInternalBoardConfigs(site_config, ge_build_config)
+  external_board_configs = CreateBoardConfigs(site_config, ge_build_config)
+  internal_board_configs = CreateInternalBoardConfigs(
+      site_config, ge_build_config)
+
+  _chromium_pfq_important_boards = frozenset([
+      'arm-generic',
+      'daisy',
+      'veyron_jerry',
+      'x86-generic',
+      'amd64-generic',
+  ])
+
+  site_config.Add(
+      'master-chromium-pfq',
+      site_config.templates.chromium_pfq,
+      boards=[],
+      master=True,
+      binhost_test=True,
+      push_overlays=constants.BOTH_OVERLAYS,
+      afdo_update_ebuild=True,
+      chrome_sdk=False,
+      health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
+                               'tree',
+                               'chrome'],
+  )
+
+  # Create important configs, then non-important configs.
+  site_config.AddForBoards(
+      'chromium-pfq',
+      _chromium_pfq_important_boards,
+      external_board_configs,
+      site_config.templates.chromium_pfq,
+      site_config.templates.build_external_chrome)
+  site_config.AddForBoards(
+      'chromium-pfq',
+      _all_full_boards - _chromium_pfq_important_boards,
+      external_board_configs,
+      site_config.templates.chromium_pfq,
+      site_config.templates.build_external_chrome,
+      important=False)
 
   _chrome_pfq_important_boards = frozenset([
       'cyan',
@@ -2736,14 +2738,14 @@ def ChromePfq(site_config, ge_build_config):
   site_config.AddForBoards(
       'chrome-pfq',
       _chrome_pfq_important_boards,
-      board_configs,
+      internal_board_configs,
       site_config.templates.chrome_pfq,
       important=True
   )
   site_config.AddForBoards(
       'chrome-pfq',
       _all_release_boards - _chrome_pfq_important_boards,
-      board_configs,
+      internal_board_configs,
       site_config.templates.chrome_pfq,
       important=False,
   )
@@ -3036,7 +3038,7 @@ def ReleaseBuilders(site_config, ge_build_config):
   _AdjustReleaseConfigs()
 
 
-def AddPayloadTryjobs(site_config):
+def PayloadBuilders(site_config):
   """Create <board>-payloads configs for all payload generating boards.
 
   We create a config named 'board-payloads' for every board which has a
@@ -3403,13 +3405,13 @@ def GetConfig():
   site_config = config_lib.SiteConfig(defaults=defaults,
                                       site_params=site_params)
 
-  CreateBuilderTemplates(site_config, ge_build_config)
+  GeneralTemplates(site_config, ge_build_config)
 
   ToolchainBuilders(site_config, ge_build_config)
 
   ReleaseBuilders(site_config, ge_build_config)
 
-  AddPayloadTryjobs(site_config)
+  PayloadBuilders(site_config)
 
   SpecialtyBuilders(site_config, ge_build_config)
 
@@ -3417,20 +3419,19 @@ def GetConfig():
 
   CqBuilders(site_config, ge_build_config)
 
-  Incrementals(site_config, ge_build_config)
+  IncrementalBuilders(site_config, ge_build_config)
 
-  ReleaseAfdoTryjobs(site_config, ge_build_config)
+  ReleaseAfdoBuilders(site_config, ge_build_config)
 
-  Informational(site_config, ge_build_config)
-
-  ChromePfq(site_config, ge_build_config)
+  InformationalBuilders(site_config, ge_build_config)
 
   FirmwareBuilders(site_config, ge_build_config)
 
   AndroidPfqBuilders(site_config, ge_build_config)
 
-  # Fill in templates and build configurations.
-  _GetConfig(site_config, ge_build_config)
+  ChromePfqBuilders(site_config, ge_build_config)
+
+  FullBuilders(site_config, ge_build_config)
 
   # Insert default HwTests for tryjobs.
   for build in site_config.itervalues():
