@@ -20,11 +20,6 @@ source_set("prefs") {
     "//components/sync_preferences",
     "//ios/chrome/browser",
   ]
-
-  # TODO(sdefresne): remove once downstream dependencies have been fixed.
-  public_deps = [
-    ":browser_prefs",
-  ]
 }
 
 source_set("browser_prefs") {
