@@ -25,12 +25,11 @@ class SleepLoop(object):
     """
     self._callback = callback
     self._interval = interval
-    self._cycles = 0
 
   def loop_once(self):
     """Do actions for a single loop."""
     try:
-      self._callback(self._cycles)
+      self._callback()
     except Exception:
       logger.exception('Error during loop.')
 
@@ -38,7 +37,6 @@ class SleepLoop(object):
     while True:
       self.loop_once()
       _force_sleep(self._interval)
-      self._cycles = (self._cycles + 1) % 60
 
 
 def _force_sleep(secs):

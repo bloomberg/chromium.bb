@@ -23,19 +23,31 @@ from infra_libs.ts_mon.common import interface
 logger = logging.getLogger(__name__)
 
 
-def collect_metrics(cycles):
-  system_metrics.get_uptime()
-  system_metrics.get_cpu_info()
-  system_metrics.get_disk_info()
-  system_metrics.get_mem_info()
-  system_metrics.get_net_info()
-  system_metrics.get_proc_info()
-  system_metrics.get_load_avg()
-  puppet_metrics.get_puppet_summary()
-  if cycles == 0:
-    system_metrics.get_os_info()
-  system_metrics.get_unix_time()  # must be just before flush
-  metrics.Flush()
+class MetricCollector(object):
+  """Metric collector class."""
+
+  def __init__(self):
+    self._last_osinfo_collection = time.time()
+
+  def __call__(self):
+    """Collect metrics."""
+    system_metrics.get_uptime()
+    system_metrics.get_cpu_info()
+    system_metrics.get_disk_info()
+    system_metrics.get_mem_info()
+    system_metrics.get_net_info()
+    system_metrics.get_proc_info()
+    system_metrics.get_load_avg()
+    puppet_metrics.get_puppet_summary()
+    if time.time() > self._next_osinfo_collection:
+      system_metrics.get_os_info()
+      self._last_osinfo_collection = time.time()
+    system_metrics.get_unix_time()  # must be just before flush
+    metrics.Flush()
+
+  @property
+  def _next_osinfo_collection(self):
+    return self._last_osinfo_collection + (60 * 60)
 
 
 def main():
@@ -65,7 +77,7 @@ def main():
   interface.state.metric_name_prefix = (interface.state.metric_name_prefix
                                         + 'chromeos/sysmon/')
 
-  loop.SleepLoop(callback=collect_metrics,
+  loop.SleepLoop(callback=MetricCollector(),
                  interval=opts.interval).loop_forever()
 
 
