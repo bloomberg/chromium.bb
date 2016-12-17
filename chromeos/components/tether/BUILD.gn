@@ -6,12 +6,23 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 static_library("tether") {
   sources = [
+    "host_scan_scheduler.cc",
+    "host_scan_scheduler.h",
+    "host_scanner.cc",
+    "host_scanner.h",
     "initializer.cc",
     "initializer.h",
   ]
 
   deps = [
     "//base",
+    "//chromeos",
+    "//components/cryptauth",
+    "//components/proximity_auth/logging",
+  ]
+
+  public_deps = [
+    "//components/cryptauth/proto",
   ]
 }
 
@@ -33,12 +44,17 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
 
-  sources = []
+  sources = [
+    "host_scan_scheduler_unittest.cc",
+  ]
 
   deps = [
     ":test_support",
     ":tether",
     "//base/test:test_support",
+    "//chromeos",
+    "//components/cryptauth",
+    "//testing/gmock",
     "//testing/gtest",
   ]
 }
