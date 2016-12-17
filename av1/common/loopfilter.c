@@ -1311,8 +1311,10 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *cm,
                             ? get_uv_tx_size(mbmi, plane)
                             : mbmi->tx_size;
 
-      const int skip_border_4x4_c = ss_x && mi_col + c == cm->mi_cols - 1;
-      const int skip_border_4x4_r = ss_y && mi_row + r == cm->mi_rows - 1;
+      const int skip_border_4x4_c =
+          ss_x && mi_col + idx_c >= cm->mi_cols - mi_size_wide[BLOCK_8X8];
+      const int skip_border_4x4_r =
+          ss_y && mi_row + idx_r >= cm->mi_rows - mi_size_high[BLOCK_8X8];
 
       TX_SIZE tx_size_c = txsize_horz_map[tx_size];
       TX_SIZE tx_size_r = txsize_vert_map[tx_size];
@@ -1488,8 +1490,10 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *cm,
 #if CONFIG_VAR_TX
       TX_SIZE mb_tx_size = mbmi->inter_tx_size[blk_row][blk_col];
 #endif
-      const int skip_border_4x4_c = ss_x && mi_col + c == cm->mi_cols - 1;
-      const int skip_border_4x4_r = ss_y && mi_row + r == cm->mi_rows - 1;
+      const int skip_border_4x4_c =
+          ss_x && mi_col + idx_c >= cm->mi_cols - mi_size_wide[BLOCK_8X8];
+      const int skip_border_4x4_r =
+          ss_y && mi_row + idx_r >= cm->mi_rows - mi_size_high[BLOCK_8X8];
 
       TX_SIZE tx_size_c = txsize_horz_map[tx_size];
       TX_SIZE tx_size_r = txsize_vert_map[tx_size];
@@ -1589,7 +1593,8 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *cm,
   }
   for (idx_r = 0; idx_r < cm->mib_size && mi_row + idx_r < cm->mi_rows;
        idx_r += row_step) {
-    const int skip_border_4x4_r = ss_y && mi_row + idx_r == cm->mi_rows - 1;
+    const int skip_border_4x4_r =
+        ss_y && mi_row + idx_r >= cm->mi_rows - mi_size_wide[BLOCK_8X8];
     const int r = idx_r >> mi_width_log2_lookup[BLOCK_8X8];
     const unsigned int mask_4x4_int_r = skip_border_4x4_r ? 0 : mask_4x4_int[r];
 
