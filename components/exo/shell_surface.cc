@@ -370,6 +370,9 @@ ShellSurface::~ShellSurface() {
   if (widget_) {
     ash::wm::GetWindowState(widget_->GetNativeWindow())->RemoveObserver(this);
     widget_->GetNativeWindow()->RemoveObserver(this);
+    // Remove transient children so they are not automatically destroyed.
+    for (auto child : wm::GetTransientChildren(widget_->GetNativeWindow()))
+      wm::RemoveTransientChild(widget_->GetNativeWindow(), child);
     if (widget_->IsVisible())
       widget_->Hide();
     widget_->CloseNow();
@@ -427,6 +430,10 @@ void ShellSurface::SetParent(ShellSurface* parent) {
     if (widget_)
       wm::AddTransientChild(parent_, widget_->GetNativeWindow());
   }
+
+  // If |parent_| is set effects the ability to maximize the window.
+  if (widget_)
+    widget_->OnSizeConstraintsChanged();
 }
 
 void ShellSurface::Activate() {
@@ -766,8 +773,12 @@ void ShellSurface::OnSurfaceDestroying(Surface* surface) {
 
   // Hide widget before surface is destroyed. This allows hide animations to
   // run using the current surface contents.
-  if (widget_)
+  if (widget_) {
+    // Remove transient children so they are not automatically hidden.
+    for (auto child : wm::GetTransientChildren(widget_->GetNativeWindow()))
+      wm::RemoveTransientChild(widget_->GetNativeWindow(), child);
     widget_->Hide();
+  }
 
   // Note: In its use in the Wayland server implementation, the surface
   // destroyed callback may destroy the ShellSurface instance. This call needs
@@ -941,9 +952,9 @@ void ShellSurface::OnWindowBoundsChanged(aura::Window* window,
 void ShellSurface::OnWindowDestroying(aura::Window* window) {
   if (window == parent_) {
     parent_ = nullptr;
-    // Disable shell surface in case parent is destroyed before shell surface
-    // widget has been created.
-    SetEnabled(false);
+    // |parent_| being set to null effects the ability to maximize the window.
+    if (widget_)
+      widget_->OnSizeConstraintsChanged();
   }
   window->RemoveObserver(this);
 }

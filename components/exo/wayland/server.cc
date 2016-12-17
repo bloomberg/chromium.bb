@@ -905,6 +905,9 @@ void shell_surface_set_transient(wl_client* client,
     parent_window = parent_window->parent();
   }
 
+  DLOG_IF(WARNING, parent_resource && !!parent_widget)
+      << "Parent surface is not a visible shell surface";
+
   gfx::Point origin(x, y);
   ShellSurface* parent_shell_surface = nullptr;
 
