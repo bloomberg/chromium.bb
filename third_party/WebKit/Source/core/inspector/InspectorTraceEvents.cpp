@@ -560,6 +560,8 @@ std::unique_ptr<TracedValue> InspectorReceiveResponseEvent::data(
     recordTiming(*response.resourceLoadTiming(), value.get());
     value->endDictionary();
   }
+  if (response.wasFetchedViaServiceWorker())
+    value->setBoolean("fromServiceWorker", true);
   return value;
 }
 
