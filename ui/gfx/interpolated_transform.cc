@@ -6,6 +6,8 @@
 
 #include <cmath>
 
+#include "base/memory/ptr_util.h"
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -96,8 +98,9 @@ gfx::Transform InterpolatedTransform::Interpolate(float t) const {
   return result;
 }
 
-void InterpolatedTransform::SetChild(InterpolatedTransform* child) {
-  child_.reset(child);
+void InterpolatedTransform::SetChild(
+    std::unique_ptr<InterpolatedTransform> child) {
+  child_ = std::move(child);
 }
 
 inline float InterpolatedTransform::ValueBetween(float time,
@@ -298,19 +301,19 @@ InterpolatedConstantTransform::~InterpolatedConstantTransform() {}
 //
 
 InterpolatedTransformAboutPivot::InterpolatedTransformAboutPivot(
-  const gfx::Point& pivot,
-  InterpolatedTransform* transform)
+    const gfx::Point& pivot,
+    std::unique_ptr<InterpolatedTransform> transform)
     : InterpolatedTransform() {
-  Init(pivot, transform);
+  Init(pivot, std::move(transform));
 }
 
 InterpolatedTransformAboutPivot::InterpolatedTransformAboutPivot(
-  const gfx::Point& pivot,
-  InterpolatedTransform* transform,
-  float start_time,
-  float end_time)
+    const gfx::Point& pivot,
+    std::unique_ptr<InterpolatedTransform> transform,
+    float start_time,
+    float end_time)
     : InterpolatedTransform() {
-  Init(pivot, transform);
+  Init(pivot, std::move(transform));
 }
 
 InterpolatedTransformAboutPivot::~InterpolatedTransformAboutPivot() {}
@@ -323,20 +326,21 @@ InterpolatedTransformAboutPivot::InterpolateButDoNotCompose(float t) const {
   return gfx::Transform();
 }
 
-void InterpolatedTransformAboutPivot::Init(const gfx::Point& pivot,
-                                           InterpolatedTransform* xform) {
+void InterpolatedTransformAboutPivot::Init(
+    const gfx::Point& pivot,
+    std::unique_ptr<InterpolatedTransform> xform) {
   gfx::Transform to_pivot;
   gfx::Transform from_pivot;
   to_pivot.Translate(SkIntToMScalar(-pivot.x()), SkIntToMScalar(-pivot.y()));
   from_pivot.Translate(SkIntToMScalar(pivot.x()), SkIntToMScalar(pivot.y()));
 
-  std::unique_ptr<InterpolatedTransform> pre_transform(
-      new InterpolatedConstantTransform(to_pivot));
-  std::unique_ptr<InterpolatedTransform> post_transform(
-      new InterpolatedConstantTransform(from_pivot));
+  std::unique_ptr<InterpolatedTransform> pre_transform =
+      base::MakeUnique<InterpolatedConstantTransform>(to_pivot);
+  std::unique_ptr<InterpolatedTransform> post_transform =
+      base::MakeUnique<InterpolatedConstantTransform>(from_pivot);
 
-  pre_transform->SetChild(xform);
-  xform->SetChild(post_transform.release());
+  xform->SetChild(std::move(post_transform));
+  pre_transform->SetChild(std::move(xform));
   transform_ = std::move(pre_transform);
 }
 

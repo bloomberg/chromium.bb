@@ -8,6 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_id_provider.h"
 #include "ui/compositor/float_animation_curve_adapter.h"
@@ -52,11 +53,11 @@ class Pause : public LayerAnimationElement {
 
 class InterpolatedTransformTransition : public LayerAnimationElement {
  public:
-  InterpolatedTransformTransition(InterpolatedTransform* interpolated_transform,
-                                  base::TimeDelta duration)
+  InterpolatedTransformTransition(
+      std::unique_ptr<InterpolatedTransform> interpolated_transform,
+      base::TimeDelta duration)
       : LayerAnimationElement(TRANSFORM, duration),
-        interpolated_transform_(interpolated_transform) {
-  }
+        interpolated_transform_(std::move(interpolated_transform)) {}
   ~InterpolatedTransformTransition() override {}
 
  protected:
@@ -598,67 +599,68 @@ base::TimeDelta LayerAnimationElement::GetEffectiveDuration(
 }
 
 // static
-LayerAnimationElement* LayerAnimationElement::CreateTransformElement(
-    const gfx::Transform& transform,
-    base::TimeDelta duration) {
-  return new ThreadedTransformTransition(transform, duration);
+std::unique_ptr<LayerAnimationElement>
+LayerAnimationElement::CreateTransformElement(const gfx::Transform& transform,
+                                              base::TimeDelta duration) {
+  return base::MakeUnique<ThreadedTransformTransition>(transform, duration);
 }
 
 // static
-LayerAnimationElement*
+std::unique_ptr<LayerAnimationElement>
 LayerAnimationElement::CreateInterpolatedTransformElement(
-    InterpolatedTransform* interpolated_transform,
+    std::unique_ptr<InterpolatedTransform> interpolated_transform,
     base::TimeDelta duration) {
-  return new InterpolatedTransformTransition(interpolated_transform, duration);
+  return base::MakeUnique<InterpolatedTransformTransition>(
+      std::move(interpolated_transform), duration);
 }
 
 // static
-LayerAnimationElement* LayerAnimationElement::CreateBoundsElement(
-    const gfx::Rect& bounds,
-    base::TimeDelta duration) {
-  return new BoundsTransition(bounds, duration);
+std::unique_ptr<LayerAnimationElement>
+LayerAnimationElement::CreateBoundsElement(const gfx::Rect& bounds,
+                                           base::TimeDelta duration) {
+  return base::MakeUnique<BoundsTransition>(bounds, duration);
 }
 
 // static
-LayerAnimationElement* LayerAnimationElement::CreateOpacityElement(
-    float opacity,
-    base::TimeDelta duration) {
-  return new ThreadedOpacityTransition(opacity, duration);
+std::unique_ptr<LayerAnimationElement>
+LayerAnimationElement::CreateOpacityElement(float opacity,
+                                            base::TimeDelta duration) {
+  return base::MakeUnique<ThreadedOpacityTransition>(opacity, duration);
 }
 
 // static
-LayerAnimationElement* LayerAnimationElement::CreateVisibilityElement(
-    bool visibility,
-    base::TimeDelta duration) {
-  return new VisibilityTransition(visibility, duration);
+std::unique_ptr<LayerAnimationElement>
+LayerAnimationElement::CreateVisibilityElement(bool visibility,
+                                               base::TimeDelta duration) {
+  return base::MakeUnique<VisibilityTransition>(visibility, duration);
 }
 
 // static
-LayerAnimationElement* LayerAnimationElement::CreateBrightnessElement(
-    float brightness,
-    base::TimeDelta duration) {
-  return new BrightnessTransition(brightness, duration);
+std::unique_ptr<LayerAnimationElement>
+LayerAnimationElement::CreateBrightnessElement(float brightness,
+                                               base::TimeDelta duration) {
+  return base::MakeUnique<BrightnessTransition>(brightness, duration);
 }
 
 // static
-LayerAnimationElement* LayerAnimationElement::CreateGrayscaleElement(
-    float grayscale,
-    base::TimeDelta duration) {
-  return new GrayscaleTransition(grayscale, duration);
+std::unique_ptr<LayerAnimationElement>
+LayerAnimationElement::CreateGrayscaleElement(float grayscale,
+                                              base::TimeDelta duration) {
+  return base::MakeUnique<GrayscaleTransition>(grayscale, duration);
 }
 
 // static
-LayerAnimationElement* LayerAnimationElement::CreatePauseElement(
-    AnimatableProperties properties,
-    base::TimeDelta duration) {
-  return new Pause(properties, duration);
+std::unique_ptr<LayerAnimationElement>
+LayerAnimationElement::CreatePauseElement(AnimatableProperties properties,
+                                          base::TimeDelta duration) {
+  return base::MakeUnique<Pause>(properties, duration);
 }
 
 // static
-LayerAnimationElement* LayerAnimationElement::CreateColorElement(
-    SkColor color,
-    base::TimeDelta duration) {
-  return new ColorTransition(color, duration);
+std::unique_ptr<LayerAnimationElement>
+LayerAnimationElement::CreateColorElement(SkColor color,
+                                          base::TimeDelta duration) {
+  return base::MakeUnique<ColorTransition>(color, duration);
 }
 
 }  // namespace ui

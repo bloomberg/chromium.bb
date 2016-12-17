@@ -25,7 +25,8 @@ LayerAnimationSequence::LayerAnimationSequence()
       weak_ptr_factory_(this) {
 }
 
-LayerAnimationSequence::LayerAnimationSequence(LayerAnimationElement* element)
+LayerAnimationSequence::LayerAnimationSequence(
+    std::unique_ptr<LayerAnimationElement> element)
     : properties_(LayerAnimationElement::UNKNOWN),
       is_cyclic_(false),
       last_element_(0),
@@ -33,7 +34,7 @@ LayerAnimationSequence::LayerAnimationSequence(LayerAnimationElement* element)
       animation_group_id_(0),
       last_progressed_fraction_(0.0),
       weak_ptr_factory_(this) {
-  AddElement(element);
+  AddElement(std::move(element));
 }
 
 LayerAnimationSequence::~LayerAnimationSequence() {
@@ -182,9 +183,10 @@ void LayerAnimationSequence::Abort(LayerAnimationDelegate* delegate) {
   NotifyAborted();
 }
 
-void LayerAnimationSequence::AddElement(LayerAnimationElement* element) {
+void LayerAnimationSequence::AddElement(
+    std::unique_ptr<LayerAnimationElement> element) {
   properties_ |= element->properties();
-  elements_.push_back(make_linked_ptr(element));
+  elements_.push_back(std::move(element));
 }
 
 bool LayerAnimationSequence::HasConflictingProperty(

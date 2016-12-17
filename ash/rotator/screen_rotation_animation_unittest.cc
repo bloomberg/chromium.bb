@@ -46,18 +46,18 @@ TEST_F(ScreenRotationAnimationTest, LayerTransformGetsSetToTargetWhenAborted) {
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithId(9));
   ui::Layer* layer = window->layer();
 
-  std::unique_ptr<ScreenRotationAnimation> screen_rotation(
-      new ScreenRotationAnimation(
+  std::unique_ptr<ScreenRotationAnimation> screen_rotation =
+      base::MakeUnique<ScreenRotationAnimation>(
           layer, 45 /* start_degrees */, 0 /* end_degrees */,
           0.5f /* initial_opacity */, 1.0f /* target_opacity */,
           gfx::Point(10, 10) /* pivot */,
-          base::TimeDelta::FromSeconds(10) /* duration */, gfx::Tween::LINEAR));
+          base::TimeDelta::FromSeconds(10) /* duration */, gfx::Tween::LINEAR);
 
   ui::LayerAnimator* animator = layer->GetAnimator();
   animator->set_preemption_strategy(
       ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-  std::unique_ptr<ui::LayerAnimationSequence> animation_sequence(
-      new ui::LayerAnimationSequence(screen_rotation.release()));
+  std::unique_ptr<ui::LayerAnimationSequence> animation_sequence =
+      base::MakeUnique<ui::LayerAnimationSequence>(std::move(screen_rotation));
   animator->StartAnimation(animation_sequence.release());
 
   const gfx::Transform identity_transform;
@@ -82,13 +82,13 @@ TEST_F(ScreenRotationAnimationTest, DestroyLayerDuringAnimation) {
   layer->SetBounds(gfx::Rect(root_layer->bounds().size()));
   root_layer->Add(layer.get());
 
-  std::unique_ptr<ScreenRotationAnimation> screen_rotation(
-      new ScreenRotationAnimation(layer.get(), 45, 0, 1.0f, 1.0f, gfx::Point(),
-                                  base::TimeDelta::FromSeconds(1),
-                                  gfx::Tween::LINEAR));
+  std::unique_ptr<ScreenRotationAnimation> screen_rotation =
+      base::MakeUnique<ScreenRotationAnimation>(
+          layer.get(), 45, 0, 1.0f, 1.0f, gfx::Point(),
+          base::TimeDelta::FromSeconds(1), gfx::Tween::LINEAR);
   ui::LayerAnimator* animator = layer->GetAnimator();
-  std::unique_ptr<ui::LayerAnimationSequence> animation_sequence(
-      new ui::LayerAnimationSequence(screen_rotation.release()));
+  std::unique_ptr<ui::LayerAnimationSequence> animation_sequence =
+      base::MakeUnique<ui::LayerAnimationSequence>(std::move(screen_rotation));
   animator->StartAnimation(animation_sequence.release());
 
   // Explicitly destroy the layer to verify that the animation doesn't crash.

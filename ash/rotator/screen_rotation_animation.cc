@@ -4,6 +4,7 @@
 
 #include "ash/rotator/screen_rotation_animation.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_delegate.h"
@@ -28,15 +29,16 @@ ScreenRotationAnimation::ScreenRotationAnimation(ui::Layer* layer,
       tween_type_(tween_type),
       initial_opacity_(initial_opacity),
       target_opacity_(target_opacity) {
-  std::unique_ptr<ui::InterpolatedTransform> rotation(
-      new ui::InterpolatedTransformAboutPivot(
-          pivot, new ui::InterpolatedRotation(start_degrees, end_degrees)));
+  std::unique_ptr<ui::InterpolatedTransform> rotation =
+      base::MakeUnique<ui::InterpolatedTransformAboutPivot>(
+          pivot, base::MakeUnique<ui::InterpolatedRotation>(start_degrees,
+                                                            end_degrees));
 
   // Use the target transform/bounds in case the layer is already animating.
   gfx::Transform current_transform = layer->GetTargetTransform();
   interpolated_transform_.reset(
       new ui::InterpolatedConstantTransform(current_transform));
-  interpolated_transform_->SetChild(rotation.release());
+  interpolated_transform_->SetChild(std::move(rotation));
 }
 
 ScreenRotationAnimation::~ScreenRotationAnimation() {}

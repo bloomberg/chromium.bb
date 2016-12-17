@@ -6,9 +6,11 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/layer.h"
@@ -31,10 +33,10 @@ void SchedulePulsingAnimation(ui::Layer* layer) {
   DCHECK(layer);
   DCHECK_EQ(arraysize(kAnimationOpacity), arraysize(kAnimationScale));
 
-  std::unique_ptr<ui::LayerAnimationSequence> opacity_sequence(
-      new ui::LayerAnimationSequence());
-  std::unique_ptr<ui::LayerAnimationSequence> transform_sequence(
-      new ui::LayerAnimationSequence());
+  std::unique_ptr<ui::LayerAnimationSequence> opacity_sequence =
+      base::MakeUnique<ui::LayerAnimationSequence>();
+  std::unique_ptr<ui::LayerAnimationSequence> transform_sequence =
+      base::MakeUnique<ui::LayerAnimationSequence>();
 
   // The animations loop infinitely.
   opacity_sequence->set_is_cyclic(true);

@@ -9,6 +9,7 @@
 #include "ash/common/wm/wm_window_animations.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -254,20 +255,20 @@ void StartGrayscaleBrightnessAnimationForWindow(
     ui::LayerAnimationObserver* observer) {
   ui::LayerAnimator* animator = window->layer()->GetAnimator();
 
-  std::unique_ptr<ui::LayerAnimationSequence> brightness_sequence(
-      new ui::LayerAnimationSequence());
-  std::unique_ptr<ui::LayerAnimationSequence> grayscale_sequence(
-      new ui::LayerAnimationSequence());
+  std::unique_ptr<ui::LayerAnimationSequence> brightness_sequence =
+      base::MakeUnique<ui::LayerAnimationSequence>();
+  std::unique_ptr<ui::LayerAnimationSequence> grayscale_sequence =
+      base::MakeUnique<ui::LayerAnimationSequence>();
 
-  std::unique_ptr<ui::LayerAnimationElement> brightness_element(
-      ui::LayerAnimationElement::CreateBrightnessElement(target, duration));
+  std::unique_ptr<ui::LayerAnimationElement> brightness_element =
+      ui::LayerAnimationElement::CreateBrightnessElement(target, duration);
   brightness_element->set_tween_type(tween_type);
-  brightness_sequence->AddElement(brightness_element.release());
+  brightness_sequence->AddElement(std::move(brightness_element));
 
-  std::unique_ptr<ui::LayerAnimationElement> grayscale_element(
-      ui::LayerAnimationElement::CreateGrayscaleElement(target, duration));
+  std::unique_ptr<ui::LayerAnimationElement> grayscale_element =
+      ui::LayerAnimationElement::CreateGrayscaleElement(target, duration);
   grayscale_element->set_tween_type(tween_type);
-  grayscale_sequence->AddElement(grayscale_element.release());
+  grayscale_sequence->AddElement(std::move(grayscale_element));
 
   std::vector<ui::LayerAnimationSequence*> animations;
   animations.push_back(brightness_sequence.release());

@@ -2162,10 +2162,11 @@ TEST_F(LayerWithDelegateTest, NonAnimatingAnimatorsAreRemovedFromCollection) {
   LayerRemovingLayerAnimationObserver observer(root.get(), parent.get());
   child->GetAnimator()->AddObserver(&observer);
 
-  LayerAnimationElement* element =
+  std::unique_ptr<LayerAnimationElement> element =
       ui::LayerAnimationElement::CreateOpacityElement(
           0.5f, base::TimeDelta::FromSeconds(1));
-  LayerAnimationSequence* sequence = new LayerAnimationSequence(element);
+  LayerAnimationSequence* sequence =
+      new LayerAnimationSequence(std::move(element));
 
   child->GetAnimator()->StartAnimation(sequence);
   EXPECT_TRUE(compositor()->layer_animator_collection()->HasActiveAnimators());

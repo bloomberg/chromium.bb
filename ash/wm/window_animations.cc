@@ -17,6 +17,7 @@
 #include "ash/wm/window_util.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
@@ -98,29 +99,30 @@ void AddLayerAnimationsForMinimize(aura::Window* window, bool show) {
   float scale_x = static_cast<float>(target_bounds.width()) / bounds.width();
   float scale_y = static_cast<float>(target_bounds.height()) / bounds.height();
 
-  std::unique_ptr<ui::InterpolatedTransform> scale(new ui::InterpolatedScale(
-      gfx::Point3F(1, 1, 1), gfx::Point3F(scale_x, scale_y, 1)));
+  std::unique_ptr<ui::InterpolatedTransform> scale =
+      base::MakeUnique<ui::InterpolatedScale>(
+          gfx::Point3F(1, 1, 1), gfx::Point3F(scale_x, scale_y, 1));
 
-  std::unique_ptr<ui::InterpolatedTransform> translation(
-      new ui::InterpolatedTranslation(
+  std::unique_ptr<ui::InterpolatedTransform> translation =
+      base::MakeUnique<ui::InterpolatedTranslation>(
           gfx::PointF(), gfx::PointF(target_bounds.x() - bounds.x(),
-                                     target_bounds.y() - bounds.y())));
+                                     target_bounds.y() - bounds.y()));
 
-  scale->SetChild(translation.release());
+  scale->SetChild(std::move(translation));
   scale->SetReversed(show);
 
   base::TimeDelta duration =
       window->layer()->GetAnimator()->GetTransitionDuration();
 
-  std::unique_ptr<ui::LayerAnimationElement> transition(
+  std::unique_ptr<ui::LayerAnimationElement> transition =
       ui::LayerAnimationElement::CreateInterpolatedTransformElement(
-          scale.release(), duration));
+          std::move(scale), duration);
 
   transition->set_tween_type(show ? gfx::Tween::EASE_IN
                                   : gfx::Tween::EASE_IN_OUT);
 
   window->layer()->GetAnimator()->ScheduleAnimation(
-      new ui::LayerAnimationSequence(transition.release()));
+      new ui::LayerAnimationSequence(std::move(transition)));
 
   // When hiding a window, turn off blending until the animation is 3 / 4 done
   // to save bandwidth and reduce jank.
@@ -387,22 +389,21 @@ std::vector<ui::LayerAnimationSequence*>
 CreateBrightnessGrayscaleAnimationSequence(float target_value,
                                            base::TimeDelta duration) {
   gfx::Tween::Type animation_type = gfx::Tween::EASE_OUT;
-  std::unique_ptr<ui::LayerAnimationSequence> brightness_sequence(
-      new ui::LayerAnimationSequence());
-  std::unique_ptr<ui::LayerAnimationSequence> grayscale_sequence(
-      new ui::LayerAnimationSequence());
+  std::unique_ptr<ui::LayerAnimationSequence> brightness_sequence =
+      base::MakeUnique<ui::LayerAnimationSequence>();
+  std::unique_ptr<ui::LayerAnimationSequence> grayscale_sequence =
+      base::MakeUnique<ui::LayerAnimationSequence>();
 
-  std::unique_ptr<ui::LayerAnimationElement> brightness_element(
+  std::unique_ptr<ui::LayerAnimationElement> brightness_element =
       ui::LayerAnimationElement::CreateBrightnessElement(target_value,
-                                                         duration));
+                                                         duration);
   brightness_element->set_tween_type(animation_type);
-  brightness_sequence->AddElement(brightness_element.release());
+  brightness_sequence->AddElement(std::move(brightness_element));
 
-  std::unique_ptr<ui::LayerAnimationElement> grayscale_element(
-      ui::LayerAnimationElement::CreateGrayscaleElement(target_value,
-                                                        duration));
+  std::unique_ptr<ui::LayerAnimationElement> grayscale_element =
+      ui::LayerAnimationElement::CreateGrayscaleElement(target_value, duration);
   grayscale_element->set_tween_type(animation_type);
-  grayscale_sequence->AddElement(grayscale_element.release());
+  grayscale_sequence->AddElement(std::move(grayscale_element));
 
   std::vector<ui::LayerAnimationSequence*> animations;
   animations.push_back(brightness_sequence.release());

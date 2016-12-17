@@ -300,10 +300,12 @@ void FloodFillInkDropRipple::AnimateToTransform(
   ui::ScopedLayerAnimationSettings animation(animator);
   animation.SetPreemptionStrategy(preemption_strategy);
   animation.SetTweenType(tween);
-  ui::LayerAnimationElement* element =
+
+  std::unique_ptr<ui::LayerAnimationElement> element =
       ui::LayerAnimationElement::CreateTransformElement(transform, duration);
+
   ui::LayerAnimationSequence* sequence =
-      new ui::LayerAnimationSequence(element);
+      new ui::LayerAnimationSequence(std::move(element));
 
   if (animation_observer)
     sequence->AddObserver(animation_observer);
@@ -325,10 +327,10 @@ void FloodFillInkDropRipple::AnimateToOpacity(
   ui::ScopedLayerAnimationSettings animation_settings(animator);
   animation_settings.SetPreemptionStrategy(preemption_strategy);
   animation_settings.SetTweenType(tween);
-  ui::LayerAnimationElement* animation_element =
+  std::unique_ptr<ui::LayerAnimationElement> animation_element =
       ui::LayerAnimationElement::CreateOpacityElement(opacity, duration);
   ui::LayerAnimationSequence* animation_sequence =
-      new ui::LayerAnimationSequence(animation_element);
+      new ui::LayerAnimationSequence(std::move(animation_element));
 
   if (animation_observer)
     animation_sequence->AddObserver(animation_observer);

@@ -94,10 +94,10 @@ LayerAnimator* LayerAnimator::CreateImplicitAnimator() {
       delegate()->Set##name##FromAnimation(value);                      \
       return;                                                           \
     }                                                                   \
-    std::unique_ptr<LayerAnimationElement> element(                     \
-        LayerAnimationElement::Create##name##Element(value, duration)); \
+    std::unique_ptr<LayerAnimationElement> element =                    \
+        LayerAnimationElement::Create##name##Element(value, duration);  \
     element->set_tween_type(tween_type_);                               \
-    StartAnimation(new LayerAnimationSequence(element.release()));      \
+    StartAnimation(new LayerAnimationSequence(std::move(element)));     \
   }                                                                     \
                                                                         \
   member_type LayerAnimator::GetTarget##name() const {                  \

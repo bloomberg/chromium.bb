@@ -12,6 +12,7 @@
 #include "ash/rotator/screen_rotation_animation.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -196,17 +197,18 @@ void RotateScreen(int64_t display_id,
     if (child_layer == layer_cleanup_observer->GetRootLayer())
       continue;
 
-    std::unique_ptr<ScreenRotationAnimation> screen_rotation(
-        new ScreenRotationAnimation(
+    std::unique_ptr<ScreenRotationAnimation> screen_rotation =
+        base::MakeUnique<ScreenRotationAnimation>(
             child_layer, kRotationDegrees * rotation_factor,
             0 /* end_degrees */, child_layer->opacity(),
-            1.0f /* target_opacity */, pivot, duration, tween_type));
+            1.0f /* target_opacity */, pivot, duration, tween_type);
 
     ui::LayerAnimator* animator = child_layer->GetAnimator();
     animator->set_preemption_strategy(
         ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-    std::unique_ptr<ui::LayerAnimationSequence> animation_sequence(
-        new ui::LayerAnimationSequence(screen_rotation.release()));
+    std::unique_ptr<ui::LayerAnimationSequence> animation_sequence =
+        base::MakeUnique<ui::LayerAnimationSequence>(
+            std::move(screen_rotation));
     animator->StartAnimation(animation_sequence.release());
   }
 
@@ -220,21 +222,21 @@ void RotateScreen(int64_t display_id,
       (rotated_screen_bounds.height() - original_screen_bounds.height()) / 2);
   layer_cleanup_observer->GetRootLayer()->SetTransform(translate_transform);
 
-  std::unique_ptr<ScreenRotationAnimation> screen_rotation(
-      new ScreenRotationAnimation(
+  std::unique_ptr<ScreenRotationAnimation> screen_rotation =
+      base::MakeUnique<ScreenRotationAnimation>(
           layer_cleanup_observer->GetRootLayer(),
           old_layer_initial_rotation_degrees * rotation_factor,
           (old_layer_initial_rotation_degrees - kRotationDegrees) *
               rotation_factor,
           layer_cleanup_observer->GetRootLayer()->opacity(),
-          0.0f /* target_opacity */, pivot, duration, tween_type));
+          0.0f /* target_opacity */, pivot, duration, tween_type);
 
   ui::LayerAnimator* animator =
       layer_cleanup_observer->GetRootLayer()->GetAnimator();
   animator->set_preemption_strategy(
       ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-  std::unique_ptr<ui::LayerAnimationSequence> animation_sequence(
-      new ui::LayerAnimationSequence(screen_rotation.release()));
+  std::unique_ptr<ui::LayerAnimationSequence> animation_sequence =
+      base::MakeUnique<ui::LayerAnimationSequence>(std::move(screen_rotation));
   // Add an observer so that the cloned layers can be cleaned up with the
   // animation completes/aborts.
   animation_sequence->AddObserver(layer_cleanup_observer.release());

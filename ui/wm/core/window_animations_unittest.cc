@@ -4,6 +4,8 @@
 
 #include "ui/wm/core/window_animations.h"
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "ui/aura/test/aura_test_base.h"

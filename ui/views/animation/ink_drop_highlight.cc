@@ -113,21 +113,23 @@ void InkDropHighlight::AnimateFade(AnimationType animation_type,
   animation.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
-  ui::LayerAnimationElement* opacity_element =
+  std::unique_ptr<ui::LayerAnimationElement> opacity_element =
       ui::LayerAnimationElement::CreateOpacityElement(
           animation_type == FADE_IN ? visible_opacity_ : kHiddenOpacity,
           duration);
   ui::LayerAnimationSequence* opacity_sequence =
-      new ui::LayerAnimationSequence(opacity_element);
+      new ui::LayerAnimationSequence(std::move(opacity_element));
   opacity_sequence->AddObserver(animation_observer);
   animator->StartAnimation(opacity_sequence);
 
   if (initial_size != target_size) {
-    ui::LayerAnimationElement* transform_element =
+    std::unique_ptr<ui::LayerAnimationElement> transform_element =
         ui::LayerAnimationElement::CreateTransformElement(
             CalculateTransform(target_size), duration);
+
     ui::LayerAnimationSequence* transform_sequence =
-        new ui::LayerAnimationSequence(transform_element);
+        new ui::LayerAnimationSequence(std::move(transform_element));
+
     transform_sequence->AddObserver(animation_observer);
     animator->StartAnimation(transform_sequence);
   }

@@ -36,6 +36,7 @@
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_split.h"
@@ -187,7 +188,7 @@ void HandleRotateActiveWindow() {
         ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
     active_window->layer()->GetAnimator()->StartAnimation(
         new ui::LayerAnimationSequence(
-            new WindowRotation(360, active_window->layer())));
+            base::MakeUnique<WindowRotation>(360, active_window->layer())));
   }
 }
 
