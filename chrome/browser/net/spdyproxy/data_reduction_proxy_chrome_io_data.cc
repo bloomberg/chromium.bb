@@ -42,6 +42,7 @@ void OnLoFiResponseReceivedOnUI(content::WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   PreviewsInfoBarDelegate::Create(
       web_contents, PreviewsInfoBarDelegate::LOFI,
+      true /* is_data_saver_user */,
       PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback());
 }
 

@@ -55,6 +55,7 @@ PreviewsInfoBarDelegate::~PreviewsInfoBarDelegate() {
 void PreviewsInfoBarDelegate::Create(
     content::WebContents* web_contents,
     PreviewsInfoBarType infobar_type,
+    bool is_data_saver_user,
     const OnDismissPreviewsInfobarCallback& on_dismiss_callback) {
   PreviewsInfoBarTabHelper* infobar_tab_helper =
       PreviewsInfoBarTabHelper::FromWebContents(web_contents);
@@ -67,7 +68,8 @@ void PreviewsInfoBarDelegate::Create(
   infobars::InfoBar* infobar =
       infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
           std::unique_ptr<ConfirmInfoBarDelegate>(new PreviewsInfoBarDelegate(
-              web_contents, infobar_type, on_dismiss_callback))));
+              web_contents, infobar_type, is_data_saver_user,
+              on_dismiss_callback))));
 
   if (infobar && (infobar_type == LITE_PAGE || infobar_type == LOFI)) {
     auto* data_reduction_proxy_settings =
@@ -83,9 +85,13 @@ void PreviewsInfoBarDelegate::Create(
 PreviewsInfoBarDelegate::PreviewsInfoBarDelegate(
     content::WebContents* web_contents,
     PreviewsInfoBarType infobar_type,
+    bool is_data_saver_user,
     const OnDismissPreviewsInfobarCallback& on_dismiss_callback)
     : ConfirmInfoBarDelegate(),
       infobar_type_(infobar_type),
+      message_text_(l10n_util::GetStringUTF16(
+          is_data_saver_user ? IDS_PREVIEWS_INFOBAR_SAVED_DATA_TITLE
+                             : IDS_PREVIEWS_INFOBAR_FASTER_PAGE_TITLE)),
       on_dismiss_callback_(on_dismiss_callback) {}
 
 infobars::InfoBarDelegate::InfoBarIdentifier
@@ -112,9 +118,7 @@ void PreviewsInfoBarDelegate::InfoBarDismissed() {
 }
 
 base::string16 PreviewsInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringUTF16((infobar_type_ == OFFLINE)
-                                       ? IDS_PREVIEWS_INFOBAR_FASTER_PAGE_TITLE
-                                       : IDS_PREVIEWS_INFOBAR_SAVED_DATA_TITLE);
+  return message_text_;
 }
 
 int PreviewsInfoBarDelegate::GetButtons() const {

@@ -6,11 +6,14 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_infobar_delegate.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/features.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_ui_service.h"
@@ -75,9 +78,15 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
       // TODO(ryansturm): Add UMA for errors.
       return;
     }
+    data_reduction_proxy::DataReductionProxySettings*
+        data_reduction_proxy_settings =
+            DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+                web_contents()->GetBrowserContext());
     is_showing_offline_preview_ = true;
     PreviewsInfoBarDelegate::Create(
         web_contents(), PreviewsInfoBarDelegate::OFFLINE,
+        data_reduction_proxy_settings &&
+            data_reduction_proxy_settings->IsDataReductionProxyEnabled(),
         base::Bind(
             &AddPreviewNavigationCallback, web_contents()->GetBrowserContext(),
             navigation_handle->GetURL(), previews::PreviewsType::OFFLINE));
@@ -91,6 +100,7 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
   if (headers && data_reduction_proxy::IsLitePagePreview(*headers)) {
     PreviewsInfoBarDelegate::Create(
         web_contents(), PreviewsInfoBarDelegate::LITE_PAGE,
+        true /* is_data_saver_user */,
         PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback());
   }
 }

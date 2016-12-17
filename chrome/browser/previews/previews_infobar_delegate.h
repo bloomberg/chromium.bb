@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PREVIEWS_PREVIEWS_INFOBAR_DELEGATE_H_
 
 #include "base/callback.h"
+#include "base/strings/string16.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
 namespace content {
@@ -45,12 +46,14 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
   static void Create(
       content::WebContents* web_contents,
       PreviewsInfoBarType infobar_type,
+      bool is_data_saver_user,
       const OnDismissPreviewsInfobarCallback& on_dismiss_callback);
 
  private:
   PreviewsInfoBarDelegate(
       content::WebContents* web_contents,
       PreviewsInfoBarType infobar_type,
+      bool is_data_saver_user,
       const OnDismissPreviewsInfobarCallback& on_dismiss_callback);
 
   // ConfirmInfoBarDelegate overrides:
@@ -64,6 +67,8 @@ class PreviewsInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool LinkClicked(WindowOpenDisposition disposition) override;
 
   PreviewsInfoBarType infobar_type_;
+
+  const base::string16 message_text_;
 
   OnDismissPreviewsInfobarCallback on_dismiss_callback_;
 
