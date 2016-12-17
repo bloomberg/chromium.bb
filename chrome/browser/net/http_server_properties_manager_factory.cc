@@ -4,6 +4,7 @@
 
 #include "chrome/browser/net/http_server_properties_manager_factory.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -63,6 +64,7 @@ HttpServerPropertiesManagerFactory::CreateManager(PrefService* pref_service) {
   using content::BrowserThread;
   return new net::HttpServerPropertiesManager(
       new PrefServiceAdapter(pref_service),  // Transfers ownership.
+      base::ThreadTaskRunnerHandle::Get(),
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 }
 

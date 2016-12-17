@@ -73,8 +73,9 @@ HttpServerPropertiesManager::PrefDelegate::~PrefDelegate() {}
 
 HttpServerPropertiesManager::HttpServerPropertiesManager(
     PrefDelegate* pref_delegate,
+    scoped_refptr<base::SingleThreadTaskRunner> pref_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> network_task_runner)
-    : pref_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+    : pref_task_runner_(pref_task_runner),
       pref_delegate_(pref_delegate),
       setting_prefs_(false),
       network_task_runner_(network_task_runner) {
@@ -83,6 +84,7 @@ HttpServerPropertiesManager::HttpServerPropertiesManager(
       new base::WeakPtrFactory<HttpServerPropertiesManager>(this));
   pref_weak_ptr_ = pref_weak_ptr_factory_->GetWeakPtr();
   pref_cache_update_timer_.reset(new base::OneShotTimer);
+  pref_cache_update_timer_->SetTaskRunner(pref_task_runner_);
   pref_delegate_->StartListeningForUpdates(
       base::Bind(&HttpServerPropertiesManager::OnHttpServerPropertiesChanged,
                  base::Unretained(this)));

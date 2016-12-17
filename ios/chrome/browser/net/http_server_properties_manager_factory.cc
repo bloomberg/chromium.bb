@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/net/http_server_properties_manager_factory.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -57,6 +58,7 @@ net::HttpServerPropertiesManager*
 HttpServerPropertiesManagerFactory::CreateManager(PrefService* pref_service) {
   return new net::HttpServerPropertiesManager(
       new PrefServiceAdapter(pref_service),  // Transfers ownership.
+      base::ThreadTaskRunnerHandle::Get(),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::IO));
 }
 

@@ -80,8 +80,11 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
  public:
   TestingHttpServerPropertiesManager(
       HttpServerPropertiesManager::PrefDelegate* pref_delegate,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-      : HttpServerPropertiesManager(pref_delegate, io_task_runner) {
+      scoped_refptr<base::SingleThreadTaskRunner> pref_task_runner,
+      scoped_refptr<base::SingleThreadTaskRunner> net_task_runner)
+      : HttpServerPropertiesManager(pref_delegate,
+                                    pref_task_runner,
+                                    net_task_runner) {
     InitializeOnNetworkThread();
   }
 
@@ -159,7 +162,8 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int> {
     pref_delegate_ = new MockPrefDelegate;
     http_server_props_manager_.reset(
         new StrictMock<TestingHttpServerPropertiesManager>(
-            pref_delegate_, net_test_task_runner_));
+            pref_delegate_, base::ThreadTaskRunnerHandle::Get(),
+            net_test_task_runner_));
 
     ExpectCacheUpdate();
     base::RunLoop().RunUntilIdle();

@@ -29,6 +29,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/cronet/android/cert/cert_verifier_cache_serializer.h"
@@ -593,7 +594,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     std::unique_ptr<net::HttpServerPropertiesManager>
         http_server_properties_manager(new net::HttpServerPropertiesManager(
             new PrefServiceAdapter(pref_service_.get()),
-            GetNetworkTaskRunner()));
+            base::ThreadTaskRunnerHandle::Get(), GetNetworkTaskRunner()));
     http_server_properties_manager->InitializeOnNetworkThread();
     http_server_properties_manager_ = http_server_properties_manager.get();
     context_builder.SetHttpServerProperties(
