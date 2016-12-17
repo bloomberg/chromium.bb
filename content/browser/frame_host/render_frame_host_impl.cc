@@ -2253,7 +2253,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
 #if defined(ENABLE_WEBVR)
   GetInterfaceRegistry()->AddInterface<device::mojom::VRService>(
-      base::Bind(&device::VRServiceImpl::BindRequest));
+      base::Bind(&device::VRServiceImpl::Create));
 #endif
   if (base::FeatureList::IsEnabled(features::kGenericSensor)) {
     GetInterfaceRegistry()->AddInterface(
