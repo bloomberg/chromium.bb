@@ -632,10 +632,68 @@ struct weston_layer_entry {
 	struct weston_layer *layer;
 };
 
+/**
+ * Higher value means higher in the stack.
+ *
+ * These values are based on well-known concepts in a classic desktop
+ * environment. Third-party modules based on libweston are encouraged to use
+ * them to integrate better with other projects.
+ *
+ * A fully integrated environment can use any value, based on these or not,
+ * at their discretion.
+ */
+enum weston_layer_position {
+	/*
+	 * Special value to make the layer invisible and still rendered.
+	 * This is used by compositors wanting e.g. minimized surfaces to still
+	 * receive frame callbacks.
+	 */
+	WESTON_LAYER_POSITION_HIDDEN     = 0x00000000,
+
+	/*
+	 * There should always be a background layer with a surface covering
+	 * the visible area.
+	 *
+	 * If the compositor handles the background itself, it should use
+	 * BACKGROUND.
+	 *
+	 * If the compositor supports runtime-loadable modules to set the
+	 * background, it should put a solid color surface at (BACKGROUND - 1)
+	 * and modules must use BACKGROUND.
+	 */
+	WESTON_LAYER_POSITION_BACKGROUND = 0x00000002,
+
+	/* For "desktop widgets" and applications like conky. */
+	WESTON_LAYER_POSITION_BOTTOM_UI  = 0x30000000,
+
+	/* For regular applications, only one layer should have this value
+	 * to ensure proper stacking control. */
+	WESTON_LAYER_POSITION_NORMAL     = 0x50000000,
+
+	/* For desktop UI, like panels. */
+	WESTON_LAYER_POSITION_UI         = 0x80000000,
+
+	/* For fullscreen applications that should cover UI. */
+	WESTON_LAYER_POSITION_FULLSCREEN = 0xb0000000,
+
+	/* For special UI like on-screen keyboard that fullscreen applications
+	 * will need. */
+	WESTON_LAYER_POSITION_TOP_UI     = 0xe0000000,
+
+	/* For the lock surface. */
+	WESTON_LAYER_POSITION_LOCK       = 0xffff0000,
+
+	/* Values reserved for libweston internal usage */
+	WESTON_LAYER_POSITION_CURSOR     = 0xfffffffe,
+	WESTON_LAYER_POSITION_FADE       = 0xffffffff,
+};
+
 struct weston_layer {
-	struct weston_layer_entry view_list;
-	struct wl_list link;
+	struct weston_compositor *compositor;
+	struct wl_list link; /* weston_compositor::layer_list */
+	enum weston_layer_position position;
 	pixman_box32_t mask;
+	struct weston_layer_entry view_list;
 };
 
 struct weston_plane {
@@ -773,7 +831,7 @@ struct weston_compositor {
 	struct wl_list pending_output_list;
 	struct wl_list output_list;
 	struct wl_list seat_list;
-	struct wl_list layer_list;
+	struct wl_list layer_list;	/* struct weston_layer::link */
 	struct wl_list view_list;	/* struct weston_view::link */
 	struct wl_list plane_list;
 	struct wl_list key_binding_list;
@@ -1297,7 +1355,13 @@ weston_layer_entry_insert(struct weston_layer_entry *list,
 void
 weston_layer_entry_remove(struct weston_layer_entry *entry);
 void
-weston_layer_init(struct weston_layer *layer, struct wl_list *below);
+weston_layer_init(struct weston_layer *layer,
+		  struct weston_compositor *compositor);
+void
+weston_layer_set_position(struct weston_layer *layer,
+			  enum weston_layer_position position);
+void
+weston_layer_unset_position(struct weston_layer *layer);
 
 void
 weston_layer_set_mask(struct weston_layer *layer, int x, int y, int width, int height);

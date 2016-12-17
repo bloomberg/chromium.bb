@@ -386,7 +386,11 @@ weston_desktop_xwayland_init(struct weston_desktop *desktop)
 	xwayland->desktop = desktop;
 	xwayland->client = weston_desktop_client_create(desktop, NULL, NULL, NULL, NULL, 0, 0);
 
-	weston_layer_init(&xwayland->layer, &compositor->cursor_layer.link);
+	weston_layer_init(&xwayland->layer, compositor);
+	/* We put this layer on top of regular shell surfaces, but hopefully
+	 * below any UI the shell would add */
+	weston_layer_set_position(&xwayland->layer,
+				  WESTON_LAYER_POSITION_NORMAL + 1);
 
 	compositor->xwayland = xwayland;
 	compositor->xwayland_interface = &weston_desktop_xwayland_interface;

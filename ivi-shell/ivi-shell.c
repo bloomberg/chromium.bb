@@ -392,7 +392,7 @@ init_ivi_shell(struct weston_compositor *compositor, struct ivi_shell *shell,
 
 	wl_list_init(&shell->ivi_surface_list);
 
-	weston_layer_init(&shell->input_panel_layer, NULL);
+	weston_layer_init(&shell->input_panel_layer, compositor);
 
 	if (setting->developermode) {
 		weston_install_debug_key_binding(compositor, MODIFIER_SUPER);

@@ -2422,14 +2422,62 @@ weston_layer_entry_remove(struct weston_layer_entry *entry)
 	entry->layer = NULL;
 }
 
+
+/** Initialize the weston_layer struct.
+ *
+ * \param compositor The compositor instance
+ * \param layer The layer to initialize
+ */
 WL_EXPORT void
-weston_layer_init(struct weston_layer *layer, struct wl_list *below)
+weston_layer_init(struct weston_layer *layer,
+		  struct weston_compositor *compositor)
 {
+	layer->compositor = compositor;
+	wl_list_init(&layer->link);
 	wl_list_init(&layer->view_list.link);
 	layer->view_list.layer = layer;
 	weston_layer_set_mask_infinite(layer);
-	if (below != NULL)
-		wl_list_insert(below, &layer->link);
+}
+
+/** Sets the position of the layer in the layer list. The layer will be placed
+ * below any layer with the same position value, if any.
+ * This function is safe to call if the layer is already on the list, but the
+ * layer may be moved below other layers at the same position, if any.
+ *
+ * \param layer The layer to modify
+ * \param position The position the layer will be placed at
+ */
+WL_EXPORT void
+weston_layer_set_position(struct weston_layer *layer,
+			  enum weston_layer_position position)
+{
+	struct weston_layer *below;
+
+	wl_list_remove(&layer->link);
+
+	/* layer_list is ordered from top to bottom, the last layer being the
+	 * background with the smallest position value */
+
+	layer->position = position;
+	wl_list_for_each_reverse(below, &layer->compositor->layer_list, link) {
+		if (below->position >= layer->position) {
+			wl_list_insert(&below->link, &layer->link);
+			return;
+		}
+	}
+	wl_list_insert(&layer->compositor->layer_list, &layer->link);
+}
+
+/** Hide a layer by taking it off the layer list.
+ * This function is safe to call if the layer is not on the list.
+ *
+ * \param layer The layer to hide
+ */
+WL_EXPORT void
+weston_layer_unset_position(struct weston_layer *layer)
+{
+	wl_list_remove(&layer->link);
+	wl_list_init(&layer->link);
 }
 
 WL_EXPORT void
@@ -5036,8 +5084,12 @@ weston_compositor_create(struct wl_display *display, void *user_data)
 	loop = wl_display_get_event_loop(ec->wl_display);
 	ec->idle_source = wl_event_loop_add_timer(loop, idle_handler, ec);
 
-	weston_layer_init(&ec->fade_layer, &ec->layer_list);
-	weston_layer_init(&ec->cursor_layer, &ec->fade_layer.link);
+	weston_layer_init(&ec->fade_layer, ec);
+	weston_layer_init(&ec->cursor_layer, ec);
+
+	weston_layer_set_position(&ec->fade_layer, WESTON_LAYER_POSITION_FADE);
+	weston_layer_set_position(&ec->cursor_layer,
+				  WESTON_LAYER_POSITION_CURSOR);
 
 	weston_compositor_add_debug_binding(ec, KEY_T,
 					    timeline_key_binding_handler, ec);

@@ -892,13 +892,13 @@ seat_destroyed(struct wl_listener *listener, void *data)
 }
 
 static struct workspace *
-workspace_create(void)
+workspace_create(struct desktop_shell *shell)
 {
 	struct workspace *ws = malloc(sizeof *ws);
 	if (ws == NULL)
 		return NULL;
 
-	weston_layer_init(&ws->layer, NULL);
+	weston_layer_init(&ws->layer, shell->compositor);
 
 	wl_list_init(&ws->focus_list);
 	wl_list_init(&ws->seat_destroyed_listener.link);
@@ -937,7 +937,7 @@ activate_workspace(struct desktop_shell *shell, unsigned int index)
 	struct workspace *ws;
 
 	ws = get_workspace(shell, index);
-	wl_list_insert(&shell->panel_layer.link, &ws->layer.link);
+	weston_layer_set_position(&ws->layer, WESTON_LAYER_POSITION_NORMAL);
 
 	shell->workspaces.current = index;
 }
@@ -1018,6 +1018,9 @@ reverse_workspace_change_animation(struct desktop_shell *shell,
 	shell->workspaces.anim_dir = -1 * shell->workspaces.anim_dir;
 	shell->workspaces.anim_timestamp = 0;
 
+	weston_layer_set_position(&to->layer, WESTON_LAYER_POSITION_NORMAL);
+	weston_layer_set_position(&from->layer, WESTON_LAYER_POSITION_NORMAL - 1);
+
 	weston_compositor_schedule_repaint(shell->compositor);
 }
 
@@ -1065,7 +1068,7 @@ finish_workspace_change_animation(struct desktop_shell *shell,
 	workspace_deactivate_transforms(to);
 	shell->workspaces.anim_to = NULL;
 
-	wl_list_remove(&shell->workspaces.anim_from->layer.link);
+	weston_layer_unset_position(&shell->workspaces.anim_from->layer);
 }
 
 static void
@@ -1147,7 +1150,8 @@ animate_workspace_change(struct desktop_shell *shell,
 	wl_list_insert(&output->animation_list,
 		       &shell->workspaces.animation.link);
 
-	wl_list_insert(from->layer.link.prev, &to->layer.link);
+	weston_layer_set_position(&to->layer, WESTON_LAYER_POSITION_NORMAL);
+	weston_layer_set_position(&from->layer, WESTON_LAYER_POSITION_NORMAL - 1);
 
 	workspace_translate_in(to, 0);
 
@@ -1161,8 +1165,8 @@ update_workspace(struct desktop_shell *shell, unsigned int index,
 		 struct workspace *from, struct workspace *to)
 {
 	shell->workspaces.current = index;
-	wl_list_insert(&from->layer.link, &to->layer.link);
-	wl_list_remove(&from->layer.link);
+	weston_layer_set_position(&to->layer, WESTON_LAYER_POSITION_NORMAL);
+	weston_layer_unset_position(&from->layer);
 }
 
 static void
@@ -1286,9 +1290,6 @@ take_surface_to_workspace_by_seat(struct desktop_shell *shell,
 
 	if (shell->workspaces.anim_from == to &&
 	    shell->workspaces.anim_to == from) {
-		wl_list_remove(&to->layer.link);
-		wl_list_insert(from->layer.link.prev, &to->layer.link);
-
 		reverse_workspace_change_animation(shell, index, from, to);
 
 		return;
@@ -3064,20 +3065,16 @@ resume_desktop(struct desktop_shell *shell)
 {
 	struct workspace *ws = get_current_workspace(shell);
 
-	wl_list_remove(&shell->lock_layer.link);
-	if (shell->showing_input_panels) {
-		wl_list_insert(&shell->compositor->cursor_layer.link,
-			       &shell->input_panel_layer.link);
-		wl_list_insert(&shell->input_panel_layer.link,
-			       &shell->fullscreen_layer.link);
-	} else {
-		wl_list_insert(&shell->compositor->cursor_layer.link,
-			       &shell->fullscreen_layer.link);
-	}
-	wl_list_insert(&shell->fullscreen_layer.link,
-		       &shell->panel_layer.link);
-	wl_list_insert(&shell->panel_layer.link,
-		       &ws->layer.link),
+	weston_layer_unset_position(&shell->lock_layer);
+
+	if (shell->showing_input_panels)
+		weston_layer_set_position(&shell->input_panel_layer,
+					  WESTON_LAYER_POSITION_TOP_UI);
+	weston_layer_set_position(&shell->fullscreen_layer,
+				  WESTON_LAYER_POSITION_FULLSCREEN);
+	weston_layer_set_position(&shell->panel_layer,
+				  WESTON_LAYER_POSITION_UI);
+	weston_layer_set_position(&ws->layer, WESTON_LAYER_POSITION_NORMAL);
 
 	restore_focus_state(shell, get_current_workspace(shell));
 
@@ -3757,13 +3754,14 @@ lock(struct desktop_shell *shell)
 	 * toplevel layers.  This way nothing else can show or receive
 	 * input events while we are locked. */
 
-	wl_list_remove(&shell->panel_layer.link);
-	wl_list_remove(&shell->fullscreen_layer.link);
+	weston_layer_unset_position(&shell->panel_layer);
+	weston_layer_unset_position(&shell->fullscreen_layer);
 	if (shell->showing_input_panels)
-		wl_list_remove(&shell->input_panel_layer.link);
-	wl_list_remove(&ws->layer.link);
-	wl_list_insert(&shell->compositor->cursor_layer.link,
-		       &shell->lock_layer.link);
+		weston_layer_unset_position(&shell->input_panel_layer);
+	weston_layer_unset_position(&ws->layer);
+
+	weston_layer_set_position(&shell->lock_layer,
+				  WESTON_LAYER_POSITION_LOCK);
 
 	weston_compositor_sleep(shell->compositor);
 
@@ -4900,11 +4898,18 @@ module_init(struct weston_compositor *ec,
 	shell->transform_listener.notify = transform_handler;
 	wl_signal_add(&ec->transform_signal, &shell->transform_listener);
 
-	weston_layer_init(&shell->fullscreen_layer, &ec->cursor_layer.link);
-	weston_layer_init(&shell->panel_layer, &shell->fullscreen_layer.link);
-	weston_layer_init(&shell->background_layer, &shell->panel_layer.link);
-	weston_layer_init(&shell->lock_layer, NULL);
-	weston_layer_init(&shell->input_panel_layer, NULL);
+	weston_layer_init(&shell->fullscreen_layer, ec);
+	weston_layer_init(&shell->panel_layer, ec);
+	weston_layer_init(&shell->background_layer, ec);
+	weston_layer_init(&shell->lock_layer, ec);
+	weston_layer_init(&shell->input_panel_layer, ec);
+
+	weston_layer_set_position(&shell->fullscreen_layer,
+				  WESTON_LAYER_POSITION_FULLSCREEN);
+	weston_layer_set_position(&shell->panel_layer,
+				  WESTON_LAYER_POSITION_UI);
+	weston_layer_set_position(&shell->background_layer,
+				  WESTON_LAYER_POSITION_BACKGROUND);
 
 	wl_array_init(&shell->workspaces.array);
 	wl_list_init(&shell->workspaces.client_list);
@@ -4926,13 +4931,13 @@ module_init(struct weston_compositor *ec,
 		if (pws == NULL)
 			return -1;
 
-		*pws = workspace_create();
+		*pws = workspace_create(shell);
 		if (*pws == NULL)
 			return -1;
 	}
 	activate_workspace(shell, 0);
 
-	weston_layer_init(&shell->minimized_layer, NULL);
+	weston_layer_init(&shell->minimized_layer, ec);
 
 	wl_list_init(&shell->workspaces.anim_sticky_list);
 	wl_list_init(&shell->workspaces.animation.link);

@@ -912,7 +912,9 @@ module_init(struct weston_compositor *compositor,
 
 	shell->client_destroyed.notify = client_destroyed;
 
-	weston_layer_init(&shell->layer, &compositor->cursor_layer.link);
+	weston_layer_init(&shell->layer, compositor);
+	weston_layer_set_position(&shell->layer,
+				  WESTON_LAYER_POSITION_FULLSCREEN);
 
 	wl_list_init(&shell->output_list);
 	shell->output_created_listener.notify = output_created;

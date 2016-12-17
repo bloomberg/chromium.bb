@@ -2019,7 +2019,9 @@ ivi_layout_init_with_compositor(struct weston_compositor *ec)
 	wl_signal_init(&layout->surface_notification.configure_changed);
 
 	/* Add layout_layer at the last of weston_compositor.layer_list */
-	weston_layer_init(&layout->layout_layer, ec->layer_list.prev);
+	weston_layer_init(&layout->layout_layer, ec);
+	weston_layer_set_position(&layout->layout_layer,
+				  WESTON_LAYER_POSITION_NORMAL);
 
 	create_screen(ec);
 

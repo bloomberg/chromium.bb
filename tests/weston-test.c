@@ -596,7 +596,8 @@ module_init(struct weston_compositor *ec,
 		return -1;
 
 	test->compositor = ec;
-	weston_layer_init(&test->layer, &ec->cursor_layer.link);
+	weston_layer_init(&test->layer, ec);
+	weston_layer_set_position(&test->layer, WESTON_LAYER_POSITION_CURSOR - 1);
 
 	if (wl_global_create(ec->wl_display, &weston_test_interface, 1,
 			     test, bind_test) == NULL)
