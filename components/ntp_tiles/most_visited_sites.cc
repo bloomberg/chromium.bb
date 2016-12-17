@@ -187,6 +187,8 @@ base::FilePath MostVisitedSites::GetWhitelistLargeIconPath(const GURL& url) {
 
 void MostVisitedSites::OnMostVisitedURLsAvailable(
     const history::MostVisitedURLList& visited_list) {
+  // TODO(mastiz): Verify if suggestion service results have been fetched in
+  // the meantime, and if that's the case ignore this event.
   NTPTilesVector tiles;
   size_t num_tiles =
       std::min(visited_list.size(), static_cast<size_t>(num_sites_));
