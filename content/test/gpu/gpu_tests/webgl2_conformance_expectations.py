@@ -56,13 +56,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'integer-cubemap-specification-order-bug.html',
         bug=483282) # owner:cwallez, test might be buggy
 
-    # This is temporary until the error tolerance is fixed in the test.
-    # see https://codereview.chromium.org/2577293002/.
-    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
-        ['mac', 'linux'], bug=662802)
-    # self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
-    #     ['linux', 'amd'], bug=483282)
-
     # Windows only.
     self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
         ['win'], bug=644740)
@@ -627,6 +620,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
 
     self.Fail('conformance2/misc/uninitialized-test-2.html',
+        ['linux', 'amd'], bug=483282)
+    self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
         ['linux', 'amd'], bug=634525)
