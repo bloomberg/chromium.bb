@@ -3,11 +3,14 @@
 # found in the LICENSE file.
 
 import logging
+
 from webkitpy.w3c.local_wpt import LocalWPT
-from webkitpy.w3c.chromium_wpt import ChromiumWPT
 from webkitpy.w3c.chromium_commit import ChromiumCommit
+from webkitpy.w3c.deps_updater import DepsUpdater
 
 _log = logging.getLogger(__name__)
+
+CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/imported/wpt/'
 
 
 class TestExporter(object):
@@ -44,7 +47,6 @@ class TestExporter(object):
         # At this point, no in-flight PRs should exist
         # If there was an issue merging, it should have errored out
         local_wpt = LocalWPT(self.host, use_github=False)
-        chromium_wpt = ChromiumWPT(self.host)
 
         # TODO(jeffcarp): have the script running this fetch Chromium origin/master
         # TODO(jeffcarp): move WPT fetch out of its constructor to match planned ChromiumWPT pattern
@@ -62,8 +64,7 @@ class TestExporter(object):
         _log.info('chromium@%s', chromium_commit.sha)
         _log.info('(%d behind chromium@origin/master)', chromium_commit.num_behind_master())
 
-        # TODO(jeffcarp): Have this function return ChromiumCommits
-        exportable_commits = chromium_wpt.exportable_commits_since(chromium_commit.sha)
+        exportable_commits = self.exportable_commits_since(chromium_commit.sha)
 
         if not exportable_commits:
             _log.info('No exportable commits found in Chromium, stopping.')
@@ -71,9 +72,9 @@ class TestExporter(object):
 
         _log.info('Found %d exportable commits in Chromium:', len(exportable_commits))
         for commit in exportable_commits:
-            _log.info('- %s %s', commit, chromium_wpt.subject(commit))
+            _log.info('- %s %s', commit, commit.subject())
 
-        outbound_commit = ChromiumCommit(self.host, sha=exportable_commits[0])
+        outbound_commit = exportable_commits[0]
         _log.info('Picking the earliest commit and creating a PR')
         _log.info('- %s %s', outbound_commit.sha, outbound_commit.subject())
 
@@ -98,3 +99,40 @@ class TestExporter(object):
             body=outbound_commit.body())
 
         _log.info('Create PR response: %s', response_data)
+
+    def exportable_commits_since(self, commit):
+        """Returns SHAs of exportable commits since `commit` in chronological order.
+
+        Args:
+            commit: The SHA of the Chromium commit from which this method will look.
+        """
+        repo_root = self.host.executive.run_command([
+            'git', 'rev-parse', '--show-toplevel'
+        ]).strip()
+
+        commits = self.host.executive.run_command([
+            'git', 'rev-list', '{}..HEAD'.format(commit), '--reverse',
+            '--', repo_root + '/' + CHROMIUM_WPT_DIR
+        ]).splitlines()
+
+        chromium_commits = [ChromiumCommit(self.host, sha=c) for c in commits]
+
+        def is_exportable(chromium_commit):
+            message = chromium_commit.message()
+            return (
+                'NOEXPORT=true' not in message
+                and not message.startswith('Import ')
+                # TODO(jeffcarp): change this to allow any commit with
+                #   any non-expectation changes to be exportable
+                and not self._has_expectations(chromium_commit)
+            )
+
+        return filter(is_exportable, chromium_commits)
+
+    def _has_expectations(self, chromium_commit):
+        files = self.host.executive.run_command([
+            'git', 'diff-tree', '--no-commit-id',
+            '--name-only', '-r', chromium_commit.sha
+        ]).splitlines()
+
+        return any(DepsUpdater.is_baseline(f) for f in files)
