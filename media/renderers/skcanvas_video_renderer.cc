@@ -88,6 +88,8 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTextures(
     const VideoFrame* video_frame,
     const Context3D& context_3d) {
   DCHECK(video_frame->HasTextures());
+  // TODO: We should compare the DCHECK vs when UpdateLastImage calls this
+  // function. (crbug.com/674185)
   DCHECK(video_frame->format() == PIXEL_FORMAT_I420 ||
          video_frame->format() == PIXEL_FORMAT_NV12);
 
@@ -667,6 +669,7 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
       }
       break;
     case PIXEL_FORMAT_YV16:
+    case PIXEL_FORMAT_I422:
       LIBYUV_I422_TO_ARGB(video_frame->visible_data(VideoFrame::kYPlane),
                           video_frame->stride(VideoFrame::kYPlane),
                           video_frame->visible_data(VideoFrame::kUPlane),

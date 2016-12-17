@@ -335,6 +335,7 @@ base::Optional<::media::VideoPixelFormat> ToMediaVideoPixelFormat(
     CASE_RETURN_OTHER(PIXEL_FORMAT_YUV444P12);
     CASE_RETURN_OTHER(PIXEL_FORMAT_Y8);
     CASE_RETURN_OTHER(PIXEL_FORMAT_Y16);
+    CASE_RETURN_OTHER(PIXEL_FORMAT_I422);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
@@ -371,6 +372,7 @@ base::Optional<pb::VideoDecoderConfig::Format> ToProtoVideoDecoderConfigFormat(
     CASE_RETURN_OTHER(PIXEL_FORMAT_YUV444P12);
     CASE_RETURN_OTHER(PIXEL_FORMAT_Y8);
     CASE_RETURN_OTHER(PIXEL_FORMAT_Y16);
+    CASE_RETURN_OTHER(PIXEL_FORMAT_I422);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }

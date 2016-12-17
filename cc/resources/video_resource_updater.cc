@@ -91,6 +91,7 @@ VideoFrameExternalResources::ResourceType ResourceTypeForVideoFrame(
     case media::PIXEL_FORMAT_YUV444P12:
     case media::PIXEL_FORMAT_Y8:
     case media::PIXEL_FORMAT_Y16:
+    case media::PIXEL_FORMAT_I422:
     case media::PIXEL_FORMAT_UNKNOWN:
       break;
   }
@@ -406,6 +407,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     case media::PIXEL_FORMAT_MJPEG:
     case media::PIXEL_FORMAT_MT21:
     case media::PIXEL_FORMAT_Y8:
+    case media::PIXEL_FORMAT_I422:
       bits_per_channel = 8;
       break;
     case media::PIXEL_FORMAT_YUV420P9:

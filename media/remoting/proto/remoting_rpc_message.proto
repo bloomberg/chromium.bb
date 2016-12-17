@@ -201,6 +201,7 @@ message VideoDecoderConfig {
     PIXEL_FORMAT_YUV444P12 = 24;
     PIXEL_FORMAT_Y8 = 25;
     PIXEL_FORMAT_Y16 = 26;
+    PIXEL_FORMAT_I422 = 27;
   };
 
   // Should align with ::media::ColorSpace
