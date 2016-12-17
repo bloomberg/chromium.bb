@@ -4,6 +4,7 @@
 
 #include "web/DevToolsEmulator.h"
 
+#include "core/fetch/MemoryCache.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
@@ -200,6 +201,9 @@ void DevToolsEmulator::enableDeviceEmulation(
       m_emulationParams.scale == params.scale) {
     return;
   }
+  if (m_emulationParams.deviceScaleFactor != params.deviceScaleFactor ||
+      !m_deviceMetricsEnabled)
+    memoryCache()->evictResources();
 
   m_emulationParams = params;
 
@@ -235,6 +239,7 @@ void DevToolsEmulator::disableDeviceEmulation() {
   if (!m_deviceMetricsEnabled)
     return;
 
+  memoryCache()->evictResources();
   m_deviceMetricsEnabled = false;
   m_webViewImpl->setBackgroundColorOverride(Color::transparent);
   m_webViewImpl->page()->settings().setDeviceScaleAdjustment(

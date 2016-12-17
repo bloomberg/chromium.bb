@@ -373,6 +373,60 @@ InspectorTest.pageReloaded = function()
         callback();
 }
 
+InspectorTest.reloadProtocolTest = function(ignoreCache, callback)
+{
+    InspectorTest._pageLoadedCallback = afterReload;
+    // This will ensure we maintain logs after navigate.
+
+    getLogs(getOldLogsCallback);
+
+    function getLogs(getLogsCallback)
+    {
+        InspectorTest.evaluateInPage("outputElement.innerHTML", data => getLogsCallback(data.split("<br>")));
+    }
+
+    function clearLogs(clearLogsCallback)
+    {
+        InspectorTest.evaluateInPage("outputElement.textContent = \"\"", clearLogsCallback);
+    }
+
+    var oldLogs;
+
+    function getOldLogsCallback(data)
+    {
+        oldLogs = data;
+        prepareForReload();
+    }
+
+    function prepareForReload()
+    {
+        InspectorTest.evaluateInPage("prepareForReload()", reload);
+    }
+
+    function reload()
+    {
+        InspectorTest.sendCommand("Page.reload", { "ignoreCache": ignoreCache });
+    }
+
+    function afterReload()
+    {
+        var currentLogs;
+        getLogs(data => {
+            currentLogs = data;
+            clearLogs(addLogsBack);
+        });
+
+        function addLogsBack()
+        {
+            for (var log of oldLogs)
+                InspectorTest.log(log);
+            for (var log of currentLogs)
+                InspectorTest.log(log);
+            callback();
+        }
+    }
+}
+
 window.addEventListener("load", InspectorTest.readyForTest.bind(InspectorTest), false);
 
 </script>
