@@ -926,22 +926,23 @@ error::Error GLES2DecoderPassthroughImpl::HandleTexImage2D(
   GLint border = static_cast<GLint>(c.border);
   GLenum format = static_cast<GLenum>(c.format);
   GLenum type = static_cast<GLenum>(c.type);
+  uint32_t pixels_shm_id = c.pixels_shm_id;
+  uint32_t pixels_shm_offset = c.pixels_shm_offset;
 
-  GLsizei imagesize = 0;
-  const void* pixels = NULL;
-  if (c.pixels_shm_id != 0 || c.pixels_shm_offset != 0) {
-    unsigned int buffer_size = 0;
+  unsigned int buffer_size = 0;
+  const void* pixels = nullptr;
+
+  if (pixels_shm_id != 0 || pixels_shm_offset != 0) {
     pixels = GetSharedMemoryAndSizeAs<uint8_t*>(
-        c.pixels_shm_id, c.pixels_shm_offset, &buffer_size);
+        pixels_shm_id, pixels_shm_offset, &buffer_size);
     if (!pixels) {
       return error::kOutOfBounds;
     }
-    imagesize = buffer_size;
   }
 
   error::Error error =
       DoTexImage2D(target, level, internal_format, width, height, border,
-                   format, type, imagesize, pixels);
+                   format, type, buffer_size, pixels);
   if (error != error::kNoError) {
     return error;
   }
@@ -963,22 +964,23 @@ error::Error GLES2DecoderPassthroughImpl::HandleTexImage3D(
   GLint border = static_cast<GLint>(c.border);
   GLenum format = static_cast<GLenum>(c.format);
   GLenum type = static_cast<GLenum>(c.type);
+  uint32_t pixels_shm_id = c.pixels_shm_id;
+  uint32_t pixels_shm_offset = c.pixels_shm_offset;
 
-  GLsizei imagesize = 0;
-  const void* pixels = NULL;
-  if (c.pixels_shm_id != 0 || c.pixels_shm_offset != 0) {
-    unsigned int buffer_size = 0;
+  unsigned int buffer_size = 0;
+  const void* pixels = nullptr;
+
+  if (pixels_shm_id != 0 || pixels_shm_offset != 0) {
     pixels = GetSharedMemoryAndSizeAs<uint8_t*>(
-        c.pixels_shm_id, c.pixels_shm_offset, &buffer_size);
+        pixels_shm_id, pixels_shm_offset, &buffer_size);
     if (!pixels) {
       return error::kOutOfBounds;
     }
-    imagesize = buffer_size;
   }
 
   error::Error error =
       DoTexImage3D(target, level, internal_format, width, height, depth, border,
-                   format, type, imagesize, pixels);
+                   format, type, buffer_size, pixels);
   if (error != error::kNoError) {
     return error;
   }
@@ -999,17 +1001,23 @@ error::Error GLES2DecoderPassthroughImpl::HandleTexSubImage2D(
   GLsizei height = static_cast<GLsizei>(c.height);
   GLenum format = static_cast<GLenum>(c.format);
   GLenum type = static_cast<GLenum>(c.type);
+  uint32_t pixels_shm_id = c.pixels_shm_id;
+  uint32_t pixels_shm_offset = c.pixels_shm_offset;
 
   unsigned int buffer_size = 0;
-  const void* pixels = GetSharedMemoryAndSizeAs<uint8_t*>(
-      c.pixels_shm_id, c.pixels_shm_offset, &buffer_size);
-  if (!pixels) {
-    return error::kOutOfBounds;
-  }
-  GLsizei imagesize = buffer_size;
+  const void* pixels = nullptr;
 
-  error::Error error = DoTexSubImage2D(target, level, xoffset, yoffset, width,
-                                       height, format, type, imagesize, pixels);
+  if (pixels_shm_id != 0 || pixels_shm_offset != 0) {
+    pixels = GetSharedMemoryAndSizeAs<uint8_t*>(
+        pixels_shm_id, pixels_shm_offset, &buffer_size);
+    if (!pixels) {
+      return error::kOutOfBounds;
+    }
+  }
+
+  error::Error error =
+      DoTexSubImage2D(target, level, xoffset, yoffset, width, height, format,
+                      type, buffer_size, pixels);
   if (error != error::kNoError) {
     return error;
   }
@@ -1032,18 +1040,23 @@ error::Error GLES2DecoderPassthroughImpl::HandleTexSubImage3D(
   GLsizei depth = static_cast<GLsizei>(c.depth);
   GLenum format = static_cast<GLenum>(c.format);
   GLenum type = static_cast<GLenum>(c.type);
+  uint32_t pixels_shm_id = c.pixels_shm_id;
+  uint32_t pixels_shm_offset = c.pixels_shm_offset;
 
   unsigned int buffer_size = 0;
-  const void* pixels = GetSharedMemoryAndSizeAs<uint8_t*>(
-      c.pixels_shm_id, c.pixels_shm_offset, &buffer_size);
-  if (!pixels) {
-    return error::kOutOfBounds;
+  const void* pixels = nullptr;
+
+  if (pixels_shm_id != 0 || pixels_shm_offset != 0) {
+    pixels = GetSharedMemoryAndSizeAs<uint8_t*>(
+        pixels_shm_id, pixels_shm_offset, &buffer_size);
+    if (!pixels) {
+      return error::kOutOfBounds;
+    }
   }
-  GLsizei imagesize = buffer_size;
 
   error::Error error =
       DoTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height,
-                      depth, format, type, imagesize, pixels);
+                      depth, format, type, buffer_size, pixels);
   if (error != error::kNoError) {
     return error;
   }
