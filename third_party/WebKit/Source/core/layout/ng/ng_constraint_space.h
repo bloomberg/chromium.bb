@@ -13,7 +13,6 @@
 
 namespace blink {
 
-class ComputedStyle;
 class LayoutBox;
 class NGFragment;
 class NGLayoutOpportunityIterator;
@@ -110,7 +109,6 @@ class CORE_EXPORT NGConstraintSpace final
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
-  NGConstraintSpace* ChildSpace(const ComputedStyle* style) const;
   String ToString() const;
 
  private:

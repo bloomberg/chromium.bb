@@ -102,14 +102,6 @@ NGLayoutOpportunityIterator* NGConstraintSpace::LayoutOpportunities(
   return iterator;
 }
 
-NGConstraintSpace* NGConstraintSpace::ChildSpace(
-    const ComputedStyle* style) const {
-  return NGConstraintSpaceBuilder(this)
-      .SetWritingMode(FromPlatformWritingMode(style->getWritingMode()))
-      .SetTextDirection(style->direction())
-      .ToConstraintSpace();
-}
-
 String NGConstraintSpace::ToString() const {
   return String::format("%s,%s %sx%s",
                         offset_.inline_offset.toString().ascii().data(),
