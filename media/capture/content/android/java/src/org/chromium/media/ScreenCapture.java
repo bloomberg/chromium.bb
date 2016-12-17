@@ -157,11 +157,13 @@ public class ScreenCapture extends Fragment {
                 Log.e(TAG, "acquireLatestImage():" + ex);
             } catch (UnsupportedOperationException ex) {
                 Log.i(TAG, "acquireLatestImage():" + ex);
-                // YUV_420_888 is the preference, but not all devices support it,
-                // fall-back to RGBA_8888 then.
-                mFormat = PixelFormat.RGBA_8888;
-                createImageReaderWithFormat();
-                createVirtualDisplay();
+                if (mFormat == ImageFormat.YUV_420_888) {
+                    // YUV_420_888 is the preference, but not all devices support it,
+                    // fall-back to RGBA_8888 then.
+                    mFormat = PixelFormat.RGBA_8888;
+                    createImageReaderWithFormat();
+                    createVirtualDisplay();
+                }
             }
         }
     }
@@ -296,13 +298,12 @@ public class ScreenCapture extends Fragment {
         mThread.start();
         mBackgroundHandler = new Handler(mThread.getLooper());
 
-        // On Android M and above, YUV420 is prefered. Some Android L devices will silently
-        // fail with YUV420, so keep with RGBA_8888 on L.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            mFormat = PixelFormat.RGBA_8888;
-        } else {
-            mFormat = ImageFormat.YUV_420_888;
-        }
+        // YUV420 is preferred. But not all devices supports it and it even will
+        // crash some devices. See https://crbug.com/674989 . A feature request
+        // was already filed to support YUV420 in VirturalDisplay. Before YUV420
+        // is available, stay with RGBA_8888 at present.
+        mFormat = PixelFormat.RGBA_8888;
+
         maybeDoRotation();
         createImageReaderWithFormat();
         createVirtualDisplay();
