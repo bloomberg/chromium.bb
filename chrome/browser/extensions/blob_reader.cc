@@ -63,7 +63,7 @@ void BlobReader::OnURLFetchComplete(const net::URLFetcher* source) {
   std::unique_ptr<std::string> response(new std::string);
   int64_t first = 0, last = 0, length = 0;
   source->GetResponseAsString(response.get());
-  source->GetResponseHeaders()->GetContentRange(&first, &last, &length);
+  source->GetResponseHeaders()->GetContentRangeFor206(&first, &last, &length);
   callback_.Run(std::move(response), length);
 
   delete this;

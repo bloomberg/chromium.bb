@@ -495,8 +495,8 @@ TEST_F(BlobURLRequestJobTest, TestGetRangeRequest1) {
   EXPECT_FALSE(url_request_delegate_.metadata());
 
   int64_t first = 0, last = 0, length = 0;
-  EXPECT_TRUE(
-      request_->response_headers()->GetContentRange(&first, &last, &length));
+  EXPECT_TRUE(request_->response_headers()->GetContentRangeFor206(&first, &last,
+                                                                  &length));
   EXPECT_EQ(5, first);
   EXPECT_EQ(10, last);
   EXPECT_EQ(GetTotalBlobLength(), length);
@@ -518,8 +518,8 @@ TEST_F(BlobURLRequestJobTest, TestGetRangeRequest2) {
 
   int64_t total = GetTotalBlobLength();
   int64_t first = 0, last = 0, length = 0;
-  EXPECT_TRUE(
-      request_->response_headers()->GetContentRange(&first, &last, &length));
+  EXPECT_TRUE(request_->response_headers()->GetContentRangeFor206(&first, &last,
+                                                                  &length));
   EXPECT_EQ(total - 10, first);
   EXPECT_EQ(total - 1, last);
   EXPECT_EQ(total, length);
@@ -540,8 +540,8 @@ TEST_F(BlobURLRequestJobTest, TestGetRangeRequest3) {
   EXPECT_FALSE(url_request_delegate_.metadata());
 
   int64_t first = 0, last = 0, length = 0;
-  EXPECT_TRUE(
-      request_->response_headers()->GetContentRange(&first, &last, &length));
+  EXPECT_TRUE(request_->response_headers()->GetContentRangeFor206(&first, &last,
+                                                                  &length));
   EXPECT_EQ(0, first);
   EXPECT_EQ(2, last);
   EXPECT_EQ(GetTotalBlobLength(), length);

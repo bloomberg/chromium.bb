@@ -777,7 +777,7 @@ class AppCacheURLRequestJobTest : public testing::Test {
     EXPECT_EQ(3, headers->GetContentLength());
     int64_t range_start, range_end, object_size;
     EXPECT_TRUE(
-        headers->GetContentRange(&range_start, &range_end, &object_size));
+        headers->GetContentRangeFor206(&range_start, &range_end, &object_size));
     EXPECT_EQ(1, range_start);
     EXPECT_EQ(3, range_end);
     EXPECT_EQ(5, object_size);

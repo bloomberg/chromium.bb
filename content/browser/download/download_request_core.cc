@@ -618,7 +618,7 @@ DownloadInterruptReason DownloadRequestCore::HandleSuccessfulServerResponse(
     int64_t first_byte = -1;
     int64_t last_byte = -1;
     int64_t length = -1;
-    if (!http_headers.GetContentRange(&first_byte, &last_byte, &length))
+    if (!http_headers.GetContentRangeFor206(&first_byte, &last_byte, &length))
       return DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT;
     DCHECK_GE(first_byte, 0);
 
