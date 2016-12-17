@@ -17,6 +17,7 @@ from chromite.lib import metrics
 from chromite.lib import ts_mon_config
 from chromite.scripts.sysmon import puppet_metrics
 from chromite.scripts.sysmon import system_metrics
+from chromite.scripts.sysmon import osinfo_metrics
 from chromite.scripts.sysmon import loop
 from infra_libs.ts_mon.common import interface
 
@@ -40,7 +41,7 @@ class MetricCollector(object):
     system_metrics.get_load_avg()
     puppet_metrics.get_puppet_summary()
     if time.time() > self._next_osinfo_collection:
-      system_metrics.get_os_info()
+      osinfo_metrics.get_os_info()
       self._last_osinfo_collection = time.time()
     system_metrics.get_unix_time()  # must be just before flush
     metrics.Flush()
