@@ -22,6 +22,7 @@
 #include "content/common/fileapi/file_system_messages.h"
 #include "storage/common/fileapi/directory_entry.h"
 #include "storage/common/fileapi/file_system_util.h"
+#include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
 #include "third_party/WebKit/public/platform/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -142,29 +143,27 @@ void DidReadDirectory(const std::vector<storage::DirectoryEntry>& entries,
   WebVector<WebFileSystemEntry> file_system_entries(entries.size());
   for (size_t i = 0; i < entries.size(); ++i) {
     file_system_entries[i].name =
-        base::FilePath(entries[i].name).AsUTF16Unsafe();
+        blink::FilePathToWebString(base::FilePath(entries[i].name));
     file_system_entries[i].isDirectory = entries[i].is_directory;
   }
   callbacks->didReadDirectory(file_system_entries, has_more);
 }
 
-void DidOpenFileSystem(const base::string16& name, const GURL& root,
+void DidOpenFileSystem(const std::string& name,
+                       const GURL& root,
                        WebFileSystemCallbacks* callbacks) {
-  callbacks->didOpenFileSystem(name, root);
+  callbacks->didOpenFileSystem(blink::WebString::fromUTF8(name), root);
 }
 
-void DidResolveURL(const base::string16& name,
+void DidResolveURL(const std::string& name,
                    const GURL& root_url,
                    storage::FileSystemType mount_type,
-                   const base::string16& file_path,
+                   const base::FilePath& file_path,
                    bool is_directory,
                    WebFileSystemCallbacks* callbacks) {
-  callbacks->didResolveURL(
-      name,
-      root_url,
-      static_cast<blink::WebFileSystemType>(mount_type),
-      file_path,
-      is_directory);
+  callbacks->didResolveURL(blink::WebString::fromUTF8(name), root_url,
+                           static_cast<blink::WebFileSystemType>(mount_type),
+                           blink::FilePathToWebString(file_path), is_directory);
 }
 
 void DidFail(base::File::Error error, WebFileSystemCallbacks* callbacks) {
@@ -230,10 +229,9 @@ void OpenFileSystemCallbackAdapter(
     WaitableCallbackResults* waitable_results,
     const std::string& name,
     const GURL& root) {
-  CallbackFileSystemCallbacks(
-      task_runner, callbacks_id, waitable_results,
-      base::Bind(&DidOpenFileSystem, base::UTF8ToUTF16(name), root),
-      UNREGISTER_CALLBACKS);
+  CallbackFileSystemCallbacks(task_runner, callbacks_id, waitable_results,
+                              base::Bind(&DidOpenFileSystem, name, root),
+                              UNREGISTER_CALLBACKS);
 }
 
 void ResolveURLCallbackAdapter(
@@ -247,9 +245,8 @@ void ResolveURLCallbackAdapter(
       storage::VirtualPath::GetNormalizedFilePath(file_path));
   CallbackFileSystemCallbacks(
       task_runner, callbacks_id, waitable_results,
-      base::Bind(&DidResolveURL, base::UTF8ToUTF16(info.name), info.root_url,
-                 info.mount_type, normalized_path.AsUTF16Unsafe(),
-                 is_directory),
+      base::Bind(&DidResolveURL, info.name, info.root_url, info.mount_type,
+                 normalized_path, is_directory),
       UNREGISTER_CALLBACKS);
 }
 
@@ -346,7 +343,7 @@ void DidCreateSnapshotFile(
 
   WebFileInfo web_file_info;
   FileInfoToWebFileInfo(file_info, &web_file_info);
-  web_file_info.platformPath = platform_path.AsUTF16Unsafe();
+  web_file_info.platformPath = blink::FilePathToWebString(platform_path);
   callbacks.didCreateSnapshotFile(web_file_info);
 
   // TODO(michaeln,kinuko): Use ThreadSafeSender when Blob becomes

@@ -26,7 +26,9 @@ void BuildErrorAndAbort(WebIDBDatabaseCallbacks* callbacks,
                         int64_t transaction_id,
                         int32_t code,
                         const base::string16& message) {
-  callbacks->onAbort(transaction_id, blink::WebIDBDatabaseError(code, message));
+  callbacks->onAbort(
+      transaction_id,
+      blink::WebIDBDatabaseError(code, blink::WebString::fromUTF16(message)));
 }
 
 void BuildObservationsAndNotify(WebIDBDatabaseCallbacks* callbacks,

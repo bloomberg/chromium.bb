@@ -88,7 +88,7 @@ void WebIDBFactoryImpl::open(const WebString& name,
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IOThreadHelper::Open, base::Unretained(io_helper_),
-                 base::string16(name), version, transaction_id,
+                 name.utf16(), version, transaction_id,
                  base::Passed(&callbacks_impl),
                  base::Passed(&database_callbacks_impl), url::Origin(origin)));
 }
@@ -102,7 +102,7 @@ void WebIDBFactoryImpl::deleteDatabase(const WebString& name,
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IOThreadHelper::DeleteDatabase, base::Unretained(io_helper_),
-                 base::string16(name), base::Passed(&callbacks_impl),
+                 name.utf16(), base::Passed(&callbacks_impl),
                  url::Origin(origin)));
 }
 

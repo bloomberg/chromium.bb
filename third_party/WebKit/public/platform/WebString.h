@@ -72,6 +72,7 @@ namespace blink {
 //
 // * GURL WebStringToGURL(const WebString&)
 // * base::FilePath WebStringToFilePath(const WebString&)
+// * WebString FilePathToWebString(const base::FilePath&);
 //
 // It is inexpensive to copy a WebString object.
 // WARNING: It is not safe to pass a WebString across threads!!!

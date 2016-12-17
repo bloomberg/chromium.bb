@@ -43,11 +43,12 @@ bool WebFileUtilitiesImpl::getFileInfo(const WebString& path,
 }
 
 WebString WebFileUtilitiesImpl::directoryName(const WebString& path) {
-  return blink::WebStringToFilePath(path).DirName().AsUTF16Unsafe();
+  return blink::FilePathToWebString(blink::WebStringToFilePath(path).DirName());
 }
 
 WebString WebFileUtilitiesImpl::baseName(const WebString& path) {
-  return blink::WebStringToFilePath(path).BaseName().AsUTF16Unsafe();
+  return blink::FilePathToWebString(
+      blink::WebStringToFilePath(path).BaseName());
 }
 
 blink::WebURL WebFileUtilitiesImpl::filePathToURL(const WebString& path) {

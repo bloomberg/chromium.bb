@@ -9,6 +9,7 @@
 #include "content/child/indexed_db/webidbcursor_impl.h"
 #include "content/child/indexed_db/webidbdatabase_impl.h"
 #include "content/common/indexed_db/indexed_db_constants.h"
+#include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCallbacks.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseError.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBMetadata.h"
@@ -30,7 +31,7 @@ namespace {
 void ConvertIndexMetadata(const content::IndexedDBIndexMetadata& metadata,
                           WebIDBMetadata::Index* output) {
   output->id = metadata.id;
-  output->name = metadata.name;
+  output->name = WebString::fromUTF16(metadata.name);
   output->keyPath = WebIDBKeyPathBuilder::Build(metadata.key_path);
   output->unique = metadata.unique;
   output->multiEntry = metadata.multi_entry;
@@ -40,7 +41,7 @@ void ConvertObjectStoreMetadata(
     const content::IndexedDBObjectStoreMetadata& metadata,
     WebIDBMetadata::ObjectStore* output) {
   output->id = metadata.id;
-  output->name = metadata.name;
+  output->name = WebString::fromUTF16(metadata.name);
   output->keyPath = WebIDBKeyPathBuilder::Build(metadata.key_path);
   output->autoIncrement = metadata.auto_increment;
   output->maxIndexId = metadata.max_index_id;
@@ -53,7 +54,7 @@ void ConvertObjectStoreMetadata(
 void ConvertDatabaseMetadata(const content::IndexedDBDatabaseMetadata& metadata,
                              WebIDBMetadata* output) {
   output->id = metadata.id;
-  output->name = metadata.name;
+  output->name = WebString::fromUTF16(metadata.name);
   output->version = metadata.version;
   output->maxObjectStoreId = metadata.max_object_store_id;
   output->objectStores =
@@ -73,13 +74,16 @@ void ConvertValue(const indexed_db::mojom::ValuePtr& value,
   for (size_t i = 0; i < value->blob_or_file_info.size(); ++i) {
     const auto& info = value->blob_or_file_info[i];
     if (info->file) {
-      local_blob_info[i] = WebBlobInfo(
-          WebString::fromUTF8(info->uuid), info->file->path.AsUTF16Unsafe(),
-          info->file->name, info->mime_type,
-          info->file->last_modified.ToDoubleT(), info->size);
+      local_blob_info[i] =
+          WebBlobInfo(WebString::fromUTF8(info->uuid),
+                      blink::FilePathToWebString(info->file->path),
+                      WebString::fromUTF16(info->file->name),
+                      WebString::fromUTF16(info->mime_type),
+                      info->file->last_modified.ToDoubleT(), info->size);
     } else {
-      local_blob_info[i] = WebBlobInfo(WebString::fromUTF8(info->uuid),
-                                       info->mime_type, info->size);
+      local_blob_info[i] =
+          WebBlobInfo(WebString::fromUTF8(info->uuid),
+                      WebString::fromUTF16(info->mime_type), info->size);
     }
   }
 
@@ -241,13 +245,18 @@ IndexedDBCallbacksImpl::InternalState::~InternalState() {
 void IndexedDBCallbacksImpl::InternalState::Error(
     int32_t code,
     const base::string16& message) {
-  callbacks_->onError(blink::WebIDBDatabaseError(code, message));
+  callbacks_->onError(
+      blink::WebIDBDatabaseError(code, WebString::fromUTF16(message)));
   callbacks_.reset();
 }
 
 void IndexedDBCallbacksImpl::InternalState::SuccessStringList(
     const std::vector<base::string16>& value) {
-  callbacks_->onSuccess(WebVector<WebString>(value));
+  WebVector<WebString> web_value(value.size());
+  std::transform(
+      value.begin(), value.end(), web_value.begin(),
+      [](const base::string16& s) { return WebString::fromUTF16(s); });
+  callbacks_->onSuccess(web_value);
   callbacks_.reset();
 }
 

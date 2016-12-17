@@ -39,7 +39,8 @@ void DBMessageFilter::OnDatabaseUpdateSize(const url::Origin& origin,
                                            const base::string16& database_name,
                                            int64_t database_size) {
   DCHECK(!origin.unique());
-  blink::WebDatabase::updateDatabaseSize(origin, database_name, database_size);
+  blink::WebDatabase::updateDatabaseSize(
+      origin, WebString::fromUTF16(database_name), database_size);
 }
 
 void DBMessageFilter::OnDatabaseUpdateSpaceAvailable(const url::Origin& origin,
@@ -57,7 +58,8 @@ void DBMessageFilter::OnDatabaseCloseImmediately(
     const url::Origin& origin,
     const base::string16& database_name) {
   DCHECK(!origin.unique());
-  blink::WebDatabase::closeDatabaseImmediately(origin, database_name);
+  blink::WebDatabase::closeDatabaseImmediately(
+      origin, WebString::fromUTF16(database_name));
 }
 
 }  // namespace content

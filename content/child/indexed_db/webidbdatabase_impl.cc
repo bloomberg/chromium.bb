@@ -15,6 +15,7 @@
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/indexed_db/indexed_db_key_builders.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebBlobInfo.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -179,7 +180,7 @@ void WebIDBDatabaseImpl::createObjectStore(long long transaction_id,
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IOThreadHelper::CreateObjectStore, base::Unretained(helper_),
-                 transaction_id, object_store_id, base::string16(name),
+                 transaction_id, object_store_id, name.utf16(),
                  IndexedDBKeyPathBuilder::Build(key_path), auto_increment));
 }
 
@@ -196,7 +197,7 @@ void WebIDBDatabaseImpl::renameObjectStore(long long transaction_id,
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IOThreadHelper::RenameObjectStore, base::Unretained(helper_),
-                 transaction_id, object_store_id, base::string16(new_name)));
+                 transaction_id, object_store_id, new_name.utf16()));
 }
 
 void WebIDBDatabaseImpl::createTransaction(
@@ -318,16 +319,15 @@ void WebIDBDatabaseImpl::put(long long transaction_id,
     auto blob_info = indexed_db::mojom::BlobInfo::New();
     if (info.isFile()) {
       blob_info->file = indexed_db::mojom::FileInfo::New();
-      blob_info->file->path =
-          base::FilePath::FromUTF8Unsafe(info.filePath().utf8());
-      blob_info->file->name = info.fileName();
+      blob_info->file->path = blink::WebStringToFilePath(info.filePath());
+      blob_info->file->name = info.fileName().utf16();
       blob_info->file->last_modified =
           base::Time::FromDoubleT(info.lastModified());
     }
     blob_info->size = info.size();
     blob_info->uuid = info.uuid().latin1();
     DCHECK(blob_info->uuid.size());
-    blob_info->mime_type = info.type();
+    blob_info->mime_type = info.type().utf16();
     mojo_value->blob_or_file_info.push_back(std::move(blob_info));
   }
 
@@ -446,9 +446,9 @@ void WebIDBDatabaseImpl::createIndex(long long transaction_id,
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IOThreadHelper::CreateIndex, base::Unretained(helper_),
-                 transaction_id, object_store_id, index_id,
-                 base::string16(name), IndexedDBKeyPathBuilder::Build(key_path),
-                 unique, multi_entry));
+                 transaction_id, object_store_id, index_id, name.utf16(),
+                 IndexedDBKeyPathBuilder::Build(key_path), unique,
+                 multi_entry));
 }
 
 void WebIDBDatabaseImpl::deleteIndex(long long transaction_id,
@@ -467,7 +467,7 @@ void WebIDBDatabaseImpl::renameIndex(long long transaction_id,
   io_runner_->PostTask(
       FROM_HERE,
       base::Bind(&IOThreadHelper::RenameIndex, base::Unretained(helper_),
-                 transaction_id, object_store_id, index_id, new_name));
+                 transaction_id, object_store_id, index_id, new_name.utf16()));
 }
 
 void WebIDBDatabaseImpl::abort(long long transaction_id) {

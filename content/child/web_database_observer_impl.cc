@@ -82,25 +82,27 @@ void WebDatabaseObserverImpl::databaseOpened(
     const WebString& database_display_name,
     unsigned long estimated_size) {
   open_connections_->AddOpenConnection(GetIdentifierFromOrigin(origin),
-                                       database_name);
-  sender_->Send(new DatabaseHostMsg_Opened(
-      origin, database_name, database_display_name, estimated_size));
+                                       database_name.utf16());
+  sender_->Send(new DatabaseHostMsg_Opened(origin, database_name.utf16(),
+                                           database_display_name.utf16(),
+                                           estimated_size));
 }
 
 void WebDatabaseObserverImpl::databaseModified(const WebSecurityOrigin& origin,
                                                const WebString& database_name) {
-  sender_->Send(new DatabaseHostMsg_Modified(origin, database_name));
+  sender_->Send(new DatabaseHostMsg_Modified(origin, database_name.utf16()));
 }
 
 void WebDatabaseObserverImpl::databaseClosed(const WebSecurityOrigin& origin,
                                              const WebString& database_name) {
   DCHECK(!main_thread_task_runner_->RunsTasksOnCurrentThread());
+  base::string16 database_name_utf16 = database_name.utf16();
   main_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(base::IgnoreResult(&IPC::SyncMessageFilter::Send), sender_,
-                 new DatabaseHostMsg_Closed(origin, database_name)));
+                 new DatabaseHostMsg_Closed(origin, database_name_utf16)));
   open_connections_->RemoveOpenConnection(GetIdentifierFromOrigin(origin),
-                                          database_name);
+                                          database_name_utf16);
 }
 
 void WebDatabaseObserverImpl::reportOpenDatabaseResult(
@@ -190,8 +192,8 @@ void WebDatabaseObserverImpl::HandleSqliteError(const WebSecurityOrigin& origin,
   // a unnecessary ipc traffic, this method can get called at a fairly
   // high frequency (per-sqlstatement).
   if (error == SQLITE_CORRUPT || error == SQLITE_NOTADB) {
-    sender_->Send(
-        new DatabaseHostMsg_HandleSqliteError(origin, database_name, error));
+    sender_->Send(new DatabaseHostMsg_HandleSqliteError(
+        origin, database_name.utf16(), error));
   }
 }
 

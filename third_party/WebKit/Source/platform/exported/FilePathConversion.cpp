@@ -31,4 +31,15 @@ base::FilePath WebStringToFilePath(const WebString& webString) {
 #endif
 }
 
+WebString FilePathToWebString(const base::FilePath& path) {
+  if (path.empty())
+    return WebString();
+
+#if OS(POSIX)
+  return WebString::fromUTF8(path.value());
+#else
+  return WebString::fromUTF16(path.AsUTF16Unsafe());
+#endif
+}
+
 }  // namespace blink

@@ -40,10 +40,9 @@ static std::vector<base::string16> CopyArray(
     const WebVector<WebString>& array) {
   std::vector<base::string16> copy(array.size());
   for (size_t i = 0; i < array.size(); ++i)
-    copy[i] = array[i];
+    copy[i] = array[i].utf16();
   return copy;
 }
-
 
 namespace content {
 
@@ -55,7 +54,7 @@ IndexedDBKey IndexedDBKeyBuilder::Build(const blink::WebIDBKey& key) {
       return IndexedDBKey(
           std::string(key.binary().data(), key.binary().size()));
     case WebIDBKeyTypeString:
-      return IndexedDBKey(key.string());
+      return IndexedDBKey(key.string().utf16());
     case WebIDBKeyTypeDate:
       return IndexedDBKey(key.date(), WebIDBKeyTypeDate);
     case WebIDBKeyTypeNumber:
@@ -83,7 +82,7 @@ WebIDBKey WebIDBKeyBuilder::Build(const IndexedDBKey& key) {
     case WebIDBKeyTypeBinary:
       return WebIDBKey::createBinary(key.binary());
     case WebIDBKeyTypeString:
-      return WebIDBKey::createString(key.string());
+      return WebIDBKey::createString(WebString::fromUTF16(key.string()));
     case WebIDBKeyTypeDate:
       return WebIDBKey::createDate(key.date());
     case WebIDBKeyTypeNumber:
@@ -119,7 +118,7 @@ IndexedDBKeyPath IndexedDBKeyPathBuilder::Build(
     const blink::WebIDBKeyPath& key_path) {
   switch (key_path.keyPathType()) {
     case blink::WebIDBKeyPathTypeString:
-      return IndexedDBKeyPath(key_path.string());
+      return IndexedDBKeyPath(key_path.string().utf16());
     case blink::WebIDBKeyPathTypeArray:
       return IndexedDBKeyPath(CopyArray(key_path.array()));
     case blink::WebIDBKeyPathTypeNull:
@@ -134,9 +133,17 @@ blink::WebIDBKeyPath WebIDBKeyPathBuilder::Build(
     const IndexedDBKeyPath& key_path) {
   switch (key_path.type()) {
     case blink::WebIDBKeyPathTypeString:
-      return blink::WebIDBKeyPath::create(WebString(key_path.string()));
-    case blink::WebIDBKeyPathTypeArray:
-      return blink::WebIDBKeyPath::create(CopyArray(key_path.array()));
+      return blink::WebIDBKeyPath::create(
+          WebString::fromUTF16(key_path.string()));
+    case blink::WebIDBKeyPathTypeArray: {
+      WebVector<WebString> key_path_vector(key_path.array().size());
+      std::transform(key_path.array().begin(), key_path.array().end(),
+                     key_path_vector.begin(),
+                     [](const typename base::string16& s) {
+                       return WebString::fromUTF16(s);
+                     });
+      return blink::WebIDBKeyPath::create(key_path_vector);
+    }
     case blink::WebIDBKeyPathTypeNull:
       return blink::WebIDBKeyPath::createNull();
     default:
