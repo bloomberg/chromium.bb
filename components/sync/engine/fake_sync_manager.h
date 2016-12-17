@@ -42,10 +42,14 @@ class FakeSyncManager : public SyncManager {
                   ModelTypeSet configure_fail_types);
   ~FakeSyncManager() override;
 
-  // Returns those types that have been cleaned (purged from the directory)
-  // since the last call to GetAndResetCleanedTypes(), or since startup if never
-  // called.
-  ModelTypeSet GetAndResetCleanedTypes();
+  // Returns those types that have been purged from the directory since the last
+  // call to GetAndResetPurgedTypes(), or since startup if never called.
+  ModelTypeSet GetAndResetPurgedTypes();
+
+  // Returns those types that have been unapplied as part of purging disabled
+  // types since the last call to GetAndResetUnappliedTypes, or since startup if
+  // never called.
+  ModelTypeSet GetAndResetUnappliedTypes();
 
   // Returns those types that have been downloaded since the last call to
   // GetAndResetDownloadedTypes(), or since startup if never called.
@@ -130,8 +134,10 @@ class FakeSyncManager : public SyncManager {
   // The types that should fail configuration attempts. These types will not
   // have their progress markers or initial_sync_ended bits set.
   ModelTypeSet configure_fail_types_;
-  // The set of types that have been cleaned up.
-  ModelTypeSet cleaned_types_;
+  // The set of types that have been purged.
+  ModelTypeSet purged_types_;
+  // Subset of |purged_types_| that were unapplied.
+  ModelTypeSet unapplied_types_;
   // The set of types that have been downloaded.
   ModelTypeSet downloaded_types_;
   // The set of types that have been enabled.

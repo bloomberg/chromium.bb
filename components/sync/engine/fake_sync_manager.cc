@@ -39,10 +39,16 @@ FakeSyncManager::FakeSyncManager(ModelTypeSet initial_sync_ended_types,
 
 FakeSyncManager::~FakeSyncManager() {}
 
-ModelTypeSet FakeSyncManager::GetAndResetCleanedTypes() {
-  ModelTypeSet cleaned_types = cleaned_types_;
-  cleaned_types_.Clear();
-  return cleaned_types;
+ModelTypeSet FakeSyncManager::GetAndResetPurgedTypes() {
+  ModelTypeSet purged_types = purged_types_;
+  purged_types_.Clear();
+  return purged_types;
+}
+
+ModelTypeSet FakeSyncManager::GetAndResetUnappliedTypes() {
+  ModelTypeSet unapplied_types = unapplied_types_;
+  unapplied_types_.Clear();
+  return unapplied_types;
 }
 
 ModelTypeSet FakeSyncManager::GetAndResetDownloadedTypes() {
@@ -114,7 +120,7 @@ void FakeSyncManager::PurgePartiallySyncedTypes() {
       partial_types.Put(i.Get());
   }
   progress_marker_types_.RemoveAll(partial_types);
-  cleaned_types_.PutAll(partial_types);
+  purged_types_.PutAll(partial_types);
 }
 
 void FakeSyncManager::PurgeDisabledTypes(ModelTypeSet to_purge,
@@ -126,9 +132,12 @@ void FakeSyncManager::PurgeDisabledTypes(ModelTypeSet to_purge,
   // behavior of the real cleanup logic.
   GetUserShare()->directory->PurgeEntriesWithTypeIn(to_purge, to_journal,
                                                     to_unapply);
-  initial_sync_ended_types_.RemoveAll(to_purge);
-  progress_marker_types_.RemoveAll(to_purge);
-  cleaned_types_.PutAll(to_purge);
+  purged_types_.PutAll(to_purge);
+  unapplied_types_.PutAll(to_unapply);
+  // Types from |to_unapply| should retain their server data and progress
+  // markers.
+  initial_sync_ended_types_.RemoveAll(Difference(to_purge, to_unapply));
+  progress_marker_types_.RemoveAll(Difference(to_purge, to_unapply));
 }
 
 void FakeSyncManager::UpdateCredentials(const SyncCredentials& credentials) {

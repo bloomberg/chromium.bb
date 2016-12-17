@@ -284,6 +284,10 @@ ModelTypeSet SyncBackendHostImpl::ConfigureDataTypes(
   ModelTypeSet types_to_purge = Difference(ModelTypeSet::All(), current_types);
   ModelTypeSet inactive_types =
       GetDataTypesInState(CONFIGURE_INACTIVE, config_state_map);
+  // Include clean_first_types in types_to_purge, they are part of
+  // current_types, but still need to be cleared.
+  DCHECK(current_types.HasAll(clean_first_types));
+  types_to_purge.PutAll(clean_first_types);
   types_to_purge.RemoveAll(inactive_types);
   types_to_purge.RemoveAll(unready_types);
 
