@@ -38,19 +38,21 @@ var MainPageBehaviorImpl = {
    * @param {settings.Route} oldRoute
    */
   currentRouteChanged: function(newRoute, oldRoute) {
-    // Scroll to the section except for back/forward. Also scroll for any
-    // back/forward navigations that are in-page.
     var oldRouteWasSection =
         !!oldRoute && !!oldRoute.parent && !!oldRoute.section &&
         oldRoute.parent.section != oldRoute.section;
 
+    // Always scroll to the top if navigating from a section to the root route.
     if (oldRouteWasSection && newRoute == settings.Route.BASIC) {
       this.scroller.scrollTop = 0;
       return;
     }
 
+    // Scroll to the section except for back/forward. Also scroll for any
+    // in-page back/forward navigations (from a section or the root page).
     var scrollToSection =
-        !settings.lastRouteChangeWasPopstate() || oldRouteWasSection;
+        !settings.lastRouteChangeWasPopstate() || oldRouteWasSection ||
+        oldRoute == settings.Route.BASIC;
 
     // For previously uncreated pages (including on first load), allow the page
     // to render before scrolling to or expanding the section.

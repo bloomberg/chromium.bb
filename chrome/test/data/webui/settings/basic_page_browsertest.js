@@ -127,6 +127,14 @@ TEST_F('SettingsBasicPageBrowserTest', 'MAYBE_Load', function() {
       }).then(function() {
         // Should be at the top of the page after going Back from the section.
         assertEquals(0, page.scroller.scrollTop);
+
+        return new Promise(function(resolve) {
+          listenOnce(window, 'popstate', resolve);
+          window.history.forward();
+        });
+      }).then(function() {
+        // Should scroll when navigating forwards from the BASIC page.
+        assertNotEquals(0, page.scroller.scrollTop);
       });
     });
 
