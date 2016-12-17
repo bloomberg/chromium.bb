@@ -40,7 +40,6 @@
 #include "chromecast/browser/pref_service_helper.h"
 #include "chromecast/browser/url_request_context_factory.h"
 #include "chromecast/chromecast_features.h"
-#include "chromecast/common/platform_client_auth.h"
 #include "chromecast/media/base/key_systems_common.h"
 #include "chromecast/media/base/media_resource_tracker.h"
 #include "chromecast/media/base/video_plane_controller.h"
@@ -448,9 +447,6 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
           content::BrowserContext::GetDefaultStoragePartition(
               cast_browser_process_->browser_context())->
                   GetURLRequestContext()));
-
-  if (!PlatformClientAuth::Initialize())
-    LOG(ERROR) << "PlatformClientAuth::Initialize failed.";
 
   cast_browser_process_->SetRemoteDebuggingServer(
       base::MakeUnique<RemoteDebuggingServer>(
