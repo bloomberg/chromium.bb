@@ -10,36 +10,17 @@
  each which contains only the values that platform needs.
 """
 
-import optparse
 import os
 import re
-import subprocess
 import sys
-import traceback
 
-# If the script is run in a virtualenv (https://virtualenv.pypa.io/en/stable/),
-# then no google.protobuf library should be brought in from site-packages.
-# Passing -S into the interpreter in a virtualenv actually destroys the ability
-# to import standard library functions like optparse, so this script should not
-# be wrapped if we're in a virtualenv.
-def IsInVirtualEnv():
-  # This is the way used by pip and other software to detect virtualenv.
-  return hasattr(sys, 'real_prefix')
-
-
-def ImportProtoModules(paths):
-  """Import the protobuf modiles we need. |paths| is list of import paths"""
-  for path in paths:
-    # Put the path to our proto libraries in front, so that we don't use system
-    # protobuf.
-    sys.path.insert(1, path)
-
-  import download_file_types_pb2 as config_pb2
-  globals()['config_pb2'] = config_pb2
-
-  import google.protobuf.text_format as text_format
-  globals()['text_format'] = text_format
-
+# Import the binary proto generator. Walks up to the root of the source tree
+# which is five directories above, and the finds the protobufs directory from
+# there.
+proto_generator_path = os.path.normpath(os.path.join(os.path.abspath(__file__),
+    *[os.path.pardir] * 5 + ['chrome/browser/resources/protobufs']))
+sys.path.insert(0, proto_generator_path)
+from binary_proto_generator import BinaryProtoGenerator
 
 # Map of platforms for which we can generate binary protos.
 # This must be run after the custom imports.
@@ -47,24 +28,12 @@ def ImportProtoModules(paths):
 #   value: proto-platform_type (int)
 def PlatformTypes():
   return {
-    "android": config_pb2.DownloadFileType.PLATFORM_ANDROID,
-    "chromeos": config_pb2.DownloadFileType.PLATFORM_CHROME_OS,
-    "linux": config_pb2.DownloadFileType.PLATFORM_LINUX,
-    "mac": config_pb2.DownloadFileType.PLATFORM_MAC,
-    "win": config_pb2.DownloadFileType.PLATFORM_WINDOWS,
+    "android": download_file_types_pb2.DownloadFileType.PLATFORM_ANDROID,
+    "chromeos": download_file_types_pb2.DownloadFileType.PLATFORM_CHROME_OS,
+    "linux": download_file_types_pb2.DownloadFileType.PLATFORM_LINUX,
+    "mac": download_file_types_pb2.DownloadFileType.PLATFORM_MAC,
+    "win": download_file_types_pb2.DownloadFileType.PLATFORM_WINDOWS,
   }
-
-
-def ValidatePb(pb):
-  """ Validate the basic values of the protobuf.  The
-      file_type_policies_unittest.cc will also validate it by platform,
-      but this will catch errors earlier.
-  """
-  assert pb.version_id > 0;
-  assert pb.sampled_ping_probability >= 0.0;
-  assert pb.sampled_ping_probability <= 1.0;
-  assert len(pb.default_file_type.platform_settings) >= 1;
-  assert len(pb.file_types) > 1;
 
 
 def PrunePlatformSettings(file_type, default_settings, platform_type):
@@ -85,7 +54,7 @@ def PrunePlatformSettings(file_type, default_settings, platform_type):
 
     # Pick the most specific match.
     if ((s.platform == platform_type) or
-        (s.platform == config_pb2.DownloadFileType.PLATFORM_ANY and
+        (s.platform == download_file_types_pb2.DownloadFileType.PLATFORM_ANY and
          setting_match is None)):
       setting_match = s
 
@@ -106,7 +75,7 @@ def FilterPbForPlatform(full_pb, platform_type):
   """ Return a filtered protobuf for this platform_type """
   assert type(platform_type) is int, "Bad platform_type type"
 
-  new_pb = config_pb2.DownloadFileTypeConfig();
+  new_pb = download_file_types_pb2.DownloadFileTypeConfig();
   new_pb.CopyFrom(full_pb)
 
   # Ensure there's only one platform_settings for the default.
@@ -143,10 +112,8 @@ def FilterForPlatformAndWrite(full_pb, platform_type, outfile):
   """ Filter and write out a file for this platform """
   # Filter it
   filtered_pb = FilterPbForPlatform(full_pb, platform_type);
-
   # Serialize it
   binary_pb_str = filtered_pb.SerializeToString()
-
   # Write it to disk
   open(outfile, 'wb').write(binary_pb_str)
 
@@ -158,102 +125,72 @@ def MakeSubDirs(outfile):
     os.makedirs(dirname)
 
 
-def GenerateBinaryProtos(opts):
-  """ Read the ASCII proto and generate one or more binary protos. """
-  # Read the ASCII
-  ifile = open(opts.infile, 'r')
-  ascii_pb_str = ifile.read()
-  ifile.close()
+class DownloadFileTypeProtoGenerator(BinaryProtoGenerator):
 
-  # Parse it into a structured PB
-  full_pb = config_pb2.DownloadFileTypeConfig()
-  text_format.Merge(ascii_pb_str, full_pb)
+  def ImportProtoModule(self):
+    import download_file_types_pb2
+    globals()['download_file_types_pb2'] = download_file_types_pb2
 
-  ValidatePb(full_pb);
+  def EmptyProtoInstance(self):
+    return download_file_types_pb2.DownloadFileTypeConfig()
 
-  if opts.type is not None:
-    # Just one platform type
-    platform_enum = PlatformTypes()[opts.type]
-    outfile = os.path.join(opts.outdir, opts.outbasename)
-    FilterForPlatformAndWrite(full_pb, platform_enum, outfile)
-  else:
-    # Make a separate file for each platform
-    for platform_type, platform_enum in PlatformTypes().iteritems():
-      # e.g. .../all/77/chromeos/download_file_types.pb
-      outfile = os.path.join(opts.outdir,
-                             str(full_pb.version_id),
-                             platform_type,
-                             opts.outbasename)
-      MakeSubDirs(outfile)
-      FilterForPlatformAndWrite(full_pb, platform_enum, outfile)
+  def ValidatePb(self, opts, pb):
+    """ Validate the basic values of the protobuf.  The
+        file_type_policies_unittest.cc will also validate it by platform,
+        but this will catch errors earlier.
+    """
+    assert pb.version_id > 0;
+    assert pb.sampled_ping_probability >= 0.0;
+    assert pb.sampled_ping_probability <= 1.0;
+    assert len(pb.default_file_type.platform_settings) >= 1;
+    assert len(pb.file_types) > 1;
 
+  def ProcessPb(self, opts, pb):
+    """ Generate one or more binary protos using the parsed proto. """
+    if opts.type is not None:
+      # Just one platform type
+      platform_enum = PlatformTypes()[opts.type]
+      outfile = os.path.join(opts.outdir, opts.outbasename)
+      FilterForPlatformAndWrite(pb, platform_enum, outfile)
+    else:
+      # Make a separate file for each platform
+      for platform_type, platform_enum in PlatformTypes().iteritems():
+        # e.g. .../all/77/chromeos/download_file_types.pb
+        outfile = os.path.join(opts.outdir,
+                               str(pb.version_id),
+                               platform_type,
+                               opts.outbasename)
+        MakeSubDirs(outfile)
+        FilterForPlatformAndWrite(pb, platform_enum, outfile)
 
-def main():
-  parser = optparse.OptionParser()
-  # TODO(nparker): Remove this once the bug is fixed.
-  parser.add_option('-w', '--wrap', action="store_true", default=False,
-                     help='Wrap this script in another python '
-                     'execution to disable site-packages.  This is a '
-                     'fix for http://crbug.com/605592')
+  def AddCommandLineOptions(self, parser):
+    parser.add_option('-a', '--all', action="store_true", default=False,
+                      help='Write a separate file for every platform. '
+                      'Outfile must have a %d for version and %s for platform.')
+    parser.add_option('-t', '--type',
+                      help='The platform type. One of android, chromeos, ' +
+                      'linux, mac, win')
 
-  parser.add_option('-a', '--all', action="store_true", default=False,
-                     help='Write a separate file for every platform. '
-                    'Outfile must have a %d for version and %s for platform.')
-  parser.add_option('-t', '--type',
-                    help='The platform type. One of android, chromeos, ' +
-                    'linux, mac, win')
-  parser.add_option('-i', '--infile',
-                    help='The ASCII DownloadFileType-proto file to read.')
-  parser.add_option('-d', '--outdir',
-                    help='Directory underwhich binary file(s) will be written')
-  parser.add_option('-o', '--outbasename',
-                    help='Basename of the binary file to write to.')
-  parser.add_option('-p', '--path', action="append",
-                    help='Repeat this as needed.  Directory(s) containing ' +
-                    'the download_file_types_pb2.py and ' +
-                    'google.protobuf.text_format modules')
-  (opts, args) = parser.parse_args()
-  if opts.infile is None or opts.outdir is None or opts.outbasename is None:
-    parser.print_help()
-    return 1
-
-  if opts.wrap and not IsInVirtualEnv():
-    # Run this script again with different args to the interpreter to suppress
-    # the inclusion of libraries, like google.protobuf, from site-packages,
-    # which is checked before sys.path when resolving imports. We want to
-    # specifically import the libraries injected into the sys.path in
-    # ImportProtoModules().
-    command = [sys.executable, '-S', '-s', sys.argv[0]]
+  def AddExtraCommandLineArgsForVirtualEnvRun(self, opts, command):
     if opts.type is not None:
       command += ['-t', opts.type]
     if opts.all:
       command += ['-a']
-    command += ['-i', opts.infile]
-    command += ['-d', opts.outdir]
-    command += ['-o', opts.outbasename]
-    for path in opts.path:
-      command += ['-p', path]
-    sys.exit(subprocess.call(command))
 
-  ImportProtoModules(opts.path)
+  def VerifyArgs(self, opts):
+    if (not opts.all and opts.type not in PlatformTypes()):
+      print "ERROR: Unknown platform type '%s'" % opts.type
+      self.opt_parser.print_help()
+      return False
 
-  if (not opts.all and opts.type not in PlatformTypes()):
-    print "ERROR: Unknown platform type '%s'" % opts.type
-    parser.print_help()
-    return 1
+    if (bool(opts.all) == bool(opts.type)):
+      print "ERROR: Need exactly one of --type or --all"
+      self.opt_parser.print_help()
+      return False
+    return True
 
-  if (bool(opts.all) == bool(opts.type)):
-    print "ERROR: Need exactly one of --type or --all"
-    parser.print_help()
-    return 1
-
-  try:
-    GenerateBinaryProtos(opts)
-  except Exception as e:
-    print "ERROR: Failed to render binary version of %s:\n  %s\n%s" % (
-        opts.infile, str(e), traceback.format_exc())
-    return 1
-
+def main():
+  return DownloadFileTypeProtoGenerator().Run()
 
 if __name__ == '__main__':
   sys.exit(main())
