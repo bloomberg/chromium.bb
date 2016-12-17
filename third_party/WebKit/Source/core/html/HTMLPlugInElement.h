@@ -67,8 +67,6 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
   void requestPluginCreationWithoutLayoutObjectIfPossible();
   void createPluginWithoutLayoutObject();
 
-  void removedFrom(ContainerNode* insertionPoint) override;
-
  protected:
   HTMLPlugInElement(const QualifiedName& tagName,
                     Document&,
@@ -76,6 +74,7 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
                     PreferPlugInsForImagesOption);
 
   // Node functions:
+  void removedFrom(ContainerNode* insertionPoint) override;
   void didMoveToNewDocument(Document& oldDocument) override;
 
   // Element functions:
@@ -115,10 +114,10 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
   bool m_isDelayingLoadEvent;
 
  private:
-  // EventTarget functions:
+  // EventTarget overrides:
   void removeAllEventListeners() final;
 
-  // Node functions:
+  // Node overrides:
   bool canContainRangeEndPoint() const override { return false; }
   bool canStartSelection() const override;
   bool willRespondToMouseClickEvents() final;
@@ -127,16 +126,19 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
   void detachLayoutTree(const AttachContext& = AttachContext()) final;
   void finishParsingChildren() final;
 
-  // Element functions:
+  // Element overrides:
   LayoutObject* createLayoutObject(const ComputedStyle&) override;
   bool supportsFocus() const final { return true; }
   bool layoutObjectIsFocusable() const final;
   bool isKeyboardFocusable() const final;
   void didAddUserAgentShadowRoot(ShadowRoot&) final;
 
-  // HTMLElement function:
+  // HTMLElement overrides:
   bool hasCustomFocusLogic() const override;
   bool isPluginElement() const final;
+
+  // HTMLFrameOwnerElement overrides:
+  void disconnectContentFrame() override;
 
   // Return any existing LayoutPart without triggering relayout, or 0 if it
   // doesn't yet exist.

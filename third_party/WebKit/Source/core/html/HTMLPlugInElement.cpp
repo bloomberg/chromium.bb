@@ -209,6 +209,8 @@ void HTMLPlugInElement::removedFrom(ContainerNode* insertionPoint) {
   // If we've persisted the plugin and we're removed from the tree then
   // make sure we cleanup the persistance pointer.
   if (m_persistedPluginWidget) {
+    // TODO(dcheng): This UpdateSuspendScope doesn't seem to provide much;
+    // investigate removing it.
     HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
     setPersistedPluginWidget(nullptr);
   }
@@ -420,6 +422,11 @@ bool HTMLPlugInElement::hasCustomFocusLogic() const {
 
 bool HTMLPlugInElement::isPluginElement() const {
   return true;
+}
+
+void HTMLPlugInElement::disconnectContentFrame() {
+  HTMLFrameOwnerElement::disconnectContentFrame();
+  setPersistedPluginWidget(nullptr);
 }
 
 bool HTMLPlugInElement::layoutObjectIsFocusable() const {

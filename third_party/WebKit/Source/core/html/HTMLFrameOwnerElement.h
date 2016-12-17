@@ -48,7 +48,7 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
   DOMWindow* contentWindow() const;
   Document* contentDocument() const;
 
-  void disconnectContentFrame();
+  virtual void disconnectContentFrame();
 
   // Most subclasses use LayoutPart (either LayoutEmbeddedObject or
   // LayoutIFrame) except for HTMLObjectElement and HTMLEmbedElement which may
