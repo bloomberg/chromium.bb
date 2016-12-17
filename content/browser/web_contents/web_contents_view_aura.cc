@@ -785,12 +785,13 @@ void WebContentsViewAura::CreateView(
   // value is set shortly after this, so its safe to ignore.
 
   DCHECK(aura::Env::GetInstanceDontCreate());
-  window_.reset(new aura::Window(this));
+  window_ = base::MakeUnique<aura::Window>(this);
   window_->set_owned_by_parent(false);
   window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);
+  window_->SetName("WebContentsViewAura");
   window_->Init(ui::LAYER_NOT_DRAWN);
   window_->AddObserver(this);
-  aura::Window* root_window = context ? context->GetRootWindow() : NULL;
+  aura::Window* root_window = context ? context->GetRootWindow() : nullptr;
   if (root_window) {
     // There are places where there is no context currently because object
     // hierarchies are built before they're attached to a Widget. (See
@@ -804,7 +805,6 @@ void WebContentsViewAura::CreateView(
                                           root_window->GetBoundsInScreen());
   }
   window_->layer()->SetMasksToBounds(true);
-  window_->SetName("WebContentsViewAura");
 
   // WindowObserver is not interesting and is problematic for Browser Plugin
   // guests.

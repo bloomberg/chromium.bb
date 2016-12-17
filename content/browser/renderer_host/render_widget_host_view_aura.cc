@@ -30,7 +30,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/browser/renderer_host/compositor_resize_lock_aura.h"
+#include "content/browser/renderer_host/delegated_frame_host_client_aura.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target_aura.h"
 #include "content/browser/renderer_host/input/touch_selection_controller_client_aura.h"
@@ -45,6 +45,7 @@
 #include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/input_messages.h"
+#include "content/common/render_widget_window_tree_client_factory.mojom.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/text_input_state.h"
 #include "content/common/view_messages.h"
@@ -56,6 +57,8 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/ipc/common/gpu_messages.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "ui/aura/client/aura_constants.h"
@@ -66,6 +69,7 @@
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_observer.h"
@@ -93,7 +97,6 @@
 #include "ui/wm/public/activation_client.h"
 #include "ui/wm/public/scoped_tooltip_disabler.h"
 #include "ui/wm/public/tooltip_client.h"
-#include "ui/wm/public/window_types.h"
 
 #if defined(OS_WIN)
 #include "base/time/time.h"
@@ -122,12 +125,6 @@ using blink::WebTouchEvent;
 namespace content {
 
 namespace {
-
-// When accelerated compositing is enabled and a widget resize is pending,
-// we delay further resizes of the UI. The following constant is the maximum
-// length of time that we should delay further UI resizes while waiting for a
-// resized frame from a renderer.
-const int kResizeLockTimeoutMs = 67;
 
 #if defined(OS_WIN)
 
@@ -210,6 +207,12 @@ class WinScreenKeyboardObserver : public ui::OnScreenKeyboardObserver {
   DISALLOW_COPY_AND_ASSIGN(WinScreenKeyboardObserver);
 };
 #endif  // defined(OS_WIN)
+
+// Callback from embedding the renderer.
+void EmbedCallback(bool result) {
+  if (!result)
+    DVLOG(1) << "embed failed";
+}
 
 }  // namespace
 
@@ -356,6 +359,12 @@ class RenderWidgetHostViewAura::WindowAncestorObserver
   DISALLOW_COPY_AND_ASSIGN(WindowAncestorObserver);
 };
 
+bool IsMus() {
+  return aura::Env::GetInstance()->mode() == aura::Env::Mode::MUS &&
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             switches::kUseMusInRenderer);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, public:
 
@@ -386,27 +395,8 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       last_active_widget_routing_id_(MSG_ROUTING_NONE),
       event_handler_(new RenderWidgetHostViewEventHandler(host_, this, this)),
       weak_ptr_factory_(this) {
-  // GuestViews have two RenderWidgetHostViews and so we need to make sure
-  // we don't have FrameSinkId collisions.
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  cc::FrameSinkId frame_sink_id =
-      is_guest_view_hack_
-          ? factory->GetContextFactoryPrivate()->AllocateFrameSinkId()
-          : cc::FrameSinkId(
-                base::checked_cast<uint32_t>(host_->GetProcess()->GetID()),
-                base::checked_cast<uint32_t>(host_->GetRoutingID()));
-  delegated_frame_host_ =
-      base::MakeUnique<DelegatedFrameHost>(frame_sink_id, this);
-
   if (!is_guest_view_hack_)
     host_->SetView(this);
-
-  // Let the page-level input event router know about our surface ID
-  // namespace for surface-based hit testing.
-  if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
-    host_->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(
-        GetFrameSinkId(), this);
-  }
 
   // We should start observing the TextInputManager for IME-related events as
   // well as monitoring its lifetime.
@@ -434,11 +424,9 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
 
 void RenderWidgetHostViewAura::InitAsChild(
     gfx::NativeView parent_view) {
-  CreateAuraWindow();
-  window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);
-  window_->Init(ui::LAYER_SOLID_COLOR);
-  window_->SetName("RenderWidgetHostViewAura");
-  window_->layer()->SetColor(background_color_);
+  CreateDelegatedFrameHostClient();
+
+  CreateAuraWindow(ui::wm::WINDOW_TYPE_CONTROL);
 
   if (parent_view)
     parent_view->AddChild(GetNativeView());
@@ -451,7 +439,8 @@ void RenderWidgetHostViewAura::InitAsChild(
 void RenderWidgetHostViewAura::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
     const gfx::Rect& bounds_in_screen) {
-  CreateAuraWindow();
+  CreateDelegatedFrameHostClient();
+
   popup_parent_host_view_ =
       static_cast<RenderWidgetHostViewAura*>(parent_host_view);
 
@@ -472,10 +461,7 @@ void RenderWidgetHostViewAura::InitAsPopup(
     old_child->popup_parent_host_view_ = NULL;
   }
   popup_parent_host_view_->SetPopupChild(this);
-  window_->SetType(ui::wm::WINDOW_TYPE_MENU);
-  window_->Init(ui::LAYER_SOLID_COLOR);
-  window_->SetName("RenderWidgetHostViewAura");
-  window_->layer()->SetColor(background_color_);
+  CreateAuraWindow(ui::wm::WINDOW_TYPE_MENU);
 
   // Setting the transient child allows for the popup to get mouse events when
   // in a system modal dialog. Do this before calling ParentWindowWithContext
@@ -503,13 +489,10 @@ void RenderWidgetHostViewAura::InitAsPopup(
 
 void RenderWidgetHostViewAura::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
-  CreateAuraWindow();
   is_fullscreen_ = true;
-  window_->SetType(ui::wm::WINDOW_TYPE_NORMAL);
-  window_->Init(ui::LAYER_SOLID_COLOR);
-  window_->SetName("RenderWidgetHostViewAura");
+  CreateDelegatedFrameHostClient();
+  CreateAuraWindow(ui::wm::WINDOW_TYPE_NORMAL);
   window_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
-  window_->layer()->SetColor(background_color_);
 
   aura::Window* parent = NULL;
   gfx::Rect bounds;
@@ -541,7 +524,8 @@ void RenderWidgetHostViewAura::Show() {
   if (!host_->is_hidden())
     return;
 
-  bool has_saved_frame = delegated_frame_host_->HasSavedFrame();
+  bool has_saved_frame =
+      delegated_frame_host_ ? delegated_frame_host_->HasSavedFrame() : false;
   ui::LatencyInfo renderer_latency_info, browser_latency_info;
   if (has_saved_frame) {
     browser_latency_info.AddLatencyNumber(
@@ -560,7 +544,8 @@ void RenderWidgetHostViewAura::Show() {
       NotifyRendererOfCursorVisibilityState(cursor_client->IsCursorVisible());
   }
 
-  delegated_frame_host_->WasShown(browser_latency_info);
+  if (delegated_frame_host_)
+    delegated_frame_host_->WasShown(browser_latency_info);
 
 #if defined(OS_WIN)
   UpdateLegacyWin();
@@ -573,7 +558,8 @@ void RenderWidgetHostViewAura::Hide() {
   // TODO(wjmaclean): can host_ ever be null?
   if (host_ && !host_->is_hidden()) {
     host_->WasHidden();
-    delegated_frame_host_->WasHidden();
+    if (delegated_frame_host_)
+      delegated_frame_host_->WasHidden();
 
 #if defined(OS_WIN)
     aura::WindowTreeHost* host = window_->GetHost();
@@ -744,7 +730,8 @@ bool RenderWidgetHostViewAura::HasFocus() const {
 }
 
 bool RenderWidgetHostViewAura::IsSurfaceAvailableForCopy() const {
-  return delegated_frame_host_->CanCopyToBitmap();
+  return delegated_frame_host_ ? delegated_frame_host_->CanCopyToBitmap()
+                               : false;
 }
 
 bool RenderWidgetHostViewAura::IsShowing() {
@@ -851,7 +838,9 @@ void RenderWidgetHostViewAura::SetTooltipText(
 }
 
 gfx::Size RenderWidgetHostViewAura::GetRequestedRendererSize() const {
-  return delegated_frame_host_->GetRequestedRendererSize();
+  return delegated_frame_host_
+             ? delegated_frame_host_->GetRequestedRendererSize()
+             : RenderWidgetHostViewBase::GetRequestedRendererSize();
 }
 
 void RenderWidgetHostViewAura::CopyFromCompositingSurface(
@@ -859,6 +848,8 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurface(
     const gfx::Size& dst_size,
     const ReadbackRequestCallback& callback,
     const SkColorType preferred_color_type) {
+  if (!delegated_frame_host_)
+    return;
   delegated_frame_host_->CopyFromCompositingSurface(
       src_subrect, dst_size, callback, preferred_color_type);
 }
@@ -867,21 +858,26 @@ void RenderWidgetHostViewAura::CopyFromCompositingSurfaceToVideoFrame(
     const gfx::Rect& src_subrect,
     const scoped_refptr<media::VideoFrame>& target,
     const base::Callback<void(const gfx::Rect&, bool)>& callback) {
+  if (!delegated_frame_host_)
+    return;
   delegated_frame_host_->CopyFromCompositingSurfaceToVideoFrame(
       src_subrect, target, callback);
 }
 
 bool RenderWidgetHostViewAura::CanCopyToVideoFrame() const {
-  return delegated_frame_host_->CanCopyToVideoFrame();
+  return delegated_frame_host_ ? delegated_frame_host_->CanCopyToVideoFrame()
+                               : false;
 }
 
 void RenderWidgetHostViewAura::BeginFrameSubscription(
     std::unique_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
-  delegated_frame_host_->BeginFrameSubscription(std::move(subscriber));
+  if (delegated_frame_host_)
+    delegated_frame_host_->BeginFrameSubscription(std::move(subscriber));
 }
 
 void RenderWidgetHostViewAura::EndFrameSubscription() {
-  delegated_frame_host_->EndFrameSubscription();
+  if (delegated_frame_host_)
+    delegated_frame_host_->EndFrameSubscription();
 }
 
 #if defined(OS_WIN)
@@ -935,14 +931,17 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     selection.end.SetEdge(end_edge_top, end_edge_bottom);
   }
 
-  delegated_frame_host_->SwapDelegatedFrame(compositor_frame_sink_id,
-                                            std::move(frame));
+  if (delegated_frame_host_) {
+    delegated_frame_host_->SwapDelegatedFrame(compositor_frame_sink_id,
+                                              std::move(frame));
+  }
   SelectionUpdated(selection.is_editable, selection.is_empty_text_form_control,
                    selection.start, selection.end);
 }
 
 void RenderWidgetHostViewAura::ClearCompositorFrame() {
-  delegated_frame_host_->ClearDelegatedFrame();
+  if (delegated_frame_host_)
+    delegated_frame_host_->ClearDelegatedFrame();
 }
 
 void RenderWidgetHostViewAura::DidStopFlinging() {
@@ -1601,8 +1600,12 @@ cc::FrameSinkId RenderWidgetHostViewAura::FrameSinkIdAtPoint(
   // |point| from DIPs to pixels before hittesting.
   gfx::Point point_in_pixels =
       gfx::ConvertPointToPixel(device_scale_factor_, point);
-  cc::SurfaceId id = delegated_frame_host_->SurfaceIdAtPoint(
-      delegate, point_in_pixels, transformed_point);
+  // TODO: this shouldn't be used with aura-mus, so that the null check so
+  // go away and become a DCHECK.
+  cc::SurfaceId id = delegated_frame_host_
+                         ? delegated_frame_host_->SurfaceIdAtPoint(
+                               delegate, point_in_pixels, transformed_point)
+                         : cc::SurfaceId();
   *transformed_point =
       gfx::ConvertPointToDIP(device_scale_factor_, *transformed_point);
 
@@ -1645,7 +1648,10 @@ bool RenderWidgetHostViewAura::TransformPointToLocalCoordSpace(
   // is necessary.
   gfx::Point point_in_pixels =
       gfx::ConvertPointToPixel(device_scale_factor_, point);
-  if (!delegated_frame_host_->TransformPointToLocalCoordSpace(
+  // TODO: this shouldn't be used with aura-mus, so that the null check so
+  // go away and become a DCHECK.
+  if (delegated_frame_host_ &&
+      !delegated_frame_host_->TransformPointToLocalCoordSpace(
           point_in_pixels, original_surface, transformed_point))
     return false;
   *transformed_point =
@@ -1657,7 +1663,7 @@ bool RenderWidgetHostViewAura::TransformPointToCoordSpaceForView(
     const gfx::Point& point,
     RenderWidgetHostViewBase* target_view,
     gfx::Point* transformed_point) {
-  if (target_view == this) {
+  if (target_view == this || !delegated_frame_host_) {
     *transformed_point = point;
     return true;
   }
@@ -1865,9 +1871,10 @@ RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
     text_input_manager_->RemoveObserver(this);
 }
 
-void RenderWidgetHostViewAura::CreateAuraWindow() {
+void RenderWidgetHostViewAura::CreateAuraWindow(ui::wm::WindowType type) {
   DCHECK(!window_);
   window_ = new aura::Window(this);
+  window_->SetName("RenderWidgetHostViewAura");
   event_handler_->set_window(window_);
   window_observer_.reset(new WindowObserver(this));
 
@@ -1875,6 +1882,55 @@ void RenderWidgetHostViewAura::CreateAuraWindow() {
   aura::client::SetActivationDelegate(window_, this);
   aura::client::SetFocusChangeObserver(window_, this);
   display::Screen::GetScreen()->AddObserver(this);
+
+  window_->SetType(type);
+  window_->Init(ui::LAYER_SOLID_COLOR);
+  window_->layer()->SetColor(background_color_);
+
+  if (!IsMus())
+    return;
+
+  // Connect to the renderer, pass it a WindowTreeClient interface request
+  // and embed that client inside our mus window.
+  mojom::RenderWidgetWindowTreeClientFactoryPtr factory;
+  host_->GetProcess()->GetRemoteInterfaces()->GetInterface(&factory);
+
+  ui::mojom::WindowTreeClientPtr window_tree_client;
+  factory->CreateWindowTreeClientForRenderWidget(
+      host_->GetRoutingID(), mojo::GetProxy(&window_tree_client));
+  aura::WindowPortMus::Get(window_)->Embed(
+      std::move(window_tree_client),
+      ui::mojom::kEmbedFlagEmbedderInterceptsEvents,
+      base::Bind(&EmbedCallback));
+}
+
+void RenderWidgetHostViewAura::CreateDelegatedFrameHostClient() {
+  if (IsMus())
+    return;
+
+  // GuestViews have two RenderWidgetHostViews and so we need to make sure
+  // we don't have FrameSinkId collisions.
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  cc::FrameSinkId frame_sink_id =
+      is_guest_view_hack_
+          ? factory->GetContextFactoryPrivate()->AllocateFrameSinkId()
+          : cc::FrameSinkId(
+                base::checked_cast<uint32_t>(host_->GetProcess()->GetID()),
+                base::checked_cast<uint32_t>(host_->GetRoutingID()));
+  // Tests may set |delegated_frame_host_client_|.
+  if (!delegated_frame_host_client_) {
+    delegated_frame_host_client_ =
+        base::MakeUnique<DelegatedFrameHostClientAura>(this);
+  }
+  delegated_frame_host_ = base::MakeUnique<DelegatedFrameHost>(
+      frame_sink_id, delegated_frame_host_client_.get());
+
+  // Let the page-level input event router know about our surface ID
+  // namespace for surface-based hit testing.
+  if (host_->delegate() && host_->delegate()->GetInputEventRouter()) {
+    host_->delegate()->GetInputEventRouter()->AddFrameSinkIdOwner(
+        GetFrameSinkId(), this);
+  }
 }
 
 void RenderWidgetHostViewAura::UpdateCursorIfOverSelf() {
@@ -2053,7 +2109,8 @@ void RenderWidgetHostViewAura::InternalSetBounds(const gfx::Rect& rect) {
   if (!in_bounds_changed_)
     window_->SetBounds(rect);
   host_->WasResized();
-  delegated_frame_host_->WasResized();
+  if (delegated_frame_host_)
+    delegated_frame_host_->WasResized();
 #if defined(OS_WIN)
   UpdateLegacyWin();
 
@@ -2119,7 +2176,8 @@ void RenderWidgetHostViewAura::AddedToRootWindow() {
   UpdateLegacyWin();
 #endif
 
-  delegated_frame_host_->SetCompositor(window_->GetHost()->compositor());
+  if (delegated_frame_host_)
+    delegated_frame_host_->SetCompositor(window_->GetHost()->compositor());
 }
 
 void RenderWidgetHostViewAura::RemovingFromRootWindow() {
@@ -2131,7 +2189,8 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
   DetachFromInputMethod();
 
   window_->GetHost()->RemoveObserver(this);
-  delegated_frame_host_->ResetCompositor();
+  if (delegated_frame_host_)
+    delegated_frame_host_->ResetCompositor();
 
 #if defined(OS_WIN)
   // Update the legacy window's parent temporarily to the hidden window. It
@@ -2205,81 +2264,6 @@ void RenderWidgetHostViewAura::CreateSelectionController() {
       selection_controller_client_.get(), tsc_config));
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// DelegatedFrameHost, public:
-
-ui::Layer* RenderWidgetHostViewAura::DelegatedFrameHostGetLayer() const {
-  return window_->layer();
-}
-
-bool RenderWidgetHostViewAura::DelegatedFrameHostIsVisible() const {
-  return !host_->is_hidden();
-}
-
-SkColor RenderWidgetHostViewAura::DelegatedFrameHostGetGutterColor(
-    SkColor color) const {
-  // When making an element on the page fullscreen the element's background
-  // may not match the page's, so use black as the gutter color to avoid
-  // flashes of brighter colors during the transition.
-  if (host_->delegate() && host_->delegate()->IsFullscreenForCurrentTab())
-    return SK_ColorBLACK;
-  return color;
-}
-
-gfx::Size RenderWidgetHostViewAura::DelegatedFrameHostDesiredSizeInDIP() const {
-  return window_->bounds().size();
-}
-
-bool RenderWidgetHostViewAura::DelegatedFrameCanCreateResizeLock() const {
-#if !defined(OS_CHROMEOS)
-  // On Windows and Linux, holding pointer moves will not help throttling
-  // resizes.
-  // TODO(piman): on Windows we need to block (nested message loop?) the
-  // WM_SIZE event. On Linux we need to throttle at the WM level using
-  // _NET_WM_SYNC_REQUEST.
-  return false;
-#else
-  if (host_->auto_resize_enabled())
-    return false;
-  return true;
-#endif
-}
-
-std::unique_ptr<ResizeLock>
-RenderWidgetHostViewAura::DelegatedFrameHostCreateResizeLock(
-    bool defer_compositor_lock) {
-  gfx::Size desired_size = window_->bounds().size();
-  return std::unique_ptr<ResizeLock>(new CompositorResizeLock(
-      window_->GetHost(), desired_size, defer_compositor_lock,
-      base::TimeDelta::FromMilliseconds(kResizeLockTimeoutMs)));
-}
-
-void RenderWidgetHostViewAura::DelegatedFrameHostResizeLockWasReleased() {
-  host_->WasResized();
-}
-
-void RenderWidgetHostViewAura::DelegatedFrameHostSendReclaimCompositorResources(
-    int compositor_frame_sink_id,
-    bool is_swap_ack,
-    const cc::ReturnedResourceArray& resources) {
-  host_->Send(new ViewMsg_ReclaimCompositorResources(
-      host_->GetRoutingID(), compositor_frame_sink_id, is_swap_ack, resources));
-}
-
-void RenderWidgetHostViewAura::SetBeginFrameSource(
-    cc::BeginFrameSource* source) {
-  if (begin_frame_source_ && added_frame_observer_) {
-    begin_frame_source_->RemoveObserver(this);
-    added_frame_observer_ = false;
-  }
-  begin_frame_source_ = source;
-  UpdateNeedsBeginFramesInternal();
-}
-
-bool RenderWidgetHostViewAura::IsAutoResizeEnabled() const {
-  return host_->auto_resize_enabled();
-}
-
 void RenderWidgetHostViewAura::OnDidNavigateMainFrameToNewPage() {
   ui::GestureRecognizer::Get()->CancelActiveTouches(window_);
 }
@@ -2293,11 +2277,13 @@ void RenderWidgetHostViewAura::UnlockCompositingSurface() {
 }
 
 cc::FrameSinkId RenderWidgetHostViewAura::GetFrameSinkId() {
-  return delegated_frame_host_->GetFrameSinkId();
+  return delegated_frame_host_ ? delegated_frame_host_->GetFrameSinkId()
+                               : cc::FrameSinkId();
 }
 
 cc::SurfaceId RenderWidgetHostViewAura::SurfaceIdForTesting() const {
-  return delegated_frame_host_->SurfaceIdForTesting();
+  return delegated_frame_host_ ? delegated_frame_host_->SurfaceIdForTesting()
+                               : cc::SurfaceId();
 }
 
 void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(

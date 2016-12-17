@@ -33,6 +33,8 @@
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
 #include "content/browser/frame_host/render_widget_host_view_guest.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/renderer_host/delegated_frame_host.h"
+#include "content/browser/renderer_host/delegated_frame_host_client_aura.h"
 #include "content/browser/renderer_host/input/input_router.h"
 #include "content/browser/renderer_host/input/mouse_wheel_event_queue.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
@@ -106,6 +108,11 @@ using blink::WebTouchPoint;
 using ui::WebInputEventTraits;
 
 namespace content {
+
+void InstallDelegatedFrameHostClient(
+    RenderWidgetHostViewAura* render_widget_host_view,
+    std::unique_ptr<DelegatedFrameHostClient> delegated_frame_host_client);
+
 namespace {
 
 class TestOverscrollDelegate : public OverscrollControllerDelegate {
@@ -323,30 +330,63 @@ class FakeWindowEventDispatcher : public aura::WindowEventDispatcher {
   size_t processed_touch_event_count_;
 };
 
+class FakeDelegatedFrameHostClientAura : public DelegatedFrameHostClientAura {
+ public:
+  explicit FakeDelegatedFrameHostClientAura(
+      RenderWidgetHostViewAura* render_widget_host_view)
+      : DelegatedFrameHostClientAura(render_widget_host_view) {}
+  ~FakeDelegatedFrameHostClientAura() override {}
+
+  void DisableResizeLock() { can_create_resize_lock_ = false; }
+
+ private:
+  // A lock that doesn't actually do anything to the compositor, and does not
+  // time out.
+  class FakeResizeLock : public ResizeLock {
+   public:
+    FakeResizeLock(const gfx::Size new_size, bool defer_compositor_lock)
+        : ResizeLock(new_size, defer_compositor_lock) {}
+  };
+
+  // DelegatedFrameHostClientAura:
+  std::unique_ptr<ResizeLock> DelegatedFrameHostCreateResizeLock(
+      bool defer_compositor_lock) override {
+    gfx::Size desired_size =
+        render_widget_host_view()->GetNativeView()->bounds().size();
+    return std::unique_ptr<ResizeLock>(
+        new FakeResizeLock(desired_size, defer_compositor_lock));
+  }
+  bool DelegatedFrameCanCreateResizeLock() const override {
+    return can_create_resize_lock_;
+  }
+
+  bool can_create_resize_lock_ = true;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeDelegatedFrameHostClientAura);
+};
+
 class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
  public:
   FakeRenderWidgetHostViewAura(RenderWidgetHost* widget,
                                bool is_guest_view_hack)
       : RenderWidgetHostViewAura(widget, is_guest_view_hack),
-        can_create_resize_lock_(true) {}
+        delegated_frame_host_client_(
+            new FakeDelegatedFrameHostClientAura(this)) {
+    std::unique_ptr<DelegatedFrameHostClient> client(
+        delegated_frame_host_client_);
+    InstallDelegatedFrameHostClient(this, std::move(client));
+  }
+
+  ~FakeRenderWidgetHostViewAura() override {}
+
+  void DisableResizeLock() {
+    delegated_frame_host_client_->DisableResizeLock();
+  }
 
   void UseFakeDispatcher() {
     dispatcher_ = new FakeWindowEventDispatcher(window()->GetHost());
     std::unique_ptr<aura::WindowEventDispatcher> dispatcher(dispatcher_);
     aura::test::SetHostDispatcher(window()->GetHost(), std::move(dispatcher));
-  }
-
-  ~FakeRenderWidgetHostViewAura() override {}
-
-  std::unique_ptr<ResizeLock> DelegatedFrameHostCreateResizeLock(
-      bool defer_compositor_lock) override {
-    gfx::Size desired_size = window()->bounds().size();
-    return std::unique_ptr<ResizeLock>(
-        new FakeResizeLock(desired_size, defer_compositor_lock));
-  }
-
-  bool DelegatedFrameCanCreateResizeLock() const override {
-    return can_create_resize_lock_;
   }
 
   void RunOnCompositingDidCommit() {
@@ -388,22 +428,18 @@ class FakeRenderWidgetHostViewAura : public RenderWidgetHostViewAura {
 
   void ResetCompositor() { GetDelegatedFrameHost()->ResetCompositor(); }
 
-  // A lock that doesn't actually do anything to the compositor, and does not
-  // time out.
-  class FakeResizeLock : public ResizeLock {
-   public:
-    FakeResizeLock(const gfx::Size new_size, bool defer_compositor_lock)
-        : ResizeLock(new_size, defer_compositor_lock) {}
-  };
-
   const ui::MotionEventAura& pointer_state_for_test() {
     return event_handler()->pointer_state();
   }
 
-  bool can_create_resize_lock_;
   gfx::Size last_frame_size_;
   std::unique_ptr<cc::CopyOutputRequest> last_copy_request_;
   FakeWindowEventDispatcher* dispatcher_;
+
+ private:
+  FakeDelegatedFrameHostClientAura* delegated_frame_host_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeRenderWidgetHostViewAura);
 };
 
 // A layout manager that always resizes a child to the root window size.
@@ -490,6 +526,13 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   RenderWidgetHostViewAuraTest()
       : widget_host_uses_shutdown_to_destroy_(false),
         is_guest_view_hack_(false) {}
+
+  static void InstallDelegatedFrameHostClient(
+      RenderWidgetHostViewAura* render_widget_host_view,
+      std::unique_ptr<DelegatedFrameHostClient> delegated_frame_host_client) {
+    render_widget_host_view->delegated_frame_host_client_ =
+        std::move(delegated_frame_host_client);
+  }
 
   void SetUpEnvironment() {
     ImageTransportFactory::InitializeForUnitTests(
@@ -689,6 +732,13 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraTest);
 };
+
+void InstallDelegatedFrameHostClient(
+    RenderWidgetHostViewAura* render_widget_host_view,
+    std::unique_ptr<DelegatedFrameHostClient> delegated_frame_host_client) {
+  RenderWidgetHostViewAuraTest::InstallDelegatedFrameHostClient(
+      render_widget_host_view, std::move(delegated_frame_host_client));
+}
 
 // Helper class to instantiate RenderWidgetHostViewGuest which is backed
 // by an aura platform view.
@@ -1942,7 +1992,8 @@ TEST_F(RenderWidgetHostViewAuraTest, DelegatedFrameGutter) {
   gfx::Size medium_size(40, 95);
 
   // Prevent the DelegatedFrameHost from skipping frames.
-  view_->can_create_resize_lock_ = false;
+  // XXX
+  view_->DisableResizeLock();
 
   view_->InitAsChild(nullptr);
   aura::client::ParentWindowWithContext(

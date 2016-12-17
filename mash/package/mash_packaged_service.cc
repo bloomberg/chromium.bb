@@ -7,6 +7,7 @@
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/debug/debugger.h"
+#include "base/process/process.h"
 #include "mash/catalog_viewer/catalog_viewer.h"
 #include "mash/catalog_viewer/public/interfaces/constants.mojom.h"
 #include "mash/quick_launch/public/interfaces/constants.mojom.h"
@@ -74,10 +75,9 @@ std::unique_ptr<service_manager::Service> MashPackagedService::CreateService(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kWaitForDebugger);
   if (!debugger_target.empty()) {
-    const size_t index = name.find(':');
-    if (index != std::string::npos &&
-        name.substr(index + 1) == debugger_target) {
-      LOG(WARNING) << "waiting for debugger to attach for service " << name;
+    if (name == debugger_target) {
+      LOG(WARNING) << "waiting for debugger to attach for service " << name
+                   << " pid=" << base::Process::Current().Pid();
       base::debug::WaitForDebugger(120, true);
     }
   }

@@ -264,6 +264,9 @@ void WindowTreeClient::Embed(
     uint32_t flags,
     const ui::mojom::WindowTree::EmbedCallback& callback) {
   DCHECK(tree_);
+  // Window::Init() must be called before Embed() (otherwise the server hasn't
+  // been told about the window).
+  DCHECK(window->layer());
   if (!window->children().empty()) {
     // The window server removes all children before embedding. In other words,
     // it's generally an error to Embed() with existing children. So, fail

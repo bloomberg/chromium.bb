@@ -152,7 +152,6 @@
 #endif
 
 #if defined(USE_AURA)
-#include "content/browser/web_contents/web_contents_view_mus.h"
 #include "content/public/common/service_manager_connection.h"
 #include "ui/aura/mus/mus_util.h"
 #endif
@@ -1556,26 +1555,12 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params) {
   WebContentsViewDelegate* delegate =
       GetContentClient()->browser()->GetWebContentsViewDelegate(this);
 
-#if defined(USE_AURA)
-  if (ServiceManagerConnection::GetForProcess() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUseMusInRenderer)) {
-    ui::Window* mus_window = aura::GetMusWindow(params.context);
-    if (mus_window) {
-      view_.reset(new WebContentsViewMus(mus_window, this, delegate,
-                                         &render_view_host_delegate_view_));
-    }
-  }
-#endif
-
-  if (!view_) {
-    if (GuestMode::IsCrossProcessFrameGuest(this)) {
-      view_.reset(new WebContentsViewChildFrame(
-          this, delegate, &render_view_host_delegate_view_));
-    } else {
-      view_.reset(CreateWebContentsView(this, delegate,
-                                        &render_view_host_delegate_view_));
-    }
+  if (GuestMode::IsCrossProcessFrameGuest(this)) {
+    view_.reset(new WebContentsViewChildFrame(
+        this, delegate, &render_view_host_delegate_view_));
+  } else {
+    view_.reset(CreateWebContentsView(this, delegate,
+                                      &render_view_host_delegate_view_));
   }
 
   if (browser_plugin_guest_ && !GuestMode::IsCrossProcessFrameGuest(this)) {
