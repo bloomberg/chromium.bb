@@ -288,10 +288,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         return mPastePopupMenu != null && mPastePopupMenu.isShowing();
     }
 
-    private Context getContext() {
-        return mContext;
-    }
-
     // Composition methods for android.view.ActionMode
 
     /**
@@ -401,8 +397,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     @Override
     public void onCreateActionMode(ActionMode mode, Menu menu) {
-        mode.setTitle(DeviceFormFactor.isTablet(getContext())
-                        ? getContext().getString(R.string.actionbar_textselection_title)
+        mode.setTitle(DeviceFormFactor.isTablet(mContext)
+                        ? mContext.getString(R.string.actionbar_textselection_title)
                         : null);
         mode.setSubtitle(null);
         createActionMenu(mode, menu);
@@ -473,7 +469,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     private boolean canPaste() {
         ClipboardManager clipMgr = (ClipboardManager)
-                getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+                mContext.getSystemService(Context.CLIPBOARD_SERVICE);
         return clipMgr.hasPrimaryClip();
     }
 
@@ -486,12 +482,12 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             return;
         }
 
-        PackageManager packageManager = getContext().getPackageManager();
+        PackageManager packageManager = mContext.getPackageManager();
         List<ResolveInfo> supportedActivities =
                 packageManager.queryIntentActivities(createProcessTextIntent(), 0);
         for (int i = 0; i < supportedActivities.size(); i++) {
             ResolveInfo resolveInfo = supportedActivities.get(i);
-            CharSequence label = resolveInfo.loadLabel(getContext().getPackageManager());
+            CharSequence label = resolveInfo.loadLabel(mContext.getPackageManager());
             menu.add(R.id.select_action_menu_text_processing_menus, Menu.NONE, i, label)
                     .setIntent(createProcessTextIntentForResolveInfo(resolveInfo))
                     .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
