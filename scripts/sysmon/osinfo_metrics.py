@@ -34,45 +34,62 @@ _python_arch_metric = ts_mon.StringMetric(
 
 
 def get_os_info():
-  os_info = _get_os_info()
+  os_info = _get_osinfo()
   _os_name_metric.set(os_info.name)
   _os_version_metric.set(os_info.version)
   _os_arch_metric.set(platform.machine())
   _python_arch_metric.set(_get_python_arch())
 
 
-OSInfo = collections.namedtuple('OSInfo', 'name,version')
+class OSInfo(collections.namedtuple('OSInfo', 'name,version')):
+  """namedtuple representing OS info (all fields lowercased)."""
+
+  def __new__(cls, name, version):
+    return super(OSInfo, cls).__new__(cls, name.lower(), version.lower())
 
 
-def _get_os_info():
+def _get_osinfo():
   """Get OS name and version.
 
   Returns:
     OSInfo instance
   """
   os_name = platform.system().lower()
-  os_version = ''
   if 'windows' in os_name:
-    os_name = 'windows'
-    # release will be something like '7', 'vista', or 'xp'
-    os_version = platform.release()
+    return _get_windows_osinfo()
   elif 'linux' in os_name:
-    # will return something like ('Ubuntu', '14.04', 'trusty')
-    os_name, os_version, _ = platform.dist()
-  else:
+    return _get_linux_osinfo()
+  elif _is_mac():
     # On mac platform.system() reports 'darwin'.
-    os_version = _get_mac_version()
-    if os_version:
-      # We found a valid mac.
-      os_name = 'mac'
-    else:
-      # not a mac, unable to find platform information, reset
-      os_name = ''
-      os_version = ''
+    #
+    # TODO(ayatane): I'm not sure how true the above comment is, but I
+    # have no reason to remove it nor change the existing logic right
+    # now.
+    return _get_mac_osinfo()
+  else:
+    return OSInfo(name='', version='')
 
-  os_name = os_name.lower()
-  os_version = os_version.lower()
+
+def _get_windows_osinfo():
+  os_name = 'windows'
+  # release will be something like '7', 'vista', or 'xp'
+  os_version = platform.release()
   return OSInfo(name=os_name, version=os_version)
+
+
+def _get_linux_osinfo():
+  # will return something like ('Ubuntu', '14.04', 'trusty')
+  os_name, os_version, _ = platform.dist()
+  return OSInfo(name=os_name, version=os_version)
+
+
+def _get_mac_osinfo():
+  return OSInfo(name='mac', version=_get_mac_version())
+
+
+def _is_mac():
+  """Return whether the current system is a Mac."""
+  return bool(_get_mac_version())
 
 
 def _get_mac_version():
@@ -81,11 +98,7 @@ def _get_mac_version():
   Returns:
     Version string, which is empty if not a valid Mac system.
   """
-  # This tuple is only populated on mac systems.
-  mac_ver = platform.mac_ver()
-  # Will be '10.11.5' or similar on a valid mac or will be '' on a non-mac.
-  os_version = mac_ver[0]
-  return os_version
+  return platform.mac_ver()[0]
 
 
 def _get_python_arch():
