@@ -1054,7 +1054,7 @@ int BrowserMainLoop::CreateThreads() {
 #else
         if (redirect_nonUInonIO_browser_threads) {
           non_ui_non_io_task_runner_traits
-              .WithPriority(base::TaskPriority::BACKGROUND)
+              .WithPriority(base::TaskPriority::USER_VISIBLE)
               .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN);
         } else {
           thread_to_start = &file_thread_;
