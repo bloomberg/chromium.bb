@@ -268,6 +268,12 @@ Status ParseType(const std::string& type_as_string, WebViewInfo::Type* type) {
     *type = WebViewInfo::kOther;
   else if (type_as_string == "service_worker")
     *type = WebViewInfo::kServiceWorker;
+  else if (type_as_string == "shared_worker")
+    *type = WebViewInfo::kSharedWorker;
+  else if (type_as_string == "external")
+    *type = WebViewInfo::kExternal;
+  else if (type_as_string == "browser")
+    *type = WebViewInfo::kBrowser;
   else
     return Status(kUnknownError,
                   "DevTools returned unknown type:" + type_as_string);

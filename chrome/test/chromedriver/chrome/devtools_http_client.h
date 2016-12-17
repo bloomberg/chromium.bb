@@ -36,7 +36,10 @@ struct WebViewInfo {
     kWebView,
     kIFrame,
     kOther,
-    kServiceWorker
+    kServiceWorker,
+    kSharedWorker,
+    kExternal,
+    kBrowser,
   };
 
   WebViewInfo(const std::string& id,

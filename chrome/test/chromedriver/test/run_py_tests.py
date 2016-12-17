@@ -363,6 +363,11 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     self._driver.FindElement('id', 'link').Click()
     self.assertNotEqual(None, self.WaitForNewWindow(self._driver, old_handles))
 
+  def testGetWindowHandlesInPresenceOfSharedWorker(self):
+    self._driver.Load(
+        self.GetHttpUrlForFile('/chromedriver/shared_worker.html'))
+    old_handles = self._driver.GetWindowHandles()
+
   def testSwitchToWindow(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/page_test.html'))
     self.assertEquals(
