@@ -480,7 +480,7 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   double m_responseTimestamp;
 
-  Timer<Resource> m_cancelTimer;
+  TaskRunnerTimer<Resource> m_cancelTimer;
 
   ResourceRequest m_resourceRequest;
   Member<ResourceLoader> m_loader;

@@ -330,7 +330,9 @@ Resource::Resource(const ResourceRequest& request,
       m_integrityDisposition(ResourceIntegrityDisposition::NotChecked),
       m_options(options),
       m_responseTimestamp(currentTime()),
-      m_cancelTimer(this, &Resource::cancelTimerFired),
+      m_cancelTimer(Platform::current()->mainThread()->getWebTaskRunner(),
+                    this,
+                    &Resource::cancelTimerFired),
       m_resourceRequest(request) {
   InstanceCounters::incrementCounter(InstanceCounters::ResourceCounter);
 
