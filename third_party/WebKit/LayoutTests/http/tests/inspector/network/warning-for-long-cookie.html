@@ -1,0 +1,27 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../console-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.makeFetch('http://127.0.0.1:8000/inspector/network/resources/set-cookie.php?length=4096', {}, step1);
+
+    function step1() {
+        InspectorTest.makeFetch('http://127.0.0.1:8000/inspector/network/resources/set-cookie.php?length=4097', {}, dumpMessages);
+    }
+    
+    function dumpMessages()
+    {
+        InspectorTest.dumpConsoleMessages();
+        InspectorTest.completeTest();
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+Checks that we show warning message for long cookie.
+</body>
+</html>
