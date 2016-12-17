@@ -1558,7 +1558,7 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
 
   for (LayerImpl* surface_layer : active_tree_->SurfaceLayers()) {
     metadata.referenced_surfaces.push_back(
-        static_cast<SurfaceLayerImpl*>(surface_layer)->surface_id());
+        static_cast<SurfaceLayerImpl*>(surface_layer)->surface_info().id());
   }
   if (!InnerViewportScrollLayer())
     return metadata;

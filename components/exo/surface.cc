@@ -17,6 +17,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/resources/single_release_callback.h"
+#include "cc/surfaces/sequence_surface_reference_factory.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_id_allocator.h"
 #include "components/exo/buffer.h"
@@ -139,6 +140,30 @@ class CustomWindowTargeter : public aura::WindowTargeter {
   DISALLOW_COPY_AND_ASSIGN(CustomWindowTargeter);
 };
 
+class CustomSurfaceReferenceFactory
+    : public cc::SequenceSurfaceReferenceFactory {
+ public:
+  explicit CustomSurfaceReferenceFactory(CompositorFrameSinkHolder* sink_holder)
+      : sink_holder_(sink_holder) {}
+
+ private:
+  ~CustomSurfaceReferenceFactory() override = default;
+
+  // Overridden from cc::SequenceSurfaceReferenceFactory:
+  void SatisfySequence(const cc::SurfaceSequence& sequence) const override {
+    sink_holder_->Satisfy(sequence);
+  }
+
+  void RequireSequence(const cc::SurfaceId& surface_id,
+                       const cc::SurfaceSequence& sequence) const override {
+    sink_holder_->Require(surface_id, sequence);
+  }
+
+  scoped_refptr<CompositorFrameSinkHolder> sink_holder_;
+
+  DISALLOW_COPY_AND_ASSIGN(CustomSurfaceReferenceFactory);
+};
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -162,6 +187,8 @@ Surface::Surface()
       std::move(frame_sink_holder_ptr)));
   compositor_frame_sink_holder_ = new CompositorFrameSinkHolder(
       this, std::move(frame_sink), std::move(frame_sink_client_request));
+  surface_reference_factory_ =
+      new CustomSurfaceReferenceFactory(compositor_frame_sink_holder_.get());
   window_->SetType(ui::wm::WINDOW_TYPE_CONTROL);
   window_->SetName("ExoSurface");
   window_->SetProperty(kSurfaceKey, this);
@@ -422,13 +449,11 @@ void Surface::CommitSurfaceHierarchy() {
     // mirror layer to update its surface using the latest bounds.
     window_->layer()->SetBounds(
         gfx::Rect(window_->layer()->bounds().origin(), content_size_));
+    cc::SurfaceId surface_id(frame_sink_id_, local_frame_id_);
     window_->layer()->SetShowSurface(
-        cc::SurfaceId(frame_sink_id_, local_frame_id_),
-        base::Bind(&CompositorFrameSinkHolder::Satisfy,
-                   compositor_frame_sink_holder_),
-        base::Bind(&CompositorFrameSinkHolder::Require,
-                   compositor_frame_sink_holder_),
-        content_size_, contents_surface_to_layer_scale);
+        cc::SurfaceInfo(surface_id, contents_surface_to_layer_scale,
+                        content_size_),
+        surface_reference_factory_);
     window_->layer()->SetFillsBoundsOpaquely(
         state_.blend_mode == SkBlendMode::kSrc ||
         state_.opaque_region.contains(

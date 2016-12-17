@@ -29,27 +29,11 @@ std::unique_ptr<LayerImpl> SurfaceLayerImpl::CreateLayerImpl(
   return SurfaceLayerImpl::Create(tree_impl, id());
 }
 
-void SurfaceLayerImpl::SetSurfaceId(const SurfaceId& surface_id) {
-  if (surface_id_ == surface_id)
+void SurfaceLayerImpl::SetSurfaceInfo(const SurfaceInfo& surface_info) {
+  if (surface_info_ == surface_info)
     return;
 
-  surface_id_ = surface_id;
-  NoteLayerPropertyChanged();
-}
-
-void SurfaceLayerImpl::SetSurfaceScale(float scale) {
-  if (surface_scale_ == scale)
-    return;
-
-  surface_scale_ = scale;
-  NoteLayerPropertyChanged();
-}
-
-void SurfaceLayerImpl::SetSurfaceSize(const gfx::Size& size) {
-  if (surface_size_ == size)
-    return;
-
-  surface_size_ = size;
+  surface_info_ = surface_info;
   NoteLayerPropertyChanged();
 }
 
@@ -64,10 +48,7 @@ void SurfaceLayerImpl::SetStretchContentToFillBounds(bool stretch_content) {
 void SurfaceLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   LayerImpl::PushPropertiesTo(layer);
   SurfaceLayerImpl* layer_impl = static_cast<SurfaceLayerImpl*>(layer);
-
-  layer_impl->SetSurfaceId(surface_id_);
-  layer_impl->SetSurfaceSize(surface_size_);
-  layer_impl->SetSurfaceScale(surface_scale_);
+  layer_impl->SetSurfaceInfo(surface_info_);
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
 }
 
@@ -81,20 +62,22 @@ void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
   if (stretch_content_to_fill_bounds_) {
     // Stretches the surface contents to exactly fill the layer bounds,
     // regardless of scale or aspect ratio differences.
-    float scale_x =
-        static_cast<float>(surface_size_.width()) / bounds().width();
+    float scale_x = static_cast<float>(surface_info_.size_in_pixels().width()) /
+                    bounds().width();
     float scale_y =
-        static_cast<float>(surface_size_.height()) / bounds().height();
+        static_cast<float>(surface_info_.size_in_pixels().height()) /
+        bounds().height();
     PopulateScaledSharedQuadState(shared_quad_state, scale_x, scale_y);
   } else {
-    PopulateScaledSharedQuadState(shared_quad_state, surface_scale_,
-                                  surface_scale_);
+    PopulateScaledSharedQuadState(shared_quad_state,
+                                  surface_info_.device_scale_factor(),
+                                  surface_info_.device_scale_factor());
   }
 
-  if (!surface_id_.is_valid())
+  if (!surface_info_.id().is_valid())
     return;
 
-  gfx::Rect quad_rect(surface_size_);
+  gfx::Rect quad_rect(surface_info_.size_in_pixels());
   gfx::Rect visible_quad_rect =
       draw_properties().occlusion_in_content_space.GetUnoccludedContentRect(
           quad_rect);
@@ -103,7 +86,8 @@ void SurfaceLayerImpl::AppendQuads(RenderPass* render_pass,
     return;
   SurfaceDrawQuad* quad =
       render_pass->CreateAndAppendDrawQuad<SurfaceDrawQuad>();
-  quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect, surface_id_);
+  quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect,
+               surface_info_.id());
 }
 
 void SurfaceLayerImpl::GetDebugBorderProperties(SkColor* color,
@@ -201,7 +185,7 @@ void SurfaceLayerImpl::AppendRainbowDebugBorder(RenderPass* render_pass) {
 
 void SurfaceLayerImpl::AsValueInto(base::trace_event::TracedValue* dict) const {
   LayerImpl::AsValueInto(dict);
-  dict->SetString("surface_id", surface_id_.ToString());
+  dict->SetString("surface_id", surface_info_.id().ToString());
 }
 
 const char* SurfaceLayerImpl::LayerTypeAsString() const {

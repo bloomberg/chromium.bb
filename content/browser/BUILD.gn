@@ -1951,7 +1951,10 @@ source_set("browser") {
         "compositor/software_output_device_ozone.h",
       ]
     }
-    deps += [ "//ui/compositor" ]
+    deps += [
+      "//cc/surfaces:surfaces",
+      "//ui/compositor",
+    ]
   }
 
   if (is_linux && use_dbus) {

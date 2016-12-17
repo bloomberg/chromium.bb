@@ -380,6 +380,12 @@ class Surface : public ui::ContextFactoryObserver, public aura::WindowObserver {
   // Surface observer list. Surface does not own the observers.
   base::ObserverList<SurfaceObserver, true> observers_;
 
+  // A reference factory that uses the compositor frame sink holder provided
+  // to this class to construct surface references. This object is passed to
+  // ui::Layer::SetShowSurface because the layer needs to know how to add
+  // references to surfaces.
+  scoped_refptr<cc::SurfaceReferenceFactory> surface_reference_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };
 

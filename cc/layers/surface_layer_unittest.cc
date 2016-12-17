@@ -15,6 +15,8 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/surfaces/sequence_surface_reference_factory.h"
+#include "cc/surfaces/surface_info.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
@@ -55,17 +57,34 @@ class SurfaceLayerTest : public testing::Test {
   LayerTree* layer_tree_;
 };
 
-void SatisfyCallback(SurfaceSequence* out, const SurfaceSequence& in) {
-  *out = in;
-}
+class TestSurfaceReferenceFactory : public SequenceSurfaceReferenceFactory {
+ protected:
+  void SatisfySequence(const SurfaceSequence& seq) const override {
+    *out_seq_ = seq;
+  }
 
-void RequireCallback(SurfaceId* out_id,
-                     std::set<SurfaceSequence>* out,
-                     const SurfaceId& in_id,
-                     const SurfaceSequence& in) {
-  *out_id = in_id;
-  out->insert(in);
-}
+  void RequireSequence(const SurfaceId& id,
+                       const SurfaceSequence& seq) const override {
+    *out_id_ = id;
+    out_set_->insert(seq);
+  }
+
+ public:
+  TestSurfaceReferenceFactory(SurfaceSequence* out_seq,
+                              SurfaceId* out_id,
+                              std::set<SurfaceSequence>* out_set)
+      : out_seq_(out_seq), out_id_(out_id), out_set_(out_set) {}
+
+ protected:
+  ~TestSurfaceReferenceFactory() override = default;
+
+ private:
+  SurfaceSequence* out_seq_;
+  SurfaceId* out_id_;
+  std::set<SurfaceSequence>* out_set_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSurfaceReferenceFactory);
+};
 
 // Check that one surface can be referenced by multiple LayerTreeHosts, and
 // each will create its own SurfaceSequence that's satisfied on destruction.
@@ -76,12 +95,14 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
 
   SurfaceId required_id;
   std::set<SurfaceSequence> required_seq;
-  scoped_refptr<SurfaceLayer> layer(SurfaceLayer::Create(
-      base::Bind(&SatisfyCallback, &blank_change),
-      base::Bind(&RequireCallback, &required_id, &required_seq)));
-  layer->SetSurfaceId(
+  scoped_refptr<SurfaceReferenceFactory> ref_factory =
+      new TestSurfaceReferenceFactory(&blank_change, &required_id,
+                                      &required_seq);
+  auto layer = SurfaceLayer::Create(ref_factory);
+  SurfaceInfo info(
       SurfaceId(kArbitraryFrameSinkId, LocalFrameId(1, kArbitraryToken)), 1.f,
-      gfx::Size(1, 1), false);
+      gfx::Size(1, 1));
+  layer->SetSurfaceInfo(info, false);
   layer_tree_host_->GetSurfaceSequenceGenerator()->set_frame_sink_id(
       FrameSinkId(1, 1));
   layer_tree_->SetRootLayer(layer);
@@ -90,12 +111,8 @@ TEST_F(SurfaceLayerTest, MultipleFramesOneSurface) {
   std::unique_ptr<FakeLayerTreeHost> layer_tree_host2 =
       FakeLayerTreeHost::Create(&fake_client_, &task_graph_runner_,
                                 animation_host2.get());
-  scoped_refptr<SurfaceLayer> layer2(SurfaceLayer::Create(
-      base::Bind(&SatisfyCallback, &blank_change),
-      base::Bind(&RequireCallback, &required_id, &required_seq)));
-  layer2->SetSurfaceId(
-      SurfaceId(kArbitraryFrameSinkId, LocalFrameId(1, kArbitraryToken)), 1.f,
-      gfx::Size(1, 1), false);
+  auto layer2 = SurfaceLayer::Create(std::move(ref_factory));
+  layer2->SetSurfaceInfo(info, false);
   layer_tree_host2->GetSurfaceSequenceGenerator()->set_frame_sink_id(
       FrameSinkId(2, 2));
   layer_tree_host2->SetRootLayer(layer2);
@@ -145,12 +162,12 @@ class SurfaceLayerSwapPromise : public LayerTreeTest {
   void BeginTest() override {
     layer_tree_host()->GetSurfaceSequenceGenerator()->set_frame_sink_id(
         FrameSinkId(1, 1));
-    layer_ = SurfaceLayer::Create(
-        base::Bind(&SatisfyCallback, &satisfied_sequence_),
-        base::Bind(&RequireCallback, &required_id_, &required_set_));
-    layer_->SetSurfaceId(
+    layer_ = SurfaceLayer::Create(new TestSurfaceReferenceFactory(
+        &satisfied_sequence_, &required_id_, &required_set_));
+    SurfaceInfo info(
         SurfaceId(kArbitraryFrameSinkId, LocalFrameId(1, kArbitraryToken)), 1.f,
-        gfx::Size(1, 1), false);
+        gfx::Size(1, 1));
+    layer_->SetSurfaceInfo(info, false);
 
     // Layer hasn't been added to tree so no SurfaceSequence generated yet.
     EXPECT_EQ(0u, required_set_.size());

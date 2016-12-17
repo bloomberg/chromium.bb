@@ -963,6 +963,7 @@ cc_test("cc_unittests") {
     "//cc/proto",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
+    "//cc/surfaces:surfaces",
     "//gpu",
     "//gpu:test_support",
     "//gpu/command_buffer/client:gles2_interface",

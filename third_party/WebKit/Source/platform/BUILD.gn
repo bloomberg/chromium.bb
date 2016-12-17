@@ -1456,6 +1456,7 @@ component("platform") {
   ]
   deps = [
     ":blink_common",
+    "//cc/surfaces:surfaces",
     "//components/link_header_util:link_header_util",
     "//components/mime_util:mime_util",
     "//device/base/synchronization",

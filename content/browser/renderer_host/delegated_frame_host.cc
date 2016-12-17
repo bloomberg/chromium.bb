@@ -38,30 +38,6 @@
 
 namespace content {
 
-namespace {
-
-void SatisfyCallback(base::WeakPtr<cc::SurfaceManager> manager,
-                     const cc::SurfaceSequence& sequence) {
-  if (!manager)
-    return;
-  std::vector<uint32_t> sequences;
-  sequences.push_back(sequence.sequence);
-  manager->DidSatisfySequences(sequence.frame_sink_id, &sequences);
-}
-
-void RequireCallback(base::WeakPtr<cc::SurfaceManager> manager,
-                     const cc::SurfaceId& id,
-                     const cc::SurfaceSequence& sequence) {
-  cc::Surface* surface = manager->GetSurfaceForId(id);
-  if (!surface) {
-    LOG(ERROR) << "Attempting to require callback on nonexistent surface";
-    return;
-  }
-  surface->AddDestructionDependency(sequence);
-}
-
-}  // namespace
-
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost
 
@@ -513,11 +489,11 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
                                             ack_callback);
     if (allocated_new_local_frame_id) {
       // manager must outlive compositors using it.
+      cc::SurfaceId surface_id(frame_sink_id_, local_frame_id_);
+      cc::SurfaceInfo surface_info(surface_id, frame_device_scale_factor,
+                                   frame_size);
       client_->DelegatedFrameHostGetLayer()->SetShowSurface(
-          cc::SurfaceId(frame_sink_id_, local_frame_id_),
-          base::Bind(&SatisfyCallback, manager->GetWeakPtr()),
-          base::Bind(&RequireCallback, manager->GetWeakPtr()), frame_size,
-          frame_device_scale_factor);
+          surface_info, manager->reference_factory());
       current_surface_size_ = frame_size;
       current_scale_factor_ = frame_device_scale_factor;
     }

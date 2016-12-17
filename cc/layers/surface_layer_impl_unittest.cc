@@ -28,9 +28,7 @@ TEST(SurfaceLayerImplTest, Occlusion) {
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
   SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalFrameId);
-  surface_layer_impl->SetSurfaceId(surface_id);
-  surface_layer_impl->SetSurfaceScale(1.f);
-  surface_layer_impl->SetSurfaceSize(layer_size);
+  surface_layer_impl->SetSurfaceInfo(SurfaceInfo(surface_id, 1.f, layer_size));
 
   impl.CalcDrawProps(viewport_size);
 
@@ -87,9 +85,8 @@ TEST(SurfaceLayerImplTest, SurfaceStretchedToLayerBounds) {
   surface_layer_impl->SetBounds(layer_size);
   surface_layer_impl->SetDrawsContent(true);
   SurfaceId surface_id(kArbitraryFrameSinkId, kArbitraryLocalFrameId);
-  surface_layer_impl->SetSurfaceId(surface_id);
-  surface_layer_impl->SetSurfaceScale(surface_scale);
-  surface_layer_impl->SetSurfaceSize(surface_size);
+  surface_layer_impl->SetSurfaceInfo(
+      SurfaceInfo(surface_id, surface_scale, surface_size));
   surface_layer_impl->SetStretchContentToFillBounds(true);
 
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();

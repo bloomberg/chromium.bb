@@ -9,6 +9,9 @@
 #include "cc/base/cc_export.h"
 #include "cc/layers/layer.h"
 #include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_info.h"
+#include "cc/surfaces/surface_reference_base.h"
+#include "cc/surfaces/surface_reference_factory.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -18,55 +21,35 @@ namespace cc {
 // instance or client.
 class CC_EXPORT SurfaceLayer : public Layer {
  public:
-  // This callback is run when a SurfaceSequence needs to be satisfied, but
-  // the parent compositor is unable to. It can be called on either the main
-  // or impl threads.
-  using SatisfyCallback = base::Callback<void(const SurfaceSequence&)>;
-
-  // This callback is run to require that a specific SurfaceSequence is
-  // received before a SurfaceId is destroyed.
-  using RequireCallback =
-      base::Callback<void(const SurfaceId&, const SurfaceSequence&)>;
-
   static scoped_refptr<SurfaceLayer> Create(
-      const SatisfyCallback& satisfy_callback,
-      const RequireCallback& require_callback);
+      scoped_refptr<SurfaceReferenceFactory> ref_factory);
 
   // When stretch_content_to_fill_bounds is true, scale is unused.
-  void SetSurfaceId(const SurfaceId& surface_id,
-                    float scale,
-                    const gfx::Size& size,
-                    bool stretch_content_to_fill_bounds);
+  void SetSurfaceInfo(const SurfaceInfo& surface_info,
+                      bool stretch_content_to_fill_bounds);
 
   // Layer overrides.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
   void SetLayerTreeHost(LayerTreeHost* host) override;
   void PushPropertiesTo(LayerImpl* layer) override;
 
-  SurfaceId surface_id() const { return surface_id_; }
-  const gfx::Size& surface_size() const { return surface_size_; }
-  float surface_scale() const { return surface_scale_; }
-
-  const SatisfyCallback& satisfy_callback() const { return satisfy_callback_; }
-  const RequireCallback& require_callback() const { return require_callback_; }
+  scoped_refptr<SurfaceReferenceFactory> surface_reference_factory() const {
+    return ref_factory_;
+  }
+  const SurfaceInfo& surface_info() const { return surface_info_; }
 
  protected:
-  SurfaceLayer(const SatisfyCallback& satisfy_callback,
-               const RequireCallback& require_callback);
+  explicit SurfaceLayer(scoped_refptr<SurfaceReferenceFactory> ref_factory);
   bool HasDrawableContent() const override;
 
  private:
   ~SurfaceLayer() override;
-  void CreateNewDestroySequence();
-  void SatisfyDestroySequence();
+  void RemoveCurrentReference();
 
-  SurfaceId surface_id_;
-  gfx::Size surface_size_;
-  float surface_scale_ = 1.f;
+  SurfaceInfo surface_info_;
+  scoped_refptr<SurfaceReferenceFactory> ref_factory_;
+  std::unique_ptr<SurfaceReferenceBase> current_ref_;
   bool stretch_content_to_fill_bounds_ = false;
-  SurfaceSequence destroy_sequence_;
-  SatisfyCallback satisfy_callback_;
-  RequireCallback require_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceLayer);
 };

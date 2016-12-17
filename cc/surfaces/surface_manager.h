@@ -21,6 +21,7 @@
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_observer.h"
+#include "cc/surfaces/surface_reference_factory.h"
 #include "cc/surfaces/surface_reference_manager.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/surfaces/surfaces_export.h"
@@ -118,7 +119,9 @@ class CC_SURFACES_EXPORT SurfaceManager
   size_t GetSurfaceReferenceCount(const SurfaceId& surface_id) const override;
   size_t GetReferencedSurfaceCount(const SurfaceId& surface_id) const override;
 
-  base::WeakPtr<SurfaceManager> GetWeakPtr();
+  scoped_refptr<SurfaceReferenceFactory> reference_factory() {
+    return reference_factory_;
+  }
 
  private:
   void RecursivelyAttachBeginFrameSource(const FrameSinkId& frame_sink_id,
@@ -198,6 +201,10 @@ class CC_SURFACES_EXPORT SurfaceManager
   // Root SurfaceId that references display root surfaces. There is no Surface
   // with this id, it's for bookkeeping purposes only.
   const SurfaceId root_surface_id_;
+
+  // The DirectSurfaceReferenceFactory that uses this manager to create surface
+  // references.
+  scoped_refptr<SurfaceReferenceFactory> reference_factory_;
 
   base::WeakPtrFactory<SurfaceManager> weak_factory_;
 

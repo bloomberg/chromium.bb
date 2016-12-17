@@ -10,10 +10,17 @@ cc_source_set("surface_id") {
     "frame_sink_id.h",
     "local_frame_id.cc",
     "local_frame_id.h",
+    "sequence_surface_reference.cc",
+    "sequence_surface_reference.h",
     "surface_id.cc",
     "surface_id.h",
+    "surface_info.h",
     "surface_reference.cc",
     "surface_reference.h",
+    "surface_reference_base.cc",
+    "surface_reference_base.h",
+    "surface_reference_factory.h",
+    "surface_reference_owner.h",
     "surface_sequence.h",
     "surface_sequence_generator.cc",
     "surface_sequence_generator.h",
@@ -22,6 +29,7 @@ cc_source_set("surface_id") {
   deps = [
     "//base",
     "//mojo/public/cpp/bindings:struct_traits",
+    "//ui/gfx/geometry:geometry",
   ]
 }
 
@@ -33,11 +41,15 @@ cc_component("surfaces") {
     "compositor_frame_sink_support_client.h",
     "direct_compositor_frame_sink.cc",
     "direct_compositor_frame_sink.h",
+    "direct_surface_reference_factory.cc",
+    "direct_surface_reference_factory.h",
     "display.cc",
     "display.h",
     "display_client.h",
     "display_scheduler.cc",
     "display_scheduler.h",
+    "sequence_surface_reference_factory.cc",
+    "sequence_surface_reference_factory.h",
     "surface.cc",
     "surface.h",
     "surface_aggregator.cc",
@@ -63,6 +75,7 @@ cc_component("surfaces") {
   public_deps = [
     ":surface_id",
   ]
+
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",

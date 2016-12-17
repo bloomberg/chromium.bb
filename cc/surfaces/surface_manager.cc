@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "cc/surfaces/direct_surface_reference_factory.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id_allocator.h"
@@ -34,6 +35,8 @@ SurfaceManager::SurfaceManager(LifetimeType lifetime_type)
                        LocalFrameId(1u, base::UnguessableToken::Create())),
       weak_factory_(this) {
   thread_checker_.DetachFromThread();
+  reference_factory_ =
+      new DirectSurfaceReferenceFactory(weak_factory_.GetWeakPtr());
 }
 
 SurfaceManager::~SurfaceManager() {
@@ -498,10 +501,6 @@ void SurfaceManager::SurfaceCreated(const SurfaceId& surface_id,
   CHECK(thread_checker_.CalledOnValidThread());
   for (auto& observer : observer_list_)
     observer.OnSurfaceCreated(surface_id, frame_size, device_scale_factor);
-}
-
-base::WeakPtr<SurfaceManager> SurfaceManager::GetWeakPtr() {
-  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace cc

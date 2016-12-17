@@ -5,7 +5,9 @@
 #include "platform/graphics/CanvasSurfaceLayerBridge.h"
 
 #include "cc/layers/surface_layer.h"
+#include "cc/surfaces/sequence_surface_reference_factory.h"
 #include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/mojo/MojoHelper.h"
@@ -17,9 +19,43 @@
 
 namespace blink {
 
+namespace {
+
+class OffscreenCanvasSurfaceReferenceFactory
+    : public cc::SequenceSurfaceReferenceFactory {
+ public:
+  OffscreenCanvasSurfaceReferenceFactory(
+      base::WeakPtr<CanvasSurfaceLayerBridge> bridge)
+      : m_bridge(bridge) {}
+
+ private:
+  ~OffscreenCanvasSurfaceReferenceFactory() override = default;
+
+  // cc::SequenceSurfaceReferenceFactory implementation:
+  void RequireSequence(const cc::SurfaceId& id,
+                       const cc::SurfaceSequence& sequence) const override {
+    DCHECK(m_bridge);
+    m_bridge->requireCallback(id, sequence);
+  }
+
+  void SatisfySequence(const cc::SurfaceSequence& sequence) const override {
+    DCHECK(m_bridge);
+    m_bridge->satisfyCallback(sequence);
+  }
+
+  base::WeakPtr<CanvasSurfaceLayerBridge> m_bridge;
+
+  DISALLOW_COPY_AND_ASSIGN(OffscreenCanvasSurfaceReferenceFactory);
+};
+
+}  // namespace
+
 CanvasSurfaceLayerBridge::CanvasSurfaceLayerBridge(
     mojom::blink::OffscreenCanvasSurfacePtr service)
-    : m_service(std::move(service)) {}
+    : m_service(std::move(service)), m_weakFactory(this) {
+  m_refFactory =
+      new OffscreenCanvasSurfaceReferenceFactory(m_weakFactory.GetWeakPtr());
+}
 
 CanvasSurfaceLayerBridge::~CanvasSurfaceLayerBridge() {}
 
@@ -28,17 +64,10 @@ bool CanvasSurfaceLayerBridge::createSurfaceLayer(int canvasWidth,
   if (!m_service->GetSurfaceId(&m_surfaceId))
     return false;
 
-  cc::SurfaceLayer::SatisfyCallback satisfyCallback =
-      convertToBaseCallback(WTF::bind(
-          &CanvasSurfaceLayerBridge::satisfyCallback, WTF::unretained(this)));
-  cc::SurfaceLayer::RequireCallback requireCallback =
-      convertToBaseCallback(WTF::bind(
-          &CanvasSurfaceLayerBridge::requireCallback, WTF::unretained(this)));
-  m_surfaceLayer = cc::SurfaceLayer::Create(std::move(satisfyCallback),
-                                            std::move(requireCallback));
-  m_surfaceLayer->SetSurfaceId(m_surfaceId, 1.f,
-                               gfx::Size(canvasWidth, canvasHeight),
-                               true /* scale layer bounds with surface size */);
+  m_surfaceLayer = cc::SurfaceLayer::Create(m_refFactory);
+  cc::SurfaceInfo info(m_surfaceId, 1.f, gfx::Size(canvasWidth, canvasHeight));
+  m_surfaceLayer->SetSurfaceInfo(
+      info, true /* scale layer bounds with surface size */);
 
   m_webLayer = Platform::current()->compositorSupport()->createLayerFromCCLayer(
       m_surfaceLayer.get());

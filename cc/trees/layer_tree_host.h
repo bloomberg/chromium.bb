@@ -10,6 +10,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/debug/micro_benchmark.h"
 #include "cc/input/browser_controls_state.h"
+#include "cc/surfaces/surface_reference_owner.h"
 
 namespace base {
 class TimeTicks;
@@ -27,7 +28,6 @@ class LayerTreeDebugState;
 class LayerTreeMutator;
 class LayerTreeSettings;
 class CompositorFrameSink;
-class SurfaceSequenceGenerator;
 class SwapPromise;
 class SwapPromiseManager;
 class TaskRunnerProvider;
@@ -37,7 +37,8 @@ class UIResourceManager;
 // LayerTreeHostInProcess provides the implementation where the compositor
 // thread components of this host run within the same process. Use
 // LayerTreeHostInProcess::CreateThreaded/CreateSingleThread to get either.
-class CC_EXPORT LayerTreeHost {
+class CC_EXPORT LayerTreeHost
+    : public NON_EXPORTED_BASE(SurfaceReferenceOwner) {
  public:
   virtual ~LayerTreeHost() {}
 
@@ -186,10 +187,6 @@ class CC_EXPORT LayerTreeHost {
   virtual bool SendMessageToMicroBenchmark(
       int id,
       std::unique_ptr<base::Value> value) = 0;
-
-  // Methods used internally in cc. These are not intended to be a part of the
-  // public API for use by the embedder ----------------------
-  virtual SurfaceSequenceGenerator* GetSurfaceSequenceGenerator() = 0;
 
   // When the main thread informs the impl thread that it is ready to commit,
   // generally it would remain blocked till the main thread state is copied to
