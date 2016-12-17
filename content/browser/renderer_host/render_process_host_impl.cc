@@ -185,6 +185,7 @@
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/service_manager/runner/common/client_util.h"
 #include "services/service_manager/runner/common/switches.h"
 #include "storage/browser/fileapi/sandbox_file_system_backend.h"
 #include "third_party/WebKit/public/public_features.h"
@@ -1300,10 +1301,14 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
       registry.get(), base::Bind(&WebSocketManager::CreateWebSocket, GetID(),
                                  MSG_ROUTING_NONE));
 
-  registry->AddInterface(base::Bind(
-      &discardable_memory::DiscardableSharedMemoryManager::Bind,
-      base::Unretained(
-          discardable_memory::DiscardableSharedMemoryManager::GetInstance())));
+  // Chrome browser process only provides DiscardableSharedMemory service when
+  // Chrome is not running in mus+ash.
+  if (!service_manager::ServiceManagerIsRemote()) {
+    registry->AddInterface(base::Bind(
+        &discardable_memory::DiscardableSharedMemoryManager::Bind,
+        base::Unretained(discardable_memory::DiscardableSharedMemoryManager::
+                             GetInstance())));
+  }
 
   GetContentClient()->browser()->ExposeInterfacesToRenderer(registry.get(),
                                                             this);

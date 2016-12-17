@@ -93,6 +93,8 @@ source_set("lib") {
     "//base",
     "//cc",
     "//cc/surfaces",
+    "//components/discardable_memory/public/interfaces",
+    "//components/discardable_memory/service",
     "//mojo/common:common_base",
     "//services/catalog/public/cpp",
     "//services/catalog/public/interfaces:constants",

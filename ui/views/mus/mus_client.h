@@ -27,6 +27,11 @@ class WindowTreeClient;
 
 namespace base {
 class SingleThreadTaskRunner;
+class Thread;
+}
+
+namespace discardable_memory {
+class ClientDiscardableSharedMemoryManager;
 }
 
 namespace service_manager {
@@ -132,6 +137,8 @@ class VIEWS_MUS_EXPORT MusClient
 
   service_manager::Identity identity_;
 
+  std::unique_ptr<base::Thread> io_thread_;
+
   base::ObserverList<MusClientObserver> observer_list_;
 
   // NOTE: this may be null (creation is based on argument supplied to
@@ -149,6 +156,9 @@ class VIEWS_MUS_EXPORT MusClient
   std::unique_ptr<PointerWatcherEventRouter2> pointer_watcher_event_router_;
 
   std::unique_ptr<aura::MusContextFactory> compositor_context_factory_;
+
+  std::unique_ptr<discardable_memory::ClientDiscardableSharedMemoryManager>
+      discardable_shared_memory_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MusClient);
 };

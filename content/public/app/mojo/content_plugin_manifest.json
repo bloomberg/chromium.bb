@@ -10,7 +10,8 @@
         ]
       },
       "requires": {
-        "content_browser": [ "plugin" ]
+        "content_browser": [ "plugin" ],
+        "ui": [ "discardable_memory" ]
       }
     }
   }

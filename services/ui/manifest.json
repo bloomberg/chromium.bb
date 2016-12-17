@@ -9,6 +9,7 @@
         // NOTE: when adding a new interface chances are you will want to add it
         // to window_manager as well.
         "app": [
+          "discardable_memory::mojom::DiscardableSharedMemoryManager",
           "ui::mojom::Clipboard",
           "ui::mojom::DisplayCompositor",
           "ui::mojom::DisplayManager",
@@ -24,6 +25,9 @@
         "test": [
           "ui::mojom::WindowServerTest"
         ],
+        "discardable_memory": [
+          "discardable_memory::mojom::DiscardableSharedMemoryManager"
+        ],
         "gpu_client": [
           "ui::mojom::Gpu"
         ],
@@ -34,6 +38,7 @@
           "ui::mojom::UserAccessManager"
         ],
         "window_manager": [
+          "discardable_memory::mojom::DiscardableSharedMemoryManager",
           "display::mojom::DisplayController",
           "display::mojom::TestDisplayController",
           "ui::mojom::AccessibilityManager",

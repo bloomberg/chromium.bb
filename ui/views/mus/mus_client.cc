@@ -6,10 +6,13 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/thread.h"
+#include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/gpu/gpu.h"
 #include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/event_matcher.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/env.h"
@@ -62,11 +65,29 @@ MusClient::MusClient(service_manager::Connector* connector,
     : identity_(identity) {
   DCHECK(!instance_);
   instance_ = this;
+
+  if (!io_task_runner) {
+    io_thread_ = base::MakeUnique<base::Thread>("IOThread");
+    base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
+    thread_options.priority = base::ThreadPriority::NORMAL;
+    CHECK(io_thread_->StartWithOptions(thread_options));
+    io_task_runner = io_thread_->task_runner();
+  }
+
   // TODO(msw): Avoid this... use some default value? Allow clients to extend?
   property_converter_ = base::MakeUnique<aura::PropertyConverter>();
 
   if (create_wm_state)
     wm_state_ = base::MakeUnique<wm::WMState>();
+
+  discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
+  connector->ConnectToInterface(ui::mojom::kServiceName, &manager_ptr);
+
+  discardable_shared_memory_manager_ = base::MakeUnique<
+      discardable_memory::ClientDiscardableSharedMemoryManager>(
+      std::move(manager_ptr), io_task_runner);
+  base::DiscardableMemoryAllocator::SetInstance(
+      discardable_shared_memory_manager_.get());
 
   gpu_ = ui::Gpu::Create(connector, std::move(io_task_runner));
   compositor_context_factory_ =

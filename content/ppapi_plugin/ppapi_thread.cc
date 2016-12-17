@@ -36,6 +36,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/pepper_plugin_info.h"
 #include "content/public/common/sandbox_init.h"
+#include "content/public/common/service_manager_connection.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "ipc/ipc_sync_channel.h"
@@ -48,7 +49,9 @@
 #include "ppapi/proxy/plugin_message_filter.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_reply_thread_registrar.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -102,6 +105,11 @@ static void WarmupWindowsLocales(const ppapi::PpapiPermissions& permissions) {
 
 #endif
 
+static bool IsRunningInMash() {
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  return cmdline->HasSwitch(switches::kIsRunningInMash);
+}
+
 namespace content {
 
 typedef int32_t (*InitializeBrokerFunc)
@@ -133,8 +141,17 @@ PpapiThread::PpapiThread(const base::CommandLine& command_line, bool is_broker)
   // allocator.
   if (!command_line.HasSwitch(switches::kSingleProcess)) {
     discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
-    ChildThread::Get()->GetRemoteInterfaces()->GetInterface(
-        mojo::GetProxy(&manager_ptr));
+    if (IsRunningInMash()) {
+#if defined(USE_AURA)
+      GetServiceManagerConnection()->GetConnector()->ConnectToInterface(
+          ui::mojom::kServiceName, &manager_ptr);
+#else
+      NOTREACHED();
+#endif
+    } else {
+      ChildThread::Get()->GetRemoteInterfaces()->GetInterface(
+          mojo::GetProxy(&manager_ptr));
+    }
     discardable_shared_memory_manager_ = base::MakeUnique<
         discardable_memory::ClientDiscardableSharedMemoryManager>(
         std::move(manager_ptr), GetIOTaskRunner());

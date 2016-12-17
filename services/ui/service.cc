@@ -13,6 +13,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/catalog/public/cpp/resource_loader.h"
 #include "services/catalog/public/interfaces/constants.mojom.h"
@@ -197,6 +198,8 @@ void Service::OnStart() {
         new ws::TouchController(window_server_->display_manager()));
 
   ime_server_.Init(context()->connector(), test_config_);
+
+  discardable_memory::DiscardableSharedMemoryManager::CreateInstance();
 }
 
 bool Service::OnConnect(const service_manager::ServiceInfo& remote_info,
@@ -212,6 +215,9 @@ bool Service::OnConnect(const service_manager::ServiceInfo& remote_info,
   registry->AddInterface<WindowTreeHostFactory>(this);
   registry->AddInterface<mojom::WindowManagerWindowTreeFactory>(this);
   registry->AddInterface<mojom::WindowTreeFactory>(this);
+  registry
+      ->AddInterface<discardable_memory::mojom::DiscardableSharedMemoryManager>(
+          this);
   if (test_config_)
     registry->AddInterface<WindowServerTest>(this);
 
@@ -357,6 +363,13 @@ void Service::Create(const service_manager::Identity& remote_identity,
         window_server_.get(), remote_identity.user_id()));
   }
   user_state->window_tree_host_factory->AddBinding(std::move(request));
+}
+
+void Service::Create(
+    const service_manager::Identity& remote_identity,
+    discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request) {
+  discardable_memory::DiscardableSharedMemoryManager::GetInstance()->Bind(
+      std::move(request));
 }
 
 void Service::Create(const service_manager::Identity& remote_identity,

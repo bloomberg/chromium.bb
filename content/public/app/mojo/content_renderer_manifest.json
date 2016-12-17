@@ -19,7 +19,10 @@
       },
       "requires": {
         "content_browser": [ "renderer" ],
-        "ui": [ "gpu_client" ]
+        "ui": [
+          "discardable_memory",
+          "gpu_client"
+        ]
       }
     },
     "navigation:frame": {

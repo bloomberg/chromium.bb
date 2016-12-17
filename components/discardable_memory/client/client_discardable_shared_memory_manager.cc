@@ -128,7 +128,8 @@ ClientDiscardableSharedMemoryManager::~ClientDiscardableSharedMemoryManager() {
   // Delete the |manager_mojo_| on IO thread, so any pending tasks on IO thread
   // will be executed before the |manager_mojo_| is deleted.
   bool posted = io_task_runner_->DeleteSoon(FROM_HERE, manager_mojo_.release());
-  DCHECK(posted);
+  if (!posted)
+    manager_mojo_.reset();
 }
 
 std::unique_ptr<base::DiscardableMemory>

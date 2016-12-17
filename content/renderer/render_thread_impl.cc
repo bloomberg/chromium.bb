@@ -141,8 +141,10 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "ppapi/features/features.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/skia_memory_dump_provider.h"
 #include "third_party/WebKit/public/platform/WebImageGenerator.h"
@@ -652,10 +654,9 @@ void RenderThreadImpl::Init(
 
   if (IsRunningInMash()) {
     gpu_ = ui::Gpu::Create(GetServiceManagerConnection()->GetConnector(),
-                           ChildProcess::current()->io_task_runner());
+                           GetIOTaskRunner());
   } else {
-    gpu_ = ui::Gpu::Create(GetRemoteInterfaces(),
-                           ChildProcess::current()->io_task_runner());
+    gpu_ = ui::Gpu::Create(GetRemoteInterfaces(), GetIOTaskRunner());
   }
 
   thread_safe_associated_interface_ptr_provider_ =
@@ -879,8 +880,18 @@ void RenderThreadImpl::Init(
   categorized_worker_pool_->Start(num_raster_threads);
 
   discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
-  ChildThread::Get()->GetRemoteInterfaces()->GetInterface(
-      mojo::GetProxy(&manager_ptr));
+  if (IsRunningInMash()) {
+#if defined(USE_AURA)
+    GetServiceManagerConnection()->GetConnector()->ConnectToInterface(
+        ui::mojom::kServiceName, &manager_ptr);
+#else
+    NOTREACHED();
+#endif
+  } else {
+    ChildThread::Get()->GetRemoteInterfaces()->GetInterface(
+        mojo::GetProxy(&manager_ptr));
+  }
+
   discardable_shared_memory_manager_ = base::MakeUnique<
       discardable_memory::ClientDiscardableSharedMemoryManager>(
       std::move(manager_ptr), GetIOTaskRunner());

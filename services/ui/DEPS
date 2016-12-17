@@ -1,5 +1,7 @@
 include_rules = [
   "+cc",
+  "+components/discardable_memory/service",
+  "+components/discardable_memory/public",
   "+ipc",
   "+mojo/common",
   "+mojo/converters",

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_runner.h"
@@ -71,6 +72,8 @@ class Service
           mojom::WindowManagerWindowTreeFactory>,
       public service_manager::InterfaceFactory<mojom::WindowTreeFactory>,
       public service_manager::InterfaceFactory<mojom::WindowTreeHostFactory>,
+      public service_manager::InterfaceFactory<
+          discardable_memory::mojom::DiscardableSharedMemoryManager>,
       public service_manager::InterfaceFactory<mojom::WindowServerTest> {
  public:
   Service();
@@ -152,6 +155,12 @@ class Service
   // service_manager::InterfaceFactory<mojom::WindowTreeHostFactory>:
   void Create(const service_manager::Identity& remote_identity,
               mojom::WindowTreeHostFactoryRequest request) override;
+
+  // service_manager::InterfaceFactory<
+  //    discardable_memory::mojom::DiscardableSharedMemoryManager>:
+  void Create(const service_manager::Identity& remote_identity,
+              discardable_memory::mojom::DiscardableSharedMemoryManagerRequest
+                  request) override;
 
   // service_manager::InterfaceFactory<mojom::WindowServerTest> implementation.
   void Create(const service_manager::Identity& remote_identity,
