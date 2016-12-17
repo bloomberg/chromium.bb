@@ -4427,6 +4427,11 @@ void FrameView::show() {
       scrollingCoordinator->frameViewVisibilityDidChange();
     setNeedsCompositingUpdate(layoutViewItem(), CompositingUpdateRebuildTree);
     updateParentScrollableAreaSet();
+    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+      // The existance of scrolling properties depends on visibility through
+      // isScrollable() so ensure properties are updated if visibility changes.
+      setNeedsPaintPropertyUpdate();
+    }
     if (isParentVisible()) {
       for (const auto& child : m_children)
         child->setParentVisible(true);
@@ -4448,6 +4453,11 @@ void FrameView::hide() {
       scrollingCoordinator->frameViewVisibilityDidChange();
     setNeedsCompositingUpdate(layoutViewItem(), CompositingUpdateRebuildTree);
     updateParentScrollableAreaSet();
+    if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
+      // The existance of scrolling properties depends on visibility through
+      // isScrollable() so ensure properties are updated if visibility changes.
+      setNeedsPaintPropertyUpdate();
+    }
   }
 
   Widget::hide();

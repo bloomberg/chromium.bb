@@ -63,8 +63,9 @@ class PaintPropertyTreeBuilderTest
     return frameView->contentClip();
   }
 
-  const ScrollPaintPropertyNode* frameScroll() {
-    FrameView* frameView = document().view();
+  const ScrollPaintPropertyNode* frameScroll(FrameView* frameView = nullptr) {
+    if (!frameView)
+      frameView = document().view();
     if (RuntimeEnabledFeatures::rootLayerScrollingEnabled())
       return frameView->layoutView()->paintProperties()->scroll();
     return frameView->scroll();
@@ -3229,6 +3230,32 @@ TEST_P(PaintPropertyTreeBuilderTest, NoPaintPropertyUpdateOnBackgroundChange) {
   div->setAttribute(HTMLNames::styleAttr, "background-color: green");
   document().view()->updateLifecycleToLayoutClean();
   EXPECT_FALSE(div->layoutObject()->needsPaintPropertyUpdate());
+}
+
+// Disabled due to stale scrollsOverflow values, see: https://crbug.com/675296.
+TEST_P(PaintPropertyTreeBuilderTest,
+       DISABLED_FrameVisibilityChangeUpdatesProperties) {
+  setBodyInnerHTML(
+      "<style>body { margin: 0; }</style>"
+      "<div id='iframeContainer'>"
+      "  <iframe id='iframe' style='width: 100px; height: 100px;'></iframe>"
+      "</div>");
+  setChildFrameHTML(
+      "<style>body { margin: 0; }</style>"
+      "<div id='forceScroll' style='height: 3000px;'></div>");
+
+  FrameView* frameView = document().view();
+  frameView->updateAllLifecyclePhases();
+  EXPECT_EQ(nullptr, frameScroll(frameView));
+  FrameView* childFrameView = childDocument().view();
+  EXPECT_NE(nullptr, frameScroll(childFrameView));
+
+  auto* iframeContainer = document().getElementById("iframeContainer");
+  iframeContainer->setAttribute(HTMLNames::styleAttr, "visibility: hidden;");
+  frameView->updateAllLifecyclePhases();
+
+  EXPECT_EQ(nullptr, frameScroll(frameView));
+  EXPECT_EQ(nullptr, frameScroll(childFrameView));
 }
 
 }  // namespace blink
