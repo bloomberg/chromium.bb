@@ -891,13 +891,14 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     void updateSelectionState(boolean editable, boolean isPassword) {
         if (!editable) hidePastePopup();
-        if (isActionModeValid()
-                && (editable != isSelectionEditable() || isPassword != isSelectionPassword())) {
-            mActionMode.invalidate();
-            mNeedsPrepare = true;
+        if (editable != isSelectionEditable() || isPassword != isSelectionPassword()) {
+            mEditable = editable;
+            mIsPasswordType = isPassword;
+            if (isActionModeValid()) {
+                mNeedsPrepare = true;
+                mActionMode.invalidate();
+            }
         }
-        mEditable = editable;
-        mIsPasswordType = isPassword;
     }
 
     /**
