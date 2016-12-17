@@ -264,6 +264,25 @@ int32_t PepperVideoDecoderHost::OnHostMsgAssignTextures(
     return PP_ERROR_FAILED;
   DCHECK(decoder_);
 
+  pending_texture_requests_--;
+  DCHECK_GE(pending_texture_requests_, 0);
+
+  // If |assign_textures_messages_to_dismiss_| is not 0 then decrement it and
+  // dismiss the textures. This is necessary to ensure that after SW decoder
+  // fallback the textures that were requested by the failed HW decoder are not
+  // passed to the SW decoder.
+  if (assign_textures_messages_to_dismiss_ > 0) {
+    assign_textures_messages_to_dismiss_--;
+    PictureBufferMap pictures_pending_dismission;
+    for (auto& texture_id : texture_ids) {
+      host()->SendUnsolicitedReply(
+          pp_resource(),
+          PpapiPluginMsg_VideoDecoder_DismissPicture(texture_id));
+    }
+    picture_buffer_map_.swap(pictures_pending_dismission);
+    return PP_OK;
+  }
+
   // Verify that the new texture IDs are unique and store them in
   // |new_textures|.
   PictureBufferMap new_textures;
@@ -465,6 +484,7 @@ void PepperVideoDecoderHost::RequestTextures(
     const gfx::Size& dimensions,
     uint32_t texture_target,
     const std::vector<gpu::Mailbox>& mailboxes) {
+  pending_texture_requests_++;
   host()->SendUnsolicitedReply(
       pp_resource(),
       PpapiPluginMsg_VideoDecoder_RequestTextures(
@@ -504,6 +524,10 @@ bool PepperVideoDecoderHost::TryFallbackToSoftwareDecoder() {
     }
   }
   picture_buffer_map_.swap(pictures_pending_dismission);
+
+  // Dismiss all outstanding texture requests.
+  DCHECK_EQ(assign_textures_messages_to_dismiss_, 0);
+  assign_textures_messages_to_dismiss_ = pending_texture_requests_;
 
   // If there was a pending Reset() it can be finished now.
   if (reset_reply_context_.is_valid()) {

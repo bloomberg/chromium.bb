@@ -125,6 +125,12 @@ class CONTENT_EXPORT PepperVideoDecoderHost
   bool software_fallback_allowed_ = false;
   bool software_fallback_used_ = false;
 
+  int pending_texture_requests_ = 0;
+
+  // Set after software decoder fallback to dismiss all outstanding texture
+  // requests.
+  int assign_textures_messages_to_dismiss_ = 0;
+
   // A vector holding our shm buffers, in sync with a similar vector in the
   // resource. We use a buffer's index in these vectors as its id on both sides
   // of the proxy. Only add buffers or update them in place so as not to
