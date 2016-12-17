@@ -98,8 +98,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     private boolean mIsPasswordType;
     private boolean mIsInsertion;
 
-    private boolean mFloatingActionModeCreationFailed;
-
     // Indicates whether the action mode needs to be redrawn since last invalidation.
     private boolean mNeedsPrepare;
 
@@ -203,10 +201,10 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
             return true;
         }
 
-        ActionMode actionMode = null;
         assert mWebContents != null;
-        if (supportsFloatingActionMode()) actionMode = startFloatingActionMode();
-        if (actionMode == null) actionMode = mView.startActionMode(mCallback);
+        ActionMode actionMode = supportsFloatingActionMode()
+                ? startFloatingActionMode()
+                : mView.startActionMode(mCallback);
         if (actionMode != null) {
             // This is to work around an LGE email issue. See crbug.com/651706 for more details.
             LGEmailActionModeWorkaround.runIfNecessary(mContext, actionMode);
@@ -219,7 +217,6 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     private ActionMode startFloatingActionMode() {
         ActionMode actionMode = mView.startActionMode(
                 new FloatingActionModeCallback(this, mCallback), ActionMode.TYPE_FLOATING);
-        if (actionMode == null) setFloatingActionModeCreationFailed();
         return actionMode;
     }
 
@@ -246,12 +243,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
     @Override
     public boolean supportsFloatingActionMode() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false;
-        return !mFloatingActionModeCreationFailed;
-    }
-
-    private void setFloatingActionModeCreationFailed() {
-        mFloatingActionModeCreationFailed = true;
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     }
 
     void hidePastePopup() {
@@ -329,7 +321,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      * @see ActionMode#invalidateContentRect()
      */
     public void invalidateContentRect() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (supportsFloatingActionMode()) {
             if (mHidden) {
                 mPendingInvalidateContentRect = true;
             } else {
@@ -343,7 +335,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
      * @see ActionMode#onWindowFocusChanged()
      */
     void onWindowFocusChanged(boolean hasWindowFocus) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && isActionModeValid()) {
+        if (supportsFloatingActionMode() && isActionModeValid()) {
             mActionMode.onWindowFocusChanged(hasWindowFocus);
         }
     }
@@ -381,13 +373,13 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     }
 
     private boolean canHideActionMode() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+        return supportsFloatingActionMode()
                 && isActionModeValid()
                 && mActionMode.getType() == ActionMode.TYPE_FLOATING;
     }
 
     private long getDefaultHideDuration() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (supportsFloatingActionMode()) {
             return ViewConfiguration.getDefaultActionModeHideDuration();
         }
         return 2000;
