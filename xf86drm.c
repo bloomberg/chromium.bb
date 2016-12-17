@@ -3383,7 +3383,7 @@ int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
         case DRM_BUS_PCI:
             ret = drmProcessPciDevice(&d, node, node_type, maj, min, true, flags);
             if (ret)
-                goto free_devices;
+                continue;
 
             break;
         default:
@@ -3514,7 +3514,7 @@ int drmGetDevices2(uint32_t flags, drmDevicePtr devices[], int max_devices)
             ret = drmProcessPciDevice(&device, node, node_type,
                                       maj, min, devices != NULL, flags);
             if (ret)
-                goto free_devices;
+                continue;
 
             break;
         default:
