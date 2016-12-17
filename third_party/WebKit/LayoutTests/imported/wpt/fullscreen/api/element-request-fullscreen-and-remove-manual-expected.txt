@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Element#requestFullscreen() followed by removing the element assert_unreached: fullscreenchange event Reached unreachable code
+Harness: the test ran to completion.
+

@@ -11,6 +11,12 @@
     "deleted_reftests": {},
     "items": {
       "manual": {
+        "auxclick/auxclick_event-manual.html": [
+          {
+            "path": "auxclick/auxclick_event-manual.html",
+            "url": "/auxclick/auxclick_event-manual.html"
+          }
+        ],
         "fullscreen/api/document-exit-fullscreen-manual.html": [
           {
             "path": "fullscreen/api/document-exit-fullscreen-manual.html",
@@ -21,6 +27,12 @@
           {
             "path": "fullscreen/api/document-exit-fullscreen-timing-manual.html",
             "url": "/fullscreen/api/document-exit-fullscreen-timing-manual.html"
+          }
+        ],
+        "fullscreen/api/document-exit-fullscreen-twice-manual.html": [
+          {
+            "path": "fullscreen/api/document-exit-fullscreen-twice-manual.html",
+            "url": "/fullscreen/api/document-exit-fullscreen-twice-manual.html"
           }
         ],
         "fullscreen/api/document-fullscreen-element-manual.html": [
@@ -77,6 +89,30 @@
             "url": "/fullscreen/api/element-request-fullscreen-and-exit-iframe-manual.html"
           }
         ],
+        "fullscreen/api/element-request-fullscreen-and-move-manual.html": [
+          {
+            "path": "fullscreen/api/element-request-fullscreen-and-move-manual.html",
+            "url": "/fullscreen/api/element-request-fullscreen-and-move-manual.html"
+          }
+        ],
+        "fullscreen/api/element-request-fullscreen-and-move-to-iframe-manual.html": [
+          {
+            "path": "fullscreen/api/element-request-fullscreen-and-move-to-iframe-manual.html",
+            "url": "/fullscreen/api/element-request-fullscreen-and-move-to-iframe-manual.html"
+          }
+        ],
+        "fullscreen/api/element-request-fullscreen-and-remove-iframe-manual.html": [
+          {
+            "path": "fullscreen/api/element-request-fullscreen-and-remove-iframe-manual.html",
+            "url": "/fullscreen/api/element-request-fullscreen-and-remove-iframe-manual.html"
+          }
+        ],
+        "fullscreen/api/element-request-fullscreen-and-remove-manual.html": [
+          {
+            "path": "fullscreen/api/element-request-fullscreen-and-remove-manual.html",
+            "url": "/fullscreen/api/element-request-fullscreen-and-remove-manual.html"
+          }
+        ],
         "fullscreen/api/element-request-fullscreen-manual.html": [
           {
             "path": "fullscreen/api/element-request-fullscreen-manual.html",
@@ -87,6 +123,12 @@
           {
             "path": "fullscreen/api/element-request-fullscreen-non-top-manual.html",
             "url": "/fullscreen/api/element-request-fullscreen-non-top-manual.html"
+          }
+        ],
+        "fullscreen/api/element-request-fullscreen-same-manual.html": [
+          {
+            "path": "fullscreen/api/element-request-fullscreen-same-manual.html",
+            "url": "/fullscreen/api/element-request-fullscreen-same-manual.html"
           }
         ],
         "fullscreen/api/element-request-fullscreen-svg-rect-manual.html": [
@@ -111,6 +153,24 @@
           {
             "path": "fullscreen/api/element-request-fullscreen-top-manual.html",
             "url": "/fullscreen/api/element-request-fullscreen-top-manual.html"
+          }
+        ],
+        "fullscreen/api/element-request-fullscreen-twice-manual.html": [
+          {
+            "path": "fullscreen/api/element-request-fullscreen-twice-manual.html",
+            "url": "/fullscreen/api/element-request-fullscreen-twice-manual.html"
+          }
+        ],
+        "fullscreen/api/element-request-fullscreen-two-elements-manual.html": [
+          {
+            "path": "fullscreen/api/element-request-fullscreen-two-elements-manual.html",
+            "url": "/fullscreen/api/element-request-fullscreen-two-elements-manual.html"
+          }
+        ],
+        "fullscreen/api/element-request-fullscreen-two-iframes-manual.html": [
+          {
+            "path": "fullscreen/api/element-request-fullscreen-two-iframes-manual.html",
+            "url": "/fullscreen/api/element-request-fullscreen-two-iframes-manual.html"
           }
         ],
         "fullscreen/model/remove-child-manual.html": [
@@ -227,6 +287,12 @@
             "url": "/pointerevents/pointerevent_attributes_nohover_pointers-manual.html"
           }
         ],
+        "pointerevents/pointerevent_boundary_events_in_capturing-manual.html": [
+          {
+            "path": "pointerevents/pointerevent_boundary_events_in_capturing-manual.html",
+            "url": "/pointerevents/pointerevent_boundary_events_in_capturing-manual.html"
+          }
+        ],
         "pointerevents/pointerevent_capture_mouse-manual.html": [
           {
             "path": "pointerevents/pointerevent_capture_mouse-manual.html",
@@ -249,12 +315,6 @@
           {
             "path": "pointerevents/pointerevent_element_haspointercapture-manual.html",
             "url": "/pointerevents/pointerevent_element_haspointercapture-manual.html"
-          }
-        ],
-        "pointerevents/pointerevent_gotpointercapture_before_first_pointerevent-manual.html": [
-          {
-            "path": "pointerevents/pointerevent_gotpointercapture_before_first_pointerevent-manual.html",
-            "url": "/pointerevents/pointerevent_gotpointercapture_before_first_pointerevent-manual.html"
           }
         ],
         "pointerevents/pointerevent_lostpointercapture_for_disconnected_node-manual.html": [
@@ -5497,6 +5557,12 @@
             "url": "/WebIDL/ecmascript-binding/interface-object.html"
           }
         ],
+        "clear-site-data/navigation.html": [
+          {
+            "path": "clear-site-data/navigation.html",
+            "url": "/clear-site-data/navigation.html"
+          }
+        ],
         "custom-elements/CustomElementRegistry.html": [
           {
             "path": "custom-elements/CustomElementRegistry.html",
@@ -8534,6 +8600,12 @@
             "url": "/encrypted-media/idlharness.html"
           }
         ],
+        "fullscreen/api/document-fullscreen-enabled-active-document.html": [
+          {
+            "path": "fullscreen/api/document-fullscreen-enabled-active-document.html",
+            "url": "/fullscreen/api/document-fullscreen-enabled-active-document.html"
+          }
+        ],
         "fullscreen/api/document-fullscreen-enabled.html": [
           {
             "path": "fullscreen/api/document-fullscreen-enabled.html",
@@ -8544,6 +8616,18 @@
           {
             "path": "fullscreen/api/document-onfullscreenerror.html",
             "url": "/fullscreen/api/document-onfullscreenerror.html"
+          }
+        ],
+        "fullscreen/api/element-request-fullscreen-not-allowed.html": [
+          {
+            "path": "fullscreen/api/element-request-fullscreen-not-allowed.html",
+            "url": "/fullscreen/api/element-request-fullscreen-not-allowed.html"
+          }
+        ],
+        "fullscreen/api/historical.html": [
+          {
+            "path": "fullscreen/api/historical.html",
+            "url": "/fullscreen/api/historical.html"
           }
         ],
         "gamepad/idlharness.html": [
@@ -17869,6 +17953,12 @@
           {
             "path": "workers/nested_worker.worker.js",
             "url": "/workers/nested_worker.worker.html"
+          }
+        ],
+        "workers/opaque-origin.html": [
+          {
+            "path": "workers/opaque-origin.html",
+            "url": "/workers/opaque-origin.html"
           }
         ],
         "workers/postMessage_DataCloneErr.htm": [

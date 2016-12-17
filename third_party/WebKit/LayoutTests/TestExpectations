@@ -1791,12 +1791,15 @@ crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simpl
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
 # ====== New tests from w3c-test-autoroller added here ======
-crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/upgrade-insecure-requests/image-redirect-upgrade.https.html [ Timeout ]
-crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/upgrade-insecure-requests/websocket-upgrade.https.html [ Timeout ]
-crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/upgrade-insecure-requests/image-upgrade.https.html [ Timeout ]
-crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/upgrade-insecure-requests/iframe-upgrade.https.html [ Timeout ]
-crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/upgrade-insecure-requests/iframe-redirect-upgrade.https.html [ Timeout ]
-crbug.com/626703 [ Trusty Mac10.11 Mac10.10 Retina Win7 Win10 Mac10.9 ] imported/wpt/innerText/getter.html [ Failure ]
+crbug.com/626703 imported/wpt/clear-site-data/navigation.html [ Timeout ]
+crbug.com/626703 imported/wpt/auxclick/auxclick_event-manual.html [ Timeout ]
+crbug.com/626703 imported/wpt/pointerevents/pointerevent_boundary_events_in_capturing-manual.html [ Timeout ]
+crbug.com/626703 imported/wpt/upgrade-insecure-requests/image-redirect-upgrade.https.html [ Timeout ]
+crbug.com/626703 imported/wpt/upgrade-insecure-requests/websocket-upgrade.https.html [ Timeout ]
+crbug.com/626703 imported/wpt/upgrade-insecure-requests/image-upgrade.https.html [ Timeout ]
+crbug.com/626703 imported/wpt/upgrade-insecure-requests/iframe-upgrade.https.html [ Timeout ]
+crbug.com/626703 imported/wpt/upgrade-insecure-requests/iframe-redirect-upgrade.https.html [ Timeout ]
+crbug.com/626703 imported/wpt/innerText/getter.html [ Failure ]
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-006.xhtml [ Failure ]
@@ -1845,10 +1848,14 @@ crbug.com/626703 imported/wpt/pointerevents/pointerevent_element_haspointercaptu
 crbug.com/626703 imported/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
 crbug.com/626703 imported/wpt/web-animations/timing-model/animations/set-the-target-effect-of-an-animation.html [ Failure ]
 
+# Crashes with DCHECK enabled, but not on normal Release builds.
+crbug.com/626703 imported/wpt/workers/opaque-origin.html [ Timeout Crash ]
+
 # Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
 crbug.com/626703 imported/wpt/dom/events/Event-dispatch-click.html [ Timeout Crash ]
 crbug.com/626703 imported/wpt/domparsing/innerhtml-05.xhtml [ Timeout Crash ]
 crbug.com/626703 imported/wpt/domxpath/xml_xpath_runner.html [ Timeout ]
+crbug.com/626703 imported/wpt/fullscreen/api/element-request-fullscreen-two-iframes-manual.html [ Timeout ]
 crbug.com/626703 imported/wpt/html/browsers/windows/nested-browsing-contexts/frameElement.html [ Timeout Failure ]
 crbug.com/626703 imported/wpt/html/browsers/windows/targeting-cross-origin-nested-browsing-contexts.html [ Timeout Failure ]
 crbug.com/626703 imported/wpt/html/dom/documents/dom-tree-accessors/Document.currentScript.html [ Timeout Failure ]
