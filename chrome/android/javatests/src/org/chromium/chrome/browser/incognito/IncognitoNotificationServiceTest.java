@@ -56,8 +56,8 @@ public class IncognitoNotificationServiceTest extends ChromeTabbedActivityTestBa
 
     }
 
-    // @Feature("Incognito")
-    // @MediumTest
+    @Feature("Incognito")
+    @MediumTest
     public void testSingleRunningChromeTabbedActivity()
             throws InterruptedException, CanceledException {
         startMainActivityOnBlankPage();
