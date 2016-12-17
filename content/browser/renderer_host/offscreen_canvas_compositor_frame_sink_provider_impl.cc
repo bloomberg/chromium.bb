@@ -25,12 +25,12 @@ void OffscreenCanvasCompositorFrameSinkProviderImpl::Create(
 }
 
 void OffscreenCanvasCompositorFrameSinkProviderImpl::CreateCompositorFrameSink(
-    const cc::SurfaceId& surface_id,
+    const cc::FrameSinkId& frame_sink_id,
     cc::mojom::MojoCompositorFrameSinkClientPtr client,
     cc::mojom::MojoCompositorFrameSinkRequest request) {
-  OffscreenCanvasCompositorFrameSink::Create(
-      surface_id.frame_sink_id(), GetSurfaceManager(), std::move(client),
-      std::move(request));
+  OffscreenCanvasCompositorFrameSink::Create(frame_sink_id, GetSurfaceManager(),
+                                             std::move(client),
+                                             std::move(request));
 }
 
 }  // namespace content

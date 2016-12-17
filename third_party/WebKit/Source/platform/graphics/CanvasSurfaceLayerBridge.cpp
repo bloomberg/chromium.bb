@@ -4,6 +4,8 @@
 
 #include "platform/graphics/CanvasSurfaceLayerBridge.h"
 
+#include "cc/layers/layer.h"
+#include "cc/layers/solid_color_layer.h"
 #include "cc/layers/surface_layer.h"
 #include "cc/surfaces/sequence_surface_reference_factory.h"
 #include "cc/surfaces/surface_id.h"
@@ -11,9 +13,11 @@
 #include "cc/surfaces/surface_sequence.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/mojo/MojoHelper.h"
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayer.h"
+#include "public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
 #include "ui/gfx/geometry/size.h"
 #include "wtf/Functional.h"
 
@@ -51,28 +55,60 @@ class OffscreenCanvasSurfaceReferenceFactory
 }  // namespace
 
 CanvasSurfaceLayerBridge::CanvasSurfaceLayerBridge(
-    mojom::blink::OffscreenCanvasSurfacePtr service)
-    : m_service(std::move(service)), m_weakFactory(this) {
+    CanvasSurfaceLayerBridgeObserver* observer)
+    : m_weakFactory(this),
+      m_observer(observer),
+      m_binding(this),
+      m_frameSinkId(Platform::current()->generateFrameSinkId()) {
   m_refFactory =
       new OffscreenCanvasSurfaceReferenceFactory(m_weakFactory.GetWeakPtr());
+
+  DCHECK(!m_service.is_bound());
+  mojom::blink::OffscreenCanvasSurfaceFactoryPtr serviceFactory;
+  Platform::current()->interfaceProvider()->getInterface(
+      mojo::GetProxy(&serviceFactory));
+  serviceFactory->CreateOffscreenCanvasSurface(
+      m_frameSinkId, m_binding.CreateInterfacePtrAndBind(),
+      mojo::GetProxy(&m_service));
 }
 
-CanvasSurfaceLayerBridge::~CanvasSurfaceLayerBridge() {}
+CanvasSurfaceLayerBridge::~CanvasSurfaceLayerBridge() {
+  m_observer = nullptr;
+}
 
-bool CanvasSurfaceLayerBridge::createSurfaceLayer(int canvasWidth,
-                                                  int canvasHeight) {
-  if (!m_service->GetSurfaceId(&m_surfaceId))
-    return false;
-
-  m_surfaceLayer = cc::SurfaceLayer::Create(m_refFactory);
-  cc::SurfaceInfo info(m_surfaceId, 1.f, gfx::Size(canvasWidth, canvasHeight));
-  m_surfaceLayer->SetSurfaceInfo(
-      info, true /* scale layer bounds with surface size */);
-
+void CanvasSurfaceLayerBridge::createSolidColorLayer() {
+  m_CCLayer = cc::SolidColorLayer::Create();
+  m_CCLayer->SetBackgroundColor(SK_ColorTRANSPARENT);
   m_webLayer = Platform::current()->compositorSupport()->createLayerFromCCLayer(
-      m_surfaceLayer.get());
+      m_CCLayer.get());
   GraphicsLayer::registerContentsLayer(m_webLayer.get());
-  return true;
+}
+
+void CanvasSurfaceLayerBridge::OnSurfaceCreated(const cc::SurfaceId& surfaceId,
+                                                int32_t width,
+                                                int32_t height,
+                                                float deviceScaleFactor) {
+  if (!m_currentSurfaceId.is_valid() && surfaceId.is_valid()) {
+    m_currentSurfaceId = surfaceId;
+    GraphicsLayer::unregisterContentsLayer(m_webLayer.get());
+    m_webLayer->removeFromParent();
+
+    scoped_refptr<cc::SurfaceLayer> surfaceLayer =
+        cc::SurfaceLayer::Create(m_refFactory);
+    // TODO(xlai): Update this on resize.
+    cc::SurfaceInfo info(surfaceId, deviceScaleFactor,
+                         gfx::Size(width, height));
+    surfaceLayer->SetSurfaceInfo(
+        info, true /* scale layer bounds with surface size */);
+    m_CCLayer = surfaceLayer;
+
+    m_webLayer =
+        Platform::current()->compositorSupport()->createLayerFromCCLayer(
+            m_CCLayer.get());
+    GraphicsLayer::registerContentsLayer(m_webLayer.get());
+
+    m_observer->OnWebLayerReplaced();
+  }
 }
 
 void CanvasSurfaceLayerBridge::satisfyCallback(

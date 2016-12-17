@@ -30,27 +30,21 @@ namespace blink {
 OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
     uint32_t clientId,
     uint32_t sinkId,
-    uint32_t localId,
-    uint64_t nonceHigh,
-    uint64_t nonceLow,
     int canvasId,
     int width,
     int height)
     : m_frameSinkId(cc::FrameSinkId(clientId, sinkId)),
-      m_currentLocalFrameId(cc::LocalFrameId(
-          localId,
-          base::UnguessableToken::Deserialize(nonceHigh, nonceLow))),
       m_width(width),
       m_height(height),
       m_nextResourceId(1u),
       m_binding(this),
       m_placeholderCanvasId(canvasId) {
+  m_currentLocalFrameId = m_surfaceIdAllocator.GenerateId();
   DCHECK(!m_sink.is_bound());
   mojom::blink::OffscreenCanvasCompositorFrameSinkProviderPtr provider;
   Platform::current()->interfaceProvider()->getInterface(
       mojo::GetProxy(&provider));
-  cc::SurfaceId surfaceId(m_frameSinkId, m_currentLocalFrameId);
-  provider->CreateCompositorFrameSink(surfaceId,
+  provider->CreateCompositorFrameSink(m_frameSinkId,
                                       m_binding.CreateInterfacePtrAndBind(),
                                       mojo::GetProxy(&m_sink));
 }

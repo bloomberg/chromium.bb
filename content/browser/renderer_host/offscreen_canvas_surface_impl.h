@@ -9,6 +9,7 @@
 #include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/string.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/WebKit/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom.h"
 
 namespace content {
@@ -16,23 +17,36 @@ namespace content {
 class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
     : public blink::mojom::OffscreenCanvasSurface {
  public:
-  OffscreenCanvasSurfaceImpl();
+  OffscreenCanvasSurfaceImpl(
+      const cc::FrameSinkId& frame_sink_id,
+      blink::mojom::OffscreenCanvasSurfaceClientPtr client);
   ~OffscreenCanvasSurfaceImpl() override;
 
-  static void Create(blink::mojom::OffscreenCanvasSurfaceRequest request);
+  static void Create(const cc::FrameSinkId& frame_sink_id,
+                     blink::mojom::OffscreenCanvasSurfaceClientPtr client,
+                     blink::mojom::OffscreenCanvasSurfaceRequest request);
+
+  void OnSurfaceCreated(const cc::SurfaceId& surface_id,
+                        const gfx::Size& frame_size,
+                        float device_scale_factor);
 
   // blink::mojom::OffscreenCanvasSurface implementation.
-  void GetSurfaceId(GetSurfaceIdCallback callback) override;
   void Require(const cc::SurfaceId& surface_id,
                const cc::SurfaceSequence& sequence) override;
   void Satisfy(const cc::SurfaceSequence& sequence) override;
 
   const cc::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
+  const cc::LocalFrameId& current_local_frame_id() const {
+    return current_local_frame_id_;
+  }
 
  private:
+  blink::mojom::OffscreenCanvasSurfaceClientPtr client_;
+  mojo::StrongBindingPtr<blink::mojom::OffscreenCanvasSurface> binding_;
+
   // Surface-related state
-  std::unique_ptr<cc::SurfaceIdAllocator> id_allocator_;
   cc::FrameSinkId frame_sink_id_;
+  cc::LocalFrameId current_local_frame_id_;
 
   DISALLOW_COPY_AND_ASSIGN(OffscreenCanvasSurfaceImpl);
 };

@@ -29,12 +29,9 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceManager
   friend class OffscreenCanvasSurfaceManagerTest;
 
   // cc::SurfaceObserver implementation.
-  // TODO(crbug.com/662498): Implement these functions when
-  // OffscreenCanvasSurfaceManager must propagate the resizing information
-  // back to renderer/main.
   void OnSurfaceCreated(const cc::SurfaceId& surface_id,
                         const gfx::Size& frame_size,
-                        float device_scale_factor) override {}
+                        float device_scale_factor) override;
   void OnSurfaceDamaged(const cc::SurfaceId&, bool* changed) override {}
 
   // When an OffscreenCanvasSurfaceImpl instance is destructed, it will

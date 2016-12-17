@@ -44,12 +44,7 @@ OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreen(
     return nullptr;
   }
 
-  if (!canvas.createSurfaceLayer()) {
-    exceptionState.throwDOMException(
-        V8Error,
-        "Offscreen canvas creation failed due to an internal timeout.");
-    return nullptr;
-  }
+  canvas.createLayer();
 
   return transferControlToOffscreenInternal(canvas, exceptionState);
 }
@@ -72,20 +67,8 @@ OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreenInternal(
 
   CanvasSurfaceLayerBridge* bridge = canvas.surfaceLayerBridge();
   if (bridge) {
-    // If a bridge exists, it means canvas.createSurfaceLayer() has been called
-    // and its SurfaceId has been populated as well.
-    offscreenCanvas->setSurfaceId(
-        bridge->getSurfaceId().frame_sink_id().client_id(),
-        bridge->getSurfaceId().frame_sink_id().sink_id(),
-        bridge->getSurfaceId().local_frame_id().local_id(),
-        bridge->getSurfaceId()
-            .local_frame_id()
-            .nonce()
-            .GetHighForSerialization(),
-        bridge->getSurfaceId()
-            .local_frame_id()
-            .nonce()
-            .GetLowForSerialization());
+    offscreenCanvas->setFrameSinkId(bridge->getFrameSinkId().client_id(),
+                                    bridge->getFrameSinkId().sink_id());
   }
   return offscreenCanvas;
 }

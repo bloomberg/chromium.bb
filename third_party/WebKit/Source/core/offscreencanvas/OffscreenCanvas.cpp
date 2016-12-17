@@ -213,8 +213,8 @@ OffscreenCanvasFrameDispatcher* OffscreenCanvas::getOrCreateFrameDispatcher() {
     // (either main or worker) to the browser process and remains unchanged
     // throughout the lifetime of this OffscreenCanvas.
     m_frameDispatcher = WTF::wrapUnique(new OffscreenCanvasFrameDispatcherImpl(
-        m_clientId, m_sinkId, m_localId, m_nonceHigh, m_nonceLow,
-        m_placeholderCanvasId, m_size.width(), m_size.height()));
+        m_clientId, m_sinkId, m_placeholderCanvasId, m_size.width(),
+        m_size.height()));
   }
   return m_frameDispatcher.get();
 }

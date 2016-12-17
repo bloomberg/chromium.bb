@@ -2055,7 +2055,6 @@ source_set("unit_tests") {
   visibility = [ "//third_party/WebKit/Source/*" ]
   sources = [
     "graphics/Canvas2DLayerBridgeTest.cpp",
-    "graphics/CanvasSurfaceLayerBridgeTest.cpp",
     "graphics/DeferredImageDecoderTest.cpp",
     "graphics/GraphicsLayerTest.cpp",
     "graphics/ImageDecodingStoreTest.cpp",
@@ -2075,7 +2074,6 @@ source_set("unit_tests") {
 
   deps = [
     ":test_support",
-    "//cc/surfaces:surface_id",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -20,7 +20,7 @@ class OffscreenCanvasCompositorFrameSinkProviderImpl
 
   // blink::mojom::OffscreenCanvasCompositorFrameSinkProvider implementation.
   void CreateCompositorFrameSink(
-      const cc::SurfaceId& surface_id,
+      const cc::FrameSinkId& frame_sink_id,
       cc::mojom::MojoCompositorFrameSinkClientPtr client,
       cc::mojom::MojoCompositorFrameSinkRequest request) override;
 

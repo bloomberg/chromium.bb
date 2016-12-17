@@ -232,17 +232,14 @@ ScriptWrappable* V8ScriptValueDeserializer::readDOMObject(
       return (*m_transferredMessagePorts)[index].get();
     }
     case OffscreenCanvasTransferTag: {
-      uint32_t width = 0, height = 0, canvasId = 0, clientId = 0, sinkId = 0,
-               localId = 0;
-      uint64_t nonceHigh = 0, nonceLow = 0;
+      uint32_t width = 0, height = 0, canvasId = 0, clientId = 0, sinkId = 0;
       if (!readUint32(&width) || !readUint32(&height) ||
           !readUint32(&canvasId) || !readUint32(&clientId) ||
-          !readUint32(&sinkId) || !readUint32(&localId) ||
-          !readUint64(&nonceHigh) || !readUint64(&nonceLow))
+          !readUint32(&sinkId))
         return nullptr;
       OffscreenCanvas* canvas = OffscreenCanvas::create(width, height);
       canvas->setPlaceholderCanvasId(canvasId);
-      canvas->setSurfaceId(clientId, sinkId, localId, nonceHigh, nonceLow);
+      canvas->setFrameSinkId(clientId, sinkId);
       return canvas;
     }
     default:

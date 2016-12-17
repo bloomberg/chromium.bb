@@ -1150,6 +1150,8 @@ source_set("browser") {
     "renderer_host/offscreen_canvas_compositor_frame_sink.h",
     "renderer_host/offscreen_canvas_compositor_frame_sink_provider_impl.cc",
     "renderer_host/offscreen_canvas_compositor_frame_sink_provider_impl.h",
+    "renderer_host/offscreen_canvas_surface_factory_impl.cc",
+    "renderer_host/offscreen_canvas_surface_factory_impl.h",
     "renderer_host/offscreen_canvas_surface_impl.cc",
     "renderer_host/offscreen_canvas_surface_impl.h",
     "renderer_host/offscreen_canvas_surface_manager.cc",

@@ -70,10 +70,8 @@
 #include "platform/graphics/gpu/AcceleratedImageBufferSurface.h"
 #include "platform/image-encoders/ImageEncoderUtils.h"
 #include "platform/transforms/AffineTransform.h"
-#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebTraceLocation.h"
-#include "public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom-blink.h"
 #include "wtf/CheckedNumeric.h"
 #include "wtf/PtrUtil.h"
 #include <math.h>
@@ -1399,20 +1397,15 @@ String HTMLCanvasElement::getIdFromControl(const Element* element) {
   return String();
 }
 
-bool HTMLCanvasElement::createSurfaceLayer() {
+void HTMLCanvasElement::createLayer() {
   DCHECK(!m_surfaceLayerBridge);
-  mojom::blink::OffscreenCanvasSurfacePtr service;
-  Platform::current()->interfaceProvider()->getInterface(
-      mojo::GetProxy(&service));
-  m_surfaceLayerBridge =
-      WTF::wrapUnique(new CanvasSurfaceLayerBridge(std::move(service)));
-  bool result =
-      m_surfaceLayerBridge->createSurfaceLayer(this->width(), this->height());
-  // After creating a new WebLayer, we want to force compositor commit
-  // to repaint.
-  document().layoutViewItem().compositor()->setNeedsCompositingUpdate(
-      CompositingUpdateRebuildTree);
-  return result;
+  m_surfaceLayerBridge = WTF::wrapUnique(new CanvasSurfaceLayerBridge(this));
+  // Creates a placeholder layer first before Surface is created.
+  m_surfaceLayerBridge->createSolidColorLayer();
+}
+
+void HTMLCanvasElement::OnWebLayerReplaced() {
+  setNeedsCompositingUpdate();
 }
 
 }  // namespace blink

@@ -24,11 +24,10 @@ class OffscreenCanvasSurfaceManagerTest : public testing::Test {
     return OffscreenCanvasSurfaceManager::GetInstance()
         ->registered_surface_instances_.size();
   }
-  const cc::SurfaceId& getCurrentSurfaceId() const {
-    return current_surface_id_;
-  }
-  void setSurfaceId(const cc::SurfaceId& surface_id) {
-    current_surface_id_ = surface_id;
+
+  void OnSurfaceCreated(const cc::SurfaceId& surface_id) {
+    OffscreenCanvasSurfaceManager::GetInstance()->OnSurfaceCreated(
+        surface_id, gfx::Size(10, 10), 1.0);
   }
 
  protected:
@@ -36,7 +35,6 @@ class OffscreenCanvasSurfaceManagerTest : public testing::Test {
   void TearDown() override;
 
  private:
-  cc::SurfaceId current_surface_id_;
   std::unique_ptr<TestBrowserThread> ui_thread_;
   base::MessageLoopForUI message_loop_;
 #if defined(OS_ANDROID)
@@ -70,21 +68,20 @@ void OffscreenCanvasSurfaceManagerTest::TearDown() {
 // process.
 TEST_F(OffscreenCanvasSurfaceManagerTest,
        SingleHTMLCanvasElementTransferToOffscreen) {
-  // Assume that HTMLCanvasElement.transferControlToOffscreen() is triggered and
-  // it will invoke GetSurfaceId function on OffscreenCanvasSurfaceImpl to
-  // obtain a unique SurfaceId from browser.
-  auto surface_impl = base::WrapUnique(new OffscreenCanvasSurfaceImpl());
-  surface_impl->GetSurfaceId(
-      base::Bind(&OffscreenCanvasSurfaceManagerTest::setSurfaceId,
-                 base::Unretained(this)));
+  blink::mojom::OffscreenCanvasSurfaceClientPtr client;
+  cc::FrameSinkId frame_sink_id(3, 3);
+  cc::SurfaceIdAllocator surface_id_allocator;
+  cc::LocalFrameId current_local_frame_id(surface_id_allocator.GenerateId());
 
-  EXPECT_TRUE(this->getCurrentSurfaceId().is_valid());
+  auto surface_impl = base::WrapUnique(
+      new OffscreenCanvasSurfaceImpl(frame_sink_id, std::move(client)));
   EXPECT_EQ(1, this->getNumSurfaceImplInstances());
-  cc::FrameSinkId frame_sink_id = surface_impl.get()->frame_sink_id();
-  EXPECT_EQ(frame_sink_id, this->getCurrentSurfaceId().frame_sink_id());
   EXPECT_EQ(surface_impl.get(),
             OffscreenCanvasSurfaceManager::GetInstance()->GetSurfaceInstance(
                 frame_sink_id));
+
+  this->OnSurfaceCreated(cc::SurfaceId(frame_sink_id, current_local_frame_id));
+  EXPECT_EQ(current_local_frame_id, surface_impl->current_local_frame_id());
 
   surface_impl = nullptr;
   EXPECT_EQ(0, this->getNumSurfaceImplInstances());
@@ -92,32 +89,25 @@ TEST_F(OffscreenCanvasSurfaceManagerTest,
 
 TEST_F(OffscreenCanvasSurfaceManagerTest,
        MultiHTMLCanvasElementTransferToOffscreen) {
-  // Same scenario as above test except that now we have two HTMLCanvasElement
-  // transferControlToOffscreen at the same time.
-  auto surface_impl_a = base::WrapUnique(new OffscreenCanvasSurfaceImpl());
-  surface_impl_a->GetSurfaceId(
-      base::Bind(&OffscreenCanvasSurfaceManagerTest::setSurfaceId,
-                 base::Unretained(this)));
-  cc::SurfaceId surface_id_a = this->getCurrentSurfaceId();
+  blink::mojom::OffscreenCanvasSurfaceClientPtr client_a;
+  cc::FrameSinkId frame_sink_id_a(3, 3);
+  cc::SurfaceIdAllocator surface_id_allocator;
+  auto surface_impl_a = base::WrapUnique(
+      new OffscreenCanvasSurfaceImpl(frame_sink_id_a, std::move(client_a)));
 
-  EXPECT_TRUE(surface_id_a.is_valid());
+  blink::mojom::OffscreenCanvasSurfaceClientPtr client_b;
+  cc::FrameSinkId frame_sink_id_b(4, 4);
 
-  auto surface_impl_b = base::WrapUnique(new OffscreenCanvasSurfaceImpl());
-  surface_impl_b->GetSurfaceId(
-      base::Bind(&OffscreenCanvasSurfaceManagerTest::setSurfaceId,
-                 base::Unretained(this)));
-  cc::SurfaceId surface_id_b = this->getCurrentSurfaceId();
-
-  EXPECT_TRUE(surface_id_b.is_valid());
-  EXPECT_NE(surface_id_a, surface_id_b);
+  auto surface_impl_b = base::WrapUnique(
+      new OffscreenCanvasSurfaceImpl(frame_sink_id_b, std::move(client_b)));
 
   EXPECT_EQ(2, this->getNumSurfaceImplInstances());
   EXPECT_EQ(surface_impl_a.get(),
             OffscreenCanvasSurfaceManager::GetInstance()->GetSurfaceInstance(
-                surface_id_a.frame_sink_id()));
+                frame_sink_id_a));
   EXPECT_EQ(surface_impl_b.get(),
             OffscreenCanvasSurfaceManager::GetInstance()->GetSurfaceInstance(
-                surface_id_b.frame_sink_id()));
+                frame_sink_id_b));
 
   surface_impl_a = nullptr;
   EXPECT_EQ(1, this->getNumSurfaceImplInstances());

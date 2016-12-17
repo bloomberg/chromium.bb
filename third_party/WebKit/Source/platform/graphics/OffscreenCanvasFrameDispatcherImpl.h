@@ -9,6 +9,7 @@
 #include "cc/output/begin_frame_args.h"
 #include "cc/resources/shared_bitmap.h"
 #include "cc/surfaces/surface_id.h"
+#include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/graphics/OffscreenCanvasFrameDispatcher.h"
 #include "platform/graphics/StaticBitmapImage.h"
@@ -24,9 +25,6 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
  public:
   OffscreenCanvasFrameDispatcherImpl(uint32_t clientId,
                                      uint32_t sinkId,
-                                     uint32_t localId,
-                                     uint64_t nonceHigh,
-                                     uint64_t nonceLow,
                                      int canvasId,
                                      int width,
                                      int height);
@@ -56,8 +54,11 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
   void reshape(int width, int height) override;
 
  private:
+  // Surface-related
+  cc::SurfaceIdAllocator m_surfaceIdAllocator;
   const cc::FrameSinkId m_frameSinkId;
   cc::LocalFrameId m_currentLocalFrameId;
+
   int m_width;
   int m_height;
 

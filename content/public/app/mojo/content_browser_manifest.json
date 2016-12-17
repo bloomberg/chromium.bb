@@ -20,7 +20,7 @@
           "blink::mojom::MimeRegistry",
           "blink::mojom::NotificationService",
           "blink::mojom::OffscreenCanvasCompositorFrameSinkProvider",
-          "blink::mojom::OffscreenCanvasSurface",
+          "blink::mojom::OffscreenCanvasSurfaceFactory",
           "blink::mojom::PermissionService",
           "blink::mojom::WebSocket",
           "content::mojom::MemoryCoordinatorHandle",

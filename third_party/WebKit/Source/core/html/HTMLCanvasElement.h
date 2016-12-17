@@ -73,13 +73,15 @@ class
 typedef CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextOrImageBitmapRenderingContext
     RenderingContext;
 
-class CORE_EXPORT HTMLCanvasElement final : public HTMLElement,
-                                            public ContextLifecycleObserver,
-                                            public PageVisibilityObserver,
-                                            public CanvasImageSource,
-                                            public ImageBufferClient,
-                                            public ImageBitmapSource,
-                                            public OffscreenCanvasPlaceholder {
+class CORE_EXPORT HTMLCanvasElement final
+    : public HTMLElement,
+      public ContextLifecycleObserver,
+      public PageVisibilityObserver,
+      public CanvasImageSource,
+      public CanvasSurfaceLayerBridgeObserver,
+      public ImageBufferClient,
+      public ImageBitmapSource,
+      public OffscreenCanvasPlaceholder {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(HTMLCanvasElement);
   USING_PRE_FINALIZER(HTMLCanvasElement, dispose);
@@ -187,6 +189,9 @@ class CORE_EXPORT HTMLCanvasElement final : public HTMLElement,
   int sourceWidth() override { return m_size.width(); }
   int sourceHeight() override { return m_size.height(); }
 
+  // CanvasSurfaceLayerBridgeObserver implementation
+  void OnWebLayerReplaced() override;
+
   // ImageBufferClient implementation
   void notifySurfaceInvalid() override;
   bool isDirty() override { return !m_dirtyRect.isEmpty(); }
@@ -229,7 +234,7 @@ class CORE_EXPORT HTMLCanvasElement final : public HTMLElement,
   CanvasSurfaceLayerBridge* surfaceLayerBridge() const {
     return m_surfaceLayerBridge.get();
   }
-  bool createSurfaceLayer();
+  void createLayer();
 
   void detachContext() { m_context = nullptr; }
 
