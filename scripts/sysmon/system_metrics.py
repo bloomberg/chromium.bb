@@ -253,6 +253,7 @@ def get_proc_info():
       sysmon_count += 1
     total += 1
   logging.debug('autoserv_count: %s', autoserv_count)
+  logging.debug('sysmon_count: %s', sysmon_count)
   _autoserv_proc_count_metric.set(autoserv_count)
   _sysmon_proc_count_metric.set(sysmon_count)
   _proc_count_metric.set(total)
@@ -273,22 +274,7 @@ def _is_autoserv(proc):
 
 def _is_sysmon(proc):
   """Return whether proc is a sysmon process."""
-  # This is fragile due to the virtualenv bootstrap of sysmon.
-  # The process tree for an Upstart invocation of sysmon is:
-  #
-  # init -> sudo -> python2 -> python
-  #
-  # If sysmon is started without using Upstart:
-  #
-  # init -> (shell) -> python2 -> python
-  #
-  # The extra python2 is due to the virtualenv wrapper script, which should do
-  # an exec to avoid wasting a process.  The fact that the first has a 2 and
-  # the second doesn't is basically just luck.
-  #
-  # TODO(ayatane): Once the chromite virtualenv wrapper uses exec, clean this
-  # up.
-  return proc.name() == 'python' and 'sysmon' in ' '.join(proc.cmdline())
+  return proc.cmdline()[:3] == ['python', '-m', 'chromite.scripts.sysmon']
 
 
 def get_load_avg():
