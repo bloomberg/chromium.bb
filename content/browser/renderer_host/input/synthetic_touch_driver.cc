@@ -21,6 +21,7 @@ void SyntheticTouchDriver::DispatchEvent(SyntheticGestureTarget* target,
                                          const base::TimeTicks& timestamp) {
   touch_event_.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
   target->DispatchInputEventToPlatform(touch_event_);
+  touch_event_.ResetPoints();
 }
 
 int SyntheticTouchDriver::Press(float x, float y) {

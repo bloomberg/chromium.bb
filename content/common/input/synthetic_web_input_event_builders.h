@@ -88,6 +88,8 @@ class CONTENT_EXPORT SyntheticWebTouchEvent
   void CancelPoint(int index);
 
   void SetTimestamp(base::TimeTicks timestamp);
+
+  int FirstFreeIndex();
 };
 
 }  // namespace content

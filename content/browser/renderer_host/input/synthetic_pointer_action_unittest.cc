@@ -22,6 +22,47 @@ namespace content {
 
 namespace {
 
+WebTouchPoint::State ToWebTouchPointState(
+    SyntheticPointerActionParams::PointerActionType action_type) {
+  switch (action_type) {
+    case SyntheticPointerActionParams::PointerActionType::PRESS:
+      return WebTouchPoint::StatePressed;
+    case SyntheticPointerActionParams::PointerActionType::MOVE:
+      return WebTouchPoint::StateMoved;
+    case SyntheticPointerActionParams::PointerActionType::RELEASE:
+      return WebTouchPoint::StateReleased;
+    case SyntheticPointerActionParams::PointerActionType::IDLE:
+      return WebTouchPoint::StateStationary;
+    case SyntheticPointerActionParams::PointerActionType::FINISH:
+    case SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED:
+      NOTREACHED()
+          << "Invalid SyntheticPointerActionParams::PointerActionType.";
+      return WebTouchPoint::StateUndefined;
+  }
+  NOTREACHED() << "Invalid SyntheticPointerActionParams::PointerActionType.";
+  return WebTouchPoint::StateUndefined;
+}
+
+WebInputEvent::Type ToWebMouseEventType(
+    SyntheticPointerActionParams::PointerActionType action_type) {
+  switch (action_type) {
+    case SyntheticPointerActionParams::PointerActionType::PRESS:
+      return WebInputEvent::MouseDown;
+    case SyntheticPointerActionParams::PointerActionType::MOVE:
+      return WebInputEvent::MouseMove;
+    case SyntheticPointerActionParams::PointerActionType::RELEASE:
+      return WebInputEvent::MouseUp;
+    case SyntheticPointerActionParams::PointerActionType::IDLE:
+    case SyntheticPointerActionParams::PointerActionType::FINISH:
+    case SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED:
+      NOTREACHED()
+          << "Invalid SyntheticPointerActionParams::PointerActionType.";
+      return WebInputEvent::Undefined;
+  }
+  NOTREACHED() << "Invalid SyntheticPointerActionParams::PointerActionType.";
+  return WebInputEvent::Undefined;
+}
+
 class MockSyntheticPointerActionTarget : public SyntheticGestureTarget {
  public:
   MockSyntheticPointerActionTarget() {}
@@ -58,7 +99,7 @@ class MockSyntheticPointerTouchActionTarget
   ~MockSyntheticPointerTouchActionTarget() override {}
 
   void DispatchInputEventToPlatform(const WebInputEvent& event) override {
-    ASSERT_TRUE(WebInputEvent::isTouchEventType(event.type));
+    DCHECK(WebInputEvent::isTouchEventType(event.type));
     const WebTouchEvent& touch_event = static_cast<const WebTouchEvent&>(event);
     type_ = touch_event.type;
     for (size_t i = 0; i < touch_event.touchesLength; ++i) {
@@ -69,15 +110,57 @@ class MockSyntheticPointerTouchActionTarget
     touch_length_ = touch_event.touchesLength;
   }
 
+  testing::AssertionResult SyntheticTouchActionDispatchedCorrectly(
+      const SyntheticPointerActionParams& param,
+      int index) {
+    if (param.pointer_action_type() ==
+            SyntheticPointerActionParams::PointerActionType::PRESS ||
+        param.pointer_action_type() ==
+            SyntheticPointerActionParams::PointerActionType::MOVE) {
+      if (indexes_[index] != param.index()) {
+        return testing::AssertionFailure()
+               << "Pointer index at index " << index << " was "
+               << indexes_[index] << ", expected " << param.index() << ".";
+      }
+
+      if (positions_[index] != param.position()) {
+        return testing::AssertionFailure()
+               << "Pointer position at index " << index << " was "
+               << positions_[index].ToString() << ", expected "
+               << param.position().ToString() << ".";
+      }
+    }
+
+    if (states_[index] != ToWebTouchPointState(param.pointer_action_type())) {
+      return testing::AssertionFailure()
+             << "Pointer states at index " << index << " was " << states_[index]
+             << ", expected "
+             << ToWebTouchPointState(param.pointer_action_type()) << ".";
+    }
+    return testing::AssertionSuccess();
+  }
+
+  testing::AssertionResult SyntheticTouchActionListDispatchedCorrectly(
+      const std::vector<SyntheticPointerActionParams>& params_list) {
+    if (touch_length_ != params_list.size()) {
+      return testing::AssertionFailure() << "Touch point length was "
+                                         << touch_length_ << ", expected "
+                                         << params_list.size() << ".";
+    }
+
+    testing::AssertionResult result = testing::AssertionSuccess();
+    for (size_t i = 0; i < params_list.size(); ++i) {
+      result = SyntheticTouchActionDispatchedCorrectly(params_list[i], i);
+      if (result == testing::AssertionFailure())
+        return result;
+    }
+    return testing::AssertionSuccess();
+  }
+
   SyntheticGestureParams::GestureSourceType
   GetDefaultSyntheticGestureSourceType() const override {
     return SyntheticGestureParams::TOUCH_INPUT;
   }
-
-  gfx::PointF positions(int index) const { return positions_[index]; }
-  int indexes(int index) const { return indexes_[index]; }
-  WebTouchPoint::State states(int index) { return states_[index]; }
-  unsigned touch_length() const { return touch_length_; }
 
  private:
   gfx::PointF positions_[WebTouchEvent::kTouchesLengthCap];
@@ -93,12 +176,53 @@ class MockSyntheticPointerMouseActionTarget
   ~MockSyntheticPointerMouseActionTarget() override {}
 
   void DispatchInputEventToPlatform(const WebInputEvent& event) override {
-    ASSERT_TRUE(WebInputEvent::isMouseEventType(event.type));
+    DCHECK(WebInputEvent::isMouseEventType(event.type));
     const WebMouseEvent& mouse_event = static_cast<const WebMouseEvent&>(event);
     type_ = mouse_event.type;
     position_ = gfx::PointF(mouse_event.x, mouse_event.y);
     clickCount_ = mouse_event.clickCount;
     button_ = mouse_event.button;
+  }
+
+  testing::AssertionResult SyntheticMouseActionDispatchedCorrectly(
+      const SyntheticPointerActionParams& param,
+      int click_count) {
+    if (type() != ToWebMouseEventType(param.pointer_action_type())) {
+      return testing::AssertionFailure()
+             << "Pointer type was " << WebInputEvent::GetName(type())
+             << ", expected " << WebInputEvent::GetName(ToWebMouseEventType(
+                                     param.pointer_action_type()))
+             << ".";
+    }
+
+    if (clickCount() != click_count) {
+      return testing::AssertionFailure() << "Pointer click count was "
+                                         << clickCount() << ", expected "
+                                         << click_count << ".";
+    }
+
+    if (clickCount() == 1 && button() != WebMouseEvent::Button::Left) {
+      return testing::AssertionFailure()
+             << "Pointer button was " << (int)button() << ", expected "
+             << (int)WebMouseEvent::Button::Left << ".";
+    }
+
+    if (clickCount() == 0 && button() != WebMouseEvent::Button::NoButton) {
+      return testing::AssertionFailure()
+             << "Pointer button was " << (int)button() << ", expected "
+             << (int)WebMouseEvent::Button::NoButton << ".";
+    }
+
+    if ((param.pointer_action_type() ==
+             SyntheticPointerActionParams::PointerActionType::PRESS ||
+         param.pointer_action_type() ==
+             SyntheticPointerActionParams::PointerActionType::MOVE) &&
+        position() != param.position()) {
+      return testing::AssertionFailure()
+             << "Pointer position was " << position().ToString()
+             << ", expected " << param.position().ToString() << ".";
+    }
+    return testing::AssertionSuccess();
   }
 
   SyntheticGestureParams::GestureSourceType
@@ -170,11 +294,8 @@ TEST_F(SyntheticPointerActionTest, PointerTouchAction) {
   EXPECT_EQ(1, num_success_);
   EXPECT_EQ(0, num_failure_);
   EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::TouchStart);
-  EXPECT_EQ(pointer_touch_target->indexes(0), 0);
-  EXPECT_EQ(action_param_list_->at(0).index(), 0);
-  EXPECT_EQ(pointer_touch_target->positions(0), gfx::PointF(54, 89));
-  EXPECT_EQ(pointer_touch_target->states(0), WebTouchPoint::StatePressed);
-  ASSERT_EQ(pointer_touch_target->touch_length(), 1U);
+  EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
+      *action_param_list_.get()));
 
   // Send a touch move for the first finger and a touch press for the second
   // finger.
@@ -192,15 +313,8 @@ TEST_F(SyntheticPointerActionTest, PointerTouchAction) {
   EXPECT_EQ(0, num_failure_);
   // The type of the SyntheticWebTouchEvent is the action of the last finger.
   EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::TouchStart);
-  EXPECT_EQ(pointer_touch_target->indexes(0), 0);
-  EXPECT_EQ(action_param_list_->at(0).index(), 0);
-  EXPECT_EQ(pointer_touch_target->positions(0), gfx::PointF(133, 156));
-  EXPECT_EQ(pointer_touch_target->states(0), WebTouchPoint::StateMoved);
-  EXPECT_EQ(pointer_touch_target->indexes(1), 1);
-  EXPECT_EQ(action_param_list_->at(1).index(), 1);
-  EXPECT_EQ(pointer_touch_target->positions(1), gfx::PointF(79, 132));
-  EXPECT_EQ(pointer_touch_target->states(1), WebTouchPoint::StatePressed);
-  ASSERT_EQ(pointer_touch_target->touch_length(), 2U);
+  EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
+      *action_param_list_.get()));
 
   // Send a touch move for the second finger.
   action_param_list_->at(1).set_pointer_action_type(
@@ -211,11 +325,8 @@ TEST_F(SyntheticPointerActionTest, PointerTouchAction) {
   EXPECT_EQ(3, num_success_);
   EXPECT_EQ(0, num_failure_);
   EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::TouchMove);
-  EXPECT_EQ(pointer_touch_target->indexes(1), 1);
-  EXPECT_EQ(action_param_list_->at(1).index(), 1);
-  EXPECT_EQ(pointer_touch_target->positions(1), gfx::PointF(87, 253));
-  EXPECT_EQ(pointer_touch_target->states(1), WebTouchPoint::StateMoved);
-  ASSERT_EQ(pointer_touch_target->touch_length(), 2U);
+  EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
+      *action_param_list_.get()));
 
   // Send touch releases for both fingers.
   action_param_list_->at(0).set_pointer_action_type(
@@ -227,13 +338,8 @@ TEST_F(SyntheticPointerActionTest, PointerTouchAction) {
   EXPECT_EQ(4, num_success_);
   EXPECT_EQ(0, num_failure_);
   EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::TouchEnd);
-  EXPECT_EQ(pointer_touch_target->indexes(0), 0);
-  EXPECT_EQ(action_param_list_->at(0).index(), -1);
-  EXPECT_EQ(pointer_touch_target->states(0), WebTouchPoint::StateReleased);
-  EXPECT_EQ(pointer_touch_target->indexes(1), 1);
-  EXPECT_EQ(action_param_list_->at(1).index(), -1);
-  EXPECT_EQ(pointer_touch_target->states(1), WebTouchPoint::StateReleased);
-  ASSERT_EQ(pointer_touch_target->touch_length(), 2U);
+  EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
+      *action_param_list_.get()));
 }
 
 TEST_F(SyntheticPointerActionTest, PointerTouchActionWithIdle) {
@@ -252,11 +358,8 @@ TEST_F(SyntheticPointerActionTest, PointerTouchActionWithIdle) {
   EXPECT_EQ(count_success++, num_success_);
   EXPECT_EQ(0, num_failure_);
   EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::TouchStart);
-  EXPECT_EQ(pointer_touch_target->indexes(0), 0);
-  EXPECT_EQ(action_param_list_->at(0).index(), 0);
-  EXPECT_EQ(pointer_touch_target->positions(0), gfx::PointF(54, 89));
-  EXPECT_EQ(pointer_touch_target->states(0), WebTouchPoint::StatePressed);
-  ASSERT_EQ(pointer_touch_target->touch_length(), 1U);
+  EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
+      *action_param_list_.get()));
 
   SyntheticPointerActionParams params1;
   params1.gesture_source_type = SyntheticGestureParams::TOUCH_INPUT;
@@ -268,18 +371,15 @@ TEST_F(SyntheticPointerActionTest, PointerTouchActionWithIdle) {
     action_param_list_->at(1).set_pointer_action_type(
         SyntheticPointerActionParams::PointerActionType::PRESS);
     action_param_list_->at(1).set_position(gfx::PointF(123, 69));
-    int index = 1 + i;
     ForwardSyntheticPointerAction();
 
     EXPECT_EQ(count_success++, num_success_);
     EXPECT_EQ(0, num_failure_);
     // The type of the SyntheticWebTouchEvent is the action of the last finger.
     EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::TouchStart);
-    EXPECT_EQ(pointer_touch_target->indexes(index), index);
-    EXPECT_EQ(action_param_list_->at(1).index(), index);
-    EXPECT_EQ(pointer_touch_target->positions(index), gfx::PointF(123, 69));
-    EXPECT_EQ(pointer_touch_target->states(index), WebTouchPoint::StatePressed);
-    ASSERT_EQ(pointer_touch_target->touch_length(), index + 1U);
+    EXPECT_TRUE(
+        pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
+            *action_param_list_.get()));
 
     // Send a touch release for the second finger and not move the first finger.
     action_param_list_->at(0).set_pointer_action_type(
@@ -293,11 +393,9 @@ TEST_F(SyntheticPointerActionTest, PointerTouchActionWithIdle) {
     EXPECT_EQ(0, num_failure_);
     // The type of the SyntheticWebTouchEvent is the action of the last finger.
     EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::TouchEnd);
-    EXPECT_EQ(pointer_touch_target->indexes(index), index);
-    EXPECT_EQ(action_param_list_->at(1).index(), -1);
-    EXPECT_EQ(pointer_touch_target->states(index),
-              WebTouchPoint::StateReleased);
-    ASSERT_EQ(pointer_touch_target->touch_length(), index + 1U);
+    EXPECT_TRUE(
+        pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
+            *action_param_list_.get()));
   }
 }
 
@@ -327,11 +425,8 @@ TEST_F(SyntheticPointerActionTest, PointerTouchActionSourceTypeInvalid) {
   EXPECT_EQ(1, num_success_);
   EXPECT_EQ(1, num_failure_);
   EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::TouchStart);
-  EXPECT_EQ(pointer_touch_target->indexes(0), 0);
-  EXPECT_EQ(action_param_list_->at(0).index(), 0);
-  EXPECT_EQ(pointer_touch_target->positions(0), gfx::PointF(54, 89));
-  EXPECT_EQ(pointer_touch_target->states(0), WebTouchPoint::StatePressed);
-  ASSERT_EQ(pointer_touch_target->touch_length(), 1U);
+  EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
+      *action_param_list_.get()));
 }
 
 TEST_F(SyntheticPointerActionTest, PointerTouchActionTypeInvalid) {
@@ -366,11 +461,8 @@ TEST_F(SyntheticPointerActionTest, PointerTouchActionTypeInvalid) {
   EXPECT_EQ(1, num_success_);
   EXPECT_EQ(2, num_failure_);
   EXPECT_EQ(pointer_touch_target->type(), WebInputEvent::TouchStart);
-  EXPECT_EQ(pointer_touch_target->indexes(0), 0);
-  EXPECT_EQ(action_param_list_->at(0).index(), 0);
-  EXPECT_EQ(pointer_touch_target->positions(0), gfx::PointF(54, 89));
-  EXPECT_EQ(pointer_touch_target->states(0), WebTouchPoint::StatePressed);
-  ASSERT_EQ(pointer_touch_target->touch_length(), 1U);
+  EXPECT_TRUE(pointer_touch_target->SyntheticTouchActionListDispatchedCorrectly(
+      *action_param_list_.get()));
 
   // Cannot send a touch press again without releasing the finger.
   action_param_list_->at(0).gesture_source_type =
@@ -398,10 +490,8 @@ TEST_F(SyntheticPointerActionTest, PointerMouseAction) {
       static_cast<MockSyntheticPointerMouseActionTarget*>(target_.get());
   EXPECT_EQ(1, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pointer_mouse_target->type(), WebInputEvent::MouseMove);
-  EXPECT_EQ(pointer_mouse_target->position(), params.position());
-  EXPECT_EQ(pointer_mouse_target->clickCount(), 0);
-  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::Button::NoButton);
+  EXPECT_TRUE(pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(
+      action_param_list_->at(0), 0));
 
   // Send a mouse down.
   action_param_list_->at(0).set_position(gfx::PointF(189, 62));
@@ -411,10 +501,8 @@ TEST_F(SyntheticPointerActionTest, PointerMouseAction) {
 
   EXPECT_EQ(2, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pointer_mouse_target->type(), WebInputEvent::MouseDown);
-  EXPECT_EQ(pointer_mouse_target->position(), params.position());
-  EXPECT_EQ(pointer_mouse_target->clickCount(), 1);
-  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::Button::Left);
+  EXPECT_TRUE(pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(
+      action_param_list_->at(0), 1));
 
   // Send a mouse drag.
   action_param_list_->at(0).set_position(gfx::PointF(326, 298));
@@ -424,11 +512,8 @@ TEST_F(SyntheticPointerActionTest, PointerMouseAction) {
 
   EXPECT_EQ(3, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pointer_mouse_target->type(), WebInputEvent::MouseMove);
-  EXPECT_EQ(pointer_mouse_target->position(),
-            action_param_list_->at(0).position());
-  EXPECT_EQ(pointer_mouse_target->clickCount(), 1);
-  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::Button::Left);
+  EXPECT_TRUE(pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(
+      action_param_list_->at(0), 1));
 
   // Send a mouse up.
   action_param_list_->at(0).set_pointer_action_type(
@@ -437,9 +522,8 @@ TEST_F(SyntheticPointerActionTest, PointerMouseAction) {
 
   EXPECT_EQ(4, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pointer_mouse_target->type(), WebInputEvent::MouseUp);
-  EXPECT_EQ(pointer_mouse_target->clickCount(), 1);
-  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::Button::Left);
+  EXPECT_TRUE(pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(
+      action_param_list_->at(0), 1));
 }
 
 TEST_F(SyntheticPointerActionTest, PointerMouseActionSourceTypeInvalid) {
@@ -467,10 +551,8 @@ TEST_F(SyntheticPointerActionTest, PointerMouseActionSourceTypeInvalid) {
       static_cast<MockSyntheticPointerMouseActionTarget*>(target_.get());
   EXPECT_EQ(1, num_success_);
   EXPECT_EQ(1, num_failure_);
-  EXPECT_EQ(pointer_mouse_target->type(), WebInputEvent::MouseDown);
-  EXPECT_EQ(pointer_mouse_target->position(), params.position());
-  EXPECT_EQ(pointer_mouse_target->clickCount(), 1);
-  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::Button::Left);
+  EXPECT_TRUE(pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(
+      action_param_list_->at(0), 1));
 }
 
 TEST_F(SyntheticPointerActionTest, PointerMouseActionTypeInvalid) {
@@ -488,10 +570,8 @@ TEST_F(SyntheticPointerActionTest, PointerMouseActionTypeInvalid) {
       static_cast<MockSyntheticPointerMouseActionTarget*>(target_.get());
   EXPECT_EQ(1, num_success_);
   EXPECT_EQ(0, num_failure_);
-  EXPECT_EQ(pointer_mouse_target->type(), WebInputEvent::MouseMove);
-  EXPECT_EQ(pointer_mouse_target->position(), params.position());
-  EXPECT_EQ(pointer_mouse_target->clickCount(), 0);
-  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::Button::NoButton);
+  EXPECT_TRUE(pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(
+      action_param_list_->at(0), 0));
 
   // Cannot send a mouse up without sending a mouse down first.
   action_param_list_->at(0).set_pointer_action_type(
@@ -508,10 +588,8 @@ TEST_F(SyntheticPointerActionTest, PointerMouseActionTypeInvalid) {
 
   EXPECT_EQ(2, num_success_);
   EXPECT_EQ(1, num_failure_);
-  EXPECT_EQ(pointer_mouse_target->type(), WebInputEvent::MouseDown);
-  EXPECT_EQ(pointer_mouse_target->position(), params.position());
-  EXPECT_EQ(pointer_mouse_target->clickCount(), 1);
-  EXPECT_EQ(pointer_mouse_target->button(), WebMouseEvent::Button::Left);
+  EXPECT_TRUE(pointer_mouse_target->SyntheticMouseActionDispatchedCorrectly(
+      action_param_list_->at(0), 1));
 
   // Cannot send a mouse down again without releasing the mouse button.
   action_param_list_->at(0).set_pointer_action_type(

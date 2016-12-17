@@ -173,26 +173,35 @@ SyntheticWebTouchEvent::SyntheticWebTouchEvent() : WebTouchEvent() {
 }
 
 void SyntheticWebTouchEvent::ResetPoints() {
-  int point = 0;
+  int activePointCount = 0;
   for (unsigned int i = 0; i < touchesLength; ++i) {
-    if (touches[i].state == WebTouchPoint::StateReleased)
-      continue;
-
-    touches[point] = touches[i];
-    touches[point].state = WebTouchPoint::StateStationary;
-    ++point;
+    switch (touches[i].state) {
+      case WebTouchPoint::StatePressed:
+      case WebTouchPoint::StateMoved:
+      case WebTouchPoint::StateStationary:
+        touches[i].state = WebTouchPoint::StateStationary;
+        ++activePointCount;
+        break;
+      case WebTouchPoint::StateReleased:
+      case WebTouchPoint::StateCancelled:
+        touches[i] = WebTouchPoint();
+        break;
+      case WebTouchPoint::StateUndefined:
+        break;
+    }
   }
-  touchesLength = point;
+  touchesLength = activePointCount;
   type = WebInputEvent::Undefined;
   movedBeyondSlopRegion = false;
   uniqueTouchEventId = ui::GetNextTouchEventId();
 }
 
 int SyntheticWebTouchEvent::PressPoint(float x, float y) {
-  if (touchesLength == kTouchesLengthCap)
+  int index = FirstFreeIndex();
+  if (index == -1)
     return -1;
-  WebTouchPoint& point = touches[touchesLength];
-  point.id = touchesLength;
+  WebTouchPoint& point = touches[index];
+  point.id = index;
   point.position.x = point.screenPosition.x = x;
   point.position.y = point.screenPosition.y = y;
   point.state = WebTouchPoint::StatePressed;
@@ -238,6 +247,14 @@ void SyntheticWebTouchEvent::CancelPoint(int index) {
 
 void SyntheticWebTouchEvent::SetTimestamp(base::TimeTicks timestamp) {
   timeStampSeconds = ui::EventTimeStampToSeconds(timestamp);
+}
+
+int SyntheticWebTouchEvent::FirstFreeIndex() {
+  for (size_t i = 0; i < kTouchesLengthCap; ++i) {
+    if (touches[i].state == WebTouchPoint::StateUndefined)
+      return i;
+  }
+  return -1;
 }
 
 }  // namespace content
