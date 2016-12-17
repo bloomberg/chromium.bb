@@ -15,20 +15,22 @@ from chromite.lib import commandline
 from chromite.lib import cros_logging as logging
 from chromite.lib import metrics
 from chromite.lib import ts_mon_config
+from chromite.scripts.sysmon import loop
+from chromite.scripts.sysmon import osinfo_metrics
 from chromite.scripts.sysmon import puppet_metrics
 from chromite.scripts.sysmon import system_metrics
-from chromite.scripts.sysmon import osinfo_metrics
-from chromite.scripts.sysmon import loop
 from infra_libs.ts_mon.common import interface
 
 logger = logging.getLogger(__name__)
 
 
-class MetricCollector(object):
+class _MetricCollector(object):
   """Metric collector class."""
 
   def __init__(self):
-    self._last_osinfo_collection = time.time()
+    self._get_osinfo = _TimedCallback(
+        callback=osinfo_metrics.get_os_info,
+        interval=60 * 60)
 
   def __call__(self):
     """Collect metrics."""
@@ -40,15 +42,37 @@ class MetricCollector(object):
     system_metrics.get_proc_info()
     system_metrics.get_load_avg()
     puppet_metrics.get_puppet_summary()
-    if time.time() > self._next_osinfo_collection:
-      osinfo_metrics.get_os_info()
-      self._last_osinfo_collection = time.time()
+    self._get_osinfo()
     system_metrics.get_unix_time()  # must be just before flush
     metrics.Flush()
 
   @property
   def _next_osinfo_collection(self):
     return self._last_osinfo_collection + (60 * 60)
+
+
+class _TimedCallback(object):
+  """Limits callback to one call in a given interval."""
+
+  def __init__(self, callback, interval):
+    """Initialize instance.
+
+    Args:
+      callback: function to call
+      interval: Number of seconds between allowed calls
+    """
+    self._callback = callback
+    self._interval = interval
+    self._last_called = time.time() - interval
+
+  def __call__(self):
+    if time.time() > self._next_call:
+      self._callback()
+      self._last_called = time.time()
+
+  @property
+  def _next_call(self):
+    return self._last_called + self._interval
 
 
 def main():
@@ -78,7 +102,7 @@ def main():
   interface.state.metric_name_prefix = (interface.state.metric_name_prefix
                                         + 'chromeos/sysmon/')
 
-  loop.SleepLoop(callback=MetricCollector(),
+  loop.SleepLoop(callback=_MetricCollector(),
                  interval=opts.interval).loop_forever()
 
 
