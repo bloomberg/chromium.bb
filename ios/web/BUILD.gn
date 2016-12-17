@@ -39,8 +39,6 @@ source_set("web_arc") {
   sources = [
     "active_state_manager_impl.h",
     "active_state_manager_impl.mm",
-    "alloc_with_zone_interceptor.h",
-    "alloc_with_zone_interceptor.mm",
     "browser_state.mm",
     "browser_url_rewriter_impl.h",
     "browser_url_rewriter_impl.mm",
@@ -505,7 +503,6 @@ test("ios_web_unittests") {
 
   sources = [
     "active_state_manager_impl_unittest.mm",
-    "alloc_with_zone_interceptor_unittest.mm",
     "browser_state_unittest.cc",
     "history_state_util_unittest.mm",
     "navigation/crw_session_controller_unittest.mm",
