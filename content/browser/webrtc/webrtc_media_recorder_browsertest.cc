@@ -143,13 +143,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
                   kMediaRecorderHtmlFile);
 }
 
-// http://crbug.com/673126, flaky on Android.
-#if defined(OS_ANDROID)
-#define MAYBE_PeerConnection DISABLED_PeerConnection
-#else
-#define MAYBE_PeerConnection PeerConnection
-#endif
-IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest, MAYBE_PeerConnection) {
+IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest, PeerConnection) {
   MaybeForceDisableEncodeAccelerator(GetParam().disable_accelerator);
   MakeTypicalCall(base::StringPrintf("testRecordRemotePeerConnection(\"%s\");",
                                      GetParam().mime_type.c_str()),

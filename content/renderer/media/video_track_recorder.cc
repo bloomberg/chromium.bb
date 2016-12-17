@@ -77,6 +77,12 @@ media::VideoCodecProfile CodecIdToVEAProfile(
 #if defined(OS_CHROMEOS)
   return media::VIDEO_CODEC_PROFILE_UNKNOWN;
 #endif  // defined(OS_CHROMEOS)
+
+// See https://crbug.com/653864.
+#if defined(OS_ANDROID)
+  return media::VIDEO_CODEC_PROFILE_UNKNOWN;
+#endif  // defined(OS_ANDROID)
+
   content::RenderThreadImpl* const render_thread_impl =
       content::RenderThreadImpl::current();
   if (!render_thread_impl) {
