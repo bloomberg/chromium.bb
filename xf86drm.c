@@ -3627,7 +3627,47 @@ char *drmGetDeviceNameFromFd2(int fd)
     fclose(f);
     return device_name;
 #else
-#warning "Missing implementation of drmGetDeviceNameFromFd2"
-    return NULL;
+    struct stat      sbuf;
+    char             node[PATH_MAX + 1];
+    const char      *dev_name;
+    int              node_type;
+    int              maj, min, n, base;
+
+    if (fstat(fd, &sbuf))
+        return NULL;
+
+    maj = major(sbuf.st_rdev);
+    min = minor(sbuf.st_rdev);
+
+    if (maj != DRM_MAJOR || !S_ISCHR(sbuf.st_mode))
+        return NULL;
+
+    node_type = drmGetMinorType(min);
+    if (node_type == -1)
+        return NULL;
+
+    switch (node_type) {
+    case DRM_NODE_PRIMARY:
+        dev_name = DRM_DEV_NAME;
+        break;
+    case DRM_NODE_CONTROL:
+        dev_name = DRM_CONTROL_DEV_NAME;
+        break;
+    case DRM_NODE_RENDER:
+        dev_name = DRM_RENDER_DEV_NAME;
+        break;
+    default:
+        return NULL;
+    };
+
+    base = drmGetMinorBase(node_type);
+    if (base < 0)
+        return NULL;
+
+    n = snprintf(node, PATH_MAX, dev_name, DRM_DIR_NAME, min - base);
+    if (n == -1 || n >= PATH_MAX)
+      return NULL;
+
+    return strdup(node);
 #endif
 }
