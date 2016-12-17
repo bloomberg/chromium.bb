@@ -8,10 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <vector>
 
 #include "cc/base/cc_export.h"
+#include "cc/base/contiguous_container.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
@@ -115,7 +115,7 @@ class CC_EXPORT RTree {
   // This is the count of data elements (rather than total nodes in the tree)
   size_t num_data_elements_;
   Branch root_;
-  std::deque<Node> nodes_;
+  ContiguousContainer<Node> nodes_;
 };
 
 }  // namespace cc

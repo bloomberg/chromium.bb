@@ -7,19 +7,20 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <algorithm>
 #include <cmath>
 
 #include "base/logging.h"
+#include "base/numerics/saturated_arithmetic.h"
 
 namespace cc {
 
-RTree::RTree() : num_data_elements_(0u) {}
+RTree::RTree() : num_data_elements_(0u), nodes_(sizeof(Node)) {}
 
 RTree::~RTree() {}
 
 RTree::Node* RTree::AllocateNodeAtLevel(int level) {
-  nodes_.push_back(Node());
-  Node& node = nodes_.back();
+  Node& node = nodes_.AllocateAndConstruct<Node>();
   node.num_children = 0;
   node.level = level;
   return &node;
@@ -76,13 +77,28 @@ RTree::Branch RTree::BuildRecursive(std::vector<Branch>* branches, int level) {
       branch.bounds = (*branches)[current_branch].bounds;
       branch.subtree = node;
       ++current_branch;
+      int x = branch.bounds.x();
+      int y = branch.bounds.y();
+      int right = branch.bounds.right();
+      int bottom = branch.bounds.bottom();
       for (int k = 1; k < increment_by && current_branch < branches->size();
            ++k) {
-        branch.bounds.Union((*branches)[current_branch].bounds);
+        // We use a custom union instead of gfx::Rect::Union here, since this
+        // bypasses some empty checks and extra setters, which improves
+        // performance.
+        auto& bounds = (*branches)[current_branch].bounds;
+        x = std::min(x, bounds.x());
+        y = std::min(y, bounds.y());
+        right = std::max(right, bounds.right());
+        bottom = std::max(bottom, bounds.bottom());
+
         node->children[k] = (*branches)[current_branch];
         ++node->num_children;
         ++current_branch;
       }
+      branch.bounds.SetRect(x, y, base::SaturatedSubtraction(right, x),
+                            base::SaturatedSubtraction(bottom, y));
+
       DCHECK_LT(new_branch_index, current_branch);
       (*branches)[new_branch_index] = branch;
       ++new_branch_index;
