@@ -76,6 +76,15 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jkeyword);
+  base::android::ScopedJavaLocalRef<jstring> AddSearchEngineForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jkeyword,
+      jint age_in_days);
+  base::android::ScopedJavaLocalRef<jstring> UpdateLastVisitedForTesting(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jkeyword);
 
   static bool Register(JNIEnv* env);
 
@@ -89,7 +98,8 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
 
   // Updates |template_urls_| to contain all TemplateURLs.  It sorts this list
   // with prepopulated engines first, then any default non-prepopulated engine,
-  // then other non-prepopulated engines.
+  // then other non-prepopulated engines based on last_visited in descending
+  // order.
   void LoadTemplateURLs();
 
   JavaObjectWeakGlobalRef weak_java_obj_;

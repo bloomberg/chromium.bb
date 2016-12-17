@@ -9,6 +9,7 @@ import android.text.TextUtils;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 
 import java.lang.annotation.Retention;
@@ -373,6 +374,17 @@ public class TemplateUrlService {
         return nativeGetSearchEngineUrlFromTemplateUrl(mNativeTemplateUrlServiceAndroid, keyword);
     }
 
+    @VisibleForTesting
+    public String addSearchEngineForTesting(String keyword, int ageInDays) {
+        return nativeAddSearchEngineForTesting(
+                mNativeTemplateUrlServiceAndroid, keyword, ageInDays);
+    }
+
+    @VisibleForTesting
+    public String updateLastVisitedForTesting(String keyword) {
+        return nativeUpdateLastVisitedForTesting(mNativeTemplateUrlServiceAndroid, keyword);
+    }
+
     private native long nativeInit();
     private native void nativeLoad(long nativeTemplateUrlServiceAndroid);
     private native boolean nativeIsLoaded(long nativeTemplateUrlServiceAndroid);
@@ -393,5 +405,9 @@ public class TemplateUrlService {
     private native String nativeGetUrlForContextualSearchQuery(long nativeTemplateUrlServiceAndroid,
             String query, String alternateTerm, boolean shouldPrefetch, String protocolVersion);
     private native String nativeGetSearchEngineUrlFromTemplateUrl(
+            long nativeTemplateUrlServiceAndroid, String keyword);
+    private native String nativeAddSearchEngineForTesting(
+            long nativeTemplateUrlServiceAndroid, String keyword, int offset);
+    private native String nativeUpdateLastVisitedForTesting(
             long nativeTemplateUrlServiceAndroid, String keyword);
 }

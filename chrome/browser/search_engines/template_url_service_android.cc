@@ -143,19 +143,42 @@ void TemplateUrlServiceAndroid::OnTemplateURLServiceLoaded() {
 
 void TemplateUrlServiceAndroid::LoadTemplateURLs() {
   template_urls_ = template_url_service_->GetTemplateURLs();
-  TemplateURL* default_search_provider =
-      template_url_service_->GetDefaultSearchProvider();
 
-  auto comp = [&](const TemplateURL* lhs, const TemplateURL* rhs) {
-    bool rhs_prepopulated =
-        template_url_service_->IsPrepopulatedOrCreatedByPolicy(rhs);
-    if (template_url_service_->IsPrepopulatedOrCreatedByPolicy(lhs)) {
-      return !rhs_prepopulated ||
-             (lhs->prepopulate_id() < rhs->prepopulate_id());
-    }
-    return (lhs == default_search_provider && !rhs_prepopulated);
+  // Move prepopulated and policy-created engines to the front of list,
+  // and sort by prepopulated_id.
+  TemplateURLService* template_url_service = template_url_service_;
+  auto it = std::partition(
+      template_urls_.begin(), template_urls_.end(),
+      [template_url_service](const TemplateURL* t_url) {
+        return template_url_service->IsPrepopulatedOrCreatedByPolicy(t_url);
+      });
+  std::sort(template_urls_.begin(), it,
+            [](const TemplateURL* lhs, const TemplateURL* rhs) {
+              return lhs->prepopulate_id() < rhs->prepopulate_id();
+            });
+
+  // Place any user-selected default engine next.
+  TemplateURL* dsp = template_url_service_->GetDefaultSearchProvider();
+  it = std::partition(it, template_urls_.end(),
+                      [dsp](const TemplateURL* t_url) { return t_url == dsp; });
+
+  // Sort the remaining engines to place the three most recently-visited first.
+  constexpr size_t kMaxRecentUrls = 3;
+  const size_t recent_url_num = template_urls_.end() - it;
+  auto end = it + std::min(recent_url_num, kMaxRecentUrls);
+  std::partial_sort(it, end, template_urls_.end(),
+                    [](const TemplateURL* lhs, const TemplateURL* rhs) {
+                      return lhs->last_visited() > rhs->last_visited();
+                    });
+
+  // Limit to those three engines which must also have been visited in the last
+  // two days.
+  constexpr base::TimeDelta kMaxVisitAge = base::TimeDelta::FromDays(2);
+  const base::Time cutoff = base::Time::Now() - kMaxVisitAge;
+  const auto too_old = [cutoff](const TemplateURL* t_url) {
+    return t_url->last_visited() < cutoff;
   };
-  std::sort(template_urls_.begin(), template_urls_.end(), comp);
+  template_urls_.erase(std::find_if(it, end, too_old), template_urls_.end());
 }
 
 void TemplateUrlServiceAndroid::OnTemplateURLServiceChanged() {
@@ -282,6 +305,45 @@ TemplateUrlServiceAndroid::GetSearchEngineUrlFromTemplateUrl(
       TemplateURLRef::SearchTermsArgs(base::ASCIIToUTF16("query")),
       template_url_service_->search_terms_data()));
   return base::android::ConvertUTF8ToJavaString(env, url);
+}
+
+base::android::ScopedJavaLocalRef<jstring>
+TemplateUrlServiceAndroid::AddSearchEngineForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& jkeyword,
+    jint age_in_days) {
+  TemplateURLData data;
+  base::string16 keyword =
+      base::android::ConvertJavaStringToUTF16(env, jkeyword);
+  data.SetShortName(keyword);
+  data.SetKeyword(keyword);
+  data.SetURL("http://testurl");
+  data.favicon_url = GURL("http://favicon.url");
+  data.safe_for_autoreplace = true;
+  data.input_encodings.push_back("UTF-8");
+  data.prepopulate_id = 0;
+  data.date_created =
+      base::Time::Now() - base::TimeDelta::FromDays((int) age_in_days);
+  data.last_modified =
+      base::Time::Now() - base::TimeDelta::FromDays((int) age_in_days);
+  data.last_visited =
+      base::Time::Now() - base::TimeDelta::FromDays((int) age_in_days);
+  TemplateURL* t_url =
+      template_url_service_->Add(base::MakeUnique<TemplateURL>(data));
+  return base::android::ConvertUTF16ToJavaString(env, t_url->data().keyword());
+}
+
+base::android::ScopedJavaLocalRef<jstring>
+TemplateUrlServiceAndroid::UpdateLastVisitedForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& jkeyword) {
+  base::string16 keyword =
+      base::android::ConvertJavaStringToUTF16(env, jkeyword);
+  TemplateURL* t_url = template_url_service_->GetTemplateURLForKeyword(keyword);
+  template_url_service_->UpdateTemplateURLVisitTime(t_url);
+  return base::android::ConvertUTF16ToJavaString(env, t_url->data().keyword());
 }
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {

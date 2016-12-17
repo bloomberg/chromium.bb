@@ -154,6 +154,87 @@ public class TemplateUrlServiceTest extends NativeLibraryTestBase {
         assertEquals(searchEngines.get(1).getKeyword(), searchEngineKeyword);
     }
 
+    @SmallTest
+    @Feature({"SearchEngines"})
+    public void testSortandGetCustomSearchEngine() {
+        final TemplateUrlService templateUrlService = waitForTemplateUrlServiceToLoad();
+
+        // Get the number of prepopulated search engine.
+        final int prepopulatedEngineNum =
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Integer>() {
+                    @Override
+                    public Integer call() throws Exception {
+                        return templateUrlService.getSearchEngines().size();
+                    }
+                });
+
+        // Add custom search engines and verified only engines visited within 2 days are added.
+        // Also verified custom engines are sorted correctly.
+        List<TemplateUrl> customSearchEngines =
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
+                    @Override
+                    public List<TemplateUrl> call() throws Exception {
+                        templateUrlService.addSearchEngineForTesting("keyword1", 0);
+                        templateUrlService.addSearchEngineForTesting("keyword2", 0);
+                        templateUrlService.addSearchEngineForTesting("keyword3", 3);
+                        List<TemplateUrl> searchEngines = templateUrlService.getSearchEngines();
+                        return searchEngines.subList(prepopulatedEngineNum, searchEngines.size());
+                    }
+                });
+        assertEquals(2, customSearchEngines.size());
+        assertEquals("keyword2", customSearchEngines.get(0).getKeyword());
+        assertEquals("keyword1", customSearchEngines.get(1).getKeyword());
+
+        // Add more custom search engines and verified at most 3 custom engines are returned.
+        // Also verified custom engines are sorted correctly.
+        customSearchEngines =
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
+                    @Override
+                    public List<TemplateUrl> call() throws Exception {
+                        templateUrlService.addSearchEngineForTesting("keyword4", 0);
+                        templateUrlService.addSearchEngineForTesting("keyword5", 0);
+                        List<TemplateUrl> searchEngines = templateUrlService.getSearchEngines();
+                        return searchEngines.subList(prepopulatedEngineNum, searchEngines.size());
+                    }
+                });
+        assertEquals(3, customSearchEngines.size());
+        assertEquals("keyword5", customSearchEngines.get(0).getKeyword());
+        assertEquals("keyword4", customSearchEngines.get(1).getKeyword());
+        assertEquals("keyword2", customSearchEngines.get(2).getKeyword());
+
+        // Verified last_visited is updated correctly and sorting in descending order correctly.
+        customSearchEngines =
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
+                    @Override
+                    public List<TemplateUrl> call() throws Exception {
+                        templateUrlService.updateLastVisitedForTesting("keyword3");
+                        List<TemplateUrl> searchEngines = templateUrlService.getSearchEngines();
+                        return searchEngines.subList(prepopulatedEngineNum, searchEngines.size());
+                    }
+                });
+        assertEquals(3, customSearchEngines.size());
+        assertEquals("keyword3", customSearchEngines.get(0).getKeyword());
+        assertEquals("keyword5", customSearchEngines.get(1).getKeyword());
+        assertEquals("keyword4", customSearchEngines.get(2).getKeyword());
+
+        // Set a custom engine as default provider and verified still 3 custom engines are returned.
+        // Also verified custom engines are sorted correctly.
+        customSearchEngines =
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
+                    @Override
+                    public List<TemplateUrl> call() throws Exception {
+                        templateUrlService.setSearchEngine("keyword4");
+                        List<TemplateUrl> searchEngines = templateUrlService.getSearchEngines();
+                        return searchEngines.subList(prepopulatedEngineNum, searchEngines.size());
+                    }
+                });
+        assertEquals(4, customSearchEngines.size());
+        assertEquals("keyword4", customSearchEngines.get(0).getKeyword());
+        assertEquals("keyword3", customSearchEngines.get(1).getKeyword());
+        assertEquals("keyword5", customSearchEngines.get(2).getKeyword());
+        assertEquals("keyword2", customSearchEngines.get(3).getKeyword());
+    }
+
     private TemplateUrlService waitForTemplateUrlServiceToLoad() {
         final AtomicBoolean observerNotified = new AtomicBoolean(false);
         final LoadListener listener = new LoadListener() {

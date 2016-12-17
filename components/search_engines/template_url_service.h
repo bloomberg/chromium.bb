@@ -137,10 +137,11 @@ class TemplateURLService : public WebDataServiceConsumer,
   // prepopulate list or created by policy.
   bool IsPrepopulatedOrCreatedByPolicy(const TemplateURL* template_url);
 
-  // Returns whether |template_url| is the current default or return true for
-  // IsPrepopulatedOrCreatedByPolicy(). This is meant to highlight the current,
-  // default, as well as the other most likely choices of default engine,
-  // separately from a full list of all TemplateURLs (which might be very long).
+  // Returns whether |template_url| should be shown in the list of engines
+  // most likely to be selected as a default engine. This is meant to highlight
+  // the current default, as well as the other most likely choices of default
+  // engine, separately from a full list of all TemplateURLs (which might be
+  // very long).
   bool ShowInDefaultList(const TemplateURL* template_url);
 
   // Adds to |matches| all TemplateURLs whose keywords begin with |prefix|,
@@ -242,6 +243,9 @@ class TemplateURLService : public WebDataServiceConsumer,
                         const base::string16& title,
                         const base::string16& keyword,
                         const std::string& search_url);
+
+  // Updates the last_visited time of |url| to the current time.
+  void UpdateTemplateURLVisitTime(TemplateURL* url);
 
   // Return true if the given |url| can be made the default. This returns false
   // regardless of |url| if the default search provider is managed by policy or
@@ -568,9 +572,6 @@ class TemplateURLService : public WebDataServiceConsumer,
   // For each TemplateURL whose url matches the visited url
   // SetKeywordSearchTermsForURL is invoked.
   void UpdateKeywordSearchTermsForURL(const URLVisitedDetails& details);
-
-  // Updates the last_visited time of |url| to the current time.
-  void UpdateTemplateURLVisitTime(TemplateURL* url);
 
   // If necessary, generates a visit for the site http:// + t_url.keyword().
   void AddTabToSearchVisit(const TemplateURL& t_url);

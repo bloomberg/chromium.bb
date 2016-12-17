@@ -611,6 +611,13 @@ void TemplateURLService::ResetTemplateURL(TemplateURL* url,
     NotifyObservers();
 }
 
+void TemplateURLService::UpdateTemplateURLVisitTime(TemplateURL* url) {
+  TemplateURLData data(url->data());
+  data.last_visited = clock_->Now();
+  Update(url, TemplateURL(data));
+}
+
+
 bool TemplateURLService::CanMakeDefault(const TemplateURL* url) {
   return
       ((default_search_provider_source_ == DefaultSearchManager::FROM_USER) ||
@@ -728,12 +735,6 @@ void TemplateURLService::RepairPrepopulatedSearchEngines() {
   } else {
     NotifyObservers();
   }
-}
-
-void TemplateURLService::UpdateTemplateURLVisitTime(TemplateURL* url) {
-  TemplateURLData data(url->data());
-  data.last_visited = clock_->Now();
-  Update(url, TemplateURL(data));
 }
 
 void TemplateURLService::AddObserver(TemplateURLServiceObserver* observer) {
