@@ -315,10 +315,12 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
              "details.";
 
     case UseCounter::EncryptedMediaInsecureOrigin:
-      return "requestMediaKeySystemAccess() is deprecated on insecure origins "
-             "in the specification. Support will be removed in the future. You "
-             "should consider switching your application to a secure origin, "
-             "such as HTTPS. See https://goo.gl/rStTGz for more details.";
+      return String::format(
+          "Using requestMediaKeySystemAccess() on insecure origins is "
+          "deprecated and will be removed in %s. You should consider "
+          "switching your application to a secure origin, such as HTTPS. See "
+          "https://goo.gl/rStTGz for more details.",
+          milestoneString(M58));
 
     case UseCounter::MediaSourceAbortRemove:
       return "Using SourceBuffer.abort() to abort remove()'s asynchronous "
