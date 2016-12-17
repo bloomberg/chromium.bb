@@ -17,51 +17,13 @@ from chromite.lib import metrics
 from chromite.lib import ts_mon_config
 from chromite.scripts.sysmon import puppet_metrics
 from chromite.scripts.sysmon import system_metrics
+from chromite.scripts.sysmon import loop
 from infra_libs.ts_mon.common import interface
 
 DEFAULT_LOG_LEVEL = 'DEBUG'
 DEFAULT_INTERVAL = 60  # 1 minute
 
 logger = logging.getLogger(__name__)
-
-
-class _MainLoop(object):
-  """Main loop for sysmon."""
-
-  def __init__(self, loop_func, interval=60):
-    """Initialize instance.
-
-    Args:
-      loop_func: Function to call on each loop.
-      interval: Time between loops in seconds.
-    """
-    self._loop_func = loop_func
-    self._interval = interval
-    self._cycles = 0
-
-  def loop_once(self):
-    """Do actions for a single loop."""
-    try:
-      self._loop_func(self._cycles)
-    except Exception:
-      logger.exception('Error during loop.')
-
-  def loop_forever(self):
-    while True:
-      self.loop_once()
-      _force_sleep(self._interval)
-      self._cycles = (self._cycles + 1) % 60
-
-
-def _force_sleep(secs):
-  """Force sleep for at least the given number of seconds."""
-  now = time.time()
-  finished_time = now + secs
-  while now < finished_time:
-    remaining = finished_time - now
-    logger.debug('Sleeping for %d, %d remaining', secs, remaining)
-    time.sleep(remaining)
-    now = time.time()
 
 
 def collect_metrics(cycles):
@@ -105,9 +67,8 @@ def main():
   interface.state.metric_name_prefix = (interface.state.metric_name_prefix
                                         + 'chromeos/sysmon/')
 
-  mainloop = _MainLoop(loop_func=collect_metrics,
-                       interval=opts.interval)
-  mainloop.loop_forever()
+  loop.SleepLoop(callback=collect_metrics,
+                 interval=opts.interval).loop_forever()
 
 
 if __name__ == '__main__':
