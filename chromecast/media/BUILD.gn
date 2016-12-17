@@ -37,6 +37,8 @@ test("cast_media_unittests") {
     "cma/test/mock_frame_consumer.h",
     "cma/test/mock_frame_provider.cc",
     "cma/test/mock_frame_provider.h",
+    "cma/test/mock_media_pipeline_backend.cc",
+    "cma/test/mock_media_pipeline_backend.h",
     "cma/test/run_all_unittests.cc",
   ]
 
