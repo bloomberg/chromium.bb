@@ -40,7 +40,7 @@ _age_metric = ts_mon.FloatMetric(
     units=ts_mon.MetricsDataUnits.SECONDS)
 
 
-class PuppetRunSummary(object):
+class _PuppetRunSummary(object):
   """Puppet run summary information."""
 
   def __init__(self, summary_file):
@@ -87,7 +87,7 @@ class PuppetRunSummary(object):
 def get_puppet_summary():
   """Send Puppet run summary metrics."""
   try:
-    summary = PuppetRunSummary(LAST_RUN_FILE)
+    summary = _PuppetRunSummary(LAST_RUN_FILE)
   except Exception as e:
     logging.warning('Error loading Puppet run summary: %s', e)
   else:
