@@ -127,11 +127,13 @@ void DataTransfer::setDropEffect(const String& effect) {
       effect != "move")
     return;
 
-  // FIXME: The spec actually allows this in all circumstances, even though
-  // there's no point in setting the drop effect when this condition is not
-  // true.
-  if (canReadTypes())
-    m_dropEffect = effect;
+  // The specification states that dropEffect can be changed at all times, even
+  // if the DataTransfer instance is protected or neutered.
+  //
+  // Allowing these changes seems inconsequential, but findDropZone() in
+  // EventHandler.cpp relies on being able to call setDropEffect during
+  // dragenter, when the DataTransfer policy is DataTransferTypesReadable.
+  m_dropEffect = effect;
 }
 
 void DataTransfer::setEffectAllowed(const String& effect) {
@@ -464,13 +466,12 @@ bool DataTransfer::hasFileOfType(const String& type) const {
   if (!canReadTypes())
     return false;
 
-  FileList* fileList = files();
-  if (fileList->isEmpty())
-    return false;
-
-  for (unsigned f = 0; f < fileList->length(); f++) {
-    if (equalIgnoringCase(fileList->item(f)->type(), type))
-      return true;
+  for (size_t i = 0; i < m_dataObject->length(); ++i) {
+    if (m_dataObject->item(i)->kind() == DataObjectItem::FileKind) {
+      Blob* blob = m_dataObject->item(i)->getAsFile();
+      if (blob && blob->isFile() && equalIgnoringCase(blob->type(), type))
+        return true;
+    }
   }
   return false;
 }
