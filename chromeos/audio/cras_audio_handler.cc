@@ -50,7 +50,7 @@ bool IsSameAudioDevice(const AudioDevice& a, const AudioDevice& b) {
 
 bool IsDeviceInList(const AudioDevice& device, const AudioNodeList& node_list) {
   for (const AudioNode& node : node_list) {
-    if (device.stable_device_id == node.stable_device_id)
+    if (device.stable_device_id == node.StableDeviceId())
       return true;
   }
   return false;

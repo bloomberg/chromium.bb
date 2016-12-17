@@ -115,20 +115,15 @@ AudioDeviceType AudioDevice::GetAudioType(
     return AUDIO_TYPE_OTHER;
 }
 
-AudioDevice::AudioDevice()
-    : is_input(false),
-      id(0),
-      stable_device_id(0),
-      display_name(""),
-      type(AUDIO_TYPE_OTHER),
-      priority(0),
-      active(false),
-      plugged_time(0) {}
+AudioDevice::AudioDevice() {}
 
 AudioDevice::AudioDevice(const AudioNode& node) {
   is_input = node.is_input;
   id = node.id;
-  stable_device_id = node.stable_device_id;
+  stable_device_id_version = node.StableDeviceIdVersion();
+  stable_device_id = node.StableDeviceId();
+  if (stable_device_id_version == 2)
+    deprecated_stable_device_id = node.stable_device_id_v1;
   type = GetAudioType(node.type);
   if (!node.name.empty() && node.name != "(default)")
     display_name = node.name;
@@ -144,6 +139,10 @@ AudioDevice::AudioDevice(const AudioNode& node) {
 AudioDevice::AudioDevice(const AudioDevice& other) = default;
 
 std::string AudioDevice::ToString() const {
+  if (stable_device_id_version == 0) {
+    return "Null device";
+  }
+
   std::string result;
   base::StringAppendF(&result,
                       "is_input = %s ",
@@ -151,12 +150,13 @@ std::string AudioDevice::ToString() const {
   base::StringAppendF(&result,
                       "id = 0x%" PRIx64 " ",
                       id);
-  base::StringAppendF(&result,
-                      "stable_device_id = 0x%" PRIx64 " ",
+  base::StringAppendF(&result, "stable_device_id_version = %d",
+                      stable_device_id_version);
+  base::StringAppendF(&result, "stable_device_id = 0x%" PRIx64 " ",
                       stable_device_id);
-  base::StringAppendF(&result,
-                      "display_name = %s ",
-                      display_name.c_str());
+  base::StringAppendF(&result, "deprecated_stable_device_id = 0x%" PRIx64 " ",
+                      deprecated_stable_device_id);
+  base::StringAppendF(&result, "display_name = %s ", display_name.c_str());
   base::StringAppendF(&result,
                       "device_name = %s ",
                       device_name.c_str());

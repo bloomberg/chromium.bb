@@ -12,16 +12,13 @@
 
 namespace chromeos {
 
-AudioNode::AudioNode()
-    : is_input(false),
-      id(0),
-      active(false),
-      plugged_time(0) {
-}
+AudioNode::AudioNode() {}
 
 AudioNode::AudioNode(bool is_input,
                      uint64_t id,
-                     uint64_t stable_device_id,
+                     bool has_v2_stable_device_id,
+                     uint64_t stable_device_id_v1,
+                     uint64_t stable_device_id_v2,
                      std::string device_name,
                      std::string type,
                      std::string name,
@@ -29,7 +26,9 @@ AudioNode::AudioNode(bool is_input,
                      uint64_t plugged_time)
     : is_input(is_input),
       id(id),
-      stable_device_id(stable_device_id),
+      has_v2_stable_device_id(has_v2_stable_device_id),
+      stable_device_id_v1(stable_device_id_v1),
+      stable_device_id_v2(stable_device_id_v2),
       device_name(device_name),
       type(type),
       name(name),
@@ -48,8 +47,12 @@ std::string AudioNode::ToString() const {
   base::StringAppendF(&result,
                       "id = 0x%" PRIx64 " ",
                       id);
-  base::StringAppendF(&result, "stable_device_id = 0x%" PRIx64 " ",
-                      stable_device_id);
+  base::StringAppendF(&result, "stable_device_id_version = %d",
+                      StableDeviceIdVersion());
+  base::StringAppendF(&result, "stable_device_id_v1 = 0x%" PRIx64 " ",
+                      stable_device_id_v1);
+  base::StringAppendF(&result, "stable_device_id_v2 = 0x%" PRIx64 " ",
+                      stable_device_id_v2);
   base::StringAppendF(&result, "device_name = %s ", device_name.c_str());
   base::StringAppendF(&result,
                       "type = %s ",
@@ -65,6 +68,14 @@ std::string AudioNode::ToString() const {
                       base::Uint64ToString(plugged_time).c_str());
 
   return result;
+}
+
+int AudioNode::StableDeviceIdVersion() const {
+  return has_v2_stable_device_id ? 2 : 1;
+}
+
+uint64_t AudioNode::StableDeviceId() const {
+  return has_v2_stable_device_id ? stable_device_id_v2 : stable_device_id_v1;
 }
 
 }  // namespace chromeos

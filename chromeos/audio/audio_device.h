@@ -59,7 +59,7 @@ struct CHROMEOS_EXPORT AudioDevice {
             type == AUDIO_TYPE_LINEOUT);
   }
 
-  bool is_input;
+  bool is_input = false;
 
   // Id of this audio device. The legacy |id| is assigned to be unique everytime
   // when each device got plugged, so that the same physical device will have
@@ -70,15 +70,24 @@ struct CHROMEOS_EXPORT AudioDevice {
   // guaranteed to be different between the same kind of audio device, e.g
   // USB headset. |id| and |stable_device_id| can be used together to achieve
   // various goals.
-  uint64_t id;
-  uint64_t stable_device_id;
+  // Note that because algorithm used to determine |stable_device_id| changed in
+  // system code, |stable_device_id_version| and |deprecated_stable_device_id|
+  // have been introduced - to ensure backward compatibility until persisted
+  // references to stable device ID have been updated where needed.
+  // |stable_device_id_version| is the version of stable device ID set in
+  // |stable_device_id|. If version is set to 2, |deprecated_stable_device_id|
+  // will contain deprecated, v1 stable device id version.
+  uint64_t id = 0;
+  int stable_device_id_version = 0;
+  uint64_t stable_device_id = 0;
+  uint64_t deprecated_stable_device_id = 0;
   std::string display_name;
   std::string device_name;
   std::string mic_positions;
-  AudioDeviceType type;
-  uint8_t priority;
-  bool active;
-  uint64_t plugged_time;
+  AudioDeviceType type = AUDIO_TYPE_OTHER;
+  uint8_t priority = 0;
+  bool active = false;
+  uint64_t plugged_time = 0;
 };
 
 typedef std::vector<AudioDevice> AudioDeviceList;

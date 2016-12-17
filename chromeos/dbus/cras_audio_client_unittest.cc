@@ -33,7 +33,9 @@ const uint64_t kInternalMicId = 20001;
 
 const AudioNode kInternalSpeaker(false,
                                  kInternalSpeakerId,
-                                 kInternalSpeakerId,
+                                 false /* has_v2_stable_device_id */,
+                                 kInternalSpeakerId /* stable_device_id_v1 */,
+                                 0 /* stable_device_id_v2 */,
                                  "Fake Speaker",
                                  "INTERNAL_SPEAKER",
                                  "Speaker",
@@ -42,12 +44,42 @@ const AudioNode kInternalSpeaker(false,
 
 const AudioNode kInternalMic(true,
                              kInternalMicId,
-                             kInternalMicId,
+                             false /* has_v2_stable_device_id */,
+                             kInternalMicId /* stable_device_id_v1*/,
+                             0 /* stable_device_id_v2 */,
                              "Fake Mic",
                              "INTERNAL_MIC",
                              "Internal Mic",
                              false,
                              0);
+
+const AudioNode kInternalSpeakerV2(
+    false,
+    kInternalSpeakerId,
+    true /* has_v2_stable_device_id */,
+    kInternalSpeakerId /* stable_device_id_v1 */,
+    // stable_device_id_v2: XOR to make sure the
+    // ID is different from |stable_device_id_v1|.
+    kInternalSpeakerId ^ 0xFF,
+    "Fake Speaker",
+    "INTERNAL_SPEAKER",
+    "Speaker",
+    false,
+    0);
+
+const AudioNode kInternalMicV2(true,
+                               kInternalMicId,
+                               true /* has_v2_stable_device_id */,
+                               kInternalMicId /* stable_device_id_v1 */,
+                               // XOR to make sure the ID is different from
+                               // |stable_device_id_v1|.
+                               kInternalMicId ^ 0xFF /* stable_device_id_v2 */,
+                               "Fake Mic",
+                               "INTERNAL_MIC",
+                               "Internal Mic",
+                               false,
+                               0);
+
 // A mock ErrorCallback.
 class MockErrorCallback {
  public:
@@ -179,7 +211,11 @@ void WriteNodesToResponse(dbus::MessageWriter& writer,
     sub_writer.CloseContainer(&entry_writer);
     sub_writer.OpenDictEntry(&entry_writer);
     entry_writer.AppendString(cras::kStableDeviceIdProperty);
-    entry_writer.AppendVariantOfUint64(node_list[i].stable_device_id);
+    entry_writer.AppendVariantOfUint64(node_list[i].stable_device_id_v1);
+    if (node_list[i].has_v2_stable_device_id) {
+      entry_writer.AppendString(cras::kStableDeviceIdNewProperty);
+      entry_writer.AppendVariantOfUint64(node_list[i].stable_device_id_v2);
+    }
     sub_writer.CloseContainer(&entry_writer);
     writer.CloseContainer(&sub_writer);
   }
@@ -194,8 +230,10 @@ void ExpectAudioNodeListResult(const AudioNodeList* expected_node_list,
   for (size_t i = 0; i < node_list.size(); ++i) {
     EXPECT_EQ((*expected_node_list)[i].is_input, node_list[i].is_input);
     EXPECT_EQ((*expected_node_list)[i].id, node_list[i].id);
-    EXPECT_EQ((*expected_node_list)[i].stable_device_id,
-              node_list[i].stable_device_id);
+    EXPECT_EQ((*expected_node_list)[i].stable_device_id_v1,
+              node_list[i].stable_device_id_v1);
+    EXPECT_EQ((*expected_node_list)[i].stable_device_id_v2,
+              node_list[i].stable_device_id_v2);
     EXPECT_EQ((*expected_node_list)[i].device_name, node_list[i].device_name);
     EXPECT_EQ((*expected_node_list)[i].type, node_list[i].type);
     EXPECT_EQ((*expected_node_list)[i].name, node_list[i].name);
@@ -203,6 +241,8 @@ void ExpectAudioNodeListResult(const AudioNodeList* expected_node_list,
               node_list[i].mic_positions);
     EXPECT_EQ((*expected_node_list)[i].active, node_list[i].active);
     EXPECT_EQ((*expected_node_list)[i].plugged_time, node_list[i].plugged_time);
+    EXPECT_EQ((*expected_node_list)[i].StableDeviceIdVersion(),
+              node_list[i].StableDeviceIdVersion());
   }
 }
 
@@ -702,6 +742,29 @@ TEST_F(CrasAudioClientTest, GetNodes) {
   MockErrorCallback error_callback;
   client_->GetNodes(base::Bind(&ExpectAudioNodeListResult,
                                &expected_node_list),
+                    error_callback.GetCallback());
+  EXPECT_CALL(error_callback, Run(_, _)).Times(0);
+  // Run the message loop.
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(CrasAudioClientTest, GetNodesV2) {
+  // Create the expected value.
+  AudioNodeList expected_node_list;
+  expected_node_list.push_back(kInternalSpeakerV2);
+  expected_node_list.push_back(kInternalMicV2);
+
+  // Create response.
+  std::unique_ptr<dbus::Response> response(dbus::Response::CreateEmpty());
+  dbus::MessageWriter writer(response.get());
+  WriteNodesToResponse(writer, expected_node_list);
+
+  // Set expectations.
+  PrepareForMethodCall(cras::kGetNodes, base::Bind(&ExpectNoArgument),
+                       response.get());
+  // Call method.
+  MockErrorCallback error_callback;
+  client_->GetNodes(base::Bind(&ExpectAudioNodeListResult, &expected_node_list),
                     error_callback.GetCallback());
   EXPECT_CALL(error_callback, Run(_, _)).Times(0);
   // Run the message loop.

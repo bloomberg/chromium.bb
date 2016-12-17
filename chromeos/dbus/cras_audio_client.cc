@@ -426,7 +426,7 @@ class CrasAudioClientImpl : public CrasAudioClient {
 
   bool GetAudioNode(dbus::Response* response,
                     dbus::MessageReader* array_reader,
-                    AudioNode *node) {
+                    AudioNode* node) {
     while (array_reader->HasMoreData()) {
       dbus::MessageReader dict_entry_reader(response);
       dbus::MessageReader value_reader(response);
@@ -462,8 +462,12 @@ class CrasAudioClientImpl : public CrasAudioClient {
         if (!value_reader.PopString(&node->mic_positions))
           return false;
       } else if (key == cras::kStableDeviceIdProperty) {
-        if (!value_reader.PopUint64(&node->stable_device_id))
+        if (!value_reader.PopUint64(&node->stable_device_id_v1))
           return false;
+      } else if (key == cras::kStableDeviceIdNewProperty) {
+        if (!value_reader.PopUint64(&node->stable_device_id_v2))
+          return false;
+        node->has_v2_stable_device_id = true;
       }
     }
 
