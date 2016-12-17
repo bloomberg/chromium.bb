@@ -1,0 +1,8 @@
+Tests the unused CSS list after finishing recording in the CSSTracker view.
+
+(4 unused rules : 67%)
+.class2
+#id
+notUsed
+notUsed2
+

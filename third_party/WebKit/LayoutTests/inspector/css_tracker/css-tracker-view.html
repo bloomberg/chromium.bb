@@ -1,0 +1,46 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+
+<link rel="stylesheet" type="text/css" href="resources/highlight-in-source.css">
+
+<script>
+
+var initialize_CSSTracker = function() {
+    InspectorTest.preloadModule("css_tracker");
+}
+
+function test()
+{
+    InspectorTest.addSniffer(CSSTracker.CSSTrackerView.prototype, "_onGotStyleSheets", displayResults);
+    
+    var tracker = self.runtime.sharedInstance(CSSTracker.CSSTrackerView);
+    
+    tracker._toggleRecording(true);
+    UI.viewManager.showView("css_tracker");
+    tracker._toggleRecording(false);
+
+    function displayResults()
+    {
+        tracker._treeOutline.rootElement().firstChild().expand();
+
+        InspectorTest.addResult(tracker._treeOutline.element.shadowRoot.querySelectorAll(
+            ".rule-result-matches-count")[0].innerHTML);
+        tracker._treeOutline.element.shadowRoot.querySelectorAll(".rule-match-content").forEach(
+            match => InspectorTest.addResult(match.innerHTML));
+
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p class="class">
+Tests the unused CSS list after finishing recording in the CSSTracker view.
+</p>
+
+</body>
+</html>

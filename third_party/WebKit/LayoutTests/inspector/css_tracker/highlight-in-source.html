@@ -8,22 +8,21 @@
 <link rel="stylesheet" type="text/css" href="resources/highlight-in-source.css">
 <script>
 
+var initialize_CSSTracker = function() {
+    InspectorTest.preloadModule("css_tracker");
+}
+
 function test()
 {
-    Runtime.experiments.enableForTest("timelineRuleUsageRecording");
-
-    var panel = UI.panels.timeline;
-    panel._markUnusedCSS.set(true);
-
     InspectorTest.runTestSuite([
         function testMarking(next)
         {            
-            InspectorTest.startTimeline(timelineStarted);
-
-            function timelineStarted()
-            {
-                InspectorTest.stopTimeline(printResults);
-            }
+            var tracker = self.runtime.sharedInstance(CSSTracker.CSSTrackerView);
+            InspectorTest.addSniffer(CSSTracker.CSSTrackerView.prototype, "_renderRuleUsage", printResults);
+    
+            tracker._toggleRecording(true);
+            UI.viewManager.showView("css_tracker");
+            tracker._toggleRecording(false);
 
             function printResults()
             {
@@ -37,12 +36,12 @@ function test()
 
             function waitForDecorations()
             {
-                InspectorTest.addSniffer(Components.CoverageProfile.LineDecorator.prototype, "decorate", didShowDecorations);
+                InspectorTest.addSniffer(CSSTracker.CSSTrackerView.LineDecorator.prototype, "decorate", didShowDecorations);
             }
 
             function didShowDecorations(sourceFrame)
             {
-                var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-line-marker-coverage"), 
+                var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-css-rule-unused-marker"), 
                                                         e => e.parentElement.previousSibling.textContent);
 
                 InspectorTest.addResult(lines);   

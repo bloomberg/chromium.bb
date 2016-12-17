@@ -8,21 +8,20 @@
 <link rel="stylesheet" type="text/css" href="resources/decorations-after-inplace-formatter.css">
 <script>
 
+var initialize_CSSTracker = function() {
+    InspectorTest.preloadModule("css_tracker");
+}
+
 function test()
 {
-    Runtime.experiments.enableForTest("timelineRuleUsageRecording");
-
-    var panel = UI.panels.timeline;
-    panel._markUnusedCSS.set(true);
-
     var scriptFormatter;
 
-    InspectorTest.startTimeline(timelineStarted);
+    var tracker = self.runtime.sharedInstance(CSSTracker.CSSTrackerView);
+    InspectorTest.addSniffer(CSSTracker.CSSTrackerView.prototype, "_renderRuleUsage", onTracingFinished);
 
-    function timelineStarted()
-    {
-        InspectorTest.stopTimeline(onTracingFinished);
-    }
+    tracker._toggleRecording(true);
+    UI.viewManager.showView("css_tracker");
+    tracker._toggleRecording(false);
 
     function onTracingFinished()
     {
@@ -37,19 +36,19 @@ function test()
     }
     function showSource()
     {
-        InspectorTest.addSniffer(Components.CoverageProfile.LineDecorator.prototype, "decorate", formatSource);
+        InspectorTest.addSniffer(CSSTracker.CSSTrackerView.LineDecorator.prototype, "decorate", formatSource);
         InspectorTest.showScriptSource("decorations-after-inplace-formatter.css");
     }
 
     function formatSource(frame) 
     {
-        InspectorTest.addSniffer(Components.CoverageProfile.LineDecorator.prototype, "decorate", uiSourceCodeScriptFormatted);
+        InspectorTest.addSniffer(CSSTracker.CSSTrackerView.LineDecorator.prototype, "decorate", uiSourceCodeScriptFormatted);
         scriptFormatter._formatSourceInPlace();
     }
 
     function uiSourceCodeScriptFormatted()
     {
-        var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-line-marker-coverage"), 
+        var lines = Array.prototype.map.call(document.querySelectorAll(".text-editor-css-rule-unused-marker"), 
                                                 e => e.parentElement.previousSibling.textContent);
 
         InspectorTest.addResult("Formatted line numbers of rules that were not used:");
