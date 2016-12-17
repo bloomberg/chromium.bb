@@ -129,12 +129,11 @@ void APIBindingHooks::RegisterJsSource(v8::Global<v8::String> source,
   js_resource_name_ = std::move(resource_name);
 }
 
-bool APIBindingHooks::HandleRequest(
-    const std::string& api_name,
-    const std::string& method_name,
-    v8::Local<v8::Context> context,
-    const binding::APISignature* signature,
-    gin::Arguments* arguments) {
+bool APIBindingHooks::HandleRequest(const std::string& api_name,
+                                    const std::string& method_name,
+                                    v8::Local<v8::Context> context,
+                                    const APISignature* signature,
+                                    gin::Arguments* arguments) {
   // Easy case: a native custom hook.
   auto request_hooks_iter = request_hooks_.find(method_name);
   if (request_hooks_iter != request_hooks_.end()) {

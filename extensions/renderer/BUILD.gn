@@ -30,6 +30,8 @@ source_set("renderer") {
     "api_event_handler.h",
     "api_request_handler.cc",
     "api_request_handler.h",
+    "api_signature.cc",
+    "api_signature.h",
     "app_window_custom_bindings.cc",
     "app_window_custom_bindings.h",
     "argument_spec.cc",

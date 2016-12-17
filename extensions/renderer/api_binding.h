@@ -27,6 +27,7 @@ class Arguments;
 namespace extensions {
 class APIBindingHooks;
 class APIEventHandler;
+class APISignature;
 
 // A class that vends v8::Objects for extension APIs. These APIs have function
 // interceptors for all exposed methods, which call back into the APIBinding.
@@ -75,8 +76,6 @@ class APIBinding {
       const AvailabilityCallback& is_available);
 
  private:
-  using APISignature = std::vector<std::unique_ptr<ArgumentSpec>>;
-
   // Handles a call an API method with the given |name| and matches the
   // arguments against |signature|.
   void HandleCall(const std::string& name,

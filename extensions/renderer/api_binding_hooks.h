@@ -19,6 +19,7 @@ class Arguments;
 }
 
 namespace extensions {
+class APISignature;
 
 // A class to register custom hooks for given API calls that need different
 // handling. An instance exists for a single API, but can be used across
@@ -36,7 +37,7 @@ class APIBindingHooks {
   // handlers to register a request so that they don't have to maintain a
   // reference to the callback themselves.
   using HandleRequestHook =
-      base::Callback<void(const binding::APISignature*, gin::Arguments*)>;
+      base::Callback<void(const APISignature*, gin::Arguments*)>;
 
   explicit APIBindingHooks(const binding::RunJSFunction& run_js);
   ~APIBindingHooks();
@@ -59,7 +60,7 @@ class APIBindingHooks {
   bool HandleRequest(const std::string& api_name,
                      const std::string& method_name,
                      v8::Local<v8::Context> context,
-                     const binding::APISignature* signature,
+                     const APISignature* signature,
                      gin::Arguments* arguments);
 
  private:

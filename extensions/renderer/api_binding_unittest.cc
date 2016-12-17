@@ -453,7 +453,7 @@ TEST_F(APIBindingUnittest, TestCustomHooks) {
   auto hooks = base::MakeUnique<APIBindingHooks>(
       base::Bind(&RunFunctionOnGlobalAndIgnoreResult));
   bool did_call = false;
-  auto hook = [](bool* did_call, const binding::APISignature* signature,
+  auto hook = [](bool* did_call, const APISignature* signature,
                  gin::Arguments* arguments) {
     *did_call = true;
     EXPECT_EQ(1, arguments->Length());

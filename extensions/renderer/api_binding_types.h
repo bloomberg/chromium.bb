@@ -12,8 +12,6 @@
 #include "v8/include/v8.h"
 
 namespace extensions {
-class ArgumentSpec;
-
 namespace binding {
 
 // A callback to execute the given v8::Function with the provided context and
@@ -22,8 +20,6 @@ using RunJSFunction = base::Callback<void(v8::Local<v8::Function>,
                                           v8::Local<v8::Context>,
                                           int argc,
                                           v8::Local<v8::Value>[])>;
-
-using APISignature = std::vector<std::unique_ptr<ArgumentSpec>>;
 
 }  // namespace binding
 }  // namespace extensions

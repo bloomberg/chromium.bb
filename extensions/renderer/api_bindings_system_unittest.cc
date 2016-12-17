@@ -298,7 +298,7 @@ TEST_F(APIBindingsSystemTest, TestCustomHooks) {
   v8::Local<v8::Context> context = ContextLocal();
 
   bool did_call = false;
-  auto hook = [](bool* did_call, const binding::APISignature* signature,
+  auto hook = [](bool* did_call, const APISignature* signature,
                  gin::Arguments* arguments) {
     *did_call = true;
     std::string argument;
