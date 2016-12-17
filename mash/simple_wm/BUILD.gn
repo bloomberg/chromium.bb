@@ -27,6 +27,10 @@ service("simple_wm") {
 source_set("lib") {
   testonly = true
   sources = [
+    "move_event_handler.cc",
+    "move_event_handler.h",
+    "move_loop.cc",
+    "move_loop.h",
     "simple_wm.cc",
     "simple_wm.h",
   ]

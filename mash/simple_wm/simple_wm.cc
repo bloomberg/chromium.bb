@@ -6,6 +6,7 @@
 
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
+#include "mash/simple_wm/move_event_handler.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/display/screen_base.h"
@@ -190,6 +191,11 @@ class SimpleWM::FrameView : public views::WidgetDelegateView,
   }
   ~FrameView() override {}
 
+  void Init() {
+    move_event_handler_ =
+        base::MakeUnique<MoveEventHandler>(GetWidget()->GetNativeWindow());
+  }
+
  private:
   // views::WidgetDelegateView:
   base::string16 GetWindowTitle() const override {
@@ -217,6 +223,7 @@ class SimpleWM::FrameView : public views::WidgetDelegateView,
   }
 
   aura::Window* client_window_;
+  std::unique_ptr<MoveEventHandler> move_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameView);
 };
@@ -343,7 +350,7 @@ void SimpleWM::SetWindowManagerClient(
 bool SimpleWM::OnWmSetBounds(aura::Window* window, gfx::Rect* bounds) {
   FrameView* frame_view = GetFrameViewForClientWindow(window);
   frame_view->GetWidget()->SetBounds(*bounds);
-  return true;
+  return false;
 }
 
 bool SimpleWM::OnWmSetProperty(
@@ -371,6 +378,7 @@ aura::Window* SimpleWM::OnWmCreateTopLevelWindow(
   params.bounds = gfx::Rect(10, 10, 500, 500);
   frame_widget->Init(params);
   frame_widget->Show();
+  frame_view->Init();
 
   frame_widget->GetNativeWindow()->AddChild(client_window);
 

@@ -10,7 +10,6 @@ source_set("mash") {
     "mash_runner.h",
   ]
   deps = [
-    "//ash/resources",
     "//base:i18n",
     "//components/tracing:startup_tracing",
     "//content/public/common",
@@ -32,6 +31,10 @@ source_set("mash") {
     ":mash_manifest",
     "//chrome/app:service_manifests",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//ash/resources" ]
+  }
 
   if (is_linux && !is_android) {
     deps += [ "//components/font_service:lib" ]
