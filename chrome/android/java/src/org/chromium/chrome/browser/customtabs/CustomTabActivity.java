@@ -109,7 +109,7 @@ public class CustomTabActivity extends ChromeActivity {
     private boolean mShouldOverridePackage;
 
     private boolean mHasCreatedTabEarly;
-    private boolean mIsInitialStart = true;
+    private boolean mIsInitialResume = true;
     // Whether there is any prerender associated with the session.
     private boolean mHasPrerender;
     private CustomTabObserver mTabObserver;
@@ -489,13 +489,6 @@ public class CustomTabActivity extends ChromeActivity {
 
         // Put Sync in the correct state by calling tab state initialized. crbug.com/581811.
         getTabModelSelector().markTabStateInitialized();
-        SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
-        String lastUrl = preferences.getString(LAST_URL_PREF, null);
-        if (lastUrl != null && lastUrl.equals(getUrlToLoad())) {
-            RecordUserAction.record("CustomTabsMenuOpenSameUrl");
-        } else {
-            preferences.edit().putString(LAST_URL_PREF, getUrlToLoad()).apply();
-        }
         super.finishNativeInitialization();
     }
 
@@ -579,14 +572,28 @@ public class CustomTabActivity extends ChromeActivity {
     public void onStartWithNative() {
         super.onStartWithNative();
         setActiveContentHandler(mCustomTabContentHandler);
+        if (mHasCreatedTabEarly && !mMainTab.isLoading()) postDeferredStartupIfNeeded();
+    }
 
-        if (getSavedInstanceState() != null || !mIsInitialStart) {
+    @Override
+    public void onResumeWithNative() {
+        super.onResumeWithNative();
+
+        if (getSavedInstanceState() != null || !mIsInitialResume) {
             if (mIntentDataProvider.isOpenedByChrome()) {
                 RecordUserAction.record("ChromeGeneratedCustomTab.StartedReopened");
             } else {
                 RecordUserAction.record("CustomTabs.StartedReopened");
             }
         } else {
+            SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
+            String lastUrl = preferences.getString(LAST_URL_PREF, null);
+            if (lastUrl != null && lastUrl.equals(getUrlToLoad())) {
+                RecordUserAction.record("CustomTabsMenuOpenSameUrl");
+            } else {
+                preferences.edit().putString(LAST_URL_PREF, getUrlToLoad()).apply();
+            }
+
             if (mIntentDataProvider.isOpenedByChrome()) {
                 RecordUserAction.record("ChromeGeneratedCustomTab.StartedInitially");
             } else {
@@ -598,8 +605,7 @@ public class CustomTabActivity extends ChromeActivity {
                 RecordUserAction.record("CustomTabs.StartedInitially");
             }
         }
-        if (mHasCreatedTabEarly && !mMainTab.isLoading()) postDeferredStartupIfNeeded();
-        mIsInitialStart = false;
+        mIsInitialResume = false;
     }
 
     @Override
