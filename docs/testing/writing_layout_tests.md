@@ -270,8 +270,9 @@ discussed on
 
 ### Character Encoding
 
-Tests should use the UTF-8 **character encoding**, which should be declared by
-`<meta charset=utf-8>`. This does not apply when specifically testing encodings.
+&#x1F6A7; Tests should use the UTF-8 **character encoding**, which should be
+declared by `<meta charset=utf-8>`. This does not apply when specifically
+testing encodings.
 
 The `<meta>` tag must be the first child of the document's `<head>` element. In
 documents that do not have an explicit `<head>`, the `<meta>` tag must follow
@@ -653,7 +654,7 @@ or the Task Manager on Windows, and `killall` or Activity Monitor on MacOS.
 
 The test server sets up an alias to the `LayoutTests/resources` directory. In
 HTTP tests, you can access the testing framework at e.g.
-`src="/js-test-resources/testharness.js"`.
+`src="/resources/testharness.js"`.
 
 TODO: Document [wptserve](http://wptserve.readthedocs.io/) when we are in a
 position to use it to run layout tests.
