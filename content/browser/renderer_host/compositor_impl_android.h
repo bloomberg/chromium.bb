@@ -33,6 +33,7 @@ struct ANativeWindow;
 
 namespace cc {
 class AnimationHost;
+class BeginFrameSource;
 class Display;
 class Layer;
 class LayerTreeHost;
@@ -53,10 +54,20 @@ class CONTENT_EXPORT CompositorImpl
       public ui::UIResourceProvider,
       public ui::WindowAndroidCompositor {
  public:
+  class VSyncObserver {
+   public:
+    virtual void OnVSync(base::TimeTicks timebase,
+                         base::TimeDelta interval) = 0;
+  };
+
   CompositorImpl(CompositorClient* client, gfx::NativeWindow root_window);
   ~CompositorImpl() override;
 
   static bool IsInitialized();
+
+  void AddObserver(VSyncObserver* observer);
+  void RemoveObserver(VSyncObserver* observer);
+  void OnNeedsBeginFramesChange(bool needs_begin_frames);
 
   // ui::ResourceProvider implementation.
   cc::UIResourceId CreateUIResource(cc::UIResourceClient* client) override;
@@ -102,6 +113,8 @@ class CONTENT_EXPORT CompositorImpl
   void AttachLayerForReadback(scoped_refptr<cc::Layer> layer) override;
   void RequestCopyOfOutputOnRootLayer(
       std::unique_ptr<cc::CopyOutputRequest> request) override;
+  void OnVSync(base::TimeTicks frame_time,
+               base::TimeDelta vsync_period) override;
   void SetNeedsAnimate() override;
   cc::FrameSinkId GetFrameSinkId() override;
 
@@ -134,10 +147,12 @@ class CONTENT_EXPORT CompositorImpl
   scoped_refptr<cc::Layer> readback_layer_tree_;
 
   // Destruction order matters here:
+  base::ObserverList<VSyncObserver, true> observer_list_;
   std::unique_ptr<cc::AnimationHost> animation_host_;
   std::unique_ptr<cc::LayerTreeHost> host_;
   ui::ResourceManagerImpl resource_manager_;
 
+  std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
   std::unique_ptr<cc::Display> display_;
 
   gfx::Size size_;
@@ -167,6 +182,7 @@ class CONTENT_EXPORT CompositorImpl
   bool compositor_frame_sink_request_pending_;
 
   gpu::Capabilities gpu_capabilities_;
+  bool needs_begin_frames_;
   base::WeakPtrFactory<CompositorImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorImpl);

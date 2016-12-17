@@ -40,6 +40,7 @@
 #include "cc/output/vulkan_in_process_context_provider.h"
 #include "cc/raster/single_thread_task_graph_runner.h"
 #include "cc/resources/ui_resource_manager.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/direct_compositor_frame_sink.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/display_scheduler.h"
@@ -135,6 +136,78 @@ gpu::gles2::ContextCreationAttribHelper GetCompositorContextAttributes(
   }
 
   return attributes;
+}
+
+class ExternalBeginFrameSource : public cc::BeginFrameSource,
+                                 public CompositorImpl::VSyncObserver {
+ public:
+  explicit ExternalBeginFrameSource(CompositorImpl* compositor)
+      : compositor_(compositor) {
+    compositor_->AddObserver(this);
+  }
+  ~ExternalBeginFrameSource() override { compositor_->RemoveObserver(this); }
+
+  // cc::BeginFrameSource implementation.
+  void AddObserver(cc::BeginFrameObserver* obs) override;
+  void RemoveObserver(cc::BeginFrameObserver* obs) override;
+  void DidFinishFrame(cc::BeginFrameObserver* obs,
+                      size_t remaining_frames) override {}
+  bool IsThrottled() const override { return true; }
+
+  // CompositorImpl::VSyncObserver implementation.
+  void OnVSync(base::TimeTicks frame_time,
+               base::TimeDelta vsync_period) override;
+
+ private:
+  CompositorImpl* const compositor_;
+  std::unordered_set<cc::BeginFrameObserver*> observers_;
+  cc::BeginFrameArgs last_begin_frame_args_;
+};
+
+void ExternalBeginFrameSource::AddObserver(cc::BeginFrameObserver* obs) {
+  DCHECK(obs);
+  DCHECK(observers_.find(obs) == observers_.end());
+
+  observers_.insert(obs);
+  obs->OnBeginFrameSourcePausedChanged(false);
+  compositor_->OnNeedsBeginFramesChange(true);
+
+  if (last_begin_frame_args_.IsValid()) {
+    // Send a MISSED begin frame if necessary.
+    cc::BeginFrameArgs last_args = obs->LastUsedBeginFrameArgs();
+    if (!last_args.IsValid() ||
+        (last_begin_frame_args_.frame_time > last_args.frame_time)) {
+      last_begin_frame_args_.type = cc::BeginFrameArgs::MISSED;
+      // TODO(crbug.com/602485): A deadline doesn't make too much sense
+      // for a missed BeginFrame (the intention rather is 'immediately'),
+      // but currently the retro frame logic is very strict in discarding
+      // BeginFrames.
+      last_begin_frame_args_.deadline =
+          base::TimeTicks::Now() + last_begin_frame_args_.interval;
+      obs->OnBeginFrame(last_begin_frame_args_);
+    }
+  }
+}
+
+void ExternalBeginFrameSource::RemoveObserver(cc::BeginFrameObserver* obs) {
+  DCHECK(obs);
+  DCHECK(observers_.find(obs) != observers_.end());
+
+  observers_.erase(obs);
+  if (observers_.empty())
+    compositor_->OnNeedsBeginFramesChange(false);
+}
+
+void ExternalBeginFrameSource::OnVSync(base::TimeTicks frame_time,
+                                       base::TimeDelta vsync_period) {
+  // frame time is in the past, so give the next vsync period as the deadline.
+  base::TimeTicks deadline = frame_time + vsync_period;
+  last_begin_frame_args_ =
+      cc::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
+                                 vsync_period, cc::BeginFrameArgs::NORMAL);
+  std::unordered_set<cc::BeginFrameObserver*> observers(observers_);
+  for (auto* obs : observers)
+    obs->OnBeginFrame(last_begin_frame_args_);
 }
 
 class AndroidOutputSurface : public cc::OutputSurface {
@@ -333,6 +406,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       pending_swapbuffers_(0U),
       num_successive_context_creation_failures_(0),
       compositor_frame_sink_request_pending_(false),
+      needs_begin_frames_(false),
       weak_factory_(this) {
   ui::ContextProviderFactory::GetInstance()
       ->GetSurfaceManager()
@@ -652,6 +726,7 @@ void CompositorImpl::InitializeDisplay(
   cc::SurfaceManager* manager =
       ui::ContextProviderFactory::GetInstance()->GetSurfaceManager();
   auto* task_runner = base::ThreadTaskRunnerHandle::Get().get();
+  begin_frame_source_.reset(new ExternalBeginFrameSource(this));
   std::unique_ptr<cc::DisplayScheduler> scheduler(new cc::DisplayScheduler(
       task_runner, display_output_surface->capabilities().max_frames_pending));
 
@@ -659,7 +734,7 @@ void CompositorImpl::InitializeDisplay(
       HostSharedBitmapManager::current(),
       BrowserGpuMemoryBufferManager::current(),
       host_->GetSettings().renderer_settings, frame_sink_id_,
-      root_window_->GetBeginFrameSource(), std::move(display_output_surface),
+      begin_frame_source_.get(), std::move(display_output_surface),
       std::move(scheduler),
       base::MakeUnique<cc::TextureMailboxDeleter>(task_runner)));
 
@@ -676,6 +751,14 @@ void CompositorImpl::InitializeDisplay(
   display_->SetVisible(true);
   display_->Resize(size_);
   host_->SetCompositorFrameSink(std::move(compositor_frame_sink));
+}
+
+void CompositorImpl::AddObserver(VSyncObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void CompositorImpl::RemoveObserver(VSyncObserver* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 cc::UIResourceId CompositorImpl::CreateUIResource(
@@ -721,6 +804,23 @@ void CompositorImpl::AttachLayerForReadback(scoped_refptr<cc::Layer> layer) {
 void CompositorImpl::RequestCopyOfOutputOnRootLayer(
     std::unique_ptr<cc::CopyOutputRequest> request) {
   root_window_->GetLayer()->RequestCopyOfOutput(std::move(request));
+}
+
+void CompositorImpl::OnVSync(base::TimeTicks frame_time,
+                             base::TimeDelta vsync_period) {
+  for (auto& observer : observer_list_)
+    observer.OnVSync(frame_time, vsync_period);
+  if (needs_begin_frames_)
+    root_window_->RequestVSyncUpdate();
+}
+
+void CompositorImpl::OnNeedsBeginFramesChange(bool needs_begin_frames) {
+  if (needs_begin_frames_ == needs_begin_frames)
+    return;
+
+  needs_begin_frames_ = needs_begin_frames;
+  if (needs_begin_frames_)
+    root_window_->RequestVSyncUpdate();
 }
 
 void CompositorImpl::SetNeedsAnimate() {

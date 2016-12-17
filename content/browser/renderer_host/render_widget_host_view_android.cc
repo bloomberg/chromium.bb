@@ -77,6 +77,7 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/android/delegated_frame_host_android.h"
 #include "ui/android/window_android.h"
 #include "ui/android/window_android_compositor.h"
 #include "ui/base/layout.h"
@@ -431,8 +432,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
     RenderWidgetHostImpl* widget_host,
     ContentViewCoreImpl* content_view_core)
     : host_(widget_host),
-      begin_frame_source_(nullptr),
-      outstanding_begin_frame_requests_(0),
+      outstanding_vsync_requests_(0),
       is_showing_(!widget_host->is_hidden()),
       is_window_visible_(true),
       is_window_activity_started_(true),
@@ -456,7 +456,9 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   view_.SetLayer(cc::Layer::Create());
   if (using_browser_compositor_) {
     delegated_frame_host_.reset(new ui::DelegatedFrameHostAndroid(
-        &view_, cached_background_color_, this));
+        &view_, cached_background_color_,
+        base::Bind(&RenderWidgetHostViewAndroid::ReturnResources,
+                   weak_ptr_factory_.GetWeakPtr())));
   }
 
   host_->SetView(this);
@@ -796,9 +798,9 @@ void RenderWidgetHostViewAndroid::SetNeedsBeginFrames(bool needs_begin_frames) {
   TRACE_EVENT1("cc", "RenderWidgetHostViewAndroid::SetNeedsBeginFrames",
                "needs_begin_frames", needs_begin_frames);
   if (needs_begin_frames)
-    AddBeginFrameRequest(PERSISTENT_BEGIN_FRAME);
+    RequestVSyncUpdate(PERSISTENT_BEGIN_FRAME);
   else
-    ClearBeginFrameRequest(PERSISTENT_BEGIN_FRAME);
+    outstanding_vsync_requests_ &= ~PERSISTENT_BEGIN_FRAME;
 }
 
 void RenderWidgetHostViewAndroid::OnStartContentIntent(
@@ -852,7 +854,7 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
   // that BeginFrame requests made during ACTION_MOVE dispatch will be honored
   // in the same vsync phase.
   if (observing_root_window_ && result.moved_beyond_slop_region)
-    AddBeginFrameRequest(BEGIN_FRAME);
+    RequestVSyncUpdate(BEGIN_FRAME);
 
   return true;
 }
@@ -1383,9 +1385,9 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
 
   host_->WasShown(ui::LatencyInfo());
 
-  if (content_view_core_ && view_.GetWindowAndroid()) {
+  if (content_view_core_) {
     StartObservingRootWindow();
-    AddBeginFrameRequest(BEGIN_FRAME);
+    RequestVSyncUpdate(BEGIN_FRAME);
   }
 }
 
@@ -1428,43 +1430,29 @@ void RenderWidgetHostViewAndroid::HideInternal() {
   host_->WasHidden();
 }
 
-void RenderWidgetHostViewAndroid::SetBeginFrameSource(
-    cc::BeginFrameSource* begin_frame_source) {
-  if (begin_frame_source_ == begin_frame_source)
-    return;
+void RenderWidgetHostViewAndroid::RequestVSyncUpdate(uint32_t requests) {
+  bool should_request_vsync = !outstanding_vsync_requests_ && requests;
+  outstanding_vsync_requests_ |= requests;
 
-  if (begin_frame_source_ && outstanding_begin_frame_requests_)
-    begin_frame_source_->RemoveObserver(this);
-  begin_frame_source_ = begin_frame_source;
-  if (begin_frame_source_ && outstanding_begin_frame_requests_)
-    begin_frame_source_->AddObserver(this);
-}
-
-void RenderWidgetHostViewAndroid::AddBeginFrameRequest(
-    BeginFrameRequestType request) {
-  uint32_t prior_requests = outstanding_begin_frame_requests_;
-  outstanding_begin_frame_requests_ = prior_requests | request;
-
-  // Note that if we don't currently have a BeginFrameSource, outstanding begin
-  // frame requests will be pushed if/when we get one during
-  // |StartObservingRootWindow()| or when the DelegatedFrameHostAndroid sets it.
-  cc::BeginFrameSource* source = begin_frame_source_;
-  if (source && outstanding_begin_frame_requests_ && !prior_requests)
-    source->AddObserver(this);
-}
-
-void RenderWidgetHostViewAndroid::ClearBeginFrameRequest(
-    BeginFrameRequestType request) {
-  uint32_t prior_requests = outstanding_begin_frame_requests_;
-  outstanding_begin_frame_requests_ = prior_requests & ~request;
-
-  cc::BeginFrameSource* source = begin_frame_source_;
-  if (source && !outstanding_begin_frame_requests_ && prior_requests)
-    source->RemoveObserver(this);
+  // Note that if we're not currently observing the root window, outstanding
+  // vsync requests will be pushed if/when we resume observing in
+  // |StartObservingRootWindow()|.
+  if (observing_root_window_ && should_request_vsync) {
+    ui::WindowAndroid* windowAndroid = view_.GetWindowAndroid();
+    DCHECK(windowAndroid);
+    // TODO(boliu): This check should be redundant with
+    // |observing_root_window_| check above. However we are receiving trickle
+    // of crash reports (crbug.com/639868) with no root cause. Should
+    // investigate more when time allows what corner case is missed.
+    if (windowAndroid)
+      windowAndroid->RequestVSyncUpdate();
+  }
 }
 
 void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
   DCHECK(content_view_core_);
+  // TODO(yusufo): This will need to have a better fallback for cases where
+  // setContentViewCore is called with a valid ContentViewCore without a window.
   DCHECK(view_.GetWindowAndroid());
   DCHECK(is_showing_);
   if (observing_root_window_)
@@ -1474,9 +1462,11 @@ void RenderWidgetHostViewAndroid::StartObservingRootWindow() {
   if (host_)
     host_->Send(new ViewMsg_SetBeginFramePaused(host_->GetRoutingID(), false));
   view_.GetWindowAndroid()->AddObserver(this);
-  // When using browser compositor, DelegatedFrameHostAndroid provides the BFS.
-  if (!using_browser_compositor_)
-    SetBeginFrameSource(view_.GetWindowAndroid()->GetBeginFrameSource());
+
+  // Clear existing vsync requests to allow a request to the new window.
+  uint32_t outstanding_vsync_requests = outstanding_vsync_requests_;
+  outstanding_vsync_requests_ = 0;
+  RequestVSyncUpdate(outstanding_vsync_requests);
 
   ui::WindowAndroidCompositor* compositor =
       view_.GetWindowAndroid()->GetCompositor();
@@ -1502,25 +1492,26 @@ void RenderWidgetHostViewAndroid::StopObservingRootWindow() {
   if (host_)
     host_->Send(new ViewMsg_SetBeginFramePaused(host_->GetRoutingID(), true));
   view_.GetWindowAndroid()->RemoveObserver(this);
-  if (!using_browser_compositor_)
-    SetBeginFrameSource(nullptr);
   // If the DFH has already been destroyed, it will have cleaned itself up.
   // This happens in some WebView cases.
   if (delegated_frame_host_)
     delegated_frame_host_->UnregisterFrameSinkHierarchy();
-  DCHECK(!begin_frame_source_);
 }
 
-void RenderWidgetHostViewAndroid::SendBeginFrame(cc::BeginFrameArgs args) {
+void RenderWidgetHostViewAndroid::SendBeginFrame(base::TimeTicks frame_time,
+                                                 base::TimeDelta vsync_period) {
   TRACE_EVENT1("cc", "RenderWidgetHostViewAndroid::SendBeginFrame",
-               "frame_time_us", args.frame_time.ToInternalValue());
+               "frame_time_us", frame_time.ToInternalValue());
 
   // Synchronous compositor does not use deadline-based scheduling.
   // TODO(brianderson): Replace this hardcoded deadline after Android
-  // switches to Surfaces and the Browser's commit isn't in the critical path.
-  args.deadline = sync_compositor_ ? base::TimeTicks()
-  : args.frame_time + (args.interval * 0.6);
-  host_->Send(new ViewMsg_BeginFrame(host_->GetRoutingID(), args));
+  // switches to Surfaces and the Browser's commit isn't in the critcal path.
+  base::TimeTicks deadline =
+      sync_compositor_ ? base::TimeTicks() : frame_time + (vsync_period * 0.6);
+  host_->Send(new ViewMsg_BeginFrame(
+      host_->GetRoutingID(),
+      cc::BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, frame_time, deadline,
+                                 vsync_period, cc::BeginFrameArgs::NORMAL)));
   if (sync_compositor_)
     sync_compositor_->DidSendBeginFrame(view_.GetWindowAndroid());
 }
@@ -1634,7 +1625,7 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
 
 void RenderWidgetHostViewAndroid::OnSetNeedsFlushInput() {
   TRACE_EVENT0("input", "RenderWidgetHostViewAndroid::OnSetNeedsFlushInput");
-  AddBeginFrameRequest(FLUSH_INPUT);
+  RequestVSyncUpdate(FLUSH_INPUT);
 }
 
 BrowserAccessibilityManager*
@@ -1816,7 +1807,7 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
     return;
   }
 
-  if (is_showing_ && view_.GetWindowAndroid())
+  if (is_showing_)
     StartObservingRootWindow();
 
   if (resize)
@@ -1892,12 +1883,10 @@ void RenderWidgetHostViewAndroid::OnDetachedFromWindow() {
 void RenderWidgetHostViewAndroid::OnAttachCompositor() {
   DCHECK(content_view_core_);
   CreateOverscrollControllerIfPossible();
-  if (observing_root_window_) {
-    ui::WindowAndroidCompositor* compositor =
-        view_.GetWindowAndroid()->GetCompositor();
-    delegated_frame_host_->RegisterFrameSinkHierarchy(
-        compositor->GetFrameSinkId());
-  }
+  ui::WindowAndroidCompositor* compositor =
+      view_.GetWindowAndroid()->GetCompositor();
+  delegated_frame_host_->RegisterFrameSinkHierarchy(
+      compositor->GetFrameSinkId());
 }
 
 void RenderWidgetHostViewAndroid::OnDetachCompositor() {
@@ -1908,41 +1897,28 @@ void RenderWidgetHostViewAndroid::OnDetachCompositor() {
   delegated_frame_host_->UnregisterFrameSinkHierarchy();
 }
 
-void RenderWidgetHostViewAndroid::OnBeginFrame(const cc::BeginFrameArgs& args) {
-  TRACE_EVENT0("cc,benchmark", "RenderWidgetHostViewAndroid::OnBeginFrame");
+void RenderWidgetHostViewAndroid::OnVSync(base::TimeTicks frame_time,
+                                          base::TimeDelta vsync_period) {
+  TRACE_EVENT0("cc,benchmark", "RenderWidgetHostViewAndroid::OnVSync");
   if (!host_)
     return;
 
-  // In sync mode, we disregard missed frame args to ensure that
-  // SynchronousCompositorBrowserFilter::SyncStateAfterVSync will be called
-  // during WindowAndroid::WindowBeginFrameSource::OnVSync() observer iteration.
-  if (sync_compositor_ && args.type == cc::BeginFrameArgs::MISSED)
-    return;
-
-  if (outstanding_begin_frame_requests_ & FLUSH_INPUT) {
-    ClearBeginFrameRequest(FLUSH_INPUT);
+  if (outstanding_vsync_requests_ & FLUSH_INPUT) {
+    outstanding_vsync_requests_ &= ~FLUSH_INPUT;
     host_->FlushInput();
   }
 
-  if ((outstanding_begin_frame_requests_ & BEGIN_FRAME) ||
-      (outstanding_begin_frame_requests_ & PERSISTENT_BEGIN_FRAME)) {
-    ClearBeginFrameRequest(BEGIN_FRAME);
-    SendBeginFrame(args);
+  if (outstanding_vsync_requests_ & BEGIN_FRAME ||
+      outstanding_vsync_requests_ & PERSISTENT_BEGIN_FRAME) {
+    outstanding_vsync_requests_ &= ~BEGIN_FRAME;
+    SendBeginFrame(frame_time, vsync_period);
   }
 
-  last_begin_frame_args_ = args;
-}
-
-const cc::BeginFrameArgs& RenderWidgetHostViewAndroid::LastUsedBeginFrameArgs()
-    const {
-  return last_begin_frame_args_;
-}
-
-void RenderWidgetHostViewAndroid::OnBeginFrameSourcePausedChanged(bool paused) {
-  // The BeginFrameSources we listen to don't use this. For WebView, we signal
-  // the "paused" state to the RenderWidget when our window attaches/detaches,
-  // see |StartObservingRootWindow()| and |StopObservingRootWindow()|.
-  DCHECK(!paused);
+  // This allows for SendBeginFrame and FlushInput to modify
+  // outstanding_vsync_requests.
+  uint32_t outstanding_vsync_requests = outstanding_vsync_requests_;
+  outstanding_vsync_requests_ = 0;
+  RequestVSyncUpdate(outstanding_vsync_requests);
 }
 
 void RenderWidgetHostViewAndroid::OnAnimate(base::TimeTicks begin_frame_time) {

@@ -6,7 +6,6 @@
 #define UI_ANDROID_WINDOW_ANDROID_H_
 
 #include <jni.h>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -19,13 +18,9 @@
 #include "ui/android/view_android.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
-namespace cc {
-class BeginFrameSource;
-}  // namespace cc
-
 namespace display {
 class DisplayAndroidManager;
-}  // namespace display
+}
 
 namespace ui {
 
@@ -64,8 +59,8 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   void RemoveObserver(WindowAndroidObserver* observer);
 
   WindowAndroidCompositor* GetCompositor() { return compositor_; }
-  cc::BeginFrameSource* GetBeginFrameSource();
 
+  void RequestVSyncUpdate();
   void SetNeedsAnimate();
   void Animate(base::TimeTicks begin_frame_time);
   void OnVSync(JNIEnv* env,
@@ -89,14 +84,9 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   void DestroyForTesting();
 
  private:
-  class WindowBeginFrameSource;
   friend class DisplayAndroidManager;
-  friend class WindowBeginFrameSource;
 
   ~WindowAndroid() override;
-
-  void SetNeedsBeginFrames(bool needs_begin_frames);
-  void RequestVSyncUpdate();
 
   // ViewAndroid overrides.
   WindowAndroid* GetWindowAndroid() const override;
@@ -110,9 +100,6 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
   WindowAndroidCompositor* compositor_;
 
   base::ObserverList<WindowAndroidObserver> observer_list_;
-
-  std::unique_ptr<WindowBeginFrameSource> begin_frame_source_;
-  bool needs_begin_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowAndroid);
 };

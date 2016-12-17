@@ -45,7 +45,7 @@ void SynchronousCompositorBrowserFilter::SyncStateAfterVSync(
   if (window_android_in_vsync_)
     return;
   window_android_in_vsync_ = window_android;
-  window_android_in_vsync_->GetBeginFrameSource()->AddObserver(this);
+  window_android_in_vsync_->AddObserver(this);
 }
 
 bool SynchronousCompositorBrowserFilter::OnMessageReceived(
@@ -177,13 +177,30 @@ void SynchronousCompositorBrowserFilter::SignalAllFutures() {
   filter_ready_ = false;
 }
 
-void SynchronousCompositorBrowserFilter::OnBeginFrame(
-    const cc::BeginFrameArgs& args) {
-  // This is called after DidSendBeginFrame for all SynchronousCompositorHosts
+void SynchronousCompositorBrowserFilter::OnCompositingDidCommit() {
+  NOTREACHED();
+}
+
+void SynchronousCompositorBrowserFilter::OnRootWindowVisibilityChanged(
+    bool visible) {
+  NOTREACHED();
+}
+
+void SynchronousCompositorBrowserFilter::OnAttachCompositor() {
+  NOTREACHED();
+}
+
+void SynchronousCompositorBrowserFilter::OnDetachCompositor() {
+  NOTREACHED();
+}
+
+void SynchronousCompositorBrowserFilter::OnVSync(base::TimeTicks frame_time,
+                                                 base::TimeDelta vsync_period) {
+  // This is called after DidSendBeginFrame for SynchronousCompositorHosts
   // belonging to this WindowAndroid, since this is added as an Observer after
   // the observer iteration has started.
   DCHECK(window_android_in_vsync_);
-  window_android_in_vsync_->GetBeginFrameSource()->RemoveObserver(this);
+  window_android_in_vsync_->RemoveObserver(this);
   window_android_in_vsync_ = nullptr;
 
   std::vector<int> routing_ids;
@@ -212,18 +229,12 @@ void SynchronousCompositorBrowserFilter::OnBeginFrame(
   compositor_host_pending_renderer_state_.clear();
 }
 
-const cc::BeginFrameArgs&
-SynchronousCompositorBrowserFilter::LastUsedBeginFrameArgs() const {
-  // Not called by the source since we add and remove ourselves during a single
-  // OnVSync() iteration.
+void SynchronousCompositorBrowserFilter::OnActivityStopped() {
   NOTREACHED();
-  return last_used_begin_frame_args_;
 }
 
-void SynchronousCompositorBrowserFilter::OnBeginFrameSourcePausedChanged(
-    bool paused) {
-  // The BeginFrameSources we listen to don't use this.
-  DCHECK(!paused);
+void SynchronousCompositorBrowserFilter::OnActivityStarted() {
+  NOTREACHED();
 }
 
 }  // namespace content

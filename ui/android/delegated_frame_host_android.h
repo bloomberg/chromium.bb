@@ -32,16 +32,12 @@ class WindowAndroidCompositor;
 class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
     : public cc::SurfaceFactoryClient {
  public:
-  class Client {
-   public:
-    virtual void SetBeginFrameSource(
-        cc::BeginFrameSource* begin_frame_source) = 0;
-    virtual void ReturnResources(const cc::ReturnedResourceArray&) = 0;
-  };
+  using ReturnResourcesCallback =
+      base::Callback<void(const cc::ReturnedResourceArray&)>;
 
   DelegatedFrameHostAndroid(ViewAndroid* view,
                             SkColor background_color,
-                            Client* client);
+                            ReturnResourcesCallback return_resources_callback);
 
   ~DelegatedFrameHostAndroid() override;
 
@@ -85,7 +81,7 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   cc::SurfaceManager* surface_manager_;
   std::unique_ptr<cc::SurfaceIdAllocator> surface_id_allocator_;
   cc::FrameSinkId registered_parent_frame_sink_id_;
-  Client* client_;
+  ReturnResourcesCallback return_resources_callback_;
 
   std::unique_ptr<cc::SurfaceFactory> surface_factory_;
 

@@ -2,7 +2,6 @@ include_rules = [
   "+cc/layers",
   "+cc/output",
   "+cc/resources",
-  "+cc/scheduler/begin_frame_source.h",
   "+cc/surfaces",
   "+cc/test/stub_layer_tree_host_client.h",
   "+cc/test/test_task_graph_runner.h",
