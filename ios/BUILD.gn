@@ -40,8 +40,8 @@ group("all") {
 
       # Those dependencies are currently only used from downstream code
       # and will be removed once the dependent code has been upstreamed.
-      "//ios/chrome/share_extension:packed_resources",
-      "//ios/chrome/today_extension:packed_resources",
+      "//ios/chrome/share_extension",
+      "//ios/chrome/today_extension",
     ]
   }
 }

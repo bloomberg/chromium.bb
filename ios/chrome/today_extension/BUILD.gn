@@ -2,12 +2,118 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/ios/rules.gni")
 import("//build/config/locales.gni")
+import("//build/config/mac/base_rules.gni")
+import("//build/mac/tweak_info_plist.gni")
+import("//ios/build/chrome_build.gni")
 import("//ios/chrome/extension_repack.gni")
+import("//ios/public/provider/chrome/browser/build_config.gni")
 
 extension_repack_all_locales("packed_resources") {
   extension = "today_extension"
   input_locales = ios_packed_locales
   output_locales = ios_packed_locales_as_mac_outputs
   copy_data_to_bundle = true
+}
+
+tweak_info_plist("tweak_info_plist") {
+  info_plist = "Info.plist"
+}
+
+compile_plist("entitlements") {
+  format = "xml1"
+  substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
+  output_name = "$target_gen_dir/today_extension.appex.entitlements"
+  plist_templates =
+      [ "entitlements/external/today_extension.appex.entitlements" ] +
+      ios_chrome_entitlements_additions
+}
+
+ios_appex_bundle("today_extension") {
+  sources = [
+    "footer_label.h",
+    "footer_label.mm",
+    "interactive_label.h",
+    "interactive_label.mm",
+    "lock_screen_state.h",
+    "lock_screen_state.mm",
+    "notification_center_button.h",
+    "notification_center_button.mm",
+    "notification_center_url_button.h",
+    "notification_center_url_button.mm",
+    "physical_web_optin_footer.h",
+    "physical_web_optin_footer.mm",
+    "today_metrics_logger.h",
+    "today_metrics_logger.mm",
+    "today_view_controller.h",
+    "today_view_controller.mm",
+    "transparent_button.h",
+    "transparent_button.mm",
+    "ui_util.h",
+    "ui_util.mm",
+    "url_table_cell.h",
+    "url_table_cell.mm",
+  ]
+
+  deps = [
+    ":resources",
+    "//base",
+    "//base:i18n",
+    "//components/metrics",
+    "//components/metrics:net",
+    "//components/open_from_clipboard",
+    "//components/prefs",
+    "//components/variations",
+    "//components/version_info",
+    "//ios/chrome/common",
+    "//ios/chrome/common/app_group",
+    "//ios/chrome/common/app_group:client",
+    "//ios/chrome/common/physical_web",
+    "//ios/chrome/today_extension:packed_resources",
+    "//ios/chrome/today_extension/strings",
+    "//ios/third_party/material_components_ios",
+    "//net",
+    "//ui/base",
+    "//url",
+  ]
+  bundle_deps_filter = [ "//third_party/icu:icudata" ]
+
+  libs = [
+    "CoreGraphics.framework",
+    "QuartzCore.framework",
+    "Foundation.framework",
+    "NotificationCenter.framework",
+    "UIKit.framework",
+    "MobileCoreServices.framework",
+  ]
+
+  extra_substitutions = [
+    "CHROME_CHANNEL_SCHEME=$url_channel_scheme",
+    "TODAY_EXTENSION_BUNDLE_ID=$chromium_bundle_id.TodayExtension",
+  ]
+
+  entitlements_target = ":entitlements"
+  info_plist_target = ":tweak_info_plist"
+}
+
+bundle_data("resources") {
+  visibility = [ ":*" ]
+  sources = [
+    "resources/todayview_clipboard.png",
+    "resources/todayview_clipboard@2x.png",
+    "resources/todayview_clipboard@3x.png",
+    "resources/todayview_new_tab.png",
+    "resources/todayview_new_tab@2x.png",
+    "resources/todayview_new_tab@3x.png",
+    "resources/todayview_physical_web.png",
+    "resources/todayview_physical_web@2x.png",
+    "resources/todayview_physical_web@3x.png",
+    "resources/todayview_voice_search.png",
+    "resources/todayview_voice_search@2x.png",
+    "resources/todayview_voice_search@3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
 }
