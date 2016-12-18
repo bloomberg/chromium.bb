@@ -74,7 +74,10 @@ bool SetAddressSpaceLimit() {
 #elif defined(OS_POSIX) && !defined(OS_MACOSX)
   // Mac will accept RLIMIT_AS changes but it is not enforced.
   // See https://crbug.com/435269 and rdar://17576114.
-  const size_t kAddressSpaceLimit = static_cast<size_t>(4096) * 1024 * 1024;
+  // Note: this number must be not less than 6 GB, because with
+  // sanitizer_coverage_flags=edge, it reserves > 5 GB of address
+  // space, see https://crbug.com/674665.
+  const size_t kAddressSpaceLimit = static_cast<size_t>(6144) * 1024 * 1024;
   struct rlimit limit;
   if (getrlimit(RLIMIT_AS, &limit) != 0)
     return false;
@@ -1299,7 +1302,7 @@ static void DoReturnNullTest(size_t allocSize) {
 
 // Tests that if an allocation fails in "return null" mode, repeating it doesn't
 // crash, and still returns null. The test tries to allocate 6 GB of memory in
-// 512 kB blocks. On 64-bit POSIX systems, the address space is limited to 4 GB
+// 512 kB blocks. On 64-bit POSIX systems, the address space is limited to 6 GB
 // using setrlimit() first.
 //
 // Disable this test on Android because, due to its allocation-heavy behavior,
