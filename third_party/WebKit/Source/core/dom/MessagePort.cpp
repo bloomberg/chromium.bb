@@ -33,6 +33,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/MessageEvent.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -123,8 +124,10 @@ WebMessagePortChannelUniquePtr MessagePort::disentangle() {
 // access mutable variables).
 void MessagePort::messageAvailable() {
   DCHECK(getExecutionContext());
+  // TODO(tzik): Use ParentThreadTaskRunners instead of ExecutionContext here to
+  // avoid touching foreign thread GCed object.
   getExecutionContext()->postTask(
-      BLINK_FROM_HERE,
+      TaskType::PostedMessage, BLINK_FROM_HERE,
       createCrossThreadTask(&MessagePort::dispatchMessages,
                             wrapCrossThreadWeakPersistent(this)));
 }
