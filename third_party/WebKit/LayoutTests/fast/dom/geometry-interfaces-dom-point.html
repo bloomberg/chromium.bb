@@ -1,114 +1,65 @@
-<!DOCTYPE html>
-<html>
-<head>
+<!doctype html>
+<meta charset="utf-8">
 <title>Geometry Interfaces: DOMPoint</title>
-<script src="../../resources/js-test.js"></script>
-</head>
-<body>
+<link rel="help" href="https://drafts.fxtf.org/geometry/#DOMPoint">
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="./resources/geometry-interfaces-test-helpers.js"></script>
 <script>
+'use strict';
 
-debug("# DOMPoint(2, 3)");
-var point = new DOMPoint(2, 3);
-shouldBe("point.x", "2");
-shouldBe("point.y", "3");
-shouldBe("point.z", "0");
-shouldBe("point.w", "1");
-debug("");
+test(() => {
+  var point = new DOMPoint(2, 3);
+  assert_dom_point_equals(point, [2, 3, 0, 1]);
+}, 'DOMPoint constructor with x, y parameters');
 
-debug("# DOMPoint(5, 7, 9)");
-point = new DOMPoint(5, 7, 9);
-shouldBe("point.x", "5");
-shouldBe("point.y", "7");
-shouldBe("point.z", "9");
-shouldBe("point.w", "1");
-debug("");
+test(() => {
+  var point = new DOMPoint(5, 7, 9);
+  assert_dom_point_equals(point, [5, 7, 9, 1]);
+}, 'DOMPoint constructor with x, y, z parameters');
 
-debug("# DOMPoint(8, 2, 1, 6)");
-point = new DOMPoint(5, 7, 9);
-point = new DOMPoint(8, 2, 1, 6);
-shouldBe("point.x", "8");
-shouldBe("point.y", "2");
-shouldBe("point.z", "1");
-shouldBe("point.w", "6");
-debug("");
+test(() => {
+  var point = new DOMPoint(8, 2, 1, 6);
+  assert_dom_point_equals(point, [8, 2, 1, 6]);
+}, 'DOMPoint constructor with x, y, z, w parameters');
 
-debug("# DOMPoint({ x : 2 })");
-point = new DOMPoint({ x : 2 });
-shouldBe("point.x", "2");
-shouldBe("point.y", "0");
-shouldBe("point.z", "0");
-shouldBe("point.w", "1");
-debug("");
+test(() => {
+  var point = new DOMPoint({x: 2});
+  assert_dom_point_equals(point, [2, 0, 0, 1]);
+}, 'DOMPoint constructor with x parameter');
 
-debug("# DOMPoint({ y : 2 })");
-point = new DOMPoint({ y : 2 });
-shouldBe("point.x", "0");
-shouldBe("point.y", "2");
-shouldBe("point.z", "0");
-shouldBe("point.w", "1");
-debug("");
+test(() => {
+  var point = new DOMPoint({y: 2});
+  assert_dom_point_equals(point, [0, 2, 0, 1]);
+}, 'DOMPoint constructor with y parameter');
 
-debug("# DOMPoint({ z : 2 })");
-point = new DOMPoint({ z : 2 });
-shouldBe("point.x", "0");
-shouldBe("point.y", "0");
-shouldBe("point.z", "2");
-shouldBe("point.w", "1");
-debug("");
+test(() => {
+  var point = new DOMPoint({z: 2});
+  assert_dom_point_equals(point, [0, 0, 2, 1]);
+}, 'DOMPoint constructor with z parameter');
 
-debug("# DOMPoint({ w : 2 })");
-point = new DOMPoint({ w : 2 });
-shouldBe("point.x", "0");
-shouldBe("point.y", "0");
-shouldBe("point.z", "0");
-shouldBe("point.w", "2");
-debug("");
+test(() => {
+  var point = new DOMPoint({w: 2});
+  assert_dom_point_equals(point, [0, 0, 0, 2]);
+}, 'DOMPoint constructor with w parameter');
 
-debug("# DOMPoint({ x : 2, y : 3, z : 4, w : 5 })");
-point = new DOMPoint({ x : 2, y : 3, z : 4, w : 5 });
-shouldBe("point.x", "2");
-shouldBe("point.y", "3");
-shouldBe("point.z", "4");
-shouldBe("point.w", "5");
-debug("");
+test(() => {
+  var point = new DOMPoint({x: 2, y: 3, z: 4, w: 5});
+  assert_dom_point_equals(point, [2, 3, 4, 5]);
+}, 'DOMPoint constructor with x, y, z, w parameters');
 
-debug("# DOMPoint()");
-point = new DOMPoint();
-shouldBe("point.x", "0");
-shouldBe("point.y", "0");
-shouldBe("point.z", "0");
-shouldBe("point.w", "1");
-debug("");
+test(() => {
+  var point = new DOMPoint();
+  assert_dom_point_equals(point, [0, 0, 0, 1]);
+}, 'DOMPoint constructor without parameter');
 
-debug("# DOMPoint setter");
-point.x = 10;
-shouldBe("point.x", "10");
-point.y = 20;
-shouldBe("point.y", "20");
-point.z = 30;
-shouldBe("point.z", "30");
-point.w = 40;
-shouldBe("point.w", "40");
-debug("");
-
-debug("# DOMPointReadOnly(10, 20, 30, 40)");
-point = new DOMPointReadOnly(10, 20, 30, 40);
-shouldBe("point.x", "10");
-shouldBe("point.y", "20");
-shouldBe("point.z", "30");
-shouldBe("point.w", "40");
-debug("");
-
-debug("# DOMPointReadOnly readonly test");
-point.x = 100;
-shouldBe("point.x", "10");
-point.y = 100;
-shouldBe("point.y", "20");
-point.z = 100;
-shouldBe("point.z", "30");
-point.w = 100;
-shouldBe("point.w", "40");
+test(() => {
+  var point = new DOMPoint();
+  point.x = 10;
+  point.y = 20;
+  point.z = 30;
+  point.w = 40;
+  assert_dom_point_equals(point, [10, 20, 30, 40]);
+}, 'DOMPoint setter');
 
 </script>
-</body>
-</html>

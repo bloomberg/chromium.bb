@@ -70,3 +70,12 @@ function assert_point_equals(actual, expected) {
   assert_equals(actual.z, expected.z, "point equality: z differs");
   assert_equals(actual.w, expected.w, "point equality: w differs");
 }
+
+function assert_dom_point_equals(actual, expected) {
+  assert_true(Array.isArray(expected));
+  assert_equals(expected.length, 4);
+  assert_equals(actual.x, expected[0], "point equality: x differs");
+  assert_equals(actual.y, expected[1], "point equality: y differs");
+  assert_equals(actual.z, expected[2], "point equality: z differs");
+  assert_equals(actual.w, expected[3], "point equality: w differs");
+}

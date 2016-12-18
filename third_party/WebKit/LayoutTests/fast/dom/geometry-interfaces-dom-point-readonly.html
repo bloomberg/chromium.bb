@@ -1,0 +1,24 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Geometry Interfaces: DOMPointReadOnly</title>
+<link rel="help" href="https://drafts.fxtf.org/geometry/#DOMPoint">
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="./resources/geometry-interfaces-test-helpers.js"></script>
+<script>
+'use strict';
+
+test(() => {
+  var point = new DOMPointReadOnly(10, 20, 30, 40);
+  assert_dom_point_equals(point, [10, 20, 30, 40]);
+}, 'DOMPointReadOnly constructor with x, y, z, w parameters');
+
+test(() => {
+  var point = new DOMPointReadOnly(1, 2, 3, 4);
+  assert_readonly(point, 'x');
+  assert_readonly(point, 'y');
+  assert_readonly(point, 'z');
+  assert_readonly(point, 'w');
+}, 'DOMPointReadOnly readonly test');
+
+</script>
