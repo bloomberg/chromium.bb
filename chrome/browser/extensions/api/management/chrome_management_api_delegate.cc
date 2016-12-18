@@ -338,8 +338,7 @@ GURL ChromeManagementAPIDelegate::GetIconURL(
     const extensions::Extension* extension,
     int icon_size,
     ExtensionIconSet::MatchType match,
-    bool grayscale,
-    bool* exists) const {
+    bool grayscale) const {
   return extensions::ExtensionIconSource::GetIconURL(extension, icon_size,
-                                                     match, grayscale, exists);
+                                                     match, grayscale);
 }

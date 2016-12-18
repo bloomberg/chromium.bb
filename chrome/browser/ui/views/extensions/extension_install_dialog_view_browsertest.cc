@@ -79,9 +79,7 @@ ExtensionInstallDialogViewTestBase::CreatePrompt() {
 
   std::unique_ptr<ExtensionIconManager> icon_manager(
       new ExtensionIconManager());
-  const SkBitmap icon_bitmap = icon_manager->GetIcon(extension_->id());
-  gfx::Image icon = gfx::Image::CreateFrom1xBitmap(icon_bitmap);
-  prompt->set_icon(icon);
+  prompt->set_icon(icon_manager->GetIcon(extension_->id()));
 
   return prompt;
 }

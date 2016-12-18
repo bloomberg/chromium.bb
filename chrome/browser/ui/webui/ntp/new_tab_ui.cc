@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/ntp/app_launcher_handler.h"
 #include "chrome/browser/ui/webui/ntp/core_app_launcher_handler.h"
-#include "chrome/browser/ui/webui/ntp/favicon_webui_handler.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache.h"
 #include "chrome/browser/ui/webui/ntp/ntp_resource_cache_factory.h"
 #include "chrome/browser/ui/webui/theme_handler.h"
@@ -60,7 +59,6 @@ NewTabUI::NewTabUI(content::WebUI* web_ui)
   Profile* profile = GetProfile();
   if (!profile->IsOffTheRecord()) {
     web_ui->AddMessageHandler(new MetricsHandler());
-    web_ui->AddMessageHandler(new FaviconWebUIHandler());
     web_ui->AddMessageHandler(new CoreAppLauncherHandler());
 
     ExtensionService* service =

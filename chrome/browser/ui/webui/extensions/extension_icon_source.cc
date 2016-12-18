@@ -78,13 +78,7 @@ struct ExtensionIconSource::ExtensionIconRequest {
 GURL ExtensionIconSource::GetIconURL(const Extension* extension,
                                      int icon_size,
                                      ExtensionIconSet::MatchType match,
-                                     bool grayscale,
-                                     bool* exists) {
-  if (exists) {
-    *exists =
-        IconsInfo::GetIconURL(extension, icon_size, match) != GURL::EmptyGURL();
-  }
-
+                                     bool grayscale) {
   GURL icon_url(base::StringPrintf("%s%s/%d/%d%s",
                                    chrome::kChromeUIExtensionIconURL,
                                    extension->id().c_str(),

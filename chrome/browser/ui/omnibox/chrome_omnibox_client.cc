@@ -48,6 +48,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
@@ -214,8 +215,8 @@ gfx::Image ChromeOmniboxClient::GetIconIfExtensionMatch(
   const TemplateURL* template_url = match.GetTemplateURL(service, false);
   if (template_url &&
       (template_url->type() == TemplateURL::OMNIBOX_API_EXTENSION)) {
-    return extensions::OmniboxAPI::Get(profile_)
-        ->GetOmniboxPopupIcon(template_url->GetExtensionId());
+    return extensions::OmniboxAPI::Get(profile_)->GetOmniboxIcon(
+        template_url->GetExtensionId());
   }
   return gfx::Image();
 }

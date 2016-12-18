@@ -27,8 +27,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/url_pattern_set.h"
-
-class SkBitmap;
+#include "ui/gfx/image/image.h"
 
 namespace content {
 class BrowserContext;
@@ -346,10 +345,10 @@ class MenuManager : public content::NotificationObserver,
                       const content::ContextMenuParams& params,
                       const MenuItem::Id& menu_item_id);
 
-  // This returns a bitmap of width/height kFaviconSize, loaded either from an
+  // This returns a image of width/height kFaviconSize, loaded either from an
   // entry specified in the extension's 'icon' section of the manifest, or a
   // default extension icon.
-  const SkBitmap& GetIconForExtension(const std::string& extension_id);
+  gfx::Image GetIconForExtension(const std::string& extension_id);
 
   // content::NotificationObserver implementation.
   void Observe(int type,

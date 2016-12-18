@@ -65,17 +65,6 @@
   position: absolute;
 }
 
-.app-icon-div .color-stripe {
-  border-bottom-left-radius: 5px 5px;
-  border-bottom-right-radius: 5px 5px;
-  bottom: 0;
-  height: 3px;
-  opacity: 1.0;
-  position: absolute;
-  width: 100%;
-  z-index: 100;
-}
-
 .app-context-menu > button:first-child {
   font-weight: bold;
 }

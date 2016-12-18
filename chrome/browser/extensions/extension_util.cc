@@ -310,11 +310,9 @@ std::unique_ptr<base::DictionaryValue> GetExtensionInfo(
   dict->SetString("name", extension->name());
 
   GURL icon = extensions::ExtensionIconSource::GetIconURL(
-      extension,
-      extension_misc::EXTENSION_ICON_SMALLISH,
+      extension, extension_misc::EXTENSION_ICON_SMALLISH,
       ExtensionIconSet::MATCH_BIGGER,
-      false,  // Not grayscale.
-      NULL);  // Don't set bool if exists.
+      false);  // Not grayscale.
   dict->SetString("icon", icon.spec());
 
   return dict;

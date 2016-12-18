@@ -265,19 +265,6 @@ cr.define('ntp', function() {
   }
 
   /**
-   * Set the dominant color for a node. This will be called in response to
-   * getFaviconDominantColor. The node represented by |id| better have a setter
-   * for stripeColor.
-   * @param {string} id The ID of a node.
-   * @param {string} color The color represented as a CSS string.
-   */
-  function setFaviconDominantColor(id, color) {
-    var node = $(id);
-    if (node)
-      node.stripeColor = color;
-  }
-
-  /**
    * Updates the text displayed in the login container. If there is no text then
    * the login container is hidden.
    * @param {string} loginHeader The first line of text.
@@ -448,7 +435,6 @@ cr.define('ntp', function() {
     saveAppPageName: saveAppPageName,
     setAppToBeHighlighted: setAppToBeHighlighted,
     setBookmarkBarAttached: setBookmarkBarAttached,
-    setFaviconDominantColor: setFaviconDominantColor,
     themeChanged: themeChanged,
     updateLogin: updateLogin
   };

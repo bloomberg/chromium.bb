@@ -950,8 +950,6 @@ split_static_library("ui") {
       "webui/ntp/app_resource_cache_factory.h",
       "webui/ntp/core_app_launcher_handler.cc",
       "webui/ntp/core_app_launcher_handler.h",
-      "webui/ntp/favicon_webui_handler.cc",
-      "webui/ntp/favicon_webui_handler.h",
       "webui/ntp/new_tab_ui.cc",
       "webui/ntp/new_tab_ui.h",
       "webui/ntp/ntp_resource_cache.cc",

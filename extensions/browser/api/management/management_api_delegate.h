@@ -133,8 +133,7 @@ class ManagementAPIDelegate {
   virtual GURL GetIconURL(const Extension* extension,
                           int icon_size,
                           ExtensionIconSet::MatchType match,
-                          bool grayscale,
-                          bool* exists) const = 0;
+                          bool grayscale) const = 0;
 };
 
 }  // namespace extensions

@@ -308,11 +308,10 @@ void ContextMenuMatcher::SetExtensionIcon(const std::string& extension_id) {
   int index = menu_model_->GetItemCount() - 1;
   DCHECK_GE(index, 0);
 
-  const SkBitmap& icon = menu_manager->GetIconForExtension(extension_id);
-  DCHECK(icon.width() == gfx::kFaviconSize);
-  DCHECK(icon.height() == gfx::kFaviconSize);
-
-  menu_model_->SetIcon(index, gfx::Image::CreateFrom1xBitmap(icon));
+  gfx::Image icon = menu_manager->GetIconForExtension(extension_id);
+  DCHECK_EQ(gfx::kFaviconSize, icon.Width());
+  DCHECK_EQ(gfx::kFaviconSize, icon.Height());
+  menu_model_->SetIcon(index, icon);
 }
 
 }  // namespace extensions

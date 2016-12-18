@@ -11,8 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/image/image.h"
 
 namespace content {
 class BrowserContext;
@@ -20,10 +19,6 @@ class BrowserContext;
 
 namespace extensions {
 class Extension;
-}
-
-namespace gfx {
-class Image;
 }
 
 class ExtensionIconManager {
@@ -35,16 +30,15 @@ class ExtensionIconManager {
   void LoadIcon(content::BrowserContext* context,
                 const extensions::Extension* extension);
 
-  // This returns a bitmap of width/height kFaviconSize, loaded either from an
+  // This returns an image of width/height kFaviconSize, loaded either from an
   // entry specified in the extension's 'icon' section of the manifest, or a
   // default extension icon.
-  const SkBitmap& GetIcon(const std::string& extension_id);
+  gfx::Image GetIcon(const std::string& extension_id);
 
   // Removes the extension's icon from memory.
   void RemoveIcon(const std::string& extension_id);
 
   void set_monochrome(bool value) { monochrome_ = value; }
-  void set_padding(const gfx::Insets& value) { padding_ = value; }
 
  protected:
   virtual void OnImageLoaded(const std::string& extension_id,
@@ -55,24 +49,17 @@ class ExtensionIconManager {
   // default_icon_.
   void EnsureDefaultIcon();
 
-  // Helper function to return a copy of |src| with the proper scaling and
-  // coloring.
-  SkBitmap ApplyTransforms(const SkBitmap& src);
-
-  // Maps extension id to an SkBitmap with the icon for that extension.
-  std::map<std::string, SkBitmap> icons_;
+  // Maps extension id to the icon for that extension.
+  std::map<std::string, gfx::Image> icons_;
 
   // Set of extension IDs waiting for icons to load.
   std::set<std::string> pending_icons_;
 
   // The default icon we'll use if an extension doesn't have one.
-  SkBitmap default_icon_;
+  gfx::Image default_icon_;
 
   // If true, we will desaturate the icons to make them monochromatic.
   bool monochrome_;
-
-  // Specifies the amount of empty padding to place around the icon.
-  gfx::Insets padding_;
 
   base::WeakPtrFactory<ExtensionIconManager> weak_ptr_factory_;
 

@@ -503,8 +503,7 @@ void FindFileHandlerTasks(Profile* profile,
       GURL best_icon = extensions::ExtensionIconSource::GetIconURL(
           extension, drive::util::kPreferredIconSize,
           ExtensionIconSet::MATCH_BIGGER,
-          false,  // grayscale
-          NULL);  // exists
+          false);  // grayscale
 
       // If file handler doesn't match as good match, regards it as generic file
       // handler.
@@ -559,11 +558,9 @@ void FindFileBrowserHandlerTasks(
     // TODO(zelidrag): Figure out how to expose icon URL that task defined in
     // manifest instead of the default extension icon.
     const GURL icon_url = extensions::ExtensionIconSource::GetIconURL(
-        extension,
-        extension_misc::EXTENSION_ICON_BITTY,
+        extension, extension_misc::EXTENSION_ICON_BITTY,
         ExtensionIconSet::MATCH_BIGGER,
-        false,  // grayscale
-        NULL);  // exists
+        false);  // grayscale
 
     result_list->push_back(FullTaskDescriptor(
         TaskDescriptor(extension_id, file_tasks::TASK_TYPE_FILE_BROWSER_HANDLER,

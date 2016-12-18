@@ -19,17 +19,17 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/image_loader_factory.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/manifest_handlers/icons_handler.h"
 #include "skia/ext/image_operations.h"
+#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_family.h"
 #include "ui/gfx/image/image_skia.h"
 
 using content::BrowserThread;
-using extensions::Extension;
-using extensions::ExtensionsBrowserClient;
-using extensions::ImageLoader;
-using extensions::Manifest;
+
+namespace extensions {
 
 namespace {
 
@@ -127,8 +127,6 @@ std::vector<SkBitmap> LoadResourceBitmaps(
 }
 
 }  // namespace
-
-namespace extensions {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ImageLoader::ImageRepresentation
@@ -239,6 +237,22 @@ void ImageLoader::LoadImageAsync(const Extension* extension,
   LoadImagesAsync(extension, info_list, callback);
 }
 
+void ImageLoader::LoadImageAtEveryScaleFactorAsync(
+    const Extension* extension,
+    const gfx::Size& dip_size,
+    const ImageLoaderImageCallback& callback) {
+  std::vector<ImageRepresentation> info_list;
+  for (auto scale : ui::GetSupportedScaleFactors()) {
+    const float scale_factor = ui::GetScaleForScaleFactor(scale);
+    const gfx::Size px_size = gfx::ScaleToFlooredSize(dip_size, scale_factor);
+    ExtensionResource image = IconsInfo::GetIconResource(
+        extension, px_size.width(), ExtensionIconSet::MATCH_BIGGER);
+    info_list.push_back(ImageRepresentation(
+        image, ImageRepresentation::ALWAYS_RESIZE, px_size, scale));
+  }
+  LoadImagesAsync(extension, info_list, callback);
+}
+
 void ImageLoader::LoadImagesAsync(
     const Extension* extension,
     const std::vector<ImageRepresentation>& info_list,
@@ -256,7 +270,7 @@ void ImageLoader::LoadImagesAsync(
 }
 
 void ImageLoader::LoadImageFamilyAsync(
-    const extensions::Extension* extension,
+    const Extension* extension,
     const std::vector<ImageRepresentation>& info_list,
     const ImageLoaderImageFamilyCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

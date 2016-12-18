@@ -872,8 +872,7 @@ void MenuManager::Observe(int type,
   }
 }
 
-const SkBitmap& MenuManager::GetIconForExtension(
-    const std::string& extension_id) {
+gfx::Image MenuManager::GetIconForExtension(const std::string& extension_id) {
   return icon_manager_.GetIcon(extension_id);
 }
 
