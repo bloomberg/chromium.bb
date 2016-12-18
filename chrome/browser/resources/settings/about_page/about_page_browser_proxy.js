@@ -60,6 +60,18 @@ var UpdateStatus = {
   DISABLED_BY_ADMIN: 'disabled_by_admin',
 };
 
+<if expr="_google_chrome and is_macosx">
+/**
+ * @typedef {{
+ *   hidden: boolean,
+ *   disabled: boolean,
+ *   actionable: boolean,
+ *   text: (string|undefined)
+ * }}
+ */
+var PromoteUpdaterStatus;
+</if>
+
 /**
  * @typedef {{
  *   status: !UpdateStatus,
@@ -148,6 +160,13 @@ cr.define('settings', function() {
     /** @return {!Promise<?RegulatoryInfo>} */
     getRegulatoryInfo: function() {},
 </if>
+
+<if expr="_google_chrome and is_macosx">
+    /**
+     * Triggers setting up auto-updates for all users.
+     */
+    promoteUpdater: function() {},
+</if>
   };
 
   /**
@@ -167,6 +186,13 @@ cr.define('settings', function() {
     refreshUpdateStatus: function() {
       chrome.send('refreshUpdateStatus');
     },
+
+<if expr="_google_chrome and is_macosx">
+    /** @override */
+    promoteUpdater: function() {
+      chrome.send('promoteUpdater');
+    },
+</if>
 
     /** @override */
     openHelpPage: function() {

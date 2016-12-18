@@ -690,6 +690,7 @@ void HelpHandler::SetPromotionState(VersionUpdater::PromotionState state) {
   std::string state_str;
   switch (state) {
   case VersionUpdater::PROMOTE_HIDDEN:
+  case VersionUpdater::PROMOTED:
     state_str = "hidden";
     break;
   case VersionUpdater::PROMOTE_ENABLED:

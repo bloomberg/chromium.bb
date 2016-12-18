@@ -24,6 +24,9 @@ cr.define('settings_about_page', function() {
         'setChannel');
     }
 
+    if (cr.isMac)
+      methodNames.push('promoteUpdater');
+
     settings.TestBrowserProxy.call(this, methodNames);
 
     /** @private {!UpdateStatus} */
@@ -81,6 +84,13 @@ cr.define('settings_about_page', function() {
       this.methodCalled('openHelpPage');
     },
   };
+
+  if (cr.isMac) {
+    /** @override */
+    TestAboutPageBrowserProxy.prototype.promoteUpdater = function() {
+      this.methodCalled('promoteUpdater');
+    };
+  }
 
   if (cr.isChromeOS) {
     /** @param {!VersionInfo} */
@@ -557,6 +567,107 @@ cr.define('settings_about_page', function() {
         MockInteractions.tap(page.$.reportIssue);
         return browserProxy.whenCalled('openFeedbackDialog');
       });
+
+      if (cr.isMac) {
+        /**
+         * A list of possible scenarios for the promoteUpdater.
+         * @enum {!PromoteUpdaterStatus}
+         */
+        var PromoStatusScenarios = {
+          CANT_PROMOTE: {
+            hidden: true,
+            disabled: true,
+            actionable: false,
+          },
+          CAN_PROMOTE: {
+            hidden: false,
+            disabled: false,
+            actionable: true,
+          },
+          IN_BETWEEN: {
+            hidden: false,
+            disabled: true,
+            actionable: true,
+          },
+          PROMOTED: {
+            hidden: false,
+            disabled: true,
+            actionable: false,
+          },
+        };
+
+        /**
+         * @param {!PromoteUpdaterStatus} status
+         */
+        function firePromoteUpdaterStatusChanged(status) {
+          cr.webUIListenerCallback('promotion-state-changed', status);
+        }
+
+        /**
+         * Tests that the button's states are wired up to the status correctly.
+         */
+        test('PromoteUpdaterButtonCorrectStates', function() {
+          var item = page.$$('#promoteUpdater');
+          var arrow = page.$$('#promoteUpdater button');
+          assertFalse(!!item);
+          assertFalse(!!arrow);
+
+          firePromoteUpdaterStatusChanged(PromoStatusScenarios.CANT_PROMOTE);
+          Polymer.dom.flush();
+          item = page.$$('#promoteUpdater');
+          arrow = page.$$('#promoteUpdater button');
+          assertFalse(!!item);
+          assertFalse(!!arrow);
+
+          firePromoteUpdaterStatusChanged(PromoStatusScenarios.CAN_PROMOTE);
+          Polymer.dom.flush();
+
+          item = page.$$('#promoteUpdater');
+          assertTrue(!!item);
+          assertFalse(item.hasAttribute('disabled'));
+          assertTrue(item.hasAttribute('actionable'));
+
+          arrow = page.$$('#promoteUpdater button');
+          assertTrue(!!arrow);
+          assertFalse(arrow.hidden);
+          assertFalse(arrow.hasAttribute('disabled'));
+
+          firePromoteUpdaterStatusChanged(PromoStatusScenarios.IN_BETWEEN);
+          Polymer.dom.flush();
+          item = page.$$('#promoteUpdater');
+          assertTrue(!!item);
+          assertTrue(item.hasAttribute('disabled'));
+          assertTrue(item.hasAttribute('actionable'));
+
+          arrow = page.$$('#promoteUpdater button');
+          assertTrue(!!arrow);
+          assertFalse(arrow.hidden);
+          assertTrue(arrow.hasAttribute('disabled'));
+
+          firePromoteUpdaterStatusChanged(PromoStatusScenarios.PROMOTED);
+          Polymer.dom.flush();
+          item = page.$$('#promoteUpdater');
+          assertTrue(!!item);
+          assertTrue(item.hasAttribute('disabled'));
+          assertFalse(item.hasAttribute('actionable'));
+
+          arrow = page.$$('#promoteUpdater button');
+          assertTrue(!!arrow);
+          assertTrue(arrow.hidden);
+          assertTrue(arrow.hasAttribute('disabled'));
+        });
+
+        test('PromoteUpdaterButtonWorksWhenEnabled', function() {
+          firePromoteUpdaterStatusChanged(PromoStatusScenarios.CAN_PROMOTE);
+          Polymer.dom.flush();
+          var item = page.$$('#promoteUpdater');
+          assertTrue(!!item);
+
+          MockInteractions.tap(item);
+
+          return browserProxy.whenCalled('promoteUpdater');
+        });
+      }
     });
   }
 

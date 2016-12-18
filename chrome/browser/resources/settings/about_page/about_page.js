@@ -35,6 +35,11 @@ Polymer({
     regulatoryInfo_: Object,
 </if>
 
+<if expr="_google_chrome and is_macosx">
+    /** @private {!PromoteUpdaterStatus} */
+    promoteUpdaterStatus_: Object,
+</if>
+
     /** @private {!{obsolete: boolean, endOfLine: boolean}} */
     obsoleteSystemInfo_: {
       type: Object,
@@ -130,6 +135,11 @@ Polymer({
     this.addWebUIListener(
         'update-status-changed',
         this.onUpdateStatusChanged_.bind(this));
+<if expr="_google_chrome and is_macosx">
+    this.addWebUIListener(
+        'promotion-state-changed',
+        this.onPromoteUpdaterStatusChanged_.bind(this));
+</if>
     this.aboutBrowserProxy_.refreshUpdateStatus();
   },
 
@@ -144,6 +154,38 @@ Polymer({
 </if>
     this.currentUpdateStatusEvent_ = event;
   },
+
+<if expr="_google_chrome and is_macosx">
+  /**
+   * @param {!PromoteUpdaterStatus} status
+   * @private
+   */
+  onPromoteUpdaterStatusChanged_: function(status) {
+    this.promoteUpdaterStatus_ = status;
+  },
+
+  /**
+   * If #promoteUpdater isn't disabled, trigger update promotion.
+   * @private
+   */
+  onPromoteUpdaterTap_: function() {
+    // This is necessary because #promoteUpdater is not a button, so by default
+    // disable doesn't do anything.
+    if (this.promoteUpdaterStatus_.disabled)
+      return;
+    this.aboutBrowserProxy_.promoteUpdater();
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onLearnMoreTap_: function(event) {
+    // Stop the propagation of events, so that clicking on links inside
+    // actionable items won't trigger action.
+    event.stopPropagation();
+  },
+</if>
 
   /** @private */
   onHelpTap_: function() {

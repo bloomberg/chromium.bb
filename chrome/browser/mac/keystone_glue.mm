@@ -837,6 +837,10 @@ NSString* const kVersionKey = @"KSVersion";
   return (statfsBuf.f_flags & MNT_RDONLY) != 0;
 }
 
+- (BOOL)isAutoupdateEnabledForAllUsers {
+  return [self isSystemKeystone] && ![self isUserTicket];
+}
+
 - (BOOL)needsPromotion {
   // Don't promote when on a read-only filesystem.
   if ([self isOnReadOnlyFilesystem]) {

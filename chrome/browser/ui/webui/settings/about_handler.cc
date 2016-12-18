@@ -592,22 +592,31 @@ void AboutHandler::SetUpdateStatus(VersionUpdater::Status status,
 
 #if defined(OS_MACOSX)
 void AboutHandler::SetPromotionState(VersionUpdater::PromotionState state) {
-  std::string state_str;
-  switch (state) {
-    case VersionUpdater::PROMOTE_HIDDEN:
-      state_str = "hidden";
-      break;
-    case VersionUpdater::PROMOTE_ENABLED:
-      state_str = "enabled";
-      break;
-    case VersionUpdater::PROMOTE_DISABLED:
-      state_str = "disabled";
-      break;
-  }
+  // Worth noting: PROMOTE_DISABLED indicates that promotion is possible,
+  // there's just something else going on right now (e.g. checking for update).
+  bool hidden = state == VersionUpdater::PROMOTE_HIDDEN;
+  bool disabled = state == VersionUpdater::PROMOTE_HIDDEN ||
+                  state == VersionUpdater::PROMOTE_DISABLED ||
+                  state == VersionUpdater::PROMOTED;
+  bool actionable = state == VersionUpdater::PROMOTE_DISABLED ||
+                    state == VersionUpdater::PROMOTE_ENABLED;
+
+  base::string16 text = base::string16();
+  if (actionable)
+    text = l10n_util::GetStringUTF16(IDS_ABOUT_CHROME_AUTOUPDATE_ALL);
+  else if (state == VersionUpdater::PROMOTED)
+    text = l10n_util::GetStringUTF16(IDS_ABOUT_CHROME_AUTOUPDATE_ALL_IS_ON);
+
+  base::DictionaryValue promo_state;
+  promo_state.SetBoolean("hidden", hidden);
+  promo_state.SetBoolean("disabled", disabled);
+  promo_state.SetBoolean("actionable", actionable);
+  if (!text.empty())
+    promo_state.SetString("text", text);
 
   CallJavascriptFunction("cr.webUIListenerCallback",
                          base::StringValue("promotion-state-changed"),
-                         base::StringValue(state_str));
+                         promo_state);
 }
 #endif  // defined(OS_MACOSX)
 
@@ -645,7 +654,6 @@ void AboutHandler::OnRegulatoryLabelTextRead(
 
   ResolveJavascriptCallback(base::StringValue(callback_id), *regulatory_info);
 }
-
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace settings

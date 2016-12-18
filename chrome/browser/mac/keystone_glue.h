@@ -166,6 +166,10 @@ enum BrandFileType {
 - (BOOL)needsPromotion;
 - (BOOL)wantsPromotion;
 
+// -isAutoupdateEnabledForAllUsers indicates whether or not autoupdate is
+// turned on for all users.
+- (BOOL)isAutoupdateEnabledForAllUsers;
+
 // Promotes the Keystone ticket into the system store.  System Keystone will
 // be installed if necessary.  If synchronous is NO, the promotion may occur
 // in the background.  synchronous should be YES for promotion during

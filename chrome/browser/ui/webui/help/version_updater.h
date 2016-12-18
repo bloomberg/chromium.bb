@@ -39,7 +39,8 @@ class VersionUpdater {
   enum PromotionState {
     PROMOTE_HIDDEN,
     PROMOTE_ENABLED,
-    PROMOTE_DISABLED
+    PROMOTE_DISABLED,
+    PROMOTED,
   };
 
   // TODO(jhawkins): Use a delegate interface instead of multiple callback
