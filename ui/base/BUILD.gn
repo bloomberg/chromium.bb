@@ -79,6 +79,8 @@ component("base") {
     "clipboard/clipboard_win.cc",
     "clipboard/clipboard_win.h",
     "clipboard/custom_data_helper_mac.mm",
+    "cocoa/a11y_util.h",
+    "cocoa/a11y_util.mm",
     "cocoa/animation_utils.h",
     "cocoa/appkit_utils.h",
     "cocoa/appkit_utils.mm",

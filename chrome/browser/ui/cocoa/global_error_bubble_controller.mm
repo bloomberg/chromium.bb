@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "components/search_engines/util.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#import "ui/base/cocoa/a11y_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
@@ -79,6 +80,11 @@ class Bridge : public GlobalErrorBubbleViewBase {
   gfx::Image image = error_->GetBubbleViewIcon();
   DCHECK(!image.IsEmpty());
   [iconView_ setImage:image.ToNSImage()];
+  // So far, none of these icons have useful descriptions (they only specify
+  // "image"). Hide them from the accessibility order for voice over. If any
+  // new bubbles use this for an informational icon, we can add a new method
+  // to the GlobalErrorWithStandardBubble class.
+  ui::a11y_util::HideImageFromAccessibilityOrder(iconView_);
 
   [title_ setStringValue:SysUTF16ToNSString(error_->GetBubbleViewTitle())];
   std::vector<base::string16> messages = error_->GetBubbleViewMessages();

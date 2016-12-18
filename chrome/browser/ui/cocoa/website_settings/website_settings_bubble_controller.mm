@@ -37,6 +37,7 @@
 #include "extensions/common/constants.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#import "ui/base/cocoa/a11y_util.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #import "ui/base/cocoa/flipped_view.h"
@@ -619,19 +620,10 @@ bool IsInternalURL(const GURL& url) {
   NSRect frame = NSMakeRect(point.x, point.y, size.width, size.height);
   base::scoped_nsobject<NSImageView> imageView(
       [[NSImageView alloc] initWithFrame:frame]);
-  [self hideImageFromAccessibilityOrder:imageView];
+  ui::a11y_util::HideImageFromAccessibilityOrder(imageView);
   [imageView setImageFrameStyle:NSImageFrameNone];
   [view addSubview:imageView.get()];
   return imageView.get();
-}
-
-// Hide the given image view from the accessibility order for VoiceOver.
-- (void)hideImageFromAccessibilityOrder:(NSImageView*)imageView {
-  // This is the minimum change necessary to get VoiceOver to skip the image
-  // (instead of reading the word "image"). Accessibility mechanisms in OSX
-  // change once in a while, so this may be fragile.
-  [[imageView cell] accessibilitySetOverrideValue:@""
-                                     forAttribute:NSAccessibilityRoleAttribute];
 }
 
 // Add a separator as a subview of the given view. Return the new view.
