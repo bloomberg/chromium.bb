@@ -3951,19 +3951,19 @@ interface MediaSession : EventTarget
     getter onnexttrack
     getter onpause
     getter onplay
-    getter onplaypause
     getter onprevioustrack
     getter onseekbackward
     getter onseekforward
+    getter playbackState
     method constructor
     setter metadata
     setter onnexttrack
     setter onpause
     setter onplay
-    setter onplaypause
     setter onprevioustrack
     setter onseekbackward
     setter onseekforward
+    setter playbackState
 interface MediaSettingsRange
     attribute @@toStringTag
     getter current

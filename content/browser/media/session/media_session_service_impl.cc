@@ -14,7 +14,8 @@ namespace content {
 
 MediaSessionServiceImpl::MediaSessionServiceImpl(
     RenderFrameHost* render_frame_host)
-    : render_frame_host_(render_frame_host) {
+    : render_frame_host_(render_frame_host),
+      playback_state_(blink::mojom::MediaSessionPlaybackState::NONE) {
   MediaSessionImpl* session = GetMediaSession();
   if (session)
     session->OnServiceCreated(this);
@@ -38,6 +39,14 @@ void MediaSessionServiceImpl::Create(
 void MediaSessionServiceImpl::SetClient(
     blink::mojom::MediaSessionClientPtr client) {
   client_ = std::move(client);
+}
+
+void MediaSessionServiceImpl::SetPlaybackState(
+    blink::mojom::MediaSessionPlaybackState state) {
+  playback_state_ = state;
+  MediaSessionImpl* session = GetMediaSession();
+  if (session)
+    session->OnMediaSessionPlaybackStateChanged(this);
 }
 
 void MediaSessionServiceImpl::SetMetadata(

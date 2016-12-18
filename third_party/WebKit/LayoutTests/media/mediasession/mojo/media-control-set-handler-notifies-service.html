@@ -17,7 +17,6 @@ function getExpectations() {
     expectations = [
       [ MediaSessionAction.PLAY, true ],
       [ MediaSessionAction.PAUSE, true ],
-      [ MediaSessionAction.PLAY_PAUSE, true ],
       [ MediaSessionAction.PREVIOUS_TRACK, true ],
       [ MediaSessionAction.NEXT_TRACK, true ],
       [ MediaSessionAction.SEEK_BACKWARD, true ],
@@ -26,8 +25,6 @@ function getExpectations() {
       [ MediaSessionAction.PLAY, true ],
       [ MediaSessionAction.PAUSE, false ],
       [ MediaSessionAction.PAUSE, true ],
-      [ MediaSessionAction.PLAY_PAUSE, false ],
-      [ MediaSessionAction.PLAY_PAUSE, true ],
       [ MediaSessionAction.PREVIOUS_TRACK, false ],
       [ MediaSessionAction.PREVIOUS_TRACK, true ],
       [ MediaSessionAction.NEXT_TRACK, false ],
@@ -38,7 +35,6 @@ function getExpectations() {
       [ MediaSessionAction.SEEK_FORWARD, true ],
       [ MediaSessionAction.PLAY, false ],
       [ MediaSessionAction.PAUSE, false ],
-      [ MediaSessionAction.PLAY_PAUSE, false ],
       [ MediaSessionAction.PREVIOUS_TRACK, false ],
       [ MediaSessionAction.NEXT_TRACK, false ],
       [ MediaSessionAction.SEEK_BACKWARD, false ],
@@ -63,7 +59,6 @@ async_test(function(t) {
     window.navigator.mediaSession.onresize = _ => {};  // Unknown event.
     window.navigator.mediaSession.onplay = _ => {};
     window.navigator.mediaSession.onpause = _ => {};
-    window.navigator.mediaSession.onplaypause = _ => {};
     window.navigator.mediaSession.onprevioustrack = _ => {};
     window.navigator.mediaSession.onnexttrack = _ => {};
     window.navigator.mediaSession.onseekbackward = _ => {};
@@ -73,7 +68,6 @@ async_test(function(t) {
     window.navigator.mediaSession.onresize = _ => {};  // Unknown event.
     window.navigator.mediaSession.onplay = _ => {};
     window.navigator.mediaSession.onpause = _ => {};
-    window.navigator.mediaSession.onplaypause = _ => {};
     window.navigator.mediaSession.onprevioustrack = _ => {};
     window.navigator.mediaSession.onnexttrack = _ => {};
     window.navigator.mediaSession.onseekbackward = _ => {};
@@ -83,7 +77,6 @@ async_test(function(t) {
     window.navigator.mediaSession.onresize = null;  // Unknown event.
     window.navigator.mediaSession.onplay = null;
     window.navigator.mediaSession.onpause = null;
-    window.navigator.mediaSession.onplaypause = null;
     window.navigator.mediaSession.onprevioustrack = null;
     window.navigator.mediaSession.onnexttrack = null;
     window.navigator.mediaSession.onseekbackward = null;

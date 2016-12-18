@@ -74,6 +74,9 @@ function emitExpectedResult(path, expected)
     case "navigator.vendor":
         expected = "window." + propertyPath;
         break;
+    case "navigator.mediaSession.playbackState":
+        expected = "'none'";
+        break;
     case "screen.orientation.type":
         expected = "'portrait-primary'";
         break;

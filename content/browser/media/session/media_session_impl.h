@@ -176,6 +176,10 @@ class MediaSessionImpl : public MediaSession,
   // from this session.
   void OnServiceDestroyed(MediaSessionServiceImpl* service);
 
+  // Called when the playback state of a MediaSessionService has
+  // changed. Will notify observers of media session state change.
+  void OnMediaSessionPlaybackStateChanged(MediaSessionServiceImpl* service);
+
   // Called when the metadata of a MediaSessionService has changed. Will notify
   // observers if the service is currently routed.
   void OnMediaSessionMetadataChanged(MediaSessionServiceImpl* service);

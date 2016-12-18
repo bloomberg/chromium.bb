@@ -29,8 +29,6 @@ const AtomicString& mojomActionToEventName(MediaSessionAction action) {
       return EventTypeNames::play;
     case MediaSessionAction::PAUSE:
       return EventTypeNames::pause;
-    case MediaSessionAction::PLAY_PAUSE:
-      return EventTypeNames::playpause;
     case MediaSessionAction::PREVIOUS_TRACK:
       return EventTypeNames::previoustrack;
     case MediaSessionAction::NEXT_TRACK:
@@ -51,8 +49,6 @@ WTF::Optional<MediaSessionAction> eventNameToMojomAction(
     return MediaSessionAction::PLAY;
   if (EventTypeNames::pause == eventName)
     return MediaSessionAction::PAUSE;
-  if (EventTypeNames::playpause == eventName)
-    return MediaSessionAction::PLAY_PAUSE;
   if (EventTypeNames::previoustrack == eventName)
     return MediaSessionAction::PREVIOUS_TRACK;
   if (EventTypeNames::nexttrack == eventName)
@@ -66,10 +62,40 @@ WTF::Optional<MediaSessionAction> eventNameToMojomAction(
   return WTF::nullopt;
 }
 
+const AtomicString& mediaSessionPlaybackStateToString(
+    mojom::blink::MediaSessionPlaybackState state) {
+  DEFINE_STATIC_LOCAL(const AtomicString, noneValue, ("none"));
+  DEFINE_STATIC_LOCAL(const AtomicString, pausedValue, ("paused"));
+  DEFINE_STATIC_LOCAL(const AtomicString, playingValue, ("playing"));
+
+  switch (state) {
+    case mojom::blink::MediaSessionPlaybackState::NONE:
+      return noneValue;
+    case mojom::blink::MediaSessionPlaybackState::PAUSED:
+      return pausedValue;
+    case mojom::blink::MediaSessionPlaybackState::PLAYING:
+      return playingValue;
+  }
+  NOTREACHED();
+  return WTF::emptyAtom;
+}
+
+mojom::blink::MediaSessionPlaybackState stringToMediaSessionPlaybackState(
+    const String& stateName) {
+  if (stateName == "none")
+    return mojom::blink::MediaSessionPlaybackState::NONE;
+  if (stateName == "paused")
+    return mojom::blink::MediaSessionPlaybackState::PAUSED;
+  DCHECK_EQ(stateName, "playing");
+  return mojom::blink::MediaSessionPlaybackState::PLAYING;
+}
+
 }  // anonymous namespace
 
 MediaSession::MediaSession(ExecutionContext* executionContext)
-    : ContextLifecycleObserver(executionContext), m_clientBinding(this) {}
+    : ContextLifecycleObserver(executionContext),
+      m_playbackState(mojom::blink::MediaSessionPlaybackState::NONE),
+      m_clientBinding(this) {}
 
 MediaSession* MediaSession::create(ExecutionContext* executionContext) {
   return new MediaSession(executionContext);
@@ -77,6 +103,17 @@ MediaSession* MediaSession::create(ExecutionContext* executionContext) {
 
 void MediaSession::dispose() {
   m_clientBinding.Close();
+}
+
+void MediaSession::setPlaybackState(const String& playbackState) {
+  m_playbackState = stringToMediaSessionPlaybackState(playbackState);
+  mojom::blink::MediaSessionService* service = getService();
+  if (service)
+    service->SetPlaybackState(m_playbackState);
+}
+
+String MediaSession::playbackState() {
+  return mediaSessionPlaybackStateToString(m_playbackState);
 }
 
 void MediaSession::setMetadata(MediaMetadata* metadata) {

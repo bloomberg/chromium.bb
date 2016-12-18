@@ -1,5 +1,5 @@
-CONSOLE WARNING: line 98: 'Performance.onwebkitresourcetimingbufferfull' is deprecated. Please use 'Performance.onresourcetimingbufferfull' instead.
-CONSOLE WARNING: line 98: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 101: 'Performance.onwebkitresourcetimingbufferfull' is deprecated. Please use 'Performance.onresourcetimingbufferfull' instead.
+CONSOLE WARNING: line 101: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 Tests access of cached DOMWindow properties after the associated frame is no longer in a web page. Test should not crash and properties should be set to sane defaults.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -51,10 +51,10 @@ PASS window.cached_navigator_mediaSession.metadata is null
 PASS window.cached_navigator_mediaSession.onnexttrack is null
 PASS window.cached_navigator_mediaSession.onpause is null
 PASS window.cached_navigator_mediaSession.onplay is null
-PASS window.cached_navigator_mediaSession.onplaypause is null
 PASS window.cached_navigator_mediaSession.onprevioustrack is null
 PASS window.cached_navigator_mediaSession.onseekbackward is null
 PASS window.cached_navigator_mediaSession.onseekforward is null
+PASS window.cached_navigator_mediaSession.playbackState is 'none'
 PASS window.cached_navigator_presentation.defaultRequest is null
 PASS window.cached_navigator_presentation.receiver is null
 PASS window.cached_navigator_serviceWorker.controller is null

@@ -8,7 +8,9 @@
 
 namespace content {
 
-MockMediaSessionPlayerObserver::MockMediaSessionPlayerObserver() = default;
+MockMediaSessionPlayerObserver::MockMediaSessionPlayerObserver(
+    RenderFrameHost* render_frame_host)
+    : MediaSessionPlayerObserver(), render_frame_host_(render_frame_host) {}
 
 MockMediaSessionPlayerObserver::~MockMediaSessionPlayerObserver() = default;
 
@@ -41,7 +43,7 @@ void MockMediaSessionPlayerObserver::OnSetVolumeMultiplier(
 }
 
 RenderFrameHost* MockMediaSessionPlayerObserver::GetRenderFrameHost() const {
-  return nullptr;
+  return render_frame_host_;
 }
 
 int MockMediaSessionPlayerObserver::StartNewPlayer() {

@@ -13,7 +13,8 @@ namespace content {
 // MediaSessionPlayerObserver to be used in tests.
 class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
  public:
-  MockMediaSessionPlayerObserver();
+  explicit MockMediaSessionPlayerObserver(
+      RenderFrameHost* render_frame_host = nullptr);
   ~MockMediaSessionPlayerObserver() override;
 
   // Implements MediaSessionPlayerObserver.
@@ -51,6 +52,8 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   // Basic representation of the players. The position in the vector is the
   // player_id. The value of the vector is the playing status and volume.
   std::vector<MockPlayer> players_;
+
+  RenderFrameHost* render_frame_host_;
 
   int received_resume_calls_ = 0;
   int received_suspend_calls_ = 0;

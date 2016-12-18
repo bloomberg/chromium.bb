@@ -5,6 +5,7 @@
 "use strict";
 
 var MediaSessionAction;
+var MediaSessionPlaybackState;
 
 function mojoString16ToJS(mojoString16) {
   return String.fromCharCode.apply(null, mojoString16.data);
@@ -46,6 +47,7 @@ let mediaSessionServiceMock = loadMojoModules(
       let [mediaSessionService, router] = mojo.modules;
 
       MediaSessionAction = mediaSessionService.MediaSessionAction;
+      MediaSessionPlaybackState = mediaSessionService.MediaSessionPlaybackState;
 
       class MediaSessionServiceMock {
         constructor(interfaceProvider) {
@@ -69,6 +71,15 @@ let mediaSessionServiceMock = loadMojoModules(
 
         setMetadataCallback(callback) {
           this.metadataCallback_ = callback;
+        }
+
+        setPlaybackState(state) {
+          if (!!this.setPlaybackStateCallback_)
+            this.setPlaybackStateCallback_(state);
+        }
+
+        setPlaybackStateCallback(callback) {
+          this.setPlaybackStateCallback_ = callback;
         }
 
         enableAction(action) {

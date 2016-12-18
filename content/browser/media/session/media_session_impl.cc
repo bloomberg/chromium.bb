@@ -298,7 +298,8 @@ void MediaSessionImpl::Resume(SuspendType suspend_type) {
 }
 
 void MediaSessionImpl::Suspend(SuspendType suspend_type) {
-  DCHECK(!IsSuspended());
+  if (IsSuspended())
+    return;
 
   OnSuspendInternal(suspend_type, State::SUSPENDED);
 }
@@ -510,9 +511,21 @@ void MediaSessionImpl::AbandonSystemAudioFocusIfNeeded() {
 }
 
 void MediaSessionImpl::NotifyAboutStateChange() {
+  bool is_actually_suspended = IsSuspended();
+  // Compute the actual playback state using both the MediaSessionService state
+  // and real state.
+  //
+  // TODO(zqzhang): Maybe also compute for IsControllable()? See
+  // https://crbug.com/674983
+  if (routed_service_ &&
+      routed_service_->playback_state() ==
+          blink::mojom::MediaSessionPlaybackState::PLAYING) {
+    is_actually_suspended = false;
+  }
+
   media_session_state_listeners_.Notify(audio_focus_state_);
   for (auto& observer : observers_)
-    observer.MediaSessionStateChanged(IsControllable(), IsSuspended());
+    observer.MediaSessionStateChanged(IsControllable(), is_actually_suspended);
 }
 
 void MediaSessionImpl::SetAudioFocusState(State audio_focus_state) {
@@ -566,6 +579,17 @@ void MediaSessionImpl::OnServiceCreated(MediaSessionServiceImpl* service) {
 
 void MediaSessionImpl::OnServiceDestroyed(MediaSessionServiceImpl* service) {
   services_.erase(service->GetRenderFrameHost());
+  if (routed_service_ == service) {
+    routed_service_ = nullptr;
+    UpdateRoutedService();
+  }
+}
+
+void MediaSessionImpl::OnMediaSessionPlaybackStateChanged(
+    MediaSessionServiceImpl* service) {
+  if (service != routed_service_)
+    return;
+  NotifyAboutStateChange();
 }
 
 void MediaSessionImpl::OnMediaSessionMetadataChanged(

@@ -1,5 +1,5 @@
-CONSOLE WARNING: line 98: 'Performance.onwebkitresourcetimingbufferfull' is deprecated. Please use 'Performance.onresourcetimingbufferfull' instead.
-CONSOLE WARNING: line 98: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 101: 'Performance.onwebkitresourcetimingbufferfull' is deprecated. Please use 'Performance.onresourcetimingbufferfull' instead.
+CONSOLE WARNING: line 101: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 Tests property access on a cached DOMWindow after the associated frame is navigated. Test should not crash and properties read from the cached DOMWindow should be identical to properties through the 'current' DOMWindow.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -53,10 +53,10 @@ PASS oldChildWindow.navigator.mediaSession.metadata is newChildWindow.navigator.
 PASS oldChildWindow.navigator.mediaSession.onnexttrack is newChildWindow.navigator.mediaSession.onnexttrack
 PASS oldChildWindow.navigator.mediaSession.onpause is newChildWindow.navigator.mediaSession.onpause
 PASS oldChildWindow.navigator.mediaSession.onplay is newChildWindow.navigator.mediaSession.onplay
-PASS oldChildWindow.navigator.mediaSession.onplaypause is newChildWindow.navigator.mediaSession.onplaypause
 PASS oldChildWindow.navigator.mediaSession.onprevioustrack is newChildWindow.navigator.mediaSession.onprevioustrack
 PASS oldChildWindow.navigator.mediaSession.onseekbackward is newChildWindow.navigator.mediaSession.onseekbackward
 PASS oldChildWindow.navigator.mediaSession.onseekforward is newChildWindow.navigator.mediaSession.onseekforward
+PASS oldChildWindow.navigator.mediaSession.playbackState is newChildWindow.navigator.mediaSession.playbackState
 PASS oldChildWindow.navigator.onLine is newChildWindow.navigator.onLine
 PASS oldChildWindow.navigator.platform is newChildWindow.navigator.platform
 PASS oldChildWindow.navigator.presentation.defaultRequest is newChildWindow.navigator.presentation.defaultRequest

@@ -32,6 +32,9 @@ class MODULES_EXPORT MediaSession final
 
   void dispose();
 
+  void setPlaybackState(const String&);
+  String playbackState();
+
   void setMetadata(MediaMetadata*);
   MediaMetadata* metadata() const;
 
@@ -45,7 +48,6 @@ class MODULES_EXPORT MediaSession final
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(play);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(pause);
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(playpause);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(previoustrack);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(nexttrack);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(seekforward);
@@ -73,6 +75,7 @@ class MODULES_EXPORT MediaSession final
   // Returns null when the ExecutionContext is not document.
   mojom::blink::MediaSessionService* getService();
 
+  mojom::blink::MediaSessionPlaybackState m_playbackState;
   Member<MediaMetadata> m_metadata;
   mojom::blink::MediaSessionServicePtr m_service;
   mojo::Binding<blink::mojom::blink::MediaSessionClient> m_clientBinding;

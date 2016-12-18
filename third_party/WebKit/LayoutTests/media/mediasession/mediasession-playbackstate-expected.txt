@@ -1,0 +1,8 @@
+CONSOLE WARNING: line 22: The provided value 'invalid' is not a valid enum value of type MediaSessionPlaybackState.
+CONSOLE WARNING: line 22: The provided value '' is not a valid enum value of type MediaSessionPlaybackState.
+This is a testharness.js-based test.
+PASS Test that playbackState is initialized as "none" 
+PASS Test that playbackState is read/write 
+PASS Test that warning is thrown when setting invalid playbackState 
+Harness: the test ran to completion.
+

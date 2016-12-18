@@ -1,5 +1,5 @@
-CONSOLE WARNING: line 98: 'Performance.onwebkitresourcetimingbufferfull' is deprecated. Please use 'Performance.onresourcetimingbufferfull' instead.
-CONSOLE WARNING: line 98: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 101: 'Performance.onwebkitresourcetimingbufferfull' is deprecated. Please use 'Performance.onresourcetimingbufferfull' instead.
+CONSOLE WARNING: line 101: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 Tests property access on a cached DOMWindow after the associated frame is no longer in a web page. Test should not crash and properties should be set to sane defaults.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -32,10 +32,10 @@ PASS childWindow.navigator.mediaSession.metadata is null
 PASS childWindow.navigator.mediaSession.onnexttrack is null
 PASS childWindow.navigator.mediaSession.onpause is null
 PASS childWindow.navigator.mediaSession.onplay is null
-PASS childWindow.navigator.mediaSession.onplaypause is null
 PASS childWindow.navigator.mediaSession.onprevioustrack is null
 PASS childWindow.navigator.mediaSession.onseekbackward is null
 PASS childWindow.navigator.mediaSession.onseekforward is null
+PASS childWindow.navigator.mediaSession.playbackState is 'none'
 PASS childWindow.navigator.onLine is window.navigator.onLine
 PASS childWindow.navigator.platform is window.navigator.platform
 PASS childWindow.navigator.product is window.navigator.product

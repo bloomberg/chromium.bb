@@ -12,7 +12,6 @@ var mock;
 var expectations = [
   "play",
   "pause",
-  "playpause",
   "previoustrack",
   "nexttrack",
   "seekbackward",
@@ -31,7 +30,6 @@ function checkExpectation(t, event) {
 function runTests(t) {
   window.navigator.mediaSession.onplay = t.step_func(checkExpectation.bind(null, t));
   window.navigator.mediaSession.onpause = t.step_func(checkExpectation.bind(null, t));
-  window.navigator.mediaSession.onplaypause = t.step_func(checkExpectation.bind(null, t));
   window.navigator.mediaSession.onprevioustrack = t.step_func(checkExpectation.bind(null, t));
   window.navigator.mediaSession.onnexttrack = t.step_func(checkExpectation.bind(null, t));
   window.navigator.mediaSession.onseekforward = t.step_func(checkExpectation.bind(null, t));
@@ -39,7 +37,6 @@ function runTests(t) {
 
   mock.getClient().didReceiveAction(MediaSessionAction.PLAY);
   mock.getClient().didReceiveAction(MediaSessionAction.PAUSE);
-  mock.getClient().didReceiveAction(MediaSessionAction.PLAY_PAUSE);
   mock.getClient().didReceiveAction(MediaSessionAction.PREVIOUS_TRACK);
   mock.getClient().didReceiveAction(MediaSessionAction.NEXT_TRACK);
   mock.getClient().didReceiveAction(MediaSessionAction.SEEK_BACKWARD);

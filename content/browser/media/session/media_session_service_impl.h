@@ -28,6 +28,9 @@ class CONTENT_EXPORT MediaSessionServiceImpl
   const blink::mojom::MediaSessionClientPtr& GetClient() { return client_; }
   RenderFrameHost* GetRenderFrameHost() { return render_frame_host_; }
 
+  blink::mojom::MediaSessionPlaybackState playback_state() const {
+    return playback_state_;
+  }
   const base::Optional<MediaMetadata>& metadata() const { return metadata_; }
   const std::set<blink::mojom::MediaSessionAction>& actions() const {
     return actions_;
@@ -36,6 +39,7 @@ class CONTENT_EXPORT MediaSessionServiceImpl
   // blink::mojom::MediaSessionService implementation.
   void SetClient(blink::mojom::MediaSessionClientPtr client) override;
 
+  void SetPlaybackState(blink::mojom::MediaSessionPlaybackState state) override;
   void SetMetadata(const base::Optional<MediaMetadata>& metadata) override;
 
   void EnableAction(blink::mojom::MediaSessionAction action) override;
@@ -55,6 +59,7 @@ class CONTENT_EXPORT MediaSessionServiceImpl
   // The binding is removed when binding_ is cleared or goes out of scope.
   std::unique_ptr<mojo::Binding<blink::mojom::MediaSessionService>> binding_;
   blink::mojom::MediaSessionClientPtr client_;
+  blink::mojom::MediaSessionPlaybackState playback_state_;
   base::Optional<MediaMetadata> metadata_;
   std::set<blink::mojom::MediaSessionAction> actions_;
 
