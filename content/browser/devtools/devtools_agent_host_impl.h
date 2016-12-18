@@ -11,7 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "content/browser/devtools/devtools_io_context.h"
-#include "content/browser/devtools/protocol/devtools_protocol_delegate.h"
 #include "content/common/content_export.h"
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/devtools_agent_host.h"
@@ -22,8 +21,7 @@ class BrowserContext;
 class DevToolsSession;
 
 // Describes interface for managing devtools agents from the browser process.
-class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
-                                             public DevToolsProtocolDelegate {
+class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost {
  public:
   // Informs the hosted agent that a client host has attached.
   virtual void Attach() = 0;
@@ -52,11 +50,6 @@ class CONTENT_EXPORT DevToolsAgentHostImpl : public DevToolsAgentHost,
 
   bool Inspect();
   void SendMessageToClient(int session_id, const std::string& message);
-
-  // DevToolsProtocolDelegate implementation.
-  void SendProtocolResponse(int session_id,
-                            const std::string& message) override;
-  void SendProtocolNotification(const std::string& message) override;
 
  protected:
   DevToolsAgentHostImpl(const std::string& id);

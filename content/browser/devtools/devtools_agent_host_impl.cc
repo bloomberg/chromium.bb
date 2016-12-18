@@ -15,7 +15,7 @@
 #include "content/browser/devtools/devtools_manager.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/forwarding_agent_host.h"
-#include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
+#include "content/browser/devtools/protocol/page.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
@@ -47,12 +47,14 @@ int DevToolsAgentHostImpl::s_force_creation_count_ = 0;
 
 // static
 std::string DevToolsAgentHost::GetProtocolVersion() {
-  return std::string(devtools::kProtocolVersion);
+  // TODO(dgozman): generate this.
+  return "1.2";
 }
 
 // static
 bool DevToolsAgentHost::IsSupportedProtocolVersion(const std::string& version) {
-  return devtools::IsSupportedProtocolVersion(version);
+  // TODO(dgozman): generate this.
+  return version == "1.0" || version == "1.1" || version == "1.2";
 }
 
 // static
@@ -244,16 +246,6 @@ bool DevToolsAgentHostImpl::Inspect() {
     return true;
   }
   return false;
-}
-
-void DevToolsAgentHostImpl::SendProtocolResponse(int session_id,
-                                                 const std::string& message) {
-  SendMessageToClient(session_id, message);
-}
-
-void DevToolsAgentHostImpl::SendProtocolNotification(
-    const std::string& message) {
-  SendMessageToClient(session_ ? session_->session_id() : 0, message);
 }
 
 void DevToolsAgentHostImpl::HostClosed() {

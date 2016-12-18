@@ -92,25 +92,3 @@ inspector_protocol_generate("protocol_sources") {
     "protocol/tracing.h",
   ]
 }
-
-action("gen_devtools_protocol_handler") {
-  visibility = [ "//content/browser" ]
-  deps = [
-    "//third_party/WebKit/Source/core/inspector:protocol_version",
-  ]
-  script = "//content/browser/devtools/protocol/" +
-           "devtools_protocol_handler_generator.py"
-
-  blink_protocol = "$root_gen_dir/blink/core/inspector/protocol.json"
-  inputs = [
-    blink_protocol,
-  ]
-
-  outputs = [
-    "$target_gen_dir/protocol/devtools_protocol_dispatcher.cc",
-    "$target_gen_dir/protocol/devtools_protocol_dispatcher.h",
-  ]
-
-  args =
-      rebase_path(inputs, root_build_dir) + rebase_path(outputs, root_build_dir)
-}

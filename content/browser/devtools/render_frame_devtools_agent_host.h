@@ -33,7 +33,6 @@ namespace content {
 
 class BrowserContext;
 class DevToolsFrameTraceRecorder;
-class DevToolsProtocolHandler;
 class FrameTreeNode;
 class NavigationHandle;
 class NavigationThrottle;
@@ -198,7 +197,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 #if defined(OS_ANDROID)
   std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
 #endif
-  std::unique_ptr<DevToolsProtocolHandler> protocol_handler_;
   RenderFrameHostImpl* handlers_frame_host_;
   bool current_frame_crashed_;
 

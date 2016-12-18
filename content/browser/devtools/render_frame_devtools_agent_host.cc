@@ -16,7 +16,6 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/devtools_frame_trace_recorder.h"
 #include "content/browser/devtools/devtools_manager.h"
-#include "content/browser/devtools/devtools_protocol_handler.h"
 #include "content/browser/devtools/devtools_session.h"
 #include "content/browser/devtools/page_navigation_throttle.h"
 #include "content/browser/devtools/protocol/dom_handler.h"
@@ -404,7 +403,6 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
     RenderFrameHostImpl* host)
     : DevToolsAgentHostImpl(base::GenerateGUID()),
       frame_trace_recorder_(nullptr),
-      protocol_handler_(new DevToolsProtocolHandler(this)),
       handlers_frame_host_(nullptr),
       current_frame_crashed_(false),
       pending_handle_(nullptr),
@@ -581,18 +579,10 @@ void RenderFrameDevToolsAgentHost::Detach() {
 
 bool RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
     const std::string& message) {
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(message);
-  std::unique_ptr<protocol::Value> protocolValue =
-      protocol::toProtocolValue(value.get(), 1000);
-  if (session()->dispatcher()->dispatch(std::move(protocolValue)) !=
-      protocol::Response::kFallThrough) {
-    return true;
-  }
-
   int call_id = 0;
   std::string method;
-  if (protocol_handler_->HandleOptionalMessage(
-          session()->session_id(), std::move(value), &call_id, &method)) {
+  if (session()->Dispatch(message, &call_id, &method) !=
+      protocol::Response::kFallThrough) {
     return true;
   }
 
