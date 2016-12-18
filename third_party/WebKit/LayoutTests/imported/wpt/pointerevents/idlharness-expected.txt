@@ -1,0 +1,68 @@
+CONSOLE MESSAGE: line 236: callback not yet supported
+This is a testharness.js-based test.
+FAIL Window interface: attribute ongotpointercapture assert_own_property: The global object must have a property "ongotpointercapture" expected property "ongotpointercapture" missing
+FAIL Window interface: attribute onlostpointercapture assert_own_property: The global object must have a property "onlostpointercapture" expected property "onlostpointercapture" missing
+PASS Window interface: attribute onpointerdown 
+PASS Window interface: attribute onpointermove 
+PASS Window interface: attribute onpointerup 
+PASS Window interface: attribute onpointercancel 
+PASS Window interface: attribute onpointerover 
+PASS Window interface: attribute onpointerout 
+PASS Window interface: attribute onpointerenter 
+PASS Window interface: attribute onpointerleave 
+PASS Window must be primary interface of window 
+PASS Stringification of window 
+FAIL Window interface: window must inherit property "ongotpointercapture" with the proper type (0) assert_own_property: expected property "ongotpointercapture" missing
+FAIL Window interface: window must inherit property "onlostpointercapture" with the proper type (1) assert_own_property: expected property "onlostpointercapture" missing
+PASS Window interface: window must inherit property "onpointerdown" with the proper type (2) 
+PASS Window interface: window must inherit property "onpointermove" with the proper type (3) 
+PASS Window interface: window must inherit property "onpointerup" with the proper type (4) 
+PASS Window interface: window must inherit property "onpointercancel" with the proper type (5) 
+PASS Window interface: window must inherit property "onpointerover" with the proper type (6) 
+PASS Window interface: window must inherit property "onpointerout" with the proper type (7) 
+PASS Window interface: window must inherit property "onpointerenter" with the proper type (8) 
+PASS Window interface: window must inherit property "onpointerleave" with the proper type (9) 
+PASS Navigator interface: attribute maxTouchPoints 
+PASS Navigator must be primary interface of navigator 
+PASS Stringification of navigator 
+PASS Navigator interface: navigator must inherit property "maxTouchPoints" with the proper type (0) 
+PASS Element interface: operation setPointerCapture(long) 
+PASS Element interface: operation releasePointerCapture(long) 
+PASS Element interface: operation hasPointerCapture(long) 
+FAIL HTMLElement interface: attribute ongotpointercapture assert_own_property: expected property "ongotpointercapture" missing
+FAIL HTMLElement interface: attribute onlostpointercapture assert_own_property: expected property "onlostpointercapture" missing
+PASS HTMLElement interface: attribute onpointerdown 
+PASS HTMLElement interface: attribute onpointermove 
+PASS HTMLElement interface: attribute onpointerup 
+PASS HTMLElement interface: attribute onpointercancel 
+PASS HTMLElement interface: attribute onpointerover 
+PASS HTMLElement interface: attribute onpointerout 
+PASS HTMLElement interface: attribute onpointerenter 
+PASS HTMLElement interface: attribute onpointerleave 
+FAIL Document interface: attribute ongotpointercapture assert_true: The prototype object must have a property "ongotpointercapture" expected true got false
+FAIL Document interface: attribute onlostpointercapture assert_true: The prototype object must have a property "onlostpointercapture" expected true got false
+PASS Document interface: attribute onpointerdown 
+PASS Document interface: attribute onpointermove 
+PASS Document interface: attribute onpointerup 
+PASS Document interface: attribute onpointercancel 
+PASS Document interface: attribute onpointerover 
+PASS Document interface: attribute onpointerout 
+PASS Document interface: attribute onpointerenter 
+PASS Document interface: attribute onpointerleave 
+PASS PointerEvent interface: existence and properties of interface object 
+PASS PointerEvent interface object length 
+PASS PointerEvent interface object name 
+FAIL PointerEvent interface: existence and properties of interface prototype object assert_equals: class string of PointerEvent.prototype expected "[object PointerEventPrototype]" but got "[object PointerEvent]"
+PASS PointerEvent interface: existence and properties of interface prototype object's "constructor" property 
+PASS PointerEvent interface: attribute pointerId 
+PASS PointerEvent interface: attribute width 
+PASS PointerEvent interface: attribute height 
+PASS PointerEvent interface: attribute pressure 
+FAIL PointerEvent interface: attribute tangentialPressure assert_true: The prototype object must have a property "tangentialPressure" expected true got false
+PASS PointerEvent interface: attribute tiltX 
+PASS PointerEvent interface: attribute tiltY 
+FAIL PointerEvent interface: attribute twist assert_true: The prototype object must have a property "twist" expected true got false
+PASS PointerEvent interface: attribute pointerType 
+PASS PointerEvent interface: attribute isPrimary 
+Harness: the test ran to completion.
+

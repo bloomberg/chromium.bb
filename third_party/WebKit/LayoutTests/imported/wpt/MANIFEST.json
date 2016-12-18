@@ -5296,6 +5296,18 @@
             "url": "/IndexedDB/idbobjectstore_put9.htm"
           }
         ],
+        "IndexedDB/idbrequest_error.html": [
+          {
+            "path": "IndexedDB/idbrequest_error.html",
+            "url": "/IndexedDB/idbrequest_error.html"
+          }
+        ],
+        "IndexedDB/idbrequest_result.html": [
+          {
+            "path": "IndexedDB/idbrequest_result.html",
+            "url": "/IndexedDB/idbrequest_result.html"
+          }
+        ],
         "IndexedDB/idbtransaction-oncomplete.htm": [
           {
             "path": "IndexedDB/idbtransaction-oncomplete.htm",
@@ -8598,6 +8610,12 @@
           {
             "path": "encrypted-media/idlharness.html",
             "url": "/encrypted-media/idlharness.html"
+          }
+        ],
+        "fullscreen/api/document-exit-fullscreen-active-document.html": [
+          {
+            "path": "fullscreen/api/document-exit-fullscreen-active-document.html",
+            "url": "/fullscreen/api/document-exit-fullscreen-active-document.html"
           }
         ],
         "fullscreen/api/document-fullscreen-enabled-active-document.html": [
@@ -14777,6 +14795,12 @@
             "url": "/innerText/setter.html"
           }
         ],
+        "input-events/idlharness.html": [
+          {
+            "path": "input-events/idlharness.html",
+            "url": "/input-events/idlharness.html"
+          }
+        ],
         "mediacapture-streams/GUM-api.https.html": [
           {
             "path": "mediacapture-streams/GUM-api.https.html",
@@ -14921,10 +14945,22 @@
             "url": "/mediacapture-streams/MediaStreamTrackEvent-constructor.https.html"
           }
         ],
+        "pointerevents/idlharness.html": [
+          {
+            "path": "pointerevents/idlharness.html",
+            "url": "/pointerevents/idlharness.html"
+          }
+        ],
         "pointerevents/pointerevent_constructor.html": [
           {
             "path": "pointerevents/pointerevent_constructor.html",
             "url": "/pointerevents/pointerevent_constructor.html"
+          }
+        ],
+        "pointerevents/pointerevent_on_event_handlers.html": [
+          {
+            "path": "pointerevents/pointerevent_on_event_handlers.html",
+            "url": "/pointerevents/pointerevent_on_event_handlers.html"
           }
         ],
         "pointerevents/pointerevent_touch-action-illegal.html": [
