@@ -5744,10 +5744,10 @@ static void runAddConsoleMessageTask(MessageSource source,
 
 void Document::addConsoleMessage(ConsoleMessage* consoleMessage) {
   if (!isContextThread()) {
-    postTask(BLINK_FROM_HERE, createCrossThreadTask(&runAddConsoleMessageTask,
-                                                    consoleMessage->source(),
-                                                    consoleMessage->level(),
-                                                    consoleMessage->message()));
+    postTask(TaskType::Unthrottled, BLINK_FROM_HERE,
+             createCrossThreadTask(
+                 &runAddConsoleMessageTask, consoleMessage->source(),
+                 consoleMessage->level(), consoleMessage->message()));
     return;
   }
 
@@ -6318,7 +6318,8 @@ void Document::setAutofocusElement(Element* element) {
   m_hasAutofocused = true;
   DCHECK(!m_autofocusElement);
   m_autofocusElement = element;
-  postTask(BLINK_FROM_HERE, createSameThreadTask(&runAutofocusTask));
+  postTask(TaskType::UserInteraction, BLINK_FROM_HERE,
+           createSameThreadTask(&runAutofocusTask));
 }
 
 Element* Document::activeElement() const {
