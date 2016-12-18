@@ -32,6 +32,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/SandboxFlags.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/EventQueue.h"
 #include "core/events/SecurityPolicyViolationEvent.h"
 #include "core/fetch/IntegrityMetadata.h"
@@ -1131,7 +1132,7 @@ void ContentSecurityPolicy::reportViolation(
   // we're not processing 'frame-ancestors').
   if (m_executionContext) {
     m_executionContext->postTask(
-        BLINK_FROM_HERE,
+        TaskType::Networking, BLINK_FROM_HERE,
         createSameThreadTask(&ContentSecurityPolicy::dispatchViolationEvents,
                              wrapPersistent(this), violationData,
                              wrapPersistent(element)));

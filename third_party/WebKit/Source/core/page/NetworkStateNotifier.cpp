@@ -27,6 +27,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/page/Page.h"
 #include "wtf/Assertions.h"
 #include "wtf/Functional.h"
@@ -149,7 +150,7 @@ void NetworkStateNotifier::notifyObservers(WebConnectionType type,
   for (const auto& entry : m_observers) {
     ExecutionContext* context = entry.key;
     context->postTask(
-        BLINK_FROM_HERE,
+        TaskType::Networking, BLINK_FROM_HERE,
         createCrossThreadTask(
             &NetworkStateNotifier::notifyObserversOfConnectionChangeOnContext,
             crossThreadUnretained(this), type, maxBandwidthMbps));
