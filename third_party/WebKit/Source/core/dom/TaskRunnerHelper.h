@@ -33,6 +33,7 @@ enum class TaskType : unsigned {
   WebSocket,
   PostedMessage,
   UnshippedPortMessage,
+  FileReading,
 
   // Other internal tasks that cannot fit any of the above task runners
   // can be posted here, but the usage is not encouraged. The task runner

@@ -27,6 +27,7 @@ WebTaskRunner* TaskRunnerHelper::get(TaskType type, LocalFrame* frame) {
     case TaskType::Microtask:
     case TaskType::PostedMessage:
     case TaskType::UnshippedPortMessage:
+    case TaskType::FileReading:
     case TaskType::Timer:
     case TaskType::Internal:
     case TaskType::Unspecified:

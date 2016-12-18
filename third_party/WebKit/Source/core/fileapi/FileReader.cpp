@@ -37,6 +37,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/ProgressEvent.h"
 #include "core/fileapi/File.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -354,7 +355,7 @@ void FileReader::abort() {
   // to be on the stack when doing so. The persistent reference keeps the
   // reader alive until the task has completed.
   getExecutionContext()->postTask(
-      BLINK_FROM_HERE,
+      TaskType::FileReading, BLINK_FROM_HERE,
       createSameThreadTask(&FileReader::terminate, wrapPersistent(this)));
 }
 

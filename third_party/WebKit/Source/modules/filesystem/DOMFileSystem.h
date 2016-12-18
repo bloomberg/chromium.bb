@@ -36,6 +36,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/SuspendableObject.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "modules/ModulesExport.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "modules/filesystem/EntriesCallback.h"
@@ -90,8 +91,8 @@ class MODULES_EXPORT DOMFileSystem final
   static void scheduleCallback(ExecutionContext* executionContext,
                                std::unique_ptr<ExecutionContextTask> task) {
     DCHECK(executionContext->isContextThread());
-    executionContext->postTask(BLINK_FROM_HERE, std::move(task),
-                               taskNameForInstrumentation());
+    executionContext->postTask(TaskType::FileReading, BLINK_FROM_HERE,
+                               std::move(task), taskNameForInstrumentation());
   }
 
   DECLARE_VIRTUAL_TRACE();
