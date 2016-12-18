@@ -842,7 +842,9 @@ void MemoryDumpManager::PeriodicGlobalDumpTimer::Start(
   DCHECK_LE(triggers_list.size(), 3u);
   auto* mdm = MemoryDumpManager::GetInstance();
   for (const TraceConfig::MemoryDumpConfig::Trigger& config : triggers_list) {
-    DCHECK_NE(0u, config.periodic_interval_ms);
+    DCHECK_NE(0u, config.min_time_between_dumps_ms);
+    DCHECK_EQ(MemoryDumpType::PERIODIC_INTERVAL, config.trigger_type)
+        << "Only periodic_interval triggers are suppported";
     switch (config.level_of_detail) {
       case MemoryDumpLevelOfDetail::BACKGROUND:
         DCHECK(mdm->IsDumpModeAllowed(MemoryDumpLevelOfDetail::BACKGROUND));
@@ -850,16 +852,16 @@ void MemoryDumpManager::PeriodicGlobalDumpTimer::Start(
       case MemoryDumpLevelOfDetail::LIGHT:
         DCHECK_EQ(0u, light_dump_period_ms);
         DCHECK(mdm->IsDumpModeAllowed(MemoryDumpLevelOfDetail::LIGHT));
-        light_dump_period_ms = config.periodic_interval_ms;
+        light_dump_period_ms = config.min_time_between_dumps_ms;
         break;
       case MemoryDumpLevelOfDetail::DETAILED:
         DCHECK_EQ(0u, heavy_dump_period_ms);
         DCHECK(mdm->IsDumpModeAllowed(MemoryDumpLevelOfDetail::DETAILED));
-        heavy_dump_period_ms = config.periodic_interval_ms;
+        heavy_dump_period_ms = config.min_time_between_dumps_ms;
         break;
     }
     min_timer_period_ms =
-        std::min(min_timer_period_ms, config.periodic_interval_ms);
+        std::min(min_timer_period_ms, config.min_time_between_dumps_ms);
   }
 
   DCHECK_EQ(0u, light_dump_period_ms % min_timer_period_ms);
