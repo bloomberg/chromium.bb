@@ -34,6 +34,7 @@
 #include "core/clipboard/DataObjectItem.h"
 #include "core/clipboard/DataTransfer.h"
 #include "core/dom/StringCallback.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
@@ -71,7 +72,8 @@ void DataTransferItem::getAsString(ExecutionContext* context,
   if (!callback || m_item->kind() != DataObjectItem::StringKind)
     return;
 
-  StringCallback::scheduleCallback(callback, context, m_item->getAsString(),
+  StringCallback::scheduleCallback(TaskType::UserInteraction, callback, context,
+                                   m_item->getAsString(),
                                    "DataTransferItem.getAsString");
 }
 

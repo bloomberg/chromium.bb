@@ -37,6 +37,7 @@
 namespace blink {
 
 class ExecutionContext;
+enum class TaskType : unsigned;
 
 class StringCallback : public GarbageCollectedFinalized<StringCallback> {
  public:
@@ -45,7 +46,8 @@ class StringCallback : public GarbageCollectedFinalized<StringCallback> {
   virtual void handleEvent(const String& data) = 0;
 
   // Helper to post callback task.
-  static void scheduleCallback(StringCallback*,
+  static void scheduleCallback(TaskType,
+                               StringCallback*,
                                ExecutionContext*,
                                const String& data,
                                const String& instrumentationName);
