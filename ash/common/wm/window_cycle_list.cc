@@ -35,6 +35,9 @@ namespace {
 
 bool g_disable_initial_delay = false;
 
+// Used for the highlight view and the shield (black background).
+constexpr float kBackgroundCornerRadius = 4.f;
+
 // Returns the window immediately below |window| in the current container.
 WmWindow* GetWindowBelow(WmWindow* window) {
   WmWindow* parent = window->GetParent();
@@ -280,14 +283,13 @@ class WindowCycleView : public views::WidgetDelegateView {
       mirror_container_->AddChildView(view);
     }
 
-    const float kHighlightCornerRadius = 4;
     // The background needs to be painted to fill the layer, not the View,
     // because the layer animates bounds changes but the View's bounds change
     // immediately.
     highlight_view_->set_background(new LayerFillBackgroundPainter(
         base::WrapUnique(views::Painter::CreateRoundRectWith1PxBorderPainter(
             SkColorSetA(SK_ColorWHITE, 0x4D), SkColorSetA(SK_ColorWHITE, 0x33),
-            kHighlightCornerRadius))));
+            kBackgroundCornerRadius))));
     highlight_view_->SetPaintToLayer(true);
     highlight_view_->layer()->SetFillsBoundsOpaquely(false);
 
@@ -395,8 +397,16 @@ class WindowCycleView : public views::WidgetDelegateView {
   void OnPaintBackground(gfx::Canvas* canvas) override {
     // We can't set a bg on the mirror container itself because the highlight
     // view needs to be on top of the bg but behind the target windows.
-    canvas->FillRect(mirror_container_->bounds(),
-                     SkColorSetA(SK_ColorBLACK, 0xE6));
+    const gfx::RectF shield_bounds(mirror_container_->bounds());
+    SkPaint paint;
+    paint.setColor(SkColorSetA(SK_ColorBLACK, 0xE6));
+    paint.setStyle(SkPaint::kFill_Style);
+    float corner_radius = 0.f;
+    if (shield_bounds.width() < width()) {
+      paint.setAntiAlias(true);
+      corner_radius = kBackgroundCornerRadius;
+    }
+    canvas->DrawRoundRect(shield_bounds, corner_radius, paint);
   }
 
   View* GetInitiallyFocusedView() override {
