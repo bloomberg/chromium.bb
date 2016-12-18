@@ -41,6 +41,7 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/IdTargetObserver.h"
 #include "core/dom/StyleChangeReason.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/editing/FrameSelection.h"
@@ -1263,7 +1264,7 @@ void HTMLInputElement::defaultEventHandler(Event* evt) {
   if (m_inputTypeView->shouldSubmitImplicitly(evt)) {
     // FIXME: Remove type check.
     if (type() == InputTypeNames::search)
-      document().postTask(BLINK_FROM_HERE,
+      document().postTask(TaskType::UserInteraction, BLINK_FROM_HERE,
                           createSameThreadTask(&HTMLInputElement::onSearch,
                                                wrapPersistent(this)));
     // Form submission finishes editing, just as loss of focus does.

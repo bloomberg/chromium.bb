@@ -46,6 +46,7 @@
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeListsNodeData.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/GestureEvent.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
@@ -897,7 +898,7 @@ void HTMLSelectElement::scrollToOption(HTMLOptionElement* option) {
   m_optionToScrollTo = option;
   if (!hasPendingTask)
     document().postTask(
-        BLINK_FROM_HERE,
+        TaskType::UserInteraction, BLINK_FROM_HERE,
         createSameThreadTask(&HTMLSelectElement::scrollToOptionTask,
                              wrapPersistent(this)));
 }
