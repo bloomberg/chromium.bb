@@ -39,13 +39,10 @@ class NavigationHandle;
 class NavigationThrottle;
 class RenderFrameHostImpl;
 
-namespace devtools {
-namespace input { class InputHandler; }
-}
-
 namespace protocol {
 class DOMHandler;
 class EmulationHandler;
+class InputHandler;
 class InspectorHandler;
 class IOHandler;
 class NetworkHandler;
@@ -185,7 +182,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   std::unique_ptr<FrameHostHolder> disconnected_;
 
   std::unique_ptr<protocol::DOMHandler> dom_handler_;
-  std::unique_ptr<devtools::input::InputHandler> input_handler_;
+  std::unique_ptr<protocol::InputHandler> input_handler_;
   std::unique_ptr<protocol::InspectorHandler> inspector_handler_;
   std::unique_ptr<protocol::IOHandler> io_handler_;
   std::unique_ptr<protocol::NetworkHandler> network_handler_;

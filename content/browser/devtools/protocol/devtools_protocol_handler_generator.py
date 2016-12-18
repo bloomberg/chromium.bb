@@ -249,6 +249,7 @@ template_cc = string.Template(header + """\
 #include "base/bind.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
 ${includes}\
 
 namespace content {
@@ -256,8 +257,9 @@ namespace content {
 DevToolsProtocolDispatcher::DevToolsProtocolDispatcher(
     DevToolsProtocolDelegate* notifier)
     : notifier_(notifier),
-      client_(notifier),
+      client_(notifier)
       ${fields_init} {
+  DCHECK(notifier_);
 }
 
 DevToolsProtocolDispatcher::~DevToolsProtocolDispatcher() {
@@ -643,12 +645,9 @@ fields = []
 includes = []
 fields_init = []
 
-browser_domains_list = ["Input"]
+browser_domains_list = []
 browser_commands_list = []
-async_commands_list = [
-    "Input.synthesizePinchGesture",
-    "Input.synthesizeScrollGesture",
-    "Input.synthesizeTapGesture"]
+async_commands_list = []
 
 for json_domain in all_domains:
   domain_map = {}
@@ -783,7 +782,7 @@ for json_domain in all_domains:
   setters.append(tmpl_setter.substitute(domain_map))
   fields.append(tmpl_field.substitute(domain_map))
   includes.append(tmpl_include.substitute(domain_map))
-  fields_init.append(tmpl_field_init.substitute(domain_map))
+  fields_init.append(",\n      " + tmpl_field_init.substitute(domain_map))
   if domain_needs_client:
     type_decls.append(tmpl_client.substitute(domain_map,
         methods = "".join(client_methods)))
@@ -813,7 +812,7 @@ output_cc_file.write(template_cc.substitute({},
     major = blink_protocol["version"]["major"],
     minor = blink_protocol["version"]["minor"],
     includes = "".join(sorted(includes)),
-    fields_init = ",\n      ".join(fields_init),
+    fields_init = "".join(fields_init),
     methods = "\n".join(handler_method_impls),
     types = "\n".join(type_impls)))
 output_cc_file.close()

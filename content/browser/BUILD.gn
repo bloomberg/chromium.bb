@@ -168,6 +168,8 @@ source_set("browser") {
     "$target_gen_dir/devtools/protocol/emulation.cc",
     "$target_gen_dir/devtools/protocol/emulation.h",
     "$target_gen_dir/devtools/protocol/forward.h",
+    "$target_gen_dir/devtools/protocol/input.cc",
+    "$target_gen_dir/devtools/protocol/input.h",
     "$target_gen_dir/devtools/protocol/inspector.cc",
     "$target_gen_dir/devtools/protocol/inspector.h",
     "$target_gen_dir/devtools/protocol/io.cc",

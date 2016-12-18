@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/devtools/protocol/devtools_protocol_dispatcher.h"
+#include "content/browser/devtools/protocol/input.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -18,124 +18,111 @@ class CompositorFrameMetadata;
 
 namespace content {
 
-class RenderWidgetHostImpl;
+class RenderFrameHostImpl;
 
-namespace devtools {
-namespace input {
+namespace protocol {
 
-class InputHandler {
+class InputHandler : public Input::Backend {
  public:
-  typedef DevToolsProtocolClient::Response Response;
-
   InputHandler();
-  virtual ~InputHandler();
+  ~InputHandler() override;
 
-  void SetRenderWidgetHost(RenderWidgetHostImpl* host);
-  void SetClient(std::unique_ptr<Client> client);
+  void Wire(UberDispatcher*);
+  void SetRenderFrameHost(RenderFrameHostImpl* host);
   void OnSwapCompositorFrame(const cc::CompositorFrameMetadata& frame_metadata);
+  Response Disable() override;
 
   Response DispatchKeyEvent(const std::string& type,
-                            const int* modifiers,
-                            const double* timestamp,
-                            const std::string* text,
-                            const std::string* unmodified_text,
-                            const std::string* key_identifier,
-                            const std::string* code,
-                            const std::string* key,
-                            const int* windows_virtual_key_code,
-                            const int* native_virtual_key_code,
-                            const bool* auto_repeat,
-                            const bool* is_keypad,
-                            const bool* is_system_key);
+                            Maybe<int> modifiers,
+                            Maybe<double> timestamp,
+                            Maybe<std::string> text,
+                            Maybe<std::string> unmodified_text,
+                            Maybe<std::string> key_identifier,
+                            Maybe<std::string> code,
+                            Maybe<std::string> key,
+                            Maybe<int> windows_virtual_key_code,
+                            Maybe<int> native_virtual_key_code,
+                            Maybe<bool> auto_repeat,
+                            Maybe<bool> is_keypad,
+                            Maybe<bool> is_system_key) override;
 
   Response DispatchMouseEvent(const std::string& type,
                               int x,
                               int y,
-                              const int* modifiers,
-                              const double* timestamp,
-                              const std::string* button,
-                              const int* click_count);
+                              Maybe<int> modifiers,
+                              Maybe<double> timestamp,
+                              Maybe<std::string> button,
+                              Maybe<int> click_count) override;
 
   Response EmulateTouchFromMouseEvent(const std::string& type,
                                       int x,
                                       int y,
                                       double timestamp,
                                       const std::string& button,
-                                      double* delta_x,
-                                      double* delta_y,
-                                      int* modifiers,
-                                      int* click_count);
+                                      Maybe<double> delta_x,
+                                      Maybe<double> delta_y,
+                                      Maybe<int> modifiers,
+                                      Maybe<int> click_count) override;
 
-  Response SynthesizePinchGesture(DevToolsCommandId command_id,
-                                  int x,
-                                  int y,
-                                  double scale_factor,
-                                  const int* relative_speed,
-                                  const std::string* gesture_source_type);
+  void SynthesizePinchGesture(
+      int x,
+      int y,
+      double scale_factor,
+      Maybe<int> relative_speed,
+      Maybe<std::string> gesture_source_type,
+      std::unique_ptr<SynthesizePinchGestureCallback> callback) override;
 
-  Response SynthesizeScrollGesture(DevToolsCommandId command_id,
-                                   int x,
-                                   int y,
-                                   const int* x_distance,
-                                   const int* y_distance,
-                                   const int* x_overscroll,
-                                   const int* y_overscroll,
-                                   const bool* prevent_fling,
-                                   const int* speed,
-                                   const std::string* gesture_source_type,
-                                   const int* repeat_count,
-                                   const int* repeat_delay_ms,
-                                   const std::string* interaction_marker_name);
+  void SynthesizeScrollGesture(
+      int x,
+      int y,
+      Maybe<int> x_distance,
+      Maybe<int> y_distance,
+      Maybe<int> x_overscroll,
+      Maybe<int> y_overscroll,
+      Maybe<bool> prevent_fling,
+      Maybe<int> speed,
+      Maybe<std::string> gesture_source_type,
+      Maybe<int> repeat_count,
+      Maybe<int> repeat_delay_ms,
+      Maybe<std::string> interaction_marker_name,
+      std::unique_ptr<SynthesizeScrollGestureCallback> callback) override;
 
-  Response SynthesizeTapGesture(DevToolsCommandId command_id,
-                                int x,
-                                int y,
-                                const int* duration,
-                                const int* tap_count,
-                                const std::string* gesture_source_type);
-
-  Response DispatchTouchEvent(
-      const std::string& type,
-      const std::vector<std::unique_ptr<base::DictionaryValue>>& touch_points,
-      const int* modifiers,
-      const double* timestamp);
+  void SynthesizeTapGesture(
+      int x,
+      int y,
+      Maybe<int> duration,
+      Maybe<int> tap_count,
+      Maybe<std::string> gesture_source_type,
+      std::unique_ptr<SynthesizeTapGestureCallback> callback) override;
 
  private:
-  void SendSynthesizePinchGestureResponse(DevToolsCommandId command_id,
-                                          SyntheticGesture::Result result);
-
-  void SendSynthesizeScrollGestureResponse(DevToolsCommandId command_id,
-                                           SyntheticGesture::Result result);
-
-  void SendSynthesizeTapGestureResponse(DevToolsCommandId command_id,
-                                        bool send_success,
-                                        SyntheticGesture::Result result);
-
   void SynthesizeRepeatingScroll(
       SyntheticSmoothScrollGestureParams gesture_params,
       int repeat_count,
       base::TimeDelta repeat_delay,
       std::string interaction_marker_name,
-      DevToolsCommandId command_id);
+      int id,
+      std::unique_ptr<SynthesizeScrollGestureCallback> callback);
 
-  void OnScrollFinished(SyntheticSmoothScrollGestureParams gesture_params,
-                        int repeat_count,
-                        base::TimeDelta repeat_delay,
-                        std::string interaction_marker_name,
-                        DevToolsCommandId command_id,
-                        SyntheticGesture::Result result);
+  void OnScrollFinished(
+      SyntheticSmoothScrollGestureParams gesture_params,
+      int repeat_count,
+      base::TimeDelta repeat_delay,
+      std::string interaction_marker_name,
+      int id,
+      std::unique_ptr<SynthesizeScrollGestureCallback> callback,
+      SyntheticGesture::Result result);
 
-  RenderWidgetHostImpl* host_;
-  std::unique_ptr<Client> client_;
+  RenderFrameHostImpl* host_;
   float page_scale_factor_;
   gfx::SizeF scrollable_viewport_size_;
+  int last_id_;
   base::WeakPtrFactory<InputHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(InputHandler);
 };
 
-}  // namespace input
-}  // namespace devtools
+}  // namespace protocol
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_DEVTOOLS_PROTOCOL_INPUT_HANDLER_H_

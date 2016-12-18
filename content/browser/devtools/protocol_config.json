@@ -20,6 +20,11 @@
                 "include": ["setGeolocationOverride", "clearGeolocationOverride", "setTouchEmulationEnabled", "canEmulate", "setDeviceMetricsOverride", "clearDeviceMetricsOverride", "setVisibleSize"]
             },
             {
+                "domain": "Input",
+                "exclude": ["dispatchTouchEvent"],
+                "async": ["synthesizePinchGesture", "synthesizeScrollGesture", "synthesizeTapGesture"]
+            },
+            {
                 "domain": "Inspector"
             },
             {

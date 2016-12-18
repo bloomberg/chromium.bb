@@ -403,16 +403,12 @@ void RenderFrameDevToolsAgentHost::WebContentsCreated(
 RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
     RenderFrameHostImpl* host)
     : DevToolsAgentHostImpl(base::GenerateGUID()),
-      input_handler_(new devtools::input::InputHandler()),
       frame_trace_recorder_(nullptr),
       protocol_handler_(new DevToolsProtocolHandler(this)),
       handlers_frame_host_(nullptr),
       current_frame_crashed_(false),
       pending_handle_(nullptr),
       frame_tree_node_(host->frame_tree_node()) {
-  DevToolsProtocolDispatcher* dispatcher = protocol_handler_->dispatcher();
-  dispatcher->SetInputHandler(input_handler_.get());
-
   SetPending(host);
   CommitPending();
   WebContentsObserver::Observe(WebContents::FromRenderFrameHost(host));
@@ -487,6 +483,10 @@ void RenderFrameDevToolsAgentHost::Attach() {
   dom_handler_->Wire(session()->dispatcher());
   dom_handler_->SetRenderFrameHost(handlers_frame_host_);
 
+  input_handler_.reset(new protocol::InputHandler());
+  input_handler_->Wire(session()->dispatcher());
+  input_handler_->SetRenderFrameHost(handlers_frame_host_);
+
   inspector_handler_.reset(new protocol::InspectorHandler());
   inspector_handler_->Wire(session()->dispatcher());
   inspector_handler_->SetRenderFrameHost(handlers_frame_host_);
@@ -545,6 +545,8 @@ void RenderFrameDevToolsAgentHost::Detach() {
     emulation_handler_->Disable();
     emulation_handler_.reset();
   }
+  input_handler_->Disable();
+  input_handler_.reset();
   inspector_handler_->Disable();
   inspector_handler_.reset();
   io_handler_->Disable();
@@ -972,8 +974,8 @@ void RenderFrameDevToolsAgentHost::UpdateProtocolHandlers(
     dom_handler_->SetRenderFrameHost(host);
   if (emulation_handler_)
     emulation_handler_->SetRenderFrameHost(host);
-  input_handler_->SetRenderWidgetHost(
-      host ? host->GetRenderWidgetHost() : nullptr);
+  if (input_handler_)
+    input_handler_->SetRenderFrameHost(host);
   if (inspector_handler_)
     inspector_handler_->SetRenderFrameHost(host);
   if (network_handler_)

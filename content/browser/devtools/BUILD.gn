@@ -60,6 +60,8 @@ inspector_protocol_generate("protocol_sources") {
     "protocol/emulation.cc",
     "protocol/emulation.h",
     "protocol/forward.h",
+    "protocol/input.cc",
+    "protocol/input.h",
     "protocol/inspector.cc",
     "protocol/inspector.h",
     "protocol/io.cc",
