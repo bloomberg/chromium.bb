@@ -155,10 +155,24 @@ static const int kHttpServerPropertiesVersions[] = {3, 4, 5};
 class HttpServerPropertiesManagerTest : public testing::TestWithParam<int> {
  protected:
   HttpServerPropertiesManagerTest()
-      : net_test_task_runner_(new TestMockTimeTaskRunner()) {}
+      : pref_test_task_runner_(new TestMockTimeTaskRunner()),
+        net_test_task_runner_(new TestMockTimeTaskRunner()) {}
 
   void SetUp() override {
     one_day_from_now_ = base::Time::Now() + base::TimeDelta::FromDays(1);
+    pref_delegate_ = new MockPrefDelegate;
+    http_server_props_manager_.reset(
+        new StrictMock<TestingHttpServerPropertiesManager>(
+            pref_delegate_, pref_test_task_runner_, net_test_task_runner_));
+
+    ExpectCacheUpdate();
+    EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+    pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+    EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+    EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+  }
+
+  void SetUpWithNonTaskRunner() {
     pref_delegate_ = new MockPrefDelegate;
     http_server_props_manager_.reset(
         new StrictMock<TestingHttpServerPropertiesManager>(
@@ -173,6 +187,8 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int> {
     if (http_server_props_manager_.get())
       http_server_props_manager_->ShutdownOnPrefThread();
     base::RunLoop().RunUntilIdle();
+    pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+    net_test_task_runner_->FastForwardUntilNoTasksRemain();
     http_server_props_manager_.reset();
   }
 
@@ -226,6 +242,7 @@ class HttpServerPropertiesManagerTest : public testing::TestWithParam<int> {
   std::unique_ptr<TestingHttpServerPropertiesManager>
       http_server_props_manager_;
   base::Time one_day_from_now_;
+  scoped_refptr<TestMockTimeTaskRunner> pref_test_task_runner_;
   scoped_refptr<TestMockTimeTaskRunner> net_test_task_runner_;
 
  private:
@@ -365,8 +382,13 @@ TEST_P(HttpServerPropertiesManagerTest,
   pref_delegate_->SetPrefs(http_server_properties_dict);
   pref_delegate_->SetPrefs(http_server_properties_dict);
 
-  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(net_test_task_runner_->HasPendingTask());
   net_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
 
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
@@ -519,9 +541,16 @@ TEST_P(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {
   // Set up the pref.
   pref_delegate_->SetPrefs(http_server_properties_dict);
 
-  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(net_test_task_runner_->HasPendingTask());
   net_test_task_runner_->FastForwardUntilNoTasksRemain();
-
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
   // Verify that nothing is set.
@@ -585,9 +614,16 @@ TEST_P(HttpServerPropertiesManagerTest, BadCachedAltProtocolPort) {
   // Set up the pref.
   pref_delegate_->SetPrefs(http_server_properties_dict);
 
-  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(net_test_task_runner_->HasPendingTask());
   net_test_task_runner_->FastForwardUntilNoTasksRemain();
-
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
   // Verify alternative service is not set.
@@ -611,8 +647,13 @@ TEST_P(HttpServerPropertiesManagerTest, SupportsSpdy) {
   http_server_props_manager_->SetSupportsSpdy(spdy_server, true);
 
   // Run the task.
-  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
   net_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
 
   EXPECT_TRUE(http_server_props_manager_->SupportsRequestPriority(spdy_server));
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
@@ -633,9 +674,14 @@ TEST_P(HttpServerPropertiesManagerTest, GetAlternativeServices) {
       spdy_server_mail, alternative_service, one_day_from_now_);
 
   // Run the task.
-  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(net_test_task_runner_->HasPendingTask());
   net_test_task_runner_->FastForwardUntilNoTasksRemain();
-
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
   AlternativeServiceVector alternative_service_vector =
@@ -666,9 +712,14 @@ TEST_P(HttpServerPropertiesManagerTest, SetAlternativeServices) {
       spdy_server_mail, alternative_service_info_vector);
 
   // Run the task.
-  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(net_test_task_runner_->HasPendingTask());
   net_test_task_runner_->FastForwardUntilNoTasksRemain();
-
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
   AlternativeServiceVector alternative_service_vector =
@@ -685,10 +736,10 @@ TEST_P(HttpServerPropertiesManagerTest, SetAlternativeServicesEmpty) {
                                                443);
   http_server_props_manager_->SetAlternativeServices(
       spdy_server_mail, AlternativeServiceInfoVector());
-  // ExpectScheduleUpdatePrefsOnNetworkThread() should not be called.
 
-  // Run the task.
-  base::RunLoop().RunUntilIdle();
+  // ExpectScheduleUpdatePrefsOnNetworkThread() should not be called.
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
   EXPECT_FALSE(HasAlternativeService(spdy_server_mail));
@@ -731,8 +782,13 @@ TEST_P(HttpServerPropertiesManagerTest, ConfirmAlternativeService) {
       alternative_service));
 
   // Run the task.
-  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(net_test_task_runner_->HasPendingTask());
   net_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
 
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
@@ -755,8 +811,13 @@ TEST_P(HttpServerPropertiesManagerTest, SupportsQuic) {
   http_server_props_manager_->SetSupportsQuic(true, actual_address);
 
   // Run the task.
-  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(net_test_task_runner_->HasPendingTask());
   net_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
 
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
@@ -779,8 +840,13 @@ TEST_P(HttpServerPropertiesManagerTest, ServerNetworkStats) {
   http_server_props_manager_->SetServerNetworkStats(mail_server, stats1);
 
   // Run the task.
-  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(net_test_task_runner_->HasPendingTask());
   net_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
 
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
@@ -804,8 +870,13 @@ TEST_P(HttpServerPropertiesManagerTest, QuicServerInfo) {
                                                 quic_server_info1);
 
   // Run the task.
-  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(net_test_task_runner_->HasPendingTask());
   net_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
 
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
@@ -814,6 +885,10 @@ TEST_P(HttpServerPropertiesManagerTest, QuicServerInfo) {
 }
 
 TEST_P(HttpServerPropertiesManagerTest, Clear) {
+  // This task expect to run the QuitWhenIdleClosure in the current thread,
+  // thus can not mock the pref task runner.
+  SetUpWithNonTaskRunner();
+
   ExpectPrefsUpdate();
   ExpectScheduleUpdatePrefsOnNetworkThreadRepeatedly();
 
@@ -835,7 +910,9 @@ TEST_P(HttpServerPropertiesManagerTest, Clear) {
 
   // Run the task.
   base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(net_test_task_runner_->HasPendingTask());
   net_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
 
   EXPECT_TRUE(http_server_props_manager_->SupportsRequestPriority(spdy_server));
   EXPECT_TRUE(HasAlternativeService(spdy_server));
@@ -854,7 +931,9 @@ TEST_P(HttpServerPropertiesManagerTest, Clear) {
 
   // Clear http server data, time out if we do not get a completion callback.
   http_server_props_manager_->Clear(base::MessageLoop::QuitWhenIdleClosure());
+
   base::RunLoop().Run();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
 
   EXPECT_FALSE(
       http_server_props_manager_->SupportsRequestPriority(spdy_server));
@@ -940,8 +1019,13 @@ TEST_P(HttpServerPropertiesManagerTest, BadSupportsQuic) {
   // Set up the pref.
   pref_delegate_->SetPrefs(http_server_properties_dict);
 
-  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(net_test_task_runner_->HasPendingTask());
   net_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
 
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 
@@ -1015,8 +1099,12 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   ExpectCacheUpdate();
   http_server_props_manager_->ScheduleUpdateCacheOnPrefThread();
 
+  EXPECT_TRUE(net_test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
   net_test_task_runner_->FastForwardUntilNoTasksRemain();
-  base::RunLoop().RunUntilIdle();
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
 
   // Verify preferences.
   const char expected_json[] =
@@ -1148,8 +1236,12 @@ TEST_P(HttpServerPropertiesManagerTest,
   ExpectCacheUpdate();
   http_server_props_manager_->ScheduleUpdateCacheOnPrefThread();
 
+  EXPECT_TRUE(net_test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
   net_test_task_runner_->FastForwardUntilNoTasksRemain();
-  base::RunLoop().RunUntilIdle();
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
 
   const base::DictionaryValue& pref_dict =
       pref_delegate_->GetServerProperties();
@@ -1230,7 +1322,11 @@ TEST_P(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateCache0) {
   http_server_props_manager_->ShutdownOnPrefThread();
   http_server_props_manager_.reset();
   // Run the task after shutdown and deletion.
-  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
 }
 
 TEST_P(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateCache1) {
@@ -1239,21 +1335,29 @@ TEST_P(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateCache1) {
   // Shutdown comes before the task is executed.
   http_server_props_manager_->ShutdownOnPrefThread();
   // Run the task after shutdown, but before deletion.
-  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
   http_server_props_manager_.reset();
-  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
 }
 
 TEST_P(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdateCache2) {
   http_server_props_manager_->UpdateCacheFromPrefsOnUIConcrete();
   // Shutdown comes before the task is executed.
   http_server_props_manager_->ShutdownOnPrefThread();
-  // Run the task after shutdown, but before deletion.
-  base::RunLoop().RunUntilIdle();
+  // There should be no tasks to run.
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
   http_server_props_manager_.reset();
-  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
 }
 
 //
@@ -1266,7 +1370,11 @@ TEST_P(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdatePrefs0) {
   http_server_props_manager_->ShutdownOnPrefThread();
   http_server_props_manager_.reset();
   // Run the task after shutdown and deletion.
-  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+  net_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
 }
 
 TEST_P(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdatePrefs1) {
@@ -1276,12 +1384,18 @@ TEST_P(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdatePrefs1) {
   // Shutdown comes before the task is executed.
   http_server_props_manager_->ShutdownOnPrefThread();
   // Run the task after shutdown, but before deletion.
+  EXPECT_TRUE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
   net_test_task_runner_->FastForwardUntilNoTasksRemain();
-  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
 
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
   http_server_props_manager_.reset();
-  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
 }
 
 TEST_P(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdatePrefs2) {
@@ -1291,10 +1405,15 @@ TEST_P(HttpServerPropertiesManagerTest, ShutdownWithPendingUpdatePrefs2) {
   // Shutdown comes before the task is executed.
   http_server_props_manager_->ShutdownOnPrefThread();
   // Run the task after shutdown, but before deletion.
-  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
   http_server_props_manager_.reset();
-  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
 }
 
 }  // namespace net
