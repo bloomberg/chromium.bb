@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/files/scoped_file.h"
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/values.h"
@@ -22,9 +21,6 @@ class CommandLine;
 }  // namespace base
 
 namespace arc {
-
-class ArcBridgeTest;
-
 namespace mojom {
 
 // Instead of including components/arc/common/arc_bridge.mojom.h, list all the
@@ -221,14 +217,6 @@ class ArcBridgeService {
   bool CalledOnValidThread();
 
  private:
-  friend class ArcBridgeTest;
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Basic);
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Prerequisites);
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, StopMidStartup);
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Restart);
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, OnBridgeStopped);
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Shutdown);
-
   base::ObserverList<ArcSessionObserver> observer_list_;
 
   base::ThreadChecker thread_checker_;

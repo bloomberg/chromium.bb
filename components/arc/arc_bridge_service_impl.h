@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/files/scoped_file.h"
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
@@ -52,10 +51,6 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   void DisableReconnectDelayForTesting();
 
  private:
-  friend class ArcBridgeTest;
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, Restart);
-  FRIEND_TEST_ALL_PREFIXES(ArcBridgeTest, OnBridgeStopped);
-
   // If all pre-requisites are true (ARC is available, it has been enabled, and
   // the session has started), and ARC is stopped, start ARC. If ARC is running
   // and the pre-requisites stop being true, stop ARC.

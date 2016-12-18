@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -24,34 +25,36 @@ class DummyObserver : public ArcSessionObserver {};
 
 }  // namespace
 
-// TODO(hidehiko): ArcBridgeTest gets complicated and has stale code.
-// Simplify the code.
 class ArcBridgeTest : public testing::Test, public ArcSessionObserver {
  public:
   ArcBridgeTest() = default;
 
-  void OnSessionReady() override {
-    state_ = ArcBridgeService::State::READY;
-    ready_ = true;
+  void SetUp() override {
+    chromeos::DBusThreadManager::Initialize();
+
+    stop_reason_ = StopReason::SHUTDOWN;
+
+    // We inject FakeArcSession here so we do not need task_runner.
+    service_ = base::MakeUnique<ArcBridgeServiceImpl>(nullptr);
+    service_->SetArcSessionFactoryForTesting(
+        base::Bind(FakeArcSession::Create));
+    service_->AddObserver(this);
   }
 
-  void OnSessionStopped(StopReason stop_reason) override {
-    // The instance is already destructed in ArcBridgeServiceImpl::OnStopped().
-    state_ = ArcBridgeService::State::STOPPED;
-    stop_reason_ = stop_reason;
-    message_loop_.task_runner()->PostTask(FROM_HERE,
-                                          message_loop_.QuitWhenIdleClosure());
+  void TearDown() override {
+    service_->RemoveObserver(this);
+    service_.reset();
+
+    chromeos::DBusThreadManager::Shutdown();
   }
 
-  bool ready() const { return ready_; }
-  ArcBridgeService::State state() const { return state_; }
+  ArcBridgeServiceImpl* arc_bridge_service() { return service_.get(); }
+
   FakeArcSession* arc_session() const {
     return static_cast<FakeArcSession*>(service_->GetArcSessionForTesting());
   }
 
- protected:
-  std::unique_ptr<ArcBridgeServiceImpl> service_;
-  StopReason stop_reason_;
+  StopReason stop_reason() { return stop_reason_; }
 
   static std::unique_ptr<ArcSession> CreateSuspendedArcSession() {
     auto arc_session = base::MakeUnique<FakeArcSession>();
@@ -67,146 +70,162 @@ class ArcBridgeTest : public testing::Test, public ArcSessionObserver {
   }
 
  private:
-  void SetUp() override {
-    chromeos::DBusThreadManager::Initialize();
-
-    ready_ = false;
-    state_ = ArcBridgeService::State::STOPPED;
-    stop_reason_ = StopReason::SHUTDOWN;
-
-    // We inject FakeArcSession here so we do not need task_runner.
-    service_.reset(new ArcBridgeServiceImpl(nullptr));
-    service_->SetArcSessionFactoryForTesting(
-        base::Bind(FakeArcSession::Create));
-    service_->AddObserver(this);
+  // ArcSessionObserver:
+  void OnSessionStopped(StopReason stop_reason) override {
+    // The instance is already destructed in ArcBridgeServiceImpl::OnStopped().
+    stop_reason_ = stop_reason;
   }
 
-  void TearDown() override {
-    service_->RemoveObserver(this);
-    service_.reset();
-
-    chromeos::DBusThreadManager::Shutdown();
-  }
-
-  bool ready_ = false;
-  ArcBridgeService::State state_;
+  StopReason stop_reason_;
+  std::unique_ptr<ArcBridgeServiceImpl> service_;
   base::MessageLoopForUI message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeTest);
 };
 
-// Exercises the basic functionality of the ARC Bridge Service.  A message from
-// within the instance should cause the observer to be notified.
+// Exercises the basic functionality of the ARC Bridge Service. Observer should
+// be notified.
 TEST_F(ArcBridgeTest, Basic) {
-  ASSERT_FALSE(ready());
-  ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
+  class Observer : public ArcSessionObserver {
+   public:
+    Observer() = default;
 
-  service_->RequestStart();
-  ASSERT_EQ(ArcBridgeService::State::READY, state());
+    bool IsReadyCalled() { return ready_called_; }
+    bool IsStoppedCalled() { return stopped_called_; }
 
-  service_->RequestStop();
-  ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
+    // ArcSessionObserver:
+    void OnSessionReady() override { ready_called_ = true; }
+    void OnSessionStopped(StopReason stop_reason) override {
+      stopped_called_ = true;
+    }
+
+   private:
+    bool ready_called_ = false;
+    bool stopped_called_ = false;
+
+    DISALLOW_COPY_AND_ASSIGN(Observer);
+  };
+
+  Observer observer;
+  arc_bridge_service()->AddObserver(&observer);
+  base::ScopedClosureRunner teardown(base::Bind(
+      [](ArcBridgeService* arc_bridge_service, Observer* observer) {
+        arc_bridge_service->RemoveObserver(observer);
+      },
+      arc_bridge_service(), &observer));
+
+  EXPECT_TRUE(arc_bridge_service()->stopped());
+
+  arc_bridge_service()->RequestStart();
+  EXPECT_TRUE(arc_bridge_service()->ready());
+  EXPECT_TRUE(observer.IsReadyCalled());
+
+  arc_bridge_service()->RequestStop();
+  EXPECT_TRUE(arc_bridge_service()->stopped());
+  EXPECT_TRUE(observer.IsStoppedCalled());
 }
 
-// If the ArcBridgeService is shut down, it should be stopped, even
-// mid-startup.
+// If the ArcBridgeService accepts a request to stop ARC instance, it should
+// stop it, even mid-startup.
 TEST_F(ArcBridgeTest, StopMidStartup) {
-  ASSERT_FALSE(ready());
-
-  service_->SetArcSessionFactoryForTesting(
+  arc_bridge_service()->SetArcSessionFactoryForTesting(
       base::Bind(ArcBridgeTest::CreateSuspendedArcSession));
-  service_->RequestStart();
-  ASSERT_FALSE(service_->stopped());
-  ASSERT_FALSE(service_->ready());
+  EXPECT_TRUE(arc_bridge_service()->stopped());
 
-  service_->RequestStop();
-  ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
+  arc_bridge_service()->RequestStart();
+  EXPECT_FALSE(arc_bridge_service()->stopped());
+  EXPECT_FALSE(arc_bridge_service()->ready());
+
+  arc_bridge_service()->RequestStop();
+  EXPECT_TRUE(arc_bridge_service()->stopped());
 }
 
 // If the boot procedure is failed, then restarting mechanism should not
 // triggered.
 TEST_F(ArcBridgeTest, BootFailure) {
-  ASSERT_TRUE(service_->stopped());
-
-  service_->SetArcSessionFactoryForTesting(
+  arc_bridge_service()->SetArcSessionFactoryForTesting(
       base::Bind(ArcBridgeTest::CreateBootFailureArcSession,
                  StopReason::GENERIC_BOOT_FAILURE));
-  service_->RequestStart();
-  EXPECT_EQ(StopReason::GENERIC_BOOT_FAILURE, stop_reason_);
-  ASSERT_TRUE(service_->stopped());
+  EXPECT_TRUE(arc_bridge_service()->stopped());
+
+  arc_bridge_service()->RequestStart();
+  EXPECT_EQ(StopReason::GENERIC_BOOT_FAILURE, stop_reason());
+  EXPECT_TRUE(arc_bridge_service()->stopped());
 }
 
 // If the instance is stopped, it should be re-started.
 TEST_F(ArcBridgeTest, Restart) {
-  ASSERT_FALSE(ready());
+  arc_bridge_service()->DisableReconnectDelayForTesting();
+  EXPECT_TRUE(arc_bridge_service()->stopped());
 
-  service_->RequestStart();
-  ASSERT_EQ(ArcBridgeService::State::READY, state());
+  arc_bridge_service()->RequestStart();
+  EXPECT_TRUE(arc_bridge_service()->ready());
 
   // Simulate a connection loss.
-  service_->DisableReconnectDelayForTesting();
   ASSERT_TRUE(arc_session());
   arc_session()->StopWithReason(StopReason::CRASH);
-  ASSERT_TRUE(service_->ready());
+  EXPECT_TRUE(arc_bridge_service()->ready());
 
-  service_->RequestStop();
-  ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
+  arc_bridge_service()->RequestStop();
+  EXPECT_TRUE(arc_bridge_service()->stopped());
 }
 
-// Makes sure OnBridgeStopped is called on stop.
-TEST_F(ArcBridgeTest, OnBridgeStopped) {
-  ASSERT_FALSE(ready());
+// Makes sure OnSessionStopped is called on stop.
+TEST_F(ArcBridgeTest, OnSessionStopped) {
+  arc_bridge_service()->DisableReconnectDelayForTesting();
+  EXPECT_TRUE(arc_bridge_service()->stopped());
 
-  service_->DisableReconnectDelayForTesting();
-  service_->RequestStart();
-  ASSERT_EQ(ArcBridgeService::State::READY, state());
+  arc_bridge_service()->RequestStart();
+  EXPECT_TRUE(arc_bridge_service()->ready());
 
   // Simulate boot failure.
   ASSERT_TRUE(arc_session());
   arc_session()->StopWithReason(StopReason::GENERIC_BOOT_FAILURE);
-  EXPECT_EQ(StopReason::GENERIC_BOOT_FAILURE, stop_reason_);
-  ASSERT_TRUE(service_->ready());
+  EXPECT_EQ(StopReason::GENERIC_BOOT_FAILURE, stop_reason());
+  EXPECT_TRUE(arc_bridge_service()->ready());
 
   // Simulate crash.
   ASSERT_TRUE(arc_session());
   arc_session()->StopWithReason(StopReason::CRASH);
-  EXPECT_EQ(StopReason::CRASH, stop_reason_);
-  ASSERT_TRUE(service_->ready());
+  EXPECT_EQ(StopReason::CRASH, stop_reason());
+  EXPECT_TRUE(arc_bridge_service()->ready());
 
   // Graceful stop.
-  service_->RequestStop();
-  ASSERT_EQ(StopReason::SHUTDOWN, stop_reason_);
-  ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
+  arc_bridge_service()->RequestStop();
+  EXPECT_EQ(StopReason::SHUTDOWN, stop_reason());
+  EXPECT_TRUE(arc_bridge_service()->stopped());
 }
 
 TEST_F(ArcBridgeTest, Shutdown) {
-  ASSERT_FALSE(ready());
+  arc_bridge_service()->DisableReconnectDelayForTesting();
+  EXPECT_TRUE(arc_bridge_service()->stopped());
 
-  service_->DisableReconnectDelayForTesting();
-  service_->RequestStart();
-  ASSERT_EQ(ArcBridgeService::State::READY, state());
+  arc_bridge_service()->RequestStart();
+  EXPECT_TRUE(arc_bridge_service()->ready());
 
   // Simulate shutdown.
-  service_->OnShutdown();
-  ASSERT_EQ(StopReason::SHUTDOWN, stop_reason_);
-  ASSERT_EQ(ArcBridgeService::State::STOPPED, state());
+  arc_bridge_service()->OnShutdown();
+  EXPECT_EQ(StopReason::SHUTDOWN, stop_reason());
+  EXPECT_TRUE(arc_bridge_service()->stopped());
 }
 
 // Removing the same observer more than once should be okay.
 TEST_F(ArcBridgeTest, RemoveObserverTwice) {
-  ASSERT_FALSE(ready());
-  auto dummy_observer = base::MakeUnique<DummyObserver>();
-  service_->AddObserver(dummy_observer.get());
+  EXPECT_TRUE(arc_bridge_service()->stopped());
+
+  DummyObserver dummy_observer;
+  arc_bridge_service()->AddObserver(&dummy_observer);
   // Call RemoveObserver() twice.
-  service_->RemoveObserver(dummy_observer.get());
-  service_->RemoveObserver(dummy_observer.get());
+  arc_bridge_service()->RemoveObserver(&dummy_observer);
+  arc_bridge_service()->RemoveObserver(&dummy_observer);
 }
 
 // Removing an unknown observer should be allowed.
 TEST_F(ArcBridgeTest, RemoveUnknownObserver) {
-  ASSERT_FALSE(ready());
-  auto dummy_observer = base::MakeUnique<DummyObserver>();
-  service_->RemoveObserver(dummy_observer.get());
+  EXPECT_TRUE(arc_bridge_service()->stopped());
+
+  DummyObserver dummy_observer;
+  arc_bridge_service()->RemoveObserver(&dummy_observer);
 }
 
 }  // namespace arc
