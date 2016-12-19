@@ -13,6 +13,7 @@
 #include <memory>
 
 using testing::_;
+using testing::AnyNumber;
 using testing::AtMost;
 
 namespace blink {
@@ -83,6 +84,7 @@ class WorkerThreadTest : public ::testing::Test {
     EXPECT_CALL(*m_reportingProxy, didInitializeWorkerContext()).Times(1);
     EXPECT_CALL(*m_reportingProxy, willEvaluateWorkerScriptMock(_, _)).Times(1);
     EXPECT_CALL(*m_reportingProxy, didEvaluateWorkerScript(true)).Times(1);
+    EXPECT_CALL(*m_reportingProxy, countFeature(_)).Times(AnyNumber());
     EXPECT_CALL(*m_reportingProxy, willDestroyWorkerGlobalScope()).Times(1);
     EXPECT_CALL(*m_reportingProxy, didTerminateWorkerThread()).Times(1);
     EXPECT_CALL(*m_lifecycleObserver, contextDestroyed()).Times(1);
@@ -94,6 +96,7 @@ class WorkerThreadTest : public ::testing::Test {
         .Times(AtMost(1));
     EXPECT_CALL(*m_reportingProxy, willEvaluateWorkerScriptMock(_, _))
         .Times(AtMost(1));
+    EXPECT_CALL(*m_reportingProxy, countFeature(_)).Times(AnyNumber());
     EXPECT_CALL(*m_reportingProxy, didEvaluateWorkerScript(_)).Times(AtMost(1));
     EXPECT_CALL(*m_reportingProxy, willDestroyWorkerGlobalScope())
         .Times(AtMost(1));
@@ -105,6 +108,7 @@ class WorkerThreadTest : public ::testing::Test {
     EXPECT_CALL(*m_reportingProxy, didCreateWorkerGlobalScope(_)).Times(1);
     EXPECT_CALL(*m_reportingProxy, didInitializeWorkerContext()).Times(1);
     EXPECT_CALL(*m_reportingProxy, willEvaluateWorkerScriptMock(_, _)).Times(1);
+    EXPECT_CALL(*m_reportingProxy, countFeature(_)).Times(AnyNumber());
     EXPECT_CALL(*m_reportingProxy, didEvaluateWorkerScript(false)).Times(1);
     EXPECT_CALL(*m_reportingProxy, willDestroyWorkerGlobalScope()).Times(1);
     EXPECT_CALL(*m_reportingProxy, didTerminateWorkerThread()).Times(1);
@@ -258,6 +262,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
   EXPECT_CALL(*m_reportingProxy, didCreateWorkerGlobalScope(_)).Times(1);
   EXPECT_CALL(*m_reportingProxy, didInitializeWorkerContext()).Times(1);
   EXPECT_CALL(*m_reportingProxy, willDestroyWorkerGlobalScope()).Times(1);
+  EXPECT_CALL(*m_reportingProxy, countFeature(_)).Times(AnyNumber());
   EXPECT_CALL(*m_reportingProxy, didTerminateWorkerThread()).Times(1);
   EXPECT_CALL(*m_lifecycleObserver, contextDestroyed()).Times(1);
 
