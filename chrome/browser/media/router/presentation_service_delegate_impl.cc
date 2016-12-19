@@ -12,7 +12,6 @@
 #include "base/containers/small_map.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
-#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/media/router/create_presentation_connection_request.h"
 #include "chrome/browser/media/router/media_route.h"
@@ -58,14 +57,10 @@ RenderFrameHostId GetRenderFrameHostId(RenderFrameHost* render_frame_host) {
 
 // Gets the last committed URL for the render frame specified by
 // |render_frame_host_id|.
-GURL GetLastCommittedURLForFrame(RenderFrameHostId render_frame_host_id,
-                                 content::WebContents* web_contents) {
+GURL GetLastCommittedURLForFrame(RenderFrameHostId render_frame_host_id) {
   RenderFrameHost* render_frame_host = RenderFrameHost::FromID(
       render_frame_host_id.first, render_frame_host_id.second);
-  // crbug.com/663740: The RFH may not be associated with the frame tree; in
-  // that case, GetLastCommittedOrigin() may crash.
-  if (!render_frame_host ||
-      !base::ContainsValue(web_contents->GetAllFrames(), render_frame_host))
+  if (!render_frame_host)
     return GURL();
 
   // TODO(crbug.com/632623): Use url::Origin in place of GURL for origins
@@ -241,8 +236,7 @@ bool PresentationFrame::SetScreenAvailabilityListener(
 
   sinks_observer.reset(new PresentationMediaSinksObserver(
       router_, listener, source,
-      GetLastCommittedURLForFrame(render_frame_host_id_, web_contents_)
-          .GetOrigin()));
+      GetLastCommittedURLForFrame(render_frame_host_id_).GetOrigin()));
 
   if (!sinks_observer->Init()) {
     url_to_sinks_observer_.erase(source.id());
@@ -566,8 +560,7 @@ void PresentationFrameManager::SetDefaultPresentationUrls(
     ClearDefaultPresentationRequest();
   } else {
     DCHECK(!callback.is_null());
-    GURL frame_url(
-        GetLastCommittedURLForFrame(render_frame_host_id, web_contents_));
+    GURL frame_url(GetLastCommittedURLForFrame(render_frame_host_id));
     PresentationRequest request(render_frame_host_id, default_presentation_urls,
                                 frame_url);
     default_presentation_started_callback_ = callback;
@@ -808,7 +801,7 @@ void PresentationServiceDelegateImpl::StartSession(
   std::unique_ptr<CreatePresentationConnectionRequest> request(
       new CreatePresentationConnectionRequest(
           render_frame_host_id, presentation_urls,
-          GetLastCommittedURLForFrame(render_frame_host_id, web_contents_),
+          GetLastCommittedURLForFrame(render_frame_host_id),
           base::Bind(&PresentationServiceDelegateImpl::OnStartSessionSucceeded,
                      weak_factory_.GetWeakPtr(), render_process_id,
                      render_frame_id, success_cb),
@@ -839,7 +832,7 @@ void PresentationServiceDelegateImpl::JoinSession(
   }
 
   const url::Origin& origin = url::Origin(GetLastCommittedURLForFrame(
-      RenderFrameHostId(render_process_id, render_frame_id), web_contents_));
+      RenderFrameHostId(render_process_id, render_frame_id)));
 
 #if !defined(OS_ANDROID)
   if (IsAutoJoinPresentationId(presentation_id) &&
