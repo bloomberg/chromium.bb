@@ -4,8 +4,9 @@
 
 mojom = "//ui/gfx/mojo/color_space.mojom"
 public_headers = [ "//ui/gfx/color_space.h" ]
-traits_headers = [ "ui/gfx/ipc/color/gfx_param_traits.h" ]
+traits_headers = [ "//ui/gfx/ipc/color/gfx_param_traits.h" ]
 public_deps = [
+  "//ipc",
   "//ui/gfx",
 ]
 deps = [
