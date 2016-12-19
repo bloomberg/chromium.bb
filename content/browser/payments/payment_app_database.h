@@ -28,6 +28,10 @@ class CONTENT_EXPORT PaymentAppDatabase {
   using ReadManifestCallback =
       base::Callback<void(payments::mojom::PaymentAppManifestPtr,
                           payments::mojom::PaymentAppManifestError)>;
+  using ManifestWithID =
+      std::pair<int64_t, payments::mojom::PaymentAppManifestPtr>;
+  using Manifests = std::vector<ManifestWithID>;
+  using ReadAllManifestsCallback = base::Callback<void(Manifests)>;
 
   explicit PaymentAppDatabase(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);
@@ -37,6 +41,7 @@ class CONTENT_EXPORT PaymentAppDatabase {
                      payments::mojom::PaymentAppManifestPtr manifest,
                      const WriteManifestCallback& callback);
   void ReadManifest(const GURL& scope, const ReadManifestCallback& callback);
+  void ReadAllManifests(const ReadAllManifestsCallback& callback);
 
  private:
   // WriteManifest callbacks
@@ -56,6 +61,12 @@ class CONTENT_EXPORT PaymentAppDatabase {
   void DidReadManifest(const ReadManifestCallback& callback,
                        const std::vector<std::string>& data,
                        ServiceWorkerStatusCode status);
+
+  // ReadAllManifests callbacks
+  void DidReadAllManifests(
+      const ReadAllManifestsCallback& callback,
+      const std::vector<std::pair<int64_t, std::string>>& raw_data,
+      ServiceWorkerStatusCode status);
 
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   base::WeakPtrFactory<PaymentAppDatabase> weak_ptr_factory_;

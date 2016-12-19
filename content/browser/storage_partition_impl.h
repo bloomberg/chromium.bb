@@ -120,7 +120,7 @@ class CONTENT_EXPORT  StoragePartitionImpl
  private:
   friend class BackgroundSyncManagerTest;
   friend class BackgroundSyncServiceImplTest;
-  friend class PaymentAppManagerTest;
+  friend class PaymentAppContentUnitTestBase;
   friend class StoragePartitionImplMap;
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionShaderClearTest, ClearShaderCache);
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplTest,

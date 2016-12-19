@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
-#include "content/browser/payments/payment_app_database.h"
 #include "content/browser/payments/payment_app_manager.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -64,7 +63,10 @@ PaymentAppDatabase* PaymentAppContextImpl::payment_app_database() const {
 
 void PaymentAppContextImpl::GetAllManifests(
     const GetAllManifestsCallback& callback) {
-  NOTIMPLEMENTED();
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PaymentAppContextImpl::GetAllManifestsOnIO, this, callback));
 }
 
 PaymentAppContextImpl::~PaymentAppContextImpl() {
@@ -99,6 +101,23 @@ void PaymentAppContextImpl::DidShutdown() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   is_shutdown_ = true;
+}
+
+void PaymentAppContextImpl::GetAllManifestsOnIO(
+    const GetAllManifestsCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  payment_app_database()->ReadAllManifests(base::Bind(
+      &PaymentAppContextImpl::DidGetAllManifestsOnIO, this, callback));
+}
+
+void PaymentAppContextImpl::DidGetAllManifestsOnIO(
+    const GetAllManifestsCallback& callback,
+    Manifests manifests) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(callback, base::Passed(std::move(manifests))));
 }
 
 }  // namespace content

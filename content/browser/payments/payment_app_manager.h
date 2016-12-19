@@ -27,7 +27,7 @@ class CONTENT_EXPORT PaymentAppManager
   ~PaymentAppManager() override;
 
  private:
-  friend class PaymentAppManagerTest;
+  friend class PaymentAppContentUnitTestBase;
 
   // payments::mojom::PaymentAppManager methods:
   void SetManifest(const std::string& scope,

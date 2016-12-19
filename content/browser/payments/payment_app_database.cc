@@ -19,6 +19,32 @@ namespace {
 
 const char kPaymentAppManifestDataKey[] = "PaymentAppManifestData";
 
+payments::mojom::PaymentAppManifestPtr DeserializePaymentAppManifest(
+    const std::string& input) {
+  PaymentAppManifestProto manifest_proto;
+  if (!manifest_proto.ParseFromString(input))
+    return nullptr;
+
+  payments::mojom::PaymentAppManifestPtr manifest =
+      payments::mojom::PaymentAppManifest::New();
+  manifest->name = manifest_proto.name();
+  if (manifest_proto.has_icon())
+    manifest->icon = manifest_proto.icon();
+  for (const auto& option_proto : manifest_proto.options()) {
+    payments::mojom::PaymentAppOptionPtr option =
+        payments::mojom::PaymentAppOption::New();
+    option->name = option_proto.name();
+    if (option_proto.has_icon())
+      option->icon = option_proto.icon();
+    option->id = option_proto.id();
+    for (const auto& method : option_proto.enabled_methods())
+      option->enabled_methods.push_back(method);
+    manifest->options.push_back(std::move(option));
+  }
+
+  return manifest;
+}
+
 }  // namespace
 
 PaymentAppDatabase::PaymentAppDatabase(
@@ -50,6 +76,16 @@ void PaymentAppDatabase::ReadManifest(const GURL& scope,
   service_worker_context_->FindReadyRegistrationForPattern(
       scope, base::Bind(&PaymentAppDatabase::DidFindRegistrationToReadManifest,
                         weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void PaymentAppDatabase::ReadAllManifests(
+    const ReadAllManifestsCallback& callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  service_worker_context_->GetUserDataForAllRegistrations(
+      kPaymentAppManifestDataKey,
+      base::Bind(&PaymentAppDatabase::DidReadAllManifests,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void PaymentAppDatabase::DidFindRegistrationToWriteManifest(
@@ -127,34 +163,41 @@ void PaymentAppDatabase::DidReadManifest(const ReadManifestCallback& callback,
     return;
   }
 
-  PaymentAppManifestProto manifest_proto;
-  bool success = manifest_proto.ParseFromString(data[0]);
-  if (!success) {
+  payments::mojom::PaymentAppManifestPtr manifest =
+      DeserializePaymentAppManifest(data[0]);
+  if (!manifest) {
     callback.Run(payments::mojom::PaymentAppManifest::New(),
                  payments::mojom::PaymentAppManifestError::
                      MANIFEST_STORAGE_OPERATION_FAILED);
     return;
   }
 
-  payments::mojom::PaymentAppManifestPtr manifest =
-      payments::mojom::PaymentAppManifest::New();
-  manifest->name = manifest_proto.name();
-  if (manifest_proto.has_icon())
-    manifest->icon = manifest_proto.icon();
-  for (const auto& option_proto : manifest_proto.options()) {
-    payments::mojom::PaymentAppOptionPtr option =
-        payments::mojom::PaymentAppOption::New();
-    option->name = option_proto.name();
-    if (option_proto.has_icon())
-      option->icon = option_proto.icon();
-    option->id = option_proto.id();
-    for (const auto& method : option_proto.enabled_methods())
-      option->enabled_methods.push_back(method);
-    manifest->options.push_back(std::move(option));
-  }
-
   callback.Run(std::move(manifest),
                payments::mojom::PaymentAppManifestError::NONE);
+}
+
+void PaymentAppDatabase::DidReadAllManifests(
+    const ReadAllManifestsCallback& callback,
+    const std::vector<std::pair<int64_t, std::string>>& raw_data,
+    ServiceWorkerStatusCode status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (status != SERVICE_WORKER_OK) {
+    callback.Run(Manifests());
+    return;
+  }
+
+  Manifests manifests;
+  for (const auto& item_of_raw_data : raw_data) {
+    payments::mojom::PaymentAppManifestPtr manifest =
+        DeserializePaymentAppManifest(item_of_raw_data.second);
+    if (!manifest)
+      continue;
+
+    manifests.push_back(
+        ManifestWithID(item_of_raw_data.first, std::move(manifest)));
+  }
+
+  callback.Run(std::move(manifests));
 }
 
 }  // namespace content
