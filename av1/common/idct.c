@@ -2509,6 +2509,38 @@ void av1_highbd_idct32x32_add(const tran_low_t *input, uint8_t *dest,
     aom_highbd_idct32x32_1024_add(input, dest, stride, bd);
 }
 
+#if CONFIG_CB4X4
+void av1_highbd_inv_txfm_add_2x2(const tran_low_t *input, uint8_t *dest,
+                                 int stride, int eob, TX_TYPE tx_type,
+                                 int lossless, int bd) {
+  tran_high_t a1 = input[0] >> UNIT_QUANT_SHIFT;
+  tran_high_t b1 = input[1] >> UNIT_QUANT_SHIFT;
+  tran_high_t c1 = input[2] >> UNIT_QUANT_SHIFT;
+  tran_high_t d1 = input[3] >> UNIT_QUANT_SHIFT;
+
+  tran_high_t a2 = a1 + c1;
+  tran_high_t b2 = b1 + d1;
+  tran_high_t c2 = a1 - c1;
+  tran_high_t d2 = b1 - d1;
+
+  uint16_t *dst = CONVERT_TO_SHORTPTR(dest);
+
+  (void)tx_type;
+  (void)lossless;
+  (void)eob;
+
+  a1 = (a2 + b2) >> 2;
+  b1 = (a2 - b2) >> 2;
+  c1 = (c2 + d2) >> 2;
+  d1 = (c2 - d2) >> 2;
+
+  dst[0] = highbd_clip_pixel_add(dst[0], a1, bd);
+  dst[1] = highbd_clip_pixel_add(dst[1], b1, bd);
+  dst[stride] = highbd_clip_pixel_add(dst[stride], c1, bd);
+  dst[stride + 1] = highbd_clip_pixel_add(dst[stride + 1], d1, bd);
+}
+#endif
+
 void av1_highbd_inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest,
                                  int stride, int eob, int bd, TX_TYPE tx_type,
                                  int lossless) {
@@ -2864,6 +2896,13 @@ void highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
       av1_highbd_inv_txfm_add_4x4(input, dest, stride, eob, bd, tx_type,
                                   lossless);
       break;
+#if CONFIG_CB4X4
+    case TX_2X2:
+      av1_highbd_inv_txfm_add_2x2(input, dest, stride, eob, bd, tx_type,
+                                  lossless);
+      break;
+
+#endif
     default: assert(0 && "Invalid transform size"); break;
   }
 }
