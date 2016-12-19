@@ -20,14 +20,17 @@ using mojom::SensorType;
 const char kChangedAxisKernelVersion[] = "3.18.0";
 #endif
 
-const base::FilePath::CharType* kSensorsBasePath =
-    FILE_PATH_LITERAL("/sys/bus/iio/devices");
-
 void InitAmbientLightSensorData(SensorPathsLinux* data) {
   std::vector<std::string> file_names{
       "in_illuminance0_input", "in_illuminance_input", "in_illuminance0_raw",
-      "in_illuminance_raw"};
+      "in_illuminance_raw", "in_intensity_both_raw"};
   data->sensor_file_names.push_back(std::move(file_names));
+  data->sensor_frequency_file_name = "in_intensity_sampling_frequency";
+  data->sensor_scale_name = "in_intensity_scale";
+  data->apply_scaling_func = base::Bind(
+      [](double scaling_value, double offset, SensorReading& reading) {
+        reading.values[0] = scaling_value * (reading.values[0] + offset);
+      });
   data->default_configuration =
       PlatformSensorConfiguration(kDefaultAmbientLightFrequencyHz);
 }
@@ -160,11 +163,8 @@ void InitMagnitometerSensorData(SensorPathsLinux* data) {
 
 }  // namespace
 
-SensorPathsLinux::SensorPathsLinux()
-    : base_path_sensor_linux(kSensorsBasePath) {}
-
+SensorPathsLinux::SensorPathsLinux() = default;
 SensorPathsLinux::~SensorPathsLinux() = default;
-
 SensorPathsLinux::SensorPathsLinux(const SensorPathsLinux& other) = default;
 
 bool InitSensorData(SensorType type, SensorPathsLinux* data) {

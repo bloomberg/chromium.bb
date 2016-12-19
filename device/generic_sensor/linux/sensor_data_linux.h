@@ -25,8 +25,6 @@ struct DEVICE_GENERIC_SENSOR_EXPORT SensorPathsLinux {
   SensorPathsLinux();
   ~SensorPathsLinux();
   SensorPathsLinux(const SensorPathsLinux& other);
-  // Provides a base path to all sensors.
-  const base::FilePath::CharType* base_path_sensor_linux;
   // Provides an array of sensor file names to be searched for.
   // Different sensors might have up to 3 different file name arrays.
   // One file must be found from each array.

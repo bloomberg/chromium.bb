@@ -177,6 +177,7 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
 
   // Creates sensor files according to SensorPathsLinux.
   // Existence of sensor read files mean existence of a sensor.
+  // If |frequency| or |scaling| is zero, the corresponding file is not created.
   void InitializeSupportedSensor(SensorType type,
                                  double frequency,
                                  double offset,
@@ -186,7 +187,7 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
     EXPECT_TRUE(InitSensorData(type, &data));
 
     base::FilePath sensor_dir = sensors_dir_.GetPath();
-    if (!data.sensor_scale_name.empty()) {
+    if (!data.sensor_scale_name.empty() && scaling != 0) {
       base::FilePath sensor_scale_file =
           base::FilePath(sensor_dir).Append(data.sensor_scale_name);
       WriteValueToFile(sensor_scale_file, scaling);
@@ -198,7 +199,7 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
       WriteValueToFile(sensor_offset_file, offset);
     }
 
-    if (!data.sensor_frequency_file_name.empty()) {
+    if (!data.sensor_frequency_file_name.empty() && frequency != 0) {
       base::FilePath sensor_frequency_file =
           base::FilePath(sensor_dir).Append(data.sensor_frequency_file_name);
       WriteValueToFile(sensor_frequency_file, frequency);
@@ -511,22 +512,18 @@ TEST_F(PlatformSensorAndProviderLinuxTest,
       sizeof(SensorReadingSharedBuffer),
       SensorReadingSharedBuffer::GetOffset(SensorType::ACCELEROMETER));
 
-  double sensor_values[3] = {4.5, -2.45, -3.29};
-  InitializeSupportedSensor(
-      SensorType::ACCELEROMETER, kAccelerometerFrequencyValue,
-      kAccelerometerOffsetValue, kAccelerometerScalingValue, sensor_values);
-
   // As long as WaitOnSensorReadingChangedEvent() waits until client gets a
-  // a notification about readings changed, the frequency file must be deleted
-  // to make the sensor device manager identify this sensor with ON_CHANGE
-  // reporting mode. This will allow the MockPlatformSensorClient to
+  // a notification about readings changed, the frequency file must not be
+  // created to make the sensor device manager identify this sensor with
+  // ON_CHANGE reporting mode. This can be done by sending |kZero| as a
+  // frequency value, which means a file is not created.
+  // This will allow the MockPlatformSensorClient to
   // receive a notification and test if reading values are right. Otherwise
   // the test will not know when data is ready.
-  SensorPathsLinux data;
-  EXPECT_TRUE(InitSensorData(SensorType::ACCELEROMETER, &data));
-  base::FilePath frequency_file = base::FilePath(sensors_dir_.GetPath())
-                                      .Append(data.sensor_frequency_file_name);
-  DeleteFile(frequency_file);
+  double sensor_values[3] = {4.5, -2.45, -3.29};
+  InitializeSupportedSensor(SensorType::ACCELEROMETER, kZero,
+                            kAccelerometerOffsetValue,
+                            kAccelerometerScalingValue, sensor_values);
 
   InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
@@ -567,22 +564,17 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckGyroscopeReadingConversion) {
       sizeof(SensorReadingSharedBuffer),
       SensorReadingSharedBuffer::GetOffset(SensorType::GYROSCOPE));
 
-  double sensor_values[3] = {2.2, -3.8, -108.7};
-  InitializeSupportedSensor(SensorType::GYROSCOPE, kGyroscopeFrequencyValue,
-                            kGyroscopeOffsetValue, kGyroscopeScalingValue,
-                            sensor_values);
-
   // As long as WaitOnSensorReadingChangedEvent() waits until client gets a
-  // a notification about readings changed, the frequency file must be deleted
-  // to make the sensor device manager identify this sensor with ON_CHANGE
-  // reporting mode. This will allow the MockPlatformSensorClient to
+  // a notification about readings changed, the frequency file must not be
+  // created to make the sensor device manager identify this sensor with
+  // ON_CHANGE reporting mode. This can be done by sending |kZero| as a
+  // frequency value, which means a file is not created.
+  // This will allow the MockPlatformSensorClient to
   // receive a notification and test if reading values are right. Otherwise
   // the test will not know when data is ready.
-  SensorPathsLinux data;
-  EXPECT_TRUE(InitSensorData(SensorType::GYROSCOPE, &data));
-  base::FilePath frequency_file = base::FilePath(sensors_dir_.GetPath())
-                                      .Append(data.sensor_frequency_file_name);
-  DeleteFile(frequency_file);
+  double sensor_values[3] = {2.2, -3.8, -108.7};
+  InitializeSupportedSensor(SensorType::GYROSCOPE, kZero, kGyroscopeOffsetValue,
+                            kGyroscopeScalingValue, sensor_values);
 
   InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
@@ -624,22 +616,18 @@ TEST_F(PlatformSensorAndProviderLinuxTest, CheckMagnetometerReadingConversion) {
       sizeof(SensorReadingSharedBuffer),
       SensorReadingSharedBuffer::GetOffset(SensorType::MAGNETOMETER));
 
-  double sensor_values[3] = {2.2, -3.8, -108.7};
-  InitializeSupportedSensor(
-      SensorType::MAGNETOMETER, kMagnetometerFrequencyValue,
-      kMagnetometerOffsetValue, kMagnetometerScalingValue, sensor_values);
-
   // As long as WaitOnSensorReadingChangedEvent() waits until client gets a
-  // a notification about readings changed, the frequency file must be deleted
-  // to make the sensor device manager identify this sensor with ON_CHANGE
-  // reporting mode. This will allow the MockPlatformSensorClient to
+  // a notification about readings changed, the frequency file must not be
+  // created to make the sensor device manager identify this sensor with
+  // ON_CHANGE reporting mode. This can be done by sending |kZero| as a
+  // frequency value, which means a file is not created.
+  // This will allow the MockPlatformSensorClient to
   // receive a notification and test if reading values are right. Otherwise
   // the test will not know when data is ready.
-  SensorPathsLinux data;
-  EXPECT_TRUE(InitSensorData(SensorType::MAGNETOMETER, &data));
-  base::FilePath frequency_file = base::FilePath(sensors_dir_.GetPath())
-                                      .Append(data.sensor_frequency_file_name);
-  DeleteFile(frequency_file);
+  double sensor_values[3] = {2.2, -3.8, -108.7};
+  InitializeSupportedSensor(SensorType::MAGNETOMETER, kZero,
+                            kMagnetometerOffsetValue, kMagnetometerScalingValue,
+                            sensor_values);
 
   InitializeMockUdevMethods(sensors_dir_.GetPath());
   SetServiceStart();
