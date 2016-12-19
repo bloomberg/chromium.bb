@@ -748,6 +748,18 @@ void MediaControls::onTextTracksChanged() {
   m_toggleClosedCaptionsButton->updateDisplayType();
 }
 
+void MediaControls::onError() {
+  // TODO(mlamouri): we should only change the aspects of the control that need
+  // to be changed.
+  reset();
+}
+
+void MediaControls::onLoadedMetadata() {
+  // TODO(mlamouri): we should only change the aspects of the control that need
+  // to be changed.
+  reset();
+}
+
 void MediaControls::notifyPanelWidthChanged(const LayoutUnit& newWidth) {
   // Don't bother to do any work if this matches the most recent panel
   // width, since we're called after layout.

@@ -26,6 +26,10 @@ MediaControlsMediaEventListener::MediaControlsMediaEventListener(
                                                     false);
   m_mediaControls->m_mediaElement->addEventListener(
       EventTypeNames::durationchange, this, false);
+  m_mediaControls->m_mediaElement->addEventListener(EventTypeNames::error, this,
+                                                    false);
+  m_mediaControls->m_mediaElement->addEventListener(
+      EventTypeNames::loadedmetadata, this, false);
 
   // TextTracks events.
   TextTrackList* textTracks = m_mediaControls->m_mediaElement->textTracks();
@@ -64,6 +68,14 @@ void MediaControlsMediaEventListener::handleEvent(
   }
   if (event->type() == EventTypeNames::pause) {
     m_mediaControls->onPause();
+    return;
+  }
+  if (event->type() == EventTypeNames::error) {
+    m_mediaControls->onError();
+    return;
+  }
+  if (event->type() == EventTypeNames::loadedmetadata) {
+    m_mediaControls->onLoadedMetadata();
     return;
   }
 

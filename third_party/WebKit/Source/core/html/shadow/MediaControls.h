@@ -160,6 +160,8 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   void onPause();
   void onTextTracksAddedOrRemoved();
   void onTextTracksChanged();
+  void onError();
+  void onLoadedMetadata();
 
   Member<HTMLMediaElement> m_mediaElement;
 

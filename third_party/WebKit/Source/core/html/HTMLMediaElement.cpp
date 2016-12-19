@@ -1488,18 +1488,17 @@ void HTMLMediaElement::mediaLoadingFailed(WebMediaPlayer::NetworkState error) {
   }
 
   if (error == WebMediaPlayer::NetworkStateNetworkError &&
-      m_readyState >= kHaveMetadata)
+      m_readyState >= kHaveMetadata) {
     mediaEngineError(MediaError::create(MediaError::kMediaErrNetwork));
-  else if (error == WebMediaPlayer::NetworkStateDecodeError)
+  } else if (error == WebMediaPlayer::NetworkStateDecodeError) {
     mediaEngineError(MediaError::create(MediaError::kMediaErrDecode));
-  else if ((error == WebMediaPlayer::NetworkStateFormatError ||
-            error == WebMediaPlayer::NetworkStateNetworkError) &&
-           m_loadState == LoadingFromSrcAttr)
+  } else if ((error == WebMediaPlayer::NetworkStateFormatError ||
+              error == WebMediaPlayer::NetworkStateNetworkError) &&
+             m_loadState == LoadingFromSrcAttr) {
     noneSupported();
+  }
 
   updateDisplayState();
-  if (mediaControls())
-    mediaControls()->reset();
 }
 
 void HTMLMediaElement::setNetworkState(WebMediaPlayer::NetworkState state) {
@@ -1658,8 +1657,6 @@ void HTMLMediaElement::setReadyState(ReadyState state) {
       jumped = true;
     }
 
-    if (mediaControls())
-      mediaControls()->reset();
     if (layoutObject())
       layoutObject()->updateFromElement();
   }
@@ -3852,11 +3849,12 @@ bool HTMLMediaElement::isAutoplayAllowedPerSettings() const {
 }
 
 void HTMLMediaElement::setNetworkState(NetworkState state) {
-  if (m_networkState != state) {
-    m_networkState = state;
-    if (MediaControls* controls = mediaControls())
-      controls->networkStateChanged();
-  }
+  if (m_networkState == state)
+    return;
+
+  m_networkState = state;
+  if (mediaControls())
+    mediaControls()->networkStateChanged();
 }
 
 void HTMLMediaElement::videoWillBeDrawnToCanvas() const {
