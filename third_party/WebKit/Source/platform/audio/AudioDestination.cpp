@@ -100,6 +100,9 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
 
   if (m_callbackBufferSize <= kSmallBufferSize)
     m_callbackBufferSize = kDefaultCallbackBufferSize;
+
+  LOG(INFO) << "audioHardwareBufferSize = " << recommendedHardwareBufferSize;
+  LOG(INFO) << "callbackBufferSize      = " << m_callbackBufferSize;
 #endif
 
   // Quick exit if the requested size is too large.
