@@ -279,7 +279,7 @@ class HeadlessShell : public HeadlessWebContents::Observer,
     printf(">>> ");
     std::stringstream expression;
     while (true) {
-      char c = fgetc(stdin);
+      int c = fgetc(stdin);
       if (c == EOF || c == '\n') {
         break;
       }
