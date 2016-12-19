@@ -553,10 +553,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 - (CRWSessionEntry*)currentSessionEntry;
 // Returns the navigation item for the current page.
 - (web::NavigationItem*)currentNavItem;
-// Returns the URL that the navigation system believes should be currently
-// active.
-// TODO(stuartmorgan):Remove this in favor of more specific getters.
-- (const GURL&)currentNavigationURL;
 // Returns the current transition type.
 - (ui::PageTransition)currentTransition;
 // Returns the referrer for current navigation item. May be empty.
@@ -1418,7 +1414,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       return [self.nativeController url];
     }
   }
-  return [self currentNavigationURL];
+  web::NavigationItem* item = [self currentNavItem];
+  return item ? item->GetVirtualURL() : GURL::EmptyGURL();
 }
 
 - (WKWebView*)webView {
@@ -1445,8 +1442,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if ([referrerString length] == 0)
     return web::Referrer();
 
-  NSString* previousURLString =
-      base::SysUTF8ToNSString([self currentNavigationURL].spec());
+  web::NavigationItem* item = [self currentNavItem];
+  GURL navigationURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
+  NSString* previousURLString = base::SysUTF8ToNSString(navigationURL.spec());
   // Check if the referrer is equal to the previous URL minus the hash symbol.
   // L'#' is used to convert the char '#' to a unichar.
   if ([previousURLString length] > [referrerString length] &&
@@ -1820,9 +1818,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Clear the set of URLs opened in external applications.
   _openedApplicationURL.reset([[NSMutableSet alloc] init]);
 
+  web::NavigationItem* item = [self currentNavItem];
+  GURL targetURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
   // Load the url. The UIWebView delegate callbacks take care of updating the
   // session history and UI.
-  const GURL targetURL([self currentNavigationURL]);
   if (!targetURL.is_valid()) {
     [self didFinishWithURL:targetURL loadSuccess:NO];
     return;
@@ -1874,7 +1873,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (NSMutableURLRequest*)requestForCurrentNavigationItem {
-  const GURL currentNavigationURL([self currentNavigationURL]);
+  web::NavigationItem* item = [self currentNavItem];
+  const GURL currentNavigationURL =
+      item ? item->GetVirtualURL() : GURL::EmptyGURL();
   NSMutableURLRequest* request = [NSMutableURLRequest
       requestWithURL:net::NSURLWithGURL(currentNavigationURL)];
   const web::Referrer referrer([self currentSessionEntryReferrer]);
@@ -1959,8 +1960,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)loadErrorInNativeView:(NSError*)error {
   [self removeWebViewAllowingCachedReconstruction:NO];
-
-  const GURL currentUrl = [self currentNavigationURL];
+  web::NavigationItem* item = [self currentNavItem];
+  const GURL currentURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
 
   if (web::IsWKWebViewSSLCertError(error)) {
     // This could happen only if certificate is absent or could not be parsed.
@@ -1975,7 +1976,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 
   BOOL isPost = [self isCurrentNavigationItemPOST];
-  [self setNativeController:[_nativeProvider controllerForURL:currentUrl
+  [self setNativeController:[_nativeProvider controllerForURL:currentURL
                                                     withError:error
                                                        isPost:isPost]];
   [self loadNativeViewWithSuccess:NO];
@@ -1987,7 +1988,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Free the web view.
   [self removeWebViewAllowingCachedReconstruction:NO];
 
-  const GURL targetURL = [self currentNavigationURL];
+  web::NavigationItem* item = [self currentNavItem];
+  const GURL targetURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
   const web::Referrer referrer;
   id<CRWNativeContent> nativeContent =
       [_nativeProvider controllerForURL:targetURL];
@@ -1995,7 +1997,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // TODO(pinkerton): What to do if this does return nil?
   [self setNativeController:nativeContent];
   if ([nativeContent respondsToSelector:@selector(virtualURL)]) {
-    [self currentNavItem]->SetVirtualURL([nativeContent virtualURL]);
+    item->SetVirtualURL([nativeContent virtualURL]);
   }
   [self registerLoadRequest:targetURL
                    referrer:referrer
@@ -2083,11 +2085,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // Remove the transient content view.
   [self clearTransientContentView];
 
-  const GURL currentURL = [self currentNavigationURL];
+  web::NavigationItem* item = [self currentNavItem];
+  const GURL currentURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
   // If it's a chrome URL, but not a native one, create the WebUI instance.
   if (web::GetWebClient()->IsAppSpecificURL(currentURL) &&
       ![_nativeProvider hasControllerForURL:currentURL]) {
-    web::NavigationItem* item = [self currentNavItem];
     if (!(item->GetTransitionType() & ui::PAGE_TRANSITION_TYPED ||
           item->GetTransitionType() & ui::PAGE_TRANSITION_AUTO_BOOKMARK) &&
         self.sessionController.openedByDOM) {
@@ -2150,8 +2152,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [_containerView addGestureRecognizer:[self touchTrackingRecognizer]];
     [_containerView setAccessibilityIdentifier:web::kContainerViewID];
     // Is |currentUrl| a web scheme or native chrome scheme.
+    web::NavigationItem* item = [self currentNavItem];
+    const GURL currentNavigationURL =
+        item ? item->GetVirtualURL() : GURL::EmptyGURL();
     BOOL isChromeScheme =
-        web::GetWebClient()->IsAppSpecificURL([self currentNavigationURL]);
+        web::GetWebClient()->IsAppSpecificURL(currentNavigationURL);
 
     // Don't immediately load the web page if in overlay mode. Always load if
     // native.
@@ -3389,9 +3394,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (isPossibleLinkClick || isOpenInNewTabNavigation ||
       PageTransitionCoreTypeIs([self currentTransition],
                                ui::PAGE_TRANSITION_AUTO_BOOKMARK)) {
+    web::NavigationItem* item = [self currentNavItem];
+    const GURL currentNavigationURL =
+        item ? item->GetVirtualURL() : GURL::EmptyGURL();
     // Check If the URL is handled by a native app.
     if ([self urlTriggersNativeAppLaunch:requestURL
-                               sourceURL:[self currentNavigationURL]
+                               sourceURL:currentNavigationURL
                  linkActivatedNavigation:isNavigationTypeLinkActivated]) {
       // External app has been launched successfully. Stop the current page
       // load operation (e.g. notifying all observers) and record the URL so
@@ -3749,7 +3757,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (void)openPopupWithInfo:(const web::NewWindowInfo&)windowInfo {
   const GURL url(windowInfo.url);
-  const GURL currentURL([self currentNavigationURL]);
+  web::NavigationItem* item = [self currentNavItem];
+  const GURL currentURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
   NSString* windowName = windowInfo.window_name.get();
   web::Referrer referrer(currentURL, windowInfo.referrer_policy);
   base::WeakNSObject<CRWWebController> weakSelf(self);
@@ -4023,14 +4032,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // can be moved here, using public NavigationManager getters. That's not
   // done now in order to avoid code duplication.
   return [[self currentSessionEntry] navigationItem];
-}
-
-- (const GURL&)currentNavigationURL {
-  // TODO(stuartmorgan): Fix the fact that this method doesn't have clear usage
-  // delination that would allow changing to one of the non-deprecated URL
-  // calls.
-  web::NavigationItem* item = [self currentNavItem];
-  return item ? item->GetVirtualURL() : GURL::EmptyGURL();
 }
 
 - (ui::PageTransition)currentTransition {
@@ -4795,10 +4796,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [self.UIDelegate cancelDialogsForWebController:self];
   _webStateImpl->CancelDialogs();
 
-  if (allowCache)
-    _expectedReconstructionURL = [self currentNavigationURL];
-  else
-    _expectedReconstructionURL = GURL();
+  web::NavigationItem* item = [self currentNavItem];
+  if (allowCache && item) {
+    _expectedReconstructionURL = item->GetVirtualURL();
+  } else {
+    _expectedReconstructionURL = GURL::EmptyGURL();
+  }
 
   [self abortLoad];
   [_webView removeFromSuperview];
@@ -4888,10 +4891,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // observers of the change via |-abortLoad|.
   [[self sessionController] discardNonCommittedEntries];
   [self abortLoad];
+  web::NavigationItem* item = [self currentNavItem];
+  GURL navigationURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
   // If discarding the non-committed entries results in an app-specific URL,
   // reload it in its native view.
   if (!self.nativeController &&
-      [self shouldLoadURLInNativeView:[self currentNavigationURL]]) {
+      [self shouldLoadURLInNativeView:navigationURL]) {
     [self loadCurrentURLInNativeView];
   }
 }
@@ -5623,7 +5628,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [request setHTTPMethod:@"POST"];
     [request setHTTPBody:POSTData];
     [request setAllHTTPHeaderFields:[self currentHTTPHeaders]];
-    [self registerLoadRequest:[self currentNavigationURL]
+    GURL navigationURL =
+        currentItem ? currentItem->GetVirtualURL() : GURL::EmptyGURL();
+    [self registerLoadRequest:navigationURL
                      referrer:[self currentSessionEntryReferrer]
                    transition:[self currentTransition]];
     [self loadPOSTRequest:request];
@@ -5631,7 +5638,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 
   ProceduralBlock defaultNavigationBlock = ^{
-    [self registerLoadRequest:[self currentNavigationURL]
+    web::NavigationItem* item = [self currentNavItem];
+    GURL navigationURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
+    [self registerLoadRequest:navigationURL
                      referrer:[self currentSessionEntryReferrer]
                    transition:[self currentTransition]];
     [self loadRequest:request];
@@ -5664,10 +5673,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // page, that means the user requested a reload. |goToBackForwardListItem|
     // will be a no-op when it is passed the current back forward list item,
     // so |reload| must be explicitly called.
-    [self registerLoadRequest:[self currentNavigationURL]
+    web::NavigationItem* item = [self currentNavItem];
+    GURL navigationURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
+    [self registerLoadRequest:navigationURL
                      referrer:[self currentSessionEntryReferrer]
                    transition:[self currentTransition]];
-    if ([self currentNavigationURL] == net::GURLWithNSURL([_webView URL])) {
+    if (navigationURL == net::GURLWithNSURL([_webView URL])) {
       [_webView reload];
     } else {
       // |didCommitNavigation:| may not be called for fast navigation, so update
