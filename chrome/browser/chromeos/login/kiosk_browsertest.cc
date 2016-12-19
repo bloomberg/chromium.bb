@@ -5,6 +5,7 @@
 #include <memory>
 #include <vector>
 
+#include "apps/test/app_window_waiter.h"
 #include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wallpaper/wallpaper_controller_observer.h"
 #include "ash/common/wm_shell.h"
@@ -25,7 +26,6 @@
 #include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/test/app_window_waiter.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
@@ -670,7 +670,7 @@ class KioskTest : public OobeBaseTest {
     extensions::AppWindowRegistry* app_window_registry =
         extensions::AppWindowRegistry::Get(app_profile);
     extensions::AppWindow* window =
-        AppWindowWaiter(app_window_registry, test_app_id_).Wait();
+        apps::AppWindowWaiter(app_window_registry, test_app_id_).Wait();
     EXPECT_TRUE(window);
 
     // Login screen should be gone or fading out.
@@ -860,7 +860,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, ZoomSupport) {
   extensions::AppWindowRegistry* app_window_registry =
       extensions::AppWindowRegistry::Get(app_profile);
   extensions::AppWindow* window =
-      AppWindowWaiter(app_window_registry, test_app_id()).Wait();
+      apps::AppWindowWaiter(app_window_registry, test_app_id()).Wait();
   ASSERT_TRUE(window);
 
   // Gets the original width of the app window.
@@ -2248,10 +2248,10 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, EnterpriseKioskApp) {
 
   // Wait for the window to appear.
   extensions::AppWindow* window =
-      AppWindowWaiter(
-          extensions::AppWindowRegistry::Get(
-              ProfileManager::GetPrimaryUserProfile()),
-          kTestEnterpriseKioskApp).Wait();
+      apps::AppWindowWaiter(extensions::AppWindowRegistry::Get(
+                                ProfileManager::GetPrimaryUserProfile()),
+                            kTestEnterpriseKioskApp)
+          .Wait();
   ASSERT_TRUE(window);
 
   // Check whether the app can retrieve an OAuth2 access token.

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "apps/test/app_window_waiter.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -9,7 +10,6 @@
 #include "base/path_service.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_app_launcher.h"
-#include "chrome/browser/chromeos/login/test/app_window_waiter.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -47,8 +47,9 @@ Profile* WaitForProfile() {
 
 bool VerifyDemoAppLaunch() {
   Profile* profile = WaitForProfile();
-  return AppWindowWaiter(extensions::AppWindowRegistry::Get(profile),
-                         DemoAppLauncher::kDemoAppId).Wait() != NULL;
+  return apps::AppWindowWaiter(extensions::AppWindowRegistry::Get(profile),
+                               DemoAppLauncher::kDemoAppId)
+             .Wait() != NULL;
 }
 
 bool VerifyNetworksDisabled() {

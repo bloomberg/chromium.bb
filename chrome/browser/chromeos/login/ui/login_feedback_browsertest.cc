@@ -6,11 +6,11 @@
 
 #include <memory>
 
+#include "apps/test/app_window_waiter.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
-#include "chrome/browser/chromeos/login/test/app_window_waiter.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "extensions/browser/app_window/app_window.h"
@@ -38,8 +38,8 @@ IN_PROC_BROWSER_TEST_F(LoginFeedbackTest, Basic) {
   login_feedback->Request("Test feedback", run_loop.QuitClosure());
 
   extensions::AppWindow* feedback_window =
-      AppWindowWaiter(extensions::AppWindowRegistry::Get(profile),
-                      extension_misc::kFeedbackExtensionId)
+      apps::AppWindowWaiter(extensions::AppWindowRegistry::Get(profile),
+                            extension_misc::kFeedbackExtensionId)
           .WaitForShown();
   ASSERT_NE(nullptr, feedback_window);
   EXPECT_FALSE(feedback_window->is_hidden());

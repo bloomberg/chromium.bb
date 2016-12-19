@@ -71,3 +71,15 @@ static_library("apps") {
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 }
+
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "test/app_window_waiter.cc",
+    "test/app_window_waiter.h",
+  ]
+
+  public_deps = [
+    "//content/public/browser",
+  ]
+}

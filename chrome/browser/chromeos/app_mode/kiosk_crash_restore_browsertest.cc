@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 
+#include "apps/test/app_window_waiter.h"
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -12,7 +13,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/app_mode/fake_cws.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/login/test/app_window_waiter.h"
 #include "chrome/browser/chromeos/net/network_portal_detector_test_impl.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
@@ -179,7 +179,7 @@ IN_PROC_BROWSER_TEST_F(KioskCrashRestoreTest, Basic) {
   extensions::AppWindowRegistry* const app_window_registry =
       extensions::AppWindowRegistry::Get(app_profile);
   extensions::AppWindow* const window =
-      AppWindowWaiter(app_window_registry, test_app_id()).Wait();
+      apps::AppWindowWaiter(app_window_registry, test_app_id()).Wait();
   ASSERT_TRUE(window);
 
   window->GetBaseWindow()->Close();

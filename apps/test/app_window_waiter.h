@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_TEST_APP_WINDOW_WAITER_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_TEST_APP_WINDOW_WAITER_H_
+#ifndef APPS_TEST_APP_WINDOW_WAITER_H_
+#define APPS_TEST_APP_WINDOW_WAITER_H_
 
 #include <memory>
 #include <string>
@@ -17,10 +17,11 @@ namespace extensions {
 class AppWindow;
 }
 
-namespace chromeos {
+namespace apps {
 
-// Helper class that monitors app windows to wait for a window to appear.
-// Use a new instance for each use, one instance will only work for one Wait.
+// Helper class that monitors app windows to wait for a window to
+// appear/activated. Use a new instance for each use, one instance will only
+// work for one Wait.
 class AppWindowWaiter : public extensions::AppWindowRegistry::Observer {
  public:
   AppWindowWaiter(extensions::AppWindowRegistry* registry,
@@ -33,16 +34,21 @@ class AppWindowWaiter : public extensions::AppWindowRegistry::Observer {
   // Waits for an AppWindow of the app to be shown.
   extensions::AppWindow* WaitForShown();
 
+  // Waits for an AppWindow of the app to be activated.
+  extensions::AppWindow* WaitForActivated();
+
   // AppWindowRegistry::Observer:
   void OnAppWindowAdded(extensions::AppWindow* app_window) override;
   void OnAppWindowShown(extensions::AppWindow* app_window,
                         bool was_hidden) override;
+  void OnAppWindowActivated(extensions::AppWindow* app_window) override;
 
  private:
   enum WaitType {
     WAIT_FOR_NONE,
     WAIT_FOR_ADDED,
     WAIT_FOR_SHOWN,
+    WAIT_FOR_ACTIVATED,
   };
 
   extensions::AppWindowRegistry* const registry_;
@@ -54,6 +60,6 @@ class AppWindowWaiter : public extensions::AppWindowRegistry::Observer {
   DISALLOW_COPY_AND_ASSIGN(AppWindowWaiter);
 };
 
-}  // namespace chromeos
+}  // namespace apps
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_TEST_APP_WINDOW_WAITER_H_
+#endif  // APPS_TEST_APP_WINDOW_WAITER_H_

@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/test/app_window_waiter.h"
+#include "apps/test/app_window_waiter.h"
 
 #include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/native_app_window.h"
 
-namespace chromeos {
+namespace apps {
 
 AppWindowWaiter::AppWindowWaiter(extensions::AppWindowRegistry* registry,
                                  const std::string& app_id)
@@ -42,6 +43,18 @@ extensions::AppWindow* AppWindowWaiter::WaitForShown() {
   return window_;
 }
 
+extensions::AppWindow* AppWindowWaiter::WaitForActivated() {
+  window_ = registry_->GetCurrentAppWindowForApp(app_id_);
+  if (window_ && window_->GetBaseWindow()->IsActive())
+    return window_;
+
+  wait_type_ = WAIT_FOR_ACTIVATED;
+  run_loop_.reset(new base::RunLoop);
+  run_loop_->Run();
+
+  return window_;
+}
+
 void AppWindowWaiter::OnAppWindowAdded(extensions::AppWindow* app_window) {
   if (wait_type_ != WAIT_FOR_ADDED || !run_loop_ || !run_loop_->running())
     return;
@@ -63,4 +76,14 @@ void AppWindowWaiter::OnAppWindowShown(extensions::AppWindow* app_window,
   }
 }
 
-}  // namespace chromeos
+void AppWindowWaiter::OnAppWindowActivated(extensions::AppWindow* app_window) {
+  if (wait_type_ != WAIT_FOR_ACTIVATED || !run_loop_ || !run_loop_->running())
+    return;
+
+  if (app_window->extension_id() == app_id_) {
+    window_ = app_window;
+    run_loop_->Quit();
+  }
+}
+
+}  // namespace apps
