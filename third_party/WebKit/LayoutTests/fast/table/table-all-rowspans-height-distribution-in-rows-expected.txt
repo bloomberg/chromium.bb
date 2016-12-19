@@ -44,7 +44,7 @@ row5 col1
 PASS
 row6 col0
 PASS
-Test 3 - 2 same row spanning cells with diffrent heights.
+Test 3 - 2 same row spanning cells with different heights.
 
 row0 col0 rowspan=6 height=300px	row0 col1 rowspan=6 height=500px
 PASS
@@ -78,7 +78,7 @@ row6 col2
 PASS
 row7 col0
 PASS
-Test 5 - 2 spanning cells starts at diffrent row index but end at same row index.
+Test 5 - 2 spanning cells starts at different row index but end at same row index.
 
 row0 col0 rowspan=6 height=400px	row0 col1
 PASS

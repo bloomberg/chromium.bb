@@ -422,5 +422,5 @@ bindings-tests
 04:38:02	4 failures6 new passes11 flakes13 missing results
 triggeredgtk-linux-64-release-tests-wk2
 04:30:45	uploadingrelease.zip
-04:28:43	Failure: timeout occured during testing
+04:28:43	Failure: timeout occurred during testing
 uploaded results ]
