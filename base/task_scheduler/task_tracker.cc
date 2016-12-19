@@ -288,6 +288,14 @@ bool TaskTracker::IsShutdownComplete() const {
 }
 
 void TaskTracker::SetHasShutdownStartedForTesting() {
+  AutoSchedulerLock auto_lock(shutdown_lock_);
+
+  // Create a dummy |shutdown_event_| to satisfy TaskTracker's expectation of
+  // its existence during shutdown (e.g. in OnBlockingShutdownTasksComplete()).
+  shutdown_event_.reset(
+      new WaitableEvent(WaitableEvent::ResetPolicy::MANUAL,
+                        WaitableEvent::InitialState::NOT_SIGNALED));
+
   state_->StartShutdown();
 }
 

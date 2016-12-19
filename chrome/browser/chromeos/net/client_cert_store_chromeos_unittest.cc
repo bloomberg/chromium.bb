@@ -11,7 +11,6 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_scheduler.h"
@@ -90,7 +89,6 @@ class ClientCertStoreChromeOSTest : public ::testing::Test {
 
  private:
   base::test::ScopedTaskScheduler scoped_task_scheduler_;
-  base::MessageLoopForIO message_loop_;
 };
 
 // Ensure that cert requests, that are started before the filter is initialized,
