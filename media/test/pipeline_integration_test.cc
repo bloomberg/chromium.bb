@@ -127,6 +127,7 @@ const int kVP8AWebMFileDurationMs = 2734;
 
 #if !defined(MOJO_RENDERER)
 #if defined(OPUS_FIXED_POINT)
+// NOTE: Hashes are specific to ARM devices. x86 will not match.
 static const char kOpusEndTrimmingHash_1[] =
     "-4.57,-5.66,-6.52,-6.30,-4.37,-3.61,";
 static const char kOpusEndTrimmingHash_2[] =
@@ -136,7 +137,7 @@ static const char kOpusEndTrimmingHash_3[] =
 static const char kOpusSmallCodecDelayHash_1[] =
     "-0.48,-0.09,1.27,1.06,1.54,-0.22,";
 static const char kOpusSmallCodecDelayHash_2[] =
-    "0.29,0.15,-0.19,0.25,0.68,0.83,";
+    "0.29,0.14,-0.20,0.24,0.68,0.83,";
 #else
 // Hash for a full playthrough of "opus-trimming-test.(webm|ogg)".
 static const char kOpusEndTrimmingHash_1[] =
