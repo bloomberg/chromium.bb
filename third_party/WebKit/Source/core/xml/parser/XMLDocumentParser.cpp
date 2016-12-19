@@ -1271,8 +1271,15 @@ void XMLDocumentParser::startDocument(const String& version,
     return;
   }
 
-  if (!version.isNull())
+  // Silently ignore XML version mismatch in the prologue.
+  // https://www.w3.org/TR/xml/#sec-prolog-dtd note says:
+  // "When an XML 1.0 processor encounters a document that specifies a 1.x
+  // version number other than '1.0', it will process it as a 1.0 document. This
+  // means that an XML 1.0 processor will accept 1.x documents provided they do
+  // not use any non-1.0 features."
+  if (!version.isNull() && supportsXMLVersion(version)) {
     document()->setXMLVersion(version, ASSERT_NO_EXCEPTION);
+  }
   if (standalone != StandaloneUnspecified)
     document()->setXMLStandalone(standaloneInfo == StandaloneYes,
                                  ASSERT_NO_EXCEPTION);
