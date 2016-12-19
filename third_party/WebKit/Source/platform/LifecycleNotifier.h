@@ -61,8 +61,6 @@ class LifecycleNotifier : public virtual GarbageCollectedMixin {
 
   using ObserverSet = HeapHashSet<WeakMember<Observer>>;
 
-  void removePending(ObserverSet&);
-
   enum IterationState {
     AllowingNone = 0,
     AllowingAddition = 1,
@@ -113,18 +111,6 @@ inline void LifecycleNotifier<T, Observer>::removeObserver(Observer* observer) {
   }
   RELEASE_ASSERT(m_iterationState & AllowingRemoval);
   m_observers.remove(observer);
-}
-
-template <typename T, typename Observer>
-inline void LifecycleNotifier<T, Observer>::removePending(
-    ObserverSet& observers) {
-  if (m_observers.size()) {
-    // Prevent allocation (==shrinking) while removing;
-    // the table is likely to become garbage soon.
-    ThreadState::NoAllocationScope scope(ThreadState::current());
-    observers.removeAll(m_observers);
-  }
-  m_observers.swap(observers);
 }
 
 }  // namespace blink
