@@ -1,4 +1,4 @@
-TestRunner.addResult("This tests if the StaticViewportControl works properly.");
+TestRunner.addResult("This tests if the ViewportControl works properly.");
 
 var items = [];
 var heights = [];
@@ -7,7 +7,7 @@ for (var i = 0; i < 100; i++){
     items[i].style.height = (heights[i] = (i % 4) ? 50 : 28) + "px";
     items[i].textContent = i;
 }
-var viewport = new UI.StaticViewportControl({
+var viewport = new UI.ViewportControl({
     fastItemHeight: i => heights[i],
     itemCount: _ => items.length,
     itemElement: i => items[i]

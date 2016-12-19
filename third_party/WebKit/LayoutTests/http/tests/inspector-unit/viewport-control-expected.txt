@@ -1,4 +1,4 @@
-This tests if the StaticViewportControl works properly.
+This tests if the ViewportControl works properly.
 First:0
 Last:6
 Active Items:11
