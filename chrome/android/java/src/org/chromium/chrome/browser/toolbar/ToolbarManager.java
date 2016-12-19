@@ -369,6 +369,13 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
 
             @Override
+            public void onToggleFullscreenMode(Tab tab, boolean enable) {
+                if (mFindToolbarManager != null && enable) {
+                    mFindToolbarManager.hideToolbar();
+                }
+            }
+
+            @Override
             public void onContentChanged(Tab tab) {
                 mToolbar.onTabContentViewChanged();
                 if (shouldShowCusrsorInLocationBar()) {
