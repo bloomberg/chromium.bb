@@ -52,6 +52,10 @@ typedef ScopedRuntimeEnabledFeatureForTest<
     RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled,
     RuntimeEnabledFeatures::setSlimmingPaintInvalidationEnabled>
     ScopedSlimmingPaintInvalidationForTest;
+typedef ScopedRuntimeEnabledFeatureForTest<
+    RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled,
+    RuntimeEnabledFeatures::setPaintUnderInvalidationCheckingEnabled>
+    ScopedPaintUnderInvalidationCheckingForTest;
 
 }  // namespace blink
 

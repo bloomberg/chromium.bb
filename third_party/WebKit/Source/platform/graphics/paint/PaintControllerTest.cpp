@@ -15,6 +15,7 @@
 #include "platform/graphics/paint/SubsequenceRecorder.h"
 #include "platform/testing/FakeDisplayItemClient.h"
 #include "platform/testing/PaintPropertyTestHelpers.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
@@ -50,11 +51,8 @@ class PaintControllerTestBase : public ::testing::Test {
   int numIndexedItems() const { return m_paintController->m_numIndexedItems; }
 #endif
 
-  void TearDown() override { m_featuresBackup.restore(); }
-
  private:
   std::unique_ptr<PaintController> m_paintController;
-  RuntimeEnabledFeatures::Backup m_featuresBackup;
 };
 
 const DisplayItem::Type foregroundDrawingType =
@@ -120,40 +118,25 @@ void drawClippedRect(GraphicsContext& context,
 }
 
 enum TestConfigurations {
-  SPv1,
-  SPv2,
-  UnderInvalidationCheckingSPv1,
-  UnderInvalidationCheckingSPv2,
+  SPv2 = 1 << 0,
+  UnderInvalidationChecking = 1 << 1,
 };
 
 // Tests using this class will be tested with under-invalidation-checking
 // enabled and disabled.
 class PaintControllerTest
     : public PaintControllerTestBase,
-      public ::testing::WithParamInterface<TestConfigurations> {
+      public ::testing::WithParamInterface<TestConfigurations>,
+      private ScopedSlimmingPaintV2ForTest,
+      private ScopedPaintUnderInvalidationCheckingForTest {
  public:
   PaintControllerTest()
-      : m_rootPaintPropertyClient("root"),
+      : ScopedSlimmingPaintV2ForTest(GetParam() & SPv2),
+        ScopedPaintUnderInvalidationCheckingForTest(GetParam() &
+                                                    UnderInvalidationChecking),
+        m_rootPaintPropertyClient("root"),
         m_rootPaintChunkId(m_rootPaintPropertyClient,
                            DisplayItem::kUninitializedType) {}
-
- protected:
-  void SetUp() override {
-    switch (GetParam()) {
-      case SPv1:
-        break;
-      case SPv2:
-        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
-        break;
-      case UnderInvalidationCheckingSPv1:
-        RuntimeEnabledFeatures::setPaintUnderInvalidationCheckingEnabled(true);
-        break;
-      case UnderInvalidationCheckingSPv2:
-        RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
-        RuntimeEnabledFeatures::setPaintUnderInvalidationCheckingEnabled(true);
-        break;
-    }
-  }
 
   FakeDisplayItemClient m_rootPaintPropertyClient;
   PaintChunk::Id m_rootPaintChunkId;
@@ -161,10 +144,7 @@ class PaintControllerTest
 
 INSTANTIATE_TEST_CASE_P(All,
                         PaintControllerTest,
-                        ::testing::Values(SPv1,
-                                          SPv2,
-                                          UnderInvalidationCheckingSPv1,
-                                          UnderInvalidationCheckingSPv2));
+                        ::testing::Values(SPv2, UnderInvalidationChecking));
 
 TEST_P(PaintControllerTest, NestedRecorders) {
   GraphicsContext context(getPaintController());
@@ -1839,7 +1819,7 @@ TEST_F(PaintControllerTestBase, OptimizeNoopPairs) {
 }
 
 TEST_F(PaintControllerTestBase, SmallPaintControllerHasOnePaintChunk) {
-  RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true);
+  ScopedSlimmingPaintV2ForTest enableSPv2(true);
   FakeDisplayItemClient client("test client");
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
@@ -2025,13 +2005,15 @@ TEST_F(PaintControllerTestBase,
 // Death tests don't work properly on Android.
 #if defined(GTEST_HAS_DEATH_TEST) && !OS(ANDROID)
 
-class PaintControllerUnderInvalidationTest : public PaintControllerTestBase {
- protected:
-  void SetUp() override {
-    PaintControllerTestBase::SetUp();
-    RuntimeEnabledFeatures::setPaintUnderInvalidationCheckingEnabled(true);
-  }
+class PaintControllerUnderInvalidationTest
+    : public PaintControllerTestBase,
+      private ScopedPaintUnderInvalidationCheckingForTest {
+ public:
+  PaintControllerUnderInvalidationTest()
+      : PaintControllerTestBase(),
+        ScopedPaintUnderInvalidationCheckingForTest(true) {}
 
+ protected:
   void testChangeDrawing() {
     FakeDisplayItemClient first("first");
     GraphicsContext context(getPaintController());
