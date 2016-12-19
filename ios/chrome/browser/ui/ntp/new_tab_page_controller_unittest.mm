@@ -1,0 +1,218 @@
+// Copyright 2012 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
+
+#include <memory>
+
+#include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
+#include "base/message_loop/message_loop.h"
+#include "components/bookmarks/test/bookmark_test_helpers.h"
+#include "components/prefs/testing_pref_service.h"
+#include "components/search_engines/template_url_service.h"
+#include "components/sessions/core/tab_restore_service.h"
+#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
+#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
+#import "ios/chrome/browser/ui/ntp/new_tab_page_view.h"
+#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/test/block_cleanup_test.h"
+#include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
+#include "ios/chrome/test/testing_application_context.h"
+#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "testing/gtest_mac.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
+#import "third_party/ocmock/gtest_support.h"
+
+@interface NewTabPageController (TestSupport)
+- (id<NewTabPagePanelProtocol>)currentController;
+- (id<NewTabPagePanelProtocol>)bookmarkController;
+- (id<NewTabPagePanelProtocol>)incognitoController;
+@end
+
+@interface NewTabPageController (PrivateMethods)
+@property(nonatomic, retain) NewTabPageView* ntpView;
+@end
+
+@implementation NewTabPageController (TestSupport)
+
+- (id<NewTabPagePanelProtocol>)currentController {
+  return currentController_;
+}
+
+- (id<NewTabPagePanelProtocol>)bookmarkController {
+  return bookmarkController_.get();
+}
+
+- (id<NewTabPagePanelProtocol>)incognitoController {
+  return incognitoController_.get();
+}
+
+@end
+
+namespace {
+
+class NewTabPageControllerTest : public BlockCleanupTest {
+ protected:
+  void SetUp() override {
+    BlockCleanupTest::SetUp();
+
+    // Set up a test ChromeBrowserState instance.
+    TestChromeBrowserState::Builder test_cbs_builder;
+    test_cbs_builder.AddTestingFactory(
+        IOSChromeTabRestoreServiceFactory::GetInstance(),
+        IOSChromeTabRestoreServiceFactory::GetDefaultFactory());
+    test_cbs_builder.AddTestingFactory(
+        ios::TemplateURLServiceFactory::GetInstance(),
+        ios::TemplateURLServiceFactory::GetDefaultFactory());
+    chrome_browser_state_ = test_cbs_builder.Build();
+
+    // Load TemplateURLService.
+    TemplateURLService* template_url_service =
+        ios::TemplateURLServiceFactory::GetForBrowserState(
+            chrome_browser_state_.get());
+    template_url_service->Load();
+
+    chrome_browser_state_->CreateBookmarkModel(true);
+    bookmarks::test::WaitForBookmarkModelToLoad(
+        ios::BookmarkModelFactory::GetForBrowserState(
+            chrome_browser_state_.get()));
+    GURL url(kChromeUINewTabURL);
+    controller_.reset([[NewTabPageController alloc]
+               initWithUrl:url
+                    loader:nil
+                   focuser:nil
+               ntpObserver:nil
+              browserState:chrome_browser_state_.get()
+                colorCache:nil
+        webToolbarDelegate:nil
+                  tabModel:nil]);
+
+    incognitoController_.reset([[NewTabPageController alloc]
+               initWithUrl:url
+                    loader:nil
+                   focuser:nil
+               ntpObserver:nil
+              browserState:chrome_browser_state_
+                               ->GetOffTheRecordChromeBrowserState()
+                colorCache:nil
+        webToolbarDelegate:nil
+                  tabModel:nil]);
+  };
+
+  void TearDown() override {
+    incognitoController_.reset();
+    controller_.reset();
+
+    // There may be blocks released below that have weak references to |profile|
+    // owned by chrome_browser_state_.  Ensure BlockCleanupTest::TearDown() is
+    // called before |chrome_browser_state_| is reset.
+    BlockCleanupTest::TearDown();
+    chrome_browser_state_.reset();
+  }
+
+  web::TestWebThreadBundle thread_bundle_;
+  IOSChromeScopedTestingLocalState local_state_;
+  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
+  base::scoped_nsobject<NewTabPageController> controller_;
+  base::scoped_nsobject<NewTabPageController> incognitoController_;
+  // The pool has to be the last declared field because it must be destroyed
+  // first.
+  base::mac::ScopedNSAutoreleasePool pool_;
+};
+
+TEST_F(NewTabPageControllerTest, NewTabBarItemDidChange) {
+  // Switching the selected index in the NewTabPageBar should cause
+  // newTabBarItemDidChange to get called.
+  NewTabPageBar* bar = [[controller_ ntpView] tabBar];
+  NSUInteger bookmarkIndex = 0;
+  UIButton* button = [[bar buttons] objectAtIndex:bookmarkIndex];
+  UIControlEvents event =
+      IsIPadIdiom() ? UIControlEventTouchDown : UIControlEventTouchUpInside;
+  [button sendActionsForControlEvents:event];
+
+  // Expecting bookmarks panel to be loaded now and to be the current controller
+  // on iPad but not iPhone.
+  // Deliberately comparing pointers.
+  if (IsIPadIdiom()) {
+    EXPECT_EQ([controller_ currentController],
+              (id<NewTabPagePanelProtocol>)[controller_ bookmarkController]);
+  } else {
+    EXPECT_NE([controller_ currentController],
+              (id<NewTabPagePanelProtocol>)[controller_ bookmarkController]);
+  }
+}
+
+TEST_F(NewTabPageControllerTest, SelectBookmarkPanel) {
+  // Expecting on start up that the bookmarkController does not exist.
+  // Deliberately comparing pointers.
+  EXPECT_NE([controller_ currentController],
+            (id<NewTabPagePanelProtocol>)[controller_ bookmarkController]);
+
+  // Switching to the Bookmarks panel.
+  [controller_ selectPanel:NewTabPage::kBookmarksPanel];
+
+  // Expecting bookmarks panel to be loaded now and to be the current controller
+  // on iPad but not iPhone.
+  // Deliberately comparing pointers.
+  if (IsIPadIdiom()) {
+    EXPECT_EQ([controller_ currentController],
+              (id<NewTabPagePanelProtocol>)[controller_ bookmarkController]);
+  } else {
+    EXPECT_NE([controller_ currentController],
+              (id<NewTabPagePanelProtocol>)[controller_ bookmarkController]);
+  }
+}
+
+TEST_F(NewTabPageControllerTest, SelectIncognitoPanel) {
+  // Expect on start up that the Incognito panel is the default.
+  EXPECT_EQ(
+      (id<NewTabPagePanelProtocol>)[incognitoController_ incognitoController],
+      [incognitoController_ currentController]);
+
+  // Switch to the Bookmarks panel.
+  [incognitoController_ selectPanel:NewTabPage::kBookmarksPanel];
+
+  // Expecting bookmarks panel to be loaded now and to be the current controller
+  // on iPad but not iPhone.
+  // Deliberately comparing pointers.
+  if (IsIPadIdiom()) {
+    EXPECT_EQ(
+        [incognitoController_ currentController],
+        (id<NewTabPagePanelProtocol>)[incognitoController_ bookmarkController]);
+  } else {
+    EXPECT_NE(
+        [incognitoController_ currentController],
+        (id<NewTabPagePanelProtocol>)[incognitoController_ bookmarkController]);
+  }
+}
+
+TEST_F(NewTabPageControllerTest, TestWantsLocationBarHintText) {
+  // Default NTP doesn't show location bar hint text on iPad, and it does on
+  // iPhone.
+  if (IsIPadIdiom())
+    EXPECT_EQ(NO, [controller_ wantsLocationBarHintText]);
+  else
+    EXPECT_EQ(YES, [controller_ wantsLocationBarHintText]);
+
+  // Default incognito always does.
+  EXPECT_EQ(YES, [incognitoController_ wantsLocationBarHintText]);
+}
+
+TEST_F(NewTabPageControllerTest, NewTabPageIdentifierConversion) {
+  EXPECT_EQ("open_tabs",
+            NewTabPage::FragmentFromIdentifier(NewTabPage::kOpenTabsPanel));
+  EXPECT_EQ("", NewTabPage::FragmentFromIdentifier(NewTabPage::kNone));
+  EXPECT_EQ(NewTabPage::kBookmarksPanel,
+            NewTabPage::IdentifierFromFragment("bookmarks"));
+  EXPECT_EQ(NewTabPage::kNone, NewTabPage::IdentifierFromFragment("garbage"));
+  EXPECT_EQ(NewTabPage::kNone, NewTabPage::IdentifierFromFragment(""));
+}
+
+}  // anonymous namespace

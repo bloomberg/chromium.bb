@@ -1,0 +1,881 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
+
+#import <QuartzCore/QuartzCore.h>
+
+#include <algorithm>
+#include "base/logging.h"
+#include "base/mac/objc_property_releaser.h"
+#include "base/mac/scoped_nsobject.h"
+#include "base/metrics/histogram.h"
+#import "ios/chrome/browser/ui/browser_view_controller.h"
+#import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_view.h"
+#include "ios/chrome/browser/ui/rtl_geometry.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
+#import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
+#import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
+#import "ios/web/public/web_state/crw_web_view_proxy.h"
+
+namespace {
+// This enum is used to record the overscroll actions performed by the user on
+// the histogram named |OverscrollActions|.
+enum {
+  // Records each time the user selects the new tab action.
+  OVERSCROLL_ACTION_NEW_TAB,
+  // Records each time the user selects the refresh action.
+  OVERSCROLL_ACTION_REFRESH,
+  // Records each time the user selects the close tab action.
+  OVERSCROLL_ACTION_CLOSE_TAB,
+  // Records each time the user cancels the overscroll action.
+  OVERSCROLL_ACTION_CANCELED,
+  // NOTE: Add new actions in sources only immediately above this line.
+  // Also, make sure the enum list for histogram |OverscrollActions| in
+  // tools/histogram/histograms.xml is updated with any change in here.
+  OVERSCROLL_ACTION_COUNT
+};
+
+// The histogram used to record user actions.
+const char kOverscrollActionsHistogram[] = "Tab.PullDownGesture";
+
+// The pulling threshold in point at which the controller will start accepting
+// actions.
+// Past this pulling value the scrollView will start to resist from pulling.
+const CGFloat kHeaderMaxExpansionThreshold = 56.0;
+// The default overall distance in point to select different actions
+// horizontally.
+const CGFloat kHorizontalPanDistance = 400.0;
+// The distance from the top content offset which will be used to detect
+// if the scrollview is scrolled to top.
+const CGFloat kScrolledToTopToleranceInPoint = 50;
+// The minimum duration between scrolling in order to allow overscroll actions.
+// In seconds.
+const CFTimeInterval kMinimumDurationBetweenScrollingInSeconds = 0.15;
+// The minimum duration that the pull must last in order to trigger an action.
+// In seconds.
+const CFTimeInterval kMinimumPullDurationToTriggerActionInSeconds = 0.2;
+// Bounce dynamic constants.
+// Since the bounce effect of the scrollview is cancelled by setting the
+// contentInsets to the value of the overscroll contentOffset, the bounce
+// bounce back have to be emulated manually using a spring simulation.
+const CGFloat kSpringTightness = 2;
+const CGFloat kSpringDampiness = 0.5;
+
+// This holds the current state of the bounce back animation.
+typedef struct {
+  CGFloat yInset;
+  CGFloat initialYInset;
+  CGFloat headerInset;
+  CGFloat velocityInset;
+  CFAbsoluteTime time;
+} SpringInsetState;
+
+// Used to set the height of a view frame.
+// Implicit animations are disabled when setting the new frame.
+void SetViewFrameHeight(UIView* view, CGFloat height) {
+  [CATransaction begin];
+  [CATransaction setDisableActions:YES];
+  CGRect viewFrame = view.frame;
+  viewFrame.size.height = height;
+  view.frame = viewFrame;
+  [CATransaction commit];
+}
+
+// Clamp a value between min and max.
+CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
+  DCHECK(min < max);
+  if (value < min)
+    return min;
+  if (value > max)
+    return max;
+  return value;
+}
+}  // namespace
+
+namespace ios_internal {
+NSString* const kOverscollActionsWillStart = @"OverscollActionsWillStart";
+NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
+}  // namespace ios_internal
+
+// This protocol describes the subset of methods used between the
+// CRWWebViewScrollViewProxy and the UIWebView.
+@protocol OverscrollActionsScrollView<NSObject>
+
+@property(nonatomic, assign) UIEdgeInsets contentInset;
+@property(nonatomic, assign) CGPoint contentOffset;
+@property(nonatomic, assign) UIEdgeInsets scrollIndicatorInsets;
+@property(nonatomic, readonly) UIPanGestureRecognizer* panGestureRecognizer;
+@property(nonatomic, readonly) BOOL isZooming;
+
+- (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated;
+- (void)addGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer;
+- (void)removeGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer;
+
+@end
+
+@interface OverscrollActionsController ()<CRWWebViewScrollViewProxyObserver,
+                                          UIGestureRecognizerDelegate,
+                                          OverscrollActionsViewDelegate> {
+  // Display link used to animate the bounce back effect.
+  CADisplayLink* _dpLink;
+  SpringInsetState _bounceState;
+  NSInteger _overscrollActionLock;
+  // The last time the user started scrolling the view.
+  CFTimeInterval _lastScrollBeginTime;
+  // Set to YES when the bounce animation must be independent of the scrollview
+  // contentOffset change.
+  // This is done when an action has been triggered. In that case the webview's
+  // scrollview will change state depending on the action being triggered so
+  // relying on the contentInset is not possible at that time.
+  BOOL _performingScrollViewIndependentAnimation;
+  // Force processing state changes in scrollviewDidScroll: even if
+  // overscroll actions are disabled.
+  // This is used to always process contentOffset changes on specific cases like
+  // when playing the bounce back animation if no actions has been triggered.
+  BOOL _forceStateUpdate;
+  // True when the overscroll actions are disabled for loading.
+  BOOL _isOverscrollActionsDisabledForLoading;
+  // True when the pull gesture started close enough from the top and the
+  // delegate allows it.
+  // Use isOverscrollActionEnabled to take into account locking.
+  BOOL _allowPullingActions;
+  // Records if a transition to the overscroll state ACTION_READY was made.
+  // This is used to record a cancel gesture.
+  BOOL _didTransitionToActionReady;
+  // Store the set of notifications that did increment the overscroll actions
+  // lock. It is used in order to enforce the fact that the lock should only be
+  // incremented/decremented once for a given notification.
+  base::scoped_nsobject<NSMutableSet> _lockIncrementNotifications;
+  // Store the notification name counterpart of another notification name.
+  // Overscroll actions locking and unlocking works by listening to balanced
+  // notifications. One notification lock and it's counterpart unlock. This
+  // dictionary is used to retrieve the notification name from it's notification
+  // counterpart name. Exemple:
+  // UIKeyboardWillShowNotification trigger a lock. Its counterpart notification
+  // name is UIKeyboardWillHideNotification.
+  base::scoped_nsobject<NSDictionary> _lockNotificationsCounterparts;
+  // A view used to catch touches on the webview.
+  base::scoped_nsobject<UIView> _dummyView;
+  // The proxy used to interact with the webview.
+  base::scoped_nsprotocol<id<CRWWebViewProxy>> _webViewProxy;
+  // The proxy used to interact with the webview's scrollview.
+  base::scoped_nsobject<CRWWebViewScrollViewProxy> _webViewScrollViewProxy;
+  // The scrollview driving the OverscrollActionsController when not using
+  // the scrollview from the CRWWebControllerObserver.
+  base::scoped_nsobject<UIScrollView> _scrollview;
+  base::mac::ObjCPropertyReleaser _propertyReleaser_OverscrollActionsController;
+}
+
+// The view displayed over the header view holding the actions.
+@property(nonatomic, retain) OverscrollActionsView* overscrollActionView;
+// Initial top inset added to the scrollview for the header.
+// This property is set from the delegate headerInset and cached on first
+// call. The cached value is reset when the webview proxy is set.
+@property(nonatomic, readonly) CGFloat initialContentInset;
+// Initial top inset for the header.
+// This property is set from the delegate headerInset and cached on first
+// call. The cached value is reset when the webview proxy is set.
+@property(nonatomic, readonly) CGFloat initialHeaderInset;
+// Initial height of the header view.
+// This property is set from the delegate headerHeight and cached on first
+// call. The cached value is reset when the webview proxy is set.
+@property(nonatomic, readonly) CGFloat initialHeaderHeight;
+// Redefined to be read-write.
+@property(nonatomic, assign, readwrite)
+    ios_internal::OverscrollState overscrollState;
+// Point where the horizontal gesture started when the state of the
+// overscroll controller is in OverscrollStateActionReady.
+@property(nonatomic, assign) CGPoint panPointScreenOrigin;
+// Pan gesture recognizer used to track horizontal touches.
+@property(nonatomic, retain) UIPanGestureRecognizer* panGestureRecognizer;
+
+// Registers notifications to lock the overscroll actions on certain UI states.
+- (void)registerNotifications;
+// Setup/tearDown methods are used to register values when the delegate is set.
+- (void)tearDown;
+- (void)setup;
+// Access the headerView from the delegate.
+- (UIView<RelaxedBoundsConstraintsHitTestSupport>*)headerView;
+// Locking/unlocking methods used to disable/enable the overscroll actions
+// with a reference count.
+- (void)incrementOverscrollActionLockForNotification:
+    (NSNotification*)notification;
+- (void)decrementOverscrollActionLockForNotification:
+    (NSNotification*)notification;
+// Indicates whether the overscroll action is allowed.
+- (BOOL)isOverscrollActionEnabled;
+// Triggers a call to delegate if an action has been triggered.
+- (void)triggerActionIfNeeded;
+// Performs work based on overscroll action state changes.
+- (void)onOverscrollStateChangeWithPreviousState:
+    (ios_internal::OverscrollState)previousOverscrollState;
+// Disables all interactions on the webview except pan.
+- (void)setWebViewInteractionEnabled:(BOOL)enabled;
+// Bounce dynamic animations methods.
+// Starts the bounce animation with an initial velocity.
+- (void)startBounceWithInitialVelocity:(CGPoint)velocity;
+// Stops bounce animation.
+- (void)stopBounce;
+// Called from the display link to update the bounce dynamic animation.
+- (void)updateBounce;
+// Applies bounce state to the scroll view.
+- (void)applyBounceState;
+
+@end
+
+@implementation OverscrollActionsController
+
+@synthesize overscrollActionView = _overscrollActionView;
+@synthesize initialHeaderInset = _initialHeaderInset;
+@synthesize initialHeaderHeight = _initialHeaderHeight;
+@synthesize overscrollState = _overscrollState;
+@synthesize delegate = _delegate;
+@synthesize panPointScreenOrigin = _panPointScreenOrigin;
+@synthesize panGestureRecognizer = _panGestureRecognizer;
+
+- (instancetype)init {
+  return [self initWithScrollView:nil];
+}
+
+- (instancetype)initWithScrollView:(UIScrollView*)scrollView {
+  self = [super init];
+  if (self) {
+    _propertyReleaser_OverscrollActionsController.Init(
+        self, [OverscrollActionsController class]);
+    _overscrollActionView =
+        [[OverscrollActionsView alloc] initWithFrame:CGRectZero];
+    _overscrollActionView.delegate = self;
+    _scrollview.reset([scrollView retain]);
+    if (_scrollview) {
+      [self setup];
+    }
+    _lockIncrementNotifications.reset([[NSMutableSet alloc] init]);
+
+    _lockNotificationsCounterparts.reset([@{
+      UIKeyboardWillHideNotification : UIKeyboardWillShowNotification,
+      kMenuWillHideNotification : kMenuWillShowNotification,
+      kTabHistoryPopupWillHideNotification :
+          kTabHistoryPopupWillShowNotification,
+      kVoiceSearchWillHideNotification : kVoiceSearchWillShowNotification,
+      kVoiceSearchBarViewButtonDeselectedNotification :
+          kVoiceSearchBarViewButtonSelectedNotification,
+      ios_internal::kPageInfoWillHideNotification :
+          ios_internal::kPageInfoWillShowNotification,
+      ios_internal::kLocationBarResignsFirstResponderNotification :
+          ios_internal::kLocationBarBecomesFirstResponderNotification,
+      ios_internal::kSideSwipeDidStopNotification :
+          ios_internal::kSideSwipeWillStartNotification
+    } retain]);
+    [self registerNotifications];
+  }
+  return self;
+}
+
+- (void)dealloc {
+  self.overscrollActionView.delegate = nil;
+  [self invalidate];
+  [super dealloc];
+}
+
+- (void)invalidate {
+  [self clear];
+  [self stopBounce];
+  [self tearDown];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [self setWebViewInteractionEnabled:YES];
+  _delegate = nil;
+  _webViewProxy.reset();
+  [_webViewScrollViewProxy removeObserver:self];
+  _webViewScrollViewProxy.reset();
+}
+
+- (void)clear {
+  self.overscrollState = ios_internal::OverscrollState::NO_PULL_STARTED;
+}
+
+- (void)enableOverscrollActions {
+  _isOverscrollActionsDisabledForLoading = NO;
+  [self setup];
+}
+
+- (void)disableOverscrollActions {
+  _isOverscrollActionsDisabledForLoading = YES;
+  [self tearDown];
+}
+
+- (void)setStyle:(ios_internal::OverscrollStyle)style {
+  [self.overscrollActionView setStyle:style];
+}
+
+#pragma mark - webViewScrollView and UIScrollView delegates implementations
+
+- (void)scrollViewDidScroll {
+  if (!_forceStateUpdate && (![self isOverscrollActionEnabled] ||
+                             _performingScrollViewIndependentAnimation))
+    return;
+
+  const UIEdgeInsets insets =
+      UIEdgeInsetsMake(-[self scrollView].contentOffset.y, 0, 0, 0);
+  // Start pulling (on top).
+  CGFloat contentOffsetFromTheTop = [self scrollView].contentOffset.y;
+  if (![_webViewProxy shouldUseInsetForTopPadding]) {
+    // Content offset is shifted for WKWebView when the web view's
+    // |shouldUseInsetForTopPadding| is NO, to workaround bug with
+    // UIScollView.contentInset (rdar://23584409).
+    contentOffsetFromTheTop -= [_webViewProxy topContentPadding];
+  }
+  CGFloat contentOffsetFromExpandedHeader =
+      contentOffsetFromTheTop + self.initialHeaderInset;
+  if (contentOffsetFromExpandedHeader >= 0) {
+    // Record initial content offset and dispatch delegate on state change.
+    self.overscrollState = ios_internal::OverscrollState::NO_PULL_STARTED;
+  } else {
+    if (contentOffsetFromExpandedHeader < -kHeaderMaxExpansionThreshold) {
+      self.overscrollState = ios_internal::OverscrollState::ACTION_READY;
+      [self scrollView].scrollIndicatorInsets = insets;
+    } else {
+      // Set the contentInset to remove the bounce that would fight with drag.
+      [self setScrollViewContentInset:insets];
+      [self scrollView].scrollIndicatorInsets = insets;
+      self.overscrollState = ios_internal::OverscrollState::STARTED_PULLING;
+    }
+    [self updateWithVerticalOffset:-contentOffsetFromExpandedHeader];
+  }
+}
+
+- (void)scrollViewWillBeginDragging {
+  [self stopBounce];
+  _allowPullingActions = NO;
+  _didTransitionToActionReady = NO;
+  [self.overscrollActionView pullStarted];
+  if (!_performingScrollViewIndependentAnimation)
+    _allowPullingActions = [self isOverscrollActionsAllowed];
+  _lastScrollBeginTime = CACurrentMediaTime();
+}
+
+- (BOOL)isOverscrollActionsAllowed {
+  const BOOL isZooming = [[self scrollView] isZooming];
+  // Check that the scrollview is scrolled to top.
+  const BOOL isScrolledToTop = fabs([[self scrollView] contentOffset].y +
+                                    [[self scrollView] contentInset].top) <=
+                               kScrolledToTopToleranceInPoint;
+  // Check that the user is not quickly scrolling the view repeatedly.
+  const BOOL isMinimumTimeBetweenScrollRespected =
+      (CACurrentMediaTime() - _lastScrollBeginTime) >=
+      kMinimumDurationBetweenScrollingInSeconds;
+  // Finally check that the delegate allow overscroll actions.
+  const BOOL delegateAllowOverscrollActions =
+      [self.delegate shouldAllowOverscrollActions];
+  const BOOL isCurrentlyProcessingOverscroll =
+      self.overscrollState != ios_internal::OverscrollState::NO_PULL_STARTED;
+  return isCurrentlyProcessingOverscroll ||
+         (isScrolledToTop && isMinimumTimeBetweenScrollRespected &&
+          delegateAllowOverscrollActions && !isZooming);
+}
+
+- (void)scrollViewDidEndDraggingWillDecelerate:(BOOL)decelerate
+                                 contentOffset:(CGPoint)contentOffset {
+  // Content is now hidden behind toolbar, make sure that contentInset is
+  // restored to initial value.
+  if (contentOffset.y >= 0 ||
+      self.overscrollState == ios_internal::OverscrollState::NO_PULL_STARTED) {
+    [self setScrollViewContentInset:UIEdgeInsetsMake(self.initialContentInset,
+                                                     0, 0, 0)];
+  }
+
+  [self triggerActionIfNeeded];
+  _allowPullingActions = NO;
+}
+
+- (void)scrollViewWillEndDraggingWithVelocity:(CGPoint)velocity
+                          targetContentOffset:
+                              (inout CGPoint*)targetContentOffset {
+  if (![self isOverscrollActionEnabled])
+    return;
+
+  if (self.overscrollState != ios_internal::OverscrollState::NO_PULL_STARTED) {
+    *targetContentOffset = [[self scrollView] contentOffset];
+    [self startBounceWithInitialVelocity:velocity];
+  }
+}
+
+- (void)webViewScrollViewProxyDidSetScrollView:
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
+  [self setup];
+}
+
+#pragma mark - UIScrollViewDelegate
+
+- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
+  DCHECK_EQ(static_cast<id>(scrollView), [self scrollView]);
+  [self scrollViewDidScroll];
+}
+
+- (void)scrollViewWillBeginDragging:(UIScrollView*)scrollView {
+  DCHECK_EQ(static_cast<id>(scrollView), [self scrollView]);
+  [self scrollViewWillBeginDragging];
+}
+
+- (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
+                  willDecelerate:(BOOL)decelerate {
+  DCHECK_EQ(static_cast<id>(scrollView), [self scrollView]);
+  [self scrollViewDidEndDraggingWillDecelerate:decelerate
+                                 contentOffset:scrollView.contentOffset];
+}
+
+- (void)scrollViewWillEndDragging:(UIScrollView*)scrollView
+                     withVelocity:(CGPoint)velocity
+              targetContentOffset:(inout CGPoint*)targetContentOffset {
+  DCHECK_EQ(static_cast<id>(scrollView), [self scrollView]);
+  [self scrollViewWillEndDraggingWithVelocity:velocity
+                          targetContentOffset:targetContentOffset];
+}
+
+#pragma mark - CRWWebViewScrollViewProxyObserver
+
+- (void)webViewScrollViewDidScroll:
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
+  DCHECK_EQ(static_cast<id>(webViewScrollViewProxy), [self scrollView]);
+  [self scrollViewDidScroll];
+}
+
+- (void)webViewScrollViewWillBeginDragging:
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
+  DCHECK_EQ(static_cast<id>(webViewScrollViewProxy), [self scrollView]);
+  [self scrollViewWillBeginDragging];
+}
+
+- (void)webViewScrollViewDidEndDragging:
+            (CRWWebViewScrollViewProxy*)webViewScrollViewProxy
+                         willDecelerate:(BOOL)decelerate {
+  DCHECK_EQ(static_cast<id>(webViewScrollViewProxy), [self scrollView]);
+  [self scrollViewDidEndDraggingWillDecelerate:decelerate
+                                 contentOffset:webViewScrollViewProxy
+                                                   .contentOffset];
+}
+
+- (void)webViewScrollViewWillEndDragging:
+            (CRWWebViewScrollViewProxy*)webViewScrollViewProxy
+                            withVelocity:(CGPoint)velocity
+                     targetContentOffset:(inout CGPoint*)targetContentOffset {
+  DCHECK_EQ(static_cast<id>(webViewScrollViewProxy), [self scrollView]);
+  [self scrollViewWillEndDraggingWithVelocity:velocity
+                          targetContentOffset:targetContentOffset];
+}
+
+#pragma mark - Pan gesture recognizer handling
+
+- (void)panGesture:(UIPanGestureRecognizer*)gesture {
+  if (gesture.state == UIGestureRecognizerStateBegan) {
+    [self setWebViewInteractionEnabled:NO];
+  } else if (gesture.state == UIGestureRecognizerStateEnded ||
+             gesture.state == UIGestureRecognizerStateCancelled) {
+    [self setWebViewInteractionEnabled:YES];
+  }
+  const CGPoint panPointScreen = [gesture locationInView:nil];
+  if (self.overscrollState == ios_internal::OverscrollState::ACTION_READY) {
+    const CGFloat direction = UseRTLLayout() ? -1 : 1;
+    const CGFloat xOffset = direction *
+                            (panPointScreen.x - self.panPointScreenOrigin.x) /
+                            kHorizontalPanDistance;
+
+    [self.overscrollActionView updateWithHorizontalOffset:xOffset];
+  }
+}
+
+- (BOOL)gestureRecognizer:(UIGestureRecognizer*)gestureRecognizer
+    shouldRecognizeSimultaneouslyWithGestureRecognizer:
+        (UIGestureRecognizer*)otherGestureRecognizer {
+  return YES;
+}
+
+#pragma mark - CRWWebControllerObserver methods
+
+- (void)setWebViewProxy:(id<CRWWebViewProxy>)webViewProxy
+             controller:(CRWWebController*)webController {
+  DCHECK([webViewProxy scrollViewProxy]);
+  _initialHeaderInset = 0;
+  _initialHeaderHeight = 0;
+  _webViewProxy.reset([webViewProxy retain]);
+  [_webViewScrollViewProxy removeObserver:self];
+  _webViewScrollViewProxy.reset([[webViewProxy scrollViewProxy] retain]);
+  [_webViewScrollViewProxy addObserver:self];
+  [self enableOverscrollActions];
+}
+
+- (void)webControllerWillClose:(CRWWebController*)webController {
+  [self disableOverscrollActions];
+  [_webViewScrollViewProxy removeObserver:self];
+  _webViewScrollViewProxy.reset();
+  [webController removeObserver:self];
+}
+
+#pragma mark - Private
+
+- (void)recordMetricForTriggeredAction:(ios_internal::OverscrollAction)action {
+  switch (action) {
+    case ios_internal::OverscrollAction::NONE:
+      UMA_HISTOGRAM_ENUMERATION(kOverscrollActionsHistogram,
+                                OVERSCROLL_ACTION_CANCELED,
+                                OVERSCROLL_ACTION_COUNT);
+      break;
+    case ios_internal::OverscrollAction::NEW_TAB:
+      UMA_HISTOGRAM_ENUMERATION(kOverscrollActionsHistogram,
+                                OVERSCROLL_ACTION_NEW_TAB,
+                                OVERSCROLL_ACTION_COUNT);
+      break;
+    case ios_internal::OverscrollAction::REFRESH:
+      UMA_HISTOGRAM_ENUMERATION(kOverscrollActionsHistogram,
+                                OVERSCROLL_ACTION_REFRESH,
+                                OVERSCROLL_ACTION_COUNT);
+      break;
+    case ios_internal::OverscrollAction::CLOSE_TAB:
+      UMA_HISTOGRAM_ENUMERATION(kOverscrollActionsHistogram,
+                                OVERSCROLL_ACTION_CLOSE_TAB,
+                                OVERSCROLL_ACTION_COUNT);
+      break;
+  }
+}
+
+- (void)registerNotifications {
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  for (NSString* counterpartNotificationName in _lockNotificationsCounterparts
+           .get()) {
+    [center addObserver:self
+               selector:@selector(incrementOverscrollActionLockForNotification:)
+                   name:[_lockNotificationsCounterparts
+                            objectForKey:counterpartNotificationName]
+                 object:nil];
+    [center addObserver:self
+               selector:@selector(decrementOverscrollActionLockForNotification:)
+                   name:counterpartNotificationName
+                 object:nil];
+  }
+  [center addObserver:self
+             selector:@selector(deviceOrientationDidChange)
+                 name:UIDeviceOrientationDidChangeNotification
+               object:nil];
+}
+
+- (void)tearDown {
+  [[self scrollView] removeGestureRecognizer:self.panGestureRecognizer];
+  self.panGestureRecognizer = nil;
+}
+
+- (void)setup {
+  base::scoped_nsobject<UIPanGestureRecognizer> panGesture(
+      [[UIPanGestureRecognizer alloc] initWithTarget:self
+                                              action:@selector(panGesture:)]);
+  [panGesture setMaximumNumberOfTouches:1];
+  [panGesture setDelegate:self];
+  [[self scrollView] addGestureRecognizer:panGesture];
+  self.panGestureRecognizer = panGesture.get();
+}
+
+- (id<OverscrollActionsScrollView>)scrollView {
+  if (_scrollview) {
+    return static_cast<id<OverscrollActionsScrollView>>(_scrollview.get());
+  } else {
+    return static_cast<id<OverscrollActionsScrollView>>(
+        _webViewScrollViewProxy.get());
+  }
+}
+
+- (void)setScrollViewContentInset:(UIEdgeInsets)contentInset {
+  if (_scrollview)
+    [_scrollview setContentInset:contentInset];
+  else
+    [_webViewScrollViewProxy setContentInsetFast:contentInset];
+}
+
+- (UIView<RelaxedBoundsConstraintsHitTestSupport>*)headerView {
+  return [self.delegate headerView];
+}
+
+- (void)incrementOverscrollActionLockForNotification:(NSNotification*)notif {
+  if (![_lockIncrementNotifications containsObject:notif.name]) {
+    [_lockIncrementNotifications addObject:notif.name];
+    ++_overscrollActionLock;
+  }
+}
+
+- (void)decrementOverscrollActionLockForNotification:(NSNotification*)notif {
+  NSString* counterpartName =
+      [_lockNotificationsCounterparts objectForKey:notif.name];
+  if ([_lockIncrementNotifications containsObject:counterpartName]) {
+    [_lockIncrementNotifications removeObject:counterpartName];
+    if (_overscrollActionLock > 0)
+      --_overscrollActionLock;
+  }
+}
+
+- (void)deviceOrientationDidChange {
+  if (self.overscrollState == ios_internal::OverscrollState::NO_PULL_STARTED &&
+      !_performingScrollViewIndependentAnimation)
+    return;
+
+  const UIDeviceOrientation deviceOrientation =
+      [[UIDevice currentDevice] orientation];
+  if (deviceOrientation != UIDeviceOrientationLandscapeRight &&
+      deviceOrientation != UIDeviceOrientationLandscapeLeft &&
+      deviceOrientation != UIDeviceOrientationPortrait) {
+    return;
+  }
+
+  // If the orientation change happen while the user is still scrolling the
+  // scrollview, we need to reset the pan gesture recognizer.
+  // Not doing so would result in a graphic issue where the scrollview jumps
+  // when scrolling after a change in UI orientation.
+  [[self scrollView] panGestureRecognizer].enabled = NO;
+  [[self scrollView] panGestureRecognizer].enabled = YES;
+
+  [self setScrollViewContentInset:UIEdgeInsetsMake(self.initialContentInset, 0,
+                                                   0, 0)];
+  [self clear];
+}
+
+- (BOOL)isOverscrollActionEnabled {
+  return _overscrollActionLock == 0 && _allowPullingActions &&
+         !_isOverscrollActionsDisabledForLoading;
+}
+
+- (void)triggerActionIfNeeded {
+  if ([self isOverscrollActionEnabled]) {
+    const BOOL isOverscrollStateActionReady =
+        self.overscrollState == ios_internal::OverscrollState::ACTION_READY;
+    const BOOL isOverscrollActionNone =
+        self.overscrollActionView.selectedAction ==
+        ios_internal::OverscrollAction::NONE;
+
+    if ((!isOverscrollStateActionReady && _didTransitionToActionReady) ||
+        (isOverscrollStateActionReady && isOverscrollActionNone)) {
+      [self
+          recordMetricForTriggeredAction:ios_internal::OverscrollAction::NONE];
+    } else if (isOverscrollStateActionReady && !isOverscrollActionNone) {
+      if (CACurrentMediaTime() - _lastScrollBeginTime >=
+          kMinimumPullDurationToTriggerActionInSeconds) {
+        _performingScrollViewIndependentAnimation = YES;
+        [self setScrollViewContentInset:UIEdgeInsetsMake(
+                                            self.initialContentInset, 0, 0, 0)];
+        CGPoint contentOffset = [[self scrollView] contentOffset];
+        contentOffset.y = -self.initialContentInset;
+        [[self scrollView] setContentOffset:contentOffset animated:YES];
+        [self.overscrollActionView displayActionAnimation];
+        dispatch_async(dispatch_get_main_queue(), ^{
+          [self recordMetricForTriggeredAction:self.overscrollActionView
+                                                   .selectedAction];
+          [self.delegate overscrollActionsController:self
+                                    didTriggerAction:self.overscrollActionView
+                                                         .selectedAction];
+        });
+      }
+    }
+  }
+}
+
+- (void)setOverscrollState:(ios_internal::OverscrollState)overscrollState {
+  if (_overscrollState != overscrollState) {
+    const ios_internal::OverscrollState previousState = _overscrollState;
+    _overscrollState = overscrollState;
+    [self onOverscrollStateChangeWithPreviousState:previousState];
+  }
+}
+
+- (void)onOverscrollStateChangeWithPreviousState:
+    (ios_internal::OverscrollState)previousOverscrollState {
+  [UIView beginAnimations:@"backgroundColor" context:NULL];
+  switch (self.overscrollState) {
+    case ios_internal::OverscrollState::NO_PULL_STARTED: {
+      UIView<RelaxedBoundsConstraintsHitTestSupport>* headerView =
+          [self headerView];
+      if ([headerView
+              respondsToSelector:@selector(setHitTestBoundsContraintRelaxed:)])
+        [headerView setHitTestBoundsContraintRelaxed:NO];
+      [self.overscrollActionView removeFromSuperview];
+      SetViewFrameHeight(
+          self.overscrollActionView,
+          self.initialContentInset +
+              [UIApplication sharedApplication].statusBarFrame.size.height);
+      self.panPointScreenOrigin = CGPointZero;
+      [[NSNotificationCenter defaultCenter]
+          postNotificationName:ios_internal::kOverscollActionsDidEnd
+                        object:self];
+    } break;
+    case ios_internal::OverscrollState::STARTED_PULLING: {
+      if (!self.overscrollActionView.superview) {
+        if (previousOverscrollState ==
+            ios_internal::OverscrollState::NO_PULL_STARTED) {
+          UIView* view = [self.delegate toolbarSnapshotView];
+          [self.overscrollActionView addSnapshotView:view];
+          [[NSNotificationCenter defaultCenter]
+              postNotificationName:ios_internal::kOverscollActionsWillStart
+                            object:self];
+        }
+        [CATransaction begin];
+        [CATransaction setDisableActions:YES];
+        self.overscrollActionView.backgroundView.alpha = 1;
+        [self.overscrollActionView updateWithVerticalOffset:0];
+        [self.overscrollActionView updateWithHorizontalOffset:0];
+        self.overscrollActionView.frame = [self headerView].bounds;
+        DCHECK([self headerView]);
+        UIView<RelaxedBoundsConstraintsHitTestSupport>* headerView =
+            [self headerView];
+        if ([headerView
+                respondsToSelector:@selector(
+                                       setHitTestBoundsContraintRelaxed:)])
+          [headerView setHitTestBoundsContraintRelaxed:YES];
+        [headerView addSubview:self.overscrollActionView];
+        [CATransaction commit];
+      }
+    } break;
+    case ios_internal::OverscrollState::ACTION_READY: {
+      _didTransitionToActionReady = YES;
+      if (CGPointEqualToPoint(self.panPointScreenOrigin, CGPointZero)) {
+        CGPoint panPointScreen = [self.panGestureRecognizer locationInView:nil];
+        self.panPointScreenOrigin = panPointScreen;
+      }
+    } break;
+  }
+  [UIView commitAnimations];
+}
+
+- (void)setWebViewInteractionEnabled:(BOOL)enabled {
+  // All interactions are disabled except pan.
+  for (UIGestureRecognizer* gesture in [_webViewProxy gestureRecognizers]) {
+    [gesture setEnabled:enabled];
+  }
+  for (UIGestureRecognizer* gesture in
+       [_webViewScrollViewProxy gestureRecognizers]) {
+    if (![gesture isKindOfClass:[UIPanGestureRecognizer class]]) {
+      [gesture setEnabled:enabled];
+    }
+  }
+  // Add a dummy view on top of the webview in order to catch touches on some
+  // specific subviews.
+  if (!enabled) {
+    if (!_dummyView)
+      _dummyView.reset([[UIView alloc] init]);
+    [_dummyView setFrame:[_webViewProxy bounds]];
+    [_webViewProxy addSubview:_dummyView];
+  } else {
+    [_dummyView removeFromSuperview];
+  }
+}
+
+- (void)updateWithVerticalOffset:(CGFloat)verticalOffset {
+  self.overscrollActionView.backgroundView.alpha =
+      1.0 -
+      Clamp(verticalOffset / (kHeaderMaxExpansionThreshold / 2.0), 0.0, 1.0);
+  SetViewFrameHeight(self.overscrollActionView,
+                     self.initialHeaderHeight + verticalOffset);
+  [self.overscrollActionView updateWithVerticalOffset:verticalOffset];
+}
+
+- (CGFloat)initialContentInset {
+  // Content inset is not used for displaying header if the web view's
+  // |shouldUseInsetForTopPadding| is NO, instead the whole web view
+  // frame is changed.
+  if (!_scrollview && ![_webViewProxy shouldUseInsetForTopPadding])
+    return 0;
+  return self.initialHeaderInset;
+}
+
+- (CGFloat)initialHeaderInset {
+  if (_initialHeaderInset == 0) {
+    _initialHeaderInset =
+        [[self delegate] overscrollActionsControllerHeaderInset:self];
+  }
+  return _initialHeaderInset;
+}
+
+- (CGFloat)initialHeaderHeight {
+  if (_initialHeaderHeight == 0) {
+    _initialHeaderHeight = [[self delegate] overscrollHeaderHeight];
+  }
+  return _initialHeaderHeight;
+}
+
+#pragma mark - Bounce dynamic
+
+- (void)startBounceWithInitialVelocity:(CGPoint)velocity {
+  [self stopBounce];
+  CADisplayLink* dpLink =
+      [CADisplayLink displayLinkWithTarget:self
+                                  selector:@selector(updateBounce)];
+  [dpLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+  _dpLink = dpLink;
+  memset(&_bounceState, 0, sizeof(_bounceState));
+  if (self.overscrollState == ios_internal::OverscrollState::ACTION_READY) {
+    const UIEdgeInsets insets = UIEdgeInsetsMake(
+        -[self scrollView].contentOffset.y + self.initialContentInset, 0, 0, 0);
+    [self setScrollViewContentInset:insets];
+    [[self scrollView] setScrollIndicatorInsets:insets];
+  }
+  _bounceState.yInset = [self scrollView].contentInset.top;
+  _bounceState.initialYInset = _bounceState.yInset;
+  _bounceState.headerInset = self.initialContentInset;
+  _bounceState.time = CACurrentMediaTime();
+  _bounceState.velocityInset = -velocity.y * 1000.0;
+}
+
+- (void)stopBounce {
+  [_dpLink invalidate];
+  _dpLink = nil;
+  if (_performingScrollViewIndependentAnimation) {
+    self.overscrollState = ios_internal::OverscrollState::NO_PULL_STARTED;
+    _performingScrollViewIndependentAnimation = NO;
+  }
+}
+
+- (void)updateBounce {
+  const double time = CACurrentMediaTime();
+  const double dt = time - _bounceState.time;
+  CGFloat force = -_bounceState.yInset * kSpringTightness;
+  if (_bounceState.yInset > _bounceState.headerInset)
+    force -= _bounceState.velocityInset * kSpringDampiness;
+  _bounceState.velocityInset += force;
+  _bounceState.yInset += _bounceState.velocityInset * dt;
+  _bounceState.time = time;
+  [self applyBounceState];
+  if (fabs(_bounceState.yInset - _bounceState.headerInset) < 0.5)
+    [self stopBounce];
+}
+
+- (void)applyBounceState {
+  if (_bounceState.yInset - _bounceState.headerInset < 0.5)
+    _bounceState.yInset = _bounceState.headerInset;
+  if (_performingScrollViewIndependentAnimation) {
+    [self updateWithVerticalOffset:_bounceState.yInset -
+                                   _bounceState.headerInset];
+  } else {
+    const UIEdgeInsets insets = UIEdgeInsetsMake(_bounceState.yInset, 0, 0, 0);
+    _forceStateUpdate = YES;
+    [self setScrollViewContentInset:insets];
+    [self scrollView].scrollIndicatorInsets = insets;
+    _forceStateUpdate = NO;
+  }
+}
+
+#pragma mark - OverscrollActionsViewDelegate
+
+- (void)overscrollActionsViewDidTapTriggerAction:
+    (OverscrollActionsView*)overscrollActionsView {
+  [self.overscrollActionView displayActionAnimation];
+  [self
+      recordMetricForTriggeredAction:self.overscrollActionView.selectedAction];
+
+  // Reset all pan gesture recognizers.
+  _allowPullingActions = NO;
+  _panGestureRecognizer.enabled = NO;
+  _panGestureRecognizer.enabled = YES;
+  [self scrollView].panGestureRecognizer.enabled = NO;
+  [self scrollView].panGestureRecognizer.enabled = YES;
+  [self startBounceWithInitialVelocity:CGPointZero];
+  [self.delegate
+      overscrollActionsController:self
+                 didTriggerAction:self.overscrollActionView.selectedAction];
+}
+
+@end
