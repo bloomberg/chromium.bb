@@ -11,7 +11,6 @@
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
-#include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_event_filter.h"
@@ -291,7 +290,6 @@ TrayBackgroundView::TrayBackgroundView(WmShelf* wm_shelf)
       shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),
       background_(NULL),
       is_active_(false),
-      is_separator_visible_(false),
       widget_observer_(new TrayWidgetObserver(this)) {
   DCHECK(wm_shelf_);
   set_notify_enter_exit_on_child(true);
@@ -377,7 +375,6 @@ void TrayBackgroundView::SetVisible(bool visible) {
     layer()->SetVisible(false);
     HideTransformation();
   }
-  wm_shelf_->GetStatusAreaWidget()->OnTrayVisibilityChanged(this);
 }
 
 const char* TrayBackgroundView::GetClassName() const {
@@ -522,11 +519,6 @@ void TrayBackgroundView::UpdateShelfItemBackground(int alpha) {
   }
 }
 
-void TrayBackgroundView::SetSeparatorVisibility(bool is_shown) {
-  is_separator_visible_ = is_shown;
-  SchedulePaint();
-}
-
 views::View* TrayBackgroundView::GetBubbleAnchor() const {
   return tray_container_;
 }
@@ -586,8 +578,7 @@ void TrayBackgroundView::OnPaint(gfx::Canvas* canvas) {
   ActionableView::OnPaint(canvas);
   if (!MaterialDesignController::IsShelfMaterial() ||
       shelf()->GetBackgroundType() ==
-          ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT ||
-      !is_separator_visible_) {
+          ShelfBackgroundType::SHELF_BACKGROUND_DEFAULT) {
     return;
   }
   //  In the given |canvas|, for a horizontal shelf draw a separator line to the

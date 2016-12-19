@@ -16,7 +16,6 @@ namespace ash {
 class OverviewButtonTray;
 class StatusAreaWidgetDelegate;
 class SystemTray;
-class TrayBackgroundView;
 class WebNotificationTray;
 class WmShelf;
 class WmWindow;
@@ -47,12 +46,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   // and calls UpdateAfterLoginStatusChange for the system tray and the web
   // notification tray.
   void UpdateAfterLoginStatusChange(LoginStatus login_status);
-
-  // Based on visibility of |tray| and a tray item on its right, sets |tray|'s
-  // separator visibility either to true or false. Note that no leading
-  // separator is required before the logout_button_tray because that
-  // button's red background is distinctive on its own.
-  void OnTrayVisibilityChanged(TrayBackgroundView* tray);
 
   StatusAreaWidgetDelegate* status_area_widget_delegate() {
     return status_area_widget_delegate_;
@@ -100,10 +93,6 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   void AddPaletteTray();
   void AddVirtualKeyboardTray();
   void AddImeMenuTray();
-
-  // Checks if |tray| is the next visible tray to the left of
-  // |logout_button_tray_|. Returns true if both are visible, false otherwise.
-  bool IsNextVisibleTrayToLogout(TrayBackgroundView* tray) const;
 #endif
   void AddOverviewButtonTray();
 
