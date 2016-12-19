@@ -55,6 +55,10 @@ public class DownloadNotificationService extends Service {
     static final String EXTRA_DOWNLOAD_FILE_PATH = "DownloadFilePath";
     static final String EXTRA_NOTIFICATION_DISMISSED = "NotificationDismissed";
     static final String EXTRA_IS_SUPPORTED_MIME_TYPE = "IsSupportedMimeType";
+    static final String EXTRA_IS_OFF_THE_RECORD =
+            "org.chromium.chrome.browser.download.IS_OFF_THE_RECORD";
+    static final String EXTRA_IS_OFFLINE_PAGE =
+            "org.chromium.chrome.browser.download.IS_OFFLINE_PAGE";
 
     public static final String ACTION_DOWNLOAD_CANCEL =
             "org.chromium.chrome.browser.download.DOWNLOAD_CANCEL";
@@ -296,20 +300,20 @@ public class DownloadNotificationService extends Service {
         if (startTime > 0) builder.setWhen(startTime);
 
         // Clicking on an in-progress download sends the user to see all their downloads.
-        Intent downloadHomeIntent = buildActionIntent(
-                mContext, DownloadManager.ACTION_NOTIFICATION_CLICKED, null, null);
+        Intent downloadHomeIntent = buildActionIntent(mContext,
+                DownloadManager.ACTION_NOTIFICATION_CLICKED, null, isOffTheRecord, isOfflinePage);
         builder.setContentIntent(PendingIntent.getBroadcast(
                 mContext, notificationId, downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
         builder.setAutoCancel(false);
 
         Intent pauseIntent = buildActionIntent(
-                mContext, ACTION_DOWNLOAD_PAUSE, downloadGuid, fileName);
+                mContext, ACTION_DOWNLOAD_PAUSE, downloadGuid, isOffTheRecord, isOfflinePage);
         builder.addAction(R.drawable.ic_media_control_pause,
                 mContext.getResources().getString(R.string.download_notification_pause_button),
                 buildPendingIntent(pauseIntent, notificationId));
 
         Intent cancelIntent = buildActionIntent(
-                mContext, ACTION_DOWNLOAD_CANCEL, downloadGuid, fileName);
+                mContext, ACTION_DOWNLOAD_CANCEL, downloadGuid, isOffTheRecord, isOfflinePage);
         builder.addAction(R.drawable.btn_close_white,
                 mContext.getResources().getString(R.string.download_notification_cancel_button),
                 buildPendingIntent(cancelIntent, notificationId));
@@ -378,19 +382,19 @@ public class DownloadNotificationService extends Service {
 
         // Clicking on an in-progress download sends the user to see all their downloads.
         Intent downloadHomeIntent = buildActionIntent(
-                mContext, DownloadManager.ACTION_NOTIFICATION_CLICKED, null, null);
+                mContext, DownloadManager.ACTION_NOTIFICATION_CLICKED, null, false, false);
         builder.setContentIntent(PendingIntent.getBroadcast(mContext, entry.notificationId,
                 downloadHomeIntent, PendingIntent.FLAG_UPDATE_CURRENT));
         builder.setAutoCancel(false);
 
         Intent resumeIntent = buildActionIntent(mContext, ACTION_DOWNLOAD_RESUME,
-                entry.downloadGuid, entry.fileName);
+                entry.downloadGuid, entry.isOffTheRecord, entry.isOfflinePage());
         builder.addAction(R.drawable.ic_get_app_white_24dp,
                 mContext.getResources().getString(R.string.download_notification_resume_button),
                 buildPendingIntent(resumeIntent, entry.notificationId));
 
         Intent cancelIntent = buildActionIntent(mContext, ACTION_DOWNLOAD_CANCEL,
-                entry.downloadGuid, entry.fileName);
+                entry.downloadGuid, entry.isOffTheRecord, entry.isOfflinePage());
         builder.addAction(R.drawable.btn_close_white,
                 mContext.getResources().getString(R.string.download_notification_cancel_button),
                 buildPendingIntent(cancelIntent, entry.notificationId));
@@ -429,8 +433,7 @@ public class DownloadNotificationService extends Service {
                 mContext.getPackageName(), DownloadBroadcastReceiver.class.getName());
         Intent intent;
         if (isOfflinePage) {
-            intent = buildActionIntent(
-                    mContext, ACTION_DOWNLOAD_OPEN, downloadGuid, fileName);
+            intent = buildActionIntent(mContext, ACTION_DOWNLOAD_OPEN, downloadGuid, false, true);
         } else {
             intent = new Intent(DownloadManager.ACTION_NOTIFICATION_CLICKED);
             long[] idArray = {systemDownloadId};
@@ -514,15 +517,18 @@ public class DownloadNotificationService extends Service {
      * @param context {@link Context} to pull resources from.
      * @param action Download action to perform.
      * @param downloadGuid GUID of the download.
-     * @param fileName Name of the download file.
+     * @param isOffTheRecord Whether the download is incognito.
+     * @param isOfflinePage Whether the download represents an Offline Page.
      */
     static Intent buildActionIntent(Context context, String action, String downloadGuid,
-            String fileName) {
+            boolean isOffTheRecord, boolean isOfflinePage) {
         ComponentName component = new ComponentName(
                 context.getPackageName(), DownloadBroadcastReceiver.class.getName());
         Intent intent = new Intent(action);
         intent.setComponent(component);
         intent.putExtra(EXTRA_DOWNLOAD_GUID, downloadGuid);
+        intent.putExtra(EXTRA_IS_OFF_THE_RECORD, isOffTheRecord);
+        intent.putExtra(EXTRA_IS_OFFLINE_PAGE, isOfflinePage);
         return intent;
     }
 
@@ -587,7 +593,11 @@ public class DownloadNotificationService extends Service {
      */
     private void handleDownloadOperation(final Intent intent) {
         final DownloadSharedPreferenceEntry entry = getDownloadEntryFromIntent(intent);
-        if (entry == null) return;
+        if (entry == null) {
+            handleDownloadOperationForMissingNotification(intent);
+            return;
+        }
+
         if (intent.getAction() == ACTION_DOWNLOAD_PAUSE) {
             // If browser process already goes away, the download should have already paused. Do
             // nothing in that case.
@@ -671,6 +681,38 @@ public class DownloadNotificationService extends Service {
         } catch (ProcessInitException e) {
             Log.e(TAG, "Unable to load native library.", e);
             ChromeApplication.reportStartupErrorAndExit(e);
+        }
+    }
+
+    /**
+     * Handles operations for downloads that the DownloadNotificationService is unaware of.
+     *
+     * This can happen because the DownloadNotificationService learn about downloads later than
+     * Download Home does, and may not yet have a DownloadSharedPreferenceEntry for the item.
+     *
+     * TODO(qinmin): Talk with dfalcantara@ about whether this is the best path forward.
+     */
+    private void handleDownloadOperationForMissingNotification(Intent intent) {
+        String action = intent.getAction();
+        String downloadGuid = IntentUtils.safeGetStringExtra(intent, EXTRA_DOWNLOAD_GUID);
+        boolean isOffTheRecord =
+                IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_OFF_THE_RECORD, false);
+        int itemType = IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_OFFLINE_PAGE, false)
+                ? DownloadSharedPreferenceEntry.ITEM_TYPE_OFFLINE_PAGE
+                : DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD;
+        if (itemType != DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD) return;
+
+        // Pass information directly to the DownloadManagerService.
+        if (TextUtils.equals(action, ACTION_DOWNLOAD_CANCEL)) {
+            getServiceDelegate(itemType).cancelDownload(downloadGuid, isOffTheRecord, false);
+        } else if (TextUtils.equals(action, ACTION_DOWNLOAD_PAUSE)) {
+            getServiceDelegate(itemType).pauseDownload(downloadGuid, isOffTheRecord);
+        } else if (TextUtils.equals(action, ACTION_DOWNLOAD_RESUME)) {
+            DownloadInfo info = new DownloadInfo.Builder()
+                                        .setDownloadGuid(downloadGuid)
+                                        .setIsOffTheRecord(isOffTheRecord)
+                                        .build();
+            getServiceDelegate(itemType).resumeDownload(new DownloadItem(false, info), true);
         }
     }
 

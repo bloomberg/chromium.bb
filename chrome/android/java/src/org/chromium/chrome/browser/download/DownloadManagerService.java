@@ -1567,7 +1567,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
     @Override
     public void broadcastDownloadAction(DownloadItem downloadItem, String action) {
         Intent intent = DownloadNotificationService.buildActionIntent(mContext, action,
-                downloadItem.getId(), downloadItem.getDownloadInfo().getFileName());
+                downloadItem.getId(), downloadItem.getDownloadInfo().isOffTheRecord(), false);
         mContext.sendBroadcast(intent);
     }
 
