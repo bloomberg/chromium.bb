@@ -226,6 +226,11 @@ public class IntentHandler {
     private final String mPackageName;
     private KeyguardManager mKeyguardManager;
 
+    /**
+     * Receiver for screen unlock broadcast.
+     */
+    private DelayedScreenLockIntentHandler mDelayedScreenIntentHandler;
+
     public static enum TabOpenType {
         OPEN_NEW_TAB,
         // Tab is reused only if the URLs perfectly match.
@@ -331,13 +336,26 @@ public class IntentHandler {
         }
     }
 
+    private void updateDeferredIntent(Intent intent) {
+        if (mDelayedScreenIntentHandler == null && intent != null) {
+            mDelayedScreenIntentHandler = new DelayedScreenLockIntentHandler();
+        }
+
+        if (mDelayedScreenIntentHandler != null) {
+            mDelayedScreenIntentHandler.updateDeferredIntent(intent);
+        }
+    }
+
     /**
      * Handles an Intent after the ChromeTabbedActivity decides that it shouldn't ignore the
      * Intent.
-     *
+     * @param context Android Context.
+     * @param intent Target intent.
      * @return Whether the Intent was successfully handled.
      */
     boolean onNewIntent(Context context, Intent intent) {
+        updateDeferredIntent(null);
+
         assert intentHasValidUrl(intent);
         String url = getUrlFromIntent(intent);
         boolean hasUserGesture =
@@ -688,7 +706,11 @@ public class IntentHandler {
             // We must check for screen state at this point.
             // These might be slow.
             boolean internalOrVisible = isInternal || isIntentUserVisible(context);
-            return !internalOrVisible;
+            if (!internalOrVisible) {
+                updateDeferredIntent(intent);
+                return true;
+            }
+            return false;
         } catch (Throwable t) {
             return true;
         }
@@ -761,7 +783,8 @@ public class IntentHandler {
         return false;
     }
 
-    private boolean isIntentUserVisible(Context context) {
+    @VisibleForTesting
+    boolean isIntentUserVisible(Context context) {
         // Only process Intents if the screen is on and the device is unlocked;
         // i.e. the user will see what is going on.
         if (mKeyguardManager == null) {
