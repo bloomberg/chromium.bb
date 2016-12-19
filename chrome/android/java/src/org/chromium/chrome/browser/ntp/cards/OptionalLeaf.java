@@ -19,14 +19,6 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 public abstract class OptionalLeaf extends ChildNode {
     private boolean mVisible;
 
-    /**
-     * Constructor for {@link OptionalLeaf}.
-     * By default it is not visible. See {@link #setVisible(boolean)} to update the visibility.
-     */
-    public OptionalLeaf(NodeParent parent) {
-        super(parent);
-    }
-
     @Override
     public int getItemCount() {
         return isVisible() ? 1 : 0;

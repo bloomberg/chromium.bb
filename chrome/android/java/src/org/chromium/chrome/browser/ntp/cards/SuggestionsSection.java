@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -41,35 +40,21 @@ public class SuggestionsSection extends InnerNode {
     private final ActionItem mMoreButton;
     private final ProgressItem mProgressIndicator;
 
-    private final List<TreeNode> mChildren;
-
     private boolean mIsNtpDestroyed;
 
-    public SuggestionsSection(NodeParent parent, NewTabPageManager manager,
-            OfflinePageBridge offlinePageBridge, SuggestionsCategoryInfo info) {
-        super(parent);
+    public SuggestionsSection(NewTabPageManager manager, OfflinePageBridge offlinePageBridge,
+            SuggestionsCategoryInfo info) {
         mCategoryInfo = info;
         mOfflinePageBridge = offlinePageBridge;
 
         mHeader = new SectionHeader(info.getTitle());
-        mSuggestionsList = new SuggestionsList(this, info);
-        mStatus = StatusItem.createNoSuggestionsItem(this);
+        mSuggestionsList = new SuggestionsList(info);
+        mStatus = StatusItem.createNoSuggestionsItem(info);
         mMoreButton = new ActionItem(this);
-        mProgressIndicator = new ProgressItem(this);
-
-        mChildren = Arrays.asList(
-                mHeader,
-                mSuggestionsList,
-                mStatus,
-                mMoreButton,
-                mProgressIndicator);
+        mProgressIndicator = new ProgressItem();
+        addChildren(mHeader, mSuggestionsList, mStatus, mMoreButton, mProgressIndicator);
 
         setupOfflinePageBridgeObserver(manager);
-    }
-
-    @Override
-    public void init() {
-        super.init();
         refreshChildrenVisibility();
     }
 
@@ -77,8 +62,7 @@ public class SuggestionsSection extends InnerNode {
         private final List<SnippetArticle> mSuggestions = new ArrayList<>();
         private final SuggestionsCategoryInfo mCategoryInfo;
 
-        public SuggestionsList(NodeParent parent, SuggestionsCategoryInfo categoryInfo) {
-            super(parent);
+        public SuggestionsList(SuggestionsCategoryInfo categoryInfo) {
             mCategoryInfo = categoryInfo;
         }
 
@@ -138,11 +122,6 @@ public class SuggestionsSection extends InnerNode {
         public Iterator<SnippetArticle> iterator() {
             return mSuggestions.iterator();
         }
-    }
-
-    @Override
-    protected List<TreeNode> getChildren() {
-        return mChildren;
     }
 
     private void setupOfflinePageBridgeObserver(NewTabPageManager manager) {

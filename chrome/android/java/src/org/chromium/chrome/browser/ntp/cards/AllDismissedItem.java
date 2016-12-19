@@ -22,12 +22,6 @@ import java.util.Calendar;
  * to restore the dismissed sections and load new suggestions from the server.
  */
 public class AllDismissedItem extends OptionalLeaf {
-    /**
-     * @param parent The item's parent node.
-     */
-    public AllDismissedItem(NodeParent parent) {
-        super(parent);
-    }
 
     @Override
     @ItemViewType

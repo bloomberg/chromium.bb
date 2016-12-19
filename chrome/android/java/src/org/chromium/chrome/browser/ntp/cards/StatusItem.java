@@ -14,20 +14,14 @@ import org.chromium.chrome.R;
  * configuration that affects the NTP suggestions.
  */
 public abstract class StatusItem extends OptionalLeaf implements StatusCardViewHolder.DataSource {
-
-    protected StatusItem(NodeParent parent) {
-        super(parent);
-    }
-
-    public static StatusItem createNoSuggestionsItem(SuggestionsSection parentSection) {
-        return new NoSuggestionsItem(parentSection);
+    public static StatusItem createNoSuggestionsItem(SuggestionsCategoryInfo categoryInfo) {
+        return new NoSuggestionsItem(categoryInfo);
     }
 
     private static class NoSuggestionsItem extends StatusItem {
         private final String mDescription;
-        public NoSuggestionsItem(SuggestionsSection parentSection) {
-            super(parentSection);
-            mDescription = parentSection.getCategoryInfo().getNoSuggestionsMessage();
+        public NoSuggestionsItem(SuggestionsCategoryInfo categoryInfo) {
+            mDescription = categoryInfo.getNoSuggestionsMessage();
         }
 
         @Override

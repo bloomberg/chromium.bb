@@ -347,8 +347,8 @@ public class SuggestionsSectionTest {
     }
 
     private SuggestionsSection createSection(SuggestionsCategoryInfo info) {
-        SuggestionsSection section = new SuggestionsSection(mParent, mManager, mBridge, info);
-        section.init();
+        SuggestionsSection section = new SuggestionsSection(mManager, mBridge, info);
+        section.setParent(mParent);
         return section;
     }
 

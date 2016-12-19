@@ -4,31 +4,34 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import android.support.annotation.CallSuper;
+
 /**
  * A node in the tree that has a parent and can notify it about changes.
  *
  * This class mostly serves as a convenience base class for implementations of {@link TreeNode}.
  */
 public abstract class ChildNode implements TreeNode {
-    private final NodeParent mParent;
+    private NodeParent mParent;
 
-    protected ChildNode(NodeParent parent) {
+    @Override
+    @CallSuper
+    public void setParent(NodeParent parent) {
+        assert mParent == null;
+        assert parent != null;
         mParent = parent;
     }
 
-    @Override
-    public void init() {}
-
     protected void notifyItemRangeChanged(int index, int count) {
-        mParent.onItemRangeChanged(this, index, count);
+        if (mParent != null) mParent.onItemRangeChanged(this, index, count);
     }
 
     protected void notifyItemRangeInserted(int index, int count) {
-        mParent.onItemRangeInserted(this, index, count);
+        if (mParent != null) mParent.onItemRangeInserted(this, index, count);
     }
 
     protected void notifyItemRangeRemoved(int index, int count) {
-        mParent.onItemRangeRemoved(this, index, count);
+        if (mParent != null) mParent.onItemRangeRemoved(this, index, count);
     }
 
     protected void notifyItemChanged(int index) {

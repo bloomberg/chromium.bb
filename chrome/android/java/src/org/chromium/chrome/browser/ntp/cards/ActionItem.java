@@ -41,7 +41,6 @@ class ActionItem extends OptionalLeaf {
     private boolean mImpressionTracked;
 
     public ActionItem(SuggestionsSection section) {
-        super(section);
         mCategoryInfo = section.getCategoryInfo();
         mParentSection = section;
     }

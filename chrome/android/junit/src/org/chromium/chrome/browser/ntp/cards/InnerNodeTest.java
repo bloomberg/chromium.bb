@@ -6,10 +6,18 @@ package org.chromium.chrome.browser.ntp.cards;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+
+import android.support.annotation.Nullable;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -39,26 +47,15 @@ public class InnerNodeTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        mInnerNode = spy(new InnerNode());
 
-        for (int i = 0; i < ITEM_COUNTS.length; i++) {
-            TreeNode child = mock(TreeNode.class);
-            when(child.getItemCount()).thenReturn(ITEM_COUNTS[i]);
+        for (int childItemCount : ITEM_COUNTS) {
+            TreeNode child = makeDummyNode(childItemCount);
             mChildren.add(child);
+            mInnerNode.addChild(child);
         }
-        mInnerNode = new InnerNode(mParent) {
-            @Override
-            protected List<TreeNode> getChildren() {
-                return mChildren;
-            }
-        };
-    }
 
-    @Test
-    public void testInit() {
-        mInnerNode.init();
-        for (TreeNode child : mChildren) {
-            verify(child).init();
-        }
+        mInnerNode.setParent(mParent);
     }
 
     @Test
@@ -112,37 +109,36 @@ public class InnerNodeTest {
     }
 
     @Test
-    public void testDidAddChild() {
-        TreeNode child = mock(TreeNode.class);
-        when(child.getItemCount()).thenReturn(23);
-        mChildren.add(3, child);
-        mInnerNode.didAddChild(child);
+    public void testAddChild() {
+        final int itemCountBefore = mInnerNode.getItemCount();
 
-        // The child should have been initialized and the parent notified about the added items.
-        verify(child).init();
-        verify(mParent).onItemRangeInserted(mInnerNode, 6, 23);
+        TreeNode child = makeDummyNode(23);
+        mInnerNode.addChild(child);
 
-        TreeNode child2 = mock(TreeNode.class);
-        when(child2.getItemCount()).thenReturn(0);
-        mChildren.add(4, child2);
-        mInnerNode.didAddChild(child2);
-        verify(child2).init();
+        // The child should have been initialized and the parent hierarchy notified about it.
+        verify(child).setParent(eq(mInnerNode));
+        verify(mParent).onItemRangeInserted(mInnerNode, itemCountBefore, 23);
+
+        TreeNode child2 = makeDummyNode(0);
+        mInnerNode.addChild(child2);
 
         // The empty child should have been initialized, but there should be no change
         // notifications.
+        verify(child2).setParent(eq(mInnerNode));
         verifyNoMoreInteractions(mParent);
     }
 
     @Test
-    public void testWillRemoveChild() {
-        mInnerNode.willRemoveChild(mChildren.get(4));
-        mChildren.remove(4);
+    public void testRemoveChild() {
+        TreeNode child = mChildren.get(4);
+        mInnerNode.removeChild(child);
 
         // The parent should have been notified about the removed items.
         verify(mParent).onItemRangeRemoved(mInnerNode, 6, 3);
 
-        mInnerNode.willRemoveChild(mChildren.get(3));
-        mChildren.remove(3);
+        reset(mParent); // Prepare for the #verifyNoMoreInteractions() call below.
+        TreeNode child2 = mChildren.get(3);
+        mInnerNode.removeChild(child2);
 
         // There should be no change notifications about the empty child.
         verifyNoMoreInteractions(mParent);
@@ -159,6 +155,79 @@ public class InnerNodeTest {
         verify(mParent).onItemRangeChanged(mInnerNode, 5, 9000);
         verify(mParent).onItemRangeChanged(mInnerNode, 6, 6502);
         verify(mParent).onItemRangeRemoved(mInnerNode, 11, 8086);
+    }
+
+    /**
+     * Tests that {@link ChildNode} sends the change notifications AFTER its child list is modified.
+     */
+    @Test
+    public void testChangeNotificationsTiming() {
+        // The MockModeParent will enforce a given number of items in the child when notified.
+        MockNodeParent parent = spy(new MockNodeParent());
+        InnerNode rootNode = new InnerNode();
+
+        TreeNode[] children = {makeDummyNode(3), makeDummyNode(5)};
+        rootNode.addChildren(children);
+        rootNode.setParent(parent);
+
+        assertThat(rootNode.getItemCount(), is(8));
+        verifyZeroInteractions(parent); // Before the parent is set, no notifications.
+
+        parent.expectItemCount(24);
+        rootNode.addChildren(makeDummyNode(7), makeDummyNode(9)); // Should bundle the insertions.
+        verify(parent).onItemRangeInserted(eq(rootNode), eq(8), eq(16));
+
+        parent.expectItemCount(28);
+        rootNode.addChild(makeDummyNode(4));
+        verify(parent).onItemRangeInserted(eq(rootNode), eq(24), eq(4));
+
+        parent.expectItemCount(23);
+        rootNode.removeChild(children[1]);
+        verify(parent).onItemRangeRemoved(eq(rootNode), eq(3), eq(5));
+
+        parent.expectItemCount(0);
+        rootNode.removeChildren(); // Bundles the removals in a single change notification
+        verify(parent).onItemRangeRemoved(eq(rootNode), eq(0), eq(23));
+    }
+
+    /**
+     * Implementation of {@link NodeParent} that checks the item count from the node that
+     * sends notifications against defined expectations. Fails on unexpected calls.
+     */
+    private static class MockNodeParent implements NodeParent {
+        @Nullable
+        private Integer mNextExpectedItemCount;
+
+        public void expectItemCount(int count) {
+            mNextExpectedItemCount = count;
+        }
+
+        @Override
+        public void onItemRangeChanged(TreeNode child, int index, int count) {
+            checkCount(child);
+        }
+
+        @Override
+        public void onItemRangeInserted(TreeNode child, int index, int count) {
+            checkCount(child);
+        }
+
+        @Override
+        public void onItemRangeRemoved(TreeNode child, int index, int count) {
+            checkCount(child);
+        }
+
+        private void checkCount(TreeNode child) {
+            if (mNextExpectedItemCount == null) fail("Unexpected call");
+            assertThat(child.getItemCount(), is(mNextExpectedItemCount));
+            mNextExpectedItemCount = null;
+        }
+    }
+
+    private static TreeNode makeDummyNode(int itemCount) {
+        TreeNode node = mock(TreeNode.class);
+        doReturn(itemCount).when(node).getItemCount();
+        return node;
     }
 }
 

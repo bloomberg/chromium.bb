@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
-import android.support.annotation.CallSuper;
-
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
 /**
@@ -17,8 +15,7 @@ interface TreeNode {
      * node has been added to the tree, i.e. when it is in the list of its parent's children.
      * The node may notify its parent about changes that happen during initialization.
      */
-    @CallSuper
-    void init();
+    void setParent(NodeParent parent);
 
     /**
      * Returns the number of items under this subtree. This method may be called

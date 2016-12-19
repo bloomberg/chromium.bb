@@ -11,9 +11,6 @@ package org.chromium.chrome.browser.ntp.cards;
  * @see ProgressViewHolder
  */
 class ProgressItem extends OptionalLeaf {
-    protected ProgressItem(NodeParent parent) {
-        super(parent);
-    }
 
     @Override
     @ItemViewType

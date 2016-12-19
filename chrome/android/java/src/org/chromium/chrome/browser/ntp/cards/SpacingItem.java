@@ -41,4 +41,9 @@ public class SpacingItem extends Leaf {
     protected void onBindViewHolder(NewTabPageViewHolder holder) {
         // Nothing to do.
     }
+
+    /** Schedules a recalculation of the space occupied by the item. */
+    public void refresh() {
+        notifyItemChanged(0);
+    }
 }

@@ -11,7 +11,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
  * If the leaf is not to be a permanent member of the tree, see {@link OptionalLeaf} for an
  * implementation that will take care of hiding or showing the item.
  */
-public abstract class Leaf implements TreeNode {
+public abstract class Leaf extends ChildNode {
     @Override
     public int getItemCount() {
         return 1;
@@ -41,9 +41,6 @@ public abstract class Leaf implements TreeNode {
     public int getDismissSiblingPosDelta(int position) {
         return 0;
     }
-
-    @Override
-    public void init() {}
 
     /**
      * Display the data for this item.

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp.cards;
 
 import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
@@ -15,7 +16,6 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetsConfig;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,27 +29,14 @@ public class SectionList extends InnerNode implements SuggestionsSource.Observer
 
     /** Maps suggestion categories to sections, with stable iteration ordering. */
     private final Map<Integer, SuggestionsSection> mSections = new LinkedHashMap<>();
-    private final List<TreeNode> mChildren = new ArrayList<>();
     private final NewTabPageManager mNewTabPageManager;
     private final OfflinePageBridge mOfflinePageBridge;
 
-    public SectionList(NodeParent parent, NewTabPageManager newTabPageManager,
-            OfflinePageBridge offlinePageBridge) {
-        super(parent);
+    public SectionList(NewTabPageManager newTabPageManager, OfflinePageBridge offlinePageBridge) {
         mNewTabPageManager = newTabPageManager;
         mNewTabPageManager.getSuggestionsSource().setObserver(this);
         mOfflinePageBridge = offlinePageBridge;
-    }
-
-    @Override
-    public void init() {
-        super.init();
         resetSections(/* alwaysAllowEmptySections = */ false);
-    }
-
-    @Override
-    protected List<TreeNode> getChildren() {
-        return mChildren;
     }
 
     /**
@@ -58,8 +45,7 @@ public class SectionList extends InnerNode implements SuggestionsSource.Observer
      *     they are empty, even when they are normally not.
      */
     public void resetSections(boolean alwaysAllowEmptySections) {
-        mSections.clear();
-        mChildren.clear();
+        removeAllSections();
 
         SuggestionsSource suggestionsSource = mNewTabPageManager.getSuggestionsSource();
         int[] categories = suggestionsSource.getCategories();
@@ -105,10 +91,9 @@ public class SectionList extends InnerNode implements SuggestionsSource.Observer
 
         // Create the section if needed.
         if (section == null) {
-            section = new SuggestionsSection(this, mNewTabPageManager, mOfflinePageBridge, info);
+            section = new SuggestionsSection(mNewTabPageManager, mOfflinePageBridge, info);
             mSections.put(category, section);
-            mChildren.add(section);
-            didAddChild(section);
+            addChild(section);
         }
 
         // Add the new suggestions.
@@ -229,10 +214,15 @@ public class SectionList extends InnerNode implements SuggestionsSource.Observer
         removeSection(section);
     }
 
-    private void removeSection(SuggestionsSection section) {
+    @VisibleForTesting
+    void removeSection(SuggestionsSection section) {
         mSections.remove(section.getCategory());
-        willRemoveChild(section);
-        mChildren.remove(section);
+        removeChild(section);
+    }
+
+    private void removeAllSections() {
+        mSections.clear();
+        removeChildren();
     }
 
     /**

@@ -25,9 +25,6 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * A class that handles merging above the fold elements and below the fold cards into an adapter
  * that will be used to back the NTP RecyclerView. The first element in the adapter should always be
@@ -43,10 +40,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     private final ItemTouchCallbacks mItemTouchCallbacks = new ItemTouchCallbacks();
     private NewTabPageRecyclerView mRecyclerView;
 
-    /**
-     * List of all child nodes (which can themselves contain multiple child nodes).
-     */
-    private final List<TreeNode> mChildren;
     private final InnerNode mRoot;
 
     private final AboveTheFoldItem mAboveTheFold = new AboveTheFoldItem();
@@ -132,23 +125,18 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
         mNewTabPageManager = manager;
         mAboveTheFoldView = aboveTheFoldView;
         mUiConfig = uiConfig;
-        mRoot = new InnerNode(this) {
-            @Override
-            protected List<TreeNode> getChildren() {
-                return mChildren;
-            }
-        };
+        mRoot = new InnerNode();
 
-        mSections = new SectionList(mRoot, mNewTabPageManager, offlinePageBridge);
-        mSigninPromo = new SignInPromo(mRoot, mNewTabPageManager);
-        mAllDismissed = new AllDismissedItem(mRoot);
-        mFooter = new Footer(mRoot);
+        mSections = new SectionList(mNewTabPageManager, offlinePageBridge);
+        mSigninPromo = new SignInPromo(mNewTabPageManager);
+        mAllDismissed = new AllDismissedItem();
+        mFooter = new Footer();
 
-        mChildren = Arrays.asList(
+        mRoot.addChildren(
                 mAboveTheFold, mSections, mSigninPromo, mAllDismissed, mFooter, mBottomSpacer);
-        mRoot.init();
 
         updateAllDismissedVisibility();
+        mRoot.setParent(this);
     }
 
     /** Returns callbacks to configure the interactions with the RecyclerView's items. */
@@ -251,7 +239,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     public void onItemRangeInserted(TreeNode child, int itemPosition, int itemCount) {
         assert child == mRoot;
         notifyItemRangeInserted(itemPosition, itemCount);
-        notifyItemChanged(getItemCount() - 1); // Refresh the spacer too.
+        mBottomSpacer.refresh();
 
         updateAllDismissedVisibility();
     }
@@ -260,7 +248,7 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     public void onItemRangeRemoved(TreeNode child, int itemPosition, int itemCount) {
         assert child == mRoot;
         notifyItemRangeRemoved(itemPosition, itemCount);
-        notifyItemChanged(getItemCount() - 1); // Refresh the spacer too.
+        mBottomSpacer.refresh();
 
         updateAllDismissedVisibility();
     }
