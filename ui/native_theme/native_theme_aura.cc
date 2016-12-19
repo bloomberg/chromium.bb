@@ -32,15 +32,6 @@ namespace {
 // this painting code are defined in overlay_scrollbar_constants_aura.h.
 constexpr int kOverlayScrollbarStrokeWidth = 1;
 constexpr int kOverlayScrollbarMinimumLength = 12;
-constexpr SkAlpha kOverlayScrollbarAlphaNormal = 0x4D;
-constexpr SkAlpha kOverlayScrollbarAlphaHovered = 0x80;
-constexpr SkAlpha kOverlayScrollbarAlphaPressed = 0x80;
-
-// Indexed by ScrollbarOverlayColorTheme.
-constexpr SkColor kOverlayScrollbarThumbColor[] = {SK_ColorBLACK,
-                                                   SK_ColorWHITE};
-constexpr SkColor kOverlayScrollbarStrokeColor[] = {SK_ColorWHITE,
-                                                    SK_ColorBLACK};
 
 const SkColor kTrackColor = SkColorSetRGB(0xF1, 0xF1, 0xF1);
 
@@ -195,35 +186,54 @@ void NativeThemeAura::PaintScrollbarThumb(
   TRACE_EVENT0("blink", "NativeThemeAura::PaintScrollbarThumb");
 
   SkAlpha thumb_alpha = SK_AlphaTRANSPARENT;
-  const bool overlay = use_overlay_scrollbars_;
-  switch (state) {
-    case NativeTheme::kDisabled:
-      thumb_alpha = SK_AlphaTRANSPARENT;
-      break;
-    case NativeTheme::kHovered:
-      thumb_alpha = overlay ? kOverlayScrollbarAlphaHovered : 0x4D;
-      break;
-    case NativeTheme::kNormal:
-      thumb_alpha = overlay ? kOverlayScrollbarAlphaNormal : 0x33;
-      break;
-    case NativeTheme::kPressed:
-      thumb_alpha = overlay ? kOverlayScrollbarAlphaPressed : 0x80;
-      break;
-    case NativeTheme::kNumStates:
-      NOTREACHED();
-      break;
-  }
-
   gfx::Rect thumb_rect(rect);
   SkColor thumb_color;
-  if (overlay) {
+
+  if (use_overlay_scrollbars_) {
+    // Constants used for painting overlay scrollbar thumb.
+    constexpr SkAlpha kOverlayScrollbarFillAlphaNormal = 0x4D;
+    constexpr SkAlpha kOverlayScrollbarFillAlphaHovered = 0x80;
+    constexpr SkAlpha kOverlayScrollbarFillAlphaPressed = 0x80;
+    constexpr SkAlpha kOverlayScrollbarStrokeAlphaNormal = 0x4D;
+    constexpr SkAlpha kOverlayScrollbarStrokeAlphaHovered = 0x58;
+    constexpr SkAlpha kOverlayScrollbarStrokeAlphaPressed = 0x80;
+
+    // Indexed by ScrollbarOverlayColorTheme.
+    constexpr SkColor kOverlayScrollbarThumbColor[] = {SK_ColorBLACK,
+                                                       SK_ColorWHITE};
+    constexpr SkColor kOverlayScrollbarStrokeColor[] = {SK_ColorWHITE,
+                                                        SK_ColorBLACK};
+
     thumb_color = kOverlayScrollbarThumbColor[theme];
+
+    SkAlpha stroke_alpha = SK_AlphaTRANSPARENT;
+    switch (state) {
+      case NativeTheme::kDisabled:
+        thumb_alpha = SK_AlphaTRANSPARENT;
+        stroke_alpha = SK_AlphaTRANSPARENT;
+        break;
+      case NativeTheme::kHovered:
+        thumb_alpha = kOverlayScrollbarFillAlphaHovered;
+        stroke_alpha = kOverlayScrollbarStrokeAlphaHovered;
+        break;
+      case NativeTheme::kNormal:
+        thumb_alpha = kOverlayScrollbarFillAlphaNormal;
+        stroke_alpha = kOverlayScrollbarStrokeAlphaNormal;
+        break;
+      case NativeTheme::kPressed:
+        thumb_alpha = kOverlayScrollbarFillAlphaPressed;
+        stroke_alpha = kOverlayScrollbarStrokeAlphaPressed;
+        break;
+      case NativeTheme::kNumStates:
+        NOTREACHED();
+        break;
+    }
 
     // In overlay mode, draw a stroke (border).
     constexpr int kStrokeWidth = kOverlayScrollbarStrokeWidth;
     SkPaint paint;
     paint.setColor(
-        SkColorSetA(kOverlayScrollbarStrokeColor[theme], thumb_alpha));
+        SkColorSetA(kOverlayScrollbarStrokeColor[theme], stroke_alpha));
     paint.setStyle(SkPaint::kStroke_Style);
     paint.setStrokeWidth(kStrokeWidth);
 
@@ -235,6 +245,23 @@ void NativeThemeAura::PaintScrollbarThumb(
     // Inset the all the edges edges so we fill-in the stroke below.
     thumb_rect.Inset(kStrokeWidth, kStrokeWidth);
   } else {
+    switch (state) {
+      case NativeTheme::kDisabled:
+        thumb_alpha = SK_AlphaTRANSPARENT;
+        break;
+      case NativeTheme::kHovered:
+        thumb_alpha = 0x4D;
+        break;
+      case NativeTheme::kNormal:
+        thumb_alpha = 0x33;
+        break;
+      case NativeTheme::kPressed:
+        thumb_alpha = 0x80;
+        break;
+      case NativeTheme::kNumStates:
+        NOTREACHED();
+        break;
+    }
     // If there are no scrollbuttons then provide some padding so that the thumb
     // doesn't touch the top of the track.
     const int kThumbPadding = 2;
