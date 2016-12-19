@@ -29,3 +29,52 @@ source_set("crash_report") {
     "//ios/web",
   ]
 }
+
+source_set("crash_report_internal") {
+  sources = [
+    "crash_report_helper.h",
+    "crash_report_helper.mm",
+    "crash_restore_helper.h",
+    "crash_restore_helper.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/infobars/core",
+    "//components/sessions",
+    "//components/strings",
+    "//components/upload_list",
+    "//ios/chrome/app/theme",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/crash_report",
+    "//ios/chrome/browser/sessions",
+    "//ios/chrome/browser/sessions:sessions_internal",
+    "//ios/chrome/browser/tabs",
+    "//ios/web",
+    "//net",
+    "//ui/base",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "breakpad_helper_unittest.mm",
+    "crash_restore_helper_unittest.mm",
+  ]
+  deps = [
+    ":crash_report_internal",
+    "//base",
+    "//breakpad:client",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/crash_report",
+    "//ios/chrome/browser/sessions:sessions_internal",
+    "//ios/chrome/test/base",
+    "//ios/chrome/test/ocmock",
+    "//ios/web:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
+}

@@ -27,6 +27,8 @@ group("all") {
   } else {
     deps = [
       # List all the targets that need to be build on iOS by default.
+      "//ios/chrome/app:chrome",
+      "//ios/chrome/app:chrome_clean_skeleton",
       "//ios/web/shell:ios_web_shell",
 
       # List all the test targets that need to be build on iOS by default.

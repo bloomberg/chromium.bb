@@ -50,3 +50,54 @@ source_set("unit_tests") {
     "//url",
   ]
 }
+
+source_set("native_app_launcher_internal") {
+  sources = [
+    "native_app_navigation_controller.h",
+    "native_app_navigation_controller.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/infobars/core",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/infobars",
+    "//ios/chrome/browser/native_app_launcher",
+    "//ios/chrome/browser/net",
+    "//ios/chrome/browser/tabs",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/native_app_launcher",
+    "//ios/public/provider/chrome/browser/signin",
+    "//ios/public/provider/chrome/browser/ui",
+    "//ios/web",
+    "//net",
+    "//ui/base",
+    "//url",
+  ]
+  libs = [ "StoreKit.framework" ]
+}
+
+source_set("unit_tests_internal") {
+  testonly = true
+  sources = [
+    "native_app_navigation_controller_unittest.mm",
+  ]
+  deps = [
+    ":native_app_launcher_internal",
+    "//base",
+    "//base/test:test_support",
+    "//components/infobars/core",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/native_app_launcher",
+    "//ios/chrome/test:test_support",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser:test_support",
+    "//ios/public/provider/chrome/browser/native_app_launcher:test_support",
+    "//ios/public/provider/chrome/browser/signin:test_support",
+    "//ios/web",
+    "//ios/web:test_support",
+    "//net:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//url",
+  ]
+}

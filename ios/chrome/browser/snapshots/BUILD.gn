@@ -41,3 +41,19 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 }
+
+source_set("snapshots_internal") {
+  sources = [
+    "snapshot_overlay_provider.h",
+    "web_controller_snapshot_helper.h",
+    "web_controller_snapshot_helper.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/snapshots",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui",
+    "//ios/web",
+  ]
+  libs = [ "UIKit.framework" ]
+}

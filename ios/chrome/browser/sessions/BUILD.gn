@@ -24,3 +24,76 @@ source_set("sessions") {
     "//url",
   ]
 }
+
+source_set("sessions_internal") {
+  sources = [
+    "NSCoder+Compatibility.h",
+    "NSCoder+Compatibility.mm",
+    "session_service.h",
+    "session_service.mm",
+    "session_util.h",
+    "session_util.mm",
+    "session_window.h",
+    "session_window.mm",
+    "tab_restore_service_delegate_impl_ios.h",
+    "tab_restore_service_delegate_impl_ios.mm",
+    "tab_restore_service_delegate_impl_ios_factory.h",
+    "tab_restore_service_delegate_impl_ios_factory.mm",
+    "tab_restore_service_delegate_provider_impl.h",
+    "tab_restore_service_delegate_provider_impl.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/keyed_service/core",
+    "//components/keyed_service/ios",
+    "//components/sessions",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui:browser_list",
+    "//ios/public/provider/chrome/browser/sessions",
+    "//ios/web",
+    "//net",
+  ]
+  libs = [ "UIKit.framework" ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test_session_service.h",
+    "test_session_service.mm",
+  ]
+  deps = [
+    ":sessions_internal",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "session_service_unittest.mm",
+    "session_window_unittest.mm",
+  ]
+  deps = [
+    ":resources_unit_tests",
+    ":sessions_internal",
+    "//base",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/web",
+    "//ios/web:test_support",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
+}
+
+bundle_data("resources_unit_tests") {
+  visibility = [ ":unit_tests" ]
+  testonly = true
+  sources = [
+    "//ios/chrome/test/data/sessions/corrupted.plist",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/ios/chrome/test/data/sessions/{{source_file_part}}",
+  ]
+}

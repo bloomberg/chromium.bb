@@ -79,3 +79,80 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 }
+
+source_set("metrics_internal") {
+  sources = [
+    "first_user_action_recorder.cc",
+    "first_user_action_recorder.h",
+    "new_tab_page_uma.h",
+    "new_tab_page_uma.mm",
+    "size_class_recorder.h",
+    "size_class_recorder.mm",
+    "size_class_recorder_private.h",
+    "tab_usage_recorder.h",
+    "tab_usage_recorder.mm",
+    "tab_usage_recorder_delegate.h",
+  ]
+  deps = [
+    "//base",
+    "//components/google/core/browser",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/metrics",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui:browser_list",
+    "//ios/web",
+    "//ui/base:base",
+    "//url",
+  ]
+  libs = [ "UIKit.framework" ]
+}
+
+source_set("unit_tests_internal") {
+  testonly = true
+  sources = [
+    "first_user_action_recorder_unittest.cc",
+    "size_class_recorder_unittest.mm",
+    "tab_usage_recorder_unittest.mm",
+  ]
+  deps = [
+    ":metrics_internal",
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/browser/metrics",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui",
+    "//ios/testing:ocmock_support",
+    "//ios/web",
+    "//ios/web:test_support",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
+}
+
+source_set("eg_tests") {
+  testonly = true
+  sources = [
+    "tab_usage_recorder_egtest.mm",
+  ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//components/strings",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/metrics:metrics_internal",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/settings",
+    "//ios/chrome/browser/ui/toolbar",
+    "//ios/chrome/browser/ui/tools_menu",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing:ios_test_support",
+    "//ios/third_party/earl_grey",
+    "//ios/web:test_support",
+    "//ui/base",
+  ]
+  libs = [ "XCTest.framework" ]
+}

@@ -48,3 +48,154 @@ bundle_data("resources") {
     "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }
+
+source_set("tab_switcher") {
+  sources = [
+    "session_changes.h",
+    "session_changes.mm",
+    "tab_model_snapshot.h",
+    "tab_model_snapshot.mm",
+    "tab_switcher.h",
+    "tab_switcher_button.h",
+    "tab_switcher_button.mm",
+    "tab_switcher_cache.h",
+    "tab_switcher_cache.mm",
+    "tab_switcher_controller.h",
+    "tab_switcher_controller.mm",
+    "tab_switcher_header_cell.h",
+    "tab_switcher_header_cell.mm",
+    "tab_switcher_header_view.h",
+    "tab_switcher_header_view.mm",
+    "tab_switcher_model.h",
+    "tab_switcher_model.mm",
+    "tab_switcher_model_private.h",
+    "tab_switcher_panel_cell.h",
+    "tab_switcher_panel_cell.mm",
+    "tab_switcher_panel_collection_view_layout.h",
+    "tab_switcher_panel_collection_view_layout.mm",
+    "tab_switcher_panel_controller.h",
+    "tab_switcher_panel_controller.mm",
+    "tab_switcher_panel_overlay_view.h",
+    "tab_switcher_panel_overlay_view.mm",
+    "tab_switcher_panel_view.h",
+    "tab_switcher_panel_view.mm",
+    "tab_switcher_session_cell_data.h",
+    "tab_switcher_session_cell_data.mm",
+    "tab_switcher_tab_strip_placeholder_view.h",
+    "tab_switcher_tab_strip_placeholder_view.mm",
+    "tab_switcher_transition_context.h",
+    "tab_switcher_transition_context.mm",
+    "tab_switcher_view.h",
+    "tab_switcher_view.mm",
+  ]
+  deps = [
+    ":utils",
+    "//base",
+    "//components/browser_sync",
+    "//components/sessions",
+    "//components/signin/core/browser",
+    "//components/sync",
+    "//components/sync_sessions",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/app/theme",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/favicon",
+    "//ios/chrome/browser/metrics:metrics_internal",
+    "//ios/chrome/browser/sessions",
+    "//ios/chrome/browser/sessions:sessions_internal",
+    "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/sync",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/colors",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/keyboard",
+    "//ios/chrome/browser/ui/material_components",
+    "//ios/chrome/browser/ui/ntp/recent_tabs/views",
+    "//ios/chrome/browser/ui/sync",
+    "//ios/chrome/browser/ui/tab_switcher:resources",
+    "//ios/chrome/browser/ui/tabs",
+    "//ios/chrome/browser/ui/toolbar",
+    "//ios/chrome/common:ios_app_bundle_id_prefix_header",
+    "//ios/public/provider/chrome/browser",
+    "//ios/third_party/material_components_ios",
+    "//ios/third_party/material_roboto_font_loader_ios",
+    "//ios/third_party/material_text_accessibility_ios",
+    "//ios/web",
+    "//ui/base",
+    "//ui/gfx",
+    "//url",
+  ]
+  public_deps = [
+    "//ios/chrome/browser/ui/ntp/recent_tabs",
+  ]
+  allow_circular_includes_from = [ "//ios/chrome/browser/ui/tabs" ]
+  libs = [
+    "QuartzCore.framework",
+    "UIKit.framework",
+  ]
+}
+
+source_set("utils") {
+  sources = [
+    "tab_switcher_utils.h",
+    "tab_switcher_utils.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/browser_sync",
+    "//components/sync",
+    "//components/sync_sessions",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/app/theme",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/favicon",
+    "//ios/chrome/browser/sync",
+    "//ui/base",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "tab_model_snapshot_unittest.mm",
+    "tab_switcher_model_unittest.mm",
+    "tab_switcher_utils_unittest.mm",
+  ]
+  deps = [
+    ":tab_switcher",
+    ":utils",
+    "//base",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui/ntp/recent_tabs",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
+}
+
+source_set("eg_tests") {
+  testonly = true
+  sources = [
+    "tab_switcher_controller_egtest.mm",
+  ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/app:app_internal",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/tools_menu",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/third_party/earl_grey",
+    "//ui/base",
+  ]
+  libs = [
+    "UIKit.framework",
+    "XCTest.framework",
+  ]
+}

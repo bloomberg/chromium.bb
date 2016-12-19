@@ -49,13 +49,45 @@ source_set("translate") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "js_language_detection_manager_unittest.mm",
     "translate_service_ios_unittest.cc",
   ]
   deps = [
     ":translate",
+    "//base",
+    "//base/test:test_support",
+    "//components/translate/ios/browser",
     "//ios/chrome/browser",
+    "//ios/chrome/browser/web:test_support",
+    "//ios/chrome/common",
     "//ios/public/provider/chrome/browser:test_support",
+    "//ios/web",
+    "//ios/web:test_support",
     "//testing/gtest",
     "//url",
   ]
+}
+
+source_set("eg_tests") {
+  testonly = true
+  sources = [
+    "translate_egtest.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/strings",
+    "//components/translate/core/browser",
+    "//components/translate/core/common",
+    "//components/translate/ios/browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/translate",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing:ios_test_support",
+    "//ios/third_party/earl_grey",
+    "//ios/web:test_support",
+    "//net",
+    "//ui/base",
+  ]
+  libs = [ "XCTest.framework" ]
 }

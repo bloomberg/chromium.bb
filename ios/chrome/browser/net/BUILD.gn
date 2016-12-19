@@ -72,3 +72,19 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 }
+
+source_set("eg_tests") {
+  testonly = true
+  sources = [
+    "cookies_egtest.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/third_party/earl_grey",
+    "//ios/web:test_support",
+    "//url",
+  ]
+  libs = [ "XCTest.framework" ]
+}

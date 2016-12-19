@@ -24,3 +24,107 @@ bundle_data("resources") {
     "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }
+
+source_set("reading_list") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "number_badge_view.h",
+    "number_badge_view.mm",
+    "offline_page_native_content.h",
+    "offline_page_native_content.mm",
+    "reading_list_collection_view_item.h",
+    "reading_list_collection_view_item.mm",
+    "reading_list_menu_notification_delegate.h",
+    "reading_list_menu_notifier.h",
+    "reading_list_menu_notifier.mm",
+    "reading_list_side_swipe_provider.h",
+    "reading_list_side_swipe_provider.mm",
+    "reading_list_toolbar.h",
+    "reading_list_toolbar.mm",
+    "reading_list_view_controller.h",
+    "reading_list_view_controller.mm",
+    "reading_list_view_controller_builder.h",
+    "reading_list_view_controller_builder.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/prefs",
+    "//components/reading_list/core",
+    "//components/strings",
+    "//components/url_formatter",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/favicon",
+    "//ios/chrome/browser/reading_list",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/alert_coordinator",
+    "//ios/chrome/browser/ui/collection_view/cells",
+    "//ios/chrome/browser/ui/colors",
+    "//ios/chrome/browser/ui/material_components",
+    "//ios/chrome/browser/ui/reading_list:resources",
+    "//ios/chrome/browser/ui/side_swipe",
+    "//ios/chrome/browser/ui/static_content",
+    "//ios/chrome/common",
+    "//ios/third_party/material_components_ios",
+    "//ios/third_party/material_roboto_font_loader_ios",
+    "//ios/web",
+    "//net",
+    "//ui/base",
+    "//url",
+  ]
+  public_deps = [
+    "//components/reading_list/ios",
+    "//ios/chrome/browser/ui/collection_view",
+  ]
+  allow_circular_includes_from = [ "//ios/chrome/browser/ui/side_swipe" ]
+  libs = [ "UIKit.framework" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "offline_page_native_content_unittest.mm",
+    "reading_list_view_controller_unittest.mm",
+  ]
+  deps = [
+    ":reading_list",
+    "//base",
+    "//components/favicon/core",
+    "//components/prefs",
+    "//components/reading_list/ios",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/favicon",
+    "//ios/chrome/browser/reading_list",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/static_content",
+    "//ios/web",
+    "//ios/web:test_support",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
+}
+
+source_set("eg_tests") {
+  testonly = true
+  sources = [
+    "reading_list_egtest.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/reading_list/ios",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/reading_list",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing:ios_test_support",
+    "//ios/third_party/earl_grey",
+  ]
+  libs = [
+    "UIKit.framework",
+    "XCTest.framework",
+  ]
+}

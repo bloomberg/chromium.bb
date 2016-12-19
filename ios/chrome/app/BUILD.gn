@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/ios/rules.gni")
+import("//build/config/mac/base_rules.gni")
 import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
@@ -29,14 +30,28 @@ source_set("app") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "chrome_app_startup_parameters_unittest.mm",
+    "chrome_overlay_window_testing.h",
     "deferred_initialization_runner_unittest.mm",
+    "main_application_delegate_unittest.mm",
+    "main_controller_unittest.mm",
     "safe_mode_util_unittest.cc",
   ]
   deps = [
     ":app",
+    ":app_internal",
     "//base",
     "//base/test:test_support",
+    "//ios/chrome/app/application_delegate:application_delegate_internal",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/common/app_group",
+    "//ios/chrome/test/base",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/distribution",
     "//testing/gtest",
+    "//third_party/ocmock",
+    "//url",
   ]
 }
 
@@ -95,4 +110,298 @@ compile_plist("entitlements") {
   }
   substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
   output_name = "$target_gen_dir/$chromium_short_name.entitlements"
+}
+
+source_set("app_internal") {
+  sources = [
+    "application_mode.h",
+    "chrome_app_startup_parameters.h",
+    "chrome_app_startup_parameters.mm",
+    "chrome_overlay_window.h",
+    "chrome_overlay_window.mm",
+    "main_application_delegate.h",
+    "main_application_delegate.mm",
+    "main_application_delegate_testing.h",
+    "main_controller.h",
+    "main_controller.mm",
+    "main_controller_private.h",
+    "memory_monitor.h",
+    "memory_monitor.mm",
+    "startup_tasks.h",
+    "startup_tasks.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//components/bookmarks/browser",
+    "//components/browser_sync",
+    "//components/browsing_data/core",
+    "//components/component_updater",
+    "//components/content_settings/core/browser",
+    "//components/crash/core/common",
+    "//components/favicon/core",
+    "//components/favicon_base",
+    "//components/handoff",
+    "//components/history/core/browser",
+    "//components/infobars/core",
+    "//components/keyed_service/core",
+    "//components/keyed_service/ios",
+    "//components/metrics",
+    "//components/prefs",
+    "//components/proxy_config",
+    "//components/reading_list/core",
+    "//components/signin/core/browser",
+    "//components/suggestions",
+    "//components/sync",
+    "//components/url_formatter",
+    "//components/web_resource",
+    "//ios/chrome/app",
+    "//ios/chrome/app:tests_hook",
+    "//ios/chrome/app/application_delegate",
+    "//ios/chrome/app/application_delegate:application_delegate_internal",
+    "//ios/chrome/app/safe_mode",
+    "//ios/chrome/app/spotlight",
+    "//ios/chrome/app/startup",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser:browser_internal",
+    "//ios/chrome/browser/bookmarks",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/browser_state:browser_state_impl",
+    "//ios/chrome/browser/browsing_data",
+    "//ios/chrome/browser/browsing_data:browsing_data_internal",
+    "//ios/chrome/browser/content_settings",
+    "//ios/chrome/browser/crash_report",
+    "//ios/chrome/browser/crash_report:crash_report_internal",
+    "//ios/chrome/browser/favicon",
+    "//ios/chrome/browser/first_run",
+    "//ios/chrome/browser/geolocation",
+    "//ios/chrome/browser/geolocation:geolocation_internal",
+    "//ios/chrome/browser/history",
+    "//ios/chrome/browser/memory",
+    "//ios/chrome/browser/metrics",
+    "//ios/chrome/browser/metrics:metrics_internal",
+    "//ios/chrome/browser/native_app_launcher:native_app_launcher_internal",
+    "//ios/chrome/browser/net",
+    "//ios/chrome/browser/omaha",
+    "//ios/chrome/browser/prefs",
+    "//ios/chrome/browser/reading_list",
+    "//ios/chrome/browser/search_engines",
+    "//ios/chrome/browser/share_extension",
+    "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/snapshots",
+    "//ios/chrome/browser/suggestions",
+    "//ios/chrome/browser/sync",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui:ui_internal",
+    "//ios/chrome/browser/ui/authentication",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/contextual_search",
+    "//ios/chrome/browser/ui/downloads",
+    "//ios/chrome/browser/ui/first_run",
+    "//ios/chrome/browser/ui/history",
+    "//ios/chrome/browser/ui/main",
+    "//ios/chrome/browser/ui/promos",
+    "//ios/chrome/browser/ui/settings",
+    "//ios/chrome/browser/ui/stack_view",
+    "//ios/chrome/browser/ui/tab_switcher",
+    "//ios/chrome/browser/ui/tabs",
+    "//ios/chrome/browser/ui/util",
+    "//ios/chrome/browser/ui/webui:webui_internal",
+    "//ios/chrome/browser/upgrade",
+    "//ios/chrome/browser/variations:ios_chrome_ui_string_overrider_factory",
+    "//ios/chrome/browser/voice",
+    "//ios/chrome/browser/web:web_internal",
+    "//ios/chrome/common",
+    "//ios/chrome/common/app_group",
+    "//ios/chrome/common/app_group:main_app",
+    "//ios/net",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/distribution",
+    "//ios/public/provider/chrome/browser/native_app_launcher",
+    "//ios/public/provider/chrome/browser/signin",
+    "//ios/public/provider/chrome/browser/user_feedback",
+    "//ios/third_party/material_roboto_font_loader_ios",
+    "//ios/web",
+    "//ios/web/public/app",
+    "//mojo/edk/system",
+    "//net",
+    "//skia",
+    "//ui/base",
+    "//ui/gfx",
+    "//ui/resources",
+    "//ui/strings:ui_strings",
+  ]
+
+  libs = [
+    "CoreSpotlight.framework",
+    "MediaPlayer.framework",
+  ]
+
+  allow_circular_includes_from =
+      [ "//ios/chrome/app/application_delegate:application_delegate_internal" ]
+}
+
+source_set("main") {
+  sources = [
+    "chrome_exe_main.mm",
+  ]
+
+  deps = [
+    ":app_internal",
+    "//base",
+    "//components/crash/core/common",
+    "//ios/chrome/app/startup",
+    "//ios/chrome/browser:browser_internal",
+    "//ios/chrome/browser/crash_report",
+    "//ios/chrome/common",
+    "//third_party/google_toolbox_for_mac",
+  ]
+}
+
+ios_app_bundle("chrome") {
+  output_name = chromium_short_name
+
+  entitlements_target = ":entitlements"
+  info_plist_target = ":info_plist"
+
+  deps = [
+    ":main",
+    "//ios/chrome/app:tests_fake_hook",
+  ]
+
+  bundle_deps = [ "//ios/chrome/app/resources" ]
+
+  if (ios_enable_today_extension && current_toolchain == default_toolchain) {
+    deps += [ ":today_extension_bundle" ]
+  }
+
+  if (ios_enable_share_extension && current_toolchain == default_toolchain) {
+    deps += [ ":share_extension_bundle" ]
+  }
+
+  extra_substitutions = [
+    "CHROMIUM_BUNDLE_ID=$chromium_bundle_id",
+    "CHROMIUM_HANDOFF_ID=$chromium_handoff_id",
+    "CHROMIUM_SHORT_NAME=$chromium_short_name",
+    "CHROMIUM_URL_SCHEME_1=$url_unsecure_scheme",
+    "CHROMIUM_URL_SCHEME_2=$url_secure_scheme",
+    "CHROMIUM_URL_SCHEME_3=$url_x_callback_scheme",
+    "CHROMIUM_URL_SCHEME_4=$url_channel_scheme",
+    "SSOAUTH_URL_SCHEME=$url_ssoauth_scheme",
+  ]
+
+  if (ios_encryption_export_compliance_code != "") {
+    extra_substitutions += [ "ENCRYPTION_EXPORT_COMPLIANCE_CODE=" +
+                             ios_encryption_export_compliance_code ]
+  }
+}
+
+if (ios_enable_today_extension && current_toolchain == default_toolchain) {
+  bundle_data("today_extension_bundle") {
+    public_deps = [
+      "//ios/chrome/today_extension",
+    ]
+    sources = [
+      "$root_out_dir/today_extension.appex",
+    ]
+    outputs = [
+      "{{bundle_plugins_dir}}/{{source_file_part}}",
+    ]
+  }
+}
+
+if (ios_enable_share_extension && current_toolchain == default_toolchain) {
+  bundle_data("share_extension_bundle") {
+    public_deps = [
+      "//ios/chrome/share_extension",
+    ]
+    sources = [
+      "$root_out_dir/share_extension.appex",
+    ]
+    outputs = [
+      "{{bundle_plugins_dir}}/{{source_file_part}}",
+    ]
+  }
+}
+
+# Clean Skeleton targets.
+ios_app_bundle("chrome_clean_skeleton") {
+  output_name = "CSChromium"
+
+  entitlements_path = "//ios/chrome/app/resources/Chrome.entitlements"
+  info_plist_target = ":info_plist"
+
+  deps = [
+    ":main_clean_skeleton",
+    "//ios/chrome/app:tests_fake_hook",
+  ]
+
+  bundle_deps = [ "//ios/chrome/app/resources" ]
+
+  extra_substitutions = [
+    "CHROMIUM_BUNDLE_ID=$chromium_bundle_id",
+    "CHROMIUM_SHORT_NAME=$chromium_short_name",
+    "CHROMIUM_URL_SCHEME_1=$url_unsecure_scheme",
+    "CHROMIUM_URL_SCHEME_2=$url_secure_scheme",
+    "CHROMIUM_URL_SCHEME_3=$url_x_callback_scheme",
+    "CHROMIUM_URL_SCHEME_4=$url_channel_scheme",
+  ]
+
+  if (ios_encryption_export_compliance_code != "") {
+    extra_substitutions += [ "ENCRYPTION_EXPORT_COMPLIANCE_CODE=" +
+                             ios_encryption_export_compliance_code ]
+  }
+}
+
+source_set("main_clean_skeleton") {
+  sources = [
+    "main.mm",
+  ]
+
+  deps = [
+    ":app_clean_skeleton",
+    "//base",
+    "//components/crash/core/common",
+    "//ios/chrome/app:app_internal",
+    "//ios/chrome/app/startup",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser:browser_internal",
+    "//ios/chrome/browser/crash_report",
+    "//ios/chrome/common",
+    "//third_party/google_toolbox_for_mac",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("application_state_clean_skeleton") {
+  sources = [
+    "application_phase.h",
+    "application_state.h",
+    "application_state.mm",
+    "application_step.h",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    "//base",
+    "//ios/chrome/browser:browser_clean_skeleton",
+  ]
+}
+
+source_set("app_clean_skeleton") {
+  sources = [
+    "app_delegate.h",
+    "app_delegate.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":application_state_clean_skeleton",
+    "//ios/chrome/app/steps",
+  ]
 }

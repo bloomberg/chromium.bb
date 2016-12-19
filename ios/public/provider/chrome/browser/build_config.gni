@@ -20,5 +20,5 @@ declare_args() {
 
   # Label of the target providing implementation for ChromeBrowserProvider.
   # Overridden when using the Google-internal repository to build Chrome on iOS.
-  ios_provider_target = "//ios/chrome/browser/providers:provider_factory"
+  ios_provider_target = "//ios/chrome/browser:downstream_provider_factory"
 }

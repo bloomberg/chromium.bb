@@ -22,14 +22,33 @@ source_set("elements") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "activity_overlay_coordinator_unittest.mm",
     "selector_coordinator_unittest.mm",
     "selector_picker_view_controller_unittest.mm",
   ]
   deps = [
     ":elements",
+    ":elements_internal",
     "//base",
     "//base/test:test_support",
     "//testing/gtest",
     "//third_party/ocmock",
   ]
+}
+
+source_set("elements_internal") {
+  sources = [
+    "activity_overlay_coordinator.h",
+    "activity_overlay_coordinator.mm",
+    "activity_overlay_view_controller.h",
+    "activity_overlay_view_controller.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/material_components",
+    "//ios/third_party/material_components_ios",
+  ]
+  libs = [ "UIKit.framework" ]
 }
