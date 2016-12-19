@@ -142,15 +142,11 @@ class ContentSuggestionsProvider {
   virtual void ClearDismissedSuggestionsForDebugging(Category category) = 0;
 
  protected:
-  ContentSuggestionsProvider(Observer* observer,
-                             CategoryFactory* category_factory);
+  ContentSuggestionsProvider(Observer* observer);
 
   Observer* observer() const { return observer_; }
-  CategoryFactory* category_factory() const { return category_factory_; }
-
  private:
   Observer* observer_;
-  CategoryFactory* category_factory_;
 };
 
 }  // namespace ntp_snippets

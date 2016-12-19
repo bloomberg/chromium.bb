@@ -26,8 +26,11 @@
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/image_fetcher/image_fetcher_delegate.h"
-#include "components/ntp_snippets/category_factory.h"
+#include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
+#include "components/ntp_snippets/category_rankers/category_ranker.h"
+#include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
+#include "components/ntp_snippets/category_rankers/mock_category_ranker.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
@@ -49,6 +52,7 @@
 
 using image_fetcher::ImageFetcher;
 using image_fetcher::ImageFetcherDelegate;
+using testing::_;
 using testing::ElementsAre;
 using testing::Eq;
 using testing::InSequence;
@@ -62,7 +66,6 @@ using testing::SaveArg;
 using testing::SizeIs;
 using testing::StartsWith;
 using testing::WithArgs;
-using testing::_;
 
 namespace ntp_snippets {
 
@@ -116,44 +119,66 @@ base::Time GetDefaultExpirationTime() {
   return base::Time::Now() + base::TimeDelta::FromHours(1);
 }
 
-std::string GetTestJson(const std::vector<std::string>& snippets,
-                        const std::string& category_title) {
+std::string GetCategoryJson(const std::vector<std::string>& snippets,
+                            int remote_category_id,
+                            const std::string& category_title) {
   return base::StringPrintf(
-      "{\n"
-      "  \"categories\": [{\n"
-      "    \"id\": 1,\n"
+      "  {\n"
+      "    \"id\": %d,\n"
       "    \"localizedTitle\": \"%s\",\n"
       "    \"suggestions\": [%s]\n"
-      "  }]\n"
-      "}\n",
-      category_title.c_str(), base::JoinString(snippets, ", ").c_str());
+      "  }\n",
+      remote_category_id, category_title.c_str(),
+      base::JoinString(snippets, ", ").c_str());
+}
+
+class MultiCategoryJsonBuilder {
+ public:
+  MultiCategoryJsonBuilder() {}
+
+  MultiCategoryJsonBuilder& AddCategoryWithCustomTitle(
+      const std::vector<std::string>& snippets,
+      int remote_category_id,
+      const std::string& category_title) {
+    category_json_.push_back(
+        GetCategoryJson(snippets, remote_category_id, category_title));
+    return *this;
+  }
+
+  MultiCategoryJsonBuilder& AddCategory(
+      const std::vector<std::string>& snippets,
+      int remote_category_id) {
+    return AddCategoryWithCustomTitle(
+        snippets, remote_category_id,
+        "Title" + base::IntToString(remote_category_id));
+  }
+
+  std::string Build() {
+    return base::StringPrintf(
+        "{\n"
+        "  \"categories\": [\n"
+        "%s\n"
+        "  ]\n"
+        "}\n",
+        base::JoinString(category_json_, "  ,\n").c_str());
+  }
+
+ private:
+  std::vector<std::string> category_json_;
+};
+
+// TODO(vitaliii): Remove these convenience functions as they do not provide
+// that much value and add additional redirections obscuring the code.
+std::string GetTestJson(const std::vector<std::string>& snippets,
+                        const std::string& category_title) {
+  return MultiCategoryJsonBuilder()
+      .AddCategoryWithCustomTitle(snippets, /*remote_category_id=*/1,
+                                  category_title)
+      .Build();
 }
 
 std::string GetTestJson(const std::vector<std::string>& snippets) {
   return GetTestJson(snippets, kTestJsonDefaultCategoryTitle);
-}
-
-// TODO(tschumann): Remove the default parameter other_id. It makes the tests
-// less explicit and hard to read. Also get rid of the convenience
-// other_category() and unknown_category() helpers -- tests can just define
-// their own.
-std::string GetMultiCategoryJson(const std::vector<std::string>& articles,
-                                 const std::vector<std::string>& others,
-                                 int other_id = 2) {
-  return base::StringPrintf(
-      "{\n"
-      "  \"categories\": [{\n"
-      "    \"id\": 1,\n"
-      "    \"localizedTitle\": \"Articles for You\",\n"
-      "    \"suggestions\": [%s]\n"
-      "  }, {\n"
-      "    \"id\": %i,\n"
-      "    \"localizedTitle\": \"Other Things\",\n"
-      "    \"suggestions\": [%s]\n"
-      "  }]\n"
-      "}\n",
-      base::JoinString(articles, ", ").c_str(), other_id,
-      base::JoinString(others, ", ").c_str());
 }
 
 std::string FormatTime(const base::Time& t) {
@@ -401,6 +426,7 @@ class RemoteSuggestionsProviderTest : public ::testing::Test {
         fake_url_fetcher_factory_(
             /*default_factory=*/&failing_url_fetcher_factory_),
         test_url_(kTestContentSuggestionsServerWithAPIKey),
+        category_ranker_(base::MakeUnique<ConstantCategoryRanker>()),
         user_classifier_(/*pref_service=*/nullptr),
         image_fetcher_(nullptr),
         image_decoder_(nullptr),
@@ -419,6 +445,8 @@ class RemoteSuggestionsProviderTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  // TODO(vitaliii): Rewrite this function to initialize a test class member
+  // instead of creating a new service.
   std::unique_ptr<RemoteSuggestionsProvider> MakeSnippetsService(
       bool set_empty_response = true) {
     auto service = MakeSnippetsServiceWithoutInitialization();
@@ -437,9 +465,8 @@ class RemoteSuggestionsProviderTest : public ::testing::Test {
     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher =
         base::MakeUnique<NTPSnippetsFetcher>(
             utils_.fake_signin_manager(), fake_token_service_.get(),
-            std::move(request_context_getter), utils_.pref_service(),
-            &category_factory_, nullptr, base::Bind(&ParseJson), kAPIKey,
-            &user_classifier_);
+            std::move(request_context_getter), utils_.pref_service(), nullptr,
+            base::Bind(&ParseJson), kAPIKey, &user_classifier_);
 
     utils_.fake_signin_manager()->SignIn("foo@bar.com");
 
@@ -455,10 +482,9 @@ class RemoteSuggestionsProviderTest : public ::testing::Test {
         database_dir_.GetPath(), task_runner);
     database_ = database.get();
     return base::MakeUnique<RemoteSuggestionsProvider>(
-        observer_.get(), &category_factory_, utils_.pref_service(), "fr",
+        observer_.get(), utils_.pref_service(), "fr", category_ranker_.get(),
         &user_classifier_, &scheduler_, std::move(snippets_fetcher),
-        std::move(image_fetcher), std::move(image_decoder),
-        std::move(database),
+        std::move(image_fetcher), std::move(image_decoder), std::move(database),
         base::MakeUnique<RemoteSuggestionsStatusService>(
             utils_.fake_signin_manager(), utils_.pref_service()));
   }
@@ -478,11 +504,15 @@ class RemoteSuggestionsProviderTest : public ::testing::Test {
     EXPECT_NE(RemoteSuggestionsProvider::State::NOT_INITED, service->state_);
   }
 
-  void ResetSnippetsService(
-      std::unique_ptr<RemoteSuggestionsProvider>* service) {
+  void ResetSnippetsService(std::unique_ptr<RemoteSuggestionsProvider>* service,
+                            bool set_empty_response) {
     service->reset();
     observer_.reset();
-    *service = MakeSnippetsService();
+    *service = MakeSnippetsService(set_empty_response);
+  }
+
+  void SetCategoryRanker(std::unique_ptr<CategoryRanker> category_ranker) {
+    category_ranker_ = std::move(category_ranker);
   }
 
   ContentSuggestion::ID MakeArticleID(const std::string& id_within_category) {
@@ -490,17 +520,19 @@ class RemoteSuggestionsProviderTest : public ::testing::Test {
   }
 
   Category articles_category() {
-    return category_factory_.FromKnownCategory(KnownCategories::ARTICLES);
+    return Category::FromKnownCategory(KnownCategories::ARTICLES);
   }
 
   ContentSuggestion::ID MakeOtherID(const std::string& id_within_category) {
     return ContentSuggestion::ID(other_category(), id_within_category);
   }
 
-  Category other_category() { return category_factory_.FromRemoteCategory(2); }
+  // TODO(tschumann): Get rid of the convenience other_category() and
+  // unknown_category() helpers -- tests can just define their own.
+  Category other_category() { return Category::FromRemoteCategory(2); }
 
   Category unknown_category() {
-    return category_factory_.FromRemoteCategory(kUnknownRemoteCategoryId);
+    return Category::FromRemoteCategory(kUnknownRemoteCategoryId);
   }
 
  protected:
@@ -553,10 +585,10 @@ class RemoteSuggestionsProviderTest : public ::testing::Test {
   net::FakeURLFetcherFactory fake_url_fetcher_factory_;
   const GURL test_url_;
   std::unique_ptr<OAuth2TokenService> fake_token_service_;
+  std::unique_ptr<CategoryRanker> category_ranker_;
   UserClassifier user_classifier_;
   NiceMock<MockScheduler> scheduler_;
   std::unique_ptr<FakeContentSuggestionsProviderObserver> observer_;
-  CategoryFactory category_factory_;
   NiceMock<MockImageFetcher>* image_fetcher_;
   FakeImageDecoder* image_decoder_;
 
@@ -591,7 +623,7 @@ TEST_F(RemoteSuggestionsProviderTest, DontRescheduleOnStart) {
   Mock::VerifyAndClearExpectations(&mock_scheduler());
   EXPECT_CALL(mock_scheduler(), Schedule(_, _)).Times(0);
   EXPECT_CALL(mock_scheduler(), Unschedule()).Times(0);
-  ResetSnippetsService(&service);
+  ResetSnippetsService(&service, /*set_empty_response=*/true);
 }
 
 TEST_F(RemoteSuggestionsProviderTest, RescheduleAfterSuccessfulFetch) {
@@ -742,11 +774,12 @@ TEST_F(RemoteSuggestionsProviderTest, CategoryTitle) {
 }
 
 TEST_F(RemoteSuggestionsProviderTest, MultipleCategories) {
-  std::string json_str(
-      GetMultiCategoryJson({GetSnippetN(0)}, {GetSnippetN(1)}));
-
   auto service = MakeSnippetsService();
-
+  std::string json_str =
+      MultiCategoryJsonBuilder()
+          .AddCategory({GetSnippetN(0)}, /*remote_category_id=*/1)
+          .AddCategory({GetSnippetN(1)}, /*remote_category_id=*/2)
+          .Build();
   LoadFromJSONString(service.get(), json_str);
 
   ASSERT_THAT(observer().statuses(),
@@ -799,12 +832,15 @@ TEST_F(RemoteSuggestionsProviderTest, ArticleCategoryInfo) {
 
 TEST_F(RemoteSuggestionsProviderTest, ExperimentalCategoryInfo) {
   auto service = MakeSnippetsService();
-
+  std::string json_str =
+      MultiCategoryJsonBuilder()
+          .AddCategory({GetSnippetN(0)}, /*remote_category_id=*/1)
+          .AddCategory({GetSnippetN(1)}, kUnknownRemoteCategoryId)
+          .Build();
   // Load data with multiple categories so that a new experimental category gets
   // registered.
-  LoadFromJSONString(service.get(),
-                     GetMultiCategoryJson({GetSnippetN(0)}, {GetSnippetN(1)},
-                                          kUnknownRemoteCategoryId));
+  LoadFromJSONString(service.get(), json_str);
+
   CategoryInfo info = service->GetCategoryInfo(unknown_category());
   EXPECT_THAT(info.has_more_action(), Eq(false));
   EXPECT_THAT(info.has_reload_action(), Eq(false));
@@ -812,12 +848,42 @@ TEST_F(RemoteSuggestionsProviderTest, ExperimentalCategoryInfo) {
   EXPECT_THAT(info.show_if_empty(), Eq(false));
 }
 
+TEST_F(RemoteSuggestionsProviderTest, AddRemoteCategoriesToCategoryRanker) {
+  auto mock_ranker = base::MakeUnique<MockCategoryRanker>();
+  MockCategoryRanker* raw_mock_ranker = mock_ranker.get();
+  SetCategoryRanker(std::move(mock_ranker));
+  std::string json_str =
+      MultiCategoryJsonBuilder()
+          .AddCategory({GetSnippetN(0)}, /*remote_category_id=*/11)
+          .AddCategory({GetSnippetN(1)}, /*remote_category_id=*/13)
+          .AddCategory({GetSnippetN(2)}, /*remote_category_id=*/12)
+          .Build();
+  SetUpFetchResponse(json_str);
+  {
+    // The order of categories is determined by the order in which they are
+    // added. Thus, the latter is tested here.
+    InSequence s;
+    EXPECT_CALL(*raw_mock_ranker,
+                AppendCategoryIfNecessary(Category::FromRemoteCategory(11)));
+    EXPECT_CALL(*raw_mock_ranker,
+                AppendCategoryIfNecessary(Category::FromRemoteCategory(13)));
+    EXPECT_CALL(*raw_mock_ranker,
+                AppendCategoryIfNecessary(Category::FromRemoteCategory(12)));
+  }
+  auto service = MakeSnippetsService(/*set_empty_response=*/false);
+}
+
 TEST_F(RemoteSuggestionsProviderTest, PersistCategoryInfos) {
   auto service = MakeSnippetsService();
-
-  LoadFromJSONString(service.get(),
-                     GetMultiCategoryJson({GetSnippetN(0)}, {GetSnippetN(1)},
-                                          kUnknownRemoteCategoryId));
+  // TODO(vitaliii): Use |articles_category()| instead of constant ID below.
+  std::string json_str =
+      MultiCategoryJsonBuilder()
+          .AddCategoryWithCustomTitle(
+              {GetSnippetN(0)}, /*remote_category_id=*/1, "Articles for You")
+          .AddCategoryWithCustomTitle({GetSnippetN(1)},
+                                      kUnknownRemoteCategoryId, "Other Things")
+          .Build();
+  LoadFromJSONString(service.get(), json_str);
 
   ASSERT_EQ(observer().StatusForCategory(articles_category()),
             CategoryStatus::AVAILABLE);
@@ -830,7 +896,7 @@ TEST_F(RemoteSuggestionsProviderTest, PersistCategoryInfos) {
       service->GetCategoryInfo(unknown_category());
 
   // Recreate the service to simulate a Chrome restart.
-  ResetSnippetsService(&service);
+  ResetSnippetsService(&service, /*set_empty_response=*/true);
 
   // The categories should have been restored.
   ASSERT_NE(observer().StatusForCategory(articles_category()),
@@ -852,18 +918,57 @@ TEST_F(RemoteSuggestionsProviderTest, PersistCategoryInfos) {
   EXPECT_EQ(info_unknown_before.title(), info_unknown_after.title());
 }
 
+TEST_F(RemoteSuggestionsProviderTest, PersistRemoteCategoryOrder) {
+  // We create a service with a normal ranker to store the order.
+  std::string json_str =
+      MultiCategoryJsonBuilder()
+          .AddCategory({GetSnippetN(0)}, /*remote_category_id=*/11)
+          .AddCategory({GetSnippetN(1)}, /*remote_category_id=*/13)
+          .AddCategory({GetSnippetN(2)}, /*remote_category_id=*/12)
+          .Build();
+  SetUpFetchResponse(json_str);
+  auto service = MakeSnippetsService(/*set_empty_response=*/false);
+
+  // We manually recreate the service to simulate Chrome restart and enforce a
+  // mock ranker. The response is cleared to ensure that the order is not
+  // fetched.
+  SetUpFetchResponse("");
+  auto mock_ranker = base::MakeUnique<MockCategoryRanker>();
+  MockCategoryRanker* raw_mock_ranker = mock_ranker.get();
+  SetCategoryRanker(std::move(mock_ranker));
+  {
+    // The order of categories is determined by the order in which they are
+    // added. Thus, the latter is tested here.
+    InSequence s;
+    // Article category always exists and, therefore, it is stored in prefs too.
+    EXPECT_CALL(*raw_mock_ranker,
+                AppendCategoryIfNecessary(articles_category()));
+
+    EXPECT_CALL(*raw_mock_ranker,
+                AppendCategoryIfNecessary(Category::FromRemoteCategory(11)));
+    EXPECT_CALL(*raw_mock_ranker,
+                AppendCategoryIfNecessary(Category::FromRemoteCategory(13)));
+    EXPECT_CALL(*raw_mock_ranker,
+                AppendCategoryIfNecessary(Category::FromRemoteCategory(12)));
+  }
+  ResetSnippetsService(&service, /*set_empty_response=*/false);
+}
+
 TEST_F(RemoteSuggestionsProviderTest, PersistSuggestions) {
   auto service = MakeSnippetsService();
-
-  LoadFromJSONString(service.get(),
-                     GetMultiCategoryJson({GetSnippetN(0)}, {GetSnippetN(1)}));
+  std::string json_str =
+      MultiCategoryJsonBuilder()
+          .AddCategory({GetSnippetN(0)}, /*remote_category_id=*/1)
+          .AddCategory({GetSnippetN(2)}, /*remote_category_id=*/2)
+          .Build();
+  LoadFromJSONString(service.get(), json_str);
 
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(1));
   ASSERT_THAT(observer().SuggestionsForCategory(other_category()), SizeIs(1));
 
   // Recreate the service to simulate a Chrome restart.
-  ResetSnippetsService(&service);
+  ResetSnippetsService(&service, /*set_empty_response=*/true);
 
   // The suggestions in both categories should have been restored.
   EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
@@ -874,8 +979,14 @@ TEST_F(RemoteSuggestionsProviderTest, PersistSuggestions) {
 TEST_F(RemoteSuggestionsProviderTest, DontNotifyIfNotAvailable) {
   // Get some suggestions into the database.
   auto service = MakeSnippetsService();
-  LoadFromJSONString(service.get(),
-                     GetMultiCategoryJson({GetSnippetN(0)}, {GetSnippetN(1)}));
+  std::string json_str =
+      MultiCategoryJsonBuilder()
+          .AddCategory({GetSnippetN(0)},
+                       /*remote_category_id=*/1)
+          .AddCategory({GetSnippetN(1)}, /*remote_category_id=*/2)
+          .Build();
+  LoadFromJSONString(service.get(), json_str);
+
   ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
               SizeIs(1));
   ASSERT_THAT(observer().SuggestionsForCategory(other_category()), SizeIs(1));
@@ -886,7 +997,7 @@ TEST_F(RemoteSuggestionsProviderTest, DontNotifyIfNotAvailable) {
   pref_service()->SetBoolean(prefs::kEnableSnippets, false);
 
   // Recreate the service to simulate a Chrome start.
-  ResetSnippetsService(&service);
+  ResetSnippetsService(&service, /*set_empty_response=*/true);
 
   ASSERT_THAT(RemoteSuggestionsProvider::State::DISABLED, Eq(service->state_));
 
@@ -1259,7 +1370,7 @@ TEST_F(RemoteSuggestionsProviderTest, Dismiss) {
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 
   // The snippet should stay dismissed even after re-creating the service.
-  ResetSnippetsService(&service);
+  ResetSnippetsService(&service, /*set_empty_response=*/true);
   LoadFromJSONString(service.get(), json_str);
   EXPECT_THAT(service->GetSnippetsForTesting(articles_category()), IsEmpty());
 
@@ -1455,7 +1566,7 @@ TEST_F(RemoteSuggestionsProviderTest, LogNumArticlesHistogram) {
   // There is only a single, dismissed snippet in the database, so recreating
   // the service will require us to re-fetch.
   tester.ExpectTotalCount("NewTabPage.Snippets.NumArticlesFetched", 4);
-  ResetSnippetsService(&service);
+  ResetSnippetsService(&service, /*set_empty_response=*/true);
   EXPECT_EQ(observer().StatusForCategory(articles_category()),
             CategoryStatus::AVAILABLE);
   tester.ExpectTotalCount("NewTabPage.Snippets.NumArticlesFetched", 5);
@@ -1469,7 +1580,7 @@ TEST_F(RemoteSuggestionsProviderTest, LogNumArticlesHistogram) {
       service.get(),
       GetTestJson({GetSnippetWithUrl("http://not-dismissed.com")}));
   tester.ExpectTotalCount("NewTabPage.Snippets.NumArticlesFetched", 6);
-  ResetSnippetsService(&service);
+  ResetSnippetsService(&service, /*set_empty_response=*/true);
   tester.ExpectTotalCount("NewTabPage.Snippets.NumArticlesFetched", 6);
 }
 
@@ -1666,7 +1777,7 @@ TEST_F(RemoteSuggestionsProviderTest, ShouldClearOrphanedImagesOnRestart) {
                          "http://something.com/pletely/unrelated")}));
   // The image should still be available until a restart happens.
   EXPECT_FALSE(FetchImage(service.get(), MakeArticleID(kSnippetUrl)).IsEmpty());
-  ResetSnippetsService(&service);
+  ResetSnippetsService(&service, /*set_empty_response=*/true);
   // After the restart, the image should be garbage collected.
   EXPECT_TRUE(FetchImage(service.get(), MakeArticleID(kSnippetUrl)).IsEmpty());
 }

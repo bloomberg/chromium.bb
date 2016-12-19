@@ -16,7 +16,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "components/ntp_snippets/category_factory.h"
+#include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
@@ -321,8 +321,8 @@ class NTPSnippetsFetcherTestBase : public testing::Test {
         fake_signin_manager_.get(), fake_token_service_.get(),
         scoped_refptr<net::TestURLRequestContextGetter>(
             new net::TestURLRequestContextGetter(mock_task_runner_.get())),
-        pref_service_.get(), &category_factory_, nullptr,
-        base::Bind(&ParseJsonDelayed), kAPIKey, user_classifier_.get());
+        pref_service_.get(), nullptr, base::Bind(&ParseJsonDelayed), kAPIKey,
+        user_classifier_.get());
 
     snippets_fetcher_->SetTickClockForTesting(
         mock_task_runner_->GetMockTickClock());
@@ -424,7 +424,6 @@ class NTPSnippetsFetcherTestBase : public testing::Test {
   std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   std::unique_ptr<UserClassifier> user_classifier_;
-  CategoryFactory category_factory_;
   MockSnippetsAvailableCallback mock_callback_;
   const GURL test_url_;
   base::HistogramTester histogram_tester_;
@@ -826,7 +825,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ServerCategories) {
       ASSERT_THAT(articles.size(), Eq(1u));
       EXPECT_THAT(articles[0]->url().spec(), Eq("http://localhost/foobar"));
       EXPECT_THAT(category.info, IsCategoryInfoForArticles());
-    } else if (category.category == CategoryFactory().FromRemoteCategory(2)) {
+    } else if (category.category == Category::FromRemoteCategory(2)) {
       ASSERT_THAT(articles.size(), Eq(1u));
       EXPECT_THAT(articles[0]->url().spec(), Eq("http://localhost/foo2"));
       EXPECT_THAT(category.info.has_more_action(), Eq(true));
@@ -942,8 +941,8 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ExclusiveCategoryOnly) {
       .WillOnce(MoveArgument1PointeeTo(&fetched_categories));
 
   NTPSnippetsFetcher::Params params = test_params();
-  params.exclusive_category = base::Optional<Category>(
-      CategoryFactory().FromRemoteCategory(2));
+  params.exclusive_category =
+      base::Optional<Category>(Category::FromRemoteCategory(2));
   snippets_fetcher().FetchSnippets(
       params, ToSnippetsAvailableCallback(&mock_callback()));
   FastForwardUntilNoTasksRemain();
@@ -951,8 +950,7 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ExclusiveCategoryOnly) {
   ASSERT_TRUE(fetched_categories);
   ASSERT_THAT(fetched_categories->size(), Eq(1u));
   const auto& category = (*fetched_categories)[0];
-  EXPECT_THAT(category.category.id(),
-              Eq(CategoryFactory().FromRemoteCategory(2).id()));
+  EXPECT_THAT(category.category.id(), Eq(Category::FromRemoteCategory(2).id()));
   ASSERT_THAT(category.snippets.size(), Eq(1u));
   EXPECT_THAT(category.snippets[0]->url().spec(), Eq("http://localhost/foo2"));
 }

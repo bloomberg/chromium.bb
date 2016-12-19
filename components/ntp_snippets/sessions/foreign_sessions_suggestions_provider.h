@@ -40,7 +40,6 @@ class ForeignSessionsSuggestionsProvider : public ContentSuggestionsProvider {
  public:
   ForeignSessionsSuggestionsProvider(
       ContentSuggestionsProvider::Observer* observer,
-      CategoryFactory* category_factory,
       std::unique_ptr<ForeignSessionsProvider> foreign_sessions_provider,
       PrefService* pref_service);
   ~ForeignSessionsSuggestionsProvider() override;

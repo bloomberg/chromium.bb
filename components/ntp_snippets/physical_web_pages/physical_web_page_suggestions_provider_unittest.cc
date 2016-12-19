@@ -14,7 +14,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/ntp_snippets/category.h"
-#include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "components/ntp_snippets/mock_content_suggestions_provider_observer.h"
 #include "components/ntp_snippets/offline_pages/offline_pages_test_utils.h"
@@ -97,16 +96,14 @@ class PhysicalWebPageSuggestionsProviderTest : public testing::Test {
   PhysicalWebPageSuggestionsProvider* CreateProvider() {
     DCHECK(!provider_);
     provider_ = base::MakeUnique<PhysicalWebPageSuggestionsProvider>(
-        &observer_, &category_factory_, &physical_web_data_source_,
-        pref_service_.get());
+        &observer_, &physical_web_data_source_, pref_service_.get());
     return provider_.get();
   }
 
   void DestroyProvider() { provider_.reset(); }
 
   Category provided_category() {
-    return category_factory_.FromKnownCategory(
-        KnownCategories::PHYSICAL_WEB_PAGES);
+    return Category::FromKnownCategory(KnownCategories::PHYSICAL_WEB_PAGES);
   }
 
   ContentSuggestion::ID GetDummySuggestionId(int id) {
@@ -141,7 +138,6 @@ class PhysicalWebPageSuggestionsProviderTest : public testing::Test {
  private:
   FakePhysicalWebDataSource physical_web_data_source_;
   StrictMock<MockContentSuggestionsProviderObserver> observer_;
-  CategoryFactory category_factory_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   // Added in order to test provider's |Fetch| method.
   base::MessageLoop message_loop_;

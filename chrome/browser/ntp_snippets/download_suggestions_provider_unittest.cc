@@ -11,7 +11,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/ntp_snippets/fake_download_item.h"
 #include "components/ntp_snippets/category.h"
-#include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/mock_content_suggestions_provider_observer.h"
 #include "components/ntp_snippets/offline_pages/offline_pages_test_utils.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
@@ -23,7 +22,6 @@
 using content::DownloadItem;
 using content::MockDownloadManager;
 using ntp_snippets::Category;
-using ntp_snippets::CategoryFactory;
 using ntp_snippets::ContentSuggestion;
 using ntp_snippets::ContentSuggestionsProvider;
 using ntp_snippets::MockContentSuggestionsProviderObserver;
@@ -257,8 +255,7 @@ class DownloadSuggestionsProviderTest : public testing::Test {
     DCHECK(!provider_);
     DCHECK(show_assets || show_offline_pages);
     provider_ = base::MakeUnique<DownloadSuggestionsProvider>(
-        &observer_, &category_factory_,
-        show_offline_pages ? &offline_pages_model_ : nullptr,
+        &observer_, show_offline_pages ? &offline_pages_model_ : nullptr,
         show_assets ? &downloads_manager_ : nullptr, pref_service(),
         /*download_manager_ui_enabled=*/false);
     return provider_.get();
@@ -267,7 +264,7 @@ class DownloadSuggestionsProviderTest : public testing::Test {
   void DestroyProvider() { provider_.reset(); }
 
   Category downloads_category() {
-    return category_factory_.FromKnownCategory(
+    return Category::FromKnownCategory(
         ntp_snippets::KnownCategories::DOWNLOADS);
   }
 
@@ -329,7 +326,6 @@ class DownloadSuggestionsProviderTest : public testing::Test {
   ObservedMockDownloadManager downloads_manager_;
   FakeOfflinePageModel offline_pages_model_;
   StrictMock<MockContentSuggestionsProviderObserver> observer_;
-  CategoryFactory category_factory_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   // Last so that the dependencies are deleted after the provider.
   std::unique_ptr<DownloadSuggestionsProvider> provider_;

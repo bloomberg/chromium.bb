@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/ntp_snippets/category.h"
-#include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "components/ntp_snippets/mock_content_suggestions_provider_observer.h"
 #include "components/prefs/testing_pref_service.h"
@@ -117,8 +116,7 @@ class ForeignSessionsSuggestionsProviderTest : public Test {
                                  _, category(), CategoryStatus::AVAILABLE));
 
     provider_ = base::MakeUnique<ForeignSessionsSuggestionsProvider>(
-        &observer_, &category_factory_,
-        std::move(fake_foreign_sessions_provider), &pref_service_);
+        &observer_, std::move(fake_foreign_sessions_provider), &pref_service_);
   }
 
  protected:
@@ -157,7 +155,7 @@ class ForeignSessionsSuggestionsProviderTest : public Test {
   }
 
   Category category() {
-    return category_factory_.FromKnownCategory(KnownCategories::FOREIGN_TABS);
+    return Category::FromKnownCategory(KnownCategories::FOREIGN_TABS);
   }
 
   MockContentSuggestionsProviderObserver* observer() { return &observer_; }
@@ -165,7 +163,6 @@ class ForeignSessionsSuggestionsProviderTest : public Test {
  private:
   FakeForeignSessionsProvider* fake_foreign_sessions_provider_;
   MockContentSuggestionsProviderObserver observer_;
-  CategoryFactory category_factory_;
   TestingPrefServiceSimple pref_service_;
   std::unique_ptr<ForeignSessionsSuggestionsProvider> provider_;
   std::map<int, std::unique_ptr<SyncedSession>> sessions_map_;

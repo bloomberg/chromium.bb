@@ -24,7 +24,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "components/ntp_snippets/category_factory.h"
+#include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/user_classifier.h"
@@ -423,7 +423,6 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
     OAuth2TokenService* token_service,
     scoped_refptr<URLRequestContextGetter> url_request_context_getter,
     PrefService* pref_service,
-    CategoryFactory* category_factory,
     LanguageModel* language_model,
     const ParseJSONCallback& parse_json_callback,
     const std::string& api_key,
@@ -432,7 +431,6 @@ NTPSnippetsFetcher::NTPSnippetsFetcher(
       signin_manager_(signin_manager),
       token_service_(token_service),
       url_request_context_getter_(std::move(url_request_context_getter)),
-      category_factory_(category_factory),
       language_model_(language_model),
       parse_json_callback_(parse_json_callback),
       fetch_url_(GetFetchEndpoint()),
@@ -1047,7 +1045,7 @@ bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
     case FetchAPI::CHROME_READER_API: {
       const int kUnusedRemoteCategoryId = -1;
       categories->push_back(FetchedCategory(
-          category_factory_->FromKnownCategory(KnownCategories::ARTICLES),
+          Category::FromKnownCategory(KnownCategories::ARTICLES),
           BuildArticleCategoryInfo(base::nullopt)));
 
       const base::ListValue* recos = nullptr;
@@ -1085,8 +1083,7 @@ bool NTPSnippetsFetcher::JsonToSnippets(const base::Value& parsed,
             return false;
           }
         }
-        Category category =
-            category_factory_->FromRemoteCategory(remote_category_id);
+        Category category = Category::FromRemoteCategory(remote_category_id);
         if (category.IsKnownCategory(KnownCategories::ARTICLES)) {
           categories->push_back(FetchedCategory(
               category,

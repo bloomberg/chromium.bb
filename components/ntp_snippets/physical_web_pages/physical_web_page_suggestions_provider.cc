@@ -47,13 +47,12 @@ std::string GetPageId(const DictionaryValue& page_dictionary) {
 
 PhysicalWebPageSuggestionsProvider::PhysicalWebPageSuggestionsProvider(
     ContentSuggestionsProvider::Observer* observer,
-    CategoryFactory* category_factory,
     physical_web::PhysicalWebDataSource* physical_web_data_source,
     PrefService* pref_service)
-    : ContentSuggestionsProvider(observer, category_factory),
+    : ContentSuggestionsProvider(observer),
       category_status_(CategoryStatus::AVAILABLE),
-      provided_category_(category_factory->FromKnownCategory(
-          KnownCategories::PHYSICAL_WEB_PAGES)),
+      provided_category_(
+          Category::FromKnownCategory(KnownCategories::PHYSICAL_WEB_PAGES)),
       physical_web_data_source_(physical_web_data_source),
       pref_service_(pref_service) {
   observer->OnCategoryStatusChanged(this, provided_category_, category_status_);

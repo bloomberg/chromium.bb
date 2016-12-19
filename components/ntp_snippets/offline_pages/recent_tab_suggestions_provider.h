@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "components/ntp_snippets/category.h"
-#include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
@@ -32,7 +31,6 @@ class RecentTabSuggestionsProvider
  public:
   RecentTabSuggestionsProvider(
       ContentSuggestionsProvider::Observer* observer,
-      CategoryFactory* category_factory,
       offline_pages::OfflinePageModel* offline_page_model,
       PrefService* pref_service);
   ~RecentTabSuggestionsProvider() override;

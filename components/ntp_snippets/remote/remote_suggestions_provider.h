@@ -21,7 +21,6 @@
 #include "base/time/time.h"
 #include "components/image_fetcher/image_fetcher_delegate.h"
 #include "components/ntp_snippets/category.h"
-#include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
@@ -46,6 +45,7 @@ class ImageFetcher;
 namespace ntp_snippets {
 
 class RemoteSuggestionsDatabase;
+class CategoryRanker;
 class UserClassifier;
 
 // CachedImageFetcher takes care of fetching images from the network and caching
@@ -114,9 +114,9 @@ class RemoteSuggestionsProvider final : public ContentSuggestionsProvider {
   // (British English person in the US) are not language codes.
   RemoteSuggestionsProvider(
       Observer* observer,
-      CategoryFactory* category_factory,
       PrefService* pref_service,
       const std::string& application_language_code,
+      CategoryRanker* category_ranker,
       const UserClassifier* user_classifier,
       NTPSnippetsScheduler* scheduler,
       std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
@@ -407,6 +407,9 @@ class RemoteSuggestionsProvider final : public ContentSuggestionsProvider {
 
   // The ISO 639-1 code of the language used by the application.
   const std::string application_language_code_;
+
+  // Ranker that orders the categories. Not owned.
+  CategoryRanker* category_ranker_;
 
   // Classifier that tells us how active the user is. Not owned.
   const UserClassifier* user_classifier_;

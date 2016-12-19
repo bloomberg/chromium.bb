@@ -18,6 +18,8 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/ntp_snippets/bookmarks/bookmark_suggestions_provider.h"
+#include "components/ntp_snippets/category_rankers/category_ranker.h"
+#include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
@@ -120,9 +122,12 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   HistoryService* history_service =
       ios::HistoryServiceFactory::GetForBrowserState(
           chrome_browser_state, ServiceAccessType::EXPLICIT_ACCESS);
+  std::unique_ptr<ntp_snippets::CategoryRanker> category_ranker =
+      base::MakeUnique<ntp_snippets::ConstantCategoryRanker>();
   std::unique_ptr<ContentSuggestionsService> service =
       base::MakeUnique<ContentSuggestionsService>(state, signin_manager,
-                                                  history_service, prefs);
+                                                  history_service, prefs,
+                                                  std::move(category_ranker));
   if (state == State::DISABLED)
     return std::move(service);
 
@@ -131,8 +136,8 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     BookmarkModel* bookmark_model =
         BookmarkModelFactory::GetForBrowserState(chrome_browser_state);
     std::unique_ptr<BookmarkSuggestionsProvider> bookmark_suggestions_provider =
-        base::MakeUnique<BookmarkSuggestionsProvider>(
-            service.get(), service->category_factory(), bookmark_model, prefs);
+        base::MakeUnique<BookmarkSuggestionsProvider>(service.get(),
+                                                      bookmark_model, prefs);
     service->RegisterProvider(std::move(bookmark_suggestions_provider));
   }
 
@@ -152,12 +157,12 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
                 base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
     std::unique_ptr<RemoteSuggestionsProvider> ntp_snippets_service =
         base::MakeUnique<RemoteSuggestionsProvider>(
-            service.get(), service->category_factory(), prefs,
+            service.get(), prefs,
             GetApplicationContext()->GetApplicationLocale(),
-            service->user_classifier(), scheduler,
+            service->category_ranker(), service->user_classifier(), scheduler,
             base::MakeUnique<NTPSnippetsFetcher>(
-                signin_manager, token_service, request_context, prefs,
-                service->category_factory(), nullptr, base::Bind(&ParseJson),
+                signin_manager, token_service, request_context, prefs, nullptr,
+                base::Bind(&ParseJson),
                 GetChannel() == version_info::Channel::STABLE
                     ? google_apis::GetAPIKey()
                     : google_apis::GetNonStableAPIKey(),

@@ -14,7 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "components/ntp_snippets/callbacks.h"
 #include "components/ntp_snippets/category.h"
-#include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
@@ -42,7 +41,6 @@ class DownloadSuggestionsProvider
  public:
   DownloadSuggestionsProvider(
       ContentSuggestionsProvider::Observer* observer,
-      ntp_snippets::CategoryFactory* category_factory,
       offline_pages::OfflinePageModel* offline_page_model,
       content::DownloadManager* download_manager,
       PrefService* pref_service,

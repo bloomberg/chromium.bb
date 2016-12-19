@@ -25,6 +25,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
+#include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
@@ -322,9 +323,9 @@ void CachedImageFetcher::FetchSnippetImageFromNetwork(
 
 RemoteSuggestionsProvider::RemoteSuggestionsProvider(
     Observer* observer,
-    CategoryFactory* category_factory,
     PrefService* pref_service,
     const std::string& application_language_code,
+    CategoryRanker* category_ranker,
     const UserClassifier* user_classifier,
     NTPSnippetsScheduler* scheduler,
     std::unique_ptr<NTPSnippetsFetcher> snippets_fetcher,
@@ -332,12 +333,13 @@ RemoteSuggestionsProvider::RemoteSuggestionsProvider(
     std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
     std::unique_ptr<RemoteSuggestionsDatabase> database,
     std::unique_ptr<RemoteSuggestionsStatusService> status_service)
-    : ContentSuggestionsProvider(observer, category_factory),
+    : ContentSuggestionsProvider(observer),
       state_(State::NOT_INITED),
       pref_service_(pref_service),
       articles_category_(
-          category_factory->FromKnownCategory(KnownCategories::ARTICLES)),
+          Category::FromKnownCategory(KnownCategories::ARTICLES)),
       application_language_code_(application_language_code),
+      category_ranker_(category_ranker),
       user_classifier_(user_classifier),
       scheduler_(scheduler),
       snippets_fetcher_(std::move(snippets_fetcher)),
@@ -644,7 +646,7 @@ void RemoteSuggestionsProvider::OnDatabaseLoaded(
   NTPSnippet::PtrVector to_delete;
   for (std::unique_ptr<NTPSnippet>& snippet : snippets) {
     Category snippet_category =
-        category_factory()->FromRemoteCategory(snippet->remote_category_id());
+        Category::FromRemoteCategory(snippet->remote_category_id());
     auto content_it = category_contents_.find(snippet_category);
     // We should already know about the category.
     if (content_it == category_contents_.end()) {
@@ -790,6 +792,7 @@ void RemoteSuggestionsProvider::OnFetchFinished(
             std::min(fetched_category.snippets.size(),
                      static_cast<size_t>(kMaxSnippetCount + 1)));
       }
+      category_ranker_->AppendCategoryIfNecessary(fetched_category.category);
       CategoryContent* content =
           UpdateCategoryInfo(fetched_category.category, fetched_category.info);
       content->included_in_last_server_response = true;
@@ -1280,7 +1283,9 @@ void RemoteSuggestionsProvider::RestoreCategoriesFromPrefs() {
     dict->GetBoolean(kCategoryContentAllowFetchingMore,
                      &allow_fetching_more_results);
 
-    Category category = category_factory()->FromIDValue(id);
+    Category category = Category::FromIDValue(id);
+    // The ranker may not persist the order of remote categories.
+    category_ranker_->AppendCategoryIfNecessary(category);
     // TODO(tschumann): The following has a bad smell that category
     // serialization / deserialization should not be done inside this
     // class. We should move that into a central place that also knows how to
@@ -1301,12 +1306,11 @@ void RemoteSuggestionsProvider::StoreCategoriesToPrefs() {
   for (const auto& entry : category_contents_) {
     to_store.emplace_back(entry.first, &entry.second);
   }
-  // Sort them into the proper category order.
+  // The ranker may not persist the order, thus, it is stored by the provider.
   std::sort(to_store.begin(), to_store.end(),
             [this](const std::pair<Category, const CategoryContent*>& left,
                    const std::pair<Category, const CategoryContent*>& right) {
-              return category_factory()->CompareCategories(left.first,
-                                                           right.first);
+              return category_ranker_->Compare(left.first, right.first);
             });
   // Convert the relevant info into a base::ListValue for storage.
   base::ListValue list;

@@ -136,7 +136,6 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
       OAuth2TokenService* token_service,
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
       PrefService* pref_service,
-      CategoryFactory* category_factory,
       translate::LanguageModel* language_model,
       const ParseJSONCallback& parse_json_callback,
       const std::string& api_key,
@@ -326,8 +325,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   std::queue<std::pair<RequestBuilder, SnippetsAvailableCallback>>
       pending_requests_;
 
-  // Weak references, not owned.
-  CategoryFactory* const category_factory_;
+  // Weak reference, not owned.
   translate::LanguageModel* const language_model_;
 
   const ParseJSONCallback parse_json_callback_;

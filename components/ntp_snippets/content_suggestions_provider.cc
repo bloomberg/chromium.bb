@@ -4,14 +4,10 @@
 
 #include "components/ntp_snippets/content_suggestions_provider.h"
 
-#include "components/ntp_snippets/category_factory.h"
-
 namespace ntp_snippets {
 
-ContentSuggestionsProvider::ContentSuggestionsProvider(
-    Observer* observer,
-    CategoryFactory* category_factory)
-    : observer_(observer), category_factory_(category_factory) {}
+ContentSuggestionsProvider::ContentSuggestionsProvider(Observer* observer)
+    : observer_(observer) {}
 
 ContentSuggestionsProvider::~ContentSuggestionsProvider() = default;
 

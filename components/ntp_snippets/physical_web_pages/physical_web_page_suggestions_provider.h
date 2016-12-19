@@ -11,7 +11,6 @@
 #include "base/callback_forward.h"
 #include "base/values.h"
 #include "components/ntp_snippets/category.h"
-#include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
@@ -31,7 +30,6 @@ class PhysicalWebPageSuggestionsProvider
  public:
   PhysicalWebPageSuggestionsProvider(
       ContentSuggestionsProvider::Observer* observer,
-      CategoryFactory* category_factory,
       physical_web::PhysicalWebDataSource* physical_web_data_source,
       PrefService* pref_service);
   ~PhysicalWebPageSuggestionsProvider() override;

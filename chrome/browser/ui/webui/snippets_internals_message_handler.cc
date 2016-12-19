@@ -24,6 +24,7 @@
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
+#include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
@@ -206,10 +207,8 @@ void SnippetsInternalsMessageHandler::HandleClearCachedSuggestions(
   if (!args->GetInteger(0, &category_id))
     return;
 
-  Category category =
-      content_suggestions_service_->category_factory()->FromIDValue(
-          category_id);
-  content_suggestions_service_->ClearCachedSuggestions(category);
+  content_suggestions_service_->ClearCachedSuggestions(
+      Category::FromIDValue(category_id));
   SendContentSuggestions();
 }
 
@@ -221,9 +220,7 @@ void SnippetsInternalsMessageHandler::HandleClearDismissedSuggestions(
   if (!args->GetInteger(0, &category_id))
     return;
 
-  Category category =
-      content_suggestions_service_->category_factory()->FromIDValue(
-          category_id);
+  Category category = Category::FromIDValue(category_id);
   content_suggestions_service_->ClearDismissedSuggestionsForDebugging(category);
   SendContentSuggestions();
   dismissed_state_[category] = DismissedState::LOADING;
@@ -244,9 +241,7 @@ void SnippetsInternalsMessageHandler::HandleToggleDismissedSuggestions(
   if (!args->GetBoolean(1, &dismissed_visible))
     return;
 
-  Category category =
-      content_suggestions_service_->category_factory()->FromIDValue(
-          category_id);
+  Category category = Category::FromIDValue(category_id);
   if (dismissed_visible) {
     dismissed_state_[category] = DismissedState::LOADING;
     content_suggestions_service_->GetDismissedSuggestionsForDebugging(

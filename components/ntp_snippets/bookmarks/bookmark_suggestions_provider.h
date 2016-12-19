@@ -25,7 +25,6 @@ class BookmarkSuggestionsProvider : public ContentSuggestionsProvider,
                                     public bookmarks::BookmarkModelObserver {
  public:
   BookmarkSuggestionsProvider(ContentSuggestionsProvider::Observer* observer,
-                              CategoryFactory* category_factory,
                               bookmarks::BookmarkModel* bookmark_model,
                               PrefService* pref_service);
   ~BookmarkSuggestionsProvider() override;

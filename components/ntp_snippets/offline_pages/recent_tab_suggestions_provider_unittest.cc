@@ -12,7 +12,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/ntp_snippets/category.h"
-#include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "components/ntp_snippets/mock_content_suggestions_provider_observer.h"
 #include "components/ntp_snippets/offline_pages/offline_pages_test_utils.h"
@@ -68,12 +67,12 @@ class RecentTabSuggestionsProviderTest : public testing::Test {
     RecentTabSuggestionsProvider::RegisterProfilePrefs(
         pref_service()->registry());
 
-    provider_.reset(new RecentTabSuggestionsProvider(
-        &observer_, &category_factory_, &model_, pref_service()));
+    provider_.reset(
+        new RecentTabSuggestionsProvider(&observer_, &model_, pref_service()));
   }
 
   Category recent_tabs_category() {
-    return category_factory_.FromKnownCategory(KnownCategories::RECENT_TABS);
+    return Category::FromKnownCategory(KnownCategories::RECENT_TABS);
   }
 
   ContentSuggestion::ID GetDummySuggestionId(int id) {
@@ -106,7 +105,6 @@ class RecentTabSuggestionsProviderTest : public testing::Test {
  private:
   FakeOfflinePageModel model_;
   MockContentSuggestionsProviderObserver observer_;
-  CategoryFactory category_factory_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
   // Last so that the dependencies are deleted after the provider.
   std::unique_ptr<RecentTabSuggestionsProvider> provider_;

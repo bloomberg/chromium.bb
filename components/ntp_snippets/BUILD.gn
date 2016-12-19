@@ -18,10 +18,11 @@ static_library("ntp_snippets") {
     "callbacks.h",
     "category.cc",
     "category.h",
-    "category_factory.cc",
-    "category_factory.h",
     "category_info.cc",
     "category_info.h",
+    "category_rankers/category_ranker.h",
+    "category_rankers/constant_category_ranker.cc",
+    "category_rankers/constant_category_ranker.h",
     "category_status.cc",
     "category_status.h",
     "content_suggestion.cc",
@@ -116,7 +117,8 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "bookmarks/bookmark_last_visit_utils_unittest.cc",
-    "category_factory_unittest.cc",
+    "category_rankers/constant_category_ranker_unittest.cc",
+    "category_unittest.cc",
     "content_suggestions_service_unittest.cc",
     "offline_pages/recent_tab_suggestions_provider_unittest.cc",
     "physical_web_pages/physical_web_page_suggestions_provider_unittest.cc",
@@ -162,6 +164,8 @@ source_set("unit_tests") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "category_rankers/mock_category_ranker.cc",
+    "category_rankers/mock_category_ranker.h",
     "mock_content_suggestions_provider_observer.cc",
     "mock_content_suggestions_provider_observer.h",
     "offline_pages/offline_pages_test_utils.cc",

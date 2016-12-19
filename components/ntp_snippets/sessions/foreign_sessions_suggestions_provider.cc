@@ -12,7 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "components/ntp_snippets/category_factory.h"
+#include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/features.h"
@@ -161,13 +161,12 @@ struct ForeignSessionsSuggestionsProvider::SessionData {
 
 ForeignSessionsSuggestionsProvider::ForeignSessionsSuggestionsProvider(
     ContentSuggestionsProvider::Observer* observer,
-    CategoryFactory* category_factory,
     std::unique_ptr<ForeignSessionsProvider> foreign_sessions_provider,
     PrefService* pref_service)
-    : ContentSuggestionsProvider(observer, category_factory),
+    : ContentSuggestionsProvider(observer),
       category_status_(CategoryStatus::INITIALIZING),
       provided_category_(
-          category_factory->FromKnownCategory(KnownCategories::FOREIGN_TABS)),
+          Category::FromKnownCategory(KnownCategories::FOREIGN_TABS)),
       foreign_sessions_provider_(std::move(foreign_sessions_provider)),
       pref_service_(pref_service) {
   foreign_sessions_provider_->SubscribeForForeignTabChange(

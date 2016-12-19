@@ -25,13 +25,15 @@ ContentSuggestionsService::ContentSuggestionsService(
     State state,
     SigninManagerBase* signin_manager,
     history::HistoryService* history_service,
-    PrefService* pref_service)
+    PrefService* pref_service,
+    std::unique_ptr<CategoryRanker> category_ranker)
     : state_(state),
       signin_observer_(this),
       history_service_observer_(this),
       ntp_snippets_service_(nullptr),
       pref_service_(pref_service),
-      user_classifier_(pref_service) {
+      user_classifier_(pref_service),
+      category_ranker_(std::move(category_ranker)) {
   // Can be null in tests.
   if (signin_manager) {
     signin_observer_.Add(signin_manager);
@@ -449,7 +451,7 @@ void ContentSuggestionsService::OnSignInStateChanged() {
 void ContentSuggestionsService::SortCategories() {
   std::sort(categories_.begin(), categories_.end(),
             [this](const Category& left, const Category& right) {
-              return category_factory_.CompareCategories(left, right);
+              return category_ranker_->Compare(left, right);
             });
 }
 
@@ -486,8 +488,7 @@ void ContentSuggestionsService::RestoreDismissedCategoriesFromPrefs() {
     }
 
     // When the provider is registered, it will be stored in this map.
-    dismissed_providers_by_category_[category_factory()->FromIDValue(id)] =
-        nullptr;
+    dismissed_providers_by_category_[Category::FromIDValue(id)] = nullptr;
   }
 }
 

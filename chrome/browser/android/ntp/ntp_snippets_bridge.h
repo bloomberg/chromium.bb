@@ -149,8 +149,6 @@ class NTPSnippetsBridge
       ntp_snippets::Status status,
       std::vector<ntp_snippets::ContentSuggestion> suggestions);
 
-  ntp_snippets::Category CategoryFromIDValue(jint id);
-
   ntp_snippets::ContentSuggestionsService* content_suggestions_service_;
   history::HistoryService* history_service_;
   base::CancelableTaskTracker tracker_;

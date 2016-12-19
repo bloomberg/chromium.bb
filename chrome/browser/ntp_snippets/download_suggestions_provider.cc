@@ -129,14 +129,13 @@ std::unique_ptr<OfflinePageModelQuery> BuildOfflinePageDownloadsQuery(
 
 DownloadSuggestionsProvider::DownloadSuggestionsProvider(
     ContentSuggestionsProvider::Observer* observer,
-    ntp_snippets::CategoryFactory* category_factory,
     offline_pages::OfflinePageModel* offline_page_model,
     content::DownloadManager* download_manager,
     PrefService* pref_service,
     bool download_manager_ui_enabled)
-    : ContentSuggestionsProvider(observer, category_factory),
+    : ContentSuggestionsProvider(observer),
       category_status_(CategoryStatus::AVAILABLE_LOADING),
-      provided_category_(category_factory->FromKnownCategory(
+      provided_category_(Category::FromKnownCategory(
           ntp_snippets::KnownCategories::DOWNLOADS)),
       offline_page_model_(offline_page_model),
       download_manager_(download_manager),

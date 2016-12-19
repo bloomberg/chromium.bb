@@ -20,7 +20,8 @@
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_snippets/callbacks.h"
-#include "components/ntp_snippets/category_factory.h"
+#include "components/ntp_snippets/category.h"
+#include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "components/ntp_snippets/user_classifier.h"
@@ -88,7 +89,8 @@ class ContentSuggestionsService : public KeyedService,
   ContentSuggestionsService(State state,
                             SigninManagerBase* signin_manager,
                             history::HistoryService* history_service,
-                            PrefService* pref_service);
+                            PrefService* pref_service,
+                            std::unique_ptr<CategoryRanker> category_ranker);
   ~ContentSuggestionsService() override;
 
   // Inherited from KeyedService.
@@ -191,8 +193,6 @@ class ContentSuggestionsService : public KeyedService,
   // supports it).
   void ClearDismissedSuggestionsForDebugging(Category category);
 
-  CategoryFactory* category_factory() { return &category_factory_; }
-
   // The reference to the RemoteSuggestionsProvider provider should only be set
   // by the factory and only be used for scheduling, periodic fetching and
   // debugging.
@@ -205,6 +205,7 @@ class ContentSuggestionsService : public KeyedService,
   }
 
   UserClassifier* user_classifier() { return &user_classifier_; }
+  CategoryRanker* category_ranker() { return category_ranker_.get(); }
 
  private:
   friend class ContentSuggestionsServiceTest;
@@ -266,9 +267,6 @@ class ContentSuggestionsService : public KeyedService,
   // Whether the content suggestions feature is enabled.
   State state_;
 
-  // Provides new and existing categories and an order for them.
-  CategoryFactory category_factory_;
-
   // All registered providers, owned by the service.
   std::vector<std::unique_ptr<ContentSuggestionsProvider>> providers_;
 
@@ -321,6 +319,9 @@ class ContentSuggestionsService : public KeyedService,
   PrefService* pref_service_;
 
   UserClassifier user_classifier_;
+
+  // Provides order for categories.
+  std::unique_ptr<CategoryRanker> category_ranker_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSuggestionsService);
 };

@@ -29,7 +29,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/ntp_snippets/bookmarks/bookmark_suggestions_provider.h"
-#include "components/ntp_snippets/category_factory.h"
+#include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
@@ -75,7 +75,6 @@ using content::BrowserThread;
 using history::HistoryService;
 using image_fetcher::ImageFetcherImpl;
 using ntp_snippets::BookmarkSuggestionsProvider;
-using ntp_snippets::CategoryFactory;
 using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::ForeignSessionsSuggestionsProvider;
 using ntp_snippets::NTPSnippetsFetcher;
@@ -100,44 +99,40 @@ void ClearScheduledTasks() {
 #if defined(OS_ANDROID)
 void RegisterRecentTabProvider(OfflinePageModel* offline_page_model,
                                ContentSuggestionsService* service,
-                               CategoryFactory* category_factory,
                                PrefService* pref_service) {
   auto provider = base::MakeUnique<RecentTabSuggestionsProvider>(
-      service, category_factory, offline_page_model, pref_service);
+      service, offline_page_model, pref_service);
   service->RegisterProvider(std::move(provider));
 }
 
 void RegisterDownloadsProvider(OfflinePageModel* offline_page_model,
                                DownloadManager* download_manager,
                                ContentSuggestionsService* service,
-                               CategoryFactory* category_factory,
                                PrefService* pref_service) {
   bool download_manager_ui_enabled =
       base::FeatureList::IsEnabled(chrome::android::kDownloadsUiFeature);
   auto provider = base::MakeUnique<DownloadSuggestionsProvider>(
-      service, category_factory, offline_page_model, download_manager,
-      pref_service, download_manager_ui_enabled);
+      service, offline_page_model, download_manager, pref_service,
+      download_manager_ui_enabled);
   service->RegisterProvider(std::move(provider));
 }
 #endif  // OS_ANDROID
 
 void RegisterBookmarkProvider(BookmarkModel* bookmark_model,
                               ContentSuggestionsService* service,
-                              CategoryFactory* category_factory,
                               PrefService* pref_service) {
   auto provider = base::MakeUnique<BookmarkSuggestionsProvider>(
-      service, category_factory, bookmark_model, pref_service);
+      service, bookmark_model, pref_service);
   service->RegisterProvider(std::move(provider));
 }
 
 #if defined(OS_ANDROID)
 void RegisterPhysicalWebPageProvider(
     ContentSuggestionsService* service,
-    CategoryFactory* category_factory,
     PhysicalWebDataSource* physical_web_data_source,
     PrefService* pref_service) {
   auto provider = base::MakeUnique<PhysicalWebPageSuggestionsProvider>(
-      service, category_factory, physical_web_data_source, pref_service);
+      service, physical_web_data_source, pref_service);
   service->RegisterProvider(std::move(provider));
 }
 #endif  // OS_ANDROID
@@ -145,7 +140,6 @@ void RegisterPhysicalWebPageProvider(
 void RegisterArticleProvider(SigninManagerBase* signin_manager,
                              OAuth2TokenService* token_service,
                              ContentSuggestionsService* service,
-                             CategoryFactory* category_factory,
                              LanguageModel* language_model,
                              PrefService* pref_service,
                              Profile* profile) {
@@ -167,15 +161,14 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
   bool is_stable_channel =
       chrome::GetChannel() == version_info::Channel::STABLE;
   auto provider = base::MakeUnique<RemoteSuggestionsProvider>(
-      service, service->category_factory(), pref_service,
-      g_browser_process->GetApplicationLocale(), service->user_classifier(),
-      scheduler, base::MakeUnique<NTPSnippetsFetcher>(
-                     signin_manager, token_service, request_context,
-                     pref_service, category_factory, language_model,
-                     base::Bind(&safe_json::SafeJsonParser::Parse),
-                     is_stable_channel ? google_apis::GetAPIKey()
-                                       : google_apis::GetNonStableAPIKey(),
-                     service->user_classifier()),
+      service, pref_service, g_browser_process->GetApplicationLocale(),
+      service->category_ranker(), service->user_classifier(), scheduler,
+      base::MakeUnique<NTPSnippetsFetcher>(
+          signin_manager, token_service, request_context, pref_service,
+          language_model, base::Bind(&safe_json::SafeJsonParser::Parse),
+          is_stable_channel ? google_apis::GetAPIKey()
+                            : google_apis::GetNonStableAPIKey(),
+          service->user_classifier()),
       base::MakeUnique<ImageFetcherImpl>(base::MakeUnique<ImageDecoderImpl>(),
                                          request_context.get()),
       base::MakeUnique<ImageDecoderImpl>(),
@@ -188,12 +181,11 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
 
 void RegisterForeignSessionsProvider(SyncService* sync_service,
                                      ContentSuggestionsService* service,
-                                     CategoryFactory* category_factory,
                                      PrefService* pref_service) {
   std::unique_ptr<TabDelegateSyncAdapter> sync_adapter =
       base::MakeUnique<TabDelegateSyncAdapter>(sync_service);
   auto provider = base::MakeUnique<ForeignSessionsSuggestionsProvider>(
-      service, category_factory, std::move(sync_adapter), pref_service);
+      service, std::move(sync_adapter), pref_service);
   service->RegisterProvider(std::move(provider));
 }
 
@@ -251,8 +243,11 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
       profile, ServiceAccessType::EXPLICIT_ACCESS);
   PrefService* pref_service = profile->GetPrefs();
-  auto* service = new ContentSuggestionsService(state, signin_manager,
-                                                history_service, pref_service);
+  auto category_ranker =
+      base::MakeUnique<ntp_snippets::ConstantCategoryRanker>();
+  auto* service =
+      new ContentSuggestionsService(state, signin_manager, history_service,
+                                    pref_service, std::move(category_ranker));
   if (state == State::DISABLED) {
     // Since we won't initialise the services, they won't get a chance to
     // unschedule their tasks. We do it explicitly here instead.
@@ -260,7 +255,6 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     return service;
   }
 
-  CategoryFactory* category_factory = service->category_factory();
 #if defined(OS_ANDROID)
   OfflinePageModel* offline_page_model =
       OfflinePageModelFactory::GetForBrowserContext(profile);
@@ -281,8 +275,7 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(
           ntp_snippets::kRecentOfflineTabSuggestionsFeature)) {
-    RegisterRecentTabProvider(offline_page_model, service, category_factory,
-                              pref_service);
+    RegisterRecentTabProvider(offline_page_model, service, pref_service);
   }
 
   bool show_asset_downloads =
@@ -293,35 +286,32 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     RegisterDownloadsProvider(
         show_offline_page_downloads ? offline_page_model : nullptr,
         show_asset_downloads ? download_manager : nullptr, service,
-        category_factory, pref_service);
+        pref_service);
   }
 #endif  // OS_ANDROID
 
   // |bookmark_model| can be null in tests.
   if (base::FeatureList::IsEnabled(ntp_snippets::kBookmarkSuggestionsFeature) &&
       bookmark_model) {
-    RegisterBookmarkProvider(bookmark_model, service, category_factory,
-                             pref_service);
+    RegisterBookmarkProvider(bookmark_model, service, pref_service);
   }
 
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(
           ntp_snippets::kPhysicalWebPageSuggestionsFeature)) {
-    RegisterPhysicalWebPageProvider(service, category_factory,
-                                    physical_web_data_source, pref_service);
+    RegisterPhysicalWebPageProvider(service, physical_web_data_source,
+                                    pref_service);
   }
 #endif  // OS_ANDROID
 
   if (base::FeatureList::IsEnabled(ntp_snippets::kArticleSuggestionsFeature)) {
     RegisterArticleProvider(signin_manager, token_service, service,
-                            category_factory, language_model, pref_service,
-                            profile);
+                            language_model, pref_service, profile);
   }
 
   if (base::FeatureList::IsEnabled(
           ntp_snippets::kForeignSessionsSuggestionsFeature)) {
-    RegisterForeignSessionsProvider(sync_service, service, category_factory,
-                                    pref_service);
+    RegisterForeignSessionsProvider(sync_service, service, pref_service);
   }
 
   return service;

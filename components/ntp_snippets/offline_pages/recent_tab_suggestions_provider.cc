@@ -73,13 +73,12 @@ std::unique_ptr<OfflinePageModelQuery> BuildRecentTabsQuery(
 
 RecentTabSuggestionsProvider::RecentTabSuggestionsProvider(
     ContentSuggestionsProvider::Observer* observer,
-    CategoryFactory* category_factory,
     offline_pages::OfflinePageModel* offline_page_model,
     PrefService* pref_service)
-    : ContentSuggestionsProvider(observer, category_factory),
+    : ContentSuggestionsProvider(observer),
       category_status_(CategoryStatus::AVAILABLE_LOADING),
       provided_category_(
-          category_factory->FromKnownCategory(KnownCategories::RECENT_TABS)),
+          Category::FromKnownCategory(KnownCategories::RECENT_TABS)),
       offline_page_model_(offline_page_model),
       pref_service_(pref_service),
       weak_ptr_factory_(this) {
