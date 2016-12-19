@@ -12,7 +12,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/proximity_auth/remote_device.h"
+#include "components/cryptauth/remote_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

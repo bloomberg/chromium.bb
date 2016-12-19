@@ -24,8 +24,8 @@
 #include "chrome/browser/signin/easy_unlock_metrics.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/tpm/tpm_token_loader.h"
+#include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/logging/logging.h"
-#include "components/proximity_auth/remote_device.h"
 #include "components/proximity_auth/switches.h"
 
 namespace {
