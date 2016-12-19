@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 
-#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -27,12 +26,13 @@ const char kDownloadsFolderName[] = "Downloads";
 
 constexpr base::FilePath::CharType kArcDownloadPath[] =
     FILE_PATH_LITERAL("/sdcard/Download");
-constexpr base::FilePath::CharType kRemovableMediaPath[] =
-    FILE_PATH_LITERAL("/media/removable");
 constexpr char kArcRemovableMediaProviderUrl[] =
     "content://org.chromium.arc.removablemediaprovider/";
 
 }  // namespace
+
+const base::FilePath::CharType kRemovableMediaPath[] =
+    FILE_PATH_LITERAL("/media/removable");
 
 base::FilePath GetDownloadsFolderForProfile(Profile* profile) {
   // On non-ChromeOS system (test+development), the primary profile uses

@@ -7,15 +7,17 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
+
 class GURL;
 class Profile;
 
-namespace base {
-class FilePath;
-}
-
 namespace file_manager {
 namespace util {
+
+// Absolute base path for removable media on Chrome OS. Exposed here so it can
+// be used by tests.
+extern const base::FilePath::CharType kRemovableMediaPath[];
 
 // Gets the absolute path for the 'Downloads' folder for the |profile|.
 base::FilePath GetDownloadsFolderForProfile(Profile* profile);
