@@ -2264,6 +2264,14 @@ void RenderThreadImpl::OnMemoryStateChange(base::MemoryState state) {
       break;
     case base::MemoryState::THROTTLED:
       ResumeRenderer();
+      // TODO(bashi): Figure out what kind of strategy is suitable on
+      // THROTTLED state. crbug.com/674815
+#if defined(OS_ANDROID)
+      OnTrimMemoryImmediately();
+#else
+      OnSyncMemoryPressure(
+          base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
+#endif
       ReleaseFreeMemory();
       break;
     case base::MemoryState::SUSPENDED:
