@@ -102,7 +102,7 @@ def main():
       'disable_file_support=true disable_ftp_support=true '+ \
       'use_platform_icu_alternatives=true '+ \
       'disable_brotli_filter=true is_component_build=false ' + \
-      'ignore_elf32_limitations=true'
+      'ignore_elf32_limitations=true use_partition_alloc=false'
 
   extra_options = ' '.join(extra_options_list)
   if options.gn:

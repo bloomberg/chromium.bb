@@ -1597,7 +1597,7 @@
     'cronet': {
       'gn_args': ('disable_file_support=true disable_ftp_support=true '
                   'enable_websockets=false use_platform_icu_alternatives=true '
-                  'disable_brotli_filter=true'),
+                  'disable_brotli_filter=true use_partition_alloc=false'),
     },
 
     'cros_chrome_sdk': {
