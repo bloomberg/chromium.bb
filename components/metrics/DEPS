@@ -2,6 +2,7 @@
 # dependencies to a minimal set.
 include_rules = [
   "-components",
+  "+components/browser_watcher",
   "+components/compression",
   "+components/metrics",
   "+components/prefs",

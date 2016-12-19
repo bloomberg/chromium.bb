@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/browser_watcher/features.h"
+#include "components/browser_watcher/stability_debugging.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/common/content_switches.h"
 #include "media/media_features.h"
@@ -30,7 +31,6 @@
 #if defined(OS_WIN)
 #include "chrome/install_static/install_util.h"
 #include "components/browser_watcher/stability_data_names.h"
-#include "components/browser_watcher/stability_debugging_win.h"
 #endif
 
 namespace chrome {

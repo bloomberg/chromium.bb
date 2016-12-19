@@ -7,6 +7,7 @@
 namespace browser_watcher {
 
 const char kStabilityChannel[] = "channel";
+const char kStabilityExecutionPhase[] = "stability-execution-phase";
 const char kStabilityPlatform[] = "platform";
 const char kStabilityProduct[] = "product";
 const char kStabilitySpecialBuild[] = "special-build";

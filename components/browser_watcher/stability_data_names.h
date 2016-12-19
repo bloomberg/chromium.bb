@@ -9,6 +9,7 @@ namespace browser_watcher {
 
 // Alphabetical list of stability data names.
 extern const char kStabilityChannel[];
+extern const char kStabilityExecutionPhase[];
 extern const char kStabilityPlatform[];
 extern const char kStabilityProduct[];
 extern const char kStabilitySpecialBuild[];

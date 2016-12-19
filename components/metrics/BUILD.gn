@@ -85,6 +85,8 @@ static_library("metrics") {
     ":call_stack_profile_params",
     "//base",
     "//base:base_static",
+    "//components/browser_watcher:stability",
+    "//components/browser_watcher:stability_data",
     "//components/prefs",
     "//components/variations",
     "//third_party/zlib:compression_utils",

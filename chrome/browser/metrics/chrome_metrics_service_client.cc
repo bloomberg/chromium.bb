@@ -44,6 +44,7 @@
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/util/util_constants.h"
+#include "components/browser_watcher/stability_debugging.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
 #include "components/metrics/file_metrics_provider.h"
@@ -105,7 +106,6 @@
 #include "chrome/common/metrics_constants_util_win.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/browser_distribution.h"
-#include "components/browser_watcher/stability_debugging_win.h"
 #include "components/browser_watcher/watcher_metrics_provider_win.h"
 #endif
 

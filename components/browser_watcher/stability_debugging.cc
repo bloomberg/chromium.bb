@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/browser_watcher/stability_debugging_win.h"
+#include "components/browser_watcher/stability_debugging.h"
 
 #include <string>
 
+#include "base/debug/activity_tracker.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/metrics/persistent_memory_allocator.h"
@@ -19,6 +20,7 @@ namespace browser_watcher {
 
 namespace {
 
+#if defined(OS_WIN)
 bool GetCreationTime(const base::Process& process, base::Time* time) {
   DCHECK(time);
 
@@ -33,8 +35,11 @@ bool GetCreationTime(const base::Process& process, base::Time* time) {
   *time = base::Time::FromFileTime(creation_time);
   return true;
 }
+#endif  // defined(OS_WIN)
 
 }  // namespace
+
+#if defined(OS_WIN)
 
 base::FilePath GetStabilityDir(const base::FilePath& user_data_dir) {
   return user_data_dir.AppendASCII("Stability");
@@ -83,6 +88,16 @@ void MarkStabilityFileForDeletion(const base::FilePath& user_data_dir) {
   base::File file(stability_file, base::File::FLAG_OPEN |
                                       base::File::FLAG_READ |
                                       base::File::FLAG_DELETE_ON_CLOSE);
+}
+#endif  // defined(OS_WIN)
+
+void SetStabilityDataInt(base::StringPiece name, int64_t value) {
+  base::debug::GlobalActivityTracker* global_tracker =
+      base::debug::GlobalActivityTracker::Get();
+  if (!global_tracker)
+    return;  // Activity tracking isn't enabled.
+
+  global_tracker->user_data().SetInt(name, value);
 }
 
 }  // namespace browser_watcher

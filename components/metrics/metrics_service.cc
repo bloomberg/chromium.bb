@@ -149,6 +149,8 @@
 #include "base/time/time.h"
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
+#include "components/browser_watcher/stability_data_names.h"
+#include "components/browser_watcher/stability_debugging.h"
 #include "components/metrics/data_use_tracker.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_manager.h"
@@ -499,6 +501,8 @@ void MetricsService::SetExecutionPhase(ExecutionPhase execution_phase,
                                        PrefService* local_state) {
   execution_phase_ = execution_phase;
   local_state->SetInteger(prefs::kStabilityExecutionPhase, execution_phase_);
+  browser_watcher::SetStabilityDataInt(
+      browser_watcher::kStabilityExecutionPhase, execution_phase_);
 }
 
 void MetricsService::RecordBreakpadRegistration(bool success) {
