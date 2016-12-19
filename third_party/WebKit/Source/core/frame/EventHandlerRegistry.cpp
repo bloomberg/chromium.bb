@@ -191,15 +191,8 @@ void EventHandlerRegistry::didMoveBetweenFrameHosts(EventTarget& target,
                                                     FrameHost* oldFrameHost,
                                                     FrameHost* newFrameHost) {
   ASSERT(newFrameHost != oldFrameHost);
-  for (size_t i = 0; i < EventHandlerClassCount; ++i) {
-    EventHandlerClass handlerClass = static_cast<EventHandlerClass>(i);
-    const EventTargetSet* targets =
-        &oldFrameHost->eventHandlerRegistry().m_targets[handlerClass];
-    for (unsigned count = targets->count(&target); count > 0; --count)
-      newFrameHost->eventHandlerRegistry().didAddEventHandler(target,
-                                                              handlerClass);
-  }
-  oldFrameHost->eventHandlerRegistry().didRemoveAllEventHandlers(target);
+  oldFrameHost->eventHandlerRegistry().didMoveOutOfFrameHost(target);
+  newFrameHost->eventHandlerRegistry().didMoveIntoFrameHost(target);
 }
 
 void EventHandlerRegistry::didRemoveAllEventHandlers(EventTarget& target) {
