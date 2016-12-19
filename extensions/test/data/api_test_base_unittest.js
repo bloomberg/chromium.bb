@@ -36,14 +36,14 @@ unittestBindings.exportTests([
   },
   function testMojoModulesAreAvailable() {
     Promise.all([
-      requireAsync('mojo/public/js/connection'),
+      requireAsync('mojo/public/js/bindings'),
       requireAsync('mojo/public/js/core'),
       requireAsync('content/public/renderer/frame_interfaces'),
     ]).then(test.callback(function(modules) {
-      var connection = modules[0];
+      var bindings = modules[0];
       var core = modules[1];
       var frameInterfaces = modules[2];
-      test.assertTrue(!!connection.Connection);
+      test.assertTrue(!!bindings.Binding);
       test.assertTrue(!!core.createMessagePipe);
       test.assertTrue(!!frameInterfaces.getInterface);
     }));

@@ -5,22 +5,16 @@
 var mediaRouter;
 
 define('media_router_bindings', [
-    'mojo/public/js/bindings',
-    'mojo/public/js/core',
     'content/public/renderer/frame_interfaces',
     'chrome/browser/media/router/mojo/media_router.mojom',
     'extensions/common/mojo/keep_alive.mojom',
     'mojo/common/time.mojom',
-    'mojo/public/js/connection',
-    'mojo/public/js/router',
-], function(bindings,
-            core,
-            frameInterfaces,
+    'mojo/public/js/bindings',
+], function(frameInterfaces,
             mediaRouterMojom,
             keepAliveMojom,
             timeMojom,
-            connector,
-            routerModule) {
+            bindings) {
   'use strict';
 
   /**
@@ -187,14 +181,14 @@ define('media_router_bindings', [
   /**
    * Creates a new MediaRouter.
    * Converts a route struct to its Mojo form.
-   * @param {!MediaRouterService} service
+   * @param {!mediaRouterMojom.MediaRouterPtr} service
    * @constructor
    */
   function MediaRouter(service) {
     /**
      * The Mojo service proxy. Allows extension code to call methods that reside
      * in the browser.
-     * @type {!MediaRouterService}
+     * @type {!mediaRouterMojom.MediaRouterPtr}
      */
     this.service_ = service;
 
@@ -287,10 +281,10 @@ define('media_router_bindings', [
    */
   MediaRouter.prototype.setKeepAlive = function(keepAlive) {
     if (keepAlive === false && this.keepAlive_) {
-      this.keepAlive_.close();
+      this.keepAlive_.ptr.reset();
       this.keepAlive_ = null;
     } else if (keepAlive === true && !this.keepAlive_) {
-      this.keepAlive_ = new routerModule.Router(
+      this.keepAlive_ = new keepAliveMojom.KeepAlivePtr(
           frameInterfaces.getInterface(keepAliveMojom.KeepAlive.name));
     }
   };
@@ -498,8 +492,6 @@ define('media_router_bindings', [
    * @constructor
    */
   function MediaRouteProvider(mediaRouter) {
-    mediaRouterMojom.MediaRouteProvider.stubClass.call(this);
-
     /**
      * Object containing JS callbacks into Provider Manager code.
      * @type {!MediaRouterHandlers}
@@ -512,8 +504,6 @@ define('media_router_bindings', [
      */
     this.mediaRouter_ = mediaRouter;
   }
-  MediaRouteProvider.prototype = Object.create(
-      mediaRouterMojom.MediaRouteProvider.stubClass.prototype);
 
   /*
    * Sets the callback handler used to invoke methods in the provider manager.
@@ -813,9 +803,8 @@ define('media_router_bindings', [
     });
   };
 
-  mediaRouter = new MediaRouter(connector.bindHandleToProxy(
-      frameInterfaces.getInterface(mediaRouterMojom.MediaRouter.name),
-      mediaRouterMojom.MediaRouter));
+  mediaRouter = new MediaRouter(new mediaRouterMojom.MediaRouterPtr(
+      frameInterfaces.getInterface(mediaRouterMojom.MediaRouter.name)));
 
   return mediaRouter;
 });

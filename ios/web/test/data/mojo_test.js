@@ -13,10 +13,9 @@ function getBrowserProxy() {
   return new Promise(function(resolve, reject) {
     define([
       'mojo/public/js/bindings',
-      'mojo/public/js/connection',
       'ios/web/test/mojo_test.mojom',
       'content/public/renderer/frame_interfaces',
-    ], function(bindings, connection, mojom, frameInterfaces) {
+    ], function(bindings, mojom, frameInterfaces) {
       var pageImpl, browserProxy;
 
       /** @constructor */
@@ -35,9 +34,8 @@ function getBrowserProxy() {
         },
       };
 
-      browserProxy = connection.bindHandleToProxy(
-          frameInterfaces.getInterface(mojom.TestUIHandlerMojo.name),
-          mojom.TestUIHandlerMojo);
+      browserProxy = new mojom.TestUIHandlerMojoPtr(
+          frameInterfaces.getInterface(mojom.TestUIHandlerMojo.name));
       pageImpl = new TestPageImpl();
 
       browserProxy.setClientPage(pageImpl.binding.createInterfacePtrAndBind());

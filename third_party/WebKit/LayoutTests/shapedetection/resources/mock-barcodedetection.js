@@ -4,22 +4,18 @@ let mockBarcodeDetectionReady = define(
   'mockBarcodeDetection',
   ['third_party/WebKit/public/platform/modules/shapedetection/barcodedetection.mojom',
    'mojo/public/js/bindings',
-   'mojo/public/js/connection',
    'mojo/public/js/core',
    'content/public/renderer/frame_interfaces',
-  ], (barcodeDetection, bindings, connection, mojo, interfaces) => {
+  ], (barcodeDetection, bindings, mojo, interfaces) => {
 
   class MockBarcodeDetection {
     constructor() {
+      this.bindingSet_ = new bindings.BindingSet(
+          barcodeDetection.BarcodeDetection);
+
       interfaces.addInterfaceOverrideForTesting(
           barcodeDetection.BarcodeDetection.name,
-          pipe => this.bindToPipe(pipe));
-    }
-
-    bindToPipe(pipe) {
-      this.stub_ = connection.bindHandleToStub(pipe,
-                                               barcodeDetection.BarcodeDetection);
-      bindings.StubBindings(this.stub_).delegate = this;
+          handle => this.bindingSet_.addBinding(this, handle));
     }
 
     detect(frame_data, width, height) {

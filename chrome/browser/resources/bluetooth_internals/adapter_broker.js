@@ -15,7 +15,7 @@ cr.define('adapter_broker', function() {
    * handles and back when necessary.
    * @constructor
    * @extends {cr.EventTarget}
-   * @param {!interfaces.BluetoothAdapter.Adapter.proxyClass} adapter
+   * @param {!interfaces.BluetoothAdapter.AdapterPtr} adapter
    */
   var AdapterBroker = function(adapter) {
     this.adapter_ = adapter;
@@ -29,7 +29,7 @@ cr.define('adapter_broker', function() {
     /**
      * Creates a GATT connection to the device with |address|.
      * @param {string} address
-     * @return {!Promise<!interfaces.BluetoothDevice.Device.proxyClass>}
+     * @return {!Promise<!interfaces.BluetoothDevice.DevicePtr>}
      */
     connectToDevice: function(address) {
       return this.adapter_.connectToDevice(address).then(function(response) {
@@ -45,9 +45,7 @@ cr.define('adapter_broker', function() {
           throw new Error(errorString);
         }
 
-        return interfaces.Connection.bindHandleToProxy(
-            response.device.ptr.passInterface().handle,
-            interfaces.BluetoothDevice.Device);
+        return response.device;
       });
     },
 
@@ -145,14 +143,9 @@ cr.define('adapter_broker', function() {
     if (adapterBroker) return Promise.resolve(adapterBroker);
 
     return interfaces.setupInterfaces().then(function(adapter) {
-      // Hook up the instance properties.
-      AdapterClient.prototype.__proto__ =
-          interfaces.BluetoothAdapter.AdapterClient.stubClass.prototype;
-
-      var adapterFactory = interfaces.Connection.bindHandleToProxy(
+      var adapterFactory = new interfaces.BluetoothAdapter.AdapterFactoryPtr(
           interfaces.FrameInterfaces.getInterface(
-              interfaces.BluetoothAdapter.AdapterFactory.name),
-          interfaces.BluetoothAdapter.AdapterFactory);
+              interfaces.BluetoothAdapter.AdapterFactory.name));
 
       // Get an Adapter service.
       return adapterFactory.getAdapter();
@@ -161,11 +154,7 @@ cr.define('adapter_broker', function() {
         throw new Error('Bluetooth Not Supported on this platform.');
       }
 
-      var adapter = interfaces.Connection.bindHandleToProxy(
-          response.adapter.ptr.passInterface().handle,
-          interfaces.BluetoothAdapter.Adapter);
-
-      adapterBroker = new AdapterBroker(adapter);
+      adapterBroker = new AdapterBroker(response.adapter);
       return adapterBroker;
     });
   }
