@@ -105,6 +105,8 @@ class CONTENT_EXPORT MemoryCoordinator {
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorTest, HandleAdded);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorTest, CanSuspendRenderer);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorTest, CanThrottleRenderer);
+  FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorWithServiceWorkerTest,
+                           CannotSuspendRendererWithServiceWorker);
 #endif
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorTest,
                            ChildRemovedOnConnectionError);

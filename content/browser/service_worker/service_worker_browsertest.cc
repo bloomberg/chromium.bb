@@ -22,6 +22,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -30,6 +31,7 @@
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
+#include "content/browser/memory/memory_coordinator.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -2936,6 +2938,71 @@ IN_PROC_BROWSER_TEST_P(ServiceWorkerDisableWebSecurityTest, UpdateNoCrash) {
   RegisterServiceWorkerOnCrossOriginServer(kScopeUrl, kWorkerUrl);
   RunTestWithCrossOriginURL(kPageUrl, kScopeUrl);
 }
+
+class MemoryCoordinatorWithServiceWorkerTest
+    : public ServiceWorkerVersionBrowserTest {
+ public:
+  MemoryCoordinatorWithServiceWorkerTest() {}
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kMemoryCoordinator);
+    ServiceWorkerVersionBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(MemoryCoordinatorWithServiceWorkerTest);
+};
+
+class TestMemoryCoordinatorDelegate : public MemoryCoordinatorDelegate {
+ public:
+  TestMemoryCoordinatorDelegate() {}
+  ~TestMemoryCoordinatorDelegate() override {}
+
+  bool CanSuspendBackgroundedRenderer(int render_process_id) override {
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestMemoryCoordinatorDelegate);
+};
+
+// MemoryCoordinatorWithServiceWorkerTest checks if a process won't be
+// suspended when it has one or more shared workers or service workers.
+// TODO(shimazu): Enable these tests on macos when MemoryMonitorMac is
+// implemented.
+#if !defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_P(MemoryCoordinatorWithServiceWorkerTest,
+                       CannotSuspendRendererWithServiceWorker) {
+  StartServerAndNavigateToSetup();
+  ActivateTestHelper("/service_worker/fetch_event.js", SERVICE_WORKER_OK);
+
+  MemoryCoordinator* memory_coordinator = MemoryCoordinator::GetInstance();
+  memory_coordinator->SetDelegateForTesting(
+      base::MakeUnique<TestMemoryCoordinatorDelegate>());
+
+  // Ensure only one process host exists.
+  ASSERT_EQ(1, CountRenderProcessHosts());
+  ASSERT_EQ(1u, memory_coordinator->children().size());
+
+  // Check the number of workers.
+  int render_process_id = memory_coordinator->children().begin()->first;
+  RenderProcessHost* rph = RenderProcessHost::FromID(render_process_id);
+  EXPECT_EQ(1u, rph->GetWorkerRefCount());
+
+  // A process should be backgrounded to ensure the worker reference count takes
+  // effect in CanSuspendRenderer().
+  shell()->web_contents()->WasHidden();
+  EXPECT_TRUE(rph->IsProcessBackgrounded());
+
+  // The process which has service worker thread shouldn't be suspended.
+  EXPECT_FALSE(memory_coordinator->CanSuspendRenderer(render_process_id));
+}
+INSTANTIATE_TEST_CASE_P(ServiceWorkerBrowserTest,
+                        MemoryCoordinatorWithServiceWorkerTest,
+                        ::testing::Bool());
+#endif
 
 INSTANTIATE_TEST_CASE_P(ServiceWorkerBrowserTest,
                         ServiceWorkerBrowserTest,

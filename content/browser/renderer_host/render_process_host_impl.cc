@@ -1386,20 +1386,25 @@ bool RenderProcessHostImpl::IsProcessBackgrounded() const {
   return is_process_backgrounded_;
 }
 
+size_t RenderProcessHostImpl::GetWorkerRefCount() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return service_worker_ref_count_ + shared_worker_ref_count_;
+}
+
 void RenderProcessHostImpl::IncrementServiceWorkerRefCount() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_worker_ref_count_disabled_);
   ++service_worker_ref_count_;
-  if (worker_ref_count() > max_worker_count_)
-    max_worker_count_ = worker_ref_count();
+  if (GetWorkerRefCount() > max_worker_count_)
+    max_worker_count_ = GetWorkerRefCount();
 }
 
 void RenderProcessHostImpl::DecrementServiceWorkerRefCount() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_worker_ref_count_disabled_);
-  DCHECK_GT(worker_ref_count(), 0U);
+  DCHECK_GT(GetWorkerRefCount(), 0U);
   --service_worker_ref_count_;
-  if (worker_ref_count() == 0)
+  if (GetWorkerRefCount() == 0)
     Cleanup();
 }
 
@@ -1407,16 +1412,16 @@ void RenderProcessHostImpl::IncrementSharedWorkerRefCount() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_worker_ref_count_disabled_);
   ++shared_worker_ref_count_;
-  if (worker_ref_count() > max_worker_count_)
-    max_worker_count_ = worker_ref_count();
+  if (GetWorkerRefCount() > max_worker_count_)
+    max_worker_count_ = GetWorkerRefCount();
 }
 
 void RenderProcessHostImpl::DecrementSharedWorkerRefCount() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_worker_ref_count_disabled_);
-  DCHECK_GT(worker_ref_count(), 0U);
+  DCHECK_GT(GetWorkerRefCount(), 0U);
   --shared_worker_ref_count_;
-  if (worker_ref_count() == 0)
+  if (GetWorkerRefCount() == 0)
     Cleanup();
 }
 
@@ -1424,7 +1429,7 @@ void RenderProcessHostImpl::ForceReleaseWorkerRefCounts() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_worker_ref_count_disabled_);
   is_worker_ref_count_disabled_ = true;
-  if (!worker_ref_count())
+  if (!GetWorkerRefCount())
     return;
   service_worker_ref_count_ = 0;
   shared_worker_ref_count_ = 0;
@@ -1951,7 +1956,7 @@ bool RenderProcessHostImpl::FastShutdownIfPossible() {
   if (!SuddenTerminationAllowed())
     return false;
 
-  if (worker_ref_count() != 0) {
+  if (GetWorkerRefCount() != 0) {
     if (survive_for_worker_start_time_.is_null())
       survive_for_worker_start_time_ = base::TimeTicks::Now();
     return false;
@@ -2129,13 +2134,13 @@ void RenderProcessHostImpl::Cleanup() {
   delayed_cleanup_needed_ = false;
 
   // Records the time when the process starts surviving for workers for UMA.
-  if (listeners_.IsEmpty() && worker_ref_count() > 0 &&
+  if (listeners_.IsEmpty() && GetWorkerRefCount() > 0 &&
       survive_for_worker_start_time_.is_null()) {
     survive_for_worker_start_time_ = base::TimeTicks::Now();
   }
 
   // Until there are no other owners of this object, we can't delete ourselves.
-  if (!listeners_.IsEmpty() || worker_ref_count() != 0)
+  if (!listeners_.IsEmpty() || GetWorkerRefCount() != 0)
     return;
 
 #if BUILDFLAG(ENABLE_WEBRTC)

@@ -167,6 +167,8 @@ bool MemoryCoordinator::CanSuspendRenderer(int render_process_id) {
   auto* render_process_host = RenderProcessHost::FromID(render_process_id);
   if (!render_process_host || !render_process_host->IsProcessBackgrounded())
     return false;
+  if (render_process_host->GetWorkerRefCount() > 0)
+    return false;
   return delegate_->CanSuspendBackgroundedRenderer(render_process_id);
 }
 

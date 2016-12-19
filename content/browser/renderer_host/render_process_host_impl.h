@@ -163,6 +163,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
   bool IsProcessBackgrounded() const override;
+  size_t GetWorkerRefCount() const override;
   void IncrementServiceWorkerRefCount() override;
   void DecrementServiceWorkerRefCount() override;
   void IncrementSharedWorkerRefCount() override;
@@ -303,10 +304,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   friend class VisitRelayingRenderProcessHost;
   class ConnectionFilterController;
   class ConnectionFilterImpl;
-
-  size_t worker_ref_count() {
-    return service_worker_ref_count_ + shared_worker_ref_count_;
-  }
 
   // Initializes a new IPC::ChannelProxy in |channel_|, which will be connected
   // to the next child process launched for this host, if any.

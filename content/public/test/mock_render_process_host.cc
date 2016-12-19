@@ -275,6 +275,10 @@ bool MockRenderProcessHost::IsProcessBackgrounded() const {
   return is_process_backgrounded_;
 }
 
+size_t MockRenderProcessHost::GetWorkerRefCount() const {
+  return worker_ref_count_;
+}
+
 void MockRenderProcessHost::IncrementServiceWorkerRefCount() {
   ++worker_ref_count_;
 }

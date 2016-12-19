@@ -101,6 +101,7 @@ class MockRenderProcessHost : public RenderProcessHost {
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
   bool IsProcessBackgrounded() const override;
+  size_t GetWorkerRefCount() const override;
   void IncrementServiceWorkerRefCount() override;
   void DecrementServiceWorkerRefCount() override;
   void IncrementSharedWorkerRefCount() override;
@@ -138,8 +139,6 @@ class MockRenderProcessHost : public RenderProcessHost {
 
   void GetAudioOutputControllers(
       const GetAudioOutputControllersCallback& callback) const override {}
-
-  int worker_ref_count() const { return worker_ref_count_; }
 
   void SetRemoteInterfaces(
       std::unique_ptr<service_manager::InterfaceProvider> remote_interfaces) {
