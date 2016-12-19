@@ -508,7 +508,7 @@ Resource* ResourceFetcher::requestResource(
     if (activityLogger) {
       Vector<String> argv;
       argv.append(Resource::resourceTypeToString(
-          factory.type(), request.options().initiatorInfo));
+          factory.type(), request.options().initiatorInfo.name));
       argv.append(request.url());
       activityLogger->logEvent("blinkRequestResource", argv.size(),
                                argv.data());

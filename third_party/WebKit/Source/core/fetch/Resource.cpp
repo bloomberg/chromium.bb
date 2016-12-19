@@ -52,6 +52,7 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 #include <algorithm>
+#include <cassert>
 #include <memory>
 #include <stdint.h>
 
@@ -926,7 +927,8 @@ void Resource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail,
 String Resource::getMemoryDumpName() const {
   return String::format(
       "web_cache/%s_resources/%ld",
-      resourceTypeToString(getType(), options().initiatorInfo), m_identifier);
+      resourceTypeToString(getType(), options().initiatorInfo.name),
+      m_identifier);
 }
 
 void Resource::setCachePolicyBypassingCache() {
@@ -1028,7 +1030,8 @@ void Resource::didChangePriority(ResourceLoadPriority loadPriority,
     m_loader->didChangePriority(loadPriority, intraPriorityValue);
 }
 
-static const char* initatorTypeNameToString(
+// TODO(toyoshim): Consider to generate automatically. https://crbug.com/675515.
+static const char* initiatorTypeNameToString(
     const AtomicString& initiatorTypeName) {
   if (initiatorTypeName == FetchInitiatorTypeNames::css)
     return "CSS resource";
@@ -1049,12 +1052,16 @@ static const char* initatorTypeNameToString(
   if (initiatorTypeName == FetchInitiatorTypeNames::xmlhttprequest)
     return "XMLHttpRequest";
 
+  static_assert(
+      FetchInitiatorTypeNames::FetchInitiatorTypeNamesCount == 12,
+      "New FetchInitiatorTypeNames should be handled correctly here.");
+
   return "Resource";
 }
 
 const char* Resource::resourceTypeToString(
     Type type,
-    const FetchInitiatorInfo& initiatorInfo) {
+    const AtomicString& fetchInitiatorName) {
   switch (type) {
     case Resource::MainResource:
       return "Main resource";
@@ -1067,7 +1074,7 @@ const char* Resource::resourceTypeToString(
     case Resource::Font:
       return "Font";
     case Resource::Raw:
-      return initatorTypeNameToString(initiatorInfo.name);
+      return initiatorTypeNameToString(fetchInitiatorName);
     case Resource::SVGDocument:
       return "SVG document";
     case Resource::XSLStyleSheet:
@@ -1086,7 +1093,7 @@ const char* Resource::resourceTypeToString(
       return "Mock";
   }
   NOTREACHED();
-  return initatorTypeNameToString(initiatorInfo.name);
+  return initiatorTypeNameToString(fetchInitiatorName);
 }
 
 bool Resource::shouldBlockLoadEvent() const {

@@ -287,7 +287,7 @@ ResourceRequestBlockedReason ResourceLoader::canAccessResponse(
     resource->setCORSFailed();
     if (!forPreload) {
       String resourceType = Resource::resourceTypeToString(
-          resource->getType(), resource->options().initiatorInfo);
+          resource->getType(), resource->options().initiatorInfo.name);
       context().addConsoleMessage(
           "Access to " + resourceType + " at '" + response.url().getString() +
           "' from origin '" + sourceOrigin->toString() +

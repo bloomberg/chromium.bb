@@ -42,12 +42,12 @@
 #include "wtf/AutoReset.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/HashSet.h"
+#include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
 
 namespace blink {
 
-struct FetchInitiatorInfo;
 class FetchRequest;
 class ResourceClient;
 class ResourceFetcher;
@@ -347,7 +347,9 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   virtual void reloadIfLoFiOrPlaceholderImage(ResourceFetcher*,
                                               ReloadLoFiOrPlaceholderPolicy) {}
 
-  static const char* resourceTypeToString(Type, const FetchInitiatorInfo&);
+  static const char* resourceTypeToString(
+      Type,
+      const AtomicString& fetchInitiatorName);
 
  protected:
   Resource(const ResourceRequest&, Type, const ResourceLoaderOptions&);
