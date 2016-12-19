@@ -134,16 +134,3 @@ source_set("unit_tests") {
     "//third_party/ocmock",
   ]
 }
-
-source_set("signin_internal") {
-  sources = [
-    "signin_capability.cc",
-    "signin_capability.h",
-  ]
-  deps = [
-    "//base",
-    "//components/signin/core/browser",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/signin",
-  ]
-}

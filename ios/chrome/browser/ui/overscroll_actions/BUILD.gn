@@ -27,29 +27,3 @@ bundle_data("resources") {
     "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }
-
-source_set("overscroll_actions") {
-  sources = [
-    "overscroll_actions_controller.h",
-    "overscroll_actions_controller.mm",
-    "overscroll_actions_view.h",
-    "overscroll_actions_view.mm",
-  ]
-  deps = [
-    "//base",
-    "//ios/chrome/app/theme",
-    "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui/overscroll_actions:resources",
-    "//ios/chrome/browser/ui/static_content",
-    "//ios/chrome/browser/ui/toolbar",
-    "//ios/chrome/browser/ui/util",
-    "//ios/chrome/browser/ui/voice",
-    "//ios/web",
-    "//ui/base",
-  ]
-  allow_circular_includes_from = [ "//ios/chrome/browser/ui/static_content" ]
-  libs = [
-    "QuartzCore.framework",
-    "UIKit.framework",
-  ]
-}

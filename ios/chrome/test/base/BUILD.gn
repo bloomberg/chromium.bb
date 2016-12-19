@@ -24,17 +24,3 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 }
-
-source_set("perf_test_support") {
-  testonly = true
-  sources = [
-    "perf_test_ios.h",
-    "perf_test_ios.mm",
-  ]
-  deps = [
-    "//base",
-    "//ios/chrome/browser/web:web_internal",
-    "//ios/chrome/test:test_support",
-    "//ios/web:test_support",
-  ]
-}

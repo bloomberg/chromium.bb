@@ -29,34 +29,3 @@ bundle_data("assets") {
     "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }
-
-source_set("icons") {
-  sources = [
-    "chrome_icon.h",
-    "chrome_icon.mm",
-  ]
-  deps = [
-    "//base",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui/icons:assets",
-    "//ui/base",
-  ]
-  libs = [
-    "CoreGraphics.framework",
-    "UIKit.framework",
-  ]
-}
-
-source_set("unit_tests") {
-  testonly = true
-  sources = [
-    "chrome_icon_unittest.mm",
-  ]
-  deps = [
-    ":icons",
-    "//ios/chrome/app/strings",
-    "//testing/gtest",
-    "//third_party/ocmock",
-    "//ui/base",
-  ]
-}

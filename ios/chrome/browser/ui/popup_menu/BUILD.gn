@@ -12,24 +12,3 @@ bundle_data("resources") {
     "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }
-
-source_set("popup_menu") {
-  sources = [
-    "popup_menu_controller.h",
-    "popup_menu_controller.mm",
-    "popup_menu_view.h",
-    "popup_menu_view.mm",
-  ]
-  deps = [
-    "//base",
-    "//ios/chrome/app/strings",
-    "//ios/chrome/browser/ui",
-    "//ios/chrome/browser/ui/popup_menu:resources",
-    "//ios/chrome/common",
-    "//ui/base",
-  ]
-  libs = [
-    "QuartzCore.framework",
-    "UIKit.framework",
-  ]
-}
