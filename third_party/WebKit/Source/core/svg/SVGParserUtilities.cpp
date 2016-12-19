@@ -28,9 +28,15 @@
 namespace blink {
 
 template <typename FloatType>
-static inline bool isValidRange(const FloatType& x) {
+static inline bool isValidRange(const FloatType x) {
   static const FloatType max = std::numeric_limits<FloatType>::max();
   return x >= -max && x <= max;
+}
+
+template <typename FloatType>
+static inline bool isValidExponent(const FloatType x) {
+  return x >= std::numeric_limits<FloatType>::min_exponent10 &&
+         x <= std::numeric_limits<FloatType>::max_exponent10;
 }
 
 // We use this generic parseNumber function to allow the Path parsing code to
@@ -41,21 +47,12 @@ static bool genericParseNumber(const CharType*& cursor,
                                const CharType* end,
                                FloatType& number,
                                WhitespaceMode mode) {
-  FloatType integer, decimal, frac, exponent;
-  int sign, expsign;
-
-  exponent = 0;
-  integer = 0;
-  frac = 1;
-  decimal = 0;
-  sign = 1;
-  expsign = 1;
-
   if (mode & AllowLeadingWhitespace)
     skipOptionalSVGSpaces(cursor, end);
 
   const CharType* ptr = cursor;
   // read the sign
+  int sign = 1;
   if (ptr < end && *ptr == '+')
     ptr++;
   else if (ptr < end && *ptr == '-') {
@@ -72,6 +69,7 @@ static bool genericParseNumber(const CharType*& cursor,
   while (ptr < end && *ptr >= '0' && *ptr <= '9')
     ++ptr;  // Advance to first non-digit.
 
+  FloatType integer = 0;
   if (ptr != digitsStart) {
     const CharType* ptrScanIntPart = ptr - 1;
     FloatType multiplier = 1;
@@ -84,6 +82,7 @@ static bool genericParseNumber(const CharType*& cursor,
       return false;
   }
 
+  FloatType decimal = 0;
   if (ptr < end && *ptr == '.') {  // read the decimals
     ptr++;
 
@@ -91,13 +90,19 @@ static bool genericParseNumber(const CharType*& cursor,
     if (ptr >= end || *ptr < '0' || *ptr > '9')
       return false;
 
-    while (ptr < end && *ptr >= '0' && *ptr <= '9')
-      decimal += (*(ptr++) - '0') * (frac *= static_cast<FloatType>(0.1));
+    FloatType frac = 1;
+    while (ptr < end && *ptr >= '0' && *ptr <= '9') {
+      frac *= static_cast<FloatType>(0.1);
+      decimal += (*(ptr++) - '0') * frac;
+    }
   }
 
   // When we get here we should have consumed either a digit for the integer
   // part or a fractional part (with at least one digit after the '.'.)
-  ASSERT(digitsStart != ptr);
+  DCHECK_NE(digitsStart, ptr);
+
+  number = integer + decimal;
+  number *= sign;
 
   // read the exponent part
   if (ptr + 1 < end && (*ptr == 'e' || *ptr == 'E') &&
@@ -105,34 +110,32 @@ static bool genericParseNumber(const CharType*& cursor,
     ptr++;
 
     // read the sign of the exponent
+    bool exponentIsNegative = false;
     if (*ptr == '+')
       ptr++;
     else if (*ptr == '-') {
       ptr++;
-      expsign = -1;
+      exponentIsNegative = true;
     }
 
     // There must be an exponent
     if (ptr >= end || *ptr < '0' || *ptr > '9')
       return false;
 
+    FloatType exponent = 0;
     while (ptr < end && *ptr >= '0' && *ptr <= '9') {
       exponent *= static_cast<FloatType>(10);
       exponent += *ptr - '0';
       ptr++;
     }
+    if (exponentIsNegative)
+      exponent = -exponent;
     // Make sure exponent is valid.
-    if (!isValidRange(exponent) ||
-        exponent > std::numeric_limits<FloatType>::max_exponent)
+    if (!isValidExponent(exponent))
       return false;
+    if (exponent)
+      number *= static_cast<FloatType>(pow(10.0, static_cast<int>(exponent)));
   }
-
-  number = integer + decimal;
-  number *= sign;
-
-  if (exponent)
-    number *=
-        static_cast<FloatType>(pow(10.0, expsign * static_cast<int>(exponent)));
 
   // Don't return Infinity() or NaN().
   if (!isValidRange(number))
