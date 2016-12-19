@@ -1697,6 +1697,12 @@ specialize qw/aom_sub_pixel_avg_variance4x8        msa sse2 ssse3/;
 specialize qw/aom_sub_pixel_avg_variance4x4        msa sse2 ssse3/;
 if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
   foreach $bd (8, 10, 12) {
+    add_proto qw/unsigned int/, "aom_highbd_${bd}_variance2x2", "const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse";
+
+    add_proto qw/unsigned int/, "aom_highbd_${bd}_variance2x4", "const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse";
+
+    add_proto qw/unsigned int/, "aom_highbd_${bd}_variance4x2", "const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse";
+
     foreach (@block_sizes) {
       ($w, $h) = @$_;
       add_proto qw/unsigned int/, "aom_highbd_${bd}_variance${w}x${h}", "const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, uint32_t *sse";
