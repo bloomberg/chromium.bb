@@ -261,6 +261,12 @@ void ExtractBaseAddressAndLength(char** base_address,
   }
   [captureSession_ addInput:captureDeviceInput_];
 
+  // Create and plug the still image capture output. This should happen in
+  // advance of the actual picture to allow for the 3A to stabilize.
+  stillImageOutput_.reset([[AVCaptureStillImageOutput alloc] init]);
+  if (stillImageOutput_ && [captureSession_ canAddOutput:stillImageOutput_])
+    [captureSession_ addOutput:stillImageOutput_];
+
   // Create a new data output for video. The data output is configured to
   // discard late frames by default.
   captureVideoDataOutput_.reset([[AVCaptureVideoDataOutput alloc] init]);
@@ -276,12 +282,6 @@ void ExtractBaseAddressAndLength(char** base_address,
                         queue:dispatch_get_global_queue(
                                   DISPATCH_QUEUE_PRIORITY_DEFAULT, 0)];
   [captureSession_ addOutput:captureVideoDataOutput_];
-
-  // Create and plug the still image capture output. This should happen in
-  // advance of the actual picture to allow for the 3A to stabilize.
-  stillImageOutput_.reset([[AVCaptureStillImageOutput alloc] init]);
-  if (stillImageOutput_ && [captureSession_ canAddOutput:stillImageOutput_])
-    [captureSession_ addOutput:stillImageOutput_];
 
   return YES;
 }
