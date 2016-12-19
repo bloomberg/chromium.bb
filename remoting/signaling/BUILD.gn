@@ -14,6 +14,8 @@ static_library("signaling") {
     "log_to_server.h",
     "push_notification_subscriber.cc",
     "push_notification_subscriber.h",
+    "remoting_bot.cc",
+    "remoting_bot.h",
     "server_log_entry.cc",
     "server_log_entry.h",
     "signal_strategy.h",

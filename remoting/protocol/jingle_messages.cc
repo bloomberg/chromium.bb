@@ -9,6 +9,7 @@
 #include "remoting/base/constants.h"
 #include "remoting/protocol/content_description.h"
 #include "remoting/protocol/name_value_map.h"
+#include "remoting/signaling/remoting_bot.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 using buzz::QName;
@@ -201,11 +202,16 @@ SignalingAddress ParseAddress(
     return empty_instance;
   }
 
-  bool isLcs = (channel == SignalingAddress::Channel::LCS);
+  bool is_lcs = (channel == SignalingAddress::Channel::LCS);
 
-  if (isLcs == endpoint_id.empty()) {
-    *error = (isLcs ? "Missing |endpoint-id| for LCS channel"
+  if (is_lcs == endpoint_id.empty()) {
+    *error = (is_lcs ? "Missing |endpoint-id| for LCS channel"
                     : "|endpoint_id| should be empty for XMPP channel");
+    return empty_instance;
+  }
+
+  if (from && is_lcs && !IsValidBotJid(jid)) {
+    *error = "Reject LCS message from untrusted sender: " + jid;
     return empty_instance;
   }
 

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "google_apis/google_api_keys.h"
+#include "remoting/signaling/remoting_bot.h"
 
 // Configurable service data.
 const char kDirectoryBaseUrl[] = "https://www.googleapis.com/chromoting/v1";
@@ -14,7 +15,6 @@ const char kGcdBaseUrl[] = "https://www.googleapis.com/clouddevices/v1";
 const char kXmppServerAddress[] = "talk.google.com:443";
 const char kXmppServerAddressForMe2MeHost[] = "talk.google.com:5222";
 const bool kXmppServerUseTls = true;
-const char kDirectoryBotJid[] = "remoting@bot.talk.google.com";
 const char kGcdJid[] = "clouddevices.gserviceaccount.com";
 const char kNetworkTraversalApiUrlBase[] =
     "https://networktraversal.googleapis.com/v1alpha/iceconfig?key=";
@@ -41,7 +41,7 @@ ServiceUrls::ServiceUrls()
       xmpp_server_address_(kXmppServerAddress),
       xmpp_server_address_for_me2me_host_(kXmppServerAddressForMe2MeHost),
       xmpp_server_use_tls_(kXmppServerUseTls),
-      directory_bot_jid_(kDirectoryBotJid),
+      directory_bot_jid_(kRemotingBotJid),
       gcd_jid_(kGcdJid),
       ice_config_url_(kNetworkTraversalApiUrlBase +
                       google_apis::GetRemotingAPIKey()) {
