@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Makes sure link preload preloaded resources are delaying onload after discovery assert_equals: expected 4 but got 0
+Harness: the test ran to completion.
+

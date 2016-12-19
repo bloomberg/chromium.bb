@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Setting cancelBubble=true prior to dispatchEvent() assert_array_equals: actual_targets lengths differ, expected 0 got 9
+Harness: the test ran to completion.
+

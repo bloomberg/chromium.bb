@@ -1,0 +1,5 @@
+CONSOLE WARNING: line 15: <link rel=preload> must have a valid `as` value
+This is a testharness.js-based test.
+FAIL Makes sure that preloaded resources are downloaded assert_equals: expected 11 but got 0
+Harness: the test ran to completion.
+

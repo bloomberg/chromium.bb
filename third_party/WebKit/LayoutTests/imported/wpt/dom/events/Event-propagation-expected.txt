@@ -1,0 +1,10 @@
+This is a testharness.js-based test.
+PASS Newly-created Event 
+PASS After stopPropagation() 
+PASS Reinitialized after stopPropagation() 
+PASS After stopImmediatePropagation() 
+PASS Reinitialized after stopImmediatePropagation() 
+FAIL After cancelBubble=true assert_equals: Propagation flag expected false but got true
+PASS Reinitialized after cancelBubble=true 
+Harness: the test ran to completion.
+

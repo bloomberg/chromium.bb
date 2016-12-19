@@ -1,0 +1,11 @@
+This is a testharness.js-based test.
+PASS cancelBubble must be false when an event is initially created. 
+FAIL Initializing an event must set cancelBubble to false. assert_false: initEvent() must set cancelBubble to false. [bubbles=true] expected false got true
+FAIL stopPropagation() must set cancelBubble to true. assert_true: stopPropagation() must set cancelBubble to true. expected true got false
+FAIL stopImmediatePropagation() must set cancelBubble to true. assert_true: stopImmediatePropagation() must set cancelBubble to true. expected true got false
+FAIL Event.cancelBubble=false must have no effect. assert_true: cancelBubble must still be true after attempting to set it to false. expected true got false
+FAIL Event.cancelBubble=false must have no effect during event propagation. assert_unreached: Setting Event.cancelBubble=false after setting Event.cancelBubble=true should have no effect. Reached unreachable code
+PASS cancelBubble must be false after an event has been dispatched. 
+FAIL Event.cancelBubble=true must set the stop propagation flag. assert_unreached: Setting cancelBubble=true should stop the event from propagating further, including during the Capture Phase. Reached unreachable code
+Harness: the test ran to completion.
+

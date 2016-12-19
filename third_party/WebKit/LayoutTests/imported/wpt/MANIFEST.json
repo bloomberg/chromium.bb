@@ -5569,6 +5569,12 @@
             "url": "/WebIDL/ecmascript-binding/interface-object.html"
           }
         ],
+        "accelerometer/idlharness.https.html": [
+          {
+            "path": "accelerometer/idlharness.https.html",
+            "url": "/accelerometer/idlharness.https.html"
+          }
+        ],
         "clear-site-data/navigation.html": [
           {
             "path": "clear-site-data/navigation.html",
@@ -6238,6 +6244,12 @@
             "url": "/dom/events/CustomEvent.html"
           }
         ],
+        "dom/events/Event-cancelBubble.html": [
+          {
+            "path": "dom/events/Event-cancelBubble.html",
+            "url": "/dom/events/Event-cancelBubble.html"
+          }
+        ],
         "dom/events/Event-constants.html": [
           {
             "path": "dom/events/Event-constants.html",
@@ -6260,6 +6272,12 @@
           {
             "path": "dom/events/Event-defaultPrevented.html",
             "url": "/dom/events/Event-defaultPrevented.html"
+          }
+        ],
+        "dom/events/Event-dispatch-bubble-canceled.html": [
+          {
+            "path": "dom/events/Event-dispatch-bubble-canceled.html",
+            "url": "/dom/events/Event-dispatch-bubble-canceled.html"
           }
         ],
         "dom/events/Event-dispatch-bubbles-false.html": [
@@ -6290,6 +6308,12 @@
           {
             "path": "dom/events/Event-dispatch-handlers-changed.html",
             "url": "/dom/events/Event-dispatch-handlers-changed.html"
+          }
+        ],
+        "dom/events/Event-dispatch-multiple-cancelBubble.html": [
+          {
+            "path": "dom/events/Event-dispatch-multiple-cancelBubble.html",
+            "url": "/dom/events/Event-dispatch-multiple-cancelBubble.html"
           }
         ],
         "dom/events/Event-dispatch-multiple-stopPropagation.html": [
@@ -8652,6 +8676,12 @@
           {
             "path": "gamepad/idlharness.html",
             "url": "/gamepad/idlharness.html"
+          }
+        ],
+        "gyroscope/idlharness.https.html": [
+          {
+            "path": "gyroscope/idlharness.https.html",
+            "url": "/gyroscope/idlharness.https.html"
           }
         ],
         "hr-time/basic.html": [
@@ -14801,6 +14831,12 @@
             "url": "/input-events/idlharness.html"
           }
         ],
+        "magnetometer/idlharness.https.html": [
+          {
+            "path": "magnetometer/idlharness.https.html",
+            "url": "/magnetometer/idlharness.https.html"
+          }
+        ],
         "mediacapture-streams/GUM-api.https.html": [
           {
             "path": "mediacapture-streams/GUM-api.https.html",
@@ -14973,6 +15009,84 @@
           {
             "path": "pointerevents/pointerevent_touch-action-verification.html",
             "url": "/pointerevents/pointerevent_touch-action-verification.html"
+          }
+        ],
+        "preload/avoid_delaying_onload_link_preload.html": [
+          {
+            "path": "preload/avoid_delaying_onload_link_preload.html",
+            "url": "/preload/avoid_delaying_onload_link_preload.html"
+          }
+        ],
+        "preload/delaying_onload_link_preload_after_discovery.html": [
+          {
+            "path": "preload/delaying_onload_link_preload_after_discovery.html",
+            "url": "/preload/delaying_onload_link_preload_after_discovery.html"
+          }
+        ],
+        "preload/download_resources.html": [
+          {
+            "path": "preload/download_resources.html",
+            "url": "/preload/download_resources.html"
+          }
+        ],
+        "preload/dynamic_adding_preload.html": [
+          {
+            "path": "preload/dynamic_adding_preload.html",
+            "url": "/preload/dynamic_adding_preload.html"
+          }
+        ],
+        "preload/link_header_preload.html": [
+          {
+            "path": "preload/link_header_preload.html",
+            "url": "/preload/link_header_preload.html"
+          }
+        ],
+        "preload/link_header_preload_delay_onload.html": [
+          {
+            "path": "preload/link_header_preload_delay_onload.html",
+            "url": "/preload/link_header_preload_delay_onload.html"
+          }
+        ],
+        "preload/onerror_event.html": [
+          {
+            "path": "preload/onerror_event.html",
+            "url": "/preload/onerror_event.html"
+          }
+        ],
+        "preload/onload_event.html": [
+          {
+            "path": "preload/onload_event.html",
+            "url": "/preload/onload_event.html"
+          }
+        ],
+        "preload/preload-csp.sub.html": [
+          {
+            "path": "preload/preload-csp.sub.html",
+            "url": "/preload/preload-csp.sub.html"
+          }
+        ],
+        "preload/preload-default-csp.sub.html": [
+          {
+            "path": "preload/preload-default-csp.sub.html",
+            "url": "/preload/preload-default-csp.sub.html"
+          }
+        ],
+        "preload/preload_with_type.html": [
+          {
+            "path": "preload/preload_with_type.html",
+            "url": "/preload/preload_with_type.html"
+          }
+        ],
+        "preload/single_download_late_used_preload.html": [
+          {
+            "path": "preload/single_download_late_used_preload.html",
+            "url": "/preload/single_download_late_used_preload.html"
+          }
+        ],
+        "preload/single_download_preload.html": [
+          {
+            "path": "preload/single_download_preload.html",
+            "url": "/preload/single_download_preload.html"
           }
         ],
         "quirks-mode/blocks-ignore-line-height.html": [

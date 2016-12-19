@@ -1,0 +1,5 @@
+CONSOLE WARNING: line 24: <link rel=preload> must have a valid `as` value
+This is a testharness.js-based test.
+FAIL Makes sure that preloaded resources trigger the onload event assert_true: style triggered load event expected true got false
+Harness: the test ran to completion.
+

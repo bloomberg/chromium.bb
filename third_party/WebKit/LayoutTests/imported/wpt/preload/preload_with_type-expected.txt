@@ -1,0 +1,12 @@
+CONSOLE WARNING: line 38: <link rel=preload> has an unsupported `type` value
+CONSOLE WARNING: line 39: <link rel=preload> has an unsupported `type` value
+CONSOLE WARNING: line 40: <link rel=preload> has an unsupported `type` value
+CONSOLE WARNING: line 41: <link rel=preload> has an unsupported `type` value
+CONSOLE WARNING: line 42: <link rel=preload> has an unsupported `type` value
+CONSOLE WARNING: line 44: <link rel=preload> has an unsupported `type` value
+CONSOLE WARNING: line 45: <link rel=preload> has an unsupported `type` value
+CONSOLE WARNING: line 47: <link rel=preload> has an unsupported `type` value
+This is a testharness.js-based test.
+FAIL Makes sure that preloaded resources with a type attribute trigger the onload event assert_true: style triggered load event expected true got false
+Harness: the test ran to completion.
+
