@@ -18,12 +18,12 @@ namespace chromeos {
 
 namespace tether {
 
-HostScanScheduler::ContextImpl::ContextImpl(
+HostScanScheduler::DelegateImpl::DelegateImpl(
     const content::BrowserContext* browser_context) {
   // TODO(khorimoto): Use browser_context to get a CryptAuthDeviceManager.
 }
 
-void HostScanScheduler::ContextImpl::AddObserver(
+void HostScanScheduler::DelegateImpl::AddObserver(
     HostScanScheduler* host_scan_scheduler) {
   LoginState::Get()->AddObserver(host_scan_scheduler);
   DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
@@ -33,7 +33,7 @@ void HostScanScheduler::ContextImpl::AddObserver(
   // TODO(khorimoto): Add listener for CryptAuthDeviceManager.
 }
 
-void HostScanScheduler::ContextImpl::RemoveObserver(
+void HostScanScheduler::DelegateImpl::RemoveObserver(
     HostScanScheduler* host_scan_scheduler) {
   LoginState::Get()->RemoveObserver(host_scan_scheduler);
   DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
@@ -43,20 +43,20 @@ void HostScanScheduler::ContextImpl::RemoveObserver(
   // TODO(khorimoto): Add observer of CryptAuthDeviceManager.
 }
 
-bool HostScanScheduler::ContextImpl::IsAuthenticatedUserLoggedIn() const {
+bool HostScanScheduler::DelegateImpl::IsAuthenticatedUserLoggedIn() const {
   LoginState* login_state = LoginState::Get();
   return login_state && login_state->IsUserLoggedIn() &&
          login_state->IsUserAuthenticated();
 }
 
-bool HostScanScheduler::ContextImpl::IsNetworkConnectedOrConnecting() const {
+bool HostScanScheduler::DelegateImpl::IsNetworkConnectedOrConnecting() const {
   const NetworkState* network_state =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   return network_state && (network_state->IsConnectedState() ||
                            network_state->IsConnectingState());
 }
 
-bool HostScanScheduler::ContextImpl::AreTetherHostsSynced() const {
+bool HostScanScheduler::DelegateImpl::AreTetherHostsSynced() const {
   // TODO(khorimoto): Return CryptAuthDeviceManager->GetTetherHosts().empty().
   return true;
 }
@@ -64,18 +64,18 @@ bool HostScanScheduler::ContextImpl::AreTetherHostsSynced() const {
 HostScanScheduler::HostScanScheduler(
     const content::BrowserContext* browser_context,
     std::unique_ptr<HostScanner> host_scanner)
-    : HostScanScheduler(base::MakeUnique<ContextImpl>(browser_context),
+    : HostScanScheduler(base::MakeUnique<DelegateImpl>(browser_context),
                         std::move(host_scanner)) {}
 
 HostScanScheduler::~HostScanScheduler() {
   if (initialized_) {
-    context_->RemoveObserver(this);
+    delegate_->RemoveObserver(this);
   }
 }
 
-HostScanScheduler::HostScanScheduler(std::unique_ptr<Context> context,
+HostScanScheduler::HostScanScheduler(std::unique_ptr<Delegate> delegate,
                                      std::unique_ptr<HostScanner> host_scanner)
-    : context_(std::move(context)),
+    : delegate_(std::move(delegate)),
       host_scanner_(std::move(host_scanner)),
       initialized_(false) {}
 
@@ -85,22 +85,22 @@ void HostScanScheduler::InitializeAutomaticScans() {
   }
 
   initialized_ = true;
-  context_->AddObserver(this);
+  delegate_->AddObserver(this);
 }
 
 bool HostScanScheduler::ScheduleScanNowIfPossible() {
-  if (!context_->IsAuthenticatedUserLoggedIn()) {
+  if (!delegate_->IsAuthenticatedUserLoggedIn()) {
     PA_LOG(INFO) << "Authenticated user not logged in; not starting scan.";
     return false;
   }
 
-  if (context_->IsNetworkConnectedOrConnecting()) {
+  if (delegate_->IsNetworkConnectedOrConnecting()) {
     PA_LOG(INFO)
         << "Network is already connected/connecting; not starting scan.";
     return false;
   }
 
-  if (!context_->AreTetherHostsSynced()) {
+  if (!delegate_->AreTetherHostsSynced()) {
     PA_LOG(INFO) << "No tether hosts available on account; not starting scan.";
     return false;
   }

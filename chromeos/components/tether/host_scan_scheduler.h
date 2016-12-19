@@ -30,9 +30,8 @@ class HostScanner;
 // Schedules scans for tether hosts. To start a scan attempt, three conditions
 // must be true:
 //
-//   (1) The user has just started using the device; specifically, the user has
-//       just logged in or has just resumed using the device after it had been
-//       sleeping/suspended.
+//   (1) The user has just logged in or has just resumed using the device after
+//       it had been sleeping/suspended.
 //   (2) The device does not have an Internet connection.
 //   (3) The device has synced data about other devices belonging to the user's
 //       account, and at least one of those devices is capable of being a tether
@@ -75,7 +74,7 @@ class HostScanScheduler : public LoginState::Observer,
  private:
   friend class HostScanSchedulerTest;
 
-  class Context {
+  class Delegate {
    public:
     virtual void AddObserver(HostScanScheduler* host_scan_scheduler) = 0;
     virtual void RemoveObserver(HostScanScheduler* host_scan_scheduler) = 0;
@@ -84,9 +83,9 @@ class HostScanScheduler : public LoginState::Observer,
     virtual bool AreTetherHostsSynced() const = 0;
   };
 
-  class ContextImpl : public Context {
+  class DelegateImpl : public Delegate {
    public:
-    ContextImpl(const content::BrowserContext* browser_context);
+    DelegateImpl(const content::BrowserContext* browser_context);
 
     void AddObserver(HostScanScheduler* host_scan_scheduler) override;
     void RemoveObserver(HostScanScheduler* host_scan_scheduler) override;
@@ -95,10 +94,10 @@ class HostScanScheduler : public LoginState::Observer,
     bool AreTetherHostsSynced() const override;
   };
 
-  HostScanScheduler(std::unique_ptr<Context> context_,
+  HostScanScheduler(std::unique_ptr<Delegate> delegate,
                     std::unique_ptr<HostScanner> host_scanner);
 
-  std::unique_ptr<Context> context_;
+  std::unique_ptr<Delegate> delegate_;
   std::unique_ptr<HostScanner> host_scanner_;
   bool initialized_;
 
