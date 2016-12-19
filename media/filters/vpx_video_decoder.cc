@@ -230,13 +230,9 @@ class VpxVideoDecoder::MemoryPool
 };
 
 VpxVideoDecoder::MemoryPool::MemoryPool() {
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "VpxVideoDecoder", base::ThreadTaskRunnerHandle::Get());
 }
 
 VpxVideoDecoder::MemoryPool::~MemoryPool() {
-  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-      this);
 }
 
 VpxVideoDecoder::MemoryPool::VP9FrameBuffer*
@@ -482,7 +478,12 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
           g_vpx_offload_thread.Pointer()->RequestOffloadThread();
     }
 
+    DCHECK(!memory_pool_);
     memory_pool_ = new MemoryPool();
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        memory_pool_.get(), "VpxVideoDecoder",
+        base::ThreadTaskRunnerHandle::Get());
+
     if (vpx_codec_set_frame_buffer_functions(vpx_codec_,
                                              &MemoryPool::GetVP9FrameBuffer,
                                              &MemoryPool::ReleaseVP9FrameBuffer,
@@ -511,6 +512,8 @@ void VpxVideoDecoder::CloseDecoder() {
     vpx_codec_destroy(vpx_codec_);
     delete vpx_codec_;
     vpx_codec_ = nullptr;
+    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+        memory_pool_.get());
     memory_pool_ = nullptr;
   }
   if (vpx_codec_alpha_) {
