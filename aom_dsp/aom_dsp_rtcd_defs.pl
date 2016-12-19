@@ -385,6 +385,55 @@ if ((aom_config("CONFIG_TX64X64") eq "yes")) {
 
 # High bitdepth functions
 if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
+  add_proto qw/void aom_highbd_d207_predictor_2x2/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
+  specialize qw/aom_highbd_d207_predictor_2x2/;
+
+  add_proto qw/void aom_highbd_d207e_predictor_2x2/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
+  specialize qw/aom_highbd_d207e_predictor_2x2/;
+
+  add_proto qw/void aom_highbd_d45e_predictor_2x2/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
+  specialize qw/aom_highbd_d45e_predictor_2x2/;
+
+  add_proto qw/void aom_highbd_d63_predictor_2x2/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
+  specialize qw/aom_highbd_d63_predictor_2x2/;
+
+  add_proto qw/void aom_highbd_d63e_predictor_2x2/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
+  specialize qw/aom_highbd_d63e_predictor_2x2/;
+
+  add_proto qw/void aom_highbd_h_predictor_2x2/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
+  specialize qw/aom_highbd_h_predictor_2x2/;
+
+  add_proto qw/void aom_highbd_d117_predictor_2x2/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
+  specialize qw/aom_highbd_d117_predictor_2x2/;
+
+  add_proto qw/void aom_highbd_d135_predictor_2x2/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
+  specialize qw/aom_highbd_d135_predictor_2x2/;
+
+  add_proto qw/void aom_highbd_d153_predictor_2x2/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
+  specialize qw/aom_highbd_d153_predictor_2x2/;
+
+  add_proto qw/void aom_highbd_v_predictor_2x2/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
+  specialize qw/aom_highbd_v_predictor_2x2/;
+
+  add_proto qw/void aom_highbd_dc_predictor_2x2/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
+  specialize qw/aom_highbd_dc_predictor_2x2/;
+
+  add_proto qw/void aom_highbd_dc_predictor_2x2/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
+  specialize qw/aom_highbd_dc_predictor_2x2/;
+
+  add_proto qw/void aom_highbd_dc_top_predictor_2x2/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
+  specialize qw/aom_highbd_dc_top_predictor_2x2/;
+
+  add_proto qw/void aom_highbd_dc_left_predictor_2x2/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
+  specialize qw/aom_highbd_dc_left_predictor_2x2/;
+
+  add_proto qw/void aom_highbd_dc_128_predictor_2x2/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
+  specialize qw/aom_highbd_dc_128_predictor_2x2/;
+
+  add_proto qw/void aom_highbd_tm_predictor_2x2/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
+  specialize qw/aom_highbd_tm_predictor_2x2/;
+
+
   add_proto qw/void aom_highbd_d207_predictor_4x4/, "uint16_t *dst, ptrdiff_t y_stride, const uint16_t *above, const uint16_t *left, int bd";
   specialize qw/aom_highbd_d207_predictor_4x4/;
 
