@@ -28,9 +28,9 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
 
   // Loads the URL in a WebContents. Will call observe on all current observers
   // with the created WebContents.
-  void LoadPage(const GURL& url);
+  virtual void LoadPage(const GURL& url);
   // Cancels loading of the current page. Calls Close() on internal WebContents.
-  void Cancel();
+  virtual void Cancel();
   // Returns the inner web contents.
   content::WebContents* web_contents() { return web_contents_.get(); }
 
@@ -77,6 +77,8 @@ class BackgroundLoaderContents : public content::WebContentsDelegate {
 
  private:
   friend class BackgroundLoaderContentsTest;
+  friend class BackgroundLoaderContentsStub;
+
   BackgroundLoaderContents();
 
   std::unique_ptr<content::WebContents> web_contents_;
