@@ -460,6 +460,7 @@ void StyleEngine::didDetach() {
   clearResolver();
   m_viewportResolver = nullptr;
   m_mediaQueryEvaluator = nullptr;
+  clearFontCache();
 }
 
 void StyleEngine::clearFontCache() {
