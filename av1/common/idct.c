@@ -2511,8 +2511,8 @@ void av1_highbd_idct32x32_add(const tran_low_t *input, uint8_t *dest,
 
 #if CONFIG_CB4X4
 void av1_highbd_inv_txfm_add_2x2(const tran_low_t *input, uint8_t *dest,
-                                 int stride, int eob, TX_TYPE tx_type,
-                                 int lossless, int bd) {
+                                 int stride, int eob, int bd, TX_TYPE tx_type,
+                                 int lossless) {
   tran_high_t a1 = input[0] >> UNIT_QUANT_SHIFT;
   tran_high_t b1 = input[1] >> UNIT_QUANT_SHIFT;
   tran_high_t c1 = input[2] >> UNIT_QUANT_SHIFT;

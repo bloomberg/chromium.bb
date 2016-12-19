@@ -52,14 +52,30 @@ static const TXFM_2D_CFG *inv_txfm_cfg_ls[FLIPADST_ADST + 1][TX_SIZES] = {
 };
 #else
 static const TXFM_2D_CFG *inv_txfm_cfg_ls[TX_TYPES][TX_SIZES] = {
-  { &inv_txfm_2d_cfg_dct_dct_4, &inv_txfm_2d_cfg_dct_dct_8,
-    &inv_txfm_2d_cfg_dct_dct_16, &inv_txfm_2d_cfg_dct_dct_32 },
-  { &inv_txfm_2d_cfg_adst_dct_4, &inv_txfm_2d_cfg_adst_dct_8,
-    &inv_txfm_2d_cfg_adst_dct_16, &inv_txfm_2d_cfg_adst_dct_32 },
-  { &inv_txfm_2d_cfg_dct_adst_4, &inv_txfm_2d_cfg_dct_adst_8,
-    &inv_txfm_2d_cfg_dct_adst_16, &inv_txfm_2d_cfg_dct_adst_32 },
-  { &inv_txfm_2d_cfg_adst_adst_4, &inv_txfm_2d_cfg_adst_adst_8,
-    &inv_txfm_2d_cfg_adst_adst_16, &inv_txfm_2d_cfg_adst_adst_32 },
+  {
+#if CONFIG_CB4X4
+      NULL,
+#endif
+      &inv_txfm_2d_cfg_dct_dct_4, &inv_txfm_2d_cfg_dct_dct_8,
+      &inv_txfm_2d_cfg_dct_dct_16, &inv_txfm_2d_cfg_dct_dct_32 },
+  {
+#if CONFIG_CB4X4
+      NULL,
+#endif
+      &inv_txfm_2d_cfg_adst_dct_4, &inv_txfm_2d_cfg_adst_dct_8,
+      &inv_txfm_2d_cfg_adst_dct_16, &inv_txfm_2d_cfg_adst_dct_32 },
+  {
+#if CONFIG_CB4X4
+      NULL,
+#endif
+      &inv_txfm_2d_cfg_dct_adst_4, &inv_txfm_2d_cfg_dct_adst_8,
+      &inv_txfm_2d_cfg_dct_adst_16, &inv_txfm_2d_cfg_dct_adst_32 },
+  {
+#if CONFIG_CB4X4
+      NULL,
+#endif
+      &inv_txfm_2d_cfg_adst_adst_4, &inv_txfm_2d_cfg_adst_adst_8,
+      &inv_txfm_2d_cfg_adst_adst_16, &inv_txfm_2d_cfg_adst_adst_32 },
 };
 #endif
 
