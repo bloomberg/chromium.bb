@@ -118,7 +118,9 @@
       child surface relative to a parent surface. Rules can be defined to ensure
       the child surface remains within the visible area's borders, and to
       specify how the child surface changes its position, such as sliding along
-      an axis, or flipping around a rectangle.
+      an axis, or flipping around a rectangle. These positioner-created rules are
+      constrained by the requirement that a child surface must intersect with or
+      be at least partially adjacent to its parent surface.
 
       See the various requests for details about possible rules.
 
@@ -941,7 +943,8 @@
       The x and y arguments passed when creating the popup object specify
       where the top left of the popup should be placed, relative to the
       local surface coordinates of the parent surface. See
-      xdg_surface.get_popup.
+      xdg_surface.get_popup. An xdg_popup must intersect with or be at least
+      partially adjacent to its parent surface.
 
       The client must call wl_surface.commit on the corresponding wl_surface
       for the xdg_popup state to take effect.
