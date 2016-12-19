@@ -84,7 +84,8 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
       scoped_refptr<base::SingleThreadTaskRunner> net_task_runner)
       : HttpServerPropertiesManager(pref_delegate,
                                     pref_task_runner,
-                                    net_task_runner) {
+                                    net_task_runner),
+        pref_update_delay_(base::TimeDelta()) {
     InitializeOnNetworkThread();
   }
 
@@ -96,7 +97,7 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
   // Post tasks without a delay during tests.
   void StartPrefsUpdateTimerOnNetworkThread(base::TimeDelta delay) override {
     HttpServerPropertiesManager::StartPrefsUpdateTimerOnNetworkThread(
-        base::TimeDelta());
+        pref_update_delay_);
   }
 
   void UpdateCacheFromPrefsOnUIConcrete() {
@@ -124,6 +125,9 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
         DETECTED_CORRUPTED_PREFS);
   }
 
+  void set_pref_update_delay(base::TimeDelta delay) {
+    pref_update_delay_ = delay;
+  }
   MOCK_METHOD0(UpdateCacheFromPrefsOnPrefThread, void());
   MOCK_METHOD1(UpdatePrefsFromCacheOnNetworkThread, void(const base::Closure&));
   MOCK_METHOD1(ScheduleUpdatePrefsOnNetworkThread, void(Location location));
@@ -143,6 +147,8 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
                     const base::Closure& completion));
 
  private:
+  // Time delays used in test for posting tasks. Default to zero.
+  base::TimeDelta pref_update_delay_;
   DISALLOW_COPY_AND_ASSIGN(TestingHttpServerPropertiesManager);
 };
 
@@ -656,6 +662,68 @@ TEST_P(HttpServerPropertiesManagerTest, SupportsSpdy) {
   EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
 
   EXPECT_TRUE(http_server_props_manager_->SupportsRequestPriority(spdy_server));
+  Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
+}
+
+// Regression test for crbug.com/670519. Test that there is only one pref update
+// scheduled if multiple updates happen in a given time period. Subsequent pref
+// update could also be scheduled once the previous scheduled update is
+// completed.
+TEST_P(HttpServerPropertiesManagerTest,
+       SinglePrefUpdateForTwoSpdyServerCacheChangese) {
+  http_server_props_manager_->set_pref_update_delay(
+      base::TimeDelta::FromMilliseconds(60));
+  ExpectPrefsUpdateRepeatedly();
+  ExpectScheduleUpdatePrefsOnNetworkThreadRepeatedly();
+
+  // Post an update task to the network thread. SetSupportsSpdy calls
+  // ScheduleUpdatePrefsOnNetworkThread with a delay of 60ms.
+  url::SchemeHostPort spdy_server("https", "mail.google.com", 443);
+  EXPECT_FALSE(
+      http_server_props_manager_->SupportsRequestPriority(spdy_server));
+  http_server_props_manager_->SetSupportsSpdy(spdy_server, true);
+  // The pref update task should be scheduled to network thread.
+  EXPECT_EQ(1u, net_test_task_runner_->GetPendingTaskCount());
+
+  // Move forward the task runner with 20ms.
+  net_test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(20));
+
+  // Set another spdy server to trigger another call to
+  // ScheduleUpdatePrefsOnNetworkThread. There should be no new update posted to
+  // the network thread.
+  url::SchemeHostPort spdy_server2("https", "drive.google.com", 443);
+  http_server_props_manager_->SetSupportsSpdy(spdy_server2, true);
+  EXPECT_EQ(1u, net_test_task_runner_->GetPendingTaskCount());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+
+  // Move forward another 40ms. The pref update should be executed.
+  net_test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(40));
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+
+  EXPECT_TRUE(http_server_props_manager_->SupportsRequestPriority(spdy_server));
+  EXPECT_TRUE(
+      http_server_props_manager_->SupportsRequestPriority(spdy_server2));
+  // Set the third spdy server to trigger one more call to
+  // ScheduleUpdatePrefsOnNetworkThread. A new update task should be posted to
+  // network thread now since the previous one is completed.
+  url::SchemeHostPort spdy_server3("https", "maps.google.com", 443);
+  http_server_props_manager_->SetSupportsSpdy(spdy_server3, true);
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_EQ(1u, net_test_task_runner_->GetPendingTaskCount());
+
+  // Run the task.
+  EXPECT_TRUE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+  net_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_TRUE(pref_test_task_runner_->HasPendingTask());
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+
   Mock::VerifyAndClearExpectations(http_server_props_manager_.get());
 }
 

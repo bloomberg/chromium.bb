@@ -781,8 +781,10 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnNetworkThread(
 void HttpServerPropertiesManager::ScheduleUpdatePrefsOnNetworkThread(
     Location location) {
   DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
-  // Cancel pending updates, if any.
-  network_prefs_update_timer_->Stop();
+  // Do not schedule a new update if there is already one scheduled.
+  if (network_prefs_update_timer_->IsRunning())
+    return;
+
   StartPrefsUpdateTimerOnNetworkThread(
       base::TimeDelta::FromMilliseconds(kUpdatePrefsDelayMs));
   // TODO(rtenneti): Delete the following histogram after collecting some data.
