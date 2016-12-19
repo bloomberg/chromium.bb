@@ -218,20 +218,25 @@ bool IsBlacklistedFunction(const clang::FunctionDecl& decl) {
   return decl.getName() == "swap";
 }
 
+bool IsBlacklistedMethodName(llvm::StringRef name) {
+  static const char* kBlacklistedNames[] = {
+      "lock", "unlock", "try_lock",
+      "begin", "end", "rbegin", "rend",
+  };
+  for (const auto& b : kBlacklistedNames) {
+    if (name == b)
+      return true;
+  }
+  return false;
+}
+
 bool IsBlacklistedMethod(const clang::CXXMethodDecl& decl) {
   if (decl.isStatic())
     return false;
 
   clang::StringRef name = decl.getName();
-
-  // These methods should never be renamed.
-  static const char* kBlacklistMethods[] = {"trace",  "traceImpl", "lock",
-                                            "unlock", "try_lock",  "begin",
-                                            "end",    "rbegin",    "rend"};
-  for (const auto& b : kBlacklistMethods) {
-    if (name == b)
+  if (IsBlacklistedMethodName(name))
       return true;
-  }
 
   // Subclasses of InspectorAgent will subclass "disable()" from both blink and
   // from gen/, which is problematic, but DevTools folks don't want to rename
@@ -240,21 +245,6 @@ bool IsBlacklistedMethod(const clang::CXXMethodDecl& decl) {
       IsMethodOverrideOf(decl, "blink::InspectorAgent"))
     return true;
 
-  return false;
-}
-
-bool IsBlacklistedFunctionOrMethodName(llvm::StringRef name) {
-  static const char* kBlacklistedNames[] = {
-      // From IsBlacklistedFunction:
-      "swap",
-      // From IsBlacklistedMethod:
-      "trace", "traceImpl", "lock", "unlock", "try_lock", "begin", "end",
-      "rbegin", "rend", "disable",
-  };
-  for (const auto& b : kBlacklistedNames) {
-    if (name == b)
-      return true;
-  }
   return false;
 }
 
@@ -826,7 +816,7 @@ class UnresolvedRewriterBase : public RewriterBase<TargetNode> {
 
     // |T::myMethod(...)| -> |T::MyMethod(...)|.
     if ((old_name.find('_') == std::string::npos) && IsCallee(node, context) &&
-        !IsBlacklistedFunctionOrMethodName(old_name)) {
+        !IsBlacklistedMethodName(old_name)) {
       new_name = old_name;
       new_name[0] = clang::toUppercase(old_name[0]);
       return true;

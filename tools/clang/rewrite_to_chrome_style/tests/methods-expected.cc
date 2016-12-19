@@ -54,8 +54,9 @@ class Task {
   my_iterator end() {}
   my_iterator rbegin() {}
   MyIterator rend() {}
-  // The trace() method is used by Oilpan, we shouldn't rename it.
-  void trace() {}
+  // The trace() method is used by Oilpan, but we plan to tweak the Oilpan's
+  // clang plugin, so that it recognizes the new method name.
+  void Trace() {}
   // These are used by std::unique_lock and std::lock_guard.
   void lock() {}
   void unlock() {}
