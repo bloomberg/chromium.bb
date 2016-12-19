@@ -21,9 +21,9 @@ class ComputedStyle;
 class LayoutObject;
 class NGConstraintSpace;
 class NGFragmentBase;
-class NGFragmentBuilder;
 class NGLayoutAlgorithm;
 class NGLayoutInlineItem;
+class NGLayoutInlineItemRange;
 class NGLayoutInlineItemsBuilder;
 
 // Represents an inline node to be laid out.
@@ -39,11 +39,14 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   // calling the Layout method.
   void PrepareLayout();
 
-  unsigned CreateLine(unsigned start, NGConstraintSpace*, NGFragmentBuilder*);
-
   String Text(unsigned start_offset, unsigned end_offset) const {
     return text_content_.substring(start_offset, end_offset);
   }
+
+  Vector<NGLayoutInlineItem>& Items() { return items_; }
+  NGLayoutInlineItemRange Items(unsigned start_index, unsigned end_index);
+
+  bool IsBidiEnabled() const { return is_bidi_enabled_; }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -94,6 +97,7 @@ class NGLayoutInlineItem {
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
   TextDirection Direction() const { return bidi_level_ & 1 ? RTL : LTR; }
+  UBiDiLevel BidiLevel() const { return bidi_level_; }
   UScriptCode Script() const { return script_; }
   const ComputedStyle* Style() const { return style_; }
 
@@ -125,6 +129,44 @@ DEFINE_TYPE_CASTS(NGInlineNode,
                   node,
                   node->Type() == NGLayoutInputNode::kLegacyInline,
                   node.Type() == NGLayoutInputNode::kLegacyInline);
+
+// A vector-like object that points to a subset of an array of
+// |NGLayoutInlineItem|.
+// The source vector must keep alive and must not resize while this object
+// is alive.
+class NGLayoutInlineItemRange {
+  STACK_ALLOCATED();
+
+ public:
+  NGLayoutInlineItemRange(Vector<NGLayoutInlineItem>*,
+                          unsigned start_index,
+                          unsigned end_index);
+
+  unsigned StartIndex() const { return start_index_; }
+  unsigned EndIndex() const { return start_index_ + size_; }
+  unsigned Size() const { return size_; }
+
+  NGLayoutInlineItem& operator[](unsigned index) {
+    RELEASE_ASSERT(index < size_);
+    return start_item_[index];
+  }
+  const NGLayoutInlineItem& operator[](unsigned index) const {
+    RELEASE_ASSERT(index < size_);
+    return start_item_[index];
+  }
+
+  using iterator = NGLayoutInlineItem*;
+  using const_iterator = const NGLayoutInlineItem*;
+  iterator begin() { return start_item_; }
+  iterator end() { return start_item_ + size_; }
+  const_iterator begin() const { return start_item_; }
+  const_iterator end() const { return start_item_ + size_; }
+
+ private:
+  NGLayoutInlineItem* start_item_;
+  unsigned size_;
+  unsigned start_index_;
+};
 
 }  // namespace blink
 

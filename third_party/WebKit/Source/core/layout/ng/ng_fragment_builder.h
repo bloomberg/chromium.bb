@@ -11,7 +11,9 @@
 namespace blink {
 
 class NGFragmentBase;
+class NGInlineNode;
 class NGPhysicalFragment;
+class NGPhysicalTextFragment;
 
 class CORE_EXPORT NGFragmentBuilder final
     : public GarbageCollectedFinalized<NGFragmentBuilder> {
@@ -81,6 +83,9 @@ class CORE_EXPORT NGFragmentBuilder final
 
   // Creates the fragment. Can only be called once.
   NGPhysicalFragment* ToFragment();
+  NGPhysicalTextFragment* ToTextFragment(NGInlineNode*,
+                                         unsigned start_index,
+                                         unsigned end_index);
 
   DECLARE_VIRTUAL_TRACE();
 

@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_block_node.h"
+#include "core/layout/ng/ng_inline_node.h"
 #include "core/layout/ng/ng_physical_fragment_base.h"
 #include "platform/heap/Handle.h"
 
@@ -15,6 +16,9 @@ namespace blink {
 class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragmentBase {
  public:
   NGPhysicalTextFragment(
+      const NGInlineNode* node,
+      unsigned start_index,
+      unsigned end_index,
       NGPhysicalSize size,
       NGPhysicalSize overflow,
       HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
@@ -23,11 +27,30 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragmentBase {
                                overflow,
                                kFragmentText,
                                out_of_flow_descendants,
-                               out_of_flow_positions) {}
+                               out_of_flow_positions),
+        node_(node),
+        start_index_(start_index),
+        end_index_(end_index) {}
 
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+    visitor->trace(node_);
     NGPhysicalFragmentBase::traceAfterDispatch(visitor);
   }
+
+  const NGInlineNode* Node() const { return node_; }
+
+  // The range of NGLayoutInlineItem.
+  // |StartIndex| shows the lower logical index, so the visual order iteration
+  // for RTL should be done from |EndIndex - 1| to |StartIndex|.
+  unsigned StartIndex() const { return start_index_; }
+  unsigned EndIndex() const { return end_index_; }
+
+ private:
+  // TODO(kojii): NGInlineNode is to access text content and NGLayoutInlineItem.
+  // Review if it's better to point them.
+  Member<const NGInlineNode> node_;
+  unsigned start_index_;
+  unsigned end_index_;
 };
 
 DEFINE_TYPE_CASTS(NGPhysicalTextFragment,

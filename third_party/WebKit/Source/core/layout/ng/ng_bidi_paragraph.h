@@ -7,12 +7,14 @@
 
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
+#include "wtf/Vector.h"
 
 #include <unicode/ubidi.h>
 
 namespace blink {
 
 class ComputedStyle;
+class NGLayoutInlineItemRange;
 
 // NGBidiParagraph resolves bidirectional runs in a paragraph using ICU BiDi.
 // http://userguide.icu-project.org/transforms/bidi
@@ -40,6 +42,11 @@ class NGBidiParagraph {
   // Returns the end offset of a logical run that starts from the |start|
   // offset.
   unsigned GetLogicalRun(unsigned start, UBiDiLevel*) const;
+
+  // Create a list of indicies in the visual order.
+  static void IndiciesInVisualOrder(
+      const NGLayoutInlineItemRange&,
+      Vector<int32_t, 32>* item_indicies_in_visual_order_out);
 
  private:
   UBiDi* ubidi_ = nullptr;

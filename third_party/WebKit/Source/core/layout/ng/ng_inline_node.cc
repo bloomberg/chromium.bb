@@ -39,6 +39,10 @@ NGInlineNode::NGInlineNode()
 
 NGInlineNode::~NGInlineNode() {}
 
+NGLayoutInlineItemRange NGInlineNode::Items(unsigned start, unsigned end) {
+  return NGLayoutInlineItemRange(&items_, start, end);
+}
+
 void NGInlineNode::PrepareLayout() {
   // Scan list of siblings collecting all in-flow non-atomic inlines. A single
   // NGInlineNode represent a collection of adjacent non-atomic inlines.
@@ -202,32 +206,6 @@ void NGInlineNode::ShapeText() {
   }
 }
 
-unsigned NGInlineNode::CreateLine(unsigned start,
-                                  NGConstraintSpace* constraint_space,
-                                  NGFragmentBuilder* builder) {
-  // TODO(kojii): |unsigned start| should be BreakToken.
-  // TODO(kojii): implement line breaker and bidi reordering.
-  for (unsigned i = start; i < items_.size(); i++) {
-    const NGLayoutInlineItem& item = items_[i];
-    // TODO(kojii): handle bidi controls and atomic inlines properly.
-    if (!item.style_)
-      continue;
-    // TODO(kojii): There should be only one oof descendants list for a
-    // NGInlineNode. Attach to the first NGPhysicalTextFragment and leave the
-    // rest empty, or attach to line box/root line box fragment?
-    HeapLinkedHashSet<WeakMember<NGBlockNode>> out_of_flow_descendants;
-    Vector<NGStaticPosition> out_of_flow_positions;
-    //  TODO(kojii): Create NGTextFragment from |item|.
-    NGPhysicalTextFragment* fragment = new NGPhysicalTextFragment(
-        NGPhysicalSize(), NGPhysicalSize(), out_of_flow_descendants,
-        out_of_flow_positions);
-    builder->AddChild(new NGTextFragment(constraint_space->WritingMode(),
-                                         item.Direction(), fragment),
-                      NGLogicalOffset());
-  }
-  return 0;  // All items are consumed.
-}
-
 bool NGInlineNode::Layout(NGConstraintSpace* constraint_space,
                           NGFragmentBase** out) {
   PrepareLayout();
@@ -273,6 +251,16 @@ DEFINE_TRACE(NGInlineNode) {
   visitor->trace(next_sibling_);
   visitor->trace(layout_algorithm_);
   NGLayoutInputNode::trace(visitor);
+}
+
+NGLayoutInlineItemRange::NGLayoutInlineItemRange(
+    Vector<NGLayoutInlineItem>* items,
+    unsigned start_index,
+    unsigned end_index)
+    : start_item_(&(*items)[start_index]),
+      size_(end_index - start_index),
+      start_index_(start_index) {
+  RELEASE_ASSERT(start_index <= end_index && end_index <= items->size());
 }
 
 }  // namespace blink

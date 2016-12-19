@@ -7,6 +7,7 @@
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_fragment_base.h"
 #include "core/layout/ng/ng_physical_fragment.h"
+#include "core/layout/ng/ng_physical_text_fragment.h"
 
 namespace blink {
 
@@ -146,6 +147,18 @@ NGPhysicalFragment* NGFragmentBuilder::ToFragment() {
   return new NGPhysicalFragment(
       physical_size, overflow_.ConvertToPhysical(writing_mode_), children,
       out_of_flow_descendants_, out_of_flow_positions_, margin_strut_);
+}
+
+NGPhysicalTextFragment* NGFragmentBuilder::ToTextFragment(NGInlineNode* node,
+                                                          unsigned start_index,
+                                                          unsigned end_index) {
+  DCHECK_EQ(type_, NGPhysicalFragmentBase::kFragmentText);
+  DCHECK(children_.isEmpty());
+  DCHECK(offsets_.isEmpty());
+  return new NGPhysicalTextFragment(
+      node, start_index, end_index, size_.ConvertToPhysical(writing_mode_),
+      overflow_.ConvertToPhysical(writing_mode_), out_of_flow_descendants_,
+      out_of_flow_positions_);
 }
 
 DEFINE_TRACE(NGFragmentBuilder) {
