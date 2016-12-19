@@ -190,7 +190,7 @@ OfflinePageEvaluationBridge::GetTestingRequestCoordinator(
       base::MakeUnique<RequestCoordinator>(
           std::move(policy), std::move(prerenderer_offliner), std::move(queue),
           std::move(scheduler), network_quality_estimator);
-  request_coordinator->SetImmediateScheduleCallbackForTest(
+  request_coordinator->SetInternalStartProcessingCallbackForTest(
       base::Bind(&android::EvaluationTestScheduler::ImmediateScheduleCallback,
                  base::Unretained(scheduler.get())));
 

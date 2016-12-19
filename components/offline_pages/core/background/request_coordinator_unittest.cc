@@ -119,10 +119,10 @@ class RequestCoordinatorTest : public testing::Test {
 
   bool is_starting() { return coordinator_->is_starting(); }
 
-  // Empty callback function.
-  void ImmediateScheduleCallbackFunction(bool result) {
-    immediate_schedule_callback_called_ = true;
-    immediate_schedule_callback_result_ = result;
+  // Test processing callback function.
+  void ProcessingCallbackFunction(bool result) {
+    processing_callback_called_ = true;
+    processing_callback_result_ = result;
   }
 
   // Callback function which releases a wait for it.
@@ -249,17 +249,17 @@ class RequestCoordinatorTest : public testing::Test {
 
   DeviceConditions device_conditions() { return device_conditions_; }
 
-  base::Callback<void(bool)> immediate_callback() {
-    return immediate_callback_;
+  base::Callback<void(bool)> processing_callback() {
+    return processing_callback_;
   }
 
   base::Callback<void(bool)> waiting_callback() { return waiting_callback_; }
-  bool immediate_schedule_callback_called() const {
-    return immediate_schedule_callback_called_;
+  bool processing_callback_called() const {
+    return processing_callback_called_;
   }
 
-  bool immediate_schedule_callback_result() const {
-    return immediate_schedule_callback_result_;
+  bool processing_callback_result() const {
+    return processing_callback_result_;
   }
 
   const base::HistogramTester& histograms() const { return histogram_tester_; }
@@ -275,10 +275,10 @@ class RequestCoordinatorTest : public testing::Test {
   OfflinerStub* offliner_;
   base::WaitableEvent waiter_;
   ObserverStub observer_;
-  bool immediate_schedule_callback_called_;
-  bool immediate_schedule_callback_result_;
+  bool processing_callback_called_;
+  bool processing_callback_result_;
   DeviceConditions device_conditions_;
-  base::Callback<void(bool)> immediate_callback_;
+  base::Callback<void(bool)> processing_callback_;
   base::Callback<void(bool)> waiting_callback_;
   base::HistogramTester histogram_tester_;
 };
@@ -290,8 +290,8 @@ RequestCoordinatorTest::RequestCoordinatorTest()
       offliner_(nullptr),
       waiter_(base::WaitableEvent::ResetPolicy::MANUAL,
               base::WaitableEvent::InitialState::NOT_SIGNALED),
-      immediate_schedule_callback_called_(false),
-      immediate_schedule_callback_result_(false),
+      processing_callback_called_(false),
+      processing_callback_result_(false),
       device_conditions_(!kPowerRequired,
                          kBatteryPercentageHigh,
                          net::NetworkChangeNotifier::CONNECTION_3G) {}
@@ -314,8 +314,8 @@ void RequestCoordinatorTest::SetUp() {
       std::move(scheduler_stub), network_quality_estimator_.get()));
   coordinator_->AddObserver(&observer_);
   SetNetworkConnected(true);
-  immediate_callback_ =
-      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
+  processing_callback_ =
+      base::Bind(&RequestCoordinatorTest::ProcessingCallbackFunction,
                  base::Unretained(this));
   // Override the normal immediate callback with a wait releasing callback.
   waiting_callback_ = base::Bind(
@@ -362,7 +362,7 @@ void RequestCoordinatorTest::SetupForOfflinerDoneCallbackTest(
 
   // Override the processing callback for test visiblity.
   base::Callback<void(bool)> callback =
-      base::Bind(&RequestCoordinatorTest::ImmediateScheduleCallbackFunction,
+      base::Bind(&RequestCoordinatorTest::ProcessingCallbackFunction,
                  base::Unretained(this));
   coordinator()->SetProcessingCallbackForTest(callback);
 
@@ -399,10 +399,10 @@ SavePageRequest RequestCoordinatorTest::AddRequest2() {
 
 TEST_F(RequestCoordinatorTest, StartScheduledProcessingWithNoRequests) {
   EXPECT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
-                                                      immediate_callback()));
+                                                      processing_callback()));
   PumpLoop();
 
-  EXPECT_TRUE(immediate_schedule_callback_called());
+  EXPECT_TRUE(processing_callback_called());
 
   // Verify queue depth UMA for starting scheduled processing on empty queue.
   if (base::SysInfo::IsLowEndDevice()) {
@@ -428,22 +428,90 @@ TEST_F(RequestCoordinatorTest, StartScheduledProcessingWithRequestInProgress) {
 
   // Sending the request to the offliner should make it busy.
   EXPECT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
-                                                      immediate_callback()));
+                                                      processing_callback()));
   PumpLoop();
 
   EXPECT_TRUE(is_busy());
   // Since the offliner is disabled, this callback should not be called.
-  EXPECT_FALSE(immediate_schedule_callback_called());
+  EXPECT_FALSE(processing_callback_called());
 
-  // Now trying to start processing on another request should return false.
+  // Now trying to start processing should return false since already busy.
   EXPECT_FALSE(coordinator()->StartScheduledProcessing(device_conditions(),
-                                                       immediate_callback()));
+                                                       processing_callback()));
+}
+
+TEST_F(RequestCoordinatorTest, StartImmediateProcessingWithNoRequests) {
+  // Ensure not low-end device so immediate start can happen.
+  SetIsLowEndDeviceForTest(false);
+
+  EXPECT_TRUE(coordinator()->StartImmediateProcessing(device_conditions(),
+                                                      processing_callback()));
+  PumpLoop();
+
+  EXPECT_TRUE(processing_callback_called());
+
+  histograms().ExpectBucketCount("OfflinePages.Background.ImmediateStartStatus",
+                                 0 /* STARTED */, 1);
+}
+
+TEST_F(RequestCoordinatorTest, StartImmediateProcessingOnSvelte) {
+  // Set as low-end device to verfiy immediate processing will not start.
+  SetIsLowEndDeviceForTest(true);
+
+  EXPECT_FALSE(coordinator()->StartImmediateProcessing(device_conditions(),
+                                                       processing_callback()));
+  histograms().ExpectBucketCount("OfflinePages.Background.ImmediateStartStatus",
+                                 5 /* NOT_STARTED_ON_SVELTE */, 1);
+}
+
+TEST_F(RequestCoordinatorTest, StartImmediateProcessingWhenDisconnected) {
+  // Ensure not low-end device so immediate start can happen.
+  SetIsLowEndDeviceForTest(false);
+
+  DeviceConditions disconnected_conditions(
+      !kPowerRequired, kBatteryPercentageHigh,
+      net::NetworkChangeNotifier::CONNECTION_NONE);
+  EXPECT_FALSE(coordinator()->StartImmediateProcessing(disconnected_conditions,
+                                                       processing_callback()));
+  histograms().ExpectBucketCount("OfflinePages.Background.ImmediateStartStatus",
+                                 3 /* NO_CONNECTION */, 1);
+}
+
+TEST_F(RequestCoordinatorTest, StartImmediateProcessingWithRequestInProgress) {
+  // Ensure not low-end device so immediate start can happen.
+  SetIsLowEndDeviceForTest(false);
+
+  // Start processing for this request.
+  EXPECT_NE(coordinator()->SavePageLater(
+                kUrl1, kClientId1, kUserRequested,
+                RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER),
+            0);
+
+  // Disable the automatic offliner callback.
+  EnableOfflinerCallback(false);
+
+  // Sending the request to the offliner should make it busy.
+  EXPECT_TRUE(coordinator()->StartImmediateProcessing(device_conditions(),
+                                                      processing_callback()));
+  PumpLoop();
+
+  EXPECT_TRUE(is_busy());
+  // Since the offliner is disabled, this callback should not be called.
+  EXPECT_FALSE(processing_callback_called());
+
+  // Now trying to start processing should return false since already busy.
+  EXPECT_FALSE(coordinator()->StartImmediateProcessing(device_conditions(),
+                                                       processing_callback()));
+
+  histograms().ExpectBucketCount("OfflinePages.Background.ImmediateStartStatus",
+                                 1 /* BUSY */, 1);
 }
 
 TEST_F(RequestCoordinatorTest, SavePageLater) {
   // The user-requested request which gets processed by SavePageLater
   // would invoke user request callback.
-  coordinator()->SetImmediateScheduleCallbackForTest(immediate_callback());
+  coordinator()->SetInternalStartProcessingCallbackForTest(
+      processing_callback());
 
   EXPECT_NE(coordinator()->SavePageLater(
                 kUrl1, kClientId1, kUserRequested,
@@ -456,7 +524,7 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
 
   // Wait for callbacks to finish, both request queue and offliner.
   PumpLoop();
-  EXPECT_TRUE(immediate_schedule_callback_called());
+  EXPECT_TRUE(processing_callback_called());
 
   // Check the request queue is as expected.
   EXPECT_EQ(1UL, last_requests().size());
@@ -489,7 +557,8 @@ TEST_F(RequestCoordinatorTest, SavePageLater) {
 TEST_F(RequestCoordinatorTest, SavePageLaterFailed) {
   // The user-requested request which gets processed by SavePageLater
   // would invoke user request callback.
-  coordinator()->SetImmediateScheduleCallbackForTest(immediate_callback());
+  coordinator()->SetInternalStartProcessingCallbackForTest(
+      processing_callback());
 
   EXPECT_TRUE(
       coordinator()->SavePageLater(
@@ -505,11 +574,11 @@ TEST_F(RequestCoordinatorTest, SavePageLaterFailed) {
 
   // On low-end devices the callback will be called with false since the
   // processing started but failed due to svelte devices.
-  EXPECT_TRUE(immediate_schedule_callback_called());
+  EXPECT_TRUE(processing_callback_called());
   if (base::SysInfo::IsLowEndDevice()) {
-    EXPECT_FALSE(immediate_schedule_callback_result());
+    EXPECT_FALSE(processing_callback_result());
   } else {
-    EXPECT_TRUE(immediate_schedule_callback_result());
+    EXPECT_TRUE(processing_callback_result());
   }
 
   // Check the request queue is as expected.
@@ -540,7 +609,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
   // for callbacks.
   SendOfflinerDoneCallback(request, Offliner::RequestStatus::SAVED);
   PumpLoop();
-  EXPECT_TRUE(immediate_schedule_callback_called());
+  EXPECT_TRUE(processing_callback_called());
 
   // Verify the request gets removed from the queue, and wait for callbacks.
   coordinator()->queue()->GetRequests(base::Bind(
@@ -575,7 +644,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceededButLostNetwork) {
   // for callbacks.
   SendOfflinerDoneCallback(request, Offliner::RequestStatus::SAVED);
   PumpLoop();
-  EXPECT_TRUE(immediate_schedule_callback_called());
+  EXPECT_TRUE(processing_callback_called());
 
   // Verify not busy with 2nd request (since no connection).
   EXPECT_FALSE(is_busy());
@@ -607,7 +676,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
 
   // For retriable failure, processing should continue to 2nd request so
   // no scheduler callback yet.
-  EXPECT_FALSE(immediate_schedule_callback_called());
+  EXPECT_FALSE(processing_callback_called());
 
   // Busy processing 2nd request.
   EXPECT_TRUE(is_busy());
@@ -646,7 +715,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoRetryFailure) {
 
   // For no retry failure, processing should continue to 2nd request so
   // no scheduler callback yet.
-  EXPECT_FALSE(immediate_schedule_callback_called());
+  EXPECT_FALSE(processing_callback_called());
 
   // Busy processing 2nd request.
   EXPECT_TRUE(is_busy());
@@ -683,7 +752,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoNextFailure) {
 
   // For no next failure, processing should not continue to 2nd request so
   // expect scheduler callback.
-  EXPECT_TRUE(immediate_schedule_callback_called());
+  EXPECT_TRUE(processing_callback_called());
 
   // Not busy for NO_NEXT failure.
   EXPECT_FALSE(is_busy());
@@ -707,7 +776,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneForegroundCancel) {
   SendOfflinerDoneCallback(request,
                            Offliner::RequestStatus::FOREGROUND_CANCELED);
   PumpLoop();
-  EXPECT_TRUE(immediate_schedule_callback_called());
+  EXPECT_TRUE(processing_callback_called());
 
   // Verify the request is not removed from the queue, and wait for callbacks.
   coordinator()->queue()->GetRequests(base::Bind(
@@ -730,7 +799,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDonePrerenderingCancel) {
   // for callbacks.
   SendOfflinerDoneCallback(request, Offliner::RequestStatus::LOADING_CANCELED);
   PumpLoop();
-  EXPECT_TRUE(immediate_schedule_callback_called());
+  EXPECT_TRUE(processing_callback_called());
 
   // Verify the request is not removed from the queue, and wait for callbacks.
   coordinator()->queue()->GetRequests(base::Bind(
@@ -749,7 +818,7 @@ TEST_F(RequestCoordinatorTest, OfflinerDonePrerenderingCancel) {
 // we should make a scheduler entry for a non-user requested item.
 TEST_F(RequestCoordinatorTest, RequestNotPickedDisabledItemsRemain) {
   coordinator()->StartScheduledProcessing(device_conditions(),
-                                          immediate_callback());
+                                          processing_callback());
   EXPECT_TRUE(is_starting());
 
   // Call RequestNotPicked, simulating a request on the disabled list.
@@ -770,7 +839,7 @@ TEST_F(RequestCoordinatorTest, RequestNotPickedDisabledItemsRemain) {
 // we should make a scheduler entry for a non-user requested item.
 TEST_F(RequestCoordinatorTest, RequestNotPickedNonUserRequestedItemsRemain) {
   coordinator()->StartScheduledProcessing(device_conditions(),
-                                          immediate_callback());
+                                          processing_callback());
   EXPECT_TRUE(is_starting());
 
   // Call RequestNotPicked, and make sure we pick schedule a task for non user
@@ -779,7 +848,7 @@ TEST_F(RequestCoordinatorTest, RequestNotPickedNonUserRequestedItemsRemain) {
   PumpLoop();
 
   EXPECT_FALSE(is_starting());
-  EXPECT_TRUE(immediate_schedule_callback_called());
+  EXPECT_TRUE(processing_callback_called());
 
   // The scheduler should have been called to schedule the non-user requested
   // task.
@@ -833,11 +902,11 @@ TEST_F(RequestCoordinatorTest, StartScheduledProcessingWithLoadingDisabled) {
 
   DisableLoading();
   EXPECT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
-                                                      immediate_callback()));
+                                                      processing_callback()));
 
   // Let the async callbacks in the request coordinator run.
   PumpLoop();
-  EXPECT_TRUE(immediate_schedule_callback_called());
+  EXPECT_TRUE(processing_callback_called());
 
   EXPECT_FALSE(is_starting());
   EXPECT_EQ(Offliner::LOADING_NOT_STARTED, last_offlining_status());
@@ -852,7 +921,7 @@ TEST_F(RequestCoordinatorTest,
   PumpLoop();
 
   EXPECT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
-                                                      immediate_callback()));
+                                                      processing_callback()));
   EXPECT_TRUE(is_starting());
 
   // Now, quick, before it can do much (we haven't called PumpLoop), cancel it.
@@ -860,7 +929,7 @@ TEST_F(RequestCoordinatorTest,
 
   // Let the async callbacks in the request coordinator run.
   PumpLoop();
-  EXPECT_TRUE(immediate_schedule_callback_called());
+  EXPECT_TRUE(processing_callback_called());
 
   EXPECT_FALSE(is_starting());
 
@@ -884,7 +953,7 @@ TEST_F(RequestCoordinatorTest,
   EnableOfflinerCallback(false);
 
   EXPECT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
-                                                      immediate_callback()));
+                                                      processing_callback()));
   EXPECT_TRUE(is_starting());
 
   // Let all the async parts of the start processing pipeline run to completion.
@@ -896,7 +965,7 @@ TEST_F(RequestCoordinatorTest,
   observer().Clear();
 
   // Since the offliner is disabled, this callback should not be called.
-  EXPECT_FALSE(immediate_schedule_callback_called());
+  EXPECT_FALSE(processing_callback_called());
 
   // Coordinator should now be busy.
   EXPECT_TRUE(is_busy());
@@ -935,12 +1004,12 @@ TEST_F(RequestCoordinatorTest, RemoveInflightRequest) {
   EnableOfflinerCallback(false);
 
   EXPECT_TRUE(coordinator()->StartScheduledProcessing(device_conditions(),
-                                                      immediate_callback()));
+                                                      processing_callback()));
 
   // Let all the async parts of the start processing pipeline run to completion.
   PumpLoop();
   // Since the offliner is disabled, this callback should not be called.
-  EXPECT_FALSE(immediate_schedule_callback_called());
+  EXPECT_FALSE(processing_callback_called());
 
   // Remove the request while it is processing.
   std::vector<int64_t> request_ids{kRequestId1};

@@ -110,6 +110,19 @@ class RequestCoordinator : public KeyedService,
   bool StartScheduledProcessing(const DeviceConditions& device_conditions,
                                 const base::Callback<void(bool)>& callback);
 
+  // Attempts to starts processing of one or more queued save page later
+  // requests (if device conditions are suitable) in immediate mode
+  // (opposed to scheduled background mode). This method is suitable to call
+  // when there is some user action that suggests the user wants to do this
+  // operation now, if possible, vs. trying to do it in the background when
+  // idle.
+  // Returns whether processing was started and that caller should expect
+  // a callback. If processing was already active or some condition was
+  // not suitable for immediate processing (e.g., network or low-end device),
+  // returns false.
+  bool StartImmediateProcessing(const DeviceConditions& device_conditions,
+                                const base::Callback<void(bool)>& callback);
+
   // Stops the current request processing if active. This is a way for
   // caller to abort processing; otherwise, processing will complete on
   // its own. In either case, the callback will be called when processing
@@ -133,12 +146,12 @@ class RequestCoordinator : public KeyedService,
     scheduler_callback_ = callback;
   }
 
-  // A way to set the callback which would be called if the request will be
-  // scheduled immediately. Used by testing harness to determine if a request
-  // has been processed.
-  void SetImmediateScheduleCallbackForTest(
+  // A way to set the callback which would be called if processing will be
+  // triggered immediately internally by the coordinator. Used by testing
+  // harness to determine if a request has been processed.
+  void SetInternalStartProcessingCallbackForTest(
       const base::Callback<void(bool)> callback) {
-    immediate_schedule_callback_ = callback;
+    internal_start_processing_callback_ = callback;
   }
 
   void StartImmediatelyForTest() { StartImmediatelyIfConnected(); }
@@ -255,7 +268,9 @@ class RequestCoordinator : public KeyedService,
   // as to other device conditions).
   void StartImmediatelyIfConnected();
 
-  OfflinerImmediateStartStatus TryImmediateStart();
+  OfflinerImmediateStartStatus TryImmediateStart(
+      const DeviceConditions& device_conditions,
+      const base::Callback<void(bool)>& callback);
 
   // Requests a callback upon the next network connection to start processing.
   void RequestConnectedEventForStarting();
@@ -408,14 +423,20 @@ class RequestCoordinator : public KeyedService,
   // A set of request_ids that we are holding off until the download manager is
   // done with them.
   std::set<int64_t> disabled_requests_;
-  // Calling this returns to the scheduler across the JNI bridge.
+  // The processing callback to call when processing the current processing
+  // window stops. It is set from the Start*Processing() call that triggered
+  // the processing or it may be the |internal_start_processing_callback_| if
+  // processing was triggered internally.
+  // For StartScheduledProcessing() processing, calling its callback returns
+  // to the scheduler across the JNI bridge.
   base::Callback<void(bool)> scheduler_callback_;
+  // Callback invoked when internally triggered processing is done. It is
+  // kept as a class member so that it may be overridden for test visibility.
+  base::Callback<void(bool)> internal_start_processing_callback_;
   // Logger to record events.
   RequestCoordinatorEventLogger event_logger_;
   // Timer to watch for pre-render attempts running too long.
   base::OneShotTimer watchdog_timer_;
-  // Callback invoked when an immediate request is done (default empty).
-  base::Callback<void(bool)> immediate_schedule_callback_;
   // Used for potential immediate processing when we get network connection.
   std::unique_ptr<ConnectionNotifier> connection_notifier_;
   // Allows us to pass a weak pointer to callbacks.

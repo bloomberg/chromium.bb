@@ -178,7 +178,7 @@ RequestCoordinator::RequestCoordinator(
       active_request_(nullptr),
       last_offlining_status_(Offliner::RequestStatus::UNKNOWN),
       scheduler_callback_(base::Bind(&EmptySchedulerCallback)),
-      immediate_schedule_callback_(base::Bind(&EmptySchedulerCallback)),
+      internal_start_processing_callback_(base::Bind(&EmptySchedulerCallback)),
       weak_ptr_factory_(this) {
   DCHECK(policy_ != nullptr);
   std::unique_ptr<CleanupTaskFactory> cleanup_factory(
@@ -529,6 +529,18 @@ bool RequestCoordinator::StartScheduledProcessing(
                                  device_conditions, callback);
 }
 
+// Returns true if the caller should expect a callback, false otherwise.
+bool RequestCoordinator::StartImmediateProcessing(
+    const DeviceConditions& device_conditions,
+    const base::Callback<void(bool)>& callback) {
+  OfflinerImmediateStartStatus immediate_start_status =
+      TryImmediateStart(device_conditions, callback);
+  UMA_HISTOGRAM_ENUMERATION(
+      "OfflinePages.Background.ImmediateStartStatus", immediate_start_status,
+      RequestCoordinator::OfflinerImmediateStartStatus::STATUS_COUNT);
+  return immediate_start_status == OfflinerImmediateStartStatus::STARTED;
+}
+
 bool RequestCoordinator::StartProcessingInternal(
     const ProcessingWindowState processing_state,
     const DeviceConditions& device_conditions,
@@ -549,14 +561,18 @@ bool RequestCoordinator::StartProcessingInternal(
 }
 
 void RequestCoordinator::StartImmediatelyIfConnected() {
-  OfflinerImmediateStartStatus immediate_start_status = TryImmediateStart();
-  UMA_HISTOGRAM_ENUMERATION(
-      "OfflinePages.Background.ImmediateStartStatus", immediate_start_status,
-      RequestCoordinator::OfflinerImmediateStartStatus::STATUS_COUNT);
+  // Start processing with manufactured conservative battery conditions
+  // (i.e., assume no battery).
+  // TODO(dougarnett): Obtain actual battery conditions (from Android/Java).
+  DeviceConditions device_conditions(false, 0, GetConnectionType());
+  StartImmediateProcessing(device_conditions,
+                           internal_start_processing_callback_);
 }
 
 RequestCoordinator::OfflinerImmediateStartStatus
-RequestCoordinator::TryImmediateStart() {
+RequestCoordinator::TryImmediateStart(
+    const DeviceConditions& device_conditions,
+    const base::Callback<void(bool)>& callback) {
   DVLOG(2) << "Immediate " << __func__;
   // Make sure not already busy processing.
   if (is_busy_)
@@ -567,11 +583,11 @@ RequestCoordinator::TryImmediateStart() {
       !offline_pages::IsOfflinePagesSvelteConcurrentLoadingEnabled()) {
     DVLOG(2) << "low end device, returning";
     // Let the scheduler know we are done processing and failed due to svelte.
-    immediate_schedule_callback_.Run(false);
+    callback.Run(false);
     return OfflinerImmediateStartStatus::NOT_STARTED_ON_SVELTE;
   }
 
-  if (GetConnectionType() ==
+  if (device_conditions.GetNetConnectionType() ==
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE) {
     RequestConnectedEventForStarting();
     return OfflinerImmediateStartStatus::NO_CONNECTION;
@@ -581,13 +597,8 @@ RequestCoordinator::TryImmediateStart() {
     ClearConnectedEventRequest();
   }
 
-  // Start processing with manufactured conservative battery conditions
-  // (i.e., assume no battery).
-  // TODO(dougarnett): Obtain actual battery conditions (from Android/Java).
-
-  DeviceConditions device_conditions(false, 0, GetConnectionType());
   if (StartProcessingInternal(ProcessingWindowState::IMMEDIATE_WINDOW,
-                              device_conditions, immediate_schedule_callback_))
+                              device_conditions, callback))
     return OfflinerImmediateStartStatus::STARTED;
   else
     return OfflinerImmediateStartStatus::NOT_ACCEPTED;
