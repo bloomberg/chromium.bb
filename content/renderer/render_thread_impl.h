@@ -506,6 +506,9 @@ class CONTENT_EXPORT RenderThreadImpl
   // Purges memory and suspends the renderer.
   void SuspendRenderer();
 
+  // Resumes the renderer if it is suspended.
+  void ResumeRenderer();
+
   // base::MemoryCoordinatorClient implementation:
   void OnMemoryStateChange(base::MemoryState state) override;
 

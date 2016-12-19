@@ -1894,7 +1894,6 @@ void RenderThreadImpl::OnProcessResume() {
     // and follow MemoryCoordinator's request.
     base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
         base::MemoryState::NORMAL);
-    renderer_scheduler_->ResumeRenderer();
   }
 }
 
@@ -2261,8 +2260,10 @@ void RenderThreadImpl::OnMemoryStateChange(base::MemoryState state) {
   }
   switch (state) {
     case base::MemoryState::NORMAL:
+      ResumeRenderer();
       break;
     case base::MemoryState::THROTTLED:
+      ResumeRenderer();
       ReleaseFreeMemory();
       break;
     case base::MemoryState::SUSPENDED:
@@ -2275,10 +2276,16 @@ void RenderThreadImpl::OnMemoryStateChange(base::MemoryState state) {
 }
 
 void RenderThreadImpl::SuspendRenderer() {
+  DCHECK(IsMainThread());
   OnTrimMemoryImmediately();
   ReleaseFreeMemory();
   ClearMemory();
   renderer_scheduler_->SuspendRenderer();
+}
+
+void RenderThreadImpl::ResumeRenderer() {
+  DCHECK(IsMainThread());
+  renderer_scheduler_->ResumeRenderer();
 }
 
 void RenderThreadImpl::ClearMemory() {
