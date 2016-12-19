@@ -39,7 +39,7 @@ namespace blink {
 class ExecutionContext;
 
 // A base class that prevents binding callbacks from executing when
-// active dom objects are stopped or suspended, and is used by the
+// ContextLifecycleObservers are stopped or suspended, and is used by the
 // generated callback v8 bindings code to avoid erroneously CRASH()'ing
 // after script execution on a worker has been scheduled to terminate.
 //

@@ -3116,7 +3116,7 @@ bool LayoutObject::willRenderImage() {
   if (style()->visibility() != EVisibility::Visible)
     return false;
 
-  // We will not render a new image when Active DOM is suspended
+  // We will not render a new image when SuspendableObjects is suspended
   if (document().activeDOMObjectsAreSuspended())
     return false;
 
