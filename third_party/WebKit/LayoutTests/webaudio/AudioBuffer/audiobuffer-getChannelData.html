@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="../../resources/js-test.js"></script>
+    <script src="../resources/compatibility.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audioparam-testing.js"></script>
+    <title>Test AudioBuffer.getChannelData() Returns the Same Object</title>
+  </head>
+
+  <body>
+    <script>
+      description("Test AudioBuffer.getChannelData() Returns the Same Object");
+      window.jsTestIsAsync = true;
+
+      var sampleRate = 48000;
+      var renderDuration = 0.5;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("buffer-eq", function (done) {
+        // Verify that successive calls to getChannelData return the same buffer.
+        var context = new AudioContext();
+        var channelCount = 2;
+        var frameLength = 1000;
+        var buffer = context.createBuffer(channelCount, frameLength, context.sampleRate);
+        var success = true;
+
+        for (var c = 0; c < channelCount; ++c) {
+          var a = buffer.getChannelData(c);
+          var b = buffer.getChannelData(c);
+          testPassed("a = buffer.getChannelData(" + c + ")");
+          testPassed("b = buffer.getChannelData(" + c + ")");
+          
+          if (a === b) {
+            testPassed("a === b is true");
+          } else {
+            testFailed("a === b is false");
+            success = false;
+          }
+        }
+
+        if (success)
+          testPassed("getChannelData correctly returned the same buffer.\n")
+        else
+          testFailed("getChannelData inccorrectly returned the different buffers.\n")
+        done();
+      });
+
+      audit.defineTask("buffer-not-eq", function (done) {
+        var context = new AudioContext();
+        var channelCount = 2;
+        var frameLength = 1000;
+        var buffer1 = context.createBuffer(channelCount, frameLength, context.sampleRate);
+        var buffer2 = context.createBuffer(channelCount, frameLength, context.sampleRate);
+        var success = true;
+
+        for (var c = 0; c < channelCount; ++c) {
+          var a = buffer1.getChannelData(c);
+          var b = buffer2.getChannelData(c);
+          testPassed("a = buffer1.getChannelData(" + c + ")");
+          testPassed("b = buffer2.getChannelData(" + c + ")");
+          
+          if (a === b) {
+            testFailed("a === b is true");
+            success = false;
+          } else {
+            testPassed("a === b is false");
+          }
+        }
+
+        if (success)
+          testPassed("getChannelData correctly returned different buffers.\n")
+        else
+          testFailed("getChannelData incorrectly returned the same buffers.\n")
+        done();
+      });
+
+      audit.defineTask("finish", function (done) {
+        finishJSTest();
+        done();
+      });
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

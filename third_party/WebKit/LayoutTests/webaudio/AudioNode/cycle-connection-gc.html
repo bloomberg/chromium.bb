@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<script src="../../resources/js-test.js"></script>
+<script>
+description('Cycles of AudioNode connections should be collected.');
+var context = new OfflineAudioContext(2, 44100, 44100);
+gc();
+var initialCount = internals.audioHandlerCount();
+createCycle();
+debug('A cycle was created:');
+shouldBeTrue('internals.audioHandlerCount() > initialCount');
+gc();
+debug('GC happened:');
+shouldBe('internals.audioHandlerCount()', 'initialCount');
+
+function createCycle() {
+    var source = context.createBufferSource();
+    var delay1 = context.createDelay();
+    var delay2 = context.createDelay();
+    source.connect(delay1);
+    delay1.connect(delay2);
+    delay2.connect(delay1);
+    delay1.connect(context.destination);
+}
+</script>

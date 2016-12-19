@@ -1,0 +1,476 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="../../resources/js-test.js"></script>
+    <script src="../resources/compatibility.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+    <title>Test AudioParam Nominal Range Values</title>
+  </head>
+
+  <body>
+    <script>
+      description("Test AudioParam Nominal Range Values.");
+      window.jsTestIsAsync = true;
+
+      // Some arbitrary sample rate for the offline context. 
+      var sampleRate = 48000;
+
+      // The actual offline context
+      var context;
+
+      // The set of all methods that we've tested for verifying that we tested all of the necessary
+      // objects.
+      var testedMethods = new Set();
+
+      // The most positive single float value (the value just before infinity).  Be careful when
+      // changing this value!  Javascript only uses double floats, so the value here should be the
+      // max single-float value, converted directly to a double-float value.  This also depends on
+      // Javascript reading this value and producing the desired double-float value correctly.
+      var mostPositiveFloat = 3.4028234663852886e38;
+
+      var audit = Audit.createTaskRunner();
+
+      // Array describing the tests that should be run.
+      var testConfigs = [{
+        // The name of the method to create the particular node to be tested.
+        creator: "createGain",
+
+        // Any args to pass to the creator function.
+        args: [],
+
+        // The min/max limits for each AudioParam of the node.  This is a dictionary whose keys are
+        // the names of each AudioParam in the node.  Don't define this if the node doesn't have any
+        // AudioParam attributes.
+        limits: {
+          gain: {
+            // The expected min and max values for this AudioParam.
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat
+          }
+        }
+      }, {
+        creator: "createDelay",
+        // Just specify a non-default value for the maximum delay so we can make sure the limits are
+        // set correctly.
+        args: [1.5],
+        limits: {
+          delayTime: {
+            minValue: 0,
+            maxValue: 1.5
+          }
+        }
+      }, {
+        creator: "createBufferSource",
+        args: [],
+        limits: {
+          playbackRate: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat
+          },
+          detune: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat
+          }
+        }
+      }, {
+        creator: "createStereoPanner",
+        args: [],
+        limits: {
+          pan: {
+            minValue: -1,
+            maxValue: 1
+          }
+        }
+      }, {
+        creator: "createDynamicsCompressor",
+        args: [],
+        // Do not set limits for reduction;  it's currently an AudioParam but should be a float.
+        // So let the test fail for reduction.  When reduction is changed, this test will then
+        // correctly pass.
+        limits: {
+          threshold: {
+            minValue: -100,
+            maxValue: 0
+          },
+          knee: {
+            minValue: 0,
+            maxValue: 40
+          },
+          ratio: {
+            minValue: 1,
+            maxValue: 20
+          },
+          attack: {
+            minValue: 0,
+            maxValue: 1
+          },
+          release: {
+            minValue: 0,
+            maxValue: 1
+          }
+        }
+      },
+      {
+        creator: "createBiquadFilter",
+        args: [],
+        limits: {
+          gain: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat
+          },
+          Q: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat
+          },
+          frequency: {
+            minValue: 0,
+            maxValue: sampleRate / 2
+          },
+          detune: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat
+          }
+        }
+      }, {
+        creator: "createOscillator",
+        args: [],
+        limits: {
+          frequency: {
+            minValue: -sampleRate / 2,
+            maxValue: sampleRate / 2
+          },
+          detune: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat
+          }
+        }
+      }, {
+        creator: "createPanner",
+        args: [],
+        limits : {
+          positionX: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          positionY: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          positionZ: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          orientationX: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          orientationY: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          orientationZ: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          }
+        },
+      }, {
+        creator: "createConstantSource",
+        args: [],
+        limits: {
+          offset: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat
+          }
+        }
+      },
+      // These nodes don't have AudioParams, but we want to test them anyway.  Any arguments for the
+      // constructor are pretty much arbitrary; they just need to be valid.
+      {
+        creator: "createBuffer",
+        args: [1, 1, sampleRate],
+      }, {
+        creator: "createIIRFilter",
+        args: [[1,2],[3,4]]
+      }, {
+        creator: "createWaveShaper",
+        args: [],
+      }, {
+        creator: "createConvolver",
+        args: [],
+      }, {
+        creator: "createAnalyser",
+        args: [],
+      }, {
+        creator: "createScriptProcessor",
+        args: [0],
+      }, {
+        creator: "createPeriodicWave",
+        args: [Float32Array.from([0, 0]), Float32Array.from([1, 0])], 
+      }, {
+        creator: "createChannelSplitter",
+        args: [],
+      }, {
+        creator: "createChannelMerger",
+        args: [],
+      }, {
+        creator: "createMediaElementSource",
+        args: [new Audio()]
+      },{
+        creator: "createMediaStreamDestination",
+        args: []
+      }
+      // Can't currently test MediaStreamSource because we're using an offline
+      // context.
+      ];
+
+      // Create the context so we can use it in the following test.
+      audit.defineTask("initialize", function (done) {
+        // Just any context so that we can create the nodes.
+        context = new OfflineAudioContext(1, 1, sampleRate);
+        done();
+      });
+
+      // Create a task for each entry in testConfigs
+      for (var test in testConfigs) {
+        var config = testConfigs[test]
+        audit.defineTask(config.creator, (function (c) {
+          return function (done) {
+            var node = context[c.creator](...c.args);
+            testLimits(c.creator, node, c.limits);
+            done();
+          };
+        })(config));
+      }
+
+      // Test the AudioListener params that were added for the automated Panner
+      audit.defineTask("AudioListener", function (done) {
+        testLimits("", context.listener, {
+          positionX: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          positionY: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          positionZ: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          forwardX: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          forwardY: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          forwardZ: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          upX: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          upY: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          },
+          upZ: {
+            minValue: -mostPositiveFloat,
+            maxValue: mostPositiveFloat,
+          }
+        });
+        done();
+      });
+
+      // Verify that we have tested all the create methods available on the context.
+      audit.defineTask("verifyTests", function (done) {
+        var allNodes = new Set();
+        // Create the set of all "create" methods from the context.
+        for (var method in context) {
+          if (typeof context[method] === "function" && method.substring(0, 6) === "create") {
+            allNodes.add(method);
+          }
+        }
+
+        // Compute the difference between the set of all create methods on the context and the set
+        // of tests that we've run.
+        var diff = new Set([...allNodes].filter(x => !testedMethods.has(x)));
+
+        // Can't currently test a MediaStreamSourceNode, so remove it from the diff set.
+        diff.delete("createMediaStreamSource");
+
+        // It's a test failure if we didn't test all of the create methods in the context (except
+        // createMediaStreamSource, of course).
+        if (diff.size) {
+          var output = [];
+          for (let item of diff)
+            output.push(" " + item.substring(6));
+          testFailed("These nodes were not tested:" + output + "\n");
+        } else {
+          testPassed("All nodes were tested.\n");
+        }
+      
+        done();
+      });
+
+      // Simple test of a few automation methods to verify we get warnings.
+      audit.defineTask("automation", function (done) {
+        // Just use a DelayNode for testing because the audio param has finite limits.
+        var d = context.createDelay();
+
+        // The console output should have the warnings that we're interested in.
+        d.delayTime.setValueAtTime(-1, 0);
+        d.delayTime.linearRampToValueAtTime(2, 1);
+        d.delayTime.exponentialRampToValueAtTime(3, 2);
+        d.delayTime.setTargetAtTime(-1, 3, .1);
+        d.delayTime.setValueCurveAtTime(Float32Array.from([.1, .2, 1.5, -1]), 4, .1);
+        done();
+      });
+
+      // All done!
+      audit.defineTask("finish", function (done) {
+        finishJSTest();
+        done();
+      });
+
+      audit.runTasks();
+
+      // Is |object| an AudioParam?  We determine this by checking the constructor name.
+      function isAudioParam(object) {
+        return object && object.constructor.name === "AudioParam";
+      }
+
+      // Does |limitOptions| exist and does it have valid values for the expected min and max
+      // values?
+      function hasValidLimits(limitOptions) {
+        return limitOptions && (typeof limitOptions.minValue === "number") && (typeof limitOptions.maxValue === "number");
+      }
+
+      // Check the min and max values for the AudioParam attribute named |paramName| for the |node|.
+      // The expected limits is given by the dictionary |limits|.  If some test fails, add the name
+      // of the failed 
+      function validateAudioParamLimits(node, paramName, limits) {
+        var nodeName = node.constructor.name;
+        var parameter = node[paramName];
+        var prefix = nodeName + "." + paramName;
+
+        var success = true;
+        if (hasValidLimits(limits[paramName])) {
+          // Verify that the min and max values for the parameter are correct.
+          var isCorrect = Should(prefix + ".minValue", parameter.minValue)
+            .beEqualTo(limits[paramName].minValue);
+          isCorrect = Should(prefix + ".maxValue", parameter.maxValue)
+            .beEqualTo(limits[paramName].maxValue) && isCorrect;
+
+          // Verify that the min and max attributes are read-only
+          parameter.minValue = Math.PI;
+          var isReadOnly;
+          isReadOnly = Should(prefix + ".minValue = Math.PI", parameter.minValue)
+            .notBeEqualTo(Math.PI);
+          if (isReadOnly)
+            testPassed(prefix + ".minValue is read-only.");
+          else
+            testFailed(prefix + ".minValue should be read-only but was changed.");
+          isCorrect = isReadOnly && isCorrect;
+
+          parameter.maxValue = Math.PI;
+          isReadOnly = Should(prefix + ".maxValue = Math.PI", parameter.maxValue)
+            .notBeEqualTo(Math.PI);
+          if (isReadOnly)
+            testPassed(prefix + ".maxValue is read-only.");
+          else
+            testFailed(prefix + ".maxValue should be read-only but was changed.");
+          isCorrect = isReadOnly && isCorrect;
+
+          // Now try to set the parameter outside the nominal range.
+          var newValue = 2 * limits[paramName].minValue - 1;
+
+          var isClipped = true;
+          var clippingTested = false;
+          // If the new value is beyond float the largest single-precision float, skip the test
+          // because Chrome throws an error.
+          if (newValue >= -mostPositiveFloat) {
+            parameter.value = newValue;
+            clippingTested = true;
+            isClipped = Should("Set " + prefix + ".value = " + newValue, parameter.value)
+              .beEqualTo(parameter.minValue) && isClipped;
+          }
+
+          newValue = 2 * limits[paramName].maxValue + 1;
+
+          if (newValue <= mostPositiveFloat) {
+            parameter.value = newValue;
+            clippingTested = true;
+            isClipped = Should("Set " + prefix + ".value = " + newValue, parameter.value)
+              .beEqualTo(parameter.maxValue) && isClipped;
+
+          }
+
+          if (clippingTested) {
+            if (isClipped)
+              testPassed(prefix + " was correctly clipped to lie within the nominal range.")
+            else
+              testPassed(prefix + " was not correctly clipped to lie within the nominal range.")
+          }
+
+          isCorrect = isCorrect && isClipped;
+
+          success = isCorrect && success;
+        } else {
+          // Test config didn't specify valid limits.  Fail this test!
+          testFailed("Limits for " + nodeName + "." + paramName + " were not correctly defined.");
+          success = false;
+        }
+
+        return success;
+      }
+
+      // Test all of the AudioParams for |node| using the expected values in |limits|.
+      // |creatorName| is the name of the method to create the node, and is used to keep trakc of
+      // which tests we've run.
+      function testLimits(creatorName, node, limits) {
+        var nodeName = node.constructor.name;
+        testedMethods.add(creatorName);
+
+        var success = true;
+
+        // List of all of the AudioParams that were tested.
+        var audioParams = [];
+
+        // List of AudioParams that failed the test.
+        var incorrectParams = [];
+
+        // Look through all of the keys for the node and extract just the AudioParams
+        Object.keys(node.__proto__).forEach(function (paramName) {
+          if (isAudioParam(node[paramName])) {
+            audioParams.push(paramName);
+            var isValid = validateAudioParamLimits(node, paramName, limits, incorrectParams);
+            if (!isValid)
+              incorrectParams.push(paramName);
+      
+            success =  isValid && success;
+          }
+        });
+
+        // Print an appropriate message depending on whether there were AudioParams defined or not.
+        if (audioParams.length) {
+          var message = "Nominal ranges for AudioParam(s) of " + node.constructor.name;
+          if (success)
+            testPassed(message + " are correct.\n");
+          else
+            testFailed(message + " are incorrect for: " + incorrectParams + ".\n");
+          return success;
+        } else {
+          if (limits)
+            testFailed(nodeName + " has no AudioParams but test expected " + limits + ".\n");
+          else
+            testPassed(nodeName + " has no AudioParams as expected.\n");
+        }
+      }
+    </script>
+  </body>
+</html>

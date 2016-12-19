@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Basic ConstantSourceNode Tests</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var context = new AudioContext();
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("createConstantSource()", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("node = context.createConstantSource()", function () {
+          node = context.createConstantSource();
+        }).notThrow();
+        success = Should("node instance of ConstantSourceNode",
+          node instanceof ConstantSourceNode)
+          .beEqualTo(true) && success;
+      
+        success = verifyNodeDefaults(node) && success;
+
+        Should("createConstantSource()", success)
+          .summarize(
+            "correctly created",
+            "incorrectly created");
+
+        taskDone();
+      });
+
+      audit.defineTask("new ConstantSourceNode()", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("node = new ConstantSourceNode()", function () {
+          node = new ConstantSourceNode(context);
+        }).notThrow();
+        success = Should("node instance of ConstantSourceNode",
+          node instanceof ConstantSourceNode)
+          .beEqualTo(true) && success;
+
+      
+        success = verifyNodeDefaults(node) && success;
+
+        Should("new ConstantSourceNode(context)", success)
+          .summarize(
+            "correctly created",
+            "incorrectly created");
+
+        taskDone();
+      });
+
+      function verifyNodeDefaults(node) {
+        var success = true;
+
+        success = Should("node.numberOfInputs", node.numberOfInputs)
+          .beEqualTo(0);
+        success = Should("node.numberOfOutputs", node.numberOfOutputs)
+          .beEqualTo(1) && success;
+        success = Should("node.channelCount", node.channelCount)
+          .beEqualTo(2) && success;
+        success = Should("node.channelCountMode", node.channelCountMode)
+          .beEqualTo("max") && success;
+        success = Should("node.channelInterpretation", node.channelInterpretation)
+          .beEqualTo("speakers") && success;
+
+        success = Should("node.offset.value", node.offset.value)
+          .beEqualTo(1) && success;
+        success = Should("node.offset.defaultValue", node.offset.defaultValue)
+          .beEqualTo(1) && success;
+        success = Should("node.offset.minValue", node.offset.minValue)
+          .beEqualTo(Math.fround(-3.4028235e38)) && success;
+        success = Should("node.offset.maxValue", node.offset.maxValue)
+          .beEqualTo(Math.fround(3.4028235e38)) && success;
+      
+        return success;
+      }
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

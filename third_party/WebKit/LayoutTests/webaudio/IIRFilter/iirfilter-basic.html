@@ -1,0 +1,211 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Basic IIRFilterNode Properties</title>
+    <script src="../../resources/js-test.js"></script>
+    <script src="../resources/compatibility.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      description("Test Basic IIRFilterNode Properties");
+      window.jsTestIsAsync = true;
+
+      var sampleRate = 48000;
+      var testFrames = 100;
+
+      // Global context that can be used by the individual tasks. It must be defined by the
+      // initialize task.
+      var context;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("initialize", function (done) {
+        context = new OfflineAudioContext(1, testFrames, sampleRate);
+        done();
+      });
+
+      audit.defineTask("existence", function (done) {
+        shouldBeDefined("context.createIIRFilter");
+        done();
+      });
+
+      audit.defineTask("parameters", function (done) {
+        // Create a really simple IIR filter. Doesn't much matter what.
+        var coef = Float32Array.from([1]);
+
+        var f = context.createIIRFilter(coef, coef);
+
+        var success = true;
+
+        success = Should("numberOfInputs", f.numberOfInputs).beEqualTo(1) && success;
+        success = Should("numberOfOutputs", f.numberOfOutputs).beEqualTo(1) && success;
+        success = Should("channelCountMode", f.channelCountMode).beEqualTo("max") && success;
+        success = Should("channelInterpretation", f.channelInterpretation).beEqualTo("speakers") && success;
+
+        if (success)
+          testPassed("All basic IIRFilter parameters are correct.\n");
+        else
+          testFailed("Some basic IIRFilter parameter was not correct.\n");
+        done();
+      });
+
+      audit.defineTask("exceptions-createIIRFilter", function (done) {
+        var success = true;
+
+        success = Should("createIIRFilter()", function () {
+          // Two args are required.
+          context.createIIRFilter();
+        }).throw("TypeError") && success;
+
+        success = Should("createIIRFilter(new Float32Array(1))", function () {
+          // Two args are required.
+          context.createIIRFilter(new Float32Array(1));
+        }).throw("TypeError") && success;
+        
+        success = Should("createIIRFilter(null, null)", function () {
+          // null is not valid
+          context.createIIRFilter(null, null);
+        }).throw("TypeError") && success;
+
+        success = Should("createIIRFilter([], [])", function () {
+          // There has to be at least one coefficient.
+          context.createIIRFilter([], []);
+        }).throw("NotSupportedError") && success;
+
+        success = Should("createIIRFilter([1], [])", function () {
+          // There has to be at least one coefficient.
+          context.createIIRFilter([1], []);
+        }).throw("NotSupportedError") && success;
+
+        success = Should("createIIRFilter([], [1])", function () {
+          // There has to be at least one coefficient.
+          context.createIIRFilter([], [1]);
+        }).throw("NotSupportedError") && success;
+
+        success = Should("createIIRFilter(new Float32Array(20), new Float32Array(20))",
+          // Max allowed size for the coefficient arrays.
+          function () {
+            var fb = new Float32Array(20);
+            fb[0] = 1;
+            context.createIIRFilter(fb, fb);
+        }).notThrow() && success;
+
+        success = Should("createIIRFilter(new Float32Array(21), [1])",
+          // Max allowed size for the feedforward coefficient array.
+          function () {
+            var coef = new Float32Array(21);
+            coef[0] = 1;
+            context.createIIRFilter(coef, [1]);
+        }).throw("NotSupportedError") && success;
+
+        success = Should("createIIRFilter([1], new Float32Array(21))",
+          // Max allowed size for the feedback coefficient array.
+          function () {
+            var coef = new Float32Array(21);
+            coef[0] = 1;
+            context.createIIRFilter([1], coef);
+        }).throw("NotSupportedError") && success;
+
+        success = Should("createIIRFilter([1], new Float32Array(2))", function () {
+          // First feedback coefficient can't be 0.
+          context.createIIRFilter([1], new Float32Array(2));
+        }).throw("InvalidStateError") && success;
+
+        success = Should("createIIRFilter(new Float32Array(10), [1])", function () {
+          // feedforward coefficients can't all be zero.
+          context.createIIRFilter(new Float32Array(10), [1]);
+        }).throw("InvalidStateError") && success;
+
+        success = Should("createIIRFilter([1], [1, NaN, Infinity])", function () {
+          // Feedback coefficients must be finite.
+          context.createIIRFilter([1], [1, Infinity, NaN]);
+        }).throw("InvalidStateError") && success;
+
+        success = Should("createIIRFilter([1, NaN, Infinity], [1])", function () {
+          // Feedforward coefficients must be finite.
+          context.createIIRFilter([1, Infinity, NaN], [1]);
+        }).throw("InvalidStateError") && success;
+
+        success = Should("createIIRFilter([1, 'abc', []], [1])", function () {
+          // Test that random junk in the array is converted to NaN.
+          context.createIIRFilter([1, "abc", []], [1]);
+        }).throw("InvalidStateError") && success;
+
+        if (success)
+          testPassed("All exceptions for createIIRFilter were correctly thrown.\n");
+        else
+          testFailed("Some exceptions for createIIRFilter were not thrown as expected.\n");
+        done();
+      });
+
+      audit.defineTask("exceptions-getFrequencyData", function (done) {
+        // Create a really simple IIR filter. Doesn't much matter what.
+        var coef = Float32Array.from([1]);
+
+        var f = context.createIIRFilter(coef, coef);
+
+        var success = true;
+
+        success = Should("getFrequencyResponse(null, new Float32Array(1), new Float32Array(1))",
+          function () {
+            // frequencyHz can't be null.
+            f.getFrequencyResponse(null, new Float32Array(1), new Float32Array(1));
+          }).throw("TypeError") && success;
+
+        success = Should("getFrequencyResponse(new Float32Array(1), null, new Float32Array(1))",
+          function () {
+            // magResponse can't be null.
+            f.getFrequencyResponse(new Float32Array(1), null, new Float32Array(1));
+          }).throw("TypeError") && success;
+
+        success = Should("getFrequencyResponse(new Float32Array(1), new Float32Array(1), null)",
+          function () {
+            // phaseResponse can't be null.
+            f.getFrequencyResponse(new Float32Array(1), new Float32Array(1), null);
+          }).throw("TypeError") && success;
+
+        success = Should(
+          "getFrequencyResponse(new Float32Array(10), new Float32Array(1), new Float32Array(20))",
+          function () {
+            // magResponse array must be longer than frequencyHz
+            f.getFrequencyResponse(new Float32Array(10), new Float32Array(1), new Float32Array(
+              20));
+          }).throw("NotSupportedError") && success;
+
+        success = Should(
+          "getFrequencyResponse(new Float32Array(10), new Float32Array(20), new Float32Array(1))",
+          function () {
+            // phaseResponse array must be longer than frequencyHz
+            f.getFrequencyResponse(new Float32Array(10), new Float32Array(20), new Float32Array(
+              1));
+          }).throw("NotSupportedError") && success;
+
+        success = Should(
+          "getFrequencyResponse(new Float32Array(10), new Float32Array(20), new Float32Array(30))",
+          function () {
+            // Ok if magResponse and phaseResponse have different lengths as long as they're longer
+            // than frequencyHz.
+            f.getFrequencyResponse(new Float32Array(10), new Float32Array(20), new Float32Array(
+              30));
+          }).notThrow() && success;
+
+        if (success)
+          testPassed("getFrequencyResponse exceptions handled correctly.\n");
+        else
+          testFailed("getFrequencyResponse exceptions not handled correctly.\n");
+
+        done();
+      });
+      audit.defineTask("finish", function (done) {
+        finishJSTest();
+        done();
+      });
+
+      audit.runTasks();
+      successfullyParsed = true;
+    </script>
+  </body>
+</html>

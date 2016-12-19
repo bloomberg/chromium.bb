@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Simple Tests of WaveShaperNode</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("simple", function (taskDone) {
+        var context = new OfflineAudioContext(1, 1, 48000);
+        var shaper = context.createWaveShaper();
+
+        // Verify default values are correct.
+        Should("WaveShaper.curve", shaper.curve).beEqualTo(null);
+        Should("WaveShaper.oversample", shaper.oversample).beEqualTo("none");
+
+        // Set oversample and verify that it is set correctly.
+        shaper.oversample = "2x";
+        Should('Waveshaper.oversample = "2x"', shaper.oversample).beEqualTo("2x");
+
+        shaper.oversample = "4x";
+        Should('Waveshaper.oversample = "4x"', shaper.oversample).beEqualTo("4x");
+
+        shaper.oversample = "invalid";
+        Should('Waveshaper.oversample = "invalid"', shaper.oversample).beEqualTo("4x");
+
+        // Set the curve and verify that the returned curve is the same as what
+        // it was set to.
+        var curve = Float32Array.from([-1, 0.25, .75]);
+        shaper.curve = curve;
+        Should("WaveShaper.curve", shaper.curve).beEqualToArray(curve);
+
+        // Verify setting the curve to null works.
+        shaper.curve = null;
+        Should("Waveshaper.curve = null", shaper.curve).beEqualTo(null);
+
+        taskDone();
+      });
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

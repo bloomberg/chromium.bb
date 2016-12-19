@@ -112,7 +112,7 @@ function calculateSNR(sPower, nPower)
 function loadReferenceAndRunTest(oscType) {
     var bufferLoader = new BufferLoader(
         context,
-        [ "oscillator-" + oscType + "-expected.wav" ],
+        [ "../Oscillator/oscillator-" + oscType + "-expected.wav" ],
         function (bufferList) {
             reference = bufferList[0].getChannelData(0);
             generateExponentialOscillatorSweep(context, oscType);

@@ -1,0 +1,182 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test ConstantSourceNode Output</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+    <script src="../resources/audioparam-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var sampleRate = 48000;
+      var renderDuration = 0.125;
+      var renderFrames = sampleRate * renderDuration;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("constant source", function (taskDone) {
+        // Verify a constant source outputs the correct (fixed) constant.
+        var context = new OfflineAudioContext(1, renderFrames, sampleRate);
+        var node = new ConstantSourceNode(context, {
+          offset: 0.5
+        });
+        node.connect(context.destination);
+        node.start();
+
+        context.startRendering().then(function (buffer) {
+          var actual = buffer.getChannelData(0);
+          var expected = new Float32Array(actual.length);
+          expected.fill(node.offset.value);
+
+          Should("ConstantSourceNode({offset: 0.5})", actual)
+            .beEqualToArray(expected);
+        }).then(taskDone);
+      });
+
+      audit.defineTask("start/stop", function (taskDone) {
+        // Verify a constant source starts and stops at the correct time and has
+        // the correct (fixed) value.
+        var context = new OfflineAudioContext(1, renderFrames, sampleRate);
+        var node = new ConstantSourceNode(context, {
+          offset: 1
+        });
+        node.connect(context.destination);
+
+        var startFrame = 10;
+        var stopFrame = 300;
+
+        node.start(startFrame / context.sampleRate);
+        node.stop(stopFrame / context.sampleRate);
+
+        context.startRendering().then(function (buffer) {
+          var actual = buffer.getChannelData(0);
+          var expected = new Float32Array(actual.length);
+          // The expected output is all 1s from start to stop time.
+          expected.fill(0);
+
+          for (var k = startFrame; k < stopFrame; ++k) {
+            expected[k] = node.offset.value;
+          }
+
+          var success = Should("ConstantSourceNode frames [0, " +
+              startFrame + ")",
+              actual.slice(0, startFrame))
+            .beConstantValueOf(0);
+
+          success = Should("ConstantSourceNode frames [" + startFrame +
+              ", " +
+              stopFrame + ")",
+              actual.slice(startFrame, stopFrame))
+            .beConstantValueOf(1) && success;
+
+          success = Should("ConstantSourceNode frames [" + stopFrame + ", " +
+              renderFrames + ")",
+              actual.slice(stopFrame))
+            .beConstantValueOf(0) && success;
+
+          Should("ConstantSourceNode started and stopped", success)
+            .summarize(
+              "at the correct times with the correct values",
+              "with the incorrect times or values");
+        }).then(taskDone);
+        
+      });
+
+      audit.defineTask("basic automation", function (taskDone) {
+        // Verify that automation works as expected.
+        var context = new OfflineAudioContext(1, renderFrames, sampleRate);
+        var source = context.createConstantSource();
+        source.connect(context.destination);
+
+        var rampEndTime = renderDuration / 2;
+        source.offset.setValueAtTime(0.5, 0);
+        source.offset.linearRampToValueAtTime(1, rampEndTime);
+
+        source.start();
+
+        context.startRendering()
+          .then(function (buffer) {
+            var actual = buffer.getChannelData(0);
+            var expected = createLinearRampArray(0, rampEndTime, 0.5, 1,
+              context.sampleRate);
+
+            var rampEndFrame = Math.ceil(rampEndTime * context.sampleRate);
+            var success = Should("ConstantSourceNode.linearRamp(1, 0.5)",
+                actual.slice(0, rampEndFrame))
+              .beCloseToArray(expected, {
+                // Experimentally determined threshold..
+                relativeThreshold: 7.1610e-7
+              });
+
+            success = Should("ConstantSourceNode after ramp",
+                actual.slice(rampEndFrame))
+              .beConstantValueOf(1) && success;
+
+            Should("ConstantSourceNode automation", success)
+              .summarize(
+                "produced the correct values",
+                "did not produce the correct values");
+          })
+          .then(taskDone);
+      });
+      
+      audit.defineTask("connected audioparam", function (taskDone) {
+        // Verify the constant source output with connected AudioParam produces
+        // the correct output.
+        var context = new OfflineAudioContext(2, renderFrames, sampleRate)
+        context.destination.channelInterpretation = "discrete";
+        var source = new ConstantSourceNode(context, {
+          offset: 1
+        });
+        var osc = context.createOscillator();
+        var merger = context.createChannelMerger(2);
+        merger.connect(context.destination);
+
+        source.connect(merger, 0, 0);
+        osc.connect(merger, 0, 1);
+        osc.connect(source.offset);
+
+        osc.start();
+        var sourceStartFrame = 10;
+        source.start(sourceStartFrame / context.sampleRate);
+
+        context.startRendering()
+          .then(function (buffer) {
+            // Channel 0 and 1 should be identical, except channel 0 (the
+            // source) is silent at the beginning.
+            var actual = buffer.getChannelData(0);
+            var expected = buffer.getChannelData(1);
+            // The expected output should be oscillator + 1 because offset
+            // is 1.
+            expected = expected.map(x => 1 + x);
+            var success = true;
+
+            // The initial part of the output should be silent because the
+            // source node hasn't started yet.
+            success = Should("ConstantSourceNode frames [0, " +
+                sourceStartFrame + ")", actual.slice(0, sourceStartFrame)
+              )
+              .beConstantValueOf(0);
+            // The rest of the output should be the same as the oscillator (in
+            // channel 1)
+            success = Should("ConstantSourceNode frames [" +
+                sourceStartFrame + ", " + renderFrames + ")",
+                actual.slice(sourceStartFrame))
+              .beCloseToArray(expected.slice(sourceStartFrame), 0);
+
+            Should("ConstantSourceNode with connected AudioParam",
+                success)
+              .summarize(
+                "had the expected output",
+                "did not have the expected output");
+          })
+          .then(taskDone);
+      });
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

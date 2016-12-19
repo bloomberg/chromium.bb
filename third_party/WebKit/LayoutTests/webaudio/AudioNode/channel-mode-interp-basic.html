@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Setting of channelCountMode and channelInterpretation</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      // Fairly arbitrary sample rate and number of frames, except the number of
+      // frames should be more than a few render quantums.
+      var sampleRate = 16000;
+      var renderFrames = 10 * 128;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("interp", function (taskDone) {
+        var context = new OfflineAudioContext(1, renderFrames, sampleRate);
+        var node = context.createGain();
+
+        // Set a new interpretation and verify that it changed.
+        node.channelInterpretation = "discrete";
+        var value = node.channelInterpretation;
+        Should("node.channelInterpretation", value).beEqualTo("discrete");
+        node.connect(context.destination);
+
+        context.startRendering().then(function (buffer) {
+          // After rendering, the value should have been changed.
+          Should("After rendering node.channelInterpretation",
+              node.channelInterpretation)
+            .beEqualTo("discrete");
+        }).then(taskDone);
+      });
+
+      audit.defineTask("mode", function (taskDone) {
+        var context = new OfflineAudioContext(1, renderFrames, sampleRate);
+        var node = context.createGain();
+
+        // Set a new mode and verify that it changed.
+        node.channelCountMode = "explicit";
+        var value = node.channelCountMode;
+        Should("node.channelCountMode", value).beEqualTo("explicit");
+        node.connect(context.destination);
+
+        context.startRendering().then(function (buffer) {
+          // After rendering, the value should have been changed.
+          Should("After rendering node.channelCountMode",
+              node.channelCountMode)
+            .beEqualTo("explicit");
+        }).then(taskDone);
+      });
+      audit.runTasks();
+    </script>
+  </body>
+</html>

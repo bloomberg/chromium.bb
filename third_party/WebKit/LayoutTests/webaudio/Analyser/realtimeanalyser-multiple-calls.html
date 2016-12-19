@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="../../resources/js-test.js"></script>
+    <script src="../resources/compatibility.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+    <title>Test Multiple Calls to getFloatFrequencyData</title>
+  </head>
+
+  <body>
+    <script>
+      description("Test AnalyserNode getFloatFrequencyData and getByteFrequencyData");
+      window.jsTestIsAsync = true;
+
+      var sampleRate = 48000;
+      // Render enough data to run the test.  
+      var renderFrames = 2*1024;
+      var renderDuration = renderFrames / sampleRate;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("test", function (done) {
+
+        var context = new OfflineAudioContext(1, renderFrames, sampleRate);
+
+        // Use sawtooth oscillator as the source because it has quite a bit of harmonic content.
+        // Otherwise, the type doesn't really matter.
+        var osc = context.createOscillator();
+        osc.type = "sawtooth";
+
+        // Create an analyser with 256-point FFT.  The FFT size doesn't really matter much.
+        var analyser = context.createAnalyser();
+        analyser.fftSize = 256;
+
+        osc.connect(analyser);
+        analyser.connect(context.destination);
+
+        var success = true;
+
+        // Suspend after getting a full analyser frame. (Not really necessary, but it's nice that
+        // the frame doesn't include any initial zeroes.
+        var suspendFrame = analyser.fftSize;
+        context.suspend(suspendFrame / sampleRate).then(function () {
+          // Test successive calls to getFloatFrequencyData in the same rendering quantum.
+          var f1 = new Float32Array(analyser.frequencyBinCount);
+          var f2 = new Float32Array(analyser.frequencyBinCount);
+
+          analyser.getFloatFrequencyData(f1);
+          analyser.getFloatFrequencyData(f2);
+
+          success = Should("Second call to getFloatFrequencyData", f2, {
+              precision: 5
+            }).beEqualToArray(f1) && success;
+        }).then(context.resume.bind(context));
+
+        suspendFrame += 128;
+        context.suspend(suspendFrame / sampleRate).then(function () {
+          // Test successive calls to getByteFrequencyData in the same rendering quantum.
+          var f1 = new Uint8Array(analyser.frequencyBinCount);
+          var f2 = new Uint8Array(analyser.frequencyBinCount);
+
+          analyser.getByteFrequencyData(f1);
+          analyser.getByteFrequencyData(f2);
+
+          success = Should("Second call to getByteFrequencyData", f2)
+            .beEqualToArray(f1) && success;
+        }).then(context.resume.bind(context));
+
+        suspendFrame += 128;
+        context.suspend(suspendFrame / sampleRate).then(function () {
+          // Test calls to getFloatFrequencyData followed by getByteFrequencyData.  The float data,
+          // when converted to byte values should be identical to the result from
+          // getByteFrequencyData.
+          var f1 = new Float32Array(analyser.frequencyBinCount);
+          var f2 = new Uint8Array(analyser.frequencyBinCount);
+
+          analyser.getFloatFrequencyData(f1);
+          analyser.getByteFrequencyData(f2);
+
+          var byteValuesFromFloat = convertFloatToByte(f1, analyser.minDecibels, analyser.maxDecibels);
+          success = Should("Output of getByteFrequencyData after getFloatFrequencyData",
+              byteValuesFromFloat)
+            .beEqualToArray(f2) && success;
+        }).then(context.resume.bind(context));
+
+        suspendFrame += 128;
+        context.suspend(suspendFrame / sampleRate).then(function () {
+          // Test calls to getByteFrequencyData followed by getFloatFrequencyData.  The float data,
+          // when converted to byte values should be identical to the result from
+          // getByteFrequencyData.
+          var f1 = new Uint8Array(analyser.frequencyBinCount);
+          var f2 = new Float32Array(analyser.frequencyBinCount);
+
+          analyser.getByteFrequencyData(f1);
+          analyser.getFloatFrequencyData(f2);
+
+          var byteValuesFromFloat = convertFloatToByte(f2, analyser.minDecibels, analyser.maxDecibels);
+          success = Should(
+              "Output of getFloatFrequenycData (converted to byte) after getByteFrequencyData",
+              f1)
+            .beEqualToArray(byteValuesFromFloat) && success;
+        }).then(context.resume.bind(context));
+
+        osc.start();
+        context.startRendering().then(done);
+      });
+
+      audit.defineTask("finish", function (done) {
+        finishJSTest();
+        done();
+      });
+
+      audit.runTasks();
+
+      // Convert the float frequency data (in dB), |floatFreqData|, to byte values using the dB
+      // limits |minDecibels| and |maxDecibels|.  The new byte array is returned.
+      function convertFloatToByte(floatFreqData, minDecibels, maxDecibels) {
+        var scale = 255 / (maxDecibels - minDecibels);
+
+        return floatFreqData.map(function (x) {
+          var value = Math.floor(scale * (x - minDecibels));
+          return Math.min(255, Math.max(0, value));
+        });
+      }
+    </script>
+  </body>
+</html>

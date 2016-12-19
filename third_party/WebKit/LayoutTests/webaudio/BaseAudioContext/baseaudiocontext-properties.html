@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Testing BaseAudioContext properties</title>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script>
+  <script src="../resources/audit-util.js"></script>
+  <script src="../resources/audio-testing.js"></script>
+  <script src="../resources/context-properties.js"></script>
+</head>
+<body>
+  <script>
+    var audit = Audit.createTaskRunner();
+
+
+    // Cross-checking two sets of properties: a programmatically generated set
+    // and a pre-populated set.
+    audit.defineTask('crosschecking-properties', function (taskDone) {
+      verifyPrototypeOwnProperties(BaseAudioContext.prototype,
+                                   BaseAudioContextOwnProperties,
+                                   Should);
+      taskDone();
+    });
+
+
+    audit.runTasks();
+  </script>
+</body>
+</html>

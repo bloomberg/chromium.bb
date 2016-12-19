@@ -1,0 +1,221 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="../../resources/js-test.js"></script>
+    <script src="../resources/compatibility.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+    <title>Test AnalyserNode getFloatTimeDomainData</title>
+  </head>
+
+  <body>
+    <script>
+      description("Test AnalyserNode getFloatTimeDomainData");
+      window.jsTestIsAsync = true;
+
+      // Use a power of two to eliminate any round-off in the computation of the times for
+      // context.suspend().
+      var sampleRate = 32768;
+
+      // The largest FFT size for the analyser node is 32768.  We want to render longer than this so
+      // that we have at least one complete buffer of data of 32768 samples.
+      var renderFrames = 2 * 32768;
+      var renderDuration = renderFrames / sampleRate;
+
+      var audit = Audit.createTaskRunner();
+
+      // Test that getFloatTimeDomainData handles short and long vectors correctly.
+      audit.defineTask("short and long vector", function (done) {
+        var fftSize = 32;
+        var graphInfo = createGraph(fftSize);
+        var context = graphInfo.context;
+        var analyser = graphInfo.analyser;
+        var signalBuffer = graphInfo.signalBuffer;
+        var signal = signalBuffer.getChannelData(0);
+
+        var success = true;
+        var sampleFrame = 128;
+
+        context.suspend(sampleFrame / sampleRate).then(function () {
+          var shortData = new Float32Array(8);
+          // Initialize the array to Infinity to represent uninitialize data.
+          shortData.fill(Infinity);
+          testPassed(shortData.length + "-element short array initialized to Infinity.");
+
+          analyser.getFloatTimeDomainData(shortData);
+          testPassed("getFloatTimeDomainData(<" + shortData.length + "-element vector>).");
+
+          // The short array should be filled with the expected data, with no errors thrown.
+
+          var expected = signal.subarray(sampleFrame - fftSize, sampleFrame);
+          success = Should(shortData.length + "-element time domain data", shortData)
+            .beEqualToArray(expected.subarray(0, shortData.length)) && success;
+
+          var longData = new Float32Array(2 * fftSize);
+          // Initialize the array to Infinity to represent uninitialize data.
+          longData.fill(Infinity);
+          testPassed(longData.length + "-element long array initialized to Infinity.");
+
+          analyser.getFloatTimeDomainData(longData);
+          testPassed("getFloatTimeDomainData(<" + longData.length + "-element vector>).");
+
+          // The long array should filled with the expected data but the extra elements should be
+          // untouched.
+          success = Should("longData.subarray(0, " + fftSize + ")",
+              longData.subarray(0, fftSize), {
+                numberOfArrayLog: 32
+              })
+            .beEqualToArray(expected) && success;
+
+          success = Should("Unfilled elements longData.subarray(" + fftSize + ")",
+              longData.subarray(fftSize))
+            .beConstantValueOf(Infinity) && success;
+        }).then(context.resume.bind(context));
+
+        context.startRendering().then(function (buffer) {
+          if (success)
+            testPassed("Long and short time domain arrays handled correctly.\n");
+          else
+            testFailed("Long and short time domain arrays handled incorrectly.\n");
+        }).then(done);
+      });
+
+      var success = true;
+
+      // Generate tests for all valid FFT sizes for an AnalyserNode.
+      for (var k = 5; k < 16; ++k) {
+        var fftSize = Math.pow(2, k);
+        (function (n) {
+          // We grab a sample at (roughly) half the rendering duration.
+          audit.defineTask("fftSize " + n, function (done) {
+            runTest(n, renderDuration / 2).then(done);
+          });
+        })(fftSize);
+      }
+
+      audit.defineTask("summarize size tests", function (done) {
+        if (success)
+          testPassed("Time domain data contained the correct data for each size.\n");
+        else
+          testFailed("Time domain data did not contain the correct data for each size.\n");
+
+        done();
+      });
+
+      // Special case for a large size, but the sampling point is early.  The initial part of the
+      // buffer should be filled with zeroes.
+
+      audit.defineTask("initial zeroes", function (done) {
+        // Somewhat arbitrary size for the analyser.  It should be greater than one rendering
+        // quantum.
+        var fftSize = 2048;
+        var graphInfo = createGraph(fftSize);
+        var context = graphInfo.context;
+        var analyser = graphInfo.analyser;
+        var signalBuffer = graphInfo.signalBuffer;
+
+        var data = new Float32Array(fftSize);
+
+        success = true;
+        // Suspend every rendering quantum and examine the analyser data.
+        for (var k = 128; k <= fftSize; k += 128) {
+          context.suspend(k / sampleRate).then(function () {
+            analyser.getFloatTimeDomainData(data);
+            var sampleFrame = context.currentTime * sampleRate;
+
+            // Verify that the last k frames are not zero, but the first fftSize - k frames are.
+            var prefix = "At frame " + (sampleFrame - 1) + ": data.subarray";
+            if (sampleFrame < fftSize) {
+              success = Should(prefix + "(0, " + (fftSize - sampleFrame) + ")",
+                  data.subarray(0, fftSize - sampleFrame))
+                .beConstantValueOf(0) && success;
+            }
+
+            var signal = signalBuffer.getChannelData(0);
+            success = Should(prefix + "(" + (fftSize - sampleFrame) + ", " + fftSize + ")",
+                data.subarray(fftSize - sampleFrame, fftSize))
+              .beEqualToArray(signal.subarray(0, sampleFrame)) && success;
+          }).then(context.resume.bind(context));
+        }
+
+        context.startRendering().then(function (b) {
+          if (success) {
+            testPassed(
+              "Time domain data contained initial zeroes and correct data as expected.\n");
+          } else {
+            testFailed(
+              "Time domain data did not contain initial zeroes and correct data as expected.\n"
+            );
+          }
+
+        }).then(done);
+      });
+
+      audit.defineTask("finish", function (done) {
+        finishJSTest();
+        done();
+      });
+
+      audit.runTasks();
+
+      // Run test of an AnalyserNode with fftSize of |fftSize|, and with the data from the node
+      // being requested at time |sampletime|.  The result from the analyser node is compared
+      // against the expected data.  The result of startRendering() is returned.
+      function runTest(fftSize, sampleTime) {
+        var graphInfo = createGraph(fftSize);
+        var context = graphInfo.context;
+        var analyser = graphInfo.analyser;
+        var signalBuffer = graphInfo.signalBuffer;
+
+        // Grab the data at the requested time.
+        context.suspend(sampleTime).then(function () {
+          var lastFrame = Math.floor(context.currentTime * sampleRate);
+
+          // Grab the time domain data from the analyzer and compare against the expected result.
+          var actualFloatData = new Float32Array(fftSize);
+          analyser.getFloatTimeDomainData(actualFloatData);
+
+          // Compare against the expected result.
+          var signal = signalBuffer.getChannelData(0);
+          var message = actualFloatData.length + "-point analyser time domain data";
+          success = Should(message, actualFloatData)
+            .beEqualToArray(signal.subarray(lastFrame - actualFloatData.length, lastFrame)) && success;
+        }).then(context.resume.bind(context));
+
+        return context.startRendering();
+      }
+
+      // Create the audio graph with an AnalyserNode with fftSize |fftSize|.  A simple
+      // integer-valued linear ramp is the source so we can easily verify the results.  A dictionary
+      // consisting of the context, the analyser node, and the signal is returned.
+      function createGraph(fftSize) {
+        var context = new OfflineAudioContext(1, renderFrames, sampleRate);
+
+        var src = context.createBufferSource();
+
+        // Use a simple linear ramp as the source.  For simplicity of inspecting results, the ramp
+        // starts at 1 with an increment of 1.
+        var signalBuffer = context.createBuffer(1, renderFrames, context.sampleRate);
+        var data = signalBuffer.getChannelData(0);
+        for (var k = 0; k < data.length; ++k) {
+          data[k] = k + 1;
+        }
+
+        src.buffer = signalBuffer;
+
+        var analyser = context.createAnalyser();
+        analyser.fftSize = fftSize;
+
+        src.connect(analyser);
+        analyser.connect(context.destination);
+        src.start();
+
+        return {
+          context: context,
+          analyser: analyser,
+          signalBuffer: signalBuffer
+        };
+      }
+    </script>
+  </body>
+</html>

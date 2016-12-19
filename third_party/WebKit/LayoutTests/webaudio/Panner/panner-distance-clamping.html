@@ -1,0 +1,213 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Clamping of Distance for PannerNode</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+  </head>
+
+  <body>
+    <script>
+      // Arbitrary sample rate and render length.
+      var sampleRate = 48000;
+      var renderFrames = 128;
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("ref-distance-error", function (taskDone) {
+        testDistanceLimits({name: "refDistance"});
+        taskDone();
+      });
+
+      audit.defineTask("max-distance-error", function (taskDone) {
+        testDistanceLimits({name: "maxDistance"});
+        taskDone();
+      });
+
+      function testDistanceLimits(options) {
+        // Verify that exceptions are thrown for invalid values of refDistance.
+        var context = new OfflineAudioContext(1, renderFrames, sampleRate);
+
+        var attrName = options.name;
+        var prefix = "new PannerNode(c, {" + attrName + ": ";
+
+        success = Should(prefix + "-1})", function () {
+          var nodeOptions = {};
+          nodeOptions[attrName] = -1;
+          new PannerNode(context, nodeOptions);
+        }).throw("RangeError");
+
+        success = Should(prefix + "0})", function () {
+          var nodeOptions = {};
+          nodeOptions[attrName] = 0;
+          new PannerNode(context, nodeOptions);
+        }).throw("RangeError") && success;
+
+        // The smallest representable positive single float.
+        var leastPositiveDoubleFloat = 4.9406564584124654e-324;
+
+        success = Should(prefix + leastPositiveDoubleFloat + "})",
+          function () {
+            var nodeOptions = {};
+            nodeOptions[attrName] = leastPositiveDoubleFloat;
+            new PannerNode(context, nodeOptions);
+          }).notThrow() && success;
+
+        prefix = "panner." + attrName + " = ";
+        panner = new PannerNode(context);
+        success = Should(prefix + "-1", function () {
+          panner[attrName] = -1;
+        }).throw("RangeError") && success;
+
+        success = Should(prefix + "0", function () {
+          panner[attrName] = 0;
+        }).throw("RangeError") && success;
+
+        success = Should(prefix + leastPositiveDoubleFloat, function () {
+          panner[attrName] = leastPositiveDoubleFloat;
+        }).notThrow() && success;
+
+        Should("Invalid " + attrName + " values handled", success)
+          .summarize("correctly", "incorrectly");
+
+      }
+
+      audit.defineTask("min-distance", function (taskDone) {
+        // Test clamping of panner distance to refDistance for all of the
+        // distance models.  The actual distance is arbitrary as long as it's
+        // less than refDistance.  We test default and non-default values for
+        // the panner's refDistance and maxDistance.
+        // correctly.  
+        Promise.all([
+          runTest({
+            distance: 0.01,
+            distanceModel: "linear",
+          }),
+          runTest({
+            distance: 0.01,
+            distanceModel: "exponential",
+          }),
+          runTest({
+            distance: 0.01,
+            distanceModel: "inverse",
+          }),
+          runTest({
+            distance: 2,
+            distanceModel: "linear",
+            maxDistance: 1000,
+            refDistance: 10,
+          }),
+          runTest({
+            distance: 2,
+            distanceModel: "exponential",
+            maxDistance: 1000,
+            refDistance: 10,
+          }),
+          runTest({
+            distance: 2,
+            distanceModel: "inverse",
+            maxDistance: 1000,
+            refDistance: 10,
+          }),
+        ]).then(taskDone);
+      });
+
+      audit.defineTask("max-distance", function (taskDone) {
+        // Like the "min-distance" task, but for clamping to the max
+        // distance. The actual distance is again arbitrary as long as it is
+        // greater than maxDistance.
+        Promise.all([
+          runTest({
+            distance: 20000,
+            distanceModel: "linear",
+          }),
+          runTest({
+            distance: 21000,
+            distanceModel: "exponential",
+          }),
+          runTest({
+            distance: 23000,
+            distanceModel: "inverse",
+          }),
+          runTest({
+            distance: 5000,
+            distanceModel: "linear",
+            maxDistance: 1000,
+            refDistance: 10,
+          }),
+          runTest({
+            distance: 5000,
+            distanceModel: "exponential",
+            maxDistance: 1000,
+            refDistance: 10,
+          }),
+          runTest({
+            distance: 5000,
+            distanceModel: "inverse",
+            maxDistance: 1000,
+            refDistance: 10,
+          }),
+        ]).then(taskDone);
+      });
+
+      function runTest(options) {
+        var context = new OfflineAudioContext(2, renderFrames, sampleRate);
+        var src = new OscillatorNode(context, {
+          type: "sawtooth",
+          frequency: 20*440,
+        });
+
+        // Set panner options.  Use a non-default rolloffFactor so that the
+        // various distance models look distinctly different.
+        var pannerOptions = {};
+        Object.assign(pannerOptions, options, {rolloffFactor: 0.5});
+
+        var pannerRef = new PannerNode(context, pannerOptions);
+        var pannerTest = new PannerNode(context, pannerOptions);
+
+        // Split the panner output so we can grab just one of the output
+        // channels.
+        var splitRef = new ChannelSplitterNode(context, {numberOfOutputs: 2});
+        var splitTest = new ChannelSplitterNode(context, {numberOfOutputs: 2});
+
+        // Merge the panner outputs back into one stereo stream for the
+        // destination.
+        var merger = new ChannelMergerNode(context, {numberOfInputs: 2});
+
+        src.connect(pannerTest).connect(splitTest).connect(merger, 0, 0);;
+        src.connect(pannerRef).connect(splitRef).connect(merger, 0, 1);
+
+        merger.connect(context.destination);
+
+        // Move the panner some distance away. Arbitrarily select the x
+        // direction.  For the reference panner, manually clamp the distance to
+        // lie between refDistance and maxDistance.
+        var xRef = Math.min(Math.max(options.distance, pannerRef.refDistance),
+          pannerRef.maxDistance);
+
+        var xTest = options.distance;
+
+        pannerRef.positionZ.setValueAtTime(xRef, 0);
+        pannerTest.positionZ.setValueAtTime(xTest, 0);
+
+        src.start();
+
+        return context.startRendering().then(function (resultBuffer) {
+          var actual = resultBuffer.getChannelData(0);
+          var expected = resultBuffer.getChannelData(1);
+
+          Should("Distance (" + xTest + ") is outside the range [" +
+          pannerRef.refDistance + ", " + pannerRef.maxDistance + "]",
+            xTest < pannerRef.refDistance || xTest > pannerRef.maxDistance)
+            .beEqualTo(true);
+          Should("Test panner output " + JSON.stringify(options), actual)
+            .beEqualToArray(expected);
+        });
+      }
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

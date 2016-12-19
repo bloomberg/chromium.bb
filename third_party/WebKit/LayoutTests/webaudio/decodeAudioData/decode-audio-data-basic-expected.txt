@@ -1,0 +1,24 @@
+Basic tests for decodeAudioData promise.
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS decodeAudioData(null) rejected correctly (with TypeError: Failed to execute 'decodeAudioData' on 'BaseAudioContext': parameter 1 is not of type 'ArrayBuffer'.).
+PASS Decode valid file with promise: Correctly succeeded in decoding ../resources/media/24bit-44khz.wav
+PASS Decode invalid file with promise: Correctly failed to decode ../resources/media/invalid-audio-file.txt: EncodingError: Unable to decode audio data
+PASS Decode invalid file with promise: Correctly failed to decode ../../media/resources/test-live.webm: EncodingError: Unable to decode audio data
+PASS Decoding valid file with promise and callback: successCallback invoked correctly
+PASS Decoding valid file with promise and callback: Promise correctly fulfilled
+PASS Decoding valid file with promise and callback: Promise and successCallback returned the same buffer
+PASS Decoding invalid file with promise and callback: errorCallback invoked correctly with: EncodingError: Unable to decode audio data
+PASS Decoding invalid file with promise and callback: rejected correctly (with EncodingError: Unable to decode audio data).
+PASS Decoded buffer length (frames) is equal to 44100.
+PASS Decoded buffer duration (sec) is equal to 1.
+PASS Decoded buffer rate (Hz) is equal to 44100.
+PASS Number of channels in decoded buffer is equal to 1.
+PASS Decoded buffer channel 0 is identical to the array [0.0009765625,0.0013427734375,0.001708984375,0.00177001953125,0.001922607421875,0.001953125,0.00225830078125,0.002166748046875,0.002349853515625,0.00250244140625,0.002532958984375,0.0028076171875,0.00262451171875,0.0028076171875,0.002716064453125,0.0028076171875,...].
+PASS Correctly decoded data after the context has been closed
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <script src="../../resources/js-test.js"></script>
+  <script src="../resources/compatibility.js"></script>
+  <script src="../resources/audit-util.js"></script>
+  <script src="../resources/audio-testing.js"></script>
+</head>
+
+<body>
+  <script>
+    description('Test ChannelMergerNode behavior on dynamic input change.');
+    window.jsTestIsAsync = true;
+
+    var renderQuantum = 128;
+
+    var numberOfChannels = 2;
+    var sampleRate = 44100;
+    var renderDuration = 0.5;
+    var disconnectTime = 0.5 * renderDuration;
+
+    var audit = Audit.createTaskRunner();
+
+    // Task: Check if the merger outputs a silent channel when an input is
+    // disconnected.
+    audit.defineTask('silent-disconnect', function (done) {
+      var context = new OfflineAudioContext(numberOfChannels, renderDuration * sampleRate, sampleRate);
+      var merger = context.createChannelMerger();
+      var source1 = context.createBufferSource();
+      var source2 = context.createBufferSource();
+
+      // Create and assign a constant buffer.
+      var bufferDCOffset = createConstantBuffer(context, 1, 1);
+      source1.buffer = source2.buffer = bufferDCOffset;
+      source1.loop = source2.loop = true;
+
+      // Connect the output of source into the 4th input of merger. The merger
+      // should produce 6 channel output.
+      source1.connect(merger, 0, 0);
+      source2.connect(merger, 0, 1);
+      merger.connect(context.destination);
+      source1.start();
+      source2.start();
+
+      // Schedule the disconnection of |source2| at the half of render duration.
+      context.suspend(disconnectTime).then(function () {
+        source2.disconnect();
+        context.resume();
+      });
+
+      context.startRendering().then(function (buffer) {
+        // The entire first channel of the output should be 1.
+        Should('Channel #0', buffer.getChannelData(0)).beConstantValueOf(1);
+
+        // Calculate the first zero index in the second channel.
+        var channel1 = buffer.getChannelData(1);
+        var disconnectIndex = disconnectTime * sampleRate; 
+        disconnectIndex -= (disconnectIndex) % renderQuantum;
+        var firstZeroIndex = channel1.findIndex(function (element, index) {
+          if (element === 0)
+            return index;
+        });
+
+        // The second channel should contain 1, and 0 after the disconnection.
+        Should('Channel #1', channel1).containValues([1, 0]);
+        Should('The index of first zero in the channel #1', firstZeroIndex)
+          .beEqualTo(disconnectIndex);
+
+      }).then(done);
+    });
+
+    audit.defineTask('finish', function (done) {
+      finishJSTest();
+      done();
+    });
+
+    audit.runTasks();
+
+    successfullyParsed = true;
+  </script>
+</body>
+
+</html>
