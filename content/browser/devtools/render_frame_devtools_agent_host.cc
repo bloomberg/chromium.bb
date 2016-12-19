@@ -129,6 +129,8 @@ class RenderFrameDevToolsAgentHost::FrameHostHolder {
   std::vector<std::pair<int, std::string>> pending_messages_;
   // <call_id> -> PendingMessage
   std::map<int, PendingMessage> sent_messages_;
+  // These are sent messages for which we got a reply while suspended.
+  std::map<int, PendingMessage> sent_messages_whose_reply_came_while_suspended_;
 };
 
 RenderFrameDevToolsAgentHost::FrameHostHolder::FrameHostHolder(
@@ -164,6 +166,13 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::Reattach(
       host_->GetRoutingID(), agent_->GetId(), agent_->session()->session_id(),
       chunk_processor_.state_cookie()));
   if (old) {
+    if (IsBrowserSideNavigationEnabled()) {
+      for (const auto& pair :
+               old->sent_messages_whose_reply_came_while_suspended_) {
+        DispatchProtocolMessage(pair.second.session_id, pair.first,
+                                pair.second.method, pair.second.message);
+      }
+    }
     for (const auto& pair : old->sent_messages_) {
       DispatchProtocolMessage(pair.second.session_id, pair.first,
                               pair.second.method, pair.second.message);
@@ -232,11 +241,14 @@ RenderFrameDevToolsAgentHost::FrameHostHolder::ProcessChunkedMessageFromAgent(
 void RenderFrameDevToolsAgentHost::FrameHostHolder::SendMessageToClient(
     int session_id,
     const std::string& message) {
-  sent_messages_.erase(chunk_processor_.last_call_id());
-  if (suspended_)
+  int id = chunk_processor_.last_call_id();
+  if (suspended_) {
+    sent_messages_whose_reply_came_while_suspended_[id] = sent_messages_[id];
     pending_messages_.push_back(std::make_pair(session_id, message));
-  else
+  } else {
     agent_->SendMessageToClient(session_id, message);
+  }
+  sent_messages_.erase(id);
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::Suspend() {
@@ -249,6 +261,7 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::Resume() {
     agent_->SendMessageToClient(pair.first, pair.second);
   std::vector<std::pair<int, std::string>> empty;
   pending_messages_.swap(empty);
+  sent_messages_whose_reply_came_while_suspended_.clear();
 }
 
 // RenderFrameDevToolsAgentHost ------------------------------------------------
@@ -692,6 +705,8 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
       DiscardPending();
     }
     pending_handle_ = nullptr;
+  } else if (navigating_handles_.empty()) {
+    current_->Resume();
   }
   DispatchBufferedProtocolMessagesIfNecessary();
 
@@ -733,6 +748,7 @@ void RenderFrameDevToolsAgentHost::AboutToNavigate(
     return;
   DCHECK(current_);
   navigating_handles_.insert(navigation_handle);
+  current_->Suspend();
   DCHECK(CheckConsistency());
 }
 
