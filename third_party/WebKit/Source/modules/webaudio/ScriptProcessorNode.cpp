@@ -28,6 +28,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
@@ -206,7 +207,7 @@ void ScriptProcessorHandler::process(size_t framesToProcess) {
         // Fire the event on the main thread with the appropriate buffer
         // index.
         context()->getExecutionContext()->postTask(
-            BLINK_FROM_HERE,
+            TaskType::MediaElementEvent, BLINK_FROM_HERE,
             createCrossThreadTask(&ScriptProcessorHandler::fireProcessEvent,
                                   crossThreadUnretained(this),
                                   m_doubleBufferIndex));
@@ -217,7 +218,7 @@ void ScriptProcessorHandler::process(size_t framesToProcess) {
             WTF::makeUnique<WaitableEvent>();
 
         context()->getExecutionContext()->postTask(
-            BLINK_FROM_HERE,
+            TaskType::MediaElementEvent, BLINK_FROM_HERE,
             createCrossThreadTask(
                 &ScriptProcessorHandler::fireProcessEventForOfflineAudioContext,
                 crossThreadUnretained(this), m_doubleBufferIndex,

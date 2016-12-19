@@ -26,6 +26,7 @@
 #include "modules/webaudio/OfflineAudioDestinationNode.h"
 
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "modules/webaudio/AudioNodeOutput.h"
 #include "modules/webaudio/BaseAudioContext.h"
@@ -216,7 +217,7 @@ void OfflineAudioDestinationHandler::suspendOfflineRendering() {
   // The actual rendering has been suspended. Notify the context.
   if (context()->getExecutionContext()) {
     context()->getExecutionContext()->postTask(
-        BLINK_FROM_HERE,
+        TaskType::MediaElementEvent, BLINK_FROM_HERE,
         createCrossThreadTask(&OfflineAudioDestinationHandler::notifySuspend,
                               PassRefPtr<OfflineAudioDestinationHandler>(this),
                               context()->currentSampleFrame()));
@@ -229,9 +230,9 @@ void OfflineAudioDestinationHandler::finishOfflineRendering() {
   // The actual rendering has been completed. Notify the context.
   if (context()->getExecutionContext()) {
     context()->getExecutionContext()->postTask(
-        BLINK_FROM_HERE, createCrossThreadTask(
-                             &OfflineAudioDestinationHandler::notifyComplete,
-                             PassRefPtr<OfflineAudioDestinationHandler>(this)));
+        TaskType::MediaElementEvent, BLINK_FROM_HERE,
+        createCrossThreadTask(&OfflineAudioDestinationHandler::notifyComplete,
+                              wrapPassRefPtr(this)));
   }
 }
 

@@ -27,6 +27,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "modules/EventModules.h"
 #include "modules/webaudio/BaseAudioContext.h"
 #include "platform/audio/AudioUtilities.h"
@@ -221,7 +222,7 @@ void AudioScheduledSourceHandler::finish() {
 
   if (context()->getExecutionContext()) {
     context()->getExecutionContext()->postTask(
-        BLINK_FROM_HERE,
+        TaskType::MediaElementEvent, BLINK_FROM_HERE,
         createCrossThreadTask(&AudioScheduledSourceHandler::notifyEnded,
                               PassRefPtr<AudioScheduledSourceHandler>(this)));
   }

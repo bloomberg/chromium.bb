@@ -10,6 +10,7 @@
 #include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
 #include "modules/EventTargetModules.h"
@@ -89,7 +90,7 @@ ScriptPromise RemotePlayback::watchAvailability(
 
   // Report the current availability via the callback.
   getExecutionContext()->postTask(
-      BLINK_FROM_HERE,
+      TaskType::MediaElementEvent, BLINK_FROM_HERE,
       createSameThreadTask(&RemotePlayback::notifyInitialAvailability,
                            wrapPersistent(this), id),
       "watchAvailabilityCallback");
