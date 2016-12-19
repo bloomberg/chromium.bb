@@ -77,9 +77,7 @@ std::unique_ptr<SkCanvas> CreateCanvas(const sk_sp<SkBaseDevice>& device,
 }
 
 SkMetaData& GetMetaData(const SkCanvas& canvas) {
-  SkBaseDevice* device = canvas.getDevice();
-  DCHECK(device != nullptr);
-  return device->getMetaData();
+  return const_cast<SkCanvas&>(canvas).getMetaData();
 }
 
 #if defined(OS_MACOSX)
