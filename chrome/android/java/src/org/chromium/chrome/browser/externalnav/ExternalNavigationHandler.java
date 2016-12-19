@@ -49,7 +49,8 @@ public class ExternalNavigationHandler {
     static final String EXTRA_BROWSER_FALLBACK_URL = "browser_fallback_url";
 
     // Supervisor package name
-    private static final Object SUPERVISOR_PKG = "com.google.android.instantapps.supervisor";
+    @VisibleForTesting
+    static final Object SUPERVISOR_PKG = "com.google.android.instantapps.supervisor";
 
     // An extra that may be specified on an intent:// URL that contains an encoded value for the
     // referrer field passed to the market:// URL in the case where the app is not present.

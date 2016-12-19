@@ -21,6 +21,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
+import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
@@ -45,6 +46,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
     private static final int START_FILE = 0x8;
     private static final int START_OTHER_ACTIVITY = 0x10;
     private static final int INTENT_SANITIZATION_EXCEPTION = 0x20;
+    private static final int PROXY_FOR_INSTANT_APPS = 0x40;
 
     private static final String SEARCH_RESULT_URL_FOR_TOM_HANKS =
             "https://www.google.com/search?q=tom+hanks";
@@ -537,6 +539,82 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                 .withIsRedirect(true)
                 .withRedirectHandler(redirectHandler)
                 .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, IGNORE);
+    }
+
+    @SmallTest
+    public void testInstantAppsIntent_incomingIntentRedirect() throws Exception {
+        TestContext context = new TestContext();
+        int transTypeLinkFromIntent = PageTransition.LINK
+                | PageTransition.FROM_API;
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(context);
+        Intent fooIntent = Intent.parseUri("http://instantappenabled.com",
+                Intent.URI_INTENT_SCHEME);
+        redirectHandler.updateIntent(fooIntent);
+        redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, false, false, 0, 0);
+        redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, false, 0, 0);
+
+        mDelegate.setCanHandleWithInstantApp(true);
+        checkUrl("http://goo.gl/1234")
+                .withPageTransition(transTypeLinkFromIntent)
+                .withIsRedirect(true)
+                .withRedirectHandler(redirectHandler)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, IGNORE);
+
+        // URL that cannot be handled with instant apps should stay in Chrome.
+        mDelegate.setCanHandleWithInstantApp(false);
+        checkUrl("http://goo.gl/1234")
+                .withPageTransition(transTypeLinkFromIntent)
+                .withIsRedirect(true)
+                .withRedirectHandler(redirectHandler)
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+    }
+
+    @SmallTest
+    public void testInstantAppsIntent_handleNavigation() {
+        mDelegate.setCanHandleWithInstantApp(false);
+        checkUrl("http://maybeinstantapp.com")
+                .withPageTransition(PageTransition.LINK)
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+
+        mDelegate.setCanHandleWithInstantApp(true);
+        checkUrl("http://maybeinstantapp.com")
+                .withPageTransition(PageTransition.LINK)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, IGNORE);
+    }
+
+    @SmallTest
+    public void testInstantAppsIntent_serpReferrer() {
+        String intentUrl = "intent://buzzfeed.com/tasty#Intent;scheme=http;"
+                + "package=com.google.android.instantapps.supervisor;"
+                + "action=com.google.android.instantapps.START;"
+                + "S.com.google.android.instantapps.FALLBACK_PACKAGE="
+                + "com.android.chrome;S.com.google.android.instantapps.INSTANT_APP_PACKAGE="
+                + "com.yelp.android;S.android.intent.extra.REFERRER_NAME="
+                + "https%3A%2F%2Fwww.google.com;end";
+        mDelegate.setIsSerpReferrer(true);
+        checkUrl(intentUrl)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY | PROXY_FOR_INSTANT_APPS);
+        assertTrue(mDelegate.startActivityIntent.hasExtra(
+                InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER));
+
+        // Check that we block all instant app intent:// URLs not from SERP
+        mDelegate.setIsSerpReferrer(false);
+        checkUrl(intentUrl)
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+
+        // Check that IS_GOOGLE_SEARCH_REFERRER param is stripped on non-supervisor intents.
+        mDelegate.setIsSerpReferrer(true);
+        String nonSupervisor = "intent://buzzfeed.com/tasty#Intent;scheme=http;"
+                + "package=com.imdb;action=com.google.VIEW;"
+                + "S.com.google.android.gms.instantapps.IS_GOOGLE_SEARCH_REFERRER="
+                + "true;S.android.intent.extra.REFERRER_NAME="
+                + "https%3A%2F%2Fwww.google.com;end";
+        checkUrl(nonSupervisor)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+        assertFalse(mDelegate.startActivityIntent.hasExtra(
+                InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER));
     }
 
     @SmallTest
@@ -1152,6 +1230,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
             // For simplicity, don't distinguish between startActivityIfNeeded and startActivity
             // until a test requires this distinction.
             startActivityIntent = intent;
+            mCalledWithProxy = proxy;
             return true;
         }
 
@@ -1211,13 +1290,14 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
 
         @Override
         public boolean isSerpReferrer(Tab tab) {
-            return false;
+            return mIsSerpReferrer;
         }
 
         public void reset() {
             startActivityIntent = null;
             startIncognitoIntentCalled = false;
             startFileIntentCalled = false;
+            mCalledWithProxy = false;
         }
 
         public void setCanResolveActivity(boolean value) {
@@ -1244,6 +1324,10 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
             mCanHandleWithInstantApp = value;
         }
 
+        public void setIsSerpReferrer(boolean value) {
+            mIsSerpReferrer = value;
+        }
+
         public Intent startActivityIntent;
         public boolean startIncognitoIntentCalled;
 
@@ -1253,6 +1337,8 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
         private String mNewUrlAfterClobbering;
         private String mReferrerUrlForClobbering;
         private boolean mCanHandleWithInstantApp;
+        private boolean mIsSerpReferrer;
+        public boolean mCalledWithProxy;
         public boolean mIsChromeAppInForeground = true;
         public boolean mIsWithinCurrentWebappScope;
 
@@ -1342,6 +1428,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
             boolean expectStartFile = (otherExpectation & START_FILE) != 0;
             boolean expectSaneIntent = expectStartOtherActivity
                     && (otherExpectation & INTENT_SANITIZATION_EXCEPTION) == 0;
+            boolean expectProxyForIA = (otherExpectation & PROXY_FOR_INSTANT_APPS) != 0;
 
             mDelegate.reset();
 
@@ -1375,6 +1462,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
             assertEquals(expectStartChrome, startChromeCalled);
             assertEquals(expectStartWebApk, startWebApkCalled);
             assertEquals(expectStartFile, mDelegate.startFileIntentCalled);
+            assertEquals(expectProxyForIA, mDelegate.mCalledWithProxy);
 
             if (startActivityCalled && expectSaneIntent) {
                 checkIntentSanity(mDelegate.startActivityIntent, "Intent");
