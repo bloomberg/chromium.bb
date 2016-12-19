@@ -1,0 +1,381 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "ios/chrome/browser/ui/history/history_panel_view_controller.h"
+
+#include "base/ios/block_types.h"
+#include "base/ios/ios_util.h"
+#include "base/mac/scoped_nsobject.h"
+#include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/history/clear_browsing_bar.h"
+#import "ios/chrome/browser/ui/history/history_collection_view_controller.h"
+#import "ios/chrome/browser/ui/history/history_search_view_controller.h"
+#import "ios/chrome/browser/ui/icons/chrome_icon.h"
+#import "ios/chrome/browser/ui/material_components/utils.h"
+#import "ios/chrome/browser/ui/ntp/recent_tabs/views/panel_bar_view.h"
+#import "ios/chrome/browser/ui/show_privacy_settings_util.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/url_loader.h"
+#include "ios/chrome/grit/ios_strings.h"
+#import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
+#import "ios/third_party/material_components_ios/src/components/NavigationBar/src/MaterialNavigationBar.h"
+#include "ui/base/l10n/l10n_util_mac.h"
+
+namespace {
+// Shadow opacity for the clear browsing button and the header when scrolling.
+CGFloat kShadowOpacity = 0.2f;
+}  // namespace
+
+@interface HistoryPanelViewController ()<
+    HistoryCollectionViewControllerDelegate,
+    HistorySearchViewControllerDelegate> {
+  // Controller for collection view that displays history entries.
+  base::scoped_nsobject<HistoryCollectionViewController>
+      _historyCollectionController;
+  // Bar at the bottom of the history panel the displays options for entry
+  // deletion, including "Clear Browsing Data..." which takes the user to
+  // Privacy settings, or "Edit" for entering a mode for deleting individual
+  // entries. When in edit mode, the bar displays options to Delete or Cancel.
+  base::scoped_nsobject<ClearBrowsingBar> _clearBrowsingBar;
+  // View controller for the search bar.
+  base::scoped_nsobject<HistorySearchViewController> _searchViewController;
+  // Container view for history collection and clear browsing button to enable
+  // use of autolayout in conjuction with Material App Bar.
+  base::scoped_nsobject<UIView> _containerView;
+  // The header view.
+  base::scoped_nsobject<MDCAppBar> _appBar;
+}
+// Closes history.
+- (void)closeHistory;
+// Closes history, invoking completionHandler once dismissal is complete.
+- (void)closeHistoryWithCompletion:(ProceduralBlock)completionHandler;
+// Opens Privacy settings.
+- (void)openPrivacySettings;
+// Configure view for editing mode.
+- (void)enterEditingMode;
+// Configure view for non-editing mode.
+- (void)exitEditingMode;
+// Deletes selected history entries.
+- (void)deleteSelectedItems;
+// Displays a search bar for searching history entries.
+- (void)enterSearchMode;
+// Dismisses the search bar.
+- (void)exitSearchMode;
+// Configures navigation bar for current state of the history collection.
+- (void)configureNavigationBar;
+// Configures the clear browsing data bar for the current state of the history
+// collection.
+- (void)configureClearBrowsingBar;
+@end
+
+@implementation HistoryPanelViewController
+
+- (instancetype)initWithLoader:(id<UrlLoader>)loader
+                  browserState:(ios::ChromeBrowserState*)browserState {
+  self = [super initWithNibName:nil bundle:nil];
+  if (self) {
+    _historyCollectionController.reset([[HistoryCollectionViewController alloc]
+        initWithLoader:loader
+          browserState:browserState
+              delegate:self]);
+
+    // Configure modal presentation.
+    [self setModalPresentationStyle:UIModalPresentationFormSheet];
+    [self setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
+
+    // Add and configure header.
+    _appBar.reset([[MDCAppBar alloc] init]);
+    [self addChildViewController:_appBar.get().headerViewController];
+  }
+  return self;
+}
+
+- (instancetype)initWithNibName:(NSString*)nibNameOrNil
+                         bundle:(NSBundle*)nibBundleOrNil {
+  NOTREACHED();
+  return nil;
+}
+
+- (instancetype)initWithCoder:(NSCoder*)aDecoder {
+  NOTREACHED();
+  return nil;
+}
+
++ (UIViewController*)controllerToPresentForBrowserState:
+                         (ios::ChromeBrowserState*)browserState
+                                                 loader:(id<UrlLoader>)loader {
+  HistoryPanelViewController* historyPanelController =
+      [[[HistoryPanelViewController alloc] initWithLoader:loader
+                                             browserState:browserState]
+          autorelease];
+  return historyPanelController;
+}
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  [self setTitle:l10n_util::GetNSString(IDS_HISTORY_TITLE)];
+
+  _containerView.reset([[UIView alloc] initWithFrame:self.view.frame]);
+  [_containerView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
+                                      UIViewAutoresizingFlexibleHeight];
+  [self.view addSubview:_containerView];
+
+  [[_historyCollectionController view]
+      setTranslatesAutoresizingMaskIntoConstraints:NO];
+  [_historyCollectionController willMoveToParentViewController:self];
+  [_containerView addSubview:[_historyCollectionController view]];
+  [self addChildViewController:_historyCollectionController];
+  [_historyCollectionController didMoveToParentViewController:self];
+
+  _clearBrowsingBar.reset([[ClearBrowsingBar alloc] initWithFrame:CGRectZero]);
+  [_clearBrowsingBar setClearBrowsingDataTarget:self
+                                         action:@selector(openPrivacySettings)];
+  [_clearBrowsingBar setEditTarget:self action:@selector(enterEditingMode)];
+  [_clearBrowsingBar setCancelTarget:self action:@selector(exitEditingMode)];
+  [_clearBrowsingBar setDeleteTarget:self
+                              action:@selector(deleteSelectedItems)];
+  [_clearBrowsingBar setTranslatesAutoresizingMaskIntoConstraints:NO];
+  [_containerView addSubview:_clearBrowsingBar];
+  [self configureClearBrowsingBar];
+
+  ConfigureAppBarWithCardStyle(_appBar);
+  [_appBar headerViewController].headerView.trackingScrollView =
+      [_historyCollectionController collectionView];
+  [_appBar addSubviewsToParent];
+
+  // Add navigation bar buttons.
+  self.navigationItem.leftBarButtonItem =
+      [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon searchIcon]
+                                          target:self
+                                          action:@selector(enterSearchMode)];
+  self.navigationItem.rightBarButtonItem = [[[UIBarButtonItem alloc]
+      initWithTitle:l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)
+              style:UIBarButtonItemStylePlain
+             target:self
+             action:@selector(closeHistory)] autorelease];
+  [self configureNavigationBar];
+}
+
+- (void)updateViewConstraints {
+  NSDictionary* views = @{
+    @"collectionView" : [_historyCollectionController view],
+    @"clearBrowsingBar" : _clearBrowsingBar,
+  };
+  NSArray* constraints = @[
+    @"V:|[collectionView][clearBrowsingBar(==48)]|", @"H:|[collectionView]|",
+    @"H:|[clearBrowsingBar]|"
+  ];
+  ApplyVisualConstraints(constraints, views);
+  [super updateViewConstraints];
+}
+
+- (BOOL)disablesAutomaticKeyboardDismissal {
+  return NO;
+}
+
+#pragma mark - Status bar
+
+- (BOOL)modalPresentationCapturesStatusBarAppearance {
+  if (!base::ios::IsRunningOnIOS10OrLater()) {
+    // TODO(crbug.com/620361): Remove the entire method override when iOS 9 is
+    // dropped.
+    return YES;
+  } else {
+    return [super modalPresentationCapturesStatusBarAppearance];
+  }
+}
+
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  if (!base::ios::IsRunningOnIOS10OrLater()) {
+    // TODO(crbug.com/620361): Remove the entire method override when iOS 9 is
+    // dropped.
+    [self setNeedsStatusBarAppearanceUpdate];
+  }
+}
+
+- (UIViewController*)childViewControllerForStatusBarHidden {
+  if (!base::ios::IsRunningOnIOS10OrLater()) {
+    // TODO(crbug.com/620361): Remove the entire method override when iOS 9 is
+    // dropped.
+    return nil;
+  } else {
+    return _appBar.get().headerViewController;
+  }
+}
+
+- (BOOL)prefersStatusBarHidden {
+  if (!base::ios::IsRunningOnIOS10OrLater()) {
+    // TODO(crbug.com/620361): Remove the entire method override when iOS 9 is
+    // dropped.
+    return NO;
+  } else {
+    return [super prefersStatusBarHidden];
+  }
+}
+
+- (UIViewController*)childViewControllerForStatusBarStyle {
+  if (!base::ios::IsRunningOnIOS10OrLater()) {
+    // TODO(crbug.com/620361): Remove the entire method override when iOS 9 is
+    // dropped.
+    return nil;
+  } else {
+    return _appBar.get().headerViewController;
+  }
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle {
+  if (!base::ios::IsRunningOnIOS10OrLater()) {
+    // TODO(crbug.com/620361): Remove the entire method override when iOS 9 is
+    // dropped.
+    if (IsIPadIdiom() && !IsCompact()) {
+      return UIStatusBarStyleLightContent;
+    } else {
+      return UIStatusBarStyleDefault;
+    }
+  } else {
+    return [super preferredStatusBarStyle];
+  }
+}
+
+#pragma mark - HistoryCollectionViewControllerDelegate
+
+- (void)historyCollectionViewController:
+            (HistoryCollectionViewController*)collectionViewcontroller
+              shouldCloseWithCompletion:(ProceduralBlock)completionHandler {
+  [self closeHistoryWithCompletion:completionHandler];
+}
+
+- (void)historyCollectionViewController:
+            (HistoryCollectionViewController*)controller
+                      didScrollToOffset:(CGPoint)offset {
+  // Display a shadow on the header when the collection is scrolled.
+  MDCFlexibleHeaderView* headerView =
+      _appBar.get().headerViewController.headerView;
+  headerView.visibleShadowOpacity =
+      offset.y > -CGRectGetHeight(headerView.frame) ? kShadowOpacity : 0.0f;
+}
+
+- (void)historyCollectionViewControllerDidChangeEntries:
+    (HistoryCollectionViewController*)controller {
+  // Reconfigure the navigation and clear browsing bars to reflect currently
+  // displayed entries.
+  [self configureNavigationBar];
+  [self configureClearBrowsingBar];
+}
+
+- (void)historyCollectionViewControllerDidChangeEntrySelection:
+    (HistoryCollectionViewController*)controller {
+  // Reconfigure the clear browsing bar to reflect current availability of
+  // entries for deletion.
+  [self configureClearBrowsingBar];
+}
+
+#pragma mark - HistorySearchViewControllerDelegate
+
+- (void)historySearchViewController:
+            (HistorySearchViewController*)searchViewController
+            didRequestSearchForTerm:(NSString*)searchTerm {
+  [_historyCollectionController showHistoryMatchingQuery:searchTerm];
+}
+
+- (void)historySearchViewControllerDidCancel:
+    (HistorySearchViewController*)searchViewController {
+  DCHECK([_searchViewController isEqual:searchViewController]);
+  [self exitSearchMode];
+}
+
+#pragma mark - Private methods
+
+- (void)closeHistory {
+  [self closeHistoryWithCompletion:nil];
+}
+
+- (void)closeHistoryWithCompletion:(ProceduralBlock)completion {
+  [self.presentingViewController dismissViewControllerAnimated:YES
+                                                    completion:completion];
+}
+
+- (void)openPrivacySettings {
+  [self exitSearchMode];
+  ShowClearBrowsingData();
+}
+
+- (void)enterEditingMode {
+  [_historyCollectionController setEditing:YES];
+  [_clearBrowsingBar setEditing:YES];
+  if (_historyCollectionController.get().searching) {
+    [_searchViewController setEnabled:NO];
+  }
+  DCHECK([_historyCollectionController isEditing]);
+  [self configureNavigationBar];
+}
+
+- (void)exitEditingMode {
+  [_historyCollectionController setEditing:NO];
+  [_clearBrowsingBar setEditing:NO];
+  if (_historyCollectionController.get().searching) {
+    [_searchViewController setEnabled:YES];
+  }
+  DCHECK(![_historyCollectionController isEditing]);
+  [self configureNavigationBar];
+}
+
+- (void)deleteSelectedItems {
+  [_historyCollectionController deleteSelectedItemsFromHistory];
+  [self exitEditingMode];
+}
+- (void)enterSearchMode {
+  if (!_searchViewController) {
+    _searchViewController.reset([[HistorySearchViewController alloc] init]);
+    [_searchViewController setDelegate:self];
+  }
+
+  UIView* searchBarView = [_searchViewController view];
+  [_searchViewController willMoveToParentViewController:self];
+  [self.view addSubview:searchBarView];
+  _historyCollectionController.get().searching = YES;
+  [_searchViewController didMoveToParentViewController:self];
+
+  // Constraints to make search bar cover header.
+  [searchBarView setTranslatesAutoresizingMaskIntoConstraints:NO];
+  MDCFlexibleHeaderView* headerView =
+      _appBar.get().headerViewController.headerView;
+  NSArray* constraints = @[
+    [[searchBarView topAnchor] constraintEqualToAnchor:headerView.topAnchor],
+    [[searchBarView leadingAnchor]
+        constraintEqualToAnchor:headerView.leadingAnchor],
+    [[searchBarView heightAnchor]
+        constraintEqualToAnchor:headerView.heightAnchor],
+    [[searchBarView widthAnchor] constraintEqualToAnchor:headerView.widthAnchor]
+  ];
+  [NSLayoutConstraint activateConstraints:constraints];
+}
+
+- (void)exitSearchMode {
+  if (_historyCollectionController.get().searching) {
+    [[_searchViewController view] removeFromSuperview];
+    [_searchViewController removeFromParentViewController];
+    _historyCollectionController.get().searching = NO;
+    [_historyCollectionController showHistoryMatchingQuery:nil];
+  }
+}
+
+- (void)configureNavigationBar {
+  // The search button should only be enabled if there are history entries to
+  // search, and if history is not in edit mode.
+  self.navigationItem.leftBarButtonItem.enabled =
+      [_historyCollectionController hasHistoryEntries] &&
+      ![_historyCollectionController isEditing];
+}
+
+- (void)configureClearBrowsingBar {
+  _clearBrowsingBar.get().editing = _historyCollectionController.get().editing;
+  _clearBrowsingBar.get().deleteButtonEnabled =
+      [_historyCollectionController hasSelectedEntries];
+  _clearBrowsingBar.get().editButtonEnabled =
+      [_historyCollectionController hasHistoryEntries];
+}
+
+@end
