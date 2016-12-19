@@ -33,6 +33,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseClient.h"
 #include "modules/webdatabase/DatabaseContext.h"
@@ -188,7 +189,7 @@ void DatabaseTracker::closeDatabasesImmediately(SecurityOrigin* origin,
   for (DatabaseSet::iterator it = databaseSet->begin();
        it != databaseSet->end(); ++it)
     (*it)->getDatabaseContext()->getExecutionContext()->postTask(
-        BLINK_FROM_HERE,
+        TaskType::DatabaseAccess, BLINK_FROM_HERE,
         createCrossThreadTask(&DatabaseTracker::closeOneDatabaseImmediately,
                               crossThreadUnretained(this), originString, name,
                               *it));

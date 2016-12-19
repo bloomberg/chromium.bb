@@ -28,6 +28,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/html/VoidCallback.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/webdatabase/ChangeVersionData.h"
@@ -873,9 +874,10 @@ void Database::runTransaction(SQLTransactionCallback* callback,
       std::unique_ptr<SQLErrorData> error = SQLErrorData::create(
           SQLError::kUnknownErr, "database has been closed");
       getExecutionContext()->postTask(
-          BLINK_FROM_HERE, createSameThreadTask(&callTransactionErrorCallback,
-                                                wrapPersistent(callback),
-                                                WTF::passed(std::move(error))));
+          TaskType::DatabaseAccess, BLINK_FROM_HERE,
+          createSameThreadTask(&callTransactionErrorCallback,
+                               wrapPersistent(callback),
+                               WTF::passed(std::move(error))));
     }
   }
 }
@@ -884,7 +886,7 @@ void Database::scheduleTransactionCallback(SQLTransaction* transaction) {
   // The task is constructed in a database thread, and destructed in the
   // context thread.
   getExecutionContext()->postTask(
-      BLINK_FROM_HERE,
+      TaskType::DatabaseAccess, BLINK_FROM_HERE,
       createCrossThreadTask(&SQLTransaction::performPendingCallback,
                             wrapCrossThreadPersistent(transaction)));
 }

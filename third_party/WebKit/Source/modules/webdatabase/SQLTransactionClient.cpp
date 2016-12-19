@@ -32,6 +32,7 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "modules/webdatabase/Database.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -66,7 +67,7 @@ void SQLTransactionClient::didCommitWriteTransaction(Database* database) {
       database->getDatabaseContext()->getExecutionContext();
   if (!executionContext->isContextThread()) {
     executionContext->postTask(
-        BLINK_FROM_HERE,
+        TaskType::DatabaseAccess, BLINK_FROM_HERE,
         createCrossThreadTask(
             &databaseModifiedCrossThread,
             executionContext->getSecurityOrigin()->toRawString(),
