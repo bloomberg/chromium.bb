@@ -14,12 +14,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
-#include "components/proximity_auth/connection.h"
+#include "components/cryptauth/connection.h"
+#include "components/cryptauth/wire_message.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/messenger_observer.h"
 #include "components/proximity_auth/remote_status_update.h"
 #include "components/proximity_auth/secure_context.h"
-#include "components/proximity_auth/wire_message.h"
 
 namespace proximity_auth {
 namespace {
@@ -68,7 +68,7 @@ std::string GetMessageType(const base::DictionaryValue& message) {
 
 }  // namespace
 
-MessengerImpl::MessengerImpl(std::unique_ptr<Connection> connection,
+MessengerImpl::MessengerImpl(std::unique_ptr<cryptauth::Connection> connection,
                              std::unique_ptr<SecureContext> secure_context)
     : connection_(std::move(connection)),
       secure_context_(std::move(secure_context)),
@@ -179,7 +179,8 @@ void MessengerImpl::ProcessMessageQueue() {
 }
 
 void MessengerImpl::OnMessageEncoded(const std::string& encoded_message) {
-  connection_->SendMessage(base::MakeUnique<WireMessage>(encoded_message));
+  connection_->SendMessage(
+      base::MakeUnique<cryptauth::WireMessage>(encoded_message));
 }
 
 void MessengerImpl::OnMessageDecoded(const std::string& decoded_message) {
@@ -306,11 +307,12 @@ void MessengerImpl::PollScreenStateForIOS() {
       base::TimeDelta::FromSeconds(kIOSPollingIntervalSeconds));
 }
 
-void MessengerImpl::OnConnectionStatusChanged(Connection* connection,
-                                              Connection::Status old_status,
-                                              Connection::Status new_status) {
+void MessengerImpl::OnConnectionStatusChanged(
+    cryptauth::Connection* connection,
+    cryptauth::Connection::Status old_status,
+    cryptauth::Connection::Status new_status) {
   DCHECK_EQ(connection, connection_.get());
-  if (new_status == Connection::DISCONNECTED) {
+  if (new_status == cryptauth::Connection::DISCONNECTED) {
     PA_LOG(INFO) << "Secure channel disconnected...";
     connection_->RemoveObserver(this);
     for (auto& observer : observers_)
@@ -320,15 +322,16 @@ void MessengerImpl::OnConnectionStatusChanged(Connection* connection,
   }
 }
 
-void MessengerImpl::OnMessageReceived(const Connection& connection,
-                                      const WireMessage& wire_message) {
+void MessengerImpl::OnMessageReceived(
+    const cryptauth::Connection& connection,
+    const cryptauth::WireMessage& wire_message) {
   secure_context_->Decode(wire_message.payload(),
                           base::Bind(&MessengerImpl::OnMessageDecoded,
                                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void MessengerImpl::OnSendCompleted(const Connection& connection,
-                                    const WireMessage& wire_message,
+void MessengerImpl::OnSendCompleted(const cryptauth::Connection& connection,
+                                    const cryptauth::WireMessage& wire_message,
                                     bool success) {
   if (!pending_message_) {
     PA_LOG(ERROR) << "Unexpected message sent.";

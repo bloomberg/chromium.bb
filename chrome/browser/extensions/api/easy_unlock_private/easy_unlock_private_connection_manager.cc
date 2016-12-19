@@ -10,12 +10,12 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
-#include "components/proximity_auth/connection.h"
-#include "components/proximity_auth/wire_message.h"
+#include "components/cryptauth/connection.h"
+#include "components/cryptauth/wire_message.h"
 #include "extensions/browser/event_router.h"
 
-using proximity_auth::Connection;
-using proximity_auth::WireMessage;
+using cryptauth::Connection;
+using cryptauth::WireMessage;
 
 namespace extensions {
 namespace {

@@ -11,6 +11,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
+#include "components/cryptauth/bluetooth_throttler.h"
+#include "components/cryptauth/connection.h"
+#include "components/cryptauth/connection_finder.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/authenticator.h"
 #include "components/proximity_auth/messenger_observer.h"
@@ -18,10 +21,7 @@
 
 namespace proximity_auth {
 
-class BluetoothThrottler;
 class Messenger;
-class Connection;
-class ConnectionFinder;
 class ProximityAuthClient;
 class SecureContext;
 
@@ -44,9 +44,10 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
   void RemoveObserver(Observer* observer) override;
 
  protected:
-  // Creates and returns a ConnectionFinder instance for |remote_device_|.
+  // Creates and returns a cryptauth::ConnectionFinder instance for
+  // |remote_device_|.
   // Exposed for testing.
-  virtual std::unique_ptr<ConnectionFinder> CreateConnectionFinder();
+  virtual std::unique_ptr<cryptauth::ConnectionFinder> CreateConnectionFinder();
 
   // Creates and returns an Authenticator instance for |connection_|.
   // Exposed for testing.
@@ -61,7 +62,7 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
   void FindConnection();
 
   // Called when |connection_finder_| finds a connection.
-  void OnConnectionFound(std::unique_ptr<Connection> connection);
+  void OnConnectionFound(std::unique_ptr<cryptauth::Connection> connection);
 
   // Callback when |authenticator_| completes authentication.
   void OnAuthenticationResult(Authenticator::Result result,
@@ -86,7 +87,7 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
   base::ObserverList<Observer> observers_;
 
   // The connection that is established by |connection_finder_|.
-  std::unique_ptr<Connection> connection_;
+  std::unique_ptr<cryptauth::Connection> connection_;
 
   // Context for encrypting and decrypting messages. Created after
   // authentication succeeds. Ownership is eventually passed to |messenger_|.
@@ -102,11 +103,11 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
 
   // Used in the FINDING_CONNECTION state to establish a connection to the
   // remote device.
-  std::unique_ptr<ConnectionFinder> connection_finder_;
+  std::unique_ptr<cryptauth::ConnectionFinder> connection_finder_;
 
   // Rate limits Bluetooth connections to the same device. Used to in the
-  // created ConnectionFinder.
-  std::unique_ptr<BluetoothThrottler> bluetooth_throttler_;
+  // created cryptauth::ConnectionFinder.
+  std::unique_ptr<cryptauth::BluetoothThrottler> bluetooth_throttler_;
 
   // After authentication fails, this timer waits for a period of time before
   // retrying the connection.

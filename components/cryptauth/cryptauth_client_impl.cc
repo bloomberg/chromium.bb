@@ -200,4 +200,4 @@ std::unique_ptr<CryptAuthClient> CryptAuthClientFactoryImpl::CreateInstance() {
       url_request_context_, device_classifier_);
 }
 
-}  // proximity_auth
+}  // namespace cryptauth

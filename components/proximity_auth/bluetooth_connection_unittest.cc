@@ -10,9 +10,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
+#include "components/cryptauth/cryptauth_test_util.h"
 #include "components/cryptauth/remote_device.h"
-#include "components/proximity_auth/proximity_auth_test_util.h"
-#include "components/proximity_auth/wire_message.h"
+#include "components/cryptauth/wire_message.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -54,14 +54,14 @@ scoped_refptr<net::IOBuffer> CreateReceiveBuffer() {
 class MockBluetoothConnection : public BluetoothConnection {
  public:
   MockBluetoothConnection()
-      : BluetoothConnection(CreateClassicRemoteDeviceForTest(),
+      : BluetoothConnection(cryptauth::CreateClassicRemoteDeviceForTest(),
                             device::BluetoothUUID(kUuid)) {}
 
   // Calls back into the parent Connection class.
   MOCK_METHOD1(SetStatusProxy, void(Status status));
   MOCK_METHOD1(OnBytesReceived, void(const std::string& bytes));
   MOCK_METHOD2(OnDidSendMessage,
-               void(const WireMessage& message, bool success));
+               void(const cryptauth::WireMessage& message, bool success));
 
   void SetStatus(Status status) override {
     SetStatusProxy(status);
@@ -78,9 +78,9 @@ class MockBluetoothConnection : public BluetoothConnection {
   DISALLOW_COPY_AND_ASSIGN(MockBluetoothConnection);
 };
 
-class TestWireMessage : public WireMessage {
+class TestWireMessage : public cryptauth::WireMessage {
  public:
-  TestWireMessage() : WireMessage("permit id", "payload") {}
+  TestWireMessage() : cryptauth::WireMessage("permit id", "payload") {}
   ~TestWireMessage() override {}
 
   std::string Serialize() const override { return kSerializedMessage; }
@@ -97,8 +97,8 @@ class ProximityAuthBluetoothConnectionTest : public testing::Test {
       : adapter_(new device::MockBluetoothAdapter),
         device_(adapter_.get(),
                 0,
-                kTestRemoteDeviceName,
-                kTestRemoteDeviceBluetoothAddress,
+                cryptauth::kTestRemoteDeviceName,
+                cryptauth::kTestRemoteDeviceBluetoothAddress,
                 true,
                 true),
         socket_(new StrictMock<device::MockBluetoothSocket>),
@@ -111,40 +111,42 @@ class ProximityAuthBluetoothConnectionTest : public testing::Test {
 
   // Transition the connection into an in-progress state.
   void BeginConnecting(MockBluetoothConnection* connection) {
-    EXPECT_EQ(Connection::DISCONNECTED, connection->status());
+    EXPECT_EQ(cryptauth::Connection::DISCONNECTED, connection->status());
     ON_CALL(device_, IsConnected()).WillByDefault(Return(false));
 
     ON_CALL(*adapter_, GetDevice(_)).WillByDefault(Return(&device_));
-    EXPECT_CALL(*connection, SetStatusProxy(Connection::IN_PROGRESS));
+    EXPECT_CALL(*connection,
+                SetStatusProxy(cryptauth::Connection::IN_PROGRESS));
     EXPECT_CALL(*adapter_, AddObserver(connection));
     EXPECT_CALL(device_, ConnectToServiceInsecurely(uuid_, _, _));
     connection->Connect();
 
-    EXPECT_EQ(Connection::IN_PROGRESS, connection->status());
+    EXPECT_EQ(cryptauth::Connection::IN_PROGRESS, connection->status());
   }
 
   // Transition the connection into a connected state.
   // Saves the success and error callbacks passed into OnReceive(), which can be
   // accessed via receive_callback() and receive_success_callback().
   void Connect(MockBluetoothConnection* connection) {
-    EXPECT_EQ(Connection::DISCONNECTED, connection->status());
+    EXPECT_EQ(cryptauth::Connection::DISCONNECTED, connection->status());
 
     device::BluetoothDevice::ConnectToServiceCallback callback;
     ON_CALL(*adapter_, GetDevice(_)).WillByDefault(Return(&device_));
-    EXPECT_CALL(*connection, SetStatusProxy(Connection::IN_PROGRESS));
+    EXPECT_CALL(*connection,
+                SetStatusProxy(cryptauth::Connection::IN_PROGRESS));
     EXPECT_CALL(*adapter_, AddObserver(connection));
     EXPECT_CALL(device_, ConnectToServiceInsecurely(_, _, _))
         .WillOnce(SaveArg<1>(&callback));
     connection->Connect();
     ASSERT_FALSE(callback.is_null());
 
-    EXPECT_CALL(*connection, SetStatusProxy(Connection::CONNECTED));
+    EXPECT_CALL(*connection, SetStatusProxy(cryptauth::Connection::CONNECTED));
     EXPECT_CALL(*socket_, Receive(_, _, _))
         .WillOnce(DoAll(SaveArg<1>(&receive_callback_),
                         SaveArg<2>(&receive_error_callback_)));
     callback.Run(socket_);
 
-    EXPECT_EQ(Connection::CONNECTED, connection->status());
+    EXPECT_EQ(cryptauth::Connection::CONNECTED, connection->status());
     ON_CALL(device_, IsConnected()).WillByDefault(Return(true));
   }
 
@@ -215,8 +217,8 @@ TEST_F(ProximityAuthBluetoothConnectionTest, Connect_DeviceMissing) {
   StrictMock<MockBluetoothConnection> connection;
 
   ON_CALL(*adapter_, GetDevice(_)).WillByDefault(Return(nullptr));
-  EXPECT_CALL(connection, SetStatusProxy(Connection::IN_PROGRESS));
-  EXPECT_CALL(connection, SetStatusProxy(Connection::DISCONNECTED));
+  EXPECT_CALL(connection, SetStatusProxy(cryptauth::Connection::IN_PROGRESS));
+  EXPECT_CALL(connection, SetStatusProxy(cryptauth::Connection::DISCONNECTED));
   connection.Connect();
 }
 
@@ -228,7 +230,7 @@ TEST_F(ProximityAuthBluetoothConnectionTest,
 
   // Remove the device while the connection is in-progress. This should cause
   // the connection to disconnect.
-  EXPECT_CALL(connection, SetStatusProxy(Connection::DISCONNECTED));
+  EXPECT_CALL(connection, SetStatusProxy(cryptauth::Connection::DISCONNECTED));
   EXPECT_CALL(*adapter_, RemoveObserver(&connection));
   connection.DeviceRemoved(adapter_.get(), &device_);
 }
@@ -255,14 +257,14 @@ TEST_F(ProximityAuthBluetoothConnectionTest, Connect_ConnectionFails) {
 
   device::BluetoothDevice::ConnectToServiceErrorCallback error_callback;
   ON_CALL(*adapter_, GetDevice(_)).WillByDefault(Return(&device_));
-  EXPECT_CALL(connection, SetStatusProxy(Connection::IN_PROGRESS));
+  EXPECT_CALL(connection, SetStatusProxy(cryptauth::Connection::IN_PROGRESS));
   EXPECT_CALL(*adapter_, AddObserver(&connection));
   EXPECT_CALL(device_, ConnectToServiceInsecurely(uuid_, _, _))
       .WillOnce(SaveArg<2>(&error_callback));
   connection.Connect();
   ASSERT_FALSE(error_callback.is_null());
 
-  EXPECT_CALL(connection, SetStatusProxy(Connection::DISCONNECTED));
+  EXPECT_CALL(connection, SetStatusProxy(cryptauth::Connection::DISCONNECTED));
   EXPECT_CALL(*adapter_, RemoveObserver(&connection));
   error_callback.Run("super descriptive error message");
 }
@@ -281,7 +283,7 @@ TEST_F(ProximityAuthBluetoothConnectionTest,
   StrictMock<MockBluetoothConnection> connection;
   Connect(&connection);
 
-  EXPECT_CALL(connection, SetStatusProxy(Connection::DISCONNECTED));
+  EXPECT_CALL(connection, SetStatusProxy(cryptauth::Connection::DISCONNECTED));
   EXPECT_CALL(*socket_, Disconnect(_));
   EXPECT_CALL(*adapter_, RemoveObserver(&connection));
   connection.DeviceRemoved(adapter_.get(), &device_);
@@ -354,7 +356,7 @@ TEST_F(ProximityAuthBluetoothConnectionTest,
   StrictMock<MockBluetoothConnection> connection;
   BeginConnecting(&connection);
 
-  EXPECT_CALL(connection, SetStatusProxy(Connection::DISCONNECTED));
+  EXPECT_CALL(connection, SetStatusProxy(cryptauth::Connection::DISCONNECTED));
   EXPECT_CALL(*adapter_, RemoveObserver(&connection));
   connection.Disconnect();
 }
@@ -365,7 +367,7 @@ TEST_F(ProximityAuthBluetoothConnectionTest,
   StrictMock<MockBluetoothConnection> connection;
   Connect(&connection);
 
-  EXPECT_CALL(connection, SetStatusProxy(Connection::DISCONNECTED));
+  EXPECT_CALL(connection, SetStatusProxy(cryptauth::Connection::DISCONNECTED));
   EXPECT_CALL(*socket_, Disconnect(_));
   EXPECT_CALL(*adapter_, RemoveObserver(&connection));
   connection.Disconnect();
@@ -376,14 +378,14 @@ TEST_F(ProximityAuthBluetoothConnectionTest,
   StrictMock<MockBluetoothConnection> connection;
   device::BluetoothDevice::ConnectToServiceCallback callback;
   ON_CALL(*adapter_, GetDevice(_)).WillByDefault(Return(&device_));
-  EXPECT_CALL(connection, SetStatusProxy(Connection::IN_PROGRESS));
+  EXPECT_CALL(connection, SetStatusProxy(cryptauth::Connection::IN_PROGRESS));
   EXPECT_CALL(*adapter_, AddObserver(&connection));
   EXPECT_CALL(device_, ConnectToServiceInsecurely(uuid_, _, _))
       .WillOnce(SaveArg<1>(&callback));
   connection.Connect();
   ASSERT_FALSE(callback.is_null());
 
-  EXPECT_CALL(connection, SetStatusProxy(Connection::DISCONNECTED));
+  EXPECT_CALL(connection, SetStatusProxy(cryptauth::Connection::DISCONNECTED));
   EXPECT_CALL(*adapter_, RemoveObserver(&connection));
   connection.Disconnect();
 
@@ -449,7 +451,7 @@ TEST_F(ProximityAuthBluetoothConnectionTest, SendMessage_Failure) {
 
   ASSERT_FALSE(error_callback.is_null());
   EXPECT_CALL(connection, OnDidSendMessage(Ref(*expected_wire_message), false));
-  EXPECT_CALL(connection, SetStatusProxy(Connection::DISCONNECTED));
+  EXPECT_CALL(connection, SetStatusProxy(cryptauth::Connection::DISCONNECTED));
   EXPECT_CALL(*socket_, Disconnect(_));
   EXPECT_CALL(*adapter_, RemoveObserver(&connection));
   error_callback.Run("The most helpful of error messages");
@@ -463,7 +465,7 @@ TEST_F(ProximityAuthBluetoothConnectionTest, DeviceChanged_Disconnected) {
 
   // If the remote device disconnects, |connection| should also disconnect.
   ON_CALL(device_, IsConnected()).WillByDefault(Return(false));
-  EXPECT_CALL(connection, SetStatusProxy(Connection::DISCONNECTED));
+  EXPECT_CALL(connection, SetStatusProxy(cryptauth::Connection::DISCONNECTED));
   EXPECT_CALL(*socket_, Disconnect(_));
   EXPECT_CALL(*adapter_, RemoveObserver(&connection));
   connection.DeviceChanged(adapter_.get(), &device_);

@@ -12,19 +12,21 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "components/cryptauth/connection.h"
+#include "components/cryptauth/connection_finder.h"
+#include "components/cryptauth/connection_observer.h"
 #include "components/cryptauth/remote_device.h"
 #include "components/proximity_auth/bluetooth_util.h"
-#include "components/proximity_auth/connection_finder.h"
-#include "components/proximity_auth/connection_observer.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 namespace proximity_auth {
 
-// This ConnectionFinder implementation tries to find a Bluetooth connection to
+// This cryptauth::ConnectionFinder implementation tries to find a Bluetooth
+// connection to
 // the remote device by polling at a fixed interval.
-class BluetoothConnectionFinder : public ConnectionFinder,
-                                  public ConnectionObserver,
+class BluetoothConnectionFinder : public cryptauth::ConnectionFinder,
+                                  public cryptauth::ConnectionObserver,
                                   public device::BluetoothAdapter::Observer {
  public:
   BluetoothConnectionFinder(const cryptauth::RemoteDevice& remote_device,
@@ -32,12 +34,13 @@ class BluetoothConnectionFinder : public ConnectionFinder,
                             const base::TimeDelta& polling_interval);
   ~BluetoothConnectionFinder() override;
 
-  // ConnectionFinder:
-  void Find(const ConnectionCallback& connection_callback) override;
+  // cryptauth::ConnectionFinder:
+  void Find(const cryptauth::ConnectionFinder::ConnectionCallback&
+                connection_callback) override;
 
  protected:
   // Exposed for mocking out the connection in tests.
-  virtual std::unique_ptr<Connection> CreateConnection();
+  virtual std::unique_ptr<cryptauth::Connection> CreateConnection();
 
   // Calls bluetooth_util::SeekDeviceByAddress. Exposed for testing, as this
   // utility function is platform dependent.
@@ -77,9 +80,10 @@ class BluetoothConnectionFinder : public ConnectionFinder,
   void OnAdapterInitialized(scoped_refptr<device::BluetoothAdapter> adapter);
 
   // ConnectionObserver:
-  void OnConnectionStatusChanged(Connection* connection,
-                                 Connection::Status old_status,
-                                 Connection::Status new_status) override;
+  void OnConnectionStatusChanged(
+      cryptauth::Connection* connection,
+      cryptauth::Connection::Status old_status,
+      cryptauth::Connection::Status new_status) override;
 
   // Used to invoke |connection_callback_| asynchronously, decoupling the
   // callback invocation from the ConnectionObserver callstack.
@@ -98,13 +102,13 @@ class BluetoothConnectionFinder : public ConnectionFinder,
   base::TimeTicks start_time_;
 
   // The callback that should be called upon a successful connection.
-  ConnectionCallback connection_callback_;
+  cryptauth::ConnectionFinder::ConnectionCallback connection_callback_;
 
   // The Bluetooth adapter over which the Bluetooth connection will be made.
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
   // The Bluetooth connection that will be opened.
-  std::unique_ptr<Connection> connection_;
+  std::unique_ptr<cryptauth::Connection> connection_;
 
   // Whether there is currently a polling task scheduled.
   bool has_delayed_poll_scheduled_;

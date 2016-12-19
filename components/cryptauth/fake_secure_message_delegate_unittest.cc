@@ -203,4 +203,4 @@ TEST_F(CryptAuthFakeSecureMessageDelegateTest, GetPrivateKeyForPublicKey) {
   EXPECT_EQ(private_key, delegate_.GetPrivateKeyForPublicKey(kTestPublicKey));
 }
 
-}  // proximity_auth
+}  // namespace cryptauth

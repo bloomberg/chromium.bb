@@ -11,12 +11,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
+#include "components/cryptauth/bluetooth_throttler_impl.h"
+#include "components/cryptauth/connection_finder.h"
 #include "components/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection_finder.h"
 #include "components/proximity_auth/bluetooth_connection.h"
 #include "components/proximity_auth/bluetooth_connection_finder.h"
-#include "components/proximity_auth/bluetooth_throttler_impl.h"
 #include "components/proximity_auth/device_to_device_authenticator.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/messenger_impl.h"
@@ -47,7 +48,7 @@ RemoteDeviceLifeCycleImpl::RemoteDeviceLifeCycleImpl(
       proximity_auth_client_(proximity_auth_client),
       state_(RemoteDeviceLifeCycle::State::STOPPED),
       observers_(base::ObserverList<Observer>::NOTIFY_EXISTING_ONLY),
-      bluetooth_throttler_(new BluetoothThrottlerImpl(
+      bluetooth_throttler_(new cryptauth::BluetoothThrottlerImpl(
           base::WrapUnique(new base::DefaultTickClock()))),
       weak_ptr_factory_(this) {}
 
@@ -80,7 +81,7 @@ void RemoteDeviceLifeCycleImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-std::unique_ptr<ConnectionFinder>
+std::unique_ptr<cryptauth::ConnectionFinder>
 RemoteDeviceLifeCycleImpl::CreateConnectionFinder() {
   if (remote_device_.bluetooth_type == cryptauth::RemoteDevice::BLUETOOTH_LE) {
     return base::MakeUnique<BluetoothLowEnergyConnectionFinder>(
@@ -120,7 +121,7 @@ void RemoteDeviceLifeCycleImpl::FindConnection() {
 }
 
 void RemoteDeviceLifeCycleImpl::OnConnectionFound(
-    std::unique_ptr<Connection> connection) {
+    std::unique_ptr<cryptauth::Connection> connection) {
   DCHECK(state_ == RemoteDeviceLifeCycle::State::FINDING_CONNECTION);
   connection_ = std::move(connection);
   authenticator_ = CreateAuthenticator();

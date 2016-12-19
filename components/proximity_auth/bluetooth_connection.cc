@@ -12,8 +12,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/wire_message.h"
 #include "components/proximity_auth/logging/logging.h"
-#include "components/proximity_auth/wire_message.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "net/base/io_buffer.h"
@@ -26,7 +26,9 @@ const int kReceiveBufferSizeBytes = 1024;
 BluetoothConnection::BluetoothConnection(
     const cryptauth::RemoteDevice& remote_device,
     const device::BluetoothUUID& uuid)
-    : Connection(remote_device), uuid_(uuid), weak_ptr_factory_(this) {}
+    : cryptauth::Connection(remote_device),
+      uuid_(uuid),
+      weak_ptr_factory_(this) {}
 
 BluetoothConnection::~BluetoothConnection() {
   if (status() != DISCONNECTED)
@@ -73,7 +75,7 @@ void BluetoothConnection::Disconnect() {
 }
 
 void BluetoothConnection::SendMessageImpl(
-    std::unique_ptr<WireMessage> message) {
+    std::unique_ptr<cryptauth::WireMessage> message) {
   DCHECK_EQ(status(), CONNECTED);
 
   // Serialize the message.

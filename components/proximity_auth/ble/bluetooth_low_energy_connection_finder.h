@@ -13,10 +13,11 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "components/cryptauth/bluetooth_throttler.h"
+#include "components/cryptauth/connection.h"
+#include "components/cryptauth/connection_finder.h"
+#include "components/cryptauth/connection_observer.h"
 #include "components/cryptauth/remote_device.h"
-#include "components/proximity_auth/connection.h"
-#include "components/proximity_auth/connection_finder.h"
-#include "components/proximity_auth/connection_observer.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
@@ -25,13 +26,13 @@
 namespace proximity_auth {
 
 class BluetoothLowEnergyDeviceWhitelist;
-class BluetoothThrottler;
 
-// This ConnectionFinder implementation is specialized in finding a Bluetooth
+// This cryptauth::ConnectionFinder implementation is specialized in finding a
+// Bluetooth
 // Low Energy remote device.
 class BluetoothLowEnergyConnectionFinder
-    : public ConnectionFinder,
-      public ConnectionObserver,
+    : public cryptauth::ConnectionFinder,
+      public cryptauth::ConnectionObserver,
       public device::BluetoothAdapter::Observer {
  public:
   enum FinderStrategy { FIND_PAIRED_DEVICE, FIND_ANY_DEVICE };
@@ -57,18 +58,20 @@ class BluetoothLowEnergyConnectionFinder
       const std::string& remote_service_uuid,
       const FinderStrategy finder_strategy,
       const BluetoothLowEnergyDeviceWhitelist* device_whitelist,
-      BluetoothThrottler* bluetooth_throttler,
+      cryptauth::BluetoothThrottler* bluetooth_throttler,
       int max_number_of_tries);
 
   ~BluetoothLowEnergyConnectionFinder() override;
 
   // Finds a connection to the remote device.
-  void Find(const ConnectionCallback& connection_callback) override;
+  void Find(const cryptauth::ConnectionFinder::ConnectionCallback&
+                connection_callback) override;
 
-  // proximity_auth::ConnectionObserver:
-  void OnConnectionStatusChanged(Connection* connection,
-                                 Connection::Status old_status,
-                                 Connection::Status new_status) override;
+  // cryptauth::ConnectionObserver:
+  void OnConnectionStatusChanged(
+      cryptauth::Connection* connection,
+      cryptauth::Connection::Status old_status,
+      cryptauth::Connection::Status new_status) override;
 
   // device::BluetoothAdapter::Observer:
   void AdapterPoweredChanged(device::BluetoothAdapter* adapter,
@@ -81,7 +84,7 @@ class BluetoothLowEnergyConnectionFinder
  protected:
   // Creates a proximity_auth::Connection with the device given by
   // |device_address|. Exposed for testing.
-  virtual std::unique_ptr<Connection> CreateConnection(
+  virtual std::unique_ptr<cryptauth::Connection> CreateConnection(
       const std::string& device_address);
 
  private:
@@ -141,7 +144,7 @@ class BluetoothLowEnergyConnectionFinder
 
   // Throttles repeated connection attempts to the same device. This is a
   // workaround for crbug.com/508919. Not owned, must outlive this instance.
-  BluetoothThrottler* bluetooth_throttler_;
+  cryptauth::BluetoothThrottler* bluetooth_throttler_;
 
   // The Bluetooth adapter over which the Bluetooth connection will be made.
   scoped_refptr<device::BluetoothAdapter> adapter_;
@@ -150,11 +153,10 @@ class BluetoothLowEnergyConnectionFinder
   std::unique_ptr<device::BluetoothDiscoverySession> discovery_session_;
 
   // The connection with |remote_device|.
-  std::unique_ptr<Connection> connection_;
+  std::unique_ptr<cryptauth::Connection> connection_;
 
   // Callback called when the connection is established.
-  // device::BluetoothDevice::GattConnectionCallback connection_callback_;
-  ConnectionCallback connection_callback_;
+  cryptauth::ConnectionFinder::ConnectionCallback connection_callback_;
 
   // BluetoothLowEnergyConnection parameter.
   int max_number_of_tries_;

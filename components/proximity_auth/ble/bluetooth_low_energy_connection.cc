@@ -13,12 +13,13 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "components/proximity_auth/ble/bluetooth_low_energy_characteristics_finder.h"
-#include "components/proximity_auth/ble/fake_wire_message.h"
-#include "components/proximity_auth/bluetooth_throttler.h"
-#include "components/proximity_auth/connection_finder.h"
+#include "components/cryptauth/ble/bluetooth_low_energy_characteristics_finder.h"
+#include "components/cryptauth/ble/fake_wire_message.h"
+#include "components/cryptauth/bluetooth_throttler.h"
+#include "components/cryptauth/connection.h"
+#include "components/cryptauth/connection_finder.h"
+#include "components/cryptauth/wire_message.h"
 #include "components/proximity_auth/logging/logging.h"
-#include "components/proximity_auth/wire_message.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
@@ -56,9 +57,9 @@ BluetoothLowEnergyConnection::BluetoothLowEnergyConnection(
     const cryptauth::RemoteDevice& device,
     scoped_refptr<device::BluetoothAdapter> adapter,
     const BluetoothUUID remote_service_uuid,
-    BluetoothThrottler* bluetooth_throttler,
+    cryptauth::BluetoothThrottler* bluetooth_throttler,
     int max_number_of_write_attempts)
-    : Connection(device),
+    : cryptauth::Connection(device),
       adapter_(adapter),
       remote_service_({remote_service_uuid, ""}),
       to_peripheral_char_({BluetoothUUID(kToPeripheralCharUUID), ""}),
@@ -149,7 +150,7 @@ void BluetoothLowEnergyConnection::Disconnect() {
 void BluetoothLowEnergyConnection::SetSubStatus(SubStatus new_sub_status) {
   sub_status_ = new_sub_status;
 
-  // Sets the status of parent class proximity_auth::Connection accordingly.
+  // Sets the status of parent class cryptauth::Connection accordingly.
   if (new_sub_status == SubStatus::CONNECTED) {
     SetStatus(CONNECTED);
   } else if (new_sub_status == SubStatus::DISCONNECTED) {
@@ -165,7 +166,7 @@ void BluetoothLowEnergyConnection::SetTaskRunnerForTesting(
 }
 
 void BluetoothLowEnergyConnection::SendMessageImpl(
-    std::unique_ptr<WireMessage> message) {
+    std::unique_ptr<cryptauth::WireMessage> message) {
   PA_LOG(INFO) << "Sending message " << message->Serialize();
   std::string serialized_msg = message->Serialize();
 
@@ -357,21 +358,21 @@ void BluetoothLowEnergyConnection::OnGattConnectionCreated(
                  weak_ptr_factory_.GetWeakPtr())));
 }
 
-BluetoothLowEnergyCharacteristicsFinder*
+cryptauth::BluetoothLowEnergyCharacteristicsFinder*
 BluetoothLowEnergyConnection::CreateCharacteristicsFinder(
-    const BluetoothLowEnergyCharacteristicsFinder::SuccessCallback&
+    const cryptauth::BluetoothLowEnergyCharacteristicsFinder::SuccessCallback&
         success_callback,
-    const BluetoothLowEnergyCharacteristicsFinder::ErrorCallback&
+    const cryptauth::BluetoothLowEnergyCharacteristicsFinder::ErrorCallback&
         error_callback) {
-  return new BluetoothLowEnergyCharacteristicsFinder(
+  return new cryptauth::BluetoothLowEnergyCharacteristicsFinder(
       adapter_, GetRemoteDevice(), remote_service_, to_peripheral_char_,
       from_peripheral_char_, success_callback, error_callback);
 }
 
 void BluetoothLowEnergyConnection::OnCharacteristicsFound(
-    const RemoteAttribute& service,
-    const RemoteAttribute& to_peripheral_char,
-    const RemoteAttribute& from_peripheral_char) {
+    const cryptauth::RemoteAttribute& service,
+    const cryptauth::RemoteAttribute& to_peripheral_char,
+    const cryptauth::RemoteAttribute& from_peripheral_char) {
   PA_LOG(INFO) << "Remote chacteristics found.";
   PrintTimeElapsed();
 
@@ -385,8 +386,8 @@ void BluetoothLowEnergyConnection::OnCharacteristicsFound(
 }
 
 void BluetoothLowEnergyConnection::OnCharacteristicsFinderError(
-    const RemoteAttribute& to_peripheral_char,
-    const RemoteAttribute& from_peripheral_char) {
+    const cryptauth::RemoteAttribute& to_peripheral_char,
+    const cryptauth::RemoteAttribute& from_peripheral_char) {
   DCHECK(sub_status() == SubStatus::WAITING_CHARACTERISTICS);
   PA_LOG(WARNING) << "Connection error, missing characteristics for SmartLock "
                      "service.\n"
@@ -499,7 +500,8 @@ void BluetoothLowEnergyConnection::OnRemoteCharacteristicWritten(
   write_remote_characteristic_pending_ = false;
   // TODO(sacomoto): Actually pass the current message to the observer.
   if (run_did_send_message_callback)
-    OnDidSendMessage(WireMessage(std::string(), std::string()), true);
+    OnDidSendMessage(cryptauth::WireMessage(std::string(), std::string()),
+                     true);
 
   // Removes the top of queue (already processed) and process the next request.
   DCHECK(!write_requests_queue_.empty());
@@ -515,7 +517,8 @@ void BluetoothLowEnergyConnection::OnWriteRemoteCharacteristicError(
   write_remote_characteristic_pending_ = false;
   // TODO(sacomoto): Actually pass the current message to the observer.
   if (run_did_send_message_callback)
-    OnDidSendMessage(WireMessage(std::string(), std::string()), false);
+    OnDidSendMessage(cryptauth::WireMessage(std::string(), std::string()),
+                     false);
 
   // Increases the number of failed attempts and retry.
   DCHECK(!write_requests_queue_.empty());

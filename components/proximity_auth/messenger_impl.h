@@ -11,7 +11,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "components/proximity_auth/connection_observer.h"
+#include "components/cryptauth/connection.h"
+#include "components/cryptauth/connection_observer.h"
 #include "components/proximity_auth/messenger.h"
 
 namespace base {
@@ -20,17 +21,16 @@ class DictionaryValue;
 
 namespace proximity_auth {
 
-class Connection;
 class SecureContext;
 
 // Concrete implementation of the Messenger interface.
-class MessengerImpl : public Messenger, public ConnectionObserver {
+class MessengerImpl : public Messenger, public cryptauth::ConnectionObserver {
  public:
   // Constructs a messenger that sends and receives messages over the given
   // |connection|, using the |secure_context| to encrypt and decrypt the
   // messages. The |connection| must be connected. The messenger begins
   // observing messages as soon as it is constructed.
-  MessengerImpl(std::unique_ptr<Connection> connection,
+  MessengerImpl(std::unique_ptr<cryptauth::Connection> connection,
                 std::unique_ptr<SecureContext> secure_context);
   ~MessengerImpl() override;
 
@@ -44,7 +44,7 @@ class MessengerImpl : public Messenger, public ConnectionObserver {
   SecureContext* GetSecureContext() const override;
 
   // Exposed for testing.
-  Connection* connection() { return connection_.get(); }
+  cryptauth::Connection* connection() { return connection_.get(); }
 
  private:
   // Internal data structure to represent a pending message that either hasn't
@@ -88,18 +88,19 @@ class MessengerImpl : public Messenger, public ConnectionObserver {
   // in the background. This function starts the poll loop.
   void PollScreenStateForIOS();
 
-  // ConnectionObserver:
-  void OnConnectionStatusChanged(Connection* connection,
-                                 Connection::Status old_status,
-                                 Connection::Status new_status) override;
-  void OnMessageReceived(const Connection& connection,
-                         const WireMessage& wire_message) override;
-  void OnSendCompleted(const Connection& connection,
-                       const WireMessage& wire_message,
+  // cryptauth::ConnectionObserver:
+  void OnConnectionStatusChanged(
+      cryptauth::Connection* connection,
+      cryptauth::Connection::Status old_status,
+      cryptauth::Connection::Status new_status) override;
+  void OnMessageReceived(const cryptauth::Connection& connection,
+                         const cryptauth::WireMessage& wire_message) override;
+  void OnSendCompleted(const cryptauth::Connection& connection,
+                       const cryptauth::WireMessage& wire_message,
                        bool success) override;
 
   // The connection used to send and receive events and status updates.
-  std::unique_ptr<Connection> connection_;
+  std::unique_ptr<cryptauth::Connection> connection_;
 
   // Used to encrypt and decrypt payloads sent and received over the
   // |connection_|.

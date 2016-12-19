@@ -12,9 +12,9 @@
 #include "base/macros.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_connection.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
-#include "components/proximity_auth/connection.h"
-#include "components/proximity_auth/connection_observer.h"
-#include "components/proximity_auth/wire_message.h"
+#include "components/cryptauth/connection.h"
+#include "components/cryptauth/connection_observer.h"
+#include "components/cryptauth/wire_message.h"
 
 namespace content {
 class BrowserContext;
@@ -25,9 +25,9 @@ namespace extensions {
 class Extension;
 
 // EasyUnlockPrivateConnectionManager is used by the EasyUnlockPrivateAPI to
-// interface with proximity_auth::Connection.
+// interface with cryptauth::Connection.
 class EasyUnlockPrivateConnectionManager
-    : public proximity_auth::ConnectionObserver {
+    : public cryptauth::ConnectionObserver {
  public:
   explicit EasyUnlockPrivateConnectionManager(content::BrowserContext* context);
   ~EasyUnlockPrivateConnectionManager() override;
@@ -35,7 +35,7 @@ class EasyUnlockPrivateConnectionManager
   // Stores |connection| in the API connection manager. Returns the
   // |connection_id|.
   int AddConnection(const Extension* extension,
-                    std::unique_ptr<proximity_auth::Connection> connection,
+                    std::unique_ptr<cryptauth::Connection> connection,
                     bool persistent);
 
   // Returns the status of the connection with |connection_id|.
@@ -58,15 +58,15 @@ class EasyUnlockPrivateConnectionManager
   std::string GetDeviceAddress(const Extension* extension,
                                int connection_id) const;
 
-  // proximity_auth::ConnectionObserver:
+  // cryptauth::ConnectionObserver:
   void OnConnectionStatusChanged(
-      proximity_auth::Connection* connection,
-      proximity_auth::Connection::Status old_status,
-      proximity_auth::Connection::Status new_status) override;
-  void OnMessageReceived(const proximity_auth::Connection& connection,
-                         const proximity_auth::WireMessage& message) override;
-  void OnSendCompleted(const proximity_auth::Connection& connection,
-                       const proximity_auth::WireMessage& message,
+      cryptauth::Connection* connection,
+      cryptauth::Connection::Status old_status,
+      cryptauth::Connection::Status new_status) override;
+  void OnMessageReceived(const cryptauth::Connection& connection,
+                         const cryptauth::WireMessage& message) override;
+  void OnSendCompleted(const cryptauth::Connection& connection,
+                       const cryptauth::WireMessage& message,
                        bool success) override;
 
  private:
@@ -75,7 +75,7 @@ class EasyUnlockPrivateConnectionManager
   // in |args| with it.
   void DispatchConnectionEvent(const std::string& event_name,
                                events::HistogramValue histogram_value,
-                               const proximity_auth::Connection* connection,
+                               const cryptauth::Connection* connection,
                                std::unique_ptr<base::ListValue> args);
 
   // Convenience method to get the API resource manager.
@@ -83,13 +83,13 @@ class EasyUnlockPrivateConnectionManager
 
   // Convenience method to get the connection with |connection_id| created by
   // extension with |extension_id| from the API resource manager.
-  proximity_auth::Connection* GetConnection(const std::string& extension_id,
-                                            int connection_id) const;
+  cryptauth::Connection* GetConnection(const std::string& extension_id,
+                                       int connection_id) const;
 
   // Find the connection_id for |connection| owned by |extension_id| from the
   // API resource manager.
   int FindConnectionId(const std::string& extension_id,
-                       const proximity_auth::Connection* connection);
+                       const cryptauth::Connection* connection);
 
   // BrowserContext passed during initialization.
   content::BrowserContext* browser_context_;

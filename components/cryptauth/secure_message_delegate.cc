@@ -27,4 +27,4 @@ SecureMessageDelegate::UnwrapOptions::UnwrapOptions() {
 SecureMessageDelegate::UnwrapOptions::~UnwrapOptions() {
 }
 
-}  // proximity_auth
+}  // namespace cryptauth

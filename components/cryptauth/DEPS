@@ -3,6 +3,7 @@ include_rules = [
   "+components/prefs",
   "+components/proximity_auth/logging",
   "+crypto",
+  "+device/bluetooth",
   "+google_apis",
   "+net",
 ]

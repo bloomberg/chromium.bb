@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/proximity_auth/proximity_auth_error_bubble.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/cryptauth/bluetooth_throttler_impl.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_utils.h"
@@ -37,7 +38,6 @@
 #include "components/cryptauth/secure_message_delegate.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection_finder.h"
-#include "components/proximity_auth/bluetooth_throttler_impl.h"
 #include "components/proximity_auth/bluetooth_util.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "components/proximity_auth/proximity_auth_client.h"
@@ -1050,7 +1050,7 @@ EasyUnlockPrivateSetAutoPairingResultFunction::Run() {
 
 EasyUnlockPrivateFindSetupConnectionFunction::
     EasyUnlockPrivateFindSetupConnectionFunction()
-    : bluetooth_throttler_(new proximity_auth::BluetoothThrottlerImpl(
+    : bluetooth_throttler_(new cryptauth::BluetoothThrottlerImpl(
           base::MakeUnique<base::DefaultTickClock>())) {}
 
 EasyUnlockPrivateFindSetupConnectionFunction::
@@ -1069,7 +1069,7 @@ void EasyUnlockPrivateFindSetupConnectionFunction::
 }
 
 void EasyUnlockPrivateFindSetupConnectionFunction::OnConnectionFound(
-    std::unique_ptr<proximity_auth::Connection> connection) {
+    std::unique_ptr<cryptauth::Connection> connection) {
   // Connection are not persistent by default.
   std::string device_address = connection->remote_device().bluetooth_address;
   bool persistent = false;

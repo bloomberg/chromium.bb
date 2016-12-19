@@ -14,9 +14,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
+#include "components/cryptauth/cryptauth_test_util.h"
 #include "components/cryptauth/remote_device.h"
-#include "components/proximity_auth/proximity_auth_test_util.h"
-#include "components/proximity_auth/wire_message.h"
+#include "components/cryptauth/wire_message.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -34,26 +34,27 @@ namespace {
 
 const char kUuid[] = "DEADBEEF-CAFE-FEED-FOOD-D15EA5EBEEF";
 
-class MockConnection : public Connection {
+class MockConnection : public cryptauth::Connection {
  public:
   MockConnection()
-      : Connection(CreateClassicRemoteDeviceForTest()),
+      : Connection(cryptauth::CreateClassicRemoteDeviceForTest()),
         do_not_destroy_(false) {}
   ~MockConnection() override { EXPECT_FALSE(do_not_destroy_); }
 
   MOCK_METHOD0(Connect, void());
 
-  void SetStatus(Connection::Status status) {
+  void SetStatus(cryptauth::Connection::Status status) {
     // This object should not be destroyed after setting the status and calling
     // observers.
     do_not_destroy_ = true;
-    Connection::SetStatus(status);
+    cryptauth::Connection::SetStatus(status);
     do_not_destroy_ = false;
   }
 
  private:
   void Disconnect() override {}
-  void SendMessageImpl(std::unique_ptr<WireMessage> message) override {}
+  void SendMessageImpl(
+      std::unique_ptr<cryptauth::WireMessage> message) override {}
 
   // If true, we do not expect |this| object to be destroyed until this value is
   // toggled back to false.
@@ -65,12 +66,12 @@ class MockConnection : public Connection {
 class MockBluetoothConnectionFinder : public BluetoothConnectionFinder {
  public:
   MockBluetoothConnectionFinder()
-      : BluetoothConnectionFinder(CreateClassicRemoteDeviceForTest(),
+      : BluetoothConnectionFinder(cryptauth::CreateClassicRemoteDeviceForTest(),
                                   device::BluetoothUUID(kUuid),
                                   base::TimeDelta()) {}
   ~MockBluetoothConnectionFinder() override {}
 
-  MOCK_METHOD0(CreateConnectionProxy, Connection*());
+  MOCK_METHOD0(CreateConnectionProxy, cryptauth::Connection*());
 
   // Creates a mock connection and sets an expectation that the mock connection
   // finder's CreateConnection() method will be called and will return the
@@ -100,7 +101,7 @@ class MockBluetoothConnectionFinder : public BluetoothConnectionFinder {
 
  protected:
   // BluetoothConnectionFinder:
-  std::unique_ptr<Connection> CreateConnection() override {
+  std::unique_ptr<cryptauth::Connection> CreateConnection() override {
     return base::WrapUnique(CreateConnectionProxy());
   }
 
@@ -108,7 +109,7 @@ class MockBluetoothConnectionFinder : public BluetoothConnectionFinder {
       const std::string& bluetooth_address,
       const base::Closure& callback,
       const bluetooth_util::ErrorCallback& error_callback) override {
-    EXPECT_EQ(kTestRemoteDeviceBluetoothAddress, bluetooth_address);
+    EXPECT_EQ(cryptauth::kTestRemoteDeviceBluetoothAddress, bluetooth_address);
     seek_callback_ = callback;
     seek_error_callback_ = error_callback;
   }
@@ -129,8 +130,8 @@ class ProximityAuthBluetoothConnectionFinderTest : public testing::Test {
         bluetooth_device_(new NiceMock<device::MockBluetoothDevice>(
             adapter_.get(),
             static_cast<uint32_t>(device::BluetoothDeviceType::PHONE),
-            kTestRemoteDeviceName,
-            kTestRemoteDeviceBluetoothAddress,
+            cryptauth::kTestRemoteDeviceName,
+            cryptauth::kTestRemoteDeviceBluetoothAddress,
             true,
             false)),
         connection_callback_(base::Bind(
@@ -145,12 +146,12 @@ class ProximityAuthBluetoothConnectionFinderTest : public testing::Test {
 
     // By default, the remote device is known to |adapter_| so
     // |SeekDeviceByAddress()| will not be called.
-    ON_CALL(*adapter_, GetDevice(kTestRemoteDeviceBluetoothAddress))
+    ON_CALL(*adapter_, GetDevice(cryptauth::kTestRemoteDeviceBluetoothAddress))
         .WillByDefault(Return(bluetooth_device_.get()));
   }
 
-  MOCK_METHOD1(OnConnectionFoundProxy, void(Connection* connection));
-  void OnConnectionFound(std::unique_ptr<Connection> connection) {
+  MOCK_METHOD1(OnConnectionFoundProxy, void(cryptauth::Connection* connection));
+  void OnConnectionFound(std::unique_ptr<cryptauth::Connection> connection) {
     OnConnectionFoundProxy(connection.get());
     last_found_connection_ = std::move(connection);
   }
@@ -168,21 +169,21 @@ class ProximityAuthBluetoothConnectionFinderTest : public testing::Test {
   // Given an in-progress |connection| returned by |StartConnectionFinder()|,
   // simulate it transitioning to the CONNECTED state.
   void SimulateDeviceConnection(MockConnection* connection) {
-    connection->SetStatus(Connection::IN_PROGRESS);
+    connection->SetStatus(cryptauth::Connection::IN_PROGRESS);
     base::RunLoop run_loop;
     EXPECT_CALL(*this, OnConnectionFoundProxy(_));
-    connection->SetStatus(Connection::CONNECTED);
+    connection->SetStatus(cryptauth::Connection::CONNECTED);
     run_loop.RunUntilIdle();
   }
 
   scoped_refptr<device::MockBluetoothAdapter> adapter_;
   StrictMock<MockBluetoothConnectionFinder> connection_finder_;
   std::unique_ptr<device::MockBluetoothDevice> bluetooth_device_;
-  ConnectionFinder::ConnectionCallback connection_callback_;
+  cryptauth::ConnectionFinder::ConnectionCallback connection_callback_;
 
  private:
   // Save a pointer to the last found connection, to extend its lifetime.
-  std::unique_ptr<Connection> last_found_connection_;
+  std::unique_ptr<cryptauth::Connection> last_found_connection_;
 
   base::MessageLoop message_loop_;
 };
@@ -192,8 +193,8 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest,
   // Destroying a BluetoothConnectionFinder for which Find() has not been called
   // should not crash.
   BluetoothConnectionFinder connection_finder(
-      CreateClassicRemoteDeviceForTest(), device::BluetoothUUID(kUuid),
-      base::TimeDelta::FromMilliseconds(1));
+      cryptauth::CreateClassicRemoteDeviceForTest(),
+      device::BluetoothUUID(kUuid), base::TimeDelta::FromMilliseconds(1));
 }
 
 TEST_F(ProximityAuthBluetoothConnectionFinderTest, Find_NoBluetoothAdapter) {
@@ -235,8 +236,8 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest,
   // be ignored.
   base::RunLoop run_loop;
   EXPECT_CALL(*this, OnConnectionFoundProxy(_)).Times(0);
-  connection->SetStatus(Connection::IN_PROGRESS);
-  connection->SetStatus(Connection::CONNECTED);
+  connection->SetStatus(cryptauth::Connection::IN_PROGRESS);
+  connection->SetStatus(cryptauth::Connection::CONNECTED);
   run_loop.RunUntilIdle();
 }
 
@@ -245,8 +246,8 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest,
   MockConnection* connection = StartConnectionFinder(true);
 
   // Simulate a connection that fails to connect.
-  connection->SetStatus(Connection::IN_PROGRESS);
-  connection->SetStatus(Connection::DISCONNECTED);
+  connection->SetStatus(cryptauth::Connection::IN_PROGRESS);
+  connection->SetStatus(cryptauth::Connection::DISCONNECTED);
 
   // A task should have been posted to poll again.
   base::RunLoop run_loop;
@@ -278,7 +279,7 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest,
        Find_DoesNotPollIfConnectionPending) {
   MockConnection* connection = StartConnectionFinder(true);
 
-  connection->SetStatus(Connection::IN_PROGRESS);
+  connection->SetStatus(cryptauth::Connection::IN_PROGRESS);
 
   // At this point, there is a pending connection in progress. Hence, an event
   // that would normally trigger a new polling iteration should not do so now,
@@ -292,8 +293,8 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest,
        Find_ConnectionFails_PostsTaskToPollAgain_PollWaitsForTask) {
   MockConnection* connection = StartConnectionFinder(true);
 
-  connection->SetStatus(Connection::IN_PROGRESS);
-  connection->SetStatus(Connection::DISCONNECTED);
+  connection->SetStatus(cryptauth::Connection::IN_PROGRESS);
+  connection->SetStatus(cryptauth::Connection::DISCONNECTED);
 
   // At this point, there is a pending poll scheduled. Hence, an event that
   // would normally trigger a new polling iteration should not do so now,
@@ -319,14 +320,14 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest,
        Find_DeviceNotKnown_SeekDeviceSucceeds) {
   // If the BluetoothDevice is not known by the adapter, |connection_finder|
   // will call SeekDeviceByAddress() first to make it known.
-  ON_CALL(*adapter_, GetDevice(kTestRemoteDeviceBluetoothAddress))
+  ON_CALL(*adapter_, GetDevice(cryptauth::kTestRemoteDeviceBluetoothAddress))
       .WillByDefault(Return(nullptr));
   connection_finder_.Find(connection_callback_);
   ASSERT_FALSE(connection_finder_.seek_callback().is_null());
   EXPECT_FALSE(connection_finder_.seek_error_callback().is_null());
 
   // After seeking is successful, the normal flow should resume.
-  ON_CALL(*adapter_, GetDevice(kTestRemoteDeviceBluetoothAddress))
+  ON_CALL(*adapter_, GetDevice(cryptauth::kTestRemoteDeviceBluetoothAddress))
       .WillByDefault(Return(bluetooth_device_.get()));
   MockConnection* connection = connection_finder_.ExpectCreateConnection();
   connection_finder_.seek_callback().Run();
@@ -337,7 +338,7 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest,
        Find_DeviceNotKnown_SeekDeviceFailThenSucceeds) {
   // If the BluetoothDevice is not known by the adapter, |connection_finder|
   // will call SeekDeviceByAddress() first to make it known.
-  ON_CALL(*adapter_, GetDevice(kTestRemoteDeviceBluetoothAddress))
+  ON_CALL(*adapter_, GetDevice(cryptauth::kTestRemoteDeviceBluetoothAddress))
       .WillByDefault(Return(nullptr));
   connection_finder_.Find(connection_callback_);
   EXPECT_FALSE(connection_finder_.seek_callback().is_null());
@@ -357,7 +358,7 @@ TEST_F(ProximityAuthBluetoothConnectionFinderTest,
   EXPECT_FALSE(connection_finder_.seek_error_callback().is_null());
 
   // Successfully connect to the Bluetooth device.
-  ON_CALL(*adapter_, GetDevice(kTestRemoteDeviceBluetoothAddress))
+  ON_CALL(*adapter_, GetDevice(cryptauth::kTestRemoteDeviceBluetoothAddress))
       .WillByDefault(Return(bluetooth_device_.get()));
   MockConnection* connection = connection_finder_.ExpectCreateConnection();
   connection_finder_.seek_callback().Run();

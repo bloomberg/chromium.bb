@@ -11,22 +11,22 @@
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
 
-namespace proximity_auth {
+namespace cryptauth {
 class Connection;
-}  // namespace proximity_auth
+}  // namespace cryptauth
 
 namespace extensions {
-// An ApiResource wrapper for a proximity_auth::Connection.
+// An ApiResource wrapper for a cryptauth::Connection.
 class EasyUnlockPrivateConnection : public ApiResource {
  public:
   EasyUnlockPrivateConnection(
       bool persistent,
       const std::string& owner_extension_id,
-      std::unique_ptr<proximity_auth::Connection> connection);
+      std::unique_ptr<cryptauth::Connection> connection);
   ~EasyUnlockPrivateConnection() override;
 
   // Returns a pointer to the underlying connection object.
-  proximity_auth::Connection* GetConnection() const;
+  cryptauth::Connection* GetConnection() const;
 
   // ApiResource override.
   bool IsPersistent() const override;
@@ -46,7 +46,7 @@ class EasyUnlockPrivateConnection : public ApiResource {
 
   // The connection is owned by this instance and will automatically disconnect
   // when deleted.
-  std::unique_ptr<proximity_auth::Connection> connection_;
+  std::unique_ptr<cryptauth::Connection> connection_;
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockPrivateConnection);
 };

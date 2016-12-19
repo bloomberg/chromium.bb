@@ -20,6 +20,6 @@ extern const char kCryptAuthEnrollmentUserPrivateKey[];
 extern const char kCryptAuthGCMRegistrationId[];
 
 }  // namespace prefs
-}  // proximity_auth
+}  // namespace cryptauth
 
 #endif  // COMPONENTS_PROXIMITY_CRYPTAUTH_PREF_NAMES_H

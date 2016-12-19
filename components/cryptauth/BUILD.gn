@@ -8,6 +8,11 @@
 
 static_library("cryptauth") {
   sources = [
+    "bluetooth_throttler.h",
+    "bluetooth_throttler_impl.cc",
+    "bluetooth_throttler_impl.h",
+    "connection.cc",
+    "connection.h",
     "cryptauth_access_token_fetcher.h",
     "cryptauth_access_token_fetcher_impl.cc",
     "cryptauth_access_token_fetcher_impl.h",
@@ -43,10 +48,13 @@ static_library("cryptauth") {
     "sync_scheduler.h",
     "sync_scheduler_impl.cc",
     "sync_scheduler_impl.h",
+    "wire_message.cc",
+    "wire_message.h",
   ]
 
   deps = [
     "//base",
+    "//components/cryptauth/ble",
     "//components/gcm_driver",
     "//components/gcm_driver/common",
     "//components/prefs",
@@ -59,12 +67,19 @@ static_library("cryptauth") {
   public_deps = [
     "//components/cryptauth/proto",
   ]
+
+  # TODO (hansberry): Resolve this.
+  allow_circular_includes_from = [ "//components/cryptauth/ble" ]
 }
 
 static_library("test_support") {
   testonly = true
 
   sources = [
+    "cryptauth_test_util.cc",
+    "cryptauth_test_util.h",
+    "fake_connection.cc",
+    "fake_connection.h",
     "fake_cryptauth_gcm_manager.cc",
     "fake_cryptauth_gcm_manager.h",
     "fake_secure_message_delegate.cc",
@@ -91,6 +106,8 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "bluetooth_throttler_impl_unittest.cc",
+    "connection_unittest.cc",
     "cryptauth_access_token_fetcher_impl_unittest.cc",
     "cryptauth_api_call_flow_unittest.cc",
     "cryptauth_client_impl_unittest.cc",
@@ -101,6 +118,7 @@ source_set("unit_tests") {
     "eid_generator_unittest.cc",
     "fake_secure_message_delegate_unittest.cc",
     "sync_scheduler_impl_unittest.cc",
+    "wire_message_unittest.cc",
   ]
 
   deps = [
@@ -109,7 +127,6 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/gcm_driver:test_support",
     "//components/prefs:test_support",
-    "//components/proximity_auth",
     "//google_apis:test_support",
     "//net:test_support",
     "//testing/gtest",

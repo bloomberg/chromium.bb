@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/cryptauth/connection.h"
 #include "components/proximity_auth/bluetooth_connection.h"
 #include "components/proximity_auth/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -34,7 +35,8 @@ BluetoothConnectionFinder::~BluetoothConnectionFinder() {
 }
 
 void BluetoothConnectionFinder::Find(
-    const ConnectionCallback& connection_callback) {
+    const cryptauth::ConnectionFinder::ConnectionCallback&
+        connection_callback) {
   if (!device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
     PA_LOG(WARNING) << "Bluetooth is unsupported on this platform. Aborting.";
     return;
@@ -50,8 +52,9 @@ void BluetoothConnectionFinder::Find(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-std::unique_ptr<Connection> BluetoothConnectionFinder::CreateConnection() {
-  return std::unique_ptr<Connection>(
+std::unique_ptr<cryptauth::Connection>
+BluetoothConnectionFinder::CreateConnection() {
+  return std::unique_ptr<cryptauth::Connection>(
       new BluetoothConnection(remote_device_, uuid_));
 }
 
@@ -84,7 +87,8 @@ void BluetoothConnectionFinder::PollIfReady() {
 
   // If the |connection_| is pending, wait for it to connect or fail prior to
   // polling again.
-  if (connection_ && connection_->status() != Connection::DISCONNECTED)
+  if (connection_ &&
+      connection_->status() != cryptauth::Connection::DISCONNECTED)
     return;
 
   // This SeekDeviceByAddress operation is needed to connect to a device if
@@ -174,9 +178,9 @@ void BluetoothConnectionFinder::AdapterPoweredChanged(BluetoothAdapter* adapter,
 }
 
 void BluetoothConnectionFinder::OnConnectionStatusChanged(
-    Connection* connection,
-    Connection::Status old_status,
-    Connection::Status new_status) {
+    cryptauth::Connection* connection,
+    cryptauth::Connection::Status old_status,
+    cryptauth::Connection::Status new_status) {
   DCHECK_EQ(connection, connection_.get());
 
   if (connection_->IsConnected()) {
@@ -186,13 +190,14 @@ void BluetoothConnectionFinder::OnConnectionStatusChanged(
     UnregisterAsObserver();
 
     // If we invoke the callback now, the callback function may install its own
-    // observer to |connection_|. Because we are in the ConnectionObserver
+    // observer to |connection_|. Because we are in the
+    // cryptauth::ConnectionObserver
     // callstack, this new observer will receive this connection event.
     // Therefore, we need to invoke the callback asynchronously.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&BluetoothConnectionFinder::InvokeCallbackAsync,
                               weak_ptr_factory_.GetWeakPtr()));
-  } else if (old_status == Connection::IN_PROGRESS) {
+  } else if (old_status == cryptauth::Connection::IN_PROGRESS) {
     PA_LOG(WARNING)
         << "Connection failed! Scheduling another polling iteration.";
     PostDelayedPoll();

@@ -15,6 +15,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/cryptauth/bluetooth_throttler.h"
+#include "components/cryptauth/connection.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_connection.h"
 #include "components/proximity_auth/ble/bluetooth_low_energy_device_whitelist.h"
 #include "components/proximity_auth/logging/logging.h"
@@ -34,14 +36,12 @@ namespace {
 const int kMinDiscoveryRSSI = -90;
 }  // namespace
 
-class BluetoothThrottler;
-
 BluetoothLowEnergyConnectionFinder::BluetoothLowEnergyConnectionFinder(
     const cryptauth::RemoteDevice remote_device,
     const std::string& remote_service_uuid,
     FinderStrategy finder_strategy,
     const BluetoothLowEnergyDeviceWhitelist* device_whitelist,
-    BluetoothThrottler* bluetooth_throttler,
+    cryptauth::BluetoothThrottler* bluetooth_throttler,
     int max_number_of_tries)
     : remote_device_(remote_device),
       remote_service_uuid_(device::BluetoothUUID(remote_service_uuid)),
@@ -71,7 +71,8 @@ BluetoothLowEnergyConnectionFinder::~BluetoothLowEnergyConnectionFinder() {
 }
 
 void BluetoothLowEnergyConnectionFinder::Find(
-    const ConnectionCallback& connection_callback) {
+    const cryptauth::ConnectionFinder::ConnectionCallback&
+        connection_callback) {
   if (!device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable()) {
     PA_LOG(WARNING) << "Bluetooth is unsupported on this platform. Aborting.";
     return;
@@ -245,7 +246,7 @@ void BluetoothLowEnergyConnectionFinder::StopDiscoverySession() {
   discovery_session_.reset();
 }
 
-std::unique_ptr<Connection>
+std::unique_ptr<cryptauth::Connection>
 BluetoothLowEnergyConnectionFinder::CreateConnection(
     const std::string& device_address) {
   DCHECK(remote_device_.bluetooth_address.empty() ||
@@ -257,9 +258,9 @@ BluetoothLowEnergyConnectionFinder::CreateConnection(
 }
 
 void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(
-    Connection* connection,
-    Connection::Status old_status,
-    Connection::Status new_status) {
+    cryptauth::Connection* connection,
+    cryptauth::Connection::Status old_status,
+    cryptauth::Connection::Status new_status) {
   DCHECK_EQ(connection, connection_.get());
   PA_LOG(INFO) << "OnConnectionStatusChanged: " << old_status << " -> "
                << new_status;
@@ -277,7 +278,7 @@ void BluetoothLowEnergyConnectionFinder::OnConnectionStatusChanged(
         FROM_HERE,
         base::Bind(&BluetoothLowEnergyConnectionFinder::InvokeCallbackAsync,
                    weak_ptr_factory_.GetWeakPtr()));
-  } else if (old_status == Connection::IN_PROGRESS) {
+  } else if (old_status == cryptauth::Connection::IN_PROGRESS) {
     PA_LOG(WARNING) << "Connection failed. Retrying.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,

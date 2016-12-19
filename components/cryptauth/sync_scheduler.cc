@@ -28,4 +28,4 @@ void SyncScheduler::SyncRequest::OnDidComplete(bool success) {
   }
 }
 
-}  // proximity_auth
+}  // namespace cryptauth

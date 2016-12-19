@@ -16,10 +16,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "components/proximity_auth/ble/bluetooth_low_energy_characteristics_finder.h"
-#include "components/proximity_auth/ble/fake_wire_message.h"
-#include "components/proximity_auth/ble/remote_attribute.h"
-#include "components/proximity_auth/connection.h"
+#include "components/cryptauth/ble/bluetooth_low_energy_characteristics_finder.h"
+#include "components/cryptauth/ble/fake_wire_message.h"
+#include "components/cryptauth/ble/remote_attribute.h"
+#include "components/cryptauth/bluetooth_throttler.h"
+#include "components/cryptauth/connection.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
@@ -31,8 +32,6 @@ class TaskRunner;
 }
 
 namespace proximity_auth {
-
-class BluetoothThrottler;
 
 // Represents a connection with a remote device over Bluetooth low energy. The
 // connection is a persistent bidirectional channel for sending and receiving
@@ -58,7 +57,7 @@ class BluetoothThrottler;
 //                              |
 //                              |
 //           Proximity Auth Connection Established
-class BluetoothLowEnergyConnection : public Connection,
+class BluetoothLowEnergyConnection : public cryptauth::Connection,
                                      public device::BluetoothAdapter::Observer {
  public:
   // Signals sent to the remote device to indicate connection related events.
@@ -87,15 +86,16 @@ class BluetoothLowEnergyConnection : public Connection,
   // initaalized and ready. The GATT connection may alreaady be established and
   // pass through |gatt_connection|. A subsequent call to Connect() must be
   // made.
-  BluetoothLowEnergyConnection(const cryptauth::RemoteDevice& remote_device,
-                               scoped_refptr<device::BluetoothAdapter> adapter,
-                               const device::BluetoothUUID remote_service_uuid,
-                               BluetoothThrottler* bluetooth_throttler,
-                               int max_number_of_write_attempts);
+  BluetoothLowEnergyConnection(
+      const cryptauth::RemoteDevice& remote_device,
+      scoped_refptr<device::BluetoothAdapter> adapter,
+      const device::BluetoothUUID remote_service_uuid,
+      cryptauth::BluetoothThrottler* bluetooth_throttler,
+      int max_number_of_write_attempts);
 
   ~BluetoothLowEnergyConnection() override;
 
-  // proximity_auth::Connection:
+  // cryptauth::Connection:
   void Connect() override;
   void Disconnect() override;
   std::string GetDeviceAddress() override;
@@ -109,14 +109,16 @@ class BluetoothLowEnergyConnection : public Connection,
   void SetTaskRunnerForTesting(scoped_refptr<base::TaskRunner> task_runner);
 
   // Virtual for testing.
-  virtual BluetoothLowEnergyCharacteristicsFinder* CreateCharacteristicsFinder(
-      const BluetoothLowEnergyCharacteristicsFinder::SuccessCallback&
+  virtual cryptauth::BluetoothLowEnergyCharacteristicsFinder*
+  CreateCharacteristicsFinder(
+      const cryptauth::BluetoothLowEnergyCharacteristicsFinder::SuccessCallback&
           success_callback,
-      const BluetoothLowEnergyCharacteristicsFinder::ErrorCallback&
+      const cryptauth::BluetoothLowEnergyCharacteristicsFinder::ErrorCallback&
           error_callback);
 
-  // proximity_auth::Connection:
-  void SendMessageImpl(std::unique_ptr<WireMessage> message) override;
+  // cryptauth::Connection:
+  void SendMessageImpl(
+      std::unique_ptr<cryptauth::WireMessage> message) override;
 
   // device::BluetoothAdapter::Observer:
   void DeviceChanged(device::BluetoothAdapter* adapter,
@@ -132,9 +134,11 @@ class BluetoothLowEnergyConnection : public Connection,
   // Represents a request to write |value| to a some characteristic.
   // |is_last_write_for_wire_messsage| indicates whether this request
   // corresponds to the last write request for some wire message.
-  // A WireMessage corresponds to exactly two WriteRequest: the first containing
-  // a kSendSignal + the size of the WireMessage, and the second containing a
-  // SendStatusSignal + the serialized WireMessage.
+  // A cryptauth::WireMessage corresponds to exactly two WriteRequest: the first
+  // containing
+  // a kSendSignal + the size of the cryptauth::WireMessage, and the second
+  // containing a
+  // SendStatusSignal + the serialized cryptauth::WireMessage.
   struct WriteRequest {
     WriteRequest(const std::vector<uint8_t>& val, bool flag);
     WriteRequest(const WriteRequest& other);
@@ -158,14 +162,15 @@ class BluetoothLowEnergyConnection : public Connection,
 
   // Callback called when |to_peripheral_char_| and |from_peripheral_char_| were
   // found.
-  void OnCharacteristicsFound(const RemoteAttribute& service,
-                              const RemoteAttribute& to_peripheral_char,
-                              const RemoteAttribute& from_peripheral_char);
+  void OnCharacteristicsFound(
+      const cryptauth::RemoteAttribute& service,
+      const cryptauth::RemoteAttribute& to_peripheral_char,
+      const cryptauth::RemoteAttribute& from_peripheral_char);
 
   // Callback called there was an error finding the characteristics.
   void OnCharacteristicsFinderError(
-      const RemoteAttribute& to_peripheral_char,
-      const RemoteAttribute& from_peripheral_char);
+      const cryptauth::RemoteAttribute& to_peripheral_char,
+      const cryptauth::RemoteAttribute& from_peripheral_char);
 
   // Starts a notify session for |from_peripheral_char_| when ready
   // (SubStatus::CHARACTERISTICS_FOUND).
@@ -248,17 +253,17 @@ class BluetoothLowEnergyConnection : public Connection,
   scoped_refptr<device::BluetoothAdapter> adapter_;
 
   // Remote service the |gatt_connection_| was established with.
-  RemoteAttribute remote_service_;
+  cryptauth::RemoteAttribute remote_service_;
 
   // Characteristic used to send data to the remote device.
-  RemoteAttribute to_peripheral_char_;
+  cryptauth::RemoteAttribute to_peripheral_char_;
 
   // Characteristic used to receive data from the remote device.
-  RemoteAttribute from_peripheral_char_;
+  cryptauth::RemoteAttribute from_peripheral_char_;
 
   // Throttles repeated connection attempts to the same device. This is a
   // workaround for crbug.com/508919. Not owned, must outlive this instance.
-  BluetoothThrottler* bluetooth_throttler_;
+  cryptauth::BluetoothThrottler* bluetooth_throttler_;
 
   scoped_refptr<base::TaskRunner> task_runner_;
 
@@ -266,7 +271,7 @@ class BluetoothLowEnergyConnection : public Connection,
   std::unique_ptr<device::BluetoothGattConnection> gatt_connection_;
 
   // The characteristics finder for remote device.
-  std::unique_ptr<BluetoothLowEnergyCharacteristicsFinder>
+  std::unique_ptr<cryptauth::BluetoothLowEnergyCharacteristicsFinder>
       characteristic_finder_;
 
   // The notify session for |from_peripheral_char|.

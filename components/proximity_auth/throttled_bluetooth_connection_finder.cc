@@ -10,15 +10,16 @@
 #include "base/location.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
+#include "components/cryptauth/bluetooth_throttler.h"
+#include "components/cryptauth/connection.h"
 #include "components/proximity_auth/bluetooth_connection_finder.h"
-#include "components/proximity_auth/bluetooth_throttler.h"
 
 namespace proximity_auth {
 
 ThrottledBluetoothConnectionFinder::ThrottledBluetoothConnectionFinder(
     std::unique_ptr<BluetoothConnectionFinder> connection_finder,
     scoped_refptr<base::TaskRunner> task_runner,
-    BluetoothThrottler* throttler)
+    cryptauth::BluetoothThrottler* throttler)
     : connection_finder_(std::move(connection_finder)),
       task_runner_(task_runner),
       throttler_(throttler),
@@ -28,7 +29,8 @@ ThrottledBluetoothConnectionFinder::~ThrottledBluetoothConnectionFinder() {
 }
 
 void ThrottledBluetoothConnectionFinder::Find(
-    const ConnectionCallback& connection_callback) {
+    const cryptauth::ConnectionFinder::ConnectionCallback&
+        connection_callback) {
   const base::TimeDelta delay = throttler_->GetDelay();
 
   // Wait, if needed.
@@ -47,8 +49,8 @@ void ThrottledBluetoothConnectionFinder::Find(
 }
 
 void ThrottledBluetoothConnectionFinder::OnConnection(
-    const ConnectionCallback& connection_callback,
-    std::unique_ptr<Connection> connection) {
+    const cryptauth::ConnectionFinder::ConnectionCallback& connection_callback,
+    std::unique_ptr<cryptauth::Connection> connection) {
   throttler_->OnConnection(connection.get());
   connection_callback.Run(std::move(connection));
 }

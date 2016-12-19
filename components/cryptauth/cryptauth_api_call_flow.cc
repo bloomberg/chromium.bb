@@ -80,4 +80,4 @@ void CryptAuthApiCallFlow::ProcessApiCallFailure(
   error_callback_.Run(error_message);
 }
 
-}  // proximity_auth
+}  // namespace cryptauth

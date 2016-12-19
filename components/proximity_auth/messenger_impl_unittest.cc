@@ -9,14 +9,14 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "components/cryptauth/connection.h"
+#include "components/cryptauth/cryptauth_test_util.h"
+#include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/remote_device.h"
-#include "components/proximity_auth/connection.h"
-#include "components/proximity_auth/fake_connection.h"
+#include "components/cryptauth/wire_message.h"
 #include "components/proximity_auth/fake_secure_context.h"
 #include "components/proximity_auth/messenger_observer.h"
-#include "components/proximity_auth/proximity_auth_test_util.h"
 #include "components/proximity_auth/remote_status_update.h"
-#include "components/proximity_auth/wire_message.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -63,14 +63,14 @@ class MockMessengerObserver : public MessengerObserver {
 class TestMessenger : public MessengerImpl {
  public:
   TestMessenger()
-      : MessengerImpl(base::MakeUnique<FakeConnection>(
-                          CreateClassicRemoteDeviceForTest()),
+      : MessengerImpl(base::MakeUnique<cryptauth::FakeConnection>(
+                          cryptauth::CreateClassicRemoteDeviceForTest()),
                       base::MakeUnique<FakeSecureContext>()) {}
   ~TestMessenger() override {}
 
   // Simple getters for the mock objects owned by |this| messenger.
-  FakeConnection* GetFakeConnection() {
-    return static_cast<FakeConnection*>(connection());
+  cryptauth::FakeConnection* GetFakeConnection() {
+    return static_cast<cryptauth::FakeConnection*>(connection());
   }
   FakeSecureContext* GetFakeSecureContext() {
     return static_cast<FakeSecureContext*>(GetSecureContext());
@@ -109,7 +109,8 @@ TEST(ProximityAuthMessengerImplTest, DispatchUnlockEvent_SendsExpectedMessage) {
   TestMessenger messenger;
   messenger.DispatchUnlockEvent();
 
-  WireMessage* message = messenger.GetFakeConnection()->current_message();
+  cryptauth::WireMessage* message =
+      messenger.GetFakeConnection()->current_message();
   ASSERT_TRUE(message);
   EXPECT_EQ(std::string(), message->permit_id());
   EXPECT_EQ(
@@ -151,7 +152,8 @@ TEST(ProximityAuthMessengerImplTest, RequestDecryption_SendsExpectedMessage) {
   TestMessenger messenger;
   messenger.RequestDecryption(kChallenge);
 
-  WireMessage* message = messenger.GetFakeConnection()->current_message();
+  cryptauth::WireMessage* message =
+      messenger.GetFakeConnection()->current_message();
   ASSERT_TRUE(message);
   EXPECT_EQ(std::string(), message->permit_id());
   EXPECT_EQ(
@@ -167,7 +169,8 @@ TEST(ProximityAuthMessengerImplTest,
   TestMessenger messenger;
   messenger.RequestDecryption("\xFF\xE6");
 
-  WireMessage* message = messenger.GetFakeConnection()->current_message();
+  cryptauth::WireMessage* message =
+      messenger.GetFakeConnection()->current_message();
   ASSERT_TRUE(message);
   EXPECT_EQ(std::string(), message->permit_id());
   EXPECT_EQ(
@@ -268,7 +271,8 @@ TEST(ProximityAuthMessengerImplTest, RequestUnlock_SendsExpectedMessage) {
   TestMessenger messenger;
   messenger.RequestUnlock();
 
-  WireMessage* message = messenger.GetFakeConnection()->current_message();
+  cryptauth::WireMessage* message =
+      messenger.GetFakeConnection()->current_message();
   ASSERT_TRUE(message);
   EXPECT_EQ(std::string(), message->permit_id());
   EXPECT_EQ("{\"type\":\"unlock_request\"}, but encoded", message->payload());
