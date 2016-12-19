@@ -31,7 +31,7 @@ public class VrCoreVersionCheckerImpl implements VrCoreVersionChecker {
             }
             return true;
         } catch (VrCoreNotAvailableException e) {
-            Log.e(TAG, "Unable to find a compatible VrCore", e);
+            Log.i(TAG, "Unable to find a compatible VrCore.");
             return false;
         }
     }
