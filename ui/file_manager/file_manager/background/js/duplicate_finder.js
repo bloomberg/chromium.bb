@@ -200,10 +200,11 @@ importer.DispositionChecker = function(historyLoader, contentMatcher) {
 /**
  * @param {!FileEntry} entry
  * @param {!importer.Destination} destination
+ * @param {!importer.ScanMode} mode
  * @return {!Promise<!importer.Disposition>}
  */
 importer.DispositionChecker.prototype.getDisposition =
-    function(entry, destination) {
+    function(entry, destination, mode) {
   if (destination !== importer.Destination.GOOGLE_DRIVE) {
     return Promise.reject('Unsupported destination: ' + destination);
   }
@@ -220,20 +221,24 @@ importer.DispositionChecker.prototype.getDisposition =
                 function(duplicate) {
                   if (duplicate) {
                     resolve(importer.Disposition.HISTORY_DUPLICATE);
-                  } else {
-                    this.contentMatcher_.isDuplicate(entry)
-                        .then(
-                            /** @param {boolean} duplicate */
-                            function(duplicate) {
-                              if (duplicate) {
-                                resolve(
-                                    importer.Disposition.CONTENT_DUPLICATE);
-                              } else {
-                                resolve(importer.Disposition.ORIGINAL);
-                              }
-                            });
-                    }
-                  }.bind(this));
+                    return;
+                  }
+                  if (mode == importer.ScanMode.HISTORY) {
+                    resolve(importer.Disposition.ORIGINAL);
+                    return;
+                  }
+                  this.contentMatcher_.isDuplicate(entry)
+                      .then(
+                          /** @param {boolean} duplicate */
+                          function(duplicate) {
+                            if (duplicate) {
+                              resolve(
+                                  importer.Disposition.CONTENT_DUPLICATE);
+                            } else {
+                              resolve(importer.Disposition.ORIGINAL);
+                            }
+                          });
+                }.bind(this));
             }.bind(this));
 };
 
@@ -274,7 +279,8 @@ importer.DispositionChecker.prototype.hasHistoryDuplicate_ =
  * @param {!importer.HistoryLoader} historyLoader
  * @param {!analytics.Tracker} tracker
  *
- * @return {function(!FileEntry, !importer.Destination):
+ * @return {function(!FileEntry, !importer.Destination,
+ *                   !importer.ScanMode):
  *     !Promise<!importer.Disposition>}
  */
 importer.DispositionChecker.createChecker =

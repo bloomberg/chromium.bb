@@ -175,7 +175,7 @@ importer.ImportController.prototype.onDirectoryChanged_ = function(event) {
   this.scanManager_.reset();
   if (this.isCurrentDirectoryScannable_()) {
     this.checkState_(
-        this.scanManager_.getDirectoryScan());
+        this.scanManager_.getDirectoryScan(importer.ScanMode.CONTENT));
   } else {
     this.checkState_();
   }
@@ -202,7 +202,7 @@ importer.ImportController.prototype.onSelectionChanged_ = function() {
   if (this.environment_.getSelection().length === 0 &&
       this.isCurrentDirectoryScannable_()) {
     this.checkState_(
-        this.scanManager_.getDirectoryScan());
+        this.scanManager_.getDirectoryScan(importer.ScanMode.CONTENT));
   } else {
     this.checkState_();
   }
@@ -226,7 +226,7 @@ importer.ImportController.prototype.onScanInvalidated_ = function() {
   if (this.environment_.getSelection().length === 0 &&
       this.isCurrentDirectoryScannable_()) {
     this.checkState_(
-        this.scanManager_.getDirectoryScan());
+        this.scanManager_.getDirectoryScan(importer.ScanMode.CONTENT));
   } else {
     this.checkState_();
   }
@@ -357,7 +357,7 @@ importer.ImportController.prototype.checkState_ = function(opt_scan) {
     // NOTE, that tryScan_ lazily initializes scans...so if
     // no scan is returned, no scan is possible for the
     // current context.
-    var scan = this.tryScan_();
+    var scan = this.tryScan_(importer.ScanMode.CONTENT);
     // If no scan is created, then no scan is possible in
     // the current context...so hide the UI.
     if (!scan) {
@@ -445,19 +445,20 @@ importer.ImportController.prototype.fitsInAvailableSpace_ =
 /**
  * Attempts to scan the current context.
  *
+ * @param {importer.ScanMode} mode How to detect new files.
  * @return {importer.ScanResult} A scan object,
  *     or null if scan is not possible in current context.
  * @private
  */
-importer.ImportController.prototype.tryScan_ = function() {
+importer.ImportController.prototype.tryScan_ = function(mode) {
   var entries = this.environment_.getSelection();
   if (entries.length) {
     if (entries.every(
         importer.isEligibleEntry.bind(null, this.environment_))) {
-      return this.scanManager_.getSelectionScan(entries);
+      return this.scanManager_.getSelectionScan(entries, mode);
     }
   } else if (this.isCurrentDirectoryScannable_()) {
-    return this.scanManager_.getDirectoryScan();
+    return this.scanManager_.getDirectoryScan(mode);
   }
 
   return null;
@@ -956,27 +957,29 @@ importer.ScanManager.prototype.isActiveScan = function(scan) {
  * selection.
  *
  * @param {!Array<!FileEntry>} entries
+ * @param {!importer.ScanMode} mode
  *
  * @return {!importer.ScanResult}
  */
-importer.ScanManager.prototype.getSelectionScan = function(entries) {
+importer.ScanManager.prototype.getSelectionScan = function(entries, mode) {
   console.assert(!this.selectionScan_,
       'Cannot create new selection scan with another in the cache.');
-  this.selectionScan_ = this.scanner_.scanFiles(entries);
+  this.selectionScan_ = this.scanner_.scanFiles(entries, mode);
   return this.selectionScan_;
 };
 
 /**
  * Returns a scan for the directory.
  *
+ * @param {!importer.ScanMode} mode
  * @return {importer.ScanResult}
  */
-importer.ScanManager.prototype.getDirectoryScan = function() {
+importer.ScanManager.prototype.getDirectoryScan = function(mode) {
   if (!this.directoryScan_) {
     var directory = this.environment_.getCurrentDirectory();
     if (directory) {
       this.directoryScan_ = this.scanner_.scanDirectory(
-          /** @type {!DirectoryEntry} */ (directory));
+          /** @type {!DirectoryEntry} */ (directory), mode);
     }
   }
   return this.directoryScan_;

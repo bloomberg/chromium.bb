@@ -13,6 +13,19 @@ importer.ScanEvent = {
 };
 
 /**
+ * Mode of the scan to find new files.
+ *
+ * @enum {string}
+ */
+importer.ScanMode = {
+  // Faster scan using import history to get candidates of new files.
+  HISTORY: 'HISTORY',
+  // Verifies content hash to eliminate content duplications from candidates
+  // chosen by HISTORY.
+  CONTENT: 'CONTENT',
+};
+
+/**
  * Disposition of an entry with respect to it's
  * presence in import history, drive, and so on.
  * @enum {string}

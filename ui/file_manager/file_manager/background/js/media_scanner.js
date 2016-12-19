@@ -13,6 +13,7 @@ importer.MediaScanner = function() {};
  * Initiates scanning.
  *
  * @param {!DirectoryEntry} directory
+ * @param {!importer.ScanMode} mode
  * @return {!importer.ScanResult} ScanResult object representing the scan
  *     job both while in-progress and when completed.
  */
@@ -24,6 +25,7 @@ importer.MediaScanner.prototype.scanDirectory;
  * @param {!Array<!FileEntry>} entries Must be non-empty, and all entires
  *     must be of a supported media type. Individually supplied files
  *     are not subject to deduplication.
+ * @param {!importer.ScanMode} mode The method to detect new files.
  * @return {!importer.ScanResult} ScanResult object representing the scan
  *     job for the explicitly supplied entries.
  */
@@ -52,7 +54,8 @@ importer.MediaScanner.prototype.removeObserver;
  * @implements {importer.MediaScanner}
  *
  * @param {function(!FileEntry): !Promise.<string>} hashGenerator
- * @param {function(!FileEntry, !importer.Destination):
+ * @param {function(!FileEntry, !importer.Destination,
+ *                  !importer.ScanMode):
  *     !Promise<!importer.Disposition>} dispositionChecker
  * @param {!importer.DirectoryWatcherFactory} watcherFactory
  */
@@ -62,10 +65,11 @@ importer.DefaultMediaScanner =
   /**
    * A little factory for DefaultScanResults which allows us to forgo
    * the saving it's dependencies in our fields.
+   * @param {importer.ScanMode} mode Mode of the scan to find new files.
    * @return {!importer.DefaultScanResult}
    */
-  this.createScanResult_ = function() {
-    return new importer.DefaultScanResult(hashGenerator);
+  this.createScanResult_ = function(mode) {
+    return new importer.DefaultScanResult(mode, hashGenerator);
   };
 
   /** @private {!Array<!importer.ScanObserver>} */
@@ -74,6 +78,7 @@ importer.DefaultMediaScanner =
   /**
    * @param {!FileEntry} entry
    * @param {!importer.Destination} destination
+   * @param {!importer.ScanMode} mode
    * @return {!Promise<!importer.Disposition>}
    */
   this.getDisposition_ = dispositionChecker;
@@ -101,8 +106,9 @@ importer.DefaultMediaScanner.prototype.removeObserver = function(observer) {
 };
 
 /** @override */
-importer.DefaultMediaScanner.prototype.scanDirectory = function(directory) {
-  var scan = this.createScanResult_();
+importer.DefaultMediaScanner.prototype.scanDirectory = function(directory,
+                                                                mode) {
+  var scan = this.createScanResult_(mode);
   console.info(scan.name + ': Scanning directory ' + directory.fullPath);
 
   var watcher = this.watcherFactory_(
@@ -131,11 +137,11 @@ importer.DefaultMediaScanner.prototype.scanDirectory = function(directory) {
 };
 
 /** @override */
-importer.DefaultMediaScanner.prototype.scanFiles = function(entries) {
+importer.DefaultMediaScanner.prototype.scanFiles = function(entries, mode) {
   if (entries.length === 0) {
     throw new Error('Cannot scan empty list.');
   }
-  var scan = this.createScanResult_();
+  var scan = this.createScanResult_(mode);
   console.info(
       scan.name + ': Scanning fixed set of ' +
       entries.length + ' entries.');
@@ -276,7 +282,8 @@ importer.DefaultMediaScanner.prototype.crawlDirectory_ =
 importer.DefaultMediaScanner.prototype.onFileEntryFound_ =
     function(scan, entry) {
 
-  return this.getDisposition_(entry, importer.Destination.GOOGLE_DRIVE)
+  return this.getDisposition_(entry, importer.Destination.GOOGLE_DRIVE,
+                              scan.mode)
       .then(
           /**
            * @param {!importer.Disposition} disposition The disposition
@@ -442,10 +449,17 @@ importer.ScanResult.Statistics;
  * @struct
  * @implements {importer.ScanResult}
  *
+ * @param {importer.ScanMode} mode The scan mode applied for finding new files.
  * @param {function(!FileEntry): !Promise.<string>} hashGenerator Hash-code
  *     generator used to dedupe within the scan results itself.
  */
-importer.DefaultScanResult = function(hashGenerator) {
+importer.DefaultScanResult = function(mode, hashGenerator) {
+  /**
+   * The scan mode applied for finding new files.
+   * @type {importer.ScanMode}
+   */
+  this.mode = mode;
+
   /** @private {number} */
   this.scanId_ = importer.generateId();
 
