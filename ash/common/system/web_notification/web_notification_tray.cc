@@ -379,7 +379,7 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
   // For vertical shelf alignments, anchor to the WebNotificationTray, but for
   // horizontal (i.e. bottom) shelves, anchor to the system tray.
   TrayBackgroundView* anchor_tray = this;
-  if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+  if (IsHorizontalAlignment(shelf_alignment())) {
     anchor_tray = WmShelf::ForWindow(status_area_window_)
                       ->GetStatusAreaWidget()
                       ->system_tray();
