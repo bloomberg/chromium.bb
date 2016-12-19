@@ -13,6 +13,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "remoting/signaling/jid_util.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 #include "third_party/webrtc/libjingle/xmpp/constants.h"
 
@@ -164,7 +165,7 @@ void FakeSignalStrategy::NotifyListeners(
   received_messages_.push_back(stanza.release());
 
   const std::string& to_field = stanza_ptr->Attr(buzz::QN_TO);
-  if (to_field != jid_) {
+  if (NormalizeJid(to_field) != NormalizeJid(jid_)) {
     LOG(WARNING) << "Dropping stanza that is addressed to " << to_field
                  << ". Local jid: " << jid_
                  << ". Message content: " << stanza_ptr->Str();

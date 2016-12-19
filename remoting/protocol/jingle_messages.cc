@@ -9,6 +9,7 @@
 #include "remoting/base/constants.h"
 #include "remoting/protocol/content_description.h"
 #include "remoting/protocol/name_value_map.h"
+#include "remoting/signaling/jid_util.h"
 #include "remoting/signaling/remoting_bot.h"
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
@@ -173,9 +174,10 @@ buzz::QName GetQNameByField(Field attr, bool from) {
 
 SignalingAddress ParseAddress(
     const buzz::XmlElement* iq, bool from, std::string* error) {
-  SignalingAddress empty_instance;
-
   std::string jid(iq->Attr(GetQNameByField(Field::JID, from)));
+  if (jid.empty()) {
+    return SignalingAddress();
+  }
 
   const XmlElement* jingle = iq->FirstNamed(QName(kJingleNamespace, "jingle"));
 
@@ -199,7 +201,7 @@ SignalingAddress ParseAddress(
     channel = SignalingAddress::Channel::XMPP;
   } else if (!NameToValue(kChannelTypes, channel_str, &channel)) {
     *error = "Unknown channel: " + channel_str;
-    return empty_instance;
+    return SignalingAddress();
   }
 
   bool is_lcs = (channel == SignalingAddress::Channel::LCS);
@@ -207,12 +209,12 @@ SignalingAddress ParseAddress(
   if (is_lcs == endpoint_id.empty()) {
     *error = (is_lcs ? "Missing |endpoint-id| for LCS channel"
                     : "|endpoint_id| should be empty for XMPP channel");
-    return empty_instance;
+    return SignalingAddress();
   }
 
   if (from && is_lcs && !IsValidBotJid(jid)) {
     *error = "Reject LCS message from untrusted sender: " + jid;
-    return empty_instance;
+    return SignalingAddress();
   }
 
   return SignalingAddress(jid, endpoint_id, channel);
@@ -227,7 +229,7 @@ void SetAddress(buzz::XmlElement* iq,
   }
 
   // Always set the JID.
-  iq->SetAttr(GetQNameByField(Field::JID, from), address.jid);
+  iq->SetAttr(GetQNameByField(Field::JID, from), address.jid());
 
   // Do not tamper the routing-info in the jingle tag for error IQ's, as
   // it corresponds to the original message.
@@ -241,47 +243,39 @@ void SetAddress(buzz::XmlElement* iq,
   jingle->ClearAttr(GetQNameByField(Field::ENDPOINT_ID, from));
 
   // Only set the channel and endpoint_id in the LCS channel.
-  if (address.channel == SignalingAddress::Channel::LCS) {
-    jingle->AddAttr(
-        GetQNameByField(Field::ENDPOINT_ID, from), address.endpoint_id);
-    jingle->AddAttr(
-        GetQNameByField(Field::CHANNEL, from),
-        ValueToName(kChannelTypes, address.channel));
+  if (address.channel() == SignalingAddress::Channel::LCS) {
+    jingle->AddAttr(GetQNameByField(Field::ENDPOINT_ID, from),
+                    address.endpoint_id());
+    jingle->AddAttr(GetQNameByField(Field::CHANNEL, from),
+                    ValueToName(kChannelTypes, address.channel()));
   }
 }
 
 }  // namespace
 
-IceTransportInfo::NamedCandidate::NamedCandidate(
-    const std::string& name,
-    const cricket::Candidate& candidate)
-    : name(name),
-      candidate(candidate) {
-}
-
-IceTransportInfo::IceCredentials::IceCredentials(std::string channel,
-                                              std::string ufrag,
-                                              std::string password)
-    : channel(channel), ufrag(ufrag), password(password) {
-}
-
 SignalingAddress::SignalingAddress()
-    : channel(SignalingAddress::Channel::XMPP) {}
+    : channel_(SignalingAddress::Channel::XMPP) {}
 
 SignalingAddress::SignalingAddress(const std::string& jid)
-    : jid(jid), channel(SignalingAddress::Channel::XMPP) {}
+    : jid_(NormalizeJid(jid)), channel_(SignalingAddress::Channel::XMPP) {
+  DCHECK(!jid.empty());
+}
 
 SignalingAddress::SignalingAddress(const std::string& jid,
                                    const std::string& endpoint_id,
                                    Channel channel)
-    : jid(jid), endpoint_id(endpoint_id), channel(channel) {}
-
-bool SignalingAddress::operator==(const SignalingAddress& other) {
-  return (other.endpoint_id == endpoint_id) && (other.jid == jid) &&
-         (other.channel == channel);
+    : jid_(NormalizeJid(jid)),
+      endpoint_id_(NormalizeJid(endpoint_id)),
+      channel_(channel) {
+  DCHECK(!jid.empty());
 }
 
-bool SignalingAddress::operator!=(const SignalingAddress& other) {
+bool SignalingAddress::operator==(const SignalingAddress& other) const {
+  return (other.jid_ == jid_) && (other.endpoint_id_ == endpoint_id_) &&
+         (other.channel_ == channel_);
+}
+
+bool SignalingAddress::operator!=(const SignalingAddress& other) const {
   return !(*this == other);
 }
 
@@ -627,6 +621,16 @@ std::unique_ptr<buzz::XmlElement> JingleMessageReply::ToXml(
 
   return iq;
 }
+
+IceTransportInfo::NamedCandidate::NamedCandidate(
+    const std::string& name,
+    const cricket::Candidate& candidate)
+    : name(name), candidate(candidate) {}
+
+IceTransportInfo::IceCredentials::IceCredentials(std::string channel,
+                                                 std::string ufrag,
+                                                 std::string password)
+    : channel(channel), ufrag(ufrag), password(password) {}
 
 IceTransportInfo::IceTransportInfo() {}
 IceTransportInfo::~IceTransportInfo() {}

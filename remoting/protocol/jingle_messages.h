@@ -21,7 +21,8 @@ class ContentDescription;
 // Represents an address of a Chromoting endpoint and its routing channel.
 // TODO(kelvinp): Move the struct to remoting/signaling. Potentially we could
 // update SignalStrategy interface to use this instead of jid for addressing.
-struct SignalingAddress {
+class SignalingAddress {
+ public:
   enum class Channel { LCS, XMPP };
 
   SignalingAddress();
@@ -30,23 +31,27 @@ struct SignalingAddress {
                    const std::string& endpoint_id,
                    Channel channel);
 
+  const std::string& jid() const { return jid_; }
+  const std::string& endpoint_id() const { return endpoint_id_; }
+  Channel channel() const { return channel_; }
+  const std::string& id() const {
+    return (channel_ == Channel::LCS) ? endpoint_id_ : jid_;
+  }
+
+  bool empty() const { return jid_.empty(); }
+
+  bool operator==(const SignalingAddress& other) const;
+  bool operator!=(const SignalingAddress& other) const;
+
+ private:
   // Represents the |to| or |from| field in an IQ stanza.
-  std::string jid;
+  std::string jid_;
 
   // Represents the identifier of an endpoint. In  LCS, this is the LCS address
   // encoded in a JID like format.  In XMPP, it is empty.
-  std::string endpoint_id;
+  std::string endpoint_id_;
 
-  Channel channel;
-
-  inline const std::string& id() const {
-    return (channel == Channel::LCS) ? endpoint_id : jid;
-  }
-
-  inline bool empty() const { return jid.empty(); }
-
-  bool operator==(const SignalingAddress& other);
-  bool operator!=(const SignalingAddress& other);
+  Channel channel_;
 };
 
 struct JingleMessage {

@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/string_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/time/time.h"
 #include "net/socket/socket.h"
@@ -143,8 +144,10 @@ class JingleSessionTest : public testing::Test {
 
   void CreateSessionManagers(int auth_round_trips, int messages_till_start,
                              FakeAuthenticator::Action auth_action) {
-    host_signal_strategy_.reset(new FakeSignalStrategy(kHostJid));
-    client_signal_strategy_.reset(new FakeSignalStrategy(kClientJid));
+    if (!host_signal_strategy_)
+      host_signal_strategy_.reset(new FakeSignalStrategy(kHostJid));
+    if (!client_signal_strategy_)
+      client_signal_strategy_.reset(new FakeSignalStrategy(kClientJid));
     FakeSignalStrategy::Connect(host_signal_strategy_.get(),
                                 client_signal_strategy_.get());
 
@@ -231,7 +234,7 @@ class JingleSessionTest : public testing::Test {
 
   void ConnectClient(std::unique_ptr<Authenticator> authenticator) {
     client_session_ =
-        client_server_->Connect(kHostJid, std::move(authenticator));
+        client_server_->Connect(host_jid_, std::move(authenticator));
     client_session_->SetEventHandler(&client_session_event_handler_);
     client_session_->SetTransport(&client_transport_);
     base::RunLoop().RunUntilIdle();
@@ -261,6 +264,8 @@ class JingleSessionTest : public testing::Test {
 
   std::unique_ptr<FakeSignalStrategy> host_signal_strategy_;
   std::unique_ptr<FakeSignalStrategy> client_signal_strategy_;
+
+  std::string host_jid_ = kHostJid;
 
   std::unique_ptr<JingleSessionManager> host_server_;
   MockSessionManagerListener host_server_listener_;
@@ -319,6 +324,24 @@ TEST_F(JingleSessionTest, Connect) {
   ASSERT_TRUE(jingle_element);
   ASSERT_EQ(kClientJid,
             jingle_element->Attr(buzz::QName(std::string(), "initiator")));
+}
+
+TEST_F(JingleSessionTest, MixedCaseHostJid) {
+  std::string host_jid = std::string("A") + kHostJid;
+  host_signal_strategy_.reset(new FakeSignalStrategy(host_jid));
+
+  // Imitate host JID being lower-cased when stored in the directory.
+  host_jid_ = base::ToLowerASCII(host_jid);
+
+  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
+  InitiateConnection(1, FakeAuthenticator::ACCEPT, false);
+}
+
+TEST_F(JingleSessionTest, MixedCaseClientJid) {
+  client_signal_strategy_.reset(
+      new FakeSignalStrategy(std::string("A") + kClientJid));
+  CreateSessionManagers(1, FakeAuthenticator::ACCEPT);
+  InitiateConnection(1, FakeAuthenticator::ACCEPT, false);
 }
 
 // Verify that we can connect two endpoints with multi-step authentication.

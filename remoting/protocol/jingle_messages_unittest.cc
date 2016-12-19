@@ -419,14 +419,14 @@ TEST(JingleMessageTest, ParseAddress) {
 
   JingleMessage message;
   ParseFormatAndCompare(kTestSessionInfoMessage, &message);
-  EXPECT_EQ(message.from.jid, "remoting@bot.talk.google.com");
-  EXPECT_EQ(message.from.channel, SignalingAddress::Channel::LCS);
-  EXPECT_EQ(message.from.endpoint_id, "user@gmail.com/xBrnereror=");
+  EXPECT_EQ(message.from.jid(), "remoting@bot.talk.google.com");
+  EXPECT_EQ(message.from.channel(), SignalingAddress::Channel::LCS);
+  EXPECT_EQ(message.from.endpoint_id(), "user@gmail.com/xBrnereror=");
   EXPECT_EQ(message.from.id(), "user@gmail.com/xBrnereror=");
 
-  EXPECT_EQ(message.to.jid, "user@gmail.com/chromiumsy5C6A652D");
-  EXPECT_EQ(message.to.channel, SignalingAddress::Channel::XMPP);
-  EXPECT_EQ(message.to.endpoint_id, "");
+  EXPECT_EQ(message.to.jid(), "user@gmail.com/chromiumsy5C6A652D");
+  EXPECT_EQ(message.to.channel(), SignalingAddress::Channel::XMPP);
+  EXPECT_EQ(message.to.endpoint_id(), "");
   EXPECT_EQ(message.to.id(), "user@gmail.com/chromiumsy5C6A652D");
 
   EXPECT_EQ(message.action, JingleMessage::SESSION_INFO);
