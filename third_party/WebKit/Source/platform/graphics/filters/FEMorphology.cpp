@@ -92,10 +92,8 @@ FloatRect FEMorphology::mapEffect(const FloatRect& rect) const {
 sk_sp<SkImageFilter> FEMorphology::createImageFilter() {
   sk_sp<SkImageFilter> input(
       SkiaImageFilterBuilder::build(inputEffect(0), operatingColorSpace()));
-  SkScalar radiusX =
-      SkFloatToScalar(getFilter()->applyHorizontalScale(m_radiusX));
-  SkScalar radiusY =
-      SkFloatToScalar(getFilter()->applyVerticalScale(m_radiusY));
+  int radiusX = clampTo<int>(getFilter()->applyHorizontalScale(m_radiusX));
+  int radiusY = clampTo<int>(getFilter()->applyVerticalScale(m_radiusY));
   SkImageFilter::CropRect rect = getCropRect();
   if (m_type == FEMORPHOLOGY_OPERATOR_DILATE)
     return SkDilateImageFilter::Make(radiusX, radiusY, std::move(input), &rect);
