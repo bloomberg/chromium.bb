@@ -4,6 +4,7 @@
 
 #include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
 
+#include "core/dom/Document.h"
 #include "core/events/Event.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
@@ -39,7 +40,7 @@ ScreenOrientationControllerImpl* ScreenOrientationControllerImpl::from(
 ScreenOrientationControllerImpl::ScreenOrientationControllerImpl(
     LocalFrame& frame,
     WebScreenOrientationClient* client)
-    : DOMWindowProperty(&frame),
+    : ContextLifecycleObserver(frame.document()),
       PlatformEventController(frame.page()),
       m_client(client),
       m_dispatchEventTimer(
@@ -82,7 +83,6 @@ void ScreenOrientationControllerImpl::updateOrientation() {
   DCHECK(m_orientation);
   DCHECK(frame());
   DCHECK(frame()->host());
-
   ChromeClient& chromeClient = frame()->host()->chromeClient();
   WebScreenInfo screenInfo = chromeClient.screenInfo();
   WebScreenOrientationType orientationType = screenInfo.orientationType;
@@ -208,10 +208,9 @@ bool ScreenOrientationControllerImpl::hasLastData() {
   return true;
 }
 
-void ScreenOrientationControllerImpl::frameDestroyed() {
+void ScreenOrientationControllerImpl::contextDestroyed() {
   stopUpdating();
   m_client = nullptr;
-  DOMWindowProperty::frameDestroyed();
   m_activeLock = false;
 }
 
@@ -224,7 +223,7 @@ void ScreenOrientationControllerImpl::notifyDispatcher() {
 
 DEFINE_TRACE(ScreenOrientationControllerImpl) {
   visitor->trace(m_orientation);
-  DOMWindowProperty::trace(visitor);
+  ContextLifecycleObserver::trace(visitor);
   Supplement<LocalFrame>::trace(visitor);
   PlatformEventController::trace(visitor);
 }
