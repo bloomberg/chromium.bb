@@ -2,12 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(fdoray): Remove this file once TaskScheduler initialization in the
+// browser process uses the components/task_scheduler_util/browser/ API on all
+// platforms.
+
 #include "components/task_scheduler_util/variations/browser_variations_util.h"
 
 #include <map>
 #include <vector>
 
 #include "base/metrics/field_trial.h"
+#include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

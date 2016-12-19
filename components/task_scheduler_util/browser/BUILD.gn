@@ -2,13 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("initialization") {
+static_library("browser") {
   sources = [
-    "browser_util.cc",
-    "browser_util.h",
+    "initialization.cc",
+    "initialization.h",
   ]
 
   deps = [
-    "//components/task_scheduler_util/browser",
+    "//base",
+    "//base:base_static",
+    "//components/task_scheduler_util/common",
+    "//components/variations",
   ]
 }
