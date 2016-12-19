@@ -156,12 +156,8 @@ id<GREYMatcher> webViewContainingBlockedImage(std::string image_id,
   if (!image)
     return grey_nil();
 
-  return webViewContainingBlockedImage(image_id, image.size, web_state);
-}
+  CGSize expected_size = image.size;
 
-id<GREYMatcher> webViewContainingBlockedImage(std::string image_id,
-                                              CGSize expected_size,
-                                              WebState* web_state) {
   MatchesBlock matches = ^BOOL(WKWebView*) {
     return WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
       NSString* const kGetElementAttributesScript = [NSString
