@@ -130,13 +130,37 @@ void Shadow::RecreateShadowLayer() {
   shadow_layer_->SetFillsBoundsOpaquely(false);
   layer()->Add(shadow_layer_.get());
 
-  const ShadowDetails& details = GetDetailsForElevation(ElevationForStyle());
-  shadow_layer_->UpdateNinePatchLayerImage(details.ninebox_image);
   UpdateLayerBounds();
 }
 
 void Shadow::UpdateLayerBounds() {
-  const ShadowDetails& details = GetDetailsForElevation(ElevationForStyle());
+  if (content_bounds_.IsEmpty())
+    return;
+
+  // The elevation depends on the style, but the ninebox assumption breaks down
+  // when the window is too small. The height/width of |blur_region| will be
+  // 4 * elevation (see GetDetailsForElevation), so cap elevation at the most we
+  // can handle.
+  const int smaller_dimension =
+      std::min(content_bounds_.width(), content_bounds_.height());
+  const int size_adjusted_elevation = std::min(
+      (smaller_dimension - 2 * kRoundedCornerRadius) / 4, ElevationForStyle());
+  const ShadowDetails& details =
+      GetDetailsForElevation(size_adjusted_elevation);
+  gfx::Insets blur_region = gfx::ShadowValue::GetBlurRegion(details.values) +
+                            gfx::Insets(kRoundedCornerRadius);
+  if (size_adjusted_elevation != effective_elevation_) {
+    shadow_layer_->UpdateNinePatchLayerImage(details.ninebox_image);
+    // The ninebox grid is defined in terms of the image size. The shadow blurs
+    // in both inward and outward directions from the edge of the contents, so
+    // the aperture goes further inside the image than the shadow margins (which
+    // represent exterior blur).
+    gfx::Rect aperture(details.ninebox_image.size());
+    aperture.Inset(blur_region);
+    shadow_layer_->UpdateNinePatchLayerAperture(aperture);
+  }
+  effective_elevation_ = size_adjusted_elevation;
+
   // Shadow margins are negative, so this expands outwards from
   // |content_bounds_|.
   const gfx::Insets margins = gfx::ShadowValue::GetMargin(details.values);
@@ -174,32 +198,10 @@ void Shadow::UpdateLayerBounds() {
   occlusion_bounds.Inset(-margins + gfx::Insets(kRoundedCornerRadius));
   shadow_layer_->UpdateNinePatchOcclusion(occlusion_bounds);
 
-  // The border is more or less the same inset as the aperture, but can be no
-  // larger than the shadow layer. When the shadow layer is too small, shrink
-  // the dimensions proportionally.
-  gfx::Insets blur_region = gfx::ShadowValue::GetBlurRegion(details.values) +
-                            gfx::Insets(kRoundedCornerRadius);
-  int border_w = std::min(blur_region.width(), shadow_layer_bounds.width());
-  int border_x = border_w * blur_region.left() / blur_region.width();
-  int border_h = std::min(blur_region.height(), shadow_layer_bounds.height());
-  int border_y = border_h * blur_region.top() / blur_region.height();
+  // The border is the same inset as the aperture.
   shadow_layer_->UpdateNinePatchLayerBorder(
-      gfx::Rect(border_x, border_y, border_w, border_h));
-
-  // The ninebox grid is defined in terms of the image size. The shadow blurs in
-  // both inward and outward directions from the edge of the contents, so the
-  // aperture goes further inside the image than the shadow margins (which
-  // represent exterior blur).
-  gfx::Rect aperture(details.ninebox_image.size());
-  // The insets for the aperture are nominally |blur_region| but we need to
-  // resize them if the contents are too small.
-  // TODO(estade): by cutting out parts of ninebox, we lose the smooth
-  // horizontal or vertical transition. This isn't very noticeable, but we may
-  // need to address it by using a separate shadow layer for each ShadowValue,
-  // by adjusting the shadow for very small windows, or other means.
-  aperture.Inset(gfx::Insets(border_y, border_x, border_h - border_y,
-                             border_w - border_x));
-  shadow_layer_->UpdateNinePatchLayerAperture(aperture);
+      gfx::Rect(blur_region.left(), blur_region.top(), blur_region.width(),
+                blur_region.height()));
 }
 
 int Shadow::ElevationForStyle() {

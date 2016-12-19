@@ -92,6 +92,9 @@ class WM_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   // Bounds of the content that the shadow encloses.
   gfx::Rect content_bounds_;
 
+  // The elevation of the shadow image that's currently set on |shadow_layer_|.
+  int effective_elevation_ = 0;
+
   DISALLOW_COPY_AND_ASSIGN(Shadow);
 };
 

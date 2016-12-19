@@ -10,6 +10,10 @@
 namespace wm {
 namespace {
 
+gfx::Insets InsetsForElevation(int elevation) {
+  return -gfx::Insets(2 * elevation) + gfx::Insets(elevation, 0, -elevation, 0);
+}
+
 using ShadowTest = aura::test::AuraTestBase;
 
 // Test if the proper content bounds is calculated based on the current style.
@@ -22,9 +26,7 @@ TEST_F(ShadowTest, SetContentBounds) {
     shadow.SetContentBounds(content_bounds);
     EXPECT_EQ(content_bounds, shadow.content_bounds());
     gfx::Rect shadow_bounds(content_bounds);
-    int elevation = 24;
-    shadow_bounds.Inset(-gfx::Insets(2 * elevation) +
-                        gfx::Insets(elevation, 0, -elevation, 0));
+    shadow_bounds.Inset(InsetsForElevation(24));
     EXPECT_EQ(shadow_bounds, shadow.layer()->bounds());
   }
 
@@ -34,9 +36,39 @@ TEST_F(ShadowTest, SetContentBounds) {
     shadow.SetContentBounds(content_bounds);
     EXPECT_EQ(content_bounds, shadow.content_bounds());
     gfx::Rect shadow_bounds(content_bounds);
-    int elevation = 6;
-    shadow_bounds.Inset(-gfx::Insets(2 * elevation) +
-                        gfx::Insets(elevation, 0, -elevation, 0));
+    shadow_bounds.Inset(InsetsForElevation(6));
+    EXPECT_EQ(shadow_bounds, shadow.layer()->bounds());
+  }
+}
+
+// Test that the elevation is reduced when the contents are too small to handle
+// the full elevation.
+TEST_F(ShadowTest, AdjustElevationForSmallContents) {
+  Shadow shadow;
+  shadow.Init(Shadow::STYLE_ACTIVE);
+  {
+    gfx::Rect content_bounds(100, 100, 300, 300);
+    shadow.SetContentBounds(content_bounds);
+    gfx::Rect shadow_bounds(content_bounds);
+    shadow_bounds.Inset(InsetsForElevation(24));
+    EXPECT_EQ(shadow_bounds, shadow.layer()->bounds());
+  }
+
+  {
+    constexpr int kWidth = 80;
+    gfx::Rect content_bounds(100, 100, kWidth, 300);
+    shadow.SetContentBounds(content_bounds);
+    gfx::Rect shadow_bounds(content_bounds);
+    shadow_bounds.Inset(InsetsForElevation((kWidth - 4) / 4));
+    EXPECT_EQ(shadow_bounds, shadow.layer()->bounds());
+  }
+
+  {
+    constexpr int kHeight = 80;
+    gfx::Rect content_bounds(100, 100, 300, kHeight);
+    shadow.SetContentBounds(content_bounds);
+    gfx::Rect shadow_bounds(content_bounds);
+    shadow_bounds.Inset(InsetsForElevation((kHeight - 4) / 4));
     EXPECT_EQ(shadow_bounds, shadow.layer()->bounds());
   }
 }
