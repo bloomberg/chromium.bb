@@ -167,7 +167,7 @@ PassRefPtr<StringImpl> insertInternal(PassRefPtr<StringImpl> impl,
   if (!lengthToInsert)
     return impl;
 
-  ASSERT(charactersToInsert);
+  DCHECK(charactersToInsert);
   UChar* data;  // FIXME: We should be able to create an 8 bit string here.
   RELEASE_ASSERT(lengthToInsert <=
                  std::numeric_limits<unsigned>::max() - impl->length());
@@ -594,7 +594,7 @@ CString String::latin1() const {
 // Helper to write a three-byte UTF-8 code point to the buffer, caller must
 // check room is available.
 static inline void putUTF8Triple(char*& buffer, UChar ch) {
-  ASSERT(ch >= 0x0800);
+  DCHECK_GE(ch, 0x0800);
   *buffer++ = static_cast<char>(((ch >> 12) & 0x0F) | 0xE0);
   *buffer++ = static_cast<char>(((ch >> 6) & 0x3F) | 0x80);
   *buffer++ = static_cast<char>((ch & 0x3F) | 0x80);
@@ -640,15 +640,16 @@ CString String::utf8(UTF8ConversionMode mode) const {
         // Use strict conversion to detect unpaired surrogates.
         ConversionResult result = convertUTF16ToUTF8(&characters, charactersEnd,
                                                      &buffer, bufferEnd, true);
-        ASSERT(result != targetExhausted);
+        DCHECK_NE(result, targetExhausted);
         // Conversion fails when there is an unpaired surrogate.  Put
         // replacement character (U+FFFD) instead of the unpaired
         // surrogate.
         if (result != conversionOK) {
-          ASSERT((0xD800 <= *characters && *characters <= 0xDFFF));
+          DCHECK_LE(0xD800, *characters);
+          DCHECK_LE(*characters, 0xDFFF);
           // There should be room left, since one UChar hasn't been
           // converted.
-          ASSERT((buffer + 3) <= bufferEnd);
+          DCHECK_LE(buffer + 3, bufferEnd);
           putUTF8Triple(buffer, replacementCharacter);
           ++characters;
         }
@@ -659,11 +660,11 @@ CString String::utf8(UTF8ConversionMode mode) const {
           convertUTF16ToUTF8(&characters, characters + length, &buffer,
                              buffer + bufferVector.size(), strict);
       // (length * 3) should be sufficient for any conversion
-      ASSERT(result != targetExhausted);
+      DCHECK_NE(result, targetExhausted);
 
       // Only produced from strict conversion.
       if (result == sourceIllegal) {
-        ASSERT(strict);
+        DCHECK(strict);
         return CString();
       }
 
@@ -675,11 +676,12 @@ CString String::utf8(UTF8ConversionMode mode) const {
         // was as an unpaired high surrogate would have been handled in
         // the middle of a string with non-strict conversion - which is
         // to say, simply encode it to UTF-8.
-        ASSERT((characters + 1) == (this->characters16() + length));
-        ASSERT((*characters >= 0xD800) && (*characters <= 0xDBFF));
+        DCHECK_EQ(characters + 1, this->characters16() + length);
+        DCHECK_GE(*characters, 0xD800);
+        DCHECK_LE(*characters, 0xDBFF);
         // There should be room left, since one UChar hasn't been
         // converted.
-        ASSERT((buffer + 3) <= (buffer + bufferVector.size()));
+        DCHECK_LE(buffer + 3, buffer + bufferVector.size());
         putUTF8Triple(buffer, *characters);
       }
     }
@@ -735,7 +737,7 @@ String String::fromUTF8(const LChar* stringStart, size_t length) {
     return String();
 
   unsigned utf16Length = bufferCurrent - bufferStart;
-  ASSERT(utf16Length < length);
+  DCHECK_LT(utf16Length, length);
   return StringImpl::create(bufferStart, utf16Length);
 }
 

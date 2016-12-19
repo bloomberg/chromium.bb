@@ -126,7 +126,7 @@ class DoubleToStringConverter {
             max_trailing_padding_zeroes_in_precision_mode) {
     // When 'trailing zero after the point' is set, then 'trailing point'
     // must be set too.
-    ASSERT(((flags & EMIT_TRAILING_DECIMAL_POINT) != 0) ||
+    DCHECK(((flags & EMIT_TRAILING_DECIMAL_POINT) != 0) ||
            !((flags & EMIT_TRAILING_ZERO_AFTER_POINT) != 0));
   }
 

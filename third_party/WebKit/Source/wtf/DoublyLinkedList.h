@@ -129,7 +129,7 @@ inline T* DoublyLinkedList<T>::tail() const {
 template <typename T>
 inline void DoublyLinkedList<T>::push(T* node) {
   if (!m_head) {
-    ASSERT(!m_tail);
+    DCHECK(!m_tail);
     m_head = node;
     m_tail = node;
     node->setPrev(0);
@@ -137,7 +137,7 @@ inline void DoublyLinkedList<T>::push(T* node) {
     return;
   }
 
-  ASSERT(m_tail);
+  DCHECK(m_tail);
   m_head->setPrev(node);
   node->setNext(m_head);
   node->setPrev(0);
@@ -147,7 +147,7 @@ inline void DoublyLinkedList<T>::push(T* node) {
 template <typename T>
 inline void DoublyLinkedList<T>::append(T* node) {
   if (!m_tail) {
-    ASSERT(!m_head);
+    DCHECK(!m_head);
     m_head = node;
     m_tail = node;
     node->setPrev(0);
@@ -155,7 +155,7 @@ inline void DoublyLinkedList<T>::append(T* node) {
     return;
   }
 
-  ASSERT(m_head);
+  DCHECK(m_head);
   m_tail->setNext(node);
   node->setPrev(m_tail);
   node->setNext(0);
@@ -165,18 +165,18 @@ inline void DoublyLinkedList<T>::append(T* node) {
 template <typename T>
 inline void DoublyLinkedList<T>::remove(T* node) {
   if (node->prev()) {
-    ASSERT(node != m_head);
+    DCHECK_NE(node, m_head);
     node->prev()->setNext(node->next());
   } else {
-    ASSERT(node == m_head);
+    DCHECK_EQ(node, m_head);
     m_head = node->next();
   }
 
   if (node->next()) {
-    ASSERT(node != m_tail);
+    DCHECK_NE(node, m_tail);
     node->next()->setPrev(node->prev());
   } else {
-    ASSERT(node == m_tail);
+    DCHECK_EQ(node, m_tail);
     m_tail = node->prev();
   }
 }

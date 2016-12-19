@@ -41,14 +41,14 @@
 
 namespace WTF {
 
-#if ENABLE(ASSERT) || ENABLE(SECURITY_ASSERT)
+#if DCHECK_IS_ON() || ENABLE(SECURITY_ASSERT)
 // The debug/assertion version may get bigger.
 struct SameSizeAsRefCounted {
   int a;
 #if ENABLE(SECURITY_ASSERT)
   bool b;
 #endif
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool c;
   ThreadRestrictionVerifier d;
 #endif

@@ -60,8 +60,8 @@ const size_t stringWithTypeNamePostfixLength = sizeof(">(void)") - 1;
 String extractTypeNameFromFunctionName(const char* funcName) {
 #if COMPILER(CLANG) || COMPILER(GCC) || COMPILER(MSVC)
   size_t funcNameLength = strlen(funcName);
-  ASSERT(funcNameLength >
-         stringWithTypeNamePrefixLength + stringWithTypeNamePostfixLength);
+  DCHECK_GT(funcNameLength,
+            stringWithTypeNamePrefixLength + stringWithTypeNamePostfixLength);
 
   const char* funcNameWithoutPrefix = funcName + stringWithTypeNamePrefixLength;
   return String(funcNameWithoutPrefix, funcNameLength -
@@ -116,7 +116,7 @@ void InstanceCounter::decrementInstanceCount(const String& instanceName,
                                              void* ptr) {
   MutexLocker locker(m_mutex);
   HashMap<String, int>::iterator it = m_counterMap.find(instanceName);
-  ASSERT(it != m_counterMap.end());
+  DCHECK(it != m_counterMap.end());
 
   --(it->value);
   if (!it->value)

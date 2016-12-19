@@ -48,7 +48,7 @@ class PrintStream;
 //   used in a manual mode, which is faster (quickSet, quickClear, quickGet,
 //   ensureSize).
 //
-// - Accesses ASSERT that you are within bounds.
+// - Accesses assert that you are within bounds.
 //
 // - Bits are automatically initialized to zero.
 //
@@ -166,7 +166,7 @@ class WTF_EXPORT BitVector {
   static size_t byteCount(size_t bitCount) { return (bitCount + 7) >> 3; }
 
   static uintptr_t makeInlineBits(uintptr_t bits) {
-    ASSERT(!(bits & (static_cast<uintptr_t>(1) << maxInlineBits())));
+    DCHECK(!(bits & (static_cast<uintptr_t>(1) << maxInlineBits())));
     return bits | (static_cast<uintptr_t>(1) << maxInlineBits());
   }
 

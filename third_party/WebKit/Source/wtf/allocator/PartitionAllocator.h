@@ -128,7 +128,7 @@ WTF_EXPORT char* PartitionAllocator::allocateExpandedVectorBacking<char>(
   }                                                               \
   void operator delete[](void* p) { Allocator::deleteArray(p); }  \
   void* operator new(size_t, NotNullTag, void* location) {        \
-    ASSERT(location);                                             \
+    DCHECK(location);                                             \
     return location;                                              \
   }                                                               \
   void* operator new(size_t, void* location) { return location; } \

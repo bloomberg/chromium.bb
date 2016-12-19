@@ -70,9 +70,9 @@ class LinkedHashSetNodeBase {
   void unlink() {
     if (!m_next)
       return;
-    ASSERT(m_prev);
-    ASSERT(m_next->m_prev == this);
-    ASSERT(m_prev->m_next == this);
+    DCHECK(m_prev);
+    DCHECK(m_next->m_prev == this);
+    DCHECK(m_prev->m_next == this);
     m_next->m_prev = m_prev;
     m_prev->m_next = m_next;
   }
@@ -84,10 +84,10 @@ class LinkedHashSetNodeBase {
     other.m_prev = m_prev;
     m_prev->m_next = &other;
     m_prev = &other;
-    ASSERT(other.m_next);
-    ASSERT(other.m_prev);
-    ASSERT(m_next);
-    ASSERT(m_prev);
+    DCHECK(other.m_next);
+    DCHECK(other.m_prev);
+    DCHECK(m_next);
+    DCHECK(m_prev);
   }
 
   void insertAfter(LinkedHashSetNodeBase& other) {
@@ -95,16 +95,16 @@ class LinkedHashSetNodeBase {
     other.m_next = m_next;
     m_next->m_prev = &other;
     m_next = &other;
-    ASSERT(other.m_next);
-    ASSERT(other.m_prev);
-    ASSERT(m_next);
-    ASSERT(m_prev);
+    DCHECK(other.m_next);
+    DCHECK(other.m_prev);
+    DCHECK(m_next);
+    DCHECK(m_prev);
   }
 
   LinkedHashSetNodeBase(LinkedHashSetNodeBase* prev,
                         LinkedHashSetNodeBase* next)
       : m_prev(prev), m_next(next) {
-    ASSERT((prev && next) || (!prev && !next));
+    DCHECK((prev && next) || (!prev && !next));
   }
 
   LinkedHashSetNodeBase* m_prev;
@@ -534,7 +534,7 @@ class LinkedHashSetConstIterator {
   LinkedHashSetConstIterator(const LinkedHashSetNodeBase* position,
                              const LinkedHashSetType* container)
       : m_position(position)
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
         ,
         m_container(container),
         m_containerModifications(container->modifications())
@@ -551,14 +551,14 @@ class LinkedHashSetConstIterator {
   PointerType operator->() const { return get(); }
 
   LinkedHashSetConstIterator& operator++() {
-    ASSERT(m_position);
+    DCHECK(m_position);
     checkModifications();
     m_position = m_position->m_next;
     return *this;
   }
 
   LinkedHashSetConstIterator& operator--() {
-    ASSERT(m_position);
+    DCHECK(m_position);
     checkModifications();
     m_position = m_position->m_prev;
     return *this;
@@ -576,7 +576,7 @@ class LinkedHashSetConstIterator {
 
  private:
   const LinkedHashSetNodeBase* m_position;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   void checkModifications() const {
     m_container->checkModifications(m_containerModifications);
   }
@@ -701,37 +701,37 @@ inline LinkedHashSet<T, U, V, Allocator>::~LinkedHashSet() {
 
 template <typename T, typename U, typename V, typename W>
 inline T& LinkedHashSet<T, U, V, W>::first() {
-  ASSERT(!isEmpty());
+  DCHECK(!isEmpty());
   return firstNode()->m_value;
 }
 
 template <typename T, typename U, typename V, typename W>
 inline const T& LinkedHashSet<T, U, V, W>::first() const {
-  ASSERT(!isEmpty());
+  DCHECK(!isEmpty());
   return firstNode()->m_value;
 }
 
 template <typename T, typename U, typename V, typename W>
 inline void LinkedHashSet<T, U, V, W>::removeFirst() {
-  ASSERT(!isEmpty());
+  DCHECK(!isEmpty());
   m_impl.remove(static_cast<Node*>(m_anchor.m_next));
 }
 
 template <typename T, typename U, typename V, typename W>
 inline T& LinkedHashSet<T, U, V, W>::last() {
-  ASSERT(!isEmpty());
+  DCHECK(!isEmpty());
   return lastNode()->m_value;
 }
 
 template <typename T, typename U, typename V, typename W>
 inline const T& LinkedHashSet<T, U, V, W>::last() const {
-  ASSERT(!isEmpty());
+  DCHECK(!isEmpty());
   return lastNode()->m_value;
 }
 
 template <typename T, typename U, typename V, typename W>
 inline void LinkedHashSet<T, U, V, W>::removeLast() {
-  ASSERT(!isEmpty());
+  DCHECK(!isEmpty());
   m_impl.remove(static_cast<Node*>(m_anchor.m_prev));
 }
 
@@ -877,11 +877,14 @@ inline void LinkedHashSet<T, U, V, W>::remove(ValuePeekInType value) {
 }
 
 inline void swapAnchor(LinkedHashSetNodeBase& a, LinkedHashSetNodeBase& b) {
-  ASSERT(a.m_prev && a.m_next && b.m_prev && b.m_next);
+  DCHECK(a.m_prev);
+  DCHECK(a.m_next);
+  DCHECK(b.m_prev);
+  DCHECK(b.m_next);
   swap(a.m_prev, b.m_prev);
   swap(a.m_next, b.m_next);
   if (b.m_next == &a) {
-    ASSERT(b.m_prev == &a);
+    DCHECK_EQ(b.m_prev, &a);
     b.m_next = &b;
     b.m_prev = &b;
   } else {
@@ -889,7 +892,7 @@ inline void swapAnchor(LinkedHashSetNodeBase& a, LinkedHashSetNodeBase& b) {
     b.m_prev->m_next = &b;
   }
   if (a.m_next == &b) {
-    ASSERT(a.m_prev == &b);
+    DCHECK_EQ(a.m_prev, &b);
     a.m_next = &a;
     a.m_prev = &a;
   } else {
@@ -899,7 +902,8 @@ inline void swapAnchor(LinkedHashSetNodeBase& a, LinkedHashSetNodeBase& b) {
 }
 
 inline void swap(LinkedHashSetNodeBase& a, LinkedHashSetNodeBase& b) {
-  ASSERT(a.m_next != &a && b.m_next != &b);
+  DCHECK_NE(a.m_next, &a);
+  DCHECK_NE(b.m_next, &b);
   swap(a.m_prev, b.m_prev);
   swap(a.m_next, b.m_next);
   if (b.m_next) {

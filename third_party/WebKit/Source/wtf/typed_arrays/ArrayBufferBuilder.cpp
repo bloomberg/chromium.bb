@@ -71,11 +71,11 @@ bool ArrayBufferBuilder::expandCapacity(unsigned sizeToIncrease) {
 }
 
 unsigned ArrayBufferBuilder::append(const char* data, unsigned length) {
-  ASSERT(length > 0);
+  DCHECK_GT(length, 0u);
 
   unsigned currentBufferSize = m_buffer->byteLength();
 
-  ASSERT(m_bytesUsed <= currentBufferSize);
+  DCHECK_LE(m_bytesUsed, currentBufferSize);
 
   unsigned remainingBufferSpace = currentBufferSize - m_bytesUsed;
 
@@ -109,7 +109,7 @@ String ArrayBufferBuilder::toString() {
 }
 
 void ArrayBufferBuilder::shrinkToFit() {
-  ASSERT(m_bytesUsed <= m_buffer->byteLength());
+  DCHECK_LE(m_bytesUsed, m_buffer->byteLength());
 
   if (m_buffer->byteLength() > m_bytesUsed)
     m_buffer = m_buffer->slice(0, m_bytesUsed);

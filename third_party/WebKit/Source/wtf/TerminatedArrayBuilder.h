@@ -20,18 +20,18 @@ class TerminatedArrayBuilder {
     if (!m_array)
       return;
     m_capacity = m_count = m_array->size();
-    ASSERT(m_array->at(m_count - 1).isLastInArray());
+    DCHECK(m_array->at(m_count - 1).isLastInArray());
   }
 
   void grow(size_t count) {
-    ASSERT(count);
+    DCHECK(count);
     if (!m_array) {
-      ASSERT(!m_count);
-      ASSERT(!m_capacity);
+      DCHECK(!m_count);
+      DCHECK(!m_capacity);
       m_capacity = count;
       m_array = ArrayType<T>::Allocator::create(m_capacity);
     } else {
-      ASSERT(m_array->at(m_count - 1).isLastInArray());
+      DCHECK(m_array->at(m_count - 1).isLastInArray());
       m_capacity += count;
       m_array = ArrayType<T>::Allocator::resize(
           ArrayType<T>::Allocator::release(m_array), m_capacity);
@@ -42,7 +42,7 @@ class TerminatedArrayBuilder {
 
   void append(const T& item) {
     RELEASE_ASSERT(m_count < m_capacity);
-    ASSERT(!item.isLastInArray());
+    DCHECK(!item.isLastInArray());
     m_array->at(m_count++) = item;
     if (m_count == m_capacity)
       m_array->at(m_capacity - 1).setLastInArray(true);
@@ -55,11 +55,11 @@ class TerminatedArrayBuilder {
   }
 
  private:
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   void assertValid() {
     for (size_t i = 0; i < m_count; ++i) {
       bool isLastInArray = (i + 1 == m_count);
-      ASSERT(m_array->at(i).isLastInArray() == isLastInArray);
+      DCHECK_EQ(m_array->at(i).isLastInArray(), isLastInArray);
     }
   }
 #else

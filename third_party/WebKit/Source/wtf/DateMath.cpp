@@ -159,7 +159,8 @@ static double msToDays(double ms) {
 }
 
 static void appendTwoDigitNumber(StringBuilder& builder, int number) {
-  ASSERT(number >= 0 && number < 100);
+  DCHECK_GE(number, 0);
+  DCHECK_LT(number, 100);
   if (number <= 9)
     builder.append('0');
   builder.appendNumber(number);
@@ -274,7 +275,7 @@ double dateToDaysFrom1970(int year, int month, int day) {
   }
 
   double yearday = floor(daysFrom1970ToYear(year));
-  ASSERT((year >= 1970 && yearday >= 0) || (year < 1970 && yearday < 0));
+  DCHECK((year >= 1970 && yearday >= 0) || (year < 1970 && yearday < 0));
   return yearday + dayInYear(year, month, day);
 }
 
@@ -324,7 +325,7 @@ static int equivalentYearForDST(int year) {
   int product = (quotient)*28;
 
   year += product;
-  ASSERT((year >= minYear && year <= maxYear) ||
+  DCHECK((year >= minYear && year <= maxYear) ||
          (product - year ==
           static_cast<int>(std::numeric_limits<double>::quiet_NaN())));
   return year;
@@ -390,9 +391,9 @@ static double calculateDSTOffset(double ms, double utcOffset) {
 }
 
 void initializeDates() {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   static bool alreadyInitialized;
-  ASSERT(!alreadyInitialized);
+  DCHECK(!alreadyInitialized);
   alreadyInitialized = true;
 #endif
 
@@ -445,7 +446,7 @@ inline static void skipSpacesAndComments(const char*& s) {
 
 // returns 0-11 (Jan-Dec); -1 on failure
 static int findMonth(const char* monthStr) {
-  ASSERT(monthStr);
+  DCHECK(monthStr);
   char needle[4];
   for (int i = 0; i < 3; ++i) {
     if (!*monthStr)

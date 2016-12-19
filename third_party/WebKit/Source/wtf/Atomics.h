@@ -111,12 +111,12 @@ ALWAYS_INLINE int64_t atomicDecrement(int64_t volatile* addend) {
 
 ALWAYS_INLINE int atomicTestAndSetToOne(int volatile* ptr) {
   int ret = InterlockedExchange(reinterpret_cast<long volatile*>(ptr), 1);
-  ASSERT(!ret || ret == 1);
+  DCHECK(!ret || ret == 1);
   return ret;
 }
 
 ALWAYS_INLINE void atomicSetOneToZero(int volatile* ptr) {
-  ASSERT(*ptr == 1);
+  DCHECK_EQ(*ptr, 1);
   InterlockedExchange(reinterpret_cast<long volatile*>(ptr), 0);
 }
 
@@ -163,12 +163,12 @@ ALWAYS_INLINE int64_t atomicDecrement(int64_t volatile* addend) {
 
 ALWAYS_INLINE int atomicTestAndSetToOne(int volatile* ptr) {
   int ret = __sync_lock_test_and_set(ptr, 1);
-  ASSERT(!ret || ret == 1);
+  DCHECK(!ret || ret == 1);
   return ret;
 }
 
 ALWAYS_INLINE void atomicSetOneToZero(int volatile* ptr) {
-  ASSERT(*ptr == 1);
+  DCHECK_EQ(*ptr, 1);
   __sync_lock_release(ptr);
 }
 #endif

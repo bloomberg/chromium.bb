@@ -83,7 +83,7 @@ bool StringAppend<StringType1, StringType2>::is8Bit() const {
 
 template <typename StringType1, typename StringType2>
 void StringAppend<StringType1, StringType2>::writeTo(LChar* destination) const {
-  ASSERT(is8Bit());
+  DCHECK(is8Bit());
   StringTypeAdapter<StringType1> adapter1(m_string1);
   StringTypeAdapter<StringType2> adapter2(m_string2);
   adapter1.writeTo(destination);

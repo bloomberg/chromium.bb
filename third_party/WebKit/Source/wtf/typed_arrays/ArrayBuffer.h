@@ -107,7 +107,7 @@ class WTF_EXPORT ArrayBuffer : public RefCounted<ArrayBuffer> {
 };
 
 int ArrayBuffer::clampValue(int x, int left, int right) {
-  ASSERT(left <= right);
+  DCHECK_LE(left, right);
   if (x < left)
     x = left;
   if (right < x)
@@ -124,7 +124,7 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::create(unsigned numElements,
 PassRefPtr<ArrayBuffer> ArrayBuffer::create(ArrayBuffer* other) {
   // TODO(binji): support creating a SharedArrayBuffer by copying another
   // ArrayBuffer?
-  ASSERT(!other->isShared());
+  DCHECK(!other->isShared());
   return ArrayBuffer::create(other->data(), other->byteLength());
 }
 

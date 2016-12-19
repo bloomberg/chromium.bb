@@ -91,9 +91,9 @@ static inline int nonASCIISequenceLength(uint8_t firstByte) {
 
 static inline int decodeNonASCIISequence(const uint8_t* sequence,
                                          unsigned length) {
-  ASSERT(!isASCII(sequence[0]));
+  DCHECK(!isASCII(sequence[0]));
   if (length == 2) {
-    ASSERT(sequence[0] <= 0xDF);
+    DCHECK_LE(sequence[0], 0xDF);
     if (sequence[0] < 0xC2)
       return nonCharacter1;
     if (sequence[1] < 0x80 || sequence[1] > 0xBF)
@@ -101,7 +101,8 @@ static inline int decodeNonASCIISequence(const uint8_t* sequence,
     return ((sequence[0] << 6) + sequence[1]) - 0x00003080;
   }
   if (length == 3) {
-    ASSERT(sequence[0] >= 0xE0 && sequence[0] <= 0xEF);
+    DCHECK_GE(sequence[0], 0xE0);
+    DCHECK_LE(sequence[0], 0xEF);
     switch (sequence[0]) {
       case 0xE0:
         if (sequence[1] < 0xA0 || sequence[1] > 0xBF)
@@ -120,8 +121,9 @@ static inline int decodeNonASCIISequence(const uint8_t* sequence,
     return ((sequence[0] << 12) + (sequence[1] << 6) + sequence[2]) -
            0x000E2080;
   }
-  ASSERT(length == 4);
-  ASSERT(sequence[0] >= 0xF0 && sequence[0] <= 0xF4);
+  DCHECK_EQ(length, 4u);
+  DCHECK_GE(sequence[0], 0xF0);
+  DCHECK_LE(sequence[0], 0xF4);
   switch (sequence[0]) {
     case 0xF0:
       if (sequence[1] < 0x90 || sequence[1] > 0xBF)
@@ -179,7 +181,7 @@ bool TextCodecUTF8::handlePartialSequence<LChar>(LChar*& destination,
                                                  bool flush,
                                                  bool,
                                                  bool&) {
-  ASSERT(m_partialSequenceSize);
+  DCHECK(m_partialSequenceSize);
   do {
     if (isASCII(m_partialSequence[0])) {
       *destination++ = m_partialSequence[0];
@@ -228,7 +230,7 @@ bool TextCodecUTF8::handlePartialSequence<UChar>(UChar*& destination,
                                                  bool flush,
                                                  bool stopOnError,
                                                  bool& sawError) {
-  ASSERT(m_partialSequenceSize);
+  DCHECK(m_partialSequenceSize);
   do {
     if (isASCII(m_partialSequence[0])) {
       *destination++ = m_partialSequence[0];
@@ -341,7 +343,7 @@ String TextCodecUTF8::decode(const char* bytes,
         if (count > end - source) {
           SECURITY_DCHECK(end - source <
                           static_cast<ptrdiff_t>(sizeof(m_partialSequence)));
-          ASSERT(!m_partialSequenceSize);
+          DCHECK(!m_partialSequenceSize);
           m_partialSequenceSize = end - source;
           memcpy(m_partialSequence, source, m_partialSequenceSize);
           source = end;
@@ -422,7 +424,7 @@ upConvertTo16Bit:
         if (count > end - source) {
           SECURITY_DCHECK(end - source <
                           static_cast<ptrdiff_t>(sizeof(m_partialSequence)));
-          ASSERT(!m_partialSequenceSize);
+          DCHECK(!m_partialSequenceSize);
           m_partialSequenceSize = end - source;
           memcpy(m_partialSequence, source, m_partialSequenceSize);
           source = end;

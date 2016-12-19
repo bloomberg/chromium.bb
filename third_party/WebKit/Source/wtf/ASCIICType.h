@@ -131,13 +131,14 @@ inline CharType toASCIIUpper(CharType c) {
 
 template <typename CharType>
 inline int toASCIIHexValue(CharType c) {
-  ASSERT(isASCIIHexDigit(c));
+  DCHECK(isASCIIHexDigit(c));
   return c < 'A' ? c - '0' : (c - 'A' + 10) & 0xF;
 }
 
 template <typename CharType>
 inline int toASCIIHexValue(CharType upperValue, CharType lowerValue) {
-  ASSERT(isASCIIHexDigit(upperValue) && isASCIIHexDigit(lowerValue));
+  DCHECK(isASCIIHexDigit(upperValue));
+  DCHECK(isASCIIHexDigit(lowerValue));
   return ((toASCIIHexValue(upperValue) << 4) & 0xF0) |
          toASCIIHexValue(lowerValue);
 }
@@ -156,7 +157,8 @@ template <typename CharType>
 inline bool isASCIIAlphaCaselessEqual(CharType cssCharacter, char character) {
   // This function compares a (preferrably) constant ASCII
   // lowercase letter to any input character.
-  ASSERT(character >= 'a' && character <= 'z');
+  DCHECK_GE(character, 'a');
+  DCHECK_LE(character, 'z');
   return LIKELY((cssCharacter | 0x20) == character);
 }
 

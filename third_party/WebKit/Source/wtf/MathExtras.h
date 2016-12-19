@@ -358,8 +358,8 @@ template <typename LimitType, typename ValueType>
 inline LimitType clampTo(ValueType value,
                          LimitType min = defaultMinimumForClamp<LimitType>(),
                          LimitType max = defaultMaximumForClamp<LimitType>()) {
-  ASSERT(!std::isnan(static_cast<double>(value)));
-  ASSERT(min <= max);  // This also ensures |min| and |max| aren't NaN.
+  DCHECK(!std::isnan(static_cast<double>(value)));
+  DCHECK_LE(min, max);  // This also ensures |min| and |max| aren't NaN.
   return ClampToHelper<LimitType, ValueType>::clampTo(value, min, max);
 }
 

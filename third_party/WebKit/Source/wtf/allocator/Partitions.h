@@ -51,27 +51,26 @@ class WTF_EXPORT Partitions {
   static void initialize(ReportPartitionAllocSizeFunction);
   static void shutdown();
   ALWAYS_INLINE static base::PartitionRootGeneric* bufferPartition() {
-    ASSERT(s_initialized);
+    DCHECK(s_initialized);
     return m_bufferAllocator.root();
   }
 
   ALWAYS_INLINE static base::PartitionRootGeneric* fastMallocPartition() {
-    ASSERT(s_initialized);
+    DCHECK(s_initialized);
     return m_fastMallocAllocator.root();
   }
 
   ALWAYS_INLINE static base::PartitionRoot* nodePartition() {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
   }
   ALWAYS_INLINE static base::PartitionRoot* layoutPartition() {
-    ASSERT(s_initialized);
+    DCHECK(s_initialized);
     return m_layoutAllocator.root();
   }
 
   static size_t currentDOMMemoryUsage() {
-    ASSERT(s_initialized);
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return 0;
   }
 

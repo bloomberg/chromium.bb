@@ -141,18 +141,18 @@ class DummyRefCounted : public RefCounted<DummyRefCounted> {
     m_isDeleted = false;
   }
   ~DummyRefCounted() {
-    ASSERT(!m_isDeleted);
+    DCHECK(!m_isDeleted);
     m_isDeleted = true;
   }
 
   void ref() {
-    ASSERT(!m_isDeleted);
+    DCHECK(!m_isDeleted);
     WTF::RefCounted<DummyRefCounted>::ref();
     ++m_refInvokesCount;
   }
 
   void deref() {
-    ASSERT(!m_isDeleted);
+    DCHECK(!m_isDeleted);
     WTF::RefCounted<DummyRefCounted>::deref();
   }
 

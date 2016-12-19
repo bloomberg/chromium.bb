@@ -80,7 +80,7 @@ static inline const char* formatStringTruncatingTrailingZerosIfNeeded(
 
   // If we removed all trailing zeros, remove the decimal point as well.
   if (truncatedLength == decimalPointPosition) {
-    ASSERT(truncatedLength > 0);
+    DCHECK_GT(truncatedLength, 0u);
     --truncatedLength;
   }
 

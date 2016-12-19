@@ -16,8 +16,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
 
-#define UNIMPLEMENTED ASSERT_NOT_REACHED
-
 namespace blink {
 
 OffscreenCanvasRenderingContext2D::~OffscreenCanvasRenderingContext2D() {}

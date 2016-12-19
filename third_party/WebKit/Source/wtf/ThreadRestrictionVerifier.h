@@ -33,7 +33,7 @@
 
 #include "wtf/Assertions.h"
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 
 #include "wtf/Threading.h"
 
@@ -109,5 +109,5 @@ class ThreadRestrictionVerifier {
 
 }  // namespace WTF
 
-#endif  // ENABLE(ASSERT)
+#endif  // DCHECK_IS_ON()
 #endif  // ThreadRestrictionVerifier_h

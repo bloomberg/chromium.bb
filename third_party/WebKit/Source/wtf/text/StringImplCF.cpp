@@ -39,7 +39,7 @@ static const void* retain(const void* info) {
 }
 
 static void release(const void*) {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 static CFStringRef copyDescription(const void*) {
@@ -74,7 +74,7 @@ static void* reallocate(void* pointer, CFIndex newSize, CFOptionFlags, void*) {
 static void deallocateOnMainThread(void* headerPointer) {
   StringImpl** header = static_cast<StringImpl**>(headerPointer);
   StringImpl* underlyingString = *header;
-  ASSERT(underlyingString);
+  DCHECK(underlyingString);
   underlyingString->deref();  // Balanced by call to ref in allocate above.
   WTF::Partitions::fastFree(header);
 }
@@ -132,7 +132,7 @@ RetainPtr<CFStringRef> StringImpl::createCFString() {
 
   // Put pointer to the StringImpl in a global so the allocator can store it
   // with the CFString.
-  ASSERT(!StringWrapperCFAllocator::currentString);
+  DCHECK(!StringWrapperCFAllocator::currentString);
   StringWrapperCFAllocator::currentString = this;
 
   CFStringRef string;

@@ -79,7 +79,7 @@ Collator::Result Collator::collate(const UChar* lhs,
 }
 
 void Collator::createCollator() const {
-  ASSERT(!m_collator);
+  DCHECK(!m_collator);
   UErrorCode status = U_ZERO_ERROR;
 
   {
@@ -87,7 +87,7 @@ void Collator::createCollator() const {
     if (cachedCollator) {
       UColAttributeValue cachedCollatorLowerFirst =
           ucol_getAttribute(cachedCollator, UCOL_CASE_FIRST, &status);
-      ASSERT(U_SUCCESS(status));
+      DCHECK(U_SUCCESS(status));
 
       if (0 == strcmp(cachedEquivalentLocale, m_equivalentLocale) &&
           ((UCOL_LOWER_FIRST == cachedCollatorLowerFirst && m_lowerFirst) ||
@@ -106,15 +106,15 @@ void Collator::createCollator() const {
     m_collator =
         ucol_open("", &status);  // Fallback to Unicode Collation Algorithm.
   }
-  ASSERT(U_SUCCESS(status));
+  DCHECK(U_SUCCESS(status));
 
   ucol_setAttribute(m_collator, UCOL_CASE_FIRST,
                     m_lowerFirst ? UCOL_LOWER_FIRST : UCOL_UPPER_FIRST,
                     &status);
-  ASSERT(U_SUCCESS(status));
+  DCHECK(U_SUCCESS(status));
 
   ucol_setAttribute(m_collator, UCOL_NORMALIZATION_MODE, UCOL_ON, &status);
-  ASSERT(U_SUCCESS(status));
+  DCHECK(U_SUCCESS(status));
 }
 
 void Collator::releaseCollator() {

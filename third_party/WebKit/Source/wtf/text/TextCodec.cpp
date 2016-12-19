@@ -55,7 +55,7 @@ int TextCodec::getUnencodableReplacement(
                codePoint);
       return static_cast<int>(strlen(replacement));
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   replacement[0] = 0;
   return 0;
 }

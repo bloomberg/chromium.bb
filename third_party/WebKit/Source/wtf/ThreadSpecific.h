@@ -155,7 +155,7 @@ inline T* ThreadSpecific<T>::get() {
 
 template <typename T>
 inline void ThreadSpecific<T>::set(T* ptr) {
-  ASSERT(!get());
+  DCHECK(!get());
   pthread_setspecific(m_key, new Data(ptr, this));
 }
 
@@ -212,7 +212,7 @@ inline T* ThreadSpecific<T>::get() {
 
 template <typename T>
 inline void ThreadSpecific<T>::set(T* ptr) {
-  ASSERT(!get());
+  DCHECK(!get());
   Data* data = new Data(ptr, this);
   data->destructor = &ThreadSpecific<T>::destroy;
   TlsSetValue(tlsKeys()[m_index], data);

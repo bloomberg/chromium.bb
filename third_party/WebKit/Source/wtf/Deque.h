@@ -90,21 +90,21 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
   }
 
   T& first() {
-    ASSERT(m_start != m_end);
+    DCHECK_NE(m_start, m_end);
     return m_buffer.buffer()[m_start];
   }
   const T& first() const {
-    ASSERT(m_start != m_end);
+    DCHECK_NE(m_start, m_end);
     return m_buffer.buffer()[m_start];
   }
   T takeFirst();
 
   T& last() {
-    ASSERT(m_start != m_end);
+    DCHECK_NE(m_start, m_end);
     return *(--end());
   }
   const T& last() const {
-    ASSERT(m_start != m_end);
+    DCHECK_NE(m_start, m_end);
     return *(--end());
   }
   T takeLast();
@@ -505,7 +505,7 @@ inline void Deque<T, inlineCapacity, Allocator>::prepend(U&& value) {
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 inline void Deque<T, inlineCapacity, Allocator>::removeFirst() {
-  ASSERT(!isEmpty());
+  DCHECK(!isEmpty());
   TypeOperations::destruct(&m_buffer.buffer()[m_start],
                            &m_buffer.buffer()[m_start + 1]);
   m_buffer.clearUnusedSlots(&m_buffer.buffer()[m_start],
@@ -518,7 +518,7 @@ inline void Deque<T, inlineCapacity, Allocator>::removeFirst() {
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 inline void Deque<T, inlineCapacity, Allocator>::removeLast() {
-  ASSERT(!isEmpty());
+  DCHECK(!isEmpty());
   if (!m_end)
     m_end = m_buffer.capacity() - 1;
   else
@@ -598,8 +598,8 @@ inline bool DequeIteratorBase<T, inlineCapacity, Allocator>::isEqual(
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 inline void DequeIteratorBase<T, inlineCapacity, Allocator>::increment() {
-  ASSERT(m_index != m_deque->m_end);
-  ASSERT(m_deque->m_buffer.capacity());
+  DCHECK_NE(m_index, m_deque->m_end);
+  DCHECK(m_deque->m_buffer.capacity());
   if (m_index == m_deque->m_buffer.capacity() - 1)
     m_index = 0;
   else
@@ -608,8 +608,8 @@ inline void DequeIteratorBase<T, inlineCapacity, Allocator>::increment() {
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 inline void DequeIteratorBase<T, inlineCapacity, Allocator>::decrement() {
-  ASSERT(m_index != m_deque->m_start);
-  ASSERT(m_deque->m_buffer.capacity());
+  DCHECK_NE(m_index, m_deque->m_start);
+  DCHECK(m_deque->m_buffer.capacity());
   if (!m_index)
     m_index = m_deque->m_buffer.capacity() - 1;
   else
@@ -635,7 +635,7 @@ inline T* DequeIteratorBase<T, inlineCapacity, Allocator>::before() const {
 template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename VisitorDispatcher>
 void Deque<T, inlineCapacity, Allocator>::trace(VisitorDispatcher visitor) {
-  ASSERT(Allocator::isGarbageCollected);  // Garbage collector must be enabled.
+  DCHECK(Allocator::isGarbageCollected) << "Garbage collector must be enabled.";
   const T* bufferBegin = m_buffer.buffer();
   const T* end = bufferBegin + m_end;
   if (IsTraceableInCollectionTrait<VectorTraits<T>>::value) {

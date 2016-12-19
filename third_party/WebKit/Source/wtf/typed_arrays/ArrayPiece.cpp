@@ -39,7 +39,7 @@ bool ArrayPiece::isNull() const {
 }
 
 void* ArrayPiece::data() const {
-  ASSERT(!isNull());
+  DCHECK(!isNull());
   return m_data;
 }
 
@@ -48,7 +48,7 @@ unsigned char* ArrayPiece::bytes() const {
 }
 
 unsigned ArrayPiece::byteLength() const {
-  ASSERT(!isNull());
+  DCHECK(!isNull());
   return m_byteLength;
 }
 

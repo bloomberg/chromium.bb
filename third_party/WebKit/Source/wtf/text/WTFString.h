@@ -124,14 +124,14 @@ class WTF_EXPORT String {
   const LChar* characters8() const {
     if (!m_impl)
       return 0;
-    ASSERT(m_impl->is8Bit());
+    DCHECK(m_impl->is8Bit());
     return m_impl->characters8();
   }
 
   const UChar* characters16() const {
     if (!m_impl)
       return 0;
-    ASSERT(!m_impl->is8Bit());
+    DCHECK(!m_impl->is8Bit());
     return m_impl->characters16();
   }
 
@@ -523,13 +523,13 @@ String::String(const Vector<UChar, inlineCapacity>& vector)
 
 template <>
 inline const LChar* String::getCharacters<LChar>() const {
-  ASSERT(is8Bit());
+  DCHECK(is8Bit());
   return characters8();
 }
 
 template <>
 inline const UChar* String::getCharacters<UChar>() const {
-  ASSERT(!is8Bit());
+  DCHECK(!is8Bit());
   return characters16();
 }
 

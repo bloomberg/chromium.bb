@@ -283,7 +283,7 @@ void StringStats::printStats() {
 #endif
 
 void* StringImpl::operator new(size_t size) {
-  ASSERT(size == sizeof(StringImpl));
+  DCHECK_EQ(size, sizeof(StringImpl));
   return Partitions::bufferMalloc(size, "WTF::StringImpl");
 }
 
@@ -292,7 +292,7 @@ void StringImpl::operator delete(void* ptr) {
 }
 
 inline StringImpl::~StringImpl() {
-  ASSERT(!isStatic());
+  DCHECK(!isStatic());
 
   STRING_STATS_REMOVE_STRING(this);
 
@@ -356,7 +356,7 @@ static StaticStringsTable& staticStrings() {
   return staticStrings;
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 static bool s_allowCreationOfStaticStrings = true;
 #endif
 
@@ -365,9 +365,9 @@ const StaticStringsTable& StringImpl::allStaticStrings() {
 }
 
 void StringImpl::freezeStaticStrings() {
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   s_allowCreationOfStaticStrings = false;
 #endif
 }
@@ -377,13 +377,15 @@ unsigned StringImpl::m_highestStaticStringLength = 0;
 StringImpl* StringImpl::createStatic(const char* string,
                                      unsigned length,
                                      unsigned hash) {
-  ASSERT(s_allowCreationOfStaticStrings);
-  ASSERT(string);
-  ASSERT(length);
+#if DCHECK_IS_ON()
+  DCHECK(s_allowCreationOfStaticStrings);
+#endif
+  DCHECK(string);
+  DCHECK(length);
 
   StaticStringsTable::const_iterator it = staticStrings().find(hash);
   if (it != staticStrings().end()) {
-    ASSERT(!memcmp(string, it->value + 1, length * sizeof(LChar)));
+    DCHECK(!memcmp(string, it->value + 1, length * sizeof(LChar)));
     return it->value;
   }
 
@@ -402,11 +404,11 @@ StringImpl* StringImpl::createStatic(const char* string,
   LChar* data = reinterpret_cast<LChar*>(impl + 1);
   impl = new (impl) StringImpl(length, hash, StaticString);
   memcpy(data, string, length * sizeof(LChar));
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   impl->assertHashIsCorrect();
 #endif
 
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
   m_highestStaticStringLength = std::max(m_highestStaticStringLength, length);
   staticStrings().add(hash, impl);
   WTF_ANNOTATE_BENIGN_RACE(impl,
@@ -417,7 +419,9 @@ StringImpl* StringImpl::createStatic(const char* string,
 }
 
 void StringImpl::reserveStaticStringsCapacityForSize(unsigned size) {
-  ASSERT(s_allowCreationOfStaticStrings);
+#if DCHECK_IS_ON()
+  DCHECK(s_allowCreationOfStaticStrings);
+#endif
   staticStrings().reserveCapacityForSize(size);
 }
 
@@ -1730,7 +1734,7 @@ PassRefPtr<StringImpl> StringImpl::replace(UChar pattern,
 PassRefPtr<StringImpl> StringImpl::replace(UChar pattern,
                                            const LChar* replacement,
                                            unsigned repStrLength) {
-  ASSERT(replacement);
+  DCHECK(replacement);
 
   size_t srcSegmentStart = 0;
   unsigned matchCount = 0;
@@ -1778,7 +1782,7 @@ PassRefPtr<StringImpl> StringImpl::replace(UChar pattern,
     memcpy(data + dstOffset, characters8() + srcSegmentStart,
            srcSegmentLength * sizeof(LChar));
 
-    ASSERT(dstOffset + srcSegmentLength == newImpl->length());
+    DCHECK_EQ(dstOffset + srcSegmentLength, newImpl->length());
 
     return newImpl.release();
   }
@@ -1803,7 +1807,7 @@ PassRefPtr<StringImpl> StringImpl::replace(UChar pattern,
   memcpy(data + dstOffset, characters16() + srcSegmentStart,
          srcSegmentLength * sizeof(UChar));
 
-  ASSERT(dstOffset + srcSegmentLength == newImpl->length());
+  DCHECK_EQ(dstOffset + srcSegmentLength, newImpl->length());
 
   return newImpl.release();
 }
@@ -1811,7 +1815,7 @@ PassRefPtr<StringImpl> StringImpl::replace(UChar pattern,
 PassRefPtr<StringImpl> StringImpl::replace(UChar pattern,
                                            const UChar* replacement,
                                            unsigned repStrLength) {
-  ASSERT(replacement);
+  DCHECK(replacement);
 
   size_t srcSegmentStart = 0;
   unsigned matchCount = 0;
@@ -1861,7 +1865,7 @@ PassRefPtr<StringImpl> StringImpl::replace(UChar pattern,
     for (unsigned i = 0; i < srcSegmentLength; ++i)
       data[i + dstOffset] = characters8()[i + srcSegmentStart];
 
-    ASSERT(dstOffset + srcSegmentLength == newImpl->length());
+    DCHECK_EQ(dstOffset + srcSegmentLength, newImpl->length());
 
     return newImpl.release();
   }
@@ -1885,7 +1889,7 @@ PassRefPtr<StringImpl> StringImpl::replace(UChar pattern,
   memcpy(data + dstOffset, characters16() + srcSegmentStart,
          srcSegmentLength * sizeof(UChar));
 
-  ASSERT(dstOffset + srcSegmentLength == newImpl->length());
+  DCHECK_EQ(dstOffset + srcSegmentLength, newImpl->length());
 
   return newImpl.release();
 }
@@ -1954,7 +1958,7 @@ PassRefPtr<StringImpl> StringImpl::replace(const StringView& pattern,
     memcpy(data + dstOffset, characters8() + srcSegmentStart,
            srcSegmentLength * sizeof(LChar));
 
-    ASSERT(dstOffset + srcSegmentLength == newImpl->length());
+    DCHECK_EQ(dstOffset + srcSegmentLength, newImpl->length());
 
     return newImpl.release();
   }
@@ -1997,7 +2001,7 @@ PassRefPtr<StringImpl> StringImpl::replace(const StringView& pattern,
            srcSegmentLength * sizeof(UChar));
   }
 
-  ASSERT(dstOffset + srcSegmentLength == newImpl->length());
+  DCHECK_EQ(dstOffset + srcSegmentLength, newImpl->length());
 
   return newImpl.release();
 }
@@ -2099,7 +2103,8 @@ bool equal(const StringImpl* a, const LChar* b) {
 }
 
 bool equalNonNull(const StringImpl* a, const StringImpl* b) {
-  ASSERT(a && b);
+  DCHECK(a);
+  DCHECK(b);
   if (a == b)
     return true;
 

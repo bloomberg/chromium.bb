@@ -71,7 +71,7 @@ NEVER_INLINE unsigned StringImpl::hashSlowCase() const {
 }
 
 void AtomicString::init() {
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
 
   new (NotNull, (void*)&nullAtom) AtomicString;
   new (NotNull, (void*)&emptyAtom) AtomicString("");
@@ -87,7 +87,7 @@ PassRefPtr<StringImpl> addStaticASCIILiteral(
 }
 
 void StringStatics::init() {
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
 
   // FIXME: These should be allocated at compile time.
   new (NotNull, (void*)&starAtom) AtomicString("*");

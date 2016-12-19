@@ -86,7 +86,7 @@ const char* ArrayBufferView::typeName() {
       return "DataView";
       break;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return "Unknown";
 }
 

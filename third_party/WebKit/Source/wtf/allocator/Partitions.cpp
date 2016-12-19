@@ -109,7 +109,7 @@ void Partitions::dumpMemoryStats(
     base::PartitionStatsDumper* partitionStatsDumper) {
   // Object model and rendering partitions are not thread safe and can be
   // accessed only on the main thread.
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
 
   decommitFreeableMemory();
   partitionDumpStatsGeneric(fastMallocPartition(), "fast_malloc", isLightDump,

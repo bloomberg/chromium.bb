@@ -160,7 +160,7 @@ CString TextCodecUTF16::encode(const UChar* characters,
   // the buffer doesn't occupy the entire address space, we can
   // assert here that doubling the length does not overflow size_t
   // and there's no need for a runtime check.
-  ASSERT(length <= numeric_limits<size_t>::max() / 2);
+  DCHECK_LE(length, numeric_limits<size_t>::max() / 2);
 
   char* bytes;
   CString result = CString::createUninitialized(length * 2, bytes);

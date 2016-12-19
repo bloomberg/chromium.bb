@@ -91,7 +91,7 @@ class StringTypeAdapter<UChar> {
   bool is8Bit() const { return m_buffer <= 0xff; }
 
   void writeTo(LChar* destination) const {
-    ASSERT(is8Bit());
+    DCHECK(is8Bit());
     *destination = static_cast<LChar>(m_buffer);
   }
 

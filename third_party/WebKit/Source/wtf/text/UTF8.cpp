@@ -385,7 +385,7 @@ unsigned calculateStringHashAndLengthFromUTF8MaskingTop8Bits(
       return 0;
 
     UChar32 character = readUTF8Sequence(data, utf8SequenceLength);
-    ASSERT(!isASCII(character));
+    DCHECK(!isASCII(character));
 
     if (U_IS_BMP(character)) {
       // UTF-16 surrogate values are illegal in UTF-32
@@ -427,7 +427,7 @@ ALWAYS_INLINE bool equalWithUTF8Internal(const CharType* a,
       return 0;
 
     UChar32 character = readUTF8Sequence(b, utf8SequenceLength);
-    ASSERT(!isASCII(character));
+    DCHECK(!isASCII(character));
 
     if (U_IS_BMP(character)) {
       // UTF-16 surrogate values are illegal in UTF-32

@@ -146,10 +146,10 @@ struct AlreadyHashed : IntHash<unsigned> {
   // the string hash function to never generate negative one, but this works
   // and is still relatively efficient.
   static unsigned avoidDeletedValue(unsigned hash) {
-    ASSERT(hash);
+    DCHECK(hash);
     unsigned newHash = hash | (!(hash + 1) << 31);
-    ASSERT(newHash);
-    ASSERT(newHash != 0xFFFFFFFF);
+    DCHECK(newHash);
+    DCHECK_NE(newHash, 0xFFFFFFFF);
     return newHash;
   }
 };

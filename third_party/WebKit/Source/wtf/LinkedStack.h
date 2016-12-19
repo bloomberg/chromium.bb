@@ -96,7 +96,8 @@ inline const T& LinkedStack<T>::peek() {
 
 template <typename T>
 inline void LinkedStack<T>::pop() {
-  ASSERT(m_head && m_size);
+  DCHECK(m_head);
+  DCHECK(m_size);
   m_head = m_head->m_next.release();
   --m_size;
 }

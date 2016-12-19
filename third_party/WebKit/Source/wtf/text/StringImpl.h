@@ -165,7 +165,7 @@ class WTF_EXPORT StringImpl {
         m_isAtomic(false),
         m_is8Bit(true),
         m_isStatic(false) {
-    ASSERT(m_length);
+    DCHECK(m_length);
     STRING_STATS_ADD_8BIT_STRING(m_length);
   }
 
@@ -176,7 +176,7 @@ class WTF_EXPORT StringImpl {
         m_isAtomic(false),
         m_is8Bit(false),
         m_isStatic(false) {
-    ASSERT(m_length);
+    DCHECK(m_length);
     STRING_STATS_ADD_16BIT_STRING(m_length);
   }
 
@@ -230,11 +230,11 @@ class WTF_EXPORT StringImpl {
   bool is8Bit() const { return m_is8Bit; }
 
   ALWAYS_INLINE const LChar* characters8() const {
-    ASSERT(is8Bit());
+    DCHECK(is8Bit());
     return reinterpret_cast<const LChar*>(this + 1);
   }
   ALWAYS_INLINE const UChar* characters16() const {
-    ASSERT(!is8Bit());
+    DCHECK(!is8Bit());
     return reinterpret_cast<const UChar*>(this + 1);
   }
   ALWAYS_INLINE const void* bytes() const {
@@ -486,11 +486,11 @@ class WTF_EXPORT StringImpl {
 
   static unsigned m_highestStaticStringLength;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   void assertHashIsCorrect() {
-    ASSERT(hasHash());
-    ASSERT(existingHash() ==
-           StringHasher::computeHashAndMaskTop8Bits(characters8(), length()));
+    DCHECK(hasHash());
+    DCHECK_EQ(existingHash(), StringHasher::computeHashAndMaskTop8Bits(
+                                  characters8(), length()));
   }
 #endif
 

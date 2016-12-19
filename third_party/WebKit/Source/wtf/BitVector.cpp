@@ -87,7 +87,7 @@ void BitVector::OutOfLineBits::destroy(OutOfLineBits* outOfLineBits) {
 }
 
 void BitVector::resizeOutOfLine(size_t numBits) {
-  ASSERT(numBits > maxInlineBits());
+  DCHECK_GT(numBits, maxInlineBits());
   OutOfLineBits* newOutOfLineBits = OutOfLineBits::create(numBits);
   size_t newNumWords = newOutOfLineBits->numWords();
   if (isInline()) {

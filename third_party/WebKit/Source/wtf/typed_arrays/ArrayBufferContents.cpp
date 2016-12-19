@@ -42,7 +42,7 @@ ArrayBufferContents::AdjustAmountOfExternalAllocatedMemoryFunction
     ArrayBufferContents::s_adjustAmountOfExternalAllocatedMemoryFunction =
         defaultAdjustAmountOfExternalAllocatedMemoryFunction;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 ArrayBufferContents::AdjustAmountOfExternalAllocatedMemoryFunction
     ArrayBufferContents::
         s_lastUsedAdjustAmountOfExternalAllocatedMemoryFunction;

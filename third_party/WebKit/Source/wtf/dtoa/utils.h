@@ -31,8 +31,8 @@
 #include "wtf/Assertions.h"
 #include <string.h>
 
-#define UNIMPLEMENTED ASSERT_NOT_REACHED
-#define UNREACHABLE ASSERT_NOT_REACHED
+#define UNIMPLEMENTED NOTREACHED
+#define UNREACHABLE NOTREACHED
 
 // Double operations detection based on target architecture.
 // Linux uses a 80bit wide floating point stack on x86. This induces double
@@ -127,7 +127,7 @@ static T Min(T a, T b) {
 
 inline int StrLength(const char* string) {
   size_t length = strlen(string);
-  ASSERT(length == static_cast<size_t>(static_cast<int>(length)));
+  DCHECK_EQ(length, static_cast<size_t>(static_cast<int>(length)));
   return static_cast<int>(length);
 }
 
@@ -137,15 +137,15 @@ class Vector {
  public:
   Vector() : start_(NULL), length_(0) {}
   Vector(T* data, int length) : start_(data), length_(length) {
-    ASSERT(length == 0 || (length > 0 && data != NULL));
+    DCHECK(length == 0 || (length > 0 && data != NULL));
   }
 
   // Returns a vector using the same backing storage as this one,
   // spanning from and including 'from', to but not including 'to'.
   Vector<T> SubVector(int from, int to) {
-    ASSERT(to <= length_);
-    ASSERT(from < to);
-    ASSERT(0 <= from);
+    DCHECK_LE(to, length_);
+    DCHECK_LT(from, to);
+    DCHECK_LE(0, from);
     return Vector<T>(start() + from, to - from);
   }
 
@@ -189,13 +189,13 @@ class StringBuilder {
 
   // Get the current position in the builder.
   int position() const {
-    ASSERT(!is_finalized());
+    DCHECK(!is_finalized());
     return position_;
   }
 
   // Set the current position in the builder.
   void SetPosition(int position) {
-    ASSERT(!is_finalized());
+    DCHECK(!is_finalized());
     SECURITY_DCHECK(position < size());
     position_ = position;
   }
@@ -207,8 +207,9 @@ class StringBuilder {
   // 0-characters; use the Finalize() method to terminate the string
   // instead.
   void AddCharacter(char c) {
-    ASSERT(c != '\0');
-    ASSERT(!is_finalized() && position_ < buffer_.length());
+    DCHECK_NE(c, '\0');
+    DCHECK(!is_finalized());
+    DCHECK_LT(position_, buffer_.length());
     buffer_[position_++] = c;
   }
 
@@ -219,7 +220,8 @@ class StringBuilder {
   // Add the first 'n' characters of the given string 's' to the
   // builder. The input string must have enough characters.
   void AddSubstring(const char* s, int n) {
-    ASSERT(!is_finalized() && position_ + n < buffer_.length());
+    DCHECK(!is_finalized());
+    DCHECK_LT(position_ + n, buffer_.length());
     SECURITY_DCHECK(static_cast<size_t>(n) <= strlen(s));
     memcpy(&buffer_[position_], s, n * kCharSize);
     position_ += n;
@@ -235,13 +237,14 @@ class StringBuilder {
 
   // Finalize the string by 0-terminating it and returning the buffer.
   char* Finalize() {
-    ASSERT(!is_finalized() && position_ < buffer_.length());
+    DCHECK(!is_finalized());
+    DCHECK_LT(position_, buffer_.length());
     buffer_[position_] = '\0';
     // Make sure nobody managed to add a 0-character to the
     // buffer while building the string.
-    ASSERT(strlen(buffer_.start()) == static_cast<size_t>(position_));
+    DCHECK_EQ(strlen(buffer_.start()), static_cast<size_t>(position_));
     position_ = -1;
-    ASSERT(is_finalized());
+    DCHECK(is_finalized());
     return buffer_.start();
   }
 

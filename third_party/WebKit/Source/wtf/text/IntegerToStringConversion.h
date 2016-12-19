@@ -50,14 +50,14 @@ class IntegerToStringConverter {
 
     do {
       --m_begin;
-      ASSERT(m_begin != m_buffer);
+      DCHECK_NE(m_begin, m_buffer);
       *m_begin = static_cast<LChar>((value % 10) + '0');
       value /= 10;
     } while (value);
 
     if (isNegative) {
       --m_begin;
-      ASSERT(m_begin != m_buffer);
+      DCHECK_NE(m_begin, m_buffer);
       *m_begin = static_cast<LChar>('-');
     }
 

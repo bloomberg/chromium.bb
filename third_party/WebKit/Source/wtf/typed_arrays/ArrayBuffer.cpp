@@ -31,7 +31,7 @@
 namespace WTF {
 
 bool ArrayBuffer::transfer(ArrayBufferContents& result) {
-  ASSERT(!isShared());
+  DCHECK(!isShared());
   RefPtr<ArrayBuffer> keepAlive(this);
 
   if (!m_contents.data()) {
@@ -66,7 +66,7 @@ bool ArrayBuffer::transfer(ArrayBufferContents& result) {
 }
 
 bool ArrayBuffer::shareContentsWith(ArrayBufferContents& result) {
-  ASSERT(isShared());
+  DCHECK(isShared());
   RefPtr<ArrayBuffer> keepAlive(this);
 
   if (!m_contents.data()) {
@@ -88,7 +88,7 @@ void ArrayBuffer::addView(ArrayBufferView* view) {
 }
 
 void ArrayBuffer::removeView(ArrayBufferView* view) {
-  ASSERT(this == view->m_buffer);
+  DCHECK_EQ(this, view->m_buffer.get());
   if (view->m_nextView)
     view->m_nextView->m_prevView = view->m_prevView;
   if (view->m_prevView)

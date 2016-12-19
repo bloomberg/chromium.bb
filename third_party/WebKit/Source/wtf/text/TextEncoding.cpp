@@ -180,7 +180,7 @@ const TextEncoding& UTF32LittleEndianEncoding() {
 const TextEncoding& UTF8Encoding() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(const TextEncoding, globalUTF8Encoding,
                                   new TextEncoding("UTF-8"));
-  ASSERT(globalUTF8Encoding.isValid());
+  DCHECK(globalUTF8Encoding.isValid());
   return globalUTF8Encoding;
 }
 

@@ -66,7 +66,7 @@ inline void appendUnsignedAsHexFixedSize(unsigned number,
                                          T& destination,
                                          unsigned desiredDigits,
                                          HexConversionMode mode = Uppercase) {
-  ASSERT(desiredDigits);
+  DCHECK(desiredDigits);
 
   const LChar* hexDigits = Internal::hexDigitsForMode(mode);
   Vector<LChar, 8> result;
@@ -75,7 +75,7 @@ inline void appendUnsignedAsHexFixedSize(unsigned number,
     number >>= 4;
   } while (result.size() < desiredDigits);
 
-  ASSERT(result.size() == desiredDigits);
+  DCHECK_EQ(result.size(), desiredDigits);
   destination.append(result.data(), result.size());
 }
 

@@ -50,7 +50,7 @@ namespace WTF {
 #if OS(POSIX)
 struct PlatformMutex {
   pthread_mutex_t m_internalMutex;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   size_t m_recursionCount;
 #endif
 };
@@ -85,7 +85,7 @@ class WTF_EXPORT MutexBase {
 
   void lock();
   void unlock();
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool locked() { return m_mutex.m_recursionCount > 0; }
 #endif
 

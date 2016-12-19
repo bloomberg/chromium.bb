@@ -56,7 +56,7 @@ class StringHasher {
   // always add characters two at a time can use the "assuming aligned"
   // functions.
   void addCharactersAssumingAligned(UChar a, UChar b) {
-    ASSERT(!m_hasPendingCharacter);
+    DCHECK(!m_hasPendingCharacter);
     m_hash += a;
     m_hash = (m_hash << 16) ^ ((b << 11) ^ m_hash);
     m_hash += m_hash >> 11;
@@ -75,12 +75,12 @@ class StringHasher {
 
   void addCharacters(UChar a, UChar b) {
     if (m_hasPendingCharacter) {
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
       m_hasPendingCharacter = false;
 #endif
       addCharactersAssumingAligned(m_pendingCharacter, a);
       m_pendingCharacter = b;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
       m_hasPendingCharacter = true;
 #endif
       return;
@@ -91,7 +91,7 @@ class StringHasher {
 
   template <typename T, UChar Converter(T)>
   void addCharactersAssumingAligned(const T* data, unsigned length) {
-    ASSERT(!m_hasPendingCharacter);
+    DCHECK(!m_hasPendingCharacter);
 
     bool remainder = length & 1;
     length >>= 1;
@@ -184,7 +184,7 @@ class StringHasher {
     // top 8 bits?  We want that for all string hashing so we can use those
     // bits in StringImpl and hash strings consistently, but I don't see why
     // we'd want that for general memory hashing.
-    ASSERT(!(length % 2));
+    DCHECK(!(length % 2));
     return computeHashAndMaskTop8Bits<UChar>(static_cast<const UChar*>(data),
                                              length / sizeof(UChar));
   }

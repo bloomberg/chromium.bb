@@ -134,7 +134,7 @@ inline bool HashCountedSet<T, U, V, W>::remove(iterator it) {
     return false;
 
   unsigned oldVal = it->value;
-  ASSERT(oldVal);
+  DCHECK(oldVal);
   unsigned newVal = oldVal - 1;
   if (newVal) {
     it->value = newVal;

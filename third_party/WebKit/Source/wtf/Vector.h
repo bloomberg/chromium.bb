@@ -82,7 +82,7 @@ template <typename T>
 struct VectorUnusedSlotClearer<false, T> {
   STATIC_ONLY(VectorUnusedSlotClearer);
   static void clear(T*, T*) {}
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   static void checkCleared(const T*, const T*) {}
 #endif
 };
@@ -94,15 +94,15 @@ struct VectorUnusedSlotClearer<true, T> {
     memset(reinterpret_cast<void*>(begin), 0, sizeof(T) * (end - begin));
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   static void checkCleared(const T* begin, const T* end) {
     const unsigned char* unusedArea =
         reinterpret_cast<const unsigned char*>(begin);
     const unsigned char* endAddress =
         reinterpret_cast<const unsigned char*>(end);
-    ASSERT(endAddress >= unusedArea);
+    DCHECK_GE(endAddress, unusedArea);
     for (int i = 0; i < endAddress - unusedArea; ++i)
-      ASSERT(!unusedArea[i]);
+      DCHECK(!unusedArea[i]);
   }
 #endif
 };
@@ -245,8 +245,8 @@ template <typename T>
 struct VectorComparer<false, T> {
   STATIC_ONLY(VectorComparer);
   static bool compare(const T* a, const T* b, size_t size) {
-    ASSERT(a);
-    ASSERT(b);
+    DCHECK(a);
+    DCHECK(b);
     return std::equal(a, a + size, b);
   }
 };
@@ -255,8 +255,8 @@ template <typename T>
 struct VectorComparer<true, T> {
   STATIC_ONLY(VectorComparer);
   static bool compare(const T* a, const T* b, size_t size) {
-    ASSERT(a);
-    ASSERT(b);
+    DCHECK(a);
+    DCHECK(b);
     return memcmp(a, b, sizeof(T) * size) == 0;
   }
 };
@@ -334,7 +334,7 @@ class VectorBufferBase {
 
  public:
   void allocateBuffer(size_t newCapacity) {
-    ASSERT(newCapacity);
+    DCHECK(newCapacity);
     size_t sizeToAllocate = allocationSize(newCapacity);
     if (hasInlineCapacity)
       m_buffer =
@@ -345,7 +345,7 @@ class VectorBufferBase {
   }
 
   void allocateExpandedBuffer(size_t newCapacity) {
-    ASSERT(newCapacity);
+    DCHECK(newCapacity);
     size_t sizeToAllocate = allocationSize(newCapacity);
     if (hasInlineCapacity)
       m_buffer =
@@ -376,7 +376,7 @@ class VectorBufferBase {
   }
 
   void checkUnusedSlots(const T* from, const T* to) {
-#if ENABLE(ASSERT) && !defined(ANNOTATE_CONTIGUOUS_CONTAINER)
+#if DCHECK_IS_ON() && !defined(ANNOTATE_CONTIGUOUS_CONTAINER)
     VectorUnusedSlotClearer<
         Allocator::isGarbageCollected &&
             (VectorTraits<T>::needsDestruction ||
@@ -389,7 +389,7 @@ class VectorBufferBase {
   struct OffsetRange final {
     OffsetRange() : begin(0), end(0) {}
     explicit OffsetRange(size_t begin, size_t end) : begin(begin), end(end) {
-      ASSERT(begin <= end);
+      DCHECK_LE(begin, end);
     }
     bool empty() const { return begin == end; }
     size_t begin;
@@ -449,7 +449,7 @@ class VectorBuffer<T, 0, Allocator>
   }
 
   inline bool shrinkBuffer(size_t newCapacity) {
-    ASSERT(newCapacity < capacity());
+    DCHECK_LT(newCapacity, capacity());
     size_t sizeToAllocate = allocationSize(newCapacity);
     if (Allocator::shrinkVectorBacking(m_buffer, allocationSize(capacity()),
                                        sizeToAllocate)) {
@@ -535,7 +535,7 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
   }
 
   bool expandBuffer(size_t newCapacity) {
-    ASSERT(newCapacity > inlineCapacity);
+    DCHECK_GT(newCapacity, inlineCapacity);
     if (m_buffer == inlineBuffer())
       return false;
 
@@ -548,13 +548,13 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
   }
 
   inline bool shrinkBuffer(size_t newCapacity) {
-    ASSERT(newCapacity < capacity());
+    DCHECK_LT(newCapacity, capacity());
     if (newCapacity <= inlineCapacity) {
       // We need to switch to inlineBuffer.  Vector::shrinkCapacity will
       // handle it.
       return false;
     }
-    ASSERT(m_buffer != inlineBuffer());
+    DCHECK_NE(m_buffer, inlineBuffer());
     size_t newSize = allocationSize(newCapacity);
     if (!Allocator::shrinkInlineVectorBacking(
             m_buffer, allocationSize(capacity()), newSize))
@@ -569,7 +569,7 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
   }
 
   void allocateBuffer(size_t newCapacity) {
-    // FIXME: This should ASSERT(!m_buffer) to catch misuse/leaks.
+    // FIXME: This should DCHECK(!m_buffer) to catch misuse/leaks.
     if (newCapacity > inlineCapacity)
       Base::allocateBuffer(newCapacity);
     else
@@ -642,8 +642,8 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
       thisSourceSize = m_size;
       thisDestinationBegin = other.inlineBuffer();
       if (!thisHole.empty()) {  // Sanity check.
-        ASSERT(thisHole.begin < thisHole.end);
-        ASSERT(thisHole.end <= thisSourceSize);
+        DCHECK_LT(thisHole.begin, thisHole.end);
+        DCHECK_LE(thisHole.end, thisSourceSize);
       }
     } else {
       // We don't need the hole information for an out-of-line buffer.
@@ -657,8 +657,8 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
       otherSourceSize = other.m_size;
       otherDestinationBegin = inlineBuffer();
       if (!otherHole.empty()) {
-        ASSERT(otherHole.begin < otherHole.end);
-        ASSERT(otherHole.end <= otherSourceSize);
+        DCHECK_LT(otherHole.begin, otherHole.end);
+        DCHECK_LE(otherHole.end, otherSourceSize);
       }
     } else {
       otherHole.begin = otherHole.end = 0;
@@ -670,8 +670,8 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
     std::swap(m_capacity, other.m_capacity);
     if (thisSourceBegin &&
         !otherSourceBegin) {  // Our buffer is inline, theirs is not.
-      ASSERT(buffer() == inlineBuffer());
-      ASSERT(other.buffer() != other.inlineBuffer());
+      DCHECK_EQ(buffer(), inlineBuffer());
+      DCHECK_NE(other.buffer(), other.inlineBuffer());
       ANNOTATE_DELETE_BUFFER(m_buffer, inlineCapacity, m_size);
       m_buffer = other.buffer();
       other.m_buffer = other.inlineBuffer();
@@ -679,17 +679,18 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
       ANNOTATE_NEW_BUFFER(other.m_buffer, inlineCapacity, other.m_size);
     } else if (!thisSourceBegin &&
                otherSourceBegin) {  // Their buffer is inline, ours is not.
-      ASSERT(buffer() != inlineBuffer());
-      ASSERT(other.buffer() == other.inlineBuffer());
+      DCHECK_NE(buffer(), inlineBuffer());
+      DCHECK_EQ(other.buffer(), other.inlineBuffer());
       ANNOTATE_DELETE_BUFFER(other.m_buffer, inlineCapacity, other.m_size);
       other.m_buffer = buffer();
       m_buffer = inlineBuffer();
       std::swap(m_size, other.m_size);
       ANNOTATE_NEW_BUFFER(m_buffer, inlineCapacity, m_size);
     } else {  // Both buffers are inline.
-      ASSERT(thisSourceBegin && otherSourceBegin);
-      ASSERT(buffer() == inlineBuffer());
-      ASSERT(other.buffer() == other.inlineBuffer());
+      DCHECK(thisSourceBegin);
+      DCHECK(otherSourceBegin);
+      DCHECK_EQ(buffer(), inlineBuffer());
+      DCHECK_EQ(other.buffer(), other.inlineBuffer());
       ANNOTATE_CHANGE_SIZE(m_buffer, inlineCapacity, m_size, other.m_size);
       ANNOTATE_CHANGE_SIZE(other.m_buffer, inlineCapacity, other.m_size,
                            m_size);
@@ -717,7 +718,7 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
       if (!otherHole.empty() && sectionBegin < otherHole.end)
         sectionEnd = std::min(sectionEnd, otherHole.end);
 
-      ASSERT(sectionBegin < sectionEnd);
+      DCHECK_LT(sectionBegin, sectionEnd);
 
       // Is the |sectionBegin|-th element of |thisSource| occupied?
       bool thisOccupied = false;
@@ -737,8 +738,8 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
       if (thisOccupied && otherOccupied) {
         // Both occupied; swap them. In this case, one's destination must be the
         // other's source (i.e. both ranges are in inline buffers).
-        ASSERT(thisDestinationBegin == otherSourceBegin);
-        ASSERT(otherDestinationBegin == thisSourceBegin);
+        DCHECK_EQ(thisDestinationBegin, otherSourceBegin);
+        DCHECK_EQ(otherDestinationBegin, thisSourceBegin);
         TypeOperations::swap(thisSourceBegin + sectionBegin,
                              thisSourceBegin + sectionEnd,
                              otherSourceBegin + sectionBegin);
@@ -976,7 +977,7 @@ class Vector
   void remove(size_t position, size_t length);
 
   void pop_back() {
-    ASSERT(!isEmpty());
+    DCHECK(!isEmpty());
     shrink(size() - 1);
   }
 
@@ -1062,7 +1063,7 @@ operator=(const Vector<T, inlineCapacity, Allocator>& other) {
   } else if (other.size() > capacity()) {
     clear();
     reserveCapacity(other.size());
-    ASSERT(begin());
+    DCHECK(begin());
   }
 
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, other.size());
@@ -1084,14 +1085,14 @@ operator=(const Vector<T, otherCapacity, Allocator>& other) {
   // If the inline capacities match, we should call the more specific
   // template.  If the inline capacities don't match, the two objects
   // shouldn't be allocated the same address.
-  ASSERT(!typelessPointersAreEqual(&other, this));
+  DCHECK(!typelessPointersAreEqual(&other, this));
 
   if (size() > other.size()) {
     shrink(other.size());
   } else if (other.size() > capacity()) {
     clear();
     reserveCapacity(other.size());
-    ASSERT(begin());
+    DCHECK(begin());
   }
 
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, other.size());
@@ -1184,7 +1185,7 @@ void Vector<T, inlineCapacity, Allocator>::fill(const T& val, size_t newSize) {
   } else if (newSize > capacity()) {
     clear();
     reserveCapacity(newSize);
-    ASSERT(begin());
+    DCHECK(begin());
   }
 
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, newSize);
@@ -1268,7 +1269,7 @@ inline void Vector<T, inlineCapacity, Allocator>::resize(size_t size) {
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 void Vector<T, inlineCapacity, Allocator>::shrink(size_t size) {
-  ASSERT(size <= m_size);
+  DCHECK_LE(size, m_size);
   TypeOperations::destruct(begin() + size, end());
   clearUnusedSlots(begin() + size, end());
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, size);
@@ -1277,7 +1278,7 @@ void Vector<T, inlineCapacity, Allocator>::shrink(size_t size) {
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 void Vector<T, inlineCapacity, Allocator>::grow(size_t size) {
-  ASSERT(size >= m_size);
+  DCHECK_GE(size, m_size);
   if (size > capacity())
     expandCapacity(size);
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, size);
@@ -1316,8 +1317,8 @@ void Vector<T, inlineCapacity, Allocator>::reserveCapacity(size_t newCapacity) {
 template <typename T, size_t inlineCapacity, typename Allocator>
 inline void Vector<T, inlineCapacity, Allocator>::reserveInitialCapacity(
     size_t initialCapacity) {
-  ASSERT(!m_size);
-  ASSERT(capacity() == INLINE_CAPACITY);
+  DCHECK(!m_size);
+  DCHECK(capacity() == INLINE_CAPACITY);
   if (initialCapacity > INLINE_CAPACITY) {
     ANNOTATE_DELETE_BUFFER(begin(), capacity(), m_size);
     Base::allocateBuffer(initialCapacity);
@@ -1372,11 +1373,11 @@ template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename U>
 void Vector<T, inlineCapacity, Allocator>::append(const U* data,
                                                   size_t dataSize) {
-  ASSERT(Allocator::isAllocationAllowed());
+  DCHECK(Allocator::isAllocationAllowed());
   size_t newSize = m_size + dataSize;
   if (newSize > capacity()) {
     data = expandCapacity(newSize, data);
-    ASSERT(begin());
+    DCHECK(begin());
   }
   RELEASE_ASSERT(newSize >= m_size);
   T* dest = end();
@@ -1395,7 +1396,7 @@ ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::push_back(U&& val) {
 template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename U>
 ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::append(U&& val) {
-  ASSERT(Allocator::isAllocationAllowed());
+  DCHECK(Allocator::isAllocationAllowed());
   if (LIKELY(size() != capacity())) {
     ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
     new (NotNull, end()) T(std::forward<U>(val));
@@ -1427,11 +1428,11 @@ template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename U>
 NEVER_INLINE void Vector<T, inlineCapacity, Allocator>::appendSlowCase(
     U&& val) {
-  ASSERT(size() == capacity());
+  DCHECK_EQ(size(), capacity());
 
   typename std::remove_reference<U>::type* ptr = &val;
   ptr = expandCapacity(size() + 1, ptr);
-  ASSERT(begin());
+  DCHECK(begin());
 
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
   new (NotNull, end()) T(std::forward<U>(*ptr));
@@ -1449,7 +1450,7 @@ ALWAYS_INLINE void Vector<T, inlineCapacity, Allocator>::uncheckedAppend(
   // Vectors in ASAN builds don't have inlineCapacity.
   append(std::forward<U>(val));
 #else
-  ASSERT(size() < capacity());
+  DCHECK_LT(size(), capacity());
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
   new (NotNull, end()) T(std::forward<U>(val));
   ++m_size;
@@ -1468,12 +1469,12 @@ template <typename U>
 void Vector<T, inlineCapacity, Allocator>::insert(size_t position,
                                                   const U* data,
                                                   size_t dataSize) {
-  ASSERT(Allocator::isAllocationAllowed());
+  DCHECK(Allocator::isAllocationAllowed());
   RELEASE_ASSERT(position <= size());
   size_t newSize = m_size + dataSize;
   if (newSize > capacity()) {
     data = expandCapacity(newSize, data);
-    ASSERT(begin());
+    DCHECK(begin());
   }
   RELEASE_ASSERT(newSize >= m_size);
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, newSize);
@@ -1488,12 +1489,12 @@ template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename U>
 inline void Vector<T, inlineCapacity, Allocator>::insert(size_t position,
                                                          U&& val) {
-  ASSERT(Allocator::isAllocationAllowed());
+  DCHECK(Allocator::isAllocationAllowed());
   RELEASE_ASSERT(position <= size());
   typename std::remove_reference<U>::type* data = &val;
   if (size() == capacity()) {
     data = expandCapacity(size() + 1, data);
-    ASSERT(begin());
+    DCHECK(begin());
   }
   ANNOTATE_CHANGE_SIZE(begin(), capacity(), m_size, m_size + 1);
   T* spot = begin() + position;
@@ -1596,7 +1597,7 @@ inline bool operator!=(const Vector<T, inlineCapacityA, Allocator>& a,
 template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename VisitorDispatcher>
 void Vector<T, inlineCapacity, Allocator>::trace(VisitorDispatcher visitor) {
-  ASSERT(Allocator::isGarbageCollected);  // Garbage collector must be enabled.
+  DCHECK(Allocator::isGarbageCollected) << "Garbage collector must be enabled.";
   if (!buffer())
     return;
   if (this->hasOutOfLineBuffer()) {

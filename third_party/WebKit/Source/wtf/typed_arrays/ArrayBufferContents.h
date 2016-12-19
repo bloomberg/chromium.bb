@@ -128,7 +128,7 @@ class WTF_EXPORT ArrayBufferContents {
     void checkIfAdjustAmountOfExternalAllocatedMemoryIsConsistent() {
       DCHECK(s_adjustAmountOfExternalAllocatedMemoryFunction);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
       // Make sure that the function actually used is always the same.
       // Shouldn't be updated during its use.
       if (!s_lastUsedAdjustAmountOfExternalAllocatedMemoryFunction) {
@@ -148,7 +148,7 @@ class WTF_EXPORT ArrayBufferContents {
   RefPtr<DataHolder> m_holder;
   static AdjustAmountOfExternalAllocatedMemoryFunction
       s_adjustAmountOfExternalAllocatedMemoryFunction;
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   static AdjustAmountOfExternalAllocatedMemoryFunction
       s_lastUsedAdjustAmountOfExternalAllocatedMemoryFunction;
 #endif

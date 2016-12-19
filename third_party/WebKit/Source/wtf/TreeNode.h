@@ -43,7 +43,7 @@ namespace WTF {
 //    lifetime somehow.
 //    FIXME: lifetime management could be parameterized so that ref counted
 //    implementations can be used.
-//  * It ASSERT()s invalid input. The callers have to ensure that given
+//  * It checks invalid input. The callers have to ensure that given
 //    parameter is sound.
 //  * There is no branch-leaf difference. Every node can be a parent of other
 //    node.
@@ -78,11 +78,11 @@ class TreeNode {
   bool hasChildren() const { return m_firstChild; }
 
   void insertBefore(NodeType* newChild, NodeType* refChild) {
-    ASSERT(!newChild->parent());
-    ASSERT(!newChild->next());
-    ASSERT(!newChild->previous());
+    DCHECK(!newChild->parent());
+    DCHECK(!newChild->next());
+    DCHECK(!newChild->previous());
 
-    ASSERT(!refChild || this == refChild->parent());
+    DCHECK(!refChild || this == refChild->parent());
 
     if (!refChild) {
       appendChild(newChild);
@@ -101,19 +101,19 @@ class TreeNode {
   }
 
   void appendChild(NodeType* child) {
-    ASSERT(!child->parent());
-    ASSERT(!child->next());
-    ASSERT(!child->previous());
+    DCHECK(!child->parent());
+    DCHECK(!child->next());
+    DCHECK(!child->previous());
 
     child->m_parent = here();
 
     if (!m_lastChild) {
-      ASSERT(!m_firstChild);
+      DCHECK(!m_firstChild);
       m_lastChild = m_firstChild = child;
       return;
     }
 
-    ASSERT(!m_lastChild->m_next);
+    DCHECK(!m_lastChild->m_next);
     NodeType* oldLast = m_lastChild;
     m_lastChild = child;
 
@@ -122,7 +122,7 @@ class TreeNode {
   }
 
   NodeType* removeChild(NodeType* child) {
-    ASSERT(child->parent() == this);
+    DCHECK_EQ(child->parent(), this);
 
     if (m_firstChild == child)
       m_firstChild = child->next();
@@ -142,7 +142,7 @@ class TreeNode {
   }
 
   void takeChildrenFrom(NodeType* oldParent) {
-    ASSERT(oldParent != this);
+    DCHECK_NE(oldParent, this);
     while (oldParent->hasChildren()) {
       NodeType* child = oldParent->firstChild();
       oldParent->removeChild(child);
