@@ -63,11 +63,9 @@ RealtimeAnalyser::RealtimeAnalyser()
 bool RealtimeAnalyser::setFftSize(size_t size) {
   DCHECK(isMainThread());
 
-  // Only allow powers of two.
-  unsigned log2size = static_cast<unsigned>(log2(size));
-  bool isPOT(1UL << log2size == size);
-
-  if (!isPOT || size > MaxFFTSize || size < MinFFTSize)
+  // Only allow powers of two within the allowed range.
+  if (size > MaxFFTSize || size < MinFFTSize ||
+      !AudioUtilities::isPowerOfTwo(size))
     return false;
 
   if (m_fftSize != size) {

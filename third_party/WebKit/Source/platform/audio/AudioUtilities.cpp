@@ -73,6 +73,14 @@ float maxAudioBufferSampleRate() {
   // should too.
   return 384000;
 }
+
+bool isPowerOfTwo(size_t x) {
+  // From Hacker's Delight.  x & (x - 1) turns off (zeroes) the
+  // rightmost 1-bit in the word x.  If x is a power of two, then the
+  // result is, of course, 0.
+  return x > 0 && ((x & (x - 1)) == 0);
+}
+
 }  // namespace AudioUtilities
 
 }  // namespace blink
