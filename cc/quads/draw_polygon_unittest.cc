@@ -525,7 +525,9 @@ TEST(DrawPolygonSplitTest, DoubleSplit) {
   vertices_c.push_back(gfx::Point3F(10.0f, 0.05f, 9.0f));
 
   CREATE_NEW_DRAW_POLYGON_PTR(polygon_c, vertices_c,
-                              gfx::Vector3dF(0.0055f, -0.999f, 0.0055f), 0);
+                              gfx::Vector3dF(0.005555f, -0.99997f, 0.005555f),
+                              0);
+  polygon_c->RecomputeNormalForTesting();
 
   std::unique_ptr<DrawPolygon> second_front_polygon;
   std::unique_ptr<DrawPolygon> second_back_polygon;
