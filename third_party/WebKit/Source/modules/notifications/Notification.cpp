@@ -39,6 +39,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/ScopedWindowFocusAllowedIndicator.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/frame/UseCounter.h"
 #include "modules/notifications/NotificationAction.h"
@@ -186,8 +187,9 @@ void Notification::close() {
   // Persistent notifications won't get such events for programmatic closes.
   if (m_type == Type::NonPersistent) {
     getExecutionContext()->postTask(
-        BLINK_FROM_HERE, createSameThreadTask(&Notification::dispatchCloseEvent,
-                                              wrapPersistent(this)));
+        TaskType::UserInteraction, BLINK_FROM_HERE,
+        createSameThreadTask(&Notification::dispatchCloseEvent,
+                             wrapPersistent(this)));
     m_state = State::Closing;
 
     notificationManager()->close(this);

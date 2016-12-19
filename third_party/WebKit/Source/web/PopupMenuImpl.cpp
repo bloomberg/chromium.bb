@@ -10,6 +10,7 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/StyleEngine.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -499,7 +500,7 @@ void PopupMenuImpl::updateFromElement(UpdateReason) {
     return;
   m_needsUpdate = true;
   ownerElement().document().postTask(
-      BLINK_FROM_HERE,
+      TaskType::UserInteraction, BLINK_FROM_HERE,
       createSameThreadTask(&PopupMenuImpl::update, wrapPersistent(this)));
 }
 

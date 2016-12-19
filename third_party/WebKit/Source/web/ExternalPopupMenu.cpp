@@ -32,6 +32,7 @@
 
 #include "core/dom/ExecutionContextTask.h"
 #include "core/dom/NodeComputedStyle.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
@@ -146,8 +147,9 @@ void ExternalPopupMenu::updateFromElement(UpdateReason reason) {
         return;
       m_needsUpdate = true;
       m_ownerElement->document().postTask(
-          BLINK_FROM_HERE, createSameThreadTask(&ExternalPopupMenu::update,
-                                                wrapPersistent(this)));
+          TaskType::UserInteraction, BLINK_FROM_HERE,
+          createSameThreadTask(&ExternalPopupMenu::update,
+                               wrapPersistent(this)));
       break;
 
     case ByStyleChange:
