@@ -16,6 +16,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/page/FocusController.h"
 #include "core/testing/DummyPageHolder.h"
+#include "modules/serviceworkers/NavigatorServiceWorker.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -150,6 +151,9 @@ class ServiceWorkerContainerTest : public ::testing::Test {
   }
 
   ExecutionContext* getExecutionContext() { return &(m_page->document()); }
+  NavigatorServiceWorker* getNavigatorServiceWorker() {
+    return NavigatorServiceWorker::from(m_page->document());
+  }
   v8::Isolate* isolate() { return v8::Isolate::GetCurrent(); }
   ScriptState* getScriptState() {
     return ScriptState::forMainWorld(m_page->document().frame());
@@ -176,8 +180,8 @@ class ServiceWorkerContainerTest : public ::testing::Test {
     // the provider.
     provide(WTF::makeUnique<NotReachedWebServiceWorkerProvider>());
 
-    ServiceWorkerContainer* container =
-        ServiceWorkerContainer::create(getExecutionContext(), nullptr);
+    ServiceWorkerContainer* container = ServiceWorkerContainer::create(
+        getExecutionContext(), getNavigatorServiceWorker());
     ScriptState::Scope scriptScope(getScriptState());
     RegistrationOptions options;
     options.setScope(scope);
@@ -190,8 +194,8 @@ class ServiceWorkerContainerTest : public ::testing::Test {
                                    const ScriptValueTest& valueTest) {
     provide(WTF::makeUnique<NotReachedWebServiceWorkerProvider>());
 
-    ServiceWorkerContainer* container =
-        ServiceWorkerContainer::create(getExecutionContext(), nullptr);
+    ServiceWorkerContainer* container = ServiceWorkerContainer::create(
+        getExecutionContext(), getNavigatorServiceWorker());
     ScriptState::Scope scriptScope(getScriptState());
     ScriptPromise promise =
         container->getRegistration(getScriptState(), documentURL);
@@ -331,8 +335,8 @@ TEST_F(ServiceWorkerContainerTest,
   StubWebServiceWorkerProvider stubProvider;
   provide(stubProvider.provider());
 
-  ServiceWorkerContainer* container =
-      ServiceWorkerContainer::create(getExecutionContext(), nullptr);
+  ServiceWorkerContainer* container = ServiceWorkerContainer::create(
+      getExecutionContext(), getNavigatorServiceWorker());
 
   // register
   {
@@ -357,8 +361,8 @@ TEST_F(ServiceWorkerContainerTest,
   StubWebServiceWorkerProvider stubProvider;
   provide(stubProvider.provider());
 
-  ServiceWorkerContainer* container =
-      ServiceWorkerContainer::create(getExecutionContext(), nullptr);
+  ServiceWorkerContainer* container = ServiceWorkerContainer::create(
+      getExecutionContext(), getNavigatorServiceWorker());
 
   {
     ScriptState::Scope scriptScope(getScriptState());

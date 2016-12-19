@@ -138,8 +138,7 @@ void ServiceWorkerContainer::contextDestroyed() {
     m_provider->setClient(0);
     m_provider = nullptr;
   }
-  if (m_navigator)
-    m_navigator->clearServiceWorker();
+  m_navigator->clearServiceWorker();
 }
 
 DEFINE_TRACE(ServiceWorkerContainer) {
