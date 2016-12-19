@@ -1,0 +1,545 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "ios/chrome/browser/ui/dialogs/dialog_presenter.h"
+
+#include <deque>
+#include <map>
+
+#import "base/ios/block_types.h"
+#import "base/ios/weak_nsobject.h"
+#include "base/logging.h"
+#import "base/mac/scoped_nsobject.h"
+#include "base/strings/sys_string_conversions.h"
+#include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
+#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
+#import "ios/chrome/browser/ui/alert_coordinator/input_alert_coordinator.h"
+#import "ios/chrome/browser/ui/dialogs/javascript_dialog_blocking_util.h"
+#import "ios/chrome/browser/ui/dialogs/nsurl_protection_space_util.h"
+#include "ios/chrome/browser/ui/ui_util.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ios/web/public/web_state/web_state.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "url/gurl.h"
+
+// Externed accessibility identifier.
+NSString* const kJavaScriptDialogTextFieldAccessibiltyIdentifier =
+    @"JavaScriptDialogTextFieldAccessibiltyIdentifier";
+
+namespace {
+// The hostname to use for JavaScript alerts when there is no valid hostname in
+// the URL passed to |+localizedTitleForJavaScriptAlertFromPage:type:|.
+const char kAboutNullHostname[] = "about:null";
+}  // namespace
+
+@interface DialogPresenter () {
+  // Backing objects for properties of the same name.
+  base::WeakNSProtocol<id<DialogPresenterDelegate>> _delegate;
+  base::WeakNSObject<UIViewController> _viewController;
+  // Queue of WebStates which correspond to the keys in
+  // |_dialogCoordinatorsForWebStates|.
+  std::deque<web::WebState*> _queuedWebStates;
+  // A map associating queued webStates with their coordinators.
+  std::map<web::WebState*, base::scoped_nsobject<AlertCoordinator>>
+      _dialogCoordinatorsForWebStates;
+  web::WebState* _presentedDialogWebState;
+  base::scoped_nsobject<AlertCoordinator> _presentedDialogCoordinator;
+  base::scoped_nsobject<ActionSheetCoordinator>
+      _blockingConfirmationCoordinator;
+}
+
+// The delegate passed on initialization.
+@property(nonatomic, readonly) id<DialogPresenterDelegate> delegate;
+
+// The presenting view controller passed on initialization.
+@property(nonatomic, readonly) UIViewController* viewController;
+
+// Whether a modal dialog is currently being shown.
+@property(nonatomic, readonly, getter=isShowingDialog) BOOL showingDialog;
+
+// The webState for |presentedDialog|.
+@property(nonatomic) web::WebState* presentedDialogWebState;
+
+// The dialog that's currently being shown, if any.
+@property(nonatomic, retain) AlertCoordinator* presentedDialogCoordinator;
+
+// The JavaScript dialog blocking confirmation action sheet being shown, if any.
+@property(nonatomic, retain) AlertCoordinator* blockingConfirmationCoordinator;
+
+// Adds |context| and |coordinator| to the queue.  If a dialog is not already
+// being shown, |coordinator| will be presented.  Otherwise, |coordinator| will
+// be displayed once the previously shown dialog is dismissed.
+- (void)addDialogCoordinator:(AlertCoordinator*)coordinator
+                 forWebState:(web::WebState*)webState;
+
+// Shows the dialog associated with the next context in |contextQueue|.
+- (void)showNextDialog;
+
+// Called when a button in |coordinator| is tapped.
+- (void)buttonWasTappedForCoordinator:(AlertCoordinator*)coordinator;
+
+// Adds buttons to |alertCoordinator|.  A confirmation button with |label| as
+// the text will be added for |confirmAction|, and a cancel button will be added
+// for |cancelAction|.
+- (void)setUpAlertCoordinator:(AlertCoordinator*)alertCoordinator
+                confirmAction:(ProceduralBlock)confirmAction
+                 cancelAction:(ProceduralBlock)cancelAction
+                      OKLabel:(NSString*)label;
+
+// Sets up the JavaScript dialog blocking option for |alertCoordinator|.
+// Overrides |alertCoordinator|'s |startAction| to call
+// JavaScriptDialogWasShown(). Depending on the value of
+// ShouldShowDialogBlockingOption() for |webState|, optionally adds a button to
+// |alertCoordinator| allowing for the blocking of future dialogs.  In addition
+// to blocking dialogs for the WebState, the added button will call
+// |alertCoordinator|'s |cancelAction|.
+- (void)setUpBlockingOptionForCoordinator:(AlertCoordinator*)alertCoordinator
+                                 webState:(web::WebState*)webState;
+
+// The block to use for the JavaScript dialog blocking option for |coordinator|.
+- (ProceduralBlock)blockingActionForCoordinator:(AlertCoordinator*)coordinator;
+
+@end
+
+@implementation DialogPresenter
+
+@synthesize active = _active;
+
+- (instancetype)initWithDelegate:(id<DialogPresenterDelegate>)delegate
+        presentingViewController:(UIViewController*)viewController {
+  if ((self = [super init])) {
+    DCHECK(delegate);
+    DCHECK(viewController);
+    _delegate.reset(delegate);
+    _viewController.reset(viewController);
+  }
+  return self;
+}
+
+#pragma mark - Accessors
+
+- (void)setActive:(BOOL)active {
+  if (_active != active) {
+    _active = active;
+    [self tryToPresent];
+  }
+}
+
+- (id<DialogPresenterDelegate>)delegate {
+  return _delegate;
+}
+
+- (UIViewController*)viewController {
+  return _viewController;
+}
+
+- (BOOL)isShowingDialog {
+  DCHECK_EQ(self.presentedDialogWebState != nullptr,
+            self.presentedDialogCoordinator != nil);
+  return self.presentedDialogCoordinator != nil;
+}
+
+- (web::WebState*)presentedDialogWebState {
+  return _presentedDialogWebState;
+}
+
+- (void)setPresentedDialogWebState:(web::WebState*)presentedDialogWebState {
+  _presentedDialogWebState = presentedDialogWebState;
+}
+
+- (AlertCoordinator*)presentedDialogCoordinator {
+  return _presentedDialogCoordinator;
+}
+
+- (void)setPresentedDialogCoordinator:
+    (AlertCoordinator*)presentedDialogCoordinator {
+  _presentedDialogCoordinator.reset([presentedDialogCoordinator retain]);
+}
+
+- (ActionSheetCoordinator*)blockingConfirmationCoordinator {
+  return _blockingConfirmationCoordinator;
+}
+
+- (void)setBlockingConfirmationCoordinator:
+    (ActionSheetCoordinator*)blockingConfirmationActionSheetCoordinator {
+  _blockingConfirmationCoordinator.reset(
+      [blockingConfirmationActionSheetCoordinator retain]);
+}
+
+#pragma mark - Public
+
+- (void)runJavaScriptAlertPanelWithMessage:(NSString*)message
+                                requestURL:(const GURL&)requestURL
+                                  webState:(web::WebState*)webState
+                         completionHandler:(void (^)(void))completionHandler {
+  NSString* title =
+      [DialogPresenter localizedTitleForJavaScriptAlertFromPage:requestURL];
+  AlertCoordinator* alertCoordinator = [[[AlertCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                           title:title
+                         message:message] autorelease];
+
+  // Handler.
+  base::WeakNSObject<DialogPresenter> weakSelf(self);
+  base::WeakNSObject<AlertCoordinator> weakCoordinator(alertCoordinator);
+  ProceduralBlock OKHandler = ^{
+    if (completionHandler)
+      completionHandler();
+    [weakSelf buttonWasTappedForCoordinator:weakCoordinator];
+  };
+
+  // Add button.
+  [alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_OK)
+                              action:OKHandler
+                               style:UIAlertActionStyleDefault];
+
+  // Add cancel handler.
+  alertCoordinator.cancelAction = completionHandler;
+  alertCoordinator.noInteractionAction = completionHandler;
+
+  // Blocking option setup.
+  [self setUpBlockingOptionForCoordinator:alertCoordinator webState:webState];
+
+  [self addDialogCoordinator:alertCoordinator forWebState:webState];
+}
+
+- (void)runJavaScriptConfirmPanelWithMessage:(NSString*)message
+                                  requestURL:(const GURL&)requestURL
+                                    webState:(web::WebState*)webState
+                           completionHandler:
+                               (void (^)(BOOL isConfirmed))completionHandler {
+  NSString* title =
+      [DialogPresenter localizedTitleForJavaScriptAlertFromPage:requestURL];
+  AlertCoordinator* alertCoordinator = [[[AlertCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                           title:title
+                         message:message] autorelease];
+
+  // Actions.
+  ProceduralBlock confirmAction = ^{
+    if (completionHandler)
+      completionHandler(YES);
+  };
+
+  ProceduralBlock cancelAction = ^{
+    if (completionHandler)
+      completionHandler(NO);
+  };
+
+  // Coordinator Setup.
+  NSString* OKLabel = l10n_util::GetNSString(IDS_OK);
+  [self setUpAlertCoordinator:alertCoordinator
+                confirmAction:confirmAction
+                 cancelAction:cancelAction
+                      OKLabel:OKLabel];
+
+  // Blocking option setup.
+  [self setUpBlockingOptionForCoordinator:alertCoordinator webState:webState];
+
+  [self addDialogCoordinator:alertCoordinator forWebState:webState];
+}
+
+- (void)runJavaScriptTextInputPanelWithPrompt:(NSString*)message
+                                  defaultText:(NSString*)defaultText
+                                   requestURL:(const GURL&)requestURL
+                                     webState:(web::WebState*)webState
+                            completionHandler:
+                                (void (^)(NSString* input))completionHandler {
+  NSString* title =
+      [DialogPresenter localizedTitleForJavaScriptAlertFromPage:requestURL];
+  InputAlertCoordinator* alertCoordinator = [[[InputAlertCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                           title:title
+                         message:message] autorelease];
+
+  // Actions.
+  base::WeakNSObject<InputAlertCoordinator> weakCoordinator(alertCoordinator);
+  ProceduralBlock confirmAction = ^{
+    if (completionHandler) {
+      NSString* textInput = [weakCoordinator textFields].firstObject.text;
+      completionHandler(textInput ? textInput : @"");
+    }
+  };
+
+  ProceduralBlock cancelAction = ^{
+    if (completionHandler)
+      completionHandler(nil);
+  };
+
+  // Coordinator Setup.
+  NSString* OKLabel = l10n_util::GetNSString(IDS_OK);
+  [self setUpAlertCoordinator:alertCoordinator
+                confirmAction:confirmAction
+                 cancelAction:cancelAction
+                      OKLabel:OKLabel];
+
+  // Blocking option setup.
+  [self setUpBlockingOptionForCoordinator:alertCoordinator webState:webState];
+
+  // Add text field.
+  [alertCoordinator
+      addTextFieldWithConfigurationHandler:^(UITextField* textField) {
+        textField.text = defaultText;
+        textField.accessibilityIdentifier =
+            kJavaScriptDialogTextFieldAccessibiltyIdentifier;
+      }];
+
+  [self addDialogCoordinator:alertCoordinator forWebState:webState];
+}
+
+- (void)runAuthDialogForProtectionSpace:(NSURLProtectionSpace*)protectionSpace
+                     proposedCredential:(NSURLCredential*)credential
+                               webState:(web::WebState*)webState
+                      completionHandler:(void (^)(NSString* user,
+                                                  NSString* password))handler {
+  NSString* title = l10n_util::GetNSStringWithFixup(IDS_LOGIN_DIALOG_TITLE);
+  NSString* message =
+      ios_internal::nsurlprotectionspace_util::MessageForHTTPAuth(
+          protectionSpace);
+
+  InputAlertCoordinator* alertCoordinator = [[[InputAlertCoordinator alloc]
+      initWithBaseViewController:self.viewController
+                           title:title
+                         message:message] autorelease];
+
+  // Actions.
+  base::WeakNSObject<InputAlertCoordinator> weakCoordinator(alertCoordinator);
+  ProceduralBlock confirmAction = ^{
+    if (handler) {
+      NSString* username = [[weakCoordinator textFields] objectAtIndex:0].text;
+      NSString* password = [[weakCoordinator textFields] objectAtIndex:1].text;
+      handler(username, password);
+    }
+  };
+
+  ProceduralBlock cancelAction = ^{
+    if (handler)
+      handler(nil, nil);
+  };
+
+  // Coordinator Setup.
+  NSString* OKLabel =
+      l10n_util::GetNSStringWithFixup(IDS_LOGIN_DIALOG_OK_BUTTON_LABEL);
+  [self setUpAlertCoordinator:alertCoordinator
+                confirmAction:confirmAction
+                 cancelAction:cancelAction
+                      OKLabel:OKLabel];
+
+  // Add text fields.
+  NSString* username = credential.user ? credential.user : @"";
+  [alertCoordinator
+      addTextFieldWithConfigurationHandler:^(UITextField* textField) {
+        textField.text = username;
+        textField.placeholder = l10n_util::GetNSString(
+            IDS_IOS_HTTP_LOGIN_DIALOG_USERNAME_PLACEHOLDER);
+      }];
+  [alertCoordinator
+      addTextFieldWithConfigurationHandler:^(UITextField* textField) {
+        textField.placeholder = l10n_util::GetNSString(
+            IDS_IOS_HTTP_LOGIN_DIALOG_PASSWORD_PLACEHOLDER);
+        textField.secureTextEntry = YES;
+      }];
+
+  [self addDialogCoordinator:alertCoordinator forWebState:webState];
+}
+
+- (void)cancelDialogForWebState:(web::WebState*)webState {
+  DCHECK_NE(webState, self.presentedDialogWebState);
+  AlertCoordinator* dialogToCancel = _dialogCoordinatorsForWebStates[webState];
+  if (dialogToCancel) {
+    auto it =
+        std::find(_queuedWebStates.begin(), _queuedWebStates.end(), webState);
+    DCHECK(it != _queuedWebStates.end());
+    _queuedWebStates.erase(it);
+    [dialogToCancel executeCancelHandler];
+    [dialogToCancel stop];
+    _dialogCoordinatorsForWebStates.erase(webState);
+  }
+}
+
+- (void)cancelAllDialogs {
+  [self.presentedDialogCoordinator executeCancelHandler];
+  [self.presentedDialogCoordinator stop];
+  self.presentedDialogCoordinator = nil;
+  self.presentedDialogWebState = nil;
+  while (!_queuedWebStates.empty()) {
+    [self cancelDialogForWebState:_queuedWebStates.front()];
+  }
+}
+
+- (void)tryToPresent {
+  // Don't try to present if a JavaScript dialog blocking confirmation sheet is
+  // displayed.
+  if (self.blockingConfirmationCoordinator)
+    return;
+  // The active TabModel can't be changed while a JavaScript dialog is shown.
+  DCHECK(!self.showingDialog);
+  if (_active && !_queuedWebStates.empty() && !self.delegate.presenting)
+    [self showNextDialog];
+}
+
++ (NSString*)localizedTitleForJavaScriptAlertFromPage:(const GURL&)pageURL {
+  NSString* hostname = base::SysUTF8ToNSString(pageURL.host());
+  if (!hostname.length)
+    hostname = base::SysUTF8ToNSString(kAboutNullHostname);
+  return l10n_util::GetNSStringF(IDS_JAVASCRIPT_MESSAGEBOX_TITLE,
+                                 base::SysNSStringToUTF16(hostname));
+}
+
+#pragma mark - Private methods.
+
+- (void)addDialogCoordinator:(AlertCoordinator*)coordinator
+                 forWebState:(web::WebState*)webState {
+  DCHECK(coordinator);
+  DCHECK(webState);
+  DCHECK_NE(webState, self.presentedDialogWebState);
+  DCHECK(!_dialogCoordinatorsForWebStates[webState]);
+  _queuedWebStates.push_back(webState);
+  _dialogCoordinatorsForWebStates[webState] =
+      base::scoped_nsobject<AlertCoordinator>([coordinator retain]);
+
+  if (self.active && !self.showingDialog && !self.delegate.presenting)
+    [self showNextDialog];
+}
+
+- (void)showNextDialog {
+  DCHECK(self.active);
+  DCHECK(!self.showingDialog);
+  DCHECK(!_queuedWebStates.empty());
+  // Update properties and remove context and the dialog from queue.
+  self.presentedDialogWebState = _queuedWebStates.front();
+  _queuedWebStates.pop_front();
+  self.presentedDialogCoordinator =
+      _dialogCoordinatorsForWebStates[self.presentedDialogWebState];
+  _dialogCoordinatorsForWebStates.erase(self.presentedDialogWebState);
+  // Notify the delegate and display the dialog.
+  [self.delegate dialogPresenter:self
+       willShowDialogForWebState:self.presentedDialogWebState];
+  [self.presentedDialogCoordinator start];
+}
+
+- (void)buttonWasTappedForCoordinator:(AlertCoordinator*)coordinator {
+  if (coordinator != self.presentedDialogCoordinator)
+    return;
+  self.presentedDialogWebState = nil;
+  self.presentedDialogCoordinator = nil;
+  self.blockingConfirmationCoordinator = nil;
+  if (!_queuedWebStates.empty() && !self.delegate.presenting)
+    [self showNextDialog];
+}
+
+- (void)setUpAlertCoordinator:(AlertCoordinator*)alertCoordinator
+                confirmAction:(ProceduralBlock)confirmAction
+                 cancelAction:(ProceduralBlock)cancelAction
+                      OKLabel:(NSString*)label {
+  // Handlers.
+  base::WeakNSObject<DialogPresenter> weakSelf(self);
+  base::WeakNSObject<AlertCoordinator> weakCoordinator(alertCoordinator);
+
+  ProceduralBlock confirmHandler = ^{
+    if (confirmAction)
+      confirmAction();
+    [weakSelf buttonWasTappedForCoordinator:weakCoordinator];
+  };
+
+  ProceduralBlock cancelHandler = ^{
+    if (cancelAction)
+      cancelAction();
+    [weakSelf buttonWasTappedForCoordinator:weakCoordinator];
+  };
+
+  // Add buttons.
+  [alertCoordinator addItemWithTitle:label
+                              action:confirmHandler
+                               style:UIAlertActionStyleDefault];
+  [alertCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                              action:cancelHandler
+                               style:UIAlertActionStyleCancel];
+
+  // Add cancel handler.
+  alertCoordinator.cancelAction = cancelAction;
+  alertCoordinator.noInteractionAction = cancelAction;
+}
+
+- (void)setUpBlockingOptionForCoordinator:(AlertCoordinator*)alertCoordinator
+                                 webState:(web::WebState*)webState {
+  DCHECK(alertCoordinator);
+  DCHECK(webState);
+
+  // Set up the start action.
+  base::WeakNSObject<DialogPresenter> weakSelf(self);
+  base::WeakNSObject<AlertCoordinator> weakCoordinator(alertCoordinator);
+  ProceduralBlock originalStartAction = alertCoordinator.startAction;
+  alertCoordinator.startAction = ^{
+    if (originalStartAction)
+      originalStartAction();
+    JavaScriptDialogWasShown(webState);
+  };
+
+  // Early return if a blocking option should not be added.
+  if (!ShouldShowDialogBlockingOption(webState))
+    return;
+
+  ProceduralBlock blockingAction =
+      [self blockingActionForCoordinator:alertCoordinator];
+  NSString* blockingOptionTitle =
+      l10n_util::GetNSString(IDS_IOS_JAVA_SCRIPT_DIALOG_BLOCKING_BUTTON_TEXT);
+  [alertCoordinator addItemWithTitle:blockingOptionTitle
+                              action:blockingAction
+                               style:UIAlertActionStyleDefault];
+}
+
+- (ProceduralBlock)blockingActionForCoordinator:(AlertCoordinator*)coordinator {
+  base::WeakNSObject<DialogPresenter> weakSelf(self);
+  base::WeakNSObject<AlertCoordinator> weakCoordinator(coordinator);
+  base::WeakNSObject<UIViewController> weakBaseViewController(
+      coordinator.baseViewController);
+  ProceduralBlock cancelAction = coordinator.cancelAction;
+  return [[^{
+    // Create the confirmation coordinator.  Use an action sheet on iPhone and
+    // an alert on iPhone.
+    NSString* confirmMessage =
+        l10n_util::GetNSString(IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION);
+    AlertCoordinator* confirmationCoordinator =
+        IsIPadIdiom()
+            ? [[[AlertCoordinator alloc]
+                  initWithBaseViewController:weakBaseViewController
+                                       title:nil
+                                     message:confirmMessage] autorelease]
+            : [[[ActionSheetCoordinator alloc]
+                  initWithBaseViewController:weakBaseViewController
+                                       title:nil
+                                     message:confirmMessage
+                                        rect:CGRectZero
+                                        view:nil] autorelease];
+    // Set up button actions.
+    ProceduralBlock confirmHandler = ^{
+      if (cancelAction)
+        cancelAction();
+      base::scoped_nsobject<DialogPresenter> strongSelf([weakSelf retain]);
+      if (!strongSelf)
+        return;
+      DialogBlockingOptionSelected([strongSelf presentedDialogWebState]);
+      [strongSelf buttonWasTappedForCoordinator:weakCoordinator];
+    };
+    ProceduralBlock cancelHandler = ^{
+      if (cancelAction)
+        cancelAction();
+      [weakSelf buttonWasTappedForCoordinator:weakCoordinator];
+    };
+    NSString* blockingOptionTitle =
+        l10n_util::GetNSString(IDS_IOS_JAVA_SCRIPT_DIALOG_BLOCKING_BUTTON_TEXT);
+    [confirmationCoordinator addItemWithTitle:blockingOptionTitle
+                                       action:confirmHandler
+                                        style:UIAlertActionStyleDestructive];
+    [confirmationCoordinator addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                                       action:cancelHandler
+                                        style:UIAlertActionStyleCancel];
+    [weakSelf setBlockingConfirmationCoordinator:confirmationCoordinator];
+    [[weakSelf blockingConfirmationCoordinator] start];
+  } copy] autorelease];
+}
+
+@end
