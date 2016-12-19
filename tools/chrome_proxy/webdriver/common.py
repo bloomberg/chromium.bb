@@ -13,6 +13,7 @@ import sys
 import time
 import traceback
 import unittest
+import urlparse
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
   os.pardir, 'third_party', 'webdriver', 'pylib'))
@@ -53,7 +54,7 @@ def ParseFlags():
   parser.add_argument('-f', '--failfast', help='Stop the test run on the first '
     'error or failure.', action='store_true')
   parser.add_argument('--logging_level', choices=['DEBUG', 'INFO', 'WARN',
-    'ERROR', 'CRIT'], default='ERROR', help='The logging verbosity for log '
+    'ERROR', 'CRIT'], default='WARN', help='The logging verbosity for log '
     'messages, printed to stderr. To see stderr logging output during a '
     'successful test run, also pass --disable_buffer. Default=ERROR')
   parser.add_argument('--log_file', help='If given, write logging statements '
@@ -260,6 +261,10 @@ class TestDriver:
       timeout: The time in seconds to load the page before timing out.
     """
     self._url = url
+    if (len(urlparse.urlparse(url).netloc) == 0 and
+        len(urlparse.urlparse(url).scheme) == 0):
+      self._logger.warn('Invalid URL: "%s". Did you forget to prepend '
+        '"http://"? See RFC 1808 for more information', url)
     if not self._driver:
       self._StartDriver()
     self._driver.set_page_load_timeout(timeout)
@@ -357,7 +362,7 @@ class TestDriver:
       len(all_messages), method_filter)
     return all_messages
 
-  def GetHTTPResponses(self, include_favicon=False):
+  def GetHTTPResponses(self, include_favicon=False, skip_domainless_pages=True):
     """Parses the Performance Logs and returns a list of HTTPResponse objects.
 
     Use caution when calling this function  multiple times. Only responses
@@ -366,6 +371,8 @@ class TestDriver:
 
     Args:
       include_favicon: A bool that if True will include responses for favicons.
+      skip_domainless_pages: If True, only responses with a net_loc as in RFC
+        1808 will be included. Pages such as about:blank will be skipped.
     Returns:
       A list of HTTPResponse objects, each representing a single completed HTTP
       transaction by Chrome.
@@ -392,8 +399,13 @@ class TestDriver:
       response = MakeHTTPResponse(message)
       self._logger.debug('New HTTPResponse: %s', str(response))
       is_favicon = response.url.endswith('favicon.ico')
-      if not is_favicon or include_favicon:
+      has_domain = len(urlparse.urlparse(response.url).netloc) > 0
+      if (not is_favicon or include_favicon) and (not skip_domainless_pages or
+          has_domain):
         all_responses.append(response)
+      else:
+        self._logger.info("Skipping HTTPResponse with url=%s in returned logs.",
+          response.url)
     self._logger.info('%d new HTTPResponse objects found in the logs %s '
       'favicons', len(all_responses), ('including' if include_favicon else
       'not including'))
