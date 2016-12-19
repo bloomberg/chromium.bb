@@ -46,7 +46,8 @@ AudioDestinationHandler::~AudioDestinationHandler() {
 
 void AudioDestinationHandler::render(AudioBus* sourceBus,
                                      AudioBus* destinationBus,
-                                     size_t numberOfFrames) {
+                                     size_t numberOfFrames,
+                                     const AudioIOPosition& outputPosition) {
   // We don't want denormals slowing down any of the audio processing
   // since they can very seriously hurt performance.  This will take care of all
   // AudioNodes because they all process within this scope.
@@ -74,7 +75,7 @@ void AudioDestinationHandler::render(AudioBus* sourceBus,
 
   // Let the context take care of any business at the start of each render
   // quantum.
-  context()->handlePreRenderTasks();
+  context()->handlePreRenderTasks(outputPosition);
 
   // Prepare the local audio input provider for this render quantum.
   if (sourceBus)

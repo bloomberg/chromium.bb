@@ -110,11 +110,21 @@ int RendererWebAudioDeviceImpl::Render(base::TimeDelta delay,
   for (int i = 0; i < dest->channels(); ++i)
     web_audio_dest_data[i] = dest->channel(i);
 
+  if (!delay.is_zero()) {  // Zero values are send at the first call.
+    // Substruct the bus duration to get hardware delay.
+    delay -= media::AudioTimestampHelper::FramesToTime(dest->frames(),
+                                                       params_.sample_rate());
+  }
+  DCHECK_GE(delay, base::TimeDelta());
+
   // TODO(xians): Remove the following |web_audio_source_data| after
   // changing the blink interface.
   WebVector<float*> web_audio_source_data(static_cast<size_t>(0));
   client_callback_->render(web_audio_source_data, web_audio_dest_data,
-                           dest->frames());
+                           dest->frames(), delay.InSecondsF(),
+                           (delay_timestamp - base::TimeTicks()).InSecondsF(),
+                           prior_frames_skipped);
+
   return dest->frames();
 }
 

@@ -102,7 +102,8 @@ BaseAudioContext::BaseAudioContext(Document* document)
       m_periodicWaveSine(nullptr),
       m_periodicWaveSquare(nullptr),
       m_periodicWaveSawtooth(nullptr),
-      m_periodicWaveTriangle(nullptr) {
+      m_periodicWaveTriangle(nullptr),
+      m_outputPosition() {
   // If mediaPlaybackRequiresUserGesture is enabled, cross origin iframes will
   // require user gesture for the AudioContext to produce sound.
   if (document->settings() &&
@@ -134,7 +135,8 @@ BaseAudioContext::BaseAudioContext(Document* document,
       m_periodicWaveSine(nullptr),
       m_periodicWaveSquare(nullptr),
       m_periodicWaveSawtooth(nullptr),
-      m_periodicWaveTriangle(nullptr) {}
+      m_periodicWaveTriangle(nullptr),
+      m_outputPosition() {}
 
 BaseAudioContext::~BaseAudioContext() {
   deferredTaskHandler().contextWillBeDestroyed();
@@ -705,7 +707,8 @@ void BaseAudioContext::handleStoppableSourceNodes() {
   }
 }
 
-void BaseAudioContext::handlePreRenderTasks() {
+void BaseAudioContext::handlePreRenderTasks(
+    const AudioIOPosition& outputPosition) {
   DCHECK(isAudioThread());
 
   // At the beginning of every render quantum, try to update the internal
@@ -722,6 +725,9 @@ void BaseAudioContext::handlePreRenderTasks() {
 
     // Update the dirty state of the listener.
     listener()->updateState();
+
+    // Update output timestamp.
+    m_outputPosition = outputPosition;
 
     unlock();
   }
@@ -814,6 +820,12 @@ bool BaseAudioContext::isAllowedToStart() const {
           "An AudioContext in a cross origin iframe must be created or resumed "
           "from a user gesture to enable audio output."));
   return false;
+}
+
+AudioIOPosition BaseAudioContext::outputPosition() {
+  DCHECK(isMainThread());
+  AutoLocker locker(this);
+  return m_outputPosition;
 }
 
 void BaseAudioContext::rejectPendingResolvers() {

@@ -36,6 +36,9 @@
     [MeasureAs=AudioContextSuspend, CallWith=ScriptState, ImplementedAs=suspendContext] Promise<void> suspend();
     [MeasureAs=AudioContextClose, CallWith=ScriptState, ImplementedAs=closeContext] Promise<void> close();
 
+    // Output timestamp
+    [CallWith=ScriptState] AudioTimestamp getOutputTimestamp();
+
     // Sources
     // TODO(rtoy): The following methods should be here instead of in BaseAudioContext:
     //

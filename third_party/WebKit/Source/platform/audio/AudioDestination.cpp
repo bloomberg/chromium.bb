@@ -70,7 +70,9 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
                                    AudioUtilities::kRenderQuantumFrames,
                                    false)),
       m_sampleRate(sampleRate),
-      m_isPlaying(false) {
+      m_isPlaying(false),
+      m_framesElapsed(0),
+      m_outputPosition() {
   // Histogram for audioHardwareBufferSize
   DEFINE_STATIC_LOCAL(SparseHistogram, hardwareBufferSizeHistogram,
                       ("WebAudio.AudioDestination.HardwareBufferSize"));
@@ -171,7 +173,10 @@ unsigned long AudioDestination::maxChannelCount() {
 
 void AudioDestination::render(const WebVector<float*>& sourceData,
                               const WebVector<float*>& audioData,
-                              size_t numberOfFrames) {
+                              size_t numberOfFrames,
+                              double delay,
+                              double delayTimestamp,
+                              size_t priorFramesSkipped) {
   bool isNumberOfChannelsGood = audioData.size() == m_numberOfOutputChannels;
   if (!isNumberOfChannelsGood) {
     ASSERT_NOT_REACHED();
@@ -183,6 +188,13 @@ void AudioDestination::render(const WebVector<float*>& sourceData,
     ASSERT_NOT_REACHED();
     return;
   }
+
+  m_framesElapsed -= std::min(m_framesElapsed, priorFramesSkipped);
+  double outputPosition =
+      m_framesElapsed / static_cast<double>(m_sampleRate) - delay;
+  m_outputPosition.position = outputPosition;
+  m_outputPosition.timestamp = delayTimestamp;
+  m_outputPositionReceivedTimestamp = base::TimeTicks::Now();
 
   // Buffer optional live input.
   if (sourceData.size() >= 2) {
@@ -197,6 +209,8 @@ void AudioDestination::render(const WebVector<float*>& sourceData,
     m_renderBus->setChannelMemory(i, audioData[i], numberOfFrames);
 
   m_fifo->consume(m_renderBus.get(), numberOfFrames);
+
+  m_framesElapsed += numberOfFrames;
 }
 
 void AudioDestination::provideInput(AudioBus* bus, size_t framesToProcess) {
@@ -206,7 +220,24 @@ void AudioDestination::provideInput(AudioBus* bus, size_t framesToProcess) {
     sourceBus = m_inputBus.get();
   }
 
-  m_callback.render(sourceBus, bus, framesToProcess);
+  AudioIOPosition outputPosition = m_outputPosition;
+
+  // If platfrom buffer is more than two times longer than |framesToProcess|
+  // we do not want output position to get stuck so we promote it
+  // using the elapsed time from the moment it was initially obtained.
+  if (m_callbackBufferSize > framesToProcess * 2) {
+    double delta = (base::TimeTicks::Now() - m_outputPositionReceivedTimestamp)
+                       .InSecondsF();
+    outputPosition.position += delta;
+    outputPosition.timestamp += delta;
+  }
+
+  // Some implementations give only rough estimation of |delay| so
+  // we might have negative estimation |outputPosition| value.
+  if (outputPosition.position < 0.0)
+    outputPosition.position = 0.0;
+
+  m_callback.render(sourceBus, bus, framesToProcess, outputPosition);
 }
 
 }  // namespace blink

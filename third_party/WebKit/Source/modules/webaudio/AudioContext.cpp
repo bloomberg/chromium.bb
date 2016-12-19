@@ -9,8 +9,12 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/frame/LocalDOMWindow.h"
 #include "core/frame/UseCounter.h"
+#include "core/timing/DOMWindowPerformance.h"
+#include "core/timing/Performance.h"
 #include "modules/webaudio/AudioBufferCallback.h"
+#include "modules/webaudio/AudioTimestamp.h"
 #include "platform/Histogram.h"
 #include "platform/audio/AudioUtilities.h"
 
@@ -149,6 +153,33 @@ ScriptPromise AudioContext::resumeContext(ScriptState* scriptState) {
   }
 
   return promise;
+}
+
+void AudioContext::getOutputTimestamp(ScriptState* scriptState,
+                                      AudioTimestamp& result) {
+  DCHECK(isMainThread());
+  LocalDOMWindow* window = scriptState->domWindow();
+  if (!window)
+    return;
+
+  if (!destination()) {
+    result.setContextTime(0.0);
+    result.setPerformanceTime(0.0);
+    return;
+  }
+
+  Performance* performance = DOMWindowPerformance::performance(*window);
+  DCHECK(performance);
+
+  AudioIOPosition position = outputPosition();
+
+  double performanceTime =
+      performance->monotonicTimeToDOMHighResTimeStamp(position.timestamp);
+  if (performanceTime < 0.0)
+    performanceTime = 0.0;
+
+  result.setContextTime(position.position);
+  result.setPerformanceTime(performanceTime);
 }
 
 ScriptPromise AudioContext::closeContext(ScriptState* scriptState) {

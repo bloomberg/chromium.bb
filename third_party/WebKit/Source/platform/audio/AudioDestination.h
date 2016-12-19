@@ -82,7 +82,10 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback,
   // WebAudioDevice::RenderCallback
   void render(const WebVector<float*>& sourceData,
               const WebVector<float*>& audioData,
-              size_t numberOfFrames) override;
+              size_t numberOfFrames,
+              double delay,
+              double delayTimestamp,
+              size_t priorFramesSkipped) override;
 
   // AudioSourceProvider
   void provideInput(AudioBus*, size_t framesToProcess) override;
@@ -109,6 +112,10 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback,
 
   std::unique_ptr<AudioFIFO> m_inputFifo;
   std::unique_ptr<AudioPullFIFO> m_fifo;
+
+  size_t m_framesElapsed;
+  AudioIOPosition m_outputPosition;
+  base::TimeTicks m_outputPositionReceivedTimestamp;
 };
 
 }  // namespace blink

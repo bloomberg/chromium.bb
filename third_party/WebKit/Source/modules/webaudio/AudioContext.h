@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class AudioTimestamp;
 class Document;
 class ExceptionState;
 class ScriptState;
@@ -34,6 +35,8 @@ class AudioContext : public BaseAudioContext {
   ScriptPromise resumeContext(ScriptState*) final;
 
   bool hasRealtimeConstraint() final { return true; }
+
+  void getOutputTimestamp(ScriptState*, AudioTimestamp&);
 
  protected:
   AudioContext(Document&);

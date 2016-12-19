@@ -239,7 +239,7 @@ class MODULES_EXPORT BaseAudioContext
   void notifySourceNodeFinishedProcessing(AudioHandler*);
 
   // Called at the start of each render quantum.
-  void handlePreRenderTasks();
+  void handlePreRenderTasks(const AudioIOPosition& outputPosition);
 
   // Called at the end of each render quantum.
   void handlePostRenderTasks();
@@ -347,6 +347,8 @@ class MODULES_EXPORT BaseAudioContext
   // Returns whether the AudioContext is allowed to start rendering.
   bool isAllowedToStart() const;
 
+  AudioIOPosition outputPosition();
+
  private:
   friend class BaseAudioContextTest;
 
@@ -450,6 +452,7 @@ class MODULES_EXPORT BaseAudioContext
   enum { MaxNumberOfChannels = 32 };
 
   Optional<AutoplayStatus> m_autoplayStatus;
+  AudioIOPosition m_outputPosition;
 };
 
 }  // namespace blink

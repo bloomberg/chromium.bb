@@ -49,10 +49,10 @@ let AudioContextOwnProperties = [
   'close',
   'constructor',
   'suspend',
+  'getOutputTimestamp'
 
   // TODO(hongchan): Not implemented yet.
   // 'outputLatency',
-  // 'getOutputTimestamp'
 ];
 
 

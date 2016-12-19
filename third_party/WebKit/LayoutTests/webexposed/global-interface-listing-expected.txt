@@ -176,6 +176,7 @@ interface AudioContext : BaseAudioContext
     attribute @@toStringTag
     method close
     method constructor
+    method getOutputTimestamp
     method suspend
 interface AudioDestinationNode : AudioNode
     attribute @@toStringTag

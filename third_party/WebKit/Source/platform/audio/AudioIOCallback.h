@@ -29,9 +29,19 @@
 #ifndef AudioIOCallback_h
 #define AudioIOCallback_h
 
+#include "base/time/time.h"
+
 namespace blink {
 
 class AudioBus;
+
+struct AudioIOPosition {
+  // Audio stream position in seconds.
+  double position;
+  // System timestamp in seconds corresponding to the contained |position|
+  // value.
+  double timestamp;
+};
 
 // Abstract base-class for isochronous audio I/O client.
 class AudioIOCallback {
@@ -41,7 +51,8 @@ class AudioIOCallback {
   // not 0).
   virtual void render(AudioBus* sourceBus,
                       AudioBus* destinationBus,
-                      size_t framesToProcess) = 0;
+                      size_t framesToProcess,
+                      const AudioIOPosition& outputPosition) = 0;
 
   virtual ~AudioIOCallback() {}
 };

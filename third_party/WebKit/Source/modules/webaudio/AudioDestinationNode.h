@@ -51,7 +51,8 @@ class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
   // sourceBus (if it's not 0).
   void render(AudioBus* sourceBus,
               AudioBus* destinationBus,
-              size_t numberOfFrames) final;
+              size_t numberOfFrames,
+              const AudioIOPosition& outputPosition) final;
 
   size_t currentSampleFrame() const {
     return acquireLoad(&m_currentSampleFrame);
