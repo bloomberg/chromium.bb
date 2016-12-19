@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<meta charset="utf-8">
 <style>
 div {
   position: absolute;
@@ -21,6 +22,7 @@ div {
 <div id="target"></div>
 <div id="expected"></div>
 <script>
+'use strict';
 if (window.testRunner)
   testRunner.waitUntilDone();
 
@@ -30,7 +32,7 @@ function waitForCompositor() {
 
 waitForCompositor().then(() => {
   target.style.transform = 'translateX(50px)';
-}).then(() => waitForCompositor()).then(() => {
+}).then(waitForCompositor).then(() => {
   if (window.testRunner)
     testRunner.notifyDone();
 });
