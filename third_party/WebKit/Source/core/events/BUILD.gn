@@ -58,7 +58,6 @@ blink_core_sources("events") {
     "MessageEvent.cpp",
     "MessageEvent.h",
     "MouseEvent.cpp",
-    "MouseRelatedEvent.cpp",
     "MutationEvent.cpp",
     "MutationEvent.h",
     "NavigatorEvents.cpp",

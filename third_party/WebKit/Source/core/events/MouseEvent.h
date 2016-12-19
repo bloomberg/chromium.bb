@@ -27,14 +27,14 @@
 #include "core/CoreExport.h"
 #include "core/events/EventDispatchMediator.h"
 #include "core/events/MouseEventInit.h"
-#include "core/events/MouseRelatedEvent.h"
+#include "core/events/UIEventWithKeyState.h"
 #include "platform/PlatformMouseEvent.h"
 
 namespace blink {
 class DataTransfer;
 class EventDispatcher;
 
-class CORE_EXPORT MouseEvent : public MouseRelatedEvent {
+class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -134,6 +134,64 @@ class CORE_EXPORT MouseEvent : public MouseRelatedEvent {
 
   const PlatformMouseEvent* mouseEvent() const { return m_mouseEvent.get(); }
 
+  enum class PositionType {
+    Position,
+    // Positionless mouse events are used, for example, for 'click' events from
+    // keyboard input.  It's kind of surprising for a mouse event not to have a
+    // position.
+    Positionless
+  };
+
+  // Note that these values are adjusted to counter the effects of zoom, so that
+  // values exposed via DOM APIs are invariant under zooming.
+  // TODO(mustaq): Remove the PointerEvent specific code when mouse has
+  // fractional coordinates. See crbug.com/655786.
+  double screenX() const {
+    return isPointerEvent() ? m_screenLocation.x()
+                            : static_cast<int>(m_screenLocation.x());
+  }
+  double screenY() const {
+    return isPointerEvent() ? m_screenLocation.y()
+                            : static_cast<int>(m_screenLocation.y());
+  }
+
+  double clientX() const {
+    return isPointerEvent() ? m_clientLocation.x()
+                            : static_cast<int>(m_clientLocation.x());
+  }
+  double clientY() const {
+    return isPointerEvent() ? m_clientLocation.y()
+                            : static_cast<int>(m_clientLocation.y());
+  }
+
+  int movementX() const { return m_movementDelta.x(); }
+  int movementY() const { return m_movementDelta.y(); }
+
+  int layerX();
+  int layerY();
+
+  int offsetX();
+  int offsetY();
+
+  double pageX() const {
+    return isPointerEvent() ? m_pageLocation.x()
+                            : static_cast<int>(m_pageLocation.x());
+  }
+  double pageY() const {
+    return isPointerEvent() ? m_pageLocation.y()
+                            : static_cast<int>(m_pageLocation.y());
+  }
+
+  double x() const { return clientX(); }
+  double y() const { return clientY(); }
+
+  bool hasPosition() const { return m_positionType == PositionType::Position; }
+
+  // Page point in "absolute" coordinates (i.e. post-zoomed, page-relative
+  // coords, usable with LayoutObject::absoluteToLocal) relative to view(), i.e.
+  // the local frame.
+  const DoublePoint& absoluteLocation() const { return m_absoluteLocation; }
+
   DECLARE_VIRTUAL_TRACE();
 
  protected:
@@ -180,6 +238,22 @@ class CORE_EXPORT MouseEvent : public MouseRelatedEvent {
                               InputDeviceCapabilities* sourceCapabilities,
                               unsigned short buttons = 0);
 
+  void initCoordinates(const double clientX, const double clientY);
+  void receivedTarget() final;
+
+  void computePageLocation();
+  void computeRelativePosition();
+
+  DoublePoint m_screenLocation;
+  DoublePoint m_clientLocation;
+  DoublePoint m_movementDelta;
+
+  DoublePoint m_pageLocation;
+  DoublePoint m_layerLocation;
+  DoublePoint m_offsetLocation;
+  DoublePoint m_absoluteLocation;
+  PositionType m_positionType;
+  bool m_hasCachedRelativePosition;
   short m_button;
   unsigned short m_buttons;
   Member<EventTarget> m_relatedTarget;

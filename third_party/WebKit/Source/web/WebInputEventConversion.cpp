@@ -348,11 +348,10 @@ static IntPoint convertAbsoluteLocationForLayoutObjectInt(
 
 // FIXME: Change |widget| to const Widget& after RemoteFrames get
 // RemoteFrameViews.
-static void updateWebMouseEventFromCoreMouseEvent(
-    const MouseRelatedEvent& event,
-    const Widget* widget,
-    const LayoutItem layoutItem,
-    WebMouseEvent& webEvent) {
+static void updateWebMouseEventFromCoreMouseEvent(const MouseEvent& event,
+                                                  const Widget* widget,
+                                                  const LayoutItem layoutItem,
+                                                  WebMouseEvent& webEvent) {
   webEvent.timeStampSeconds = event.platformTimeStamp().InSeconds();
   webEvent.modifiers = event.modifiers();
 

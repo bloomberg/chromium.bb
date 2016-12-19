@@ -26,10 +26,58 @@
 #include "bindings/core/v8/ScriptState.h"
 #include "core/dom/Element.h"
 #include "core/events/EventDispatcher.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalDOMWindow.h"
+#include "core/frame/LocalFrame.h"
+#include "core/layout/LayoutObject.h"
+#include "core/paint/PaintLayer.h"
+#include "core/svg/SVGElement.h"
 #include "platform/PlatformMouseEvent.h"
 #include "public/platform/WebPointerProperties.h"
 
 namespace blink {
+
+namespace {
+
+LayoutSize contentsScrollOffset(AbstractView* abstractView) {
+  if (!abstractView || !abstractView->isLocalDOMWindow())
+    return LayoutSize();
+  LocalFrame* frame = toLocalDOMWindow(abstractView)->frame();
+  if (!frame)
+    return LayoutSize();
+  FrameView* frameView = frame->view();
+  if (!frameView)
+    return LayoutSize();
+  float scaleFactor = frame->pageZoomFactor();
+  return LayoutSize(frameView->scrollX() / scaleFactor,
+                    frameView->scrollY() / scaleFactor);
+}
+
+float pageZoomFactor(const UIEvent* event) {
+  if (!event->view() || !event->view()->isLocalDOMWindow())
+    return 1;
+  LocalFrame* frame = toLocalDOMWindow(event->view())->frame();
+  if (!frame)
+    return 1;
+  return frame->pageZoomFactor();
+}
+
+const LayoutObject* findTargetLayoutObject(Node*& targetNode) {
+  LayoutObject* layoutObject = targetNode->layoutObject();
+  if (!layoutObject || !layoutObject->isSVG())
+    return layoutObject;
+  // If this is an SVG node, compute the offset to the padding box of the
+  // outermost SVG root (== the closest ancestor that has a CSS layout box.)
+  while (!layoutObject->isSVGRoot())
+    layoutObject = layoutObject->parent();
+  // Update the target node to point to the SVG root.
+  targetNode = layoutObject->node();
+  DCHECK(!targetNode || (targetNode->isSVGElement() &&
+                         toSVGElement(*targetNode).isOutermostSVGSVGElement()));
+  return layoutObject;
+}
+
+}  // namespace
 
 MouseEvent* MouseEvent::create(ScriptState* scriptState,
                                const AtomicString& type,
@@ -126,7 +174,9 @@ MouseEvent* MouseEvent::create(const AtomicString& eventType,
 }
 
 MouseEvent::MouseEvent()
-    : m_button(0),
+    : m_positionType(PositionType::Position),
+      m_hasCachedRelativePosition(false),
+      m_button(0),
       m_buttons(0),
       m_relatedTarget(nullptr),
       m_syntheticEventType(PlatformMouseEvent::RealOrIndistinguishable) {}
@@ -135,7 +185,7 @@ MouseEvent::MouseEvent(
     const AtomicString& eventType,
     bool canBubble,
     bool cancelable,
-    AbstractView* view,
+    AbstractView* abstractView,
     int detail,
     int screenX,
     int screenY,
@@ -151,24 +201,23 @@ MouseEvent::MouseEvent(
     PlatformMouseEvent::SyntheticEventType syntheticEventType,
     const String& region,
     const PlatformMouseEvent* mouseEvent)
-    : MouseRelatedEvent(
+    : UIEventWithKeyState(
           eventType,
           canBubble,
           cancelable,
-          view,
+          abstractView,
           detail,
-          IntPoint(screenX, screenY),
-          IntPoint(windowX, windowY),
-          IntPoint(movementX, movementY),
           modifiers,
           platformTimeStamp,
-          syntheticEventType == PlatformMouseEvent::Positionless
-              ? PositionType::Positionless
-              : PositionType::Position,
           syntheticEventType == PlatformMouseEvent::FromTouch
               ? InputDeviceCapabilities::firesTouchEventsSourceCapabilities()
               : InputDeviceCapabilities::
                     doesntFireTouchEventsSourceCapabilities()),
+      m_screenLocation(screenX, screenY),
+      m_movementDelta(movementX, movementY),
+      m_positionType(syntheticEventType == PlatformMouseEvent::Positionless
+                         ? PositionType::Positionless
+                         : PositionType::Position),
       m_button(button),
       m_buttons(buttons),
       m_relatedTarget(relatedTarget),
@@ -176,16 +225,66 @@ MouseEvent::MouseEvent(
       m_region(region) {
   if (mouseEvent)
     m_mouseEvent.reset(new PlatformMouseEvent(*mouseEvent));
+
+  DoublePoint adjustedPageLocation;
+  DoubleSize scrollOffset;
+
+  LocalFrame* frame = view() && view()->isLocalDOMWindow()
+                          ? toLocalDOMWindow(view())->frame()
+                          : nullptr;
+  if (frame && hasPosition()) {
+    if (FrameView* frameView = frame->view()) {
+      adjustedPageLocation =
+          frameView->rootFrameToContents(IntPoint(windowX, windowY));
+      scrollOffset = frameView->scrollOffsetInt();
+      float scaleFactor = 1 / frame->pageZoomFactor();
+      if (scaleFactor != 1.0f) {
+        adjustedPageLocation.scale(scaleFactor, scaleFactor);
+        scrollOffset.scale(scaleFactor, scaleFactor);
+      }
+    }
+  }
+
+  m_clientLocation = adjustedPageLocation - scrollOffset;
+  m_pageLocation = adjustedPageLocation;
+
+  // Set up initial values for coordinates.
+  // Correct values are computed lazily, see computeRelativePosition.
+  m_layerLocation = m_pageLocation;
+  m_offsetLocation = m_pageLocation;
+
+  computePageLocation();
+  m_hasCachedRelativePosition = false;
 }
 
 MouseEvent::MouseEvent(const AtomicString& eventType,
                        const MouseEventInit& initializer)
-    : MouseRelatedEvent(eventType, initializer),
+    : UIEventWithKeyState(eventType, initializer),
+      m_screenLocation(
+          DoublePoint(initializer.screenX(), initializer.screenY())),
+      m_movementDelta(
+          IntPoint(initializer.movementX(), initializer.movementY())),
+      m_positionType(PositionType::Position),
       m_button(initializer.button()),
       m_buttons(initializer.buttons()),
       m_relatedTarget(initializer.relatedTarget()),
       m_syntheticEventType(PlatformMouseEvent::RealOrIndistinguishable),
-      m_region(initializer.region()) {}
+      m_region(initializer.region()) {
+  initCoordinates(initializer.clientX(), initializer.clientY());
+}
+
+void MouseEvent::initCoordinates(const double clientX, const double clientY) {
+  // Set up initial values for coordinates.
+  // Correct values are computed lazily, see computeRelativePosition.
+  m_clientLocation = DoublePoint(clientX, clientY);
+  m_pageLocation = m_clientLocation + DoubleSize(contentsScrollOffset(view()));
+
+  m_layerLocation = m_pageLocation;
+  m_offsetLocation = m_pageLocation;
+
+  computePageLocation();
+  m_hasCachedRelativePosition = false;
+}
 
 MouseEvent::~MouseEvent() {}
 
@@ -302,7 +401,7 @@ Node* MouseEvent::fromElement() const {
 
 DEFINE_TRACE(MouseEvent) {
   visitor->trace(m_relatedTarget);
-  MouseRelatedEvent::trace(visitor);
+  UIEventWithKeyState::trace(visitor);
 }
 
 EventDispatchMediator* MouseEvent::createMediator() {
@@ -370,6 +469,103 @@ DispatchEventResult MouseEventDispatchMediator::dispatchEvent(
   if (doubleClickDispatchResult != DispatchEventResult::NotCanceled)
     return doubleClickDispatchResult;
   return dispatchResult;
+}
+
+void MouseEvent::computePageLocation() {
+  float scaleFactor = pageZoomFactor(this);
+  m_absoluteLocation = m_pageLocation.scaledBy(scaleFactor);
+}
+
+void MouseEvent::receivedTarget() {
+  m_hasCachedRelativePosition = false;
+}
+
+void MouseEvent::computeRelativePosition() {
+  Node* targetNode = target() ? target()->toNode() : nullptr;
+  if (!targetNode)
+    return;
+
+  // Compute coordinates that are based on the target.
+  m_layerLocation = m_pageLocation;
+  m_offsetLocation = m_pageLocation;
+
+  // Must have an updated layout tree for this math to work correctly.
+  targetNode->document().updateStyleAndLayoutIgnorePendingStylesheets();
+
+  // Adjust offsetLocation to be relative to the target's padding box.
+  if (const LayoutObject* layoutObject = findTargetLayoutObject(targetNode)) {
+    FloatPoint localPos = layoutObject->absoluteToLocal(
+        FloatPoint(absoluteLocation()), UseTransforms);
+
+    // Adding this here to address crbug.com/570666. Basically we'd like to
+    // find the local coordinates relative to the padding box not the border
+    // box.
+    if (layoutObject->isBoxModelObject()) {
+      const LayoutBoxModelObject* layoutBox =
+          toLayoutBoxModelObject(layoutObject);
+      localPos.move(-layoutBox->borderLeft(), -layoutBox->borderTop());
+    }
+
+    m_offsetLocation = DoublePoint(localPos);
+    float scaleFactor = 1 / pageZoomFactor(this);
+    if (scaleFactor != 1.0f)
+      m_offsetLocation.scale(scaleFactor, scaleFactor);
+  }
+
+  // Adjust layerLocation to be relative to the layer.
+  // FIXME: event.layerX and event.layerY are poorly defined,
+  // and probably don't always correspond to PaintLayer offsets.
+  // https://bugs.webkit.org/show_bug.cgi?id=21868
+  Node* n = targetNode;
+  while (n && !n->layoutObject())
+    n = n->parentNode();
+
+  if (n) {
+    // FIXME: This logic is a wrong implementation of convertToLayerCoords.
+    for (PaintLayer* layer = n->layoutObject()->enclosingLayer(); layer;
+         layer = layer->parent()) {
+      m_layerLocation -= DoubleSize(layer->location().x().toDouble(),
+                                    layer->location().y().toDouble());
+    }
+  }
+
+  m_hasCachedRelativePosition = true;
+}
+
+int MouseEvent::layerX() {
+  if (!m_hasCachedRelativePosition)
+    computeRelativePosition();
+
+  // TODO(mustaq): Remove the PointerEvent specific code when mouse has
+  // fractional coordinates. See crbug.com/655786.
+  return isPointerEvent() ? m_layerLocation.x()
+                          : static_cast<int>(m_layerLocation.x());
+}
+
+int MouseEvent::layerY() {
+  if (!m_hasCachedRelativePosition)
+    computeRelativePosition();
+
+  // TODO(mustaq): Remove the PointerEvent specific code when mouse has
+  // fractional coordinates. See crbug.com/655786.
+  return isPointerEvent() ? m_layerLocation.y()
+                          : static_cast<int>(m_layerLocation.y());
+}
+
+int MouseEvent::offsetX() {
+  if (!hasPosition())
+    return 0;
+  if (!m_hasCachedRelativePosition)
+    computeRelativePosition();
+  return std::round(m_offsetLocation.x());
+}
+
+int MouseEvent::offsetY() {
+  if (!hasPosition())
+    return 0;
+  if (!m_hasCachedRelativePosition)
+    computeRelativePosition();
+  return std::round(m_offsetLocation.y());
 }
 
 }  // namespace blink
