@@ -28,23 +28,19 @@ ArcKioskAppService* ArcKioskAppService::Get(content::BrowserContext* context) {
 void ArcKioskAppService::OnAppRegistered(
     const std::string& app_id,
     const ArcAppListPrefs::AppInfo& app_info) {
-  if (app_id == app_id_)
-    PreconditionsChanged();
+  PreconditionsChanged();
 }
 
 void ArcKioskAppService::OnAppReadyChanged(const std::string& id, bool ready) {
-  if (id == app_id_)
-    PreconditionsChanged();
+  PreconditionsChanged();
 }
 
 void ArcKioskAppService::OnPackageListInitialRefreshed() {
   // The app could already be registered.
-  app_id_ = GetAppId();
   PreconditionsChanged();
 }
 
 void ArcKioskAppService::OnArcKioskAppsChanged() {
-  app_id_ = GetAppId();
   PreconditionsChanged();
 }
 
@@ -73,7 +69,6 @@ ArcKioskAppService::ArcKioskAppService(Profile* profile, ArcAppListPrefs* prefs)
   app_manager_ = ArcKioskAppManager::Get();
   if (app_manager_) {
     app_manager_->AddObserver(this);
-    app_id_ = GetAppId();
   }
   pref_change_registrar_.reset(new PrefChangeRegistrar());
   pref_change_registrar_->Init(profile_->GetPrefs());
@@ -93,6 +88,9 @@ ArcKioskAppService::~ArcKioskAppService() {
 }
 
 void ArcKioskAppService::PreconditionsChanged() {
+  app_id_ = GetAppId();
+  if (app_id_.empty())
+    return;
   app_info_ = prefs_->GetApp(app_id_);
   if (app_info_ && app_info_->ready &&
       profile_->GetPrefs()->GetBoolean(prefs::kArcPolicyCompliant)) {
