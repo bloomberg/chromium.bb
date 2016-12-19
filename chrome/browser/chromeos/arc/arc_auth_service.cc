@@ -233,6 +233,9 @@ void ArcAuthService::RequestAccountInfoInternal(
         ArcSessionManager::Get()->profile(),
         ArcSessionManager::Get()->auth_context());
   } else {
+    // Report that silent auth code is not activated. All other states are
+    // reported in ArcBackgroundAuthCodeFetcher.
+    UpdateSilentAuthCodeUMA(OptInSilentAuthCode::DISABLED);
     // Otherwise, show LSO page and let user click "Sign in" button.
     // Here, support_host should be available always. The case support_host is
     // not created is when 1) IsOptInVerificationDisabled() is true or 2)

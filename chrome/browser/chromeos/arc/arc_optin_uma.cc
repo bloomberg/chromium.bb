@@ -49,4 +49,9 @@ void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
       ->AddTime(elapsed_time);
 }
 
+void UpdateSilentAuthCodeUMA(OptInSilentAuthCode state) {
+  UMA_HISTOGRAM_ENUMERATION("Arc.OptInSilentAuthCode", static_cast<int>(state),
+                            static_cast<int>(OptInSilentAuthCode::SIZE));
+}
+
 }  // namespace arc
