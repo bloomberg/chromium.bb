@@ -131,7 +131,7 @@ class CORE_EXPORT WorkerGlobalScope
   void postTask(TaskType,
                 const WebTraceLocation&,
                 std::unique_ptr<ExecutionContextTask>,
-                const String& taskNameForInstrumentation) final;
+                const String& taskNameForInstrumentation = emptyString()) final;
 
   DOMTimerCoordinator* timers() final { return &m_timers; }
   SecurityContext& securityContext() final { return *this; }

@@ -59,7 +59,7 @@ bool WorkerEventQueue::enqueueEvent(Event* event) {
       event->target()->getExecutionContext(), event->type(), event);
   m_pendingEvents.add(event);
   m_workerGlobalScope->postTask(
-      BLINK_FROM_HERE,
+      TaskType::Internal, BLINK_FROM_HERE,
       createSameThreadTask(&WorkerEventQueue::dispatchEvent,
                            wrapPersistent(this), wrapWeakPersistent(event)));
   return true;
