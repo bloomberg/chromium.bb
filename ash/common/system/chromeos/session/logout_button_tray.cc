@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/common/material_design/material_design_controller.h"
+#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
@@ -189,7 +190,7 @@ void LogoutButtonTray::UpdateButtonTextAndImage(LoginStatus login_status,
   const int button_size = MaterialDesignController::IsShelfMaterial()
                               ? kTrayItemSize
                               : GetTrayConstant(TRAY_ITEM_HEIGHT_LEGACY);
-  if (alignment == SHELF_ALIGNMENT_BOTTOM) {
+  if (IsHorizontalAlignment(alignment)) {
     button_->SetText(title);
     button_->SetImage(views::LabelButton::STATE_NORMAL, gfx::ImageSkia());
     button_->SetMinSize(gfx::Size(0, button_size));

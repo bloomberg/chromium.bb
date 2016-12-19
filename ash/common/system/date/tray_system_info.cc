@@ -48,7 +48,7 @@ views::View* TraySystemInfo::CreateDefaultViewForTesting(LoginStatus status) {
 views::View* TraySystemInfo::CreateTrayView(LoginStatus status) {
   CHECK(tray_view_ == nullptr);
   tray::TimeView::ClockLayout clock_layout =
-      system_tray()->shelf_alignment() == SHELF_ALIGNMENT_BOTTOM
+      IsHorizontalAlignment(system_tray()->shelf_alignment())
           ? tray::TimeView::ClockLayout::HORIZONTAL_CLOCK
           : tray::TimeView::ClockLayout::VERTICAL_CLOCK;
   tray_view_ = new tray::TimeView(clock_layout);
