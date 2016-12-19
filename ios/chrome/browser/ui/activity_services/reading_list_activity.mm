@@ -1,0 +1,80 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "ios/chrome/browser/ui/activity_services/reading_list_activity.h"
+
+#include "base/logging.h"
+#import "ios/chrome/browser/ui/commands/UIKit+ChromeExecuteCommand.h"
+#include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
+#include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util_mac.h"
+#include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+namespace {
+
+NSString* const kReadingListActivityType =
+    @"com.google.chrome.readingListActivity";
+
+}  // namespace
+
+@interface ReadingListActivity () {
+  GURL _activityURL;
+  NSString* _title;
+  // The responder that receives ChromeCommands when the activity is performed.
+  __weak UIResponder* _responder;
+}
+@end
+
+@implementation ReadingListActivity
+
++ (NSString*)activityIdentifier {
+  return kReadingListActivityType;
+}
+
+- (instancetype)initWithURL:(const GURL&)activityURL
+                      title:(NSString*)title
+                  responder:(UIResponder*)responder {
+  if (self = [super init]) {
+    _responder = responder;
+    _activityURL = activityURL;
+    _title = [NSString stringWithString:title];
+  }
+  return self;
+}
+
+#pragma mark - UIActivity
+
+- (NSString*)activityType {
+  return [[self class] activityIdentifier];
+}
+
+- (NSString*)activityTitle {
+  return l10n_util::GetNSString(IDS_IOS_SHARE_MENU_READING_LIST_ACTION);
+}
+
+- (UIImage*)activityImage {
+  return [UIImage imageNamed:@"activity_services_reading_list"];
+}
+
+- (BOOL)canPerformWithActivityItems:(NSArray*)activityItems {
+  return YES;
+}
+
++ (UIActivityCategory)activityCategory {
+  return UIActivityCategoryAction;
+}
+
+- (void)performActivity {
+  ReadingListAddCommand* command =
+      [[ReadingListAddCommand alloc] initWithURL:_activityURL title:_title];
+  [_responder chromeExecuteCommand:command];
+  [self activityDidFinish:YES];
+}
+
+@end
