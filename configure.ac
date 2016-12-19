@@ -88,8 +88,9 @@ PKG_PROG_PKG_CONFIG()
 
 WESTON_SEARCH_LIBS([DLOPEN], [dl], [dlopen])
 
-# In old glibc versions (< 2.17) clock_gettime() is in librt
+# In old glibc versions (< 2.17) clock_gettime() and clock_getres() are in librt
 WESTON_SEARCH_LIBS([CLOCK_GETTIME], [rt], [clock_gettime])
+WESTON_SEARCH_LIBS([CLOCK_GETRES], [rt], [clock_getres])
 
 AC_CHECK_DECL(SFD_CLOEXEC,[],
 	      [AC_MSG_ERROR("SFD_CLOEXEC is needed to compile weston")],
