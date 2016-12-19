@@ -76,10 +76,6 @@ class CORE_EXPORT PointerEventManager
   // the last event was sent to the given frame.
   bool isTouchPointerIdActiveOnFrame(int, LocalFrame*) const;
 
-  // TODO(crbug.com/625843): This can be hidden when mouse refactoring in
-  // EventHandler is done.
-  EventTarget* getMouseCapturingNode();
-
   // Returns true if the primary pointerdown corresponding to the given
   // |uniqueTouchEventId| was canceled. Also drops stale ids from
   // |m_touchIdsForCanceledPointerdowns|.

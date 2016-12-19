@@ -18,11 +18,11 @@ green received pointermove
 green received mousemove
 --- Set pointercapture for blue ---
  **** Move to blue box *****
-blue received gotpointercapture
 green received pointerout
 green received pointerleave
 blue received pointerover
 blue received pointerenter
+blue received gotpointercapture
 green received mouseout
 green received mouseleave
 blue received mouseover
@@ -81,11 +81,11 @@ green received pointermove
 green received mousemove
  **** Set initial capturing and jiggle mouse in green *****
 --- Set pointercapture for blue ---
-blue received gotpointercapture
 green received pointerout
 green received pointerleave
 blue received pointerover
 blue received pointerenter
+blue received gotpointercapture
 green received mouseout
 green received mouseleave
 blue received mouseover
@@ -123,14 +123,22 @@ green received mousemove
 --- Release pointercapture for green ---
  **** Move to blue box *****
 green received lostpointercapture
-green received pointermove
-green received mousemove
- ****  Move out of grey, then release *****
 green received pointerout
 green received pointerleave
-grey received pointerleave
+blue received pointerover
+blue received pointerenter
 green received mouseout
 green received mouseleave
+blue received mouseover
+blue received mouseenter
+blue received pointermove
+blue received mousemove
+ ****  Move out of grey, then release *****
+blue received pointerout
+blue received pointerleave
+grey received pointerleave
+blue received mouseout
+blue received mouseleave
 grey received mouseleave
 
     ==== 'blue' is capturing and then 'green' will capture; will move pointer to 'blue' ====
@@ -145,11 +153,11 @@ green received pointermove
 green received mousemove
  **** Set initial capturing and jiggle mouse in green *****
 --- Set pointercapture for blue ---
-blue received gotpointercapture
 green received pointerout
 green received pointerleave
 blue received pointerover
 blue received pointerenter
+blue received gotpointercapture
 green received mouseout
 green received mouseleave
 blue received mouseover
@@ -159,11 +167,11 @@ blue received mousemove
 --- Set pointercapture for green ---
  **** Move to blue box *****
 blue received lostpointercapture
-green received gotpointercapture
 blue received pointerout
 blue received pointerleave
 green received pointerover
 green received pointerenter
+green received gotpointercapture
 blue received mouseout
 blue received mouseleave
 green received mouseover
@@ -199,11 +207,11 @@ green received mousemove
 --- Set pointercapture for blue ---
  **** Move to blue box *****
 green received lostpointercapture
-blue received gotpointercapture
 green received pointerout
 green received pointerleave
 blue received pointerover
 blue received pointerenter
+blue received gotpointercapture
 green received mouseout
 green received mouseleave
 blue received mouseover
@@ -236,11 +244,11 @@ green received pointermove
 green received mousemove
 --- Set pointercapture for blue ---
  **** Jiggle mouse in green *****
-blue received gotpointercapture
 green received pointerout
 green received pointerleave
 blue received pointerover
 blue received pointerenter
+blue received gotpointercapture
 green received mouseout
 green received mouseleave
 blue received mouseover
@@ -299,11 +307,11 @@ green received pointermove
 green received mousemove
  **** Set initial capturing and jiggle mouse in green *****
 --- Set pointercapture for blue ---
-blue received gotpointercapture
 green received pointerout
 green received pointerleave
 blue received pointerover
 blue received pointerenter
+blue received gotpointercapture
 green received mouseout
 green received mouseleave
 blue received mouseover
@@ -313,14 +321,22 @@ blue received mousemove
 --- Release pointercapture for blue ---
  **** Jiggle mouse in green *****
 blue received lostpointercapture
-blue received pointermove
-blue received mousemove
- ****  Move out of grey, then release *****
 blue received pointerout
 blue received pointerleave
-grey received pointerleave
+green received pointerover
+green received pointerenter
 blue received mouseout
 blue received mouseleave
+green received mouseover
+green received mouseenter
+green received pointermove
+green received mousemove
+ ****  Move out of grey, then release *****
+green received pointerout
+green received pointerleave
+grey received pointerleave
+green received mouseout
+green received mouseleave
 grey received mouseleave
 
     ==== 'green' is capturing and then 'none' will capture ====
@@ -363,11 +379,11 @@ green received pointermove
 green received mousemove
  **** Set initial capturing and jiggle mouse in green *****
 --- Set pointercapture for blue ---
-blue received gotpointercapture
 green received pointerout
 green received pointerleave
 blue received pointerover
 blue received pointerenter
+blue received gotpointercapture
 green received mouseout
 green received mouseleave
 blue received mouseover
@@ -377,11 +393,11 @@ blue received mousemove
 --- Set pointercapture for green ---
  **** Jiggle mouse in green *****
 blue received lostpointercapture
-green received gotpointercapture
 blue received pointerout
 blue received pointerleave
 green received pointerover
 green received pointerenter
+green received gotpointercapture
 blue received mouseout
 blue received mouseleave
 green received mouseover
@@ -417,11 +433,11 @@ green received mousemove
 --- Set pointercapture for blue ---
  **** Jiggle mouse in green *****
 green received lostpointercapture
-blue received gotpointercapture
 green received pointerout
 green received pointerleave
 blue received pointerover
 blue received pointerenter
+blue received gotpointercapture
 green received mouseout
 green received mouseleave
 blue received mouseover

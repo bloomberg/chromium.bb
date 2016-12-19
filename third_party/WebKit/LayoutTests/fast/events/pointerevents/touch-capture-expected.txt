@@ -283,12 +283,12 @@ green received pointerenter 14
 green received pointerdown 14
      --- Set pointer capture to blue 14 ---
 green received touchstart
-blue received gotpointercapture 14
 green received pointerout 14
 green received pointerleave 14
 grey received pointerleave 14
 blue received pointerover 14
 blue received pointerenter 14
+blue received gotpointercapture 14
 blue received pointermove 14
 green received touchmove
     **** Move to blue box & jiggle ****
@@ -311,12 +311,12 @@ green received pointerenter 15
 green received pointerdown 15
      --- Set pointer capture to blue 15 ---
 green received touchstart
-blue received gotpointercapture 15
 green received pointerout 15
 green received pointerleave 15
 grey received pointerleave 15
 blue received pointerover 15
 blue received pointerenter 15
+blue received gotpointercapture 15
 blue received pointermove 15
 green received touchmove
     **** Move to blue box & jiggle ****
@@ -343,12 +343,12 @@ blue received pointerover 17
 blue received pointerenter 17
 blue received pointerdown 17
 blue received touchstart
-blue received gotpointercapture 16
 green received pointerout 16
 green received pointerleave 16
 grey received pointerleave 16
 blue received pointerover 16
 blue received pointerenter 16
+blue received gotpointercapture 16
 blue received pointermove 16
 green received touchmove
 blue received gotpointercapture 17
@@ -387,12 +387,12 @@ blue received pointerover 19
 blue received pointerenter 19
 blue received pointerdown 19
 blue received touchstart
-blue received gotpointercapture 18
 green received pointerout 18
 green received pointerleave 18
 grey received pointerleave 18
 blue received pointerover 18
 blue received pointerenter 18
+blue received gotpointercapture 18
 blue received pointermove 18
 green received touchmove
 blue received gotpointercapture 19

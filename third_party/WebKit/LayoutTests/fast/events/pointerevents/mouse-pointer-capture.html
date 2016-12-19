@@ -67,7 +67,7 @@ var pointereventProperties = [
 ];
 
 function checkPointerCaptureProperties(lastPointerEvent, currentPointerEvent) {
-  if (lastPointerEvent == null)
+  if (lastPointerEvent == null || lastPointerEvent.target == document)
     return false;
 
   var isImmediateRelease = (lastPointerEvent.type == 'pointerup') &&
@@ -77,10 +77,10 @@ function checkPointerCaptureProperties(lastPointerEvent, currentPointerEvent) {
   if (!isImmediateRelease && !isDelayedCapture)
     return false;
 
-  for (var i = 0; i< pointereventProperties. length; i++) {
+  for (var i = 0; i < pointereventProperties.length; i++) {
     var property = pointereventProperties[i];
     if (lastPointerEvent[property] !== currentPointerEvent[property]) {
-      debug("Capture pointer event attributes are incorrect!");
+      debug("Capture pointer event attributes are incorrect! ");
       return true;
     }
   }

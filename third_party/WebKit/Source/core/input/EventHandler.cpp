@@ -1184,12 +1184,7 @@ void EventHandler::setCapturingMouseEventsNode(Node* n) {
 Node* EventHandler::updateMouseEventTargetNode(Node* targetNode) {
   Node* newNodeUnderMouse = targetNode;
 
-  // If we're capturing, we always go right to that node.
-  if (EventTarget* mousePointerCapturingNode =
-          m_pointerEventManager->getMouseCapturingNode()) {
-    newNodeUnderMouse = mousePointerCapturingNode->toNode();
-    DCHECK(newNodeUnderMouse);
-  } else if (m_capturingMouseEventsNode) {
+  if (m_capturingMouseEventsNode) {
     newNodeUnderMouse = m_capturingMouseEventsNode.get();
   } else {
     // If the target node is a text node, dispatch on the parent node -

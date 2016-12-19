@@ -575,16 +575,16 @@ void PointerEventManager::processPendingPointerCapture(
                          m_pointerEventFactory.createPointerCaptureEvent(
                              pointerEvent, EventTypeNames::lostpointercapture));
   }
-  // Note that If pendingPointerCaptureTarget is null dispatchPointerEvent
-  // automatically does nothing.
-  dispatchPointerEvent(pendingPointerCaptureTarget,
-                       m_pointerEventFactory.createPointerCaptureEvent(
-                           pointerEvent, EventTypeNames::gotpointercapture));
 
-  if (pendingPointerCaptureTarget)
+  if (pendingPointerCaptureTarget) {
+    setNodeUnderPointer(pointerEvent, pendingPointerCaptureTarget);
+    dispatchPointerEvent(pendingPointerCaptureTarget,
+                         m_pointerEventFactory.createPointerCaptureEvent(
+                             pointerEvent, EventTypeNames::gotpointercapture));
     m_pointerCaptureTarget.set(pointerId, pendingPointerCaptureTarget);
-  else
+  } else {
     m_pointerCaptureTarget.remove(pointerId);
+  }
 }
 
 void PointerEventManager::removeTargetFromPointerCapturingMapping(
@@ -696,10 +696,6 @@ bool PointerEventManager::primaryPointerdownCanceled(
       return true;
   }
   return false;
-}
-
-EventTarget* PointerEventManager::getMouseCapturingNode() {
-  return getCapturingNode(PointerEventFactory::s_mouseId);
 }
 
 }  // namespace blink
