@@ -91,6 +91,7 @@
 #include "public/platform/WebMediaPlayerClient.h"
 #include "public/platform/WebMediaSource.h"
 #include "public/platform/WebMediaStreamSource.h"
+#include "public/platform/WebMouseWheelEvent.h"
 #include "public/platform/WebPageVisibilityState.h"
 #include "public/platform/WebReferrerPolicy.h"
 #include "public/platform/WebScrollbar.h"

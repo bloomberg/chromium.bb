@@ -6,6 +6,8 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
+#include "third_party/WebKit/public/platform/WebMouseWheelEvent.h"
 
 using base::StringAppendF;
 using base::SStringPrintf;
@@ -254,7 +256,7 @@ uint32_t WebInputEventTraits::GetUniqueTouchEventId(
 
 // static
 LatencyInfo WebInputEventTraits::CreateLatencyInfoForWebGestureEvent(
-    WebGestureEvent event) {
+    const WebGestureEvent& event) {
   SourceEventType source_event_type = SourceEventType::UNKNOWN;
   if (event.sourceDevice == blink::WebGestureDevice::WebGestureDeviceTouchpad) {
     source_event_type = SourceEventType::WHEEL;

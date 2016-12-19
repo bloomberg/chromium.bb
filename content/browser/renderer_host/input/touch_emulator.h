@@ -16,6 +16,10 @@
 #include "ui/events/gesture_detection/gesture_provider_config_helper.h"
 #include "ui/gfx/geometry/size_f.h"
 
+namespace blink {
+class WebMouseWheelEvent;
+}
+
 namespace content {
 
 // Emulates touch input with mouse and keyboard.

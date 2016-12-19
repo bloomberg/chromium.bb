@@ -5,7 +5,9 @@
 #include "ui/events/blink/web_input_event_traits.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebMouseWheelEvent.h"
 
 using blink::WebGestureEvent;
 using blink::WebInputEvent;

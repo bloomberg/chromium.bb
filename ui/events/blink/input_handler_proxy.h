@@ -24,6 +24,10 @@ namespace base {
 class TickClock;
 }
 
+namespace blink {
+class WebMouseWheelEvent;
+}
+
 namespace ui {
 
 namespace test {

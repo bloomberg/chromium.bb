@@ -5,10 +5,14 @@
 #ifndef UI_EVENTS_BLINK_WEB_INPUT_EVENT_TRAITS_H_
 #define UI_EVENTS_BLINK_WEB_INPUT_EVENT_TRAITS_H_
 
-#include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/events/blink/scoped_web_input_event.h"
 #include "ui/events/latency_info.h"
+
+namespace blink {
+class WebGestureEvent;
+class WebMouseWheelEvent;
+}
 
 namespace ui {
 
@@ -26,7 +30,7 @@ class WebInputEventTraits {
   // Return uniqueTouchEventId for WebTouchEvent, otherwise return 0.
   static uint32_t GetUniqueTouchEventId(const blink::WebInputEvent& event);
   static LatencyInfo CreateLatencyInfoForWebGestureEvent(
-      blink::WebGestureEvent event);
+      const blink::WebGestureEvent& event);
 };
 
 }  // namespace ui

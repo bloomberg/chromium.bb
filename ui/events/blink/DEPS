@@ -10,6 +10,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebFloatSize.h",
   "+third_party/WebKit/public/platform/WebGestureEvent.h",
   "+third_party/WebKit/public/platform/WebInputEvent.h",
+  "+third_party/WebKit/public/platform/WebMouseWheelEvent.h",
   "+third_party/WebKit/public/platform/WebPoint.h",
   "+third_party/WebKit/public/web/WebActiveWheelFlingParameters.h",
 

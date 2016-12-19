@@ -424,65 +424,6 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
         clickCount(0) {}
 };
 
-// WebMouseWheelEvent ---------------------------------------------------------
-
-class WebMouseWheelEvent : public WebMouseEvent {
- public:
-  enum Phase {
-    PhaseNone = 0,
-    PhaseBegan = 1 << 0,
-    PhaseStationary = 1 << 1,
-    PhaseChanged = 1 << 2,
-    PhaseEnded = 1 << 3,
-    PhaseCancelled = 1 << 4,
-    PhaseMayBegin = 1 << 5,
-  };
-
-  float deltaX;
-  float deltaY;
-  float wheelTicksX;
-  float wheelTicksY;
-
-  float accelerationRatioX;
-  float accelerationRatioY;
-
-  // This field exists to allow BrowserPlugin to mark MouseWheel events as
-  // 'resent' to handle the case where an event is not consumed when first
-  // encountered; it should be handled differently by the plugin when it is
-  // sent for thesecond time. No code within Blink touches this, other than to
-  // plumb it through event conversions.
-  int resendingPluginId;
-
-  Phase phase;
-  Phase momentumPhase;
-
-  bool scrollByPage;
-  bool hasPreciseScrollingDeltas;
-
-  RailsMode railsMode;
-
-  // Whether the event is blocking, non-blocking, all event
-  // listeners were passive or was forced to be non-blocking.
-  DispatchType dispatchType;
-
-  WebMouseWheelEvent()
-      : WebMouseEvent(sizeof(WebMouseWheelEvent)),
-        deltaX(0.0f),
-        deltaY(0.0f),
-        wheelTicksX(0.0f),
-        wheelTicksY(0.0f),
-        accelerationRatioX(1.0f),
-        accelerationRatioY(1.0f),
-        resendingPluginId(-1),
-        phase(PhaseNone),
-        momentumPhase(PhaseNone),
-        scrollByPage(false),
-        hasPreciseScrollingDeltas(false),
-        railsMode(RailsModeFree),
-        dispatchType(Blocking) {}
-};
-
-
 // WebTouchEvent --------------------------------------------------------------
 
 // TODO(e_hakkinen): Replace with WebPointerEvent. crbug.com/508283

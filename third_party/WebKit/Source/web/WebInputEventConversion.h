@@ -36,6 +36,7 @@
 #include "platform/PlatformWheelEvent.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "public/platform/WebInputEvent.h"
+#include "public/platform/WebMouseWheelEvent.h"
 #include "web/WebExport.h"
 #include "wtf/Compiler.h"
 #include <vector>
@@ -48,7 +49,6 @@ class LayoutItem;
 class TouchEvent;
 class WebGestureEvent;
 class WebMouseEvent;
-class WebMouseWheelEvent;
 class WebKeyboardEvent;
 class WebTouchEvent;
 class WheelEvent;

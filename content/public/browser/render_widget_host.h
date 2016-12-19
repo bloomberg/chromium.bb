@@ -28,6 +28,7 @@ class Rect;
 
 namespace blink {
 class WebMouseEvent;
+class WebMouseWheelEvent;
 }
 
 namespace content {
