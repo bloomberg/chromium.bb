@@ -201,6 +201,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   // TODO(ericrk): Revisit this once we assess its impact on crbug.com/662802
   // and crbug.com/609252.
   std::unique_ptr<base::MessageLoop> main_message_loop;
+  std::unique_ptr<ui::PlatformEventSource> event_source;
   if (command_line.HasSwitch(switches::kHeadless)) {
     main_message_loop.reset(
         new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
@@ -214,8 +215,7 @@ int GpuMain(const MainFunctionParams& parameters) {
     // We need a UI loop so that we can grab the Expose events. See GLSurfaceGLX
     // and https://crbug.com/326995.
     main_message_loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
-    std::unique_ptr<ui::PlatformEventSource> event_source =
-        ui::PlatformEventSource::CreateDefault();
+    event_source = ui::PlatformEventSource::CreateDefault();
 #elif defined(USE_OZONE) && defined(OZONE_X11)
     // If we might be running Ozone X11 we need a UI loop to grab Expose events.
     // See GLSurfaceGLX and https://crbug.com/326995.
