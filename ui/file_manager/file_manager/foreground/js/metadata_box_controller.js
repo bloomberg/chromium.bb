@@ -147,6 +147,7 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
                 'mediaGenre',
                 'mediaTitle',
                 'mediaTrack',
+                'mediaYearRecorded',
               ])
           .then(function(items) {
             var item = items[0];
@@ -158,7 +159,8 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
             this.metadataBox_.mediaDuration = item.mediaDuration || 0;
             this.metadataBox_.mediaGenre = item.mediaGenre || '';
             this.metadataBox_.mediaTitle = item.mediaTitle || '';
-            this.metadataBox_.mediaTrack = item.mediaTrack || 0;
+            this.metadataBox_.mediaTrack = item.mediaTrack || '';
+            this.metadataBox_.mediaYearRecorded = item.mediaYearRecorded || '';
           }.bind(this));
     }
   }

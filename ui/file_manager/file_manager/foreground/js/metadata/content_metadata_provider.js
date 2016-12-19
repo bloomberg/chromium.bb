@@ -65,6 +65,7 @@ ContentMetadataProvider.PROPERTY_NAMES = [
   'mediaMimeType',
   'mediaTitle',
   'mediaTrack',
+  'mediaYearRecorded',
 ];
 
 /**
@@ -162,7 +163,9 @@ ContentMetadataProvider.prototype.getFromMediaGalleries_ =
     entry.file(function(blob) {
       var metadataType = 'mimeTypeOnly';
       if (names.indexOf('mediaArtist') !== -1 ||
-          names.indexOf('mediaTitle') !== -1) {
+          names.indexOf('mediaTitle') !== -1 ||
+          names.indexOf('mediaTrack') !== -1 ||
+          names.indexOf('mediaYearRecorded') !== -1) {
         metadataType = 'mimeTypeAndTags';
       }
       if (names.indexOf('contentThumbnailUrl') !== -1) {
@@ -314,7 +317,23 @@ ContentMetadataProvider.prototype.convertMediaMetadataToMetadataItem_ =
     item.mediaDuration = metadata['duration'];
     item.mediaGenre = metadata['genre'];
     item.mediaTitle = metadata['title'];
-    item.mediaTrack = metadata['track'];
+    if (metadata['track']) {
+      item.mediaTrack = '' + metadata['track'];
+    }
+    if (metadata.rawTags) {
+      metadata.rawTags.forEach(function(entry) {
+        if (entry.type === 'mp3') {
+          if (entry.tags['date']) {
+            item.mediaYearRecorded = entry.tags['date'];
+          }
+          // It is possible that metadata['track'] is undefined but this is
+          // defined.
+          if (entry.tags['track']) {
+            item.mediaTrack = entry.tags['track'];
+          }
+        }
+      });
+    }
     if (metadata.attachedImages && metadata.attachedImages.length > 0) {
       var reader = new FileReader();
       reader.onload = function(e) {

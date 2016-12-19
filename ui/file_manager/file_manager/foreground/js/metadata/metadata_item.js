@@ -193,9 +193,14 @@ function MetadataItem() {
   this.mediaTitle;
 
   /**
-   * @public {number|undefined}
+   * @public {string|undefined}
    */
   this.mediaTrack;
+
+  /**
+   * @public {string|undefined}
+   */
+  this.mediaYearRecorded;
 
   /**
    * Mime type obtained by content provider based on URL.

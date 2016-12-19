@@ -43,7 +43,11 @@ var FilesMetadataBox = Polymer({
       observer: 'metadataUpdated_',
     },
     mediaTrack: {
-      type: Number,
+      type: String,
+      observer: 'metadataUpdated_',
+    },
+    mediaYearRecorded: {
+      type: String,
       observer: 'metadataUpdated_',
     },
     /**
@@ -80,7 +84,8 @@ var FilesMetadataBox = Polymer({
     this.mediaAlbum = '';
     this.mediaDuration = 0;
     this.mediaGenre = '';
-    this.mediaTrack = 0;
+    this.mediaTrack = '';
+    this.mediaYearRecorded = '';
     this.ifd = null;
 
     this.isSizeLoading = false;
@@ -118,7 +123,7 @@ var FilesMetadataBox = Polymer({
     this.hasFileSpecificInfo_ =
         !!(this.imageWidth && this.imageHeight || this.mediaTitle ||
            this.mediaArtist || this.mediaAlbum || this.mediaDuration ||
-           this.mediaGenre || this.mediaTrack ||
+           this.mediaGenre || this.mediaTrack || this.mediaYearRecorded ||
            this.ifd);
   },
 
