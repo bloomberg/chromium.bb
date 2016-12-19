@@ -1,0 +1,22 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef IOS_CHROME_TEST_EARL_GREY_CHROME_ASSERTIONS_H_
+#define IOS_CHROME_TEST_EARL_GREY_CHROME_ASSERTIONS_H_
+
+#import <Foundation/Foundation.h>
+
+namespace chrome_test_util {
+
+// Generates a failure if the actual number of non-incognito tabs is different
+// from |expected_tab_count|.
+void AssertMainTabCount(NSUInteger expected_tab_count);
+
+// Generates a failure if the actual number of incognito tabs is different from
+// |expected_tab_count|.
+void AssertIncognitoTabCount(NSUInteger expected_tab_count);
+
+}  // namespace chrome_test_util
+
+#endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_ASSERTIONS_H_
