@@ -347,11 +347,12 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // If |listener| is provided, then it will be informed once ACKs have been
   // received for all the packets written in this call.
   // The |listener| is not owned by the QuicConnection and must outlive it.
-  virtual QuicConsumedData SendStreamData(QuicStreamId id,
-                                          QuicIOVector iov,
-                                          QuicStreamOffset offset,
-                                          bool fin,
-                                          QuicAckListenerInterface* listener);
+  virtual QuicConsumedData SendStreamData(
+      QuicStreamId id,
+      QuicIOVector iov,
+      QuicStreamOffset offset,
+      bool fin,
+      const scoped_refptr<QuicAckListenerInterface>& listener);
 
   // Send a RST_STREAM frame to the peer.
   virtual void SendRstStream(QuicStreamId id,

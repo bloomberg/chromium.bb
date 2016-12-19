@@ -41,9 +41,12 @@ size_t GetReceivedFlowControlWindow(QuicSession* session) {
 
 }  // namespace
 
-QuicStream::PendingData::PendingData(string data_in,
-                                     QuicAckListenerInterface* ack_listener_in)
-    : data(std::move(data_in)), offset(0), ack_listener(ack_listener_in) {}
+QuicStream::PendingData::PendingData(
+    string data_in,
+    scoped_refptr<QuicAckListenerInterface> ack_listener_in)
+    : data(std::move(data_in)),
+      offset(0),
+      ack_listener(std::move(ack_listener_in)) {}
 
 QuicStream::PendingData::~PendingData() {}
 
@@ -176,9 +179,10 @@ void QuicStream::CloseConnectionWithDetails(QuicErrorCode error,
       error, details, ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
 }
 
-void QuicStream::WriteOrBufferData(StringPiece data,
-                                   bool fin,
-                                   QuicAckListenerInterface* ack_listener) {
+void QuicStream::WriteOrBufferData(
+    StringPiece data,
+    bool fin,
+    const scoped_refptr<QuicAckListenerInterface>& ack_listener) {
   if (data.empty() && !fin) {
     QUIC_BUG << "data.empty() && !fin";
     return;
@@ -215,7 +219,8 @@ void QuicStream::OnCanWrite() {
   bool fin = false;
   while (!queued_data_.empty()) {
     PendingData* pending_data = &queued_data_.front();
-    QuicAckListenerInterface* ack_listener = pending_data->ack_listener.get();
+    const scoped_refptr<QuicAckListenerInterface>& ack_listener =
+        pending_data->ack_listener;
     if (queued_data_.size() == 1 && fin_buffered_) {
       fin = true;
     }
@@ -265,7 +270,7 @@ QuicConsumedData QuicStream::WritevData(
     const struct iovec* iov,
     int iov_count,
     bool fin,
-    QuicAckListenerInterface* ack_listener) {
+    const scoped_refptr<QuicAckListenerInterface>& ack_listener) {
   if (write_side_closed_) {
     DLOG(ERROR) << ENDPOINT << "Attempt to write when the write side is closed";
     return QuicConsumedData(0, false);
@@ -346,7 +351,7 @@ QuicConsumedData QuicStream::WritevDataInner(
     QuicIOVector iov,
     QuicStreamOffset offset,
     bool fin,
-    QuicAckListenerInterface* ack_notifier_delegate) {
+    const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate) {
   return session()->WritevData(this, id(), iov, offset, fin,
                                ack_notifier_delegate);
 }

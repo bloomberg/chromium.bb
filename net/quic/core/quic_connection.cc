@@ -1116,7 +1116,7 @@ QuicConsumedData QuicConnection::SendStreamData(
     QuicIOVector iov,
     QuicStreamOffset offset,
     bool fin,
-    QuicAckListenerInterface* listener) {
+    const scoped_refptr<QuicAckListenerInterface>& listener) {
   if (!fin && iov.total_length == 0) {
     QUIC_BUG << "Attempt to send empty stream frame";
     return QuicConsumedData(0, false);

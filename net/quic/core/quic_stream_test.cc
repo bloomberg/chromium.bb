@@ -143,7 +143,8 @@ class QuicStreamTest : public ::testing::TestWithParam<bool> {
       QuicIOVector /*iov*/,
       QuicStreamOffset /*offset*/,
       bool /*fin*/,
-      QuicAckListenerInterface* /*ack_notifier_delegate*/) {
+      const scoped_refptr<
+          QuicAckListenerInterface>& /*ack_notifier_delegate*/) {
     session_->CloseStream(id);
     return QuicConsumedData(1, false);
   }
@@ -387,8 +388,8 @@ TEST_F(QuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
 // TODO(ianswett): It's not clear this method is still needed now that
 // ProxyAckNotifierDelegate has been removed.
 void SaveAckListener(scoped_refptr<QuicAckListenerInterface>* listener_out,
-                     QuicAckListenerInterface* listener) {
-  *listener_out = (listener);
+                     scoped_refptr<QuicAckListenerInterface> listener) {
+  *listener_out = std::move(listener);
 }
 
 TEST_F(QuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
@@ -413,22 +414,22 @@ TEST_F(QuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
       .WillOnce(DoAll(
           WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &ack_listener))),
           Return(QuicConsumedData(kFirstWriteSize, false))));
-  stream_->WriteOrBufferData(kData, false, delegate.get());
+  stream_->WriteOrBufferData(kData, false, delegate);
   EXPECT_TRUE(HasWriteBlockedStreams());
 
   EXPECT_CALL(*session_,
-              WritevData(stream_, kTestStreamId, _, _, _, ack_listener.get()))
+              WritevData(stream_, kTestStreamId, _, _, _, ack_listener))
       .WillOnce(Return(QuicConsumedData(kSecondWriteSize, false)));
   stream_->OnCanWrite();
 
   // No ack expected for an empty write.
   EXPECT_CALL(*session_,
-              WritevData(stream_, kTestStreamId, _, _, _, ack_listener.get()))
+              WritevData(stream_, kTestStreamId, _, _, _, ack_listener))
       .WillOnce(Return(QuicConsumedData(0, false)));
   stream_->OnCanWrite();
 
   EXPECT_CALL(*session_,
-              WritevData(stream_, kTestStreamId, _, _, _, ack_listener.get()))
+              WritevData(stream_, kTestStreamId, _, _, _, ack_listener))
       .WillOnce(Return(QuicConsumedData(kLastWriteSize, false)));
   stream_->OnCanWrite();
 }
@@ -455,7 +456,7 @@ TEST_F(QuicStreamTest, WriteOrBufferDataAckNotificationBeforeFlush) {
       .WillOnce(DoAll(
           WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &proxy_delegate))),
           Return(QuicConsumedData(kInitialWriteSize, false))));
-  stream_->WriteOrBufferData(kData, false, ack_listener.get());
+  stream_->WriteOrBufferData(kData, false, ack_listener);
   EXPECT_TRUE(HasWriteBlockedStreams());
 
   EXPECT_CALL(*session_, WritevData(stream_, kTestStreamId, _, _, _, _))
@@ -477,7 +478,7 @@ TEST_F(QuicStreamTest, WriteAndBufferDataWithAckNotiferNoBuffer) {
       .WillOnce(DoAll(
           WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &proxy_delegate))),
           Return(QuicConsumedData(kDataLen, true))));
-  stream_->WriteOrBufferData(kData1, true, delegate.get());
+  stream_->WriteOrBufferData(kData1, true, delegate);
   EXPECT_FALSE(HasWriteBlockedStreams());
 }
 
@@ -491,7 +492,7 @@ TEST_F(QuicStreamTest, BufferOnWriteAndBufferDataWithAckNotifer) {
 
   EXPECT_CALL(*session_, WritevData(stream_, kTestStreamId, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(0, false)));
-  stream_->WriteOrBufferData(kData1, true, delegate.get());
+  stream_->WriteOrBufferData(kData1, true, delegate);
   EXPECT_TRUE(HasWriteBlockedStreams());
 
   EXPECT_CALL(*session_, WritevData(stream_, kTestStreamId, _, _, _, _))
@@ -514,7 +515,7 @@ TEST_F(QuicStreamTest, WriteAndBufferDataWithAckNotiferOnlyFinRemains) {
       .WillOnce(DoAll(
           WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &proxy_delegate))),
           Return(QuicConsumedData(kDataLen, false))));
-  stream_->WriteOrBufferData(kData1, true, delegate.get());
+  stream_->WriteOrBufferData(kData1, true, delegate);
   EXPECT_TRUE(HasWriteBlockedStreams());
 
   EXPECT_CALL(*session_, WritevData(stream_, kTestStreamId, _, _, _, _))

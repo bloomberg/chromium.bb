@@ -123,7 +123,7 @@ void QuicChromiumClientStream::OnCanWrite() {
 size_t QuicChromiumClientStream::WriteHeaders(
     SpdyHeaderBlock header_block,
     bool fin,
-    QuicAckListenerInterface* ack_notifier_delegate) {
+    const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate) {
   if (!session()->IsCryptoHandshakeConfirmed()) {
     auto entry = header_block.find(":method");
     DCHECK(entry != header_block.end());

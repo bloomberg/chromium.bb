@@ -283,7 +283,7 @@ QuicConsumedData QuicSession::WritevData(
     QuicIOVector iov,
     QuicStreamOffset offset,
     bool fin,
-    QuicAckListenerInterface* ack_notifier_delegate) {
+    const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate) {
   // This check is an attempt to deal with potential memory corruption
   // in which |id| ends up set to 1 (the crypto stream id). If this happen
   // it might end up resulting in unencrypted stream data being sent.

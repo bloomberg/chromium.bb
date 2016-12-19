@@ -516,7 +516,7 @@ class TestConnection : public QuicConnection {
       StringPiece data,
       QuicStreamOffset offset,
       bool fin,
-      QuicAckListenerInterface* listener) {
+      const scoped_refptr<QuicAckListenerInterface>& listener) {
     if (id != kCryptoStreamId && this->encryption_level() == ENCRYPTION_NONE) {
       this->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
     }
@@ -4616,7 +4616,7 @@ TEST_P(QuicConnectionTest, AckNotifierTriggerCallback) {
   EXPECT_CALL(*listener, OnPacketAcked(_, _)).Times(1);
 
   // Send some data, which will register the listener to be notified.
-  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, listener.get());
+  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, listener);
 
   // Process an ACK from the server which should trigger the callback.
   EXPECT_CALL(*send_algorithm_, OnCongestionEvent(true, _, _, _, _));
@@ -4633,7 +4633,7 @@ TEST_P(QuicConnectionTest, AckNotifierFailToTriggerCallback) {
 
   // Send some data, which will register the listener to be notified. This will
   // not be ACKed and so the listener should never be called.
-  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, listener.get());
+  connection_.SendStreamDataWithString(1, "foo", 0, !kFin, listener);
 
   // Send some other data which we will ACK.
   connection_.SendStreamDataWithString(1, "foo", 0, !kFin, nullptr);
@@ -4661,7 +4661,7 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackAfterRetransmission) {
 
   // Send four packets, and register to be notified on ACK of packet 2.
   connection_.SendStreamDataWithString(3, "foo", 0, !kFin, nullptr);
-  connection_.SendStreamDataWithString(3, "bar", 0, !kFin, listener.get());
+  connection_.SendStreamDataWithString(3, "bar", 0, !kFin, listener);
   connection_.SendStreamDataWithString(3, "baz", 0, !kFin, nullptr);
   connection_.SendStreamDataWithString(3, "qux", 0, !kFin, nullptr);
 
@@ -4695,7 +4695,7 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackForAckAfterRTO) {
 
   QuicTime default_retransmission_time =
       clock_.ApproximateNow() + DefaultRetransmissionTime();
-  connection_.SendStreamDataWithString(3, "foo", 0, !kFin, listener.get());
+  connection_.SendStreamDataWithString(3, "foo", 0, !kFin, listener);
   EXPECT_EQ(1u, stop_waiting()->least_unacked);
 
   EXPECT_EQ(1u, writer_->header().packet_number);
@@ -4732,7 +4732,7 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackForAckOfNackedPacket) {
 
   // Send four packets, and register to be notified on ACK of packet 2.
   connection_.SendStreamDataWithString(3, "foo", 0, !kFin, nullptr);
-  connection_.SendStreamDataWithString(3, "bar", 0, !kFin, listener.get());
+  connection_.SendStreamDataWithString(3, "bar", 0, !kFin, listener);
   connection_.SendStreamDataWithString(3, "baz", 0, !kFin, nullptr);
   connection_.SendStreamDataWithString(3, "qux", 0, !kFin, nullptr);
 
@@ -4827,7 +4827,7 @@ TEST_P(QuicConnectionTest, NoDataNoFin) {
   // Regression test for b/18594622
   scoped_refptr<MockAckListener> listener(new MockAckListener);
   EXPECT_QUIC_BUG(
-      connection_.SendStreamDataWithString(3, "", 0, !kFin, listener.get()),
+      connection_.SendStreamDataWithString(3, "", 0, !kFin, listener),
       "Attempt to send empty stream frame");
 }
 

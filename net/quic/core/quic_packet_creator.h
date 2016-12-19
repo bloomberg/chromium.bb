@@ -119,13 +119,14 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // QuicStreamFrame to the returned SerializedPacket.  Sets
   // |num_bytes_consumed| to the number of bytes consumed to create the
   // QuicStreamFrame.
-  void CreateAndSerializeStreamFrame(QuicStreamId id,
-                                     const QuicIOVector& iov,
-                                     QuicStreamOffset iov_offset,
-                                     QuicStreamOffset stream_offset,
-                                     bool fin,
-                                     QuicAckListenerInterface* listener,
-                                     size_t* num_bytes_consumed);
+  void CreateAndSerializeStreamFrame(
+      QuicStreamId id,
+      const QuicIOVector& iov,
+      QuicStreamOffset iov_offset,
+      QuicStreamOffset stream_offset,
+      bool fin,
+      const scoped_refptr<QuicAckListenerInterface>& listener,
+      size_t* num_bytes_consumed);
 
   // Returns true if there are frames pending to be serialized.
   bool HasPendingFrames() const;
@@ -161,7 +162,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
 
   // Adds |listener| to the next serialized packet and notifies the
   // std::listener with |length| as the number of acked bytes.
-  void AddAckListener(QuicAckListenerInterface* listener,
+  void AddAckListener(const scoped_refptr<QuicAckListenerInterface>& listener,
                       QuicPacketLength length);
 
   // Creates a version negotiation packet which supports |supported_versions|.

@@ -79,13 +79,14 @@ class MockQuicClientSessionBase : public QuicClientSessionBase {
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD1(CreateOutgoingDynamicStream,
                QuicChromiumClientStream*(SpdyPriority priority));
-  MOCK_METHOD6(WritevData,
-               QuicConsumedData(QuicStream* stream,
-                                QuicStreamId id,
-                                QuicIOVector data,
-                                QuicStreamOffset offset,
-                                bool fin,
-                                QuicAckListenerInterface*));
+  MOCK_METHOD6(
+      WritevData,
+      QuicConsumedData(QuicStream* stream,
+                       QuicStreamId id,
+                       QuicIOVector data,
+                       QuicStreamOffset offset,
+                       bool fin,
+                       const scoped_refptr<QuicAckListenerInterface>&));
   MOCK_METHOD3(SendRstStream,
                void(QuicStreamId stream_id,
                     QuicRstStreamErrorCode error,
@@ -106,12 +107,12 @@ class MockQuicClientSessionBase : public QuicClientSessionBase {
   MOCK_METHOD0(IsCryptoHandshakeConfirmed, bool());
   // Methods taking non-copyable types like SpdyHeaderBlock by value cannot be
   // mocked directly.
-  size_t WriteHeaders(
-      QuicStreamId id,
-      SpdyHeaderBlock headers,
-      bool fin,
-      SpdyPriority priority,
-      QuicAckListenerInterface* ack_notifier_delegate) override {
+  size_t WriteHeaders(QuicStreamId id,
+                      SpdyHeaderBlock headers,
+                      bool fin,
+                      SpdyPriority priority,
+                      const scoped_refptr<QuicAckListenerInterface>&
+                          ack_notifier_delegate) override {
     return WriteHeadersMock(id, headers, fin, priority, ack_notifier_delegate);
   }
   MOCK_METHOD5(WriteHeadersMock,
@@ -119,7 +120,8 @@ class MockQuicClientSessionBase : public QuicClientSessionBase {
                       const SpdyHeaderBlock& headers,
                       bool fin,
                       SpdyPriority priority,
-                      QuicAckListenerInterface* ack_notifier_delegate));
+                      const scoped_refptr<QuicAckListenerInterface>&
+                          ack_notifier_delegate));
   MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(QuicTime::Delta delta));
 
   using QuicSession::ActivateStream;

@@ -184,19 +184,21 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   // and then buffers any remaining data in queued_data_.
   // If fin is true: if it is immediately passed on to the session,
   // write_side_closed() becomes true, otherwise fin_buffered_ becomes true.
-  void WriteOrBufferData(base::StringPiece data,
-                         bool fin,
-                         QuicAckListenerInterface* ack_listener);
+  void WriteOrBufferData(
+      base::StringPiece data,
+      bool fin,
+      const scoped_refptr<QuicAckListenerInterface>& ack_listener);
 
   // Sends as many bytes in the first |count| buffers of |iov| to the connection
   // as the connection will consume.
   // If |ack_listener| is provided, then it will be notified once all
   // the ACKs for this write have been received.
   // Returns the number of bytes consumed by the connection.
-  QuicConsumedData WritevData(const struct iovec* iov,
-                              int iov_count,
-                              bool fin,
-                              QuicAckListenerInterface* ack_listener);
+  QuicConsumedData WritevData(
+      const struct iovec* iov,
+      int iov_count,
+      bool fin,
+      const scoped_refptr<QuicAckListenerInterface>& ack_listener);
 
   // Allows override of the session level writev, for the force HOL
   // blocking experiment.
@@ -204,7 +206,7 @@ class QUIC_EXPORT_PRIVATE QuicStream {
       QuicIOVector iov,
       QuicStreamOffset offset,
       bool fin,
-      QuicAckListenerInterface* ack_notifier_delegate);
+      const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate);
 
   // Close the write side of the socket.  Further writes will fail.
   // Can be called by the subclass or internally.
@@ -235,7 +237,8 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   bool read_side_closed() const { return read_side_closed_; }
 
   struct PendingData {
-    PendingData(std::string data_in, QuicAckListenerInterface* ack_listener_in);
+    PendingData(std::string data_in,
+                scoped_refptr<QuicAckListenerInterface> ack_listener_in);
     ~PendingData();
 
     // Pending data to be written.

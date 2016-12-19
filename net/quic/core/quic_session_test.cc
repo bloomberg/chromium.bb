@@ -162,13 +162,13 @@ class TestSession : public QuicSpdySession {
     return QuicSpdySession::GetOrCreateDynamicStream(stream_id);
   }
 
-  QuicConsumedData WritevData(
-      QuicStream* stream,
-      QuicStreamId id,
-      QuicIOVector data,
-      QuicStreamOffset offset,
-      bool fin,
-      QuicAckListenerInterface* ack_notifier_delegate) override {
+  QuicConsumedData WritevData(QuicStream* stream,
+                              QuicStreamId id,
+                              QuicIOVector data,
+                              QuicStreamOffset offset,
+                              bool fin,
+                              const scoped_refptr<QuicAckListenerInterface>&
+                                  ack_notifier_delegate) override {
     QuicConsumedData consumed(data.total_length, fin);
     if (!writev_consumes_all_data_) {
       consumed = QuicSession::WritevData(stream, id, data, offset, fin,

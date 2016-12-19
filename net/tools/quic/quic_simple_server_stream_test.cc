@@ -117,13 +117,14 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                     const string& error_details,
                     ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
-  MOCK_METHOD6(WritevData,
-               QuicConsumedData(QuicStream* stream,
-                                QuicStreamId id,
-                                QuicIOVector data,
-                                QuicStreamOffset offset,
-                                bool fin,
-                                QuicAckListenerInterface*));
+  MOCK_METHOD6(
+      WritevData,
+      QuicConsumedData(QuicStream* stream,
+                       QuicStreamId id,
+                       QuicIOVector data,
+                       QuicStreamOffset offset,
+                       bool fin,
+                       const scoped_refptr<QuicAckListenerInterface>&));
   MOCK_METHOD4(OnStreamHeaderList,
                void(QuicStreamId stream_id,
                     bool fin,
@@ -133,12 +134,12 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                void(QuicStreamId stream_id, SpdyPriority priority));
   // Methods taking non-copyable types like SpdyHeaderBlock by value cannot be
   // mocked directly.
-  size_t WriteHeaders(
-      QuicStreamId id,
-      SpdyHeaderBlock headers,
-      bool fin,
-      SpdyPriority priority,
-      QuicAckListenerInterface* ack_notifier_delegate) override {
+  size_t WriteHeaders(QuicStreamId id,
+                      SpdyHeaderBlock headers,
+                      bool fin,
+                      SpdyPriority priority,
+                      const scoped_refptr<QuicAckListenerInterface>&
+                          ack_notifier_delegate) override {
     return WriteHeadersMock(id, headers, fin, priority, ack_notifier_delegate);
   }
   MOCK_METHOD5(WriteHeadersMock,
@@ -146,7 +147,8 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                       const SpdyHeaderBlock& headers,
                       bool fin,
                       SpdyPriority priority,
-                      QuicAckListenerInterface* ack_notifier_delegate));
+                      const scoped_refptr<QuicAckListenerInterface>&
+                          ack_notifier_delegate));
   MOCK_METHOD3(SendRstStream,
                void(QuicStreamId stream_id,
                     QuicRstStreamErrorCode error,
@@ -330,7 +332,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus) {
   stream_->set_fin_received(true);
 
   InSequence s;
-  EXPECT_CALL(session_, WriteHeadersMock(stream_->id(), _, false, _, nullptr));
+  EXPECT_CALL(session_, WriteHeadersMock(stream_->id(), _, false, _, _));
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(1)
       .WillOnce(Return(QuicConsumedData(
@@ -361,7 +363,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus2) {
   stream_->set_fin_received(true);
 
   InSequence s;
-  EXPECT_CALL(session_, WriteHeadersMock(stream_->id(), _, false, _, nullptr));
+  EXPECT_CALL(session_, WriteHeadersMock(stream_->id(), _, false, _, _));
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(1)
       .WillOnce(Return(QuicConsumedData(
@@ -418,7 +420,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithValidHeaders) {
   stream_->set_fin_received(true);
 
   InSequence s;
-  EXPECT_CALL(session_, WriteHeadersMock(stream_->id(), _, false, _, nullptr));
+  EXPECT_CALL(session_, WriteHeadersMock(stream_->id(), _, false, _, _));
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(1)
       .WillOnce(Return(QuicConsumedData(body.length(), true)));
@@ -456,7 +458,7 @@ TEST_P(QuicSimpleServerStreamTest, SendReponseWithPushResources) {
   EXPECT_CALL(session_,
               PromisePushResourcesMock(host + request_path, _,
                                        ::net::test::kClientDataStreamId1, _));
-  EXPECT_CALL(session_, WriteHeadersMock(stream_->id(), _, false, _, nullptr));
+  EXPECT_CALL(session_, WriteHeadersMock(stream_->id(), _, false, _, _));
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(1)
       .WillOnce(Return(QuicConsumedData(body.length(), true)));
@@ -503,7 +505,7 @@ TEST_P(QuicSimpleServerStreamTest, PushResponseOnServerInitiatedStream) {
   // and send it back.
   EXPECT_CALL(session_,
               WriteHeadersMock(kServerInitiatedStreamId, _, false,
-                               server_initiated_stream->priority(), nullptr));
+                               server_initiated_stream->priority(), _));
   EXPECT_CALL(session_, WritevData(_, kServerInitiatedStreamId, _, _, _, _))
       .Times(1)
       .WillOnce(Return(QuicConsumedData(kBody.size(), true)));
@@ -590,7 +592,7 @@ TEST_P(QuicSimpleServerStreamTest, ValidMultipleContentLength) {
 
 TEST_P(QuicSimpleServerStreamTest, SendQuicRstStreamNoErrorWithEarlyResponse) {
   InSequence s;
-  EXPECT_CALL(session_, WriteHeadersMock(stream_->id(), _, false, _, nullptr));
+  EXPECT_CALL(session_, WriteHeadersMock(stream_->id(), _, false, _, _));
   EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
       .Times(1)
       .WillOnce(Return(QuicConsumedData(3, true)));

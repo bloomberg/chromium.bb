@@ -42,7 +42,7 @@ class QuicStreamPeer {
       QuicStream* stream,
       base::StringPiece data,
       bool fin,
-      QuicAckListenerInterface* ack_notifier_delegate);
+      const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate);
 
   static net::QuicStreamSequencer* sequencer(QuicStream* stream);
 

@@ -376,7 +376,7 @@ QuicConsumedData MockQuicSession::ConsumeAllData(
     const QuicIOVector& data,
     QuicStreamOffset /*offset*/,
     bool fin,
-    QuicAckListenerInterface* /*ack_notifier_delegate*/) {
+    const scoped_refptr<QuicAckListenerInterface>& /*ack_notifier_delegate*/) {
   return QuicConsumedData(data.total_length, fin);
 }
 

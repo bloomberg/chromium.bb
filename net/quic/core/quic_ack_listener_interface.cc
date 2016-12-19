@@ -6,8 +6,9 @@
 
 namespace net {
 
-AckListenerWrapper::AckListenerWrapper(QuicAckListenerInterface* listener,
-                                       QuicPacketLength data_length)
+AckListenerWrapper::AckListenerWrapper(
+    const scoped_refptr<QuicAckListenerInterface>& listener,
+    QuicPacketLength data_length)
     : ack_listener(listener), length(data_length) {
   DCHECK(listener != nullptr);
 }

@@ -264,7 +264,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParamsTuple> {
 
   QuicConsumedData SaveIovAndNotifyAckListener(
       const QuicIOVector& data,
-      QuicAckListenerInterface* ack_listener) {
+      const scoped_refptr<QuicAckListenerInterface>& ack_listener) {
     QuicConsumedData result = SaveIov(data);
     if (ack_listener) {
       ack_listener->OnPacketAcked(result.bytes_consumed,
@@ -324,8 +324,8 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParamsTuple> {
                                 SpdyPriority priority,
                                 bool is_request) {
     // Write the headers and capture the outgoing data
-    EXPECT_CALL(session_, WritevData(headers_stream_, kHeadersStreamId, _, _,
-                                     false, nullptr))
+    EXPECT_CALL(session_,
+                WritevData(headers_stream_, kHeadersStreamId, _, _, false, _))
         .WillOnce(WithArgs<2>(Invoke(this, &QuicHeadersStreamTest::SaveIov)));
     headers_stream_->WriteHeaders(stream_id, headers_.Clone(), fin, priority,
                                   nullptr);
@@ -443,8 +443,8 @@ TEST_P(QuicHeadersStreamTest, WritePushPromises) {
     QuicStreamId promised_stream_id = NextPromisedStreamId();
     if (perspective() == Perspective::IS_SERVER) {
       // Write the headers and capture the outgoing data
-      EXPECT_CALL(session_, WritevData(headers_stream_, kHeadersStreamId, _, _,
-                                       false, nullptr))
+      EXPECT_CALL(session_,
+                  WritevData(headers_stream_, kHeadersStreamId, _, _, false, _))
           .WillOnce(WithArgs<2>(Invoke(this, &QuicHeadersStreamTest::SaveIov)));
       headers_stream_->WritePushPromise(stream_id, promised_stream_id,
                                         headers_.Clone());
@@ -963,7 +963,7 @@ TEST_P(QuicHeadersStreamTest, WritevStreamData) {
               this, &QuicHeadersStreamTest::SaveIovAndNotifyAckListener)));
 
       QuicConsumedData consumed_data = headers_stream_->WritevStreamData(
-          id, MakeIOVector(data, &iov), offset, fin, ack_listener.get());
+          id, MakeIOVector(data, &iov), offset, fin, ack_listener);
 
       EXPECT_EQ(consumed_data.bytes_consumed, data_len);
       EXPECT_EQ(consumed_data.fin_consumed, fin);

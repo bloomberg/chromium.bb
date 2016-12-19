@@ -35,7 +35,7 @@ class QUIC_EXPORT_PRIVATE QuicAckListenerInterface
 };
 
 struct QUIC_EXPORT_PRIVATE AckListenerWrapper {
-  AckListenerWrapper(QuicAckListenerInterface* listener,
+  AckListenerWrapper(const scoped_refptr<QuicAckListenerInterface>& listener,
                      QuicPacketLength data_length);
   AckListenerWrapper(const AckListenerWrapper& other);
   ~AckListenerWrapper();

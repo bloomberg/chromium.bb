@@ -69,9 +69,11 @@ class ForceHolAckListener : public QuicAckListenerInterface {
  public:
   // |extra_bytes| should be initialized to the size of the HTTP/2
   // DATA frame header inserted when forced HOL blocking is enabled.
-  ForceHolAckListener(QuicAckListenerInterface* stream_ack_listener,
-                      int extra_bytes)
-      : stream_ack_listener_(stream_ack_listener), extra_bytes_(extra_bytes) {
+  ForceHolAckListener(
+      scoped_refptr<QuicAckListenerInterface> stream_ack_listener,
+      int extra_bytes)
+      : stream_ack_listener_(std::move(stream_ack_listener)),
+        extra_bytes_(extra_bytes) {
     DCHECK_GE(extra_bytes, 0);
   }
 
@@ -337,11 +339,12 @@ QuicHeadersStream::QuicHeadersStream(QuicSpdySession* session)
 
 QuicHeadersStream::~QuicHeadersStream() {}
 
-size_t QuicHeadersStream::WriteHeaders(QuicStreamId stream_id,
-                                       SpdyHeaderBlock headers,
-                                       bool fin,
-                                       SpdyPriority priority,
-                                       QuicAckListenerInterface* ack_listener) {
+size_t QuicHeadersStream::WriteHeaders(
+    QuicStreamId stream_id,
+    SpdyHeaderBlock headers,
+    bool fin,
+    SpdyPriority priority,
+    const scoped_refptr<QuicAckListenerInterface>& ack_listener) {
   SpdyHeadersIR headers_frame(stream_id, std::move(headers));
   headers_frame.set_fin(fin);
   if (session()->perspective() == Perspective::IS_CLIENT) {
@@ -378,7 +381,7 @@ void QuicHeadersStream::WriteDataFrame(
     QuicStreamId id,
     StringPiece data,
     bool fin,
-    QuicAckListenerInterface* ack_notifier_delegate) {
+    const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate) {
   SpdyDataIR spdy_data(id, data);
   spdy_data.set_fin(fin);
   SpdySerializedFrame frame(spdy_framer_.SerializeFrame(spdy_data));
@@ -390,7 +393,7 @@ void QuicHeadersStream::WriteDataFrame(
   // Use buffered writes so that coherence of framing is preserved
   // between streams.
   WriteOrBufferData(StringPiece(frame.data(), frame.size()), false,
-                    ack_listener.get());
+                    ack_listener);
 }
 
 QuicConsumedData QuicHeadersStream::WritevStreamData(
@@ -398,7 +401,7 @@ QuicConsumedData QuicHeadersStream::WritevStreamData(
     QuicIOVector iov,
     QuicStreamOffset offset,
     bool fin,
-    QuicAckListenerInterface* ack_notifier_delegate) {
+    const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate) {
   const size_t max_len =
       kSpdyInitialFrameSizeLimit - SpdyConstants::kDataFrameMinimumSize;
 

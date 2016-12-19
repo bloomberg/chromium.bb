@@ -51,11 +51,12 @@ class QUIC_EXPORT_PRIVATE QuicHeadersStream : public QuicStream {
   // Writes |headers| for |stream_id| in an HTTP/2 HEADERS frame to the peer.
   // If |fin| is true, the fin flag will be set on the HEADERS frame.  Returns
   // the size, in bytes, of the resulting HEADERS frame.
-  virtual size_t WriteHeaders(QuicStreamId stream_id,
-                              SpdyHeaderBlock headers,
-                              bool fin,
-                              SpdyPriority priority,
-                              QuicAckListenerInterface* ack_listener);
+  virtual size_t WriteHeaders(
+      QuicStreamId stream_id,
+      SpdyHeaderBlock headers,
+      bool fin,
+      SpdyPriority priority,
+      const scoped_refptr<QuicAckListenerInterface>& ack_listener);
 
   // Write |headers| for |promised_stream_id| on |original_stream_id| in a
   // PUSH_PROMISE frame to peer.
@@ -71,7 +72,7 @@ class QUIC_EXPORT_PRIVATE QuicHeadersStream : public QuicStream {
       QuicIOVector iov,
       QuicStreamOffset offset,
       bool fin,
-      QuicAckListenerInterface* ack_notifier_delegate);
+      const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate);
 
   // QuicStream implementation
   void OnDataAvailable() override;
@@ -140,10 +141,11 @@ class QUIC_EXPORT_PRIVATE QuicHeadersStream : public QuicStream {
   bool OnDataFrameHeader(QuicStreamId stream_id, size_t length, bool fin);
   bool OnStreamFrameData(QuicStreamId stream_id, const char* data, size_t len);
   // Helper for |WritevStreamData()|.
-  void WriteDataFrame(QuicStreamId stream_id,
-                      base::StringPiece data,
-                      bool fin,
-                      QuicAckListenerInterface* ack_notifier_delegate);
+  void WriteDataFrame(
+      QuicStreamId stream_id,
+      base::StringPiece data,
+      bool fin,
+      const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate);
 
   // Returns true if the session is still connected.
   bool IsConnected();

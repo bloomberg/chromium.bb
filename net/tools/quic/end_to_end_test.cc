@@ -1982,7 +1982,7 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
       "a request body bigger than one packet" + string(kMaxPacketSize, '.');
 
   // Send the request, and register the delegate for ACKs.
-  client_->SendData(request_string, true, delegate.get());
+  client_->SendData(request_string, true, delegate);
   client_->WaitForResponse();
   EXPECT_EQ(kFooResponseBody, client_->response_body());
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
