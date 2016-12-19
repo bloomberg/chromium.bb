@@ -441,6 +441,10 @@ ContentBrowserClient::GetMemoryCoordinatorDelegate() {
   return nullptr;
 }
 
+bool ContentBrowserClient::ShouldRedirectDOMStorageTaskRunner() {
+  return false;
+}
+
 bool ContentBrowserClient::RedirectNonUINonIOBrowserThreadsToTaskScheduler() {
   return false;
 }

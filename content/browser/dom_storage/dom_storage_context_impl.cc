@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_enumerator.h"
@@ -74,12 +76,12 @@ DOMStorageContextImpl::DOMStorageContextImpl(
     const base::FilePath& localstorage_directory,
     const base::FilePath& sessionstorage_directory,
     storage::SpecialStoragePolicy* special_storage_policy,
-    DOMStorageTaskRunner* task_runner)
+    scoped_refptr<DOMStorageTaskRunner> task_runner)
     : localstorage_directory_(localstorage_directory),
       sessionstorage_directory_(sessionstorage_directory),
-      task_runner_(task_runner),
-      session_id_offset_(
-          abs((g_session_id_offset_sequence++ % 10)) * kSessionIdOffsetAmount),
+      task_runner_(std::move(task_runner)),
+      session_id_offset_(abs((g_session_id_offset_sequence++ % 10)) *
+                         kSessionIdOffsetAmount),
       session_id_sequence_(session_id_offset_),
       is_shutdown_(false),
       force_keep_session_state_(false),

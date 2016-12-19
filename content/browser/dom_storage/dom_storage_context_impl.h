@@ -112,7 +112,7 @@ class CONTENT_EXPORT DOMStorageContextImpl
   DOMStorageContextImpl(const base::FilePath& localstorage_directory,
                         const base::FilePath& sessionstorage_directory,
                         storage::SpecialStoragePolicy* special_storage_policy,
-                        DOMStorageTaskRunner* task_runner);
+                        scoped_refptr<DOMStorageTaskRunner> task_runner);
 
   // Returns the directory path for localStorage, or an empty directory, if
   // there is no backing on disk.

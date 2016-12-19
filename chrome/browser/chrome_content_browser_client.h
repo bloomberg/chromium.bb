@@ -325,6 +325,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       base::TaskScheduler::WorkerPoolIndexForTraitsCallback*
           index_to_traits_callback) override;
   void PerformExperimentalTaskSchedulerRedirections() override;
+  bool ShouldRedirectDOMStorageTaskRunner() override;
   bool RedirectNonUINonIOBrowserThreadsToTaskScheduler() override;
 
  private:

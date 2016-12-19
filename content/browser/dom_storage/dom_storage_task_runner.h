@@ -8,14 +8,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace content {
 
@@ -58,17 +52,15 @@ class CONTENT_EXPORT DOMStorageTaskRunner
   ~DOMStorageTaskRunner() override {}
 };
 
-// A derived class used in chromium that utilizes a SequenceWorkerPool
-// under dom_storage specific SequenceTokens. The |delayed_task_loop|
-// is used to delay scheduling on the worker pool.
+// A DOMStorageTaskRunner which manages a primary and a commit sequence.
 class CONTENT_EXPORT DOMStorageWorkerPoolTaskRunner :
       public DOMStorageTaskRunner {
  public:
+  // |primary_sequence| and |commit_sequence| should have
+  // TaskShutdownBehaviour::BLOCK_SHUTDOWN semantics.
   DOMStorageWorkerPoolTaskRunner(
-      base::SequencedWorkerPool* sequenced_worker_pool,
-      base::SequencedWorkerPool::SequenceToken primary_sequence_token,
-      base::SequencedWorkerPool::SequenceToken commit_sequence_token,
-      base::SingleThreadTaskRunner* delayed_task_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> primary_sequence,
+      scoped_refptr<base::SequencedTaskRunner> commit_sequence);
 
   bool RunsTasksOnCurrentThread() const override;
 
@@ -90,26 +82,22 @@ class CONTENT_EXPORT DOMStorageWorkerPoolTaskRunner :
   ~DOMStorageWorkerPoolTaskRunner() override;
 
  private:
+  scoped_refptr<base::SequencedTaskRunner> primary_sequence_;
+  scoped_refptr<base::SequencedTaskRunner> commit_sequence_;
 
-  base::SequencedWorkerPool::SequenceToken IDtoToken(SequenceID id) const;
-
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  const scoped_refptr<base::SequencedWorkerPool> sequenced_worker_pool_;
-  base::SequencedWorkerPool::SequenceToken primary_sequence_token_;
-  base::SequenceChecker primary_sequence_checker_;
-  base::SequencedWorkerPool::SequenceToken commit_sequence_token_;
-  base::SequenceChecker commit_sequence_checker_;
+  DISALLOW_COPY_AND_ASSIGN(DOMStorageWorkerPoolTaskRunner);
 };
 
 // A derived class used in unit tests that ignores all delays so
 // we don't block in unit tests waiting for timeouts to expire.
 // There is no distinction between [non]-shutdown-blocking or
 // the primary sequence vs the commit sequence in the mock,
-// all tasks are scheduled on |message_loop| with zero delay.
+// all tasks are scheduled on |task_runner| with zero delay.
 class CONTENT_EXPORT MockDOMStorageTaskRunner :
       public DOMStorageTaskRunner {
  public:
-  explicit MockDOMStorageTaskRunner(base::SingleThreadTaskRunner* task_runner);
+  explicit MockDOMStorageTaskRunner(
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   bool RunsTasksOnCurrentThread() const override;
 
@@ -131,7 +119,9 @@ class CONTENT_EXPORT MockDOMStorageTaskRunner :
   ~MockDOMStorageTaskRunner() override;
 
  private:
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockDOMStorageTaskRunner);
 };
 
 }  // namespace content

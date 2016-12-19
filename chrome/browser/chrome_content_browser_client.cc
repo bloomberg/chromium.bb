@@ -3370,6 +3370,11 @@ void ChromeContentBrowserClient::
       MaybePerformBrowserTaskSchedulerRedirection();
 }
 
+bool ChromeContentBrowserClient::ShouldRedirectDOMStorageTaskRunner() {
+  return variations::GetVariationParamValue(
+             "BrowserScheduler", "RedirectDOMStorageTaskRunner") == "true";
+}
+
 bool ChromeContentBrowserClient::
     RedirectNonUINonIOBrowserThreadsToTaskScheduler() {
   return variations::GetVariationParamValue(

@@ -14,8 +14,10 @@
 #include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/filesystem/public/interfaces/directory.mojom.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
@@ -26,8 +28,10 @@
 #include "content/browser/leveldb_wrapper_impl.h"
 #include "content/browser/memory/memory_coordinator.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/local_storage_usage_info.h"
 #include "content/public/browser/session_storage_usage_info.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "mojo/common/common_type_converters.h"
 #include "services/file/public/interfaces/constants.mojom.h"
@@ -274,18 +278,41 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
   base::FilePath data_path;
   if (!profile_path.empty())
     data_path = profile_path.Append(local_partition_path);
-  base::SequencedWorkerPool* worker_pool = BrowserThread::GetBlockingPool();
+
+  scoped_refptr<base::SequencedTaskRunner> primary_sequence;
+  scoped_refptr<base::SequencedTaskRunner> commit_sequence;
+  if (GetContentClient()->browser()->ShouldRedirectDOMStorageTaskRunner()) {
+    // TaskPriority::USER_BLOCKING as an experiment because this is currently
+    // believed to be blocking synchronous IPCs from the renderers:
+    // http://crbug.com/665588 (yes we want to fix that bug, but are taking it
+    // as an opportunity to experiment with the scheduler).
+    base::TaskTraits dom_storage_traits =
+        base::TaskTraits()
+            .WithShutdownBehavior(base::TaskShutdownBehavior::BLOCK_SHUTDOWN)
+            .WithFileIO()
+            .WithPriority(base::TaskPriority::USER_BLOCKING);
+    primary_sequence =
+        base::CreateSequencedTaskRunnerWithTraits(dom_storage_traits);
+    commit_sequence =
+        base::CreateSequencedTaskRunnerWithTraits(dom_storage_traits);
+  } else {
+    base::SequencedWorkerPool* worker_pool = BrowserThread::GetBlockingPool();
+    primary_sequence = worker_pool->GetSequencedTaskRunner(
+        worker_pool->GetNamedSequenceToken("dom_storage_primary"));
+    commit_sequence = worker_pool->GetSequencedTaskRunner(
+        worker_pool->GetNamedSequenceToken("dom_storage_commit"));
+  }
+  DCHECK(primary_sequence);
+  DCHECK(commit_sequence);
+
   context_ = new DOMStorageContextImpl(
       data_path.empty() ? data_path
                         : data_path.AppendASCII(kLocalStorageDirectory),
       data_path.empty() ? data_path
                         : data_path.AppendASCII(kSessionStorageDirectory),
       special_storage_policy,
-      new DOMStorageWorkerPoolTaskRunner(
-          worker_pool,
-          worker_pool->GetNamedSequenceToken("dom_storage_primary"),
-          worker_pool->GetNamedSequenceToken("dom_storage_commit"),
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get()));
+      new DOMStorageWorkerPoolTaskRunner(std::move(primary_sequence),
+                                         std::move(commit_sequence)));
 
   if (base::FeatureList::IsEnabled(features::kMemoryCoordinator)) {
     base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
