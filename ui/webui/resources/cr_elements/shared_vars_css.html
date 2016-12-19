@@ -9,10 +9,21 @@
     --cr-focused-item-color: var(--google-grey-300);
     /* Same padding as paper-icon-button. */
     --cr-icon-padding: 8px;
-    --cr-icon-size: {
-      height: 20px;
-      width: 20px;
+
+    /* The inner icon is 20px in size. paper-icon-button has 8px padding. */
+    --cr-icon-ripple-size: 36px;
+    --cr-icon-size: 20px;
+
+    --cr-icon-height-width: {
+      height: var(--cr-icon-size);
+      width: var(--cr-icon-size);
     }
+
+    --cr-paper-icon-button-margin: {
+      -webkit-margin-end: -8px;  /* Allow ripple to overlap the end. */
+      -webkit-margin-start: 16px;
+    }
+
     --cr-selectable-focus: {
       background-color: var(--cr-focused-item-color);
       outline: none;

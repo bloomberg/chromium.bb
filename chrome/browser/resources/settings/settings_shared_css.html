@@ -11,17 +11,6 @@
         display: none !important;
       }
 
-      button[is='paper-icon-button-light'] {
-        -webkit-margin-end: -8px;  /* Allow ripple to overlap the end. */
-        -webkit-margin-start: 16px;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: var(--settings-icon-size);
-        flex-shrink: 0;
-        height: var(--settings-icon-ripple-size);
-        width: var(--settings-icon-ripple-size);
-      }
-
       :host-context([dir=rtl]) button[is='paper-icon-button-light'] {
         transform: scaleX(-1);  /* Flip on the X axis (aka mirror). */
       }

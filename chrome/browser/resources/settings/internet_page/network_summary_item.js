@@ -75,10 +75,6 @@ Polymer({
     },
   },
 
-  keyBindings: {
-    'enter': 'onDetailsTap_',
-  },
-
   /** @private */
   expandedChanged_: function() {
     var type = this.deviceState ? this.deviceState.Type : '';

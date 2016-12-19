@@ -17,12 +17,6 @@
         outline: none;
       }
 
-      #divButtons {
-        align-items: center;
-        display: flex;
-        flex-direction: row;
-      }
-
       #divDetail {
         display: flex;
         flex: 1 0 auto;
@@ -42,9 +36,8 @@
         border-style: none;
         display: flex;
         flex-direction: row;
-        margin: 0;
         height: 32px;
-        padding: 4px;
+        margin: 4px 12px;
       }
 
       #divOuter[first-custom-item] {
@@ -117,11 +110,9 @@
       </template>
       <template is="dom-if"
           if="[[isSubpageButtonVisible_(networkState, showButtons)]]">
-        <div id="divButtons">
-          <button class="subpage-arrow" is="paper-icon-button-light"
-              on-tap="fireShowDetails_" tabindex$="[[tabindex]]">
-          </button>
-        </div>
+        <button class="subpage-arrow" is="paper-icon-button-light"
+            on-tap="fireShowDetails_" tabindex$="[[tabindex]]">
+        </button>
       </template>
     </div>
   </template>
