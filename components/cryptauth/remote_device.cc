@@ -29,19 +29,29 @@ RemoteDevice::RemoteDevice(const RemoteDevice& other) = default;
 
 RemoteDevice::~RemoteDevice() {}
 
-std::string RemoteDevice::GetDeviceId() {
+std::string RemoteDevice::GetDeviceId() const {
    std::string to_return;
    base::Base64Encode(public_key, &to_return);
    return to_return;
 }
 
-std::string RemoteDevice::GetTruncatedDeviceIdForLogs() {
+std::string RemoteDevice::GetTruncatedDeviceIdForLogs() const {
    std::string id = GetDeviceId();
    if (id.length() <= 10) {
       return id;
    }
 
    return id.substr(0, 5) + "..." + id.substr(id.length() - 5, id.length());
+}
+
+bool RemoteDevice::operator==(const RemoteDevice& other) const {
+   return user_id == other.user_id
+         && name == other.name
+         && public_key == other.public_key
+         && bluetooth_type == other.bluetooth_type
+         && bluetooth_address == other.bluetooth_address
+         && persistent_symmetric_key == other.persistent_symmetric_key
+         && sign_in_challenge == other.sign_in_challenge;
 }
 
 }  // namespace cryptauth

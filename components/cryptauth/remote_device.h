@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PROXIMITY_AUTH_REMOTE_DEVICE_H
-#define COMPONENTS_PROXIMITY_AUTH_REMOTE_DEVICE_H
+#ifndef COMPONENTS_CRYPTAUTH_REMOTE_DEVICE_H
+#define COMPONENTS_CRYPTAUTH_REMOTE_DEVICE_H
 
 #include <string>
 #include <vector>
@@ -34,16 +34,18 @@ struct RemoteDevice {
   ~RemoteDevice();
 
   // Returns a unique ID for the device.
-  std::string GetDeviceId();
+  std::string GetDeviceId() const;
 
   // Returns a shortened device ID for the purpose of concise logging (device
   // IDs are often so long that logs are difficult to read). Note that this
   // ID is not guaranteed to be unique, so it should only be used for log.
-  std::string GetTruncatedDeviceIdForLogs();
+  std::string GetTruncatedDeviceIdForLogs() const;
+
+  bool operator==(const RemoteDevice& other) const;
 };
 
 typedef std::vector<RemoteDevice> RemoteDeviceList;
 
 }  // namespace cryptauth
 
-#endif  // COMPONENTS_PROXIMITY_AUTH_REMOTE_DEVICE_H
+#endif  // COMPONENTS_CRYPTAUTH_REMOTE_DEVICE_H

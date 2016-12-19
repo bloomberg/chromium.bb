@@ -6,6 +6,8 @@ assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
 
 static_library("tether") {
   sources = [
+    "ble_advertisement_device_queue.cc",
+    "ble_advertisement_device_queue.h",
     "host_scan_scheduler.cc",
     "host_scan_scheduler.h",
     "host_scanner.cc",
@@ -45,6 +47,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "ble_advertisement_device_queue_unittest.cc",
     "host_scan_scheduler_unittest.cc",
   ]
 
@@ -54,6 +57,7 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//chromeos",
     "//components/cryptauth",
+    "//components/cryptauth:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

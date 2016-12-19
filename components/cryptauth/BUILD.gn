@@ -73,6 +73,8 @@ static_library("test_support") {
     "mock_cryptauth_client.h",
     "mock_sync_scheduler.cc",
     "mock_sync_scheduler.h",
+    "remote_device_test_util.cc",
+    "remote_device_test_util.h",
   ]
 
   public_deps = [
