@@ -1,0 +1,61 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// ======                        New Architecture                         =====
+// =         This code is only used in the new iOS Chrome architecture.       =
+// ============================================================================
+
+#import "ios/chrome/browser/ui/toolbar/toolbar_coordinator.h"
+
+#include "base/strings/sys_string_conversions.h"
+#import "ios/chrome/browser/browser_coordinator+internal.h"
+#import "ios/chrome/browser/ui/toolbar/toolbar_view_controller.h"
+#import "ios/chrome/browser/ui/tools/tools_coordinator.h"
+#include "ios/web/public/web_state/web_state.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+@interface ToolbarCoordinator ()<ToolbarActionDelegate>
+@property(nonatomic, weak) ToolsCoordinator* toolsMenuCoordinator;
+@property(nonatomic, strong) ToolbarViewController* viewController;
+@end
+
+@implementation ToolbarCoordinator
+@synthesize toolsMenuCoordinator = _toolsMenuCoordinator;
+@synthesize viewController = _viewController;
+
+- (void)start {
+  self.viewController = [[ToolbarViewController alloc] init];
+  self.viewController.actionDelegate = self;
+
+  [self.rootViewController presentViewController:self.viewController
+                                        animated:YES
+                                      completion:nil];
+}
+
+#pragma mark - CRWWebStateObserver
+
+- (void)webStateDidLoadPage:(web::WebState*)webState {
+  const GURL& pageURL = webState->GetVisibleURL();
+  [self.viewController
+      setCurrentPageText:base::SysUTF8ToNSString(pageURL.spec())];
+}
+
+#pragma mark - ToolbarActionDelegate
+
+- (void)showToolsMenu {
+  ToolsCoordinator* toolsCoordinator = [[ToolsCoordinator alloc] init];
+  [self addChildCoordinator:toolsCoordinator];
+  [toolsCoordinator start];
+  self.toolsMenuCoordinator = toolsCoordinator;
+}
+
+- (void)closeToolsMenu {
+  [self.toolsMenuCoordinator stop];
+  [self removeChildCoordinator:self.toolsMenuCoordinator];
+}
+
+@end
