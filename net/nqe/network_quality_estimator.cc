@@ -788,6 +788,8 @@ void NetworkQualityEstimator::OnConnectionTypeChanged(
   effective_connection_type_ = EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
   effective_connection_type_at_last_main_frame_ =
       EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
+  rtt_observations_size_at_last_ect_computation_ = 0;
+  throughput_observations_size_at_last_ect_computation_ = 0;
 
   // Update the local state as part of preparation for the new connection.
   current_network_id_ = GetCurrentNetworkID();
@@ -1390,6 +1392,15 @@ bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {
     rtt_observations_.AddObservation(rtt_observation);
     NotifyObserversOfRTT(rtt_observation);
   }
+
+  if (cached_network_quality.network_quality().transport_rtt() !=
+      nqe::internal::InvalidRTT()) {
+    RttObservation rtt_observation(
+        cached_network_quality.network_quality().transport_rtt(), now,
+        NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE);
+    rtt_observations_.AddObservation(rtt_observation);
+    NotifyObserversOfRTT(rtt_observation);
+  }
   return true;
 }
 
@@ -1600,9 +1611,74 @@ void NetworkQualityEstimator::OnPrefsRead(
     const std::map<nqe::internal::NetworkID,
                    nqe::internal::CachedNetworkQuality> read_prefs) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
   UMA_HISTOGRAM_COUNTS("NQE.Prefs.ReadSize", read_prefs.size());
-  // TODO(tbansal): crbug.com/490870. Incorporate the network quality into the
-  // current estimates.
+  for (auto& it : read_prefs) {
+    EffectiveConnectionType effective_connection_type =
+        it.second.effective_connection_type();
+    if (effective_connection_type == EFFECTIVE_CONNECTION_TYPE_UNKNOWN ||
+        effective_connection_type == EFFECTIVE_CONNECTION_TYPE_OFFLINE) {
+      continue;
+    }
+
+    // RTT and throughput values are not set in the prefs.
+    DCHECK_EQ(nqe::internal::InvalidRTT(),
+              it.second.network_quality().http_rtt());
+    DCHECK_EQ(nqe::internal::InvalidRTT(),
+              it.second.network_quality().transport_rtt());
+    DCHECK_EQ(nqe::internal::kInvalidThroughput,
+              it.second.network_quality().downstream_throughput_kbps());
+
+    nqe::internal::NetworkQuality network_quality(
+        typical_network_quality_[effective_connection_type].http_rtt(),
+        typical_network_quality_[effective_connection_type].transport_rtt(),
+        typical_network_quality_[effective_connection_type]
+            .downstream_throughput_kbps());
+
+    nqe::internal::CachedNetworkQuality cached_network_quality(
+        base::TimeTicks::Now(), network_quality, effective_connection_type);
+
+    network_quality_store_->Add(it.first, cached_network_quality);
+    MaybeUpdateNetworkQualityFromCache(it.first, cached_network_quality);
+  }
+}
+
+void NetworkQualityEstimator::MaybeUpdateNetworkQualityFromCache(
+    const nqe::internal::NetworkID& network_id,
+    const nqe::internal::CachedNetworkQuality& cached_network_quality) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (network_id != current_network_id_)
+    return;
+
+  // Since the cached network quality is for the current network, add it to
+  // the current observations.
+  RttObservation http_rtt_observation(
+      cached_network_quality.network_quality().http_rtt(),
+      base::TimeTicks::Now(),
+      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE);
+  rtt_observations_.AddObservation(http_rtt_observation);
+  NotifyObserversOfRTT(http_rtt_observation);
+
+  RttObservation transport_rtt_observation(
+      cached_network_quality.network_quality().transport_rtt(),
+      base::TimeTicks::Now(),
+      NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE);
+  rtt_observations_.AddObservation(transport_rtt_observation);
+  NotifyObserversOfRTT(transport_rtt_observation);
+
+  // TODO(tbansal): crbug.com/673977: Remove this check.
+  if (cached_network_quality.network_quality().downstream_throughput_kbps() !=
+      nqe::internal::kInvalidThroughput) {
+    ThroughputObservation throughput_observation(
+        cached_network_quality.network_quality().downstream_throughput_kbps(),
+        base::TimeTicks::Now(),
+        NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE);
+    downstream_throughput_kbps_observations_.AddObservation(
+        throughput_observation);
+    NotifyObserversOfThroughput(throughput_observation);
+  }
+
+  ComputeEffectiveConnectionType();
 }
 
 }  // namespace net

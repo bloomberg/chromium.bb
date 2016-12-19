@@ -57,19 +57,21 @@ class UINetworkQualityEstimatorServiceBrowserTest
  public:
   UINetworkQualityEstimatorServiceBrowserTest() {}
 
-  // Enables persistent caching if |persistent_caching_enabled| is true.
-  // Verifies that the network quality prefs are written correctly, and that
-  // they are written only if the persistent caching was enabled.
-  void VerifyWritingReadingPrefs(bool persistent_caching_enabled) {
-    if (persistent_caching_enabled) {
-      std::map<std::string, std::string> variation_params;
-      variation_params["persistent_caching_enabled"] = "true";
+  // Verifies that the network quality prefs are written amd read correctly.
+  void VerifyWritingReadingPrefs(bool persistent_cache_writing_enabled,
+                                 bool persistent_cache_reading_enabled) {
+    std::map<std::string, std::string> variation_params;
 
-      variations::AssociateVariationParams("NetworkQualityEstimator", "Enabled",
-                                           variation_params);
-      base::FieldTrialList::CreateFieldTrial("NetworkQualityEstimator",
-                                             "Enabled");
-    }
+    if (persistent_cache_writing_enabled)
+      variation_params["persistent_cache_writing_enabled"] = "true";
+
+    if (persistent_cache_reading_enabled)
+      variation_params["persistent_cache_reading_enabled"] = "true";
+
+    variations::AssociateVariationParams("NetworkQualityEstimator", "Enabled",
+                                         variation_params);
+    base::FieldTrialList::CreateFieldTrial("NetworkQualityEstimator",
+                                           "Enabled");
 
     // Verifies that NQE notifying EffectiveConnectionTypeObservers causes the
     // UINetworkQualityEstimatorService to receive an updated
@@ -101,7 +103,7 @@ class UINetworkQualityEstimatorServiceBrowserTest
 
       // Prefs are written only if the network id was available, and persistent
       // caching was enabled.
-      EXPECT_NE(network_id_available && persistent_caching_enabled,
+      EXPECT_NE(network_id_available && persistent_cache_writing_enabled,
                 histogram_tester.GetAllSamples("NQE.Prefs.WriteCount").empty());
       histogram_tester.ExpectTotalCount("NQE.Prefs.ReadCount", 0);
 
@@ -119,7 +121,7 @@ class UINetworkQualityEstimatorServiceBrowserTest
 
       // Prefs are written only if the network id was available, and persistent
       // caching was enabled.
-      EXPECT_NE(network_id_available && persistent_caching_enabled,
+      EXPECT_NE(network_id_available && persistent_cache_writing_enabled,
                 histogram_tester.GetAllSamples("NQE.Prefs.WriteCount").empty());
       histogram_tester.ExpectTotalCount("NQE.Prefs.ReadCount", 0);
 
@@ -131,9 +133,13 @@ class UINetworkQualityEstimatorServiceBrowserTest
     std::map<net::nqe::internal::NetworkID,
              net::nqe::internal::CachedNetworkQuality>
         read_prefs = nqe_service->ForceReadPrefsForTesting();
-    EXPECT_EQ(network_id_available && persistent_caching_enabled ? 1u : 0u,
+    EXPECT_EQ(network_id_available && persistent_cache_writing_enabled &&
+                      persistent_cache_reading_enabled
+                  ? 1u
+                  : 0u,
               read_prefs.size());
-    if (network_id_available && persistent_caching_enabled) {
+    if (network_id_available && persistent_cache_writing_enabled &&
+        persistent_cache_reading_enabled) {
       // Verify that the cached network quality was written correctly.
       EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
                 read_prefs.begin()->second.effective_connection_type());
@@ -214,12 +220,18 @@ IN_PROC_BROWSER_TEST_F(UINetworkQualityEstimatorServiceBrowserTest,
 // via field trial.
 IN_PROC_BROWSER_TEST_F(UINetworkQualityEstimatorServiceBrowserTest,
                        WritingToPrefsDisabled) {
-  VerifyWritingReadingPrefs(false);
+  VerifyWritingReadingPrefs(false, true);
 }
 
-// Verify that prefs are writen when writing of the prefs is enabled via field
-// trial.
+// Verify that prefs are not read when reading of the prefs is not enabled
+// via field trial.
 IN_PROC_BROWSER_TEST_F(UINetworkQualityEstimatorServiceBrowserTest,
-                       WritingToPrefsEnabled) {
-  VerifyWritingReadingPrefs(true);
+                       ReadingFromPrefsDisabled) {
+  VerifyWritingReadingPrefs(true, false);
+}
+
+// Verify that prefs are writen and read correctly.
+IN_PROC_BROWSER_TEST_F(UINetworkQualityEstimatorServiceBrowserTest,
+                       WritingReadingToPrefsEnabled) {
+  VerifyWritingReadingPrefs(true, true);
 }

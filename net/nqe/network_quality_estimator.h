@@ -489,8 +489,12 @@ class NET_EXPORT NetworkQualityEstimator
   // Virtualized for testing.
   virtual nqe::internal::NetworkID GetCurrentNetworkID() const;
 
+  // Notifies RTT observers of |observation|. May also trigger recomputation
+  // of effective connection type.
   void NotifyObserversOfRTT(const RttObservation& observation);
 
+  // Notifies throughput observers of |observation|. May also trigger
+  // recomputation of effective connection type.
   void NotifyObserversOfThroughput(const ThroughputObservation& observation);
 
   // Returns true only if the |request| can be used for RTT estimation.
@@ -578,6 +582,13 @@ class NET_EXPORT NetworkQualityEstimator
   // Forces computation of effective connection type, and notifies observers
   // if there is a change in its value.
   void ComputeEffectiveConnectionType();
+
+  // May update the network quality of the current network if |network_id|
+  // matches the ID of the current network. |cached_network_quality| is the
+  // cached network quality of the network with id |network_id|.
+  void MaybeUpdateNetworkQualityFromCache(
+      const nqe::internal::NetworkID& network_id,
+      const nqe::internal::CachedNetworkQuality& cached_network_quality);
 
   // Determines if the requests to local host can be used in estimating the
   // network quality. Set to true only for tests.
