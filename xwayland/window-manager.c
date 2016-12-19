@@ -1121,7 +1121,6 @@ weston_wm_window_draw_decoration(void *data)
 	int32_t input_x, input_y, input_w, input_h;
 	const struct weston_desktop_xwayland_interface *xwayland_interface =
 		wm->server->compositor->xwayland_interface;
-	uint32_t flags = 0;
 
 	wm_log("XWM: start draw decoration, win %d\n", window->id);
 
@@ -1138,9 +1137,6 @@ weston_wm_window_draw_decoration(void *data)
 	if (window->fullscreen) {
 		/* nothing */
 	} else if (window->decorate) {
-		if (wm->focus_window == window)
-			flags |= THEME_FRAME_ACTIVE;
-
 		frame_set_title(window->frame, window->name);
 		frame_repaint(window->frame, cr);
 	} else {
