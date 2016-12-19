@@ -1119,25 +1119,14 @@ weston_wm_handle_unmap_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 }
 
 static void
-weston_wm_window_draw_decoration(void *data)
+weston_wm_window_draw_decoration(struct weston_wm_window *window)
 {
-	struct weston_wm_window *window = data;
-	struct weston_wm *wm = window->wm;
-	struct theme *t = wm->theme;
 	cairo_t *cr;
-	int x, y, width, height;
-	int32_t input_x, input_y, input_w, input_h;
-	const struct weston_desktop_xwayland_interface *xwayland_interface =
-		wm->server->compositor->xwayland_interface;
+	int width, height;
 
-	wm_log("XWM: start draw decoration, win %d\n", window->id);
-
-	weston_wm_window_read_properties(window);
-
-	window->repaint_source = NULL;
+	wm_log("XWM: draw decoration, win %d\n", window->id);
 
 	weston_wm_window_get_frame_size(window, &width, &height);
-	weston_wm_window_get_child_position(window, &x, &y);
 
 	cairo_xcb_surface_set_size(window->cairo_surface, width, height);
 	cr = cairo_create(window->cairo_surface);
@@ -1152,52 +1141,79 @@ weston_wm_window_draw_decoration(void *data)
 		cairo_set_source_rgba(cr, 0, 0, 0, 0);
 		cairo_paint(cr);
 
-		render_shadow(cr, t->shadow, 2, 2, width + 8, height + 8, 64, 64);
+		render_shadow(cr, window->wm->theme->shadow,
+			      2, 2, width + 8, height + 8, 64, 64);
 	}
 
 	cairo_destroy(cr);
 	cairo_surface_flush(window->cairo_surface);
 	xcb_flush(window->wm->conn);
+}
 
-	if (window->surface) {
-		pixman_region32_fini(&window->surface->pending.opaque);
-		if (window->has_alpha) {
-			pixman_region32_init(&window->surface->pending.opaque);
-		} else {
-			/* We leave an extra pixel around the X window area to
-			 * make sure we don't sample from the undefined alpha
-			 * channel when filtering. */
-			pixman_region32_init_rect(&window->surface->pending.opaque,
-						  x - 1, y - 1,
-						  window->width + 2,
-						  window->height + 2);
-		}
+static void
+weston_wm_window_set_pending_state(struct weston_wm_window *window)
+{
+	int x, y, width, height;
+	int32_t input_x, input_y, input_w, input_h;
+	const struct weston_desktop_xwayland_interface *xwayland_interface =
+		window->wm->server->compositor->xwayland_interface;
 
-		pixman_region32_fini(&window->surface->pending.input);
+	if (!window->surface)
+		return;
 
-		if (window->decorate && !window->fullscreen) {
-			frame_input_rect(window->frame, &input_x, &input_y,
-					 &input_w, &input_h);
-		} else {
-			input_x = x;
-			input_y = y;
-			input_w = width;
-			input_h = height;
-		}
+	weston_wm_window_get_frame_size(window, &width, &height);
+	weston_wm_window_get_child_position(window, &x, &y);
 
-		pixman_region32_init_rect(&window->surface->pending.input,
-					  input_x, input_y, input_w, input_h);
-
-		wm_log("XWM: draw decoration, win %d geometry: %d,%d %dx%d\n",
-		       window->id, input_x, input_y, input_w, input_h);
-
-		xwayland_interface->set_window_geometry(window->shsurf,
-							input_x, input_y, input_w, input_h);
-		if (window->name)
-			xwayland_interface->set_title(window->shsurf, window->name);
-		if (window->pid > 0)
-			xwayland_interface->set_pid(window->shsurf, window->pid);
+	pixman_region32_fini(&window->surface->pending.opaque);
+	if (window->has_alpha) {
+		pixman_region32_init(&window->surface->pending.opaque);
+	} else {
+		/* We leave an extra pixel around the X window area to
+		 * make sure we don't sample from the undefined alpha
+		 * channel when filtering. */
+		pixman_region32_init_rect(&window->surface->pending.opaque,
+					  x - 1, y - 1,
+					  window->width + 2,
+					  window->height + 2);
 	}
+
+	pixman_region32_fini(&window->surface->pending.input);
+
+	if (window->decorate && !window->fullscreen) {
+		frame_input_rect(window->frame, &input_x, &input_y,
+				 &input_w, &input_h);
+	} else {
+		input_x = x;
+		input_y = y;
+		input_w = width;
+		input_h = height;
+	}
+
+	wm_log("XWM: win %d geometry: %d,%d %dx%d\n",
+	       window->id, input_x, input_y, input_w, input_h);
+
+	pixman_region32_init_rect(&window->surface->pending.input,
+				  input_x, input_y, input_w, input_h);
+
+	xwayland_interface->set_window_geometry(window->shsurf,
+						input_x, input_y, input_w, input_h);
+	if (window->name)
+		xwayland_interface->set_title(window->shsurf, window->name);
+	if (window->pid > 0)
+		xwayland_interface->set_pid(window->shsurf, window->pid);
+}
+
+static void
+weston_wm_window_do_repaint(void *data)
+{
+	struct weston_wm_window *window = data;
+
+	window->repaint_source = NULL;
+
+	weston_wm_window_read_properties(window);
+
+	weston_wm_window_draw_decoration(window);
+	weston_wm_window_set_pending_state(window);
 }
 
 static void
@@ -1232,8 +1248,7 @@ weston_wm_window_schedule_repaint(struct weston_wm_window *window)
 
 	window->repaint_source =
 		wl_event_loop_add_idle(wm->server->loop,
-				       weston_wm_window_draw_decoration,
-				       window);
+				       weston_wm_window_do_repaint, window);
 }
 
 static void
