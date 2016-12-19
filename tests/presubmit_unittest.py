@@ -36,16 +36,13 @@ presubmit_canned_checks = presubmit.presubmit_canned_checks
 
 
 class PresubmitTestsBase(SuperMoxTestBase):
-  """Setups and tear downs the mocks but doesn't test anything as-is."""
+  """Sets up and tears down the mocks but doesn't test anything as-is."""
   presubmit_text = """
 def CheckChangeOnUpload(input_api, output_api):
-  if not input_api.change.NOSUCHKEY:
+  if input_api.change.ERROR:
     return [output_api.PresubmitError("!!")]
-  elif not input_api.change.REALLYNOSUCHKEY:
+  if input_api.change.PROMPT_WARNING:
     return [output_api.PresubmitPromptWarning("??")]
-  elif not input_api.change.REALLYABSOLUTELYNOSUCHKEY:
-    return [output_api.PresubmitPromptWarning("??"),
-            output_api.PresubmitError("XX!!XX")]
   else:
     return ()
 """
@@ -542,7 +539,7 @@ class PresubmitUnittest(PresubmitTestsBase):
 
     self.failUnless(executer.ExecPresubmitScript(
       ('def CheckChangeOnCommit(input_api, output_api):\n'
-       '  if not input_api.change.NOSUCHKEY:\n'
+       '  if not input_api.change.ERROR:\n'
        '    return [output_api.PresubmitError("!!")]\n'
        '  else:\n'
        '    return ()'),
@@ -561,7 +558,7 @@ class PresubmitUnittest(PresubmitTestsBase):
       '  return ["foo"]',
       fake_presubmit)
 
-  def testDoPresubmitChecks(self):
+  def testDoPresubmitChecksNoWarningsOrErrors(self):
     haspresubmit_path = presubmit.os.path.join(
         self.fake_root_dir, 'haspresubmit', 'PRESUBMIT.py')
     root_path = presubmit.os.path.join(self.fake_root_dir, 'PRESUBMIT.py')
@@ -577,7 +574,6 @@ class PresubmitUnittest(PresubmitTestsBase):
         self.presubmit_text)
     presubmit.gclient_utils.FileRead(haspresubmit_path, 'rU').AndReturn(
         self.presubmit_text)
-    presubmit.random.randint(0, 4).AndReturn(1)
     self.mox.ReplayAll()
 
     # Make a change which will have no warnings.
@@ -587,8 +583,9 @@ class PresubmitUnittest(PresubmitTestsBase):
         change=change, committing=False, verbose=True,
         output_stream=None, input_stream=None,
         default_presubmit=None, may_prompt=False, rietveld_obj=None)
-    self.failIf(output.should_continue())
-    self.assertEqual(output.getvalue().count('!!'), 2)
+    self.failUnless(output.should_continue())
+    self.assertEqual(output.getvalue().count('!!'), 0)
+    self.assertEqual(output.getvalue().count('??'), 0)
     self.assertEqual(output.getvalue().count(
         'Running presubmit upload checks ...\n'), 1)
 
@@ -614,7 +611,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     self.mox.ReplayAll()
 
     # Make a change with a single warning.
-    change = self.ExampleChange(extra_lines=['NOSUCHKEY=http://tracker/123'])
+    change = self.ExampleChange(extra_lines=['PROMPT_WARNING=yes'])
 
     input_buf = StringIO.StringIO('n\n')  # say no to the warning
     output = presubmit.DoPresubmitChecks(
@@ -653,7 +650,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     presubmit.random.randint(0, 4).AndReturn(1)
     self.mox.ReplayAll()
 
-    change = self.ExampleChange(extra_lines=['NOSUCHKEY=http://tracker/123'])
+    change = self.ExampleChange(extra_lines=['PROMPT_WARNING=yes'])
 
     # There is no input buffer and may_prompt is set to False.
     output = presubmit.DoPresubmitChecks(
@@ -663,6 +660,7 @@ class PresubmitUnittest(PresubmitTestsBase):
     # A warning is printed, and should_continue is True.
     self.failUnless(output.should_continue())
     self.assertEquals(output.getvalue().count('??'), 2)
+    self.assertEqual(output.getvalue().count('(y/N)'), 0)
     self.assertEqual(output.getvalue().count(
         'Running presubmit upload checks ...\n'), 1)
 
@@ -685,16 +683,14 @@ class PresubmitUnittest(PresubmitTestsBase):
     presubmit.random.randint(0, 4).AndReturn(1)
     self.mox.ReplayAll()
 
-    change = self.ExampleChange(extra_lines=[
-        'NOSUCHKEY=http://tracker/123',
-        'REALLYNOSUCHKEY=http://tracker/123'
-    ])
+    change = self.ExampleChange(extra_lines=['ERROR=yes'])
     output = presubmit.DoPresubmitChecks(
         change=change, committing=False, verbose=True,
         output_stream=None, input_stream=None,
-        default_presubmit=None, may_prompt=False, rietveld_obj=None)
-    self.assertEqual(output.getvalue().count('??'), 2)
-    self.assertEqual(output.getvalue().count('XX!!XX'), 2)
+        default_presubmit=None, may_prompt=True, rietveld_obj=None)
+    self.failIf(output.should_continue())
+    self.assertEqual(output.getvalue().count('??'), 0)
+    self.assertEqual(output.getvalue().count('!!'), 2)
     self.assertEqual(output.getvalue().count('(y/N)'), 0)
     self.assertEqual(output.getvalue().count(
         'Running presubmit upload checks ...\n'), 1)
