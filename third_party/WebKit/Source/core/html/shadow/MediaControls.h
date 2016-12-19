@@ -65,9 +65,6 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   void enteredFullscreen();
   void exitedFullscreen();
 
-  void startedCasting();
-  void stoppedCasting();
-  void refreshCastButtonVisibility();
   void showOverlayCastButtonIfNeeded();
   // Update cast button visibility, but don't try to update our panel
   // button visibility for space.
@@ -102,6 +99,18 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   // HTMLTrackElement failed to load because there is no web exposed way to
   // be notified on the TextTrack object. See https://crbug.com/669977
   void onTrackElementFailedToLoad() { onTextTracksAddedOrRemoved(); }
+
+  // TODO(mlamouri): the following methods will be able to become private when
+  // the controls have moved to modules/ and have access to RemotePlayback.
+  void onRemotePlaybackAvailabilityChanged() { refreshCastButtonVisibility(); }
+  void onRemotePlaybackConnecting() { startedCasting(); }
+  void onRemotePlaybackDisconnected() { stoppedCasting(); }
+
+  // TODO(mlamouri): this method is needed in order to notify the controls that
+  // the attribute have changed.
+  void onDisableRemotePlaybackAttributeChanged() {
+    refreshCastButtonVisibility();
+  }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -162,6 +171,11 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   void onTextTracksChanged();
   void onError();
   void onLoadedMetadata();
+
+  // Internal cast related methods.
+  void startedCasting();
+  void stoppedCasting();
+  void refreshCastButtonVisibility();
 
   Member<HTMLMediaElement> m_mediaElement;
 
