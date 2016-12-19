@@ -131,6 +131,7 @@ source_set("unit_tests") {
     "remote/test_utils.cc",
     "remote/test_utils.h",
     "sessions/foreign_sessions_suggestions_provider_unittest.cc",
+    "sessions/tab_delegate_sync_adapter_unittest.cc",
   ]
 
   deps = [

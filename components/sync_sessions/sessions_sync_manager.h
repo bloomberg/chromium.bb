@@ -90,7 +90,7 @@ class SessionsSyncManager : public syncer::SyncableService,
       const std::string& tag,
       std::vector<const sessions::SessionWindow*>* windows) override;
   bool GetForeignTab(const std::string& tag,
-                     const SessionID::id_type tab_id,
+                     SessionID::id_type tab_id,
                      const sessions::SessionTab** tab) override;
   bool GetForeignSessionTabs(
       const std::string& tag,
