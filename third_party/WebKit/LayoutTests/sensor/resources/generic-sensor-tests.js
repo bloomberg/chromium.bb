@@ -304,10 +304,7 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
                 // By the moment slow sensor (9 Hz) is notified for the
                 // next time, the fast sensor (30 Hz) has been notified
                 // for int(30/9) = 3 times.
-                // In actual implementation updates are bound to rAF,
-                // (not to a timer) sometimes fast sensor gets invoked 4 times.
-                assert_true(fastSensorNotifiedCounter == 3 ||
-                            fastSensorNotifiedCounter == 4);
+                assert_equals(fastSensorNotifiedCounter, 3);
                 fastSensor.stop();
                 slowSensor.stop();
                 resolve(mockSensor);
