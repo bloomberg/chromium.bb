@@ -2142,6 +2142,9 @@ const FeatureEntry kFeatureEntries[] = {
          autofill::kAutofillCreditCardPopupLayout,
          kAutofillCreditCardPopupLayoutFeatureVariations,
          "AutofillCreditCardPopupLayout")},
+     {"native-android-history-manager", IDS_NATIVE_ANDROID_HISTORY_MANAGER,
+      IDS_NATIVE_ANDROID_HISTORY_MANAGER_DESCRIPTION, kOsAndroid,
+      FEATURE_VALUE_TYPE(chrome::android::kNativeAndroidHistoryManager)},
 #endif  // OS_ANDROID
     {"enable-faster-location-reload", IDS_FLAGS_FASTER_LOCATION_RELOAD_NAME,
      IDS_FLAGS_FASTER_LOCATION_RELOAD_DESCRIPTION, kOsAll,

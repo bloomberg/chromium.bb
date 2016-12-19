@@ -22,6 +22,7 @@ extern const base::Feature kContextualSearchSingleActions;
 extern const base::Feature kDownloadsUiFeature;
 extern const base::Feature kImportantSitesInCBD;
 extern const base::Feature kImprovedA2HS;
+extern const base::Feature kNativeAndroidHistoryManager;
 extern const base::Feature kNoCreditCardAbort;
 extern const base::Feature kNTPFakeOmniboxTextFeature;
 extern const base::Feature kNTPOfflinePagesFeature;

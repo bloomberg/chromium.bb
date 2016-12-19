@@ -15620,6 +15620,16 @@ read aloud to screenreader users to announce that a completion is available.">
      <message name="IDS_FLAGS_FASTER_LOCATION_RELOAD_DESCRIPTION" desc="Description for the flag to enable faster location.reload()" translateable="false">
       Enable faster location.reload() to use a reload mode that revalidates only main resource forcibly.
     </message>
+
+    <!-- Native Android History chrome://flags strings -->
+    <if expr="is_android">
+      <message name="IDS_NATIVE_ANDROID_HISTORY_MANAGER" desc="Name of the flag that enables the native Android history UI." translateable="false">
+        Native Android History
+      </message>
+      <message name="IDS_NATIVE_ANDROID_HISTORY_MANAGER_DESCRIPTION" desc="Description of the flag that enables the native Android history UI." translateable="false">
+        Show the native Android UI for browsing history.
+      </message>
+    </if>
   </messages>
  </release>
 </grit>

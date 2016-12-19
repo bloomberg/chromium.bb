@@ -47,6 +47,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDownloadsUiFeature,
     &kImportantSitesInCBD,
     &kImprovedA2HS,
+    &kNativeAndroidHistoryManager,
     &kNoCreditCardAbort,
     &kNTPFakeOmniboxTextFeature,
     &kNTPOfflinePagesFeature,
@@ -99,6 +100,9 @@ const base::Feature kImportantSitesInCBD{"ImportantSitesInCBD",
 // URL which opens Chrome in fullscreen.
 const base::Feature kImprovedA2HS{"ImprovedA2HS",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kNativeAndroidHistoryManager{
+  "AndroidHistoryManager", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNoCreditCardAbort{"NoCreditCardAbort",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

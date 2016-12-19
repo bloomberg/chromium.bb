@@ -7,14 +7,12 @@ package org.chromium.chrome.browser.history;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.text.TextUtils;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -22,8 +20,6 @@ import org.chromium.ui.base.DeviceFormFactor;
  * Utility methods for the browsing history manager.
  */
 public class HistoryManagerUtils {
-    private static final String FIELD_TRIAL_NAME = "AndroidHistoryManager";
-    private static final String ENABLE_HISTORY_SWTICH = "enable_android_history_manager";
     private static final Object NATIVE_HISTORY_ENABLED_LOCK = new Object();
     private static Boolean sNativeHistoryEnabled;
 
@@ -33,13 +29,7 @@ public class HistoryManagerUtils {
     public static boolean isAndroidHistoryManagerEnabled() {
         synchronized (NATIVE_HISTORY_ENABLED_LOCK) {
             if (sNativeHistoryEnabled == null) {
-                if (CommandLine.getInstance().hasSwitch(ENABLE_HISTORY_SWTICH)) {
-                    sNativeHistoryEnabled = true;
-                } else {
-                    sNativeHistoryEnabled = TextUtils.equals("true",
-                            VariationsAssociatedData.getVariationParamValue(FIELD_TRIAL_NAME,
-                                    ENABLE_HISTORY_SWTICH));
-                }
+                sNativeHistoryEnabled = ChromeFeatureList.isEnabled("AndroidHistoryManager");
             }
         }
 
