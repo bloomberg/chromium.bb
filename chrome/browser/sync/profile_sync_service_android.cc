@@ -441,9 +441,13 @@ ProfileSyncServiceAndroid::GetCurrentSignedInAccountText(
     JNIEnv* env,
     const JavaParamRef<jobject>&) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  // TODO(maxbogue): Remove this function. This String can be used in Java.
-  return base::android::ConvertUTF16ToJavaString(env,
-      l10n_util::GetStringUTF16(IDS_SYNC_ACCOUNT_SYNCING));
+  const std::string& sync_username =
+      SigninManagerFactory::GetForProfile(profile_)
+          ->GetAuthenticatedAccountInfo()
+          .email;
+  return base::android::ConvertUTF16ToJavaString(
+      env, l10n_util::GetStringFUTF16(IDS_SYNC_ACCOUNT_INFO,
+                                      base::ASCIIToUTF16(sync_username)));
 }
 
 ScopedJavaLocalRef<jstring>
