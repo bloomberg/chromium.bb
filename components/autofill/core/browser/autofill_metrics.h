@@ -383,6 +383,13 @@ class AutofillMetrics {
     FORM_EVENT_LOCAL_SUGGESTION_WILL_SUBMIT_ONCE,
     FORM_EVENT_SERVER_SUGGESTION_WILL_SUBMIT_ONCE,
     FORM_EVENT_MASKED_SERVER_CARD_SUGGESTION_WILL_SUBMIT_ONCE,
+    // A dropdown with suggestions was shown and a form was submitted after
+    // that.
+    FORM_EVENT_SUGGESTION_SHOWN_SUBMITTED_ONCE,
+    // A dropdown with suggestions was shown and a form is about to be
+    // submitted. If the submission is not interrupted by JavaScript, the "form
+    // submitted" event above will also be logged.
+    FORM_EVENT_SUGGESTION_SHOWN_WILL_SUBMIT_ONCE,
 
     NUM_FORM_EVENTS,
   };

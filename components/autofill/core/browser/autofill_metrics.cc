@@ -814,6 +814,10 @@ void AutofillMetrics::FormEventLogger::OnWillSubmitForm() {
     Log(AutofillMetrics::FORM_EVENT_LOCAL_SUGGESTION_WILL_SUBMIT_ONCE);
   }
 
+  if (has_logged_suggestions_shown_) {
+    Log(AutofillMetrics::FORM_EVENT_SUGGESTION_SHOWN_WILL_SUBMIT_ONCE);
+  }
+
   base::RecordAction(base::UserMetricsAction("Autofill_OnWillSubmitForm"));
 }
 
@@ -836,6 +840,10 @@ void AutofillMetrics::FormEventLogger::OnFormSubmitted() {
     Log(AutofillMetrics::FORM_EVENT_SERVER_SUGGESTION_SUBMITTED_ONCE);
   } else {
     Log(AutofillMetrics::FORM_EVENT_LOCAL_SUGGESTION_SUBMITTED_ONCE);
+  }
+
+  if (has_logged_suggestions_shown_) {
+    Log(AutofillMetrics::FORM_EVENT_SUGGESTION_SHOWN_SUBMITTED_ONCE);
   }
 }
 
