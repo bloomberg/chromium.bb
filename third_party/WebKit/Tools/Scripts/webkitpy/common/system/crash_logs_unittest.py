@@ -23,10 +23,10 @@
 
 import unittest
 
-from webkitpy.common.system.crashlogs import CrashLogs
+from webkitpy.common.system.crash_logs import CrashLogs
 from webkitpy.common.system.filesystem_mock import MockFileSystem
-from webkitpy.common.system.systemhost import SystemHost
-from webkitpy.common.system.systemhost_mock import MockSystemHost
+from webkitpy.common.system.system_host import SystemHost
+from webkitpy.common.system.system_host_mock import MockSystemHost
 
 
 def make_mock_crash_report_darwin(process_name, pid):
@@ -103,10 +103,10 @@ class CrashLogsTest(unittest.TestCase):
         log = crash_logs.find_newest_log("DumpRenderTree", newer_than=1.0)
         self.assertIsNone(log)
 
-        def bad_read(path):
+        def bad_read(_):
             raise IOError('IOError: No such file or directory')
 
-        def bad_mtime(path):
+        def bad_mtime(_):
             raise OSError('OSError: No such file or directory')
 
         filesystem.read_text_file = bad_read

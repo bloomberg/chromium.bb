@@ -35,9 +35,9 @@ import socket
 import unittest
 
 from webkitpy.common.system.executive_mock import MockExecutive, MockExecutive2
-from webkitpy.common.system.outputcapture import OutputCapture
-from webkitpy.common.system.systemhost import SystemHost
-from webkitpy.common.system.systemhost_mock import MockSystemHost
+from webkitpy.common.system.output_capture import OutputCapture
+from webkitpy.common.system.system_host import SystemHost
+from webkitpy.common.system.system_host_mock import MockSystemHost
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port.base import Port
 

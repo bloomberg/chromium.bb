@@ -31,8 +31,8 @@ import re
 import urllib2
 
 from webkitpy.common.memoized import memoized
-from webkitpy.common.net.layouttestresults import LayoutTestResults
-from webkitpy.common.net.networktransaction import NetworkTransaction
+from webkitpy.common.net.layout_test_results import LayoutTestResults
+from webkitpy.common.net.network_transaction import NetworkTransaction
 
 
 RESULTS_URL_BASE = 'https://storage.googleapis.com/chromium-layout-test-archives'

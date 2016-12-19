@@ -41,6 +41,9 @@ class NetworkTimeout(Exception):
 
 class NetworkTransaction(object):
 
+    # TODO(qyearsley): Rename convert_404_to_None
+    # pylint: disable=invalid-name
+
     def __init__(self, initial_backoff_seconds=10, grown_factor=1.5, timeout_seconds=(10 * 60), convert_404_to_None=False):
         self._initial_backoff_seconds = initial_backoff_seconds
         self._grown_factor = grown_factor

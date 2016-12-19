@@ -7,10 +7,10 @@ import optparse
 
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.git_cl import GitCL
-from webkitpy.common.net.layouttestresults import LayoutTestResults
+from webkitpy.common.net.layout_test_results import LayoutTestResults
 from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.net.web_mock import MockWeb
-from webkitpy.common.system.logtesting import LoggingTestCase
+from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.tool.commands.rebaseline_cl import RebaselineCL
 from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase

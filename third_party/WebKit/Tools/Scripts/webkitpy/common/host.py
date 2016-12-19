@@ -34,7 +34,7 @@ from webkitpy.common.checkout.scm.detection import SCMDetector
 from webkitpy.common.config.builders import BUILDERS
 from webkitpy.common.net.buildbot import BuildBot
 from webkitpy.common.net import web
-from webkitpy.common.system.systemhost import SystemHost
+from webkitpy.common.system.system_host import SystemHost
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.layout_tests.port.factory import PortFactory
 

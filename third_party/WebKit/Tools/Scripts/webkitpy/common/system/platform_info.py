@@ -118,7 +118,7 @@ class PlatformInfo(object):
                 packed = fcntl.ioctl(sys.stderr.fileno(), termios.TIOCGWINSZ, '\0' * 8)
                 _, columns, _, _ = struct.unpack('HHHH', packed)
                 return columns
-        except:
+        except Exception:  # pylint: disable=broad-except
             return sys.maxsize
 
     def linux_distribution(self):
@@ -171,9 +171,10 @@ class PlatformInfo(object):
             return 'vista'
         if win_version_tuple[:2] == (5, 1):
             return 'xp'
-        assert (win_version_tuple[0] > 10 or
-                win_version_tuple[0] == 10 and win_version_tuple[1] > 0), (
-            'Unrecognized Windows version tuple: "%s"' % (win_version_tuple,))
+        assert (
+            win_version_tuple[0] > 10 or
+            win_version_tuple[0] == 10 and win_version_tuple[1] > 0), (
+                'Unrecognized Windows version tuple: "%s"' % (win_version_tuple,))
         return 'future'
 
     def _win_version_tuple(self, sys_module):

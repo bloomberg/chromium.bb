@@ -30,7 +30,7 @@ from webkitpy.common.config.builders import BUILDERS
 from webkitpy.common.checkout.scm.scm_mock import MockSCM
 from webkitpy.common.net.buildbot_mock import MockBuildBot
 from webkitpy.common.net.web_mock import MockWeb
-from webkitpy.common.system.systemhost_mock import MockSystemHost
+from webkitpy.common.system.system_host_mock import MockSystemHost
 
 # New-style ports need to move down into webkitpy.common.
 from webkitpy.layout_tests.builder_list import BuilderList

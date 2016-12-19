@@ -986,7 +986,7 @@ class TestExpectations(object):
         return set(suffixes)
 
     @staticmethod
-    # test_result is an instance of webkitpy.common.net.layouttestresults.LayoutTestResult
+    # test_result is an instance of webkitpy.common.net.layout_test_results.LayoutTestResult
     def suffixes_for_test_result(test_result):
         suffixes = set()
         actual_results = test_result.actual_results()

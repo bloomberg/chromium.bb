@@ -22,7 +22,7 @@
 
 
 from webkitpy.common.system.filesystem import FileSystem
-from webkitpy.common.system.logtesting import LoggingTestCase
+from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.style.checker import ProcessorBase
 from webkitpy.style.filereader import TextFileReader
 

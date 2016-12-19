@@ -30,7 +30,7 @@ import sys
 import unittest
 
 from webkitpy.common.system.executive_mock import MockExecutive
-from webkitpy.common.system.outputcapture import OutputCapture
+from webkitpy.common.system.output_capture import OutputCapture
 from webkitpy.common.host_mock import MockHost
 from webkitpy.layout_tests.port import test
 from webkitpy.layout_tests.servers.apache_http import ApacheHTTP

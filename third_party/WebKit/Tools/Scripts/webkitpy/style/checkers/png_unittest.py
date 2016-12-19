@@ -27,7 +27,7 @@ import unittest
 
 from png import PNGChecker
 from webkitpy.common.system.filesystem_mock import MockFileSystem
-from webkitpy.common.system.systemhost_mock import MockSystemHost
+from webkitpy.common.system.system_host_mock import MockSystemHost
 
 
 class PNGCheckerTest(unittest.TestCase):

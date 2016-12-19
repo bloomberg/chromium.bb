@@ -30,7 +30,7 @@
 import optparse
 import unittest
 
-from webkitpy.common.system.outputcapture import OutputCapture
+from webkitpy.common.system.output_capture import OutputCapture
 from webkitpy.tool.commands.queries import PrintBaselines, PrintExpectations
 from webkitpy.tool.mock_tool import MockWebKitPatch
 

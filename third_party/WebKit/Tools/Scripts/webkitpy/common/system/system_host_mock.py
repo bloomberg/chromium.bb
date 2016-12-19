@@ -26,36 +26,46 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
-import platform
-import sys
-import time
+from StringIO import StringIO
 
-from webkitpy.common.system import executive, filesystem, platforminfo, user, workspace
+from webkitpy.common.system.executive_mock import MockExecutive
+from webkitpy.common.system.filesystem_mock import MockFileSystem
+from webkitpy.common.system.platform_info_mock import MockPlatformInfo
+from webkitpy.common.system.user_mock import MockUser
+from webkitpy.common.system.workspace_mock import MockWorkspace
 
 
-class SystemHost(object):
+class MockSystemHost(object):
 
-    def __init__(self):
-        self.executable = sys.executable
-        self.executive = executive.Executive()
-        self.filesystem = filesystem.FileSystem()
-        self.user = user.User()
-        self.platform = platforminfo.PlatformInfo(sys, platform, self.filesystem, self.executive)
-        self.workspace = workspace.Workspace(self.filesystem, self.executive)
-        self.stdin = sys.stdin
-        self.stdout = sys.stdout
-        self.stderr = sys.stderr
-        self.environ = os.environ
+    def __init__(self, log_executive=False, executive_throws_when_run=None, os_name=None,
+                 os_version=None, executive=None, filesystem=None, time_return_val=123):
+        self.executable = 'python'
+        self.executive = executive or MockExecutive(should_log=log_executive, should_throw_when_run=executive_throws_when_run)
+        self.filesystem = filesystem or MockFileSystem()
+        self.user = MockUser()
+        self.platform = MockPlatformInfo()
+        if os_name:
+            self.platform.os_name = os_name
+        if os_version:
+            self.platform.os_version = os_version
+
+        # FIXME: Should this take pointers to the filesystem and the executive?
+        self.workspace = MockWorkspace()
+
+        self.stdin = StringIO()
+        self.stdout = StringIO()
+        self.stderr = StringIO()
+        self.environ = {
+            'MOCK_ENVIRON_COPY': '1',
+            'PATH': '/bin:/mock/bin'
+        }
+        self.time_return_val = time_return_val
+
+    def time(self):
+        return self.time_return_val
 
     def print_(self, *args, **kwargs):
         sep = kwargs.get('sep', ' ')
         end = kwargs.get('end', '\n')
         stream = kwargs.get('stream', self.stdout)
         stream.write(sep.join([str(arg) for arg in args]) + end)
-
-    def exit(self, returncode):
-        sys.exit(returncode)
-
-    def time(self):
-        return time.time()

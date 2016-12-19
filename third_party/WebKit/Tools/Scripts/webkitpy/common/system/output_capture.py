@@ -39,10 +39,14 @@ class OutputCapture(object):
     def __init__(self):
         self.saved_outputs = dict()
         self._log_level = logging.INFO
+        self._logs = None
+        self._logs_handler = None
+        self._logger = None
+        self._orig_log_level = None
 
     def set_log_level(self, log_level):
         self._log_level = log_level
-        if hasattr(self, '_logs_handler'):
+        if self._logs_handler is not None:
             self._logs_handler.setLevel(self._log_level)
 
     def _capture_output_with_name(self, output_name):
@@ -78,8 +82,10 @@ class OutputCapture(object):
         delattr(self, '_logs')
         return (self._restore_output_with_name("stdout"), self._restore_output_with_name("stderr"), logs_string)
 
-    def assert_outputs(self, testcase, function, args=[], kwargs={}, expected_stdout="",
+    def assert_outputs(self, testcase, function, args=None, kwargs=None, expected_stdout="",
                        expected_stderr="", expected_exception=None, expected_logs=None):
+        args = args or []
+        kwargs = kwargs or {}
         self.capture_output()
         try:
             if expected_exception:

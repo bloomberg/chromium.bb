@@ -4,7 +4,7 @@
 
 import optparse
 
-from webkitpy.common.system.outputcapture import OutputCapture
+from webkitpy.common.system.output_capture import OutputCapture
 from webkitpy.tool.commands.optimize_baselines import OptimizeBaselines
 from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase
 

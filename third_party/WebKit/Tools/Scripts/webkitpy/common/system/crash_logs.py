@@ -49,26 +49,28 @@ class CrashLogs(object):
         return log_directory
 
     def _find_newest_log_darwin(self, process_name, pid, include_errors, newer_than):
-        def is_crash_log(fs, dirpath, basename):
+        def is_crash_log(basename):
             return basename.startswith(process_name + "_") and basename.endswith(".crash")
 
         log_directory = self._log_directory_darwin()
-        logs = self._host.filesystem.files_under(log_directory, file_filter=is_crash_log)
+        logs = self._host.filesystem.files_under(
+            log_directory,
+            file_filter=lambda fs, dirname, basename: is_crash_log(basename))
         first_line_regex = re.compile(r'^Process:\s+(?P<process_name>.*) \[(?P<pid>\d+)\]$')
         errors = ''
         for path in reversed(sorted(logs)):
             try:
                 if not newer_than or self._host.filesystem.mtime(path) > newer_than:
-                    f = self._host.filesystem.read_text_file(path)
-                    match = first_line_regex.match(f[0:f.find('\n')])
+                    contents = self._host.filesystem.read_text_file(path)
+                    match = first_line_regex.match(contents[0:contents.find('\n')])
                     if match and match.group('process_name') == process_name and (pid is None or int(match.group('pid')) == pid):
-                        return errors + f
-            except IOError as e:
+                        return errors + contents
+            except IOError as error:
                 if include_errors:
-                    errors += "ERROR: Failed to read '%s': %s\n" % (path, str(e))
-            except OSError as e:
+                    errors += "ERROR: Failed to read '%s': %s\n" % (path, error)
+            except OSError as error:
                 if include_errors:
-                    errors += "ERROR: Failed to read '%s': %s\n" % (path, str(e))
+                    errors += "ERROR: Failed to read '%s': %s\n" % (path, error)
 
         if include_errors and errors:
             return errors

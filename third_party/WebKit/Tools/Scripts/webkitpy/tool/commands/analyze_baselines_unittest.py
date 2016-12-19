@@ -4,7 +4,7 @@
 
 import optparse
 
-from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
+from webkitpy.common.checkout.baseline_optimizer import BaselineOptimizer
 from webkitpy.tool.commands.analyze_baselines import AnalyzeBaselines
 from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase
 

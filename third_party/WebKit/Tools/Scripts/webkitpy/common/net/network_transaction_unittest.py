@@ -28,8 +28,8 @@
 
 
 from urllib2 import HTTPError
-from webkitpy.common.net.networktransaction import NetworkTransaction, NetworkTimeout
-from webkitpy.common.system.logtesting import LoggingTestCase
+from webkitpy.common.net.network_transaction import NetworkTransaction, NetworkTimeout
+from webkitpy.common.system.log_testing import LoggingTestCase
 
 
 class NetworkTransactionTest(LoggingTestCase):
@@ -53,9 +53,9 @@ class NetworkTransactionTest(LoggingTestCase):
         try:
             transaction.run(self._raise_exception)
             did_throw_exception = False
-        except Exception as e:
+        except Exception as error:  # pylint: disable=broad-except
             did_process_exception = True
-            self.assertEqual(e, self.exception)
+            self.assertEqual(error, self.exception)
         self.assertTrue(did_throw_exception)
         self.assertTrue(did_process_exception)
 
@@ -77,7 +77,7 @@ class NetworkTransactionTest(LoggingTestCase):
                         'WARNING: Received HTTP status 500 loading "http://example.com/".  '
                         'Retrying in 0.0 seconds...\n'])
 
-    def test_convert_404_to_None(self):
+    def test_convert_404_to_none(self):
         transaction = NetworkTransaction(convert_404_to_None=True)
         self.assertIsNone(transaction.run(self._raise_404_error))
 

@@ -33,6 +33,9 @@ see the TestLogStream class, and perhaps also the LogTesting class.
 import logging
 import unittest
 
+# pylint: disable=invalid-name
+# Camel-case names are used here to match the style of the TestCase methods.
+
 
 class TestLogStream(object):
     """Represents a file-like object for unit-testing logging.

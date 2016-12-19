@@ -24,7 +24,7 @@
 
 import unittest
 
-from webkitpy.common.system.logtesting import LoggingTestCase
+from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.style.optparser import ArgumentParser
 from webkitpy.style.optparser import ArgumentPrinter
 from webkitpy.style.optparser import CommandOptionValues as ProcessorOptions

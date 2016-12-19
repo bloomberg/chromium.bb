@@ -29,7 +29,7 @@
 import mimetypes
 import urllib2
 
-from webkitpy.common.net.networktransaction import NetworkTransaction
+from webkitpy.common.net.network_transaction import NetworkTransaction
 
 
 def get_mime_type(filename):

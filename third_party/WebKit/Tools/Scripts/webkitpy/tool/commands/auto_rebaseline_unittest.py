@@ -5,7 +5,7 @@
 import optparse
 
 from webkitpy.common.net.buildbot import Build
-from webkitpy.common.net.layouttestresults import LayoutTestResults
+from webkitpy.common.net.layout_test_results import LayoutTestResults
 from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.tool.commands.auto_rebaseline import AutoRebaseline

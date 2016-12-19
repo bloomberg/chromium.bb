@@ -28,7 +28,7 @@
 
 import optparse
 
-from webkitpy.common.system import outputcapture
+from webkitpy.common.system import output_capture
 from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.layout_tests.port import port_testcase
 from webkitpy.layout_tests.port import win
@@ -44,7 +44,7 @@ class WinPortTest(port_testcase.PortTestCase):
     def test_setup_environ_for_server(self):
         port = self.make_port()
         port._executive = MockExecutive(should_log=True)
-        output = outputcapture.OutputCapture()
+        output = output_capture.OutputCapture()
         orig_environ = port.host.environ.copy()
         env = output.assert_outputs(self, port.setup_environ_for_server)
         self.assertEqual(orig_environ["PATH"], port.host.environ.get("PATH"))
@@ -59,7 +59,7 @@ class WinPortTest(port_testcase.PortTestCase):
         port = self.make_port(options=optparse.Values({'register_cygwin': True, 'results_directory': '/'}))
         port._executive = MockExecutive(should_log=True)
         expected_logs = "MOCK run_command: ['/mock-checkout/third_party/cygwin/setup_mount.bat'], cwd=None\n"
-        output = outputcapture.OutputCapture()
+        output = output_capture.OutputCapture()
         output.assert_outputs(self, port.setup_environ_for_server, expected_logs=expected_logs)
 
     def assert_name(self, port_name, os_version_string, expected):

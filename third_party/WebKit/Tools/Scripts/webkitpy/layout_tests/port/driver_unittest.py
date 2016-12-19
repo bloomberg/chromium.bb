@@ -29,7 +29,7 @@
 import optparse
 import unittest
 
-from webkitpy.common.system.systemhost_mock import MockSystemHost
+from webkitpy.common.system.system_host_mock import MockSystemHost
 from webkitpy.layout_tests.port.base import Port
 from webkitpy.layout_tests.port.driver import Driver
 from webkitpy.layout_tests.port.server_process_mock import MockServerProcess

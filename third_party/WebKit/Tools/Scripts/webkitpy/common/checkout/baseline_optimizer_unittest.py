@@ -28,7 +28,7 @@
 
 import unittest
 
-from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
+from webkitpy.common.checkout.baseline_optimizer import BaselineOptimizer
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.webkit_finder import WebKitFinder
 
@@ -85,8 +85,11 @@ class BaselineOptimizerTest(unittest.TestCase):
                 '/mock-checkout/third_party/WebKit/LayoutTests/another/test-expected.txt'),
             'result A')
 
-    def _assertOptimization(self, results_by_directory, expected_new_results_by_directory,
-                            baseline_dirname='', host=None):
+    def _assert_optimization(
+            self,
+            results_by_directory,
+            directory_to_new_results,
+            baseline_dirname='', host=None):
         if not host:
             host = MockHost()
         fs = host.filesystem
@@ -103,13 +106,13 @@ class BaselineOptimizerTest(unittest.TestCase):
         ), host.port_factory.all_port_names())
         self.assertTrue(baseline_optimizer.optimize(fs.join(baseline_dirname, baseline_name)))
 
-        for dirname, contents in expected_new_results_by_directory.items():
+        for dirname, contents in directory_to_new_results.items():
             path = fs.join(webkit_base, 'LayoutTests', dirname, baseline_name)
             if contents is not None:
                 self.assertEqual(fs.read_binary_file(path), contents)
 
     def test_linux_redundant_with_win(self):
-        self._assertOptimization(
+        self._assert_optimization(
             {
                 'platform/win': '1',
                 'platform/linux': '1',
@@ -119,7 +122,7 @@ class BaselineOptimizerTest(unittest.TestCase):
             })
 
     def test_covers_mac_win_linux(self):
-        self._assertOptimization(
+        self._assert_optimization(
             {
                 'platform/mac': '1',
                 'platform/win': '1',
@@ -131,7 +134,7 @@ class BaselineOptimizerTest(unittest.TestCase):
             })
 
     def test_overwrites_root(self):
-        self._assertOptimization(
+        self._assert_optimization(
             {
                 'platform/mac': '1',
                 'platform/win': '1',
@@ -143,7 +146,7 @@ class BaselineOptimizerTest(unittest.TestCase):
             })
 
     def test_no_new_common_directory(self):
-        self._assertOptimization(
+        self._assert_optimization(
             {
                 'platform/mac': '1',
                 'platform/linux': '1',
@@ -156,7 +159,7 @@ class BaselineOptimizerTest(unittest.TestCase):
             })
 
     def test_local_optimization(self):
-        self._assertOptimization(
+        self._assert_optimization(
             {
                 'platform/mac': '1',
                 'platform/linux': '1',
@@ -168,7 +171,7 @@ class BaselineOptimizerTest(unittest.TestCase):
             })
 
     def test_local_optimization_skipping_a_port_in_the_middle(self):
-        self._assertOptimization(
+        self._assert_optimization(
             {
                 'platform/mac-snowleopard': '1',
                 'platform/win': '1',
@@ -181,7 +184,7 @@ class BaselineOptimizerTest(unittest.TestCase):
             })
 
     def test_baseline_redundant_with_root(self):
-        self._assertOptimization(
+        self._assert_optimization(
             {
                 'platform/mac': '1',
                 'platform/win': '2',
@@ -193,7 +196,7 @@ class BaselineOptimizerTest(unittest.TestCase):
             })
 
     def test_root_baseline_unused(self):
-        self._assertOptimization(
+        self._assert_optimization(
             {
                 'platform/mac': '1',
                 'platform/win': '2',
@@ -205,7 +208,7 @@ class BaselineOptimizerTest(unittest.TestCase):
             })
 
     def test_root_baseline_unused_and_non_existant(self):
-        self._assertOptimization(
+        self._assert_optimization(
             {
                 'platform/mac': '1',
                 'platform/win': '2',
@@ -216,7 +219,7 @@ class BaselineOptimizerTest(unittest.TestCase):
             })
 
     def test_virtual_root_redundant_with_actual_root(self):
-        self._assertOptimization(
+        self._assert_optimization(
             {
                 'virtual/gpu/fast/canvas': '2',
                 'fast/canvas': '2',
@@ -228,7 +231,7 @@ class BaselineOptimizerTest(unittest.TestCase):
             baseline_dirname='virtual/gpu/fast/canvas')
 
     def test_virtual_root_redundant_with_ancestors(self):
-        self._assertOptimization(
+        self._assert_optimization(
             {
                 'virtual/gpu/fast/canvas': '2',
                 'platform/mac/fast/canvas': '2',
@@ -239,36 +242,9 @@ class BaselineOptimizerTest(unittest.TestCase):
                 'fast/canvas': '2',
             },
             baseline_dirname='virtual/gpu/fast/canvas')
-
-    def test_virtual_root_redundant_with_ancestors_skip_scm_commands(self):
-        self._assertOptimization(
-            {
-                'virtual/gpu/fast/canvas': '2',
-                'platform/mac/fast/canvas': '2',
-                'platform/win/fast/canvas': '2',
-            },
-            {
-                'virtual/gpu/fast/canvas': None,
-                'fast/canvas': '2',
-            },
-            baseline_dirname='virtual/gpu/fast/canvas')
-
-    def test_virtual_root_redundant_with_ancestors_skip_scm_commands_with_file_not_in_scm(self):
-        self._assertOptimization(
-            {
-                'virtual/gpu/fast/canvas': '2',
-                'platform/mac/fast/canvas': '2',
-                'platform/win/fast/canvas': '2',
-            },
-            {
-                'virtual/gpu/fast/canvas': None,
-                'fast/canvas': '2',
-            },
-            baseline_dirname='virtual/gpu/fast/canvas',
-            host=MockHost())
 
     def test_virtual_root_not_redundant_with_ancestors(self):
-        self._assertOptimization(
+        self._assert_optimization(
             {
                 'virtual/gpu/fast/canvas': '2',
                 'platform/mac/fast/canvas': '1',

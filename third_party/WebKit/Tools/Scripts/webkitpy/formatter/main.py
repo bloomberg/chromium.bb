@@ -5,7 +5,7 @@
 import argparse
 import lib2to3.refactor
 
-from webkitpy.common.system.systemhost import SystemHost
+from webkitpy.common.system.system_host import SystemHost
 from webkitpy.thirdparty import autopep8
 
 

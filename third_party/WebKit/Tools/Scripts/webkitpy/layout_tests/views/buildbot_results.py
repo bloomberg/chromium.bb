@@ -30,7 +30,7 @@
 from webkitpy.layout_tests.models import test_expectations
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationLine
 
-from webkitpy.common.net.layouttestresults import LayoutTestResults
+from webkitpy.common.net.layout_test_results import LayoutTestResults
 
 
 class BuildBotPrinter(object):

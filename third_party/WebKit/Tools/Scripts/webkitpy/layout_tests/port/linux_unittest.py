@@ -29,7 +29,7 @@
 import optparse
 
 from webkitpy.common.system import executive_mock
-from webkitpy.common.system.systemhost_mock import MockSystemHost
+from webkitpy.common.system.system_host_mock import MockSystemHost
 from webkitpy.layout_tests.port import linux
 from webkitpy.layout_tests.port import port_testcase
 

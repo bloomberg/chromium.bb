@@ -28,9 +28,9 @@
 
 import copy
 import logging
+import functools
 
 from webkitpy.common.memoized import memoized
-from functools import reduce
 
 _log = logging.getLogger(__name__)
 
@@ -101,7 +101,7 @@ class BaselineOptimizer(object):
 
     def read_results_by_directory(self, baseline_name):
         results_by_directory = {}
-        directories = reduce(set.union, map(set, [self._relative_baseline_search_paths(
+        directories = functools.reduce(set.union, map(set, [self._relative_baseline_search_paths(
             port, baseline_name) for port in self._ports.values()]))
 
         for directory in directories:
@@ -134,11 +134,11 @@ class BaselineOptimizer(object):
         # have the same baseline, then it can be promoted up to be the LayoutTests baseline.
         # All other baselines can only be removed if they're redundant with a baseline earlier
         # in the fallback order. They can never promoted up.
-        directories_immediately_preceding_root = self._directories_immediately_preceding_root(baseline_name)
+        immediately_preceding_root = self._directories_immediately_preceding_root(baseline_name)
 
         shared_result = None
         root_baseline_unused = False
-        for directory in directories_immediately_preceding_root:
+        for directory in immediately_preceding_root:
             this_result = new_results_by_directory.get(directory)
 
             # If any of these directories don't have a baseline, there's no optimization we can do.
@@ -160,21 +160,20 @@ class BaselineOptimizer(object):
             return
 
         new_results_by_directory[baseline_root] = shared_result
-        for directory in directories_immediately_preceding_root:
+        for directory in immediately_preceding_root:
             del new_results_by_directory[directory]
 
     def _find_optimal_result_placement(self, baseline_name):
         results_by_directory = self.read_results_by_directory(baseline_name)
         results_by_port_name = self._results_by_port_name(results_by_directory, baseline_name)
-        port_names_by_result = _invert_dictionary(results_by_port_name)
 
         new_results_by_directory = self._remove_redundant_results(
-            results_by_directory, results_by_port_name, port_names_by_result, baseline_name)
+            results_by_directory, results_by_port_name, baseline_name)
         self._optimize_result_for_root(new_results_by_directory, baseline_name)
 
         return results_by_directory, new_results_by_directory
 
-    def _remove_redundant_results(self, results_by_directory, results_by_port_name, port_names_by_result, baseline_name):
+    def _remove_redundant_results(self, results_by_directory, results_by_port_name, baseline_name):
         new_results_by_directory = copy.copy(results_by_directory)
         for port_name, port in self._ports.items():
             current_result = results_by_port_name.get(port_name)
@@ -187,7 +186,7 @@ class BaselineOptimizer(object):
             current_index, current_directory = self._find_in_fallbackpath(fallback_path, current_result, new_results_by_directory)
             for index in range(current_index + 1, len(fallback_path)):
                 new_directory = fallback_path[index]
-                if not new_directory in new_results_by_directory:
+                if new_directory not in new_results_by_directory:
                     # No result for this baseline in this directory.
                     continue
                 elif new_results_by_directory[new_directory] == current_result:
@@ -218,7 +217,7 @@ class BaselineOptimizer(object):
     def _move_baselines(self, baseline_name, results_by_directory, new_results_by_directory):
         data_for_result = {}
         for directory, result in results_by_directory.items():
-            if not result in data_for_result:
+            if result not in data_for_result:
                 source = self._join_directory(directory, baseline_name)
                 data_for_result[result] = self._filesystem.read_binary_file(source)
 
@@ -289,10 +288,10 @@ class BaselineOptimizer(object):
         return True
 
     def _optimize_virtual_root(self, baseline_name, non_virtual_baseline_name):
-        virtual_root_expected_baseline_path = self._filesystem.join(self._layout_tests_dir, baseline_name)
-        if not self._filesystem.exists(virtual_root_expected_baseline_path):
+        virtual_root_baseline_path = self._filesystem.join(self._layout_tests_dir, baseline_name)
+        if not self._filesystem.exists(virtual_root_baseline_path):
             return
-        root_sha1 = self._filesystem.sha1(virtual_root_expected_baseline_path)
+        root_sha1 = self._filesystem.sha1(virtual_root_baseline_path)
 
         results_by_directory = self.read_results_by_directory(non_virtual_baseline_name)
         # See if all the immediate predecessors of the virtual root have the same expected result.
@@ -306,8 +305,8 @@ class BaselineOptimizer(object):
                 break
 
         _log.debug("Deleting redundant virtual root expected result.")
-        _log.debug("    Deleting (file system): " + virtual_root_expected_baseline_path)
-        self._filesystem.remove(virtual_root_expected_baseline_path)
+        _log.debug("    Deleting (file system): " + virtual_root_baseline_path)
+        self._filesystem.remove(virtual_root_baseline_path)
 
     def optimize(self, baseline_name):
         # The virtual fallback path is the same as the non-virtual one tacked on to the bottom of the non-virtual path.

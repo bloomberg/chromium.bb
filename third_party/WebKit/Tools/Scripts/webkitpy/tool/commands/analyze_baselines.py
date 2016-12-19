@@ -29,7 +29,7 @@
 import logging
 import optparse
 
-from webkitpy.common.checkout.baselineoptimizer import BaselineOptimizer
+from webkitpy.common.checkout.baseline_optimizer import BaselineOptimizer
 from webkitpy.layout_tests.controllers.test_result_writer import baseline_name
 from webkitpy.tool.commands.rebaseline import AbstractRebaseliningCommand
 

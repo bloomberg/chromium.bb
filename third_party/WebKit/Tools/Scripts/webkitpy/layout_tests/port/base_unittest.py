@@ -35,11 +35,11 @@ import unittest
 from webkitpy.common.system.executive import ScriptError
 from webkitpy.common.system import executive_mock
 from webkitpy.common.system.filesystem_mock import MockFileSystem
-from webkitpy.common.system.platforminfo_mock import MockPlatformInfo
-from webkitpy.common.system.outputcapture import OutputCapture
+from webkitpy.common.system.platform_info_mock import MockPlatformInfo
+from webkitpy.common.system.output_capture import OutputCapture
 from webkitpy.common.system.executive_mock import MockExecutive2
-from webkitpy.common.system.systemhost import SystemHost
-from webkitpy.common.system.systemhost_mock import MockSystemHost
+from webkitpy.common.system.system_host import SystemHost
+from webkitpy.common.system.system_host_mock import MockSystemHost
 
 from webkitpy.layout_tests.port.base import Port, VirtualTestSuite
 from webkitpy.layout_tests.models.test_expectations import TestExpectations

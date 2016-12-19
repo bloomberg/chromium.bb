@@ -30,7 +30,7 @@ from collections import OrderedDict
 import unittest
 
 from webkitpy.common.host_mock import MockHost
-from webkitpy.common.system.outputcapture import OutputCapture
+from webkitpy.common.system.output_capture import OutputCapture
 from webkitpy.layout_tests.models.test_configuration import TestConfiguration, TestConfigurationConverter
 from webkitpy.layout_tests.models.test_expectations import (
     TestExpectationLine, TestExpectations, ParseError, TestExpectationParser,

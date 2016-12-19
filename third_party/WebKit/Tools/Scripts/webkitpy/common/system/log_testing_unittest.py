@@ -5,7 +5,7 @@
 import logging
 import unittest
 
-from webkitpy.common.system.logtesting import LoggingTestCase, LogTesting, TestLogStream
+from webkitpy.common.system.log_testing import LoggingTestCase, LogTesting, TestLogStream
 
 
 class TestLogStreamTest(unittest.TestCase):

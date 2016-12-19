@@ -95,7 +95,7 @@ class ServerProcess(object):
         self._reset()
 
         # See comment in imports for why we need the win32 APIs and can't just use select.
-        # FIXME: there should be a way to get win32 vs. cygwin from platforminfo.
+        # FIXME: there should be a way to get win32 vs. cygwin from platform_info.
         self._use_win32_apis = sys.platform == 'win32'
 
     def name(self):

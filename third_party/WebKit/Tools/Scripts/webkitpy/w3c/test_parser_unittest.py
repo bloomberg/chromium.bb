@@ -29,7 +29,7 @@ import os
 import unittest
 
 from webkitpy.common.host_mock import MockHost
-from webkitpy.common.system.outputcapture import OutputCapture
+from webkitpy.common.system.output_capture import OutputCapture
 from webkitpy.w3c.test_parser import TestParser
 
 

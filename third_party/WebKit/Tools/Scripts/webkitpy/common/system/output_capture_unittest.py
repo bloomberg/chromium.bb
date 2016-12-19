@@ -23,7 +23,7 @@
 import logging
 import unittest
 
-from webkitpy.common.system.outputcapture import OutputCapture
+from webkitpy.common.system.output_capture import OutputCapture
 
 
 _log = logging.getLogger(__name__)
@@ -40,7 +40,7 @@ class OutputCaptureTest(unittest.TestCase):
         _log.error('ERROR')
         _log.critical('CRITICAL')
 
-    def assertLogged(self, expected_logs):
+    def assert_logged(self, expected_logs):
         actual_stdout, actual_stderr, actual_logs = self.output.restore_output()
         self.assertEqual('', actual_stdout)
         self.assertEqual('', actual_stderr)
@@ -49,7 +49,7 @@ class OutputCaptureTest(unittest.TestCase):
     def test_initial_log_level(self):
         self.output.capture_output()
         self.log_all_levels()
-        self.assertLogged('INFO\nWARN\nERROR\nCRITICAL\n')
+        self.assert_logged('INFO\nWARN\nERROR\nCRITICAL\n')
 
     def test_set_log_level(self):
         self.output.set_log_level(logging.ERROR)
@@ -57,4 +57,4 @@ class OutputCaptureTest(unittest.TestCase):
         self.log_all_levels()
         self.output.set_log_level(logging.WARN)
         self.log_all_levels()
-        self.assertLogged('ERROR\nCRITICAL\nWARN\nERROR\nCRITICAL\n')
+        self.assert_logged('ERROR\nCRITICAL\nWARN\nERROR\nCRITICAL\n')

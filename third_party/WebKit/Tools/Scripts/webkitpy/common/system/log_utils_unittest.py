@@ -23,8 +23,8 @@
 import logging
 import unittest
 
-from webkitpy.common.system.logtesting import TestLogStream
-from webkitpy.common.system.logutils import configure_logging
+from webkitpy.common.system.log_testing import TestLogStream
+from webkitpy.common.system.log_utils import configure_logging
 
 
 class ConfigureLoggingTestBase(unittest.TestCase):

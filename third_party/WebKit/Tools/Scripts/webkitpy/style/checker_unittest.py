@@ -37,8 +37,8 @@ import logging
 import os
 import unittest
 
-from webkitpy.common.system.logtesting import LoggingTestCase
-from webkitpy.common.system.logtesting import TestLogStream
+from webkitpy.common.system.log_testing import LoggingTestCase
+from webkitpy.common.system.log_testing import TestLogStream
 from webkitpy.style import checker as style
 from webkitpy.style.checker import _all_categories
 from webkitpy.style.checker import _BASE_FILTER_RULES

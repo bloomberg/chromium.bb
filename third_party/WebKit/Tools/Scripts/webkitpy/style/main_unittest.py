@@ -22,7 +22,7 @@
 
 from main import change_directory
 from webkitpy.common.system.filesystem_mock import MockFileSystem
-from webkitpy.common.system.logtesting import LoggingTestCase
+from webkitpy.common.system.log_testing import LoggingTestCase
 
 
 class ChangeDirectoryTest(LoggingTestCase):

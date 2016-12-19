@@ -28,7 +28,7 @@
 
 import unittest
 
-from webkitpy.common.net.layouttestresults import LayoutTestResults
+from webkitpy.common.net.layout_test_results import LayoutTestResults
 
 
 class LayoutTestResultsTest(unittest.TestCase):

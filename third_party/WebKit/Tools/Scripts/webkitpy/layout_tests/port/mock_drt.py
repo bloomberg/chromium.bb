@@ -48,7 +48,7 @@ if script_dir not in sys.path:
     sys.path.append(script_dir)
 
 from webkitpy.common import read_checksum_from_png
-from webkitpy.common.system.systemhost import SystemHost
+from webkitpy.common.system.system_host import SystemHost
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port.driver import DriverInput, DriverOutput
 from webkitpy.layout_tests.port.factory import PortFactory

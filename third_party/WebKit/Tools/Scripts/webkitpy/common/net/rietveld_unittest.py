@@ -8,7 +8,7 @@ import urllib2
 from webkitpy.common.net.rietveld import Rietveld
 from webkitpy.common.net.buildbot import Build
 from webkitpy.common.net.web_mock import MockWeb
-from webkitpy.common.system.logtesting import LoggingTestCase
+from webkitpy.common.system.log_testing import LoggingTestCase
 
 
 class RietveldTest(LoggingTestCase):

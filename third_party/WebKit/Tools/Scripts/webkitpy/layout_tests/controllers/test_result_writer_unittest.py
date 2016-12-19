@@ -30,7 +30,7 @@ import optparse
 import unittest
 
 from webkitpy.common.system.filesystem_mock import MockFileSystem
-from webkitpy.common.system.systemhost_mock import MockSystemHost
+from webkitpy.common.system.system_host_mock import MockSystemHost
 from webkitpy.layout_tests.controllers.test_result_writer import baseline_name
 from webkitpy.layout_tests.controllers.test_result_writer import write_test_result
 from webkitpy.layout_tests.port.driver import DriverOutput

@@ -29,10 +29,10 @@ import re
 import unittest
 
 from webkitpy.common.host import Host
-from webkitpy.common.system.outputcapture import OutputCapture
+from webkitpy.common.system.output_capture import OutputCapture
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.w3c.test_converter import _W3CTestConverter, convert_for_webkit
-from webkitpy.common.system.systemhost_mock import MockSystemHost
+from webkitpy.common.system.system_host_mock import MockSystemHost
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 
 DUMMY_FILENAME = 'dummy.html'

@@ -36,8 +36,8 @@ import unittest
 
 from webkitpy.common.host import Host
 from webkitpy.common.host_mock import MockHost
-from webkitpy.common.system import outputcapture, path
-from webkitpy.common.system.systemhost import SystemHost
+from webkitpy.common.system import output_capture, path
+from webkitpy.common.system.system_host import SystemHost
 
 from webkitpy.layout_tests import run_webkit_tests
 from webkitpy.layout_tests.models import test_expectations
@@ -97,7 +97,7 @@ def logging_run(extra_args=None, port_obj=None, tests_included=False, host=None,
 def run_and_capture(port_obj, options, parsed_args, shared_port=True):
     if shared_port:
         port_obj.host.port_factory.get = lambda *args, **kwargs: port_obj
-    oc = outputcapture.OutputCapture()
+    oc = output_capture.OutputCapture()
     try:
         oc.capture_output()
         logging_stream = StringIO.StringIO()
@@ -135,7 +135,7 @@ def get_test_results(args, host=None, port_obj=None):
     host = host or MockHost()
     port_obj = port_obj or host.port_factory.get(port_name=options.platform, options=options)
 
-    oc = outputcapture.OutputCapture()
+    oc = output_capture.OutputCapture()
     oc.capture_output()
     logging_stream = StringIO.StringIO()
     stdout = StringIO.StringIO()
@@ -999,7 +999,7 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         # When we actually run multiple processes, we may have to reconfigure logging in the
         # child process (e.g., on win32) and we need to make sure that works and we still
         # see the verbose log output. However, we can't use logging_run() because using
-        # outputcapture to capture stdout and stderr latter results in a nonpicklable host.
+        # output_capture to capture stdout and stderr latter results in a nonpicklable host.
 
         # Test is flaky on Windows: https://bugs.webkit.org/show_bug.cgi?id=98559
         if not self.should_test_processes:

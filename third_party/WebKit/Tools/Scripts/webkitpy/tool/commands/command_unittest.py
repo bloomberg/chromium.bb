@@ -29,7 +29,7 @@
 import optparse
 import unittest
 
-from webkitpy.common.system.outputcapture import OutputCapture
+from webkitpy.common.system.output_capture import OutputCapture
 from webkitpy.tool.commands.command import Command
 
 
