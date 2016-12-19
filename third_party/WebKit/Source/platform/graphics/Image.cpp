@@ -225,10 +225,11 @@ namespace {
 sk_sp<SkShader> createPatternShader(const SkImage* image,
                                     const SkMatrix& shaderMatrix,
                                     const SkPaint& paint,
-                                    const FloatSize& spacing) {
+                                    const FloatSize& spacing,
+                                    SkShader::TileMode tmx,
+                                    SkShader::TileMode tmy) {
   if (spacing.isZero())
-    return image->makeShader(SkShader::kRepeat_TileMode,
-                             SkShader::kRepeat_TileMode, &shaderMatrix);
+    return image->makeShader(tmx, tmy, &shaderMatrix);
 
   // Arbitrary tiling is currently only supported for SkPictureShader, so we use
   // that instead of a plain bitmap shader to implement spacing.
@@ -239,9 +240,17 @@ sk_sp<SkShader> createPatternShader(const SkImage* image,
   SkCanvas* canvas = recorder.beginRecording(tileRect);
   canvas->drawImage(image, 0, 0, &paint);
 
-  return SkShader::MakePictureShader(
-      recorder.finishRecordingAsPicture(), SkShader::kRepeat_TileMode,
-      SkShader::kRepeat_TileMode, &shaderMatrix, nullptr);
+  return SkShader::MakePictureShader(recorder.finishRecordingAsPicture(), tmx,
+                                     tmy, &shaderMatrix, nullptr);
+}
+
+SkShader::TileMode computeTileMode(float left,
+                                   float right,
+                                   float min,
+                                   float max) {
+  DCHECK(left < right);
+  return left >= min && right <= max ? SkShader::kClamp_TileMode
+                                     : SkShader::kRepeat_TileMode;
 }
 
 }  // anonymous namespace
@@ -286,6 +295,14 @@ void Image::drawPattern(GraphicsContext& context,
   if (!image)
     return;
 
+  const FloatSize tileSize(
+      image->width() * scale.width() + repeatSpacing.width(),
+      image->height() * scale.height() + repeatSpacing.height());
+  const auto tmx = computeTileMode(destRect.x(), destRect.maxX(), adjustedX,
+                                   adjustedX + tileSize.width());
+  const auto tmy = computeTileMode(destRect.y(), destRect.maxY(), adjustedY,
+                                   adjustedY + tileSize.height());
+
   {
     SkPaint paint = context.fillPaint();
     paint.setColor(SK_ColorBLACK);
@@ -293,10 +310,11 @@ void Image::drawPattern(GraphicsContext& context,
     paint.setFilterQuality(
         context.computeFilterQuality(this, destRect, normSrcRect));
     paint.setAntiAlias(context.shouldAntialias());
-    paint.setShader(createPatternShader(
-        image.get(), localMatrix, paint,
-        FloatSize(repeatSpacing.width() / scale.width(),
-                  repeatSpacing.height() / scale.height())));
+    paint.setShader(
+        createPatternShader(image.get(), localMatrix, paint,
+                            FloatSize(repeatSpacing.width() / scale.width(),
+                                      repeatSpacing.height() / scale.height()),
+                            tmx, tmy));
     context.drawRect(destRect, paint);
   }
 

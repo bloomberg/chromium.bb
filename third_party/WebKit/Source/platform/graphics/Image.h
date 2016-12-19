@@ -156,14 +156,6 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   virtual sk_sp<SkImage> imageForCurrentFrame(const ColorBehavior&) = 0;
   virtual PassRefPtr<Image> imageForDefaultFrame();
 
-  virtual void drawPattern(GraphicsContext&,
-                           const FloatRect&,
-                           const FloatSize&,
-                           const FloatPoint& phase,
-                           SkBlendMode,
-                           const FloatRect&,
-                           const FloatSize& repeatSpacing = FloatSize());
-
   enum ImageClampingMode {
     ClampImageToSourceRect,
     DoNotClampImageToSourceRect
@@ -212,6 +204,14 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
                        TileRule hRule,
                        TileRule vRule,
                        SkBlendMode);
+
+  virtual void drawPattern(GraphicsContext&,
+                           const FloatRect&,
+                           const FloatSize&,
+                           const FloatPoint& phase,
+                           SkBlendMode,
+                           const FloatRect&,
+                           const FloatSize& repeatSpacing = FloatSize());
 
  private:
   RefPtr<SharedBuffer> m_encodedImageData;
