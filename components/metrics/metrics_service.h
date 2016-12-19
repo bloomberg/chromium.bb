@@ -361,14 +361,11 @@ class MetricsService : public base::HistogramFlattener {
   void IncrementLongPrefsValue(const char* path);
 
   // Records that the browser was shut down cleanly.
-  void LogCleanShutdown();
+  void LogCleanShutdown(bool end_completed);
 
   // Records state that should be periodically saved, like uptime and
   // buffered plugin stability statistics.
   void RecordCurrentState(PrefService* pref);
-
-  // Sets the value of the specified path in prefs and schedules a save.
-  void RecordBooleanPrefValue(const char* path, bool value);
 
   // Notifies observers on a synthetic trial list change.
   void NotifySyntheticTrialObservers();

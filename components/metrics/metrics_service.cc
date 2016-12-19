@@ -448,13 +448,11 @@ void MetricsService::OnApplicationNotIdle() {
 }
 
 void MetricsService::RecordStartOfSessionEnd() {
-  LogCleanShutdown();
-  RecordBooleanPrefValue(prefs::kStabilitySessionEndCompleted, false);
+  LogCleanShutdown(false);
 }
 
 void MetricsService::RecordCompletedSessionEnd() {
-  LogCleanShutdown();
-  RecordBooleanPrefValue(prefs::kStabilitySessionEndCompleted, true);
+  LogCleanShutdown(true);
 }
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
@@ -1213,7 +1211,8 @@ void MetricsService::RecordCurrentStabilityHistograms() {
     provider->RecordInitialHistogramSnapshots(&histogram_snapshot_manager_);
 }
 
-void MetricsService::LogCleanShutdown() {
+void MetricsService::LogCleanShutdown(bool end_completed) {
+  DCHECK(IsSingleThreaded());
   // Redundant setting to assure that we always reset this value at shutdown
   // (and that we don't use some alternate path, and not call LogCleanShutdown).
   clean_shutdown_status_ = CLEANLY_SHUTDOWN;
@@ -1221,11 +1220,7 @@ void MetricsService::LogCleanShutdown() {
   clean_exit_beacon_.WriteBeaconValue(true);
   RecordCurrentState(local_state_);
   SetExecutionPhase(MetricsService::SHUTDOWN_COMPLETE, local_state_);
-}
-
-void MetricsService::RecordBooleanPrefValue(const char* path, bool value) {
-  DCHECK(IsSingleThreaded());
-  local_state_->SetBoolean(path, value);
+  local_state_->SetBoolean(prefs::kStabilitySessionEndCompleted, end_completed);
   RecordCurrentState(local_state_);
 }
 
