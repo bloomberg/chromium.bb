@@ -65,10 +65,10 @@ class ConstrainedWindowMac {
   // is hidden until its WebContents initially loads.
   bool DialogWasShown();
 
+ private:
   // Gets the dialog manager for |web_contents_|.
   web_modal::WebContentsModalDialogManager* GetDialogManager();
 
- private:
   ConstrainedWindowMacDelegate* delegate_;  // weak, owns us.
   SingleWebContentsDialogManagerCocoa* manager_;  // weak, owned by WCMDM.
   content::WebContents* web_contents_;  // weak, owned by dialog initiator.

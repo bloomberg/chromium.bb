@@ -81,5 +81,12 @@ bool ConstrainedWindowMac::DialogWasShown() {
 
 WebContentsModalDialogManager* ConstrainedWindowMac::GetDialogManager() {
   DCHECK(web_contents_);
-  return WebContentsModalDialogManager::FromWebContents(web_contents_);
+  WebContentsModalDialogManager* dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents_);
+  // If WebContentsModalDialogManager::CreateForWebContents(web_contents_) was
+  // never called, then the manager will be null. E.g., for browser tabs,
+  // TabHelpers::AttachTabHelpers() calls CreateForWebContents(). It is invalid
+  // to show a dialog on some kinds of WebContents. Crash cleanly in that case.
+  CHECK(dialog_manager);
+  return dialog_manager;
 }
