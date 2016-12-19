@@ -8,13 +8,12 @@ set -e
 
 . ./test-lib.sh
 
-setup_initsvn
-setup_gitsvn
+setup_git_remote
+setup_git_checkout
 
 (
-
   set -e
-  cd git-svn
+  cd git_checkout
   git config rietveld.server localhost:10000
   export GIT_EDITOR=$(which true)
 
@@ -32,14 +31,8 @@ END
   test_expect_success "upload succeeds (needs a server running on localhost)" \
     "$GIT_CL upload --no-oauth2 -m test master | grep -q 'Issue created'"
 
-  test_expect_success "git-cl status has a suggested reviewer" \
-    "$GIT_CL_STATUS | grep -q 'R=ben@chromium.org'"
-
-  test_expect_failure "git-cl dcommit fails w/ missing LGTM" \
-    "$GIT_CL dcommit -f --no-oauth2"
-
-  test_expect_success "git-cl dcommit --tbr succeeds" \
-    "$GIT_CL dcommit --tbr -f --no-oauth2 | grep -q -- '--tbr was specified'"
+  test_expect_failure "git-cl land fails w/ missing LGTM" \
+    "$GIT_CL land -f --no-oauth2"
 )
 SUCCESS=$?
 

@@ -8,13 +8,13 @@ set -e
 
 . ./test-lib.sh
 
-setup_initsvn
-setup_gitsvn
+setup_git_remote
+setup_git_checkout
 
 (
   set -e
-  cd git-svn
-  git checkout -q -b work
+  cd git_checkout
+  git checkout -q --track -b work origin
   echo "some work done on a branch" >> test
   git add test; git commit -q -m "branch work"
   echo "some other work done on a branch" >> test
@@ -32,7 +32,7 @@ setup_gitsvn
   export GIT_EDITOR=$(which true)
 
   test_expect_success "upload succeeds (needs a server running on localhost)" \
-    "$GIT_CL upload --no-oauth2 -m test master | grep -q 'Issue created'"
+    "$GIT_CL upload  --no-oauth2  -m test master | grep -q 'Issue created'"
 
   test_expect_success "git-cl status now knows the issue" \
     "$GIT_CL_STATUS | grep -q 'Issue number'"
@@ -45,19 +45,21 @@ setup_gitsvn
        --data-urlencode xsrf_token="$(print_xsrf_token)" \
        $URL/edit
 
-  test_expect_success "git-cl dcommits ok" \
-    "$GIT_CL dcommit -f --no-oauth2"
+  test_expect_success "git-cl land ok" \
+    "$GIT_CL land -f --no-oauth2"
 
   test_expect_success "branch still has an issue" \
       "$GIT_CL_STATUS | grep -q 'Issue number'"
 
-  git checkout -q master
-  git svn -q rebase >/dev/null 2>&1
-  test_expect_success "dcommitted code has proper description" \
+  git checkout -q master > /dev/null 2>&1
+  git pull -q > /dev/null 2>&1
+
+  test_expect_success "committed code has proper description" \
       "git show | grep -q 'foo-quux'"
 
-  test_expect_success "upstream svn has our commit" \
-      "svn log $REPO_URL 2>/dev/null | grep -q 'foo-quux'"
+  cd $GITREPO_PATH
+  test_expect_success "upstream repo has our commit" \
+      "git log master 2>/dev/null | grep -q 'foo-quux'"
 )
 SUCCESS=$?
 

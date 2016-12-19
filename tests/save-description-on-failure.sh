@@ -17,12 +17,12 @@ if [ -e "$BACKUP_FILE" ]; then
   mv "$BACKUP_FILE" "$BACKUP_FILE_TMP"
 fi
 
-setup_initgit
-setup_gitgit
+setup_git_remote
+setup_git_checkout
 
 (
   set -e
-  cd git-git
+  cd git_checkout
 
   DESC="this is the description"
 

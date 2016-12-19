@@ -8,13 +8,13 @@ set -e
 
 . ./test-lib.sh
 
-setup_initgit
-setup_gitgit
+setup_git_remote
+setup_git_checkout
 
 (
   set -e
-  cd git-git
-  git checkout -q --track -b work origin
+  cd git_checkout
+  git checkout -q -t origin/master -b work
   echo "some work done on a branch" >> test
   git add test; git commit -q -m "branch work"
   echo "some other work done on a branch" >> test
@@ -26,12 +26,12 @@ setup_gitgit
   git config rietveld.server localhost:10000
 
   test_expect_success "git-cl status has no issue" \
-    "$GIT_CL_STATUS | grep -q 'no issue'"
+    "$GIT_CL_STATUS | grep -q 'No issue assigned'"
 
   # Prevent the editor from coming up when you upload.
   export EDITOR=$(which true)
   test_expect_success "upload succeeds (needs a server running on localhost)" \
-      "$GIT_CL upload --no-oauth2 -m test master | \
+      "$GIT_CL upload --no-oauth2 -t test master | \
       grep -q 'Issue created'"
 
   test_expect_success "git-cl status now knows the issue" \
@@ -40,27 +40,28 @@ setup_gitgit
   # Check to see if the description contains the local commit messages.
   # Should contain 'branch work' x 2.
   test_expect_success "git-cl status has the right description for the log" \
-      "$GIT_CL_STATUS --field desc | [ $( egrep -q '^branch work$' -c ) -eq 2 ]
+      "[ $($GIT_CL_STATUS --field desc | egrep '^branch work$' -c) -eq 2 ]"
 
   test_expect_success "git-cl status has the right subject from message" \
-      "$GIT_CL_STATUS --field desc | \
-      [ $( egrep -q '^test$' --byte-offset) | grep '^0:' ]
+      "$GIT_CL_STATUS --field desc | head -n 1 | grep -q '^test$'"
 
-  test_expect_success "git-cl push ok" \
-    "$GIT_CL push -f --no-oauth2"
+  test_expect_success "git-cl land ok" \
+    "$GIT_CL land --bypass-hooks"
 
-  git checkout -q master > /dev/null 2>&1
-  git pull -q > /dev/null 2>&1
+  git fetch origin
+  git checkout origin/master
+
+  test_expect_success "committed code has proper summary" \
+      "[ $(git log -n 1 --pretty=format:%s | egrep '^test$' -c) -eq 1 ]"
 
   test_expect_success "committed code has proper description" \
-      "git show | [ $( egrep -q '^branch work$' -c ) -eq 2 ]
+      "[ $(git log -n 1 --pretty=format:%b | egrep '^branch work$' -c) -eq 2 ]"
 
-  test_expect_success "issue no longer has a branch" \
-      "$GIT_CL_STATUS | grep -q 'work : None'"
+  # # Have to sleep to let the server return the new status.
+  # sleep 5
+  # test_expect_success "branch issue is closed" \
+  #     "$GIT_CL_STATUS | grep -q 'work :.*closed'"
 
-  cd $GITREPO_PATH
-  test_expect_success "upstream repo has our commit" \
-      "git log master 2>/dev/null | [ $( egrep -q '^branch work$' -c ) -eq 2 ]
 )
 SUCCESS=$?
 

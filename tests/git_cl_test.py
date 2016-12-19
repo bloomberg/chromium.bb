@@ -635,12 +635,7 @@ class TestGitCl(TestCase):
         ((['git', 'config', 'core.editor'],), ''),
     ] + cc_call + private_call + [
         ((['git', 'config', 'branch.master.base-url'],), ''),
-        ((['git', 'config', 'rietveld.pending-ref-prefix'],), ''),
-        ((['git',
-           'config', '--local', '--get-regexp', '^svn-remote\\.'],),
-         (('', None), 0)),
-        ((['git', 'rev-parse', '--show-cdup'],), ''),
-        ((['git', 'svn', 'info'],), ''),
+        ((['git', 'config', 'remote.origin.url'],), ''),
         ((['git', 'config', 'rietveld.project'],), ''),
         ((['git', 'config', 'branch.master.rietveldissue', '1'],), ''),
         ((['git', 'config', 'branch.master.rietveldserver',
@@ -684,106 +679,6 @@ class TestGitCl(TestCase):
       ((['git', 'rev-list', '^' + fake_ancestor,
          'refs/remotes/origin/master'],), ''),
     ]
-
-  @classmethod
-  def _dcommit_calls_1(cls):
-    return [
-      ((['git', 'config', 'rietveld.autoupdate'],),
-       ''),
-      ((['git', 'config', 'rietveld.pending-ref-prefix'],),
-       ''),
-      ((['git',
-         'config', '--local', '--get-regexp', '^svn-remote\\.'],),
-       ((('svn-remote.svn.url svn://svn.chromium.org/chrome\n'
-          'svn-remote.svn.fetch trunk/src:refs/remotes/origin/master'),
-         None),
-        0)),
-      ((['git', 'symbolic-ref', 'HEAD'],), 'refs/heads/working'),
-      ((['git', 'config',
-        'branch.working.git-cl-similarity'],), CERR1),
-      ((['git', 'symbolic-ref', 'HEAD'],), 'refs/heads/working'),
-      ((['git', 'config', '--bool',
-        'branch.working.git-find-copies'],), CERR1),
-      ((['git', 'symbolic-ref', 'HEAD'],), 'refs/heads/working'),
-      ((['git',
-         'config', 'branch.working.rietveldissue'],), '12345'),
-      ((['git',
-         'config', 'rietveld.server'],), 'codereview.example.com'),
-      ((['git',
-         'config', 'branch.working.merge'],), 'refs/heads/master'),
-      ((['git', 'config', 'branch.working.remote'],), 'origin'),
-      ((['git', 'config', 'branch.working.merge'],),
-       'refs/heads/master'),
-      ((['git', 'config', 'branch.working.remote'],), 'origin'),
-      ((['git', 'rev-list', '--merges',
-         '--grep=^SVN changes up to revision [0-9]*$',
-         'refs/remotes/origin/master^!'],), ''),
-      ((['git', 'rev-list', '^refs/heads/working',
-         'refs/remotes/origin/master'],),
-         ''),
-      ((['git',
-         'log', '--grep=^git-svn-id:', '-1', '--pretty=format:%H'],),
-         '3fc18b62c4966193eb435baabe2d18a3810ec82e'),
-      ((['git',
-         'rev-list', '^3fc18b62c4966193eb435baabe2d18a3810ec82e',
-         'refs/remotes/origin/master'],), ''),
-      ((['git',
-         'merge-base', 'refs/remotes/origin/master', 'HEAD'],),
-       'fake_ancestor_sha'),
-    ]
-
-  @classmethod
-  def _dcommit_calls_normal(cls):
-    return [
-      ((['git', 'rev-parse', '--show-cdup'],), ''),
-      ((['git', 'rev-parse', 'HEAD'],),
-          '00ff397798ea57439712ed7e04ab96e13969ef40'),
-      ((['git',
-         'diff', '--name-status', '--no-renames', '-r', 'fake_ancestor_sha...',
-         '.'],),
-        'M\tPRESUBMIT.py'),
-      ((['git',
-         'config', 'branch.working.rietveldpatchset'],), '31137'),
-      ((['git', 'config', 'branch.working.rietveldserver'],),
-         'codereview.example.com'),
-      ((['git', 'config', 'user.email'],), 'author@example.com'),
-      ((['git', 'config', 'rietveld.tree-status-url'],), ''),
-  ]
-
-  @classmethod
-  def _dcommit_calls_bypassed(cls):
-    return [
-      ((['git', 'config', 'branch.working.rietveldserver'],),
-         'codereview.example.com'),
-  ]
-
-  @classmethod
-  def _dcommit_calls_3(cls):
-    return [
-      ((['git',
-         'diff', '--no-ext-diff', '--stat', '-l100000', '-C50',
-         'fake_ancestor_sha', 'refs/heads/working'],),
-       (' PRESUBMIT.py |    2 +-\n'
-        ' 1 files changed, 1 insertions(+), 1 deletions(-)\n')),
-      ((['git', 'show-ref', '--quiet', '--verify',
-         'refs/heads/git-cl-commit'],), ''),
-      ((['git', 'branch', '-D', 'git-cl-commit'],), ''),
-      ((['git', 'show-ref', '--quiet', '--verify',
-         'refs/heads/git-cl-cherry-pick'],), CERR1),
-      ((['git', 'rev-parse', '--show-cdup'],), '\n'),
-      ((['git', 'checkout', '-q', '-b', 'git-cl-commit'],), ''),
-      ((['git', 'reset', '--soft', 'fake_ancestor_sha'],), ''),
-      ((['git', 'commit', '-m',
-         'Issue: 12345\n\nR=john@chromium.org\n\n'
-         'Review-Url: https://codereview.example.com/12345 .'],),
-       ''),
-      ((['git', 'config', 'rietveld.force-https-commit-url'],), ''),
-      ((['git',
-         'svn', 'dcommit', '-C50', '--no-rebase', '--rmdir'],),
-       (('', None), 0)),
-      ((['git', 'checkout', '-q', 'working'],), ''),
-      ((['git', 'branch', '-D', 'git-cl-commit'],), ''),
-  ]
 
   @staticmethod
   def _cmd_line(description, args, similarity, find_copies, private, cc):
@@ -952,23 +847,6 @@ class TestGitCl(TestCase):
         'desc\n\nBUG=500658\nBUG=proj:1234',
         [])
 
-  def test_dcommit(self):
-    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
-    self.calls = (
-        self._dcommit_calls_1() +
-        self._git_sanity_checks('fake_ancestor_sha', 'working') +
-        self._dcommit_calls_normal() +
-        self._dcommit_calls_3())
-    git_cl.main(['dcommit'])
-
-  def test_dcommit_bypass_hooks(self):
-    self.mock(git_cl.sys, 'stdout', StringIO.StringIO())
-    self.calls = (
-        self._dcommit_calls_1() +
-        self._dcommit_calls_bypassed() +
-        self._dcommit_calls_3())
-    git_cl.main(['dcommit', '--bypass-hooks'])
-
   def _land_rietveld_common(self, debug=False):
     if debug:
       # Very useful due to finally clause in git cl land raising exceptions and
@@ -984,10 +862,6 @@ class TestGitCl(TestCase):
     self.mock(RietveldMock, 'add_comment', staticmethod(
               lambda i, c: self._mocked_call(['add_comment', i, c])))
     self.calls = [
-      ((['git', 'config', 'rietveld.autoupdate'],), ''),
-      ((['git', 'config', 'rietveld.pending-ref-prefix'],), CERR1),
-      ((['git', 'config', '--local', '--get-regexp', '^svn-remote\\.'],),
-       CERR1),
       ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
       ((['git', 'config', 'branch.feature.git-cl-similarity'],), CERR1),
       ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
@@ -995,15 +869,13 @@ class TestGitCl(TestCase):
        CERR1),
       ((['git', 'symbolic-ref', 'HEAD'],), 'feature'),
       ((['git', 'config', 'branch.feature.rietveldissue'],), '123'),
+      ((['git', 'config', 'rietveld.autoupdate'],), ''),
       ((['git', 'config', 'rietveld.server'],),
        'https://codereview.chromium.org'),
       ((['git', 'config', 'branch.feature.merge'],), 'refs/heads/master'),
       ((['git', 'config', 'branch.feature.remote'],), 'origin'),
       ((['git', 'config', 'branch.feature.merge'],), 'refs/heads/master'),
       ((['git', 'config', 'branch.feature.remote'],), 'origin'),
-      ((['git', 'rev-list', '--merges',
-         '--grep=^SVN changes up to revision [0-9]*$',
-         'refs/remotes/origin/master^!'],), ''),
       ((['git', 'rev-list', '^feature', 'refs/remotes/origin/master'],),
        ''),  # No commits to rebase, according to local view of origin.
       ((['git', 'merge-base', 'refs/remotes/origin/master', 'HEAD'],),

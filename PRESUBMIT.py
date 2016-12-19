@@ -86,12 +86,11 @@ def RunGitClTests(input_api, output_api):
     server.start_server()
     test_path = input_api.os_path.abspath(
         input_api.os_path.join(input_api.PresubmitLocalPath(), 'tests'))
+
+    # test-lib.sh is not an actual test so it should not be run.
+    NON_TEST_FILES = ('test-lib.sh')
     for test in input_api.os_listdir(test_path):
-      # test-lib.sh is not an actual test so it should not be run. The other
-      # tests are tests known to fail.
-      DISABLED_TESTS = (
-          'owners.sh', 'push-from-logs.sh', 'rename.sh', 'test-lib.sh')
-      if test in DISABLED_TESTS or not test.endswith('.sh'):
+      if test in NON_TEST_FILES or not test.endswith('.sh'):
         continue
 
       print('Running %s' % test)

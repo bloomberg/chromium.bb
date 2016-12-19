@@ -11,90 +11,20 @@ export DEPOT_TOOLS_UPDATE=0
 export PYTHONUNBUFFERED=
 
 PWD=$(pwd)
-REPO_URL=file://$PWD/svnrepo
-TRUNK_URL=$REPO_URL/trunk
-BRANCH_URL=$REPO_URL/branches/some_branch
-GITREPO_PATH=$PWD/gitrepo
+GITREPO_PATH=$PWD/git_remote
 GITREPO_URL=file://$GITREPO_PATH
 PATH="$(dirname $PWD):$PATH"
 GIT_CL=$(dirname $PWD)/git-cl
 GIT_CL_STATUS="$GIT_CL status -f"
 
-# Set up an SVN repo that has a few commits to trunk.
-setup_initsvn() {
-  echo "Setting up test SVN repo..."
-  rm -rf svnrepo
-  svnadmin create svnrepo
-  # Need this in order for Mac SnowLeopard to work
-  echo "enable-rep-sharing = false" >> svnrepo/db/fsfs.conf
-
-  svn mkdir -q -m 'creating trunk' --parents $TRUNK_URL
-
-  rm -rf svn
-  svn co -q $TRUNK_URL svn
-  (
-    cd svn
-    echo "test" > test
-    svn add -q test
-    svn commit -q -m "initial commit"
-    echo "test2" >> test
-    svn commit -q -m "second commit"
-  )
-
-  svn cp -q -m 'branching' --parents $TRUNK_URL $BRANCH_URL
-}
-
-# Set up a git-svn checkout of the repo.
-setup_gitsvn() {
-  echo "Setting up test git-svn repo..."
-  rm -rf git-svn
-  # There appears to be no way to make git-svn completely shut up, so we
-  # redirect its output.
-  # clone with --prefix origin/ to ensure the same behaviour with old and new
-  # versions of git (The default prefix was "" prior to Git 2.0)
-  git svn --prefix origin/ -q clone -s $REPO_URL git-svn >/dev/null 2>&1
-  (
-    cd git-svn
-    git remote add origin https://example.com/fake_refspec
-    git config user.name 'TestDood'
-    git config user.email 'TestDood@example.com'
-  )
-}
-
-# Set up a git-svn checkout of the repo and apply merge commits
-# (like the submodule repo layout).
-setup_gitsvn_submodule() {
-  echo "Setting up test remote git-svn-submodule repo..."
-  rm -rf git-svn-submodule
-  # clone with --prefix origin/ to ensure the same behaviour with old and new
-  # versions of git (The default prefix was "" prior to Git 2.0)
-  git svn --prefix origin/ -q clone -s $REPO_URL git-svn-submodule >/dev/null 2>&1
-  svn_revision=`svn info file://$PWD/svnrepo | grep ^Revision | \
-                sed s/^.*:// | xargs`
-  (
-    cd git-svn-submodule
-    git config user.name 'TestDood'
-    git config user.email 'TestDood@example.com'
-    echo 'merge-file line 1' > merge-file
-    git add merge-file; git commit -q -m 'First non-svn commit on master'
-    git checkout -q refs/remotes/origin/trunk
-    git merge -q --no-commit --no-ff refs/heads/master >/dev/null 2>&1
-    echo 'merge-edit-file line 1' > merge-edit-file
-    git add merge-edit-file
-    git commit -q -m "SVN changes up to revision $svn_revision"
-    git update-ref refs/heads/master HEAD
-    git checkout master
-  )
-}
-
 # Set up a git repo that has a few commits to master.
-setup_initgit() {
+setup_git_remote() {
   echo "Setting up test upstream git repo..."
-  rm -rf gitrepo
-  mkdir gitrepo
+  rm -rf git_remote
+  mkdir git_remote
 
   (
-    cd gitrepo
+    cd git_remote
     git init -q
     git config user.name 'TestDood'
     git config user.email 'TestDood@example.com'
@@ -110,19 +40,19 @@ setup_initgit() {
 }
 
 # Set up a git checkout of the repo.
-setup_gitgit() {
+setup_git_checkout() {
   echo "Setting up test git repo..."
-  rm -rf git-git
-  git clone -q $GITREPO_URL git-git
+  rm -rf git_checkout
+  git clone -q $GITREPO_URL git_checkout
   (
-    cd git-git
+    cd git_checkout
     git config user.name 'TestDood'
     git config user.email 'TestDood@example.com'
   )
 }
 
 cleanup() {
-  rm -rf gitrepo svnrepo svn git-git git-svn git-svn-submodule
+  rm -rf git_remote git_checkout
 }
 
 # Usage: test_expect_success "description of test" "test code".

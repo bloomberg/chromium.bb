@@ -12,12 +12,12 @@ set -e
 
 . ./test-lib.sh
 
-setup_initsvn
-setup_gitsvn
+setup_git_remote
+setup_git_checkout
 
 (
   set -e
-  cd git-svn
+  cd git_checkout
   git config rietveld.server localhost:10000
 
   # Create a branch and give it an issue.
@@ -29,8 +29,8 @@ setup_gitsvn
   export GIT_EDITOR=$(which true)
   test_expect_success "upload succeeds" \
     "$GIT_CL upload --no-oauth2 -m test master | grep -q 'Issue created'"
-  test_expect_success "git-cl dcommits ok" \
-    "$GIT_CL dcommit -f --no-oauth2"
+  test_expect_success "git-cl lands ok" \
+    "$GIT_CL land -f --no-oauth2"
 )
 
 SUCCESS=$?

@@ -8,29 +8,29 @@ set -e
 
 . ./test-lib.sh
 
-setup_initsvn
-setup_gitsvn
+setup_git_remote
+setup_git_checkout
 
 (
   set -e
-  cd git-svn
+  cd git_checkout
 
-  cat > .git/hooks/post-cl-dcommit << _EOF
+  cat > .git/hooks/post-cl-land << _EOF
 #!/usr/bin/env bash
 git branch -m COMMITTED
 _EOF
-  chmod +x .git/hooks/post-cl-dcommit
+  chmod +x .git/hooks/post-cl-land
 
   git config rietveld.server localhost:1
-  git checkout -q --track -b work
+  git checkout -q -t origin/master -b work
   echo "some work done" >> test
   git add test; git commit -q -m "work \
 TBR=foo"
 
-  test_expect_success "dcommitted code" \
-      "$GIT_CL dcommit --no-oauth2 -f --bypass-hooks -m 'dcommit'"
+  test_expect_success "landed code" \
+      "$GIT_CL land --no-oauth2 -f --bypass-hooks -m 'land'"
 
-  test_expect_success "post-cl-dcommit hook executed" \
+  test_expect_success "post-cl-land hook executed" \
       "git symbolic-ref HEAD | grep -q COMMITTED"
 )
 SUCCESS=$?

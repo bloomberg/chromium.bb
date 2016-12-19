@@ -4,32 +4,32 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# Tests the "preupload and predcommit hooks" functionality, which lets you run
+# Tests the "preupload and preland hooks" functionality, which lets you run
 # hooks by installing a script into .git/hooks/pre-cl-* first.
 
 set -e
 
 . ./test-lib.sh
 
-setup_initsvn
-setup_gitsvn
+setup_git_remote
+setup_git_checkout
 
 setup_hooks() {
   upload_retval=$1
-  dcommit_retval=$2
+  land_retval=$2
 
   echo > PRESUBMIT.py <<END
 def CheckChangeOnUpload(input_api, output_api):
   return $upload_retval
 
 def CheckChangeOnCommit(input_api, output_api):
-  return $dcommit_retval
+  return $land_retval
 END
 }
 
 (
   set -e
-  cd git-svn
+  cd git_checkout
 
   # We need a server set up, but we don't use it.  git config rietveld.server localhost:1
 
@@ -42,8 +42,8 @@ END
   # Verify git cl upload fails.
   test_expect_failure "git-cl upload hook fails" "$GIT_CL upload master"
 
-  # Verify git cl dcommit fails.
-  test_expect_failure "git-cl dcommit hook fails" "$GIT_CL dcommit master"
+  # Verify git cl land fails.
+  test_expect_failure "git-cl land hook fails" "$GIT_CL land master"
 )
 SUCCESS=$?
 

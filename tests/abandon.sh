@@ -10,12 +10,12 @@ set -e
 
 . ./test-lib.sh
 
-setup_initsvn
-setup_gitsvn
+setup_git_remote
+setup_git_checkout
 
 (
   set -e
-  cd git-svn
+  cd git_checkout
   git config rietveld.server localhost:10000
 
   # Create a branch and give it an issue.

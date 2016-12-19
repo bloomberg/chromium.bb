@@ -8,12 +8,12 @@ set -e
 
 . ./test-lib.sh
 
-setup_initgit
-setup_gitgit
+setup_git_remote
+setup_git_checkout
 
 (
   set -e
-  cd git-git
+  cd git_checkout
   git checkout -q -b work HEAD^
   echo "some work done on a branch" >> test
   git add test; git commit -q -m "branch work"
