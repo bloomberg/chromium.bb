@@ -1345,6 +1345,16 @@ TEST(XFormTest, IntegerTranslation) {
   transform.MakeIdentity();
   transform.Translate3d(0, 0, 8.9f);
   EXPECT_FALSE(transform.IsIdentityOrIntegerTranslation());
+
+  float max_int = std::numeric_limits<int>::max();
+  transform.MakeIdentity();
+  transform.Translate3d(0, 0, max_int + 1000.5f);
+  EXPECT_FALSE(transform.IsIdentityOrIntegerTranslation());
+
+  float max_float = std::numeric_limits<float>::max();
+  transform.MakeIdentity();
+  transform.Translate3d(0, 0, max_float - 0.5f);
+  EXPECT_FALSE(transform.IsIdentityOrIntegerTranslation());
 }
 
 TEST(XFormTest, verifyMatrixInversion) {

@@ -246,10 +246,13 @@ bool Transform::IsIdentityOrIntegerTranslation() const {
   if (!IsIdentityOrTranslation())
     return false;
 
+  float t[] = {matrix_.get(0, 3), matrix_.get(1, 3), matrix_.get(2, 3)};
   bool no_fractional_translation =
-      static_cast<int>(matrix_.get(0, 3)) == matrix_.get(0, 3) &&
-      static_cast<int>(matrix_.get(1, 3)) == matrix_.get(1, 3) &&
-      static_cast<int>(matrix_.get(2, 3)) == matrix_.get(2, 3);
+      base::IsValueInRangeForNumericType<int>(t[0]) &&
+      base::IsValueInRangeForNumericType<int>(t[1]) &&
+      base::IsValueInRangeForNumericType<int>(t[2]) &&
+      static_cast<int>(t[0]) == t[0] && static_cast<int>(t[1]) == t[1] &&
+      static_cast<int>(t[2]) == t[2];
 
   return no_fractional_translation;
 }
