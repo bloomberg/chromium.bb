@@ -52,17 +52,10 @@ SVGIntegerOptionalInteger* SVGIntegerOptionalInteger::clone() const {
 
 SVGPropertyBase* SVGIntegerOptionalInteger::cloneForAnimation(
     const String& value) const {
-  float floatX, floatY;
-  if (!parseNumberOptionalNumber(value, floatX, floatY)) {
-    return SVGIntegerOptionalInteger::create(SVGInteger::create(0),
-                                             SVGInteger::create(0));
-  }
-
-  int x = static_cast<int>(roundf(floatX));
-  int y = static_cast<int>(roundf(floatY));
-
-  return SVGIntegerOptionalInteger::create(SVGInteger::create(x),
-                                           SVGInteger::create(y));
+  SVGIntegerOptionalInteger* clone =
+      create(SVGInteger::create(0), SVGInteger::create(0));
+  clone->setValueAsString(value);
+  return clone;
 }
 
 String SVGIntegerOptionalInteger::valueAsString() const {
@@ -83,8 +76,8 @@ SVGParsingError SVGIntegerOptionalInteger::setValueAsString(
     x = y = 0;
   }
 
-  m_firstInteger->setValue(x);
-  m_secondInteger->setValue(y);
+  m_firstInteger->setValue(clampTo<int>(x));
+  m_secondInteger->setValue(clampTo<int>(y));
   return parseStatus;
 }
 
@@ -125,8 +118,8 @@ void SVGIntegerOptionalInteger::calculateAnimatedValue(
       percentage, repeatCount, fromInteger->secondInteger()->value(),
       toInteger->secondInteger()->value(),
       toAtEndOfDurationInteger->secondInteger()->value(), y);
-  m_firstInteger->setValue(static_cast<int>(roundf(x)));
-  m_secondInteger->setValue(static_cast<int>(roundf(y)));
+  m_firstInteger->setValue(clampTo<int>(roundf(x)));
+  m_secondInteger->setValue(clampTo<int>(roundf(y)));
 }
 
 float SVGIntegerOptionalInteger::calculateDistance(SVGPropertyBase* other,
