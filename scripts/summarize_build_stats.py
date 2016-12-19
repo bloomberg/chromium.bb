@@ -709,7 +709,7 @@ def GenerateReport(file_out, summary):
                                 summary['patch_blame_counts'].iteritems()],
                                reverse=True)
   cq_flakes = [{'id': b_id, 'rejections': rejs}
-               for b_id, rejs in sorted_blame_counts]
+               for rejs, b_id in sorted_blame_counts]
   flake_fmt = ('  <li><a href="http://{id}">{id}</a> (<b>[{rejections}] false '
                'rejections</b>): _<replace>Brief explanation of bug. If '
                'fixed, or describe workarounds</replace>_</li>')
