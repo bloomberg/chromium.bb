@@ -144,7 +144,6 @@ ResourcePrefetcherTest::ResourcePrefetcherTest()
     : loop_(base::MessageLoop::TYPE_IO),
       io_thread_(content::BrowserThread::IO, &loop_),
       prefetcher_delegate_(&loop_) {
-  config_.max_prefetches_inflight_per_navigation = 5;
   config_.max_prefetches_inflight_per_host_per_navigation = 2;
 }
 
