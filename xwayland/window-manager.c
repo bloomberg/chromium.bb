@@ -737,10 +737,11 @@ weston_wm_handle_configure_notify(struct weston_wm *wm, xcb_generic_event_t *eve
 		(xcb_configure_notify_event_t *) event;
 	struct weston_wm_window *window;
 
-	wm_log("XCB_CONFIGURE_NOTIFY (window %d) %d,%d @ %dx%d\n",
+	wm_log("XCB_CONFIGURE_NOTIFY (window %d) %d,%d @ %dx%d%s\n",
 	       configure_notify->window,
 	       configure_notify->x, configure_notify->y,
-	       configure_notify->width, configure_notify->height);
+	       configure_notify->width, configure_notify->height,
+	       configure_notify->override_redirect ? ", override" : "");
 
 	if (!wm_lookup_window(wm, configure_notify->window, &window))
 		return;
@@ -1061,7 +1062,8 @@ weston_wm_handle_map_notify(struct weston_wm *wm, xcb_generic_event_t *event)
 			return;
 	}
 
-	wm_log("XCB_MAP_NOTIFY (window %d)\n", map_notify->window);
+	wm_log("XCB_MAP_NOTIFY (window %d%s)\n", map_notify->window,
+	       map_notify->override_redirect ? ", override" : "");
 }
 
 static void
@@ -1204,6 +1206,11 @@ weston_wm_window_schedule_repaint(struct weston_wm_window *window)
 
 	if (window->frame_id == XCB_WINDOW_NONE) {
 		if (window->surface != NULL) {
+			/* Override-redirect windows go through here, but we
+			 * cannot assert(window->override_redirect); because
+			 * we do not deal with changing OR flag yet.
+			 * XXX: handle OR flag changes in message handlers
+			 */
 			weston_wm_window_get_frame_size(window, &width, &height);
 			pixman_region32_fini(&window->surface->pending.opaque);
 			if (window->has_alpha) {
@@ -1376,10 +1383,11 @@ weston_wm_handle_reparent_notify(struct weston_wm *wm, xcb_generic_event_t *even
 		(xcb_reparent_notify_event_t *) event;
 	struct weston_wm_window *window;
 
-	wm_log("XCB_REPARENT_NOTIFY (window %d, parent %d, event %d)\n",
+	wm_log("XCB_REPARENT_NOTIFY (window %d, parent %d, event %d%s)\n",
 	       reparent_notify->window,
 	       reparent_notify->parent,
-	       reparent_notify->event);
+	       reparent_notify->event,
+	       reparent_notify->override_redirect ? ", override" : "");
 
 	if (reparent_notify->parent == wm->screen->root) {
 		weston_wm_window_create(wm, reparent_notify->window, 10, 10,
