@@ -100,12 +100,6 @@ def UpdateProductsProject(file_input, file_output, configurations):
       if 'IPHONEOS_DEPLOYMENT_TARGET' not in build_settings:
         build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '9.0'
 
-    # Remove path name key and change path to basename.
-    if isa == 'PBXFileReference':
-      if 'name' in value:
-        del value['name']
-      value['path'] = os.path.basename(value['path'])
-
     # Teach build shell script to look for the configuration and platform.
     if isa == 'PBXShellScriptBuildPhase':
       value['shellScript'] = value['shellScript'].replace(
