@@ -48,10 +48,7 @@
 #include "content/child/web_url_request_util.h"
 #include "content/child/worker_thread_registry.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/service_manager_connection.h"
 #include "net/base/net_errors.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
@@ -73,6 +70,11 @@ using blink::WebURLLoader;
 using blink::scheduler::WebThreadImplForWorkerScheduler;
 
 namespace content {
+
+namespace {
+
+
+}  // namespace
 
 static int ToMessageID(WebLocalizedString::Name name) {
   switch (name) {
@@ -786,19 +788,6 @@ long long BlinkPlatformImpl::databaseGetSpaceAvailableForOrigin(
 bool BlinkPlatformImpl::databaseSetFileSize(
     const blink::WebString& vfs_file_name, long long size) {
   return false;
-}
-
-void BlinkPlatformImpl::bindServiceConnector(
-    service_manager::mojom::blink::ConnectorRequest request) {
-  if (!ChildThreadImpl::current())
-    return;
-
-  service_manager::mojom::ConnectorRequest chromium_request;
-  chromium_request.Bind(request.PassMessagePipe());
-  ChildThreadImpl::current()
-      ->GetServiceManagerConnection()
-      ->GetConnector()
-      ->BindRequest(std::move(chromium_request));
 }
 
 blink::WebString BlinkPlatformImpl::signedPublicKeyAndChallengeString(

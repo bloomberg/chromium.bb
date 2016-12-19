@@ -40,7 +40,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/device/device_service.h"
-#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/device/public/cpp/constants.h"
 #include "services/file/file_service.h"
 #include "services/file/public/interfaces/constants.mojom.h"
 #include "services/file/user_id_map.h"
@@ -465,7 +465,7 @@ void BrowserContext::Initialize(
     info.factory =
         base::Bind(&device::CreateDeviceService,
                    BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
-    connection->AddEmbeddedService(device::mojom::kServiceName, info);
+    connection->AddEmbeddedService(device::kDeviceServiceName, info);
 
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kMojoLocalStorage)) {

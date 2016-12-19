@@ -19,7 +19,6 @@ include_rules = [
     "+platform/weborigin",
     "+public/platform",
     "-public/web",
-    "+services/service_manager/public/interfaces",
     "+third_party/skia",
     "+url",
     "-web",

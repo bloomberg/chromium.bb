@@ -10,9 +10,8 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerThread.h"
-#include "platform/ServiceConnector.h"
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-#include "services/device/public/interfaces/constants.mojom-blink.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include <v8.h>
 
@@ -37,8 +36,8 @@ void TimeZoneMonitorClient::Init() {
   DEFINE_STATIC_LOCAL(TimeZoneMonitorClient, instance, ());
 
   device::mojom::blink::TimeZoneMonitorPtr monitor;
-  ServiceConnector::instance().connectToInterface(
-      device::mojom::blink::kServiceName, mojo::GetProxy(&monitor));
+  Platform::current()->interfaceProvider()->getInterface(
+      mojo::GetProxy(&monitor));
   monitor->AddClient(instance.m_binding.CreateInterfacePtrAndBind());
 }
 

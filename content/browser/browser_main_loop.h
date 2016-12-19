@@ -35,6 +35,10 @@ class TraceEventSystemStatsMonitor;
 }  // namespace trace_event
 }  // namespace base
 
+namespace device {
+class TimeZoneMonitor;
+}
+
 namespace media {
 #if defined(OS_WIN)
 class SystemMessageWindowWin;
@@ -137,6 +141,9 @@ class CONTENT_EXPORT BrowserMainLoop {
   }
   media::UserInputMonitor* user_input_monitor() const {
     return user_input_monitor_.get();
+  }
+  device::TimeZoneMonitor* time_zone_monitor() const {
+    return time_zone_monitor_.get();
   }
   midi::MidiService* midi_service() const { return midi_service_.get(); }
   base::Thread* indexed_db_thread() const { return indexed_db_thread_.get(); }
@@ -304,6 +311,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<ResourceDispatcherHostImpl> resource_dispatcher_host_;
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   std::unique_ptr<SpeechRecognitionManagerImpl> speech_recognition_manager_;
+  std::unique_ptr<device::TimeZoneMonitor> time_zone_monitor_;
   scoped_refptr<SaveFileManager> save_file_manager_;
 
   // DO NOT add members here. Add them to the right categories above.

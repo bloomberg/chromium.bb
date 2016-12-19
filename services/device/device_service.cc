@@ -7,10 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "device/time_zone_monitor/time_zone_monitor.h"
 #include "services/service_manager/public/cpp/connection.h"
-#include "services/service_manager/public/cpp/interface_registry.h"
 
 namespace device {
 
@@ -29,15 +26,7 @@ void DeviceService::OnStart() {}
 
 bool DeviceService::OnConnect(const service_manager::ServiceInfo& remote_info,
                               service_manager::InterfaceRegistry* registry) {
-  registry->AddInterface<mojom::TimeZoneMonitor>(this);
   return true;
-}
-
-void DeviceService::Create(const service_manager::Identity& remote_identity,
-                           mojom::TimeZoneMonitorRequest request) {
-  if (!time_zone_monitor_)
-    time_zone_monitor_ = device::TimeZoneMonitor::Create(file_task_runner_);
-  time_zone_monitor_->Bind(std::move(request));
 }
 
 }  // namespace device

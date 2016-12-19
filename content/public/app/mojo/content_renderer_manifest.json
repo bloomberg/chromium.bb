@@ -19,7 +19,6 @@
       },
       "requires": {
         "content_browser": [ "renderer" ],
-        "device": [ "device:time_zone_monitor" ],
         "ui": [
           "discardable_memory",
           "gpu_client"

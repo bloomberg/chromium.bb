@@ -92,6 +92,7 @@
 #include "content/public/common/result_codes.h"
 #include "device/battery/battery_status_service.h"
 #include "device/gamepad/gamepad_service.h"
+#include "device/time_zone_monitor/time_zone_monitor.h"
 #include "media/base/media.h"
 #include "media/base/user_input_monitor.h"
 #include "media/midi/midi_service.h"
@@ -1540,6 +1541,13 @@ int BrowserMainLoop::BrowserThreadsStarted() {
         "BrowserMainLoop::BrowserThreadsStarted::InitUserInputMonitor");
     user_input_monitor_ = media::UserInputMonitor::Create(
         io_thread_->task_runner(), main_thread_->task_runner());
+  }
+
+  {
+    TRACE_EVENT0("startup",
+                 "BrowserMainLoop::BrowserThreadsStarted::TimeZoneMonitor");
+    time_zone_monitor_ =
+        device::TimeZoneMonitor::Create(file_thread_->task_runner());
   }
 
   {

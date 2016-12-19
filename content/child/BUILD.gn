@@ -212,7 +212,6 @@ target(link_target_type, "child") {
 
   public_deps = [
     "//gpu/ipc/client:client",
-    "//services/service_manager/public/interfaces:interfaces_blink",
   ]
 
   deps = [

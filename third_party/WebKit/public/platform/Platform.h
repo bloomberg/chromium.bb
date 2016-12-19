@@ -56,7 +56,6 @@
 #include "base/metrics/user_metrics_action.h"
 #include "cc/resources/shared_bitmap.h"
 #include "cc/surfaces/frame_sink_id.h"
-#include "services/service_manager/public/interfaces/connector.mojom-blink.h"
 
 namespace gpu {
 class GpuMemoryBufferManager;
@@ -604,9 +603,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Mojo ---------------------------------------------------------------
 
   virtual InterfaceProvider* interfaceProvider();
-
-  virtual void bindServiceConnector(
-      service_manager::mojom::blink::ConnectorRequest);
 
   // Platform events -----------------------------------------------------
   // Device Orientation, Device Motion, Device Light, Battery, Gamepad.
