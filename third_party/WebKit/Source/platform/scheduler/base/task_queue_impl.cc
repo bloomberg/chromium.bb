@@ -276,15 +276,11 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
   main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
 
   // If |pending_task| is at the head of the queue, then make sure a wakeup
-  // is requested if the queue is enabled.  Note we still want to schedule a
-  // wakeup even if blocked by a fence, because we'd break throttling logic
-  // otherwise.
-  base::TimeTicks next_delayed_task =
-      main_thread_only().delayed_incoming_queue.top().delayed_run_time;
-  if (next_delayed_task == delayed_run_time && IsQueueEnabled()) {
-    LazyNow lazy_now(now);
-    main_thread_only().time_domain->ScheduleDelayedWork(this, delayed_run_time,
-                                                        &lazy_now);
+  // is requested.
+  if (main_thread_only().delayed_incoming_queue.top().delayed_run_time ==
+      delayed_run_time) {
+    main_thread_only().time_domain->ScheduleDelayedWork(
+        this, pending_task.delayed_run_time, now);
   }
 
   TraceQueueSize(false);
@@ -820,19 +816,10 @@ void TaskQueueImpl::EnableOrDisableWithSelector(bool enable) {
     return;
 
   if (enable) {
-    if (!main_thread_only().delayed_incoming_queue.empty()) {
-      LazyNow lazy_now = main_thread_only().time_domain->CreateLazyNow();
-      main_thread_only().time_domain->ScheduleDelayedWork(
-          this,
-          main_thread_only().delayed_incoming_queue.top().delayed_run_time,
-          &lazy_now);
-    }
     // Note it's the job of the selector to tell the TaskQueueManager if
-    // an immediate DoWork needs posting.
+    // a DoWork needs posting.
     main_thread_only().task_queue_manager->selector_.EnableQueue(this);
   } else {
-    if (!main_thread_only().delayed_incoming_queue.empty())
-      main_thread_only().time_domain->CancelDelayedWork(this);
     main_thread_only().task_queue_manager->selector_.DisableQueue(this);
   }
 }

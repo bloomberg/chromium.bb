@@ -217,10 +217,6 @@ TestingPlatformSupportWithMockScheduler::
               m_mockTaskRunner,
               base::WrapUnique(new scheduler::TestTimeSource(m_clock.get()))))),
       m_thread(m_scheduler->CreateMainThread()) {
-  // We need a non-zero start time because LazyNow in the blink scheduler can't
-  // be initialized with time t = 0;
-  m_clock->Advance(base::TimeDelta::FromSeconds(1));
-
   // Set the work batch size to one so RunPendingTasks behaves as expected.
   m_scheduler->GetSchedulerHelperForTesting()->SetWorkBatchSizeForTesting(1);
 

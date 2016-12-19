@@ -21,8 +21,7 @@ class BLINK_PLATFORM_EXPORT ThrottledTimeDomain : public RealTimeDomain {
 
   // TimeDomain implementation:
   const char* GetName() const override;
-  void RequestWakeupAt(LazyNow* lazy_now, base::TimeTicks run_time) override;
-  void CancelWakeupAt(base::TimeTicks run_time) override;
+  void RequestWakeup(base::TimeTicks now, base::TimeDelta delay) override;
   base::Optional<base::TimeDelta> DelayTillNextTask(LazyNow* lazy_now) override;
 
   using TimeDomain::WakeupReadyDelayedQueues;
