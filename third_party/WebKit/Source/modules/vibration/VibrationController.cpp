@@ -177,13 +177,6 @@ void VibrationController::contextDestroyed() {
 
   // If the document context was destroyed, never call the mojo service again.
   m_service.reset();
-
-  // The context is not automatically cleared, so do it manually.
-  ContextLifecycleObserver::clearContext();
-
-  // Page outlives ExecutionContext so stop observing it to avoid having
-  // |pageVisibilityChanged| or |contextDestroyed| called again.
-  PageVisibilityObserver::clearContext();
 }
 
 void VibrationController::pageVisibilityChanged() {
