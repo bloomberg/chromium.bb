@@ -1,0 +1,998 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#import "ios/chrome/browser/ui/reading_list/reading_list_view_controller.h"
+
+#include "base/bind.h"
+#include "base/logging.h"
+#import "base/mac/foundation_util.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
+#include "base/strings/sys_string_conversions.h"
+#include "base/time/time.h"
+#include "components/reading_list/ios/reading_list_entry.h"
+#include "components/reading_list/ios/reading_list_model.h"
+#import "components/reading_list/ios/reading_list_model_bridge_observer.h"
+#include "components/strings/grit/components_strings.h"
+#include "components/url_formatter/url_formatter.h"
+#include "ios/chrome/browser/reading_list/offline_url_utils.h"
+#include "ios/chrome/browser/reading_list/reading_list_download_service.h"
+#include "ios/chrome/browser/reading_list/reading_list_entry_loading_util.h"
+#import "ios/chrome/browser/tabs/tab.h"
+#import "ios/chrome/browser/tabs/tab_model.h"
+#import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
+#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/favicon_view.h"
+#import "ios/chrome/browser/ui/material_components/utils.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
+#include "ios/chrome/browser/ui/url_loader.h"
+#include "ios/chrome/grit/ios_strings.h"
+#import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
+#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
+#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
+#include "ios/web/public/referrer.h"
+#include "ios/web/public/web_state/web_state.h"
+#include "net/base/network_change_notifier.h"
+#include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/window_open_disposition.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+namespace {
+
+NSString* const kEmptyReadingListBackgroundIcon = @"reading_list_icon";
+NSString* const kEmptyReadingListShareIcon = @"share_icon";
+NSString* const kShareIconMarker = @"SHARE_ICON";
+
+// Height of the toolbar.
+const int kToolbarHeight = 48;
+
+// Background view constants.
+const CGFloat kTextImageSpacing = 10;
+const CGFloat kTextHorizontalMargin = 32;
+const CGFloat kImageWidth = 60;
+const CGFloat kImageHeight = 44;
+const CGFloat kShareImageHeight = 14;
+const CGFloat kShareImageWidth = 10;
+const CGFloat kFontSize = 16;
+
+typedef NS_ENUM(NSInteger, SectionIdentifier) {
+  SectionIdentifierUnread = kSectionIdentifierEnumZero,
+  SectionIdentifierRead,
+};
+
+typedef NS_ENUM(NSInteger, ItemType) {
+  ItemTypeUnreadHeader = kItemTypeEnumZero,
+  ItemTypeUnread,
+  ItemTypeReadHeader,
+  ItemTypeRead,
+};
+
+// Typedef for a block taking a GURL as parameter and returning nothing.
+typedef void (^EntryUpdater)(const GURL&);
+
+// Type for map used to sort ReadingListEntry by timestamp. Multiple entries can
+// have the same timestamp.
+using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
+}
+
+@interface ReadingListViewController ()<ReadingListModelBridgeObserver> {
+  // Toolbar with the actions.
+  ReadingListToolbar* _toolbar;
+  // Action sheet presenting the subactions of the toolbar.
+  AlertCoordinator* _actionSheet;
+  std::unique_ptr<ReadingListModelBridge> _modelBridge;
+  UIView* _emptyCollectionBackground;
+}
+
+// Lazily instantiated.
+@property(nonatomic, strong, readonly)
+    FaviconAttributesProvider* attributesProvider;
+
+// Returns the UIView to be displayed when the reading list is empty.
+- (UIView*)emptyCollectionBackground;
+// Handles "Done" button touches.
+- (void)donePressed;
+// Loads all the items in all sections.
+- (void)loadItems;
+// Fills section |sectionIdentifier| with the items from |map| in reverse order
+// of the map key.
+- (void)loadItemsFromMap:(const ItemsMapByDate&)map
+               toSection:(SectionIdentifier)sectionIdentifier;
+// Convenience method to create cell items for reading list entries.
+- (ReadingListCollectionViewItem*)cellItemForReadingListEntry:
+    (const ReadingListEntry&)entry;
+// Returns whether there are elements in the section identified by
+// |sectionIdentifier|.
+- (BOOL)hasItemInSection:(SectionIdentifier)sectionIdentifier;
+// Adds the bottom toolbar with the edition options.
+- (void)addToolbar;
+// Updates the toolbar state according to the selected items.
+- (void)updateToolbarState;
+// Displays an action sheet to let the user choose to mark all the elements as
+// read or as unread. Used when nothing is selected.
+- (void)markAllItemsAs;
+// Displays an action sheet to let the user choose to mark all the selected
+// elements as read or as unread. Used if read and unread elements are selected.
+- (void)markMixedItemsAs;
+// Marks all items as read.
+- (void)markAllRead;
+// Marks all items as unread.
+- (void)markAllUnread;
+// Marks the selected items as read.
+- (void)markItemsRead;
+// Marks the selected items as unread.
+- (void)markItemsUnread;
+// Deletes all the read items.
+- (void)deleteAllReadItems;
+// Deletes all the selected items.
+- (void)deleteSelectedItems;
+// Initializes |_actionSheet| with |self| as base view controller, and the
+// toolbar's mark button as anchor point.
+- (void)initializeActionSheet;
+// Exits the editing mode and update the toolbar state with animation.
+- (void)exitEditingModeAnimated:(BOOL)animated;
+// Applies |action| to every cell in the section |identifier|.
+- (void)updateItemsInSectionIdentifier:(SectionIdentifier)identifier
+                     usingEntryUpdater:(EntryUpdater)updater;
+// Applies |action| to every selected element of collection view.
+- (void)updateSelectedItemsWithEntryUpdater:(EntryUpdater)updater;
+// Logs the deletions histograms for the entry with |url|.
+- (void)logDeletionHistogramsForEntry:(const GURL&)url;
+// Move all the items from |sourceSectionIdentifier| to
+// |destinationSectionIdentifier| and removes the empty section from the
+// collection.
+- (void)moveItemsFromSection:(SectionIdentifier)sourceSectionIdentifier
+                   toSection:(SectionIdentifier)destinationSectionIdentifier;
+// Move the currently selected elements to |sectionIdentifier| and removes the
+// empty sections.
+- (void)moveSelectedItems:(NSArray*)sortedIndexPaths
+                toSection:(SectionIdentifier)sectionIdentifier;
+// Makes sure |sectionIdentifier| exists with the correct header.
+// Returns the index of the new section in the collection view; NSIntegerMax if
+// no section has been created.
+- (NSInteger)initializeSection:(SectionIdentifier)sectionIdentifier;
+// Returns the header for the |sectionIdentifier|.
+- (CollectionViewTextItem*)headerForSection:
+    (SectionIdentifier)sectionIdentifier;
+// Removes the empty sections from the collection and the model.
+- (void)removeEmptySections;
+
+@end
+
+@implementation ReadingListViewController
+@synthesize readingListModel = _readingListModel;
+@synthesize tabModel = _tabModel;
+@synthesize largeIconService = _largeIconService;
+@synthesize readingListDownloadService = _readingListDownloadService;
+@synthesize attributesProvider = _attributesProvider;
+
+#pragma mark lifecycle
+
+- (instancetype)initWithModel:(ReadingListModel*)model
+                      tabModel:(TabModel*)tabModel
+              largeIconService:(favicon::LargeIconService*)largeIconService
+    readingListDownloadService:
+        (ReadingListDownloadService*)readingListDownloadService {
+  self = [super initWithStyle:CollectionViewControllerStyleAppBar];
+  if (self) {
+    DCHECK(model);
+
+    // Configure modal presentation.
+    [self setModalPresentationStyle:UIModalPresentationFormSheet];
+    [self setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
+
+    _readingListModel = model;
+    _tabModel = tabModel;
+    _largeIconService = largeIconService;
+    _readingListDownloadService = readingListDownloadService;
+    _emptyCollectionBackground = [self emptyCollectionBackground];
+    _toolbar = [[ReadingListToolbar alloc] initWithFrame:CGRectZero];
+
+    _modelBridge.reset(new ReadingListModelBridge(self, model));
+  }
+  return self;
+}
+
+#pragma mark - properties
+
+- (FaviconAttributesProvider*)attributesProvider {
+  if (_attributesProvider) {
+    return _attributesProvider;
+  }
+
+  _attributesProvider = [[FaviconAttributesProvider alloc]
+      initWithFaviconSize:kFaviconPreferredSize
+           minFaviconSize:kFaviconMinSize
+         largeIconService:self.largeIconService];
+  return _attributesProvider;
+}
+
+- (void)setToolbarState:(ReadingListToolbarState)toolbarState {
+  [_toolbar setState:toolbarState];
+}
+
+#pragma mark - UIViewController
+
+- (void)updateViewConstraints {
+  NSDictionary* views = @{ @"toolbar" : _toolbar };
+  NSDictionary* metrics = @{ @"toolbarHeight" : @(kToolbarHeight) };
+  NSArray* constraints =
+      @[ @"V:[toolbar(==toolbarHeight)]|", @"H:|[toolbar]|" ];
+  ApplyVisualConstraintsWithMetrics(constraints, views, metrics);
+  [super updateViewConstraints];
+}
+
+- (void)viewDidLoad {
+  [super viewDidLoad];
+  [self addToolbar];
+
+  self.title = l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_READING_LIST);
+
+  // Add "Done" button.
+  UIBarButtonItem* doneItem = [[UIBarButtonItem alloc]
+      initWithTitle:l10n_util::GetNSString(IDS_IOS_READING_LIST_DONE_BUTTON)
+              style:UIBarButtonItemStylePlain
+             target:self
+             action:@selector(donePressed)];
+  doneItem.accessibilityIdentifier = @"Done";
+  self.navigationItem.rightBarButtonItem = doneItem;
+
+  // Customize collection view settings.
+  self.styler.cellStyle = MDCCollectionViewCellStyleCard;
+  self.styler.separatorInset = UIEdgeInsetsMake(0, 16, 0, 16);
+}
+
+#pragma mark - UICollectionViewDelegate
+
+- (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
+          viewForSupplementaryElementOfKind:(NSString*)kind
+                                atIndexPath:(NSIndexPath*)indexPath {
+  UICollectionReusableView* cell = [super collectionView:collectionView
+                       viewForSupplementaryElementOfKind:kind
+                                             atIndexPath:indexPath];
+  MDCCollectionViewTextCell* textCell =
+      base::mac::ObjCCast<MDCCollectionViewTextCell>(cell);
+  if (textCell) {
+    textCell.textLabel.textColor = [[MDCPalette greyPalette] tint500];
+  }
+  return cell;
+};
+
+- (void)collectionView:(UICollectionView*)collectionView
+    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
+  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
+
+  if (self.editor.editing) {
+    [self updateToolbarState];
+  } else {
+    [self openItemAtIndexPath:indexPath];
+  }
+}
+
+- (void)collectionView:(UICollectionView*)collectionView
+    didDeselectItemAtIndexPath:(NSIndexPath*)indexPath {
+  [super collectionView:collectionView didDeselectItemAtIndexPath:indexPath];
+  if (self.editor.editing) {
+    // When deselecting an item, if we are editing, we want to update the
+    // toolbar base on the selected items.
+    [self updateToolbarState];
+  }
+}
+
+#pragma mark - MDCCollectionViewController
+
+- (void)updateFooterInfoBarIfNecessary {
+  // No-op. This prevents the default infobar from showing.
+  // TODO(crbug.com/653547): Remove this once the MDC adds an option for
+  // preventing the infobar from showing.
+}
+
+#pragma mark - MDCCollectionViewStylingDelegate
+
+- (CGFloat)collectionView:(UICollectionView*)collectionView
+    cellHeightAtIndexPath:(NSIndexPath*)indexPath {
+  NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
+  if (type == ItemTypeUnread || type == ItemTypeRead)
+    return MDCCellDefaultTwoLineHeight;
+  else
+    return MDCCellDefaultOneLineHeight;
+}
+
+#pragma mark - MDCCollectionViewEditingDelegate
+
+- (BOOL)collectionViewAllowsEditing:(nonnull UICollectionView*)collectionView {
+  return YES;
+}
+
+#pragma mark - ReadingListModelBridgeObserver
+
+- (void)readingListModelLoaded:(const ReadingListModel*)model {
+  _readingListModel->ResetUnseenEntries();
+  [self loadModel];
+  UMA_HISTOGRAM_COUNTS_1000("ReadingList.Unread.Number", model->unread_size());
+  UMA_HISTOGRAM_COUNTS_1000("ReadingList.Read.Number",
+                            model->size() - model->unread_size());
+  if ([self isViewLoaded]) {
+    [self.collectionView reloadData];
+  }
+}
+
+- (void)readingListModelDidApplyChanges:(const ReadingListModel*)model {
+  // Ignore model updates when the view controller is being edited or  doing
+  // batch updates.
+  if (model->IsPerformingBatchUpdates() || [self.editor isEditing]) {
+    return;
+  }
+
+  [self reloadData];
+}
+
+- (void)readingListModelCompletedBatchUpdates:(const ReadingListModel*)model {
+  // Ignore model updates when the view controller is being edited.
+  if ([self.editor isEditing]) {
+    return;
+  }
+
+  [self reloadData];
+}
+
+#pragma mark - private methods
+
+- (UIView*)emptyCollectionBackground {
+  UIView* emptyCollectionBackground = [[UIView alloc] initWithFrame:CGRectZero];
+
+  NSString* emptyTitle =
+      l10n_util::GetNSString(IDS_IOS_READING_LIST_EMPTY_MESSAGE);
+  NSRange iconRange = [emptyTitle rangeOfString:kShareIconMarker];
+
+  NSTextAttachment* textAttachment = [[NSTextAttachment alloc] init];
+  textAttachment.image = [[UIImage imageNamed:kEmptyReadingListShareIcon]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  textAttachment.bounds = CGRectMake(0, 0, kShareImageWidth, kShareImageHeight);
+
+  NSAttributedString* attachmentAttributedString =
+      [NSAttributedString attributedStringWithAttachment:textAttachment];
+
+  NSDictionary* attributes = @{
+    NSFontAttributeName :
+        [[MDFRobotoFontLoader sharedInstance] mediumFontOfSize:kFontSize],
+    NSForegroundColorAttributeName : [[MDCPalette greyPalette] tint700]
+  };
+
+  NSMutableAttributedString* labelAttributedString =
+      [[NSMutableAttributedString alloc] initWithString:emptyTitle
+                                             attributes:attributes];
+  [labelAttributedString replaceCharactersInRange:iconRange
+                             withAttributedString:attachmentAttributedString];
+
+  UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
+  label.attributedText = labelAttributedString;
+  label.lineBreakMode = NSLineBreakByWordWrapping;
+  label.numberOfLines = 0;
+  label.textAlignment = NSTextAlignmentCenter;
+  [label setTranslatesAutoresizingMaskIntoConstraints:NO];
+  [emptyCollectionBackground addSubview:label];
+
+  UIImageView* imageView = [[UIImageView alloc] init];
+  imageView.image = [UIImage imageNamed:kEmptyReadingListBackgroundIcon];
+  [imageView setTranslatesAutoresizingMaskIntoConstraints:NO];
+  [emptyCollectionBackground addSubview:imageView];
+
+  [NSLayoutConstraint activateConstraints:@[
+    [[imageView heightAnchor] constraintEqualToConstant:kImageHeight],
+    [[imageView widthAnchor] constraintEqualToConstant:kImageWidth],
+    [[emptyCollectionBackground centerXAnchor]
+        constraintEqualToAnchor:label.centerXAnchor],
+    [[emptyCollectionBackground centerXAnchor]
+        constraintEqualToAnchor:imageView.centerXAnchor],
+    [label.topAnchor constraintEqualToAnchor:imageView.bottomAnchor
+                                    constant:kTextImageSpacing]
+  ]];
+
+  // Position the top of the image at 40% from the top.
+  NSLayoutConstraint* verticalAlignment =
+      [NSLayoutConstraint constraintWithItem:imageView
+                                   attribute:NSLayoutAttributeTop
+                                   relatedBy:NSLayoutRelationEqual
+                                      toItem:emptyCollectionBackground
+                                   attribute:NSLayoutAttributeBottom
+                                  multiplier:0.4
+                                    constant:0];
+  [emptyCollectionBackground addConstraints:@[ verticalAlignment ]];
+
+  ApplyVisualConstraintsWithMetrics(@[ @"H:|-(margin)-[textLabel]-(margin)-|" ],
+                                    @{ @"textLabel" : label },
+                                    @{ @"margin" : @(kTextHorizontalMargin) });
+
+  return emptyCollectionBackground;
+}
+
+- (void)openItemAtIndexPath:(NSIndexPath*)indexPath {
+  ReadingListCollectionViewItem* readingListItem =
+      base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(
+          [self.collectionViewModel itemAtIndexPath:indexPath]);
+  const ReadingListEntry* entry =
+      self.readingListModel->GetEntryByURL(readingListItem.url);
+  if (!entry) {
+    [self reloadData];
+    return;
+  }
+
+  base::RecordAction(base::UserMetricsAction("MobileReadingListOpen"));
+
+  // Reset observer to prevent further model update notifications.
+  _modelBridge.reset();
+
+  Tab* currentTab = _tabModel.currentTab;
+  DCHECK(currentTab);
+  reading_list::LoadReadingListEntry(*entry, self.readingListModel,
+                                     currentTab.webState);
+  [self dismiss];
+}
+
+- (void)donePressed {
+  [self dismiss];
+}
+
+- (void)dismiss {
+  // Reset observer to prevent further model update notifications.
+  _modelBridge.reset();
+  [_actionSheet stop];
+  [self.presentingViewController dismissViewControllerAnimated:YES
+                                                    completion:nil];
+}
+
+- (void)loadModel {
+  [super loadModel];
+
+  if (self.readingListModel->size() == 0) {
+    // The collection is empty, add background.
+    self.collectionView.backgroundView = _emptyCollectionBackground;
+    [_toolbar setHidden:YES];
+  } else {
+    [self loadItems];
+    self.collectionView.backgroundView = nil;
+    [_toolbar setHidden:NO];
+  }
+}
+
+- (void)loadItemsFromMap:(const ItemsMapByDate&)map
+               toSection:(SectionIdentifier)sectionIdentifier {
+  if (map.size() == 0) {
+    return;
+  }
+  CollectionViewModel* model = self.collectionViewModel;
+  [model addSectionWithIdentifier:sectionIdentifier];
+  [model setHeader:[self headerForSection:sectionIdentifier]
+      forSectionWithIdentifier:sectionIdentifier];
+  // Reverse iterate to add newer entries at the top.
+  ItemsMapByDate::const_reverse_iterator iterator = map.rbegin();
+  for (; iterator != map.rend(); iterator++) {
+    [model addItem:iterator->second toSectionWithIdentifier:sectionIdentifier];
+  }
+}
+
+- (void)loadItems {
+  ItemsMapByDate read_map;
+  ItemsMapByDate unread_map;
+  for (const auto& url : self.readingListModel->Keys()) {
+    const ReadingListEntry* entry = self.readingListModel->GetEntryByURL(url);
+    ReadingListCollectionViewItem* item =
+        [self cellItemForReadingListEntry:*entry];
+    if (entry->IsRead()) {
+      read_map.insert(std::make_pair(entry->UpdateTime(), item));
+    } else {
+      unread_map.insert(std::make_pair(entry->UpdateTime(), item));
+    }
+  }
+  [self loadItemsFromMap:unread_map toSection:SectionIdentifierUnread];
+  [self loadItemsFromMap:read_map toSection:SectionIdentifierRead];
+
+  BOOL hasRead = read_map.size() > 0;
+  [_toolbar setHasReadItem:hasRead];
+}
+
+- (void)reloadData {
+  [self loadModel];
+  if ([self isViewLoaded]) {
+    [self.collectionView reloadData];
+  }
+}
+
+- (ReadingListCollectionViewItem*)cellItemForReadingListEntry:
+    (const ReadingListEntry&)entry {
+  GURL url = entry.URL();
+  ReadingListCollectionViewItem* item = [[ReadingListCollectionViewItem alloc]
+            initWithType:entry.IsRead() ? ItemTypeRead : ItemTypeUnread
+      attributesProvider:self.attributesProvider
+                     url:url
+       distillationState:entry.DistilledState()];
+  base::string16 urlString = url_formatter::FormatUrl(url);
+  item.text = base::SysUTF8ToNSString(entry.Title());
+  item.detailText = base::SysUTF16ToNSString(urlString);
+  return item;
+}
+
+- (BOOL)hasItemInSection:(SectionIdentifier)sectionIdentifier {
+  if (![self.collectionViewModel
+          hasSectionForSectionIdentifier:sectionIdentifier]) {
+    // No section.
+    return NO;
+  }
+
+  NSInteger section =
+      [self.collectionViewModel sectionForSectionIdentifier:sectionIdentifier];
+  NSInteger numberOfItems =
+      [self.collectionViewModel numberOfItemsInSection:section];
+
+  return numberOfItems > 0;
+}
+
+#pragma mark - ReadingListToolbarDelegate
+
+- (void)markPressed {
+  switch ([_toolbar state]) {
+    case NoneSelected:
+      [self markAllItemsAs];
+      break;
+    case OnlyUnreadSelected:
+      [self markItemsRead];
+      break;
+    case OnlyReadSelected:
+      [self markItemsUnread];
+      break;
+    case MixedItemsSelected:
+      [self markMixedItemsAs];
+      break;
+  }
+}
+
+- (void)deletePressed {
+  if ([_toolbar state] == NoneSelected) {
+    [self deleteAllReadItems];
+  } else {
+    [self deleteSelectedItems];
+  }
+}
+- (void)enterEditingModePressed {
+  self.toolbarState = NoneSelected;
+  [self.editor setEditing:YES animated:YES];
+  [_toolbar setEditing:YES];
+}
+
+- (void)exitEditingModePressed {
+  [self exitEditingModeAnimated:YES];
+}
+
+#pragma mark - Private methods - Toolbar
+
+- (void)addToolbar {
+  [_toolbar setDelegate:self];
+  [_toolbar setTranslatesAutoresizingMaskIntoConstraints:NO];
+  [self.view addSubview:_toolbar];
+  UIEdgeInsets insets = self.collectionView.contentInset;
+  insets.bottom += kToolbarHeight + 8;
+  self.collectionView.contentInset = insets;
+  [_toolbar setHidden:YES];
+}
+
+- (void)updateToolbarState {
+  BOOL readSelected = NO;
+  BOOL unreadSelected = NO;
+
+  if ([self.collectionView.indexPathsForSelectedItems count] == 0) {
+    // No entry selected.
+    self.toolbarState = NoneSelected;
+    return;
+  }
+
+  // Sections for section identifiers.
+  NSInteger sectionRead = NSNotFound;
+  NSInteger sectionUnread = NSNotFound;
+
+  if ([self hasItemInSection:SectionIdentifierRead]) {
+    sectionRead = [self.collectionViewModel
+        sectionForSectionIdentifier:SectionIdentifierRead];
+  }
+  if ([self hasItemInSection:SectionIdentifierUnread]) {
+    sectionUnread = [self.collectionViewModel
+        sectionForSectionIdentifier:SectionIdentifierUnread];
+  }
+
+  // Check selected sections.
+  for (NSIndexPath* index in self.collectionView.indexPathsForSelectedItems) {
+    if (index.section == sectionRead) {
+      readSelected = YES;
+    } else if (index.section == sectionUnread) {
+      unreadSelected = YES;
+    }
+  }
+
+  // Update toolbar state.
+  if (readSelected) {
+    if (unreadSelected) {
+      // Read and Unread selected.
+      self.toolbarState = MixedItemsSelected;
+    } else {
+      // Read selected.
+      self.toolbarState = OnlyReadSelected;
+    }
+  } else if (unreadSelected) {
+    // Unread selected.
+    self.toolbarState = OnlyUnreadSelected;
+  }
+}
+
+- (void)markAllItemsAs {
+  [self initializeActionSheet];
+  __weak ReadingListViewController* weakSelf = self;
+  [_actionSheet addItemWithTitle:l10n_util::GetNSStringWithFixup(
+                                     IDS_IOS_READING_LIST_MARK_ALL_READ_ACTION)
+                          action:^{
+                            [weakSelf markAllRead];
+                          }
+                           style:UIAlertActionStyleDefault];
+  [_actionSheet
+      addItemWithTitle:l10n_util::GetNSStringWithFixup(
+                           IDS_IOS_READING_LIST_MARK_ALL_UNREAD_ACTION)
+                action:^{
+                  [weakSelf markAllUnread];
+                }
+                 style:UIAlertActionStyleDefault];
+  [_actionSheet start];
+}
+
+- (void)markMixedItemsAs {
+  [self initializeActionSheet];
+  __weak ReadingListViewController* weakSelf = self;
+  [_actionSheet addItemWithTitle:l10n_util::GetNSStringWithFixup(
+                                     IDS_IOS_READING_LIST_MARK_READ_BUTTON)
+                          action:^{
+                            [weakSelf markItemsRead];
+                          }
+                           style:UIAlertActionStyleDefault];
+  [_actionSheet addItemWithTitle:l10n_util::GetNSStringWithFixup(
+                                     IDS_IOS_READING_LIST_MARK_UNREAD_BUTTON)
+                          action:^{
+                            [weakSelf markItemsUnread];
+                          }
+                           style:UIAlertActionStyleDefault];
+  [_actionSheet start];
+}
+
+- (void)initializeActionSheet {
+  _actionSheet = [_toolbar actionSheetForMarkWithBaseViewController:self];
+
+  [_actionSheet addItemWithTitle:l10n_util::GetNSStringWithFixup(IDS_CANCEL)
+                          action:nil
+                           style:UIAlertActionStyleCancel];
+}
+
+- (void)markAllRead {
+  if (![self hasItemInSection:SectionIdentifierUnread]) {
+    [self exitEditingModeAnimated:YES];
+    return;
+  }
+
+  [self updateItemsInSectionIdentifier:SectionIdentifierUnread
+                     usingEntryUpdater:^(const GURL& url) {
+                       [self readingListModel]->SetReadStatus(url, true);
+                     }];
+  [self exitEditingModeAnimated:YES];
+  [self moveItemsFromSection:SectionIdentifierUnread
+                   toSection:SectionIdentifierRead];
+}
+
+- (void)markAllUnread {
+  if (![self hasItemInSection:SectionIdentifierRead]) {
+    [self exitEditingModeAnimated:YES];
+    return;
+  }
+
+  [self updateItemsInSectionIdentifier:SectionIdentifierRead
+                     usingEntryUpdater:^(const GURL& url) {
+                       [self readingListModel]->SetReadStatus(url, false);
+                     }];
+  [self exitEditingModeAnimated:YES];
+  [self moveItemsFromSection:SectionIdentifierRead
+                   toSection:SectionIdentifierUnread];
+}
+
+- (void)markItemsRead {
+  base::RecordAction(base::UserMetricsAction("MobileReadingListMarkRead"));
+  [self updateSelectedItemsWithEntryUpdater:^(const GURL& url) {
+    [self readingListModel]->SetReadStatus(url, true);
+  }];
+
+  NSArray* sortedIndexPaths = [self.collectionView.indexPathsForSelectedItems
+      sortedArrayUsingSelector:@selector(compare:)];
+  [self exitEditingModeAnimated:YES];
+  [self moveSelectedItems:sortedIndexPaths toSection:SectionIdentifierRead];
+}
+
+- (void)markItemsUnread {
+  base::RecordAction(base::UserMetricsAction("MobileReadingListMarkUnread"));
+  [self updateSelectedItemsWithEntryUpdater:^(const GURL& url) {
+    [self readingListModel]->SetReadStatus(url, false);
+  }];
+
+  NSArray* sortedIndexPaths = [self.collectionView.indexPathsForSelectedItems
+      sortedArrayUsingSelector:@selector(compare:)];
+  [self exitEditingModeAnimated:YES];
+  [self moveSelectedItems:sortedIndexPaths toSection:SectionIdentifierUnread];
+}
+
+- (void)deleteAllReadItems {
+  base::RecordAction(base::UserMetricsAction("MobileReadingListDeleteRead"));
+  if (![self hasItemInSection:SectionIdentifierRead]) {
+    [self exitEditingModeAnimated:YES];
+    return;
+  }
+
+  [self updateItemsInSectionIdentifier:SectionIdentifierRead
+                     usingEntryUpdater:^(const GURL& url) {
+                       [self logDeletionHistogramsForEntry:url];
+                       [self readingListModel]->RemoveEntryByURL(url);
+                     }];
+
+  [self exitEditingModeAnimated:YES];
+  [self.collectionView performBatchUpdates:^{
+    NSInteger readSection = [self.collectionViewModel
+        sectionForSectionIdentifier:SectionIdentifierRead];
+    [self.collectionView
+        deleteSections:[NSIndexSet indexSetWithIndex:readSection]];
+    [self.collectionViewModel
+        removeSectionWithIdentifier:SectionIdentifierRead];
+  }
+      completion:^(BOOL) {
+        // Reload data to take into account possible sync events.
+        [self reloadData];
+      }];
+  // As we modified the section in the batch update block, remove the section in
+  // another block.
+  [self removeEmptySections];
+}
+
+- (void)deleteSelectedItems {
+  [self updateSelectedItemsWithEntryUpdater:^(const GURL& url) {
+    [self logDeletionHistogramsForEntry:url];
+    [self readingListModel]->RemoveEntryByURL(url);
+  }];
+
+  NSArray* indexPaths = [self.collectionView.indexPathsForSelectedItems copy];
+  [self exitEditingModeAnimated:YES];
+
+  [self.collectionView performBatchUpdates:^{
+    [self collectionView:self.collectionView
+        willDeleteItemsAtIndexPaths:indexPaths];
+
+    [self.collectionView deleteItemsAtIndexPaths:indexPaths];
+  }
+      completion:^(BOOL) {
+        // Reload data to take into account possible sync events.
+        [self reloadData];
+      }];
+  // As we modified the section in the batch update block, remove the section in
+  // another block.
+  [self removeEmptySections];
+}
+
+- (void)updateItemsInSectionIdentifier:(SectionIdentifier)identifier
+                     usingEntryUpdater:(EntryUpdater)updater {
+  auto token = self.readingListModel->BeginBatchUpdates();
+  NSArray* readItems =
+      [self.collectionViewModel itemsInSectionWithIdentifier:identifier];
+  for (id item in readItems) {
+    ReadingListCollectionViewItem* readingListItem =
+        base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(item);
+    if (updater)
+      updater(readingListItem.url);
+  }
+}
+
+- (void)updateSelectedItemsWithEntryUpdater:(EntryUpdater)updater {
+  auto token = self.readingListModel->BeginBatchUpdates();
+  for (NSIndexPath* index in self.collectionView.indexPathsForSelectedItems) {
+    CollectionViewItem* cell = [self.collectionViewModel itemAtIndexPath:index];
+    ReadingListCollectionViewItem* readingListItem =
+        base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(cell);
+    if (updater)
+      updater(readingListItem.url);
+  }
+}
+
+- (void)logDeletionHistogramsForEntry:(const GURL&)url {
+  const ReadingListEntry* entry = [self readingListModel]->GetEntryByURL(url);
+
+  if (!entry)
+    return;
+
+  int64_t firstRead = entry->FirstReadTime();
+  if (firstRead > 0) {
+    // Log 0 if the entry has never been read.
+    firstRead = (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds() -
+                firstRead;
+    // Convert it to hours.
+    firstRead = firstRead / base::Time::kMicrosecondsPerHour;
+  }
+  UMA_HISTOGRAM_COUNTS_10000("ReadingList.FirstReadAgeOnDeletion", firstRead);
+
+  int64_t age = (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds() -
+                entry->CreationTime();
+  // Convert it to hours.
+  age = age / base::Time::kMicrosecondsPerHour;
+  if (entry->IsRead())
+    UMA_HISTOGRAM_COUNTS_10000("ReadingList.Read.AgeOnDeletion", age);
+  else
+    UMA_HISTOGRAM_COUNTS_10000("ReadingList.Unread.AgeOnDeletion", age);
+}
+
+- (void)moveItemsFromSection:(SectionIdentifier)sourceSectionIdentifier
+                   toSection:(SectionIdentifier)destinationSectionIdentifier {
+  [self initializeSection:destinationSectionIdentifier];
+
+  NSInteger sourceSection = [self.collectionViewModel
+      sectionForSectionIdentifier:sourceSectionIdentifier];
+  NSInteger destinationSection = [self.collectionViewModel
+      sectionForSectionIdentifier:destinationSectionIdentifier];
+  NSInteger numberOfSourceItems =
+      [self.collectionViewModel numberOfItemsInSection:sourceSection];
+
+  [self.collectionView performBatchUpdates:^{
+    for (int index = 0; index < numberOfSourceItems; index++) {
+      NSIndexPath* firstItemIndex =
+          [NSIndexPath indexPathForItem:0 inSection:sourceSection];
+      NSIndexPath* sourceItemIndex =
+          [NSIndexPath indexPathForItem:index inSection:sourceSection];
+      NSIndexPath* destinationItemIndex =
+          [NSIndexPath indexPathForItem:index inSection:destinationSection];
+
+      // The collection view model gets updated instantaneously, the collection
+      // view does batch updates.
+      [self collectionView:self.collectionView
+          willMoveItemAtIndexPath:firstItemIndex
+                      toIndexPath:destinationItemIndex];
+      [self.collectionView moveItemAtIndexPath:sourceItemIndex
+                                   toIndexPath:destinationItemIndex];
+    }
+  }
+      completion:^(BOOL) {
+        // Reload data to take into account possible sync events.
+        [self reloadData];
+      }];
+  // As we modified the section in the batch update block, remove the section in
+  // another block.
+  [self removeEmptySections];
+}
+
+- (void)moveSelectedItems:(NSArray*)sortedIndexPaths
+                toSection:(SectionIdentifier)sectionIdentifier {
+  NSInteger sectionCreatedIndex = [self initializeSection:sectionIdentifier];
+
+  [self.collectionView performBatchUpdates:^{
+    NSInteger section = [self.collectionViewModel
+        sectionForSectionIdentifier:sectionIdentifier];
+
+    NSInteger newItemIndex = 0;
+    // In order to make sure the we do not end modifying the wrong item, we have
+    // to take the items in the reverse order of the indexPaths.
+    for (NSIndexPath* index in [sortedIndexPaths reverseObjectEnumerator]) {
+      // The |sortedIndexPaths| is a copy of the index paths before the
+      // destination section has been added if necessary. The section part of
+      // the index potentially needs to be updated.
+      NSInteger updatedSection = index.section;
+      if (updatedSection >= sectionCreatedIndex)
+        updatedSection++;
+      if (updatedSection == section) {
+        // The item is already in the targeted section, there is no need to move
+        // it.
+        continue;
+      }
+
+      NSIndexPath* updatedIndex =
+          [NSIndexPath indexPathForItem:index.item inSection:updatedSection];
+
+      // Index of the item in the new section. The newItemIndex is the index of
+      // this item in the targeted section.
+      NSIndexPath* newIndexPath =
+          [NSIndexPath indexPathForItem:newItemIndex++ inSection:section];
+      [self collectionView:self.collectionView
+          willMoveItemAtIndexPath:updatedIndex
+                      toIndexPath:newIndexPath];
+      [self.collectionView moveItemAtIndexPath:updatedIndex
+                                   toIndexPath:newIndexPath];
+    }
+  }
+      completion:^(BOOL) {
+        // Reload data to take into account possible sync events.
+        [self reloadData];
+      }];
+  // As we modified the section in the batch update block, remove the section in
+  // another block.
+  [self removeEmptySections];
+}
+
+- (NSInteger)initializeSection:(SectionIdentifier)sectionIdentifier {
+  if (![self.collectionViewModel
+          hasSectionForSectionIdentifier:sectionIdentifier]) {
+    // The new section IndexPath will be 1 if it is the read section with
+    // items in the unread section, 0 otherwise.
+    BOOL hasNonEmptySectionAbove =
+        sectionIdentifier == SectionIdentifierRead &&
+        [self hasItemInSection:SectionIdentifierUnread];
+    NSInteger sectionIndex = hasNonEmptySectionAbove ? 1 : 0;
+
+    [self.collectionView performBatchUpdates:^{
+      [self.collectionViewModel insertSectionWithIdentifier:sectionIdentifier
+                                                    atIndex:sectionIndex];
+
+      [self.collectionViewModel
+                         setHeader:[self headerForSection:sectionIdentifier]
+          forSectionWithIdentifier:sectionIdentifier];
+
+      [self.collectionView
+          insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]];
+    }
+                                  completion:nil];
+
+    return sectionIndex;
+  }
+  return NSIntegerMax;
+}
+
+- (CollectionViewTextItem*)headerForSection:
+    (SectionIdentifier)sectionIdentifier {
+  CollectionViewTextItem* header = nil;
+
+  switch (sectionIdentifier) {
+    case SectionIdentifierRead:
+      header = [[CollectionViewTextItem alloc] initWithType:ItemTypeReadHeader];
+      header.text = l10n_util::GetNSString(IDS_IOS_READING_LIST_READ_HEADER);
+      break;
+
+    case SectionIdentifierUnread:
+      header =
+          [[CollectionViewTextItem alloc] initWithType:ItemTypeUnreadHeader];
+      header.text = l10n_util::GetNSString(IDS_IOS_READING_LIST_UNREAD_HEADER);
+      break;
+  }
+  return header;
+}
+
+- (void)removeEmptySections {
+  [self.collectionView performBatchUpdates:^{
+
+    SectionIdentifier a[] = {SectionIdentifierRead, SectionIdentifierUnread};
+    for (size_t i = 0; i < arraysize(a); i++) {
+      SectionIdentifier sectionIdentifier = a[i];
+
+      if ([self.collectionViewModel
+              hasSectionForSectionIdentifier:sectionIdentifier] &&
+          ![self hasItemInSection:sectionIdentifier]) {
+        NSInteger section = [self.collectionViewModel
+            sectionForSectionIdentifier:sectionIdentifier];
+
+        [self.collectionView
+            deleteSections:[NSIndexSet indexSetWithIndex:section]];
+        [self.collectionViewModel
+            removeSectionWithIdentifier:sectionIdentifier];
+      }
+    }
+  }
+                                completion:nil];
+}
+
+- (void)exitEditingModeAnimated:(BOOL)animated {
+  [self.editor setEditing:NO animated:animated];
+  [_toolbar setEditing:NO];
+}
+
+@end
