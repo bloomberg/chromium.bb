@@ -31,9 +31,11 @@ import org.chromium.chrome.browser.infobar.InfoBar;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationListener;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
+import org.chromium.chrome.test.util.browser.TabTitleObserver;
 import org.chromium.chrome.test.util.browser.WebappTestPage;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -563,6 +565,16 @@ public class AppBannerManagerTest extends ChromeTabbedActivityTestBase {
         triggerWebAppBanner(WebappTestPage.urlOfPageWithServiceWorkerAndManifest(
                                     mTestServer, WEB_APP_SHORT_TITLE_MANIFEST),
                 WEB_APP_SHORT_TITLE, false);
+    }
+
+    @SmallTest
+    @Feature({"AppBanners"})
+    public void testAppInstalledEvent() throws Exception {
+        triggerWebAppBanner(mWebAppUrl, WEB_APP_TITLE, true);
+
+        // The appinstalled event should fire (and cause the title to change).
+        Tab tab = getActivity().getActivityTab();
+        new TabTitleObserver(tab, "Got appinstalled").waitForTitleUpdate(3);
     }
 
     @SmallTest

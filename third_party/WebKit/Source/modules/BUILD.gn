@@ -119,6 +119,7 @@ target(modules_target_type, "modules") {
     "//third_party/WebKit/Source/modules/imagebitmap",
     "//third_party/WebKit/Source/modules/imagecapture",
     "//third_party/WebKit/Source/modules/indexeddb",
+    "//third_party/WebKit/Source/modules/installation",
     "//third_party/WebKit/Source/modules/installedapp",
     "//third_party/WebKit/Source/modules/mediacapturefromelement",
     "//third_party/WebKit/Source/modules/mediarecorder",

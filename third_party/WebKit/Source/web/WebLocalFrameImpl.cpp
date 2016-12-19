@@ -157,6 +157,7 @@
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "modules/app_banner/AppBannerController.h"
+#include "modules/installation/InstallationServiceImpl.h"
 #include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/UserGestureIndicator.h"
@@ -1570,6 +1571,9 @@ void WebLocalFrameImpl::initializeCoreFrame(FrameHost* host,
     // frame()->document().
     frame()->interfaceRegistry()->addInterface(WTF::bind(
         &AppBannerController::bindMojoRequest, wrapWeakPersistent(frame())));
+
+    frame()->interfaceRegistry()->addInterface(WTF::bind(
+        &InstallationServiceImpl::create, wrapWeakPersistent(frame())));
   }
 }
 

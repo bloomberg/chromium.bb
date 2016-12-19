@@ -4,6 +4,10 @@
 
 function initialize() {
   navigator.serviceWorker.register('service_worker.js');
+
+  window.addEventListener('appinstalled', () => {
+    window.document.title = 'Got appinstalled';
+  });
 }
 
 function addManifestLinkTag() {

@@ -20,6 +20,7 @@ addtrack
 animationend
 animationiteration
 animationstart
+appinstalled
 audioend
 audioprocess
 audiostart

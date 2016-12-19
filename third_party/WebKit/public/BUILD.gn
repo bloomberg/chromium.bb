@@ -693,6 +693,7 @@ mojom("mojo_bindings") {
 
 mojom("android_mojo_bindings") {
   sources = [
+    "platform/modules/installation/installation.mojom",
     "platform/modules/webshare/webshare.mojom",
   ]
   public_deps = [

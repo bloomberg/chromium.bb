@@ -309,6 +309,11 @@ void EventTarget::addedEventListener(
       UseCounter::count(executingWindow->document(),
                         UseCounter::AuxclickAddListenerCount);
     }
+  } else if (eventType == EventTypeNames::appinstalled) {
+    if (LocalDOMWindow* executingWindow = this->executingWindow()) {
+      UseCounter::count(executingWindow->document(),
+                        UseCounter::AppInstalledEventAddListener);
+    }
   } else if (EventUtil::isPointerEventType(eventType)) {
     if (LocalDOMWindow* executingWindow = this->executingWindow()) {
       UseCounter::count(executingWindow->document(),

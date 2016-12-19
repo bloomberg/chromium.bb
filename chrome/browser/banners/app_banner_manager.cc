@@ -23,7 +23,9 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/WebKit/public/platform/modules/installation/installation.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -128,6 +130,14 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
   manager_->GetData(
       ParamsToGetManifest(),
       base::Bind(&AppBannerManager::OnDidGetManifest, GetWeakPtr()));
+}
+
+void AppBannerManager::OnInstall() {
+  blink::mojom::InstallationServicePtr installation_service;
+  web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
+      mojo::GetProxy(&installation_service));
+  DCHECK(installation_service);
+  installation_service->OnInstall();
 }
 
 void AppBannerManager::SendBannerAccepted(int request_id) {

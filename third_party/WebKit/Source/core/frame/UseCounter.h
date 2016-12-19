@@ -1383,6 +1383,7 @@ class CORE_EXPORT UseCounter {
     ServiceWorkerRespondToNavigationRequestWithRedirectedResponse = 1697,
     V8AudioContext_Constructor = 1698,
     V8OfflineAudioContext_Constructor = 1699,
+    AppInstalledEventAddListener = 1700,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

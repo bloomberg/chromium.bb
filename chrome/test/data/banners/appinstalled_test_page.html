@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>appinstalled event test page</title>
+        <script>
+            function onAppInstalled() {
+                window.document.title = 'Got appinstalled';
+            }
+
+            window.addEventListener('load', () => {
+                window.addEventListener('appinstalled', onAppInstalled);
+            });
+        </script>
+    </head>
+    <body>
+    </body>
+</html>

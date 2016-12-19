@@ -68,6 +68,11 @@ class AppBannerManager : public content::WebContentsObserver,
   // pipeline will be reported to the devtools console.
   virtual void RequestAppBanner(const GURL& validated_url, bool is_debug_mode);
 
+  // Informs the page that it has been installed via an app banner.
+  // This is redundant for the beforeinstallprompt event's promise being
+  // resolved, but is required by the install event spec.
+  void OnInstall();
+
   // Sends a message to the renderer that the user accepted the banner. Does
   // nothing if |request_id| does not match the current request.
   void SendBannerAccepted(int request_id);

@@ -102,6 +102,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebSecurityStyle.h",
   "+third_party/WebKit/public/platform/modules/app_banner/app_banner.mojom.h",
   "+third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom.h",
+  "+third_party/WebKit/public/platform/modules/installation/installation.mojom.h",
   "+third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h",
   "+third_party/WebKit/public/platform/modules/push_messaging/WebPushPermissionStatus.h",
   "+third_party/WebKit/public/platform/modules/remoteplayback/WebRemotePlaybackAvailability.h",

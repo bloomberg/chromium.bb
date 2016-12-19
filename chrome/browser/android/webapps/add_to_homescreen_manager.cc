@@ -17,9 +17,13 @@
 #include "chrome/browser/android/webapk/webapk_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
 #include "jni/AddToHomescreenManager_jni.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/WebKit/public/platform/modules/installation/installation.mojom.h"
 #include "ui/gfx/android/java_bitmap.h"
 
 using base::android::JavaParamRef;
@@ -115,6 +119,13 @@ void AddToHomescreenManager::AddShortcut(const ShortcutInfo& info,
   ShortcutHelper::AddToLauncherWithSkBitmap(
       web_contents->GetBrowserContext(), info, uid, icon,
       data_fetcher_->FetchSplashScreenImageCallback(uid));
+
+  // Fire the appinstalled event.
+  blink::mojom::InstallationServicePtr installation_service;
+  web_contents->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
+      mojo::GetProxy(&installation_service));
+  DCHECK(installation_service);
+  installation_service->OnInstall();
 }
 
 void AddToHomescreenManager::RecordAddToHomescreen() {
