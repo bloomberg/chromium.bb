@@ -1122,7 +1122,6 @@ weston_wm_window_draw_decoration(void *data)
 	const struct weston_desktop_xwayland_interface *xwayland_interface =
 		wm->server->compositor->xwayland_interface;
 	uint32_t flags = 0;
-	struct weston_view *view;
 
 	wm_log("XWM: start draw decoration, win %d\n", window->id);
 
@@ -1167,8 +1166,6 @@ weston_wm_window_draw_decoration(void *data)
 						  window->width + 2,
 						  window->height + 2);
 		}
-		wl_list_for_each(view, &window->surface->views, surface_link)
-			weston_view_geometry_dirty(view);
 
 		pixman_region32_fini(&window->surface->pending.input);
 
@@ -1201,7 +1198,6 @@ static void
 weston_wm_window_schedule_repaint(struct weston_wm_window *window)
 {
 	struct weston_wm *wm = window->wm;
-	struct weston_view *view;
 	int width, height;
 
 	if (window->frame_id == XCB_WINDOW_NONE) {
@@ -1219,8 +1215,6 @@ weston_wm_window_schedule_repaint(struct weston_wm_window *window)
 				pixman_region32_init_rect(&window->surface->pending.opaque, 0, 0,
 							  width, height);
 			}
-			wl_list_for_each(view, &window->surface->views, surface_link)
-				weston_view_geometry_dirty(view);
 		}
 		return;
 	}
