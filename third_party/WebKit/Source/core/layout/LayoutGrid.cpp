@@ -2612,9 +2612,6 @@ void LayoutGrid::layoutPositionedObjects(bool relayoutChildren,
     return;
 
   for (auto* child : *positionedDescendants) {
-    if (!child->needsLayout())
-      continue;
-
     if (isOrthogonalChild(*child)) {
       // FIXME: Properly support orthogonal writing mode.
       continue;
