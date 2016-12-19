@@ -195,8 +195,11 @@ CommandHandler.onCommand = function(command) {
   }
 
   // Require a current range.
-  if (!ChromeVoxState.instance.currentRange_)
-    return true;
+  if (!ChromeVoxState.instance.currentRange_ ||
+      !ChromeVoxState.instance.currentRange_.isValid()) {
+    cvox.ChromeVox.tts.speak(Msgs.getMsg('no_focus'), cvox.QueueMode.FLUSH);
+    return false;
+  }
 
   // Next/classic compat commands hereafter.
   if (ChromeVoxState.instance.mode == ChromeVoxMode.CLASSIC ||
