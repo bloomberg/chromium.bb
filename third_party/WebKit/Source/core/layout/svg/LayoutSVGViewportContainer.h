@@ -38,7 +38,6 @@ class LayoutSVGViewportContainer final : public LayoutSVGContainer {
 
   bool isLayoutSizeChanged() const { return m_isLayoutSizeChanged; }
 
-  void determineIfLayoutSizeChanged() override;
   void setNeedsTransformUpdate() override;
 
   const char* name() const override { return "LayoutSVGViewportContainer"; }
@@ -48,6 +47,8 @@ class LayoutSVGViewportContainer final : public LayoutSVGContainer {
     return type == LayoutObjectSVGViewportContainer ||
            LayoutSVGContainer::isOfType(type);
   }
+
+  void layout() override;
 
   AffineTransform localToSVGParentTransform() const override {
     return m_localToParentTransform;

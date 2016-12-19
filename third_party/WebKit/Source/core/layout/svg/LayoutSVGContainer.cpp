@@ -52,9 +52,6 @@ void LayoutSVGContainer::layout() {
       transformChange == SVGTransformChange::Full ||
       SVGLayoutSupport::screenScaleFactorChanged(parent());
 
-  // LayoutSVGViewportContainer needs to set the 'layout size changed' flag.
-  determineIfLayoutSizeChanged();
-
   // When hasRelativeLengths() is false, no descendants have relative lengths
   // (hence no one is interested in viewport size changes).
   bool layoutSizeChanged =

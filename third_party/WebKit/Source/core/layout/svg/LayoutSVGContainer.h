@@ -91,8 +91,6 @@ class LayoutSVGContainer : public LayoutSVGModelObject {
   // Called during layout to update the local transform.
   virtual SVGTransformChange calculateLocalTransform();
 
-  virtual void determineIfLayoutSizeChanged() {}
-
   void updateCachedBoundaries();
 
   void descendantIsolationRequirementsChanged(DescendantIsolationState) final;

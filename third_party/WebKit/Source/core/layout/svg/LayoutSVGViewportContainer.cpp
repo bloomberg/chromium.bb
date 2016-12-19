@@ -32,10 +32,28 @@ LayoutSVGViewportContainer::LayoutSVGViewportContainer(SVGSVGElement* node)
       m_isLayoutSizeChanged(false),
       m_needsTransformUpdate(true) {}
 
-void LayoutSVGViewportContainer::determineIfLayoutSizeChanged() {
+void LayoutSVGViewportContainer::layout() {
+  DCHECK(needsLayout());
   DCHECK(isSVGSVGElement(element()));
-  m_isLayoutSizeChanged =
-      toSVGSVGElement(element())->hasRelativeLengths() && selfNeedsLayout();
+
+  const SVGSVGElement* svg = toSVGSVGElement(element());
+  m_isLayoutSizeChanged = selfNeedsLayout() && svg->hasRelativeLengths();
+
+  if (selfNeedsLayout()) {
+    SVGLengthContext lengthContext(svg);
+    FloatRect oldViewport = m_viewport;
+    m_viewport = FloatRect(svg->x()->currentValue()->value(lengthContext),
+                           svg->y()->currentValue()->value(lengthContext),
+                           svg->width()->currentValue()->value(lengthContext),
+                           svg->height()->currentValue()->value(lengthContext));
+    if (oldViewport != m_viewport) {
+      setNeedsBoundariesUpdate();
+      // The transform depends on viewport values.
+      setNeedsTransformUpdate();
+    }
+  }
+
+  LayoutSVGContainer::layout();
 }
 
 void LayoutSVGViewportContainer::setNeedsTransformUpdate() {
@@ -49,26 +67,11 @@ void LayoutSVGViewportContainer::setNeedsTransformUpdate() {
 }
 
 SVGTransformChange LayoutSVGViewportContainer::calculateLocalTransform() {
-  DCHECK(isSVGSVGElement(element()));
-  const SVGSVGElement* svg = toSVGSVGElement(element());
-
-  FloatRect oldViewport = m_viewport;
-  SVGLengthContext lengthContext(svg);
-  m_viewport = FloatRect(svg->x()->currentValue()->value(lengthContext),
-                         svg->y()->currentValue()->value(lengthContext),
-                         svg->width()->currentValue()->value(lengthContext),
-                         svg->height()->currentValue()->value(lengthContext));
-
-  // TODO(pdr): Mark this object as needing updates when the viewport values
-  // change instead of waiting for layout.
-  if (m_viewport != oldViewport) {
-    setNeedsBoundariesUpdate();
-    setNeedsTransformUpdate();
-  }
-
   if (!m_needsTransformUpdate)
     return SVGTransformChange::None;
 
+  DCHECK(isSVGSVGElement(element()));
+  const SVGSVGElement* svg = toSVGSVGElement(element());
   SVGTransformChangeDetector changeDetector(m_localToParentTransform);
   m_localToParentTransform =
       AffineTransform::translation(m_viewport.x(), m_viewport.y()) *
