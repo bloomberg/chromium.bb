@@ -25,7 +25,7 @@ void UpdatePasswordInfoBarDelegate::Create(
     content::WebContents* web_contents,
     std::unique_ptr<password_manager::PasswordFormManager> form_to_save) {
   const bool is_smartlock_branding_enabled =
-      password_bubble_experiment::IsSmartLockBrandingEnabled(
+      password_bubble_experiment::IsSmartLockBrandingSavePromptEnabled(
           ProfileSyncServiceFactory::GetForProfile(
               Profile::FromBrowserContext(web_contents->GetBrowserContext())));
   InfoBarService::FromWebContents(web_contents)
