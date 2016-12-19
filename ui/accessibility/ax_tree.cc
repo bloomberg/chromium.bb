@@ -169,11 +169,19 @@ bool AXTree::Unserialize(const AXTreeUpdate& update) {
 
       AXTreeDelegate::ChangeType change = AXTreeDelegate::NODE_CHANGED;
       if (is_new_node) {
-        bool is_subtree = new_nodes.find(node->parent()) == new_nodes.end();
         if (is_reparented_node) {
+          // A reparented subtree is any new node whose parent either doesn't
+          // exist, or is not new.
+          bool is_subtree = !node->parent() ||
+                            new_nodes.find(node->parent()) == new_nodes.end();
           change = is_subtree ? AXTreeDelegate::SUBTREE_REPARENTED
                               : AXTreeDelegate::NODE_REPARENTED;
         } else {
+          // A new subtree is any new node whose parent is either not new, or
+          // whose parent happens to be new only because it has been reparented.
+          bool is_subtree = !node->parent() ||
+                            new_nodes.find(node->parent()) == new_nodes.end() ||
+                            update_state.HasRemovedNode(node->parent());
           change = is_subtree ? AXTreeDelegate::SUBTREE_CREATED
                               : AXTreeDelegate::NODE_CREATED;
         }

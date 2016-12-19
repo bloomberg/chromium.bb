@@ -469,10 +469,14 @@ TEST(AXTreeTest, TreeDelegateIsNotCalledForReparenting) {
   ASSERT_EQ(1U, fake_delegate.created_ids().size());
   EXPECT_EQ(4, fake_delegate.created_ids()[0]);
 
-  ASSERT_EQ(0U, fake_delegate.subtree_creation_finished_ids().size());
+  ASSERT_EQ(1U, fake_delegate.subtree_creation_finished_ids().size());
+  EXPECT_EQ(4, fake_delegate.subtree_creation_finished_ids()[0]);
 
-  ASSERT_EQ(1U, fake_delegate.node_creation_finished_ids().size());
-  EXPECT_EQ(4, fake_delegate.node_creation_finished_ids()[0]);
+  ASSERT_EQ(1U, fake_delegate.subtree_reparented_finished_ids().size());
+  EXPECT_EQ(2, fake_delegate.subtree_reparented_finished_ids()[0]);
+
+  EXPECT_EQ(0U, fake_delegate.node_creation_finished_ids().size());
+  EXPECT_EQ(0U, fake_delegate.node_reparented_finished_ids().size());
 
   ASSERT_EQ(true, fake_delegate.root_changed());
 

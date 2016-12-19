@@ -199,8 +199,8 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
-                       AccessibilityEventsAddChild) {
-  RunEventTest(FILE_PATH_LITERAL("add-child.html"));
+                       AccessibilityEventsAddChildOfBody) {
+  RunEventTest(FILE_PATH_LITERAL("add-child-of-body.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityEventsTest,
