@@ -506,21 +506,6 @@ LocalDOMWindow* LocalFrame::domWindow() const {
 }
 
 void LocalFrame::setDOMWindow(LocalDOMWindow* domWindow) {
-  // TODO(haraken): Update this comment.
-  // Oilpan: setDOMWindow() cannot be used when finalizing. Which
-  // is acceptable as its actions are either not needed or handled
-  // by other means --
-  //
-  //  - LocalFrameLifecycleObserver::willDetachFrameHost() will have
-  //    signalled the Inspector frameWindowDiscarded() notifications.
-  //    We assume that all LocalFrames are detached, where that notification
-  //    will have been done.
-  //
-  //  - Calling LocalDOMWindow::reset() is not needed (called from
-  //    Frame::setDOMWindow().) The Member references it clears will now
-  //    die with the window. And the registered DOMWindowProperty instances that
-  //    don't, only keep a weak reference to this frame, so there's no need to
-  //    be explicitly notified that this frame is going away.
   if (domWindow)
     script().clearWindowProxy();
 
