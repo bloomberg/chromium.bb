@@ -184,9 +184,7 @@ void SyncBackendHostImpl::Shutdown(ShutdownReason reason) {
   DCHECK(!host_);
 
   if (invalidation_handler_registered_) {
-    if (reason == DISABLE_SYNC) {
-      UnregisterInvalidationIds();
-    }
+    CHECK(invalidator_->UpdateRegisteredInvalidationIds(this, ObjectIdSet()));
     invalidator_->UnregisterInvalidationHandler(this);
     invalidator_ = nullptr;
   }
@@ -201,12 +199,6 @@ void SyncBackendHostImpl::Shutdown(ShutdownReason reason) {
       FROM_HERE, base::Bind(&SyncBackendHostCore::DoShutdown, core_, reason));
   core_ = nullptr;
   registrar_ = nullptr;
-}
-
-void SyncBackendHostImpl::UnregisterInvalidationIds() {
-  if (invalidation_handler_registered_) {
-    CHECK(invalidator_->UpdateRegisteredInvalidationIds(this, ObjectIdSet()));
-  }
 }
 
 ModelTypeSet SyncBackendHostImpl::ConfigureDataTypes(

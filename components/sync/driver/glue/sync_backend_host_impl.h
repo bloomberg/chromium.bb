@@ -68,7 +68,6 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
       WARN_UNUSED_RESULT;
   void StopSyncingForShutdown() override;
   void Shutdown(ShutdownReason reason) override;
-  void UnregisterInvalidationIds() override;
   ModelTypeSet ConfigureDataTypes(
       ConfigureReason reason,
       const DataTypeConfigStateMap& config_state_map,

@@ -131,10 +131,6 @@ class SyncEngine : public ModelTypeConfigurer {
   // Must be called *after* StopSyncingForShutdown.
   virtual void Shutdown(ShutdownReason reason) = 0;
 
-  // Removes all current registrations from the backend on the
-  // InvalidationService.
-  virtual void UnregisterInvalidationIds() = 0;
-
   // Changes the set of data types that are currently being synced.
   // The ready_task will be run when configuration is done with the
   // set of all types that failed configuration (i.e., if its argument

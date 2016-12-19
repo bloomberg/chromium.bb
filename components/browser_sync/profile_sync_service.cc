@@ -804,11 +804,6 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
 void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
   switch (data_fate) {
     case KEEP_DATA:
-      // TODO(maxbogue): Investigate whether this logic can/should be moved
-      // into ShutdownImpl or the sync engine itself.
-      if (HasSyncingEngine()) {
-        engine_->UnregisterInvalidationIds();
-      }
       ShutdownImpl(syncer::STOP_SYNC);
       break;
     case CLEAR_DATA:

@@ -43,8 +43,6 @@ class FakeSyncEngine : public SyncEngine {
 
   void Shutdown(ShutdownReason reason) override;
 
-  void UnregisterInvalidationIds() override;
-
   ModelTypeSet ConfigureDataTypes(
       ConfigureReason reason,
       const DataTypeConfigStateMap& config_state_map,

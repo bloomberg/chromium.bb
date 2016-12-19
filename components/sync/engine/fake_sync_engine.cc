@@ -37,8 +37,6 @@ void FakeSyncEngine::StopSyncingForShutdown() {}
 
 void FakeSyncEngine::Shutdown(ShutdownReason reason) {}
 
-void FakeSyncEngine::UnregisterInvalidationIds() {}
-
 ModelTypeSet FakeSyncEngine::ConfigureDataTypes(
     ConfigureReason reason,
     const DataTypeConfigStateMap& config_state_map,
