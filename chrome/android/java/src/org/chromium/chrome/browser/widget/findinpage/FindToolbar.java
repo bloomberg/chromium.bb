@@ -235,7 +235,6 @@ public class FindToolbar extends LinearLayout
                 if (mFindInPageBridge == null) return;
 
                 mAccessibilityDidActivateResult = false;
-                setPrevNextEnabled(s.length() > 0);
 
                 if (mSettingFindTextProgrammatically) return;
 
@@ -429,6 +428,8 @@ public class FindToolbar extends LinearLayout
                 Math.max(result.activeMatchOrdinal, 0),
                 result.numberOfMatches);
         setStatus(text, result.numberOfMatches == 0);
+
+        setPrevNextEnabled(result.numberOfMatches > 0);
 
         // The accessible version will be something like "Result 1 of 9".
         String accessibleText = getAccessibleStatusText(
