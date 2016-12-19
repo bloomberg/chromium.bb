@@ -20,13 +20,28 @@
 
 namespace blink {
 
-// This class stores property tree related information associated with a
-// LayoutObject.
-// Currently there are two groups of information:
-// 1. The set of property nodes created locally by this LayoutObject.
+// This class stores the paint property nodes associated with a LayoutObject.
+// The object owns each of the property nodes directly set here (e.g, m_cssClip,
+// m_paintOffsetTranslation, etc.) and RefPtrs are only used to harden against
+// use-after-free bugs. These paint properties are built/updated by
+// PaintPropertyTreeBuilder during the PrePaint lifecycle step.
+//
+// There are two groups of information stored on ObjectPaintProperties:
+// 1. The set of property nodes created locally and owned by this LayoutObject.
 // 2. The set of property nodes (inherited, or created locally) and paint offset
 //    that can be used to paint the border box of this LayoutObject (see:
 //    localBorderBoxProperties).
+//
+// [update & clear implementation note] This class has update[property](...) and
+// clear[property]() helper functions for efficiently creating and updating
+// properties. These functions return true if the property tree structure
+// changes (e.g., a node is added or removed), and false otherwise. Property
+// nodes store parent pointers but not child pointers and these return values
+// are important for catching property tree structure changes which require
+// updating descendant's parent pointers. The update functions use a
+// create-or-update pattern of re-using existing properties for efficiency:
+// 1. It avoids extra allocations.
+// 2. It preserves existing child->parent pointers.
 class CORE_EXPORT ObjectPaintProperties {
   WTF_MAKE_NONCOPYABLE(ObjectPaintProperties);
   USING_FAST_MALLOC(ObjectPaintProperties);
@@ -124,6 +139,14 @@ class CORE_EXPORT ObjectPaintProperties {
   const PropertyTreeStateWithOffset* localBorderBoxProperties() const {
     return m_localBorderBoxProperties.get();
   }
+
+  // This is the complete set of property nodes and paint offset that can be
+  // used to paint the contents of this object. It is similar to
+  // localBorderBoxProperties but includes properties (e.g., overflow clip,
+  // scroll translation) that apply to contents. This is suitable for paint
+  // invalidation.
+  ObjectPaintProperties::PropertyTreeStateWithOffset contentsProperties() const;
+
   void updateLocalBorderBoxProperties(
       LayoutPoint& paintOffset,
       const TransformPaintPropertyNode* transform,
@@ -144,56 +167,41 @@ class CORE_EXPORT ObjectPaintProperties {
   }
   void clearLocalBorderBoxProperties() { m_localBorderBoxProperties = nullptr; }
 
-  // This is the complete set of property nodes and paint offset that can be
-  // used to paint the contents of this object. It is similar to
-  // localBorderBoxProperties but includes properties (e.g., overflow clip,
-  // scroll translation) that apply to contents. This is suitable for paint
-  // invalidation.
-  ObjectPaintProperties::PropertyTreeStateWithOffset contentsProperties() const;
-
-  // True if an existing property was deleted, false otherwise.
+  // The following clear* functions return true if the property tree structure
+  // changes (an existing node was deleted), and false otherwise. See the
+  // class-level comment ("update & clear implementation note") for details
+  // about why this is needed for efficient updates.
   bool clearPaintOffsetTranslation() { return clear(m_paintOffsetTranslation); }
-  // True if an existing property was deleted, false otherwise.
   bool clearTransform() { return clear(m_transform); }
-  // True if an existing property was deleted, false otherwise.
   bool clearEffect() { return clear(m_effect); }
-  // True if an existing property was deleted, false otherwise.
   bool clearCssClip() { return clear(m_cssClip); }
-  // True if an existing property was deleted, false otherwise.
   bool clearCssClipFixedPosition() { return clear(m_cssClipFixedPosition); }
-  // True if an existing property was deleted, false otherwise.
   bool clearInnerBorderRadiusClip() { return clear(m_innerBorderRadiusClip); }
-  // True if an existing property was deleted, false otherwise.
   bool clearOverflowClip() { return clear(m_overflowClip); }
-  // True if an existing property was deleted, false otherwise.
   bool clearPerspective() { return clear(m_perspective); }
-  // True if an existing property was deleted, false otherwise.
   bool clearSvgLocalToBorderBoxTransform() {
     return clear(m_svgLocalToBorderBoxTransform);
   }
-  // True if an existing property was deleted, false otherwise.
   bool clearScrollTranslation() { return clear(m_scrollTranslation); }
-  // True if an existing property was deleted, false otherwise.
   bool clearScrollbarPaintOffset() { return clear(m_scrollbarPaintOffset); }
-  // True if an existing property was deleted, false otherwise.
   bool clearScroll() { return clear(m_scroll); }
 
-  // True if a new property was created, false if an existing one was updated.
+  // The following update* functions return true if the property tree structure
+  // changes (a new node was created), and false otherwise. See the class-level
+  // comment ("update & clear implementation note") for details about why this
+  // is needed for efficient updates.
   template <typename... Args>
   bool updatePaintOffsetTranslation(Args&&... args) {
     return update(m_paintOffsetTranslation, std::forward<Args>(args)...);
   }
-  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
   bool updateTransform(Args&&... args) {
     return update(m_transform, std::forward<Args>(args)...);
   }
-  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
   bool updatePerspective(Args&&... args) {
     return update(m_perspective, std::forward<Args>(args)...);
   }
-  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
   bool updateSvgLocalToBorderBoxTransform(Args&&... args) {
     DCHECK(!scrollTranslation()) << "SVG elements cannot scroll so there "
@@ -201,7 +209,6 @@ class CORE_EXPORT ObjectPaintProperties {
                                     "and an SVG local to border box transform.";
     return update(m_svgLocalToBorderBoxTransform, std::forward<Args>(args)...);
   }
-  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
   bool updateScrollTranslation(Args&&... args) {
     DCHECK(!svgLocalToBorderBoxTransform())
@@ -209,37 +216,30 @@ class CORE_EXPORT ObjectPaintProperties {
            "translation and an SVG local to border box transform.";
     return update(m_scrollTranslation, std::forward<Args>(args)...);
   }
-  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
   bool updateScrollbarPaintOffset(Args&&... args) {
     return update(m_scrollbarPaintOffset, std::forward<Args>(args)...);
   }
-  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
   bool updateScroll(Args&&... args) {
     return update(m_scroll, std::forward<Args>(args)...);
   }
-  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
   bool updateEffect(Args&&... args) {
     return update(m_effect, std::forward<Args>(args)...);
   }
-  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
   bool updateCssClip(Args&&... args) {
     return update(m_cssClip, std::forward<Args>(args)...);
   }
-  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
   bool updateCssClipFixedPosition(Args&&... args) {
     return update(m_cssClipFixedPosition, std::forward<Args>(args)...);
   }
-  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
   bool updateInnerBorderRadiusClip(Args&&... args) {
     return update(m_innerBorderRadiusClip, std::forward<Args>(args)...);
   }
-  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
   bool updateOverflowClip(Args&&... args) {
     return update(m_overflowClip, std::forward<Args>(args)...);
@@ -290,7 +290,9 @@ class CORE_EXPORT ObjectPaintProperties {
  private:
   ObjectPaintProperties() {}
 
-  // True if an existing property was deleted, false otherwise.
+  // Return true if the property tree structure changes (an existing node was
+  // deleted), and false otherwise. See the class-level comment ("update & clear
+  // implementation note") for details about why this is needed for efficiency.
   template <typename PaintPropertyNode>
   bool clear(RefPtr<PaintPropertyNode>& field) {
     if (field) {
@@ -300,7 +302,9 @@ class CORE_EXPORT ObjectPaintProperties {
     return false;
   }
 
-  // True if a new property was created, false if an existing one was updated.
+  // Return true if the property tree structure changes (a new node was
+  // created), and false otherwise. See the class-level comment ("update & clear
+  // implementation note") for details about why this is needed for efficiency.
   template <typename PaintPropertyNode, typename... Args>
   bool update(RefPtr<PaintPropertyNode>& field, Args&&... args) {
     if (field) {
