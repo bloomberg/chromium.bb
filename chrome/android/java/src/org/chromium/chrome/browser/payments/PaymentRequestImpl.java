@@ -183,7 +183,7 @@ public class PaymentRequestImpl
 
     /**
      * In-memory mapping of the origins of websites that have recently called canMakePayment()
-     * to the list of the payment methods that were been queried. Used for throttling the usage of
+     * to the list of the payment methods that were being queried. Used for throttling the usage of
      * this call. The mapping is shared among all instances of PaymentRequestImpl in the browser
      * process on UI thread. The user can reset the throttling mechanism by restarting the browser.
      */
@@ -267,6 +267,12 @@ public class PaymentRequestImpl
 
     /** True if any of the requested payment methods are supported. */
     private boolean mArePaymentMethodsSupported;
+
+    /**
+     * True after at least one usable payment instrument has been found. Should be read only after
+     * all payment apps have been queried.
+     */
+    private boolean mCanMakePayment;
 
     /** The helper to create and fill the response to send to the merchant. */
     private PaymentResponseHelper mPaymentResponseHelper;
@@ -1174,10 +1180,7 @@ public class PaymentRequestImpl
         }
 
         query.addObserver(this);
-        if (mPendingApps.isEmpty() && mPendingInstruments.isEmpty()) {
-            query.setResponse(mPaymentMethodsSection != null
-                    && mPaymentMethodsSection.getSelectedItem() != null);
-        }
+        if (isFinishedQueryingPaymentApps()) query.setResponse(mCanMakePayment);
     }
 
     private void respondCanMakePaymentQuery(boolean response) {
@@ -1240,18 +1243,22 @@ public class PaymentRequestImpl
         if (disconnectIfNoPaymentMethodsSupported()) return;
 
         // Load the validation rules for each unique region code in the credit card billing
-        // addresses.
+        // addresses and check for validity.
         Set<String> uniqueCountryCodes = new HashSet<>();
         for (int i = 0; i < mPendingAutofillInstruments.size(); ++i) {
             assert mPendingAutofillInstruments.get(i) instanceof AutofillPaymentInstrument;
+            AutofillPaymentInstrument creditCard =
+                    (AutofillPaymentInstrument) mPendingAutofillInstruments.get(i);
 
-            String countryCode = AutofillAddress
-                    .getCountryCode(((AutofillPaymentInstrument) mPendingAutofillInstruments.get(
-                            i)).getBillingAddress());
+            String countryCode = AutofillAddress.getCountryCode(creditCard.getBillingAddress());
             if (!uniqueCountryCodes.contains(countryCode)) {
                 uniqueCountryCodes.add(countryCode);
                 PersonalDataManager.getInstance().loadRulesForRegion(countryCode);
             }
+
+            // If there's a card on file with a valid number and a name, then
+            // PaymentRequest.canMakePayment() returns true.
+            mCanMakePayment |= creditCard.isValid();
         }
 
         // List order:
@@ -1267,18 +1274,22 @@ public class PaymentRequestImpl
 
         mPendingAutofillInstruments.clear();
 
-        // Pre-select the first instrument on the list, if it is complete.
+        // Possibly pre-select the first instrument on the list.
         int selection = SectionInformation.NO_SELECTION;
         if (!mPendingInstruments.isEmpty()) {
             PaymentInstrument first = mPendingInstruments.get(0);
-            if (!(first instanceof AutofillPaymentInstrument)
-                    || ((AutofillPaymentInstrument) first).isComplete()) {
+            if (first instanceof AutofillPaymentInstrument) {
+                AutofillPaymentInstrument creditCard = (AutofillPaymentInstrument) first;
+                if (creditCard.isComplete()) selection = 0;
+            } else {
+                // If a payment app is available, then PaymentRequest.canMakePayment() returns true.
+                mCanMakePayment = true;
                 selection = 0;
             }
         }
 
         CanMakePaymentQuery query = sCanMakePaymentQueries.get(mOrigin);
-        if (query != null) query.setResponse(selection == 0);
+        if (query != null) query.setResponse(mCanMakePayment);
 
         // The list of payment instruments is ready to display.
         mPaymentMethodsSection = new SectionInformation(PaymentRequestUI.TYPE_PAYMENT_METHODS,
@@ -1298,10 +1309,7 @@ public class PaymentRequestImpl
      * @return True if no payment methods are supported
      */
     private boolean disconnectIfNoPaymentMethodsSupported() {
-        if (mPendingApps == null || !mPendingApps.isEmpty() || !mPendingInstruments.isEmpty()) {
-            // Waiting for pending apps and instruments.
-            return false;
-        }
+        if (!isFinishedQueryingPaymentApps()) return false;
 
         boolean foundPaymentMethods = mPaymentMethodsSection != null
                 && !mPaymentMethodsSection.isEmpty();
@@ -1323,6 +1331,11 @@ public class PaymentRequestImpl
         }
 
         return false;
+    }
+
+    /** @return True after payment apps have been queried. */
+    private boolean isFinishedQueryingPaymentApps() {
+        return mPendingApps != null && mPendingApps.isEmpty() && mPendingInstruments.isEmpty();
     }
 
     /**

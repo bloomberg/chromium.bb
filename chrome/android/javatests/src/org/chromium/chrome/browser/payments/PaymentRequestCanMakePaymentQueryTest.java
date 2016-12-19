@@ -9,15 +9,14 @@ import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
-import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
- * A payment integration test for checking whether user can make a payment via either payment
- * app or a credit card. This user has a complete credit card on file.
+ * A payment integration test for checking whether user can make a payment via either payment app or
+ * a credit card. This user has a valid credit card without a billing address on file.
  */
 public class PaymentRequestCanMakePaymentQueryTest extends PaymentRequestTestBase {
     public PaymentRequestCanMakePaymentQueryTest() {
@@ -27,15 +26,11 @@ public class PaymentRequestCanMakePaymentQueryTest extends PaymentRequestTestBas
     @Override
     public void onMainActivityStarted() throws InterruptedException, ExecutionException,
             TimeoutException {
-        // The user has a complete credit card on file. This is sufficient for
-        // canMakePayment() to return true.
-        AutofillTestHelper helper = new AutofillTestHelper();
-        String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
-                true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
-                "US", "555-555-5555", "", "en-US"));
-        helper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
-                "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
-                billingAddressId, "" /* serverId */));
+        // The user has a valid credit card without a billing address on file. This is sufficient
+        // for canMakePayment() to return true.
+        new AutofillTestHelper().setCreditCard(new CreditCard("", "https://example.com", true, true,
+                "Jon Doe", "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
+                "" /* billingAddressId */, "" /* serverId */));
     }
 
     @MediumTest

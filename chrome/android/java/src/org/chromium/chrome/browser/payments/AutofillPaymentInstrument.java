@@ -42,6 +42,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
     @Nullable private InstrumentDetailsCallback mCallback;
     private boolean mIsWaitingForBillingNormalization;
     private boolean mIsWaitingForFullCardDetails;
+    private boolean mHasValidNumberAndName;
 
     /**
      * Builds a payment instrument for the given credit card.
@@ -80,7 +81,10 @@ public class AutofillPaymentInstrument extends PaymentInstrument
             InstrumentDetailsCallback callback) {
         // The billing address should never be null for a credit card at this point.
         assert mBillingAddress != null;
+        assert AutofillAddress.checkAddressCompletionStatus(mBillingAddress)
+                == AutofillAddress.COMPLETE;
         assert mIsComplete;
+        assert mHasValidNumberAndName;
         assert mCallback == null;
         mCallback = callback;
 
@@ -210,9 +214,20 @@ public class AutofillPaymentInstrument extends PaymentInstrument
     @Override
     public void dismissInstrument() {}
 
-    /** @return Whether the card is complete and ready to be sent to the merchant as-is. */
+    /**
+     * @return Whether the card is complete and ready to be sent to the merchant as-is. If true,
+     * this card has a valid card number, a non-empty name on card, and a complete billing address.
+     */
     public boolean isComplete() {
         return mIsComplete;
+    }
+
+    /**
+     * @return Whether the card number is valid and name on card is non-empty. Billing address is
+     * not taken into consideration.
+     */
+    public boolean isValid() {
+        return mHasValidNumberAndName;
     }
 
     /**
@@ -239,14 +254,18 @@ public class AutofillPaymentInstrument extends PaymentInstrument
                               mContext.getResources(), card.getIssuerIconDrawableId()));
         checkAndUpateCardCompleteness();
         assert mIsComplete;
+        assert mHasValidNumberAndName;
     }
 
     /**
      * Checks whether card is complete, i.e., can be sent to the merchant as-is without editing
      * first. And updates edit message, edit title and complete status.
      *
-     * For both local and server cards, verifies that the billing address is complete. For local
+     * For both local and server cards, verifies that the billing address is present. For local
      * cards also verifies that the card number is valid and the name on card is not empty.
+     *
+     * Does not check that the billing address has all of the required fields. This is done
+     * elsewhere to filter out such billing addresses entirely.
      *
      * Does not check the expiration date. If the card is expired, the user has the opportunity
      * update the expiration date when providing their CVC in the card unmask dialog.
@@ -265,8 +284,10 @@ public class AutofillPaymentInstrument extends PaymentInstrument
             invalidFieldsCount++;
         }
 
+        mHasValidNumberAndName = true;
         if (mCard.getIsLocal()) {
             if (TextUtils.isEmpty(mCard.getName())) {
+                mHasValidNumberAndName = false;
                 editMessageResId = R.string.payments_name_on_card_required;
                 editTitleResId = R.string.payments_add_name_on_card;
                 invalidFieldsCount++;
@@ -275,6 +296,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
             if (PersonalDataManager.getInstance().getBasicCardPaymentType(
                         mCard.getNumber().toString(), true)
                     == null) {
+                mHasValidNumberAndName = false;
                 editMessageResId = R.string.payments_card_number_invalid;
                 editTitleResId = R.string.payments_add_valid_card_number;
                 invalidFieldsCount++;

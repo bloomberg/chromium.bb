@@ -29,8 +29,8 @@ public class PaymentRequestCcCanMakePaymentQueryNoCardTest extends PaymentReques
         // The user has an incomplete credit card on file. This is not sufficient for
         // canMakePayment() to return true.
         new AutofillTestHelper().setCreditCard(new CreditCard("", "https://example.com", true, true,
-                "Jon Doe", "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
-                "" /* billingAddressId */, "" /* serverId */));
+                "" /* nameOnCard */, "4111111111111111", "1111", "12", "2050", "visa",
+                R.drawable.pr_visa, "" /* billingAddressId */, "" /* serverId */));
     }
 
     @MediumTest
