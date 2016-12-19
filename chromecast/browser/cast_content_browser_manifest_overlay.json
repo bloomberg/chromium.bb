@@ -1,4 +1,6 @@
 {
+  "name": "content_browser",
+  "display_name": "Cast Shell (Browser)",
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {

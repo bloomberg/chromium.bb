@@ -8,7 +8,9 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_CAST_CONTENT_BROWSER_MANIFEST_OVERLAY" file="cast_content_browser_manifest_overlay.json" type="BINDATA" />
+      <include name="IDR_CAST_CONTENT_BROWSER_MANIFEST_OVERLAY"
+               file="gen\cast_content_browser_manifest_overlay.json"
+               use_base_dir="false" type="BINDATA" />
     </includes>
   </release>
 </grit>

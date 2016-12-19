@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//chromecast/chromecast.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
 import("//tools/grit/grit_rule.gni")
 
@@ -143,6 +144,51 @@ source_set("browser") {
   }
 }
 
+# HOW THIS WORKS
+# This target generates an "overlay" interface spec, allowing the Cast build to
+# declare specific behavior and requirements for the "content_browser" service.
+# This is accomplished by generating a JSON file, which is packed into
+# cast_shell.pak, and loaded at runtime. This can be used to:
+#
+# 1) Host Cast-specific embedded services in the browser process.
+#    To host an embedded service, add the service's name to the list of
+#    "packages" in this target, and add the target that generates that service's
+#    manifest to "deps", like so:
+#
+#      packages = [ "foo" ]
+#      deps = [ "//path/to/foo/service:foo_manifest" ]
+#
+#    You must also register the "foo" service with the content client. See
+#    CastContentBrowserClient::RegisterInProcessServices() for details.
+#
+#    **NOTE**
+#    If your service's manifest is in chromecast/internal, do not add it here!
+#    Instead, add the service to the internal counterpart, which is referenced
+#    below.
+#
+# 2) Host an addtional interface in "content_browser" via a ConnectionFilter.
+#    In this case, nothing need be added to this file. Add your interface to the
+#    "provides" field in cast_content_browser_manifest_overlay.json, and use
+#    CastContentBrowserClient::AddConnectionFilters() to register bindings to it
+#    for incoming connections. Remember to add the provided interfaces to the
+#    "requires" field in the manifest of the service that needs them.
+#
+service_manifest_overlay("cast_content_browser_manifest_overlay") {
+  source = "cast_content_browser_manifest_overlay.json"
+
+  packaged_services = [ "media" ]
+
+  deps = [
+    "//media/mojo/services:media_manifest",
+  ]
+
+  if (chromecast_branding != "public") {
+    overlays = [ "${root_gen_dir}/cast_content_browser_internal_manifest_overlay.json" ]
+
+    deps += [ "//chromecast/internal/shell/browser:cast_content_browser_internal_manifest_overlay" ]
+  }
+}
+
 grit("resources") {
   visibility = [
     ":browser",
@@ -154,6 +200,10 @@ grit("resources") {
   outputs = [
     "grit/cast_browser_resources.h",
     "cast_browser_resources.pak",
+  ]
+
+  deps = [
+    ":cast_content_browser_manifest_overlay",
   ]
 }
 
