@@ -1,0 +1,43 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("cells") {
+  sources = [
+    "order_summary_line_item.h",
+    "order_summary_line_item.mm",
+    "order_summary_total_item.h",
+    "order_summary_total_item.mm",
+    "page_info_item.h",
+    "page_info_item.mm",
+    "payment_method_item.h",
+    "payment_method_item.mm",
+    "shipping_address_item.h",
+    "shipping_address_item.mm",
+  ]
+
+  deps = [
+    "//ios/chrome/browser/ui/collection_view/cells",
+    "//ios/third_party/material_components_ios",
+    "//ios/third_party/material_roboto_font_loader_ios",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "page_info_item_unittest.mm",
+    "payment_method_item_unittest.mm",
+  ]
+
+  deps = [
+    ":cells",
+    "//ios/chrome/browser/ui/collection_view/cells:test_support",
+    "//ios/third_party/material_components_ios",
+    "//testing/gtest",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}

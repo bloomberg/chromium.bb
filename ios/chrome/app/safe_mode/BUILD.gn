@@ -12,3 +12,62 @@ bundle_data("resources") {
     "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }
+
+source_set("safe_mode") {
+  sources = [
+    "safe_mode_coordinator.h",
+    "safe_mode_coordinator.mm",
+    "safe_mode_view_controller.h",
+    "safe_mode_view_controller.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//ios/chrome/app",
+    "//ios/chrome/app/safe_mode:resources",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/crash_report",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/fancy_ui",
+    "//ui/gfx",
+  ]
+
+  libs = [ "UIKit.framework" ]
+}
+
+source_set("eg_tests") {
+  testonly = true
+  sources = [
+    "safe_mode_egtest.mm",
+  ]
+  deps = [
+    ":safe_mode",
+    "//base",
+    "//ios/chrome/app:app_internal",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser/ui/main",
+    "//ios/chrome/test/base",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/third_party/earl_grey",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "safe_mode_coordinator_unittest.mm",
+    "safe_mode_view_controller_unittest.mm",
+  ]
+  deps = [
+    ":safe_mode",
+    "//base",
+    "//breakpad:client",
+    "//ios/chrome/browser/crash_report",
+    "//ios/chrome/test/base",
+    "//ios/chrome/test/ocmock",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
+  libs = [ "UIKit.framework" ]
+}

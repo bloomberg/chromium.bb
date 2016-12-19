@@ -53,17 +53,48 @@ source_set("browsing_data") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "browsing_data_removal_controller_unittest.mm",
     "cache_counter_unittest.cc",
   ]
   deps = [
     ":browsing_data",
+    ":browsing_data_internal",
     "//base",
+    "//base/test:test_support",
     "//components/browsing_data/core",
     "//components/prefs",
     "//components/prefs:test_support",
+    "//ios/chrome/browser/browser_state:test_support",
     "//ios/web",
     "//ios/web:test_support",
     "//net",
     "//testing/gtest",
+    "//third_party/ocmock",
   ]
+}
+
+source_set("browsing_data_internal") {
+  sources = [
+    "browsing_data_removal_controller.h",
+    "browsing_data_removal_controller.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/browsing_data/core",
+    "//components/open_from_clipboard",
+    "//components/signin/ios/browser",
+    "//ios/chrome/browser:browser_internal",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/browsing_data",
+    "//ios/chrome/browser/native_app_launcher:native_app_launcher_internal",
+    "//ios/chrome/browser/sessions:sessions_internal",
+    "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/snapshots",
+    "//ios/chrome/browser/ui:ui_internal",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/native_app_launcher",
+    "//ios/web",
+    "//net",
+  ]
+  libs = [ "WebKit.framework" ]
 }

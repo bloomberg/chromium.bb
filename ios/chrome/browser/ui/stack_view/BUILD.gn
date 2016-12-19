@@ -50,3 +50,119 @@ bundle_data("resources") {
     "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }
+
+source_set("stack_view") {
+  sources = [
+    "card_set.h",
+    "card_set.mm",
+    "card_stack_layout_manager.h",
+    "card_stack_layout_manager.mm",
+    "card_stack_pinch_gesture_recognizer.h",
+    "card_stack_pinch_gesture_recognizer.mm",
+    "card_view.h",
+    "card_view.mm",
+    "close_button.h",
+    "close_button.mm",
+    "page_animation_util.h",
+    "page_animation_util.mm",
+    "stack_card.h",
+    "stack_card.mm",
+    "stack_view_controller.h",
+    "stack_view_controller.mm",
+    "stack_view_controller_private.h",
+    "stack_view_toolbar_controller.h",
+    "stack_view_toolbar_controller.mm",
+    "title_label.h",
+    "title_label.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/strings",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/keyboard",
+    "//ios/chrome/browser/ui/ntp",
+    "//ios/chrome/browser/ui/ntp:ntp_internal",
+    "//ios/chrome/browser/ui/stack_view:resources",
+    "//ios/chrome/browser/ui/tab_switcher",
+    "//ios/chrome/browser/ui/tabs",
+    "//ios/chrome/browser/ui/toolbar",
+    "//ios/chrome/browser/ui/tools_menu",
+    "//ios/chrome/common",
+    "//ios/third_party/material_components_ios",
+    "//ios/web",
+    "//net",
+    "//ui/base",
+    "//ui/gfx",
+  ]
+  libs = [
+    "CoreGraphics.framework",
+    "QuartzCore.framework",
+    "UIKit.framework",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "card_set_unittest.mm",
+    "card_stack_layout_manager_unittest.mm",
+    "stack_card_unittest.mm",
+    "stack_view_controller_unittest.mm",
+  ]
+  deps = [
+    ":stack_view",
+    "//base",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/test:test_support",
+    "//ios/testing:ocmock_support",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
+}
+
+source_set("eg_tests") {
+  testonly = true
+  sources = [
+    "stack_view_egtest.mm",
+  ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/ui:ui_internal",
+    "//ios/chrome/browser/ui/stack_view",
+    "//ios/chrome/browser/ui/toolbar",
+    "//ios/chrome/browser/ui/tools_menu",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/testing/earl_grey:earl_grey_support",
+  ]
+  libs = [ "XCTest.framework" ]
+}
+
+source_set("perf_tests") {
+  testonly = true
+  sources = [
+    "stack_view_controller_perftest.mm",
+  ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//ios/chrome/browser/snapshots",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/browser/test:perf_test_support",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui:ui_internal",
+    "//ios/chrome/browser/ui/stack_view",
+    "//ios/web",
+    "//net",
+  ]
+  libs = [ "UIKit.framework" ]
+}

@@ -30,3 +30,109 @@ bundle_data("resources") {
     "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }
+
+source_set("omnibox_internal") {
+  sources = [
+    "chrome_omnibox_client_ios.h",
+    "chrome_omnibox_client_ios.mm",
+    "location_bar_view_ios.h",
+    "location_bar_view_ios.mm",
+    "omnibox_popup_material_row.h",
+    "omnibox_popup_material_row.mm",
+    "omnibox_popup_material_view_controller.h",
+    "omnibox_popup_material_view_controller.mm",
+    "omnibox_popup_positioner.h",
+    "omnibox_popup_view_ios.h",
+    "omnibox_popup_view_ios.mm",
+    "omnibox_text_field_ios.h",
+    "omnibox_text_field_ios.mm",
+    "omnibox_view_ios.h",
+    "omnibox_view_ios.mm",
+    "page_info_model.cc",
+    "page_info_model.h",
+    "page_info_model_observer.h",
+    "page_info_view_controller.h",
+    "page_info_view_controller.mm",
+    "preload_provider.h",
+    "truncating_attributed_label.h",
+    "truncating_attributed_label.mm",
+  ]
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//components/favicon/ios",
+    "//components/keyed_service/core",
+    "//components/open_from_clipboard",
+    "//components/resources",
+    "//components/search_engines",
+    "//components/ssl_errors",
+    "//components/strings",
+    "//components/toolbar",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/app/theme",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/autocomplete",
+    "//ios/chrome/browser/bookmarks",
+    "//ios/chrome/browser/bookmarks:bookmarks_utils",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/net",
+    "//ios/chrome/browser/search_engines",
+    "//ios/chrome/browser/sessions",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/commands",
+    "//ios/chrome/browser/ui/fancy_ui",
+    "//ios/chrome/browser/ui/omnibox",
+    "//ios/chrome/browser/ui/omnibox:resources",
+    "//ios/chrome/browser/ui/popup_menu",
+    "//ios/chrome/common",
+    "//ios/public/provider/chrome/browser",
+    "//ios/third_party/material_components_ios",
+    "//ios/third_party/material_roboto_font_loader_ios",
+    "//ios/web",
+    "//ios/web/public/image_fetcher",
+    "//net",
+    "//skia",
+    "//third_party/google_toolbox_for_mac",
+    "//ui/base",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
+    "//url",
+  ]
+  public_deps = [
+    "//components/omnibox/browser",
+  ]
+  libs = [
+    "CoreText.framework",
+    "MobileCoreServices.framework",
+    "QuartzCore.framework",
+    "UIKit.framework",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "omnibox_text_field_ios_unittest.mm",
+  ]
+  deps = [
+    ":omnibox_internal",
+    ":resources_unit_tests",
+    "//base",
+    "//ios/chrome/app/strings",
+    "//ios/chrome/browser",
+    "//testing/gtest",
+    "//ui/base",
+  ]
+}
+
+bundle_data("resources_unit_tests") {
+  visibility = [ ":unit_tests" ]
+  testonly = true
+  sources = [
+    "//ios/chrome/test/data/omnibox/selected_ranges.txt",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/" +
+        "ios/chrome/test/data/omnibox/{{source_file_part}}",
+  ]
+}

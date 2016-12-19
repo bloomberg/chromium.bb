@@ -26,3 +26,61 @@ bundle_data("resources") {
     "{{bundle_resources_dir}}/{{source_file_part}}",
   ]
 }
+
+source_set("infobars") {
+  sources = [
+    "infobar_view.h",
+    "infobar_view.mm",
+  ]
+  deps = [
+    "//base",
+    "//base:i18n",
+    "//components/strings",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/colors",
+    "//ios/chrome/browser/ui/fancy_ui",
+    "//ios/chrome/browser/ui/infobars:resources",
+    "//ios/chrome/browser/ui/util",
+    "//ios/public/provider/chrome/browser/ui",
+    "//ios/third_party/material_components_ios",
+    "//ui/base",
+    "//ui/gfx",
+    "//url",
+  ]
+  libs = [
+    "CoreGraphics.framework",
+    "QuartzCore.framework",
+    "UIKit.framework",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "infobar_view_unittest.mm",
+  ]
+  deps = [
+    ":infobars",
+    "//testing/gtest",
+  ]
+}
+
+source_set("eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "infobar_egtest.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/infobars/core",
+    "//ios/chrome/app:app_internal",
+    "//ios/chrome/browser/tabs",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/third_party/earl_grey",
+    "//ios/web:test_support",
+    "//url",
+  ]
+  libs = [ "XCTest.framework" ]
+}

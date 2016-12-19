@@ -36,3 +36,22 @@ source_set("unit_tests") {
     "//url",
   ]
 }
+
+source_set("eg_tests") {
+  testonly = true
+  sources = [
+    "handoff_manager_egtest.mm",
+  ]
+  deps = [
+    "//components/handoff",
+    "//ios/chrome/browser/device_sharing",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/test/app:test_support",
+    "//ios/chrome/test/earl_grey:test_support",
+    "//ios/third_party/earl_grey",
+    "//ios/web:test_support",
+    "//net",
+    "//url",
+  ]
+  libs = [ "XCTest.framework" ]
+}

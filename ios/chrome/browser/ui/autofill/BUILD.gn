@@ -25,3 +25,28 @@ source_set("autofill") {
     "//ios/public/provider/chrome/browser",
   ]
 }
+
+source_set("autofill_internal") {
+  sources = [
+    "card_unmask_prompt_view_bridge.h",
+    "card_unmask_prompt_view_bridge.mm",
+    "storage_switch_tooltip.h",
+    "storage_switch_tooltip.mm",
+  ]
+  deps = [
+    "//base",
+    "//components/autofill/core/browser",
+    "//components/strings",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/autofill/cells",
+    "//ios/chrome/browser/ui/collection_view/cells",
+    "//ios/chrome/browser/ui/colors",
+    "//ios/third_party/material_components_ios",
+    "//ios/third_party/material_roboto_font_loader_ios",
+    "//ui/base",
+  ]
+  public_deps = [
+    "//ios/chrome/browser/ui/collection_view",
+  ]
+  libs = [ "UIKit.framework" ]
+}
