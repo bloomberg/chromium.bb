@@ -2132,7 +2132,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"cros-comp-updates", IDS_FLAGS_CROS_COMP_UPDATES_NAME,
      IDS_FLAGS_CROS_COMP_UPDATES_DESCRIPTION, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kCrosCompUpdates)},
-#endif
+    {"enable-android-wallpapers-app",
+     IDS_FLAGS_ENABLE_ANDROID_WALLPAPERS_APP_NAME,
+     IDS_FLAGS_ENABLE_ANDROID_WALLPAPERS_APP_DESCRIPTION, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kEnableAndroidWallpapersApp)},
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(OS_ANDROID)
     {"enable-expanded-autofill-credit-card-popup",
      IDS_FLAGS_ENABLE_EXPANDED_AUTOFILL_CREDIT_CARD_POPUP_LAYOUT,

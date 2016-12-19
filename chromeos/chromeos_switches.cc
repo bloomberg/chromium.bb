@@ -211,6 +211,9 @@ const char kEafeUrl[] = "eafe-url";
 // Enables AD functionality.
 const char kEnableAd[] = "enable-ad";
 
+// Enables the Android Wallpapers App as the default app on Chrome OS.
+const char kEnableAndroidWallpapersApp[] = "enable-android-wallpapers-app";
+
 // Enables starting the ARC instance upon session start.
 const char kEnableArc[] = "enable-arc";
 

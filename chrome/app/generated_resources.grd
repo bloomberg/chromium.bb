@@ -15164,6 +15164,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_ENABLE_NATIVE_CUPS_DESCRIPTION" desc="Description of the native CUPS flag">
         Enables the use of the native CUPS printing backend.
       </message>
+      <message name="IDS_FLAGS_ENABLE_ANDROID_WALLPAPERS_APP_NAME" desc="Name of the Android Wallpapers App flag.">
+        Android Wallpapers App
+      </message>
+      <message name="IDS_FLAGS_ENABLE_ANDROID_WALLPAPERS_APP_DESCRIPTION" desc="Description of the Android Wallpapers App flag.">
+        Enables the Android Wallpapers App as the default Wallpaper App on Chrome OS.
+      </message>
     </if>
 
     <if expr="is_android">
