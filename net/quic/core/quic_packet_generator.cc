@@ -53,7 +53,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
     QuicIOVector iov,
     QuicStreamOffset offset,
     bool fin,
-    const scoped_refptr<QuicAckListenerInterface>& listener) {
+    scoped_refptr<QuicAckListenerInterface> listener) {
   bool has_handshake = (id == kCryptoStreamId);
   QUIC_BUG_IF(has_handshake && fin)
       << "Handshake packets should never send a fin";
@@ -125,7 +125,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeDataFastPath(
     const QuicIOVector& iov,
     QuicStreamOffset offset,
     bool fin,
-    const scoped_refptr<QuicAckListenerInterface>& listener) {
+    scoped_refptr<QuicAckListenerInterface> listener) {
   DCHECK_NE(id, kCryptoStreamId);
   size_t total_bytes_consumed = 0;
   while (total_bytes_consumed < iov.total_length &&
@@ -145,7 +145,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeDataFastPath(
 
 void QuicPacketGenerator::GenerateMtuDiscoveryPacket(
     QuicByteCount target_mtu,
-    const scoped_refptr<QuicAckListenerInterface>& listener) {
+    scoped_refptr<QuicAckListenerInterface> listener) {
   // MTU discovery frames must be sent by themselves.
   if (!packet_creator_.CanSetMaxPacketLength()) {
     QUIC_BUG << "MTU discovery packets should only be sent when no other "
@@ -163,7 +163,7 @@ void QuicPacketGenerator::GenerateMtuDiscoveryPacket(
   SetMaxPacketLength(target_mtu);
   const bool success = packet_creator_.AddPaddedSavedFrame(frame);
   if (listener != nullptr) {
-    packet_creator_.AddAckListener(listener, 0);
+    packet_creator_.AddAckListener(std::move(listener), 0);
   }
   packet_creator_.Flush();
   // The only reason AddFrame can fail is that the packet is too full to fit in

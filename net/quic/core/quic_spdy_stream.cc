@@ -61,9 +61,10 @@ void QuicSpdyStream::StopReading() {
 size_t QuicSpdyStream::WriteHeaders(
     SpdyHeaderBlock header_block,
     bool fin,
-    const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate) {
-  size_t bytes_written = spdy_session_->WriteHeaders(
-      id(), std::move(header_block), fin, priority_, ack_notifier_delegate);
+    scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) {
+  size_t bytes_written =
+      spdy_session_->WriteHeaders(id(), std::move(header_block), fin, priority_,
+                                  std::move(ack_notifier_delegate));
   if (fin) {
     // TODO(rch): Add test to ensure fin_sent_ is set whenever a fin is sent.
     set_fin_sent(true);
@@ -75,13 +76,13 @@ size_t QuicSpdyStream::WriteHeaders(
 void QuicSpdyStream::WriteOrBufferBody(
     const string& data,
     bool fin,
-    const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate) {
-  WriteOrBufferData(data, fin, ack_notifier_delegate);
+    scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) {
+  WriteOrBufferData(data, fin, std::move(ack_notifier_delegate));
 }
 
 size_t QuicSpdyStream::WriteTrailers(
     SpdyHeaderBlock trailer_block,
-    const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate) {
+    scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) {
   if (fin_sent()) {
     QUIC_BUG << "Trailers cannot be sent after a FIN.";
     return 0;
@@ -98,8 +99,9 @@ size_t QuicSpdyStream::WriteTrailers(
   // Write the trailing headers with a FIN, and close stream for writing:
   // trailers are the last thing to be sent on a stream.
   const bool kFin = true;
-  size_t bytes_written = spdy_session_->WriteHeaders(
-      id(), std::move(trailer_block), kFin, priority_, ack_notifier_delegate);
+  size_t bytes_written =
+      spdy_session_->WriteHeaders(id(), std::move(trailer_block), kFin,
+                                  priority_, std::move(ack_notifier_delegate));
   set_fin_sent(kFin);
 
   // Trailers are the last thing to be sent on a stream, but if there is still
@@ -330,13 +332,14 @@ QuicConsumedData QuicSpdyStream::WritevDataInner(
     QuicIOVector iov,
     QuicStreamOffset offset,
     bool fin,
-    const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate) {
+    scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) {
   if (spdy_session_->headers_stream() != nullptr &&
       spdy_session_->force_hol_blocking()) {
     return spdy_session_->headers_stream()->WritevStreamData(
-        id(), iov, offset, fin, ack_notifier_delegate);
+        id(), iov, offset, fin, std::move(ack_notifier_delegate));
   }
-  return QuicStream::WritevDataInner(iov, offset, fin, ack_notifier_delegate);
+  return QuicStream::WritevDataInner(iov, offset, fin,
+                                     std::move(ack_notifier_delegate));
 }
 
 }  // namespace net

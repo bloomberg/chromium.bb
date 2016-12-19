@@ -74,9 +74,9 @@ size_t QuicSpdySession::WriteHeaders(
     SpdyHeaderBlock headers,
     bool fin,
     SpdyPriority priority,
-    const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate) {
+    scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) {
   return headers_stream_->WriteHeaders(id, std::move(headers), fin, priority,
-                                       ack_notifier_delegate);
+                                       std::move(ack_notifier_delegate));
 }
 
 void QuicSpdySession::OnHeadersHeadOfLineBlocking(QuicTime::Delta delta) {

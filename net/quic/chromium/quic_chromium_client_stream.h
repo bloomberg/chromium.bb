@@ -78,10 +78,10 @@ class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
   void OnDataAvailable() override;
   void OnClose() override;
   void OnCanWrite() override;
-  size_t WriteHeaders(SpdyHeaderBlock header_block,
-                      bool fin,
-                      const scoped_refptr<QuicAckListenerInterface>&
-                          ack_notifier_delegate) override;
+  size_t WriteHeaders(
+      SpdyHeaderBlock header_block,
+      bool fin,
+      scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) override;
   SpdyPriority priority() const override;
 
   // While the server's set_priority shouldn't be called externally, the creator

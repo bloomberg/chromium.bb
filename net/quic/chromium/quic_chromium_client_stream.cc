@@ -123,7 +123,7 @@ void QuicChromiumClientStream::OnCanWrite() {
 size_t QuicChromiumClientStream::WriteHeaders(
     SpdyHeaderBlock header_block,
     bool fin,
-    const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate) {
+    scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) {
   if (!session()->IsCryptoHandshakeConfirmed()) {
     auto entry = header_block.find(":method");
     DCHECK(entry != header_block.end());
@@ -134,7 +134,7 @@ size_t QuicChromiumClientStream::WriteHeaders(
       base::Bind(&QuicRequestNetLogCallback, id(), &header_block,
                  QuicSpdyStream::priority()));
   return QuicSpdyStream::WriteHeaders(std::move(header_block), fin,
-                                      ack_notifier_delegate);
+                                      std::move(ack_notifier_delegate));
 }
 
 SpdyPriority QuicChromiumClientStream::priority() const {

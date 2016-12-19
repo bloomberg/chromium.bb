@@ -283,7 +283,7 @@ QuicConsumedData QuicSession::WritevData(
     QuicIOVector iov,
     QuicStreamOffset offset,
     bool fin,
-    const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate) {
+    scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) {
   // This check is an attempt to deal with potential memory corruption
   // in which |id| ends up set to 1 (the crypto stream id). If this happen
   // it might end up resulting in unencrypted stream data being sent.
@@ -302,8 +302,8 @@ QuicConsumedData QuicSession::WritevData(
     // up write blocked until OnCanWrite is next called.
     return QuicConsumedData(0, false);
   }
-  QuicConsumedData data =
-      connection_->SendStreamData(id, iov, offset, fin, ack_notifier_delegate);
+  QuicConsumedData data = connection_->SendStreamData(
+      id, iov, offset, fin, std::move(ack_notifier_delegate));
   write_blocked_streams_.UpdateBytesForStream(id, data.bytes_consumed);
   return data;
 }

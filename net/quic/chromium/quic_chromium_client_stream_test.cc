@@ -79,14 +79,13 @@ class MockQuicClientSessionBase : public QuicClientSessionBase {
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
   MOCK_METHOD1(CreateOutgoingDynamicStream,
                QuicChromiumClientStream*(SpdyPriority priority));
-  MOCK_METHOD6(
-      WritevData,
-      QuicConsumedData(QuicStream* stream,
-                       QuicStreamId id,
-                       QuicIOVector data,
-                       QuicStreamOffset offset,
-                       bool fin,
-                       const scoped_refptr<QuicAckListenerInterface>&));
+  MOCK_METHOD6(WritevData,
+               QuicConsumedData(QuicStream* stream,
+                                QuicStreamId id,
+                                QuicIOVector data,
+                                QuicStreamOffset offset,
+                                bool fin,
+                                scoped_refptr<QuicAckListenerInterface>));
   MOCK_METHOD3(SendRstStream,
                void(QuicStreamId stream_id,
                     QuicRstStreamErrorCode error,
@@ -107,13 +106,14 @@ class MockQuicClientSessionBase : public QuicClientSessionBase {
   MOCK_METHOD0(IsCryptoHandshakeConfirmed, bool());
   // Methods taking non-copyable types like SpdyHeaderBlock by value cannot be
   // mocked directly.
-  size_t WriteHeaders(QuicStreamId id,
-                      SpdyHeaderBlock headers,
-                      bool fin,
-                      SpdyPriority priority,
-                      const scoped_refptr<QuicAckListenerInterface>&
-                          ack_notifier_delegate) override {
-    return WriteHeadersMock(id, headers, fin, priority, ack_notifier_delegate);
+  size_t WriteHeaders(
+      QuicStreamId id,
+      SpdyHeaderBlock headers,
+      bool fin,
+      SpdyPriority priority,
+      scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) override {
+    return WriteHeadersMock(id, headers, fin, priority,
+                            std::move(ack_notifier_delegate));
   }
   MOCK_METHOD5(WriteHeadersMock,
                size_t(QuicStreamId id,

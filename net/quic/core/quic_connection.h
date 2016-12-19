@@ -352,7 +352,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
       QuicIOVector iov,
       QuicStreamOffset offset,
       bool fin,
-      const scoped_refptr<QuicAckListenerInterface>& listener);
+      scoped_refptr<QuicAckListenerInterface> listener);
 
   // Send a RST_STREAM frame to the peer.
   virtual void SendRstStream(QuicStreamId id,

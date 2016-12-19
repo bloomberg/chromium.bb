@@ -353,7 +353,7 @@ void QuicPacketCreator::CreateAndSerializeStreamFrame(
     QuicStreamOffset iov_offset,
     QuicStreamOffset stream_offset,
     bool fin,
-    const scoped_refptr<QuicAckListenerInterface>& listener,
+    scoped_refptr<QuicAckListenerInterface> listener,
     size_t* num_bytes_consumed) {
   DCHECK(queued_frames_.empty());
   // Write out the packet header
@@ -413,7 +413,7 @@ void QuicPacketCreator::CreateAndSerializeStreamFrame(
   packet_.encrypted_buffer = encrypted_buffer;
   packet_.encrypted_length = encrypted_length;
   if (listener != nullptr) {
-    packet_.listeners.emplace_back(listener, bytes_consumed);
+    packet_.listeners.emplace_back(std::move(listener), bytes_consumed);
   }
   packet_.retransmittable_frames.push_back(QuicFrame(frame.release()));
   OnSerializedPacket();
@@ -465,10 +465,10 @@ bool QuicPacketCreator::AddPaddedSavedFrame(const QuicFrame& frame) {
 }
 
 void QuicPacketCreator::AddAckListener(
-    const scoped_refptr<QuicAckListenerInterface>& listener,
+    scoped_refptr<QuicAckListenerInterface> listener,
     QuicPacketLength length) {
   DCHECK(!queued_frames_.empty());
-  packet_.listeners.emplace_back(listener, length);
+  packet_.listeners.emplace_back(std::move(listener), length);
 }
 
 void QuicPacketCreator::SerializePacket(char* encrypted_buffer,

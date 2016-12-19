@@ -88,8 +88,8 @@ void QuicStreamPeer::WriteOrBufferData(
     QuicStream* stream,
     StringPiece data,
     bool fin,
-    const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate) {
-  stream->WriteOrBufferData(data, fin, ack_notifier_delegate);
+    scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) {
+  stream->WriteOrBufferData(data, fin, std::move(ack_notifier_delegate));
 }
 
 // static

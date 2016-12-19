@@ -182,7 +182,7 @@ void QuicStream::CloseConnectionWithDetails(QuicErrorCode error,
 void QuicStream::WriteOrBufferData(
     StringPiece data,
     bool fin,
-    const scoped_refptr<QuicAckListenerInterface>& ack_listener) {
+    scoped_refptr<QuicAckListenerInterface> ack_listener) {
   if (data.empty() && !fin) {
     QUIC_BUG << "data.empty() && !fin";
     return;
@@ -219,7 +219,7 @@ void QuicStream::OnCanWrite() {
   bool fin = false;
   while (!queued_data_.empty()) {
     PendingData* pending_data = &queued_data_.front();
-    const scoped_refptr<QuicAckListenerInterface>& ack_listener =
+    scoped_refptr<QuicAckListenerInterface> ack_listener =
         pending_data->ack_listener;
     if (queued_data_.size() == 1 && fin_buffered_) {
       fin = true;
@@ -270,7 +270,7 @@ QuicConsumedData QuicStream::WritevData(
     const struct iovec* iov,
     int iov_count,
     bool fin,
-    const scoped_refptr<QuicAckListenerInterface>& ack_listener) {
+    scoped_refptr<QuicAckListenerInterface> ack_listener) {
   if (write_side_closed_) {
     DLOG(ERROR) << ENDPOINT << "Attempt to write when the write side is closed";
     return QuicConsumedData(0, false);
@@ -317,7 +317,7 @@ QuicConsumedData QuicStream::WritevData(
 
   QuicConsumedData consumed_data =
       WritevDataInner(QuicIOVector(iov, iov_count, write_length),
-                      stream_bytes_written_, fin, ack_listener);
+                      stream_bytes_written_, fin, std::move(ack_listener));
   stream_bytes_written_ += consumed_data.bytes_consumed;
 
   AddBytesSent(consumed_data.bytes_consumed);
@@ -351,9 +351,9 @@ QuicConsumedData QuicStream::WritevDataInner(
     QuicIOVector iov,
     QuicStreamOffset offset,
     bool fin,
-    const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate) {
+    scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) {
   return session()->WritevData(this, id(), iov, offset, fin,
-                               ack_notifier_delegate);
+                               std::move(ack_notifier_delegate));
 }
 
 void QuicStream::CloseReadSide() {

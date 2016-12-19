@@ -7,11 +7,9 @@
 namespace net {
 
 AckListenerWrapper::AckListenerWrapper(
-    const scoped_refptr<QuicAckListenerInterface>& listener,
+    scoped_refptr<QuicAckListenerInterface> listener,
     QuicPacketLength data_length)
-    : ack_listener(listener), length(data_length) {
-  DCHECK(listener != nullptr);
-}
+    : ack_listener(std::move(listener)), length(data_length) {}
 
 AckListenerWrapper::AckListenerWrapper(const AckListenerWrapper& other) =
     default;

@@ -84,7 +84,7 @@ class MockQuicHeadersStream : public QuicHeadersStream {
       SpdyHeaderBlock headers,
       bool fin,
       SpdyPriority priority,
-      const scoped_refptr<QuicAckListenerInterface>& ack_listener) override {
+      scoped_refptr<QuicAckListenerInterface> ack_listener) override {
     return WriteHeadersMock(stream_id, headers, fin, priority, ack_listener);
   }
   MOCK_METHOD5(
@@ -139,7 +139,7 @@ class MockQuicConnectionWithSendStreamData : public MockQuicConnection {
                        QuicIOVector iov,
                        QuicStreamOffset offset,
                        bool fin,
-                       const scoped_refptr<QuicAckListenerInterface>& listern));
+                       scoped_refptr<QuicAckListenerInterface> listern));
 };
 
 class QuicSimpleServerSessionPeer {

@@ -344,7 +344,7 @@ size_t QuicHeadersStream::WriteHeaders(
     SpdyHeaderBlock headers,
     bool fin,
     SpdyPriority priority,
-    const scoped_refptr<QuicAckListenerInterface>& ack_listener) {
+    scoped_refptr<QuicAckListenerInterface> ack_listener) {
   SpdyHeadersIR headers_frame(stream_id, std::move(headers));
   headers_frame.set_fin(fin);
   if (session()->perspective() == Perspective::IS_CLIENT) {
@@ -353,7 +353,7 @@ size_t QuicHeadersStream::WriteHeaders(
   }
   SpdySerializedFrame frame(spdy_framer_.SerializeFrame(headers_frame));
   WriteOrBufferData(StringPiece(frame.data(), frame.size()), false,
-                    ack_listener);
+                    std::move(ack_listener));
   return frame.size();
 }
 
@@ -381,19 +381,19 @@ void QuicHeadersStream::WriteDataFrame(
     QuicStreamId id,
     StringPiece data,
     bool fin,
-    const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate) {
+    scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) {
   SpdyDataIR spdy_data(id, data);
   spdy_data.set_fin(fin);
   SpdySerializedFrame frame(spdy_framer_.SerializeFrame(spdy_data));
   scoped_refptr<ForceHolAckListener> ack_listener;
   if (ack_notifier_delegate != nullptr) {
-    ack_listener = new ForceHolAckListener(ack_notifier_delegate,
+    ack_listener = new ForceHolAckListener(std::move(ack_notifier_delegate),
                                            frame.size() - data.length());
   }
   // Use buffered writes so that coherence of framing is preserved
   // between streams.
   WriteOrBufferData(StringPiece(frame.data(), frame.size()), false,
-                    ack_listener);
+                    std::move(ack_listener));
 }
 
 QuicConsumedData QuicHeadersStream::WritevStreamData(
@@ -401,7 +401,7 @@ QuicConsumedData QuicHeadersStream::WritevStreamData(
     QuicIOVector iov,
     QuicStreamOffset offset,
     bool fin,
-    const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate) {
+    scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) {
   const size_t max_len =
       kSpdyInitialFrameSizeLimit - SpdyConstants::kDataFrameMinimumSize;
 
@@ -409,7 +409,7 @@ QuicConsumedData QuicHeadersStream::WritevStreamData(
   size_t total_length = iov.total_length;
 
   if (total_length == 0 && fin) {
-    WriteDataFrame(id, StringPiece(), true, ack_notifier_delegate);
+    WriteDataFrame(id, StringPiece(), true, std::move(ack_notifier_delegate));
     result.fin_consumed = true;
     return result;
   }

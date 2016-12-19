@@ -516,13 +516,14 @@ class TestConnection : public QuicConnection {
       StringPiece data,
       QuicStreamOffset offset,
       bool fin,
-      const scoped_refptr<QuicAckListenerInterface>& listener) {
+      scoped_refptr<QuicAckListenerInterface> listener) {
     if (id != kCryptoStreamId && this->encryption_level() == ENCRYPTION_NONE) {
       this->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
     }
     struct iovec iov;
     QuicIOVector data_iov(MakeIOVector(data, &iov));
-    return QuicConnection::SendStreamData(id, data_iov, offset, fin, listener);
+    return QuicConnection::SendStreamData(id, data_iov, offset, fin,
+                                          std::move(listener));
   }
 
   QuicConsumedData SendStreamData3() {
