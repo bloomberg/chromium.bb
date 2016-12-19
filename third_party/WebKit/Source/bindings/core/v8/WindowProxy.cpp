@@ -291,21 +291,6 @@ bool WindowProxy::initialize() {
 }
 
 void WindowProxy::createContext() {
-  // FIXME: This should be a null check of m_frame->client(), but there are
-  // still some edge cases
-  // that this fails to catch during frame detach.
-  if (m_frame->isLocalFrame() &&
-      !toLocalFrame(m_frame)->loader().documentLoader()) {
-    // TODO(yukishiino): Remove this if-clause entirely once we are sure that
-    // it's safe.  There seems no case that we hit this if-clause.  Plus,
-    // createContext() is responsible just to create a new v8::Context, and it's
-    // technically possible to create it without a document loader.
-    // If we really want to limit the context creation under some condition,
-    // it must come with the right reason described in a comment.
-    NOTREACHED();
-    return;
-  }
-
   // Create a new v8::Context with the window object as the global object
   // (aka the inner global).  Reuse the global proxy object (aka the outer
   // global) if it already exists.  See the comments in
