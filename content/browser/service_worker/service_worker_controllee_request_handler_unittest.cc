@@ -119,6 +119,8 @@ class ServiceWorkerControlleeRequestHandlerTest : public testing::Test {
     records.push_back(
         ServiceWorkerDatabase::ResourceRecord(10, version_->script_url(), 100));
     version_->script_cache_map()->SetResources(records);
+    version_->SetMainScriptHttpResponseInfo(
+        EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
 
     // An empty host.
     std::unique_ptr<ServiceWorkerProviderHost> host(

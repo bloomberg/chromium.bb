@@ -69,6 +69,7 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_response_info.h"
 #include "net/log/net_log_with_source.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -386,6 +387,17 @@ bool CheckHeader(const base::DictionaryValue& dict,
   return false;
 }
 
+net::HttpResponseInfo CreateHttpResponseInfo() {
+  net::HttpResponseInfo info;
+  const char data[] =
+      "HTTP/1.1 200 OK\0"
+      "Content-Type: application/javascript\0"
+      "\0";
+  info.headers =
+      new net::HttpResponseHeaders(std::string(data, arraysize(data)));
+  return info;
+}
+
 }  // namespace
 
 class ServiceWorkerBrowserTest
@@ -696,6 +708,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
   void StartOnIOThread(const base::Closure& done,
                        ServiceWorkerStatusCode* result) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    version_->SetMainScriptHttpResponseInfo(CreateHttpResponseInfo());
     version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
                           CreateReceiver(BrowserThread::UI, done, result));
   }
@@ -764,6 +777,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     version_->set_fetch_handler_existence(
         ServiceWorkerVersion::FetchHandlerExistence::EXISTS);
+    version_->SetMainScriptHttpResponseInfo(CreateHttpResponseInfo());
     version_->SetStatus(ServiceWorkerVersion::ACTIVATING);
     registration_->SetActiveVersion(version_.get());
     version_->RunAfterStartWorker(

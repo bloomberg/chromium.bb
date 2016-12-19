@@ -864,12 +864,16 @@ class UpdateJobTestHelper
       WriteStringResponse(storage(), resource_id, kMockScriptBody);
       version->script_cache_map()->NotifyFinishedCaching(
           script, kMockScriptSize, net::OK, std::string());
+      version->SetMainScriptHttpResponseInfo(
+          EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
     } else {
       if (script.GetOrigin() == kNoChangeOrigin) {
         // Simulate fetching the updated script and finding it's identical to
         // the incumbent.
         version->script_cache_map()->NotifyFinishedCaching(
             script, kMockScriptSize, net::ERR_FILE_EXISTS, std::string());
+        version->SetMainScriptHttpResponseInfo(
+            EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
         SimulateWorkerScriptLoaded(embedded_worker_id);
         return;
       }
@@ -878,6 +882,8 @@ class UpdateJobTestHelper
       WriteStringResponse(storage(), resource_id, "mock_different_script");
       version->script_cache_map()->NotifyFinishedCaching(
           script, kMockScriptSize, net::OK, std::string());
+      version->SetMainScriptHttpResponseInfo(
+          EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
     }
 
     EmbeddedWorkerTestHelper::OnStartWorker(

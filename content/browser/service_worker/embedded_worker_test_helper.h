@@ -23,6 +23,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_test_sink.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/http/http_response_info.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
@@ -153,6 +154,8 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   base::WeakPtr<EmbeddedWorkerTestHelper> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
+
+  static net::HttpResponseInfo CreateHttpResponseInfo();
 
  protected:
   // Called when StartWorker, StopWorker and SendMessageToWorker message

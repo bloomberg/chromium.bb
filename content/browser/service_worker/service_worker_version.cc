@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -649,6 +650,9 @@ void ServiceWorkerVersion::RunAfterStartWorker(
     const StatusCallback& error_callback) {
   if (running_status() == EmbeddedWorkerStatus::RUNNING) {
     DCHECK(start_callbacks_.empty());
+    // TODO(falken): Remove this CHECK once https://crbug.com/485900 is
+    // resolved.
+    CHECK(GetMainScriptHttpResponseInfo());
     task.Run();
     return;
   }
@@ -924,6 +928,23 @@ void ServiceWorkerVersion::OnDetached(EmbeddedWorkerStatus old_status) {
 }
 
 void ServiceWorkerVersion::OnScriptLoaded() {
+  // TODO(falken): Remove this CHECK once https://crbug.com/485900 is
+  // resolved.
+  if (!GetMainScriptHttpResponseInfo()) {
+    // Stick some information on the stack that may be useful in debugging.
+    Status status = status_;
+    char url[128];
+    base::strlcpy(url, script_url_.spec().c_str(), arraysize(url));
+    size_t script_map_size = script_cache_map_.size();
+    net::URLRequestStatus::Status main_script_status =
+        script_cache_map_.main_script_status().status();
+    base::debug::Alias(&status);
+    base::debug::Alias(url);
+    base::debug::Alias(&script_map_size);
+    base::debug::Alias(&main_script_status);
+    CHECK(false);
+  }
+
   if (IsInstalled(status()))
     UMA_HISTOGRAM_BOOLEAN("ServiceWorker.ScriptLoadSuccess", true);
 }
@@ -1429,6 +1450,9 @@ void ServiceWorkerVersion::DidEnsureLiveRegistrationForStartWorker(
 
   switch (running_status()) {
     case EmbeddedWorkerStatus::RUNNING:
+      // TODO(falken): Remove this CHECK once https://crbug.com/485900 is
+      // resolved.
+      CHECK(GetMainScriptHttpResponseInfo());
       RunSoon(base::Bind(callback, SERVICE_WORKER_OK));
       return;
     case EmbeddedWorkerStatus::STARTING:
@@ -1859,6 +1883,11 @@ void ServiceWorkerVersion::OnBeginEvent() {
 
 void ServiceWorkerVersion::FinishStartWorker(ServiceWorkerStatusCode status) {
   start_worker_first_purpose_ = base::nullopt;
+  if (status == SERVICE_WORKER_OK) {
+    // TODO(falken): Remove this CHECK once https://crbug.com/485900 is
+    // resolved.
+    CHECK(GetMainScriptHttpResponseInfo());
+  }
   RunCallbacks(this, &start_callbacks_, status);
 }
 

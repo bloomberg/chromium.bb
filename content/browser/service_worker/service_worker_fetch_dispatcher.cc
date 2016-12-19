@@ -194,8 +194,12 @@ class ServiceWorkerFetchDispatcher::ResponseCallback {
       NOTREACHED() << "Should only receive one reply per event";
 
     // |fetch_dispatcher| is null if the URLRequest was killed.
-    if (fetch_dispatcher_)
+    if (fetch_dispatcher_) {
+      // TODO(falken): Remove this CHECK once https://crbug.com/485900 is
+      // resolved.
+      CHECK(version_->GetMainScriptHttpResponseInfo());
       fetch_dispatcher_->DidFinish(request_id, fetch_result, response);
+    }
   }
 
  private:
@@ -293,6 +297,9 @@ void ServiceWorkerFetchDispatcher::DidFailToStartWorker(
 void ServiceWorkerFetchDispatcher::DispatchFetchEvent() {
   DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status())
       << "Worker stopped too soon after it was started.";
+
+  // TODO(falken): Remove this CHECK once https://crbug.com/485900 is resolved.
+  CHECK(version_->GetMainScriptHttpResponseInfo());
 
   DCHECK(!prepare_callback_.is_null());
   base::Closure prepare_callback = prepare_callback_;

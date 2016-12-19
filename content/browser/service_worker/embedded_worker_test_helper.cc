@@ -280,6 +280,18 @@ void EmbeddedWorkerTestHelper::ShutdownContext() {
   wrapper_ = NULL;
 }
 
+// static
+net::HttpResponseInfo EmbeddedWorkerTestHelper::CreateHttpResponseInfo() {
+  net::HttpResponseInfo info;
+  const char data[] =
+      "HTTP/1.1 200 OK\0"
+      "Content-Type: application/javascript\0"
+      "\0";
+  info.headers =
+      new net::HttpResponseHeaders(std::string(data, arraysize(data)));
+  return info;
+}
+
 void EmbeddedWorkerTestHelper::OnStartWorker(int embedded_worker_id,
                                              int64_t service_worker_version_id,
                                              const GURL& scope,
@@ -404,6 +416,7 @@ void EmbeddedWorkerTestHelper::SimulateWorkerScriptCached(
   records.push_back(ServiceWorkerDatabase::ResourceRecord(
       embedded_worker_id, version->script_url(), 100));
   version->script_cache_map()->SetResources(records);
+  version->SetMainScriptHttpResponseInfo(CreateHttpResponseInfo());
 }
 
 void EmbeddedWorkerTestHelper::SimulateWorkerScriptLoaded(

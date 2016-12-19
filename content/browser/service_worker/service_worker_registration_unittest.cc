@@ -249,6 +249,8 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTestP {
     records.push_back(ServiceWorkerDatabase::ResourceRecord(
         10, version_1->script_url(), 100));
     version_1->script_cache_map()->SetResources(records);
+    version_1->SetMainScriptHttpResponseInfo(
+        EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
     ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
     context()->storage()->StoreRegistration(
         registration_.get(), version_1.get(),

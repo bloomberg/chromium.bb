@@ -336,6 +336,9 @@ TEST_F(ForeignFetchRequestHandlerTest, InitializeHandler_TimeoutBehavior) {
 
   CreateServiceWorkerTypeProviderHost();
   ServiceWorkerVersion* version = provider_host()->running_hosted_version();
+  std::unique_ptr<net::HttpResponseInfo> http_info(
+      CreateTestHttpResponseInfo());
+  version->SetMainScriptHttpResponseInfo(*http_info);
 
   // Set mock clock on version to check timeout behavior.
   base::SimpleTestTickClock* tick_clock = new base::SimpleTestTickClock();
