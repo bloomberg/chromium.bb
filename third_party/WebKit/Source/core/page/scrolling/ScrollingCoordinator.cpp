@@ -44,6 +44,7 @@
 #include "core/page/Page.h"
 #include "core/plugins/PluginView.h"
 #include "platform/RuntimeEnabledFeatures.h"
+#include "platform/animation/CompositorAnimationHost.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/exported/WebScrollbarImpl.h"
 #include "platform/exported/WebScrollbarThemeGeometryNative.h"
@@ -828,20 +829,24 @@ void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(
 
 void ScrollingCoordinator::layerTreeViewInitialized(
     WebLayerTreeView& layerTreeView) {
-  if (Platform::current()->isThreadedAnimationEnabled()) {
+  if (Platform::current()->isThreadedAnimationEnabled() &&
+      layerTreeView.compositorAnimationHost()) {
+    m_compositorAnimationHost = WTF::makeUnique<CompositorAnimationHost>(
+        layerTreeView.compositorAnimationHost());
     m_programmaticScrollAnimatorTimeline =
         CompositorAnimationTimeline::create();
-    layerTreeView.attachCompositorAnimationTimeline(
-        m_programmaticScrollAnimatorTimeline->animationTimeline());
+    m_compositorAnimationHost->addTimeline(
+        *m_programmaticScrollAnimatorTimeline.get());
   }
 }
 
 void ScrollingCoordinator::willCloseLayerTreeView(
     WebLayerTreeView& layerTreeView) {
   if (m_programmaticScrollAnimatorTimeline) {
-    layerTreeView.detachCompositorAnimationTimeline(
-        m_programmaticScrollAnimatorTimeline->animationTimeline());
-    m_programmaticScrollAnimatorTimeline.reset();
+    m_compositorAnimationHost->removeTimeline(
+        *m_programmaticScrollAnimatorTimeline.get());
+    m_programmaticScrollAnimatorTimeline = nullptr;
+    m_compositorAnimationHost = nullptr;
   }
 }
 

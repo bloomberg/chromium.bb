@@ -101,6 +101,7 @@
 #include "platform/PlatformMouseEvent.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/animation/CompositorAnimationHost.h"
 #include "platform/exported/WebActiveGestureAnimation.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/FloatRect.h"
@@ -2529,6 +2530,7 @@ void WebViewImpl::willCloseLayerTreeView() {
     page()->willCloseLayerTreeView(*m_layerTreeView);
 
   setRootLayer(nullptr);
+  m_compositorAnimationHost = nullptr;
 
   m_mutator = nullptr;
   m_layerTreeView = nullptr;
@@ -3947,22 +3949,24 @@ void WebViewImpl::scheduleAnimationForWidget() {
 
 void WebViewImpl::attachCompositorAnimationTimeline(
     CompositorAnimationTimeline* timeline) {
-  if (m_layerTreeView)
-    m_layerTreeView->attachCompositorAnimationTimeline(
-        timeline->animationTimeline());
+  if (m_compositorAnimationHost)
+    m_compositorAnimationHost->addTimeline(*timeline);
 }
 
 void WebViewImpl::detachCompositorAnimationTimeline(
     CompositorAnimationTimeline* timeline) {
-  if (m_layerTreeView)
-    m_layerTreeView->detachCompositorAnimationTimeline(
-        timeline->animationTimeline());
+  if (m_compositorAnimationHost)
+    m_compositorAnimationHost->removeTimeline(*timeline);
 }
 
 void WebViewImpl::initializeLayerTreeView() {
   if (m_client) {
     m_client->initializeLayerTreeView();
     m_layerTreeView = m_client->widgetClient()->layerTreeView();
+    if (m_layerTreeView && m_layerTreeView->compositorAnimationHost()) {
+      m_compositorAnimationHost = WTF::makeUnique<CompositorAnimationHost>(
+          m_layerTreeView->compositorAnimationHost());
+    }
   }
 
   if (WebDevToolsAgentImpl* devTools = mainFrameDevToolsAgentImpl())

@@ -72,6 +72,7 @@
 namespace blink {
 
 class BrowserControls;
+class CompositorAnimationHost;
 class DevToolsEmulator;
 class Frame;
 class FullscreenController;
@@ -688,6 +689,8 @@ class WEB_EXPORT WebViewImpl final
   RefPtr<UserGestureToken> m_pointerLockGestureToken;
 
   WebLayerTreeView* m_layerTreeView;
+  std::unique_ptr<CompositorAnimationHost> m_compositorAnimationHost;
+
   WebLayer* m_rootLayer;
   GraphicsLayer* m_rootGraphicsLayer;
   GraphicsLayer* m_visualViewportContainerLayer;

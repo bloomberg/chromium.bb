@@ -51,6 +51,7 @@
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/ScriptForbiddenScope.h"
+#include "platform/animation/CompositorAnimationHost.h"
 #include "platform/heap/Handle.h"
 #include "platform/tracing/TraceEvent.h"
 #include "public/platform/WebCompositeAndReadbackAsyncCallback.h"
@@ -137,16 +138,14 @@ class PagePopupChromeClient final : public EmptyChromeClient {
 
   void attachCompositorAnimationTimeline(CompositorAnimationTimeline* timeline,
                                          LocalFrame*) override {
-    if (m_popup->m_layerTreeView)
-      m_popup->m_layerTreeView->attachCompositorAnimationTimeline(
-          timeline->animationTimeline());
+    if (m_popup->m_compositorAnimationHost)
+      m_popup->m_compositorAnimationHost->addTimeline(*timeline);
   }
 
   void detachCompositorAnimationTimeline(CompositorAnimationTimeline* timeline,
                                          LocalFrame*) override {
-    if (m_popup->m_layerTreeView)
-      m_popup->m_layerTreeView->detachCompositorAnimationTimeline(
-          timeline->animationTimeline());
+    if (m_popup->m_compositorAnimationHost)
+      m_popup->m_compositorAnimationHost->removeTimeline(*timeline);
   }
 
   WebScreenInfo screenInfo() const override {
@@ -388,9 +387,12 @@ void WebPagePopupImpl::setIsAcceleratedCompositingActive(bool enter) {
     if (m_layerTreeView) {
       m_layerTreeView->setVisible(true);
       m_isAcceleratedCompositingActive = true;
+      m_compositorAnimationHost = WTF::makeUnique<CompositorAnimationHost>(
+          m_layerTreeView->compositorAnimationHost());
       m_page->layerTreeViewInitialized(*m_layerTreeView);
     } else {
       m_isAcceleratedCompositingActive = false;
+      m_compositorAnimationHost = nullptr;
     }
   }
 }
@@ -408,7 +410,8 @@ void WebPagePopupImpl::willCloseLayerTreeView() {
     m_page->willCloseLayerTreeView(*m_layerTreeView);
 
   setIsAcceleratedCompositingActive(false);
-  m_layerTreeView = 0;
+  m_layerTreeView = nullptr;
+  m_compositorAnimationHost = nullptr;
 }
 
 void WebPagePopupImpl::updateAllLifecyclePhases() {

@@ -672,18 +672,8 @@ void RenderWidgetCompositor::clearRootLayer() {
   layer_tree_host_->GetLayerTree()->SetRootLayer(scoped_refptr<cc::Layer>());
 }
 
-void RenderWidgetCompositor::attachCompositorAnimationTimeline(
-    cc::AnimationTimeline* compositor_timeline) {
-  DCHECK(animation_host_);
-  DCHECK(compositor_deps_->IsThreadedAnimationEnabled());
-  animation_host_->AddAnimationTimeline(compositor_timeline);
-}
-
-void RenderWidgetCompositor::detachCompositorAnimationTimeline(
-    cc::AnimationTimeline* compositor_timeline) {
-  DCHECK(animation_host_);
-  DCHECK(compositor_deps_->IsThreadedAnimationEnabled());
-  animation_host_->RemoveAnimationTimeline(compositor_timeline);
+cc::AnimationHost* RenderWidgetCompositor::compositorAnimationHost() {
+  return animation_host_.get();
 }
 
 void RenderWidgetCompositor::setViewportSize(

@@ -40,6 +40,8 @@
 namespace blink {
 using MainThreadScrollingReasons = uint32_t;
 
+class CompositorAnimationHost;
+class CompositorAnimationTimeline;
 class LocalFrame;
 class FrameView;
 class GraphicsLayer;
@@ -47,7 +49,6 @@ class Page;
 class PaintLayer;
 class Region;
 class ScrollableArea;
-class CompositorAnimationTimeline;
 class WebLayerTreeView;
 class WebScrollbarLayer;
 
@@ -127,6 +128,9 @@ class CORE_EXPORT ScrollingCoordinator final
 
   void updateTouchEventTargetRectsIfNeeded();
 
+  CompositorAnimationHost* compositorAnimationHost() {
+    return m_compositorAnimationHost.get();
+  }
   CompositorAnimationTimeline* compositorAnimationTimeline() {
     return m_programmaticScrollAnimatorTimeline.get();
   }
@@ -173,6 +177,7 @@ class CORE_EXPORT ScrollingCoordinator final
 
   bool frameViewIsDirty() const;
 
+  std::unique_ptr<CompositorAnimationHost> m_compositorAnimationHost;
   std::unique_ptr<CompositorAnimationTimeline>
       m_programmaticScrollAnimatorTimeline;
 

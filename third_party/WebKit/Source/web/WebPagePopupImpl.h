@@ -38,6 +38,7 @@
 
 namespace blink {
 
+class CompositorAnimationHost;
 class GraphicsLayer;
 class Page;
 class PagePopupChromeClient;
@@ -119,6 +120,7 @@ class WebPagePopupImpl final : public WebPagePopup,
   WebLayerTreeView* m_layerTreeView;
   WebLayer* m_rootLayer;
   GraphicsLayer* m_rootGraphicsLayer;
+  std::unique_ptr<CompositorAnimationHost> m_compositorAnimationHost;
   bool m_isAcceleratedCompositingActive;
 
   friend class WebPagePopup;

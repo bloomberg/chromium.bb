@@ -47,6 +47,8 @@
 #include "wtf/HashSet.h"
 
 namespace blink {
+
+class CompositorAnimationHost;
 class Frame;
 class Element;
 class InspectorOverlay;
@@ -218,6 +220,7 @@ class WebFrameWidgetImpl final
   WebLayerTreeView* m_layerTreeView;
   WebLayer* m_rootLayer;
   GraphicsLayer* m_rootGraphicsLayer;
+  std::unique_ptr<CompositorAnimationHost> m_compositorAnimationHost;
   bool m_isAcceleratedCompositingActive;
   bool m_layerTreeViewClosed;
 

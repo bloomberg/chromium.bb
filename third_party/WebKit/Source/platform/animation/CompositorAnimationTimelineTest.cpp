@@ -6,10 +6,10 @@
 
 #include "base/memory/ref_counted.h"
 #include "cc/animation/animation_host.h"
+#include "platform/animation/CompositorAnimationHost.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/testing/CompositorTest.h"
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
 
 namespace blink {
@@ -25,12 +25,11 @@ TEST_F(CompositorAnimationTimelineTest,
       timeline->animationTimeline();
   EXPECT_FALSE(ccTimeline->animation_host());
 
-  std::unique_ptr<WebLayerTreeView> layerTreeHost =
-      WTF::wrapUnique(new WebLayerTreeViewImplForTesting);
-  DCHECK(layerTreeHost);
+  WebLayerTreeViewImplForTesting layerTreeView;
+  CompositorAnimationHost compositorAnimationHost(
+      layerTreeView.compositorAnimationHost());
 
-  layerTreeHost->attachCompositorAnimationTimeline(
-      timeline->animationTimeline());
+  compositorAnimationHost.addTimeline(*timeline);
   cc::AnimationHost* animationHost = ccTimeline->animation_host();
   EXPECT_TRUE(animationHost);
   EXPECT_TRUE(animationHost->GetTimelineById(ccTimeline->id()));

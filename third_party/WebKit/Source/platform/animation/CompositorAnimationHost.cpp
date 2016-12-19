@@ -4,32 +4,36 @@
 
 #include "platform/animation/CompositorAnimationHost.h"
 
+#include "cc/animation/animation_host.h"
 #include "cc/animation/scroll_offset_animations.h"
+#include "platform/animation/CompositorAnimationTimeline.h"
 
 namespace blink {
 
 CompositorAnimationHost::CompositorAnimationHost(cc::AnimationHost* host)
-    : m_animationHost(host) {}
+    : m_animationHost(host) {
+  DCHECK(m_animationHost);
+}
 
-bool CompositorAnimationHost::isNull() const {
-  return !m_animationHost;
+void CompositorAnimationHost::addTimeline(
+    const CompositorAnimationTimeline& timeline) {
+  m_animationHost->AddAnimationTimeline(timeline.animationTimeline());
+}
+
+void CompositorAnimationHost::removeTimeline(
+    const CompositorAnimationTimeline& timeline) {
+  m_animationHost->RemoveAnimationTimeline(timeline.animationTimeline());
 }
 
 void CompositorAnimationHost::adjustImplOnlyScrollOffsetAnimation(
-    cc::ElementId elementId,
+    CompositorElementId elementId,
     const gfx::Vector2dF& adjustment) {
-  if (!m_animationHost)
-    return;
-
   m_animationHost->scroll_offset_animations().AddAdjustmentUpdate(elementId,
                                                                   adjustment);
 }
 
 void CompositorAnimationHost::takeOverImplOnlyScrollOffsetAnimation(
-    cc::ElementId elementId) {
-  if (!m_animationHost)
-    return;
-
+    CompositorElementId elementId) {
   m_animationHost->scroll_offset_animations().AddTakeoverUpdate(elementId);
 }
 

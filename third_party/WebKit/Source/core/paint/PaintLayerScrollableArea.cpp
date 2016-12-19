@@ -144,11 +144,8 @@ void PaintLayerScrollableArea::dispose() {
     }
   }
 
-  if (box().frame() && box().frame()->page()) {
-    if (ScrollingCoordinator* scrollingCoordinator =
-            box().frame()->page()->scrollingCoordinator())
-      scrollingCoordinator->willDestroyScrollableArea(this);
-  }
+  if (ScrollingCoordinator* scrollingCoordinator = getScrollingCoordinator())
+    scrollingCoordinator->willDestroyScrollableArea(this);
 
   if (!box().documentBeingDestroyed()) {
     Node* node = box().node();
@@ -1695,6 +1692,19 @@ void PaintLayerScrollableArea::updateCompositingLayersAfterScroll() {
   }
 }
 
+ScrollingCoordinator* PaintLayerScrollableArea::getScrollingCoordinator()
+    const {
+  LocalFrame* frame = box().frame();
+  if (!frame)
+    return nullptr;
+
+  Page* page = frame->page();
+  if (!page)
+    return nullptr;
+
+  return page->scrollingCoordinator();
+}
+
 bool PaintLayerScrollableArea::usesCompositedScrolling() const {
   // See https://codereview.chromium.org/176633003/ for the tests that fail
   // without this disabler.
@@ -1704,12 +1714,9 @@ bool PaintLayerScrollableArea::usesCompositedScrolling() const {
 }
 
 bool PaintLayerScrollableArea::shouldScrollOnMainThread() const {
-  if (LocalFrame* frame = box().frame()) {
-    if (Page* page = frame->page()) {
-      if (page->scrollingCoordinator()
-              ->shouldUpdateScrollLayerPositionOnMainThread())
-        return true;
-    }
+  if (ScrollingCoordinator* scrollingCoordinator = getScrollingCoordinator()) {
+    if (scrollingCoordinator->shouldUpdateScrollLayerPositionOnMainThread())
+      return true;
   }
   return ScrollableArea::shouldScrollOnMainThread();
 }
@@ -1794,14 +1801,19 @@ void PaintLayerScrollableArea::resetRebuildScrollbarLayerFlags() {
   m_rebuildVerticalScrollbarLayer = false;
 }
 
+CompositorAnimationHost* PaintLayerScrollableArea::compositorAnimationHost()
+    const {
+  if (ScrollingCoordinator* coordinator = getScrollingCoordinator())
+    return coordinator->compositorAnimationHost();
+
+  return nullptr;
+}
+
 CompositorAnimationTimeline*
 PaintLayerScrollableArea::compositorAnimationTimeline() const {
-  if (LocalFrame* frame = box().frame()) {
-    if (Page* page = frame->page())
-      return page->scrollingCoordinator()
-                 ? page->scrollingCoordinator()->compositorAnimationTimeline()
-                 : nullptr;
-  }
+  if (ScrollingCoordinator* coordinator = getScrollingCoordinator())
+    return coordinator->compositorAnimationTimeline();
+
   return nullptr;
 }
 

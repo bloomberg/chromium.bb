@@ -41,6 +41,8 @@
 
 namespace blink {
 
+class CompositorAnimationHost;
+class CompositorAnimationTimeline;
 class GraphicsLayer;
 class HostWindow;
 class LayoutBox;
@@ -150,6 +152,9 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return m_programmaticScrollAnimator;
   }
 
+  virtual CompositorAnimationHost* compositorAnimationHost() const {
+    return nullptr;
+  }
   virtual CompositorAnimationTimeline* compositorAnimationTimeline() const {
     return nullptr;
   }

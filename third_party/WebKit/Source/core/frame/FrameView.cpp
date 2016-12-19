@@ -557,6 +557,11 @@ ScrollingCoordinator* FrameView::scrollingCoordinator() const {
   return p ? p->scrollingCoordinator() : 0;
 }
 
+CompositorAnimationHost* FrameView::compositorAnimationHost() const {
+  ScrollingCoordinator* c = scrollingCoordinator();
+  return c ? c->compositorAnimationHost() : nullptr;
+}
+
 CompositorAnimationTimeline* FrameView::compositorAnimationTimeline() const {
   ScrollingCoordinator* c = scrollingCoordinator();
   return c ? c->compositorAnimationTimeline() : nullptr;

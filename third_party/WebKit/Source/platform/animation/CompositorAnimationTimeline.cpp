@@ -28,10 +28,6 @@ cc::AnimationTimeline* CompositorAnimationTimeline::animationTimeline() const {
   return m_animationTimeline.get();
 }
 
-CompositorAnimationHost CompositorAnimationTimeline::compositorAnimationHost() {
-  return CompositorAnimationHost(m_animationTimeline->animation_host());
-}
-
 void CompositorAnimationTimeline::playerAttached(
     const blink::CompositorAnimationPlayerClient& client) {
   if (client.compositorPlayer())

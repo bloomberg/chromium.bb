@@ -40,8 +40,7 @@ class WebLayerTreeViewImplForTesting
   // blink::WebLayerTreeView implementation.
   void setRootLayer(const blink::WebLayer&) override;
   void clearRootLayer() override;
-  void attachCompositorAnimationTimeline(cc::AnimationTimeline*) override;
-  void detachCompositorAnimationTimeline(cc::AnimationTimeline*) override;
+  cc::AnimationHost* compositorAnimationHost() override;
   virtual void setViewportSize(const blink::WebSize& unusedDeprecated,
                                const blink::WebSize& deviceViewportSize);
   void setViewportSize(const blink::WebSize&) override;

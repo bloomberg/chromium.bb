@@ -52,6 +52,7 @@
 #include "core/page/PointerLockController.h"
 #include "platform/KeyboardCodes.h"
 #include "platform/WebFrameScheduler.h"
+#include "platform/animation/CompositorAnimationHost.h"
 #include "platform/graphics/CompositorMutatorClient.h"
 #include "public/web/WebAutofillClient.h"
 #include "public/web/WebPlugin.h"
@@ -152,6 +153,7 @@ void WebFrameWidgetImpl::close() {
   m_layerTreeView = nullptr;
   m_rootLayer = nullptr;
   m_rootGraphicsLayer = nullptr;
+  m_compositorAnimationHost = nullptr;
 
   m_selfKeepAlive.clear();
 }
@@ -684,6 +686,7 @@ void WebFrameWidgetImpl::willCloseLayerTreeView() {
   setIsAcceleratedCompositingActive(false);
   m_mutator = nullptr;
   m_layerTreeView = nullptr;
+  m_compositorAnimationHost = nullptr;
   m_layerTreeViewClosed = true;
 }
 
@@ -1002,6 +1005,10 @@ void WebFrameWidgetImpl::initializeLayerTreeView() {
     DCHECK(!m_mutator);
     m_client->initializeLayerTreeView();
     m_layerTreeView = m_client->layerTreeView();
+    if (m_layerTreeView && m_layerTreeView->compositorAnimationHost()) {
+      m_compositorAnimationHost = WTF::makeUnique<CompositorAnimationHost>(
+          m_layerTreeView->compositorAnimationHost());
+    }
   }
 
   if (WebDevToolsAgentImpl* devTools = m_localRoot->devToolsAgentImpl())
@@ -1087,16 +1094,14 @@ void WebFrameWidgetImpl::setRootLayer(WebLayer* layer) {
 
 void WebFrameWidgetImpl::attachCompositorAnimationTimeline(
     CompositorAnimationTimeline* compositorTimeline) {
-  if (m_layerTreeView)
-    m_layerTreeView->attachCompositorAnimationTimeline(
-        compositorTimeline->animationTimeline());
+  if (m_compositorAnimationHost)
+    m_compositorAnimationHost->addTimeline(*compositorTimeline);
 }
 
 void WebFrameWidgetImpl::detachCompositorAnimationTimeline(
     CompositorAnimationTimeline* compositorTimeline) {
-  if (m_layerTreeView)
-    m_layerTreeView->detachCompositorAnimationTimeline(
-        compositorTimeline->animationTimeline());
+  if (m_compositorAnimationHost)
+    m_compositorAnimationHost->removeTimeline(*compositorTimeline);
 }
 
 HitTestResult WebFrameWidgetImpl::coreHitTestResultAt(

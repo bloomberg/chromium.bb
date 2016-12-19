@@ -8,7 +8,6 @@
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/testing/CompositorTest.h"
 #include "platform/testing/WebLayerTreeViewImplForTesting.h"
-#include "wtf/PtrUtil.h"
 #include <memory>
 
 namespace blink {
@@ -22,19 +21,16 @@ TEST_F(CompositorAnimationHostTest, AnimationHostNullWhenTimelineDetached) {
   scoped_refptr<cc::AnimationTimeline> ccTimeline =
       timeline->animationTimeline();
   EXPECT_FALSE(ccTimeline->animation_host());
-  EXPECT_TRUE(timeline->compositorAnimationHost().isNull());
 
-  std::unique_ptr<WebLayerTreeView> layerTreeHost =
-      WTF::wrapUnique(new WebLayerTreeViewImplForTesting);
-  DCHECK(layerTreeHost);
+  WebLayerTreeViewImplForTesting layerTreeView;
+  CompositorAnimationHost compositorAnimationHost(
+      layerTreeView.compositorAnimationHost());
 
-  layerTreeHost->attachCompositorAnimationTimeline(
-      timeline->animationTimeline());
-  EXPECT_FALSE(timeline->compositorAnimationHost().isNull());
+  compositorAnimationHost.addTimeline(*timeline);
+  EXPECT_TRUE(ccTimeline->animation_host());
 
-  layerTreeHost->detachCompositorAnimationTimeline(
-      timeline->animationTimeline());
-  EXPECT_TRUE(timeline->compositorAnimationHost().isNull());
+  compositorAnimationHost.removeTimeline(*timeline);
+  EXPECT_FALSE(ccTimeline->animation_host());
 }
 
 }  // namespace blink

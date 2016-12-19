@@ -27,6 +27,7 @@
 
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/CompositorAnimation.h"
+#include "platform/animation/CompositorAnimationHost.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
@@ -118,8 +119,9 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
       CompositorAnimationTimeline::create();
   AnimationPlayerForTesting player;
 
-  layerTreeView()->attachCompositorAnimationTimeline(
-      compositorTimeline->animationTimeline());
+  CompositorAnimationHost host(layerTreeView()->compositorAnimationHost());
+
+  host.addTimeline(*compositorTimeline);
   compositorTimeline->playerAttached(player);
 
   m_platformLayer->setElementId(CompositorElementId(m_platformLayer->id(), 0));
@@ -151,8 +153,7 @@ TEST_F(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
   ASSERT_FALSE(player.compositorPlayer()->isElementAttached());
 
   compositorTimeline->playerDestroyed(player);
-  layerTreeView()->detachCompositorAnimationTimeline(
-      compositorTimeline->animationTimeline());
+  host.removeTimeline(*compositorTimeline.get());
 }
 
 class FakeScrollableArea : public GarbageCollectedFinalized<FakeScrollableArea>,

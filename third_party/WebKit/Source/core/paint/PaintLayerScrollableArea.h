@@ -63,6 +63,7 @@ class HitTestResult;
 class LayoutBox;
 class LayoutScrollbarPart;
 class PaintLayer;
+class ScrollingCoordinator;
 class StickyPositionScrollingConstraints;
 class SubtreeLayoutScope;
 
@@ -291,6 +292,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool shouldPlaceVerticalScrollbarOnLeft() const override;
   int pageStep(ScrollbarOrientation) const override;
   ScrollBehavior scrollBehaviorStyle() const override;
+  CompositorAnimationHost* compositorAnimationHost() const override;
   CompositorAnimationTimeline* compositorAnimationTimeline() const override;
 
   void visibleSizeChanged();
@@ -518,6 +520,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void updateScrollableAreaSet(bool hasOverflow);
 
   void updateCompositingLayersAfterScroll();
+
+  ScrollingCoordinator* getScrollingCoordinator() const;
 
   PaintLayerScrollableAreaRareData* rareData() { return m_rareData.get(); }
 

@@ -110,10 +110,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   // WebLayerTreeView implementation.
   void setRootLayer(const blink::WebLayer& layer) override;
   void clearRootLayer() override;
-  void attachCompositorAnimationTimeline(
-      cc::AnimationTimeline* compositor_timeline) override;
-  void detachCompositorAnimationTimeline(
-      cc::AnimationTimeline* compositor_timeline) override;
+  cc::AnimationHost* compositorAnimationHost() override;
   void setViewportSize(const blink::WebSize& device_viewport_size) override;
   blink::WebSize getViewportSize() const override;
   virtual blink::WebFloatPoint adjustEventPointForPinchZoom(

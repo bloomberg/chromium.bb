@@ -795,6 +795,11 @@ bool VisualViewport::shouldDisableDesktopWorkarounds() const {
           constraints.minimumScale != -1);
 }
 
+CompositorAnimationHost* VisualViewport::compositorAnimationHost() const {
+  ScrollingCoordinator* c = frameHost().page().scrollingCoordinator();
+  return c ? c->compositorAnimationHost() : nullptr;
+}
+
 CompositorAnimationTimeline* VisualViewport::compositorAnimationTimeline()
     const {
   ScrollingCoordinator* c = frameHost().page().scrollingCoordinator();

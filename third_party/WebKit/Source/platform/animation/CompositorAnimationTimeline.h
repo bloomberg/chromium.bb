@@ -14,7 +14,6 @@
 
 namespace blink {
 
-class CompositorAnimationHost;
 class CompositorAnimationPlayerClient;
 
 // A compositor representation for cc::AnimationTimeline.
@@ -29,10 +28,6 @@ class PLATFORM_EXPORT CompositorAnimationTimeline {
   ~CompositorAnimationTimeline();
 
   cc::AnimationTimeline* animationTimeline() const;
-  // TODO(ymalik): Currently we just wrap cc::AnimationHost in
-  // CompositorAnimationHost. Correctly introduce CompositorAnimationHost
-  // to blink. See crbug.com/610763.
-  CompositorAnimationHost compositorAnimationHost();
 
   void playerAttached(const CompositorAnimationPlayerClient&);
   void playerDestroyed(const CompositorAnimationPlayerClient&);
