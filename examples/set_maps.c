@@ -123,6 +123,7 @@ int main(int argc, char **argv) {
   aom_codec_ctx_t codec;
   aom_codec_enc_cfg_t cfg;
   int frame_count = 0;
+  const int limit = 60;
   aom_image_t raw;
   aom_codec_err_t res;
   AvxVideoInfo info;
@@ -180,7 +181,7 @@ int main(int argc, char **argv) {
     die_codec(&codec, "Failed to initialize encoder");
 
   // Encode frames.
-  while (aom_img_read(&raw, infile)) {
+  while (aom_img_read(&raw, infile) && frame_count < limit) {
     ++frame_count;
 
     if (frame_count == 33) {
