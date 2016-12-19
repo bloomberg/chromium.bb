@@ -68,6 +68,10 @@ class DomainReliabilityMonitorTest : public testing::Test {
     monitor_.SetDiscardUploads(false);
   }
 
+  ~DomainReliabilityMonitorTest() override {
+    monitor_.Shutdown();
+  }
+
   static RequestInfo MakeRequestInfo() {
     RequestInfo request;
     request.status = net::URLRequestStatus();

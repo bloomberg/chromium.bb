@@ -171,6 +171,8 @@ void ProfileImplIOData::Handle::Init(
   lazy_params->extensions_cookie_path = extensions_cookie_path;
   lazy_params->session_cookie_mode = session_cookie_mode;
   lazy_params->special_storage_policy = special_storage_policy;
+  lazy_params->domain_reliability_monitor =
+      std::move(domain_reliability_monitor);
 
   PrefService* pref_service = profile_->GetPrefs();
   lazy_params->http_server_properties_manager.reset(
@@ -188,11 +190,10 @@ void ProfileImplIOData::Handle::Init(
   io_data_->app_media_cache_max_size_ = media_cache_max_size;
 
   io_data_->predictor_.reset(predictor);
-  io_data_->domain_reliability_monitor_ = std::move(domain_reliability_monitor);
 
   io_data_->InitializeMetricsEnabledStateOnUIThread();
-  if (io_data_->domain_reliability_monitor_)
-    io_data_->domain_reliability_monitor_->MoveToNetworkThread();
+  if (io_data_->lazy_params_->domain_reliability_monitor)
+    io_data_->lazy_params_->domain_reliability_monitor->MoveToNetworkThread();
 
   io_data_->previews_io_data_ = base::MakeUnique<previews::PreviewsIOData>(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
@@ -426,11 +427,15 @@ ProfileImplIOData::LazyParams::~LazyParams() {}
 ProfileImplIOData::ProfileImplIOData()
     : ProfileIOData(Profile::REGULAR_PROFILE),
       http_server_properties_manager_(NULL),
+      domain_reliability_monitor_(nullptr),
       app_cache_max_size_(0),
       app_media_cache_max_size_(0) {
 }
 
 ProfileImplIOData::~ProfileImplIOData() {
+  if (domain_reliability_monitor_)
+    domain_reliability_monitor_->Shutdown();
+
   DestroyResourceContext();
 
   if (media_request_context_)
@@ -459,13 +464,18 @@ void ProfileImplIOData::InitializeInternal(
   IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
 
-  if (domain_reliability_monitor_) {
-    domain_reliability::DomainReliabilityMonitor* monitor =
-        domain_reliability_monitor_.get();
-    monitor->InitURLRequestContext(main_context);
-    monitor->AddBakedInConfigs();
-    monitor->SetDiscardUploads(!GetMetricsEnabledStateOnIOThread());
-    chrome_network_delegate->set_domain_reliability_monitor(monitor);
+  if (lazy_params_->domain_reliability_monitor) {
+    // Hold on to a raw pointer to call Shutdown() in ~ProfileImplIOData.
+    domain_reliability_monitor_ =
+        lazy_params_->domain_reliability_monitor.get();
+
+    domain_reliability_monitor_->InitURLRequestContext(main_context);
+    domain_reliability_monitor_->AddBakedInConfigs();
+    domain_reliability_monitor_->SetDiscardUploads(
+        !GetMetricsEnabledStateOnIOThread());
+
+    chrome_network_delegate->set_domain_reliability_monitor(
+        std::move(lazy_params_->domain_reliability_monitor));
   }
 
   ApplyProfileParamsToContext(main_context);

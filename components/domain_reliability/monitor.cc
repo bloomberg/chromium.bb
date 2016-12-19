@@ -155,6 +155,10 @@ void DomainReliabilityMonitor::InitURLRequestContext(
                                                 url_request_context_getter);
 }
 
+void DomainReliabilityMonitor::Shutdown() {
+  uploader_->Shutdown();
+}
+
 void DomainReliabilityMonitor::AddBakedInConfigs() {
   DCHECK(OnNetworkThread());
   DCHECK(moved_to_network_thread_);
@@ -247,6 +251,10 @@ DomainReliabilityContext* DomainReliabilityMonitor::AddContextForTesting(
   DCHECK(OnNetworkThread());
 
   return context_manager_.AddContextForConfig(std::move(config));
+}
+
+void DomainReliabilityMonitor::ForceUploadsForTesting() {
+  dispatcher_.RunAllTasksForTesting();
 }
 
 std::unique_ptr<DomainReliabilityContext>

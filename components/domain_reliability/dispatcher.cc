@@ -83,6 +83,17 @@ void DomainReliabilityDispatcher::RunEligibleTasks() {
   }
 }
 
+void DomainReliabilityDispatcher::RunAllTasksForTesting() {
+  std::set<Task*> tasks;
+  for (auto& task : tasks_)
+    tasks.insert(task.get());
+
+  for (auto* task : tasks) {
+    DCHECK(task);
+    RunAndDeleteTask(task);
+  }
+}
+
 void DomainReliabilityDispatcher::MakeTaskWaiting(Task* task) {
   DCHECK(task);
   DCHECK(!task->eligible);

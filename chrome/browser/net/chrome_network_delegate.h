@@ -17,6 +17,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/net/safe_search_util.h"
+#include "components/domain_reliability/monitor.h"
 #include "components/prefs/pref_member.h"
 #include "net/base/network_delegate_impl.h"
 
@@ -109,8 +110,8 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
   }
 
   void set_domain_reliability_monitor(
-      domain_reliability::DomainReliabilityMonitor* monitor) {
-    domain_reliability_monitor_ = monitor;
+      std::unique_ptr<domain_reliability::DomainReliabilityMonitor> monitor) {
+    domain_reliability_monitor_ = std::move(monitor);
   }
 
   void set_data_use_aggregator(
@@ -203,7 +204,8 @@ class ChromeNetworkDelegate : public net::NetworkDelegateImpl {
 
   // Weak, owned by our owner.
   const policy::URLBlacklistManager* url_blacklist_manager_;
-  domain_reliability::DomainReliabilityMonitor* domain_reliability_monitor_;
+  std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
+      domain_reliability_monitor_;
 
   // When true, allow access to all file:// URLs.
   static bool g_allow_file_access_;

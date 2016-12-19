@@ -19,6 +19,7 @@
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -884,6 +885,18 @@ class MockDomainReliabilityService : public DomainReliabilityService {
                         callback) const override {
     NOTREACHED();
   }
+
+  void SetDiscardUploadsForTesting(bool discard_uploads) override {
+    NOTREACHED();
+  }
+
+  void AddContextForTesting(
+      std::unique_ptr<const domain_reliability::DomainReliabilityConfig> config)
+      override {
+    NOTREACHED();
+  }
+
+  void ForceUploadsForTesting() override { NOTREACHED(); }
 
   int clear_count() const { return clear_count_; }
 

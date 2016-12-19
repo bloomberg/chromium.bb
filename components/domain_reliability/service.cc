@@ -18,6 +18,15 @@ namespace domain_reliability {
 
 namespace {
 
+void AddContextForTestingOnNetworkTaskRunner(
+    base::WeakPtr<DomainReliabilityMonitor> monitor,
+    std::unique_ptr<const DomainReliabilityConfig> config) {
+  if (!monitor)
+    return;
+
+  monitor->AddContextForTesting(std::move(config));
+}
+
 std::unique_ptr<base::Value> GetWebUIDataOnNetworkTaskRunner(
     base::WeakPtr<DomainReliabilityMonitor> monitor) {
   if (!monitor) {
@@ -81,6 +90,36 @@ class DomainReliabilityServiceImpl : public DomainReliabilityService {
         FROM_HERE,
         base::Bind(&GetWebUIDataOnNetworkTaskRunner, monitor_),
         callback);
+  }
+
+  void SetDiscardUploadsForTesting(bool discard_uploads) override {
+    DCHECK(network_task_runner_.get());
+
+    network_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DomainReliabilityMonitor::SetDiscardUploads,
+                   monitor_,
+                   discard_uploads));
+  }
+
+  void AddContextForTesting(
+      std::unique_ptr<const DomainReliabilityConfig> config) override {
+    DCHECK(network_task_runner_.get());
+
+    network_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&AddContextForTestingOnNetworkTaskRunner,
+                   monitor_,
+                   base::Passed(&config)));
+  }
+
+  void ForceUploadsForTesting() override {
+    DCHECK(network_task_runner_.get());
+
+    network_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&DomainReliabilityMonitor::ForceUploadsForTesting,
+                   monitor_));
   }
 
  private:

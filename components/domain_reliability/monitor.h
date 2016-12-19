@@ -88,6 +88,10 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
       const scoped_refptr<net::URLRequestContextGetter>&
           url_request_context_getter);
 
+  // Shuts down the monitor prior to destruction. Currently, ensures that there
+  // are no pending uploads, to avoid hairy lifetime issues at destruction.
+  void Shutdown();
+
   // Populates the monitor with contexts that were configured at compile time.
   void AddBakedInConfigs();
 
@@ -129,6 +133,10 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityMonitor
   size_t contexts_size_for_testing() const {
     return context_manager_.contexts_size_for_testing();
   }
+
+  // Forces all pending uploads to run now, even if their minimum delay has not
+  // yet passed.
+  void ForceUploadsForTesting();
 
   // DomainReliabilityContext::Factory implementation:
   std::unique_ptr<DomainReliabilityContext> CreateContextForConfig(

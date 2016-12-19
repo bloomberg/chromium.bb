@@ -151,8 +151,7 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
       force_google_safe_search_(nullptr),
       force_youtube_restrict_(nullptr),
       allowed_domains_for_apps_(nullptr),
-      url_blacklist_manager_(nullptr),
-      domain_reliability_monitor_(nullptr),
+      url_blacklist_manager_(NULL),
       experimental_web_platform_features_enabled_(
           base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kEnableExperimentalWebPlatformFeatures)),

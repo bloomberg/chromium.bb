@@ -156,6 +156,8 @@ class ProfileImplIOData : public ProfileIOData {
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy;
     std::unique_ptr<net::HttpServerPropertiesManager>
         http_server_properties_manager;
+    std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
+        domain_reliability_monitor;
   };
 
   ProfileImplIOData();
@@ -219,7 +221,8 @@ class ProfileImplIOData : public ProfileIOData {
 
   mutable std::unique_ptr<net::URLRequestJobFactory> extensions_job_factory_;
 
-  mutable std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
+  // Owned by ChromeNetworkDelegate (which is owned by |network_delegate_|).
+  mutable domain_reliability::DomainReliabilityMonitor*
       domain_reliability_monitor_;
 
   mutable std::unique_ptr<net::SdchOwner> sdch_policy_;

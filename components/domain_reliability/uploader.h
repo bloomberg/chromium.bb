@@ -65,6 +65,11 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityUploader {
                             const GURL& upload_url,
                             const UploadCallback& callback) = 0;
 
+  // Shuts down the uploader prior to destruction. Currently, terminates pending
+  // uploads and prevents the uploader from starting new ones to avoid hairy
+  // lifetime issues at destruction.
+  virtual void Shutdown();
+
   virtual void set_discard_uploads(bool discard_uploads) = 0;
 
   static int GetURLRequestUploadDepth(const net::URLRequest& request);

@@ -35,8 +35,14 @@ class DOMAIN_RELIABILITY_EXPORT DomainReliabilityDispatcher {
                     base::TimeDelta min_delay,
                     base::TimeDelta max_delay);
 
-  // Runs all tasks whose minimum delay has already passed.
+  // Runs all existing tasks whose minimum delay has already passed. Does not
+  // run tasks added by those existing tasks, even if their minimum delay has
+  // already passed.
   void RunEligibleTasks();
+
+  // Runs all waiting or eligible tasks, regardless of whether their minimum
+  // delay has passed.
+  void RunAllTasksForTesting();
 
  private:
   struct Task;

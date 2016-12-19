@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/supports_user_data.h"
 #include "components/domain_reliability/util.h"
@@ -58,9 +59,12 @@ class DomainReliabilityUploaderImpl
           net::URLRequestContextGetter>& url_request_context_getter)
       : time_(time),
         url_request_context_getter_(url_request_context_getter),
-        discard_uploads_(true) {}
+        discard_uploads_(true),
+        shutdown_(false) {}
 
-  ~DomainReliabilityUploaderImpl() override {}
+  ~DomainReliabilityUploaderImpl() override {
+    DCHECK(shutdown_);
+  }
 
   // DomainReliabilityUploader implementation:
   void UploadReport(
@@ -71,7 +75,7 @@ class DomainReliabilityUploaderImpl
     VLOG(1) << "Uploading report to " << upload_url;
     VLOG(2) << "Report JSON: " << report_json;
 
-    if (discard_uploads_) {
+    if (discard_uploads_ || shutdown_) {
       VLOG(1) << "Discarding report instead of uploading.";
       UploadResult result;
       result.status = UploadResult::SUCCESS;
@@ -92,7 +96,7 @@ class DomainReliabilityUploaderImpl
         UploadUserData::CreateCreateDataCallback(max_upload_depth + 1));
     fetcher->Start();
 
-    upload_callbacks_[fetcher] = {std::move(owned_fetcher), callback};
+    uploads_[fetcher] = {std::move(owned_fetcher), callback};
 
     base::TimeTicks now = base::TimeTicks::Now();
     if (!last_upload_start_time_.is_null()) {
@@ -107,12 +111,18 @@ class DomainReliabilityUploaderImpl
     VLOG(1) << "Setting discard_uploads to " << discard_uploads;
   }
 
+  void Shutdown() override {
+    DCHECK(!shutdown_);
+    shutdown_ = true;
+    uploads_.clear();
+  }
+
   // net::URLFetcherDelegate implementation:
   void OnURLFetchComplete(const net::URLFetcher* fetcher) override {
     DCHECK(fetcher);
 
-    auto callback_it = upload_callbacks_.find(fetcher);
-    DCHECK(callback_it != upload_callbacks_.end());
+    auto callback_it = uploads_.find(fetcher);
+    DCHECK(callback_it != uploads_.end());
 
     int net_error = GetNetErrorFromURLRequestStatus(fetcher->GetStatus());
     int http_response_code = fetcher->GetResponseCode();
@@ -145,7 +155,7 @@ class DomainReliabilityUploaderImpl
                                        &result);
     callback_it->second.second.Run(result);
 
-    upload_callbacks_.erase(callback_it);
+    uploads_.erase(callback_it);
   }
 
  private:
@@ -155,9 +165,10 @@ class DomainReliabilityUploaderImpl
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
   std::map<const net::URLFetcher*,
            std::pair<std::unique_ptr<net::URLFetcher>, UploadCallback>>
-      upload_callbacks_;
+      uploads_;
   bool discard_uploads_;
   base::TimeTicks last_upload_start_time_;
+  bool shutdown_;
 };
 
 }  // namespace
@@ -189,5 +200,7 @@ int DomainReliabilityUploader::GetURLRequestUploadDepth(
     return 0;
   return data->depth();
 }
+
+void DomainReliabilityUploader::Shutdown() {}
 
 }  // namespace domain_reliability
