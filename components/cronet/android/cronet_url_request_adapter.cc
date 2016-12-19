@@ -402,7 +402,11 @@ void CronetURLRequestAdapter::ReportError(net::URLRequest* request,
 }
 
 void CronetURLRequestAdapter::MaybeReportMetrics(JNIEnv* env) const {
-  if (!enable_metrics_) {
+  // If there was an exception while starting the CronetUrlRequest, there won't
+  // be a native URLRequest. In this case, the caller gets the exception
+  // immediately, and the onFailed callback isn't called, so don't report
+  // metrics either.
+  if (!enable_metrics_ || !url_request_) {
     return;
   }
   net::LoadTimingInfo metrics;

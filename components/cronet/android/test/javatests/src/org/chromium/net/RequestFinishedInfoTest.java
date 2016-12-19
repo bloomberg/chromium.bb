@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * Test RequestFinishedInfo.Listener and the metrics information it provides.
@@ -289,6 +290,41 @@ public class RequestFinishedInfoTest extends CronetTestBase {
 
         assertEquals(newHashSet("request annotation", this), // Use sets for unordered comparison.
                 new HashSet<Object>(requestInfo.getAnnotations()));
+        mTestFramework.mCronetEngine.shutdown();
+    }
+
+    private static class RejectAllTasksExecutor implements Executor {
+        @Override
+        public void execute(Runnable task) {
+            throw new RejectedExecutionException();
+        }
+    }
+
+    // Checks that CronetURLRequestAdapter::DestroyOnNetworkThread() doesn't crash when metrics
+    // collection is enabled and the URLRequest hasn't been created. See http://crbug.com/675629.
+    @SmallTest
+    @OnlyRunNativeCronet
+    @Feature({"Cronet"})
+    public void testExceptionInRequestStart() throws Exception {
+        mTestFramework = startCronetTestFramework();
+        // The listener in this test shouldn't get any tasks.
+        Executor executor = new RejectAllTasksExecutor();
+        TestRequestFinishedListener requestFinishedListener =
+                new TestRequestFinishedListener(executor);
+        mTestFramework.mCronetEngine.addRequestFinishedListener(requestFinishedListener);
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        ExperimentalUrlRequest.Builder urlRequestBuilder =
+                mTestFramework.mCronetEngine.newUrlRequestBuilder(
+                        mUrl, callback, callback.getExecutor());
+        // Empty headers are invalid and will cause start() to throw an exception.
+        UrlRequest request = urlRequestBuilder.addHeader("", "").build();
+        try {
+            request.start();
+            fail("UrlRequest.start() should throw IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Invalid header =", e.getMessage());
+        }
+
         mTestFramework.mCronetEngine.shutdown();
     }
 
