@@ -158,6 +158,14 @@ class TestManager(cros_test_lib.TestCase):
       with self.assertRaises(Queue.Empty):
         queue.get(block=False)
 
+  def testSigterm(self):
+    """Tests that parallel.Manager() ignores SIGTERM."""
+    with parallel.Manager() as manager:
+      queue = manager.Queue()
+      os.kill(manager._process.pid, signal.SIGTERM)
+      with self.assertRaises(Queue.Empty):
+        queue.get(block=False)
+
 
 class TestBackgroundWrapper(cros_test_lib.TestCase):
   """Unittests for background wrapper."""

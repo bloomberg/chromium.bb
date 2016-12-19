@@ -64,9 +64,10 @@ class HackTimeoutSyncManager(SyncManager):
     SyncManager._finalize_manager(process, *args, **kwargs)
 
 
-def IgnoreSigint():
-  """Ignores any future SIGINTs."""
+def IgnoreSigintAndSigterm():
+  """Ignores any future SIGINTs and SIGTERMs."""
   signal.signal(signal.SIGINT, signal.SIG_IGN)
+  signal.signal(signal.SIGTERM, signal.SIG_IGN)
 
 
 def Manager():
@@ -92,7 +93,7 @@ def Manager():
     # broken and E_NOENT or E_PIPE errors are thrown from various places. We
     # can just ignore SIGINT in the SyncManager and things will close properly
     # when the enclosing with-statement exits.
-    m.start(IgnoreSigint)
+    m.start(IgnoreSigintAndSigterm)
     return m
   finally:
     osutils.SetGlobalTempDir(old_tempdir_value, old_tempdir_env)
