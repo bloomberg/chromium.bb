@@ -999,7 +999,7 @@ void CSPDirectiveList::parseReportURI(const String& name, const String& value) {
 
     if (urlBegin < position) {
       String url = String(urlBegin, position - urlBegin);
-      m_reportEndpoints.append(url);
+      m_reportEndpoints.push_back(url);
     }
   }
 }
@@ -1219,7 +1219,7 @@ SourceListDirectiveVector CSPDirectiveList::getSourceVector(
     if (SourceListDirective* directive = policy->operativeDirective(type)) {
       if (directive->isNone())
         return SourceListDirectiveVector(1, directive);
-      sourceListDirectives.append(directive);
+      sourceListDirectives.push_back(directive);
     }
   }
 
@@ -1270,7 +1270,7 @@ bool CSPDirectiveList::subsumes(const CSPDirectiveListVector& other) {
   HeapVector<Member<MediaListDirective>> pluginTypesOther;
   for (const auto& policy : other) {
     if (policy->hasPluginTypes())
-      pluginTypesOther.append(policy->m_pluginTypes);
+      pluginTypesOther.push_back(policy->m_pluginTypes);
   }
 
   return m_pluginTypes->subsumes(pluginTypesOther);

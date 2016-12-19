@@ -543,18 +543,18 @@ TEST_F(CSPSourceTest, FirstSubsumesSecond) {
     // Setup default vectors.
     HeapVector<Member<CSPSource>> listA;
     HeapVector<Member<CSPSource>> listB;
-    listB.append(noWildcards);
+    listB.push_back(noWildcards);
     // Empty `listA` implies `none` is allowed.
     EXPECT_FALSE(CSPSource::firstSubsumesSecond(listA, listB));
 
-    listA.append(noWildcards);
+    listA.push_back(noWildcards);
     // Add CSPSources based on the current test.
-    listB.append(new CSPSource(csp.get(), test.sourceB.scheme,
-                               test.sourceB.host, 0, test.sourceB.path,
-                               CSPSource::NoWildcard, CSPSource::NoWildcard));
-    listA.append(new CSPSource(csp.get(), test.schemeA, "second-example.com", 0,
-                               "/", CSPSource::NoWildcard,
-                               CSPSource::NoWildcard));
+    listB.push_back(new CSPSource(
+        csp.get(), test.sourceB.scheme, test.sourceB.host, 0, test.sourceB.path,
+        CSPSource::NoWildcard, CSPSource::NoWildcard));
+    listA.push_back(new CSPSource(csp.get(), test.schemeA, "second-example.com",
+                                  0, "/", CSPSource::NoWildcard,
+                                  CSPSource::NoWildcard));
     // listB contains: ["http://example.com/", test.listB]
     // listA contains: ["http://example.com/",
     // test.schemeA + "://second-example.com/"]
@@ -562,27 +562,27 @@ TEST_F(CSPSourceTest, FirstSubsumesSecond) {
 
     // If we add another source to `listB` with a host wildcard,
     // then the result should definitely be false.
-    listB.append(hostWildcard);
+    listB.push_back(hostWildcard);
 
     // If we add another source to `listA` with a port wildcard,
     // it does not make `listB` to be subsumed under `listA`.
-    listB.append(portWildcard);
+    listB.push_back(portWildcard);
     EXPECT_FALSE(CSPSource::firstSubsumesSecond(listA, listB));
 
     // If however we add another source to `listA` with both wildcards,
     // that CSPSource is subsumed, so the answer should be as expected
     // before.
-    listA.append(bothWildcards);
+    listA.push_back(bothWildcards);
     EXPECT_EQ(test.expected, CSPSource::firstSubsumesSecond(listA, listB));
 
     // If we add a scheme-source expression of 'https' to `listB`, then it
     // should not be subsumed.
-    listB.append(httpsOnly);
+    listB.push_back(httpsOnly);
     EXPECT_FALSE(CSPSource::firstSubsumesSecond(listA, listB));
 
     // If we add a scheme-source expression of 'http' to `listA`, then it should
     // subsume all current epxression in `listB`.
-    listA.append(httpOnly);
+    listA.push_back(httpOnly);
     EXPECT_TRUE(CSPSource::firstSubsumesSecond(listA, listB));
   }
 }

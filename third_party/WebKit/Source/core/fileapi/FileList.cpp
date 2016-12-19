@@ -40,9 +40,9 @@ Vector<String> FileList::pathsForUserVisibleFiles() const {
   for (unsigned i = 0; i < m_files.size(); ++i) {
     if (m_files[i]->getUserVisibility() == File::IsUserVisible) {
       if (m_files[i]->hasBackingFile())
-        paths.append(m_files[i]->path());
+        paths.push_back(m_files[i]->path());
       else
-        paths.append(m_files[i]->name());
+        paths.push_back(m_files[i]->name());
     }
   }
 

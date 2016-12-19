@@ -60,7 +60,7 @@ bool GenericEventQueue::enqueueEvent(Event* event) {
   EventTarget* target = event->target() ? event->target() : m_owner.get();
   InspectorInstrumentation::asyncTaskScheduled(target->getExecutionContext(),
                                                event->type(), event);
-  m_pendingEvents.append(event);
+  m_pendingEvents.push_back(event);
 
   if (!m_timer.isActive())
     m_timer.startOneShot(0, BLINK_FROM_HERE);

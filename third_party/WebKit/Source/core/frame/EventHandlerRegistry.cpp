@@ -272,9 +272,9 @@ void EventHandlerRegistry::clearWeakMembers(Visitor* visitor) {
       Node* node = eventTarget.key->toNode();
       LocalDOMWindow* window = eventTarget.key->toLocalDOMWindow();
       if (node && !ThreadHeap::isHeapObjectAlive(node)) {
-        deadTargets.append(node);
+        deadTargets.push_back(node);
       } else if (window && !ThreadHeap::isHeapObjectAlive(window)) {
-        deadTargets.append(window);
+        deadTargets.push_back(window);
       }
     }
   }
@@ -295,7 +295,7 @@ void EventHandlerRegistry::documentDetached(Document& document) {
         for (Document* doc = &node->document(); doc;
              doc = doc->localOwner() ? &doc->localOwner()->document() : 0) {
           if (doc == &document) {
-            targetsToRemove.append(eventTarget.key);
+            targetsToRemove.push_back(eventTarget.key);
             break;
           }
         }

@@ -71,7 +71,7 @@ class CORE_EXPORT TreeScopeEventContext final
 #if DCHECK_IS_ON()
   bool isExclusivePartOf(const TreeScopeEventContext&) const;
 #endif
-  void addChild(TreeScopeEventContext& child) { m_children.append(&child); }
+  void addChild(TreeScopeEventContext& child) { m_children.push_back(&child); }
 
   // For ancestor-descendant relationship check in O(1).
   // Preprocessing takes O(N).

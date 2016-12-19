@@ -434,7 +434,7 @@ TEST_F(SourceListDirectiveTest, Subsumes) {
     for (const auto& sources : test.sourcesVector) {
       SourceListDirective* member =
           new SourceListDirective("script-src", sources, csp.get());
-      returned.append(member);
+      returned.push_back(member);
     }
 
     EXPECT_EQ(required.subsumes(returned), test.expected);
@@ -551,7 +551,7 @@ TEST_F(SourceListDirectiveTest, SubsumesWithSelf) {
     for (const auto& sources : test.sourcesB) {
       SourceListDirective* member =
           new SourceListDirective("script-src", sources, cspB);
-      vectorB.append(member);
+      vectorB.push_back(member);
     }
 
     EXPECT_EQ(test.expected, A.subsumes(vectorB));
@@ -717,7 +717,7 @@ TEST_F(SourceListDirectiveTest, SubsumesAllowAllInline) {
     for (const auto& sources : test.sourcesB) {
       SourceListDirective* member = new SourceListDirective(
           test.isScriptSrc ? "script-src" : "style-src", sources, cspB);
-      vectorB.append(member);
+      vectorB.push_back(member);
     }
 
     EXPECT_EQ(A.subsumes(vectorB), test.expected);
@@ -806,7 +806,7 @@ TEST_F(SourceListDirectiveTest, SubsumesUnsafeAttributes) {
     for (const auto& sources : test.sourcesB) {
       SourceListDirective* member = new SourceListDirective(
           test.isScriptSrc ? "script-src" : "style-src", sources, cspB);
-      vectorB.append(member);
+      vectorB.push_back(member);
     }
 
     EXPECT_EQ(A.subsumes(vectorB), test.expected);
@@ -1044,7 +1044,7 @@ TEST_F(SourceListDirectiveTest, SubsumesNoncesAndHashes) {
     for (const auto& sources : test.sourcesB) {
       SourceListDirective* member = new SourceListDirective(
           test.isScriptSrc ? "script-src" : "style-src", sources, cspB);
-      vectorB.append(member);
+      vectorB.push_back(member);
     }
 
     EXPECT_EQ(A.subsumes(vectorB), test.expected);
@@ -1220,7 +1220,7 @@ TEST_F(SourceListDirectiveTest, SubsumesStrictDynamic) {
     for (const auto& sources : test.sourcesB) {
       SourceListDirective* member = new SourceListDirective(
           test.isScriptSrc ? "script-src" : "style-src", sources, cspB);
-      vectorB.append(member);
+      vectorB.push_back(member);
     }
 
     EXPECT_EQ(A.subsumes(vectorB), test.expected);
@@ -1291,7 +1291,7 @@ TEST_F(SourceListDirectiveTest, SubsumesListWildcard) {
     for (const auto& sources : test.sourcesB) {
       SourceListDirective* member =
           new SourceListDirective("script-src", sources, cspB);
-      vectorB.append(member);
+      vectorB.push_back(member);
     }
 
     EXPECT_EQ(A.subsumes(vectorB), test.expected);

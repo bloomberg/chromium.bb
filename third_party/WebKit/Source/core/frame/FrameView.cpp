@@ -3128,7 +3128,7 @@ void FrameView::updateStyleAndLayoutIfNeededRecursiveInternal() {
     if (!child->isLocalFrame())
       continue;
     if (FrameView* view = toLocalFrame(child)->view())
-      frameViews.append(view);
+      frameViews.push_back(view);
   }
 
   for (const auto& frameView : frameViews)
@@ -3470,7 +3470,7 @@ void FrameView::trackObjectPaintInvalidation(const DisplayItemClient& client,
     return;
 
   ObjectPaintInvalidation invalidation = {client.debugName(), reason};
-  m_trackedObjectPaintInvalidations->append(invalidation);
+  m_trackedObjectPaintInvalidations->push_back(invalidation);
 }
 
 std::unique_ptr<JSONArray> FrameView::trackedObjectPaintInvalidationsAsJSON()

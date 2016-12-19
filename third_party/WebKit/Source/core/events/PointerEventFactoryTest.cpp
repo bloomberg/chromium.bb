@@ -133,8 +133,9 @@ PointerEvent* PointerEventFactoryTest::createAndCheckTouchEvent(
     size_t coalescedEventCount) {
   Vector<PlatformTouchPoint> coalescedEvents;
   for (size_t i = 0; i < coalescedEventCount; i++) {
-    coalescedEvents.append(PointerEventFactoryTest::PlatformTouchPointBuilder(
-        pointerType, rawId, state));
+    coalescedEvents.push_back(
+        PointerEventFactoryTest::PlatformTouchPointBuilder(pointerType, rawId,
+                                                           state));
   }
   PointerEvent* pointerEvent = m_pointerEventFactory.create(
       PointerEventFactoryTest::PlatformTouchPointBuilder(pointerType, rawId,
@@ -163,8 +164,9 @@ PointerEvent* PointerEventFactoryTest::createAndCheckMouseEvent(
     size_t coalescedEventCount) {
   Vector<PlatformMouseEvent> coalescedEvents;
   for (size_t i = 0; i < coalescedEventCount; i++) {
-    coalescedEvents.append(PointerEventFactoryTest::PlatformMouseEventBuilder(
-        pointerType, rawId, modifiers));
+    coalescedEvents.push_back(
+        PointerEventFactoryTest::PlatformMouseEventBuilder(pointerType, rawId,
+                                                           modifiers));
   }
   PointerEvent* pointerEvent = m_pointerEventFactory.create(
       coalescedEventCount ? EventTypeNames::mousemove

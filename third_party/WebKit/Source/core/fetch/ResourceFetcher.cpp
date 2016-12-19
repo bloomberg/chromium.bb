@@ -311,7 +311,7 @@ void ResourceFetcher::requestLoadStarted(unsigned long identifier,
     populateResourceTiming(info.get(), resource);
     info->clearLoadTimings();
     info->setLoadFinishTime(info->initialTime());
-    m_scheduledResourceTimingReports.append(std::move(info));
+    m_scheduledResourceTimingReports.push_back(std::move(info));
     if (!m_resourceTimingReportTimer.isActive())
       m_resourceTimingReportTimer.startOneShot(0, BLINK_FROM_HERE);
   }
@@ -507,9 +507,9 @@ Resource* ResourceFetcher::requestResource(
 
     if (activityLogger) {
       Vector<String> argv;
-      argv.append(Resource::resourceTypeToString(
+      argv.push_back(Resource::resourceTypeToString(
           factory.type(), request.options().initiatorInfo.name));
-      argv.append(request.url());
+      argv.push_back(request.url());
       activityLogger->logEvent("blinkRequestResource", argv.size(),
                                argv.data());
     }
@@ -1260,9 +1260,9 @@ void ResourceFetcher::removeResourceLoader(ResourceLoader* loader) {
 void ResourceFetcher::stopFetching() {
   HeapVector<Member<ResourceLoader>> loadersToCancel;
   for (const auto& loader : m_nonBlockingLoaders)
-    loadersToCancel.append(loader);
+    loadersToCancel.push_back(loader);
   for (const auto& loader : m_loaders)
-    loadersToCancel.append(loader);
+    loadersToCancel.push_back(loader);
 
   for (const auto& loader : loadersToCancel) {
     if (m_loaders.contains(loader) || m_nonBlockingLoaders.contains(loader))

@@ -37,7 +37,7 @@ PointerEvent::PointerEvent(const AtomicString& type,
     m_isPrimary = initializer.isPrimary();
   if (initializer.hasCoalescedEvents()) {
     for (auto coalescedEvent : initializer.coalescedEvents())
-      m_coalescedEvents.append(coalescedEvent);
+      m_coalescedEvents.push_back(coalescedEvent);
   }
 }
 

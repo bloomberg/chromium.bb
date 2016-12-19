@@ -283,8 +283,8 @@ bool EventTarget::addEventListenerInternal(
       V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
   if (activityLogger) {
     Vector<String> argv;
-    argv.append(toNode() ? toNode()->nodeName() : interfaceName());
-    argv.append(eventType);
+    argv.push_back(toNode() ? toNode()->nodeName() : interfaceName());
+    argv.push_back(eventType);
     activityLogger->logEvent("blinkAddEventListener", argv.size(), argv.data());
   }
 
@@ -647,7 +647,8 @@ bool EventTarget::fireEventListeners(Event* event,
   size_t size = entry.size();
   if (!d->firingEventIterators)
     d->firingEventIterators = WTF::wrapUnique(new FiringEventIteratorVector);
-  d->firingEventIterators->append(FiringEventIterator(event->type(), i, size));
+  d->firingEventIterators->push_back(
+      FiringEventIterator(event->type(), i, size));
 
   double blockedEventThreshold = blockedEventsWarningThreshold(context, event);
   TimeTicks now;

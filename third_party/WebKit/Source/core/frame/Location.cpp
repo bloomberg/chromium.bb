@@ -298,10 +298,10 @@ void Location::setLocation(const String& url,
       V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
   if (activityLogger) {
     Vector<String> argv;
-    argv.append("LocalDOMWindow");
-    argv.append("url");
-    argv.append(enteredDocument->url());
-    argv.append(completedURL);
+    argv.push_back("LocalDOMWindow");
+    argv.push_back("url");
+    argv.push_back(enteredDocument->url());
+    argv.push_back(completedURL);
     activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
   }
   m_frame->navigate(*currentWindow->document(), completedURL,

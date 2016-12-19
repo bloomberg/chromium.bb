@@ -139,7 +139,7 @@ TEST_F(MediaListDirectiveTest, Subsumes) {
   for (const auto& test : cases) {
     HeapVector<Member<MediaListDirective>> policiesB;
     for (const auto& policy : test.policiesB) {
-      policiesB.append(
+      policiesB.push_back(
           new MediaListDirective("plugin-types", policy, csp.get()));
     }
 

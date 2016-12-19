@@ -330,7 +330,7 @@ void Frame::didChangeVisibilityState() {
   HeapVector<Member<Frame>> childFrames;
   for (Frame* child = tree().firstChild(); child;
        child = child->tree().nextSibling())
-    childFrames.append(child);
+    childFrames.push_back(child);
   for (size_t i = 0; i < childFrames.size(); ++i)
     childFrames[i]->didChangeVisibilityState();
 }

@@ -58,7 +58,7 @@ void ScopedEventQueue::initialize() {
 void ScopedEventQueue::enqueueEventDispatchMediator(
     EventDispatchMediator* mediator) {
   if (shouldQueueEvents())
-    m_queuedEventDispatchMediators.append(mediator);
+    m_queuedEventDispatchMediators.push_back(mediator);
   else
     dispatchEvent(mediator);
 }

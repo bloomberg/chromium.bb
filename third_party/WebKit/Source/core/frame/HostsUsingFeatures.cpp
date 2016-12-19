@@ -83,7 +83,7 @@ void HostsUsingFeatures::documentDetached(Document& document) {
   if (!url.protocolIsInHTTPFamily())
     return;
 
-  m_urlAndValues.append(std::make_pair(url, counter));
+  m_urlAndValues.push_back(std::make_pair(url, counter));
   document.HostsUsingFeaturesValue().clear();
   DCHECK(document.HostsUsingFeaturesValue().isEmpty());
 }

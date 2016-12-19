@@ -509,7 +509,8 @@ TEST_F(CSPDirectiveListTest, SubsumesBasedOnCSPSourcesOnly) {
   for (const auto& test : cases) {
     HeapVector<Member<CSPDirectiveList>> listB;
     for (const auto& policy : test.policies) {
-      listB.append(createList(policy, ContentSecurityPolicyHeaderTypeEnforce));
+      listB.push_back(
+          createList(policy, ContentSecurityPolicyHeaderTypeEnforce));
     }
 
     EXPECT_EQ(test.expected, A->subsumes(listB));
@@ -615,7 +616,8 @@ TEST_F(CSPDirectiveListTest, SubsumesIfNoneIsPresent) {
 
     HeapVector<Member<CSPDirectiveList>> listB;
     for (const auto& policyB : test.policiesB)
-      listB.append(createList(policyB, ContentSecurityPolicyHeaderTypeEnforce));
+      listB.push_back(
+          createList(policyB, ContentSecurityPolicyHeaderTypeEnforce));
 
     EXPECT_EQ(test.expected, A->subsumes(listB));
   }
@@ -696,7 +698,8 @@ TEST_F(CSPDirectiveListTest, SubsumesPluginTypes) {
 
     HeapVector<Member<CSPDirectiveList>> listB;
     for (const auto& policyB : test.policiesB)
-      listB.append(createList(policyB, ContentSecurityPolicyHeaderTypeEnforce));
+      listB.push_back(
+          createList(policyB, ContentSecurityPolicyHeaderTypeEnforce));
 
     EXPECT_EQ(test.expected, A->subsumes(listB));
   }
@@ -811,7 +814,7 @@ TEST_F(CSPDirectiveListTest, GetSourceVector) {
   // Check expectations on the initial set-up.
   HeapVector<Member<CSPDirectiveList>> policyVector;
   for (const auto& policy : policies) {
-    policyVector.append(
+    policyVector.push_back(
         createList(policy, ContentSecurityPolicyHeaderTypeEnforce));
   }
   HeapVector<Member<SourceListDirective>> result =
@@ -863,15 +866,15 @@ TEST_F(CSPDirectiveListTest, GetSourceVector) {
     // Initial set-up.
     HeapVector<Member<CSPDirectiveList>> policyVector;
     for (const auto& policy : policies) {
-      policyVector.append(
+      policyVector.push_back(
           createList(policy, ContentSecurityPolicyHeaderTypeEnforce));
     }
     // Append current test's policy.
     std::stringstream currentDirective;
     const char* name = ContentSecurityPolicy::getDirectiveName(test.directive);
     currentDirective << name << " http://" << name << ".com;";
-    policyVector.append(createList(currentDirective.str().c_str(),
-                                   ContentSecurityPolicyHeaderTypeEnforce));
+    policyVector.push_back(createList(currentDirective.str().c_str(),
+                                      ContentSecurityPolicyHeaderTypeEnforce));
 
     HeapVector<Member<SourceListDirective>> result =
         CSPDirectiveList::getSourceVector(test.directive, policyVector);
@@ -897,8 +900,8 @@ TEST_F(CSPDirectiveListTest, GetSourceVector) {
     EXPECT_EQ(actualChild, test.expectedChildSrc);
 
     // If another default-src is added that should only impact Fetch Directives
-    policyVector.append(createList("default-src https://default-src.com;",
-                                   ContentSecurityPolicyHeaderTypeEnforce));
+    policyVector.push_back(createList("default-src https://default-src.com;",
+                                      ContentSecurityPolicyHeaderTypeEnforce));
     size_t udpatedTotal =
         test.type != NoDefault ? test.expectedTotal + 1 : test.expectedTotal;
     EXPECT_EQ(
@@ -914,8 +917,8 @@ TEST_F(CSPDirectiveListTest, GetSourceVector) {
 
     // If another child-src is added that should only impact frame-src and
     // child-src
-    policyVector.append(createList("child-src http://child-src.com;",
-                                   ContentSecurityPolicyHeaderTypeEnforce));
+    policyVector.push_back(createList("child-src http://child-src.com;",
+                                      ContentSecurityPolicyHeaderTypeEnforce));
     udpatedTotal =
         test.type == ChildAndDefault ||
                 test.directive == ContentSecurityPolicy::DirectiveType::ChildSrc
@@ -932,8 +935,8 @@ TEST_F(CSPDirectiveListTest, GetSourceVector) {
 
     // If we add sandbox, nothing should change since it is currenly not
     // considered.
-    policyVector.append(createList("sandbox http://sandbox.com;",
-                                   ContentSecurityPolicyHeaderTypeEnforce));
+    policyVector.push_back(createList("sandbox http://sandbox.com;",
+                                      ContentSecurityPolicyHeaderTypeEnforce));
     EXPECT_EQ(
         CSPDirectiveList::getSourceVector(test.directive, policyVector).size(),
         udpatedTotal);

@@ -71,10 +71,10 @@ HeapVector<Member<EventTarget>>& TreeScopeEventContext::ensureEventPath(
 
   for (auto& context : path.nodeEventContexts()) {
     if (context.treeScopeEventContext().isUnclosedTreeOf(*this))
-      m_eventPath->append(context.node());
+      m_eventPath->push_back(context.node());
   }
   if (window)
-    m_eventPath->append(window);
+    m_eventPath->push_back(window);
   return *m_eventPath;
 }
 

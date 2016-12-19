@@ -88,7 +88,7 @@ SmartClipData SmartClip::dataForRect(const IntRect& cropRectInViewport) {
 
   if (hitNodes.isEmpty() || hitNodes.size() == bestNode->countChildren()) {
     hitNodes.clear();
-    hitNodes.append(bestNode);
+    hitNodes.push_back(bestNode);
   }
 
   // Unite won't work with the empty rect, so we initialize to the first rect.
@@ -229,7 +229,7 @@ void SmartClip::collectOverlappingChildNodes(
        child = child->nextSibling()) {
     IntRect childRect = child->pixelSnappedBoundingBox();
     if (resizedCropRect.intersects(childRect))
-      hitNodes.append(child);
+      hitNodes.push_back(child);
   }
 }
 

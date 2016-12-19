@@ -150,8 +150,8 @@ void SourceListDirective::parse(const UChar* begin, const UChar* end) {
       if (ContentSecurityPolicy::getDirectiveType(host) !=
           ContentSecurityPolicy::DirectiveType::Undefined)
         m_policy->reportDirectiveAsSourceExpression(m_directiveName, host);
-      m_list.append(new CSPSource(m_policy, scheme, host, port, path,
-                                  hostWildcard, portWildcard));
+      m_list.push_back(new CSPSource(m_policy, scheme, host, port, path,
+                                     hostWildcard, portWildcard));
     } else {
       m_policy->reportInvalidSourceExpression(
           m_directiveName, String(beginSource, position - beginSource));
@@ -603,19 +603,22 @@ HeapVector<Member<CSPSource>> SourceListDirective::getSources(
     Member<CSPSource> self) const {
   HeapVector<Member<CSPSource>> sources = m_list;
   if (m_allowStar) {
-    sources.append(new CSPSource(m_policy, "ftp", String(), 0, String(),
-                                 CSPSource::NoWildcard, CSPSource::NoWildcard));
-    sources.append(new CSPSource(m_policy, "ws", String(), 0, String(),
-                                 CSPSource::NoWildcard, CSPSource::NoWildcard));
-    sources.append(new CSPSource(m_policy, "http", String(), 0, String(),
-                                 CSPSource::NoWildcard, CSPSource::NoWildcard));
+    sources.push_back(new CSPSource(m_policy, "ftp", String(), 0, String(),
+                                    CSPSource::NoWildcard,
+                                    CSPSource::NoWildcard));
+    sources.push_back(new CSPSource(m_policy, "ws", String(), 0, String(),
+                                    CSPSource::NoWildcard,
+                                    CSPSource::NoWildcard));
+    sources.push_back(new CSPSource(m_policy, "http", String(), 0, String(),
+                                    CSPSource::NoWildcard,
+                                    CSPSource::NoWildcard));
     if (self) {
-      sources.append(new CSPSource(m_policy, self->getScheme(), String(), 0,
-                                   String(), CSPSource::NoWildcard,
-                                   CSPSource::NoWildcard));
+      sources.push_back(new CSPSource(m_policy, self->getScheme(), String(), 0,
+                                      String(), CSPSource::NoWildcard,
+                                      CSPSource::NoWildcard));
     }
   } else if (m_allowSelf && self) {
-    sources.append(self);
+    sources.push_back(self);
   }
 
   return sources;
@@ -764,7 +767,7 @@ HeapVector<Member<CSPSource>> SourceListDirective::getIntersectCSPSources(
     // We do not add secure versions if insecure schemes are present.
     if ((it.key != "https" || !schemesMap.contains("http")) &&
         (it.key != "wss" || !schemesMap.contains("ws"))) {
-      normalized.append(it.value);
+      normalized.push_back(it.value);
     }
   }
 
@@ -784,7 +787,7 @@ HeapVector<Member<CSPSource>> SourceListDirective::getIntersectCSPSources(
       // `other` list, we add all the sourceB with that scheme.
       if (sourceA->isSchemeOnly()) {
         if (CSPSource* localMatch = sourceB->intersect(sourceA))
-          normalized.append(localMatch);
+          normalized.push_back(localMatch);
         continue;
       }
       if (sourceB->subsumes(sourceA)) {
@@ -795,7 +798,7 @@ HeapVector<Member<CSPSource>> SourceListDirective::getIntersectCSPSources(
         match = localMatch;
     }
     if (match)
-      normalized.append(match);
+      normalized.push_back(match);
   }
   return normalized;
 }

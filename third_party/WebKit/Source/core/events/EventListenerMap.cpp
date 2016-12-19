@@ -104,7 +104,7 @@ static bool addListenerToVector(EventListenerVector* vector,
   if (vector->find(*registeredListener) != kNotFound)
     return false;  // Duplicate listener.
 
-  vector->append(*registeredListener);
+  vector->push_back(*registeredListener);
   return true;
 }
 
@@ -120,7 +120,7 @@ bool EventListenerMap::add(const AtomicString& eventType,
                                  registeredListener);
   }
 
-  m_entries.append(std::make_pair(eventType, new EventListenerVector));
+  m_entries.push_back(std::make_pair(eventType, new EventListenerVector));
   return addListenerToVector(m_entries.back().second.get(), listener, options,
                              registeredListener);
 }

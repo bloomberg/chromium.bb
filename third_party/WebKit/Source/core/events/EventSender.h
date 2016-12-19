@@ -76,7 +76,7 @@ EventSender<T>::EventSender(const AtomicString& eventType)
 
 template <typename T>
 void EventSender<T>::dispatchEventSoon(T* sender) {
-  m_dispatchSoonList.append(sender);
+  m_dispatchSoonList.push_back(sender);
   if (!m_timer.isActive())
     m_timer.startOneShot(0, BLINK_FROM_HERE);
 }

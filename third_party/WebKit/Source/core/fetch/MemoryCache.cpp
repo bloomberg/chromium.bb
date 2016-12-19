@@ -232,7 +232,7 @@ HeapVector<Member<Resource>> MemoryCache::resourcesForURL(
     if (MemoryCacheEntry* entry = resourceMapIter.value->get(url)) {
       Resource* resource = entry->resource();
       DCHECK(resource);
-      results.append(resource);
+      results.push_back(resource);
     }
   }
   return results;
@@ -342,7 +342,7 @@ void MemoryCache::evictResources(EvictResourcePolicy policy) {
         // Store unused preloads aside, so they could be added back later.
         // That is in order to avoid the performance impact of iterating over
         // the same resource multiple times.
-        unusedPreloads.append(resourceIter->value.get());
+        unusedPreloads.push_back(resourceIter->value.get());
       }
       removeInternal(resources, resourceIter);
     }

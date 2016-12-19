@@ -304,7 +304,7 @@ void ContentSecurityPolicy::addPolicyFromHeaderValue(
         m_disableEvalErrorMessage.isNull())
       m_disableEvalErrorMessage = policy->evalDisabledErrorMessage();
 
-    m_policies.append(policy.release());
+    m_policies.push_back(policy.release());
 
     // Skip the comma, and begin the next header from the current position.
     ASSERT(position == end || *position == ',');
@@ -364,7 +364,7 @@ std::unique_ptr<Vector<CSPHeaderAndType>> ContentSecurityPolicy::headers()
       WTF::wrapUnique(new Vector<CSPHeaderAndType>);
   for (const auto& policy : m_policies) {
     CSPHeaderAndType headerAndType(policy->header(), policy->headerType());
-    headers->append(headerAndType);
+    headers->push_back(headerAndType);
   }
   return headers;
 }
@@ -1426,7 +1426,7 @@ void ContentSecurityPolicy::logToConsole(ConsoleMessage* consoleMessage,
   else if (m_executionContext)
     m_executionContext->addConsoleMessage(consoleMessage);
   else
-    m_consoleMessages.append(consoleMessage);
+    m_consoleMessages.push_back(consoleMessage);
 }
 
 void ContentSecurityPolicy::reportBlockedScriptExecutionToInspector(
@@ -1606,7 +1606,7 @@ bool ContentSecurityPolicy::subsumes(const ContentSecurityPolicy& other) const {
   CSPDirectiveListVector otherVector;
   for (const auto& policy : other.m_policies) {
     if (!policy->isReportOnly())
-      otherVector.append(policy);
+      otherVector.push_back(policy);
   }
 
   return m_policies[0]->subsumes(otherVector);

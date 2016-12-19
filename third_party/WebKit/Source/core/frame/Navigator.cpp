@@ -77,7 +77,7 @@ Vector<String> Navigator::languages() {
   Vector<String> languages;
 
   if (!frame() || !frame()->host()) {
-    languages.append(defaultLanguage());
+    languages.push_back(defaultLanguage());
     return languages;
   }
 

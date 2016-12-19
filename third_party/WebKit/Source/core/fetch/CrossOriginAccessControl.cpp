@@ -68,7 +68,7 @@ static AtomicString createAccessControlRequestHeadersHeader(
       // Access-Control-Request-Headers header.
       continue;
     }
-    filteredHeaders.append(header.key.lower());
+    filteredHeaders.push_back(header.key.lower());
   }
 
   // Sort header names lexicographically.

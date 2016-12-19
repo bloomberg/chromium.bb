@@ -193,7 +193,7 @@ void RemoteFrame::detachChildren() {
   childrenToDetach.reserveCapacity(tree().childCount());
   for (Frame* child = tree().firstChild(); child;
        child = child->tree().nextSibling())
-    childrenToDetach.append(child);
+    childrenToDetach.push_back(child);
   for (const auto& child : childrenToDetach)
     child->detach(FrameDetachType::Remove);
 }

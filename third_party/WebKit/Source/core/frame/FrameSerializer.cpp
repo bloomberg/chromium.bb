@@ -223,7 +223,7 @@ void SerializerMarkupAccumulator::appendAttribute(StringBuilder& out,
 void SerializerMarkupAccumulator::appendStartTag(Node& node,
                                                  Namespaces* namespaces) {
   MarkupAccumulator::appendStartTag(node, namespaces);
-  m_nodes.append(&node);
+  m_nodes.push_back(&node);
 }
 
 void SerializerMarkupAccumulator::appendEndTag(const Element& element) {
@@ -295,7 +295,7 @@ void FrameSerializer::serializeFrame(const LocalFrame& frame) {
 
     CString frameHTML =
         document.encoding().encode(text, WTF::EntitiesForUnencodables);
-    m_resources->append(SerializedResource(
+    m_resources->push_back(SerializedResource(
         url, document.suggestedMIMEType(),
         SharedBuffer::create(frameHTML.data(), frameHTML.length())));
   }
@@ -472,7 +472,7 @@ void FrameSerializer::addToResources(
     return;
   }
 
-  m_resources->append(SerializedResource(url, mimeType, std::move(data)));
+  m_resources->push_back(SerializedResource(url, mimeType, std::move(data)));
   m_resourceURLs.add(url);
 }
 

@@ -526,7 +526,7 @@ void LocalDOMWindow::sendOrientationChangeEvent() {
   // potentially interfering with others.
   HeapVector<Member<Frame>> frames;
   for (Frame* f = frame(); f; f = f->tree().traverseNext())
-    frames.append(f);
+    frames.push_back(f);
 
   for (size_t i = 0; i < frames.size(); ++i) {
     if (!frames[i]->isLocalFrame())

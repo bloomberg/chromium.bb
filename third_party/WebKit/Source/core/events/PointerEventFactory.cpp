@@ -268,7 +268,7 @@ PointerEvent* PointerEventFactory::create(
               coalescedMouseEvent.pointerProperties().pointerType);
     PointerEventInit coalescedEventInit = pointerEventInit;
     updateMousePointerEventInit(coalescedMouseEvent, view, &coalescedEventInit);
-    coalescedPointerEvents.append(
+    coalescedPointerEvents.push_back(
         PointerEvent::create(pointerEventName, coalescedEventInit));
   }
   pointerEventInit.setCoalescedEvents(coalescedPointerEvents);
@@ -321,7 +321,7 @@ PointerEvent* PointerEventFactory::create(
     PointerEventInit coalescedEventInit = pointerEventInit;
     updateTouchPointerEventInit(coalescedTouchPoint, targetFrame,
                                 &coalescedEventInit);
-    coalescedPointerEvents.append(
+    coalescedPointerEvents.push_back(
         PointerEvent::create(type, coalescedEventInit));
   }
   pointerEventInit.setCoalescedEvents(coalescedPointerEvents);
@@ -477,7 +477,7 @@ Vector<int> PointerEventFactory::getPointerIdsOfType(
        ++iter) {
     int mappedId = iter->key;
     if (iter->value.incomingId.pointerType() == pointerType)
-      mappedIds.append(mappedId);
+      mappedIds.push_back(mappedId);
   }
 
   // Sorting for a predictable ordering.

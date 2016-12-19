@@ -26,7 +26,7 @@ class MockPlatform final : public TestingPlatformSupport {
 
   // From blink::Platform:
   void cacheMetadata(const WebURL& url, int64_t, const char*, size_t) override {
-    m_cachedURLs.append(url);
+    m_cachedURLs.push_back(url);
   }
 
   const Vector<WebURL>& cachedURLs() const { return m_cachedURLs; }

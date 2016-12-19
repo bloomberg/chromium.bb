@@ -295,7 +295,7 @@ bool Resource::ResourceCallback::isScheduled(Resource* resource) const {
 void Resource::ResourceCallback::runTask() {
   HeapVector<Member<Resource>> resources;
   for (const Member<Resource>& resource : m_resourcesWithPendingClients)
-    resources.append(resource.get());
+    resources.push_back(resource.get());
   m_resourcesWithPendingClients.clear();
 
   for (const auto& resource : resources)
@@ -585,7 +585,7 @@ bool Resource::willFollowRedirect(const ResourceRequest& newRequest,
                                   const ResourceResponse& redirectResponse) {
   if (m_isRevalidating)
     revalidationFailed();
-  m_redirectChain.append(RedirectPair(newRequest, redirectResponse));
+  m_redirectChain.push_back(RedirectPair(newRequest, redirectResponse));
   return true;
 }
 
@@ -889,13 +889,13 @@ void Resource::onMemoryDump(WebMemoryDumpLevelOfDetail levelOfDetail,
     Vector<String> clientNames;
     ResourceClientWalker<ResourceClient> walker(m_clients);
     while (ResourceClient* client = walker.next())
-      clientNames.append(client->debugName());
+      clientNames.push_back(client->debugName());
     ResourceClientWalker<ResourceClient> walker2(m_clientsAwaitingCallback);
     while (ResourceClient* client = walker2.next())
-      clientNames.append("(awaiting) " + client->debugName());
+      clientNames.push_back("(awaiting) " + client->debugName());
     ResourceClientWalker<ResourceClient> walker3(m_finishedClients);
     while (ResourceClient* client = walker3.next())
-      clientNames.append("(finished) " + client->debugName());
+      clientNames.push_back("(finished) " + client->debugName());
     std::sort(clientNames.begin(), clientNames.end(),
               WTF::codePointCompareLessThan);
 
