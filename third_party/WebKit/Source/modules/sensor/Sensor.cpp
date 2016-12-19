@@ -7,6 +7,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "device/generic_sensor/public/interfaces/sensor.mojom-blink.h"
 #include "modules/sensor/SensorErrorEvent.h"
@@ -265,7 +266,7 @@ void Sensor::onSensorUpdateNotification() {
   if (getExecutionContext() &&
       m_sensorProxy->sensorReading()->isReadingUpdated(m_storedData)) {
     getExecutionContext()->postTask(
-        BLINK_FROM_HERE,
+        TaskType::Sensor, BLINK_FROM_HERE,
         createSameThreadTask(&Sensor::notifySensorReadingChanged,
                              wrapWeakPersistent(this)));
   }
@@ -280,8 +281,9 @@ void Sensor::updateState(Sensor::SensorState newState) {
   if (newState == SensorState::Activated && getExecutionContext()) {
     DCHECK_EQ(SensorState::Activating, m_state);
     getExecutionContext()->postTask(
-        BLINK_FROM_HERE, createSameThreadTask(&Sensor::notifyOnActivate,
-                                              wrapWeakPersistent(this)));
+        TaskType::Sensor, BLINK_FROM_HERE,
+        createSameThreadTask(&Sensor::notifyOnActivate,
+                             wrapWeakPersistent(this)));
   }
 
   m_state = newState;
@@ -295,7 +297,7 @@ void Sensor::reportError(ExceptionCode code,
     auto error =
         DOMException::create(code, sanitizedMessage, unsanitizedMessage);
     getExecutionContext()->postTask(
-        BLINK_FROM_HERE,
+        TaskType::Sensor, BLINK_FROM_HERE,
         createSameThreadTask(&Sensor::notifyError, wrapWeakPersistent(this),
                              wrapPersistent(error)));
   }
