@@ -457,7 +457,7 @@ user-select inherited
 white-space inherited, independent, keyword_only, keywords=[normal|pre|pre-wrap|pre-line|nowrap|-webkit-nowrap], initial_keyword=normal
 widows interpolable, inherited, type_name=short
 width interpolable, initial=initialSize, converter=convertLengthSizing, typedom_types=[Length], keywords=[auto], supports_percentage
-will-change custom_all
+will-change custom_all, api_class
 word-break inherited
 word-spacing interpolable, inherited, initial=initialLetterWordSpacing, converter=convertSpacing
 // UAs must treat 'word-wrap' as an alternate name for the 'overflow-wrap' property. So using the same handlers.

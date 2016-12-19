@@ -21,7 +21,7 @@ static CSSPropertyDescriptor cssPropertyDescriptors[] = {
     // When functions are added to CSSPropertyAPI, also add them to the struct
     // initaliser below.
     {% for api_class in api_classes %}
-    { {{api_class.classname}}::parseSingleValue, true }
+    { {{api_class.classname}}::parseSingleValue, true },
     {% endfor %}
 };
 

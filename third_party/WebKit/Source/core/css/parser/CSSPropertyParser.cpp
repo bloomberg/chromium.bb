@@ -302,57 +302,6 @@ static CSSValueList* consumeTransformOrigin(CSSParserTokenRange& range,
   return nullptr;
 }
 
-// Methods for consuming non-shorthand properties starts here.
-static CSSValue* consumeWillChange(CSSParserTokenRange& range) {
-  if (range.peek().id() == CSSValueAuto)
-    return consumeIdent(range);
-
-  CSSValueList* values = CSSValueList::createCommaSeparated();
-  // Every comma-separated list of identifiers is a valid will-change value,
-  // unless the list includes an explicitly disallowed identifier.
-  while (true) {
-    if (range.peek().type() != IdentToken)
-      return nullptr;
-    CSSPropertyID unresolvedProperty =
-        unresolvedCSSPropertyID(range.peek().value());
-    if (unresolvedProperty != CSSPropertyInvalid &&
-        unresolvedProperty != CSSPropertyVariable) {
-      ASSERT(CSSPropertyMetadata::isEnabledProperty(unresolvedProperty));
-      // Now "all" is used by both CSSValue and CSSPropertyValue.
-      // Need to return nullptr when currentValue is CSSPropertyAll.
-      if (unresolvedProperty == CSSPropertyWillChange ||
-          unresolvedProperty == CSSPropertyAll)
-        return nullptr;
-      values->append(*CSSCustomIdentValue::create(unresolvedProperty));
-      range.consumeIncludingWhitespace();
-    } else {
-      switch (range.peek().id()) {
-        case CSSValueNone:
-        case CSSValueAll:
-        case CSSValueAuto:
-        case CSSValueDefault:
-        case CSSValueInitial:
-        case CSSValueInherit:
-          return nullptr;
-        case CSSValueContents:
-        case CSSValueScrollPosition:
-          values->append(*consumeIdent(range));
-          break;
-        default:
-          range.consumeIncludingWhitespace();
-          break;
-      }
-    }
-
-    if (range.atEnd())
-      break;
-    if (!consumeCommaIncludingWhitespace(range))
-      return nullptr;
-  }
-
-  return values;
-}
-
 static CSSFontFeatureValue* consumeFontFeatureTag(CSSParserTokenRange& range) {
   // Feature tag name consists of 4-letter characters.
   static const unsigned tagNameLength = 4;
@@ -3484,8 +3433,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     return cssPropertyDesc.parseSingleValue(m_range, m_context);
 
   switch (property) {
-    case CSSPropertyWillChange:
-      return consumeWillChange(m_range);
     case CSSPropertyPage:
       return consumePage(m_range);
     case CSSPropertyQuotes:
