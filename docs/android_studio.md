@@ -29,7 +29,7 @@ For first-time Android Studio users:
 
 To import the project:
 
-* Use "Import Project", and select the directory containing the generated project.
+* Use "Import Project", and select the directory containing the generated project, by default `out-gn/Debug/gradle`.
 
 You need to re-run `generate_gradle.py` whenever `BUILD.gn` files change.
 
@@ -76,6 +76,10 @@ includes `R.java`).
 * Turn on automatic import:
     * Help -&gt; Find Action -&gt; "Auto Import"
         * Tick all the boxes under "Java" and change the dropdown to "All".
+* Turn on documentation on mouse hover:
+    * Help -&gt; Find Action -&gt; "Show quick documentation on mouse move"
+* Turn on line numbers:
+    * Help -&gt; Find Action -&gt; "Show line numbers"
 
 ### Useful Shortcuts
 
