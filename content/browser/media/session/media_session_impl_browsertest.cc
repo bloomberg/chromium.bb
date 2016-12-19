@@ -157,7 +157,6 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
   void EnsureMediaSessionService() {
     mock_media_session_service_.reset(new MockMediaSessionServiceImpl(
         shell()->web_contents()->GetMainFrame()));
-    mock_media_session_service_->SetMetadata(content::MediaMetadata());
   }
 
   void SetPlaybackState(blink::mojom::MediaSessionPlaybackState state) {

@@ -575,6 +575,7 @@ bool MediaSessionImpl::AddOneShotPlayer(MediaSessionPlayerObserver* observer,
 
 void MediaSessionImpl::OnServiceCreated(MediaSessionServiceImpl* service) {
   services_[service->GetRenderFrameHost()] = service;
+  UpdateRoutedService();
 }
 
 void MediaSessionImpl::OnServiceDestroyed(MediaSessionServiceImpl* service) {
@@ -617,11 +618,7 @@ void MediaSessionImpl::DidReceiveAction(
 }
 
 bool MediaSessionImpl::IsServiceActiveForRenderFrameHost(RenderFrameHost* rfh) {
-  if (!services_.count(rfh))
-    return false;
-
-  return services_[rfh]->metadata().has_value() ||
-         !services_[rfh]->actions().empty();
+  return services_.find(rfh) != services_.end();
 }
 
 void MediaSessionImpl::UpdateRoutedService() {

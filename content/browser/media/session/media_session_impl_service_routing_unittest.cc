@@ -74,7 +74,10 @@ class MediaSessionImplServiceRoutingTest
  protected:
   void CreateServiceForFrame(TestRenderFrameHost* frame) {
     services_[frame] = base::MakeUnique<MockMediaSessionServiceImpl>(frame);
-    services_[frame]->SetMetadata(MediaMetadata());
+  }
+
+  void DestroyServiceForFrame(TestRenderFrameHost* frame) {
+    services_.erase(frame);
   }
 
   void StartPlayerForFrame(TestRenderFrameHost* frame) {
@@ -133,23 +136,37 @@ TEST_F(MediaSessionImplServiceRoutingTest,
 }
 
 TEST_F(MediaSessionImplServiceRoutingTest,
-       OnlyMainFrameProducesAudioButHasInactiveService) {
-  StartPlayerForFrame(main_frame_);
-
+       OnlyMainFrameProducesAudioButHasDestroyedService) {
   CreateServiceForFrame(main_frame_);
-  services_[main_frame_]->SetMetadata(base::nullopt);
+  StartPlayerForFrame(main_frame_);
+  DestroyServiceForFrame(main_frame_);
 
   ASSERT_EQ(nullptr, ComputeServiceForRouting());
 }
 
 TEST_F(MediaSessionImplServiceRoutingTest,
-       OnlySubFrameProducesAudioButHasInactiveService) {
-  StartPlayerForFrame(sub_frame_);
-
+       OnlySubFrameProducesAudioButHasDestroyedService) {
   CreateServiceForFrame(sub_frame_);
-  services_[sub_frame_]->SetMetadata(base::nullopt);
+  StartPlayerForFrame(sub_frame_);
+  DestroyServiceForFrame(sub_frame_);
 
   ASSERT_EQ(nullptr, ComputeServiceForRouting());
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest,
+       OnlyMainFrameProducesAudioAndServiceIsCreatedAfterwards) {
+  StartPlayerForFrame(main_frame_);
+  CreateServiceForFrame(main_frame_);
+
+  ASSERT_EQ(services_[main_frame_].get(), ComputeServiceForRouting());
+}
+
+TEST_F(MediaSessionImplServiceRoutingTest,
+       OnlySubFrameProducesAudioAndServiceIsCreatedAfterwards) {
+  StartPlayerForFrame(sub_frame_);
+  CreateServiceForFrame(sub_frame_);
+
+  ASSERT_EQ(services_[sub_frame_].get(), ComputeServiceForRouting());
 }
 
 TEST_F(MediaSessionImplServiceRoutingTest,
