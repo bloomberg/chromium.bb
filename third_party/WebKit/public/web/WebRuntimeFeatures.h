@@ -78,6 +78,7 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void enableDecodeToYUV(bool);
   BLINK_EXPORT static void enableDocumentWriteEvaluator(bool);
   BLINK_EXPORT static void enableExperimentalCanvasFeatures(bool);
+  BLINK_EXPORT static void enableFasterLocationReload(bool);
   BLINK_EXPORT static void enableFastMobileScrolling(bool);
   BLINK_EXPORT static void enableFeaturePolicy(bool);
   BLINK_EXPORT static void enableFileSystem(bool);

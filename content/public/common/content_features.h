@@ -25,6 +25,7 @@ CONTENT_EXPORT extern const base::Feature kCredentialManagementAPI;
 CONTENT_EXPORT extern const base::Feature kDefaultEnableGpuRasterization;
 CONTENT_EXPORT extern const base::Feature kDocumentWriteEvaluator;
 CONTENT_EXPORT extern const base::Feature kExpensiveBackgroundTimerThrottling;
+CONTENT_EXPORT extern const base::Feature kFasterLocationReload;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicy;
 CONTENT_EXPORT extern const base::Feature kFontCacheScaling;
 CONTENT_EXPORT extern const base::Feature

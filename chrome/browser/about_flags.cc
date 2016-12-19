@@ -2133,7 +2133,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_CROS_COMP_UPDATES_DESCRIPTION, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kCrosCompUpdates)},
 #endif
-
 #if defined(OS_ANDROID)
     {"enable-expanded-autofill-credit-card-popup",
      IDS_FLAGS_ENABLE_EXPANDED_AUTOFILL_CREDIT_CARD_POPUP_LAYOUT,
@@ -2144,6 +2143,9 @@ const FeatureEntry kFeatureEntries[] = {
          kAutofillCreditCardPopupLayoutFeatureVariations,
          "AutofillCreditCardPopupLayout")},
 #endif  // OS_ANDROID
+    {"enable-faster-location-reload", IDS_FLAGS_FASTER_LOCATION_RELOAD_NAME,
+     IDS_FLAGS_FASTER_LOCATION_RELOAD_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kFasterLocationReload)}
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
