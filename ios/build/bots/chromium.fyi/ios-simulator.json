@@ -16,6 +16,9 @@
     "target_os=\"ios\"",
     "use_goma=true"
   ],
+  "additional_compile_targets": [
+    "ios:all"
+  ],
   "compiler": "ninja",
   "configuration": "Debug",
   "sdk": "iphonesimulator10.0",

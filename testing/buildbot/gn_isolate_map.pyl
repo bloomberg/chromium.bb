@@ -509,6 +509,10 @@
     "label": "//chrome/test:interactive_ui_tests",
     "type": "windowed_test_launcher",
   },
+  "ios:all": {
+    "label": "//ios:all",
+    "type": "additional_compile_target",
+  },
   "ios_chrome_unittests": {
     "label": "//ios/chrome/test:ios_chrome_unittests",
     "type": "raw",

@@ -13,6 +13,9 @@
     "target_cpu=\"arm\"",
     "target_os=\"ios\""
   ],
+  "additional_compile_targets": [
+    "ios:all"
+  ],
   "env": {
     "LLVM_FORCE_HEAD_REVISION": "YES"
   },

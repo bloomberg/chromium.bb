@@ -18,6 +18,9 @@
     "target_os=\"ios\"",
     "use_goma=true"
   ],
+  "additional_compile_targets": [
+    "ios:all"
+  ],
   "compiler": "ninja",
   "configuration": "Release",
   "sdk": "iphoneos10.0",

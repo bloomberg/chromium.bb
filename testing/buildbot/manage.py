@@ -157,6 +157,7 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
 
   # this is used at least on iOS
   'gn_all',
+  'ios:all',
   'cronet_test',
 
   # These are listed in Builders that are skipped for other reasons.

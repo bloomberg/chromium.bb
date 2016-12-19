@@ -20,6 +20,9 @@
     "use_goma=true",
     "use_xcode_clang=true"
   ],
+  "additional_compile_targets": [
+    "ios:all"
+  ],
   "compiler": "ninja",
   "configuration": "Debug",
   "sdk": "iphonesimulator10.0",

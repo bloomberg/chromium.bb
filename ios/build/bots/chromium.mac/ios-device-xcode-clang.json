@@ -19,6 +19,9 @@
     "use_goma=true",
     "use_xcode_clang=true"
   ],
+  "additional_compile_targets": [
+    "ios:all"
+  ],
   "compiler": "ninja",
   "configuration": "Release",
   "sdk": "iphoneos10.0",
