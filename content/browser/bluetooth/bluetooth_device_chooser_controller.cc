@@ -429,8 +429,10 @@ void BluetoothDeviceChooserController::AddFilteredDevice(
         MatchesFilters(device_name ? &device_name.value() : nullptr,
                        device.GetUUIDs(), options_->filters)) {
       base::Optional<int8_t> rssi = device.GetInquiryRSSI();
+      std::string device_id = device.GetAddress();
+      device_ids_.insert(device_id);
       chooser_->AddOrUpdateDevice(
-          device.GetAddress(), !!device.GetName() /* should_update_name */,
+          device_id, !!device.GetName() /* should_update_name */,
           device.GetNameForDisplay(), device.IsGattConnected(),
           web_bluetooth_service_->IsDevicePaired(device.GetAddress()),
           rssi ? CalculateSignalStrengthLevel(rssi.value()) : -1);
@@ -500,6 +502,8 @@ void BluetoothDeviceChooserController::StartDeviceDiscovery() {
     discovery_session_timer_.Reset();
     return;
   }
+
+  device_ids_.clear();
 
   scanning_start_time_ = base::TimeTicks::Now();
 
@@ -588,6 +592,7 @@ void BluetoothDeviceChooserController::OnBluetoothChooserEvent(
       PostErrorCallback(blink::mojom::WebBluetoothResult::CHOOSER_CANCELLED);
       break;
     case BluetoothChooser::Event::SELECTED:
+      RecordNumOfDevices(options_->accept_all_devices, device_ids_.size());
       // RecordRequestDeviceOutcome is called in the callback, because the
       // device may have vanished.
       PostSuccessCallback(device_address);

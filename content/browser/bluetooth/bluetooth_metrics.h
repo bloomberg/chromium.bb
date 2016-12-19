@@ -294,6 +294,11 @@ enum class UMARSSISignalStrengthLevel {
 void RecordRSSISignalStrength(int rssi);
 void RecordRSSISignalStrengthLevel(UMARSSISignalStrengthLevel level);
 
+// In the case of not accepting all devices in the options that are given
+// to WebBluetooth requestDevice(), records the number of devices in the
+// chooser when a device is paired.
+void RecordNumOfDevices(bool accept_all_devices, size_t num_of_devices);
+
 }  // namespace content
 
 #endif  // CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_METRICS_H_

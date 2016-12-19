@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_BLUETOOTH_BLUETOOTH_DEVICE_CHOOSER_CONTROLLER_H_
 
 #include <string>
+#include <unordered_set>
 
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -148,6 +149,9 @@ class CONTENT_EXPORT BluetoothDeviceChooserController final {
 
   // The time when scanning starts.
   base::Optional<base::TimeTicks> scanning_start_time_;
+
+  // The device ids that are currently shown in the chooser.
+  std::unordered_set<std::string> device_ids_;
 
   // Weak pointer factory for generating 'this' pointers that might live longer
   // than we do.

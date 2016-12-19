@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <map>
 #include <set>
 #include <unordered_set>
@@ -41,6 +42,9 @@ int HashUUID(const std::string& canonical_uuid) {
 int HashUUID(const base::Optional<BluetoothUUID>& uuid) {
   return uuid ? HashUUID(uuid->canonical_value()) : 0;
 }
+
+// The maximum number of devices that needs to be recorded.
+const size_t kMaxNumOfDevices = 100;
 
 }  // namespace
 
@@ -351,6 +355,15 @@ void RecordRSSISignalStrengthLevel(UMARSSISignalStrengthLevel level) {
       "Bluetooth.Web.RequestDevice.RSSISignalStrengthLevel",
       static_cast<int>(level),
       static_cast<int>(UMARSSISignalStrengthLevel::COUNT));
+}
+
+void RecordNumOfDevices(bool accept_all_devices, size_t num_of_devices) {
+  if (accept_all_devices) {
+    UMA_HISTOGRAM_SPARSE_SLOWLY(
+        "Bluetooth.Web.RequestDevice."
+        "NumOfDevicesInChooserWhenNotAcceptingAllDevices",
+        std::min(num_of_devices, kMaxNumOfDevices));
+  }
 }
 
 }  // namespace content

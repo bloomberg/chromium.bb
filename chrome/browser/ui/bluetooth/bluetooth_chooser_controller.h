@@ -22,7 +22,7 @@
 // access a Bluetooth device. It is owned by ChooserBubbleDelegate.
 class BluetoothChooserController : public ChooserController {
  public:
-  explicit BluetoothChooserController(
+  BluetoothChooserController(
       content::RenderFrameHost* owner,
       const content::BluetoothChooser::EventHandler& event_handler);
   ~BluetoothChooserController() override;
