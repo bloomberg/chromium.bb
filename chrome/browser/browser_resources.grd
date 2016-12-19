@@ -257,8 +257,8 @@
         <include name="IDR_MD_HISTORY_CONSTANTS_JS" file="resources\md_history\constants.js" type="BINDATA" />
         <include name="IDR_MD_HISTORY_HISTORY_HTML" file="resources\md_history\history.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_MD_HISTORY_HISTORY_JS" file="resources\md_history\history.js" type="BINDATA" />
-        <include name="IDR_MD_HISTORY_IMAGES_100_SIGN_IN_PROMO_PNG" file="resources\md_history\images\100\sign_in_promo.png" type="BINDATA" />
-        <include name="IDR_MD_HISTORY_IMAGES_200_SIGN_IN_PROMO_PNG" file="resources\md_history\images\200\sign_in_promo.png" type="BINDATA" />
+        <include name="IDR_MD_HISTORY_IMAGES_100_SIGN_IN_PROMO_JPG" file="resources\md_history\images\100\sign_in_promo.jpg" type="BINDATA" />
+        <include name="IDR_MD_HISTORY_IMAGES_200_SIGN_IN_PROMO_JPG" file="resources\md_history\images\200\sign_in_promo.jpg" type="BINDATA" />
         <if expr="use_vulcanize">
           <then>
             <include name="IDR_MD_HISTORY_APP_VULCANIZED_HTML" file="resources\md_history\app.vulcanized.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />

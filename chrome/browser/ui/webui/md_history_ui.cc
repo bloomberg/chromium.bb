@@ -143,10 +143,10 @@ content::WebUIDataSource* CreateMdHistoryUIHTMLSource(Profile* profile,
 
   source->AddResourcePath("constants.html", IDR_MD_HISTORY_CONSTANTS_HTML);
   source->AddResourcePath("constants.js", IDR_MD_HISTORY_CONSTANTS_JS);
-  source->AddResourcePath("images/100/sign_in_promo.png",
-                          IDR_MD_HISTORY_IMAGES_100_SIGN_IN_PROMO_PNG);
-  source->AddResourcePath("images/200/sign_in_promo.png",
-                          IDR_MD_HISTORY_IMAGES_200_SIGN_IN_PROMO_PNG);
+  source->AddResourcePath("images/100/sign_in_promo.jpg",
+                          IDR_MD_HISTORY_IMAGES_100_SIGN_IN_PROMO_JPG);
+  source->AddResourcePath("images/200/sign_in_promo.jpg",
+                          IDR_MD_HISTORY_IMAGES_200_SIGN_IN_PROMO_JPG);
   source->AddResourcePath("history.js", IDR_MD_HISTORY_HISTORY_JS);
 
 #if BUILDFLAG(USE_VULCANIZE)
