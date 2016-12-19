@@ -8,9 +8,10 @@
 #include "helpers.h"
 #include "util.h"
 
-static struct supported_combination combos[2] = {
-	{DRM_FORMAT_RGBX8888, DRM_FORMAT_MOD_NONE, BO_USE_CURSOR | BO_USE_LINEAR},
-	{DRM_FORMAT_RGBX8888, DRM_FORMAT_MOD_NONE, BO_USE_RENDERING},
+static struct supported_combination combos[1] = {
+	{DRM_FORMAT_RGBX8888, DRM_FORMAT_MOD_NONE,
+		BO_USE_CURSOR | BO_USE_LINEAR | BO_USE_RENDERING | BO_USE_SW_READ_OFTEN |
+		BO_USE_SW_WRITE_OFTEN | BO_USE_SW_READ_RARELY | BO_USE_SW_WRITE_RARELY},
 };
 
 static int gma500_init(struct driver *drv)
