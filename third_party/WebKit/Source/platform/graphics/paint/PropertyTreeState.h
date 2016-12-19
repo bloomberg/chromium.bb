@@ -38,36 +38,32 @@ class PropertyTreeState {
     DCHECK(!m_transform || !m_transform->hasOneRef());
     return m_transform.get();
   }
-  void setTransform(const TransformPaintPropertyNode* node) {
-    m_transform = node;
-    DCHECK(!node->hasOneRef());
+  void setTransform(RefPtr<const TransformPaintPropertyNode> node) {
+    m_transform = std::move(node);
   }
 
   const ClipPaintPropertyNode* clip() const {
     DCHECK(!m_clip || !m_clip->hasOneRef());
     return m_clip.get();
   }
-  void setClip(const ClipPaintPropertyNode* node) {
-    m_clip = node;
-    DCHECK(!node->hasOneRef());
+  void setClip(RefPtr<const ClipPaintPropertyNode> node) {
+    m_clip = std::move(node);
   }
 
   const EffectPaintPropertyNode* effect() const {
     DCHECK(!m_effect || !m_effect->hasOneRef());
     return m_effect.get();
   }
-  void setEffect(const EffectPaintPropertyNode* node) {
-    m_effect = node;
-    DCHECK(!node->hasOneRef());
+  void setEffect(RefPtr<const EffectPaintPropertyNode> node) {
+    m_effect = std::move(node);
   }
 
   const ScrollPaintPropertyNode* scroll() const {
     DCHECK(!m_scroll || !m_scroll->hasOneRef());
     return m_scroll.get();
   }
-  void setScroll(const ScrollPaintPropertyNode* node) {
-    m_scroll = node;
-    DCHECK(!node->hasOneRef());
+  void setScroll(RefPtr<const ScrollPaintPropertyNode> node) {
+    m_scroll = std::move(node);
   }
 
  private:
