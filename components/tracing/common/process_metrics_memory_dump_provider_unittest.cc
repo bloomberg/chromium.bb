@@ -9,6 +9,8 @@
 #include <memory>
 
 #include "base/files/file_util.h"
+#include "base/memory/ptr_util.h"
+#include "base/process/process_metrics.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/process_memory_maps.h"
 #include "base/trace_event/process_memory_totals.h"
@@ -107,15 +109,16 @@ const char kTestSmaps2[] =
     "Locked:                0 kB\n"
     "VmFlags: rd wr mr mw me ac sd\n";
 
-void CreateAndSetSmapsFileForTesting(const char* smaps_string,
-                                     base::ScopedFILE& file) {
+const char kTestStatm[] = "200 100 20 2 3 4";
+
+void CreateTempFileWithContents(const char* contents, base::ScopedFILE* file) {
   base::FilePath temp_path;
   FILE* temp_file = CreateAndOpenTemporaryFile(&temp_path);
-  file.reset(temp_file);
+  file->reset(temp_file);
   ASSERT_TRUE(temp_file);
 
-  ASSERT_TRUE(base::WriteFileDescriptor(fileno(temp_file), smaps_string,
-                                        strlen(smaps_string)));
+  ASSERT_TRUE(
+      base::WriteFileDescriptor(fileno(temp_file), contents, strlen(contents)));
 }
 
 }  // namespace
@@ -182,7 +185,7 @@ TEST(ProcessMetricsMemoryDumpProviderTest, ParseProcSmaps) {
   base::trace_event::ProcessMemoryDump pmd_1(nullptr /* session_state */,
                                              dump_args);
   base::ScopedFILE temp_file1;
-  CreateAndSetSmapsFileForTesting(kTestSmaps1, temp_file1);
+  CreateTempFileWithContents(kTestSmaps1, &temp_file1);
   ProcessMetricsMemoryDumpProvider::proc_smaps_for_testing = temp_file1.get();
   pmmdp->OnMemoryDump(dump_args, &pmd_1);
   ASSERT_TRUE(pmd_1.has_process_mmaps());
@@ -215,7 +218,7 @@ TEST(ProcessMetricsMemoryDumpProviderTest, ParseProcSmaps) {
   base::trace_event::ProcessMemoryDump pmd_2(nullptr /* session_state */,
                                              dump_args);
   base::ScopedFILE temp_file2;
-  CreateAndSetSmapsFileForTesting(kTestSmaps2, temp_file2);
+  CreateTempFileWithContents(kTestSmaps2, &temp_file2);
   ProcessMetricsMemoryDumpProvider::proc_smaps_for_testing = temp_file2.get();
   pmmdp->OnMemoryDump(dump_args, &pmd_2);
   ASSERT_TRUE(pmd_2.has_process_mmaps());
@@ -233,5 +236,37 @@ TEST(ProcessMetricsMemoryDumpProviderTest, ParseProcSmaps) {
   EXPECT_EQ(0 * 1024UL, regions_2[0].byte_stats_swapped);
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
+
+TEST(ProcessMetricsMemoryDumpProviderTest, TestPollFastMemoryTotal) {
+  ProcessMetricsMemoryDumpProvider mdp(base::kNullProcessId);
+
+  uint64_t total1, total2;
+  mdp.PollFastMemoryTotal(&total1);
+  ASSERT_GT(total1, 0u);
+  size_t kBufSize = 16 * 1024 * 1024;
+  auto buf = base::MakeUnique<char[]>(kBufSize);
+  for (size_t i = 0; i < kBufSize; i++)
+    buf[i] = *((volatile char*)&buf[i]) + 1;
+  mdp.PollFastMemoryTotal(&total2);
+  ASSERT_GT(total2, 0u);
+  EXPECT_GT(total2, total1 + kBufSize / 2);
+
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  EXPECT_GE(mdp.fast_polling_statm_fd_.get(), 0);
+
+  base::ScopedFILE temp_file;
+  CreateTempFileWithContents(kTestStatm, &temp_file);
+  mdp.fast_polling_statm_fd_for_testing = fileno(temp_file.get());
+  size_t page_size = base::GetPageSize();
+  uint64_t value;
+  mdp.PollFastMemoryTotal(&value);
+  EXPECT_EQ(100 * page_size, value);
+
+  mdp.SuspendFastMemoryPolling();
+  EXPECT_FALSE(mdp.fast_polling_statm_fd_.is_valid());
+#else
+  mdp.SuspendFastMemoryPolling();
+#endif
+}
 
 }  // namespace tracing

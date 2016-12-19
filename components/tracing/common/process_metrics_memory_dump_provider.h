@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/files/scoped_file.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
@@ -33,11 +34,15 @@ class TRACING_EXPORT ProcessMetricsMemoryDumpProvider
   // MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
+  void PollFastMemoryTotal(uint64_t* memory_total) override;
+  void SuspendFastMemoryPolling() override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ProcessMetricsMemoryDumpProviderTest,
                            ParseProcSmaps);
   FRIEND_TEST_ALL_PREFIXES(ProcessMetricsMemoryDumpProviderTest, DumpRSS);
+  FRIEND_TEST_ALL_PREFIXES(ProcessMetricsMemoryDumpProviderTest,
+                           TestPollFastMemoryTotal);
 
   ProcessMetricsMemoryDumpProvider(base::ProcessId process);
 
@@ -50,6 +55,9 @@ class TRACING_EXPORT ProcessMetricsMemoryDumpProvider
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   static FILE* proc_smaps_for_testing;
+  static int fast_polling_statm_fd_for_testing;
+
+  base::ScopedFD fast_polling_statm_fd_;
 #endif
 
   base::ProcessId process_;

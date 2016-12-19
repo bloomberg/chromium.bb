@@ -155,6 +155,18 @@ uint32_t ReadLinuxProcSmapsFile(FILE* smaps_file,
   }
   return num_valid_regions;
 }
+
+bool GetResidentSizeFromStatmFile(int fd, uint64_t* resident_pages) {
+  lseek(fd, 0, SEEK_SET);
+  char line[kMaxLineSize];
+  int res = read(fd, line, kMaxLineSize - 1);
+  if (res <= 0)
+    return false;
+  line[res] = '\0';
+  int num_scanned = sscanf(line, "%*s %" SCNu64, resident_pages);
+  return num_scanned == 1;
+}
+
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 std::unique_ptr<base::ProcessMetrics> CreateProcessMetrics(
@@ -182,6 +194,9 @@ uint64_t ProcessMetricsMemoryDumpProvider::rss_bytes_for_testing = 0;
 
 // static
 FILE* ProcessMetricsMemoryDumpProvider::proc_smaps_for_testing = nullptr;
+
+// static
+int ProcessMetricsMemoryDumpProvider::fast_polling_statm_fd_for_testing = -1;
 
 bool ProcessMetricsMemoryDumpProvider::DumpProcessMemoryMaps(
     const base::trace_event::MemoryDumpArgs& args,
@@ -211,6 +226,7 @@ void ProcessMetricsMemoryDumpProvider::RegisterForProcess(
       new ProcessMetricsMemoryDumpProvider(process));
   base::trace_event::MemoryDumpProvider::Options options;
   options.target_pid = process;
+  options.is_fast_polling_supported = true;
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       metrics_provider.get(), "ProcessMemoryMetrics", nullptr, options);
   bool did_insert =
@@ -229,9 +245,8 @@ void ProcessMetricsMemoryDumpProvider::RegisterForProcess(
 void ProcessMetricsMemoryDumpProvider::UnregisterForProcess(
     base::ProcessId process) {
   auto iter = g_dump_providers_map.Get().find(process);
-  if (iter == g_dump_providers_map.Get().end()) {
+  if (iter == g_dump_providers_map.Get().end())
     return;
-  }
   base::trace_event::MemoryDumpManager::GetInstance()
       ->UnregisterAndDeleteDumpProviderSoon(std::move(iter->second));
   g_dump_providers_map.Get().erase(iter);
@@ -320,6 +335,42 @@ bool ProcessMetricsMemoryDumpProvider::DumpProcessTotals(
 
   // Returns true even if other metrics failed, since rss is reported.
   return true;
+}
+
+void ProcessMetricsMemoryDumpProvider::PollFastMemoryTotal(
+    uint64_t* memory_total) {
+  *memory_total = 0;
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  int statm_fd = fast_polling_statm_fd_for_testing;
+  if (statm_fd == -1) {
+    if (!fast_polling_statm_fd_.is_valid()) {
+      std::string name = "/proc/" + (process_ == base::kNullProcessId
+                                         ? "self"
+                                         : base::IntToString(process_)) +
+                         "/statm";
+      fast_polling_statm_fd_.reset(open(name.c_str(), O_RDONLY));
+      DCHECK(fast_polling_statm_fd_.is_valid());
+    }
+    statm_fd = fast_polling_statm_fd_.get();
+  }
+  if (statm_fd == -1)
+    return;
+
+  uint64_t rss_pages = 0;
+  if (!GetResidentSizeFromStatmFile(statm_fd, &rss_pages))
+    return;
+
+  static size_t page_size = base::GetPageSize();
+  *memory_total = rss_pages * page_size;
+#else
+  *memory_total = process_metrics_->GetWorkingSetSize();
+#endif
+}
+
+void ProcessMetricsMemoryDumpProvider::SuspendFastMemoryPolling() {
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  fast_polling_statm_fd_.reset();
+#endif
 }
 
 }  // namespace tracing
