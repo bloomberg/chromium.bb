@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_default_provider.h"
@@ -178,7 +179,7 @@ content_settings::PatternPair GetPatternsForContentSettingsType(
 HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
                                                bool is_incognito_profile,
                                                bool is_guest_profile)
-    :
+    : RefcountedKeyedService(base::ThreadTaskRunnerHandle::Get()),
 #ifndef NDEBUG
       used_from_thread_id_(base::PlatformThread::CurrentId()),
 #endif
@@ -827,6 +828,7 @@ void HostContentSettingsMap::OnContentSettingChanged(
 }
 
 HostContentSettingsMap::~HostContentSettingsMap() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!prefs_);
 }
 

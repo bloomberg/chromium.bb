@@ -5,9 +5,8 @@
 #include "chrome/browser/notifications/notification_permission_context.h"
 
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
-#include "base/test/test_mock_time_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/memory/ptr_util.h"
+#include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
@@ -81,24 +80,19 @@ class TestNotificationPermissionContext : public NotificationPermissionContext {
 class NotificationPermissionContextTest
     : public ChromeRenderViewHostTestHarness {
  public:
-  scoped_refptr<base::TestMockTimeTaskRunner> SwitchToMockTime() {
-    old_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    scoped_refptr<base::TestMockTimeTaskRunner> task_runner(
-        new base::TestMockTimeTaskRunner(base::Time::Now(),
-                                         base::TimeTicks::Now()));
-    base::MessageLoop::current()->SetTaskRunner(task_runner);
-    return task_runner;
-  }
-
   void TearDown() override {
-    if (old_task_runner_) {
-      base::MessageLoop::current()->SetTaskRunner(old_task_runner_);
-      old_task_runner_ = nullptr;
-    }
+    mock_time_task_runner_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
  protected:
+  base::TestMockTimeTaskRunner* SwitchToMockTime() {
+    EXPECT_FALSE(mock_time_task_runner_);
+    mock_time_task_runner_ =
+        base::MakeUnique<base::ScopedMockTimeMessageLoopTaskRunner>();
+    return mock_time_task_runner_->task_runner();
+  }
+
   void UpdateContentSetting(NotificationPermissionContext* context,
                             const GURL& requesting_origin,
                             const GURL& embedding_origin,
@@ -107,7 +101,8 @@ class NotificationPermissionContextTest
   }
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> old_task_runner_;
+  std::unique_ptr<base::ScopedMockTimeMessageLoopTaskRunner>
+      mock_time_task_runner_;
 };
 
 // Web Notification permission requests will completely ignore the embedder
@@ -215,7 +210,7 @@ TEST_F(NotificationPermissionContextTest, TestDenyInIncognitoAfterDelay) {
                                web_contents()->GetMainFrame()->GetRoutingID(),
                                -1);
 
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner(SwitchToMockTime());
+  base::TestMockTimeTaskRunner* task_runner = SwitchToMockTime();
 
   ASSERT_EQ(0, permission_context.permission_set_count());
   ASSERT_FALSE(permission_context.last_permission_set_persisted());
@@ -281,7 +276,7 @@ TEST_F(NotificationPermissionContextTest, TestCancelledIncognitoRequest) {
                                web_contents()->GetMainFrame()->GetRoutingID(),
                                -1);
 
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner(SwitchToMockTime());
+  base::TestMockTimeTaskRunner* task_runner = SwitchToMockTime();
 
   content::PermissionManager* permission_manager =
       PermissionManagerFactory::GetForProfile(
@@ -318,7 +313,7 @@ TEST_F(NotificationPermissionContextTest, TestParallelDenyInIncognito) {
                                 web_contents()->GetMainFrame()->GetRoutingID(),
                                 1);
 
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner(SwitchToMockTime());
+  base::TestMockTimeTaskRunner* task_runner = SwitchToMockTime();
 
   ASSERT_EQ(0, permission_context.permission_set_count());
   ASSERT_FALSE(permission_context.last_permission_set_persisted());

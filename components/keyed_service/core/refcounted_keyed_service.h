@@ -6,8 +6,8 @@
 #define COMPONENTS_KEYED_SERVICE_CORE_REFCOUNTED_KEYED_SERVICE_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "base/sequenced_task_runner_helpers.h"
-#include "base/single_thread_task_runner.h"
 #include "components/keyed_service/core/keyed_service_export.h"
 
 class RefcountedKeyedService;
@@ -29,7 +29,7 @@ struct KEYED_SERVICE_EXPORT RefcountedKeyedServiceTraits {
 // be after the corresponding BrowserContext has been destroyed.
 //
 // Optionally, if you initialize your service with the constructor that takes a
-// single thread task runner, your service will be deleted on that thread. We
+// SequencedTaskRunner, your service will be deleted on that sequence. We
 // can't use content::DeleteOnThread<> directly because RefcountedKeyedService
 // must not depend on //content.
 class KEYED_SERVICE_EXPORT RefcountedKeyedService
@@ -44,19 +44,19 @@ class KEYED_SERVICE_EXPORT RefcountedKeyedService
   virtual void ShutdownOnUIThread() = 0;
 
  protected:
-  // If your service does not need to be deleted on a specific thread, use the
+  // If your service does not need to be deleted on a specific sequence, use the
   // default constructor.
   RefcountedKeyedService();
 
-  // If you need your service to be deleted on a specific thread (for example,
+  // If you need your service to be deleted on a specific sequence (for example,
   // you're converting a service that used content::DeleteOnThread<IO>), then
-  // use this constructor with a reference to the SingleThreadTaskRunner (you
+  // use this constructor with a reference to the SequencedTaskRunner (e.g., you
   // can get it from content::BrowserThread::GetTaskRunnerForThread).
   explicit RefcountedKeyedService(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // The second pass destruction can happen anywhere unless you specify which
-  // thread this service must be destroyed on by using the second constructor.
+  // sequence this service must be destroyed on by using the second constructor.
   virtual ~RefcountedKeyedService();
 
  private:
@@ -65,8 +65,8 @@ class KEYED_SERVICE_EXPORT RefcountedKeyedService
   friend class base::RefCountedThreadSafe<RefcountedKeyedService,
                                           impl::RefcountedKeyedServiceTraits>;
 
-  // Do we have to delete this object on a specific thread?
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  // Do we have to delete this object on a specific sequence?
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };
 
 #endif  // COMPONENTS_KEYED_SERVICE_CORE_REFCOUNTED_KEYED_SERVICE_H_
