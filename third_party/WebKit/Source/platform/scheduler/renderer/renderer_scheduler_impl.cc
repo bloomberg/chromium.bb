@@ -549,8 +549,9 @@ void RendererSchedulerImpl::OnAudioStateChanged() {
 
 void RendererSchedulerImpl::SuspendRenderer() {
   helper_.CheckOnValidThread();
-  DCHECK(MainThreadOnly().renderer_backgrounded);
   if (helper_.IsShutdown())
+    return;
+  if (!MainThreadOnly().renderer_backgrounded)
     return;
   suspend_timers_when_backgrounded_closure_.Cancel();
 
@@ -565,8 +566,9 @@ void RendererSchedulerImpl::SuspendRenderer() {
 
 void RendererSchedulerImpl::ResumeRenderer() {
   helper_.CheckOnValidThread();
-  DCHECK(MainThreadOnly().renderer_backgrounded);
   if (helper_.IsShutdown())
+    return;
+  if (!MainThreadOnly().renderer_backgrounded)
     return;
   suspend_timers_when_backgrounded_closure_.Cancel();
   MainThreadOnly().renderer_suspended = false;
