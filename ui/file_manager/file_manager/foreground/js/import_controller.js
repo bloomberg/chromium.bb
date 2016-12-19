@@ -282,13 +282,12 @@ importer.ImportController.prototype.onClick_ =
 };
 
 /**
- * Executes import against the current directory. Should only
- * be called when the current directory has been validated
- * by calling "update" on this class.
+ * Executes import against the current context. Should only be called
+ * after the current context has been validated by a scan.
  *
  * @private
  */
-importer.ImportController.prototype.execute_ = function() {
+importer.ImportController.prototype.startImportTask_ = function() {
   console.assert(!this.activeImport_,
       'Cannot execute while an import task is already active.');
 
@@ -308,6 +307,17 @@ importer.ImportController.prototype.execute_ = function() {
   };
   var taskFinished = this.onImportFinished_.bind(this, importTask);
   importTask.whenFinished.then(taskFinished).catch(taskFinished);
+}
+
+/**
+ * Executes import against the current context. Should only be called
+ * when user clicked an import button after the current context has
+ * been validated by a scan.
+ *
+ * @private
+ */
+importer.ImportController.prototype.execute_ = function() {
+  this.startImportTask_();
   this.checkState_();
 };
 
@@ -375,7 +385,15 @@ importer.ImportController.prototype.checkState_ = function(opt_scan) {
   }
 
   if (opt_scan.getFileEntries().length === 0) {
-    this.updateUi_(importer.ActivityState.NO_MEDIA);
+    if (opt_scan.getDuplicateFileEntries().length === 0) {
+      this.updateUi_(importer.ActivityState.NO_MEDIA);
+      return;
+    }
+    // Some scanned files found already exist in Drive.
+    // It means those files weren't marked as already backed up but need to be.
+    // Trigger sync for that purpose, but no files will actually be copied.
+    this.startImportTask_();
+    this.updateUi_(importer.ActivityState.IMPORTING, this.activeImport_.scan);
     return;
   }
 
