@@ -123,9 +123,8 @@ class CORE_EXPORT HTMLTokenizer {
     AfterDOCTYPESystemIdentifierState,
     BogusDOCTYPEState,
     CDATASectionState,
-    // These CDATA states are not in the HTML5 spec, but we use them internally.
-    CDATASectionRightSquareBracketState,
-    CDATASectionDoubleRightSquareBracketState,
+    CDATASectionBracketState,
+    CDATASectionEndState,
   };
 
   // This function returns true if it emits a token. Otherwise, callers

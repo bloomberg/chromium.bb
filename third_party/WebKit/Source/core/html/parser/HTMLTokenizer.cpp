@@ -1495,7 +1495,7 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
 
     HTML_BEGIN_STATE(CDATASectionState) {
       if (cc == ']')
-        HTML_ADVANCE_TO(CDATASectionRightSquareBracketState);
+        HTML_ADVANCE_TO(CDATASectionBracketState);
       else if (cc == kEndOfFileMarker)
         HTML_RECONSUME_IN(DataState);
       else {
@@ -1505,19 +1505,22 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
     }
     END_STATE()
 
-    HTML_BEGIN_STATE(CDATASectionRightSquareBracketState) {
+    HTML_BEGIN_STATE(CDATASectionBracketState) {
       if (cc == ']')
-        HTML_ADVANCE_TO(CDATASectionDoubleRightSquareBracketState);
+        HTML_ADVANCE_TO(CDATASectionEndState);
       else {
         bufferCharacter(']');
         HTML_RECONSUME_IN(CDATASectionState);
       }
     }
 
-    HTML_BEGIN_STATE(CDATASectionDoubleRightSquareBracketState) {
-      if (cc == '>')
+    HTML_BEGIN_STATE(CDATASectionEndState) {
+      if (cc == ']') {
+        bufferCharacter(']');
+        HTML_ADVANCE_TO(CDATASectionEndState);
+      } else if (cc == '>') {
         HTML_ADVANCE_TO(DataState);
-      else {
+      } else {
         bufferCharacter(']');
         bufferCharacter(']');
         HTML_RECONSUME_IN(CDATASectionState);
