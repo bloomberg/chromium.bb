@@ -55,12 +55,12 @@ DEFINE_TRACE(SensorProviderProxy) {
 
 SensorProxy* SensorProviderProxy::createSensorProxy(
     device::mojom::blink::SensorType type,
-    Page* page,
+    Document* document,
     std::unique_ptr<SensorReadingFactory> readingFactory) {
   DCHECK(!getSensorProxy(type));
 
   SensorProxy* sensor =
-      new SensorProxy(type, this, page, std::move(readingFactory));
+      new SensorProxy(type, this, document, std::move(readingFactory));
   m_sensorProxies.add(sensor);
 
   return sensor;
