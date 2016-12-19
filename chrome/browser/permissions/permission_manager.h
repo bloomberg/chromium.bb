@@ -68,11 +68,13 @@ class PermissionManager : public KeyedService,
       override;
   void UnsubscribePermissionStatusChange(int subscription_id) override;
 
+  // TODO(raymes): Rather than exposing this, expose a denial reason from
+  // GetPermissionStatus so that callers can determine whether a permission is
+  // denied due to the kill switch.
+  bool IsPermissionKillSwitchOn(content::PermissionType permission);
+
  private:
   friend class GeolocationPermissionContextTests;
-  // TODO(raymes): Refactor MediaPermission to not call GetPermissionContext.
-  // See crbug.com/596786.
-  friend class MediaPermission;
 
   class PendingRequest;
   using PendingRequestsMap = IDMap<std::unique_ptr<PendingRequest>>;
@@ -98,6 +100,10 @@ class PermissionManager : public KeyedService,
                                const ContentSettingsPattern& secondary_pattern,
                                ContentSettingsType content_type,
                                std::string resource_identifier) override;
+
+  ContentSetting GetPermissionStatusInternal(content::PermissionType permission,
+                                             const GURL& requesting_origin,
+                                             const GURL& embedding_origin);
 
   Profile* profile_;
   PendingRequestsMap pending_requests_;

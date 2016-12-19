@@ -156,11 +156,6 @@ ContentSetting GetContentSettingForConstantPermission(PermissionType type) {
   }
 }
 
-PermissionStatus GetPermissionStatusForConstantPermission(PermissionType type) {
-  return ContentSettingToPermissionStatus(
-      GetContentSettingForConstantPermission(type));
-}
-
 }  // anonymous namespace
 
 class PermissionManager::PendingRequest {
@@ -394,15 +389,8 @@ PermissionStatus PermissionManager::GetPermissionStatus(
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (IsConstantPermission(permission))
-    return GetPermissionStatusForConstantPermission(permission);
-
-  PermissionContextBase* context = GetPermissionContext(permission);
-  if (!context)
-    return PermissionStatus::DENIED;
-
-  return ContentSettingToPermissionStatus(context->GetPermissionStatus(
-      requesting_origin.GetOrigin(), embedding_origin.GetOrigin()));
+  return ContentSettingToPermissionStatus(GetPermissionStatusInternal(
+      permission, requesting_origin, embedding_origin));
 }
 
 void PermissionManager::RegisterPermissionUsage(PermissionType permission,
@@ -435,15 +423,8 @@ int PermissionManager::SubscribePermissionStatusChange(
   subscription->embedding_origin = embedding_origin;
   subscription->callback = callback;
 
-  if (IsConstantPermission(permission)) {
-    subscription->current_value = GetContentSettingForConstantPermission(
-        permission);
-  } else {
-    subscription->current_value =
-        GetPermissionContext(permission)
-            ->GetPermissionStatus(subscription->requesting_origin,
-                                  subscription->embedding_origin);
-  }
+  subscription->current_value = GetPermissionStatusInternal(
+      permission, requesting_origin, embedding_origin);
 
   return subscriptions_.Add(std::move(subscription));
 }
@@ -456,6 +437,12 @@ void PermissionManager::UnsubscribePermissionStatusChange(int subscription_id) {
   if (subscriptions_.IsEmpty())
     HostContentSettingsMapFactory::GetForProfile(profile_)
         ->RemoveObserver(this);
+}
+
+bool PermissionManager::IsPermissionKillSwitchOn(
+    content::PermissionType permission) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  return GetPermissionContext(permission)->IsPermissionKillSwitchOn();
 }
 
 void PermissionManager::OnContentSettingChanged(
@@ -483,10 +470,9 @@ void PermissionManager::OnContentSettingChanged(
         !secondary_pattern.Matches(subscription->embedding_origin))
       continue;
 
-    ContentSetting new_value =
-        GetPermissionContext(subscription->permission)
-            ->GetPermissionStatus(subscription->requesting_origin,
-                                  subscription->embedding_origin);
+    ContentSetting new_value = GetPermissionStatusInternal(
+        subscription->permission, subscription->requesting_origin,
+        subscription->embedding_origin);
     if (subscription->current_value == new_value)
       continue;
 
@@ -501,4 +487,16 @@ void PermissionManager::OnContentSettingChanged(
 
   for (const auto& callback : callbacks)
     callback.Run();
+}
+
+ContentSetting PermissionManager::GetPermissionStatusInternal(
+    PermissionType permission,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) {
+  if (IsConstantPermission(permission))
+    return GetContentSettingForConstantPermission(permission);
+
+  PermissionContextBase* context = GetPermissionContext(permission);
+  return context->GetPermissionStatus(requesting_origin.GetOrigin(),
+                                      embedding_origin.GetOrigin());
 }

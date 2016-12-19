@@ -13,7 +13,6 @@
 #include "content/public/common/media_stream_request.h"
 #include "url/gurl.h"
 
-class MediaStreamDevicePermissionContext;
 class Profile;
 
 // Represents a permission for microphone/camera access.
@@ -37,9 +36,6 @@ class MediaPermission {
       content::MediaStreamRequestResult* denial_reason) const;
 
  private:
-  ContentSetting GetStoredContentSetting(
-      MediaStreamDevicePermissionContext* media_device_permission_context)
-      const;
   bool HasAvailableDevices(const std::string& device_id) const;
 
   const ContentSettingsType content_type_;

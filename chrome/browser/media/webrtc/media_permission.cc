@@ -5,7 +5,6 @@
 #include "chrome/browser/media/webrtc/media_permission.h"
 
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
-#include "chrome/browser/media/webrtc/media_stream_device_permission_context.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -15,6 +14,7 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 namespace {
 
@@ -48,36 +48,32 @@ ContentSetting MediaPermission::GetPermissionStatus(
     return CONTENT_SETTING_BLOCK;
   }
 
-  // Use the Permission Context to find out if the kill switch is on. Set the
-  // denial reason to kill switch.
   content::PermissionType permission_type =
       ContentSettingsTypeToPermission(content_type_);
-  // TODO(raymes): This calls into GetPermissionContext which is a private
-  // member of PermissionManager. Remove this call when this class is refactored
-  // into a PermissionContext. See crbug.com/596786.
-  PermissionContextBase* permission_context =
-      PermissionManager::Get(profile_)->GetPermissionContext(permission_type);
+  PermissionManager* permission_manager = PermissionManager::Get(profile_);
 
-  if (!permission_context) {
-    *denial_reason = content::MEDIA_DEVICE_PERMISSION_DENIED;
-    return CONTENT_SETTING_BLOCK;
-  }
-
-  MediaStreamDevicePermissionContext* media_device_permission_context =
-      static_cast<MediaStreamDevicePermissionContext*>(permission_context);
-
-  if (media_device_permission_context->IsPermissionKillSwitchOn()) {
+  // Find out if the kill switch is on. Set the denial reason to kill switch.
+  if (permission_manager->IsPermissionKillSwitchOn(permission_type)) {
     *denial_reason = content::MEDIA_DEVICE_KILL_SWITCH_ON;
     return CONTENT_SETTING_BLOCK;
   }
 
   // Check policy and content settings.
-  ContentSetting result =
-      GetStoredContentSetting(media_device_permission_context);
-  if (result == CONTENT_SETTING_BLOCK)
-    *denial_reason = content::MEDIA_DEVICE_PERMISSION_DENIED;
+  blink::mojom::PermissionStatus status =
+      permission_manager->GetPermissionStatus(
+          permission_type, requesting_origin_, embedding_origin_);
+  switch (status) {
+    case blink::mojom::PermissionStatus::DENIED:
+      *denial_reason = content::MEDIA_DEVICE_PERMISSION_DENIED;
+      return CONTENT_SETTING_BLOCK;
+    case blink::mojom::PermissionStatus::ASK:
+      return CONTENT_SETTING_ASK;
+    case blink::mojom::PermissionStatus::GRANTED:
+      return CONTENT_SETTING_ALLOW;
+  }
 
-  return result;
+  NOTREACHED();
+  return CONTENT_SETTING_BLOCK;
 }
 
 ContentSetting MediaPermission::GetPermissionStatusWithDeviceRequired(
@@ -91,12 +87,6 @@ ContentSetting MediaPermission::GetPermissionStatusWithDeviceRequired(
   }
 
   return GetPermissionStatus(denial_reason);
-}
-
-ContentSetting MediaPermission::GetStoredContentSetting(
-    MediaStreamDevicePermissionContext* media_device_permission_context) const {
-  return media_device_permission_context->GetPermissionStatus(
-      requesting_origin_, embedding_origin_);
 }
 
 bool MediaPermission::HasAvailableDevices(const std::string& device_id) const {
