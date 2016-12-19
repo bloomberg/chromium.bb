@@ -20,10 +20,8 @@ message Config {
   // URL of the CQ status app to push updates to.
   optional string cq_status_url = 4;
 
-  // When true, hash of the commit is not posted by CQ. This is used for
-  // projects using gnumbd as latter publishes actual hash later. Default value
-  // is false.
-  optional bool hide_ref_in_committed_msg = 5;
+  // DO NOT USE. Kept here for validator error messages.
+  optional bool hide_ref_in_committed_msg = 5 [deprecated = true];
 
   // Delay between commit bursts in seconds. Default value is 480.
   optional int32 commit_burst_delay = 6;
@@ -39,8 +37,7 @@ message Config {
   // Configuration options for Rietveld code review.
   optional Rietveld rietveld = 9;
 
-  // EXPERIMENTAL! Configuration options for Gerrit code review.
-  // TODO(tandrii): update this doc (GERRIT).
+  // Configuration options for Gerrit code review.
   optional Gerrit gerrit = 15;
 
   // This can be used to override the Git repository URL used to checkout and
@@ -53,8 +50,8 @@ message Config {
   // that use gnumbd where CQ should commit into a pending ref.
   optional string target_ref = 11;
 
-  // Deprecated. URL of the SVN repository. We are deprecating SVN support.
-  optional string svn_repo_url = 12;
+  // DO NOT USE. Kept here for validator error messages.
+  optional string svn_repo_url = 12 [deprecated = true];
 
   // If present, the CQ will refrain from processing any commits whose start
   // time is >= this time.
@@ -67,22 +64,13 @@ message Rietveld {
   // Required. URL of the codereview site.
   optional string url = 1;
 
-  // List of regular expressions used to check if CL's base URL should be
-  // processed by this CQ. This may be useful if a single branch has multiple
-  // sub-directories that are handled by different CQs. When no regular
-  // expressions are specified, the regular expression '.*', which matches any
-  // directory, is used.
+  // DO NOT USE. Kept here for validator error messages.
   repeated string project_bases = 2;
 }
 
-// Gerrit CQ is EXPERIMENTAL! See http://crbug.com/493899 for more info.
-//
 // Unlike Rietveld, Gerrit doesn't need a separate url.
 // Instead, the git_repo_url must be specified on the Gerrit instance,
 // and CQ will deduce Gerrit url from it.
-//
-// TODO(tandrii): support Rietveld and Gerrit at the same time.
-// This basically requires to start two CQ instances, instead of one.
 //
 // For example, if https://chromium.googlesource.com/infra/infra.git is your
 // repo url provided in `git_repo_url` above, then
@@ -95,13 +83,20 @@ message Rietveld {
 // see it. This will come handy to enable and customize the CQ-related workflows
 // for your project.
 message Gerrit {
-  // Optional. If set, tells CQ vote on a given label to mark result of CQ run.
-  // The vote is either -1 if failed or 1 on success, and will be given on
+  // Optional. If set, tells CQ to vote on a given label to mark result of CQ
+  // run.  The vote is either -1 if failed or 1 on success, and will be given on
   // non-dry runs only.
   // This vote can then be used in Gerrit's rule for submitting issues, so as to
   // require CQ run. CQ will attempt to submit issue only after setting this
   // label.
   optional string cq_verified_label = 1;
+
+  // Optional and only allowed if cq_verified_label is set. Default: False.
+  // If set, tells CQ to vote on the Verified label even on dry run.
+  // This is useful if CQ has no presubmit builders, as dry run would be
+  // totally equivalent to full run, except that CQ won't try to actually submit
+  // the code.
+  optional bool dry_run_sets_cq_verified_label = 2;
 }
 
 // Verifiers are various types of checks that a Commit Queue performs on a CL.
@@ -111,7 +106,9 @@ message Gerrit {
 message Verifiers {
   // This verifier is used to ensure that an LGTM was posted to the code review
   // site from a valid project committer.
-  // This verifier is not supported with Gerrit.
+  // It is ignored in case of Gerrit, and you should not declare it unless you
+  // use both Gerrit and Rietveld for codereview. Unlike Rietveld, Gerrit has
+  // its own ACL system which should be set up by project admins.
   optional ReviewerLgtmVerifier reviewer_lgtm = 1;
 
   // This verifier is used to check tree status before committing a CL. If the

@@ -39,7 +39,7 @@ infra/infra repository and go utilities `make go-prepare`.
 
 ## Notes
 
-1. Please make sure to use proto3-compatible yntax, e.g. no default
+1. Please make sure to use proto3-compatible syntax, e.g. no default
 values, no required fields. As of this writing (Jan 2016),
 the Go protobuf compiler has been upgraded to 3.0.0. So, if you can generate go
 bindings, all is good.
