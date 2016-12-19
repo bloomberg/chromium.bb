@@ -592,8 +592,12 @@ public class DownloadNotificationService extends Service {
      * @param intent Intent with the download operation.
      */
     private void handleDownloadOperation(final Intent intent) {
+        // TODO(qinmin): Figure out how to properly handle this case.
+        boolean isOfflinePage =
+                IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_OFFLINE_PAGE, false);
         final DownloadSharedPreferenceEntry entry = getDownloadEntryFromIntent(intent);
-        if (entry == null) {
+        if (entry == null
+                && !(isOfflinePage && TextUtils.equals(intent.getAction(), ACTION_DOWNLOAD_OPEN))) {
             handleDownloadOperationForMissingNotification(intent);
             return;
         }
@@ -690,9 +694,12 @@ public class DownloadNotificationService extends Service {
      * This can happen because the DownloadNotificationService learn about downloads later than
      * Download Home does, and may not yet have a DownloadSharedPreferenceEntry for the item.
      *
-     * TODO(qinmin): Talk with dfalcantara@ about whether this is the best path forward.
+     * TODO(qinmin): Figure out how to fix the SharedPreferences so that it properly tracks entries.
      */
     private void handleDownloadOperationForMissingNotification(Intent intent) {
+        // This function should only be called via Download Home, but catch this case to be safe.
+        if (!DownloadManagerService.hasDownloadManagerService()) return;
+
         String action = intent.getAction();
         String downloadGuid = IntentUtils.safeGetStringExtra(intent, EXTRA_DOWNLOAD_GUID);
         boolean isOffTheRecord =
