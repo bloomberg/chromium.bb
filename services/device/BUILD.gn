@@ -13,7 +13,15 @@ source_set("lib") {
 
   deps = [
     "//base",
+    "//device/time_zone_monitor",
     "//services/service_manager/public/cpp",
+  ]
+
+  public_deps = [
+    # TODO(blundell): This dep shouldn't be necessary at all,
+    # but content_shell fails to link in the component build if
+    # this isn't here as a public_dep.
+    "//device/time_zone_monitor/public/interfaces",
   ]
 
   data_deps = [

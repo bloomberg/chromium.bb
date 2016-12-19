@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("cpp") {
+import("//mojo/public/tools/bindings/mojom.gni")
+
+mojom("interfaces") {
   sources = [
-    "constants.cc",
-    "constants.h",
+    "constants.mojom",
   ]
 }

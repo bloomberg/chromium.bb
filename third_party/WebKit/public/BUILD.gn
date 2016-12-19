@@ -591,6 +591,10 @@ source_set("blink_headers") {
     "//third_party/icu:icu_config",
   ]
 
+  public_deps = [
+    "//services/service_manager/public/interfaces:interfaces_blink",
+  ]
+
   deps = [
     ":generate_mojo_bindings",
   ]

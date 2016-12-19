@@ -166,7 +166,6 @@
 #include "device/battery/battery_monitor_impl.h"
 #include "device/gamepad/gamepad_monitor.h"
 #include "device/power_monitor/power_monitor_message_broadcaster.h"
-#include "device/time_zone_monitor/time_zone_monitor.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -1244,16 +1243,6 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
     AddUIThreadInterface(
         registry.get(), base::Bind(&CreateMemoryCoordinatorHandle, GetID()));
   }
-
-  // BrowserMainLoop, which owns TimeZoneMonitor, is alive for the lifetime of
-  // Mojo communication (see BrowserMainLoop::ShutdownThreadsAndCleanUp(),
-  // which shuts down Mojo). Hence, passing that TimeZoneMonitor instance as
-  // a raw pointer here is safe.
-  AddUIThreadInterface(
-      registry.get(),
-      base::Bind(&device::TimeZoneMonitor::Bind,
-                 base::Unretained(
-                     BrowserMainLoop::GetInstance()->time_zone_monitor())));
 
   AddUIThreadInterface(
       registry.get(),

@@ -151,4 +151,7 @@ InterfaceProvider* Platform::interfaceProvider() {
   return InterfaceProvider::getEmptyInterfaceProvider();
 }
 
+void Platform::bindServiceConnector(
+    service_manager::mojom::blink::ConnectorRequest request) {}
+
 }  // namespace blink
