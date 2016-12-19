@@ -773,6 +773,7 @@
                   '|components/payments'\
                   '|third_party/WebKit/LayoutTests/payments/'\
                   '|third_party/WebKit/Source/modules/payments'\
+                  '|ios/chrome/browser/payments/'
     },
     'pepper_api': {
       'filepath': 'ppapi/api'\
