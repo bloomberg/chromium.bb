@@ -325,10 +325,6 @@ class GPU_EXPORT Texture final : public TextureBase {
 
   bool EmulatingRGB();
 
-  static bool ColorRenderable(const FeatureInfo* feature_info,
-                              GLenum internal_format,
-                              bool immutable);
-
  private:
   friend class MailboxManagerImpl;
   friend class MailboxManagerSync;
@@ -505,6 +501,10 @@ class GPU_EXPORT Texture final : public TextureBase {
                                  GLsizei depth,
                                  GLenum format,
                                  GLenum type);
+
+  static bool ColorRenderable(const FeatureInfo* feature_info,
+                              GLenum internal_format,
+                              bool immutable);
 
   static bool TextureFilterable(const FeatureInfo* feature_info,
                                 GLenum internal_format,

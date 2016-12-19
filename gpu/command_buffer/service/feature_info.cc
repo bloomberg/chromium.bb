@@ -591,7 +591,6 @@ void FeatureInfo::InitializeFeatures() {
         extensions.Contains("GL_EXT_sRGB")) ||
        feature_flags_.desktop_srgb_support) &&
        IsWebGL1OrES2Context()) {
-    feature_flags_.ext_srgb = true;
     AddExtensionString("GL_EXT_sRGB");
     validators_.texture_internal_format.AddValue(GL_SRGB_EXT);
     validators_.texture_internal_format.AddValue(GL_SRGB_ALPHA_EXT);
