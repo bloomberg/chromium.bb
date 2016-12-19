@@ -250,6 +250,13 @@ class AccessibilityManager
   // Notify accessibility when locale changes occur.
   void OnLocaleChanged();
 
+  // Whether or not to enable toggling spoken feedback via holding down
+  // two fingers on the screen.
+  bool ShouldToggleSpokenFeedbackViaTouch();
+
+  // Play tick sound indicating spoken feedback will be toggled after countdown.
+  bool PlaySpokenFeedbackToggleCountdown(int tick_count);
+
   // Plays an earcon. Earcons are brief and distinctive sounds that indicate
   // when their mapped event has occurred. The sound key enums can be found in
   // chromeos/audio/chromeos_sounds.h.

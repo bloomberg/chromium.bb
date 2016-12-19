@@ -39,6 +39,8 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_highlight_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/accessibility/select_to_speak_event_handler.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
 #include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
@@ -296,6 +298,12 @@ AccessibilityManager::AccessibilityManager()
                       bundle.GetRawDataResource(IDR_SOUND_EXIT_SCREEN_WAV));
   manager->Initialize(SOUND_ENTER_SCREEN,
                       bundle.GetRawDataResource(IDR_SOUND_ENTER_SCREEN_WAV));
+  manager->Initialize(SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_HIGH,
+                      bundle.GetRawDataResource(
+                          IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_HIGH_WAV));
+  manager->Initialize(SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW,
+                      bundle.GetRawDataResource(
+                          IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW_WAV));
 
   base::FilePath resources_path;
   if (!PathService::Get(chrome::DIR_RESOURCES, &resources_path))
@@ -550,6 +558,35 @@ bool AccessibilityManager::PlayEarcon(int sound_key, PlaySoundOption option) {
     return false;
   }
   return media::SoundsManager::Get()->Play(sound_key);
+}
+
+bool AccessibilityManager::ShouldToggleSpokenFeedbackViaTouch() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  if (!connector)
+    return false;
+
+  if (!connector->IsEnterpriseManaged())
+    return false;
+
+  const policy::DeviceCloudPolicyManagerChromeOS* const
+      device_cloud_policy_manager = connector->GetDeviceCloudPolicyManager();
+  if (!device_cloud_policy_manager)
+    return false;
+
+  if (!device_cloud_policy_manager->IsRemoraRequisition())
+    return false;
+
+  KioskAppManager* manager = KioskAppManager::Get();
+  KioskAppManager::App app;
+  CHECK(manager->GetApp(manager->GetAutoLaunchApp(), &app));
+  return app.was_auto_launched_with_zero_delay;
+}
+
+bool AccessibilityManager::PlaySpokenFeedbackToggleCountdown(int tick_count) {
+  return media::SoundsManager::Get()->Play(
+      tick_count % 2 ? SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_HIGH
+                     : SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW);
 }
 
 void AccessibilityManager::HandleAccessibilityGesture(ui::AXGesture gesture) {

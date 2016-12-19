@@ -146,6 +146,13 @@ AccessibilityAlert DefaultAccessibilityDelegate::GetLastAccessibilityAlert() {
   return accessibility_alert_;
 }
 
+bool DefaultAccessibilityDelegate::ShouldToggleSpokenFeedbackViaTouch() {
+  return false;
+}
+
+void DefaultAccessibilityDelegate::PlaySpokenFeedbackToggleCountdown(
+    int tick_count) {}
+
 void DefaultAccessibilityDelegate::PlayEarcon(int sound_key) {}
 
 base::TimeDelta DefaultAccessibilityDelegate::PlayShutdownSound() const {
