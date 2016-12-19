@@ -566,11 +566,6 @@ void MessageService::OpenChannelImpl(BrowserContext* browser_context,
   channel->receiver.reset(params->receiver.release());
   AddChannel(std::move(channel_ptr), params->receiver_port_id);
 
-  // TODO(robwu): Could |guest_process_id| and |guest_render_frame_routing_id|
-  // be removed? In the past extension message routing was process-based, but
-  // now that extensions are routed from a specific RFH, the special casing for
-  // guest views seems no longer necessary, because the ExtensionMessagePort can
-  // simply obtain the source process & frame ID directly from the RFH.
   int guest_process_id = content::ChildProcessHost::kInvalidUniqueID;
   int guest_render_frame_routing_id = MSG_ROUTING_NONE;
   if (params->include_guest_process_info) {
