@@ -15,9 +15,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_split.h"
+#include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_bridge_service.h"
+#include "components/arc/common/intent_helper.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_registry.h"
@@ -39,6 +42,35 @@ const char* const kExtensionIds[] = {
     NoteTakingHelper::kDevKeepExtensionId,
     NoteTakingHelper::kProdKeepExtensionId,
 };
+
+// Returns true if |app_id|, a value from prefs::kNoteTakingAppId, looks like
+// it's probably an Android package name rather than a Chrome extension ID.
+bool LooksLikeAndroidPackageName(const std::string& app_id) {
+  // Android package names are required to contain at least one period (see
+  // validateName() in PackageParser.java), while Chrome extension IDs contain
+  // only characters in [a-p].
+  return app_id.find(".") != std::string::npos;
+}
+
+// Returns the helper used for intent-related communication with Android, or
+// null if it's unavailable.
+arc::mojom::IntentHelperInstance* GetIntentHelper(const std::string& method,
+                                                  uint32_t min_version) {
+  return arc::ArcServiceManager::Get()
+      ->arc_bridge_service()
+      ->intent_helper()
+      ->GetInstanceForMethod(method, min_version);
+}
+
+// Creates a new Mojo IntentInfo struct for launching an Android note-taking app
+// with an optional ClipData URI.
+arc::mojom::IntentInfoPtr CreateIntentInfo(const GURL& clip_data_uri) {
+  arc::mojom::IntentInfoPtr intent = arc::mojom::IntentInfo::New();
+  intent->action = NoteTakingHelper::kIntentAction;
+  if (!clip_data_uri.is_empty())
+    intent->clip_data_uri = clip_data_uri.spec();
+  return intent;
+}
 
 // Returns all installed and enabled whitelisted Chrome note-taking apps.
 std::vector<const extensions::Extension*> GetChromeApps(Profile* profile) {
@@ -73,6 +105,8 @@ std::vector<const extensions::Extension*> GetChromeApps(Profile* profile) {
 
 }  // namespace
 
+const char NoteTakingHelper::kIntentAction[] =
+    "org.chromium.arc.intent.action.CREATE_NOTE";
 const char NoteTakingHelper::kDevKeepExtensionId[] =
     "ogfjaccbdfhecploibfbhighmebiffla";
 const char NoteTakingHelper::kProdKeepExtensionId[] =
@@ -97,6 +131,18 @@ NoteTakingHelper* NoteTakingHelper::Get() {
   return g_helper;
 }
 
+void NoteTakingHelper::AddObserver(Observer* observer) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(observer);
+  observers_.AddObserver(observer);
+}
+
+void NoteTakingHelper::RemoveObserver(Observer* observer) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(observer);
+  observers_.RemoveObserver(observer);
+}
+
 NoteTakingAppInfos NoteTakingHelper::GetAvailableApps(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   NoteTakingAppInfos infos;
@@ -105,6 +151,9 @@ NoteTakingAppInfos NoteTakingHelper::GetAvailableApps(Profile* profile) {
       GetChromeApps(profile);
   for (const auto& app : chrome_apps)
     infos.push_back(NoteTakingAppInfo{app->name(), app->id(), false});
+
+  if (arc::ArcSessionManager::Get()->IsAllowedForProfile(profile))
+    infos.insert(infos.end(), android_apps_.begin(), android_apps_.end());
 
   // Determine which app, if any, is preferred.
   const std::string pref_app_id =
@@ -149,14 +198,85 @@ void NoteTakingHelper::LaunchAppForNewNote(Profile* profile,
     LaunchAppInternal(profile, infos[0].app_id, path);
 }
 
+void NoteTakingHelper::OnArcShutdown() {}
+
+void NoteTakingHelper::OnIntentFiltersUpdated() {
+  if (android_enabled_)
+    UpdateAndroidApps();
+}
+
+void NoteTakingHelper::OnArcOptInChanged(bool enabled) {
+  android_enabled_ = enabled;
+  if (!enabled) {
+    android_apps_.clear();
+    android_apps_received_ = false;
+  }
+  for (auto& observer : observers_)
+    observer.OnAvailableNoteTakingAppsUpdated();
+}
+
 NoteTakingHelper::NoteTakingHelper()
     : launch_chrome_app_callback_(
-          base::Bind(&apps::LaunchPlatformAppWithAction)) {
+          base::Bind(&apps::LaunchPlatformAppWithAction)),
+      weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // Check if the primary profile has already enabled ARC and watch for changes.
+  auto session_manager = arc::ArcSessionManager::Get();
+  session_manager->AddObserver(this);
+  android_enabled_ = session_manager->IsArcEnabled();
+
+  // ArcServiceManager will notify us about changes to the list of available
+  // Android apps.
+  auto service_manager = arc::ArcServiceManager::Get();
+  service_manager->AddObserver(this);
+
+  // If the ARC intent helper is ready, get the Android apps. Otherwise,
+  // UpdateAndroidApps() will be called when ArcServiceManager calls
+  // OnIntentFiltersUpdated().
+  if (android_enabled_ &&
+      arc::ArcServiceManager::Get()
+          ->arc_bridge_service()
+          ->intent_helper()
+          ->has_instance())
+    UpdateAndroidApps();
 }
 
 NoteTakingHelper::~NoteTakingHelper() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // ArcSessionManagerTest shuts down ARC before NoteTakingHelper.
+  if (arc::ArcServiceManager::Get())
+    arc::ArcServiceManager::Get()->RemoveObserver(this);
+  if (arc::ArcSessionManager::Get())
+    arc::ArcSessionManager::Get()->RemoveObserver(this);
+}
+
+void NoteTakingHelper::UpdateAndroidApps() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  auto* helper = GetIntentHelper("RequestIntentHandlerList", 12);
+  if (!helper)
+    return;
+  helper->RequestIntentHandlerList(
+      CreateIntentInfo(GURL()), base::Bind(&NoteTakingHelper::OnGotAndroidApps,
+                                           weak_ptr_factory_.GetWeakPtr()));
+}
+
+void NoteTakingHelper::OnGotAndroidApps(
+    std::vector<arc::mojom::IntentHandlerInfoPtr> handlers) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!android_enabled_)
+    return;
+
+  android_apps_.clear();
+  android_apps_.reserve(handlers.size());
+  for (const auto& it : handlers) {
+    android_apps_.emplace_back(
+        NoteTakingAppInfo{it->name, it->package_name, false});
+  }
+  android_apps_received_ = true;
+
+  for (auto& observer : observers_)
+    observer.OnAvailableNoteTakingAppsUpdated();
 }
 
 bool NoteTakingHelper::LaunchAppInternal(Profile* profile,
@@ -164,17 +284,45 @@ bool NoteTakingHelper::LaunchAppInternal(Profile* profile,
                                          const base::FilePath& path) {
   DCHECK(profile);
 
-  const extensions::ExtensionRegistry* extension_registry =
-      extensions::ExtensionRegistry::Get(profile);
-  const extensions::Extension* app = extension_registry->GetExtensionById(
-      app_id, extensions::ExtensionRegistry::ENABLED);
-  if (!app) {
-    LOG(WARNING) << "Failed to find Chrome note-taking app " << app_id;
-    return false;
+  if (LooksLikeAndroidPackageName(app_id)) {
+    // Android app.
+    if (!arc::ArcSessionManager::Get()->IsAllowedForProfile(profile)) {
+      LOG(WARNING) << "Can't launch Android app " << app_id << " for profile";
+      return false;
+    }
+    auto* helper = GetIntentHelper("HandleIntent", 10);
+    if (!helper)
+      return false;
+
+    GURL clip_data_uri;
+    if (!path.empty()) {
+      if (!file_manager::util::ConvertPathToArcUrl(path, &clip_data_uri) ||
+          !clip_data_uri.is_valid()) {
+        LOG(WARNING) << "Failed to convert " << path.value() << " to ARC URI";
+        return false;
+      }
+    }
+
+    // Only set the package name: leaving the activity name unset enables the
+    // app to rename its activities.
+    arc::mojom::ActivityNamePtr activity = arc::mojom::ActivityName::New();
+    activity->package_name = app_id;
+
+    helper->HandleIntent(CreateIntentInfo(clip_data_uri), std::move(activity));
+  } else {
+    // Chrome app.
+    const extensions::ExtensionRegistry* extension_registry =
+        extensions::ExtensionRegistry::Get(profile);
+    const extensions::Extension* app = extension_registry->GetExtensionById(
+        app_id, extensions::ExtensionRegistry::ENABLED);
+    if (!app) {
+      LOG(WARNING) << "Failed to find Chrome note-taking app " << app_id;
+      return false;
+    }
+    auto action_data = base::MakeUnique<app_runtime::ActionData>();
+    action_data->action_type = app_runtime::ActionType::ACTION_TYPE_NEW_NOTE;
+    launch_chrome_app_callback_.Run(profile, app, std::move(action_data), path);
   }
-  auto action_data = base::MakeUnique<app_runtime::ActionData>();
-  action_data->action_type = app_runtime::ActionType::ACTION_TYPE_NEW_NOTE;
-  launch_chrome_app_callback_.Run(profile, app, std::move(action_data), path);
 
   return true;
 }

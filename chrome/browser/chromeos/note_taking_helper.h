@@ -8,8 +8,11 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "components/arc/arc_service_manager.h"
 
 class Profile;
 
@@ -44,14 +47,28 @@ struct NoteTakingAppInfo {
 using NoteTakingAppInfos = std::vector<NoteTakingAppInfo>;
 
 // Singleton class used to launch a note-taking app.
-class NoteTakingHelper {
+class NoteTakingHelper : public arc::ArcServiceManager::Observer,
+                         public arc::ArcSessionManager::Observer {
  public:
+  // Interface for observing changes to the list of available apps.
+  class Observer {
+   public:
+    virtual ~Observer() = default;
+
+    // Called when the list of available apps that will be returned by
+    // GetAvailableApps() changes or when |android_enabled_| changes state.
+    virtual void OnAvailableNoteTakingAppsUpdated() = 0;
+  };
+
   // Callback used to launch a Chrome app.
   using LaunchChromeAppCallback = base::Callback<void(
       Profile*,
       const extensions::Extension*,
       std::unique_ptr<extensions::api::app_runtime::ActionData>,
       const base::FilePath&)>;
+
+  // Intent action used to launch Android apps.
+  static const char kIntentAction[];
 
   // Extension IDs for the development and released versions of the Google Keep
   // Chrome app.
@@ -62,10 +79,17 @@ class NoteTakingHelper {
   static void Shutdown();
   static NoteTakingHelper* Get();
 
+  bool android_enabled() const { return android_enabled_; }
+  bool android_apps_received() const { return android_apps_received_; }
+
   void set_launch_chrome_app_callback_for_test(
       const LaunchChromeAppCallback& callback) {
     launch_chrome_app_callback_ = callback;
   }
+
+  // Adds or removes an observer.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   // Returns a list of available note-taking apps.
   std::vector<NoteTakingAppInfo> GetAvailableApps(Profile* profile);
@@ -83,9 +107,22 @@ class NoteTakingHelper {
   // first.
   void LaunchAppForNewNote(Profile* profile, const base::FilePath& path);
 
+  // arc::ArcServiceManager::Observer:
+  void OnArcShutdown() override;
+  void OnIntentFiltersUpdated() override;
+
+  // arc::ArcSessionManager::Observer:
+  void OnArcOptInChanged(bool enabled) override;
+
  private:
   NoteTakingHelper();
-  ~NoteTakingHelper();
+  ~NoteTakingHelper() override;
+
+  // Requests a list of Android note-taking apps from ARC.
+  void UpdateAndroidApps();
+
+  // Handles ARC's response to an earlier UpdateAndroidApps() call.
+  void OnGotAndroidApps(std::vector<arc::mojom::IntentHandlerInfoPtr> handlers);
 
   // Helper method that launches |app_id| (either an Android package name or a
   // Chrome extension ID) to create a new note with an optional attached file at
@@ -94,8 +131,24 @@ class NoteTakingHelper {
                          const std::string& app_id,
                          const base::FilePath& path);
 
+  // True iff ARC is enabled (i.e. per the checkbox on the settings page). Note
+  // that ARC may not be fully started yet when this is true, but it is expected
+  // to start eventually. Similarly, ARC may not be fully shut down yet when
+  // this is false, but will be eventually.
+  bool android_enabled_ = false;
+
+  // This is set to true after |android_apps_| is updated.
+  bool android_apps_received_ = false;
+
   // Callback used to launch Chrome apps. Can be overridden for tests.
   LaunchChromeAppCallback launch_chrome_app_callback_;
+
+  // Cached information about available Android note-taking apps.
+  NoteTakingAppInfos android_apps_;
+
+  base::ObserverList<Observer> observers_;
+
+  base::WeakPtrFactory<NoteTakingHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NoteTakingHelper);
 };

@@ -489,6 +489,7 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   media::SoundsManager::Create();
 
+  // |arc_service_launcher_| must be initialized before NoteTakingHelper.
   NoteTakingHelper::Initialize();
 
   AccessibilityManager::Initialize();
@@ -797,6 +798,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   BootTimesRecorder::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
 
+  // This must be shut down before |arc_service_launcher_|.
+  NoteTakingHelper::Shutdown();
+
   arc_service_launcher_->Shutdown();
 
   // Unregister CrosSettings observers before CrosSettings is destroyed.
@@ -857,8 +861,6 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   if (!chrome::IsRunningInMash())
     MagnificationManager::Shutdown();
-
-  NoteTakingHelper::Shutdown();
 
   media::SoundsManager::Shutdown();
 
