@@ -735,7 +735,6 @@ crbug.com/520189 [ Mac ] virtual/mojo-loading/http/tests/misc/submit-post-keygen
 
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/transition-and-animation-2.html [ Timeout ]
-crbug.com/248938 [ Debug ] virtual/threaded/animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/cancel-and-start-new.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/change-keyframes-name.html [ Failure Pass Timeout ]
 crbug.com/248938 virtual/threaded/animations/change-one-anim.html [ Failure Pass ]
@@ -763,8 +762,6 @@ crbug.com/248938 virtual/threaded/transitions/transition-end-event-rendering.htm
 crbug.com/248938 [ Linux ] virtual/threaded/transitions/unprefixed-perspective-origin.html [ Pass Timeout ]
 crbug.com/248938 [ Mac ] virtual/threaded/transitions/interrupted-all-transition.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/fill-mode-multiple-keyframes.html [ Pass Failure ]
-
-crbug.com/674715 [  Win7 Debug ] animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
 
 crbug.com/659123 [ Mac ] fast/css/text-overflow-ellipsis-button.html [ Pass Failure ]
 
@@ -2400,9 +2397,6 @@ crbug.com/664853 virtual/mojo-loading/webexposed/css-properties-as-js-properties
 crbug.com/664853 virtual/mojo-loading/webexposed/web-animations-api.html [ Pass Failure ]
 crbug.com/664855 virtual/scroll_customization/fast/scroll-behavior/main-frame-interrupted-scroll.html [ Pass Failure ]
 crbug.com/664856 virtual/sharedarraybuffer/fast/workers/worker-gc.html [ Pass Failure ]
-
-# Possible duplicate of crbug.com/248938:
-# crbug.com/664857 virtual/threaded/animations/3d/transform-origin-vs-functions.html [ Pass Failure ]
 
 crbug.com/664857 virtual/threaded/animations/animation-transition-collision-crash.html [ Pass Failure ]
 crbug.com/664857 virtual/threaded/animations/composited-animations-simple.html [ Pass Failure ]
