@@ -5,7 +5,9 @@
             var runPixelTests = true;
             
             function init() {
-                waitForEventAndEnd(document, 'webkitfullscreenchange');
+                waitForEventOnce(document, 'webkitfullscreenchange', function() {
+                    testRunner.layoutAndPaintAsyncThen(endTest);
+                });
                 runWithKeyDown(goFullScreen);
             }
             

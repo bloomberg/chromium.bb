@@ -58,7 +58,7 @@ class FullscreenController {
 
   // Called by Fullscreen (via ChromeClient) to notify that the fullscreen
   // element has changed.
-  void fullscreenElementChanged(Element*, Element*);
+  void fullscreenElementChanged(Element* fromElement, Element* toElement);
 
   bool isFullscreen() { return m_state == State::Fullscreen; }
 

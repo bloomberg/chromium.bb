@@ -34,7 +34,6 @@
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/RuleSet.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/dom/Fullscreen.h"
 #include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/layout/LayoutTheme.h"

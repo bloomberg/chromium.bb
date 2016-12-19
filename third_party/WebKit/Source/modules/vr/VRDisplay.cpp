@@ -702,7 +702,7 @@ void VRDisplay::onFullscreenCheck(TimerBase*) {
   // depend on the Fullscreen API to fake VR presentation, so this will
   // become unnessecary. Until that point, though, this seems preferable to
   // adding a bunch of notification plumbing to Fullscreen.
-  if (!Fullscreen::isCurrentFullScreenElement(*m_layer.source())) {
+  if (!Fullscreen::isFullscreenElement(*m_layer.source())) {
     // TODO(mthiesse): Due to asynchronous resizing, we might get kicked out of
     // fullscreen when changing display parameters upon entering WebVR. So one
     // time only, we reenter fullscreen after having left it; otherwise we exit

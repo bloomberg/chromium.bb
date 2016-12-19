@@ -3427,7 +3427,7 @@ bool HTMLMediaElement::hasPendingActivity() const {
 }
 
 bool HTMLMediaElement::isFullscreen() const {
-  return Fullscreen::isCurrentFullScreenElement(*this);
+  return Fullscreen::isFullscreenElement(*this);
 }
 
 void HTMLMediaElement::didEnterFullscreen() {

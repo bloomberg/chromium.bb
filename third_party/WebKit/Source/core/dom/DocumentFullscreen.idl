@@ -30,8 +30,8 @@ partial interface Document {
     [RuntimeEnabled=FullscreenUnprefixed] attribute EventHandler onfullscreenerror;
 
     // Mozilla version
-    [MeasureAs=PrefixedDocumentIsFullscreen, ImplementedAs=currentFullScreenElement] readonly attribute boolean webkitIsFullScreen;
-    [MeasureAs=PrefixedDocumentCurrentFullScreenElement, ImplementedAs=currentFullScreenElement] readonly attribute Element webkitCurrentFullScreenElement;
+    [MeasureAs=PrefixedDocumentIsFullscreen, ImplementedAs=fullscreenElement] readonly attribute boolean webkitIsFullScreen;
+    [MeasureAs=PrefixedDocumentCurrentFullScreenElement, ImplementedAs=fullscreenElement] readonly attribute Element webkitCurrentFullScreenElement;
     [MeasureAs=PrefixedDocumentCancelFullScreen, ImplementedAs=exitFullscreen] void webkitCancelFullScreen();
 
     // W3C version

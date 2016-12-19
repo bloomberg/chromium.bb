@@ -41,8 +41,4 @@ void DocumentFullscreen::exitFullscreen(Document& document) {
   Fullscreen::exitFullscreen(document);
 }
 
-Element* DocumentFullscreen::currentFullScreenElement(Document& document) {
-  return Fullscreen::currentFullScreenElementForBindingFrom(document);
-}
-
 }  // namespace blink

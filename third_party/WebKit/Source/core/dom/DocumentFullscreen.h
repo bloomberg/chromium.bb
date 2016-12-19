@@ -45,9 +45,6 @@ class DocumentFullscreen {
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenchange);
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenerror);
 
-  // Mozilla version
-  static Element* currentFullScreenElement(Document&);
-
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange);
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenerror);
 };
