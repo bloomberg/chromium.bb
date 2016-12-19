@@ -4,45 +4,45 @@
 
 <script>
 var EPSILON = 1e-6; // float epsilon
+function angle(deg) {
+  return new CSSAngleValue(deg, 'deg');
+}
 var values = [
-  {input: new CSSRotation(0), angle: 0, x: 0, y: 0, z: 1,
+  {input: new CSSRotation(angle(0)), angle: 0, x: 0, y: 0, z: 1,
     is2D: true, cssText: "rotate(0deg)",
     asMatrix: new CSSMatrixTransformComponent(1, 0, 0, 1, 0, 0)},
-  {input: new CSSRotation(10), angle: 10, x: 0, y: 0, z: 1,
+  {input: new CSSRotation(angle(10)), angle: 10, x: 0, y: 0, z: 1,
     is2D: true, cssText: "rotate(10deg)",
     asMatrix: new CSSMatrixTransformComponent(0.9848077, 0.1736481, -0.1736481, 0.9848077, 0, 0)},
-  {input: new CSSRotation(new CSSAngleValue(10, 'deg')), angle: 10, x: 0, y: 0, z: 1,
-    is2D: true, cssText: "rotate(10deg)",
-    asMatrix: new CSSMatrixTransformComponent(0.9848077, 0.1736481, -0.1736481, 0.9848077, 0, 0)},
-  {input: new CSSRotation(-21), angle: -21, x: 0, y: 0, z: 1,
+  {input: new CSSRotation(angle(-21)), angle: -21, x: 0, y: 0, z: 1,
     is2D: true, cssText: "rotate(-21deg)",
     asMatrix: new CSSMatrixTransformComponent(0.9335804, -0.3583679, 0.3583679, 0.9335804, 0, 0)},
-  {input: new CSSRotation(3.2), angle: 3.2, x: 0, y: 0, z: 1,
+  {input: new CSSRotation(angle(3.2)), angle: 3.2, x: 0, y: 0, z: 1,
     is2D: true, cssText: "rotate(3.2deg)",
     asMatrix: new CSSMatrixTransformComponent(0.9984407, 0.0558215, -0.0558215, 0.9984407, 0, 0)},
-  {input: new CSSRotation(0, 0, 1, 90), angle: 90, x: 0, y: 0, z: 1,
+  {input: new CSSRotation(0, 0, 1, angle(90)), angle: 90, x: 0, y: 0, z: 1,
     is2D: false, cssText: "rotate3d(0, 0, 1, 90deg)",
     asMatrix: new CSSMatrixTransformComponent(0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)},
-  {input: new CSSRotation(2.7, -3, 4.4, 0), angle: 0, x: 2.7, y: -3, z: 4.4,
+  {input: new CSSRotation(2.7, -3, 4.4, angle(0)), angle: 0, x: 2.7, y: -3, z: 4.4,
     is2D: false, cssText: "rotate3d(2.7, -3, 4.4, 0deg)",
     asMatrix: new CSSMatrixTransformComponent(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)},
-  {input: new CSSRotation(2, 3, 4, 10), angle: 10, x: 2, y: 3, z: 4,
+  {input: new CSSRotation(2, 3, 4, angle(10)), angle: 10, x: 2, y: 3, z: 4,
     is2D: false, cssText: "rotate3d(2, 3, 4, 10deg)",
     asMatrix: new CSSMatrixTransformComponent(0.9869032, 0.1321258, -0.0925460, 0, -0.1258394,
       0.9895225, 0.0707777, 0, 0.1009279, -0.0582048, 0.9931896, 0, 0, 0, 0, 1)},
-  {input: new CSSRotation(2, 3.7, -4, -1.2), angle: -1.2, x: 2, y: 3.7, z: -4,
+  {input: new CSSRotation(2, 3.7, -4, angle(-1.2)), angle: -1.2, x: 2, y: 3.7, z: -4,
     is2D: false, cssText: "rotate3d(2, 3.7, -4, -1.2deg)",
     asMatrix: new CSSMatrixTransformComponent(0.9998067, 0.01448049, 0.0132978, 0, -0.0143841,
     0.9998698, -0.0073125, 0, -0.0134019, 0.0071198, 0.9998848, 0, 0, 0, 0, 1)},
   {input: new CSSRotation(1, 0, 0, new CSSAngleValue(0.5, 'turn')), angle: 180, x: 1, y: 0, z: 0,
-    is2D: false, cssText: "rotate3d(1, 0, 0, 180deg)",
+    is2D: false, cssText: "rotate3d(1, 0, 0, 0.5turn)",
     asMatrix: new CSSMatrixTransformComponent(1, 0, 0, 0, 0, -1, 1.2246467991473532e-16, 0, 0,
     -1.2246467991473532e-16, -1, 0, 0, 0, 0, 1)}
 ];
 
 test(function() {
   for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.angle, values[i].angle);
+    assert_equals(values[i].input.angle.degrees, values[i].angle);
     assert_equals(values[i].input.x, values[i].x);
     assert_equals(values[i].input.y, values[i].y);
     assert_equals(values[i].input.z, values[i].z);

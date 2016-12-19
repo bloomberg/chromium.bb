@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<script src='../../../resources/testharness.js'></script>
+<script src='../../../resources/testharnessreport.js'></script>
+<script src='property-suite.js'></script>
+
+<div id="testElement"></div>
+
+<script>
+
+function cssTransformWithRotate(angleValue) {
+  return new CSSTransformValue([
+      new CSSRotation(angleValue)]);
+}
+
+function cssTransformWithRotate3D(x, y, z, angleValue) {
+  return new CSSTransformValue([
+      new CSSRotation(x, y, z, angleValue)]);
+}
+
+runInlineStylePropertyMapTests( {
+  property: 'transform',
+  validKeywords: [
+    'none',
+  ],
+  validObjects: [
+    // Translations
+    // TODO(meade)
+    // Scales
+    // TODO(meade)
+    // Skews
+    // TODO(meade)
+    // Rotations
+    cssTransformWithRotate(new CSSAngleValue(30, 'deg')),
+    cssTransformWithRotate(new CSSAngleValue(10, 'rad')),
+    cssTransformWithRotate(new CSSAngleValue(2, 'grad')),
+    cssTransformWithRotate(new CSSAngleValue(0.2, 'turn')),
+    cssTransformWithRotate3D(1, 2, 3, new CSSAngleValue(30, 'deg')),
+    cssTransformWithRotate3D(1, 2, 3, new CSSAngleValue(10, 'rad')),
+    cssTransformWithRotate3D(1, 2, 3, new CSSAngleValue(2, 'grad')),
+    cssTransformWithRotate3D(1, 2, 3, new CSSAngleValue(0.2, 'turn')),
+    // Perspectives
+    // TODO(meade)
+  ],
+  supportsMultiple: false,
+  invalidObjects: [new CSSSimpleLength(4, 'px')]
+});
+
+test(function() {
+  testElement.style.transform = 'rotate(calc(45deg + 1rad))';
+  let result = testElement.styleMap.get('transform');
+  assert_equals(result.constructor, CSSStyleValue,
+      'result is a base CSSStyleValue');
+  assert_equals(result.cssText, 'rotate(calc(102.296deg))');
+}, 'Getting transform when it has a rotate with a calc angle does not crash');
+
+test(function() {
+  testElement.style.transform = 'rotate3d(1, 2, 3, calc(45deg + 1rad))';
+  let result = testElement.styleMap.get('transform');
+  assert_equals(result.constructor, CSSStyleValue,
+      'result is a base CSSStyleValue');
+  assert_equals(result.cssText, 'rotate3d(1, 2, 3, calc(102.296deg))');
+}, 'Getting transform when it has a rotate3d with a calc angle does not crash');
+
+</script>
+

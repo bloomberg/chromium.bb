@@ -3,12 +3,11 @@
 <script src="../../resources/testharnessreport.js"></script>
 
 <div id="testElement"></div>
-<div id="crashTest" style="transform:translateY(50px)"></div>
 
 <script>
 
 test(function() {
-  var transform = new CSSTransformValue([new CSSRotation(20)]);
+  var transform = new CSSTransformValue([new CSSRotation(new CSSAngleValue(20, 'deg'))]);
 
   assert_equals(testElement.styleMap.get('transform'), null);
 
@@ -17,14 +16,15 @@ test(function() {
 }, "Setting transform works on a regular element.");
 
 test(function() {
-  var transform = new CSSTransformValue([new CSSRotation(30)]);
+  var transform = new CSSTransformValue([new CSSRotation(new CSSAngleValue(30, 'deg'))]);
 
   testElement.styleMap.set('transform', transform);
   assert_equals(testElement.styleMap.get('transform').cssText, 'rotate(30deg)');
 }, "Getting transform works on a regular element.");
 
 test(function() {
-  crashTest.styleMap.entries();
+  testElement.style.transform = 'translateY(50px)';
+  testElement.styleMap.entries();
 }, "Unhandled case doesn't crash.");
 
 </script>

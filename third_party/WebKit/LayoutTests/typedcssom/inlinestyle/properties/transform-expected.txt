@@ -1,0 +1,43 @@
+This is a testharness.js-based test.
+PASS Setting transform to none 
+PASS Setting transform to initial 
+PASS Setting transform to inherit 
+PASS Setting transform to unset 
+PASS Setting transform to CSSTransformValue with value rotate(30deg) 
+PASS Setting transform to CSSTransformValue with value rotate(10rad) 
+PASS Setting transform to CSSTransformValue with value rotate(2grad) 
+PASS Setting transform to CSSTransformValue with value rotate(0.2turn) 
+PASS Setting transform to CSSTransformValue with value rotate3d(1, 2, 3, 30deg) 
+PASS Setting transform to CSSTransformValue with value rotate3d(1, 2, 3, 10rad) 
+PASS Setting transform to CSSTransformValue with value rotate3d(1, 2, 3, 2grad) 
+PASS Setting transform to CSSTransformValue with value rotate3d(1, 2, 3, 0.2turn) 
+PASS Setting transform to invalid value CSSSimpleLength throws 
+PASS Setting transform to invalid value null throws 
+PASS Setting transform to invalid value undefined throws 
+PASS Setting transform to invalid value true throws 
+PASS Setting transform to invalid value false throws 
+PASS Setting transform to invalid value 1 throws 
+PASS Setting transform to invalid value hello throws 
+PASS Setting transform to invalid value [object Object] throws 
+PASS Setting transform to invalid value CSSKeywordValue throws 
+FAIL Getting transform when it is set to none assert_true: result instanceof CSSKeywordValue: expected true got false
+FAIL Getting transform when it is set to initial assert_true: result instanceof CSSKeywordValue: expected true got false
+FAIL Getting transform when it is set to inherit assert_true: result instanceof CSSKeywordValue: expected true got false
+FAIL Getting transform when it is set to unset assert_true: result instanceof CSSKeywordValue: expected true got false
+PASS Getting transform with a CSSTransformValue whose value is rotate(30deg) 
+PASS Getting transform with a CSSTransformValue whose value is rotate(10rad) 
+PASS Getting transform with a CSSTransformValue whose value is rotate(2grad) 
+PASS Getting transform with a CSSTransformValue whose value is rotate(0.2turn) 
+PASS Getting transform with a CSSTransformValue whose value is rotate3d(1, 2, 3, 30deg) 
+PASS Getting transform with a CSSTransformValue whose value is rotate3d(1, 2, 3, 10rad) 
+PASS Getting transform with a CSSTransformValue whose value is rotate3d(1, 2, 3, 2grad) 
+PASS Getting transform with a CSSTransformValue whose value is rotate3d(1, 2, 3, 0.2turn) 
+PASS getAll for single-valued transform 
+PASS Delete transform removes the value form the styleMap 
+PASS transform shows up in getProperties 
+PASS Setting transform to a sequence throws 
+PASS Appending to transform throws 
+PASS Getting transform when it has a rotate with a calc angle does not crash 
+PASS Getting transform when it has a rotate3d with a calc angle does not crash 
+Harness: the test ran to completion.
+

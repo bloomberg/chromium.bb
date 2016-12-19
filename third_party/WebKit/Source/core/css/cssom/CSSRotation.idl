@@ -3,14 +3,12 @@
 // found in the LICENSE file.
 
 [
-    Constructor(double angle),
     Constructor(CSSAngleValue angleValue),
-    Constructor(double x, double y, double z, double angle),
     Constructor(double x, double y, double z, CSSAngleValue angle),
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface CSSRotation : CSSTransformComponent {
-    readonly attribute double angle;
+    readonly attribute CSSAngleValue angle;
     readonly attribute double x;
     readonly attribute double y;
     readonly attribute double z;

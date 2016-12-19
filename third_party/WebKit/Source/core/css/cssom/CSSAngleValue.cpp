@@ -17,6 +17,14 @@ CSSAngleValue* CSSAngleValue::create(double value, const String& unit) {
   return new CSSAngleValue(value, primitiveUnit);
 }
 
+CSSAngleValue* CSSAngleValue::fromCSSValue(const CSSPrimitiveValue& value) {
+  DCHECK(value.isAngle());
+  if (value.isCalculated())
+    return nullptr;
+  return new CSSAngleValue(value.getDoubleValue(),
+                           value.typeWithCalcResolved());
+}
+
 double CSSAngleValue::degrees() const {
   switch (m_unit) {
     case CSSPrimitiveValue::UnitType::Degrees:

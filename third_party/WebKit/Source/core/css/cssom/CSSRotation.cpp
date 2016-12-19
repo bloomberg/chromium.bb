@@ -17,8 +17,10 @@ bool isNumberValue(const CSSValue& value) {
 
 CSSRotation* fromCSSRotate(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 1UL);
-  return CSSRotation::create(
-      toCSSPrimitiveValue(value.item(0)).computeDegrees());
+  const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(value.item(0));
+  if (!primitiveValue.isAngle())
+    return nullptr;
+  return CSSRotation::create(CSSAngleValue::fromCSSValue(primitiveValue));
 }
 
 CSSRotation* fromCSSRotate3d(const CSSFunctionValue& value) {
@@ -26,19 +28,22 @@ CSSRotation* fromCSSRotate3d(const CSSFunctionValue& value) {
   DCHECK(isNumberValue(value.item(0)));
   DCHECK(isNumberValue(value.item(1)));
   DCHECK(isNumberValue(value.item(2)));
-  // computeDegrees asserts that value.item(3) is an angle.
+  const CSSPrimitiveValue& angle = toCSSPrimitiveValue(value.item(3));
+  if (!angle.isAngle())
+    return nullptr;
 
   double x = toCSSPrimitiveValue(value.item(0)).getDoubleValue();
   double y = toCSSPrimitiveValue(value.item(1)).getDoubleValue();
   double z = toCSSPrimitiveValue(value.item(2)).getDoubleValue();
-  double angle = toCSSPrimitiveValue(value.item(3)).computeDegrees();
-  return CSSRotation::create(x, y, z, angle);
+
+  return CSSRotation::create(x, y, z, CSSAngleValue::fromCSSValue(angle));
 }
 
 CSSRotation* fromCSSRotateXYZ(const CSSFunctionValue& value) {
   DCHECK_EQ(value.length(), 1UL);
-  double angle = toCSSPrimitiveValue(value.item(0)).computeDegrees();
 
+  CSSAngleValue* angle =
+      CSSAngleValue::fromCSSValue(toCSSPrimitiveValue(value.item(0)));
   switch (value.functionType()) {
     case CSSValueRotateX:
       return CSSRotation::create(1, 0, 0, angle);
@@ -81,8 +86,7 @@ CSSFunctionValue* CSSRotation::toCSSValue() const {
     result->append(
         *CSSPrimitiveValue::create(m_z, CSSPrimitiveValue::UnitType::Number));
   }
-  result->append(*CSSPrimitiveValue::create(
-      m_angle, CSSPrimitiveValue::UnitType::Degrees));
+  result->append(*CSSPrimitiveValue::create(m_angle->value(), m_angle->unit()));
   return result;
 }
 
