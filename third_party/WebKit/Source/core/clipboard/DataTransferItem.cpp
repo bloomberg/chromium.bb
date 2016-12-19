@@ -33,9 +33,13 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "core/clipboard/DataObjectItem.h"
 #include "core/clipboard/DataTransfer.h"
+#include "core/dom/ExecutionContext.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/dom/StringCallback.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "public/platform/WebTraceLocation.h"
 #include "wtf/StdLibExtras.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -72,9 +76,11 @@ void DataTransferItem::getAsString(ExecutionContext* context,
   if (!callback || m_item->kind() != DataObjectItem::StringKind)
     return;
 
-  StringCallback::scheduleCallback(TaskType::UserInteraction, callback, context,
-                                   m_item->getAsString(),
-                                   "DataTransferItem.getAsString");
+  context->postTask(
+      TaskType::UserInteraction, BLINK_FROM_HERE,
+      createSameThreadTask(&StringCallback::handleEvent,
+                           wrapPersistent(callback), m_item->getAsString()),
+      "DataTransferItem.getAsString");
 }
 
 Blob* DataTransferItem::getAsFile() const {

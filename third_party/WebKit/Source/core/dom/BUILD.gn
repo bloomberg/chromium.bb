@@ -249,7 +249,6 @@ blink_core_sources("dom") {
     "StaticNodeList.h",
     "StaticRange.cpp",
     "StaticRange.h",
-    "StringCallback.cpp",
     "StringCallback.h",
     "StyleChangeReason.cpp",
     "StyleChangeReason.h",
