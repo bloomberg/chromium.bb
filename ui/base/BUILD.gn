@@ -369,8 +369,6 @@ component("base") {
     ":ui_features",
     "//base",
     "//skia",
-    "//ui/events:events_base",
-    "//ui/events/platform",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
@@ -389,12 +387,22 @@ component("base") {
     "//url",
   ]
 
+  if (!is_ios) {
+    # iOS does not use Chromium-specific code for event handling.
+    public_deps += [
+      "//ui/events:events_base",
+      "//ui/events/platform",
+    ]
+  }
+
   if (is_ios) {
     set_sources_assignment_filter([])
     sources += [
       "l10n/l10n_util_mac.h",
       "l10n/l10n_util_mac.mm",
     ]
+    public_deps += [ "//ui/events:event_constants" ]
+
     set_sources_assignment_filter(sources_assignment_filter)
   }
 

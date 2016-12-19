@@ -261,7 +261,6 @@ component("gfx") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//skia",
-    "//third_party/harfbuzz-ng",
     "//third_party/libpng",
     "//third_party/qcms",
     "//third_party/zlib",
@@ -310,7 +309,10 @@ component("gfx") {
     sources += [ "scoped_cg_context_save_gstate_mac.h" ]
     set_sources_assignment_filter(sources_assignment_filter)
   } else {
-    deps += [ "//third_party:jpeg" ]
+    deps += [
+      "//third_party:jpeg",
+      "//third_party/harfbuzz-ng",
+    ]
   }
 
   # Android.
