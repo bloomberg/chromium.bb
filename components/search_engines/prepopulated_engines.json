@@ -30,7 +30,7 @@
 
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version.
-    "kCurrentDataVersion": 96
+    "kCurrentDataVersion": 97
   },
 
   // The following engines are included in country lists and are added to the
@@ -164,7 +164,7 @@
       "name": "\ub124\uc774\ubc84",
       "keyword": "naver.com",
       "favicon_url": "https://ssl.pstatic.net/sstatic/search/favicon/favicon_140327.ico",
-      "search_url": "https://search.naver.com/search.naver?ie={inputEncoding}&query={searchTerms}",
+      "search_url": "https://search.naver.com/search.naver?ie={inputEncoding}&query={searchTerms}&sm=chr_hty",
       "suggest_url": "https://ac.search.naver.com/nx/ac?of=os&ie={inputEncoding}&q={searchTerms}&oe={outputEncoding}",
       "type": "SEARCH_ENGINE_NAVER",
       "id": 67
