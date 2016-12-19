@@ -23,7 +23,8 @@
 #include "extensions/renderer/logging_native_handler.h"
 #include "extensions/renderer/object_backed_native_handler.h"
 #include "extensions/renderer/safe_builtins.h"
-#include "extensions/renderer/source_map.h"
+#include "extensions/renderer/string_source_map.h"
+#include "extensions/renderer/test_v8_extension_configuration.h"
 #include "extensions/renderer/utils_native_handler.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -37,30 +38,6 @@ class FailsOnException : public ModuleSystem::ExceptionHandler {
     FAIL() << "Uncaught exception: " << CreateExceptionString(try_catch);
   }
 };
-
-class V8ExtensionConfigurator {
- public:
-  V8ExtensionConfigurator()
-      : safe_builtins_(SafeBuiltins::CreateV8Extension()),
-        names_(1, safe_builtins_->name()),
-        configuration_(
-            new v8::ExtensionConfiguration(static_cast<int>(names_.size()),
-                                           names_.data())) {
-    v8::RegisterExtension(safe_builtins_.get());
-  }
-
-  v8::ExtensionConfiguration* GetConfiguration() {
-    return configuration_.get();
-  }
-
- private:
-  std::unique_ptr<v8::Extension> safe_builtins_;
-  std::vector<const char*> names_;
-  std::unique_ptr<v8::ExtensionConfiguration> configuration_;
-};
-
-base::LazyInstance<V8ExtensionConfigurator>::Leaky g_v8_extension_configurator =
-    LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
@@ -100,40 +77,13 @@ class ModuleSystemTestEnvironment::AssertNatives
   bool failed_;
 };
 
-// Source map that operates on std::strings.
-class ModuleSystemTestEnvironment::StringSourceMap : public SourceMap {
- public:
-  StringSourceMap() {}
-  ~StringSourceMap() override {}
-
-  v8::Local<v8::String> GetSource(v8::Isolate* isolate,
-                                 const std::string& name) const override {
-    const auto& source_map_iter = source_map_.find(name);
-    if (source_map_iter == source_map_.end())
-      return v8::Local<v8::String>();
-    return v8::String::NewFromUtf8(isolate, source_map_iter->second.c_str());
-  }
-
-  bool Contains(const std::string& name) const override {
-    return source_map_.count(name);
-  }
-
-  void RegisterModule(const std::string& name, const std::string& source) {
-    CHECK_EQ(0u, source_map_.count(name)) << "Module " << name << " not found";
-    source_map_[name] = source;
-  }
-
- private:
-  std::map<std::string, std::string> source_map_;
-};
-
 ModuleSystemTestEnvironment::ModuleSystemTestEnvironment(v8::Isolate* isolate)
     : isolate_(isolate),
       context_holder_(new gin::ContextHolder(isolate_)),
       handle_scope_(isolate_),
       source_map_(new StringSourceMap()) {
   context_holder_->SetContext(v8::Context::New(
-      isolate, g_v8_extension_configurator.Get().GetConfiguration()));
+      isolate, TestV8ExtensionConfiguration::GetConfiguration()));
   context_.reset(new ScriptContext(context_holder_->context(),
                                    nullptr,  // WebFrame
                                    nullptr,  // Extension

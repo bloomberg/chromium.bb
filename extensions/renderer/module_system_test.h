@@ -13,11 +13,11 @@
 #include "v8/include/v8.h"
 
 namespace extensions {
+class StringSourceMap;
 
 class ModuleSystemTestEnvironment {
  public:
   class AssertNatives;
-  class StringSourceMap;
 
   explicit ModuleSystemTestEnvironment(v8::Isolate* isolate);
   ~ModuleSystemTestEnvironment();
