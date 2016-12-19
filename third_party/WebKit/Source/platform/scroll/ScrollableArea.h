@@ -319,12 +319,6 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return ScrollBehaviorInstant;
   }
 
-  // TODO(bokan): This is only used in FrameView to check scrollability but is
-  // needed here to allow RootFrameViewport to preserve wheelHandler
-  // semantics. Not sure why it's FrameView specific, it could probably be
-  // generalized to other types of ScrollableAreas.
-  virtual bool isScrollable() { return true; }
-
   // TODO(bokan): FrameView::setScrollOffset uses updateScrollbars to scroll
   // which bails out early if its already in updateScrollbars, the effect being
   // that programmatic scrolls (i.e. setScrollOffset) are disabled when in
