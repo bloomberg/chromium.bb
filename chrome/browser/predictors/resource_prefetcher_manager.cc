@@ -82,7 +82,13 @@ void ResourcePrefetcherManager::ResourcePrefetcherFinished(
     ResourcePrefetcher* resource_prefetcher) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  const std::string key = resource_prefetcher->main_frame_url().host();
+  const GURL& main_frame_url = resource_prefetcher->main_frame_url();
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&ResourcePrefetchPredictor::OnPrefetchingFinished,
+                 base::Unretained(predictor_), main_frame_url));
+
+  const std::string key = main_frame_url.host();
   auto it = prefetcher_map_.find(key);
   DCHECK(it != prefetcher_map_.end());
   prefetcher_map_.erase(it);

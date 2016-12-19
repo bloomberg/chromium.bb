@@ -160,6 +160,10 @@ class ResourcePrefetchPredictor
   // |main_frame_url|.
   void StopPrefetching(const GURL& main_frame_url);
 
+  // Called when ResourcePrefetcher is finished, i.e. there is nothing pending
+  // in flight.
+  void OnPrefetchingFinished(const GURL& main_frame_url);
+
   // Sets the |observer| to be notified when the resource prefetch predictor
   // data changes. Previously registered observer will be discarded. Call
   // this with nullptr parameter to de-register observer.
@@ -366,6 +370,8 @@ class TestObserver {
   virtual void OnNavigationLearned(
       size_t url_visit_count,
       const ResourcePrefetchPredictor::PageRequestSummary& summary) {}
+
+  virtual void OnPrefetchingFinished(const GURL& main_frame_url) {}
 
   virtual void OnPredictorInitialized() {}
 

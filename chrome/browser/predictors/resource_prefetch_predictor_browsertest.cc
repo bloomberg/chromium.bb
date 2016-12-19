@@ -8,6 +8,7 @@
 #include "chrome/browser/predictors/resource_prefetch_predictor_test_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -73,6 +74,9 @@ struct RedirectEdge {
   GURL url;
 };
 
+// Helper class to track and allow waiting for ResourcePrefetchPredictor
+// initialization. WARNING: OnPredictorInitialized event will not be fired if
+// ResourcePrefetchPredictor is initialized before the observer creation.
 class InitializationObserver : public TestObserver {
  public:
   explicit InitializationObserver(ResourcePrefetchPredictor* predictor)
@@ -145,18 +149,17 @@ void CompareSubresources(std::vector<URLRequestSummary> actual_subresources,
 
 }  // namespace
 
-// Helper class to track and allow waiting for ResourcePrefetchPredictor events.
-// These events are also used to verify that ResourcePrefetchPredictor works as
-// expected.
-class ResourcePrefetchPredictorTestObserver : public TestObserver {
+// Helper class to track and allow waiting for a single OnNavigationLearned
+// event. The information provided by this event is also used to verify that
+// ResourcePrefetchPredictor works as expected.
+class LearningObserver : public TestObserver {
  public:
   using PageRequestSummary = ResourcePrefetchPredictor::PageRequestSummary;
 
-  explicit ResourcePrefetchPredictorTestObserver(
-      ResourcePrefetchPredictor* predictor,
-      const size_t expected_url_visit_count,
-      const PageRequestSummary& expected_summary,
-      bool match_navigation_id)
+  LearningObserver(ResourcePrefetchPredictor* predictor,
+                   const size_t expected_url_visit_count,
+                   const PageRequestSummary& expected_summary,
+                   bool match_navigation_id)
       : TestObserver(predictor),
         url_visit_count_(expected_url_visit_count),
         summary_(expected_summary),
@@ -181,7 +184,35 @@ class ResourcePrefetchPredictorTestObserver : public TestObserver {
   PageRequestSummary summary_;
   bool match_navigation_id_;
 
-  DISALLOW_COPY_AND_ASSIGN(ResourcePrefetchPredictorTestObserver);
+  DISALLOW_COPY_AND_ASSIGN(LearningObserver);
+};
+
+// Helper class to track and allow waiting for a single OnPrefetchingFinished
+// event. No learning events should be fired while this observer is active.
+class PrefetchingObserver : public TestObserver {
+ public:
+  PrefetchingObserver(ResourcePrefetchPredictor* predictor,
+                      const GURL& expected_main_frame_url)
+      : TestObserver(predictor), main_frame_url_(expected_main_frame_url) {}
+
+  // TestObserver:
+  void OnNavigationLearned(size_t url_visit_count,
+                           const PageRequestSummary& summary) override {
+    ADD_FAILURE() << "Prefetching shouldn't activate learning";
+  }
+
+  void OnPrefetchingFinished(const GURL& main_frame_url) override {
+    EXPECT_EQ(main_frame_url_, main_frame_url);
+    run_loop_.Quit();
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+ private:
+  base::RunLoop run_loop_;
+  GURL main_frame_url_;
+
+  DISALLOW_COPY_AND_ASSIGN(PrefetchingObserver);
 };
 
 class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
@@ -208,6 +239,19 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     EnsurePredictorInitialized();
   }
 
+  void TestLearningAndPrefetching(const GURL& main_frame_url) {
+    // Navigate to |main_frame_url| and check all the expectations.
+    NavigateToURLAndCheckSubresources(main_frame_url);
+    ClearCache();
+    // It is needed to have at least two resource hits to trigger prefetch.
+    NavigateToURLAndCheckSubresources(main_frame_url);
+    ClearCache();
+    // Prefetch all needed resources and change expectations so that all
+    // cacheable resources should be served from cache next navigation.
+    PrefetchURL(main_frame_url);
+    NavigateToURLAndCheckSubresources(main_frame_url);
+  }
+
   void NavigateToURLAndCheckSubresources(
       const GURL& main_frame_url,
       WindowOpenDisposition disposition = WindowOpenDisposition::CURRENT_TAB) {
@@ -219,7 +263,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
       url_request_summaries.push_back(
           GetURLRequestSummaryForResource(endpoint_url, kv.second));
     }
-    ResourcePrefetchPredictorTestObserver observer(
+    LearningObserver observer(
         predictor_, UpdateAndGetVisitCount(main_frame_url),
         CreatePageRequestSummary(endpoint_url.spec(), main_frame_url.spec(),
                                  url_request_summaries),
@@ -228,6 +272,20 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
         browser(), main_frame_url, disposition,
         ui_test_utils::BROWSER_TEST_NONE);
     observer.Wait();
+    for (auto& kv : resources_) {
+      if (!kv.second.is_no_store && kv.second.should_be_recorded)
+        kv.second.request.was_cached = true;
+    }
+  }
+
+  void PrefetchURL(const GURL& main_frame_url) {
+    PrefetchingObserver observer(predictor_, main_frame_url);
+    predictor_->StartPrefetching(main_frame_url, PrefetchOrigin::EXTERNAL);
+    observer.Wait();
+    for (auto& kv : resources_) {
+      if (!kv.second.is_no_store && kv.second.should_be_recorded)
+        kv.second.request.was_cached = true;
+    }
   }
 
   ResourceSummary* AddResource(const GURL& resource_url,
@@ -271,6 +329,12 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
       EXPECT_TRUE(result.second) << current << " already has a redirect.";
       current = edge.url;
     }
+  }
+
+  void ClearCache() {
+    chrome::ClearCache(browser());
+    for (auto& kv : resources_)
+      kv.second.request.was_cached = false;
   }
 
   // Shortcut for convenience.
@@ -397,7 +461,7 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   std::map<GURL, size_t> visit_count_;
 };
 
-IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest, LearningSimple) {
+IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest, Simple) {
   // These resources have default priorities that correspond to
   // blink::typeToPriority function.
   AddResource(GetURL(kImagePath), content::RESOURCE_TYPE_IMAGE, net::LOWEST);
@@ -406,11 +470,10 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest, LearningSimple) {
   AddResource(GetURL(kScriptPath), content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
   AddResource(GetURL(kFontPath), content::RESOURCE_TYPE_FONT_RESOURCE,
               net::HIGHEST);
-  NavigateToURLAndCheckSubresources(GetURL(kHtmlSubresourcesPath));
+  TestLearningAndPrefetching(GetURL(kHtmlSubresourcesPath));
 }
 
-IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
-                       LearningAfterRedirect) {
+IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest, Redirect) {
   AddRedirectChain(GetURL(kRedirectPath), {{net::HTTP_MOVED_PERMANENTLY,
                                             GetURL(kHtmlSubresourcesPath)}});
   AddResource(GetURL(kImagePath), content::RESOURCE_TYPE_IMAGE, net::LOWEST);
@@ -419,11 +482,10 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
   AddResource(GetURL(kScriptPath), content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
   AddResource(GetURL(kFontPath), content::RESOURCE_TYPE_FONT_RESOURCE,
               net::HIGHEST);
-  NavigateToURLAndCheckSubresources(GetURL(kRedirectPath));
+  TestLearningAndPrefetching(GetURL(kRedirectPath));
 }
 
-IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
-                       LearningAfterRedirectChain) {
+IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest, RedirectChain) {
   AddRedirectChain(GetURL(kRedirectPath),
                    {{net::HTTP_FOUND, GetURL(kRedirectPath2)},
                     {net::HTTP_MOVED_PERMANENTLY, GetURL(kRedirectPath3)},
@@ -434,15 +496,14 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
   AddResource(GetURL(kScriptPath), content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
   AddResource(GetURL(kFontPath), content::RESOURCE_TYPE_FONT_RESOURCE,
               net::HIGHEST);
-  NavigateToURLAndCheckSubresources(GetURL(kRedirectPath));
+  TestLearningAndPrefetching(GetURL(kRedirectPath));
 }
 
 IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
                        LearningAfterHttpToHttpsRedirect) {
   EnableHttpsServer();
   AddRedirectChain(GetURL(kRedirectPath),
-                   {{net::HTTP_FOUND, https_server()->GetURL(kRedirectPath2)},
-                    {net::HTTP_MOVED_PERMANENTLY,
+                   {{net::HTTP_MOVED_PERMANENTLY,
                      https_server()->GetURL(kHtmlSubresourcesPath)}});
   AddResource(https_server()->GetURL(kImagePath), content::RESOURCE_TYPE_IMAGE,
               net::LOWEST);
@@ -453,10 +514,12 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
   AddResource(https_server()->GetURL(kFontPath),
               content::RESOURCE_TYPE_FONT_RESOURCE, net::HIGHEST);
   NavigateToURLAndCheckSubresources(GetURL(kRedirectPath));
+  // TODO(alexilin): Test learning and prefetching once crbug.com/650246 is
+  // fixed.
 }
 
 IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
-                       LearningJavascriptDocumentWrite) {
+                       JavascriptDocumentWrite) {
   auto externalScript =
       AddExternalResource(GetURL(kScriptDocumentWritePath),
                           content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
@@ -465,11 +528,11 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
   AddResource(GetURL(kStylePath), content::RESOURCE_TYPE_STYLESHEET,
               net::HIGHEST);
   AddResource(GetURL(kScriptPath), content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
-  NavigateToURLAndCheckSubresources(GetURL(kHtmlDocumentWritePath));
+  TestLearningAndPrefetching(GetURL(kHtmlDocumentWritePath));
 }
 
 IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
-                       LearningJavascriptAppendChild) {
+                       JavascriptAppendChild) {
   auto externalScript =
       AddExternalResource(GetURL(kScriptAppendChildPath),
                           content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
@@ -479,11 +542,11 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
               net::HIGHEST);
   // This script has net::LOWEST priority because it's executed asynchronously.
   AddResource(GetURL(kScriptPath), content::RESOURCE_TYPE_SCRIPT, net::LOWEST);
-  NavigateToURLAndCheckSubresources(GetURL(kHtmlAppendChildPath));
+  TestLearningAndPrefetching(GetURL(kHtmlAppendChildPath));
 }
 
 IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
-                       LearningJavascriptInnerHtml) {
+                       JavascriptInnerHtml) {
   auto externalScript = AddExternalResource(
       GetURL(kScriptInnerHtmlPath), content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
   externalScript->request.mime_type = kJavascriptMime;
@@ -493,13 +556,12 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
   // https://www.w3.org/TR/2014/REC-html5-20141028/scripting-1.html#the-script-element
   // Script elements don't execute when inserted using innerHTML attribute.
   AddUnrecordedResources({GetURL(kScriptPath)});
-  NavigateToURLAndCheckSubresources(GetURL(kHtmlInnerHtmlPath));
+  TestLearningAndPrefetching(GetURL(kHtmlInnerHtmlPath));
 }
 
 // Requests originated by XMLHttpRequest have content::RESOURCE_TYPE_XHR.
 // Actual resource type is inferred from the mime-type.
-IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
-                       LearningJavascriptXHR) {
+IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest, JavascriptXHR) {
   auto externalScript = AddExternalResource(
       GetURL(kScriptXHRPath), content::RESOURCE_TYPE_SCRIPT, net::MEDIUM);
   externalScript->request.mime_type = kJavascriptMime;
@@ -512,12 +574,12 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
   auto script = AddResource(GetURL(kScriptPath), content::RESOURCE_TYPE_SCRIPT,
                             net::HIGHEST);
   script->request.mime_type = kJavascriptMime;
-  NavigateToURLAndCheckSubresources(GetURL(kHtmlXHRPath));
+  TestLearningAndPrefetching(GetURL(kHtmlXHRPath));
 }
 
 // ResourcePrefetchPredictor ignores all resources requested from subframes.
 IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
-                       LearningWithIframe) {
+                       IframeShouldBeIgnored) {
   // Included from html_iframe.html.
   AddResource(GetURL(kImagePath2), content::RESOURCE_TYPE_IMAGE, net::LOWEST);
   AddResource(GetURL(kStylePath2), content::RESOURCE_TYPE_STYLESHEET,
@@ -526,7 +588,7 @@ IN_PROC_BROWSER_TEST_F(ResourcePrefetchPredictorBrowserTest,
   // Included from <iframe src="html_subresources.html"> and not recored.
   AddUnrecordedResources({GetURL(kImagePath), GetURL(kStylePath),
                           GetURL(kScriptPath), GetURL(kFontPath)});
-  NavigateToURLAndCheckSubresources(GetURL(kHtmlIframePath));
+  TestLearningAndPrefetching(GetURL(kHtmlIframePath));
 }
 
 }  // namespace predictors

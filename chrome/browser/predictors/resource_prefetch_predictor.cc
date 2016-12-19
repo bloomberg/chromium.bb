@@ -497,6 +497,12 @@ void ResourcePrefetchPredictor::StopPrefetching(const GURL& url) {
                  prefetch_manager_, url));
 }
 
+void ResourcePrefetchPredictor::OnPrefetchingFinished(
+    const GURL& main_frame_url) {
+  if (observer_)
+    observer_->OnPrefetchingFinished(main_frame_url);
+}
+
 void ResourcePrefetchPredictor::SetObserverForTesting(TestObserver* observer) {
   observer_ = observer;
 }
