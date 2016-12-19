@@ -443,9 +443,23 @@ InspectorTest.showEventListenersWidget = function()
     return UI.viewManager.showView("elements.eventListeners");
 }
 
-InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback)
+InspectorTest.expandAndDumpSelectedElementEventListeners = function(callback, force)
 {
-    InspectorTest.expandAndDumpEventListeners(InspectorTest.eventListenersWidget()._eventListenersView, callback);
+    InspectorTest.expandAndDumpEventListeners(InspectorTest.eventListenersWidget()._eventListenersView, callback, force);
+}
+
+InspectorTest.removeFirstEventListener = function()
+{
+    var treeOutline = InspectorTest.eventListenersWidget()._eventListenersView._treeOutline;
+    var listenerTypes = treeOutline.rootElement().children();
+    for (var i = 0; i < listenerTypes.length; i++) {
+        var listeners = listenerTypes[i].children();
+        if (listeners.length && !listenerTypes[i].hidden) {
+            listeners[0].eventListener().remove();
+            listeners[0]._removeListenerBar();
+            break;
+        }
+    }
 }
 
 InspectorTest.dumpObjectPropertySectionDeep = function(section)

@@ -1,0 +1,73 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function setupEventListeners()
+{
+    function f() {}
+    function g() {}
+    var button = document.getElementById("node");
+    button.addEventListener("click", f, false);
+    button.addEventListener("mouseover", f, false);
+    var sibling = document.getElementById("node-sibling");
+    sibling.addEventListener("click", g, false);
+    sibling.addEventListener("mouseover", g, false);
+}
+
+function test()
+{
+    Common.settingForTest("showEventListenersForAncestors").set(false);
+
+
+    function step1()
+    {
+        InspectorTest.selectNodeWithId("node", function () {
+            InspectorTest.expandAndDumpSelectedElementEventListeners(step2);
+        });
+    }
+
+    function step2()
+    {
+        InspectorTest.removeFirstEventListener();
+        InspectorTest.addResult("Listeners after removal:");
+        InspectorTest.expandAndDumpSelectedElementEventListeners(step3, true);
+    }
+
+    function step3()
+    {
+        InspectorTest.selectNodeWithId("node-sibling", function () {
+            InspectorTest.addResult("Listeners for sibling node:");
+            InspectorTest.expandAndDumpSelectedElementEventListeners(step4);
+        });
+    }
+
+    function step4()
+    {
+        InspectorTest.completeTest();
+    }
+
+    step1();
+}
+
+function onloadHandler()
+{
+    setupEventListeners();
+    runTest();
+}
+</script>
+</head>
+
+
+
+<body onload="onloadHandler()">
+<p>
+Tests removing event listeners in the Elements sidebar panel.
+</p>
+
+<button id="node">Inspect Me</button>
+<button id="node-sibling">Inspect Sibling</button>
+
+</body>
+</html>

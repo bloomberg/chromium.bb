@@ -319,10 +319,8 @@ InspectorTest.dumpObjectPropertyTreeElement = function(treeElement)
     }
 }
 
-InspectorTest.expandAndDumpEventListeners = function(eventListenersView, callback)
+InspectorTest.expandAndDumpEventListeners = function(eventListenersView, callback, force)
 {
-    InspectorTest.addSniffer(Components.EventListenersView.prototype, "_eventListenersArrivedForTest", listenersArrived);
-
     function listenersArrived()
     {
         var listenerTypes = eventListenersView._treeOutline.rootElement().children();
@@ -352,6 +350,11 @@ InspectorTest.expandAndDumpEventListeners = function(eventListenersView, callbac
         }
         callback();
     }
+
+    if (force)
+        listenersArrived();
+    else
+        InspectorTest.addSniffer(Components.EventListenersView.prototype, "_eventListenersArrivedForTest", listenersArrived);
 }
 
 InspectorTest.dumpNavigatorView = function(navigatorView)
