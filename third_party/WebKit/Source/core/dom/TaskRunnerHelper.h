@@ -35,6 +35,7 @@ enum class TaskType : unsigned {
   UnshippedPortMessage,
   FileReading,
   DatabaseAccess,
+  Presentation,
 
   // Other internal tasks that cannot fit any of the above task runners
   // can be posted here, but the usage is not encouraged. The task runner

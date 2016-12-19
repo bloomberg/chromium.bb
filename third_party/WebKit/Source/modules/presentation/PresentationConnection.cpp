@@ -10,6 +10,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/events/MessageEvent.h"
 #include "core/fileapi/FileReaderLoader.h"
@@ -197,7 +198,7 @@ PresentationConnection* PresentationConnection::take(
   auto* event = PresentationConnectionAvailableEvent::create(
       EventTypeNames::connectionavailable, connection);
   request->getExecutionContext()->postTask(
-      BLINK_FROM_HERE,
+      TaskType::Presentation, BLINK_FROM_HERE,
       createSameThreadTask(&PresentationConnection::dispatchEventAsync,
                            wrapPersistent(request), wrapPersistent(event)));
 
@@ -473,7 +474,7 @@ void PresentationConnection::didFailLoadingBlob(
 
 void PresentationConnection::dispatchStateChangeEvent(Event* event) {
   getExecutionContext()->postTask(
-      BLINK_FROM_HERE,
+      TaskType::Presentation, BLINK_FROM_HERE,
       createSameThreadTask(&PresentationConnection::dispatchEventAsync,
                            wrapPersistent(this), wrapPersistent(event)));
 }
