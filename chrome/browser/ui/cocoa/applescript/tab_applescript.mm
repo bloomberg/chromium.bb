@@ -221,7 +221,7 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
   AppleScript::LogAppleScriptUMA(AppleScript::AppleScriptCommand::TAB_RELOAD);
   NavigationController& navigationController = webContents_->GetController();
   const bool checkForRepost = true;
-  navigationController.Reload(checkForRepost);
+  navigationController.Reload(content::ReloadType::NORMAL, checkForRepost);
 }
 
 - (void)handlesStopScriptCommand:(NSScriptCommand*)command {

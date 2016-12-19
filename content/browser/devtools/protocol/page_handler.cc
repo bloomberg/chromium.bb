@@ -214,10 +214,10 @@ Response PageHandler::Reload(Maybe<bool> bypassCache,
   if (web_contents->IsCrashed() ||
       (web_contents->GetController().GetVisibleEntry() &&
        web_contents->GetController().GetVisibleEntry()->IsViewSourceMode())) {
-    if (bypassCache.fromMaybe(false))
-      web_contents->GetController().ReloadBypassingCache(false);
-    else
-      web_contents->GetController().Reload(false);
+    web_contents->GetController().Reload(bypassCache.fromMaybe(false)
+                                             ? ReloadType::BYPASSING_CACHE
+                                             : ReloadType::NORMAL,
+                                         false);
     return Response::OK();
   } else {
     // Handle reload in renderer except for crashed and view source mode.

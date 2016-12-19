@@ -71,7 +71,7 @@ void FlashPermissionContext::UpdateTabContext(const PermissionRequestID& id,
   }
 
   // Automatically refresh the page.
-  web_contents->GetController().Reload(true /* check_for_repost */);
+  web_contents->GetController().Reload(content::ReloadType::NORMAL, true);
 }
 
 void FlashPermissionContext::UpdateContentSetting(

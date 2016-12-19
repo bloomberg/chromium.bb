@@ -242,7 +242,7 @@ void RenderViewHostTestHarness::NavigateAndCommit(const GURL& url) {
 void RenderViewHostTestHarness::Reload() {
   NavigationEntry* entry = controller().GetLastCommittedEntry();
   DCHECK(entry);
-  controller().Reload(false);
+  controller().Reload(ReloadType::NORMAL, false);
   RenderFrameHostTester::For(main_rfh())
       ->SendNavigateWithTransition(entry->GetUniqueID(),
                                    false, entry->GetURL(),
@@ -252,7 +252,7 @@ void RenderViewHostTestHarness::Reload() {
 void RenderViewHostTestHarness::FailedReload() {
   NavigationEntry* entry = controller().GetLastCommittedEntry();
   DCHECK(entry);
-  controller().Reload(false);
+  controller().Reload(ReloadType::NORMAL, false);
   RenderFrameHostTester::For(main_rfh())
       ->SendFailedNavigate(entry->GetUniqueID(), false, entry->GetURL());
 }

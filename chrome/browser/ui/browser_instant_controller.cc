@@ -56,7 +56,7 @@ class TabReloader : public content::WebContentsUserData<TabReloader> {
   ~TabReloader() override {}
 
   void ReloadImpl() {
-    web_contents_->GetController().Reload(false);
+    web_contents_->GetController().Reload(content::ReloadType::NORMAL, false);
 
     // As the reload was not triggered by the user we don't want to close any
     // infobars. We have to tell the InfoBarService after the reload,

@@ -165,7 +165,8 @@ void SadTab::PerformAction(SadTab::Action action) {
                                          : IDS_KILLED_TAB_FEEDBACK_MESSAGE),
             std::string(kCategoryTagCrash));
       } else {
-        web_contents_->GetController().Reload(true);
+        web_contents_->GetController().Reload(content::ReloadType::NORMAL,
+                                              true);
       }
       break;
     case Action::HELP_LINK:

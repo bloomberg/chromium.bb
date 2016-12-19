@@ -178,7 +178,7 @@ void ChromeControllerClient::Proceed() {
 }
 
 void ChromeControllerClient::Reload() {
-  web_contents_->GetController().Reload(true);
+  web_contents_->GetController().Reload(content::ReloadType::NORMAL, true);
 }
 
 void ChromeControllerClient::OpenUrlInCurrentTab(const GURL& url) {

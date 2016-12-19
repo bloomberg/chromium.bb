@@ -1533,7 +1533,7 @@ TEST_F(RenderFrameHostManagerTest, CleanUpSwappedOutRVHOnProcessCrash) {
 
   // Reload the initial tab. This should recreate the opener's swapped out RVH
   // in the original SiteInstance.
-  contents()->GetController().Reload(true);
+  contents()->GetController().Reload(ReloadType::NORMAL, true);
   contents()->GetMainFrame()->PrepareForCommit();
   EXPECT_TRUE(
       opener1_manager->GetSwappedOutRenderViewHost(rfh1->GetSiteInstance())
@@ -2580,7 +2580,7 @@ void RenderFrameHostManagerTest::BaseSimultaneousNavigationWithOneWebUI(
   EXPECT_TRUE(web_ui);
 
   // Starts a reload of the WebUI page.
-  contents()->GetController().Reload(true);
+  contents()->GetController().Reload(ReloadType::NORMAL, true);
   main_test_rfh()->PrepareForCommit();
 
   // It should be a same-site navigation reusing the same WebUI.
@@ -2672,7 +2672,7 @@ void RenderFrameHostManagerTest::BaseSimultaneousNavigationWithTwoWebUIs(
   EXPECT_TRUE(web_ui1);
 
   // Starts a reload of the WebUI page.
-  contents()->GetController().Reload(true);
+  contents()->GetController().Reload(ReloadType::NORMAL, true);
 
   // It should be a same-site navigation reusing the same WebUI.
   EXPECT_EQ(web_ui1, manager->GetNavigatingWebUI());

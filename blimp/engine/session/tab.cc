@@ -102,7 +102,7 @@ void Tab::GoForward() {
 
 void Tab::Reload() {
   DVLOG(1) << "Reload in tab " << tab_id_;
-  web_contents_->GetController().Reload(true);
+  web_contents_->GetController().Reload(content::ReloadType::NORMAL, true);
 }
 
 void Tab::RenderViewCreated(content::RenderViewHost* render_view_host) {

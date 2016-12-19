@@ -1096,7 +1096,8 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, ReloadEmbedder) {
 
   ExtensionTestMessageListener launched_again_listener("WebViewTest.LAUNCHED",
                                                        false);
-  GetEmbedderWebContents()->GetController().Reload(false);
+  GetEmbedderWebContents()->GetController().Reload(content::ReloadType::NORMAL,
+                                                   false);
   ASSERT_TRUE(launched_again_listener.WaitUntilSatisfied());
 }
 

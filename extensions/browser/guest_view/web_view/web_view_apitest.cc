@@ -403,7 +403,8 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, ReloadEmbedder) {
   LaunchApp("web_view/visibility_changed");
 
   ExtensionTestMessageListener launched_again_listener("LAUNCHED", false);
-  embedder_web_contents_->GetController().Reload(false);
+  embedder_web_contents_->GetController().Reload(content::ReloadType::NORMAL,
+                                                 false);
   ASSERT_TRUE(launched_again_listener.WaitUntilSatisfied());
 }
 

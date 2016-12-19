@@ -1816,7 +1816,8 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_RELOAD:
-      embedder_web_contents_->GetController().Reload(true);
+      embedder_web_contents_->GetController().Reload(
+          content::ReloadType::NORMAL, true);
       break;
 
     case IDC_CONTENT_CONTEXT_RELOAD_PACKAGED_APP:

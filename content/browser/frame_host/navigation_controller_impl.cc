@@ -264,21 +264,8 @@ void NavigationControllerImpl::Restore(
   FinishRestore(selected_navigation, type);
 }
 
-void NavigationControllerImpl::Reload(bool check_for_repost) {
-  Reload(check_for_repost, ReloadType::NORMAL);
-}
-void NavigationControllerImpl::ReloadBypassingCache(bool check_for_repost) {
-  Reload(check_for_repost, ReloadType::BYPASSING_CACHE);
-}
-void NavigationControllerImpl::ReloadOriginalRequestURL(bool check_for_repost) {
-  Reload(check_for_repost, ReloadType::ORIGINAL_REQUEST_URL);
-}
-void NavigationControllerImpl::ReloadDisableLoFi(bool check_for_repost) {
-  Reload(check_for_repost, ReloadType::DISABLE_LOFI_MODE);
-}
-
-void NavigationControllerImpl::Reload(bool check_for_repost,
-                                      ReloadType reload_type) {
+void NavigationControllerImpl::Reload(ReloadType reload_type,
+                                      bool check_for_repost) {
   if (transient_entry_index_ != -1) {
     // If an interstitial is showing, treat a reload as a navigation to the
     // transient entry's URL.
@@ -402,7 +389,7 @@ void NavigationControllerImpl::ContinuePendingReload() {
   if (pending_reload_ == ReloadType::NONE) {
     NOTREACHED();
   } else {
-    Reload(false, pending_reload_);
+    Reload(pending_reload_, false);
     pending_reload_ = ReloadType::NONE;
   }
 }

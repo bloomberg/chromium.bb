@@ -1183,7 +1183,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   {
     // Reload from the browser side.
     FrameNavigateParamsCapturer capturer(root);
-    shell()->web_contents()->GetController().Reload(false);
+    shell()->web_contents()->GetController().Reload(ReloadType::NORMAL, false);
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.params().transition, ui::PAGE_TRANSITION_RELOAD));
@@ -4328,7 +4328,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // 3. Reload the main frame.
   {
     FrameNavigateParamsCapturer capturer(root);
-    controller.Reload(false);
+    controller.Reload(ReloadType::NORMAL, false);
     capturer.Wait();
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         capturer.params().transition, ui::PAGE_TRANSITION_RELOAD));
@@ -5077,10 +5077,11 @@ class RenderProcessKilledObserver : public WebContentsObserver {
 };
 }
 
-// This tests a race in ReloadOriginalRequest, where a cross-origin reload was
-// causing an in-flight replaceState to look like a cross-origin navigation,
-// even though it's in-page.  (The reload should not modify the underlying last
-// committed entry.)  Not crashing means that the test is successful.
+// This tests a race in Reload with ReloadType::ORIGINAL_REQUEST_URL, where a
+// cross-origin reload was causing an in-flight replaceState to look like a
+// cross-origin navigation, even though it's in-page.  (The reload should not
+// modify the underlying last committed entry.)  Not crashing means that the
+// test is successful.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadOriginalRequest) {
   GURL original_url(embedded_test_server()->GetURL(
       "/navigation_controller/simple_page_1.html"));
@@ -5090,7 +5091,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadOriginalRequest) {
                             ->root();
   RenderProcessKilledObserver kill_observer(shell()->web_contents());
 
-  // Redirect so that we can use ReloadOriginalRequest.
+  // Redirect so that we can use Reload with ReloadType::ORIGINAL_REQUEST_URL.
   GURL redirect_url(embedded_test_server()->GetURL(
       "foo.com", "/navigation_controller/simple_page_1.html"));
   {
@@ -5109,16 +5110,17 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest, ReloadOriginalRequest) {
   {
     // We first send a replaceState() to the renderer, which will cause the
     // renderer to send back a DidCommitProvisionalLoad. Immediately after,
-    // we send a ReloadOriginalRequest (which in this case is a different
-    // origin) and will also cause the renderer to commit the frame. In the
-    // end we verify that both navigations committed and that the URLs are
-    // correct.
+    // we send a Reload request with ReloadType::ORIGINAL_REQUEST_URL (which in
+    // this case is a different origin) and will also cause the renderer to
+    // commit the frame. In the end we verify that both navigations committed
+    // and that the URLs are correct.
     std::string script = "history.replaceState({}, '', 'foo');";
     root->render_manager()
         ->current_frame_host()
         ->ExecuteJavaScriptWithUserGestureForTests(base::UTF8ToUTF16(script));
     EXPECT_FALSE(shell()->web_contents()->IsLoading());
-    shell()->web_contents()->GetController().ReloadOriginalRequestURL(false);
+    shell()->web_contents()->GetController().Reload(
+        ReloadType::ORIGINAL_REQUEST_URL, false);
     EXPECT_TRUE(shell()->web_contents()->IsLoading());
     EXPECT_EQ(redirect_url, shell()->web_contents()->GetLastCommittedURL());
 
@@ -6700,21 +6702,21 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // Reload triggers a reload of ReloadType::NORMAL.  The first reload should
   // not be counted.
-  controller.Reload(false);
+  controller.Reload(ReloadType::NORMAL, false);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   histogram.ExpectTotalCount(kReloadToReloadMetricName, 0);
   histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 0);
 
-  // ReloadBypassingCache triggers a reload of ReloadType::BYPASSING_CACHE.
-  // Both metrics should count the consecutive reloads.
-  controller.ReloadBypassingCache(false);
+  // Reload with ReloadType::BYPASSING_CACHE.  Both metrics should count the
+  // consecutive reloads.
+  controller.Reload(ReloadType::BYPASSING_CACHE, false);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   histogram.ExpectTotalCount(kReloadToReloadMetricName, 1);
   histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 1);
 
-  // Triggers another reload of ReloadType::BYPASSING_CACHE.
+  // Triggers another reload with ReloadType::BYPASSING_CACHE.
   // ReloadMainResourceToReload should not be counted here.
-  controller.ReloadBypassingCache(false);
+  controller.Reload(ReloadType::BYPASSING_CACHE, false);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   histogram.ExpectTotalCount(kReloadToReloadMetricName, 2);
   histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 1);
@@ -6729,14 +6731,14 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 
   // Then, the next reload should be assumed as the first reload.  Metrics
   // should not be changed for the first reload.
-  controller.Reload(false);
+  controller.Reload(ReloadType::NORMAL, false);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   histogram.ExpectTotalCount(kReloadToReloadMetricName, 2);
   histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 1);
 
   // Another reload of ReloadType::NORMAL should be counted by both metrics
   // again.
-  controller.Reload(false);
+  controller.Reload(ReloadType::NORMAL, false);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   histogram.ExpectTotalCount(kReloadToReloadMetricName, 3);
   histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 2);
@@ -6753,7 +6755,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   histogram.ExpectTotalCount(kReloadToReloadMetricName, 3);
   histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 2);
 
-  controller.Reload(false);
+  controller.Reload(ReloadType::NORMAL, false);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   histogram.ExpectTotalCount(kReloadToReloadMetricName, 4);
   histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 3);
@@ -6764,7 +6766,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   histogram.ExpectTotalCount(kReloadToReloadMetricName, 4);
   histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 3);
 
-  controller.Reload(false);
+  controller.Reload(ReloadType::NORMAL, false);
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   histogram.ExpectTotalCount(kReloadToReloadMetricName, 4);
   histogram.ExpectTotalCount(kReloadMainResourceToReloadMetricName, 3);

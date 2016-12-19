@@ -383,7 +383,7 @@ void ExtensionActionRunner::OnBlockedActionBubbleClosed(
           ->active_tab_permission_granter()
           ->GrantIfRequested(extension);
     }
-    web_contents()->GetController().Reload(false);
+    web_contents()->GetController().Reload(content::ReloadType::NORMAL, false);
   }
 }
 

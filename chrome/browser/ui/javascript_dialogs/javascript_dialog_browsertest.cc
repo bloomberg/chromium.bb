@@ -35,7 +35,7 @@ IN_PROC_BROWSER_TEST_F(JavaScriptDialogTest, ReloadDoesntHang) {
 
   // Try reloading.
 
-  tab->GetController().Reload(false);
+  tab->GetController().Reload(content::ReloadType::NORMAL, false);
   content::WaitForLoadStop(tab);
 
   // If the WaitForLoadStop doesn't hang forever, we've passed.

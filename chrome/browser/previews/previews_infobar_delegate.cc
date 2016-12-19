@@ -139,7 +139,8 @@ bool PreviewsInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
       InfoBarService::WebContentsFromInfoBar(infobar());
   if (infobar_type_ == LITE_PAGE || infobar_type_ == LOFI) {
     if (infobar_type_ == LITE_PAGE)
-      web_contents->GetController().ReloadDisableLoFi(true);
+      web_contents->GetController().Reload(
+          content::ReloadType::DISABLE_LOFI_MODE, true);
     else if (infobar_type_ == LOFI)
       web_contents->ReloadLoFiImages();
 
@@ -148,7 +149,7 @@ bool PreviewsInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
             web_contents->GetBrowserContext());
     data_reduction_proxy_settings->IncrementLoFiUserRequestsForImages();
   } else if (infobar_type_ == OFFLINE) {
-    web_contents->GetController().Reload(true);
+    web_contents->GetController().Reload(content::ReloadType::NORMAL, true);
   }
 
   return true;

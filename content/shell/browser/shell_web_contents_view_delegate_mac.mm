@@ -253,7 +253,7 @@ void ShellWebContentsViewDelegate::ActionPerformed(int tag) {
       web_contents_->Focus();
       break;
     case ShellContextMenuItemReloadTag: {
-      web_contents_->GetController().Reload(false);
+      web_contents_->GetController().Reload(ReloadType::NORMAL, false);
       web_contents_->Focus();
       break;
     }

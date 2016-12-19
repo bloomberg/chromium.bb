@@ -425,7 +425,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, ReloadBringPageToTop) {
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  tab->GetController().Reload(false);
+  tab->GetController().Reload(content::ReloadType::NORMAL, false);
   content::WaitForLoadStop(tab);
 
   urls = GetHistoryContents();

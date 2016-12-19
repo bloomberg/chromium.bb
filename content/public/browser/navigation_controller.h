@@ -350,29 +350,13 @@ class NavigationController {
   // the offset is out of bounds.
   virtual void GoToOffset(int offset) = 0;
 
-  // Reloads the current entry under the specified ReloadType.
-  // TODO(toyoshim): Change all callers to use this new Reload(), and remove
-  // old Reload* methods below. One motivation of this change is Reload(bool)
-  // interface is just confusing because in some contexts, the bool could be to
-  // specify bypassing cache. http://crbug.com/670232
-  virtual void Reload(bool check_for_repost, ReloadType reload_type) = 0;
-
-  // Reloads the current entry. If |check_for_repost| is true and the current
-  // entry has POST data the user is prompted to see if they really want to
-  // reload the page. In nearly all cases pass in true.  If a transient entry
-  // is showing, initiates a new navigation to its URL.
-  virtual void Reload(bool check_for_repost) = 0;
-
-  // Like Reload(), but don't use caches (aka "shift-reload").
-  virtual void ReloadBypassingCache(bool check_for_repost) = 0;
-
-  // Reloads the current entry using the original URL used to create it.  This
-  // is used for cases where the user wants to refresh a page using a different
-  // user agent after following a redirect.
-  virtual void ReloadOriginalRequestURL(bool check_for_repost) = 0;
-
-  // Like Reload(), but disables Lo-Fi.
-  virtual void ReloadDisableLoFi(bool check_for_repost) = 0;
+  // Reloads the current entry under the specified ReloadType.  If
+  // |check_for_repost| is true and the current entry has POST data the user is
+  // prompted to see if they really want to reload the page.  In nearly all
+  // cases pass in true in production code, but would do false for testing, or
+  // in cases where no user interface is available for prompting.  If a
+  // transient entry is showing, initiates a new navigation to its URL.
+  virtual void Reload(ReloadType reload_type, bool check_for_repost) = 0;
 
   // Removing of entries -------------------------------------------------------
 

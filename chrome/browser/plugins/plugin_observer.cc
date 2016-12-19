@@ -192,7 +192,7 @@ base::string16 ReloadPluginInfoBarDelegate::GetButtonLabel(
 }
 
 bool ReloadPluginInfoBarDelegate::Accept() {
-  controller_->Reload(true);
+  controller_->Reload(content::ReloadType::NORMAL, true);
   return true;
 }
 

@@ -595,7 +595,7 @@ void Navigate(NavigateParams* params) {
         params->browser->tab_strip_model()->GetWebContentsAt(singleton_index);
 
     if (target->IsCrashed()) {
-      target->GetController().Reload(true);
+      target->GetController().Reload(content::ReloadType::NORMAL, true);
     } else if (params->path_behavior == NavigateParams::IGNORE_AND_NAVIGATE &&
         target->GetURL() != params->url) {
       LoadURLInContents(target, params->url, params);

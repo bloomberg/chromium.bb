@@ -366,11 +366,11 @@ void VrShell::DoUiAction(const UiAction action) {
         controller.GoForward();
       break;
     case RELOAD:
-      controller.Reload(false);
+      controller.Reload(content::ReloadType::NORMAL, false);
       break;
 #if defined(ENABLE_VR_SHELL_UI_DEV)
     case RELOAD_UI:
-      ui_contents_->GetController().Reload(false);
+      ui_contents_->GetController().Reload(content::ReloadType::NORMAL, false);
       html_interface_.reset(new UiInterface(UiInterface::Mode::STANDARD,
                                             main_contents_->IsFullscreen()));
       vr_web_contents_observer_->SetUiInterface(html_interface_.get());

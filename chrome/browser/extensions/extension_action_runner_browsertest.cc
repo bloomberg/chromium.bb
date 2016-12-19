@@ -495,7 +495,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionActionRunnerBrowserTest,
       TabHelper::FromWebContents(web_contents)->active_tab_permission_granter();
   ASSERT_TRUE(active_tab_granter);
   active_tab_granter->RevokeForTesting();
-  web_contents->GetController().Reload(true);
+  web_contents->GetController().Reload(content::ReloadType::NORMAL, true);
   EXPECT_TRUE(content::WaitForLoadStop(web_contents));
 
   // The extension should again want to run. Automatically dismiss the bubble

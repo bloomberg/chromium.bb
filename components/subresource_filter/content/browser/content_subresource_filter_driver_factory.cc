@@ -141,7 +141,7 @@ void ContentSubresourceFilterDriverFactory::OnReloadRequested() {
   UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.Prompt.NumReloads", true);
   const GURL& whitelist_url = web_contents()->GetLastCommittedURL();
   AddHostOfURLToWhitelistSet(whitelist_url);
-  web_contents()->GetController().Reload(true);
+  web_contents()->GetController().Reload(content::ReloadType::NORMAL, true);
 }
 
 void ContentSubresourceFilterDriverFactory::SetDriverForFrameHostForTesting(

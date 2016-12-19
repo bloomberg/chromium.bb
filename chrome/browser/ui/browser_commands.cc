@@ -264,10 +264,10 @@ void ReloadInternal(Browser* browser,
   if (devtools && devtools->ReloadInspectedWebContents(bypass_cache))
     return;
 
-  if (bypass_cache)
-    new_tab->GetController().Reload(true, content::ReloadType::BYPASSING_CACHE);
-  else
-    new_tab->GetController().Reload(true);
+  new_tab->GetController().Reload(bypass_cache
+                                      ? content::ReloadType::BYPASSING_CACHE
+                                      : content::ReloadType::NORMAL,
+                                  true);
 }
 
 bool IsShowingWebContentsModalDialog(Browser* browser) {
@@ -1180,7 +1180,7 @@ void ToggleRequestTabletSite(Browser* browser) {
     current_tab->SetUserAgentOverride(content::BuildUserAgentFromOSAndProduct(
         kOsOverrideForTabletSite, product));
   }
-  controller.ReloadOriginalRequestURL(true);
+  controller.Reload(content::ReloadType::ORIGINAL_REQUEST_URL, true);
 }
 
 void ToggleFullscreenMode(Browser* browser) {

@@ -1229,7 +1229,7 @@ TEST_F(NavigationControllerTest, LoadURL_AbortDoesntCancelPending) {
   NavigationEntry* pending_entry = controller.GetPendingEntry();
 
   // Ensure that a reload keeps the same pending entry.
-  controller.Reload(true);
+  controller.Reload(ReloadType::NORMAL, true);
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(pending_entry, controller.GetPendingEntry());
@@ -1376,7 +1376,7 @@ TEST_F(NavigationControllerTest, Reload) {
   controller.GetVisibleEntry()->SetTitle(base::ASCIIToUTF16("Title"));
   entry_id = controller.GetLastCommittedEntry()->GetUniqueID();
 
-  controller.Reload(true);
+  controller.Reload(ReloadType::NORMAL, true);
   EXPECT_EQ(0U, notifications.size());
 
   const base::Time timestamp = controller.GetVisibleEntry()->GetTimestamp();
@@ -1432,7 +1432,7 @@ TEST_F(NavigationControllerTest, Reload_GeneratesNewPage) {
   navigation_entry_committed_counter_ = 0;
   entry_id = controller.GetLastCommittedEntry()->GetUniqueID();
 
-  controller.Reload(true);
+  controller.Reload(ReloadType::NORMAL, true);
   EXPECT_EQ(0U, notifications.size());
 
   main_test_rfh()->PrepareForCommitWithServerRedirect(url2);
@@ -1470,7 +1470,7 @@ TEST_F(NavigationControllerTest, ReloadWithGuest) {
       entry1->site_instance()->GetProcess())->set_is_for_guests_only(true);
 
   // And reload.
-  controller.Reload(true);
+  controller.Reload(ReloadType::NORMAL, true);
 
   // The reload is pending. Check that the NavigationEntry didn't get replaced
   // because of having the wrong process.
@@ -1519,7 +1519,7 @@ TEST_F(NavigationControllerTest, ReloadOriginalRequestURL) {
 
   // Reload using the original URL.
   controller.GetVisibleEntry()->SetTitle(base::ASCIIToUTF16("Title"));
-  controller.ReloadOriginalRequestURL(false);
+  controller.Reload(ReloadType::ORIGINAL_REQUEST_URL, false);
   EXPECT_EQ(0U, notifications.size());
 
   // The reload is pending.  The request should point to the original URL.
@@ -3458,7 +3458,7 @@ TEST_F(NavigationControllerTest, ReloadTransient) {
   // The page is reloaded, which should remove the pending entry for |url1| and
   // the transient entry for |transient_url|, and start a navigation to
   // |transient_url|.
-  controller.Reload(true);
+  controller.Reload(ReloadType::NORMAL, true);
   entry_id = controller.GetPendingEntry()->GetUniqueID();
   EXPECT_FALSE(controller.GetTransientEntry());
   EXPECT_TRUE(controller.GetPendingEntry());
@@ -3980,7 +3980,7 @@ TEST_F(NavigationControllerTest, CloneAndReload) {
   ASSERT_EQ(2, clone->GetController().GetEntryCount());
   EXPECT_EQ(1, clone->GetController().GetPendingEntryIndex());
 
-  clone->GetController().Reload(true);
+  clone->GetController().Reload(ReloadType::NORMAL, true);
   EXPECT_EQ(1, clone->GetController().GetPendingEntryIndex());
 }
 
@@ -5075,7 +5075,7 @@ TEST_F(NavigationControllerTest, PostThenReplaceStateThenReload) {
 
   // Now reload. replaceState overrides the POST, so we should not show a
   // repost warning dialog.
-  controller_impl().Reload(true);
+  controller_impl().Reload(ReloadType::NORMAL, true);
   EXPECT_EQ(0, delegate->repost_form_warning_count());
 }
 

@@ -34,8 +34,8 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestDoubleReload) {
   // Try to reload it twice, checking for repost.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  web_contents->GetController().Reload(true);
-  web_contents->GetController().Reload(true);
+  web_contents->GetController().Reload(content::ReloadType::NORMAL, true);
+  web_contents->GetController().Reload(content::ReloadType::NORMAL, true);
 
   // There should only be one dialog open.
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
@@ -65,7 +65,7 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestLoginAfterRepost) {
   // Try to reload it, checking for repost.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  web_contents->GetController().Reload(true);
+  web_contents->GetController().Reload(content::ReloadType::NORMAL, true);
 
   // Navigate to a page that requires authentication, bringing up another
   // tab-modal sheet.
@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_F(RepostFormWarningTest, TestLoginAfterRepost) {
   observer.Wait();
 
   // Try to reload it again.
-  web_contents->GetController().Reload(true);
+  web_contents->GetController().Reload(content::ReloadType::NORMAL, true);
 
   // Navigate away from the page. We can't use ui_test_utils:NavigateToURL
   // because that waits for the current page to stop loading first, which won't

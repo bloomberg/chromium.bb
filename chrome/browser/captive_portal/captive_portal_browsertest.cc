@@ -2635,7 +2635,8 @@ IN_PROC_BROWSER_TEST_F(CaptivePortalBrowserTest, ReloadTimeout) {
   SetSlowSSLLoadTime(tab_reloader, base::TimeDelta());
 
   MultiNavigationObserver navigation_observer;
-  tab_strip_model->GetActiveWebContents()->GetController().Reload(true);
+  tab_strip_model->GetActiveWebContents()->GetController().Reload(
+      content::ReloadType::NORMAL, true);
 
   // Wait for the check triggered by the broken tab and for the login tab to
   // stop loading.

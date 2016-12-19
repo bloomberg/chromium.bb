@@ -418,7 +418,8 @@ TEST_F(TabManagerTest, ReloadDiscardedTabContextMenu) {
   tab_manager.DiscardWebContentsAt(1, &tabstrip);
   EXPECT_TRUE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(1)));
 
-  tabstrip.GetWebContentsAt(1)->GetController().Reload(false);
+  tabstrip.GetWebContentsAt(1)->GetController().Reload(
+      content::ReloadType::NORMAL, false);
   EXPECT_FALSE(tab_manager.IsTabDiscarded(tabstrip.GetWebContentsAt(1)));
   tabstrip.CloseAllTabs();
   EXPECT_TRUE(tabstrip.empty());

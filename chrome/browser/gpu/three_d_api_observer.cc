@@ -146,7 +146,7 @@ bool ThreeDAPIInfoBarDelegate::Cancel() {
                             DISMISSAL_MAX);
   content::GpuDataManager::GetInstance()->UnblockDomainFrom3DAPIs(url_);
   InfoBarService::WebContentsFromInfoBar(infobar())->GetController().Reload(
-      true);
+      content::ReloadType::NORMAL, true);
   return true;
 }
 

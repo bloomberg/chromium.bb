@@ -220,7 +220,7 @@ void CaptivePortalTabReloader::SetState(State new_state) {
     default:
       NOTREACHED();
       break;
-  };
+  }
 
   state_ = new_state;
 
@@ -267,7 +267,7 @@ void CaptivePortalTabReloader::ReloadTabIfNeeded() {
 void CaptivePortalTabReloader::ReloadTab() {
   content::NavigationController* controller = &web_contents_->GetController();
   if (!controller->GetActiveEntry()->GetHasPostData())
-    controller->Reload(true);
+    controller->Reload(content::ReloadType::NORMAL, true);
 }
 
 void CaptivePortalTabReloader::MaybeOpenCaptivePortalLoginTab() {

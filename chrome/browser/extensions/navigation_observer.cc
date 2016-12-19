@@ -111,7 +111,7 @@ void NavigationObserver::OnInstallPromptDone(
 
     // Grant permissions, re-enable the extension, and then reload the tab.
     extension_service->GrantPermissionsAndEnableExtension(extension);
-    nav_controller->Reload(true);
+    nav_controller->Reload(content::ReloadType::NORMAL, true);
   } else {
     std::string histogram_name =
        result == ExtensionInstallPrompt::Result::USER_CANCELED

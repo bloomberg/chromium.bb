@@ -48,7 +48,7 @@ class ViewImpl : public mojom::View,
   void GoBack() override;
   void GoForward() override;
   void NavigateToOffset(int offset) override;
-  void Reload(bool skip_cache) override;
+  void Reload(bool bypass_cache) override;
   void Stop() override;
   void GetWindowTreeClient(ui::mojom::WindowTreeClientRequest request) override;
   void ShowInterstitial(const std::string& html) override;

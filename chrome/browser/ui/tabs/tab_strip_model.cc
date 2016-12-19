@@ -909,7 +909,7 @@ void TabStripModel::ExecuteContextMenuCommand(
           CoreTabHelperDelegate* core_delegate =
               CoreTabHelper::FromWebContents(tab)->delegate();
           if (!core_delegate || core_delegate->CanReloadContents(tab))
-            tab->GetController().Reload(true);
+            tab->GetController().Reload(content::ReloadType::NORMAL, true);
         }
       }
       break;

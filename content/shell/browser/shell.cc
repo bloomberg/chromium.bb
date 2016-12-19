@@ -262,12 +262,12 @@ void Shell::GoBackOrForward(int offset) {
 }
 
 void Shell::Reload() {
-  web_contents_->GetController().Reload(false);
+  web_contents_->GetController().Reload(ReloadType::NORMAL, false);
   web_contents_->Focus();
 }
 
 void Shell::ReloadBypassingCache() {
-  web_contents_->GetController().ReloadBypassingCache(false);
+  web_contents_->GetController().Reload(ReloadType::BYPASSING_CACHE, false);
   web_contents_->Focus();
 }
 

@@ -83,13 +83,7 @@ class CONTENT_EXPORT NavigationControllerImpl
   void ContinuePendingReload() override;
   bool IsInitialNavigation() const override;
   bool IsInitialBlankNavigation() const override;
-  void Reload(bool check_for_repost, ReloadType reload_type) override;
-  // TODO(toyoshim): Remove following Reload* methods once all callers to use
-  // new Reload() with ReloadType above. http://crbug.com/670232
-  void Reload(bool check_for_repost) override;
-  void ReloadBypassingCache(bool check_for_repost) override;
-  void ReloadOriginalRequestURL(bool check_for_repost) override;
-  void ReloadDisableLoFi(bool check_for_repost) override;
+  void Reload(ReloadType reload_type, bool check_for_repost) override;
   void NotifyEntryChanged(const NavigationEntry* entry) override;
   void CopyStateFrom(const NavigationController& source) override;
   void CopyStateFromAndPrune(NavigationController* source,

@@ -60,6 +60,6 @@ base::string16 WebsiteSettingsInfoBarDelegate::GetButtonLabel(
 bool WebsiteSettingsInfoBarDelegate::Accept() {
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(infobar());
-  web_contents->GetController().Reload(true);
+  web_contents->GetController().Reload(content::ReloadType::NORMAL, true);
   return true;
 }

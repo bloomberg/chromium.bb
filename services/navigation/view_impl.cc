@@ -109,11 +109,11 @@ void ViewImpl::NavigateToOffset(int offset) {
   web_view_->GetWebContents()->GetController().GoToOffset(offset);
 }
 
-void ViewImpl::Reload(bool skip_cache) {
-  if (skip_cache)
-    web_view_->GetWebContents()->GetController().Reload(true);
-  else
-    web_view_->GetWebContents()->GetController().ReloadBypassingCache(true);
+void ViewImpl::Reload(bool bypass_cache) {
+  web_view_->GetWebContents()->GetController().Reload(
+      bypass_cache ? content::ReloadType::BYPASSING_CACHE
+                   : content::ReloadType::NORMAL,
+      true);
 }
 
 void ViewImpl::Stop() {

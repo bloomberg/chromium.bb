@@ -735,7 +735,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ReplaceStateReloadPushState) {
   // history.replaceState shouldn't capture a screenshot
   EXPECT_FALSE(screenshot_manager()->screenshot_taken_for());
   screenshot_manager()->Reset();
-  web_contents->GetController().Reload(true);
+  web_contents->GetController().Reload(ReloadType::NORMAL, true);
   WaitForLoadStop(web_contents);
   // reloading the page shouldn't capture a screenshot
   // TODO (mfomitchev): currently broken. Uncomment when

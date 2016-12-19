@@ -111,7 +111,7 @@ interface View {
   GoBack();
   GoForward();
   NavigateToOffset(int32 offset);
-  Reload(bool skip_cache);
+  Reload(bool bypass_cache);
   Stop();
 
   // Obtains a Mus WindowTreeClient for the View, so it can be embedded in a
