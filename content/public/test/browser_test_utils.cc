@@ -406,7 +406,7 @@ const char kHasVideoInputDeviceOnSystem[] =
       "navigator.mediaDevices.enumerateDevices()"
       ".then(function(devices) {"
         "devices.forEach(function(device) {"
-          "if (device.kind == 'video-input') {"
+          "if (device.kind == 'videoinput') {"
             "window.domAutomationController.send('has-video-input-device');"
             "return;"
           "}"
