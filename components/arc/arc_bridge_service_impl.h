@@ -13,6 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_session_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -45,16 +47,19 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   // Returns the current ArcSession instance for testing purpose.
   ArcSession* GetArcSessionForTesting() { return arc_session_.get(); }
 
-  // Normally, reconnecting after connection shutdown happens after a short
-  // delay. When testing, however, we'd like it to happen immediately to avoid
-  // adding unnecessary delays.
-  void DisableReconnectDelayForTesting();
+  // Normally, automatic restarting happens after a short delay. When testing,
+  // however, we'd like it to happen immediately to avoid adding unnecessary
+  // delays.
+  void SetRestartDelayForTesting(const base::TimeDelta& restart_delay);
 
  private:
   // If all pre-requisites are true (ARC is available, it has been enabled, and
   // the session has started), and ARC is stopped, start ARC. If ARC is running
   // and the pre-requisites stop being true, stop ARC.
   void PrerequisitesChanged();
+
+  // Starts to run an ARC instance.
+  void StartArcSession();
 
   // Stops the running instance.
   void StopInstance();
@@ -68,12 +73,10 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   // If the user's session has started.
   bool session_started_;
 
-  // If the instance had already been started but the connection to it was
-  // lost. This should make the instance restart.
-  bool reconnect_ = false;
-
-  // Delay the reconnection.
-  bool use_delay_before_reconnecting_ = true;
+  // Instead of immediately trying to restart the container, give it some time
+  // to finish tearing down in case it is still in the process of stopping.
+  base::TimeDelta restart_delay_;
+  base::OneShotTimer restart_timer_;
 
   // Factory to inject a fake ArcSession instance for testing.
   ArcSessionFactory factory_;

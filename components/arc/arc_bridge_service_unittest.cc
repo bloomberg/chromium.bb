@@ -155,7 +155,7 @@ TEST_F(ArcBridgeTest, BootFailure) {
 
 // If the instance is stopped, it should be re-started.
 TEST_F(ArcBridgeTest, Restart) {
-  arc_bridge_service()->DisableReconnectDelayForTesting();
+  arc_bridge_service()->SetRestartDelayForTesting(base::TimeDelta());
   EXPECT_TRUE(arc_bridge_service()->stopped());
 
   arc_bridge_service()->RequestStart();
@@ -164,6 +164,8 @@ TEST_F(ArcBridgeTest, Restart) {
   // Simulate a connection loss.
   ASSERT_TRUE(arc_session());
   arc_session()->StopWithReason(StopReason::CRASH);
+  EXPECT_TRUE(arc_bridge_service()->stopped());
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(arc_bridge_service()->ready());
 
   arc_bridge_service()->RequestStop();
@@ -172,7 +174,7 @@ TEST_F(ArcBridgeTest, Restart) {
 
 // Makes sure OnSessionStopped is called on stop.
 TEST_F(ArcBridgeTest, OnSessionStopped) {
-  arc_bridge_service()->DisableReconnectDelayForTesting();
+  arc_bridge_service()->SetRestartDelayForTesting(base::TimeDelta());
   EXPECT_TRUE(arc_bridge_service()->stopped());
 
   arc_bridge_service()->RequestStart();
@@ -182,12 +184,16 @@ TEST_F(ArcBridgeTest, OnSessionStopped) {
   ASSERT_TRUE(arc_session());
   arc_session()->StopWithReason(StopReason::GENERIC_BOOT_FAILURE);
   EXPECT_EQ(StopReason::GENERIC_BOOT_FAILURE, stop_reason());
+  EXPECT_TRUE(arc_bridge_service()->stopped());
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(arc_bridge_service()->ready());
 
   // Simulate crash.
   ASSERT_TRUE(arc_session());
   arc_session()->StopWithReason(StopReason::CRASH);
   EXPECT_EQ(StopReason::CRASH, stop_reason());
+  EXPECT_TRUE(arc_bridge_service()->stopped());
+  base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(arc_bridge_service()->ready());
 
   // Graceful stop.
@@ -197,7 +203,7 @@ TEST_F(ArcBridgeTest, OnSessionStopped) {
 }
 
 TEST_F(ArcBridgeTest, Shutdown) {
-  arc_bridge_service()->DisableReconnectDelayForTesting();
+  arc_bridge_service()->SetRestartDelayForTesting(base::TimeDelta());
   EXPECT_TRUE(arc_bridge_service()->stopped());
 
   arc_bridge_service()->RequestStart();

@@ -22,13 +22,18 @@
 #include "components/prefs/pref_service.h"
 
 namespace arc {
+
 namespace {
-constexpr int64_t kReconnectDelayInSeconds = 5;
+
+constexpr base::TimeDelta kDefaultRestartDelay =
+    base::TimeDelta::FromSeconds(5);
+
 }  // namespace
 
 ArcBridgeServiceImpl::ArcBridgeServiceImpl(
     const scoped_refptr<base::TaskRunner>& blocking_task_runner)
     : session_started_(false),
+      restart_delay_(kDefaultRestartDelay),
       factory_(base::Bind(ArcSession::Create, this, blocking_task_runner)),
       weak_factory_(this) {}
 
@@ -57,13 +62,18 @@ void ArcBridgeServiceImpl::RequestStop() {
 
 void ArcBridgeServiceImpl::OnShutdown() {
   DCHECK(CalledOnValidThread());
+
   VLOG(1) << "OnShutdown";
-  if (!session_started_)
-    return;
   session_started_ = false;
-  reconnect_ = false;
-  if (arc_session_)
+  restart_timer_.Stop();
+  if (arc_session_) {
+    if (state() != State::STOPPING)
+      SetState(State::STOPPING);
     arc_session_->OnShutdown();
+  }
+  // ArcSession::OnShutdown() invokes OnSessionStopped() synchronously.
+  // In the observer method, |arc_session_| should be destroyed.
+  DCHECK(!arc_session_);
 }
 
 void ArcBridgeServiceImpl::SetArcSessionFactoryForTesting(
@@ -72,8 +82,12 @@ void ArcBridgeServiceImpl::SetArcSessionFactoryForTesting(
   factory_ = factory;
 }
 
-void ArcBridgeServiceImpl::DisableReconnectDelayForTesting() {
-  use_delay_before_reconnecting_ = false;
+void ArcBridgeServiceImpl::SetRestartDelayForTesting(
+    const base::TimeDelta& restart_delay) {
+  DCHECK_EQ(state(), State::STOPPED);
+  DCHECK(!arc_session_);
+  DCHECK(!restart_timer_.IsRunning());
+  restart_delay_ = restart_delay;
 }
 
 void ArcBridgeServiceImpl::PrerequisitesChanged() {
@@ -82,19 +96,16 @@ void ArcBridgeServiceImpl::PrerequisitesChanged() {
           << "state=" << static_cast<uint32_t>(state())
           << ", session_started=" << session_started_;
   if (state() == State::STOPPED) {
-    if (!session_started_)
+    if (!session_started_) {
+      // We were explicitly asked to stop, so do not restart.
+      restart_timer_.Stop();
       return;
+    }
+    DCHECK(!restart_timer_.IsRunning());
     VLOG(0) << "Prerequisites met, starting ARC";
-    SetStopReason(StopReason::SHUTDOWN);
-
-    if (arc_session_)
-      arc_session_->RemoveObserver(this);
-
-    SetState(State::CONNECTING);
-    arc_session_ = factory_.Run();
-    arc_session_->AddObserver(this);
-    arc_session_->Start();
+    StartArcSession();
   } else {
+    DCHECK(!restart_timer_.IsRunning());
     if (session_started_)
       return;
     VLOG(0) << "Prerequisites stopped being met, stopping ARC";
@@ -102,15 +113,29 @@ void ArcBridgeServiceImpl::PrerequisitesChanged() {
   }
 }
 
+void ArcBridgeServiceImpl::StartArcSession() {
+  DCHECK(CalledOnValidThread());
+  DCHECK_EQ(state(), State::STOPPED);
+  DCHECK(!arc_session_);
+  DCHECK(!restart_timer_.IsRunning());
+
+  VLOG(1) << "Starting ARC instance";
+  SetStopReason(StopReason::SHUTDOWN);
+  arc_session_ = factory_.Run();
+  arc_session_->AddObserver(this);
+  SetState(State::CONNECTING);
+  arc_session_->Start();
+}
+
 void ArcBridgeServiceImpl::StopInstance() {
   DCHECK(CalledOnValidThread());
-  if (state() == State::STOPPED || state() == State::STOPPING) {
+  DCHECK_NE(state(), State::STOPPED);
+  DCHECK(!restart_timer_.IsRunning());
+
+  if (state() == State::STOPPING) {
     VLOG(1) << "StopInstance() called when ARC is not running";
     return;
   }
-
-  // We were explicitly asked to stop, so do not reconnect.
-  reconnect_ = false;
 
   VLOG(1) << "Stopping ARC";
   DCHECK(arc_session_.get());
@@ -127,39 +152,47 @@ void ArcBridgeServiceImpl::OnSessionReady() {
     return;
   }
 
-  // The container can be considered to have been successfully launched, so
-  // restart if the connection goes down without being requested.
-  reconnect_ = true;
   VLOG(0) << "ARC ready";
   SetState(State::READY);
 }
 
 void ArcBridgeServiceImpl::OnSessionStopped(StopReason stop_reason) {
   DCHECK(CalledOnValidThread());
+  DCHECK(!restart_timer_.IsRunning());
+
   VLOG(0) << "ARC stopped: " << stop_reason;
   arc_session_->RemoveObserver(this);
   arc_session_.reset();
+
+  // If READY, ARC instance unexpectedly crashed so we need to restart it
+  // automatically.
+  // If STOPPING, at least once RequestStop() is called. If |session_started_|
+  // is true, RequestStart() is following so schedule to restart ARC session.
+  // Otherwise, do nothing.
+  // If CONNECTING, ARC instance has not been booted properly, so do not
+  // restart it automatically.
+  if (state() == State::READY ||
+      (state() == State::STOPPING && session_started_)) {
+    // This check is for READY case. In READY case |session_started_| should be
+    // always true, because if once RequestStop() is called, the state() will
+    // be set to STOPPING.
+    DCHECK(session_started_);
+
+    // There was a previous invocation and it crashed for some reason. Try
+    // starting ARC instance later again.
+    // Note that even |restart_delay_| is 0 (for testing), it needs to
+    // PostTask, because observer callback may call RequestStart()/Stop(),
+    // which can change restarting.
+    VLOG(0) << "ARC restarting";
+    restart_timer_.Start(FROM_HERE, restart_delay_,
+                         base::Bind(&ArcBridgeServiceImpl::StartArcSession,
+                                    weak_factory_.GetWeakPtr()));
+  }
+
+  // TODO(hidehiko): Consider to let observers know whether there is scheduled
+  // restarting event, or not.
   SetStopReason(stop_reason);
   SetState(State::STOPPED);
-
-  if (reconnect_) {
-    // There was a previous invocation and it crashed for some reason. Try
-    // starting the container again.
-    reconnect_ = false;
-    VLOG(0) << "ARC reconnecting";
-    if (use_delay_before_reconnecting_) {
-      // Instead of immediately trying to restart the container, give it some
-      // time to finish tearing down in case it is still in the process of
-      // stopping.
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::Bind(&ArcBridgeServiceImpl::PrerequisitesChanged,
-                                weak_factory_.GetWeakPtr()),
-          base::TimeDelta::FromSeconds(kReconnectDelayInSeconds));
-    } else {
-      // Restart immediately.
-      PrerequisitesChanged();
-    }
-  }
 }
 
 }  // namespace arc
