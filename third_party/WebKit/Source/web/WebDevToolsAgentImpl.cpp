@@ -117,16 +117,6 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
     MainThreadDebugger::instance()->setClientMessageLoop(std::move(instance));
   }
 
-  static void webViewImplClosed(WebViewImpl* view) {
-    if (s_instance)
-      s_instance->m_frozenViews.remove(view);
-  }
-
-  static void webFrameWidgetImplClosed(WebFrameWidgetImpl* widget) {
-    if (s_instance)
-      s_instance->m_frozenWidgets.remove(widget);
-  }
-
   static void continueProgram() {
     // Release render thread if necessary.
     if (s_instance)
@@ -175,30 +165,10 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
     WebDevToolsAgentImpl* agent = frame->devToolsAgentImpl();
     agent->flushProtocolNotifications();
 
-    Vector<WebViewImpl*> views;
-    HeapVector<Member<WebFrameWidgetImpl>> widgets;
-
     // 1. Disable input events.
-    const HashSet<WebViewImpl*>& viewImpls = WebViewImpl::allInstances();
-    HashSet<WebViewImpl*>::const_iterator viewImplsEnd = viewImpls.end();
-    for (HashSet<WebViewImpl*>::const_iterator it = viewImpls.begin();
-         it != viewImplsEnd; ++it) {
-      WebViewImpl* view = *it;
-      m_frozenViews.add(view);
-      views.append(view);
-      view->setIgnoreInputEvents(true);
+    WebFrameWidgetBase::setIgnoreInputEvents(true);
+    for (const auto view : WebViewImpl::allInstances())
       view->chromeClient().notifyPopupOpeningObservers();
-    }
-
-    const WebFrameWidgetsSet& widgetImpls = WebFrameWidgetImpl::allInstances();
-    WebFrameWidgetsSet::const_iterator widgetImplsEnd = widgetImpls.end();
-    for (WebFrameWidgetsSet::const_iterator it = widgetImpls.begin();
-         it != widgetImplsEnd; ++it) {
-      WebFrameWidgetImpl* widget = *it;
-      m_frozenWidgets.add(widget);
-      widgets.append(widget);
-      widget->setIgnoreInputEvents(true);
-    }
 
     // 2. Notify embedder about pausing.
     if (agent->client())
@@ -213,29 +183,11 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
     // 5. Resume active objects
     WebView::didExitModalLoop();
 
-    // 6. Resume input events.
-    for (Vector<WebViewImpl*>::iterator it = views.begin(); it != views.end();
-         ++it) {
-      if (m_frozenViews.contains(*it)) {
-        // The view was not closed during the dispatch.
-        (*it)->setIgnoreInputEvents(false);
-      }
-    }
-    for (HeapVector<Member<WebFrameWidgetImpl>>::iterator it = widgets.begin();
-         it != widgets.end(); ++it) {
-      if (m_frozenWidgets.contains(*it)) {
-        // The widget was not closed during the dispatch.
-        (*it)->setIgnoreInputEvents(false);
-      }
-    }
+    WebFrameWidgetBase::setIgnoreInputEvents(false);
 
     // 7. Notify embedder about resuming.
     if (agent->client())
       agent->client()->didExitDebugLoop();
-
-    // 8. All views have been resumed, clear the set.
-    m_frozenViews.clear();
-    m_frozenWidgets.clear();
   }
 
   void quitNow() override {
@@ -271,9 +223,7 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
   bool m_runningForCreateWindow;
   std::unique_ptr<WebDevToolsAgentClient::WebKitClientMessageLoop>
       m_messageLoop;
-  typedef HashSet<WebViewImpl*> FrozenViewsSet;
-  FrozenViewsSet m_frozenViews;
-  WebFrameWidgetsSet m_frozenWidgets;
+
   static ClientMessageLoopAdapter* s_instance;
 };
 
@@ -327,17 +277,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(WebLocalFrameImpl* webLocalFrameImpl,
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {
   DCHECK(!m_client);
-}
-
-// static
-void WebDevToolsAgentImpl::webViewImplClosed(WebViewImpl* webViewImpl) {
-  ClientMessageLoopAdapter::webViewImplClosed(webViewImpl);
-}
-
-// static
-void WebDevToolsAgentImpl::webFrameWidgetImplClosed(
-    WebFrameWidgetImpl* webFrameWidgetImpl) {
-  ClientMessageLoopAdapter::webFrameWidgetImplClosed(webFrameWidgetImpl);
 }
 
 DEFINE_TRACE(WebDevToolsAgentImpl) {

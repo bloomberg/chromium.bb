@@ -71,7 +71,6 @@ class WebFrameWidgetImpl final
       public PageWidgetEventHandler {
  public:
   static WebFrameWidgetImpl* create(WebWidgetClient*, WebLocalFrame*);
-  static WebFrameWidgetsSet& allInstances();
 
   ~WebFrameWidgetImpl();
 
@@ -150,8 +149,6 @@ class WebFrameWidgetImpl final
 
   void updateMainFrameLayoutSize();
 
-  void setIgnoreInputEvents(bool newValue);
-
   // Event related methods:
   void mouseContextMenu(const WebMouseEvent&);
 
@@ -225,8 +222,6 @@ class WebFrameWidgetImpl final
   bool m_layerTreeViewClosed;
 
   bool m_suppressNextKeypressEvent;
-
-  bool m_ignoreInputEvents;
 
   // Whether the WebFrameWidget is rendering transparently.
   bool m_isTransparent;

@@ -99,12 +99,6 @@ WebFrameWidgetImpl* WebFrameWidgetImpl::create(WebWidgetClient* client,
       client, localRoot);  // SelfKeepAlive is set in constructor.
 }
 
-// static
-WebFrameWidgetsSet& WebFrameWidgetImpl::allInstances() {
-  DEFINE_STATIC_LOCAL(WebFrameWidgetsSet, allInstances, ());
-  return allInstances;
-}
-
 WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient* client,
                                        WebLocalFrame* localRoot)
     : m_client(client),
@@ -116,14 +110,12 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient* client,
       m_isAcceleratedCompositingActive(false),
       m_layerTreeViewClosed(false),
       m_suppressNextKeypressEvent(false),
-      m_ignoreInputEvents(false),
       m_isTransparent(false),
       m_imeAcceptEvents(true),
       m_selfKeepAlive(this) {
   DCHECK(m_localRoot->frame()->isLocalRoot());
   initializeLayerTreeView();
   m_localRoot->setFrameWidget(this);
-  allInstances().add(this);
 
   if (localRoot->parent())
     setIsTransparent(true);
@@ -139,10 +131,6 @@ DEFINE_TRACE(WebFrameWidgetImpl) {
 // WebWidget ------------------------------------------------------------------
 
 void WebFrameWidgetImpl::close() {
-  WebDevToolsAgentImpl::webFrameWidgetImplClosed(this);
-  DCHECK(allInstances().contains(this));
-  allInstances().remove(this);
-
   m_localRoot->setFrameWidget(nullptr);
   m_localRoot = nullptr;
   // Reset the delegate to prevent notifications being sent as we're being
@@ -228,10 +216,6 @@ void WebFrameWidgetImpl::updateMainFrameLayoutSize() {
   view->setLayoutSize(layoutSize);
 }
 
-void WebFrameWidgetImpl::setIgnoreInputEvents(bool newValue) {
-  DCHECK_NE(m_ignoreInputEvents, newValue);
-  m_ignoreInputEvents = newValue;
-}
 
 void WebFrameWidgetImpl::didEnterFullscreen() {
   view()->didEnterFullscreen();
@@ -343,7 +327,7 @@ WebInputEventResult WebFrameWidgetImpl::handleInputEvent(
 
   // Report the event to be NOT processed by WebKit, so that the browser can
   // handle it appropriately.
-  if (m_ignoreInputEvents)
+  if (ignoreInputEvents())
     return WebInputEventResult::NotHandled;
 
   // FIXME: pass event to m_localRoot's WebDevToolsAgentImpl once available.

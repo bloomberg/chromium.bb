@@ -358,7 +358,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       m_enableFakePageScaleAnimationForTesting(false),
       m_fakePageScaleAnimationPageScaleFactor(0),
       m_fakePageScaleAnimationUseAnchor(false),
-      m_ignoreInputEvents(false),
       m_compositorDeviceScaleFactorOverride(0),
       m_suppressNextKeypressEvent(false),
       m_imeAcceptEvents(true),
@@ -1747,7 +1746,6 @@ WebViewImpl* WebViewImpl::fromPage(Page* page) {
 // WebWidget ------------------------------------------------------------------
 
 void WebViewImpl::close() {
-  WebDevToolsAgentImpl::webViewImplClosed(this);
   DCHECK(allInstances().contains(this));
   allInstances().remove(this);
 
@@ -2148,7 +2146,7 @@ WebInputEventResult WebViewImpl::handleInputEvent(
 
   // Report the event to be NOT processed by WebKit, so that the browser can
   // handle it appropriately.
-  if (m_ignoreInputEvents)
+  if (WebFrameWidgetBase::ignoreInputEvents())
     return WebInputEventResult::NotHandled;
 
   AutoReset<const WebInputEvent*> currentEventChange(&m_currentInputEvent,
@@ -3719,11 +3717,6 @@ void WebViewImpl::mainFrameScrollOffsetChanged() {
 
 bool WebViewImpl::useExternalPopupMenus() {
   return shouldUseExternalPopupMenus;
-}
-
-void WebViewImpl::setIgnoreInputEvents(bool newValue) {
-  DCHECK_NE(m_ignoreInputEvents, newValue);
-  m_ignoreInputEvents = newValue;
 }
 
 void WebViewImpl::setBackgroundColorOverride(WebColor color) {

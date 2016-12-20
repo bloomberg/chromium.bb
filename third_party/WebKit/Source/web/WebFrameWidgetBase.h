@@ -71,6 +71,8 @@ class WebFrameWidgetBase : public WebFrameWidget {
                      const WebPoint& dragImageOffset);
 
   bool doingDragAndDrop() { return m_doingDragAndDrop; }
+  static void setIgnoreInputEvents(bool value) { s_ignoreInputEvents = value; }
+  static bool ignoreInputEvents() { return s_ignoreInputEvents; }
 
  protected:
   enum DragAction { DragEnter, DragOver };
@@ -104,6 +106,9 @@ class WebFrameWidgetBase : public WebFrameWidget {
   // When not equal to DragOperationNone, the drag data can be dropped onto the
   // current drop target in this WebView (the drop target can accept the drop).
   WebDragOperation m_dragOperation = WebDragOperationNone;
+
+ private:
+  static bool s_ignoreInputEvents;
 };
 
 DEFINE_TYPE_CASTS(WebFrameWidgetBase, WebFrameWidget, widget, true, true);

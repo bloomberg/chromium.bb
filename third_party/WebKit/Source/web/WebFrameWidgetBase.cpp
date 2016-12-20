@@ -44,6 +44,8 @@ STATIC_ASSERT_ENUM(DragOperationMove, WebDragOperationMove);
 STATIC_ASSERT_ENUM(DragOperationDelete, WebDragOperationDelete);
 STATIC_ASSERT_ENUM(DragOperationEvery, WebDragOperationEvery);
 
+bool WebFrameWidgetBase::s_ignoreInputEvents = false;
+
 WebDragOperation WebFrameWidgetBase::dragTargetDragEnter(
     const WebDragData& webDragData,
     const WebPoint& pointInViewport,

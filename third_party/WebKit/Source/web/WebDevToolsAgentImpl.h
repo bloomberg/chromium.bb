@@ -52,11 +52,9 @@ class InspectorResourceContainer;
 class InspectorResourceContentLoader;
 class LocalFrame;
 class WebDevToolsAgentClient;
-class WebFrameWidgetImpl;
 class WebLayerTreeView;
 class WebLocalFrameImpl;
 class WebString;
-class WebViewImpl;
 
 class WebDevToolsAgentImpl final
     : public GarbageCollectedFinalized<WebDevToolsAgentImpl>,
@@ -76,8 +74,6 @@ class WebDevToolsAgentImpl final
   WebDevToolsAgentClient* client() { return m_client; }
   InspectorOverlay* overlay() const { return m_overlay.get(); }
   void flushProtocolNotifications();
-  static void webViewImplClosed(WebViewImpl*);
-  static void webFrameWidgetImplClosed(WebFrameWidgetImpl*);
 
   // Instrumentation from web/ layer.
   void didCommitLoadForLocalFrame(LocalFrame*);

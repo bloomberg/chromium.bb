@@ -287,7 +287,6 @@ class WEB_EXPORT WebViewImpl final
   HitTestResult coreHitTestResultAt(const WebPoint&);
   void invalidateRect(const IntRect&);
 
-  void setIgnoreInputEvents(bool newValue);
   void setBaseBackgroundColor(WebColor);
   void setBackgroundColorOverride(WebColor);
   void setZoomFactorOverride(float);
@@ -650,8 +649,6 @@ class WEB_EXPORT WebViewImpl final
   IntPoint m_fakePageScaleAnimationTargetPosition;
   float m_fakePageScaleAnimationPageScaleFactor;
   bool m_fakePageScaleAnimationUseAnchor;
-
-  bool m_ignoreInputEvents;
 
   float m_compositorDeviceScaleFactorOverride;
   TransformationMatrix m_deviceEmulationTransform;
