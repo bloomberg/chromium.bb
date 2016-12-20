@@ -31,6 +31,7 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
         make_scoped_refptr(new OrderedSimpleTaskRunner(now_src_.get(), false));
     std::unique_ptr<TestDelayBasedTimeSource> time_source(
         new TestDelayBasedTimeSource(now_src_.get(), task_runner_.get()));
+    delay_based_time_source_ = time_source.get();
     source_.reset(new BackToBackBeginFrameSource(std::move(time_source)));
     obs_ = base::WrapUnique(new ::testing::StrictMock<MockBeginFrameObserver>);
   }
@@ -41,6 +42,7 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
   scoped_refptr<OrderedSimpleTaskRunner> task_runner_;
   std::unique_ptr<BackToBackBeginFrameSource> source_;
   std::unique_ptr<MockBeginFrameObserver> obs_;
+  TestDelayBasedTimeSource* delay_based_time_source_;  // Owned by |now_src_|.
 };
 
 const int64_t BackToBackBeginFrameSourceTest::kDeadline =
@@ -265,6 +267,8 @@ TEST_F(BackToBackBeginFrameSourceTest, MultipleObserversInterleaved) {
 
   source_->DidFinishFrame(&obs1, 0);
   source_->RemoveObserver(&obs1);
+  // Removing all finished observers should disable the time source.
+  EXPECT_FALSE(delay_based_time_source_->Active());
   // Finishing the frame for |obs1| posts a begin frame task, which will be
   // aborted since |obs1| is removed. Clear that from the task runner.
   task_runner_->RunPendingTasks();

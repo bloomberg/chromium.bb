@@ -77,7 +77,7 @@ void BackToBackBeginFrameSource::RemoveObserver(BeginFrameObserver* obs) {
   DCHECK(observers_.find(obs) != observers_.end());
   observers_.erase(obs);
   pending_begin_frame_observers_.erase(obs);
-  if (observers_.empty())
+  if (pending_begin_frame_observers_.empty())
     time_source_->SetActive(false);
 }
 
@@ -105,6 +105,7 @@ void BackToBackBeginFrameSource::OnTimerTick() {
 
   std::unordered_set<BeginFrameObserver*> pending_observers;
   pending_observers.swap(pending_begin_frame_observers_);
+  DCHECK(!pending_observers.empty());
   for (BeginFrameObserver* obs : pending_observers)
     obs->OnBeginFrame(args);
 }
