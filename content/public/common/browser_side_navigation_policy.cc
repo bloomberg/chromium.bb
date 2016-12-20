@@ -10,7 +10,8 @@
 namespace content {
 
 bool IsBrowserSideNavigationEnabled() {
-  return true;
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableBrowserSideNavigation);
 }
 
 }  // namespace content
