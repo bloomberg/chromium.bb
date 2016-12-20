@@ -42,6 +42,8 @@ class CONTENT_EXPORT MediaStreamVideoWebRtcSink : public MediaStreamVideoSink {
  protected:
   // Implementation of MediaStreamSink.
   void OnEnabledChanged(bool enabled) override;
+  void OnContentHintChanged(
+      blink::WebMediaStreamTrack::ContentHintType content_hint) override;
 
  private:
   // Helper to request a refresh frame from the source. Called via the callback

@@ -143,9 +143,12 @@ class WebRtcVideoCapturerAdapter::TextureFrameCopier
   std::unique_ptr<media::SkCanvasVideoRenderer> canvas_video_renderer_;
 };
 
-WebRtcVideoCapturerAdapter::WebRtcVideoCapturerAdapter(bool is_screencast)
+WebRtcVideoCapturerAdapter::WebRtcVideoCapturerAdapter(
+    bool is_screencast,
+    blink::WebMediaStreamTrack::ContentHintType content_hint)
     : texture_copier_(new WebRtcVideoCapturerAdapter::TextureFrameCopier()),
       is_screencast_(is_screencast),
+      content_hint_(content_hint),
       running_(false) {
   thread_checker_.DetachFromThread();
 }
@@ -300,8 +303,33 @@ bool WebRtcVideoCapturerAdapter::GetPreferredFourccs(
   return true;
 }
 
+void WebRtcVideoCapturerAdapter::SetContentHint(
+    blink::WebMediaStreamTrack::ContentHintType content_hint) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  content_hint_ = content_hint;
+}
+
 bool WebRtcVideoCapturerAdapter::IsScreencast() const {
-  return is_screencast_;
+  // IsScreencast() is misleading since content hints were added to
+  // MediaStreamTracks. What IsScreencast() really signals is whether or not
+  // video frames should ever be scaled before being handed over to WebRTC.
+  // TODO(pbos): Remove the need for IsScreencast() -> ShouldAdaptResolution()
+  // by inlining VideoCapturer::AdaptFrame() and removing it from VideoCapturer.
+  return !ShouldAdaptResolution();
+}
+
+bool WebRtcVideoCapturerAdapter::ShouldAdaptResolution() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (content_hint_ ==
+      blink::WebMediaStreamTrack::ContentHintType::VideoFluid) {
+    return true;
+  }
+  if (content_hint_ ==
+      blink::WebMediaStreamTrack::ContentHintType::VideoDetailed) {
+    return false;
+  }
+  // Screencast does not adapt by default.
+  return !is_screencast_;
 }
 
 bool WebRtcVideoCapturerAdapter::GetBestCaptureFormat(
