@@ -157,11 +157,6 @@ ResourceLoader::~ResourceLoader() {
 }
 
 void ResourceLoader::StartRequest() {
-  if (delegate_->HandleExternalProtocol(this, request_->url())) {
-    CancelAndIgnore();
-    return;
-  }
-
   // Give the handler a chance to delay the URLRequest from being started.
   bool defer_start = false;
   if (!handler_->OnWillStart(request_->url(), &defer_start)) {
@@ -273,12 +268,6 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
     }
   }
 
-  if (delegate_->HandleExternalProtocol(this, redirect_info.new_url)) {
-    // The request is complete so we can remove it.
-    CancelAndIgnore();
-    return;
-  }
-
   scoped_refptr<ResourceResponse> response = new ResourceResponse();
   PopulateResourceResponse(info, request_.get(), response.get());
   delegate_->DidReceiveRedirect(this, redirect_info.new_url, response.get());
@@ -286,6 +275,12 @@ void ResourceLoader::OnReceivedRedirect(net::URLRequest* unused,
     Cancel();
   } else if (*defer) {
     deferred_stage_ = DEFERRED_REDIRECT;  // Follow redirect when resumed.
+    DCHECK(deferred_redirect_url_.is_empty());
+    deferred_redirect_url_ = redirect_info.new_url;
+  } else if (delegate_->HandleExternalProtocol(this, redirect_info.new_url)) {
+    // The request is complete so we can remove it.
+    CancelAndIgnore();
+    return;
   }
 }
 
@@ -450,7 +445,7 @@ void ResourceLoader::Resume() {
       StartRequestInternal();
       break;
     case DEFERRED_REDIRECT:
-      request_->FollowDeferredRedirect();
+      FollowDeferredRedirectInternal();
       break;
     case DEFERRED_READ:
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -478,7 +473,14 @@ void ResourceLoader::Cancel() {
 void ResourceLoader::StartRequestInternal() {
   DCHECK(!request_->is_pending());
 
+  // Note: at this point any possible deferred start actions are already over.
+
   if (!request_->status().is_success()) {
+    return;
+  }
+
+  if (delegate_->HandleExternalProtocol(this, request_->url())) {
+    CancelAndIgnore();
     return;
   }
 
@@ -531,6 +533,17 @@ void ResourceLoader::CancelRequestInternal(int error, bool from_renderer) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&ResourceLoader::ResponseCompleted,
                               weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void ResourceLoader::FollowDeferredRedirectInternal() {
+  DCHECK(!deferred_redirect_url_.is_empty());
+  GURL redirect_url = deferred_redirect_url_;
+  deferred_redirect_url_ = GURL();
+  if (delegate_->HandleExternalProtocol(this, deferred_redirect_url_)) {
+    CancelAndIgnore();
+  } else {
+    request_->FollowDeferredRedirect();
   }
 }
 
