@@ -11,6 +11,7 @@
 #include "WebHistoryItem.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLError.h"
+#include "public/platform/site_engagement.mojom-shared.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -436,6 +437,11 @@ class WebLocalFrame : public WebFrame {
   // Save as the image located at a particular point in visual viewport
   // coordinates.
   virtual void saveImageAt(const WebPoint&) = 0;
+
+  // Site engagement --------------------------------------------------------
+
+  // Sets the site engagement level for this frame's document.
+  virtual void setEngagementLevel(mojom::EngagementLevel) = 0;
 
   // TEMP: Usage count for chrome.loadtimes deprecation.
   // This will be removed following the deprecation.

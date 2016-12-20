@@ -56,6 +56,7 @@
 #include "third_party/WebKit/public/platform/WebLoadingBehaviorFlag.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
+#include "third_party/WebKit/public/platform/site_engagement.mojom.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDataSource.h"
 #include "third_party/WebKit/public/web/WebFrameClient.h"
@@ -66,6 +67,7 @@
 #include "third_party/WebKit/public/web/WebScriptExecutionCallback.h"
 #include "ui/gfx/range/range.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/renderer/pepper/plugin_power_saver_helper.h"
@@ -167,6 +169,7 @@ class CreateFrameWidgetParams;
 
 class CONTENT_EXPORT RenderFrameImpl
     : public RenderFrame,
+      NON_EXPORTED_BASE(blink::mojom::EngagementClient),
       NON_EXPORTED_BASE(mojom::Frame),
       NON_EXPORTED_BASE(mojom::HostZoom),
       NON_EXPORTED_BASE(public blink::WebFrameClient),
@@ -442,6 +445,10 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebPageVisibilityState GetVisibilityState() const override;
   bool IsBrowserSideNavigationPending() override;
 
+  // blink::mojom::EngagementClient implementation:
+  void SetEngagementLevel(const url::Origin& origin,
+                          blink::mojom::EngagementLevel level) override;
+
   // mojom::Frame implementation:
   void GetInterfaceProvider(
       service_manager::mojom::InterfaceProviderRequest request) override;
@@ -650,8 +657,11 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebFrameSerializerClient::FrameSerializationStatus status)
       override;
 
+  // Binds to the site engagement service in the browser.
+  void BindEngagement(blink::mojom::EngagementClientAssociatedRequest request);
+
   // Binds to the FrameHost in the browser.
-  void Bind(mojom::FrameRequest frame, mojom::FrameHostPtr frame_host);
+  void BindFrame(mojom::FrameRequest request, mojom::FrameHostPtr frame_host);
 
   ManifestManager* manifest_manager();
 
@@ -749,6 +759,7 @@ class CONTENT_EXPORT RenderFrameImpl
   };
 
   typedef std::map<GURL, double> HostZoomLevels;
+  typedef std::map<url::Origin, blink::mojom::EngagementLevel> EngagementLevels;
 
   // Creates a new RenderFrame. |render_view| is the RenderView object that this
   // frame belongs to.
@@ -1326,7 +1337,9 @@ class CONTENT_EXPORT RenderFrameImpl
 #endif
 
   HostZoomLevels host_zoom_levels_;
+  EngagementLevels engagement_levels_;
 
+  mojo::AssociatedBinding<blink::mojom::EngagementClient> engagement_binding_;
   mojo::Binding<mojom::Frame> frame_binding_;
   mojo::AssociatedBinding<mojom::HostZoom> host_zoom_binding_;
   mojom::FrameHostPtr frame_host_;

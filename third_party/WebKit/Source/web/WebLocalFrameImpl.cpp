@@ -2291,6 +2291,10 @@ void WebLocalFrameImpl::saveImageAt(const WebPoint& posInViewport) {
   m_client->saveImageFromDataURL(url);
 }
 
+void WebLocalFrameImpl::setEngagementLevel(mojom::EngagementLevel level) {
+  frame()->document()->setEngagementLevel(level);
+}
+
 WebSandboxFlags WebLocalFrameImpl::effectiveSandboxFlags() const {
   if (!frame())
     return WebSandboxFlags::None;

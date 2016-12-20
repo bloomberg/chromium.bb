@@ -247,6 +247,28 @@ void SiteEngagementScore::Commit() {
       std::move(score_dict_));
 }
 
+blink::mojom::EngagementLevel SiteEngagementScore::GetEngagementLevel() const {
+  DCHECK_LT(GetMediumEngagementBoundary(), GetHighEngagementBoundary());
+
+  double score = GetScore();
+  if (score == 0)
+    return blink::mojom::EngagementLevel::NONE;
+
+  if (score < 1)
+    return blink::mojom::EngagementLevel::MINIMAL;
+
+  if (score < GetMediumEngagementBoundary())
+    return blink::mojom::EngagementLevel::LOW;
+
+  if (score < GetHighEngagementBoundary())
+    return blink::mojom::EngagementLevel::MEDIUM;
+
+  if (score < SiteEngagementScore::kMaxPoints)
+    return blink::mojom::EngagementLevel::HIGH;
+
+  return blink::mojom::EngagementLevel::MAX;
+}
+
 bool SiteEngagementScore::MaxPointsPerDayAdded() const {
   if (!last_engagement_time_.is_null() &&
       clock_->Now().LocalMidnight() != last_engagement_time_.LocalMidnight()) {

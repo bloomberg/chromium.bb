@@ -29,6 +29,7 @@
       "provides": {
         "browser": [
           "blink::mojom::AppBannerController",
+          "blink::mojom::EngagementClient",
           "blink::mojom::InstallationService",
           "content::mojom::ImageDownloader",
           "mojom::MediaDevicesListener"

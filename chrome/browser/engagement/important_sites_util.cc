@@ -26,6 +26,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "third_party/WebKit/public/platform/site_engagement.mojom.h"
 #include "url/gurl.h"
 
 namespace {
@@ -210,7 +211,7 @@ base::hash_set<std::string> GetBlacklistedImportantDomains(Profile* profile) {
 
 void PopulateInfoMapWithSiteEngagement(
     Profile* profile,
-    SiteEngagementService::EngagementLevel minimum_engagement,
+    blink::mojom::EngagementLevel minimum_engagement,
     std::map<GURL, double>* engagement_map,
     base::hash_map<std::string, ImportantDomainInfo>* output) {
   SiteEngagementService* service = SiteEngagementService::Get(profile);
@@ -275,7 +276,7 @@ void PopulateInfoMapWithBookmarks(
                  [service](const BookmarkModel::URLAndTitle& entry) {
                    return service->IsEngagementAtLeast(
                        entry.url.GetOrigin(),
-                       SiteEngagementService::ENGAGEMENT_LEVEL_LOW);
+                       blink::mojom::EngagementLevel::LOW);
                  });
     std::sort(result_bookmarks.begin(), result_bookmarks.end(),
               [&engagement_map](const BookmarkModel::URLAndTitle& a,
@@ -326,7 +327,7 @@ ImportantSitesUtil::GetImportantRegisterableDomains(Profile* profile,
   std::map<GURL, double> engagement_map;
 
   PopulateInfoMapWithSiteEngagement(
-      profile, SiteEngagementService::ENGAGEMENT_LEVEL_MEDIUM, &engagement_map,
+      profile, blink::mojom::EngagementLevel::MEDIUM, &engagement_map,
       &important_info);
 
   PopulateInfoMapWithContentTypeAllowed(
@@ -438,5 +439,5 @@ void ImportantSitesUtil::MarkOriginAsImportantForTesting(Profile* profile,
   site_engagement_service->ResetScoreForURL(
       origin, SiteEngagementScore::GetMediumEngagementBoundary());
   DCHECK(site_engagement_service->IsEngagementAtLeast(
-      origin, SiteEngagementService::ENGAGEMENT_LEVEL_MEDIUM));
+      origin, blink::mojom::EngagementLevel::MEDIUM));
 }

@@ -6,13 +6,19 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/associated_interface_provider.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
 
@@ -24,6 +30,40 @@ int g_seconds_delay_after_show = 5;
 }  // anonymous namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(SiteEngagementService::Helper);
+
+// static
+void SiteEngagementService::Helper::SetSecondsBetweenUserInputCheck(
+    int seconds) {
+  g_seconds_to_pause_engagement_detection = seconds;
+}
+
+// static
+void SiteEngagementService::Helper::SetSecondsTrackingDelayAfterNavigation(
+    int seconds) {
+  g_seconds_delay_after_navigation = seconds;
+}
+
+// static
+void SiteEngagementService::Helper::SetSecondsTrackingDelayAfterShow(
+    int seconds) {
+  g_seconds_delay_after_show = seconds;
+}
+
+SiteEngagementService::Helper::~Helper() {
+  service_->HelperDeleted(this);
+  if (web_contents()) {
+    input_tracker_.Stop();
+    media_tracker_.Stop();
+  }
+}
+
+void SiteEngagementService::Helper::OnEngagementLevelChanged(
+    const GURL& url,
+    blink::mojom::EngagementLevel level) {
+  web_contents()->ForEachFrame(base::Bind(
+      &SiteEngagementService::Helper::SendEngagementLevelToFramesMatchingOrigin,
+      base::Unretained(this), url::Origin(url), level));
+}
 
 SiteEngagementService::Helper::PeriodicTracker::PeriodicTracker(
     SiteEngagementService::Helper* helper)
@@ -157,19 +197,14 @@ void SiteEngagementService::Helper::MediaTracker::WasHidden() {
   is_hidden_ = true;
 }
 
-SiteEngagementService::Helper::~Helper() {
-  if (web_contents()) {
-    input_tracker_.Stop();
-    media_tracker_.Stop();
-  }
-}
-
 SiteEngagementService::Helper::Helper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       input_tracker_(this, web_contents),
       media_tracker_(this, web_contents),
       service_(SiteEngagementService::Get(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {}
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
+  service_->HelperCreated(this);
+}
 
 void SiteEngagementService::Helper::RecordUserInput(
     SiteEngagementMetrics::EngagementType type) {
@@ -183,6 +218,24 @@ void SiteEngagementService::Helper::RecordMediaPlaying(bool is_hidden) {
   content::WebContents* contents = web_contents();
   if (contents)
     service_->HandleMediaPlaying(contents, is_hidden);
+}
+
+void SiteEngagementService::Helper::SendEngagementLevelToFramesMatchingOrigin(
+    const url::Origin& origin,
+    blink::mojom::EngagementLevel level,
+    content::RenderFrameHost* render_frame_host) {
+  if (origin == render_frame_host->GetLastCommittedOrigin()) {
+    SendEngagementLevelToFrame(origin, level, render_frame_host);
+  }
+}
+
+void SiteEngagementService::Helper::SendEngagementLevelToFrame(
+    const url::Origin& origin,
+    blink::mojom::EngagementLevel level,
+    content::RenderFrameHost* render_frame_host) {
+  blink::mojom::EngagementClientAssociatedPtr client;
+  render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&client);
+  client->SetEngagementLevel(origin, level);
 }
 
 void SiteEngagementService::Helper::DidFinishNavigation(
@@ -218,6 +271,17 @@ void SiteEngagementService::Helper::DidFinishNavigation(
       base::TimeDelta::FromSeconds(g_seconds_delay_after_navigation));
 }
 
+void SiteEngagementService::Helper::ReadyToCommitNavigation(
+    content::NavigationHandle* handle) {
+  if (service_->ShouldRecordEngagement(handle->GetURL())) {
+    // Don't bother sending the engagement if we wouldn't have recorded any for
+    // the URL. These will have NONE engagement by default.
+    SendEngagementLevelToFrame(url::Origin(handle->GetURL()),
+                               service_->GetEngagementLevel(handle->GetURL()),
+                               handle->GetRenderFrameHost());
+  }
+}
+
 void SiteEngagementService::Helper::WasShown() {
   // Ensure that the input callbacks are registered when we come into view.
   input_tracker_.Start(
@@ -227,22 +291,4 @@ void SiteEngagementService::Helper::WasShown() {
 void SiteEngagementService::Helper::WasHidden() {
   // Ensure that the input callbacks are not registered when hidden.
   input_tracker_.Stop();
-}
-
-// static
-void SiteEngagementService::Helper::SetSecondsBetweenUserInputCheck(
-    int seconds) {
-  g_seconds_to_pause_engagement_detection = seconds;
-}
-
-// static
-void SiteEngagementService::Helper::SetSecondsTrackingDelayAfterNavigation(
-    int seconds) {
-  g_seconds_delay_after_navigation = seconds;
-}
-
-// static
-void SiteEngagementService::Helper::SetSecondsTrackingDelayAfterShow(
-    int seconds) {
-  g_seconds_delay_after_show = seconds;
 }

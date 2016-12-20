@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/engagement/site_engagement_helper.h"
 #include "chrome/browser/engagement/site_engagement_metrics.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
@@ -32,7 +33,9 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/associated_interface_provider.h"
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
@@ -126,24 +129,12 @@ SiteEngagementService::~SiteEngagementService() {
     history->RemoveObserver(this);
 }
 
-SiteEngagementService::EngagementLevel
+blink::mojom::EngagementLevel
 SiteEngagementService::GetEngagementLevel(const GURL& url) const {
-  DCHECK_LT(SiteEngagementScore::GetMediumEngagementBoundary(),
-            SiteEngagementScore::GetHighEngagementBoundary());
-  double score = GetScore(url);
-  if (score == 0)
-    return ENGAGEMENT_LEVEL_NONE;
+  if (IsLastEngagementStale())
+    CleanupEngagementScores(true);
 
-  if (score < SiteEngagementScore::GetMediumEngagementBoundary())
-    return ENGAGEMENT_LEVEL_LOW;
-
-  if (score < SiteEngagementScore::GetHighEngagementBoundary())
-    return ENGAGEMENT_LEVEL_MEDIUM;
-
-  if (score < SiteEngagementScore::kMaxPoints)
-    return ENGAGEMENT_LEVEL_HIGH;
-
-  return ENGAGEMENT_LEVEL_MAX;
+  return CreateEngagementScore(url).GetEngagementLevel();
 }
 
 std::map<GURL, double> SiteEngagementService::GetScoreMap() const {
@@ -169,21 +160,24 @@ bool SiteEngagementService::IsBootstrapped() const {
          SiteEngagementScore::GetBootstrapPoints();
 }
 
-bool SiteEngagementService::IsEngagementAtLeast(const GURL& url,
-                                                EngagementLevel level) const {
+bool SiteEngagementService::IsEngagementAtLeast(
+    const GURL& url,
+    blink::mojom::EngagementLevel level) const {
   DCHECK_LT(SiteEngagementScore::GetMediumEngagementBoundary(),
             SiteEngagementScore::GetHighEngagementBoundary());
   double score = GetScore(url);
   switch (level) {
-    case ENGAGEMENT_LEVEL_NONE:
+    case blink::mojom::EngagementLevel::NONE:
       return true;
-    case ENGAGEMENT_LEVEL_LOW:
+    case blink::mojom::EngagementLevel::MINIMAL:
       return score > 0;
-    case ENGAGEMENT_LEVEL_MEDIUM:
+    case blink::mojom::EngagementLevel::LOW:
+      return score >= 1;
+    case blink::mojom::EngagementLevel::MEDIUM:
       return score >= SiteEngagementScore::GetMediumEngagementBoundary();
-    case ENGAGEMENT_LEVEL_HIGH:
+    case blink::mojom::EngagementLevel::HIGH:
       return score >= SiteEngagementScore::GetHighEngagementBoundary();
-    case ENGAGEMENT_LEVEL_MAX:
+    case blink::mojom::EngagementLevel::MAX:
       return score == SiteEngagementScore::kMaxPoints;
   }
   NOTREACHED();
@@ -220,6 +214,16 @@ void SiteEngagementService::SetLastShortcutLaunchTime(const GURL& url) {
 
   score.set_last_shortcut_launch_time(now);
   score.Commit();
+}
+
+void SiteEngagementService::HelperCreated(
+    SiteEngagementService::Helper* helper) {
+  helpers_.insert(helper);
+}
+
+void SiteEngagementService::HelperDeleted(
+    SiteEngagementService::Helper* helper) {
+  helpers_.erase(helper);
 }
 
 double SiteEngagementService::GetScore(const GURL& url) const {
@@ -273,10 +277,16 @@ void SiteEngagementService::AddPoints(const GURL& url, double points) {
     CleanupEngagementScores(true);
 
   SiteEngagementScore score = CreateEngagementScore(url);
+  blink::mojom::EngagementLevel old_level = score.GetEngagementLevel();
+
   score.AddPoints(points);
   score.Commit();
 
   SetLastEngagementTime(score.last_engagement_time());
+
+  blink::mojom::EngagementLevel new_level = score.GetEngagementLevel();
+  if (old_level != new_level)
+    SendLevelChangeToHelpers(url, new_level);
 }
 
 void SiteEngagementService::AfterStartupTask() {
@@ -496,6 +506,13 @@ void SiteEngagementService::HandleUserInput(
   RecordMetrics();
   for (SiteEngagementObserver& observer : observer_list_)
     observer.OnEngagementIncreased(web_contents, url, GetScore(url));
+}
+
+void SiteEngagementService::SendLevelChangeToHelpers(
+    const GURL& url,
+    blink::mojom::EngagementLevel level) {
+  for (SiteEngagementService::Helper* helper : helpers_)
+    helper->OnEngagementLevelChanged(url, level);
 }
 
 bool SiteEngagementService::IsLastEngagementStale() const {

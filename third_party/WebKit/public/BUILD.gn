@@ -665,6 +665,7 @@ mojom("mojo_bindings") {
     "platform/modules/shapedetection/facedetection_provider.mojom",
     "platform/modules/websockets/websocket.mojom",
     "platform/referrer.mojom",
+    "platform/site_engagement.mojom",
     "web/window_features.mojom",
   ]
   public_deps = [

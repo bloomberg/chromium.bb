@@ -352,7 +352,7 @@ class FrameFactoryImpl : public mojom::FrameFactory {
       return;
     }
 
-    frame->Bind(std::move(frame_request), std::move(frame_host));
+    frame->BindFrame(std::move(frame_request), std::move(frame_host));
   }
 
  private:
@@ -1129,7 +1129,7 @@ void RenderThreadImpl::AddRoute(int32_t routing_id, IPC::Listener* listener) {
     return;
 
   scoped_refptr<PendingFrameCreate> create(it->second);
-  frame->Bind(it->second->TakeFrameRequest(), it->second->TakeFrameHost());
+  frame->BindFrame(it->second->TakeFrameRequest(), it->second->TakeFrameHost());
   pending_frame_creates_.erase(it);
 }
 

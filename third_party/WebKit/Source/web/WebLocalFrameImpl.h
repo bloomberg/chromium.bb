@@ -290,6 +290,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   WebFrameWidgetBase* frameWidget() const override;
   void copyImageAt(const WebPoint&) override;
   void saveImageAt(const WebPoint&) override;
+  void setEngagementLevel(mojom::EngagementLevel) override;
   void clearActiveFindMatch() override;
   void usageCountChromeLoadTimes(const WebString& metric) override;
   base::SingleThreadTaskRunner* timerTaskRunner() override;

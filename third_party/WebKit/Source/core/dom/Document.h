@@ -63,6 +63,7 @@
 #include "platform/weborigin/ReferrerPolicy.h"
 #include "public/platform/WebFocusType.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
+#include "public/platform/site_engagement.mojom-blink.h"
 #include "wtf/Compiler.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"
@@ -1194,6 +1195,13 @@ class CORE_EXPORT Document : public ContainerNode,
   Document& ensureTemplateDocument();
   Document* templateDocumentHost() { return m_templateDocumentHost; }
 
+  mojom::blink::EngagementLevel getEngagementLevel() const {
+    return m_engagementLevel;
+  }
+  void setEngagementLevel(mojom::blink::EngagementLevel level) {
+    m_engagementLevel = level;
+  }
+
   // TODO(thestig): Rename these and related functions, since we can call them
   // for controls outside of forms as well.
   void didAssociateFormControl(Element*);
@@ -1662,6 +1670,8 @@ class CORE_EXPORT Document : public ContainerNode,
   unsigned m_passwordCount;
 
   TaskHandle m_sensitiveInputVisibilityTask;
+
+  mojom::EngagementLevel m_engagementLevel;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

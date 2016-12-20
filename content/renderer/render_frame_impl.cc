@@ -1122,6 +1122,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       focused_pepper_plugin_(nullptr),
       pepper_last_mouse_event_target_(nullptr),
 #endif
+      engagement_binding_(this),
       frame_binding_(this),
       host_zoom_binding_(this),
       has_accessed_initial_document_(false),
@@ -1640,8 +1641,13 @@ void RenderFrameImpl::OnNavigate(
                    std::unique_ptr<StreamOverrideParameters>());
 }
 
-void RenderFrameImpl::Bind(mojom::FrameRequest request,
-                           mojom::FrameHostPtr host) {
+void RenderFrameImpl::BindEngagement(
+    blink::mojom::EngagementClientAssociatedRequest request) {
+  engagement_binding_.Bind(std::move(request));
+}
+
+void RenderFrameImpl::BindFrame(mojom::FrameRequest request,
+                                mojom::FrameHostPtr host) {
   frame_binding_.Bind(std::move(request));
   frame_host_ = std::move(host);
   frame_host_->GetInterfaceProvider(
@@ -2645,6 +2651,20 @@ bool RenderFrameImpl::IsUsingLoFi() const {
 
 bool RenderFrameImpl::IsPasting() const {
   return is_pasting_;
+}
+
+// blink::mojom::EngagementClient implementation -------------------------------
+
+void RenderFrameImpl::SetEngagementLevel(const url::Origin& origin,
+                                         blink::mojom::EngagementLevel level) {
+  // Set the engagement level on |frame_| if its origin matches the one we have
+  // been provided with.
+  if (frame_ && url::Origin(frame_->getSecurityOrigin()) == origin) {
+    frame_->setEngagementLevel(level);
+    return;
+  }
+
+  engagement_levels_[origin] = level;
 }
 
 // mojom::Frame implementation -------------------------------------------------
@@ -4758,6 +4778,14 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   InternalDocumentStateData* internal_data =
       InternalDocumentStateData::FromDocumentState(document_state);
 
+  // Set the correct engagement level on the frame.
+  EngagementLevels::iterator engagement_level =
+      engagement_levels_.find(url::Origin(frame_->getSecurityOrigin()));
+
+  if (engagement_level != engagement_levels_.end())
+    frame_->setEngagementLevel(engagement_level->second);
+  engagement_levels_.clear();
+
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.http_status_code = response.httpStatusCode();
   params.url_is_unreachable = ds->hasUnreachableURL();
@@ -6511,6 +6539,9 @@ void RenderFrameImpl::HandlePepperImeCommit(const base::string16& text) {
 #endif  // ENABLE_PLUGINS
 
 void RenderFrameImpl::RegisterMojoInterfaces() {
+  GetAssociatedInterfaceRegistry()->AddInterface(
+      base::Bind(&RenderFrameImpl::BindEngagement, weak_factory_.GetWeakPtr()));
+
   if (!frame_->parent()) {
     // Only main frame have ImageDownloader service.
     GetInterfaceRegistry()->AddInterface(base::Bind(

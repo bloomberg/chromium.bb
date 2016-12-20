@@ -492,7 +492,8 @@ Document::Document(const DocumentInit& initializer,
       m_parserSyncPolicy(AllowAsynchronousParsing),
       m_nodeCount(0),
       m_wouldLoadReason(Created),
-      m_passwordCount(0) {
+      m_passwordCount(0),
+      m_engagementLevel(mojom::blink::EngagementLevel::NONE) {
   if (m_frame) {
     DCHECK(m_frame->page());
     provideContextFeaturesToDocumentFrom(*this, *m_frame->page());

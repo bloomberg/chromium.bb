@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "third_party/WebKit/public/platform/site_engagement.mojom.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -128,6 +129,9 @@ class SiteEngagementScore {
 
   // Writes the values in this score into |settings_map_|.
   void Commit();
+
+  // Returns the discrete engagement level for this score.
+  blink::mojom::EngagementLevel GetEngagementLevel() const;
 
   // Returns true if the maximum number of points today has been added.
   bool MaxPointsPerDayAdded() const;
