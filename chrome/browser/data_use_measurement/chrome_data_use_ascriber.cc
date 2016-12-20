@@ -44,16 +44,29 @@ ChromeDataUseAscriber::~ChromeDataUseAscriber() {
   DCHECK(data_use_recorders_.empty());
 }
 
-ChromeDataUseRecorder* ChromeDataUseAscriber::GetDataUseRecorder(
-    net::URLRequest* request,
-    bool can_create_new) {
-  DataUseRecorderEntry entry = GetDataUseRecorderEntry(request, can_create_new);
+ChromeDataUseRecorder* ChromeDataUseAscriber::GetOrCreateDataUseRecorder(
+    net::URLRequest* request) {
+  DataUseRecorderEntry entry = GetOrCreateDataUseRecorderEntry(request);
   return entry == data_use_recorders_.end() ? nullptr : &(*entry);
 }
 
+ChromeDataUseRecorder* ChromeDataUseAscriber::GetDataUseRecorder(
+    const net::URLRequest& request) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  // TODO(ryansturm): Handle PlzNavigate (http://crbug/664233).
+  if (content::IsBrowserSideNavigationEnabled())
+    return nullptr;
+
+  // If a DataUseRecorder has already been set as user data, then return that.
+  auto user_data = static_cast<DataUseRecorderEntryAsUserData*>(
+      request.GetUserData(DataUseRecorderEntryAsUserData::kUserDataKey));
+  return user_data ? &(*user_data->recorder_entry()) : nullptr;
+}
+
 ChromeDataUseAscriber::DataUseRecorderEntry
-ChromeDataUseAscriber::GetDataUseRecorderEntry(net::URLRequest* request,
-                                               bool can_create_new) {
+ChromeDataUseAscriber::GetOrCreateDataUseRecorderEntry(
+    net::URLRequest* request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
   // TODO(ryansturm): Handle PlzNavigate (http://crbug/664233).
@@ -65,9 +78,6 @@ ChromeDataUseAscriber::GetDataUseRecorderEntry(net::URLRequest* request,
       request->GetUserData(DataUseRecorderEntryAsUserData::kUserDataKey));
   if (user_data)
     return user_data->recorder_entry();
-
-  if (!can_create_new)
-    return data_use_recorders_.end();
 
   // If request is associated with a ChromeService, create a new
   // DataUseRecorder for it. There is no reason to aggregate URLRequests
@@ -143,7 +153,7 @@ ChromeDataUseAscriber::GetDataUseRecorderEntry(net::URLRequest* request,
 void ChromeDataUseAscriber::OnUrlRequestDestroyed(net::URLRequest* request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  DataUseRecorderEntry entry = GetDataUseRecorderEntry(request, true);
+  DataUseRecorderEntry entry = GetOrCreateDataUseRecorderEntry(request);
 
   if (entry == data_use_recorders_.end())
     return;

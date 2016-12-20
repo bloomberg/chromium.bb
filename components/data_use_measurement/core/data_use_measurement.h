@@ -29,6 +29,7 @@ class URLRequest;
 
 namespace data_use_measurement {
 
+class DataUseAscriber;
 class URLRequestClassifier;
 
 // Records the data use of user traffic and various services in UMA histograms.
@@ -41,7 +42,8 @@ class DataUseMeasurement {
  public:
   DataUseMeasurement(
       std::unique_ptr<URLRequestClassifier> url_request_classifier,
-      const metrics::UpdateUsagePrefCallbackType& metrics_data_use_forwarder);
+      const metrics::UpdateUsagePrefCallbackType& metrics_data_use_forwarder,
+      DataUseAscriber* ascriber);
   ~DataUseMeasurement();
 
   // Called before a request is sent.
@@ -115,9 +117,9 @@ class DataUseMeasurement {
   // Reports the message size of the service requests.
   void ReportServicesMessageSizeUMA(const net::URLRequest& request);
 
-  // A helper function used to record data use of services. It gets the size of
-  // exchanged message, its direction (which is upstream or downstream) and
-  // reports to two histogram groups. DataUse.MessageSize.ServiceName and
+  // Records data use histograms of services. It gets the size of exchanged
+  // message, its direction (which is upstream or downstream) and reports to two
+  // histogram groups. DataUse.MessageSize.ServiceName and
   // DataUse.Services.{Dimensions}. In the second one, services are buckets.
   // |app_state| indicates the app state which can be foreground, background, or
   // unknown.
@@ -128,6 +130,13 @@ class DataUseMeasurement {
       bool is_connection_cellular,
       int64_t message_size) const;
 
+  // Records data use histograms split on TrafficDirection, AppState and
+  // TabState.
+  void RecordTabStateHistogram(TrafficDirection dir,
+                               DataUseUserData::AppState app_state,
+                               bool is_tab_visible,
+                               int64_t bytes);
+
   // Classifier for identifying if an URL request is user initiated.
   std::unique_ptr<URLRequestClassifier> url_request_classifier_;
 
@@ -136,6 +145,9 @@ class DataUseMeasurement {
   // other than metrics, then the better approach would be to refactor this
   // class to support registering arbitrary observers. crbug.com/601185
   metrics::UpdateUsagePrefCallbackType metrics_data_use_forwarder_;
+
+  // DataUseAscriber used to get the attributes of data use.
+  DataUseAscriber* ascriber_;
 
 #if defined(OS_ANDROID)
   // Application listener store the last known state of the application in this

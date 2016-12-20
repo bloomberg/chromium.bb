@@ -12,6 +12,8 @@
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "build/build_config.h"
+#include "components/data_use_measurement/core/data_use_ascriber.h"
+#include "components/data_use_measurement/core/data_use_recorder.h"
 #include "components/data_use_measurement/core/url_request_classifier.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/request_priority.h"
@@ -41,6 +43,30 @@ class UserRequestUserDataForTesting : public base::SupportsUserData::Data,
   }
 };
 
+class TestDataUseAscriber : public DataUseAscriber {
+ public:
+  TestDataUseAscriber() {}
+
+  DataUseRecorder* GetOrCreateDataUseRecorder(
+      net::URLRequest* request) override {
+    return &recorder_;
+  }
+
+  DataUseRecorder* GetDataUseRecorder(const net::URLRequest& request) override {
+    return &recorder_;
+  }
+
+  std::unique_ptr<URLRequestClassifier> CreateURLRequestClassifier()
+      const override {
+    return nullptr;
+  }
+
+  void SetTabVisibility(bool visible) { recorder_.set_is_visible(visible); }
+
+ private:
+  DataUseRecorder recorder_;
+};
+
 // The more usual initialization of kUserDataKey would be along the lines of
 //     const void* const UserRequestUserDataForTesting::kUserDataKey =
 //         &UserRequestUserDataForTesting::kUserDataKey;
@@ -63,7 +89,8 @@ class DataUseMeasurementTest : public testing::Test {
       : data_use_measurement_(
             base::MakeUnique<UserRequestUserDataForTesting>(),
             base::Bind(&DataUseMeasurementTest::FakeDataUseforwarder,
-                       base::Unretained(this))) {
+                       base::Unretained(this)),
+            &ascriber_) {
     // During the test it is expected to not have cellular connection.
     DCHECK(!net::NetworkChangeNotifier::IsConnectionCellular(
         net::NetworkChangeNotifier::GetConnectionType()));
@@ -165,7 +192,10 @@ class DataUseMeasurementTest : public testing::Test {
   }
 
   base::MessageLoopForIO loop_;
+
+  TestDataUseAscriber ascriber_;
   DataUseMeasurement data_use_measurement_;
+
   std::unique_ptr<net::MockClientSocketFactory> socket_factory_;
   std::unique_ptr<net::TestURLRequestContext> context_;
   const std::string kConnectionType = "NotCellular";
@@ -341,6 +371,48 @@ TEST_F(DataUseMeasurementTest, TimeOfBackgroundDownstreamBytes) {
     histogram_tester.ExpectTotalCount(
         "DataUse.BackgroundToFirstDownstream.User", 0);
   }
+}
+
+TEST_F(DataUseMeasurementTest, AppTabState) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<net::URLRequest> request = CreateTestRequest(kUserRequest);
+
+  // App in foreground, Tab in background.
+  data_use_measurement_.OnBeforeURLRequest(request.get());
+  data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
+  data_use_measurement_.OnNetworkBytesSent(*request, 100);
+
+  histogram_tester.ExpectTotalCount(
+      "DataUse.AppTabState.Upstream.AppForeground.TabBackground", 1);
+  histogram_tester.ExpectTotalCount(
+      "DataUse.AppTabState.Downstream.AppForeground.TabBackground", 1);
+
+  // App and Tab in foreground.
+  ascriber_.SetTabVisibility(true);
+  data_use_measurement_.OnBeforeURLRequest(request.get());
+  data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
+  data_use_measurement_.OnNetworkBytesSent(*request, 100);
+
+  histogram_tester.ExpectTotalCount(
+      "DataUse.AppTabState.Upstream.AppForeground.TabForeground", 1);
+  histogram_tester.ExpectTotalCount(
+      "DataUse.AppTabState.Downstream.AppForeground.TabForeground", 1);
+
+  // App and Tab in background.
+  data_use_measurement()->OnApplicationStateChangeForTesting(
+      base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
+  ascriber_.SetTabVisibility(false);
+  data_use_measurement_.OnBeforeURLRequest(request.get());
+  // First network access changes the app state to UNKNOWN and the next nextwork
+  // access changes to BACKGROUND.
+  data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
+  data_use_measurement_.OnNetworkBytesReceived(*request, 1000);
+  data_use_measurement_.OnNetworkBytesSent(*request, 100);
+
+  histogram_tester.ExpectTotalCount(
+      "DataUse.AppTabState.Upstream.AppBackground", 1);
+  histogram_tester.ExpectTotalCount(
+      "DataUse.AppTabState.Downstream.AppBackground", 1);
 }
 #endif
 

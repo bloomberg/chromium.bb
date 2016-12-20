@@ -38,8 +38,11 @@ class TestDataUseAscriber : public DataUseAscriber {
  public:
   TestDataUseAscriber() {}
 
-  DataUseRecorder* GetDataUseRecorder(net::URLRequest* request,
-                                      bool can_create_new) override {
+  DataUseRecorder* GetOrCreateDataUseRecorder(
+      net::URLRequest* request) override {
+    return nullptr;
+  }
+  DataUseRecorder* GetDataUseRecorder(const net::URLRequest& request) override {
     return nullptr;
   }
 

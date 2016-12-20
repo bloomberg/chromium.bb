@@ -20,7 +20,8 @@ DataUseNetworkDelegate::DataUseNetworkDelegate(
     : net::LayeredNetworkDelegate(std::move(nested_network_delegate)),
       ascriber_(ascriber),
       data_use_measurement_(std::move(url_request_classifier),
-                            metrics_data_use_forwarder) {
+                            metrics_data_use_forwarder,
+                            ascriber_) {
   DCHECK(ascriber);
 }
 

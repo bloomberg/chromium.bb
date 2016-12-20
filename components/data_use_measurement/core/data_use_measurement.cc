@@ -8,6 +8,8 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "components/data_use_measurement/core/data_use_ascriber.h"
+#include "components/data_use_measurement/core/data_use_recorder.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/data_use_measurement/core/url_request_classifier.h"
 #include "components/domain_reliability/uploader.h"
@@ -66,9 +68,11 @@ void IncrementLatencyHistogramByCount(const std::string& name,
 
 DataUseMeasurement::DataUseMeasurement(
     std::unique_ptr<URLRequestClassifier> url_request_classifier,
-    const metrics::UpdateUsagePrefCallbackType& metrics_data_use_forwarder)
+    const metrics::UpdateUsagePrefCallbackType& metrics_data_use_forwarder,
+    DataUseAscriber* ascriber)
     : url_request_classifier_(std::move(url_request_classifier)),
-      metrics_data_use_forwarder_(metrics_data_use_forwarder)
+      metrics_data_use_forwarder_(metrics_data_use_forwarder),
+      ascriber_(ascriber)
 #if defined(OS_ANDROID)
       ,
       app_state_(base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES),
@@ -81,6 +85,7 @@ DataUseMeasurement::DataUseMeasurement(
       no_reads_since_background_(false)
 #endif
 {
+  DCHECK(ascriber_);
   DCHECK(url_request_classifier_);
 }
 
@@ -190,6 +195,14 @@ void DataUseMeasurement::ReportDataUseUMA(const net::URLRequest& request,
     }
   }
 #endif
+
+  if (is_user_traffic) {
+    const DataUseRecorder* recorder = ascriber_->GetDataUseRecorder(request);
+    if (recorder) {
+      RecordTabStateHistogram(dir, new_app_state, recorder->is_visible(),
+                              bytes);
+    }
+  }
 }
 
 void DataUseMeasurement::UpdateDataUsePrefs(
@@ -328,6 +341,26 @@ void DataUseMeasurement::ReportDataUsageServices(
                          is_connection_cellular),
         service, message_size);
   }
+}
+
+void DataUseMeasurement::RecordTabStateHistogram(
+    TrafficDirection dir,
+    DataUseUserData::AppState app_state,
+    bool is_tab_visible,
+    int64_t bytes) {
+  if (app_state == DataUseUserData::UNKNOWN)
+    return;
+
+  std::string histogram_name = "DataUse.AppTabState.";
+  histogram_name.append(dir == UPSTREAM ? "Upstream." : "Downstream.");
+  if (app_state == DataUseUserData::BACKGROUND) {
+    histogram_name.append("AppBackground");
+  } else if (is_tab_visible) {
+    histogram_name.append("AppForeground.TabForeground");
+  } else {
+    histogram_name.append("AppForeground.TabBackground");
+  }
+  RecordUMAHistogramCount(histogram_name, bytes);
 }
 
 }  // namespace data_use_measurement

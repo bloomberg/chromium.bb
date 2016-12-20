@@ -55,8 +55,10 @@ class ChromeDataUseAscriber : public DataUseAscriber {
   ~ChromeDataUseAscriber() override;
 
   // DataUseAscriber implementation:
-  ChromeDataUseRecorder* GetDataUseRecorder(net::URLRequest* request,
-                                            bool can_create_new) override;
+  ChromeDataUseRecorder* GetOrCreateDataUseRecorder(
+      net::URLRequest* request) override;
+  ChromeDataUseRecorder* GetDataUseRecorder(
+      const net::URLRequest& request) override;
   void OnUrlRequestDestroyed(net::URLRequest* request) override;
   std::unique_ptr<URLRequestClassifier> CreateURLRequestClassifier()
       const override;
@@ -131,8 +133,8 @@ class ChromeDataUseAscriber : public DataUseAscriber {
     DataUseRecorderEntry entry_;
   };
 
-  DataUseRecorderEntry GetDataUseRecorderEntry(net::URLRequest* request,
-                                               bool can_create_new);
+  DataUseRecorderEntry GetOrCreateDataUseRecorderEntry(
+      net::URLRequest* request);
 
   void OnDataUseCompleted(DataUseRecorderEntry entry);
 

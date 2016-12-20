@@ -39,9 +39,14 @@ class DataUseAscriber {
 
   // Returns the DataUseRecorder to which data usage for the given URL should
   // be ascribed. If no existing DataUseRecorder exists, a new one will be
-  // created only if |can_create_new| is true.
-  virtual DataUseRecorder* GetDataUseRecorder(net::URLRequest* request,
-                                              bool can_create_new) = 0;
+  // created.
+  virtual DataUseRecorder* GetOrCreateDataUseRecorder(
+      net::URLRequest* request) = 0;
+
+  // Returns the existing DataUseRecorder to which data usage for the given URL
+  // should be ascribed.
+  virtual DataUseRecorder* GetDataUseRecorder(
+      const net::URLRequest& request) = 0;
 
   // Returns a URLRequestClassifier that can classify requests for metrics
   // recording.
