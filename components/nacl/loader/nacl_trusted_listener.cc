@@ -6,52 +6,45 @@
 
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "ipc/message_filter.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "native_client/src/public/chrome_main.h"
 
 namespace {
 
-// The OnChannelError() event must be processed in a MessageFilter so it can
-// be handled on the IO thread.  The main thread used by NaClListener is busy
-// in NaClChromeMainAppStart(), so it can't be used for servicing messages.
-class EOFMessageFilter : public IPC::MessageFilter {
+class NaClExitControlImpl : public nacl::mojom::NaClExitControl {
  public:
-  void OnChannelError() override {
-    // The renderer process dropped its connection to this process (the NaCl
-    // loader process), either because the <embed> element was removed
-    // (perhaps implicitly if the tab was closed) or because the renderer
-    // crashed.  The NaCl loader process should therefore exit.
+  ~NaClExitControlImpl() override {
+    // If the binding disconnects, the renderer process dropped its connection
+    // to this process (the NaCl loader process), either because the <embed>
+    // element was removed (perhaps implicitly if the tab was closed) or because
+    // the renderer crashed.  The NaCl loader process should therefore exit.
     //
     // For SFI NaCl, trusted code does this exit voluntarily, but untrusted
     // code cannot disable it.  However, for Non-SFI NaCl, the following exit
     // call could be disabled by untrusted code.
     NaClExit(0);
   }
- private:
-  ~EOFMessageFilter() override {}
 };
 
+void CreateExitControl(nacl::mojom::NaClExitControlRequest request) {
+  mojo::MakeStrongBinding(base::MakeUnique<NaClExitControlImpl>(),
+                          std::move(request));
 }
+
+}  // namespace
 
 NaClTrustedListener::NaClTrustedListener(
-    const IPC::ChannelHandle& handle,
-    base::SingleThreadTaskRunner* ipc_task_runner,
-    base::WaitableEvent* shutdown_event)
-    : channel_handle_(handle) {
-  channel_ =
-      IPC::SyncChannel::Create(handle, IPC::Channel::MODE_SERVER, this,
-                               ipc_task_runner, true, /* create_channel_now */
-                               shutdown_event);
-  channel_->AddFilter(new EOFMessageFilter());
+    nacl::mojom::NaClRendererHostPtr renderer_host,
+    base::SingleThreadTaskRunner* io_task_runner)
+    : renderer_host_(std::move(renderer_host)) {
+  nacl::mojom::NaClExitControlPtr exit_control;
+  // The exit control binding must run on the IO thread. The main thread used
+  // by NaClListener is busy in NaClChromeMainAppStart(), so it can't be used
+  // for servicing messages.
+  io_task_runner->PostTask(
+      FROM_HERE, base::Bind(&CreateExitControl,
+                            base::Passed(mojo::GetProxy(&exit_control))));
+  renderer_host_->ProvideExitControl(std::move(exit_control));
 }
 
-NaClTrustedListener::~NaClTrustedListener() {
-}
-
-bool NaClTrustedListener::OnMessageReceived(const IPC::Message& msg) {
-  return false;
-}
-
-bool NaClTrustedListener::Send(IPC::Message* msg) {
-  return channel_->Send(msg);
-}
+NaClTrustedListener::~NaClTrustedListener() = default;
