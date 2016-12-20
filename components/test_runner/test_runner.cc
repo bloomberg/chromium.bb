@@ -181,6 +181,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                                         const std::string& destination_protocol,
                                         const std::string& destination_host,
                                         bool allow_destination_subdomains);
+  void RemoveSpellCheckResolvedCallback();
   void RemoveWebPageOverlay();
   void ResetDeviceLight();
   void ResetTestHelperControllers();
@@ -241,6 +242,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetPrinting();
   void SetScriptsAllowed(bool allowed);
   void SetShouldStayOnPageAfterHandlingBeforeUnload(bool value);
+  void SetSpellCheckResolvedCallback(v8::Local<v8::Function> callback);
   void SetStorageAllowed(bool allowed);
   void SetTabKeyCyclesThroughElements(bool tab_key_cycles_through_elements);
   void SetTextDirection(const std::string& direction_name);
@@ -469,6 +471,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("queueReload", &TestRunnerBindings::QueueReload)
       .SetMethod("removeOriginAccessWhitelistEntry",
                  &TestRunnerBindings::RemoveOriginAccessWhitelistEntry)
+      .SetMethod("removeSpellCheckResolvedCallback",
+                 &TestRunnerBindings::RemoveSpellCheckResolvedCallback)
       .SetMethod("removeWebPageOverlay",
                  &TestRunnerBindings::RemoveWebPageOverlay)
       .SetMethod("resetDeviceLight", &TestRunnerBindings::ResetDeviceLight)
@@ -560,6 +564,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod(
           "setShouldStayOnPageAfterHandlingBeforeUnload",
           &TestRunnerBindings::SetShouldStayOnPageAfterHandlingBeforeUnload)
+      .SetMethod("setSpellCheckResolvedCallback",
+                 &TestRunnerBindings::SetSpellCheckResolvedCallback)
       .SetMethod("setStorageAllowed", &TestRunnerBindings::SetStorageAllowed)
       .SetMethod("setTabKeyCyclesThroughElements",
                  &TestRunnerBindings::SetTabKeyCyclesThroughElements)
@@ -746,6 +752,17 @@ void TestRunnerBindings::SetEffectiveConnectionType(
 void TestRunnerBindings::SetMockSpellCheckerEnabled(bool enabled) {
   if (runner_)
     runner_->SetMockSpellCheckerEnabled(enabled);
+}
+
+void TestRunnerBindings::SetSpellCheckResolvedCallback(
+    v8::Local<v8::Function> callback) {
+  if (runner_)
+    runner_->spellcheck_->SetSpellCheckResolvedCallback(callback);
+}
+
+void TestRunnerBindings::RemoveSpellCheckResolvedCallback() {
+  if (runner_)
+    runner_->spellcheck_->RemoveSpellCheckResolvedCallback();
 }
 
 v8::Local<v8::Value>
@@ -1682,7 +1699,7 @@ void TestRunner::Reset() {
   else
     close_remaining_windows_ = true;
 
-  spellcheck_->SetEnabled(false);
+  spellcheck_->Reset();
 }
 
 void TestRunner::SetTestIsRunning(bool running) {
@@ -1922,6 +1939,10 @@ bool TestRunner::tryToClearTopLoadingFrame(WebFrame* frame) {
 
 WebFrame* TestRunner::topLoadingFrame() const {
   return top_loading_frame_;
+}
+
+WebFrame* TestRunner::mainFrame() const {
+  return main_view_->mainFrame();
 }
 
 void TestRunner::policyDelegateDone() {

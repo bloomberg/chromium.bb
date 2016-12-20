@@ -155,6 +155,7 @@ class TestRunner : public WebTestRunner {
   // pending load requests in WorkQueue).
   bool tryToClearTopLoadingFrame(blink::WebFrame*);
 
+  blink::WebFrame* mainFrame() const;
   blink::WebFrame* topLoadingFrame() const;
   void policyDelegateDone();
   bool policyDelegateEnabled() const;

@@ -13,6 +13,8 @@
 #include "components/test_runner/mock_grammar_check.h"
 #include "components/test_runner/test_runner.h"
 #include "components/test_runner/web_test_delegate.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebTextCheckingCompletion.h"
 #include "third_party/WebKit/public/web/WebTextCheckingResult.h"
 
@@ -34,6 +36,11 @@ void SpellCheckClient::SetDelegate(WebTestDelegate* delegate) {
 
 void SpellCheckClient::SetEnabled(bool enabled) {
   enabled_ = enabled;
+}
+
+void SpellCheckClient::Reset() {
+  enabled_ = false;
+  resolved_callback_.Reset();
 }
 
 // blink::WebSpellCheckClient
@@ -58,13 +65,17 @@ void SpellCheckClient::requestCheckingOfText(
     const blink::WebVector<unsigned>& marker_offsets,
     blink::WebTextCheckingCompletion* completion) {
   if (!enabled_ || text.isEmpty()) {
-    if (completion)
+    if (completion) {
       completion->didCancelCheckingText();
+      RequestResolved();
+    }
     return;
   }
 
-  if (last_requested_text_checking_completion_)
+  if (last_requested_text_checking_completion_) {
     last_requested_text_checking_completion_->didCancelCheckingText();
+    RequestResolved();
+  }
 
   last_requested_text_checking_completion_ = completion;
   last_requested_text_check_string_ = text;
@@ -115,9 +126,41 @@ void SpellCheckClient::FinishLastTextCheck() {
   }
   last_requested_text_checking_completion_->didFinishCheckingText(results);
   last_requested_text_checking_completion_ = 0;
+  RequestResolved();
 
   if (test_runner_->shouldDumpSpellCheckCallbacks())
     delegate_->PrintMessage("SpellCheckEvent: FinishLastTextCheck\n");
+}
+
+void SpellCheckClient::SetSpellCheckResolvedCallback(
+    v8::Local<v8::Function> callback) {
+  resolved_callback_.Reset(blink::mainThreadIsolate(), callback);
+}
+
+void SpellCheckClient::RemoveSpellCheckResolvedCallback() {
+  resolved_callback_.Reset();
+}
+
+void SpellCheckClient::RequestResolved() {
+  if (resolved_callback_.IsEmpty())
+    return;
+
+  v8::Isolate* isolate = blink::mainThreadIsolate();
+  v8::HandleScope handle_scope(isolate);
+
+  blink::WebFrame* frame = test_runner_->mainFrame();
+  if (!frame || frame->isWebRemoteFrame())
+    return;
+
+  v8::Local<v8::Context> context = frame->mainWorldScriptContext();
+  if (context.IsEmpty())
+    return;
+
+  v8::Context::Scope context_scope(context);
+
+  frame->callFunctionEvenIfScriptDisabled(
+      v8::Local<v8::Function>::New(isolate, resolved_callback_),
+      context->Global(), 0, nullptr);
 }
 
 }  // namespace test_runner
