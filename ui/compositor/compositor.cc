@@ -184,9 +184,8 @@ Compositor::Compositor(ui::ContextFactory* context_factory,
          ++format_idx) {
       gfx::BufferFormat format = static_cast<gfx::BufferFormat>(format_idx);
       uint32_t target = context_factory_->GetImageTextureTarget(format, usage);
-      settings.renderer_settings.buffer_to_texture_target_map.insert(
-          cc::BufferToTextureTargetMap::value_type(
-              cc::BufferToTextureTargetKey(usage, format), target));
+      settings.renderer_settings
+          .buffer_to_texture_target_map[std::make_pair(usage, format)] = target;
     }
   }
 

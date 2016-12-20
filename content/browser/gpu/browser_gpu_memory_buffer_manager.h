@@ -38,9 +38,6 @@ class CONTENT_EXPORT BrowserGpuMemoryBufferManager
 
   static BrowserGpuMemoryBufferManager* current();
 
-  static uint32_t GetImageTextureTarget(gfx::BufferFormat format,
-                                        gfx::BufferUsage usage);
-
   // Overridden from gpu::GpuMemoryBufferManager:
   std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
       const gfx::Size& size,

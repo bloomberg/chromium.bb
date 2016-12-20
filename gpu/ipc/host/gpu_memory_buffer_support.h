@@ -37,6 +37,10 @@ bool AreNativeGpuMemoryBuffersEnabled();
 // Returns the set of supported configurations.
 GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations();
 
+// Returns the OpenGL target to use for image textures.
+uint32_t GetImageTextureTarget(gfx::BufferFormat format,
+                               gfx::BufferUsage usage);
+
 }  // namespace gpu
 
 #endif  // GPU_IPC_HOST_GPU_MEMORY_BUFFER_SUPPORT_H_

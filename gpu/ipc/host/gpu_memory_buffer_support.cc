@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/host/gpu_switches.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_switches.h"
 
 namespace gpu {
@@ -80,6 +81,34 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
   }
 
   return configurations;
+}
+
+uint32_t GetImageTextureTarget(gfx::BufferFormat format,
+                               gfx::BufferUsage usage) {
+  GpuMemoryBufferConfigurationSet native_configurations =
+      GetNativeGpuMemoryBufferConfigurations();
+  if (native_configurations.find(std::make_pair(format, usage)) ==
+      native_configurations.end()) {
+    return GL_TEXTURE_2D;
+  }
+
+  switch (GetNativeGpuMemoryBufferType()) {
+    case gfx::OZONE_NATIVE_PIXMAP:
+      // GPU memory buffers that are shared with the GL using EGLImages
+      // require TEXTURE_EXTERNAL_OES.
+      return GL_TEXTURE_EXTERNAL_OES;
+    case gfx::IO_SURFACE_BUFFER:
+      // IOSurface backed images require GL_TEXTURE_RECTANGLE_ARB.
+      return GL_TEXTURE_RECTANGLE_ARB;
+    case gfx::SHARED_MEMORY_BUFFER:
+      return GL_TEXTURE_2D;
+    case gfx::EMPTY_BUFFER:
+      NOTREACHED();
+      return GL_TEXTURE_2D;
+  }
+
+  NOTREACHED();
+  return GL_TEXTURE_2D;
 }
 
 }  // namespace gpu

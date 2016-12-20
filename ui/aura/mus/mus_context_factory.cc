@@ -12,10 +12,6 @@
 #include "ui/gl/gl_bindings.h"
 
 namespace aura {
-namespace {
-
-
-}  // namespace
 
 MusContextFactory::MusContextFactory(ui::Gpu* gpu) : gpu_(gpu) {}
 
@@ -51,7 +47,7 @@ bool MusContextFactory::DoesCreateTestContexts() {
 
 uint32_t MusContextFactory::GetImageTextureTarget(gfx::BufferFormat format,
                                                   gfx::BufferUsage usage) {
-  // No GpuMemoryBuffer support, so just return GL_TEXTURE_2D.
+  // TODO(sad): http://crbug.com/675431
   return GL_TEXTURE_2D;
 }
 

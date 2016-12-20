@@ -171,6 +171,7 @@
 #include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
+#include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "ipc/ipc.mojom.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_mojo.h"
@@ -1580,10 +1581,8 @@ static void AppendCompositorCommandLineFlags(base::CommandLine* command_line) {
          format_idx <= static_cast<int>(gfx::BufferFormat::LAST);
          ++format_idx) {
       gfx::BufferFormat format = static_cast<gfx::BufferFormat>(format_idx);
-      uint32_t target =
-          BrowserGpuMemoryBufferManager::GetImageTextureTarget(format, usage);
-      image_targets.insert(cc::BufferToTextureTargetMap::value_type(
-          cc::BufferToTextureTargetKey(usage, format), target));
+      uint32_t target = gpu::GetImageTextureTarget(format, usage);
+      image_targets[std::make_pair(usage, format)] = target;
     }
   }
   command_line->AppendSwitchASCII(

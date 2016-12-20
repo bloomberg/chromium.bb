@@ -47,6 +47,7 @@
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/compositor/compositor.h"
@@ -662,7 +663,7 @@ bool GpuProcessTransportFactory::DoesCreateTestContexts() { return false; }
 uint32_t GpuProcessTransportFactory::GetImageTextureTarget(
     gfx::BufferFormat format,
     gfx::BufferUsage usage) {
-  return BrowserGpuMemoryBufferManager::GetImageTextureTarget(format, usage);
+  return gpu::GetImageTextureTarget(format, usage);
 }
 
 gpu::GpuMemoryBufferManager*
