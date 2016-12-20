@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views_context.h"
 #include "chrome/browser/ui/views/subtle_notification_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -55,23 +56,16 @@ bool NewBackShortcutBubble::IsVisible() const {
 }
 
 void NewBackShortcutBubble::UpdateContent(bool forward) {
-  // Note: The key names are parameters so that we can vary by operating system
-  // or change the direction of the arrow as necessary (see
-  // https://crbug.com/612685).
-
-#if defined(OS_MACOSX)
-  // U+2318 = PLACE OF INTEREST SIGN (Mac Command symbol).
-  base::string16 accelerator = base::WideToUTF16(L"\x2318");
-#else
-  base::string16 accelerator = l10n_util::GetStringUTF16(IDS_APP_ALT_KEY);
-#endif
-
-  int message_id = forward ? IDS_PRESS_ALT_RIGHT_TO_GO_FORWARD
-                           : IDS_PRESS_ALT_LEFT_TO_GO_BACK;
-  // U+2192 = RIGHTWARDS ARROW; U+2190 = LEFTWARDS ARROW.
-  base::string16 arrow_key = base::WideToUTF16(forward ? L"\x2192" : L"\x2190");
+  const int command_id = forward ? IDC_FORWARD : IDC_BACK;
+  ui::Accelerator accelerator;
+  const bool got_accelerator =
+      bubble_view_context_->GetAcceleratorProvider()
+          ->GetAcceleratorForCommandId(command_id, &accelerator);
+  DCHECK(got_accelerator);
+  const int message_id = forward ? IDS_PRESS_SHORTCUT_TO_GO_FORWARD
+                                 : IDS_PRESS_SHORTCUT_TO_GO_BACK;
   view_->UpdateContent(
-      l10n_util::GetStringFUTF16(message_id, accelerator, arrow_key),
+      l10n_util::GetStringFUTF16(message_id, accelerator.GetShortcutText()),
       base::string16());
 
   view_->SetSize(GetPopupRect(true).size());
