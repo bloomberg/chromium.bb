@@ -14,25 +14,24 @@ namespace blink {
 MediaControlsMediaEventListener::MediaControlsMediaEventListener(
     MediaControls* mediaControls)
     : EventListener(CPPEventListenerType), m_mediaControls(mediaControls) {
-  m_mediaControls->m_mediaElement->addEventListener(
-      EventTypeNames::volumechange, this, false);
-  m_mediaControls->m_mediaElement->addEventListener(EventTypeNames::focusin,
-                                                    this, false);
-  m_mediaControls->m_mediaElement->addEventListener(EventTypeNames::timeupdate,
-                                                    this, false);
-  m_mediaControls->m_mediaElement->addEventListener(EventTypeNames::play, this,
-                                                    false);
-  m_mediaControls->m_mediaElement->addEventListener(EventTypeNames::pause, this,
-                                                    false);
-  m_mediaControls->m_mediaElement->addEventListener(
-      EventTypeNames::durationchange, this, false);
-  m_mediaControls->m_mediaElement->addEventListener(EventTypeNames::error, this,
-                                                    false);
-  m_mediaControls->m_mediaElement->addEventListener(
-      EventTypeNames::loadedmetadata, this, false);
+  mediaElement().addEventListener(EventTypeNames::volumechange, this, false);
+  mediaElement().addEventListener(EventTypeNames::focusin, this, false);
+  mediaElement().addEventListener(EventTypeNames::timeupdate, this, false);
+  mediaElement().addEventListener(EventTypeNames::play, this, false);
+  mediaElement().addEventListener(EventTypeNames::pause, this, false);
+  mediaElement().addEventListener(EventTypeNames::durationchange, this, false);
+  mediaElement().addEventListener(EventTypeNames::error, this, false);
+  mediaElement().addEventListener(EventTypeNames::loadedmetadata, this, false);
+
+  // Listen to two different fullscreen events in order to make sure the new and
+  // old APIs are handled.
+  mediaElement().addEventListener(EventTypeNames::webkitfullscreenchange, this,
+                                  false);
+  m_mediaControls->document().addEventListener(EventTypeNames::fullscreenchange,
+                                               this, false);
 
   // TextTracks events.
-  TextTrackList* textTracks = m_mediaControls->m_mediaElement->textTracks();
+  TextTrackList* textTracks = mediaElement().textTracks();
   textTracks->addEventListener(EventTypeNames::addtrack, this, false);
   textTracks->addEventListener(EventTypeNames::change, this, false);
   textTracks->addEventListener(EventTypeNames::removetrack, this, false);
@@ -41,6 +40,10 @@ MediaControlsMediaEventListener::MediaControlsMediaEventListener(
 bool MediaControlsMediaEventListener::operator==(
     const EventListener& other) const {
   return this == &other;
+}
+
+HTMLMediaElement& MediaControlsMediaEventListener::mediaElement() {
+  return m_mediaControls->mediaElement();
 }
 
 void MediaControlsMediaEventListener::handleEvent(
@@ -76,6 +79,16 @@ void MediaControlsMediaEventListener::handleEvent(
   }
   if (event->type() == EventTypeNames::loadedmetadata) {
     m_mediaControls->onLoadedMetadata();
+    return;
+  }
+
+  // Fullscreen handling.
+  if (event->type() == EventTypeNames::fullscreenchange ||
+      event->type() == EventTypeNames::webkitfullscreenchange) {
+    if (mediaElement().isFullscreen())
+      m_mediaControls->onEnteredFullscreen();
+    else
+      m_mediaControls->onExitedFullscreen();
     return;
   }
 

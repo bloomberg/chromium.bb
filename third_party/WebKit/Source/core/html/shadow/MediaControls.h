@@ -62,9 +62,6 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   void enterFullscreen();
   void exitFullscreen();
 
-  void enteredFullscreen();
-  void exitedFullscreen();
-
   void showOverlayCastButtonIfNeeded();
   // Update cast button visibility, but don't try to update our panel
   // button visibility for space.
@@ -171,6 +168,8 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   void onTextTracksChanged();
   void onError();
   void onLoadedMetadata();
+  void onEnteredFullscreen();
+  void onExitedFullscreen();
 
   // Internal cast related methods.
   void startedCasting();

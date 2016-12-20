@@ -354,6 +354,7 @@ void MediaControls::reset() {
   onTextTracksAddedOrRemoved();
 
   m_fullscreenButton->setIsWanted(shouldShowFullscreenButton(mediaElement()));
+  m_fullscreenButton->setIsFullscreen(mediaElement().isFullscreen());
 
   refreshCastButtonVisibilityWithoutUpdate();
 
@@ -547,18 +548,6 @@ void MediaControls::enterFullscreen() {
 
 void MediaControls::exitFullscreen() {
   Fullscreen::exitFullscreen(document());
-}
-
-void MediaControls::enteredFullscreen() {
-  m_fullscreenButton->setIsFullscreen(true);
-  stopHideMediaControlsTimer();
-  startHideMediaControlsTimer();
-}
-
-void MediaControls::exitedFullscreen() {
-  m_fullscreenButton->setIsFullscreen(false);
-  stopHideMediaControlsTimer();
-  startHideMediaControlsTimer();
 }
 
 void MediaControls::startedCasting() {
@@ -758,6 +747,18 @@ void MediaControls::onLoadedMetadata() {
   // TODO(mlamouri): we should only change the aspects of the control that need
   // to be changed.
   reset();
+}
+
+void MediaControls::onEnteredFullscreen() {
+  m_fullscreenButton->setIsFullscreen(true);
+  stopHideMediaControlsTimer();
+  startHideMediaControlsTimer();
+}
+
+void MediaControls::onExitedFullscreen() {
+  m_fullscreenButton->setIsFullscreen(false);
+  stopHideMediaControlsTimer();
+  startHideMediaControlsTimer();
 }
 
 void MediaControls::notifyPanelWidthChanged(const LayoutUnit& newWidth) {

@@ -3432,8 +3432,6 @@ bool HTMLMediaElement::isFullscreen() const {
 
 void HTMLMediaElement::didEnterFullscreen() {
   configureMediaControls();
-  if (mediaControls())
-    mediaControls()->enteredFullscreen();
   // FIXME: There is no embedder-side handling in layout test mode.
   if (webMediaPlayer() && !LayoutTestSupport::isRunningLayoutTest())
     webMediaPlayer()->enteredFullscreen();
@@ -3446,8 +3444,6 @@ void HTMLMediaElement::didEnterFullscreen() {
 
 void HTMLMediaElement::didExitFullscreen() {
   configureMediaControls();
-  if (mediaControls())
-    mediaControls()->exitedFullscreen();
   if (webMediaPlayer())
     webMediaPlayer()->exitedFullscreen();
   if (m_inOverlayFullscreenVideo)
@@ -3622,10 +3618,7 @@ void HTMLMediaElement::ensureMediaControls() {
     return;
 
   MediaControls* mediaControls = MediaControls::create(*this);
-
   mediaControls->reset();
-  if (isFullscreen())
-    mediaControls->enteredFullscreen();
 
   ShadowRoot& shadowRoot = ensureUserAgentShadowRoot();
   assertShadowRootChildren(shadowRoot);

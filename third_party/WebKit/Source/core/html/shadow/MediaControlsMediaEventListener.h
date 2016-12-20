@@ -9,6 +9,7 @@
 
 namespace blink {
 
+class HTMLMediaElement;
 class MediaControls;
 
 class MediaControlsMediaEventListener final : public EventListener {
@@ -20,6 +21,8 @@ class MediaControlsMediaEventListener final : public EventListener {
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  HTMLMediaElement& mediaElement();
+
   void handleEvent(ExecutionContext*, Event*) override;
 
   Member<MediaControls> m_mediaControls;
