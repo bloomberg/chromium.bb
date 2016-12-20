@@ -288,6 +288,23 @@ var vrShellUi = (function() {
           this.onAnimationDone.bind(this));
     }
 
+    getSecurityIconElementId(level) {
+      // See security_state.h and getSecurityIconResource() for this mapping.
+      switch (level) {
+        case 0: // NONE
+        case 1: // HTTP_SHOW_WARNING
+        case 4: // SECURITY_WARNING
+          return '#omni-info-icon';
+        case 2: // SECURE:
+        case 3: // EV_SECURE:
+          return '#omni-lock-icon';
+        case 5: // SECURE_WITH_POLICY_INSTALLED_CERT (ChromeOS only)
+        case 6: // DANGEROUS
+        default:
+          return '#omni-warning-icon';
+      }
+    }
+
     setEnabled(enabled) {
       this.enabled = enabled;
       this.resetVisibilityTimer();
@@ -347,11 +364,12 @@ var vrShellUi = (function() {
         this.setNativeVisibility(false);
         return;
       }
-      let secure = this.level == 2 || this.level == 3;
-      document.querySelector('#omni-secure-icon').style.display =
-          (secure ? 'block' : 'none');
-      document.querySelector('#omni-insecure-icon').style.display =
-          (secure ? 'none' : 'block');
+
+      document.querySelector('#omni-warning-icon').style.display = 'none';
+      document.querySelector('#omni-info-icon').style.display = 'none';
+      document.querySelector('#omni-lock-icon').style.display = 'none';
+      let icon = this.getSecurityIconElementId(this.level);
+      document.querySelector(icon).style.display = 'block';
 
       let state = 'idle';
       this.visibleAfterTransition = true;

@@ -152,6 +152,8 @@ html {
 }
 
 #omni .connection-security {
+  display: none;
+  flex: none;
   height: 50px;
   margin-right: 10px;
   width: 50px;
