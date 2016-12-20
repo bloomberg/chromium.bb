@@ -365,8 +365,11 @@ void PBXAggregateTarget::Print(std::ostream& out, unsigned indent) const {
 // PBXBuildFile ---------------------------------------------------------------
 
 PBXBuildFile::PBXBuildFile(const PBXFileReference* file_reference,
-                           const PBXSourcesBuildPhase* build_phase)
-    : file_reference_(file_reference), build_phase_(build_phase) {
+                           const PBXSourcesBuildPhase* build_phase,
+                           const CompilerFlags compiler_flag)
+    : file_reference_(file_reference),
+      build_phase_(build_phase),
+      compiler_flag_(compiler_flag) {
   DCHECK(file_reference_);
   DCHECK(build_phase_);
 }
@@ -387,6 +390,12 @@ void PBXBuildFile::Print(std::ostream& out, unsigned indent) const {
   out << indent_str << Reference() << " = {";
   PrintProperty(out, rules, "isa", ToString(Class()));
   PrintProperty(out, rules, "fileRef", file_reference_);
+  if (compiler_flag_ == CompilerFlags::HELP) {
+    std::map<std::string, std::string> settings = {
+        {"COMPILER_FLAGS", "--help"},
+    };
+    PrintProperty(out, rules, "settings", settings);
+  }
   out << "};\n";
 }
 
@@ -563,11 +572,11 @@ PBXNativeTarget::PBXNativeTarget(const std::string& name,
 
 PBXNativeTarget::~PBXNativeTarget() {}
 
-void PBXNativeTarget::AddFileForIndexing(
-    const PBXFileReference* file_reference) {
+void PBXNativeTarget::AddFileForIndexing(const PBXFileReference* file_reference,
+                                         const CompilerFlags compiler_flag) {
   DCHECK(file_reference);
-  source_build_phase_->AddBuildFile(
-      base::MakeUnique<PBXBuildFile>(file_reference, source_build_phase_));
+  source_build_phase_->AddBuildFile(base::MakeUnique<PBXBuildFile>(
+      file_reference, source_build_phase_, compiler_flag));
 }
 
 PBXObjectClass PBXNativeTarget::Class() const {
@@ -614,15 +623,18 @@ PBXProject::~PBXProject() {}
 
 void PBXProject::AddSourceFileToIndexingTarget(
     const std::string& navigator_path,
-    const std::string& source_path) {
+    const std::string& source_path,
+    const CompilerFlags compiler_flag) {
   if (!target_for_indexing_) {
     AddIndexingTarget();
   }
-  AddSourceFile(navigator_path, source_path, target_for_indexing_);
+  AddSourceFile(navigator_path, source_path, compiler_flag,
+                target_for_indexing_);
 }
 
 void PBXProject::AddSourceFile(const std::string& navigator_path,
                                const std::string& source_path,
+                               const CompilerFlags compiler_flag,
                                PBXNativeTarget* target) {
   PBXFileReference* file_reference =
       sources_->AddSourceFile(navigator_path, source_path);
@@ -631,7 +643,7 @@ void PBXProject::AddSourceFile(const std::string& navigator_path,
     return;
 
   DCHECK(target);
-  target->AddFileForIndexing(file_reference);
+  target->AddFileForIndexing(file_reference, compiler_flag);
 }
 
 void PBXProject::AddAggregateTarget(const std::string& name,
