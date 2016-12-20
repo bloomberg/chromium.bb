@@ -139,7 +139,7 @@ public class SelectFileDialogTest extends ChromeActivityTestCaseBase<ChromeActiv
             @Override
             public void run() {
                 mActivityWindowAndroidForTest.lastCallback.onIntentCompleted(
-                        mActivityWindowAndroidForTest, Activity.RESULT_CANCELED, null, null);
+                        mActivityWindowAndroidForTest, Activity.RESULT_CANCELED, null);
             }
         });
         mActivityWindowAndroidForTest.lastCallback = null;

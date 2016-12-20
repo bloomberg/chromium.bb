@@ -10,7 +10,6 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.PendingIntent;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -511,11 +510,9 @@ public class WindowAndroid {
          * Handles the data returned by the requested intent.
          * @param window A window reference.
          * @param resultCode Result code of the requested intent.
-         * @param contentResolver An instance of ContentResolver class for accessing returned data.
          * @param data The data returned by the intent.
          */
-        void onIntentCompleted(WindowAndroid window, int resultCode,
-                ContentResolver contentResolver, Intent data);
+        void onIntentCompleted(WindowAndroid window, int resultCode, Intent data);
     }
 
     /**

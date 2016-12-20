@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.infobar;
 
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -125,8 +124,7 @@ public class AppBannerInfoBarDelegateAndroid {
     private WindowAndroid.IntentCallback createIntentCallback(final AppData appData) {
         return new WindowAndroid.IntentCallback() {
             @Override
-            public void onIntentCompleted(WindowAndroid window, int resultCode,
-                    ContentResolver contentResolver, Intent data) {
+            public void onIntentCompleted(WindowAndroid window, int resultCode, Intent data) {
                 boolean isInstalling = resultCode == Activity.RESULT_OK;
                 if (isInstalling) {
                     // Start monitoring the install.

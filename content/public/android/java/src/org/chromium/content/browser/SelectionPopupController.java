@@ -8,7 +8,6 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.content.ClipboardManager;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -639,12 +638,11 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         // Intent is sent by WindowAndroid by default.
         try {
             mWindowAndroid.showIntent(intent, new WindowAndroid.IntentCallback() {
-                    @Override
-                    public void onIntentCompleted(WindowAndroid window,
-                            int resultCode, ContentResolver contentResolver, Intent data) {
-                        onReceivedProcessTextResult(resultCode, data);
-                    }
-                }, null);
+                @Override
+                public void onIntentCompleted(WindowAndroid window, int resultCode, Intent data) {
+                    onReceivedProcessTextResult(resultCode, data);
+                }
+            }, null);
         } catch (android.content.ActivityNotFoundException ex) {
             // If no app handles it, do nothing.
         }

@@ -14,7 +14,6 @@ import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -2473,8 +2472,7 @@ public class LocationBarLayout extends FrameLayout implements OnClickListener,
 
     // WindowAndroid.IntentCallback implementation:
     @Override
-    public void onIntentCompleted(WindowAndroid window, int resultCode,
-            ContentResolver contentResolver, Intent data) {
+    public void onIntentCompleted(WindowAndroid window, int resultCode, Intent data) {
         if (resultCode != Activity.RESULT_OK) return;
         if (data.getExtras() == null) return;
 

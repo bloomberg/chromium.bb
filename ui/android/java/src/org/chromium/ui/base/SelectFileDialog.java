@@ -20,6 +20,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.chromium.base.ContentUriUtils;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -167,7 +168,6 @@ public class SelectFileDialog
         }
 
         Intent getContentIntent = new Intent(Intent.ACTION_GET_CONTENT);
-        getContentIntent.addCategory(Intent.CATEGORY_OPENABLE);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && mAllowMultiple) {
             getContentIntent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
@@ -188,6 +188,10 @@ public class SelectFileDialog
                 if (soundRecorder != null) extraIntents.add(soundRecorder);
                 getContentIntent.setType(ALL_AUDIO_TYPES);
             }
+
+            // If any types are specified, then only accept openable files, as coercing
+            // virtual files may yield to a MIME type different than expected.
+            getContentIntent.addCategory(Intent.CATEGORY_OPENABLE);
         }
 
         if (extraIntents.isEmpty()) {
@@ -263,13 +267,11 @@ public class SelectFileDialog
      * SelectFileDialog.
      * @param window The window that has access to the application activity.
      * @param resultCode The result code whether the intent returned successfully.
-     * @param contentResolver The content resolver used to extract the path of the selected file.
      * @param results The results of the requested intent.
      */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     @Override
-    public void onIntentCompleted(WindowAndroid window, int resultCode,
-            ContentResolver contentResolver, Intent results) {
+    public void onIntentCompleted(WindowAndroid window, int resultCode, Intent results) {
         if (resultCode != Activity.RESULT_OK) {
             onFileNotSelected();
             return;
@@ -313,7 +315,8 @@ public class SelectFileDialog
             for (int i = 0; i < itemCount; ++i) {
                 filePathArray[i] = clipData.getItemAt(i).getUri();
             }
-            GetDisplayNameTask task = new GetDisplayNameTask(contentResolver, true);
+            GetDisplayNameTask task =
+                    new GetDisplayNameTask(ContextUtils.getApplicationContext(), true);
             task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, filePathArray);
             return;
         }
@@ -325,7 +328,8 @@ public class SelectFileDialog
         }
 
         if (ContentResolver.SCHEME_CONTENT.equals(results.getScheme())) {
-            GetDisplayNameTask task = new GetDisplayNameTask(contentResolver, false);
+            GetDisplayNameTask task =
+                    new GetDisplayNameTask(ContextUtils.getApplicationContext(), false);
             task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, results.getData());
             return;
         }
@@ -401,11 +405,11 @@ public class SelectFileDialog
 
     private class GetDisplayNameTask extends AsyncTask<Uri, Void, String[]> {
         String[] mFilePaths;
-        final ContentResolver mContentResolver;
+        final Context mContext;
         final boolean mIsMultiple;
 
-        public GetDisplayNameTask(ContentResolver contentResolver, boolean isMultiple) {
-            mContentResolver = contentResolver;
+        public GetDisplayNameTask(Context context, boolean isMultiple) {
+            mContext = context;
             mIsMultiple = isMultiple;
         }
 
@@ -417,7 +421,7 @@ public class SelectFileDialog
                 for (int i = 0; i < uris.length; i++) {
                     mFilePaths[i] = uris[i].toString();
                     displayNames[i] = ContentUriUtils.getDisplayName(
-                            uris[i], mContentResolver, MediaStore.MediaColumns.DISPLAY_NAME);
+                            uris[i], mContext, MediaStore.MediaColumns.DISPLAY_NAME);
                 }
             }  catch (SecurityException e) {
                 // Some third party apps will present themselves as being able
