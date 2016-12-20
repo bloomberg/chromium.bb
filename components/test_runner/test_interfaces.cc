@@ -94,8 +94,12 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
     test_runner_->setShouldGeneratePixelResults(false);
   }
   if (spec.find("/inspector/") != std::string::npos ||
-      spec.find("/inspector-enabled/") != std::string::npos)
+      spec.find("/inspector-enabled/") != std::string::npos) {
     test_runner_->ClearDevToolsLocalStorage();
+    test_runner_->SetV8CacheDisabled(true);
+  } else {
+    test_runner_->SetV8CacheDisabled(false);
+  }
   if (spec.find("/inspector/") != std::string::npos &&
       spec.find("unit_test_runner.html") == std::string::npos) {
     // Subfolder name determines default panel to open.

@@ -1626,6 +1626,8 @@ void TestRunner::SetDelegate(WebTestDelegate* delegate) {
 
 void TestRunner::SetMainView(WebView* web_view) {
   main_view_ = web_view;
+  if (disable_v8_cache_)
+    SetV8CacheDisabled(true);
 }
 
 void TestRunner::Reset() {
@@ -1963,6 +1965,16 @@ midi::mojom::Result TestRunner::midiAccessorResult() {
 
 void TestRunner::ClearDevToolsLocalStorage() {
   delegate_->ClearDevToolsLocalStorage();
+}
+
+void TestRunner::SetV8CacheDisabled(bool disabled) {
+  if (!main_view_) {
+    disable_v8_cache_ = disabled;
+    return;
+  }
+  main_view_->settings()->setV8CacheOptions(disabled ?
+      blink::WebSettings::V8CacheOptionsNone :
+      blink::WebSettings::V8CacheOptionsDefault);
 }
 
 void TestRunner::ShowDevTools(const std::string& settings,
