@@ -18,7 +18,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Icon;
 import android.os.Build;
-import android.os.Bundle;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
@@ -122,7 +121,6 @@ public abstract class NotificationBuilderBase {
     protected long[] mVibratePattern;
     protected long mTimestamp;
     protected boolean mRenotify;
-    protected Bundle mExtras;
 
     private Bitmap mLargeIcon;
 
@@ -307,18 +305,6 @@ public abstract class NotificationBuilderBase {
      */
     public NotificationBuilderBase setRenotify(boolean renotify) {
         mRenotify = renotify;
-        return this;
-    }
-
-    /**
-     * Sets the extras bundle on supported platforms.
-     */
-    @TargetApi(Build.VERSION_CODES.M)
-    public NotificationBuilderBase setExtras(Bundle extras) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
-            return this;
-        }
-        mExtras = extras;
         return this;
     }
 

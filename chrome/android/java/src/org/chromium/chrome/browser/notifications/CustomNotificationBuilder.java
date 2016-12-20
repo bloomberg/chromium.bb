@@ -166,9 +166,6 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
             // Notification.Builder.setPublicVersion was added in Android L.
             builder.setPublicVersion(createPublicNotification(mContext));
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            builder.setExtras(mExtras);
-        }
 
         Notification notification = builder.build();
         notification.bigContentView = bigView;

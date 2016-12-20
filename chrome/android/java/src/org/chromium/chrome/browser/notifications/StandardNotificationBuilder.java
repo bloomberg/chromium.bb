@@ -60,9 +60,6 @@ public class StandardNotificationBuilder extends NotificationBuilderBase {
             // Notification.Builder.setPublicVersion was added in Android L.
             builder.setPublicVersion(createPublicNotification(mContext));
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            builder.setExtras(mExtras);
-        }
         return builder.build();
     }
 }
