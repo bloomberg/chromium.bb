@@ -23,11 +23,11 @@ struct GpuProcessHostedCALayerTreeParamsMac;
 }
 
 namespace ui {
+class ContextProviderCommandBuffer;
 class LatencyInfo;
 }
 
 namespace content {
-class ContextProviderCommandBuffer;
 class ReflectorTexture;
 
 // Adapts a WebGraphicsContext3DCommandBufferImpl into a
@@ -37,7 +37,7 @@ class GpuBrowserCompositorOutputSurface
     : public BrowserCompositorOutputSurface {
  public:
   GpuBrowserCompositorOutputSurface(
-      scoped_refptr<ContextProviderCommandBuffer> context,
+      scoped_refptr<ui::ContextProviderCommandBuffer> context,
       const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
       std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
           overlay_candidate_validator);

@@ -13,7 +13,6 @@
 #include "base/unguessable_token.h"
 #include "cc/output/context_provider.h"
 #include "content/child/child_thread_impl.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/render_thread_impl.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
@@ -24,6 +23,7 @@
 #include "media/gpu/ipc/common/media_messages.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 
 namespace content {
 
@@ -49,7 +49,7 @@ RendererGpuVideoAcceleratorFactories::Create(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+    const scoped_refptr<ui::ContextProviderCommandBuffer>& context_provider,
     bool enable_gpu_memory_buffer_video_frames,
     const cc::BufferToTextureTargetMap& image_texture_targets,
     bool enable_video_accelerator) {
@@ -65,7 +65,7 @@ RendererGpuVideoAcceleratorFactories::RendererGpuVideoAcceleratorFactories(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
+    const scoped_refptr<ui::ContextProviderCommandBuffer>& context_provider,
     bool enable_gpu_memory_buffer_video_frames,
     const cc::BufferToTextureTargetMap& image_texture_targets,
     bool enable_video_accelerator)
@@ -330,7 +330,7 @@ void RendererGpuVideoAcceleratorFactories::ReleaseContextProvider() {
   context_provider_refptr_ = nullptr;
 }
 
-scoped_refptr<ContextProviderCommandBuffer>
+scoped_refptr<ui::ContextProviderCommandBuffer>
 RendererGpuVideoAcceleratorFactories::ContextProviderMainThread() {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   return context_provider_refptr_;

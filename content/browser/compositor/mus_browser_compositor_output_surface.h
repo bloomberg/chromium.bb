@@ -42,7 +42,7 @@ class MusBrowserCompositorOutputSurface
   // Aura-Mus.
   MusBrowserCompositorOutputSurface(
       ui::Window* window,
-      scoped_refptr<ContextProviderCommandBuffer> context,
+      scoped_refptr<ui::ContextProviderCommandBuffer> context,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
       std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
@@ -50,7 +50,7 @@ class MusBrowserCompositorOutputSurface
 
   MusBrowserCompositorOutputSurface(
       aura::Window* window,
-      scoped_refptr<ContextProviderCommandBuffer> context,
+      scoped_refptr<ui::ContextProviderCommandBuffer> context,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
       std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>

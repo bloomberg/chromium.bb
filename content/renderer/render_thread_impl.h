@@ -92,6 +92,7 @@ class GpuVideoAcceleratorFactories;
 }
 
 namespace ui {
+class ContextProviderCommandBuffer;
 class Gpu;
 }
 
@@ -111,7 +112,6 @@ class BrowserPluginManager;
 class CacheStorageDispatcher;
 class ChildSharedBitmapManager;
 class CompositorForwardingMessageFilter;
-class ContextProviderCommandBuffer;
 class DBMessageFilter;
 class DevToolsAgentFilter;
 class DomStorageDispatcher;
@@ -380,7 +380,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
   // Returns a worker context provider that will be bound on the compositor
   // thread.
-  scoped_refptr<ContextProviderCommandBuffer>
+  scoped_refptr<ui::ContextProviderCommandBuffer>
   SharedCompositorWorkerContextProvider();
 
   // Causes the idle handler to skip sending idle notifications
@@ -390,7 +390,8 @@ class CONTENT_EXPORT RenderThreadImpl
 
   media::GpuVideoAcceleratorFactories* GetGpuFactories();
 
-  scoped_refptr<ContextProviderCommandBuffer> SharedMainThreadContextProvider();
+  scoped_refptr<ui::ContextProviderCommandBuffer>
+  SharedMainThreadContextProvider();
 
   // AudioRendererMixerManager instance which manages renderer side mixer
   // instances shared based on configured audio parameters.  Lazily created on
@@ -675,11 +676,12 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<StreamTextureFactory> stream_texture_factory_;
 #endif
 
-  scoped_refptr<ContextProviderCommandBuffer> shared_main_thread_contexts_;
+  scoped_refptr<ui::ContextProviderCommandBuffer> shared_main_thread_contexts_;
 
   base::ObserverList<RenderThreadObserver> observers_;
 
-  scoped_refptr<ContextProviderCommandBuffer> shared_worker_context_provider_;
+  scoped_refptr<ui::ContextProviderCommandBuffer>
+      shared_worker_context_provider_;
 
   std::unique_ptr<AudioRendererMixerManager> audio_renderer_mixer_manager_;
 

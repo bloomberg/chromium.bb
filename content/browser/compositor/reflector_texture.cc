@@ -6,9 +6,9 @@
 
 #include "components/display_compositor/gl_helper.h"
 #include "content/browser/compositor/owned_mailbox.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 
 namespace content {
 

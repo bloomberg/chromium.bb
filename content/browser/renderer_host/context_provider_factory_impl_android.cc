@@ -14,28 +14,28 @@
 #include "cc/surfaces/surface_manager.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 
 namespace content {
 
 namespace {
 
-command_buffer_metrics::ContextType ToCommandBufferContextType(
+ui::command_buffer_metrics::ContextType ToCommandBufferContextType(
     ui::ContextProviderFactory::ContextType context_type) {
   switch (context_type) {
     case ui::ContextProviderFactory::ContextType::
         BLIMP_RENDER_COMPOSITOR_CONTEXT:
-      return command_buffer_metrics::BLIMP_RENDER_COMPOSITOR_CONTEXT;
+      return ui::command_buffer_metrics::BLIMP_RENDER_COMPOSITOR_CONTEXT;
     case ui::ContextProviderFactory::ContextType::BLIMP_RENDER_WORKER_CONTEXT:
-      return command_buffer_metrics::BLIMP_RENDER_WORKER_CONTEXT;
+      return ui::command_buffer_metrics::BLIMP_RENDER_WORKER_CONTEXT;
   }
   NOTREACHED();
-  return command_buffer_metrics::CONTEXT_TYPE_UNKNOWN;
+  return ui::command_buffer_metrics::CONTEXT_TYPE_UNKNOWN;
 }
 
 ContextProviderFactoryImpl* instance = nullptr;
@@ -107,7 +107,7 @@ ContextProviderFactoryImpl::CreateDisplayContextProvider(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
   DCHECK(surface_handle != gpu::kNullSurfaceHandle);
   return CreateContextProviderInternal(
-      command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT,
+      ui::command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT,
       surface_handle, shared_memory_limits, attributes, support_locking,
       automatic_flushes, nullptr, std::move(gpu_channel_host));
 }
@@ -145,7 +145,7 @@ ContextProviderFactoryImpl::GetGpuMemoryBufferManager() {
 
 scoped_refptr<cc::ContextProvider>
 ContextProviderFactoryImpl::CreateContextProviderInternal(
-    command_buffer_metrics::ContextType context_type,
+    ui::command_buffer_metrics::ContextType context_type,
     gpu::SurfaceHandle surface_handle,
     gpu::SharedMemoryLimits shared_memory_limits,
     gpu::gles2::ContextCreationAttribHelper attributes,
@@ -153,13 +153,13 @@ ContextProviderFactoryImpl::CreateContextProviderInternal(
     bool automatic_flushes,
     cc::ContextProvider* shared_context_provider,
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
-  return make_scoped_refptr(new ContextProviderCommandBuffer(
+  return make_scoped_refptr(new ui::ContextProviderCommandBuffer(
       std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
       gpu::GpuStreamPriority::NORMAL, surface_handle,
       GURL(std::string("chrome://gpu/ContextProviderFactoryImpl::") +
            std::string("CompositorContextProvider")),
       automatic_flushes, support_locking, shared_memory_limits, attributes,
-      static_cast<ContextProviderCommandBuffer*>(shared_context_provider),
+      static_cast<ui::ContextProviderCommandBuffer*>(shared_context_provider),
       context_type));
 }
 

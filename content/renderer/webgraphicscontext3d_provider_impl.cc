@@ -4,13 +4,13 @@
 
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "gpu/command_buffer/client/context_support.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 
 namespace content {
 
 WebGraphicsContext3DProviderImpl::WebGraphicsContext3DProviderImpl(
-    scoped_refptr<ContextProviderCommandBuffer> provider,
+    scoped_refptr<ui::ContextProviderCommandBuffer> provider,
     bool software_rendering)
     : provider_(std::move(provider)), software_rendering_(software_rendering) {}
 

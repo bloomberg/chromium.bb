@@ -12,15 +12,15 @@
 #include "components/display_compositor/compositor_overlay_candidate_validator.h"
 #include "components/display_compositor/gl_helper.h"
 #include "content/browser/compositor/reflector_impl.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 
 namespace content {
 
 GpuSurfacelessBrowserCompositorOutputSurface::
     GpuSurfacelessBrowserCompositorOutputSurface(
-        scoped_refptr<ContextProviderCommandBuffer> context,
+        scoped_refptr<ui::ContextProviderCommandBuffer> context,
         gpu::SurfaceHandle surface_handle,
         const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
         std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>

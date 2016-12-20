@@ -16,7 +16,6 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/pepper/pepper_video_decoder_host.h"
 #include "content/renderer/render_thread_impl.h"
@@ -32,6 +31,7 @@
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ppapi/c/pp_errors.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 
 namespace content {
@@ -61,7 +61,7 @@ bool IsCodecSupported(media::VideoCodec codec) {
 // YUV->RGB converter class using a shader and FBO.
 class VideoDecoderShim::YUVConverter {
  public:
-  YUVConverter(scoped_refptr<ContextProviderCommandBuffer>);
+  YUVConverter(scoped_refptr<ui::ContextProviderCommandBuffer>);
   ~YUVConverter();
   bool Initialize();
   void Convert(const scoped_refptr<media::VideoFrame>& frame, GLuint tex_out);
@@ -72,7 +72,7 @@ class VideoDecoderShim::YUVConverter {
   GLuint CreateProgram(const char* name, GLuint vshader, GLuint fshader);
   GLuint CreateTexture();
 
-  scoped_refptr<ContextProviderCommandBuffer> context_provider_;
+  scoped_refptr<ui::ContextProviderCommandBuffer> context_provider_;
   gpu::gles2::GLES2Interface* gl_;
   GLuint frame_buffer_;
   GLuint vertex_buffer_;
@@ -102,7 +102,7 @@ class VideoDecoderShim::YUVConverter {
 };
 
 VideoDecoderShim::YUVConverter::YUVConverter(
-    scoped_refptr<ContextProviderCommandBuffer> context_provider)
+    scoped_refptr<ui::ContextProviderCommandBuffer> context_provider)
     : context_provider_(std::move(context_provider)),
       gl_(context_provider_->ContextGL()),
       frame_buffer_(0),

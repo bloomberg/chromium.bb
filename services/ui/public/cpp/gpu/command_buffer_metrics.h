@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_CLIENT_COMMAND_BUFFER_METRICS_H_
-#define CONTENT_COMMON_GPU_CLIENT_COMMAND_BUFFER_METRICS_H_
+#ifndef SERVICES_UI_PUBLIC_CPP_GPU_COMMAND_BUFFER_METRICS_H_
+#define SERVICES_UI_PUBLIC_CPP_GPU_COMMAND_BUFFER_METRICS_H_
 
 #include <string>
 
 #include "gpu/command_buffer/common/constants.h"
 
-namespace content {
+namespace ui {
 namespace command_buffer_metrics {
 
 enum ContextType {
@@ -38,6 +38,6 @@ void UmaRecordContextLost(ContextType type,
                           gpu::error::ContextLostReason reason);
 
 }  // namespace command_buffer_metrics
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_COMMON_GPU_CLIENT_COMMAND_BUFFER_METRICS_H_
+#endif  // SERVICES_UI_PUBLIC_CPP_GPU_COMMAND_BUFFER_METRICS_H_

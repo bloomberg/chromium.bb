@@ -11,9 +11,9 @@
 #include "cc/quads/render_pass.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "components/display_compositor/compositor_overlay_candidate_validator.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/cpp/window_compositor_frame_sink.h"
 #include "ui/aura/mus/window_compositor_frame_sink.h"
@@ -25,7 +25,7 @@ namespace content {
 
 MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
     ui::Window* window,
-    scoped_refptr<ContextProviderCommandBuffer> context,
+    scoped_refptr<ui::ContextProviderCommandBuffer> context,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
     std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
@@ -44,7 +44,7 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
 
 MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
     aura::Window* window,
-    scoped_refptr<ContextProviderCommandBuffer> context,
+    scoped_refptr<ui::ContextProviderCommandBuffer> context,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
     std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>

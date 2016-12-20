@@ -9,10 +9,10 @@
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkSurface.h"
@@ -21,7 +21,7 @@
 
 namespace {
 
-scoped_refptr<content::ContextProviderCommandBuffer> CreateContext(
+scoped_refptr<ui::ContextProviderCommandBuffer> CreateContext(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
   // This is for an offscreen context, so the default framebuffer doesn't need
   // any alpha, depth, stencil, antialiasing.
@@ -34,11 +34,11 @@ scoped_refptr<content::ContextProviderCommandBuffer> CreateContext(
   attributes.bind_generates_resource = false;
   constexpr bool automatic_flushes = false;
   constexpr bool support_locking = false;
-  return make_scoped_refptr(new content::ContextProviderCommandBuffer(
+  return make_scoped_refptr(new ui::ContextProviderCommandBuffer(
       std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
       gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle, GURL(),
       automatic_flushes, support_locking, gpu::SharedMemoryLimits(), attributes,
-      nullptr, content::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING));
+      nullptr, ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING));
 }
 
 void OnEstablishedGpuChannel(
@@ -107,7 +107,7 @@ class ContextTestBase : public content::ContentBrowserTest {
   gpu::ContextSupport* context_support_ = nullptr;
 
  private:
-  scoped_refptr<content::ContextProviderCommandBuffer> provider_;
+  scoped_refptr<ui::ContextProviderCommandBuffer> provider_;
 };
 
 }  // namespace
@@ -237,7 +237,8 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
                        MAYBE_GrContextKeepsGpuChannelAlive) {
   // Test for crbug.com/551143
   // This test verifies that holding a reference to the GrContext created by
-  // a ContextProviderCommandBuffer will keep the gpu channel alive after the
+  // a ui::ContextProviderCommandBuffer will keep the gpu channel alive after
+  // the
   // provider has been destroyed. Without this behavior, user code would have
   // to be careful to destroy objects in the right order to avoid using freed
   // memory as a function pointer in the GrContext's GrGLInterface instance.
@@ -246,7 +247,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
 
   // Step 2: verify that holding onto the provider's GrContext will
   // retain the host after provider is destroyed.
-  scoped_refptr<ContextProviderCommandBuffer> provider =
+  scoped_refptr<ui::ContextProviderCommandBuffer> provider =
       CreateContext(GetGpuChannel());
   EXPECT_TRUE(provider->BindToCurrentThread());
 
@@ -293,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   EstablishAndWait();
   scoped_refptr<gpu::GpuChannelHost> host = GetGpuChannel();
 
-  scoped_refptr<ContextProviderCommandBuffer> provider =
+  scoped_refptr<ui::ContextProviderCommandBuffer> provider =
       CreateContext(GetGpuChannel());
   base::RunLoop run_loop;
   int counter = 0;

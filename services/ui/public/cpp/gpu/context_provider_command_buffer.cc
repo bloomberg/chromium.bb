@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/client/context_provider_command_buffer.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 
 #include <stddef.h>
 
@@ -19,7 +19,6 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "cc/output/context_cache_controller.h"
 #include "cc/output/managed_memory_policy.h"
-#include "content/common/gpu/client/command_buffer_metrics.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_trace_implementation.h"
@@ -29,6 +28,7 @@
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
+#include "services/ui/public/cpp/gpu/command_buffer_metrics.h"
 #include "third_party/skia/include/core/SkTraceMemoryDump.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gl/trace_util.h"
@@ -144,7 +144,7 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
 
 }  // namespace
 
-namespace content {
+namespace ui {
 
 ContextProviderCommandBuffer::SharedProviders::SharedProviders() = default;
 ContextProviderCommandBuffer::SharedProviders::~SharedProviders() = default;
@@ -438,8 +438,7 @@ void ContextProviderCommandBuffer::OnLostContext() {
 void ContextProviderCommandBuffer::SetLostContextCallback(
     const LostContextCallback& lost_context_callback) {
   DCHECK(context_thread_checker_.CalledOnValidThread());
-  DCHECK(lost_context_callback_.is_null() ||
-         lost_context_callback.is_null());
+  DCHECK(lost_context_callback_.is_null() || lost_context_callback.is_null());
   lost_context_callback_ = lost_context_callback;
 }
 
@@ -465,4 +464,4 @@ bool ContextProviderCommandBuffer::OnMemoryDump(
   return true;
 }
 
-}  // namespace content
+}  // namespace ui

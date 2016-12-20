@@ -27,8 +27,11 @@ class SurfaceManager;
 class VulkanInProcessContextProvider;
 }
 
-namespace content {
+namespace ui {
 class ContextProviderCommandBuffer;
+}
+
+namespace content {
 class OutputDeviceBacking;
 
 class GpuProcessTransportFactory : public ui::ContextFactory,
@@ -112,11 +115,12 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
       PerCompositorDataMap;
   PerCompositorDataMap per_compositor_data_;
 
-  scoped_refptr<ContextProviderCommandBuffer> shared_main_thread_contexts_;
+  scoped_refptr<ui::ContextProviderCommandBuffer> shared_main_thread_contexts_;
   std::unique_ptr<display_compositor::GLHelper> gl_helper_;
   base::ObserverList<ui::ContextFactoryObserver> observer_list_;
   std::unique_ptr<cc::SingleThreadTaskGraphRunner> task_graph_runner_;
-  scoped_refptr<ContextProviderCommandBuffer> shared_worker_context_provider_;
+  scoped_refptr<ui::ContextProviderCommandBuffer>
+      shared_worker_context_provider_;
 
   bool shared_vulkan_context_provider_initialized_ = false;
   scoped_refptr<cc::VulkanInProcessContextProvider>

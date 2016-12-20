@@ -15,7 +15,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/bind_to_current_loop.h"
@@ -23,6 +22,7 @@
 #include "media/base/video_util.h"
 #include "media/filters/context_3d.h"
 #include "media/renderers/skcanvas_video_renderer.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -241,7 +241,7 @@ void VideoTrackRecorder::Encoder::RetrieveFrameOnMainThread(
   scoped_refptr<media::VideoFrame> frame;
 
   // |context_provider| is null if the GPU process has crashed or isn't there.
-  ContextProviderCommandBuffer* const context_provider =
+  ui::ContextProviderCommandBuffer* const context_provider =
       RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
   if (!context_provider) {
     // Send black frames (yuv = {0, 127, 127}).

@@ -11,7 +11,6 @@
 #include "base/hash.h"
 #include "base/single_thread_task_runner.h"
 #include "base/values.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/media/webmediaplayer_ms.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/media_switches.h"
@@ -19,6 +18,7 @@
 #include "media/base/video_util.h"
 #include "media/filters/video_renderer_algorithm.h"
 #include "media/renderers/skcanvas_video_renderer.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
@@ -50,7 +50,7 @@ scoped_refptr<media::VideoFrame> CopyFrame(
     sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
         frame->visible_rect().width(), frame->visible_rect().height());
 
-    ContextProviderCommandBuffer* const provider =
+    ui::ContextProviderCommandBuffer* const provider =
         RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
     if (surface && provider) {
       DCHECK(provider->ContextGL());

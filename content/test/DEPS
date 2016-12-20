@@ -20,5 +20,6 @@ specific_include_rules = {
   "layouttest_support.cc": [
     "+components/test_runner",
     "+content/shell/common/shell_switches.h",
+    "+services/ui/public/cpp/gpu",
   ],
 }

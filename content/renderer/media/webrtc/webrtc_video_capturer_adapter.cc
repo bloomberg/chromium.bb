@@ -9,12 +9,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/media/webrtc/webrtc_video_frame_adapter.h"
 #include "content/renderer/render_thread_impl.h"
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_util.h"
 #include "media/renderers/skcanvas_video_renderer.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/libyuv/include/libyuv/convert.h"
 #include "third_party/libyuv/include/libyuv/convert_from.h"
@@ -139,7 +139,7 @@ class WebRtcVideoCapturerAdapter::TextureFrameCopier
   }
 
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  scoped_refptr<ContextProviderCommandBuffer> provider_;
+  scoped_refptr<ui::ContextProviderCommandBuffer> provider_;
   std::unique_ptr<media::SkCanvasVideoRenderer> canvas_video_renderer_;
 };
 

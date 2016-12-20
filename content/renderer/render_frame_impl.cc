@@ -58,7 +58,6 @@
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/input_messages.h"
 #include "content/common/navigation_params.h"
 #include "content/common/page_messages.h"
@@ -165,6 +164,7 @@
 #include "ppapi/features/features.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "storage/common/data_element.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/URLConversion.h"
@@ -655,7 +655,7 @@ CommonNavigationParams MakeCommonNavigationParams(
 }
 
 media::Context3D GetSharedMainThreadContext3D(
-    scoped_refptr<ContextProviderCommandBuffer> provider) {
+    scoped_refptr<ui::ContextProviderCommandBuffer> provider) {
   if (!provider)
     return media::Context3D();
   return media::Context3D(provider->ContextGL(), provider->GrContext());

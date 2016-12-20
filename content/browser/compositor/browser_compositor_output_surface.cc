@@ -15,7 +15,7 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "components/display_compositor/compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/reflector_impl.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 
 namespace content {
 

@@ -11,10 +11,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
 #include "content/common/content_export.h"
-#include "content/common/gpu/client/command_buffer_metrics.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "services/ui/public/cpp/gpu/command_buffer_metrics.h"
 #include "ui/android/context_provider_factory.h"
 
 namespace gpu {
@@ -22,8 +22,11 @@ class GpuChannelHost;
 class GpuChannelEstablishFactory;
 }
 
-namespace content {
+namespace ui {
 class ContextProviderCommandBuffer;
+}
+
+namespace content {
 
 class CONTENT_EXPORT ContextProviderFactoryImpl
     : public ui::ContextProviderFactory {
@@ -67,7 +70,7 @@ class CONTENT_EXPORT ContextProviderFactoryImpl
       gpu::GpuChannelEstablishFactory* gpu_channel_factory);
 
   scoped_refptr<cc::ContextProvider> CreateContextProviderInternal(
-      command_buffer_metrics::ContextType context_type,
+      ui::command_buffer_metrics::ContextType context_type,
       gpu::SurfaceHandle surface_handle,
       gpu::SharedMemoryLimits shared_memory_limits,
       gpu::gles2::ContextCreationAttribHelper attributes,
@@ -89,7 +92,8 @@ class CONTENT_EXPORT ContextProviderFactoryImpl
 
   std::queue<GpuChannelHostCallback> gpu_channel_requests_;
 
-  scoped_refptr<ContextProviderCommandBuffer> shared_worker_context_provider_;
+  scoped_refptr<ui::ContextProviderCommandBuffer>
+      shared_worker_context_provider_;
 
   scoped_refptr<cc::VulkanContextProvider> shared_vulkan_context_provider_;
 

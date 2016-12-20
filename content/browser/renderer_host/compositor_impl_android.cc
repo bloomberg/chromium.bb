@@ -52,7 +52,6 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/context_provider_factory_impl_android.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/android/compositor_client.h"
@@ -63,6 +62,7 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
 #include "gpu/vulkan/vulkan_surface.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 #include "third_party/skia/include/core/SkMallocPixelRef.h"
@@ -213,7 +213,7 @@ void ExternalBeginFrameSource::OnVSync(base::TimeTicks frame_time,
 class AndroidOutputSurface : public cc::OutputSurface {
  public:
   explicit AndroidOutputSurface(
-      scoped_refptr<ContextProviderCommandBuffer> context_provider)
+      scoped_refptr<ui::ContextProviderCommandBuffer> context_provider)
       : cc::OutputSurface(std::move(context_provider)),
         overlay_candidate_validator_(
             new display_compositor::
@@ -272,15 +272,15 @@ class AndroidOutputSurface : public cc::OutputSurface {
   void ApplyExternalStencil() override {}
 
   uint32_t GetFramebufferCopyTextureFormat() override {
-    auto* gl = static_cast<ContextProviderCommandBuffer*>(context_provider());
+    auto* gl =
+        static_cast<ui::ContextProviderCommandBuffer*>(context_provider());
     return gl->GetCopyTextureInternalFormat();
   }
 
  private:
   gpu::CommandBufferProxyImpl* GetCommandBufferProxy() {
-    ContextProviderCommandBuffer* provider_command_buffer =
-        static_cast<content::ContextProviderCommandBuffer*>(
-            context_provider_.get());
+    ui::ContextProviderCommandBuffer* provider_command_buffer =
+        static_cast<ui::ContextProviderCommandBuffer*>(context_provider_.get());
     gpu::CommandBufferProxyImpl* command_buffer_proxy =
         provider_command_buffer->GetCommandBufferProxy();
     DCHECK(command_buffer_proxy);
@@ -696,9 +696,9 @@ void CompositorImpl::OnGpuChannelEstablished(
         break;
       }
 
-      scoped_refptr<ContextProviderCommandBuffer>
+      scoped_refptr<ui::ContextProviderCommandBuffer>
           context_provider_command_buffer =
-              static_cast<ContextProviderCommandBuffer*>(
+              static_cast<ui::ContextProviderCommandBuffer*>(
                   context_provider.get());
       auto display_output_surface = base::MakeUnique<AndroidOutputSurface>(
           std::move(context_provider_command_buffer));

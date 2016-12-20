@@ -39,7 +39,6 @@
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/file_utilities_messages.h"
 #include "content/common/frame_messages.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/render_process_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/webplugininfo.h"
@@ -82,6 +81,7 @@
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "ppapi/features/features.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/quota/quota_types.h"
 #include "third_party/WebKit/public/platform/BlameContext.h"
@@ -1015,7 +1015,7 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
 
   content::WebGraphicsContext3DProviderImpl* share_provider_impl =
       static_cast<content::WebGraphicsContext3DProviderImpl*>(share_provider);
-  ContextProviderCommandBuffer* share_context = nullptr;
+  ui::ContextProviderCommandBuffer* share_context = nullptr;
 
   // WebGL contexts must fail creation if the share group is lost.
   if (share_provider_impl) {
@@ -1055,13 +1055,13 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
   constexpr bool automatic_flushes = true;
   constexpr bool support_locking = false;
 
-  scoped_refptr<ContextProviderCommandBuffer> provider(
-      new ContextProviderCommandBuffer(
+  scoped_refptr<ui::ContextProviderCommandBuffer> provider(
+      new ui::ContextProviderCommandBuffer(
           std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
           gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle,
           GURL(top_document_web_url), automatic_flushes, support_locking,
           gpu::SharedMemoryLimits(), attributes, share_context,
-          command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_WEBGL));
+          ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_WEBGL));
   return new WebGraphicsContext3DProviderImpl(std::move(provider),
                                               is_software_rendering);
 }
@@ -1072,7 +1072,7 @@ blink::WebGraphicsContext3DProvider*
 RendererBlinkPlatformImpl::createSharedOffscreenGraphicsContext3DProvider() {
   auto* thread = RenderThreadImpl::current();
 
-  scoped_refptr<ContextProviderCommandBuffer> provider =
+  scoped_refptr<ui::ContextProviderCommandBuffer> provider =
       thread->SharedMainThreadContextProvider();
   if (!provider)
     return nullptr;

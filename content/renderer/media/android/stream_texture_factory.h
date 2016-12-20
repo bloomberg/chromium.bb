@@ -26,9 +26,12 @@ class GLES2Interface;
 class GpuChannelHost;
 }  // namespace gpu
 
+namespace ui {
+class ContextProviderCommandBuffer;
+}
+
 namespace content {
 
-class ContextProviderCommandBuffer;
 class StreamTextureFactory;
 
 // The proxy class for the gpu thread to notify the compositor thread
@@ -90,7 +93,7 @@ class CONTENT_EXPORT StreamTextureFactory
     : public base::RefCounted<StreamTextureFactory> {
  public:
   static scoped_refptr<StreamTextureFactory> Create(
-      scoped_refptr<ContextProviderCommandBuffer> context_provider);
+      scoped_refptr<ui::ContextProviderCommandBuffer> context_provider);
 
   // Create the StreamTextureProxy object. This internally calls
   // CreateSteamTexture with the recieved arguments. CreateSteamTexture
@@ -109,7 +112,7 @@ class CONTENT_EXPORT StreamTextureFactory
  private:
   friend class base::RefCounted<StreamTextureFactory>;
   StreamTextureFactory(
-      scoped_refptr<ContextProviderCommandBuffer> context_provider);
+      scoped_refptr<ui::ContextProviderCommandBuffer> context_provider);
   ~StreamTextureFactory();
   // Creates a gpu::StreamTexture and returns its id.  Sets |*texture_id| to the
   // client-side id of the gpu::StreamTexture. The texture is produced into
@@ -118,7 +121,7 @@ class CONTENT_EXPORT StreamTextureFactory
                                unsigned* texture_id,
                                gpu::Mailbox* texture_mailbox);
 
-  scoped_refptr<ContextProviderCommandBuffer> context_provider_;
+  scoped_refptr<ui::ContextProviderCommandBuffer> context_provider_;
   scoped_refptr<gpu::GpuChannelHost> channel_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(StreamTextureFactory);

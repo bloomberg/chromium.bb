@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/gpu/client/command_buffer_metrics.h"
+#include "services/ui/public/cpp/gpu/command_buffer_metrics.h"
 
 #include "base/metrics/histogram_macros.h"
 
-namespace content {
+namespace ui {
 namespace command_buffer_metrics {
 
 namespace {
@@ -53,22 +53,22 @@ CommandBufferContextLostReason GetContextLostReason(
     }
   }
   switch (error) {
-      case gpu::error::kInvalidSize:
-        return CONTEXT_PARSE_ERROR_INVALID_SIZE;
-      case gpu::error::kOutOfBounds:
-        return CONTEXT_PARSE_ERROR_OUT_OF_BOUNDS;
-      case gpu::error::kUnknownCommand:
-        return CONTEXT_PARSE_ERROR_UNKNOWN_COMMAND;
-      case gpu::error::kInvalidArguments:
-        return CONTEXT_PARSE_ERROR_INVALID_ARGS;
-      case gpu::error::kGenericError:
-        return CONTEXT_PARSE_ERROR_GENERIC_ERROR;
-      case gpu::error::kDeferCommandUntilLater:
-      case gpu::error::kDeferLaterCommands:
-      case gpu::error::kNoError:
-      case gpu::error::kLostContext:
-        NOTREACHED();
-        return CONTEXT_LOST_UNKNOWN;
+    case gpu::error::kInvalidSize:
+      return CONTEXT_PARSE_ERROR_INVALID_SIZE;
+    case gpu::error::kOutOfBounds:
+      return CONTEXT_PARSE_ERROR_OUT_OF_BOUNDS;
+    case gpu::error::kUnknownCommand:
+      return CONTEXT_PARSE_ERROR_UNKNOWN_COMMAND;
+    case gpu::error::kInvalidArguments:
+      return CONTEXT_PARSE_ERROR_INVALID_ARGS;
+    case gpu::error::kGenericError:
+      return CONTEXT_PARSE_ERROR_GENERIC_ERROR;
+    case gpu::error::kDeferCommandUntilLater:
+    case gpu::error::kDeferLaterCommands:
+    case gpu::error::kNoError:
+    case gpu::error::kLostContext:
+      NOTREACHED();
+      return CONTEXT_LOST_UNKNOWN;
   }
   NOTREACHED();
   return CONTEXT_LOST_UNKNOWN;
@@ -179,4 +179,4 @@ void UmaRecordContextLost(ContextType type,
 }
 
 }  // namespace command_buffer_metrics
-}  // namespace content
+}  // namespace ui

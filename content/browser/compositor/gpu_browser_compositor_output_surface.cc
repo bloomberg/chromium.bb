@@ -13,15 +13,15 @@
 #include "content/browser/compositor/reflector_impl.h"
 #include "content/browser/compositor/reflector_texture.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 
 namespace content {
 
 GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
-    scoped_refptr<ContextProviderCommandBuffer> context,
+    scoped_refptr<ui::ContextProviderCommandBuffer> context,
     const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
     std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
         overlay_candidate_validator)
@@ -112,7 +112,7 @@ void GpuBrowserCompositorOutputSurface::SwapBuffers(
 }
 
 uint32_t GpuBrowserCompositorOutputSurface::GetFramebufferCopyTextureFormat() {
-  auto* gl = static_cast<ContextProviderCommandBuffer*>(context_provider());
+  auto* gl = static_cast<ui::ContextProviderCommandBuffer*>(context_provider());
   return gl->GetCopyTextureInternalFormat();
 }
 
@@ -135,9 +135,8 @@ void GpuBrowserCompositorOutputSurface::SetSurfaceSuspendedForRecycle(
 
 gpu::CommandBufferProxyImpl*
 GpuBrowserCompositorOutputSurface::GetCommandBufferProxy() {
-  ContextProviderCommandBuffer* provider_command_buffer =
-      static_cast<content::ContextProviderCommandBuffer*>(
-          context_provider_.get());
+  ui::ContextProviderCommandBuffer* provider_command_buffer =
+      static_cast<ui::ContextProviderCommandBuffer*>(context_provider_.get());
   gpu::CommandBufferProxyImpl* command_buffer_proxy =
       provider_command_buffer->GetCommandBufferProxy();
   DCHECK(command_buffer_proxy);

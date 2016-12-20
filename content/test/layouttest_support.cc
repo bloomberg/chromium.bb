@@ -22,7 +22,6 @@
 #include "content/browser/bluetooth/bluetooth_device_chooser_controller.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/public/common/page_state.h"
@@ -40,6 +39,7 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/shell/common/shell_switches.h"
 #include "gpu/ipc/service/image_transport_surface.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -391,14 +391,15 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
     const bool automatic_flushes = false;
     const bool support_locking = false;
 
-    auto context_provider = make_scoped_refptr(new ContextProviderCommandBuffer(
-        gpu_channel_, gpu::GPU_STREAM_DEFAULT, gpu::GpuStreamPriority::NORMAL,
-        gpu::kNullSurfaceHandle,
-        GURL("chrome://gpu/"
-             "LayoutTestDependenciesImpl::CreateOutputSurface"),
-        automatic_flushes, support_locking, gpu::SharedMemoryLimits(),
-        attributes, nullptr,
-        command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING));
+    auto context_provider =
+        make_scoped_refptr(new ui::ContextProviderCommandBuffer(
+            gpu_channel_, gpu::GPU_STREAM_DEFAULT,
+            gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle,
+            GURL("chrome://gpu/"
+                 "LayoutTestDependenciesImpl::CreateOutputSurface"),
+            automatic_flushes, support_locking, gpu::SharedMemoryLimits(),
+            attributes, nullptr,
+            ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING));
     context_provider->BindToCurrentThread();
 
     bool flipped_output_surface = false;

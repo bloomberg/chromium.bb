@@ -146,7 +146,7 @@ class GLHelperHolder {
   void OnContextLost();
   void OnApplicationStatusChanged(ApplicationState new_state);
 
-  scoped_refptr<ContextProviderCommandBuffer> provider_;
+  scoped_refptr<ui::ContextProviderCommandBuffer> provider_;
   std::unique_ptr<display_compositor::GLHelper> gl_helper_;
 
   // Set to |false| if there are only stopped activities (or none).
@@ -211,11 +211,11 @@ void GLHelperHolder::Initialize() {
   constexpr bool support_locking = false;
   const GURL url("chrome://gpu/RenderWidgetHostViewAndroid");
 
-  provider_ = new ContextProviderCommandBuffer(
+  provider_ = new ui::ContextProviderCommandBuffer(
       std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
       gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle, url,
       automatic_flushes, support_locking, limits, attributes, nullptr,
-      command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
+      ui::command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   if (!provider_->BindToCurrentThread())
     return;
   provider_->ContextGL()->TraceBeginCHROMIUM(

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_GPU_CLIENT_CONTEXT_PROVIDER_COMMAND_BUFFER_H_
-#define CONTENT_COMMON_GPU_CLIENT_CONTEXT_PROVIDER_COMMAND_BUFFER_H_
+#ifndef SERVICES_UI_PUBLIC_CPP_GPU_CONTEXT_PROVIDER_COMMAND_BUFFER_H_
+#define SERVICES_UI_PUBLIC_CPP_GPU_CONTEXT_PROVIDER_COMMAND_BUFFER_H_
 
 #include <stdint.h>
 
@@ -16,12 +16,11 @@
 #include "base/threading/thread_checker.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/output/context_provider.h"
-#include "content/common/content_export.h"
-#include "content/common/gpu/client/command_buffer_metrics.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/ipc/common/gpu_stream_constants.h"
 #include "gpu/ipc/common/surface_handle.h"
+#include "services/ui/public/cpp/gpu/command_buffer_metrics.h"
 #include "ui/gl/gpu_preference.h"
 #include "url/gurl.h"
 
@@ -40,12 +39,12 @@ namespace skia_bindings {
 class GrContextForGLES2Interface;
 }
 
-namespace content {
+namespace ui {
 
 // Implementation of cc::ContextProvider that provides a GL implementation over
 // command buffer to the GPU process.
-class CONTENT_EXPORT ContextProviderCommandBuffer
-    : NON_EXPORTED_BASE(public cc::ContextProvider),
+class ContextProviderCommandBuffer
+    : public cc::ContextProvider,
       public base::trace_event::MemoryDumpProvider {
  public:
   ContextProviderCommandBuffer(
@@ -138,6 +137,6 @@ class CONTENT_EXPORT ContextProviderCommandBuffer
   LostContextCallback lost_context_callback_;
 };
 
-}  // namespace content
+}  // namespace ui
 
-#endif  // CONTENT_COMMON_GPU_CLIENT_CONTEXT_PROVIDER_COMMAND_BUFFER_H_
+#endif  // SERVICES_UI_PUBLIC_CPP_GPU_CONTEXT_PROVIDER_COMMAND_BUFFER_H_

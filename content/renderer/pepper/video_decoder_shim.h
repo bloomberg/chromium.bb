@@ -23,9 +23,12 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace ui {
+class ContextProviderCommandBuffer;
+}
+
 namespace content {
 
-class ContextProviderCommandBuffer;
 class PepperVideoDecoderHost;
 
 // This class is a shim to wrap a media::VideoDecoder so that it can be used
@@ -77,7 +80,7 @@ class VideoDecoderShim : public media::VideoDecodeAccelerator {
 
   PepperVideoDecoderHost* host_;
   scoped_refptr<base::SingleThreadTaskRunner> media_task_runner_;
-  scoped_refptr<ContextProviderCommandBuffer> context_provider_;
+  scoped_refptr<ui::ContextProviderCommandBuffer> context_provider_;
 
   // The current decoded frame size.
   gfx::Size texture_size_;

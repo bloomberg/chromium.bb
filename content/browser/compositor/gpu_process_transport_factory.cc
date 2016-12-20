@@ -39,7 +39,6 @@
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -49,6 +48,7 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
 #include "services/service_manager/runner/common/client_util.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_constants.h"
@@ -106,13 +106,13 @@ bool IsUsingMus() {
   return service_manager::ServiceManagerIsRemote();
 }
 
-scoped_refptr<content::ContextProviderCommandBuffer> CreateContextCommon(
+scoped_refptr<ui::ContextProviderCommandBuffer> CreateContextCommon(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     gpu::SurfaceHandle surface_handle,
     bool need_alpha_channel,
     bool support_locking,
-    content::ContextProviderCommandBuffer* shared_context_provider,
-    content::command_buffer_metrics::ContextType type) {
+    ui::ContextProviderCommandBuffer* shared_context_provider,
+    ui::command_buffer_metrics::ContextType type) {
   DCHECK(
       content::GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor());
   DCHECK(gpu_channel_host);
@@ -145,7 +145,7 @@ scoped_refptr<content::ContextProviderCommandBuffer> CreateContextCommon(
   constexpr bool automatic_flushes = false;
 
   GURL url("chrome://gpu/GpuProcessTransportFactory::CreateContextCommon");
-  return make_scoped_refptr(new content::ContextProviderCommandBuffer(
+  return make_scoped_refptr(new ui::ContextProviderCommandBuffer(
       std::move(gpu_channel_host), gpu::GPU_STREAM_DEFAULT,
       gpu::GpuStreamPriority::NORMAL, surface_handle, url, automatic_flushes,
       support_locking, gpu::SharedMemoryLimits(), attributes,
@@ -353,7 +353,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
 
   scoped_refptr<cc::VulkanInProcessContextProvider> vulkan_context_provider =
       SharedVulkanContextProvider();
-  scoped_refptr<ContextProviderCommandBuffer> context_provider;
+  scoped_refptr<ui::ContextProviderCommandBuffer> context_provider;
   if (create_gpu_output_surface && !vulkan_context_provider) {
     // Try to reuse existing worker context provider.
     if (shared_worker_context_provider_) {
@@ -379,10 +379,10 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       if (!shared_worker_context_provider_) {
         bool need_alpha_channel = false;
         const bool support_locking = true;
-        shared_worker_context_provider_ =
-            CreateContextCommon(gpu_channel_host, gpu::kNullSurfaceHandle,
-                                need_alpha_channel, support_locking, nullptr,
-                                command_buffer_metrics::BROWSER_WORKER_CONTEXT);
+        shared_worker_context_provider_ = CreateContextCommon(
+            gpu_channel_host, gpu::kNullSurfaceHandle, need_alpha_channel,
+            support_locking, nullptr,
+            ui::command_buffer_metrics::BROWSER_WORKER_CONTEXT);
         // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is
         // fixed. Tracking time in BindToCurrentThread.
         tracked_objects::ScopedTracker tracking_profile(
@@ -409,7 +409,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         context_provider = CreateContextCommon(
             std::move(gpu_channel_host), surface_handle, need_alpha_channel,
             support_locking, shared_worker_context_provider_.get(),
-            command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
+            ui::command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
         // TODO(vadimt): Remove ScopedTracker below once crbug.com/125248 is
         // fixed. Tracking time in BindToCurrentThread.
         tracked_objects::ScopedTracker tracking_profile(
@@ -829,7 +829,7 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   shared_main_thread_contexts_ = CreateContextCommon(
       std::move(gpu_channel_host), gpu::kNullSurfaceHandle, need_alpha_channel,
       support_locking, nullptr,
-      command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
+      ui::command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   shared_main_thread_contexts_->SetLostContextCallback(base::Bind(
       &GpuProcessTransportFactory::OnLostMainThreadSharedContextInsideCallback,
       callback_factory_.GetWeakPtr()));

@@ -71,7 +71,6 @@
 #include "content/common/dom_storage/dom_storage_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
-#include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/common/render_process_messages.h"
 #include "content/common/resource_messages.h"
 #include "content/common/service_worker/embedded_worker_setup.mojom.h"
@@ -144,6 +143,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/skia_memory_dump_provider.h"
@@ -394,11 +394,11 @@ void CreateEmbeddedWorkerSetup(mojom::EmbeddedWorkerSetupRequest request) {
                           std::move(request));
 }
 
-scoped_refptr<ContextProviderCommandBuffer> CreateOffscreenContext(
+scoped_refptr<ui::ContextProviderCommandBuffer> CreateOffscreenContext(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
     const gpu::SharedMemoryLimits& limits,
     bool support_locking,
-    command_buffer_metrics::ContextType type,
+    ui::command_buffer_metrics::ContextType type,
     int32_t stream_id,
     gpu::GpuStreamPriority stream_priority) {
   DCHECK(gpu_channel_host);
@@ -416,7 +416,7 @@ scoped_refptr<ContextProviderCommandBuffer> CreateOffscreenContext(
   attributes.bind_generates_resource = false;
   attributes.lose_context_when_out_of_memory = true;
   const bool automatic_flushes = false;
-  return make_scoped_refptr(new ContextProviderCommandBuffer(
+  return make_scoped_refptr(new ui::ContextProviderCommandBuffer(
       std::move(gpu_channel_host), stream_id, stream_priority,
       gpu::kNullSurfaceHandle,
       GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext"),
@@ -1476,7 +1476,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   DCHECK(IsMainThread());
 
   if (!gpu_factories_.empty()) {
-    scoped_refptr<ContextProviderCommandBuffer> shared_context_provider =
+    scoped_refptr<ui::ContextProviderCommandBuffer> shared_context_provider =
         gpu_factories_.back()->ContextProviderMainThread();
     if (shared_context_provider) {
       cc::ContextProvider::ScopedContextLock lock(
@@ -1506,9 +1506,9 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   // use lower limits than the default.
   gpu::SharedMemoryLimits limits = gpu::SharedMemoryLimits::ForMailboxContext();
   bool support_locking = true;
-  scoped_refptr<ContextProviderCommandBuffer> media_context_provider =
+  scoped_refptr<ui::ContextProviderCommandBuffer> media_context_provider =
       CreateOffscreenContext(gpu_channel_host, limits, support_locking,
-                             command_buffer_metrics::RENDER_WORKER_CONTEXT,
+                             ui::command_buffer_metrics::RENDER_WORKER_CONTEXT,
                              gpu::GPU_STREAM_DEFAULT,
                              gpu::GpuStreamPriority::NORMAL);
   if (!media_context_provider->BindToCurrentThread())
@@ -1535,7 +1535,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
   return gpu_factories_.back();
 }
 
-scoped_refptr<ContextProviderCommandBuffer>
+scoped_refptr<ui::ContextProviderCommandBuffer>
 RenderThreadImpl::SharedMainThreadContextProvider() {
   DCHECK(IsMainThread());
   if (shared_main_thread_contexts_ &&
@@ -1553,7 +1553,7 @@ RenderThreadImpl::SharedMainThreadContextProvider() {
   bool support_locking = false;
   shared_main_thread_contexts_ = CreateOffscreenContext(
       std::move(gpu_channel_host), gpu::SharedMemoryLimits(), support_locking,
-      command_buffer_metrics::RENDERER_MAINTHREAD_CONTEXT,
+      ui::command_buffer_metrics::RENDERER_MAINTHREAD_CONTEXT,
       gpu::GPU_STREAM_DEFAULT, gpu::GpuStreamPriority::NORMAL);
   if (!shared_main_thread_contexts_->BindToCurrentThread())
     shared_main_thread_contexts_ = nullptr;
@@ -1567,7 +1567,7 @@ scoped_refptr<StreamTextureFactory> RenderThreadImpl::GetStreamTexureFactory() {
   if (!stream_texture_factory_.get() ||
       stream_texture_factory_->ContextGL()->GetGraphicsResetStatusKHR() !=
           GL_NO_ERROR) {
-    scoped_refptr<ContextProviderCommandBuffer> shared_context_provider =
+    scoped_refptr<ui::ContextProviderCommandBuffer> shared_context_provider =
         SharedMainThreadContextProvider();
     if (!shared_context_provider) {
       stream_texture_factory_ = nullptr;
@@ -1978,7 +1978,7 @@ RenderThreadImpl::CreateCompositorFrameSink(
         shared_bitmap_manager(), std::move(frame_swap_message_queue));
   }
 
-  scoped_refptr<ContextProviderCommandBuffer> worker_context_provider =
+  scoped_refptr<ui::ContextProviderCommandBuffer> worker_context_provider =
       SharedCompositorWorkerContextProvider();
   if (!worker_context_provider) {
     // Cause the compositor to wait and try again.
@@ -2006,16 +2006,17 @@ RenderThreadImpl::CreateCompositorFrameSink(
 
   // The compositor context shares resources with the worker context unless
   // the worker is async.
-  ContextProviderCommandBuffer* share_context = worker_context_provider.get();
+  ui::ContextProviderCommandBuffer* share_context =
+      worker_context_provider.get();
   if (IsAsyncWorkerContextEnabled())
     share_context = nullptr;
 
-  scoped_refptr<ContextProviderCommandBuffer> context_provider(
-      new ContextProviderCommandBuffer(
+  scoped_refptr<ui::ContextProviderCommandBuffer> context_provider(
+      new ui::ContextProviderCommandBuffer(
           gpu_channel_host, gpu::GPU_STREAM_DEFAULT,
           gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle, url,
           automatic_flushes, support_locking, limits, attributes, share_context,
-          command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT));
+          ui::command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT));
 
   if (layout_test_deps_) {
     return layout_test_deps_->CreateCompositorFrameSink(
@@ -2330,7 +2331,7 @@ base::TaskRunner* RenderThreadImpl::GetWorkerTaskRunner() {
   return categorized_worker_pool_.get();
 }
 
-scoped_refptr<ContextProviderCommandBuffer>
+scoped_refptr<ui::ContextProviderCommandBuffer>
 RenderThreadImpl::SharedCompositorWorkerContextProvider() {
   DCHECK(IsMainThread());
   // Try to reuse existing shared worker context provider.
@@ -2360,7 +2361,7 @@ RenderThreadImpl::SharedCompositorWorkerContextProvider() {
   bool support_locking = true;
   shared_worker_context_provider_ = CreateOffscreenContext(
       std::move(gpu_channel_host), gpu::SharedMemoryLimits(), support_locking,
-      command_buffer_metrics::RENDER_WORKER_CONTEXT, stream_id,
+      ui::command_buffer_metrics::RENDER_WORKER_CONTEXT, stream_id,
       stream_priority);
   if (!shared_worker_context_provider_->BindToCurrentThread())
     shared_worker_context_provider_ = nullptr;
