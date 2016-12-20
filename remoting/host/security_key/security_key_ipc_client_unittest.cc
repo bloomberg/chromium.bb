@@ -36,6 +36,12 @@ class SecurityKeyIpcClientTest : public testing::Test {
   // completion of an IPC channel state change or reception of an IPC message.
   void OperationComplete(bool failed);
 
+  // Callback used to signal when the IPC channel is ready for messages.
+  void ConnectionStateHandler(bool established);
+
+  // Callback used to drive the |fake_ipc_server_| connection behavior.
+  void SendConnectionMessage();
+
   // Used as a callback given to the object under test, expected to be called
   // back when a security key request is received by it.
   void SendMessageToClient(int connection_id, const std::string& data);
@@ -85,6 +91,12 @@ class SecurityKeyIpcClientTest : public testing::Test {
   // Tracks the success/failure of the last async operation.
   bool operation_failed_ = false;
 
+  // Tracks whether the IPC channel connection has been established.
+  bool connection_established_ = false;
+
+  // Used to drive invalid session behavior for testing the client.
+  bool simulate_invalid_session_ = false;
+
   // Used to validate the object under test uses the correct ID when
   // communicating over the IPC channel.
   int last_connection_id_received_ = -1;
@@ -105,7 +117,8 @@ SecurityKeyIpcClientTest::SecurityKeyIpcClientTest()
           /*initial_connect_timeout=*/base::TimeDelta::FromMilliseconds(500),
           base::Bind(&SecurityKeyIpcClientTest::SendMessageToClient,
                      base::Unretained(this)),
-          base::Bind(&base::DoNothing),
+          base::Bind(&SecurityKeyIpcClientTest::SendConnectionMessage,
+                     base::Unretained(this)),
           base::Bind(&SecurityKeyIpcClientTest::OperationComplete,
                      base::Unretained(this),
                      /*failed=*/false)) {}
@@ -126,6 +139,19 @@ void SecurityKeyIpcClientTest::SetUp() {
 void SecurityKeyIpcClientTest::OperationComplete(bool failed) {
   operation_failed_ |= failed;
   run_loop_->Quit();
+}
+
+void SecurityKeyIpcClientTest::ConnectionStateHandler(bool established) {
+  connection_established_ = established;
+  OperationComplete(/*failed=*/false);
+}
+
+void SecurityKeyIpcClientTest::SendConnectionMessage() {
+  if (simulate_invalid_session_) {
+    fake_ipc_server_.SendInvalidSessionMessage();
+  } else {
+    fake_ipc_server_.SendConnectionReadyMessage();
+  }
 }
 
 void SecurityKeyIpcClientTest::WaitForOperationComplete() {
@@ -166,11 +192,12 @@ void SecurityKeyIpcClientTest::EstablishConnection(bool expect_success) {
   // Establish the IPC channel so we can begin sending and receiving security
   // key messages.
   security_key_ipc_client_.EstablishIpcConnection(
-      base::Bind(&SecurityKeyIpcClientTest::OperationComplete,
-                 base::Unretained(this), /*failed=*/false),
+      base::Bind(&SecurityKeyIpcClientTest::ConnectionStateHandler,
+                 base::Unretained(this)),
       base::Bind(&SecurityKeyIpcClientTest::OperationComplete,
                  base::Unretained(this), /*failed=*/true));
   WaitForOperationComplete();
+  ASSERT_EQ(connection_established_, expect_success);
   ASSERT_NE(operation_failed_, expect_success);
 }
 
@@ -281,8 +308,8 @@ TEST_F(SecurityKeyIpcClientTest, NonExistentIpcServerChannel) {
   // Attempt to establish the conection (should fail since the IPC channel does
   // not exist).
   security_key_ipc_client_.EstablishIpcConnection(
-      base::Bind(&SecurityKeyIpcClientTest::OperationComplete,
-                 base::Unretained(this), /*failed=*/false),
+      base::Bind(&SecurityKeyIpcClientTest::ConnectionStateHandler,
+                 base::Unretained(this)),
       base::Bind(&SecurityKeyIpcClientTest::OperationComplete,
                  base::Unretained(this), /*failed=*/true));
   WaitForOperationComplete();
@@ -294,6 +321,7 @@ TEST_F(SecurityKeyIpcClientTest, SecurityKeyIpcServerRunningInWrongSession) {
   // Set the expected session Id to a different session than we are running in.
   security_key_ipc_client_.SetExpectedIpcServerSessionIdForTest(session_id_ +
                                                                 1);
+  simulate_invalid_session_ = true;
 
   // Attempting to establish a connection should fail here since the IPC Server
   // is 'running' in a different session than expected.

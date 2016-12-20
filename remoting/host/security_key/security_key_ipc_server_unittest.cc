@@ -134,6 +134,8 @@ TEST_F(SecurityKeyIpcServerTest, HandleSingleSecurityKeyRequest) {
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_handle));
   WaitForOperationComplete();
 
+  ASSERT_FALSE(fake_ipc_client.invalid_session_error());
+  ASSERT_TRUE(fake_ipc_client.connection_ready());
   ASSERT_TRUE(fake_ipc_client.ipc_channel_connected());
 
   // Send a request from the IPC client to the IPC server.
@@ -169,6 +171,8 @@ TEST_F(SecurityKeyIpcServerTest, HandleLargeSecurityKeyRequest) {
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_handle));
   WaitForOperationComplete();
 
+  ASSERT_FALSE(fake_ipc_client.invalid_session_error());
+  ASSERT_TRUE(fake_ipc_client.connection_ready());
   ASSERT_TRUE(fake_ipc_client.ipc_channel_connected());
 
   // Send a request from the IPC client to the IPC server.
@@ -204,6 +208,8 @@ TEST_F(SecurityKeyIpcServerTest, HandleReallyLargeSecurityKeyRequest) {
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_handle));
   WaitForOperationComplete();
 
+  ASSERT_FALSE(fake_ipc_client.invalid_session_error());
+  ASSERT_TRUE(fake_ipc_client.connection_ready());
   ASSERT_TRUE(fake_ipc_client.ipc_channel_connected());
 
   // Send a request from the IPC client to the IPC server.
@@ -239,6 +245,8 @@ TEST_F(SecurityKeyIpcServerTest, HandleMultipleSecurityKeyRequests) {
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_handle));
   WaitForOperationComplete();
 
+  ASSERT_FALSE(fake_ipc_client.invalid_session_error());
+  ASSERT_TRUE(fake_ipc_client.connection_ready());
   ASSERT_TRUE(fake_ipc_client.ipc_channel_connected());
 
   // Send a request from the IPC client to the IPC server.
@@ -333,6 +341,8 @@ TEST_F(SecurityKeyIpcServerTest, NoSecurityKeyRequestTimeout) {
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_handle));
   WaitForOperationComplete();
 
+  ASSERT_FALSE(fake_ipc_client.invalid_session_error());
+  ASSERT_TRUE(fake_ipc_client.connection_ready());
   ASSERT_TRUE(fake_ipc_client.ipc_channel_connected());
 
   // Now that a connection has been established, we wait for the timeout.
@@ -358,6 +368,8 @@ TEST_F(SecurityKeyIpcServerTest, SecurityKeyResponseTimeout) {
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_handle));
   WaitForOperationComplete();
 
+  ASSERT_FALSE(fake_ipc_client.invalid_session_error());
+  ASSERT_TRUE(fake_ipc_client.connection_ready());
   ASSERT_TRUE(fake_ipc_client.ipc_channel_connected());
 
   // Now that a connection has been established, we issue a request and
@@ -390,6 +402,8 @@ TEST_F(SecurityKeyIpcServerTest, SendResponseTimeout) {
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_handle));
   WaitForOperationComplete();
 
+  ASSERT_FALSE(fake_ipc_client.invalid_session_error());
+  ASSERT_TRUE(fake_ipc_client.connection_ready());
   ASSERT_TRUE(fake_ipc_client.ipc_channel_connected());
 
   // Issue a request.
@@ -438,6 +452,8 @@ TEST_F(SecurityKeyIpcServerTest, CleanupPendingConnection) {
   ASSERT_TRUE(fake_ipc_client.ConnectViaIpc(channel_handle));
   WaitForOperationComplete();
 
+  ASSERT_FALSE(fake_ipc_client.invalid_session_error());
+  ASSERT_TRUE(fake_ipc_client.connection_ready());
   ASSERT_TRUE(fake_ipc_client.ipc_channel_connected());
 
   // Send a request from the IPC client to the IPC server.
@@ -480,6 +496,8 @@ TEST_F(SecurityKeyIpcServerTest, IpcConnectionFailsFromInvalidSession) {
   WaitForOperationComplete();
 
   // Verify the connection failed.
+  ASSERT_TRUE(fake_ipc_client.invalid_session_error());
+  ASSERT_FALSE(fake_ipc_client.connection_ready());
   ASSERT_FALSE(fake_ipc_client.ipc_channel_connected());
 }
 #endif  // defined(OS_WIN)

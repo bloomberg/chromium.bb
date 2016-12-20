@@ -99,6 +99,16 @@ bool FakeSecurityKeyIpcServer::SendResponse(const std::string& message_data) {
       new ChromotingNetworkToRemoteSecurityKeyMsg_Response(message_data));
 }
 
+void FakeSecurityKeyIpcServer::SendConnectionReadyMessage() {
+  ipc_channel_->Send(
+      new ChromotingNetworkToRemoteSecurityKeyMsg_ConnectionReady());
+}
+
+void FakeSecurityKeyIpcServer::SendInvalidSessionMessage() {
+  ipc_channel_->Send(
+      new ChromotingNetworkToRemoteSecurityKeyMsg_InvalidSession());
+}
+
 FakeSecurityKeyIpcServerFactory::FakeSecurityKeyIpcServerFactory() {
   SecurityKeyIpcServer::SetFactoryForTest(this);
 }

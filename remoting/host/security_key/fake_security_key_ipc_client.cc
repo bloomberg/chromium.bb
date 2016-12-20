@@ -37,10 +37,10 @@ bool FakeSecurityKeyIpcClient::CheckForSecurityKeyIpcServerChannel() {
 }
 
 void FakeSecurityKeyIpcClient::EstablishIpcConnection(
-    const base::Closure& connection_ready_callback,
+    const ConnectedCallback& connected_callback,
     const base::Closure& connection_error_callback) {
   if (establish_ipc_connection_should_succeed_) {
-    connection_ready_callback.Run();
+    connected_callback.Run(/*connection_usable=*/true);
   } else {
     connection_error_callback.Run();
   }
@@ -86,11 +86,25 @@ bool FakeSecurityKeyIpcClient::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(FakeSecurityKeyIpcClient, message)
     IPC_MESSAGE_HANDLER(ChromotingNetworkToRemoteSecurityKeyMsg_Response,
                         OnSecurityKeyResponse)
+    IPC_MESSAGE_HANDLER(ChromotingNetworkToRemoteSecurityKeyMsg_ConnectionReady,
+                        OnConnectionReady)
+    IPC_MESSAGE_HANDLER(ChromotingNetworkToRemoteSecurityKeyMsg_InvalidSession,
+                        OnInvalidSession)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   CHECK(handled) << "Received unexpected IPC type: " << message.type();
   return handled;
+}
+
+void FakeSecurityKeyIpcClient::OnConnectionReady() {
+  connection_ready_ = true;
+  channel_event_callback_.Run();
+}
+
+void FakeSecurityKeyIpcClient::OnInvalidSession() {
+  invalid_session_error_ = true;
+  channel_event_callback_.Run();
 }
 
 void FakeSecurityKeyIpcClient::OnChannelConnected(int32_t peer_pid) {

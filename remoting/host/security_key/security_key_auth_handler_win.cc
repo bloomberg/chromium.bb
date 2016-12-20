@@ -50,14 +50,8 @@ namespace remoting {
 // Creates an IPC server channel which services IPC clients that want to start
 // a security key forwarding session.  Once an IPC Client connects to the
 // server, the SecurityKeyAuthHandlerWin class will create a new
-// SecurityKeyIpcServer instance that will service that request.  The new
-// instance will exist for the lifetime of the security key request and will be
-// assigned a unique IPC channel name and connection id.  The channel name is
-// sent to the client which should disconnect the IPC server channel and
-// connect to the security key forwarding session IPC channel to send/receive
-// security key messages.  The IPC server channel will then be reset so it can
-// can service the next client/request.  This system allows multiple security
-// key forwarding sessions to occur concurrently.
+// SecurityKeyIpcServer instance to service the next request.  This system
+// allows multiple security key forwarding sessions to occur concurrently.
 // TODO(joedow): Update SecurityKeyAuthHandler impls to run on a separate IO
 // thread instead of the thread it was created on: crbug.com/591739
 class SecurityKeyAuthHandlerWin : public SecurityKeyAuthHandler {

@@ -161,6 +161,9 @@ void SecurityKeyIpcServerImpl::OnChannelConnected(int32_t peer_pid) {
     connection_close_pending_ = true;
   }
   if (connection_close_pending_) {
+    ipc_channel_->Send(
+        new ChromotingNetworkToRemoteSecurityKeyMsg_InvalidSession());
+
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&SecurityKeyIpcServerImpl::OnChannelError,
                               weak_factory_.GetWeakPtr()));
@@ -174,6 +177,9 @@ void SecurityKeyIpcServerImpl::OnChannelConnected(int32_t peer_pid) {
   timer_.Start(FROM_HERE, initial_connect_timeout_,
                base::Bind(&SecurityKeyIpcServerImpl::OnChannelError,
                           base::Unretained(this)));
+
+  ipc_channel_->Send(
+      new ChromotingNetworkToRemoteSecurityKeyMsg_ConnectionReady());
 }
 
 void SecurityKeyIpcServerImpl::OnChannelError() {

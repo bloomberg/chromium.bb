@@ -252,7 +252,13 @@ IPC_MESSAGE_CONTROL1(ChromotingRemoteSecurityKeyToNetworkMsg_Request,
 // Chromoting messages sent from the network process to the remote_security_key
 // process.
 
-// The array of bytes representing a security key response from the remote
-// client.  This message is sent over the per-client IPC channel.
+// The array of bytes representing the security key response from the client.
 IPC_MESSAGE_CONTROL1(ChromotingNetworkToRemoteSecurityKeyMsg_Response,
                      std::string /* response bytes */)
+
+// Indicates the channel used for security key message passing is ready for use.
+IPC_MESSAGE_CONTROL0(ChromotingNetworkToRemoteSecurityKeyMsg_ConnectionReady)
+
+// Error indicating the request originated from outside the remoted session.
+// The IPC channel will be disconnected after this message has been sent.
+IPC_MESSAGE_CONTROL0(ChromotingNetworkToRemoteSecurityKeyMsg_InvalidSession)

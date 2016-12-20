@@ -33,7 +33,7 @@ class FakeSecurityKeyIpcClient : public SecurityKeyIpcClient {
   // SecurityKeyIpcClient interface.
   bool CheckForSecurityKeyIpcServerChannel() override;
   void EstablishIpcConnection(
-      const base::Closure& connection_ready_callback,
+      const ConnectedCallback& connected_callback,
       const base::Closure& connection_error_callback) override;
   bool SendSecurityKeyRequest(
       const std::string& request_payload,
@@ -54,6 +54,10 @@ class FakeSecurityKeyIpcClient : public SecurityKeyIpcClient {
   }
 
   bool ipc_channel_connected() { return ipc_channel_connected_; }
+
+  bool connection_ready() { return connection_ready_; }
+
+  bool invalid_session_error() { return invalid_session_error_; }
 
   void set_check_for_ipc_channel_return_value(bool return_value) {
     check_for_ipc_channel_return_value_ = return_value;
@@ -80,6 +84,12 @@ class FakeSecurityKeyIpcClient : public SecurityKeyIpcClient {
   // Handles security key response IPC messages.
   void OnSecurityKeyResponse(const std::string& request_data);
 
+  // Handles the ConnectionReady IPC message.
+  void OnConnectionReady();
+
+  // Handles the InvalidSession IPC message.
+  void OnInvalidSession();
+
   // Called when a change in the IPC channel state has occurred.
   base::Closure channel_event_callback_;
 
@@ -100,6 +110,12 @@ class FakeSecurityKeyIpcClient : public SecurityKeyIpcClient {
 
   // Stores whether a connection to the server IPC channel is active.
   bool ipc_channel_connected_ = false;
+
+  // Tracks whether a ConnectionReady message has been received.
+  bool connection_ready_ = false;
+
+  // Tracks whether an InvalidSession message has been received.
+  bool invalid_session_error_ = false;
 
   // Value returned by SendSecurityKeyRequest() method.
   std::string security_key_response_payload_;

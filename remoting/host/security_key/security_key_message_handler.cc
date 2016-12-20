@@ -88,9 +88,18 @@ void SecurityKeyMessageHandler::HandleIpcConnectionChange(
     SendMessageWithPayload(SecurityKeyMessageType::CONNECT_RESPONSE,
                            std::string(1, kConnectResponseActiveSession));
   } else {
-    SendMessageWithPayload(
-        SecurityKeyMessageType::CONNECT_ERROR,
-        "Unknown error occurred while establishing connection.");
+    SendMessageWithPayload(SecurityKeyMessageType::CONNECT_RESPONSE,
+                           std::string(1, kConnectResponseNoSession));
+    // We expect the server to close the IPC channel in this scenario.
+    expect_ipc_channel_close_ = true;
+  }
+}
+
+void SecurityKeyMessageHandler::HandleIpcConnectionError() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (!expect_ipc_channel_close_) {
+    SendMessageWithPayload(SecurityKeyMessageType::CONNECT_ERROR,
+                           "Unknown error occurred during connection.");
   }
 }
 
@@ -125,9 +134,9 @@ void SecurityKeyMessageHandler::HandleConnectRequest(
     // If we find an IPC server, then attempt to establish a connection.
     ipc_client_->EstablishIpcConnection(
         base::Bind(&SecurityKeyMessageHandler::HandleIpcConnectionChange,
-                   base::Unretained(this), true),
-        base::Bind(&SecurityKeyMessageHandler::HandleIpcConnectionChange,
-                   base::Unretained(this), false));
+                   base::Unretained(this)),
+        base::Bind(&SecurityKeyMessageHandler::HandleIpcConnectionError,
+                   base::Unretained(this)));
   } else {
     SendMessageWithPayload(SecurityKeyMessageType::CONNECT_RESPONSE,
                            std::string(1, kConnectResponseNoSession));

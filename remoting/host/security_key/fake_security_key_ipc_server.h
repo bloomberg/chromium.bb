@@ -50,6 +50,12 @@ class FakeSecurityKeyIpcServer : public SecurityKeyIpcServer,
   // Simulates the IPC channel being closed.
   void CloseChannel();
 
+  // Sends a ConnectionReady message to the client.
+  void SendConnectionReadyMessage();
+
+  // Sends an InvalidSession message to the client.
+  void SendInvalidSessionMessage();
+
   // Returns a WeakPtr reference to this instance.
   base::WeakPtr<FakeSecurityKeyIpcServer> AsWeakPtr();
 
