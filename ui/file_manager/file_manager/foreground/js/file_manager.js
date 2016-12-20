@@ -277,12 +277,6 @@ function FileManager() {
    */
   this.quickViewController_ = null;
 
-  /**
-   * @type {MetadataBoxController}
-   * @private
-   */
-  this.metadataBoxController_ = null;
-
   // --------------------------------------------------------------------------
   // DOM elements.
 
@@ -544,21 +538,17 @@ FileManager.prototype = /** @struct */ {
         this.selectionHandler_, assert(this.ui_));
 
     this.quickViewModel_ = new QuickViewModel();
-    /**@private {!FilesQuickView} */
-    var quickView = /** @type {!FilesQuickView} */
-        (queryRequiredElement('#quick-view'));
     var fileListSelectionModel = /** @type {!cr.ui.ListSelectionModel} */ (
         this.directoryModel_.getFileListSelection());
     this.quickViewUma_ =
         new QuickViewUma(assert(this.volumeManager_), assert(this.dialogType));
+    var metadataBoxController = new MetadataBoxController(
+        this.metadataModel_, this.quickViewModel_, this.fileMetadataFormatter_);
     this.quickViewController_ = new QuickViewController(
-        quickView, assert(this.metadataModel_), assert(this.selectionHandler_),
+        assert(this.metadataModel_), assert(this.selectionHandler_),
         assert(this.ui_.listContainer), assert(this.quickViewModel_),
         assert(this.taskController_), fileListSelectionModel,
-        assert(this.quickViewUma_));
-    this.metadataBoxController_ = new MetadataBoxController(
-        this.metadataModel_, quickView.getFilesMetadataBox(), quickView,
-        this.quickViewModel_, this.fileMetadataFormatter_);
+        assert(this.quickViewUma_), metadataBoxController);
 
     if (this.dialogType === DialogType.FULL_PAGE) {
       importer.importEnabled().then(

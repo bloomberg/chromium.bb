@@ -4,18 +4,16 @@
 
 /**
  * Controller of metadata box.
+ * This should be initialized with |init| method.
  *
  * @param{!MetadataModel} metadataModel
- * @param{!FilesMetadataBox} metadataBox
- * @param{!FilesQuickView} quickView
  * @param{!QuickViewModel} quickViewModel
  * @param{!FileMetadataFormatter} fileMetadataFormatter
  *
  * @constructor
  */
 function MetadataBoxController(
-    metadataModel, metadataBox, quickView, quickViewModel,
-    fileMetadataFormatter) {
+    metadataModel, quickViewModel, fileMetadataFormatter) {
   /**
    * @type {!MetadataModel}
    * @private
@@ -23,40 +21,49 @@ function MetadataBoxController(
   this.metadataModel_ = metadataModel;
 
   /**
-   * @type {!FilesMetadataBox}
+   * @type {!QuickViewModel}
    * @private
    */
-  this.metadataBox_ = metadataBox;
+  this.quickViewModel_ = quickViewModel;
+
+ /**
+  * @type {FilesMetadataBox} metadataBox
+  * @private
+  */
+  this.metadataBox_ = null;
 
   /**
-   * @type {!FilesQuickView}
+   * @type {FilesQuickView} quickView
    * @private
    */
-  this.quickView_ = quickView;
+  this.quickView_ = null;
 
   /**
    * @type {!FileMetadataFormatter}
    * @private
    */
   this.fileMetadataFormatter_ = fileMetadataFormatter;
+}
 
+/**
+ * Initialize the controller with quick view which will be lazily loaded.
+ * @param{!FilesQuickView} quickView
+ */
+MetadataBoxController.prototype.init = function(quickView) {
   // TODO(oka): Add storage to persist the value of
   // quickViewModel_.metadataBoxActive.
-  /**
-   * @type {!QuickViewModel}
-   * @private
-   */
-  this.quickViewModel_ = quickViewModel;
-
-  fileMetadataFormatter.addEventListener(
+  this.fileMetadataFormatter_.addEventListener(
       'date-time-format-changed', this.updateView_.bind(this));
 
   quickView.addEventListener(
       'metadata-box-active-changed', this.updateView_.bind(this));
 
-  quickViewModel.addEventListener(
+  this.quickViewModel_.addEventListener(
       'selected-entry-changed', this.updateView_.bind(this));
-}
+
+  this.metadataBox_ = quickView.getFilesMetadataBox();
+  this.quickView_ = quickView;
+};
 
 /**
  * @const {!Array<string>}

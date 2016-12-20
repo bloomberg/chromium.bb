@@ -4,8 +4,8 @@
 
 /**
  * Controller for QuickView.
+ * This should be initialized with |init_| method.
  *
- * @param {!FilesQuickView} quickView
  * @param {!MetadataModel} metadataModel File system metadata.
  * @param {!FileSelectionHandler} selectionHandler
  * @param {!ListContainer} listContainer
@@ -13,17 +13,31 @@
  * @param {!TaskController} taskController
  * @param {!cr.ui.ListSelectionModel} fileListSelectionModel
  * @param {!QuickViewUma} quickViewUma
+ * @param {!MetadataBoxController} metadataBoxController
  *
  * @constructor
  */
 function QuickViewController(
-    quickView, metadataModel, selectionHandler, listContainer, quickViewModel,
-    taskController, fileListSelectionModel, quickViewUma) {
+    metadataModel, selectionHandler, listContainer, quickViewModel,
+    taskController, fileListSelectionModel, quickViewUma,
+    metadataBoxController) {
   /**
-   * @type {!FilesQuickView}
+   * @type {FilesQuickView}
    * @private
    */
-  this.quickView_ = quickView;
+  this.quickView_ = null;
+
+  /**
+   * @type {!FileSelectionHandler}
+   * @private
+   */
+  this.selectionHandler_ = selectionHandler;
+
+  /**
+   * @type {!ListContainer}
+   * @private
+   */
+  this.listContainer_ = listContainer;
 
   /**
    * @type{!QuickViewModel}
@@ -44,12 +58,6 @@ function QuickViewController(
   this.metadataModel_ = metadataModel;
 
   /**
-   * @type {!ListContainer}
-   * @private
-   */
-  this.listContainer_ = listContainer;
-
-  /**
    * @type {!TaskController}
    * @private
    */
@@ -62,6 +70,12 @@ function QuickViewController(
   this.fileListSelectionModel_ = fileListSelectionModel;
 
   /**
+   * @type {!MetadataBoxController}
+   * @private
+   */
+  this.metadataBoxController_ = metadataBoxController;
+
+  /**
    * Current selection of selectionHandler.
    *
    * @type {!Array<!FileEntry>}
@@ -69,15 +83,25 @@ function QuickViewController(
    */
   this.entries_ = [];
 
-  selectionHandler.addEventListener(
+  this.selectionHandler_.addEventListener(
       FileSelectionHandler.EventType.CHANGE,
       this.onFileSelectionChanged_.bind(this));
-  listContainer.element.addEventListener(
+  this.listContainer_.element.addEventListener(
       'keydown', this.onKeyDownToOpen_.bind(this));
-  listContainer.element.addEventListener('command', function(event) {
+  this.listContainer_.element.addEventListener('command', function(event) {
     if(event.command.id === 'get-info')
       this.display_();
   }.bind(this));
+}
+
+/**
+ * Initialize the controller with quick view which will be lazily loaded.
+ * @param {!FilesQuickView} quickView
+ * @private
+ */
+QuickViewController.prototype.init_ = function(quickView) {
+  this.quickView_ = quickView;
+  this.metadataBoxController_.init(quickView);
   quickView.addEventListener('keydown', this.onQuickViewKeyDown_.bind(this));
   quickView.addEventListener('iron-overlay-closed', function() {
     this.listContainer_.focus();
@@ -87,7 +111,17 @@ function QuickViewController(
   var toolTip = this.quickView_.$$('files-tooltip');
   var elems = this.quickView_.$.buttons.querySelectorAll('[has-tooltip]');
   toolTip.addTargets(elems);
-}
+};
+
+/**
+ * Craete quick view element.
+ * TODO(oka): lazy load quick view element for fast Files App initialization.
+ * @return Promise<!FilesQuickView>
+ * @private
+ */
+QuickViewController.prototype.createQuickView_ = function() {
+  return Promise.resolve(document.querySelector('#quick-view'));
+};
 
 /**
  * Handles open-in-new button tap.
@@ -167,7 +201,7 @@ QuickViewController.prototype.display_ = function() {
  */
 QuickViewController.prototype.onFileSelectionChanged_ = function(event) {
   this.entries_ = event.target.selection.entries;
-  if (this.quickView_.isOpened()) {
+  if (this.quickView_ && this.quickView_.isOpened()) {
     assert(this.entries_.length > 0);
     var entry = this.entries_[0];
     this.quickViewModel_.setSelectedEntry(entry);
@@ -182,6 +216,12 @@ QuickViewController.prototype.onFileSelectionChanged_ = function(event) {
  * @private
  */
 QuickViewController.prototype.updateQuickView_ = function() {
+  if (!this.quickView_) {
+    return this.createQuickView_()
+        .then(this.init_.bind(this))
+        .then(this.updateQuickView_.bind(this))
+        .catch(console.error);
+  }
   assert(this.entries_.length > 0);
   // TODO(oka): Support multi-selection.
   this.quickViewModel_.setSelectedEntry(this.entries_[0]);
