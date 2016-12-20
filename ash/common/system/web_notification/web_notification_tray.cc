@@ -45,19 +45,15 @@
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/layout/fill_layout.h"
 
-#if defined(OS_CHROMEOS)
-
 namespace message_center {
 
 MessageCenterTrayDelegate* CreateMessageCenterTray() {
-  // On Windows+Ash the Tray will not be hosted in ash::Shell.
+  // On non-CrOS, the Tray will not be hosted in ash::Shell.
   NOTREACHED();
   return nullptr;
 }
 
 }  // namespace message_center
-
-#endif  // defined(OS_CHROMEOS)
 
 namespace ash {
 namespace {

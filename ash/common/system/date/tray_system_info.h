@@ -5,9 +5,7 @@
 #ifndef ASH_COMMON_SYSTEM_DATE_TRAY_SYSTEM_INFO_H_
 #define ASH_COMMON_SYSTEM_DATE_TRAY_SYSTEM_INFO_H_
 
-#if defined(OS_CHROMEOS)
 #include <memory>
-#endif  // defined(OS_CHROMEOS)
 
 #include "ash/ash_export.h"
 #include "ash/common/login_status.h"
@@ -20,10 +18,8 @@ class Label;
 }
 
 namespace ash {
-class SystemInfoDefaultView;
-#if defined(OS_CHROMEOS)
 class SystemClockObserver;
-#endif
+class SystemInfoDefaultView;
 
 namespace tray {
 class TimeView;
@@ -61,9 +57,7 @@ class ASH_EXPORT TraySystemInfo : public SystemTrayItem, public ClockObserver {
   SystemInfoDefaultView* default_view_;
   LoginStatus login_status_;
 
-#if defined(OS_CHROMEOS)
   std::unique_ptr<SystemClockObserver> system_clock_observer_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(TraySystemInfo);
 };

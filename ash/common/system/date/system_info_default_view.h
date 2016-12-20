@@ -11,9 +11,7 @@
 #include "ui/views/view.h"
 
 namespace ash {
-#if defined(OS_CHROMEOS)
 class PowerStatusView;
-#endif  // defined(OS_CHROMEOS)
 class SystemTrayItem;
 class TriView;
 
@@ -48,9 +46,7 @@ class ASH_EXPORT SystemInfoDefaultView : public views::View {
 
   tray::DateView* date_view_;
 
-#if defined(OS_CHROMEOS)
   PowerStatusView* power_status_view_ = nullptr;
-#endif  // defined(OS_CHROMEOS)
 
   TriView* tri_view_;
 

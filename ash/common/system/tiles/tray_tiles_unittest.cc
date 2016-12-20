@@ -58,10 +58,8 @@ TEST_F(TrayTilesTest, ButtonStatesWithAddingUser) {
       tray_tiles()->CreateDefaultViewForTesting(LoginStatus::USER));
   EXPECT_EQ(GetSettingsButton()->state(), views::Button::STATE_DISABLED);
   EXPECT_EQ(GetHelpButton()->state(), views::Button::STATE_DISABLED);
-#if !defined(OS_WIN)
   EXPECT_EQ(GetLockButton()->state(), views::Button::STATE_DISABLED);
   EXPECT_EQ(GetPowerButton()->state(), views::Button::STATE_NORMAL);
-#endif  // !defined(OS_WIN)
 }
 
 TEST_F(TrayTilesTest, ButtonStatesWithLoginStatusNotLoggedIn) {
@@ -69,10 +67,8 @@ TEST_F(TrayTilesTest, ButtonStatesWithLoginStatusNotLoggedIn) {
       tray_tiles()->CreateDefaultViewForTesting(LoginStatus::NOT_LOGGED_IN));
   EXPECT_EQ(GetSettingsButton()->state(), views::Button::STATE_DISABLED);
   EXPECT_EQ(GetHelpButton()->state(), views::Button::STATE_DISABLED);
-#if !defined(OS_WIN)
   EXPECT_EQ(GetLockButton()->state(), views::Button::STATE_DISABLED);
   EXPECT_EQ(GetPowerButton()->state(), views::Button::STATE_NORMAL);
-#endif  // !defined(OS_WIN)
 }
 
 TEST_F(TrayTilesTest, ButtonStatesWithLoginStatusLocked) {
@@ -80,10 +76,8 @@ TEST_F(TrayTilesTest, ButtonStatesWithLoginStatusLocked) {
       tray_tiles()->CreateDefaultViewForTesting(LoginStatus::LOCKED));
   EXPECT_EQ(GetSettingsButton()->state(), views::Button::STATE_DISABLED);
   EXPECT_EQ(GetHelpButton()->state(), views::Button::STATE_DISABLED);
-#if !defined(OS_WIN)
   EXPECT_EQ(GetLockButton()->state(), views::Button::STATE_DISABLED);
   EXPECT_EQ(GetPowerButton()->state(), views::Button::STATE_NORMAL);
-#endif  // !defined(OS_WIN)
 }
 
 TEST_F(TrayTilesTest, ButtonStatesWithLoginStatusUser) {
@@ -91,10 +85,8 @@ TEST_F(TrayTilesTest, ButtonStatesWithLoginStatusUser) {
       tray_tiles()->CreateDefaultViewForTesting(LoginStatus::USER));
   EXPECT_EQ(GetSettingsButton()->state(), views::Button::STATE_NORMAL);
   EXPECT_EQ(GetHelpButton()->state(), views::Button::STATE_NORMAL);
-#if !defined(OS_WIN)
   EXPECT_EQ(GetLockButton()->state(), views::Button::STATE_NORMAL);
   EXPECT_EQ(GetPowerButton()->state(), views::Button::STATE_NORMAL);
-#endif  // !defined(OS_WIN)
 }
 
 }  // namespace ash

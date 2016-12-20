@@ -15,6 +15,8 @@
 #include "ash/common/system/tray/tray_popup_header_button.h"
 #include "ash/common/wm_shell.h"
 #include "base/i18n/rtl.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/session_manager_client.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -22,11 +24,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view.h"
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/session_manager_client.h"
-#endif
 
 namespace {
 
@@ -80,7 +77,6 @@ DateDefaultView::DateDefaultView(SystemTrayItem* owner, LoginStatus login)
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_HELP));
   view->AddViewToRowNonMd(help_button_, true);
 
-#if !defined(OS_WIN)
   if (login != LoginStatus::LOCKED) {
     shutdown_button_ = new TrayPopupHeaderButton(
         this, IDR_AURA_UBER_TRAY_SHUTDOWN, IDR_AURA_UBER_TRAY_SHUTDOWN,
@@ -105,7 +101,6 @@ DateDefaultView::DateDefaultView(SystemTrayItem* owner, LoginStatus login)
         l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_LOCK));
     view->AddViewToRowNonMd(lock_button_, true);
   }
-#endif  // !defined(OS_WIN)
 }
 
 DateDefaultView::~DateDefaultView() {}
@@ -137,11 +132,9 @@ void DateDefaultView::ButtonPressed(views::Button* sender,
     shell->RequestShutdown();
   } else if (sender == lock_button_) {
     shell->RecordUserMetricsAction(UMA_TRAY_LOCK_SCREEN);
-#if defined(OS_CHROMEOS)
     chromeos::DBusThreadManager::Get()
         ->GetSessionManagerClient()
         ->RequestLockScreen();
-#endif
   } else {
     NOTREACHED();
   }

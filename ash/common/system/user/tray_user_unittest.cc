@@ -193,7 +193,6 @@ TEST_F(TrayUserTest, AccessibleLabelContainsMultiUserInfo) {
   EXPECT_EQ(ui::AX_ROLE_BUTTON, node_data.role);
 }
 
-#if defined(OS_CHROMEOS)
 // Make sure that in multi user mode the user panel can be activated and there
 // will be one panel for each user plus one additional separator at the end.
 // Note: the mouse watcher (for automatic closing upon leave) cannot be tested
@@ -278,7 +277,5 @@ TEST_F(TrayUserTest, MultiUserModeButtonClicks) {
             second_user->GetDisplayEmail());
   tray()->CloseSystemBubble();
 }
-
-#endif
 
 }  // namespace ash

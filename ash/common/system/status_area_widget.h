@@ -13,18 +13,16 @@
 #include "ui/views/widget/widget.h"
 
 namespace ash {
+class ImeMenuTray;
+class LogoutButtonTray;
 class OverviewButtonTray;
+class PaletteTray;
 class StatusAreaWidgetDelegate;
 class SystemTray;
+class VirtualKeyboardTray;
 class WebNotificationTray;
 class WmShelf;
 class WmWindow;
-#if defined(OS_CHROMEOS)
-class ImeMenuTray;
-class LogoutButtonTray;
-class PaletteTray;
-class VirtualKeyboardTray;
-#endif
 
 class ASH_EXPORT StatusAreaWidget : public views::Widget,
                                     public ShelfBackgroundAnimatorObserver {
@@ -56,11 +54,9 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   }
   OverviewButtonTray* overview_button_tray() { return overview_button_tray_; }
 
-#if defined(OS_CHROMEOS)
   PaletteTray* palette_tray() { return palette_tray_; }
 
   ImeMenuTray* ime_menu_tray() { return ime_menu_tray_; }
-#endif
 
   WmShelf* wm_shelf() { return wm_shelf_; }
 
@@ -88,12 +84,10 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
  private:
   void AddSystemTray();
   void AddWebNotificationTray();
-#if defined(OS_CHROMEOS)
   void AddLogoutButtonTray();
   void AddPaletteTray();
   void AddVirtualKeyboardTray();
   void AddImeMenuTray();
-#endif
   void AddOverviewButtonTray();
 
   // Weak pointers to View classes that are parented to StatusAreaWidget:
@@ -101,12 +95,10 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
   OverviewButtonTray* overview_button_tray_;
   SystemTray* system_tray_;
   WebNotificationTray* web_notification_tray_;
-#if defined(OS_CHROMEOS)
   LogoutButtonTray* logout_button_tray_;
   PaletteTray* palette_tray_;
   VirtualKeyboardTray* virtual_keyboard_tray_;
   ImeMenuTray* ime_menu_tray_;
-#endif
   LoginStatus login_status_;
 
   WmShelf* wm_shelf_;

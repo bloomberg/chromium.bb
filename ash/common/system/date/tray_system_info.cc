@@ -5,6 +5,7 @@
 #include "ash/common/system/date/tray_system_info.h"
 
 #include "ash/common/shelf/wm_shelf_util.h"
+#include "ash/common/system/chromeos/system_clock_observer.h"
 #include "ash/common/system/date/date_view.h"
 #include "ash/common/system/date/system_info_default_view.h"
 #include "ash/common/system/tray/system_tray.h"
@@ -12,20 +13,14 @@
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/wm_shell.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/common/system/chromeos/system_clock_observer.h"
-#endif
-
 namespace ash {
 
 TraySystemInfo::TraySystemInfo(SystemTray* system_tray)
     : SystemTrayItem(system_tray, UMA_DATE),
       tray_view_(nullptr),
       default_view_(nullptr),
-      login_status_(LoginStatus::NOT_LOGGED_IN) {
-#if defined(OS_CHROMEOS)
-  system_clock_observer_.reset(new SystemClockObserver());
-#endif
+      login_status_(LoginStatus::NOT_LOGGED_IN),
+      system_clock_observer_(new SystemClockObserver()) {
   WmShell::Get()->system_tray_notifier()->AddClockObserver(this);
 }
 
@@ -60,12 +55,10 @@ views::View* TraySystemInfo::CreateTrayView(LoginStatus status) {
 views::View* TraySystemInfo::CreateDefaultView(LoginStatus status) {
   default_view_ = new SystemInfoDefaultView(this, status);
 
-#if defined(OS_CHROMEOS)
   // Save the login status we created the view with.
   login_status_ = status;
 
   OnSystemClockCanSetTimeChanged(system_clock_observer_->can_set_time());
-#endif
   return default_view_;
 }
 

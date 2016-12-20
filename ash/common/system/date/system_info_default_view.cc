@@ -4,6 +4,8 @@
 
 #include "ash/common/system/date/system_info_default_view.h"
 
+#include "ash/common/system/chromeos/power/power_status.h"
+#include "ash/common/system/chromeos/power/power_status_view.h"
 #include "ash/common/system/date/date_view.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
@@ -12,11 +14,6 @@
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/common/system/chromeos/power/power_status.h"
-#include "ash/common/system/chromeos/power/power_status_view.h"
-#endif  // defined(OS_CHROMEOS)
 
 namespace ash {
 
@@ -38,7 +35,6 @@ SystemInfoDefaultView::SystemInfoDefaultView(SystemTrayItem* owner,
   date_view_ = new tray::DateView(owner);
   tri_view_->AddView(TriView::Container::START, date_view_);
 
-#if defined(OS_CHROMEOS)
   if (PowerStatus::Get()->IsBatteryPresent()) {
     power_status_view_ = new ash::PowerStatusView(false);
     std::unique_ptr<views::BoxLayout> box_layout =
@@ -55,7 +51,6 @@ SystemInfoDefaultView::SystemInfoDefaultView(SystemTrayItem* owner,
                        TrayPopupUtils::CreateVerticalSeparator());
     tri_view_->AddView(TriView::Container::CENTER, power_status_view_);
   }
-#endif  // defined(OS_CHROMEOS)
   tri_view_->SetContainerVisible(TriView::Container::END, false);
 
   if (TrayPopupUtils::CanOpenWebUISettings(login))

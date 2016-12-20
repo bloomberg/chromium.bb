@@ -6,6 +6,11 @@
 
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/system/chromeos/ime_menu/ime_menu_tray.h"
+#include "ash/common/system/chromeos/palette/palette_tray.h"
+#include "ash/common/system/chromeos/palette/palette_utils.h"
+#include "ash/common/system/chromeos/session/logout_button_tray.h"
+#include "ash/common/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
 #include "ash/common/system/overview/overview_button_tray.h"
 #include "ash/common/system/status_area_widget_delegate.h"
 #include "ash/common/system/tray/system_tray.h"
@@ -17,16 +22,8 @@
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/i18n/time_formatting.h"
-#include "ui/native_theme/native_theme_dark_aura.h"
-
-#if defined(OS_CHROMEOS)
-#include "ash/common/system/chromeos/ime_menu/ime_menu_tray.h"
-#include "ash/common/system/chromeos/palette/palette_tray.h"
-#include "ash/common/system/chromeos/palette/palette_utils.h"
-#include "ash/common/system/chromeos/session/logout_button_tray.h"
-#include "ash/common/system/chromeos/virtual_keyboard/virtual_keyboard_tray.h"
 #include "ui/display/display.h"
-#endif
+#include "ui/native_theme/native_theme_dark_aura.h"
 
 namespace ash {
 
@@ -36,12 +33,10 @@ StatusAreaWidget::StatusAreaWidget(WmWindow* status_container,
       overview_button_tray_(nullptr),
       system_tray_(nullptr),
       web_notification_tray_(nullptr),
-#if defined(OS_CHROMEOS)
       logout_button_tray_(nullptr),
       palette_tray_(nullptr),
       virtual_keyboard_tray_(nullptr),
       ime_menu_tray_(nullptr),
-#endif
       login_status_(LoginStatus::NOT_LOGGED_IN),
       wm_shelf_(wm_shelf) {
   views::Widget::InitParams params(
@@ -63,25 +58,21 @@ void StatusAreaWidget::CreateTrayViews() {
   AddOverviewButtonTray();
   AddSystemTray();
   AddWebNotificationTray();
-#if defined(OS_CHROMEOS)
   AddPaletteTray();
   AddVirtualKeyboardTray();
   AddImeMenuTray();
   AddLogoutButtonTray();
-#endif
 
   SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
   DCHECK(delegate);
   // Initialize after all trays have been created.
   system_tray_->InitializeTrayItems(delegate, web_notification_tray_);
   web_notification_tray_->Initialize();
-#if defined(OS_CHROMEOS)
   logout_button_tray_->Initialize();
   if (palette_tray_)
     palette_tray_->Initialize();
   virtual_keyboard_tray_->Initialize();
   ime_menu_tray_->Initialize();
-#endif
   overview_button_tray_->Initialize();
   SetShelfAlignment(system_tray_->shelf_alignment());
   UpdateAfterLoginStatusChange(delegate->GetUserLoginStatus());
@@ -97,14 +88,12 @@ void StatusAreaWidget::Shutdown() {
   // Must be destroyed after |web_notification_tray_|.
   delete system_tray_;
   system_tray_ = nullptr;
-#if defined(OS_CHROMEOS)
   delete ime_menu_tray_;
   ime_menu_tray_ = nullptr;
   delete virtual_keyboard_tray_;
   virtual_keyboard_tray_ = nullptr;
   delete logout_button_tray_;
   logout_button_tray_ = nullptr;
-#endif
   delete overview_button_tray_;
   overview_button_tray_ = nullptr;
 }
@@ -115,7 +104,6 @@ void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {
     system_tray_->SetShelfAlignment(alignment);
   if (web_notification_tray_)
     web_notification_tray_->SetShelfAlignment(alignment);
-#if defined(OS_CHROMEOS)
   if (logout_button_tray_)
     logout_button_tray_->SetShelfAlignment(alignment);
   if (virtual_keyboard_tray_)
@@ -124,7 +112,6 @@ void StatusAreaWidget::SetShelfAlignment(ShelfAlignment alignment) {
     ime_menu_tray_->SetShelfAlignment(alignment);
   if (palette_tray_)
     palette_tray_->SetShelfAlignment(alignment);
-#endif
   if (overview_button_tray_)
     overview_button_tray_->SetShelfAlignment(alignment);
   status_area_widget_delegate_->UpdateLayout();
@@ -138,10 +125,8 @@ void StatusAreaWidget::UpdateAfterLoginStatusChange(LoginStatus login_status) {
     system_tray_->UpdateAfterLoginStatusChange(login_status);
   if (web_notification_tray_)
     web_notification_tray_->UpdateAfterLoginStatusChange(login_status);
-#if defined(OS_CHROMEOS)
   if (logout_button_tray_)
     logout_button_tray_->UpdateAfterLoginStatusChange(login_status);
-#endif
   if (overview_button_tray_)
     overview_button_tray_->UpdateAfterLoginStatusChange(login_status);
 }
@@ -152,13 +137,11 @@ bool StatusAreaWidget::ShouldShowShelf() const {
        web_notification_tray_->ShouldBlockShelfAutoHide()))
     return true;
 
-#if defined(OS_CHROMEOS)
   if (palette_tray_ && palette_tray_->ShouldBlockShelfAutoHide())
     return true;
 
   if (ime_menu_tray_ && ime_menu_tray_->ShouldBlockShelfAutoHide())
     return true;
-#endif
 
   if (!wm_shelf_->IsVisible())
     return false;
@@ -180,13 +163,11 @@ void StatusAreaWidget::SchedulePaint() {
   status_area_widget_delegate_->SchedulePaint();
   web_notification_tray_->SchedulePaint();
   system_tray_->SchedulePaint();
-#if defined(OS_CHROMEOS)
   virtual_keyboard_tray_->SchedulePaint();
   logout_button_tray_->SchedulePaint();
   ime_menu_tray_->SchedulePaint();
   if (palette_tray_)
     palette_tray_->SchedulePaint();
-#endif
   overview_button_tray_->SchedulePaint();
 }
 
@@ -205,13 +186,11 @@ void StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {
 void StatusAreaWidget::UpdateShelfItemBackground(int alpha) {
   web_notification_tray_->UpdateShelfItemBackground(alpha);
   system_tray_->UpdateShelfItemBackground(alpha);
-#if defined(OS_CHROMEOS)
   virtual_keyboard_tray_->UpdateShelfItemBackground(alpha);
   logout_button_tray_->UpdateShelfItemBackground(alpha);
   ime_menu_tray_->UpdateShelfItemBackground(alpha);
   if (palette_tray_)
     palette_tray_->UpdateShelfItemBackground(alpha);
-#endif
   overview_button_tray_->UpdateShelfItemBackground(alpha);
 }
 
@@ -227,7 +206,6 @@ void StatusAreaWidget::AddWebNotificationTray() {
   status_area_widget_delegate_->AddTray(web_notification_tray_);
 }
 
-#if defined(OS_CHROMEOS)
 void StatusAreaWidget::AddLogoutButtonTray() {
   logout_button_tray_ = new LogoutButtonTray(wm_shelf_);
   status_area_widget_delegate_->AddTray(logout_button_tray_);
@@ -258,7 +236,6 @@ void StatusAreaWidget::AddImeMenuTray() {
   ime_menu_tray_ = new ImeMenuTray(wm_shelf_);
   status_area_widget_delegate_->AddTray(ime_menu_tray_);
 }
-#endif
 
 void StatusAreaWidget::AddOverviewButtonTray() {
   overview_button_tray_ = new OverviewButtonTray(wm_shelf_);
