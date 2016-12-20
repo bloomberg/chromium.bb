@@ -23,7 +23,7 @@ bytes at offset 670166 : 8 be 3 c 6 91 2 8
 checksum : 84637740
 PASS exception correctly thrown when xhr.responseText is accessed but responseType is 'arraybuffer' : InvalidStateError: Failed to read the 'responseText' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'text' (was 'arraybuffer')..
 PASS exception correctly thrown when xhr.responseXML is accessed but responseType is 'arraybuffer' : InvalidStateError: Failed to read the 'responseXML' property from 'XMLHttpRequest': The value is only accessible if the object's 'responseType' is '' or 'document' (was 'arraybuffer')..
-FAIL xhr.response.foo should be bar (of type string). Was undefined (of type undefined).
+PASS xhr.response.foo is 'bar'
 PASS successfullyParsed is true
 
 TEST COMPLETE
