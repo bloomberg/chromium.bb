@@ -10,11 +10,11 @@ namespace ntp_snippets {
 
 ConstantCategoryRanker::ConstantCategoryRanker() {
   // Add all local categories in a fixed order.
+  AppendKnownCategory(KnownCategories::PHYSICAL_WEB_PAGES);
   AppendKnownCategory(KnownCategories::DOWNLOADS);
   AppendKnownCategory(KnownCategories::RECENT_TABS);
   AppendKnownCategory(KnownCategories::FOREIGN_TABS);
   AppendKnownCategory(KnownCategories::BOOKMARKS);
-  AppendKnownCategory(KnownCategories::PHYSICAL_WEB_PAGES);
 
   DCHECK_EQ(static_cast<size_t>(KnownCategories::LOCAL_CATEGORIES_COUNT),
             ordered_categories_.size());
