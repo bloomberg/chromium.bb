@@ -408,7 +408,7 @@ public class WebsiteSettingsPopup implements OnClickListener {
             mOpenOnlineButton.setVisibility(View.GONE);
         }
 
-        mInstantAppIntent = mIsInternalPage ? null
+        mInstantAppIntent = (mIsInternalPage || isShowingOfflinePage()) ? null
                 : InstantAppsHandler.getInstance().getInstantAppIntentForUrl(mFullUrl);
         if (mInstantAppIntent == null) mInstantAppButton.setVisibility(View.GONE);
 
