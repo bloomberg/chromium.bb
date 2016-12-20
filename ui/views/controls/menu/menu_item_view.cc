@@ -845,7 +845,7 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
         subtitle_,
         font_list,
         GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_ButtonDisabledColor),
+            ui::NativeTheme::kColorId_MenuItemSubtitleColor),
         text_bounds + gfx::Vector2d(0, font_list.GetHeight()),
         flags);
   }
@@ -891,7 +891,7 @@ void MenuItemView::PaintMinorText(gfx::Canvas* canvas,
       GetFontList(),
       GetNativeTheme()->GetSystemColor(render_selection ?
           ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor :
-          ui::NativeTheme::kColorId_ButtonDisabledColor),
+          ui::NativeTheme::kColorId_MenuItemSubtitleColor),
       accel_bounds,
       flags);
 }

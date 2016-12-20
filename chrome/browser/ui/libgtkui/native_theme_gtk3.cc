@@ -195,6 +195,8 @@ SkColor NativeThemeGtk3::LookupGtkThemeColor(ColorId color_id) const {
       return GetFGColor("menu menuitem label", GTK_STATE_FLAG_SELECTED);
     case kColorId_DisabledMenuItemForegroundColor:
       return GetFGColor("menu menuitem label", GTK_STATE_FLAG_INSENSITIVE);
+    case kColorId_MenuItemSubtitleColor:
+      return GetFGColor("menu menuitem accelerator", GTK_STATE_FLAG_NORMAL);
     case kColorId_MenuSeparatorColor:
     // MenuButton borders are used the same way as menu separtors in Chrome.
     case kColorId_EnabledMenuButtonBorderColor:

@@ -183,6 +183,9 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
       return kEnabledMenuItemForegroundColor;
     case NativeTheme::kColorId_DisabledMenuItemForegroundColor:
       return kDisabledMenuItemForegroundColor;
+    case NativeTheme::kColorId_MenuItemSubtitleColor:
+      return base_theme->GetSystemColor(
+          NativeTheme::kColorId_DisabledMenuItemForegroundColor);
 
     // Label
     case NativeTheme::kColorId_LabelEnabledColor:
