@@ -5,11 +5,10 @@
 #import "ios/chrome/browser/payments/payment_items_display_view_controller.h"
 
 #import "base/ios/weak_nsobject.h"
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/credit_card.h"
-#import "ios/chrome/browser/payments/cells/order_summary_line_item.h"
-#import "ios/chrome/browser/payments/cells/order_summary_total_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
@@ -18,6 +17,8 @@
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
+#import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
+#import "ios/third_party/material_roboto_font_loader_ios/src/src/MaterialRobotoFontLoader.h"
 #include "ui/base/l10n/l10n_util.h"
 
 NSString* const kPaymentItemsDisplayCollectionViewId =
@@ -33,7 +34,8 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 };
 
 typedef NS_ENUM(NSInteger, ItemType) {
-  ItemTypePaymentItem = kItemTypeEnumZero,  // This is a repeated item type.
+  ItemTypePaymentItemTotal = kItemTypeEnumZero,
+  ItemTypePaymentItem,  // This is a repeated item type.
 };
 
 }  // namespace
@@ -140,8 +142,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [currencyFormatter setNumberStyle:NSNumberFormatterCurrencyStyle];
 
   // Add the total entry.
-  OrderSummaryTotalItem* totalItem = [[[OrderSummaryTotalItem alloc]
-      initWithType:ItemTypePaymentItem] autorelease];
+  CollectionViewDetailItem* totalItem = [[[CollectionViewDetailItem alloc]
+      initWithType:ItemTypePaymentItemTotal] autorelease];
   totalItem.text = base::SysUTF16ToNSString(_total.label);
 
   NSString* currencyCode = base::SysUTF16ToNSString(_total.amount.currency);
@@ -155,8 +157,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // Add the line item entries.
   for (size_t i = 0; i < _paymentItems.size(); ++i) {
     web::PaymentItem paymentItem = _paymentItems[i];
-    OrderSummaryLineItem* paymentItemItem = [[[OrderSummaryLineItem alloc]
-        initWithType:ItemTypePaymentItem] autorelease];
+    CollectionViewDetailItem* paymentItemItem =
+        [[[CollectionViewDetailItem alloc] initWithType:ItemTypePaymentItem]
+            autorelease];
     paymentItemItem.text = base::SysUTF16ToNSString(paymentItem.label);
 
     NSString* currencyCode =
@@ -180,6 +183,44 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
   self.styler.separatorInset =
       UIEdgeInsetsMake(0, kSeparatorEdgeInset, 0, kSeparatorEdgeInset);
+}
+
+#pragma mark UICollectionViewDataSource
+- (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
+                 cellForItemAtIndexPath:(nonnull NSIndexPath*)indexPath {
+  UICollectionViewCell* cell =
+      [super collectionView:collectionView cellForItemAtIndexPath:indexPath];
+
+  NSInteger itemType =
+      [self.collectionViewModel itemTypeForIndexPath:indexPath];
+  switch (itemType) {
+    case ItemTypePaymentItemTotal: {
+      CollectionViewDetailCell* detailCell =
+          base::mac::ObjCCastStrict<CollectionViewDetailCell>(cell);
+      detailCell.textLabel.font =
+          [[MDFRobotoFontLoader sharedInstance] boldFontOfSize:14];
+      detailCell.textLabel.textColor = [[MDCPalette greyPalette] tint600];
+      detailCell.detailTextLabel.font =
+          [[MDFRobotoFontLoader sharedInstance] boldFontOfSize:14];
+      detailCell.detailTextLabel.textColor = [[MDCPalette greyPalette] tint900];
+      break;
+    }
+    case ItemTypePaymentItem: {
+      CollectionViewDetailCell* detailCell =
+          base::mac::ObjCCastStrict<CollectionViewDetailCell>(cell);
+      detailCell.textLabel.font =
+          [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:14];
+      detailCell.textLabel.textColor = [[MDCPalette greyPalette] tint900];
+
+      detailCell.detailTextLabel.font =
+          [[MDFRobotoFontLoader sharedInstance] regularFontOfSize:14];
+      detailCell.detailTextLabel.textColor = [[MDCPalette greyPalette] tint900];
+      break;
+    }
+    default:
+      break;
+  }
+  return cell;
 }
 
 #pragma mark MDCCollectionViewStylingDelegate
