@@ -603,7 +603,7 @@ TEST_F(PasswordAutofillManagerTest, NonSecurePasswordFieldHttpWarningMessage) {
   // String "Login not secure" shown as a warning messages if password form is
   // on http sites.
   base::string16 warning_message =
-      l10n_util::GetStringUTF16(IDS_AUTOFILL_PASSWORD_HTTP_WARNING_MESSAGE);
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_LOGIN_HTTP_WARNING_MESSAGE);
 
   // String "Use password for:" shown when displaying suggestions matching a
   // username and specifying that the field is a password field.
@@ -637,6 +637,62 @@ TEST_F(PasswordAutofillManagerTest, NonSecurePasswordFieldHttpWarningMessage) {
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_,
       autofill::IS_PASSWORD_FIELD, element_bounds);
+
+  // Accepting the warning message should trigger a call to open the url and
+  // hide the popup.
+  EXPECT_CALL(*autofill_client, ShowHttpNotSecureExplanation());
+  EXPECT_CALL(*autofill_client, HideAutofillPopup());
+  password_autofill_manager_->DidAcceptSuggestion(
+      base::string16(), autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE,
+      0);
+}
+
+// Tests that the "Login not secure" warning shows up in non-password
+// fields of login forms.
+TEST_F(PasswordAutofillManagerTest, NonSecureUsernameFieldHttpWarningMessage) {
+  auto client = base::MakeUnique<TestPasswordManagerClient>();
+  auto autofill_client = base::MakeUnique<MockAutofillClient>();
+  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+
+  gfx::RectF element_bounds;
+  autofill::PasswordFormFillData data;
+  data.username_field.value = test_username_;
+  data.password_field.value = test_password_;
+  data.origin = GURL("http://foo.test");
+
+  int dummy_key = 0;
+  password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
+
+  // String "Login not secure" shown as a warning messages if password form is
+  // on http sites.
+  base::string16 warning_message =
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_LOGIN_HTTP_WARNING_MESSAGE);
+
+  // Http warning message won't show with switch flag off.
+  EXPECT_CALL(
+      *autofill_client,
+      ShowAutofillPopup(
+          element_bounds, _,
+          SuggestionVectorValuesAre(testing::ElementsAre(test_username_)), _));
+  password_autofill_manager_->OnShowPasswordSuggestions(
+      dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_, 0, element_bounds);
+
+  SetHttpWarningEnabled();
+
+  // Http warning message shows for non-secure context and switch flag on, so
+  // there are 2 suggestions (+ 1 separator on desktop) in total, and the
+  // message comes first among suggestions.
+  auto elements = testing::ElementsAre(warning_message,
+#if !defined(OS_ANDROID)
+                                       base::string16(),
+#endif
+                                       test_username_);
+
+  EXPECT_CALL(*autofill_client,
+              ShowAutofillPopup(element_bounds, _,
+                                SuggestionVectorValuesAre(elements), _));
+  password_autofill_manager_->OnShowPasswordSuggestions(
+      dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_, 0, element_bounds);
 
   // Accepting the warning message should trigger a call to open the url and
   // hide the popup.

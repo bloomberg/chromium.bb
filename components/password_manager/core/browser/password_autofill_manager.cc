@@ -208,34 +208,33 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
         IDS_AUTOFILL_PASSWORD_FIELD_SUGGESTIONS_TITLE));
     password_field_suggestions.frontend_id = autofill::POPUP_ITEM_ID_TITLE;
     suggestions.insert(suggestions.begin(), password_field_suggestions);
+  }
 
-    GURL origin = (fill_data_it->second).origin;
+  GURL origin = (fill_data_it->second).origin;
+  bool is_context_secure = autofill_client_->IsContextSecure(origin) &&
+                           (!origin.is_valid() || !origin.SchemeIs("http"));
+  if (!is_context_secure && security_state::IsHttpWarningInFormEnabled()) {
+    std::string icon_str;
 
-    bool is_context_secure = autofill_client_->IsContextSecure(origin) &&
-                             (!origin.is_valid() || !origin.SchemeIs("http"));
-    if (!is_context_secure && security_state::IsHttpWarningInFormEnabled()) {
-      std::string icon_str;
+    // Show http info icon for http sites.
+    if (origin.is_valid() && origin.SchemeIs("http")) {
+      icon_str = "httpWarning";
+    } else {
+      // Show https_invalid icon for broken https sites.
+      icon_str = "httpsInvalid";
+    }
 
-      // Show http info icon for http sites.
-      if (origin.is_valid() && origin.SchemeIs("http")) {
-        icon_str = "httpWarning";
-      } else {
-        // Show https_invalid icon for broken https sites.
-        icon_str = "httpsInvalid";
-      }
-
-      autofill::Suggestion password_field_http_warning_suggestion(
-          l10n_util::GetStringUTF8(IDS_AUTOFILL_PASSWORD_HTTP_WARNING_MESSAGE),
-          l10n_util::GetStringUTF8(IDS_AUTOFILL_HTTP_WARNING_LEARN_MORE),
-          icon_str, autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE);
+    autofill::Suggestion http_warning_suggestion(
+        l10n_util::GetStringUTF8(IDS_AUTOFILL_LOGIN_HTTP_WARNING_MESSAGE),
+        l10n_util::GetStringUTF8(IDS_AUTOFILL_HTTP_WARNING_LEARN_MORE),
+        icon_str, autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE);
 #if !defined(OS_ANDROID)
       suggestions.insert(suggestions.begin(), autofill::Suggestion());
       suggestions.front().frontend_id = autofill::POPUP_ITEM_ID_SEPARATOR;
 #endif
-      suggestions.insert(suggestions.begin(),
-                         password_field_http_warning_suggestion);
-    }
+      suggestions.insert(suggestions.begin(), http_warning_suggestion);
   }
+
   autofill_client_->ShowAutofillPopup(bounds,
                                       text_direction,
                                       suggestions,
