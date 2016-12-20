@@ -31,7 +31,7 @@
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
-#include "content/browser/memory/memory_coordinator.h"
+#include "content/browser/memory/memory_coordinator_impl.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -2992,7 +2992,8 @@ IN_PROC_BROWSER_TEST_P(MemoryCoordinatorWithServiceWorkerTest,
   StartServerAndNavigateToSetup();
   ActivateTestHelper("/service_worker/fetch_event.js", SERVICE_WORKER_OK);
 
-  MemoryCoordinator* memory_coordinator = MemoryCoordinator::GetInstance();
+  MemoryCoordinatorImpl* memory_coordinator =
+      MemoryCoordinatorImpl::GetInstance();
   memory_coordinator->SetDelegateForTesting(
       base::MakeUnique<TestMemoryCoordinatorDelegate>());
 

@@ -5,7 +5,7 @@
 #include "content/public/test/memory_coordinator_test_utils.h"
 
 #include "base/memory/memory_coordinator_proxy.h"
-#include "content/browser/memory/memory_coordinator.h"
+#include "content/browser/memory/memory_coordinator_impl.h"
 #include "content/public/common/content_features.h"
 
 namespace content {
@@ -13,12 +13,12 @@ namespace content {
 void SetUpMemoryCoordinatorProxyForTesting() {
   base::MemoryCoordinatorProxy::GetInstance()->
       SetGetCurrentMemoryStateCallback(base::Bind(
-          &content::MemoryCoordinator::GetCurrentMemoryState,
-          base::Unretained(content::MemoryCoordinator::GetInstance())));
+          &MemoryCoordinatorImpl::GetCurrentMemoryState,
+          base::Unretained(MemoryCoordinatorImpl::GetInstance())));
   base::MemoryCoordinatorProxy::GetInstance()->
       SetSetCurrentMemoryStateForTestingCallback(base::Bind(
-          &content::MemoryCoordinator::SetCurrentMemoryStateForTesting,
-          base::Unretained(content::MemoryCoordinator::GetInstance())));
+          &MemoryCoordinatorImpl::SetCurrentMemoryStateForTesting,
+          base::Unretained(MemoryCoordinatorImpl::GetInstance())));
 }
 
 }  // namespace content

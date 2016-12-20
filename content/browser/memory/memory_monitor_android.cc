@@ -74,8 +74,7 @@ static void OnTrimMemory(JNIEnv* env,
                          const base::android::JavaParamRef<jclass>& jcaller,
                          jint level) {
   DCHECK(level >= 0 && level <= kTrimMemoryLevelMax);
-  auto* coordinator =
-      static_cast<MemoryCoordinatorImpl*>(MemoryCoordinator::GetInstance());
+  auto* coordinator = MemoryCoordinatorImpl::GetInstance();
 
   auto state = coordinator->GetGlobalMemoryState();
   switch (state) {

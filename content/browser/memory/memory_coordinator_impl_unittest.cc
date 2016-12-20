@@ -4,19 +4,52 @@
 
 #include "content/browser/memory/memory_coordinator_impl.h"
 
+#include "base/memory/memory_coordinator_client_registry.h"
 #include "base/memory/memory_coordinator_proxy.h"
+#include "base/memory/memory_pressure_monitor.h"
+#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "content/browser/memory/memory_monitor.h"
 #include "content/browser/memory/memory_state_updater.h"
 #include "content/public/common/content_features.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
 namespace {
 
+void RunUntilIdle() {
+  base::RunLoop loop;
+  loop.RunUntilIdle();
+}
+
+// A mock ChildMemoryCoordinator, for testing interaction between MC and CMC.
+class MockChildMemoryCoordinator : public mojom::ChildMemoryCoordinator {
+ public:
+  MockChildMemoryCoordinator()
+      : state_(mojom::MemoryState::NORMAL),
+        on_state_change_calls_(0) {}
+
+  ~MockChildMemoryCoordinator() override {}
+
+  void OnStateChange(mojom::MemoryState state) override {
+    state_ = state;
+    ++on_state_change_calls_;
+  }
+
+  mojom::MemoryState state() const { return state_; }
+  int on_state_change_calls() const { return on_state_change_calls_; }
+
+ private:
+  mojom::MemoryState state_;
+  int on_state_change_calls_;
+};
+
+// A mock MemoryCoordinatorClient, for testing interaction between MC and
+// clients.
 class MockMemoryCoordinatorClient : public base::MemoryCoordinatorClient {
  public:
   void OnMemoryStateChange(base::MemoryState state) override {
@@ -31,8 +64,6 @@ class MockMemoryCoordinatorClient : public base::MemoryCoordinatorClient {
   bool is_called_ = false;
   base::MemoryState state_ = base::MemoryState::NORMAL;
 };
-
-}  // namespace
 
 class MockMemoryMonitor : public MemoryMonitor {
  public:
@@ -52,22 +83,66 @@ class MockMemoryMonitor : public MemoryMonitor {
   DISALLOW_COPY_AND_ASSIGN(MockMemoryMonitor);
 };
 
+// A MemoryCoordinatorImpl that can be directly constructed.
+class TestMemoryCoordinatorImpl : public MemoryCoordinatorImpl {
+ public:
+  // Mojo machinery for wrapping a mock ChildMemoryCoordinator.
+  struct Child {
+    Child(mojom::ChildMemoryCoordinatorPtr* cmc_ptr) : cmc_binding(&cmc) {
+      cmc_binding.Bind(mojo::GetProxy(cmc_ptr));
+      RunUntilIdle();
+    }
+
+    MockChildMemoryCoordinator cmc;
+    mojo::Binding<mojom::ChildMemoryCoordinator> cmc_binding;
+  };
+
+  TestMemoryCoordinatorImpl(
+      scoped_refptr<base::TestMockTimeTaskRunner> task_runner)
+      : MemoryCoordinatorImpl(task_runner,
+                              base::MakeUnique<MockMemoryMonitor>()) {}
+  ~TestMemoryCoordinatorImpl() override {}
+
+  using MemoryCoordinatorImpl::OnConnectionError;
+  using MemoryCoordinatorImpl::children;
+
+  MockChildMemoryCoordinator* CreateChildMemoryCoordinator(
+      int process_id) {
+    mojom::ChildMemoryCoordinatorPtr cmc_ptr;
+    children_.push_back(std::unique_ptr<Child>(new Child(&cmc_ptr)));
+    AddChildForTesting(process_id, std::move(cmc_ptr));
+    return &children_.back()->cmc;
+  }
+
+  // Wrapper of MemoryCoordinator::SetMemoryState that also calls RunUntilIdle.
+  bool SetChildMemoryState(
+      int render_process_id, mojom::MemoryState memory_state) {
+    bool result = MemoryCoordinatorImpl::SetChildMemoryState(
+        render_process_id, memory_state);
+    RunUntilIdle();
+    return result;
+  }
+
+  std::vector<std::unique_ptr<Child>> children_;
+};
+
+}  // namespace
+
 class MemoryCoordinatorImplTest : public testing::Test {
  public:
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kMemoryCoordinator);
 
     task_runner_ = new base::TestMockTimeTaskRunner();
-    coordinator_.reset(new MemoryCoordinatorImpl(
-        task_runner_, base::WrapUnique(new MockMemoryMonitor)));
+    coordinator_.reset(new TestMemoryCoordinatorImpl(task_runner_));
 
     base::MemoryCoordinatorProxy::GetInstance()->
         SetGetCurrentMemoryStateCallback(base::Bind(
-            &MemoryCoordinator::GetCurrentMemoryState,
+            &MemoryCoordinatorImpl::GetCurrentMemoryState,
             base::Unretained(coordinator_.get())));
     base::MemoryCoordinatorProxy::GetInstance()->
         SetSetCurrentMemoryStateForTestingCallback(base::Bind(
-            &MemoryCoordinator::SetCurrentMemoryStateForTesting,
+            &MemoryCoordinatorImpl::SetCurrentMemoryStateForTesting,
             base::Unretained(coordinator_.get())));
   }
 
@@ -76,11 +151,91 @@ class MemoryCoordinatorImplTest : public testing::Test {
   }
 
  protected:
-  std::unique_ptr<MemoryCoordinatorImpl> coordinator_;
+  std::unique_ptr<TestMemoryCoordinatorImpl> coordinator_;
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   base::MessageLoop message_loop_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+TEST_F(MemoryCoordinatorImplTest, ChildRemovedOnConnectionError) {
+  coordinator_->CreateChildMemoryCoordinator(1);
+  ASSERT_EQ(1u, coordinator_->children().size());
+  coordinator_->OnConnectionError(1);
+  EXPECT_EQ(0u, coordinator_->children().size());
+}
+
+TEST_F(MemoryCoordinatorImplTest, SetMemoryStateFailsInvalidState) {
+  auto cmc1 = coordinator_->CreateChildMemoryCoordinator(1);
+
+  EXPECT_FALSE(
+      coordinator_->SetChildMemoryState(1, mojom::MemoryState::UNKNOWN));
+  EXPECT_EQ(0, cmc1->on_state_change_calls());
+}
+
+TEST_F(MemoryCoordinatorImplTest, SetMemoryStateFailsInvalidRenderer) {
+  auto cmc1 = coordinator_->CreateChildMemoryCoordinator(1);
+
+  EXPECT_FALSE(
+      coordinator_->SetChildMemoryState(2, mojom::MemoryState::THROTTLED));
+  EXPECT_EQ(0, cmc1->on_state_change_calls());
+}
+
+TEST_F(MemoryCoordinatorImplTest, SetMemoryStateNotDeliveredNop) {
+  auto cmc1 = coordinator_->CreateChildMemoryCoordinator(1);
+
+  EXPECT_FALSE(
+      coordinator_->SetChildMemoryState(2, mojom::MemoryState::NORMAL));
+  EXPECT_EQ(0, cmc1->on_state_change_calls());
+}
+
+TEST_F(MemoryCoordinatorImplTest, SetMemoryStateDelivered) {
+  auto cmc1 = coordinator_->CreateChildMemoryCoordinator(1);
+  auto cmc2 = coordinator_->CreateChildMemoryCoordinator(2);
+
+  EXPECT_TRUE(
+      coordinator_->SetChildMemoryState(1, mojom::MemoryState::THROTTLED));
+  EXPECT_EQ(1, cmc1->on_state_change_calls());
+  EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc1->state());
+
+  EXPECT_TRUE(
+      coordinator_->SetChildMemoryState(2, mojom::MemoryState::SUSPENDED));
+  EXPECT_EQ(1, cmc2->on_state_change_calls());
+  // Child processes are considered as visible (foreground) by default,
+  // and visible ones won't be suspended but throttled.
+  EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc2->state());
+}
+
+TEST_F(MemoryCoordinatorImplTest, SetChildMemoryState) {
+  auto cmc = coordinator_->CreateChildMemoryCoordinator(1);
+  auto iter = coordinator_->children().find(1);
+  ASSERT_TRUE(iter != coordinator_->children().end());
+
+  // Foreground
+  iter->second.is_visible = true;
+  EXPECT_TRUE(coordinator_->SetChildMemoryState(1, mojom::MemoryState::NORMAL));
+  EXPECT_EQ(mojom::MemoryState::NORMAL, cmc->state());
+  EXPECT_TRUE(
+      coordinator_->SetChildMemoryState(1, mojom::MemoryState::THROTTLED));
+  EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
+  EXPECT_TRUE(
+      coordinator_->SetChildMemoryState(1, mojom::MemoryState::SUSPENDED));
+  EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
+
+  // Background
+  iter->second.is_visible = false;
+  EXPECT_TRUE(coordinator_->SetChildMemoryState(1, mojom::MemoryState::NORMAL));
+#if defined(OS_ANDROID)
+  EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
+#else
+  EXPECT_EQ(mojom::MemoryState::NORMAL, cmc->state());
+#endif
+  EXPECT_TRUE(
+      coordinator_->SetChildMemoryState(1, mojom::MemoryState::THROTTLED));
+  EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
+  EXPECT_TRUE(
+      coordinator_->SetChildMemoryState(1, mojom::MemoryState::SUSPENDED));
+  EXPECT_EQ(mojom::MemoryState::SUSPENDED, cmc->state());
+}
 
 TEST_F(MemoryCoordinatorImplTest, CalculateNextState) {
   auto* state_updater = coordinator_->state_updater_.get();
@@ -160,8 +315,7 @@ TEST_F(MemoryCoordinatorImplTest, UpdateState) {
     coordinator_->current_state_ = base::MemoryState::NORMAL;
     GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(40);
     state_updater->UpdateState();
-    base::RunLoop loop;
-    loop.RunUntilIdle();
+    RunUntilIdle();
     EXPECT_TRUE(client.is_called());
     EXPECT_EQ(base::MemoryState::THROTTLED, client.state());
     base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(&client);
@@ -174,8 +328,7 @@ TEST_F(MemoryCoordinatorImplTest, UpdateState) {
     coordinator_->current_state_ = base::MemoryState::NORMAL;
     GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(50);
     state_updater->UpdateState();
-    base::RunLoop loop;
-    loop.RunUntilIdle();
+    RunUntilIdle();
     EXPECT_FALSE(client.is_called());
     EXPECT_EQ(base::MemoryState::NORMAL, client.state());
     base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(&client);
@@ -215,9 +368,8 @@ TEST_F(MemoryCoordinatorImplTest, SetMemoryStateForTesting) {
             coordinator_->GetCurrentMemoryState());
   EXPECT_EQ(base::MemoryState::THROTTLED,
             base::MemoryCoordinatorProxy::GetInstance()->
-                GetCurrentMemoryState());
-  base::RunLoop loop;
-  loop.RunUntilIdle();
+            GetCurrentMemoryState());
+  RunUntilIdle();
   EXPECT_TRUE(client.is_called());
   EXPECT_EQ(base::MemoryState::THROTTLED, client.state());
   base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(&client);

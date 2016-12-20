@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/memory/memory_coordinator.h"
+#include "content/browser/memory/memory_coordinator_impl.h"
 
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/browser_main_loop.h"
@@ -25,9 +25,9 @@ class TestMemoryCoordinatorDelegate : public MemoryCoordinatorDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestMemoryCoordinatorDelegate);
 };
 
-class MemoryCoordinatorTest : public ContentBrowserTest {
+class MemoryCoordinatorImplBrowserTest : public ContentBrowserTest {
  public:
-  MemoryCoordinatorTest() {}
+  MemoryCoordinatorImplBrowserTest() {}
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kMemoryCoordinator);
@@ -37,23 +37,24 @@ class MemoryCoordinatorTest : public ContentBrowserTest {
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(MemoryCoordinatorTest);
+  DISALLOW_COPY_AND_ASSIGN(MemoryCoordinatorImplBrowserTest);
 };
 
 // TODO(bashi): Enable these tests on macos when MemoryMonitorMac is
 // implemented.
 #if !defined(OS_MACOSX)
 
-IN_PROC_BROWSER_TEST_F(MemoryCoordinatorTest, HandleAdded) {
+IN_PROC_BROWSER_TEST_F(MemoryCoordinatorImplBrowserTest, HandleAdded) {
   GURL url = GetTestUrl("", "simple_page.html");
   NavigateToURL(shell(), url);
-  EXPECT_EQ(1u, MemoryCoordinator::GetInstance()->children().size());
+  size_t num_children = MemoryCoordinatorImpl::GetInstance()->children().size();
+  EXPECT_EQ(1u, num_children);
 }
 
-IN_PROC_BROWSER_TEST_F(MemoryCoordinatorTest, CanSuspendRenderer) {
+IN_PROC_BROWSER_TEST_F(MemoryCoordinatorImplBrowserTest, CanSuspendRenderer) {
   GURL url = GetTestUrl("", "simple_page.html");
   NavigateToURL(shell(), url);
-  auto* memory_coordinator = MemoryCoordinator::GetInstance();
+  auto* memory_coordinator = MemoryCoordinatorImpl::GetInstance();
   memory_coordinator->SetDelegateForTesting(
       base::MakeUnique<TestMemoryCoordinatorDelegate>());
   EXPECT_EQ(1u, memory_coordinator->children().size());

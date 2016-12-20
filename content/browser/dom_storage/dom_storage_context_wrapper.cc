@@ -26,7 +26,6 @@
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/leveldb_wrapper_impl.h"
-#include "content/browser/memory/memory_coordinator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/local_storage_usage_info.h"

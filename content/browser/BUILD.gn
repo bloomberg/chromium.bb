@@ -920,8 +920,6 @@ source_set("browser") {
     "media/session/media_session_uma_helper.h",
     "media/url_provision_fetcher.cc",
     "media/url_provision_fetcher.h",
-    "memory/memory_coordinator.cc",
-    "memory/memory_coordinator.h",
     "memory/memory_coordinator_impl.cc",
     "memory/memory_coordinator_impl.h",
     "memory/memory_message_filter.cc",

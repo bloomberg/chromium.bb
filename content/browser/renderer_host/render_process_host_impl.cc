@@ -85,7 +85,7 @@
 #include "content/browser/media/capture/image_capture_impl.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/media/midi_host.h"
-#include "content/browser/memory/memory_coordinator.h"
+#include "content/browser/memory/memory_coordinator_impl.h"
 #include "content/browser/memory/memory_message_filter.h"
 #include "content/browser/message_port_message_filter.h"
 #include "content/browser/mime_registry_impl.h"
@@ -450,8 +450,8 @@ class SessionStorageHolder : public base::SupportsUserData::Data {
 void CreateMemoryCoordinatorHandle(
     int render_process_id,
     mojom::MemoryCoordinatorHandleRequest request) {
-  MemoryCoordinator::GetInstance()->CreateHandle(render_process_id,
-                                                 std::move(request));
+  MemoryCoordinatorImpl::GetInstance()->CreateHandle(render_process_id,
+                                                     std::move(request));
 }
 
 }  // namespace
