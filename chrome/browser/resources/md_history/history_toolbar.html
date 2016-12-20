@@ -40,27 +40,11 @@
       }
 
       cr-toolbar {
-        --cr-toolbar-field-end-padding: 0;
         --cr-toolbar-field-margin: var(--side-bar-width);
-        --cr-toolbar-right-content-wide: {
-          position: absolute;
-          right: 0;
-        };
-      }
-
-      :host-context([dir=rtl]) cr-toolbar {
-        --cr-toolbar-right-content-wide: {
-          position: absolute;
-          left: 0;
-        };
       }
 
       :host([has-drawer]) cr-toolbar {
         --cr-toolbar-field-margin: 0;
-      }
-
-      cr-toolbar .more-actions {
-        -webkit-margin-end: 12px;
       }
 
       /* Info button and dropdown. */

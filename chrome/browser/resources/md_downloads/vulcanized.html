@@ -2964,13 +2964,12 @@ paper-icon-button {
 }
 
 paper-spinner-lite {
-  --paper-spinner-color: white;
-        height: 20px;
+  ;
+        --paper-spinner-color: white;
         margin: 0 6px;
         opacity: 0;
         padding: 6px;
         position: absolute;
-        width: 20px;
 }
 
 paper-spinner-lite[active] {
@@ -3079,7 +3078,7 @@ input[type='search']::-webkit-search-decoration, input[type='search']::-webkit-s
 
 h1 {
   -webkit-margin-start: 6px;
-        -webkit-padding-end: 2px;
+        -webkit-padding-end: 12px;
         flex: 1;
         font-size: 123%;
         font-weight: 400;
@@ -3089,12 +3088,14 @@ h1 {
 }
 
 #leftContent {
-  -webkit-padding-start: 18px;
-        align-items: center;
-        box-sizing: border-box;
-        display: flex;
-        position: absolute;
+  -webkit-margin-start: 12px;
         transition: opacity 100ms;
+}
+
+#leftSpacer {
+  -webkit-margin-start: 6px;
+        align-items: center;
+        display: flex;
 }
 
 #menuButton {
@@ -3109,28 +3110,10 @@ h1 {
 #centeredContent {
   display: flex;
         flex: 1 1 0;
-        justify-content: center;
 }
 
-:host([narrow_]) #centeredContent {
-  -webkit-padding-end: var(--cr-toolbar-field-end-padding, 12px);
-}
-
-:host(:not([narrow_])) h1 {
-  -webkit-margin-start: var(--cr-toolbar-header-wide_-_-webkit-margin-start); -webkit-margin-end: var(--cr-toolbar-header-wide_-_-webkit-margin-end);
-}
-
-:host(:not([narrow_])) #leftContent {
-  max-width: calc((100% - var(--cr-toolbar-field-width)) / 2);
-        -webkit-padding-start: var(--cr-toolbar-left-content-wide_-_-webkit-padding-start); flex: var(--cr-toolbar-left-content-wide_-_flex); max-width: var(--cr-toolbar-left-content-wide_-_max-width, calc((100% - var(--cr-toolbar-field-width)) / 2)); position: var(--cr-toolbar-left-content-wide_-_position);
-}
-
-:host(:not([narrow_])) #centeredContent {
-  -webkit-margin-start: var(--cr-toolbar-field-margin, 0);
-}
-
-:host(:not([narrow_])) #rightContent {
-  flex: var(--cr-toolbar-right-content-wide_-_flex); position: var(--cr-toolbar-right-content-wide_-_position);
+#rightContent {
+  -webkit-margin-end: 12px;
 }
 
 :host([narrow_]) #centeredContent {
@@ -3138,7 +3121,17 @@ h1 {
 }
 
 :host([narrow_][showing-search_]) #leftContent {
-  opacity: 0;
+  position: absolute;
+        opacity: 0;
+}
+
+:host(:not([narrow_])) #leftContent {
+  flex: 1 1 var(--cr-toolbar-field-margin, 0);
+}
+
+:host(:not([narrow_])) #rightContent {
+  flex: 1 1 0;
+        text-align: end;
 }
 
 #menuPromo {
@@ -3163,7 +3156,7 @@ h1 {
 #menuPromo::before {
   background: inherit;
         
-        clip-path: polygon(0 105%, 100% 105%, 50% 0);  
+        clip-path: polygon(0 105%, 100% 105%, 50% 0);
         content: '';
         display: block;
         left: 10px;
@@ -3192,18 +3185,20 @@ h1 {
 
 </style>
     <div id="leftContent">
-      
-      <template is="dom-if" if="[[showMenu]]" restamp="">
-        <paper-icon-button id="menuButton" icon="cr:menu" on-tap="onMenuTap_" title="[[titleIfNotShowMenuPromo_(menuLabel, showMenuPromo)]]" aria-label$="[[menuLabel]]">
-        </paper-icon-button>
-        <template is="dom-if" if="[[showMenuPromo]]">
-          <div id="menuPromo" role="tooltip">
-            [[menuPromo]]
-            <button id="closePromo" on-tap="onClosePromoTap_" aria-label$="[[closeMenuPromo]]">✕</button>
-          
-        </div></template>
-      </template>
-      <h1>[[pageName]]</h1>
+      <div id="leftSpacer">
+        
+        <template is="dom-if" if="[[showMenu]]" restamp="">
+          <paper-icon-button id="menuButton" icon="cr:menu" on-tap="onMenuTap_" title="[[titleIfNotShowMenuPromo_(menuLabel, showMenuPromo)]]" aria-label$="[[menuLabel]]">
+          </paper-icon-button>
+          <template is="dom-if" if="[[showMenuPromo]]">
+            <div id="menuPromo" role="tooltip">
+              [[menuPromo]]
+              <button id="closePromo" on-tap="onClosePromoTap_" aria-label$="[[closeMenuPromo]]">✕</button>
+            
+          </div></template>
+        </template>
+        <h1>[[pageName]]</h1>
+      </div>
     </div>
 
     <div id="centeredContent">
@@ -3233,12 +3228,7 @@ h1 {
 }
 
 #toolbar {
-  --cr-toolbar-field-end-padding: 0;
-        --cr-toolbar-field-width: var(--downloads-card-width);
-        --cr-toolbar-header-wide_-_-webkit-margin-start:  24px; --cr-toolbar-header-wide_-_-webkit-margin-end:  16px;;
-        --cr-toolbar-left-content-wide_-_-webkit-padding-start:  0; --cr-toolbar-left-content-wide_-_flex:  1 0 1px; --cr-toolbar-left-content-wide_-_max-width:  none; --cr-toolbar-left-content-wide_-_position:  static;;
-        --cr-toolbar-right-content-wide_-_flex:  1 0 1px; --cr-toolbar-right-content-wide_-_position:  static;;
-        align-items: center;
+  --cr-toolbar-field-width: var(--downloads-card-width);
         flex: 1;
 }
 
@@ -3248,14 +3238,8 @@ paper-icon-button {
         --paper-icon-button_-_height:  32px; --paper-icon-button_-_padding:  6px; --paper-icon-button_-_width:  32px;;
 }
 
-.more-actions {
-  -webkit-margin-end: 16px;
-        -webkit-margin-start: 8px;
-        text-align: end;
-}
-
 #more {
-  --paper-menu-button_-_padding:  0;;
+  --paper-menu-button_-_padding:  6px;;
 }
 
 paper-menu {

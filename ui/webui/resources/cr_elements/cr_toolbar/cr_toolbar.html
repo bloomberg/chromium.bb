@@ -17,7 +17,7 @@
 
       h1 {
         -webkit-margin-start: 6px;
-        -webkit-padding-end: 2px;
+        -webkit-padding-end: 12px;
         flex: 1;
         font-size: 123%;
         font-weight: 400;
@@ -27,12 +27,15 @@
       }
 
       #leftContent {
-        -webkit-padding-start: 18px;
-        align-items: center;
-        box-sizing: border-box;
-        display: flex;
-        position: absolute;
+        /* margin-start here must match margin-end on #rightContent. */
+        -webkit-margin-start: 12px;
         transition: opacity 100ms;
+      }
+
+      #leftSpacer {
+        -webkit-margin-start: 6px;
+        align-items: center;
+        display: flex;
       }
 
       #menuButton {
@@ -47,30 +50,10 @@
       #centeredContent {
         display: flex;
         flex: 1 1 0;
-        justify-content: center;
       }
 
-      :host([narrow_]) #centeredContent {
-        -webkit-padding-end: var(--cr-toolbar-field-end-padding, 12px);
-      }
-
-      :host(:not([narrow_])) h1 {
-        @apply(--cr-toolbar-header-wide);
-      }
-
-      :host(:not([narrow_])) #leftContent {
-        /* The amount of space left of the search field:
-           (width of window - width of search field) / 2. */
-        max-width: calc((100% - var(--cr-toolbar-field-width)) / 2);
-        @apply(--cr-toolbar-left-content-wide);
-      }
-
-      :host(:not([narrow_])) #centeredContent {
-        -webkit-margin-start: var(--cr-toolbar-field-margin, 0);
-      }
-
-      :host(:not([narrow_])) #rightContent {
-        @apply(--cr-toolbar-right-content-wide);
+      #rightContent {
+        -webkit-margin-end: 12px;
       }
 
       :host([narrow_]) #centeredContent {
@@ -78,7 +61,17 @@
       }
 
       :host([narrow_][showing-search_]) #leftContent {
+        position: absolute;
         opacity: 0;
+      }
+
+      :host(:not([narrow_])) #leftContent {
+        flex: 1 1 var(--cr-toolbar-field-margin, 0);
+      }
+
+      :host(:not([narrow_])) #rightContent {
+        flex: 1 1 0;
+        text-align: end;
       }
 
       #menuPromo {
@@ -103,7 +96,7 @@
       #menuPromo::before {
         background: inherit;
         /* Up arrow. 105% in Y coordinates fixes glitch at 110/125% zoom. */
-        clip-path: polygon(0 105%, 100% 105%, 50% 0);  
+        clip-path: polygon(0 105%, 100% 105%, 50% 0);
         content: '';
         display: block;
         left: 10px;
@@ -131,21 +124,23 @@
       }
     </style>
     <div id="leftContent">
-      <!-- Note: showing #menuPromo relies on this dom-if being [restamp]. -->
-      <template is="dom-if" if="[[showMenu]]" restamp>
-        <paper-icon-button id="menuButton" icon="cr:menu" on-tap="onMenuTap_"
-            title="[[titleIfNotShowMenuPromo_(menuLabel, showMenuPromo)]]"
-            aria-label$="[[menuLabel]]">
-        </paper-icon-button>
-        <template is="dom-if" if="[[showMenuPromo]]">
-          <div id="menuPromo" role="tooltip">
-            [[menuPromo]]
-            <button id="closePromo" on-tap="onClosePromoTap_"
-                aria-label$="[[closeMenuPromo]]">&#x2715;</button>
-          </paper-tooltip>
+      <div id="leftSpacer">
+        <!-- Note: showing #menuPromo relies on this dom-if being [restamp]. -->
+        <template is="dom-if" if="[[showMenu]]" restamp>
+          <paper-icon-button id="menuButton" icon="cr:menu" on-tap="onMenuTap_"
+              title="[[titleIfNotShowMenuPromo_(menuLabel, showMenuPromo)]]"
+              aria-label$="[[menuLabel]]">
+          </paper-icon-button>
+          <template is="dom-if" if="[[showMenuPromo]]">
+            <div id="menuPromo" role="tooltip">
+              [[menuPromo]]
+              <button id="closePromo" on-tap="onClosePromoTap_"
+                  aria-label$="[[closeMenuPromo]]">&#x2715;</button>
+            </paper-tooltip>
+          </template>
         </template>
-      </template>
-      <h1>[[pageName]]</h1>
+        <h1>[[pageName]]</h1>
+      </div>
     </div>
 
     <div id="centeredContent">

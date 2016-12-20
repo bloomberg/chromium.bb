@@ -1832,13 +1832,12 @@ paper-icon-button {
 }
 
 paper-spinner-lite {
-  --paper-spinner-color: white;
-        height: 20px;
+  height: var(--cr-icon-size_-_height); width: var(--cr-icon-size_-_width);
+        --paper-spinner-color: white;
         margin: 0 6px;
         opacity: 0;
         padding: 6px;
         position: absolute;
-        width: 20px;
 }
 
 paper-spinner-lite[active] {
@@ -1947,7 +1946,7 @@ input[type='search']::-webkit-search-decoration, input[type='search']::-webkit-s
 
 h1 {
   -webkit-margin-start: 6px;
-        -webkit-padding-end: 2px;
+        -webkit-padding-end: 12px;
         flex: 1;
         font-size: 123%;
         font-weight: 400;
@@ -1957,12 +1956,14 @@ h1 {
 }
 
 #leftContent {
-  -webkit-padding-start: 18px;
-        align-items: center;
-        box-sizing: border-box;
-        display: flex;
-        position: absolute;
+  -webkit-margin-start: 12px;
         transition: opacity 100ms;
+}
+
+#leftSpacer {
+  -webkit-margin-start: 6px;
+        align-items: center;
+        display: flex;
 }
 
 #menuButton {
@@ -1977,28 +1978,10 @@ h1 {
 #centeredContent {
   display: flex;
         flex: 1 1 0;
-        justify-content: center;
 }
 
-:host([narrow_]) #centeredContent {
-  -webkit-padding-end: var(--cr-toolbar-field-end-padding, 12px);
-}
-
-:host(:not([narrow_])) h1 {
-  ;
-}
-
-:host(:not([narrow_])) #leftContent {
-  max-width: calc((100% - var(--cr-toolbar-field-width)) / 2);
-        ;
-}
-
-:host(:not([narrow_])) #centeredContent {
-  -webkit-margin-start: var(--cr-toolbar-field-margin, 0);
-}
-
-:host(:not([narrow_])) #rightContent {
-  position: var(--cr-toolbar-right-content-wide_-_position); left: var(--cr-toolbar-right-content-wide_-_left); right: var(--cr-toolbar-right-content-wide_-_right);
+#rightContent {
+  -webkit-margin-end: 12px;
 }
 
 :host([narrow_]) #centeredContent {
@@ -2006,7 +1989,17 @@ h1 {
 }
 
 :host([narrow_][showing-search_]) #leftContent {
-  opacity: 0;
+  position: absolute;
+        opacity: 0;
+}
+
+:host(:not([narrow_])) #leftContent {
+  flex: 1 1 var(--cr-toolbar-field-margin, 0);
+}
+
+:host(:not([narrow_])) #rightContent {
+  flex: 1 1 0;
+        text-align: end;
 }
 
 #menuPromo {
@@ -2031,7 +2024,7 @@ h1 {
 #menuPromo::before {
   background: inherit;
         
-        clip-path: polygon(0 105%, 100% 105%, 50% 0);  
+        clip-path: polygon(0 105%, 100% 105%, 50% 0);
         content: '';
         display: block;
         left: 10px;
@@ -2060,18 +2053,20 @@ h1 {
 
 </style>
     <div id="leftContent">
-      
-      <template is="dom-if" if="[[showMenu]]" restamp="">
-        <paper-icon-button id="menuButton" icon="cr:menu" on-tap="onMenuTap_" title="[[titleIfNotShowMenuPromo_(menuLabel, showMenuPromo)]]" aria-label$="[[menuLabel]]">
-        </paper-icon-button>
-        <template is="dom-if" if="[[showMenuPromo]]">
-          <div id="menuPromo" role="tooltip">
-            [[menuPromo]]
-            <button id="closePromo" on-tap="onClosePromoTap_" aria-label$="[[closeMenuPromo]]">✕</button>
-          
-        </div></template>
-      </template>
-      <h1>[[pageName]]</h1>
+      <div id="leftSpacer">
+        
+        <template is="dom-if" if="[[showMenu]]" restamp="">
+          <paper-icon-button id="menuButton" icon="cr:menu" on-tap="onMenuTap_" title="[[titleIfNotShowMenuPromo_(menuLabel, showMenuPromo)]]" aria-label$="[[menuLabel]]">
+          </paper-icon-button>
+          <template is="dom-if" if="[[showMenuPromo]]">
+            <div id="menuPromo" role="tooltip">
+              [[menuPromo]]
+              <button id="closePromo" on-tap="onClosePromoTap_" aria-label$="[[closeMenuPromo]]">✕</button>
+            
+          </div></template>
+        </template>
+        <h1>[[pageName]]</h1>
+      </div>
     </div>
 
     <div id="centeredContent">
@@ -2320,21 +2315,11 @@ cr-toolbar, #overlay-buttons, #overlay-wrapper, #toolbar-container {
 }
 
 cr-toolbar {
-  --cr-toolbar-field-end-padding: 0;
-        --cr-toolbar-field-margin: var(--side-bar-width);
-        --cr-toolbar-right-content-wide_-_position:  absolute; --cr-toolbar-right-content-wide_-_right:  0; --cr-toolbar-right-content-wide_-_left: initial;;
-}
-
-:host-context([dir=rtl]) cr-toolbar {
-  --cr-toolbar-right-content-wide_-_position:  absolute; --cr-toolbar-right-content-wide_-_left:  0; --cr-toolbar-right-content-wide_-_right: initial;;
+  --cr-toolbar-field-margin: var(--side-bar-width);
 }
 
 :host([has-drawer]) cr-toolbar {
   --cr-toolbar-field-margin: 0;
-}
-
-cr-toolbar .more-actions {
-  -webkit-margin-end: 12px;
 }
 
 #info-button {
@@ -2512,6 +2497,7 @@ paper-tab {
     --cr-focused-item-color: var(--google-grey-300);
     
     --cr-icon-padding: 8px;
+    --cr-icon-size_-_height:  20px; --cr-icon-size_-_width:  20px;
     --cr-selectable-focus_-_background-color:  var(--cr-focused-item-color); --cr-selectable-focus_-_outline:  none;
     --cr-separator-line: 1px solid rgba(0, 0, 0, 0.06);
     --paper-checkbox-ink-size: 40px;
@@ -2548,6 +2534,22 @@ paper-tab {
 
 [actionable] {
   cursor: var(--cr-actionable_-_cursor);
+}
+
+button[is='paper-icon-button-light'].subpage-arrow {
+  background-image: url("chrome://resources/images/arrow_right.svg");
+}
+
+button[is='paper-icon-button-light'].icon-external {
+  background-image: url("chrome://resources/images/open_in_new.svg");
+}
+
+.subpage-arrow, .icon-external {
+  display: none;
+}
+
+[actionable] :-webkit-any(.subpage-arrow, .icon-external), [actionable]:-webkit-any(.subpage-arrow, .icon-external) {
+  display: block;
 }
 
 [scrollable] {
@@ -3242,6 +3244,22 @@ paper-spinner {
 
 [actionable] {
   cursor: var(--cr-actionable_-_cursor);
+}
+
+button[is='paper-icon-button-light'].subpage-arrow {
+  background-image: url("chrome://resources/images/arrow_right.svg");
+}
+
+button[is='paper-icon-button-light'].icon-external {
+  background-image: url("chrome://resources/images/open_in_new.svg");
+}
+
+.subpage-arrow, .icon-external {
+  display: none;
+}
+
+[actionable] :-webkit-any(.subpage-arrow, .icon-external), [actionable]:-webkit-any(.subpage-arrow, .icon-external) {
+  display: block;
 }
 
 [scrollable] {
