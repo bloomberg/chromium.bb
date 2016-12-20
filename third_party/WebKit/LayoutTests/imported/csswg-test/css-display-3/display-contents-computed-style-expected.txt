@@ -1,0 +1,36 @@
+
+CSS Display: Computed style for display:contents
+
+
+
+
+
+
+
+    html, .contents { display: contents }
+
+    #t2 .contents { background-color: green }
+    #t2 span { background-color: inherit }
+
+    #t3 .contents { color: green }
+
+    #t4 { display: flex; align-items: center }
+    #t4 .contents { align-items: baseline }
+    #t4 span { align-self: auto }
+
+    #t5 {
+        width: auto;
+        height: 50%;
+        margin-left: 25%;
+        padding-top: 10%;
+    }
+
+This is a testharness.js-based test.
+PASS Serialization of computed style value for display:contents 
+PASS display:contents element as inherit parent - explicit inheritance 
+PASS display:contents element as inherit parent - implicit inheritance 
+PASS align-self:auto resolution for flex item inside display:contents 
+PASS Resolved value should be computed value, not used value, for display:contents 
+FAIL display:contents is blockified for root elements assert_equals: expected "block" but got "contents"
+Harness: the test ran to completion.
+

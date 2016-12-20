@@ -20,6 +20,8 @@ imported/csswg-test/css-color-3 [ Skip ]
 imported/csswg-test/css-color-4 [ Skip ]
 imported/csswg-test/css-conditional-3 [ Skip ]
 imported/csswg-test/css-counter-styles-3 [ Skip ]
+## Owners: ecobos@igalia.com
+# imported/csswg-test/css-dislay-3 [ Pass ]
 imported/csswg-test/css-exclusions-1 [ Skip ]
 ## Owners: cbiesinger@chromium.org
 # imported/csswg-test/css-flexbox-1 [ Pass ]

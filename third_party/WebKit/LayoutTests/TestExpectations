@@ -2429,3 +2429,36 @@ crbug.com/664859 virtual/threaded/transitions/transition-end-event-multiple-02.h
 crbug.com/664859 virtual/threaded/transitions/transition-end-event-unprefixed-02.html [ Pass Failure ]
 crbug.com/664859 virtual/threaded/transitions/transition-end-event-window.html [ Pass Failure ]
 # ====== Random order flaky tests end here ======
+
+# ====== Begin of display:contents tests ======
+
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-dynamic-flex-001-inline.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-dynamic-flex-001-none.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-dynamic-flex-002-inline.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-dynamic-flex-002-none.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-dynamic-flex-003-inline.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-dynamic-flex-003-none.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-dynamic-inline-flex-001-inline.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-dynamic-inline-flex-001-none.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-dynamic-list-001-inline.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-dynamic-list-001-none.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-dynamic-multicol-001-inline.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-dynamic-multicol-001-none.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-dynamic-table-001-inline.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-dynamic-table-001-none.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-dynamic-table-002-inline.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-dynamic-table-002-none.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-flex-001.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-flex-002.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-flex-003.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-float-001.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-inline-flex-001.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-list-001.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-multicol-001.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-oof-001.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-oof-002.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-table-001.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-table-002.html [ Failure ]
+crbug.com/657748 imported/csswg-test/css-display-3/display-contents-text-only-001.html [ Failure ]
+
+# ====== End of display: contents tests ======
