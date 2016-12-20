@@ -131,22 +131,24 @@ class SelectorChecker {
  private:
   bool checkOne(const SelectorCheckingContext&, MatchResult&) const;
 
-  enum Match {
+  enum MatchStatus {
     SelectorMatches,
     SelectorFailsLocally,
     SelectorFailsAllSiblings,
     SelectorFailsCompletely
   };
 
-  Match matchSelector(const SelectorCheckingContext&, MatchResult&) const;
-  Match matchForSubSelector(const SelectorCheckingContext&, MatchResult&) const;
-  Match matchForRelation(const SelectorCheckingContext&, MatchResult&) const;
-  Match matchForPseudoContent(const SelectorCheckingContext&,
-                              const Element&,
-                              MatchResult&) const;
-  Match matchForPseudoShadow(const SelectorCheckingContext&,
-                             const ContainerNode*,
-                             MatchResult&) const;
+  MatchStatus matchSelector(const SelectorCheckingContext&, MatchResult&) const;
+  MatchStatus matchForSubSelector(const SelectorCheckingContext&,
+                                  MatchResult&) const;
+  MatchStatus matchForRelation(const SelectorCheckingContext&,
+                               MatchResult&) const;
+  MatchStatus matchForPseudoContent(const SelectorCheckingContext&,
+                                    const Element&,
+                                    MatchResult&) const;
+  MatchStatus matchForPseudoShadow(const SelectorCheckingContext&,
+                                   const ContainerNode*,
+                                   MatchResult&) const;
   bool checkPseudoClass(const SelectorCheckingContext&, MatchResult&) const;
   bool checkPseudoElement(const SelectorCheckingContext&, MatchResult&) const;
   bool checkScrollbarPseudoClass(const SelectorCheckingContext&,
