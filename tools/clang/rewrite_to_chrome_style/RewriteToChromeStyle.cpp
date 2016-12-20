@@ -330,6 +330,70 @@ AST_MATCHER_P(clang::QualType, hasString, std::string, ExpectedString) {
   return ExpectedString == Node.getAsString();
 }
 
+bool ShouldPrefixFunctionName(const std::string& old_method_name) {
+  // Methods that are named similarily to a type - they should be prefixed
+  // with a "get" prefix.
+  static const char* kConflictingMethods[] = {
+      "animationWorklet",
+      "audioWorklet",
+      "binaryType",
+      "blob",
+      "channelCountMode",
+      "color",
+      "counterDirectives",
+      "document",
+      "emptyChromeClient",
+      "emptyEditorClient",
+      "emptySpellCheckerClient",
+      "entryType",
+      "error",
+      "fileUtilities",
+      "font",
+      "iconURL",
+      "inputMethodController",
+      "inputType",
+      "layout",
+      "layoutBlock",
+      "layoutSize",
+      "length",
+      "lineCap",
+      "lineJoin",
+      "matchedProperties",
+      "name",
+      "navigationType",
+      "node",
+      "outcome",
+      "pagePopup",
+      "paintWorklet",
+      "path",
+      "processingInstruction",
+      "readyState",
+      "screenInfo",
+      "scrollAnimator",
+      "settings",
+      "signalingState",
+      "state",
+      "string",
+      "text",
+      "textAlign",
+      "textBaseline",
+      "theme",
+      "timing",
+      "topLevelBlameContext",
+      "widget",
+  };
+  for (const auto& conflicting_method : kConflictingMethods) {
+    if (old_method_name == conflicting_method)
+      return true;
+  }
+
+  return false;
+}
+
+AST_MATCHER(clang::FunctionDecl, shouldPrefixFunctionName) {
+  return ShouldPrefixFunctionName(Node.getName().str());
+}
+
 bool GetNameForDecl(const clang::FunctionDecl& decl,
                     clang::ASTContext& context,
                     std::string& name) {
@@ -349,7 +413,8 @@ bool GetNameForDecl(const clang::FunctionDecl& decl,
       hasString(name),
       // hasDeclaration matches resolved type (Foo or DerivedFoo above).
       hasDeclaration(namedDecl(hasName(name))),
-      hasDeclaration(cxxRecordDecl(isDerivedFrom(namedDecl(hasName(name)))))));
+      hasDeclaration(
+          cxxRecordDecl(isDerivedFrom(namedDecl(hasName(name)))))));
 
   // |type_containing_same_name_as_function| matcher will match all of the
   // return types below:
@@ -361,8 +426,9 @@ bool GetNameForDecl(const clang::FunctionDecl& decl,
                      hasDescendant(type_with_same_name_as_function)));
   // https://crbug.com/582312: Prepend "Get" if method name conflicts with
   // return type.
-  auto conflict_matcher =
-      functionDecl(returns(type_containing_same_name_as_function));
+  auto conflict_matcher = functionDecl(anyOf(
+      returns(type_containing_same_name_as_function),
+      shouldPrefixFunctionName()));
   if (IsMatching(conflict_matcher, decl, context))
     name = "Get" + name;
 
@@ -819,6 +885,8 @@ class UnresolvedRewriterBase : public RewriterBase<TargetNode> {
         !IsBlacklistedMethodName(old_name)) {
       new_name = old_name;
       new_name[0] = clang::toUppercase(old_name[0]);
+      if (ShouldPrefixFunctionName(old_name))
+        new_name = "Get" + new_name;
       return true;
     }
 

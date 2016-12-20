@@ -173,6 +173,10 @@ class BitVector {
   class Baz {};
   class FooBar {};
 
+  // Should be renamed to GetReadyState, because of
+  // ShouldPrefixFunctionName heuristic.
+  int GetReadyState() { return 123; }
+
   template <typename T>
   class MyRefPtr {};
 
