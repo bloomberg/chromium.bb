@@ -59,9 +59,6 @@ const CGFloat kMediumAlpha = 0.5;
 // Loads all the shared elements from the extension context and update the UI.
 - (void)loadElementsFromContext;
 
-// Performs a fade in animation for the whole widget.
-- (void)fadeIn;
-
 // Sets constaints to the widget so that margin are at least
 // kShareExtensionMargin points and widget width is closest up to
 // kShareExtensionMaxWidth points.
@@ -74,6 +71,8 @@ const CGFloat kMediumAlpha = 0.5;
 @synthesize maskView = _maskView;
 @synthesize shareView = _shareView;
 @synthesize itemType = _itemType;
+
+#pragma mark - UIViewController
 
 - (void)viewDidLoad {
   [super viewDidLoad];
@@ -94,9 +93,13 @@ const CGFloat kMediumAlpha = 0.5;
 
   [self constrainWidgetWidth];
 
-  // Center the widget in the screen.
+  // Position the widget below the screen. It will be slided up with an
+  // animation.
   _centerYConstraint = [[shareView centerYAnchor]
       constraintEqualToAnchor:[self.view centerYAnchor]];
+  [_centerYConstraint setConstant:(self.view.frame.size.height +
+                                   self.shareView.frame.size.height) /
+                                  2];
   [_centerYConstraint setActive:YES];
   [[[shareView centerXAnchor] constraintEqualToAnchor:[self.view centerXAnchor]]
       setActive:YES];
@@ -105,8 +108,22 @@ const CGFloat kMediumAlpha = 0.5;
   [self.shareView setTranslatesAutoresizingMaskIntoConstraints:NO];
 
   [self loadElementsFromContext];
-  [self fadeIn];
 }
+
+- (void)viewWillAppear:(BOOL)animated {
+  [super viewWillAppear:animated];
+
+  // Center the widget.
+  [_centerYConstraint setConstant:0];
+  [self.maskView setAlpha:0];
+  [UIView animateWithDuration:kAnimationDuration
+                   animations:^{
+                     [self.maskView setAlpha:1];
+                     [self.view layoutIfNeeded];
+                   }];
+}
+
+#pragma mark - Private methods
 
 - (void)constrainWidgetWidth {
   // Setting the constraints.
@@ -138,17 +155,6 @@ const CGFloat kMediumAlpha = 0.5;
   [self.shareView
       setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh
                                       forAxis:UILayoutConstraintAxisHorizontal];
-}
-
-- (void)fadeIn {
-  // Fade in animation.
-  [self.maskView setAlpha:0];
-  [self.shareView setAlpha:0];
-  [UIView animateWithDuration:kAnimationDuration
-                   animations:^{
-                     [self.maskView setAlpha:kMediumAlpha];
-                     [self.shareView setAlpha:1];
-                   }];
 }
 
 - (void)loadElementsFromContext {
@@ -195,10 +201,13 @@ const CGFloat kMediumAlpha = 0.5;
 }
 
 - (void)dismissAndReturnItem:(NSExtensionItem*)item {
-  // Set the Y center constraints so the whole extension slides up out of the
+  // Set the Y center constraints so the whole extension slides out of the
   // screen. Constant is relative to the center of the screen.
-  [_centerYConstraint setConstant:-(self.view.frame.size.height +
-                                    self.shareView.frame.size.height) /
+  // The direction (up or down) is relative to the output (cancel or submit).
+  NSInteger direction = item ? -1 : 1;
+  [_centerYConstraint setConstant:direction *
+                                  (self.view.frame.size.height +
+                                   self.shareView.frame.size.height) /
                                   2];
   [UIView animateWithDuration:kAnimationDuration
       animations:^{
