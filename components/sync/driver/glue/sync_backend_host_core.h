@@ -39,7 +39,7 @@ class SyncBackendHostCore
       public TypeDebugInfoObserver {
  public:
   SyncBackendHostCore(const std::string& name,
-                      const base::FilePath& sync_data_folder_path,
+                      const base::FilePath& sync_data_folder,
                       const base::WeakPtr<SyncBackendHostImpl>& backend);
 
   // MemoryDumpProvider implementation.
@@ -173,11 +173,6 @@ class SyncBackendHostCore
   // Disables forwarding of directory type debug counters.
   void DisableDirectoryTypeDebugInfoForwarding();
 
-  // Delete the sync data folder to cleanup backend data.  Happens the first
-  // time sync is enabled for a user (to prevent accidentally reusing old
-  // sync databases), as well as shutdown when you're no longer syncing.
-  void DeleteSyncDataFolder();
-
   // Tell the sync manager to persist its state by writing to disk.
   // Called on the sync thread, both by a timer and, on Android, when the
   // application is backgrounded.
@@ -206,7 +201,7 @@ class SyncBackendHostCore
   const std::string name_;
 
   // Path of the folder that stores the sync data files.
-  const base::FilePath sync_data_folder_path_;
+  const base::FilePath sync_data_folder_;
 
   // Our parent SyncBackendHostImpl.
   WeakHandle<SyncBackendHostImpl> host_;

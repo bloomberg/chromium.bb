@@ -76,7 +76,7 @@ class ProfileSyncComponentsFactoryImpl
       const std::string& name,
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
-      const base::FilePath& sync_folder) override;
+      const base::FilePath& sync_data_folder) override;
   std::unique_ptr<syncer::LocalDeviceInfoProvider>
   CreateLocalDeviceInfoProvider() override;
   std::unique_ptr<syncer::AttachmentService> CreateAttachmentService(

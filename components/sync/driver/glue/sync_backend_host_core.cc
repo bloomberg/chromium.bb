@@ -28,6 +28,7 @@
 #include "components/sync/engine/sync_backend_registrar.h"
 #include "components/sync/engine/sync_manager.h"
 #include "components/sync/engine/sync_manager_factory.h"
+#include "components/sync/syncable/directory.h"
 
 // Helper macros to log with the syncer thread name; useful when there
 // are multiple syncers involved.
@@ -57,10 +58,10 @@ class EngineComponentsFactory;
 
 SyncBackendHostCore::SyncBackendHostCore(
     const std::string& name,
-    const base::FilePath& sync_data_folder_path,
+    const base::FilePath& sync_data_folder,
     const base::WeakPtr<SyncBackendHostImpl>& backend)
     : name_(name),
-      sync_data_folder_path_(sync_data_folder_path),
+      sync_data_folder_(sync_data_folder),
       host_(backend),
       weak_ptr_factory_(this) {
   DCHECK(backend.get());
@@ -325,12 +326,12 @@ void SyncBackendHostCore::DoInitialize(SyncEngine::InitParams params) {
   // Blow away the partial or corrupt sync data folder before doing any more
   // initialization, if necessary.
   if (params.delete_sync_data_folder) {
-    DeleteSyncDataFolder();
+    syncable::Directory::DeleteDirectoryFiles(sync_data_folder_);
   }
 
   // Make sure that the directory exists before initializing the backend.
   // If it already exists, this will do no harm.
-  if (!base::CreateDirectory(sync_data_folder_path_)) {
+  if (!base::CreateDirectory(sync_data_folder_)) {
     DLOG(FATAL) << "Sync Data directory creation failed.";
   }
 
@@ -345,7 +346,7 @@ void SyncBackendHostCore::DoInitialize(SyncEngine::InitParams params) {
   sync_manager_->AddObserver(this);
 
   SyncManager::InitArgs args;
-  args.database_location = sync_data_folder_path_;
+  args.database_location = sync_data_folder_;
   args.event_handler = params.event_handler;
   args.service_url = params.service_url;
   args.enable_local_sync_backend = params.enable_local_sync_backend;
@@ -480,7 +481,7 @@ void SyncBackendHostCore::DoShutdown(ShutdownReason reason) {
   registrar_ = nullptr;
 
   if (reason == DISABLE_SYNC)
-    DeleteSyncDataFolder();
+    syncable::Directory::DeleteDirectoryFiles(sync_data_folder_);
 
   host_.Reset();
   weak_ptr_factory_.InvalidateWeakPtrs();
@@ -599,14 +600,6 @@ void SyncBackendHostCore::DisableDirectoryTypeDebugInfoForwarding() {
 
   if (sync_manager_->HasDirectoryTypeDebugInfoObserver(this))
     sync_manager_->UnregisterDirectoryTypeDebugInfoObserver(this);
-}
-
-void SyncBackendHostCore::DeleteSyncDataFolder() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (base::DirectoryExists(sync_data_folder_path_)) {
-    if (!base::DeleteFile(sync_data_folder_path_, true))
-      SLOG(DFATAL) << "Could not delete the Sync Data folder.";
-  }
 }
 
 void SyncBackendHostCore::StartSavingChanges() {

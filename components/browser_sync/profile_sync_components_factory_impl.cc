@@ -313,9 +313,9 @@ syncer::SyncEngine* ProfileSyncComponentsFactoryImpl::CreateSyncEngine(
     const std::string& name,
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
-    const base::FilePath& sync_folder) {
+    const base::FilePath& sync_data_folder) {
   return new syncer::SyncBackendHostImpl(name, sync_client_, invalidator,
-                                         sync_prefs, sync_folder);
+                                         sync_prefs, sync_data_folder);
 }
 
 std::unique_ptr<syncer::LocalDeviceInfoProvider>

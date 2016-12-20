@@ -172,15 +172,6 @@ const net::BackoffEntry::Policy kRequestAccessTokenBackoffPolicy = {
 const base::FilePath::CharType kLevelDBFolderName[] =
     FILE_PATH_LITERAL("LevelDB");
 
-// Perform the actual sync data folder deletion.
-// This should only be called on the sync thread.
-void DeleteSyncDataFolder(const base::FilePath& directory_path) {
-  if (base::DirectoryExists(directory_path)) {
-    if (!base::DeleteFile(directory_path, true))
-      LOG(DFATAL) << "Could not delete the Sync Data folder.";
-  }
-}
-
 }  // namespace
 
 ProfileSyncService::InitParams::InitParams() = default;
@@ -288,10 +279,10 @@ void ProfileSyncService::Initialize() {
     // TODO(skym): Stop creating leveldb files when signed out.
     // TODO(skym): Verify using AsUTF8Unsafe is okay here. Should work as long
     // as the Local State file is guaranteed to be UTF-8.
-    device_info_service_ = base::MakeUnique<DeviceInfoSyncBridge>(
+    device_info_sync_bridge_ = base::MakeUnique<DeviceInfoSyncBridge>(
         local_device_.get(),
         base::Bind(&ModelTypeStore::CreateStore, syncer::DEVICE_INFO,
-                   directory_path_.Append(base::FilePath(kLevelDBFolderName))
+                   sync_data_folder_.Append(base::FilePath(kLevelDBFolderName))
                        .AsUTF8Unsafe(),
                    blocking_task_runner),
         base::Bind(&ModelTypeChangeProcessor::Create));
@@ -447,8 +438,8 @@ sync_sessions::FaviconCache* ProfileSyncService::GetFaviconCache() {
 syncer::DeviceInfoTracker* ProfileSyncService::GetDeviceInfoTracker() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   // One of the two should always be non-null after initialization is done.
-  if (device_info_service_) {
-    return device_info_service_.get();
+  if (device_info_sync_bridge_) {
+    return device_info_sync_bridge_.get();
   } else {
     return device_info_sync_service_.get();
   }
@@ -595,7 +586,7 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
 
   engine_.reset(sync_client_->GetSyncApiComponentFactory()->CreateSyncEngine(
       debug_identifier_, invalidator, sync_prefs_.AsWeakPtr(),
-      directory_path_));
+      sync_data_folder_));
 
   // Clear any old errors the first time sync starts.
   if (!IsFirstSetupComplete())
@@ -728,7 +719,9 @@ void ProfileSyncService::ShutdownImpl(syncer::ShutdownReason reason) {
       // If the engine is already shut down when a DISABLE_SYNC happens,
       // the data directory needs to be cleaned up here.
       sync_thread_->task_runner()->PostTask(
-          FROM_HERE, base::Bind(&DeleteSyncDataFolder, directory_path_));
+          FROM_HERE,
+          base::Bind(&syncer::syncable::Directory::DeleteDirectoryFiles,
+                     sync_data_folder_));
     }
     return;
   }
@@ -2477,7 +2470,7 @@ syncer::SyncableService* ProfileSyncService::GetDeviceInfoSyncableService() {
 
 syncer::ModelTypeSyncBridge* ProfileSyncService::GetDeviceInfoSyncBridge() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return device_info_service_.get();
+  return device_info_sync_bridge_.get();
 }
 
 syncer::SyncService::SyncTokenStatus ProfileSyncService::GetSyncTokenStatus()
@@ -2523,7 +2516,7 @@ void ProfileSyncService::FlushDirectory() const {
 
 base::FilePath ProfileSyncService::GetDirectoryPathForTest() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return directory_path_;
+  return sync_data_folder_;
 }
 
 base::MessageLoop* ProfileSyncService::GetSyncLoopForTest() const {

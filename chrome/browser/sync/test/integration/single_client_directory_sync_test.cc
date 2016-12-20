@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file_enumerator.h"
+#include "base/files/file_path.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -21,6 +23,22 @@
 #include "url/gurl.h"
 
 using content::BrowserThread;
+using base::FileEnumerator;
+using base::FilePath;
+
+namespace {
+
+// USS ModelTypeStore uses the same folder as the Directory. However, all of its
+// content is in a sub-folder. By not asking for recursive files, this function
+// will avoid seeing any of those, and return iff Directory database files still
+// exist.
+bool FolderContainsFiles(const FilePath& folder) {
+  if (base::DirectoryExists(folder)) {
+    return !FileEnumerator(folder, false, FileEnumerator::FILES).Next().empty();
+  } else {
+    return false;
+  }
+}
 
 class SingleClientDirectorySyncTest : public SyncTest {
  public:
@@ -63,8 +81,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
                        StopThenDisableDeletesDirectory) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   browser_sync::ProfileSyncService* sync_service = GetSyncService(0);
-  base::FilePath directory_path = sync_service->GetDirectoryPathForTest();
-  ASSERT_TRUE(base::DirectoryExists(directory_path));
+  FilePath directory_path = sync_service->GetDirectoryPathForTest();
+  ASSERT_TRUE(FolderContainsFiles(directory_path));
   sync_service->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
 
   // Wait for StartupController::StartUp()'s tasks to finish.
@@ -75,8 +93,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
   // Wait for the directory deletion to finish.
   base::MessageLoop* sync_loop = sync_service->GetSyncLoopForTest();
   ASSERT_TRUE(WaitForExistingTasksOnLoop(sync_loop));
-
-  ASSERT_FALSE(base::DirectoryExists(directory_path));
+  ASSERT_FALSE(FolderContainsFiles(directory_path));
 }
 
 // Verify that when the sync directory's backing store becomes corrupted, we
@@ -100,8 +117,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
   ASSERT_TRUE(WaitForExistingTasksOnLoop(sync_loop));
 
   // Now corrupt the database.
-  const base::FilePath directory_path(sync_service->GetDirectoryPathForTest());
-  const base::FilePath sync_db(directory_path.Append(
+  const FilePath directory_path(sync_service->GetDirectoryPathForTest());
+  const FilePath sync_db(directory_path.Append(
       syncer::syncable::Directory::kSyncDatabaseFilename));
   ASSERT_TRUE(sql::test::CorruptSizeInHeaderWithLock(sync_db));
 
@@ -123,5 +140,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
   // Wait until the sync loop has processed any existing tasks and see that the
   // directory no longer exists.
   ASSERT_TRUE(WaitForExistingTasksOnLoop(sync_loop));
-  ASSERT_FALSE(base::DirectoryExists(directory_path));
+  ASSERT_FALSE(FolderContainsFiles(directory_path));
 }
+
+}  // namespace

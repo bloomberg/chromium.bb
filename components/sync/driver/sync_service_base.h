@@ -76,8 +76,10 @@ class SyncServiceBase : public SyncService, public SyncEngineHost {
   // information.
   const base::FilePath base_directory_;
 
-  // The full path to the sync data directory.
-  const base::FilePath directory_path_;
+  // The full path to the sync data folder. The folder is not fully deleted when
+  // sync is disabled, since it holds both Directory and ModelTypeStore data.
+  // Directory files will be selectively targeted instead.
+  const base::FilePath sync_data_folder_;
 
   // An identifier representing this instance for debugging purposes.
   const std::string debug_identifier_;

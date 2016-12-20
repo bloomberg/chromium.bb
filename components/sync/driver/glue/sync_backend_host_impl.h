@@ -49,12 +49,11 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
  public:
   typedef SyncStatus Status;
 
-  SyncBackendHostImpl(
-      const std::string& name,
-      SyncClient* sync_client,
-      invalidation::InvalidationService* invalidator,
-      const base::WeakPtr<SyncPrefs>& sync_prefs,
-      const base::FilePath& sync_folder);
+  SyncBackendHostImpl(const std::string& name,
+                      SyncClient* sync_client,
+                      invalidation::InvalidationService* invalidator,
+                      const base::WeakPtr<SyncPrefs>& sync_prefs,
+                      const base::FilePath& sync_data_folder);
   ~SyncBackendHostImpl() override;
 
   // SyncEngine implementation.

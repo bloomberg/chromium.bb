@@ -61,7 +61,7 @@ SyncServiceBase::SyncServiceBase(std::unique_ptr<SyncClient> sync_client,
       signin_(std::move(signin)),
       channel_(channel),
       base_directory_(base_directory),
-      directory_path_(
+      sync_data_folder_(
           base_directory_.Append(base::FilePath(kSyncDataFolderName))),
       debug_identifier_(debug_identifier),
       sync_prefs_(sync_client_->GetPrefService()) {}

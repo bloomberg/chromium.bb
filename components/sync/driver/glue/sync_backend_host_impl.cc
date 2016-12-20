@@ -47,13 +47,13 @@ SyncBackendHostImpl::SyncBackendHostImpl(
     SyncClient* sync_client,
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<SyncPrefs>& sync_prefs,
-    const base::FilePath& sync_folder)
+    const base::FilePath& sync_data_folder)
     : sync_client_(sync_client),
       name_(name),
       sync_prefs_(sync_prefs),
       invalidator_(invalidator),
       weak_ptr_factory_(this) {
-  core_ = new SyncBackendHostCore(name_, sync_folder,
+  core_ = new SyncBackendHostCore(name_, sync_data_folder,
                                   weak_ptr_factory_.GetWeakPtr());
 }
 
