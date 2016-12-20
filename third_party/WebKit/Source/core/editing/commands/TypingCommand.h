@@ -107,8 +107,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
 
   ETypingCommand commandTypeOfOpenCommand() const { return m_commandType; }
   TextCompositionType compositionType() const { return m_compositionType; }
-  // |TypingCommand| may contain multiple |InsertTextCommand|, should return
-  // |textDataForInputEvent()| of the last one.
+  // Returns text data of the last added typing.
   String textDataForInputEvent() const final;
 
  private:
@@ -160,6 +159,10 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
                                                              LocalFrame*);
 
   void updatePreservesTypingStyle(ETypingCommand);
+  // Returns |false| to cancel adding typing.
+  bool willAddTypingToOpenCommand(EditCommandSource,
+                                  InputEvent::InputType,
+                                  const String& text = nullAtom);
   void typingAddedToOpenCommand(ETypingCommand);
   bool makeEditableRootEmpty(EditingState*);
 
@@ -171,6 +174,7 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
 
   ETypingCommand m_commandType;
   String m_textToInsert;
+  InputEvent::InputType m_inputType;
   bool m_openForMoreTyping;
   bool m_selectInsertedText;
   bool m_smartDelete;

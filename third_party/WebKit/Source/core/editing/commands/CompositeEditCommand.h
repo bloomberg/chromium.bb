@@ -118,6 +118,15 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
  protected:
   explicit CompositeEditCommand(Document&);
 
+  // TODO(chongz): Implement "beforeinput" as described below:
+  // Fires "beforeinput" and will return |false| to cancel applying editing if
+  //   * "beforeinput" was canceled, or
+  //   * |frame| was destroyed by event handlers.
+  // |willApplyEditing()| should be called from
+  //   * |CompositeEditCommand::apply()|, and
+  //   * |TypingCommand::willAddTypingToOpenCommand()|.
+  bool willApplyEditing(EditCommandSource);
+
   //
   // sugary-sweet convenience functions to help create and apply edit commands
   // in composite commands
