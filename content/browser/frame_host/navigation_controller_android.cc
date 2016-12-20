@@ -340,8 +340,7 @@ void NavigationControllerAndroid::SetUseDesktopUserAgent(
   if (reload_on_state_change) {
     // Reloading the page will send the override down as part of the
     // navigation IPC message.
-    // TODO(toyoshim): Should this call use |true| for check_for_post argument?
-    navigation_controller_->Reload(ReloadType::ORIGINAL_REQUEST_URL, false);
+    navigation_controller_->Reload(ReloadType::ORIGINAL_REQUEST_URL, true);
   }
 }
 
