@@ -19,7 +19,7 @@ class CONTENT_EXPORT DelegatedFrameHostClientAura
  public:
   explicit DelegatedFrameHostClientAura(
       RenderWidgetHostViewAura* render_widget_host_view);
-  virtual ~DelegatedFrameHostClientAura();
+  ~DelegatedFrameHostClientAura() override;
 
  protected:
   RenderWidgetHostViewAura* render_widget_host_view() {

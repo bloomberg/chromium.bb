@@ -53,6 +53,8 @@ class ResizeLock;
 // display them.
 class CONTENT_EXPORT DelegatedFrameHostClient {
  public:
+  virtual ~DelegatedFrameHostClient() {}
+
   virtual ui::Layer* DelegatedFrameHostGetLayer() const = 0;
   virtual bool DelegatedFrameHostIsVisible() const = 0;
 
