@@ -417,9 +417,6 @@ const char kEnableLowResTiling[] = "enable-low-res-tiling";
 // builds.
 const char kEnableLogging[]                 = "enable-logging";
 
-// Enables the memory benchmarking extension
-const char kEnableMemoryBenchmarking[]      = "enable-memory-benchmarking";
-
 // Enables the network information API.
 const char kEnableNetworkInformation[]      = "enable-network-information";
 

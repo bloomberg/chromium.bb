@@ -770,14 +770,8 @@ void MemoryDumpManager::OnTraceLogEnabled() {
 
     subtle::NoBarrier_Store(&memory_tracing_enabled_, 1);
 
-    // TODO(primiano): This is a temporary hack to disable periodic memory dumps
-    // when running memory benchmarks until telemetry uses TraceConfig to
-    // enable/disable periodic dumps. See crbug.com/529184 .
-    if (!is_coordinator_ ||
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            "enable-memory-benchmarking")) {
+    if (!is_coordinator_)
       return;
-    }
   }
 
   // Enable periodic dumps if necessary.
