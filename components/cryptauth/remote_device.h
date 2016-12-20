@@ -42,6 +42,9 @@ struct RemoteDevice {
   std::string GetTruncatedDeviceIdForLogs() const;
 
   bool operator==(const RemoteDevice& other) const;
+
+  // Static method for truncated device ID for logs.
+  static std::string TruncateDeviceIdForLogs(const std::string& full_id);
 };
 
 typedef std::vector<RemoteDevice> RemoteDeviceList;
