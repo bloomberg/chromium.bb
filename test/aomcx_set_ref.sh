@@ -33,7 +33,7 @@ aom_set_ref() {
   local codec="$1"
   local output_file="${AOM_TEST_OUTPUT_DIR}/aom_cx_set_ref_${codec}.ivf"
   local ref_frame_num=4
-  local limit=20
+  local limit=10
   if [ ! -x "${encoder}" ]; then
     elog "${encoder} does not exist or is not executable."
     return 1
