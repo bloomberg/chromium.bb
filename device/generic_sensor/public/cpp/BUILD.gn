@@ -10,11 +10,14 @@ component("cpp") {
     "sensor_reading.h",
   ]
 
-  defines = [ "DEVICE_GENERIC_SENSOR_IMPLEMENTATION" ]
+  defines = [ "DEVICE_GENERIC_SENSOR_PUBLIC_IMPLEMENTATION" ]
+
+  public_deps = [
+    "//device/generic_sensor/public/interfaces",
+  ]
 
   deps = [
     "//base",
     "//device/base/synchronization",
-    "//device/generic_sensor/public/interfaces",
   ]
 }

@@ -53,7 +53,6 @@ component("generic_sensor") {
 
   public_deps = [
     "//device/generic_sensor/public/cpp",
-    "//device/generic_sensor/public/interfaces",
   ]
 
   if (is_android) {

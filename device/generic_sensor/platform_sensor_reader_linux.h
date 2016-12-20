@@ -6,7 +6,6 @@
 #define DEVICE_GENERIC_SENSOR_PLATFORM_SENSOR_READER_LINUX_H_
 
 #include "base/memory/ref_counted.h"
-#include "device/generic_sensor/generic_sensor_export.h"
 
 namespace base {
 class SingleThreadTaskRunner;

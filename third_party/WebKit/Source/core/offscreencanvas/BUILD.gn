@@ -11,6 +11,5 @@ blink_core_sources("offscreencanvas") {
   ]
   deps = [
     "//mojo/public/cpp/bindings:bindings",
-    "//third_party/WebKit/public:offscreen_canvas_mojo_bindings_blink",
   ]
 }
