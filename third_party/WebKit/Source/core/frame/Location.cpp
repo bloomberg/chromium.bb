@@ -240,7 +240,7 @@ void Location::replace(LocalDOMWindow* currentWindow,
   if (!m_frame)
     return;
   setLocation(url, currentWindow, enteredWindow, &exceptionState,
-              SetLocation::ReplaceThisFrame);
+              SetLocationPolicy::ReplaceThisFrame);
 }
 
 void Location::reload(LocalDOMWindow* currentWindow) {
@@ -259,7 +259,7 @@ void Location::setLocation(const String& url,
                            LocalDOMWindow* currentWindow,
                            LocalDOMWindow* enteredWindow,
                            ExceptionState* exceptionState,
-                           SetLocation locationPolicy) {
+                           SetLocationPolicy setLocationPolicy) {
   DCHECK(m_frame);
   if (!m_frame || !m_frame->host())
     return;
@@ -305,7 +305,7 @@ void Location::setLocation(const String& url,
     activityLogger->logEvent("blinkSetAttribute", argv.size(), argv.data());
   }
   m_frame->navigate(*currentWindow->document(), completedURL,
-                    locationPolicy == SetLocation::ReplaceThisFrame,
+                    setLocationPolicy == SetLocationPolicy::ReplaceThisFrame,
                     UserGestureStatus::None);
 }
 

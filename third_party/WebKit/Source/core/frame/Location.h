@@ -125,12 +125,12 @@ class CORE_EXPORT Location final : public GarbageCollected<Location>,
  private:
   explicit Location(Frame*);
 
-  enum class SetLocation { Normal, ReplaceThisFrame };
+  enum class SetLocationPolicy { Normal, ReplaceThisFrame };
   void setLocation(const String&,
                    LocalDOMWindow* currentWindow,
                    LocalDOMWindow* enteredWindow,
                    ExceptionState* = nullptr,
-                   SetLocation = SetLocation::Normal);
+                   SetLocationPolicy = SetLocationPolicy::Normal);
 
   const KURL& url() const;
 
