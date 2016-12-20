@@ -102,8 +102,13 @@ CGFloat BubbleDecoration::GetWidthForSpace(CGFloat width) {
 
 NSRect BubbleDecoration::GetBackgroundFrame(NSRect frame) {
   NSRect background_frame = NSInsetRect(frame, 0.0, kBackgroundFrameYInset);
-  background_frame.origin.x += kBackgroundFrameLeftMargin;
-  background_frame.size.width -= kDividerPadding;
+  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
+    background_frame.origin.x += kDividerPadding;
+    background_frame.size.width -= kDividerPadding + kBackgroundFrameLeftMargin;
+  } else {
+    background_frame.origin.x += kBackgroundFrameLeftMargin;
+    background_frame.size.width -= kDividerPadding;
+  }
   return background_frame;
 }
 
