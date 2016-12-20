@@ -171,7 +171,6 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
 
   ScrollingCoordinator* scrollingCoordinator();
 
-  String mainThreadScrollingReasonsAsText();
   ClientRectList* nonFastScrollableRects(const LocalFrame*);
 
   Settings& settings() const { return *m_settings; }

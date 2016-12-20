@@ -2061,11 +2061,7 @@ String Internals::mainThreadScrollingReasons(
 
   document->frame()->view()->updateAllLifecyclePhases();
 
-  Page* page = document->page();
-  if (!page)
-    return String();
-
-  return page->mainThreadScrollingReasonsAsText();
+  return document->frame()->view()->mainThreadScrollingReasonsAsText();
 }
 
 ClientRectList* Internals::nonFastScrollableRects(

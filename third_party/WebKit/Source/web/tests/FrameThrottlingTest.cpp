@@ -496,7 +496,9 @@ TEST_F(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame) {
   compositeFrame();
   EXPECT_FALSE(frameElement->contentDocument()->view()->canThrottleRendering());
   // The fixed background in the throttled sub frame should be considered.
-  EXPECT_TRUE(document().view()->shouldScrollOnMainThread());
+  EXPECT_TRUE(
+      frameElement->contentDocument()->view()->shouldScrollOnMainThread());
+  EXPECT_FALSE(document().view()->shouldScrollOnMainThread());
 }
 
 TEST_F(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledLayer) {

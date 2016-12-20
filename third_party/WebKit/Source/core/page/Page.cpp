@@ -164,13 +164,6 @@ ScrollingCoordinator* Page::scrollingCoordinator() {
   return m_scrollingCoordinator.get();
 }
 
-String Page::mainThreadScrollingReasonsAsText() {
-  if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-    return scrollingCoordinator->mainThreadScrollingReasonsAsText();
-
-  return String();
-}
-
 ClientRectList* Page::nonFastScrollableRects(const LocalFrame* frame) {
   if (ScrollingCoordinator* scrollingCoordinator =
           this->scrollingCoordinator()) {

@@ -361,6 +361,8 @@ void ScrollAnimator::updateCompositorAnimations() {
 }
 
 void ScrollAnimator::addMainThreadScrollingReason() {
+  // TODO(yigu): Should update the frame tree to make sure
+  // the same reason is set for subframes. crbug.com/675677.
   if (WebLayer* scrollLayer =
           toWebLayer(getScrollableArea()->layerForScrolling())) {
     scrollLayer->addMainThreadScrollingReasons(

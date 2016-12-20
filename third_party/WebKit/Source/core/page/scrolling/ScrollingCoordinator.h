@@ -95,11 +95,6 @@ class CORE_EXPORT ScrollingCoordinator final
   // Should be called whenever the root layer for the given frame view changes.
   void frameViewRootLayerDidChange(FrameView*);
 
-  MainThreadScrollingReasons mainThreadScrollingReasons() const;
-  bool shouldUpdateScrollLayerPositionOnMainThread() const {
-    return mainThreadScrollingReasons() != 0;
-  }
-
   std::unique_ptr<WebScrollbarLayer> createSolidColorScrollbarLayer(
       ScrollbarOrientation,
       int thumbThickness,
@@ -120,8 +115,6 @@ class CORE_EXPORT ScrollingCoordinator final
                                           const PaintLayer* parent);
   void updateClipParentForGraphicsLayer(GraphicsLayer* child,
                                         const PaintLayer* parent);
-
-  String mainThreadScrollingReasonsAsText() const;
   Region computeShouldHandleScrollGestureOnMainThreadRegion(
       const LocalFrame*,
       const IntPoint& frameLocation) const;
@@ -161,8 +154,6 @@ class CORE_EXPORT ScrollingCoordinator final
 
   void setShouldUpdateScrollLayerPositionOnMainThread(
       MainThreadScrollingReasons);
-
-  bool hasVisibleSlowRepaintViewportConstrainedObjects(FrameView*) const;
 
   void setShouldHandleScrollGestureOnMainThreadRegion(const Region&);
   void setTouchEventTargetRects(LayerHitTestRects&);

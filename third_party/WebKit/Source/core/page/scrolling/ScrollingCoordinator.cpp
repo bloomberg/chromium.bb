@@ -186,12 +186,17 @@ void ScrollingCoordinator::updateAfterCompositingChangeIfNeeded() {
     m_touchEventTargetRectsAreDirty = false;
   }
 
-  FrameView* frameView = m_page->deprecatedLocalMainFrame()->view();
+  FrameView* frameView = toLocalFrame(m_page->mainFrame())->view();
   bool frameIsScrollable = frameView && frameView->isScrollable();
   if (m_shouldScrollOnMainThreadDirty ||
       m_wasFrameScrollable != frameIsScrollable) {
     setShouldUpdateScrollLayerPositionOnMainThread(
-        mainThreadScrollingReasons());
+        frameView->mainThreadScrollingReasons());
+
+    // Need to update scroll on main thread reasons for subframe because
+    // subframe (e.g. iframe with background-attachment:fixed) should
+    // scroll on main thread while the main frame scrolls on impl.
+    frameView->updateSubFrameScrollOnMainReason(*(m_page->mainFrame()), 0);
     m_shouldScrollOnMainThreadDirty = false;
   }
   m_wasFrameScrollable = frameIsScrollable;
@@ -1097,115 +1102,6 @@ void ScrollingCoordinator::frameViewRootLayerDidChange(FrameView* frameView) {
     return;
 
   notifyGeometryChanged();
-}
-
-bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(
-    FrameView* frameView) const {
-  const FrameView::ViewportConstrainedObjectSet* viewportConstrainedObjects =
-      frameView->viewportConstrainedObjects();
-  if (!viewportConstrainedObjects)
-    return false;
-
-  for (const LayoutObject* layoutObject : *viewportConstrainedObjects) {
-    DCHECK(layoutObject->isBoxModelObject() && layoutObject->hasLayer());
-    DCHECK(layoutObject->style()->position() == FixedPosition ||
-           layoutObject->style()->position() == StickyPosition);
-    PaintLayer* layer = toLayoutBoxModelObject(layoutObject)->layer();
-
-    // Whether the Layer sticks to the viewport is a tree-depenent
-    // property and our viewportConstrainedObjects collection is maintained
-    // with only LayoutObject-level information.
-    if (!layer->sticksToViewport())
-      continue;
-
-    // If the whole subtree is invisible, there's no reason to scroll on
-    // the main thread because we don't need to generate invalidations
-    // for invisible content.
-    if (layer->subtreeIsInvisible())
-      continue;
-
-    // We're only smart enough to scroll viewport-constrainted objects
-    // in the compositor if they have their own backing or they paint
-    // into a grouped back (which necessarily all have the same viewport
-    // constraints).
-    CompositingState compositingState = layer->compositingState();
-    if (compositingState != PaintsIntoOwnBacking &&
-        compositingState != PaintsIntoGroupedBacking)
-      return true;
-  }
-  return false;
-}
-
-MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons()
-    const {
-  MainThreadScrollingReasons reasons =
-      static_cast<MainThreadScrollingReasons>(0);
-
-  if (!m_page->settings().threadedScrollingEnabled())
-    reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
-
-  if (!m_page->mainFrame()->isLocalFrame())
-    return reasons;
-
-  // TODO(flackr) Currently we combine reasons for main thread scrolling from
-  // all frames but we should only look at the targetted frame (and its
-  // ancestors if the scroll bubbles up). http://crbug.com/568901
-  for (Frame* frame = m_page->mainFrame(); frame;
-       frame = frame->tree().traverseNext()) {
-    if (!frame->isLocalFrame())
-      continue;
-
-    // TODO(alexmos,kenrb): For OOPIF, local roots that are different from
-    // the main frame can't be used in the calculation, since they use
-    // different compositors with unrelated state, which breaks some of the
-    // calculations below.
-    if (toLocalFrame(frame)->localFrameRoot() != m_page->mainFrame())
-      continue;
-
-    FrameView* frameView = toLocalFrame(frame)->view();
-    if (!frameView || frameView->shouldThrottleRendering())
-      continue;
-
-    if (frameView->hasBackgroundAttachmentFixedObjects())
-      reasons |=
-          MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
-    FrameView::ScrollingReasons scrollingReasons =
-        frameView->getScrollingReasons();
-    const bool mayBeScrolledByInput =
-        (scrollingReasons == FrameView::Scrollable);
-    const bool mayBeScrolledByScript =
-        mayBeScrolledByInput ||
-        (scrollingReasons == FrameView::NotScrollableExplicitlyDisabled);
-
-    // TODO(awoloszyn) Currently crbug.com/304810 will let certain
-    // overflow:hidden elements scroll on the compositor thread, so we should
-    // not let this move there path as an optimization, when we have
-    // slow-repaint elements.
-    if (mayBeScrolledByScript &&
-        hasVisibleSlowRepaintViewportConstrainedObjects(frameView)) {
-      reasons |=
-          MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects;
-    }
-  }
-
-  return reasons;
-}
-
-String ScrollingCoordinator::mainThreadScrollingReasonsAsText() const {
-  DCHECK(m_page->deprecatedLocalMainFrame()->document()->lifecycle().state() >=
-         DocumentLifecycle::CompositingClean);
-  if (WebLayer* scrollLayer = toWebLayer(
-          m_page->deprecatedLocalMainFrame()->view()->layerForScrolling())) {
-    String result(MainThreadScrollingReason::mainThreadScrollingReasonsAsText(
-                      scrollLayer->mainThreadScrollingReasons())
-                      .c_str());
-    return result;
-  }
-
-  String result(MainThreadScrollingReason::mainThreadScrollingReasonsAsText(
-                    m_lastMainThreadScrollingReasons)
-                    .c_str());
-  return result;
 }
 
 bool ScrollingCoordinator::frameViewIsDirty() const {

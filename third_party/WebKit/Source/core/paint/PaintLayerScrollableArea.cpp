@@ -1714,8 +1714,8 @@ bool PaintLayerScrollableArea::usesCompositedScrolling() const {
 }
 
 bool PaintLayerScrollableArea::shouldScrollOnMainThread() const {
-  if (ScrollingCoordinator* scrollingCoordinator = getScrollingCoordinator()) {
-    if (scrollingCoordinator->shouldUpdateScrollLayerPositionOnMainThread())
+  if (LocalFrame* frame = box().frame()) {
+    if (frame->view()->mainThreadScrollingReasons())
       return true;
   }
   return ScrollableArea::shouldScrollOnMainThread();

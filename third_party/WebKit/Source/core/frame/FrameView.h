@@ -64,6 +64,7 @@ class DocumentLifecycle;
 class Cursor;
 class Element;
 class ElementVisibilityObserver;
+class Frame;
 class FloatSize;
 class JSONArray;
 class JSONObject;
@@ -331,14 +332,15 @@ class CORE_EXPORT FrameView final
     NotScrollableExplicitlyDisabled
   };
 
-  ScrollingReasons getScrollingReasons();
+  ScrollingReasons getScrollingReasons() const;
   bool isScrollable();
   bool isProgrammaticallyScrollable() override;
 
   enum ScrollbarModesCalculationStrategy { RulesFromWebContentOnly, AnyRule };
-  void calculateScrollbarModes(ScrollbarMode& hMode,
-                               ScrollbarMode& vMode,
-                               ScrollbarModesCalculationStrategy = AnyRule);
+  void calculateScrollbarModes(
+      ScrollbarMode& hMode,
+      ScrollbarMode& vMode,
+      ScrollbarModesCalculationStrategy = AnyRule) const;
 
   IntPoint lastKnownMousePosition() const override;
   bool shouldSetCursor() const;
@@ -785,6 +787,26 @@ class CORE_EXPORT FrameView final
   // Only for SPv2.
   std::unique_ptr<JSONObject> compositedLayersAsJSON(LayerTreeFlags);
 
+  // Recursively update frame tree. Each frame has its only
+  // scroll on main reason. Given the following frame tree
+  //.. A...
+  //../.\..
+  //.B...C.
+  //.|.....
+  //.D.....
+  // If B has fixed background-attachment but other frames
+  // don't, both A and C should scroll on cc. Frame D should
+  // scrolled on main thread as its ancestor B.
+  void updateSubFrameScrollOnMainReason(const Frame&,
+                                        MainThreadScrollingReasons);
+  String mainThreadScrollingReasonsAsText() const;
+  // Main thread scrolling reasons including reasons from ancestors.
+  MainThreadScrollingReasons mainThreadScrollingReasons() const;
+  // Main thread scrolling reasons for this object only. For all reasons,
+  // see: mainThreadScrollingReasons().
+  MainThreadScrollingReasons mainThreadScrollingReasonsPerFrame() const;
+  bool hasVisibleSlowRepaintViewportConstrainedObjects() const;
+
  protected:
   // Scroll the content via the compositor.
   bool scrollContentsFastPath(const IntSize& scrollDelta);
@@ -874,7 +896,7 @@ class CORE_EXPORT FrameView final
 
   void calculateScrollbarModesFromOverflowStyle(const ComputedStyle*,
                                                 ScrollbarMode& hMode,
-                                                ScrollbarMode& vMode);
+                                                ScrollbarMode& vMode) const;
 
   void updateCounters();
   void forceLayoutParentViewIfNeeded();
@@ -1151,7 +1173,9 @@ class CORE_EXPORT FrameView final
   // For Slimming Paint v2 only.
   std::unique_ptr<PaintController> m_paintController;
   std::unique_ptr<PaintArtifactCompositor> m_paintArtifactCompositor;
+
   bool m_isStoringCompositedLayerDebugInfo;
+  MainThreadScrollingReasons m_mainThreadScrollingReasons;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count) {

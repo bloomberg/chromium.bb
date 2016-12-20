@@ -29,6 +29,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/VisualViewport.h"
+#include "core/html/HTMLIFrameElement.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
@@ -847,6 +848,185 @@ TEST_F(ScrollingCoordinatorTest, CustomScrollbarShouldTriggerMainThreadScroll) {
   ASSERT_FALSE(
       scrollbarGraphicsLayer->platformLayer()->mainThreadScrollingReasons() &
       MainThreadScrollingReason::kCustomScrollbarScrolling);
+}
+
+TEST_F(ScrollingCoordinatorTest,
+       BackgroundAttachmentFixedShouldTriggerMainThreadScroll) {
+  registerMockedHttpURLLoad("iframe-background-attachment-fixed.html");
+  registerMockedHttpURLLoad("iframe-background-attachment-fixed-inner.html");
+  registerMockedHttpURLLoad("white-1x1.png");
+  navigateTo(m_baseURL + "iframe-background-attachment-fixed.html");
+  forceFullCompositingUpdate();
+
+  Element* iframe = frame()->document()->getElementById("iframe");
+  ASSERT_TRUE(iframe);
+
+  LayoutObject* layoutObject = iframe->layoutObject();
+  ASSERT_TRUE(layoutObject);
+  ASSERT_TRUE(layoutObject->isLayoutPart());
+
+  LayoutPart* layoutPart = toLayoutPart(layoutObject);
+  ASSERT_TRUE(layoutPart);
+  ASSERT_TRUE(layoutPart->widget());
+  ASSERT_TRUE(layoutPart->widget()->isFrameView());
+
+  FrameView* innerFrameView = toFrameView(layoutPart->widget());
+  LayoutViewItem innerLayoutViewItem = innerFrameView->layoutViewItem();
+  ASSERT_FALSE(innerLayoutViewItem.isNull());
+
+  PaintLayerCompositor* innerCompositor = innerLayoutViewItem.compositor();
+  ASSERT_TRUE(innerCompositor->inCompositingMode());
+  ASSERT_TRUE(innerCompositor->scrollLayer());
+
+  GraphicsLayer* scrollLayer = innerCompositor->scrollLayer();
+  ASSERT_EQ(innerFrameView, scrollLayer->getScrollableArea());
+
+  WebLayer* webScrollLayer = scrollLayer->platformLayer();
+  ASSERT_TRUE(webScrollLayer->scrollable());
+  ASSERT_TRUE(webScrollLayer->mainThreadScrollingReasons() &
+              MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+
+  // Remove fixed background-attachment should make the iframe
+  // scroll on cc.
+  auto* iframeDoc = toHTMLIFrameElement(iframe)->contentDocument();
+  iframe = iframeDoc->getElementById("scrollable");
+  ASSERT_TRUE(iframe);
+
+  iframe->removeAttribute("class");
+  forceFullCompositingUpdate();
+
+  layoutObject = iframe->layoutObject();
+  ASSERT_TRUE(layoutObject);
+
+  scrollLayer = layoutObject->frameView()->layerForScrolling();
+  ASSERT_TRUE(scrollLayer);
+
+  webScrollLayer = scrollLayer->platformLayer();
+  ASSERT_TRUE(webScrollLayer->scrollable());
+  ASSERT_FALSE(webScrollLayer->mainThreadScrollingReasons() &
+               MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+
+  // Force main frame to scroll on main thread. All its descendants
+  // should scroll on main thread as well.
+  Element* element = frame()->document()->getElementById("scrollable");
+  element->setAttribute(
+      "style",
+      "background-image: url('white-1x1.png'); background-attachment: fixed;",
+      ASSERT_NO_EXCEPTION);
+
+  forceFullCompositingUpdate();
+
+  layoutObject = iframe->layoutObject();
+  ASSERT_TRUE(layoutObject);
+
+  scrollLayer = layoutObject->frameView()->layerForScrolling();
+  ASSERT_TRUE(scrollLayer);
+
+  webScrollLayer = scrollLayer->platformLayer();
+  ASSERT_TRUE(webScrollLayer->scrollable());
+  ASSERT_TRUE(webScrollLayer->mainThreadScrollingReasons() &
+              MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects);
+}
+
+// Upon resizing the content size, the main thread scrolling reason
+// kHasNonLayerViewportConstrainedObject should be updated on all frames
+TEST_F(ScrollingCoordinatorTest,
+       RecalculateMainThreadScrollingReasonsUponResize) {
+  webViewImpl()->settings()->setPreferCompositingToLCDTextEnabled(false);
+  registerMockedHttpURLLoad("has-non-layer-viewport-constrained-objects.html");
+  navigateTo(m_baseURL + "has-non-layer-viewport-constrained-objects.html");
+  forceFullCompositingUpdate();
+
+  LOG(ERROR) << frame()->view()->mainThreadScrollingReasons();
+  Element* element = frame()->document()->getElementById("scrollable");
+  ASSERT_TRUE(element);
+
+  LayoutObject* layoutObject = element->layoutObject();
+  ASSERT_TRUE(layoutObject);
+
+  GraphicsLayer* scrollLayer = layoutObject->frameView()->layerForScrolling();
+  ASSERT_TRUE(scrollLayer);
+
+  WebLayer* webScrollLayer = scrollLayer->platformLayer();
+  ASSERT_TRUE(webScrollLayer->scrollable());
+  ASSERT_FALSE(
+      webScrollLayer->mainThreadScrollingReasons() &
+      MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects);
+
+  Element* iframe = frame()->document()->getElementById("iframe");
+  ASSERT_TRUE(iframe);
+
+  layoutObject = iframe->layoutObject();
+  ASSERT_TRUE(layoutObject);
+
+  scrollLayer = layoutObject->frameView()->layerForScrolling();
+  ASSERT_TRUE(scrollLayer);
+
+  webScrollLayer = scrollLayer->platformLayer();
+  ASSERT_TRUE(webScrollLayer->scrollable());
+  ASSERT_FALSE(
+      webScrollLayer->mainThreadScrollingReasons() &
+      MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects);
+
+  // When the div becomes to scrollable it should scroll on main thread
+  element->setAttribute("style",
+                        "overflow:scroll;height:2000px;will-change:transform;",
+                        ASSERT_NO_EXCEPTION);
+  forceFullCompositingUpdate();
+
+  layoutObject = element->layoutObject();
+  ASSERT_TRUE(layoutObject);
+
+  scrollLayer = layoutObject->frameView()->layerForScrolling();
+  ASSERT_TRUE(scrollLayer);
+
+  webScrollLayer = scrollLayer->platformLayer();
+  ASSERT_TRUE(webScrollLayer->scrollable());
+  ASSERT_TRUE(
+      webScrollLayer->mainThreadScrollingReasons() &
+      MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects);
+
+  layoutObject = iframe->layoutObject();
+  ASSERT_TRUE(layoutObject);
+
+  scrollLayer = layoutObject->frameView()->layerForScrolling();
+  ASSERT_TRUE(scrollLayer);
+
+  webScrollLayer = scrollLayer->platformLayer();
+  ASSERT_TRUE(webScrollLayer->scrollable());
+  ASSERT_TRUE(
+      webScrollLayer->mainThreadScrollingReasons() &
+      MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects);
+
+  // The main thread scrolling reason should be reset upon the following change
+  element->setAttribute("style",
+                        "overflow:scroll;height:200px;will-change:transform;",
+                        ASSERT_NO_EXCEPTION);
+  forceFullCompositingUpdate();
+
+  layoutObject = element->layoutObject();
+  ASSERT_TRUE(layoutObject);
+
+  scrollLayer = layoutObject->frameView()->layerForScrolling();
+  ASSERT_TRUE(scrollLayer);
+
+  webScrollLayer = scrollLayer->platformLayer();
+  ASSERT_TRUE(webScrollLayer->scrollable());
+  ASSERT_FALSE(
+      webScrollLayer->mainThreadScrollingReasons() &
+      MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects);
+
+  layoutObject = iframe->layoutObject();
+  ASSERT_TRUE(layoutObject);
+
+  scrollLayer = layoutObject->frameView()->layerForScrolling();
+  ASSERT_TRUE(scrollLayer);
+
+  webScrollLayer = scrollLayer->platformLayer();
+  ASSERT_TRUE(webScrollLayer->scrollable());
+  ASSERT_FALSE(
+      webScrollLayer->mainThreadScrollingReasons() &
+      MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects);
 }
 
 }  // namespace blink

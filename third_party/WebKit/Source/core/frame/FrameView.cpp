@@ -194,7 +194,8 @@ FrameView::FrameView(LocalFrame& frame)
       m_scrollbarManager(*this),
       m_needsScrollbarsUpdate(false),
       m_suppressAdjustViewSize(false),
-      m_allowsLayoutInvalidationAfterLayoutClean(true) {
+      m_allowsLayoutInvalidationAfterLayoutClean(true),
+      m_mainThreadScrollingReasons(0) {
   init();
 }
 
@@ -257,6 +258,7 @@ void FrameView::reset() {
   m_visuallyNonEmptyCharacterCount = 0;
   m_visuallyNonEmptyPixelCount = 0;
   m_isVisuallyNonEmpty = false;
+  m_mainThreadScrollingReasons = 0;
   m_layoutObjectCounter.reset();
   clearFragmentAnchor();
   m_viewportConstrainedObjects.reset();
@@ -703,7 +705,7 @@ void FrameView::adjustViewSizeAndLayout() {
 void FrameView::calculateScrollbarModesFromOverflowStyle(
     const ComputedStyle* style,
     ScrollbarMode& hMode,
-    ScrollbarMode& vMode) {
+    ScrollbarMode& vMode) const {
   hMode = vMode = ScrollbarAuto;
 
   EOverflow overflowX = style->overflowX();
@@ -725,7 +727,7 @@ void FrameView::calculateScrollbarModesFromOverflowStyle(
 void FrameView::calculateScrollbarModes(
     ScrollbarMode& hMode,
     ScrollbarMode& vMode,
-    ScrollbarModesCalculationStrategy strategy) {
+    ScrollbarModesCalculationStrategy strategy) const {
 #define RETURN_SCROLLBAR_MODE(mode) \
   {                                 \
     hMode = vMode = mode;           \
@@ -832,10 +834,8 @@ bool FrameView::usesCompositedScrolling() const {
 }
 
 bool FrameView::shouldScrollOnMainThread() const {
-  if (ScrollingCoordinator* sc = scrollingCoordinator()) {
-    if (sc->shouldUpdateScrollLayerPositionOnMainThread())
-      return true;
-  }
+  if (mainThreadScrollingReasons())
+    return true;
   return ScrollableArea::shouldScrollOnMainThread();
 }
 
@@ -2541,7 +2541,7 @@ bool FrameView::isProgrammaticallyScrollable() {
   return !m_inUpdateScrollbars;
 }
 
-FrameView::ScrollingReasons FrameView::getScrollingReasons() {
+FrameView::ScrollingReasons FrameView::getScrollingReasons() const {
   // Check for:
   // 1) If there an actual overflow.
   // 2) display:none or visibility:hidden set to self or inherited.
@@ -4702,6 +4702,151 @@ int FrameView::initialViewportWidth() const {
 int FrameView::initialViewportHeight() const {
   DCHECK(m_frame->isMainFrame());
   return m_initialViewportSize.height();
+}
+
+bool FrameView::hasVisibleSlowRepaintViewportConstrainedObjects() const {
+  if (!viewportConstrainedObjects())
+    return false;
+
+  for (const LayoutObject* layoutObject : *viewportConstrainedObjects()) {
+    DCHECK(layoutObject->isBoxModelObject() && layoutObject->hasLayer());
+    DCHECK(layoutObject->style()->position() == FixedPosition ||
+           layoutObject->style()->position() == StickyPosition);
+    PaintLayer* layer = toLayoutBoxModelObject(layoutObject)->layer();
+
+    // Whether the Layer sticks to the viewport is a tree-depenent
+    // property and our viewportConstrainedObjects collection is maintained
+    // with only LayoutObject-level information.
+    if (!layer->sticksToViewport())
+      continue;
+
+    // If the whole subtree is invisible, there's no reason to scroll on
+    // the main thread because we don't need to generate invalidations
+    // for invisible content.
+    if (layer->subtreeIsInvisible())
+      continue;
+
+    // We're only smart enough to scroll viewport-constrainted objects
+    // in the compositor if they have their own backing or they paint
+    // into a grouped back (which necessarily all have the same viewport
+    // constraints).
+    CompositingState compositingState = layer->compositingState();
+    if (compositingState != PaintsIntoOwnBacking &&
+        compositingState != PaintsIntoGroupedBacking)
+      return true;
+  }
+  return false;
+}
+
+void FrameView::updateSubFrameScrollOnMainReason(
+    const Frame& frame,
+    MainThreadScrollingReasons parentReason) {
+  MainThreadScrollingReasons reasons = parentReason;
+
+  if (!page()->settings().threadedScrollingEnabled())
+    reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
+
+  if (!frame.isLocalFrame())
+    return;
+
+  if (!toLocalFrame(frame).view()->layerForScrolling())
+    return;
+
+  reasons |= toLocalFrame(frame).view()->mainThreadScrollingReasonsPerFrame();
+  if (WebLayer* scrollLayer =
+          toLocalFrame(frame).view()->layerForScrolling()->platformLayer()) {
+    if (reasons) {
+      scrollLayer->addMainThreadScrollingReasons(reasons);
+    } else {
+      // Clear all main thread scrolling reasons except the one that's set
+      // if there is a running scroll animation.
+      scrollLayer->clearMainThreadScrollingReasons(
+          ~MainThreadScrollingReason::kHandlingScrollFromMainThread);
+    }
+  }
+
+  Frame* child = frame.tree().firstChild();
+  while (child) {
+    updateSubFrameScrollOnMainReason(*child, reasons);
+    child = child->tree().nextSibling();
+  }
+
+  if (frame.isMainFrame())
+    m_mainThreadScrollingReasons = reasons;
+}
+
+MainThreadScrollingReasons FrameView::mainThreadScrollingReasonsPerFrame()
+    const {
+  MainThreadScrollingReasons reasons =
+      static_cast<MainThreadScrollingReasons>(0);
+
+  if (shouldThrottleRendering())
+    return reasons;
+
+  if (hasBackgroundAttachmentFixedObjects())
+    reasons |= MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
+  ScrollingReasons scrollingReasons = getScrollingReasons();
+  const bool mayBeScrolledByInput = (scrollingReasons == Scrollable);
+  const bool mayBeScrolledByScript =
+      mayBeScrolledByInput ||
+      (scrollingReasons == NotScrollableExplicitlyDisabled);
+
+  // TODO(awoloszyn) Currently crbug.com/304810 will let certain
+  // overflow:hidden elements scroll on the compositor thread, so we should
+  // not let this move there path as an optimization, when we have
+  // slow-repaint elements.
+  if (mayBeScrolledByScript &&
+      hasVisibleSlowRepaintViewportConstrainedObjects()) {
+    reasons |=
+        MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects;
+  }
+  return reasons;
+}
+
+MainThreadScrollingReasons FrameView::mainThreadScrollingReasons() const {
+  MainThreadScrollingReasons reasons =
+      static_cast<MainThreadScrollingReasons>(0);
+
+  if (!page()->settings().threadedScrollingEnabled())
+    reasons |= MainThreadScrollingReason::kThreadedScrollingDisabled;
+
+  if (!page()->mainFrame()->isLocalFrame())
+    return reasons;
+
+  // TODO(alexmos,kenrb): For OOPIF, local roots that are different from
+  // the main frame can't be used in the calculation, since they use
+  // different compositors with unrelated state, which breaks some of the
+  // calculations below.
+  if (m_frame->localFrameRoot() != page()->mainFrame())
+    return reasons;
+
+  // Walk the tree to the root. Use the gathered reasons to determine
+  // whether the target frame should be scrolled on main thread regardless
+  // other subframes on the same page.
+  for (Frame* frame = m_frame; frame; frame = frame->tree().parent()) {
+    if (!frame->isLocalFrame())
+      continue;
+    reasons |=
+        toLocalFrame(frame)->view()->mainThreadScrollingReasonsPerFrame();
+  }
+
+  return reasons;
+}
+
+String FrameView::mainThreadScrollingReasonsAsText() const {
+  DCHECK(lifecycle().state() >= DocumentLifecycle::CompositingClean);
+  if (layerForScrolling() && layerForScrolling()->platformLayer()) {
+    String result(
+        MainThreadScrollingReason::mainThreadScrollingReasonsAsText(
+            layerForScrolling()->platformLayer()->mainThreadScrollingReasons())
+            .c_str());
+    return result;
+  }
+
+  String result(MainThreadScrollingReason::mainThreadScrollingReasonsAsText(
+                    m_mainThreadScrollingReasons)
+                    .c_str());
+  return result;
 }
 
 }  // namespace blink
