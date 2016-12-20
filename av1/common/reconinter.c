@@ -1201,36 +1201,18 @@ void av1_build_inter_predictors_sb_extend(MACROBLOCKD *xd,
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
     const BLOCK_SIZE plane_bsize =
         get_plane_block_size(bsize, &xd->plane[plane]);
-    const int num_4x4_w = num_4x4_blocks_wide_lookup[plane_bsize];
-    const int num_4x4_h = num_4x4_blocks_high_lookup[plane_bsize];
     const int bw = block_size_wide[plane_bsize];
     const int bh = block_size_high[plane_bsize];
 
-    if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8) {
-      int x, y;
-      assert(bsize == BLOCK_8X8);
-      for (y = 0; y < num_4x4_h; ++y)
-        for (x = 0; x < num_4x4_w; ++x)
-          build_inter_predictors(xd, plane,
+    build_inter_predictors(xd, plane,
 #if CONFIG_MOTION_VAR
-                                 0, 0,
+                           0, 0,
 #endif  // CONFIG_MOTION_VAR
-                                 y * 2 + x, bw, bh, 4 * x, 4 * y, 4, 4,
+                           0, bw, bh, 0, 0, bw, bh,
 #if CONFIG_EXT_INTER
-                                 wedge_offset_x, wedge_offset_y,
+                           wedge_offset_x, wedge_offset_y,
 #endif  // CONFIG_EXT_INTER
-                                 mi_x, mi_y);
-    } else {
-      build_inter_predictors(xd, plane,
-#if CONFIG_MOTION_VAR
-                             0, 0,
-#endif  // CONFIG_MOTION_VAR
-                             0, bw, bh, 0, 0, bw, bh,
-#if CONFIG_EXT_INTER
-                             wedge_offset_x, wedge_offset_y,
-#endif  // CONFIG_EXT_INTER
-                             mi_x, mi_y);
-    }
+                           mi_x, mi_y);
   }
 }
 #endif  // CONFIG_SUPERTX
