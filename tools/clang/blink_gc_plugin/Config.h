@@ -32,6 +32,10 @@ const char kVisitorVarName[] = "visitor";
 const char kAdjustAndMarkName[] = "adjustAndMark";
 const char kIsHeapObjectAliveName[] = "isHeapObjectAlive";
 const char kIsEagerlyFinalizedName[] = "IsEagerlyFinalizedMarker";
+const char kConstIteratorName[] = "const_iterator";
+const char kIteratorName[] = "iterator";
+const char kConstReverseIteratorName[] = "const_reverse_iterator";
+const char kReverseIteratorName[] = "reverse_iterator";
 
 class Config {
  public:
@@ -101,6 +105,16 @@ class Config {
            name == "PersistentHeapHashMap";
   }
 
+  static bool IsGCCollectionWithUnsafeIterator(const std::string& name) {
+    if (!IsGCCollection(name))
+      return false;
+    // The list hash set iterators refer to the set, not the
+    // backing store and are consequently safe.
+    if (name == "HeapListHashSet" || name == "PersistentHeapListHashSet")
+      return false;
+    return true;
+  }
+
   static bool IsHashMap(const std::string& name) {
     return name == "HashMap" ||
            name == "HeapHashMap" ||
@@ -129,6 +143,11 @@ class Config {
     return name == "GarbageCollected" ||
            IsGCFinalizedBase(name) ||
            IsGCMixinBase(name);
+  }
+
+  static bool IsIterator(const std::string& name) {
+    return name == kIteratorName || name == kConstIteratorName ||
+           name == kReverseIteratorName || name == kConstReverseIteratorName;
   }
 
   // Returns true of the base classes that do not need a vtable entry for trace
