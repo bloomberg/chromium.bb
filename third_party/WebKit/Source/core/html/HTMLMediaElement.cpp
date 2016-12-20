@@ -420,7 +420,8 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
       m_audioSourceNode(nullptr),
       m_autoplayUmaHelper(AutoplayUmaHelper::create(this)),
       m_remotePlaybackClient(nullptr),
-      m_autoplayVisibilityObserver(nullptr) {
+      m_autoplayVisibilityObserver(nullptr),
+      m_mediaControls(nullptr) {
   BLINK_MEDIA_LOG << "HTMLMediaElement(" << (void*)this << ")";
 
   m_lockedPendingUserGesture = computeLockedPendingUserGesture(document);
@@ -538,7 +539,7 @@ void HTMLMediaElement::parseAttribute(const QualifiedName& name,
   } else if (name == controlsAttr) {
     UseCounter::count(document(),
                       UseCounter::HTMLMediaElementControlsAttribute);
-    configureMediaControls();
+    updateControlsVisibility();
   } else if (name == preloadAttr) {
     setPlayerPreload();
   } else if (name == disableremoteplaybackAttr) {
@@ -593,7 +594,7 @@ Node::InsertionNotificationRequest HTMLMediaElement::insertedInto(
 }
 
 void HTMLMediaElement::didNotifySubtreeInsertionsToDocument() {
-  configureMediaControls();
+  updateControlsVisibility();
 }
 
 void HTMLMediaElement::removedFrom(ContainerNode* insertionPoint) {
@@ -602,7 +603,7 @@ void HTMLMediaElement::removedFrom(ContainerNode* insertionPoint) {
 
   HTMLElement::removedFrom(insertionPoint);
   if (insertionPoint->inActiveDocument()) {
-    configureMediaControls();
+    updateControlsVisibility();
     if (m_networkState > kNetworkEmpty)
       pauseInternal();
   }
@@ -3431,7 +3432,8 @@ bool HTMLMediaElement::isFullscreen() const {
 }
 
 void HTMLMediaElement::didEnterFullscreen() {
-  configureMediaControls();
+  updateControlsVisibility();
+
   // FIXME: There is no embedder-side handling in layout test mode.
   if (webMediaPlayer() && !LayoutTestSupport::isRunningLayoutTest())
     webMediaPlayer()->enteredFullscreen();
@@ -3443,7 +3445,8 @@ void HTMLMediaElement::didEnterFullscreen() {
 }
 
 void HTMLMediaElement::didExitFullscreen() {
-  configureMediaControls();
+  updateControlsVisibility();
+
   if (webMediaPlayer())
     webMediaPlayer()->exitedFullscreen();
   if (m_inOverlayFullscreenVideo)
@@ -3604,36 +3607,23 @@ void HTMLMediaElement::setShouldDelayLoadEvent(bool shouldDelay) {
 }
 
 MediaControls* HTMLMediaElement::mediaControls() const {
-  if (ShadowRoot* shadowRoot = userAgentShadowRoot()) {
-    Node* lastChild = shadowRoot->lastChild();
-    if (lastChild && lastChild->isMediaControls())
-      return toMediaControls(lastChild);
-  }
-
-  return nullptr;
+  return m_mediaControls;
 }
 
 void HTMLMediaElement::ensureMediaControls() {
   if (mediaControls())
     return;
 
-  MediaControls* mediaControls = MediaControls::create(*this);
-  mediaControls->reset();
-
   ShadowRoot& shadowRoot = ensureUserAgentShadowRoot();
-  assertShadowRootChildren(shadowRoot);
+  m_mediaControls = MediaControls::create(*this, shadowRoot);
 
   // The media controls should be inserted after the text track container,
-  // so that they are rendered in front of captions and subtitles.
-  shadowRoot.appendChild(mediaControls);
-
+  // so that they are rendered in front of captions and subtitles. This check
+  // is verifying the contract.
   assertShadowRootChildren(shadowRoot);
-
-  if (!shouldShowControls() || !isConnected())
-    mediaControls->hide();
 }
 
-void HTMLMediaElement::configureMediaControls() {
+void HTMLMediaElement::updateControlsVisibility() {
   if (!isConnected()) {
     if (mediaControls())
       mediaControls()->hide();
@@ -3641,6 +3631,9 @@ void HTMLMediaElement::configureMediaControls() {
   }
 
   ensureMediaControls();
+  // TODO(mlamouri): this doesn't sound needed but the following tests, on
+  // Android fails when removed:
+  // fullscreen/compositor-touch-hit-rects-fullscreen-video-controls.html
   mediaControls()->reset();
 
   if (shouldShowControls(RecordMetricsBehavior::DoRecord))
@@ -3758,6 +3751,7 @@ DEFINE_TRACE(HTMLMediaElement) {
   visitor->trace(m_autoplayUmaHelper);
   visitor->trace(m_srcObject);
   visitor->trace(m_autoplayVisibilityObserver);
+  visitor->trace(m_mediaControls);
   visitor->template registerWeakMembers<HTMLMediaElement,
                                         &HTMLMediaElement::clearWeakMembers>(
       this);

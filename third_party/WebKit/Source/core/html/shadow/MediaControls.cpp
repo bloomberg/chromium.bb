@@ -140,10 +140,12 @@ MediaControls::MediaControls(HTMLMediaElement& mediaElement)
       m_panelWidth(0),
       m_keepShowingUntilTimerFires(false) {}
 
-MediaControls* MediaControls::create(HTMLMediaElement& mediaElement) {
+MediaControls* MediaControls::create(HTMLMediaElement& mediaElement,
+                                     ShadowRoot& shadowRoot) {
   MediaControls* controls = new MediaControls(mediaElement);
   controls->setShadowPseudoId(AtomicString("-webkit-media-controls"));
   controls->initializeControls();
+  controls->reset();
 
   // Initialize the orientation lock when going fullscreen feature.
   if (RuntimeEnabledFeatures::videoFullscreenOrientationLockEnabled() &&
@@ -153,6 +155,7 @@ MediaControls* MediaControls::create(HTMLMediaElement& mediaElement) {
             toHTMLVideoElement(mediaElement));
   }
 
+  shadowRoot.appendChild(controls);
   return controls;
 }
 
@@ -354,7 +357,6 @@ void MediaControls::reset() {
   onTextTracksAddedOrRemoved();
 
   m_fullscreenButton->setIsWanted(shouldShowFullscreenButton(mediaElement()));
-  m_fullscreenButton->setIsFullscreen(mediaElement().isFullscreen());
 
   refreshCastButtonVisibilityWithoutUpdate();
 

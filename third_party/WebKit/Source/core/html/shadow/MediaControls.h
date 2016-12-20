@@ -36,10 +36,11 @@ class Event;
 class MediaControlsMediaEventListener;
 class MediaControlsOrientationLockDelegate;
 class MediaControlsWindowEventListener;
+class ShadowRoot;
 
 class CORE_EXPORT MediaControls final : public HTMLDivElement {
  public:
-  static MediaControls* create(HTMLMediaElement&);
+  static MediaControls* create(HTMLMediaElement&, ShadowRoot&);
 
   HTMLMediaElement& mediaElement() const { return *m_mediaElement; }
 

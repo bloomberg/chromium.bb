@@ -483,7 +483,7 @@ class CORE_EXPORT HTMLMediaElement
   void requireOfficialPlaybackPositionUpdate() const;
 
   void ensureMediaControls();
-  void configureMediaControls();
+  void updateControlsVisibility();
 
   TextTrackContainer& ensureTextTrackContainer();
 
@@ -745,6 +745,8 @@ class CORE_EXPORT HTMLMediaElement
   Member<ElementVisibilityObserver> m_autoplayVisibilityObserver;
 
   IntRect m_currentIntersectRect;
+
+  Member<MediaControls> m_mediaControls;
 
   static URLRegistry* s_mediaStreamRegistry;
 };
