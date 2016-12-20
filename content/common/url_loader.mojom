@@ -44,7 +44,20 @@ interface URLLoaderClient {
   // Called when some data from a resource request has been downloaded to the
   // file. This is only called in the 'download_to_file' case and replaces
   // OnStartLoadingResponseBody in the call sequence in that case.
+  // TODO(yhirano): Remove |encoded_length| and use OnTransferSizeUpdated
+  // instead.
   OnDataDownloaded(int64 data_length, int64 encoded_length);
+
+  // Called when the transfer size is updated. This is only called if
+  // |report_raw_headers| is set and |download_to_file| is unset in the request.
+  // The transfer size is the length of the response (including both headers
+  // and the body) over the network. |transfer_size_diff| is the difference from
+  // the value previously reported one (including the one in OnReceiveResponse
+  // and OnReceiveRedirect). It must be positive.
+  // TODO(yhirano): Dispatch this notification even when |download_to_file| is
+  // set.
+  // TODO(yhirano): Consider using an unsigned type.
+  OnTransferSizeUpdated(int32 transfer_size_diff);
 
   // Called when the loader starts loading response body.
   OnStartLoadingResponseBody(handle<data_pipe_consumer> body);

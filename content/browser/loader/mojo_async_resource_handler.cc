@@ -164,6 +164,8 @@ bool MojoAsyncResourceHandler::OnResponseStarted(ResourceResponse* response,
   }
 
   NetLogObserver::PopulateResponseInfo(request(), response);
+  response->head.encoded_data_length = request()->raw_header_size();
+  reported_total_received_bytes_ = response->head.encoded_data_length;
 
   response->head.request_start = request()->creation_time();
   response->head.response_start = base::TimeTicks::Now();
@@ -245,6 +247,13 @@ bool MojoAsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   if (!bytes_read)
     return true;
 
+  const ResourceRequestInfoImpl* info = GetRequestInfo();
+  if (info->ShouldReportRawHeaders()) {
+    auto transfer_size_diff = CalculateRecentlyReceivedBytes();
+    if (transfer_size_diff > 0)
+      url_loader_client_->OnTransferSizeUpdated(transfer_size_diff);
+  }
+
   if (is_using_io_buffer_not_from_writer_) {
     // Couldn't allocate a buffer on the data pipe in OnWillRead.
     DCHECK_EQ(0u, buffer_bytes_read_);
@@ -272,13 +281,8 @@ bool MojoAsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
 }
 
 void MojoAsyncResourceHandler::OnDataDownloaded(int bytes_downloaded) {
-  int64_t total_received_bytes = request()->GetTotalReceivedBytes();
-  int64_t bytes_to_report =
-      total_received_bytes - reported_total_received_bytes_;
-  reported_total_received_bytes_ = total_received_bytes;
-  DCHECK_LE(0, bytes_to_report);
-
-  url_loader_client_->OnDataDownloaded(bytes_downloaded, bytes_to_report);
+  url_loader_client_->OnDataDownloaded(bytes_downloaded,
+                                       CalculateRecentlyReceivedBytes());
 }
 
 void MojoAsyncResourceHandler::FollowRedirect() {
@@ -448,6 +452,15 @@ void MojoAsyncResourceHandler::Cancel() {
   const ResourceRequestInfoImpl* info = GetRequestInfo();
   ResourceDispatcherHostImpl::Get()->CancelRequestFromRenderer(
       GlobalRequestID(info->GetChildID(), info->GetRequestID()));
+}
+
+int64_t MojoAsyncResourceHandler::CalculateRecentlyReceivedBytes() {
+  int64_t total_received_bytes = request()->GetTotalReceivedBytes();
+  int64_t bytes_to_report =
+      total_received_bytes - reported_total_received_bytes_;
+  reported_total_received_bytes_ = total_received_bytes;
+  DCHECK_LE(0, bytes_to_report);
+  return bytes_to_report;
 }
 
 void MojoAsyncResourceHandler::ReportBadMessage(const std::string& error) {

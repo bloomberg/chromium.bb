@@ -354,6 +354,7 @@ specific_include_rules = {
   ],
   "url_loader_factory_impl_unittest\.cc": [
     "-content",
+    "+content/browser/child_process_security_policy_impl.h",
     "+content/browser/loader/mojo_async_resource_handler.h",
     "+content/browser/loader/test_url_loader_client.h",
     "+content/browser/loader/resource_dispatcher_host_impl.h",

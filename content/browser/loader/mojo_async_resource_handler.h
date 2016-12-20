@@ -91,6 +91,10 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   bool CheckForSufficientResource();
   void OnWritable(MojoResult result);
   void Cancel();
+  // Calculates the diff between URLRequest::GetTotalReceivedBytes() and
+  // |reported_total_received_bytes_|, returns it, and updates
+  // |reported_total_received_bytes_|.
+  int64_t CalculateRecentlyReceivedBytes();
   // This function can be overriden only for tests.
   virtual void ReportBadMessage(const std::string& error);
 

@@ -1934,10 +1934,6 @@ crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/workers/xmlhttpr
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/workers/xmlhttprequest-response-type-blob-sync.html [ Pass Timeout ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/workers/shared-worker-response-type-blob-sync.html [ Pass Timeout ]
 
-crbug.com/669357 virtual/mojo-loading/http/tests/inspector-protocol/network-data-length.html [ Failure ]
-crbug.com/669357 virtual/mojo-loading/http/tests/inspector/network/network-datareceived.html [ Failure ]
-crbug.com/669357 virtual/mojo-loading/http/tests/inspector/tracing/timeline-receive-response-event.html [ Failure ]
-crbug.com/669357 virtual/mojo-loading/http/tests/inspector/tracing/timeline-network-received-data.html [ Failure ]
 crbug.com/669357 virtual/mojo-loading/http/tests/local/formdata/upload-events.html [ Failure ]
 
 crbug.com/664873 http/tests/xmlhttprequest/small-chunks-response-text.html [ Failure Pass ]

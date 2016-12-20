@@ -33,6 +33,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const ResourceResponseHead& response_head) override;
   void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override;
+  void OnTransferSizeUpdated(int32_t transfer_size_diff) override;
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const ResourceRequestCompletionStatus& status) override;
@@ -51,6 +52,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   int64_t encoded_download_data_length() const {
     return encoded_download_data_length_;
   }
+  int64_t body_transfer_size() const { return body_transfer_size_; }
 
   void ClearHasReceivedRedirect();
   // Creates an AssociatedPtrInfo, binds it to |*this| and returns it. The
@@ -85,6 +87,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   mojom::URLLoaderFactoryPtr url_loader_factory_;
   int64_t download_data_length_ = 0;
   int64_t encoded_download_data_length_ = 0;
+  int64_t body_transfer_size_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestURLLoaderClient);
 };

@@ -20,6 +20,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/mojo_async_resource_handler.h"
 #include "content/browser/loader/navigation_resource_throttle.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -89,6 +90,12 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
             nullptr,
             base::Bind(&URLLoaderFactoryImplTest::GetContexts,
                        base::Unretained(this)))) {
+    // Some tests specify request.report_raw_headers, but the RDH checks the
+    // CanReadRawCookies permission before enabling it.
+    ChildProcessSecurityPolicyImpl::GetInstance()->Add(kChildId);
+    ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
+        kChildId);
+
     resource_message_filter_->InitializeForTest();
     MojoAsyncResourceHandler::SetAllocationSizeForTesting(GetParam());
     rdh_.SetLoaderDelegate(&loader_deleate_);
@@ -103,6 +110,7 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
   }
 
   ~URLLoaderFactoryImplTest() override {
+    ChildProcessSecurityPolicyImpl::GetInstance()->Remove(kChildId);
     rdh_.SetDelegate(nullptr);
     net::URLRequestFilter::GetInstance()->ClearHandlers();
 
@@ -204,10 +212,15 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   base::ReadFileToString(
       root.Append(base::FilePath(FILE_PATH_LITERAL("hello.html"))), &expected);
   EXPECT_EQ(expected, contents);
-  EXPECT_EQ(static_cast<int64_t>(expected.size()),
+  EXPECT_EQ(static_cast<int64_t>(expected.size()) +
+                client.response_head().encoded_data_length,
             client.completion_status().encoded_data_length);
   EXPECT_EQ(static_cast<int64_t>(expected.size()),
             client.completion_status().encoded_body_length);
+  // OnTransferSizeUpdated is not dispatched as report_raw_headers is not set.
+  EXPECT_EQ(0, client.body_transfer_size());
+  EXPECT_GT(client.response_head().encoded_data_length, 0);
+  EXPECT_GT(client.completion_status().encoded_data_length, 0);
 }
 
 TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
@@ -382,7 +395,8 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFile) {
   base::ReadFileToString(
       root.Append(base::FilePath(FILE_PATH_LITERAL("hello.html"))), &expected);
   EXPECT_EQ(expected, contents);
-  EXPECT_EQ(static_cast<int64_t>(expected.size()),
+  EXPECT_EQ(static_cast<int64_t>(expected.size()) +
+                client.response_head().encoded_data_length,
             client.completion_status().encoded_data_length);
   EXPECT_EQ(static_cast<int64_t>(expected.size()),
             client.completion_status().encoded_body_length);
@@ -445,6 +459,67 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFileFailure) {
 
   EXPECT_EQ(200, client.response_head().headers->response_code());
   EXPECT_EQ(net::ERR_ABORTED, client.completion_status().error_code);
+}
+
+TEST_P(URLLoaderFactoryImplTest, OnTransferSizeUpdated) {
+  constexpr int32_t kRoutingId = 81;
+  constexpr int32_t kRequestId = 28;
+  NavigationResourceThrottle::set_ui_checks_always_succeed_for_testing(true);
+  mojom::URLLoaderAssociatedPtr loader;
+  base::FilePath root;
+  PathService::Get(DIR_TEST_DATA, &root);
+  net::URLRequestMockHTTPJob::AddUrlHandlers(root,
+                                             BrowserThread::GetBlockingPool());
+  ResourceRequest request;
+  TestURLLoaderClient client;
+  // Assume the file contents is small enough to be stored in the data pipe.
+  request.url = net::URLRequestMockHTTPJob::GetMockUrl("gzip-content.svgz");
+  request.method = "GET";
+  // |resource_type| can't be a frame type. It is because when PlzNavigate is
+  // enabled, the url scheme of frame type requests from the renderer process
+  // must be blob scheme.
+  request.resource_type = RESOURCE_TYPE_XHR;
+  // Need to set |request_initiator| for non main frame type request.
+  request.request_initiator = url::Origin();
+  request.report_raw_headers = true;
+  factory_->CreateLoaderAndStart(
+      mojo::GetProxy(&loader, factory_.associated_group()), kRoutingId,
+      kRequestId, request,
+      client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
+
+  client.RunUntilComplete();
+
+  std::string contents;
+  while (true) {
+    char buffer[16];
+    uint32_t read_size = sizeof(buffer);
+    MojoResult r = mojo::ReadDataRaw(client.response_body(), buffer, &read_size,
+                                     MOJO_READ_DATA_FLAG_NONE);
+    if (r == MOJO_RESULT_FAILED_PRECONDITION)
+      break;
+    if (r == MOJO_RESULT_SHOULD_WAIT)
+      continue;
+    ASSERT_EQ(MOJO_RESULT_OK, r);
+    contents.append(buffer, read_size);
+  }
+
+  std::string expected_encoded_body;
+  base::ReadFileToString(
+      root.Append(base::FilePath(FILE_PATH_LITERAL("gzip-content.svgz"))),
+      &expected_encoded_body);
+
+  EXPECT_GT(client.response_head().encoded_data_length, 0);
+  EXPECT_GT(client.completion_status().encoded_data_length, 0);
+  EXPECT_EQ(static_cast<int64_t>(expected_encoded_body.size()),
+            client.body_transfer_size());
+  EXPECT_EQ(200, client.response_head().headers->response_code());
+  EXPECT_EQ(
+      client.response_head().encoded_data_length + client.body_transfer_size(),
+      client.completion_status().encoded_data_length);
+  EXPECT_NE(client.body_transfer_size(), static_cast<int64_t>(contents.size()));
+  EXPECT_EQ(client.body_transfer_size(),
+            client.completion_status().encoded_body_length);
+  EXPECT_EQ(contents, "Hello World!\n");
 }
 
 // Removing the loader in the remote side will cancel the request.

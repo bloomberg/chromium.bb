@@ -289,6 +289,10 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
     NOTREACHED();
   }
 
+  void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
+    NOTREACHED();
+  }
+
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override {
     DCHECK(!body_.is_valid());

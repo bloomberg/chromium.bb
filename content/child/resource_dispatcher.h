@@ -149,6 +149,8 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
     return weak_factory_.GetWeakPtr();
   }
 
+  void OnTransferSizeUpdated(int request_id, int32_t transfer_size_diff);
+
  private:
   friend class URLResponseBodyConsumer;
   friend class ResourceDispatcherTest;

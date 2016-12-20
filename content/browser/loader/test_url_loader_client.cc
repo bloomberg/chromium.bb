@@ -45,6 +45,11 @@ void TestURLLoaderClient::OnDataDownloaded(int64_t data_length,
     quit_closure_for_on_data_downloaded_.Run();
 }
 
+void TestURLLoaderClient::OnTransferSizeUpdated(int32_t transfer_size_diff) {
+  EXPECT_GT(transfer_size_diff, 0);
+  body_transfer_size_ += transfer_size_diff;
+}
+
 void TestURLLoaderClient::OnStartLoadingResponseBody(
     mojo::ScopedDataPipeConsumerHandle body) {
   response_body_ = std::move(body);

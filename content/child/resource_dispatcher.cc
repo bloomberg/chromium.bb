@@ -114,6 +114,11 @@ class URLLoaderClientImpl final : public mojom::URLLoaderClient {
         ResourceMsg_DataDownloaded(request_id_, data_len, encoded_data_len));
   }
 
+  void OnTransferSizeUpdated(int32_t transfer_size_diff) override {
+    resource_dispatcher_->OnTransferSizeUpdated(request_id_,
+                                                transfer_size_diff);
+  }
+
   void OnStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override {
     DCHECK(!body_consumer_);
@@ -549,12 +554,11 @@ void ResourceDispatcher::Cancel(int request_id) {
 }
 
 void ResourceDispatcher::SetDefersLoading(int request_id, bool value) {
-  PendingRequestMap::iterator it = pending_requests_.find(request_id);
-  if (it == pending_requests_.end()) {
+  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
+  if (!request_info) {
     DLOG(ERROR) << "unknown request";
     return;
   }
-  PendingRequestInfo* request_info = it->second.get();
   if (value) {
     request_info->is_deferred = value;
   } else if (request_info->is_deferred) {
@@ -574,6 +578,18 @@ void ResourceDispatcher::DidChangePriority(int request_id,
   DCHECK(base::ContainsKey(pending_requests_, request_id));
   message_sender_->Send(new ResourceHostMsg_DidChangePriority(
       request_id, new_priority, intra_priority_value));
+}
+
+void ResourceDispatcher::OnTransferSizeUpdated(int request_id,
+                                               int32_t transfer_size_diff) {
+  DCHECK_GT(transfer_size_diff, 0);
+  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
+  if (!request_info)
+    return;
+
+  // TODO(yhirano): Consider using int64_t in
+  // RequestPeer::OnTransferSizeUpdated.
+  request_info->peer->OnTransferSizeUpdated(transfer_size_diff);
 }
 
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
