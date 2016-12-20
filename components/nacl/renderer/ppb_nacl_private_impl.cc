@@ -541,11 +541,8 @@ void PPBNaClPrivate::LaunchSelLdr(
     bool is_helper_nexe = !PP_ToBool(main_service_runtime);
     std::unique_ptr<TrustedPluginChannel> trusted_plugin_channel(
         new TrustedPluginChannel(
-            load_manager,
-            mojo::MakeRequest<mojom::NaClRendererHost>(
-                mojo::ScopedMessagePipeHandle(
-                    launch_result.trusted_ipc_channel_handle.mojo_handle)),
-            is_helper_nexe));
+            load_manager, launch_result.trusted_ipc_channel_handle,
+            content::RenderThread::Get()->GetShutdownEvent(), is_helper_nexe));
     load_manager->set_trusted_plugin_channel(std::move(trusted_plugin_channel));
   } else {
     PostPPCompletionCallback(callback, PP_ERROR_FAILED);

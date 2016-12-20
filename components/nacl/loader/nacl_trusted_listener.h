@@ -6,24 +6,32 @@
 #define COMPONENTS_NACL_LOADER_NACL_TRUSTED_LISTENER_H_
 
 #include "base/macros.h"
-#include "components/nacl/common/nacl.mojom.h"
+#include "base/memory/ref_counted.h"
+#include "ipc/ipc_channel_handle.h"
+#include "ipc/ipc_listener.h"
+#include "ipc/ipc_sync_channel.h"
 
 namespace base {
 class SingleThreadTaskRunner;
 }
 
-class NaClTrustedListener {
+class NaClTrustedListener : public base::RefCounted<NaClTrustedListener>,
+                            public IPC::Listener {
  public:
-  NaClTrustedListener(nacl::mojom::NaClRendererHostPtr renderer_host,
-                      base::SingleThreadTaskRunner* io_task_runner);
-  ~NaClTrustedListener();
+  NaClTrustedListener(const IPC::ChannelHandle& handle,
+                      base::SingleThreadTaskRunner* ipc_task_runner,
+                      base::WaitableEvent* shutdown_event);
 
-  nacl::mojom::NaClRendererHost* renderer_host() {
-    return renderer_host_.get();
-  }
+  // Listener implementation.
+  bool OnMessageReceived(const IPC::Message& message) override;
+
+  bool Send(IPC::Message* msg);
 
  private:
-  nacl::mojom::NaClRendererHostPtr renderer_host_;
+  friend class base::RefCounted<NaClTrustedListener>;
+  ~NaClTrustedListener() override;
+  IPC::ChannelHandle channel_handle_;
+  std::unique_ptr<IPC::SyncChannel> channel_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClTrustedListener);
 };

@@ -5,24 +5,43 @@
 #include "components/nacl/renderer/trusted_plugin_channel.h"
 
 #include "base/callback_helpers.h"
+#include "components/nacl/common/nacl_renderer_messages.h"
 #include "components/nacl/renderer/histogram.h"
 #include "components/nacl/renderer/nexe_load_manager.h"
+#include "content/public/renderer/render_thread.h"
+#include "ipc/ipc_sync_channel.h"
+#include "ipc/ipc_message_macros.h"
 #include "ppapi/c/pp_errors.h"
 
 namespace nacl {
 
 TrustedPluginChannel::TrustedPluginChannel(
     NexeLoadManager* nexe_load_manager,
-    mojom::NaClRendererHostRequest request,
+    const IPC::ChannelHandle& handle,
+    base::WaitableEvent* shutdown_event,
     bool is_helper_nexe)
     : nexe_load_manager_(nexe_load_manager),
-      binding_(this, std::move(request)),
       is_helper_nexe_(is_helper_nexe) {
-  binding_.set_connection_error_handler(base::Bind(
-      &TrustedPluginChannel::OnChannelError, base::Unretained(this)));
+  channel_ = IPC::SyncChannel::Create(
+      handle, IPC::Channel::MODE_CLIENT, this,
+      content::RenderThread::Get()->GetIOTaskRunner(), true, shutdown_event);
 }
 
 TrustedPluginChannel::~TrustedPluginChannel() {
+}
+
+bool TrustedPluginChannel::Send(IPC::Message* message) {
+  return channel_->Send(message);
+}
+
+bool TrustedPluginChannel::OnMessageReceived(const IPC::Message& msg) {
+  bool handled = true;
+  IPC_BEGIN_MESSAGE_MAP(TrustedPluginChannel, msg)
+    IPC_MESSAGE_HANDLER(NaClRendererMsg_ReportExitStatus, OnReportExitStatus);
+    IPC_MESSAGE_HANDLER(NaClRendererMsg_ReportLoadStatus, OnReportLoadStatus);
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  return handled;
 }
 
 void TrustedPluginChannel::OnChannelError() {
@@ -30,18 +49,12 @@ void TrustedPluginChannel::OnChannelError() {
     nexe_load_manager_->NexeDidCrash();
 }
 
-void TrustedPluginChannel::ReportExitStatus(
-    int exit_status,
-    const ReportExitStatusCallback& callback) {
-  callback.Run();
+void TrustedPluginChannel::OnReportExitStatus(int exit_status) {
   if (!is_helper_nexe_)
     nexe_load_manager_->set_exit_status(exit_status);
 }
 
-void TrustedPluginChannel::ReportLoadStatus(
-    NaClErrorCode load_status,
-    const ReportLoadStatusCallback& callback) {
-  callback.Run();
+void TrustedPluginChannel::OnReportLoadStatus(NaClErrorCode load_status) {
   if (load_status < 0 || load_status > NACL_ERROR_CODE_MAX) {
     load_status = LOAD_STATUS_UNKNOWN;
   }
@@ -60,11 +73,6 @@ void TrustedPluginChannel::ReportLoadStatus(
     nexe_load_manager_->ReportLoadError(PP_NACL_ERROR_SEL_LDR_START_STATUS,
                                         NaClErrorString(load_status));
   }
-}
-
-void TrustedPluginChannel::ProvideExitControl(
-    mojom::NaClExitControlPtr exit_control) {
-  exit_control_ = std::move(exit_control);
 }
 
 }  // namespace nacl

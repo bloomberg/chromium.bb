@@ -9,37 +9,46 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/nacl/common/nacl.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "ipc/ipc_listener.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "ppapi/c/pp_instance.h"
+
+namespace base {
+class WaitableEvent;
+}  // namespace base
+
+namespace IPC {
+struct ChannelHandle;
+class Message;
+class SyncChannel;
+}  // namespace IPC
 
 namespace nacl {
 class NexeLoadManager;
 
-class TrustedPluginChannel : public mojom::NaClRendererHost {
+class TrustedPluginChannel : public IPC::Listener {
  public:
   TrustedPluginChannel(NexeLoadManager* nexe_load_manager,
-                       mojom::NaClRendererHostRequest request,
+                       const IPC::ChannelHandle& handle,
+                       base::WaitableEvent* shutdown_event,
                        bool is_helper_nexe);
   ~TrustedPluginChannel() override;
 
+  bool Send(IPC::Message* message);
+
+  // Listener implementation.
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void OnChannelError() override;
+
+  void OnReportExitStatus(int exit_status);
+  void OnReportLoadStatus(NaClErrorCode load_status);
+
  private:
-  void OnChannelError();
-
-  // mojom::NaClRendererHost overrides.
-  void ReportExitStatus(int exit_status,
-                        const ReportExitStatusCallback& callback) override;
-  void ReportLoadStatus(NaClErrorCode load_status,
-                        const ReportLoadStatusCallback& callback) override;
-  void ProvideExitControl(mojom::NaClExitControlPtr exit_control) override;
-
   // Non-owning pointer. This is safe because the TrustedPluginChannel is owned
   // by the NexeLoadManager pointed to here.
   NexeLoadManager* nexe_load_manager_;
-  mojo::Binding<mojom::NaClRendererHost> binding_;
-  mojom::NaClExitControlPtr exit_control_;
-  const bool is_helper_nexe_;
+  std::unique_ptr<IPC::SyncChannel> channel_;
+  bool is_helper_nexe_;
 
   DISALLOW_COPY_AND_ASSIGN(TrustedPluginChannel);
 };

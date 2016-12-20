@@ -110,7 +110,7 @@ class NaClListener : public IPC::Listener {
 
   std::unique_ptr<base::SharedMemory> crash_info_shmem_;
 
-  std::unique_ptr<NaClTrustedListener> trusted_listener_;
+  scoped_refptr<NaClTrustedListener> trusted_listener_;
 
   ResolveFileTokenCallback resolved_cb_;
 

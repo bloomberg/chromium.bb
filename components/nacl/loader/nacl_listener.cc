@@ -24,8 +24,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "components/nacl/common/nacl.mojom.h"
 #include "components/nacl/common/nacl_messages.h"
+#include "components/nacl/common/nacl_renderer_messages.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/nacl/loader/nacl_ipc_adapter.h"
 #include "components/nacl/loader/nacl_validation_db.h"
@@ -76,8 +76,9 @@ void FatalLogHandler(const char* data, size_t bytes) {
 }
 
 void LoadStatusCallback(int load_status) {
-  g_listener->trusted_listener()->renderer_host()->ReportLoadStatus(
-      static_cast<NaClErrorCode>(load_status));
+  g_listener->trusted_listener()->Send(
+      new NaClRendererMsg_ReportLoadStatus(
+          static_cast<NaClErrorCode>(load_status)));
 }
 
 #if defined(OS_LINUX)
@@ -348,15 +349,15 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
       base::Bind(&NaClListener::ResolveFileToken, base::Unretained(this)),
       base::Bind(&NaClListener::OnOpenResource, base::Unretained(this)));
 
-  nacl::mojom::NaClRendererHostPtr renderer_host;
+  mojo::MessagePipe trusted_pipe;
+  trusted_listener_ =
+      new NaClTrustedListener(trusted_pipe.handle0.release(),
+                              io_thread_.task_runner().get(), &shutdown_event_);
   if (!Send(new NaClProcessHostMsg_PpapiChannelsCreated(
-          browser_handle, ppapi_renderer_handle,
-          GetProxy(&renderer_host).PassMessagePipe().release(),
+          browser_handle, ppapi_renderer_handle, trusted_pipe.handle1.release(),
           manifest_service_handle)))
     LOG(FATAL) << "Failed to send IPC channel handle to NaClProcessHost.";
 
-  trusted_listener_ = base::MakeUnique<NaClTrustedListener>(
-      std::move(renderer_host), io_thread_.task_runner().get());
   struct NaClChromeMainArgs* args = NaClChromeMainArgsCreate();
   if (args == NULL) {
     LOG(FATAL) << "NaClChromeMainArgsCreate() failed";
@@ -445,7 +446,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
     NaClExit(1);
 
   // Report the plugin's exit status if the application started successfully.
-  trusted_listener_->renderer_host()->ReportExitStatus(exit_status);
+  trusted_listener_->Send(new NaClRendererMsg_ReportExitStatus(exit_status));
   NaClExit(exit_status);
 }
 
