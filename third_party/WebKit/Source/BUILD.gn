@@ -24,6 +24,11 @@ declare_args() {
   # a class has an empty destructor which would be unnecessarily invoked
   # when finalized.
   blink_gc_plugin_option_warn_unneeded_finalizer = false
+
+  # Set to true to have the clang Blink GC plugin use Chromium-style naming
+  # rather than legacy Blink name.
+  # TODO(https://crbug.com/675879): Remove this option after the Blink rename.
+  blink_gc_plugin_option_use_chromium_style_naming = false
 }
 
 # features ---------------------------------------------------------------------
@@ -147,6 +152,14 @@ config("config") {
         "-plugin-arg-blink-gc-plugin",
         "-Xclang",
         "warn-unneeded-finalizer",
+      ]
+    }
+    if (blink_gc_plugin_option_use_chromium_style_naming) {
+      cflags += [
+        "-Xclang",
+        "-plugin-arg-blink-gc-plugin",
+        "-Xclang",
+        "use-chromium-style-naming",
       ]
     }
   }
