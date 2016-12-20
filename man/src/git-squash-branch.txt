@@ -35,7 +35,7 @@ OPTIONS
 -m <message>::
 --message=<message>::
   Optional message to use for the first line of the squashed commit. If omitted,
-  it defaults to "git squash commit.".
+  it defaults to "git squash commit for <branch>.".
 
 EXAMPLE
 -------

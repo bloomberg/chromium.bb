@@ -810,7 +810,7 @@ def status():
 
 
 def squash_current_branch(header=None, merge_base=None):
-  header = header or 'git squash commit.'
+  header = header or 'git squash commit for %s.' % current_branch()
   merge_base = merge_base or get_or_create_merge_base(current_branch())
   log_msg = header + '\n'
   if log_msg:

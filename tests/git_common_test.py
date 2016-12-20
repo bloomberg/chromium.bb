@@ -681,6 +681,12 @@ class GitMutableStructuredTest(git_test_utils.GitRepoReadWriteTestBase,
       'K'
     )
 
+  def testSquashBranchDefaultMessage(self):
+    self.repo.git('checkout', 'branch_K')
+    self.assertEquals(True, self.repo.run(self.gc.squash_current_branch))
+    self.assertEquals(self.repo.run(self.gc.run, 'log', '-n1', '--format=%s'),
+                      'git squash commit for branch_K.')
+
   def testSquashBranchEmpty(self):
     self.repo.git('checkout', 'branch_K')
     self.repo.git('checkout', 'branch_G', '.')
