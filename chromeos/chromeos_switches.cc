@@ -144,9 +144,6 @@ const char kDisableDeviceDisabling[] = "disable-device-disabling";
 // Disables notification when device is in end of life status.
 const char kDisableEolNotification[] = "disable-eol-notification";
 
-// Disables quick view in Files app.
-const char kDisableFilesQuickView[] = "disable-files-quick-view";
-
 // Disables GAIA services such as enrollment and OAuth session restore. Used by
 // 'fake' telemetry login.
 const char kDisableGaiaServices[] = "disable-gaia-services";
@@ -233,9 +230,6 @@ const char kEnableExperimentalAccessibilityFeatures[] =
 
 // Enables sharing assets for installed default apps.
 const char kEnableExtensionAssetsSharing[] = "enable-extension-assets-sharing";
-
-// Enables quick view in Files app.
-const char kEnableFilesQuickView[] = "enable-files-quick-view";
 
 // Enables animated transitions during first-run tutorial.
 const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";

@@ -549,23 +549,16 @@ FileManager.prototype = /** @struct */ {
         (queryRequiredElement('#quick-view'));
     var fileListSelectionModel = /** @type {!cr.ui.ListSelectionModel} */ (
         this.directoryModel_.getFileListSelection());
-    chrome.commandLinePrivate.hasSwitch(
-        'disable-files-quick-view', function(disabled) {
-          if (!disabled) {
-            this.quickViewUma_ = new QuickViewUma(
-                assert(this.volumeManager_), assert(this.dialogType));
-            this.quickViewController_ = new QuickViewController(
-                quickView, assert(this.metadataModel_),
-                assert(this.selectionHandler_),
-                assert(this.ui_.listContainer), assert(this.quickViewModel_),
-                assert(this.taskController_),
-                fileListSelectionModel,
-                assert(this.quickViewUma_));
-            this.metadataBoxController_ = new MetadataBoxController(
-                this.metadataModel_, quickView.getFilesMetadataBox(),
-                quickView, this.quickViewModel_, this.fileMetadataFormatter_);
-          }
-        }.bind(this));
+    this.quickViewUma_ =
+        new QuickViewUma(assert(this.volumeManager_), assert(this.dialogType));
+    this.quickViewController_ = new QuickViewController(
+        quickView, assert(this.metadataModel_), assert(this.selectionHandler_),
+        assert(this.ui_.listContainer), assert(this.quickViewModel_),
+        assert(this.taskController_), fileListSelectionModel,
+        assert(this.quickViewUma_));
+    this.metadataBoxController_ = new MetadataBoxController(
+        this.metadataModel_, quickView.getFilesMetadataBox(), quickView,
+        this.quickViewModel_, this.fileMetadataFormatter_);
 
     if (this.dialogType === DialogType.FULL_PAGE) {
       importer.importEnabled().then(

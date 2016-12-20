@@ -2004,10 +2004,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_BACKGROUND_VIDEO_TRACK_OPTIMIZATION_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(media::kBackgroundVideoTrackOptimization)},
 #if defined(OS_CHROMEOS)
-    {"files-quick-view", IDS_FLAGS_FILES_QUICK_VIEW_NAME,
-     IDS_FLAGS_FILES_QUICK_VIEW_DESCRIPTION, kOsCrOS,
-     ENABLE_DISABLE_VALUE_TYPE(chromeos::switches::kEnableFilesQuickView,
-                               chromeos::switches::kDisableFilesQuickView)},
     {"quick-unlock-pin", IDS_FLAGS_QUICK_UNLOCK_PIN,
      IDS_FLAGS_QUICK_UNLOCK_PIN_DESCRIPTION, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kQuickUnlockPin)},
