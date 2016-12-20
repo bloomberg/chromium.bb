@@ -3245,9 +3245,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ClipChangesUpdateOverflowClip) {
               !div->layoutObject()->paintProperties()->overflowClip());
 }
 
-// crbug.com:645667: Contain paint changes fail to update paint properties.
-TEST_P(PaintPropertyTreeBuilderTest,
-       DISABLED_ContainPaintChangesUpdateOverflowClip) {
+TEST_P(PaintPropertyTreeBuilderTest, ContainPaintChangesUpdateOverflowClip) {
   setBodyInnerHTML(
       "<style>"
       "  body { margin:0 }"
