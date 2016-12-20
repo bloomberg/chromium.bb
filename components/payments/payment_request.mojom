@@ -128,6 +128,8 @@ struct PaymentMethodData {
   array<AndroidPayCardNetwork> allowed_card_networks;
   AndroidPayTokenization tokenization_type;
   array<AndroidPayTokenizationParameter> parameters;
+  // Value of 0 means the merchant did not specify or it was an invalid value.
+  int32 min_google_play_services_version;
 };
 
 struct PaymentDetailsModifier {

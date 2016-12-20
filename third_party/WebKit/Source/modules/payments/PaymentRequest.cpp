@@ -253,6 +253,17 @@ void maybeSetAndroidPayMethodData(const ScriptValue& input,
   output->merchant_name = androidPay.merchantName();
   output->merchant_id = androidPay.merchantId();
 
+  // 0 means the merchant did not specify or it was an invalid value
+  output->min_google_play_services_version = 0;
+  if (androidPay.hasMinGooglePlayServicesVersion()) {
+    bool ok = false;
+    int minGooglePlayServicesVersion =
+        androidPay.minGooglePlayServicesVersion().toIntStrict(&ok);
+    if (ok) {
+      output->min_google_play_services_version = minGooglePlayServicesVersion;
+    }
+  }
+
   if (androidPay.hasAllowedCardNetworks()) {
     for (const String& allowedCardNetwork : androidPay.allowedCardNetworks()) {
       for (size_t i = 0; i < arraysize(kAndroidPayNetwork); ++i) {
