@@ -21,7 +21,16 @@ class ArcKioskBridge : public ArcService,
                        public InstanceHolder<mojom::KioskInstance>::Observer,
                        public mojom::KioskHost {
  public:
-  explicit ArcKioskBridge(ArcBridgeService* bridge_service);
+  // Received IPCs are passed to this delegate.
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+    virtual void OnMaintenanceSessionCreated() = 0;
+    virtual void OnMaintenanceSessionFinished() = 0;
+  };
+
+  // |delegate| should be alive while the ArcKioskBridge instance is alive.
+  ArcKioskBridge(ArcBridgeService* bridge_service, Delegate* delegate);
   ~ArcKioskBridge() override;
 
   // InstanceHolder<mojom::KioskInstance>::Observer overrides.
@@ -33,6 +42,7 @@ class ArcKioskBridge : public ArcService,
 
  private:
   mojo::Binding<mojom::KioskHost> binding_;
+  Delegate* const delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcKioskBridge);
 };

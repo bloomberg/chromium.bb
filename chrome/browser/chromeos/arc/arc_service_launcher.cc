@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_service.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/downloads_watcher/arc_downloads_watcher_service.h"
@@ -21,6 +22,7 @@
 #include "chrome/browser/chromeos/arc/tts/arc_tts_service.h"
 #include "chrome/browser/chromeos/arc/video/gpu_arc_video_service_host.h"
 #include "chrome/browser/chromeos/arc/wallpaper/arc_wallpaper_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/audio/arc_audio_bridge.h"
@@ -37,6 +39,7 @@
 #include "components/arc/power/arc_power_bridge.h"
 #include "components/arc/storage_manager/arc_storage_manager.h"
 #include "components/prefs/pref_member.h"
+#include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/arc/notification/arc_notification_manager.h"
 
@@ -109,8 +112,6 @@ void ArcServiceLauncher::Initialize() {
   arc_service_manager_->AddService(
       base::MakeUnique<ArcImeService>(arc_bridge_service));
   arc_service_manager_->AddService(
-      base::MakeUnique<ArcKioskBridge>(arc_bridge_service));
-  arc_service_manager_->AddService(
       base::MakeUnique<ArcMetricsService>(arc_bridge_service));
   arc_service_manager_->AddService(
       base::MakeUnique<ArcNetHostImpl>(arc_bridge_service));
@@ -141,6 +142,16 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   arc_service_manager_->AddService(base::MakeUnique<ArcNotificationManager>(
       arc_service_manager_->arc_bridge_service(),
       multi_user_util::GetAccountIdFromProfile(profile)));
+
+  // Kiosk apps should be run only for kiosk sessions.
+  if (user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp()) {
+    // ArcKioskAppService is BrowserContextKeyedService so that it's destroyed
+    // on destroying the Profile, that is after ArcServiceLauncher::Shutdown().
+    arc_service_manager_->AddService(base::MakeUnique<ArcKioskBridge>(
+        arc_service_manager_->arc_bridge_service(),
+        chromeos::ArcKioskAppService::Get(profile)));
+  }
+
   arc_session_manager_->OnPrimaryUserProfilePrepared(profile);
 }
 

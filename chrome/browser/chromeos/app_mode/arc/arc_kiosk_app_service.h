@@ -9,9 +9,15 @@
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_launcher.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "components/arc/kiosk/arc_kiosk_bridge.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "content/public/browser/browser_context.h"
+
+class Profile;
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace chromeos {
 
@@ -24,10 +30,14 @@ namespace chromeos {
 class ArcKioskAppService
     : public KeyedService,
       public ArcAppListPrefs::Observer,
-      public ArcKioskAppManager::ArcKioskAppManagerObserver {
+      public ArcKioskAppManager::ArcKioskAppManagerObserver,
+      public arc::ArcKioskBridge::Delegate {
  public:
-  static ArcKioskAppService* Create(Profile* profile, ArcAppListPrefs* prefs);
+  static ArcKioskAppService* Create(Profile* profile);
   static ArcKioskAppService* Get(content::BrowserContext* context);
+
+  // KeyedService overrides
+  void Shutdown() override;
 
   // ArcAppListPrefs::Observer overrides
   void OnAppRegistered(const std::string& app_id,
@@ -43,8 +53,12 @@ class ArcKioskAppService
   // ArcKioskAppManager::Observer overrides
   void OnArcKioskAppsChanged() override;
 
+  // ArcKioskBridge::Delegate overrides
+  void OnMaintenanceSessionCreated() override;
+  void OnMaintenanceSessionFinished() override;
+
  private:
-  ArcKioskAppService(Profile* profile, ArcAppListPrefs* prefs);
+  explicit ArcKioskAppService(Profile* profile);
   ~ArcKioskAppService() override;
 
   std::string GetAppId();
@@ -52,7 +66,7 @@ class ArcKioskAppService
   void PreconditionsChanged();
 
   Profile* const profile_;
-  ArcAppListPrefs* const prefs_;
+  bool maintenance_session_running_ = false;
   ArcKioskAppManager* app_manager_;
   std::string app_id_;
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info_;

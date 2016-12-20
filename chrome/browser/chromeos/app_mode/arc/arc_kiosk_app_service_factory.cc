@@ -37,7 +37,7 @@ KeyedService* ArcKioskAppServiceFactory::BuildServiceInstanceFor(
   Profile* profile = static_cast<Profile*>(context);
   DCHECK(profile);
 
-  return ArcKioskAppService::Create(profile, ArcAppListPrefs::Get(profile));
+  return ArcKioskAppService::Create(profile);
 }
 
 }  // namespace chromeos

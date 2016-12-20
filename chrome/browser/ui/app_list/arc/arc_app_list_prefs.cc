@@ -12,7 +12,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner_util.h"
-#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_service.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
@@ -668,12 +667,6 @@ void ArcAppListPrefs::OnInstanceReady() {
   // Note, sync_service_ may be nullptr in testing.
   sync_service_ = arc::ArcPackageSyncableService::Get(profile_);
 
-  // Kiosk apps should be run only for kiosk sessions.
-  if (user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp()) {
-    kiosk_app_service_ = chromeos::ArcKioskAppService::Get(profile_);
-    DCHECK(kiosk_app_service_);
-  }
-
   // In some tests app_instance may not be set.
   if (!app_instance)
     return;
@@ -693,7 +686,6 @@ void ArcAppListPrefs::OnInstanceClosed() {
     sync_service_ = nullptr;
   }
 
-  kiosk_app_service_ = nullptr;
   is_initialized_ = false;
   package_list_initial_refreshed_ = false;
 }
