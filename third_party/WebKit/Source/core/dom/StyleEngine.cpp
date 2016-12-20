@@ -457,6 +457,7 @@ void StyleEngine::clearResolver() {
 }
 
 void StyleEngine::didDetach() {
+  m_globalRuleSet.dispose();
   clearResolver();
   m_viewportResolver = nullptr;
   m_mediaQueryEvaluator = nullptr;

@@ -69,6 +69,15 @@ void CSSGlobalRuleSet::update(Document& document) {
   m_uncommonAttributeRuleSet = makeRuleSet(m_features.uncommonAttributeRules());
 }
 
+void CSSGlobalRuleSet::dispose() {
+  m_features.clear();
+  m_siblingRuleSet = nullptr;
+  m_uncommonAttributeRuleSet = nullptr;
+  m_watchedSelectorsRuleSet = nullptr;
+  m_hasFullscreenUAStyle = false;
+  m_isDirty = true;
+}
+
 DEFINE_TRACE(CSSGlobalRuleSet) {
   visitor->trace(m_features);
   visitor->trace(m_siblingRuleSet);

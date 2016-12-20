@@ -28,6 +28,7 @@ class CSSGlobalRuleSet {
  public:
   CSSGlobalRuleSet() {}
 
+  void dispose();
   void initWatchedSelectorsRuleSet(Document&);
   void markDirty() { m_isDirty = true; }
   bool isDirty() const { return m_isDirty; }
