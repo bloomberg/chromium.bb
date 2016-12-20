@@ -14,6 +14,7 @@
 #include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
+#include "components/nacl/common/nacl.mojom.h"
 #include "components/nacl/common/nacl_messages.h"
 #include "components/nacl/common/nacl_types.h"
 #include "components/nacl/loader/nacl_trusted_listener.h"
@@ -120,12 +121,12 @@ void NonSfiListener::OnStart(const nacl::NaClStartParams& params) {
       params.manifest_service_channel_handle);
   ppapi::StartUpPlugin();
 
-  // TODO(teravest): Do we plan on using this renderer handle for nexe loading
-  // for non-SFI? Right now, passing an empty channel handle instead causes
-  // hangs, so we'll keep it.
-  trusted_listener_ =
-      new NaClTrustedListener(params.trusted_service_channel_handle,
-                              io_thread_.task_runner().get(), &shutdown_event_);
+  trusted_listener_ = base::MakeUnique<NaClTrustedListener>(
+      mojo::MakeProxy(nacl::mojom::NaClRendererHostPtrInfo(
+          mojo::ScopedMessagePipeHandle(
+              params.trusted_service_channel_handle.mojo_handle),
+          nacl::mojom::NaClRendererHost::Version_)),
+      io_thread_.task_runner().get());
 
   // Ensure that the validation cache key (used as an extra input to the
   // validation cache's hashing) isn't exposed accidentally.

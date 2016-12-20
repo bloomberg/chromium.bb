@@ -10,8 +10,11 @@
 
 #include "components/nacl/common/nacl_types.h"
 #include "ipc/ipc_message_macros.h"
+#include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 
 IPC_ENUM_TRAITS_MAX_VALUE(nacl::NaClAppProcessType,
                           nacl::kNumNaClProcessTypes - 1)
+
+IPC_ENUM_TRAITS_MAX_VALUE(NaClErrorCode, NACL_ERROR_CODE_MAX)
 
 #endif  // COMPONENTS_NACL_COMMON_NACL_TYPES_PARAM_TRAITS_H_

@@ -31,6 +31,7 @@ source_set("minimal") {
     ":minimal_content_dummy",
     "//base",
     "//components/nacl/common:minimal",
+    "//components/nacl/common:mojo_bindings",
     "//crypto",
     "//ipc",
     "//mojo/edk/system",
@@ -214,6 +215,7 @@ if (is_nacl_nonsfi) {
     deps = [
       ":nacl_helper_nonsfi_sandbox",
       "//base",
+      "//components/nacl/common:mojo_bindings",
       "//components/nacl/common:switches",
       "//components/tracing",
       "//content",

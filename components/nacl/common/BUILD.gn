@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/features.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 
 if (enable_nacl) {
   # This is separate so it can be used by ../broker:nacl64.
@@ -15,8 +16,6 @@ if (enable_nacl) {
       "nacl_messages.cc",
       "nacl_messages.h",
       "nacl_process_type.h",
-      "nacl_renderer_messages.cc",
-      "nacl_renderer_messages.h",
       "nacl_sandbox_type.h",
       "nacl_types.cc",
       "nacl_types.h",
@@ -30,6 +29,7 @@ if (enable_nacl) {
 
     deps = [
       ":minimal_content_dummy",
+      ":nacl_error_code",
       "//base",
       "//base:base_static",
       "//ipc",
@@ -66,6 +66,7 @@ if (enable_nacl) {
 
     public_deps = [
       ":minimal",
+      ":mojo_bindings",
       ":switches",
     ]
 
@@ -94,6 +95,18 @@ if (enable_nacl) {
 
     deps = [
       "//base",
+    ]
+  }
+
+  source_set("nacl_error_code") {
+    sources = [
+      "//native_client/src/trusted/service_runtime/nacl_error_code.h",
+    ]
+  }
+
+  mojom("mojo_bindings") {
+    sources = [
+      "nacl.mojom",
     ]
   }
 }
