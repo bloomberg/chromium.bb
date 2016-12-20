@@ -1990,11 +1990,20 @@ void DXVAVideoDecodeAccelerator::StopDecoderThread() {
   uint64_t last_process_output_time = g_last_process_output_time;
   LARGE_INTEGER perf_frequency;
   ::QueryPerformanceFrequency(&perf_frequency);
+  uint32_t output_array_size = output_array_size_;
+  size_t sample_count;
+  {
+    base::AutoLock lock(decoder_lock_);
+    sample_count = pending_output_samples_.size();
+  }
+
   base::debug::Alias(&last_exception_code);
   base::debug::Alias(&last_unhandled_error);
   base::debug::Alias(&last_exception_time);
   base::debug::Alias(&last_process_output_time);
   base::debug::Alias(&perf_frequency.QuadPart);
+  base::debug::Alias(&output_array_size);
+  base::debug::Alias(&sample_count);
   decoder_thread_.Stop();
 }
 
@@ -2831,6 +2840,7 @@ bool DXVAVideoDecodeAccelerator::GetVideoFrameDimensions(IMFSample* sample,
     d3d11_texture->GetDesc(&d3d11_texture_desc);
     *width = d3d11_texture_desc.Width;
     *height = d3d11_texture_desc.Height;
+    output_array_size_ = d3d11_texture_desc.ArraySize;
   } else {
     base::win::ScopedComPtr<IDirect3DSurface9> surface;
     hr = MFGetService(output_buffer.get(), MR_BUFFER_SERVICE,

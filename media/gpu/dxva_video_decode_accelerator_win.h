@@ -463,6 +463,10 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // |pending_input_buffers_| is drained. Protected by |decoder_lock_|.
   bool sent_drain_message_;
 
+  // This is the array size of the D3D11 texture that's output to by the
+  // decoder. It's only used for debugging.
+  uint32_t output_array_size_ = 0;
+
   // List of input samples waiting to be processed.
   typedef std::list<base::win::ScopedComPtr<IMFSample>> PendingInputs;
   PendingInputs pending_input_buffers_;
