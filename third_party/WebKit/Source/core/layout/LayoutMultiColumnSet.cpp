@@ -474,8 +474,9 @@ PositionWithAffinity LayoutMultiColumnSet::positionForPoint(
   // Convert the visual point to a flow thread point.
   const MultiColumnFragmentainerGroup& row =
       fragmentainerGroupAtVisualPoint(point);
-  LayoutPoint flowThreadPoint =
-      row.visualPointToFlowThreadPoint(point + row.offsetFromColumnSet());
+  LayoutPoint flowThreadPoint = row.visualPointToFlowThreadPoint(
+      point + row.offsetFromColumnSet(),
+      MultiColumnFragmentainerGroup::SnapToColumn);
   // Then drill into the flow thread, where we'll find the actual content.
   return flowThread()->positionForPoint(flowThreadPoint);
 }

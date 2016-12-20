@@ -855,6 +855,36 @@ TEST_P(MapCoordinatesTest, MulticolWithBlock) {
   EXPECT_EQ(FloatPoint(10, 120), mappedPoint);
 }
 
+TEST_P(MapCoordinatesTest, MulticolWithBlockAbove) {
+  setBodyInnerHTML(
+      "<div id='container' style='columns:3; column-gap:0; "
+      "column-fill:auto; width:300px; height:200px;'>"
+      "    <div id='target' style='margin-top:-50px; height:100px;'></div>"
+      "</div>");
+
+  LayoutBox* target = toLayoutBox(getLayoutObjectByElementId("target"));
+  LayoutBox* container = toLayoutBox(getLayoutObjectByElementId("container"));
+
+  FloatPoint mappedPoint = mapLocalToAncestor(target, container, FloatPoint());
+  EXPECT_EQ(FloatPoint(0, -50), mappedPoint);
+  mappedPoint = mapAncestorToLocal(target, container, mappedPoint);
+  EXPECT_EQ(FloatPoint(), mappedPoint);
+
+  // Walk each ancestor in the chain separately, to verify each step on the way.
+  LayoutBox* flowThread = target->parentBox();
+  ASSERT_TRUE(flowThread->isLayoutFlowThread());
+
+  mappedPoint = mapLocalToAncestor(target, flowThread, FloatPoint());
+  EXPECT_EQ(FloatPoint(0, -50), mappedPoint);
+  mappedPoint = mapAncestorToLocal(target, flowThread, mappedPoint);
+  EXPECT_EQ(FloatPoint(), mappedPoint);
+
+  mappedPoint = mapLocalToAncestor(flowThread, container, FloatPoint(0, -50));
+  EXPECT_EQ(FloatPoint(0, -50), mappedPoint);
+  mappedPoint = mapAncestorToLocal(flowThread, container, mappedPoint);
+  EXPECT_EQ(FloatPoint(0, -50), mappedPoint);
+}
+
 TEST_P(MapCoordinatesTest, NestedMulticolWithBlock) {
   setBodyInnerHTML(
       "<div id='outerMulticol' style='columns:2; column-gap:0; "

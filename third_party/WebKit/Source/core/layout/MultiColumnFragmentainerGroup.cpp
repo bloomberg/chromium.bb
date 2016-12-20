@@ -181,36 +181,34 @@ LayoutUnit MultiColumnFragmentainerGroup::columnLogicalTopForOffset(
 }
 
 LayoutPoint MultiColumnFragmentainerGroup::visualPointToFlowThreadPoint(
-    const LayoutPoint& visualPoint) const {
+    const LayoutPoint& visualPoint,
+    SnapToColumnPolicy snap) const {
   unsigned columnIndex = columnIndexAtVisualPoint(visualPoint);
   LayoutRect columnRect = columnRectAt(columnIndex);
   LayoutPoint localPoint(visualPoint);
   localPoint.moveBy(-columnRect.location());
-  // Before converting to a flow thread position, if the block direction
-  // coordinate is outside the column, snap to the bounds of the column, and
-  // reset the inline direction coordinate to the start position in the column.
-  // The effect of this is that if the block position is before the column
-  // rectangle, we'll get to the beginning of this column, while if the block
-  // position is after the column rectangle, we'll get to the beginning of the
-  // next column.
   if (!m_columnSet.isHorizontalWritingMode()) {
-    LayoutUnit columnStart = m_columnSet.style()->isLeftToRightDirection()
-                                 ? LayoutUnit()
-                                 : columnRect.height();
-    if (localPoint.x() < 0)
-      localPoint = LayoutPoint(LayoutUnit(), columnStart);
-    else if (localPoint.x() > logicalHeight())
-      localPoint = LayoutPoint(logicalHeight(), columnStart);
+    if (snap == SnapToColumn) {
+      LayoutUnit columnStart = m_columnSet.style()->isLeftToRightDirection()
+                                   ? LayoutUnit()
+                                   : columnRect.height();
+      if (localPoint.x() < 0)
+        localPoint = LayoutPoint(LayoutUnit(), columnStart);
+      else if (localPoint.x() > logicalHeight())
+        localPoint = LayoutPoint(logicalHeight(), columnStart);
+    }
     return LayoutPoint(localPoint.x() + logicalTopInFlowThreadAt(columnIndex),
                        localPoint.y());
   }
-  LayoutUnit columnStart = m_columnSet.style()->isLeftToRightDirection()
-                               ? LayoutUnit()
-                               : columnRect.width();
-  if (localPoint.y() < 0)
-    localPoint = LayoutPoint(columnStart, LayoutUnit());
-  else if (localPoint.y() > logicalHeight())
-    localPoint = LayoutPoint(columnStart, logicalHeight());
+  if (snap == SnapToColumn) {
+    LayoutUnit columnStart = m_columnSet.style()->isLeftToRightDirection()
+                                 ? LayoutUnit()
+                                 : columnRect.width();
+    if (localPoint.y() < 0)
+      localPoint = LayoutPoint(columnStart, LayoutUnit());
+    else if (localPoint.y() > logicalHeight())
+      localPoint = LayoutPoint(columnStart, logicalHeight());
+  }
   return LayoutPoint(localPoint.x(),
                      localPoint.y() + logicalTopInFlowThreadAt(columnIndex));
 }
