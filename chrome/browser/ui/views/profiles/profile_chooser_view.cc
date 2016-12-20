@@ -177,7 +177,6 @@ views::ImageButton* CreateBackButton(views::ButtonListener* listener) {
   back_button->SetImage(views::ImageButton::STATE_DISABLED,
                         rb->GetImageSkiaNamed(IDR_BACK_D));
   back_button->SetFocusForPlatform();
-  back_button->set_request_focus_on_press(true);
   return back_button;
 }
 
@@ -197,7 +196,6 @@ class BackgroundColorHoverButton : public views::LabelButton {
                                   : views::kButtonHEdgeMarginNew;
     SetBorder(views::CreateEmptyBorder(0, button_margin, 0, button_margin));
     SetFocusForPlatform();
-    set_request_focus_on_press(true);
 
     if (switches::IsMaterialDesignUserMenu()) {
       label()->SetHandlesTooltips(false);
@@ -1623,7 +1621,6 @@ views::View* ProfileChooserView::CreateCurrentProfileView(
             gfx::CreateVectorIcon(gfx::VectorIconId::WARNING, 18,
                                   gfx::kChromeIconGrey));
         auth_error_email_button_->SetFocusForPlatform();
-        auth_error_email_button_->set_request_focus_on_press(true);
         gfx::Insets insets =
             views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(
                 views::Button::STYLE_TEXTBUTTON);
