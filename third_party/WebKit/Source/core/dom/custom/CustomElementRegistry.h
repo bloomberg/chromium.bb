@@ -68,6 +68,7 @@ class CORE_EXPORT CustomElementRegistry final
   void entangle(V0CustomElementRegistrationContext*);
 
   DECLARE_TRACE();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
   friend class CustomElementRegistryTest;

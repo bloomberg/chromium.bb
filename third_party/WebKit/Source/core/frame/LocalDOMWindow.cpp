@@ -274,8 +274,8 @@ LocalDOMWindow::LocalDOMWindow(LocalFrame& frame)
     : m_frame(&frame),
       m_visualViewport(DOMVisualViewport::create(this)),
       m_unusedPreloadsTimer(this, &LocalDOMWindow::warnUnusedPreloads),
-      m_shouldPrintWhenFinishedLoading(false) {
-}
+      m_shouldPrintWhenFinishedLoading(false),
+      m_customElements(this, nullptr) {}
 
 void LocalDOMWindow::clearDocument() {
   if (!m_document)
@@ -1563,6 +1563,11 @@ DEFINE_TRACE(LocalDOMWindow) {
   visitor->trace(m_eventListenerObservers);
   DOMWindow::trace(visitor);
   Supplementable<LocalDOMWindow>::trace(visitor);
+}
+
+DEFINE_TRACE_WRAPPERS(LocalDOMWindow) {
+  visitor->traceWrappers(m_customElements);
+  DOMWindow::traceWrappers(visitor);
 }
 
 LocalFrame* LocalDOMWindow::frame() const {

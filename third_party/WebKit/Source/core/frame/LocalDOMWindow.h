@@ -27,6 +27,7 @@
 #ifndef LocalDOMWindow_h
 #define LocalDOMWindow_h
 
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "core/CoreExport.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindow.h"
@@ -82,6 +83,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   ~LocalDOMWindow() override;
 
   DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
   Document* installNewDocument(const String& mimeType,
                                const DocumentInit&,
@@ -277,7 +279,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   mutable Member<BarProp> m_toolbar;
   mutable Member<Navigator> m_navigator;
   mutable Member<StyleMedia> m_media;
-  mutable Member<CustomElementRegistry> m_customElements;
+  mutable TraceWrapperMember<CustomElementRegistry> m_customElements;
 
   String m_status;
   String m_defaultStatus;

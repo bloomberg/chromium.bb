@@ -18,6 +18,7 @@
 #include "core/dom/custom/CustomElementDefinition.h"
 #include "core/dom/custom/CustomElementDefinitionBuilder.h"
 #include "core/dom/custom/CustomElementDescriptor.h"
+#include "core/dom/custom/CustomElementReactionStack.h"
 #include "core/dom/custom/CustomElementUpgradeReaction.h"
 #include "core/dom/custom/CustomElementUpgradeSorter.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
@@ -88,6 +89,10 @@ DEFINE_TRACE(CustomElementRegistry) {
   visitor->trace(m_v0);
   visitor->trace(m_upgradeCandidates);
   visitor->trace(m_whenDefinedPromiseMap);
+}
+
+DEFINE_TRACE_WRAPPERS(CustomElementRegistry) {
+  visitor->traceWrappers(&CustomElementReactionStack::current());
 }
 
 CustomElementDefinition* CustomElementRegistry::define(
