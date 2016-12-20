@@ -98,13 +98,9 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
   DCHECK(!_readingListModel);
   DCHECK(!_bookmarkModel);
 
-#if TARGET_IPHONE_SIMULATOR
   if (![self presentedItemURL]) {
     return;
   }
-#else
-  DCHECK([self presentedItemURL]);
-#endif
 
   _readingListModel = readingListModel;
   _bookmarkModel = bookmarkModel;
