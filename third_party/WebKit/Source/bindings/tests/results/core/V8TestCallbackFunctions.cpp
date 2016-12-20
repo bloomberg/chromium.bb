@@ -249,7 +249,7 @@ static void voidMethodNullableCallbackFunctionInArgMethod(const v8::FunctionCall
     return;
   }
 
-  Nullable<VoidCallbackFunction*> voidCallbackFunctionArg;
+  VoidCallbackFunction* voidCallbackFunctionArg;
   if (!info[0]->IsFunction() && !info[0]->IsNull()) {
     V8ThrowException::throwTypeError(info.GetIsolate(), ExceptionMessages::failedToExecute("voidMethodNullableCallbackFunctionInArg", "TestCallbackFunctions", "The callback provided as parameter 1 is not a function."));
 
