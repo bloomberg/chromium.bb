@@ -27,6 +27,7 @@
 [
     Constructor(BaseAudioContext context, optional DelayOptions options),
     RaisesException=Constructor,
+    Measure
 ]
 interface DelayNode : AudioNode {
     readonly attribute AudioParam delayTime;

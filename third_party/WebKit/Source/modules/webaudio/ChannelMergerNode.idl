@@ -30,6 +30,7 @@
 [
     Constructor(BaseAudioContext context, optional ChannelMergerOptions options),
     RaisesException=Constructor,
+    Measure
 ]
 interface ChannelMergerNode : AudioNode {
 };

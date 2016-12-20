@@ -37,6 +37,7 @@ enum OscillatorType {
     Constructor(BaseAudioContext context, optional OscillatorOptions options),
     RaisesException=Constructor,
     ActiveScriptWrappable,    
+    Measure
 ]
 interface OscillatorNode : AudioSourceNode {
 

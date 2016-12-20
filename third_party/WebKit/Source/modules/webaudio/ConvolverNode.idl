@@ -28,6 +28,7 @@
 [
     Constructor(BaseAudioContext context, optional ConvolverOptions options),
     RaisesException=Constructor,
+    Measure
 ]
 interface ConvolverNode : AudioNode {
     [RaisesException=Setter] attribute AudioBuffer? buffer;

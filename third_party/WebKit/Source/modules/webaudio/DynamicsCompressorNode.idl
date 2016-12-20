@@ -27,6 +27,7 @@
 [
     Constructor(BaseAudioContext context, optional DynamicsCompressorOptions options),
     RaisesException=Constructor,
+    Measure
 ]
 interface DynamicsCompressorNode : AudioNode {
     readonly attribute AudioParam threshold; // in Decibels

@@ -6,6 +6,7 @@
 [
     Constructor(BaseAudioContext context, IIRFilterOptions options),
     RaisesException=Constructor,
+    Measure
 ]
 interface IIRFilterNode : AudioNode {
     [RaisesException] void getFrequencyResponse(Float32Array frequencyHz,

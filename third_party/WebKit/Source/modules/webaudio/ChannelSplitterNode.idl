@@ -27,6 +27,7 @@
 [
     Constructor(BaseAudioContext context, optional ChannelSplitterOptions options),
     RaisesException=Constructor,
+    Measure
 ]
 interface ChannelSplitterNode : AudioNode {
 };

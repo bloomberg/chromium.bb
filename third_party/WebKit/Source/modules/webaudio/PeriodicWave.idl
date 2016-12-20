@@ -28,6 +28,7 @@
 [
     Constructor(BaseAudioContext context, optional PeriodicWaveOptions options),
     RaisesException=Constructor,
+    Measure
 ]
 interface PeriodicWave {
 };

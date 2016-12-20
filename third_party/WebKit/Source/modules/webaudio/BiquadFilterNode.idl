@@ -38,6 +38,7 @@ enum BiquadFilterType {
 [
     Constructor(BaseAudioContext context, optional BiquadFilterOptions options),
     RaisesException=Constructor,
+    Measure
 ]
 interface BiquadFilterNode : AudioNode {
     attribute BiquadFilterType type;

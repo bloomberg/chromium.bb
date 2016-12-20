@@ -29,6 +29,7 @@
     Constructor(BaseAudioContext context, optional AudioBufferSourceOptions options),
     RaisesException=Constructor,
     ActiveScriptWrappable,
+    Measure
 ]
 interface AudioBufferSourceNode : AudioSourceNode {
     [RaisesException=Setter] attribute AudioBuffer buffer;

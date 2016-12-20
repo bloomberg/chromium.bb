@@ -6,6 +6,7 @@
 [
     Constructor(BaseAudioContext context, optional StereoPannerOptions options),
     RaisesException=Constructor,
+    Measure
 ]
 interface StereoPannerNode : AudioNode {
 

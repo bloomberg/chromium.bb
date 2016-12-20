@@ -27,6 +27,7 @@
 [
     Constructor(BaseAudioContext context, optional AnalyserOptions options),
     RaisesException=Constructor,
+    Measure
 ]
 interface AnalyserNode : AudioNode {
     [RaisesException=Setter] attribute unsigned long fftSize;

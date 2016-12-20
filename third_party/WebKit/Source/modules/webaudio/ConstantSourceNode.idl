@@ -7,6 +7,7 @@
     Constructor(BaseAudioContext context, optional ConstantSourceOptions options),
     RaisesException=Constructor,
     ActiveScriptWrappable,
+    Measure
 ]
 interface ConstantSourceNode : AudioSourceNode {
     readonly attribute AudioParam offset;

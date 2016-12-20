@@ -30,6 +30,7 @@
 [
     Constructor(BaseAudioContext context, AudioBufferOptions options),
     RaisesException=Constructor,
+    Measure
 ] interface AudioBuffer {
     readonly attribute long length; // in sample-frames
     readonly attribute double duration; // in seconds
