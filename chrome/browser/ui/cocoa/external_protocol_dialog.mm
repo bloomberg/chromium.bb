@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/shell_integration.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -117,8 +118,10 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
     UMA_HISTOGRAM_LONG_TIMES("clickjacking.launch_url",
                              base::Time::Now() - creation_time_);
 
-    ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
-        url_, render_process_host_id_, routing_id_);
+    content::WebContents* web_contents =
+        tab_util::GetWebContentsByID(render_process_host_id_, routing_id_);
+
+    ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url_, web_contents);
   }
 
   [self autorelease];

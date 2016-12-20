@@ -73,7 +73,9 @@ class FakeExternalProtocolHandlerDelegate
     has_prompted_ = true;
   }
 
-  void LaunchUrlWithoutSecurityCheck(const GURL& url) override {
+  void LaunchUrlWithoutSecurityCheck(
+      const GURL& url,
+      content::WebContents* web_contents) override {
     ASSERT_EQ(block_state_, ExternalProtocolHandler::DONT_BLOCK);
     ASSERT_NE(os_state_, shell_integration::IS_DEFAULT);
     has_launched_ = true;

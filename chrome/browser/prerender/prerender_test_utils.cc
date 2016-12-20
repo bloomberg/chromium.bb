@@ -240,7 +240,11 @@ class NeverRunsExternalProtocolHandlerDelegate
     NOTREACHED();
   }
 
-  void LaunchUrlWithoutSecurityCheck(const GURL& url) override { NOTREACHED(); }
+  void LaunchUrlWithoutSecurityCheck(
+      const GURL& url,
+      content::WebContents* web_contents) override {
+    NOTREACHED();
+  }
 
   void FinishedProcessingCheck() override { NOTREACHED(); }
 };

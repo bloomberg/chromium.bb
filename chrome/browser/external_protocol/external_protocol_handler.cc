@@ -82,11 +82,13 @@ void LaunchUrlWithoutSecurityCheckWithDelegate(
     int render_process_host_id,
     int tab_contents_id,
     ExternalProtocolHandler::Delegate* delegate) {
+  content::WebContents* web_contents =
+      tab_util::GetWebContentsByID(render_process_host_id, tab_contents_id);
+
   if (!delegate) {
-    ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
-        url, render_process_host_id, tab_contents_id);
+    ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url, web_contents);
   } else {
-    delegate->LaunchUrlWithoutSecurityCheck(url);
+    delegate->LaunchUrlWithoutSecurityCheck(url, web_contents);
   }
 }
 
@@ -222,10 +224,9 @@ void ExternalProtocolHandler::LaunchUrlWithDelegate(
 // static
 void ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
     const GURL& url,
-    int render_process_host_id,
-    int tab_contents_id) {
-  content::WebContents* web_contents = tab_util::GetWebContentsByID(
-      render_process_host_id, tab_contents_id);
+    content::WebContents* web_contents) {
+  // |web_contents| is only passed in to find browser context. Do not assume
+  // that the external protocol request came from the main frame.
   if (!web_contents)
     return;
 

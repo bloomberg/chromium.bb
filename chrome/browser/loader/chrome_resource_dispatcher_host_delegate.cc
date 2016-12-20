@@ -224,7 +224,6 @@ void SendExecuteMimeTypeHandlerEvent(
 
 void LaunchURL(
     const GURL& url,
-    int render_process_id,
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     ui::PageTransition page_transition,
     bool has_user_gesture,
@@ -247,15 +246,11 @@ void LaunchURL(
   // If the URL is in whitelist, we launch it without asking the user and
   // without any additional security checks. Since the URL is whitelisted,
   // we assume it can be executed.
-  // TODO(davidsac): External protocol handling needs to be
-  // fixed for OOPIFs.  See https://crbug.com/668289.
   if (is_whitelisted) {
-    ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
-        url, render_process_id,
-        web_contents->GetRenderViewHost()->GetRoutingID());
+    ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url, web_contents);
   } else {
     ExternalProtocolHandler::LaunchUrlWithDelegate(
-        url, render_process_id,
+        url, web_contents->GetRenderViewHost()->GetProcess()->GetID(),
         web_contents->GetRenderViewHost()->GetRoutingID(), page_transition,
         has_user_gesture, g_external_protocol_handler_delegate);
   }
@@ -578,11 +573,12 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
     // content page.
     return false;
   }
-  int child_id = info->GetChildID();
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // External protocols are disabled for guests. An exception is made for the
   // "mailto" protocol, so that pages that utilize it work properly in a
   // WebView.
+  int child_id = info->GetChildID();
   ChromeNavigationUIData* navigation_data =
       static_cast<ChromeNavigationUIData*>(info->GetNavigationUIData());
   if ((extensions::WebViewRendererState::GetInstance()->IsGuest(child_id) ||
@@ -604,8 +600,7 @@ bool ChromeResourceDispatcherHostDelegate::HandleExternalProtocol(
       url_state == policy::URLBlacklist::URLBlacklistState::URL_IN_WHITELIST;
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&LaunchURL, url, child_id,
-                 info->GetWebContentsGetterForRequest(),
+      base::Bind(&LaunchURL, url, info->GetWebContentsGetterForRequest(),
                  info->GetPageTransition(), info->HasUserGesture(),
                  is_whitelisted));
   return true;

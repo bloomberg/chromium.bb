@@ -8,6 +8,8 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -361,6 +363,115 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessPDFTest,
       "document.body.removeChild(document.querySelector('iframe'));"));
   observer.Wait();
   EXPECT_EQ(0U, test_guest_view_manager()->GetNumGuestsActive());
+}
+
+// A helper class to verify that a "mailto:" external protocol request succeeds.
+class MailtoExternalProtocolHandlerDelegate
+    : public ExternalProtocolHandler::Delegate {
+ public:
+  bool has_triggered_external_protocol() {
+    return has_triggered_external_protocol_;
+  }
+
+  const GURL& external_protocol_url() { return external_protocol_url_; }
+
+  content::WebContents* web_contents() { return web_contents_; }
+
+  void RunExternalProtocolDialog(const GURL& url,
+                                 int render_process_host_id,
+                                 int routing_id,
+                                 ui::PageTransition page_transition,
+                                 bool has_user_gesture) override {}
+
+  scoped_refptr<shell_integration::DefaultProtocolClientWorker>
+  CreateShellWorker(
+      const shell_integration::DefaultWebClientWorkerCallback& callback,
+      const std::string& protocol) override {
+    return new shell_integration::DefaultProtocolClientWorker(callback,
+                                                              protocol);
+  }
+
+  ExternalProtocolHandler::BlockState GetBlockState(
+      const std::string& scheme) override {
+    return ExternalProtocolHandler::DONT_BLOCK;
+  }
+
+  void BlockRequest() override {}
+
+  void LaunchUrlWithoutSecurityCheck(
+      const GURL& url,
+      content::WebContents* web_contents) override {
+    external_protocol_url_ = url;
+    web_contents_ = web_contents;
+    has_triggered_external_protocol_ = true;
+    if (message_loop_runner_)
+      message_loop_runner_->Quit();
+  }
+
+  void Wait() {
+    if (!has_triggered_external_protocol_) {
+      message_loop_runner_ = new content::MessageLoopRunner();
+      message_loop_runner_->Run();
+    }
+  }
+
+  void FinishedProcessingCheck() override {}
+
+ private:
+  bool has_triggered_external_protocol_ = false;
+  GURL external_protocol_url_;
+  content::WebContents* web_contents_ = nullptr;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+};
+
+// This test is not run on ChromeOS because it registers a custom handler (see
+// ProtocolHandlerRegistry::InstallDefaultsForChromeOS), and handles mailto:
+// navigations before getting to external protocol code.
+#if defined(OS_CHROMEOS)
+#define MAYBE_LaunchExternalProtocolFromSubframe \
+  DISABLED_LaunchExternalProtocolFromSubframe
+#else
+#define MAYBE_LaunchExternalProtocolFromSubframe \
+  LaunchExternalProtocolFromSubframe
+#endif
+// This test verifies that external protocol requests succeed when made from an
+// OOPIF (https://crbug.com/668289).
+IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
+                       MAYBE_LaunchExternalProtocolFromSubframe) {
+  GURL start_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+
+  ui_test_utils::NavigateToURL(browser(), start_url);
+
+  // Navigate to a page with a cross-site iframe that triggers a mailto:
+  // external protocol request.
+  // The test did not start by navigating to this URL because that would mask
+  // the bug.  Instead, navigating the main frame to another page will cause a
+  // cross-process transfer, which will avoid a situation where the OOPIF's
+  // swapped-out RenderViewHost and the main frame's active RenderViewHost get
+  // the same routing IDs, causing an accidental success.
+  GURL mailto_main_frame_url(
+      embedded_test_server()->GetURL("b.com", "/iframe.html"));
+
+  ui_test_utils::NavigateToURL(browser(), mailto_main_frame_url);
+
+  MailtoExternalProtocolHandlerDelegate delegate;
+  ChromeResourceDispatcherHostDelegate::
+      SetExternalProtocolHandlerDelegateForTesting(&delegate);
+
+  GURL mailto_subframe_url(
+      embedded_test_server()->GetURL("c.com", "/page_with_mailto.html"));
+  content::WebContents* active_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(
+      NavigateIframeToURL(active_web_contents, "test", mailto_subframe_url));
+
+  delegate.Wait();
+
+  EXPECT_TRUE(delegate.has_triggered_external_protocol());
+  EXPECT_EQ(delegate.external_protocol_url(), GURL("mailto:mail@example.org"));
+  EXPECT_EQ(active_web_contents, delegate.web_contents());
+  ChromeResourceDispatcherHostDelegate::
+      SetExternalProtocolHandlerDelegateForTesting(nullptr);
 }
 
 // Verify that a popup can be opened after navigating a remote frame.  This has

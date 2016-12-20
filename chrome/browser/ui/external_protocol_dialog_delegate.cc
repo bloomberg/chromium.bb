@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/external_protocol_dialog_delegate.h"
 
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
@@ -65,8 +66,10 @@ void ExternalProtocolDialogDelegate::DoAccept(const GURL& url,
                                            ExternalProtocolHandler::DONT_BLOCK);
   }
 
-  ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
-      url, render_process_host_id_, tab_contents_id_);
+  content::WebContents* web_contents =
+      tab_util::GetWebContentsByID(render_process_host_id_, tab_contents_id_);
+
+  ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url, web_contents);
 }
 
 void ExternalProtocolDialogDelegate::DoCancel(const GURL& url,

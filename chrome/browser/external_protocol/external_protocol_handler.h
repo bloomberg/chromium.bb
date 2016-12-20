@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/shell_integration.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -41,7 +42,9 @@ class ExternalProtocolHandler {
         int routing_id,
         ui::PageTransition page_transition,
         bool has_user_gesture) = 0;
-    virtual void LaunchUrlWithoutSecurityCheck(const GURL& url) = 0;
+    virtual void LaunchUrlWithoutSecurityCheck(
+        const GURL& url,
+        content::WebContents* web_contents) = 0;
     virtual void FinishedProcessingCheck() = 0;
     virtual ~Delegate() {}
   };
@@ -76,8 +79,7 @@ class ExternalProtocolHandler {
   // url you have has been checked against the blacklist, and has been escaped.
   // All calls to this function should originate in some way from LaunchUrl.
   static void LaunchUrlWithoutSecurityCheck(const GURL& url,
-                                            int render_process_host_id,
-                                            int tab_contents_id);
+                                            content::WebContents* web_contents);
 
   // Allows LaunchUrl to proceed with launching an external protocol handler.
   // This is typically triggered by a user gesture, but is also called for
@@ -106,6 +108,8 @@ class ExternalProtocolHandler {
   //       to change the command line by itself, we do not do anything special
   //       to protect against this scenario.
   // This is implemented separately on each platform.
+  // TODO(davidsac): Consider refactoring this to take a WebContents directly.
+  // crbug.com/668289
   static void RunExternalProtocolDialog(const GURL& url,
                                         int render_process_host_id,
                                         int routing_id,
