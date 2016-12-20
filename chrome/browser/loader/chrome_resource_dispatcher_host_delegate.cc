@@ -108,6 +108,10 @@
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #endif
 
+#if BUILDFLAG(ANDROID_JAVA_UI)
+#include "chrome/browser/android/offline_pages/downloads/resource_throttle.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/signin/merge_session_resource_throttle.h"
 #include "chrome/browser/chromeos/login/signin/merge_session_throttling_utils.h"
@@ -545,6 +549,11 @@ void ChromeResourceDispatcherHostDelegate::DownloadStarting(
                                     resource_context,
                                     content::RESOURCE_TYPE_MAIN_FRAME,
                                     throttles);
+#if BUILDFLAG(ANDROID_JAVA_UI)
+    // On Android, forward text/html downloads to OfflinePages backend.
+    throttles->push_back(
+        new offline_pages::downloads::ResourceThrottle(request));
+#endif
   }
 }
 

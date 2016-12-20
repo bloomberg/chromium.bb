@@ -5,12 +5,14 @@
 #include "chrome/browser/android/offline_pages/offline_page_utils.h"
 
 #include "base/bind.h"
+#include "base/guid.h"
 #include "base/location.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/android/offline_pages/offline_page_tab_helper.h"
@@ -218,6 +220,27 @@ bool OfflinePageUtils::EqualsIgnoringFragment(const GURL& lhs,
   GURL rhs_stripped = rhs.ReplaceComponents(remove_params);
 
   return lhs_stripped == rhs_stripped;
+}
+
+// static
+void OfflinePageUtils::StartOfflinePageDownload(
+    content::BrowserContext* context,
+    const GURL& url) {
+  RequestCoordinator* request_coordinator =
+      RequestCoordinatorFactory::GetForBrowserContext(context);
+
+  // TODO(dimich): Enable in Incognito when Android Downloads implement
+  // Incognito story.
+  if (!request_coordinator)
+    return;
+
+  ClientId client_id(kDownloadNamespace, base::GenerateGUID());
+  request_coordinator->SavePageLater(
+      url, client_id, true,
+      RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER);
+
+  android::OfflinePageNotificationBridge notification_bridge;
+  notification_bridge.ShowDownloadingToast();
 }
 
 }  // namespace offline_pages

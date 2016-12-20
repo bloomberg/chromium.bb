@@ -88,6 +88,9 @@ class OfflinePageUtils {
       const PagesExistCallback& callback);
 
   static bool EqualsIgnoringFragment(const GURL& lhs, const GURL& rhs);
+
+  static void StartOfflinePageDownload(content::BrowserContext* context,
+                                       const GURL& url);
 };
 
 }  // namespace offline_pages
