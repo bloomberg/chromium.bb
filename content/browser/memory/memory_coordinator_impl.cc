@@ -316,6 +316,17 @@ bool MemoryCoordinatorImpl::ChangeStateIfNeeded(base::MemoryState prev_state,
   return true;
 }
 
+RenderProcessHost* MemoryCoordinatorImpl::GetRenderProcessHost(
+    int render_process_id) {
+  return RenderProcessHost::FromID(render_process_id);
+}
+
+void MemoryCoordinatorImpl::SetDelegateForTesting(
+    std::unique_ptr<MemoryCoordinatorDelegate> delegate) {
+  CHECK(!delegate_);
+  delegate_ = std::move(delegate);
+}
+
 void MemoryCoordinatorImpl::AddChildForTesting(
     int dummy_render_process_id, mojom::ChildMemoryCoordinatorPtr child) {
   mojom::MemoryCoordinatorHandlePtr mch;
@@ -332,13 +343,13 @@ void MemoryCoordinatorImpl::OnConnectionError(int render_process_id) {
 }
 
 bool MemoryCoordinatorImpl::CanSuspendRenderer(int render_process_id) {
-  // If there is no delegate (i.e. unittests), renderers are always suspendable.
-  if (!delegate_)
-    return true;
-  auto* render_process_host = RenderProcessHost::FromID(render_process_id);
+  auto* render_process_host = GetRenderProcessHost(render_process_id);
   if (!render_process_host || !render_process_host->IsProcessBackgrounded())
     return false;
   if (render_process_host->GetWorkerRefCount() > 0)
+    return false;
+  // Assumes that we can't suspend renderers if there is no delegate.
+  if (!delegate_)
     return false;
   return delegate_->CanSuspendBackgroundedRenderer(render_process_id);
 }
@@ -364,12 +375,6 @@ base::MemoryState MemoryCoordinatorImpl::OverrideGlobalState(
   // TODO(bashi): Suspend background renderers after a certain period of time.
 #endif  // defined(OS_ANDROID)
   return memory_state;
-}
-
-void MemoryCoordinatorImpl::SetDelegateForTesting(
-    std::unique_ptr<MemoryCoordinatorDelegate> delegate) {
-  CHECK(!delegate_);
-  delegate_ = std::move(delegate);
 }
 
 void MemoryCoordinatorImpl::CreateChildInfoMapEntry(
@@ -411,7 +416,7 @@ void MemoryCoordinatorImpl::RecordStateChange(MemoryState prev_state,
   total_private_kb += working_set.priv;
 
   for (auto& iter : children()) {
-    auto* render_process_host = RenderProcessHost::FromID(iter.first);
+    auto* render_process_host = GetRenderProcessHost(iter.first);
     if (!render_process_host ||
         render_process_host->GetHandle() == base::kNullProcessHandle)
       continue;

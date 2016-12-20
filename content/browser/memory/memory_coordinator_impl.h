@@ -28,6 +28,7 @@ class MemoryCoordinatorHandleImpl;
 class MemoryCoordinatorImplTest;
 class MemoryMonitor;
 class MemoryStateUpdater;
+class RenderProcessHost;
 struct MemoryCoordinatorSingletonTraits;
 
 // MemoryCoordinatorImpl is an implementation of MemoryCoordinator.
@@ -96,6 +97,16 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public NotificationObserver,
   bool ChangeStateIfNeeded(MemoryState prev_state, MemoryState next_state);
 
  protected:
+  // Returns the RenderProcessHost which is correspond to the given id.
+  // Returns nullptr if there is no corresponding RenderProcessHost.
+  // This is a virtual method so that we can write tests without having
+  // actual RenderProcessHost.
+  virtual RenderProcessHost* GetRenderProcessHost(int render_process_id);
+
+  // Sets a delegate for testing.
+  void SetDelegateForTesting(
+      std::unique_ptr<MemoryCoordinatorDelegate> delegate);
+
   // Adds the given ChildMemoryCoordinator as a child of this coordinator.
   void AddChildForTesting(int dummy_render_process_id,
                           mojom::ChildMemoryCoordinatorPtr child);
@@ -147,9 +158,6 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public NotificationObserver,
   // the current status of the child process.
   MemoryState OverrideGlobalState(MemoryState memroy_state,
                                   const ChildInfo& child);
-
-  void SetDelegateForTesting(
-      std::unique_ptr<MemoryCoordinatorDelegate> delegate);
 
   // Helper function of CreateHandle and AddChildForTesting.
   void CreateChildInfoMapEntry(

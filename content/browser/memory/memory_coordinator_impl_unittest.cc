@@ -14,6 +14,8 @@
 #include "content/browser/memory/memory_monitor.h"
 #include "content/browser/memory/memory_state_updater.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/mock_render_process_host.h"
+#include "content/public/test/test_browser_context.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -83,6 +85,19 @@ class MockMemoryMonitor : public MemoryMonitor {
   DISALLOW_COPY_AND_ASSIGN(MockMemoryMonitor);
 };
 
+class TestMemoryCoordinatorDelegate : public MemoryCoordinatorDelegate {
+ public:
+  TestMemoryCoordinatorDelegate() {}
+  ~TestMemoryCoordinatorDelegate() override {}
+
+  bool CanSuspendBackgroundedRenderer(int render_process_id) override {
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestMemoryCoordinatorDelegate);
+};
+
 // A MemoryCoordinatorImpl that can be directly constructed.
 class TestMemoryCoordinatorImpl : public MemoryCoordinatorImpl {
  public:
@@ -100,7 +115,10 @@ class TestMemoryCoordinatorImpl : public MemoryCoordinatorImpl {
   TestMemoryCoordinatorImpl(
       scoped_refptr<base::TestMockTimeTaskRunner> task_runner)
       : MemoryCoordinatorImpl(task_runner,
-                              base::MakeUnique<MockMemoryMonitor>()) {}
+                              base::MakeUnique<MockMemoryMonitor>()) {
+    SetDelegateForTesting(base::MakeUnique<TestMemoryCoordinatorDelegate>());
+  }
+
   ~TestMemoryCoordinatorImpl() override {}
 
   using MemoryCoordinatorImpl::OnConnectionError;
@@ -111,7 +129,20 @@ class TestMemoryCoordinatorImpl : public MemoryCoordinatorImpl {
     mojom::ChildMemoryCoordinatorPtr cmc_ptr;
     children_.push_back(std::unique_ptr<Child>(new Child(&cmc_ptr)));
     AddChildForTesting(process_id, std::move(cmc_ptr));
+    render_process_hosts_[process_id] =
+        base::MakeUnique<MockRenderProcessHost>(&browser_context_);
     return &children_.back()->cmc;
+  }
+
+  RenderProcessHost* GetRenderProcessHost(int render_process_id) override {
+    return GetMockRenderProcessHost(render_process_id);
+  }
+
+  MockRenderProcessHost* GetMockRenderProcessHost(int render_process_id) {
+    auto iter = render_process_hosts_.find(render_process_id);
+    if (iter == render_process_hosts_.end())
+      return nullptr;
+    return iter->second.get();
   }
 
   // Wrapper of MemoryCoordinator::SetMemoryState that also calls RunUntilIdle.
@@ -123,7 +154,9 @@ class TestMemoryCoordinatorImpl : public MemoryCoordinatorImpl {
     return result;
   }
 
+  TestBrowserContext browser_context_;
   std::vector<std::unique_ptr<Child>> children_;
+  std::map<int, std::unique_ptr<MockRenderProcessHost>> render_process_hosts_;
 };
 
 }  // namespace
@@ -210,10 +243,13 @@ TEST_F(MemoryCoordinatorImplTest, SetMemoryStateDelivered) {
 TEST_F(MemoryCoordinatorImplTest, SetChildMemoryState) {
   auto cmc = coordinator_->CreateChildMemoryCoordinator(1);
   auto iter = coordinator_->children().find(1);
+  auto* render_process_host = coordinator_->GetMockRenderProcessHost(1);
   ASSERT_TRUE(iter != coordinator_->children().end());
+  ASSERT_TRUE(render_process_host);
 
   // Foreground
   iter->second.is_visible = true;
+  render_process_host->set_is_process_backgrounded(false);
   EXPECT_TRUE(coordinator_->SetChildMemoryState(1, MemoryState::NORMAL));
   EXPECT_EQ(mojom::MemoryState::NORMAL, cmc->state());
   EXPECT_TRUE(
@@ -225,6 +261,7 @@ TEST_F(MemoryCoordinatorImplTest, SetChildMemoryState) {
 
   // Background
   iter->second.is_visible = false;
+  render_process_host->set_is_process_backgrounded(true);
   EXPECT_TRUE(coordinator_->SetChildMemoryState(1, MemoryState::NORMAL));
 #if defined(OS_ANDROID)
   EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
@@ -237,6 +274,16 @@ TEST_F(MemoryCoordinatorImplTest, SetChildMemoryState) {
   EXPECT_TRUE(
       coordinator_->SetChildMemoryState(1, MemoryState::SUSPENDED));
   EXPECT_EQ(mojom::MemoryState::SUSPENDED, cmc->state());
+
+  // Background but there are workers
+  render_process_host->IncrementServiceWorkerRefCount();
+  EXPECT_TRUE(
+      coordinator_->SetChildMemoryState(1, MemoryState::THROTTLED));
+  EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
+  EXPECT_FALSE(
+      coordinator_->SetChildMemoryState(1, MemoryState::SUSPENDED));
+  EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
+  render_process_host->DecrementSharedWorkerRefCount();
 }
 
 TEST_F(MemoryCoordinatorImplTest, CalculateNextState) {
