@@ -272,12 +272,11 @@ class UMAHistogramReporter {
       } else {
         parse_error = true;
       }
-
-      // Clean up the old value.
-      reporter_key.DeleteValue(kFoundUwsValueName);
-
-      RecordBooleanHistogram(kFoundUwsReadErrorMetricName, parse_error);
     }
+
+    // Clean up the old value.
+    reporter_key.DeleteValue(kFoundUwsValueName);
+    RecordBooleanHistogram(kFoundUwsReadErrorMetricName, parse_error);
   }
 
   // Reports to UMA the memory usage of the software reporter tool as reported
