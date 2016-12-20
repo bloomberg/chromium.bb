@@ -1571,12 +1571,15 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
         _isOffTheRecord, NULL, ^{
           [newPage removeFromSuperview];
           _inNewTabAnimation = NO;
-          // Only show |tab|'s view if it is the current tab in its TabModel.
-          // It is possible that the current Tab can be reset to a new value
-          // before the new Tab animation finished (e.g. if another Tab shows
-          // a dialog via |dialogPresenter|).
-          if ([_model currentTab] == tab)
-            [self tabSelected:tab];
+          // Use the model's currentTab here because it is possible that it can
+          // be reset to a new value before the new Tab animation finished (e.g.
+          // if another Tab shows a dialog via |dialogPresenter|). However, that
+          // tab's view hasn't been displayed yet because it was in a new tab
+          // animation.
+          Tab* currentTab = [_model currentTab];
+          if (currentTab) {
+            [self tabSelected:currentTab];
+          }
           startVoiceSearchIfNecessaryBlock();
         });
   } else {
