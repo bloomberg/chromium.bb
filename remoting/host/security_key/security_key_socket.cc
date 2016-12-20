@@ -30,7 +30,6 @@ SecurityKeySocket::SecurityKeySocket(std::unique_ptr<net::StreamSocket> socket,
                                      base::TimeDelta timeout,
                                      const base::Closure& timeout_callback)
     : socket_(std::move(socket)),
-      read_completed_(false),
       read_buffer_(new net::IOBufferWithSize(kRequestReadBufferLength)) {
   timer_.reset(new base::Timer(false, false));
   timer_->Start(FROM_HERE, timeout, timeout_callback);
@@ -40,11 +39,8 @@ SecurityKeySocket::~SecurityKeySocket() {}
 
 bool SecurityKeySocket::GetAndClearRequestData(std::string* data_out) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(read_completed_);
+  DCHECK(!waiting_for_request_);
 
-  if (!read_completed_) {
-    return false;
-  }
   if (!IsRequestComplete() || IsRequestTooLarge()) {
     return false;
   }
@@ -81,7 +77,9 @@ void SecurityKeySocket::StartReadingRequest(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(request_received_callback_.is_null());
 
+  waiting_for_request_ = true;
   request_received_callback_ = request_received_callback;
+
   DoRead();
 }
 
@@ -122,17 +120,22 @@ void SecurityKeySocket::OnDataRead(int result) {
   if (result <= 0) {
     if (result < 0) {
       LOG(ERROR) << "Error reading request: " << result;
+      socket_read_error_ = true;
     }
-    read_completed_ = true;
+    waiting_for_request_ = false;
     base::ResetAndReturn(&request_received_callback_).Run();
     return;
   }
 
   ResetTimer();
+  // TODO(joedow): If there are multiple requests in a burst, it is possible
+  // that we could read too many bytes from the buffer (e.g. all of request #1
+  // and some of request #2).  We should consider using the request header to
+  // determine the request length and only read that amount from buffer.
   request_data_.insert(request_data_.end(), read_buffer_->data(),
                        read_buffer_->data() + result);
   if (IsRequestComplete()) {
-    read_completed_ = true;
+    waiting_for_request_ = false;
     base::ResetAndReturn(&request_received_callback_).Run();
     return;
   }

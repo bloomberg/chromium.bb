@@ -54,6 +54,8 @@ class SecurityKeySocket {
   // get the request data.
   void StartReadingRequest(const base::Closure& request_received_callback);
 
+  bool socket_read_error() const { return socket_read_error_; }
+
  private:
   // Called when bytes are written to |socket_|.
   void OnDataWritten(int result);
@@ -91,9 +93,11 @@ class SecurityKeySocket {
   // Invoked when request data has been read.
   base::Closure request_received_callback_;
 
-  // Indicates whether read has completed and |request_received_callback_| is
-  // about to be run.
-  bool read_completed_;
+  // Indicates whether the socket is being used to wait for a request.
+  bool waiting_for_request_ = false;
+
+  // Indicates whether an error was encountered while reading from the socket.
+  bool socket_read_error_ = false;
 
   // Request data.
   std::vector<char> request_data_;
