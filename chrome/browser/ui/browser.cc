@@ -583,10 +583,6 @@ base::string16 Browser::GetWindowTitleForCurrentTab(
   // |contents| can be NULL because GetWindowTitleForCurrentTab is called by the
   // window during the window's creation (before tabs have been added).
   if (contents) {
-    // The web app frame uses the host instead of the title.
-    if (ShouldUseWebAppFrame())
-      return base::UTF8ToUTF16(contents->GetURL().host());
-
     title = contents->GetTitle();
     FormatTitleForDisplay(&title);
   }
@@ -2408,20 +2404,9 @@ bool Browser::SupportsLocationBar() const {
   if (!is_app())
     return !is_trusted_source();
 
+  // Hosted apps always support a location bar.
   if (hosted_app_controller_)
-    return hosted_app_controller_->SupportsLocationBar();
-
-  return false;
-}
-
-bool Browser::ShouldUseWebAppFrame() const {
-  // Only use the web app frame for apps in ash, and only if the web app frame
-  // is enabled.
-  if (!is_app())
-    return false;
-
-  if (hosted_app_controller_)
-    return hosted_app_controller_->should_use_web_app_frame();
+    return true;
 
   return false;
 }
@@ -2447,9 +2432,6 @@ bool Browser::SupportsWindowFeatureImpl(WindowFeature feature,
 
     if (SupportsLocationBar())
       features |= FEATURE_LOCATIONBAR;
-
-    if (ShouldUseWebAppFrame())
-      features |= FEATURE_WEBAPPFRAME;
   }
   return !!(features & feature);
 }

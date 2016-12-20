@@ -18,7 +18,6 @@
 #endif
 
 class TabIconView;
-class WebAppLeftHeaderView;
 
 class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
                                      public TabIconViewModel,
@@ -37,8 +36,6 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
-  void UpdateToolbar() override;
-  views::View* GetLocationIconView() const override;
   views::View* GetProfileSwitcherView() const override;
 
   // views::NonClientFrameView:
@@ -91,11 +88,6 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   // the header used for packaged apps. Packaged apps use a different color
   // scheme than browser windows.
   bool UsePackagedAppHeaderStyle() const;
-
-  // Returns true if the header should be painted with a WebApp header style.
-  // The WebApp header style has a back button and title along with the usual
-  // accoutrements.
-  bool UseWebAppHeaderStyle() const;
 
   // Layout the incognito button.
   void LayoutIncognitoButton();

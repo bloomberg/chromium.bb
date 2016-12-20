@@ -6,11 +6,9 @@
 
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
-#include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -179,88 +177,4 @@ IN_PROC_BROWSER_TEST_F(HostedAppTest,
   // Navigate to different origin; the location bar should now be visible.
   NavigateAndCheckForLocationBar(
       app_browser_, "http://www.foo.com/blah", true);
-}
-
-// Open a normal browser window, a hosted app window, a legacy packaged app
-// window and a dev tools window, and check that the web app frame feature is
-// supported correctly.
-IN_PROC_BROWSER_TEST_F(HostedAppTest, ShouldUseWebAppFrame) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableWebAppFrame);
-
-  // Load a hosted app.
-   const Extension* bookmark_app = InstallExtensionWithSourceAndFlags(
-      test_data_dir_.AppendASCII("app"),
-      1,
-      extensions::Manifest::INTERNAL,
-      extensions::Extension::FROM_BOOKMARK);
-  ASSERT_TRUE(bookmark_app);
-
-  // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
-  WebContents* bookmark_app_window = OpenApplication(AppLaunchParams(
-      browser()->profile(), bookmark_app, extensions::LAUNCH_CONTAINER_WINDOW,
-      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_UNTRACKED));
-  ASSERT_TRUE(bookmark_app_window);
-
-  //  Load a packaged app.
-  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("packaged_app")));
-  const Extension* packaged_app = nullptr;
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(browser()->profile());
-  for (const scoped_refptr<const extensions::Extension>& extension :
-       registry->enabled_extensions()) {
-    if (extension->name() == "Packaged App Test")
-      packaged_app = extension.get();
-  }
-  ASSERT_TRUE(packaged_app);
-
-  // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
-  WebContents* packaged_app_window = OpenApplication(AppLaunchParams(
-      browser()->profile(), packaged_app, extensions::LAUNCH_CONTAINER_WINDOW,
-      WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_UNTRACKED));
-  ASSERT_TRUE(packaged_app_window);
-
-  DevToolsWindow* devtools_window =
-      DevToolsWindowTesting::OpenDevToolsWindowSync(browser(), false);
-
-  // The launch should have created a new app browser and a dev tools browser.
-  ASSERT_EQ(4u, chrome::GetBrowserCount(browser()->profile()));
-
-  // Find the new browsers.
-  Browser* bookmark_app_browser = nullptr;
-  Browser* packaged_app_browser = nullptr;
-  Browser* dev_tools_browser = nullptr;
-  for (auto* b : *BrowserList::GetInstance()) {
-    if (b == browser()) {
-      continue;
-    } else if (b->app_name() == DevToolsWindow::kDevToolsApp) {
-      dev_tools_browser = b;
-    } else if (b->tab_strip_model()->GetActiveWebContents() ==
-               bookmark_app_window) {
-      bookmark_app_browser = b;
-    } else {
-      packaged_app_browser = b;
-    }
-  }
-  ASSERT_TRUE(dev_tools_browser);
-  ASSERT_TRUE(bookmark_app_browser);
-  ASSERT_TRUE(bookmark_app_browser != browser());
-  ASSERT_TRUE(packaged_app_browser);
-  ASSERT_TRUE(packaged_app_browser != browser());
-  ASSERT_TRUE(packaged_app_browser != bookmark_app_browser);
-
-  EXPECT_FALSE(browser()->SupportsWindowFeature(Browser::FEATURE_WEBAPPFRAME));
-  EXPECT_FALSE(
-      dev_tools_browser->SupportsWindowFeature(Browser::FEATURE_WEBAPPFRAME));
-#if defined(USE_ASH)
-  const bool kIsAsh = true;
-#else
-  const bool kIsAsh = false;
-#endif  // USE_ASH
-  EXPECT_EQ(kIsAsh, bookmark_app_browser->SupportsWindowFeature(
-                        Browser::FEATURE_WEBAPPFRAME));
-  EXPECT_FALSE(packaged_app_browser->SupportsWindowFeature(
-      Browser::FEATURE_WEBAPPFRAME));
-
-  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window);
 }

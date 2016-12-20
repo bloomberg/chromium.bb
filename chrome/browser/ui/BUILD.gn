@@ -1931,8 +1931,6 @@ split_static_library("ui") {
         "views/frame/immersive_handler_factory_mus.h",
         "views/frame/immersive_mode_controller_ash.cc",
         "views/frame/immersive_mode_controller_ash.h",
-        "views/frame/web_app_left_header_view_ash.cc",
-        "views/frame/web_app_left_header_view_ash.h",
         "views/tabs/window_finder_ash.cc",
       ]
     }

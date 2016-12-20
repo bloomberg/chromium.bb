@@ -1409,11 +1409,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_EMBEDDED_EXTENSION_OPTIONS_DESCRIPTION, kOsDesktop,
      SINGLE_VALUE_TYPE(extensions::switches::kEnableEmbeddedExtensionOptions)},
 #endif  // ENABLE_EXTENSIONS
-#if defined(USE_ASH)
-    {"enable-web-app-frame", IDS_FLAGS_WEB_APP_FRAME_NAME,
-     IDS_FLAGS_WEB_APP_FRAME_DESCRIPTION, kOsWin | kOsCrOS,
-     SINGLE_VALUE_TYPE(switches::kEnableWebAppFrame)},
-#endif  // USE_ASH
     {"drop-sync-credential", IDS_FLAGS_DROP_SYNC_CREDENTIAL_NAME,
      IDS_FLAGS_DROP_SYNC_CREDENTIAL_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(password_manager::features::kDropSyncCredential)},

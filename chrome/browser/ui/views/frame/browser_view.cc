@@ -1035,7 +1035,6 @@ void BrowserView::UpdateToolbar(content::WebContents* contents) {
   // We may end up here during destruction.
   if (toolbar_)
     toolbar_->Update(contents);
-  frame_->UpdateToolbar();
 }
 
 void BrowserView::ResetToolbarTabState(content::WebContents* contents) {
@@ -1283,14 +1282,10 @@ void BrowserView::ShowWebsiteSettings(
     content::WebContents* web_contents,
     const GURL& virtual_url,
     const security_state::SecurityInfo& security_info) {
-  // Some browser windows have a location icon embedded in the frame. Try to
-  // use that if it exists. If it doesn't exist, use the location icon from
-  // the location bar.
-  views::View* popup_anchor =
-      ui::MaterialDesignController::IsSecondaryUiMaterial()
-          ? toolbar_->location_bar()
-          : frame_->GetLocationIconView();
-  if (!popup_anchor)
+  views::View* popup_anchor = nullptr;
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+    popup_anchor = toolbar_->location_bar();
+  else
     popup_anchor = GetLocationBarView()->location_icon_view()->GetImageView();
 
   WebsiteSettingsPopupView::ShowPopup(popup_anchor, gfx::Rect(), profile,
@@ -1611,8 +1606,7 @@ bool BrowserView::ShouldShowWindowTitle() const {
 #if defined(USE_ASH)
   // For Ash only, trusted windows (apps and settings) do not show a title,
   // crbug.com/119411. Child windows (i.e. popups) do show a title.
-  if (browser_->is_trusted_source() &&
-      !browser_->SupportsWindowFeature(Browser::FEATURE_WEBAPPFRAME))
+  if (browser_->is_trusted_source())
     return false;
 #endif  // USE_ASH
 
@@ -1646,8 +1640,7 @@ bool BrowserView::ShouldShowWindowIcon() const {
 #if defined(USE_ASH)
   // For Ash only, trusted windows (apps and settings) do not show an icon,
   // crbug.com/119411. Child windows (i.e. popups) do show an icon.
-  if (browser_->is_trusted_source() &&
-      !browser_->SupportsWindowFeature(Browser::FEATURE_WEBAPPFRAME))
+  if (browser_->is_trusted_source())
     return false;
 #endif  // USE_ASH
 

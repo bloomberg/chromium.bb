@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/views/frame/browser_header_painter_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
-#include "chrome/browser/ui/views/frame/web_app_left_header_view_ash.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -175,13 +174,6 @@ void BrowserNonClientFrameViewMus::UpdateThrobber(bool running) {
     window_icon_->Update();
 }
 
-void BrowserNonClientFrameViewMus::UpdateToolbar() {
-}
-
-views::View* BrowserNonClientFrameViewMus::GetLocationIconView() const {
-  return nullptr;
-}
-
 views::View* BrowserNonClientFrameViewMus::GetProfileSwitcherView() const {
 #if defined(FRAME_AVATAR_BUTTON)
   return profile_switcher_.view();
@@ -266,7 +258,7 @@ void BrowserNonClientFrameViewMus::OnPaint(gfx::Canvas* canvas) {
 
   if (browser_view()->IsToolbarVisible())
     PaintToolbarBackground(canvas);
-  else if (!UsePackagedAppHeaderStyle() && !UseWebAppHeaderStyle())
+  else if (!UsePackagedAppHeaderStyle())
     PaintContentEdge(canvas);
 }
 
@@ -401,19 +393,10 @@ bool BrowserNonClientFrameViewMus::UseImmersiveLightbarHeaderStyle() const {
 }
 
 bool BrowserNonClientFrameViewMus::UsePackagedAppHeaderStyle() const {
-  Browser* browser = browser_view()->browser();
-  // For non tabbed trusted source windows, e.g. Settings, use the packaged
-  // app style frame.
-  if (!browser->is_type_tabbed() && browser->is_trusted_source())
-    return true;
-  // Use the packaged app style for apps that aren't using the newer WebApp
-  // style.
-  return browser->is_app() && !UseWebAppHeaderStyle();
-}
-
-bool BrowserNonClientFrameViewMus::UseWebAppHeaderStyle() const {
-  return browser_view()->browser()->SupportsWindowFeature(
-      Browser::FEATURE_WEBAPPFRAME);
+  // Use for non tabbed trusted source windows, e.g. Settings, as well as apps.
+  const Browser* const browser = browser_view()->browser();
+  return (!browser->is_type_tabbed() && browser->is_trusted_source()) ||
+         browser->is_app();
 }
 
 void BrowserNonClientFrameViewMus::LayoutIncognitoButton() {
@@ -506,7 +489,7 @@ void BrowserNonClientFrameViewMus::PaintToolbarBackground(gfx::Canvas* canvas) {
 }
 
 void BrowserNonClientFrameViewMus::PaintContentEdge(gfx::Canvas* canvas) {
-  DCHECK(!UsePackagedAppHeaderStyle() && !UseWebAppHeaderStyle());
+  DCHECK(!UsePackagedAppHeaderStyle());
   const int bottom = frame_values().normal_insets.bottom();
   canvas->FillRect(
       gfx::Rect(0, bottom, width(), kClientEdgeThickness),

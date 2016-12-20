@@ -125,14 +125,6 @@ void BrowserFrame::UpdateThrobber(bool running) {
   browser_frame_view_->UpdateThrobber(running);
 }
 
-void BrowserFrame::UpdateToolbar() {
-  browser_frame_view_->UpdateToolbar();
-}
-
-views::View* BrowserFrame::GetLocationIconView() const {
-  return browser_frame_view_->GetLocationIconView();
-}
-
 BrowserNonClientFrameView* BrowserFrame::GetFrameView() const {
   return browser_frame_view_;
 }

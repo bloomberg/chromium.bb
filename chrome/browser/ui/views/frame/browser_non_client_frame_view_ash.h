@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 
 class TabIconView;
-class WebAppLeftHeaderView;
 
 namespace ash {
 class FrameCaptionButtonContainerView;
@@ -35,8 +34,6 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   int GetTopInset(bool restored) const override;
   int GetThemeBackgroundXInset() const override;
   void UpdateThrobber(bool running) override;
-  void UpdateToolbar() override;
-  views::View* GetLocationIconView() const override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -81,8 +78,6 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
                            ToggleMaximizeModeRelayout);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            AvatarDisplayOnTeleportedWindow);
-  FRIEND_TEST_ALL_PREFIXES(WebAppLeftHeaderViewTest, BackButton);
-  FRIEND_TEST_ALL_PREFIXES(WebAppLeftHeaderViewTest, LocationIcon);
   friend class BrowserHeaderPainterAsh;
 
   // Distance between the left edge of the NonClientFrameView and the tab strip.
@@ -102,11 +97,6 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
   // scheme than browser windows.
   bool UsePackagedAppHeaderStyle() const;
 
-  // Returns true if the header should be painted with a WebApp header style.
-  // The WebApp header style has a back button and title along with the usual
-  // accoutrements.
-  bool UseWebAppHeaderStyle() const;
-
   void LayoutProfileIndicatorIcon();
 
   // Returns true if there is anything to paint. Some fullscreen windows do not
@@ -117,10 +107,6 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
 
   // View which contains the window controls.
   ash::FrameCaptionButtonContainerView* caption_button_container_;
-
-  // The holder for the buttons on the left side of the header. This is included
-  // for web app style frames, and includes a back button and location icon.
-  WebAppLeftHeaderView* web_app_left_header_view_;
 
   // For popups, the window icon.
   TabIconView* window_icon_;

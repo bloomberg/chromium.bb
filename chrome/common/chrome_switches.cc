@@ -450,10 +450,6 @@ const char kEnableThumbnailRetargeting[]   = "enable-thumbnail-retargeting";
 const char kEnableUserAlternateProtocolPorts[] =
     "enable-user-controlled-alternate-protocol-ports";
 
-// Enables a new "web app" style frame for hosted apps (including bookmark
-// apps).
-const char kEnableWebAppFrame[] = "enable-web-app-frame";
-
 // Enables Web Notification custom layouts.
 const char kEnableWebNotificationCustomLayouts[] =
     "enable-web-notification-custom-layouts";

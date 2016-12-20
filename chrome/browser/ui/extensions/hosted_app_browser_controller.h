@@ -22,9 +22,6 @@ class HostedAppBrowserController {
   explicit HostedAppBrowserController(Browser* browser);
   ~HostedAppBrowserController();
 
-  // Whether the browser being controlled can ever show the location bar.
-  bool SupportsLocationBar() const;
-
   // Whether the browser being controlled should be currently showing the
   // location bar.
   bool ShouldShowLocationBar() const;
@@ -34,13 +31,9 @@ class HostedAppBrowserController {
   // animated.
   void UpdateLocationBarVisibility(bool animate) const;
 
-  // Whether the controlled browser should use the web app style frame.
-  bool should_use_web_app_frame() const { return should_use_web_app_frame_; }
-
  private:
   Browser* browser_;
   const std::string extension_id_;
-  bool should_use_web_app_frame_;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppBrowserController);
 };

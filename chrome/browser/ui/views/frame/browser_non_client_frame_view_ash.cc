@@ -24,7 +24,6 @@
 #include "chrome/browser/ui/views/frame/browser_header_painter_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
-#include "chrome/browser/ui/views/frame/web_app_left_header_view_ash.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -60,18 +59,6 @@ const int kTabstripRightSpacing = 10;
 // to hit easily.
 const int kTabShadowHeight = 4;
 
-// Combines View::ConvertPointToTarget() and View::HitTest() for a given
-// |point|. Converts |point| from |src| to |dst| and hit tests it against |dst|.
-bool ConvertedHitTest(views::View* src,
-                      views::View* dst,
-                      const gfx::Point& point) {
-  DCHECK(src);
-  DCHECK(dst);
-  gfx::Point converted_point(point);
-  views::View::ConvertPointToTarget(src, dst, &converted_point);
-  return dst->HitTestPoint(converted_point);
-}
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -82,7 +69,6 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
     BrowserView* browser_view)
     : BrowserNonClientFrameView(frame, browser_view),
       caption_button_container_(nullptr),
-      web_app_left_header_view_(nullptr),
       window_icon_(nullptr) {
   ash::WmLookup::Get()
       ->GetWindowForWidget(frame)
@@ -107,17 +93,12 @@ void BrowserNonClientFrameViewAsh::Init() {
     window_icon_->Update();
   }
 
-  if (UsePackagedAppHeaderStyle() || UseWebAppHeaderStyle()) {
+  if (UsePackagedAppHeaderStyle()) {
     ash::DefaultHeaderPainter* header_painter = new ash::DefaultHeaderPainter;
     header_painter_.reset(header_painter);
     header_painter->Init(frame(), this, caption_button_container_);
-    if (UseWebAppHeaderStyle()) {
-      web_app_left_header_view_ = new WebAppLeftHeaderView(browser_view());
-      AddChildView(web_app_left_header_view_);
-      header_painter->UpdateLeftHeaderView(web_app_left_header_view_);
-    } else if (window_icon_) {
+    if (window_icon_)
       header_painter->UpdateLeftHeaderView(window_icon_);
-    }
   } else {
     BrowserHeaderPainterAsh* header_painter = new BrowserHeaderPainterAsh;
     header_painter_.reset(header_painter);
@@ -160,7 +141,7 @@ int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {
     return 0;
 
   if (!browser_view()->IsTabStripVisible()) {
-    return (UsePackagedAppHeaderStyle() || UseWebAppHeaderStyle())
+    return (UsePackagedAppHeaderStyle())
         ? header_painter_->GetHeaderHeight()
         : caption_button_container_->bounds().bottom();
   }
@@ -179,16 +160,6 @@ int BrowserNonClientFrameViewAsh::GetThemeBackgroundXInset() const {
 void BrowserNonClientFrameViewAsh::UpdateThrobber(bool running) {
   if (window_icon_)
     window_icon_->Update();
-}
-
-void BrowserNonClientFrameViewAsh::UpdateToolbar() {
-  if (web_app_left_header_view_)
-    web_app_left_header_view_->Update();
-}
-
-views::View* BrowserNonClientFrameViewAsh::GetLocationIconView() const {
-  return web_app_left_header_view_ ?
-      web_app_left_header_view_->GetLocationIconView() : nullptr;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -212,12 +183,6 @@ gfx::Rect BrowserNonClientFrameViewAsh::GetWindowBoundsForClientBounds(
 int BrowserNonClientFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
   const int hit_test =
       ash::FrameBorderNonClientHitTest(this, caption_button_container_, point);
-
-  // See if the point is actually within the web app back button.
-  if (hit_test == HTCAPTION && web_app_left_header_view_ &&
-      ConvertedHitTest(this, web_app_left_header_view_, point)) {
-    return HTCLIENT;
-  }
 
   // When the window is restored we want a large click target above the tabs
   // to drag the window, so redirect clicks in the tab's shadow to caption.
@@ -278,8 +243,6 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
 
   const bool should_paint_as_active = ShouldPaintAsActive();
   caption_button_container_->SetPaintAsActive(should_paint_as_active);
-  if (web_app_left_header_view_)
-    web_app_left_header_view_->SetPaintAsActive(should_paint_as_active);
 
   const ash::HeaderPainter::Mode header_mode = should_paint_as_active ?
       ash::HeaderPainter::MODE_ACTIVE : ash::HeaderPainter::MODE_INACTIVE;
@@ -429,16 +392,10 @@ bool BrowserNonClientFrameViewAsh::UseImmersiveLightbarHeaderStyle() const {
 }
 
 bool BrowserNonClientFrameViewAsh::UsePackagedAppHeaderStyle() const {
-  // Use for non tabbed trusted source windows, e.g. Settings, as well as apps
-  // that aren't using the newer WebApp style.
+  // Use for non tabbed trusted source windows, e.g. Settings, as well as apps.
   const Browser* const browser = browser_view()->browser();
   return (!browser->is_type_tabbed() && browser->is_trusted_source()) ||
-         (browser->is_app() && !UseWebAppHeaderStyle());
-}
-
-bool BrowserNonClientFrameViewAsh::UseWebAppHeaderStyle() const {
-  return browser_view()->browser()->SupportsWindowFeature(
-      Browser::FEATURE_WEBAPPFRAME);
+         browser->is_app();
 }
 
 void BrowserNonClientFrameViewAsh::LayoutProfileIndicatorIcon() {

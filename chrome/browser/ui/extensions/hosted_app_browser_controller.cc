@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 
-#include "base/command_line.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -12,7 +11,6 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/web_contents.h"
@@ -32,14 +30,6 @@ bool IsSameOriginOrMoreSecure(const GURL& app_url, const GURL& page_url) {
           www + app_url.host() == page_url.host_piece()) &&
          app_url.port() == page_url.port();
 }
-
-#if defined(USE_ASH)
-bool IsWebAppFrameEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableWebAppFrame);
-}
-#endif  // USE_ASH
-
 }  // namespace
 
 // static
@@ -55,25 +45,9 @@ bool HostedAppBrowserController::IsForHostedApp(Browser* browser) {
 HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
     : browser_(browser),
       extension_id_(
-          web_app::GetExtensionIdFromApplicationName(browser->app_name())) {
-  const Extension* extension =
-      ExtensionRegistry::Get(browser->profile())->GetExtensionById(
-          extension_id_, ExtensionRegistry::EVERYTHING);
-  DCHECK(extension);
-#if defined(USE_ASH)
-  should_use_web_app_frame_ =
-      extension->from_bookmark() && IsWebAppFrameEnabled();
-#else
-  should_use_web_app_frame_ = false;
-#endif
-}
+          web_app::GetExtensionIdFromApplicationName(browser->app_name())) {}
 
-HostedAppBrowserController::~HostedAppBrowserController() {
-}
-
-bool HostedAppBrowserController::SupportsLocationBar() const {
-  return !should_use_web_app_frame();
-}
+HostedAppBrowserController::~HostedAppBrowserController() {}
 
 bool HostedAppBrowserController::ShouldShowLocationBar() const {
   const Extension* extension =
@@ -113,9 +87,6 @@ bool HostedAppBrowserController::ShouldShowLocationBar() const {
 
 void HostedAppBrowserController::UpdateLocationBarVisibility(
     bool animate) const {
-  if (!SupportsLocationBar())
-    return;
-
   browser_->window()->GetLocationBar()->UpdateLocationBarVisibility(
       ShouldShowLocationBar(), animate);
 }

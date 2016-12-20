@@ -65,13 +65,6 @@ SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
                                      color_id, browser_view_->IsIncognito());
 }
 
-void BrowserNonClientFrameView::UpdateToolbar() {
-}
-
-views::View* BrowserNonClientFrameView::GetLocationIconView() const {
-  return nullptr;
-}
-
 views::View* BrowserNonClientFrameView::GetProfileSwitcherView() const {
   return nullptr;
 }
