@@ -30,6 +30,9 @@ class NetworkActivityIndicatorTabHelper
   void DidStartLoading() override;
   void DidStopLoading() override;
 
+  // Clears any network activity state associated with this activity.
+  void Stop();
+
   // Key used to uniquely identify this activity.
   base::scoped_nsobject<NSString> network_activity_key_;
 

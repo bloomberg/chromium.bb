@@ -62,3 +62,22 @@ TEST(NetworkActivityIndicatorTabHelperTest, MultipleWebStateActivity) {
   EXPECT_FALSE(
       [[UIApplication sharedApplication] isNetworkActivityIndicatorVisible]);
 }
+
+// Tests that the network activity for a single WebState correctly stops when
+// the WebState is deallocated.
+TEST(NetworkActivityIndicatorTabHelperTest, WebStateDeallocated) {
+  std::unique_ptr<TestWebState> web_state(new TestWebState());
+  NetworkActivityIndicatorTabHelper::CreateForWebState(web_state.get(),
+                                                       @"web_state1");
+
+  EXPECT_FALSE(
+      [[UIApplication sharedApplication] isNetworkActivityIndicatorVisible]);
+
+  web_state->SetLoading(true);
+  EXPECT_TRUE(
+      [[UIApplication sharedApplication] isNetworkActivityIndicatorVisible]);
+
+  web_state.reset(nil);
+  EXPECT_FALSE(
+      [[UIApplication sharedApplication] isNetworkActivityIndicatorVisible]);
+}

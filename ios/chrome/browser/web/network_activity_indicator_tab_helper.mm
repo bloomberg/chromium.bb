@@ -26,12 +26,7 @@ NetworkActivityIndicatorTabHelper::NetworkActivityIndicatorTabHelper(
     : web::WebStateObserver(web_state), network_activity_key_([tab_id copy]) {}
 
 NetworkActivityIndicatorTabHelper::~NetworkActivityIndicatorTabHelper() {
-  NetworkActivityIndicatorManager* shared_manager =
-      [NetworkActivityIndicatorManager sharedInstance];
-  // Verifies that there is a network task associated with this instance
-  // before stopping a task, so that this method is idempotent.
-  if ([shared_manager numNetworkTasksForGroup:network_activity_key_])
-    [shared_manager stopNetworkTaskForGroup:network_activity_key_];
+  Stop();
 }
 
 void NetworkActivityIndicatorTabHelper::DidStartLoading() {
@@ -44,6 +39,10 @@ void NetworkActivityIndicatorTabHelper::DidStartLoading() {
 }
 
 void NetworkActivityIndicatorTabHelper::DidStopLoading() {
+  Stop();
+}
+
+void NetworkActivityIndicatorTabHelper::Stop() {
   NetworkActivityIndicatorManager* shared_manager =
       [NetworkActivityIndicatorManager sharedInstance];
   // Verifies that there is a network task associated with this instance
