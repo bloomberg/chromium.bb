@@ -86,6 +86,9 @@ void VariationParamsManager::ClearAllVariationParams() {
   // When the scoped feature list is destroyed, it puts back the original
   // feature list that was there when InitWithFeatureList() was called.
   scoped_feature_list_.reset(new base::test::ScopedFeatureList());
+  // Ensure the destructor is called properly, so it can be freshly recreated.
+  field_trial_list_.reset();
+  field_trial_list_ = base::MakeUnique<base::FieldTrialList>(nullptr);
 }
 
 }  // namespace testing
