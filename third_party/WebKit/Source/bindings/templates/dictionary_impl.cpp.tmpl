@@ -26,7 +26,7 @@ namespace blink {
 bool {{cpp_class}}::{{member.has_method_name}}() const {
   return {{member.has_method_expression}};
 }
-{{member.rvalue_cpp_type}} {{cpp_class}}::{{member.cpp_name}}() const {
+{{member.rvalue_cpp_type}} {{cpp_class}}::{{member.getter_name}}() const {
   {% if member.nullable_indicator_name %}
   DCHECK({{member.nullable_indicator_name}});
   {% endif %}

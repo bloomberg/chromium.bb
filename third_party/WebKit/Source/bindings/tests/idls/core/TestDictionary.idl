@@ -36,4 +36,5 @@ dictionary TestDictionary {
     any anyMember = null;
     Dictionary dictionaryMember;
     [RuntimeEnabled=runtimeFeature] boolean runtimeMember;
+    [PrefixGet] object prefixGetMember;
 };

@@ -25,6 +25,13 @@ DICTIONARY_CPP_INCLUDES = frozenset([
 ])
 
 
+def getter_name_for_dictionary_member(member):
+    name = v8_utilities.cpp_name(member)
+    if 'PrefixGet' in member.extended_attributes:
+        return 'get%s' % v8_utilities.capitalize(name)
+    return name
+
+
 def setter_name_for_dictionary_member(member):
     name = v8_utilities.cpp_name(member)
     return 'set%s' % v8_utilities.capitalize(name)
@@ -114,6 +121,7 @@ def member_context(dictionary, member):
 
     cpp_default_value, v8_default_value = default_values()
     cpp_name = v8_utilities.cpp_name(member)
+    getter_name = getter_name_for_dictionary_member(member)
     is_deprecated_dictionary = unwrapped_idl_type.name == 'Dictionary'
 
     return {
@@ -121,12 +129,13 @@ def member_context(dictionary, member):
         'cpp_name': cpp_name,
         'cpp_type': unwrapped_idl_type.cpp_type,
         'cpp_value_to_v8_value': unwrapped_idl_type.cpp_value_to_v8_value(
-            cpp_value='impl.%s()' % cpp_name, isolate='isolate',
+            cpp_value='impl.%s()' % getter_name, isolate='isolate',
             creation_context='creationContext',
             extended_attributes=extended_attributes),
         'deprecate_as': v8_utilities.deprecate_as(member),
         'enum_type': idl_type.enum_type,
         'enum_values': unwrapped_idl_type.enum_values,
+        'getter_name': getter_name,
         'has_method_name': has_method_name_for_dictionary_member(member),
         'idl_type': idl_type.base_type,
         'is_interface_type': idl_type.is_interface_type and not is_deprecated_dictionary,
@@ -223,6 +232,7 @@ def member_impl_context(member, interfaces_info, header_includes,
         'cpp_default_value': cpp_default_value,
         'cpp_name': cpp_name,
         'getter_expression': 'm_' + cpp_name,
+        'getter_name': getter_name_for_dictionary_member(member),
         'has_method_expression': has_method_expression(),
         'has_method_name': has_method_name_for_dictionary_member(member),
         'is_nullable': idl_type.is_nullable,

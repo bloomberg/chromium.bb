@@ -91,6 +91,7 @@ class DictionaryTest : public GarbageCollectedFinalized<DictionaryTest>,
   String m_derivedDerivedStringMember;
   bool m_requiredBooleanMember;
   Nullable<HashMap<String, String>> m_dictionaryMemberProperties;
+  ScriptValue m_prefixGetMember;
 };
 
 }  // namespace blink

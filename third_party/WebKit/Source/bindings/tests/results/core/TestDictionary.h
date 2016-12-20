@@ -108,6 +108,10 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   const DoubleOrString& otherDoubleOrStringMember() const;
   void setOtherDoubleOrStringMember(const DoubleOrString&);
 
+  bool hasPrefixGetMember() const;
+  ScriptValue getPrefixGetMember() const;
+  void setPrefixGetMember(ScriptValue);
+
   bool hasRestrictedDoubleMember() const;
   double restrictedDoubleMember() const;
   void setRestrictedDoubleMember(double);
@@ -202,6 +206,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   ScriptValue m_objectMember;
   ScriptValue m_objectOrNullMember;
   DoubleOrString m_otherDoubleOrStringMember;
+  ScriptValue m_prefixGetMember;
   bool m_hasRestrictedDoubleMember = false;
   double m_restrictedDoubleMember;
   bool m_hasRuntimeMember = false;

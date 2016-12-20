@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 227: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
+CONSOLE WARNING: line 230: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 IDL dictionary unittest
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -30,6 +30,7 @@ PASS dict.objectOrNullMemberWithDefault is null
 PASS dict.doubleOrStringMember is undefined.
 PASS dict.doubleOrStringSequenceMember is undefined.
 PASS dict.eventTargetOrNullMember is null
+PASS dict.prefixGetMember is undefined.
 
 Test for setting undefined
 PASS dict.longMember is undefined.
@@ -78,6 +79,7 @@ PASS dict.objectOrNullMemberWithDefault is testObject2
 PASS dict.doubleOrStringMember is 3.14
 PASS dict.doubleOrStringSequenceMember is [3.14, "Hello"]
 PASS dict.eventTargetOrNullMember is element1
+PASS dict.prefixGetMember is testObject1
 
 Additional test for union type members
 PASS dict.doubleOrStringMember is "foo"

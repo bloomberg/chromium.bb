@@ -208,6 +208,15 @@ const DoubleOrString& TestDictionary::otherDoubleOrStringMember() const {
 void TestDictionary::setOtherDoubleOrStringMember(const DoubleOrString& value) {
   m_otherDoubleOrStringMember = value;
 }
+bool TestDictionary::hasPrefixGetMember() const {
+  return !(m_prefixGetMember.isEmpty() || m_prefixGetMember.isNull() || m_prefixGetMember.isUndefined());
+}
+ScriptValue TestDictionary::getPrefixGetMember() const {
+  return m_prefixGetMember;
+}
+void TestDictionary::setPrefixGetMember(ScriptValue value) {
+  m_prefixGetMember = value;
+}
 bool TestDictionary::hasRestrictedDoubleMember() const {
   return m_hasRestrictedDoubleMember;
 }

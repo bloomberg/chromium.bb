@@ -1076,6 +1076,10 @@ Usage: `[PostMessage]` can be specified on methods
 [PostMessage] void postMessage(any message, optional sequence<Transferable> transfer);
 ```
 
+### [PrefixGet] _(d)_
+
+Summary: If this extended attribute is specified on a dictionary member, the code generator adds 'get' prefix to the getter method of the member.
+
 ### [RaisesException] _(i, m, a)_
 
 Summary: Tells the code generator to append an `ExceptionState&` argument when calling the Blink implementation.

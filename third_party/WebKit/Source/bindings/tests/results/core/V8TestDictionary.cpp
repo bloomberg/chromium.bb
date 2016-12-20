@@ -319,6 +319,22 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     impl.setOtherDoubleOrStringMember(otherDoubleOrStringMember);
   }
 
+  v8::Local<v8::Value> prefixGetMemberValue;
+  if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "prefixGetMember")).ToLocal(&prefixGetMemberValue)) {
+    exceptionState.rethrowV8Exception(block.Exception());
+    return;
+  }
+  if (prefixGetMemberValue.IsEmpty() || prefixGetMemberValue->IsUndefined()) {
+    // Do nothing.
+  } else {
+    ScriptValue prefixGetMember = ScriptValue(ScriptState::current(isolate), prefixGetMemberValue);
+    if (!prefixGetMember.isObject()) {
+      exceptionState.throwTypeError("member prefixGetMember is not an object.");
+      return;
+    }
+    impl.setPrefixGetMember(prefixGetMember);
+  }
+
   v8::Local<v8::Value> restrictedDoubleMemberValue;
   if (!v8Object->Get(isolate->GetCurrentContext(), v8String(isolate, "restrictedDoubleMember")).ToLocal(&restrictedDoubleMemberValue)) {
     exceptionState.rethrowV8Exception(block.Exception());
@@ -680,6 +696,12 @@ bool toV8TestDictionary(const TestDictionary& impl, v8::Local<v8::Object> dictio
       return false;
   } else {
     if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "otherDoubleOrStringMember"), toV8(DoubleOrString::fromString(String("default string value")), creationContext, isolate))))
+      return false;
+  }
+
+  if (impl.hasPrefixGetMember()) {
+    DCHECK(impl.getPrefixGetMember().isObject());
+    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8String(isolate, "prefixGetMember"), impl.getPrefixGetMember().v8Value())))
       return false;
   }
 
