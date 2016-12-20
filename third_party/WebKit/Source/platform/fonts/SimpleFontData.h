@@ -155,8 +155,6 @@ class PLATFORM_EXPORT SimpleFontData : public FontData {
     m_missingGlyphData = glyphData;
   }
 
-  bool canRenderCombiningCharacterSequence(const UChar*, size_t) const;
-
   CustomFontData* customFontData() const { return m_customFontData.get(); }
 
  protected:
