@@ -55,7 +55,7 @@ CompactHTMLToken::CompactHTMLToken(const HTMLToken* token,
 
       // There is only 1 DOCTYPE token per document, so to avoid increasing the
       // size of CompactHTMLToken, we just use the m_attributes vector.
-      m_attributes.append(Attribute(
+      m_attributes.push_back(Attribute(
           attemptStaticStringCreation(token->publicIdentifier(), Likely8Bit),
           String(token->systemIdentifier())));
       m_doctypeForcesQuirks = token->forceQuirks();
@@ -66,7 +66,7 @@ CompactHTMLToken::CompactHTMLToken(const HTMLToken* token,
     case HTMLToken::StartTag:
       m_attributes.reserveInitialCapacity(token->attributes().size());
       for (const HTMLToken::Attribute& attribute : token->attributes())
-        m_attributes.append(
+        m_attributes.push_back(
             Attribute(attribute.nameAttemptStaticStringCreation(),
                       attribute.value8BitIfNecessary()));
     // Fall through!

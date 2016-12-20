@@ -277,7 +277,7 @@ void HTMLConstructionSite::flushPendingText(FlushMode mode) {
 void HTMLConstructionSite::queueTask(const HTMLConstructionSiteTask& task) {
   flushPendingText(FlushAlways);
   ASSERT(m_pendingText.isEmpty());
-  m_taskQueue.append(task);
+  m_taskQueue.push_back(task);
 }
 
 void HTMLConstructionSite::attachLater(ContainerNode* parent,

@@ -95,7 +95,7 @@ static bool tokenExitsMath(const CompactHTMLToken& token) {
 HTMLTreeBuilderSimulator::HTMLTreeBuilderSimulator(
     const HTMLParserOptions& options)
     : m_options(options) {
-  m_namespaceStack.append(HTML);
+  m_namespaceStack.push_back(HTML);
 }
 
 HTMLTreeBuilderSimulator::State HTMLTreeBuilderSimulator::stateFor(
@@ -112,7 +112,7 @@ HTMLTreeBuilderSimulator::State HTMLTreeBuilderSimulator::stateFor(
       currentNamespace = MathML;
 
     if (namespaceStack.isEmpty() || namespaceStack.back() != currentNamespace)
-      namespaceStack.append(currentNamespace);
+      namespaceStack.push_back(currentNamespace);
   }
   namespaceStack.reverse();
   return namespaceStack;
@@ -126,14 +126,14 @@ HTMLTreeBuilderSimulator::SimulatedToken HTMLTreeBuilderSimulator::simulate(
   if (token.type() == HTMLToken::StartTag) {
     const String& tagName = token.data();
     if (threadSafeMatch(tagName, SVGNames::svgTag))
-      m_namespaceStack.append(SVG);
+      m_namespaceStack.push_back(SVG);
     if (threadSafeMatch(tagName, MathMLNames::mathTag))
-      m_namespaceStack.append(MathML);
+      m_namespaceStack.push_back(MathML);
     if (inForeignContent() && tokenExitsForeignContent(token))
       m_namespaceStack.pop_back();
     if ((m_namespaceStack.back() == SVG && tokenExitsSVG(token)) ||
         (m_namespaceStack.back() == MathML && tokenExitsMath(token)))
-      m_namespaceStack.append(HTML);
+      m_namespaceStack.push_back(HTML);
     if (!inForeignContent()) {
       // FIXME: This is just a copy of Tokenizer::updateStateFor which uses
       // threadSafeMatches.

@@ -238,7 +238,7 @@ void CSSPreloadScanner::emitRule(const SegmentedString& source) {
         Resource::CSSStyleSheet, m_referrerPolicy);
     if (request) {
       // FIXME: Should this be including the charset in the preload request?
-      m_requests->append(std::move(request));
+      m_requests->push_back(std::move(request));
     }
     m_state = Initial;
   } else if (equalIgnoringCase(m_rule, "charset"))

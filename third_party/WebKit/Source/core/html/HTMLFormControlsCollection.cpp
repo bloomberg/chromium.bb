@@ -207,14 +207,14 @@ void HTMLFormControlsCollection::supportedPropertyNames(Vector<String>& names) {
       HashSet<AtomicString>::AddResult addResult =
           existingNames.add(idAttribute);
       if (addResult.isNewEntry)
-        names.append(idAttribute);
+        names.push_back(idAttribute);
     }
     const AtomicString& nameAttribute = element->getNameAttribute();
     if (!nameAttribute.isEmpty()) {
       HashSet<AtomicString>::AddResult addResult =
           existingNames.add(nameAttribute);
       if (addResult.isNewEntry)
-        names.append(nameAttribute);
+        names.push_back(nameAttribute);
     }
   }
 }

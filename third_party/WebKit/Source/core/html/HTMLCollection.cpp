@@ -457,7 +457,7 @@ void HTMLCollection::supportedPropertyNames(Vector<String>& names) {
       HashSet<AtomicString>::AddResult addResult =
           existingNames.add(idAttribute);
       if (addResult.isNewEntry)
-        names.append(idAttribute);
+        names.push_back(idAttribute);
     }
     if (!element->isHTMLElement())
       continue;
@@ -468,7 +468,7 @@ void HTMLCollection::supportedPropertyNames(Vector<String>& names) {
       HashSet<AtomicString>::AddResult addResult =
           existingNames.add(nameAttribute);
       if (addResult.isNewEntry)
-        names.append(nameAttribute);
+        names.push_back(nameAttribute);
     }
   }
 }
@@ -513,12 +513,12 @@ void HTMLCollection::namedItems(const AtomicString& name,
   const NamedItemCache& cache = namedItemCache();
   if (HeapVector<Member<Element>>* idResults = cache.getElementsById(name)) {
     for (const auto& element : *idResults)
-      result.append(element);
+      result.push_back(element);
   }
   if (HeapVector<Member<Element>>* nameResults =
           cache.getElementsByName(name)) {
     for (const auto& element : *nameResults)
-      result.append(element);
+      result.push_back(element);
   }
 }
 

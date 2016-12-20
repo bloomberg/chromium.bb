@@ -471,7 +471,7 @@ void HTMLTextAreaElement::setDefaultValue(const String& defaultValue) {
   HeapVector<Member<Node>> textNodes;
   for (Node* n = firstChild(); n; n = n->nextSibling()) {
     if (n->isTextNode())
-      textNodes.append(n);
+      textNodes.push_back(n);
   }
   for (const auto& text : textNodes)
     removeChild(text.get(), IGNORE_EXCEPTION);

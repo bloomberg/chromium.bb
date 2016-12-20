@@ -34,7 +34,7 @@ BackgroundHTMLInputStream::BackgroundHTMLInputStream()
 
 void BackgroundHTMLInputStream::append(const String& input) {
   m_current.append(SegmentedString(input));
-  m_segments.append(input);
+  m_segments.push_back(input);
 }
 
 void BackgroundHTMLInputStream::close() {
@@ -44,8 +44,8 @@ void BackgroundHTMLInputStream::close() {
 HTMLInputCheckpoint BackgroundHTMLInputStream::createCheckpoint(
     size_t tokensExtractedSincePreviousCheckpoint) {
   HTMLInputCheckpoint checkpoint = m_checkpoints.size();
-  m_checkpoints.append(Checkpoint(m_current, m_segments.size(),
-                                  tokensExtractedSincePreviousCheckpoint));
+  m_checkpoints.push_back(Checkpoint(m_current, m_segments.size(),
+                                     tokensExtractedSincePreviousCheckpoint));
   m_totalCheckpointTokenCount += tokensExtractedSincePreviousCheckpoint;
   return checkpoint;
 }

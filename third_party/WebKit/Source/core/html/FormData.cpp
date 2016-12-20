@@ -96,7 +96,7 @@ DEFINE_TRACE(FormData) {
 }
 
 void FormData::append(const String& name, const String& value) {
-  m_entries.append(
+  m_entries.push_back(
       new Entry(encodeAndNormalize(name), encodeAndNormalize(value)));
 }
 
@@ -163,7 +163,7 @@ HeapVector<FormDataEntryValue> FormData::getAll(const String& name) {
       DCHECK(entry->isFile());
       value.setFile(entry->file());
     }
-    results.append(value);
+    results.push_back(value);
   }
   return results;
 }
@@ -202,7 +202,7 @@ void FormData::setEntry(const Entry* entry) {
     }
   }
   if (!found)
-    m_entries.append(entry);
+    m_entries.push_back(entry);
 }
 
 void FormData::append(const String& name, int value) {
@@ -210,7 +210,7 @@ void FormData::append(const String& name, int value) {
 }
 
 void FormData::append(const String& name, Blob* blob, const String& filename) {
-  m_entries.append(new Entry(encodeAndNormalize(name), blob, filename));
+  m_entries.push_back(new Entry(encodeAndNormalize(name), blob, filename));
 }
 
 CString FormData::encodeAndNormalize(const String& string) const {

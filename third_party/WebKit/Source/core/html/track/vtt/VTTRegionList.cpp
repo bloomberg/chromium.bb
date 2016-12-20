@@ -53,7 +53,7 @@ VTTRegion* VTTRegionList::getRegionById(const String& id) const {
 }
 
 void VTTRegionList::add(VTTRegion* region) {
-  m_list.append(region);
+  m_list.push_back(region);
 }
 
 bool VTTRegionList::remove(VTTRegion* region) {

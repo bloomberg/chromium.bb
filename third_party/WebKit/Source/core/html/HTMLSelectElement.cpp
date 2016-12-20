@@ -446,7 +446,7 @@ void HTMLSelectElement::setLength(unsigned newLen,
     for (const auto& option : optionList()) {
       if (optionIndex++ >= newLen) {
         DCHECK(option->parentNode());
-        itemsToRemove.append(option);
+        itemsToRemove.push_back(option);
       }
     }
 
@@ -579,8 +579,8 @@ void HTMLSelectElement::saveLastSelection() {
 
   m_lastOnChangeSelection.clear();
   for (auto& element : listItems())
-    m_lastOnChangeSelection.append(isHTMLOptionElement(*element) &&
-                                   toHTMLOptionElement(element)->selected());
+    m_lastOnChangeSelection.push_back(isHTMLOptionElement(*element) &&
+                                      toHTMLOptionElement(element)->selected());
 }
 
 void HTMLSelectElement::setActiveSelectionAnchor(HTMLOptionElement* option) {
@@ -602,7 +602,7 @@ void HTMLSelectElement::saveListboxActiveSelection() {
   //   updateListBoxSelection needs to clear selection of the fifth OPTION.
   m_cachedStateForActiveSelection.resize(0);
   for (const auto& option : optionList()) {
-    m_cachedStateForActiveSelection.append(option->selected());
+    m_cachedStateForActiveSelection.push_back(option->selected());
   }
 }
 
@@ -772,7 +772,7 @@ void HTMLSelectElement::recalcListItems() const {
         currentElement = ElementTraversal::nextSkippingChildren(current, this);
         continue;
       }
-      m_listItems.append(&current);
+      m_listItems.push_back(&current);
       if (Element* nextElement = ElementTraversal::firstWithin(current)) {
         currentElement = nextElement;
         continue;
@@ -780,10 +780,10 @@ void HTMLSelectElement::recalcListItems() const {
     }
 
     if (isHTMLOptionElement(current))
-      m_listItems.append(&current);
+      m_listItems.push_back(&current);
 
     if (isHTMLHRElement(current))
-      m_listItems.append(&current);
+      m_listItems.push_back(&current);
 
     // In conforming HTML code, only <optgroup> and <option> will be found
     // within a <select>. We call NodeTraversal::nextSkippingChildren so
@@ -2013,10 +2013,10 @@ HTMLSelectElement::PopupUpdater::PopupUpdater(HTMLSelectElement& select)
   Vector<String> filter;
   filter.reserveCapacity(4);
   // Observe only attributes which affect popup content.
-  filter.append(String("disabled"));
-  filter.append(String("label"));
-  filter.append(String("selected"));
-  filter.append(String("value"));
+  filter.push_back(String("disabled"));
+  filter.push_back(String("label"));
+  filter.push_back(String("selected"));
+  filter.push_back(String("value"));
   MutationObserverInit init;
   init.setAttributeOldValue(true);
   init.setAttributes(true);

@@ -60,7 +60,7 @@ HTMLIFrameElementPermissions::parseDelegatedPermissions(
   for (size_t i = 0; i < tokens.size(); ++i) {
     WebPermissionType type;
     if (getPermissionType(tokens[i], &type)) {
-      permissions.append(type);
+      permissions.push_back(type);
     } else {
       if (numTokenErrors)
         tokenErrors.append(", '");

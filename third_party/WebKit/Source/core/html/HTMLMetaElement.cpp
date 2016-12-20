@@ -503,7 +503,7 @@ void HTMLMetaElement::process() {
 WTF::TextEncoding HTMLMetaElement::computeEncoding() const {
   HTMLAttributeList attributeList;
   for (const Attribute& attr : attributes())
-    attributeList.append(
+    attributeList.push_back(
         std::make_pair(attr.name().localName(), attr.value().getString()));
   return encodingFromMetaAttributes(attributeList);
 }

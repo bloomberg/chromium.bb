@@ -515,7 +515,7 @@ bool HTMLFormControlElement::checkValidity(
   if (dispatchResult == DispatchEventResult::NotCanceled &&
       unhandledInvalidControls && isConnected() &&
       originalDocument == document())
-    unhandledInvalidControls->append(this);
+    unhandledInvalidControls->push_back(this);
   return false;
 }
 

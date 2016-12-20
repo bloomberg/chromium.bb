@@ -378,7 +378,7 @@ void VTTParser::createNewCue() {
   cue->setId(m_currentId);
   cue->parseSettings(m_currentSettings);
 
-  m_cueList.append(cue);
+  m_cueList.push_back(cue);
   if (m_client)
     m_client->newCuesParsed();
 }
@@ -409,7 +409,7 @@ void VTTParser::createNewRegion(const String& headerValue) {
   }
 
   // Step 12.5.11
-  m_regionList.append(region);
+  m_regionList.push_back(region);
 }
 
 bool VTTParser::collectTimeStamp(const String& line, double& timeStamp) {
@@ -522,7 +522,7 @@ void VTTTreeBuilder::constructTreeFromToken(Document& document) {
         child->setAttribute(VTTElement::voiceAttributeName(),
                             m_token.annotation());
       } else if (nodeType == VTTNodeTypeLanguage) {
-        m_languageStack.append(m_token.annotation());
+        m_languageStack.push_back(m_token.annotation());
         child->setAttribute(VTTElement::langAttributeName(),
                             m_languageStack.back());
       }

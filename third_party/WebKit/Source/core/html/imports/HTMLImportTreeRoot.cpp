@@ -62,7 +62,7 @@ void HTMLImportTreeRoot::scheduleRecalcState() {
 }
 
 HTMLImportChild* HTMLImportTreeRoot::add(HTMLImportChild* child) {
-  m_imports.append(child);
+  m_imports.push_back(child);
   return m_imports.back().get();
 }
 

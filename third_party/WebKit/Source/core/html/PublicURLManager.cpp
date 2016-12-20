@@ -84,7 +84,7 @@ void PublicURLManager::revoke(const String& uuid) {
         KURL url(ParsedURLString, registeredUrl.key);
         getExecutionContext()->removeURLFromMemoryCache(url);
         registry->unregisterURL(url);
-        urlsToRemove.append(registeredUrl.key);
+        urlsToRemove.push_back(registeredUrl.key);
       }
     }
     for (const auto& url : urlsToRemove)

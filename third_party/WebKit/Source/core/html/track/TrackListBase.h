@@ -50,7 +50,7 @@ class TrackListBase : public EventTargetWithInlineData {
 
   void add(T* track) {
     track->setMediaElement(m_mediaElement);
-    m_tracks.append(TraceWrapperMember<T>(this, track));
+    m_tracks.push_back(TraceWrapperMember<T>(this, track));
     scheduleEvent(TrackEvent::create(EventTypeNames::addtrack, track));
   }
 

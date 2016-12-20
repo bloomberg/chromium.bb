@@ -551,8 +551,8 @@ TokenPreloadScanner::~TokenPreloadScanner() {}
 
 TokenPreloadScannerCheckpoint TokenPreloadScanner::createCheckpoint() {
   TokenPreloadScannerCheckpoint checkpoint = m_checkpoints.size();
-  m_checkpoints.append(Checkpoint(m_predictedBaseElementURL, m_inStyle,
-                                  m_inScript, m_templateCount));
+  m_checkpoints.push_back(Checkpoint(m_predictedBaseElementURL, m_inStyle,
+                                     m_inScript, m_templateCount));
   return checkpoint;
 }
 
@@ -815,7 +815,7 @@ void TokenPreloadScanner::scanCommon(const Token& token,
           m_predictedBaseElementURL, source, m_clientHintsPreferences,
           m_pictureData, m_documentParameters->referrerPolicy);
       if (request)
-        requests.append(std::move(request));
+        requests.push_back(std::move(request));
       return;
     }
     default: { return; }

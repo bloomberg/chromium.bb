@@ -116,14 +116,14 @@ class HTMLToken {
     }
     const Vector<UChar, 32>& nameAsVector() const { return m_name; }
 
-    void appendToName(UChar c) { m_name.append(c); }
+    void appendToName(UChar c) { m_name.push_back(c); }
 
     PassRefPtr<StringImpl> value8BitIfNecessary() const {
       return StringImpl::create8BitIfPossible(m_value);
     }
     String value() const { return String(m_value); }
 
-    void appendToValue(UChar c) { m_value.append(c); }
+    void appendToValue(UChar c) { m_value.push_back(c); }
     void appendToValue(const String& value) { value.appendTo(m_value); }
     void clearValue() { m_value.clear(); }
 
@@ -195,7 +195,7 @@ class HTMLToken {
   void appendToName(UChar character) {
     ASSERT(m_type == StartTag || m_type == EndTag || m_type == DOCTYPE);
     ASSERT(character);
-    m_data.append(character);
+    m_data.push_back(character);
     m_orAllData |= character;
   }
 
@@ -220,7 +220,7 @@ class HTMLToken {
   void beginDOCTYPE(UChar character) {
     ASSERT(character);
     beginDOCTYPE();
-    m_data.append(character);
+    m_data.push_back(character);
     m_orAllData |= character;
   }
 
@@ -252,14 +252,14 @@ class HTMLToken {
     ASSERT(character);
     ASSERT(m_type == DOCTYPE);
     ASSERT(m_doctypeData->m_hasPublicIdentifier);
-    m_doctypeData->m_publicIdentifier.append(character);
+    m_doctypeData->m_publicIdentifier.push_back(character);
   }
 
   void appendToSystemIdentifier(UChar character) {
     ASSERT(character);
     ASSERT(m_type == DOCTYPE);
     ASSERT(m_doctypeData->m_hasSystemIdentifier);
-    m_doctypeData->m_systemIdentifier.append(character);
+    m_doctypeData->m_systemIdentifier.push_back(character);
   }
 
   std::unique_ptr<DoctypeData> releaseDoctypeData() {
@@ -286,7 +286,7 @@ class HTMLToken {
     m_currentAttribute = 0;
     m_attributes.clear();
 
-    m_data.append(character);
+    m_data.push_back(character);
     m_orAllData |= character;
   }
 
@@ -297,7 +297,7 @@ class HTMLToken {
     m_currentAttribute = 0;
     m_attributes.clear();
 
-    m_data.append(character);
+    m_data.push_back(character);
   }
 
   void beginEndTag(const Vector<LChar, 32>& characters) {
@@ -397,12 +397,12 @@ class HTMLToken {
 
   void appendToCharacter(char character) {
     ASSERT(m_type == Character);
-    m_data.append(character);
+    m_data.push_back(character);
   }
 
   void appendToCharacter(UChar character) {
     ASSERT(m_type == Character);
-    m_data.append(character);
+    m_data.push_back(character);
     m_orAllData |= character;
   }
 
@@ -426,7 +426,7 @@ class HTMLToken {
   void appendToComment(UChar character) {
     ASSERT(character);
     ASSERT(m_type == Comment);
-    m_data.append(character);
+    m_data.push_back(character);
     m_orAllData |= character;
   }
 

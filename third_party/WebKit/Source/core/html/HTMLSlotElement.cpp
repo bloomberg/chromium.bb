@@ -91,7 +91,7 @@ HTMLSlotElement::getDistributedNodesForBinding() {
     if (isHTMLSlotElement(child)) {
       child = NodeTraversal::next(*child, this);
     } else {
-      distributedNodes.append(child);
+      distributedNodes.push_back(child);
       child = NodeTraversal::nextSkippingChildren(*child, this);
     }
   }
@@ -106,7 +106,7 @@ const HeapVector<Member<Node>>& HTMLSlotElement::getDistributedNodes() {
 
 void HTMLSlotElement::appendAssignedNode(Node& hostChild) {
   DCHECK(hostChild.isSlotable());
-  m_assignedNodes.append(&hostChild);
+  m_assignedNodes.push_back(&hostChild);
 }
 
 void HTMLSlotElement::resolveDistributedNodes() {
@@ -124,7 +124,7 @@ void HTMLSlotElement::resolveDistributedNodes() {
 
 void HTMLSlotElement::appendDistributedNode(Node& node) {
   size_t size = m_distributedNodes.size();
-  m_distributedNodes.append(&node);
+  m_distributedNodes.push_back(&node);
   m_distributedIndices.set(&node, size);
 }
 

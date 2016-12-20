@@ -1363,7 +1363,7 @@ static Vector<String> parseAcceptAttribute(const String& acceptString,
       continue;
     if (!predicate(trimmedType))
       continue;
-    types.append(trimmedType.lower());
+    types.push_back(trimmedType.lower());
   }
 
   return types;
@@ -1600,7 +1600,7 @@ HTMLInputElement::filteredDataListOptions() const {
     // TODO(tkent): Should allow invalid strings. crbug.com/607097.
     if (!isValidValue(option->value()))
       continue;
-    filtered.append(option);
+    filtered.push_back(option);
   }
   return filtered;
 }
@@ -1832,7 +1832,7 @@ bool HTMLInputElement::setupDateTimeChooserParameters(
       suggestion.localizedValue = localizeValue(option->value());
       suggestion.label =
           option->value() == option->label() ? String() : option->label();
-      parameters.suggestions.append(suggestion);
+      parameters.suggestions.push_back(suggestion);
     }
   }
   return true;

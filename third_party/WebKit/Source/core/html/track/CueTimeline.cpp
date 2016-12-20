@@ -171,7 +171,7 @@ void CueTimeline::updateActiveCues(double movieTime) {
       // Consider cues that may have been missed since the last seek time.
       if (cue.low() > std::max(lastSeekTime, lastTime) &&
           cue.high() < movieTime)
-        missedCues.append(cue);
+        missedCues.push_back(cue);
     }
   }
 
@@ -245,7 +245,7 @@ void CueTimeline::updateActiveCues(double movieTime) {
   for (const auto& missedCue : missedCues) {
     // 9 - For each text track cue in missed cues, prepare an event named enter
     // for the TextTrackCue object with the text track cue start time.
-    eventTasks.append(
+    eventTasks.push_back(
         std::make_pair(missedCue.data()->startTime(), missedCue.data()));
 
     // 10 - For each text track [...] in missed cues, prepare an event
@@ -258,7 +258,7 @@ void CueTimeline::updateActiveCues(double movieTime) {
     // affect sorting events before dispatch either, because the exit
     // event has the same time as the enter event.
     if (missedCue.data()->startTime() < missedCue.data()->endTime()) {
-      eventTasks.append(
+      eventTasks.push_back(
           std::make_pair(missedCue.data()->endTime(), missedCue.data()));
     }
   }
@@ -268,7 +268,7 @@ void CueTimeline::updateActiveCues(double movieTime) {
     // track cue active flag set prepare an event named exit for the
     // TextTrackCue object with the text track cue end time.
     if (!currentCues.contains(previousCue)) {
-      eventTasks.append(
+      eventTasks.push_back(
           std::make_pair(previousCue.data()->endTime(), previousCue.data()));
     }
   }
@@ -278,7 +278,7 @@ void CueTimeline::updateActiveCues(double movieTime) {
     // text track cue active flag set, prepare an event named enter for the
     // TextTrackCue object with the text track cue start time.
     if (!previousCues.contains(currentCue)) {
-      eventTasks.append(
+      eventTasks.push_back(
           std::make_pair(currentCue.data()->startTime(), currentCue.data()));
     }
   }
@@ -289,7 +289,7 @@ void CueTimeline::updateActiveCues(double movieTime) {
 
   for (const auto& task : eventTasks) {
     if (!affectedTracks.contains(task.second->track()))
-      affectedTracks.append(task.second->track());
+      affectedTracks.push_back(task.second->track());
 
     // 13 - Queue each task in events, in list order.
 

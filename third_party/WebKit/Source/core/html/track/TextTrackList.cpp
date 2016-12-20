@@ -168,13 +168,13 @@ void TextTrackList::invalidateTrackIndexesAfterTrack(TextTrack* track) {
 
 void TextTrackList::append(TextTrack* track) {
   if (track->trackType() == TextTrack::AddTrack) {
-    m_addTrackTracks.append(TraceWrapperMember<TextTrack>(this, track));
+    m_addTrackTracks.push_back(TraceWrapperMember<TextTrack>(this, track));
   } else if (track->trackType() == TextTrack::TrackElement) {
     // Insert tracks added for <track> element in tree order.
     size_t index = static_cast<LoadableTextTrack*>(track)->trackElementIndex();
     m_elementTracks.insert(index, TraceWrapperMember<TextTrack>(this, track));
   } else if (track->trackType() == TextTrack::InBand) {
-    m_inbandTracks.append(TraceWrapperMember<TextTrack>(this, track));
+    m_inbandTracks.push_back(TraceWrapperMember<TextTrack>(this, track));
   } else {
     NOTREACHED();
   }

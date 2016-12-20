@@ -135,8 +135,8 @@ void HTMLEmbedElement::parametersForPlugin(Vector<String>& paramNames,
                                            Vector<String>& paramValues) {
   AttributeCollection attributes = this->attributes();
   for (const Attribute& attribute : attributes) {
-    paramNames.append(attribute.localName().getString());
-    paramValues.append(attribute.value().getString());
+    paramNames.push_back(attribute.localName().getString());
+    paramValues.push_back(attribute.value().getString());
   }
 }
 

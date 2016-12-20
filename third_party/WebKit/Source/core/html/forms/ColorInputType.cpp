@@ -252,7 +252,7 @@ Vector<ColorSuggestion> ColorInputType::suggestions() const {
         continue;
       ColorSuggestion suggestion(
           color, option->label().left(maxSuggestionLabelLength));
-      suggestions.append(suggestion);
+      suggestions.push_back(suggestion);
       if (suggestions.size() >= maxSuggestions)
         break;
     }

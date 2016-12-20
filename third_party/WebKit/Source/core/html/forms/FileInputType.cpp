@@ -73,9 +73,9 @@ Vector<FileChooserFileInfo> FileInputType::filesFromFormControlState(
   Vector<FileChooserFileInfo> files;
   for (size_t i = 0; i < state.valueSize(); i += 2) {
     if (!state[i + 1].isEmpty())
-      files.append(FileChooserFileInfo(state[i], state[i + 1]));
+      files.push_back(FileChooserFileInfo(state[i], state[i + 1]));
     else
-      files.append(FileChooserFileInfo(state[i]));
+      files.push_back(FileChooserFileInfo(state[i]));
   }
   return files;
 }
@@ -332,7 +332,7 @@ void FileInputType::setFilesFromDirectory(const String& path) {
     HTMLInputElement& input = element();
     settings.allowsDirectoryUpload = true;
     settings.allowsMultipleFiles = true;
-    settings.selectedFiles.append(path);
+    settings.selectedFiles.push_back(path);
     settings.acceptMIMETypes = input.acceptMIMETypes();
     settings.acceptFileExtensions = input.acceptFileExtensions();
     chromeClient->enumerateChosenDirectory(newFileChooser(settings));
@@ -351,13 +351,13 @@ void FileInputType::setFilesFromPaths(const Vector<String>& paths) {
 
   Vector<FileChooserFileInfo> files;
   for (const auto& path : paths)
-    files.append(FileChooserFileInfo(path));
+    files.push_back(FileChooserFileInfo(path));
 
   if (input.fastHasAttribute(multipleAttr)) {
     filesChosen(files);
   } else {
     Vector<FileChooserFileInfo> firstFileOnly;
-    firstFileOnly.append(files[0]);
+    firstFileOnly.push_back(files[0]);
     filesChosen(firstFileOnly);
   }
 }

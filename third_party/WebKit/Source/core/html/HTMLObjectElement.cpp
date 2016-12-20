@@ -140,8 +140,8 @@ static void mapDataParamToSrc(Vector<String>* paramNames,
   }
 
   if (srcIndex == -1 && dataIndex != -1) {
-    paramNames->append("src");
-    paramValues->append((*paramValues)[dataIndex]);
+    paramNames->push_back("src");
+    paramValues->push_back((*paramValues)[dataIndex]);
   }
 }
 
@@ -163,8 +163,8 @@ void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames,
       continue;
 
     uniqueParamNames.add(name.impl());
-    paramNames.append(p->name());
-    paramValues.append(p->value());
+    paramNames.push_back(p->name());
+    paramValues.push_back(p->value());
 
     // TODO(schenney): crbug.com/572908 url adjustment does not belong in this
     // function.
@@ -201,8 +201,8 @@ void HTMLObjectElement::parametersForPlugin(Vector<String>& paramNames,
   for (const Attribute& attribute : attributes) {
     const AtomicString& name = attribute.name().localName();
     if (!uniqueParamNames.contains(name.impl())) {
-      paramNames.append(name.getString());
-      paramValues.append(attribute.value().getString());
+      paramNames.push_back(name.getString());
+      paramValues.push_back(attribute.value().getString());
     }
   }
 

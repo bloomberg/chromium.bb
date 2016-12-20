@@ -329,7 +329,7 @@ static Vector<double> parseHTMLListOfFloatingPointNumbersInternal(
     size_t parsedLength = 0;
     double number = charactersToDouble(
         unparsedNumberStart, position - unparsedNumberStart, parsedLength);
-    numbers.append(checkDoubleValue(number, parsedLength != 0, 0));
+    numbers.push_back(checkDoubleValue(number, parsedLength != 0, 0));
 
     skipWhile<CharacterType, isSpaceOrDelimiter>(position, end);
   }

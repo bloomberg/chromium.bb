@@ -133,7 +133,7 @@ bool HTMLImportsController::shouldBlockScriptExecution(
 }
 
 HTMLImportLoader* HTMLImportsController::createLoader() {
-  m_loaders.append(HTMLImportLoader::create(this));
+  m_loaders.push_back(HTMLImportLoader::create(this));
   return m_loaders.back().get();
 }
 

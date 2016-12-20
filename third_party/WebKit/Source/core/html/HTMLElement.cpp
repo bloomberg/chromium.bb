@@ -948,17 +948,17 @@ static RGBA32 parseColorStringWithCrazyLegacyRules(const String& colorString) {
   // "characters" in the String.
   for (; i < colorString.length() && digitBuffer.size() < maxColorLength; i++) {
     if (!isASCIIHexDigit(colorString[i]))
-      digitBuffer.append('0');
+      digitBuffer.push_back('0');
     else
-      digitBuffer.append(colorString[i]);
+      digitBuffer.push_back(colorString[i]);
   }
 
   if (!digitBuffer.size())
     return Color::black;
 
   // Pad the buffer out to at least the next multiple of three in size.
-  digitBuffer.append('0');
-  digitBuffer.append('0');
+  digitBuffer.push_back('0');
+  digitBuffer.push_back('0');
 
   if (digitBuffer.size() < 6)
     return makeRGB(toASCIIHexValue(digitBuffer[0]),

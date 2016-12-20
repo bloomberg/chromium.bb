@@ -75,7 +75,7 @@ static HTMLDimension parseDimension(const CharacterType* characters,
              (isASCIIDigit(characters[position]) ||
               isASCIISpace(characters[position]))) {
         if (isASCIIDigit(characters[position]))
-          fractionNumbers.append(characters[position]);
+          fractionNumbers.push_back(characters[position]);
         ++position;
       }
 
@@ -138,12 +138,12 @@ Vector<HTMLDimension> parseListOfDimensions(const String& input) {
     if (nextComma == kNotFound)
       break;
 
-    parsedDimensions.append(
+    parsedDimensions.push_back(
         parseDimension(trimmedString, lastParsedIndex, nextComma));
     lastParsedIndex = nextComma + 1;
   }
 
-  parsedDimensions.append(
+  parsedDimensions.push_back(
       parseDimension(trimmedString, lastParsedIndex, trimmedString.length()));
   return parsedDimensions;
 }

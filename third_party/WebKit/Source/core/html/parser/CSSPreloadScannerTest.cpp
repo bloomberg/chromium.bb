@@ -41,7 +41,7 @@ class PreloadRecordingCSSPreloaderResourceClient final
 
   void fetchPreloads(PreloadRequestStream& preloads) override {
     for (const auto& it : preloads)
-      m_preloadUrls.append(it->resourceURL());
+      m_preloadUrls.push_back(it->resourceURL());
     CSSPreloaderResourceClient::fetchPreloads(preloads);
   }
 

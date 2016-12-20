@@ -189,7 +189,7 @@ void HTMLImportLoader::moveToFirst(HTMLImportChild* import) {
 void HTMLImportLoader::addImport(HTMLImportChild* import) {
   DCHECK_EQ(kNotFound, m_imports.find(import));
 
-  m_imports.append(import);
+  m_imports.push_back(import);
   import->normalize();
   if (isDone())
     import->didFinishLoading();

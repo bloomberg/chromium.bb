@@ -52,7 +52,7 @@ void TextDocumentParser::insertFakePreElement() {
   // fake bytes through the front-end of the parser to avoid distrubing the
   // line/column number calculations.
   Vector<Attribute> attributes;
-  attributes.append(
+  attributes.push_back(
       Attribute(styleAttr, "word-wrap: break-word; white-space: pre-wrap;"));
   AtomicHTMLToken fakePre(HTMLToken::StartTag, preTag.localName(), attributes);
   treeBuilder()->constructTree(&fakePre);

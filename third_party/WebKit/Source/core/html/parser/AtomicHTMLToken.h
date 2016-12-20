@@ -157,7 +157,7 @@ class CORE_EXPORT AtomicHTMLToken {
                              nullAtom);
           // FIXME: This is N^2 for the number of attributes.
           if (!findAttributeInVector(m_attributes, name))
-            m_attributes.append(
+            m_attributes.push_back(
                 Attribute(name, AtomicString(attribute.value())));
         }
       // Fall through!
@@ -233,7 +233,7 @@ inline void AtomicHTMLToken::initializeAttributes(
     const QualifiedName& name = nameForAttribute(attribute);
     // FIXME: This is N^2 for the number of attributes.
     if (!findAttributeInVector(m_attributes, name))
-      m_attributes.append(Attribute(name, value));
+      m_attributes.push_back(Attribute(name, value));
   }
 }
 

@@ -960,8 +960,8 @@ static Position findWordBoundary(const HTMLElement* innerEditor,
       const unsigned length = end - start;
 
       concatTexts.append(text->data(), start, length);
-      lengthList.append(length);
-      textList.append(text);
+      lengthList.push_back(length);
+      textList.push_back(text);
     }
 
     if (isEndNode)

@@ -47,7 +47,7 @@ bool TokenizedChunkQueue::enqueue(
       std::max(m_peakPendingTokenCount, m_pendingTokenCount);
 
   bool wasEmpty = m_pendingChunks.isEmpty();
-  m_pendingChunks.append(std::move(chunk));
+  m_pendingChunks.push_back(std::move(chunk));
   m_peakPendingChunkCount =
       std::max(m_peakPendingChunkCount, m_pendingChunks.size());
 

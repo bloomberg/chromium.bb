@@ -44,7 +44,7 @@ class FormControlState {
  public:
   FormControlState() : m_type(TypeSkip) {}
   explicit FormControlState(const String& value) : m_type(TypeRestore) {
-    m_values.append(value);
+    m_values.push_back(value);
   }
   static FormControlState deserialize(const Vector<String>& stateVector,
                                       size_t& index);
@@ -75,7 +75,7 @@ inline FormControlState& FormControlState::operator=(
 
 inline void FormControlState::append(const String& value) {
   m_type = TypeRestore;
-  m_values.append(value);
+  m_values.push_back(value);
 }
 
 using SavedFormStateMap =

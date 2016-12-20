@@ -92,7 +92,7 @@ void HTMLFormattingElementList::swapTo(Element* oldElement,
 
 void HTMLFormattingElementList::append(HTMLStackItem* item) {
   ensureNoahsArkCondition(item);
-  m_entries.append(item);
+  m_entries.push_back(item);
 }
 
 void HTMLFormattingElementList::remove(Element* element) {
@@ -102,7 +102,7 @@ void HTMLFormattingElementList::remove(Element* element) {
 }
 
 void HTMLFormattingElementList::appendMarker() {
-  m_entries.append(Entry::MarkerEntry);
+  m_entries.push_back(Entry::MarkerEntry);
 }
 
 void HTMLFormattingElementList::clearToLastMarker() {
@@ -143,7 +143,7 @@ void HTMLFormattingElementList::tryToEnsureNoahsArkConditionQuickly(
     if (candidate->attributes().size() != newItemAttributeCount)
       continue;
 
-    candidates.append(candidate);
+    candidates.push_back(candidate);
   }
 
   // There's room for the new element in the ark. There's no need to copy out
@@ -178,7 +178,7 @@ void HTMLFormattingElementList::ensureNoahsArkCondition(
           candidate->getAttributeItem(attribute.name());
       if (candidateAttribute &&
           candidateAttribute->value() == attribute.value())
-        remainingCandidates.append(candidate);
+        remainingCandidates.push_back(candidate);
     }
 
     if (remainingCandidates.size() < kNoahsArkCapacity)

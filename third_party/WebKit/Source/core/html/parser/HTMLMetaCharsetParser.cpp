@@ -52,7 +52,7 @@ bool HTMLMetaCharsetParser::processMeta() {
   for (const HTMLToken::Attribute& tokenAttribute : tokenAttributes) {
     String attributeName = tokenAttribute.nameAttemptStaticStringCreation();
     String attributeValue = tokenAttribute.value8BitIfNecessary();
-    attributes.append(std::make_pair(attributeName, attributeValue));
+    attributes.push_back(std::make_pair(attributeName, attributeValue));
   }
 
   m_encoding = encodingFromMetaAttributes(attributes);

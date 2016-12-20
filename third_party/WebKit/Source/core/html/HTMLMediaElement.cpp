@@ -886,7 +886,7 @@ void HTMLMediaElement::loadInternal() {
     for (unsigned i = 0; i < m_textTracks->length(); ++i) {
       TextTrack* track = m_textTracks->anonymousIndexedGetter(i);
       if (track->mode() != TextTrack::disabledKeyword())
-        m_textTracksWhenResourceSelectionBegan.append(track);
+        m_textTracksWhenResourceSelectionBegan.push_back(track);
     }
   }
 
@@ -2167,7 +2167,7 @@ ScriptPromise HTMLMediaElement::playForBindings(ScriptState* scriptState) {
   // remove the Promise if ::play() failed.
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
-  m_playPromiseResolvers.append(resolver);
+  m_playPromiseResolvers.push_back(resolver);
 
   Nullable<ExceptionCode> code = play();
   if (!code.isNull()) {
@@ -2537,7 +2537,7 @@ void HTMLMediaElement::audioTracksTimerFired(TimerBase*) {
   for (unsigned i = 0; i < audioTracks().length(); ++i) {
     AudioTrack* track = audioTracks().anonymousIndexedGetter(i);
     if (track->enabled())
-      enabledTrackIds.append(track->id());
+      enabledTrackIds.push_back(track->id());
   }
 
   webMediaPlayer()->enabledAudioTracksChanged(enabledTrackIds);

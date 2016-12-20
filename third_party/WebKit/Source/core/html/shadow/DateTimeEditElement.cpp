@@ -530,7 +530,7 @@ inline Element* DateTimeEditElement::fieldsWrapperElement() const {
 void DateTimeEditElement::addField(DateTimeFieldElement* field) {
   if (m_fields.size() >= maximumNumberOfFields)
     return;
-  m_fields.append(field);
+  m_fields.push_back(field);
   fieldsWrapperElement()->appendChild(field);
 }
 

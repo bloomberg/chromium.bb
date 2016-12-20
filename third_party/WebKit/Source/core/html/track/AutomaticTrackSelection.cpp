@@ -78,7 +78,7 @@ void AutomaticTrackSelection::performAutomaticTextTrackSelection(
   for (const auto& textTrack : group.tracks) {
     if (m_configuration.disableCurrentlyEnabledTracks &&
         textTrack->mode() == TextTrack::showingKeyword())
-      currentlyEnabledTracks.append(textTrack);
+      currentlyEnabledTracks.push_back(textTrack);
 
     int trackScore = textTrackSelectionScore(*textTrack);
 
@@ -197,7 +197,7 @@ void AutomaticTrackSelection::perform(TextTrackList& textTracks) {
 
     if (textTrack->language().length())
       currentGroup->hasSrcLang = true;
-    currentGroup->tracks.append(textTrack);
+    currentGroup->tracks.push_back(textTrack);
   }
 
   if (captionAndSubtitleTracks.tracks.size())

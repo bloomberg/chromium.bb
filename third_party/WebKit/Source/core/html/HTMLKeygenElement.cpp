@@ -74,9 +74,9 @@ void HTMLKeygenElement::didAddUserAgentShadowRoot(ShadowRoot& root) {
 
   Vector<String> keys;
   keys.reserveCapacity(2);
-  keys.append(
+  keys.push_back(
       locale().queryString(WebLocalizedString::KeygenMenuHighGradeKeySize));
-  keys.append(
+  keys.push_back(
       locale().queryString(WebLocalizedString::KeygenMenuMediumGradeKeySize));
 
   // Create a select element with one option element for each key size.

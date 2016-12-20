@@ -256,7 +256,7 @@ void BackgroundHTMLParser::pumpTokenizer() {
               FilterTokenRequest(*m_token, m_sourceTracker,
                                  m_tokenizer->shouldAllowCDATA()))) {
         xssInfo->m_textPosition = position;
-        m_pendingXSSInfos.append(std::move(xssInfo));
+        m_pendingXSSInfos.push_back(std::move(xssInfo));
       }
 
       CompactHTMLToken token(m_token.get(), position);
@@ -278,12 +278,13 @@ void BackgroundHTMLParser::pumpTokenizer() {
         m_startingScript = true;
       }
 
-      m_pendingTokens->append(token);
+      m_pendingTokens->push_back(token);
       if (isCSPMetaTag) {
         m_pendingCSPMetaTokenIndex = m_pendingTokens->size() - 1;
       }
       if (shouldEvaluateForDocumentWrite) {
-        m_likelyDocumentWriteScriptIndices.append(m_pendingTokens->size() - 1);
+        m_likelyDocumentWriteScriptIndices.push_back(m_pendingTokens->size() -
+                                                     1);
       }
     }
 

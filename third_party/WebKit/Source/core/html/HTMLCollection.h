@@ -152,7 +152,7 @@ class CORE_EXPORT HTMLCollection
           map.add(key.impl(), nullptr).storedValue->value;
       if (!vector)
         vector = new HeapVector<Member<Element>>;
-      vector->append(element);
+      vector->push_back(element);
     }
 
     StringToElementsMap m_idCache;

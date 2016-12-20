@@ -59,9 +59,9 @@ static inline HTMLFormElement* ownerFormForState(
 
 void FormControlState::serializeTo(Vector<String>& stateVector) const {
   DCHECK(!isFailure());
-  stateVector.append(String::number(m_values.size()));
+  stateVector.push_back(String::number(m_values.size()));
   for (const auto& value : m_values)
-    stateVector.append(value.isNull() ? emptyString() : value);
+    stateVector.push_back(value.isNull() ? emptyString() : value);
 }
 
 FormControlState FormControlState::deserialize(
@@ -241,13 +241,13 @@ std::unique_ptr<SavedFormState> SavedFormState::deserialize(
 }
 
 void SavedFormState::serializeTo(Vector<String>& stateVector) const {
-  stateVector.append(String::number(m_controlStateCount));
+  stateVector.push_back(String::number(m_controlStateCount));
   for (const auto& formControl : m_stateForNewFormElements) {
     const FormElementKey& key = formControl.key;
     const Deque<FormControlState>& queue = formControl.value;
     for (const FormControlState& formControlState : queue) {
-      stateVector.append(key.name());
-      stateVector.append(key.type());
+      stateVector.push_back(key.name());
+      stateVector.push_back(key.type());
       formControlState.serializeTo(stateVector);
     }
   }
@@ -296,7 +296,7 @@ Vector<String> SavedFormState::getReferencedFilePaths() const {
           HTMLInputElement::filesFromFileInputFormControlState(
               formControlState);
       for (const auto& file : selectedFiles)
-        toReturn.append(file.path);
+        toReturn.push_back(file.path);
     }
   }
   return toReturn;
@@ -441,9 +441,9 @@ Vector<String> DocumentState::toStateVector() {
 
   Vector<String> stateVector;
   stateVector.reserveInitialCapacity(m_formControls.size() * 4);
-  stateVector.append(formStateSignature());
+  stateVector.push_back(formStateSignature());
   for (const auto& savedFormState : *stateMap) {
-    stateVector.append(savedFormState.key);
+    stateVector.push_back(savedFormState.key);
     savedFormState.value->serializeTo(stateVector);
   }
   bool hasOnlySignature = stateVector.size() == 1;

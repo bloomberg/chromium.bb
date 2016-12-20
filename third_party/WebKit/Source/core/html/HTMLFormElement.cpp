@@ -562,7 +562,7 @@ void HTMLFormElement::collectListedElements(
     else
       continue;
     if (listedElement->form() == this)
-      elements.append(listedElement);
+      elements.push_back(listedElement);
   }
 }
 
@@ -590,7 +590,7 @@ void HTMLFormElement::collectImageElements(
   for (HTMLImageElement& image :
        Traversal<HTMLImageElement>::startsAfter(root)) {
     if (image.formOwner() == this)
-      elements.append(&image);
+      elements.push_back(&image);
   }
 }
 
@@ -658,7 +658,7 @@ bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(
   HeapVector<Member<ListedElement>> elements;
   elements.reserveCapacity(listedElements.size());
   for (const auto& element : listedElements)
-    elements.append(element);
+    elements.push_back(element);
   int invalidControlsCount = 0;
   for (const auto& element : elements) {
     if (element->form() == this && element->isFormControlElement()) {
@@ -732,7 +732,7 @@ void HTMLFormElement::getNamedElements(
   if (namedItems.size() && namedItems.front() != elementFromPast) {
     addToPastNamesMap(namedItems.front().get(), name);
   } else if (elementFromPast && namedItems.isEmpty()) {
-    namedItems.append(elementFromPast);
+    namedItems.push_back(elementFromPast);
     UseCounter::count(document(), UseCounter::FormNameAccessForPastNamesMap);
   }
 }

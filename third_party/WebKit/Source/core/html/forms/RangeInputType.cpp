@@ -363,7 +363,7 @@ void RangeInputType::updateTickMarkValues() {
     String optionValue = optionElement->value();
     if (!this->element().isValidValue(optionValue))
       continue;
-    m_tickMarkValues.append(parseToNumber(optionValue, Decimal::nan()));
+    m_tickMarkValues.push_back(parseToNumber(optionValue, Decimal::nan()));
   }
   m_tickMarkValues.shrinkToFit();
   nonCopyingSort(m_tickMarkValues.begin(), m_tickMarkValues.end(),

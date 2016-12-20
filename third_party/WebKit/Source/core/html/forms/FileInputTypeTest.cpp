@@ -19,7 +19,8 @@ TEST(FileInputTypeTest, createFileList) {
   Vector<FileChooserFileInfo> files;
 
   // Native file.
-  files.append(FileChooserFileInfo("/native/path/native-file", "display-name"));
+  files.push_back(
+      FileChooserFileInfo("/native/path/native-file", "display-name"));
 
   // Non-native file.
   KURL url(ParsedURLStringTag(),
@@ -27,7 +28,7 @@ TEST(FileInputTypeTest, createFileList) {
   FileMetadata metadata;
   metadata.length = 64;
   metadata.modificationTime = 1.0 * msPerDay + 3;
-  files.append(FileChooserFileInfo(url, metadata));
+  files.push_back(FileChooserFileInfo(url, metadata));
 
   FileList* list = FileInputType::createFileList(files, false);
   ASSERT_TRUE(list);
@@ -81,16 +82,16 @@ TEST(FileInputTypeTest, setFilesFromPaths) {
   HTMLInputElement* input = HTMLInputElement::create(*document, false);
   InputType* fileInput = FileInputType::create(*input);
   Vector<String> paths;
-  paths.append("/native/path");
-  paths.append("/native/path2");
+  paths.push_back("/native/path");
+  paths.push_back("/native/path2");
   fileInput->setFilesFromPaths(paths);
   ASSERT_EQ(1u, fileInput->files()->length());
   EXPECT_EQ(String("/native/path"), fileInput->files()->item(0)->path());
 
   // Try to upload multiple files without multipleAttr
   paths.clear();
-  paths.append("/native/path1");
-  paths.append("/native/path2");
+  paths.push_back("/native/path1");
+  paths.push_back("/native/path2");
   fileInput->setFilesFromPaths(paths);
   ASSERT_EQ(1u, fileInput->files()->length());
   EXPECT_EQ(String("/native/path1"), fileInput->files()->item(0)->path());
@@ -98,8 +99,8 @@ TEST(FileInputTypeTest, setFilesFromPaths) {
   // Try to upload multiple files with multipleAttr
   input->setBooleanAttribute(HTMLNames::multipleAttr, true);
   paths.clear();
-  paths.append("/native/real/path1");
-  paths.append("/native/real/path2");
+  paths.push_back("/native/real/path1");
+  paths.push_back("/native/real/path2");
   fileInput->setFilesFromPaths(paths);
   ASSERT_EQ(2u, fileInput->files()->length());
   EXPECT_EQ(String("/native/real/path1"), fileInput->files()->item(0)->path());

@@ -254,7 +254,7 @@ HTMLTreeBuilder::HTMLTreeBuilder(HTMLDocumentParser* parser,
       fragment, HTMLStackItem::ItemForDocumentFragmentNode));
 
   if (isHTMLTemplateElement(*contextElement))
-    m_templateInsertionModes.append(TemplateContentsMode);
+    m_templateInsertionModes.push_back(TemplateContentsMode);
 
   resetInsertionModeAppropriately();
 }
@@ -851,7 +851,7 @@ void HTMLTreeBuilder::processTemplateStartTag(AtomicHTMLToken* token) {
   m_tree.activeFormattingElements()->appendMarker();
   m_tree.insertHTMLElement(token);
   m_framesetOk = false;
-  m_templateInsertionModes.append(TemplateContentsMode);
+  m_templateInsertionModes.push_back(TemplateContentsMode);
   setInsertionMode(TemplateContentsMode);
 }
 

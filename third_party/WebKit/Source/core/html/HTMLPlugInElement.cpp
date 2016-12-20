@@ -244,8 +244,8 @@ void HTMLPlugInElement::createPluginWithoutLayoutObject() {
   Vector<String> paramNames;
   Vector<String> paramValues;
 
-  paramNames.append("type");
-  paramValues.append(m_serviceType);
+  paramNames.push_back("type");
+  paramValues.push_back(m_serviceType);
 
   bool useFallback = false;
   loadPlugin(url, m_serviceType, paramNames, paramValues, useFallback, false);

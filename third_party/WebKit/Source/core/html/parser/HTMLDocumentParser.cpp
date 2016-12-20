@@ -347,14 +347,14 @@ void HTMLDocumentParser::notifyPendingTokenizedChunks() {
         // Link rel preloads don't need to wait for AppCache but they
         // should probably wait for CSP.
         if (!m_pendingCSPMetaToken && request->isLinkRelPreload())
-          linkRelPreloads.append(std::move(request));
+          linkRelPreloads.push_back(std::move(request));
         else
-          m_queuedPreloads.append(std::move(request));
+          m_queuedPreloads.push_back(std::move(request));
       }
       for (auto& index : chunk->likelyDocumentWriteScriptIndices) {
         const CompactHTMLToken& token = chunk->tokens->at(index);
         ASSERT(token.type() == HTMLToken::TokenType::Character);
-        m_queuedDocumentWriteScripts.append(token.data());
+        m_queuedDocumentWriteScripts.push_back(token.data());
       }
     }
     m_preloader->takeAndPreload(linkRelPreloads);

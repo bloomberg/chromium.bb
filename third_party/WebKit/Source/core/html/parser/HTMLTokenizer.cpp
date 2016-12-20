@@ -332,11 +332,11 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
 
     HTML_BEGIN_STATE(RCDATAEndTagOpenState) {
       if (isASCIIUpper(cc)) {
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         addToPossibleEndTag(static_cast<LChar>(toLowerCase(cc)));
         HTML_ADVANCE_TO(RCDATAEndTagNameState);
       } else if (isASCIILower(cc)) {
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         addToPossibleEndTag(static_cast<LChar>(cc));
         HTML_ADVANCE_TO(RCDATAEndTagNameState);
       } else {
@@ -349,27 +349,27 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
 
     HTML_BEGIN_STATE(RCDATAEndTagNameState) {
       if (isASCIIUpper(cc)) {
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         addToPossibleEndTag(static_cast<LChar>(toLowerCase(cc)));
         HTML_ADVANCE_TO(RCDATAEndTagNameState);
       } else if (isASCIILower(cc)) {
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         addToPossibleEndTag(static_cast<LChar>(cc));
         HTML_ADVANCE_TO(RCDATAEndTagNameState);
       } else {
         if (isTokenizerWhitespace(cc)) {
           if (isAppropriateEndTag()) {
-            m_temporaryBuffer.append(static_cast<LChar>(cc));
+            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
             FLUSH_AND_ADVANCE_TO(BeforeAttributeNameState);
           }
         } else if (cc == '/') {
           if (isAppropriateEndTag()) {
-            m_temporaryBuffer.append(static_cast<LChar>(cc));
+            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
             FLUSH_AND_ADVANCE_TO(SelfClosingStartTagState);
           }
         } else if (cc == '>') {
           if (isAppropriateEndTag()) {
-            m_temporaryBuffer.append(static_cast<LChar>(cc));
+            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
             return flushEmitAndResumeIn(source, HTMLTokenizer::DataState);
           }
         }
@@ -397,11 +397,11 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
 
     HTML_BEGIN_STATE(RAWTEXTEndTagOpenState) {
       if (isASCIIUpper(cc)) {
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         addToPossibleEndTag(static_cast<LChar>(toLowerCase(cc)));
         HTML_ADVANCE_TO(RAWTEXTEndTagNameState);
       } else if (isASCIILower(cc)) {
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         addToPossibleEndTag(static_cast<LChar>(cc));
         HTML_ADVANCE_TO(RAWTEXTEndTagNameState);
       } else {
@@ -414,27 +414,27 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
 
     HTML_BEGIN_STATE(RAWTEXTEndTagNameState) {
       if (isASCIIUpper(cc)) {
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         addToPossibleEndTag(static_cast<LChar>(toLowerCase(cc)));
         HTML_ADVANCE_TO(RAWTEXTEndTagNameState);
       } else if (isASCIILower(cc)) {
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         addToPossibleEndTag(static_cast<LChar>(cc));
         HTML_ADVANCE_TO(RAWTEXTEndTagNameState);
       } else {
         if (isTokenizerWhitespace(cc)) {
           if (isAppropriateEndTag()) {
-            m_temporaryBuffer.append(static_cast<LChar>(cc));
+            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
             FLUSH_AND_ADVANCE_TO(BeforeAttributeNameState);
           }
         } else if (cc == '/') {
           if (isAppropriateEndTag()) {
-            m_temporaryBuffer.append(static_cast<LChar>(cc));
+            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
             FLUSH_AND_ADVANCE_TO(SelfClosingStartTagState);
           }
         } else if (cc == '>') {
           if (isAppropriateEndTag()) {
-            m_temporaryBuffer.append(static_cast<LChar>(cc));
+            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
             return flushEmitAndResumeIn(source, HTMLTokenizer::DataState);
           }
         }
@@ -466,11 +466,11 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
 
     HTML_BEGIN_STATE(ScriptDataEndTagOpenState) {
       if (isASCIIUpper(cc)) {
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         addToPossibleEndTag(static_cast<LChar>(toLowerCase(cc)));
         HTML_ADVANCE_TO(ScriptDataEndTagNameState);
       } else if (isASCIILower(cc)) {
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         addToPossibleEndTag(static_cast<LChar>(cc));
         HTML_ADVANCE_TO(ScriptDataEndTagNameState);
       } else {
@@ -483,27 +483,27 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
 
     HTML_BEGIN_STATE(ScriptDataEndTagNameState) {
       if (isASCIIUpper(cc)) {
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         addToPossibleEndTag(static_cast<LChar>(toLowerCase(cc)));
         HTML_ADVANCE_TO(ScriptDataEndTagNameState);
       } else if (isASCIILower(cc)) {
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         addToPossibleEndTag(static_cast<LChar>(cc));
         HTML_ADVANCE_TO(ScriptDataEndTagNameState);
       } else {
         if (isTokenizerWhitespace(cc)) {
           if (isAppropriateEndTag()) {
-            m_temporaryBuffer.append(static_cast<LChar>(cc));
+            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
             FLUSH_AND_ADVANCE_TO(BeforeAttributeNameState);
           }
         } else if (cc == '/') {
           if (isAppropriateEndTag()) {
-            m_temporaryBuffer.append(static_cast<LChar>(cc));
+            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
             FLUSH_AND_ADVANCE_TO(SelfClosingStartTagState);
           }
         } else if (cc == '>') {
           if (isAppropriateEndTag()) {
-            m_temporaryBuffer.append(static_cast<LChar>(cc));
+            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
             return flushEmitAndResumeIn(source, HTMLTokenizer::DataState);
           }
         }
@@ -595,13 +595,13 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
         bufferCharacter('<');
         bufferCharacter(cc);
         m_temporaryBuffer.clear();
-        m_temporaryBuffer.append(toLowerCase(cc));
+        m_temporaryBuffer.push_back(toLowerCase(cc));
         HTML_ADVANCE_TO(ScriptDataDoubleEscapeStartState);
       } else if (isASCIILower(cc)) {
         bufferCharacter('<');
         bufferCharacter(cc);
         m_temporaryBuffer.clear();
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         HTML_ADVANCE_TO(ScriptDataDoubleEscapeStartState);
       } else {
         bufferCharacter('<');
@@ -612,11 +612,11 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
 
     HTML_BEGIN_STATE(ScriptDataEscapedEndTagOpenState) {
       if (isASCIIUpper(cc)) {
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         addToPossibleEndTag(static_cast<LChar>(toLowerCase(cc)));
         HTML_ADVANCE_TO(ScriptDataEscapedEndTagNameState);
       } else if (isASCIILower(cc)) {
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         addToPossibleEndTag(static_cast<LChar>(cc));
         HTML_ADVANCE_TO(ScriptDataEscapedEndTagNameState);
       } else {
@@ -629,27 +629,27 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
 
     HTML_BEGIN_STATE(ScriptDataEscapedEndTagNameState) {
       if (isASCIIUpper(cc)) {
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         addToPossibleEndTag(static_cast<LChar>(toLowerCase(cc)));
         HTML_ADVANCE_TO(ScriptDataEscapedEndTagNameState);
       } else if (isASCIILower(cc)) {
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         addToPossibleEndTag(static_cast<LChar>(cc));
         HTML_ADVANCE_TO(ScriptDataEscapedEndTagNameState);
       } else {
         if (isTokenizerWhitespace(cc)) {
           if (isAppropriateEndTag()) {
-            m_temporaryBuffer.append(static_cast<LChar>(cc));
+            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
             FLUSH_AND_ADVANCE_TO(BeforeAttributeNameState);
           }
         } else if (cc == '/') {
           if (isAppropriateEndTag()) {
-            m_temporaryBuffer.append(static_cast<LChar>(cc));
+            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
             FLUSH_AND_ADVANCE_TO(SelfClosingStartTagState);
           }
         } else if (cc == '>') {
           if (isAppropriateEndTag()) {
-            m_temporaryBuffer.append(static_cast<LChar>(cc));
+            m_temporaryBuffer.push_back(static_cast<LChar>(cc));
             return flushEmitAndResumeIn(source, HTMLTokenizer::DataState);
           }
         }
@@ -672,11 +672,11 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
           HTML_ADVANCE_TO(ScriptDataEscapedState);
       } else if (isASCIIUpper(cc)) {
         bufferCharacter(cc);
-        m_temporaryBuffer.append(toLowerCase(cc));
+        m_temporaryBuffer.push_back(toLowerCase(cc));
         HTML_ADVANCE_TO(ScriptDataDoubleEscapeStartState);
       } else if (isASCIILower(cc)) {
         bufferCharacter(cc);
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         HTML_ADVANCE_TO(ScriptDataDoubleEscapeStartState);
       } else
         HTML_RECONSUME_IN(ScriptDataEscapedState);
@@ -756,11 +756,11 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
           HTML_ADVANCE_TO(ScriptDataDoubleEscapedState);
       } else if (isASCIIUpper(cc)) {
         bufferCharacter(cc);
-        m_temporaryBuffer.append(toLowerCase(cc));
+        m_temporaryBuffer.push_back(toLowerCase(cc));
         HTML_ADVANCE_TO(ScriptDataDoubleEscapeEndState);
       } else if (isASCIILower(cc)) {
         bufferCharacter(cc);
-        m_temporaryBuffer.append(static_cast<LChar>(cc));
+        m_temporaryBuffer.push_back(static_cast<LChar>(cc));
         HTML_ADVANCE_TO(ScriptDataDoubleEscapeEndState);
       } else
         HTML_RECONSUME_IN(ScriptDataDoubleEscapedState);
@@ -1566,7 +1566,7 @@ inline bool HTMLTokenizer::temporaryBufferIs(const String& expectedString) {
 
 inline void HTMLTokenizer::addToPossibleEndTag(LChar cc) {
   ASSERT(isEndTagBufferingState(m_state));
-  m_bufferedEndTagName.append(cc);
+  m_bufferedEndTagName.push_back(cc);
 }
 
 inline bool HTMLTokenizer::isAppropriateEndTag() {
