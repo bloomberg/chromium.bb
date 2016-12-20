@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -28,30 +29,35 @@ class AccessibilityModeTest : public ContentBrowserTest {
     return static_cast<WebContentsImpl*>(shell()->web_contents());
   }
 
-  void ExpectBrowserAccessibilityManager(bool expect_bam,
-                                         std::string message = "") {
-    if (expect_bam) {
-      EXPECT_NE(
-          (BrowserAccessibilityManager*)NULL,
-          web_contents()->GetRootBrowserAccessibilityManager()) << message;
-    } else {
-      EXPECT_EQ(
-          (BrowserAccessibilityManager*)NULL,
-          web_contents()->GetRootBrowserAccessibilityManager()) << message;
-    }
+ protected:
+  const BrowserAccessibility* FindNode(ui::AXRole role,
+                                       const std::string& name) {
+    const BrowserAccessibility* root = GetManager()->GetRoot();
+    CHECK(root);
+    return FindNodeInSubtree(*root, role, name);
   }
 
-  bool ShouldBeBrowserAccessibilityManager(AccessibilityMode mode) {
-    switch (mode) {
-      case AccessibilityModeOff:
-      case ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY:
-        return false;
-      case ACCESSIBILITY_MODE_COMPLETE:
-        return true;
-      default:
-        NOTREACHED();
+  BrowserAccessibilityManager* GetManager() {
+    WebContentsImpl* web_contents =
+        static_cast<WebContentsImpl*>(shell()->web_contents());
+    return web_contents->GetRootBrowserAccessibilityManager();
+  }
+
+ private:
+  const BrowserAccessibility* FindNodeInSubtree(
+      const BrowserAccessibility& node,
+      ui::AXRole role,
+      const std::string& name) {
+    if (node.GetRole() == role &&
+        node.GetStringAttribute(ui::AX_ATTR_NAME) == name)
+      return &node;
+    for (unsigned int i = 0; i < node.PlatformChildCount(); ++i) {
+      const BrowserAccessibility* result = FindNodeInSubtree(
+          *node.PlatformGetChild(i), role, name);
+      if (result)
+        return result;
     }
-    return false;
+    return nullptr;
   }
 };
 
@@ -59,11 +65,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AccessibilityModeOff) {
   NavigateToURL(shell(), GURL(kMinimalPageDataURL));
 
   EXPECT_EQ(AccessibilityModeOff, web_contents()->GetAccessibilityMode());
-  ExpectBrowserAccessibilityManager(
-      ShouldBeBrowserAccessibilityManager(AccessibilityModeOff));
+  EXPECT_EQ(nullptr, GetManager());
 }
 
-IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, ACCESSIBILITY_MODE_COMPLETE) {
+IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AccessibilityModeComplete) {
   NavigateToURL(shell(), GURL(kMinimalPageDataURL));
   ASSERT_EQ(AccessibilityModeOff, web_contents()->GetAccessibilityMode());
 
@@ -72,12 +77,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, ACCESSIBILITY_MODE_COMPLETE) {
   EXPECT_EQ(ACCESSIBILITY_MODE_COMPLETE,
             web_contents()->GetAccessibilityMode());
   waiter.WaitForNotification();
-  ExpectBrowserAccessibilityManager(
-      ShouldBeBrowserAccessibilityManager(ACCESSIBILITY_MODE_COMPLETE));
+  EXPECT_NE(nullptr, GetManager());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityModeTest,
-                       ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY) {
+                       AccessibilityModeWebContentsOnly) {
   NavigateToURL(shell(), GURL(kMinimalPageDataURL));
   ASSERT_EQ(AccessibilityModeOff, web_contents()->GetAccessibilityMode());
 
@@ -86,10 +90,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest,
   EXPECT_EQ(ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY,
             web_contents()->GetAccessibilityMode());
   waiter.WaitForNotification();
-  // No BrowserAccessibilityManager expected for
-  // ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY
-  ExpectBrowserAccessibilityManager(ShouldBeBrowserAccessibilityManager(
-      ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY));
+  // No BrowserAccessibilityManager expected for this mode.
+  EXPECT_EQ(nullptr, GetManager());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AddingModes) {
@@ -100,20 +102,89 @@ IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AddingModes) {
   EXPECT_EQ(ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY,
             web_contents()->GetAccessibilityMode());
   waiter.WaitForNotification();
-  ExpectBrowserAccessibilityManager(
-      ShouldBeBrowserAccessibilityManager(ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY),
-      "Should be no BrowserAccessibilityManager "
-      "for ACCESSIBILITY_MODE_WEB_CONTENTS_ONLY");
+  EXPECT_EQ(nullptr, GetManager());
 
   AccessibilityNotificationWaiter waiter2(shell()->web_contents());
   web_contents()->AddAccessibilityMode(ACCESSIBILITY_MODE_COMPLETE);
   EXPECT_EQ(ACCESSIBILITY_MODE_COMPLETE,
             web_contents()->GetAccessibilityMode());
   waiter2.WaitForNotification();
-  ExpectBrowserAccessibilityManager(
-      ShouldBeBrowserAccessibilityManager(ACCESSIBILITY_MODE_COMPLETE),
-      "Should be a BrowserAccessibilityManager "
-      "for ACCESSIBILITY_MODE_COMPLETE");
+  EXPECT_NE(nullptr, GetManager());
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityModeTest,
+                       FullAccessibilityHasInlineTextBoxes) {
+  // TODO(dmazzoni): On Android we use an ifdef to disable inline text boxes,
+  // we should do it with accessibility flags instead. http://crbug.com/672205
+#if !defined(OS_ANDROID)
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ACCESSIBILITY_MODE_COMPLETE,
+                                         ui::AX_EVENT_LOAD_COMPLETE);
+  GURL url("data:text/html,<p>Para</p>");
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  const BrowserAccessibility* text = FindNode(ui::AX_ROLE_STATIC_TEXT, "Para");
+  ASSERT_NE(nullptr, text);
+  ASSERT_EQ(1U, text->InternalChildCount());
+  BrowserAccessibility* inline_text = text->InternalGetChild(0);
+  ASSERT_NE(nullptr, inline_text);
+  EXPECT_EQ(ui::AX_ROLE_INLINE_TEXT_BOX, inline_text->GetRole());
+#endif  // !defined(OS_ANDROID)
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityModeTest,
+                       MinimalAccessibilityModeHasNoInlineTextBoxes) {
+  // TODO(dmazzoni): On Android we use an ifdef to disable inline text boxes,
+  // we should do it with accessibility flags instead. http://crbug.com/672205
+#if !defined(OS_ANDROID)
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(),
+      ACCESSIBILITY_MODE_FLAG_NATIVE_APIS |
+      ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS,
+      ui::AX_EVENT_LOAD_COMPLETE);
+  GURL url("data:text/html,<p>Para</p>");
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  const BrowserAccessibility* text = FindNode(ui::AX_ROLE_STATIC_TEXT, "Para");
+  ASSERT_NE(nullptr, text);
+  EXPECT_EQ(0U, text->InternalChildCount());
+#endif  // !defined(OS_ANDROID)
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityModeTest, AddScreenReaderModeFlag) {
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  AccessibilityNotificationWaiter waiter(
+      shell()->web_contents(),
+      ACCESSIBILITY_MODE_FLAG_NATIVE_APIS |
+      ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS,
+      ui::AX_EVENT_LOAD_COMPLETE);
+  GURL url("data:text/html,<input aria-label=Foo placeholder=Bar>");
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  const BrowserAccessibility* textbox = FindNode(ui::AX_ROLE_TEXT_FIELD, "Foo");
+  ASSERT_NE(nullptr, textbox);
+  EXPECT_FALSE(textbox->HasStringAttribute(ui::AX_ATTR_PLACEHOLDER));
+  int original_id = textbox->GetId();
+
+  AccessibilityNotificationWaiter waiter2(
+      shell()->web_contents(), 0, ui::AX_EVENT_LAYOUT_COMPLETE);
+  BrowserAccessibilityStateImpl::GetInstance()->AddAccessibilityModeFlags(
+      ACCESSIBILITY_MODE_FLAG_SCREEN_READER);
+  waiter2.WaitForNotification();
+
+  const BrowserAccessibility* textbox2 = FindNode(
+      ui::AX_ROLE_TEXT_FIELD, "Foo");
+  ASSERT_NE(nullptr, textbox2);
+  EXPECT_TRUE(textbox2->HasStringAttribute(ui::AX_ATTR_PLACEHOLDER));
+  EXPECT_NE(original_id, textbox2->GetId());
 }
 
 }  // namespace content

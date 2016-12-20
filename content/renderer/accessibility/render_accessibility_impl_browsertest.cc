@@ -32,7 +32,7 @@ namespace content {
 class TestRenderAccessibilityImpl : public RenderAccessibilityImpl {
  public:
   explicit TestRenderAccessibilityImpl(RenderFrameImpl* render_frame)
-    : RenderAccessibilityImpl(render_frame) {
+      : RenderAccessibilityImpl(render_frame, ACCESSIBILITY_MODE_COMPLETE) {
   }
 
   void SendPendingAccessibilityEvents() {

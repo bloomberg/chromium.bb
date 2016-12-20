@@ -128,8 +128,10 @@ ScopedFreezeBlinkAXTreeSource::~ScopedFreezeBlinkAXTreeSource() {
   tree_source_->Thaw();
 }
 
-BlinkAXTreeSource::BlinkAXTreeSource(RenderFrameImpl* render_frame)
+BlinkAXTreeSource::BlinkAXTreeSource(RenderFrameImpl* render_frame,
+                                     AccessibilityMode mode)
     : render_frame_(render_frame),
+      accessibility_mode_(mode),
       frozen_(false) {}
 
 BlinkAXTreeSource::~BlinkAXTreeSource() {
@@ -341,10 +343,6 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
         ui::AX_ATTR_DESCRIBEDBY_IDS, descriptionObjects, dst);
   }
 
-  blink::WebString web_placeholder = src.placeholder(nameFrom);
-  if (!web_placeholder.isEmpty())
-    dst->AddStringAttribute(ui::AX_ATTR_PLACEHOLDER, web_placeholder.utf8());
-
   std::string value;
   if (src.valueDescription().length()) {
     dst->AddStringAttribute(ui::AX_ATTR_VALUE, src.valueDescription().utf8());
@@ -352,177 +350,299 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     dst->AddStringAttribute(ui::AX_ATTR_VALUE, src.stringValue().utf8());
   }
 
-  if (dst->role == ui::AX_ROLE_COLOR_WELL)
-    dst->AddIntAttribute(ui::AX_ATTR_COLOR_VALUE, src.colorValue());
-
-
-  // Text attributes.
-  if (src.backgroundColor())
-    dst->AddIntAttribute(ui::AX_ATTR_BACKGROUND_COLOR, src.backgroundColor());
-
-  if (src.color())
-    dst->AddIntAttribute(ui::AX_ATTR_COLOR, src.color());
-
-  WebAXObject parent = ParentObjectUnignored(src);
-  if (src.fontFamily().length()) {
-    if (parent.isNull() || parent.fontFamily() != src.fontFamily())
-      dst->AddStringAttribute(ui::AX_ATTR_FONT_FAMILY, src.fontFamily().utf8());
-  }
-
-  // Font size is in pixels.
-  if (src.fontSize())
-    dst->AddFloatAttribute(ui::AX_ATTR_FONT_SIZE, src.fontSize());
-
-  if (src.ariaCurrentState()) {
-    dst->AddIntAttribute(ui::AX_ATTR_ARIA_CURRENT_STATE,
-                         AXAriaCurrentStateFromBlink(src.ariaCurrentState()));
-  }
-
-  if (src.invalidState()) {
-    dst->AddIntAttribute(ui::AX_ATTR_INVALID_STATE,
-                         AXInvalidStateFromBlink(src.invalidState()));
-  }
-  if (src.invalidState() == blink::WebAXInvalidStateOther &&
-      src.ariaInvalidValue().length()) {
-    dst->AddStringAttribute(
-        ui::AX_ATTR_ARIA_INVALID_VALUE, src.ariaInvalidValue().utf8());
-  }
-
-  if (src.textDirection()) {
-    dst->AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
-                         AXTextDirectionFromBlink(src.textDirection()));
-  }
-
-  if (src.textStyle()) {
-    dst->AddIntAttribute(ui::AX_ATTR_TEXT_STYLE,
-                         AXTextStyleFromBlink(src.textStyle()));
-  }
-
-
-  if (dst->role == ui::AX_ROLE_INLINE_TEXT_BOX) {
-    WebVector<int> src_character_offsets;
-    src.characterOffsets(src_character_offsets);
-    std::vector<int32_t> character_offsets;
-    character_offsets.reserve(src_character_offsets.size());
-    for (size_t i = 0; i < src_character_offsets.size(); ++i)
-      character_offsets.push_back(src_character_offsets[i]);
-    dst->AddIntListAttribute(ui::AX_ATTR_CHARACTER_OFFSETS, character_offsets);
-
-    WebVector<int> src_word_starts;
-    WebVector<int> src_word_ends;
-    src.wordBoundaries(src_word_starts, src_word_ends);
-    std::vector<int32_t> word_starts;
-    std::vector<int32_t> word_ends;
-    word_starts.reserve(src_word_starts.size());
-    word_ends.reserve(src_word_starts.size());
-    for (size_t i = 0; i < src_word_starts.size(); ++i) {
-      word_starts.push_back(src_word_starts[i]);
-      word_ends.push_back(src_word_ends[i]);
-    }
-    dst->AddIntListAttribute(ui::AX_ATTR_WORD_STARTS, word_starts);
-    dst->AddIntListAttribute(ui::AX_ATTR_WORD_ENDS, word_ends);
-  }
-
-  if (src.accessKey().length()) {
-    dst->AddStringAttribute(ui::AX_ATTR_ACCESS_KEY, src.accessKey().utf8());
-  }
-
-  if (src.action() != blink::WebAXSupportedAction::None) {
-    dst->AddIntAttribute(ui::AX_ATTR_ACTION,
-                         AXSupportedActionFromBlink(src.action()));
-  }
-
-  if (src.ariaAutoComplete().length()) {
-    dst->AddStringAttribute(
-        ui::AX_ATTR_AUTO_COMPLETE,
-        src.ariaAutoComplete().utf8());
-  }
-
-  if (src.isAriaReadOnly())
-    dst->AddBoolAttribute(ui::AX_ATTR_ARIA_READONLY, true);
-
   if (src.isButtonStateMixed())
     dst->AddBoolAttribute(ui::AX_ATTR_STATE_MIXED, true);
 
   if (src.canSetValueAttribute())
     dst->AddBoolAttribute(ui::AX_ATTR_CAN_SET_VALUE, true);
 
-  if (src.hasComputedStyle()) {
-    dst->AddStringAttribute(
-        ui::AX_ATTR_DISPLAY, src.computedStyleDisplay().utf8());
-  }
-
-  if (src.language().length()) {
-    if (parent.isNull() || parent.language() != src.language())
-      dst->AddStringAttribute(ui::AX_ATTR_LANGUAGE, src.language().utf8());
-  }
-
-  if (src.keyboardShortcut().length()) {
-    dst->AddStringAttribute(
-        ui::AX_ATTR_SHORTCUT,
-        src.keyboardShortcut().utf8());
-  }
-
-  if (!src.nextOnLine().isDetached()) {
-    dst->AddIntAttribute(ui::AX_ATTR_NEXT_ON_LINE_ID, src.nextOnLine().axID());
-  }
-
-  if (!src.previousOnLine().isDetached()) {
-    dst->AddIntAttribute(ui::AX_ATTR_PREVIOUS_ON_LINE_ID,
-                         src.previousOnLine().axID());
-  }
-
-  if (!src.ariaActiveDescendant().isDetached()) {
-    dst->AddIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID,
-                         src.ariaActiveDescendant().axID());
-  }
-
   if (!src.url().isEmpty())
     dst->AddStringAttribute(ui::AX_ATTR_URL, src.url().string().utf8());
 
-  if (dst->role == ui::AX_ROLE_HEADING && src.headingLevel()) {
-    dst->AddIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL, src.headingLevel());
-  } else if ((dst->role == ui::AX_ROLE_TREE_ITEM ||
-              dst->role == ui::AX_ROLE_ROW) &&
-             src.hierarchicalLevel()) {
-    dst->AddIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL,
-                         src.hierarchicalLevel());
-  }
+  // The following set of attributes are only accessed when the accessibility
+  // mode is set to screen reader mode, otherwise only the more basic
+  // attributes are populated.
+  if (accessibility_mode_ & ACCESSIBILITY_MODE_FLAG_SCREEN_READER) {
+    blink::WebString web_placeholder = src.placeholder(nameFrom);
+    if (!web_placeholder.isEmpty())
+      dst->AddStringAttribute(ui::AX_ATTR_PLACEHOLDER, web_placeholder.utf8());
 
-  if (src.setSize())
-    dst->AddIntAttribute(ui::AX_ATTR_SET_SIZE, src.setSize());
+    if (dst->role == ui::AX_ROLE_COLOR_WELL)
+      dst->AddIntAttribute(ui::AX_ATTR_COLOR_VALUE, src.colorValue());
 
-  if (src.posInSet())
-    dst->AddIntAttribute(ui::AX_ATTR_POS_IN_SET, src.posInSet());
+    // Text attributes.
+    if (src.backgroundColor())
+      dst->AddIntAttribute(ui::AX_ATTR_BACKGROUND_COLOR, src.backgroundColor());
 
-  if (src.canvasHasFallbackContent())
-    dst->AddBoolAttribute(ui::AX_ATTR_CANVAS_HAS_FALLBACK, true);
+    if (src.color())
+      dst->AddIntAttribute(ui::AX_ATTR_COLOR, src.color());
 
-  // Spelling, grammar and other document markers.
-  WebVector<blink::WebAXMarkerType> src_marker_types;
-  WebVector<int> src_marker_starts;
-  WebVector<int> src_marker_ends;
-  src.markers(src_marker_types, src_marker_starts, src_marker_ends);
-  DCHECK_EQ(src_marker_types.size(), src_marker_starts.size());
-  DCHECK_EQ(src_marker_starts.size(), src_marker_ends.size());
-
-  if (src_marker_types.size()) {
-    std::vector<int32_t> marker_types;
-    std::vector<int32_t> marker_starts;
-    std::vector<int32_t> marker_ends;
-    marker_types.reserve(src_marker_types.size());
-    marker_starts.reserve(src_marker_starts.size());
-    marker_ends.reserve(src_marker_ends.size());
-    for (size_t i = 0; i < src_marker_types.size(); ++i) {
-      marker_types.push_back(
-          static_cast<int32_t>(AXMarkerTypeFromBlink(src_marker_types[i])));
-      marker_starts.push_back(src_marker_starts[i]);
-      marker_ends.push_back(src_marker_ends[i]);
+    WebAXObject parent = ParentObjectUnignored(src);
+    if (src.fontFamily().length()) {
+      if (parent.isNull() || parent.fontFamily() != src.fontFamily())
+        dst->AddStringAttribute(ui::AX_ATTR_FONT_FAMILY,
+                                src.fontFamily().utf8());
     }
-    dst->AddIntListAttribute(ui::AX_ATTR_MARKER_TYPES, marker_types);
-    dst->AddIntListAttribute(ui::AX_ATTR_MARKER_STARTS, marker_starts);
-    dst->AddIntListAttribute(ui::AX_ATTR_MARKER_ENDS, marker_ends);
+
+    // Font size is in pixels.
+    if (src.fontSize())
+      dst->AddFloatAttribute(ui::AX_ATTR_FONT_SIZE, src.fontSize());
+
+    if (src.ariaCurrentState()) {
+      dst->AddIntAttribute(ui::AX_ATTR_ARIA_CURRENT_STATE,
+                           AXAriaCurrentStateFromBlink(src.ariaCurrentState()));
+    }
+
+    if (src.invalidState()) {
+      dst->AddIntAttribute(ui::AX_ATTR_INVALID_STATE,
+                           AXInvalidStateFromBlink(src.invalidState()));
+    }
+    if (src.invalidState() == blink::WebAXInvalidStateOther &&
+        src.ariaInvalidValue().length()) {
+      dst->AddStringAttribute(
+          ui::AX_ATTR_ARIA_INVALID_VALUE, src.ariaInvalidValue().utf8());
+    }
+
+    if (src.textDirection()) {
+      dst->AddIntAttribute(ui::AX_ATTR_TEXT_DIRECTION,
+                           AXTextDirectionFromBlink(src.textDirection()));
+    }
+
+    if (src.textStyle()) {
+      dst->AddIntAttribute(ui::AX_ATTR_TEXT_STYLE,
+                           AXTextStyleFromBlink(src.textStyle()));
+    }
+
+    if (dst->role == ui::AX_ROLE_INLINE_TEXT_BOX) {
+      WebVector<int> src_character_offsets;
+      src.characterOffsets(src_character_offsets);
+      std::vector<int32_t> character_offsets;
+      character_offsets.reserve(src_character_offsets.size());
+      for (size_t i = 0; i < src_character_offsets.size(); ++i)
+        character_offsets.push_back(src_character_offsets[i]);
+      dst->AddIntListAttribute(ui::AX_ATTR_CHARACTER_OFFSETS,
+                               character_offsets);
+
+      WebVector<int> src_word_starts;
+      WebVector<int> src_word_ends;
+      src.wordBoundaries(src_word_starts, src_word_ends);
+      std::vector<int32_t> word_starts;
+      std::vector<int32_t> word_ends;
+      word_starts.reserve(src_word_starts.size());
+      word_ends.reserve(src_word_starts.size());
+      for (size_t i = 0; i < src_word_starts.size(); ++i) {
+        word_starts.push_back(src_word_starts[i]);
+        word_ends.push_back(src_word_ends[i]);
+      }
+      dst->AddIntListAttribute(ui::AX_ATTR_WORD_STARTS, word_starts);
+      dst->AddIntListAttribute(ui::AX_ATTR_WORD_ENDS, word_ends);
+    }
+
+    if (src.accessKey().length()) {
+      dst->AddStringAttribute(ui::AX_ATTR_ACCESS_KEY, src.accessKey().utf8());
+    }
+
+    if (src.ariaAutoComplete().length()) {
+      dst->AddStringAttribute(
+          ui::AX_ATTR_AUTO_COMPLETE,
+          src.ariaAutoComplete().utf8());
+    }
+
+    if (src.action() != blink::WebAXSupportedAction::None) {
+      dst->AddIntAttribute(ui::AX_ATTR_ACTION,
+                           AXSupportedActionFromBlink(src.action()));
+    }
+
+    if (src.isAriaReadOnly())
+      dst->AddBoolAttribute(ui::AX_ATTR_ARIA_READONLY, true);
+
+    if (src.hasComputedStyle()) {
+      dst->AddStringAttribute(
+          ui::AX_ATTR_DISPLAY, src.computedStyleDisplay().utf8());
+    }
+
+    if (src.language().length()) {
+      if (parent.isNull() || parent.language() != src.language())
+        dst->AddStringAttribute(ui::AX_ATTR_LANGUAGE, src.language().utf8());
+    }
+
+    if (src.keyboardShortcut().length()) {
+      dst->AddStringAttribute(
+          ui::AX_ATTR_SHORTCUT,
+          src.keyboardShortcut().utf8());
+    }
+
+    if (!src.nextOnLine().isDetached()) {
+      dst->AddIntAttribute(ui::AX_ATTR_NEXT_ON_LINE_ID,
+                           src.nextOnLine().axID());
+    }
+
+    if (!src.previousOnLine().isDetached()) {
+      dst->AddIntAttribute(ui::AX_ATTR_PREVIOUS_ON_LINE_ID,
+                           src.previousOnLine().axID());
+    }
+
+    if (!src.ariaActiveDescendant().isDetached()) {
+      dst->AddIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID,
+                           src.ariaActiveDescendant().axID());
+    }
+
+    if (dst->role == ui::AX_ROLE_HEADING && src.headingLevel()) {
+      dst->AddIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL, src.headingLevel());
+    } else if ((dst->role == ui::AX_ROLE_TREE_ITEM ||
+                dst->role == ui::AX_ROLE_ROW) &&
+               src.hierarchicalLevel()) {
+      dst->AddIntAttribute(ui::AX_ATTR_HIERARCHICAL_LEVEL,
+                           src.hierarchicalLevel());
+    }
+
+    if (src.setSize())
+      dst->AddIntAttribute(ui::AX_ATTR_SET_SIZE, src.setSize());
+
+    if (src.posInSet())
+      dst->AddIntAttribute(ui::AX_ATTR_POS_IN_SET, src.posInSet());
+
+    if (src.canvasHasFallbackContent())
+      dst->AddBoolAttribute(ui::AX_ATTR_CANVAS_HAS_FALLBACK, true);
+
+    // Spelling, grammar and other document markers.
+    WebVector<blink::WebAXMarkerType> src_marker_types;
+    WebVector<int> src_marker_starts;
+    WebVector<int> src_marker_ends;
+    src.markers(src_marker_types, src_marker_starts, src_marker_ends);
+    DCHECK_EQ(src_marker_types.size(), src_marker_starts.size());
+    DCHECK_EQ(src_marker_starts.size(), src_marker_ends.size());
+
+    if (src_marker_types.size()) {
+      std::vector<int32_t> marker_types;
+      std::vector<int32_t> marker_starts;
+      std::vector<int32_t> marker_ends;
+      marker_types.reserve(src_marker_types.size());
+      marker_starts.reserve(src_marker_starts.size());
+      marker_ends.reserve(src_marker_ends.size());
+      for (size_t i = 0; i < src_marker_types.size(); ++i) {
+        marker_types.push_back(
+            static_cast<int32_t>(AXMarkerTypeFromBlink(src_marker_types[i])));
+        marker_starts.push_back(src_marker_starts[i]);
+        marker_ends.push_back(src_marker_ends[i]);
+      }
+      dst->AddIntListAttribute(ui::AX_ATTR_MARKER_TYPES, marker_types);
+      dst->AddIntListAttribute(ui::AX_ATTR_MARKER_STARTS, marker_starts);
+      dst->AddIntListAttribute(ui::AX_ATTR_MARKER_ENDS, marker_ends);
+    }
+
+    if (src.isInLiveRegion()) {
+      dst->AddBoolAttribute(ui::AX_ATTR_LIVE_ATOMIC, src.liveRegionAtomic());
+      dst->AddBoolAttribute(ui::AX_ATTR_LIVE_BUSY, src.liveRegionBusy());
+      if (src.liveRegionBusy())
+        dst->state |= (1 << ui::AX_STATE_BUSY);
+      if (!src.liveRegionStatus().isEmpty()) {
+        dst->AddStringAttribute(
+            ui::AX_ATTR_LIVE_STATUS,
+            src.liveRegionStatus().utf8());
+      }
+      dst->AddStringAttribute(
+          ui::AX_ATTR_LIVE_RELEVANT,
+          src.liveRegionRelevant().utf8());
+      // If we are not at the root of an atomic live region.
+      if (src.containerLiveRegionAtomic() &&
+          !src.liveRegionRoot().isDetached() &&
+          !src.liveRegionAtomic()) {
+        dst->AddIntAttribute(ui::AX_ATTR_MEMBER_OF_ID,
+                             src.liveRegionRoot().axID());
+      }
+      dst->AddBoolAttribute(ui::AX_ATTR_CONTAINER_LIVE_ATOMIC,
+                            src.containerLiveRegionAtomic());
+      dst->AddBoolAttribute(ui::AX_ATTR_CONTAINER_LIVE_BUSY,
+                            src.containerLiveRegionBusy());
+      dst->AddStringAttribute(
+          ui::AX_ATTR_CONTAINER_LIVE_STATUS,
+          src.containerLiveRegionStatus().utf8());
+      dst->AddStringAttribute(
+          ui::AX_ATTR_CONTAINER_LIVE_RELEVANT,
+          src.containerLiveRegionRelevant().utf8());
+    }
+
+    if (dst->role == ui::AX_ROLE_PROGRESS_INDICATOR ||
+        dst->role == ui::AX_ROLE_METER ||
+        dst->role == ui::AX_ROLE_SCROLL_BAR ||
+        dst->role == ui::AX_ROLE_SLIDER ||
+        dst->role == ui::AX_ROLE_SPIN_BUTTON) {
+      dst->AddFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE, src.valueForRange());
+      dst->AddFloatAttribute(ui::AX_ATTR_MAX_VALUE_FOR_RANGE,
+                             src.maxValueForRange());
+      dst->AddFloatAttribute(ui::AX_ATTR_MIN_VALUE_FOR_RANGE,
+                             src.minValueForRange());
+    }
+
+    if (dst->role == ui::AX_ROLE_ROOT_WEB_AREA)
+      dst->AddStringAttribute(ui::AX_ATTR_HTML_TAG, "#document");
+
+    if (dst->role == ui::AX_ROLE_TABLE) {
+      int column_count = src.columnCount();
+      int row_count = src.rowCount();
+      if (column_count > 0 && row_count > 0) {
+        std::set<int32_t> unique_cell_id_set;
+        std::vector<int32_t> cell_ids;
+        std::vector<int32_t> unique_cell_ids;
+        dst->AddIntAttribute(ui::AX_ATTR_TABLE_COLUMN_COUNT, column_count);
+        dst->AddIntAttribute(ui::AX_ATTR_TABLE_ROW_COUNT, row_count);
+        WebAXObject header = src.headerContainerObject();
+        if (!header.isDetached())
+          dst->AddIntAttribute(ui::AX_ATTR_TABLE_HEADER_ID, header.axID());
+        for (int i = 0; i < column_count * row_count; ++i) {
+          WebAXObject cell = src.cellForColumnAndRow(
+              i % column_count, i / column_count);
+          int cell_id = -1;
+          if (!cell.isDetached()) {
+            cell_id = cell.axID();
+            if (unique_cell_id_set.find(cell_id) == unique_cell_id_set.end()) {
+              unique_cell_id_set.insert(cell_id);
+              unique_cell_ids.push_back(cell_id);
+            }
+          }
+          cell_ids.push_back(cell_id);
+        }
+        dst->AddIntListAttribute(ui::AX_ATTR_CELL_IDS, cell_ids);
+        dst->AddIntListAttribute(ui::AX_ATTR_UNIQUE_CELL_IDS, unique_cell_ids);
+      }
+    }
+
+    if (dst->role == ui::AX_ROLE_ROW) {
+      dst->AddIntAttribute(ui::AX_ATTR_TABLE_ROW_INDEX, src.rowIndex());
+      WebAXObject header = src.rowHeader();
+      if (!header.isDetached())
+        dst->AddIntAttribute(ui::AX_ATTR_TABLE_ROW_HEADER_ID, header.axID());
+    }
+
+    if (dst->role == ui::AX_ROLE_COLUMN) {
+      dst->AddIntAttribute(ui::AX_ATTR_TABLE_COLUMN_INDEX, src.columnIndex());
+      WebAXObject header = src.columnHeader();
+      if (!header.isDetached())
+        dst->AddIntAttribute(ui::AX_ATTR_TABLE_COLUMN_HEADER_ID, header.axID());
+    }
+
+    if (dst->role == ui::AX_ROLE_CELL ||
+        dst->role == ui::AX_ROLE_ROW_HEADER ||
+        dst->role == ui::AX_ROLE_COLUMN_HEADER) {
+      dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_INDEX,
+                           src.cellColumnIndex());
+      dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_SPAN,
+                           src.cellColumnSpan());
+      dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_INDEX,
+                           src.cellRowIndex());
+      dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_SPAN, src.cellRowSpan());
+    }
+
+    if ((dst->role == ui::AX_ROLE_ROW_HEADER ||
+        dst->role == ui::AX_ROLE_COLUMN_HEADER) && src.sortDirection()) {
+      dst->AddIntAttribute(ui::AX_ATTR_SORT_DIRECTION,
+                           AXSortDirectionFromBlink(src.sortDirection()));
+    }
   }
+
+  // The majority of the rest of this code computes attributes needed for
+  // all modes, not just for screen readers.
 
   WebNode node = src.node();
   bool is_iframe = false;
@@ -531,17 +651,19 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     WebElement element = node.to<WebElement>();
     is_iframe = element.hasHTMLTagName("iframe");
 
-    // TODO(ctguil): The tagName in WebKit is lower cased but
-    // HTMLElement::nodeName calls localNameUpper. Consider adding
-    // a WebElement method that returns the original lower cased tagName.
-    dst->AddStringAttribute(
-        ui::AX_ATTR_HTML_TAG,
-        base::ToLowerASCII(element.tagName().utf8()));
-    for (unsigned i = 0; i < element.attributeCount(); ++i) {
-      std::string name = base::ToLowerASCII(
-          element.attributeLocalName(i).utf8());
-      std::string value = element.attributeValue(i).utf8();
-      dst->html_attributes.push_back(std::make_pair(name, value));
+    if (accessibility_mode_ & ACCESSIBILITY_MODE_FLAG_HTML) {
+      // TODO(ctguil): The tagName in WebKit is lower cased but
+      // HTMLElement::nodeName calls localNameUpper. Consider adding
+      // a WebElement method that returns the original lower cased tagName.
+      dst->AddStringAttribute(
+          ui::AX_ATTR_HTML_TAG,
+          base::ToLowerASCII(element.tagName().utf8()));
+      for (unsigned i = 0; i < element.attributeCount(); ++i) {
+        std::string name = base::ToLowerASCII(
+            element.attributeLocalName(i).utf8());
+        std::string value = element.attributeValue(i).utf8();
+        dst->html_attributes.push_back(std::make_pair(name, value));
+      }
     }
 
     if (src.isEditable()) {
@@ -590,113 +712,6 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
           AX_CONTENT_ATTR_CHILD_ROUTING_ID,
           GetRoutingIdForFrameOrProxy(frame));
     }
-  }
-
-  if (src.isInLiveRegion()) {
-    dst->AddBoolAttribute(ui::AX_ATTR_LIVE_ATOMIC, src.liveRegionAtomic());
-    dst->AddBoolAttribute(ui::AX_ATTR_LIVE_BUSY, src.liveRegionBusy());
-    if (src.liveRegionBusy())
-      dst->state |= (1 << ui::AX_STATE_BUSY);
-    if (!src.liveRegionStatus().isEmpty()) {
-      dst->AddStringAttribute(
-          ui::AX_ATTR_LIVE_STATUS,
-          src.liveRegionStatus().utf8());
-    }
-    dst->AddStringAttribute(
-        ui::AX_ATTR_LIVE_RELEVANT,
-        src.liveRegionRelevant().utf8());
-    // If we are not at the root of an atomic live region.
-    if (src.containerLiveRegionAtomic() && !src.liveRegionRoot().isDetached() &&
-        !src.liveRegionAtomic()) {
-      dst->AddIntAttribute(ui::AX_ATTR_MEMBER_OF_ID,
-                           src.liveRegionRoot().axID());
-    }
-    dst->AddBoolAttribute(ui::AX_ATTR_CONTAINER_LIVE_ATOMIC,
-                          src.containerLiveRegionAtomic());
-    dst->AddBoolAttribute(ui::AX_ATTR_CONTAINER_LIVE_BUSY,
-                          src.containerLiveRegionBusy());
-    dst->AddStringAttribute(
-        ui::AX_ATTR_CONTAINER_LIVE_STATUS,
-        src.containerLiveRegionStatus().utf8());
-    dst->AddStringAttribute(
-        ui::AX_ATTR_CONTAINER_LIVE_RELEVANT,
-        src.containerLiveRegionRelevant().utf8());
-  }
-
-  if (dst->role == ui::AX_ROLE_PROGRESS_INDICATOR ||
-      dst->role == ui::AX_ROLE_METER ||
-      dst->role == ui::AX_ROLE_SCROLL_BAR ||
-      dst->role == ui::AX_ROLE_SLIDER ||
-      dst->role == ui::AX_ROLE_SPIN_BUTTON) {
-    dst->AddFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE, src.valueForRange());
-    dst->AddFloatAttribute(ui::AX_ATTR_MAX_VALUE_FOR_RANGE,
-                           src.maxValueForRange());
-    dst->AddFloatAttribute(ui::AX_ATTR_MIN_VALUE_FOR_RANGE,
-                           src.minValueForRange());
-  }
-
-  if (dst->role == ui::AX_ROLE_ROOT_WEB_AREA)
-    dst->AddStringAttribute(ui::AX_ATTR_HTML_TAG, "#document");
-
-  if (dst->role == ui::AX_ROLE_TABLE) {
-    int column_count = src.columnCount();
-    int row_count = src.rowCount();
-    if (column_count > 0 && row_count > 0) {
-      std::set<int32_t> unique_cell_id_set;
-      std::vector<int32_t> cell_ids;
-      std::vector<int32_t> unique_cell_ids;
-      dst->AddIntAttribute(ui::AX_ATTR_TABLE_COLUMN_COUNT, column_count);
-      dst->AddIntAttribute(ui::AX_ATTR_TABLE_ROW_COUNT, row_count);
-      WebAXObject header = src.headerContainerObject();
-      if (!header.isDetached())
-        dst->AddIntAttribute(ui::AX_ATTR_TABLE_HEADER_ID, header.axID());
-      for (int i = 0; i < column_count * row_count; ++i) {
-        WebAXObject cell = src.cellForColumnAndRow(
-            i % column_count, i / column_count);
-        int cell_id = -1;
-        if (!cell.isDetached()) {
-          cell_id = cell.axID();
-          if (unique_cell_id_set.find(cell_id) == unique_cell_id_set.end()) {
-            unique_cell_id_set.insert(cell_id);
-            unique_cell_ids.push_back(cell_id);
-          }
-        }
-        cell_ids.push_back(cell_id);
-      }
-      dst->AddIntListAttribute(ui::AX_ATTR_CELL_IDS, cell_ids);
-      dst->AddIntListAttribute(ui::AX_ATTR_UNIQUE_CELL_IDS, unique_cell_ids);
-    }
-  }
-
-  if (dst->role == ui::AX_ROLE_ROW) {
-    dst->AddIntAttribute(ui::AX_ATTR_TABLE_ROW_INDEX, src.rowIndex());
-    WebAXObject header = src.rowHeader();
-    if (!header.isDetached())
-      dst->AddIntAttribute(ui::AX_ATTR_TABLE_ROW_HEADER_ID, header.axID());
-  }
-
-  if (dst->role == ui::AX_ROLE_COLUMN) {
-    dst->AddIntAttribute(ui::AX_ATTR_TABLE_COLUMN_INDEX, src.columnIndex());
-    WebAXObject header = src.columnHeader();
-    if (!header.isDetached())
-      dst->AddIntAttribute(ui::AX_ATTR_TABLE_COLUMN_HEADER_ID, header.axID());
-  }
-
-  if (dst->role == ui::AX_ROLE_CELL ||
-      dst->role == ui::AX_ROLE_ROW_HEADER ||
-      dst->role == ui::AX_ROLE_COLUMN_HEADER) {
-    dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_INDEX,
-                         src.cellColumnIndex());
-    dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_COLUMN_SPAN,
-                         src.cellColumnSpan());
-    dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_INDEX, src.cellRowIndex());
-    dst->AddIntAttribute(ui::AX_ATTR_TABLE_CELL_ROW_SPAN, src.cellRowSpan());
-  }
-
-  if ((dst->role == ui::AX_ROLE_ROW_HEADER ||
-      dst->role == ui::AX_ROLE_COLUMN_HEADER) && src.sortDirection()) {
-    dst->AddIntAttribute(ui::AX_ATTR_SORT_DIRECTION,
-                         AXSortDirectionFromBlink(src.sortDirection()));
   }
 
   // Add the ids of *indirect* children - those who are children of this node,

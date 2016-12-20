@@ -65,7 +65,8 @@ class CONTENT_EXPORT RenderAccessibilityImpl
       RenderFrameImpl* render_frame,
       AXContentTreeUpdate* response);
 
-  explicit RenderAccessibilityImpl(RenderFrameImpl* render_frame);
+  RenderAccessibilityImpl(RenderFrameImpl* render_frame,
+                          AccessibilityMode mode);
   ~RenderAccessibilityImpl() override;
 
   // RenderAccessibility implementation.

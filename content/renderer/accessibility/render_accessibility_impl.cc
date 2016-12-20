@@ -68,7 +68,7 @@ void RenderAccessibilityImpl::SnapshotAccessibilityTree(
   WebAXObject root = context.root();
   if (!root.updateLayoutAndCheckValidity())
     return;
-  BlinkAXTreeSource tree_source(render_frame);
+  BlinkAXTreeSource tree_source(render_frame, ACCESSIBILITY_MODE_COMPLETE);
   tree_source.SetRoot(root);
   ScopedFreezeBlinkAXTreeSource freeze(&tree_source);
   BlinkAXTreeSerializer serializer(&tree_source);
@@ -76,10 +76,11 @@ void RenderAccessibilityImpl::SnapshotAccessibilityTree(
   serializer.SerializeChanges(context.root(), response);
 }
 
-RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame)
+RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame,
+                                                 AccessibilityMode mode)
     : RenderFrameObserver(render_frame),
       render_frame_(render_frame),
-      tree_source_(render_frame),
+      tree_source_(render_frame, mode),
       serializer_(&tree_source_),
       plugin_tree_source_(nullptr),
       last_scroll_offset_(gfx::Size()),
@@ -98,8 +99,10 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(RenderFrameImpl* render_frame)
 #endif
 
 #if !defined(OS_ANDROID)
-  // Inline text boxes are enabled for all nodes on all except Android.
-  settings->setInlineTextBoxAccessibilityEnabled(true);
+  // Inline text boxes can be enabled globally on all except Android.
+  // On Android they can be requested for just a specific node.
+  if (mode & ACCESSIBILITY_MODE_FLAG_INLINE_TEXT_BOXES)
+    settings->setInlineTextBoxAccessibilityEnabled(true);
 #endif
 
   const WebDocument& document = GetMainDocument();

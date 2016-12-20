@@ -2123,8 +2123,10 @@ void RenderFrameImpl::OnSetAccessibilityMode(AccessibilityMode new_mode) {
     render_accessibility_ = NULL;
   }
 
-  if (accessibility_mode_ & ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS)
-    render_accessibility_ = new RenderAccessibilityImpl(this);
+  if (accessibility_mode_ & ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS) {
+    render_accessibility_ = new RenderAccessibilityImpl(
+        this, accessibility_mode_);
+  }
 
   for (auto& observer : observers_)
     observer.AccessibilityModeChanged();

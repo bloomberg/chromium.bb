@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "content/common/accessibility_mode_enums.h"
 #include "content/common/ax_content_node_data.h"
 #include "third_party/WebKit/public/web/WebAXObject.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -36,7 +37,8 @@ class BlinkAXTreeSource
                               AXContentNodeData,
                               AXContentTreeData> {
  public:
-  BlinkAXTreeSource(RenderFrameImpl* render_frame);
+  BlinkAXTreeSource(RenderFrameImpl* render_frame,
+                    AccessibilityMode mode);
   ~BlinkAXTreeSource() override;
 
   // Freeze caches the document, accessibility root, and current focused
@@ -107,6 +109,8 @@ class BlinkAXTreeSource
   blink::WebAXObject ComputeRoot() const;
 
   RenderFrameImpl* render_frame_;
+
+  AccessibilityMode accessibility_mode_;
 
   // An explicit root to use, otherwise it's taken from the WebDocument.
   blink::WebAXObject explicit_root_;

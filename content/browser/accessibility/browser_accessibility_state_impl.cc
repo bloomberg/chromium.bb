@@ -17,8 +17,30 @@
 
 namespace content {
 
+// IMPORTANT!
+// These values are written to logs.  Do not renumber or delete
+// existing items; add new entries to the end of the list.
+enum ModeFlagHistogramValue {
+  UMA_AX_MODE_FLAG_NATIVE_APIS = 0,
+  UMA_AX_MODE_FLAG_WEB_CONTENTS = 1,
+  UMA_AX_MODE_FLAG_INLINE_TEXT_BOXES = 2,
+  UMA_AX_MODE_FLAG_SCREEN_READER = 3,
+  UMA_AX_MODE_FLAG_HTML = 4,
+
+  // This must always be the last enum. It's okay for its value to
+  // increase, but none of the other enum values may change.
+  UMA_AX_MODE_FLAG_MAX
+};
+
+// Record a histograms for an accessibility mode when it's enabled.
+void RecordNewAccessibilityModeFlags(ModeFlagHistogramValue mode_flag) {
+  UMA_HISTOGRAM_ENUMERATION("Accessibility.ModeFlag",
+                            mode_flag,
+                            UMA_AX_MODE_FLAG_MAX);
+}
+
 // Update the accessibility histogram 45 seconds after initialization.
-static const int kAccessibilityHistogramDelaySecs = 45;
+static const int ACCESSIBILITY_HISTOGRAM_DELAY_SECS = 45;
 
 // static
 BrowserAccessibilityState* BrowserAccessibilityState::GetInstance() {
@@ -54,7 +76,7 @@ BrowserAccessibilityStateImpl::BrowserAccessibilityStateImpl()
   BrowserThread::PostDelayedTask(
       update_histogram_thread, FROM_HERE,
       base::Bind(&BrowserAccessibilityStateImpl::UpdateHistograms, this),
-      base::TimeDelta::FromSeconds(kAccessibilityHistogramDelaySecs));
+      base::TimeDelta::FromSeconds(ACCESSIBILITY_HISTOGRAM_DELAY_SECS));
 }
 
 BrowserAccessibilityStateImpl::~BrowserAccessibilityStateImpl() {
@@ -113,7 +135,10 @@ void BrowserAccessibilityStateImpl::UpdateHistograms() {
   for (size_t i = 0; i < histogram_callbacks_.size(); ++i)
     histogram_callbacks_[i].Run();
 
+  // TODO(dmazzoni): remove this in M59 since Accessibility.ModeFlag
+  // supercedes it.  http://crbug.com/672205
   UMA_HISTOGRAM_BOOLEAN("Accessibility.State", IsAccessibleBrowser());
+
   UMA_HISTOGRAM_BOOLEAN("Accessibility.InvertedColors",
                         color_utils::IsInvertedColorScheme());
   UMA_HISTOGRAM_BOOLEAN("Accessibility.ManuallyEnabled",
@@ -133,7 +158,24 @@ void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(
     return;
   }
 
+  AccessibilityMode previous_mode = accessibility_mode_;
   accessibility_mode_ |= mode;
+  if (accessibility_mode_ == previous_mode)
+    return;
+
+  // Retrieve only newly added modes for the purposes of logging.
+  AccessibilityMode new_mode_flags = accessibility_mode_ & (~previous_mode);
+  if (new_mode_flags & ACCESSIBILITY_MODE_FLAG_NATIVE_APIS)
+    RecordNewAccessibilityModeFlags(UMA_AX_MODE_FLAG_NATIVE_APIS);
+  if (new_mode_flags & ACCESSIBILITY_MODE_FLAG_WEB_CONTENTS)
+    RecordNewAccessibilityModeFlags(UMA_AX_MODE_FLAG_WEB_CONTENTS);
+  if (new_mode_flags & ACCESSIBILITY_MODE_FLAG_INLINE_TEXT_BOXES)
+    RecordNewAccessibilityModeFlags(UMA_AX_MODE_FLAG_INLINE_TEXT_BOXES);
+  if (new_mode_flags & ACCESSIBILITY_MODE_FLAG_SCREEN_READER)
+    RecordNewAccessibilityModeFlags(UMA_AX_MODE_FLAG_SCREEN_READER);
+  if (new_mode_flags & ACCESSIBILITY_MODE_FLAG_HTML)
+    RecordNewAccessibilityModeFlags(UMA_AX_MODE_FLAG_HTML);
+
   std::vector<WebContentsImpl*> web_contents_vector =
       WebContentsImpl::GetAllWebContents();
   for (size_t i = 0; i < web_contents_vector.size(); ++i)
