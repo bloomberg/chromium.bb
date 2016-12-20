@@ -16,6 +16,9 @@
 class ContextMenuCoordinatorTest : public PlatformTest {
  public:
   ContextMenuCoordinatorTest() {
+    // Save the current key window and restore it after the test.
+    previous_key_window_.reset(
+        [[[UIApplication sharedApplication] keyWindow] retain]);
     window_.reset(
         [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]]);
     [window_ makeKeyAndVisible];
@@ -23,7 +26,12 @@ class ContextMenuCoordinatorTest : public PlatformTest {
     [window_ setRootViewController:view_controller_];
   }
 
+  ~ContextMenuCoordinatorTest() override {
+    [previous_key_window_ makeKeyAndVisible];
+  }
+
  protected:
+  base::scoped_nsobject<UIWindow> previous_key_window_;
   base::scoped_nsobject<ContextMenuCoordinator> menu_coordinator_;
   base::scoped_nsobject<UIWindow> window_;
   base::scoped_nsobject<UIViewController> view_controller_;

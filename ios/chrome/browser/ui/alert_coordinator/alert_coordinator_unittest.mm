@@ -23,11 +23,15 @@
 class AlertCoordinatorTest : public PlatformTest {
  protected:
   AlertCoordinatorTest() {
+    // Save the current key window and restore it after the test.
+    previous_key_window_ = [[UIApplication sharedApplication] keyWindow];
     window_ = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     [window_ makeKeyAndVisible];
     view_controller_ = [[UIViewController alloc] init];
     [window_ setRootViewController:view_controller_];
   }
+
+  ~AlertCoordinatorTest() override { [previous_key_window_ makeKeyAndVisible]; }
 
   void startAlertCoordinator() { [alert_coordinator_ start]; }
 
@@ -48,6 +52,7 @@ class AlertCoordinatorTest : public PlatformTest {
   }
 
  private:
+  UIWindow* previous_key_window_;
   AlertCoordinator* alert_coordinator_;
   UIWindow* window_;
   UIViewController* view_controller_;
