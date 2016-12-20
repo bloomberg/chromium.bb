@@ -373,7 +373,7 @@ NSString* const kWindowNameKey = @"windowName";
   // between new navigations and history stack navigation, hence the inclusion
   // of specific transiton type logic here, in order to make it reliable with
   // real-world observed behavior.
-  // TODO(stuartmorgan): Fix the way changes are detected/reported elsewhere
+  // TODO(crbug.com/676129): Fix the way changes are detected/reported elsewhere
   // in the web layer so that this hack can be removed.
   // Remove the workaround code from -presentSafeBrowsingWarningForResource:.
   CRWSessionEntry* currentEntry = self.currentEntry;
