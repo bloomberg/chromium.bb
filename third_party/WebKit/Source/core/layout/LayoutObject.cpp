@@ -2164,15 +2164,6 @@ void LayoutObject::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
     container->mapAncestorToLocal(ancestor, transformState, mode);
 
   LayoutSize containerOffset = offsetFromContainer(container);
-  if (isLayoutFlowThread()) {
-    // Descending into a flow thread. Convert to the local coordinate space,
-    // i.e. flow thread coordinates.
-    LayoutPoint visualPoint = LayoutPoint(transformState.mappedPoint());
-    transformState.move(
-        visualPoint -
-        toLayoutFlowThread(this)->visualPointToFlowThreadPoint(visualPoint));
-  }
-
   bool preserve3D =
       mode & UseTransforms &&
       (container->style()->preserves3D() || style()->preserves3D());
@@ -2186,6 +2177,15 @@ void LayoutObject::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
     transformState.move(containerOffset.width(), containerOffset.height(),
                         preserve3D ? TransformState::AccumulateTransform
                                    : TransformState::FlattenTransform);
+  }
+
+  if (isLayoutFlowThread()) {
+    // Descending into a flow thread. Convert to the local coordinate space,
+    // i.e. flow thread coordinates.
+    LayoutPoint visualPoint = LayoutPoint(transformState.mappedPoint());
+    transformState.move(
+        visualPoint -
+        toLayoutFlowThread(this)->visualPointToFlowThreadPoint(visualPoint));
   }
 
   if (applyContainerFlip) {
