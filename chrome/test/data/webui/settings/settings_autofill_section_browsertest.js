@@ -419,8 +419,15 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
       var addressSummary = address.metadata.summaryLabel +
                            address.metadata.summarySublabel;
 
-      assertEquals(addressSummary,
-                   row.querySelector('#addressSummary').textContent);
+      var actualSummary = '';
+
+      // Eliminate white space between nodes!
+      var addressPieces = row.querySelector('#addressSummary').children;
+      for (var i = 0; i < addressPieces.length; ++i) {
+        actualSummary += addressPieces[i].textContent.trim();
+      }
+
+      assertEquals(addressSummary, actualSummary);
     });
 
     test('verifyAddAddressDialog', function() {

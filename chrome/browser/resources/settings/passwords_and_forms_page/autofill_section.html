@@ -31,6 +31,25 @@
         -webkit-margin-start: 16px;
         color: var(--paper-grey-600);
       }
+
+      #addressList .start {
+        display: flex;
+        overflow: hidden;
+      }
+
+      #addressSummary {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      .ellipses {
+        flex: 1;
+        max-width: fit-content;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     </style>
     <div class="settings-box first">
       <h2>$i18n{addresses}</h2>
@@ -40,7 +59,14 @@
         <template is="dom-repeat" items="[[addresses]]">
           <div class="list-item two-line">
             <div class="start">
-              <span id="addressSummary">[[address_(item)]]</span>
+              <span id="addressSummary">
+                <span class="ellipses">
+                  [[item.metadata.summaryLabel]]
+                </span>
+                <span class="ellipses">
+                  [[item.metadata.summarySublabel]]
+                </span>
+              </span>
               <span class="payments-label" hidden$="[[item.metadata.isLocal]]">
                 $i18n{googlePayments}
               </span>

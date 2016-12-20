@@ -47,15 +47,6 @@
     },
 
     /**
-     * Formats an AddressEntry so it's displayed as an address.
-     * @param {!chrome.autofillPrivate.AddressEntry} item
-     * @return {string}
-     */
-    address_: function(item) {
-      return item.metadata.summaryLabel + item.metadata.summarySublabel;
-    },
-
-    /**
      * Formats the expiration date so it's displayed as MM/YYYY.
      * @param {!chrome.autofillPrivate.CreditCardEntry} item
      * @return {string}

@@ -70,7 +70,7 @@ FakeDataMaker.addressEntry = function() {
   ret.languageCode = 'EN-US';
   ret.metadata = {isLocal: true};
   ret.metadata.summaryLabel = ret.fullNames[0];
-  ret.metadata.summarySublabel = ' ' + ret.addressLines;
+  ret.metadata.summarySublabel = ', ' + ret.addressLines;
   return ret;
 };
 
