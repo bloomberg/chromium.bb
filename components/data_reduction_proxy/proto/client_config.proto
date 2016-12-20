@@ -16,7 +16,7 @@ message ClientConfig {
   // The time at which the client should request a new configuration. The
   // session_key is guaranteed to be valid through this time and may be valid
   // for some time thereafter.
-  optional Timestamp refresh_time = 2;
+  optional Timestamp DEPRECATED_refresh_time = 2 [deprecated = true];
   // The proxy configuration the client should use to connect to the Data Saver
   // service.
   optional ProxyConfig proxy_config = 3;
@@ -94,7 +94,15 @@ message ProxyServer {
     // HTTPS
     HTTPS = 2;
     // HTTPS over QUIC
-    QUIC = 3;
+    DEPRECATED_QUIC = 3 [deprecated = true];
+  }
+
+  // The deployment type of the proxy server.
+  enum ProxyType {
+    // The proxy type is unspecified.
+    UNSPECIFIED_TYPE = 0;
+    // Core Google datacenter.
+    CORE = 1;
   }
 
   // The scheme for the proxy server.
@@ -103,6 +111,8 @@ message ProxyServer {
   optional string host = 2;
   // The port number for the proxy server.
   optional int32 port = 3;
+  // The type for the proxy server.
+  optional ProxyType type = 4;
 }
 
 // Request object to create a client configuration object.

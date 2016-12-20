@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 
 namespace data_reduction_proxy {
 
@@ -57,7 +58,7 @@ bool DataReductionProxyMutableConfigValues::fallback_allowed() const {
   return fallback_allowed_;
 }
 
-const std::vector<net::ProxyServer>&
+const std::vector<DataReductionProxyServer>
 DataReductionProxyMutableConfigValues::proxies_for_http() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (use_override_proxies_for_http_ && !proxies_for_http_.empty()) {
@@ -79,7 +80,7 @@ const GURL& DataReductionProxyMutableConfigValues::secure_proxy_check_url()
 }
 
 void DataReductionProxyMutableConfigValues::UpdateValues(
-    const std::vector<net::ProxyServer>& proxies_for_http) {
+    const std::vector<DataReductionProxyServer>& proxies_for_http) {
   DCHECK(thread_checker_.CalledOnValidThread());
   proxies_for_http_ = proxies_for_http;
 }

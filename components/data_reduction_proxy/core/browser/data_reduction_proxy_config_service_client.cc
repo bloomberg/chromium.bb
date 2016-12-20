@@ -24,6 +24,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_util.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -80,14 +81,16 @@ const net::BackoffEntry::Policy kDefaultBackoffPolicy = {
 };
 
 // Extracts the list of Data Reduction Proxy servers to use for HTTP requests.
-std::vector<net::ProxyServer> GetProxiesForHTTP(
+std::vector<DataReductionProxyServer> GetProxiesForHTTP(
     const data_reduction_proxy::ProxyConfig& proxy_config) {
-  std::vector<net::ProxyServer> proxies;
+  std::vector<DataReductionProxyServer> proxies;
   for (const auto& server : proxy_config.http_proxy_servers()) {
     if (server.scheme() != ProxyServer_ProxyScheme_UNSPECIFIED) {
-      proxies.push_back(net::ProxyServer(
-          protobuf_parser::SchemeFromProxyScheme(server.scheme()),
-          net::HostPortPair(server.host(), server.port())));
+      proxies.push_back(DataReductionProxyServer(
+          net::ProxyServer(
+              protobuf_parser::SchemeFromProxyScheme(server.scheme()),
+              net::HostPortPair(server.host(), server.port())),
+          server.type()));
     }
   }
 
@@ -429,7 +432,7 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
 
   // These are proxies listed in the config. The proxies that client eventually
   // ends up using depend on the field trials.
-  std::vector<net::ProxyServer> proxies;
+  std::vector<DataReductionProxyServer> proxies;
   base::TimeDelta refresh_duration;
   if (succeeded) {
     proxies = GetProxiesForHTTP(config.proxy_config());
@@ -457,10 +460,11 @@ void DataReductionProxyConfigServiceClient::HandleResponse(
       succeeded, refresh_duration, GetBackoffEntry()->GetTimeUntilRelease());
 
   SetConfigRefreshTimer(next_config_refresh_time);
-  event_creator_->EndConfigRequest(net_log_with_source_, status.error(),
-                                   response_code,
-                                   GetBackoffEntry()->failure_count(), proxies,
-                                   refresh_duration, next_config_refresh_time);
+  event_creator_->EndConfigRequest(
+      net_log_with_source_, status.error(), response_code,
+      GetBackoffEntry()->failure_count(),
+      DataReductionProxyServer::ConvertToNetProxyServers(proxies),
+      refresh_duration, next_config_refresh_time);
 }
 
 bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
@@ -478,7 +482,7 @@ bool DataReductionProxyConfigServiceClient::ParseAndApplyProxyConfig(
   if (!config.has_proxy_config())
     return false;
 
-  std::vector<net::ProxyServer> proxies =
+  std::vector<DataReductionProxyServer> proxies =
       GetProxiesForHTTP(config.proxy_config());
 
   if (proxies.empty())

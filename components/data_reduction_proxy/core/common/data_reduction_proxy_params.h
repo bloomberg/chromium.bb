@@ -20,6 +20,8 @@ class ProxyServer;
 
 namespace data_reduction_proxy {
 
+class DataReductionProxyServer;
+
 // The data_reduction_proxy::params namespace is a collection of methods to
 // determine the operating parameters of the Data Reduction Proxy as specified
 // by field trials and command line switches.
@@ -146,7 +148,7 @@ int GetFieldTrialParameterAsInteger(const std::string& group,
 // has been overridden on the command line, and if so, returns the override
 // proxy list in |override_proxies_for_http|.
 bool GetOverrideProxiesForHttpFromCommandLine(
-    std::vector<net::ProxyServer>* override_proxies_for_http);
+    std::vector<DataReductionProxyServer>* override_proxies_for_http);
 
 // Returns the name of the server side experiment field trial.
 const char* GetServerExperimentsFieldTrialName();
@@ -198,9 +200,13 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   // HTTP traffic.
   explicit DataReductionProxyParams(int flags);
 
+  // Updates |proxies_for_http_|.
+  void SetProxiesForHttpForTesting(
+      const std::vector<DataReductionProxyServer>& proxies_for_http);
+
   ~DataReductionProxyParams() override;
 
-  const std::vector<net::ProxyServer>& proxies_for_http() const override;
+  const std::vector<DataReductionProxyServer> proxies_for_http() const override;
 
   const GURL& secure_proxy_check_url() const override;
 
@@ -232,9 +238,9 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   virtual std::string GetDefaultFallbackOrigin() const;
   virtual std::string GetDefaultSecureProxyCheckURL() const;
 
-  std::vector<net::ProxyServer> proxies_for_http_;
-
  private:
+  std::vector<DataReductionProxyServer> proxies_for_http_;
+
   net::ProxyServer origin_;
   net::ProxyServer fallback_origin_;
 
@@ -248,7 +254,7 @@ class DataReductionProxyParams : public DataReductionProxyConfigValues {
   bool configured_on_command_line_;
 
   bool use_override_proxies_for_http_;
-  std::vector<net::ProxyServer> override_proxies_for_http_;
+  std::vector<DataReductionProxyServer> override_data_reduction_proxy_servers_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyParams);
 };

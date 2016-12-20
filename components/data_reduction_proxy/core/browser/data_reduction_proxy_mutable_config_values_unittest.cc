@@ -8,7 +8,9 @@
 
 #include "base/command_line.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "net/proxy/proxy_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -39,21 +41,27 @@ class DataReductionProxyMutableConfigValuesTest : public testing::Test {
 
 TEST_F(DataReductionProxyMutableConfigValuesTest, UpdateValuesAndInvalidate) {
   Init();
-  EXPECT_EQ(std::vector<net::ProxyServer>(),
+  EXPECT_EQ(std::vector<DataReductionProxyServer>(),
             mutable_config_values()->proxies_for_http());
 
-  std::vector<net::ProxyServer> proxies_for_http;
-  proxies_for_http.push_back(net::ProxyServer::FromURI(
+  std::vector<DataReductionProxyServer> proxies_for_http;
+
+  net::ProxyServer first_proxy_server(net::ProxyServer::FromURI(
       "http://first.net", net::ProxyServer::SCHEME_HTTP));
-  proxies_for_http.push_back(net::ProxyServer::FromURI(
-      "http://second.net", net::ProxyServer::SCHEME_HTTP));
+  proxies_for_http.push_back(
+      DataReductionProxyServer(first_proxy_server, ProxyServer::CORE));
+
+  net::ProxyServer second_proxy_server = net::ProxyServer::FromURI(
+      "http://second.net", net::ProxyServer::SCHEME_HTTP);
+  proxies_for_http.push_back(DataReductionProxyServer(
+      second_proxy_server, ProxyServer::UNSPECIFIED_TYPE));
 
   mutable_config_values()->UpdateValues(proxies_for_http);
   EXPECT_EQ(proxies_for_http, mutable_config_values()->proxies_for_http());
 
+  // Invalidation must clear out the list of proxies and their properties.
   mutable_config_values()->Invalidate();
-  EXPECT_EQ(std::vector<net::ProxyServer>(),
-            mutable_config_values()->proxies_for_http());
+  EXPECT_TRUE(mutable_config_values()->proxies_for_http().empty());
 }
 
 // Tests if HTTP proxies are overridden when |kDataReductionProxyHttpProxies|
@@ -64,29 +72,39 @@ TEST_F(DataReductionProxyMutableConfigValuesTest, OverrideProxiesForHttp) {
       "http://override-first.net;http://override-second.net");
   Init();
 
-  EXPECT_EQ(std::vector<net::ProxyServer>(),
+  EXPECT_EQ(std::vector<DataReductionProxyServer>(),
             mutable_config_values()->proxies_for_http());
 
-  std::vector<net::ProxyServer> proxies_for_http;
-  proxies_for_http.push_back(net::ProxyServer::FromURI(
+  std::vector<DataReductionProxyServer> proxies_for_http;
+
+  net::ProxyServer first_proxy_server(net::ProxyServer::FromURI(
       "http://first.net", net::ProxyServer::SCHEME_HTTP));
-  proxies_for_http.push_back(net::ProxyServer::FromURI(
-      "http://second.net", net::ProxyServer::SCHEME_HTTP));
+  proxies_for_http.push_back(
+      DataReductionProxyServer(first_proxy_server, ProxyServer::CORE));
+
+  net::ProxyServer second_proxy_server = net::ProxyServer::FromURI(
+      "http://second.net", net::ProxyServer::SCHEME_HTTP);
+  proxies_for_http.push_back(DataReductionProxyServer(
+      second_proxy_server, ProxyServer::UNSPECIFIED_TYPE));
 
   mutable_config_values()->UpdateValues(proxies_for_http);
 
-  std::vector<net::ProxyServer> expected_override_proxies_for_http;
-  expected_override_proxies_for_http.push_back(net::ProxyServer::FromURI(
-      "http://override-first.net", net::ProxyServer::SCHEME_HTTP));
-  expected_override_proxies_for_http.push_back(net::ProxyServer::FromURI(
-      "http://override-second.net", net::ProxyServer::SCHEME_HTTP));
+  std::vector<DataReductionProxyServer> expected_override_proxies_for_http;
+  expected_override_proxies_for_http.push_back(DataReductionProxyServer(
+      net::ProxyServer::FromURI("http://override-first.net",
+                                net::ProxyServer::SCHEME_HTTP),
+      ProxyServer::UNSPECIFIED_TYPE));
+  expected_override_proxies_for_http.push_back(DataReductionProxyServer(
+      net::ProxyServer::FromURI("http://override-second.net",
+                                net::ProxyServer::SCHEME_HTTP),
+      ProxyServer::UNSPECIFIED_TYPE));
 
   EXPECT_EQ(expected_override_proxies_for_http,
             mutable_config_values()->proxies_for_http());
 
+  // Invalidation must clear out the list of proxies and their properties.
   mutable_config_values()->Invalidate();
-  EXPECT_EQ(std::vector<net::ProxyServer>(),
-            mutable_config_values()->proxies_for_http());
+  EXPECT_TRUE(mutable_config_values()->proxies_for_http().empty());
 }
 
 // Tests if HTTP proxies are overridden when |kDataReductionProxy| or
@@ -112,37 +130,48 @@ TEST_F(DataReductionProxyMutableConfigValuesTest, OverrideDataReductionProxy) {
     }
     Init();
 
-    EXPECT_EQ(std::vector<net::ProxyServer>(),
+    EXPECT_EQ(std::vector<DataReductionProxyServer>(),
               mutable_config_values()->proxies_for_http());
 
-    std::vector<net::ProxyServer> proxies_for_http;
+    std::vector<DataReductionProxyServer> proxies_for_http;
+
     if (test.set_primary) {
-      proxies_for_http.push_back(net::ProxyServer::FromURI(
+      net::ProxyServer first_proxy_server = (net::ProxyServer::FromURI(
           "http://first.net", net::ProxyServer::SCHEME_HTTP));
+      proxies_for_http.push_back(
+          DataReductionProxyServer(first_proxy_server, ProxyServer::CORE));
     }
     if (test.set_fallback) {
-      proxies_for_http.push_back(net::ProxyServer::FromURI(
-          "http://second.net", net::ProxyServer::SCHEME_HTTP));
+      net::ProxyServer second_proxy_server = net::ProxyServer::FromURI(
+          "http://second.net", net::ProxyServer::SCHEME_HTTP);
+
+      proxies_for_http.push_back(DataReductionProxyServer(
+          second_proxy_server, ProxyServer::UNSPECIFIED_TYPE));
     }
 
     mutable_config_values()->UpdateValues(proxies_for_http);
 
-    std::vector<net::ProxyServer> expected_override_proxies_for_http;
+    // Overriding proxies must have type UNSPECIFIED_TYPE.
+    std::vector<DataReductionProxyServer> expected_override_proxies_for_http;
     if (test.set_primary) {
-      expected_override_proxies_for_http.push_back(net::ProxyServer::FromURI(
-          "http://override-first.net", net::ProxyServer::SCHEME_HTTP));
+      expected_override_proxies_for_http.push_back(DataReductionProxyServer(
+          net::ProxyServer::FromURI("http://override-first.net",
+                                    net::ProxyServer::SCHEME_HTTP),
+          ProxyServer::UNSPECIFIED_TYPE));
     }
     if (test.set_fallback) {
-      expected_override_proxies_for_http.push_back(net::ProxyServer::FromURI(
-          "http://override-second.net", net::ProxyServer::SCHEME_HTTP));
+      expected_override_proxies_for_http.push_back(DataReductionProxyServer(
+          net::ProxyServer::FromURI("http://override-second.net",
+                                    net::ProxyServer::SCHEME_HTTP),
+          ProxyServer::UNSPECIFIED_TYPE));
     }
 
     EXPECT_EQ(expected_override_proxies_for_http,
               mutable_config_values()->proxies_for_http());
 
+    // Invalidation must clear out the list of proxies and their properties.
     mutable_config_values()->Invalidate();
-    EXPECT_EQ(std::vector<net::ProxyServer>(),
-              mutable_config_values()->proxies_for_http());
+    EXPECT_TRUE(mutable_config_values()->proxies_for_http().empty());
   }
 }
 

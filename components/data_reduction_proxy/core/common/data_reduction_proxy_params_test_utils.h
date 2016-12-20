@@ -9,11 +9,9 @@
 
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 
-namespace net {
-class ProxyServer;
-}
-
 namespace data_reduction_proxy {
+
+class DataReductionProxyServer;
 
 class TestDataReductionProxyParams : public DataReductionProxyParams {
  public:
@@ -30,7 +28,7 @@ class TestDataReductionProxyParams : public DataReductionProxyParams {
                                unsigned int has_definitions);
   bool init_result() const;
 
-  void SetProxiesForHttp(const std::vector<net::ProxyServer>& proxies);
+  void SetProxiesForHttp(const std::vector<DataReductionProxyServer>& proxies);
 
   // Test values to replace the values specified in preprocessor defines.
   static std::string DefaultOrigin();

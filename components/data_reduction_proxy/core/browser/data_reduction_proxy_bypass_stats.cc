@@ -20,12 +20,6 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 
-using net::HostPortPair;
-using net::ProxyServer;
-using net::ProxyService;
-using net::NetworkChangeNotifier;
-using net::URLRequest;
-
 namespace data_reduction_proxy {
 
 namespace {
@@ -63,7 +57,7 @@ ProxyScheme ConvertNetProxySchemeToProxyScheme(
 // proxy (|is_primary| is true) or the data reduction proxy fallback.
 void RecordDataReductionProxyBypassOnNetworkError(
     bool is_primary,
-    const ProxyServer& proxy_server,
+    const net::ProxyServer& proxy_server,
     int net_error) {
   if (is_primary) {
     UMA_HISTOGRAM_SPARSE_SLOWLY(
@@ -139,12 +133,12 @@ DataReductionProxyBypassStats::DataReductionProxyBypassStats(
 }
 
 DataReductionProxyBypassStats::~DataReductionProxyBypassStats() {
-  NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
 void DataReductionProxyBypassStats::InitializeOnIOThread() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
 }
 
 void DataReductionProxyBypassStats::OnUrlRequestCompleted(
@@ -383,7 +377,7 @@ void DataReductionProxyBypassStats::RecordBypassedBytesHistograms(
 }
 
 void DataReductionProxyBypassStats::RecordMissingViaHeaderBytes(
-    const URLRequest& request) {
+    const net::URLRequest& request) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // Responses that were served from cache should have been filtered out
   // already.
@@ -409,7 +403,7 @@ void DataReductionProxyBypassStats::RecordMissingViaHeaderBytes(
 }
 
 void DataReductionProxyBypassStats::OnNetworkChanged(
-    NetworkChangeNotifier::ConnectionType type) {
+    net::NetworkChangeNotifier::ConnectionType type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   ClearRequestCounts();
 }

@@ -50,6 +50,7 @@ class DataReductionProxyConfigurator;
 class DataReductionProxyEventCreator;
 class DataReductionProxyMutableConfigValues;
 class DataReductionProxyRequestOptions;
+class DataReductionProxyServer;
 class DataReductionProxySettings;
 class MockDataReductionProxyConfig;
 class TestDataReductionProxyConfig;
@@ -325,7 +326,7 @@ class DataReductionProxyTestContext {
 
     // Specifies the data reduction proxy servers.
     Builder& WithProxiesForHttp(
-        const std::vector<net::ProxyServer>& proxy_servers);
+        const std::vector<DataReductionProxyServer>& proxy_servers);
 
     // Creates a |DataReductionProxyTestContext|. Owned by the caller.
     std::unique_ptr<DataReductionProxyTestContext> Build();
@@ -343,7 +344,7 @@ class DataReductionProxyTestContext {
     bool use_config_client_;
     bool use_test_config_client_;
     bool skip_settings_initialization_;
-    std::vector<net::ProxyServer> proxy_servers_;
+    std::vector<DataReductionProxyServer> proxy_servers_;
   };
 
   virtual ~DataReductionProxyTestContext();

@@ -166,8 +166,6 @@ net::ProxyServer::Scheme SchemeFromProxyScheme(
       return net::ProxyServer::SCHEME_HTTP;
     case ProxyServer_ProxyScheme_HTTPS:
       return net::ProxyServer::SCHEME_HTTPS;
-    case ProxyServer_ProxyScheme_QUIC:
-      return net::ProxyServer::SCHEME_QUIC;
     default:
       return net::ProxyServer::SCHEME_INVALID;
   }
@@ -179,8 +177,6 @@ ProxyServer_ProxyScheme ProxySchemeFromScheme(net::ProxyServer::Scheme scheme) {
       return ProxyServer_ProxyScheme_HTTP;
     case net::ProxyServer::SCHEME_HTTPS:
       return ProxyServer_ProxyScheme_HTTPS;
-    case net::ProxyServer::SCHEME_QUIC:
-      return ProxyServer_ProxyScheme_QUIC;
     default:
       return ProxyServer_ProxyScheme_UNSPECIFIED;
   }

@@ -14,7 +14,9 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/proxy/proxy_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -37,19 +39,20 @@ class DataReductionProxyParamsTest : public testing::Test {
                    const std::string& expected_origin,
                    const std::string& expected_fallback_origin,
                    const std::string& expected_secure_proxy_check_url) {
-    std::vector<net::ProxyServer> proxies_for_http;
+    std::vector<net::ProxyServer> expected_proxies;
     if (!expected_origin.empty()) {
-      proxies_for_http.push_back(net::ProxyServer::FromURI(
+      expected_proxies.push_back(net::ProxyServer::FromURI(
           expected_origin, net::ProxyServer::SCHEME_HTTP));
     }
 
     if (!expected_fallback_origin.empty()) {
-      proxies_for_http.push_back(net::ProxyServer::FromURI(
+      expected_proxies.push_back(net::ProxyServer::FromURI(
           expected_fallback_origin, net::ProxyServer::SCHEME_HTTP));
     }
 
-    EXPECT_THAT(proxies_for_http,
-                testing::ContainerEq(params.proxies_for_http()));
+    EXPECT_EQ(expected_proxies,
+              DataReductionProxyServer::ConvertToNetProxyServers(
+                  params.proxies_for_http()));
     EXPECT_EQ(GURL(expected_secure_proxy_check_url),
               params.secure_proxy_check_url());
   }
@@ -62,9 +65,22 @@ TEST_F(DataReductionProxyParamsTest, EverythingDefined) {
       DataReductionProxyParams::kPromoAllowed,
       TestDataReductionProxyParams::HAS_EVERYTHING);
   CheckParams(params, true, true, true, true);
-  CheckValues(params, TestDataReductionProxyParams::DefaultOrigin(),
-              TestDataReductionProxyParams::DefaultFallbackOrigin(),
-              TestDataReductionProxyParams::DefaultSecureProxyCheckURL());
+  std::vector<DataReductionProxyServer> expected_proxies;
+
+  // Both the origin and fallback proxy must have type CORE.
+  expected_proxies.push_back(DataReductionProxyServer(
+      net::ProxyServer::FromURI(TestDataReductionProxyParams::DefaultOrigin(),
+                                net::ProxyServer::SCHEME_HTTP),
+      ProxyServer::CORE));
+  expected_proxies.push_back(DataReductionProxyServer(
+      net::ProxyServer::FromURI(
+          TestDataReductionProxyParams::DefaultFallbackOrigin(),
+          net::ProxyServer::SCHEME_HTTP),
+      ProxyServer::CORE));
+
+  EXPECT_EQ(expected_proxies, params.proxies_for_http());
+  EXPECT_EQ(GURL(TestDataReductionProxyParams::DefaultSecureProxyCheckURL()),
+            params.secure_proxy_check_url());
 }
 
 TEST_F(DataReductionProxyParamsTest, Flags) {
@@ -95,11 +111,12 @@ TEST_F(DataReductionProxyParamsTest, CarrierTestFlag) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnableDataReductionProxyCarrierTest, kCarrierTestOrigin);
   DataReductionProxyParams params(DataReductionProxyParams::kAllowed);
-  std::vector<net::ProxyServer> proxies_for_http;
-  proxies_for_http.push_back(net::ProxyServer::FromURI(
-      kCarrierTestOrigin, net::ProxyServer::SCHEME_HTTP));
-  EXPECT_THAT(params.proxies_for_http(),
-              testing::ContainerEq(proxies_for_http));
+  std::vector<DataReductionProxyServer> proxies_for_http;
+  proxies_for_http.push_back(DataReductionProxyServer(
+      net::ProxyServer::FromURI(kCarrierTestOrigin,
+                                net::ProxyServer::SCHEME_HTTP),
+      ProxyServer::CORE));
+  EXPECT_EQ(params.proxies_for_http(), proxies_for_http);
 }
 
 TEST_F(DataReductionProxyParamsTest, InvalidConfigurations) {
@@ -538,11 +555,16 @@ TEST(DataReductionProxyParamsStandaloneTest, OverrideProxiesForHttp) {
   DataReductionProxyParams params(
       DataReductionProxyParams::kAllowAllProxyConfigurations);
 
-  std::vector<net::ProxyServer> expected_override_proxies_for_http;
-  expected_override_proxies_for_http.push_back(net::ProxyServer::FromURI(
-      "http://override-first.net", net::ProxyServer::SCHEME_HTTP));
-  expected_override_proxies_for_http.push_back(net::ProxyServer::FromURI(
-      "http://override-second.net", net::ProxyServer::SCHEME_HTTP));
+  // Overriding proxies must have type UNSPECIFIED_TYPE.
+  std::vector<DataReductionProxyServer> expected_override_proxies_for_http;
+  expected_override_proxies_for_http.push_back(DataReductionProxyServer(
+      net::ProxyServer::FromURI("http://override-first.net",
+                                net::ProxyServer::SCHEME_HTTP),
+      ProxyServer::UNSPECIFIED_TYPE));
+  expected_override_proxies_for_http.push_back(DataReductionProxyServer(
+      net::ProxyServer::FromURI("http://override-second.net",
+                                net::ProxyServer::SCHEME_HTTP),
+      ProxyServer::UNSPECIFIED_TYPE));
 
   EXPECT_EQ(expected_override_proxies_for_http, params.proxies_for_http());
 }

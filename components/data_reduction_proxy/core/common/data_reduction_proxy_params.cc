@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/proxy/proxy_server.h"
@@ -310,7 +311,7 @@ int GetFieldTrialParameterAsInteger(const std::string& group,
 }
 
 bool GetOverrideProxiesForHttpFromCommandLine(
-    std::vector<net::ProxyServer>* override_proxies_for_http) {
+    std::vector<DataReductionProxyServer>* override_proxies_for_http) {
   DCHECK(override_proxies_for_http);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDataReductionProxyHttpProxies)) {
@@ -330,8 +331,11 @@ bool GetOverrideProxiesForHttpFromCommandLine(
     std::vector<std::string> proxy_override_values = base::SplitString(
         proxy_overrides, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     for (const std::string& proxy_override : proxy_override_values) {
-      override_proxies_for_http->push_back(net::ProxyServer::FromURI(
-          proxy_override, net::ProxyServer::SCHEME_HTTP));
+      // Overriding proxies have type UNSPECIFIED_TYPE.
+      override_proxies_for_http->push_back(DataReductionProxyServer(
+          net::ProxyServer::FromURI(proxy_override,
+                                    net::ProxyServer::SCHEME_HTTP),
+          ProxyServer::UNSPECIFIED_TYPE));
     }
 
     return true;
@@ -348,13 +352,17 @@ bool GetOverrideProxiesForHttpFromCommandLine(
     return false;
 
   override_proxies_for_http->clear();
+  // Overriding proxies have type UNSPECIFIED_TYPE.
   if (!origin.empty()) {
-    override_proxies_for_http->push_back(
-        net::ProxyServer::FromURI(origin, net::ProxyServer::SCHEME_HTTP));
+    override_proxies_for_http->push_back(DataReductionProxyServer(
+        net::ProxyServer::FromURI(origin, net::ProxyServer::SCHEME_HTTP),
+        ProxyServer::UNSPECIFIED_TYPE));
   }
   if (!fallback_origin.empty()) {
-    override_proxies_for_http->push_back(net::ProxyServer::FromURI(
-        fallback_origin, net::ProxyServer::SCHEME_HTTP));
+    override_proxies_for_http->push_back(DataReductionProxyServer(
+        net::ProxyServer::FromURI(fallback_origin,
+                                  net::ProxyServer::SCHEME_HTTP),
+        ProxyServer::UNSPECIFIED_TYPE));
   }
 
   return true;
@@ -390,6 +398,11 @@ DataReductionProxyParams::DataReductionProxyParams(int flags,
     bool result = Init(allowed_, fallback_allowed_);
     DCHECK(result);
   }
+}
+
+void DataReductionProxyParams::SetProxiesForHttpForTesting(
+    const std::vector<DataReductionProxyServer>& proxies_for_http) {
+  proxies_for_http_ = proxies_for_http;
 }
 
 bool DataReductionProxyParams::Init(bool allowed, bool fallback_allowed) {
@@ -429,9 +442,11 @@ bool DataReductionProxyParams::Init(bool allowed, bool fallback_allowed) {
 }
 
 void DataReductionProxyParams::InitWithoutChecks() {
+  DCHECK(proxies_for_http_.empty());
+
   use_override_proxies_for_http_ =
       params::GetOverrideProxiesForHttpFromCommandLine(
-          &override_proxies_for_http_);
+          &override_data_reduction_proxy_servers_);
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -464,18 +479,24 @@ void DataReductionProxyParams::InitWithoutChecks() {
   origin_ = net::ProxyServer::FromURI(origin, net::ProxyServer::SCHEME_HTTP);
   fallback_origin_ =
       net::ProxyServer::FromURI(fallback_origin, net::ProxyServer::SCHEME_HTTP);
-  if (origin_.is_valid())
-    proxies_for_http_.push_back(origin_);
-  if (fallback_allowed_ && fallback_origin_.is_valid())
-    proxies_for_http_.push_back(fallback_origin_);
+  if (origin_.is_valid()) {
+    // |origin_| is the core proxy server.
+    proxies_for_http_.push_back(
+        DataReductionProxyServer(origin_, ProxyServer::CORE));
+  }
+  if (fallback_allowed_ && fallback_origin_.is_valid()) {
+    // |fallback| is also a core proxy server.
+    proxies_for_http_.push_back(
+        DataReductionProxyServer(fallback_origin_, ProxyServer::CORE));
+  }
 
   secure_proxy_check_url_ = GURL(secure_proxy_check_url);
 }
 
-const std::vector<net::ProxyServer>&
+const std::vector<DataReductionProxyServer>
 DataReductionProxyParams::proxies_for_http() const {
   if (use_override_proxies_for_http_)
-    return override_proxies_for_http_;
+    return override_data_reduction_proxy_servers_;
   return proxies_for_http_;
 }
 

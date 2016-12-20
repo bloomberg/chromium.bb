@@ -29,8 +29,8 @@ bool TestDataReductionProxyParams::init_result() const {
 }
 
 void TestDataReductionProxyParams::SetProxiesForHttp(
-    const std::vector<net::ProxyServer>& proxies) {
-  proxies_for_http_ = proxies;
+    const std::vector<DataReductionProxyServer>& proxies) {
+  SetProxiesForHttpForTesting(proxies);
 }
 // Test values to replace the values specified in preprocessor defines.
 std::string TestDataReductionProxyParams::DefaultOrigin() {

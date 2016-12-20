@@ -13,6 +13,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "net/base/load_flags.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
@@ -37,7 +38,8 @@ TEST(ChromeNetworkDailyDataSavingMetricsTest,
           .Build();
   TestDataReductionProxyConfig* config = test_context->config();
 
-  net::ProxyServer origin = config->test_params()->proxies_for_http().front();
+  net::ProxyServer origin =
+      config->test_params()->proxies_for_http().front().proxy_server();
   net::ProxyConfig data_reduction_proxy_config;
   data_reduction_proxy_config.proxy_rules().ParseFromString(
       "http=" + origin.host_port_pair().ToString() + ",direct://");

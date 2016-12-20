@@ -34,7 +34,9 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -228,16 +230,18 @@ TEST(DataReductionProxyDelegate, IsTrustedSpdyProxy) {
                    test.second_proxy_scheme == net::ProxyServer::SCHEME_HTTPS))
         << (&test - test_cases);
 
-    std::vector<net::ProxyServer> proxies_for_http;
+    std::vector<DataReductionProxyServer> proxies_for_http;
     net::ProxyServer first_proxy;
     net::ProxyServer second_proxy;
     if (test.first_proxy_scheme != net::ProxyServer::SCHEME_INVALID) {
       first_proxy = GetProxyWithScheme(test.first_proxy_scheme);
-      proxies_for_http.push_back(first_proxy);
+      proxies_for_http.push_back(
+          DataReductionProxyServer(first_proxy, ProxyServer::CORE));
     }
     if (test.second_proxy_scheme != net::ProxyServer::SCHEME_INVALID) {
       second_proxy = GetProxyWithScheme(test.second_proxy_scheme);
-      proxies_for_http.push_back(second_proxy);
+      proxies_for_http.push_back(DataReductionProxyServer(
+          second_proxy, ProxyServer::UNSPECIFIED_TYPE));
     }
 
     std::unique_ptr<DataReductionProxyMutableConfigValues> config_values =
@@ -331,16 +335,18 @@ TEST(DataReductionProxyDelegate, AlternativeProxy) {
         !test.gurl.SchemeIsCryptographic() &&
         test.second_proxy_scheme == net::ProxyServer::SCHEME_HTTPS;
 
-    std::vector<net::ProxyServer> proxies_for_http;
+    std::vector<DataReductionProxyServer> proxies_for_http;
     net::ProxyServer first_proxy;
     net::ProxyServer second_proxy;
     if (test.first_proxy_scheme != net::ProxyServer::SCHEME_INVALID) {
       first_proxy = GetProxyWithScheme(test.first_proxy_scheme);
-      proxies_for_http.push_back(first_proxy);
+      proxies_for_http.push_back(
+          DataReductionProxyServer(first_proxy, ProxyServer::CORE));
     }
     if (test.second_proxy_scheme != net::ProxyServer::SCHEME_INVALID) {
       second_proxy = GetProxyWithScheme(test.second_proxy_scheme);
-      proxies_for_http.push_back(second_proxy);
+      proxies_for_http.push_back(DataReductionProxyServer(
+          second_proxy, ProxyServer::UNSPECIFIED_TYPE));
     }
 
     std::unique_ptr<DataReductionProxyMutableConfigValues> config_values =
@@ -485,7 +491,7 @@ TEST(DataReductionProxyDelegate, DefaultAlternativeProxyStatus) {
                {true, false, true},
                {true, true, true}};
   for (const auto test : tests) {
-    std::vector<net::ProxyServer> proxies_for_http;
+    std::vector<DataReductionProxyServer> proxies_for_http;
     net::ProxyServer first_proxy;
     net::ProxyServer second_proxy =
         GetProxyWithScheme(net::ProxyServer::SCHEME_HTTP);
@@ -498,8 +504,10 @@ TEST(DataReductionProxyDelegate, DefaultAlternativeProxyStatus) {
       first_proxy = GetProxyWithScheme(net::ProxyServer::SCHEME_HTTPS);
     }
 
-    proxies_for_http.push_back(first_proxy);
-    proxies_for_http.push_back(second_proxy);
+    proxies_for_http.push_back(
+        DataReductionProxyServer(first_proxy, ProxyServer::CORE));
+    proxies_for_http.push_back(
+        DataReductionProxyServer(second_proxy, ProxyServer::UNSPECIFIED_TYPE));
 
     std::unique_ptr<DataReductionProxyMutableConfigValues> config_values =
         DataReductionProxyMutableConfigValues::CreateFromParams(

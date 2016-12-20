@@ -34,8 +34,10 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
+#include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -194,7 +196,8 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
                          .WithClient(kClient)
                          .WithMockClientSocketFactory(&mock_socket_factory_)
                          .WithURLRequestContext(&context_)
-                         .WithProxiesForHttp({proxy_server})
+                         .WithProxiesForHttp({DataReductionProxyServer(
+                             proxy_server, ProxyServer::UNSPECIFIED_TYPE)})
                          .Build());
 
     context_.set_client_socket_factory(&mock_socket_factory_);

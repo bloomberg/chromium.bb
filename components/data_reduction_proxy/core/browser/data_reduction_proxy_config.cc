@@ -28,6 +28,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_config_values.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/host_port_pair.h"
@@ -409,8 +410,9 @@ void DataReductionProxyConfig::ReloadConfig() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(configurator_);
 
-  const std::vector<net::ProxyServer>& proxies_for_http =
-      config_values_->proxies_for_http();
+  const std::vector<net::ProxyServer> proxies_for_http =
+      DataReductionProxyServer::ConvertToNetProxyServers(
+          config_values_->proxies_for_http());
   if (enabled_by_user_ && !config_values_->holdback() &&
       !proxies_for_http.empty()) {
     configurator_->Enable(!secure_proxy_allowed_ || is_captive_portal_,
@@ -436,8 +438,9 @@ bool DataReductionProxyConfig::IsDataReductionProxy(
   if (!proxy_server.is_valid() || proxy_server.is_direct())
     return false;
 
-  const std::vector<net::ProxyServer>& proxy_list =
-      config_values_->proxies_for_http();
+  const std::vector<net::ProxyServer> proxy_list =
+      DataReductionProxyServer::ConvertToNetProxyServers(
+          config_values_->proxies_for_http());
 
   net::HostPortPair host_port_pair = proxy_server.host_port_pair();
   const auto proxy_it =
@@ -1042,7 +1045,8 @@ base::TimeTicks DataReductionProxyConfig::GetTicksNow() const {
 
 net::ProxyConfig DataReductionProxyConfig::ProxyConfigIgnoringHoldback() const {
   std::vector<net::ProxyServer> proxies_for_http =
-      config_values_->proxies_for_http();
+      DataReductionProxyServer::ConvertToNetProxyServers(
+          config_values_->proxies_for_http());
   if (!enabled_by_user_ || proxies_for_http.empty())
     return net::ProxyConfig::CreateDirect();
   return configurator_->CreateProxyConfig(!secure_proxy_allowed_,

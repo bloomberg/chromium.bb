@@ -21,6 +21,8 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
+#include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/prefs/pref_service.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
@@ -115,7 +117,11 @@ class DataReductionProxyInterceptorTest : public testing::Test {
             .WithParamsDefinitions(TestDataReductionProxyParams::HAS_EVERYTHING)
             .Build();
     default_context_.reset(new TestURLRequestContextWithDataReductionProxy(
-        test_context_->config()->test_params()->proxies_for_http().front(),
+        test_context_->config()
+            ->test_params()
+            ->proxies_for_http()
+            .front()
+            .proxy_server(),
         &default_network_delegate_));
     default_context_->set_network_delegate(&default_network_delegate_);
     default_context_->set_net_log(test_context_->net_log());
@@ -213,8 +219,9 @@ class DataReductionProxyInterceptorWithServerTest : public testing::Test {
     base::TrimString(proxy_.GetURL("/").spec(), "/", &spec);
     net::ProxyServer origin =
         net::ProxyServer::FromURI(spec, net::ProxyServer::SCHEME_HTTP);
-    std::vector<net::ProxyServer> proxies_for_http;
-    proxies_for_http.push_back(origin);
+    std::vector<DataReductionProxyServer> proxies_for_http;
+    proxies_for_http.push_back(
+        DataReductionProxyServer(origin, ProxyServer::UNSPECIFIED_TYPE));
     test_context_->config()->test_params()->SetProxiesForHttp(proxies_for_http);
     std::string proxy_name = origin.ToURI();
     proxy_service_ = net::ProxyService::CreateFixedFromPacResult(
@@ -323,7 +330,7 @@ class DataReductionProxyInterceptorEndToEndTest : public testing::Test {
   }
 
   net::ProxyServer origin() const {
-    return config()->test_params()->proxies_for_http().front();
+    return config()->test_params()->proxies_for_http().front().proxy_server();
   }
 
  private:

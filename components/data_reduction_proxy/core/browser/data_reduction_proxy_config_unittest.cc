@@ -35,7 +35,9 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -739,64 +741,82 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithParams) {
 }
 
 TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithMutableConfig) {
-  std::vector<net::ProxyServer> proxies_for_http;
-  proxies_for_http.push_back(net::ProxyServer::FromURI(
-      "https://origin.net:443", net::ProxyServer::SCHEME_HTTP));
-  proxies_for_http.push_back(net::ProxyServer::FromURI(
-      "http://origin.net:80", net::ProxyServer::SCHEME_HTTP));
-  proxies_for_http.push_back(net::ProxyServer::FromURI(
-      "quic://anotherorigin.net:443", net::ProxyServer::SCHEME_HTTP));
+  std::vector<DataReductionProxyServer> proxies_for_http;
+  proxies_for_http.push_back(DataReductionProxyServer(
+      net::ProxyServer::FromURI("https://origin.net:443",
+                                net::ProxyServer::SCHEME_HTTP),
+      ProxyServer::CORE));
+  proxies_for_http.push_back(DataReductionProxyServer(
+      net::ProxyServer::FromURI("http://origin.net:80",
+                                net::ProxyServer::SCHEME_HTTP),
+      ProxyServer::CORE));
+
+  proxies_for_http.push_back(DataReductionProxyServer(
+      net::ProxyServer::FromURI("quic://anotherorigin.net:443",
+                                net::ProxyServer::SCHEME_HTTP),
+      ProxyServer::CORE));
+
   const struct {
-    net::ProxyServer proxy_server;
+    DataReductionProxyServer proxy_server;
     bool expected_result;
-    std::vector<net::ProxyServer> expected_proxies;
+    std::vector<DataReductionProxyServer> expected_proxies;
     size_t expected_proxy_index;
   } tests[] = {
       {
           proxies_for_http[0], true,
-          std::vector<net::ProxyServer>(proxies_for_http.begin(),
-                                        proxies_for_http.end()),
+          std::vector<DataReductionProxyServer>(proxies_for_http.begin(),
+                                                proxies_for_http.end()),
           0,
       },
       {
           proxies_for_http[1], true,
-          std::vector<net::ProxyServer>(proxies_for_http.begin() + 1,
-                                        proxies_for_http.end()),
+          std::vector<DataReductionProxyServer>(proxies_for_http.begin() + 1,
+                                                proxies_for_http.end()),
           1,
       },
       {
           proxies_for_http[2], true,
-          std::vector<net::ProxyServer>(proxies_for_http.begin() + 2,
-                                        proxies_for_http.end()),
+          std::vector<DataReductionProxyServer>(proxies_for_http.begin() + 2,
+                                                proxies_for_http.end()),
           2,
       },
       {
-          net::ProxyServer(), false, std::vector<net::ProxyServer>(), 0,
+          DataReductionProxyServer(net::ProxyServer(),
+                                   ProxyServer::UNSPECIFIED_TYPE),
+          false, std::vector<DataReductionProxyServer>(), 0,
       },
       {
-          net::ProxyServer(
-              net::ProxyServer::SCHEME_HTTPS,
-              net::HostPortPair::FromString("otherorigin.net:443")),
-          false, std::vector<net::ProxyServer>(), 0,
+          DataReductionProxyServer(
+              net::ProxyServer(
+                  net::ProxyServer::SCHEME_HTTPS,
+                  net::HostPortPair::FromString("otherorigin.net:443")),
+              ProxyServer::UNSPECIFIED_TYPE),
+          false, std::vector<DataReductionProxyServer>(), 0,
       },
       {
           // Verifies that when determining if a proxy is a valid data reduction
           // proxy, only the host port pairs are compared.
-          net::ProxyServer::FromURI("origin.net:443",
-                                    net::ProxyServer::SCHEME_QUIC),
-          true, std::vector<net::ProxyServer>(proxies_for_http.begin(),
-                                              proxies_for_http.end()),
+          DataReductionProxyServer(
+              net::ProxyServer::FromURI("origin.net:443",
+                                        net::ProxyServer::SCHEME_QUIC),
+              ProxyServer::UNSPECIFIED_TYPE),
+          true, std::vector<DataReductionProxyServer>(proxies_for_http.begin(),
+                                                      proxies_for_http.end()),
           0,
       },
       {
-          net::ProxyServer::FromURI("origin2.net:443",
-                                    net::ProxyServer::SCHEME_HTTPS),
-          false, std::vector<net::ProxyServer>(), 0,
+          DataReductionProxyServer(
+              net::ProxyServer::FromURI("origin2.net:443",
+                                        net::ProxyServer::SCHEME_HTTPS),
+              ProxyServer::UNSPECIFIED_TYPE),
+          false, std::vector<DataReductionProxyServer>(), 0,
       },
       {
-          net::ProxyServer::FromURI("origin2.net:443",
-                                    net::ProxyServer::SCHEME_QUIC),
-          false, std::vector<net::ProxyServer>(), 0,
+          DataReductionProxyServer(
+              net::ProxyServer::FromURI("origin2.net:443",
+                                        net::ProxyServer::SCHEME_QUIC),
+              ProxyServer::UNSPECIFIED_TYPE),
+          false, std::vector<DataReductionProxyServer>(), 0,
       },
   };
 
@@ -808,10 +828,12 @@ TEST_F(DataReductionProxyConfigTest, IsDataReductionProxyWithMutableConfig) {
       event_creator()));
   for (const auto& test : tests) {
     DataReductionProxyTypeInfo proxy_type_info;
-    EXPECT_EQ(test.expected_result, config->IsDataReductionProxy(
-                                        test.proxy_server, &proxy_type_info));
-    EXPECT_THAT(proxy_type_info.proxy_servers,
-                testing::ContainerEq(test.expected_proxies));
+    EXPECT_EQ(test.expected_result,
+              config->IsDataReductionProxy(test.proxy_server.proxy_server(),
+                                           &proxy_type_info));
+    EXPECT_EQ(proxy_type_info.proxy_servers,
+              DataReductionProxyServer::ConvertToNetProxyServers(
+                  test.expected_proxies));
     EXPECT_EQ(test.expected_proxy_index, proxy_type_info.proxy_index);
   }
 }

@@ -35,6 +35,8 @@ class DataReductionProxyConfigurator {
   // Enables data reduction using the proxy servers in |proxies_for_http|.
   // |secure_transport_restricted| indicates that proxies going over secure
   // transports can not be used.
+  // TODO: crbug.com/675764: Pass a vector of DataReductionProxyServer
+  // instead of net::ProxyServer.
   virtual void Enable(bool secure_transport_restricted,
                       const std::vector<net::ProxyServer>& proxies_for_http);
 

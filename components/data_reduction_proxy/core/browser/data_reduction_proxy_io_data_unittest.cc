@@ -19,6 +19,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/http/http_network_session.h"
@@ -200,8 +201,11 @@ TEST_F(DataReductionProxyIODataTest, HoldbackConfiguresProxies) {
           .Build();
 
   EXPECT_TRUE(drp_test_context->test_params()->proxies_for_http().size() > 0);
-  EXPECT_FALSE(
-      drp_test_context->test_params()->proxies_for_http().front().is_direct());
+  EXPECT_FALSE(drp_test_context->test_params()
+                   ->proxies_for_http()
+                   .front()
+                   .proxy_server()
+                   .is_direct());
 }
 
 }  // namespace data_reduction_proxy

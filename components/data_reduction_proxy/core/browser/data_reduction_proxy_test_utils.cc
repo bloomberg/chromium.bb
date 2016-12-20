@@ -27,6 +27,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_pref_names.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/proxy/proxy_config.h"
@@ -373,7 +374,7 @@ DataReductionProxyTestContext::Builder::SkipSettingsInitialization() {
 
 DataReductionProxyTestContext::Builder&
 DataReductionProxyTestContext::Builder::WithProxiesForHttp(
-    const std::vector<net::ProxyServer>& proxy_servers) {
+    const std::vector<DataReductionProxyServer>& proxy_servers) {
   DCHECK(!proxy_servers.empty());
   proxy_servers_ = proxy_servers;
   return *this;
