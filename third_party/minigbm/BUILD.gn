@@ -19,10 +19,6 @@ if (!use_system_minigbm) {
     include_dirs = [ "src" ]
   }
 
-  pkg_config("libdrm") {
-    packages = [ "libdrm" ]
-  }
-
   shared_library("minigbm") {
     sources = [
       "src/amdgpu.c",
@@ -45,11 +41,11 @@ if (!use_system_minigbm) {
     ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [
-      ":libdrm",
-      "//build/config/compiler:no_chromium_code",
-    ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
 
+    deps = [
+      "//third_party/libdrm",
+    ]
     public_configs = [ ":minigbm_config" ]
 
     # Clients need this to pick up the shared library correctly.

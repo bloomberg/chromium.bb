@@ -425,6 +425,10 @@ deps_os = {
     'src/third_party/minigbm/src':
       Var('chromium_git') + '/chromiumos/platform/minigbm.git' + '@' + '3345977b5e9ef13f97e2e858241297fc4bfc7401',
 
+    # Userspace interface to kernel DRM services.
+    'src/third_party/libdrm/src':
+      Var('chromium_git') + '/chromiumos/third_party/libdrm.git' + '@' + '4c4778123b7b11f750577199644f5d6820851dbb',
+
     # Display server protocol for Linux.
     'src/third_party/wayland/src':
       Var('chromium_git') + '/external/anongit.freedesktop.org/git/wayland/wayland.git' + '@' + '6a18a87727c64719c68168568b9ab1e4d7c2d9c1',

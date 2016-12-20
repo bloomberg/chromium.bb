@@ -11,10 +11,6 @@ declare_args() {
 
 visibility = [ "//ui/ozone/*" ]
 
-pkg_config("libdrm") {
-  packages = [ "libdrm" ]
-}
-
 config("drm_atomic") {
   if (use_drm_atomic) {
     defines = [ "USE_DRM_ATOMIC" ]
@@ -129,6 +125,7 @@ source_set("gbm") {
     "//services/service_manager/public/cpp:sources",
     "//services/ui/public/interfaces:constants",
     "//skia",
+    "//third_party/libdrm",
     "//third_party/minigbm",
     "//ui/base",
     "//ui/display",
@@ -149,8 +146,6 @@ source_set("gbm") {
     "//ui/ozone/public/interfaces",
     "//ui/platform_window",
   ]
-
-  configs += [ ":libdrm" ]
 
   public_configs = [ "//third_party/khronos:khronos_headers" ]
 
@@ -194,10 +189,9 @@ source_set("gbm_unittests") {
     ":gbm",
     "//skia",
     "//testing/gtest",
+    "//third_party/libdrm",
     "//ui/gfx",
     "//ui/ozone:platform",
     "//ui/ozone/common",
   ]
-
-  public_configs = [ ":libdrm" ]
 }
