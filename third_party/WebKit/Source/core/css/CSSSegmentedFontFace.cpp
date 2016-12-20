@@ -191,6 +191,7 @@ void CSSSegmentedFontFace::match(const String& text,
 
 DEFINE_TRACE(CSSSegmentedFontFace) {
   visitor->trace(m_fontSelector);
+  visitor->trace(m_firstNonCssConnectedFace);
   visitor->trace(m_fontFaces);
 }
 

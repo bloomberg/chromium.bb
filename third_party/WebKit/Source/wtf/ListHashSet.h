@@ -535,6 +535,11 @@ class ListHashSetIterator {
 
   operator const_iterator() const { return m_iterator; }
 
+  template <typename VisitorDispatcher>
+  void trace(VisitorDispatcher visitor) {
+    m_iterator.trace(visitor);
+  }
+
  private:
   Node* getNode() { return m_iterator.getNode(); }
 
@@ -592,6 +597,12 @@ class ListHashSetConstIterator {
     return m_position != other.m_position;
   }
 
+  template <typename VisitorDispatcher>
+  void trace(VisitorDispatcher visitor) {
+    visitor->trace(*m_set);
+    visitor->trace(m_position);
+  }
+
  private:
   Node* getNode() { return m_position; }
 
@@ -645,6 +656,11 @@ class ListHashSetReverseIterator {
   }
 
   operator const_reverse_iterator() const { return m_iterator; }
+
+  template <typename VisitorDispatcher>
+  void trace(VisitorDispatcher visitor) {
+    m_iterator.trace(visitor);
+  }
 
  private:
   Node* getNode() { return m_iterator.node(); }
@@ -701,6 +717,12 @@ class ListHashSetConstReverseIterator {
   }
   bool operator!=(const ListHashSetConstReverseIterator& other) const {
     return m_position != other.m_position;
+  }
+
+  template <typename VisitorDispatcher>
+  void trace(VisitorDispatcher visitor) {
+    visitor->trace(*m_set);
+    visitor->trace(m_position);
   }
 
  private:

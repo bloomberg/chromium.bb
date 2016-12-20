@@ -737,6 +737,26 @@ struct IsGarbageCollectedType<
   static const bool value = true;
 };
 
+template <typename Set>
+struct IsGarbageCollectedType<ListHashSetIterator<Set>> {
+  static const bool value = IsGarbageCollectedType<Set>::value;
+};
+
+template <typename Set>
+struct IsGarbageCollectedType<ListHashSetConstIterator<Set>> {
+  static const bool value = IsGarbageCollectedType<Set>::value;
+};
+
+template <typename Set>
+struct IsGarbageCollectedType<ListHashSetReverseIterator<Set>> {
+  static const bool value = IsGarbageCollectedType<Set>::value;
+};
+
+template <typename Set>
+struct IsGarbageCollectedType<ListHashSetConstReverseIterator<Set>> {
+  static const bool value = IsGarbageCollectedType<Set>::value;
+};
+
 template <typename T, typename H>
 struct HandleHashTraits : SimpleClassHashTraits<H> {
   STATIC_ONLY(HandleHashTraits);
