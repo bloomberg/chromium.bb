@@ -1637,8 +1637,13 @@ crbug.com/457273 [ Mac ] virtual/mojo-loading/http/tests/websocket/close.html [ 
 
 crbug.com/596752 virtual/threaded/inspector/tracing/decode-resize.html [ Pass Failure ]
 
+crbug.com/610300 css3/fonts/font-style-matching-0.html [ Failure Pass ]
+crbug.com/610300 css3/fonts/font-style-matching-1.html [ Failure Pass ]
+crbug.com/610300 css3/fonts/font-style-matching-2.html [ Failure Pass ]
+crbug.com/610300 css3/fonts/font-style-matching-3.html [ Failure Pass ]
 crbug.com/610300 css3/fonts/font-style-matching-4.html [ Failure Pass ]
 crbug.com/610300 css3/fonts/font-style-matching-5.html [ Failure Pass ]
+crbug.com/610300 css3/fonts/font-style-matching-6.html [ Failure Pass ]
 crbug.com/610300 css3/fonts/font-style-matching-7.html [ Failure Pass ]
 crbug.com/610300 css3/fonts/font-style-matching-8.html [ Failure Pass ]
 crbug.com/524646 [ Mac10.10 ] fast/dom/shadow/shadowdom-for-button.html [ Failure ]
