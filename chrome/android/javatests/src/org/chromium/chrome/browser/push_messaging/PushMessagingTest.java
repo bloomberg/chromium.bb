@@ -18,6 +18,7 @@ import android.util.Pair;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.infobar.InfoBar;
@@ -116,6 +117,7 @@ public class PushMessagingTest
      */
     @MediumTest
     @Feature({"Browser", "PushMessaging"})
+    @CommandLineFlags.Add("disable-features=ModalPermissionPrompts")
     public void testPushPermissionDenied() throws InterruptedException, TimeoutException {
         // Notifications permission should initially be prompt.
         assertEquals("\"default\"", runScriptBlocking("Notification.permission"));
@@ -166,6 +168,7 @@ public class PushMessagingTest
      */
     @MediumTest
     @Feature({"Browser", "PushMessaging"})
+    @CommandLineFlags.Add("disable-features=ModalPermissionPrompts")
     public void testPushPermissionGranted() throws InterruptedException, TimeoutException {
         // Notifications permission should initially be prompt.
         assertEquals("\"default\"", runScriptBlocking("Notification.permission"));

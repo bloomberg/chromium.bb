@@ -39,7 +39,7 @@ public class MediaTest extends PermissionTestCaseBase {
      */
     @MediumTest
     @Feature({"MediaPermissions", "Main"})
-    @CommandLineFlags.Add(FAKE_DEVICE)
+    @CommandLineFlags.Add({FAKE_DEVICE, "disable-features=" + MODAL_FLAG})
     public void testMicrophonePermissionsPlumbingInfoBar() throws Exception {
         testMediaPermissionsPlumbing(
                 "Mic count:", "initiate_getMicrophone()", 1, false, false, false, false);
@@ -63,7 +63,7 @@ public class MediaTest extends PermissionTestCaseBase {
      */
     @MediumTest
     @Feature({"MediaPermissions", "Main"})
-    @CommandLineFlags.Add(FAKE_DEVICE)
+    @CommandLineFlags.Add({FAKE_DEVICE, "disable-features=" + MODAL_FLAG})
     public void testCameraPermissionsPlumbingInfoBar() throws Exception {
         testMediaPermissionsPlumbing(
                 "Camera count:", "initiate_getCamera()", 1, false, false, false, false);
@@ -114,7 +114,10 @@ public class MediaTest extends PermissionTestCaseBase {
      * @throws Exception
      */
     @MediumTest
-    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + TOGGLE_FLAG})
+    @CommandLineFlags.Add({
+            FAKE_DEVICE,
+            "enable-features=" + TOGGLE_FLAG,
+            "disable-features=" + MODAL_FLAG})
     @Feature({"MediaPermissions"})
     public void testMicrophonePersistenceOnInfoBar() throws Exception {
         testMediaPermissionsPlumbing(
@@ -127,7 +130,10 @@ public class MediaTest extends PermissionTestCaseBase {
      * @throws Exception
      */
     @MediumTest
-    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + TOGGLE_FLAG})
+    @CommandLineFlags.Add({
+            FAKE_DEVICE,
+            "enable-features=" + TOGGLE_FLAG,
+            "disable-features=" + MODAL_FLAG})
     @Feature({"MediaPermissions"})
     public void testMicrophonePersistenceOffInfoBar() throws Exception {
         testMediaPermissionsPlumbing(
@@ -166,7 +172,10 @@ public class MediaTest extends PermissionTestCaseBase {
      * @throws Exception
      */
     @MediumTest
-    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + TOGGLE_FLAG})
+    @CommandLineFlags.Add({
+            FAKE_DEVICE,
+            "enable-features=" + TOGGLE_FLAG,
+            "disable-features=" + MODAL_FLAG})
     @Feature({"MediaPermissions"})
     public void testCameraPersistenceOn() throws Exception {
         testMediaPermissionsPlumbing(
@@ -179,7 +188,10 @@ public class MediaTest extends PermissionTestCaseBase {
      * @throws Exception
      */
     @MediumTest
-    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + TOGGLE_FLAG})
+    @CommandLineFlags.Add({
+            FAKE_DEVICE,
+            "enable-features=" + TOGGLE_FLAG,
+            "disable-features=" + MODAL_FLAG})
     @Feature({"MediaPermissions"})
     public void testCameraPersistenceOff() throws Exception {
         testMediaPermissionsPlumbing(
@@ -192,7 +204,10 @@ public class MediaTest extends PermissionTestCaseBase {
      * @throws Exception
      */
     @MediumTest
-    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + TOGGLE_FLAG})
+    @CommandLineFlags.Add({
+            FAKE_DEVICE,
+            "enable-features=" + TOGGLE_FLAG,
+            "disable-features=" + MODAL_FLAG})
     @Feature({"MediaPermissions"})
     public void testCombinedPersistenceOnInfoBar() throws Exception {
         testMediaPermissionsPlumbing(
@@ -205,7 +220,10 @@ public class MediaTest extends PermissionTestCaseBase {
      * @throws Exception
      */
     @MediumTest
-    @CommandLineFlags.Add({FAKE_DEVICE, "enable-features=" + TOGGLE_FLAG})
+    @CommandLineFlags.Add({
+            FAKE_DEVICE,
+            "enable-features=" + TOGGLE_FLAG,
+            "disable-features=" + MODAL_FLAG})
     @Feature({"MediaPermissions"})
     public void testCombinedPersistenceOffInfoBar() throws Exception {
         testMediaPermissionsPlumbing(

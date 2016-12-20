@@ -1425,6 +1425,75 @@
             ]
         }
     ],
+    "PermissionPromptUIAndroid": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "ModalGestureEnabled",
+                    "params": {
+                        "require_gesture": "true"
+                    },
+                    "enable_features": [
+                        "ModalPermissionPrompts"
+                    ],
+                    "disable_features": [
+                        "DisplayPersistenceToggleInPermissionPrompts"
+                    ]
+                },
+                {
+                    "name": "ModalNoGestureEnabled",
+                    "params": {
+                        "require_gesture": "false"
+                    },
+                    "enable_features": [
+                        "ModalPermissionPrompts"
+                    ],
+                    "disable_features": [
+                        "DisplayPersistenceToggleInPermissionPrompts"
+                    ]
+                },
+                {
+                    "name": "ModalAndToggleEnabled",
+                    "params": {
+                        "require_gesture": "false"
+                    },
+                    "enable_features": [
+                        "DisplayPersistenceToggleInPermissionPrompts",
+                        "ModalPermissionPrompts"
+                    ]
+                },
+                {
+                    "name": "ToggleEnabled",
+                    "enable_features": [
+                        "DisplayPersistenceToggleInPermissionPrompts"
+                    ],
+                    "disable_features": [
+                        "ModalPermissionPrompts"
+                    ]
+                }
+            ]
+        }
+    ],
+    "PermissionPromptUIViews": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "ToggleEnabled",
+                    "enable_features": [
+                        "DisplayPersistenceToggleInPermissionPrompts"
+                    ]
+                }
+            ]
+        }
+    ],
     "PersistentHistograms": [
         {
             "platforms": [

@@ -56,6 +56,7 @@ public class GeolocationTest extends PermissionTestCaseBase {
      */
     @Smoke
     @MediumTest
+    @CommandLineFlags.Add("disable-features=" + MODAL_FLAG)
     @Feature({"Location", "Main"})
     public void testGeolocationPlumbingAllowedInfoBar() throws Exception {
         runTest("initiate_getCurrentPosition()", 1, false, false, false, false);
@@ -104,6 +105,7 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * @throws Exception
      */
     @MediumTest
+    @CommandLineFlags.Add("disable-features=" + MODAL_FLAG)
     @Feature({"Location"})
     public void testGeolocationWatchInfoBar() throws Exception {
         runTest("initiate_watchPosition()", 2, false, false, false, false);
@@ -126,7 +128,7 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * @throws Exception
      */
     @MediumTest
-    @CommandLineFlags.Add("enable-features=" + TOGGLE_FLAG)
+    @CommandLineFlags.Add({"enable-features=" + TOGGLE_FLAG, "disable-features=" + MODAL_FLAG})
     @Feature({"Location"})
     public void testGeolocationPersistenceAllowedInfoBar() throws Exception {
         runTest("initiate_getCurrentPosition()", 1, false, false, true, false);
@@ -150,7 +152,7 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * @throws Exception
      */
     @MediumTest
-    @CommandLineFlags.Add("enable-features=" + TOGGLE_FLAG)
+    @CommandLineFlags.Add({"enable-features=" + TOGGLE_FLAG, "disable-features=" + MODAL_FLAG})
     @Feature({"Location"})
     public void testGeolocationPersistenceOffAllowedInfoBar() throws Exception {
         Tab tab = getActivity().getActivityTab();
@@ -204,7 +206,7 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * @throws Exception
      */
     @LargeTest
-    @CommandLineFlags.Add("enable-features=" + TOGGLE_FLAG)
+    @CommandLineFlags.Add({"enable-features=" + TOGGLE_FLAG, "disable-features=" + MODAL_FLAG})
     @Feature({"Location"})
     public void testGeolocationWatchPersistenceOffAllowedInfoBar() throws Exception {
         runTest("initiate_watchPosition()", 2, false, false, true, true);
