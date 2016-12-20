@@ -160,6 +160,10 @@ void AwContentsMessageFilter::OnSubFrameCreated(int parent_render_frame_id,
 
 AwLocaleManager* g_locale_manager = NULL;
 
+// A dummy binder for mojo interface autofill::mojom::PasswordManagerDriver.
+void DummyBindPasswordManagerDriver(
+    autofill::mojom::PasswordManagerDriverRequest request) {}
+
 }  // anonymous namespace
 
 // TODO(yirui): can use similar logic as in PrependToAcceptLanguagesIfNecessary
@@ -564,6 +568,12 @@ void AwContentBrowserClient::RegisterRenderFrameMojoInterfaces(
   registry->AddInterface(
       base::Bind(&autofill::ContentAutofillDriverFactory::BindAutofillDriver,
                  render_frame_host));
+
+  // Although WebView does not support password manager feature, renderer code
+  // could still request this interface, so we register a dummy binder which
+  // just drops the incoming request, to avoid the 'Failed to locate a binder
+  // for interface' error log..
+  registry->AddInterface(base::Bind(&DummyBindPasswordManagerDriver));
 }
 
 }  // namespace android_webview
