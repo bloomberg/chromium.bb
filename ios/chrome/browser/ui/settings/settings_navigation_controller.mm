@@ -78,6 +78,11 @@
 // Closes the settings by calling |closeSettings| on |delegate|.
 - (void)closeSettings;
 
+// Creates an autoreleased Back button for a UINavigationItem which will pop the
+// top view controller when it is pressed. Should only be called by view
+// controllers owned by SettingsNavigationController.
+- (UIBarButtonItem*)backButton;
+
 // Creates an autoreleased "X" button that closes the settings when tapped.
 - (UIBarButtonItem*)closeButton;
 
@@ -319,6 +324,10 @@ initWithRootViewController:(UIViewController*)rootViewController
   [delegate_ closeSettings];
 }
 
+- (void)back {
+  [self popViewControllerAnimated:YES];
+}
+
 - (void)popViewControllerOrCloseSettingsAnimated:(BOOL)animated {
   if (self.viewControllers.count > 1) {
     // Pop the top view controller to reveal the view controller underneath.
@@ -349,6 +358,14 @@ initWithRootViewController:(UIViewController*)rootViewController
   base::scoped_nsobject<UIBarButtonItem> doneButton([self doneButton]);
   return [rightButton style] == [doneButton style] &&
          [[rightButton title] compare:[doneButton title]] == NSOrderedSame;
+}
+
+- (UIBarButtonItem*)backButton {
+  // Create a custom Back bar button item, as Material Navigation Bar deprecated
+  // the back arrow with a shaft.
+  return [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
+                                             target:self
+                                             action:@selector(back)];
 }
 
 - (UIBarButtonItem*)doneButton {
@@ -408,6 +425,12 @@ initWithRootViewController:(UIViewController*)rootViewController
 
 - (void)pushViewController:(UIViewController*)viewController
                   animated:(BOOL)animated {
+  // Add a back button if the view controller is not the root view controller
+  // and doesn’t already have a left bar button item.
+  if (self.viewControllers.count > 0 &&
+      viewController.navigationItem.leftBarButtonItems.count == 0) {
+    viewController.navigationItem.leftBarButtonItem = [self backButton];
+  }
   // Wrap the view controller in an MDCAppBarContainerViewController if needed.
   [super pushViewController:[self wrappedControllerIfNeeded:viewController]
                    animated:animated];

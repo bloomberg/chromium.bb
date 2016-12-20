@@ -145,7 +145,7 @@ void ClearCountryValue() {
 
 // Close the settings.
 - (void)exitSettingsMenu {
-  NSString* backButtonA11yId = @"back_bar_button";
+  NSString* backButtonA11yId = @"ic_arrow_back";
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
                                    grey_accessibilityID(backButtonA11yId),

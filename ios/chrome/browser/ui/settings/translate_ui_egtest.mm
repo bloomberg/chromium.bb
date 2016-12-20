@@ -58,13 +58,13 @@ const CGFloat kScrollDisplacement = 50.0;
   // Close settings.
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"back_bar_button"),
+                                   grey_accessibilityID(@"ic_arrow_back"),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitButton),
                                    nil)] performAction:grey_tap()];
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"back_bar_button"),
+                                   grey_accessibilityID(@"ic_arrow_back"),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitButton),
                                    nil)] performAction:grey_tap()];

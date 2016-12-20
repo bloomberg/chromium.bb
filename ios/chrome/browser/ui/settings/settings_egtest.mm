@@ -273,11 +273,11 @@ bool IsCertificateCleared() {
       performAction:grey_tap()];
 }
 
-// Closes the a sub-settings menu, and then the general Settings menu.
+// Closes a sub-settings menu, and then the general Settings menu.
 - (void)closeSubSettingsMenu {
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(
-                                   grey_accessibilityID(@"back_bar_button"),
+                                   grey_accessibilityID(@"ic_arrow_back"),
                                    grey_accessibilityTrait(
                                        UIAccessibilityTraitButton),
                                    nil)] performAction:grey_tap()];
