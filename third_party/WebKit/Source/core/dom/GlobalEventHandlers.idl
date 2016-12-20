@@ -102,6 +102,8 @@
 
     // Pointer Events
     // https://w3c.github.io/pointerevents/#extensions-to-the-globaleventhandlers-interface
+    [RuntimeEnabled=PointerEvent] attribute EventHandler ongotpointercapture;
+    [RuntimeEnabled=PointerEvent] attribute EventHandler onlostpointercapture;
     [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerdown;
     [RuntimeEnabled=PointerEvent] attribute EventHandler onpointermove;
     [RuntimeEnabled=PointerEvent] attribute EventHandler onpointerup;

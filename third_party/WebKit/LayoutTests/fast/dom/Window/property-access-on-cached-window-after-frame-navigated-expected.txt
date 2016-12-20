@@ -103,6 +103,7 @@ PASS oldChildWindow.onemptied is newChildWindow.onemptied
 PASS oldChildWindow.onended is newChildWindow.onended
 PASS oldChildWindow.onerror is newChildWindow.onerror
 PASS oldChildWindow.onfocus is newChildWindow.onfocus
+PASS oldChildWindow.ongotpointercapture is newChildWindow.ongotpointercapture
 PASS oldChildWindow.onhashchange is newChildWindow.onhashchange
 PASS oldChildWindow.oninput is newChildWindow.oninput
 PASS oldChildWindow.oninvalid is newChildWindow.oninvalid
@@ -114,6 +115,7 @@ PASS oldChildWindow.onload is newChildWindow.onload
 PASS oldChildWindow.onloadeddata is newChildWindow.onloadeddata
 PASS oldChildWindow.onloadedmetadata is newChildWindow.onloadedmetadata
 PASS oldChildWindow.onloadstart is newChildWindow.onloadstart
+PASS oldChildWindow.onlostpointercapture is newChildWindow.onlostpointercapture
 PASS oldChildWindow.onmessage is newChildWindow.onmessage
 PASS oldChildWindow.onmousedown is newChildWindow.onmousedown
 PASS oldChildWindow.onmouseenter is newChildWindow.onmouseenter

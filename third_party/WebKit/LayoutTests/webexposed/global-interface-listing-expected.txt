@@ -1331,6 +1331,7 @@ interface Document : Node
     getter onfocus
     getter onfullscreenchange
     getter onfullscreenerror
+    getter ongotpointercapture
     getter oninput
     getter oninvalid
     getter onkeydown
@@ -1340,6 +1341,7 @@ interface Document : Node
     getter onloadeddata
     getter onloadedmetadata
     getter onloadstart
+    getter onlostpointercapture
     getter onmousedown
     getter onmouseenter
     getter onmouseleave
@@ -1501,6 +1503,7 @@ interface Document : Node
     setter onfocus
     setter onfullscreenchange
     setter onfullscreenerror
+    setter ongotpointercapture
     setter oninput
     setter oninvalid
     setter onkeydown
@@ -1510,6 +1513,7 @@ interface Document : Node
     setter onloadeddata
     setter onloadedmetadata
     setter onloadstart
+    setter onlostpointercapture
     setter onmousedown
     setter onmouseenter
     setter onmouseleave
@@ -1632,8 +1636,6 @@ interface Element : Node
     getter onbeforepaste
     getter oncopy
     getter oncut
-    getter ongotpointercapture
-    getter onlostpointercapture
     getter onpaste
     getter onsearch
     getter onselectstart
@@ -1710,8 +1712,6 @@ interface Element : Node
     setter onbeforepaste
     setter oncopy
     setter oncut
-    setter ongotpointercapture
-    setter onlostpointercapture
     setter onpaste
     setter onsearch
     setter onselectstart
@@ -2233,6 +2233,7 @@ interface HTMLElement : Element
     getter onended
     getter onerror
     getter onfocus
+    getter ongotpointercapture
     getter oninput
     getter oninvalid
     getter onkeydown
@@ -2242,6 +2243,7 @@ interface HTMLElement : Element
     getter onloadeddata
     getter onloadedmetadata
     getter onloadstart
+    getter onlostpointercapture
     getter onmousedown
     getter onmouseenter
     getter onmouseleave
@@ -2326,6 +2328,7 @@ interface HTMLElement : Element
     setter onended
     setter onerror
     setter onfocus
+    setter ongotpointercapture
     setter oninput
     setter oninvalid
     setter onkeydown
@@ -2335,6 +2338,7 @@ interface HTMLElement : Element
     setter onloadeddata
     setter onloadedmetadata
     setter onloadstart
+    setter onlostpointercapture
     setter onmousedown
     setter onmouseenter
     setter onmouseleave
@@ -5252,6 +5256,7 @@ interface SVGElement : Element
     getter onended
     getter onerror
     getter onfocus
+    getter ongotpointercapture
     getter oninput
     getter oninvalid
     getter onkeydown
@@ -5261,6 +5266,7 @@ interface SVGElement : Element
     getter onloadeddata
     getter onloadedmetadata
     getter onloadstart
+    getter onlostpointercapture
     getter onmousedown
     getter onmouseenter
     getter onmouseleave
@@ -5331,6 +5337,7 @@ interface SVGElement : Element
     setter onended
     setter onerror
     setter onfocus
+    setter ongotpointercapture
     setter oninput
     setter oninvalid
     setter onkeydown
@@ -5340,6 +5347,7 @@ interface SVGElement : Element
     setter onloadeddata
     setter onloadedmetadata
     setter onloadstart
+    setter onlostpointercapture
     setter onmousedown
     setter onmouseenter
     setter onmouseleave
@@ -8653,6 +8661,7 @@ interface webkitURL
     getter onended
     getter onerror
     getter onfocus
+    getter ongotpointercapture
     getter onhashchange
     getter oninput
     getter oninvalid
@@ -8664,6 +8673,7 @@ interface webkitURL
     getter onloadeddata
     getter onloadedmetadata
     getter onloadstart
+    getter onlostpointercapture
     getter onmessage
     getter onmousedown
     getter onmouseenter
@@ -8830,6 +8840,7 @@ interface webkitURL
     setter onended
     setter onerror
     setter onfocus
+    setter ongotpointercapture
     setter onhashchange
     setter oninput
     setter oninvalid
@@ -8841,6 +8852,7 @@ interface webkitURL
     setter onloadeddata
     setter onloadedmetadata
     setter onloadstart
+    setter onlostpointercapture
     setter onmessage
     setter onmousedown
     setter onmouseenter

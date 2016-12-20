@@ -75,6 +75,7 @@ PASS childWindow.onemptied is null
 PASS childWindow.onended is null
 PASS childWindow.onerror is null
 PASS childWindow.onfocus is null
+PASS childWindow.ongotpointercapture is null
 PASS childWindow.onhashchange is null
 PASS childWindow.oninput is null
 PASS childWindow.oninvalid is null
@@ -86,6 +87,7 @@ PASS childWindow.onload is null
 PASS childWindow.onloadeddata is null
 PASS childWindow.onloadedmetadata is null
 PASS childWindow.onloadstart is null
+PASS childWindow.onlostpointercapture is null
 PASS childWindow.onmessage is null
 PASS childWindow.onmousedown is null
 PASS childWindow.onmouseenter is null
