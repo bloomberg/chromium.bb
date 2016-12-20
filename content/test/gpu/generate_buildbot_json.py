@@ -983,6 +983,10 @@ COMMON_GTESTS = {
           'Android Release (Nexus 5)',
           'Android Release (Nexus 6)',
           'Android Release (Nexus 9)',
+
+          # These tests are flaky on old AMD.
+          # TODO(jmadill): Enably flaky test retries only on this config.
+          'Win7 Release (AMD R5 230)',
         ],
       },
     ],
