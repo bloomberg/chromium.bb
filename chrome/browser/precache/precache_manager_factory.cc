@@ -37,6 +37,9 @@ PrecacheManagerFactory::PrecacheManagerFactory()
     : BrowserContextKeyedServiceFactory(
           "PrecacheManager",
           BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(ProfileSyncServiceFactory::GetInstance());
+  DependsOn(HistoryServiceFactory::GetInstance());
+  DependsOn(DataReductionProxyChromeSettingsFactory::GetInstance());
 }
 
 PrecacheManagerFactory::~PrecacheManagerFactory() {
