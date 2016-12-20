@@ -14,6 +14,7 @@
 #include "headless/lib/browser/headless_browser_impl.h"
 #include "headless/lib/browser/headless_content_browser_client.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/ozone/public/ozone_switches.h"
@@ -114,14 +115,20 @@ void HeadlessContentMainDelegate::InitializeResourceBundle() {
   base::FilePath pak_file;
   bool result = PathService::Get(base::DIR_MODULE, &dir_module);
   DCHECK(result);
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  const std::string locale = command_line->GetSwitchValueASCII(switches::kLang);
+  ui::ResourceBundle::InitSharedInstanceWithLocale(
+      locale, nullptr, ui::ResourceBundle::DO_NOT_LOAD_COMMON_RESOURCES);
+
   // Try loading the headless library pak file first. If it doesn't exist (i.e.,
   // when we're running with the --headless switch), fall back to the browser's
   // resource pak.
   pak_file = dir_module.Append(FILE_PATH_LITERAL("headless_lib.pak"));
   if (!base::PathExists(pak_file))
     pak_file = dir_module.Append(FILE_PATH_LITERAL("resources.pak"));
-  // TODO(skyostil): Use the locale-based loader instead.
-  ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
+  ResourceBundle::GetSharedInstance().AddDataPackFromPath(
+      pak_file, ui::SCALE_FACTOR_NONE);
 }
 
 content::ContentBrowserClient*
