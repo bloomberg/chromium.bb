@@ -355,7 +355,7 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
         ('build_1', 'buildbucket_id_1', 1),
         ('build_2', 'buildbucket_id_2', 2)
     }
-    stage.build_info_dict = (
+    stage.buildbucket_info_dict = (
         buildbucket_lib.GetScheduledBuildDict(scheduled_slaves_list))
 
     mock_logging_link = self.PatchObject(

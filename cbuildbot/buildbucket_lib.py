@@ -93,30 +93,32 @@ def GetScheduledBuildDict(scheduled_slave_list):
   if scheduled_slave_list is None:
     return {}
 
-  build_info_dict = {}
+  buildbucket_info_dict = {}
   for (build_config, buildbucket_id, created_ts) in scheduled_slave_list:
-    if build_config not in build_info_dict:
-      build_info_dict[build_config] = {'buildbucket_id':buildbucket_id,
-                                       'created_ts': created_ts,
-                                       'retry': 0}
+    if build_config not in buildbucket_info_dict:
+      buildbucket_info_dict[build_config] = {
+          'buildbucket_id':buildbucket_id,
+          'created_ts': created_ts,
+          'retry': 0
+      }
     else:
       # If a slave occurs multiple times, increment retry count and keep
       # the buildbucket_id and created_ts of most recently created one.
-      build_info_dict[build_config]['retry'] += 1
-      if created_ts > build_info_dict[build_config]['created_ts']:
-        build_info_dict[build_config]['buildbucket_id'] = buildbucket_id
-        build_info_dict[build_config]['created_ts'] = created_ts
+      buildbucket_info_dict[build_config]['retry'] += 1
+      if created_ts > buildbucket_info_dict[build_config]['created_ts']:
+        buildbucket_info_dict[build_config]['buildbucket_id'] = buildbucket_id
+        buildbucket_info_dict[build_config]['created_ts'] = created_ts
 
-  return build_info_dict
+  return buildbucket_info_dict
 
 def GetBuildInfoDict(metadata):
-  """Get build_info_dict from metadata.
+  """Get buildbucket_info_dict from metadata.
 
   Args:
     metadata: Instance of metadata_lib.CBuildbotMetadata.
 
   Returns:
-    build_info_dict: A dict mapping build config name to its buildbucket
+    buildbucket_info_dict: A dict mapping build config name to its buildbucket
         information dict(current buildbucket_id, current created_ts, retry #).
         See GetScheduledBuildDict for details.
   """
@@ -135,9 +137,9 @@ def GetBuildbucketIds(metadata):
   Returns:
     A list of buildbucket_ids (string) of slave builds.
   """
-  build_info_dict = GetBuildInfoDict(metadata)
+  buildbucket_info_dict = GetBuildInfoDict(metadata)
   return [info_dict['buildbucket_id']
-          for info_dict in build_info_dict.values()]
+          for info_dict in buildbucket_info_dict.values()]
 
 
 class BuildbucketClient(object):

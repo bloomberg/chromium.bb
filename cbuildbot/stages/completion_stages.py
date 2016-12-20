@@ -316,11 +316,12 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     Args:
       no_stat: Config names of the slave builds with None status.
     """
-    build_info_dict = buildbucket_lib.GetBuildInfoDict(self._run.attrs.metadata)
+    buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(
+        self._run.attrs.metadata)
 
     for config_name in no_stat:
-      if config_name in build_info_dict:
-        buildbucket_id = build_info_dict[config_name]['buildbucket_id']
+      if config_name in buildbucket_info_dict:
+        buildbucket_id = buildbucket_info_dict[config_name]['buildbucket_id']
         assert buildbucket_id is not None, 'buildbucket_id is None'
         try:
           content = self.buildbucket_client.GetBuildRequest(

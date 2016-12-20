@@ -444,13 +444,13 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
         buildbucket_client=buildbucket_client)
 
   def _GetBuildersStatusWithBuildbucket(self, builders, status_runs,
-                                        build_info_dicts):
+                                        buildbucket_info_dicts):
     """Test a call to BuildSpecsManager.GetBuildersStatus.
 
     Args:
       builders: List of builders to get status for.
       status_runs: List of dictionaries of expected build and status.
-      build_info_dicts: A list of dict mapping build names to
+      buildbucket_info_dicts: A list of dict mapping build names to
                         buildbucket_ids.
     """
     self.PatchObject(build_status.SlaveStatus,
@@ -458,7 +458,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
                      side_effect=status_runs)
     self.PatchObject(build_status.SlaveStatus,
                      '_GetSlaveStatusesFromBuildbucket',
-                     side_effect=build_info_dicts)
+                     side_effect=buildbucket_info_dicts)
 
     final_status_dict = status_runs[-1]
     build_statuses = [
@@ -488,7 +488,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
             2, constants.BUILDER_STATUS_PASSED)
     }]
 
-    build_info_dicts = [{
+    buildbucket_info_dicts = [{
         'build1': build_status_unittest.BuildbucketInfos.GetStartedBuild(),
         'build2': build_status_unittest.BuildbucketInfos.GetStartedBuild()
     }, {
@@ -497,7 +497,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     }]
 
     statuses = self._GetBuildersStatusWithBuildbucket(
-        ['build1', 'build2'], status_runs, build_info_dicts)
+        ['build1', 'build2'], status_runs, buildbucket_info_dicts)
 
     self.assertTrue(statuses['build1'].Failed())
     self.assertTrue(statuses['build2'].Passed())
@@ -530,7 +530,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
             2, constants.BUILDER_STATUS_PASSED)
     }]
 
-    build_info_dict = [{
+    buildbucket_info_dict = [{
         'build1': build_status_unittest.BuildbucketInfos.GetStartedBuild(),
         'build2': build_status_unittest.BuildbucketInfos.GetMissingBuild()
     }, {
@@ -545,7 +545,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     }]
 
     statuses = self._GetBuildersStatusWithBuildbucket(
-        ['build1', 'build2'], status_runs, build_info_dict)
+        ['build1', 'build2'], status_runs, buildbucket_info_dict)
     self.assertTrue(statuses['build1'].Failed())
     self.assertTrue(statuses['build2'].Passed())
     self.assertEqual(retry_patch.call_count, 0)
@@ -574,7 +574,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
             2, constants.BUILDER_STATUS_PASSED)
     }]
 
-    build_info_dict = [{
+    buildbucket_info_dict = [{
         'build1': build_status_unittest.BuildbucketInfos.GetStartedBuild(),
         'build2': build_status_unittest.BuildbucketInfos.GetStartedBuild()
     }, {
@@ -589,7 +589,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     }]
 
     statuses = self._GetBuildersStatusWithBuildbucket(
-        ['build1', 'build2'], status_runs, build_info_dict)
+        ['build1', 'build2'], status_runs, buildbucket_info_dict)
     self.assertTrue(statuses['build1'].Failed())
     self.assertTrue(statuses['build2'].Passed())
     self.assertTrue(retry_patch.call_count, 1)
@@ -619,7 +619,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
             2, constants.BUILDER_STATUS_FAILED)
     }]
 
-    build_info_dict = [{
+    buildbucket_info_dict = [{
         'build1': build_status_unittest.BuildbucketInfos.GetStartedBuild(),
         'build2': build_status_unittest.BuildbucketInfos.GetFailureBuild()
     }, {
@@ -637,7 +637,7 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     }]
 
     statuses = self._GetBuildersStatusWithBuildbucket(
-        ['build1', 'build2'], status_runs, build_info_dict)
+        ['build1', 'build2'], status_runs, buildbucket_info_dict)
     self.assertTrue(statuses['build1'].Failed())
     self.assertTrue(statuses['build2'].Failed())
 

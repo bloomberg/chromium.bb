@@ -426,9 +426,9 @@ class BuildbucketLibTest(cros_test_lib.MockTestCase):
     metadata.ExtendKeyListWithList(
         constants.METADATA_SCHEDULED_SLAVES, slaves)
 
-    build_info_dict = buildbucket_lib.GetBuildInfoDict(metadata)
-    self.assertEqual(build_info_dict['config_1']['retry'], 1)
-    self.assertEqual(build_info_dict['config_1']['buildbucket_id'],
+    buildbucket_info_dict = buildbucket_lib.GetBuildInfoDict(metadata)
+    self.assertEqual(buildbucket_info_dict['config_1']['retry'], 1)
+    self.assertEqual(buildbucket_info_dict['config_1']['buildbucket_id'],
                      'bb_id_2')
 
   def testGetBuildbucketIds(self):
