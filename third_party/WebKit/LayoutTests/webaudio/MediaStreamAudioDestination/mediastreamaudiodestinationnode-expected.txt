@@ -3,7 +3,7 @@ Basic tests for MediaStreamAudioDestinationNode API.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 PASS mediaStreamDestination.__proto__.__proto__ is AudioNode.prototype
-PASS Setting the channel count beyond 8 threw IndexSizeError: Failed to set the 'channelCount' property on 'AudioNode': The channel count provided (9) is outside the range [1, 8]..
+PASS Setting the channel count beyond 8 threw NotSupportedError: Failed to set the 'channelCount' property on 'AudioNode': The channel count provided (9) is outside the range [1, 8]..
 PASS Destination AudioNode has one input.
 PASS successfullyParsed is true
 

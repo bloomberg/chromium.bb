@@ -1385,6 +1385,7 @@ class CORE_EXPORT UseCounter {
     V8OfflineAudioContext_Constructor = 1699,
     AppInstalledEventAddListener = 1700,
     AudioContextGetOutputTimestamp = 1701,
+    V8MediaStreamAudioDestinationNode_Constructor = 1702,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

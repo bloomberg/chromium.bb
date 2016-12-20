@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test Constructor: MediaStreamAudioDestinationNode</title>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script>
+    <script src="../resources/audit-util.js"></script>
+    <script src="../resources/audio-testing.js"></script>
+    <script src="audionodeoptions.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var context = new AudioContext();
+
+      var audit = Audit.createTaskRunner();
+
+      audit.defineTask("invalid constructor", function (taskDone) {
+        var node;
+        var success = true;
+
+        success = Should("new MediaStreamAudioDestinationNode()",
+            function () {
+              node = new MediaStreamAudioDestinationNode();
+            })
+          .throw("TypeError");
+        success = Should("new MediaStreamAudioDestinationNode(1)",
+            function () {
+              node = new MediaStreamAudioDestinationNode(1)
+            })
+          .throw("TypeError") && success;;
+        success = Should("new MediaStreamAudioDestinationNode(context, 42)",
+            function () {
+              node = new MediaStreamAudioDestinationNode(context, 42)
+            })
+          .throw("TypeError") && success;;
+
+        taskDone();
+      });
+
+      audit.defineTask("default constructor", function (taskDone) {
+        var node;
+        var success;
+
+        success = Should("new MediaStreamAudioDestinationNode(context)",
+          function () {
+            node = new MediaStreamAudioDestinationNode(context);
+          }).notThrow() && success;
+
+        success = Should("node instanceof MediaStreamAudioDestinationNode",
+            node instanceof MediaStreamAudioDestinationNode)
+          .beEqualTo(true) && success;
+        success = Should("node.channelCount", node.channelCount)
+          .beEqualTo(2) && success;
+
+        taskDone();
+      });
+
+      audit.defineTask("test AudioNodeOptions", function (taskDone) {
+        testAudioNodeOptions(context, "MediaStreamAudioDestinationNode", {
+          expectedChannelCount: {
+            // An arbitrary but valid, non-default count for this node.
+            value: 7
+          }
+        });
+        taskDone();
+      });
+
+      audit.runTasks();
+    </script>
+  </body>
+</html>

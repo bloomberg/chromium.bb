@@ -24,6 +24,11 @@
  */
 
 // See https://webaudio.github.io/web-audio-api/#the-mediastreamaudiodestinationnode-interface
+[
+    Constructor(BaseAudioContext context, optional AudioNodeOptions options),
+    RaisesException=Constructor,
+    Measure
+]
 interface MediaStreamAudioDestinationNode : AudioNode {
     readonly attribute MediaStream stream;
 };
