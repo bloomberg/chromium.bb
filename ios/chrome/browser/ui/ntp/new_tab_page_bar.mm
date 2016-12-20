@@ -143,7 +143,8 @@ const int kNumberOfTabsIncognito = 2;
   CGFloat logoWidth = logoView_.get().image.size.width;
   CGFloat padding = [self useIconsInButtons] ? logoWidth : 0;
   CGFloat buttonPadding = floor((CGRectGetWidth(self.bounds) - padding -
-                                 (buttonWidth_ * self.buttons.count) / 2) +
+                                 buttonWidth_ * self.buttons.count) /
+                                    2 +
                                 padding);
 
   for (NSUInteger i = 0; i < self.buttons.count; ++i) {
