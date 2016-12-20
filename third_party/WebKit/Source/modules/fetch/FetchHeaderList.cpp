@@ -87,13 +87,20 @@ void FetchHeaderList::remove(const String& name) {
 
 bool FetchHeaderList::get(const String& name, String& result) const {
   const String lowercasedName = name.lower();
-  for (size_t i = 0; i < m_headerList.size(); ++i) {
-    if (m_headerList[i]->first == lowercasedName) {
-      result = m_headerList[i]->second;
-      return true;
+  bool found = false;
+  for (const auto& header : m_headerList) {
+    if (header->first == lowercasedName) {
+      if (!found) {
+        result = "";
+        result.append(header->second);
+        found = true;
+      } else {
+        result.append(",");
+        result.append(header->second);
+      }
     }
   }
-  return false;
+  return found;
 }
 
 void FetchHeaderList::getAll(const String& name, Vector<String>& result) const {

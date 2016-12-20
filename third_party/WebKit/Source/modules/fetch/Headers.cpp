@@ -177,8 +177,9 @@ String Headers::get(const String& name, ExceptionState& exceptionState) {
     exceptionState.throwTypeError("Invalid name");
     return String();
   }
-  // "2. Return the value of the first header in header list whose name is
-  //     |name|, and null otherwise."
+  // "2. If there is no header in header list whose name is |name|,
+  //     return null."
+  // "3. Return the combined value given |name| and header list."
   String result;
   m_headerList->get(name, result);
   return result;
