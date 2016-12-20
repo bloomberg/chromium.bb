@@ -466,9 +466,13 @@ FileManager.prototype = /** @struct */ {
    * @private
    */
   FileManager.prototype.startInitSettings_ = function() {
+    metrics.startInterval('Load.InitSettings');
     this.appStateController_ = new AppStateController(this.dialogType);
     return new Promise(function(resolve) {
-      this.appStateController_.loadInitialViewOptions().then(resolve);
+      this.appStateController_.loadInitialViewOptions().then(function() {
+        metrics.recordInterval('Load.InitSettings');
+        resolve();
+      });
     }.bind(this));
   };
 
@@ -715,16 +719,20 @@ FileManager.prototype = /** @struct */ {
     this.dialogDom_ = dialogDom;
     this.document_ = this.dialogDom_.ownerDocument;
 
+    metrics.startInterval('Load.InitDocuments');
     return Promise.all([
       this.initBackgroundPagePromise_,
       window.importElementsPromise
     ]).then(function() {
+      metrics.recordInterval('Load.InitDocuments');
+      metrics.startInterval('Load.InitUI');
       this.initEssentialUI_();
       this.initAdditionalUI_();
       return this.initSettingsPromise_;
     }.bind(this)).then(function() {
       this.initFileSystemUI_();
       this.initUIFocus_();
+      metrics.recordInterval('Load.InitUI');
     }.bind(this));
   };
 
@@ -770,6 +778,7 @@ FileManager.prototype = /** @struct */ {
    */
   FileManager.prototype.startInitBackgroundPage_ = function() {
     return new Promise(function(resolve) {
+      metrics.startInterval('Load.InitBackgroundPage');
       chrome.runtime.getBackgroundPage(/** @type {function(Window=)} */ (
           function(opt_backgroundPage) {
             assert(opt_backgroundPage);
@@ -787,6 +796,7 @@ FileManager.prototype = /** @struct */ {
                   this.backgroundPage_.background.mediaScanner;
               this.historyLoader_ =
                   this.backgroundPage_.background.historyLoader;
+              metrics.recordInterval('Load.InitBackgroundPage');
               resolve();
             }.bind(this));
           }.bind(this)));
