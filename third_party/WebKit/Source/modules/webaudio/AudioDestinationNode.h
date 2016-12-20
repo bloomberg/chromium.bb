@@ -66,6 +66,9 @@ class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
   virtual void startRendering() = 0;
   virtual void stopRendering() = 0;
 
+  // Returns the rendering callback buffer size.
+  virtual size_t callbackBufferSize() const = 0;
+
  protected:
   // LocalAudioInputProvider allows us to expose an AudioSourceProvider for
   // local/live audio input.  If there is local/live audio input, we call set()
@@ -112,6 +115,7 @@ class AudioDestinationNode : public AudioNode {
   AudioDestinationHandler& audioDestinationHandler() const;
 
   unsigned long maxChannelCount() const;
+  size_t callbackBufferSize() const { return handler().callbackBufferSize(); }
 
  protected:
   AudioDestinationNode(BaseAudioContext&);

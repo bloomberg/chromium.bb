@@ -103,6 +103,10 @@ unsigned long DefaultAudioDestinationHandler::maxChannelCount() const {
   return AudioDestination::maxChannelCount();
 }
 
+size_t DefaultAudioDestinationHandler::callbackBufferSize() const {
+  return m_destination->callbackBufferSize();
+}
+
 void DefaultAudioDestinationHandler::setChannelCount(
     unsigned long channelCount,
     ExceptionState& exceptionState) {

@@ -50,6 +50,8 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler {
   void startRendering() override;
   void stopRendering() override;
   unsigned long maxChannelCount() const override;
+  // Returns the rendering callback buffer size.
+  size_t callbackBufferSize() const override;
 
  private:
   explicit DefaultAudioDestinationHandler(AudioNode&);
@@ -63,6 +65,8 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler {
 class DefaultAudioDestinationNode final : public AudioDestinationNode {
  public:
   static DefaultAudioDestinationNode* create(BaseAudioContext*);
+
+  size_t callbackBufferSize() const { return handler().callbackBufferSize(); };
 
  private:
   explicit DefaultAudioDestinationNode(BaseAudioContext&);

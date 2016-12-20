@@ -141,6 +141,11 @@ class MODULES_EXPORT BaseAudioContext
     return m_destinationNode ? m_destinationNode->handler().sampleRate() : 0;
   }
 
+  size_t callbackBufferSize() const {
+    return m_destinationNode ? m_destinationNode->handler().callbackBufferSize()
+                             : 0;
+  }
+
   String state() const;
   AudioContextState contextState() const { return m_contextState; }
   void throwExceptionForClosedState(ExceptionState&);

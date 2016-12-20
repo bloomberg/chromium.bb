@@ -92,6 +92,8 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback,
 
   static float hardwareSampleRate();
 
+  size_t callbackBufferSize() const { return m_callbackBufferSize; }
+
   // maxChannelCount() returns the total number of output channels of the audio
   // hardware.  A value of 0 indicates that the number of channels cannot be
   // configured and that only stereo (2-channel) destinations can be created.

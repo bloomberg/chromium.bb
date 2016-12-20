@@ -59,6 +59,10 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
   void stopRendering() override;
   unsigned long maxChannelCount() const override;
 
+  // Returns the rendering callback buffer size.  This should never be
+  // called.
+  size_t callbackBufferSize() const override;
+
   float sampleRate() const override { return m_renderTarget->sampleRate(); }
 
   size_t renderQuantumFrames() const {

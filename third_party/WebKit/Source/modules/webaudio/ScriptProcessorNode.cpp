@@ -343,14 +343,13 @@ ScriptProcessorNode::ScriptProcessorNode(BaseAudioContext& context,
                                             numberOfOutputChannels));
 }
 
-static size_t chooseBufferSize() {
+static size_t chooseBufferSize(size_t callbackBufferSize) {
   // Choose a buffer size based on the audio hardware buffer size. Arbitarily
   // make it a power of two that is 4 times greater than the hardware buffer
   // size.
   // FIXME: What is the best way to choose this?
-  size_t hardwareBufferSize = Platform::current()->audioHardwareBufferSize();
   size_t bufferSize =
-      1 << static_cast<unsigned>(log2(4 * hardwareBufferSize) + 0.5);
+      1 << static_cast<unsigned>(log2(4 * callbackBufferSize) + 0.5);
 
   if (bufferSize < 256)
     return 256;
@@ -432,7 +431,14 @@ ScriptProcessorNode* ScriptProcessorNode::create(
   // Check for valid buffer size.
   switch (bufferSize) {
     case 0:
-      bufferSize = chooseBufferSize();
+      // Choose an appropriate size.  For an AudioContext, we need to
+      // choose an appropriate size based on the callback buffer size.
+      // For OfflineAudioContext, there's no callback buffer size, so
+      // just use the minimum valid buffer size.
+      bufferSize =
+          context.hasRealtimeConstraint()
+              ? chooseBufferSize(context.destination()->callbackBufferSize())
+              : 256;
       break;
     case 256:
     case 512:
