@@ -1989,16 +1989,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self removeWebViewAllowingCachedReconstruction:NO];
 
   web::NavigationItem* item = [self currentNavItem];
-  const GURL targetURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
+  const GURL virtualURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
   const web::Referrer referrer;
   id<CRWNativeContent> nativeContent =
-      [_nativeProvider controllerForURL:targetURL];
+      [_nativeProvider controllerForURL:virtualURL];
   // Unlike the WebView case, always create a new controller and view.
   // TODO(pinkerton): What to do if this does return nil?
   [self setNativeController:nativeContent];
   if ([nativeContent respondsToSelector:@selector(virtualURL)]) {
     item->SetVirtualURL([nativeContent virtualURL]);
   }
+  const GURL targetURL = item ? item->GetURL() : GURL::EmptyGURL();
   [self registerLoadRequest:targetURL
                    referrer:referrer
                  transition:[self currentTransition]];
@@ -5629,7 +5630,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [request setHTTPBody:POSTData];
     [request setAllHTTPHeaderFields:[self currentHTTPHeaders]];
     GURL navigationURL =
-        currentItem ? currentItem->GetVirtualURL() : GURL::EmptyGURL();
+        currentItem ? currentItem->GetURL() : GURL::EmptyGURL();
     [self registerLoadRequest:navigationURL
                      referrer:[self currentSessionEntryReferrer]
                    transition:[self currentTransition]];
@@ -5639,7 +5640,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   ProceduralBlock defaultNavigationBlock = ^{
     web::NavigationItem* item = [self currentNavItem];
-    GURL navigationURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
+    GURL navigationURL = item ? item->GetURL() : GURL::EmptyGURL();
     [self registerLoadRequest:navigationURL
                      referrer:[self currentSessionEntryReferrer]
                    transition:[self currentTransition]];
@@ -5674,7 +5675,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // will be a no-op when it is passed the current back forward list item,
     // so |reload| must be explicitly called.
     web::NavigationItem* item = [self currentNavItem];
-    GURL navigationURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
+    GURL navigationURL = item ? item->GetURL() : GURL::EmptyGURL();
     [self registerLoadRequest:navigationURL
                      referrer:[self currentSessionEntryReferrer]
                    transition:[self currentTransition]];
