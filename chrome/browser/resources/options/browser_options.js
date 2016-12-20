@@ -441,6 +441,8 @@ cr.define('options', function() {
         if (loadTimeData.getBoolean('showQuickUnlockSettings')) {
           $('manage-screenlock').onclick = function(event) {
             PageManager.showPageByName('quickUnlockConfigureOverlay');
+            settings.recordLockScreenProgress(
+                LockScreenProgress.START_SCREEN_LOCK);
           };
           $('manage-screenlock').hidden = false;
         }

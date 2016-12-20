@@ -10,6 +10,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
 #include "chrome/browser/ui/webui/settings/appearance_handler.h"
 #include "chrome/browser/ui/webui/settings/browser_lifetime_handler.h"
@@ -146,6 +147,9 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
 
   AddSettingsPageUIHandler(AboutHandler::Create(html_source, profile));
   AddSettingsPageUIHandler(ResetSettingsHandler::Create(html_source, profile));
+
+  // Add the metrics handler to write uma stats.
+  web_ui->AddMessageHandler(new MetricsHandler());
 
   // Add all settings resources.
   for (size_t i = 0; i < kSettingsResourcesSize; ++i) {

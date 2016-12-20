@@ -125,6 +125,10 @@ constexpr char kPasswordPromptDialogHTMLPath[] =
     "people_page/password_prompt_dialog.html";
 constexpr char kPasswordPromptDialogJSPath[] =
     "people_page/password_prompt_dialog.js";
+constexpr char kLockScreenConstantsHTMLPath[] =
+    "people_page/lock_screen_constants.html";
+constexpr char kLockScreenConstantsJSPath[] =
+    "people_page/lock_screen_constants.js";
 constexpr char kLockStateBehaviorHTMLPath[] =
     "people_page/lock_state_behavior.html";
 constexpr char kLockStateBehaviorJSPath[] =
@@ -257,6 +261,10 @@ void OptionsUIHTMLSource::CreateDataSourceMap() {
       IDR_OPTIONS_PASSWORD_PROMPT_DIALOG_HTML;
   path_to_idr_map_[kPasswordPromptDialogJSPath] =
       IDR_OPTIONS_PASSWORD_PROMPT_DIALOG_JS;
+  path_to_idr_map_[kLockScreenConstantsHTMLPath] =
+      IDR_OPTIONS_LOCK_SCREEN_CONSTANTS_HTML;
+  path_to_idr_map_[kLockScreenConstantsJSPath] =
+      IDR_OPTIONS_LOCK_SCREEN_CONSTANTS_JS;
   path_to_idr_map_[kLockStateBehaviorHTMLPath] =
       IDR_OPTIONS_LOCK_STATE_BEHAVIOR_HTML;
   path_to_idr_map_[kLockStateBehaviorJSPath] =

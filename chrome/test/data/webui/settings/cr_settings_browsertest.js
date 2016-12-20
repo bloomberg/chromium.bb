@@ -197,6 +197,7 @@ CrSettingsPeoplePageQuickUnlockAuthenticateTest.prototype = {
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     '../fake_chrome_event.js',
     'fake_quick_unlock_private.js',
+    'fake_quick_unlock_uma.js',
     'quick_unlock_authenticate_browsertest_chromeos.js'
   ]),
 };
@@ -227,6 +228,7 @@ CrSettingsPeoplePageLockScreenTest.prototype = {
     '../fake_chrome_event.js',
     'fake_quick_unlock_private.js',
     'fake_settings_private.js',
+    'fake_quick_unlock_uma.js',
     'quick_unlock_authenticate_browsertest_chromeos.js'
   ]),
 };
@@ -257,6 +259,7 @@ CrSettingsPeoplePageSetupPinDialogTest.prototype = {
     '../fake_chrome_event.js',
     'fake_quick_unlock_private.js',
     'fake_settings_private.js',
+    'fake_quick_unlock_uma.js',
     'quick_unlock_authenticate_browsertest_chromeos.js'
   ]),
 };

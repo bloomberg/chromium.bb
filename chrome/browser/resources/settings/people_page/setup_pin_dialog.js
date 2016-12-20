@@ -61,6 +61,18 @@ Polymer({
     enableSubmit_: Boolean,
 
     /**
+     * writeUma_ is a function that handles writing uma stats. It may be
+     * overridden for tests.
+     *
+     * @type {Function}
+     * @private
+     */
+    writeUma_: {
+      type: Object,
+      value: function() { return settings.recordLockScreenProgress; }
+    },
+
+    /**
      * The current step/subpage we are on.
      * @private
      */
@@ -210,6 +222,7 @@ Polymer({
         this.isConfirmStep_ = true;
         this.onPinChange_();
         this.$.pinKeyboard.focus();
+        this.writeUma_(LockScreenProgress.ENTER_PIN);
       }
     } else {
       // onPinSubmit_ gets called if the user hits enter on the PIN keyboard.
@@ -234,6 +247,7 @@ Polymer({
         [chrome.quickUnlockPrivate.QuickUnlockMode.PIN],
         [this.pinKeyboardValue_],
         onSetModesCompleted.bind(this));
+      this.writeUma_(LockScreenProgress.CONFIRM_PIN);
     }
   },
 

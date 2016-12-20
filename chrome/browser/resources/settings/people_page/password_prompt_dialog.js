@@ -72,6 +72,18 @@ Polymer({
     },
 
     /**
+     * writeUma_ is a function that handles writing uma stats. It may be
+     * overridden for tests.
+     *
+     * @type {Function}
+     * @private
+     */
+    writeUma_: {
+      type: Object,
+      value: function() { return settings.recordLockScreenProgress; }
+    },
+
+    /**
      * PASSWORD_ACTIVE_DURATION_MS value. May be overridden by tests.
      * @private
      */
@@ -96,6 +108,7 @@ Polymer({
     if (this.$.dialog.open)
       return;
 
+    this.writeUma_(LockScreenProgress.START_SCREEN_LOCK);
     this.$.dialog.showModal();
   },
 
@@ -163,6 +176,8 @@ Polymer({
         this.password_ = '';
         if (this.$.dialog.open)
           this.$.dialog.close();
+
+        this.writeUma_(LockScreenProgress.ENTER_PASSWORD_CORRECTLY);
       }
     }
 

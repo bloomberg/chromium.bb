@@ -45,6 +45,7 @@
           '../../../../chrome/browser/resources/chromeos/keyboard/keyboard_utils.js',
           '../../../../ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
           '../settings/compiled_resources2.gyp:route',
+          '../settings/people_page/compiled_resources2.gyp:lock_screen_constants',
           '../settings/people_page/compiled_resources2.gyp:lock_state_behavior',
           '../settings/people_page/compiled_resources2.gyp:password_prompt_dialog',
           '../settings/people_page/compiled_resources2.gyp:lock_screen',
