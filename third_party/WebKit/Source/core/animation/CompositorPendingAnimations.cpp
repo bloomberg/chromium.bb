@@ -90,7 +90,7 @@ bool CompositorPendingAnimations::update(bool startOnCompositor) {
   }
 
   // If any synchronized animations were started on the compositor, all
-  // remaning synchronized animations need to wait for the synchronized
+  // remaining synchronized animations need to wait for the synchronized
   // start time. Otherwise they may start immediately.
   if (startedSynchronizedOnCompositor) {
     for (auto& animation : waitingForStartTime) {

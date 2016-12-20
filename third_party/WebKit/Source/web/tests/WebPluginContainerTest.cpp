@@ -41,6 +41,7 @@
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
@@ -700,19 +701,10 @@ class CompositedPlugin : public FakeWebPlugin {
   std::unique_ptr<WebLayer> m_layer;
 };
 
-class ScopedSPv2 {
- public:
-  ScopedSPv2() { RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true); }
-  ~ScopedSPv2() { m_featuresBackup.restore(); }
-
- private:
-  RuntimeEnabledFeatures::Backup m_featuresBackup;
-};
-
 }  // namespace
 
 TEST_F(WebPluginContainerTest, CompositedPluginSPv2) {
-  ScopedSPv2 enableSPv2;
+  ScopedSlimmingPaintV2ForTest enableSPv2(true);
   URLTestHelpers::registerMockedURLFromBaseURL(
       WebString::fromUTF8(m_baseURL.c_str()),
       WebString::fromUTF8("plugin.html"));

@@ -68,7 +68,7 @@ const CompositingReasonStringMap kCompositingReasonStringMap[] = {
      "composited descendants"},
     {CompositingReasonBlendingWithCompositedDescendants,
      "blendingWithCompositedDescendants",
-     "Has a blenidng effect that needs to be known by compositor because of "
+     "Has a blending effect that needs to be known by compositor because of "
      "composited descendants"},
     {CompositingReasonClipsCompositingDescendants,
      "clipsCompositingDescendants",

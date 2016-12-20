@@ -41,6 +41,7 @@
 #include "core/animation/animatable/AnimatableValueTestHelper.h"
 #include "core/dom/Document.h"
 #include "core/layout/LayoutObject.h"
+#include "core/paint/ObjectPaintProperties.h"
 #include "core/style/FilterOperations.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/animation/CompositorAnimation.h"
@@ -48,6 +49,7 @@
 #include "platform/animation/CompositorFloatKeyframe.h"
 #include "platform/geometry/FloatBox.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/transforms/TransformOperations.h"
 #include "platform/transforms/TranslateTransformOperation.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1250,6 +1252,37 @@ TEST_F(AnimationCompositorAnimationsTest,
 
   ThreadState::current()->collectAllGarbage();
   EXPECT_TRUE(element->elementAnimations()->animations().isEmpty());
+}
+
+TEST_F(AnimationCompositorAnimationsTest,
+       canStartAnimationOnCompositorTransformSPv2) {
+  Persistent<Element> element = m_document->createElement("shared");
+  LayoutObjectProxy* layoutObject = LayoutObjectProxy::create(element.get());
+  element->setLayoutObject(layoutObject);
+
+  ScopedSlimmingPaintV2ForTest enableSPv2(true);
+  auto& properties =
+      layoutObject->getMutableForPainting().ensurePaintProperties();
+
+  // Add a transform with a compositing reason, which should allow starting
+  // animation.
+  properties.updateTransform(TransformPaintPropertyNode::root(),
+                             TransformationMatrix(), FloatPoint3D(), false, 0,
+                             CompositingReasonActiveAnimation);
+  EXPECT_TRUE(CompositorAnimations::canStartAnimationOnCompositor(*element));
+
+  // Setting to CompositingReasonNone should produce false.
+  properties.updateTransform(TransformPaintPropertyNode::root(),
+                             TransformationMatrix(), FloatPoint3D(), false, 0,
+                             CompositingReasonNone);
+  EXPECT_FALSE(CompositorAnimations::canStartAnimationOnCompositor(*element));
+
+  // Clearing the transform node entirely should also produce false.
+  properties.clearTransform();
+  EXPECT_FALSE(CompositorAnimations::canStartAnimationOnCompositor(*element));
+
+  element->setLayoutObject(nullptr);
+  LayoutObjectProxy::dispose(layoutObject);
 }
 
 }  // namespace blink

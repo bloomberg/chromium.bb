@@ -30,12 +30,16 @@ var animation = target.animate([
   iterations: Infinity,
 });
 
-testRunner.waitUntilDone();
+if (window.testRunner)
+  testRunner.waitUntilDone();
 requestAnimationFrame(function() {
   requestAnimationFrame(function() {
-    var composited = internals.isCompositedAnimation(animation);
-    text.textContent = `Animation ${composited ? 'is' : 'is not'} running on the compositor.`;
-    testRunner.notifyDone();
+    if (window.internals) {
+      var composited = internals.isCompositedAnimation(animation);
+      text.textContent = `Animation ${composited ? 'is' : 'is not'} running on the compositor.`;
+    }
+    if (window.testRunner)
+      testRunner.notifyDone();
   });
 });
 </script>

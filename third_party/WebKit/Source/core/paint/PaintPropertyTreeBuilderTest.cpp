@@ -404,6 +404,25 @@ TEST_P(PaintPropertyTreeBuilderTest, Transform) {
       transform->layoutObject()->paintProperties()->transform()->matrix());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest,
+       TransformNodeWithActiveAnimationHasDirectCompositingReason) {
+  setBodyInnerHTML(
+      "<style>"
+      "@keyframes test {"
+      "  0% { transform: translate(1em, 1em) } "
+      "  100% { transform: translate(2em, 2em) } "
+      "} "
+      "</style>"
+      "<div id='transform' "
+      "    style='animation-name: test; animation-duration: 1s'>"
+      "</div>");
+
+  Element* transform = document().getElementById("transform");
+  const ObjectPaintProperties* transformProperties =
+      transform->layoutObject()->paintProperties();
+  EXPECT_TRUE(transformProperties->transform()->hasDirectCompositingReasons());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {
   setBodyInnerHTML(
       "<style> body { margin: 0 } </style>"

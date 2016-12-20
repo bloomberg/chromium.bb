@@ -8,6 +8,7 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutView.h"
 #include "platform/json/JSONValues.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -124,19 +125,6 @@ TEST_F(LayoutObjectTest, PaintingLayerOfOverflowClipLayerUnderColumnSpanAll) {
   EXPECT_EQ(columns->layer(), overflowClipObject->paintingLayer());
 }
 
-namespace {
-
-class ScopedSPv2 {
- public:
-  ScopedSPv2() { RuntimeEnabledFeatures::setSlimmingPaintV2Enabled(true); }
-  ~ScopedSPv2() { m_featuresBackup.restore(); }
-
- private:
-  RuntimeEnabledFeatures::Backup m_featuresBackup;
-};
-
-}  // namespace
-
 TEST_F(LayoutObjectTest, MutableForPaintingClearPaintFlags) {
   LayoutObject* object = document().body()->layoutObject();
   object->setShouldDoFullPaintInvalidation();
@@ -158,7 +146,7 @@ TEST_F(LayoutObjectTest, MutableForPaintingClearPaintFlags) {
   object->m_bitfields.setDescendantNeedsPaintPropertyUpdate(true);
   EXPECT_TRUE(object->descendantNeedsPaintPropertyUpdate());
 
-  ScopedSPv2 enableSPv2;
+  ScopedSlimmingPaintV2ForTest enableSPv2(true);
   document().lifecycle().advanceTo(DocumentLifecycle::InPrePaint);
   object->getMutableForPainting().clearPaintFlags();
 

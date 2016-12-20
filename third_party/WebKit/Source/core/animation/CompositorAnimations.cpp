@@ -42,6 +42,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/paint/FilterEffectBuilder.h"
+#include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/animation/AnimationTranslationUtil.h"
 #include "platform/animation/CompositorAnimation.h"
@@ -344,6 +345,14 @@ bool CompositorAnimations::canStartAnimationOnCompositor(
     const Element& element) {
   if (!Platform::current()->isThreadedAnimationEnabled())
     return false;
+
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    // TODO(wkorman): Consider effect node for opacity.
+    const TransformPaintPropertyNode* transformNode =
+        element.layoutObject()->paintProperties()->transform();
+    return transformNode && transformNode->hasDirectCompositingReasons();
+  }
+
   return element.layoutObject() &&
          element.layoutObject()->compositingState() == PaintsIntoOwnBacking;
 }

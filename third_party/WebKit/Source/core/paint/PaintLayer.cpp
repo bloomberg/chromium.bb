@@ -3034,6 +3034,7 @@ void PaintLayer::styleDidChange(StyleDifference diff,
   updateClipPath(oldStyle, layoutObject()->styleRef());
 
   setNeedsCompositingInputsUpdate();
+  layoutObject()->setNeedsPaintPropertyUpdate();
 }
 
 bool PaintLayer::scrollsOverflow() const {
