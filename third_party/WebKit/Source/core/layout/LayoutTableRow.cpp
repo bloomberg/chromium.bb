@@ -312,4 +312,18 @@ void LayoutTableRow::addOverflowFromCell(const LayoutTableCell* cell) {
   addContentsVisualOverflow(cellVisualOverflowRect);
 }
 
+bool LayoutTableRow::isFirstRowInSectionAfterHeader() const {
+  // If there isn't room on the page for at least one content row after the
+  // header group, then we won't repeat the header on each page.
+  // https://drafts.csswg.org/css-tables-3/#repeated-headers reads like
+  // it wants us to drop headers on only the pages that a single row
+  // won't fit but we avoid the complexity of that reading until it
+  // is clarified. Tracked by crbug.com/675904
+  if (rowIndex())
+    return false;
+  LayoutTableSection* header = table()->header();
+  return header && table()->sectionAbove(section()) == header &&
+         header->getPaginationBreakability() != AllowAnyBreaks;
+}
+
 }  // namespace blink

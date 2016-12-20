@@ -2012,14 +2012,9 @@ void LayoutTableSection::adjustRowForPagination(LayoutTableRow& rowObject,
   // fragmentainer, above this row. Otherwise, this row will just go at the top
   // of the next fragmentainer.
 
-  // If there isn't room for at least one content row on a page with a
-  // header group, then we won't repeat the header on each page.
   LayoutTableSection* header = table()->header();
-  if (!rowObject.rowIndex() && header &&
-      table()->sectionAbove(this) == header &&
-      header->getPaginationBreakability() != AllowAnyBreaks) {
+  if (rowObject.isFirstRowInSectionAfterHeader())
     table()->setRowOffsetFromRepeatingHeader(LayoutUnit());
-  }
   // Border spacing from the previous row has pushed this row just past the top
   // of the page, so we must reposition it to the top of the page and avoid any
   // repeating header.

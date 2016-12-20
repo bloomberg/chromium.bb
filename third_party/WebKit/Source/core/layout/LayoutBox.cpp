@@ -5587,6 +5587,13 @@ LayoutUnit LayoutBox::calculatePaginationStrutToFitContent(
     LayoutUnit contentLogicalHeight) const {
   ASSERT(strutToNextPage ==
          pageRemainingLogicalHeightForOffset(offset, AssociateWithLatterPage));
+  // If we're a cell in a row that straddles a page then avoid the repeating
+  // header group if necessary.
+  if (isTableCell()) {
+    const LayoutTableCell* cell = toLayoutTableCell(this);
+    if (!cell->row()->isFirstRowInSectionAfterHeader())
+      strutToNextPage += cell->table()->rowOffsetFromRepeatingHeader();
+  }
   LayoutUnit nextPageLogicalTop = offset + strutToNextPage;
   if (pageLogicalHeightForOffset(nextPageLogicalTop) >= contentLogicalHeight)
     return strutToNextPage;  // Content fits just fine in the next page or

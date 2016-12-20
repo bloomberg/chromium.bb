@@ -140,6 +140,8 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent {
     return false;
   }
 
+  bool isFirstRowInSectionAfterHeader() const;
+
  private:
   void addOverflowFromCell(const LayoutTableCell*);
 
