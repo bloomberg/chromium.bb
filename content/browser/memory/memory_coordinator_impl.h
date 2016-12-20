@@ -57,12 +57,11 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public NotificationObserver,
   // Dispatches a memory state change to the provided process. Returns true if
   // the process is tracked by this coordinator and successfully dispatches,
   // returns false otherwise.
-  bool SetChildMemoryState(
-      int render_process_id, mojom::MemoryState memory_state);
+  bool SetChildMemoryState(int render_process_id, MemoryState memory_state);
 
   // Returns the memory state of the specified render process. Returns UNKNOWN
   // if the process is not tracked by this coordinator.
-  mojom::MemoryState GetChildMemoryState(int render_process_id) const;
+  MemoryState GetChildMemoryState(int render_process_id) const;
 
   // Records memory pressure notifications. Called by MemoryPressureMonitor.
   // TODO(bashi): Remove this when MemoryPressureMonitor is retired.
@@ -115,7 +114,7 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public NotificationObserver,
     ChildInfo(const ChildInfo& rhs);
     ~ChildInfo();
 
-    mojom::MemoryState memory_state;
+    MemoryState memory_state;
     bool is_visible = false;
     std::unique_ptr<MemoryCoordinatorHandleImpl> handle;
   };
@@ -146,8 +145,8 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public NotificationObserver,
 
   // Called by SetChildMemoryState() to determine a child memory state based on
   // the current status of the child process.
-  mojom::MemoryState OverrideGlobalState(mojom::MemoryState memroy_state,
-                                         const ChildInfo& child);
+  MemoryState OverrideGlobalState(MemoryState memroy_state,
+                                  const ChildInfo& child);
 
   void SetDelegateForTesting(
       std::unique_ptr<MemoryCoordinatorDelegate> delegate);

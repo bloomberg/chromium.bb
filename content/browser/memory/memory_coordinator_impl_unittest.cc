@@ -116,7 +116,7 @@ class TestMemoryCoordinatorImpl : public MemoryCoordinatorImpl {
 
   // Wrapper of MemoryCoordinator::SetMemoryState that also calls RunUntilIdle.
   bool SetChildMemoryState(
-      int render_process_id, mojom::MemoryState memory_state) {
+      int render_process_id, MemoryState memory_state) {
     bool result = MemoryCoordinatorImpl::SetChildMemoryState(
         render_process_id, memory_state);
     RunUntilIdle();
@@ -130,6 +130,8 @@ class TestMemoryCoordinatorImpl : public MemoryCoordinatorImpl {
 
 class MemoryCoordinatorImplTest : public testing::Test {
  public:
+  using MemoryState = base::MemoryState;
+
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kMemoryCoordinator);
 
@@ -168,7 +170,7 @@ TEST_F(MemoryCoordinatorImplTest, SetMemoryStateFailsInvalidState) {
   auto cmc1 = coordinator_->CreateChildMemoryCoordinator(1);
 
   EXPECT_FALSE(
-      coordinator_->SetChildMemoryState(1, mojom::MemoryState::UNKNOWN));
+      coordinator_->SetChildMemoryState(1, MemoryState::UNKNOWN));
   EXPECT_EQ(0, cmc1->on_state_change_calls());
 }
 
@@ -176,7 +178,7 @@ TEST_F(MemoryCoordinatorImplTest, SetMemoryStateFailsInvalidRenderer) {
   auto cmc1 = coordinator_->CreateChildMemoryCoordinator(1);
 
   EXPECT_FALSE(
-      coordinator_->SetChildMemoryState(2, mojom::MemoryState::THROTTLED));
+      coordinator_->SetChildMemoryState(2, MemoryState::THROTTLED));
   EXPECT_EQ(0, cmc1->on_state_change_calls());
 }
 
@@ -184,7 +186,7 @@ TEST_F(MemoryCoordinatorImplTest, SetMemoryStateNotDeliveredNop) {
   auto cmc1 = coordinator_->CreateChildMemoryCoordinator(1);
 
   EXPECT_FALSE(
-      coordinator_->SetChildMemoryState(2, mojom::MemoryState::NORMAL));
+      coordinator_->SetChildMemoryState(2, MemoryState::NORMAL));
   EXPECT_EQ(0, cmc1->on_state_change_calls());
 }
 
@@ -193,12 +195,12 @@ TEST_F(MemoryCoordinatorImplTest, SetMemoryStateDelivered) {
   auto cmc2 = coordinator_->CreateChildMemoryCoordinator(2);
 
   EXPECT_TRUE(
-      coordinator_->SetChildMemoryState(1, mojom::MemoryState::THROTTLED));
+      coordinator_->SetChildMemoryState(1, MemoryState::THROTTLED));
   EXPECT_EQ(1, cmc1->on_state_change_calls());
   EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc1->state());
 
   EXPECT_TRUE(
-      coordinator_->SetChildMemoryState(2, mojom::MemoryState::SUSPENDED));
+      coordinator_->SetChildMemoryState(2, MemoryState::SUSPENDED));
   EXPECT_EQ(1, cmc2->on_state_change_calls());
   // Child processes are considered as visible (foreground) by default,
   // and visible ones won't be suspended but throttled.
@@ -212,28 +214,28 @@ TEST_F(MemoryCoordinatorImplTest, SetChildMemoryState) {
 
   // Foreground
   iter->second.is_visible = true;
-  EXPECT_TRUE(coordinator_->SetChildMemoryState(1, mojom::MemoryState::NORMAL));
+  EXPECT_TRUE(coordinator_->SetChildMemoryState(1, MemoryState::NORMAL));
   EXPECT_EQ(mojom::MemoryState::NORMAL, cmc->state());
   EXPECT_TRUE(
-      coordinator_->SetChildMemoryState(1, mojom::MemoryState::THROTTLED));
+      coordinator_->SetChildMemoryState(1, MemoryState::THROTTLED));
   EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
   EXPECT_TRUE(
-      coordinator_->SetChildMemoryState(1, mojom::MemoryState::SUSPENDED));
+      coordinator_->SetChildMemoryState(1, MemoryState::SUSPENDED));
   EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
 
   // Background
   iter->second.is_visible = false;
-  EXPECT_TRUE(coordinator_->SetChildMemoryState(1, mojom::MemoryState::NORMAL));
+  EXPECT_TRUE(coordinator_->SetChildMemoryState(1, MemoryState::NORMAL));
 #if defined(OS_ANDROID)
   EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
 #else
   EXPECT_EQ(mojom::MemoryState::NORMAL, cmc->state());
 #endif
   EXPECT_TRUE(
-      coordinator_->SetChildMemoryState(1, mojom::MemoryState::THROTTLED));
+      coordinator_->SetChildMemoryState(1, MemoryState::THROTTLED));
   EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
   EXPECT_TRUE(
-      coordinator_->SetChildMemoryState(1, mojom::MemoryState::SUSPENDED));
+      coordinator_->SetChildMemoryState(1, MemoryState::SUSPENDED));
   EXPECT_EQ(mojom::MemoryState::SUSPENDED, cmc->state());
 }
 

@@ -195,9 +195,9 @@ void MemoryCoordinatorImpl::CreateHandle(
 }
 
 bool MemoryCoordinatorImpl::SetChildMemoryState(int render_process_id,
-                                            mojom::MemoryState memory_state) {
+                                                MemoryState memory_state) {
   // Can't set an invalid memory state.
-  if (memory_state == mojom::MemoryState::UNKNOWN)
+  if (memory_state == MemoryState::UNKNOWN)
     return false;
 
   // Can't send a message to a child that doesn't exist.
@@ -216,21 +216,21 @@ bool MemoryCoordinatorImpl::SetChildMemoryState(int render_process_id,
     return true;
 
   // Can't suspend the given renderer.
-  if (memory_state == mojom::MemoryState::SUSPENDED &&
+  if (memory_state == MemoryState::SUSPENDED &&
       !CanSuspendRenderer(render_process_id))
     return false;
 
   // Update the internal state and send the message.
   iter->second.memory_state = memory_state;
-  iter->second.handle->child()->OnStateChange(memory_state);
+  iter->second.handle->child()->OnStateChange(ToMojomMemoryState(memory_state));
   return true;
 }
 
-mojom::MemoryState MemoryCoordinatorImpl::GetChildMemoryState(
+base::MemoryState MemoryCoordinatorImpl::GetChildMemoryState(
     int render_process_id) const {
   auto iter = children_.find(render_process_id);
   if (iter == children_.end())
-    return mojom::MemoryState::UNKNOWN;
+    return base::MemoryState::UNKNOWN;
   return iter->second.memory_state;
 }
 
@@ -292,7 +292,7 @@ void MemoryCoordinatorImpl::Observe(int type,
   if (iter == children().end())
     return;
   iter->second.is_visible = *Details<bool>(details).ptr();
-  auto new_state = ToMojomMemoryState(GetGlobalMemoryState());
+  auto new_state = GetGlobalMemoryState();
   SetChildMemoryState(iter->first, new_state);
 }
 
@@ -345,22 +345,22 @@ bool MemoryCoordinatorImpl::CanSuspendRenderer(int render_process_id) {
 
 void MemoryCoordinatorImpl::OnChildAdded(int render_process_id) {
   // Populate the global state as an initial state of a newly created process.
-  auto new_state = ToMojomMemoryState(GetGlobalMemoryState());
+  auto new_state = GetGlobalMemoryState();
   SetChildMemoryState(render_process_id, new_state);
 }
 
-mojom::MemoryState MemoryCoordinatorImpl::OverrideGlobalState(
-    mojom::MemoryState memory_state,
+base::MemoryState MemoryCoordinatorImpl::OverrideGlobalState(
+    MemoryState memory_state,
     const ChildInfo& child) {
   // We don't suspend foreground renderers. Throttle them instead.
-  if (child.is_visible && memory_state == mojom::MemoryState::SUSPENDED)
-    return mojom::MemoryState::THROTTLED;
+  if (child.is_visible && memory_state == MemoryState::SUSPENDED)
+    return MemoryState::THROTTLED;
 #if defined(OS_ANDROID)
   // On Android, we throttle background renderers immediately.
   // TODO(bashi): Create a specialized class of MemoryCoordinator for Android
   // and move this ifdef to the class.
-  if (!child.is_visible && memory_state == mojom::MemoryState::NORMAL)
-    return mojom::MemoryState::THROTTLED;
+  if (!child.is_visible && memory_state == MemoryState::NORMAL)
+    return MemoryState::THROTTLED;
   // TODO(bashi): Suspend background renderers after a certain period of time.
 #endif  // defined(OS_ANDROID)
   return memory_state;
@@ -380,7 +380,7 @@ void MemoryCoordinatorImpl::CreateChildInfoMapEntry(
   // We'll set renderer's memory state to the current global state when the
   // corresponding renderer process is ready to communicate. Renderer processes
   // call AddChild() when they are ready.
-  child_info.memory_state = mojom::MemoryState::NORMAL;
+  child_info.memory_state = MemoryState::NORMAL;
   child_info.is_visible = true;
   child_info.handle = std::move(handle);
 }
@@ -391,11 +391,10 @@ void MemoryCoordinatorImpl::NotifyStateToClients() {
 }
 
 void MemoryCoordinatorImpl::NotifyStateToChildren() {
-  auto mojo_state = ToMojomMemoryState(current_state_);
   // It's OK to call SetChildMemoryState() unconditionally because it checks
   // whether this state transition is valid.
   for (auto& iter : children())
-    SetChildMemoryState(iter.first, mojo_state);
+    SetChildMemoryState(iter.first, current_state_);
 }
 
 void MemoryCoordinatorImpl::RecordStateChange(MemoryState prev_state,
