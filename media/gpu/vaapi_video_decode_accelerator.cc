@@ -1734,11 +1734,8 @@ bool VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::SubmitDecode(
     const Vp9LoopFilterParams& lf,
     const std::vector<scoped_refptr<VP9Picture>>& ref_pictures,
     const base::Closure& done_cb) {
-  // TODO(posciak): We don't currently have the ability to know when the surface
-  // is decoded, as we submit both the decode job and output independently and
-  // don't wait for just the decode to be finished, instead relying on the
-  // driver to execute them in correct order.
-  DCHECK(!done_cb.is_null());
+  // |done_cb| should be null as we return false from IsFrameContextRequired().
+  DCHECK(done_cb.is_null());
 
   VADecPictureParameterBufferVP9 pic_param;
   memset(&pic_param, 0, sizeof(pic_param));
