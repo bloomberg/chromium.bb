@@ -58,6 +58,11 @@ class PLATFORM_EXPORT ScrollbarThemeOverlayMock : public ScrollbarThemeOverlay {
     ScrollbarThemeOverlay::paintThumb(gc, scrollbar, rect);
   }
 
+  bool shouldSnapBackToDragOrigin(const ScrollbarThemeClient& scrollbar,
+                                  const PlatformMouseEvent& evt) override {
+    return false;
+  }
+
  private:
   double m_delayInSeconds;
   bool isMockTheme() const final { return true; }

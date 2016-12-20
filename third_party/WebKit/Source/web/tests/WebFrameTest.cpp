@@ -10904,6 +10904,69 @@ TEST_F(WebFrameTest, MouseOverCustomScrollbar) {
   EXPECT_EQ(hitTestResult.scrollbar()->hoveredPart(), ScrollbarPart::ThumbPart);
 }
 
+TEST_F(WebFrameTest, MouseReleaseUpdatesScrollbarHoveredPart) {
+  registerMockedHttpURLLoad("custom-scrollbar-hover.html");
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  WebViewImpl* webView = webViewHelper.initializeAndLoad(
+      m_baseURL + "custom-scrollbar-hover.html");
+
+  webViewHelper.resize(WebSize(200, 200));
+
+  webView->updateAllLifecyclePhases();
+
+  Document* document = toLocalFrame(webView->page()->mainFrame())->document();
+
+  Element* scrollbarDiv = document->getElementById("scrollbar");
+  EXPECT_TRUE(scrollbarDiv);
+
+  ScrollableArea* scrollableArea =
+      toLayoutBox(scrollbarDiv->layoutObject())->getScrollableArea();
+
+  EXPECT_TRUE(scrollableArea->verticalScrollbar());
+  Scrollbar* scrollbar = scrollableArea->verticalScrollbar();
+  EXPECT_EQ(scrollbar->pressedPart(), ScrollbarPart::NoPart);
+  EXPECT_EQ(scrollbar->hoveredPart(), ScrollbarPart::NoPart);
+
+  // Mouse moved over the scrollbar.
+  PlatformMouseEvent mouseMoveOverScrollbar(
+      IntPoint(175, 1), IntPoint(175, 1),
+      WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
+      PlatformEvent::NoModifiers, TimeTicks::Now());
+  document->frame()->eventHandler().handleMouseMoveEvent(
+      mouseMoveOverScrollbar, Vector<PlatformMouseEvent>());
+  HitTestResult hitTestResult = webView->coreHitTestResultAt(WebPoint(175, 1));
+  EXPECT_EQ(scrollbar->pressedPart(), ScrollbarPart::NoPart);
+  EXPECT_EQ(scrollbar->hoveredPart(), ScrollbarPart::ThumbPart);
+
+  // Mouse pressed.
+  PlatformMouseEvent mousePressEvent(
+      IntPoint(175, 1), IntPoint(175, 1), WebPointerProperties::Button::Left,
+      PlatformEvent::MousePressed, 0, PlatformEvent::Modifiers::LeftButtonDown,
+      TimeTicks::Now());
+  document->frame()->eventHandler().handleMousePressEvent(mousePressEvent);
+  EXPECT_EQ(scrollbar->pressedPart(), ScrollbarPart::ThumbPart);
+  EXPECT_EQ(scrollbar->hoveredPart(), ScrollbarPart::ThumbPart);
+
+  // Mouse moved off the scrollbar while still pressed.
+  PlatformMouseEvent mouseMoveOffScrollbar(
+      IntPoint(1, 1), IntPoint(1, 1), WebPointerProperties::Button::Left,
+      PlatformEvent::MouseMoved, 0, PlatformEvent::Modifiers::LeftButtonDown,
+      TimeTicks::Now());
+  document->frame()->eventHandler().handleMouseLeaveEvent(
+      mouseMoveOffScrollbar);
+  EXPECT_EQ(scrollbar->pressedPart(), ScrollbarPart::ThumbPart);
+  EXPECT_EQ(scrollbar->hoveredPart(), ScrollbarPart::ThumbPart);
+
+  // Mouse released.
+  PlatformMouseEvent MouseReleaseEvent(
+      IntPoint(1, 1), IntPoint(1, 1), WebPointerProperties::Button::Left,
+      PlatformEvent::MouseReleased, 0, PlatformEvent::Modifiers::LeftButtonDown,
+      TimeTicks::Now());
+  document->frame()->eventHandler().handleMouseReleaseEvent(MouseReleaseEvent);
+  EXPECT_EQ(scrollbar->pressedPart(), ScrollbarPart::NoPart);
+  EXPECT_EQ(scrollbar->hoveredPart(), ScrollbarPart::NoPart);
+}
+
 static void disableCompositing(WebSettings* settings) {
   settings->setAcceleratedCompositingEnabled(false);
   settings->setPreferCompositingToLCDTextEnabled(false);

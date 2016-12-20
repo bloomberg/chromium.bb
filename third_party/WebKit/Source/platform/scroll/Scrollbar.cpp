@@ -477,12 +477,11 @@ void Scrollbar::mouseUp(const PlatformMouseEvent& mouseEvent) {
     if (isCaptured)
       m_scrollableArea->mouseReleasedScrollbar();
 
-    // m_hoveredPart won't be updated until the next mouseMoved or mouseDown, so
-    // we have to hit test to really know if the mouse has exited the scrollbar
-    // on a mouseUp.
     ScrollbarPart part = theme().hitTest(*this, mouseEvent.position());
-    if (part == NoPart)
+    if (part == NoPart) {
+      setHoveredPart(NoPart);
       m_scrollableArea->mouseExitedScrollbar(*this);
+    }
   }
 }
 
