@@ -160,33 +160,11 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'win',
     },
-    'Win8 Release (NVIDIA)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '10de:104a',
-          'os': 'Windows-10-10586'
-        },
-      ],
-      'build_config': 'Release',
-      'swarming': True,
-      'os_type': 'win',
-    },
-    'Win8 Debug (NVIDIA)': {
-      'swarming_dimensions': [
-        {
-          'gpu': '10de:104a',
-          'os': 'Windows-10-10586'
-        },
-      ],
-      'build_config': 'Debug',
-      'swarming': True,
-      'os_type': 'win',
-    },
     'Win10 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Windows-10-10586'
+          'os': 'Windows-10'
         },
       ],
       'build_config': 'Release',
@@ -197,7 +175,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '10de:104a',
-          'os': 'Windows-10-10586'
+          'os': 'Windows-10'
         },
       ],
       'build_config': 'Debug',
@@ -269,7 +247,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:0412',
-          'os': 'Windows-10-10586',
+          'os': 'Windows-10',
         },
       ],
       'build_config': 'Release',
@@ -295,7 +273,7 @@ FYI_WATERFALL = {
       'swarming_dimensions': [
         {
           'gpu': '8086:0412',
-          'os': 'Windows-10-10586',
+          'os': 'Windows-10',
         },
       ],
       'build_config': 'Debug',
