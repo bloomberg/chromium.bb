@@ -45,14 +45,14 @@ std::vector<std::unique_ptr<PasswordForm>> SplitFederatedMatches(
   return federated_matches;
 }
 
-// Create a vector of const T* from a vector of unique_ptr<T>.
-template <typename T>
-std::vector<const T*> MakeWeakCopies(
-    const std::vector<std::unique_ptr<T>>& owning) {
-  std::vector<const T*> result;
-  result.resize(owning.size());
-  std::transform(owning.begin(), owning.end(), result.begin(),
-                 [](const std::unique_ptr<T>& ptr) { return ptr.get(); });
+// Create a vector of const PasswordForm from a vector of
+// unique_ptr<PasswordForm> by applying get() item-wise.
+std::vector<const PasswordForm*> MakeWeakCopies(
+    const std::vector<std::unique_ptr<PasswordForm>>& owning) {
+  std::vector<const PasswordForm*> result(owning.size());
+  std::transform(
+      owning.begin(), owning.end(), result.begin(),
+      [](const std::unique_ptr<PasswordForm>& ptr) { return ptr.get(); });
   return result;
 }
 
@@ -80,13 +80,13 @@ const std::vector<InteractionsStats>& FormFetcherImpl::GetInteractionsStats()
   return interactions_stats_;
 }
 
-const std::vector<const autofill::PasswordForm*>&
-FormFetcherImpl::GetFederatedMatches() const {
+const std::vector<const PasswordForm*>& FormFetcherImpl::GetFederatedMatches()
+    const {
   return weak_federated_;
 }
 
 void FormFetcherImpl::OnGetPasswordStoreResults(
-    std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
+    std::vector<std::unique_ptr<PasswordForm>> results) {
   DCHECK_EQ(State::WAITING, state_);
   state_ = State::NOT_WAITING;
 
