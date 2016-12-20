@@ -12,10 +12,6 @@
 #include "media/base/cdm_config.h"
 #include "media/base/cdm_key_information.h"
 
-#if !defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-#include "chromecast/media/cdm/cast_cdm_proxy.h"
-#endif  // !defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
-
 namespace chromecast {
 namespace media {
 
@@ -66,14 +62,7 @@ void CastCdmFactory::Create(
                  ::media::BindToCurrentLoop(session_closed_cb),
                  ::media::BindToCurrentLoop(session_keys_change_cb),
                  ::media::BindToCurrentLoop(session_expiration_update_cb)));
-
-// When using Mojo media, we do not need to proxy calls to the CMA thread. All
-// calls are made on that thread already.
-#if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   bound_cdm_created_cb.Run(cast_cdm, "");
-#else
-  bound_cdm_created_cb.Run(new CastCdmProxy(cast_cdm, task_runner_), "");
-#endif  // defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 }
 
 scoped_refptr<CastCdm> CastCdmFactory::CreatePlatformBrowserCdm(
