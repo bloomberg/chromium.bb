@@ -14,12 +14,12 @@
 #include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using std::ostream;
 using std::string;
 
 namespace net {
 
-ostream& operator<<(ostream& os, const SpdyStreamPrecedence precedence) {
+std::ostream& operator<<(std::ostream& os,
+                         const SpdyStreamPrecedence precedence) {
   if (precedence.is_spdy3_priority()) {
     os << "SpdyStreamPrecedence[spdy3_priority=" << precedence.spdy3_priority()
        << "]";
