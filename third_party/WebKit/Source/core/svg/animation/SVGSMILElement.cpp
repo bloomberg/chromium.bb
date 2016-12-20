@@ -862,8 +862,8 @@ SMILTime SVGSMILElement::resolveActiveEnd(SMILTime resolvedBegin,
 }
 
 SMILInterval SVGSMILElement::resolveInterval(
-    ResolveInterval resolveIntervalType) const {
-  bool first = resolveIntervalType == FirstInterval;
+    IntervalSelector intervalSelector) const {
+  bool first = intervalSelector == FirstInterval;
   // See the pseudocode in http://www.w3.org/TR/SMIL3/smil-timing.html#q90.
   SMILTime beginAfter =
       first ? -std::numeric_limits<double>::infinity() : m_interval.end;

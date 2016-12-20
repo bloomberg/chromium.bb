@@ -166,9 +166,9 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
                             SMILTime minimumTime,
                             bool equalsMinimumOK) const;
 
-  enum ResolveInterval { FirstInterval, NextInterval };
+  enum IntervalSelector { FirstInterval, NextInterval };
 
-  SMILInterval resolveInterval(ResolveInterval) const;
+  SMILInterval resolveInterval(IntervalSelector) const;
   void resolveFirstInterval();
   bool resolveNextInterval();
   SMILTime resolveActiveEnd(SMILTime resolvedBegin, SMILTime resolvedEnd) const;
