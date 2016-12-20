@@ -52,6 +52,7 @@ class SimpleWM : public service_manager::Service,
   class WindowListModel;
   class WindowListModelObserver;
   class WindowListView;
+  class WorkspaceLayoutManager;
 
   // service_manager::Service:
   void OnStart() override;
@@ -113,6 +114,7 @@ class SimpleWM : public service_manager::Service,
   std::unique_ptr<aura::MusContextFactory> compositor_context_factory_;
   std::map<aura::Window*, FrameView*> client_window_to_frame_view_;
   std::unique_ptr<WindowListModel> window_list_model_;
+  std::unique_ptr<WorkspaceLayoutManager> workspace_layout_manager_;
 
   bool started_ = false;
 

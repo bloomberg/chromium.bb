@@ -108,7 +108,7 @@ class MoveLoop : public aura::WindowObserver {
   const gfx::Point initial_event_screen_location_;
 
   // Original bounds of the window.
-  const gfx::Rect initial_window_bounds_;
+  gfx::Rect initial_window_bounds_;
   const gfx::Rect initial_user_set_bounds_;
 
   // Set to true when MoveLoop changes the bounds of |target_|. The move is

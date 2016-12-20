@@ -6,8 +6,10 @@
 
 #include "base/auto_reset.h"
 #include "base/memory/ptr_util.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect.h"
@@ -159,6 +161,21 @@ bool MoveLoop::DetermineType(int ht_location,
 }
 
 void MoveLoop::MoveImpl(const ui::PointerEvent& event) {
+  ui::WindowShowState show_state =
+      target_->GetProperty(aura::client::kShowStateKey);
+  // TODO(beng): figure out if there might not be another place to put this,
+  //             perhaps prior to move loop creation.
+  if (show_state == ui::SHOW_STATE_MAXIMIZED) {
+    base::AutoReset<bool> resetter(&changing_bounds_, true);
+    target_->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+    gfx::Rect restored_bounds =
+        *target_->GetProperty(aura::client::kRestoreBoundsKey);
+    // TODO(beng): Not just enough to adjust width and height, probably also
+    //             need to take some action to recenter the window relative to
+    //             the pointer position within the titlebar.
+    initial_window_bounds_.set_width(restored_bounds.width());
+    initial_window_bounds_.set_height(restored_bounds.height());
+  }
   const gfx::Vector2d delta =
       event.root_location() - initial_event_screen_location_;
   const gfx::Rect new_bounds(DetermineBoundsFromDelta(delta));

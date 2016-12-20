@@ -27,6 +27,7 @@ namespace {
 
 const int kNonClientTopHeight = 24;
 const int kNonClientSize = 5;
+const int kNonClientMaximizedTopOverlap = 4;
 
 }  // namespace
 
@@ -133,6 +134,9 @@ class SimpleWM::WindowListView : public views::WidgetDelegateView,
   }
   void OnPaint(gfx::Canvas* canvas) override {
     canvas->DrawColor(SK_ColorLTGRAY);
+    gfx::Rect stroke_bounds = GetLocalBounds();
+    stroke_bounds.set_height(1);
+    canvas->FillRect(stroke_bounds, SK_ColorDKGRAY);
   }
   gfx::Size GetPreferredSize() const override {
     std::unique_ptr<views::MdTextButton> measure_button(
@@ -212,7 +216,27 @@ class SimpleWM::FrameView : public views::WidgetDelegateView,
     // Client offsets are applied automatically by the window service.
     gfx::Rect parent_bounds = GetWidget()->GetNativeWindow()->bounds();
     parent_bounds.set_origin(gfx::Point());
+
+    if (GetWidget()->IsMaximized()) {
+      parent_bounds.Inset(-kNonClientSize, -kNonClientMaximizedTopOverlap,
+                          -kNonClientSize, -kNonClientSize);
+    }
+
     client_window_->SetBounds(parent_bounds);
+  }
+  bool CanMaximize() const override {
+    return (client_window_->GetProperty(aura::client::kResizeBehaviorKey) &
+        ui::mojom::kResizeBehaviorCanMaximize) != 0;
+  }
+
+  bool CanMinimize() const override {
+    return (client_window_->GetProperty(aura::client::kResizeBehaviorKey) &
+        ui::mojom::kResizeBehaviorCanMinimize) != 0;
+  }
+
+  bool CanResize() const override {
+    return (client_window_->GetProperty(aura::client::kResizeBehaviorKey) &
+        ui::mojom::kResizeBehaviorCanResize) != 0;
   }
 
   // aura::WindowObserver:
@@ -220,12 +244,57 @@ class SimpleWM::FrameView : public views::WidgetDelegateView,
                                intptr_t old) override {
     if (key == aura::client::kTitleKey)
       GetWidget()->UpdateWindowTitle();
+    else if (key == aura::client::kResizeBehaviorKey)
+      GetWidget()->non_client_view()->frame_view()->Layout();
   }
 
   aura::Window* client_window_;
   std::unique_ptr<MoveEventHandler> move_event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameView);
+};
+
+class SimpleWM::WorkspaceLayoutManager : public aura::WindowObserver {
+ public:
+  explicit WorkspaceLayoutManager(aura::Window* window_root)
+      : window_root_(window_root) {}
+  ~WorkspaceLayoutManager() override {}
+
+ private:
+  // aura::WindowObserver:
+  void OnWindowPropertyChanged(aura::Window* window, const void* key,
+                               intptr_t old) override {
+    if (key == aura::client::kShowStateKey) {
+      ui::WindowShowState show_state =
+          window->GetProperty(aura::client::kShowStateKey);
+      switch (show_state) {
+      case ui::SHOW_STATE_NORMAL:
+        window->Show();
+        window->SetBounds(
+            *window->GetProperty(aura::client::kRestoreBoundsKey));
+        break;
+      case ui::SHOW_STATE_MINIMIZED:
+        window->Hide();
+        break;
+      case ui::SHOW_STATE_MAXIMIZED:
+        window->Show();
+        window->SetProperty(aura::client::kRestoreBoundsKey,
+                            new gfx::Rect(window->bounds()));
+        window->SetBounds(gfx::Rect(window_root_->bounds().size()));
+        break;
+      default:
+        NOTREACHED();
+        break;
+      }
+    }
+  }
+  void OnWindowDestroying(aura::Window* window) override {
+    window->RemoveObserver(this);
+  }
+
+  aura::Window* window_root_;
+
+  DISALLOW_COPY_AND_ASSIGN(WorkspaceLayoutManager);
 };
 
 class SimpleWM::DisplayLayoutManager : public aura::LayoutManager {
@@ -381,6 +450,7 @@ aura::Window* SimpleWM::OnWmCreateTopLevelWindow(
   frame_view->Init();
 
   frame_widget->GetNativeWindow()->AddChild(client_window);
+  frame_widget->GetNativeWindow()->AddObserver(workspace_layout_manager_.get());
 
   client_window_to_frame_view_[client_window] = frame_view;
   // TODO(beng): probably need to observe client_window from now on so we can
@@ -410,9 +480,12 @@ void SimpleWM::OnWmNewDisplay(
   window_tree_host_->window()->Show();
   display_root_ = window_tree_host_->window();
   window_root_ = new aura::Window(nullptr);
-  window_root_->Init(ui::LAYER_NOT_DRAWN);
+  window_root_->Init(ui::LAYER_SOLID_COLOR);
+  window_root_->layer()->SetColor(SK_ColorWHITE);
   display_root_->AddChild(window_root_);
   window_root_->Show();
+  workspace_layout_manager_ =
+      base::MakeUnique<WorkspaceLayoutManager>(window_root_);
 
   window_list_model_ = base::MakeUnique<WindowListModel>(window_root_);
 
@@ -477,6 +550,7 @@ SimpleWM::FrameView* SimpleWM::GetFrameViewForClientWindow(
 }
 
 void SimpleWM::OnWindowListViewItemActivated(aura::Window* window) {
+  window->Show();
   aura::client::ActivationClient* activation_client =
       aura::client::GetActivationClient(window->GetRootWindow());
   activation_client->ActivateWindow(window);
