@@ -224,11 +224,25 @@ void WontCompile() {
   Closure cb2 = Bind(cb);
 }
 
-#elif defined(NCTEST_DISALLOW_ONCECALLBACK_RUN_ON_LVALUE)  // [r"static_assert failed \"OnceCallback::Run\(\) may only be invoked on an rvalue, i\.e\. std::move\(callback\)\.Run\(\)\.\""]
+#elif defined(NCTEST_DISALLOW_ONCECALLBACK_RUN_ON_LVALUE)  // [r"static_assert failed \"OnceCallback::Run\(\) may only be invoked on a non-const rvalue, i\.e\. std::move\(callback\)\.Run\(\)\.\""]
 
 void WontCompile() {
   OnceClosure cb = Bind([] {});
   cb.Run();
+}
+
+#elif defined(NCTEST_DISALLOW_ONCECALLBACK_RUN_ON_CONST_LVALUE)  // [r"static_assert failed \"OnceCallback::Run\(\) may only be invoked on a non-const rvalue, i\.e\. std::move\(callback\)\.Run\(\)\.\""]
+
+void WontCompile() {
+  const OnceClosure cb = Bind([] {});
+  cb.Run();
+}
+
+#elif defined(NCTEST_DISALLOW_ONCECALLBACK_RUN_ON_CONST_RVALUE)  // [r"static_assert failed \"OnceCallback::Run\(\) may only be invoked on a non-const rvalue, i\.e\. std::move\(callback\)\.Run\(\)\.\""]
+
+void WontCompile() {
+  const OnceClosure cb = Bind([] {});
+  std::move(cb).Run();
 }
 
 #endif
