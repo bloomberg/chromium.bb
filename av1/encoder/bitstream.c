@@ -3891,6 +3891,18 @@ static void write_uncompressed_header(AV1_COMP *cpi,
     aom_wb_write_bit(wb, 1);  // show_existing_frame
     aom_wb_write_literal(wb, cpi->existing_fb_idx_to_show, 3);
 
+#if CONFIG_REFERENCE_BUFFER
+    if (cpi->seq_params.frame_id_numbers_present_flag) {
+      int frame_id_len = cpi->seq_params.frame_id_length_minus7 + 7;
+      int display_frame_id = cm->ref_frame_id[cpi->existing_fb_idx_to_show];
+      aom_wb_write_literal(wb, display_frame_id, frame_id_len);
+      /* Add a zero byte to prevent emulation of superframe marker */
+      /* Same logic as when when terminating the entropy coder */
+      /* Consider to have this logic only one place */
+      aom_wb_write_literal(wb, 0, 8);
+    }
+#endif
+
     return;
   } else {
 #endif                        // CONFIG_EXT_REFS
@@ -3906,8 +3918,8 @@ static void write_uncompressed_header(AV1_COMP *cpi,
 #if CONFIG_REFERENCE_BUFFER
   cm->invalid_delta_frame_id_minus1 = 0;
   if (cpi->seq_params.frame_id_numbers_present_flag) {
-    int FidLen = cpi->seq_params.frame_id_length_minus7 + 7;
-    aom_wb_write_literal(wb, cm->current_frame_id, FidLen);
+    int frame_id_len = cpi->seq_params.frame_id_length_minus7 + 7;
+    aom_wb_write_literal(wb, cm->current_frame_id, frame_id_len);
   }
 #endif
 
@@ -3975,16 +3987,17 @@ static void write_uncompressed_header(AV1_COMP *cpi,
 #if CONFIG_REFERENCE_BUFFER
         if (cpi->seq_params.frame_id_numbers_present_flag) {
           int i = get_ref_frame_map_idx(cpi, ref_frame);
-          int FidLen = cpi->seq_params.frame_id_length_minus7 + 7;
-          int DiffLen = cpi->seq_params.delta_frame_id_length_minus2 + 2;
+          int frame_id_len = cpi->seq_params.frame_id_length_minus7 + 7;
+          int diff_len = cpi->seq_params.delta_frame_id_length_minus2 + 2;
           int delta_frame_id_minus1 =
-              ((cm->current_frame_id - cm->ref_frame_id[i] + (1 << FidLen)) %
-               (1 << FidLen)) -
+              ((cm->current_frame_id - cm->ref_frame_id[i] +
+                (1 << frame_id_len)) %
+               (1 << frame_id_len)) -
               1;
           if (delta_frame_id_minus1 < 0 ||
-              delta_frame_id_minus1 >= (1 << DiffLen))
+              delta_frame_id_minus1 >= (1 << diff_len))
             cm->invalid_delta_frame_id_minus1 = 1;
-          aom_wb_write_literal(wb, delta_frame_id_minus1, DiffLen);
+          aom_wb_write_literal(wb, delta_frame_id_minus1, diff_len);
         }
 #endif
       }

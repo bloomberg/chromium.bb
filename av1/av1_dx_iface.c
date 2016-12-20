@@ -215,12 +215,12 @@ static aom_codec_err_t decoder_peek_si_internal(
 #if CONFIG_REFERENCE_BUFFER
     {
       /* TODO: Move outside frame loop or inside key-frame branch */
-      int FidLen;
+      int frame_id_len;
       SequenceHeader seq_params;
       read_sequence_header(&seq_params);
       if (seq_params.frame_id_numbers_present_flag) {
-        FidLen = seq_params.frame_id_length_minus7 + 7;
-        aom_rb_read_literal(&rb, FidLen);
+        frame_id_len = seq_params.frame_id_length_minus7 + 7;
+        aom_rb_read_literal(&rb, frame_id_len);
       }
     }
 #endif

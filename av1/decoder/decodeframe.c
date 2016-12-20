@@ -3690,19 +3690,22 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   cm->show_existing_frame = aom_rb_read_bit(rb);
 
   if (cm->show_existing_frame) {
-    // Show an existing frame directly.
-    const int frame_to_show = cm->ref_frame_map[aom_rb_read_literal(rb, 3)];
+// Show an existing frame directly.
 #if CONFIG_REFERENCE_BUFFER
+    const int existing_frame_idx = aom_rb_read_literal(rb, 3);
+    const int frame_to_show = cm->ref_frame_map[existing_frame_idx];
     if (pbi->seq_params.frame_id_numbers_present_flag) {
-      int FidLen = pbi->seq_params.frame_id_length_minus7 + 7;
-      int display_frame_id = aom_rb_read_literal(rb, FidLen);
+      int frame_id_length = pbi->seq_params.frame_id_length_minus7 + 7;
+      int display_frame_id = aom_rb_read_literal(rb, frame_id_length);
       /* Compare display_frame_id with ref_frame_id and check valid for
       * referencing */
-      if (display_frame_id != cm->ref_frame_id[frame_to_show] ||
-          cm->valid_for_referencing[frame_to_show] == 0)
+      if (display_frame_id != cm->ref_frame_id[existing_frame_idx] ||
+          cm->valid_for_referencing[existing_frame_idx] == 0)
         aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                            "Reference buffer frame ID mismatch");
     }
+#else
+    const int frame_to_show = cm->ref_frame_map[aom_rb_read_literal(rb, 3)];
 #endif
     lock_buffer_pool(pool);
     if (frame_to_show < 0 || frame_bufs[frame_to_show].ref_count < 1) {
@@ -3731,24 +3734,25 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
   cm->error_resilient_mode = aom_rb_read_bit(rb);
 #if CONFIG_REFERENCE_BUFFER
   if (pbi->seq_params.frame_id_numbers_present_flag) {
-    int FidLen = pbi->seq_params.frame_id_length_minus7 + 7;
-    int DiffLen = pbi->seq_params.delta_frame_id_length_minus2 + 2;
-    int PrevFrameId = 0;
+    int frame_id_length = pbi->seq_params.frame_id_length_minus7 + 7;
+    int diff_len = pbi->seq_params.delta_frame_id_length_minus2 + 2;
+    int prev_frame_id = 0;
     if (cm->frame_type != KEY_FRAME) {
-      PrevFrameId = cm->current_frame_id;
+      prev_frame_id = cm->current_frame_id;
     }
-    cm->current_frame_id = aom_rb_read_literal(rb, FidLen);
+    cm->current_frame_id = aom_rb_read_literal(rb, frame_id_length);
 
     if (cm->frame_type != KEY_FRAME) {
-      int DiffFrameID;
-      if (cm->current_frame_id > PrevFrameId) {
-        DiffFrameID = cm->current_frame_id - PrevFrameId;
+      int diff_frame_id;
+      if (cm->current_frame_id > prev_frame_id) {
+        diff_frame_id = cm->current_frame_id - prev_frame_id;
       } else {
-        DiffFrameID = (1 << FidLen) + cm->current_frame_id - PrevFrameId;
+        diff_frame_id =
+            (1 << frame_id_length) + cm->current_frame_id - prev_frame_id;
       }
       /* Check current_frame_id for conformance */
-      if (PrevFrameId == cm->current_frame_id ||
-          DiffFrameID >= (1 << (FidLen - 1))) {
+      if (prev_frame_id == cm->current_frame_id ||
+          diff_frame_id >= (1 << (frame_id_length - 1))) {
         aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                            "Invalid value of current_frame_id");
       }
@@ -3757,14 +3761,14 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
     for (i = 0; i < REF_FRAMES; i++) {
       if (cm->frame_type == KEY_FRAME) {
         cm->valid_for_referencing[i] = 0;
-      } else if (cm->current_frame_id - (1 << DiffLen) > 0) {
+      } else if (cm->current_frame_id - (1 << diff_len) > 0) {
         if (cm->ref_frame_id[i] > cm->current_frame_id ||
-            cm->ref_frame_id[i] < cm->current_frame_id - (1 << DiffLen))
+            cm->ref_frame_id[i] < cm->current_frame_id - (1 << diff_len))
           cm->valid_for_referencing[i] = 0;
       } else {
         if (cm->ref_frame_id[i] > cm->current_frame_id &&
             cm->ref_frame_id[i] <
-                (1 << FidLen) + cm->current_frame_id - (1 << DiffLen))
+                (1 << frame_id_length) + cm->current_frame_id - (1 << diff_len))
           cm->valid_for_referencing[i] = 0;
       }
     }
@@ -3847,15 +3851,16 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
         cm->ref_frame_sign_bias[LAST_FRAME + i] = aom_rb_read_bit(rb);
 #if CONFIG_REFERENCE_BUFFER
         if (pbi->seq_params.frame_id_numbers_present_flag) {
-          int FidLen = pbi->seq_params.frame_id_length_minus7 + 7;
-          int DiffLen = pbi->seq_params.delta_frame_id_length_minus2 + 2;
-          int delta_frame_id_minus1 = aom_rb_read_literal(rb, DiffLen);
-          int refFrameId = ((cm->current_frame_id -
-                             (delta_frame_id_minus1 + 1) + (1 << FidLen)) %
-                            (1 << FidLen));
+          int frame_id_length = pbi->seq_params.frame_id_length_minus7 + 7;
+          int diff_len = pbi->seq_params.delta_frame_id_length_minus2 + 2;
+          int delta_frame_id_minus1 = aom_rb_read_literal(rb, diff_len);
+          int ref_frame_id =
+              ((cm->current_frame_id - (delta_frame_id_minus1 + 1) +
+                (1 << frame_id_length)) %
+               (1 << frame_id_length));
           /* Compare values derived from delta_frame_id_minus1 and
           * refresh_frame_flags. Also, check valid for referencing */
-          if (refFrameId != cm->ref_frame_id[ref] ||
+          if (ref_frame_id != cm->ref_frame_id[ref] ||
               cm->valid_for_referencing[ref] == 0)
             aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
                                "Reference buffer frame ID mismatch");
@@ -4457,14 +4462,8 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_GLOBAL_MOTION
 
   if (!first_partition_size) {
-// showing a frame directly
-#if CONFIG_EXT_REFS
-    if (cm->show_existing_frame)
-      *p_data_end = data + aom_rb_bytes_read(&rb);
-    else
-#endif  // CONFIG_EXT_REFS
-      *p_data_end = data + (cm->profile <= PROFILE_2 ? 1 : 2);
-
+    // showing a frame directly
+    *p_data_end = data + aom_rb_bytes_read(&rb);
     return;
   }
 

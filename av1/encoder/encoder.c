@@ -4706,7 +4706,7 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   {
     /* Non-normative definition of current_frame_id ("frame counter" with
     * wraparound) */
-    const int FidLen = FRAME_ID_LENGTH_MINUS7 + 7;
+    const int frame_id_length = FRAME_ID_LENGTH_MINUS7 + 7;
     if (cm->current_frame_id == -1) {
       int lsb, msb;
 /* quasi-random initialization of current_frame_id for a key frame */
@@ -4721,10 +4721,11 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 #if CONFIG_AOM_HIGHBITDEPTH
       }
 #endif
-      cm->current_frame_id = ((msb << 8) + lsb) % (1 << FidLen);
+      cm->current_frame_id = ((msb << 8) + lsb) % (1 << frame_id_length);
     } else {
       cm->current_frame_id =
-          (cm->current_frame_id + 1 + (1 << FidLen)) % (1 << FidLen);
+          (cm->current_frame_id + 1 + (1 << frame_id_length)) %
+          (1 << frame_id_length);
     }
   }
 #endif
