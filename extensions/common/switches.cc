@@ -20,9 +20,6 @@ const char kAllowLegacyExtensionManifests[] =
 // a new tab.
 const char kEmbeddedExtensionOptions[] = "embedded-extension-options";
 
-// Enables the <window-controls> tag in platform apps.
-const char kEnableAppWindowControls[] = "enable-app-window-controls";
-
 // Enable BLE Advertisiing in apps.
 const char kEnableBLEAdvertising[] = "enable-ble-advertising-in-apps";
 

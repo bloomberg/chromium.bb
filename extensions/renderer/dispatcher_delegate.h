@@ -35,8 +35,7 @@ class DispatcherDelegate {
   virtual void PopulateSourceMap(ResourceBundleSourceMap* source_map) {}
 
   // Requires additional modules within an extension context's module system.
-  virtual void RequireAdditionalModules(ScriptContext* context,
-                                        bool is_within_platform_app) {}
+  virtual void RequireAdditionalModules(ScriptContext* context) {}
 
   // Allows the delegate to respond to an updated set of active extensions in
   // the Dispatcher.

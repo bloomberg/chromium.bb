@@ -5586,12 +5586,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_FAST_UNLOAD_DESCRIPTION" desc="Description of the 'Fast Unload' lab.">
         Enables fast tab/window closing - runs a tab's onunload js handler independently of the GUI.
       </message>
-      <message name="IDS_FLAGS_APP_WINDOW_CONTROLS_NAME" desc="Name of the 'Enable 'window-controls' element' lab.">
-        'Window-controls' element
-      </message>
-      <message name="IDS_FLAGS_APP_WINDOW_CONTROLS_DESCRIPTION" desc="Description of the 'Enable 'window-controls' element' lab.">
-        Enables using 'window-controls' HTML elements in packaged apps.
-      </message>
       <message name="IDS_FLAGS_USER_CONSENT_FOR_EXTENSION_SCRIPTS_NAME" desc="Name of the 'User consent for extension scripts' lab.">
         User consent for extension scripts
       </message>

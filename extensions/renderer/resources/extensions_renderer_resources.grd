@@ -72,8 +72,6 @@
       <include name="IDR_SERVICE_WORKER_BINDINGS_JS" file="service_worker_bindings.js" type="BINDATA" />
       <include name="IDR_WEB_REQUEST_CUSTOM_BINDINGS_JS" file="web_request_custom_bindings.js" type="BINDATA" />
       <include name="IDR_WEB_REQUEST_INTERNAL_CUSTOM_BINDINGS_JS" file="web_request_internal_custom_bindings.js" type="BINDATA" />
-      <include name="IDR_WINDOW_CONTROLS_JS" file="window_controls.js" type="BINDATA" />
-      <include name="IDR_WINDOW_CONTROLS_TEMPLATE_HTML" file="window_controls_template.html" type="BINDATA" />
       <include name="IDR_WEB_VIEW_REQUEST_CUSTOM_BINDINGS_JS" file="guest_view/web_view/web_view_request_custom_bindings.js" type="BINDATA" />
 
       <!-- Custom types for APIs. -->

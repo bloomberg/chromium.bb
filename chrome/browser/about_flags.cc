@@ -758,11 +758,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-fast-unload", IDS_FLAGS_FAST_UNLOAD_NAME,
      IDS_FLAGS_FAST_UNLOAD_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableFastUnload)},
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-    {"enable-app-window-controls", IDS_FLAGS_APP_WINDOW_CONTROLS_NAME,
-     IDS_FLAGS_APP_WINDOW_CONTROLS_DESCRIPTION, kOsDesktop,
-     SINGLE_VALUE_TYPE(extensions::switches::kEnableAppWindowControls)},
-#endif  // ENABLE_EXTENSIONS
     {"enable-history-entry-requires-user-gesture",
      IDS_FLAGS_HISTORY_REQUIRES_USER_GESTURE_NAME,
      IDS_FLAGS_HISTORY_REQUIRES_USER_GESTURE_DESCRIPTION, kOsAll,

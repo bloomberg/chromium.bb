@@ -261,33 +261,20 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   // Platform app sources that are not API-specific..
   source_map->RegisterSource("fileEntryBindingUtil",
                              IDR_FILE_ENTRY_BINDING_UTIL_JS);
-  source_map->RegisterSource("tagWatcher", IDR_TAG_WATCHER_JS);
   source_map->RegisterSource("chromeWebViewInternal",
                              IDR_CHROME_WEB_VIEW_INTERNAL_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("chromeWebView", IDR_CHROME_WEB_VIEW_JS);
 }
 
 void ChromeExtensionsDispatcherDelegate::RequireAdditionalModules(
-    extensions::ScriptContext* context,
-    bool is_within_platform_app) {
-  extensions::ModuleSystem* module_system = context->module_system();
-  extensions::Feature::Context context_type = context->context_type();
-
-  // TODO(kalman, fsamuel): Eagerly calling Require on context startup is
-  // expensive. It would be better if there were a light way of detecting when
-  // a webview or appview is created and only then set up the infrastructure.
-  if (context_type == extensions::Feature::BLESSED_EXTENSION_CONTEXT &&
-      is_within_platform_app &&
-      extensions::GetCurrentChannel() <= version_info::Channel::DEV &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          extensions::switches::kEnableAppWindowControls)) {
-    module_system->Require("windowControls");
-  }
-
+    extensions::ScriptContext* context) {
   // Note: setting up the WebView class here, not the chrome.webview API.
   // The API will be automatically set up when first used.
   if (context->GetAvailability("webViewInternal").is_available()) {
-    module_system->Require("chromeWebView");
+    // TODO(fsamuel): Eagerly calling Require on context startup is expensive.
+    // It would be better if there were a light way of detecting when a webview
+    // or appview is created and only then set up the infrastructure.
+    context->module_system()->Require("chromeWebView");
   }
 }
 

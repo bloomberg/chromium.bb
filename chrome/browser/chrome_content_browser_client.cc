@@ -1737,7 +1737,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
       extensions::switches::kAllowHTTPBackgroundPage,
       extensions::switches::kAllowLegacyExtensionManifests,
-      extensions::switches::kEnableAppWindowControls,
       extensions::switches::kEnableEmbeddedExtensionOptions,
       extensions::switches::kEnableExperimentalExtensionApis,
       extensions::switches::kExtensionsOnChromeURLs,

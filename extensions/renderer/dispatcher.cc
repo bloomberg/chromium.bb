@@ -345,14 +345,13 @@ void Dispatcher::DidCreateScriptContext(
   bindings_system_->DidCreateScriptContext(context);
   UpdateBindingsForContext(context);
 
-  bool is_within_platform_app = IsWithinPlatformApp();
   // Inject custom JS into the platform app context.
-  if (is_within_platform_app) {
+  if (IsWithinPlatformApp()) {
     module_system->Require("platformApp");
   }
 
   RequireGuestViewModules(context);
-  delegate_->RequireAdditionalModules(context, is_within_platform_app);
+  delegate_->RequireAdditionalModules(context);
 
   const base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
   switch (context->context_type()) {
@@ -460,8 +459,7 @@ void Dispatcher::DidInitializeServiceWorkerContextOnWorkerThread(
     // TODO(lazyboy): Get rid of RequireGuestViewModules() as this doesn't seem
     // necessary for Extension SW.
     RequireGuestViewModules(context);
-    delegate_->RequireAdditionalModules(context,
-                                        false /* is_within_platform_app */);
+    delegate_->RequireAdditionalModules(context);
   }
 
   g_worker_script_context_set.Get().Insert(base::WrapUnique(context));
@@ -784,7 +782,6 @@ std::vector<std::pair<std::string, int> > Dispatcher::GetJsResources() {
                                      IDR_PRINTER_PROVIDER_CUSTOM_BINDINGS_JS));
   resources.push_back(
       std::make_pair("runtime", IDR_RUNTIME_CUSTOM_BINDINGS_JS));
-  resources.push_back(std::make_pair("windowControls", IDR_WINDOW_CONTROLS_JS));
   resources.push_back(
       std::make_pair("webViewRequest",
                      IDR_WEB_VIEW_REQUEST_CUSTOM_BINDINGS_JS));
