@@ -291,8 +291,6 @@ WTF_EXPORT extern const AtomicString& starAtom;
 WTF_EXPORT extern const AtomicString& xmlAtom;
 WTF_EXPORT extern const AtomicString& xmlnsAtom;
 WTF_EXPORT extern const AtomicString& xlinkAtom;
-WTF_EXPORT extern const AtomicString& httpAtom;
-WTF_EXPORT extern const AtomicString& httpsAtom;
 
 // AtomicStringHash is the default hash for AtomicString
 template <typename T>
