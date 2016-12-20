@@ -39,17 +39,17 @@ _VULCANIZE_BASE_ARGS = [
   '--inline-css',
   '--inline-scripts',
 
-  '--redirect', 'chrome://resources/cr_elements/|%s' % _CR_ELEMENTS_PATH,
-  '--redirect', 'chrome://resources/css/|%s' % _CSS_RESOURCES_PATH,
-  '--redirect', 'chrome://resources/html/|%s' % _HTML_RESOURCES_PATH,
-  '--redirect', 'chrome://resources/js/|%s' % _JS_RESOURCES_PATH,
-  '--redirect', 'chrome://resources/polymer/v1_0/|%s' % _POLYMER_PATH,
+  '--redirect', '"chrome://resources/cr_elements/|%s"' % _CR_ELEMENTS_PATH,
+  '--redirect', '"chrome://resources/css/|%s"' % _CSS_RESOURCES_PATH,
+  '--redirect', '"chrome://resources/html/|%s"' % _HTML_RESOURCES_PATH,
+  '--redirect', '"chrome://resources/js/|%s"' % _JS_RESOURCES_PATH,
+  '--redirect', '"chrome://resources/polymer/v1_0/|%s"' % _POLYMER_PATH,
 
   '--strip-comments',
 ]
 
 def _run_cmd(cmd_parts, stdout=None):
-  cmd = "'" + "' '".join(cmd_parts) + "'"
+  cmd = " ".join(cmd_parts)
   process = subprocess.Popen(
       cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
   stdout, stderr = process.communicate()
@@ -71,7 +71,7 @@ def _vulcanize(directory, host, html_in_file, html_out_file='vulcanized.html',
   extra_args = extra_args or []
 
   output = _run_cmd(['vulcanize'] + _VULCANIZE_BASE_ARGS + extra_args +
-                    ['--redirect', 'chrome://%s/|%s' % (host, target_path),
+                    ['--redirect', '"chrome://%s/|%s"' % (host, target_path),
                      html_in_path])
 
   with tempfile.NamedTemporaryFile(mode='wt+', delete=False) as tmp:
@@ -88,7 +88,7 @@ def _vulcanize(directory, host, html_in_file, html_out_file='vulcanized.html',
     # TODO(tsergeant): Remove when JS resources are minified by default:
     # crbug.com/619091.
     _run_cmd(['uglifyjs', js_out_path,
-                         '--comments', '/Copyright|license|LICENSE|\<\/?if/',
+                         '--comments', '"/Copyright|license|LICENSE|\<\/?if/"',
                          '--output', js_out_path])
   finally:
     os.remove(tmp.name)
