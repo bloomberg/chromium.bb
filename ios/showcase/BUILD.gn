@@ -1,0 +1,63 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ios/rules.gni")
+import("//ios/build/chrome_build.gni")
+import("//ios/build/config.gni")
+import("//ios/third_party/earl_grey/ios_eg_test.gni")
+
+ios_app_bundle("showcase") {
+  info_plist = "core/Info.plist"
+  extra_substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
+  output_name = "Showcase"
+  deps = [
+    ":features",
+    "//ios/showcase/core:main",
+
+    # All shared libraries must have the sanitizer deps to properly link in
+    # asan mode (this target will be empty in other cases).
+    "//build/config/sanitizers:deps",
+  ]
+  bundle_deps = [ ":launchscreen_storyboard" ]
+  assert_no_deps = ios_assert_no_deps
+}
+
+group("features") {
+  deps = [
+    "//ios/chrome/browser/ui/tools:tools_ui",
+    "//ios/showcase/settings",
+    "//ios/showcase/tab_grid",
+    "//ios/showcase/uikit_table_view_cell",
+  ]
+}
+
+group("all_tests") {
+  testonly = true
+  deps = [
+    ":ios_showcase_egtests",
+  ]
+}
+
+ios_eg_test("ios_showcase_egtests") {
+  info_plist = "core/Info.plist"
+  extra_substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
+  deps = [
+    ":features",
+    "//ios/showcase/core:main",
+
+    # Add all eg_tests targets below.
+    "//ios/showcase/core:eg_tests",
+    "//ios/showcase/tab_grid:eg_tests",
+
+    # All shared libraries must have the sanitizer deps to properly link in
+    # asan mode (this target will be empty in other cases).
+    "//build/config/sanitizers:deps",
+  ]
+  bundle_deps = [ ":launchscreen_storyboard" ]
+  assert_no_deps = ios_assert_no_deps
+}
+
+bundle_data_ib_file("launchscreen_storyboard") {
+  source = "core/LaunchScreen.storyboard"
+}

@@ -2,18 +2,15 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("test") {
-  testonly = true
+source_set("settings") {
   sources = [
-    "showcase_test_case.h",
-    "showcase_test_case.mm",
+    "settings_coordinator.h",
+    "settings_coordinator.mm",
   ]
   deps = [
     "//base",
-    "//ios/third_party/earl_grey",
+    "//ios/showcase/common",
   ]
-  public_deps = [
-    "//build/config/ios:xctest",
-  ]
+  libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

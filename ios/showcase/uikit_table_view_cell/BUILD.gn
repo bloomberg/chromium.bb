@@ -2,18 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("test") {
-  testonly = true
+source_set("uikit_table_view_cell") {
   sources = [
-    "showcase_test_case.h",
-    "showcase_test_case.mm",
+    "uikit_table_view_cell_view_controller.h",
+    "uikit_table_view_cell_view_controller.mm",
   ]
-  deps = [
-    "//base",
-    "//ios/third_party/earl_grey",
-  ]
-  public_deps = [
-    "//build/config/ios:xctest",
-  ]
+  libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
