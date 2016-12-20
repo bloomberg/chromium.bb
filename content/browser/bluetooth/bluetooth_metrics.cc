@@ -358,7 +358,7 @@ void RecordRSSISignalStrengthLevel(UMARSSISignalStrengthLevel level) {
 }
 
 void RecordNumOfDevices(bool accept_all_devices, size_t num_of_devices) {
-  if (accept_all_devices) {
+  if (!accept_all_devices) {
     UMA_HISTOGRAM_SPARSE_SLOWLY(
         "Bluetooth.Web.RequestDevice."
         "NumOfDevicesInChooserWhenNotAcceptingAllDevices",
