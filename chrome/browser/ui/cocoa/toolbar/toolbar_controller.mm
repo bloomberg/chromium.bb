@@ -1025,24 +1025,30 @@ class NotificationBridge : public AppMenuIconController::Delegate {
     return;
   }
 
-  // TODO(viettrungluu): dropping multiple URLs?
-  if ([urls count] > 1)
-    NOTIMPLEMENTED();
+  for (NSUInteger index = 0; index < [urls count]; index++) {
+    // Refactor this code.
+    // https://crbug.com/665261.
+    GURL url = url_formatter::FixupURL(
+        base::SysNSStringToUTF8([urls objectAtIndex:index]), std::string());
 
-  // Get the first URL and fix it up.
-  GURL url(url_formatter::FixupURL(
-      base::SysNSStringToUTF8([urls objectAtIndex:0]), std::string()));
+    // If the URL isn't valid, don't bother.
+    if (!url.is_valid())
+      continue;
 
-  // Security: Sanitize text to prevent self-XSS.
-  if (url.SchemeIs(url::kJavaScriptScheme)) {
-    browser_->window()->GetLocationBar()->GetOmniboxView()->SetUserText(
-          OmniboxView::StripJavascriptSchemas(base::UTF8ToUTF16(url.spec())));
-    return;
+    // Security: Sanitize text to prevent self-XSS.
+    if (url.SchemeIs(url::kJavaScriptScheme))
+      continue;
+
+    WindowOpenDisposition disposition;
+    if (index == 0)
+      disposition = WindowOpenDisposition::CURRENT_TAB;
+    else
+      disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+
+    OpenURLParams params(url, Referrer(), disposition,
+                         ui::PAGE_TRANSITION_TYPED, false);
+    browser_->tab_strip_model()->GetActiveWebContents()->OpenURL(params);
   }
-
-  OpenURLParams params(url, Referrer(), WindowOpenDisposition::CURRENT_TAB,
-                       ui::PAGE_TRANSITION_TYPED, false);
-  browser_->tab_strip_model()->GetActiveWebContents()->OpenURL(params);
 }
 
 // (URLDropTargetController protocol)
