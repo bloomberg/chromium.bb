@@ -3876,7 +3876,7 @@ TEST_P(GLES3DecoderTest, InvalidateFramebufferDepthStencilAttachment) {
   EXPECT_FALSE(framebuffer->HasUnclearedAttachment(GL_STENCIL_ATTACHMENT));
 
   attachments[0] = GL_DEPTH_STENCIL_ATTACHMENT;
-  EXPECT_CALL(*gl_, InvalidateFramebuffer(target, 1, _))
+  EXPECT_CALL(*gl_, InvalidateFramebuffer(target, 2, _))
       .Times(1)
       .RetiresOnSaturation();
   cmd.Init(target, count, attachments);

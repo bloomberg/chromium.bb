@@ -5920,7 +5920,7 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
       framebuffer->HasDepthStencilFormatAttachment();
   bool invalidate_depth = false;
   bool invalidate_stencil = false;
-  std::unique_ptr<GLenum[]> validated_attachments(new GLenum[count]);
+  std::unique_ptr<GLenum[]> validated_attachments(new GLenum[count+1]);
   GLsizei validated_count = 0;
 
   // Validates the attachments. If one of them fails, the whole command fails.
@@ -5963,7 +5963,10 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
     validated_attachments[validated_count++] = attachment;
   }
   if (invalidate_depth && invalidate_stencil) {
-    validated_attachments[validated_count++] = GL_DEPTH_STENCIL_ATTACHMENT;
+    // We do not use GL_DEPTH_STENCIL_ATTACHMENT here because
+    // it is not a valid token for glDiscardFramebufferEXT.
+    validated_attachments[validated_count++] = GL_DEPTH_ATTACHMENT;
+    validated_attachments[validated_count++] = GL_STENCIL_ATTACHMENT;
   }
 
   // If the default framebuffer is bound but we are still rendering to an
