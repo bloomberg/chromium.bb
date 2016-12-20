@@ -495,6 +495,8 @@ void ImageBuffer::updateGPUMemoryUsage() const {
   }
 }
 
+namespace {
+
 class UnacceleratedSurfaceFactory
     : public RecordingImageBufferFallbackSurfaceFactory {
  public:
@@ -510,6 +512,8 @@ class UnacceleratedSurfaceFactory
 
   virtual ~UnacceleratedSurfaceFactory() {}
 };
+
+}  // namespace
 
 void ImageBuffer::disableAcceleration() {
   if (!isAccelerated())

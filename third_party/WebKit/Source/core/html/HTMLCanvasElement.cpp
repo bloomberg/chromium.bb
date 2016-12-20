@@ -850,6 +850,8 @@ bool HTMLCanvasElement::shouldAccelerate(const IntSize& size) const {
   return true;
 }
 
+namespace {
+
 class UnacceleratedSurfaceFactory
     : public RecordingImageBufferFallbackSurfaceFactory {
  public:
@@ -864,6 +866,8 @@ class UnacceleratedSurfaceFactory
 
   virtual ~UnacceleratedSurfaceFactory() {}
 };
+
+}  // namespace
 
 bool HTMLCanvasElement::shouldUseDisplayList(const IntSize& deviceSize) {
   if (m_context->colorSpace() != kLegacyCanvasColorSpace)
