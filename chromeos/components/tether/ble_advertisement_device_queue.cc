@@ -8,13 +8,12 @@
 #include <string>
 
 #include "base/logging.h"
+#include "chromeos/components/tether/ble_constants.h"
 #include "components/proximity_auth/logging/logging.h"
 
 namespace chromeos {
 
 namespace tether {
-
-const int BleAdvertisementDeviceQueue::kMaxConcurrentAdvertisements = 2;
 
 BleAdvertisementDeviceQueue::BleAdvertisementDeviceQueue() {}
 

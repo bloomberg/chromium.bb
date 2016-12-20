@@ -20,14 +20,6 @@ namespace tether {
 // fair share of time spent contacting it.
 class BleAdvertisementDeviceQueue {
  public:
-  // The maximum number of devices to which to advertise concurrently. If more
-  // than this number of devices are registered, some advertisement must be
-  // stopped before new ones can be added.
-  //
-  // Note that this upper limit on concurrent advertisements is imposed due to a
-  // hardware limit of advertisements.
-  static const int kMaxConcurrentAdvertisements;
-
   BleAdvertisementDeviceQueue();
   virtual ~BleAdvertisementDeviceQueue();
 

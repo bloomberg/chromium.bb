@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "chromeos/components/tether/ble_constants.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -94,9 +95,9 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestTwoDevices_MoveToEnd) {
 }
 
 TEST_F(BleAdvertisementDeviceQueueTest, TestThreeDevices) {
-  // Note: These tests need to be rewritten if MAX_CONCURRENT_ADVERTISEMENTS is
+  // Note: These tests need to be rewritten if |kMaxConcurrentAdvertisements| is
   // ever changed.
-  ASSERT_GT(3, BleAdvertisementDeviceQueue::kMaxConcurrentAdvertisements);
+  ASSERT_GT(3, kMaxConcurrentAdvertisements);
 
   std::vector<cryptauth::RemoteDevice> devices =
       cryptauth::GenerateTestRemoteDevices(3);
@@ -121,9 +122,9 @@ TEST_F(BleAdvertisementDeviceQueueTest, TestThreeDevices) {
 }
 
 TEST_F(BleAdvertisementDeviceQueueTest, TestAddingDevices) {
-  // Note: These tests need to be rewritten if MAX_CONCURRENT_ADVERTISEMENTS is
+  // Note: These tests need to be rewritten if |kMaxConcurrentAdvertisements| is
   // ever changed.
-  ASSERT_GT(3, BleAdvertisementDeviceQueue::kMaxConcurrentAdvertisements);
+  ASSERT_GT(3, kMaxConcurrentAdvertisements);
 
   std::vector<cryptauth::RemoteDevice> all_devices =
       cryptauth::GenerateTestRemoteDevices(5);
