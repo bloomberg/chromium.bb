@@ -164,7 +164,7 @@ mojom::blink::MediaSessionService* MediaSession::getService() {
   if (!interfaceProvider)
     return nullptr;
 
-  interfaceProvider->getInterface(mojo::GetProxy(&m_service));
+  interfaceProvider->getInterface(mojo::MakeRequest(&m_service));
   if (m_service.get())
     m_service->SetClient(m_clientBinding.CreateInterfacePtrAndBind());
 

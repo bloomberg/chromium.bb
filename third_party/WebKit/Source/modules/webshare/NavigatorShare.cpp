@@ -100,7 +100,7 @@ ScriptPromise NavigatorShare::share(ScriptState* scriptState,
   if (!m_service) {
     LocalFrame* frame = doc->frame();
     DCHECK(frame);
-    frame->interfaceProvider()->getInterface(mojo::GetProxy(&m_service));
+    frame->interfaceProvider()->getInterface(mojo::MakeRequest(&m_service));
     m_service.set_connection_error_handler(convertToBaseCallback(WTF::bind(
         &NavigatorShare::onConnectionError, wrapWeakPersistent(this))));
     DCHECK(m_service);

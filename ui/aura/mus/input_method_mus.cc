@@ -127,7 +127,7 @@ void InputMethodMus::OnDidChangeFocusedClient(
   text_input_client_ = base::MakeUnique<TextInputClientImpl>(focused);
   if (ime_server_) {
     ime_server_->StartSession(text_input_client_->CreateInterfacePtrAndBind(),
-                              GetProxy(&input_method_));
+                              MakeRequest(&input_method_));
   }
 }
 

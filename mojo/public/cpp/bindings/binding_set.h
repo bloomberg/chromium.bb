@@ -27,8 +27,8 @@ struct BindingSetTraits<Binding<Interface>> {
   using ProxyType = InterfacePtr<Interface>;
   using RequestType = InterfaceRequest<Interface>;
 
-  static RequestType GetProxy(ProxyType* proxy) {
-    return mojo::GetProxy(proxy);
+  static RequestType MakeRequest(ProxyType* proxy) {
+    return mojo::MakeRequest(proxy);
   }
 };
 
@@ -114,7 +114,7 @@ class BindingSet {
   ProxyType CreateInterfacePtrAndBind(Interface* impl,
                                       BindingId* id_storage = nullptr) {
     ProxyType proxy;
-    BindingId id = AddBinding(impl, Traits::GetProxy(&proxy));
+    BindingId id = AddBinding(impl, Traits::MakeRequest(&proxy));
     if (id_storage)
       *id_storage = id;
     return proxy;

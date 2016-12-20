@@ -1134,7 +1134,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
   interface_registry_ = base::MakeUnique<service_manager::InterfaceRegistry>(
       mojom::kNavigation_FrameSpec);
   service_manager::mojom::InterfaceProviderPtr remote_interfaces;
-  pending_remote_interface_provider_request_ = GetProxy(&remote_interfaces);
+  pending_remote_interface_provider_request_ = MakeRequest(&remote_interfaces);
   remote_interfaces_.reset(new service_manager::InterfaceProvider);
   remote_interfaces_->Bind(std::move(remote_interfaces));
   blink_interface_provider_.reset(new BlinkInterfaceProviderImpl(
@@ -1167,10 +1167,10 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
   // Create the RemotingSinkObserver to monitor the remoting sink availablity.
   media::mojom::RemotingSourcePtr remoting_source;
   media::mojom::RemotingSourceRequest remoting_source_request =
-      mojo::GetProxy(&remoting_source);
+      mojo::MakeRequest(&remoting_source);
   media::mojom::RemoterPtr remoter;
   GetRemoterFactory()->Create(std::move(remoting_source),
-                              mojo::GetProxy(&remoter));
+                              mojo::MakeRequest(&remoter));
   remoting_sink_observer_ = base::MakeUnique<media::RemotingSinkObserver>(
       std::move(remoting_source_request), std::move(remoter));
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
@@ -2533,8 +2533,9 @@ RenderFrameImpl::GetRemoteAssociatedInterfaces() {
     if (thread) {
       mojom::AssociatedInterfaceProviderAssociatedPtr remote_interfaces;
       thread->GetRemoteRouteProvider()->GetRoute(
-          routing_id_, mojo::GetProxy(&remote_interfaces,
-                                      thread->channel()->GetAssociatedGroup()));
+          routing_id_,
+          mojo::MakeRequest(&remote_interfaces,
+                            thread->channel()->GetAssociatedGroup()));
       remote_associated_interfaces_.reset(
           new AssociatedInterfaceProviderImpl(std::move(remote_interfaces)));
     } else {
@@ -2751,10 +2752,10 @@ std::unique_ptr<media::RemotingRendererController>
 RenderFrameImpl::CreateRemotingRendererController() {
   media::mojom::RemotingSourcePtr remoting_source;
   media::mojom::RemotingSourceRequest remoting_source_request =
-      mojo::GetProxy(&remoting_source);
+      mojo::MakeRequest(&remoting_source);
   media::mojom::RemoterPtr remoter;
   GetRemoterFactory()->Create(std::move(remoting_source),
-                              mojo::GetProxy(&remoter));
+                              mojo::MakeRequest(&remoter));
   return base::MakeUnique<media::RemotingRendererController>(
       make_scoped_refptr(new media::RemotingSourceImpl(
           std::move(remoting_source_request), std::move(remoter))));

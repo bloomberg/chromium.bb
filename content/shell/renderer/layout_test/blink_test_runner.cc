@@ -713,7 +713,7 @@ void BlinkTestRunner::DispatchBeforeInstallPromptEvent(
   service_manager::InterfaceRegistry::TestApi test_api(
       render_view()->GetMainRenderFrame()->GetInterfaceRegistry());
   test_api.GetLocalInterface(
-      mojo::GetProxy(&app_banner_service_->controller()));
+      mojo::MakeRequest(&app_banner_service_->controller()));
 
   app_banner_service_->SendBannerPromptRequest(event_platforms, callback);
 }
@@ -942,7 +942,7 @@ mojom::LayoutTestBluetoothFakeAdapterSetter&
 BlinkTestRunner::GetBluetoothFakeAdapterSetter() {
   if (!bluetooth_fake_adapter_setter_) {
     RenderThread::Get()->GetRemoteInterfaces()->GetInterface(
-        mojo::GetProxy(&bluetooth_fake_adapter_setter_));
+        mojo::MakeRequest(&bluetooth_fake_adapter_setter_));
   }
   return *bluetooth_fake_adapter_setter_;
 }

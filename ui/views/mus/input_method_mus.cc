@@ -123,7 +123,7 @@ void InputMethodMus::OnDidChangeFocusedClient(
 
   text_input_client_ = base::MakeUnique<TextInputClientImpl>(focused);
   ime_server_->StartSession(text_input_client_->CreateInterfacePtrAndBind(),
-                            GetProxy(&input_method_));
+                            MakeRequest(&input_method_));
 }
 
 void InputMethodMus::UpdateTextInputType() {

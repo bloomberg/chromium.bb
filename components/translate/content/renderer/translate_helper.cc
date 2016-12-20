@@ -464,7 +464,7 @@ void TranslateHelper::NotifyBrowserTranslationFailed(
 const mojom::ContentTranslateDriverPtr& TranslateHelper::GetTranslateDriver() {
   if (!translate_driver_) {
     render_frame()->GetRemoteInterfaces()->GetInterface(
-        mojo::GetProxy(&translate_driver_));
+        mojo::MakeRequest(&translate_driver_));
   }
 
   return translate_driver_;

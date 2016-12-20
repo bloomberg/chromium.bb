@@ -80,7 +80,7 @@ PaymentAppManager* PaymentAppContentUnitTestBase::CreatePaymentAppManager(
   // Create a new payment app manager.
   payments::mojom::PaymentAppManagerPtr manager;
   mojo::InterfaceRequest<payments::mojom::PaymentAppManager> request =
-      mojo::GetProxy(&manager);
+      mojo::MakeRequest(&manager);
   payment_app_managers_.push_back(std::move(manager));
   payment_app_context_->CreatePaymentAppManager(std::move(request));
   base::RunLoop().RunUntilIdle();

@@ -32,7 +32,7 @@ struct ThreadSafeInterfacePtrDeleter;
 //
 // Ex for ThreadSafeInterfacePtr:
 // frob::FrobinatorPtr frobinator;
-// frob::FrobinatorImpl impl(GetProxy(&frobinator));
+// frob::FrobinatorImpl impl(MakeRequest(&frobinator));
 // scoped_refptr<frob::ThreadSafeFrobinatorPtr> thread_safe_frobinator =
 //     frob::ThreadSafeFrobinatorPtr::Create(std::move(frobinator));
 // (*thread_safe_frobinator)->FrobinateToTheMax();

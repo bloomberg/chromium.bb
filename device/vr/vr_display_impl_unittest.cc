@@ -36,7 +36,7 @@ class VRDisplayImplTest : public testing::Test {
 
   std::unique_ptr<VRServiceImpl> BindService() {
     mojom::VRServiceClientPtr proxy;
-    clients_.push_back(new FakeVRServiceClient(mojo::GetProxy(&proxy)));
+    clients_.push_back(new FakeVRServiceClient(mojo::MakeRequest(&proxy)));
 
     auto service = base::WrapUnique(new VRServiceImpl());
     service->SetClient(std::move(proxy),

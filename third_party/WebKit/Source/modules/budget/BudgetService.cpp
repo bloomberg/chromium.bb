@@ -44,7 +44,7 @@ DOMException* errorTypeToException(mojom::blink::BudgetServiceErrorType error) {
 
 BudgetService::BudgetService() {
   Platform::current()->interfaceProvider()->getInterface(
-      mojo::GetProxy(&m_service));
+      mojo::MakeRequest(&m_service));
 
   // Set a connection error handler, so that if an embedder doesn't
   // implement a BudgetSerice mojo service, the developer will get a

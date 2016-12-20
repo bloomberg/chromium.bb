@@ -76,7 +76,7 @@ VideoCaptureImpl::VideoCaptureImpl(media::VideoCaptureSessionId session_id)
   if (ChildThread::Get()) {  // This will be null in unit tests.
     mojom::VideoCaptureHostPtr temp_video_capture_host;
     ChildThread::Get()->GetRemoteInterfaces()->GetInterface(
-        mojo::GetProxy(&temp_video_capture_host));
+        mojo::MakeRequest(&temp_video_capture_host));
     video_capture_host_info_ = temp_video_capture_host.PassInterface();
   }
 }

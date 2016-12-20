@@ -77,7 +77,7 @@ TEST_F(NavigationTest, DISABLED_Navigate) {
   connector()->ConnectToInterface("navigation", &view_factory);
 
   mojom::ViewPtr view;
-  view_factory->CreateView(GetViewClient(), GetProxy(&view));
+  view_factory->CreateView(GetViewClient(), MakeRequest(&view));
   view->NavigateTo(GURL("about:blank"));
 
   base::RunLoop loop;

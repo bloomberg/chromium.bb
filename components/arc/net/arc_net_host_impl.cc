@@ -306,7 +306,7 @@ void ArcNetHostImpl::OnInstanceReady() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   mojom::NetHostPtr host;
-  binding_.Bind(GetProxy(&host));
+  binding_.Bind(MakeRequest(&host));
   auto* instance = arc_bridge_service()->net()->GetInstanceForMethod("Init");
   DCHECK(instance);
   instance->Init(std::move(host));

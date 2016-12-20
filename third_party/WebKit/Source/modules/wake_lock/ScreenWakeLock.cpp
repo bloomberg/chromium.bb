@@ -67,7 +67,7 @@ ScreenWakeLock::ScreenWakeLock(LocalFrame& frame)
       m_keepAwake(false) {
   DCHECK(!m_service.is_bound());
   DCHECK(frame.interfaceProvider());
-  frame.interfaceProvider()->getInterface(mojo::GetProxy(&m_service));
+  frame.interfaceProvider()->getInterface(mojo::MakeRequest(&m_service));
 }
 
 bool ScreenWakeLock::keepAwake() const {

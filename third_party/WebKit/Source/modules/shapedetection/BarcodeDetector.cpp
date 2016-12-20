@@ -20,7 +20,7 @@ BarcodeDetector* BarcodeDetector::create(Document& document) {
 }
 
 BarcodeDetector::BarcodeDetector(LocalFrame& frame) : ShapeDetector(frame) {
-  frame.interfaceProvider()->getInterface(mojo::GetProxy(&m_barcodeService));
+  frame.interfaceProvider()->getInterface(mojo::MakeRequest(&m_barcodeService));
   m_barcodeService.set_connection_error_handler(convertToBaseCallback(
       WTF::bind(&BarcodeDetector::onBarcodeServiceConnectionError,
                 wrapWeakPersistent(this))));

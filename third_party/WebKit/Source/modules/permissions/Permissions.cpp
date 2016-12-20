@@ -257,8 +257,8 @@ ScriptPromise Permissions::requestAll(
 }
 
 PermissionService* Permissions::getService(ExecutionContext* executionContext) {
-  if (!m_service &&
-      connectToPermissionService(executionContext, mojo::GetProxy(&m_service)))
+  if (!m_service && connectToPermissionService(executionContext,
+                                               mojo::MakeRequest(&m_service)))
     m_service.set_connection_error_handler(convertToBaseCallback(WTF::bind(
         &Permissions::serviceConnectionError, wrapWeakPersistent(this))));
   return m_service.get();

@@ -921,7 +921,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT_WITH_CUSTOM_FIXTURE(
   IPC::mojom::PingReceiverAssociatedPtr ping_receiver;
   proxy()->GetRemoteAssociatedInterface(&driver);
   driver->GetPingReceiver(
-      mojo::GetProxy(&ping_receiver, driver.associated_group()));
+      mojo::MakeRequest(&ping_receiver, driver.associated_group()));
 
   base::RunLoop loop;
   ping_receiver->Ping(loop.QuitClosure());

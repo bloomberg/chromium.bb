@@ -20,7 +20,7 @@ SensorImpl::~SensorImpl() {
 }
 
 mojom::SensorClientRequest SensorImpl::GetClient() {
-  return mojo::GetProxy(&client_);
+  return mojo::MakeRequest(&client_);
 }
 
 void SensorImpl::AddConfiguration(

@@ -187,7 +187,7 @@ class BindTaskRunnerTest : public testing::Test {
     binding_task_runner_ = scoped_refptr<TestTaskRunner>(new TestTaskRunner);
     ptr_task_runner_ = scoped_refptr<TestTaskRunner>(new TestTaskRunner);
 
-    auto request = GetProxy(&ptr_, ptr_task_runner_);
+    auto request = MakeRequest(&ptr_, ptr_task_runner_);
     impl_.reset(new ImplType(std::move(request), binding_task_runner_));
   }
 
@@ -213,7 +213,7 @@ class AssociatedBindTaskRunnerTest : public testing::Test {
     sender_ptr_task_runner_ = scoped_refptr<TestTaskRunner>(new TestTaskRunner);
 
     auto connection_request =
-        GetProxy(&connection_ptr_, connection_ptr_task_runner_);
+        MakeRequest(&connection_ptr_, connection_ptr_task_runner_);
     connection_impl_.reset(new IntegerSenderConnectionImpl(
         std::move(connection_request), connection_binding_task_runner_,
         sender_binding_task_runner_));
@@ -222,9 +222,9 @@ class AssociatedBindTaskRunnerTest : public testing::Test {
         base::Bind(&AssociatedBindTaskRunnerTest::QuitTaskRunner,
                    base::Unretained(this)));
 
-    connection_ptr_->GetSender(GetProxy(&sender_ptr_,
-                                        connection_ptr_.associated_group(),
-                                        sender_ptr_task_runner_));
+    connection_ptr_->GetSender(MakeRequest(&sender_ptr_,
+                                           connection_ptr_.associated_group(),
+                                           sender_ptr_task_runner_));
     connection_binding_task_runner_->Run();
   }
 

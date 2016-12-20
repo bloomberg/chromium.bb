@@ -19,7 +19,7 @@ class ShareServiceTest : public ChromeRenderViewHostTestHarness {
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
 
-    ShareServiceImpl::Create(mojo::GetProxy(&share_service_));
+    ShareServiceImpl::Create(mojo::MakeRequest(&share_service_));
   }
 
   void TearDown() override {

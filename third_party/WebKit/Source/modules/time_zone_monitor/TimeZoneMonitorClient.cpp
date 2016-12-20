@@ -37,7 +37,7 @@ void TimeZoneMonitorClient::Init() {
 
   device::mojom::blink::TimeZoneMonitorPtr monitor;
   Platform::current()->interfaceProvider()->getInterface(
-      mojo::GetProxy(&monitor));
+      mojo::MakeRequest(&monitor));
   monitor->AddClient(instance.m_binding.CreateInterfacePtrAndBind());
 }
 

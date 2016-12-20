@@ -59,7 +59,7 @@ void VRDeviceManagerTest::SetUp() {
 
 std::unique_ptr<VRServiceImpl> VRDeviceManagerTest::BindService() {
   mojom::VRServiceClientPtr proxy;
-  FakeVRServiceClient client(mojo::GetProxy(&proxy));
+  FakeVRServiceClient client(mojo::MakeRequest(&proxy));
   auto service = base::WrapUnique(new VRServiceImpl());
   service->SetClient(std::move(proxy),
                      base::Bind(&VRDeviceManagerTest::onDisplaySynced,

@@ -16,7 +16,7 @@ mojo::InterfacePtr<mojom::DownloadedTempFile> DownloadedTempFileImpl::Create(
   mojo::InterfacePtr<mojom::DownloadedTempFile> ptr;
   auto binding = mojo::MakeStrongBinding(
       base::MakeUnique<DownloadedTempFileImpl>(child_id, request_id),
-      mojo::GetProxy(&ptr));
+      mojo::MakeRequest(&ptr));
   return ptr;
 }
 

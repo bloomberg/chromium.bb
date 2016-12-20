@@ -316,7 +316,8 @@ void WebBluetoothImpl::DispatchCharacteristicValueChanged(
 
 blink::mojom::WebBluetoothService& WebBluetoothImpl::GetWebBluetoothService() {
   if (!web_bluetooth_service_) {
-    remote_interfaces_->GetInterface(mojo::GetProxy(&web_bluetooth_service_));
+    remote_interfaces_->GetInterface(
+        mojo::MakeRequest(&web_bluetooth_service_));
     // Create an associated interface ptr and pass it to the WebBluetoothService
     // so that it can send us events without us prompting.
     blink::mojom::WebBluetoothServiceClientAssociatedPtrInfo ptr_info;

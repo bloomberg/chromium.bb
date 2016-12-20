@@ -212,7 +212,7 @@ class AssociatedInterfacePtr {
 // as soon as the request is sent, |ptr| is usable. There is no need to wait
 // until the request is bound to an implementation at the remote side.
 template <typename Interface>
-AssociatedInterfaceRequest<Interface> GetProxy(
+AssociatedInterfaceRequest<Interface> MakeRequest(
     AssociatedInterfacePtr<Interface>* ptr,
     AssociatedGroup* group,
     scoped_refptr<base::SingleThreadTaskRunner> runner =
@@ -228,7 +228,7 @@ AssociatedInterfaceRequest<Interface> GetProxy(
 
 // Creates an associated interface proxy in its own AssociatedGroup.
 template <typename Interface>
-AssociatedInterfaceRequest<Interface> GetProxyForTesting(
+AssociatedInterfaceRequest<Interface> MakeRequestForTesting(
     AssociatedInterfacePtr<Interface>* ptr,
     scoped_refptr<base::SingleThreadTaskRunner> runner =
         base::ThreadTaskRunnerHandle::Get()) {
@@ -264,7 +264,7 @@ void GetDummyProxyForTesting(AssociatedInterfacePtr<Interface>* proxy) {
                                     internal::MultiplexRouter::MULTI_INTERFACE,
                                     false, base::ThreadTaskRunnerHandle::Get());
   std::unique_ptr<AssociatedGroup> group = router->CreateAssociatedGroup();
-  GetProxy(proxy, group.get());
+  MakeRequest(proxy, group.get());
 }
 
 }  // namespace mojo

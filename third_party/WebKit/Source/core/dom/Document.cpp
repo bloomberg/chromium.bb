@@ -4377,7 +4377,7 @@ void Document::sendSensitiveInputVisibilityInternal() {
 
   mojom::blink::SensitiveInputVisibilityServicePtr sensitiveInputServicePtr;
   frame()->interfaceProvider()->getInterface(
-      mojo::GetProxy(&sensitiveInputServicePtr));
+      mojo::MakeRequest(&sensitiveInputServicePtr));
   if (m_passwordCount > 0) {
     sensitiveInputServicePtr->PasswordFieldVisibleInInsecureContext();
     return;

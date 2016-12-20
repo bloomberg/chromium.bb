@@ -40,7 +40,7 @@ ScriptPromise MIDIAccessInitializer::start() {
   m_accessor = MIDIAccessor::create(this);
 
   connectToPermissionService(getExecutionContext(),
-                             mojo::GetProxy(&m_permissionService));
+                             mojo::MakeRequest(&m_permissionService));
   m_permissionService->RequestPermission(
       createMidiPermissionDescriptor(m_options.hasSysex() && m_options.sysex()),
       getExecutionContext()->getSecurityOrigin(),

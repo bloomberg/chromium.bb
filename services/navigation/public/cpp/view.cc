@@ -24,8 +24,8 @@ void EmbedCallback(bool result) {}
 
 View::View(mojom::ViewFactoryPtr factory) : binding_(this) {
   mojom::ViewClientPtr client;
-  binding_.Bind(GetProxy(&client));
-  factory->CreateView(std::move(client), GetProxy(&view_));
+  binding_.Bind(MakeRequest(&client));
+  factory->CreateView(std::move(client), MakeRequest(&view_));
 }
 
 View::View(mojom::ViewPtr view, mojom::ViewClientRequest request)
@@ -95,7 +95,7 @@ void View::HideInterstitial() {
 
 void View::EmbedInWindow(aura::Window* parent) {
   ui::mojom::WindowTreeClientPtr client;
-  view_->GetWindowTreeClient(GetProxy(&client));
+  view_->GetWindowTreeClient(MakeRequest(&client));
   const uint32_t embed_flags = 0u;  // Nothing special.
   aura::WindowPortMus::Get(parent)->Embed(std::move(client), embed_flags,
                                           base::Bind(&EmbedCallback));

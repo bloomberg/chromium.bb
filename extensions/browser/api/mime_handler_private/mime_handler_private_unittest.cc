@@ -51,7 +51,7 @@ class MimeHandlerServiceImplTest : public testing::Test {
     service_binding_ =
         mojo::MakeStrongBinding(base::MakeUnique<MimeHandlerServiceImpl>(
                                     stream_container_->GetWeakPtr()),
-                                mojo::GetProxy(&service_ptr_));
+                                mojo::MakeRequest(&service_ptr_));
   }
   void TearDown() override {
     service_binding_->Close();

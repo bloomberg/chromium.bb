@@ -480,7 +480,7 @@ void EmbeddedWorkerInstance::Start(
 
   mojom::EmbeddedWorkerInstanceClientRequest request;
   if (ServiceWorkerUtils::IsMojoForServiceWorkerEnabled()) {
-    request = mojo::GetProxy(&client_);
+    request = mojo::MakeRequest(&client_);
     client_.set_connection_error_handler(
         base::Bind(&CallDetach, base::Unretained(this)));
   }

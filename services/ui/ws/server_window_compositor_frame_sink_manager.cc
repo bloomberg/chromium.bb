@@ -64,7 +64,7 @@ void ServerWindowCompositorFrameSinkManager::AddChildFrameSinkId(
   CompositorFrameSinkData& data =
       type_to_compositor_frame_sink_map_[compositor_frame_sink_type];
   data.pending_compositor_frame_sink_request =
-      mojo::GetProxy(&data.compositor_frame_sink);
+      mojo::MakeRequest(&data.compositor_frame_sink);
   data.compositor_frame_sink->AddChildFrameSink(frame_sink_id);
 }
 
@@ -158,7 +158,7 @@ void ServerWindowCompositorFrameSinkManager::CreateCompositorFrameSinkInternal(
   if (data.pending_compositor_frame_sink_request.is_pending()) {
     private_request = std::move(data.pending_compositor_frame_sink_request);
   } else {
-    private_request = mojo::GetProxy(&data.compositor_frame_sink);
+    private_request = mojo::MakeRequest(&data.compositor_frame_sink);
   }
 
   if (widget != gfx::kNullAcceleratedWidget) {

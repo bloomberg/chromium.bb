@@ -210,7 +210,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
 
-    auto request = mojo::GetProxy(&service_ptr_);
+    auto request = mojo::MakeRequest(&service_ptr_);
     EXPECT_CALL(mock_delegate_, AddObserver(_, _, _)).Times(1);
     TestRenderFrameHost* render_frame_host = contents()->GetMainFrame();
     render_frame_host->InitializeRenderFrameIfNeeded();
@@ -221,7 +221,7 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
     blink::mojom::PresentationServiceClientPtr client_ptr;
     client_binding_.reset(
         new mojo::Binding<blink::mojom::PresentationServiceClient>(
-            &mock_client_, mojo::GetProxy(&client_ptr)));
+            &mock_client_, mojo::MakeRequest(&client_ptr)));
     service_impl_->SetClient(std::move(client_ptr));
 
     presentation_urls_.push_back(presentation_url1_);

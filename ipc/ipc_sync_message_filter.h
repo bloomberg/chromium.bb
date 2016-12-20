@@ -56,7 +56,7 @@ class IPC_EXPORT SyncMessageFilter : public MessageFilter, public Sender {
   void GetRemoteAssociatedInterface(
       mojo::AssociatedInterfacePtr<Interface>* proxy) {
     mojo::AssociatedInterfaceRequest<Interface> request =
-        mojo::GetProxy(proxy, &channel_associated_group_);
+        mojo::MakeRequest(proxy, &channel_associated_group_);
     GetGenericRemoteAssociatedInterface(Interface::Name_, request.PassHandle());
   }
 

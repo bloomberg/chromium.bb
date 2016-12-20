@@ -55,7 +55,7 @@ void Service::CreateRecorder(mojom::ProviderPtr provider) {
   if (tracing_active_) {
     mojom::RecorderPtr recorder_ptr;
     recorder_impls_.push_back(
-        new Recorder(GetProxy(&recorder_ptr), sink_.get()));
+        new Recorder(MakeRequest(&recorder_ptr), sink_.get()));
     provider->StartTracing(tracing_categories_, std::move(recorder_ptr));
   }
   provider_ptrs_.AddPtr(std::move(provider));
@@ -68,8 +68,7 @@ void Service::Start(mojo::ScopedDataPipeProducerHandle stream,
   provider_ptrs_.ForAllPtrs(
     [categories, this](mojom::Provider* controller) {
       mojom::RecorderPtr ptr;
-      recorder_impls_.push_back(
-          new Recorder(GetProxy(&ptr), sink_.get()));
+      recorder_impls_.push_back(new Recorder(MakeRequest(&ptr), sink_.get()));
       controller->StartTracing(categories, std::move(ptr));
     });
   tracing_active_ = true;

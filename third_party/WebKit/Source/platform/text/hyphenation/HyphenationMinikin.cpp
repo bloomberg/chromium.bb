@@ -38,7 +38,7 @@ class HyphenationMinikin : public Hyphenation {
 static mojom::blink::HyphenationPtr connectToRemoteService() {
   mojom::blink::HyphenationPtr service;
   Platform::current()->interfaceProvider()->getInterface(
-      mojo::GetProxy(&service));
+      mojo::MakeRequest(&service));
   return service;
 }
 

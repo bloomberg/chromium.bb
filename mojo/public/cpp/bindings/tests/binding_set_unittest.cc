@@ -79,8 +79,8 @@ TEST_F(BindingSetTest, BindingSetContext) {
 
   BindingSet<PingService> bindings_(BindingSetDispatchMode::WITH_CONTEXT);
   PingServicePtr ping_a, ping_b;
-  bindings_.AddBinding(&impl, GetProxy(&ping_a), context_a);
-  bindings_.AddBinding(&impl, GetProxy(&ping_b), context_b);
+  bindings_.AddBinding(&impl, MakeRequest(&ping_a), context_a);
+  bindings_.AddBinding(&impl, MakeRequest(&ping_b), context_b);
 
   {
     impl.set_ping_handler(ExpectContext(&bindings_, context_a));
@@ -119,7 +119,7 @@ TEST_F(BindingSetTest, BindingSetConnectionErrorWithReason) {
   PingImpl impl;
   PingServicePtr ptr;
   BindingSet<PingService> bindings;
-  bindings.AddBinding(&impl, GetProxy(&ptr));
+  bindings.AddBinding(&impl, MakeRequest(&ptr));
 
   base::RunLoop run_loop;
   bindings.set_connection_error_with_reason_handler(base::Bind(
@@ -175,7 +175,7 @@ class PingProviderImpl : public AssociatedPingProvider, public PingService {
 TEST_F(BindingSetTest, AssociatedBindingSetContext) {
   AssociatedPingProviderPtr provider;
   PingProviderImpl impl;
-  Binding<AssociatedPingProvider> binding(&impl, GetProxy(&provider));
+  Binding<AssociatedPingProvider> binding(&impl, MakeRequest(&provider));
 
   void* context_a = reinterpret_cast<void*>(1);
   void* context_b = reinterpret_cast<void*>(2);
@@ -185,7 +185,7 @@ TEST_F(BindingSetTest, AssociatedBindingSetContext) {
     base::RunLoop loop;
     impl.set_new_ping_context(context_a);
     impl.set_new_ping_handler(loop.QuitClosure());
-    provider->GetPing(GetProxy(&ping_a, provider.associated_group()));
+    provider->GetPing(MakeRequest(&ping_a, provider.associated_group()));
     loop.Run();
   }
 
@@ -194,7 +194,7 @@ TEST_F(BindingSetTest, AssociatedBindingSetContext) {
     base::RunLoop loop;
     impl.set_new_ping_context(context_b);
     impl.set_new_ping_handler(loop.QuitClosure());
-    provider->GetPing(GetProxy(&ping_b, provider.associated_group()));
+    provider->GetPing(MakeRequest(&ping_b, provider.associated_group()));
     loop.Run();
   }
 
@@ -242,15 +242,15 @@ TEST_F(BindingSetTest, MasterInterfaceBindingSetContext) {
   void* context_a = reinterpret_cast<void*>(1);
   void* context_b = reinterpret_cast<void*>(2);
 
-  bindings.AddBinding(&impl, GetProxy(&provider_a), context_a);
-  bindings.AddBinding(&impl, GetProxy(&provider_b), context_b);
+  bindings.AddBinding(&impl, MakeRequest(&provider_a), context_a);
+  bindings.AddBinding(&impl, MakeRequest(&provider_b), context_b);
 
   {
     PingServiceAssociatedPtr ping;
     base::RunLoop loop;
     impl.set_new_ping_handler(
         Sequence(ExpectContext(&bindings, context_a), loop.QuitClosure()));
-    provider_a->GetPing(GetProxy(&ping, provider_a.associated_group()));
+    provider_a->GetPing(MakeRequest(&ping, provider_a.associated_group()));
     loop.Run();
   }
 
@@ -259,7 +259,7 @@ TEST_F(BindingSetTest, MasterInterfaceBindingSetContext) {
     base::RunLoop loop;
     impl.set_new_ping_handler(
         Sequence(ExpectContext(&bindings, context_b), loop.QuitClosure()));
-    provider_b->GetPing(GetProxy(&ping, provider_b.associated_group()));
+    provider_b->GetPing(MakeRequest(&ping, provider_b.associated_group()));
     loop.Run();
   }
 
@@ -299,7 +299,7 @@ TEST_F(BindingSetTest, AssociatedBindingSetConnectionErrorWithReason) {
           run_loop.QuitClosure()));
 
   PingServiceAssociatedPtr ptr;
-  master_ptr->GetPing(GetProxy(&ptr, master_ptr.associated_group()));
+  master_ptr->GetPing(MakeRequest(&ptr, master_ptr.associated_group()));
 
   ptr.ResetWithReason(2048u, "bye");
 

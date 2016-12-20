@@ -29,8 +29,8 @@ FaceDetector::FaceDetector(LocalFrame& frame,
   faceDetectorOptions->max_detected_faces = options.maxDetectedFaces();
   faceDetectorOptions->fast_mode = options.fastMode();
   mojom::blink::FaceDetectionProviderPtr provider;
-  frame.interfaceProvider()->getInterface(mojo::GetProxy(&provider));
-  provider->CreateFaceDetection(mojo::GetProxy(&m_faceService),
+  frame.interfaceProvider()->getInterface(mojo::MakeRequest(&provider));
+  provider->CreateFaceDetection(mojo::MakeRequest(&m_faceService),
                                 std::move(faceDetectorOptions));
 
   m_faceService.set_connection_error_handler(convertToBaseCallback(WTF::bind(

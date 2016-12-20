@@ -171,16 +171,15 @@ void DOMStorageContextWrapper::MojoState::OpenLocalStorage(
       // database.
       file_service_connection_->GetInterface(&file_system_);
       file_system_->GetSubDirectory(subdirectory_.AsUTF8Unsafe(),
-                                    GetProxy(&directory_),
+                                    MakeRequest(&directory_),
                                     base::Bind(&MojoState::OnDirectoryOpened,
                                                weak_ptr_factory_.GetWeakPtr()));
     } else {
       // We were not given a subdirectory. Use a memory backed database.
       file_service_connection_->GetInterface(&leveldb_service_);
       leveldb_service_->OpenInMemory(
-          GetProxy(&database_),
-          base::Bind(&MojoState::OnDatabaseOpened,
-                     weak_ptr_factory_.GetWeakPtr()));
+          MakeRequest(&database_), base::Bind(&MojoState::OnDatabaseOpened,
+                                              weak_ptr_factory_.GetWeakPtr()));
     }
   }
 
@@ -209,7 +208,7 @@ void DOMStorageContextWrapper::MojoState::OnDirectoryOpened(
   file_service_connection_->GetInterface(&leveldb_service_);
 
   leveldb_service_->Open(
-      std::move(directory_), "leveldb", GetProxy(&database_),
+      std::move(directory_), "leveldb", MakeRequest(&database_),
       base::Bind(&MojoState::OnDatabaseOpened, weak_ptr_factory_.GetWeakPtr()));
 }
 

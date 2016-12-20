@@ -38,7 +38,7 @@ TEST(KURLSecurityOriginStructTraitsTest, Basic) {
   base::MessageLoop messageLoop;
 
   url::mojom::blink::UrlTestPtr proxy;
-  UrlTestImpl impl(GetProxy(&proxy));
+  UrlTestImpl impl(MakeRequest(&proxy));
 
   const char* serializeCases[] = {
       "http://www.google.com/", "http://user:pass@host.com:888/foo;bar?baz#nop",

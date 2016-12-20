@@ -81,7 +81,7 @@ class BackgroundTestState {
     client_process_connection->service =
         service.PassInterface().PassHandle();
     client_process_connection->pid_receiver_request =
-        mojo::GetProxy(&pid_receiver_).PassMessagePipe();
+        mojo::MakeRequest(&pid_receiver_).PassMessagePipe();
     params->set_client_process_connection(std::move(client_process_connection));
     service_manager->Connect(std::move(params));
   }

@@ -707,7 +707,7 @@ PaymentRequest::PaymentRequest(Document& document,
     m_shippingType = getValidShippingType(m_options.shippingType());
 
   document.frame()->interfaceProvider()->getInterface(
-      mojo::GetProxy(&m_paymentProvider));
+      mojo::MakeRequest(&m_paymentProvider));
   m_paymentProvider.set_connection_error_handler(convertToBaseCallback(
       WTF::bind(&PaymentRequest::OnError, wrapWeakPersistent(this),
                 PaymentErrorReason::UNKNOWN)));

@@ -104,7 +104,7 @@ class TestMemoryCoordinatorImpl : public MemoryCoordinatorImpl {
   // Mojo machinery for wrapping a mock ChildMemoryCoordinator.
   struct Child {
     Child(mojom::ChildMemoryCoordinatorPtr* cmc_ptr) : cmc_binding(&cmc) {
-      cmc_binding.Bind(mojo::GetProxy(cmc_ptr));
+      cmc_binding.Bind(mojo::MakeRequest(cmc_ptr));
       RunUntilIdle();
     }
 

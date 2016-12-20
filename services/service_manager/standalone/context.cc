@@ -268,7 +268,7 @@ void Context::Run(const std::string& name) {
   std::unique_ptr<ConnectParams> params(new ConnectParams);
   params->set_source(CreateServiceManagerIdentity());
   params->set_target(Identity(name, mojom::kRootUserID));
-  params->set_remote_interfaces(mojo::GetProxy(&remote_interfaces));
+  params->set_remote_interfaces(mojo::MakeRequest(&remote_interfaces));
   service_manager_->Connect(std::move(params));
 }
 

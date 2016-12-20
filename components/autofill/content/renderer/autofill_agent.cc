@@ -779,7 +779,7 @@ void AutofillAgent::ajaxSucceeded() {
 const mojom::AutofillDriverPtr& AutofillAgent::GetAutofillDriver() {
   if (!autofill_driver_) {
     render_frame()->GetRemoteInterfaces()->GetInterface(
-        mojo::GetProxy(&autofill_driver_));
+        mojo::MakeRequest(&autofill_driver_));
   }
 
   return autofill_driver_;

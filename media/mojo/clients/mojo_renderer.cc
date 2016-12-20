@@ -81,7 +81,7 @@ void MojoRenderer::InitializeRendererFromStreams(
   mojom::DemuxerStreamPtr audio_stream;
   if (audio) {
     audio_stream_.reset(
-        new MojoDemuxerStreamImpl(audio, GetProxy(&audio_stream)));
+        new MojoDemuxerStreamImpl(audio, MakeRequest(&audio_stream)));
     // Using base::Unretained(this) is safe because |this| owns
     // |audio_stream_|, and the error handler can't be invoked once
     // |audio_stream_| is destroyed.
@@ -93,7 +93,7 @@ void MojoRenderer::InitializeRendererFromStreams(
   mojom::DemuxerStreamPtr video_stream;
   if (video) {
     video_stream_.reset(
-        new MojoDemuxerStreamImpl(video, GetProxy(&video_stream)));
+        new MojoDemuxerStreamImpl(video, MakeRequest(&video_stream)));
     // Using base::Unretained(this) is safe because |this| owns
     // |video_stream_|, and the error handler can't be invoked once
     // |video_stream_| is destroyed.

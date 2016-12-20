@@ -60,7 +60,7 @@ WindowServer::WindowServer(WindowServerDelegate* delegate)
   user_id_tracker_.AddObserver(this);
   OnUserIdAdded(user_id_tracker_.active_id());
   gpu_host_->CreateDisplayCompositor(
-      mojo::GetProxy(&display_compositor_),
+      mojo::MakeRequest(&display_compositor_),
       display_compositor_client_binding_.CreateInterfacePtrAndBind());
 }
 
@@ -108,7 +108,7 @@ WindowTree* WindowServer::EmbedAtWindow(
     tree->set_embedder_intercepts_events();
 
   mojom::WindowTreePtr window_tree_ptr;
-  mojom::WindowTreeRequest window_tree_request = GetProxy(&window_tree_ptr);
+  mojom::WindowTreeRequest window_tree_request = MakeRequest(&window_tree_ptr);
   std::unique_ptr<WindowTreeBinding> binding =
       delegate_->CreateWindowTreeBinding(
           WindowServerDelegate::BindingType::EMBED, this, tree,

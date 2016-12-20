@@ -89,7 +89,7 @@ class CallStackProfileCollectorTestImpl
 
 class CallStackProfileStructTraitsTest : public testing::Test {
  public:
-  CallStackProfileStructTraitsTest() : impl_(GetProxy(&proxy_)) {}
+  CallStackProfileStructTraitsTest() : impl_(MakeRequest(&proxy_)) {}
 
  protected:
   base::MessageLoop message_loop_;

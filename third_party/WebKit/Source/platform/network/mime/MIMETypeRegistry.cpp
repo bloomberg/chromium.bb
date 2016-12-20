@@ -24,7 +24,7 @@ struct MimeRegistryPtrHolder {
  public:
   MimeRegistryPtrHolder() {
     Platform::current()->interfaceProvider()->getInterface(
-        mojo::GetProxy(&mimeRegistry));
+        mojo::MakeRequest(&mimeRegistry));
   }
   ~MimeRegistryPtrHolder() {}
 

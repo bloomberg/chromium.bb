@@ -35,7 +35,7 @@ TEST_F(FakeDeviceTest, FrameCallbacksArrive) {
   const int kNumFramesToWaitFor = 3;
   int num_frames_arrived = 0;
   mojom::ReceiverPtr receiver_proxy;
-  MockReceiver receiver(mojo::GetProxy(&receiver_proxy));
+  MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
   EXPECT_CALL(receiver, OnIncomingCapturedVideoFramePtr(_))
       .WillRepeatedly(InvokeWithoutArgs(
           [&wait_loop, &kNumFramesToWaitFor, &num_frames_arrived]() {
@@ -57,7 +57,7 @@ TEST_F(FakeDeviceTest, ReceiveFramesFromFakeCaptureDevice) {
   constexpr int num_frames_to_receive = 2;
   FrameInfo received_frame_infos[num_frames_to_receive];
   int received_frame_count = 0;
-  MockReceiver receiver(mojo::GetProxy(&receiver_proxy));
+  MockReceiver receiver(mojo::MakeRequest(&receiver_proxy));
   EXPECT_CALL(receiver, OnIncomingCapturedVideoFramePtr(_))
       .WillRepeatedly(Invoke(
           [&received_frame_infos, &received_frame_count, &num_frames_to_receive,

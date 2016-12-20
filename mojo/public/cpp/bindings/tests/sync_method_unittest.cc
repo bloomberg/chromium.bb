@@ -267,7 +267,7 @@ class SyncMethodAssociatedTest : public SyncMethodTest {
 
  protected:
   void SetUp() override {
-    master_impl_.reset(new TestSyncMasterImpl(GetProxy(&master_ptr_)));
+    master_impl_.reset(new TestSyncMasterImpl(MakeRequest(&master_ptr_)));
 
     master_ptr_.associated_group()->CreateAssociatedInterface(
         AssociatedGroup::WILL_PASS_REQUEST, &asso_ptr_info_, &asso_request_);
@@ -342,7 +342,7 @@ TYPED_TEST_CASE(SyncMethodCommonTest, InterfaceTypes);
 
 TYPED_TEST(SyncMethodCommonTest, CallSyncMethodAsynchronously) {
   InterfacePtr<TypeParam> ptr;
-  typename ImplTraits<TypeParam>::Type impl(GetProxy(&ptr));
+  typename ImplTraits<TypeParam>::Type impl(MakeRequest(&ptr));
 
   base::RunLoop run_loop;
   ptr->Echo(123, base::Bind(&ExpectValueAndRunClosure, 123,
@@ -357,7 +357,7 @@ TYPED_TEST(SyncMethodCommonTest, BasicSyncCalls) {
   service_thread.thread()->task_runner()->PostTask(
       FROM_HERE, base::Bind(&TestSyncServiceThread<TypeParam>::SetUp,
                             base::Unretained(&service_thread),
-                            base::Passed(GetProxy(&ptr))));
+                            base::Passed(MakeRequest(&ptr))));
   ASSERT_TRUE(ptr->Ping());
   ASSERT_TRUE(service_thread.ping_called());
 
@@ -379,7 +379,7 @@ TYPED_TEST(SyncMethodCommonTest, ReenteredBySyncMethodBinding) {
 
   InterfacePtr<TypeParam> ptr;
   // The binding lives on the same thread as the interface pointer.
-  typename ImplTraits<TypeParam>::Type impl(GetProxy(&ptr));
+  typename ImplTraits<TypeParam>::Type impl(MakeRequest(&ptr));
   int32_t output_value = -1;
   ASSERT_TRUE(ptr->Echo(42, &output_value));
   EXPECT_EQ(42, output_value);
@@ -390,7 +390,7 @@ TYPED_TEST(SyncMethodCommonTest, InterfacePtrDestroyedDuringSyncCall) {
   // destroyed while it is waiting for a sync call response.
 
   InterfacePtr<TypeParam> ptr;
-  typename ImplTraits<TypeParam>::Type impl(GetProxy(&ptr));
+  typename ImplTraits<TypeParam>::Type impl(MakeRequest(&ptr));
   impl.set_ping_handler([&ptr](const TestSync::PingCallback& callback) {
     ptr.reset();
     callback.Run();
@@ -404,7 +404,7 @@ TYPED_TEST(SyncMethodCommonTest, BindingDestroyedDuringSyncCall) {
   // corresponding interface pointer is waiting for a sync call response.
 
   InterfacePtr<TypeParam> ptr;
-  typename ImplTraits<TypeParam>::Type impl(GetProxy(&ptr));
+  typename ImplTraits<TypeParam>::Type impl(MakeRequest(&ptr));
   impl.set_ping_handler([&impl](const TestSync::PingCallback& callback) {
     impl.binding()->Close();
     callback.Run();
@@ -417,7 +417,7 @@ TYPED_TEST(SyncMethodCommonTest, NestedSyncCallsWithInOrderResponses) {
   // already a sync call ongoing. The responses arrive in order.
 
   InterfacePtr<TypeParam> ptr;
-  typename ImplTraits<TypeParam>::Type impl(GetProxy(&ptr));
+  typename ImplTraits<TypeParam>::Type impl(MakeRequest(&ptr));
 
   // The same variable is used to store the output of the two sync calls, in
   // order to test that responses are handled in the correct order.
@@ -443,7 +443,7 @@ TYPED_TEST(SyncMethodCommonTest, NestedSyncCallsWithOutOfOrderResponses) {
   // already a sync call ongoing. The responses arrive out of order.
 
   InterfacePtr<TypeParam> ptr;
-  typename ImplTraits<TypeParam>::Type impl(GetProxy(&ptr));
+  typename ImplTraits<TypeParam>::Type impl(MakeRequest(&ptr));
 
   // The same variable is used to store the output of the two sync calls, in
   // order to test that responses are handled in the correct order.
@@ -469,7 +469,7 @@ TYPED_TEST(SyncMethodCommonTest, AsyncResponseQueuedDuringSyncCall) {
   // call, async responses are queued until the sync call completes.
 
   InterfacePtr<TypeParam> ptr;
-  typename ImplTraits<TypeParam>::Type impl(GetProxy(&ptr));
+  typename ImplTraits<TypeParam>::Type impl(MakeRequest(&ptr));
 
   int32_t async_echo_request_value = -1;
   TestSync::AsyncEchoCallback async_echo_request_callback;
@@ -525,7 +525,7 @@ TYPED_TEST(SyncMethodCommonTest, AsyncRequestQueuedDuringSyncCall) {
   // until the sync call completes.
 
   InterfacePtr<TypeParam> ptr;
-  typename ImplTraits<TypeParam>::Type impl(GetProxy(&ptr));
+  typename ImplTraits<TypeParam>::Type impl(MakeRequest(&ptr));
 
   bool async_echo_request_dispatched = false;
   impl.set_async_echo_handler([&async_echo_request_dispatched](
@@ -576,7 +576,7 @@ TYPED_TEST(SyncMethodCommonTest,
   // notification is delayed until all the queued messages are processed.
 
   InterfacePtr<TypeParam> ptr;
-  typename ImplTraits<TypeParam>::Type impl(GetProxy(&ptr));
+  typename ImplTraits<TypeParam>::Type impl(MakeRequest(&ptr));
 
   int32_t async_echo_request_value = -1;
   TestSync::AsyncEchoCallback async_echo_request_callback;

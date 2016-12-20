@@ -208,7 +208,7 @@ class MojoProxyResolverImplTest : public testing::Test {
 
 TEST_F(MojoProxyResolverImplTest, GetProxyForUrl) {
   interfaces::ProxyResolverRequestClientPtr client_ptr;
-  TestRequestClient client(mojo::GetProxy(&client_ptr));
+  TestRequestClient client(mojo::MakeRequest(&client_ptr));
 
   resolver_->GetProxyForUrl(GURL(GURL("http://example.com")),
                             std::move(client_ptr));
@@ -255,7 +255,7 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrl) {
 
 TEST_F(MojoProxyResolverImplTest, GetProxyForUrlFailure) {
   interfaces::ProxyResolverRequestClientPtr client_ptr;
-  TestRequestClient client(mojo::GetProxy(&client_ptr));
+  TestRequestClient client(mojo::MakeRequest(&client_ptr));
 
   resolver_->GetProxyForUrl(GURL("http://example.com"), std::move(client_ptr));
   ASSERT_EQ(1u, mock_proxy_resolver_->pending_jobs().size());
@@ -273,9 +273,9 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrlFailure) {
 
 TEST_F(MojoProxyResolverImplTest, GetProxyForUrlMultiple) {
   interfaces::ProxyResolverRequestClientPtr client_ptr1;
-  TestRequestClient client1(mojo::GetProxy(&client_ptr1));
+  TestRequestClient client1(mojo::MakeRequest(&client_ptr1));
   interfaces::ProxyResolverRequestClientPtr client_ptr2;
-  TestRequestClient client2(mojo::GetProxy(&client_ptr2));
+  TestRequestClient client2(mojo::MakeRequest(&client_ptr2));
 
   resolver_->GetProxyForUrl(GURL("http://example.com"), std::move(client_ptr1));
   resolver_->GetProxyForUrl(GURL("https://example.com"),
@@ -316,7 +316,7 @@ TEST_F(MojoProxyResolverImplTest, GetProxyForUrlMultiple) {
 TEST_F(MojoProxyResolverImplTest, DestroyClient) {
   interfaces::ProxyResolverRequestClientPtr client_ptr;
   std::unique_ptr<TestRequestClient> client(
-      new TestRequestClient(mojo::GetProxy(&client_ptr)));
+      new TestRequestClient(mojo::MakeRequest(&client_ptr)));
 
   resolver_->GetProxyForUrl(GURL("http://example.com"), std::move(client_ptr));
   ASSERT_EQ(1u, mock_proxy_resolver_->pending_jobs().size());
@@ -330,7 +330,7 @@ TEST_F(MojoProxyResolverImplTest, DestroyClient) {
 
 TEST_F(MojoProxyResolverImplTest, DestroyService) {
   interfaces::ProxyResolverRequestClientPtr client_ptr;
-  TestRequestClient client(mojo::GetProxy(&client_ptr));
+  TestRequestClient client(mojo::MakeRequest(&client_ptr));
 
   resolver_->GetProxyForUrl(GURL("http://example.com"), std::move(client_ptr));
   ASSERT_EQ(1u, mock_proxy_resolver_->pending_jobs().size());

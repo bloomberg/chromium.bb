@@ -388,11 +388,11 @@ class JsToCppTest : public testing::Test {
     cpp_side->set_run_loop(&run_loop_);
 
     js_to_cpp::JsSidePtr js_side;
-    auto js_side_proxy = GetProxy(&js_side);
+    auto js_side_proxy = MakeRequest(&js_side);
 
     cpp_side->set_js_side(js_side.get());
     js_to_cpp::CppSidePtr cpp_side_ptr;
-    cpp_side->Bind(GetProxy(&cpp_side_ptr));
+    cpp_side->Bind(MakeRequest(&cpp_side_ptr));
 
     js_side->SetCppSide(std::move(cpp_side_ptr));
 

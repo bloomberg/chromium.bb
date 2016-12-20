@@ -196,7 +196,7 @@ TEST_F(CommonCustomTypesTest, FilePath) {
   base::RunLoop run_loop;
 
   TestFilePathPtr ptr;
-  TestFilePathImpl impl(GetProxy(&ptr));
+  TestFilePathImpl impl(MakeRequest(&ptr));
 
   base::FilePath dir(FILE_PATH_LITERAL("hello"));
   base::FilePath file = dir.Append(FILE_PATH_LITERAL("world"));
@@ -210,7 +210,7 @@ TEST_F(CommonCustomTypesTest, UnguessableToken) {
   base::RunLoop run_loop;
 
   TestUnguessableTokenPtr ptr;
-  TestUnguessableTokenImpl impl(GetProxy(&ptr));
+  TestUnguessableTokenImpl impl(MakeRequest(&ptr));
 
   base::UnguessableToken token = base::UnguessableToken::Create();
 
@@ -223,7 +223,7 @@ TEST_F(CommonCustomTypesTest, Time) {
   base::RunLoop run_loop;
 
   TestTimePtr ptr;
-  TestTimeImpl impl(GetProxy(&ptr));
+  TestTimeImpl impl(MakeRequest(&ptr));
 
   base::Time t = base::Time::Now();
 
@@ -236,7 +236,7 @@ TEST_F(CommonCustomTypesTest, TimeDelta) {
   base::RunLoop run_loop;
 
   TestTimePtr ptr;
-  TestTimeImpl impl(GetProxy(&ptr));
+  TestTimeImpl impl(MakeRequest(&ptr));
 
   base::TimeDelta t = base::TimeDelta::FromDays(123);
 
@@ -249,7 +249,7 @@ TEST_F(CommonCustomTypesTest, TimeTicks) {
   base::RunLoop run_loop;
 
   TestTimePtr ptr;
-  TestTimeImpl impl(GetProxy(&ptr));
+  TestTimeImpl impl(MakeRequest(&ptr));
 
   base::TimeTicks t = base::TimeTicks::Now();
 
@@ -260,7 +260,7 @@ TEST_F(CommonCustomTypesTest, TimeTicks) {
 
 TEST_F(CommonCustomTypesTest, Value) {
   TestValuePtr ptr;
-  TestValueImpl impl(GetProxy(&ptr));
+  TestValueImpl impl(MakeRequest(&ptr));
 
   base::DictionaryValue dict;
   dict.SetBoolean("bool", false);
@@ -304,7 +304,7 @@ TEST_F(CommonCustomTypesTest, String16) {
   base::RunLoop run_loop;
 
   TestString16Ptr ptr;
-  TestString16Impl impl(GetProxy(&ptr));
+  TestString16Impl impl(MakeRequest(&ptr));
 
   base::string16 str16 = base::ASCIIToUTF16("hello world");
 
@@ -317,7 +317,7 @@ TEST_F(CommonCustomTypesTest, EmptyString16) {
   base::RunLoop run_loop;
 
   TestString16Ptr ptr;
-  TestString16Impl impl(GetProxy(&ptr));
+  TestString16Impl impl(MakeRequest(&ptr));
 
   base::string16 str16;
 
@@ -331,7 +331,7 @@ TEST_F(CommonCustomTypesTest, File) {
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
   TestFilePtr ptr;
-  TestFileImpl impl(GetProxy(&ptr));
+  TestFileImpl impl(MakeRequest(&ptr));
 
   base::File file(
       temp_dir.GetPath().AppendASCII("test_file.txt"),
@@ -356,7 +356,7 @@ TEST_F(CommonCustomTypesTest, File) {
 
 TEST_F(CommonCustomTypesTest, InvalidFile) {
   TestFilePtr ptr;
-  TestFileImpl impl(GetProxy(&ptr));
+  TestFileImpl impl(MakeRequest(&ptr));
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());

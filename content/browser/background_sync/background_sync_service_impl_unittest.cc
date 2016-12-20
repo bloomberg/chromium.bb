@@ -179,7 +179,7 @@ class BackgroundSyncServiceImplTest : public testing::Test {
     // Create a dummy mojo channel so that the BackgroundSyncServiceImpl can be
     // instantiated.
     mojo::InterfaceRequest<blink::mojom::BackgroundSyncService>
-        service_request = mojo::GetProxy(&service_ptr_);
+        service_request = mojo::MakeRequest(&service_ptr_);
     // Create a new BackgroundSyncServiceImpl bound to the dummy channel.
     background_sync_context_->CreateService(std::move(service_request));
     base::RunLoop().RunUntilIdle();

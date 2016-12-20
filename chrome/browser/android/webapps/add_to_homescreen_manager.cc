@@ -123,7 +123,7 @@ void AddToHomescreenManager::AddShortcut(const ShortcutInfo& info,
   // Fire the appinstalled event.
   blink::mojom::InstallationServicePtr installation_service;
   web_contents->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
-      mojo::GetProxy(&installation_service));
+      mojo::MakeRequest(&installation_service));
   DCHECK(installation_service);
   installation_service->OnInstall();
 }

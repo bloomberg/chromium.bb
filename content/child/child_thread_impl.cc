@@ -398,7 +398,7 @@ void ChildThreadImpl::ConnectChannel() {
   } else {
     DCHECK(service_manager_connection_);
     IPC::mojom::ChannelBootstrapPtr bootstrap;
-    handle = mojo::GetProxy(&bootstrap).PassMessagePipe();
+    handle = mojo::MakeRequest(&bootstrap).PassMessagePipe();
     service_manager_connection_->AddConnectionFilter(
         base::MakeUnique<ChannelBootstrapFilter>(bootstrap.PassInterface()));
   }

@@ -53,7 +53,7 @@ usb::DeviceFilterPtr convertDeviceFilter(const USBDeviceFilter& filter) {
 
 USB::USB(LocalFrame& frame)
     : ContextLifecycleObserver(frame.document()), m_clientBinding(this) {
-  frame.interfaceProvider()->getInterface(mojo::GetProxy(&m_deviceManager));
+  frame.interfaceProvider()->getInterface(mojo::MakeRequest(&m_deviceManager));
   m_deviceManager.set_connection_error_handler(convertToBaseCallback(WTF::bind(
       &USB::onDeviceManagerConnectionError, wrapWeakPersistent(this))));
   m_deviceManager->SetClient(m_clientBinding.CreateInterfacePtrAndBind());
@@ -112,7 +112,8 @@ ScriptPromise USB::requestDevice(ScriptState* scriptState,
       resolver->reject(DOMException::create(NotSupportedError));
       return promise;
     }
-    frame->interfaceProvider()->getInterface(mojo::GetProxy(&m_chooserService));
+    frame->interfaceProvider()->getInterface(
+        mojo::MakeRequest(&m_chooserService));
     m_chooserService.set_connection_error_handler(
         convertToBaseCallback(WTF::bind(&USB::onChooserServiceConnectionError,
                                         wrapWeakPersistent(this))));
@@ -161,7 +162,7 @@ USBDevice* USB::getOrCreateDevice(usb::DeviceInfoPtr deviceInfo) {
   if (!device) {
     String guid = deviceInfo->guid;
     usb::DevicePtr pipe;
-    m_deviceManager->GetDevice(guid, mojo::GetProxy(&pipe));
+    m_deviceManager->GetDevice(guid, mojo::MakeRequest(&pipe));
     device = USBDevice::create(std::move(deviceInfo), std::move(pipe),
                                getExecutionContext());
     m_deviceCache.add(guid, device);

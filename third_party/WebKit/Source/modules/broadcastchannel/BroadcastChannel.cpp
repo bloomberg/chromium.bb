@@ -28,7 +28,7 @@ mojom::blink::BroadcastChannelProviderPtr& getThreadSpecificProvider() {
       new ThreadSpecific<mojom::blink::BroadcastChannelProviderPtr>);
   if (!provider.isSet()) {
     Platform::current()->interfaceProvider()->getInterface(
-        mojo::GetProxy(&*provider));
+        mojo::MakeRequest(&*provider));
   }
   return *provider;
 }

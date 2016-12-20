@@ -90,10 +90,10 @@ class IMEAppTest : public service_manager::test::ServiceTest {
 // Tests sending a KeyEvent to the IMEDriver through the Mus IMEServer.
 TEST_F(IMEAppTest, ProcessKeyEvent) {
   ui::mojom::TextInputClientPtr client_ptr;
-  TestTextInputClient client(GetProxy(&client_ptr));
+  TestTextInputClient client(MakeRequest(&client_ptr));
 
   ui::mojom::InputMethodPtr input_method;
-  ime_server_->StartSession(std::move(client_ptr), GetProxy(&input_method));
+  ime_server_->StartSession(std::move(client_ptr), MakeRequest(&input_method));
 
   // Send character key event.
   ui::KeyEvent char_event('A', ui::VKEY_A, 0);

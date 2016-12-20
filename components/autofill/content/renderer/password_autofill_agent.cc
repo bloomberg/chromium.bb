@@ -1501,7 +1501,7 @@ const mojom::PasswordManagerDriverPtr&
 PasswordAutofillAgent::GetPasswordManagerDriver() {
   if (!password_manager_driver_) {
     render_frame()->GetRemoteInterfaces()->GetInterface(
-        mojo::GetProxy(&password_manager_driver_));
+        mojo::MakeRequest(&password_manager_driver_));
   }
 
   return password_manager_driver_;

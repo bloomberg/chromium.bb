@@ -210,9 +210,9 @@ void RemotingSourceImpl::StartDataPipe(
             : mojo::ScopedDataPipeConsumerHandle(),
       video ? std::move(video_data_pipe->consumer_handle)
             : mojo::ScopedDataPipeConsumerHandle(),
-      audio ? mojo::GetProxy(&audio_stream_sender)
+      audio ? mojo::MakeRequest(&audio_stream_sender)
             : media::mojom::RemotingDataStreamSenderRequest(),
-      video ? mojo::GetProxy(&video_stream_sender)
+      video ? mojo::MakeRequest(&video_stream_sender)
             : media::mojom::RemotingDataStreamSenderRequest());
   done_callback.Run(audio_stream_sender.PassInterface(),
                     video_stream_sender.PassInterface(),

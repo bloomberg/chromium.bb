@@ -86,9 +86,7 @@ void PingPongTest::OnPingDone() {
 }
 
 struct BoundPingService {
-  BoundPingService() : binding(&impl) {
-    binding.Bind(GetProxy(&service));
-  }
+  BoundPingService() : binding(&impl) { binding.Bind(MakeRequest(&service)); }
 
   PingServiceImpl impl;
   test::PingServicePtr service;
@@ -106,7 +104,7 @@ class MojoBindingsPerftest : public testing::Test {
 TEST_F(MojoBindingsPerftest, InProcessPingPong) {
   test::PingServicePtr service;
   PingServiceImpl impl;
-  Binding<test::PingService> binding(&impl, GetProxy(&service));
+  Binding<test::PingService> binding(&impl, MakeRequest(&service));
   PingPongTest test(std::move(service));
 
   {

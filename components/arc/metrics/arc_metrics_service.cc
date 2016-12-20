@@ -129,7 +129,7 @@ void ArcMetricsService::OnArcStartTimeRetrieved(
   // time availability in ReportBootProgress().
   if (!binding_.is_bound()) {
     mojom::MetricsHostPtr host_ptr;
-    binding_.Bind(mojo::GetProxy(&host_ptr));
+    binding_.Bind(mojo::MakeRequest(&host_ptr));
     instance->Init(std::move(host_ptr));
   }
   arc_start_time_ = arc_start_time;

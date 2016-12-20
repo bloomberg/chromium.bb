@@ -133,7 +133,7 @@ void WiFiDisplayMediaPipeline::OnInitialize(
       break;
     case InitializationStep::MEDIA_SERVICE:
       service_callback_.Run(
-          mojo::GetProxy(&media_service_),
+          mojo::MakeRequest(&media_service_),
           base::Bind(&WiFiDisplayMediaPipeline::OnMediaServiceRegistered,
                      weak_factory_.GetWeakPtr(), callback));
       break;

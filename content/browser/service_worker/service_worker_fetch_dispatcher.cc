@@ -421,7 +421,7 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   mojom::URLLoaderFactoryPtr factory;
   URLLoaderFactoryImpl::Create(
       ResourceRequesterInfo::CreateForNavigationPreload(requester_info),
-      mojo::GetProxy(&url_loader_factory_));
+      mojo::MakeRequest(&url_loader_factory_));
 
   preload_handle_ = mojom::FetchEventPreloadHandle::New();
 
@@ -454,7 +454,7 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   preload_handle_ = mojom::FetchEventPreloadHandle::New();
   mojom::URLLoaderClientPtr url_loader_client_ptr;
   preload_handle_->url_loader_client_request =
-      mojo::GetProxy(&url_loader_client_ptr);
+      mojo::MakeRequest(&url_loader_client_ptr);
   auto url_loader_client = base::MakeUnique<DelegatingURLLoaderClient>(
       std::move(url_loader_client_ptr));
   mojom::URLLoaderClientAssociatedPtrInfo url_loader_client_associated_ptr_info;
@@ -463,8 +463,8 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   mojom::URLLoaderAssociatedPtr url_loader_associated_ptr;
 
   url_loader_factory_->CreateLoaderAndStart(
-      mojo::GetProxy(&url_loader_associated_ptr,
-                     url_loader_factory_.associated_group()),
+      mojo::MakeRequest(&url_loader_associated_ptr,
+                        url_loader_factory_.associated_group()),
       original_info->GetRouteID(), request_id, request,
       std::move(url_loader_client_associated_ptr_info));
 

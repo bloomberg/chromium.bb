@@ -98,14 +98,14 @@ class WebSocketManagerTest : public ::testing::Test {
   void AddMultipleChannels(int number_of_channels) {
     for (int i = 0; i < number_of_channels; ++i) {
       blink::mojom::WebSocketPtr websocket;
-      websocket_manager_->DoCreateWebSocket(mojo::GetProxy(&websocket));
+      websocket_manager_->DoCreateWebSocket(mojo::MakeRequest(&websocket));
     }
   }
 
   void AddAndCancelMultipleChannels(int number_of_channels) {
     for (int i = 0; i < number_of_channels; ++i) {
       blink::mojom::WebSocketPtr websocket;
-      websocket_manager_->DoCreateWebSocket(mojo::GetProxy(&websocket));
+      websocket_manager_->DoCreateWebSocket(mojo::MakeRequest(&websocket));
       websocket_manager_->sockets().back()->SimulateConnectionError();
     }
   }
@@ -124,7 +124,7 @@ TEST_F(WebSocketManagerTest, Construct) {
 TEST_F(WebSocketManagerTest, CreateWebSocket) {
   blink::mojom::WebSocketPtr websocket;
 
-  websocket_manager()->DoCreateWebSocket(mojo::GetProxy(&websocket));
+  websocket_manager()->DoCreateWebSocket(mojo::MakeRequest(&websocket));
 
   EXPECT_EQ(1U, websocket_manager()->sockets().size());
 }
@@ -132,7 +132,7 @@ TEST_F(WebSocketManagerTest, CreateWebSocket) {
 TEST_F(WebSocketManagerTest, SendFrameButNotConnectedYet) {
   blink::mojom::WebSocketPtr websocket;
 
-  websocket_manager()->DoCreateWebSocket(mojo::GetProxy(&websocket));
+  websocket_manager()->DoCreateWebSocket(mojo::MakeRequest(&websocket));
 
   // This should not crash.
   mojo::Array<uint8_t> data;

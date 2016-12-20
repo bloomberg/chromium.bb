@@ -47,12 +47,14 @@ class StrongBindingSetTest : public testing::Test {
 
  protected:
   void AddBindings() {
-    binding_id_1_ = bindings_->AddBinding(base::MakeUnique<TestServiceImpl>(),
-                                          mojo::GetProxy(&test_service_ptr_1_));
+    binding_id_1_ =
+        bindings_->AddBinding(base::MakeUnique<TestServiceImpl>(),
+                              mojo::MakeRequest(&test_service_ptr_1_));
     EXPECT_EQ(1, TestServiceImpl::instance_count);
 
-    binding_id_2_ = bindings_->AddBinding(base::MakeUnique<TestServiceImpl>(),
-                                          mojo::GetProxy(&test_service_ptr_2_));
+    binding_id_2_ =
+        bindings_->AddBinding(base::MakeUnique<TestServiceImpl>(),
+                              mojo::MakeRequest(&test_service_ptr_2_));
     EXPECT_EQ(2, TestServiceImpl::instance_count);
   }
 

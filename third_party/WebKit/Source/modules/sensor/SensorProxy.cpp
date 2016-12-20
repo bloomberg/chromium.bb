@@ -63,8 +63,8 @@ void SensorProxy::initialize() {
   m_state = Initializing;
   auto callback = convertToBaseCallback(
       WTF::bind(&SensorProxy::onSensorCreated, wrapWeakPersistent(this)));
-  m_provider->getSensorProvider()->GetSensor(m_type, mojo::GetProxy(&m_sensor),
-                                             callback);
+  m_provider->getSensorProvider()->GetSensor(
+      m_type, mojo::MakeRequest(&m_sensor), callback);
 }
 
 void SensorProxy::addConfiguration(

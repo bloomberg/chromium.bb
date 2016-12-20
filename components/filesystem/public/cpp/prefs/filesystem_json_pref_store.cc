@@ -334,10 +334,10 @@ void FilesystemJsonPrefStore::PerformWrite() {
 
 void FilesystemJsonPrefStore::OpenFilesystem(base::Closure callback) {
   filesystem::mojom::FileSystemClientPtr client;
-  binding_.Bind(GetProxy(&client));
+  binding_.Bind(MakeRequest(&client));
 
   filesystem_->OpenFileSystem(
-      "origin", GetProxy(&directory_), std::move(client),
+      "origin", MakeRequest(&directory_), std::move(client),
       base::Bind(&FilesystemJsonPrefStore::OnOpenFilesystem, AsWeakPtr(),
                  callback));
 }

@@ -120,9 +120,9 @@ InterfaceRequest<Interface> MakeRequest(ScopedMessagePipeHandle handle) {
 //
 //   DatabasePtr database = ...;  // Connect to database.
 //   TablePtr table;
-//   database->OpenTable(GetProxy(&table));
+//   database->OpenTable(MakeRequest(&table));
 //
-// Upon return from GetProxy, |table| is ready to have methods called on it.
+// Upon return from MakeRequest, |table| is ready to have methods called on it.
 //
 // Example #2: Registering a local implementation with a remote service.
 // =====================================================================
@@ -136,12 +136,12 @@ InterfaceRequest<Interface> MakeRequest(ScopedMessagePipeHandle handle) {
 //
 //   CollectorPtr collector = ...;  // Connect to Collector.
 //   SourcePtr source;
-//   InterfaceRequest<Source> source_request = GetProxy(&source);
+//   InterfaceRequest<Source> source_request = MakeRequest(&source);
 //   collector->RegisterSource(std::move(source));
 //   CreateSource(std::move(source_request));  // Create implementation locally.
 //
 template <typename Interface>
-InterfaceRequest<Interface> GetProxy(
+InterfaceRequest<Interface> MakeRequest(
     InterfacePtr<Interface>* ptr,
     scoped_refptr<base::SingleThreadTaskRunner> runner =
         base::ThreadTaskRunnerHandle::Get()) {

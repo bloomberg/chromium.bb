@@ -66,10 +66,11 @@ void StartServiceInUtilityProcess(
     bool use_sandbox,
     service_manager::mojom::ServiceRequest request) {
   service_manager::mojom::ServiceFactoryPtr service_factory;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&StartUtilityProcessOnIOThread,
-                                     base::Passed(GetProxy(&service_factory)),
-                                     process_name, use_sandbox));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&StartUtilityProcessOnIOThread,
+                 base::Passed(MakeRequest(&service_factory)), process_name,
+                 use_sandbox));
   service_factory->CreateService(std::move(request), service_name);
 }
 
@@ -100,7 +101,7 @@ void StartServiceInGpuProcess(const std::string& service_name,
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&RequestGpuServiceFactory,
-                 base::Passed(GetProxy(&service_factory))));
+                 base::Passed(MakeRequest(&service_factory))));
   service_factory->CreateService(std::move(request), service_name);
 }
 
@@ -161,7 +162,7 @@ class ServiceManagerContext::InProcessServiceManagerContext
       std::unique_ptr<BuiltinManifestProvider> manifest_provider) {
     service_manager::mojom::ServicePtr embedder_service_proxy;
     service_manager::mojom::ServiceRequest embedder_service_request =
-        mojo::GetProxy(&embedder_service_proxy);
+        mojo::MakeRequest(&embedder_service_proxy);
     service_manager::mojom::ServicePtrInfo embedder_service_proxy_info =
         embedder_service_proxy.PassInterface();
     BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)->PostTask(

@@ -55,7 +55,7 @@ void MockDeviceTest::SetUp() {
           std::move(mock_device_factory), base::Bind(CreateJpegDecoder));
 
   mock_factory_binding_ = base::MakeUnique<mojo::Binding<mojom::DeviceFactory>>(
-      mock_device_factory_adapter_.get(), mojo::GetProxy(&factory_));
+      mock_device_factory_adapter_.get(), mojo::MakeRequest(&factory_));
 
   media::VideoCaptureDeviceDescriptor mock_descriptor;
   mock_descriptor.device_id = "MockDeviceId";
@@ -63,7 +63,7 @@ void MockDeviceTest::SetUp() {
 
   // Obtain the mock device from the factory
   factory_->CreateDevice(
-      mock_descriptor.device_id, mojo::GetProxy(&device_proxy_),
+      mock_descriptor.device_id, mojo::MakeRequest(&device_proxy_),
       base::Bind([](mojom::DeviceAccessResultCode result_code) {}));
 
   requested_settings_.format.frame_size = gfx::Size(800, 600);
@@ -74,7 +74,7 @@ void MockDeviceTest::SetUp() {
       media::PowerLineFrequency::FREQUENCY_DEFAULT;
 
   mock_receiver_ =
-      base::MakeUnique<MockReceiver>(mojo::GetProxy(&mock_receiver_proxy_));
+      base::MakeUnique<MockReceiver>(mojo::MakeRequest(&mock_receiver_proxy_));
 }
 
 }  // namespace video_capture

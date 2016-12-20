@@ -104,7 +104,7 @@ class InputMethodBridgeChromeOSTest : public testing::Test {
     ui::IMEBridge::Initialize();
 
     ui::mojom::TextInputClientPtr client_ptr;
-    client_ = base::MakeUnique<TestTextInputClient>(GetProxy(&client_ptr));
+    client_ = base::MakeUnique<TestTextInputClient>(MakeRequest(&client_ptr));
     input_method_ = base::MakeUnique<InputMethodBridge>(std::move(client_ptr));
   }
 

@@ -91,7 +91,7 @@ class PrefObserverStoreTest : public testing::Test {
 };
 
 void PrefObserverStoreTest::SetUp() {
-  manager_.reset(new TestPreferenceManager(mojo::GetProxy(&proxy_)));
+  manager_.reset(new TestPreferenceManager(mojo::MakeRequest(&proxy_)));
   store_ = new PrefObserverStore(std::move(proxy_));
   store_->AddObserver(&observer_);
 }

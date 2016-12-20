@@ -50,7 +50,7 @@ mojom::WindowTreePtr DefaultWindowTreeBinding::CreateInterfacePtrAndBind() {
 
 mojom::WindowManager* DefaultWindowTreeBinding::GetWindowManager() {
   client_->GetWindowManager(
-      GetProxy(&window_manager_internal_, client_.associated_group()));
+      MakeRequest(&window_manager_internal_, client_.associated_group()));
   return window_manager_internal_.get();
 }
 
@@ -64,7 +64,7 @@ void DefaultWindowTreeBinding::SetIncomingMethodCallProcessingPaused(
 
 mojom::WindowTreeClient* DefaultWindowTreeBinding::CreateClientForShutdown() {
   client_.reset();
-  GetProxy(&client_);
+  MakeRequest(&client_);
   return client_.get();
 }
 

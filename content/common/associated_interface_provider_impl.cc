@@ -15,9 +15,9 @@ class AssociatedInterfaceProviderImpl::LocalProvider
   explicit LocalProvider(mojom::AssociatedInterfaceProviderAssociatedPtr* proxy)
       : route_provider_binding_(this),
         associated_interface_provider_binding_(this) {
-    route_provider_binding_.Bind(mojo::GetProxy(&route_provider_ptr_));
+    route_provider_binding_.Bind(mojo::MakeRequest(&route_provider_ptr_));
     route_provider_ptr_->GetRoute(
-        0, mojo::GetProxy(proxy, route_provider_ptr_.associated_group()));
+        0, mojo::MakeRequest(proxy, route_provider_ptr_.associated_group()));
   }
 
   ~LocalProvider() override {}

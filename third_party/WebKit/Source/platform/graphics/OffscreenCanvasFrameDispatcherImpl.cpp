@@ -43,10 +43,10 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
   DCHECK(!m_sink.is_bound());
   mojom::blink::OffscreenCanvasCompositorFrameSinkProviderPtr provider;
   Platform::current()->interfaceProvider()->getInterface(
-      mojo::GetProxy(&provider));
+      mojo::MakeRequest(&provider));
   provider->CreateCompositorFrameSink(m_frameSinkId,
                                       m_binding.CreateInterfacePtrAndBind(),
-                                      mojo::GetProxy(&m_sink));
+                                      mojo::MakeRequest(&m_sink));
 }
 
 void OffscreenCanvasFrameDispatcherImpl::setTransferableResourceToSharedBitmap(

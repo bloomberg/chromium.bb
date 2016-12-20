@@ -102,7 +102,7 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
 
     URLLoaderFactoryImpl::Create(
         resource_message_filter_->requester_info_for_test(),
-        mojo::GetProxy(&factory_));
+        mojo::MakeRequest(&factory_));
 
     // Calling this function creates a request context.
     browser_context_->GetResourceContext()->GetRequestContext();
@@ -160,7 +160,7 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   // Need to set |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(
-      mojo::GetProxy(&loader, factory_.associated_group()), kRoutingId,
+      mojo::MakeRequest(&loader, factory_.associated_group()), kRoutingId,
       kRequestId, request,
       client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
 
@@ -239,7 +239,7 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
   // Need to set |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(
-      mojo::GetProxy(&loader, factory_.associated_group()), 2, 1, request,
+      mojo::MakeRequest(&loader, factory_.associated_group()), 2, 1, request,
       client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
 
   client.RunUntilComplete();
@@ -268,7 +268,7 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse2) {
   // Need to set |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(
-      mojo::GetProxy(&loader, factory_.associated_group()), 2, 1, request,
+      mojo::MakeRequest(&loader, factory_.associated_group()), 2, 1, request,
       client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
 
   client.RunUntilComplete();
@@ -295,7 +295,7 @@ TEST_P(URLLoaderFactoryImplTest, InvalidURL) {
   request.request_initiator = url::Origin();
   ASSERT_FALSE(request.url.is_valid());
   factory_->CreateLoaderAndStart(
-      mojo::GetProxy(&loader, factory_.associated_group()), 2, 1, request,
+      mojo::MakeRequest(&loader, factory_.associated_group()), 2, 1, request,
       client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
 
   client.RunUntilComplete();
@@ -321,7 +321,7 @@ TEST_P(URLLoaderFactoryImplTest, ShouldNotRequestURL) {
   // Need to set |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(
-      mojo::GetProxy(&loader, factory_.associated_group()), 2, 1, request,
+      mojo::MakeRequest(&loader, factory_.associated_group()), 2, 1, request,
       client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
 
   client.RunUntilComplete();
@@ -351,7 +351,7 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFile) {
   request.download_to_file = true;
   request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(
-      mojo::GetProxy(&loader, factory_.associated_group()), kRoutingId,
+      mojo::MakeRequest(&loader, factory_.associated_group()), kRoutingId,
       kRequestId, request,
       client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
   ASSERT_FALSE(client.has_received_response());
@@ -419,7 +419,7 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFileFailure) {
   request.download_to_file = true;
   request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(
-      mojo::GetProxy(&loader, factory_.associated_group()), kRoutingId,
+      mojo::MakeRequest(&loader, factory_.associated_group()), kRoutingId,
       kRequestId, request,
       client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
   ASSERT_FALSE(client.has_received_response());
@@ -483,7 +483,7 @@ TEST_P(URLLoaderFactoryImplTest, OnTransferSizeUpdated) {
   request.request_initiator = url::Origin();
   request.report_raw_headers = true;
   factory_->CreateLoaderAndStart(
-      mojo::GetProxy(&loader, factory_.associated_group()), kRoutingId,
+      mojo::MakeRequest(&loader, factory_.associated_group()), kRoutingId,
       kRequestId, request,
       client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
 
@@ -544,7 +544,7 @@ TEST_P(URLLoaderFactoryImplTest, CancelFromRenderer) {
   // Need to set |request_initiator| for non main frame type request.
   request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(
-      mojo::GetProxy(&loader, factory_.associated_group()), kRoutingId,
+      mojo::MakeRequest(&loader, factory_.associated_group()), kRoutingId,
       kRequestId, request,
       client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
 

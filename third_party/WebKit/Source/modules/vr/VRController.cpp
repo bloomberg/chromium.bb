@@ -22,7 +22,7 @@ VRController::VRController(NavigatorVR* navigatorVR)
       m_displaySynced(false),
       m_binding(this) {
   navigatorVR->document()->frame()->interfaceProvider()->getInterface(
-      mojo::GetProxy(&m_service));
+      mojo::MakeRequest(&m_service));
   m_service->SetClient(
       m_binding.CreateInterfacePtrAndBind(),
       convertToBaseCallback(

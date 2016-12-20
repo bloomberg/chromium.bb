@@ -205,7 +205,7 @@ void MojoCdmService::OnCdmCreated(
     // MojoDecryptorService takes a reference to the CDM, but it is still owned
     // by |this|.
     decryptor_.reset(new MojoDecryptorService(
-        cdm_, GetProxy(&decryptor_service),
+        cdm_, MakeRequest(&decryptor_service),
         base::Bind(&MojoCdmService::OnDecryptorConnectionError, weak_this_)));
   }
 

@@ -219,7 +219,7 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   void GetRemoteAssociatedInterface(
       mojo::AssociatedInterfacePtr<Interface>* proxy) {
     mojo::AssociatedInterfaceRequest<Interface> request =
-        mojo::GetProxy(proxy, GetAssociatedGroup());
+        mojo::MakeRequest(proxy, GetAssociatedGroup());
     GetGenericRemoteAssociatedInterface(Interface::Name_, request.PassHandle());
   }
 

@@ -50,7 +50,7 @@ class USBDeviceManagerImplTest : public testing::Test {
   DeviceManagerPtr ConnectToDeviceManager() {
     DeviceManagerPtr device_manager;
     DeviceManagerImpl::Create(permission_provider_.GetWeakPtr(),
-                              mojo::GetProxy(&device_manager));
+                              mojo::MakeRequest(&device_manager));
     return device_manager;
   }
 
@@ -152,14 +152,14 @@ TEST_F(USBDeviceManagerImplTest, GetDevice) {
   {
     base::RunLoop loop;
     DevicePtr device;
-    device_manager->GetDevice(mock_device->guid(), mojo::GetProxy(&device));
+    device_manager->GetDevice(mock_device->guid(), mojo::MakeRequest(&device));
     device->GetDeviceInfo(base::Bind(&ExpectDeviceInfoAndThen,
                                      mock_device->guid(), loop.QuitClosure()));
     loop.Run();
   }
 
   DevicePtr bad_device;
-  device_manager->GetDevice("not a real guid", mojo::GetProxy(&bad_device));
+  device_manager->GetDevice("not a real guid", mojo::MakeRequest(&bad_device));
 
   {
     base::RunLoop loop;

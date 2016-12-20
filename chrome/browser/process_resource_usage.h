@@ -28,7 +28,7 @@
 // 1. Create a chrome::mojom::ResourceUsageReporterPtr and obtain an
 //    InterfaceRequest<>
 // using
-//    mojo::GetProxy.
+//    mojo::MakeRequest.
 // 2. Use the child process's service registry to connect to the service using
 //    the InterfaceRequest<>. Note, ServiceRegistry is thread hostile and
 //    must always be accessed from the same thread. However, InterfaceRequest<>
@@ -46,7 +46,7 @@
 //   ...
 //     chrome::mojom::ResourceUsageReporterPtr service;
 //     mojo::InterfaceRequest<chrome::mojom::ResourceUsageReporter> request =
-//         mojo::GetProxy(&service);
+//         mojo::MakeRequest(&service);
 //     content::BrowserThread::PostTask(
 //         content::BrowserThread::IO, FROM_HERE,
 //         base::Bind(&Foo::ConnectToService, this, base::Passed(&request)));

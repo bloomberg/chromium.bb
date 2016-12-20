@@ -75,7 +75,7 @@ void MediaPermissionDispatcher::HasPermission(
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   if (!permission_service_)
-    connect_to_service_cb_.Run(mojo::GetProxy(&permission_service_));
+    connect_to_service_cb_.Run(mojo::MakeRequest(&permission_service_));
 
   int request_id = RegisterCallback(permission_status_cb);
   DVLOG(2) << __func__ << ": request ID " << request_id;
@@ -102,7 +102,7 @@ void MediaPermissionDispatcher::RequestPermission(
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
 
   if (!permission_service_)
-    connect_to_service_cb_.Run(mojo::GetProxy(&permission_service_));
+    connect_to_service_cb_.Run(mojo::MakeRequest(&permission_service_));
 
   int request_id = RegisterCallback(permission_status_cb);
   DVLOG(2) << __func__ << ": request ID " << request_id;

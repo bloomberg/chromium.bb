@@ -229,7 +229,7 @@ void MediaDevicesDispatcherHost::NotifyDeviceChangeOnUIThread(
       return;
 
     render_frame_host->GetRemoteInterfaces()->GetInterface(
-        mojo::GetProxy(&media_devices_listener));
+        mojo::MakeRequest(&media_devices_listener));
     if (!media_devices_listener)
       return;
   }

@@ -273,7 +273,7 @@ service_manager::InterfaceProvider* MockRenderThread::GetRemoteInterfaces() {
   if (!remote_interfaces_) {
     service_manager::mojom::InterfaceProviderPtr remote_interface_provider;
     pending_remote_interface_provider_request_ =
-        GetProxy(&remote_interface_provider);
+        MakeRequest(&remote_interface_provider);
     remote_interfaces_.reset(new service_manager::InterfaceProvider);
     remote_interfaces_->Bind(std::move(remote_interface_provider));
   }

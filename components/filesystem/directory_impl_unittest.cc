@@ -135,7 +135,7 @@ TEST_F(DirectoryImplTest, CantOpenDirectoriesAsFiles) {
     mojom::DirectoryPtr my_file_directory;
     error = mojom::FileError::FAILED;
     bool handled = directory->OpenDirectory(
-        "my_file", GetProxy(&my_file_directory),
+        "my_file", MakeRequest(&my_file_directory),
         mojom::kFlagRead | mojom::kFlagWrite | mojom::kFlagCreate, &error);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
@@ -146,7 +146,7 @@ TEST_F(DirectoryImplTest, CantOpenDirectoriesAsFiles) {
     mojom::FilePtr file;
     error = mojom::FileError::FAILED;
     bool handled =
-        directory->OpenFile("my_file", GetProxy(&file),
+        directory->OpenFile("my_file", MakeRequest(&file),
                             mojom::kFlagRead | mojom::kFlagOpen, &error);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::NOT_A_FILE, error);
@@ -162,8 +162,8 @@ TEST_F(DirectoryImplTest, Clone) {
     mojom::DirectoryPtr directory;
     GetTemporaryRoot(&directory);
 
-    directory->Clone(GetProxy(&clone_one));
-    directory->Clone(GetProxy(&clone_two));
+    directory->Clone(MakeRequest(&clone_one));
+    directory->Clone(MakeRequest(&clone_two));
 
     // Original temporary directory goes out of scope here; shouldn't be
     // deleted since it has clones.
@@ -236,7 +236,7 @@ TEST_F(DirectoryImplTest, CantReadEntireFileOnADirectory) {
     mojom::DirectoryPtr my_file_directory;
     error = mojom::FileError::FAILED;
     bool handled = directory->OpenDirectory(
-        "my_dir", GetProxy(&my_file_directory),
+        "my_dir", MakeRequest(&my_file_directory),
         mojom::kFlagRead | mojom::kFlagWrite | mojom::kFlagCreate, &error);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);
@@ -261,7 +261,7 @@ TEST_F(DirectoryImplTest, CantWriteFileOnADirectory) {
     mojom::DirectoryPtr my_file_directory;
     error = mojom::FileError::FAILED;
     bool handled = directory->OpenDirectory(
-        "my_dir", GetProxy(&my_file_directory),
+        "my_dir", MakeRequest(&my_file_directory),
         mojom::kFlagRead | mojom::kFlagWrite | mojom::kFlagCreate, &error);
     ASSERT_TRUE(handled);
     EXPECT_EQ(mojom::FileError::OK, error);

@@ -27,7 +27,7 @@ class JavaInterfaceProviderHolder {
     service_manager::mojom::InterfaceProviderPtr provider;
     JNIEnv* env = base::android::AttachCurrentThread();
     Java_InterfaceRegistrarImpl_createInterfaceRegistryForContext(
-        env, mojo::GetProxy(&provider).PassMessagePipe().release().value(),
+        env, mojo::MakeRequest(&provider).PassMessagePipe().release().value(),
         base::android::GetApplicationContext());
     interface_provider_.Bind(std::move(provider));
   }

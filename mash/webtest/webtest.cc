@@ -100,7 +100,7 @@ class UI : public views::WidgetDelegateView,
       window->AddChild(content_area_);
 
       ui::mojom::WindowTreeClientPtr client;
-      view_->GetWindowTreeClient(GetProxy(&client));
+      view_->GetWindowTreeClient(MakeRequest(&client));
       const uint32_t embed_flags = 0;  // Nothing special.
       aura::WindowPortMus::Get(content_area_)
           ->Embed(std::move(client), embed_flags, base::Bind(&EmbedCallback));
@@ -192,8 +192,8 @@ void Webtest::Launch(uint32_t what, mojom::LaunchMode how) {
   navigation::mojom::ViewPtr view;
   navigation::mojom::ViewClientPtr view_client;
   navigation::mojom::ViewClientRequest view_client_request =
-      GetProxy(&view_client);
-  view_factory->CreateView(std::move(view_client), GetProxy(&view));
+      MakeRequest(&view_client);
+  view_factory->CreateView(std::move(view_client), MakeRequest(&view));
   UI* ui = new UI(this, std::move(view), std::move(view_client_request));
   views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
       ui, nullptr, gfx::Rect(50, 10, 600, 600));

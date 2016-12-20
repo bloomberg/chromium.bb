@@ -181,7 +181,7 @@ class USBDeviceImplTest : public testing::Test {
     new DeviceImpl(
         mock_device_,
         DeviceInfo::From(static_cast<const UsbDevice&>(*mock_device_)),
-        permission_provider_.GetWeakPtr(), mojo::GetProxy(&proxy));
+        permission_provider_.GetWeakPtr(), mojo::MakeRequest(&proxy));
 
     // Set up mock handle calls to respond based on mock device configs
     // established by the test.

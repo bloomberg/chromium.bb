@@ -341,11 +341,11 @@ class MojoAsyncResourceHandlerTestBase {
     ResourceRequest request;
     base::WeakPtr<mojo::StrongBinding<mojom::URLLoaderFactory>> weak_binding =
         mojo::MakeStrongBinding(base::MakeUnique<TestURLLoaderFactory>(),
-                                mojo::GetProxy(&url_loader_factory_));
+                                mojo::MakeRequest(&url_loader_factory_));
 
     url_loader_factory_->CreateLoaderAndStart(
-        mojo::GetProxy(&url_loader_proxy_,
-                       url_loader_factory_.associated_group()),
+        mojo::MakeRequest(&url_loader_proxy_,
+                          url_loader_factory_.associated_group()),
         0, 0, request, url_loader_client_.CreateRemoteAssociatedPtrInfo(
                            url_loader_factory_.associated_group()));
 

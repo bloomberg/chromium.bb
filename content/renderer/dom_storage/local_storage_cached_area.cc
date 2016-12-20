@@ -58,7 +58,8 @@ LocalStorageCachedArea::LocalStorageCachedArea(
     : origin_(origin), binding_(this),
       cached_areas_(cached_areas), weak_factory_(this) {
   storage_partition_service->OpenLocalStorage(
-      origin_, binding_.CreateInterfacePtrAndBind(), mojo::GetProxy(&leveldb_));
+      origin_, binding_.CreateInterfacePtrAndBind(),
+      mojo::MakeRequest(&leveldb_));
 }
 
 LocalStorageCachedArea::~LocalStorageCachedArea() {

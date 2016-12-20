@@ -15,7 +15,7 @@ PowerMonitorBroadcastSource::PowerMonitorBroadcastSource(
     : last_reported_battery_power_state_(false), binding_(this) {
   if (interface_provider) {
     device::mojom::PowerMonitorPtr power_monitor;
-    interface_provider->GetInterface(mojo::GetProxy(&power_monitor));
+    interface_provider->GetInterface(mojo::MakeRequest(&power_monitor));
     power_monitor->SetClient(binding_.CreateInterfacePtrAndBind());
   }
 }

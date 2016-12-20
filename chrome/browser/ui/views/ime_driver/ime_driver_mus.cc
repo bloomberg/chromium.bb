@@ -29,7 +29,7 @@ void IMEDriver::Register() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ui::mojom::IMEDriverPtr ime_driver_ptr;
   mojo::MakeStrongBinding(base::MakeUnique<IMEDriver>(),
-                          GetProxy(&ime_driver_ptr));
+                          MakeRequest(&ime_driver_ptr));
   ui::mojom::IMERegistrarPtr ime_registrar;
   content::ServiceManagerConnection::GetForProcess()
       ->GetConnector()

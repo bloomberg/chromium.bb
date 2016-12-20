@@ -117,7 +117,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
 
   mojom::ServiceWorkerEventDispatcherRequest CreateEventDispatcher() {
     dispatchers_.emplace_back();
-    return mojo::GetProxy(&dispatchers_.back());
+    return mojo::MakeRequest(&dispatchers_.back());
   }
 
   ServiceWorkerContextCore* context() { return helper_->context(); }

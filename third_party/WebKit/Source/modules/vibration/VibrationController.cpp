@@ -81,7 +81,7 @@ VibrationController::VibrationController(Document& document)
       m_isCallingCancel(false),
       m_isCallingVibrate(false) {
   document.frame()->interfaceProvider()->getInterface(
-      mojo::GetProxy(&m_service));
+      mojo::MakeRequest(&m_service));
 }
 
 VibrationController::~VibrationController() {}

@@ -273,7 +273,7 @@ ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
   DCHECK(!m_service.is_bound());
 
   Platform::current()->interfaceProvider()->getInterface(
-      mojo::GetProxy(&m_service));
+      mojo::MakeRequest(&m_service));
 
   m_service.set_connection_error_handler(convertToBaseCallback(WTF::bind(
       &ImageCapture::onServiceConnectionError, wrapWeakPersistent(this))));

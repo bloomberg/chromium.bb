@@ -1227,14 +1227,14 @@ class MediaRouterMojoExtensionTest : public ::testing::Test {
   void BindMediaRouteProvider() {
     binding_.reset(new mojo::Binding<mojom::MediaRouteProvider>(
         &mock_media_route_provider_,
-        mojo::GetProxy(&media_route_provider_proxy_)));
-    media_router_->BindToMojoRequest(mojo::GetProxy(&media_router_proxy_),
+        mojo::MakeRequest(&media_route_provider_proxy_)));
+    media_router_->BindToMojoRequest(mojo::MakeRequest(&media_router_proxy_),
                                      *extension_);
   }
 
   void ResetMediaRouteProvider() {
     binding_.reset();
-    media_router_->BindToMojoRequest(mojo::GetProxy(&media_router_proxy_),
+    media_router_->BindToMojoRequest(mojo::MakeRequest(&media_router_proxy_),
                                      *extension_);
   }
 

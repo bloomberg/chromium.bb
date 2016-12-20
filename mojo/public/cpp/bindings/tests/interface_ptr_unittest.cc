@@ -221,13 +221,13 @@ void ExpectValueAndRunClosure(uint32_t expected_value,
 TEST_F(InterfacePtrTest, IsBound) {
   math::CalculatorPtr calc;
   EXPECT_FALSE(calc.is_bound());
-  MathCalculatorImpl calc_impl(GetProxy(&calc));
+  MathCalculatorImpl calc_impl(MakeRequest(&calc));
   EXPECT_TRUE(calc.is_bound());
 }
 
 TEST_F(InterfacePtrTest, EndToEnd) {
   math::CalculatorPtr calc;
-  MathCalculatorImpl calc_impl(GetProxy(&calc));
+  MathCalculatorImpl calc_impl(MakeRequest(&calc));
 
   // Suppose this is instantiated in a process that has pipe1_.
   MathCalculatorUI calculator_ui(std::move(calc));
@@ -243,7 +243,7 @@ TEST_F(InterfacePtrTest, EndToEnd) {
 
 TEST_F(InterfacePtrTest, EndToEnd_Synchronous) {
   math::CalculatorPtr calc;
-  MathCalculatorImpl calc_impl(GetProxy(&calc));
+  MathCalculatorImpl calc_impl(MakeRequest(&calc));
 
   // Suppose this is instantiated in a process that has pipe1_.
   MathCalculatorUI calculator_ui(std::move(calc));
@@ -268,7 +268,7 @@ TEST_F(InterfacePtrTest, EndToEnd_Synchronous) {
 TEST_F(InterfacePtrTest, Movable) {
   math::CalculatorPtr a;
   math::CalculatorPtr b;
-  MathCalculatorImpl calc_impl(GetProxy(&b));
+  MathCalculatorImpl calc_impl(MakeRequest(&b));
 
   EXPECT_TRUE(!a);
   EXPECT_FALSE(!b);
@@ -315,7 +315,7 @@ TEST_F(InterfacePtrTest, BindInvalidHandle) {
 
 TEST_F(InterfacePtrTest, EncounteredError) {
   math::CalculatorPtr proxy;
-  MathCalculatorImpl calc_impl(GetProxy(&proxy));
+  MathCalculatorImpl calc_impl(MakeRequest(&proxy));
 
   MathCalculatorUI calculator_ui(std::move(proxy));
 
@@ -344,7 +344,7 @@ TEST_F(InterfacePtrTest, EncounteredError) {
 
 TEST_F(InterfacePtrTest, EncounteredErrorCallback) {
   math::CalculatorPtr proxy;
-  MathCalculatorImpl calc_impl(GetProxy(&proxy));
+  MathCalculatorImpl calc_impl(MakeRequest(&proxy));
 
   bool encountered_error = false;
   base::RunLoop run_loop;
@@ -381,7 +381,7 @@ TEST_F(InterfacePtrTest, EncounteredErrorCallback) {
 
 TEST_F(InterfacePtrTest, DestroyInterfacePtrOnMethodResponse) {
   math::CalculatorPtr proxy;
-  MathCalculatorImpl calc_impl(GetProxy(&proxy));
+  MathCalculatorImpl calc_impl(MakeRequest(&proxy));
 
   EXPECT_EQ(0, SelfDestructingMathCalculatorUI::num_instances());
 
@@ -396,7 +396,7 @@ TEST_F(InterfacePtrTest, DestroyInterfacePtrOnMethodResponse) {
 
 TEST_F(InterfacePtrTest, NestedDestroyInterfacePtrOnMethodResponse) {
   math::CalculatorPtr proxy;
-  MathCalculatorImpl calc_impl(GetProxy(&proxy));
+  MathCalculatorImpl calc_impl(MakeRequest(&proxy));
 
   EXPECT_EQ(0, SelfDestructingMathCalculatorUI::num_instances());
 
@@ -411,7 +411,7 @@ TEST_F(InterfacePtrTest, NestedDestroyInterfacePtrOnMethodResponse) {
 
 TEST_F(InterfacePtrTest, ReentrantWaitForIncomingMethodCall) {
   sample::ServicePtr proxy;
-  ReentrantServiceImpl impl(GetProxy(&proxy));
+  ReentrantServiceImpl impl(MakeRequest(&proxy));
 
   base::RunLoop run_loop, run_loop2;
   proxy->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
@@ -430,7 +430,7 @@ TEST_F(InterfacePtrTest, ReentrantWaitForIncomingMethodCall) {
 TEST_F(InterfacePtrTest, QueryVersion) {
   IntegerAccessorImpl impl;
   sample::IntegerAccessorPtr ptr;
-  Binding<sample::IntegerAccessor> binding(&impl, GetProxy(&ptr));
+  Binding<sample::IntegerAccessor> binding(&impl, MakeRequest(&ptr));
 
   EXPECT_EQ(0u, ptr.version());
 
@@ -445,7 +445,7 @@ TEST_F(InterfacePtrTest, QueryVersion) {
 TEST_F(InterfacePtrTest, RequireVersion) {
   IntegerAccessorImpl impl;
   sample::IntegerAccessorPtr ptr;
-  Binding<sample::IntegerAccessor> binding(&impl, GetProxy(&ptr));
+  Binding<sample::IntegerAccessor> binding(&impl, MakeRequest(&ptr));
 
   EXPECT_EQ(0u, ptr.version());
 
@@ -511,8 +511,9 @@ TEST(StrongConnectorTest, Math) {
   math::CalculatorPtr calc;
   base::RunLoop run_loop;
 
-  auto binding = MakeStrongBinding(
-      base::MakeUnique<StrongMathCalculatorImpl>(&destroyed), GetProxy(&calc));
+  auto binding =
+      MakeStrongBinding(base::MakeUnique<StrongMathCalculatorImpl>(&destroyed),
+                        MakeRequest(&calc));
   binding->set_connection_error_handler(base::Bind(
       &SetFlagAndRunClosure, &error_received, run_loop.QuitClosure()));
 
@@ -668,15 +669,15 @@ class AImpl : public A {
 TEST_F(InterfacePtrTest, Scoping) {
   APtr a;
   base::RunLoop run_loop;
-  AImpl a_impl(GetProxy(&a), run_loop.QuitClosure());
+  AImpl a_impl(MakeRequest(&a), run_loop.QuitClosure());
 
   EXPECT_FALSE(a_impl.d_called());
 
   {
     BPtr b;
-    a->GetB(GetProxy(&b));
+    a->GetB(MakeRequest(&b));
     CPtr c;
-    b->GetC(GetProxy(&c));
+    b->GetC(MakeRequest(&c));
     c->D();
   }
 
@@ -703,11 +704,11 @@ class PingTestImpl : public sample::PingTest {
 // Tests that FuseProxy does what it's supposed to do.
 TEST_F(InterfacePtrTest, Fusion) {
   sample::PingTestPtr proxy;
-  PingTestImpl impl(GetProxy(&proxy));
+  PingTestImpl impl(MakeRequest(&proxy));
 
   // Create another PingTest pipe.
   sample::PingTestPtr ptr;
-  sample::PingTestRequest request = GetProxy(&ptr);
+  sample::PingTestRequest request = MakeRequest(&ptr);
 
   // Fuse the new pipe to the one hanging off |impl|.
   EXPECT_TRUE(FuseInterface(std::move(request), proxy.PassInterface()));
@@ -726,7 +727,7 @@ void Fail() {
 
 TEST_F(InterfacePtrTest, FlushForTesting) {
   math::CalculatorPtr calc;
-  MathCalculatorImpl calc_impl(GetProxy(&calc));
+  MathCalculatorImpl calc_impl(MakeRequest(&calc));
   calc.set_connection_error_handler(base::Bind(&Fail));
 
   MathCalculatorUI calculator_ui(std::move(calc));
@@ -747,7 +748,7 @@ void SetBool(bool* value) {
 
 TEST_F(InterfacePtrTest, FlushForTestingWithClosedPeer) {
   math::CalculatorPtr calc;
-  GetProxy(&calc);
+  MakeRequest(&calc);
   bool called = false;
   calc.set_connection_error_handler(base::Bind(&SetBool, &called));
   calc.FlushForTesting();
@@ -757,7 +758,7 @@ TEST_F(InterfacePtrTest, FlushForTestingWithClosedPeer) {
 
 TEST_F(InterfacePtrTest, ConnectionErrorWithReason) {
   math::CalculatorPtr calc;
-  MathCalculatorImpl calc_impl(GetProxy(&calc));
+  MathCalculatorImpl calc_impl(MakeRequest(&calc));
 
   base::RunLoop run_loop;
   calc.set_connection_error_with_reason_handler(base::Bind(
@@ -776,7 +777,7 @@ TEST_F(InterfacePtrTest, ConnectionErrorWithReason) {
 
 TEST_F(InterfacePtrTest, InterfaceRequestResetWithReason) {
   math::CalculatorPtr calc;
-  auto request = GetProxy(&calc);
+  auto request = MakeRequest(&calc);
 
   base::RunLoop run_loop;
   calc.set_connection_error_with_reason_handler(base::Bind(
@@ -795,7 +796,7 @@ TEST_F(InterfacePtrTest, InterfaceRequestResetWithReason) {
 
 TEST_F(InterfacePtrTest, CallbackOwnsInterfacePtr) {
   sample::PingTestPtr ptr;
-  sample::PingTestRequest request = GetProxy(&ptr);
+  sample::PingTestRequest request = MakeRequest(&ptr);
 
   base::RunLoop run_loop;
 
@@ -814,7 +815,7 @@ TEST_F(InterfacePtrTest, CallbackOwnsInterfacePtr) {
 
 TEST_F(InterfacePtrTest, ThreadSafeInterfacePointer) {
   math::CalculatorPtr ptr;
-  MathCalculatorImpl calc_impl(GetProxy(&ptr));
+  MathCalculatorImpl calc_impl(MakeRequest(&ptr));
   scoped_refptr<math::ThreadSafeCalculatorPtr> thread_safe_ptr =
       math::ThreadSafeCalculatorPtr::Create(std::move(ptr));
 
@@ -872,7 +873,7 @@ TEST_F(InterfacePtrTest, BindLaterThreadSafeInterfacePointer) {
            MathCalculatorImpl** math_calc_impl) {
           math::CalculatorPtr ptr;
           // In real life, the implementation would have a legitimate owner.
-          *math_calc_impl = new MathCalculatorImpl(GetProxy(&ptr));
+          *math_calc_impl = new MathCalculatorImpl(MakeRequest(&ptr));
           thread_safe_ptr->Bind(std::move(ptr));
           main_task_runner->PostTask(FROM_HERE, quit_closure);
         },

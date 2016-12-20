@@ -20,10 +20,10 @@ std::unique_ptr<WindowCompositorFrameSink> WindowCompositorFrameSink::Create(
   cc::mojom::MojoCompositorFrameSinkClientPtr compositor_frame_sink_client;
   cc::mojom::MojoCompositorFrameSinkClientRequest
       compositor_frame_sink_client_request =
-          GetProxy(&compositor_frame_sink_client);
+          MakeRequest(&compositor_frame_sink_client);
 
   compositor_frame_sink_binding->reset(new WindowCompositorFrameSinkBinding(
-      GetProxy(&compositor_frame_sink),
+      MakeRequest(&compositor_frame_sink),
       compositor_frame_sink_client.PassInterface()));
   return base::WrapUnique(new WindowCompositorFrameSink(
       std::move(context_provider), gpu_memory_buffer_manager,

@@ -42,7 +42,7 @@ void FrameGenerator::OnAcceleratedWidgetAvailable(
     gfx::AcceleratedWidget widget) {
   DCHECK_NE(gfx::kNullAcceleratedWidget, widget);
   cc::mojom::MojoCompositorFrameSinkRequest request =
-      mojo::GetProxy(&compositor_frame_sink_);
+      mojo::MakeRequest(&compositor_frame_sink_);
   root_window_->CreateDisplayCompositorFrameSink(
       widget, std::move(request), binding_.CreateInterfacePtrAndBind());
   // TODO(fsamuel): This means we're always requesting a new BeginFrame signal

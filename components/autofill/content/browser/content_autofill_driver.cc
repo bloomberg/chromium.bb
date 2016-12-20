@@ -260,7 +260,7 @@ const mojom::AutofillAgentPtr& ContentAutofillDriver::GetAutofillAgent() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!autofill_agent_) {
     render_frame_host_->GetRemoteInterfaces()->GetInterface(
-        mojo::GetProxy(&autofill_agent_));
+        mojo::MakeRequest(&autofill_agent_));
   }
 
   return autofill_agent_;

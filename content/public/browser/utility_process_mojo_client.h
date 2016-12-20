@@ -56,7 +56,7 @@ class UtilityProcessMojoClient {
 
     start_called_ = true;
 
-    mojo::InterfaceRequest<MojoInterface> req = mojo::GetProxy(&service_);
+    mojo::InterfaceRequest<MojoInterface> req = mojo::MakeRequest(&service_);
     service_.set_connection_error_handler(on_error_callback_);
     helper_->Start(MojoInterface::Name_, req.PassMessagePipe());
   }

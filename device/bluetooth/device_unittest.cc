@@ -72,7 +72,7 @@ class BluetoothInterfaceDeviceTest : public testing::Test {
     auto connection = base::MakeUnique<NiceMockBluetoothGattConnection>(
         adapter_, device_.GetAddress());
 
-    Device::Create(adapter_, std::move(connection), mojo::GetProxy(&proxy_));
+    Device::Create(adapter_, std::move(connection), mojo::MakeRequest(&proxy_));
 
     proxy_.set_connection_error_handler(
         base::Bind(&BluetoothInterfaceDeviceTest::OnConnectionError,

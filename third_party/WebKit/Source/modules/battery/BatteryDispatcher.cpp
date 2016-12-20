@@ -45,7 +45,7 @@ void BatteryDispatcher::updateBatteryStatus(
 void BatteryDispatcher::startListening() {
   DCHECK(!m_monitor.is_bound());
   Platform::current()->interfaceProvider()->getInterface(
-      mojo::GetProxy(&m_monitor));
+      mojo::MakeRequest(&m_monitor));
   queryNextStatus();
 }
 

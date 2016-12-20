@@ -75,7 +75,8 @@ std::unique_ptr<Connection> LaunchAndConnectToProcess(
   service_manager::mojom::PIDReceiverPtr receiver;
 
   service_manager::Connector::ConnectParams params(target);
-  params.set_client_process_connection(std::move(client), GetProxy(&receiver));
+  params.set_client_process_connection(std::move(client),
+                                       MakeRequest(&receiver));
   std::unique_ptr<service_manager::Connection> connection =
       connector->Connect(&params);
   {

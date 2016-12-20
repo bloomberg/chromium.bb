@@ -83,13 +83,13 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
     auto registry =
         base::MakeUnique<service_manager::InterfaceRegistry>(std::string());
     service_manager::mojom::InterfaceProviderPtr interfaces;
-    registry->Bind(GetProxy(&interfaces), service_manager::Identity(),
+    registry->Bind(MakeRequest(&interfaces), service_manager::Identity(),
                    service_manager::InterfaceProviderSpec(),
                    service_manager::Identity(),
                    service_manager::InterfaceProviderSpec());
 
-    media_service->CreateInterfaceFactory(mojo::GetProxy(&interface_factory_),
-                                          std::move(interfaces));
+    media_service->CreateInterfaceFactory(
+        mojo::MakeRequest(&interface_factory_), std::move(interfaces));
 
     run_loop_.reset(new base::RunLoop());
   }
@@ -106,7 +106,7 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
   void InitializeCdm(const std::string& key_system,
                      bool expected_result,
                      int cdm_id) {
-    interface_factory_->CreateCdm(mojo::GetProxy(&cdm_));
+    interface_factory_->CreateCdm(mojo::MakeRequest(&cdm_));
 
     EXPECT_CALL(*this, OnCdmInitializedInternal(expected_result, cdm_id))
         .Times(Exactly(1))
@@ -122,13 +122,13 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
   void InitializeRenderer(const VideoDecoderConfig& video_config,
                           bool expected_result) {
     interface_factory_->CreateRenderer(std::string(),
-                                       mojo::GetProxy(&renderer_));
+                                       mojo::MakeRequest(&renderer_));
 
     video_stream_.set_video_decoder_config(video_config);
 
     mojom::DemuxerStreamPtr video_stream_proxy;
     mojo_video_stream_.reset(new MojoDemuxerStreamImpl(
-        &video_stream_, GetProxy(&video_stream_proxy)));
+        &video_stream_, MakeRequest(&video_stream_proxy)));
 
     mojom::RendererClientAssociatedPtrInfo client_ptr_info;
     renderer_client_binding_.Bind(&client_ptr_info,

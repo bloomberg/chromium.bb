@@ -591,7 +591,7 @@ RenderFrameHostImpl::GetRemoteAssociatedInterfaces() {
           static_cast<RenderProcessHostImpl*>(GetProcess());
       process->GetRemoteRouteProvider()->GetRoute(
           GetRoutingID(),
-          mojo::GetProxy(&remote_interfaces, channel->GetAssociatedGroup()));
+          mojo::MakeRequest(&remote_interfaces, channel->GetAssociatedGroup()));
     } else {
       // The channel may not be initialized in some tests environments. In this
       // case we set up a dummy interface provider.
@@ -2641,12 +2641,12 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   RegisterMojoInterfaces();
   mojom::FrameFactoryPtr frame_factory;
   GetProcess()->GetRemoteInterfaces()->GetInterface(&frame_factory);
-  frame_factory->CreateFrame(routing_id_, GetProxy(&frame_),
+  frame_factory->CreateFrame(routing_id_, MakeRequest(&frame_),
                              frame_host_binding_.CreateInterfacePtrAndBind());
 
   service_manager::mojom::InterfaceProviderPtr remote_interfaces;
   service_manager::mojom::InterfaceProviderRequest remote_interfaces_request =
-      GetProxy(&remote_interfaces);
+      MakeRequest(&remote_interfaces);
   remote_interfaces_.reset(new service_manager::InterfaceProvider);
   remote_interfaces_->Bind(std::move(remote_interfaces));
   frame_->GetInterfaceProvider(std::move(remote_interfaces_request));

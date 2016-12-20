@@ -860,7 +860,7 @@ void RenderThreadImpl::Init(
     // ChildMemoryCoordinatorImpl.
     // https://codereview.chromium.org/2094583002/#msg52
     mojom::MemoryCoordinatorHandlePtr parent_coordinator;
-    GetRemoteInterfaces()->GetInterface(mojo::GetProxy(&parent_coordinator));
+    GetRemoteInterfaces()->GetInterface(mojo::MakeRequest(&parent_coordinator));
     memory_coordinator_ = CreateChildMemoryCoordinator(
         std::move(parent_coordinator), this);
   }
@@ -889,7 +889,7 @@ void RenderThreadImpl::Init(
 #endif
   } else {
     ChildThread::Get()->GetRemoteInterfaces()->GetInterface(
-        mojo::GetProxy(&manager_ptr));
+        mojo::MakeRequest(&manager_ptr));
   }
 
   discardable_shared_memory_manager_ = base::MakeUnique<
@@ -912,7 +912,7 @@ void RenderThreadImpl::Init(
                  base::Unretained(embedded_worker_dispatcher_.get())));
 
   GetRemoteInterfaces()->GetInterface(
-      mojo::GetProxy(&storage_partition_service_));
+      mojo::MakeRequest(&storage_partition_service_));
 
 #if defined(OS_LINUX)
   ChildProcess::current()->SetIOThreadPriority(base::ThreadPriority::DISPLAY);

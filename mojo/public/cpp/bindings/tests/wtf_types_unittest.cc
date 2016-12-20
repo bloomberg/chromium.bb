@@ -253,7 +253,7 @@ TEST_F(WTFTypesTest, Serialization_PublicAPI) {
 
 TEST_F(WTFTypesTest, SendString) {
   blink::TestWTFPtr ptr;
-  TestWTFImpl impl(ConvertInterfaceRequest<TestWTF>(GetProxy(&ptr)));
+  TestWTFImpl impl(ConvertInterfaceRequest<TestWTF>(MakeRequest(&ptr)));
 
   WTF::Vector<WTF::String> strs = ConstructStringArray();
 
@@ -272,7 +272,7 @@ TEST_F(WTFTypesTest, SendString) {
 
 TEST_F(WTFTypesTest, SendStringArray) {
   blink::TestWTFPtr ptr;
-  TestWTFImpl impl(ConvertInterfaceRequest<TestWTF>(GetProxy(&ptr)));
+  TestWTFImpl impl(ConvertInterfaceRequest<TestWTF>(MakeRequest(&ptr)));
 
   WTF::Optional<WTF::Vector<WTF::String>> arrs[3];
   // arrs[0] is empty.
@@ -298,7 +298,7 @@ TEST_F(WTFTypesTest, SendStringArray) {
 
 TEST_F(WTFTypesTest, SendStringMap) {
   blink::TestWTFPtr ptr;
-  TestWTFImpl impl(ConvertInterfaceRequest<TestWTF>(GetProxy(&ptr)));
+  TestWTFImpl impl(ConvertInterfaceRequest<TestWTF>(MakeRequest(&ptr)));
 
   WTF::Optional<WTF::HashMap<WTF::String, WTF::String>> maps[3];
   // maps[0] is empty.

@@ -63,7 +63,7 @@ TEST_F(ServiceTest, ErrorCodeOnCreateDeviceForInvalidDescriptor) {
       .Times(1)
       .WillOnce(InvokeWithoutArgs([&wait_loop]() { wait_loop.Quit(); }));
   factory_->CreateDevice(
-      invalid_device_id, mojo::GetProxy(&fake_device_proxy),
+      invalid_device_id, mojo::MakeRequest(&fake_device_proxy),
       base::Bind(&MockCreateDeviceProxyCallback::Run,
                  base::Unretained(&create_device_proxy_callback)));
   wait_loop.Run();

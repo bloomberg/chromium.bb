@@ -14,7 +14,7 @@ ServiceTest::~ServiceTest() = default;
 void ServiceTest::SetUp() {
   service_manager::test::ServiceTest::SetUp();
   connector()->ConnectToInterface("video_capture", &service_);
-  service_->ConnectToFakeDeviceFactory(mojo::GetProxy(&factory_));
+  service_->ConnectToFakeDeviceFactory(mojo::MakeRequest(&factory_));
 }
 
 }  // namespace video_capture

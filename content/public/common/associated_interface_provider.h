@@ -47,7 +47,7 @@ class AssociatedInterfaceProvider {
   template <typename Interface>
   void GetInterface(mojo::AssociatedInterfacePtr<Interface>* proxy) {
     mojo::AssociatedInterfaceRequest<Interface> request =
-        mojo::GetProxy(proxy, GetAssociatedGroup());
+        mojo::MakeRequest(proxy, GetAssociatedGroup());
     GetInterface(Interface::Name_, request.PassHandle());
   }
 

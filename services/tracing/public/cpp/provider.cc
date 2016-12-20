@@ -45,7 +45,7 @@ Provider::~Provider() {
 
 void Provider::InitializeWithFactoryInternal(mojom::FactoryPtr* factory) {
   mojom::ProviderPtr provider;
-  Bind(GetProxy(&provider));
+  Bind(MakeRequest(&provider));
   (*factory)->CreateRecorder(std::move(provider));
 #ifdef NDEBUG
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

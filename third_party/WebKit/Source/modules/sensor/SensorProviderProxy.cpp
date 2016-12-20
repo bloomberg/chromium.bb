@@ -20,7 +20,8 @@ SensorProviderProxy::SensorProviderProxy(LocalFrame* frame) {
 void SensorProviderProxy::initialize(LocalFrame* frame) {
   DCHECK(!isInitialized());
 
-  frame->interfaceProvider()->getInterface(mojo::GetProxy(&m_sensorProvider));
+  frame->interfaceProvider()->getInterface(
+      mojo::MakeRequest(&m_sensorProvider));
   m_sensorProvider.set_connection_error_handler(convertToBaseCallback(
       WTF::bind(&SensorProviderProxy::onSensorProviderConnectionError,
                 wrapWeakPersistent(this))));

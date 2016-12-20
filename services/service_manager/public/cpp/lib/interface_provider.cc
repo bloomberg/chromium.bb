@@ -10,7 +10,7 @@
 namespace service_manager {
 
 InterfaceProvider::InterfaceProvider() : weak_factory_(this) {
-  pending_request_ = GetProxy(&interface_provider_);
+  pending_request_ = MakeRequest(&interface_provider_);
 }
 
 InterfaceProvider::~InterfaceProvider() {}

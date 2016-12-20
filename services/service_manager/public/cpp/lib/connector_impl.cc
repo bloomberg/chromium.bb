@@ -49,7 +49,8 @@ std::unique_ptr<Connection> ConnectorImpl::Connect(ConnectParams* params) {
   DCHECK(params);
 
   mojom::InterfaceProviderPtr remote_interfaces;
-  mojom::InterfaceProviderRequest remote_request = GetProxy(&remote_interfaces);
+  mojom::InterfaceProviderRequest remote_request =
+      MakeRequest(&remote_interfaces);
   std::unique_ptr<internal::ConnectionImpl> connection(
       new internal::ConnectionImpl(params->target(),
                                    Connection::State::PENDING));
@@ -89,7 +90,7 @@ std::unique_ptr<Connector> ConnectorImpl::Clone() {
     return nullptr;
 
   mojom::ConnectorPtr connector;
-  mojom::ConnectorRequest request = GetProxy(&connector);
+  mojom::ConnectorRequest request = MakeRequest(&connector);
   connector_->Clone(std::move(request));
   return base::MakeUnique<ConnectorImpl>(connector.PassInterface());
 }
@@ -125,7 +126,7 @@ bool ConnectorImpl::BindIfNecessary() {
 
 std::unique_ptr<Connector> Connector::Create(mojom::ConnectorRequest* request) {
   mojom::ConnectorPtr proxy;
-  *request = mojo::GetProxy(&proxy);
+  *request = mojo::MakeRequest(&proxy);
   return base::MakeUnique<ConnectorImpl>(proxy.PassInterface());
 }
 

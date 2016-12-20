@@ -94,7 +94,7 @@ class RemoteDemuxerStreamAdapterTest : public ::testing::Test {
         mojo::CreateDataPipe(&data_pipe_options, &producer_end, &consumer_end));
 
     data_stream_sender_.reset(new FakeRemotingDataStreamSender(
-        GetProxy(&stream_sender), std::move(consumer_end)));
+        MakeRequest(&stream_sender), std::move(consumer_end)));
     demuxer_stream_adapter_.reset(new MockRemoteDemuxerStreamAdapter(
         message_loop_.task_runner(), message_loop_.task_runner(), "test",
         demuxer_stream_.get(), stream_sender.PassInterface(),

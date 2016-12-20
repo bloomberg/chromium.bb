@@ -98,11 +98,11 @@ GpuHost::GpuHost(GpuHostDelegate* delegate)
       next_client_id_(kInternalGpuChannelClientId + 1),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       gpu_host_binding_(this) {
-  gpu_main_impl_ = base::MakeUnique<GpuMain>(GetProxy(&gpu_main_));
+  gpu_main_impl_ = base::MakeUnique<GpuMain>(MakeRequest(&gpu_main_));
   gpu_main_impl_->OnStart();
   // TODO(sad): Once GPU process is split, this would look like:
   //   connector->ConnectToInterface("gpu", &gpu_main_);
-  gpu_main_->CreateGpuService(GetProxy(&gpu_service_),
+  gpu_main_->CreateGpuService(MakeRequest(&gpu_service_),
                               gpu_host_binding_.CreateInterfacePtrAndBind());
   gpu_memory_buffer_manager_ = base::MakeUnique<ServerGpuMemoryBufferManager>(
       gpu_service_.get(), next_client_id_++);

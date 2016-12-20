@@ -148,8 +148,8 @@ void ViewImpl::AddNewContents(content::WebContents* source,
                               bool* was_blocked) {
   mojom::ViewClientPtr client;
   mojom::ViewPtr view;
-  mojom::ViewRequest view_request = GetProxy(&view);
-  client_->ViewCreated(std::move(view), GetProxy(&client),
+  mojom::ViewRequest view_request = MakeRequest(&view);
+  client_->ViewCreated(std::move(view), MakeRequest(&client),
                        disposition == WindowOpenDisposition::NEW_POPUP,
                        initial_rect, user_gesture);
 

@@ -21,7 +21,7 @@ TestIMEApplication::~TestIMEApplication() {}
 void TestIMEApplication::OnStart() {
   mojom::IMEDriverPtr ime_driver_ptr;
   mojo::MakeStrongBinding(base::MakeUnique<TestIMEDriver>(),
-                          GetProxy(&ime_driver_ptr));
+                          MakeRequest(&ime_driver_ptr));
 
   ui::mojom::IMERegistrarPtr ime_registrar;
   context()->connector()->ConnectToInterface(ui::mojom::kServiceName,

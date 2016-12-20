@@ -167,7 +167,7 @@ TEST_F(DataViewTest, EnumArray) {
 
 TEST_F(DataViewTest, InterfaceArray) {
   TestInterfacePtr ptr;
-  TestInterfaceImpl impl(GetProxy(&ptr));
+  TestInterfaceImpl impl(MakeRequest(&ptr));
 
   TestStructPtr obj(TestStruct::New());
   obj->f_interface_array.push_back(std::move(ptr));

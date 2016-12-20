@@ -20,7 +20,7 @@ InProcessMojoProxyResolverFactory::GetInstance() {
 
 InProcessMojoProxyResolverFactory::InProcessMojoProxyResolverFactory() {
   mojo::MakeStrongBinding(base::MakeUnique<MojoProxyResolverFactoryImpl>(),
-                          mojo::GetProxy(&factory_));
+                          mojo::MakeRequest(&factory_));
 }
 
 InProcessMojoProxyResolverFactory::~InProcessMojoProxyResolverFactory() =

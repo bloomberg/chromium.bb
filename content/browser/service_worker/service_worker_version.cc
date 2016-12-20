@@ -1506,7 +1506,7 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   params->pause_after_download = pause_after_download_;
 
   embedded_worker_->Start(
-      std::move(params), mojo::GetProxy(&event_dispatcher_),
+      std::move(params), mojo::MakeRequest(&event_dispatcher_),
       base::Bind(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
                  weak_factory_.GetWeakPtr()));
 }

@@ -124,13 +124,13 @@ TEST_F(EqualsTest, InterfacePtr) {
   EXPECT_TRUE(inf1.Equals(inf1));
   EXPECT_TRUE(inf1.Equals(inf2));
 
-  auto inf1_request = GetProxy(&inf1);
+  auto inf1_request = MakeRequest(&inf1);
   ALLOW_UNUSED_LOCAL(inf1_request);
 
   EXPECT_TRUE(inf1.Equals(inf1));
   EXPECT_FALSE(inf1.Equals(inf2));
 
-  auto inf2_request = GetProxy(&inf2);
+  auto inf2_request = MakeRequest(&inf2);
   ALLOW_UNUSED_LOCAL(inf2_request);
 
   EXPECT_FALSE(inf1.Equals(inf2));
@@ -146,13 +146,13 @@ TEST_F(EqualsTest, InterfaceRequest) {
   EXPECT_TRUE(req1.Equals(req2));
 
   SomeInterfacePtr inf1;
-  req1 = GetProxy(&inf1);
+  req1 = MakeRequest(&inf1);
 
   EXPECT_TRUE(req1.Equals(req1));
   EXPECT_FALSE(req1.Equals(req2));
 
   SomeInterfacePtr inf2;
-  req2 = GetProxy(&inf2);
+  req2 = MakeRequest(&inf2);
 
   EXPECT_FALSE(req1.Equals(req2));
 }

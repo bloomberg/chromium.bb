@@ -552,11 +552,11 @@ void CaptureSenderPtrInfo(IntegerSenderAssociatedPtr* storage,
 
 TEST_F(AssociatedInterfaceTest, PassAssociatedInterfaces) {
   IntegerSenderConnectionPtr connection_ptr;
-  IntegerSenderConnectionImpl connection(GetProxy(&connection_ptr));
+  IntegerSenderConnectionImpl connection(MakeRequest(&connection_ptr));
 
   IntegerSenderAssociatedPtr sender0;
   connection_ptr->GetSender(
-      GetProxy(&sender0, connection_ptr.associated_group()));
+      MakeRequest(&sender0, connection_ptr.associated_group()));
 
   int32_t echoed_value = 0;
   base::RunLoop run_loop;
@@ -581,11 +581,11 @@ TEST_F(AssociatedInterfaceTest, PassAssociatedInterfaces) {
 
 TEST_F(AssociatedInterfaceTest, BindingWaitAndPauseWhenNoAssociatedInterfaces) {
   IntegerSenderConnectionPtr connection_ptr;
-  IntegerSenderConnectionImpl connection(GetProxy(&connection_ptr));
+  IntegerSenderConnectionImpl connection(MakeRequest(&connection_ptr));
 
   IntegerSenderAssociatedPtr sender0;
   connection_ptr->GetSender(
-      GetProxy(&sender0, connection_ptr.associated_group()));
+      MakeRequest(&sender0, connection_ptr.associated_group()));
 
   EXPECT_FALSE(connection.binding()->HasAssociatedInterfaces());
   // There are no associated interfaces running on the pipe yet. It is okay to
@@ -690,11 +690,11 @@ class CallbackFilter : public MessageReceiver {
 // binding in a group operates with its own set of filters.
 TEST_F(AssociatedInterfaceTest, BindingWithFilters) {
   AssociatedPingProviderPtr provider;
-  PingProviderImpl provider_impl(GetProxy(&provider));
+  PingProviderImpl provider_impl(MakeRequest(&provider));
 
   PingServiceAssociatedPtr ping_a, ping_b;
-  provider->GetPing(GetProxy(&ping_a, provider.associated_group()));
-  provider->GetPing(GetProxy(&ping_b, provider.associated_group()));
+  provider->GetPing(MakeRequest(&ping_a, provider.associated_group()));
+  provider->GetPing(MakeRequest(&ping_b, provider.associated_group()));
   provider_impl.WaitForBindings(2);
 
   ASSERT_EQ(2u, provider_impl.ping_services().size());
@@ -838,7 +838,7 @@ TEST_F(AssociatedInterfaceTest,
 
 TEST_F(AssociatedInterfaceTest, BindingFlushForTesting) {
   IntegerSenderConnectionPtr ptr;
-  IntegerSenderConnectionImpl impl(GetProxy(&ptr));
+  IntegerSenderConnectionImpl impl(MakeRequest(&ptr));
   bool called = false;
   ptr->AsyncGetSender(base::Bind(
       &SetBoolWithUnusedParameter<IntegerSenderAssociatedPtrInfo>, &called));
@@ -854,7 +854,7 @@ TEST_F(AssociatedInterfaceTest, BindingFlushForTesting) {
 
 TEST_F(AssociatedInterfaceTest, BindingFlushForTestingWithClosedPeer) {
   IntegerSenderConnectionPtr ptr;
-  IntegerSenderConnectionImpl impl(GetProxy(&ptr));
+  IntegerSenderConnectionImpl impl(MakeRequest(&ptr));
   bool called = false;
   impl.binding()->set_connection_error_handler(base::Bind(&SetBool, &called));
   ptr.reset();
@@ -869,10 +869,10 @@ TEST_F(AssociatedInterfaceTest, StrongBindingFlushForTesting) {
   auto binding =
       MakeStrongBinding(base::MakeUnique<IntegerSenderConnectionImpl>(
                             IntegerSenderConnectionRequest{}),
-                        GetProxy(&ptr));
+                        MakeRequest(&ptr));
   bool called = false;
   IntegerSenderAssociatedPtr sender_ptr;
-  ptr->GetSender(GetProxy(&sender_ptr, ptr.associated_group()));
+  ptr->GetSender(MakeRequest(&sender_ptr, ptr.associated_group()));
   sender_ptr->Echo(1, base::Bind(&SetBoolWithUnusedParameter<int>, &called));
   EXPECT_FALSE(called);
   // Because the flush is sent from the binding, it only guarantees that the
@@ -891,7 +891,7 @@ TEST_F(AssociatedInterfaceTest, StrongBindingFlushForTestingWithClosedPeer) {
   auto binding =
       MakeStrongBinding(base::MakeUnique<IntegerSenderConnectionImpl>(
                             IntegerSenderConnectionRequest{}),
-                        GetProxy(&ptr));
+                        MakeRequest(&ptr));
   binding->set_connection_error_handler(base::Bind(&SetBool, &called));
   ptr.reset();
   EXPECT_FALSE(called);
@@ -903,7 +903,7 @@ TEST_F(AssociatedInterfaceTest, StrongBindingFlushForTestingWithClosedPeer) {
 
 TEST_F(AssociatedInterfaceTest, PtrFlushForTesting) {
   IntegerSenderConnectionPtr ptr;
-  IntegerSenderConnectionImpl impl(GetProxy(&ptr));
+  IntegerSenderConnectionImpl impl(MakeRequest(&ptr));
   bool called = false;
   ptr.set_connection_error_handler(base::Bind(&Fail));
   ptr->AsyncGetSender(base::Bind(
@@ -915,7 +915,7 @@ TEST_F(AssociatedInterfaceTest, PtrFlushForTesting) {
 
 TEST_F(AssociatedInterfaceTest, PtrFlushForTestingWithClosedPeer) {
   IntegerSenderConnectionPtr ptr;
-  GetProxy(&ptr);
+  MakeRequest(&ptr);
   bool called = false;
   ptr.set_connection_error_handler(base::Bind(&SetBool, &called));
   EXPECT_FALSE(called);
@@ -997,11 +997,11 @@ TEST_F(AssociatedInterfaceTest, AssociatedRequestResetWithReason) {
 
 TEST_F(AssociatedInterfaceTest, ThreadSafeAssociatedInterfacePtr) {
   IntegerSenderConnectionPtr connection_ptr;
-  IntegerSenderConnectionImpl connection(GetProxy(&connection_ptr));
+  IntegerSenderConnectionImpl connection(MakeRequest(&connection_ptr));
 
   IntegerSenderAssociatedPtr sender;
   connection_ptr->GetSender(
-      GetProxy(&sender, connection_ptr.associated_group()));
+      MakeRequest(&sender, connection_ptr.associated_group()));
 
   scoped_refptr<ThreadSafeIntegerSenderAssociatedPtr> thread_safe_sender =
       ThreadSafeIntegerSenderAssociatedPtr::Create(std::move(sender));
@@ -1077,10 +1077,10 @@ TEST_F(AssociatedInterfaceTest, BindLaterThreadSafeAssociatedInterfacePtr) {
           // We are on the background thread, create the interface ptr.
           context->interface_impl =
               base::MakeUnique<IntegerSenderConnectionImpl>(
-                  GetProxy(&(context->connection_ptr)));
+                  MakeRequest(&(context->connection_ptr)));
           IntegerSenderAssociatedPtr sender;
           context->connection_ptr->GetSender(
-              GetProxy(&sender, context->connection_ptr.associated_group()));
+              MakeRequest(&sender, context->connection_ptr.associated_group()));
           thread_safe_ptr->Bind(std::move(sender));
           main_task_runner->PostTask(FROM_HERE, quit_closure);
         },

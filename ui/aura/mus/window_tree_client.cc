@@ -209,7 +209,7 @@ void WindowTreeClient::ConnectViaWindowTreeFactory() {
   ui::mojom::WindowTreeFactoryPtr factory;
   connector_->ConnectToInterface(ui::mojom::kServiceName, &factory);
   ui::mojom::WindowTreePtr window_tree;
-  factory->CreateWindowTree(GetProxy(&window_tree),
+  factory->CreateWindowTree(MakeRequest(&window_tree),
                             binding_.CreateInterfacePtrAndBind());
   SetWindowTree(std::move(window_tree));
 }
@@ -220,7 +220,7 @@ void WindowTreeClient::ConnectAsWindowManager() {
   ui::mojom::WindowManagerWindowTreeFactoryPtr factory;
   connector_->ConnectToInterface(ui::mojom::kServiceName, &factory);
   ui::mojom::WindowTreePtr window_tree;
-  factory->CreateWindowTree(GetProxy(&window_tree),
+  factory->CreateWindowTree(MakeRequest(&window_tree),
                             binding_.CreateInterfacePtrAndBind());
   SetWindowTree(std::move(window_tree));
 }
@@ -445,8 +445,8 @@ void WindowTreeClient::SetWindowTree(ui::mojom::WindowTreePtr window_tree_ptr) {
       &WindowTreeClient::OnConnectionLost, weak_factory_.GetWeakPtr()));
 
   if (window_manager_delegate_) {
-    tree_ptr_->GetWindowManagerClient(GetProxy(&window_manager_internal_client_,
-                                               tree_ptr_.associated_group()));
+    tree_ptr_->GetWindowManagerClient(MakeRequest(
+        &window_manager_internal_client_, tree_ptr_.associated_group()));
   }
 }
 
@@ -843,8 +843,8 @@ void WindowTreeClient::OnEmbed(ClientSpecificId client_id,
   is_from_embed_ = true;
 
   if (window_manager_delegate_) {
-    tree_ptr_->GetWindowManagerClient(GetProxy(&window_manager_internal_client_,
-                                               tree_ptr_.associated_group()));
+    tree_ptr_->GetWindowManagerClient(MakeRequest(
+        &window_manager_internal_client_, tree_ptr_.associated_group()));
   }
 
   OnEmbedImpl(tree_ptr_.get(), client_id, std::move(root_data), display_id,

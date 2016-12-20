@@ -47,9 +47,10 @@ NotificationManager::~NotificationManager() {}
 
 mojom::blink::PermissionStatus NotificationManager::permissionStatus(
     ExecutionContext* executionContext) {
-  if (!m_notificationService)
+  if (!m_notificationService) {
     Platform::current()->interfaceProvider()->getInterface(
-        mojo::GetProxy(&m_notificationService));
+        mojo::MakeRequest(&m_notificationService));
+  }
 
   mojom::blink::PermissionStatus permissionStatus;
   const bool result = m_notificationService->GetPermissionStatus(
@@ -65,7 +66,8 @@ ScriptPromise NotificationManager::requestPermission(
   ExecutionContext* context = scriptState->getExecutionContext();
 
   if (!m_permissionService) {
-    connectToPermissionService(context, mojo::GetProxy(&m_permissionService));
+    connectToPermissionService(context,
+                               mojo::MakeRequest(&m_permissionService));
     m_permissionService.set_connection_error_handler(convertToBaseCallback(
         WTF::bind(&NotificationManager::onPermissionServiceConnectionError,
                   wrapWeakPersistent(this))));

@@ -89,7 +89,7 @@ int HostResolverMojo::Resolve(const RequestInfo& info,
 
   interfaces::HostResolverRequestClientPtr handle;
   std::unique_ptr<Job> job(new Job(key, addresses, callback,
-                                   mojo::GetProxy(&handle),
+                                   mojo::MakeRequest(&handle),
                                    host_cache_weak_factory_.GetWeakPtr()));
   request->reset(new RequestImpl(std::move(job)));
 

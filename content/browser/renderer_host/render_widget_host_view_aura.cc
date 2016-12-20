@@ -1897,7 +1897,7 @@ void RenderWidgetHostViewAura::CreateAuraWindow(ui::wm::WindowType type) {
 
   ui::mojom::WindowTreeClientPtr window_tree_client;
   factory->CreateWindowTreeClientForRenderWidget(
-      host_->GetRoutingID(), mojo::GetProxy(&window_tree_client));
+      host_->GetRoutingID(), mojo::MakeRequest(&window_tree_client));
   aura::WindowPortMus::Get(window_)->Embed(
       std::move(window_tree_client),
       ui::mojom::kEmbedFlagEmbedderInterceptsEvents,

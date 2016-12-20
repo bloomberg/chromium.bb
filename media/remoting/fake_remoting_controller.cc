@@ -178,11 +178,12 @@ scoped_refptr<RemotingSourceImpl> CreateRemotingSourceImpl(
     bool start_will_fail) {
   mojom::RemotingSourcePtr remoting_source;
   mojom::RemotingSourceRequest remoting_source_request =
-      mojo::GetProxy(&remoting_source);
+      mojo::MakeRequest(&remoting_source);
   mojom::RemoterPtr remoter;
   std::unique_ptr<mojom::RemoterFactory> remoter_factory =
       base::MakeUnique<FakeRemoterFactory>(start_will_fail);
-  remoter_factory->Create(std::move(remoting_source), mojo::GetProxy(&remoter));
+  remoter_factory->Create(std::move(remoting_source),
+                          mojo::MakeRequest(&remoter));
   return new RemotingSourceImpl(std::move(remoting_source_request),
                                 std::move(remoter));
 }

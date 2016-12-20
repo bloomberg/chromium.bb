@@ -96,7 +96,8 @@ void Adapter::OnGattConnected(
     const ConnectToDeviceCallback& callback,
     std::unique_ptr<device::BluetoothGattConnection> connection) {
   mojom::DevicePtr device_ptr;
-  Device::Create(adapter_, std::move(connection), mojo::GetProxy(&device_ptr));
+  Device::Create(adapter_, std::move(connection),
+                 mojo::MakeRequest(&device_ptr));
   callback.Run(mojom::ConnectResult::SUCCESS, std::move(device_ptr));
 }
 

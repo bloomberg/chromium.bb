@@ -663,7 +663,7 @@ previous section. The connect flow in the service that launches the target
     service_manager::Identity target("exe:target",service_manager::mojom::kInheritUserID);
     service_manager::Connector::ConnectParams params(target);
     params.set_client_process_connection(std::move(factory),
-                                         GetProxy(&receiver));
+                                         MakeRequest(&receiver));
     std::unique_ptr<service_manager::Connection> connection = connector->Connect(&params);
 
     base::LaunchOptions options;

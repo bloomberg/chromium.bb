@@ -258,10 +258,10 @@ class CastRemotingConnectorTest : public ::testing::Test {
  protected:
   RemoterPtr CreateRemoter(MockRemotingSource* source) {
     RemotingSourcePtr source_ptr;
-    source->Bind(mojo::GetProxy(&source_ptr));
+    source->Bind(mojo::MakeRequest(&source_ptr));
     RemoterPtr remoter_ptr;
     connector_.CreateBridge(std::move(source_ptr),
-                            mojo::GetProxy(&remoter_ptr));
+                            mojo::MakeRequest(&remoter_ptr));
     return remoter_ptr;
   }
 

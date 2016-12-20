@@ -574,7 +574,7 @@ NFC::NFC(LocalFrame* frame)
     : PageVisibilityObserver(frame->page()),
       ContextLifecycleObserver(frame->document()),
       m_client(this) {
-  frame->interfaceProvider()->getInterface(mojo::GetProxy(&m_nfc));
+  frame->interfaceProvider()->getInterface(mojo::MakeRequest(&m_nfc));
   m_nfc.set_connection_error_handler(convertToBaseCallback(
       WTF::bind(&NFC::OnConnectionError, wrapWeakPersistent(this))));
   m_nfc->SetClient(m_client.CreateInterfacePtrAndBind());

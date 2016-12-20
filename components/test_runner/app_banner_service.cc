@@ -28,9 +28,9 @@ void AppBannerService::SendBannerPromptRequest(
     return;
 
   controller_->BannerPromptRequest(
-      binding_.CreateInterfacePtrAndBind(), mojo::GetProxy(&event_), platforms,
-      base::Bind(&AppBannerService::OnBannerPromptReply, base::Unretained(this),
-                 callback));
+      binding_.CreateInterfacePtrAndBind(), mojo::MakeRequest(&event_),
+      platforms, base::Bind(&AppBannerService::OnBannerPromptReply,
+                            base::Unretained(this), callback));
 }
 
 void AppBannerService::DisplayAppBanner() { /* do nothing */ }

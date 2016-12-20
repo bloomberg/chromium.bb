@@ -180,7 +180,7 @@ Surface::Surface()
                          ->AllocateFrameSinkId()) {
   cc::mojom::MojoCompositorFrameSinkClientPtr frame_sink_holder_ptr;
   cc::mojom::MojoCompositorFrameSinkClientRequest frame_sink_client_request =
-      mojo::GetProxy(&frame_sink_holder_ptr);
+      mojo::MakeRequest(&frame_sink_holder_ptr);
   std::unique_ptr<CompositorFrameSink> frame_sink(new CompositorFrameSink(
       frame_sink_id_,
       aura::Env::GetInstance()->context_factory_private()->GetSurfaceManager(),

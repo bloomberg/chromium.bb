@@ -106,7 +106,7 @@ TEST_F(WindowManagerTest, OpenWindow) {
   // Create another WindowTreeClient by way of embedding in
   // |child_window|. This blocks until it succeeds.
   ui::mojom::WindowTreeClientPtr tree_client;
-  auto tree_client_request = GetProxy(&tree_client);
+  auto tree_client_request = MakeRequest(&tree_client);
   client.Embed(child_window, std::move(tree_client), 0u, base::Bind(&OnEmbed));
   aura::WindowTreeClient child_client(connector(), &window_tree_delegate,
                                       nullptr, std::move(tree_client_request));

@@ -433,7 +433,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
         base::MakeUnique<mojo::AssociatedBinding<mojom::WindowManager>>(
             this, std::move(internal));
     tree_->GetWindowManagerClient(
-        GetProxy(&window_manager_client_, tree_.associated_group()));
+        MakeRequest(&window_manager_client_, tree_.associated_group()));
   }
 
   // mojom::WindowManager:
@@ -657,9 +657,9 @@ class WindowTreeClientTest : public WindowServerServiceTestBase {
 
     mojom::WindowTreeClientPtr tree_client_ptr;
     wt_client1_ = base::MakeUnique<TestWindowTreeClient>();
-    wt_client1_->Bind(GetProxy(&tree_client_ptr));
+    wt_client1_->Bind(MakeRequest(&tree_client_ptr));
 
-    factory->CreateWindowTreeHost(GetProxy(&host_),
+    factory->CreateWindowTreeHost(MakeRequest(&host_),
                                   std::move(tree_client_ptr));
 
     // Next we should get an embed call on the "window manager" client.
@@ -2157,10 +2157,10 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
   cc::mojom::MojoCompositorFrameSinkPtr surface_ptr;
   cc::mojom::MojoCompositorFrameSinkClientRequest client_request;
   cc::mojom::MojoCompositorFrameSinkClientPtr surface_client_ptr;
-  client_request = mojo::GetProxy(&surface_client_ptr);
+  client_request = mojo::MakeRequest(&surface_client_ptr);
   wt2()->AttachCompositorFrameSink(
       window_2_101, mojom::CompositorFrameSinkType::DEFAULT,
-      mojo::GetProxy(&surface_ptr), std::move(surface_client_ptr));
+      mojo::MakeRequest(&surface_ptr), std::move(surface_client_ptr));
   cc::CompositorFrame compositor_frame;
   std::unique_ptr<cc::RenderPass> render_pass = cc::RenderPass::Create();
   gfx::Rect frame_rect(0, 0, 100, 100);

@@ -58,7 +58,7 @@ class MojoCdmTest : public ::testing::Test {
   void Initialize(const std::string& key_system,
                   ExpectedResult expected_result) {
     mojom::ContentDecryptionModulePtr remote_cdm;
-    auto cdm_request = mojo::GetProxy(&remote_cdm);
+    auto cdm_request = mojo::MakeRequest(&remote_cdm);
 
     switch (expected_result) {
       case SUCCESS:

@@ -423,7 +423,7 @@ void Geolocation::requestPermission() {
 
   m_geolocationPermission = PermissionRequested;
   frame->interfaceProvider()->getInterface(
-      mojo::GetProxy(&m_permissionService));
+      mojo::MakeRequest(&m_permissionService));
   m_permissionService.set_connection_error_handler(
       convertToBaseCallback(WTF::bind(&Geolocation::onPermissionConnectionError,
                                       wrapWeakPersistent(this))));
@@ -495,7 +495,7 @@ void Geolocation::updateGeolocationServiceConnection() {
     return;
 
   frame()->interfaceProvider()->getInterface(
-      mojo::GetProxy(&m_geolocationService));
+      mojo::MakeRequest(&m_geolocationService));
   m_geolocationService.set_connection_error_handler(convertToBaseCallback(
       WTF::bind(&Geolocation::onGeolocationConnectionError,
                 wrapWeakPersistent(this))));

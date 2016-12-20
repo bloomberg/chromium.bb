@@ -135,7 +135,7 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url,
 void AppBannerManager::OnInstall() {
   blink::mojom::InstallationServicePtr installation_service;
   web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
-      mojo::GetProxy(&installation_service));
+      mojo::MakeRequest(&installation_service));
   DCHECK(installation_service);
   installation_service->OnInstall();
 }
@@ -358,10 +358,10 @@ void AppBannerManager::SendBannerPromptRequest() {
   event_request_id_ = ++gCurrentRequestID;
 
   web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
-      mojo::GetProxy(&controller_));
+      mojo::MakeRequest(&controller_));
 
   controller_->BannerPromptRequest(
-      binding_.CreateInterfacePtrAndBind(), mojo::GetProxy(&event_),
+      binding_.CreateInterfacePtrAndBind(), mojo::MakeRequest(&event_),
       {GetBannerType()},
       base::Bind(&AppBannerManager::OnBannerPromptReply, GetWeakPtr()));
 }

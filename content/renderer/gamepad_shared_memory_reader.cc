@@ -22,7 +22,7 @@ GamepadSharedMemoryReader::GamepadSharedMemoryReader(RenderThread* thread)
       binding_(this) {
   if (thread) {
     thread->GetRemoteInterfaces()->GetInterface(
-        mojo::GetProxy(&gamepad_monitor_));
+        mojo::MakeRequest(&gamepad_monitor_));
     gamepad_monitor_->SetObserver(binding_.CreateInterfacePtrAndBind());
   }
 }

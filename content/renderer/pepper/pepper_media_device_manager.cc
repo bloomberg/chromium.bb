@@ -263,7 +263,7 @@ PepperMediaDeviceManager::GetMediaDevicesDispatcher() {
   if (!media_devices_dispatcher_) {
     DCHECK(render_frame());
     render_frame()->GetRemoteInterfaces()->GetInterface(
-        mojo::GetProxy(&media_devices_dispatcher_));
+        mojo::MakeRequest(&media_devices_dispatcher_));
   }
 
   return media_devices_dispatcher_;

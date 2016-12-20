@@ -52,7 +52,7 @@ class ChildCallStackProfileCollectorTest : public testing::Test {
   };
 
   ChildCallStackProfileCollectorTest()
-      : receiver_impl_(new Receiver(GetProxy(&receiver_))) {}
+      : receiver_impl_(new Receiver(MakeRequest(&receiver_))) {}
 
   void CollectEmptyProfiles(
       const CallStackProfileParams& params,

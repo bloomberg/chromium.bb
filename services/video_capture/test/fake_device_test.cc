@@ -46,7 +46,7 @@ void FakeDeviceTest::SetUp() {
 
   factory_->CreateDevice(
       std::move(fake_device_descriptor_.device_id),
-      mojo::GetProxy(&fake_device_proxy_),
+      mojo::MakeRequest(&fake_device_proxy_),
       base::Bind([](mojom::DeviceAccessResultCode result_code) {
         ASSERT_EQ(mojom::DeviceAccessResultCode::SUCCESS, result_code);
       }));

@@ -95,7 +95,7 @@ class RequestResponseTest : public testing::Test {
 
 TEST_F(RequestResponseTest, EchoString) {
   sample::ProviderPtr provider;
-  ProviderImpl provider_impl(GetProxy(&provider));
+  ProviderImpl provider_impl(MakeRequest(&provider));
 
   std::string buf;
   base::RunLoop run_loop;
@@ -109,7 +109,7 @@ TEST_F(RequestResponseTest, EchoString) {
 
 TEST_F(RequestResponseTest, EchoStrings) {
   sample::ProviderPtr provider;
-  ProviderImpl provider_impl(GetProxy(&provider));
+  ProviderImpl provider_impl(MakeRequest(&provider));
 
   std::string buf;
   base::RunLoop run_loop;
@@ -123,7 +123,7 @@ TEST_F(RequestResponseTest, EchoStrings) {
 
 TEST_F(RequestResponseTest, EchoMessagePipeHandle) {
   sample::ProviderPtr provider;
-  ProviderImpl provider_impl(GetProxy(&provider));
+  ProviderImpl provider_impl(MakeRequest(&provider));
 
   MessagePipe pipe2;
   base::RunLoop run_loop;
@@ -141,7 +141,7 @@ TEST_F(RequestResponseTest, EchoMessagePipeHandle) {
 
 TEST_F(RequestResponseTest, EchoEnum) {
   sample::ProviderPtr provider;
-  ProviderImpl provider_impl(GetProxy(&provider));
+  ProviderImpl provider_impl(MakeRequest(&provider));
 
   sample::Enum value;
   base::RunLoop run_loop;

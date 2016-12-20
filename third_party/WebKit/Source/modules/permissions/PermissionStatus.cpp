@@ -84,7 +84,8 @@ void PermissionStatus::contextDestroyed() {
 
 void PermissionStatus::startListening() {
   DCHECK(!m_service);
-  connectToPermissionService(getExecutionContext(), mojo::GetProxy(&m_service));
+  connectToPermissionService(getExecutionContext(),
+                             mojo::MakeRequest(&m_service));
   m_service->GetNextPermissionChange(
       m_descriptor->Clone(), getExecutionContext()->getSecurityOrigin(),
       m_status,

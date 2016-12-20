@@ -70,7 +70,7 @@ const mojom::blink::BackgroundSyncServicePtr&
 SyncManager::getBackgroundSyncServicePtr() {
   if (!m_backgroundSyncService.get()) {
     Platform::current()->interfaceProvider()->getInterface(
-        mojo::GetProxy(&m_backgroundSyncService));
+        mojo::MakeRequest(&m_backgroundSyncService));
   }
   return m_backgroundSyncService;
 }

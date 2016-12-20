@@ -62,7 +62,7 @@ class PowerMonitorMessageBroadcasterTest : public testing::Test {
 
 TEST_F(PowerMonitorMessageBroadcasterTest, PowerMessageBroadcast) {
   device::mojom::PowerMonitorClientPtr proxy;
-  FakePowerMonitorClient client(mojo::GetProxy(&proxy));
+  FakePowerMonitorClient client(mojo::MakeRequest(&proxy));
   PowerMonitorMessageBroadcaster broadcaster;
 
   // Calling SetClient should invoke a power state change.

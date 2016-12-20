@@ -38,7 +38,7 @@ class BlobChannelSenderProxyTest : public testing::Test {
     // blob_channel_sender_proxy_ => (mojo) => mojo_service_impl_ =>
     //    mock_sender_;
     mojom::BlobChannelPtr mojo_ptr;
-    mojo_service_impl_->BindRequest(GetProxy(&mojo_ptr));
+    mojo_service_impl_->BindRequest(MakeRequest(&mojo_ptr));
     blob_channel_sender_proxy_ =
         BlobChannelSenderProxy::CreateForTest(std::move(mojo_ptr));
   }

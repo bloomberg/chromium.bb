@@ -44,7 +44,7 @@ class CommonCustomTypesStructTraitsTest : public testing::Test {
 
 TEST_F(CommonCustomTypesStructTraitsTest, String16) {
   mojo::common::test::blink::TestString16Ptr ptr;
-  TestString16Impl impl(GetProxy(&ptr));
+  TestString16Impl impl(MakeRequest(&ptr));
 
   // |str| is 8-bit.
   String str = String::fromUTF8("hello world");
@@ -63,7 +63,7 @@ TEST_F(CommonCustomTypesStructTraitsTest, String16) {
 
 TEST_F(CommonCustomTypesStructTraitsTest, EmptyString16) {
   mojo::common::test::blink::TestString16Ptr ptr;
-  TestString16Impl impl(GetProxy(&ptr));
+  TestString16Impl impl(MakeRequest(&ptr));
 
   String str = String::fromUTF8("");
   String output;

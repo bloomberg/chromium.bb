@@ -30,10 +30,10 @@ std::unique_ptr<RemotingCdmController>
 RemotingCdmFactory::CreateRemotingCdmController() {
   mojom::RemotingSourcePtr remoting_source;
   mojom::RemotingSourceRequest remoting_source_request =
-      mojo::GetProxy(&remoting_source);
+      mojo::MakeRequest(&remoting_source);
   mojom::RemoterPtr remoter;
   remoter_factory_->Create(std::move(remoting_source),
-                           mojo::GetProxy(&remoter));
+                           mojo::MakeRequest(&remoter));
   scoped_refptr<RemotingSourceImpl> remoting_source_impl =
       new RemotingSourceImpl(std::move(remoting_source_request),
                              std::move(remoter));

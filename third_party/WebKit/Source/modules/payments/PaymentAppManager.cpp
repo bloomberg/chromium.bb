@@ -136,7 +136,7 @@ PaymentAppManager::PaymentAppManager(ServiceWorkerRegistration* registration)
     : m_registration(registration) {
   DCHECK(registration);
   Platform::current()->interfaceProvider()->getInterface(
-      mojo::GetProxy(&m_manager));
+      mojo::MakeRequest(&m_manager));
 
   m_manager.set_connection_error_handler(convertToBaseCallback(WTF::bind(
       &PaymentAppManager::onServiceConnectionError, wrapWeakPersistent(this))));

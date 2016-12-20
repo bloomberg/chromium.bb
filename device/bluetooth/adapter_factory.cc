@@ -36,7 +36,7 @@ void AdapterFactory::OnGetAdapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   mojom::AdapterPtr adapter_ptr;
   mojo::MakeStrongBinding(base::MakeUnique<Adapter>(adapter),
-                          mojo::GetProxy(&adapter_ptr));
+                          mojo::MakeRequest(&adapter_ptr));
   callback.Run(std::move(adapter_ptr));
 }
 

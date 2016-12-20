@@ -86,15 +86,15 @@ class SerialServiceTest : public testing::Test {
                            base::Unretained(this)),
                 base::ThreadTaskRunnerHandle::Get()),
             base::MakeUnique<FakeSerialDeviceEnumerator>()),
-        mojo::GetProxy(&service));
+        mojo::MakeRequest(&service));
     mojo::InterfacePtr<serial::Connection> connection;
     mojo::InterfacePtr<serial::DataSink> sink;
     mojo::InterfacePtr<serial::DataSource> source;
     mojo::InterfacePtr<serial::DataSourceClient> source_client;
-    mojo::GetProxy(&source_client);
+    mojo::MakeRequest(&source_client);
     service->Connect(path, serial::ConnectionOptions::New(),
-                     mojo::GetProxy(&connection), mojo::GetProxy(&sink),
-                     mojo::GetProxy(&source), std::move(source_client));
+                     mojo::MakeRequest(&connection), mojo::MakeRequest(&sink),
+                     mojo::MakeRequest(&source), std::move(source_client));
     connection.set_connection_error_handler(base::Bind(
         &SerialServiceTest::OnConnectionError, base::Unretained(this)));
     expecting_error_ = !expecting_success;
@@ -120,7 +120,7 @@ class SerialServiceTest : public testing::Test {
 
 TEST_F(SerialServiceTest, GetDevices) {
   mojo::InterfacePtr<serial::SerialService> service;
-  SerialServiceImpl::Create(NULL, NULL, mojo::GetProxy(&service));
+  SerialServiceImpl::Create(NULL, NULL, mojo::MakeRequest(&service));
   service.set_connection_error_handler(base::Bind(
       &SerialServiceTest::OnConnectionError, base::Unretained(this)));
   mojo::Array<serial::DeviceInfoPtr> result;

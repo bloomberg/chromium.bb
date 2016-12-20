@@ -140,7 +140,7 @@ class BindingCallbackTest : public testing::Test {
 TEST_F(BindingCallbackTest, Basic) {
   // Create the ServerImpl and the Binding.
   InterfaceImpl server_impl;
-  Binding<sample::Provider> binding(&server_impl, GetProxy(&interface_ptr_));
+  Binding<sample::Provider> binding(&server_impl, MakeRequest(&interface_ptr_));
 
   // Initialize the test values.
   server_impl.resetLastServerValueSeen();
@@ -199,7 +199,8 @@ TEST_F(BindingCallbackTest, DeleteBindingThenRunCallback) {
   base::RunLoop run_loop;
   {
     // Create the binding in an inner scope so it can be deleted first.
-    Binding<sample::Provider> binding(&server_impl, GetProxy(&interface_ptr_));
+    Binding<sample::Provider> binding(&server_impl,
+                                      MakeRequest(&interface_ptr_));
     interface_ptr_.set_connection_error_handler(run_loop.QuitClosure());
 
     // Initialize the test values.
@@ -244,7 +245,8 @@ TEST_F(BindingCallbackTest, DeleteBindingThenDeleteCallback) {
   InterfaceImpl server_impl;
   {
     // Create the binding in an inner scope so it can be deleted first.
-    Binding<sample::Provider> binding(&server_impl, GetProxy(&interface_ptr_));
+    Binding<sample::Provider> binding(&server_impl,
+                                      MakeRequest(&interface_ptr_));
 
     // Initialize the test values.
     server_impl.resetLastServerValueSeen();
@@ -275,7 +277,7 @@ TEST_F(BindingCallbackTest, DeleteBindingThenDeleteCallback) {
 TEST_F(BindingCallbackTest, CloseBindingBeforeDeletingCallback) {
   // Create the ServerImpl and the Binding.
   InterfaceImpl server_impl;
-  Binding<sample::Provider> binding(&server_impl, GetProxy(&interface_ptr_));
+  Binding<sample::Provider> binding(&server_impl, MakeRequest(&interface_ptr_));
 
   // Initialize the test values.
   server_impl.resetLastServerValueSeen();
@@ -310,7 +312,7 @@ TEST_F(BindingCallbackTest, CloseBindingBeforeDeletingCallback) {
 TEST_F(BindingCallbackTest, DeleteCallbackBeforeBindingDeathTest) {
   // Create the ServerImpl and the Binding.
   InterfaceImpl server_impl;
-  Binding<sample::Provider> binding(&server_impl, GetProxy(&interface_ptr_));
+  Binding<sample::Provider> binding(&server_impl, MakeRequest(&interface_ptr_));
 
   // Initialize the test values.
   server_impl.resetLastServerValueSeen();

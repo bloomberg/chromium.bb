@@ -330,7 +330,7 @@ void MemoryCoordinatorImpl::SetDelegateForTesting(
 void MemoryCoordinatorImpl::AddChildForTesting(
     int dummy_render_process_id, mojom::ChildMemoryCoordinatorPtr child) {
   mojom::MemoryCoordinatorHandlePtr mch;
-  auto request = mojo::GetProxy(&mch);
+  auto request = mojo::MakeRequest(&mch);
   std::unique_ptr<MemoryCoordinatorHandleImpl> handle(
       new MemoryCoordinatorHandleImpl(std::move(request), this,
                                       dummy_render_process_id));

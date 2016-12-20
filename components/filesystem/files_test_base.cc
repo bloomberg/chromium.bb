@@ -26,7 +26,7 @@ void FilesTestBase::SetUp() {
 
 void FilesTestBase::GetTemporaryRoot(mojom::DirectoryPtr* directory) {
   mojom::FileError error = mojom::FileError::FAILED;
-  bool handled = files()->OpenTempDirectory(GetProxy(directory), &error);
+  bool handled = files()->OpenTempDirectory(MakeRequest(directory), &error);
   ASSERT_TRUE(handled);
   ASSERT_EQ(mojom::FileError::OK, error);
 }

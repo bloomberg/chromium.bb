@@ -150,7 +150,7 @@ PpapiThread::PpapiThread(const base::CommandLine& command_line, bool is_broker)
 #endif
     } else {
       ChildThread::Get()->GetRemoteInterfaces()->GetInterface(
-          mojo::GetProxy(&manager_ptr));
+          mojo::MakeRequest(&manager_ptr));
     }
     discardable_shared_memory_manager_ = base::MakeUnique<
         discardable_memory::ClientDiscardableSharedMemoryManager>(

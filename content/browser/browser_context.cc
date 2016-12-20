@@ -439,13 +439,13 @@ void BrowserContext::Initialize(
 
     service_manager::mojom::ServicePtr service;
     service_manager::mojom::ServiceRequest service_request =
-        mojo::GetProxy(&service);
+        mojo::MakeRequest(&service);
 
     service_manager::mojom::PIDReceiverPtr pid_receiver;
     service_manager::Connector::ConnectParams params(
         service_manager::Identity(mojom::kBrowserServiceName, new_id));
     params.set_client_process_connection(std::move(service),
-                                         mojo::GetProxy(&pid_receiver));
+                                         mojo::MakeRequest(&pid_receiver));
     pid_receiver->SetPID(base::GetCurrentProcId());
 
     BrowserContextServiceManagerConnectionHolder* connection_holder =

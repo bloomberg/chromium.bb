@@ -199,7 +199,7 @@ class LifecycleTest : public test::ServiceTest {
                                     &service_manager);
     mojom::ServiceManagerListenerPtr listener;
     base::RunLoop loop;
-    InstanceState* state = new InstanceState(GetProxy(&listener), &loop);
+    InstanceState* state = new InstanceState(MakeRequest(&listener), &loop);
     service_manager->AddListener(std::move(listener));
     loop.Run();
     return base::WrapUnique(state);

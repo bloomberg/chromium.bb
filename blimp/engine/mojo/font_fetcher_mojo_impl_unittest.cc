@@ -62,7 +62,7 @@ class FontFetcherMojoImplUnittest : public testing::Test {
 
 TEST_F(FontFetcherMojoImplUnittest, VerifyWriteToDataPipe) {
   mojom::FontFetcherPtr mojo_ptr;
-  font_fetcher_mojo_impl_.BindRequest(GetProxy(&mojo_ptr));
+  font_fetcher_mojo_impl_.BindRequest(MakeRequest(&mojo_ptr));
 
   // Expect that dummy font data is written correctly to a Mojo DataPipe.
   mojo_ptr->GetFontStream(kFakeHash, base::Bind(&VerifyDataWriteCorrectly));

@@ -201,7 +201,7 @@ class StructTraitsTest : public testing::Test,
 
 TEST_F(StructTraitsTest, ChromiumProxyToChromiumService) {
   RectServicePtr chromium_proxy;
-  BindToChromiumService(GetProxy(&chromium_proxy));
+  BindToChromiumService(MakeRequest(&chromium_proxy));
   {
     base::RunLoop loop;
     chromium_proxy->AddRect(RectChromium(1, 1, 4, 5));
@@ -221,7 +221,7 @@ TEST_F(StructTraitsTest, ChromiumProxyToChromiumService) {
 
 TEST_F(StructTraitsTest, ChromiumToBlinkService) {
   RectServicePtr chromium_proxy;
-  BindToBlinkService(GetProxy(&chromium_proxy));
+  BindToBlinkService(MakeRequest(&chromium_proxy));
   {
     base::RunLoop loop;
     chromium_proxy->AddRect(RectChromium(1, 1, 4, 5));
@@ -251,7 +251,7 @@ TEST_F(StructTraitsTest, ChromiumToBlinkService) {
 
 TEST_F(StructTraitsTest, BlinkProxyToBlinkService) {
   blink::RectServicePtr blink_proxy;
-  BindToBlinkService(GetProxy(&blink_proxy));
+  BindToBlinkService(MakeRequest(&blink_proxy));
   {
     base::RunLoop loop;
     blink_proxy->AddRect(RectBlink(1, 1, 4, 5));
@@ -271,7 +271,7 @@ TEST_F(StructTraitsTest, BlinkProxyToBlinkService) {
 
 TEST_F(StructTraitsTest, BlinkProxyToChromiumService) {
   blink::RectServicePtr blink_proxy;
-  BindToChromiumService(GetProxy(&blink_proxy));
+  BindToChromiumService(MakeRequest(&blink_proxy));
   {
     base::RunLoop loop;
     blink_proxy->AddRect(RectBlink(1, 1, 4, 5));

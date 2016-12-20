@@ -1178,7 +1178,7 @@ TEST(UnionTest, InterfaceInUnion) {
   base::RunLoop run_loop;
   SmallCacheImpl impl(run_loop.QuitClosure());
   SmallCachePtr ptr;
-  Binding<SmallCache> bindings(&impl, GetProxy(&ptr));
+  Binding<SmallCache> bindings(&impl, MakeRequest(&ptr));
 
   HandleUnionPtr handle(HandleUnion::New());
   handle->set_f_small_cache(std::move(ptr));
@@ -1193,7 +1193,7 @@ TEST(UnionTest, InterfaceInUnionSerialization) {
   base::RunLoop run_loop;
   SmallCacheImpl impl(run_loop.QuitClosure());
   SmallCachePtr ptr;
-  Binding<SmallCache> bindings(&impl, GetProxy(&ptr));
+  Binding<SmallCache> bindings(&impl, MakeRequest(&ptr));
 
   mojo::internal::SerializationContext context;
   HandleUnionPtr handle(HandleUnion::New());
@@ -1235,7 +1235,7 @@ TEST(UnionTest, UnionInInterface) {
   base::MessageLoop message_loop;
   UnionInterfaceImpl impl;
   UnionInterfacePtr ptr;
-  Binding<UnionInterface> bindings(&impl, GetProxy(&ptr));
+  Binding<UnionInterface> bindings(&impl, MakeRequest(&ptr));
 
   PodUnionPtr pod(PodUnion::New());
   pod->set_f_int16(16);

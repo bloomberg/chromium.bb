@@ -66,10 +66,10 @@ CanvasSurfaceLayerBridge::CanvasSurfaceLayerBridge(
   DCHECK(!m_service.is_bound());
   mojom::blink::OffscreenCanvasSurfaceFactoryPtr serviceFactory;
   Platform::current()->interfaceProvider()->getInterface(
-      mojo::GetProxy(&serviceFactory));
+      mojo::MakeRequest(&serviceFactory));
   serviceFactory->CreateOffscreenCanvasSurface(
       m_frameSinkId, m_binding.CreateInterfacePtrAndBind(),
-      mojo::GetProxy(&m_service));
+      mojo::MakeRequest(&m_service));
 }
 
 CanvasSurfaceLayerBridge::~CanvasSurfaceLayerBridge() {

@@ -731,7 +731,7 @@ int ResourceDispatcher::StartAsync(
     mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info;
     client->Bind(&client_ptr_info, associated_group);
     url_loader_factory->CreateLoaderAndStart(
-        GetProxy(&url_loader, associated_group), routing_id, request_id,
+        MakeRequest(&url_loader, associated_group), routing_id, request_id,
         *request, std::move(client_ptr_info));
     pending_requests_[request_id]->url_loader = std::move(url_loader);
     pending_requests_[request_id]->url_loader_client = std::move(client);

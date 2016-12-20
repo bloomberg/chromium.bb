@@ -137,7 +137,7 @@ ProcessResourceUsage* CreateProcessResourcesSampler(
     int unique_child_process_id) {
   chrome::mojom::ResourceUsageReporterPtr usage_reporter;
   chrome::mojom::ResourceUsageReporterRequest request =
-      mojo::GetProxy(&usage_reporter);
+      mojo::MakeRequest(&usage_reporter);
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,
       FROM_HERE,

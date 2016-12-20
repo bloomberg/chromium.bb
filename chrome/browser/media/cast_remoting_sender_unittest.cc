@@ -132,7 +132,7 @@ class CastRemotingSenderTest : public ::testing::Test {
 
     CastRemotingSender::FindAndBind(
         transport_config_.rtp_stream_id, std::move(consumer_end),
-        GetProxy(&sender_),
+        MakeRequest(&sender_),
         base::Bind(&CastRemotingSenderTest::OnError, base::Unretained(this)));
 
     RunPendingTasks();

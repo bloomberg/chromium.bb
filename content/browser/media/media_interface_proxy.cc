@@ -115,7 +115,7 @@ void MediaInterfaceProxy::ConnectToService() {
   // TODO(xhwang): Replace this InterfaceProvider with a dedicated media host
   // interface. See http://crbug.com/660573
   service_manager::mojom::InterfaceProviderPtr interfaces;
-  registry->Bind(GetProxy(&interfaces), service_manager::Identity(),
+  registry->Bind(MakeRequest(&interfaces), service_manager::Identity(),
                  service_manager::InterfaceProviderSpec(),
                  service_manager::Identity(),
                  service_manager::InterfaceProviderSpec());
@@ -126,7 +126,7 @@ void MediaInterfaceProxy::ConnectToService() {
   service_manager::Connector* connector =
       ServiceManagerConnection::GetForProcess()->GetConnector();
   connector->ConnectToInterface("media", &media_service);
-  media_service->CreateInterfaceFactory(GetProxy(&interface_factory_ptr_),
+  media_service->CreateInterfaceFactory(MakeRequest(&interface_factory_ptr_),
                                         std::move(interfaces));
   interface_factory_ptr_.set_connection_error_handler(base::Bind(
       &MediaInterfaceProxy::OnConnectionError, base::Unretained(this)));

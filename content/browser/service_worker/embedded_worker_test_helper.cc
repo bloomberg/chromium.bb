@@ -579,7 +579,7 @@ EmbeddedWorkerTestHelper::CreateInterfaceRegistry(MockRenderProcessHost* rph) {
       base::Bind(&MockEmbeddedWorkerInstanceClient::Bind, AsWeakPtr()));
 
   service_manager::mojom::InterfaceProviderPtr interfaces;
-  registry->Bind(mojo::GetProxy(&interfaces), service_manager::Identity(),
+  registry->Bind(mojo::MakeRequest(&interfaces), service_manager::Identity(),
                  service_manager::InterfaceProviderSpec(),
                  service_manager::Identity(),
                  service_manager::InterfaceProviderSpec());

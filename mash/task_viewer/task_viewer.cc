@@ -319,7 +319,7 @@ void TaskViewer::Launch(uint32_t what, mojom::LaunchMode how) {
 
   service_manager::mojom::ServiceManagerListenerPtr listener;
   service_manager::mojom::ServiceManagerListenerRequest request =
-      GetProxy(&listener);
+      MakeRequest(&listener);
   service_manager->AddListener(std::move(listener));
 
   catalog::mojom::CatalogPtr catalog;
