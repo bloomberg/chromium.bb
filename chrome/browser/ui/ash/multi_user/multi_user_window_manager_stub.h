@@ -19,8 +19,8 @@ namespace chrome {
 // This is the implementation of MultiUserWindowManager for single user mode.
 class MultiUserWindowManagerStub : public MultiUserWindowManager {
  public:
-  MultiUserWindowManagerStub() {}
-  ~MultiUserWindowManagerStub() override {}
+  MultiUserWindowManagerStub();
+  ~MultiUserWindowManagerStub() override;
 
   // MultiUserWindowManager overrides:
   void SetWindowOwner(aura::Window* window,

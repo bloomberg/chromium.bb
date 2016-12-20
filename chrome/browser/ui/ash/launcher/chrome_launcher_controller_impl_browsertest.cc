@@ -192,6 +192,7 @@ class LauncherPlatformAppBrowserTest
 
   void RunTestOnMainThreadLoop() override {
     controller_ = GetChromeLauncherControllerImpl();
+    ASSERT_TRUE(controller_);
     return extensions::PlatformAppBrowserTest::RunTestOnMainThreadLoop();
   }
 
@@ -262,6 +263,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
         ash::WmShelf::ForWindow(ash::WmShell::Get()->GetPrimaryRootWindow());
     model_ = ash::WmShell::Get()->shelf_model();
     controller_ = GetChromeLauncherControllerImpl();
+    ASSERT_TRUE(controller_);
     return ExtensionBrowserTest::RunTestOnMainThreadLoop();
   }
 

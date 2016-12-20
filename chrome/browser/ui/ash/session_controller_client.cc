@@ -36,6 +36,8 @@ namespace {
 // Limits the number of logged in users to 10 due to memory constraints.
 constexpr uint32_t kMaxUsers = 10;
 
+SessionControllerClient* g_instance = nullptr;
+
 uint32_t GetSessionId(const User* user) {
   const UserList logged_in_users = UserManager::Get()->GetLoggedInUsers();
   // TODO(xiyuan): Update with real session id when user session tracking
@@ -85,9 +87,15 @@ SessionControllerClient::SessionControllerClient() : binding_(this) {
   SendSessionInfoIfChanged();
   // User sessions and their order will be sent via UserSessionStateObserver
   // even for crash-n-restart.
+
+  DCHECK(!g_instance);
+  g_instance = this;
 }
 
 SessionControllerClient::~SessionControllerClient() {
+  DCHECK_EQ(this, g_instance);
+  g_instance = nullptr;
+
   session_manager::SessionManager::Get()->RemoveObserver(this);
   UserManager::Get()->RemoveSessionStateObserver(this);
 }
@@ -224,6 +232,11 @@ void SessionControllerClient::DoCycleActiveUser(bool next_user) {
   }
 
   DoSwitchActiveUser(account_id);
+}
+
+// static
+void SessionControllerClient::FlushForTesting() {
+  g_instance->session_controller_.FlushForTesting();
 }
 
 void SessionControllerClient::OnSessionStateChanged() {

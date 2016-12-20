@@ -151,11 +151,6 @@ void WmShell::CreateShelf() {
     root_window->GetRootWindowController()->CreateShelf();
 }
 
-void WmShell::ShowShelf() {
-  for (WmWindow* root_window : GetAllRootWindows())
-    root_window->GetRootWindowController()->ShowShelf();
-}
-
 void WmShell::CreateShelfDelegate() {
   // May be called multiple times as shelves are created and destroyed.
   if (shelf_delegate_)
@@ -272,9 +267,12 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
   keyboard_brightness_control_delegate_.reset(new KeyboardBrightnessController);
   vpn_list_ = base::MakeUnique<VpnList>();
 #endif
+  session_controller_->AddSessionStateObserver(this);
 }
 
-WmShell::~WmShell() {}
+WmShell::~WmShell() {
+  session_controller_->RemoveSessionStateObserver(this);
+}
 
 WmRootWindowController* WmShell::GetPrimaryRootWindowController() {
   return GetPrimaryRootWindow()->GetRootWindowController();
@@ -413,6 +411,13 @@ void WmShell::DeleteToastManager() {
 void WmShell::SetAcceleratorController(
     std::unique_ptr<AcceleratorController> accelerator_controller) {
   accelerator_controller_ = std::move(accelerator_controller);
+}
+
+void WmShell::SessionStateChanged(session_manager::SessionState state) {
+  // Create the shelf when a session becomes active. It's safe to do this
+  // multiple times (e.g. initial login vs. multiprofile add session).
+  if (state == session_manager::SessionState::ACTIVE)
+    CreateShelf();
 }
 
 }  // namespace ash

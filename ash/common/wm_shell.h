@@ -13,6 +13,7 @@
 #include "ash/ash_export.h"
 #include "ash/common/metrics/gesture_action_type.h"
 #include "ash/common/metrics/user_metrics_action.h"
+#include "ash/common/session/session_state_observer.h"
 #include "ash/common/wm/lock_state_observer.h"
 #include "base/observer_list.h"
 #include "components/ui_devtools/devtools_server.h"
@@ -100,7 +101,7 @@ class VpnList;
 #endif
 
 // Similar to ash::Shell. Eventually the two will be merged.
-class ASH_EXPORT WmShell {
+class ASH_EXPORT WmShell : public SessionStateObserver {
  public:
   // This is necessary for a handful of places that is difficult to plumb
   // through context.
@@ -343,9 +344,6 @@ class ASH_EXPORT WmShell {
   // Initializes the appropriate shelves. Does nothing for any existing shelves.
   void CreateShelf();
 
-  // Show shelf view if it was created hidden (before session has started).
-  void ShowShelf();
-
   void CreateShelfDelegate();
 
   // Called after maximize mode has started, windows might still animate though.
@@ -446,7 +444,7 @@ class ASH_EXPORT WmShell {
 
  protected:
   explicit WmShell(std::unique_ptr<ShellDelegate> shell_delegate);
-  virtual ~WmShell();
+  ~WmShell() override;
 
   base::ObserverList<ShellObserver>* shell_observers() {
     return &shell_observers_;
@@ -473,6 +471,9 @@ class ASH_EXPORT WmShell {
 
   void SetAcceleratorController(
       std::unique_ptr<AcceleratorController> accelerator_controller);
+
+  // SessionStateObserver:
+  void SessionStateChanged(session_manager::SessionState state) override;
 
  private:
   friend class AcceleratorControllerTest;
