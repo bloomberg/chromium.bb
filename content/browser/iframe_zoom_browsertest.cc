@@ -258,7 +258,7 @@ IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest, SubframesDontZoomIndependently) {
 
   // We exclude the remainder of this test on Android since Android does not
   // set page zoom levels for loading pages.
-  // See RenderViewImpl::OnSetZoomLevelForLoadingURL().
+  // See RenderFrameImpl::SetHostZoomLevel().
 #if !defined(OS_ANDROID)
   // When we navigate so that b.com is the top-level site, then it has the
   // expected zoom.
@@ -475,6 +475,73 @@ IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest,
       kZoomFactorForRedirectedHost,
       GetMainFrameZoomFactor(web_contents(), main_frame_window_border),
       0.001);
+}
+#endif
+
+// Tests that on cross-site navigation from a page that has a subframe, the
+// appropriate zoom is applied to the new page.
+// crbug.com/673065
+// Note: We exclude the this test on Android since Android does not set page
+// zoom levels for loading pages.
+// See RenderFrameImpl::SetHostZoomLevel().
+#if !defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(IFrameZoomBrowserTest,
+                       SubframesDontBreakConnectionToRenderer) {
+  std::string top_level_host("a.com");
+  GURL main_url(embedded_test_server()->GetURL(
+      top_level_host, "/page_with_iframe_and_link.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  NavigationEntry* entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+  ASSERT_TRUE(entry);
+  GURL loaded_url = HostZoomMap::GetURLFromEntry(entry);
+  EXPECT_EQ(top_level_host, loaded_url.host());
+
+  // The following calls must be made when the page's scale factor = 1.0.
+  double main_frame_window_border = GetMainframeWindowBorder(web_contents());
+
+  HostZoomMap* host_zoom_map = HostZoomMap::GetForWebContents(web_contents());
+  double default_zoom_level = host_zoom_map->GetDefaultZoomLevel();
+  EXPECT_EQ(0.0, default_zoom_level);
+  EXPECT_DOUBLE_EQ(
+      1.0, GetMainFrameZoomFactor(web_contents(), main_frame_window_border));
+
+  // Set a zoom for a host that will be navigated to below.
+  const double new_zoom_factor = 2.0;
+  const double new_zoom_level =
+      default_zoom_level + ZoomFactorToZoomLevel(new_zoom_factor);
+  host_zoom_map->SetZoomLevelForHost("foo.com", new_zoom_level);
+
+  // Navigate forward in the same RFH to a site with that host via a
+  // renderer-initiated navigation.
+  {
+    const char kReplacePortNumber[] =
+        "window.domAutomationController.send(setPortNumber(%d));";
+    uint16_t port_number = embedded_test_server()->port();
+    bool success = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        shell(), base::StringPrintf(kReplacePortNumber, port_number),
+        &success));
+    TestNavigationObserver observer(shell()->web_contents());
+    GURL url = embedded_test_server()->GetURL("foo.com", "/title2.html");
+    success = false;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        shell(), "window.domAutomationController.send(clickCrossSiteLink());",
+        &success));
+    EXPECT_TRUE(success);
+    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+    EXPECT_EQ(url, observer.last_navigation_url());
+    EXPECT_TRUE(observer.last_navigation_succeeded());
+  }
+
+  // Check that the requested zoom has been applied to the new site.
+  // NOTE: Local observation on Linux has shown that this comparison has to be
+  // approximate. As the common failure mode would be that the zoom is ~1
+  // instead of ~2, this approximation shouldn't be problematic.
+  EXPECT_NEAR(
+      new_zoom_factor,
+      GetMainFrameZoomFactor(web_contents(), main_frame_window_border),
+      .1);
 }
 #endif
 
