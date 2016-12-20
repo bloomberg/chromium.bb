@@ -113,7 +113,9 @@ class TestShard(object):
         exit_code, output = cmd_helper.GetCmdStatusAndOutputWithTimeout(
             cmd, timeout, cwd=cwd, shell=True)
       end_time = time.time()
-      json_output = self._test_instance.ReadChartjsonOutput(self._output_dir)
+      chart_json_output = self._test_instance.ReadChartjsonOutput(
+          self._output_dir)
+      json_output = self._test_instance.ReadJsonOutput(self._output_dir)
       if exit_code == 0:
         result_type = base_test_result.ResultType.PASS
       else:
@@ -122,10 +124,12 @@ class TestShard(object):
       end_time = time.time()
       exit_code = -1
       output = e.output
+      chart_json_output = ''
       json_output = ''
       result_type = base_test_result.ResultType.TIMEOUT
     return self._ProcessTestResult(test, cmd, start_time, end_time, exit_code,
-                                   output, json_output, result_type)
+                                   output, chart_json_output, json_output,
+                                   result_type)
 
   def _CreateCmd(self, test):
     cmd = []
@@ -134,6 +138,7 @@ class TestShard(object):
     cmd.append(self._tests[test]['cmd'])
     if self._output_dir:
       cmd.append('--output-dir=%s' % self._output_dir)
+      cmd.append('--output-format=json')
     return ' '.join(self._ExtendCmd(cmd))
 
   def _ExtendCmd(self, cmd): # pylint: disable=no-self-use
@@ -150,7 +155,7 @@ class TestShard(object):
     raise NotImplementedError
 
   def _ProcessTestResult(self, test, cmd, start_time, end_time, exit_code,
-                         output, json_output, result_type):
+                         output, chart_json_output, json_output, result_type):
     if exit_code is None:
       exit_code = -1
 
@@ -166,7 +171,8 @@ class TestShard(object):
     persisted_result = {
         'name': test,
         'output': [output],
-        'chartjson': json_output,
+        'chartjson': chart_json_output,
+        'json': json_output,
         'archive_bytes': archive_bytes,
         'exit_code': exit_code,
         'actual_exit_code': actual_exit_code,
