@@ -36,7 +36,6 @@ typedef unsigned AXID;
 namespace blink {
 
 class AbstractInlineTextBox;
-class AXObject;
 class FrameView;
 class HTMLCanvasElement;
 class HTMLOptionElement;
@@ -50,8 +49,6 @@ class CORE_EXPORT AXObjectCache
 
  public:
   static AXObjectCache* create(Document&);
-
-  static AXObject* focusedObject();
 
   virtual ~AXObjectCache();
   DEFINE_INLINE_VIRTUAL_TRACE() {}
