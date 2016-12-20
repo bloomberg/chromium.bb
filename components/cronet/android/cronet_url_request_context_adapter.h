@@ -36,7 +36,7 @@ class ProxyConfigService;
 class SdchOwner;
 class URLRequestContext;
 class WriteToFileNetLogObserver;
-class BoundedFileNetLogObserver;
+class FileNetLogObserver;
 }  // namespace net
 
 namespace cronet {
@@ -216,7 +216,7 @@ class CronetURLRequestContextAdapter
   std::unique_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
   base::Lock write_to_file_observer_lock_;
 
-  std::unique_ptr<net::BoundedFileNetLogObserver> bounded_file_observer_;
+  std::unique_ptr<net::FileNetLogObserver> bounded_file_observer_;
 
   // |pref_service_| should outlive the HttpServerPropertiesManager owned by
   // |context_|.

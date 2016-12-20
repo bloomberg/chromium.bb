@@ -8,8 +8,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <limits>
 #include <map>
 #include <utility>
+#include <vector>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -52,7 +54,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_server_properties_manager.h"
-#include "net/log/bounded_file_net_log_observer.h"
+#include "net/log/file_net_log_observer.h"
 #include "net/log/write_to_file_net_log_observer.h"
 #include "net/nqe/external_estimate_provider.h"
 #include "net/proxy/proxy_config_service_android.h"
@@ -930,15 +932,15 @@ void CronetURLRequestContextAdapter::StartNetLogToBoundedFileOnNetworkThread(
   DCHECK(base::PathIsWritable(file_path));
 
   bounded_file_observer_.reset(
-      new net::BoundedFileNetLogObserver(GetFileThread()->task_runner()));
-  if (include_socket_bytes) {
-    bounded_file_observer_->set_capture_mode(
-        net::NetLogCaptureMode::IncludeSocketBytes());
-  }
+      new net::FileNetLogObserver(GetFileThread()->task_runner()));
 
-  bounded_file_observer_->StartObserving(g_net_log.Get().net_log(), file_path,
-                                         /*constants=*/nullptr, context_.get(),
-                                         size, kNumNetLogEventFiles);
+  net::NetLogCaptureMode capture_mode =
+      include_socket_bytes ? net::NetLogCaptureMode::IncludeSocketBytes()
+                           : net::NetLogCaptureMode::Default();
+
+  bounded_file_observer_->StartObservingBounded(
+      g_net_log.Get().net_log(), capture_mode, file_path,
+      /*constants=*/nullptr, context_.get(), size, kNumNetLogEventFiles);
 }
 
 void CronetURLRequestContextAdapter::StopBoundedFileNetLogOnNetworkThread() {
