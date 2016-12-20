@@ -20,14 +20,6 @@ Polymer({
         return loadTimeData.getBoolean('enableSiteSettings');
       },
     },
-
-    /**
-     * The category selected by the user.
-     */
-    categorySelected: {
-      type: String,
-      notify: true,
-    },
   },
 
   ready: function() {
