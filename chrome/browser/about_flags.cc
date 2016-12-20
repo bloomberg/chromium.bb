@@ -52,6 +52,7 @@
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/proximity_auth/switches.h"
+#include "components/security_state/core/security_state.h"
 #include "components/security_state/core/switches.h"
 #include "components/signin/core/common/signin_switches.h"
 #include "components/spellcheck/common/spellcheck_features.h"
@@ -210,11 +211,7 @@ const FeatureEntry::Choice kMarkHttpAsChoices[] = {
      security_state::switches::kMarkHttpAsDangerous},
     {IDS_MARK_HTTP_WITH_PASSWORDS_OR_CC_WITH_CHIP,
      security_state::switches::kMarkHttpAs,
-     security_state::switches::kMarkHttpWithPasswordsOrCcWithChip},
-    {IDS_MARK_HTTP_WITH_PASSWORDS_OR_CC_WITH_CHIP_AND_FORM_WARNING,
-     security_state::switches::kMarkHttpAs,
-     security_state::switches::
-         kMarkHttpWithPasswordsOrCcWithChipAndFormWarning}};
+     security_state::switches::kMarkHttpWithPasswordsOrCcWithChip}};
 
 const FeatureEntry::Choice kDataReductionProxyLoFiChoices[] = {
     { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
@@ -1488,6 +1485,9 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // OS_CHROMEOS
     {"mark-non-secure-as", IDS_MARK_HTTP_AS_NAME, IDS_MARK_HTTP_AS_DESCRIPTION,
      kOsAll, MULTI_VALUE_TYPE(kMarkHttpAsChoices)},
+    {"enable-http-form-warning", IDS_ENABLE_HTTP_FORM_WARNING_NAME,
+     IDS_ENABLE_HTTP_FORM_WARNING_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(security_state::kHttpFormWarningFeature)},
     {"enable-site-per-process", IDS_FLAGS_SITE_PER_PROCESS_NAME,
      IDS_FLAGS_SITE_PER_PROCESS_DESCRIPTION, kOsAll,
      SINGLE_VALUE_TYPE(switches::kSitePerProcess)},
@@ -2132,14 +2132,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-expanded-autofill-credit-card-popup",
      IDS_FLAGS_ENABLE_EXPANDED_AUTOFILL_CREDIT_CARD_POPUP_LAYOUT,
      IDS_FLAGS_ENABLE_EXPANDED_AUTOFILL_CREDIT_CARD_POPUP_LAYOUT_DESCRIPTION,
-     kOsAndroid,
-     FEATURE_WITH_VARIATIONS_VALUE_TYPE(
-         autofill::kAutofillCreditCardPopupLayout,
-         kAutofillCreditCardPopupLayoutFeatureVariations,
-         "AutofillCreditCardPopupLayout")},
-     {"native-android-history-manager", IDS_NATIVE_ANDROID_HISTORY_MANAGER,
-      IDS_NATIVE_ANDROID_HISTORY_MANAGER_DESCRIPTION, kOsAndroid,
-      FEATURE_VALUE_TYPE(chrome::android::kNativeAndroidHistoryManager)},
+     kOsAndroid, FEATURE_WITH_VARIATIONS_VALUE_TYPE(
+                     autofill::kAutofillCreditCardPopupLayout,
+                     kAutofillCreditCardPopupLayoutFeatureVariations,
+                     "AutofillCreditCardPopupLayout")},
+    {"native-android-history-manager", IDS_NATIVE_ANDROID_HISTORY_MANAGER,
+     IDS_NATIVE_ANDROID_HISTORY_MANAGER_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kNativeAndroidHistoryManager)},
 #endif  // OS_ANDROID
     {"enable-faster-location-reload", IDS_FLAGS_FASTER_LOCATION_RELOAD_NAME,
      IDS_FLAGS_FASTER_LOCATION_RELOAD_DESCRIPTION, kOsAll,

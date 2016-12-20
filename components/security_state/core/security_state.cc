@@ -42,9 +42,7 @@ bool GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
   }
 
   if (switch_or_field_trial_group ==
-          switches::kMarkHttpWithPasswordsOrCcWithChip ||
-      switch_or_field_trial_group ==
-          switches::kMarkHttpWithPasswordsOrCcWithChipAndFormWarning) {
+      switches::kMarkHttpWithPasswordsOrCcWithChip) {
     if (displayed_sensitive_input_on_http) {
       *level = security_state::HTTP_SHOW_WARNING;
     } else {
@@ -256,6 +254,9 @@ void SecurityInfoForRequest(
 
 }  // namespace
 
+const base::Feature kHttpFormWarningFeature{"HttpFormWarning",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 SecurityInfo::SecurityInfo()
     : security_level(NONE),
       malicious_content_status(MALICIOUS_CONTENT_STATUS_NONE),
@@ -282,6 +283,10 @@ void GetSecurityInfo(
   SecurityInfoForRequest(*visible_security_state,
                          used_policy_installed_certificate,
                          is_origin_secure_callback, result);
+}
+
+bool IsHttpWarningInFormEnabled() {
+  return base::FeatureList::IsEnabled(kHttpFormWarningFeature);
 }
 
 VisibleSecurityState::VisibleSecurityState()

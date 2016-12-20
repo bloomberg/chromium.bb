@@ -49,7 +49,7 @@
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/prefs/pref_service.h"
 #include "components/rappor/test_rappor_service.h"
-#include "components/security_state/core/switches.h"
+#include "components/security_state/core/security_state.h"
 #include "components/variations/variations_associated_data.h"
 #include "grit/components_strings.h"
 #include "net/url_request/url_request_test_util.h"
@@ -1019,10 +1019,8 @@ class AutofillManagerTest : public testing::Test {
   }
 
   void SetHttpWarningEnabled() {
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        security_state::switches::kMarkHttpAs,
-        security_state::switches::
-            kMarkHttpWithPasswordsOrCcWithChipAndFormWarning);
+    scoped_feature_list_.InitAndEnableFeature(
+        security_state::kHttpFormWarningFeature);
   }
 
  protected:

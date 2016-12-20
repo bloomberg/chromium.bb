@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion_test_helpers.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -18,7 +19,7 @@
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
-#include "components/security_state/core/switches.h"
+#include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -109,6 +110,11 @@ class PasswordAutofillManagerTest : public testing::Test {
   int fill_data_id() { return fill_data_id_; }
   autofill::PasswordFormFillData& fill_data() { return fill_data_; }
 
+  void SetHttpWarningEnabled() {
+    scoped_feature_list_.InitAndEnableFeature(
+        security_state::kHttpFormWarningFeature);
+  }
+
   std::unique_ptr<PasswordAutofillManager> password_autofill_manager_;
 
   base::string16 test_username_;
@@ -117,6 +123,7 @@ class PasswordAutofillManagerTest : public testing::Test {
  private:
   autofill::PasswordFormFillData fill_data_;
   const int fill_data_id_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   // The TestAutofillDriver uses a SequencedWorkerPool which expects the
   // existence of a MessageLoop.
@@ -613,10 +620,7 @@ TEST_F(PasswordAutofillManagerTest, NonSecurePasswordFieldHttpWarningMessage) {
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_,
       autofill::IS_PASSWORD_FIELD, element_bounds);
 
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      security_state::switches::kMarkHttpAs,
-      security_state::switches::
-          kMarkHttpWithPasswordsOrCcWithChipAndFormWarning);
+  SetHttpWarningEnabled();
 
   // Http warning message shows for non-secure context and switch flag on, so
   // there are 3 suggestions (+ 1 separator on desktop) in total, and the
@@ -672,10 +676,7 @@ TEST_F(PasswordAutofillManagerTest, SecurePasswordFieldHttpWarningMessage) {
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_,
       autofill::IS_PASSWORD_FIELD, element_bounds);
 
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      security_state::switches::kMarkHttpAs,
-      security_state::switches::
-          kMarkHttpWithPasswordsOrCcWithChipAndFormWarning);
+  SetHttpWarningEnabled();
 
   // Http warning message won't show for secure context, even with switch flag
   // on.

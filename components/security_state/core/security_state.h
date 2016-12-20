@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/sct_status_flags.h"
@@ -23,6 +24,10 @@
 // helper method, which receives platform-specific inputs from its callers in
 // the form of a VisibleSecurityState struct.
 namespace security_state {
+
+// A feature for showing a warning in autofill dropdowns for password
+// and credit cards fields when the top-level page is not HTTPS.
+extern const base::Feature kHttpFormWarningFeature;
 
 // Describes the overall security state of the page.
 //
@@ -215,6 +220,11 @@ void GetSecurityInfo(
     bool used_policy_installed_certificate,
     IsOriginSecureCallback is_origin_secure_callback,
     SecurityInfo* result);
+
+// Returns true if an experimental form warning UI about HTTP passwords
+// and credit cards is enabled. This warning UI can be enabled with the
+// |kHttpFormWarningFeature| feature.
+bool IsHttpWarningInFormEnabled();
 
 }  // namespace security_state
 

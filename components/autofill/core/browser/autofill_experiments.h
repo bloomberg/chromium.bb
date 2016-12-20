@@ -67,10 +67,6 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
                                const syncer::SyncService* sync_service,
                                const std::string& user_email);
 
-// Returns true if the http warning switch is on, which will display a warning
-// in the autofill dropdown when credit card fields are on an HTTP page.
-bool IsCreditCardAutofillHttpWarningEnabled();
-
 // Returns whether the new Autofill credit card popup layout experiment is
 // enabled.
 bool IsAutofillCreditCardPopupLayoutExperimentEnabled();

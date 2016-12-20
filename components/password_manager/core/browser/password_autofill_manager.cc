@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -26,7 +27,7 @@
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
-#include "components/security_state/core/switches.h"
+#include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -212,12 +213,7 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
 
     bool is_context_secure = autofill_client_->IsContextSecure(origin) &&
                              (!origin.is_valid() || !origin.SchemeIs("http"));
-    std::string choice =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            security_state::switches::kMarkHttpAs);
-    if (!is_context_secure &&
-        choice == security_state::switches::
-                      kMarkHttpWithPasswordsOrCcWithChipAndFormWarning) {
+    if (!is_context_secure && security_state::IsHttpWarningInFormEnabled()) {
       std::string icon_str;
 
       // Show http info icon for http sites.

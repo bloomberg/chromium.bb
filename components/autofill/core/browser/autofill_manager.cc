@@ -62,6 +62,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
+#include "components/security_state/core/security_state.h"
 #include "google_apis/gaia/identity_provider.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -589,7 +590,8 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
       // provide them for secure pages with passive mixed content (see impl. of
       // IsContextSecure).
       if (is_filling_credit_card && !is_context_secure) {
-        bool is_http_warning_enabled = IsCreditCardAutofillHttpWarningEnabled();
+        bool is_http_warning_enabled =
+            security_state::IsHttpWarningInFormEnabled();
         // Replace the suggestion content with a warning message explaining why
         // Autofill is disabled for a website. The string is different if the
         // credit card autofill HTTP warning experiment is enabled.

@@ -5358,6 +5358,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_NACL_DEBUG_MASK_CHOICE_INCLUDE_DEBUG">
         Debug only if manifest URL ends with debug.nmf.
       </message>
+      <message name="IDS_ENABLE_HTTP_FORM_WARNING_NAME" desc="Name of the 'HTTP form warning' feature.">
+        Show in-form warnings for sensitive fields when the top-level page is not HTTPS
+      </message>
+      <message name="IDS_ENABLE_HTTP_FORM_WARNING_DESCRIPTION" desc="Description of the 'HTTP form warning' feature.">
+        Attaches a warning UI to any password or credit card fields detected when the top-level page is not HTTPS
+      </message>
       <message name="IDS_MARK_HTTP_AS_NAME" desc="Name of the 'Mark Non-Secure Origins As' lab.">
         Mark non-secure origins as non-secure
       </message>
@@ -5372,9 +5378,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_MARK_HTTP_WITH_PASSWORDS_OR_CC_WITH_CHIP">
         Display a verbose state when password or credit card fields are detected on an HTTP page
-      </message>
-      <message name="IDS_MARK_HTTP_WITH_PASSWORDS_OR_CC_WITH_CHIP_AND_FORM_WARNING">
-        Display a verbose state and form warning when password or credit card fields are detected on an HTTP page
       </message>
       <message name="IDS_FLAGS_SAVE_PAGE_AS_MHTML_NAME" desc="Name of the 'Save Page as MHTML' lab.">
         Save Page as MHTML

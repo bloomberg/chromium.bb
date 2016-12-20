@@ -13,8 +13,6 @@ const char kMarkHttpAsNeutral[] = "neutral";
 const char kMarkHttpAsDangerous[] = "non-secure";
 const char kMarkHttpWithPasswordsOrCcWithChip[] =
     "show-non-secure-passwords-cc-ui";
-const char kMarkHttpWithPasswordsOrCcWithChipAndFormWarning[] =
-    "show-non-secure-passwords-cc-chip-and-form-warning";
 
 }  // namespace switches
 }  // namespace security_state
