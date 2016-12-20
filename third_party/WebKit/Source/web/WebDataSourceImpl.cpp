@@ -52,7 +52,7 @@ const WebURLRequest& WebDataSourceImpl::originalRequest() const {
   return m_originalRequestWrapper;
 }
 
-const WebURLRequest& WebDataSourceImpl::request() const {
+const WebURLRequest& WebDataSourceImpl::getRequest() const {
   return m_requestWrapper;
 }
 
@@ -142,7 +142,7 @@ WebDataSourceImpl::WebDataSourceImpl(LocalFrame* frame,
                                      ClientRedirectPolicy clientRedirectPolicy)
     : DocumentLoader(frame, request, data, clientRedirectPolicy),
       m_originalRequestWrapper(DocumentLoader::originalRequest()),
-      m_requestWrapper(DocumentLoader::request()),
+      m_requestWrapper(DocumentLoader::getRequest()),
       m_responseWrapper(DocumentLoader::response()) {}
 
 WebDataSourceImpl::~WebDataSourceImpl() {

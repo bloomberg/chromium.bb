@@ -58,7 +58,7 @@ class WebDataSource {
   // include additional request headers added by WebKit that were not
   // present in the original request.  This request may also correspond
   // to a location specified by a redirect that was followed.
-  virtual const WebURLRequest& request() const = 0;
+  virtual const WebURLRequest& getRequest() const = 0;
 
   // Returns the response associated with this datasource.
   virtual const WebURLResponse& response() const = 0;

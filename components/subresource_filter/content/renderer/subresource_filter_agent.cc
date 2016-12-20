@@ -131,7 +131,8 @@ void SubresourceFilterAgent::DidStartProvisionalLoad() {
                      : nullptr;
   if (!content::IsBrowserSideNavigationEnabled() ||
       (!ds ||
-       static_cast<GURL>(ds->request().url()) != url_for_provisional_load_)) {
+       static_cast<GURL>(ds->getRequest().url()) !=
+           url_for_provisional_load_)) {
     activation_state_for_provisional_load_ = ActivationState::DISABLED;
     measure_performance_ = false;
   } else {

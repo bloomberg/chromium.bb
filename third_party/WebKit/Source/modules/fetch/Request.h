@@ -86,7 +86,7 @@ class MODULES_EXPORT Request final : public Body {
   Request(ScriptState*, FetchRequestData*, Headers*);
   Request(ScriptState*, FetchRequestData*);
 
-  const FetchRequestData* request() const { return m_request; }
+  const FetchRequestData* getRequest() const { return m_request; }
   static Request* createRequestWithRequestOrString(ScriptState*,
                                                    Request*,
                                                    const String&,

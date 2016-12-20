@@ -424,7 +424,7 @@ void XSSAuditor::init(Document* document, XSSAuditorDelegate* auditorDelegate) {
     if (auditorDelegate)
       auditorDelegate->setReportURL(xssProtectionReportURL.copy());
 
-    EncodedFormData* httpBody = documentLoader->request().httpBody();
+    EncodedFormData* httpBody = documentLoader->getRequest().httpBody();
     if (httpBody && !httpBody->isEmpty())
       m_httpBodyAsString = httpBody->flattenToString();
   }

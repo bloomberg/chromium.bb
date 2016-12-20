@@ -93,7 +93,7 @@ class CORE_EXPORT DocumentLoader
 
   const ResourceRequest& originalRequest() const;
 
-  const ResourceRequest& request() const;
+  const ResourceRequest& getRequest() const;
 
   ResourceFetcher* fetcher() const { return m_fetcher.get(); }
 

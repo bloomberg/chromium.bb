@@ -4563,7 +4563,7 @@ void Document::setCookie(const String& value, ExceptionState& exceptionState) {
 
 const AtomicString& Document::referrer() const {
   if (loader())
-    return loader()->request().httpReferrer();
+    return loader()->getRequest().httpReferrer();
   return nullAtom;
 }
 

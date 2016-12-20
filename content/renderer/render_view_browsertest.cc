@@ -1935,7 +1935,7 @@ TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
       DocumentState::FromDataSource(GetMainFrame()->dataSource()));
   ASSERT_TRUE(provider);
   extra_data = static_cast<RequestExtraData*>(
-      GetMainFrame()->dataSource()->request().getExtraData());
+      GetMainFrame()->dataSource()->getRequest().getExtraData());
   ASSERT_TRUE(extra_data);
   EXPECT_EQ(extra_data->service_worker_provider_id(),
             provider->provider_id());
@@ -1948,7 +1948,7 @@ TEST_F(RenderViewImplTest, ServiceWorkerNetworkProviderSetup) {
   ASSERT_TRUE(provider);
   EXPECT_NE(provider1_id, provider->provider_id());
   extra_data = static_cast<RequestExtraData*>(
-      GetMainFrame()->dataSource()->request().getExtraData());
+      GetMainFrame()->dataSource()->getRequest().getExtraData());
   ASSERT_TRUE(extra_data);
   EXPECT_EQ(extra_data->service_worker_provider_id(),
             provider->provider_id());

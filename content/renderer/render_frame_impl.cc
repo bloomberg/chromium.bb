@@ -392,7 +392,7 @@ bool MaybeGetOverriddenURL(WebDataSource* ds, GURL* output) {
 }
 
 // Returns the original request url. If there is no redirect, the original
-// url is the same as ds->request()->url(). If the WebDataSource belongs to a
+// url is the same as ds->getRequest()->url(). If the WebDataSource belongs to a
 // frame was loaded by loadData, the original url will be ds->unreachableURL()
 GURL GetOriginalRequestURL(WebDataSource* ds) {
   GURL overriden_url;
@@ -2492,7 +2492,7 @@ void RenderFrameImpl::loadErrorPage(int reason) {
 
   std::string error_html;
   GetContentClient()->renderer()->GetNavigationErrorStrings(
-      this, frame_->dataSource()->request(), error, &error_html, nullptr);
+      this, frame_->dataSource()->getRequest(), error, &error_html, nullptr);
 
   frame_->loadData(error_html, WebString::fromUTF8("text/html"),
                    WebString::fromUTF8("UTF-8"), GURL(kUnreachableWebDataURL),
@@ -3399,7 +3399,7 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame) {
 
   TRACE_EVENT2("navigation,benchmark,rail",
                "RenderFrameImpl::didStartProvisionalLoad", "id", routing_id_,
-               "url", ds->request().url().string().utf8());
+               "url", ds->getRequest().url().string().utf8());
   DocumentState* document_state = DocumentState::FromDataSource(ds);
   NavigationStateImpl* navigation_state = static_cast<NavigationStateImpl*>(
       document_state->navigation_state());
@@ -3425,7 +3425,7 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame) {
     observer.DidStartProvisionalLoad();
 
   Send(new FrameHostMsg_DidStartProvisionalLoad(
-      routing_id_, ds->request().url(), navigation_start));
+      routing_id_, ds->getRequest().url(), navigation_start));
 }
 
 void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
@@ -3449,7 +3449,7 @@ void RenderFrameImpl::didFailProvisionalLoad(
   WebDataSource* ds = frame->provisionalDataSource();
   DCHECK(ds);
 
-  const WebURLRequest& failed_request = ds->request();
+  const WebURLRequest& failed_request = ds->getRequest();
 
   // Notify the browser that we failed a provisional load with an error.
   //
@@ -3853,7 +3853,7 @@ void RenderFrameImpl::runScriptsAtDocumentReady(blink::WebLocalFrame* frame,
     error.domain = WebString::fromUTF8(error_domain);
     error.reason = http_status_code;
     // This call may run scripts, e.g. via the beforeunload event.
-    LoadNavigationErrorPage(frame->dataSource()->request(), error, true,
+    LoadNavigationErrorPage(frame->dataSource()->getRequest(), error, true,
                             nullptr);
   }
   // Do not use |this| or |frame| here without checking |weak_self|.
@@ -3864,10 +3864,11 @@ void RenderFrameImpl::didHandleOnloadEvents(blink::WebLocalFrame* frame) {
   if (!frame->parent()) {
     FrameMsg_UILoadMetricsReportType::Value report_type =
         static_cast<FrameMsg_UILoadMetricsReportType::Value>(
-            frame->dataSource()->request().inputPerfMetricReportPolicy());
-    base::TimeTicks ui_timestamp = base::TimeTicks() +
+            frame->dataSource()->getRequest().inputPerfMetricReportPolicy());
+    base::TimeTicks ui_timestamp =
+        base::TimeTicks() +
         base::TimeDelta::FromSecondsD(
-            frame->dataSource()->request().uiStartTime());
+            frame->dataSource()->getRequest().uiStartTime());
 
     Send(new FrameHostMsg_DocumentOnLoadCompleted(
         routing_id_, report_type, ui_timestamp));
@@ -3887,7 +3888,7 @@ void RenderFrameImpl::didFailLoad(blink::WebLocalFrame* frame,
   for (auto& observer : render_view_->observers())
     observer.DidFailLoad(frame, error);
 
-  const WebURLRequest& failed_request = ds->request();
+  const WebURLRequest& failed_request = ds->getRequest();
   base::string16 error_description;
   GetContentClient()->renderer()->GetNavigationErrorStrings(
       this,
@@ -3917,8 +3918,7 @@ void RenderFrameImpl::didFinishLoad(blink::WebLocalFrame* frame) {
     observer.DidFinishLoad();
 
   WebDataSource* ds = frame->dataSource();
-  Send(new FrameHostMsg_DidFinishLoad(routing_id_,
-                                      ds->request().url()));
+  Send(new FrameHostMsg_DidFinishLoad(routing_id_, ds->getRequest().url()));
 }
 
 void RenderFrameImpl::didNavigateWithinPage(
@@ -4749,7 +4749,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   WebDataSource* ds = frame->dataSource();
   DCHECK(ds);
 
-  const WebURLRequest& request = ds->request();
+  const WebURLRequest& request = ds->getRequest();
   const WebURLResponse& response = ds->response();
 
   DocumentState* document_state = DocumentState::FromDataSource(ds);
@@ -4840,10 +4840,10 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   // set the referrer appropriately.
   if (ds->isClientRedirect()) {
     params.referrer =
-        Referrer(params.redirects[0], ds->request().getReferrerPolicy());
+        Referrer(params.redirects[0], ds->getRequest().getReferrerPolicy());
   } else {
     params.referrer =
-        RenderViewImpl::GetReferrerFromRequest(frame, ds->request());
+        RenderViewImpl::GetReferrerFromRequest(frame, ds->getRequest());
   }
 
   if (!frame->parent()) {
@@ -4924,9 +4924,10 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
         navigation_state->request_params().should_clear_history_list;
 
     params.report_type = static_cast<FrameMsg_UILoadMetricsReportType::Value>(
-        frame->dataSource()->request().inputPerfMetricReportPolicy());
-    params.ui_timestamp = base::TimeTicks() + base::TimeDelta::FromSecondsD(
-        frame->dataSource()->request().uiStartTime());
+        frame->dataSource()->getRequest().inputPerfMetricReportPolicy());
+    params.ui_timestamp = base::TimeTicks() +
+                          base::TimeDelta::FromSecondsD(
+                              frame->dataSource()->getRequest().uiStartTime());
   } else {
     // Subframe navigation: the type depends on whether this navigation
     // generated a new session history entry. When they do generate a session
@@ -5213,7 +5214,7 @@ WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(
   // subsequent checks.  For a popup, the document's URL may become the opener
   // window's URL if the opener has called document.write().
   // See http://crbug.com/93517.
-  GURL old_url(frame_->dataSource()->request().url());
+  GURL old_url(frame_->dataSource()->getRequest().url());
 
   // Detect when we're crossing a permission-based boundary (e.g. into or out of
   // an extension or app origin, leaving a WebUI page, etc). We only care about
@@ -6290,7 +6291,7 @@ GURL RenderFrameImpl::GetLoadingUrl() const {
   if (MaybeGetOverriddenURL(ds, &overriden_url))
     return overriden_url;
 
-  const WebURLRequest& request = ds->request();
+  const WebURLRequest& request = ds->getRequest();
   return request.url();
 }
 

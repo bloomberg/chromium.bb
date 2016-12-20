@@ -282,7 +282,7 @@ CachePolicy FrameFetchContext::getCachePolicy() const {
     return CachePolicyRevalidate;
 
   if (m_documentLoader &&
-      m_documentLoader->request().getCachePolicy() ==
+      m_documentLoader->getRequest().getCachePolicy() ==
           WebCachePolicy::ReturnCacheDataElseLoad)
     return CachePolicyHistoryBuffer;
 
@@ -351,8 +351,8 @@ WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(
     // For POST requests, we mutate the main resource's cache policy to avoid
     // form resubmission. This policy should not be inherited by subresources.
     WebCachePolicy mainResourceCachePolicy =
-        m_documentLoader->request().getCachePolicy();
-    if (m_documentLoader->request().httpMethod() == "POST") {
+        m_documentLoader->getRequest().getCachePolicy();
+    if (m_documentLoader->getRequest().httpMethod() == "POST") {
       if (mainResourceCachePolicy == WebCachePolicy::ReturnCacheDataDontLoad)
         return WebCachePolicy::ReturnCacheDataElseLoad;
       return WebCachePolicy::UseProtocolCachePolicy;

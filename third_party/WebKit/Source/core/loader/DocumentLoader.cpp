@@ -157,7 +157,7 @@ const ResourceRequest& DocumentLoader::originalRequest() const {
   return m_originalRequest;
 }
 
-const ResourceRequest& DocumentLoader::request() const {
+const ResourceRequest& DocumentLoader::getRequest() const {
   return m_request;
 }
 

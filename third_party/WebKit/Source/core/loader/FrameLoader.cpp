@@ -399,9 +399,9 @@ void FrameLoader::setHistoryItemStateForCommit(
   m_currentItem->setDocumentState(m_frame->document()->formElementsState());
   m_currentItem->setTarget(m_frame->tree().uniqueName());
   m_currentItem->setReferrer(SecurityPolicy::generateReferrer(
-      m_documentLoader->request().getReferrerPolicy(), m_currentItem->url(),
-      m_documentLoader->request().httpReferrer()));
-  m_currentItem->setFormInfoFromRequest(m_documentLoader->request());
+      m_documentLoader->getRequest().getReferrerPolicy(), m_currentItem->url(),
+      m_documentLoader->getRequest().httpReferrer()));
+  m_currentItem->setFormInfoFromRequest(m_documentLoader->getRequest());
 
   // Don't propagate state from the old item to the new item if there isn't an
   // old item (obviously), or if this is a back/forward navigation, since we
@@ -1325,7 +1325,7 @@ void FrameLoader::commitProvisionalLoad() {
   // timing information.
   if (m_frame->document()) {
     RefPtr<SecurityOrigin> securityOrigin =
-        SecurityOrigin::create(m_provisionalDocumentLoader->request().url());
+        SecurityOrigin::create(m_provisionalDocumentLoader->getRequest().url());
     m_provisionalDocumentLoader->timing().setHasSameOriginAsPreviousDocument(
         securityOrigin->canRequest(m_frame->document()->url()));
   }
@@ -1710,7 +1710,7 @@ void FrameLoader::startLoad(FrameLoadRequest& frameLoadRequest,
 
   m_progressTracker->progressStarted();
   m_provisionalDocumentLoader->appendRedirect(
-      m_provisionalDocumentLoader->request().url());
+      m_provisionalDocumentLoader->getRequest().url());
   client()->dispatchDidStartProvisionalLoad();
   DCHECK(m_provisionalDocumentLoader);
   m_provisionalDocumentLoader->startLoadingMainResource();

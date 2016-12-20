@@ -314,7 +314,7 @@ GURL ScriptContext::GetDataSourceURLForFrame(const blink::WebFrame* frame) {
   blink::WebDataSource* data_source = frame->provisionalDataSource()
                                           ? frame->provisionalDataSource()
                                           : frame->dataSource();
-  return data_source ? GURL(data_source->request().url()) : GURL();
+  return data_source ? GURL(data_source->getRequest().url()) : GURL();
 }
 
 // static
@@ -325,9 +325,9 @@ GURL ScriptContext::GetAccessCheckedFrameURL(const blink::WebFrame* frame) {
                                             ? frame->provisionalDataSource()
                                             : frame->dataSource();
     if (data_source &&
-        frame->getSecurityOrigin().canAccess(
-            blink::WebSecurityOrigin::create(data_source->request().url()))) {
-      return GURL(data_source->request().url());
+        frame->getSecurityOrigin().canAccess(blink::WebSecurityOrigin::create(
+            data_source->getRequest().url()))) {
+      return GURL(data_source->getRequest().url());
     }
   }
   return GURL(weburl);

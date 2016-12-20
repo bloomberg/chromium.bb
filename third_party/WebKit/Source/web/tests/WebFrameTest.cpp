@@ -4177,7 +4177,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadWhileProvisional) {
       webViewHelper.webView()->mainFrame()->dataSource();
   ASSERT_TRUE(dataSource);
   EXPECT_EQ(toKURL(m_baseURL + "fixed_layout.html"),
-            KURL(dataSource->request().url()));
+            KURL(dataSource->getRequest().url()));
 }
 
 TEST_P(ParameterizedWebFrameTest, AppendRedirects) {
@@ -7001,7 +7001,7 @@ TEST_P(ParameterizedWebFrameTest, BackToReload) {
 
   FrameTestHelpers::reloadFrame(frame);
   EXPECT_EQ(WebCachePolicy::ValidatingCacheData,
-            frame->dataSource()->request().getCachePolicy());
+            frame->dataSource()->getRequest().getCachePolicy());
 }
 
 TEST_P(ParameterizedWebFrameTest, BackDuringChildFrameReload) {
@@ -7048,11 +7048,11 @@ TEST_P(ParameterizedWebFrameTest, ReloadPost) {
   FrameTestHelpers::pumpPendingRequestsForFrameToLoad(
       webViewHelper.webView()->mainFrame());
   EXPECT_EQ(WebString::fromUTF8("POST"),
-            frame->dataSource()->request().httpMethod());
+            frame->dataSource()->getRequest().httpMethod());
 
   FrameTestHelpers::reloadFrame(frame);
   EXPECT_EQ(WebCachePolicy::ValidatingCacheData,
-            frame->dataSource()->request().getCachePolicy());
+            frame->dataSource()->getRequest().getCachePolicy());
   EXPECT_EQ(WebNavigationTypeFormResubmitted,
             frame->dataSource()->navigationType());
 }
@@ -7078,7 +7078,7 @@ TEST_P(ParameterizedWebFrameTest, LoadHistoryItemReload) {
                                     WebCachePolicy::ValidatingCacheData);
   EXPECT_EQ(firstItem.get(), mainFrameLoader.currentItem());
   EXPECT_EQ(WebCachePolicy::ValidatingCacheData,
-            frame->dataSource()->request().getCachePolicy());
+            frame->dataSource()->getRequest().getCachePolicy());
 }
 
 class TestCachePolicyWebFrameClient
@@ -8343,7 +8343,7 @@ TEST_P(ParameterizedWebFrameTest, ReloadBypassingCache) {
   WebFrame* frame = webViewHelper.webView()->mainFrame();
   FrameTestHelpers::reloadFrameBypassingCache(frame);
   EXPECT_EQ(WebCachePolicy::BypassingCache,
-            frame->dataSource()->request().getCachePolicy());
+            frame->dataSource()->getRequest().getCachePolicy());
 }
 
 static void nodeImageTestValidation(const IntSize& referenceBitmapSize,

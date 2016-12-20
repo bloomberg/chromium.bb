@@ -194,7 +194,7 @@ bool cacheControlNoStoreHeaderPresent(
     return true;
 
   const ResourceRequest& request =
-      webLocalFrameImpl.dataSource()->request().toResourceRequest();
+      webLocalFrameImpl.dataSource()->getRequest().toResourceRequest();
   return request.cacheControlContainsNoStore();
 }
 

@@ -97,7 +97,7 @@ Request* Request::createRequestWithRequestOrString(
   // integrity metadata is |request|'s integrity metadata."
   FetchRequestData* request = createCopyOfFetchRequestDataForFetch(
       scriptState,
-      inputRequest ? inputRequest->request() : FetchRequestData::create());
+      inputRequest ? inputRequest->getRequest() : FetchRequestData::create());
 
   // We don't use fallback values. We set these flags directly in below.
   // - "Let |fallbackMode| be null."
@@ -311,11 +311,11 @@ Request* Request::createRequestWithRequestOrString(
   // "Empty |r|'s request's header list."
   r->m_request->headerList()->clearList();
   // "If |r|'s request's mode is "no-cors", run these substeps:
-  if (r->request()->mode() == WebURLRequest::FetchRequestModeNoCORS) {
+  if (r->getRequest()->mode() == WebURLRequest::FetchRequestModeNoCORS) {
     // "If |r|'s request's method is not a simple method, throw a
     // TypeError."
-    if (!FetchUtils::isSimpleMethod(r->request()->method())) {
-      exceptionState.throwTypeError("'" + r->request()->method() +
+    if (!FetchUtils::isSimpleMethod(r->getRequest()->method())) {
+      exceptionState.throwTypeError("'" + r->getRequest()->method() +
                                     "' is unsupported in no-cors mode.");
       return nullptr;
     }
