@@ -2461,7 +2461,8 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
         // (see http://crbug.com/340987).
         newContentViewCore.onSizeChanged(originalWidth, originalHeight, 0, 0);
         if (!bounds.isEmpty()) {
-            newContentViewCore.onPhysicalBackingSizeChanged(bounds.right, bounds.bottom);
+            newContentViewCore.getWindowAndroid().getViewRoot().onPhysicalBackingSizeChanged(
+                    bounds.right, bounds.bottom);
         }
         newContentViewCore.onShow();
         setContentViewCore(newContentViewCore);

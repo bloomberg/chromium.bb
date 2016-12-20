@@ -9,12 +9,15 @@
 #include "base/android/jni_android.h"
 #include "cc/layers/layer.h"
 #include "jni/ViewAndroidDelegate_jni.h"
+#include "jni/ViewRoot_jni.h"
+#include "ui/android/view_client.h"
 #include "ui/android/window_android.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 
 namespace ui {
 
+using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 
@@ -68,24 +71,29 @@ ViewAndroid::ScopedAnchorView::view() const {
   return view_.get(env);
 }
 
-ViewAndroid::ViewAndroid(const JavaRef<jobject>& delegate)
-    : parent_(nullptr)
-    , delegate_(base::android::AttachCurrentThread(),
-                delegate.obj()) {}
-
-ViewAndroid::ViewAndroid() : parent_(nullptr) {}
+ViewAndroid::ViewAndroid(ViewClient* client) : parent_(nullptr),
+                                               client_(client),
+                                               physical_width_pix_(0),
+                                               physical_height_pix_(0) {}
+ViewAndroid::ViewAndroid() : ViewAndroid(nullptr) {}
 
 ViewAndroid::~ViewAndroid() {
   RemoveFromParent();
 
-  for (std::list<ViewAndroid*>::iterator it = children_.begin();
-       it != children_.end(); it++) {
-    DCHECK_EQ((*it)->parent_, this);
-    (*it)->parent_ = nullptr;
+  for (auto& child : children_) {
+    DCHECK_EQ(child->parent_, this);
+    child->parent_ = nullptr;
   }
+
+  JNIEnv* env = base::android::AttachCurrentThread();
+  const ScopedJavaLocalRef<jobject> view_root = view_root_.get(env);
+  if (!view_root.is_null())
+    Java_ViewRoot_onDestroyNativeView(env, view_root);
 }
 
 void ViewAndroid::SetDelegate(const JavaRef<jobject>& delegate) {
+  // A ViewAndroid may have its own delegate or otherwise will
+  // use the next available parent's delegate.
   JNIEnv* env = base::android::AttachCurrentThread();
   delegate_ = JavaObjectWeakGlobalRef(env, delegate);
 }
@@ -94,11 +102,17 @@ void ViewAndroid::AddChild(ViewAndroid* child) {
   DCHECK(child);
   DCHECK(std::find(children_.begin(), children_.end(), child) ==
          children_.end());
+  DCHECK(!HasViewRootInTreeHierarchy() ||
+         !child->HasViewRootInSubtree());
 
   children_.push_back(child);
   if (child->parent_)
     child->RemoveFromParent();
   child->parent_ = this;
+  if (physical_width_pix_ || physical_height_pix_) {
+    child->OnPhysicalBackingSizeChanged(physical_width_pix_,
+                                        physical_height_pix_);
+  }
 }
 
 void ViewAndroid::RemoveFromParent() {
@@ -151,6 +165,15 @@ WindowAndroid* ViewAndroid::GetWindowAndroid() const {
   return parent_ ? parent_->GetWindowAndroid() : nullptr;
 }
 
+ScopedJavaLocalRef<jobject> ViewAndroid::CreateViewRoot() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_ViewRoot_create(env, reinterpret_cast<intptr_t>(this));
+}
+
+bool ViewAndroid::HasViewRoot() {
+  return !view_root_.is_uninitialized();
+}
+
 const ScopedJavaLocalRef<jobject> ViewAndroid::GetViewAndroidDelegate()
     const {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -167,6 +190,38 @@ cc::Layer* ViewAndroid::GetLayer() const {
 
 void ViewAndroid::SetLayer(scoped_refptr<cc::Layer> layer) {
   layer_ = layer;
+  UpdateLayerBounds();
+}
+
+ScopedJavaLocalRef<jobject> ViewAndroid::GetViewRoot() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  const ScopedJavaLocalRef<jobject> view_root = view_root_.get(env);
+  if (!view_root.is_null())
+     return view_root;
+
+  DCHECK(!HasViewRootInTreeHierarchy());
+  view_root_ = JavaObjectWeakGlobalRef(env, CreateViewRoot());
+  return view_root_.get(env);
+}
+
+bool ViewAndroid::HasViewRootInTreeHierarchy() {
+  ViewAndroid* view = parent_;
+  while (view) {
+    if (view->HasViewRoot())
+      return true;
+    view = view->parent_;
+  }
+  return HasViewRootInSubtree();
+}
+
+bool ViewAndroid::HasViewRootInSubtree() {
+  if (HasViewRoot())
+    return true;
+  for (auto& child : children_) {
+    if (child->HasViewRootInSubtree())
+      return true;
+  }
+  return false;
 }
 
 bool ViewAndroid::StartDragAndDrop(const JavaRef<jstring>& jtext,
@@ -177,6 +232,44 @@ bool ViewAndroid::StartDragAndDrop(const JavaRef<jstring>& jtext,
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_ViewAndroidDelegate_startDragAndDrop(env, delegate, jtext,
                                                    jimage);
+}
+
+gfx::Size ViewAndroid::GetPhysicalBackingSize() {
+  return gfx::Size(physical_width_pix_, physical_height_pix_);
+}
+
+void ViewAndroid::UpdateLayerBounds() {
+  if (layer_)
+    layer_->SetBounds(GetPhysicalBackingSize());
+}
+
+void ViewAndroid::OnPhysicalBackingSizeChanged(int width, int height) {
+  if (width == physical_width_pix_ && height == physical_height_pix_)
+    return;
+
+  physical_width_pix_ = width;
+  physical_height_pix_ = height;
+  UpdateLayerBounds();
+
+  if (client_)
+    client_->OnPhysicalBackingSizeChanged(width, height);
+
+  for (auto& child : children_)
+    child->OnPhysicalBackingSizeChanged(width, height);
+}
+
+// static
+void OnPhysicalBackingSizeChanged(JNIEnv* env,
+                                  const JavaParamRef<jclass>& jcaller,
+                                  jlong native_view,
+                                  int width,
+                                  int height) {
+  ViewAndroid* view_android = reinterpret_cast<ViewAndroid*>(native_view);
+  view_android->OnPhysicalBackingSizeChanged(width, height);
+}
+
+bool RegisterViewRoot(JNIEnv* env) {
+  return RegisterNativesImpl(env);
 }
 
 }  // namespace ui

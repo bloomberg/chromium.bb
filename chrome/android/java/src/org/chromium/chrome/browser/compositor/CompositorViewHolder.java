@@ -58,6 +58,7 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.SPenSupport;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.base.ViewRoot;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.ResourceManager;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
@@ -122,6 +123,8 @@ public class CompositorViewHolder extends CoordinatorLayout
 
     // If we've drawn at least one frame.
     private boolean mHasDrawnOnce;
+
+    private ViewRoot mViewRoot;
 
     /**
      * The information about {@link ContentView} for overlay panel. Used to adjust the backing
@@ -315,6 +318,8 @@ public class CompositorViewHolder extends CoordinatorLayout
             mCompositorView.getResourceManager().getDynamicResourceLoader().registerResource(
                     R.id.control_container, mControlContainer.getToolbarResourceAdapter());
         }
+
+        mViewRoot = windowAndroid.getViewRoot();
     }
 
     /**
@@ -951,7 +956,8 @@ public class CompositorViewHolder extends CoordinatorLayout
             width = MeasureSpec.getSize(mOverlayContentWidthMeasureSpec);
             height = MeasureSpec.getSize(mOverlayContentHeightMeasureSpec);
         }
-        contentViewCore.onPhysicalBackingSizeChanged(width, height);
+
+        mViewRoot.onPhysicalBackingSizeChanged(width, height);
     }
 
     /**

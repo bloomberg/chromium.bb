@@ -15,6 +15,7 @@ import android.widget.FrameLayout;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.ViewRoot;
 import org.chromium.ui.base.WindowAndroid;
 
 /***
@@ -71,8 +72,7 @@ public class ContentViewRenderView extends FrameLayout {
                 nativeSurfaceChanged(mNativeContentViewRenderView,
                         format, width, height, holder.getSurface());
                 if (mContentViewCore != null) {
-                    mContentViewCore.onPhysicalBackingSizeChanged(
-                            width, height);
+                    getViewRoot().onPhysicalBackingSizeChanged(width, height);
                 }
             }
 
@@ -92,6 +92,10 @@ public class ContentViewRenderView extends FrameLayout {
         };
         mSurfaceView.getHolder().addCallback(mSurfaceCallback);
         mSurfaceView.setVisibility(VISIBLE);
+    }
+
+    private ViewRoot getViewRoot() {
+        return mContentViewCore.getWindowAndroid().getViewRoot();
     }
 
     /**
@@ -128,7 +132,7 @@ public class ContentViewRenderView extends FrameLayout {
         mContentViewCore = contentViewCore;
 
         if (mContentViewCore != null) {
-            mContentViewCore.onPhysicalBackingSizeChanged(getWidth(), getHeight());
+            getViewRoot().onPhysicalBackingSizeChanged(getWidth(), getHeight());
             nativeSetCurrentWebContents(
                     mNativeContentViewRenderView, mContentViewCore.getWebContents());
         } else {

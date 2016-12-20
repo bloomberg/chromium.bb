@@ -132,6 +132,12 @@ void WindowAndroid::OnActivityStarted(JNIEnv* env,
     observer.OnActivityStarted();
 }
 
+ScopedJavaLocalRef<jobject> WindowAndroid::GetViewRootForJava(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  return GetViewRoot();
+}
+
 bool WindowAndroid::HasPermission(const std::string& permission) {
   JNIEnv* env = AttachCurrentThread();
   return Java_WindowAndroid_hasPermission(

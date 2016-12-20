@@ -28,6 +28,7 @@ import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewAndroidDelegate;
+import org.chromium.ui.base.ViewRoot;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.VirtualDisplayAndroid;
@@ -170,7 +171,7 @@ public class VrShellImpl extends GvrLayout implements VrShell {
         Point size = new Point(surfaceWidth, surfaceHeight);
         mUiVirtualDisplay.update(size, size, dpr, null, null, null);
         mUiCVC.onSizeChanged(surfaceWidth, surfaceHeight, 0, 0);
-        mUiCVC.onPhysicalBackingSizeChanged(surfaceWidth, surfaceHeight);
+        getViewRoot(mUiCVC).onPhysicalBackingSizeChanged(surfaceWidth, surfaceHeight);
         nativeUIBoundsChanged(mNativeVrShell, surfaceWidth, surfaceHeight, dpr);
     }
 
@@ -183,8 +184,12 @@ public class VrShellImpl extends GvrLayout implements VrShell {
         Point size = new Point(surfaceWidth, surfaceHeight);
         mContentVirtualDisplay.update(size, size, dpr, null, null, null);
         mContentCVC.onSizeChanged(surfaceWidth, surfaceHeight, 0, 0);
-        mContentCVC.onPhysicalBackingSizeChanged(surfaceWidth, surfaceHeight);
+        getViewRoot(mContentCVC).onPhysicalBackingSizeChanged(surfaceWidth, surfaceHeight);
         nativeContentBoundsChanged(mNativeVrShell, surfaceWidth, surfaceHeight, dpr);
+    }
+
+    private ViewRoot getViewRoot(ContentViewCore cvc) {
+        return cvc.getWindowAndroid().getViewRoot();
     }
 
     @Override

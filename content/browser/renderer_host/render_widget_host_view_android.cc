@@ -440,6 +440,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       content_view_core_(nullptr),
       ime_adapter_android_(this),
       cached_background_color_(SK_ColorWHITE),
+      view_(this),
       last_compositor_frame_sink_id_(kUndefinedCompositorFrameSinkId),
       gesture_provider_(ui::GetGestureProviderConfig(
                             ui::GestureProviderConfigType::CURRENT_PLATFORM),
@@ -718,7 +719,7 @@ gfx::Size RenderWidgetHostViewAndroid::GetPhysicalBackingSize() const {
         * ui::GetScaleFactorForNativeView(GetNativeView()));
   }
 
-  return content_view_core_->GetPhysicalBackingSize();
+  return view_.GetPhysicalBackingSize();
 }
 
 bool RenderWidgetHostViewAndroid::DoBrowserControlsShrinkBlinkSize() const {
@@ -801,6 +802,11 @@ void RenderWidgetHostViewAndroid::SetNeedsBeginFrames(bool needs_begin_frames) {
     RequestVSyncUpdate(PERSISTENT_BEGIN_FRAME);
   else
     outstanding_vsync_requests_ &= ~PERSISTENT_BEGIN_FRAME;
+}
+
+void RenderWidgetHostViewAndroid::OnPhysicalBackingSizeChanged(int width,
+                                                               int height) {
+  WasResized();
 }
 
 void RenderWidgetHostViewAndroid::OnStartContentIntent(
