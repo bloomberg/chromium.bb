@@ -105,19 +105,21 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
   virtual size_t WriteHeaders(
       SpdyHeaderBlock header_block,
       bool fin,
-      scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate);
+      QuicReferenceCountedPointer<QuicAckListenerInterface>
+          ack_notifier_delegate);
 
   // Sends |data| to the peer, or buffers if it can't be sent immediately.
-  void WriteOrBufferBody(
-      const std::string& data,
-      bool fin,
-      scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate);
+  void WriteOrBufferBody(const std::string& data,
+                         bool fin,
+                         QuicReferenceCountedPointer<QuicAckListenerInterface>
+                             ack_notifier_delegate);
 
   // Writes the trailers contained in |trailer_block| to the dedicated
   // headers stream. Trailers will always have the FIN set.
   virtual size_t WriteTrailers(
       SpdyHeaderBlock trailer_block,
-      scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate);
+      QuicReferenceCountedPointer<QuicAckListenerInterface>
+          ack_notifier_delegate);
 
   // Marks the trailers as consumed. This applies to the case where this object
   // receives headers and trailers as QuicHeaderLists via calls to
@@ -201,7 +203,8 @@ class QUIC_EXPORT_PRIVATE QuicSpdyStream : public QuicStream {
       QuicIOVector iov,
       QuicStreamOffset offset,
       bool fin,
-      scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) override;
+      QuicReferenceCountedPointer<QuicAckListenerInterface>
+          ack_notifier_delegate) override;
 
  private:
   friend class test::QuicSpdyStreamPeer;

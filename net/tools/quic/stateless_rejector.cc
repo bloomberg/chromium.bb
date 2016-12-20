@@ -20,7 +20,7 @@ class StatelessRejector::ValidateCallback
 
   ~ValidateCallback() override {}
 
-  void Run(scoped_refptr<Result> result,
+  void Run(QuicReferenceCountedPointer<Result> result,
            std::unique_ptr<ProofSource::Details> /* proof_source_details */)
       override {
     StatelessRejector* rejector_ptr = rejector_.get();
@@ -120,7 +120,8 @@ class StatelessRejector::ProcessClientHelloCallback
 };
 
 void StatelessRejector::ProcessClientHello(
-    scoped_refptr<ValidateClientHelloResultCallback::Result> result,
+    QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
+        result,
     std::unique_ptr<StatelessRejector> rejector,
     std::unique_ptr<StatelessRejector::ProcessDoneCallback> done_cb) {
   std::unique_ptr<ProcessClientHelloCallback> cb(

@@ -79,12 +79,12 @@ class MockQuicHeadersStream : public QuicHeadersStream {
                       QuicStreamId promised_stream_id,
                       const SpdyHeaderBlock& headers));
 
-  size_t WriteHeaders(
-      QuicStreamId stream_id,
-      SpdyHeaderBlock headers,
-      bool fin,
-      SpdyPriority priority,
-      scoped_refptr<QuicAckListenerInterface> ack_listener) override {
+  size_t WriteHeaders(QuicStreamId stream_id,
+                      SpdyHeaderBlock headers,
+                      bool fin,
+                      SpdyPriority priority,
+                      QuicReferenceCountedPointer<QuicAckListenerInterface>
+                          ack_listener) override {
     return WriteHeadersMock(stream_id, headers, fin, priority, ack_listener);
   }
   MOCK_METHOD5(
@@ -93,7 +93,8 @@ class MockQuicHeadersStream : public QuicHeadersStream {
              const SpdyHeaderBlock& headers,
              bool fin,
              SpdyPriority priority,
-             const scoped_refptr<QuicAckListenerInterface>& ack_listener));
+             const QuicReferenceCountedPointer<QuicAckListenerInterface>&
+                 ack_listener));
 };
 
 class MockQuicCryptoServerStream : public QuicCryptoServerStream {
@@ -135,11 +136,12 @@ class MockQuicConnectionWithSendStreamData : public MockQuicConnection {
 
   MOCK_METHOD5(
       SendStreamData,
-      QuicConsumedData(QuicStreamId id,
-                       QuicIOVector iov,
-                       QuicStreamOffset offset,
-                       bool fin,
-                       scoped_refptr<QuicAckListenerInterface> listern));
+      QuicConsumedData(
+          QuicStreamId id,
+          QuicIOVector iov,
+          QuicStreamOffset offset,
+          bool fin,
+          QuicReferenceCountedPointer<QuicAckListenerInterface> listern));
 };
 
 class QuicSimpleServerSessionPeer {

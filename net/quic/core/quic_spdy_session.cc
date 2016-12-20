@@ -74,7 +74,8 @@ size_t QuicSpdySession::WriteHeaders(
     SpdyHeaderBlock headers,
     bool fin,
     SpdyPriority priority,
-    scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) {
+    QuicReferenceCountedPointer<QuicAckListenerInterface>
+        ack_notifier_delegate) {
   return headers_stream_->WriteHeaders(id, std::move(headers), fin, priority,
                                        std::move(ack_notifier_delegate));
 }

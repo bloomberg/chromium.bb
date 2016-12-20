@@ -292,7 +292,7 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
     const SpdyHeaderBlock* headers,
     StringPiece body,
     bool fin,
-    scoped_refptr<QuicAckListenerInterface> delegate) {
+    QuicReferenceCountedPointer<QuicAckListenerInterface> delegate) {
   if (headers) {
     QuicClientPushPromiseIndex::TryHandle* handle;
     QuicAsyncStatus rv =
@@ -377,7 +377,7 @@ ssize_t QuicTestClient::SendData(const string& data, bool last_data) {
 ssize_t QuicTestClient::SendData(
     const string& data,
     bool last_data,
-    scoped_refptr<QuicAckListenerInterface> delegate) {
+    QuicReferenceCountedPointer<QuicAckListenerInterface> delegate) {
   return GetOrCreateStreamAndSendRequest(nullptr, StringPiece(data), last_data,
                                          std::move(delegate));
 }
@@ -677,7 +677,7 @@ QuicTestClient::TestClientDataToResend::TestClientDataToResend(
     base::StringPiece body,
     bool fin,
     QuicTestClient* test_client,
-    scoped_refptr<QuicAckListenerInterface> delegate)
+    QuicReferenceCountedPointer<QuicAckListenerInterface> delegate)
     : QuicClient::QuicDataToResend(std::move(headers), body, fin),
       test_client_(test_client),
       delegate_(std::move(delegate)) {}

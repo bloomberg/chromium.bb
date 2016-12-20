@@ -61,7 +61,8 @@ void QuicSpdyStream::StopReading() {
 size_t QuicSpdyStream::WriteHeaders(
     SpdyHeaderBlock header_block,
     bool fin,
-    scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) {
+    QuicReferenceCountedPointer<QuicAckListenerInterface>
+        ack_notifier_delegate) {
   size_t bytes_written =
       spdy_session_->WriteHeaders(id(), std::move(header_block), fin, priority_,
                                   std::move(ack_notifier_delegate));
@@ -76,13 +77,15 @@ size_t QuicSpdyStream::WriteHeaders(
 void QuicSpdyStream::WriteOrBufferBody(
     const string& data,
     bool fin,
-    scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) {
+    QuicReferenceCountedPointer<QuicAckListenerInterface>
+        ack_notifier_delegate) {
   WriteOrBufferData(data, fin, std::move(ack_notifier_delegate));
 }
 
 size_t QuicSpdyStream::WriteTrailers(
     SpdyHeaderBlock trailer_block,
-    scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) {
+    QuicReferenceCountedPointer<QuicAckListenerInterface>
+        ack_notifier_delegate) {
   if (fin_sent()) {
     QUIC_BUG << "Trailers cannot be sent after a FIN.";
     return 0;
@@ -332,7 +335,8 @@ QuicConsumedData QuicSpdyStream::WritevDataInner(
     QuicIOVector iov,
     QuicStreamOffset offset,
     bool fin,
-    scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) {
+    QuicReferenceCountedPointer<QuicAckListenerInterface>
+        ack_notifier_delegate) {
   if (spdy_session_->headers_stream() != nullptr &&
       spdy_session_->force_hol_blocking()) {
     return spdy_session_->headers_stream()->WritevStreamData(

@@ -125,7 +125,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
       QuicStreamOffset iov_offset,
       QuicStreamOffset stream_offset,
       bool fin,
-      scoped_refptr<QuicAckListenerInterface> listener,
+      QuicReferenceCountedPointer<QuicAckListenerInterface> listener,
       size_t* num_bytes_consumed);
 
   // Returns true if there are frames pending to be serialized.
@@ -160,10 +160,11 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   // Identical to AddSavedFrame, but allows the frame to be padded.
   bool AddPaddedSavedFrame(const QuicFrame& frame);
 
-  // Adds |listener| to the next serialized packet and notifies the
-  // std::listener with |length| as the number of acked bytes.
-  void AddAckListener(scoped_refptr<QuicAckListenerInterface> listener,
-                      QuicPacketLength length);
+  // Adds |listener| to the next serialized packet and notifies the listener
+  // with |length| as the number of acked bytes.
+  void AddAckListener(
+      QuicReferenceCountedPointer<QuicAckListenerInterface> listener,
+      QuicPacketLength length);
 
   // Creates a version negotiation packet which supports |supported_versions|.
   std::unique_ptr<QuicEncryptedPacket> SerializeVersionNegotiationPacket(

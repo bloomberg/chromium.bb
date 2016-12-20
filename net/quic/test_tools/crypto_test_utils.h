@@ -225,7 +225,7 @@ class CryptoTestUtils {
       QuicSocketAddress client_addr,
       QuicVersion version,
       const QuicClock* clock,
-      scoped_refptr<QuicSignedServerConfig> signed_config,
+      QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config,
       QuicCompressedCertsCache* compressed_certs_cache,
       CryptoHandshakeMessage* out);
 

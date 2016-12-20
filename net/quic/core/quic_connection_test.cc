@@ -516,7 +516,7 @@ class TestConnection : public QuicConnection {
       StringPiece data,
       QuicStreamOffset offset,
       bool fin,
-      scoped_refptr<QuicAckListenerInterface> listener) {
+      QuicReferenceCountedPointer<QuicAckListenerInterface> listener) {
     if (id != kCryptoStreamId && this->encryption_level() == ENCRYPTION_NONE) {
       this->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
     }
@@ -4613,7 +4613,7 @@ TEST_P(QuicConnectionTest, AckNotifierTriggerCallback) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
   // Create a listener which we expect to be called.
-  scoped_refptr<MockAckListener> listener(new MockAckListener);
+  QuicReferenceCountedPointer<MockAckListener> listener(new MockAckListener);
   EXPECT_CALL(*listener, OnPacketAcked(_, _)).Times(1);
 
   // Send some data, which will register the listener to be notified.
@@ -4629,7 +4629,7 @@ TEST_P(QuicConnectionTest, AckNotifierFailToTriggerCallback) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
   // Create a listener which we don't expect to be called.
-  scoped_refptr<MockAckListener> listener(new MockAckListener);
+  QuicReferenceCountedPointer<MockAckListener> listener(new MockAckListener);
   EXPECT_CALL(*listener, OnPacketAcked(_, _)).Times(0);
 
   // Send some data, which will register the listener to be notified. This will
@@ -4656,7 +4656,7 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackAfterRetransmission) {
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
   // Create a listener which we expect to be called.
-  scoped_refptr<MockAckListener> listener(new MockAckListener);
+  QuicReferenceCountedPointer<MockAckListener> listener(new MockAckListener);
   EXPECT_CALL(*listener, OnPacketRetransmitted(3)).Times(1);
   EXPECT_CALL(*listener, OnPacketAcked(3, _)).Times(1);
 
@@ -4692,7 +4692,8 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackForAckAfterRTO) {
   connection_.SetMaxTailLossProbes(kDefaultPathId, 0);
 
   // Create a listener which we expect to be called.
-  scoped_refptr<MockAckListener> listener(new StrictMock<MockAckListener>);
+  QuicReferenceCountedPointer<MockAckListener> listener(
+      new StrictMock<MockAckListener>);
 
   QuicTime default_retransmission_time =
       clock_.ApproximateNow() + DefaultRetransmissionTime();
@@ -4729,7 +4730,8 @@ TEST_P(QuicConnectionTest, AckNotifierCallbackForAckAfterRTO) {
 // packet number.
 TEST_P(QuicConnectionTest, AckNotifierCallbackForAckOfNackedPacket) {
   // Create a listener which we expect to be called.
-  scoped_refptr<MockAckListener> listener(new StrictMock<MockAckListener>);
+  QuicReferenceCountedPointer<MockAckListener> listener(
+      new StrictMock<MockAckListener>());
 
   // Send four packets, and register to be notified on ACK of packet 2.
   connection_.SendStreamDataWithString(3, "foo", 0, !kFin, nullptr);
@@ -4826,7 +4828,7 @@ TEST_P(QuicConnectionTest, NoDataNoFin) {
   // Make sure that a call to SendStreamWithData, with no data and no FIN, does
   // not result in a QuicAckNotifier being used-after-free (fail under ASAN).
   // Regression test for b/18594622
-  scoped_refptr<MockAckListener> listener(new MockAckListener);
+  QuicReferenceCountedPointer<MockAckListener> listener(new MockAckListener);
   EXPECT_QUIC_BUG(
       connection_.SendStreamDataWithString(3, "", 0, !kFin, listener),
       "Attempt to send empty stream frame");

@@ -491,7 +491,7 @@ class FailingProofSource : public ProofSource {
                 QuicVersion quic_version,
                 StringPiece chlo_hash,
                 const QuicTagVector& connection_options,
-                scoped_refptr<ProofSource::Chain>* out_chain,
+                QuicReferenceCountedPointer<ProofSource::Chain>* out_chain,
                 QuicCryptoProof* out_proof) override {
     return false;
   }

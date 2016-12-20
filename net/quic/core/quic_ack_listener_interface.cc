@@ -6,8 +6,10 @@
 
 namespace net {
 
+QuicAckListenerInterface::~QuicAckListenerInterface() {}
+
 AckListenerWrapper::AckListenerWrapper(
-    scoped_refptr<QuicAckListenerInterface> listener,
+    QuicReferenceCountedPointer<QuicAckListenerInterface> listener,
     QuicPacketLength data_length)
     : ack_listener(std::move(listener)), length(data_length) {}
 

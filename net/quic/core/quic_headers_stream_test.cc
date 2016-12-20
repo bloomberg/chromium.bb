@@ -264,7 +264,8 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParamsTuple> {
 
   QuicConsumedData SaveIovAndNotifyAckListener(
       const QuicIOVector& data,
-      const scoped_refptr<QuicAckListenerInterface>& ack_listener) {
+      const QuicReferenceCountedPointer<QuicAckListenerInterface>&
+          ack_listener) {
     QuicConsumedData result = SaveIov(data);
     if (ack_listener) {
       ack_listener->OnPacketAcked(result.bytes_consumed,
@@ -953,7 +954,7 @@ TEST_P(QuicHeadersStreamTest, WritevStreamData) {
 
   for (bool fin : {true, false}) {
     for (bool use_ack_listener : {true, false}) {
-      scoped_refptr<ForceHolAckListener> ack_listener;
+      QuicReferenceCountedPointer<ForceHolAckListener> ack_listener;
       if (use_ack_listener) {
         ack_listener = new ForceHolAckListener();
       }

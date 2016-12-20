@@ -1974,7 +1974,7 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
   client_->SendMessage(headers, "", /*fin=*/false);
 
   // The TestAckListener will cause a failure if not notified.
-  scoped_refptr<TestAckListener> delegate(new TestAckListener(2));
+  QuicReferenceCountedPointer<TestAckListener> delegate(new TestAckListener(2));
 
   // Test the AckNotifier's ability to track multiple packets by making the
   // request body exceed the size of a single packet.

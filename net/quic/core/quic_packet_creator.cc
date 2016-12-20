@@ -353,7 +353,7 @@ void QuicPacketCreator::CreateAndSerializeStreamFrame(
     QuicStreamOffset iov_offset,
     QuicStreamOffset stream_offset,
     bool fin,
-    scoped_refptr<QuicAckListenerInterface> listener,
+    QuicReferenceCountedPointer<QuicAckListenerInterface> listener,
     size_t* num_bytes_consumed) {
   DCHECK(queued_frames_.empty());
   // Write out the packet header
@@ -465,7 +465,7 @@ bool QuicPacketCreator::AddPaddedSavedFrame(const QuicFrame& frame) {
 }
 
 void QuicPacketCreator::AddAckListener(
-    scoped_refptr<QuicAckListenerInterface> listener,
+    QuicReferenceCountedPointer<QuicAckListenerInterface> listener,
     QuicPacketLength length) {
   DCHECK(!queued_frames_.empty());
   packet_.listeners.emplace_back(std::move(listener), length);

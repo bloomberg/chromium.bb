@@ -28,7 +28,8 @@ class QuicCryptoServerStream::ProcessClientHelloCallback
  public:
   ProcessClientHelloCallback(
       QuicCryptoServerStream* stream,
-      const scoped_refptr<ValidateClientHelloResultCallback::Result>& result)
+      const QuicReferenceCountedPointer<
+          ValidateClientHelloResultCallback::Result>& result)
       : stream_(stream), result_(result) {}
 
   void Run(QuicErrorCode error,
@@ -57,7 +58,8 @@ class QuicCryptoServerStream::ProcessClientHelloCallback
 
  private:
   QuicCryptoServerStream* stream_;
-  scoped_refptr<ValidateClientHelloResultCallback::Result> result_;
+  QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
+      result_;
 };
 
 QuicCryptoServerStreamBase::QuicCryptoServerStreamBase(QuicSession* session)
@@ -167,7 +169,8 @@ void QuicCryptoServerStream::OnHandshakeMessage(
 }
 
 void QuicCryptoServerStream::FinishProcessingHandshakeMessage(
-    scoped_refptr<ValidateClientHelloResultCallback::Result> result,
+    QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
+        result,
     std::unique_ptr<ProofSource::Details> details) {
   const CryptoHandshakeMessage& message = result->client_hello;
 
@@ -435,7 +438,8 @@ bool QuicCryptoServerStream::GetBase64SHA256ClientChannelID(
 }
 
 void QuicCryptoServerStream::ProcessClientHello(
-    scoped_refptr<ValidateClientHelloResultCallback::Result> result,
+    QuicReferenceCountedPointer<ValidateClientHelloResultCallback::Result>
+        result,
     std::unique_ptr<ProofSource::Details> proof_source_details,
     std::unique_ptr<ProcessClientHelloResultCallback> done_cb) {
   const CryptoHandshakeMessage& message = result->client_hello;
@@ -485,7 +489,7 @@ void QuicCryptoServerStream::ValidateCallback::Cancel() {
 }
 
 void QuicCryptoServerStream::ValidateCallback::Run(
-    scoped_refptr<Result> result,
+    QuicReferenceCountedPointer<Result> result,
     std::unique_ptr<ProofSource::Details> details) {
   if (parent_ != nullptr) {
     parent_->FinishProcessingHandshakeMessage(std::move(result),

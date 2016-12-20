@@ -43,7 +43,7 @@ size_t GetReceivedFlowControlWindow(QuicSession* session) {
 
 QuicStream::PendingData::PendingData(
     string data_in,
-    scoped_refptr<QuicAckListenerInterface> ack_listener_in)
+    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener_in)
     : data(std::move(data_in)),
       offset(0),
       ack_listener(std::move(ack_listener_in)) {}
@@ -182,7 +182,7 @@ void QuicStream::CloseConnectionWithDetails(QuicErrorCode error,
 void QuicStream::WriteOrBufferData(
     StringPiece data,
     bool fin,
-    scoped_refptr<QuicAckListenerInterface> ack_listener) {
+    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   if (data.empty() && !fin) {
     QUIC_BUG << "data.empty() && !fin";
     return;
@@ -219,7 +219,7 @@ void QuicStream::OnCanWrite() {
   bool fin = false;
   while (!queued_data_.empty()) {
     PendingData* pending_data = &queued_data_.front();
-    scoped_refptr<QuicAckListenerInterface> ack_listener =
+    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener =
         pending_data->ack_listener;
     if (queued_data_.size() == 1 && fin_buffered_) {
       fin = true;
@@ -270,7 +270,7 @@ QuicConsumedData QuicStream::WritevData(
     const struct iovec* iov,
     int iov_count,
     bool fin,
-    scoped_refptr<QuicAckListenerInterface> ack_listener) {
+    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   if (write_side_closed_) {
     DLOG(ERROR) << ENDPOINT << "Attempt to write when the write side is closed";
     return QuicConsumedData(0, false);
@@ -351,7 +351,8 @@ QuicConsumedData QuicStream::WritevDataInner(
     QuicIOVector iov,
     QuicStreamOffset offset,
     bool fin,
-    scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) {
+    QuicReferenceCountedPointer<QuicAckListenerInterface>
+        ack_notifier_delegate) {
   return session()->WritevData(this, id(), iov, offset, fin,
                                std::move(ack_notifier_delegate));
 }

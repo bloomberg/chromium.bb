@@ -418,7 +418,7 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
     const CachedState* cached,
     QuicRandom* rand,
     bool demand_x509_proof,
-    scoped_refptr<QuicCryptoNegotiatedParameters> out_params,
+    QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
     CryptoHandshakeMessage* out) const {
   out->set_tag(kCHLO);
   // TODO(rch): Remove this when we remove:
@@ -491,7 +491,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     QuicWallTime now,
     QuicRandom* rand,
     const ChannelIDKey* channel_id_key,
-    scoped_refptr<QuicCryptoNegotiatedParameters> out_params,
+    QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
     CryptoHandshakeMessage* out,
     string* error_details) const {
   DCHECK(error_details != nullptr);
@@ -785,7 +785,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
     const QuicVersion version,
     StringPiece chlo_hash,
     CachedState* cached,
-    scoped_refptr<QuicCryptoNegotiatedParameters> out_params,
+    QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
     string* error_details) {
   DCHECK(error_details != nullptr);
 
@@ -828,7 +828,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
     QuicVersion version,
     const QuicVersionVector& negotiated_versions,
     CachedState* cached,
-    scoped_refptr<QuicCryptoNegotiatedParameters> out_params,
+    QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
     string* error_details) {
   DCHECK(error_details != nullptr);
 
@@ -891,7 +891,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerConfigUpdate(
     const QuicVersion version,
     StringPiece chlo_hash,
     CachedState* cached,
-    scoped_refptr<QuicCryptoNegotiatedParameters> out_params,
+    QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
     string* error_details) {
   DCHECK(error_details != nullptr);
 

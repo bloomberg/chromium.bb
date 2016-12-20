@@ -512,13 +512,14 @@ class MockQuicSession : public QuicSession {
   MOCK_METHOD1(CreateOutgoingDynamicStream, QuicStream*(SpdyPriority priority));
   MOCK_METHOD1(ShouldCreateIncomingDynamicStream, bool(QuicStreamId id));
   MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
-  MOCK_METHOD6(WritevData,
-               QuicConsumedData(QuicStream* stream,
-                                QuicStreamId id,
-                                QuicIOVector data,
-                                QuicStreamOffset offset,
-                                bool fin,
-                                scoped_refptr<QuicAckListenerInterface>));
+  MOCK_METHOD6(
+      WritevData,
+      QuicConsumedData(QuicStream* stream,
+                       QuicStreamId id,
+                       QuicIOVector data,
+                       QuicStreamOffset offset,
+                       bool fin,
+                       QuicReferenceCountedPointer<QuicAckListenerInterface>));
 
   MOCK_METHOD3(SendRstStream,
                void(QuicStreamId stream_id,
@@ -543,7 +544,8 @@ class MockQuicSession : public QuicSession {
       const QuicIOVector& data,
       QuicStreamOffset offset,
       bool fin,
-      const scoped_refptr<QuicAckListenerInterface>& ack_notifier_delegate);
+      const QuicReferenceCountedPointer<QuicAckListenerInterface>&
+          ack_notifier_delegate);
 
  private:
   std::unique_ptr<QuicCryptoStream> crypto_stream_;
@@ -572,12 +574,13 @@ class MockQuicSpdySession : public QuicSpdySession {
   MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
   MOCK_METHOD6(
       WritevData,
-      QuicConsumedData(QuicStream* stream,
-                       QuicStreamId id,
-                       QuicIOVector data,
-                       QuicStreamOffset offset,
-                       bool fin,
-                       scoped_refptr<QuicAckListenerInterface> ack_listener));
+      QuicConsumedData(
+          QuicStream* stream,
+          QuicStreamId id,
+          QuicIOVector data,
+          QuicStreamOffset offset,
+          bool fin,
+          QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener));
 
   MOCK_METHOD3(SendRstStream,
                void(QuicStreamId stream_id,
@@ -609,23 +612,24 @@ class MockQuicSpdySession : public QuicSpdySession {
                     const QuicHeaderList& header_list));
   // Methods taking non-copyable types like SpdyHeaderBlock by value cannot be
   // mocked directly.
-  size_t WriteHeaders(
-      QuicStreamId id,
-      SpdyHeaderBlock headers,
-      bool fin,
-      SpdyPriority priority,
-      scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) override {
+  size_t WriteHeaders(QuicStreamId id,
+                      SpdyHeaderBlock headers,
+                      bool fin,
+                      SpdyPriority priority,
+                      QuicReferenceCountedPointer<QuicAckListenerInterface>
+                          ack_notifier_delegate) override {
     write_headers_ = std::move(headers);
     return WriteHeadersMock(id, write_headers_, fin, priority,
                             ack_notifier_delegate);
   }
-  MOCK_METHOD5(WriteHeadersMock,
-               size_t(QuicStreamId id,
-                      const SpdyHeaderBlock& headers,
-                      bool fin,
-                      SpdyPriority priority,
-                      const scoped_refptr<QuicAckListenerInterface>&
-                          ack_notifier_delegate));
+  MOCK_METHOD5(
+      WriteHeadersMock,
+      size_t(QuicStreamId id,
+             const SpdyHeaderBlock& headers,
+             bool fin,
+             SpdyPriority priority,
+             const QuicReferenceCountedPointer<QuicAckListenerInterface>&
+                 ack_notifier_delegate));
   MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(QuicTime::Delta delta));
   MOCK_METHOD4(
       OnStreamFrameData,

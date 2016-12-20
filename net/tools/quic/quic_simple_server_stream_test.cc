@@ -117,13 +117,14 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                     const string& error_details,
                     ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
-  MOCK_METHOD6(WritevData,
-               QuicConsumedData(QuicStream* stream,
-                                QuicStreamId id,
-                                QuicIOVector data,
-                                QuicStreamOffset offset,
-                                bool fin,
-                                scoped_refptr<QuicAckListenerInterface>));
+  MOCK_METHOD6(
+      WritevData,
+      QuicConsumedData(QuicStream* stream,
+                       QuicStreamId id,
+                       QuicIOVector data,
+                       QuicStreamOffset offset,
+                       bool fin,
+                       QuicReferenceCountedPointer<QuicAckListenerInterface>));
   MOCK_METHOD4(OnStreamHeaderList,
                void(QuicStreamId stream_id,
                     bool fin,
@@ -133,21 +134,22 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                void(QuicStreamId stream_id, SpdyPriority priority));
   // Methods taking non-copyable types like SpdyHeaderBlock by value cannot be
   // mocked directly.
-  size_t WriteHeaders(
-      QuicStreamId id,
-      SpdyHeaderBlock headers,
-      bool fin,
-      SpdyPriority priority,
-      scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) override {
-    return WriteHeadersMock(id, headers, fin, priority, ack_notifier_delegate);
-  }
-  MOCK_METHOD5(WriteHeadersMock,
-               size_t(QuicStreamId id,
-                      const SpdyHeaderBlock& headers,
+  size_t WriteHeaders(QuicStreamId id,
+                      SpdyHeaderBlock headers,
                       bool fin,
                       SpdyPriority priority,
-                      const scoped_refptr<QuicAckListenerInterface>&
-                          ack_notifier_delegate));
+                      QuicReferenceCountedPointer<QuicAckListenerInterface>
+                          ack_notifier_delegate) override {
+    return WriteHeadersMock(id, headers, fin, priority, ack_notifier_delegate);
+  }
+  MOCK_METHOD5(
+      WriteHeadersMock,
+      size_t(QuicStreamId id,
+             const SpdyHeaderBlock& headers,
+             bool fin,
+             SpdyPriority priority,
+             const QuicReferenceCountedPointer<QuicAckListenerInterface>&
+                 ack_notifier_delegate));
   MOCK_METHOD3(SendRstStream,
                void(QuicStreamId stream_id,
                     QuicRstStreamErrorCode error,

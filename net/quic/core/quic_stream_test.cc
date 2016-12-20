@@ -143,7 +143,7 @@ class QuicStreamTest : public ::testing::TestWithParam<bool> {
       QuicIOVector /*iov*/,
       QuicStreamOffset /*offset*/,
       bool /*fin*/,
-      const scoped_refptr<
+      const QuicReferenceCountedPointer<
           QuicAckListenerInterface>& /*ack_notifier_delegate*/) {
     session_->CloseStream(id);
     return QuicConsumedData(1, false);
@@ -387,15 +387,17 @@ TEST_F(QuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
 
 // TODO(ianswett): It's not clear this method is still needed now that
 // ProxyAckNotifierDelegate has been removed.
-void SaveAckListener(scoped_refptr<QuicAckListenerInterface>* listener_out,
-                     scoped_refptr<QuicAckListenerInterface> listener) {
+void SaveAckListener(
+    QuicReferenceCountedPointer<QuicAckListenerInterface>* listener_out,
+    QuicReferenceCountedPointer<QuicAckListenerInterface> listener) {
   *listener_out = std::move(listener);
 }
 
 TEST_F(QuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
   Initialize(kShouldProcessData);
 
-  scoped_refptr<MockAckListener> delegate(new StrictMock<MockAckListener>);
+  QuicReferenceCountedPointer<MockAckListener> delegate(
+      new StrictMock<MockAckListener>);
 
   const int kDataSize = 16 * 1024;
   const string kData(kDataSize, 'a');
@@ -408,7 +410,7 @@ TEST_F(QuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
   stream_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
   session_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
 
-  scoped_refptr<QuicAckListenerInterface> ack_listener;
+  QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener;
 
   EXPECT_CALL(*session_, WritevData(_, kTestStreamId, _, _, _, _))
       .WillOnce(DoAll(
@@ -439,7 +441,8 @@ TEST_F(QuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
 TEST_F(QuicStreamTest, WriteOrBufferDataAckNotificationBeforeFlush) {
   Initialize(kShouldProcessData);
 
-  scoped_refptr<MockAckListener> ack_listener(new StrictMock<MockAckListener>);
+  QuicReferenceCountedPointer<MockAckListener> ack_listener(
+      new StrictMock<MockAckListener>);
 
   const int kDataSize = 16 * 1024;
   const string kData(kDataSize, 'a');
@@ -450,7 +453,7 @@ TEST_F(QuicStreamTest, WriteOrBufferDataAckNotificationBeforeFlush) {
   stream_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
   session_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
 
-  scoped_refptr<QuicAckListenerInterface> proxy_delegate;
+  QuicReferenceCountedPointer<QuicAckListenerInterface> proxy_delegate;
 
   EXPECT_CALL(*session_, WritevData(stream_, kTestStreamId, _, _, _, _))
       .WillOnce(DoAll(
@@ -470,9 +473,10 @@ TEST_F(QuicStreamTest, WriteOrBufferDataAckNotificationBeforeFlush) {
 TEST_F(QuicStreamTest, WriteAndBufferDataWithAckNotiferNoBuffer) {
   Initialize(kShouldProcessData);
 
-  scoped_refptr<MockAckListener> delegate(new StrictMock<MockAckListener>);
+  QuicReferenceCountedPointer<MockAckListener> delegate(
+      new StrictMock<MockAckListener>);
 
-  scoped_refptr<QuicAckListenerInterface> proxy_delegate;
+  QuicReferenceCountedPointer<QuicAckListenerInterface> proxy_delegate;
 
   EXPECT_CALL(*session_, WritevData(stream_, kTestStreamId, _, _, _, _))
       .WillOnce(DoAll(
@@ -486,9 +490,10 @@ TEST_F(QuicStreamTest, WriteAndBufferDataWithAckNotiferNoBuffer) {
 TEST_F(QuicStreamTest, BufferOnWriteAndBufferDataWithAckNotifer) {
   Initialize(kShouldProcessData);
 
-  scoped_refptr<MockAckListener> delegate(new StrictMock<MockAckListener>);
+  QuicReferenceCountedPointer<MockAckListener> delegate(
+      new StrictMock<MockAckListener>);
 
-  scoped_refptr<QuicAckListenerInterface> proxy_delegate;
+  QuicReferenceCountedPointer<QuicAckListenerInterface> proxy_delegate;
 
   EXPECT_CALL(*session_, WritevData(stream_, kTestStreamId, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(0, false)));
@@ -507,9 +512,10 @@ TEST_F(QuicStreamTest, BufferOnWriteAndBufferDataWithAckNotifer) {
 TEST_F(QuicStreamTest, WriteAndBufferDataWithAckNotiferOnlyFinRemains) {
   Initialize(kShouldProcessData);
 
-  scoped_refptr<MockAckListener> delegate(new StrictMock<MockAckListener>);
+  QuicReferenceCountedPointer<MockAckListener> delegate(
+      new StrictMock<MockAckListener>);
 
-  scoped_refptr<QuicAckListenerInterface> proxy_delegate;
+  QuicReferenceCountedPointer<QuicAckListenerInterface> proxy_delegate;
 
   EXPECT_CALL(*session_, WritevData(stream_, kTestStreamId, _, _, _, _))
       .WillOnce(DoAll(

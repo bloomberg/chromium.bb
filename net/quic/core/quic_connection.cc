@@ -17,7 +17,6 @@
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -1116,7 +1115,7 @@ QuicConsumedData QuicConnection::SendStreamData(
     QuicIOVector iov,
     QuicStreamOffset offset,
     bool fin,
-    scoped_refptr<QuicAckListenerInterface> listener) {
+    QuicReferenceCountedPointer<QuicAckListenerInterface> listener) {
   if (!fin && iov.total_length == 0) {
     QUIC_BUG << "Attempt to send empty stream frame";
     return QuicConsumedData(0, false);

@@ -98,7 +98,7 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
       QuicIOVector iov,
       QuicStreamOffset offset,
       bool fin,
-      scoped_refptr<QuicAckListenerInterface> listener);
+      QuicReferenceCountedPointer<QuicAckListenerInterface> listener);
 
   // Sends as many data only packets as allowed by the send algorithm and the
   // available iov.
@@ -108,12 +108,12 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
       const QuicIOVector& iov,
       QuicStreamOffset offset,
       bool fin,
-      scoped_refptr<QuicAckListenerInterface> listener);
+      QuicReferenceCountedPointer<QuicAckListenerInterface> listener);
 
   // Generates an MTU discovery packet of specified size.
   void GenerateMtuDiscoveryPacket(
       QuicByteCount target_mtu,
-      scoped_refptr<QuicAckListenerInterface> listener);
+      QuicReferenceCountedPointer<QuicAckListenerInterface> listener);
 
   // Indicates whether batch mode is currently enabled.
   bool InBatchMode();

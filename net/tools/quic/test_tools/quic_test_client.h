@@ -113,9 +113,10 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
   // Wraps data in a quic packet and sends it.
   ssize_t SendData(const std::string& data, bool last_data);
   // As above, but |delegate| will be notified when |data| is ACKed.
-  ssize_t SendData(const std::string& data,
-                   bool last_data,
-                   scoped_refptr<QuicAckListenerInterface> delegate);
+  ssize_t SendData(
+      const std::string& data,
+      bool last_data,
+      QuicReferenceCountedPointer<QuicAckListenerInterface> delegate);
 
   // Clears any outstanding state and sends a simple GET of 'uri' to the
   // server.  Returns 0 if the request failed and no bytes were written.
@@ -219,7 +220,7 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
       const SpdyHeaderBlock* headers,
       base::StringPiece body,
       bool fin,
-      scoped_refptr<QuicAckListenerInterface> delegate);
+      QuicReferenceCountedPointer<QuicAckListenerInterface> delegate);
 
   QuicRstStreamErrorCode stream_error() { return stream_error_; }
   QuicErrorCode connection_error();
@@ -276,11 +277,12 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
  private:
   class TestClientDataToResend : public QuicClient::QuicDataToResend {
    public:
-    TestClientDataToResend(std::unique_ptr<SpdyHeaderBlock> headers,
-                           base::StringPiece body,
-                           bool fin,
-                           QuicTestClient* test_client,
-                           scoped_refptr<QuicAckListenerInterface> delegate);
+    TestClientDataToResend(
+        std::unique_ptr<SpdyHeaderBlock> headers,
+        base::StringPiece body,
+        bool fin,
+        QuicTestClient* test_client,
+        QuicReferenceCountedPointer<QuicAckListenerInterface> delegate);
 
     ~TestClientDataToResend() override;
 
@@ -288,7 +290,7 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
 
    protected:
     QuicTestClient* test_client_;
-    scoped_refptr<QuicAckListenerInterface> delegate_;
+    QuicReferenceCountedPointer<QuicAckListenerInterface> delegate_;
   };
 
   // Given |uri|, populates the fields in |headers| for a simple GET

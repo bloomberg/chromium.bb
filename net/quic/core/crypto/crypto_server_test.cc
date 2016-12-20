@@ -180,8 +180,8 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
     ASSERT_TRUE(server_config_->GetStringPiece(kSCID, &scid));
     scid_hex_ = "#" + QuicUtils::HexEncode(scid);
 
-    signed_config_ =
-        scoped_refptr<QuicSignedServerConfig>(new QuicSignedServerConfig());
+    signed_config_ = QuicReferenceCountedPointer<QuicSignedServerConfig>(
+        new QuicSignedServerConfig());
     DCHECK(signed_config_->chain.get() == nullptr);
   }
 
@@ -200,7 +200,7 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
       *called_ = false;
     }
 
-    void Run(scoped_refptr<Result> result,
+    void Run(QuicReferenceCountedPointer<Result> result,
              std::unique_ptr<ProofSource::Details> /* details */) override {
       ASSERT_FALSE(*called_);
       test_->ProcessValidationResult(std::move(result), should_succeed_,
@@ -263,11 +263,12 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
 
   class ProcessCallback : public ProcessClientHelloResultCallback {
    public:
-    ProcessCallback(scoped_refptr<ValidateCallback::Result> result,
-                    bool should_succeed,
-                    const char* error_substr,
-                    bool* called,
-                    CryptoHandshakeMessage* out)
+    ProcessCallback(
+        QuicReferenceCountedPointer<ValidateCallback::Result> result,
+        bool should_succeed,
+        const char* error_substr,
+        bool* called,
+        CryptoHandshakeMessage* out)
         : result_(std::move(result)),
           should_succeed_(should_succeed),
           error_substr_(error_substr),
@@ -300,16 +301,17 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
     }
 
    private:
-    const scoped_refptr<ValidateCallback::Result> result_;
+    const QuicReferenceCountedPointer<ValidateCallback::Result> result_;
     const bool should_succeed_;
     const char* const error_substr_;
     bool* called_;
     CryptoHandshakeMessage* out_;
   };
 
-  void ProcessValidationResult(scoped_refptr<ValidateCallback::Result> result,
-                               bool should_succeed,
-                               const char* error_substr) {
+  void ProcessValidationResult(
+      QuicReferenceCountedPointer<ValidateCallback::Result> result,
+      bool should_succeed,
+      const char* error_substr) {
     QuicSocketAddress server_address;
     QuicConnectionId server_designated_connection_id =
         rand_for_id_generation_.RandUint64();
@@ -398,8 +400,8 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
   QuicCryptoServerConfig config_;
   QuicCompressedCertsCache compressed_certs_cache_;
   QuicCryptoServerConfig::ConfigOptions config_options_;
-  scoped_refptr<QuicCryptoNegotiatedParameters> params_;
-  scoped_refptr<QuicSignedServerConfig> signed_config_;
+  QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> params_;
+  QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config_;
   CryptoHandshakeMessage out_;
   uint8_t orbit_[kOrbitSize];
   bool use_stateless_rejects_;

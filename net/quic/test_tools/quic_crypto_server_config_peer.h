@@ -21,10 +21,11 @@ class QuicCryptoServerConfigPeer {
   ProofSource* GetProofSource();
 
   // Returns the primary config.
-  scoped_refptr<QuicCryptoServerConfig::Config> GetPrimaryConfig();
+  QuicReferenceCountedPointer<QuicCryptoServerConfig::Config>
+  GetPrimaryConfig();
 
   // Returns the config associated with |config_id|.
-  scoped_refptr<QuicCryptoServerConfig::Config> GetConfig(
+  QuicReferenceCountedPointer<QuicCryptoServerConfig::Config> GetConfig(
       std::string config_id);
 
   // Returns a pointer to the ProofSource object.
@@ -82,7 +83,7 @@ class QuicCryptoServerConfigPeer {
 
   static std::string CompressChain(
       QuicCompressedCertsCache* compressed_certs_cache,
-      const scoped_refptr<ProofSource::Chain>& chain,
+      const QuicReferenceCountedPointer<ProofSource::Chain>& chain,
       const std::string& client_common_set_hashes,
       const std::string& client_cached_cert_hashes,
       const CommonCertSets* common_sets);

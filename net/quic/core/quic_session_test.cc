@@ -168,7 +168,8 @@ class TestSession : public QuicSpdySession {
       QuicIOVector data,
       QuicStreamOffset offset,
       bool fin,
-      scoped_refptr<QuicAckListenerInterface> ack_notifier_delegate) override {
+      QuicReferenceCountedPointer<QuicAckListenerInterface>
+          ack_notifier_delegate) override {
     QuicConsumedData consumed(data.total_length, fin);
     if (!writev_consumes_all_data_) {
       consumed = QuicSession::WritevData(stream, id, data, offset, fin,

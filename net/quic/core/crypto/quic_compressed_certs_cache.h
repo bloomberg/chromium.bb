@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/containers/mru_cache.h"
-#include "base/memory/ref_counted.h"
 #include "net/quic/core/crypto/proof_source.h"
 #include "net/quic/platform/api/quic_export.h"
 
@@ -26,7 +25,7 @@ class QUIC_EXPORT_PRIVATE QuicCompressedCertsCache {
   // Otherwise, return nullptr.
   // Returned pointer might become invalid on the next call to Insert().
   const std::string* GetCompressedCert(
-      const scoped_refptr<ProofSource::Chain>& chain,
+      const QuicReferenceCountedPointer<ProofSource::Chain>& chain,
       const std::string& client_common_set_hashes,
       const std::string& client_cached_cert_hashes);
 
@@ -35,7 +34,7 @@ class QUIC_EXPORT_PRIVATE QuicCompressedCertsCache {
   //  client_cached_cert_hashes, compressed_cert| tuple to the cache.
   // If the insertion causes the cache to become overfull, entries will
   // be deleted in an LRU order to make room.
-  void Insert(const scoped_refptr<ProofSource::Chain>& chain,
+  void Insert(const QuicReferenceCountedPointer<ProofSource::Chain>& chain,
               const std::string& client_common_set_hashes,
               const std::string& client_cached_cert_hashes,
               const std::string& compressed_cert);
@@ -55,12 +54,13 @@ class QUIC_EXPORT_PRIVATE QuicCompressedCertsCache {
   // to identify uncompressed representation of certs.
   struct UncompressedCerts {
     UncompressedCerts();
-    UncompressedCerts(const scoped_refptr<ProofSource::Chain>& chain,
-                      const std::string* client_common_set_hashes,
-                      const std::string* client_cached_cert_hashes);
+    UncompressedCerts(
+        const QuicReferenceCountedPointer<ProofSource::Chain>& chain,
+        const std::string* client_common_set_hashes,
+        const std::string* client_cached_cert_hashes);
     ~UncompressedCerts();
 
-    const scoped_refptr<ProofSource::Chain> chain;
+    const QuicReferenceCountedPointer<ProofSource::Chain> chain;
     const std::string* client_common_set_hashes;
     const std::string* client_cached_cert_hashes;
   };
@@ -86,7 +86,7 @@ class QUIC_EXPORT_PRIVATE QuicCompressedCertsCache {
 
    private:
     // Uncompressed certs data.
-    scoped_refptr<ProofSource::Chain> chain_;
+    QuicReferenceCountedPointer<ProofSource::Chain> chain_;
     const std::string client_common_set_hashes_;
     const std::string client_cached_cert_hashes_;
 

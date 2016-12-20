@@ -1160,7 +1160,7 @@ class BufferedPacketStoreTest
  protected:
   QuicSocketAddress server_addr_;
   QuicSocketAddress client_addr_;
-  scoped_refptr<QuicSignedServerConfig> signed_config_;
+  QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config_;
   const QuicClock* clock_;
   CryptoHandshakeMessage full_chlo_;
 };
@@ -1649,7 +1649,7 @@ class AsyncGetProofTest : public QuicDispatcherTest {
  private:
   QuicCryptoServerConfigPeer crypto_config_peer_;
   QuicSocketAddress server_addr_;
-  scoped_refptr<QuicSignedServerConfig> signed_config_;
+  QuicReferenceCountedPointer<QuicSignedServerConfig> signed_config_;
   const QuicClock* clock_;
   CryptoHandshakeMessage chlo_;
   CryptoHandshakeMessage full_chlo_;

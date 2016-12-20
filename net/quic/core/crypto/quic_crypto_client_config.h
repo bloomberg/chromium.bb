@@ -19,6 +19,7 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_server_id.h"
 #include "net/quic/platform/api/quic_export.h"
+#include "net/quic/platform/api/quic_reference_counted.h"
 
 namespace net {
 
@@ -232,7 +233,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
       const CachedState* cached,
       QuicRandom* rand,
       bool demand_x509_proof,
-      scoped_refptr<QuicCryptoNegotiatedParameters> out_params,
+      QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
       CryptoHandshakeMessage* out) const;
 
   // FillClientHello sets |out| to be a CHLO message based on the configuration
@@ -257,7 +258,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
       QuicWallTime now,
       QuicRandom* rand,
       const ChannelIDKey* channel_id_key,
-      scoped_refptr<QuicCryptoNegotiatedParameters> out_params,
+      QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
       CryptoHandshakeMessage* out,
       std::string* error_details) const;
 
@@ -273,7 +274,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
       QuicVersion version,
       base::StringPiece chlo_hash,
       CachedState* cached,
-      scoped_refptr<QuicCryptoNegotiatedParameters> out_params,
+      QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
       std::string* error_details);
 
   // ProcessServerHello processes the message in |server_hello|, updates the
@@ -291,7 +292,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
       QuicVersion version,
       const QuicVersionVector& negotiated_versions,
       CachedState* cached,
-      scoped_refptr<QuicCryptoNegotiatedParameters> out_params,
+      QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
       std::string* error_details);
 
   // Processes the message in |server_update|, updating the cached source
@@ -305,7 +306,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
       const QuicVersion version,
       base::StringPiece chlo_hash,
       CachedState* cached,
-      scoped_refptr<QuicCryptoNegotiatedParameters> out_params,
+      QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters> out_params,
       std::string* error_details);
 
   ProofVerifier* proof_verifier() const;
