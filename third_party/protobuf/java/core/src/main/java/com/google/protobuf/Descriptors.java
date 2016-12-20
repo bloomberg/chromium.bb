@@ -871,6 +871,10 @@ public final class Descriptors {
         nestedTypes[i].setProto(proto.getNestedType(i));
       }
 
+      for (int i = 0; i < oneofs.length; i++) {
+        oneofs[i].setProto(proto.getOneofDecl(i));
+      }
+
       for (int i = 0; i < enumTypes.length; i++) {
         enumTypes[i].setProto(proto.getEnumType(i));
       }
@@ -1208,33 +1212,20 @@ public final class Descriptors {
       private final Object defaultDefault;
     }
 
-    // TODO(xiaofeng): Implement it consistently across different languages. See b/24751348.
-    private static String fieldNameToLowerCamelCase(String name) {
+    // This method should match exactly with the ToJsonName() function in C++
+    // descriptor.cc.
+    private static String fieldNameToJsonName(String name) {
       StringBuilder result = new StringBuilder(name.length());
       boolean isNextUpperCase = false;
       for (int i = 0; i < name.length(); i++) {
         Character ch = name.charAt(i);
-        if (Character.isLowerCase(ch)) {
-          if (isNextUpperCase) {
-            result.append(Character.toUpperCase(ch));
-          } else {
-            result.append(ch);
-          }
-          isNextUpperCase = false;
-        } else if (Character.isUpperCase(ch)) {
-          if (i == 0) {
-            // Force first letter to lower-case.
-            result.append(Character.toLowerCase(ch));
-          } else {
-            // Capital letters after the first are left as-is.
-            result.append(ch);
-          }
-          isNextUpperCase = false;
-        } else if (Character.isDigit(ch)) {
-          result.append(ch);
+        if (ch == '_') {
+          isNextUpperCase = true;
+        } else if (isNextUpperCase) {
+          result.append(Character.toUpperCase(ch));
           isNextUpperCase = false;
         } else {
-          isNextUpperCase = true;
+          result.append(ch);
         }
       }
       return result.toString();
@@ -1253,7 +1244,7 @@ public final class Descriptors {
       if (proto.hasJsonName()) {
         jsonName = proto.getJsonName();
       } else {
-        jsonName = fieldNameToLowerCamelCase(proto.getName());
+        jsonName = fieldNameToJsonName(proto.getName());
       }
 
       if (proto.hasType()) {
@@ -2132,7 +2123,7 @@ public final class Descriptors {
           // Can't happen, because addPackage() only fails when the name
           // conflicts with a non-package, but we have not yet added any
           // non-packages at this point.
-          assert false;
+          throw new AssertionError(e);
         }
       }
     }
@@ -2513,6 +2504,10 @@ public final class Descriptors {
 
     public int getFieldCount() { return fieldCount; }
 
+    public OneofOptions getOptions() {
+      return proto.getOptions();
+    }
+
     /** Get a list of this message type's fields. */
     public List<FieldDescriptor> getFields() {
       return Collections.unmodifiableList(Arrays.asList(fields));
@@ -2520,6 +2515,10 @@ public final class Descriptors {
 
     public FieldDescriptor getField(int index) {
       return fields[index];
+    }
+
+    private void setProto(final OneofDescriptorProto proto) {
+      this.proto = proto;
     }
 
     private OneofDescriptor(final OneofDescriptorProto proto,
