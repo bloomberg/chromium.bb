@@ -64,8 +64,7 @@ SafeBrowsingErrorUI::SafeBrowsingErrorUI(
       display_options_(display_options),
       app_locale_(app_locale),
       time_triggered_(time_triggered),
-      controller_(controller),
-      user_made_decision_(false) {
+      controller_(controller) {
   controller_->metrics_helper()->RecordUserDecision(MetricsHelper::SHOW);
   controller_->metrics_helper()->RecordUserInteraction(
       MetricsHelper::TOTAL_VISITS);
@@ -75,12 +74,6 @@ SafeBrowsingErrorUI::SafeBrowsingErrorUI(
 }
 
 SafeBrowsingErrorUI::~SafeBrowsingErrorUI() {
-  // If the page is closing without an explicit decision, record it as not
-  // proceeding.
-  if (!user_made_decision_) {
-    controller_->metrics_helper()->RecordUserDecision(
-        MetricsHelper::DONT_PROCEED);
-  }
   controller_->metrics_helper()->RecordShutdownMetrics();
 }
 
@@ -128,7 +121,6 @@ void SafeBrowsingErrorUI::HandleCommand(SecurityInterstitialCommands command) {
         controller_->metrics_helper()->RecordUserDecision(
             MetricsHelper::PROCEED);
         controller_->Proceed();
-        user_made_decision_ = true;
         break;
       }
     }
@@ -147,7 +139,6 @@ void SafeBrowsingErrorUI::HandleCommand(SecurityInterstitialCommands command) {
         // commits.
         controller_->GoBackAfterNavigationCommitted();
       }
-      user_made_decision_ = true;
       break;
     }
     case CMD_DO_REPORT: {

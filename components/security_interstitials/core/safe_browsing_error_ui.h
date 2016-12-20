@@ -83,7 +83,6 @@ class SafeBrowsingErrorUI {
   const base::Time time_triggered_;
 
   ControllerClient* controller_;
-  bool user_made_decision_;  // Whether the user made a choice in the UI.
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingErrorUI);
 };
