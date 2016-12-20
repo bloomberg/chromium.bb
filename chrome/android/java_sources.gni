@@ -550,6 +550,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/notifications/NotificationSystemStatusUtil.java",
   "java/src/org/chromium/chrome/browser/notifications/StandardNotificationBuilder.java",
   "java/src/org/chromium/chrome/browser/notifications/WebApkNotificationClient.java",
+  "java/src/org/chromium/chrome/browser/ntp/ContentSuggestionsNotificationHelper.java",
   "java/src/org/chromium/chrome/browser/ntp/ContextMenuManager.java",
   "java/src/org/chromium/chrome/browser/ntp/CurrentlyOpenTab.java",
   "java/src/org/chromium/chrome/browser/ntp/DisplayStyleObserver.java",
