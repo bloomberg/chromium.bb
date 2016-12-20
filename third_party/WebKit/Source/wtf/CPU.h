@@ -137,7 +137,8 @@
 #define WTF_CPU_ARM_NEON 1
 #endif
 
-#if CPU(ARM_NEON) && (!COMPILER(GCC) || GCC_VERSION_AT_LEAST(4, 7, 0))
+#if CPU(ARM_NEON) && \
+    (COMPILER(CLANG) || !COMPILER(GCC) || GCC_VERSION_AT_LEAST(4, 7, 0))
 // All NEON intrinsics usage can be disabled by this macro.
 #define HAVE_ARM_NEON_INTRINSICS 1
 #endif
