@@ -5,6 +5,7 @@
 #include "chrome/browser/previews/previews_infobar_delegate.h"
 
 #include <memory>
+#include <string>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -25,8 +26,10 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/referrer.h"
 #include "content/public/test/web_contents_tester.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 
 namespace {
@@ -135,6 +138,38 @@ TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestNavigationDismissal) {
   tester.ExpectBucketCount(
       kUMAPreviewsInfoBarActionLoFi,
       PreviewsInfoBarDelegate::INFOBAR_DISMISSED_BY_NAVIGATION, 1);
+  EXPECT_EQ(0, drp_test_context_->pref_service()->GetInteger(
+                   data_reduction_proxy::prefs::kLoFiLoadImagesPerSession));
+}
+
+TEST_F(PreviewsInfoBarDelegateUnitTest, InfobarTestReloadDismissal) {
+  base::HistogramTester tester;
+
+  // Navigate to test URL, so we can reload later.
+  content::WebContentsTester::For(web_contents())
+      ->NavigateAndCommit(GURL(kTestUrl));
+
+  CreateInfoBar(PreviewsInfoBarDelegate::LOFI, true /* is_data_saver_user */);
+
+  // Try showing a second infobar. Another should not be shown since the page
+  // has not navigated.
+  PreviewsInfoBarDelegate::Create(
+      web_contents(), PreviewsInfoBarDelegate::LOFI,
+      true /* is_data_saver_user */,
+      PreviewsInfoBarDelegate::OnDismissPreviewsInfobarCallback());
+  EXPECT_EQ(1U, infobar_service()->infobar_count());
+
+  // Navigate to test URL as a reload to dismiss the infobar.
+  controller().LoadURL(GURL(kTestUrl), content::Referrer(),
+                       ui::PAGE_TRANSITION_RELOAD, std::string());
+  content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
+
+  EXPECT_EQ(0U, infobar_service()->infobar_count());
+  EXPECT_FALSE(user_opt_out_.value());
+
+  tester.ExpectBucketCount(kUMAPreviewsInfoBarActionLoFi,
+                           PreviewsInfoBarDelegate::INFOBAR_DISMISSED_BY_RELOAD,
+                           1);
   EXPECT_EQ(0, drp_test_context_->pref_service()->GetInteger(
                    data_reduction_proxy::prefs::kLoFiLoadImagesPerSession));
 }

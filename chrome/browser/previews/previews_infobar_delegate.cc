@@ -109,7 +109,9 @@ int PreviewsInfoBarDelegate::GetIconId() const {
 
 bool PreviewsInfoBarDelegate::ShouldExpire(
     const NavigationDetails& details) const {
-  RecordPreviewsInfoBarAction(infobar_type_, INFOBAR_DISMISSED_BY_NAVIGATION);
+  RecordPreviewsInfoBarAction(
+      infobar_type_, details.is_reload ? INFOBAR_DISMISSED_BY_RELOAD
+                                       : INFOBAR_DISMISSED_BY_NAVIGATION);
   return InfoBarDelegate::ShouldExpire(details);
 }
 
