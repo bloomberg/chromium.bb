@@ -194,7 +194,7 @@ FFMPEG_TEST_CASE(Cr658440, "security/658440.flac", PIPELINE_OK, PIPELINE_OK);
 FFMPEG_TEST_CASE(Cr665305,
                  "crbug665305.flac",
                  PIPELINE_OK,
-                 PIPELINE_ERROR_DECODE);
+                 DEMUXER_ERROR_COULD_NOT_PARSE);
 FFMPEG_TEST_CASE_SEEKING(Cr666770,
                          "security/666770.mp4",
                          PIPELINE_OK,

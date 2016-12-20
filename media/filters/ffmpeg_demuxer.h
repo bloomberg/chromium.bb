@@ -235,6 +235,9 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   void NotifyCapacityAvailable();
   void NotifyBufferingChanged();
 
+  // Allow FFmpegDemxuerStream to notify us about an error.
+  void NotifyDemuxerError(PipelineStatus error);
+
   void OnEnabledAudioTracksChanged(const std::vector<MediaTrack::Id>& track_ids,
                                    base::TimeDelta currTime) override;
   // |track_ids| is either empty or contains a single video track id.

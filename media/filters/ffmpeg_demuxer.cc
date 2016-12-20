@@ -553,9 +553,14 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
                                  : base::TimeDelta::FromMicroseconds(1)));
     }
 
+    if (buffer->timestamp() == kNoTimestamp) {
+      // If we didn't get a valid timestamp and didn't fix it up, then fail.
+      demuxer_->NotifyDemuxerError(DEMUXER_ERROR_COULD_NOT_PARSE);
+      return;
+    }
+
     // The demuxer should always output positive timestamps.
     DCHECK(buffer->timestamp() >= base::TimeDelta());
-    DCHECK(buffer->timestamp() != kNoTimestamp);
 
     if (last_packet_timestamp_ < buffer->timestamp()) {
       buffered_ranges_.Add(last_packet_timestamp_, buffer->timestamp());
@@ -1800,6 +1805,12 @@ void FFmpegDemuxer::StreamHasEnded() {
 void FFmpegDemuxer::OnDataSourceError() {
   MEDIA_LOG(ERROR, media_log_) << GetDisplayName() << ": data source error";
   host_->OnDemuxerError(PIPELINE_ERROR_READ);
+}
+
+void FFmpegDemuxer::NotifyDemuxerError(PipelineStatus status) {
+  MEDIA_LOG(ERROR, media_log_) << GetDisplayName()
+                               << ": demuxer error: " << status;
+  host_->OnDemuxerError(status);
 }
 
 void FFmpegDemuxer::SetLiveness(DemuxerStream::Liveness liveness) {
