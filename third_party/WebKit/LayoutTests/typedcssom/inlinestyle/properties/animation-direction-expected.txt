@@ -24,7 +24,7 @@ FAIL Getting animation-direction when it is set to inherit assert_true: result i
 FAIL Getting animation-direction when it is set to unset assert_true: result instanceof CSSKeywordValue: expected true got false
 FAIL getAll for single-valued animation-direction assert_equals: Returned type is incorrect: expected "CSSKeywordValue" but got "CSSStyleValue"
 FAIL getAll for list-valued animation-direction assert_equals: Expected getAll to return an array containing two instances of CSSStyleValue expected 2 but got 1
-PASS Delete animation-direction removes the value form the styleMap 
+PASS Delete animation-direction removes the value from the styleMap 
 PASS animation-direction shows up in getProperties 
 FAIL Set animation-direction to a sequence assert_equals: expected "normal, normal" but got "normal normal"
 PASS Set animation-direction to a sequence containing an invalid type 

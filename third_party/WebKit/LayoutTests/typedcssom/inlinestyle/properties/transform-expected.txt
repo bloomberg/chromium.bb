@@ -32,11 +32,24 @@ PASS Getting transform with a CSSTransformValue whose value is rotate3d(1, 2, 3,
 PASS Getting transform with a CSSTransformValue whose value is rotate3d(1, 2, 3, 10rad) 
 PASS Getting transform with a CSSTransformValue whose value is rotate3d(1, 2, 3, 2grad) 
 PASS Getting transform with a CSSTransformValue whose value is rotate3d(1, 2, 3, 0.2turn) 
+PASS Getting transform when it is set to "rotateX(45deg)" via a string 
+PASS Getting transform when it is set to "rotateX(1rad)" via a string 
+PASS Getting transform when it is set to "rotateX(6.2grad)" via a string 
+PASS Getting transform when it is set to "rotateX(0.31turn)" via a string 
+PASS Getting transform when it is set to "rotateY(45deg)" via a string 
+PASS Getting transform when it is set to "rotateY(1rad)" via a string 
+PASS Getting transform when it is set to "rotateY(6.2grad)" via a string 
+PASS Getting transform when it is set to "rotateY(0.31turn)" via a string 
+PASS Getting transform when it is set to "rotateZ(45deg)" via a string 
+PASS Getting transform when it is set to "rotateZ(1rad)" via a string 
+PASS Getting transform when it is set to "rotateZ(6.2grad)" via a string 
+PASS Getting transform when it is set to "rotateZ(0.31turn)" via a string 
 PASS getAll for single-valued transform 
-PASS Delete transform removes the value form the styleMap 
+PASS Delete transform removes the value from the styleMap 
 PASS transform shows up in getProperties 
 PASS Setting transform to a sequence throws 
 PASS Appending to transform throws 
+PASS Unhandled case doesn't crash. 
 PASS Getting transform when it has a rotate with a calc angle does not crash 
 PASS Getting transform when it has a rotate3d with a calc angle does not crash 
 Harness: the test ran to completion.

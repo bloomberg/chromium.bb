@@ -25,7 +25,7 @@ PASS Getting bottom with a CSSSimpleLength whose value is 2%
 PASS Getting bottom with a CSSSimpleLength whose value is 3em 
 FAIL Getting bottom with a CSSCalcLength whose value is calc(10% + 1px) assert_equals: typeof result expected "CSSCalcLength" but got "CSSStyleValue"
 PASS getAll for single-valued bottom 
-PASS Delete bottom removes the value form the styleMap 
+PASS Delete bottom removes the value from the styleMap 
 PASS bottom shows up in getProperties 
 PASS Setting bottom to a sequence throws 
 PASS Appending to bottom throws 

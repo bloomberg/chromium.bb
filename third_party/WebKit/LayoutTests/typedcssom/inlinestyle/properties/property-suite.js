@@ -7,6 +7,9 @@
  *   validKeywords: array of strings,
  *   validObjects: array of CSSStyleValue instances that are valid for the
  *       property,
+ *   validStringMappings: object containing a mapping of string to
+ *       CSSStyleValues for things expressable in string CSS, but are expressed
+ *       the same as something else in Typed OM.
  *   supportsMultiple: boolean; whether the property supports a list of
  *       properties,
  *   invalidObjects: array of CSSStyleValue instances that are invalid for the
@@ -32,6 +35,8 @@ function runInlineStylePropertyMapTests(config) {
     'unset'
   ]);
   let validObjects = config.validObjects;
+  let validStringMappings = config.validStringMappings ?
+      config.validStringMappings : {};
   let invalidObjects = config.invalidObjects.concat([
     // No properties should take these values
     null,
@@ -49,7 +54,8 @@ function runInlineStylePropertyMapTests(config) {
   let styleMap = element.styleMap;
   runSetterTests(
       config.property, validKeywords, validObjects, invalidObjects, element);
-  runGetterTests(config.property, validKeywords, validObjects, element);
+  runGetterTests(config.property, validKeywords, validObjects,
+      validStringMappings, element);
   runGetAllTests(
       config.property, validObject, element, config.supportsMultiple);
   runDeletionTests(config.property, validObject, element);
@@ -97,7 +103,7 @@ function runSetterTests(
 }
 
 function runGetterTests(
-    propertyName, validKeywords, validObjects, element) {
+    propertyName, validKeywords, validObjects, validStringMappings, element) {
   for (let keyword of validKeywords) {
     test(function() {
       element.style[propertyName] = keyword;
@@ -118,6 +124,18 @@ function runGetterTests(
       assert_equals(result.cssText, validObject.cssText);
     }, 'Getting ' + propertyName + ' with a ' + validObject.constructor.name +
         ' whose value is ' + validObject.cssText);
+  }
+  for (let cssText in validStringMappings) {
+    test(function() {
+      element.style[propertyName] = cssText;
+
+      let result = element.styleMap.get(propertyName);
+      assert_equals(result.constructor.name,
+          validStringMappings[cssText].constructor.name,
+          'typeof result');
+      assert_equals(result.cssText, validStringMappings[cssText].cssText);
+    }, 'Getting ' + propertyName + ' when it is set to "' +
+        cssText + '" via a string');
   }
 }
 
@@ -202,9 +220,9 @@ function runGetAllTests(
       assert_equals(result.length, 2,
           'Expected getAll to return an array containing two instances ' +
           'of CSSStyleValue');
-      assert_true(result[0] instanceof CSSStyleValue,
+      assert_equals(result[0].constructor, CSSStyleValue,
           'Expected first result to be an instance of CSSStyleValue');
-      assert_true(result[1] instanceof CSSStyleValue,
+      assert_equals(result[1].constructor, CSSStyleValue,
           'Expected second result to be an instance of CSSStyleValue');
       assert_equals(result[0].constructor.name, validObject.constructor.name);
       assert_equals(result[1].constructor.name, validObject.constructor.name);
@@ -223,7 +241,7 @@ function runDeletionTests(propertyName, validObject, element) {
     element.styleMap.delete(propertyName);
     assert_equals(element.style[propertyName], '');
     assert_equals(element.styleMap.get(propertyName), null);
-  }, 'Delete ' + propertyName + ' removes the value form the styleMap');
+  }, 'Delete ' + propertyName + ' removes the value from the styleMap');
 }
 
 function runGetPropertiesTests(propertyName, validObject, element) {

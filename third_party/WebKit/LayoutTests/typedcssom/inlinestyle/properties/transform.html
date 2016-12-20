@@ -41,9 +41,44 @@ runInlineStylePropertyMapTests( {
     // Perspectives
     // TODO(meade)
   ],
+  // Values with these strings aren't used in Typed OM, but can also be
+  // represented by the specified values.
+  validStringMappings: {
+    // Rotations
+    'rotateX(45deg)':
+      cssTransformWithRotate3D(1, 0, 0, new CSSAngleValue(45, 'deg')),
+    'rotateX(1rad)':
+      cssTransformWithRotate3D(1, 0, 0, new CSSAngleValue(1, 'rad')),
+    'rotateX(6.2grad)':
+      cssTransformWithRotate3D(1, 0, 0, new CSSAngleValue(6.2, 'grad')),
+    'rotateX(0.31turn)':
+      cssTransformWithRotate3D(1, 0, 0, new CSSAngleValue(0.31, 'turn')),
+    'rotateY(45deg)':
+      cssTransformWithRotate3D(0, 1, 0, new CSSAngleValue(45, 'deg')),
+    'rotateY(1rad)':
+      cssTransformWithRotate3D(0, 1, 0, new CSSAngleValue(1, 'rad')),
+    'rotateY(6.2grad)':
+      cssTransformWithRotate3D(0, 1, 0, new CSSAngleValue(6.2, 'grad')),
+    'rotateY(0.31turn)':
+      cssTransformWithRotate3D(0, 1, 0, new CSSAngleValue(0.31, 'turn')),
+    'rotateZ(45deg)':
+      cssTransformWithRotate3D(0, 0, 1, new CSSAngleValue(45, 'deg')),
+    'rotateZ(1rad)':
+      cssTransformWithRotate3D(0, 0, 1, new CSSAngleValue(1, 'rad')),
+    'rotateZ(6.2grad)':
+      cssTransformWithRotate3D(0, 0, 1, new CSSAngleValue(6.2, 'grad')),
+    'rotateZ(0.31turn)':
+      cssTransformWithRotate3D(0, 0, 1, new CSSAngleValue(0.31, 'turn')),
+  },
   supportsMultiple: false,
   invalidObjects: [new CSSSimpleLength(4, 'px')]
 });
+
+// TODO(meade): Remove/update this test once translate is supported.
+test(function() {
+  testElement.style.transform = 'translateY(50px)';
+  testElement.styleMap.entries();
+}, "Unhandled case doesn't crash.");
 
 test(function() {
   testElement.style.transform = 'rotate(calc(45deg + 1rad))';
