@@ -7,7 +7,9 @@
 from __future__ import print_function
 
 import collections
+import pickle
 import re
+import subprocess
 
 import git
 
@@ -15,18 +17,34 @@ from chromite.lib import clactions
 from chromite.lib import commandline
 
 
-_GERRIT_MESSAGE_REXP = "Reviewed-on: https://(.*?)(?:/gerrit)?/([0-9]*)\n"
+_GERRIT_MESSAGE_REXP = (
+    "Reviewed-on: https://(.*?)(?:/gerrit)?(?:/r)?/([0-9]*)\n")
+
+# These are gerrit hosts that we know have been used for some CLs in our
+# history. We do not need to log them as anomalies.
+_SILENTLY_IGNORED_GERRIT_HOSTS = (
+    '10.10.10.29',
+    'android.intel.com',
+    'gerrit.rds.intel.com',
+    'review.coreboot.org',
+    'weave-review.googlesource.com',
+)
 
 
 def _GetParser():
   """Create the argparse parser."""
   parser = commandline.ArgumentParser(description=__doc__)
 
-  parser.add_argument('repo', action='store',
-                      help='Path to git repository to examine.')
+  parser.add_argument('repos', action='store', nargs='*',
+                      help='Paths to git repository to examine. If none '
+                           'provided, iterate over entire repo checkout.')
   parser.add_argument('--since', action='store', default='2014-01-01',
                       help='Date of earliest commit to examine. '
                            'Default: 2014-01-01')
+  parser.add_argument('--verbose', '-v', action='store_true', default=False,
+                      help='Print more logging.')
+  parser.add_argument('--output', '-o', action='store', default=None,
+                      help='Path to file to which to write pickled database.')
 
   return parser
 
@@ -35,6 +53,9 @@ CommitInfo = collections.namedtuple('CommitInfo',
                                     ['gerrit_host', 'change_number',
                                      'hexsha'])
 
+ChangeDatabase = collections.namedtuple('ChangeDatabase',
+                                        ['unique_changes',
+                                         'duplicate_changes'])
 
 def _ParseCommitMessage(commit_message):
   """Extract gerrit_host and change_number from commit message.
@@ -89,7 +110,7 @@ def _ProcessRepo(repo, since):
     gerrit info extracted from their commit message.
   """
   r = git.Repo(repo)
-  print('Examining git repository at %s' % r.working_dir)
+  print('Examining git repository at %s' % repo)
   commits = r.iter_commits(since=since)
   commit_infos = []
 
@@ -100,49 +121,53 @@ def _ProcessRepo(repo, since):
         change_tuple = clactions.GerritChangeTuple.FromHostAndNumber(
             ci.gerrit_host, ci.change_number)
         commit_infos.append((change_tuple, ci))
-      except ValueError:
-        print('Unable to determine Gerrit host for commit %s' % ci.hexsha)
+      except clactions.UnknownGerritHostError as e:
+        if e.gerrit_host not in _SILENTLY_IGNORED_GERRIT_HOSTS:
+          print('Unknown gerrit host %s for commit %s'
+                % (e.gerrit_host, ci.hexsha))
 
   return commit_infos
 
 
-def DedupelicateChanges(changes):
-  """Deduplicate a list of changes and index by change.
-
-  Args:
-    changes: A (GerritChangeTuple, CommitInfo) list to examine.
-
-  Returns:
-    A tuple of (GerritChangeTuple -> CommitInfo for all unique changes,
-                GerritChangeTuple -> [CommitInfo] for duplicate changes.
-  """
-  changes_dict = {}
-  duplicates = {}
-  for c in changes:
-    if c[0] in changes_dict:
-      ci = changes_dict.pop(c[0])
-      duplicates[c[0]] = [ci]
-      duplicates[c[0]].append(c[1])
-    elif c[0] in duplicates:
-      duplicates[c[0]].append(c[1])
-    else:
-      changes_dict[c[0]] = c[1]
-
-  return changes_dict, duplicates
-
-
 def main(argv):
+
   parser = _GetParser()
   options = parser.parse_args(argv)
 
-  changes_list = _ProcessRepo(options.repo, options.since)
-  print('Found %s Gerrit-reviewed commits since %s.' %
-        (len(changes_list), options.since))
-  changes_dict, duplicates = DedupelicateChanges(changes_list)
-  print('There were %s unique changes and %s changes with duplicates' %
-        (len(changes_dict), len(duplicates)))
+  repo_list = options.repos
+  if not repo_list:
+    repo_list = subprocess.check_output(['repo', 'list', '-fp']).splitlines()
 
-  if duplicates:
-    for cl, commits in duplicates.items():
-      print('The following hexshas are duplicates for change %s:\n%s'
-            % (cl, ', '.join([c.hexsha for c in commits])))
+
+  duplicates = {}
+  changes_dict = {}
+
+  for repo in repo_list:
+
+    changes_list = _ProcessRepo(repo, options.since)
+    print('Found %s Gerrit-reviewed commits since %s.' %
+          (len(changes_list), options.since))
+
+    # Merge this repo info into database
+    for item in changes_list:
+      change, commit_info = item
+      record = (repo, commit_info)
+      if change in duplicates:
+        duplicates[change].append(record)
+      elif change in changes_dict:
+        duplicates[change] = [changes_dict.pop(change)]
+        duplicates[change].append(record)
+      else:
+        changes_dict[change] = record
+
+    print('Up to %s uniques, %s duplicates' %
+          (len(changes_dict), len(duplicates)))
+
+  print('There are %s unique changes and %s duplicates.'
+        % (len(changes_dict), len(duplicates)))
+
+  if options.output:
+    db = ChangeDatabase(changes_dict, duplicates)
+    print('Writing database as pickle to %s' % options.output)
+    with open(options.output, 'w') as f:
+      pickle.dump(db, f)

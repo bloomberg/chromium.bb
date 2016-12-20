@@ -64,6 +64,15 @@ _INTERNAL_GERRIT_HOSTS = (
 )
 
 
+class UnknownGerritHostError(ValueError):
+
+  """Raised when attempting to construct GerritChangeTuple with unknown host."""
+  def __init__(self, gerrit_host):
+    super(UnknownGerritHostError, self).__init__(
+        'Gerrit host %s is not a known host.')
+    self.gerrit_host = gerrit_host
+
+
 class GerritChangeTuple(_GerritChangeTuple):
   """A tuple for a given Gerrit change."""
 
@@ -79,8 +88,7 @@ class GerritChangeTuple(_GerritChangeTuple):
     elif gerrit_host in _INTERNAL_GERRIT_HOSTS:
       internal = True
     else:
-      raise ValueError('Gerrit host %s is neither of the known hosts.'
-                       % gerrit_host)
+      raise UnknownGerritHostError(gerrit_host)
 
     return cls(int(gerrit_number), internal)
 
