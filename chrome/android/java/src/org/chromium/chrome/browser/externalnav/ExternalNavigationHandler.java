@@ -48,9 +48,13 @@ public class ExternalNavigationHandler {
     @VisibleForTesting
     static final String EXTRA_BROWSER_FALLBACK_URL = "browser_fallback_url";
 
-    // Supervisor package name
     @VisibleForTesting
-    static final Object SUPERVISOR_PKG = "com.google.android.instantapps.supervisor";
+    static final String SUPERVISOR_PKG = "com.google.android.instantapps.supervisor";
+    @VisibleForTesting
+    static final String[] SUPERVISOR_START_ACTIONS = {
+            "com.google.android.instantapps.START",
+            "com.google.android.instantapps.nmr1.INSTALL",
+            "com.google.android.instantapps.nmr1.VIEW" };
 
     // An extra that may be specified on an intent:// URL that contains an encoded value for the
     // referrer field passed to the market:// URL in the case where the app is not present.
@@ -455,8 +459,7 @@ public class ExternalNavigationHandler {
             }
         }
 
-        boolean isDirectInstantAppsIntent = isExternalProtocol
-                && SUPERVISOR_PKG.equals(intent.getPackage());
+        boolean isDirectInstantAppsIntent = isExternalProtocol && isIntentToInstantApp(intent);
         boolean shouldProxyForInstantApps = isDirectInstantAppsIntent
                 && mDelegate.isSerpReferrer(params.getTab());
         if (shouldProxyForInstantApps) {
@@ -533,6 +536,23 @@ public class ExternalNavigationHandler {
         }
 
         return OverrideUrlLoadingResult.NO_OVERRIDE;
+    }
+
+    /**
+     * Checks whether {@param intent} is for an Instant App. Considers both package and actions that
+     * would resolve to Supervisor.
+     * @return Whether the given intent is going to open an Instant App.
+     */
+    private boolean isIntentToInstantApp(Intent intent) {
+        if (SUPERVISOR_PKG.equals(intent.getPackage())) return true;
+
+        String intentAction = intent.getAction();
+        for (String action: SUPERVISOR_START_ACTIONS) {
+            if (action.equals(intentAction)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

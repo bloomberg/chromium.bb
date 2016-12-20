@@ -615,6 +615,19 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
                         START_OTHER_ACTIVITY);
         assertFalse(mDelegate.startActivityIntent.hasExtra(
                 InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER));
+
+        // Check that Supervisor is detected by action even without package
+        for (String action : ExternalNavigationHandler.SUPERVISOR_START_ACTIONS) {
+            String intentWithoutPackage = "intent://buzzfeed.com/tasty#Intent;scheme=http;"
+                    + "action=" + action + ";"
+                    + "S.com.google.android.instantapps.FALLBACK_PACKAGE="
+                    + "com.android.chrome;S.com.google.android.instantapps.INSTANT_APP_PACKAGE="
+                    + "com.yelp.android;S.android.intent.extra.REFERRER_NAME="
+                    + "https%3A%2F%2Fwww.google.com;end";
+            mDelegate.setIsSerpReferrer(false);
+            checkUrl(intentWithoutPackage)
+                    .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+        }
     }
 
     @SmallTest
