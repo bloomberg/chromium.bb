@@ -2,11 +2,11 @@
 
 {% include 'copyright_block.txt' %}
 
-#include "Web{{class_name}}.h"
+#include "{{class_name}}.h"
 
 // TODO(dglazkov): Implement generating includes.
 {% for filename in cpp_includes %}
-#include "Web{{filename}}.h"
+#include "{{filename}}.h"
 {% endfor %}
 
 namespace blink {

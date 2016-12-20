@@ -208,6 +208,10 @@ class IdlType(IdlTypeBase):
         return self.base_type in INTEGER_TYPES
 
     @property
+    def is_void(self):
+        return self.base_type == 'void'
+
+    @property
     def is_numeric_type(self):
         return self.base_type in NUMERIC_TYPES
 

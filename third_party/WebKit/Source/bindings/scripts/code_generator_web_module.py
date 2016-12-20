@@ -29,10 +29,10 @@ from code_generator_v8 import TypedefResolver
 MODULE_PYNAME = os.path.splitext(os.path.basename(__file__))[0] + '.py'
 
 WEB_MODULE_IDL_ATTRIBUTE = 'WebModuleAPI'
-
+STRING_INCLUDE_PATH = 'wtf/text/WTFString.h'
 
 def interface_context(idl_interface):
-    builder = InterfaceContextBuilder(MODULE_PYNAME)
+    builder = InterfaceContextBuilder(MODULE_PYNAME, TypeResolver())
     builder.set_class_name(idl_interface.name)
     builder.set_inheritance(idl_interface.parent)
 
@@ -45,9 +45,40 @@ def interface_context(idl_interface):
     return builder.build()
 
 
+class TypeResolver(object):
+    """Resolves Web IDL types into corresponding C++ types and include paths
+       to the generated and existing files."""
+
+    def includes_from_interface(self, base_type):
+        # TODO(dglazkov): Are there any exceptional conditions here?
+        return set([base_type])
+
+    def _includes_from_type(self, idl_type):
+        if idl_type.is_void:
+            return set()
+        if idl_type.is_primitive_type:
+            return set()
+        if idl_type.is_string_type:
+            return set([STRING_INCLUDE_PATH])
+
+        # TODO(dglazkov): Handle complex/weird types.
+        # TODO(dglazkov): Make these proper paths to generated and non-generated
+        # files.
+        return set([idl_type.base_type])
+
+    def includes_from_definition(self, idl_definition):
+        return self._includes_from_type(idl_definition.idl_type)
+
+    def type_from_definition(self, idl_definition):
+        # TODO(dglazkov): The output of this method must be a reasonable C++
+        # type that can be used directly in the jinja2 template.
+        return idl_definition.idl_type.base_type
+
+
 class InterfaceContextBuilder(object):
-    def __init__(self, code_generator):
+    def __init__(self, code_generator, type_resolver):
         self.result = {'code_generator': code_generator}
+        self.type_resolver = type_resolver
 
     def set_class_name(self, class_name):
         self.result['class_name'] = class_name
@@ -57,7 +88,7 @@ class InterfaceContextBuilder(object):
             return
         self.result['inherits_expression'] = ' : public %s' % base_interface
         self._ensure_set('cpp_includes').update(
-            self._includes_for_type(base_interface))
+            self.type_resolver.includes_from_interface(base_interface))
 
     def _ensure_set(self, name):
         return self.result.setdefault(name, set())
@@ -65,19 +96,11 @@ class InterfaceContextBuilder(object):
     def _ensure_list(self, name):
         return self.result.setdefault(name, [])
 
-    def _includes_for_type(self, idl_type):
-        # TODO(dglazkov): Make this actually work.
-        name = idl_type
-        return set([name])
-
-    def _get_return_type(self, idl_definition):
-        return idl_definition.idl_type.preprocessed_type.base_type
-
     def add_attribute(self, idl_attribute):
         self._ensure_list('attributes').append(
             self.create_attribute(idl_attribute))
         self._ensure_set('cpp_includes').update(
-            self._includes_for_type(self._get_return_type(idl_attribute)))
+            self.type_resolver.includes_from_definition(idl_attribute))
 
     def add_operation(self, idl_operation):
         if not idl_operation.name:
@@ -85,11 +108,11 @@ class InterfaceContextBuilder(object):
         self._ensure_list('methods').append(
             self.create_method(idl_operation))
         self._ensure_set('cpp_includes').update(
-            self._includes_for_type(self._get_return_type(idl_operation)))
+            self.type_resolver.includes_from_definition(idl_operation))
 
     def create_method(self, idl_operation):
         name = idl_operation.name
-        return_type = idl_operation.idl_type.preprocessed_type.base_type
+        return_type = self.type_resolver.type_from_definition(idl_operation)
         return {
             'name': name,
             'return_type': return_type
@@ -97,7 +120,7 @@ class InterfaceContextBuilder(object):
 
     def create_attribute(self, idl_attribute):
         name = idl_attribute.name
-        return_type = idl_attribute.idl_type.preprocessed_type.base_type
+        return_type = self.type_resolver.type_from_definition(idl_attribute)
         return {
             'name': name,
             'return_type': return_type

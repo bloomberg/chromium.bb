@@ -10,12 +10,11 @@
 
 // clang-format off
 
-#include "WebTestInterface3.h"
+#include "TestInterface3.h"
 
 // TODO(dglazkov): Implement generating includes.
-#include "Webvoid.h"
-#include "WebIterator.h"
-#include "WebDOMString.h"
+#include "wtf/text/WTFString.h.h"
+#include "Iterator.h"
 
 namespace blink {
 namespace api {
