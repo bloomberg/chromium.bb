@@ -47,6 +47,7 @@ constexpr char kOsVersionTag[] = "OS VERSION";
 #endif
 #if defined(OS_WIN)
 constexpr char kUsbKeyboardDetected[] = "usb_keyboard_detected";
+constexpr char kIsEnrolledToDomain[] = "enrolled_to_domain";
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -114,6 +115,7 @@ void ChromeInternalLogSource::Fetch(const SysLogsSourceCallback& callback) {
   PopulateDataReductionProxyLogs(response.get());
 #if defined(OS_WIN)
   PopulateUsbKeyboardDetected(response.get());
+  PopulateEnrolledToDomain(response.get());
 #endif
 
   if (ProfileManager::GetLastUsedProfile()->IsChild())
@@ -236,6 +238,13 @@ void ChromeInternalLogSource::PopulateUsbKeyboardDetected(
   (*response)[kUsbKeyboardDetected] = result ? "Keyboard Detected:\n" :
                                                "No Keyboard:\n";
   (*response)[kUsbKeyboardDetected] += reason;
+}
+
+void ChromeInternalLogSource::PopulateEnrolledToDomain(
+    SystemLogsResponse* response) {
+  (*response)[kIsEnrolledToDomain] = base::win::IsEnrolledToDomain()
+                                         ? "Enrolled to domain"
+                                         : "Not enrolled to domain";
 }
 #endif
 

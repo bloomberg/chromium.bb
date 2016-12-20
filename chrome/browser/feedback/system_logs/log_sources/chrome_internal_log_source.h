@@ -31,6 +31,7 @@ class ChromeInternalLogSource : public SystemLogsSource {
 
 #if defined(OS_WIN)
   void PopulateUsbKeyboardDetected(SystemLogsResponse* response);
+  void PopulateEnrolledToDomain(SystemLogsResponse* response);
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeInternalLogSource);
