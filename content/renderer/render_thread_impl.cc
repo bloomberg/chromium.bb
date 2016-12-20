@@ -1779,10 +1779,9 @@ void RenderThreadImpl::OnProcessPurgeAndSuspend() {
   if (!RendererIsHidden())
     return;
   if (base::FeatureList::IsEnabled(features::kPurgeAndSuspend)) {
-    // TODO(tasak): After enabling MemoryCoordinator, remove this Notify
-    // and follow MemoryCoordinator's request.
-    base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
-        base::MemoryState::SUSPENDED);
+    // TODO(tasak,bashi): After enabling MemoryCoordinator, stop calling
+    // SuspendRenderer() here.
+    SuspendRenderer();
   }
   // Since purging is not a synchronous task (e.g. v8 GC, oilpan GC, ...),
   // we need to wait until the task is finished. So wait 15 seconds and
@@ -1890,10 +1889,9 @@ void RenderThreadImpl::OnProcessResume() {
   if (!RendererIsHidden())
     return;
   if (base::FeatureList::IsEnabled(features::kPurgeAndSuspend)) {
-    // TODO(tasak): after enabling MemoryCoordinator, remove this Notify
-    // and follow MemoryCoordinator's request.
-    base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
-        base::MemoryState::NORMAL);
+    // TODO(tasak,bashi): After enabling MemoryCoordinator, stop calling
+    // ResumeRenderer() here.
+    ResumeRenderer();
   }
 }
 
@@ -2261,10 +2259,10 @@ void RenderThreadImpl::OnMemoryStateChange(base::MemoryState state) {
   }
   switch (state) {
     case base::MemoryState::NORMAL:
-      ResumeRenderer();
+      // TODO(bashi): When the renderer is suspended, resume it.
       break;
     case base::MemoryState::THROTTLED:
-      ResumeRenderer();
+      // TODO(bashi): When the renderer is suspended, resume it.
       // TODO(bashi): Figure out what kind of strategy is suitable on
       // THROTTLED state. crbug.com/674815
 #if defined(OS_ANDROID)
@@ -2276,7 +2274,10 @@ void RenderThreadImpl::OnMemoryStateChange(base::MemoryState state) {
       ReleaseFreeMemory();
       break;
     case base::MemoryState::SUSPENDED:
-      SuspendRenderer();
+      // TODO(bashi): Suspend the renderer.
+      OnTrimMemoryImmediately();
+      ReleaseFreeMemory();
+      ClearMemory();
       break;
     case base::MemoryState::UNKNOWN:
       NOTREACHED();
