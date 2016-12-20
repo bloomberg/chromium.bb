@@ -18,7 +18,8 @@ class WebContents;
 class GeneratedPasswordSavedInfoBarDelegateAndroid
     : public infobars::InfoBarDelegate {
  public:
-  // Creates and shows the infobar. Implemented in the platform-specific file.
+  // Creates and shows the infobar. Implemented with
+  // GeneratedPasswordSavedInfoBar.
   static void Create(content::WebContents* web_contents);
 
   ~GeneratedPasswordSavedInfoBarDelegateAndroid() override;
@@ -36,8 +37,7 @@ class GeneratedPasswordSavedInfoBarDelegateAndroid
   void OnInlineLinkClicked();
 
  private:
-  explicit GeneratedPasswordSavedInfoBarDelegateAndroid(
-      content::WebContents* web_contents);
+  GeneratedPasswordSavedInfoBarDelegateAndroid();
 
   // infobars::InfoBarDelegate:
   Type GetInfoBarType() const override;
@@ -52,11 +52,6 @@ class GeneratedPasswordSavedInfoBarDelegateAndroid
 
   // The translated label of the button.
   base::string16 button_label_;
-
-  content::WebContents* web_contents_;
-
-  // If smart lock branding should be used.
-  bool smart_lock_branding_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(GeneratedPasswordSavedInfoBarDelegateAndroid);
 };

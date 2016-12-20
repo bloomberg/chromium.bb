@@ -135,13 +135,8 @@ void PasswordManagerHandler::GetLocalizedValues(
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
 
-  const browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(GetProfile());
-  int title_id =
-      password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service)
-          ? IDS_PASSWORD_MANAGER_SMART_LOCK_FOR_PASSWORDS
-          : IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE;
-  RegisterTitle(localized_strings, "passwordsPage", title_id);
+  RegisterTitle(localized_strings, "passwordsPage",
+                IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE);
 
   localized_strings->SetString("passwordManagerLearnMoreURL",
                                chrome::kPasswordManagerLearnMoreURL);

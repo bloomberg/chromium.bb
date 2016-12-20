@@ -131,13 +131,7 @@ public class MainPreferences extends PreferenceFragment
             passwordsPref.setOnPreferenceClickListener(this);
             passwordsPref.setManagedPreferenceDelegate(null);
         } else {
-            if (PasswordUIView.shouldUseSmartLockBranding()) {
-                passwordsPref.setTitle(getResources().getString(
-                         R.string.prefs_smart_lock_for_passwords));
-            } else {
-                passwordsPref.setTitle(getResources().getString(
-                          R.string.prefs_saved_passwords));
-            }
+            passwordsPref.setTitle(getResources().getString(R.string.prefs_saved_passwords));
             passwordsPref.setFragment(SavePasswordsPreferences.class.getCanonicalName());
             setOnOffSummary(passwordsPref,
                     PrefServiceBridge.getInstance().isRememberPasswordsEnabled());

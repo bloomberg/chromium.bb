@@ -14,13 +14,10 @@ class SyncService;
 
 namespace password_bubble_experiment {
 
-extern const char kBrandingExperimentName[];
 extern const char kChromeSignInPasswordPromoExperimentName[];
 extern const char kChromeSignInPasswordPromoThresholdParam[];
 extern const char kSmartBubbleExperimentName[];
 extern const char kSmartBubbleThresholdParam[];
-extern const char kSmartLockBrandingGroupName[];
-extern const char kSmartLockBrandingSavePromptOnlyGroupName[];
 
 // Registers prefs which controls appearance of the first run experience for the
 // Smart Lock UI, namely was first run experience shown for save prompt or auto
@@ -33,35 +30,6 @@ int GetSmartBubbleDismissalThreshold();
 
 // A Smart Lock user is a sync user without a custom passphrase.
 bool IsSmartLockUser(const syncer::SyncService* sync_service);
-
-enum class SmartLockBranding { NONE, FULL, SAVE_PROMPT_ONLY };
-
-// If the user is not a Smart Lock user, returns NONE. For Smart Lock users:
-// * returns NONE if the password manager should not be referred to as Smart
-//   Lock anywhere;
-// * returns FULL, if it should be referred to as Smart Lock everywhere;
-// * returns SAVE_PROMPT_ONLY if it only should be referred to as Smart Lock in
-//   the save password bubble.
-SmartLockBranding GetSmartLockBrandingState(
-    const syncer::SyncService* sync_service);
-
-// Convenience function for checking whether the result of
-// GetSmartLockBrandingState is SmartLockBranding::FULL.
-bool IsSmartLockBrandingEnabled(const syncer::SyncService* sync_service);
-
-// Convenience function for checking whether the result of
-// GetSmartLockBrandingState is not equal to SmartLockBranding::NONE.
-bool IsSmartLockBrandingSavePromptEnabled(
-    const syncer::SyncService* sync_service);
-
-// Returns true if save prompt should contain first run experience.
-bool ShouldShowSavePromptFirstRunExperience(
-    const syncer::SyncService* sync_service,
-    PrefService* prefs);
-
-// Sets appropriate value to the preference which controls appearance of the
-// first run experience for the save prompt.
-void RecordSavePromptFirstRunExperienceWasShown(PrefService* prefs);
 
 // Returns true if first run experience for auto sign-in prompt should be shown.
 bool ShouldShowAutoSignInPromptFirstRunExperience(PrefService* prefs);

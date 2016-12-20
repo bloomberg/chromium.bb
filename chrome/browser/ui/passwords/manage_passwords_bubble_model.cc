@@ -61,11 +61,10 @@ std::vector<autofill::PasswordForm> DeepCopyForms(
   return result;
 }
 
-password_bubble_experiment::SmartLockBranding GetSmartLockBrandingState(
-    Profile* profile) {
+bool IsSmartLockUser(Profile* profile) {
   const browser_sync::ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
-  return password_bubble_experiment::GetSmartLockBrandingState(sync_service);
+  return password_bubble_experiment::IsSmartLockUser(sync_service);
 }
 
 }  // namespace
@@ -151,11 +150,6 @@ void ManagePasswordsBubbleModel::InteractionKeeper::ReportInteractions(
   if (model->state() == password_manager::ui::PENDING_PASSWORD_STATE) {
     Profile* profile = model->GetProfile();
     if (profile) {
-      if (GetSmartLockBrandingState(profile) ==
-          password_bubble_experiment::SmartLockBranding::FULL) {
-        password_bubble_experiment::RecordSavePromptFirstRunExperienceWasShown(
-            profile->GetPrefs());
-      }
       if (dismissal_reason_ == metrics_util::NO_DIRECT_INTERACTION &&
           display_disposition_ ==
               metrics_util::AUTOMATIC_WITH_PASSWORD_PENDING) {
@@ -255,20 +249,10 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
   if (state_ == password_manager::ui::CONFIRMATION_STATE) {
     base::string16 save_confirmation_link =
         l10n_util::GetStringUTF16(IDS_MANAGE_PASSWORDS_LINK);
-    int confirmation_text_id = IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT;
-    if (GetSmartLockBrandingState(GetProfile()) ==
-        password_bubble_experiment::SmartLockBranding::FULL) {
-      std::string management_hostname =
-          GURL(password_manager::kPasswordManagerAccountDashboardURL).host();
-      save_confirmation_link = base::UTF8ToUTF16(management_hostname);
-      confirmation_text_id =
-          IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_SMART_LOCK_TEXT;
-    }
-
     size_t offset;
     save_confirmation_text_ =
-        l10n_util::GetStringFUTF16(
-            confirmation_text_id, save_confirmation_link, &offset);
+        l10n_util::GetStringFUTF16(IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT,
+                                   save_confirmation_link, &offset);
     save_confirmation_link_range_ =
         gfx::Range(offset, offset + save_confirmation_link.length());
   }
@@ -375,12 +359,7 @@ void ManagePasswordsBubbleModel::OnOKClicked() {
 
 void ManagePasswordsBubbleModel::OnManageLinkClicked() {
   interaction_keeper_->set_dismissal_reason(metrics_util::CLICKED_MANAGE);
-  if (GetSmartLockBrandingState(GetProfile()) ==
-      password_bubble_experiment::SmartLockBranding::FULL) {
-    delegate_->NavigateToExternalPasswordManager();
-  } else {
-    delegate_->NavigateToPasswordManagerSettingsPage();
-  }
+  delegate_->NavigateToPasswordManagerSettingsPage();
 }
 
 void ManagePasswordsBubbleModel::OnBrandLinkClicked() {
@@ -437,17 +416,6 @@ bool ManagePasswordsBubbleModel::ShouldShowMultipleAccountUpdateUI() const {
          local_credentials_.size() > 1 && !password_overridden_;
 }
 
-bool ManagePasswordsBubbleModel::ShouldShowGoogleSmartLockWelcome() const {
-  Profile* profile = GetProfile();
-  if (GetSmartLockBrandingState(profile) ==
-      password_bubble_experiment::SmartLockBranding::FULL) {
-    PrefService* prefs = profile->GetPrefs();
-    return !prefs->GetBoolean(
-        password_manager::prefs::kWasSavePrompFirstRunExperienceShown);
-  }
-  return false;
-}
-
 bool ManagePasswordsBubbleModel::ReplaceToShowSignInPromoIfNeeded() {
   DCHECK_EQ(password_manager::ui::PENDING_PASSWORD_STATE, state_);
   PrefService* prefs = GetProfile()->GetPrefs();
@@ -484,9 +452,7 @@ void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
                  ? PasswordTitleType::SAVE_PASSWORD
                  : PasswordTitleType::SAVE_ACCOUNT);
   GetSavePasswordDialogTitleTextAndLinkRange(
-      GetWebContents()->GetVisibleURL(), origin_,
-      GetSmartLockBrandingState(GetProfile()) !=
-          password_bubble_experiment::SmartLockBranding::NONE,
+      GetWebContents()->GetVisibleURL(), origin_, IsSmartLockUser(GetProfile()),
       type, &title_, &title_brand_link_range_);
 }
 

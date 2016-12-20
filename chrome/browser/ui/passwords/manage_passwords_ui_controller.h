@@ -102,7 +102,6 @@ class ManagePasswordsUIController
   void ChooseCredential(
       const autofill::PasswordForm& form,
       password_manager::CredentialType credential_type) override;
-  void NavigateToExternalPasswordManager() override;
   void NavigateToSmartLockHelpPage() override;
   void NavigateToPasswordManagerSettingsPage() override;
   void NavigateToChromeSignIn() override;

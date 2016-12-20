@@ -14,12 +14,8 @@
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
-#import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util.h"
-
-constexpr SkColor kWarmWelcomeColor =
-    SkColorSetARGBMacro(0xFF, 0x64, 0x64, 0x64);
 
 @implementation PendingPasswordViewController
 
@@ -47,10 +43,6 @@ constexpr SkColor kWarmWelcomeColor =
   // Empty implementation, it should be implemented in child class.
   NOTREACHED();
   return nil;
-}
-
-- (BOOL)shouldShowGoogleSmartLockWelcome {
-  return NO;
 }
 
 - (NSArray*)createButtonsAndAddThemToView:(NSView*)view {
@@ -108,21 +100,6 @@ constexpr SkColor kWarmWelcomeColor =
     [view addSubview:passwordRow];
   }
 
-  base::scoped_nsobject<NSTextField> warm_welcome;
-  if ([self shouldShowGoogleSmartLockWelcome]) {
-    base::string16 label_text =
-        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK_WELCOME);
-    warm_welcome.reset([[NSTextField alloc] initWithFrame:NSZeroRect]);
-    InitLabel(warm_welcome.get(), label_text);
-    [[warm_welcome cell] setWraps:YES];
-    [warm_welcome setFrameSize:NSMakeSize(kDesiredBubbleWidth - 2*kFramePadding,
-                                          MAXFLOAT)];
-    [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:warm_welcome];
-    NSColor* color = skia::SkColorToSRGBNSColor(kWarmWelcomeColor);
-    [warm_welcome setTextColor:color];
-    [view addSubview:warm_welcome.get()];
-  }
-
   NSArray* buttons = [self createButtonsAndAddThemToView:view];
 
   // Compute the bubble width using the password item.
@@ -144,11 +121,6 @@ constexpr SkColor kWarmWelcomeColor =
 
   curX = kFramePadding;
   curY = NSMaxY([buttons.firstObject frame]) + kUnrelatedControlVerticalPadding;
-  // The Smart Lock warm welcome is placed above after some padding.
-  if (warm_welcome) {
-    [warm_welcome setFrameOrigin:NSMakePoint(curX, curY)];
-    curY = NSMaxY([warm_welcome frame]) + kUnrelatedControlVerticalPadding;
-  }
 
   if (passwordRow) {
     // Password item goes on the next row.
