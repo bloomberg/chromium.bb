@@ -10,6 +10,8 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/macros.h"
+#include "base/memory/singleton.h"
 #include "base/time/clock.h"
 
 namespace cryptauth {
@@ -38,6 +40,7 @@ class EidGenerator {
                       const int64_t end_timestamp_ms);
 
     bool ContainsTime(const int64_t timestamp_ms) const;
+    std::string DataInHex() const;
 
     const std::string data;
     const int64_t start_timestamp_ms;
@@ -56,13 +59,14 @@ class EidGenerator {
     ~EidData();
 
     AdjacentDataType GetAdjacentDataType() const;
+    std::string DataInHex() const;
 
     const DataWithTimestamp current_data;
     const std::unique_ptr<DataWithTimestamp> adjacent_data;
   };
 
-  EidGenerator();
-  ~EidGenerator();
+  static EidGenerator* GetInstance();
+  virtual ~EidGenerator();
 
   // Generates EID data for the given EID seeds to be used as a background scan
   // filter. In the normal case, two DataWithTimestamp values are returned, one
@@ -92,7 +96,12 @@ class EidGenerator {
       const std::vector<RemoteDevice>& device_list,
       const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const;
 
+ protected:
+  EidGenerator();
+
  private:
+  friend struct base::DefaultSingletonTraits<EidGenerator>;
+
   struct EidPeriodTimestamps {
     int64_t current_period_start_timestamp_ms;
     int64_t current_period_end_timestamp_ms;
@@ -168,6 +177,8 @@ class EidGenerator {
 
   std::unique_ptr<EidComputationHelper> eid_computation_helper_;
 
+  DISALLOW_COPY_AND_ASSIGN(EidGenerator);
+
   friend class CryptAuthEidGeneratorTest;
   FRIEND_TEST_ALL_PREFIXES(
       CryptAuthEidGeneratorTest,
@@ -209,7 +220,7 @@ class EidGenerator {
       TestEidComputationHelperImpl_ChangingExtraEntropyChangesOutput);
   FRIEND_TEST_ALL_PREFIXES(
       CryptAuthEidGeneratorTest,
-      testEidComputationHelper_ChangingTimestampWithLongExtraEntropy);
+      TestEidComputationHelper_ChangingTimestampWithLongExtraEntropy);
   FRIEND_TEST_ALL_PREFIXES(CryptAuthEidGeneratorTest,
                            TestEidComputationHelper_EnsureTestVectorsPass);
 };

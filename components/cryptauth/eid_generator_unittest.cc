@@ -653,7 +653,7 @@ TEST_F(CryptAuthEidGeneratorTest,
 }
 
 TEST_F(CryptAuthEidGeneratorTest,
-       testEidComputationHelper_ChangingTimestampWithLongExtraEntropy) {
+       TestEidComputationHelper_ChangingTimestampWithLongExtraEntropy) {
   EidGenerator::EidComputationHelperImpl helper;
   std::string long_extra_entropy =
       "reallyReallyReallyReallyReallyReallyReallyLongExtraEntropy";
@@ -712,6 +712,17 @@ TEST_F(CryptAuthEidGeneratorTest,
   std::string test_eid_with_entropy2 = helper.GenerateEidDataForDevice(
       test_eid_seed2_str, test_timestamp2, &test_entropy2_str);
   EXPECT_EQ("\xee\xcc", test_eid_with_entropy2);
+}
+
+TEST_F(CryptAuthEidGeneratorTest,
+       TestDataWithTimestamp_ContainsTime) {
+  EidGenerator::DataWithTimestamp data_with_timestamp(
+      "data", /* start */ 1000L, /* end */ 2000L);
+  EXPECT_FALSE(data_with_timestamp.ContainsTime(999L));
+  EXPECT_TRUE(data_with_timestamp.ContainsTime(1000L));
+  EXPECT_TRUE(data_with_timestamp.ContainsTime(1500L));
+  EXPECT_TRUE(data_with_timestamp.ContainsTime(1999L));
+  EXPECT_FALSE(data_with_timestamp.ContainsTime(2000L));
 }
 
 }  // namespace cryptauth

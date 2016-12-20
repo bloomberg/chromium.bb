@@ -30,6 +30,11 @@ const int64_t EidGenerator::kNumMsInBeginningOfEidPeriod =
     base::TimeDelta::FromHours(2).InMilliseconds();
 const int32_t EidGenerator::kNumBytesInEidValue = 2;
 
+// static
+EidGenerator* EidGenerator::GetInstance() {
+  return base::Singleton<EidGenerator>::get();
+}
+
 std::string EidGenerator::EidComputationHelperImpl::GenerateEidDataForDevice(
     const std::string& eid_seed,
     const int64_t start_of_period_timestamp_ms,
@@ -68,6 +73,43 @@ EidGenerator::EidData::GetAdjacentDataType() const {
   return AdjacentDataType::FUTURE;
 }
 
+std::string EidGenerator::EidData::DataInHex() const {
+  std::string str = "[" + current_data.DataInHex();
+
+  if (adjacent_data) {
+    return str + ", " + adjacent_data->DataInHex() + "]";
+  }
+
+  return str + "]";
+}
+
+EidGenerator::DataWithTimestamp::DataWithTimestamp(
+    const std::string& data,
+    const int64_t start_timestamp_ms,
+    const int64_t end_timestamp_ms)
+    : data(data),
+      start_timestamp_ms(start_timestamp_ms),
+      end_timestamp_ms(end_timestamp_ms) {
+  DCHECK(start_timestamp_ms < end_timestamp_ms);
+  DCHECK(data.size());
+}
+
+bool EidGenerator::DataWithTimestamp::ContainsTime(
+    const int64_t timestamp_ms) const {
+  return start_timestamp_ms <= timestamp_ms && timestamp_ms < end_timestamp_ms;
+}
+
+std::string EidGenerator::DataWithTimestamp::DataInHex() const {
+  std::stringstream ss;
+  ss << "0x" << std::hex;
+
+  for (size_t i = 0; i < data.size(); i++) {
+    ss << static_cast<int>(data.data()[i]);
+  }
+
+  return ss.str();
+}
+
 EidGenerator::EidGenerator()
     : EidGenerator(base::WrapUnique(new EidComputationHelperImpl()),
                    base::WrapUnique(new base::DefaultClock())) {}
@@ -77,14 +119,6 @@ EidGenerator::EidGenerator(
     std::unique_ptr<base::Clock> clock)
     : clock_(std::move(clock)),
       eid_computation_helper_(std::move(computation_helper)) {}
-
-EidGenerator::DataWithTimestamp::DataWithTimestamp(
-    const std::string& data,
-    const int64_t start_timestamp_ms,
-    const int64_t end_timestamp_ms)
-    : data(data),
-      start_timestamp_ms(start_timestamp_ms),
-      end_timestamp_ms(end_timestamp_ms) {}
 
 EidGenerator::~EidGenerator() {}
 
