@@ -14,14 +14,13 @@ AutoAdvancingVirtualTimeDomain::AutoAdvancingVirtualTimeDomain(
 
 AutoAdvancingVirtualTimeDomain::~AutoAdvancingVirtualTimeDomain() {}
 
-base::Optional<base::TimeDelta>
-AutoAdvancingVirtualTimeDomain::DelayTillNextTask(LazyNow* lazy_now) {
+bool AutoAdvancingVirtualTimeDomain::MaybeAdvanceTime() {
   base::TimeTicks run_time;
-  if (!can_advance_virtual_time_ || !NextScheduledRunTime(&run_time))
-    return base::Optional<base::TimeDelta>();
-
+  if (!can_advance_virtual_time_ || !NextScheduledRunTime(&run_time)) {
+    return false;
+  }
   AdvanceTo(run_time);
-  return base::TimeDelta();  // Makes DoWork post an immediate continuation.
+  return true;
 }
 
 void AutoAdvancingVirtualTimeDomain::RequestWakeup(base::TimeTicks now,

@@ -23,20 +23,19 @@ void ThrottledTimeDomain::RequestWakeup(base::TimeTicks now,
   // behalf.
 }
 
-base::Optional<base::TimeDelta> ThrottledTimeDomain::DelayTillNextTask(
-    LazyNow* lazy_now) {
+bool ThrottledTimeDomain::MaybeAdvanceTime() {
   base::TimeTicks next_run_time;
   if (!NextScheduledRunTime(&next_run_time))
-    return base::Optional<base::TimeDelta>();
+    return false;
 
-  base::TimeTicks now = lazy_now->Now();
+  base::TimeTicks now = Now();
   if (now >= next_run_time)
-    return base::TimeDelta();  // Makes DoWork post an immediate continuation.
+    return true;  // Causes DoWork to post a continuation.
 
-  // Unlike RealTimeDomain::ContinuationNeeded we don't request a wake up here,
-  // we assume the owner (i.e. TaskQueueThrottler) will manage wakeups on our
+  // Unlike RealTimeDomain::MaybeAdvanceTime we don't request a wake up here, we
+  // assume the owner (i.e. TaskQueueThrottler) will manage wakeups on our
   // behalf.
-  return base::Optional<base::TimeDelta>();
+  return false;
 }
 
 }  // namespace scheduler

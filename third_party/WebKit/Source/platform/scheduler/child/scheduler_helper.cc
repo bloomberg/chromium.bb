@@ -18,19 +18,6 @@ SchedulerHelper::SchedulerHelper(
     const char* tracing_category,
     const char* disabled_by_default_tracing_category,
     const char* disabled_by_default_verbose_tracing_category)
-    : SchedulerHelper(task_queue_manager_delegate,
-                      tracing_category,
-                      disabled_by_default_tracing_category,
-                      disabled_by_default_verbose_tracing_category,
-                      TaskQueue::Spec(TaskQueue::QueueType::DEFAULT)
-                          .SetShouldMonitorQuiescence(true)) {}
-
-SchedulerHelper::SchedulerHelper(
-    scoped_refptr<SchedulerTqmDelegate> task_queue_manager_delegate,
-    const char* tracing_category,
-    const char* disabled_by_default_tracing_category,
-    const char* disabled_by_default_verbose_tracing_category,
-    TaskQueue::Spec default_task_queue_spec)
     : task_queue_manager_delegate_(task_queue_manager_delegate),
       task_queue_manager_(
           new TaskQueueManager(task_queue_manager_delegate,
@@ -40,7 +27,9 @@ SchedulerHelper::SchedulerHelper(
       control_task_runner_(
           NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::CONTROL)
                            .SetShouldNotifyObservers(false))),
-      default_task_runner_(NewTaskQueue(default_task_queue_spec)),
+      default_task_runner_(
+          NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::DEFAULT)
+                           .SetShouldMonitorQuiescence(true))),
       observer_(nullptr),
       tracing_category_(tracing_category),
       disabled_by_default_tracing_category_(
@@ -64,15 +53,6 @@ void SchedulerHelper::Shutdown() {
     task_queue_manager_->SetObserver(nullptr);
   task_queue_manager_.reset();
   task_queue_manager_delegate_->RestoreDefaultTaskRunner();
-}
-
-void SchedulerHelper::SetRecordTaskDelayHistograms(
-    bool record_task_delay_histograms) {
-  if (!task_queue_manager_)
-    return;
-
-  task_queue_manager_->SetRecordTaskDelayHistograms(
-      record_task_delay_histograms);
 }
 
 scoped_refptr<TaskQueue> SchedulerHelper::NewTaskQueue(

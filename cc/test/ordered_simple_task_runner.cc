@@ -137,8 +137,6 @@ bool OrderedSimpleTaskRunner::HasPendingTasks() const {
 }
 
 base::TimeTicks OrderedSimpleTaskRunner::NextTaskTime() {
-  RemoveCancelledTasks();
-
   if (pending_tasks_.size() <= 0) {
     return AbsoluteMaxNow();
   }
@@ -148,7 +146,6 @@ base::TimeTicks OrderedSimpleTaskRunner::NextTaskTime() {
 
 base::TimeDelta OrderedSimpleTaskRunner::DelayToNextTaskTime() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  RemoveCancelledTasks();
 
   if (pending_tasks_.size() <= 0) {
     return AbsoluteMaxNow() - base::TimeTicks();
@@ -201,11 +198,6 @@ bool OrderedSimpleTaskRunner::RunTasksWhile(
   }
 
   while (pending_tasks_.size() > 0) {
-    // Skip canceled tasks.
-    if (pending_tasks_.begin()->task.IsCancelled()) {
-      pending_tasks_.erase(pending_tasks_.begin());
-      continue;
-    }
     // Check if we should continue to run pending tasks.
     bool condition_success = true;
     for (std::vector<base::Callback<bool(void)>>::iterator it =
@@ -350,17 +342,6 @@ bool OrderedSimpleTaskRunner::AdvanceNowCallback() {
     now_src_->Advance(next_task_time - now_src_->NowTicks());
   }
   return true;
-}
-
-void OrderedSimpleTaskRunner::RemoveCancelledTasks() {
-  std::set<TestOrderablePendingTask>::iterator it = pending_tasks_.begin();
-  while (it != pending_tasks_.end()) {
-    if (it->task.IsCancelled()) {
-      it = pending_tasks_.erase(it);
-    } else {
-      it++;
-    }
-  }
 }
 
 }  // namespace cc

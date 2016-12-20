@@ -8,7 +8,6 @@
 #include <map>
 
 #include "base/atomic_sequence_num.h"
-#include "base/cancelable_callback.h"
 #include "base/debug/task_annotator.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -17,7 +16,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "platform/scheduler/base/enqueue_order.h"
-#include "platform/scheduler/base/moveable_auto_lock.h"
 #include "platform/scheduler/base/task_queue_impl.h"
 #include "platform/scheduler/base/task_queue_selector.h"
 
@@ -142,10 +140,6 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   // Returns true if there is a task that could be executed immediately.
   bool HasImmediateWorkForTesting() const;
 
-  // There is a small overhead to recording task delay histograms. If you don't
-  // need them, you can turn them off.
-  void SetRecordTaskDelayHistograms(bool record_task_delay_histograms);
-
  private:
   friend class LazyNow;
   friend class internal::TaskQueueImpl;
@@ -158,6 +152,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   };
 
   // Unregisters a TaskQueue previously created by |NewTaskQueue()|.
+  // NOTE we have to flush the queue from |newly_updatable_| which means as a
+  // side effect MoveNewlyUpdatableQueuesIntoUpdatableQueueSet is called by this
+  // function.
   void UnregisterTaskQueue(scoped_refptr<internal::TaskQueueImpl> task_queue);
 
   // TaskQueueSelector::Observer implementation:
@@ -172,18 +169,11 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   void DidQueueTask(const internal::TaskQueueImpl::Task& pending_task);
 
   // Use the selector to choose a pending task and run it.
-  void DoWork(bool delayed);
-
-  // Post a DoWork continuation if |next_delay| is not empty.
-  void PostDoWorkContinuationLocked(base::Optional<base::TimeDelta> next_delay,
-                                    LazyNow* lazy_now,
-                                    MoveableAutoLock&& lock);
+  void DoWork(base::TimeTicks run_time, bool from_main_thread);
 
   // Delayed Tasks with run_times <= Now() are enqueued onto the work queue and
   // reloads any empty work queues.
-  void UpdateWorkQueues(
-      const std::set<internal::TaskQueueImpl*>* queues_to_reload,
-      LazyNow* lazy_now);
+  void UpdateWorkQueues(LazyNow lazy_now);
 
   // Chooses the next work queue to service. Returns true if |out_queue|
   // indicates the queue from which the next task should be run, false to
@@ -199,8 +189,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
     TASK_QUEUE_MANAGER_DELETED
   };
   ProcessTaskResult ProcessTaskFromWorkQueue(internal::WorkQueue* work_queue,
-                                             bool is_nested,
-                                             LazyNow* lazy_now);
+                                             LazyNow*);
 
   bool RunsTasksOnCurrentThread() const;
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
@@ -209,10 +198,9 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
 
   internal::EnqueueOrder GetNextSequenceNumber();
 
-  // Calls DelayTillNextTask on all time domains and returns the smallest delay
-  // requested if any.
-  base::Optional<base::TimeDelta> ComputeDelayTillNextTaskLocked(
-      LazyNow* lazy_now);
+  // Calls MaybeAdvanceTime on all time domains and returns true if one of them
+  // was able to advance.
+  bool TryAdvanceTimeDomains();
 
   void MaybeRecordTaskDelayHistograms(
       const internal::TaskQueueImpl::Task& pending_task,
@@ -221,15 +209,6 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
   AsValueWithSelectorResult(bool should_run,
                             internal::WorkQueue* selected_work_queue) const;
-
-  void MaybeScheduleImmediateWorkLocked(
-      const tracked_objects::Location& from_here,
-      MoveableAutoLock&& lock);
-
-  // Adds |queue| to |has_incoming_immediate_work_| and if
-  // |ensure_do_work_posted| is true it calls MaybeScheduleImmediateWorkLocked.
-  void OnQueueHasImmediateWork(internal::TaskQueueImpl* queue,
-                               bool ensure_do_work_posted);
 
   std::set<TimeDomain*> time_domains_;
   std::unique_ptr<RealTimeDomain> real_time_domain_;
@@ -247,35 +226,18 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
   scoped_refptr<TaskQueueManagerDelegate> delegate_;
   internal::TaskQueueSelector selector_;
 
-  base::Closure immediate_do_work_closure_;
-  base::Closure delayed_do_work_closure_;
+  base::Closure from_main_thread_immediate_do_work_closure_;
+  base::Closure from_other_thread_immediate_do_work_closure_;
 
   bool task_was_run_on_quiescence_monitored_queue_;
 
-  struct AnyThread {
-    AnyThread();
+  // To reduce locking overhead we track pending calls to DoWork separately for
+  // the main thread and other threads.
+  std::set<base::TimeTicks> main_thread_pending_wakeups_;
 
-    int do_work_running_count;
-    int immediate_do_work_posted_count;
-    std::set<internal::TaskQueueImpl*> has_incoming_immediate_work;
-    bool is_nested;  // Whether or not the message loop is currently nested.
-  };
-
-  mutable base::Lock any_thread_lock_;
-  AnyThread any_thread_;
-  struct AnyThread& any_thread() {
-    any_thread_lock_.AssertAcquired();
-    return any_thread_;
-  }
-  const struct AnyThread& any_thread() const {
-    any_thread_lock_.AssertAcquired();
-    return any_thread_;
-  }
-
-  bool record_task_delay_histograms_;
-
-  base::TimeTicks next_delayed_do_work_;
-  base::CancelableClosure cancelable_delayed_do_work_closure_;
+  // Protects |other_thread_pending_wakeup_|.
+  mutable base::Lock other_thread_lock_;
+  bool other_thread_pending_wakeup_;
 
   int work_batch_size_;
   size_t task_count_;
