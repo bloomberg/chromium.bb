@@ -13,6 +13,7 @@ function appendIframe()
 function test()
 {
     InspectorTest.eventHandler["Network.responseReceived"] = onResponseReceived;
+    InspectorTest.eventHandler["Network.loadingFinished"] = onLoadingFinished;
 
     function enableNetwork()
     {
@@ -60,15 +61,27 @@ function test()
                 }
                 resource.gotType = type;
                 resource.gotUrl = url;
-                if ("responseAvailable" in resource)
-                    onResponseReady();
-                else
-                    InspectorTest.sendCommand("Network.getResponseBody", { "requestId": requestId }, onResponseBody.bind(null, resource));
+                resource.requestId = requestId;
                 return;
             }
         }
         InspectorTest.log("FAIL: received unexpected resource " + url);
         InspectorTest.completeTest();
+    }
+
+    function onLoadingFinished(event)
+    {
+        const requestId = event.params.requestId;
+        for (const resource of resources) {
+            if (resource.requestId !== requestId) {
+                continue;
+            }
+            if ("responseAvailable" in resource) {
+                onResponseReady();
+            } else {
+                InspectorTest.sendCommand("Network.getResponseBody", { "requestId": requestId }, onResponseBody.bind(null, resource));
+            }
+        }
     }
 
     function onResponseReady()
