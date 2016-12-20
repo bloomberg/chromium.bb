@@ -34,8 +34,8 @@ namespace blink {
 
 // Converts |points| to pixels. One point is 1/72 of an inch.
 static float pointsToPixels(float points) {
-  float pixelsPerInch = 96.0f * FontCache::deviceScaleFactor();
-  static const float pointsPerInch = 72.0f;
+  const float pixelsPerInch = 96.0f;
+  const float pointsPerInch = 72.0f;
   return points / pointsPerInch * pixelsPerInch;
 }
 
