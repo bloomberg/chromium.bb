@@ -263,16 +263,19 @@ void ManagePasswordsUIController::OnBubbleHidden() {
     UpdateBubbleAndIconVisibility();
 }
 
-void ManagePasswordsUIController::OnNoInteractionOnUpdate() {
-  if (GetState() != password_manager::ui::PENDING_PASSWORD_UPDATE_STATE) {
+void ManagePasswordsUIController::OnNoInteraction() {
+  if (GetState() != password_manager::ui::PENDING_PASSWORD_UPDATE_STATE &&
+      GetState() != password_manager::ui::PENDING_PASSWORD_STATE) {
     // Do nothing if the state was changed. It can happen for example when the
-    // update bubble is active and a page navigation happens.
+    // bubble is active and a page navigation happens.
     return;
   }
+  bool is_update =
+      GetState() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE;
   password_manager::PasswordFormManager* form_manager =
       passwords_data_.form_manager();
   DCHECK(form_manager);
-  form_manager->OnNoInteractionOnUpdate();
+  form_manager->OnNoInteraction(is_update);
 }
 
 void ManagePasswordsUIController::OnNopeUpdateClicked() {
@@ -382,7 +385,7 @@ void ManagePasswordsUIController::NeverSavePasswordInternal() {
   password_manager::PasswordFormManager* form_manager =
       passwords_data_.form_manager();
   DCHECK(form_manager);
-  form_manager->PermanentlyBlacklist();
+  form_manager->OnNeverClicked();
 }
 
 void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {

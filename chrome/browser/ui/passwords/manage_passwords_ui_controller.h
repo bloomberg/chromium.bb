@@ -94,7 +94,7 @@ class ManagePasswordsUIController
       const override;
   void OnBubbleShown() override;
   void OnBubbleHidden() override;
-  void OnNoInteractionOnUpdate() override;
+  void OnNoInteraction() override;
   void OnNopeUpdateClicked() override;
   void NeverSavePassword() override;
   void SavePassword() override;

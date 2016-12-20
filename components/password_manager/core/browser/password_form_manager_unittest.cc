@@ -62,6 +62,9 @@ namespace password_manager {
 
 namespace {
 
+// Enum that describes what button the user pressed on the save prompt.
+enum SavePromptInteraction { SAVE, NEVER, NO_INTERACTION };
+
 class MockFormSaver : public StubFormSaver {
  public:
   MockFormSaver() = default;
@@ -514,7 +517,7 @@ class PasswordFormManagerTest : public testing::Test {
         form_manager.Update(*saved_match());
         break;
       case autofill::PROBABLY_NEW_PASSWORD:
-        form_manager.OnNoInteractionOnUpdate();
+        form_manager.OnNoInteraction(true /* it is an update */);
         break;
       case autofill::NOT_NEW_PASSWORD:
         form_manager.OnNopeUpdateClicked();
@@ -552,13 +555,17 @@ class PasswordFormManagerTest : public testing::Test {
 
   // The user types username and generates password on SignUp or change password
   // form. The password generation might be triggered automatically or manually.
-  // This function checks that correct vote is uploaded on server.
+  // This function checks that correct vote is uploaded on server. The vote must
+  // be uploaded regardless of the user's interaction with the prompt.
   void GeneratedVoteUploadTest(bool is_manual_generation,
                                bool is_change_password_form,
-                               bool has_generated_password) {
+                               bool has_generated_password,
+                               SavePromptInteraction interaction) {
     SCOPED_TRACE(testing::Message()
                  << "is_manual_generation=" << is_manual_generation
-                 << " is_change_password_form=" << is_change_password_form);
+                 << " is_change_password_form=" << is_change_password_form
+                 << " has_generated_password=" << has_generated_password
+                 << " interaction=" << interaction);
     PasswordForm form(*observed_form());
     form.form_data = saved_match()->form_data;
 
@@ -593,8 +600,11 @@ class PasswordFormManagerTest : public testing::Test {
     fetcher.SetNonFederated(std::vector<const PasswordForm*>(), 0u);
 
     autofill::ServerFieldTypeSet expected_available_field_types;
-    expected_available_field_types.insert(autofill::USERNAME);
-    expected_available_field_types.insert(autofill::PASSWORD);
+    // Don't send autofill votes if the user didn't press "Save" button.
+    if (interaction == SAVE) {
+      expected_available_field_types.insert(autofill::USERNAME);
+      expected_available_field_types.insert(autofill::PASSWORD);
+    }
 
     form_manager.set_is_manual_generation(is_manual_generation);
     base::string16 generation_element = is_change_password_form
@@ -625,7 +635,17 @@ class PasswordFormManagerTest : public testing::Test {
 
     form_manager.ProvisionallySave(
         submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
-    form_manager.Save();
+    switch (interaction) {
+      case SAVE:
+        form_manager.Save();
+        break;
+      case NEVER:
+        form_manager.OnNeverClicked();
+        break;
+      case NO_INTERACTION:
+        form_manager.OnNoInteraction(false /* not an update prompt*/);
+        break;
+    }
   }
 
   PasswordForm* observed_form() { return &observed_form_; }
@@ -2546,17 +2566,21 @@ TEST_F(PasswordFormManagerTest,
   form_manager.Update(*saved_match());
 }
 
+// Checks uploading a vote about the usage of the password generation popup.
 TEST_F(PasswordFormManagerTest, GeneratedVoteUpload) {
-  // Automatic generation, sign-up form.
-  GeneratedVoteUploadTest(false, false, true);
-  // Automatic generation, change password form.
-  GeneratedVoteUploadTest(false, true, true);
-  // Manual generation, sign-up form.
-  GeneratedVoteUploadTest(true, false, true);
-  // Manual generation, change password form.
-  GeneratedVoteUploadTest(true, true, true);
-  // Generation popup was shown, but the user entered its own password.
-  GeneratedVoteUploadTest(true, true, false);
+  bool kFalseTrue[] = {false, true};
+  SavePromptInteraction kSavePromptInterations[] = {SAVE, NEVER,
+                                                    NO_INTERACTION};
+  for (bool is_manual_generation : kFalseTrue) {
+    for (bool is_change_password_form : kFalseTrue) {
+      for (bool has_generated_password : kFalseTrue) {
+        for (SavePromptInteraction interaction : kSavePromptInterations) {
+          GeneratedVoteUploadTest(is_manual_generation, is_change_password_form,
+                                  has_generated_password, interaction);
+        }
+      }
+    }
+  }
 }
 
 TEST_F(PasswordFormManagerTest, FormClassifierVoteUpload) {

@@ -258,6 +258,7 @@ TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutInteraction) {
   stats.dismissal_count++;
   stats.update_time = now;
   EXPECT_CALL(*GetStore(), AddSiteStatsImpl(stats));
+  EXPECT_CALL(*controller(), OnNoInteraction());
   EXPECT_CALL(*controller(), SavePassword()).Times(0);
   EXPECT_CALL(*controller(), NeverSavePassword()).Times(0);
   DestroyModelExpectReason(
@@ -332,6 +333,7 @@ TEST_F(ManagePasswordsBubbleModelTest, ShowSmartLockWarmWelcome) {
 
   EXPECT_TRUE(model()->ShouldShowGoogleSmartLockWelcome());
   EXPECT_CALL(*GetStore(), AddSiteStatsImpl(_));
+  EXPECT_CALL(*controller(), OnNoInteraction());
   DestroyModel();
   PretendPasswordWaiting();
 
@@ -352,6 +354,7 @@ TEST_F(ManagePasswordsBubbleModelTest, OmitSmartLockWarmWelcome) {
 
   EXPECT_FALSE(model()->ShouldShowGoogleSmartLockWelcome());
   EXPECT_CALL(*GetStore(), AddSiteStatsImpl(_));
+  EXPECT_CALL(*controller(), OnNoInteraction());
   DestroyModel();
   PretendPasswordWaiting();
 

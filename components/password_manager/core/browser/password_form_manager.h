@@ -25,6 +25,8 @@
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_store.h"
 
+using autofill::FormStructure;
+
 namespace password_manager {
 
 class FormSaver;
@@ -215,8 +217,12 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // Called when the user chose not to update password.
   void OnNopeUpdateClicked();
 
-  // Called when the user didn't interact with Update UI.
-  void OnNoInteractionOnUpdate();
+  // Called when the user clicked "Never" button in the "save password" prompt.
+  void OnNeverClicked();
+
+  // Called when the user didn't interact with UI. |is_update| is true iff
+  // it was the update UI.
+  void OnNoInteraction(bool is_update);
 
   // Saves the outcome of HTML parsing based form classifier to upload proto.
   void SaveGenerationFieldDetectedByClassifier(
@@ -356,35 +362,11 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // UMA.
   int GetActionsTaken() const;
 
-  // Try to label password fields and upload |form_data|. This differs from
-  // AutofillManager::OnFormSubmitted() in a few ways.
-  //   - This function will only label the first <input type="password"> field
-  //     as |password_type|. Other fields will stay unlabeled, as they
-  //     should have been labeled during the upload for OnFormSubmitted().
-  //   - If the |username_field| attribute is nonempty, we will additionally
-  //     label the field with that name as the username field.
-  //   - This function does not assume that |form| is being uploaded during
-  //     the same browsing session as it was originally submitted (as we may
-  //     not have the necessary information to classify the form at that time)
-  //     so it bypasses the cache and doesn't log the same quality UMA metrics.
-  // |login_form_signature| may be empty.  It is non-empty when the user fills
-  // and submits a login form using a generated password. In this case,
-  // |login_form_signature| should be set to the submitted form's signature.
-  // Note that in this case, |form.FormSignature()| gives the signature for the
-  // registration form on which the password was generated, rather than the
-  // submitted form's signature.
-  bool UploadPasswordForm(const autofill::FormData& form_data,
-                          const base::string16& username_field,
+  // Tries to set all votes (e.g. autofill field types, generation vote) to
+  // a |FormStructure| and upload it to the server. Returns true on success.
+  bool UploadPasswordVote(const base::string16& username_field,
                           const autofill::ServerFieldType& password_type,
                           const std::string& login_form_signature);
-
-  // Try to label username, password and new password fields of |observed_form_|
-  // which is considered to be change password forms. Returns true on success.
-  // |password_type| should be equal to NEW_PASSWORD, PROBABLY_NEW_PASSWORD or
-  // NOT_NEW_PASSWORD. These values correspond to cases when the user conrirmed
-  // password update, did nothing or declined to update password respectively.
-  bool UploadChangePasswordForm(const autofill::ServerFieldType& password_type,
-                                const std::string& login_form_signature);
 
   // Adds a vote on password generation usage to |form_structure|.
   void AddGeneratedVote(autofill::FormStructure* form_structure);
@@ -434,6 +416,26 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // used as the old primary key during the store update.
   base::Optional<autofill::PasswordForm> UpdatePendingAndGetOldKey(
       std::vector<autofill::PasswordForm>* credentials_to_update);
+
+  // Sets autofill types of username, password and new password fields in
+  // |form_structure|. |password_type| (the autofill type of new password field)
+  // should be equal to NEW_PASSWORD, PROBABLY_NEW_PASSWORD or NOT_NEW_PASSWORD.
+  // These values correspond to cases when the user confirmed password update,
+  // did nothing or declined to update password respectively. The function also
+  // add the types to |available_field_types|.
+  void SetAutofillTypesOnUpdate(
+      const autofill::ServerFieldType password_type,
+      FormStructure* form_structure,
+      autofill::ServerFieldTypeSet* available_field_types);
+
+  // Sets autofill types of username and password fields in |form_structure|.
+  // |username_field| determines the name of the username field. The function
+  // also add the types to |available_field_types|.
+  void SetAutofillTypesOnSave(
+      const base::string16& username_field,
+      const autofill::ServerFieldType password_type,
+      FormStructure* form_structure,
+      autofill::ServerFieldTypeSet* available_field_types);
 
   // Set of nonblacklisted PasswordForms from the DB that best match the form
   // being managed by |this|, indexed by username. They are owned by

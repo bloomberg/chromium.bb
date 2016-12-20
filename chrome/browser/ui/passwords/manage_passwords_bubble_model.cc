@@ -80,8 +80,8 @@ class ManagePasswordsBubbleModel::InteractionKeeper {
 
   ~InteractionKeeper() = default;
 
-  // Records UMA events and updates the interaction statistics when the bubble
-  // is closed.
+  // Records UMA events, updates the interaction statistics and sends
+  // notifications to the delegate when the bubble is closed.
   void ReportInteractions(const ManagePasswordsBubbleModel* model);
 
   void set_dismissal_reason(
@@ -200,15 +200,22 @@ void ManagePasswordsBubbleModel::InteractionKeeper::ReportInteractions(
 
   if (model->state() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE ||
       model->state() == password_manager::ui::PENDING_PASSWORD_STATE) {
+    // Send a notification if there was no interaction with the bubble.
+    bool no_interaction =
+        model->state() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE
+            ? update_password_submission_event_ ==
+                  metrics_util::NO_UPDATE_SUBMISSION
+            : dismissal_reason_ == metrics_util::NO_DIRECT_INTERACTION;
+    if (no_interaction && model->delegate_) {
+      model->delegate_->OnNoInteraction();
+    }
+
+    // Send UMA.
     if (update_password_submission_event_ ==
         metrics_util::NO_UPDATE_SUBMISSION) {
       update_password_submission_event_ =
           model->GetUpdateDismissalReason(NO_INTERACTION);
-      if (model->delegate_ &&
-          model->state() == password_manager::ui::PENDING_PASSWORD_UPDATE_STATE)
-        model->delegate_->OnNoInteractionOnUpdate();
     }
-
     if (update_password_submission_event_ != metrics_util::NO_UPDATE_SUBMISSION)
       LogUpdatePasswordSubmissionEvent(update_password_submission_event_);
   }

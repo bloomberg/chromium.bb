@@ -60,8 +60,8 @@ class PasswordsModelDelegate {
   // Called from the model when the bubble is hidden.
   virtual void OnBubbleHidden() = 0;
 
-  // Called when the user didn't interact with the Update UI.
-  virtual void OnNoInteractionOnUpdate() = 0;
+  // Called when the user didn't interact with UI.
+  virtual void OnNoInteraction() = 0;
 
   // Called when the user chose not to update password.
   virtual void OnNopeUpdateClicked() = 0;

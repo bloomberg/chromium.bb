@@ -29,7 +29,7 @@ class PasswordsModelDelegateMock
                      password_manager::InteractionsStats*());
   MOCK_METHOD0(OnBubbleShown, void());
   MOCK_METHOD0(OnBubbleHidden, void());
-  MOCK_METHOD0(OnNoInteractionOnUpdate, void());
+  MOCK_METHOD0(OnNoInteraction, void());
   MOCK_METHOD0(OnNopeUpdateClicked, void());
   MOCK_METHOD0(NeverSavePassword, void());
   MOCK_METHOD0(SavePassword, void());
