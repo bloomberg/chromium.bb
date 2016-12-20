@@ -27,7 +27,6 @@
 
 #include "core/fetch/ResourceFetcher.h"
 
-#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/fetch/FetchContext.h"
 #include "core/fetch/FetchInitiatorTypeNames.h"
 #include "core/fetch/MemoryCache.h"
@@ -491,29 +490,10 @@ Resource* ResourceFetcher::requestResource(
   }
 
   context().willStartLoadingResource(
-      identifier, request.mutableResourceRequest(), factory.type());
+      identifier, request.mutableResourceRequest(), factory.type(),
+      request.options().initiatorInfo.name, request.forPreload());
   if (!request.url().isValid())
     return nullptr;
-
-  if (!request.forPreload()) {
-    V8DOMActivityLogger* activityLogger = nullptr;
-    if (request.options().initiatorInfo.name ==
-        FetchInitiatorTypeNames::xmlhttprequest) {
-      activityLogger = V8DOMActivityLogger::currentActivityLogger();
-    } else {
-      activityLogger =
-          V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
-    }
-
-    if (activityLogger) {
-      Vector<String> argv;
-      argv.push_back(Resource::resourceTypeToString(
-          factory.type(), request.options().initiatorInfo.name));
-      argv.push_back(request.url());
-      activityLogger->logEvent("blinkRequestResource", argv.size(),
-                               argv.data());
-    }
-  }
 
   bool isDataUrl = request.resourceRequest().url().protocolIsData();
   bool isStaticData = isDataUrl || substituteData.isValid() || m_archive;

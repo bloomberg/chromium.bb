@@ -39,6 +39,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/network/ResourceRequest.h"
+#include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
 namespace blink {
@@ -122,13 +123,17 @@ class CORE_EXPORT FetchContext
   virtual bool shouldLoadNewResource(Resource::Type) const { return false; }
   // Called when a resource load is first requested, which may not be when the
   // load actually begins.
+  // TODO(toyoshim): Consider to use enum. See https://crbug.com/675883.
   virtual void willStartLoadingResource(unsigned long identifier,
                                         ResourceRequest&,
-                                        Resource::Type);
+                                        Resource::Type,
+                                        const AtomicString& fetchInitiatorName,
+                                        bool forPreload);
   virtual void didLoadResource(Resource*);
 
   virtual void addResourceTiming(const ResourceTimingInfo&);
   virtual bool allowImage(bool, const KURL&) const { return false; }
+  // TODO(toyoshim): Consider to use enum. See https://crbug.com/675883.
   virtual ResourceRequestBlockedReason canRequest(
       Resource::Type,
       const ResourceRequest&,

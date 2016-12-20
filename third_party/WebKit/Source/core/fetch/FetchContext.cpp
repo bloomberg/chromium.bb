@@ -89,9 +89,12 @@ void FetchContext::dispatchDidFail(unsigned long,
                                    int64_t,
                                    bool) {}
 
-void FetchContext::willStartLoadingResource(unsigned long,
-                                            ResourceRequest&,
-                                            Resource::Type) {}
+void FetchContext::willStartLoadingResource(
+    unsigned long,
+    ResourceRequest&,
+    Resource::Type,
+    const AtomicString& fetchInitiatorName,
+    bool) {}
 
 void FetchContext::didLoadResource(Resource*) {}
 

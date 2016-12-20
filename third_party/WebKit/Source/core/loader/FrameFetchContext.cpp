@@ -31,8 +31,11 @@
 #include "core/loader/FrameFetchContext.h"
 
 #include "bindings/core/v8/ScriptController.h"
+#include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "core/dom/Document.h"
 #include "core/fetch/ClientHintsPreferences.h"
+#include "core/fetch/FetchInitiatorTypeNames.h"
+#include "core/fetch/Resource.h"
 #include "core/fetch/ResourceLoadingLog.h"
 #include "core/fetch/UniqueIdentifier.h"
 #include "core/frame/FrameConsole.h"
@@ -76,6 +79,7 @@
 #include "public/platform/WebDocumentSubresourceFilter.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
 #include "public/platform/WebViewScheduler.h"
+#include "wtf/Vector.h"
 #include <algorithm>
 #include <memory>
 
@@ -528,9 +532,12 @@ loadResourceTraceData(unsigned long identifier, const KURL& url, int priority) {
   return value;
 }
 
-void FrameFetchContext::willStartLoadingResource(unsigned long identifier,
-                                                 ResourceRequest& request,
-                                                 Resource::Type type) {
+void FrameFetchContext::willStartLoadingResource(
+    unsigned long identifier,
+    ResourceRequest& request,
+    Resource::Type type,
+    const AtomicString& fetchInitiatorName,
+    bool forPreload) {
   TRACE_EVENT_ASYNC_BEGIN1(
       "blink.net", "Resource", identifier, "data",
       loadResourceTraceData(identifier, request.url(), request.priority()));
@@ -544,6 +551,23 @@ void FrameFetchContext::willStartLoadingResource(unsigned long identifier,
         request);
   } else {
     m_documentLoader->applicationCacheHost()->willStartLoadingResource(request);
+  }
+  if (!forPreload) {
+    V8DOMActivityLogger* activityLogger = nullptr;
+    if (fetchInitiatorName == FetchInitiatorTypeNames::xmlhttprequest) {
+      activityLogger = V8DOMActivityLogger::currentActivityLogger();
+    } else {
+      activityLogger =
+          V8DOMActivityLogger::currentActivityLoggerIfIsolatedWorld();
+    }
+
+    if (activityLogger) {
+      Vector<String> argv;
+      argv.append(Resource::resourceTypeToString(type, fetchInitiatorName));
+      argv.append(request.url());
+      activityLogger->logEvent("blinkRequestResource", argv.size(),
+                               argv.data());
+    }
   }
 }
 

@@ -55,6 +55,10 @@ class CORE_EXPORT FetchRequest {
     DisallowPlaceholder = 0,  // The requested image must not be a placeholder.
     AllowPlaceholder,         // The image is allowed to be a placeholder.
   };
+  // TODO(toyoshim): Consider to define an enum for preload options, and use it
+  // instead of bool in this class, FrameFetchContext, and so on. If it is
+  // reasonable, we try merging m_forPreload and m_linkPreload into one enum
+  // type. See https://crbug.com/675883.
 
   struct ResourceWidth {
     DISALLOW_NEW();

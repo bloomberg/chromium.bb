@@ -38,6 +38,7 @@
 #include "core/loader/LinkLoader.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ResourceRequest.h"
+#include "wtf/Forward.h"
 
 namespace blink {
 
@@ -112,7 +113,9 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
   bool shouldLoadNewResource(Resource::Type) const override;
   void willStartLoadingResource(unsigned long identifier,
                                 ResourceRequest&,
-                                Resource::Type) override;
+                                Resource::Type,
+                                const AtomicString& fetchInitiatorName,
+                                bool forPreload) override;
   void didLoadResource(Resource*) override;
 
   void addResourceTiming(const ResourceTimingInfo&) override;
