@@ -220,7 +220,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
                                LogHistogramReceivedItem(BOOKMARK_ENTRY);
                                _bookmarkModel->AddURL(
                                    _bookmarkModel->mobile_node(), 0,
-                                   base::ASCIIToUTF16(entryTitle), entryURL);
+                                   base::UTF8ToUTF16(entryTitle), entryURL);
                              }
                              if (completion) {
                                web::WebThread::PostTask(web::WebThread::FILE,
