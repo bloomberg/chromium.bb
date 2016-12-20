@@ -1989,17 +1989,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self removeWebViewAllowingCachedReconstruction:NO];
 
   web::NavigationItem* item = [self currentNavItem];
-  const GURL virtualURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
+  const GURL targetURL = item ? item->GetURL() : GURL::EmptyGURL();
   const web::Referrer referrer;
   id<CRWNativeContent> nativeContent =
-      [_nativeProvider controllerForURL:virtualURL];
+      [_nativeProvider controllerForURL:targetURL];
   // Unlike the WebView case, always create a new controller and view.
   // TODO(pinkerton): What to do if this does return nil?
   [self setNativeController:nativeContent];
   if ([nativeContent respondsToSelector:@selector(virtualURL)]) {
     item->SetVirtualURL([nativeContent virtualURL]);
   }
-  const GURL targetURL = item ? item->GetURL() : GURL::EmptyGURL();
+
   [self registerLoadRequest:targetURL
                    referrer:referrer
                  transition:[self currentTransition]];
@@ -2087,7 +2087,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self clearTransientContentView];
 
   web::NavigationItem* item = [self currentNavItem];
-  const GURL currentURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
+  const GURL currentURL = item ? item->GetURL() : GURL::EmptyGURL();
   // If it's a chrome URL, but not a native one, create the WebUI instance.
   if (web::GetWebClient()->IsAppSpecificURL(currentURL) &&
       ![_nativeProvider hasControllerForURL:currentURL]) {
