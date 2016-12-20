@@ -236,9 +236,6 @@ struct UsbDeviceHandleUsbfs::Transfer {
 
   scoped_refptr<net::IOBuffer> control_transfer_buffer;
   scoped_refptr<net::IOBuffer> buffer;
-  TransferCallback callback;
-  IsochronousTransferCallback isoc_callback;
-  scoped_refptr<base::SingleThreadTaskRunner> callback_runner;
   base::CancelableClosure timeout_closure;
   bool cancelled = false;
 
@@ -248,13 +245,18 @@ struct UsbDeviceHandleUsbfs::Transfer {
   bool discarded = false;
   bool reaped = false;
 
+ private:
+  TransferCallback callback;
+  IsochronousTransferCallback isoc_callback;
+  scoped_refptr<base::SingleThreadTaskRunner> callback_runner;
+
+  DISALLOW_COPY_AND_ASSIGN(Transfer);
+
+ public:
   // The |urb| field must be the last in the struct so that the extra space
   // allocated by the overridden new function above extends the length of its
   // |iso_frame_desc| field.
   usbdevfs_urb urb;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(Transfer);
 };
 
 UsbDeviceHandleUsbfs::Transfer::Transfer(
@@ -292,20 +294,22 @@ void* UsbDeviceHandleUsbfs::Transfer::operator new(
 void UsbDeviceHandleUsbfs::Transfer::RunCallback(UsbTransferStatus status,
                                                  size_t bytes_transferred) {
   DCHECK_NE(urb.type, USBDEVFS_URB_TYPE_ISO);
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
   if (!callback_runner || callback_runner->BelongsToCurrentThread()) {
     callback.Run(status, buffer, bytes_transferred);
   } else {
     callback_runner->PostTask(
         FROM_HERE, base::Bind(callback, status, buffer, bytes_transferred));
   }
+  callback.Reset();
 }
 
 void UsbDeviceHandleUsbfs::Transfer::RunIsochronousCallback(
     const std::vector<IsochronousPacket>& packets) {
   DCHECK_EQ(urb.type, USBDEVFS_URB_TYPE_ISO);
-  DCHECK(!isoc_callback.is_null());
+  DCHECK(isoc_callback);
   isoc_callback.Run(buffer, packets);
+  isoc_callback.Reset();
 }
 
 UsbDeviceHandleUsbfs::UsbDeviceHandleUsbfs(
@@ -339,10 +343,12 @@ void UsbDeviceHandleUsbfs::Close() {
   // On the |task_runner_| thread check |device_| to see if the handle is
   // closed. On the |blocking_task_runner_| thread check |fd_.is_valid()| to
   // see if the handle is closed.
-  for (const auto& transfer : transfers_)
-    CancelTransfer(transfer.get(), USB_TRANSFER_CANCELLED);
   device_->HandleClosed(this);
   device_ = nullptr;
+
+  for (const auto& transfer : transfers_)
+    CancelTransfer(transfer.get(), USB_TRANSFER_CANCELLED);
+
   blocking_task_runner_->PostTask(
       FROM_HERE, base::Bind(&UsbDeviceHandleUsbfs::CloseBlocking, this));
 }
@@ -848,6 +854,9 @@ UsbDeviceHandleUsbfs::RemoveFromTransferList(Transfer* transfer_ptr) {
 
 void UsbDeviceHandleUsbfs::CancelTransfer(Transfer* transfer,
                                           UsbTransferStatus status) {
+  if (transfer->cancelled)
+    return;
+
   // |transfer| must stay in |transfers_| as it is still being processed by the
   // kernel and will be reaped later.
   transfer->cancelled = true;
