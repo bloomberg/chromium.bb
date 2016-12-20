@@ -138,6 +138,10 @@ void SearchGeolocationDisclosureTabHelper::
   if (!Java_GeolocationHeader_hasGeolocationPermission(env))
     return;
 
+  // Record metrics for the state of permissions before the disclosure has been
+  // shown.
+  RecordPreDisclosureMetrics(gurl);
+
   // Only show the disclosure if the geolocation permission is set to ASK
   // (i.e. has not been explicitly set or revoked).
   blink::mojom::PermissionStatus status =
@@ -146,10 +150,6 @@ void SearchGeolocationDisclosureTabHelper::
                                 gurl);
   if (status != blink::mojom::PermissionStatus::ASK)
     return;
-
-  // Record metrics for the state of permissions before the disclosure has been
-  // shown.
-  RecordPreDisclosureMetrics(gurl);
 
   // All good, let's show the disclosure and increment the shown count.
   SearchGeolocationDisclosureInfoBarDelegate::Create(web_contents(), gurl);
