@@ -20,6 +20,7 @@ const heldTest = async_test(
 add_result_callback(testObj => {
   if (!testObj.properties.blockHeldTest)
     return;
+  testObj.properties.sample.remove();
   if (++heldTest.properties.finishCount === kNumTests)
     heldTest.done();
 });
@@ -85,7 +86,7 @@ spellcheck_test(
             'Context clicking "home" does not select the correctly spelled word');
       },
       'Context clicking misspelled word in INPUT selects the word.',
-      {blockHeldTest: true})
+      {sample: sample, blockHeldTest: true})
     });
 
 spellcheck_test(
@@ -114,7 +115,7 @@ spellcheck_test(
             '');
       },
       'Context clicking misspelled word in editable DIV selects the word.',
-      {blockHeldTest: true})
+      {sample: sample, blockHeldTest: true})
     });
 
 spellcheck_test(
@@ -130,7 +131,7 @@ spellcheck_test(
             'Context clicking "wordl" selects the misspelled word.');
       },
       'Context clicking the second misspelled word "wordl" in editable DIV selects the word.',
-      {blockHeldTest: true})
+      {sample: sample, blockHeldTest: true})
     });
 
 spellcheck_test(
@@ -147,6 +148,6 @@ spellcheck_test(
             'uppercase');
       },
       'Context clicking multi-word misspelling "upper case" in editable DIV selects the words.',
-      {blockHeldTest: true})
+      {sample: sample, blockHeldTest: true})
     });
 </script>
