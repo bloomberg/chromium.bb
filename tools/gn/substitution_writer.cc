@@ -98,7 +98,7 @@ Placeholders
       build.gn file.
         "//foo/bar/baz.txt" => "obj/foo/bar"
 
-  {{source_target_relative}}\n"
+  {{source_target_relative}}
       The path to the source file relative to the target's directory. This will
       generally be used for replicating the source directory layout in the
       output directory. This can only be used in actions and it is an error to
