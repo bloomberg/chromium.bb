@@ -105,10 +105,13 @@ bool EditCommandComposition::belongsTo(const LocalFrame& frame) const {
   return m_document->frame() == &frame;
 }
 
-void EditCommandComposition::unapply() {
+void EditCommandComposition::unapply(EditCommandSource source) {
   DCHECK(m_document);
   LocalFrame* frame = m_document->frame();
   DCHECK(frame);
+
+  if (!willUnapply(source))
+    return;
 
   // Changes to the document may have been made since the last editing operation
   // that require a layout, as in <rdar://problem/5658603>. Low level
@@ -126,10 +129,13 @@ void EditCommandComposition::unapply() {
   frame->editor().unappliedEditing(this);
 }
 
-void EditCommandComposition::reapply() {
+void EditCommandComposition::reapply(EditCommandSource source) {
   DCHECK(m_document);
   LocalFrame* frame = m_document->frame();
   DCHECK(frame);
+
+  if (!willReapply(source))
+    return;
 
   // Changes to the document may have been made since the last editing operation
   // that require a layout, as in <rdar://problem/5658603>. Low level
@@ -144,6 +150,16 @@ void EditCommandComposition::reapply() {
   }
 
   frame->editor().reappliedEditing(this);
+}
+
+bool EditCommandComposition::willUnapply(EditCommandSource) {
+  // TODO(chongz): Fire 'beforeinput' for 'historyUndo'.
+  return true;
+}
+
+bool EditCommandComposition::willReapply(EditCommandSource) {
+  // TODO(chongz): Fire 'beforeinput' for 'historyRedo'.
+  return true;
 }
 
 InputEvent::InputType EditCommandComposition::inputType() const {

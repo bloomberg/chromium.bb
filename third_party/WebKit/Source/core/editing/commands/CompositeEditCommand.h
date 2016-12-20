@@ -52,8 +52,8 @@ class EditCommandComposition final : public UndoStep {
                                         InputEvent::InputType);
 
   bool belongsTo(const LocalFrame&) const override;
-  void unapply() override;
-  void reapply() override;
+  void unapply(EditCommandSource) override;
+  void reapply(EditCommandSource) override;
   InputEvent::InputType inputType() const override;
   void append(SimpleEditCommand*);
   void append(EditCommandComposition*);
@@ -78,6 +78,14 @@ class EditCommandComposition final : public UndoStep {
                          const VisibleSelection& startingSelection,
                          const VisibleSelection& endingSelection,
                          InputEvent::InputType);
+
+  // TODO(chongz): Implement "beforeinput" as described below:
+  // Fires "beforeinput" and will returns |false| to cancel unapply / reapply if
+  //   * "beforeinput" was canceled, or
+  //   * |frame| was destroyed by event handlers.
+  // Note: Undo stack will always get popped.
+  bool willUnapply(EditCommandSource);
+  bool willReapply(EditCommandSource);
 
   Member<Document> m_document;
   VisibleSelection m_startingSelection;

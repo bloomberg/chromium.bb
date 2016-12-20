@@ -36,6 +36,7 @@
 
 namespace blink {
 
+enum class EditCommandSource;
 class LocalFrame;
 
 class UndoStep : public GarbageCollectedFinalized<UndoStep> {
@@ -44,8 +45,8 @@ class UndoStep : public GarbageCollectedFinalized<UndoStep> {
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 
   virtual bool belongsTo(const LocalFrame&) const = 0;
-  virtual void unapply() = 0;
-  virtual void reapply() = 0;
+  virtual void unapply(EditCommandSource) = 0;
+  virtual void reapply(EditCommandSource) = 0;
   virtual InputEvent::InputType inputType() const = 0;
 };
 
