@@ -32,10 +32,17 @@ bool BeginTracing(const std::string& category_patterns) WARN_UNUSED_RESULT;
 // Begin tracing specified category_patterns on the browser.
 // |trace_config| specifies the configuration for tracing. This includes the
 // list of categories enabled, tracing modes and memory dumps configuration.
+// Once all child processes have acked to the StartTracing request,
+// |start_tracing_done_callback| will be called back.
 //
 // See base/trace_event/trace_config.h for documentation of configurations.
 bool BeginTracingWithTraceConfig(
     const base::trace_event::TraceConfig& trace_config) WARN_UNUSED_RESULT;
+
+typedef base::Callback<void()> StartTracingDoneCallback;
+bool BeginTracingWithTraceConfig(
+    const base::trace_event::TraceConfig& trace_config,
+    StartTracingDoneCallback start_tracing_done_callback) WARN_UNUSED_RESULT;
 
 // Called from UI thread.
 // End trace and collect the trace output as a json string.

@@ -29,6 +29,21 @@ using base::trace_event::MemoryDumpType;
 using tracing::BeginTracingWithTraceConfig;
 using tracing::EndTracing;
 
+void RequestGlobalDumpCallback(base::Closure quit_closure,
+                               uint64_t,
+                               bool success) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, quit_closure);
+  ASSERT_TRUE(success);
+}
+
+void OnStartTracingDoneCallback(
+    base::trace_event::MemoryDumpLevelOfDetail explicit_dump_type,
+    base::Closure quit_closure) {
+  base::trace_event::MemoryDumpManager::GetInstance()->RequestGlobalDump(
+      MemoryDumpType::EXPLICITLY_TRIGGERED, explicit_dump_type,
+      Bind(&RequestGlobalDumpCallback, quit_closure));
+}
+
 class TracingBrowserTest : public InProcessBrowserTest {
  protected:
   // Execute some no-op javascript on the current tab - this triggers a trace
@@ -42,17 +57,20 @@ class TracingBrowserTest : public InProcessBrowserTest {
   }
 
   void PerformDumpMemoryTestActions(
-      const base::trace_event::TraceConfig& trace_config) {
+      const base::trace_event::TraceConfig& trace_config,
+      base::trace_event::MemoryDumpLevelOfDetail explicit_dump_type) {
     GURL url1("about:blank");
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
     ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
 
-    // Begin tracing and watch for multiple periodic dump trace events.
-    std::string event_name = base::trace_event::MemoryDumpTypeToString(
-        MemoryDumpType::PERIODIC_INTERVAL);
-    ASSERT_TRUE(BeginTracingWithTraceConfig(trace_config));
+    // Begin tracing and trigger dump once start is broadcasted to all
+    // processes.
+    base::RunLoop run_loop;
+    ASSERT_TRUE(BeginTracingWithTraceConfig(
+        trace_config, Bind(&OnStartTracingDoneCallback, explicit_dump_type,
+                           run_loop.QuitClosure())));
 
     // Create and destroy renderers while tracing is enabled.
     GURL url2("chrome://credits");
@@ -70,6 +88,7 @@ class TracingBrowserTest : public InProcessBrowserTest {
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
     ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
 
+    run_loop.Run();
     std::string json_events;
     ASSERT_TRUE(EndTracing(&json_events));
 
@@ -80,18 +99,20 @@ class TracingBrowserTest : public InProcessBrowserTest {
   }
 };
 
-// Flaky: http://crbug.com/658054
-IN_PROC_BROWSER_TEST_F(TracingBrowserTest, DISABLED_TestMemoryInfra) {
-  PerformDumpMemoryTestActions(base::trace_event::TraceConfig(
-      base::trace_event::TraceConfigMemoryTestUtil::
-          GetTraceConfig_PeriodicTriggers(250, 2000)));
+IN_PROC_BROWSER_TEST_F(TracingBrowserTest, TestMemoryInfra) {
+  PerformDumpMemoryTestActions(
+      base::trace_event::TraceConfig(
+          base::trace_event::TraceConfigMemoryTestUtil::
+              GetTraceConfig_EmptyTriggers()),
+      base::trace_event::MemoryDumpLevelOfDetail::DETAILED);
 }
 
-// Flaky: http://crbug.com/658054
-IN_PROC_BROWSER_TEST_F(TracingBrowserTest, DISABLED_TestBackgroundMemoryInfra) {
-  PerformDumpMemoryTestActions(base::trace_event::TraceConfig(
-      base::trace_event::TraceConfigMemoryTestUtil::
-          GetTraceConfig_BackgroundTrigger(200)));
+IN_PROC_BROWSER_TEST_F(TracingBrowserTest, TestBackgroundMemoryInfra) {
+  PerformDumpMemoryTestActions(
+      base::trace_event::TraceConfig(
+          base::trace_event::TraceConfigMemoryTestUtil::
+              GetTraceConfig_BackgroundTrigger(200)),
+      base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND);
 }
 
 }  // namespace

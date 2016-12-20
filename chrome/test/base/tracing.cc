@@ -53,10 +53,12 @@ class InProcessTraceController {
   InProcessTraceController() {}
   virtual ~InProcessTraceController() {}
 
-  bool BeginTracing(const base::trace_event::TraceConfig& trace_config) {
+  bool BeginTracing(
+      const base::trace_event::TraceConfig& trace_config,
+      tracing::StartTracingDoneCallback start_tracing_done_callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     return content::TracingController::GetInstance()->StartTracing(
-        trace_config, content::TracingController::StartTracingDoneCallback());
+        trace_config, start_tracing_done_callback);
   }
 
   bool EndTracing(std::string* json_trace_output) {
@@ -99,12 +101,21 @@ namespace tracing {
 
 bool BeginTracing(const std::string& category_patterns) {
   return InProcessTraceController::GetInstance()->BeginTracing(
-      base::trace_event::TraceConfig(category_patterns, ""));
+      base::trace_event::TraceConfig(category_patterns, ""),
+      tracing::StartTracingDoneCallback());
 }
 
 bool BeginTracingWithTraceConfig(
     const base::trace_event::TraceConfig& trace_config) {
-  return InProcessTraceController::GetInstance()->BeginTracing(trace_config);
+  return InProcessTraceController::GetInstance()->BeginTracing(
+      trace_config, tracing::StartTracingDoneCallback());
+}
+
+bool BeginTracingWithTraceConfig(
+    const base::trace_event::TraceConfig& trace_config,
+    tracing::StartTracingDoneCallback start_tracing_done_callback) {
+  return InProcessTraceController::GetInstance()->BeginTracing(
+      trace_config, start_tracing_done_callback);
 }
 
 bool EndTracing(std::string* json_trace_output) {
