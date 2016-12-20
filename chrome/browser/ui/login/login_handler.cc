@@ -31,6 +31,7 @@
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/origin_util.h"
 #include "extensions/features/features.h"
 #include "net/base/auth.h"
@@ -596,6 +597,7 @@ void LoginHandler::LoginDialogCallback(const GURL& request_url,
   // (a) if the request is cross origin or
   // (b) if an interstitial is already being shown or
   // (c) the prompt is for proxy authentication
+  // (d) we're not displaying a standalone app
   //
   // For (a), there are two different ways the navigation can occur:
   // 1- The user enters the resource URL in the omnibox.
@@ -622,7 +624,9 @@ void LoginHandler::LoginDialogCallback(const GURL& request_url,
       request_url.GetOrigin();
   if (is_main_frame &&
       (is_cross_origin_request || parent_contents->ShowingInterstitialPage() ||
-       auth_info->is_proxy)) {
+       auth_info->is_proxy) &&
+      parent_contents->GetDelegate()->GetDisplayMode(parent_contents) !=
+          blink::WebDisplayModeStandalone) {
     RecordHttpAuthPromptType(AUTH_PROMPT_TYPE_WITH_INTERSTITIAL);
 
     // Show a blank interstitial for main-frame, cross origin requests
