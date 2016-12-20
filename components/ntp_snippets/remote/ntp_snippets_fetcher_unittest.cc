@@ -272,12 +272,9 @@ class NTPSnippetsFetcherTestBase : public testing::Test {
   explicit NTPSnippetsFetcherTestBase(const GURL& gurl)
       : default_variation_params_(
             {{"send_top_languages", "true"}, {"send_user_class", "true"}}),
-        params_manager_(
-            base::MakeUnique<variations::testing::VariationParamsManager>(
-                ntp_snippets::kStudyName,
-                default_variation_params_,
-                std::set<std::string>{
-                    ntp_snippets::kArticleSuggestionsFeature.name})),
+        params_manager_(ntp_snippets::kStudyName,
+                        default_variation_params_,
+                        {ntp_snippets::kArticleSuggestionsFeature.name}),
         mock_task_runner_(new base::TestMockTimeTaskRunner()),
         mock_task_runner_handle_(mock_task_runner_),
         signin_client_(base::MakeUnique<TestSigninClient>(nullptr)),
@@ -338,31 +335,14 @@ class NTPSnippetsFetcherTestBase : public testing::Test {
         /*default_factory=*/&failing_url_fetcher_factory_));
   }
 
-  void SetDefaultVariationParam(std::string param_name, std::string value) {
-    default_variation_params_[param_name] = value;
-    SetVariationParam(param_name, value);
-  }
-
   void SetVariationParam(std::string param_name, std::string value) {
-    params_manager_.reset();
-
     std::map<std::string, std::string> params = default_variation_params_;
     params[param_name] = value;
 
-    params_manager_ =
-        base::MakeUnique<variations::testing::VariationParamsManager>(
-            ntp_snippets::kStudyName, params,
-            std::set<std::string>{
-                ntp_snippets::kArticleSuggestionsFeature.name});
-  }
-
-  void SetVariationParametersForFeatures(
-      const std::map<std::string, std::string>& params,
-      const std::set<std::string>& features) {
-    params_manager_.reset();
-    params_manager_ =
-        base::MakeUnique<variations::testing::VariationParamsManager>(
-            ntp_snippets::kStudyName, params, features);
+    params_manager_.ClearAllVariationParams();
+    params_manager_.SetVariationParamsWithFeatureAssociations(
+        ntp_snippets::kStudyName, params,
+        {ntp_snippets::kArticleSuggestionsFeature.name});
   }
 
   void SetFakeResponse(const std::string& response_data,
@@ -375,10 +355,11 @@ class NTPSnippetsFetcherTestBase : public testing::Test {
 
   TestingPrefServiceSimple* pref_service() const { return pref_service_.get(); }
 
- private:
+ protected:
   std::map<std::string, std::string> default_variation_params_;
-  // TODO(fhorschig): Make it a simple member when crbug.com/672010 is resolved.
-  std::unique_ptr<variations::testing::VariationParamsManager> params_manager_;
+
+ private:
+  variations::testing::VariationParamsManager params_manager_;
   scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
   base::ThreadTaskRunnerHandle mock_task_runner_handle_;
   FailingFakeURLFetcherFactory failing_url_fetcher_factory_;
@@ -409,8 +390,9 @@ class NTPSnippetsContentSuggestionsFetcherTest
  public:
   NTPSnippetsContentSuggestionsFetcherTest()
       : NTPSnippetsFetcherTestBase(GURL(kTestChromeContentSuggestionsUrl)) {
-    SetDefaultVariationParam("content_suggestions_backend",
-                             kContentSuggestionsServer);
+    default_variation_params_["content_suggestions_backend"] =
+        kContentSuggestionsServer;
+    SetVariationParam("content_suggestions_backend", kContentSuggestionsServer);
     ResetSnippetsFetcher();
   }
 };
@@ -767,9 +749,7 @@ TEST_F(ChromeReaderSnippetsFetcherTest,
 
   for (const auto& retry_config : retry_config_expectation) {
     DelegateCallingTestURLFetcherFactory fetcher_factory;
-    SetVariationParametersForFeatures(
-        {{"background_5xx_retries_count", retry_config.param_value}},
-        {ntp_snippets::kArticleSuggestionsFeature.name});
+    SetVariationParam("background_5xx_retries_count", retry_config.param_value);
 
     snippets_fetcher().FetchSnippets(
         params, ToSnippetsAvailableCallback(&mock_callback()));
