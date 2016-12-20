@@ -1211,7 +1211,7 @@ importer.RuntimeControllerEnvironment.prototype.addDirectoryChangedListener =
 importer.RuntimeControllerEnvironment.prototype.addSelectionChangedListener =
     function(listener) {
   this.selectionHandler_.addEventListener(
-      FileSelectionHandler.EventType.CHANGE,
+      FileSelectionHandler.EventType.CHANGE_THROTTLED,
       listener);
 };
 
