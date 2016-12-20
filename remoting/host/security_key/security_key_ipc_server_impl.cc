@@ -29,7 +29,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/win_util.h"
-#include "remoting/host/ipc_util.h"
 #endif  // defined(OS_WIN)
 
 namespace {

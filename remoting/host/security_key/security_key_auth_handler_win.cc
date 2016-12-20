@@ -27,7 +27,6 @@
 #include "remoting/base/logging.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/client_session_details.h"
-#include "remoting/host/ipc_util.h"
 #include "remoting/host/security_key/security_key_ipc_constants.h"
 #include "remoting/host/security_key/security_key_ipc_server.h"
 

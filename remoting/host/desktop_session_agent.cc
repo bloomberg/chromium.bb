@@ -22,7 +22,6 @@
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/input_injector.h"
-#include "remoting/host/ipc_util.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
