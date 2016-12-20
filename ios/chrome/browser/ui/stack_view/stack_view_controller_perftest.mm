@@ -159,8 +159,6 @@ class StackViewControllerPerfTest : public PerfTestWithBVC {
     if (IsIPadIdiom())
       return;
 
-    [FullScreenController setHideOmniboxDelaySeconds:0.0];
-
     // Base class does most of the setup.
     PerfTestWithBVC::SetUp();
 

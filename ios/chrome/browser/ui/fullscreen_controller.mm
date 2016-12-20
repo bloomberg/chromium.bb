@@ -40,10 +40,6 @@ CGFloat kPrecision = 0.00001;
 
 // Duration for the delay before showing the omnibox.
 const double kShowOmniboxDelaySeconds = 0.5;
-// Default duration for the delay before hiding the omnibox.
-const double kDefaultHideOmniboxDelaySeconds = 3.0;
-// Duration for the delay before hiding the omnibox.
-double gHideOmniboxDelaySeconds = kDefaultHideOmniboxDelaySeconds;
 // Indicates if the FullScreenController returns nil from |init|. Used for
 // testing purposes.
 BOOL gEnabledForTests = YES;
@@ -825,14 +821,6 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
 }
 
 #pragma mark - Used for testing
-
-+ (void)setHideOmniboxDelaySeconds:(double)hideOmniboxDelaySeconds {
-  gHideOmniboxDelaySeconds = hideOmniboxDelaySeconds;
-}
-
-+ (void)resetHideOmniboxDelaySeconds {
-  gHideOmniboxDelaySeconds = kDefaultHideOmniboxDelaySeconds;
-}
 
 + (void)setEnabledForTests:(BOOL)enabled {
   gEnabledForTests = enabled;

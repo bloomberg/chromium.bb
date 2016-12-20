@@ -76,8 +76,6 @@ class FullscreenControllerTest : public PlatformTest {
     CGRect frame = CGRectMake(0.0, 0.0, 300.0, 900.0);
     PlatformTest::SetUp();
 
-    [FullScreenController setHideOmniboxDelaySeconds:0.0];
-
     scrollview_.reset([[UIScrollView alloc] initWithFrame:frame]);
     scrollview_.get().contentInset = UIEdgeInsetsZero;
     [GetWindow() addSubview:scrollview_];

@@ -127,11 +127,6 @@ extern NSString* const kSetupForTestingWillCloseAllTabsNotification;
 // TODO(shreyasv): Find a better solution/remove this when FullScreenController
 // moves to Tab.
 + (void)setEnabledForTests:(BOOL)enabled;
-// Sets the hide omnibox delay. If set to 0.0, the omnibox is hidden
-// synchronously.
-+ (void)setHideOmniboxDelaySeconds:(double)hideOmniboxDelaySeconds;
-// Resets the hide omnibox delay to its default value.
-+ (void)resetHideOmniboxDelaySeconds;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_FULLSCREEN_CONTROLLER_H_
