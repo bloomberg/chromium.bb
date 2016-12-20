@@ -1040,10 +1040,12 @@ TEST(HttpUtilTest, ParseContentRangeHeader) {
 
 TEST(HttpUtilTest, ParseRetryAfterHeader) {
   base::Time::Exploded now_exploded = {2014, 11, 4, 5, 22, 39, 30, 0};
-  base::Time now = base::Time::FromUTCExploded(now_exploded);
+  base::Time now;
+  EXPECT_TRUE(base::Time::FromUTCExploded(now_exploded, &now));
 
   base::Time::Exploded later_exploded = {2015, 1, 5, 1, 12, 34, 56, 0};
-  base::Time later = base::Time::FromUTCExploded(later_exploded);
+  base::Time later;
+  EXPECT_TRUE(base::Time::FromUTCExploded(later_exploded, &later));
 
   const struct {
     const char* retry_after_string;
