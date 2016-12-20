@@ -558,19 +558,6 @@ bool FillFormOnPasswordReceived(
       field_value_and_properties_map, registration_callback, logger);
 }
 
-// Takes a |map| with pointers as keys and linked_ptr as values, and returns
-// true if |key| is not NULL and  |map| contains a non-NULL entry for |key|.
-// Makes sure not to create an entry as a side effect of using the operator [].
-template <class Key, class Value>
-bool ContainsNonNullEntryForNonNullKey(
-    const std::map<Key*, linked_ptr<Value>>& map,
-    Key* key) {
-  if (!key)
-    return false;
-  auto it = map.find(key);
-  return it != map.end() && it->second.get();
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
