@@ -886,6 +886,10 @@
                   '|chrome/browser/.*managed_user'\
                   '|chrome/browser/.*supervised_user',
     },
+    'swreporter': {
+      'filepath': 'chrome/browser/safe_browsing/srt_'\
+                  '|chrome/browser/component_updater/sw_reporter_',
+    },
     'sync': {
       'filepath': '^chrome/android/sync_shell/'\
                   '|^chrome/browser/ui/sync/'\
@@ -2011,6 +2015,9 @@
                    'jbroman+cpp@chromium.org',
                    'vmpstr+watch@chromium.org'],
     'supervised_users': ['pam+watch@chromium.org'],
+    'swreporter': ['alito+watch@chromium.org',
+                   'ftirelo+watch@chromium.org',
+                   'joenotcharles+watch@chromium.org'],
     'sync': ['sync-reviews@chromium.org'],
     'syncfs': ['kinuko+fileapi@chromium.org',
                'nhiroki@chromium.org',
