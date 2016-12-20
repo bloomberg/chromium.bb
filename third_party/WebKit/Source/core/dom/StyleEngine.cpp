@@ -351,7 +351,7 @@ void StyleEngine::updateActiveStyle() {
   DCHECK(document().isActive());
   updateViewport();
   updateActiveStyleSheets();
-  m_globalRuleSet.update(document());
+  updateGlobalRuleSet();
 }
 
 const ActiveStyleSheetVector StyleEngine::activeStyleSheetsForInspector() {
@@ -928,14 +928,14 @@ void StyleEngine::ensureUAStyleForFullscreen() {
     return;
   CSSDefaultStyleSheets::instance().ensureDefaultStyleSheetForFullscreen();
   m_globalRuleSet.markDirty();
-  m_globalRuleSet.update(document());
+  updateActiveStyle();
 }
 
 void StyleEngine::ensureUAStyleForElement(const Element& element) {
   if (CSSDefaultStyleSheets::instance().ensureDefaultStyleSheetsForElement(
           element)) {
     m_globalRuleSet.markDirty();
-    m_globalRuleSet.update(document());
+    updateActiveStyle();
   }
 }
 

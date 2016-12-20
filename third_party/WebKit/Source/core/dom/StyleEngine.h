@@ -314,6 +314,10 @@ class CORE_EXPORT StyleEngine final
 
   void updateViewport();
   void updateActiveStyleSheets();
+  void updateGlobalRuleSet() {
+    DCHECK(!needsActiveStyleSheetUpdate());
+    m_globalRuleSet.update(document());
+  }
   const MediaQueryEvaluator& ensureMediaQueryEvaluator();
 
   Member<Document> m_document;
