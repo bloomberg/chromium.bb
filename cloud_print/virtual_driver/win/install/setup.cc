@@ -53,8 +53,21 @@ base::FilePath GetSystemPath(const base::string16& binary) {
   return path.Append(binary);
 }
 
+base::FilePath GetNativeSystemPath(const base::string16& binary) {
+  if (!IsSystem64Bit())
+    return GetSystemPath(binary);
+  base::FilePath path;
+  // Sysnative will bypass filesystem redirection and give us
+  // the location of the 64bit system32 from a 32 bit process.
+  if (!PathService::Get(base::DIR_WINDOWS, &path)) {
+    LOG(ERROR) << "Unable to get windows path.";
+    return path;
+  }
+  return path.Append(L"sysnative").Append(binary);
+}
+
 void SpoolerServiceCommand(const char* command) {
-  base::FilePath net_path = GetSystemPath(L"net");
+  base::FilePath net_path = GetNativeSystemPath(L"net");
   if (net_path.empty())
     return;
   base::CommandLine command_line(net_path);
@@ -71,13 +84,13 @@ void SpoolerServiceCommand(const char* command) {
 
 HRESULT RegisterPortMonitor(bool install, const base::FilePath& install_path) {
   DCHECK(install || install_path.empty());
-  base::FilePath target_path = GetSystemPath(L"gcp_portmon.dll");
+  base::FilePath target_path = GetNativeSystemPath(GetPortMonitorDllName());
   if (target_path.empty()) {
     LOG(ERROR) << "Unable to get port monitor target path.";
     return HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND);
   }
   if (install) {
-    base::FilePath source_path = install_path.Append(L"gcp_portmon.dll");
+    base::FilePath source_path = install_path.Append(GetPortMonitorDllName());
     if (!base::CopyFile(source_path, target_path)) {
       LOG(ERROR) << "Unable copy port monitor dll from " << source_path.value()
                  << " to " << target_path.value();
@@ -88,7 +101,7 @@ HRESULT RegisterPortMonitor(bool install, const base::FilePath& install_path) {
     return S_OK;
   }
 
-  base::FilePath regsvr32_path = GetSystemPath(L"regsvr32.exe");
+  base::FilePath regsvr32_path = GetNativeSystemPath(L"regsvr32.exe");
   if (regsvr32_path.empty()) {
     LOG(ERROR) << "Can't find regsvr32.exe.";
     return HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND);
@@ -101,7 +114,7 @@ HRESULT RegisterPortMonitor(bool install, const base::FilePath& install_path) {
   }
 
   // Use system32 path here because otherwise ::AddMonitor would fail.
-  command_line.AppendArgPath(GetSystemPath(L"gcp_portmon.dll"));
+  command_line.AppendArgPath(GetSystemPath(GetPortMonitorDllName()));
 
   base::LaunchOptions options;
   options.wait = true;

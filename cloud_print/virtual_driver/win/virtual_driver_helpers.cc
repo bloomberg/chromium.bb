@@ -21,6 +21,14 @@ void DisplayWindowsMessage(HWND hwnd,
   ::MessageBox(hwnd, GetErrorMessage(hr).c_str(), caption.c_str(), MB_OK);
 }
 
+base::string16 GetPortMonitorDllName() {
+  if (IsSystem64Bit()) {
+    return base::string16(L"gcp_portmon64.dll");
+  } else {
+    return base::string16(L"gcp_portmon.dll");
+  }
+}
+
 HRESULT GetPrinterDriverDir(base::FilePath* path) {
   BYTE driver_dir_buffer[MAX_PATH * sizeof(wchar_t)];
   DWORD needed = 0;
@@ -36,4 +44,11 @@ HRESULT GetPrinterDriverDir(base::FilePath* path) {
   *path = path->Append(L"3");
   return S_OK;
 }
+
+bool IsSystem64Bit() {
+  base::win::OSInfo::WindowsArchitecture arch =
+      base::win::OSInfo::GetInstance()->architecture();
+  return (arch == base::win::OSInfo::X64_ARCHITECTURE) ||
+         (arch == base::win::OSInfo::IA64_ARCHITECTURE);
 }
+}  // namespace cloud_print

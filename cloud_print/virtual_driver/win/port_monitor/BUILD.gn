@@ -14,6 +14,9 @@ group("port_monitor") {
 
 shared_library("port_monitor_dll") {
   output_name = "gcp_portmon"
+  if (current_cpu == "x64") {
+    output_name = "gcp_portmon64"
+  }
 
   sources = [
     "port_monitor.def",
@@ -31,6 +34,51 @@ shared_library("port_monitor_dll") {
   ]
 
   libs = [ "userenv.lib" ]
+}
+
+group("copy_gcp_portmon_binaries") {
+  deps = [
+    ":copy_gcp_portmon_dll",
+  ]
+  # TODO(pastarmovj): Find some way to reference the pdb file for the 64bit dll
+  # simply using it in the sources directive causes gn to error when generating
+  # the build files.
+}
+
+if (current_cpu == "x64") {
+  copy("copy_gcp_portmon_dll") {
+    sources = [
+      "$root_out_dir/gcp_portmon64.dll",
+    ]
+    outputs = [
+      "$root_out_dir/gcp_portmon.dll",
+    ]
+    deps = [
+      ":port_monitor_dll",
+    ]
+  }
+} else {
+  # Make sure that we have a copy of gcp_portmon64.dll in the root out
+  # directory.
+  copy("copy_gcp_portmon_dll") {
+    if (is_clang) {
+      gcp_portmon64_toolchain = "//build/toolchain/win:clang_x64"
+    } else {
+      gcp_portmon64_toolchain = "//build/toolchain/win:x64"
+    }
+    gcp_portmon64_label = ":port_monitor_dll($gcp_portmon64_toolchain)"
+
+    gcp_portmon64_out_dir = get_label_info(gcp_portmon64_label, "root_out_dir")
+    sources = [
+      "$gcp_portmon64_out_dir/gcp_portmon64.dll",
+    ]
+    outputs = [
+      "$root_out_dir/{{source_file_part}}",
+    ]
+    deps = [
+      gcp_portmon64_label,
+    ]
+  }
 }
 
 source_set("lib") {

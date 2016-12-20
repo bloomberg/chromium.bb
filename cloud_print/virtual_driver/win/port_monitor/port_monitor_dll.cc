@@ -74,7 +74,7 @@ HRESULT WINAPI DllRegisterServer(void) {
   MONITOR_INFO_2 monitor_info = {0};
   // YUCK!!!  I can either copy the constant, const_cast, or define my own
   // MONITOR_INFO_2 that will take const strings.
-  base::FilePath dll_path(L"gcp_portmon.dll");
+  base::FilePath dll_path(cloud_print::GetPortMonitorDllName());
   monitor_info.pDLLName = const_cast<LPWSTR>(dll_path.value().c_str());
   monitor_info.pName = const_cast<LPWSTR>(dll_path.value().c_str());
   if (AddMonitor(NULL, 2, reinterpret_cast<BYTE*>(&monitor_info))) {
@@ -88,7 +88,7 @@ HRESULT WINAPI DllUnregisterServer(void) {
   if (!cloud_print::CanRegister()) {
     return E_ACCESSDENIED;
   }
-  base::FilePath dll_path(L"gcp_portmon.dll");
+  base::FilePath dll_path(cloud_print::GetPortMonitorDllName());
   if (DeleteMonitor(NULL, NULL, const_cast<LPWSTR>(dll_path.value().c_str()))) {
     return S_OK;
   }

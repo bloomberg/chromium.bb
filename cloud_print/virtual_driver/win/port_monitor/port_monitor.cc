@@ -629,7 +629,7 @@ DWORD WINAPI Monitor2XcvDataPort(HANDLE xcv_handle,
   // dynamic creation of ports.
   if (lstrcmp(L"MonitorUI", data_name) == 0) {
     DWORD dll_path_len = 0;
-    base::FilePath dll_path(L"gcp_portmon.dll");
+    base::FilePath dll_path(cloud_print::GetPortMonitorDllName());
     dll_path_len = static_cast<DWORD>(dll_path.value().length());
     if (output_data_bytes_needed != NULL) {
       *output_data_bytes_needed = dll_path_len;
