@@ -88,6 +88,34 @@ cr.define('cr_profile_avatar_selector', function() {
         // Simulate tapping the second avatar.
         MockInteractions.tap(avatarSelector.$['avatar-grid'].items[1]);
       });
+
+      test('Ignores modified key events', function() {
+        var selector = avatarSelector.$['avatar-grid'];
+        var items = selector.items;
+
+        selector._setFocusedItem(items[0]);
+        assertTrue(items[0].focused);
+
+        MockInteractions.keyDownOn(items[0], 39, [], 'ArrowRight');
+        assertTrue(items[1].focused);
+
+        MockInteractions.keyDownOn(items[0], 37, [], 'ArrowLeft');
+        assertTrue(items[0].focused);
+
+        avatarSelector.ignoreModifiedKeyEvents = true;
+
+        MockInteractions.keyDownOn(items[0], 39, 'alt', 'ArrowRight');
+        assertTrue(items[0].focused);
+
+        MockInteractions.keyDownOn(items[0], 39, 'ctrl', 'ArrowRight');
+        assertTrue(items[0].focused);
+
+        MockInteractions.keyDownOn(items[0], 39, 'meta', 'ArrowRight');
+        assertTrue(items[0].focused);
+
+        MockInteractions.keyDownOn(items[0], 39, 'shift', 'ArrowRight');
+        assertTrue(items[0].focused);
+      });
     });
   }
 

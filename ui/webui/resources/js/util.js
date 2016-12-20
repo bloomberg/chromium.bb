@@ -500,3 +500,11 @@ function importModules(moduleNames) {
     });
   });
 }
+
+/**
+ * @param {!Event} e
+ * @return {boolean} Whether a modifier key was down when processing |e|.
+ */
+function hasKeyModifiers(e) {
+  return !!(e.altKey || e.ctrlKey || e.metaKey || e.shiftKey);
+}

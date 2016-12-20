@@ -42,7 +42,8 @@
       }
     </style>
     <cr-profile-avatar-selector-grid id="avatar-grid"
-        selected="{{selectedAvatarUrl}}" attr-for-selected="data-avatar-url">
+        selected="{{selectedAvatarUrl}}" attr-for-selected="data-avatar-url"
+        ignore-modified-key-events="[[ignoreModifiedKeyEvents]]">
       <template is="dom-repeat" items="[[avatars]]">
         <paper-button class="avatar" data-avatar-url$="[[item.url]]"
             title="[[item.label]]"

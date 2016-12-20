@@ -754,7 +754,7 @@ cr.define('options', function() {
      */
     handleKeyLeftRight_: function(e) {
       var id = e.key;
-      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)
+      if (hasKeyModifiers(e))
         return;
       if ((id == 'ArrowLeft' || id == 'ArrowRight') && this.expandedItem) {
         var cs = this.ownerDocument.defaultView.getComputedStyle(this);

@@ -320,7 +320,7 @@ PDFViewer.prototype = {
         pageDownHandler();
         return;
       case 37:  // Left arrow key.
-        if (!(e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)) {
+        if (!hasKeyModifiers(e)) {
           // Go to the previous page if there are no horizontal scrollbars and
           // no form field is focused.
           if (!(this.viewport_.documentHasScrollbars().horizontal ||
@@ -341,7 +341,7 @@ PDFViewer.prototype = {
         }
         return;
       case 39:  // Right arrow key.
-        if (!(e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)) {
+        if (!hasKeyModifiers(e)) {
           // Go to the next page if there are no horizontal scrollbars and no
           // form field is focused.
           if (!(this.viewport_.documentHasScrollbars().horizontal ||

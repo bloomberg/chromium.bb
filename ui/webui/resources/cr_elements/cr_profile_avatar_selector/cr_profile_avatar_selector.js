@@ -15,6 +15,15 @@ Polymer({
 
   properties: {
     /**
+     * The list of profile avatar URLs and labels.
+     * @type {!Array<!AvatarIcon>}
+     */
+    avatars: {
+      type: Array,
+      value: function() { return []; }
+    },
+
+    /**
      * The currently selected profile avatar URL. May be a data URI.
      * @type {string}
      */
@@ -23,14 +32,10 @@ Polymer({
       notify: true
     },
 
-    /**
-     * The list of profile avatar URLs and labels.
-     * @type {!Array<!AvatarIcon>}
-     */
-    avatars: {
-      type: Array,
-      value: function() { return []; }
-    }
+    ignoreModifiedKeyEvents: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   /**

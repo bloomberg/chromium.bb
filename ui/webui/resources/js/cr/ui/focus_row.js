@@ -254,7 +254,7 @@ cr.define('cr.ui', function() {
     },
 
     /**
-     * @param {Event} e The keydown event.
+     * @param {!Event} e The keydown event.
      * @private
      */
     onKeydown_: function(e) {
@@ -266,7 +266,7 @@ cr.define('cr.ui', function() {
       if (this.delegate && this.delegate.onKeydown(this, e))
         return;
 
-      if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey)
+      if (hasKeyModifiers(e))
         return;
 
       var index = -1;

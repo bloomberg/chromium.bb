@@ -824,7 +824,7 @@ function appendRow(list, lineFactory, key, value) {
   var line = lineFactory(key, value);
   line.lastElementChild.addEventListener('keydown', function(e) {
     if (e.key == 'Tab' &&
-        !e.ctrlKey && !e.altKey && !e.shiftKey && !e.metaKey &&
+        !hasKeyModifiers(e) &&
         line.classList.contains('fresh') &&
         !line.classList.contains('empty')) {
       // Tabbing forward on the fresh line, try create a new empty one.

@@ -46,13 +46,13 @@ keyboard.onAdvanceFocus = function(reverse) {
 
 /**
  * Swallows keypress and keyup events of arrow keys.
- * @param {Event} event Raised event.
+ * @param {!Event} event Raised event.
  * @private
  */
 keyboard.onKeyIgnore_ = function(event) {
-  event = /** @type {KeyboardEvent} */(event);
+  event = /** @type {!KeyboardEvent} */(event);
 
-  if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
+  if (hasKeyModifiers(event))
     return;
 
   if (event.key == 'ArrowLeft' ||
@@ -66,13 +66,13 @@ keyboard.onKeyIgnore_ = function(event) {
 
 /**
  * Handles arrow key events, depending on if self is a content script.
- * @param {Event} event Raised event.
+ * @param {!Event} event Raised event.
  * @private
  */
 keyboard.onKeyDown_ = function(event) {
-  event = /** @type {KeyboardEvent} */(event);
+  event = /** @type {!KeyboardEvent} */(event);
 
-  if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
+  if (hasKeyModifiers(event))
     return;
 
   // This file also gets embedded inside of the CfM/hotrod enrollment webview.

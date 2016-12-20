@@ -260,7 +260,7 @@ cr.define('print_preview', function() {
       // If the user is holding a modifier key, ignore.
       if (!this.plugin_ ||
           !arrayContains([33, 34, 37, 38, 39, 40], e.keyCode) ||
-          e.metaKey || e.altKey || e.shiftKey || e.ctrlKey) {
+          hasKeyModifiers(e)) {
         return;
       }
 

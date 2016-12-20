@@ -41,10 +41,10 @@ cr.define('ntp', function() {
     /**
      * Handler for key events on the dot list. These keys will change the focus
      * element.
-     * @param {Event} e The KeyboardEvent.
+     * @param {!Event} e The KeyboardEvent.
      */
     onKeyDown_: function(e) {
-      if (e.metaKey || e.shiftKey || e.altKey || e.ctrlKey)
+      if (hasKeyModifiers(e))
         return;
 
       var direction = 0;

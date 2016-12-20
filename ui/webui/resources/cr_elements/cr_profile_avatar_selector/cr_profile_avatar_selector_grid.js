@@ -14,6 +14,39 @@ Polymer({
     Polymer.IronMenubarBehavior,
   ],
 
+  properties: {
+    ignoreModifiedKeyEvents: {
+      type: Boolean,
+      value: false,
+    },
+  },
+
+  /**
+   * Handler that is called when left arrow key is pressed. Overrides
+   * IronMenubarBehaviorImpl#_onLeftKey and ignores keys likely to be browser
+   * shortcuts (like Alt+Left for back).
+   * @param {!CustomEvent} event
+   * @private
+   */
+  _onLeftKey: function(event) {
+    if (this.ignoreModifiedKeyEvents && this.hasKeyModifiers_(event))
+      return;
+    Polymer.IronMenubarBehaviorImpl._onLeftKey.call(this, event);
+  },
+
+  /**
+   * Handler that is called when right arrow key is pressed. Overrides
+   * IronMenubarBehaviorImpl#_onRightKey and ignores keys likely to be browser
+   * shortcuts (like Alt+Right for forward).
+   * @param {!CustomEvent} event
+   * @private
+   */
+  _onRightKey: function(event) {
+    if (this.ignoreModifiedKeyEvents && this.hasKeyModifiers_(event))
+      return;
+    Polymer.IronMenubarBehaviorImpl._onRightKey.call(this, event);
+  },
+
   /**
    * Handler that is called when the up arrow key is pressed.
    * @param {CustomEvent} event A key combination event.
@@ -41,6 +74,14 @@ Polymer({
    */
   _onEscKey: function(event) {
     // Override the original behavior by doing nothing.
+  },
+
+  /**
+   * @param {!CustomEvent} event
+   * @return {boolean} Whether the key event has modifier keys pressed.
+   */
+  hasKeyModifiers_: function(event) {
+    return hasKeyModifiers(assertInstanceof(event.detail.keyboardEvent, Event));
   },
 
   /**

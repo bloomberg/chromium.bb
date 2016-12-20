@@ -33,7 +33,7 @@
     </template>
     <cr-profile-avatar-selector id="selector" avatars="[[availableIcons]]"
         selected-avatar-url="{{profileIconUrl}}"
-        on-iron-activate="onIconActivate_">
+        on-iron-activate="onIconActivate_" ignore-modified-key-events>
     </cr-profile-avatar-selector>
   </template>
   <script src="manage_profile.js"></script>

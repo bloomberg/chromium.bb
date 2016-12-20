@@ -40,7 +40,7 @@ cr.define('print_preview', function() {
 
       this.getElement().addEventListener('keydown', function f(e) {
         // Escape pressed -> cancel the dialog.
-        if (!e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        if (!hasKeyModifiers(e)) {
           if (e.keyCode == 27) {
             e.stopPropagation();
             e.preventDefault();

@@ -903,8 +903,7 @@ cr.define('print_preview', function() {
      */
     onKeyDown_: function(e) {
       // Escape key closes the dialog.
-      if (e.keyCode == 27 && !e.shiftKey && !e.ctrlKey && !e.altKey &&
-          !e.metaKey) {
+      if (e.keyCode == 27 && !hasKeyModifiers(e)) {
         // On non-mac with toolkit-views, ESC key is handled by C++-side instead
         // of JS-side.
         if (cr.isMac) {

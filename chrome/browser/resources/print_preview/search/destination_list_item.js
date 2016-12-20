@@ -227,7 +227,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onKeyDown_: function(e) {
-      if (!e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+      if (!hasKeyModifiers(e)) {
         if (e.keyCode == 13) {
           var activeElementTag = document.activeElement ?
               document.activeElement.tagName.toUpperCase() : '';
@@ -281,7 +281,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onExtensionIconKeyDown_: function(e) {
-      if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey)
+      if (hasKeyModifiers(e))
         return;
       if (e.keyCode != 13 /* Enter */)
         return;
