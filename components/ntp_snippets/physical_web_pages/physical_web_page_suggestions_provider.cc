@@ -77,7 +77,7 @@ CategoryInfo PhysicalWebPageSuggestionsProvider::GetCategoryInfo(
   return CategoryInfo(
       base::ASCIIToUTF16("Physical web pages"),
       ContentSuggestionsCardLayout::FULL_CARD,
-      /*has_more_action=*/true,
+      /*has_more_action=*/false,
       /*has_reload_action=*/false,
       /*has_view_all_action=*/false,
       /*show_if_empty=*/false,
