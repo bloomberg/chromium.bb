@@ -150,6 +150,7 @@ TEST(TextureLayerImplTest, OutputIsSecure) {
 TEST(TextureLayerImplTest, ResourceNotFreedOnGpuRasterToggle) {
   LayerTreeSettings settings;
   settings.gpu_rasterization_enabled = true;
+  bool released = false;
   LayerTestCommon::LayerImplTest impl(settings);
   impl.host_impl()->AdvanceToNextFrame(base::TimeDelta::FromMilliseconds(1));
 
@@ -171,7 +172,6 @@ TEST(TextureLayerImplTest, ResourceNotFreedOnGpuRasterToggle) {
       impl.AddChildToRoot<TextureLayerImpl>();
   texture_layer_impl->SetBounds(layer_size);
   texture_layer_impl->SetDrawsContent(true);
-  bool released = false;
   texture_layer_impl->SetTextureMailbox(
       texture_mailbox,
       SingleReleaseCallbackImpl::Create(base::Bind(
