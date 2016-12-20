@@ -76,7 +76,7 @@ bool ConsumedByIme(Surface* focus, const ui::KeyEvent* event) {
 
 bool IsPhysicalKeyboardEnabled() {
   // The internal keyboard is enabled if maximize mode is not enabled.
-  if (WMHelper::GetInstance()->IsMaximizeModeWindowManagerEnabled())
+  if (!WMHelper::GetInstance()->IsMaximizeModeWindowManagerEnabled())
     return true;
 
   for (auto& keyboard :
