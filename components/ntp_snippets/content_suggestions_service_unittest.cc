@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/category_rankers/constant_category_ranker.h"
+#include "components/ntp_snippets/category_rankers/fake_category_ranker.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
@@ -26,18 +27,21 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"
 
+using testing::_;
 using testing::ElementsAre;
 using testing::Eq;
 using testing::InvokeWithoutArgs;
 using testing::IsEmpty;
 using testing::Mock;
 using testing::Property;
-using testing::_;
+using testing::Return;
+using testing::UnorderedElementsAre;
 
 namespace ntp_snippets {
 
 namespace {
 
+// TODO(treib): This is a weird combination of a mock and a fake. Fix this.
 class MockProvider : public ContentSuggestionsProvider {
  public:
   MockProvider(Observer* observer,
@@ -131,7 +135,8 @@ class MockServiceObserver : public ContentSuggestionsService::Observer {
 class ContentSuggestionsServiceTest : public testing::Test {
  public:
   ContentSuggestionsServiceTest()
-      : pref_service_(new TestingPrefServiceSimple()) {}
+      : pref_service_(base::MakeUnique<TestingPrefServiceSimple>()),
+        category_ranker_(base::MakeUnique<ConstantCategoryRanker>()) {}
 
   void SetUp() override {
     RegisterPrefs();
@@ -193,6 +198,10 @@ class ContentSuggestionsServiceTest : public testing::Test {
     return result;
   }
 
+  void SetCategoryRanker(std::unique_ptr<CategoryRanker> category_ranker) {
+    category_ranker_ = std::move(category_ranker);
+  }
+
   MOCK_METHOD1(OnImageFetched, void(const gfx::Image&));
 
  protected:
@@ -204,10 +213,9 @@ class ContentSuggestionsServiceTest : public testing::Test {
   void CreateContentSuggestionsService(
       ContentSuggestionsService::State enabled) {
     ASSERT_FALSE(service_);
-    service_.reset(new ContentSuggestionsService(
+    service_ = base::MakeUnique<ContentSuggestionsService>(
         enabled, /*signin_manager=*/nullptr, /*history_service=*/nullptr,
-        pref_service_.get(),
-        base::MakeUnique<ntp_snippets::ConstantCategoryRanker>()));
+        pref_service_.get(), std::move(category_ranker_));
   }
 
   void ResetService() {
@@ -238,6 +246,7 @@ class ContentSuggestionsServiceTest : public testing::Test {
  private:
   std::unique_ptr<ContentSuggestionsService> service_;
   std::unique_ptr<TestingPrefServiceSimple> pref_service_;
+  std::unique_ptr<CategoryRanker> category_ranker_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSuggestionsServiceTest);
 };
@@ -271,7 +280,8 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRegisterProviders) {
   ASSERT_THAT(providers().count(articles_category), Eq(1ul));
   EXPECT_THAT(providers().at(articles_category), Eq(provider1));
   EXPECT_THAT(providers().size(), Eq(1ul));
-  EXPECT_THAT(service()->GetCategories(), ElementsAre(articles_category));
+  EXPECT_THAT(service()->GetCategories(),
+              UnorderedElementsAre(articles_category));
   EXPECT_THAT(service()->GetCategoryStatus(articles_category),
               Eq(CategoryStatus::AVAILABLE));
   EXPECT_THAT(service()->GetCategoryStatus(offline_pages_category),
@@ -285,7 +295,7 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRegisterProviders) {
   EXPECT_THAT(providers().at(offline_pages_category), Eq(provider2));
   EXPECT_THAT(providers().size(), Eq(2ul));
   EXPECT_THAT(service()->GetCategories(),
-              ElementsAre(offline_pages_category, articles_category));
+              UnorderedElementsAre(offline_pages_category, articles_category));
   EXPECT_THAT(service()->GetCategoryStatus(articles_category),
               Eq(CategoryStatus::AVAILABLE));
   EXPECT_THAT(service()->GetCategoryStatus(offline_pages_category),
@@ -545,7 +555,7 @@ TEST_F(ContentSuggestionsServiceTest,
   EXPECT_THAT(service()->GetCategoryStatus(new_category),
               Eq(CategoryStatus::INITIALIZING));
   EXPECT_THAT(service()->GetCategories(),
-              Eq(std::vector<Category>({category, new_category})));
+              UnorderedElementsAre(category, new_category));
 
   service()->RemoveObserver(&observer);
 }
@@ -598,7 +608,7 @@ TEST_F(ContentSuggestionsServiceTest, DismissAndRestoreCategory) {
   provider->FireCategoryStatusChangedWithCurrentStatus(category);
   provider->FireSuggestionsChanged(category, CreateSuggestions(category, {42}));
 
-  EXPECT_THAT(service()->GetCategories(), ElementsAre(category));
+  EXPECT_THAT(service()->GetCategories(), UnorderedElementsAre(category));
   EXPECT_THAT(service()->GetCategoryStatus(category),
               Eq(CategoryStatus::AVAILABLE));
   ExpectThatSuggestionsAre(category, {42});
@@ -619,7 +629,7 @@ TEST_F(ContentSuggestionsServiceTest, DismissAndRestoreCategory) {
   // empty.
   service()->RestoreDismissedCategories();
 
-  EXPECT_THAT(service()->GetCategories(), ElementsAre(category));
+  EXPECT_THAT(service()->GetCategories(), UnorderedElementsAre(category));
   EXPECT_THAT(service()->GetCategoryStatus(category),
               Eq(CategoryStatus::AVAILABLE));
   EXPECT_THAT(service()->GetSuggestionsForCategory(category), IsEmpty());
@@ -703,6 +713,34 @@ TEST_F(ContentSuggestionsServiceTest, ShouldRestoreDismissalsFromPrefs) {
   service()->RestoreDismissedCategories();
   EXPECT_FALSE(service()->IsCategoryDismissed(category));
   EXPECT_THAT(providers().find(category)->second, Eq(provider));
+}
+
+TEST_F(ContentSuggestionsServiceTest, ShouldReturnCategoriesInOrderToDisplay) {
+  const Category first_category = Category::FromRemoteCategory(1);
+  const Category second_category = Category::FromRemoteCategory(2);
+
+  auto fake_ranker = base::MakeUnique<FakeCategoryRanker>();
+  FakeCategoryRanker* raw_fake_ranker = fake_ranker.get();
+  SetCategoryRanker(std::move(fake_ranker));
+
+  raw_fake_ranker->SetOrder({first_category, second_category});
+
+  // The service is recreated to pick up the new ranker.
+  ResetService();
+
+  MockProvider* provider = RegisterProvider({first_category, second_category});
+  provider->FireCategoryStatusChangedWithCurrentStatus(first_category);
+  provider->FireCategoryStatusChangedWithCurrentStatus(second_category);
+
+  EXPECT_THAT(service()->GetCategories(),
+              ElementsAre(first_category, second_category));
+
+  // The order to display (in the ranker) changes.
+  raw_fake_ranker->SetOrder({second_category, first_category});
+
+  // Categories order should reflect the new order.
+  EXPECT_THAT(service()->GetCategories(),
+              ElementsAre(second_category, first_category));
 }
 
 }  // namespace ntp_snippets

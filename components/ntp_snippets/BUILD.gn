@@ -165,6 +165,8 @@ source_set("unit_tests") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "category_rankers/fake_category_ranker.cc",
+    "category_rankers/fake_category_ranker.h",
     "category_rankers/mock_category_ranker.cc",
     "category_rankers/mock_category_ranker.h",
     "mock_content_suggestions_provider_observer.cc",

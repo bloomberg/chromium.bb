@@ -100,9 +100,10 @@ class ContentSuggestionsService : public KeyedService,
 
   State state() { return state_; }
 
-  // Gets all categories for which a provider is registered. The categories
-  // may or may not be available, see |GetCategoryStatus()|.
-  const std::vector<Category>& GetCategories() const { return categories_; }
+  // Gets all categories for which a provider is registered. The categories may
+  // or may not be available, see |GetCategoryStatus()|. The order in which the
+  // categories are returned is the order in which they should be displayed.
+  std::vector<Category> GetCategories() const;
 
   // Gets the status of a category.
   CategoryStatus GetCategoryStatus(Category category) const;
@@ -256,8 +257,6 @@ class ContentSuggestionsService : public KeyedService,
 
   void OnSignInStateChanged();
 
-  void SortCategories();
-
   // Re-enables a dismissed category, making querying its provider possible.
   void RestoreDismissedCategory(Category category);
 
@@ -284,9 +283,8 @@ class ContentSuggestionsService : public KeyedService,
   std::map<Category, ContentSuggestionsProvider*, Category::CompareByID>
       dismissed_providers_by_category_;
 
-  // All current suggestion categories, in an order determined by the
-  // |category_factory_|. This vector contains exactly the same categories as
-  // |providers_by_category_|.
+  // All current suggestion categories in arbitrary order. This vector contains
+  // exactly the same categories as |providers_by_category_|.
   std::vector<Category> categories_;
 
   // All current suggestions grouped by category. This contains an entry for

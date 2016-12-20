@@ -66,6 +66,15 @@ void ContentSuggestionsService::RegisterProfilePrefs(
   registry->RegisterListPref(prefs::kDismissedCategories);
 }
 
+std::vector<Category> ContentSuggestionsService::GetCategories() const {
+  std::vector<Category> sorted_categories = categories_;
+  std::sort(sorted_categories.begin(), sorted_categories.end(),
+            [this](const Category& left, const Category& right) {
+              return category_ranker_->Compare(left, right);
+            });
+  return sorted_categories;
+}
+
 CategoryStatus ContentSuggestionsService::GetCategoryStatus(
     Category category) const {
   if (state_ == State::DISABLED) {
@@ -389,7 +398,6 @@ void ContentSuggestionsService::RegisterCategory(
 
   providers_by_category_[category] = provider;
   categories_.push_back(category);
-  SortCategories();
   if (IsCategoryStatusAvailable(provider->GetCategoryStatus(category))) {
     suggestions_by_category_.insert(
         std::make_pair(category, std::vector<ContentSuggestion>()));
@@ -446,13 +454,6 @@ void ContentSuggestionsService::OnSignInStateChanged() {
   for (Observer& observer : observers_) {
     observer.OnFullRefreshRequired();
   }
-}
-
-void ContentSuggestionsService::SortCategories() {
-  std::sort(categories_.begin(), categories_.end(),
-            [this](const Category& left, const Category& right) {
-              return category_ranker_->Compare(left, right);
-            });
 }
 
 bool ContentSuggestionsService::IsCategoryDismissed(Category category) const {
