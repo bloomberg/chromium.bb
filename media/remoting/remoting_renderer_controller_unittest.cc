@@ -90,6 +90,9 @@ TEST_F(RemotingRendererControllerTest, ToggleRendererOnFullscreenChange) {
   EXPECT_FALSE(is_rendering_remotely_);
   remoting_renderer_controller_->OnRemotePlaybackDisabled(false);
   RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+  remoting_renderer_controller_->OnPlaying();
+  RunUntilIdle();
   EXPECT_TRUE(is_rendering_remotely_);  // All requirements now satisfied.
 
   // Leaving fullscreen should shut down remoting.
@@ -112,6 +115,9 @@ TEST_F(RemotingRendererControllerTest, ToggleRendererOnSinkCapabilities) {
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   remoting_renderer_controller_->OnRemotePlaybackDisabled(false);
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+  remoting_renderer_controller_->OnPlaying();
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   remoting_renderer_controller_->OnEnteredFullscreen();
@@ -159,6 +165,9 @@ TEST_F(RemotingRendererControllerTest, ToggleRendererOnDisableChange) {
   EXPECT_FALSE(is_rendering_remotely_);
   remoting_renderer_controller_->OnRemotePlaybackDisabled(false);
   RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+  remoting_renderer_controller_->OnPlaying();
+  RunUntilIdle();
   EXPECT_TRUE(is_rendering_remotely_);  // All requirements now satisfied.
 
   // If the page disables remote playback (e.g., by setting the
@@ -190,6 +199,9 @@ TEST_F(RemotingRendererControllerTest, StartFailed) {
   remoting_renderer_controller_->OnRemotePlaybackDisabled(false);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
+  remoting_renderer_controller_->OnPlaying();
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
 }
 
 TEST_F(RemotingRendererControllerTest, EncryptedWithRemotingCdm) {
@@ -202,6 +214,7 @@ TEST_F(RemotingRendererControllerTest, EncryptedWithRemotingCdm) {
   EXPECT_FALSE(is_rendering_remotely_);
   remoting_renderer_controller_->OnMetadataChanged(EncryptedMetadata());
   remoting_renderer_controller_->OnRemotePlaybackDisabled(false);
+  remoting_renderer_controller_->OnPlaying();
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   scoped_refptr<RemotingSourceImpl> cdm_remoting_source_impl =
@@ -267,6 +280,9 @@ TEST_F(RemotingRendererControllerTest, EncryptedWithLocalCdm) {
   remoting_renderer_controller_->OnRemotePlaybackDisabled(false);
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
+  remoting_renderer_controller_->OnPlaying();
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
 
   scoped_refptr<RemotingSourceImpl> cdm_remoting_source_impl =
       CreateRemotingSourceImpl(true);
@@ -295,6 +311,9 @@ TEST_F(RemotingRendererControllerTest, EncryptedWithFailedRemotingCdm) {
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
   remoting_renderer_controller_->OnRemotePlaybackDisabled(false);
+  RunUntilIdle();
+  EXPECT_FALSE(is_rendering_remotely_);
+  remoting_renderer_controller_->OnPlaying();
   RunUntilIdle();
   EXPECT_FALSE(is_rendering_remotely_);
 

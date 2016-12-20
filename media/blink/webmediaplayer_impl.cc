@@ -423,6 +423,9 @@ void WebMediaPlayerImpl::play() {
   if (data_source_)
     data_source_->MediaIsPlaying();
 
+  if (observer_)
+    observer_->OnPlaying();
+
   DCHECK(watch_time_reporter_);
   watch_time_reporter_->OnPlaying();
   media_log_->AddEvent(media_log_->CreateEvent(MediaLogEvent::PLAY));
@@ -453,6 +456,9 @@ void WebMediaPlayerImpl::pause() {
   // incorrectly discard what it thinks is a seek to the existing time.
   paused_time_ =
       ended_ ? pipeline_.GetMediaDuration() : pipeline_.GetMediaTime();
+
+  if (observer_)
+    observer_->OnPaused();
 
   DCHECK(watch_time_reporter_);
   watch_time_reporter_->OnPaused();

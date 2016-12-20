@@ -204,6 +204,19 @@ bool RemotingRendererController::IsAudioCodecSupported() {
   }
 }
 
+void RemotingRendererController::OnPlaying() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  is_paused_ = false;
+  UpdateAndMaybeSwitch();
+}
+
+void RemotingRendererController::OnPaused() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  is_paused_ = true;
+}
+
 bool RemotingRendererController::ShouldBeRemoting() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -263,6 +276,13 @@ void RemotingRendererController::UpdateAndMaybeSwitch() {
   bool should_be_remoting = ShouldBeRemoting();
 
   if (remote_rendering_started_ == should_be_remoting)
+    return;
+
+  // Only switch to remoting when media is playing. Since the renderer is
+  // created when video starts loading/playing, receiver will display a black
+  // screen before video starts playing if switching to remoting when paused.
+  // Keep mirroring the video in this case is good for the user experience.
+  if (should_be_remoting && is_paused_)
     return;
 
   // Switch between local renderer and remoting renderer.

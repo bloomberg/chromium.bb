@@ -36,6 +36,10 @@ class MEDIA_EXPORT MediaObserver {
   // "disableRemotePlayback" media element attribute, as described in the
   // Remote Playback API spec: https://w3c.github.io/remote-playback
   virtual void OnRemotePlaybackDisabled(bool disabled) = 0;
+
+  // Called when the media is playing/paused.
+  virtual void OnPlaying() = 0;
+  virtual void OnPaused() = 0;
 };
 
 }  // namespace media

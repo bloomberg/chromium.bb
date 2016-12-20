@@ -39,6 +39,8 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   void OnSetCdm(CdmContext* cdm_context) override;
   void OnMetadataChanged(const PipelineMetadata& metadata) override;
   void OnRemotePlaybackDisabled(bool disabled) override;
+  void OnPlaying() override;
+  void OnPaused() override;
 
   void SetSwitchRendererCallback(const base::Closure& cb);
   void SetRemoteSinkAvailableChangedCallback(
@@ -119,6 +121,9 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
 
   // Indicates whether video is the dominant visible content in the tab.
   bool is_dominant_content_ = false;
+
+  // Indicates whether video is paused.
+  bool is_paused_ = true;
 
   // The callback to switch the media renderer.
   base::Closure switch_renderer_cb_;
