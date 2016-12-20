@@ -517,7 +517,7 @@ public class CustomTabActivity extends ChromeActivity {
             webContents = WarmupManager.getInstance().takeSpareWebContents(false, false);
             if (webContents != null) webContentsStateOnLaunch = WEBCONTENTS_STATE_SPARE_WEBCONTENTS;
         }
-        RecordHistogram.recordEnumeratedHistogram("CustomTabs.WebcontentsStateOnLaunch",
+        RecordHistogram.recordEnumeratedHistogram("CustomTabs.WebContentsStateOnLaunch",
                 webContentsStateOnLaunch, WEBCONTENTS_STATE_MAX);
         if (webContents == null) webContents = WebContentsFactory.createWebContents(false, false);
         if (!mHasPrerendered) {
