@@ -2415,5 +2415,4 @@ crbug.com/664859 virtual/threaded/transitions/transition-end-event-multiple-02.h
 
 crbug.com/664859 virtual/threaded/transitions/transition-end-event-unprefixed-02.html [ Pass Failure ]
 crbug.com/664859 virtual/threaded/transitions/transition-end-event-window.html [ Pass Failure ]
-crbug.com/664859 virtual/threaded/transitions/unprefixed-transform.html [ Pass Failure ]
 # ====== Random order flaky tests end here ======
