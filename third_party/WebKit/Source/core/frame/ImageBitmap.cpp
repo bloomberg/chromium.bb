@@ -506,8 +506,6 @@ static PassRefPtr<StaticBitmapImage> cropImageAndApplyColorSpaceConversion(
     if (parsedOptions.premultiplyAlpha && imageFormat == DontPremultiplyAlpha)
       return StaticBitmapImage::create(
           unPremulSkImageToPremul(croppedSkImage.get()));
-    // Call preroll to trigger image decoding.
-    croppedSkImage->preroll();
     return StaticBitmapImage::create(std::move(croppedSkImage));
   }
 
