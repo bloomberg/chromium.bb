@@ -167,7 +167,7 @@ CryptAuthEnrollmentManager::CreateSyncScheduler() {
       kEnrollmentMaxJitterRatio, "CryptAuth Enrollment");
 }
 
-std::string CryptAuthEnrollmentManager::GetUserPublicKey() {
+std::string CryptAuthEnrollmentManager::GetUserPublicKey() const {
   std::string public_key;
   if (!base::Base64UrlDecode(
           pref_service_->GetString(prefs::kCryptAuthEnrollmentUserPublicKey),
@@ -178,7 +178,7 @@ std::string CryptAuthEnrollmentManager::GetUserPublicKey() {
   return public_key;
 }
 
-std::string CryptAuthEnrollmentManager::GetUserPrivateKey() {
+std::string CryptAuthEnrollmentManager::GetUserPrivateKey() const {
   std::string private_key;
   if (!base::Base64UrlDecode(
           pref_service_->GetString(prefs::kCryptAuthEnrollmentUserPrivateKey),

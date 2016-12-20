@@ -14,6 +14,8 @@ static_library("tether") {
     "host_scanner.h",
     "initializer.cc",
     "initializer.h",
+    "local_device_data_provider.cc",
+    "local_device_data_provider.h",
   ]
 
   deps = [
@@ -49,6 +51,7 @@ source_set("unit_tests") {
   sources = [
     "ble_advertisement_device_queue_unittest.cc",
     "host_scan_scheduler_unittest.cc",
+    "local_device_data_provider_unittest.cc",
   ]
 
   deps = [
