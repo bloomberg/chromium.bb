@@ -21,4 +21,11 @@ TEST(MediaSourceTest, ConstructorWithGURL) {
   EXPECT_EQ(test_url, source1.url());
 }
 
+TEST(MediaSourceTest, ConstructorWithURLString) {
+  GURL test_url = GURL("http://google.com");
+  MediaSource source1(test_url.spec());
+  EXPECT_EQ(test_url.spec(), source1.id());
+  EXPECT_EQ(test_url, source1.url());
+}
+
 }  // namespace media_router
