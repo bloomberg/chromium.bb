@@ -429,10 +429,8 @@ class UpdateSieve(object):
         elif marker.token:
           (timestamp, version) = pickle.loads(marker.token)
           self._migration_versions_to_check[data_type] = version
-        elif marker.HasField('token'):
-          timestamp = 0
         else:
-          raise ValueError('No timestamp information in progress marker.')
+          timestamp = 0
         data_type = ProtocolDataTypeIdToSyncType(marker.data_type_id)
         self._state[data_type] = timestamp
     elif request.HasField('from_timestamp'):

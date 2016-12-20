@@ -7,6 +7,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/syncable/read_node.h"
 #include "components/sync/syncable/read_transaction.h"
 
@@ -14,6 +15,9 @@
 // types.
 
 namespace {
+
+using base::FeatureList;
+using syncer::ModelTypeSet;
 
 class EnableDisableSingleClientTest : public SyncTest {
  public:
@@ -39,21 +43,36 @@ bool IsUnready(const syncer::DataTypeStatusTable& data_type_status_table,
   return data_type_status_table.GetUnreadyErrorTypes().Has(type);
 }
 
+// The current approach this test class takes is to examine the Directory and
+// check for root nodes to see if a type is currently enabled. While this works
+// for things in the directory, it does not work for USS types. USS does not
+// have any general data access mechanism, at least yet. Until that exists,
+// simply omit types that may be USS from these cases.
+ModelTypeSet UnifiedSyncServiceTypes() {
+  ModelTypeSet set;
+  if (FeatureList::IsEnabled(switches::kSyncUSSDeviceInfo)) {
+    set.Put(syncer::DEVICE_INFO);
+  }
+  return set;
+}
+
 IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
   ASSERT_TRUE(SetupClients());
 
   // Setup sync with no enabled types.
-  ASSERT_TRUE(GetClient(0)->SetupSync(syncer::ModelTypeSet()));
+  ASSERT_TRUE(GetClient(0)->SetupSync(ModelTypeSet()));
 
   syncer::UserShare* user_share = GetSyncService(0)->GetUserShare();
   const syncer::DataTypeStatusTable& data_type_status_table =
       GetSyncService(0)->data_type_status_table();
 
-  const syncer::ModelTypeSet registered_types =
+  const ModelTypeSet registered_types =
       GetSyncService(0)->GetRegisteredDataTypes();
-  const syncer::ModelTypeSet registered_user_types =
+  const ModelTypeSet registered_directory_types =
+      Difference(registered_types, UnifiedSyncServiceTypes());
+  const ModelTypeSet registered_directory_user_types =
       Intersection(registered_types, syncer::UserSelectableTypes());
-  for (syncer::ModelTypeSet::Iterator it = registered_user_types.First();
+  for (ModelTypeSet::Iterator it = registered_directory_user_types.First();
        it.Good(); it.Inc()) {
     ASSERT_TRUE(GetClient(0)->EnableSyncForDatatype(it.Get()));
 
@@ -90,8 +109,10 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
   // Setup sync with no disabled types.
   ASSERT_TRUE(GetClient(0)->SetupSync());
 
-  const syncer::ModelTypeSet registered_types =
+  const ModelTypeSet registered_types =
       GetSyncService(0)->GetRegisteredDataTypes();
+  const ModelTypeSet registered_directory_types =
+      Difference(registered_types, UnifiedSyncServiceTypes());
 
   syncer::UserShare* user_share = GetSyncService(0)->GetUserShare();
 
@@ -99,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
       GetSyncService(0)->data_type_status_table();
 
   // Make sure all top-level nodes exist first.
-  for (syncer::ModelTypeSet::Iterator it = registered_types.First();
+  for (ModelTypeSet::Iterator it = registered_directory_types.First();
        it.Good(); it.Inc()) {
     if (!syncer::ProxyTypes().Has(it.Get())) {
       ASSERT_TRUE(DoesTopLevelNodeExist(user_share, it.Get()) ||
@@ -107,7 +128,7 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
     }
   }
 
-  for (syncer::ModelTypeSet::Iterator it = registered_types.First();
+  for (ModelTypeSet::Iterator it = registered_directory_types.First();
        it.Good(); it.Inc()) {
     // SUPERVISED_USERS and SUPERVISED_USER_SHARED_SETTINGS are always synced.
     if (it.Get() == syncer::SUPERVISED_USERS ||
