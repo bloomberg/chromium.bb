@@ -48,6 +48,10 @@
   return [passwordItem_ view];
 }
 
+- (BOOL)shouldShowGoogleSmartLockWelcome {
+  return self.model->ShouldShowGoogleSmartLockWelcome();
+}
+
 - (NSArray*)createButtonsAndAddThemToView:(NSView*)view {
   // Save button.
   saveButton_.reset(

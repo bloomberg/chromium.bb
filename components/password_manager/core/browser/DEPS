@@ -3,7 +3,6 @@ include_rules = [
   "+components/keyed_service/core",
   "+components/pref_registry",
   "+components/security_state",
-  "+components/sync/base",
   "+components/sync/driver",
   "+components/url_formatter",
   "+components/variations",
