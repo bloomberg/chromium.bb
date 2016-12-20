@@ -104,8 +104,8 @@ function test()
                 {
                     uiSourceCode1.addRevision("<snippet content>");
                     InspectorTest.addResult("Snippet content set.");
-                    delete uiSourceCode1._content;
-                    delete uiSourceCode1._contentLoaded;
+                    uiSourceCode1._requestContentPromise = null;
+                    uiSourceCode1.contentLoaded = false;
                     uiSourceCode1.requestContent()
                         .then(contentCallback)
                         .then(contentDumped2)
@@ -128,8 +128,8 @@ function test()
                 renameSnippetAndCheckWorkspace(uiSourceCode1, "foo");
                 renameSnippetAndCheckWorkspace(uiSourceCode2, "bar");
                 renameSnippetAndCheckWorkspace(uiSourceCode2, "foo");
-                delete uiSourceCode1._content;
-                delete uiSourceCode1._contentLoaded;
+                uiSourceCode1._requestContentPromise = null;
+                uiSourceCode1.contentLoaded = false;
                 uiSourceCode1.requestContent()
                     .then(contentCallback)
                     .then(onContentDumped);
