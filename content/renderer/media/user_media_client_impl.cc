@@ -443,7 +443,7 @@ void UserMediaClientImpl::OnStreamGenerated(
   CreateVideoTracks(video_array, request_info->request.videoConstraints(),
                     &video_track_vector, request_info);
 
-  blink::WebString webkit_id = base::UTF8ToUTF16(label);
+  blink::WebString webkit_id = blink::WebString::fromUTF8(label);
   blink::WebMediaStream* web_stream = &(request_info->web_stream);
 
   web_stream->initialize(webkit_id, audio_track_vector,
@@ -554,11 +554,9 @@ void UserMediaClientImpl::InitializeSourceObject(
     return;
   }
 
-  webkit_source->initialize(
-      base::UTF8ToUTF16(device.device.id),
-      type,
-      base::UTF8ToUTF16(device.device.name),
-      false /* remote */);
+  webkit_source->initialize(blink::WebString::fromUTF8(device.device.id), type,
+                            blink::WebString::fromUTF8(device.device.name),
+                            false /* remote */);
 
   DVLOG(1) << "Initialize source object :"
            << "id = " << webkit_source->id().utf8()

@@ -128,8 +128,9 @@ void WebEncryptedMediaClientImpl::CreateCdm(
     const blink::WebSecurityOrigin& security_origin,
     const CdmConfig& cdm_config,
     std::unique_ptr<blink::WebContentDecryptionModuleResult> result) {
-  WebContentDecryptionModuleImpl::Create(
-      cdm_factory_, key_system, security_origin, cdm_config, std::move(result));
+  WebContentDecryptionModuleImpl::Create(cdm_factory_, key_system.utf16(),
+                                         security_origin, cdm_config,
+                                         std::move(result));
 }
 
 void WebEncryptedMediaClientImpl::OnRequestSucceeded(

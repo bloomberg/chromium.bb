@@ -100,7 +100,7 @@ class RemoteMediaStreamTrackAdapter
     DCHECK(main_thread_->BelongsToCurrentThread());
     DCHECK(webkit_track_.isNull());
 
-    blink::WebString webkit_track_id(base::UTF8ToUTF16(id_));
+    blink::WebString webkit_track_id(blink::WebString::fromUTF8(id_));
     blink::WebMediaStreamSource webkit_source;
     webkit_source.initialize(webkit_track_id, type, webkit_track_id,
                              true /* remote */);
@@ -369,7 +369,7 @@ void RemoteMediaStreamImpl::InitializeOnMainThread(const std::string& label) {
     webkit_video_tracks[i] = *video_track_observers_[i]->webkit_track();
   }
 
-  webkit_stream_.initialize(base::UTF8ToUTF16(label),
+  webkit_stream_.initialize(blink::WebString::fromUTF8(label),
                             webkit_audio_tracks, webkit_video_tracks);
   webkit_stream_.setExtraData(new MediaStream());
 }

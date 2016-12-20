@@ -400,8 +400,8 @@ bool KeySystemConfigSelector::GetSupportedCapabilities(
 
     // 3.4-3.11. (Implemented by IsSupportedContentType().)
     ConfigState proposed_config_state = *config_state;
-    if (!base::IsStringASCII(capability.mimeType) ||
-        !base::IsStringASCII(capability.codecs) ||
+    if (!capability.mimeType.containsOnlyASCII() ||
+        !capability.codecs.containsOnlyASCII() ||
         !IsSupportedContentType(
             key_system, media_type, capability.mimeType.ascii(),
             capability.codecs.ascii(), &proposed_config_state)) {
@@ -412,7 +412,7 @@ bool KeySystemConfigSelector::GetSupportedCapabilities(
       // 3.12.1. If robustness is an unrecognized value or not supported by
       //         implementation, continue to the next iteration. String
       //         comparison is case-sensitive.
-      if (!base::IsStringASCII(capability.robustness))
+      if (!capability.robustness.containsOnlyASCII())
         continue;
       EmeConfigRule robustness_rule = key_systems_->GetRobustnessConfigRule(
           key_system, media_type, capability.robustness.ascii());

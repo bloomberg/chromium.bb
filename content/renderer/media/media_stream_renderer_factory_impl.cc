@@ -68,7 +68,7 @@ MediaStreamRendererFactoryImpl::GetVideoRenderer(
   DCHECK(!web_stream.isNull());
 
   DVLOG(1) << "MediaStreamRendererFactoryImpl::GetVideoRenderer stream:"
-           << base::UTF16ToUTF8(base::StringPiece16(web_stream.id()));
+           << web_stream.id().utf8();
 
   blink::WebVector<blink::WebMediaStreamTrack> video_tracks;
   web_stream.videoTracks(video_tracks);
@@ -95,7 +95,7 @@ MediaStreamRendererFactoryImpl::GetAudioRenderer(
     return NULL;
 
   DVLOG(1) << "MediaStreamRendererFactoryImpl::GetAudioRenderer stream:"
-           << base::UTF16ToUTF8(base::StringPiece16(web_stream.id()));
+           << web_stream.id().utf8();
 
   // TODO(tommi): We need to fix the data flow so that
   // it works the same way for all track implementations, local, remote or what

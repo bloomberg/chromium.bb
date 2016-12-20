@@ -257,7 +257,7 @@ void CanvasCaptureHandler::AddVideoCapturerSourceToVideoTrack(
     blink::WebMediaStreamTrack* web_track) {
   std::string str_track_id;
   base::Base64Encode(base::RandBytesAsString(64), &str_track_id);
-  const blink::WebString track_id = base::UTF8ToUTF16(str_track_id);
+  const blink::WebString track_id = blink::WebString::fromASCII(str_track_id);
   blink::WebMediaStreamSource webkit_source;
   std::unique_ptr<MediaStreamVideoSource> media_stream_source(
       new MediaStreamVideoCapturerSource(

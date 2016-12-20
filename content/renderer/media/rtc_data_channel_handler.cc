@@ -177,7 +177,7 @@ void RtcDataChannelHandler::setClient(
 
 blink::WebString RtcDataChannelHandler::label() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return base::UTF8ToUTF16(channel()->label());
+  return blink::WebString::fromUTF8(channel()->label());
 }
 
 bool RtcDataChannelHandler::isReliable() {
@@ -202,7 +202,7 @@ unsigned short RtcDataChannelHandler::maxRetransmits() const {
 
 blink::WebString RtcDataChannelHandler::protocol() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return base::UTF8ToUTF16(channel()->protocol());
+  return blink::WebString::fromUTF8(channel()->protocol());
 }
 
 bool RtcDataChannelHandler::negotiated() const {
@@ -254,7 +254,7 @@ unsigned long RtcDataChannelHandler::bufferedAmount() {
 
 bool RtcDataChannelHandler::sendStringData(const blink::WebString& data) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  std::string utf8_buffer = base::UTF16ToUTF8(base::StringPiece16(data));
+  std::string utf8_buffer = data.utf8();
   webrtc::DataBuffer data_buffer(utf8_buffer);
   RecordMessageSent(data_buffer.size());
   return channel()->Send(data_buffer);
@@ -335,7 +335,7 @@ void RtcDataChannelHandler::OnMessage(
       LOG(ERROR) << "Failed convert received data to UTF16";
       return;
     }
-    webkit_client_->didReceiveStringData(utf16);
+    webkit_client_->didReceiveStringData(blink::WebString::fromUTF16(utf16));
   }
 }
 
