@@ -55,7 +55,7 @@ LevelDBWrapperImpl::LevelDBWrapperImpl(
     int max_bytes_per_hour,
     int max_commits_per_hour,
     const base::Closure& no_bindings_callback)
-    : prefix_(prefix),
+    : prefix_(leveldb::StdStringToUint8Vector(prefix)),
       no_bindings_callback_(no_bindings_callback),
       database_(database),
       bytes_used_(0),
@@ -249,7 +249,7 @@ void LevelDBWrapperImpl::LoadMap(const base::Closure& completion_callback) {
     return;
 
   // TODO(michaeln): Import from sqlite localstorage db.
-  database_->GetPrefixed(leveldb::StdStringToUint8Vector(prefix_),
+  database_->GetPrefixed(prefix_,
                          base::Bind(&LevelDBWrapperImpl::OnLoadComplete,
                                     weak_ptr_factory_.GetWeakPtr()));
 }
@@ -259,8 +259,11 @@ void LevelDBWrapperImpl::OnLoadComplete(
     std::vector<leveldb::mojom::KeyValuePtr> data) {
   DCHECK(!map_);
   map_.reset(new ValueMap);
-  for (auto& it : data)
-    (*map_)[it->key] = it->value;
+  for (auto& it : data) {
+    DCHECK_GE(it->key.size(), prefix_.size());
+    (*map_)[std::vector<uint8_t>(it->key.begin() + prefix_.size(),
+                                 it->key.end())] = it->value;
+  }
 
   // We proceed without using a backing store, nothing will be persisted but the
   // class is functional for the lifetime of the object.
@@ -316,7 +319,7 @@ base::TimeDelta LevelDBWrapperImpl::ComputeCommitDelay() const {
 
 void LevelDBWrapperImpl::CommitChanges() {
   DCHECK(database_);
-  if (commit_batch_)
+  if (!commit_batch_)
     return;
 
   commit_rate_limiter_.add_samples(1);
@@ -328,13 +331,15 @@ void LevelDBWrapperImpl::CommitChanges() {
     leveldb::mojom::BatchedOperationPtr item =
         leveldb::mojom::BatchedOperation::New();
     item->type = leveldb::mojom::BatchOperationType::DELETE_PREFIXED_KEY;
-    item->key = leveldb::StdStringToUint8Vector(prefix_);
+    item->key = prefix_;
     operations.push_back(std::move(item));
   }
   for (auto& it : commit_batch_->changed_values) {
     leveldb::mojom::BatchedOperationPtr item =
         leveldb::mojom::BatchedOperation::New();
-    item->key = std::move(it.first);
+    item->key.reserve(prefix_.size() + it.first.size());
+    item->key.insert(item->key.end(), prefix_.begin(), prefix_.end());
+    item->key.insert(item->key.end(), it.first.begin(), it.first.end());
     if (!it.second) {
       item->type = leveldb::mojom::BatchOperationType::DELETE_KEY;
     } else {

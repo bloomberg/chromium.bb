@@ -30,7 +30,7 @@ namespace content {
 // 2) Enforces a max_size constraint.
 // 3) Informs observers when values scoped by prefix are modified.
 // 4) Throttles requests to avoid overwhelming the disk.
-class LevelDBWrapperImpl : public mojom::LevelDBWrapper {
+class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
  public:
   // |no_bindings_callback| will be called when this object has no more
   // bindings.
@@ -53,6 +53,8 @@ class LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   static void EnableAggressiveCommitDelay();
 
  private:
+  friend class LevelDBWrapperImplTest;
+
   using ValueMap = std::map<std::vector<uint8_t>, std::vector<uint8_t>>;
   using ChangedValueMap =
       std::map<std::vector<uint8_t>, base::Optional<std::vector<uint8_t>>>;
@@ -114,7 +116,7 @@ class LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   void CommitChanges();
   void OnCommitComplete(leveldb::mojom::DatabaseError error);
 
-  std::string prefix_;
+  std::vector<uint8_t> prefix_;
   mojo::BindingSet<mojom::LevelDBWrapper> bindings_;
   mojo::InterfacePtrSet<mojom::LevelDBObserver> observers_;
   base::Closure no_bindings_callback_;

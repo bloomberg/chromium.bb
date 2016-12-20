@@ -124,9 +124,6 @@ class DOMStorageContextWrapper::MojoState {
                         mojom::LevelDBObserverPtr observer,
                         mojom::LevelDBWrapperRequest request);
 
-  // Maps between an origin and its prefixed LevelDB view.
-  std::map<url::Origin, std::unique_ptr<LevelDBWrapperImpl>> level_db_wrappers_;
-
   service_manager::Connector* const connector_;
   const base::FilePath subdirectory_;
 
@@ -145,6 +142,9 @@ class DOMStorageContextWrapper::MojoState {
   leveldb::mojom::LevelDBDatabasePtr database_;
 
   std::vector<base::Closure> on_database_opened_callbacks_;
+
+  // Maps between an origin and its prefixed LevelDB view.
+  std::map<url::Origin, std::unique_ptr<LevelDBWrapperImpl>> level_db_wrappers_;
 
   base::WeakPtrFactory<MojoState> weak_ptr_factory_;
 };
