@@ -612,33 +612,26 @@ PBXProject::PBXProject(const std::string& name,
 
 PBXProject::~PBXProject() {}
 
+void PBXProject::AddSourceFileToIndexingTarget(
+    const std::string& navigator_path,
+    const std::string& source_path) {
+  if (!target_for_indexing_) {
+    AddIndexingTarget();
+  }
+  AddSourceFile(navigator_path, source_path, target_for_indexing_);
+}
+
 void PBXProject::AddSourceFile(const std::string& navigator_path,
-                               const std::string& source_path) {
+                               const std::string& source_path,
+                               PBXNativeTarget* target) {
   PBXFileReference* file_reference =
       sources_->AddSourceFile(navigator_path, source_path);
   base::StringPiece ext = FindExtension(&source_path);
   if (!IsSourceFileForIndexing(ext))
     return;
 
-  if (!target_for_indexing_) {
-    PBXAttributes attributes;
-    attributes["EXECUTABLE_PREFIX"] = "";
-    attributes["HEADER_SEARCH_PATHS"] = sources_->path();
-    attributes["PRODUCT_NAME"] = name_;
-
-    PBXFileReference* product_reference = static_cast<PBXFileReference*>(
-        products_->AddChild(base::MakeUnique<PBXFileReference>(
-            std::string(), name_, "compiled.mach-o.executable")));
-
-    const char product_type[] = "com.apple.product-type.tool";
-    targets_.push_back(base::MakeUnique<PBXNativeTarget>(
-        name_, std::string(), config_name_, attributes, product_type, name_,
-        product_reference));
-    target_for_indexing_ = static_cast<PBXNativeTarget*>(targets_.back().get());
-  }
-
-  DCHECK(target_for_indexing_);
-  target_for_indexing_->AddFileForIndexing(file_reference);
+  DCHECK(target);
+  target->AddFileForIndexing(file_reference);
 }
 
 void PBXProject::AddAggregateTarget(const std::string& name,
@@ -650,6 +643,24 @@ void PBXProject::AddAggregateTarget(const std::string& name,
 
   targets_.push_back(base::MakeUnique<PBXAggregateTarget>(
       name, shell_script, config_name_, attributes));
+}
+
+void PBXProject::AddIndexingTarget() {
+  DCHECK(!target_for_indexing_);
+  PBXAttributes attributes;
+  attributes["EXECUTABLE_PREFIX"] = "";
+  attributes["HEADER_SEARCH_PATHS"] = sources_->path();
+  attributes["PRODUCT_NAME"] = name_;
+
+  PBXFileReference* product_reference = static_cast<PBXFileReference*>(
+      products_->AddChild(base::MakeUnique<PBXFileReference>(
+          std::string(), name_, "compiled.mach-o.executable")));
+
+  const char product_type[] = "com.apple.product-type.tool";
+  targets_.push_back(base::MakeUnique<PBXNativeTarget>(
+      name_, std::string(), config_name_, attributes, product_type, name_,
+      product_reference));
+  target_for_indexing_ = static_cast<PBXNativeTarget*>(targets_.back().get());
 }
 
 void PBXProject::AddNativeTarget(const std::string& name,

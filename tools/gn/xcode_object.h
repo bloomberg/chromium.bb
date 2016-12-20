@@ -275,10 +275,15 @@ class PBXProject : public PBXObject {
              const PBXAttributes& attributes);
   ~PBXProject() override;
 
+  void AddSourceFileToIndexingTarget(const std::string& navigator_path,
+                                     const std::string& source_path);
   void AddSourceFile(const std::string& navigator_path,
-                     const std::string& source_path);
+                     const std::string& source_path,
+                     PBXNativeTarget* target);
+
   void AddAggregateTarget(const std::string& name,
                           const std::string& shell_script);
+  void AddIndexingTarget();
   void AddNativeTarget(const std::string& name,
                        const std::string& type,
                        const std::string& output_name,
