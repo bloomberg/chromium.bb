@@ -242,7 +242,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
   EXPECT_TRUE(rootPaintController().clientCacheIsValid(subDiv));
 }
 
-TEST_P(PaintControllerPaintTestForSlimmingPaintV2, CompositingFold) {
+TEST_P(PaintControllerPaintTestForSlimmingPaintV2, CompositingNoFold) {
   setBodyInnerHTML(
       "<div id='div' style='width: 200px; height: 200px; opacity: 0.5'>"
       "  <div style='width: 100px; height: 100px; background-color: "
@@ -256,28 +256,26 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, CompositingFold) {
 
   if (RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
     EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 6,
+        rootPaintController().getDisplayItemList(), 8,
         TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-        // The begin and end compositing display items have been folded into
-        // this
-        // one.
+        TestDisplayItem(div, DisplayItem::kBeginCompositing),
         TestDisplayItem(subDiv, backgroundType),
+        TestDisplayItem(div, DisplayItem::kEndCompositing),
         TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence),
         TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence));
   } else {
     EXPECT_DISPLAY_LIST(
-        rootPaintController().getDisplayItemList(), 8,
+        rootPaintController().getDisplayItemList(), 10,
         TestDisplayItem(layoutView(),
                         DisplayItem::kClipFrameToVisibleContentRect),
         TestDisplayItem(*layoutView().layer(), DisplayItem::kSubsequence),
         TestDisplayItem(layoutView(), documentBackgroundType),
         TestDisplayItem(htmlLayer, DisplayItem::kSubsequence),
-        // The begin and end compositing display items have been folded into
-        // this
-        // one.
+        TestDisplayItem(div, DisplayItem::kBeginCompositing),
         TestDisplayItem(subDiv, backgroundType),
+        TestDisplayItem(div, DisplayItem::kEndCompositing),
         TestDisplayItem(htmlLayer, DisplayItem::kEndSubsequence),
         TestDisplayItem(*layoutView().layer(), DisplayItem::kEndSubsequence),
         TestDisplayItem(layoutView(),

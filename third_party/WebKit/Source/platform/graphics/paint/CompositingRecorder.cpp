@@ -52,8 +52,8 @@ void CompositingRecorder::endCompositing(GraphicsContext& graphicsContext,
   const DisplayItem* lastDisplayItem = paintController.lastDisplayItem(0);
   const DisplayItem* secondToLastDisplayItem =
       paintController.lastDisplayItem(1);
-  if (lastDisplayItem && secondToLastDisplayItem &&
-      lastDisplayItem->drawsContent() &&
+  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled() && lastDisplayItem &&
+      secondToLastDisplayItem && lastDisplayItem->drawsContent() &&
       secondToLastDisplayItem->getType() == DisplayItem::kBeginCompositing) {
     FloatRect cullRect(
         ((DrawingDisplayItem*)lastDisplayItem)->picture()->cullRect());
