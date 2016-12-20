@@ -1040,7 +1040,8 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 	window->map_request_y = window->y;
 
 	if (window->frame_id == XCB_WINDOW_NONE)
-		weston_wm_window_create_frame(window);
+		weston_wm_window_create_frame(window); /* sets frame_id */
+	assert(window->frame_id != XCB_WINDOW_NONE);
 
 	wm_log("XCB_MAP_REQUEST (window %d, %p, frame %d, %dx%d @ %d,%d)\n",
 	       window->id, window, window->frame_id,
@@ -1059,6 +1060,11 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 
 	xcb_map_window(wm->conn, map_request->window);
 	xcb_map_window(wm->conn, window->frame_id);
+
+	/* Mapped in the X server, we can draw immediately.
+	 * Cannot set pending state though, no weston_surface until
+	 * xserver_map_shell_surface() time. */
+	weston_wm_window_schedule_repaint(window);
 }
 
 static void
