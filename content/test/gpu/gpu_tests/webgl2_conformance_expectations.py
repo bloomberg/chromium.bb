@@ -405,6 +405,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/shaderindexing/mat_02.html',
         ['mac', 'amd'], bug=644360)
 
+    # These seem to be provoking intermittent GPU process crashes on
+    # the MacBook Pros with AMD GPUs.
+    self.Flaky('deqp/functional/gles3/texturefiltering/*',
+        ['mac', 'amd'], bug=663601)
+    self.Flaky('deqp/functional/gles3/textureshadow/*',
+        ['mac', 'amd'], bug=663601)
+
     self.Fail('conformance2/rendering/clipping-wide-points.html',
         ['mac', 'amd'], bug=642822)
     self.Fail('conformance2/reading/read-pixels-from-rgb8-into-pbo-bug.html',
