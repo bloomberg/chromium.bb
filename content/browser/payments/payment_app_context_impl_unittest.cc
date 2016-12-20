@@ -15,6 +15,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using payments::mojom::PaymentAppManifestError;
+using payments::mojom::PaymentAppManifestPtr;
+
 namespace content {
 
 class PaymentAppManager;
@@ -22,8 +25,8 @@ class PaymentAppManager;
 namespace {
 
 void SetManifestCallback(bool* called,
-                         payments::mojom::PaymentAppManifestError* out_error,
-                         payments::mojom::PaymentAppManifestError error) {
+                         PaymentAppManifestError* out_error,
+                         PaymentAppManifestError error) {
   *called = true;
   *out_error = error;
 }
@@ -51,27 +54,15 @@ class PaymentAppContextTest : public PaymentAppContentUnitTestBase {
     PaymentAppManager* manager =
         CreatePaymentAppManager(scope_url, sw_script_url);
 
-    payments::mojom::PaymentAppOptionPtr option =
-        payments::mojom::PaymentAppOption::New();
-    option->name = "Visa ****";
-    option->id = "payment-app-id";
-    option->icon = std::string("payment-app-icon");
-    option->enabled_methods.push_back("visa");
-
-    payments::mojom::PaymentAppManifestPtr manifest =
-        payments::mojom::PaymentAppManifest::New();
-    manifest->icon = std::string("payment-app-icon");
-    manifest->name = scope_url.spec();
-    manifest->options.push_back(std::move(option));
-
-    payments::mojom::PaymentAppManifestError error = payments::mojom::
+    PaymentAppManifestError error =
         PaymentAppManifestError::MANIFEST_STORAGE_OPERATION_FAILED;
     bool called = false;
-    SetManifest(manager, scope_url.spec(), std::move(manifest),
+    SetManifest(manager, scope_url.spec(),
+                CreatePaymentAppManifestForTest(scope_url.spec()),
                 base::Bind(&SetManifestCallback, &called, &error));
     ASSERT_TRUE(called);
 
-    ASSERT_EQ(error, payments::mojom::PaymentAppManifestError::NONE);
+    ASSERT_EQ(PaymentAppManifestError::NONE, error);
   }
 
  private:
@@ -97,17 +88,17 @@ TEST_F(PaymentAppContextTest, Test) {
   GetAllManifests(base::Bind(&GetAllManifestsCallback, &called, &manifests));
   ASSERT_TRUE(called);
 
-  ASSERT_EQ(manifests.size(), 3U);
+  ASSERT_EQ(3U, manifests.size());
   size_t i = 0;
   for (const auto& manifest : manifests) {
-    EXPECT_EQ(manifest.second->icon.value(), "payment-app-icon");
-    EXPECT_EQ(manifest.second->name, kPaymentAppInfo[i++].scopeUrl);
-    ASSERT_EQ(manifest.second->options.size(), 1U);
-    EXPECT_EQ(manifest.second->options[0]->icon.value(), "payment-app-icon");
-    EXPECT_EQ(manifest.second->options[0]->name, "Visa ****");
-    EXPECT_EQ(manifest.second->options[0]->id, "payment-app-id");
-    ASSERT_EQ(manifest.second->options[0]->enabled_methods.size(), 1U);
-    EXPECT_EQ(manifest.second->options[0]->enabled_methods[0], "visa");
+    EXPECT_EQ("payment-app-icon", manifest.second->icon.value());
+    EXPECT_EQ(kPaymentAppInfo[i++].scopeUrl, manifest.second->name);
+    ASSERT_EQ(1U, manifest.second->options.size());
+    EXPECT_EQ("payment-app-icon", manifest.second->options[0]->icon.value());
+    EXPECT_EQ("Visa ****", manifest.second->options[0]->name);
+    EXPECT_EQ("payment-app-id", manifest.second->options[0]->id);
+    ASSERT_EQ(1U, manifest.second->options[0]->enabled_methods.size());
+    EXPECT_EQ("visa", manifest.second->options[0]->enabled_methods[0]);
   }
 }
 

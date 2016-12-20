@@ -40,6 +40,8 @@ class PaymentAppContentUnitTestBase : public testing::Test {
   void GetManifest(PaymentAppManager* manager,
                    const std::string& scope,
                    const PaymentAppManager::GetManifestCallback& callback);
+  payments::mojom::PaymentAppManifestPtr CreatePaymentAppManifestForTest(
+      const std::string& name);
 
  private:
   std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;

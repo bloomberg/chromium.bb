@@ -115,4 +115,23 @@ void PaymentAppContentUnitTestBase::GetManifest(
   base::RunLoop().RunUntilIdle();
 }
 
+payments::mojom::PaymentAppManifestPtr
+PaymentAppContentUnitTestBase::CreatePaymentAppManifestForTest(
+    const std::string& name) {
+  payments::mojom::PaymentAppOptionPtr option =
+      payments::mojom::PaymentAppOption::New();
+  option->name = "Visa ****";
+  option->id = "payment-app-id";
+  option->icon = std::string("payment-app-icon");
+  option->enabled_methods.push_back("visa");
+
+  payments::mojom::PaymentAppManifestPtr manifest =
+      payments::mojom::PaymentAppManifest::New();
+  manifest->icon = std::string("payment-app-icon");
+  manifest->name = name;
+  manifest->options.push_back(std::move(option));
+
+  return manifest;
+}
+
 }  // namespace content

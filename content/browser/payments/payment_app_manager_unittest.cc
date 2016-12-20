@@ -10,6 +10,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using payments::mojom::PaymentAppManifestError;
+using payments::mojom::PaymentAppManifestPtr;
+
 namespace content {
 namespace {
 
@@ -19,37 +22,20 @@ const char kUnregisteredServiceWorkerPattern[] =
     "https://example.com/unregistered";
 
 void SetManifestCallback(bool* called,
-                         payments::mojom::PaymentAppManifestError* out_error,
-                         payments::mojom::PaymentAppManifestError error) {
+                         PaymentAppManifestError* out_error,
+                         PaymentAppManifestError error) {
   *called = true;
   *out_error = error;
 }
 
 void GetManifestCallback(bool* called,
-                         payments::mojom::PaymentAppManifestPtr* out_manifest,
-                         payments::mojom::PaymentAppManifestError* out_error,
-                         payments::mojom::PaymentAppManifestPtr manifest,
-                         payments::mojom::PaymentAppManifestError error) {
+                         PaymentAppManifestPtr* out_manifest,
+                         PaymentAppManifestError* out_error,
+                         PaymentAppManifestPtr manifest,
+                         PaymentAppManifestError error) {
   *called = true;
   *out_manifest = std::move(manifest);
   *out_error = error;
-}
-
-payments::mojom::PaymentAppManifestPtr CreatePaymentAppManifestForTest() {
-  payments::mojom::PaymentAppOptionPtr option =
-      payments::mojom::PaymentAppOption::New();
-  option->name = "Visa ****";
-  option->id = "payment-app-id";
-  option->icon = std::string("payment-app-icon");
-  option->enabled_methods.push_back("visa");
-
-  payments::mojom::PaymentAppManifestPtr manifest =
-      payments::mojom::PaymentAppManifest::New();
-  manifest->icon = std::string("payment-app-icon");
-  manifest->name = "Payment App";
-  manifest->options.push_back(std::move(option));
-
-  return manifest;
 }
 
 }  // namespace
@@ -59,7 +45,7 @@ class PaymentAppManagerTest : public PaymentAppContentUnitTestBase {
   PaymentAppManagerTest() {
     manager_ = CreatePaymentAppManager(GURL(kServiceWorkerPattern),
                                        GURL(kServiceWorkerScript));
-    EXPECT_NE(manager_, nullptr);
+    EXPECT_NE(nullptr, manager_);
   }
 
   PaymentAppManager* payment_app_manager() const { return manager_; }
@@ -73,73 +59,69 @@ class PaymentAppManagerTest : public PaymentAppContentUnitTestBase {
 
 TEST_F(PaymentAppManagerTest, SetAndGetManifest) {
   bool called = false;
-  payments::mojom::PaymentAppManifestError error = payments::mojom::
+  PaymentAppManifestError error =
       PaymentAppManifestError::MANIFEST_STORAGE_OPERATION_FAILED;
   SetManifest(payment_app_manager(), kServiceWorkerPattern,
-              CreatePaymentAppManifestForTest(),
+              CreatePaymentAppManifestForTest(kServiceWorkerPattern),
               base::Bind(&SetManifestCallback, &called, &error));
   ASSERT_TRUE(called);
 
-  ASSERT_EQ(error, payments::mojom::PaymentAppManifestError::NONE);
+  ASSERT_EQ(PaymentAppManifestError::NONE, error);
 
   called = false;
-  payments::mojom::PaymentAppManifestPtr read_manifest;
-  payments::mojom::PaymentAppManifestError read_error = payments::mojom::
+  PaymentAppManifestPtr read_manifest;
+  PaymentAppManifestError read_error =
       PaymentAppManifestError::MANIFEST_STORAGE_OPERATION_FAILED;
   GetManifest(
       payment_app_manager(), kServiceWorkerPattern,
       base::Bind(&GetManifestCallback, &called, &read_manifest, &read_error));
   ASSERT_TRUE(called);
 
-  ASSERT_EQ(read_error, payments::mojom::PaymentAppManifestError::NONE);
-  EXPECT_EQ(read_manifest->icon.value(), "payment-app-icon");
-  EXPECT_EQ(read_manifest->name, "Payment App");
-  ASSERT_EQ(read_manifest->options.size(), 1U);
-  EXPECT_EQ(read_manifest->options[0]->icon.value(), "payment-app-icon");
-  EXPECT_EQ(read_manifest->options[0]->name, "Visa ****");
-  EXPECT_EQ(read_manifest->options[0]->id, "payment-app-id");
-  ASSERT_EQ(read_manifest->options[0]->enabled_methods.size(), 1U);
-  EXPECT_EQ(read_manifest->options[0]->enabled_methods[0], "visa");
+  ASSERT_EQ(payments::mojom::PaymentAppManifestError::NONE, read_error);
+  EXPECT_EQ("payment-app-icon", read_manifest->icon.value());
+  EXPECT_EQ(kServiceWorkerPattern, read_manifest->name);
+  ASSERT_EQ(1U, read_manifest->options.size());
+  EXPECT_EQ("payment-app-icon", read_manifest->options[0]->icon.value());
+  EXPECT_EQ("Visa ****", read_manifest->options[0]->name);
+  EXPECT_EQ("payment-app-id", read_manifest->options[0]->id);
+  ASSERT_EQ(1U, read_manifest->options[0]->enabled_methods.size());
+  EXPECT_EQ("visa", read_manifest->options[0]->enabled_methods[0]);
 }
 
 TEST_F(PaymentAppManagerTest, SetManifestWithoutAssociatedServiceWorker) {
   bool called = false;
-  payments::mojom::PaymentAppManifestError error =
-      payments::mojom::PaymentAppManifestError::NONE;
+  PaymentAppManifestError error = PaymentAppManifestError::NONE;
   SetManifest(payment_app_manager(), kUnregisteredServiceWorkerPattern,
-              CreatePaymentAppManifestForTest(),
+              CreatePaymentAppManifestForTest(kServiceWorkerPattern),
               base::Bind(&SetManifestCallback, &called, &error));
   ASSERT_TRUE(called);
 
-  EXPECT_EQ(error, payments::mojom::PaymentAppManifestError::NO_ACTIVE_WORKER);
+  EXPECT_EQ(PaymentAppManifestError::NO_ACTIVE_WORKER, error);
 }
 
 TEST_F(PaymentAppManagerTest, GetManifestWithoutAssociatedServiceWorker) {
   bool called = false;
-  payments::mojom::PaymentAppManifestPtr read_manifest;
-  payments::mojom::PaymentAppManifestError read_error =
-      payments::mojom::PaymentAppManifestError::NONE;
+  PaymentAppManifestPtr read_manifest;
+  PaymentAppManifestError read_error = PaymentAppManifestError::NONE;
   GetManifest(
       payment_app_manager(), kUnregisteredServiceWorkerPattern,
       base::Bind(&GetManifestCallback, &called, &read_manifest, &read_error));
   ASSERT_TRUE(called);
 
-  EXPECT_EQ(read_error,
-            payments::mojom::PaymentAppManifestError::NO_ACTIVE_WORKER);
+  EXPECT_EQ(PaymentAppManifestError::NO_ACTIVE_WORKER, read_error);
 }
 
 TEST_F(PaymentAppManagerTest, GetManifestWithNoSavedManifest) {
   bool called = false;
-  payments::mojom::PaymentAppManifestPtr read_manifest;
-  payments::mojom::PaymentAppManifestError read_error =
-      payments::mojom::PaymentAppManifestError::NONE;
+  PaymentAppManifestPtr read_manifest;
+  PaymentAppManifestError read_error = PaymentAppManifestError::NONE;
   GetManifest(
       payment_app_manager(), kServiceWorkerPattern,
       base::Bind(&GetManifestCallback, &called, &read_manifest, &read_error));
   ASSERT_TRUE(called);
 
-  EXPECT_EQ(read_error, payments::mojom::PaymentAppManifestError::
-                            MANIFEST_STORAGE_OPERATION_FAILED);
+  EXPECT_EQ(PaymentAppManifestError::MANIFEST_STORAGE_OPERATION_FAILED,
+            read_error);
 }
 
 }  // namespace content
