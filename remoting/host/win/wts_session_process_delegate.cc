@@ -56,8 +56,7 @@ class WtsSessionProcessDelegate::Core
   Core(scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
        std::unique_ptr<base::CommandLine> target,
        bool launch_elevated,
-       const std::string& channel_security,
-       const std::string& new_process_security);
+       const std::string& channel_security);
 
   // Initializes the object returning true on success.
   bool Initialize(uint32_t session_id);
@@ -125,9 +124,6 @@ class WtsSessionProcessDelegate::Core
   // Security descriptor (as SDDL) to be applied to |channel_|.
   std::string channel_security_;
 
-  // Security descriptor (as SDDL) to be applied to the newly created process.
-  std::string new_process_security_;
-
   WorkerProcessLauncher* event_handler_;
 
   // The job object used to control the lifetime of child processes.
@@ -168,12 +164,10 @@ WtsSessionProcessDelegate::Core::Core(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     std::unique_ptr<base::CommandLine> target_command,
     bool launch_elevated,
-    const std::string& channel_security,
-    const std::string& new_process_security)
+    const std::string& channel_security)
     : caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_task_runner_(io_task_runner),
       channel_security_(channel_security),
-      new_process_security_(new_process_security),
       event_handler_(nullptr),
       launch_elevated_(launch_elevated),
       launch_pending_(false),
@@ -422,28 +416,12 @@ void WtsSessionProcessDelegate::Core::DoLaunchProcess() {
         &command_line, &handles_to_inherit);
   }
 
-  ScopedSd security_descriptor;
-  std::unique_ptr<SECURITY_ATTRIBUTES> security_attributes;
-  if (!new_process_security_.empty()) {
-    security_descriptor = ConvertSddlToSd(new_process_security_);
-    if (!security_descriptor) {
-      PLOG(ERROR) << "ConvertSddlToSd() failed.";
-      ReportFatalError();
-      return;
-    }
-
-    security_attributes.reset(new SECURITY_ATTRIBUTES());
-    security_attributes->nLength = sizeof(SECURITY_ATTRIBUTES);
-    security_attributes->lpSecurityDescriptor = security_descriptor.get();
-    security_attributes->bInheritHandle = FALSE;
-  }
-
   // Try to launch the process.
   ScopedHandle worker_process;
   ScopedHandle worker_thread;
   if (!LaunchProcessWithToken(
           command_line.GetProgram(), command_line.GetCommandLineString(),
-          session_token_.Get(), security_attributes.get(),
+          session_token_.Get(), /*security_attributes=*/nullptr,
           /* thread_attributes= */ nullptr, handles_to_inherit,
           /* creation_flags= */ CREATE_SUSPENDED | CREATE_BREAKAWAY_FROM_JOB,
           base::UTF8ToUTF16(kDefaultDesktopName).c_str(), &worker_process,
@@ -606,10 +584,9 @@ WtsSessionProcessDelegate::WtsSessionProcessDelegate(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     std::unique_ptr<base::CommandLine> target_command,
     bool launch_elevated,
-    const std::string& channel_security,
-    const std::string& new_process_security_descriptor) {
+    const std::string& channel_security) {
   core_ = new Core(io_task_runner, std::move(target_command), launch_elevated,
-                   channel_security, new_process_security_descriptor);
+                   channel_security);
 }
 
 WtsSessionProcessDelegate::~WtsSessionProcessDelegate() {

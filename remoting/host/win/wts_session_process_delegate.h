@@ -36,8 +36,7 @@ class WtsSessionProcessDelegate
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       std::unique_ptr<base::CommandLine> target,
       bool launch_elevated,
-      const std::string& channel_security,
-      const std::string& new_process_security);
+      const std::string& channel_security);
   ~WtsSessionProcessDelegate() override;
 
   // Initializes the object returning true on success.
