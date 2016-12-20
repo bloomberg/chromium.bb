@@ -42,11 +42,6 @@ class WebDateTimeChooserCompletionImpl : public WebDateTimeChooserCompletion {
       : m_chooser(chooser) {}
 
  private:
-  void didChooseValue(const WebString& value) override {
-    m_chooser->didChooseValue(value);
-    delete this;
-  }
-
   void didChooseValue(double value) override {
     m_chooser->didChooseValue(value);
     delete this;
@@ -111,7 +106,6 @@ bool ExternalDateTimeChooser::openDateTimeChooser(
   WebDateTimeChooserParams webParams;
   webParams.type = toWebDateTimeInputType(parameters.type);
   webParams.anchorRectInScreen = parameters.anchorRectInScreen;
-  webParams.currentValue = parameters.currentValue;
   webParams.doubleValue = parameters.doubleValue;
   webParams.suggestions = parameters.suggestions;
   webParams.minimum = parameters.minimum;

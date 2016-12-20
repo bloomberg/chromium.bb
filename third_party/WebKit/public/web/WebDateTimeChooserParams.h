@@ -41,9 +41,6 @@ struct WebDateTimeChooserParams {
   WebDateTimeInputType type;
   // Bounding rectangle of the requester element.
   WebRect anchorRectInScreen;
-  // The current value of the requester element.
-  // FIXME: Remove. Deprecated in favor of doubleValue.
-  WebString currentValue;
   // The current value of the requester element as a double.
   // NaN means empty value. Should not be infinity.
   double doubleValue;

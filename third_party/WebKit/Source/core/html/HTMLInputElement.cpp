@@ -1815,7 +1815,6 @@ bool HTMLInputElement::setupDateTimeChooserParameters(
 
   parameters.anchorRectInScreen =
       document().view()->contentsToScreen(pixelSnappedBoundingBox());
-  parameters.currentValue = value();
   parameters.doubleValue = m_inputType->valueAsDouble();
   parameters.isAnchorElementRTL =
       m_inputTypeView->computedTextDirection() == RTL;
