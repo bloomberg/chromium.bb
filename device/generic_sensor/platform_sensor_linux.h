@@ -45,6 +45,8 @@ class PlatformSensorLinux : public PlatformSensor {
   const PlatformSensorConfiguration default_configuration_;
   const mojom::ReportingMode reporting_mode_;
 
+  scoped_refptr<base::SingleThreadTaskRunner> polling_thread_task_runner_;
+
   // A sensor reader that reads values from sensor files
   // and stores them to a SensorReading structure.
   std::unique_ptr<SensorReader> sensor_reader_;

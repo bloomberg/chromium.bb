@@ -58,7 +58,7 @@ class DEVICE_GENERIC_SENSOR_EXPORT PlatformSensorProviderLinux
       mojom::SensorType type,
       mojo::ScopedSharedBufferMapping mapping,
       const PlatformSensorProviderBase::CreateSensorCallback& callback,
-      SensorInfoLinux* sensor_device);
+      const SensorInfoLinux* sensor_device);
 
   bool StartPollingThread();
 

@@ -17,14 +17,13 @@ namespace device {
 
 class PollingSensorReader : public SensorReader {
  public:
-  PollingSensorReader(
-      const SensorInfoLinux* sensor_device,
-      PlatformSensorLinux* sensor,
-      scoped_refptr<base::SingleThreadTaskRunner> polling_task_runner);
+  PollingSensorReader(const SensorInfoLinux* sensor_device,
+                      base::WeakPtr<PlatformSensorLinux> sensor,
+                      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~PollingSensorReader() override;
 
   // SensorReader implements:
-  bool StartFetchingData(
+  void StartFetchingData(
       const PlatformSensorConfiguration& configuration) override;
   void StopFetchingData() override;
 
@@ -47,59 +46,53 @@ class PollingSensorReader : public SensorReader {
   // Used to apply scalings and invert signs if needed.
   const SensorPathsLinux::ReaderFunctor apply_scaling_func_;
 
-  // Owned pointer to a timer. Will be deleted on a polling thread once
-  // destructor is called.
-  base::RepeatingTimer* timer_;
-
-  base::WeakPtrFactory<PollingSensorReader> weak_factory_;
+  // Repeating timer for data polling.
+  base::RepeatingTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(PollingSensorReader);
 };
 
 PollingSensorReader::PollingSensorReader(
     const SensorInfoLinux* sensor_device,
-    PlatformSensorLinux* sensor,
-    scoped_refptr<base::SingleThreadTaskRunner> polling_task_runner)
-    : SensorReader(sensor, polling_task_runner),
+    base::WeakPtr<PlatformSensorLinux> sensor,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : SensorReader(sensor, std::move(task_runner)),
       sensor_file_paths_(sensor_device->device_reading_files),
       scaling_value_(sensor_device->device_scaling_value),
       offset_value_(sensor_device->device_offset_value),
-      apply_scaling_func_(sensor_device->apply_scaling_func),
-      timer_(new base::RepeatingTimer()),
-      weak_factory_(this) {}
+      apply_scaling_func_(sensor_device->apply_scaling_func) {}
 
 PollingSensorReader::~PollingSensorReader() {
-  polling_task_runner_->DeleteSoon(FROM_HERE, timer_);
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-bool PollingSensorReader::StartFetchingData(
+void PollingSensorReader::StartFetchingData(
     const PlatformSensorConfiguration& configuration) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (is_reading_active_)
     StopFetchingData();
-
-  return polling_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&PollingSensorReader::InitializeTimer,
-                            weak_factory_.GetWeakPtr(), configuration));
+  InitializeTimer(configuration);
 }
 
 void PollingSensorReader::StopFetchingData() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   is_reading_active_ = false;
-  timer_->Stop();
+  timer_.Stop();
 }
 
 void PollingSensorReader::InitializeTimer(
     const PlatformSensorConfiguration& configuration) {
-  DCHECK(polling_task_runner_->BelongsToCurrentThread());
-  timer_->Start(FROM_HERE, base::TimeDelta::FromMicroseconds(
-                               base::Time::kMicrosecondsPerSecond /
-                               configuration.frequency()),
-                this, &PollingSensorReader::PollForData);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!is_reading_active_);
+  timer_.Start(FROM_HERE, base::TimeDelta::FromMicroseconds(
+                              base::Time::kMicrosecondsPerSecond /
+                              configuration.frequency()),
+               this, &PollingSensorReader::PollForData);
   is_reading_active_ = true;
 }
 
 void PollingSensorReader::PollForData() {
-  DCHECK(polling_task_runner_->BelongsToCurrentThread());
-  base::ThreadRestrictions::AssertIOAllowed();
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   SensorReading readings;
   DCHECK_LE(sensor_file_paths_.size(), arraysize(readings.values));
@@ -127,36 +120,41 @@ void PollingSensorReader::PollForData() {
   if (is_reading_active_) {
     task_runner_->PostTask(
         FROM_HERE, base::Bind(&PlatformSensorLinux::UpdatePlatformSensorReading,
-                              base::Unretained(sensor_), readings));
+                              sensor_, readings));
   }
 }
 
 // static
 std::unique_ptr<SensorReader> SensorReader::Create(
     const SensorInfoLinux* sensor_device,
-    PlatformSensorLinux* sensor,
-    scoped_refptr<base::SingleThreadTaskRunner> polling_thread_task_runner) {
+    base::WeakPtr<PlatformSensorLinux> sensor,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  base::ThreadRestrictions::AssertIOAllowed();
   // TODO(maksims): implement triggered reading. At the moment,
   // only polling read is supported.
   return base::MakeUnique<PollingSensorReader>(sensor_device, sensor,
-                                               polling_thread_task_runner);
+                                               std::move(task_runner));
 }
 
 SensorReader::SensorReader(
-    PlatformSensorLinux* sensor,
-    scoped_refptr<base::SingleThreadTaskRunner> polling_task_runner)
+    base::WeakPtr<PlatformSensorLinux> sensor,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : sensor_(sensor),
-      polling_task_runner_(polling_task_runner),
-      task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      is_reading_active_(false) {}
+      task_runner_(std::move(task_runner)),
+      is_reading_active_(false) {
+  thread_checker_.DetachFromThread();
+}
 
-SensorReader::~SensorReader() = default;
+SensorReader::~SensorReader() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+}
 
 void SensorReader::NotifyReadError() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (is_reading_active_) {
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&PlatformSensorLinux::NotifyPlatformSensorError,
-                              base::Unretained(sensor_)));
+        FROM_HERE,
+        base::Bind(&PlatformSensorLinux::NotifyPlatformSensorError, sensor_));
   }
 }
 

@@ -29,12 +29,16 @@ PlatformSensorLinux::PlatformSensorLinux(
       default_configuration_(
           PlatformSensorConfiguration(sensor_device->device_frequency)),
       reporting_mode_(sensor_device->reporting_mode),
+      polling_thread_task_runner_(std::move(polling_thread_task_runner)),
       weak_factory_(this) {
-  sensor_reader_ =
-      SensorReader::Create(sensor_device, this, polling_thread_task_runner);
+  sensor_reader_ = SensorReader::Create(
+      sensor_device, weak_factory_.GetWeakPtr(), task_runner_);
 }
 
-PlatformSensorLinux::~PlatformSensorLinux() = default;
+PlatformSensorLinux::~PlatformSensorLinux() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  polling_thread_task_runner_->DeleteSoon(FROM_HERE, sensor_reader_.release());
+}
 
 mojom::ReportingMode PlatformSensorLinux::GetReportingMode() {
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -62,15 +66,18 @@ void PlatformSensorLinux::NotifyPlatformSensorError() {
 bool PlatformSensorLinux::StartSensor(
     const PlatformSensorConfiguration& configuration) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  if (!sensor_reader_)
-    return false;
-  return sensor_reader_->StartFetchingData(configuration);
+  polling_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&SensorReader::StartFetchingData,
+                 base::Unretained(sensor_reader_.get()), configuration));
+  return true;
 }
 
 void PlatformSensorLinux::StopSensor() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(sensor_reader_);
-  sensor_reader_->StopFetchingData();
+  polling_thread_task_runner_->PostTask(
+      FROM_HERE, base::Bind(&SensorReader::StopFetchingData,
+                            base::Unretained(sensor_reader_.get())));
 }
 
 bool PlatformSensorLinux::CheckSensorConfiguration(

@@ -5,9 +5,11 @@
 #include "device/generic_sensor/platform_sensor_provider_linux.h"
 
 #include "base/memory/singleton.h"
+#include "base/task_runner_util.h"
 #include "base/threading/thread.h"
 #include "device/generic_sensor/linux/sensor_data_linux.h"
 #include "device/generic_sensor/platform_sensor_linux.h"
+#include "device/generic_sensor/platform_sensor_reader_linux.h"
 
 namespace device {
 
@@ -59,8 +61,9 @@ void PlatformSensorProviderLinux::SensorDeviceFound(
     mojom::SensorType type,
     mojo::ScopedSharedBufferMapping mapping,
     const PlatformSensorProviderBase::CreateSensorCallback& callback,
-    SensorInfoLinux* sensor_device) {
+    const SensorInfoLinux* sensor_device) {
   DCHECK(CalledOnValidThread());
+  DCHECK(sensor_device);
 
   if (!StartPollingThread()) {
     callback.Run(nullptr);
