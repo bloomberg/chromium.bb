@@ -590,7 +590,6 @@ js_compile_bundle("web_ui_bundle") {
     "webui/resources/web_ui_base.js",
     "webui/resources/web_ui_bind.js",
     "webui/resources/web_ui_bundle.js",
-    "webui/resources/web_ui_favicons.js",
     "webui/resources/web_ui_module_load_notifier.js",
     "webui/resources/web_ui_send.js",
   ]

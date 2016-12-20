@@ -30,7 +30,7 @@
 #endif
 
 namespace {
-// Prefix for history.requestFavicon JavaScript message.
+// Prefix for JavaScript messages.
 const char kScriptCommandPrefix[] = "webui";
 }
 
@@ -50,9 +50,6 @@ const char kScriptCommandPrefix[] = "webui";
 
 // Handles JavaScript message from the WebUI page.
 - (BOOL)handleWebUIJSMessage:(const base::DictionaryValue&)message;
-
-// Handles webui.requestFavicon JavaScript message from the WebUI page.
-- (BOOL)handleRequestFavicon:(const base::ListValue*)arguments;
 
 // Handles webui.loadMojo JavaScript message from the WebUI page.
 - (BOOL)handleLoadMojo:(const base::ListValue*)arguments;
@@ -197,40 +194,11 @@ const char kScriptCommandPrefix[] = "webui";
     return NO;
   }
 
-  if (command == "webui.requestFavicon")
-    return [self handleRequestFavicon:arguments];
   if (command == "webui.loadMojo")
     return [self handleLoadMojo:arguments];
 
   DLOG(WARNING) << "Unknown webui command received: " << command;
   return NO;
-}
-
-- (BOOL)handleRequestFavicon:(const base::ListValue*)arguments {
-  std::string favicon;
-  if (!arguments->GetString(0, &favicon)) {
-    DLOG(WARNING) << "JS message parameter not found: Favicon URL";
-    return NO;
-  }
-  GURL faviconURL(favicon);
-  DCHECK(faviconURL.is_valid());
-  // Retrieve favicon resource and set favicon background image via JavaScript.
-  base::WeakNSObject<CRWWebUIManager> weakSelf(self);
-  void (^faviconHandler)(NSData*) = ^void(NSData* data) {
-    base::scoped_nsobject<CRWWebUIManager> strongSelf(weakSelf);
-    if (!strongSelf)
-      return;
-    NSString* base64EncodedResource = [data base64EncodedStringWithOptions:0];
-    NSString* dataURLString = [NSString
-        stringWithFormat:@"data:image/png;base64,%@", base64EncodedResource];
-    NSString* faviconURLString = base::SysUTF8ToNSString(faviconURL.spec());
-    NSString* script =
-        [NSString stringWithFormat:@"chrome.setFaviconBackground('%@', '%@');",
-                                   faviconURLString, dataURLString];
-    [strongSelf webState]->ExecuteJavaScript(base::SysNSStringToUTF16(script));
-  };
-  [self fetchResourceWithURL:faviconURL completionHandler:faviconHandler];
-  return YES;
 }
 
 - (BOOL)handleLoadMojo:(const base::ListValue*)arguments {

@@ -149,36 +149,6 @@ TEST_F(CRWWebUIManagerTest, LoadWebUI) {
 }
 
 // Tests that CRWWebUIManager responds to OnScriptCommandReceieved call and runs
-// JavaScript to set favicon background.
-TEST_F(CRWWebUIManagerTest, HandleFaviconRequest) {
-  GURL test_url(kTestWebUIUrl);
-  std::string favicon_url_string(kFaviconUrl);
-
-  // Create mock JavaScript message to request favicon.
-  base::ListValue* arguments(new base::ListValue());
-  arguments->AppendString(favicon_url_string);
-  std::unique_ptr<base::DictionaryValue> message(new base::DictionaryValue());
-  message->SetString("message", "webui.requestFavicon");
-  message->Set("arguments", arguments);
-
-  // Create expected JavaScript to call.
-  base::FilePath favicon_path;
-  ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &favicon_path));
-  favicon_path = favicon_path.AppendASCII(kFaviconPath);
-  NSData* expected_data = [NSData
-      dataWithContentsOfFile:base::SysUTF8ToNSString(favicon_path.value())];
-  base::string16 expected_javascript = base::SysNSStringToUTF16([NSString
-      stringWithFormat:
-          @"chrome.setFaviconBackground('%s', 'data:image/png;base64,%@');",
-          favicon_url_string.c_str(),
-          [expected_data base64EncodedStringWithOptions:0]]);
-
-  EXPECT_CALL(*web_state_impl_, ExecuteJavaScript(expected_javascript));
-  web_state_impl_->OnScriptCommandReceived("webui.requestFavicon", *message,
-                                           test_url, false);
-}
-
-// Tests that CRWWebUIManager responds to OnScriptCommandReceieved call and runs
 // JavaScript to fetch a mojo resource.
 TEST_F(CRWWebUIManagerTest, HandleLoadMojoRequest) {
   // Create mock JavaScript message to request a mojo resource.
