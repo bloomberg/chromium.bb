@@ -70,7 +70,7 @@ void ArcBridgeService::SetState(State state) {
   DCHECK_NE(state_, state);
   state_ = state;
   VLOG(2) << "State: " << static_cast<uint32_t>(state_);
-  if (state_ == State::READY) {
+  if (state_ == State::RUNNING) {
     for (auto& observer : observer_list())
       observer.OnSessionReady();
   } else if (state == State::STOPPED) {

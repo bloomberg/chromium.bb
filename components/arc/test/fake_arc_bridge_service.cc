@@ -25,8 +25,8 @@ void FakeArcBridgeService::OnShutdown() {
 }
 
 void FakeArcBridgeService::SetReady() {
-  if (state() != State::READY)
-    SetState(State::READY);
+  if (state() != State::RUNNING)
+    SetState(State::RUNNING);
 }
 
 void FakeArcBridgeService::SetStopped() {

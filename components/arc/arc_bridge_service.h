@@ -9,10 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "base/values.h"
 #include "components/arc/arc_session_observer.h"
 #include "components/arc/instance_holder.h"
 
@@ -131,7 +129,7 @@ class ArcBridgeService {
   InstanceHolder<mojom::WallpaperInstance>* wallpaper() { return &wallpaper_; }
 
   // Gets if ARC is currently running.
-  bool ready() const { return state() == State::READY; }
+  bool ready() const { return state() == State::RUNNING; }
 
   // Gets if ARC is currently stopped. This is not exactly !ready() since there
   // are transient states between ready() and stopped().
@@ -142,34 +140,32 @@ class ArcBridgeService {
   // in the following sequence:
   //
   // STOPPED
-  //   PrerequisitesChanged() ->
-  // CONNECTING
-  //   OnConnectionEstablished() ->
+  //   RequestStart() ->
+  // STARTING
+  //   OnSessionReady() ->
   // READY
   //
   // The ArcSession state machine can be thought of being substates of
-  // ArcBridgeService's CONNECTING state.
+  // ArcBridgeService's STARTING state.
+  // ArcBridgeService's state machine can be stopped at any phase.
   //
   // *
-  //   StopInstance() ->
+  //   RequestStop() ->
   // STOPPING
-  //   OnStopped() ->
+  //   OnSessionStopped() ->
   // STOPPED
   enum class State {
-    // ARC is not currently running.
+    // ARC instance is not currently running.
     STOPPED,
 
-    // The request to connect has been sent.
-    CONNECTING,
+    // Request to start ARC instance is received. Starting an ARC instance.
+    STARTING,
 
-    // The instance has started, and the bridge is fully established.
-    CONNECTED,
+    // ARC instance has finished initializing, and is now ready for interaction
+    // with other services.
+    RUNNING,
 
-    // The ARC instance has finished initializing and is now ready for user
-    // interaction.
-    READY,
-
-    // The ARC instance has started shutting down.
+    // Request to stop ARC instance is recieved. Stopping the ARC instance.
     STOPPING,
   };
 

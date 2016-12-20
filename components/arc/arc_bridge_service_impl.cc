@@ -4,22 +4,10 @@
 
 #include "components/arc/arc_bridge_service_impl.h"
 
-#include <string>
-#include <utility>
-
-#include "base/command_line.h"
-#include "base/json/json_writer.h"
-#include "base/sequenced_task_runner.h"
-#include "base/sys_info.h"
-#include "base/task_runner_util.h"
-#include "base/threading/thread_task_runner_handle.h"
-#include "base/time/time.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/dbus/dbus_method_call_status.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
+#include "base/logging.h"
+#include "base/memory/ref_counted.h"
+#include "base/task_runner.h"
 #include "components/arc/arc_session.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service.h"
 
 namespace arc {
 
@@ -32,39 +20,78 @@ constexpr base::TimeDelta kDefaultRestartDelay =
 
 ArcBridgeServiceImpl::ArcBridgeServiceImpl(
     const scoped_refptr<base::TaskRunner>& blocking_task_runner)
-    : session_started_(false),
-      restart_delay_(kDefaultRestartDelay),
+    : restart_delay_(kDefaultRestartDelay),
       factory_(base::Bind(ArcSession::Create, this, blocking_task_runner)),
-      weak_factory_(this) {}
+      weak_ptr_factory_(this) {}
 
 ArcBridgeServiceImpl::~ArcBridgeServiceImpl() {
+  DCHECK(CalledOnValidThread());
   if (arc_session_)
     arc_session_->RemoveObserver(this);
 }
 
 void ArcBridgeServiceImpl::RequestStart() {
   DCHECK(CalledOnValidThread());
-  if (session_started_)
+
+  // Consecutive RequestStart() call. Do nothing.
+  if (run_requested_)
     return;
+
   VLOG(1) << "Session started";
-  session_started_ = true;
-  PrerequisitesChanged();
+  run_requested_ = true;
+  // Here |run_requested_| transitions from false to true. So, |restart_timer_|
+  // must be stopped (either not even started, or has been cancelled in
+  // previous RequestStop() call).
+  DCHECK(!restart_timer_.IsRunning());
+
+  if (arc_session_) {
+    // In this case, RequestStop() was called, and before |arc_session_| had
+    // finished stopping, RequestStart() was called. Do nothing in that case,
+    // since when |arc_session_| does actually stop, OnSessionStopped() will
+    // be called, where it should automatically restart.
+    DCHECK_EQ(state(), State::STOPPING);
+  } else {
+    DCHECK_EQ(state(), State::STOPPED);
+    StartArcSession();
+  }
 }
 
 void ArcBridgeServiceImpl::RequestStop() {
   DCHECK(CalledOnValidThread());
-  if (!session_started_)
+
+  // Consecutive RequestStop() call. Do nothing.
+  if (!run_requested_)
     return;
+
   VLOG(1) << "Session ended";
-  session_started_ = false;
-  PrerequisitesChanged();
+  run_requested_ = false;
+
+  if (arc_session_) {
+    // The |state_| could be either STARTING, RUNNING or STOPPING.
+    DCHECK_NE(state(), State::STOPPED);
+
+    if (state() == State::STOPPING) {
+      // STOPPING is found in the senario of "RequestStart() -> RequestStop()
+      // -> RequestStart() -> RequestStop()" case.
+      // In the first RequestStop() call, |state_| is set to STOPPING,
+      // and in the second RequestStop() finds it (so this is the second call).
+      // In that case, ArcSession::Stop() is already called, so do nothing.
+      return;
+    }
+    SetState(State::STOPPING);
+    arc_session_->Stop();
+  } else {
+    DCHECK_EQ(state(), State::STOPPED);
+    // In case restarting is in progress, cancel it.
+    restart_timer_.Stop();
+  }
 }
 
 void ArcBridgeServiceImpl::OnShutdown() {
   DCHECK(CalledOnValidThread());
 
   VLOG(1) << "OnShutdown";
-  session_started_ = false;
+  run_requested_ = false;
   restart_timer_.Stop();
   if (arc_session_) {
     if (state() != State::STOPPING)
@@ -79,6 +106,9 @@ void ArcBridgeServiceImpl::OnShutdown() {
 void ArcBridgeServiceImpl::SetArcSessionFactoryForTesting(
     const ArcSessionFactory& factory) {
   DCHECK(!factory.is_null());
+  DCHECK_EQ(state(), State::STOPPED);
+  DCHECK(!arc_session_);
+  DCHECK(!restart_timer_.IsRunning());
   factory_ = factory;
 }
 
@@ -88,29 +118,6 @@ void ArcBridgeServiceImpl::SetRestartDelayForTesting(
   DCHECK(!arc_session_);
   DCHECK(!restart_timer_.IsRunning());
   restart_delay_ = restart_delay;
-}
-
-void ArcBridgeServiceImpl::PrerequisitesChanged() {
-  DCHECK(CalledOnValidThread());
-  VLOG(1) << "Prerequisites changed. "
-          << "state=" << static_cast<uint32_t>(state())
-          << ", session_started=" << session_started_;
-  if (state() == State::STOPPED) {
-    if (!session_started_) {
-      // We were explicitly asked to stop, so do not restart.
-      restart_timer_.Stop();
-      return;
-    }
-    DCHECK(!restart_timer_.IsRunning());
-    VLOG(0) << "Prerequisites met, starting ARC";
-    StartArcSession();
-  } else {
-    DCHECK(!restart_timer_.IsRunning());
-    if (session_started_)
-      return;
-    VLOG(0) << "Prerequisites stopped being met, stopping ARC";
-    StopInstance();
-  }
 }
 
 void ArcBridgeServiceImpl::StartArcSession() {
@@ -123,60 +130,43 @@ void ArcBridgeServiceImpl::StartArcSession() {
   SetStopReason(StopReason::SHUTDOWN);
   arc_session_ = factory_.Run();
   arc_session_->AddObserver(this);
-  SetState(State::CONNECTING);
+  SetState(State::STARTING);
   arc_session_->Start();
-}
-
-void ArcBridgeServiceImpl::StopInstance() {
-  DCHECK(CalledOnValidThread());
-  DCHECK_NE(state(), State::STOPPED);
-  DCHECK(!restart_timer_.IsRunning());
-
-  if (state() == State::STOPPING) {
-    VLOG(1) << "StopInstance() called when ARC is not running";
-    return;
-  }
-
-  VLOG(1) << "Stopping ARC";
-  DCHECK(arc_session_.get());
-  SetState(State::STOPPING);
-
-  // Note: this can call OnStopped() internally as a callback.
-  arc_session_->Stop();
 }
 
 void ArcBridgeServiceImpl::OnSessionReady() {
   DCHECK(CalledOnValidThread());
-  if (state() != State::CONNECTING) {
-    VLOG(1) << "StopInstance() called while connecting";
-    return;
-  }
+  DCHECK_EQ(state(), State::STARTING);
+  DCHECK(arc_session_);
+  DCHECK(!restart_timer_.IsRunning());
 
   VLOG(0) << "ARC ready";
-  SetState(State::READY);
+  SetState(State::RUNNING);
 }
 
 void ArcBridgeServiceImpl::OnSessionStopped(StopReason stop_reason) {
   DCHECK(CalledOnValidThread());
+  DCHECK_NE(state(), State::STOPPED);
+  DCHECK(arc_session_);
   DCHECK(!restart_timer_.IsRunning());
 
   VLOG(0) << "ARC stopped: " << stop_reason;
   arc_session_->RemoveObserver(this);
   arc_session_.reset();
 
-  // If READY, ARC instance unexpectedly crashed so we need to restart it
+  // If RUNNING, ARC instance unexpectedly crashed so we need to restart it
   // automatically.
   // If STOPPING, at least once RequestStop() is called. If |session_started_|
   // is true, RequestStart() is following so schedule to restart ARC session.
   // Otherwise, do nothing.
-  // If CONNECTING, ARC instance has not been booted properly, so do not
+  // If STARTING, ARC instance has not been booted properly, so do not
   // restart it automatically.
-  if (state() == State::READY ||
-      (state() == State::STOPPING && session_started_)) {
-    // This check is for READY case. In READY case |session_started_| should be
-    // always true, because if once RequestStop() is called, the state() will
-    // be set to STOPPING.
-    DCHECK(session_started_);
+  if (state() == State::RUNNING ||
+      (state() == State::STOPPING && run_requested_)) {
+    // This check is for READY case. In RUNNING case |run_requested_| should
+    // be always true, because if once RequestStop() is called, the state()
+    // will be set to STOPPING.
+    DCHECK(run_requested_);
 
     // There was a previous invocation and it crashed for some reason. Try
     // starting ARC instance later again.
@@ -186,7 +176,7 @@ void ArcBridgeServiceImpl::OnSessionStopped(StopReason stop_reason) {
     VLOG(0) << "ARC restarting";
     restart_timer_.Start(FROM_HERE, restart_delay_,
                          base::Bind(&ArcBridgeServiceImpl::StartArcSession,
-                                    weak_factory_.GetWeakPtr()));
+                                    weak_ptr_factory_.GetWeakPtr()));
   }
 
   // TODO(hidehiko): Consider to let observers know whether there is scheduled

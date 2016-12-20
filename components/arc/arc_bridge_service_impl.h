@@ -6,18 +6,20 @@
 #define COMPONENTS_ARC_ARC_BRIDGE_SERVICE_IMPL_H_
 
 #include <memory>
-#include <string>
-#include <vector>
 
-#include "base/files/scoped_file.h"
+#include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/task_runner.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_session_observer.h"
-#include "mojo/public/cpp/bindings/binding.h"
+
+template <typename T>
+class scoped_refptr;
+
+namespace base {
+class TaskRunner;
+}  // namespace base
 
 namespace arc {
 
@@ -53,11 +55,6 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   void SetRestartDelayForTesting(const base::TimeDelta& restart_delay);
 
  private:
-  // If all pre-requisites are true (ARC is available, it has been enabled, and
-  // the session has started), and ARC is stopped, start ARC. If ARC is running
-  // and the pre-requisites stop being true, stop ARC.
-  void PrerequisitesChanged();
-
   // Starts to run an ARC instance.
   void StartArcSession();
 
@@ -68,10 +65,8 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   void OnSessionReady() override;
   void OnSessionStopped(StopReason reason) override;
 
-  std::unique_ptr<ArcSession> arc_session_;
-
-  // If the user's session has started.
-  bool session_started_;
+  // Whether a client requests to run session or not.
+  bool run_requested_ = false;
 
   // Instead of immediately trying to restart the container, give it some time
   // to finish tearing down in case it is still in the process of stopping.
@@ -81,8 +76,12 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   // Factory to inject a fake ArcSession instance for testing.
   ArcSessionFactory factory_;
 
+  // ArcSession object for currently running ARC instance. This should be
+  // nullptr if the state is STOPPED, otherwise non-nullptr.
+  std::unique_ptr<ArcSession> arc_session_;
+
   // WeakPtrFactory to use callbacks.
-  base::WeakPtrFactory<ArcBridgeServiceImpl> weak_factory_;
+  base::WeakPtrFactory<ArcBridgeServiceImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeServiceImpl);
 };
