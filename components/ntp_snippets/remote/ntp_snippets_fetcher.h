@@ -7,7 +7,6 @@
 
 #include <memory>
 #include <queue>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -16,15 +15,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/tick_clock.h"
-#include "base/time/time.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
+#include "components/ntp_snippets/remote/ntp_snippets_json_request.h"
+#include "components/ntp_snippets/remote/ntp_snippets_request_params.h"
 #include "components/ntp_snippets/remote/request_throttler.h"
 #include "components/ntp_snippets/status.h"
 #include "components/translate/core/browser/language_model.h"
-#include "google_apis/gaia/oauth2_token_service.h"
-#include "net/http/http_request_headers.h"
 #include "net/url_request/url_request_context_getter.h"
 
 class PrefService;
@@ -55,19 +53,11 @@ CategoryInfo BuildRemoteCategoryInfo(const base::string16& title,
                                      bool allow_fetching_more_results);
 
 // Fetches snippet data for the NTP from the server.
+// TODO(fhorschig): Untangle cyclic dependencies by introducing a
+// NTPSnippetsFetcherInterface. (Would be good for mock implementations, too)
 class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
                            public OAuth2TokenService::Observer {
  public:
-  // Callbacks for JSON parsing, needed because the parsing is platform-
-  // dependent.
-  using SuccessCallback =
-      base::Callback<void(std::unique_ptr<base::Value> result)>;
-  using ErrorCallback = base::Callback<void(const std::string& error)>;
-  using ParseJSONCallback =
-      base::Callback<void(const std::string& raw_json_string,
-                          const SuccessCallback& success_callback,
-                          const ErrorCallback& error_callback)>;
-
   struct FetchedCategory {
     Category category;
     CategoryInfo info;
@@ -81,55 +71,12 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   using FetchedCategoriesVector = std::vector<FetchedCategory>;
   using OptionalFetchedCategories = base::Optional<FetchedCategoriesVector>;
 
-  // Enumeration listing all possible outcomes for fetch attempts. Used for UMA
-  // histograms, so do not change existing values. Insert new values at the end,
-  // and update the histogram definition.
-  enum class FetchResult {
-    SUCCESS,
-    DEPRECATED_EMPTY_HOSTS,
-    URL_REQUEST_STATUS_ERROR,
-    HTTP_ERROR,
-    JSON_PARSE_ERROR,
-    INVALID_SNIPPET_CONTENT_ERROR,
-    OAUTH_TOKEN_ERROR,
-    INTERACTIVE_QUOTA_ERROR,
-    NON_INTERACTIVE_QUOTA_ERROR,
-    RESULT_MAX
-  };
-
   // |snippets| contains parsed snippets if a fetch succeeded. If problems
   // occur, |snippets| contains no value (no actual vector in base::Optional).
   // Error details can be retrieved using last_status().
   using SnippetsAvailableCallback =
       base::OnceCallback<void(Status status,
                               OptionalFetchedCategories fetched_categories)>;
-
-  // Enumeration listing all possible variants of dealing with personalization.
-  enum class Personalization { kPersonal, kNonPersonal, kBoth };
-
-  // Contains all the parameters for one fetch.
-  struct Params {
-    Params();
-    Params(const Params&);
-    ~Params();
-
-    // BCP 47 language code specifying the user's UI language.
-    std::string language_code;
-
-    // A set of suggestion IDs that should not be returned again.
-    std::set<std::string> excluded_ids;
-
-    // Maximum number of snippets to fetch.
-    int count_to_fetch = 0;
-
-    // Whether this is an interactive request, i.e. triggered by an explicit
-    // user action. Typically, non-interactive requests are subject to a daily
-    // quota.
-    bool interactive_request = false;
-
-    // If set, only return results for this category.
-    base::Optional<Category> exclusive_category;
-  };
 
   NTPSnippetsFetcher(
       SigninManagerBase* signin_manager,
@@ -143,12 +90,14 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   ~NTPSnippetsFetcher() override;
 
   // Initiates a fetch from the server. When done (successfully or not), calls
-  // the subscriber of SetCallback().
+  // the callback.
   //
-  // If an ongoing fetch exists, it will be silently abandoned and a new one
-  // started, without triggering an additional callback (i.e. the callback will
-  // only be called once).
-  void FetchSnippets(const Params& params, SnippetsAvailableCallback callback);
+  // If an ongoing fetch exists, both fetches won't influence each other (i.e.
+  // every callback will be called exactly once).
+  void FetchSnippets(const NTPSnippetsRequestParams& params,
+                     SnippetsAvailableCallback callback);
+
+  std::string PersonalizationModeString() const;
 
   // Debug string representing the status/result of the last fetch attempt.
   const std::string& last_status() const { return last_status_; }
@@ -158,7 +107,8 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
     return last_fetch_json_;
   }
 
-  // Returns the personalization setting of the fetcher.
+  // Returns the personalization setting of the fetcher as used in tests.
+  // TODO(fhorschig): Reconsider these tests and remove this getter.
   Personalization personalization() const { return personalization_; }
 
   // Returns the URL endpoint used by the fetcher.
@@ -186,98 +136,16 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
                            BuildRequestWithOtherLanguageOnly);
   friend class ChromeReaderSnippetsFetcherTest;
 
-  enum FetchAPI {
-    CHROME_READER_API,
-    CHROME_CONTENT_SUGGESTIONS_API,
-  };
-
-  class JsonRequest;
-
-  // A class that builds authenticated and non-authenticated JsonRequests.
-  // This class is only in the header for testing.
-  // TODO(fhorschig): Move into separate file with snippets::internal namespace.
-  class RequestBuilder {
-   public:
-    RequestBuilder();
-    RequestBuilder(RequestBuilder&&);
-    ~RequestBuilder();
-
-    // Builds a Request object that contains all data to fetch new snippets.
-    std::unique_ptr<JsonRequest> Build() const;
-
-    RequestBuilder& SetAuthentication(const std::string& account_id,
-                                      const std::string& auth_header);
-    RequestBuilder& SetCreationTime(base::TimeTicks creation_time);
-    RequestBuilder& SetFetchAPI(FetchAPI fetch_api);
-    // The language_model borrowed from the fetcher needs to stay alive until
-    // the request body is built.
-    RequestBuilder& SetLanguageModel(
-        const translate::LanguageModel* language_model);
-    RequestBuilder& SetParams(const Params& params);
-    RequestBuilder& SetParseJsonCallback(ParseJSONCallback callback);
-    RequestBuilder& SetPersonalization(Personalization personalization);
-    // The tick_clock borrowed from the fetcher will be injected into the
-    // request. It will be used at build time and after the fetch returned.
-    // It has to be alive until the request is destroyed.
-    RequestBuilder& SetTickClock(base::TickClock* tick_clock);
-    RequestBuilder& SetUrl(const GURL& url);
-    RequestBuilder& SetUrlRequestContextGetter(
-        const scoped_refptr<net::URLRequestContextGetter>& context_getter);
-    RequestBuilder& SetUserClassifier(const UserClassifier& user_classifier);
-
-    // These preview methods allow to inspect the Request without exposing it
-    // publicly.
-    // TODO(fhorschig): Remove these when moving the RequestBuilder to
-    // snippets::internal and trigger the request to intercept the request.
-    std::string PreviewRequestBodyForTesting() { return BuildBody(); }
-    std::string PreviewRequestHeadersForTesting() { return BuildHeaders(); }
-    RequestBuilder& SetUserClassForTesting(const std::string& user_class) {
-      user_class_ = user_class;
-      return *this;
-    }
-
-   private:
-    std::string BuildHeaders() const;
-    std::string BuildBody() const;
-    std::unique_ptr<net::URLFetcher> BuildURLFetcher(
-        net::URLFetcherDelegate* request,
-        const std::string& headers,
-        const std::string& body) const;
-
-    bool ReturnOnlyPersonalizedResults() const {
-      return !obfuscated_gaia_id_.empty() &&
-             personalization_ == NTPSnippetsFetcher::Personalization::kPersonal;
-    }
-
-    void PrepareLanguages(
-        translate::LanguageModel::LanguageInfo* ui_language,
-        translate::LanguageModel::LanguageInfo* other_top_language) const;
-
-    // Only required, if the request needs to be sent.
-    std::string auth_header_;
-    base::TickClock* tick_clock_;
-    FetchAPI fetch_api_;
-    Params params_;
-    ParseJSONCallback parse_json_callback_;
-    Personalization personalization_;
-    GURL url_;
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-
-    // Optional properties.
-    std::string obfuscated_gaia_id_;
-    std::string user_class_;
-    const translate::LanguageModel* language_model_;
-
-    DISALLOW_COPY_AND_ASSIGN(RequestBuilder);
-  };
-
-  void FetchSnippetsNonAuthenticated(RequestBuilder builder,
-                                     SnippetsAvailableCallback callback);
-  void FetchSnippetsAuthenticated(RequestBuilder builder,
-                                  SnippetsAvailableCallback callback,
-                                  const std::string& account_id,
-                                  const std::string& oauth_access_token);
-  void StartRequest(RequestBuilder builder, SnippetsAvailableCallback callback);
+  void FetchSnippetsNonAuthenticated(
+      internal::NTPSnippetsJsonRequest::Builder builder,
+      SnippetsAvailableCallback callback);
+  void FetchSnippetsAuthenticated(
+      internal::NTPSnippetsJsonRequest::Builder builder,
+      SnippetsAvailableCallback callback,
+      const std::string& account_id,
+      const std::string& oauth_access_token);
+  void StartRequest(internal::NTPSnippetsJsonRequest::Builder builder,
+                    SnippetsAvailableCallback callback);
 
   void StartTokenRequest();
 
@@ -291,14 +159,15 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // OAuth2TokenService::Observer overrides:
   void OnRefreshTokenAvailable(const std::string& account_id) override;
 
-  void JsonRequestDone(std::unique_ptr<JsonRequest> request,
-                       SnippetsAvailableCallback callback,
-                       std::unique_ptr<base::Value> result,
-                       FetchResult status_code,
-                       const std::string& error_details);
+  void JsonRequestDone(
+      std::unique_ptr<internal::NTPSnippetsJsonRequest> request,
+      SnippetsAvailableCallback callback,
+      std::unique_ptr<base::Value> result,
+      internal::FetchResult status_code,
+      const std::string& error_details);
   void FetchFinished(OptionalFetchedCategories categories,
                      SnippetsAvailableCallback callback,
-                     FetchResult status_code,
+                     internal::FetchResult status_code,
                      const std::string& error_details);
 
   bool JsonToSnippets(const base::Value& parsed,
@@ -322,7 +191,8 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   // Stores requests that wait for an access token.
-  std::queue<std::pair<RequestBuilder, SnippetsAvailableCallback>>
+  std::queue<std::pair<internal::NTPSnippetsJsonRequest::Builder,
+                       SnippetsAvailableCallback>>
       pending_requests_;
 
   // Weak reference, not owned.
@@ -333,7 +203,7 @@ class NTPSnippetsFetcher : public OAuth2TokenService::Consumer,
   // API endpoint for fetching snippets.
   const GURL fetch_url_;
   // Which API to use
-  const FetchAPI fetch_api_;
+  const internal::FetchAPI fetch_api_;
 
   // API key to use for non-authenticated requests.
   const std::string api_key_;

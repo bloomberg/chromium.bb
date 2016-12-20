@@ -59,8 +59,8 @@ using suggestions::ImageFetcherImpl;
 namespace {
 
 void ParseJson(const std::string& json,
-               const NTPSnippetsFetcher::SuccessCallback& success_callback,
-               const NTPSnippetsFetcher::ErrorCallback& error_callback) {
+               const ntp_snippets::SuccessCallback& success_callback,
+               const ntp_snippets::ErrorCallback& error_callback) {
   base::JSONReader json_reader;
   std::unique_ptr<base::Value> value = json_reader.ReadToValue(json);
   if (value) {

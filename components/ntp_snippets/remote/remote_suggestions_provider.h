@@ -26,6 +26,7 @@
 #include "components/ntp_snippets/content_suggestions_provider.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
 #include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
+#include "components/ntp_snippets/remote/ntp_snippets_request_params.h"
 #include "components/ntp_snippets/remote/ntp_snippets_scheduler.h"
 #include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
 #include "components/ntp_snippets/remote/request_throttler.h"
@@ -148,6 +149,9 @@ class RemoteSuggestionsProvider final : public ContentSuggestionsProvider {
   // and request lower latency processing.
   void FetchSnippetsForAllCategories();
 
+  // Only used in tests and for debugging in snippets-internal/.
+  // TODO(fhorschig): Remove this getter when there is an interface for the
+  // fetcher that allows better mocks.
   const NTPSnippetsFetcher* snippets_fetcher() const {
     return snippets_fetcher_.get();
   }
@@ -393,7 +397,7 @@ class RemoteSuggestionsProvider final : public ContentSuggestionsProvider {
   void RestoreCategoriesFromPrefs();
   void StoreCategoriesToPrefs();
 
-  NTPSnippetsFetcher::Params BuildFetchParams() const;
+  NTPSnippetsRequestParams BuildFetchParams() const;
 
   void MarkEmptyCategoriesAsLoading();
 

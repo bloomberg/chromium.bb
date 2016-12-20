@@ -6,7 +6,9 @@
 
 #include <deque>
 #include <map>
+#include <set>
 #include <utility>
+#include <vector>
 
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
@@ -20,6 +22,7 @@
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/remote/ntp_snippet.h"
+#include "components/ntp_snippets/remote/ntp_snippets_request_params.h"
 #include "components/ntp_snippets/user_classifier.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -49,7 +52,6 @@ using testing::Pointee;
 using testing::PrintToString;
 using testing::Return;
 using testing::StartsWith;
-using testing::StrEq;
 using testing::WithArg;
 
 const char kAPIKey[] = "fakeAPIkey";
@@ -136,25 +138,6 @@ MATCHER_P(FirstCategoryHasInfo, info_matcher, "") {
   }
   return testing::ExplainMatchResult(
       info_matcher, arg->value().front().info, result_listener);
-}
-
-MATCHER_P(EqualsJSON, json, "equals JSON") {
-  std::unique_ptr<base::Value> expected = base::JSONReader::Read(json);
-  if (!expected) {
-    *result_listener << "INTERNAL ERROR: couldn't parse expected JSON";
-    return false;
-  }
-
-  std::string err_msg;
-  int err_line, err_col;
-  std::unique_ptr<base::Value> actual = base::JSONReader::ReadAndReturnError(
-      arg, base::JSON_PARSE_RFC, nullptr, &err_msg, &err_line, &err_col);
-  if (!actual) {
-    *result_listener << "input:" << err_line << ":" << err_col << ": "
-                     << "parse error: " << err_msg;
-    return false;
-  }
-  return base::Value::Equals(actual.get(), expected.get());
 }
 
 class MockSnippetsAvailableCallback {
@@ -261,10 +244,9 @@ class FailingFakeURLFetcherFactory : public net::URLFetcherFactory {
   }
 };
 
-void ParseJson(
-    const std::string& json,
-    const ntp_snippets::NTPSnippetsFetcher::SuccessCallback& success_callback,
-    const ntp_snippets::NTPSnippetsFetcher::ErrorCallback& error_callback) {
+void ParseJson(const std::string& json,
+               const SuccessCallback& success_callback,
+               const ErrorCallback& error_callback) {
   base::JSONReader json_reader;
   std::unique_ptr<base::Value> value = json_reader.ReadToValue(json);
   if (value) {
@@ -274,10 +256,9 @@ void ParseJson(
   }
 }
 
-void ParseJsonDelayed(
-    const std::string& json,
-    const ntp_snippets::NTPSnippetsFetcher::SuccessCallback& success_callback,
-    const ntp_snippets::NTPSnippetsFetcher::ErrorCallback& error_callback) {
+void ParseJsonDelayed(const std::string& json,
+                      const SuccessCallback& success_callback,
+                      const ErrorCallback& error_callback) {
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::Bind(&ParseJson, json, std::move(success_callback),
                             std::move(error_callback)),
@@ -309,7 +290,6 @@ class NTPSnippetsFetcherTestBase : public testing::Test {
         test_url_(gurl) {
     RequestThrottler::RegisterProfilePrefs(pref_service_->registry());
     UserClassifier::RegisterProfilePrefs(pref_service_->registry());
-    translate::LanguageModel::RegisterProfilePrefs(pref_service()->registry());
     user_classifier_ = base::MakeUnique<UserClassifier>(pref_service_.get());
     // Increase initial time such that ticks are non-zero.
     mock_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(1234));
@@ -341,8 +321,8 @@ class NTPSnippetsFetcherTestBase : public testing::Test {
   }
   base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
-  NTPSnippetsFetcher::Params test_params() {
-    NTPSnippetsFetcher::Params result;
+  NTPSnippetsRequestParams test_params() {
+    NTPSnippetsRequestParams result;
     result.count_to_fetch = 1;
     result.interactive_request = true;
     return result;
@@ -393,19 +373,6 @@ class NTPSnippetsFetcherTestBase : public testing::Test {
                                                response_code, status);
   }
 
-  std::unique_ptr<translate::LanguageModel> MakeLanguageModel(
-      const std::vector<std::string>& codes) {
-    std::unique_ptr<translate::LanguageModel> language_model =
-        base::MakeUnique<translate::LanguageModel>(pref_service());
-    // There must be at least 10 visits before the top languages are defined.
-    for (int i = 0; i < 10; i++) {
-      for (const auto& code : codes) {
-        language_model->OnPageVisited(code);
-      }
-    }
-    return language_model;
-  }
-
   TestingPrefServiceSimple* pref_service() const { return pref_service_.get(); }
 
  private:
@@ -447,231 +414,6 @@ class NTPSnippetsContentSuggestionsFetcherTest
     ResetSnippetsFetcher();
   }
 };
-
-TEST_F(ChromeReaderSnippetsFetcherTest, BuildRequestAuthenticated) {
-  NTPSnippetsFetcher::RequestBuilder builder;
-  NTPSnippetsFetcher::Params params;
-  params.excluded_ids = {"1234567890"};
-  params.count_to_fetch = 25;
-  params.interactive_request = false;
-  builder.SetParams(params)
-      .SetAuthentication("0BFUSGAIA", "headerstuff")
-      .SetPersonalization(NTPSnippetsFetcher::Personalization::kPersonal)
-      .SetUserClassForTesting("ACTIVE_NTP_USER")
-      .SetFetchAPI(NTPSnippetsFetcher::CHROME_READER_API);
-
-  EXPECT_THAT(builder.PreviewRequestHeadersForTesting(),
-              StrEq("Content-Type: application/json; charset=UTF-8\r\n"
-                    "Authorization: headerstuff\r\n"
-                    "\r\n"));
-  EXPECT_THAT(builder.PreviewRequestBodyForTesting(),
-              EqualsJSON("{"
-                         "  \"response_detail_level\": \"STANDARD\","
-                         "  \"obfuscated_gaia_id\": \"0BFUSGAIA\","
-                         "  \"advanced_options\": {"
-                         "    \"local_scoring_params\": {"
-                         "      \"content_params\": {"
-                         "        \"only_return_personalized_results\": true"
-                         "      },"
-                         "      \"content_restricts\": ["
-                         "        {"
-                         "          \"type\": \"METADATA\","
-                         "          \"value\": \"TITLE\""
-                         "        },"
-                         "        {"
-                         "          \"type\": \"METADATA\","
-                         "          \"value\": \"SNIPPET\""
-                         "        },"
-                         "        {"
-                         "          \"type\": \"METADATA\","
-                         "          \"value\": \"THUMBNAIL\""
-                         "        }"
-                         "      ]"
-                         "    },"
-                         "    \"global_scoring_params\": {"
-                         "      \"num_to_return\": 25,"
-                         "      \"sort_type\": 1"
-                         "    }"
-                         "  }"
-                         "}"));
-
-  builder.SetFetchAPI(
-      NTPSnippetsFetcher::FetchAPI::CHROME_CONTENT_SUGGESTIONS_API);
-  EXPECT_THAT(builder.PreviewRequestBodyForTesting(),
-              EqualsJSON("{"
-                         "  \"priority\": \"BACKGROUND_PREFETCH\","
-                         "  \"excludedSuggestionIds\": ["
-                         "    \"1234567890\""
-                         "  ],"
-                         "  \"userActivenessClass\": \"ACTIVE_NTP_USER\""
-                         "}"));
-}
-
-TEST_F(ChromeReaderSnippetsFetcherTest, BuildRequestUnauthenticated) {
-  NTPSnippetsFetcher::RequestBuilder builder;
-  NTPSnippetsFetcher::Params params = test_params();
-  params.count_to_fetch = 10;
-  builder.SetParams(params)
-      .SetUserClassForTesting("ACTIVE_NTP_USER")
-      .SetPersonalization(NTPSnippetsFetcher::Personalization::kNonPersonal)
-      .SetFetchAPI(NTPSnippetsFetcher::CHROME_READER_API);
-
-  EXPECT_THAT(builder.PreviewRequestHeadersForTesting(),
-              StrEq("Content-Type: application/json; charset=UTF-8\r\n"
-                    "\r\n"));
-  EXPECT_THAT(builder.PreviewRequestBodyForTesting(),
-              EqualsJSON("{"
-                         "  \"response_detail_level\": \"STANDARD\","
-                         "  \"advanced_options\": {"
-                         "    \"local_scoring_params\": {"
-                         "      \"content_params\": {"
-                         "        \"only_return_personalized_results\": false"
-                         "      },"
-                         "      \"content_restricts\": ["
-                         "        {"
-                         "          \"type\": \"METADATA\","
-                         "          \"value\": \"TITLE\""
-                         "        },"
-                         "        {"
-                         "          \"type\": \"METADATA\","
-                         "          \"value\": \"SNIPPET\""
-                         "        },"
-                         "        {"
-                         "          \"type\": \"METADATA\","
-                         "          \"value\": \"THUMBNAIL\""
-                         "        }"
-                         "      ]"
-                         "    },"
-                         "    \"global_scoring_params\": {"
-                         "      \"num_to_return\": 10,"
-                         "      \"sort_type\": 1"
-                         "    }"
-                         "  }"
-                         "}"));
-
-  builder.SetFetchAPI(
-      NTPSnippetsFetcher::FetchAPI::CHROME_CONTENT_SUGGESTIONS_API);
-  EXPECT_THAT(builder.PreviewRequestBodyForTesting(),
-              EqualsJSON("{"
-                         "  \"priority\": \"USER_ACTION\","
-                         "  \"excludedSuggestionIds\": [],"
-                         "  \"userActivenessClass\": \"ACTIVE_NTP_USER\""
-                         "}"));
-}
-
-TEST_F(ChromeReaderSnippetsFetcherTest, BuildRequestExcludedIds) {
-  NTPSnippetsFetcher::RequestBuilder builder;
-  NTPSnippetsFetcher::Params params = test_params();
-  params.interactive_request = false;
-  for (int i = 0; i < 200; ++i) {
-    params.excluded_ids.insert(base::StringPrintf("%03d", i));
-  }
-  builder.SetParams(params)
-      .SetUserClassForTesting("ACTIVE_NTP_USER")
-      .SetPersonalization(NTPSnippetsFetcher::Personalization::kNonPersonal)
-      .SetFetchAPI(
-          NTPSnippetsFetcher::FetchAPI::CHROME_CONTENT_SUGGESTIONS_API);
-
-  EXPECT_THAT(builder.PreviewRequestBodyForTesting(),
-              EqualsJSON("{"
-                         "  \"priority\": \"BACKGROUND_PREFETCH\","
-                         "  \"excludedSuggestionIds\": ["
-                         "    \"000\", \"001\", \"002\", \"003\", \"004\","
-                         "    \"005\", \"006\", \"007\", \"008\", \"009\","
-                         "    \"010\", \"011\", \"012\", \"013\", \"014\","
-                         "    \"015\", \"016\", \"017\", \"018\", \"019\","
-                         "    \"020\", \"021\", \"022\", \"023\", \"024\","
-                         "    \"025\", \"026\", \"027\", \"028\", \"029\","
-                         "    \"030\", \"031\", \"032\", \"033\", \"034\","
-                         "    \"035\", \"036\", \"037\", \"038\", \"039\","
-                         "    \"040\", \"041\", \"042\", \"043\", \"044\","
-                         "    \"045\", \"046\", \"047\", \"048\", \"049\","
-                         "    \"050\", \"051\", \"052\", \"053\", \"054\","
-                         "    \"055\", \"056\", \"057\", \"058\", \"059\","
-                         "    \"060\", \"061\", \"062\", \"063\", \"064\","
-                         "    \"065\", \"066\", \"067\", \"068\", \"069\","
-                         "    \"070\", \"071\", \"072\", \"073\", \"074\","
-                         "    \"075\", \"076\", \"077\", \"078\", \"079\","
-                         "    \"080\", \"081\", \"082\", \"083\", \"084\","
-                         "    \"085\", \"086\", \"087\", \"088\", \"089\","
-                         "    \"090\", \"091\", \"092\", \"093\", \"094\","
-                         "    \"095\", \"096\", \"097\", \"098\", \"099\""
-                         // Truncated to 100 entries. Currently, they happen to
-                         // be those lexically first.
-                         "  ],"
-                         "  \"userActivenessClass\": \"ACTIVE_NTP_USER\""
-                         "}"));
-}
-
-TEST_F(ChromeReaderSnippetsFetcherTest, BuildRequestNoUserClass) {
-  NTPSnippetsFetcher::RequestBuilder builder;
-  NTPSnippetsFetcher::Params params = test_params();
-  params.interactive_request = false;
-  builder.SetPersonalization(NTPSnippetsFetcher::Personalization::kNonPersonal)
-      .SetParams(params)
-      .SetFetchAPI(
-          NTPSnippetsFetcher::FetchAPI::CHROME_CONTENT_SUGGESTIONS_API);
-
-  EXPECT_THAT(builder.PreviewRequestBodyForTesting(),
-              EqualsJSON("{"
-                         "  \"priority\": \"BACKGROUND_PREFETCH\","
-                         "  \"excludedSuggestionIds\": []"
-                         "}"));
-}
-
-TEST_F(ChromeReaderSnippetsFetcherTest, BuildRequestWithTwoLanguages) {
-  NTPSnippetsFetcher::RequestBuilder builder;
-  std::unique_ptr<translate::LanguageModel> language_model =
-      MakeLanguageModel({"de", "en"});
-  NTPSnippetsFetcher::Params params = test_params();
-  params.language_code = "en";
-  builder.SetParams(params)
-      .SetLanguageModel(language_model.get())
-      .SetPersonalization(NTPSnippetsFetcher::Personalization::kNonPersonal)
-      .SetFetchAPI(
-          NTPSnippetsFetcher::FetchAPI::CHROME_CONTENT_SUGGESTIONS_API);
-
-  EXPECT_THAT(builder.PreviewRequestBodyForTesting(),
-              EqualsJSON("{"
-                         "  \"priority\": \"USER_ACTION\","
-                         "  \"uiLanguage\": \"en\","
-                         "  \"excludedSuggestionIds\": [],"
-                         "  \"topLanguages\": ["
-                         "    {"
-                         "      \"language\" : \"en\","
-                         "      \"frequency\" : 0.5"
-                         "    },"
-                         "    {"
-                         "      \"language\" : \"de\","
-                         "      \"frequency\" : 0.5"
-                         "    }"
-                         "  ]"
-                         "}"));
-}
-
-TEST_F(ChromeReaderSnippetsFetcherTest, BuildRequestWithUILanguageOnly) {
-  NTPSnippetsFetcher::RequestBuilder builder;
-  std::unique_ptr<translate::LanguageModel> language_model =
-      MakeLanguageModel({"en"});
-  NTPSnippetsFetcher::Params params = test_params();
-  params.language_code = "en";
-  builder.SetParams(params)
-      .SetLanguageModel(language_model.get())
-      .SetPersonalization(NTPSnippetsFetcher::Personalization::kNonPersonal)
-      .SetFetchAPI(
-          NTPSnippetsFetcher::FetchAPI::CHROME_CONTENT_SUGGESTIONS_API);
-
-  EXPECT_THAT(builder.PreviewRequestBodyForTesting(),
-              EqualsJSON("{"
-                         "  \"priority\": \"USER_ACTION\","
-                         "  \"uiLanguage\": \"en\","
-                         "  \"excludedSuggestionIds\": [],"
-                         "  \"topLanguages\": [{"
-                         "    \"language\" : \"en\","
-                         "    \"frequency\" : 1.0"
-                         "  }]"
-                         "}"));
-}
 
 TEST_F(ChromeReaderSnippetsFetcherTest, ShouldNotFetchOnCreation) {
   // The lack of registered baked in responses would cause any fetch to fail.
@@ -940,9 +682,10 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ExclusiveCategoryOnly) {
   EXPECT_CALL(mock_callback(), Run(IsSuccess(), _))
       .WillOnce(MoveArgument1PointeeTo(&fetched_categories));
 
-  NTPSnippetsFetcher::Params params = test_params();
+  NTPSnippetsRequestParams params = test_params();
   params.exclusive_category =
       base::Optional<Category>(Category::FromRemoteCategory(2));
+
   snippets_fetcher().FetchSnippets(
       params, ToSnippetsAvailableCallback(&mock_callback()));
   FastForwardUntilNoTasksRemain();
@@ -955,25 +698,24 @@ TEST_F(NTPSnippetsContentSuggestionsFetcherTest, ExclusiveCategoryOnly) {
   EXPECT_THAT(category.snippets[0]->url().spec(), Eq("http://localhost/foo2"));
 }
 
+// TODO(fhorschig): Check for behavioral changes instead of state.
 TEST_F(ChromeReaderSnippetsFetcherTest, PersonalizesDependingOnVariations) {
   // Default setting should be both personalization options.
-  EXPECT_THAT(snippets_fetcher().personalization(),
-              Eq(NTPSnippetsFetcher::Personalization::kBoth));
+  EXPECT_THAT(snippets_fetcher().personalization(), Eq(Personalization::kBoth));
 
   SetVariationParam("fetching_personalization", "personal");
   ResetSnippetsFetcher();
   EXPECT_THAT(snippets_fetcher().personalization(),
-              Eq(NTPSnippetsFetcher::Personalization::kPersonal));
+              Eq(Personalization::kPersonal));
 
   SetVariationParam("fetching_personalization", "non_personal");
   ResetSnippetsFetcher();
   EXPECT_THAT(snippets_fetcher().personalization(),
-              Eq(NTPSnippetsFetcher::Personalization::kNonPersonal));
+              Eq(Personalization::kNonPersonal));
 
   SetVariationParam("fetching_personalization", "both");
   ResetSnippetsFetcher();
-  EXPECT_THAT(snippets_fetcher().personalization(),
-              Eq(NTPSnippetsFetcher::Personalization::kBoth));
+  EXPECT_THAT(snippets_fetcher().personalization(), Eq(Personalization::kBoth));
 }
 
 TEST_F(ChromeReaderSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {
@@ -996,7 +738,7 @@ TEST_F(ChromeReaderSnippetsFetcherTest, ShouldFetchSuccessfullyEmptyList) {
 
 TEST_F(ChromeReaderSnippetsFetcherTest, RetryOnInteractiveRequests) {
   DelegateCallingTestURLFetcherFactory fetcher_factory;
-  NTPSnippetsFetcher::Params params = test_params();
+  NTPSnippetsRequestParams params = test_params();
   params.interactive_request = true;
 
   snippets_fetcher().FetchSnippets(
@@ -1020,7 +762,7 @@ TEST_F(ChromeReaderSnippetsFetcherTest,
       {"-1", 0, "Do not retry on negative param values."},
       {"4", 4, "Retry as set in param value."}};
 
-  NTPSnippetsFetcher::Params params = test_params();
+  NTPSnippetsRequestParams params = test_params();
   params.interactive_request = false;
 
   for (const auto& retry_config : retry_config_expectation) {

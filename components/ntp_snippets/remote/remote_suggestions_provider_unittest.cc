@@ -305,10 +305,9 @@ gfx::Image FetchImage(RemoteSuggestionsProvider* service,
   return result;
 }
 
-void ParseJson(
-    const std::string& json,
-    const ntp_snippets::NTPSnippetsFetcher::SuccessCallback& success_callback,
-    const ntp_snippets::NTPSnippetsFetcher::ErrorCallback& error_callback) {
+void ParseJson(const std::string& json,
+               const SuccessCallback& success_callback,
+               const ErrorCallback& error_callback) {
   base::JSONReader json_reader;
   std::unique_ptr<base::Value> value = json_reader.ReadToValue(json);
   if (value) {

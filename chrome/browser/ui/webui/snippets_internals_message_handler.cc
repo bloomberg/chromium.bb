@@ -296,19 +296,10 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
   SendLastRemoteSuggestionsBackgroundFetchTime();
 
   if (remote_suggestions_provider_) {
-    switch (
-        remote_suggestions_provider_->snippets_fetcher()->personalization()) {
-      case ntp_snippets::NTPSnippetsFetcher::Personalization::kPersonal:
-        SendString("switch-personalized", "Only personalized");
-        break;
-      case ntp_snippets::NTPSnippetsFetcher::Personalization::kBoth:
-        SendString("switch-personalized",
-                   "Both personalized and non-personalized");
-        break;
-      case ntp_snippets::NTPSnippetsFetcher::Personalization::kNonPersonal:
-        SendString("switch-personalized", "Only non-personalized");
-        break;
-    }
+    // TODO(fhorschig): Read this string from variations directly.
+    SendString("switch-personalized",
+               remote_suggestions_provider_->snippets_fetcher()
+                   ->PersonalizationModeString());
 
     SendString(
         "switch-fetch-url",

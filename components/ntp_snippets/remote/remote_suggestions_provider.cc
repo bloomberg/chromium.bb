@@ -28,6 +28,7 @@
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
+#include "components/ntp_snippets/remote/ntp_snippets_request_params.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
 #include "components/ntp_snippets/switches.h"
 #include "components/ntp_snippets/user_classifier.h"
@@ -416,7 +417,7 @@ void RemoteSuggestionsProvider::FetchSnippets(
 
   MarkEmptyCategoriesAsLoading();
 
-  NTPSnippetsFetcher::Params params = BuildFetchParams();
+  NTPSnippetsRequestParams params = BuildFetchParams();
   params.interactive_request = interactive_request;
   snippets_fetcher_->FetchSnippets(
       params, base::BindOnce(&RemoteSuggestionsProvider::OnFetchFinished,
@@ -433,7 +434,7 @@ void RemoteSuggestionsProvider::Fetch(
                                 "RemoteSuggestionsProvider is not ready!"));
     return;
   }
-  NTPSnippetsFetcher::Params params = BuildFetchParams();
+  NTPSnippetsRequestParams params = BuildFetchParams();
   params.excluded_ids.insert(known_suggestion_ids.begin(),
                              known_suggestion_ids.end());
   params.interactive_request = true;
@@ -445,8 +446,8 @@ void RemoteSuggestionsProvider::Fetch(
 }
 
 // Builds default fetcher params.
-NTPSnippetsFetcher::Params RemoteSuggestionsProvider::BuildFetchParams() const {
-  NTPSnippetsFetcher::Params result;
+NTPSnippetsRequestParams RemoteSuggestionsProvider::BuildFetchParams() const {
+  NTPSnippetsRequestParams result;
   result.language_code = application_language_code_;
   result.count_to_fetch = kMaxSnippetCount;
   for (const auto& map_entry : category_contents_) {
