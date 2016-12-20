@@ -1448,7 +1448,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             @Override
             public void run() {
                 assertFalse(WarmupManager.getInstance().hasSpareWebContents());
-                final CustomTabActivity activity = (CustomTabActivity) getActivity();
+                final CustomTabActivity activity = getActivity();
                 activity.finishAndClose(false);
             }
         });
@@ -1729,12 +1729,6 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             public boolean isSatisfied() {
                 return newActivity.getActivityTab() != null
                         && newActivity.getActivityTab().equals(tabToBeReparented);
-            }
-        }));
-        CriteriaHelper.pollUiThread((new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return mActivity.isActivityDestroyed();
             }
         }));
         assertEquals(newActivity.getWindowAndroid(), tabToBeReparented.getWindowAndroid());

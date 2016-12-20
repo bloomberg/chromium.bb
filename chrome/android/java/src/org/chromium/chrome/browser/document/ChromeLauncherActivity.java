@@ -337,45 +337,6 @@ public class ChromeLauncherActivity extends Activity
     }
 
     /**
-     * Adds extras to the Intent that are needed by Herb.
-     */
-    public static void updateHerbIntent(Context context, Intent newIntent) {
-        // For Elderberry flavored Herbs that are to be launched in a separate task, add a random
-        // UUID to try and prevent Android from refocusing/clobbering items that share the same
-        // base intent.  If we do support refocusing of existing Herbs, we need to do it on the
-        // current URL and not the URL that it was triggered with.
-        if (TextUtils.equals(
-                FeatureUtilities.getHerbFlavor(), ChromeSwitches.HERB_FLAVOR_ELDERBERRY)
-                && ((newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0
-                        || (newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_DOCUMENT) != 0)) {
-            String uuid = UUID.randomUUID().toString();
-            newIntent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
-            newIntent.setFlags(
-                    newIntent.getFlags() & ~Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                // Force a new document L+ to ensure the proper task/stack creation.
-                newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT
-                        | Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
-                newIntent.setClassName(context, SeparateTaskCustomTabActivity.class.getName());
-            } else {
-                int activityIndex =
-                        ActivityAssigner.instance(ActivityAssigner.SEPARATE_TASK_CCT_NAMESPACE)
-                        .assign(uuid);
-                String className = SeparateTaskCustomTabActivity.class.getName() + activityIndex;
-                newIntent.setClassName(context, className);
-            }
-
-            String url = IntentHandler.getUrlFromIntent(newIntent);
-            assert url != null;
-            newIntent.setData(new Uri.Builder().scheme(UrlConstants.CUSTOM_TAB_SCHEME)
-                    .authority(uuid).query(url).build());
-        }
-
-        newIntent.putExtra(CustomTabsIntent.EXTRA_DEFAULT_SHARE_MENU_ITEM, true);
-    }
-
-    /**
      * @return Whether the intent is for launching a Custom Tab.
      */
     public static boolean isCustomTabIntent(Intent intent) {
@@ -407,6 +368,23 @@ public class ChromeLauncherActivity extends Activity
                 || (newIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_DOCUMENT) != 0) {
             newIntent.setFlags(
                     newIntent.getFlags() & ~Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+            String uuid = UUID.randomUUID().toString();
+            newIntent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                // Force a new document L+ to ensure the proper task/stack creation.
+                newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+                newIntent.setClassName(context, SeparateTaskCustomTabActivity.class.getName());
+            } else {
+                int activityIndex = ActivityAssigner
+                        .instance(ActivityAssigner.SEPARATE_TASK_CCT_NAMESPACE).assign(uuid);
+                String className = SeparateTaskCustomTabActivity.class.getName() + activityIndex;
+                newIntent.setClassName(context, className);
+            }
+
+            String url = IntentHandler.getUrlFromIntent(newIntent);
+            assert url != null;
+            newIntent.setData(new Uri.Builder().scheme(UrlConstants.CUSTOM_TAB_SCHEME)
+                    .authority(uuid).query(url).build());
         }
 
         if (addHerbExtras) {
@@ -416,11 +394,11 @@ public class ChromeLauncherActivity extends Activity
             //                              this is better addressed in TabRedirectHandler long
             //                              term.
             newIntent.putExtra(CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME, true);
+            newIntent.putExtra(CustomTabsIntent.EXTRA_DEFAULT_SHARE_MENU_ITEM, true);
         } else {
             IntentUtils.safeRemoveExtra(
                     intent, CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME);
         }
-        if (addHerbExtras) updateHerbIntent(context, newIntent);
 
         return newIntent;
     }
