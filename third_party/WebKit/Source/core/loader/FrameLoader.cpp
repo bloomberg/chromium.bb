@@ -122,8 +122,7 @@ bool isReloadLoadType(FrameLoadType type) {
 }
 
 static bool needsHistoryItemRestore(FrameLoadType type) {
-  // TODO(toyoshim): Shall we return true for FrameLoadTypeInitialHistoryLoad
-  // too?
+  // FrameLoadtypeInitialHistoryLoad is intentionally excluded.
   return type == FrameLoadTypeBackForward || isReloadLoadType(type);
 }
 
