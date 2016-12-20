@@ -242,13 +242,15 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::SendMessageToClient(
     int session_id,
     const std::string& message) {
   int id = chunk_processor_.last_call_id();
+  PendingMessage sent_message = sent_messages_[id];
+  sent_messages_.erase(id);
   if (suspended_) {
-    sent_messages_whose_reply_came_while_suspended_[id] = sent_messages_[id];
+    sent_messages_whose_reply_came_while_suspended_[id] = sent_message;
     pending_messages_.push_back(std::make_pair(session_id, message));
   } else {
     agent_->SendMessageToClient(session_id, message);
+    // |this| may be deleted at this point.
   }
-  sent_messages_.erase(id);
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::Suspend() {
