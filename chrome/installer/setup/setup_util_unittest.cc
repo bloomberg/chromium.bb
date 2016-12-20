@@ -193,6 +193,48 @@ TEST(SetupUtilTest, GuidToSquid) {
             L"3E026ADE89AA64838BE14339BCE2E020");
 }
 
+TEST(SetupUtilTest, RegisterEventLogProvider) {
+  registry_util::RegistryOverrideManager registry_override_manager;
+  registry_override_manager.OverrideRegistry(HKEY_LOCAL_MACHINE);
+
+  const base::Version version("1.2.3.4");
+  const base::FilePath install_directory(
+      FILE_PATH_LITERAL("c:\\some_path\\test"));
+  installer::RegisterEventLogProvider(install_directory, version);
+
+  // TODO(grt): use install_static::InstallDetails::Get().install_full_name()
+  // when InstallDetails is initialized in the installer.
+  base::string16 reg_path(
+      L"SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\");
+#if defined(GOOGLE_CHROME_BUILD)
+  reg_path.append(L"Chrome");
+  if (InstallUtil::IsChromeSxSProcess())
+    reg_path.append(L" SxS");
+#else
+  reg_path.append(L"Chromium");
+#endif
+  base::win::RegKey key;
+  ASSERT_EQ(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ));
+  EXPECT_TRUE(key.HasValue(L"CategoryCount"));
+  EXPECT_TRUE(key.HasValue(L"TypesSupported"));
+  EXPECT_TRUE(key.HasValue(L"CategoryMessageFile"));
+  EXPECT_TRUE(key.HasValue(L"EventMessageFile"));
+  EXPECT_TRUE(key.HasValue(L"ParameterMessageFile"));
+  base::string16 value;
+  EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"CategoryMessageFile", &value));
+  const base::FilePath expected_directory(
+      install_directory.AppendASCII(version.GetString()));
+  const base::FilePath provider_path(value);
+  EXPECT_EQ(expected_directory, provider_path.DirName());
+  key.Close();
+
+  installer::DeRegisterEventLogProvider();
+
+  EXPECT_NE(ERROR_SUCCESS,
+            key.Open(HKEY_LOCAL_MACHINE, reg_path.c_str(), KEY_READ));
+}
+
 const char kAdjustProcessPriority[] = "adjust-process-priority";
 
 PriorityClassChangeResult DoProcessPriorityAdjustment() {

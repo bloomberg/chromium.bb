@@ -440,13 +440,19 @@ void CreateOrUpdateShortcuts(
 
 void RegisterChromeOnMachine(const installer::InstallerState& installer_state,
                              const installer::Product& product,
-                             bool make_chrome_default) {
+                             bool make_chrome_default,
+                             const base::Version& version) {
   DCHECK(product.is_chrome());
 
   // Try to add Chrome to Media Player shim inclusion list. We don't do any
   // error checking here because this operation will fail if user doesn't
   // have admin rights and we want to ignore the error.
   AddChromeToMediaPlayerList();
+
+  // Register the event log provider for system-level installs only, as it
+  // requires admin privileges.
+  if (installer_state.system_install())
+    RegisterEventLogProvider(installer_state.target_path(), version);
 
   // Make Chrome the default browser if desired when possible. Otherwise, only
   // register it with Windows.
@@ -562,8 +568,9 @@ InstallStatus InstallOrUpdateProduct(
                       &force_chrome_default_for_user);
       }
 
-      RegisterChromeOnMachine(installer_state, *chrome_product,
-          make_chrome_default || force_chrome_default_for_user);
+      RegisterChromeOnMachine(
+          installer_state, *chrome_product,
+          make_chrome_default || force_chrome_default_for_user, new_version);
 
       if (!installer_state.system_install()) {
         DCHECK_EQ(chrome_product->distribution(),
@@ -647,7 +654,7 @@ void HandleOsUpgradeForBrowser(const installer::InstallerState& installer_state,
                           INSTALL_SHORTCUT_REPLACE_EXISTING);
 
   // Adapt Chrome registrations to this new OS.
-  RegisterChromeOnMachine(installer_state, chrome, false);
+  RegisterChromeOnMachine(installer_state, chrome, false, installed_version);
 
   // Active Setup registrations are sometimes lost across OS update, make sure
   // they're back in place. Note: when Active Setup registrations in HKLM are

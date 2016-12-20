@@ -11,6 +11,8 @@
 
 #include <algorithm>
 #include <iterator>
+#include <limits>
+#include <memory>
 #include <set>
 #include <string>
 
@@ -36,6 +38,7 @@
 #include "chrome/installer/setup/user_hive_visitor.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/google_update_constants.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/installation_state.h"
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
@@ -46,6 +49,23 @@
 namespace installer {
 
 namespace {
+
+// Event log providers registry location.
+constexpr wchar_t kEventLogProvidersRegPath[] =
+    L"SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\";
+
+// TODO(grt): use install_static::InstallDetails::Get().install_full_name() when
+// InstallDetails is initialized in the installer.
+base::string16 InstallFullName() {
+#if defined(GOOGLE_CHROME_BUILD)
+  base::string16 reg_path(L"Chrome");
+  if (InstallUtil::IsChromeSxSProcess())
+    reg_path.append(L" SxS");
+  return reg_path;
+#else
+  return base::string16(L"Chromium");
+#endif
+}
 
 // Returns true if product |type| cam be meaningfully installed without the
 // --multi-install flag.
@@ -658,6 +678,58 @@ void RecordUnPackMetrics(UnPackStatus unpack_status,
       std::string(kUnPackNTSTATUSMetricsName) + "_" + consumer_name,
       base::HistogramBase::kUmaTargetedHistogramFlag)
       ->Add(status);
+}
+
+void RegisterEventLogProvider(const base::FilePath& install_directory,
+                              const base::Version& version) {
+  base::string16 reg_path(kEventLogProvidersRegPath);
+  reg_path.append(InstallFullName());
+  VLOG(1) << "Registering Chrome's event log provider at " << reg_path;
+
+  std::unique_ptr<WorkItemList> work_item_list(WorkItem::CreateWorkItemList());
+  work_item_list->set_log_message("Register event log provider");
+
+  work_item_list->AddCreateRegKeyWorkItem(HKEY_LOCAL_MACHINE, reg_path,
+                                          WorkItem::kWow64Default);
+  // Speicifes the number of event categories defined in the dll.
+  work_item_list->AddSetRegValueWorkItem(
+      HKEY_LOCAL_MACHINE, reg_path, WorkItem::kWow64Default, L"CategoryCount",
+      static_cast<DWORD>(1), true);
+  // Specifies the event type emitted by this event source.
+  work_item_list->AddSetRegValueWorkItem(
+      HKEY_LOCAL_MACHINE, reg_path, WorkItem::kWow64Default, L"TypesSupported",
+      static_cast<DWORD>(EVENTLOG_ERROR_TYPE | EVENTLOG_INFORMATION_TYPE |
+                         EVENTLOG_WARNING_TYPE),
+      true);
+
+  const base::FilePath provider(
+      install_directory.AppendASCII(version.GetString())
+          .Append(FILE_PATH_LITERAL("eventlog_provider.dll")));
+
+  static constexpr const wchar_t* kFileKeys[] = {
+      L"CategoryMessageFile", L"EventMessageFile", L"ParameterMessageFile",
+  };
+  for (const wchar_t* file_key : kFileKeys) {
+    work_item_list->AddSetRegValueWorkItem(HKEY_LOCAL_MACHINE, reg_path,
+                                           WorkItem::kWow64Default, file_key,
+                                           provider.value(), true);
+  }
+
+  // if the operation fails we log the error but still continue because none of
+  // these are critical for the proper operation of the browser.
+  if (!work_item_list->Do())
+    work_item_list->Rollback();
+}
+
+void DeRegisterEventLogProvider() {
+  base::string16 reg_path(kEventLogProvidersRegPath);
+  reg_path.append(InstallFullName());
+
+  // TODO(http://crbug.com/668120): If the Event Viewer is open the provider dll
+  // will fail to get deleted. This doesn't fail the uninstallation altogether
+  // but leaves files behind.
+  InstallUtil::DeleteRegistryKey(HKEY_LOCAL_MACHINE, reg_path,
+                                 WorkItem::kWow64Default);
 }
 
 ScopedTokenPrivilege::ScopedTokenPrivilege(const wchar_t* privilege_name)

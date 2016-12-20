@@ -143,6 +143,13 @@ void RecordUnPackMetrics(UnPackStatus unpack_status,
                          int32_t status,
                          UnPackConsumer consumer);
 
+// Register Chrome's EventLog message provider dll.
+void RegisterEventLogProvider(const base::FilePath& install_directory,
+                              const base::Version& version);
+
+// De-register Chrome's EventLog message provider dll.
+void DeRegisterEventLogProvider();
+
 // This class will enable the privilege defined by |privilege_name| on the
 // current process' token. The privilege will be disabled upon the
 // ScopedTokenPrivilege's destruction (unless it was already enabled when the

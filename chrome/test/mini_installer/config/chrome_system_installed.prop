@@ -41,6 +41,31 @@
     },
     "HKEY_LOCAL_MACHINE\\Software\\Classes\\$CHROME_SHORT_NAME": {
       "exists": "forbidden"
+    },
+    "HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\Services\\EventLog\\Application\\$CHROME_SHORT_NAME": {
+      "exists": "required",
+      "values": {
+        "CategoryCount": {
+          "type": "DWORD",
+          "data": 1
+        },
+        "TypesSupported": {
+          "type": "DWORD",
+          "data": 7
+        },
+        "CategoryMessageFile": {
+          "type": "SZ",
+          "data": "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\eventlog_provider.dll"
+        },
+        "EventMessageFile": {
+          "type": "SZ",
+          "data": "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\eventlog_provider.dll"
+        },
+        "ParameterMessageFile": {
+          "type": "SZ",
+          "data": "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\eventlog_provider.dll"
+        }
+      }
     }
   }
 }
