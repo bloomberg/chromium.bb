@@ -1043,10 +1043,10 @@ void av1_build_masked_inter_predictor_complex(
   const struct macroblockd_plane *pd = &xd->plane[plane];
   const int ssx = pd->subsampling_x;
   const int ssy = pd->subsampling_y;
-  const int top_w = (4 << b_width_log2_lookup[top_bsize]) >> ssx;
-  const int top_h = (4 << b_height_log2_lookup[top_bsize]) >> ssy;
-  const int w = (4 << b_width_log2_lookup[bsize]) >> ssx;
-  const int h = (4 << b_height_log2_lookup[bsize]) >> ssy;
+  const int top_w = block_size_wide[top_bsize] >> ssx;
+  const int top_h = block_size_high[top_bsize] >> ssy;
+  const int w = block_size_wide[bsize] >> ssx;
+  const int h = block_size_high[bsize] >> ssy;
   const int w_offset = ((mi_col - mi_col_ori) * MI_SIZE) >> ssx;
   const int h_offset = ((mi_row - mi_row_ori) * MI_SIZE) >> ssy;
 

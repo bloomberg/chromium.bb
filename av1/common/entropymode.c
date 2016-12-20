@@ -1910,7 +1910,7 @@ void av1_adapt_inter_frame_probs(AV1_COMMON *cm) {
 
 #if CONFIG_SUPERTX
   for (i = 0; i < PARTITION_SUPERTX_CONTEXTS; ++i) {
-    for (j = 1; j < TX_SIZES; ++j) {
+    for (j = TX_8X8; j < TX_SIZES; ++j) {
       fc->supertx_prob[i][j] = av1_mode_mv_merge_probs(
           pre_fc->supertx_prob[i][j], counts->supertx[i][j]);
     }

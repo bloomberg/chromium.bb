@@ -555,9 +555,9 @@ static const TX_TYPE intra_mode_to_tx_type_context[INTRA_MODES] = {
 
 #if CONFIG_SUPERTX
 static INLINE int supertx_enabled(const MB_MODE_INFO *mbmi) {
-  return (int)txsize_sqr_map[mbmi->tx_size] >
-         AOMMIN(b_width_log2_lookup[mbmi->sb_type],
-                b_height_log2_lookup[mbmi->sb_type]);
+  TX_SIZE max_tx_size = txsize_sqr_map[mbmi->tx_size];
+  return tx_size_wide[max_tx_size] >
+         AOMMIN(block_size_wide[mbmi->sb_type], block_size_high[mbmi->sb_type]);
 }
 #endif  // CONFIG_SUPERTX
 
@@ -869,15 +869,15 @@ static INLINE TX_SIZE depth_to_tx_size(const int depth) {
 static INLINE TX_SIZE get_uv_tx_size(const MB_MODE_INFO *mbmi,
                                      const struct macroblockd_plane *pd) {
   TX_SIZE uv_txsize;
+#if CONFIG_CB4X4
+  assert(mbmi->tx_size > TX_2X2);
+#endif
+
 #if CONFIG_SUPERTX
   if (supertx_enabled(mbmi))
     return uvsupertx_size_lookup[txsize_sqr_map[mbmi->tx_size]]
                                 [pd->subsampling_x][pd->subsampling_y];
 #endif  // CONFIG_SUPERTX
-
-#if CONFIG_CB4X4
-  assert(mbmi->tx_size > TX_2X2);
-#endif
 
   uv_txsize = uv_txsize_lookup[mbmi->sb_type][mbmi->tx_size][pd->subsampling_x]
                               [pd->subsampling_y];

@@ -646,8 +646,8 @@ static MB_MODE_INFO *set_offsets_extend(AV1_COMMON *const cm,
   // Used in supertx
   // (mi_row_ori, mi_col_ori): location for mv
   // (mi_row_pred, mi_col_pred, bsize_pred): region to predict
-  const int bw = num_8x8_blocks_wide_lookup[bsize_pred];
-  const int bh = num_8x8_blocks_high_lookup[bsize_pred];
+  const int bw = mi_size_wide[bsize_pred];
+  const int bh = mi_size_high[bsize_pred];
   const int offset = mi_row_ori * cm->mi_stride + mi_col_ori;
   xd->mi = cm->mi_grid_visible + offset;
   xd->mi[0] = cm->mi + offset;
@@ -682,8 +682,8 @@ static MB_MODE_INFO *set_mb_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 static void set_offsets_topblock(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                  const TileInfo *const tile, BLOCK_SIZE bsize,
                                  int mi_row, int mi_col) {
-  const int bw = num_8x8_blocks_wide_lookup[bsize];
-  const int bh = num_8x8_blocks_high_lookup[bsize];
+  const int bw = mi_size_wide[bsize];
+  const int bh = mi_size_high[bsize];
   const int offset = mi_row * cm->mi_stride + mi_col;
 
   xd->mi = cm->mi_grid_visible + offset;
@@ -699,8 +699,8 @@ static void set_offsets_topblock(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 static void set_param_topblock(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                BLOCK_SIZE bsize, int mi_row, int mi_col,
                                int txfm, int skip) {
-  const int bw = num_8x8_blocks_wide_lookup[bsize];
-  const int bh = num_8x8_blocks_high_lookup[bsize];
+  const int bw = mi_size_wide[bsize];
+  const int bh = mi_size_high[bsize];
   const int x_mis = AOMMIN(bw, cm->mi_cols - mi_col);
   const int y_mis = AOMMIN(bh, cm->mi_rows - mi_row);
   const int offset = mi_row * cm->mi_stride + mi_col;
@@ -749,8 +749,8 @@ static void dec_predict_b_extend(
   // bextend: 1: region to predict is an extension of ori; 0: not
   int r = (mi_row_pred - mi_row_top) * MI_SIZE;
   int c = (mi_col_pred - mi_col_top) * MI_SIZE;
-  const int mi_width_top = num_8x8_blocks_wide_lookup[bsize_top];
-  const int mi_height_top = num_8x8_blocks_high_lookup[bsize_top];
+  const int mi_width_top = mi_size_wide[bsize_top];
+  const int mi_height_top = mi_size_high[bsize_top];
   MB_MODE_INFO *mbmi;
   AV1_COMMON *const cm = &pbi->common;
 
@@ -768,6 +768,9 @@ static void dec_predict_b_extend(
 
   if (!bextend) {
     mbmi->tx_size = b_width_log2_lookup[bsize_top];
+#if CONFIG_CB4X4
+    ++mbmi->tx_size;
+#endif
   }
 
   xd->plane[0].dst.stride = dst_stride[0];
@@ -805,8 +808,8 @@ static void dec_extend_dir(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                            uint8_t *dst_buf[3], int dst_stride[3], int dir) {
   // dir: 0-lower, 1-upper, 2-left, 3-right
   //      4-lowerleft, 5-upperleft, 6-lowerright, 7-upperright
-  const int mi_width = num_8x8_blocks_wide_lookup[bsize];
-  const int mi_height = num_8x8_blocks_high_lookup[bsize];
+  const int mi_width = mi_size_wide[bsize];
+  const int mi_height = mi_size_high[bsize];
   int xss = xd->plane[1].subsampling_x;
   int yss = xd->plane[1].subsampling_y;
   int b_sub8x8 = (bsize < BLOCK_8X8) ? 1 : 0;
@@ -814,11 +817,12 @@ static void dec_extend_dir(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   int unit, mi_row_pred, mi_col_pred;
 
   if (dir == 0 || dir == 1) {
-    extend_bsize = (mi_width == 1 || bsize < BLOCK_8X8 || xss < yss)
-                       ? BLOCK_8X8
-                       : BLOCK_16X8;
-    unit = num_8x8_blocks_wide_lookup[extend_bsize];
-    mi_row_pred = mi_row + ((dir == 0) ? mi_height : -1);
+    extend_bsize =
+        (mi_width == mi_size_wide[BLOCK_8X8] || bsize < BLOCK_8X8 || xss < yss)
+            ? BLOCK_8X8
+            : BLOCK_16X8;
+    unit = mi_size_wide[extend_bsize];
+    mi_row_pred = mi_row + ((dir == 0) ? mi_height : -mi_size_high[BLOCK_8X8]);
     mi_col_pred = mi_col;
 
     dec_predict_b_extend(pbi, xd, tile, block, mi_row, mi_col, mi_row_pred,
