@@ -5,13 +5,15 @@
 'use strict';
 
 define('main', [
+    'mojo/public/js/connection',
     'chrome/browser/ui/webui/engagement/site_engagement.mojom',
     'content/public/renderer/frame_interfaces',
-], function(siteEngagementMojom, frameInterfaces) {
+], function(connection, siteEngagementMojom, frameInterfaces) {
   return function() {
-    var uiHandler = new siteEngagementMojom.SiteEngagementUIHandlerPtr(
+    var uiHandler = connection.bindHandleToProxy(
         frameInterfaces.getInterface(
-            siteEngagementMojom.SiteEngagementUIHandler.name));
+            siteEngagementMojom.SiteEngagementUIHandler.name),
+        siteEngagementMojom.SiteEngagementUIHandler);
 
     var engagementTableBody = $('engagement-table-body');
     var updateInterval = null;

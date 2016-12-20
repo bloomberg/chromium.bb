@@ -416,15 +416,18 @@
   function initializeProxies() {
     return importModules([
       'mojo/public/js/bindings',
+      'mojo/public/js/connection',
       'chrome/browser/ui/webui/omnibox/omnibox.mojom',
       'content/public/renderer/frame_interfaces',
     ]).then(function(modules) {
       var bindings = modules[0];
-      var mojom = modules[1];
-      var frameInterfaces = modules[2];
+      var connection = modules[1];
+      var mojom = modules[2];
+      var frameInterfaces = modules[3];
 
-      browserProxy = new mojom.OmniboxPageHandlerPtr(
-          frameInterfaces.getInterface(mojom.OmniboxPageHandler.name));
+      browserProxy = connection.bindHandleToProxy(
+          frameInterfaces.getInterface(mojom.OmniboxPageHandler.name),
+          mojom.OmniboxPageHandler);
 
       /** @constructor */
       var OmniboxPageImpl = function() {

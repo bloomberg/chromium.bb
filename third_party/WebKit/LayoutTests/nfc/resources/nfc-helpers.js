@@ -70,8 +70,9 @@ function createUrlRecord(url) {
 function nfc_mocks(mojo) {
   return define('NFC mocks', [
     'mojo/public/js/bindings',
+    'mojo/public/js/connection',
     'device/nfc/nfc.mojom',
-  ], (bindings, nfc) => {
+  ], (bindings, connection, nfc) => {
 
     function toMojoNFCRecordType(type) {
       switch (type) {
@@ -258,8 +259,6 @@ function nfc_mocks(mojo) {
 
     class MockNFC {
       constructor() {
-        this.bindingSet = new bindings.BindingSet(nfc.NFC);
-
         this.hw_status_ = NFCHWStatus.ENABLED;
         this.pushed_message_ = null;
         this.push_options_ = null;
@@ -271,7 +270,7 @@ function nfc_mocks(mojo) {
         this.watchers_ = [];
       }
 
-      // NFC delegate functions
+      // NFC.stubClass delegate functions
       push(message, options) {
         let error = this.isReady();
         if (error)
@@ -339,6 +338,14 @@ function nfc_mocks(mojo) {
         return Promise.resolve(createNFCError(null));
       }
 
+
+      // Mock utility functions
+      bindToPipe(pipe) {
+        this.stub_ = connection.bindHandleToStub(
+            pipe, nfc.NFC);
+        bindings.StubBindings(this.stub_).delegate = this;
+      }
+
       isReady() {
         if (this.hw_status_ === NFCHWStatus.DISABLED)
           return createNFCError(nfc.NFCErrorType.DEVICE_DISABLED);
@@ -401,8 +408,8 @@ function nfc_mocks(mojo) {
     let mockNFC = new MockNFC;
     mojo.frameInterfaces.addInterfaceOverrideForTesting(
         nfc.NFC.name,
-        handle => {
-          mockNFC.bindingSet.addBinding(mockNFC, handle);
+        pipe => {
+          mockNFC.bindToPipe(pipe);
         });
 
     return Promise.resolve({

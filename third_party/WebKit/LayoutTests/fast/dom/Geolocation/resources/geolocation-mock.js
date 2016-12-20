@@ -10,9 +10,9 @@ let geolocationServiceMock = loadMojoModules(
     ['device/geolocation/public/interfaces/geolocation.mojom',
      'third_party/WebKit/public/platform/modules/permissions/permission.mojom',
      'third_party/WebKit/public/platform/modules/permissions/permission_status.mojom',
-     'mojo/public/js/bindings',
+     'mojo/public/js/router',
     ]).then(mojo => {
-  let [geolocation, permission, permissionStatus, bindings] =
+  let [geolocation, permission, permissionStatus, router] =
       mojo.modules;
 
   class GeolocationServiceMock {
@@ -51,11 +51,6 @@ let geolocationServiceMock = loadMojoModules(
       this.permissionStatus_ = permissionStatus.PermissionStatus.ASK;
       this.rejectPermissionConnections_ = false;
       this.rejectGeolocationConnections_ = false;
-
-      this.geolocationBindingSet_ = new bindings.BindingSet(
-          geolocation.GeolocationService);
-      this.permissionBindingSet_ = new bindings.BindingSet(
-          permission.PermissionService);
     }
 
     connectGeolocation_(handle) {
@@ -63,7 +58,10 @@ let geolocationServiceMock = loadMojoModules(
         mojo.core.close(handle);
         return;
       }
-      this.geolocationBindingSet_.addBinding(this, handle);
+      this.geolocationStub_ = new geolocation.GeolocationService.stubClass(
+          this);
+      this.geolocationRouter_ = new router.Router(handle);
+      this.geolocationRouter_.setIncomingReceiver(this.geolocationStub_);
     }
 
     connectPermission_(handle) {
@@ -71,7 +69,9 @@ let geolocationServiceMock = loadMojoModules(
         mojo.core.close(handle);
         return;
       }
-      this.permissionBindingSet_.addBinding(this, handle);
+      this.permissionStub_ = new permission.PermissionService.stubClass(this);
+      this.permissionRouter_ = new router.Router(handle);
+      this.permissionRouter_.setIncomingReceiver(this.permissionStub_);
     }
 
     setHighAccuracy(highAccuracy) {

@@ -42,9 +42,9 @@ function mojoMetadataToJS(mojoMetadata) {
 let mediaSessionServiceMock = loadMojoModules(
     'mediaSessionServiceMock',
     ['third_party/WebKit/public/platform/modules/mediasession/media_session.mojom',
-     'mojo/public/js/bindings',
+     'mojo/public/js/router',
     ]).then(mojo => {
-      let [mediaSessionService, bindings] = mojo.modules;
+      let [mediaSessionService, router] = mojo.modules;
 
       MediaSessionAction = mediaSessionService.MediaSessionAction;
       MediaSessionPlaybackState = mediaSessionService.MediaSessionPlaybackState;
@@ -53,11 +53,15 @@ let mediaSessionServiceMock = loadMojoModules(
         constructor(interfaceProvider) {
           interfaceProvider.addInterfaceOverrideForTesting(
               mediaSessionService.MediaSessionService.name,
-              handle => this.bindingSet_.addBinding(this, handle));
+              handle => this.connectMediaSessionService_(handle));
           this.interfaceProvider_ = interfaceProvider;
           this.pendingResponse_ = null;
-          this.bindingSet_ = new bindings.BindingSet(
-              mediaSessionService.MediaSessionService);
+        }
+
+        connectMediaSessionService_(handle) {
+          this.mediaSessionServiceStub_ = new mediaSessionService.MediaSessionService.stubClass(this);
+          this.mediaSessionServiceRouter_ = new router.Router(handle);
+          this.mediaSessionServiceRouter_.setIncomingReceiver(this.mediaSessionServiceStub_);
         }
 
         setMetadata(metadata) {

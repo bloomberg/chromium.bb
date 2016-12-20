@@ -51,7 +51,9 @@ BluetoothInternalsTest.prototype = {
         'device/bluetooth/public/interfaces/adapter.mojom',
         'device/bluetooth/public/interfaces/device.mojom',
         'mojo/public/js/bindings',
-      ]).then(function([frameInterfaces, adapter, device, bindings]) {
+        'mojo/public/js/connection',
+      ]).then(function([frameInterfaces, adapter, device, bindings,
+          connection]) {
         /**
           * A test adapter factory proxy for the chrome://bluetooth-internals
           * page.
@@ -64,7 +66,6 @@ BluetoothInternalsTest.prototype = {
             'getAdapter',
           ]);
 
-          this.binding = new bindings.Binding(adapter.AdapterFactory, this);
           this.adapter = new TestAdapter();
           this.adapterBinding_ = new bindings.Binding(adapter.Adapter,
                                                       this.adapter);
@@ -87,12 +88,14 @@ BluetoothInternalsTest.prototype = {
           * Must be used to create message pipe handle from test code.
           *
           * @constructor
+          * @extends {adapter.Adapter.stubClass}
           */
         var TestAdapter = function() {
           this.proxy = new TestAdapterProxy();
         };
 
         TestAdapter.prototype = {
+          __proto__: adapter.Adapter.stubClass.prototype,
           getInfo: function() { return this.proxy.getInfo(); },
           getDevices: function() { return this.proxy.getDevices(); },
           setClient: function(client) { return this.proxy.setClient(client); }
@@ -143,8 +146,10 @@ BluetoothInternalsTest.prototype = {
 
         frameInterfaces.addInterfaceOverrideForTesting(
             adapter.AdapterFactory.name, function(handle) {
+              var stub = connection.bindHandleToStub(
+                  handle, adapter.AdapterFactory);
+
               this.adapterFactory = new TestAdapterFactoryProxy();
-              this.adapterFactory.binding.bind(handle);
 
               this.adapterFactory.adapter.proxy.setTestDevices([
                 this.fakeDeviceInfo1(),
@@ -152,6 +157,8 @@ BluetoothInternalsTest.prototype = {
               ]);
               this.adapterFactory.adapter.proxy.setTestAdapter(
                   this.fakeAdapterInfo());
+
+              bindings.StubBindings(stub).delegate = this.adapterFactory;
 
               this.setupResolver.resolve();
             }.bind(this));

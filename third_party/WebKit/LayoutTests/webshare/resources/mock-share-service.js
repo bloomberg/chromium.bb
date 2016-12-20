@@ -2,18 +2,17 @@
 
 let mockShareService = loadMojoModules(
     'mockShareService',
-    ['mojo/public/js/bindings',
+    ['mojo/public/js/router',
      'third_party/WebKit/public/platform/modules/webshare/webshare.mojom',
     ]).then(mojo => {
-  let [bindings, webshare] = mojo.modules;
+  let [router, webshare] = mojo.modules;
 
-  class MockShareService {
+  class MockShareService extends webshare.ShareService.stubClass {
     constructor(interfaceProvider) {
-      this.bindingSet_ = new bindings.BindingSet(webshare.ShareService);
-
+      super();
       interfaceProvider.addInterfaceOverrideForTesting(
           webshare.ShareService.name,
-          handle => this.bindingSet_.addBinding(this, handle));
+          handle => this.connect_(handle));
     }
 
     // Returns a Promise that gets rejected if the test should fail.
@@ -22,6 +21,11 @@ let mockShareService = loadMojoModules(
       this.shareResultQueue_ = [];
 
       return new Promise((resolve, reject) => {this.reject_ = reject});
+    }
+
+    connect_(handle) {
+      this.router_ = new router.Router(handle);
+      this.router_.setIncomingReceiver(this);
     }
 
     share(title, text, url) {

@@ -61,14 +61,17 @@
 
   function initializeProxies() {
     return importModules([
+      'mojo/public/js/connection',
       'chrome/browser/ui/webui/usb_internals/usb_internals.mojom',
       'content/public/renderer/frame_interfaces',
     ]).then(function(modules) {
-      let mojom = modules[0];
-      let frameInterfaces = modules[1];
+      let connection = modules[0];
+      let mojom = modules[1];
+      let frameInterfaces = modules[2];
 
-      pageHandler = new mojom.UsbInternalsPageHandlerPtr(
-          frameInterfaces.getInterface(mojom.UsbInternalsPageHandler.name));
+      pageHandler = connection.bindHandleToProxy(
+          frameInterfaces.getInterface(mojom.UsbInternalsPageHandler.name),
+          mojom.UsbInternalsPageHandler);
     });
   }
 

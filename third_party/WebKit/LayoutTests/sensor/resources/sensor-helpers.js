@@ -21,9 +21,10 @@ function sensor_mocks(mojo) {
   return define('Generic Sensor API mocks', [
     'mojo/public/js/core',
     'mojo/public/js/bindings',
+    'mojo/public/js/connection',
     'device/generic_sensor/public/interfaces/sensor_provider.mojom',
     'device/generic_sensor/public/interfaces/sensor.mojom',
-  ], (core, bindings, sensor_provider, sensor) => {
+  ], (core, bindings, connection, sensor_provider, sensor) => {
 
     // Helper function that returns resolved promise with result.
     function sensorResponse(success) {
@@ -32,8 +33,9 @@ function sensor_mocks(mojo) {
 
     // Class that mocks Sensor interface defined in sensor.mojom
     class MockSensor {
-      constructor(sensorRequest, handle, offset, size, reportingMode) {
+      constructor(stub, handle, offset, size, reportingMode) {
         this.client_ = null;
+        this.stub_ = stub;
         this.expects_modified_reading_ = false;
         this.start_should_fail_ = false;
         this.reporting_mode_ = reportingMode;
@@ -50,11 +52,10 @@ function sensor_mocks(mojo) {
         this.buffer_array_ = rv.buffer;
         this.buffer_ = new Float64Array(this.buffer_array_);
         this.resetBuffer();
-        this.binding_ = new bindings.Binding(sensor.Sensor, this,
-                                             sensorRequest);
-        this.binding_.setConnectionErrorHandler(() => {
+        bindings.StubBindings(this.stub_).delegate = this;
+        bindings.StubBindings(this.stub_).connectionErrorHandler = () => {
           this.reset();
-        });
+        };
       }
 
       // Returns default configuration.
@@ -136,7 +137,7 @@ function sensor_mocks(mojo) {
         this.resetBuffer();
         core.unmapBuffer(this.buffer_array_);
         this.buffer_array_ = null;
-        this.binding_.close();
+        bindings.StubBindings(this.stub_).close();
       }
 
       // Zeroes shared buffer.
@@ -240,8 +241,6 @@ function sensor_mocks(mojo) {
         this.resolve_func_ = null;
         this.is_continuous_ = false;
         this.max_frequency_ = 60;
-        this.binding_ = new bindings.Binding(sensor_provider.SensorProvider,
-                                             this);
       }
 
       // Returns initialized Sensor proxy to the client.
@@ -259,7 +258,8 @@ function sensor_mocks(mojo) {
         }
 
         if (this.active_sensor_ == null) {
-          let mockSensor = new MockSensor(request, this.shared_buffer_handle_,
+          var stub = connection.bindHandleToStub(request.handle, sensor.Sensor);
+          let mockSensor = new MockSensor(stub, this.shared_buffer_handle_,
               offset, this.reading_size_in_bytes_, reporting_mode);
           this.active_sensor_ = mockSensor;
         }
@@ -285,17 +285,21 @@ function sensor_mocks(mojo) {
           this.resolve_func_(this.active_sensor_);
         }
 
-        this.active_sensor_.client_ = new sensor.SensorClientPtr();
-        return getSensorResponse(
-            init_params, bindings.makeRequest(this.active_sensor_.client_));
+        var client_request = new bindings.InterfaceRequest(
+            connection.bindProxy(proxy => {
+              this.active_sensor_.client_ = proxy;
+            }, sensor.SensorClient));
+        return getSensorResponse(init_params, client_request);
       }
 
       // Binds object to mojo message pipe
       bindToPipe(pipe) {
-        this.binding_.bind(pipe);
-        this.binding_.setConnectionErrorHandler(() => {
+        this.stub_ = connection.bindHandleToStub(
+            pipe, sensor_provider.SensorProvider);
+        bindings.StubBindings(this.stub_).delegate = this;
+        bindings.StubBindings(this.stub_).connectionErrorHandler = () => {
           this.reset();
-        });
+        };
       }
 
       // Mock functions
@@ -311,7 +315,8 @@ function sensor_mocks(mojo) {
         this.resolve_func_ = null;
         this.max_frequency_ = 60;
         this.is_continuous_ = false;
-        this.binding_.close();
+        if (this.stub_)
+          bindings.StubBindings(this.stub_).close();
       }
 
       // Sets flag that forces mock SensorProvider to fail when getSensor() is

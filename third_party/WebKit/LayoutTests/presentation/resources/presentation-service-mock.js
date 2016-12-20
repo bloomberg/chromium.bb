@@ -8,19 +8,23 @@ let presentationServiceMock = loadMojoModules(
     'presentationServiceMock',
     [
       'third_party/WebKit/public/platform/modules/presentation/presentation.mojom',
-      'mojo/public/js/bindings',
+      'mojo/public/js/router',
     ]).then(mojo => {
-      let [ presentationService, bindings ] = mojo.modules;
+      let [ presentationService, router ] = mojo.modules;
 
       class PresentationServiceMock {
         constructor(interfaceProvider) {
           interfaceProvider.addInterfaceOverrideForTesting(
               presentationService.PresentationService.name,
-              handle => this.bindingSet_.addBinding(this, handle));
+              handle => this.connectPresentationService_(handle));
           this.interfaceProvider_ = interfaceProvider;
           this.pendingResponse_ = null;
-          this.bindingSet_ = new bindings.BindingSet(
-              presentationService.PresentationService);
+        }
+
+        connectPresentationService_(handle) {
+          this.presentationServiceStub_ = new presentationService.PresentationService.stubClass(this);
+          this.presentationServiceRouter_ = new router.Router(handle);
+          this.presentationServiceRouter_.setIncomingReceiver(this.presentationServiceStub_);
         }
 
         startSession(urls) {

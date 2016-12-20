@@ -5,22 +5,30 @@ let mockFaceDetectionProviderReady = define(
   ['third_party/WebKit/public/platform/modules/shapedetection/facedetection.mojom',
    'third_party/WebKit/public/platform/modules/shapedetection/facedetection_provider.mojom',
    'mojo/public/js/bindings',
+   'mojo/public/js/connection',
    'mojo/public/js/core',
    'content/public/renderer/frame_interfaces',
-  ], (faceDetection, faceDetectionProvider, bindings, mojo, interfaces) => {
+  ], (faceDetection, faceDetectionProvider, bindings, connection, mojo, interfaces) => {
 
   class MockFaceDetectionProvider {
     constructor() {
-      this.bindingSet_ = new bindings.BindingSet(
-          faceDetectionProvider.FaceDetectionProvider);
-
       interfaces.addInterfaceOverrideForTesting(
           faceDetectionProvider.FaceDetectionProvider.name,
-          handle => this.bindingSet_.addBinding(this, handle));
+          pipe => this.bindToPipe(pipe));
+    }
+
+    bindToPipe(pipe) {
+      this.stub_ = connection.bindHandleToStub(
+          pipe, faceDetectionProvider.FaceDetectionProvider);
+      bindings.StubBindings(this.stub_).delegate = this;
     }
 
     createFaceDetection(request, options) {
-      this.mock_service_ = new MockFaceDetection(request, options);
+      this.mock_service_ = new MockFaceDetection(options);
+      this.mock_service_.stub_ = connection.bindHandleToStub(
+          request.handle, faceDetection.FaceDetection);
+      bindings.StubBindings(this.mock_service_.stub_).delegate =
+          this.mock_service_;
     }
 
     getFrameData() {
@@ -37,11 +45,9 @@ let mockFaceDetectionProviderReady = define(
   }
 
   class MockFaceDetection {
-    constructor(request, options) {
+    constructor(options) {
       this.maxDetectedFaces_ = options.max_detected_faces;
       this.fastMode_ = options.fast_mode;
-      this.binding_ = new bindings.Binding(faceDetection.FaceDetection, this,
-                                           request);
     }
 
     detect(frame_data, width, height) {

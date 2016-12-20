@@ -11,15 +11,15 @@ const TEST_BUDGET_TIME = new Date().getTime();
 let budgetServiceMock = loadMojoModules(
     'budgetServiceMock',
     ['third_party/WebKit/public/platform/modules/budget_service/budget_service.mojom',
-     'mojo/public/js/bindings'
+     'mojo/public/js/router'
     ]).then(mojo => {
-  const [budgetService, bindings] = mojo.modules;
+  const [budgetService, router] = mojo.modules;
 
   class BudgetServiceMock {
     constructor(interfaceProvider) {
       interfaceProvider.addInterfaceOverrideForTesting(
           budgetService.BudgetService.name,
-          handle => this.bindingSet_.addBinding(this, handle));
+          handle => this.connectBudgetService_(handle));
 
       this.interfaceProvider_ = interfaceProvider;
 
@@ -27,7 +27,12 @@ let budgetServiceMock = loadMojoModules(
       this.cost_ = {};
       this.budget_ = [];
       this.error_ = budgetService.BudgetServiceErrorType.NONE;
-      this.bindingSet_ = new bindings.BindingSet(budgetService.BudgetService);
+    }
+
+    connectBudgetService_(handle) {
+      this.budgetServiceStub_ = new budgetService.BudgetService.stubClass(this);
+      this.budgetServiceRouter_ = new router.Router(handle);
+      this.budgetServiceRouter_.setIncomingReceiver(this.budgetServiceStub_);
     }
 
     // This is called directly from test JavaScript to set up the return value

@@ -3,15 +3,16 @@
 // found in the LICENSE file.
 
 define('main', [
-    'content/public/renderer/frame_interfaces',
+    'mojo/public/js/router',
     'content/test/data/web_ui_test_mojo_bindings.mojom',
-    'mojo/public/js/bindings',
-], function (interfaceProvider, webUITest, bindings) {
+    'content/public/renderer/frame_interfaces',
+], function (router, bindings, interfaceProvider) {
   var browserTarget;
 
   return function() {
-    browserTarget = new webUITest.BrowserTargetPtr(
-        interfaceProvider.getInterface(webUITest.BrowserTarget.name));
+    browserTarget = new bindings.BrowserTarget.proxyClass(
+        new router.Router(
+            interfaceProvider.getInterface(bindings.BrowserTarget.name)));
 
     browserTarget.start().then(function() {
       browserTarget.stop();
