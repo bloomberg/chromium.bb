@@ -38,7 +38,7 @@ import sys
 
 import webkitpy.common.version_check
 
-from webkitpy.common.system.logutils import configure_logging
+from webkitpy.common.system.log_utils import configure_logging
 from webkitpy.tool.webkit_patch import WebKitPatch
 
 # A StreamWriter will by default try to encode all objects passed
