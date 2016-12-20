@@ -207,7 +207,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // Invoked when we have a valid decoded output sample. Retrieves the D3D
   // surface and maintains a copy of it which is passed eventually to the
   // client when we have a picture buffer to copy the surface contents to.
-  bool ProcessOutputSample(IMFSample* sample,
+  bool ProcessOutputSample(base::win::ScopedComPtr<IMFSample> sample,
                            const gfx::ColorSpace& color_space);
 
   // Processes pending output samples by copying them to available picture
@@ -316,7 +316,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
       ID3D11Texture2D* dest_texture,
       base::win::ScopedComPtr<IDXGIKeyedMutex> dest_keyed_mutex,
       uint64_t keyed_mutex_value,
-      IMFSample* video_frame,
+      base::win::ScopedComPtr<IMFSample> video_frame,
       int picture_buffer_id,
       int input_buffer_id);
 
@@ -419,7 +419,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // Contains information about a decoded sample.
   struct PendingSampleInfo {
     PendingSampleInfo(int32_t buffer_id,
-                      IMFSample* sample,
+                      base::win::ScopedComPtr<IMFSample> sample,
                       const gfx::ColorSpace& color_space);
     PendingSampleInfo(const PendingSampleInfo& other);
     ~PendingSampleInfo();

@@ -285,38 +285,43 @@ enum {
 // If duration and sample time are not known, provide 0.
 // |min_size| specifies the minimum size of the buffer (might be required by
 // the decoder for input). If no alignment is required, provide 0.
-static IMFSample* CreateInputSample(const uint8_t* stream,
-                                    uint32_t size,
-                                    uint32_t min_size,
-                                    int alignment) {
+static base::win::ScopedComPtr<IMFSample> CreateInputSample(
+    const uint8_t* stream,
+    uint32_t size,
+    uint32_t min_size,
+    int alignment) {
   CHECK(stream);
   CHECK_GT(size, 0U);
   base::win::ScopedComPtr<IMFSample> sample;
-  sample.Attach(
-      mf::CreateEmptySampleWithBuffer(std::max(min_size, size), alignment));
-  RETURN_ON_FAILURE(sample.get(), "Failed to create empty sample", NULL);
+  sample = mf::CreateEmptySampleWithBuffer(std::max(min_size, size), alignment);
+  RETURN_ON_FAILURE(sample.get(), "Failed to create empty sample",
+                    base::win::ScopedComPtr<IMFSample>());
 
   base::win::ScopedComPtr<IMFMediaBuffer> buffer;
   HRESULT hr = sample->GetBufferByIndex(0, buffer.Receive());
-  RETURN_ON_HR_FAILURE(hr, "Failed to get buffer from sample", NULL);
+  RETURN_ON_HR_FAILURE(hr, "Failed to get buffer from sample",
+                       base::win::ScopedComPtr<IMFSample>());
 
   DWORD max_length = 0;
   DWORD current_length = 0;
   uint8_t* destination = NULL;
   hr = buffer->Lock(&destination, &max_length, &current_length);
-  RETURN_ON_HR_FAILURE(hr, "Failed to lock buffer", NULL);
+  RETURN_ON_HR_FAILURE(hr, "Failed to lock buffer",
+                       base::win::ScopedComPtr<IMFSample>());
 
   CHECK_EQ(current_length, 0u);
   CHECK_GE(max_length, size);
   memcpy(destination, stream, size);
 
   hr = buffer->SetCurrentLength(size);
-  RETURN_ON_HR_FAILURE(hr, "Failed to set buffer length", NULL);
+  RETURN_ON_HR_FAILURE(hr, "Failed to set buffer length",
+                       base::win::ScopedComPtr<IMFSample>());
 
   hr = buffer->Unlock();
-  RETURN_ON_HR_FAILURE(hr, "Failed to unlock buffer", NULL);
+  RETURN_ON_HR_FAILURE(hr, "Failed to unlock buffer",
+                       base::win::ScopedComPtr<IMFSample>());
 
-  return sample.Detach();
+  return sample;
 }
 
 // Helper function to create a COM object instance from a DLL. The alternative
@@ -466,13 +471,12 @@ gfx::ColorSpace H264ConfigChangeDetector::current_color_space() const {
 
 DXVAVideoDecodeAccelerator::PendingSampleInfo::PendingSampleInfo(
     int32_t buffer_id,
-    IMFSample* sample,
+    base::win::ScopedComPtr<IMFSample> sample,
     const gfx::ColorSpace& color_space)
     : input_buffer_id(buffer_id),
       picture_buffer_id(-1),
-      color_space(color_space) {
-  output_sample.Attach(sample);
-}
+      color_space(color_space),
+      output_sample(sample) {}
 
 DXVAVideoDecodeAccelerator::PendingSampleInfo::PendingSampleInfo(
     const PendingSampleInfo& other) = default;
@@ -928,10 +932,10 @@ void DXVAVideoDecodeAccelerator::Decode(
                                "Failed in base::SharedMemory::Map",
                                PLATFORM_FAILURE, );
 
-  sample.Attach(CreateInputSample(
+  sample = CreateInputSample(
       reinterpret_cast<const uint8_t*>(shm.memory()), bitstream_buffer.size(),
       std::min<uint32_t>(bitstream_buffer.size(), input_stream_info_.cbSize),
-      input_stream_info_.cbAlignment));
+      input_stream_info_.cbAlignment);
   RETURN_AND_NOTIFY_ON_FAILURE(sample.get(), "Failed to create input sample",
                                PLATFORM_FAILURE, );
 
@@ -1750,6 +1754,8 @@ void DXVAVideoDecodeAccelerator::DoDecode(const gfx::ColorSpace& color_space) {
     DVLOG(1) << "Got events from ProcessOuput, but discarding";
     events->Release();
   }
+  base::win::ScopedComPtr<IMFSample> output_sample;
+  output_sample.Attach(output_data_buffer.pSample);
   if (FAILED(hr)) {
     // A stream change needs further ProcessInput calls to get back decoder
     // output which is why we need to set the state to stopped.
@@ -1783,13 +1789,13 @@ void DXVAVideoDecodeAccelerator::DoDecode(const gfx::ColorSpace& color_space) {
 
   inputs_before_decode_ = 0;
 
-  RETURN_AND_NOTIFY_ON_FAILURE(
-      ProcessOutputSample(output_data_buffer.pSample, color_space),
-      "Failed to process output sample.", PLATFORM_FAILURE, );
+  RETURN_AND_NOTIFY_ON_FAILURE(ProcessOutputSample(output_sample, color_space),
+                               "Failed to process output sample.",
+                               PLATFORM_FAILURE, );
 }
 
 bool DXVAVideoDecodeAccelerator::ProcessOutputSample(
-    IMFSample* sample,
+    base::win::ScopedComPtr<IMFSample> sample,
     const gfx::ColorSpace& color_space) {
   RETURN_ON_FAILURE(sample, "Decode succeeded with NULL output sample", false);
 
@@ -1816,7 +1822,7 @@ bool DXVAVideoDecodeAccelerator::ProcessOutputSample(
 
   int width = 0;
   int height = 0;
-  if (!GetVideoFrameDimensions(sample, &width, &height)) {
+  if (!GetVideoFrameDimensions(sample.get(), &width, &height)) {
     RETURN_ON_FAILURE(false, "Failed to get D3D surface from output sample",
                       false);
   }
@@ -2580,7 +2586,7 @@ void DXVAVideoDecodeAccelerator::CopyTexture(
       FROM_HERE,
       base::Bind(&DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread,
                  base::Unretained(this), dest_texture, dest_keyed_mutex,
-                 keyed_mutex_value, input_sample_for_conversion.Detach(),
+                 keyed_mutex_value, input_sample_for_conversion,
                  picture_buffer_id, input_buffer_id));
 }
 
@@ -2588,7 +2594,7 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
     ID3D11Texture2D* dest_texture,
     base::win::ScopedComPtr<IDXGIKeyedMutex> dest_keyed_mutex,
     uint64_t keyed_mutex_value,
-    IMFSample* video_frame,
+    base::win::ScopedComPtr<IMFSample> input_sample,
     int picture_buffer_id,
     int input_buffer_id) {
   TRACE_EVENT0("media",
@@ -2597,11 +2603,7 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
   HRESULT hr = E_FAIL;
 
   DCHECK(use_dx11_);
-  DCHECK(video_frame);
-
-  base::win::ScopedComPtr<IMFSample> input_sample;
-  input_sample.Attach(video_frame);
-
+  DCHECK(!!input_sample);
   DCHECK(video_format_converter_mft_.get());
 
   if (dest_keyed_mutex) {
@@ -2633,12 +2635,14 @@ void DXVAVideoDecodeAccelerator::CopyTextureOnDecoderThread(
 
   output_sample->AddBuffer(output_buffer.get());
 
-  hr = video_format_converter_mft_->ProcessInput(0, video_frame, 0);
+  hr = video_format_converter_mft_->ProcessInput(0, input_sample.get(), 0);
   if (FAILED(hr)) {
     DCHECK(false);
     RETURN_AND_NOTIFY_ON_HR_FAILURE(
         hr, "Failed to convert output sample format.", PLATFORM_FAILURE, );
   }
+
+  input_sample.Release();
 
   DWORD status = 0;
   MFT_OUTPUT_DATA_BUFFER format_converter_output = {};
