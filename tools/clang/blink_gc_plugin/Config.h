@@ -17,28 +17,30 @@
 #include "clang/AST/AST.h"
 #include "clang/AST/Attr.h"
 
-const char kNewOperatorName[] = "operator new";
-const char kCreateName[] = "create";
-const char kTraceName[] = "trace";
-const char kTraceImplName[] = "traceImpl";
-const char kFinalizeName[] = "finalizeGarbageCollectedObject";
-const char kTraceAfterDispatchName[] = "traceAfterDispatch";
-const char kTraceAfterDispatchImplName[] = "traceAfterDispatchImpl";
-const char kRegisterWeakMembersName[] = "registerWeakMembers";
-const char kHeapAllocatorName[] = "HeapAllocator";
-const char kTraceIfNeededName[] = "TraceIfNeeded";
-const char kVisitorDispatcherName[] = "VisitorDispatcher";
-const char kVisitorVarName[] = "visitor";
-const char kAdjustAndMarkName[] = "adjustAndMark";
-const char kIsHeapObjectAliveName[] = "isHeapObjectAlive";
-const char kIsEagerlyFinalizedName[] = "IsEagerlyFinalizedMarker";
-const char kConstIteratorName[] = "const_iterator";
-const char kIteratorName[] = "iterator";
-const char kConstReverseIteratorName[] = "const_reverse_iterator";
-const char kReverseIteratorName[] = "reverse_iterator";
+extern const char kNewOperatorName[];
+extern const char* kCreateName;
+extern const char* kTraceName;
+extern const char* kTraceImplName;
+extern const char* kFinalizeName;
+extern const char* kTraceAfterDispatchName;
+extern const char* kTraceAfterDispatchImplName;
+extern const char* kRegisterWeakMembersName;
+extern const char kHeapAllocatorName[];
+extern const char kTraceIfNeededName[];
+extern const char kVisitorDispatcherName[];
+extern const char kVisitorVarName[];
+extern const char* kAdjustAndMarkName;
+extern const char* kIsHeapObjectAliveName;
+extern const char kIsEagerlyFinalizedName[];
+extern const char kConstIteratorName[];
+extern const char kIteratorName[];
+extern const char kConstReverseIteratorName[];
+extern const char kReverseIteratorName[];
 
 class Config {
  public:
+  static void UseLegacyNames();
+
   static bool IsMember(const std::string& name) {
     return name == "Member";
   }
