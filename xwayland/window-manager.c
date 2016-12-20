@@ -1217,27 +1217,38 @@ weston_wm_window_do_repaint(void *data)
 }
 
 static void
+weston_wm_window_set_pending_state_OR(struct weston_wm_window *window)
+{
+	int width, height;
+
+	/* for override-redirect windows */
+	assert(window->frame_id == XCB_WINDOW_NONE);
+
+	if (!window->surface)
+		return;
+
+	weston_wm_window_get_frame_size(window, &width, &height);
+	pixman_region32_fini(&window->surface->pending.opaque);
+	if (window->has_alpha) {
+		pixman_region32_init(&window->surface->pending.opaque);
+	} else {
+		pixman_region32_init_rect(&window->surface->pending.opaque, 0, 0,
+					  width, height);
+	}
+}
+
+static void
 weston_wm_window_schedule_repaint(struct weston_wm_window *window)
 {
 	struct weston_wm *wm = window->wm;
-	int width, height;
 
 	if (window->frame_id == XCB_WINDOW_NONE) {
-		if (window->surface != NULL) {
-			/* Override-redirect windows go through here, but we
-			 * cannot assert(window->override_redirect); because
-			 * we do not deal with changing OR flag yet.
-			 * XXX: handle OR flag changes in message handlers
-			 */
-			weston_wm_window_get_frame_size(window, &width, &height);
-			pixman_region32_fini(&window->surface->pending.opaque);
-			if (window->has_alpha) {
-				pixman_region32_init(&window->surface->pending.opaque);
-			} else {
-				pixman_region32_init_rect(&window->surface->pending.opaque, 0, 0,
-							  width, height);
-			}
-		}
+		/* Override-redirect windows go through here, but we
+		 * cannot assert(window->override_redirect); because
+		 * we do not deal with changing OR flag yet.
+		 * XXX: handle OR flag changes in message handlers
+		 */
+		weston_wm_window_set_pending_state_OR(window);
 		return;
 	}
 
