@@ -1143,9 +1143,6 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SAVE_PASSWORDS_MANAGE_ACCOUNT" desc="Header text with link for the view in Settings for managing saved passwords. [Length: unlimited] [iOS only]">
         View and manage saved passwords at <ph name="BEGIN_LINK">BEGIN_LINK</ph>passwords.google.com<ph name="END_LINK">END_LINK</ph>
       </message>
-      <message name="IDS_IOS_SAVE_PASSWORDS_SMART_LOCK" desc="Title for the view in Settings for managing saved passwords when the Smart Lock branding is enabled. [Length: 25em] [iOS only]">
-        Smart Lock for Passwords
-      </message>
       <message name="IDS_IOS_SEARCH_COPIED" desc="The message displayed when the search is copied via long press (contextual search) [Length: 10em] [iOS only]">
         Copied
       </message>

@@ -15,11 +15,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/password_manager/core/browser/affiliation_utils.h"
-#include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_ui_utils.h"
-#include "components/password_manager/core/common/experiments.h"
 #include "jni/PasswordUIView_jni.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -147,14 +144,6 @@ ScopedJavaLocalRef<jstring> GetAccountDashboardURL(
     const JavaParamRef<jclass>&) {
   return ConvertUTF8ToJavaString(
       env, password_manager::kPasswordManagerAccountDashboardURL);
-}
-
-static jboolean ShouldUseSmartLockBranding(JNIEnv* env,
-                                           const JavaParamRef<jclass>&) {
-  const browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(
-          ProfileManager::GetLastUsedProfile());
-  return password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service);
 }
 
 // static

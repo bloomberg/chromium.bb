@@ -13,8 +13,6 @@ int GetPasswordManagerSettingsStringId(
   int smart_lock_users_ids = IDS_OPTIONS_PASSWORD_MANAGER_SMART_LOCK_ENABLE;
   int non_smart_lock_users_ids = IDS_OPTIONS_PASSWORD_MANAGER_ENABLE;
 
-  if (password_bubble_experiment::IsSmartLockBrandingEnabled(sync_service))
-    return smart_lock_users_ids;
   if (password_bubble_experiment::IsSmartLockUser(sync_service) &&
       password_manager::IsSettingsMigrationActive()) {
     return smart_lock_users_ids;

@@ -43,7 +43,6 @@ int ManagePasswordsBubbleView::auto_signin_toast_timeout_ = 3;
 namespace {
 
 const int kDesiredBubbleWidth = 370;
-const SkColor kWarmWelcomeColor = SkColorSetARGB(0xFF, 0x64, 0x64, 0x64);
 
 enum ColumnSetType {
   // | | (FILL, FILL) | |
@@ -316,21 +315,6 @@ ManagePasswordsBubbleView::PendingView::PendingView(
   if (item) {
     layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
     layout->AddView(item);
-    layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
-  }
-
-  // Smart Lock warm welcome.
-  if (parent_->model()->ShouldShowGoogleSmartLockWelcome()) {
-    views::Label* smart_lock_label = new views::Label(
-        l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK_WELCOME));
-    smart_lock_label->SetMultiLine(true);
-    smart_lock_label->SetFontList(
-        ui::ResourceBundle::GetSharedInstance().GetFontList(
-            ui::ResourceBundle::SmallFont));
-    smart_lock_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    smart_lock_label->SetEnabledColor(kWarmWelcomeColor);
-    layout->StartRow(0, SINGLE_VIEW_COLUMN_SET);
-    layout->AddView(smart_lock_label);
     layout->AddPaddingRow(0, views::kUnrelatedControlVerticalSpacing);
   }
 

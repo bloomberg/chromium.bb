@@ -32,8 +32,7 @@ void SavePasswordInfoBarDelegate::Create(
   syncer::SyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile);
   bool is_smartlock_branding_enabled =
-      password_bubble_experiment::IsSmartLockBrandingSavePromptEnabled(
-          sync_service);
+      password_bubble_experiment::IsSmartLockUser(sync_service);
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(

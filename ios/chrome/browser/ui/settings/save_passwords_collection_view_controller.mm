@@ -17,11 +17,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
-#include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -34,7 +32,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
-#include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -183,13 +180,7 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
     browserState_ = browserState;
     reauthenticationModule_.reset([[ReauthenticationModule alloc]
         initWithSuccessfulReauthTimeAccessor:self]);
-    int titleId = IDS_IOS_SAVE_PASSWORDS;
-    syncer::SyncService* syncService =
-        IOSChromeProfileSyncServiceFactory::GetForBrowserState(browserState_);
-    if (password_bubble_experiment::IsSmartLockBrandingEnabled(syncService)) {
-      titleId = IDS_IOS_SAVE_PASSWORDS_SMART_LOCK;
-    }
-    self.title = l10n_util::GetNSString(titleId);
+    self.title = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
     self.shouldHideDoneButton = YES;
     passwordStore_ = IOSChromePasswordStoreFactory::GetForBrowserState(
         browserState_, ServiceAccessType::EXPLICIT_ACCESS);

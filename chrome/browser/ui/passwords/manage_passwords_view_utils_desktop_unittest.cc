@@ -31,10 +31,6 @@ const char kPasswordManagerSettingMigrationFieldTrialName[] =
 const char kEnabledPasswordManagerSettingsMigrationGroupName[] = "Enable";
 const char kDisablePasswordManagerSettingsMigrationGroupName[] = "Disable";
 
-const char kBrandingExperimentName[] = "PasswordBranding";
-const char kSmartLockBrandingGroupName[] = "SmartLockBranding";
-const char kSmartLockNoBrandingGroupName[] = "NoSmartLockBranding";
-
 }  // namespace
 
 class ManagePasswordsViewUtilDesktopTest : public testing::Test {
@@ -52,11 +48,6 @@ class ManagePasswordsViewUtilDesktopTest : public testing::Test {
   void EnforcePasswordManagerSettingMigrationExperiment(const char* name) {
     settings_migration_ = base::FieldTrialList::CreateFieldTrial(
         kPasswordManagerSettingMigrationFieldTrialName, name);
-  }
-
-  void EnforceSmartLockBrandingExperiment(const char* name) {
-    smart_lock_branding_ =
-        base::FieldTrialList::CreateFieldTrial(kBrandingExperimentName, name);
   }
 
   browser_sync::ProfileSyncService* GetSyncServiceForSmartLockUser() {
@@ -91,30 +82,20 @@ class ManagePasswordsViewUtilDesktopTest : public testing::Test {
 TEST_F(ManagePasswordsViewUtilDesktopTest, GetPasswordManagerSettingsStringId) {
   const struct {
     const char* description;
-    const char* smart_lock_branding_experiment_group;
     const char* settings_migration_experiment_group;
     UserType user_type;
     int expected_setting_description_id;
   } kTestData[] = {
-      {"Smart Lock User, branding, migration active",
-       kSmartLockBrandingGroupName,
+      {"Smart Lock User, migration active",
        kEnabledPasswordManagerSettingsMigrationGroupName, SMART_LOCK_USER,
        IDS_OPTIONS_PASSWORD_MANAGER_SMART_LOCK_ENABLE},
-      {"Smart Lock User, no branding, migration active",
-       kSmartLockNoBrandingGroupName,
-       kEnabledPasswordManagerSettingsMigrationGroupName, SMART_LOCK_USER,
-       IDS_OPTIONS_PASSWORD_MANAGER_SMART_LOCK_ENABLE},
-      {"Smart Lock User, no branding, no migration",
-       kSmartLockNoBrandingGroupName,
+      {"Smart Lock User, no migration",
        kDisablePasswordManagerSettingsMigrationGroupName, SMART_LOCK_USER,
        IDS_OPTIONS_PASSWORD_MANAGER_ENABLE},
-      {"Smart Lock User, branding, no migration", kSmartLockBrandingGroupName,
-       kDisablePasswordManagerSettingsMigrationGroupName, SMART_LOCK_USER,
-       IDS_OPTIONS_PASSWORD_MANAGER_SMART_LOCK_ENABLE},
-      {"Non Smart Lock User, no migration", kSmartLockNoBrandingGroupName,
+      {"Non Smart Lock User, no migration",
        kDisablePasswordManagerSettingsMigrationGroupName, NON_SMART_LOCK_USER,
        IDS_OPTIONS_PASSWORD_MANAGER_ENABLE},
-      {"Non Smart Lock User, migration", kSmartLockNoBrandingGroupName,
+      {"Non Smart Lock User, migration",
        kEnabledPasswordManagerSettingsMigrationGroupName, NON_SMART_LOCK_USER,
        IDS_OPTIONS_PASSWORD_MANAGER_ENABLE},
   };
@@ -128,8 +109,6 @@ TEST_F(ManagePasswordsViewUtilDesktopTest, GetPasswordManagerSettingsStringId) {
       sync_service = GetSyncServiceForSmartLockUser();
     else
       sync_service = GetSyncServiceForNonSmartLockUser();
-    EnforceSmartLockBrandingExperiment(
-        test_case.smart_lock_branding_experiment_group);
     EnforcePasswordManagerSettingMigrationExperiment(
         test_case.settings_migration_experiment_group);
     EXPECT_EQ(

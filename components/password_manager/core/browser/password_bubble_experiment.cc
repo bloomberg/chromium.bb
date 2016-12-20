@@ -18,19 +18,12 @@
 
 namespace password_bubble_experiment {
 
-const char kBrandingExperimentName[] = "PasswordBranding";
 const char kChromeSignInPasswordPromoExperimentName[] = "SignInPasswordPromo";
 const char kChromeSignInPasswordPromoThresholdParam[] = "dismissal_threshold";
 const char kSmartBubbleExperimentName[] = "PasswordSmartBubble";
 const char kSmartBubbleThresholdParam[] = "dismissal_count";
-const char kSmartLockBrandingGroupName[] = "SmartLockBranding";
-const char kSmartLockBrandingSavePromptOnlyGroupName[] =
-    "SmartLockBrandingSavePromptOnly";
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterBooleanPref(
-      password_manager::prefs::kWasSavePrompFirstRunExperienceShown, false);
-
   registry->RegisterBooleanPref(
       password_manager::prefs::kWasAutoSignInFirstRunExperienceShown, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
@@ -53,40 +46,6 @@ int GetSmartBubbleDismissalThreshold() {
 bool IsSmartLockUser(const syncer::SyncService* sync_service) {
   return password_manager_util::GetPasswordSyncState(sync_service) ==
          password_manager::SYNCING_NORMAL_ENCRYPTION;
-}
-
-SmartLockBranding GetSmartLockBrandingState(
-    const syncer::SyncService* sync_service) {
-  // Query the group first for correct UMA reporting.
-  std::string group_name =
-      base::FieldTrialList::FindFullName(kBrandingExperimentName);
-  if (!IsSmartLockUser(sync_service))
-    return SmartLockBranding::NONE;
-  if (group_name == kSmartLockBrandingGroupName)
-    return SmartLockBranding::FULL;
-  if (group_name == kSmartLockBrandingSavePromptOnlyGroupName)
-    return SmartLockBranding::SAVE_PROMPT_ONLY;
-  return SmartLockBranding::NONE;
-}
-
-bool IsSmartLockBrandingEnabled(const syncer::SyncService* sync_service) {
-  return GetSmartLockBrandingState(sync_service) == SmartLockBranding::FULL;
-}
-
-bool IsSmartLockBrandingSavePromptEnabled(
-    const syncer::SyncService* sync_service) {
-  return GetSmartLockBrandingState(sync_service) != SmartLockBranding::NONE;
-}
-
-bool ShouldShowSavePromptFirstRunExperience(
-    const syncer::SyncService* sync_service,
-    PrefService* prefs) {
-  return false;
-}
-
-void RecordSavePromptFirstRunExperienceWasShown(PrefService* prefs) {
-  prefs->SetBoolean(
-      password_manager::prefs::kWasSavePrompFirstRunExperienceShown, true);
 }
 
 bool ShouldShowAutoSignInPromptFirstRunExperience(PrefService* prefs) {

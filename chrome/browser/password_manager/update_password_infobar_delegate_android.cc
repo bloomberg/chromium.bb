@@ -17,6 +17,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/infobars/core/infobar.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -25,7 +26,7 @@ void UpdatePasswordInfoBarDelegate::Create(
     content::WebContents* web_contents,
     std::unique_ptr<password_manager::PasswordFormManager> form_to_save) {
   const bool is_smartlock_branding_enabled =
-      password_bubble_experiment::IsSmartLockBrandingSavePromptEnabled(
+      password_bubble_experiment::IsSmartLockUser(
           ProfileSyncServiceFactory::GetForProfile(
               Profile::FromBrowserContext(web_contents->GetBrowserContext())));
   InfoBarService::FromWebContents(web_contents)
@@ -38,10 +39,9 @@ void UpdatePasswordInfoBarDelegate::Create(
 UpdatePasswordInfoBarDelegate::~UpdatePasswordInfoBarDelegate() {}
 
 base::string16 UpdatePasswordInfoBarDelegate::GetBranding() const {
-  return l10n_util::GetStringUTF16(
-      is_smartlock_branding_enabled_
-          ? IDS_PASSWORD_MANAGER_SMART_LOCK_FOR_PASSWORDS
-          : IDS_PASSWORD_MANAGER_TITLE_BRAND);
+  return l10n_util::GetStringUTF16(is_smartlock_branding_enabled_
+                                       ? IDS_PASSWORD_MANAGER_SMART_LOCK
+                                       : IDS_PASSWORD_MANAGER_TITLE_BRAND);
 }
 
 bool UpdatePasswordInfoBarDelegate::ShowMultipleAccounts() const {

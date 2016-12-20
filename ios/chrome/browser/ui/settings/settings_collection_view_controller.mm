@@ -15,7 +15,6 @@
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -442,16 +441,10 @@ void SigninObserverBridge::GoogleSignedOut(const std::string& account_id,
   NSString* passwordsDetail = savePasswordsEnabled
                                   ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                                   : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
-  int titleId = IDS_IOS_SAVE_PASSWORDS;
-  syncer::SyncService* syncService =
-      IOSChromeProfileSyncServiceFactory::GetForBrowserState(_mainBrowserState);
-  if (password_bubble_experiment::IsSmartLockBrandingEnabled(syncService)) {
-    titleId = IDS_IOS_SAVE_PASSWORDS_SMART_LOCK;
-  }
 
   _savePasswordsDetailItem.reset(
       [[self detailItemWithType:ItemTypeSavedPasswords
-                           text:l10n_util::GetNSString(titleId)
+                           text:l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS)
                      detailText:passwordsDetail] retain]);
 
   return _savePasswordsDetailItem;

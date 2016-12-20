@@ -30,9 +30,6 @@ const char kPasswordManagerSavingEnabled[] = "profile.password_manager_enabled";
 const char kWasAutoSignInFirstRunExperienceShown[] =
     "profile.was_auto_sign_in_first_run_experience_shown";
 
-const char kWasSavePrompFirstRunExperienceShown[] =
-    "profile.was_save_prompt_first_run_experience_shown";
-
 const char kWasSignInPasswordPromoClicked[] =
     "profile.was_sign_in_password_promo_clicked";
 

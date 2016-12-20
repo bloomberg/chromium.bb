@@ -110,10 +110,6 @@ class ManagePasswordsBubbleModel {
   // should be presented.
   bool ShouldShowMultipleAccountUpdateUI() const;
 
-  // True if the save bubble should display the warm welcome for Google Smart
-  // Lock.
-  bool ShouldShowGoogleSmartLockWelcome() const;
-
   // Returns true and updates the internal state iff the Save bubble should
   // switch to the Chrome Sign In promo after the password was saved. Otherwise,
   // returns false and leaves the current state.
