@@ -23,15 +23,9 @@ function pasteToAllChildren(text, container) {
 spellcheck_test(
   [
     '<div id="container">',
-      '<input>',
       '<textarea></textarea>',
       '<div contenteditable></div>',
       '<input>',
-      '<textarea></textarea>',
-      '<div contenteditable></div>',
-      '<input>',
-      '<textarea></textarea>',
-      '<div contenteditable></div>',
     '</div>'
   ].join(''),
   document => {
@@ -41,15 +35,9 @@ spellcheck_test(
   },
   [
     '<div id="container">',
-      '<input value="#zz# apple orange">',
       '<textarea>#zz# apple orange</textarea>',
       '<div contenteditable>#zz# apple orange</div>',
       '<input value="#zz# apple orange">',
-      '<textarea>#zz# apple orange</textarea>',
-      '<div contenteditable>#zz# apple orange</div>',
-      '<input value="#zz# apple orange">',
-      '<textarea>#zz# apple orange</textarea>',
-      '<div contenteditable>#zz# apple orange</div>',
     '</div>'
   ].join(''),
   'Spellchecker handles multiple requests.');
