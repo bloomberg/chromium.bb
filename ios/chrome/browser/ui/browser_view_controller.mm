@@ -1169,8 +1169,9 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
 // Perform additional set up after loading the view, typically from a nib.
 - (void)viewDidLoad {
-  // Duplicate .xib layout for now.
-  CGRect initialViewsRect = CGRectMake(0, 30, 320, 430);
+  CGRect initialViewsRect = self.view.frame;
+  initialViewsRect.origin.y += StatusBarHeight();
+  initialViewsRect.size.height -= StatusBarHeight();
   UIViewAutoresizing initialViewAutoresizing =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
@@ -1183,7 +1184,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   [self.typingShield addTarget:self
                         action:@selector(shieldWasTapped:)
               forControlEvents:UIControlEventTouchUpInside];
-  self.view.bounds = CGRectMake(0, 0, 320, 460);
   self.view.autoresizingMask = initialViewAutoresizing;
   self.view.backgroundColor = [UIColor colorWithWhite:0.75 alpha:1.0];
   [self.view addSubview:self.contentArea];
