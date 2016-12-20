@@ -20,6 +20,7 @@
 #include "base/process/process.h"
 #include "cc/input/selection.h"
 #include "cc/output/begin_frame_args.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/android/content_view_core_impl_observer.h"
 #include "content/browser/renderer_host/delegated_frame_evictor.h"
@@ -31,6 +32,7 @@
 #include "content/public/browser/readback_types.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/android/delegated_frame_host_android.h"
 #include "ui/android/view_android.h"
 #include "ui/android/view_client.h"
 #include "ui/android/window_android_observer.h"
@@ -45,10 +47,6 @@ class GURL;
 
 namespace ui {
 struct DidOverscrollParams;
-}
-
-namespace ui {
-class DelegatedFrameHostAndroid;
 }
 
 namespace content {
@@ -72,7 +70,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       public StylusTextSelectorClient,
       public ui::TouchSelectionControllerClient,
       public content::ContentViewCoreImplObserver,
-      public content::TextInputManager::Observer {
+      public content::TextInputManager::Observer,
+      public ui::DelegatedFrameHostAndroid::Client,
+      public cc::BeginFrameObserver {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
                               ContentViewCoreImpl* content_view_core);
@@ -170,8 +170,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnRootWindowVisibilityChanged(bool visible) override;
   void OnAttachCompositor() override;
   void OnDetachCompositor() override;
-  void OnVSync(base::TimeTicks frame_time,
-               base::TimeDelta vsync_period) override;
   void OnAnimate(base::TimeTicks begin_frame_time) override;
   void OnActivityStopped() override;
   void OnActivityStarted() override;
@@ -199,6 +197,15 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                                 const gfx::PointF& extent) override;
   void OnSelectionEvent(ui::SelectionEventType event) override;
   std::unique_ptr<ui::TouchHandleDrawable> CreateDrawable() override;
+
+  // DelegatedFrameHostAndroid::Client implementation.
+  void SetBeginFrameSource(cc::BeginFrameSource* begin_frame_source) override;
+  void ReturnResources(const cc::ReturnedResourceArray& resources) override;
+
+  // cc::BeginFrameObserver implementation.
+  void OnBeginFrame(const cc::BeginFrameArgs& args) override;
+  const cc::BeginFrameArgs& LastUsedBeginFrameArgs() const override;
+  void OnBeginFrameSourcePausedChanged(bool paused) override;
 
   // Non-virtual methods
   void SetContentViewCore(ContentViewCoreImpl* content_view_core);
@@ -291,17 +298,16 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void DestroyDelegatedContent();
   void OnLostResources();
 
-  void ReturnResources(const cc::ReturnedResourceArray& resources);
-
-  enum VSyncRequestType {
+  enum BeginFrameRequestType {
     FLUSH_INPUT = 1 << 0,
     BEGIN_FRAME = 1 << 1,
     PERSISTENT_BEGIN_FRAME = 1 << 2
   };
-  void RequestVSyncUpdate(uint32_t requests);
+  void AddBeginFrameRequest(BeginFrameRequestType request);
+  void ClearBeginFrameRequest(BeginFrameRequestType request);
   void StartObservingRootWindow();
   void StopObservingRootWindow();
-  void SendBeginFrame(base::TimeTicks frame_time, base::TimeDelta vsync_period);
+  void SendBeginFrame(cc::BeginFrameArgs args);
   bool Animate(base::TimeTicks frame_time);
   void RequestDisallowInterceptTouchEvent();
 
@@ -314,8 +320,13 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // The model object.
   RenderWidgetHostImpl* host_;
 
-  // Used to control action dispatch at the next |OnVSync()| call.
-  uint32_t outstanding_vsync_requests_;
+  // The begin frame source being observed.  Null if none.
+  cc::BeginFrameSource* begin_frame_source_;
+  cc::BeginFrameArgs last_begin_frame_args_;
+
+  // Indicates whether and for what reason a request for begin frames has been
+  // issued. Used to control action dispatch at the next |OnBeginFrame()| call.
+  uint32_t outstanding_begin_frame_requests_;
 
   bool is_showing_;
 
