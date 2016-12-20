@@ -4,20 +4,15 @@
 AC_PREREQ(2.59)
 
 # Note:  If you change the version, you must also update it in:
-# * Protobuf.podspec
-# * csharp/Google.Protobuf.Tools.nuspec
-# * csharp/src/*/AssemblyInfo.cs
-# * csharp/src/Google.Protobuf/Google.Protobuf.nuspec
-# * java/*/pom.xml
-# * python/google/protobuf/__init__.py
-# * protoc-artifacts/pom.xml
+# * java/pom.xml
+# * python/setup.py
 # * src/google/protobuf/stubs/common.h
 # * src/Makefile.am (Update -version-info for LDFLAGS if needed)
 #
 # In the SVN trunk, the version should always be the next anticipated release
 # version with the "-pre" suffix.  (We used to use "-SNAPSHOT" but this pushed
 # the size of one file name in the dist tarfile over the 99-char limit.)
-AC_INIT([Protocol Buffers],[3.1.0],[protobuf@googlegroups.com],[protobuf])
+AC_INIT([Protocol Buffers],[3.0.0-beta-3],[protobuf@googlegroups.com],[protobuf])
 
 AM_MAINTAINER_MODE([enable])
 
@@ -31,7 +26,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_ARG_VAR(DIST_LANG, [language to include in the distribution package (i.e., make dist)])
 case "$DIST_LANG" in
   "") DIST_LANG=all ;;
-  all | cpp | csharp | java | python | javanano | objectivec | ruby | js | php) ;;
+  all | cpp | csharp | java | python | javanano | objectivec | ruby | js) ;;
   *) AC_MSG_FAILURE([unknown language: $DIST_LANG]) ;;
 esac
 AC_SUBST(DIST_LANG)
@@ -177,8 +172,6 @@ case "$target_os" in
     ;;
 esac
 AM_CONDITIONAL([OBJC_CONFORMANCE_TEST], [test $OBJC_CONFORMANCE_TEST = 1])
-
-AX_CXX_COMPILE_STDCXX([11], [noext], [optional])
 
 # HACK:  Make gmock's configure script pick up our copy of CFLAGS and CXXFLAGS,
 #   since the flags added by ACX_CHECK_SUNCC must be used when compiling gmock

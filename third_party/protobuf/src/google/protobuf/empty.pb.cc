@@ -19,101 +19,94 @@
 
 namespace google {
 namespace protobuf {
-class EmptyDefaultTypeInternal : public ::google::protobuf::internal::ExplicitlyConstructed<Empty> {};
-EmptyDefaultTypeInternal _Empty_default_instance_;
 
 namespace {
 
-::google::protobuf::Metadata file_level_metadata[1];
+const ::google::protobuf::Descriptor* Empty_descriptor_ = NULL;
+const ::google::protobuf::internal::GeneratedMessageReflection*
+  Empty_reflection_ = NULL;
 
 }  // namespace
 
 
-const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fempty_2eproto() GOOGLE_ATTRIBUTE_COLD;
-const ::google::protobuf::uint32* protobuf_Offsets_google_2fprotobuf_2fempty_2eproto() {
-  static const ::google::protobuf::uint32 offsets[] = {
-    ~0u,  // no _has_bits_
-    GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Empty, _internal_metadata_),
-    ~0u,  // no _extensions_
-    ~0u,  // no _oneof_case_
+void protobuf_AssignDesc_google_2fprotobuf_2fempty_2eproto() {
+  protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto();
+  const ::google::protobuf::FileDescriptor* file =
+    ::google::protobuf::DescriptorPool::generated_pool()->FindFileByName(
+      "google/protobuf/empty.proto");
+  GOOGLE_CHECK(file != NULL);
+  Empty_descriptor_ = file->message_type(0);
+  static const int Empty_offsets_[1] = {
   };
-  return offsets;
+  Empty_reflection_ =
+    ::google::protobuf::internal::GeneratedMessageReflection::NewGeneratedMessageReflection(
+      Empty_descriptor_,
+      Empty::default_instance_,
+      Empty_offsets_,
+      -1,
+      -1,
+      -1,
+      sizeof(Empty),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Empty, _internal_metadata_),
+      GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Empty, _is_default_instance_));
 }
-
-static const ::google::protobuf::internal::MigrationSchema schemas[] = {
-  { 0, -1, sizeof(Empty)},
-};
-
-static const ::google::protobuf::internal::DefaultInstanceData file_default_instances[] = {
-  {reinterpret_cast<const ::google::protobuf::Message*>(&_Empty_default_instance_), NULL},
-};
 
 namespace {
 
-void protobuf_AssignDescriptors() {
-  protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto();
-  ::google::protobuf::MessageFactory* factory = NULL;
-  AssignDescriptors(
-      "google/protobuf/empty.proto", schemas, file_default_instances, protobuf_Offsets_google_2fprotobuf_2fempty_2eproto(), factory,
-      file_level_metadata, NULL, NULL);
+GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AssignDescriptors_once_);
+inline void protobuf_AssignDescriptorsOnce() {
+  ::google::protobuf::GoogleOnceInit(&protobuf_AssignDescriptors_once_,
+                 &protobuf_AssignDesc_google_2fprotobuf_2fempty_2eproto);
 }
 
-void protobuf_AssignDescriptorsOnce() {
-  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);
-  ::google::protobuf::GoogleOnceInit(&once, &protobuf_AssignDescriptors);
-}
-
-void protobuf_RegisterTypes(const ::std::string&) GOOGLE_ATTRIBUTE_COLD;
 void protobuf_RegisterTypes(const ::std::string&) {
   protobuf_AssignDescriptorsOnce();
-  ::google::protobuf::internal::RegisterAllTypes(file_level_metadata, 1);
+  ::google::protobuf::MessageFactory::InternalRegisterGeneratedMessage(
+      Empty_descriptor_, &Empty::default_instance());
 }
 
 }  // namespace
 
 void protobuf_ShutdownFile_google_2fprotobuf_2fempty_2eproto() {
-  _Empty_default_instance_.Shutdown();
-  delete file_level_metadata[0].reflection;
+  delete Empty::default_instance_;
+  delete Empty_reflection_;
 }
 
-void protobuf_InitDefaults_google_2fprotobuf_2fempty_2eproto_impl() {
+void protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto() {
+  static bool already_here = false;
+  if (already_here) return;
+  already_here = true;
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
-  ::google::protobuf::internal::InitProtobufDefaults();
-  _Empty_default_instance_.DefaultConstruct();
-}
-
-void protobuf_InitDefaults_google_2fprotobuf_2fempty_2eproto() {
-  static GOOGLE_PROTOBUF_DECLARE_ONCE(once);
-  ::google::protobuf::GoogleOnceInit(&once, &protobuf_InitDefaults_google_2fprotobuf_2fempty_2eproto_impl);
-}
-void protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto_impl() {
-  protobuf_InitDefaults_google_2fprotobuf_2fempty_2eproto();
-  static const char descriptor[] = {
-      "\n\033google/protobuf/empty.proto\022\017google.pr"
-      "otobuf\"\007\n\005EmptyBv\n\023com.google.protobufB\n"
-      "EmptyProtoP\001Z\'github.com/golang/protobuf"
-      "/ptypes/empty\370\001\001\242\002\003GPB\252\002\036Google.Protobuf"
-      ".WellKnownTypesb\006proto3"
-  };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 183);
+    "\n\033google/protobuf/empty.proto\022\017google.pr"
+    "otobuf\"\007\n\005EmptyBy\n\023com.google.protobufB\n"
+    "EmptyProtoP\001Z\'github.com/golang/protobuf"
+    "/ptypes/empty\240\001\001\370\001\001\242\002\003GPB\252\002\036Google.Proto"
+    "buf.WellKnownTypesb\006proto3", 186);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "google/protobuf/empty.proto", &protobuf_RegisterTypes);
+  Empty::default_instance_ = new Empty();
+  Empty::default_instance_->InitAsDefaultInstance();
   ::google::protobuf::internal::OnShutdown(&protobuf_ShutdownFile_google_2fprotobuf_2fempty_2eproto);
 }
 
-GOOGLE_PROTOBUF_DECLARE_ONCE(protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto_once_);
-void protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto() {
-  ::google::protobuf::GoogleOnceInit(&protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto_once_,
-                 &protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto_impl);
-}
 // Force AddDescriptors() to be called at static initialization time.
 struct StaticDescriptorInitializer_google_2fprotobuf_2fempty_2eproto {
   StaticDescriptorInitializer_google_2fprotobuf_2fempty_2eproto() {
     protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto();
   }
 } static_descriptor_initializer_google_2fprotobuf_2fempty_2eproto_;
+
+namespace {
+
+static void MergeFromFail(int line) GOOGLE_ATTRIBUTE_COLD;
+static void MergeFromFail(int line) {
+  GOOGLE_CHECK(false) << __FILE__ << ":" << line;
+}
+
+}  // namespace
+
 
 // ===================================================================
 
@@ -122,31 +115,32 @@ struct StaticDescriptorInitializer_google_2fprotobuf_2fempty_2eproto {
 
 Empty::Empty()
   : ::google::protobuf::Message(), _internal_metadata_(NULL) {
-  if (GOOGLE_PREDICT_TRUE(this != internal_default_instance())) {
-    protobuf_InitDefaults_google_2fprotobuf_2fempty_2eproto();
-  }
   SharedCtor();
   // @@protoc_insertion_point(constructor:google.protobuf.Empty)
 }
+
 Empty::Empty(::google::protobuf::Arena* arena)
   : ::google::protobuf::Message(),
   _internal_metadata_(arena) {
-#ifdef GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
-  protobuf_InitDefaults_google_2fprotobuf_2fempty_2eproto();
-#endif  // GOOGLE_PROTOBUF_NO_STATIC_INITIALIZER
   SharedCtor();
   RegisterArenaDtor(arena);
   // @@protoc_insertion_point(arena_constructor:google.protobuf.Empty)
 }
+
+void Empty::InitAsDefaultInstance() {
+  _is_default_instance_ = true;
+}
+
 Empty::Empty(const Empty& from)
   : ::google::protobuf::Message(),
-      _internal_metadata_(NULL),
-      _cached_size_(0) {
-  _internal_metadata_.MergeFrom(from._internal_metadata_);
+    _internal_metadata_(NULL) {
+  SharedCtor();
+  MergeFrom(from);
   // @@protoc_insertion_point(copy_constructor:google.protobuf.Empty)
 }
 
 void Empty::SharedCtor() {
+    _is_default_instance_ = false;
   _cached_size_ = 0;
 }
 
@@ -156,11 +150,12 @@ Empty::~Empty() {
 }
 
 void Empty::SharedDtor() {
-  ::google::protobuf::Arena* arena = GetArenaNoVirtual();
-  if (arena != NULL) {
+  if (GetArenaNoVirtual() != NULL) {
     return;
   }
 
+  if (this != default_instance_) {
+  }
 }
 
 void Empty::ArenaDtor(void* object) {
@@ -176,13 +171,15 @@ void Empty::SetCachedSize(int size) const {
 }
 const ::google::protobuf::Descriptor* Empty::descriptor() {
   protobuf_AssignDescriptorsOnce();
-  return file_level_metadata[0].descriptor;
+  return Empty_descriptor_;
 }
 
 const Empty& Empty::default_instance() {
-  protobuf_InitDefaults_google_2fprotobuf_2fempty_2eproto();
-  return *internal_default_instance();
+  if (default_instance_ == NULL) protobuf_AddDesc_google_2fprotobuf_2fempty_2eproto();
+  return *default_instance_;
 }
+
+Empty* Empty::default_instance_ = NULL;
 
 Empty* Empty::New(::google::protobuf::Arena* arena) const {
   return ::google::protobuf::Arena::CreateMessage<Empty>(arena);
@@ -198,7 +195,7 @@ bool Empty::MergePartialFromCodedStream(
   ::google::protobuf::uint32 tag;
   // @@protoc_insertion_point(parse_start:google.protobuf.Empty)
   for (;;) {
-    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoffNoLastTag(127u);
+    ::std::pair< ::google::protobuf::uint32, bool> p = input->ReadTagWithCutoff(127);
     tag = p.first;
     if (!p.second) goto handle_unusual;
   handle_unusual:
@@ -224,29 +221,27 @@ void Empty::SerializeWithCachedSizes(
   // @@protoc_insertion_point(serialize_end:google.protobuf.Empty)
 }
 
-::google::protobuf::uint8* Empty::InternalSerializeWithCachedSizesToArray(
-    bool deterministic, ::google::protobuf::uint8* target) const {
-  (void)deterministic; // Unused
+::google::protobuf::uint8* Empty::SerializeWithCachedSizesToArray(
+    ::google::protobuf::uint8* target) const {
   // @@protoc_insertion_point(serialize_to_array_start:google.protobuf.Empty)
   // @@protoc_insertion_point(serialize_to_array_end:google.protobuf.Empty)
   return target;
 }
 
-size_t Empty::ByteSizeLong() const {
+int Empty::ByteSize() const {
 // @@protoc_insertion_point(message_byte_size_start:google.protobuf.Empty)
-  size_t total_size = 0;
+  int total_size = 0;
 
-  int cached_size = ::google::protobuf::internal::ToCachedSize(total_size);
   GOOGLE_SAFE_CONCURRENT_WRITES_BEGIN();
-  _cached_size_ = cached_size;
+  _cached_size_ = total_size;
   GOOGLE_SAFE_CONCURRENT_WRITES_END();
   return total_size;
 }
 
 void Empty::MergeFrom(const ::google::protobuf::Message& from) {
 // @@protoc_insertion_point(generalized_merge_from_start:google.protobuf.Empty)
-  GOOGLE_DCHECK_NE(&from, this);
-  const Empty* source =
+  if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
+  const Empty* source = 
       ::google::protobuf::internal::DynamicCastToGenerated<const Empty>(
           &from);
   if (source == NULL) {
@@ -260,8 +255,7 @@ void Empty::MergeFrom(const ::google::protobuf::Message& from) {
 
 void Empty::MergeFrom(const Empty& from) {
 // @@protoc_insertion_point(class_specific_merge_from_start:google.protobuf.Empty)
-  GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  if (GOOGLE_PREDICT_FALSE(&from == this)) MergeFromFail(__LINE__);
 }
 
 void Empty::CopyFrom(const ::google::protobuf::Message& from) {
@@ -279,6 +273,7 @@ void Empty::CopyFrom(const Empty& from) {
 }
 
 bool Empty::IsInitialized() const {
+
   return true;
 }
 
@@ -287,13 +282,10 @@ void Empty::Swap(Empty* other) {
   if (GetArenaNoVirtual() == other->GetArenaNoVirtual()) {
     InternalSwap(other);
   } else {
-    Empty* temp = New(GetArenaNoVirtual());
-    temp->MergeFrom(*other);
-    other->CopyFrom(*this);
-    InternalSwap(temp);
-    if (GetArenaNoVirtual() == NULL) {
-      delete temp;
-    }
+    Empty temp;
+    temp.MergeFrom(*this);
+    CopyFrom(*other);
+    other->CopyFrom(temp);
   }
 }
 void Empty::UnsafeArenaSwap(Empty* other) {
@@ -302,12 +294,16 @@ void Empty::UnsafeArenaSwap(Empty* other) {
   InternalSwap(other);
 }
 void Empty::InternalSwap(Empty* other) {
+  _internal_metadata_.Swap(&other->_internal_metadata_);
   std::swap(_cached_size_, other->_cached_size_);
 }
 
 ::google::protobuf::Metadata Empty::GetMetadata() const {
   protobuf_AssignDescriptorsOnce();
-  return file_level_metadata[0];
+  ::google::protobuf::Metadata metadata;
+  metadata.descriptor = Empty_descriptor_;
+  metadata.reflection = Empty_reflection_;
+  return metadata;
 }
 
 #if PROTOBUF_INLINE_NOT_IN_HEADERS

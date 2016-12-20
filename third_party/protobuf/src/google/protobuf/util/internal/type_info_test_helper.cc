@@ -55,7 +55,7 @@ namespace testing {
 
 
 void TypeInfoTestHelper::ResetTypeInfo(
-    const std::vector<const Descriptor*>& descriptors) {
+    const vector<const Descriptor*>& descriptors) {
   switch (type_) {
     case USE_TYPE_RESOLVER: {
       const DescriptorPool* pool = descriptors[0]->file()->pool();
@@ -73,14 +73,14 @@ void TypeInfoTestHelper::ResetTypeInfo(
 }
 
 void TypeInfoTestHelper::ResetTypeInfo(const Descriptor* descriptor) {
-  std::vector<const Descriptor*> descriptors;
+  vector<const Descriptor*> descriptors;
   descriptors.push_back(descriptor);
   ResetTypeInfo(descriptors);
 }
 
 void TypeInfoTestHelper::ResetTypeInfo(const Descriptor* descriptor1,
                                        const Descriptor* descriptor2) {
-  std::vector<const Descriptor*> descriptors;
+  vector<const Descriptor*> descriptors;
   descriptors.push_back(descriptor1);
   descriptors.push_back(descriptor2);
   ResetTypeInfo(descriptors);

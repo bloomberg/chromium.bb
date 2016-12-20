@@ -10,6 +10,7 @@ using scg = global::System.Collections.Generic;
 namespace Google.Protobuf.WellKnownTypes {
 
   /// <summary>Holder for reflection information generated from google/protobuf/wrappers.proto</summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public static partial class WrappersReflection {
 
     #region Descriptor
@@ -28,10 +29,10 @@ namespace Google.Protobuf.WellKnownTypes {
             "KAMiHAoLVUludDY0VmFsdWUSDQoFdmFsdWUYASABKAQiGwoKSW50MzJWYWx1",
             "ZRINCgV2YWx1ZRgBIAEoBSIcCgtVSW50MzJWYWx1ZRINCgV2YWx1ZRgBIAEo",
             "DSIaCglCb29sVmFsdWUSDQoFdmFsdWUYASABKAgiHAoLU3RyaW5nVmFsdWUS",
-            "DQoFdmFsdWUYASABKAkiGwoKQnl0ZXNWYWx1ZRINCgV2YWx1ZRgBIAEoDEJ8",
+            "DQoFdmFsdWUYASABKAkiGwoKQnl0ZXNWYWx1ZRINCgV2YWx1ZRgBIAEoDEJ/",
             "ChNjb20uZ29vZ2xlLnByb3RvYnVmQg1XcmFwcGVyc1Byb3RvUAFaKmdpdGh1",
-            "Yi5jb20vZ29sYW5nL3Byb3RvYnVmL3B0eXBlcy93cmFwcGVyc/gBAaICA0dQ",
-            "QqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25vd25UeXBlc2IGcHJvdG8z"));
+            "Yi5jb20vZ29sYW5nL3Byb3RvYnVmL3B0eXBlcy93cmFwcGVyc6ABAfgBAaIC",
+            "A0dQQqoCHkdvb2dsZS5Qcm90b2J1Zi5XZWxsS25vd25UeXBlc2IGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, new pbr::GeneratedClrTypeInfo[] {
@@ -51,38 +52,33 @@ namespace Google.Protobuf.WellKnownTypes {
   }
   #region Messages
   /// <summary>
-  /// Wrapper message for `double`.
+  ///  Wrapper message for `double`.
   ///
-  /// The JSON representation for `DoubleValue` is JSON number.
+  ///  The JSON representation for `DoubleValue` is JSON number.
   /// </summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class DoubleValue : pb::IMessage<DoubleValue> {
     private static readonly pb::MessageParser<DoubleValue> _parser = new pb::MessageParser<DoubleValue>(() => new DoubleValue());
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<DoubleValue> Parser { get { return _parser; } }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor.MessageTypes[0]; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public DoubleValue() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public DoubleValue(DoubleValue other) : this() {
       value_ = other.value_;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public DoubleValue Clone() {
       return new DoubleValue(this);
     }
@@ -91,9 +87,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int ValueFieldNumber = 1;
     private double value_;
     /// <summary>
-    /// The double value.
+    ///  The double value.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public double Value {
       get { return value_; }
       set {
@@ -101,12 +96,10 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as DoubleValue);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(DoubleValue other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -118,19 +111,16 @@ namespace Google.Protobuf.WellKnownTypes {
       return true;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (Value != 0D) hash ^= Value.GetHashCode();
       return hash;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (Value != 0D) {
         output.WriteRawTag(9);
@@ -138,7 +128,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (Value != 0D) {
@@ -147,7 +136,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return size;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(DoubleValue other) {
       if (other == null) {
         return;
@@ -157,7 +145,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -176,38 +163,33 @@ namespace Google.Protobuf.WellKnownTypes {
   }
 
   /// <summary>
-  /// Wrapper message for `float`.
+  ///  Wrapper message for `float`.
   ///
-  /// The JSON representation for `FloatValue` is JSON number.
+  ///  The JSON representation for `FloatValue` is JSON number.
   /// </summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class FloatValue : pb::IMessage<FloatValue> {
     private static readonly pb::MessageParser<FloatValue> _parser = new pb::MessageParser<FloatValue>(() => new FloatValue());
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<FloatValue> Parser { get { return _parser; } }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor.MessageTypes[1]; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public FloatValue() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public FloatValue(FloatValue other) : this() {
       value_ = other.value_;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public FloatValue Clone() {
       return new FloatValue(this);
     }
@@ -216,9 +198,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int ValueFieldNumber = 1;
     private float value_;
     /// <summary>
-    /// The float value.
+    ///  The float value.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public float Value {
       get { return value_; }
       set {
@@ -226,12 +207,10 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as FloatValue);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(FloatValue other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -243,19 +222,16 @@ namespace Google.Protobuf.WellKnownTypes {
       return true;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (Value != 0F) hash ^= Value.GetHashCode();
       return hash;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (Value != 0F) {
         output.WriteRawTag(13);
@@ -263,7 +239,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (Value != 0F) {
@@ -272,7 +247,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return size;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(FloatValue other) {
       if (other == null) {
         return;
@@ -282,7 +256,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -301,38 +274,33 @@ namespace Google.Protobuf.WellKnownTypes {
   }
 
   /// <summary>
-  /// Wrapper message for `int64`.
+  ///  Wrapper message for `int64`.
   ///
-  /// The JSON representation for `Int64Value` is JSON string.
+  ///  The JSON representation for `Int64Value` is JSON string.
   /// </summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class Int64Value : pb::IMessage<Int64Value> {
     private static readonly pb::MessageParser<Int64Value> _parser = new pb::MessageParser<Int64Value>(() => new Int64Value());
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Int64Value> Parser { get { return _parser; } }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor.MessageTypes[2]; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Int64Value() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Int64Value(Int64Value other) : this() {
       value_ = other.value_;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Int64Value Clone() {
       return new Int64Value(this);
     }
@@ -341,9 +309,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int ValueFieldNumber = 1;
     private long value_;
     /// <summary>
-    /// The int64 value.
+    ///  The int64 value.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public long Value {
       get { return value_; }
       set {
@@ -351,12 +318,10 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Int64Value);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(Int64Value other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -368,19 +333,16 @@ namespace Google.Protobuf.WellKnownTypes {
       return true;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (Value != 0L) hash ^= Value.GetHashCode();
       return hash;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (Value != 0L) {
         output.WriteRawTag(8);
@@ -388,7 +350,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (Value != 0L) {
@@ -397,7 +358,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return size;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(Int64Value other) {
       if (other == null) {
         return;
@@ -407,7 +367,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -426,38 +385,33 @@ namespace Google.Protobuf.WellKnownTypes {
   }
 
   /// <summary>
-  /// Wrapper message for `uint64`.
+  ///  Wrapper message for `uint64`.
   ///
-  /// The JSON representation for `UInt64Value` is JSON string.
+  ///  The JSON representation for `UInt64Value` is JSON string.
   /// </summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class UInt64Value : pb::IMessage<UInt64Value> {
     private static readonly pb::MessageParser<UInt64Value> _parser = new pb::MessageParser<UInt64Value>(() => new UInt64Value());
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<UInt64Value> Parser { get { return _parser; } }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor.MessageTypes[3]; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public UInt64Value() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public UInt64Value(UInt64Value other) : this() {
       value_ = other.value_;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public UInt64Value Clone() {
       return new UInt64Value(this);
     }
@@ -466,9 +420,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int ValueFieldNumber = 1;
     private ulong value_;
     /// <summary>
-    /// The uint64 value.
+    ///  The uint64 value.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public ulong Value {
       get { return value_; }
       set {
@@ -476,12 +429,10 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as UInt64Value);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(UInt64Value other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -493,19 +444,16 @@ namespace Google.Protobuf.WellKnownTypes {
       return true;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (Value != 0UL) hash ^= Value.GetHashCode();
       return hash;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (Value != 0UL) {
         output.WriteRawTag(8);
@@ -513,7 +461,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (Value != 0UL) {
@@ -522,7 +469,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return size;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(UInt64Value other) {
       if (other == null) {
         return;
@@ -532,7 +478,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -551,38 +496,33 @@ namespace Google.Protobuf.WellKnownTypes {
   }
 
   /// <summary>
-  /// Wrapper message for `int32`.
+  ///  Wrapper message for `int32`.
   ///
-  /// The JSON representation for `Int32Value` is JSON number.
+  ///  The JSON representation for `Int32Value` is JSON number.
   /// </summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class Int32Value : pb::IMessage<Int32Value> {
     private static readonly pb::MessageParser<Int32Value> _parser = new pb::MessageParser<Int32Value>(() => new Int32Value());
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<Int32Value> Parser { get { return _parser; } }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor.MessageTypes[4]; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Int32Value() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Int32Value(Int32Value other) : this() {
       value_ = other.value_;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public Int32Value Clone() {
       return new Int32Value(this);
     }
@@ -591,9 +531,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int ValueFieldNumber = 1;
     private int value_;
     /// <summary>
-    /// The int32 value.
+    ///  The int32 value.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int Value {
       get { return value_; }
       set {
@@ -601,12 +540,10 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as Int32Value);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(Int32Value other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -618,19 +555,16 @@ namespace Google.Protobuf.WellKnownTypes {
       return true;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (Value != 0) hash ^= Value.GetHashCode();
       return hash;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (Value != 0) {
         output.WriteRawTag(8);
@@ -638,7 +572,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (Value != 0) {
@@ -647,7 +580,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return size;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(Int32Value other) {
       if (other == null) {
         return;
@@ -657,7 +589,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -676,38 +607,33 @@ namespace Google.Protobuf.WellKnownTypes {
   }
 
   /// <summary>
-  /// Wrapper message for `uint32`.
+  ///  Wrapper message for `uint32`.
   ///
-  /// The JSON representation for `UInt32Value` is JSON number.
+  ///  The JSON representation for `UInt32Value` is JSON number.
   /// </summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class UInt32Value : pb::IMessage<UInt32Value> {
     private static readonly pb::MessageParser<UInt32Value> _parser = new pb::MessageParser<UInt32Value>(() => new UInt32Value());
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<UInt32Value> Parser { get { return _parser; } }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor.MessageTypes[5]; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public UInt32Value() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public UInt32Value(UInt32Value other) : this() {
       value_ = other.value_;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public UInt32Value Clone() {
       return new UInt32Value(this);
     }
@@ -716,9 +642,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int ValueFieldNumber = 1;
     private uint value_;
     /// <summary>
-    /// The uint32 value.
+    ///  The uint32 value.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public uint Value {
       get { return value_; }
       set {
@@ -726,12 +651,10 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as UInt32Value);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(UInt32Value other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -743,19 +666,16 @@ namespace Google.Protobuf.WellKnownTypes {
       return true;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (Value != 0) hash ^= Value.GetHashCode();
       return hash;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (Value != 0) {
         output.WriteRawTag(8);
@@ -763,7 +683,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (Value != 0) {
@@ -772,7 +691,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return size;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(UInt32Value other) {
       if (other == null) {
         return;
@@ -782,7 +700,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -801,38 +718,33 @@ namespace Google.Protobuf.WellKnownTypes {
   }
 
   /// <summary>
-  /// Wrapper message for `bool`.
+  ///  Wrapper message for `bool`.
   ///
-  /// The JSON representation for `BoolValue` is JSON `true` and `false`.
+  ///  The JSON representation for `BoolValue` is JSON `true` and `false`.
   /// </summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class BoolValue : pb::IMessage<BoolValue> {
     private static readonly pb::MessageParser<BoolValue> _parser = new pb::MessageParser<BoolValue>(() => new BoolValue());
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<BoolValue> Parser { get { return _parser; } }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor.MessageTypes[6]; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public BoolValue() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public BoolValue(BoolValue other) : this() {
       value_ = other.value_;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public BoolValue Clone() {
       return new BoolValue(this);
     }
@@ -841,9 +753,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int ValueFieldNumber = 1;
     private bool value_;
     /// <summary>
-    /// The bool value.
+    ///  The bool value.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Value {
       get { return value_; }
       set {
@@ -851,12 +762,10 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as BoolValue);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(BoolValue other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -868,19 +777,16 @@ namespace Google.Protobuf.WellKnownTypes {
       return true;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (Value != false) hash ^= Value.GetHashCode();
       return hash;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (Value != false) {
         output.WriteRawTag(8);
@@ -888,7 +794,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (Value != false) {
@@ -897,7 +802,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return size;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(BoolValue other) {
       if (other == null) {
         return;
@@ -907,7 +811,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -926,38 +829,33 @@ namespace Google.Protobuf.WellKnownTypes {
   }
 
   /// <summary>
-  /// Wrapper message for `string`.
+  ///  Wrapper message for `string`.
   ///
-  /// The JSON representation for `StringValue` is JSON string.
+  ///  The JSON representation for `StringValue` is JSON string.
   /// </summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class StringValue : pb::IMessage<StringValue> {
     private static readonly pb::MessageParser<StringValue> _parser = new pb::MessageParser<StringValue>(() => new StringValue());
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<StringValue> Parser { get { return _parser; } }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor.MessageTypes[7]; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public StringValue() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public StringValue(StringValue other) : this() {
       value_ = other.value_;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public StringValue Clone() {
       return new StringValue(this);
     }
@@ -966,9 +864,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int ValueFieldNumber = 1;
     private string value_ = "";
     /// <summary>
-    /// The string value.
+    ///  The string value.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public string Value {
       get { return value_; }
       set {
@@ -976,12 +873,10 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as StringValue);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(StringValue other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -993,19 +888,16 @@ namespace Google.Protobuf.WellKnownTypes {
       return true;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (Value.Length != 0) hash ^= Value.GetHashCode();
       return hash;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (Value.Length != 0) {
         output.WriteRawTag(10);
@@ -1013,7 +905,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (Value.Length != 0) {
@@ -1022,7 +913,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return size;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(StringValue other) {
       if (other == null) {
         return;
@@ -1032,7 +922,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {
@@ -1051,38 +940,33 @@ namespace Google.Protobuf.WellKnownTypes {
   }
 
   /// <summary>
-  /// Wrapper message for `bytes`.
+  ///  Wrapper message for `bytes`.
   ///
-  /// The JSON representation for `BytesValue` is JSON string.
+  ///  The JSON representation for `BytesValue` is JSON string.
   /// </summary>
+  [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
   public sealed partial class BytesValue : pb::IMessage<BytesValue> {
     private static readonly pb::MessageParser<BytesValue> _parser = new pb::MessageParser<BytesValue>(() => new BytesValue());
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pb::MessageParser<BytesValue> Parser { get { return _parser; } }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public static pbr::MessageDescriptor Descriptor {
       get { return global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor.MessageTypes[8]; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     pbr::MessageDescriptor pb::IMessage.Descriptor {
       get { return Descriptor; }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public BytesValue() {
       OnConstruction();
     }
 
     partial void OnConstruction();
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public BytesValue(BytesValue other) : this() {
       value_ = other.value_;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public BytesValue Clone() {
       return new BytesValue(this);
     }
@@ -1091,9 +975,8 @@ namespace Google.Protobuf.WellKnownTypes {
     public const int ValueFieldNumber = 1;
     private pb::ByteString value_ = pb::ByteString.Empty;
     /// <summary>
-    /// The bytes value.
+    ///  The bytes value.
     /// </summary>
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public pb::ByteString Value {
       get { return value_; }
       set {
@@ -1101,12 +984,10 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override bool Equals(object other) {
       return Equals(other as BytesValue);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public bool Equals(BytesValue other) {
       if (ReferenceEquals(other, null)) {
         return false;
@@ -1118,19 +999,16 @@ namespace Google.Protobuf.WellKnownTypes {
       return true;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override int GetHashCode() {
       int hash = 1;
       if (Value.Length != 0) hash ^= Value.GetHashCode();
       return hash;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public override string ToString() {
       return pb::JsonFormatter.ToDiagnosticString(this);
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void WriteTo(pb::CodedOutputStream output) {
       if (Value.Length != 0) {
         output.WriteRawTag(10);
@@ -1138,7 +1016,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public int CalculateSize() {
       int size = 0;
       if (Value.Length != 0) {
@@ -1147,7 +1024,6 @@ namespace Google.Protobuf.WellKnownTypes {
       return size;
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(BytesValue other) {
       if (other == null) {
         return;
@@ -1157,7 +1033,6 @@ namespace Google.Protobuf.WellKnownTypes {
       }
     }
 
-    [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     public void MergeFrom(pb::CodedInputStream input) {
       uint tag;
       while ((tag = input.ReadTag()) != 0) {

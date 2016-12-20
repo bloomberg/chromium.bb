@@ -42,12 +42,13 @@ import protobuf_unittest.UnittestProto.TestAllTypes;
 import protobuf_unittest.UnittestProto.TestEmptyMessage;
 import protobuf_unittest.UnittestProto.TestParsingMerge;
 import protobuf_unittest.UnittestProto.TestRequired;
+
+import junit.framework.TestCase;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InterruptedIOException;
-import junit.framework.TestCase;
 
 /**
  * Unit test for {@link Parser}.
@@ -372,44 +373,5 @@ public class ParserTest extends TestCase {
     assertEquals(3, parsingMerge.getRepeatedGroupCount());
     assertEquals(3, parsingMerge.getExtensionCount(
         TestParsingMergeLite.repeatedExt));
-  }
-
-  public void testParseDelimitedFrom_firstByteInterrupted_preservesCause() {
-    try {
-      TestUtil.getAllSet().parseDelimitedFrom(
-          new InputStream() {
-            @Override
-            public int read() throws IOException {
-              throw new InterruptedIOException();
-            }
-          });
-      fail("Expected InterruptedIOException");
-    } catch (Exception e) {
-      assertEquals(InterruptedIOException.class, e.getClass());
-    }
-  }
-
-  public void testParseDelimitedFrom_secondByteInterrupted_preservesCause() {
-    try {
-      TestUtil.getAllSet().parseDelimitedFrom(
-          new InputStream() {
-            private int i;
-
-            @Override
-            public int read() throws IOException {
-              switch (i++) {
-                case 0:
-                  return 1;
-                case 1:
-                  throw new InterruptedIOException();
-                default:
-                  throw new AssertionError();
-              }
-            }
-          });
-      fail("Expected InterruptedIOException");
-    } catch (Exception e) {
-      assertEquals(InterruptedIOException.class, e.getClass());
-    }
   }
 }

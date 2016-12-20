@@ -36,42 +36,17 @@
 #import "GPBUtilities_PackagePrivate.h"
 #import "GPBWireFormat.h"
 
-NSString *const GPBCodedInputStreamException =
-    GPBNSStringifySymbol(GPBCodedInputStreamException);
-
-NSString *const GPBCodedInputStreamUnderlyingErrorKey =
-    GPBNSStringifySymbol(GPBCodedInputStreamUnderlyingErrorKey);
-
-NSString *const GPBCodedInputStreamErrorDomain =
-    GPBNSStringifySymbol(GPBCodedInputStreamErrorDomain);
-
 static const NSUInteger kDefaultRecursionLimit = 64;
-
-static void RaiseException(NSInteger code, NSString *reason) {
-  NSDictionary *errorInfo = nil;
-  if ([reason length]) {
-    errorInfo = @{ GPBErrorReasonKey: reason };
-  }
-  NSError *error = [NSError errorWithDomain:GPBCodedInputStreamErrorDomain
-                                       code:code
-                                   userInfo:errorInfo];
-
-  NSDictionary *exceptionInfo =
-      @{ GPBCodedInputStreamUnderlyingErrorKey: error };
-  [[[NSException alloc] initWithName:GPBCodedInputStreamException
-                              reason:reason
-                            userInfo:exceptionInfo] raise];
-}
 
 static void CheckSize(GPBCodedInputStreamState *state, size_t size) {
   size_t newSize = state->bufferPos + size;
   if (newSize > state->bufferSize) {
-    RaiseException(GPBCodedInputStreamErrorInvalidSize, nil);
+    [NSException raise:NSParseErrorException format:@""];
   }
   if (newSize > state->currentLimit) {
     // Fast forward to end of currentLimit;
     state->bufferPos = state->currentLimit;
-    RaiseException(GPBCodedInputStreamErrorSubsectionLimitReached, nil);
+    [NSException raise:NSParseErrorException format:@""];
   }
 }
 
@@ -120,8 +95,8 @@ static int32_t ReadRawVarint32(GPBCodedInputStreamState *state) {
               return result;
             }
           }
-          RaiseException(GPBCodedInputStreamErrorInvalidVarInt,
-                         @"Invalid VarInt32");
+          [NSException raise:NSParseErrorException
+                      format:@"Unable to read varint32"];
         }
       }
     }
@@ -140,7 +115,7 @@ static int64_t ReadRawVarint64(GPBCodedInputStreamState *state) {
     }
     shift += 7;
   }
-  RaiseException(GPBCodedInputStreamErrorInvalidVarInt, @"Invalid VarInt64");
+  [NSException raise:NSParseErrorException format:@"Unable to read varint64"];
   return 0;
 }
 
@@ -227,13 +202,8 @@ int32_t GPBCodedInputStreamReadTag(GPBCodedInputStreamState *state) {
   state->lastTag = ReadRawVarint32(state);
   if (state->lastTag == 0) {
     // If we actually read zero, that's not a valid tag.
-    RaiseException(GPBCodedInputStreamErrorInvalidTag,
-                   @"A zero tag on the wire is invalid.");
-  }
-  // Tags have to include a valid wireformat, check that also.
-  if (!GPBWireFormatIsValidTag(state->lastTag)) {
-    RaiseException(GPBCodedInputStreamErrorInvalidTag,
-                   @"Invalid wireformat in tag.");
+    [NSException raise:NSParseErrorException
+                format:@"Invalid last tag %d", state->lastTag];
   }
   return state->lastTag;
 }
@@ -256,7 +226,8 @@ NSString *GPBCodedInputStreamReadRetainedString(
       NSLog(@"UTF-8 failure, is some field type 'string' when it should be "
             @"'bytes'?");
 #endif
-      RaiseException(GPBCodedInputStreamErrorInvalidUTF8, nil);
+      [NSException raise:NSParseErrorException
+                  format:@"Invalid UTF-8 for a 'string'"];
     }
   }
   return result;
@@ -291,7 +262,8 @@ size_t GPBCodedInputStreamPushLimit(GPBCodedInputStreamState *state,
   byteLimit += state->bufferPos;
   size_t oldLimit = state->currentLimit;
   if (byteLimit > oldLimit) {
-    RaiseException(GPBCodedInputStreamErrorInvalidSubsectionLimit, nil);
+    [NSException raise:NSInvalidArgumentException
+                format:@"byteLimit > oldLimit: %tu > %tu", byteLimit, oldLimit];
   }
   state->currentLimit = byteLimit;
   return oldLimit;
@@ -314,7 +286,8 @@ BOOL GPBCodedInputStreamIsAtEnd(GPBCodedInputStreamState *state) {
 void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
                                         int32_t value) {
   if (state->lastTag != value) {
-    RaiseException(GPBCodedInputStreamErrorInvalidTag, @"Unexpected tag read");
+    [NSException raise:NSParseErrorException
+                format:@"Last tag: %d should be %d", state->lastTag, value];
   }
 }
 
@@ -343,12 +316,6 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
   [super dealloc];
 }
 
-// Direct access is use for speed, to avoid even internally declaring things
-// read/write, etc. The warning is enabled in the project to ensure code calling
-// protos can turn on -Wdirect-ivar-access without issues.
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdirect-ivar-access"
-
 - (int32_t)readTag {
   return GPBCodedInputStreamReadTag(&state_);
 }
@@ -358,7 +325,6 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
 }
 
 - (BOOL)skipField:(int32_t)tag {
-  NSAssert(GPBWireFormatIsValidTag(tag), @"Invalid tag");
   switch (GPBWireFormatGetTagWireType(tag)) {
     case GPBWireFormatVarint:
       GPBCodedInputStreamReadInt32(&state_);
@@ -381,6 +347,8 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
       SkipRawData(&state_, sizeof(int32_t));
       return YES;
   }
+  [NSException raise:NSParseErrorException format:@"Invalid tag %d", tag];
+  return NO;
 }
 
 - (void)skipMessage {
@@ -398,14 +366,6 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
 
 - (size_t)position {
   return state_.bufferPos;
-}
-
-- (size_t)pushLimit:(size_t)byteLimit {
-  return GPBCodedInputStreamPushLimit(&state_, byteLimit);
-}
-
-- (void)popLimit:(size_t)oldLimit {
-  GPBCodedInputStreamPopLimit(&state_, oldLimit);
 }
 
 - (double)readDouble {
@@ -448,7 +408,9 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
               message:(GPBMessage *)message
     extensionRegistry:(GPBExtensionRegistry *)extensionRegistry {
   if (state_.recursionDepth >= kDefaultRecursionLimit) {
-    RaiseException(GPBCodedInputStreamErrorRecursionDepthExceeded, nil);
+    [NSException raise:NSParseErrorException
+                format:@"recursionDepth(%tu) >= %tu", state_.recursionDepth,
+                       kDefaultRecursionLimit];
   }
   ++state_.recursionDepth;
   [message mergeFromCodedInputStream:self extensionRegistry:extensionRegistry];
@@ -460,7 +422,9 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
 - (void)readUnknownGroup:(int32_t)fieldNumber
                  message:(GPBUnknownFieldSet *)message {
   if (state_.recursionDepth >= kDefaultRecursionLimit) {
-    RaiseException(GPBCodedInputStreamErrorRecursionDepthExceeded, nil);
+    [NSException raise:NSParseErrorException
+                format:@"recursionDepth(%tu) >= %tu", state_.recursionDepth,
+                       kDefaultRecursionLimit];
   }
   ++state_.recursionDepth;
   [message mergeFromCodedInputStream:self];
@@ -473,7 +437,9 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
     extensionRegistry:(GPBExtensionRegistry *)extensionRegistry {
   int32_t length = ReadRawVarint32(&state_);
   if (state_.recursionDepth >= kDefaultRecursionLimit) {
-    RaiseException(GPBCodedInputStreamErrorRecursionDepthExceeded, nil);
+    [NSException raise:NSParseErrorException
+                format:@"recursionDepth(%tu) >= %tu", state_.recursionDepth,
+                       kDefaultRecursionLimit];
   }
   size_t oldLimit = GPBCodedInputStreamPushLimit(&state_, length);
   ++state_.recursionDepth;
@@ -489,7 +455,9 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
         parentMessage:(GPBMessage *)parentMessage {
   int32_t length = ReadRawVarint32(&state_);
   if (state_.recursionDepth >= kDefaultRecursionLimit) {
-    RaiseException(GPBCodedInputStreamErrorRecursionDepthExceeded, nil);
+    [NSException raise:NSParseErrorException
+                format:@"recursionDepth(%tu) >= %tu", state_.recursionDepth,
+                       kDefaultRecursionLimit];
   }
   size_t oldLimit = GPBCodedInputStreamPushLimit(&state_, length);
   ++state_.recursionDepth;
@@ -527,7 +495,5 @@ void GPBCodedInputStreamCheckLastTagWas(GPBCodedInputStreamState *state,
 - (int64_t)readSInt64 {
   return GPBCodedInputStreamReadSInt64(&state_);
 }
-
-#pragma clang diagnostic pop
 
 @end

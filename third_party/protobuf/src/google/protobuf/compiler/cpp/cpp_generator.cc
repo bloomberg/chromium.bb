@@ -59,7 +59,7 @@ bool CppGenerator::Generate(const FileDescriptor* file,
                             const string& parameter,
                             GeneratorContext* generator_context,
                             string* error) const {
-  std::vector<std::pair<string, string> > options;
+  vector<pair<string, string> > options;
   ParseGeneratorParameter(parameter, &options);
 
   // -----------------------------------------------------------------

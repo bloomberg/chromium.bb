@@ -3,13 +3,14 @@ Short Name: protobuf
 URL: https://github.com/google/protobuf
 License: BSD
 License File: LICENSE
-Version: 3.1.0
-Revision: 83d681ee2caef1feb009656417830f846382d8ba
+Version: 3.0.0-beta-3
+Revision: 3470b6895aa659b7559ed678e029a5338e535f14
 Security Critical: yes
 
 Steps used to create the current version:
 1. Pull the release from https://github.com/google/protobuf/releases
-2. Add build files (BUILD.gn, proto_library.gni).
+2. Add build files (BUILD.gn, proto_library.gni, protobuf.gyp,
+   protobuf_lite.gypi, protobuf_nacl.gyp).
 
    Be sure to update the list of source files, as additional .cc files and
    headers might have been added -- you need to find the transitive closure of
@@ -24,8 +25,7 @@ Steps used to create the current version:
    $ for patch in patches/*; do patch -s -p1 < $patch; done
 
    For future releases, it will be worth looking into which patches still need
-   to be applied. In case of conflict, update those patches accordingly and save
-   them back in place (i.e. in patches directory).
+   to be applied.
 5. Generate descriptor_pb2.py using something like the following steps. Make
    sure you've regenerated your buildfiles and will build protoc from the
    newly-modified sources above.
@@ -55,6 +55,13 @@ Description of the patches:
   protobuf symbols in Linux .so libraries, so that protobuf can be built as a
   component (see http://crrev.com/179806).
 
+- 0005-fix-include-js-generator.protobuf
+
+  During merge with internal branch, the <> in one of the #includes were
+  accidentally replaced with "", which results in a failure in checkdeps.
+
+  Fixed in https://github.com/google/protobuf/pull/1547.
+
 - 0007-uninline_googleonce.patch
 - 0008-uninline_get_empty_string.patch
 - 0009-uninline-arenastring.patch
@@ -62,3 +69,10 @@ Description of the patches:
 
   These patches uninline some functions, resulting in a significant reduction
   (somewhere between 500 KB and 1 MB) of binary size.
+
+- 0011-libprotobuf_export.patch
+
+  During merge with internal branch, the dll export attribute was accidentally
+  removed in C++11 mode.
+
+  Fixed in https://github.com/google/protobuf/pull/1549

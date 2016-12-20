@@ -67,7 +67,7 @@ class LIBPROTOBUF_EXPORT ReflectionOps {
   // the front of each name.
   static void FindInitializationErrors(const Message& message,
                                        const string& prefix,
-                                       std::vector<string>* errors);
+                                       vector<string>* errors);
 
  private:
   // All methods are static.  No need to construct.

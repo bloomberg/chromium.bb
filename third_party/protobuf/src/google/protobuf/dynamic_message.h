@@ -136,11 +136,11 @@ class LIBPROTOBUF_EXPORT DynamicMessageFactory : public MessageFactory {
   // Construct default oneof instance for reflection usage if oneof
   // is defined.
   static void ConstructDefaultOneofInstance(const Descriptor* type,
-                                            const uint32 offsets[],
+                                            const int offsets[],
                                             void* default_oneof_instance);
   // Delete default oneof instance. Called by ~DynamicMessageFactory.
   static void DeleteDefaultOneofInstance(const Descriptor* type,
-                                         const uint32 offsets[],
+                                         const int offsets[],
                                          void* default_oneof_instance);
 
   GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(DynamicMessageFactory);

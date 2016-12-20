@@ -297,7 +297,7 @@ public final class DynamicMessage extends AbstractMessage {
         } catch (InvalidProtocolBufferException e) {
           throw e.setUnfinishedMessage(builder.buildPartial());
         } catch (IOException e) {
-          throw new InvalidProtocolBufferException(e)
+          throw new InvalidProtocolBufferException(e.getMessage())
               .setUnfinishedMessage(builder.buildPartial());
         }
         return builder.buildPartial();
@@ -526,14 +526,6 @@ public final class DynamicMessage extends AbstractMessage {
           fields.clearField(oldField);
         }
         oneofCases[index] = field;
-      } else if (field.getFile().getSyntax() == Descriptors.FileDescriptor.Syntax.PROTO3) {
-        if (!field.isRepeated()
-            && field.getJavaType() != FieldDescriptor.JavaType.MESSAGE
-            && value.equals(field.getDefaultValue())) {
-          // In proto3, setting a field to its default value is equivalent to clearing the field.
-          fields.clearField(field);
-          return this;
-        }
       }
       fields.setField(field, value);
       return this;

@@ -58,7 +58,7 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
                       int builderBitIndex,
                       const FieldGeneratorInfo* info,
                       ClassNameResolver* name_resolver,
-                      std::map<string, string>* variables) {
+                      map<string, string>* variables) {
   SetCommonFieldVariables(descriptor, info, variables);
 
   (*variables)["type"] =
@@ -68,8 +68,7 @@ void SetEnumVariables(const FieldDescriptor* descriptor,
   (*variables)["default"] = ImmutableDefaultValue(descriptor, name_resolver);
   (*variables)["default_number"] = SimpleItoa(
       descriptor->default_value_enum()->number());
-  (*variables)["tag"] =
-      SimpleItoa(static_cast<int32>(internal::WireFormat::MakeTag(descriptor)));
+  (*variables)["tag"] = SimpleItoa(internal::WireFormat::MakeTag(descriptor));
   (*variables)["tag_size"] = SimpleItoa(
       internal::WireFormat::TagSize(descriptor->number(), GetType(descriptor)));
   // TODO(birdo): Add @deprecated javadoc when generating javadoc is supported
@@ -259,9 +258,7 @@ GenerateFieldBuilderInitializationCode(io::Printer* printer)  const {
 
 void ImmutableEnumFieldLiteGenerator::
 GenerateInitializationCode(io::Printer* printer) const {
-  if (!IsDefaultValueJavaDefault(descriptor_)) {
-    printer->Print(variables_, "$name$_ = $default_number$;\n");
-  }
+  printer->Print(variables_, "$name$_ = $default_number$;\n");
 }
 
 void ImmutableEnumFieldLiteGenerator::
@@ -888,8 +885,8 @@ GenerateSerializationCode(io::Printer* printer) const {
   if (descriptor_->options().packed()) {
     printer->Print(variables_,
       "if (get$capitalized_name$List().size() > 0) {\n"
-      "  output.writeUInt32NoTag($tag$);\n"
-      "  output.writeUInt32NoTag($name$MemoizedSerializedSize);\n"
+      "  output.writeRawVarint32($tag$);\n"
+      "  output.writeRawVarint32($name$MemoizedSerializedSize);\n"
       "}\n"
       "for (int i = 0; i < $name$_.size(); i++) {\n"
       "  output.writeEnumNoTag($name$_.getInt(i));\n"
@@ -921,7 +918,7 @@ GenerateSerializedSizeCode(io::Printer* printer) const {
       "if (!get$capitalized_name$List().isEmpty()) {"
       "  size += $tag_size$;\n"
       "  size += com.google.protobuf.CodedOutputStream\n"
-      "    .computeUInt32SizeNoTag(dataSize);\n"
+      "    .computeRawVarint32Size(dataSize);\n"
       "}");
   } else {
     printer->Print(variables_,
