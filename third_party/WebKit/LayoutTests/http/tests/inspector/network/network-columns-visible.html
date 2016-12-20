@@ -17,6 +17,8 @@ function test() {
 
     function onNodeInserted(node)
     {
+        if (node.dataGrid !== UI.panels.network._networkLogView._dataGrid)
+            return;
         if (node.request().name() !== "empty.html?xhr")
             return;
         xhrNode = node;
@@ -45,7 +47,7 @@ function test() {
 
     InspectorTest.recordNetwork();
     InspectorTest.networkManager.addEventListener(SDK.NetworkManager.Events.RequestFinished, onRequestFinished);
-    InspectorTest.addSniffer(UI.panels.network._networkLogView._dataGrid, "insertChild", onNodeInserted, true);
+    InspectorTest.addSniffer(UI.SortableDataGridNode.prototype, "insertChild", onNodeInserted, true);
     InspectorTest.NetworkAgent.setCacheDisabled(true, InspectorTest.evaluateInPage.bind(null, "sendXHRRequest()"));
 }
 </script>
