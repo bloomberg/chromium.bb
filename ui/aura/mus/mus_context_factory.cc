@@ -5,7 +5,6 @@
 #include "ui/aura/mus/mus_context_factory.h"
 
 #include "base/memory/ptr_util.h"
-#include "services/ui/public/cpp/context_provider.h"
 #include "services/ui/public/cpp/gpu/gpu.h"
 #include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/window_tree_host.h"
@@ -13,22 +12,32 @@
 
 namespace aura {
 
-MusContextFactory::MusContextFactory(ui::Gpu* gpu) : gpu_(gpu) {}
+MusContextFactory::MusContextFactory(ui::Gpu* gpu)
+    : gpu_(gpu), weak_ptr_factory_(this) {}
 
 MusContextFactory::~MusContextFactory() {}
 
-void MusContextFactory::CreateCompositorFrameSink(
-    base::WeakPtr<ui::Compositor> compositor) {
+void MusContextFactory::OnEstablishedGpuChannel(
+    base::WeakPtr<ui::Compositor> compositor,
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel) {
+  if (!compositor)
+    return;
   WindowTreeHost* host =
       WindowTreeHost::GetForAcceleratedWidget(compositor->widget());
   WindowPortMus* window_port = WindowPortMus::Get(host->window());
   DCHECK(window_port);
   auto compositor_frame_sink = window_port->RequestCompositorFrameSink(
       ui::mojom::CompositorFrameSinkType::DEFAULT,
-      make_scoped_refptr(
-          new ui::ContextProvider(gpu_->EstablishGpuChannelSync())),
+      gpu_->CreateContextProvider(std::move(gpu_channel)),
       gpu_->gpu_memory_buffer_manager());
   compositor->SetCompositorFrameSink(std::move(compositor_frame_sink));
+}
+
+void MusContextFactory::CreateCompositorFrameSink(
+    base::WeakPtr<ui::Compositor> compositor) {
+  gpu_->EstablishGpuChannel(
+      base::Bind(&MusContextFactory::OnEstablishedGpuChannel,
+                 weak_ptr_factory_.GetWeakPtr(), compositor));
 }
 
 scoped_refptr<cc::ContextProvider>

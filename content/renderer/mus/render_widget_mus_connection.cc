@@ -11,7 +11,6 @@
 #include "content/renderer/mus/compositor_mus_connection.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
-#include "services/ui/public/cpp/context_provider.h"
 #include "services/ui/public/cpp/window_compositor_frame_sink.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 
@@ -40,16 +39,15 @@ void RenderWidgetMusConnection::Bind(
 
 std::unique_ptr<cc::CompositorFrameSink>
 RenderWidgetMusConnection::CreateCompositorFrameSink(
-    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+    scoped_refptr<cc::ContextProvider> context_provider,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!window_compositor_frame_sink_binding_);
 
   std::unique_ptr<cc::CompositorFrameSink> compositor_frame_sink(
       ui::WindowCompositorFrameSink::Create(
-          make_scoped_refptr(
-              new ui::ContextProvider(std::move(gpu_channel_host))),
-          gpu_memory_buffer_manager, &window_compositor_frame_sink_binding_));
+          std::move(context_provider), gpu_memory_buffer_manager,
+          &window_compositor_frame_sink_binding_));
   if (compositor_mus_connection_) {
     compositor_mus_connection_->AttachCompositorFrameSinkOnMainThread(
         std::move(window_compositor_frame_sink_binding_));

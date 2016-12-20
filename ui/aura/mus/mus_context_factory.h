@@ -8,11 +8,17 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "cc/surfaces/surface_manager.h"
 #include "services/ui/public/cpp/raster_thread_helper.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/aura_export.h"
 #include "ui/compositor/compositor.h"
+
+namespace gpu {
+class GpuChannelHost;
+}
 
 namespace ui {
 class Gpu;
@@ -27,6 +33,10 @@ class AURA_EXPORT MusContextFactory : public ui::ContextFactory {
   ~MusContextFactory() override;
 
  private:
+  // Callback function for Gpu::EstablishGpuChannel().
+  void OnEstablishedGpuChannel(base::WeakPtr<ui::Compositor> compositor,
+                               scoped_refptr<gpu::GpuChannelHost> gpu_channel);
+
   // ContextFactory:
   void CreateCompositorFrameSink(
       base::WeakPtr<ui::Compositor> compositor) override;
@@ -42,6 +52,7 @@ class AURA_EXPORT MusContextFactory : public ui::ContextFactory {
 
   ui::RasterThreadHelper raster_thread_helper_;
   ui::Gpu* gpu_;
+  base::WeakPtrFactory<MusContextFactory> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MusContextFactory);
 };

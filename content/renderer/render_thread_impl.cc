@@ -1931,10 +1931,9 @@ RenderThreadImpl::CreateCompositorFrameSink(
       command_line.HasSwitch(switches::kUseMusInRenderer)) {
     RenderWidgetMusConnection* connection =
         RenderWidgetMusConnection::GetOrCreate(routing_id);
-    scoped_refptr<gpu::GpuChannelHost> gpu_channel_host =
-        EstablishGpuChannelSync();
-    return connection->CreateCompositorFrameSink(std::move(gpu_channel_host),
-                                                 GetGpuMemoryBufferManager());
+    return connection->CreateCompositorFrameSink(
+        gpu_->CreateContextProvider(EstablishGpuChannelSync()),
+        GetGpuMemoryBufferManager());
   }
 #endif
 

@@ -8,7 +8,6 @@ import("//build/config/ui.gni")
 # implementation (and private haders) are in 'internal'.
 source_set("cpp") {
   sources = [
-    "context_provider.h",
     "input_event_handler.h",
     "property_type_converters.h",
     "raster_thread_helper.h",
@@ -31,11 +30,7 @@ source_set("cpp") {
     "//cc",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
-    "//gpu/command_buffer/client",
-    "//gpu/command_buffer/client:gles2_implementation",
-    "//gpu/command_buffer/common",
     "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/system",
     "//services/service_manager/public/interfaces",
     "//services/ui/common:mus_common",
     "//services/ui/public/cpp/gpu",
@@ -93,9 +88,6 @@ source_set("internal") {
   ]
 
   sources = [
-    "context_provider.cc",
-    "gles2_context.cc",
-    "gles2_context.h",
     "in_flight_change.cc",
     "in_flight_change.h",
     "property_type_converters.cc",
@@ -117,14 +109,7 @@ source_set("internal") {
     "//cc",
     "//cc/surfaces",
     "//cc/surfaces:surface_id",
-    "//gpu/command_buffer/client",
-    "//gpu/command_buffer/client:gles2_cmd_helper",
-    "//gpu/command_buffer/client:gles2_implementation",
-    "//gpu/command_buffer/client:gles2_interface",
-    "//gpu/command_buffer/common",
-    "//gpu/ipc/client",
     "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//services/ui/common:mus_common",

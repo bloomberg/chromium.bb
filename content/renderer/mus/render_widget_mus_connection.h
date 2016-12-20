@@ -8,12 +8,12 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "cc/output/compositor_frame_sink.h"
+#include "cc/output/context_provider.h"
 #include "content/common/content_export.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/mus/compositor_mus_connection.h"
 
 namespace gpu {
-class GpuChannelHost;
 class GpuMemoryBufferManager;
 }
 
@@ -28,7 +28,7 @@ class CONTENT_EXPORT RenderWidgetMusConnection
 
   // Create a cc output surface.
   std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
-      scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
+      scoped_refptr<cc::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
 
   static RenderWidgetMusConnection* Get(int routing_id);

@@ -10,6 +10,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
+#include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
 
@@ -62,6 +63,27 @@ std::unique_ptr<Gpu> Gpu::Create(
     service_manager::InterfaceProvider* provider,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   return base::WrapUnique(new Gpu(nullptr, provider, std::move(task_runner)));
+}
+
+scoped_refptr<cc::ContextProvider> Gpu::CreateContextProvider(
+    scoped_refptr<gpu::GpuChannelHost> gpu_channel) {
+  constexpr bool automatic_flushes = false;
+  constexpr bool support_locking = false;
+  gpu::gles2::ContextCreationAttribHelper attributes;
+  attributes.alpha_size = -1;
+  attributes.depth_size = 0;
+  attributes.stencil_size = 0;
+  attributes.samples = 0;
+  attributes.sample_buffers = 0;
+  attributes.bind_generates_resource = false;
+  attributes.lose_context_when_out_of_memory = true;
+  constexpr ui::ContextProviderCommandBuffer* shared_context_provider = nullptr;
+  return make_scoped_refptr(new ui::ContextProviderCommandBuffer(
+      std::move(gpu_channel), gpu::GPU_STREAM_DEFAULT,
+      gpu::GpuStreamPriority::NORMAL, gpu::kNullSurfaceHandle,
+      GURL("chrome://gpu/MusContextFactory"), automatic_flushes,
+      support_locking, gpu::SharedMemoryLimits(), attributes,
+      shared_context_provider, ui::command_buffer_metrics::MUS_CLIENT_CONTEXT));
 }
 
 void Gpu::EstablishGpuChannel(
