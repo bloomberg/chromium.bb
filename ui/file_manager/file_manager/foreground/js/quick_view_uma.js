@@ -6,16 +6,22 @@
  * UMA exporter for Quick View.
  *
  * @param {!VolumeManagerWrapper} volumeManager
+ * @param {!DialogType} dialogType
  *
  * @constructor
  */
-function QuickViewUma(volumeManager) {
+function QuickViewUma(volumeManager, dialogType) {
 
   /**
    * @type {!VolumeManagerWrapper}
    * @private
    */
   this.volumeManager_ = volumeManager;
+  /**
+   * @type {DialogType}
+   * @private
+   */
+  this.dialogType_ = dialogType;
 }
 
 /**
@@ -73,4 +79,13 @@ QuickViewUma.prototype.onOpened = function(entry) {
   } else {
     console.error('Unknown volume type: ' + volumeType);
   }
+  // Record stats of dialog types. It must be in sync with
+  // FileDialogType enum in tools/metrics/histograms/histogram.xml.
+  metrics.recordEnum('QuickView.DialogType', this.dialogType_,
+      [DialogType.SELECT_FOLDER,
+       DialogType.SELECT_UPLOAD_FOLDER,
+       DialogType.SELECT_SAVEAS_FILE,
+       DialogType.SELECT_OPEN_FILE,
+       DialogType.SELECT_OPEN_MULTI_FILE,
+       DialogType.FULL_PAGE]);
 };

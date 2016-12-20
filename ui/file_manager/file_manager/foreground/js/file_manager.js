@@ -548,8 +548,8 @@ FileManager.prototype = /** @struct */ {
     chrome.commandLinePrivate.hasSwitch(
         'disable-files-quick-view', function(disabled) {
           if (!disabled) {
-            this.quickViewUma_ =
-                new QuickViewUma(assert(this.volumeManager_));
+            this.quickViewUma_ = new QuickViewUma(
+                assert(this.volumeManager_), assert(this.dialogType));
             this.quickViewController_ = new QuickViewController(
                 quickView, assert(this.metadataModel_),
                 assert(this.selectionHandler_),
