@@ -366,9 +366,11 @@ const user_manager::User* ProfileHelper::GetUserByProfile(
     return user_manager->GetActiveUser();
   }
 
+  // Finds the matching user in logged-in user list since only a logged-in
+  // user would have a profile.
   const std::string username_hash =
       ProfileHelper::GetUserIdHashFromProfile(profile);
-  const user_manager::UserList& users = user_manager->GetUsers();
+  const user_manager::UserList& users = user_manager->GetLoggedInUsers();
   const user_manager::UserList::const_iterator pos = std::find_if(
       users.begin(), users.end(), UsernameHashMatcher(username_hash));
   if (pos != users.end())
