@@ -81,9 +81,8 @@ class PermissionContextBase : public KeyedService {
                                  const BrowserPermissionCallback& callback);
 
   // Returns whether the permission has been granted, denied...
-  virtual ContentSetting GetPermissionStatus(
-      const GURL& requesting_origin,
-      const GURL& embedding_origin) const;
+  ContentSetting GetPermissionStatus(const GURL& requesting_origin,
+                                     const GURL& embedding_origin) const;
 
   // Resets the permission to its default value.
   virtual void ResetPermission(const GURL& requesting_origin,
@@ -100,6 +99,10 @@ class PermissionContextBase : public KeyedService {
   bool IsPermissionKillSwitchOn() const;
 
  protected:
+  virtual ContentSetting GetPermissionStatusInternal(
+      const GURL& requesting_origin,
+      const GURL& embedding_origin) const;
+
   // Decide whether the permission should be granted.
   // Calls PermissionDecided if permission can be decided non-interactively,
   // or NotifyPermissionSet if permission decided by presenting an infobar.

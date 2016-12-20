@@ -124,7 +124,6 @@ void PermissionContextBase::RequestPermission(
 ContentSetting PermissionContextBase::GetPermissionStatus(
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
-
   // If the permission has been disabled through Finch, block all requests.
   if (IsPermissionKillSwitchOn())
     return CONTENT_SETTING_BLOCK;
@@ -134,9 +133,7 @@ ContentSetting PermissionContextBase::GetPermissionStatus(
     return CONTENT_SETTING_BLOCK;
   }
 
-  return HostContentSettingsMapFactory::GetForProfile(profile_)
-      ->GetContentSetting(requesting_origin, embedding_origin,
-                          content_settings_type_, std::string());
+  return GetPermissionStatusInternal(requesting_origin, embedding_origin);
 }
 
 void PermissionContextBase::ResetPermission(
@@ -167,6 +164,22 @@ void PermissionContextBase::CancelPermissionRequest(
     NOTREACHED();
 #endif
   }
+}
+
+bool PermissionContextBase::IsPermissionKillSwitchOn() const {
+  const std::string param = variations::GetVariationParamValue(
+      kPermissionsKillSwitchFieldStudy,
+      PermissionUtil::GetPermissionString(permission_type_));
+
+  return param == kPermissionsKillSwitchBlockedValue;
+}
+
+ContentSetting PermissionContextBase::GetPermissionStatusInternal(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) const {
+  return HostContentSettingsMapFactory::GetForProfile(profile_)
+      ->GetContentSetting(requesting_origin, embedding_origin,
+                          content_settings_type_, std::string());
 }
 
 void PermissionContextBase::DecidePermission(
@@ -309,12 +322,4 @@ void PermissionContextBase::UpdateContentSetting(
       ->SetContentSettingDefaultScope(requesting_origin, embedding_origin,
                                       content_settings_type_, std::string(),
                                       content_setting);
-}
-
-bool PermissionContextBase::IsPermissionKillSwitchOn() const {
-  const std::string param = variations::GetVariationParamValue(
-      kPermissionsKillSwitchFieldStudy,
-      PermissionUtil::GetPermissionString(permission_type_));
-
-  return param == kPermissionsKillSwitchBlockedValue;
 }

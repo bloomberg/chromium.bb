@@ -37,7 +37,7 @@ FlashPermissionContext::FlashPermissionContext(Profile* profile)
 
 FlashPermissionContext::~FlashPermissionContext() {}
 
-ContentSetting FlashPermissionContext::GetPermissionStatus(
+ContentSetting FlashPermissionContext::GetPermissionStatusInternal(
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
   HostContentSettingsMap* host_content_settings_map =

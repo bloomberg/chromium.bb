@@ -18,7 +18,7 @@ class FlashPermissionContext : public PermissionContextBase {
 
  private:
   // PermissionContextBase:
-  ContentSetting GetPermissionStatus(
+  ContentSetting GetPermissionStatusInternal(
       const GURL& requesting_origin,
       const GURL& embedding_origin) const override;
   void UpdateTabContext(const PermissionRequestID& id,

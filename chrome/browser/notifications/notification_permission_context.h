@@ -19,7 +19,7 @@ class NotificationPermissionContext : public PermissionContextBase {
   ~NotificationPermissionContext() override;
 
   // PermissionContextBase implementation.
-  ContentSetting GetPermissionStatus(
+  ContentSetting GetPermissionStatusInternal(
       const GURL& requesting_origin,
       const GURL& embedding_origin) const override;
   void ResetPermission(const GURL& requesting_origin,

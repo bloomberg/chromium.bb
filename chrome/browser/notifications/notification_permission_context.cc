@@ -172,7 +172,7 @@ NotificationPermissionContext::NotificationPermissionContext(
 
 NotificationPermissionContext::~NotificationPermissionContext() {}
 
-ContentSetting NotificationPermissionContext::GetPermissionStatus(
+ContentSetting NotificationPermissionContext::GetPermissionStatusInternal(
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
   // Push messaging is only allowed to be granted on top-level origins.
@@ -181,8 +181,8 @@ ContentSetting NotificationPermissionContext::GetPermissionStatus(
     return CONTENT_SETTING_BLOCK;
   }
 
-  return PermissionContextBase::GetPermissionStatus(requesting_origin,
-                                                    embedding_origin);
+  return PermissionContextBase::GetPermissionStatusInternal(requesting_origin,
+                                                            embedding_origin);
 }
 
 void NotificationPermissionContext::ResetPermission(

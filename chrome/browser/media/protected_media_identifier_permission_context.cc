@@ -83,9 +83,10 @@ void ProtectedMediaIdentifierPermissionContext::DecidePermission(
 }
 #endif  // defined(OS_CHROMEOS)
 
-ContentSetting ProtectedMediaIdentifierPermissionContext::GetPermissionStatus(
-      const GURL& requesting_origin,
-      const GURL& embedding_origin) const {
+ContentSetting
+ProtectedMediaIdentifierPermissionContext::GetPermissionStatusInternal(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) const {
   DVLOG(1) << __func__ << ": (" << requesting_origin.spec() << ", "
            << embedding_origin.spec() << ")";
 
@@ -94,8 +95,9 @@ ContentSetting ProtectedMediaIdentifierPermissionContext::GetPermissionStatus(
     return CONTENT_SETTING_BLOCK;
   }
 
-  ContentSetting content_setting = PermissionContextBase::GetPermissionStatus(
-      requesting_origin, embedding_origin);
+  ContentSetting content_setting =
+      PermissionContextBase::GetPermissionStatusInternal(requesting_origin,
+                                                         embedding_origin);
   DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
          content_setting == CONTENT_SETTING_BLOCK ||
          content_setting == CONTENT_SETTING_ASK);

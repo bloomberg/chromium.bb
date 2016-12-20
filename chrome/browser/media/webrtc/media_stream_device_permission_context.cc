@@ -33,7 +33,7 @@ void MediaStreamDevicePermissionContext::RequestPermission(
   callback.Run(CONTENT_SETTING_BLOCK);
 }
 
-ContentSetting MediaStreamDevicePermissionContext::GetPermissionStatus(
+ContentSetting MediaStreamDevicePermissionContext::GetPermissionStatusInternal(
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
   // TODO(raymes): Merge this policy check into content settings
@@ -63,7 +63,7 @@ ContentSetting MediaStreamDevicePermissionContext::GetPermissionStatus(
 
   // Check the content setting. TODO(raymes): currently mic/camera permission
   // doesn't consider the embedder.
-  ContentSetting setting = PermissionContextBase::GetPermissionStatus(
+  ContentSetting setting = PermissionContextBase::GetPermissionStatusInternal(
       requesting_origin, requesting_origin);
 
   if (setting == CONTENT_SETTING_DEFAULT)
