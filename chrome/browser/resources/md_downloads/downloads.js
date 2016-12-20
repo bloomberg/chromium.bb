@@ -3,6 +3,13 @@
 // found in the LICENSE file.
 
 window.addEventListener('load', function() {
-  downloads.Manager.onLoad();
-  document.fonts.load('bold 12px Roboto');
+  downloads.Manager.onLoad().then(function() {
+    requestIdleCallback(function() {
+      chrome.send('metricsHandler:recordTime', [
+        'Download.ResultsRenderedTime',
+        window.performance.now()
+      ]);
+      document.fonts.load('bold 12px Roboto');
+    });
+  });
 });

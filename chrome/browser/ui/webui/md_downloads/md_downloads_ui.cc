@@ -14,6 +14,7 @@
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/md_downloads/md_downloads_dom_handler.h"
+#include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/theme_source.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
@@ -144,6 +145,7 @@ MdDownloadsUI::MdDownloadsUI(content::WebUI* web_ui) : WebUIController(web_ui) {
 
   handler_ = new MdDownloadsDOMHandler(dlm, web_ui);
   web_ui->AddMessageHandler(handler_);
+  web_ui->AddMessageHandler(new MetricsHandler);
 
   // Set up the chrome://downloads/ source.
   content::WebUIDataSource* source = CreateDownloadsUIHTMLSource(profile);

@@ -52,6 +52,9 @@ cr.define('downloads', function() {
       'itemsChanged_(items_.*)',
     ],
 
+    /** @private {!PromiseResolver} */
+    loaded_: new PromiseResolver,
+
     /** @private */
     clearAll_: function() {
       this.set('items_', []);
@@ -74,7 +77,12 @@ cr.define('downloads', function() {
     insertItems_: function(index, list) {
       this.splice.apply(this, ['items_', index, 0].concat(list));
       this.updateHideDates_(index, index + list.length);
-      this.removeAttribute('loading');
+
+      if (this.hasAttribute('loading')) {
+        this.removeAttribute('loading');
+        this.loaded_.resolve();
+      }
+
       this.spinnerActive_ = false;
     },
 
@@ -134,13 +142,17 @@ cr.define('downloads', function() {
       this.hasShadow_ = list.scrollTop > 0;
     },
 
-    /** @private */
+    /**
+     * @return {!Promise}
+     * @private
+     */
     onLoad_: function() {
       cr.ui.decorate('command', cr.ui.Command);
       document.addEventListener('canExecute', this.onCanExecute_.bind(this));
       document.addEventListener('command', this.onCommand_.bind(this));
 
       downloads.ActionService.getInstance().loadMore();
+      return this.loaded_.promise;
     },
 
     /** @private */
@@ -201,8 +213,9 @@ cr.define('downloads', function() {
     Manager.get().insertItems_(index, list);
   };
 
+  /** @return {!Promise} */
   Manager.onLoad = function() {
-    Manager.get().onLoad_();
+    return Manager.get().onLoad_();
   };
 
   Manager.removeItem = function(index) {
