@@ -27,11 +27,8 @@ public class SnippetArticle {
     /** The snippet preview text. */
     public final String mPreviewText;
 
-    /** The URL of this article. */
+    /** The URL of this article. This may be an AMP url. */
     public final String mUrl;
-
-    /** the AMP url for this article (possible for this to be empty). */
-    public final String mAmpUrl;
 
     /** The time when this article was published. */
     public final long mPublishTimestampMilliseconds;
@@ -51,7 +48,7 @@ public class SnippetArticle {
     /** Stores whether impression of this article has been tracked already. */
     private boolean mImpressionTracked;
 
-    /** To be run when the offline status of the article or AMP article changes. */
+    /** To be run when the offline status of the article changes. */
     private Runnable mOfflineStatusChangeRunnable;
 
     /** Whether the linked article represents an asset download. */
@@ -73,15 +70,13 @@ public class SnippetArticle {
      * Creates a SnippetArticleListItem object that will hold the data.
      */
     public SnippetArticle(int category, String idWithinCategory, String title, String publisher,
-            String previewText, String url, String ampUrl, long timestamp, float score,
-            int position) {
+            String previewText, String url, long timestamp, float score, int position) {
         mCategory = category;
         mIdWithinCategory = idWithinCategory;
         mTitle = title;
         mPublisher = publisher;
         mPreviewText = previewText;
         mUrl = url;
-        mAmpUrl = ampUrl;
         mPublishTimestampMilliseconds = timestamp;
         mScore = score;
         mPosition = position;

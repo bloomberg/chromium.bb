@@ -38,6 +38,9 @@ extern const base::Feature kIncreasedVisibility;
 // Feature to enable the Fetch More action
 extern const base::Feature kFetchMoreFeature;
 
+// Feature to prefer AMP URLs over regular URLs when available.
+extern const base::Feature kPreferAmpUrlsFeature;
+
 }  // namespace ntp_snippets
 
 #endif  // COMPONENTS_NTP_SNIPPETS_FEATURES_H_

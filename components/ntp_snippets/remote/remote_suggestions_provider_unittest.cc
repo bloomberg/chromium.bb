@@ -734,7 +734,6 @@ TEST_F(RemoteSuggestionsProviderTest, Full) {
   EXPECT_EQ(GetDefaultCreationTime(), suggestion.publish_date());
   EXPECT_EQ(kSnippetPublisherName,
             base::UTF16ToUTF8(suggestion.publisher_name()));
-  EXPECT_EQ(GURL(kSnippetAmpUrl), suggestion.amp_url());
 }
 
 TEST_F(RemoteSuggestionsProviderTest, CategoryTitle) {
@@ -804,7 +803,6 @@ TEST_F(RemoteSuggestionsProviderTest, MultipleCategories) {
     EXPECT_EQ(GetDefaultCreationTime(), suggestion.publish_date());
     EXPECT_EQ(kSnippetPublisherName,
               base::UTF16ToUTF8(suggestion.publisher_name()));
-    EXPECT_EQ(GURL(kSnippetAmpUrl), suggestion.amp_url());
   }
 
   {
@@ -816,7 +814,6 @@ TEST_F(RemoteSuggestionsProviderTest, MultipleCategories) {
     EXPECT_EQ(GetDefaultCreationTime(), suggestion.publish_date());
     EXPECT_EQ(kSnippetPublisherName,
               base::UTF16ToUTF8(suggestion.publisher_name()));
-    EXPECT_EQ(GURL(kSnippetAmpUrl), suggestion.amp_url());
   }
 }
 

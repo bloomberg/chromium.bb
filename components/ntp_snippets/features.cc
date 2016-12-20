@@ -41,4 +41,7 @@ const base::Feature kForeignSessionsSuggestionsFeature{
 const base::Feature kFetchMoreFeature{"NTPSuggestionsFetchMore",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kPreferAmpUrlsFeature{"NTPPreferAmpUrls",
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace ntp_snippets

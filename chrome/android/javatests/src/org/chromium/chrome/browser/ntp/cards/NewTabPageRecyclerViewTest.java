@@ -110,7 +110,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
     @MediumTest
     @Feature({"NewTabPage"})
     @CommandLineFlags.Add("enable-features=NTPSnippets")
-    public void testClickSuggestion() throws InterruptedException, TimeoutException {
+    public void testClickSuggestion() throws InterruptedException {
         setSuggestionsAndWaitForUpdate(10);
         List<SnippetArticle> suggestions =
                 mSource.getSuggestionsForCategory(KnownCategories.ARTICLES);
@@ -268,8 +268,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         });
     }
 
-    private void setSuggestionsAndWaitForUpdate(final int suggestionsCount)
-            throws InterruptedException, TimeoutException {
+    private void setSuggestionsAndWaitForUpdate(final int suggestionsCount) {
         final FakeSuggestionsSource source = mSource;
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -288,7 +287,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         for (int i = 0; i < suggestionsCount; i++) {
             String url = mTestServer.getURL(TEST_PAGE) + "#" + i;
             suggestions.add(new SnippetArticle(KnownCategories.ARTICLES, "id" + i, "title" + i,
-                    "publisher" + i, "previewText" + i, url, url, 1466614774 + i, 10f, 0));
+                    "publisher" + i, "previewText" + i, url, 1466614774 + i, 10f, 0));
         }
         return suggestions;
     }

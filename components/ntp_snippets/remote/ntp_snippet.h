@@ -128,7 +128,10 @@ class NTPSnippet {
   std::string title_;
   GURL url_;
   std::string publisher_name_;
+
+  // TODO(mvanouwerkerk): Remove this field and its uses, just use |url_|.
   GURL amp_url_;
+
   GURL salient_image_url_;
   std::string snippet_;
   base::Time publish_date_;

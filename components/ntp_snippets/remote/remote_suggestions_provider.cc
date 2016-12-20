@@ -200,8 +200,12 @@ std::vector<ContentSuggestion> ConvertToContentSuggestions(
     if (!snippet->is_complete()) {
       continue;
     }
-    ContentSuggestion suggestion(category, snippet->id(), snippet->url());
-    suggestion.set_amp_url(snippet->amp_url());
+    GURL url = snippet->url();
+    if (base::FeatureList::IsEnabled(kPreferAmpUrlsFeature) &&
+        !snippet->amp_url().is_empty()) {
+      url = snippet->amp_url();
+    }
+    ContentSuggestion suggestion(category, snippet->id(), url);
     suggestion.set_title(base::UTF8ToUTF16(snippet->title()));
     suggestion.set_snippet_text(base::UTF8ToUTF16(snippet->snippet()));
     suggestion.set_publish_date(snippet->publish_date());

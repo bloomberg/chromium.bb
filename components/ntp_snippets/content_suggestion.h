@@ -82,14 +82,9 @@ class ContentSuggestion {
   // An ID for identifying the suggestion. The ID is unique application-wide.
   const ID& id() const { return id_; }
 
-  // The normal content URL where the content referenced by the suggestion can
-  // be accessed.
+  // The URL where the content referenced by the suggestion can be accessed.
+  // This may be an AMP URL.
   const GURL& url() const { return url_; }
-
-  // If available, this contains an URL to an AMP version of the same content.
-  // Otherwise, this is an empty GURL().
-  const GURL& amp_url() const { return amp_url_; }
-  void set_amp_url(const GURL& amp_url) { amp_url_ = amp_url; }
 
   // Title of the suggestion.
   const base::string16& title() const { return title_; }
@@ -141,7 +136,6 @@ class ContentSuggestion {
  private:
   ID id_;
   GURL url_;
-  GURL amp_url_;
   base::string16 title_;
   base::string16 snippet_text_;
   base::Time publish_date_;

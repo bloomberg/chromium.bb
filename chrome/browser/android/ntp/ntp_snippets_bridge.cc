@@ -64,7 +64,6 @@ ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
             ConvertUTF16ToJavaString(env, suggestion.publisher_name()),
             ConvertUTF16ToJavaString(env, suggestion.snippet_text()),
             ConvertUTF8ToJavaString(env, suggestion.url().spec()),
-            ConvertUTF8ToJavaString(env, suggestion.amp_url().spec()),
             suggestion.publish_date().ToJavaTime(), suggestion.score());
     if (suggestion.id().category().IsKnownCategory(
             KnownCategories::DOWNLOADS) &&

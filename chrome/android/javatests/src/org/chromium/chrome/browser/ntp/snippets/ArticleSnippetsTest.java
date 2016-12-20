@@ -135,7 +135,6 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
                 "Publisher",
                 "Preview Text",
                 "www.google.com",
-                "",  // AMP URL
                 1466614774,  // Timestamp
                 10f,  // Score
                 0);  // Position
@@ -149,7 +148,6 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
                 new String(new char[20]).replace("\0", "Publisher "),
                 new String(new char[80]).replace("\0", "Preview Text "),
                 "www.google.com",
-                "",  // AMP URL
                 1466614074,  // Timestamp
                 20f,  // Score
                 1);  // Position
@@ -161,7 +159,6 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
                 "Publisher",
                 "This should not be displayed",
                 "www.google.com",
-                "",  // AMP URL
                 1466614774,  // Timestamp
                 10f,  // Score
                 0);  // Position
@@ -173,7 +170,6 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
                 "Publisher",
                 "This should not be displayed",
                 "www.google.com",
-                "",  // AMP URL
                 1466614774,  // Timestamp
                 10f,  // Score
                 0);  // Position

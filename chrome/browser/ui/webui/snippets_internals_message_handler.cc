@@ -48,7 +48,6 @@ std::unique_ptr<base::DictionaryValue> PrepareSuggestion(
   auto entry = base::MakeUnique<base::DictionaryValue>();
   entry->SetString("idWithinCategory", suggestion.id().id_within_category());
   entry->SetString("url", suggestion.url().spec());
-  entry->SetString("ampUrl", suggestion.amp_url().spec());
   entry->SetString("title", suggestion.title());
   entry->SetString("snippetText", suggestion.snippet_text());
   entry->SetString("publishDate",

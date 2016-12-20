@@ -24,7 +24,7 @@ public final class ContentSuggestionsTestUtils {
         for (int index = 0; index < count; index++) {
             suggestions.add(new SnippetArticle(KnownCategories.BOOKMARKS,
                     "https://site.com/url" + index, "title" + index, "pub" + index, "txt" + index,
-                    "https://site.com/url" + index, "https://amp.site.com/url" + index, 0, 0, 0));
+                    "https://site.com/url" + index, 0, 0, 0));
         }
         return suggestions;
     }

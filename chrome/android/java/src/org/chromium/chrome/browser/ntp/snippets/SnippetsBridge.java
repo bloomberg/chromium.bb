@@ -206,10 +206,10 @@ public class SnippetsBridge implements SuggestionsSource {
     @CalledByNative
     private static SnippetArticle addSuggestion(List<SnippetArticle> suggestions, int category,
             String id, String title, String publisher, String previewText, String url,
-            String ampUrl, long timestamp, float score) {
+            long timestamp, float score) {
         int position = suggestions.size();
-        suggestions.add(new SnippetArticle(category, id, title, publisher, previewText, url, ampUrl,
-                timestamp, score, position));
+        suggestions.add(new SnippetArticle(
+                category, id, title, publisher, previewText, url, timestamp, score, position));
         return suggestions.get(position);
     }
 
