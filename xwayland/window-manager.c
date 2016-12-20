@@ -1177,8 +1177,6 @@ weston_wm_window_set_pending_state(struct weston_wm_window *window)
 					  window->height + 2);
 	}
 
-	pixman_region32_fini(&window->surface->pending.input);
-
 	if (window->decorate && !window->fullscreen) {
 		frame_input_rect(window->frame, &input_x, &input_y,
 				 &input_w, &input_h);
@@ -1192,11 +1190,13 @@ weston_wm_window_set_pending_state(struct weston_wm_window *window)
 	wm_log("XWM: win %d geometry: %d,%d %dx%d\n",
 	       window->id, input_x, input_y, input_w, input_h);
 
+	pixman_region32_fini(&window->surface->pending.input);
 	pixman_region32_init_rect(&window->surface->pending.input,
 				  input_x, input_y, input_w, input_h);
 
 	xwayland_interface->set_window_geometry(window->shsurf,
-						input_x, input_y, input_w, input_h);
+						input_x, input_y,
+						input_w, input_h);
 	if (window->name)
 		xwayland_interface->set_title(window->shsurf, window->name);
 	if (window->pid > 0)
