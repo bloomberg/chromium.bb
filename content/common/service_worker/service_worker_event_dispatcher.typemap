@@ -6,6 +6,7 @@ mojom = "//content/common/service_worker/service_worker_event_dispatcher.mojom"
 public_headers = [
   "//content/common/service_worker/service_worker_status_code.h",
   "//content/common/service_worker/service_worker_types.h",
+  "//content/public/common/push_event_payload.h",
 ]
 sources = [
   "//content/common/service_worker/service_worker_status_code_traits.cc",
@@ -15,7 +16,8 @@ traits_headers = [
   "//content/common/service_worker/service_worker_status_code_traits.h",
 ]
 type_mappings = [
-  "content.mojom.ExtendableMessageEventSource=::content::ExtendableMessageEventSource",
-  "content.mojom.ServiceWorkerFetchRequest=::content::ServiceWorkerFetchRequest",
   "blink.mojom.ServiceWorkerEventStatus=::content::ServiceWorkerStatusCode",
+  "content.mojom.ExtendableMessageEventSource=::content::ExtendableMessageEventSource",
+  "content.mojom.PushEventPayload=::content::PushEventPayload",
+  "content.mojom.ServiceWorkerFetchRequest=::content::ServiceWorkerFetchRequest",
 ]
