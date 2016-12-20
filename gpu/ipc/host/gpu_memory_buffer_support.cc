@@ -33,6 +33,7 @@ bool AreNativeGpuMemoryBuffersEnabled() {
 GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
   GpuMemoryBufferConfigurationSet configurations;
 
+#if defined(USE_OZONE) || defined(OS_MACOSX)
   if (AreNativeGpuMemoryBuffersEnabled()) {
     const gfx::BufferFormat kNativeFormats[] = {
         gfx::BufferFormat::R_8,
@@ -48,22 +49,18 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
         gfx::BufferUsage::GPU_READ, gfx::BufferUsage::SCANOUT,
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE,
         gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT};
-    for (auto& format : kNativeFormats) {
-      for (auto& usage : kNativeUsages) {
+    for (auto format : kNativeFormats) {
+      for (auto usage : kNativeUsages) {
         if (IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
           configurations.insert(std::make_pair(format, usage));
       }
     }
   }
 
-#if defined(USE_OZONE) || defined(OS_MACOSX)
   // Disable native buffers only when using Mesa.
   bool force_native_gpu_read_write_formats =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kUseGL) != gl::kGLImplementationOSMesaName;
-#else
-  bool force_native_gpu_read_write_formats = false;
-#endif
   if (force_native_gpu_read_write_formats) {
     const gfx::BufferFormat kGPUReadWriteFormats[] = {
         gfx::BufferFormat::BGR_565,   gfx::BufferFormat::RGBA_8888,
@@ -72,19 +69,21 @@ GpuMemoryBufferConfigurationSet GetNativeGpuMemoryBufferConfigurations() {
         gfx::BufferFormat::YVU_420,   gfx::BufferFormat::YUV_420_BIPLANAR};
     const gfx::BufferUsage kGPUReadWriteUsages[] = {gfx::BufferUsage::GPU_READ,
                                                     gfx::BufferUsage::SCANOUT};
-    for (auto& format : kGPUReadWriteFormats) {
-      for (auto& usage : kGPUReadWriteUsages) {
+    for (auto format : kGPUReadWriteFormats) {
+      for (auto usage : kGPUReadWriteUsages) {
         if (IsNativeGpuMemoryBufferConfigurationSupported(format, usage))
           configurations.insert(std::make_pair(format, usage));
       }
     }
   }
+#endif  // defined(USE_OZONE) || defined(OS_MACOSX)
 
   return configurations;
 }
 
 uint32_t GetImageTextureTarget(gfx::BufferFormat format,
                                gfx::BufferUsage usage) {
+#if defined(USE_OZONE) || defined(OS_MACOSX)
   GpuMemoryBufferConfigurationSet native_configurations =
       GetNativeGpuMemoryBufferConfigurations();
   if (native_configurations.find(std::make_pair(format, usage)) ==
@@ -101,14 +100,14 @@ uint32_t GetImageTextureTarget(gfx::BufferFormat format,
       // IOSurface backed images require GL_TEXTURE_RECTANGLE_ARB.
       return GL_TEXTURE_RECTANGLE_ARB;
     case gfx::SHARED_MEMORY_BUFFER:
-      return GL_TEXTURE_2D;
     case gfx::EMPTY_BUFFER:
-      NOTREACHED();
-      return GL_TEXTURE_2D;
+      break;
   }
-
   NOTREACHED();
   return GL_TEXTURE_2D;
+#else  // defined(USE_OZONE) || defined(OS_MACOSX)
+  return GL_TEXTURE_2D;
+#endif
 }
 
 }  // namespace gpu
