@@ -8,7 +8,6 @@
  *                testharness.js. Includes asynchronous test task manager,
  *                assertion utilities.
  * @dependency    testharness.js
- * @seealso       webaudio/unit-tests/audit.html for actual examples.
  */
 
 
@@ -24,29 +23,21 @@
 
   // Check if testharness.js is properly loaded. Throw otherwise.
   for (let name in testharnessProperties) {
-    if (!self.hasOwnProperty(testharnessProperties[name])) {
+    if (!self.hasOwnProperty(testharnessProperties[name]))
       throw new Error('Cannot proceed. testharness.js is not loaded.');
-      break;
-    }
   }
 })();
 
 
-/**
- * @class Audit
- * @description A WebAudio layout test task manager.
- * @example
- *   let audit = Audit.createTaskRunner();
- *   audit.define('first-task', function (task, should) {
- *     task.describe('the first task');
- *     should(someValue).beEqualTo(someValue);
- *     task.done();
- *   });
- *   audit.run();
- */
 window.Audit = (function () {
 
   'use strict';
+
+  // NOTE: Moving this method (or any other code above) will change the location
+  // of 'CONSOLE ERROR...' message in the expected text files.
+  function _logError (message) {
+    console.error('[audit.js] ' + message);
+  }
 
   function _logPassed (message) {
     test(function (arg) {
@@ -239,7 +230,7 @@ window.Audit = (function () {
       return this._assert(
           this._actual !== null && this._actual !== undefined,
           '${actual} does exist.',
-          '${actual} does *NOT* exist.');
+          '${actual} does not exist.');
     }
 
     /**
@@ -265,7 +256,7 @@ window.Audit = (function () {
         // This should throw.
         this._actual();
         // Catch did not happen, so the test is failed.
-        failDetail = '${actual} did *NOT* throw an exception.';
+        failDetail = '${actual} did not throw an exception.';
       } catch (error) {
         if (this._expected === undefined) {
           didThrowCorrectly = true;
@@ -302,8 +293,8 @@ window.Audit = (function () {
         passDetail = '${actual} did not throw an exception.';
       } catch (error) {
         didThrowCorrectly = true;
-        failDetail = '${actual} threw ' + error.name + ': '
-            + error.message + '.';
+        failDetail = '${actual} incorrectly threw ' + error.name + ': "'
+            + error.message + '".';
       }
 
       return this._assert(!didThrowCorrectly, passDetail, failDetail);
@@ -324,7 +315,7 @@ window.Audit = (function () {
           this._assert(true, '${actual} resolved correctly.', null);
         }.bind(this), function (error) {
           this._assert(false, null,
-              '${actual} rejected *INCORRECTLY* with ' + error + '.');
+              '${actual} rejected incorrectly with ' + error + '.');
         }.bind(this));
     }
 
@@ -340,7 +331,7 @@ window.Audit = (function () {
      */
     beRejected () {
       return this._actual.then(function () {
-          this._assert(false, null, '${actual} resolved *INCORRECTLY*.');
+          this._assert(false, null, '${actual} resolved incorrectly.');
         }.bind(this), function (error) {
           this._assert(true,
               '${actual} rejected correctly with ' + error + '.', null);
@@ -360,7 +351,7 @@ window.Audit = (function () {
       return this._assert(
           this._actual === true,
           '${actual} is true.',
-          '${actual} is *NOT* true.');
+          '${actual} is not true.');
     }
 
     /**
@@ -376,7 +367,7 @@ window.Audit = (function () {
       return this._assert(
           this._actual === false,
           '${actual} is false.',
-          '${actual} is *NOT* false.');
+          '${actual} is not false.');
     }
 
     /**
@@ -393,7 +384,7 @@ window.Audit = (function () {
       return this._assert(
           this._actual === this._expected,
           '${actual} is equal to ${expected}.',
-          '${actual} is *NOT* equal to ${expected}.');
+          '${actual} is not equal to ${expected}.');
     }
 
     /**
@@ -403,14 +394,14 @@ window.Audit = (function () {
      *   should(1).notBeEqualTo(2);
      *
      * @result
-     *   "PASS   1 is *NOT* equal to 2."
+     *   "PASS   1 is not equal to 2."
      */
     notBeEqualTo () {
       this._processArguments(arguments);
       return this._assert(
           this._actual !== this._expected,
           '${actual} is not equal to ${expected}.',
-          '${actual} should *NOT* be equal to ${expected}.');
+          '${actual} should not be equal to ${expected}.');
     }
 
     /**
@@ -427,7 +418,7 @@ window.Audit = (function () {
       return this._assert(
           this._actual > this._expected,
            '${actual} is greater than ${expected}.',
-           '${actual} is *NOT* greater than ${expected}.'
+           '${actual} is not greater than ${expected}.'
         );
     }
 
@@ -445,7 +436,7 @@ window.Audit = (function () {
       return this._assert(
           this._actual >= this._expected,
            '${actual} is greater than or equal to ${expected}.',
-           '${actual} is *NOT* greater than or equal to ${expected}.'
+           '${actual} is not greater than or equal to ${expected}.'
         );
     }
 
@@ -463,7 +454,7 @@ window.Audit = (function () {
       return this._assert(
           this._actual < this._expected,
            '${actual} is less than ${expected}.',
-           '${actual} is *NOT* less than ${expected}.'
+           '${actual} is not less than ${expected}.'
         );
     }
 
@@ -481,7 +472,7 @@ window.Audit = (function () {
       return this._assert(
           this._actual <= this._expected,
            '${actual} is less than or equal to ${expected}.',
-           '${actual} is *NOT* less than or equal to ${expected}.'
+           '${actual} is not less than or equal to ${expected}.'
         );
     }
 
@@ -513,8 +504,8 @@ window.Audit = (function () {
         passDetail = '${actual} contains only the constant ${expected}.';
       } else {
         let counter = 0;
-        failDetail = '${actual} contains ' + numberOfErrors
-          + ' values that are *NOT* equal to ${expected}: ';
+        failDetail = 'Expected ${expected} for all values but found '
+            + numberOfErrors + ' unexpected values. : ';
         failDetail += '\n\tIndex\tActual';
         for (let errorIndex in errors) {
           failDetail += '\n\t[' + errorIndex + ']'
@@ -548,7 +539,7 @@ window.Audit = (function () {
 
       if (this._actual.length !== this._expected.length) {
         passed = false;
-        failDetail = 'The array length does *NOT* match.';
+        failDetail = 'The array length does not match.';
         return this._assert(passed, passDetail, failDetail);
       }
 
@@ -563,9 +554,9 @@ window.Audit = (function () {
         passDetail = '${actual} is identical to the array ${expected}.';
       } else {
         let counter = 0;
-        failDetail = '${actual} contains ' + errorIndices.length
-          + ' values that are *NOT* equal to ${expected}: ';
-        failDetail += '\n\tIndex\tActual\t\t\tExpected';
+        failDetail = '${actual} expected to be equal to the array ${expected} '
+            + 'but differs in ' + errorIndices.length + ' places:'
+            + '\n\tIndex\tActual\t\t\tExpected';
         for (let index of errorIndices) {
           failDetail += '\n\t[' + index + ']'
             + '\t' + this._actual[index].toExponential(16)
@@ -596,26 +587,36 @@ window.Audit = (function () {
       this._processArguments(arguments);
 
       let passed = true;
-      let indexActual = 0, indexExpected = 0;
+      let indexedActual = [];
+      let firstErrorIndex = null;
 
-      while (indexActual < this._actual.length
-          && indexExpected < this._expected.length) {
-        if (this._actual[indexActual] === this._expected[indexExpected]) {
-          indexActual++;
-        } else {
-          indexExpected++;
+      // Collect the unique value sequence from the actual.
+      for (let i = 0, prev = null; i < this._actual.length; i++) {
+        if (this._actual[i] !== prev) {
+          indexedActual.push({
+              index: i,
+              value: this._actual[i]
+            });
+          prev = this._actual[i];
         }
       }
 
-      passed = !(indexActual < this._actual.length - 1
-          || indexExpected < this._expected.length - 1);
+      // Compare against the expected sequence.
+      for (let j = 0; j < this._expected.length; j++) {
+        if (this._expected[j] !== indexedActual[j].value) {
+          firstErrorIndex = indexedActual[j].index;
+          passed = false;
+          break;
+        }
+      }
 
       return this._assert(
           passed,
           '${actual} contains all the expected values in the correct order: '
             + '${expected}.',
-          '${actual} contains an unexpected value of '
-            + this._actual[indexActual] + ' at index ' + indexActual + '.');
+          '${actual} expected to have the value sequence of ${expected} but '
+            + 'got ' + this._actual[firstErrorIndex] + ' at index '
+            + firstErrorIndex + '.');
     }
 
     /**
@@ -672,10 +673,10 @@ window.Audit = (function () {
       let error = Math.abs(this._actual - this._expected) / absExpected;
 
       return this._assert(
-        error <= this._options.threshold,
-        '${actual} is ${expected} within an error of ${threshold}.',
-        '${actual} is not ${expected} within an error of ${threshold}: ' +
-          '${actual} with error of ${threshold}.');
+          error <= this._options.threshold,
+          '${actual} is ${expected} within an error of ${threshold}.',
+          '${actual} is not close to ${expected} within an error of ' +
+            '${threshold}');
     }
 
     /**
@@ -977,12 +978,34 @@ window.Audit = (function () {
   }
 
 
+  /**
+   * @class Audit
+   * @description A WebAudio layout test task manager.
+   * @example
+   *   let audit = Audit.createTaskRunner();
+   *   audit.define('first-task', function (task, should) {
+   *     task.describe('the first task');
+   *     should(someValue).beEqualTo(someValue);
+   *     task.done();
+   *   });
+   *   audit.run();
+   */
   return {
 
     /**
      * Creates an instance of Audit task runner.
+     * @param {Object}  options                     Options for task runner.
+     * @param {Boolean} options.requireResultFile   True if the test suite
+     *                                              requires explicit text
+     *                                              comparison with the expected
+     *                                              result file.
      */
-    createTaskRunner: function () {
+    createTaskRunner: function (options) {
+      if (options && options.requireResultFile == true) {
+        _logError('this test requires the explicit comparison with the '
+            + 'expected result when it runs with run-webkit-tests.');
+      }
+
       return new TaskRunner();
     }
 

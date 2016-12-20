@@ -1,0 +1,65 @@
+CONSOLE ERROR: line 39: [audit.js] this test requires the explicit comparison with the expected result when it runs with run-webkit-tests.
+This is a testharness.js-based test.
+PASS # AUDIT TASK RUNNER STARTED. 
+PASS > [basic-failure] Testing basic assertion failures. 
+FAIL X Setting foo to bar incorrectly threw ReferenceError: "bar is not defined". assert_true: expected true got false
+FAIL X function () { var foo = 0; } did not throw an exception. assert_true: expected true got false
+FAIL X 3 < 5 is not true. assert_true: expected true got false
+FAIL X true is not false. assert_true: expected true got false
+FAIL X 1 is not equal to 2. assert_true: expected true got false
+FAIL X 1 should not be equal to 1. assert_true: expected true got false
+FAIL X typeof 3.141592 is not equal to string. assert_true: expected true got false
+FAIL X 1 is not greater than 2. assert_true: expected true got false
+FAIL X 1 is not greater than or equal to 2. assert_true: expected true got false
+FAIL X 2 is not less than 1. assert_true: expected true got false
+FAIL X 2 is not less than or equal to 1. assert_true: expected true got false
+FAIL X Decoding audio data with no argument rejected incorrectly with TypeError: Failed to execute 'decodeAudioData' on 'BaseAudioContext': 1 argument required, but only 0 present.. assert_true: expected true got false
+FAIL X undefined resolved incorrectly. assert_true: expected true got false
+FAIL < [basic-failure] 13 out of 13 assertions were failed. assert_true: expected true got false
+PASS > [numerical-failures] Testing numerical assertion failures. 
+FAIL X 0 is not close to 0.1 within an error of 0 assert_true: expected true got false
+FAIL X Expected 5 for all values but found 7 unexpected values. : 
+	Index	Actual
+	[0]	1
+	[1]	8
+	[2]	11
+	[3]	18
+	...and 3 more errors. assert_true: expected true got false
+FAIL X [1,8,11,18,6,5,5,5,123,49] expected to be equal to the array [1,8,10,18,6,5,6,5,123,48] but differs in 3 places:
+	Index	Actual			Expected
+	[2]	1.1000000000000000e+1	1.0000000000000000e+1
+	[6]	5.0000000000000000e+0	6.0000000000000000e+0
+	[9]	4.9000000000000000e+1	4.8000000000000000e+1 assert_true: expected true got false
+FAIL X [1,1,1,1,2,2,3,3,3] expected to have the value sequence of [1,3,2] but got 2 at index 4. assert_true: expected true got false
+FAIL X [0.5,0.5,0.55,0.5,0.45,0.5] has a glitch at index 5 of size 0.04999999999999999. assert_true: expected true got false
+FAIL X [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.9] does not equal [0.7,0.6,0.5,0.4,0.3,0.2,0.1] with an element-wise tolerance of {"absoluteThreshold":0.02,"relativeThreshold":0}.
+	Index	Actual			Expected		AbsError		RelError		Test threshold
+	[0]	1.0000000000000001e-1	6.9999999999999996e-1	5.9999999999999998e-1	8.5714285714285721e-1	2.0000000000000000e-2
+	[1]	2.0000000000000001e-1	5.9999999999999998e-1	3.9999999999999997e-1	6.6666666666666663e-1	2.0000000000000000e-2
+	[2]	2.9999999999999999e-1	5.0000000000000000e-1	2.0000000000000001e-1	4.0000000000000002e-1	2.0000000000000000e-2
+	[4]	5.0000000000000000e-1	2.9999999999999999e-1	2.0000000000000001e-1	6.6666666666666674e-1	2.0000000000000000e-2
+	[5]	5.9999999999999998e-1	2.0000000000000001e-1	3.9999999999999997e-1	1.9999999999999998e+0	2.0000000000000000e-2
+	Max AbsError of 5.9999999999999998e-1 at index of 0.
+	Max RelError of 5.9999999999999991e+0 at index of 6. assert_true: expected true got false
+FAIL X [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.9] does not equal [0.7,0.6,0.5,0.4,0.3,0.2,0.1] with an element-wise tolerance of {"absoluteThreshold":0,"relativeThreshold":0.1}.
+	Index	Actual			Expected		AbsError		RelError		Test threshold
+	[0]	1.0000000000000001e-1	6.9999999999999996e-1	5.9999999999999998e-1	8.5714285714285721e-1	6.9999999999999993e-2
+	[1]	2.0000000000000001e-1	5.9999999999999998e-1	3.9999999999999997e-1	6.6666666666666663e-1	5.9999999999999998e-2
+	[2]	2.9999999999999999e-1	5.0000000000000000e-1	2.0000000000000001e-1	4.0000000000000002e-1	5.0000000000000003e-2
+	[4]	5.0000000000000000e-1	2.9999999999999999e-1	2.0000000000000001e-1	6.6666666666666674e-1	2.9999999999999999e-2
+	[5]	5.9999999999999998e-1	2.0000000000000001e-1	3.9999999999999997e-1	1.9999999999999998e+0	2.0000000000000004e-2
+	Max AbsError of 5.9999999999999998e-1 at index of 0.
+	Max RelError of 5.9999999999999991e+0 at index of 6. assert_true: expected true got false
+FAIL X [0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.9] does not equal [0.7,0.6,0.5,0.4,0.3,0.2,0.1] with an element-wise tolerance of {"absoluteThreshold":0.02,"relativeThreshold":0.1}.
+	Index	Actual			Expected		AbsError		RelError		Test threshold
+	[0]	1.0000000000000001e-1	6.9999999999999996e-1	5.9999999999999998e-1	8.5714285714285721e-1	6.9999999999999993e-2
+	[1]	2.0000000000000001e-1	5.9999999999999998e-1	3.9999999999999997e-1	6.6666666666666663e-1	5.9999999999999998e-2
+	[2]	2.9999999999999999e-1	5.0000000000000000e-1	2.0000000000000001e-1	4.0000000000000002e-1	5.0000000000000003e-2
+	[4]	5.0000000000000000e-1	2.9999999999999999e-1	2.0000000000000001e-1	6.6666666666666674e-1	2.9999999999999999e-2
+	[5]	5.9999999999999998e-1	2.0000000000000001e-1	3.9999999999999997e-1	1.9999999999999998e+0	2.0000000000000004e-2
+	Max AbsError of 5.9999999999999998e-1 at index of 0.
+	Max RelError of 5.9999999999999991e+0 at index of 6. assert_true: expected true got false
+FAIL < [numerical-failures] 8 out of 8 assertions were failed. assert_true: expected true got false
+FAIL # AUDIT TASK RUNNER FINISHED: 2 out of 2 tasks were failed. assert_true: expected true got false
+Harness: the test ran to completion.
+

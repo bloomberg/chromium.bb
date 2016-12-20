@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>audit.js: handling failures</title>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script>
+  <script src="../resources/audit.js"></script>
+</head>
+<body>
+  <script>
+    // The task runner will print out a console message to ensure the text file
+    // comparison.
+    var audit = Audit.createTaskRunner({ requireResultFile: true });
+
+
+    // These assertions are supposed to be failed. The WPT (testharness) fails
+    // because the assertions are failing, but the existence of expected test
+    // result makes this test pass as long as the actual and the expected match.
+    // See the expected result file to see the logging message from Audit.
+
+
+    // Basic assertions.
+    audit.define('basic-failure', function (task, should) {
+      task.describe('Testing basic assertion failures.');
+
+      should(function () { var foo = bar; }, 'Setting foo to bar').notThrow();
+      should(function () { var foo = 0; }).throw('ReferenceError');
+      should(3 > 5, '3 < 5').beTrue();
+      should(true).beFalse();
+      should(1).beEqualTo(2)
+      should(1).notBeEqualTo(1)
+      should(typeof 3.141592, 'typeof 3.141592').beEqualTo('string');
+      should(1).beGreaterThan(2);
+      should(1).beGreaterThanOrEqualTo(2);
+      should(2).beLessThan(1);
+      should(2).beLessThanOrEqualTo(1);
+
+      let oac = new OfflineAudioContext(1, 128, 44100);
+      Promise.all([
+          should(oac.decodeAudioData(), 'Decoding audio data with no argument')
+            .beResolved(),
+          should(oac.startRendering()).beRejected()
+        ]).then(task.done.bind(task));
+    });
+
+
+    // Numerical assertions.
+    audit.define('numerical-failures', function (task, should) {
+      task.describe('Testing numerical assertion failures.');
+
+      should(0).beCloseTo(0.1, { threshold: 0 });
+      should([1, 8, 11, 18, 6, 5, 5, 5, 123, 49]).beConstantValueOf(5);
+      should([1, 8, 11, 18, 6, 5, 5, 5, 123, 49])
+        .beEqualToArray([1, 8, 10, 18, 6, 5, 6, 5, 123, 48]);
+      should([1, 1, 1, 1, 2, 2, 3, 3, 3]).containValues([1, 3, 2]);
+      should([0.5, 0.5, 0.55, 0.5, 0.45, 0.5]).notGlitch(0.04);
+      should([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9])
+        .beCloseToArray([0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1], {
+            absoluteThreshold: 0.02
+          });
+      should([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9])
+        .beCloseToArray([0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1], {
+            relativeThreshold: 0.1
+          });
+      should([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9])
+        .beCloseToArray([0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1], {
+            absoluteThreshold: 0.02,
+            relativeThreshold: 0.1
+          });
+
+      task.done();
+    });
+
+
+    // With no argument, this executes all tasks in the order defined.
+    audit.run();
+  </script>
+</body>
+</html>

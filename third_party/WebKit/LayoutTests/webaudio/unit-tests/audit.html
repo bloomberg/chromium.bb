@@ -8,7 +8,8 @@
 </head>
 <body>
   <script>
-    var audit = Audit.createTaskRunner();
+    var audit = Audit.createTaskRunner({ requireResultFile: true });
+
 
     // Basic assertion testing.
     audit.define('basic', function (task, should) {
@@ -30,7 +31,8 @@
       let oac = new OfflineAudioContext(1, 128, 44100);
       Promise.all([
           should(oac.startRendering(), 'Start OAC rendering').beResolved(),
-          should(oac.decodeAudioData()).beRejected()
+          should(oac.decodeAudioData(), 'Decoding audio data with no argument')
+            .beRejected()
         ]).then(task.done.bind(task));
     });
 
