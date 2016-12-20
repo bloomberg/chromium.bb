@@ -7907,6 +7907,11 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     return;
   }
 
+  // If color/depth/stencil buffer have no image, we can remove corresponding
+  // bitfield from mask and return early if mask equals to 0.
+  // But validations should be done against the original mask.
+  GLbitfield mask_blit = mask;
+
   // Detect that designated read/depth/stencil buffer in read framebuffer miss
   // image, and the corresponding buffers in draw framebuffer have image.
   bool read_framebuffer_miss_image = false;
@@ -7954,7 +7959,7 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
       const Framebuffer::Attachment* depth_buffer_draw =
           draw_framebuffer->GetAttachment(GL_DEPTH_ATTACHMENT);
       if (!depth_buffer_draw || !depth_buffer_read) {
-        mask &= ~GL_DEPTH_BUFFER_BIT;
+        mask_blit &= ~GL_DEPTH_BUFFER_BIT;
         if (depth_buffer_draw) {
           read_framebuffer_miss_image = true;
         }
@@ -7968,7 +7973,7 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
       const Framebuffer::Attachment* stencil_buffer_draw =
           draw_framebuffer->GetAttachment(GL_STENCIL_ATTACHMENT);
       if (!stencil_buffer_draw || !stencil_buffer_read) {
-        mask &= ~GL_STENCIL_BUFFER_BIT;
+        mask_blit &= ~GL_STENCIL_BUFFER_BIT;
         if (stencil_buffer_draw) {
           read_framebuffer_miss_image = true;
         }
@@ -7976,8 +7981,6 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
         is_feedback_loop = FeedbackLoopTrue;
       }
     }
-    if (!mask && !read_framebuffer_miss_image)
-      return;
   }
 
   GLenum src_internal_format = GetBoundReadFramebufferInternalFormat();
@@ -8065,16 +8068,23 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
                          "invalid filter for depth/stencil");
       return;
     }
-
-    if ((GetBoundFramebufferDepthFormat(GL_READ_FRAMEBUFFER) !=
-         GetBoundFramebufferDepthFormat(GL_DRAW_FRAMEBUFFER)) ||
-        (GetBoundFramebufferStencilFormat(GL_READ_FRAMEBUFFER) !=
-         GetBoundFramebufferStencilFormat(GL_DRAW_FRAMEBUFFER))) {
-      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
-                         "src and dst formats differ for depth/stencil");
-      return;
-    }
   }
+
+  mask = mask_blit;
+  if (!mask)
+    return;
+
+  if (((mask & GL_DEPTH_BUFFER_BIT) != 0 &&
+      (GetBoundFramebufferDepthFormat(GL_READ_FRAMEBUFFER) !=
+      GetBoundFramebufferDepthFormat(GL_DRAW_FRAMEBUFFER))) ||
+      ((mask & GL_STENCIL_BUFFER_BIT) != 0 &&
+      ((GetBoundFramebufferStencilFormat(GL_READ_FRAMEBUFFER) !=
+      GetBoundFramebufferStencilFormat(GL_DRAW_FRAMEBUFFER))))) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name,
+                       "src and dst formats differ for depth/stencil");
+    return;
+  }
+
 
   if (workarounds().adjust_src_dst_region_for_blitframebuffer) {
     gfx::Size read_size = GetBoundReadFramebufferSize();
