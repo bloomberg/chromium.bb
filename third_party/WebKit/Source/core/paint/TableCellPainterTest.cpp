@@ -49,7 +49,7 @@ TEST_F(TableCellPainterTest, BackgroundWithCellSpacing) {
   setBodyInnerHTML(
       "<style>"
       "  body { margin: 0; }"
-      "  td { width: 200px; height: 200px; border: 0; background-color: green; "
+      "  td { width: 200px; height: 150px; border: 0; background-color: green; "
       "}"
       "  tr { background-color: blue; }"
       "  table { border: none; border-spacing: 100px; border-collapse: "
@@ -67,7 +67,7 @@ TEST_F(TableCellPainterTest, BackgroundWithCellSpacing) {
   rootPaintController().invalidateAll();
   document().view()->updateAllLifecyclePhasesExceptPaint();
   // Intersects cell1 and the spacing between cell1 and cell2.
-  IntRect interestRect(0, 200, 200, 200);
+  IntRect interestRect(0, 200, 200, 150);
   paint(&interestRect);
 
   EXPECT_DISPLAY_LIST(
@@ -78,7 +78,7 @@ TEST_F(TableCellPainterTest, BackgroundWithCellSpacing) {
 
   document().view()->updateAllLifecyclePhasesExceptPaint();
   // Intersects the spacing only.
-  interestRect = IntRect(0, 300, 100, 100);
+  interestRect = IntRect(0, 250, 100, 100);
   paint(&interestRect);
 
   EXPECT_DISPLAY_LIST(
@@ -87,7 +87,7 @@ TEST_F(TableCellPainterTest, BackgroundWithCellSpacing) {
 
   document().view()->updateAllLifecyclePhasesExceptPaint();
   // Intersects cell2 only.
-  interestRect = IntRect(0, 400, 200, 200);
+  interestRect = IntRect(0, 350, 200, 150);
   paint(&interestRect);
 
   EXPECT_DISPLAY_LIST(
