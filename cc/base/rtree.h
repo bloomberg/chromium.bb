@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "cc/base/cc_export.h"
-#include "cc/base/contiguous_container.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
@@ -61,14 +60,33 @@ class CC_EXPORT RTree {
 
     num_data_elements_ = branches.size();
     if (num_data_elements_ == 1u) {
+      nodes_.reserve(1);
       Node* node = AllocateNodeAtLevel(0);
       node->num_children = 1;
       node->children[0] = branches[0];
       root_.subtree = node;
       root_.bounds = branches[0].bounds;
     } else if (num_data_elements_ > 1u) {
+      // Determine a reasonable upper bound on the number of nodes to prevent
+      // reallocations. This is basically (n**d - 1) / (n - 1), which is the
+      // number of nodes in a complete tree with n branches at each node. In the
+      // code n = |branch_count|, d = |depth|. However, we normally would have
+      // kMaxChildren branch factor, but that can be broken if some children
+      // don't have enough nodes. That can happen for at most kMinChildren nodes
+      // (since otherwise, we'd create a new node).
+      size_t branch_count = kMaxChildren;
+      double depth = log(branches.size()) / log(branch_count);
+      size_t node_count =
+          static_cast<size_t>((std::pow(branch_count, depth) - 1) /
+                              (branch_count - 1)) +
+          kMinChildren;
+      nodes_.reserve(node_count);
+
       root_ = BuildRecursive(&branches, 0);
     }
+    // We should've wasted at most kMinChildren nodes.
+    DCHECK_LE(nodes_.capacity() - nodes_.size(),
+              static_cast<size_t>(kMinChildren));
   }
 
   template <typename Container>
@@ -83,7 +101,8 @@ class CC_EXPORT RTree {
  private:
   // These values were empirically determined to produce reasonable performance
   // in most cases.
-  enum { MIN_CHILDREN = 6, MAX_CHILDREN = 11 };
+  enum { kMinChildren = 6 };
+  enum { kMaxChildren = 11 };
 
   struct Node;
   struct Branch {
@@ -101,7 +120,7 @@ class CC_EXPORT RTree {
   struct Node {
     uint16_t num_children;
     uint16_t level;
-    Branch children[MAX_CHILDREN];
+    Branch children[kMaxChildren];
   };
 
   void SearchRecursive(Node* root,
@@ -115,7 +134,7 @@ class CC_EXPORT RTree {
   // This is the count of data elements (rather than total nodes in the tree)
   size_t num_data_elements_;
   Branch root_;
-  ContiguousContainer<Node> nodes_;
+  std::vector<Node> nodes_;
 };
 
 }  // namespace cc

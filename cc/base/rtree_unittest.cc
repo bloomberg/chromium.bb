@@ -10,6 +10,20 @@
 
 namespace cc {
 
+TEST(RTreeTest, ReserveNodesDoesntDcheck) {
+  // Make sure that anywhere between 0 and 1000 rects, our reserve math in rtree
+  // is correct. (This test would DCHECK if broken either in
+  // RTree::AllocateNodeAtLevel, indicating that the capacity calculation was
+  // too small or in RTree::Build, indicating the capacity was too large).
+  for (int i = 0; i < 1000; ++i) {
+    std::vector<gfx::Rect> rects;
+    for (int j = 0; j < i; ++j)
+      rects.push_back(gfx::Rect(j, i, 1, 1));
+    RTree rtree;
+    rtree.Build(rects);
+  }
+}
+
 TEST(RTreeTest, NoOverlap) {
   std::vector<gfx::Rect> rects;
   for (int y = 0; y < 50; ++y) {

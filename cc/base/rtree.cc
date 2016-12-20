@@ -15,12 +15,16 @@
 
 namespace cc {
 
-RTree::RTree() : num_data_elements_(0u), nodes_(sizeof(Node)) {}
+RTree::RTree() : num_data_elements_(0u) {}
 
 RTree::~RTree() {}
 
 RTree::Node* RTree::AllocateNodeAtLevel(int level) {
-  Node& node = nodes_.AllocateAndConstruct<Node>();
+  // We don't allow reallocations, since that would invalidate references to
+  // existing nodes, so verify that capacity > size.
+  DCHECK_GT(nodes_.capacity(), nodes_.size());
+  nodes_.emplace_back();
+  Node& node = nodes_.back();
   node.num_children = 0;
   node.level = level;
   return &node;
@@ -36,17 +40,17 @@ RTree::Branch RTree::BuildRecursive(std::vector<Branch>* branches, int level) {
   // We might sort our branches here, but we expect Blink gives us a reasonable
   // x,y order. Skipping a call to sort (in Y) here resulted in a 17% win for
   // recording with negligible difference in playback speed.
-  int num_branches = static_cast<int>(branches->size() / MAX_CHILDREN);
-  int remainder = static_cast<int>(branches->size() % MAX_CHILDREN);
+  int num_branches = static_cast<int>(branches->size() / kMaxChildren);
+  int remainder = static_cast<int>(branches->size() % kMaxChildren);
 
   if (remainder > 0) {
     ++num_branches;
     // If the remainder isn't enough to fill a node, we'll add fewer nodes to
     // other branches.
-    if (remainder >= MIN_CHILDREN)
+    if (remainder >= kMinChildren)
       remainder = 0;
     else
-      remainder = MIN_CHILDREN - remainder;
+      remainder = kMinChildren - remainder;
   }
 
   int num_strips = static_cast<int>(std::ceil(std::sqrt(num_branches)));
@@ -58,15 +62,15 @@ RTree::Branch RTree::BuildRecursive(std::vector<Branch>* branches, int level) {
   for (int i = 0; i < num_strips; ++i) {
     // Might be worth sorting by X here too.
     for (int j = 0; j < num_tiles && current_branch < branches->size(); ++j) {
-      int increment_by = MAX_CHILDREN;
+      int increment_by = kMaxChildren;
       if (remainder != 0) {
         // if need be, omit some nodes to make up for remainder
-        if (remainder <= MAX_CHILDREN - MIN_CHILDREN) {
+        if (remainder <= kMaxChildren - kMinChildren) {
           increment_by -= remainder;
           remainder = 0;
         } else {
-          increment_by = MIN_CHILDREN;
-          remainder -= MAX_CHILDREN - MIN_CHILDREN;
+          increment_by = kMinChildren;
+          remainder -= kMaxChildren - kMinChildren;
         }
       }
       Node* node = AllocateNodeAtLevel(level);
