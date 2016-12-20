@@ -544,8 +544,9 @@ void RenderWidgetHostViewGuest::UnlockCompositingSurface() {
 
 RenderWidgetHostViewBase*
 RenderWidgetHostViewGuest::GetOwnerRenderWidgetHostView() const {
-  return static_cast<RenderWidgetHostViewBase*>(
-      guest_->GetOwnerRenderWidgetHostView());
+  return guest_ ? static_cast<RenderWidgetHostViewBase*>(
+                      guest_->GetOwnerRenderWidgetHostView())
+                : nullptr;
 }
 
 // TODO(wjmaclean): When we remove BrowserPlugin, delete this code.
