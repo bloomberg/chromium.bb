@@ -65,18 +65,21 @@ public class TouchDevice {
 
             int sources = inputDevice.getSources();
 
-            if (hasAnySource(sources, InputDevice.SOURCE_MOUSE | InputDevice.SOURCE_STYLUS
-                                | InputDevice.SOURCE_TOUCHPAD | InputDevice.SOURCE_TRACKBALL)) {
+            if (hasSource(sources, InputDevice.SOURCE_MOUSE)
+                    || hasSource(sources, InputDevice.SOURCE_STYLUS)
+                    || hasSource(sources, InputDevice.SOURCE_TOUCHPAD)
+                    || hasSource(sources, InputDevice.SOURCE_TRACKBALL)) {
                 result[0] |= PointerType.FINE;
             } else if (hasSource(sources, InputDevice.SOURCE_TOUCHSCREEN)) {
                 result[0] |= PointerType.COARSE;
             }
 
-            if (hasAnySource(sources, InputDevice.SOURCE_MOUSE | InputDevice.SOURCE_TOUCHPAD
-                                | InputDevice.SOURCE_TRACKBALL)) {
+            if (hasSource(sources, InputDevice.SOURCE_MOUSE)
+                    || hasSource(sources, InputDevice.SOURCE_TOUCHPAD)
+                    || hasSource(sources, InputDevice.SOURCE_TRACKBALL)) {
                 result[1] |= HoverType.HOVER;
-            } else if (hasAnySource(sources,
-                               InputDevice.SOURCE_STYLUS | InputDevice.SOURCE_TOUCHSCREEN)) {
+            } else if (hasSource(sources, InputDevice.SOURCE_STYLUS)
+                    || hasSource(sources, InputDevice.SOURCE_TOUCHSCREEN)) {
                 result[1] |= HoverType.ON_DEMAND;
             }
 
@@ -88,10 +91,6 @@ public class TouchDevice {
         if (result[1] == 0) result[1] = HoverType.NONE;
 
         return result;
-    }
-
-    private static boolean hasAnySource(int sources, int inputDeviceSources) {
-        return (sources & inputDeviceSources) != 0;
     }
 
     private static boolean hasSource(int sources, int inputDeviceSource) {
