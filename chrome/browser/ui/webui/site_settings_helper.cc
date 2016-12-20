@@ -118,6 +118,7 @@ void AddExceptionForHostedApp(const std::string& url_pattern,
 
   exception->SetString(site_settings::kSetting, setting_string);
   exception->SetString(site_settings::kOrigin, url_pattern);
+  exception->SetString(site_settings::kDisplayName, url_pattern);
   exception->SetString(site_settings::kEmbeddingOrigin, url_pattern);
   exception->SetString(site_settings::kSource, "HostedApp");
   exception->SetBoolean(site_settings::kIncognito, false);
@@ -355,6 +356,7 @@ std::unique_ptr<base::DictionaryValue> GetChooserExceptionForPage(
 
   exception->SetString(site_settings::kSetting, setting_string);
   exception->SetString(site_settings::kOrigin, requesting_origin.spec());
+  exception->SetString(site_settings::kDisplayName, requesting_origin.spec());
   exception->SetString(
       site_settings::kEmbeddingOrigin, embedding_origin.spec());
   exception->SetString(site_settings::kSource, provider_name);

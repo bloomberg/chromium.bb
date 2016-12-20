@@ -30,6 +30,9 @@ class SiteSettingsHelperTest : public testing::Test {
     std::string actual_pattern;
     dict->GetString("origin", &actual_pattern);
     EXPECT_EQ(pattern, actual_pattern);
+    std::string actual_display_name;
+    dict->GetString("displayName", &actual_display_name);
+    EXPECT_EQ(pattern, actual_display_name);
     std::string actual_setting;
     dict->GetString("setting", &actual_setting);
     EXPECT_EQ(setting, actual_setting);

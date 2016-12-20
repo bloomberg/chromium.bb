@@ -70,6 +70,7 @@ class SiteSettingsHandlerTest : public testing::Test {
 
   void ValidateOrigin(
       const std::string& expected_origin,
+      const std::string& expected_display_name,
       const std::string& expected_embedding,
       const std::string& expected_setting,
       const std::string& expected_source,
@@ -91,9 +92,12 @@ class SiteSettingsHandlerTest : public testing::Test {
     EXPECT_EQ(1U, exceptions->GetSize());
     const base::DictionaryValue* exception;
     ASSERT_TRUE(exceptions->GetDictionary(0, &exception));
-    std::string origin, embedding_origin, setting, source;
+    std::string origin, embedding_origin, display_name, setting, source;
     ASSERT_TRUE(exception->GetString(site_settings::kOrigin, &origin));
     ASSERT_EQ(expected_origin, origin);
+    ASSERT_TRUE(
+        exception->GetString(site_settings::kDisplayName, &display_name));
+    ASSERT_EQ(expected_display_name, display_name);
     ASSERT_TRUE(exception->GetString(
         site_settings::kEmbeddingOrigin, &embedding_origin));
     ASSERT_EQ(expected_embedding, embedding_origin);
@@ -249,7 +253,7 @@ TEST_F(SiteSettingsHandlerTest, Origins) {
   listArgs.AppendString(kCallbackId);
   listArgs.AppendString("notifications");
   handler()->HandleGetExceptionList(&listArgs);
-  ValidateOrigin(google, google, "block", "preference", 2U);
+  ValidateOrigin(google, google, google, "block", "preference", 2U);
 
   // Reset things back to how they were.
   base::ListValue resetArgs;
@@ -273,9 +277,10 @@ TEST_F(SiteSettingsHandlerTest, ExceptionHelpers) {
                                          CONTENT_SETTING_BLOCK, "preference",
                                          false);
 
-  std::string primary_pattern, secondary_pattern, type;
+  std::string primary_pattern, secondary_pattern, display_name, type;
   bool incognito;
   CHECK(exception->GetString(site_settings::kOrigin, &primary_pattern));
+  CHECK(exception->GetString(site_settings::kDisplayName, &display_name));
   CHECK(exception->GetString(site_settings::kEmbeddingOrigin,
                              &secondary_pattern));
   CHECK(exception->GetString(site_settings::kSetting, &type));
@@ -309,6 +314,7 @@ TEST_F(SiteSettingsHandlerTest, ExceptionHelpers) {
   const base::DictionaryValue* dictionary;
   CHECK(exceptions->GetDictionary(0, &dictionary));
   CHECK(dictionary->GetString(site_settings::kOrigin, &primary_pattern));
+  CHECK(dictionary->GetString(site_settings::kDisplayName, &display_name));
   CHECK(dictionary->GetString(site_settings::kEmbeddingOrigin,
                               &secondary_pattern));
   CHECK(dictionary->GetString(site_settings::kSetting, &type));
