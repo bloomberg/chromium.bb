@@ -2132,8 +2132,8 @@ void LayoutFlexibleBox::applyStretchAlignmentToChild(
     LayoutUnit childWidth =
         (lineCrossAxisExtent - crossAxisMarginExtentForChild(child))
             .clampNegativeToZero();
-    childWidth =
-        child.constrainLogicalWidthByMinMax(childWidth, childWidth, this);
+    childWidth = child.constrainLogicalWidthByMinMax(
+        childWidth, crossAxisContentExtent(), this);
 
     if (childWidth != child.logicalWidth()) {
       child.setOverrideLogicalContentWidth(
