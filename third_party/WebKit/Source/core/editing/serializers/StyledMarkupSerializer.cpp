@@ -96,7 +96,7 @@ class StyledMarkupTraverser {
 
  private:
   bool shouldAnnotate() const;
-  bool convertBlocksToInlines() const;
+  bool shouldConvertBlocksToInlines() const;
   void appendStartMarkup(Node&);
   void appendEndMarkup(Node&);
   EditingStyle* createInlineStyle(Element&);
@@ -114,8 +114,8 @@ bool StyledMarkupTraverser<Strategy>::shouldAnnotate() const {
 }
 
 template <typename Strategy>
-bool StyledMarkupTraverser<Strategy>::convertBlocksToInlines() const {
-  return m_accumulator->convertBlocksToInlines();
+bool StyledMarkupTraverser<Strategy>::shouldConvertBlocksToInlines() const {
+  return m_accumulator->shouldConvertBlocksToInlines();
 }
 
 template <typename Strategy>
@@ -242,7 +242,7 @@ String StyledMarkupSerializer<Strategy>::createMarkup() {
     for (ContainerNode* ancestor = Strategy::parent(*lastClosed); ancestor;
          ancestor = Strategy::parent(*ancestor)) {
       if (ancestor == fullySelectedRoot &&
-          !markupAccumulator.convertBlocksToInlines()) {
+          !markupAccumulator.shouldConvertBlocksToInlines()) {
         EditingStyle* fullySelectedRootStyle =
             styleFromMatchedRulesAndInlineDecl(fullySelectedRoot);
 
@@ -424,7 +424,7 @@ bool StyledMarkupTraverser<Strategy>::needsInlineStyle(const Element& element) {
     return false;
   if (shouldAnnotate())
     return true;
-  return convertBlocksToInlines() && isEnclosingBlock(&element);
+  return shouldConvertBlocksToInlines() && isEnclosingBlock(&element);
 }
 
 template <typename Strategy>
@@ -457,7 +457,7 @@ EditingStyle* StyledMarkupTraverser<Strategy>::createInlineStyleIfNeeded(
   if (!node.isElementNode())
     return nullptr;
   EditingStyle* inlineStyle = createInlineStyle(toElement(node));
-  if (convertBlocksToInlines() && isEnclosingBlock(&node))
+  if (shouldConvertBlocksToInlines() && isEnclosingBlock(&node))
     inlineStyle->forceInline();
   return inlineStyle;
 }

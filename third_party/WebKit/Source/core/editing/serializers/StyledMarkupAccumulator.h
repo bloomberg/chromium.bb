@@ -73,7 +73,7 @@ class StyledMarkupAccumulator final {
   void appendStartMarkup(Node&);
 
   bool shouldAnnotate() const;
-  bool convertBlocksToInlines() const {
+  bool shouldConvertBlocksToInlines() const {
     return m_convertBlocksToInlines == ConvertBlocksToInlines::Convert;
   }
 
