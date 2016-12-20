@@ -696,6 +696,11 @@ static inline bool objectIsRelayoutBoundary(const LayoutObject* object) {
   if (object->isSVGRoot())
     return true;
 
+  // LayoutInline can't be relayout roots since LayoutBlockFlow is responsible
+  // for layouting them.
+  if (object->isLayoutInline())
+    return false;
+
   // Table parts can't be relayout roots since the table is responsible for
   // layouting all the parts.
   if (object->isTablePart())
