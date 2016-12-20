@@ -2285,6 +2285,14 @@ TEST_F(RendererSchedulerImplTest, SuspendRenderer) {
   RunUntilIdle();
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("L1"), std::string("T1")));
+
+  run_order.clear();
+  PostTestTasks(&run_order, "D2 T2");
+  // The renderer is foregrounded. Suspending doesn't take effect.
+  scheduler_->SuspendRenderer();
+  RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("D2"), std::string("T2")));
 }
 
 TEST_F(RendererSchedulerImplTest, ResumeRenderer) {
@@ -2336,6 +2344,14 @@ TEST_F(RendererSchedulerImplTest, ResumeRenderer) {
   RunUntilIdle();
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("D3"), std::string("T3")));
+
+  run_order.clear();
+  PostTestTasks(&run_order, "D4 T4");
+  // The renderer is foregrounded. Resuming doesn't take effect.
+  scheduler_->ResumeRenderer();
+  RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("D4"), std::string("T4")));
 }
 
 TEST_F(RendererSchedulerImplTest, UseCaseToString) {
