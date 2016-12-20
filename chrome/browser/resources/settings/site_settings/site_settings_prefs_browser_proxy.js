@@ -8,7 +8,7 @@
  */
 
 /**
- * The handler will send a police source that is similar, but not exactly the
+ * The handler will send a policy source that is similar, but not exactly the
  * same as a ControlledBy value. If the ContentSettingProvider is omitted it
  * should be treated as 'default'.
  * @enum {string}
