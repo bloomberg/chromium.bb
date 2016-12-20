@@ -4,5 +4,17 @@
       "name": "testPageScroll",
       "_bug_id": "crbug.com/534643"
     }
+  ],
+  "android.webkit.cts.WebViewClientTest": [
+    {
+      "name": "testShouldOverrideUrlLoadingOnCreateWindow",
+      "_bug_id": "crbug.com/659077"
+    }
+  ],
+  "android.webkit.cts.ServiceWorkerClientTest": [
+    {
+      "name": "testServiceWorkerClientInterceptCallback",
+      "_bug_id": "crbug.com/675809"
+    }
   ]
 }
