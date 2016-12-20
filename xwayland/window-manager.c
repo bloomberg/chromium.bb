@@ -787,6 +787,8 @@ weston_wm_create_surface(struct wl_listener *listener, void *data)
 	if (wl_resource_get_client(surface->resource) != wm->server->client)
 		return;
 
+	wm_log("XWM: create weston_surface %p\n", surface);
+
 	wl_list_for_each(window, &wm->unpaired_window_list, link)
 		if (window->surface_id ==
 		    wl_resource_get_id(surface->resource)) {
@@ -2681,8 +2683,8 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 						   window->surface,
 						   &shell_client);
 
-	wm_log("XWM: map shell surface, win %d, xwayland surface %p\n",
-	       window->id, window->shsurf);
+	wm_log("XWM: map shell surface, win %d, weston_surface %p, xwayland surface %p\n",
+	       window->id, window->surface, window->shsurf);
 
 	if (window->name)
 		xwayland_interface->set_title(window->shsurf, window->name);
