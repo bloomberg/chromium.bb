@@ -2247,6 +2247,9 @@ crbug.com/674720 [ Debug Trusty ] http/tests/loading/preload-img-test.html [ Pas
 crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-2d-printing.html [ Pass Failure Crash ]
 crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-webgl-printing.html [ Pass Failure Crash ]
 
+# Added 2016-12-20
+crbug.com/675907 fast/input/placeholder-wrongly-placed-if-too-tall.html [ Pass Timeout ]
+
 # for Skia DEPS roll
 crbug.com/674509   compositing/overlap-blending/reflection-opacity-huge.html [ NeedsRebaseline ]
 crbug.com/674509   compositing/reflections/animation-inside-reflection.html [ NeedsRebaseline ]
