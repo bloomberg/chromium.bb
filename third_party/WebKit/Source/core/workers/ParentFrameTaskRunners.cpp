@@ -18,9 +18,9 @@ ParentFrameTaskRunners::ParentFrameTaskRunners(LocalFrame* frame)
     DCHECK(frame->document()->isContextThread());
 
   // For now we only support very limited task types.
-  for (auto type :
-       {TaskType::Internal, TaskType::Networking, TaskType::PostedMessage,
-        TaskType::CanvasBlobSerialization, TaskType::Unthrottled}) {
+  for (auto type : {TaskType::UnspecedTimer, TaskType::UnspecedLoading,
+                    TaskType::Networking, TaskType::PostedMessage,
+                    TaskType::CanvasBlobSerialization, TaskType::Unthrottled}) {
     m_taskRunners.add(type, TaskRunnerHelper::get(type, frame));
   }
 }

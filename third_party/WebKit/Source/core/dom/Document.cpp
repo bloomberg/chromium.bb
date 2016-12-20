@@ -421,7 +421,7 @@ Document::Document(const DocumentInit& initializer,
       m_compatibilityModeLocked(false),
       m_hasAutofocused(false),
       m_clearFocusedElementTimer(
-          TaskRunnerHelper::get(TaskType::Internal, this),
+          TaskRunnerHelper::get(TaskType::UnspecedTimer, this),
           this,
           &Document::clearFocusedElementTimerFired),
       m_domTreeVersion(++s_globalTreeVersion),
@@ -442,7 +442,7 @@ Document::Document(const DocumentInit& initializer,
       m_throwOnDynamicMarkupInsertionCount(0),
       m_markers(new DocumentMarkerController(*this)),
       m_updateFocusAppearanceTimer(
-          TaskRunnerHelper::get(TaskType::Internal, this),
+          TaskRunnerHelper::get(TaskType::UnspecedTimer, this),
           this,
           &Document::updateFocusAppearanceTimerFired),
       m_cssTarget(nullptr),
@@ -469,22 +469,23 @@ Document::Document(const DocumentInit& initializer,
       m_loadEventDelayTimer(TaskRunnerHelper::get(TaskType::Networking, this),
                             this,
                             &Document::loadEventDelayTimerFired),
-      m_pluginLoadingTimer(TaskRunnerHelper::get(TaskType::Internal, this),
-                           this,
-                           &Document::pluginLoadingTimerFired),
+      m_pluginLoadingTimer(
+          TaskRunnerHelper::get(TaskType::UnspecedLoading, this),
+          this,
+          &Document::pluginLoadingTimerFired),
       m_documentTiming(*this),
       m_writeRecursionIsTooDeep(false),
       m_writeRecursionDepth(0),
       m_registrationContext(initializer.registrationContext(this)),
       m_elementDataCacheClearTimer(
-          TaskRunnerHelper::get(TaskType::Internal, this),
+          TaskRunnerHelper::get(TaskType::UnspecedTimer, this),
           this,
           &Document::elementDataCacheClearTimerFired),
       m_timeline(DocumentTimeline::create(this)),
       m_compositorPendingAnimations(new CompositorPendingAnimations()),
       m_templateDocumentHost(nullptr),
       m_didAssociateFormControlsTimer(
-          TaskRunnerHelper::get(TaskType::Internal, this),
+          TaskRunnerHelper::get(TaskType::UnspecedLoading, this),
           this,
           &Document::didAssociateFormControlsTimerFired),
       m_timers(TaskRunnerHelper::get(TaskType::Timer, this)->clone()),
@@ -4364,7 +4365,7 @@ void Document::sendSensitiveInputVisibility() {
     return;
 
   m_sensitiveInputVisibilityTask =
-      TaskRunnerHelper::get(TaskType::Internal, this)
+      TaskRunnerHelper::get(TaskType::UnspecedLoading, this)
           ->postCancellableTask(
               BLINK_FROM_HERE,
               WTF::bind(&Document::sendSensitiveInputVisibilityInternal,

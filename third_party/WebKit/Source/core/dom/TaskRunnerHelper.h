@@ -41,7 +41,11 @@ enum class TaskType : unsigned {
   // Other internal tasks that cannot fit any of the above task runners
   // can be posted here, but the usage is not encouraged. The task runner
   // may be throttled.
-  Internal,
+  //
+  // UnspecedLoading type should be used for all tasks associated with
+  // loading page content, UnspecedTimer should be used for all other purposes.
+  UnspecedTimer,
+  UnspecedLoading,
 
   // Tasks that must not be throttled should be posted here, but the usage
   // should be very limited.

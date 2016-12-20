@@ -76,7 +76,7 @@ void InProcessWorkerObjectProxy::postMessageToWorkerObject(
 
 void InProcessWorkerObjectProxy::confirmMessageFromWorkerObject() {
   getParentFrameTaskRunners()
-      ->get(TaskType::Internal)
+      ->get(TaskType::UnspecedTimer)
       ->postTask(
           BLINK_FROM_HERE,
           crossThreadBind(
@@ -101,7 +101,7 @@ void InProcessWorkerObjectProxy::reportException(
     std::unique_ptr<SourceLocation> location,
     int exceptionId) {
   getParentFrameTaskRunners()
-      ->get(TaskType::Internal)
+      ->get(TaskType::UnspecedTimer)
       ->postTask(
           BLINK_FROM_HERE,
           crossThreadBind(&InProcessWorkerMessagingProxy::dispatchErrorEvent,
@@ -141,7 +141,7 @@ void InProcessWorkerObjectProxy::checkPendingActivity(TimerBase*) {
   if (!hasPendingActivity) {
     // Report all activities are done.
     getParentFrameTaskRunners()
-        ->get(TaskType::Internal)
+        ->get(TaskType::UnspecedTimer)
         ->postTask(BLINK_FROM_HERE,
                    crossThreadBind(
                        &InProcessWorkerMessagingProxy::pendingActivityFinished,

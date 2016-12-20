@@ -32,10 +32,11 @@ WebTaskRunner* TaskRunnerHelper::get(TaskType type, LocalFrame* frame) {
     case TaskType::Presentation:
     case TaskType::Sensor:
     case TaskType::Timer:
-    case TaskType::Internal:
+    case TaskType::UnspecedTimer:
     case TaskType::Unspecified:
       return frame ? frame->frameScheduler()->timerTaskRunner()
                    : Platform::current()->currentThread()->getWebTaskRunner();
+    case TaskType::UnspecedLoading:
     case TaskType::Networking:
       return frame ? frame->frameScheduler()->loadingTaskRunner()
                    : Platform::current()->currentThread()->getWebTaskRunner();

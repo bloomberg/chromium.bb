@@ -59,7 +59,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
     globalScope()->countFeature(feature);
     workerReportingProxy()
         .getParentFrameTaskRunners()
-        ->get(TaskType::Internal)
+        ->get(TaskType::UnspecedTimer)
         ->postTask(BLINK_FROM_HERE, crossThreadBind(&testing::exitRunLoop));
   }
 
@@ -76,7 +76,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
 
     workerReportingProxy()
         .getParentFrameTaskRunners()
-        ->get(TaskType::Internal)
+        ->get(TaskType::UnspecedTimer)
         ->postTask(BLINK_FROM_HERE, crossThreadBind(&testing::exitRunLoop));
   }
 };

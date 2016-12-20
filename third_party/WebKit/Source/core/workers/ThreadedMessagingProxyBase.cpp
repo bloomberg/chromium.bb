@@ -114,7 +114,7 @@ void ThreadedMessagingProxyBase::workerThreadCreated() {
 void ThreadedMessagingProxyBase::parentObjectDestroyed() {
   DCHECK(isParentContextThread());
 
-  m_parentFrameTaskRunners->get(TaskType::Internal)
+  m_parentFrameTaskRunners->get(TaskType::UnspecedTimer)
       ->postTask(
           BLINK_FROM_HERE,
           WTF::bind(&ThreadedMessagingProxyBase::parentObjectDestroyedInternal,

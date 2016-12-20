@@ -166,9 +166,10 @@ EventHandler::EventHandler(LocalFrame& frame)
       m_hoverTimer(TaskRunnerHelper::get(TaskType::UserInteraction, &frame),
                    this,
                    &EventHandler::hoverTimerFired),
-      m_cursorUpdateTimer(TaskRunnerHelper::get(TaskType::Internal, &frame),
-                          this,
-                          &EventHandler::cursorUpdateTimerFired),
+      m_cursorUpdateTimer(
+          TaskRunnerHelper::get(TaskType::UnspecedTimer, &frame),
+          this,
+          &EventHandler::cursorUpdateTimerFired),
       m_eventHandlerWillResetCapturingMouseEventsNode(0),
       m_shouldOnlyFireDragOverEvent(false),
       m_scrollManager(new ScrollManager(frame)),

@@ -273,7 +273,7 @@ ParentFrameTaskRunners* WebSharedWorkerImpl::getParentFrameTaskRunners() {
 
 void WebSharedWorkerImpl::didCloseWorkerGlobalScope() {
   getParentFrameTaskRunners()
-      ->get(TaskType::Internal)
+      ->get(TaskType::UnspecedTimer)
       ->postTask(
           BLINK_FROM_HERE,
           crossThreadBind(
@@ -289,7 +289,7 @@ void WebSharedWorkerImpl::didCloseWorkerGlobalScopeOnMainThread() {
 
 void WebSharedWorkerImpl::didTerminateWorkerThread() {
   getParentFrameTaskRunners()
-      ->get(TaskType::Internal)
+      ->get(TaskType::UnspecedTimer)
       ->postTask(BLINK_FROM_HERE,
                  crossThreadBind(
                      &WebSharedWorkerImpl::didTerminateWorkerThreadOnMainThread,

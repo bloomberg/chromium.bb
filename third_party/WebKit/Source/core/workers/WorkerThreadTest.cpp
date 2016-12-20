@@ -30,7 +30,7 @@ void waitForSignalTask(WorkerThread* workerThread,
   // Notify the main thread that the debugger task is waiting for the signal.
   workerThread->workerReportingProxy()
       .getParentFrameTaskRunners()
-      ->get(TaskType::Internal)
+      ->get(TaskType::UnspecedTimer)
       ->postTask(BLINK_FROM_HERE, crossThreadBind(&testing::exitRunLoop));
   waitableEvent->wait();
 }

@@ -354,7 +354,7 @@ void WorkerThread::terminateInternal(TerminationMode mode) {
           m_forcibleTerminationTaskHandle =
               workerReportingProxy()
                   .getParentFrameTaskRunners()
-                  ->get(TaskType::Internal)
+                  ->get(TaskType::UnspecedTimer)
                   ->postDelayedCancellableTask(
                       BLINK_FROM_HERE,
                       WTF::bind(&WorkerThread::mayForciblyTerminateExecution,

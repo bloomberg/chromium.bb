@@ -18,7 +18,7 @@ namespace blink {
 
 void ThreadedObjectProxyBase::countFeature(UseCounter::Feature feature) {
   getParentFrameTaskRunners()
-      ->get(TaskType::Internal)
+      ->get(TaskType::UnspecedTimer)
       ->postTask(BLINK_FROM_HERE,
                  crossThreadBind(&ThreadedMessagingProxyBase::countFeature,
                                  messagingProxyWeakPtr(), feature));
@@ -26,7 +26,7 @@ void ThreadedObjectProxyBase::countFeature(UseCounter::Feature feature) {
 
 void ThreadedObjectProxyBase::countDeprecation(UseCounter::Feature feature) {
   getParentFrameTaskRunners()
-      ->get(TaskType::Internal)
+      ->get(TaskType::UnspecedTimer)
       ->postTask(BLINK_FROM_HERE,
                  crossThreadBind(&ThreadedMessagingProxyBase::countDeprecation,
                                  messagingProxyWeakPtr(), feature));
@@ -37,7 +37,7 @@ void ThreadedObjectProxyBase::reportConsoleMessage(MessageSource source,
                                                    const String& message,
                                                    SourceLocation* location) {
   getParentFrameTaskRunners()
-      ->get(TaskType::Internal)
+      ->get(TaskType::UnspecedTimer)
       ->postTask(
           BLINK_FROM_HERE,
           crossThreadBind(&ThreadedMessagingProxyBase::reportConsoleMessage,
@@ -63,7 +63,7 @@ ParentFrameTaskRunners* ThreadedObjectProxyBase::getParentFrameTaskRunners() {
 
 void ThreadedObjectProxyBase::didCloseWorkerGlobalScope() {
   getParentFrameTaskRunners()
-      ->get(TaskType::Internal)
+      ->get(TaskType::UnspecedTimer)
       ->postTask(
           BLINK_FROM_HERE,
           crossThreadBind(&ThreadedMessagingProxyBase::terminateGlobalScope,
@@ -73,7 +73,7 @@ void ThreadedObjectProxyBase::didCloseWorkerGlobalScope() {
 void ThreadedObjectProxyBase::didTerminateWorkerThread() {
   // This will terminate the MessagingProxy.
   getParentFrameTaskRunners()
-      ->get(TaskType::Internal)
+      ->get(TaskType::UnspecedTimer)
       ->postTask(
           BLINK_FROM_HERE,
           crossThreadBind(&ThreadedMessagingProxyBase::workerThreadTerminated,

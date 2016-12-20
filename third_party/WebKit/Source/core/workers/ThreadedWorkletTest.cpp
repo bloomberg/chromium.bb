@@ -64,7 +64,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     globalScope()->countFeature(feature);
     workerReportingProxy()
         .getParentFrameTaskRunners()
-        ->get(TaskType::Internal)
+        ->get(TaskType::UnspecedTimer)
         ->postTask(BLINK_FROM_HERE, crossThreadBind(&testing::exitRunLoop));
   }
 
@@ -81,7 +81,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
 
     workerReportingProxy()
         .getParentFrameTaskRunners()
-        ->get(TaskType::Internal)
+        ->get(TaskType::UnspecedTimer)
         ->postTask(BLINK_FROM_HERE, crossThreadBind(&testing::exitRunLoop));
   }
 };
