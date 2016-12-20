@@ -144,8 +144,8 @@ void FindBarController::Observe(int type,
         const base::string16& last_search =
             find_tab_helper->previous_find_text();
         const base::string16& current_search = find_tab_helper->find_text();
-        if (base::StartsWith(last_search, current_search,
-                             base::CompareCase::SENSITIVE)) {
+        if (!base::StartsWith(last_search, current_search,
+                              base::CompareCase::SENSITIVE)) {
           find_bar_->AudibleAlert();
         }
       }
