@@ -20,7 +20,7 @@ goog.provide('__crWeb.webUIFavicons');
  */
 window['chrome']['requestFavicon'] = function(el, imageSet) {
   var cssUrls = imageSet.match(/url\([^\)]+\) \dx/g);
-  // TODO(jyquinn): Review match above (crbug.com/528080).
+  // TODO(crbug.com/528080): Review match above.
   if (!cssUrls) {
     return;
   }
