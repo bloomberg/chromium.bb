@@ -369,6 +369,16 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(
     prepareCrossOriginRequest(crossOriginRequest);
     loadRequest(crossOriginRequest, crossOriginOptions);
   } else {
+    // Explicitly set the SkipServiceWorker flag here. Although the page is not
+    // controlled by a SW at this point, a new SW may be controlling the page
+    // when this request gets sent later. We should not send the actual request
+    // to the SW. https://crbug.com/604583
+    // Similarly we don't want any requests that could involve a CORS preflight
+    // to get intercepted by a foreign fetch service worker, even if we have the
+    // result of the preflight cached already. https://crbug.com/674370
+    crossOriginRequest.setSkipServiceWorker(
+        WebURLRequest::SkipServiceWorker::All);
+
     bool shouldForcePreflight =
         request.isExternalRequest() ||
         InspectorInstrumentation::shouldForceCORSPreflight(m_document);
@@ -915,12 +925,6 @@ void DocumentThreadableLoader::loadActualRequest() {
   m_actualOptions = ResourceLoaderOptions();
 
   clearResource();
-
-  // Explicitly set the SkipServiceWorker flag here. Even if the page was not
-  // controlled by a SW when the preflight request was sent, a new SW may be
-  // controlling the page now by calling clients.claim(). We should not send
-  // the actual request to the SW. https://crbug.com/604583
-  actualRequest.setSkipServiceWorker(WebURLRequest::SkipServiceWorker::All);
 
   prepareCrossOriginRequest(actualRequest);
   loadRequest(actualRequest, actualOptions);

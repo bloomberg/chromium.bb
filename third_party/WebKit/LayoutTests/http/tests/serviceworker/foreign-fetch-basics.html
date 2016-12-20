@@ -236,6 +236,10 @@ promise_test(t => {
     return install_cross_origin_worker(t, worker_for_scopes(['']), scope)
       .then(() => fetch(remote_url, {method: 'SPECIAL'}))
       .then(response => response.text())
+      .then(response_text => assert_true(response_text.startsWith('report(')))
+      // Do the whole thing twice to test CORS preflight cache behavior.
+      .then(() => fetch(remote_url, {method: 'SPECIAL'}))
+      .then(response => response.text())
       .then(response_text => assert_true(response_text.startsWith('report(')));
   }, 'Service Worker does not intercept fetches with CORS preflight');
 
