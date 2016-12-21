@@ -331,7 +331,8 @@ void TextAutosizer::record(LayoutBlock* block) {
   if (Fingerprint fingerprint = computeFingerprint(block))
     m_fingerprintMapper.addTentativeClusterRoot(block, fingerprint);
 
-  markSuperclusterForConsistencyCheck(block);
+  if (!block->everHadLayout())
+    markSuperclusterForConsistencyCheck(block);
 }
 
 void TextAutosizer::record(LayoutText* text) {
@@ -549,17 +550,20 @@ void TextAutosizer::markSuperclusterForConsistencyCheck(LayoutObject* object) {
       if (block->isTableCell() ||
           classifyBlock(block, INDEPENDENT | EXPLICIT_WIDTH)) {
         // If supercluster hasn't been created yet, create one.
+        bool isNewEntry = false;
         Supercluster* supercluster =
-            m_fingerprintMapper.createSuperclusterIfNeeded(block);
+            m_fingerprintMapper.createSuperclusterIfNeeded(block, isNewEntry);
         if (supercluster &&
             supercluster->m_inheritParentMultiplier == DontInheritMultiplier) {
-          if (supercluster->m_hasEnoughTextToAutosize != HasEnoughText) {
+          if (supercluster->m_hasEnoughTextToAutosize == NotEnoughText) {
             m_fingerprintMapper.getPotentiallyInconsistentSuperclusters().add(
                 supercluster);
           }
           return;
         }
-        if (supercluster)
+        if (supercluster &&
+            (isNewEntry ||
+             supercluster->m_hasEnoughTextToAutosize == NotEnoughText))
           lastSupercluster = supercluster;
       }
     }
@@ -567,8 +571,7 @@ void TextAutosizer::markSuperclusterForConsistencyCheck(LayoutObject* object) {
   }
 
   // If we didn't add any supercluster, we should add one.
-  if (lastSupercluster &&
-      lastSupercluster->m_hasEnoughTextToAutosize != HasEnoughText) {
+  if (lastSupercluster) {
     m_fingerprintMapper.getPotentiallyInconsistentSuperclusters().add(
         lastSupercluster);
   }
@@ -858,9 +861,10 @@ TextAutosizer::Cluster* TextAutosizer::maybeCreateCluster(LayoutBlock* block) {
       !!(flags & SUPPRESSING) == parentSuppresses)
     return nullptr;
 
-  Cluster* cluster =
-      new Cluster(block, flags, parentCluster,
-                  m_fingerprintMapper.createSuperclusterIfNeeded(block));
+  bool isNewEntry = false;
+  Cluster* cluster = new Cluster(
+      block, flags, parentCluster,
+      m_fingerprintMapper.createSuperclusterIfNeeded(block, isNewEntry));
 #ifdef AUTOSIZING_DOM_DEBUG_INFO
   // Non-SUPPRESSING clusters are annotated in clusterMultiplier.
   if (flags & SUPPRESSING)
@@ -870,8 +874,8 @@ TextAutosizer::Cluster* TextAutosizer::maybeCreateCluster(LayoutBlock* block) {
 }
 
 TextAutosizer::Supercluster*
-TextAutosizer::FingerprintMapper::createSuperclusterIfNeeded(
-    LayoutBlock* block) {
+TextAutosizer::FingerprintMapper::createSuperclusterIfNeeded(LayoutBlock* block,
+                                                             bool& isNewEntry) {
   Fingerprint fingerprint = get(block);
   if (!fingerprint)
     return nullptr;
@@ -882,6 +886,7 @@ TextAutosizer::FingerprintMapper::createSuperclusterIfNeeded(
 
   SuperclusterMap::AddResult addResult =
       m_superclusters.add(fingerprint, std::unique_ptr<Supercluster>());
+  isNewEntry = addResult.isNewEntry;
   if (!addResult.isNewEntry)
     return addResult.storedValue->value.get();
 

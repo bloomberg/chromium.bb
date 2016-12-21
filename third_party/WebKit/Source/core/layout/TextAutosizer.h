@@ -234,7 +234,7 @@ class CORE_EXPORT TextAutosizer final
     bool remove(LayoutObject*);
     Fingerprint get(const LayoutObject*);
     BlockSet* getTentativeClusterRoots(Fingerprint);
-    Supercluster* createSuperclusterIfNeeded(LayoutBlock*);
+    Supercluster* createSuperclusterIfNeeded(LayoutBlock*, bool& isNewEntry);
     bool hasFingerprints() const { return !m_fingerprints.isEmpty(); }
     HashSet<Supercluster*>& getPotentiallyInconsistentSuperclusters() {
       return m_potentiallyInconsistentSuperclusters;
