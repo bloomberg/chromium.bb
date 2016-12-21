@@ -33,8 +33,6 @@
 #include "base/metrics/histogram.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#include "base/strings/string_piece.h"
-#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -690,11 +688,11 @@ NSString* const kReadingListSnackbarCategory = @"ReadingListSnackbarCategory";
 // Induces an intentional crash in the browser process.
 - (void)induceBrowserCrash;
 // Saves the image or display error message, based on privacy settings.
-- (void)managePermissionAndSaveImage:(NSData*)data fileName:(NSString*)fileName;
+- (void)managePermissionAndSaveImage:(NSData*)data;
 // Saves the image. In order to keep the metadata of the image, the image is
 // saved as a temporary file on disk then saved in photos.
 // This should be called on FILE thread.
-- (void)saveImage:(NSData*)data fileName:(NSString*)fileName;
+- (void)saveImage:(NSData*)data;
 // Called when Chrome has been denied access to the photos or videos and the
 // user can change it.
 // Shows a privacy alert on the main queue, allowing the user to go to Chrome's
@@ -3048,46 +3046,18 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
               referrer:(const web::Referrer&)referrer {
   DCHECK(url.is_valid());
 
-  NSString* fileName = [NSString
-      stringWithFormat:@"%@.png",
-                       [[NSProcessInfo processInfo] globallyUniqueString]];
-
-  if (url.SchemeIs(base::StringPiece("data"))) {
-    if (!base::StartsWith(url.GetContent(), "image",
-                          base::CompareCase::INSENSITIVE_ASCII)) {
-      // Not an image, return.
-      return;
-    }
-
-    // Find the type of the image. It should be positionned like here:
-    // "image/png;base...", between the '/' and the ';'.
-    size_t semiColonPosition = url.GetContent().find(std::string(";"));
-    size_t slashPosition = url.GetContent().find(std::string("/"));
-    size_t substrLength = semiColonPosition - slashPosition - 1;
-    if (substrLength > 1) {
-      // Make sure there is a type.
-      fileName = [NSString
-          stringWithFormat:@"image.%@",
-                           base::SysUTF8ToNSString(url.GetContent().substr(
-                               slashPosition + 1, substrLength))];
-    }
-  } else {
-    fileName = base::SysUTF8ToNSString(url.ExtractFileName());
-  }
-
   web::ImageFetchedCallback callback =
       ^(const GURL& original_url, int response_code, NSData* data) {
         DCHECK(data);
 
-        [self managePermissionAndSaveImage:data fileName:fileName];
+        [self managePermissionAndSaveImage:data];
       };
   _imageFetcher->StartDownload(
       url, callback, web::ReferrerHeaderValueForNavigation(url, referrer),
       web::PolicyForNavigation(url, referrer));
 }
 
-- (void)managePermissionAndSaveImage:(NSData*)data
-                            fileName:(NSString*)fileName {
+- (void)managePermissionAndSaveImage:(NSData*)data {
   switch ([PHPhotoLibrary authorizationStatus]) {
     // User was never asked for permission to access photos.
     case PHAuthorizationStatusNotDetermined:
@@ -3095,7 +3065,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
         // Call -saveImage again to check if chrome needs to display an error or
         // saves the image.
         if (status != PHAuthorizationStatusNotDetermined)
-          [self managePermissionAndSaveImage:data fileName:fileName];
+          [self managePermissionAndSaveImage:data];
       }];
       break;
 
@@ -3117,14 +3087,16 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     default: {
       web::WebThread::PostTask(web::WebThread::FILE, FROM_HERE,
                                base::BindBlock(^{
-                                 [self saveImage:data fileName:fileName];
+                                 [self saveImage:data];
                                }));
       break;
     }
   }
 }
 
-- (void)saveImage:(NSData*)data fileName:(NSString*)fileName {
+- (void)saveImage:(NSData*)data {
+  NSString* fileName = [[[NSProcessInfo processInfo] globallyUniqueString]
+      stringByAppendingString:@".png"];
   NSURL* fileURL =
       [NSURL fileURLWithPath:[NSTemporaryDirectory()
                                  stringByAppendingPathComponent:fileName]];
