@@ -30,7 +30,7 @@ cr.define('md_history', function() {
       var removalList = items.map(function(item) {
         return {
           url: item.url,
-          timestamps: item.allTimestamps
+          timestamps: item.allTimestamps,
         };
       });
 
@@ -45,9 +45,7 @@ cr.define('md_history', function() {
     /**
      * @param {!string} url
      */
-    removeBookmark: function(url) {
-      chrome.send('removeBookmark', [url]);
-    },
+    removeBookmark: function(url) { chrome.send('removeBookmark', [url]); },
 
     /**
      * @param {string} sessionTag
@@ -76,9 +74,7 @@ cr.define('md_history', function() {
       chrome.send('deleteForeignSession', [sessionTag]);
     },
 
-    openClearBrowsingData: function() {
-      chrome.send('clearBrowsingData');
-    },
+    openClearBrowsingData: function() { chrome.send('clearBrowsingData'); },
 
     /**
      * @param {string} histogram
@@ -118,9 +114,7 @@ cr.define('md_history', function() {
       this.pendingDeletePromise_ = null;
     },
 
-    menuPromoShown: function() {
-      chrome.send('menuPromoShown');
-    },
+    menuPromoShown: function() { chrome.send('menuPromoShown'); },
   };
 
   cr.addSingletonGetter(BrowserService);
@@ -141,4 +135,3 @@ function deleteComplete() {
 function deleteFailed() {
   md_history.BrowserService.getInstance().resolveDelete_(false);
 }
-

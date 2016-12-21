@@ -38,7 +38,7 @@ function waitForAppUpgrade() {
  */
 function historyResult(info, results) {
   waitForAppUpgrade().then(function() {
-    var app = /** @type {HistoryAppElement} */($('history-app'));
+    var app = /** @type {HistoryAppElement} */ ($('history-app'));
     app.historyResult(info, results);
     document.body.classList.remove('loading');
 
@@ -74,7 +74,7 @@ function showNotification(
  */
 function setForeignSessions(sessionList) {
   waitForAppUpgrade().then(function() {
-    /** @type {HistoryAppElement} */($('history-app'))
+    /** @type {HistoryAppElement} */ ($('history-app'))
         .setForeignSessions(sessionList);
   });
 }
@@ -84,8 +84,7 @@ function setForeignSessions(sessionList) {
  */
 function historyDeleted() {
   waitForAppUpgrade().then(function() {
-    /** @type {HistoryAppElement} */($('history-app'))
-        .historyDeleted();
+    /** @type {HistoryAppElement} */ ($('history-app')).historyDeleted();
   });
 }
 
@@ -96,7 +95,7 @@ function historyDeleted() {
 function updateSignInState(isUserSignedIn) {
   waitForAppUpgrade().then(function() {
     if ($('history-app')) {
-      /** @type {HistoryAppElement} */($('history-app'))
+      /** @type {HistoryAppElement} */ ($('history-app'))
           .updateSignInState(isUserSignedIn);
     }
   });

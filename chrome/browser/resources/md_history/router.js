@@ -14,12 +14,12 @@ Polymer({
 
     queryState: {
       type: Object,
-      notify: true
+      notify: true,
     },
 
     path_: {
       type: String,
-      observer: 'pathChanged_'
+      observer: 'pathChanged_',
     },
 
     queryParams_: Object,

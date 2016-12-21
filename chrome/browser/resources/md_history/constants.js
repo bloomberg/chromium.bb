@@ -70,5 +70,5 @@ var SyncedTabsHistogram = {
 var HistoryRange = {
   ALL_TIME: 0,
   WEEK: 1,
-  MONTH: 2
+  MONTH: 2,
 };

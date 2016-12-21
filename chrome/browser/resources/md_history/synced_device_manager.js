@@ -20,15 +20,24 @@ Polymer({
     /**
      * @type {?Array<!ForeignSession>}
      */
-    sessionList: {type: Array, observer: 'updateSyncedDevices'},
+    sessionList: {
+      type: Array,
+      observer: 'updateSyncedDevices',
+    },
 
-    searchTerm: {type: String, observer: 'searchTermChanged'},
+    searchTerm: {
+      type: String,
+      observer: 'searchTermChanged',
+    },
 
     /**
      * An array of synced devices with synced tab data.
      * @type {!Array<!ForeignDeviceInternal>}
      */
-    syncedDevices_: {type: Array, value: function() { return []; }},
+    syncedDevices_: {
+      type: Array,
+      value: function() { return []; },
+    },
 
     /** @private */
     signInState: {
@@ -91,9 +100,7 @@ Polymer({
       if (newTabs.length == 0)
         continue;
 
-      newTabs.forEach(function(tab) {
-        tab.windowId = windowId;
-      });
+      newTabs.forEach(function(tab) { tab.windowId = windowId; });
 
       var windowAdded = false;
       if (!this.searchTerm) {
@@ -152,8 +159,7 @@ Polymer({
     browserService.recordHistogram(
         SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.OPEN_ALL,
         SyncedTabsHistogram.LIMIT);
-    browserService.openForeignSessionAllTabs(
-        menu.itemData);
+    browserService.openForeignSessionAllTabs(menu.itemData);
     menu.closeMenu();
   },
 
@@ -252,8 +258,8 @@ Polymer({
     if (sessionList.length > 0 && !this.hasSeenForeignData_) {
       this.hasSeenForeignData_ = true;
       md_history.BrowserService.getInstance().recordHistogram(
-        SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.HAS_FOREIGN_DATA,
-        SyncedTabsHistogram.LIMIT);
+          SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram.HAS_FOREIGN_DATA,
+          SyncedTabsHistogram.LIMIT);
     }
 
     var devices = [];

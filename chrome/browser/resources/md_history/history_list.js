@@ -14,17 +14,17 @@ Polymer({
       value: '',
     },
 
-    querying: Boolean,
-
-    // An array of history entries in reverse chronological order.
-    historyData_: Array,
-
     resultLoadingDisabled_: {
       type: Boolean,
       value: false,
     },
 
+    // An array of history entries in reverse chronological order.
+    historyData_: Array,
+
     lastFocused_: Object,
+
+    querying: Boolean,
   },
 
   listeners: {
@@ -37,7 +37,7 @@ Polymer({
     // It is possible (eg, when middle clicking the reload button) for all other
     // resize events to fire before the list is attached and can be measured.
     // Adding another resize here ensures it will get sized correctly.
-    /** @type {IronListElement} */(this.$['infinite-list']).notifyResize();
+    /** @type {IronListElement} */ (this.$['infinite-list']).notifyResize();
     this.$['infinite-list'].scrollTarget = this;
     this.$['scroll-threshold'].scrollTarget = this;
   },
@@ -70,7 +70,7 @@ Polymer({
    */
   addNewResults: function(historyResults, incremental, finished) {
     var results = historyResults.slice();
-    /** @type {IronScrollThresholdElement} */(this.$['scroll-threshold'])
+    /** @type {IronScrollThresholdElement} */ (this.$['scroll-threshold'])
         .clearTriggers();
 
     if (!incremental) {
@@ -154,16 +154,12 @@ Polymer({
   /**
    * @private
    */
-  notifyListScroll_: function() {
-    this.fire('history-list-scrolled');
-  },
+  notifyListScroll_: function() { this.fire('history-list-scrolled'); },
 
   /**
    * @param {number} index
    * @return {string}
    * @private
    */
-  pathForItem_: function(index) {
-    return 'historyData_.' + index;
-  },
+  pathForItem_: function(index) { return 'historyData_.' + index; },
 });

@@ -35,7 +35,7 @@ var HistoryListBehavior = {
      */
     selectedPaths: {
       type: Object,
-      value: /** @return {!Set<string>} */ function() { return new Set(); }
+      value: /** @return {!Set<string>} */ function() { return new Set(); },
     },
 
     lastSelectedPath: String,

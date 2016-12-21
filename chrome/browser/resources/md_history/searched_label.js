@@ -34,8 +34,8 @@ Polymer({
     this.textContent = '';
     while (match = re.exec(titleText)) {
       if (match.index > i)
-        this.appendChild(document.createTextNode(
-            titleText.slice(i, match.index)));
+        this.appendChild(
+            document.createTextNode(titleText.slice(i, match.index)));
       i = re.lastIndex;
       // Mark the highlighted text in bold.
       var b = document.createElement('b');
@@ -43,7 +43,6 @@ Polymer({
       this.appendChild(b);
     }
     if (i < titleText.length)
-      this.appendChild(
-          document.createTextNode(titleText.slice(i)));
+      this.appendChild(document.createTextNode(titleText.slice(i)));
   },
 });

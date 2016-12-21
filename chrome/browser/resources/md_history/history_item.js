@@ -25,8 +25,7 @@ HistoryFocusRow.prototype = {
       equivalent = this.getFirstFocusable('title');
 
     return equivalent ||
-        cr.ui.FocusRow.prototype.getCustomEquivalent.call(
-            this, sampleElement);
+        cr.ui.FocusRow.prototype.getCustomEquivalent.call(this, sampleElement);
   },
 
   addItems: function() {
@@ -81,29 +80,32 @@ cr.define('md_history', function() {
     properties: {
       // Underlying HistoryEntry data for this item. Contains read-only fields
       // from the history backend, as well as fields computed by history-list.
-      item: {type: Object, observer: 'showIcon_'},
+      item: {
+        type: Object,
+        observer: 'showIcon_',
+      },
 
-      // Search term used to obtain this history-item.
-      searchTerm: {type: String},
+      selected: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
 
-      selected: {type: Boolean, reflectToAttribute: true},
+      isCardStart: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
 
-      isCardStart: {type: Boolean, reflectToAttribute: true},
-
-      isCardEnd: {type: Boolean, reflectToAttribute: true},
+      isCardEnd: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
 
       // True if the item is being displayed embedded in another element and
       // should not manage its own borders or size.
-      embedded: {type: Boolean, reflectToAttribute: true},
-
-      hasTimeGap: {type: Boolean},
-
-      numberOfItems: {type: Number},
-
-      // The path of this history item inside its parent.
-      path: String,
-
-      index: Number,
+      embedded: {
+        type: Boolean,
+        reflectToAttribute: true,
+      },
 
       /** @type {Element} */
       lastFocused: {
@@ -115,6 +117,18 @@ cr.define('md_history', function() {
         type: Number,
         observer: 'ironListTabIndexChanged_',
       },
+
+      hasTimeGap: Boolean,
+
+      index: Number,
+
+      numberOfItems: Number,
+
+      // The path of this history item inside its parent.
+      path: String,
+
+      // Search term used to obtain this history-item.
+      searchTerm: String,
     },
 
     /** @private {?HistoryFocusRow} */
@@ -219,9 +233,7 @@ cr.define('md_history', function() {
      * @return {string}
      * @private
      */
-    getAriaChecked_: function(selected) {
-      return selected ? 'true' : 'false';
-    },
+    getAriaChecked_: function(selected) { return selected ? 'true' : 'false'; },
 
     /**
      * Remove bookmark of current item when bookmark-star is clicked.
@@ -349,9 +361,10 @@ cr.define('md_history', function() {
    */
   HistoryItem.searchResultsTitle = function(numberOfResults, searchTerm) {
     var resultId = numberOfResults == 1 ? 'searchResult' : 'searchResults';
-    return loadTimeData.getStringF('foundSearchResults', numberOfResults,
-        loadTimeData.getString(resultId), searchTerm);
+    return loadTimeData.getStringF(
+        'foundSearchResults', numberOfResults, loadTimeData.getString(resultId),
+        searchTerm);
   };
 
-  return { HistoryItem: HistoryItem };
+  return {HistoryItem: HistoryItem};
 });

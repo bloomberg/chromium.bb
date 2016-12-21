@@ -27,16 +27,17 @@ Polymer({
   ],
 
   properties: {
-    // Used to display notices for profile sign-in status.
-    showSidebarFooter: Boolean,
-
-    hasSyncedResults: Boolean,
-
     // The id of the currently selected page.
-    selectedPage_: {type: String, observer: 'selectedPageChanged_'},
+    selectedPage_: {
+      type: String,
+      observer: 'selectedPageChanged_',
+    },
 
     // Whether domain-grouped history is enabled.
-    grouped_: {type: Boolean, reflectToAttribute: true},
+    grouped_: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
 
     /** @type {!QueryState} */
     queryState_: {
@@ -70,9 +71,6 @@ Polymer({
       }
     },
 
-    // True if the window is narrow enough for the page to have a drawer.
-    hasDrawer_: Boolean,
-
     isUserSignedIn_: {
       type: Boolean,
       // Updated on synced-device-manager attach by chrome.sending
@@ -88,10 +86,16 @@ Polymer({
 
     showMenuPromo_: {
       type: Boolean,
-      value: function() {
-        return loadTimeData.getBoolean('showMenuPromo');
-      },
+      value: function() { return loadTimeData.getBoolean('showMenuPromo'); },
     },
+
+    // True if the window is narrow enough for the page to have a drawer.
+    hasDrawer_: Boolean,
+
+    // Used to display notices for profile sign-in status.
+    showSidebarFooter: Boolean,
+
+    hasSyncedResults: Boolean,
   },
 
   listeners: {
@@ -160,9 +164,7 @@ Polymer({
   },
 
   /** @private */
-  onCrToolbarMenuPromoClose_: function() {
-    this.showMenuPromo_ = false;
-  },
+  onCrToolbarMenuPromoClose_: function() { this.showMenuPromo_ = false; },
 
   /** @private */
   onCrToolbarMenuPromoShown_: function() {
@@ -235,7 +237,7 @@ Polymer({
    * @private
    */
   onCanExecute_: function(e) {
-    e = /** @type {cr.ui.CanExecuteEvent} */(e);
+    e = /** @type {cr.ui.CanExecuteEvent} */ (e);
     switch (e.command.id) {
       case 'find-command':
       case 'toggle-grouped':
@@ -274,9 +276,7 @@ Polymer({
   /**
    * Called when browsing data is cleared.
    */
-  historyDeleted: function() {
-    this.$.history.historyDeleted();
-  },
+  historyDeleted: function() { this.$.history.historyDeleted(); },
 
   /**
    * Update sign in state of synced device manager after user logs in or out.
@@ -387,7 +387,7 @@ Polymer({
     }
 
     md_history.BrowserService.getInstance().recordHistogram(
-      'History.HistoryPageView', histogramValue, HistoryPageViewHistogram.END
-    );
+        'History.HistoryPageView', histogramValue,
+        HistoryPageViewHistogram.END);
   },
 });

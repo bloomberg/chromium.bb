@@ -6,14 +6,17 @@ Polymer({
   is: 'history-list-container',
 
   properties: {
+    /** @type {HistoryRange} */
+    groupedRange: {
+      type: Number,
+      observer: 'groupedRangeChanged_',
+    },
+
     // The path of the currently selected page.
     selectedPage_: String,
 
     // Whether domain-grouped history is enabled.
     grouped: Boolean,
-
-    /** @type {HistoryRange} */
-    groupedRange: {type: Number, observer: 'groupedRangeChanged_'},
 
     /** @type {!QueryState} */
     queryState: Object,
@@ -85,7 +88,7 @@ Polymer({
     }
 
     var maxResults =
-      this.groupedRange == HistoryRange.ALL_TIME ? RESULTS_PER_PAGE : 0;
+        this.groupedRange == HistoryRange.ALL_TIME ? RESULTS_PER_PAGE : 0;
     chrome.send('queryHistory', [
       queryState.searchTerm, queryState.groupedOffset, queryState.range,
       lastVisitTime, maxResults
@@ -102,9 +105,7 @@ Polymer({
   },
 
   /** @return {Element} */
-  getContentScrollTarget: function() {
-    return this.getSelectedList_();
-  },
+  getContentScrollTarget: function() { return this.getSelectedList_(); },
 
   /** @return {number} */
   getSelectedItemCount: function() {
@@ -140,8 +141,8 @@ Polymer({
    * @private
    */
   groupedRangeChanged_: function(range, oldRange) {
-    this.selectedPage_ = range == HistoryRange.ALL_TIME ?
-      'infinite-list' : 'grouped-list';
+    this.selectedPage_ =
+        range == HistoryRange.ALL_TIME ? 'infinite-list' : 'grouped-list';
 
     if (oldRange == undefined)
       return;
@@ -168,9 +169,7 @@ Polymer({
   },
 
   /** @private */
-  groupedOffsetChanged_: function() {
-    this.queryHistory(false);
-  },
+  groupedOffsetChanged_: function() { this.queryHistory(false); },
 
   /** @private */
   loadMoreHistory_: function() { this.queryHistory(true); },
@@ -235,7 +234,7 @@ Polymer({
    */
   toggleMenu_: function(e) {
     var target = e.detail.target;
-    var menu = /** @type {CrSharedMenuElement} */this.$.sharedMenu.get();
+    var menu = /** @type {CrSharedMenuElement} */ this.$.sharedMenu.get();
     menu.toggleMenu(target, e.detail);
   },
 
@@ -255,30 +254,29 @@ Polymer({
     browserService.recordAction('EntryMenuRemoveFromHistory');
     var menu = assert(this.$.sharedMenu.getIfExists());
     var itemData = menu.itemData;
-    browserService.deleteItems([itemData.item])
-        .then(function(items) {
-          // This unselect-all resets the toolbar when deleting a selected item
-          // and clears selection state which can be invalid if items move
-          // around during deletion.
-          // TODO(tsergeant): Make this automatic based on observing list
-          // modifications.
-          this.fire('unselect-all');
-          this.getSelectedList_().removeItemsByPath([itemData.path]);
+    browserService.deleteItems([itemData.item]).then(function(items) {
+      // This unselect-all resets the toolbar when deleting a selected item
+      // and clears selection state which can be invalid if items move
+      // around during deletion.
+      // TODO(tsergeant): Make this automatic based on observing list
+      // modifications.
+      this.fire('unselect-all');
+      this.getSelectedList_().removeItemsByPath([itemData.path]);
 
-          var index = itemData.index;
-          if (index == undefined)
-            return;
+      var index = itemData.index;
+      if (index == undefined)
+        return;
 
-          var browserService = md_history.BrowserService.getInstance();
-          browserService.recordHistogram(
-              'HistoryPage.RemoveEntryPosition',
-              Math.min(index, UMA_MAX_BUCKET_VALUE), UMA_MAX_BUCKET_VALUE);
-          if (index <= UMA_MAX_SUBSET_BUCKET_VALUE) {
-            browserService.recordHistogram(
-                'HistoryPage.RemoveEntryPositionSubset', index,
-                UMA_MAX_SUBSET_BUCKET_VALUE);
-          }
-        }.bind(this));
+      var browserService = md_history.BrowserService.getInstance();
+      browserService.recordHistogram(
+          'HistoryPage.RemoveEntryPosition',
+          Math.min(index, UMA_MAX_BUCKET_VALUE), UMA_MAX_BUCKET_VALUE);
+      if (index <= UMA_MAX_SUBSET_BUCKET_VALUE) {
+        browserService.recordHistogram(
+            'HistoryPage.RemoveEntryPositionSubset', index,
+            UMA_MAX_SUBSET_BUCKET_VALUE);
+      }
+    }.bind(this));
     menu.closeMenu();
   },
 

@@ -8,11 +8,19 @@ Polymer({
     // Number of history items currently selected.
     // TODO(calamity): bind this to
     // listContainer.selectedItem.selectedPaths.length.
-    count: {type: Number, value: 0, observer: 'changeToolbarView_'},
+    count: {
+      type: Number,
+      value: 0,
+      observer: 'changeToolbarView_',
+    },
 
     // True if 1 or more history items are selected. When this value changes
     // the background colour changes.
-    itemsSelected_: {type: Boolean, value: false, reflectToAttribute: true},
+    itemsSelected_: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
 
     // The most recent term entered in the search field. Updated incrementally
     // as the user types.
@@ -24,14 +32,15 @@ Polymer({
 
     // True if the backend is processing and a spinner should be shown in the
     // toolbar.
-    spinnerActive: {type: Boolean, value: false},
+    spinnerActive: {
+      type: Boolean,
+      value: false,
+    },
 
     hasDrawer: {
       type: Boolean,
       reflectToAttribute: true,
     },
-
-    showSyncNotice: Boolean,
 
     // Whether domain-grouped history is enabled.
     isGroupedMode: {
@@ -64,6 +73,8 @@ Polymer({
     // Whether to show the menu promo (a tooltip that points at the menu button
     // in narrow mode).
     showMenuPromo: Boolean,
+
+    showSyncNotice: Boolean,
   },
 
   /** @return {CrToolbarSearchFieldElement} */
@@ -134,7 +145,7 @@ Polymer({
   getHistoryInterval_: function(queryStartTime, queryEndTime) {
     // TODO(calamity): Fix the format of these dates.
     return loadTimeData.getStringF(
-      'historyInterval', queryStartTime, queryEndTime);
+        'historyInterval', queryStartTime, queryEndTime);
   },
 
   /** @private */

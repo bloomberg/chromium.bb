@@ -8,12 +8,18 @@ Polymer({
   behaviors: [Polymer.IronA11yKeysBehavior],
 
   properties: {
-    selectedPage: {type: String, notify: true},
-
-    showFooter: Boolean,
+    selectedPage: {
+      type: String,
+      notify: true,
+    },
 
     // If true, the sidebar is contained within an app-drawer.
-    drawer: {type: Boolean, reflectToAttribute: true},
+    drawer: {
+      type: Boolean,
+      reflectToAttribute: true,
+    },
+
+    showFooter: Boolean,
   },
 
   keyBindings: {
@@ -24,9 +30,7 @@ Polymer({
    * @param {CustomEvent} e
    * @private
    */
-  onSpacePressed_: function(e) {
-    e.detail.keyboardEvent.path[0].click();
-  },
+  onSpacePressed_: function(e) { e.detail.keyboardEvent.path[0].click(); },
 
   /**
    * @private
@@ -42,7 +46,7 @@ Polymer({
     var browserService = md_history.BrowserService.getInstance();
     browserService.recordAction('InitClearBrowsingData');
     browserService.openClearBrowsingData();
-    /** @type {PaperRippleElement} */(this.$['cbd-ripple']).upAction();
+    /** @type {PaperRippleElement} */ (this.$['cbd-ripple']).upAction();
     e.preventDefault();
   },
 
@@ -51,7 +55,5 @@ Polymer({
    * accessibility purposes, taps are handled separately by <iron-selector>.
    * @private
    */
-  onItemClick_: function(e) {
-    e.preventDefault();
-  },
+  onItemClick_: function(e) { e.preventDefault(); },
 });

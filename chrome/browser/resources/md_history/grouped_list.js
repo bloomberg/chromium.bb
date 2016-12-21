@@ -22,34 +22,27 @@ Polymer({
   behaviors: [HistoryListBehavior],
 
   properties: {
-    // An array of history entries in reverse chronological order.
-    historyData: {
-      type: Array,
+    searchedTerm: {
+      type: String,
+      value: '',
     },
 
     /**
      * @type {Array<HistoryGroup>}
      */
-    groupedHistoryData_: {
-      type: Array,
-    },
+    groupedHistoryData_: Array,
 
-    searchedTerm: {
-      type: String,
-      value: ''
-    },
-
-    range: {
-      type: Number,
-    },
+    // An array of history entries in reverse chronological order.
+    historyData: Array,
 
     queryStartTime: String,
+
     queryEndTime: String,
+
+    range: Number,
   },
 
-  observers: [
-    'updateGroupedHistoryData_(range, historyData)'
-  ],
+  observers: ['updateGroupedHistoryData_(range, historyData)'],
 
   /**
    * @param {!Array<!HistoryEntry>} results
@@ -106,7 +99,7 @@ Polymer({
       var pushCurrentDay = function() {
         days.push({
           title: this.searchedTerm ? currentDayVisits[0].dateShort :
-              currentDayVisits[0].dateRelativeDay,
+                                     currentDayVisits[0].dateRelativeDay,
           domains: this.createHistoryDomains_(currentDayVisits),
         });
       }.bind(this);

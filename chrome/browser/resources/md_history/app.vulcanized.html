@@ -1832,7 +1832,7 @@ paper-icon-button {
 }
 
 paper-spinner-lite {
-  height: var(--cr-icon-size_-_height); width: var(--cr-icon-size_-_width);
+  height: var(--cr-icon-height-width_-_height); width: var(--cr-icon-height-width_-_width);
         --paper-spinner-color: white;
         margin: 0 6px;
         opacity: 0;
@@ -2497,7 +2497,15 @@ paper-tab {
     --cr-focused-item-color: var(--google-grey-300);
     
     --cr-icon-padding: 8px;
-    --cr-icon-size_-_height:  20px; --cr-icon-size_-_width:  20px;
+
+    
+    --cr-icon-ripple-size: 36px;
+    --cr-icon-size: 20px;
+
+    --cr-icon-height-width_-_height:  var(--cr-icon-size); --cr-icon-height-width_-_width:  var(--cr-icon-size);
+
+    --cr-paper-icon-button-margin_-_-webkit-margin-end:  -8px; --cr-paper-icon-button-margin_-_-webkit-margin-start:  16px;
+
     --cr-selectable-focus_-_background-color:  var(--cr-focused-item-color); --cr-selectable-focus_-_outline:  none;
     --cr-separator-line: 1px solid rgba(0, 0, 0, 0.06);
     --paper-checkbox-ink-size: 40px;
@@ -2536,6 +2544,16 @@ paper-tab {
   cursor: var(--cr-actionable_-_cursor);
 }
 
+button[is='paper-icon-button-light'] {
+  -webkit-margin-end: var(--cr-paper-icon-button-margin_-_-webkit-margin-end); -webkit-margin-start: var(--cr-paper-icon-button-margin_-_-webkit-margin-start);
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: var(--cr-icon-size);
+        flex-shrink: 0;
+        height: var(--cr-icon-ripple-size);
+        width: var(--cr-icon-ripple-size);
+}
+
 button[is='paper-icon-button-light'].subpage-arrow {
   background-image: url("chrome://resources/images/arrow_right.svg");
 }
@@ -2546,6 +2564,10 @@ button[is='paper-icon-button-light'].icon-external {
 
 .subpage-arrow, .icon-external {
   display: none;
+}
+
+paper-icon-button.subpage-arrow {
+  background-image: url("chrome://resources/images/arrow_right.svg");
 }
 
 [actionable] :-webkit-any(.subpage-arrow, .icon-external), [actionable]:-webkit-any(.subpage-arrow, .icon-external) {
@@ -3246,6 +3268,16 @@ paper-spinner {
   cursor: var(--cr-actionable_-_cursor);
 }
 
+button[is='paper-icon-button-light'] {
+  -webkit-margin-end: var(--cr-paper-icon-button-margin_-_-webkit-margin-end); -webkit-margin-start: var(--cr-paper-icon-button-margin_-_-webkit-margin-start);
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: var(--cr-icon-size);
+        flex-shrink: 0;
+        height: var(--cr-icon-ripple-size);
+        width: var(--cr-icon-ripple-size);
+}
+
 button[is='paper-icon-button-light'].subpage-arrow {
   background-image: url("chrome://resources/images/arrow_right.svg");
 }
@@ -3256,6 +3288,10 @@ button[is='paper-icon-button-light'].icon-external {
 
 .subpage-arrow, .icon-external {
   display: none;
+}
+
+paper-icon-button.subpage-arrow {
+  background-image: url("chrome://resources/images/arrow_right.svg");
 }
 
 [actionable] :-webkit-any(.subpage-arrow, .icon-external), [actionable]:-webkit-any(.subpage-arrow, .icon-external) {
