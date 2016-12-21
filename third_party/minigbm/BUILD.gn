@@ -33,6 +33,7 @@ if (!use_system_minigbm) {
       "src/i915.c",
       "src/marvell.c",
       "src/mediatek.c",
+      "src/nouveau.c",
       "src/rockchip.c",
       "src/tegra.c",
       "src/udl.c",
