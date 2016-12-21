@@ -219,6 +219,7 @@
                     "forcing_flag": "enable-browser-task-scheduler",
                     "params": {
                         "RedirectHistoryService": "true",
+                        "RedirectNonUINonIOBrowserThreads": "true",
                         "RedirectSequencedWorkerPools": "true"
                     }
                 },
