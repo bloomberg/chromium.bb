@@ -109,9 +109,9 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
       proceeded_(false) {
   // Computes display options based on user profile and blocked resource.
   bool is_main_frame_load_blocked = IsMainPageLoadBlocked(unsafe_resources);
-  bool can_show_threat_details_option = CanShowThreatDetailsOption();
+  bool can_show_extended_reporting_option = CanShowExtendedReportingOption();
   SafeBrowsingErrorUI::SBErrorDisplayOptions display_options(
-      is_main_frame_load_blocked, can_show_threat_details_option,
+      is_main_frame_load_blocked, can_show_extended_reporting_option,
       IsExtendedReportingEnabled(*profile()->GetPrefs()),
       IsScout(*profile()->GetPrefs()),
       IsPrefEnabled(prefs::kSafeBrowsingProceedAnywayDisabled));
@@ -135,7 +135,7 @@ SafeBrowsingBlockingPage::SafeBrowsingBlockingPage(
   // reports.
   if (unsafe_resources.size() == 1 &&
       ShouldReportThreatDetails(unsafe_resources[0].threat_type) &&
-      threat_details_.get() == NULL && can_show_threat_details_option) {
+      threat_details_.get() == NULL && can_show_extended_reporting_option) {
     threat_details_ = ThreatDetails::NewThreatDetails(ui_manager_, web_contents,
                                                       unsafe_resources[0]);
   }
@@ -150,9 +150,8 @@ bool SafeBrowsingBlockingPage::ShouldReportThreatDetails(
          threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL;
 }
 
-bool SafeBrowsingBlockingPage::CanShowThreatDetailsOption() {
+bool SafeBrowsingBlockingPage::CanShowExtendedReportingOption() {
   return (!web_contents()->GetBrowserContext()->IsOffTheRecord() &&
-          main_frame_url_.SchemeIs(url::kHttpScheme) &&
           IsPrefEnabled(prefs::kSafeBrowsingExtendedReportingOptInAllowed));
 }
 

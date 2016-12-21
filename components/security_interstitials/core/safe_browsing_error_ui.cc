@@ -284,9 +284,10 @@ void SafeBrowsingErrorUI::PopulatePhishingLoadTimeData(
 
 void SafeBrowsingErrorUI::PopulateExtendedReportingOption(
     base::DictionaryValue* load_time_data) {
-  load_time_data->SetBoolean(security_interstitials::kDisplayCheckBox,
-                             display_options_.can_show_threat_details_option);
-  if (!display_options_.can_show_threat_details_option)
+  load_time_data->SetBoolean(
+      security_interstitials::kDisplayCheckBox,
+      display_options_.can_show_extended_reporting_option);
+  if (!display_options_.can_show_extended_reporting_option)
     return;
 
   const std::string privacy_link = base::StringPrintf(

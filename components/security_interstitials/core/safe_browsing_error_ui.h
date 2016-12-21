@@ -26,12 +26,13 @@ class SafeBrowsingErrorUI {
 
   struct SBErrorDisplayOptions {
     SBErrorDisplayOptions(bool is_main_frame_load_blocked,
-                          bool can_show_threat_details_option,
+                          bool can_show_extended_reporting_option,
                           bool is_extended_reporting_enabled,
                           bool is_scout_reporting_enabled,
                           bool is_proceed_anyway_disabled)
         : is_main_frame_load_blocked(is_main_frame_load_blocked),
-          can_show_threat_details_option(can_show_threat_details_option),
+          can_show_extended_reporting_option(
+              can_show_extended_reporting_option),
           is_extended_reporting_enabled(is_extended_reporting_enabled),
           is_scout_reporting_enabled(is_scout_reporting_enabled),
           is_proceed_anyway_disabled(is_proceed_anyway_disabled) {}
@@ -40,7 +41,7 @@ class SafeBrowsingErrorUI {
     bool is_main_frame_load_blocked;
 
     // Indicates if we can show extended reporting checkbox,
-    bool can_show_threat_details_option;
+    bool can_show_extended_reporting_option;
 
     // Indicates if user opted in for SB extended reporting.
     bool is_extended_reporting_enabled;

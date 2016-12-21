@@ -898,16 +898,6 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, ProceedDisabled) {
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
-// Verifies that the reporting checkbox is hidden on non-HTTP pages.
-// TODO(mattm): Should also verify that no report is sent, but there isn't a
-// good way to do that in the current design.
-IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, ReportingDisabled) {
-  SetExtendedReportingPref(browser()->profile()->GetPrefs(), true);
-
-  TestReportingDisabledAndDontProceed(
-      net::URLRequestMockHTTPJob::GetMockHttpsUrl(kEmptyPage));
-}
-
 // Verifies that the reporting checkbox is hidden when opt-in is
 // disabled by policy.
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,

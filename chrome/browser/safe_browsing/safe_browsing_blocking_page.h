@@ -106,18 +106,10 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
                            ExtendedReportingNotShownOnSecurePage);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
                            MalwareReportsTransitionDisabled);
-  FRIEND_TEST_ALL_PREFIXES(
-      SafeBrowsingBlockingPageTest,
-      ExtendedReportingNotShownOnSecurePageWithSecureSubresource);
-  FRIEND_TEST_ALL_PREFIXES(
-      SafeBrowsingBlockingPageTest,
-      ExtendedReportingNotShownOnSecurePageWithInsecureSubresource);
-  FRIEND_TEST_ALL_PREFIXES(
-      SafeBrowsingBlockingPageTest,
-      ExtendedReportingOnInsecurePageWithSecureSubresource);
-  FRIEND_TEST_ALL_PREFIXES(
-      SafeBrowsingBlockingPageTest,
-      ExtendedReportingNotShownOnSecurePageWithPendingInsecureLoad);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
+                           ExtendedReportingNotShownInIncognito);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingBlockingPageTest,
+                           ExtendedReportingNotShownNotAllowExtendedReporting);
 
   void UpdateReportingPref();  // Used for the transition from old to new pref.
 
@@ -138,9 +130,10 @@ class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
   // milliseconds), in order to get data from the blocked resource itself.
   int64_t threat_details_proceed_delay_ms_;
 
-  // Checks if we should even show the threat details option. For example, we
-  // don't show it in incognito mode.
-  bool CanShowThreatDetailsOption();
+  // Checks if we should even show the extended reporting option. We don't show
+  // it in incognito mode or if kSafeBrowsingExtendedReportingOptInAllowed
+  // preference is disabled.
+  bool CanShowExtendedReportingOption();
 
   // Called when the insterstitial is going away. If there is a
   // pending threat details object, we look at the user's
