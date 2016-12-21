@@ -825,7 +825,8 @@ html[dir='rtl'] #search-box .clear {
 /* Draw outline using box-shadow to make them rounded. */
 .dialog-footer .primary:focus:not(:active),
 .dialog-footer .secondary:focus:not(:active),
-.dialog-footer select:focus:not(:active) {
+.dialog-footer select:focus:not(:active),
+#cloud-import-details paper-button.keyboard-focus {
   box-shadow: 0 0 0 2px rgba(51, 103, 214, 0.5);
 }
 
