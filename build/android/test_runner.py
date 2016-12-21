@@ -500,9 +500,7 @@ def AddPerfTestOptions(parser):
 
   group.add_argument(
       '--output-json-list', type=os.path.realpath,
-      help='Writes a JSON list of information for each --steps into the given '
-           'file. Information includes runtime and device affinity for each '
-           '--steps.')
+      help='Write a simple list of names from --steps into the given file.')
   group.add_argument(
       '--collect-chartjson-data',
       action='store_true',
@@ -510,11 +508,7 @@ def AddPerfTestOptions(parser):
   group.add_argument(
       '--output-chartjson-data',
       type=os.path.realpath,
-      help='Writes telemetry chartjson formatted output into the given file.')
-  group.add_argument(
-      '--output-json-data',
-      type=os.path.realpath,
-      help='Writes telemetry JSON formatted output into the given file.')
+      help='Write out chartjson into the given file.')
   # TODO(rnephew): Remove this when everything moves to new option in platform
   # mode.
   group.add_argument(
