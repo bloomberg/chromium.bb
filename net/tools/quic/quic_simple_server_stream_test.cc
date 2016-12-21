@@ -139,8 +139,8 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                       bool fin,
                       SpdyPriority priority,
                       QuicReferenceCountedPointer<QuicAckListenerInterface>
-                          ack_notifier_delegate) override {
-    return WriteHeadersMock(id, headers, fin, priority, ack_notifier_delegate);
+                          ack_listener) override {
+    return WriteHeadersMock(id, headers, fin, priority, ack_listener);
   }
   MOCK_METHOD5(
       WriteHeadersMock,
@@ -149,7 +149,7 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
              bool fin,
              SpdyPriority priority,
              const QuicReferenceCountedPointer<QuicAckListenerInterface>&
-                 ack_notifier_delegate));
+                 ack_listener));
   MOCK_METHOD3(SendRstStream,
                void(QuicStreamId stream_id,
                     QuicRstStreamErrorCode error,

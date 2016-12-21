@@ -1115,7 +1115,7 @@ QuicConsumedData QuicConnection::SendStreamData(
     QuicIOVector iov,
     QuicStreamOffset offset,
     bool fin,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> listener) {
+    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   if (!fin && iov.total_length == 0) {
     QUIC_BUG << "Attempt to send empty stream frame";
     return QuicConsumedData(0, false);
@@ -1134,10 +1134,10 @@ QuicConsumedData QuicConnection::SendStreamData(
       iov.total_length > kMaxPacketSize) {
     // Use the fast path to send full data packets.
     return packet_generator_.ConsumeDataFastPath(id, iov, offset, fin,
-                                                 std::move(listener));
+                                                 std::move(ack_listener));
   }
   return packet_generator_.ConsumeData(id, iov, offset, fin,
-                                       std::move(listener));
+                                       std::move(ack_listener));
 }
 
 void QuicConnection::SendRstStream(QuicStreamId id,

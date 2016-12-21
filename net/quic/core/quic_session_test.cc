@@ -169,12 +169,12 @@ class TestSession : public QuicSpdySession {
       QuicIOVector data,
       QuicStreamOffset offset,
       bool fin,
-      QuicReferenceCountedPointer<QuicAckListenerInterface>
-          ack_notifier_delegate) override {
+      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener)
+      override {
     QuicConsumedData consumed(data.total_length, fin);
     if (!writev_consumes_all_data_) {
       consumed = QuicSession::WritevData(stream, id, data, offset, fin,
-                                         std::move(ack_notifier_delegate));
+                                         std::move(ack_listener));
     }
     stream->set_stream_bytes_written(stream->stream_bytes_written() +
                                      consumed.bytes_consumed);

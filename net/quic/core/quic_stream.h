@@ -206,8 +206,7 @@ class QUIC_EXPORT_PRIVATE QuicStream {
       QuicIOVector iov,
       QuicStreamOffset offset,
       bool fin,
-      QuicReferenceCountedPointer<QuicAckListenerInterface>
-          ack_notifier_delegate);
+      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
   // Close the write side of the socket.  Further writes will fail.
   // Can be called by the subclass or internally.
@@ -240,7 +239,7 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   struct PendingData {
     PendingData(
         std::string data_in,
-        QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener_in);
+        QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
     ~PendingData();
 
     // Pending data to be written.

@@ -34,7 +34,7 @@ class QUIC_EXPORT_PRIVATE QuicAckListenerInterface
 
 struct QUIC_EXPORT_PRIVATE AckListenerWrapper {
   AckListenerWrapper(
-      QuicReferenceCountedPointer<QuicAckListenerInterface> listener,
+      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener,
       QuicPacketLength data_length);
   AckListenerWrapper(const AckListenerWrapper& other);
   ~AckListenerWrapper();

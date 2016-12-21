@@ -116,7 +116,7 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
   ssize_t SendData(
       const std::string& data,
       bool last_data,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> delegate);
+      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
   // Clears any outstanding state and sends a simple GET of 'uri' to the
   // server.  Returns 0 if the request failed and no bytes were written.
@@ -221,7 +221,7 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
       const SpdyHeaderBlock* headers,
       base::StringPiece body,
       bool fin,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> delegate);
+      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
   QuicRstStreamErrorCode stream_error() { return stream_error_; }
   QuicErrorCode connection_error();
@@ -283,7 +283,7 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
         base::StringPiece body,
         bool fin,
         QuicTestClient* test_client,
-        QuicReferenceCountedPointer<QuicAckListenerInterface> delegate);
+        QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
     ~TestClientDataToResend() override;
 
@@ -291,7 +291,7 @@ class QuicTestClient : public QuicSpdyStream::Visitor,
 
    protected:
     QuicTestClient* test_client_;
-    QuicReferenceCountedPointer<QuicAckListenerInterface> delegate_;
+    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener_;
   };
 
   // Given |uri|, populates the fields in |headers| for a simple GET

@@ -144,7 +144,7 @@ class QuicStreamTest : public ::testing::TestWithParam<bool> {
       QuicStreamOffset /*offset*/,
       bool /*fin*/,
       const QuicReferenceCountedPointer<
-          QuicAckListenerInterface>& /*ack_notifier_delegate*/) {
+          QuicAckListenerInterface>& /*ack_listener*/) {
     session_->CloseStream(id);
     return QuicConsumedData(1, false);
   }
@@ -388,15 +388,15 @@ TEST_F(QuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
 // TODO(ianswett): It's not clear this method is still needed now that
 // ProxyAckNotifierDelegate has been removed.
 void SaveAckListener(
-    QuicReferenceCountedPointer<QuicAckListenerInterface>* listener_out,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> listener) {
-  *listener_out = std::move(listener);
+    QuicReferenceCountedPointer<QuicAckListenerInterface>* ack_listener_out,
+    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
+  *ack_listener_out = std::move(ack_listener);
 }
 
 TEST_F(QuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
   Initialize(kShouldProcessData);
 
-  QuicReferenceCountedPointer<MockAckListener> delegate(
+  QuicReferenceCountedPointer<MockAckListener> mock_ack_listener(
       new StrictMock<MockAckListener>);
 
   const int kDataSize = 16 * 1024;
@@ -416,7 +416,7 @@ TEST_F(QuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
       .WillOnce(DoAll(
           WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &ack_listener))),
           Return(QuicConsumedData(kFirstWriteSize, false))));
-  stream_->WriteOrBufferData(kData, false, delegate);
+  stream_->WriteOrBufferData(kData, false, mock_ack_listener);
   EXPECT_TRUE(HasWriteBlockedStreams());
 
   EXPECT_CALL(*session_,
@@ -441,7 +441,7 @@ TEST_F(QuicStreamTest, WriteOrBufferDataWithQuicAckNotifier) {
 TEST_F(QuicStreamTest, WriteOrBufferDataAckNotificationBeforeFlush) {
   Initialize(kShouldProcessData);
 
-  QuicReferenceCountedPointer<MockAckListener> ack_listener(
+  QuicReferenceCountedPointer<MockAckListener> mock_ack_listener(
       new StrictMock<MockAckListener>);
 
   const int kDataSize = 16 * 1024;
@@ -453,18 +453,18 @@ TEST_F(QuicStreamTest, WriteOrBufferDataAckNotificationBeforeFlush) {
   stream_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
   session_->flow_controller()->UpdateSendWindowOffset(kDataSize + 1);
 
-  QuicReferenceCountedPointer<QuicAckListenerInterface> proxy_delegate;
+  QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener;
 
   EXPECT_CALL(*session_, WritevData(stream_, kTestStreamId, _, _, _, _))
       .WillOnce(DoAll(
-          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &proxy_delegate))),
+          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &ack_listener))),
           Return(QuicConsumedData(kInitialWriteSize, false))));
-  stream_->WriteOrBufferData(kData, false, ack_listener);
+  stream_->WriteOrBufferData(kData, false, mock_ack_listener);
   EXPECT_TRUE(HasWriteBlockedStreams());
 
   EXPECT_CALL(*session_, WritevData(stream_, kTestStreamId, _, _, _, _))
       .WillOnce(DoAll(
-          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &proxy_delegate))),
+          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &ack_listener))),
           Return(QuicConsumedData(kDataSize - kInitialWriteSize, false))));
   stream_->OnCanWrite();
 }
@@ -473,16 +473,16 @@ TEST_F(QuicStreamTest, WriteOrBufferDataAckNotificationBeforeFlush) {
 TEST_F(QuicStreamTest, WriteAndBufferDataWithAckNotiferNoBuffer) {
   Initialize(kShouldProcessData);
 
-  QuicReferenceCountedPointer<MockAckListener> delegate(
+  QuicReferenceCountedPointer<MockAckListener> mock_ack_listener(
       new StrictMock<MockAckListener>);
 
-  QuicReferenceCountedPointer<QuicAckListenerInterface> proxy_delegate;
+  QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener;
 
   EXPECT_CALL(*session_, WritevData(stream_, kTestStreamId, _, _, _, _))
       .WillOnce(DoAll(
-          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &proxy_delegate))),
+          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &ack_listener))),
           Return(QuicConsumedData(kDataLen, true))));
-  stream_->WriteOrBufferData(kData1, true, delegate);
+  stream_->WriteOrBufferData(kData1, true, mock_ack_listener);
   EXPECT_FALSE(HasWriteBlockedStreams());
 }
 
@@ -490,19 +490,19 @@ TEST_F(QuicStreamTest, WriteAndBufferDataWithAckNotiferNoBuffer) {
 TEST_F(QuicStreamTest, BufferOnWriteAndBufferDataWithAckNotifer) {
   Initialize(kShouldProcessData);
 
-  QuicReferenceCountedPointer<MockAckListener> delegate(
+  QuicReferenceCountedPointer<MockAckListener> mock_ack_listener(
       new StrictMock<MockAckListener>);
 
-  QuicReferenceCountedPointer<QuicAckListenerInterface> proxy_delegate;
+  QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener;
 
   EXPECT_CALL(*session_, WritevData(stream_, kTestStreamId, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(0, false)));
-  stream_->WriteOrBufferData(kData1, true, delegate);
+  stream_->WriteOrBufferData(kData1, true, mock_ack_listener);
   EXPECT_TRUE(HasWriteBlockedStreams());
 
   EXPECT_CALL(*session_, WritevData(stream_, kTestStreamId, _, _, _, _))
       .WillOnce(DoAll(
-          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &proxy_delegate))),
+          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &ack_listener))),
           Return(QuicConsumedData(kDataLen, true))));
   stream_->OnCanWrite();
 }
@@ -512,21 +512,21 @@ TEST_F(QuicStreamTest, BufferOnWriteAndBufferDataWithAckNotifer) {
 TEST_F(QuicStreamTest, WriteAndBufferDataWithAckNotiferOnlyFinRemains) {
   Initialize(kShouldProcessData);
 
-  QuicReferenceCountedPointer<MockAckListener> delegate(
+  QuicReferenceCountedPointer<MockAckListener> mock_ack_listener(
       new StrictMock<MockAckListener>);
 
-  QuicReferenceCountedPointer<QuicAckListenerInterface> proxy_delegate;
+  QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener;
 
   EXPECT_CALL(*session_, WritevData(stream_, kTestStreamId, _, _, _, _))
       .WillOnce(DoAll(
-          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &proxy_delegate))),
+          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &ack_listener))),
           Return(QuicConsumedData(kDataLen, false))));
-  stream_->WriteOrBufferData(kData1, true, delegate);
+  stream_->WriteOrBufferData(kData1, true, mock_ack_listener);
   EXPECT_TRUE(HasWriteBlockedStreams());
 
   EXPECT_CALL(*session_, WritevData(stream_, kTestStreamId, _, _, _, _))
       .WillOnce(DoAll(
-          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &proxy_delegate))),
+          WithArgs<5>(Invoke(CreateFunctor(SaveAckListener, &ack_listener))),
           Return(QuicConsumedData(0, true))));
   stream_->OnCanWrite();
 }

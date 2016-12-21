@@ -65,8 +65,7 @@ class QUIC_EXPORT_PRIVATE QuicSpdySession : public QuicSession {
       SpdyHeaderBlock headers,
       bool fin,
       SpdyPriority priority,
-      QuicReferenceCountedPointer<QuicAckListenerInterface>
-          ack_notifier_delegate);
+      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
 
   QuicHeadersStream* headers_stream() { return headers_stream_.get(); }
 

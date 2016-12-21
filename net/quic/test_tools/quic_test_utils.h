@@ -545,7 +545,7 @@ class MockQuicSession : public QuicSession {
       QuicStreamOffset offset,
       bool fin,
       const QuicReferenceCountedPointer<QuicAckListenerInterface>&
-          ack_notifier_delegate);
+          ack_listener);
 
  private:
   std::unique_ptr<QuicCryptoStream> crypto_stream_;
@@ -617,10 +617,9 @@ class MockQuicSpdySession : public QuicSpdySession {
                       bool fin,
                       SpdyPriority priority,
                       QuicReferenceCountedPointer<QuicAckListenerInterface>
-                          ack_notifier_delegate) override {
+                          ack_listener) override {
     write_headers_ = std::move(headers);
-    return WriteHeadersMock(id, write_headers_, fin, priority,
-                            ack_notifier_delegate);
+    return WriteHeadersMock(id, write_headers_, fin, priority, ack_listener);
   }
   MOCK_METHOD5(
       WriteHeadersMock,
@@ -629,7 +628,7 @@ class MockQuicSpdySession : public QuicSpdySession {
              bool fin,
              SpdyPriority priority,
              const QuicReferenceCountedPointer<QuicAckListenerInterface>&
-                 ack_notifier_delegate));
+                 ack_listener));
   MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(QuicTime::Delta delta));
   MOCK_METHOD4(
       OnStreamFrameData,

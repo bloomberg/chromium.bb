@@ -43,10 +43,10 @@ size_t GetReceivedFlowControlWindow(QuicSession* session) {
 
 QuicStream::PendingData::PendingData(
     string data_in,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener_in)
+    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener)
     : data(std::move(data_in)),
       offset(0),
-      ack_listener(std::move(ack_listener_in)) {}
+      ack_listener(std::move(ack_listener)) {}
 
 QuicStream::PendingData::~PendingData() {}
 
@@ -351,10 +351,9 @@ QuicConsumedData QuicStream::WritevDataInner(
     QuicIOVector iov,
     QuicStreamOffset offset,
     bool fin,
-    QuicReferenceCountedPointer<QuicAckListenerInterface>
-        ack_notifier_delegate) {
+    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   return session()->WritevData(this, id(), iov, offset, fin,
-                               std::move(ack_notifier_delegate));
+                               std::move(ack_listener));
 }
 
 void QuicStream::CloseReadSide() {

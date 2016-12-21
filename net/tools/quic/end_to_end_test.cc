@@ -1974,7 +1974,8 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
   client_->SendMessage(headers, "", /*fin=*/false);
 
   // The TestAckListener will cause a failure if not notified.
-  QuicReferenceCountedPointer<TestAckListener> delegate(new TestAckListener(2));
+  QuicReferenceCountedPointer<TestAckListener> ack_listener(
+      new TestAckListener(2));
 
   // Test the AckNotifier's ability to track multiple packets by making the
   // request body exceed the size of a single packet.
@@ -1982,7 +1983,7 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
       "a request body bigger than one packet" + string(kMaxPacketSize, '.');
 
   // Send the request, and register the delegate for ACKs.
-  client_->SendData(request_string, true, delegate);
+  client_->SendData(request_string, true, ack_listener);
   client_->WaitForResponse();
   EXPECT_EQ(kFooResponseBody, client_->response_body());
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
@@ -1991,7 +1992,7 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
   client_->SendSynchronousRequest("/bar");
 
   // Make sure the delegate does get the notification it expects.
-  while (!delegate->has_been_notified()) {
+  while (!ack_listener->has_been_notified()) {
     // Waits for up to 50 ms.
     client_->client()->WaitForEvents();
   }

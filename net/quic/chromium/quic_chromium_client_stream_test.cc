@@ -112,9 +112,9 @@ class MockQuicClientSessionBase : public QuicClientSessionBase {
                       bool fin,
                       SpdyPriority priority,
                       QuicReferenceCountedPointer<QuicAckListenerInterface>
-                          ack_notifier_delegate) override {
+                          ack_listener) override {
     return WriteHeadersMock(id, headers, fin, priority,
-                            std::move(ack_notifier_delegate));
+                            std::move(ack_listener));
   }
   MOCK_METHOD5(
       WriteHeadersMock,
@@ -123,7 +123,7 @@ class MockQuicClientSessionBase : public QuicClientSessionBase {
              bool fin,
              SpdyPriority priority,
              const QuicReferenceCountedPointer<QuicAckListenerInterface>&
-                 ack_notifier_delegate));
+                 ack_listener));
   MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(QuicTime::Delta delta));
 
   using QuicSession::ActivateStream;
@@ -135,7 +135,7 @@ class MockQuicClientSessionBase : public QuicClientSessionBase {
       const QuicIOVector& data,
       QuicStreamOffset offset,
       bool fin,
-      QuicAckListenerInterface* ack_notifier_delegate);
+      QuicAckListenerInterface* ack_listener);
 
   void OnProofValid(
       const QuicCryptoClientConfig::CachedState& cached) override {}

@@ -292,7 +292,7 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
     const SpdyHeaderBlock* headers,
     StringPiece body,
     bool fin,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> delegate) {
+    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   if (headers) {
     QuicClientPushPromiseIndex::TryHandle* handle;
     QuicAsyncStatus rv =
@@ -304,7 +304,7 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
       std::unique_ptr<SpdyHeaderBlock> new_headers(
           new SpdyHeaderBlock(headers->Clone()));
       push_promise_data_to_resend_.reset(new TestClientDataToResend(
-          std::move(new_headers), body, fin, this, std::move(delegate)));
+          std::move(new_headers), body, fin, this, std::move(ack_listener)));
       return 1;
     }
   }
@@ -326,7 +326,7 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
     ret = stream->SendRequest(std::move(spdy_headers), body, fin);
     ++num_requests_;
   } else {
-    stream->WriteOrBufferBody(body.as_string(), fin, delegate);
+    stream->WriteOrBufferBody(body.as_string(), fin, ack_listener);
     ret = body.length();
   }
   if (FLAGS_enable_quic_stateless_reject_support) {
@@ -336,7 +336,7 @@ ssize_t QuicTestClient::GetOrCreateStreamAndSendRequest(
     }
     std::unique_ptr<QuicClientBase::QuicDataToResend> data_to_resend(
         new TestClientDataToResend(std::move(new_headers), body, fin, this,
-                                   delegate));
+                                   ack_listener));
     client()->MaybeAddQuicDataToResend(std::move(data_to_resend));
   }
   return ret;
@@ -377,9 +377,9 @@ ssize_t QuicTestClient::SendData(const string& data, bool last_data) {
 ssize_t QuicTestClient::SendData(
     const string& data,
     bool last_data,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> delegate) {
+    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   return GetOrCreateStreamAndSendRequest(nullptr, StringPiece(data), last_data,
-                                         std::move(delegate));
+                                         std::move(ack_listener));
 }
 
 bool QuicTestClient::response_complete() const {
@@ -685,16 +685,16 @@ QuicTestClient::TestClientDataToResend::TestClientDataToResend(
     base::StringPiece body,
     bool fin,
     QuicTestClient* test_client,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> delegate)
+    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener)
     : QuicClient::QuicDataToResend(std::move(headers), body, fin),
       test_client_(test_client),
-      delegate_(std::move(delegate)) {}
+      ack_listener_(std::move(ack_listener)) {}
 
 QuicTestClient::TestClientDataToResend::~TestClientDataToResend() {}
 
 void QuicTestClient::TestClientDataToResend::Resend() {
   test_client_->GetOrCreateStreamAndSendRequest(headers_.get(), body_, fin_,
-                                                delegate_);
+                                                ack_listener_);
   headers_.reset();
 }
 

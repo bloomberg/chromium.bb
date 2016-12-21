@@ -141,7 +141,7 @@ class MockQuicConnectionWithSendStreamData : public MockQuicConnection {
           QuicIOVector iov,
           QuicStreamOffset offset,
           bool fin,
-          QuicReferenceCountedPointer<QuicAckListenerInterface> listern));
+          QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener));
 };
 
 class QuicSimpleServerSessionPeer {
