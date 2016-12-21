@@ -54,6 +54,8 @@
   aom_read_tree_bits_(r, tree, probs ACCT_STR_ARG(ACCT_STR_NAME))
 #define aom_read_symbol(r, cdf, nsymbs, ACCT_STR_NAME) \
   aom_read_symbol_(r, cdf, nsymbs ACCT_STR_ARG(ACCT_STR_NAME))
+#define aom_read_symbol_unscaled(r, cdf, nsymbs, ACCT_STR_NAME) \
+  aom_read_symbol_unscaled_(r, cdf, nsymbs ACCT_STR_ARG(ACCT_STR_NAME))
 
 #ifdef __cplusplus
 extern "C" {
@@ -242,6 +244,24 @@ static INLINE int aom_read_symbol_(aom_reader *r, aom_cdf_prob *cdf,
 #endif
   return ret;
 }
+
+#if CONFIG_PVQ
+static INLINE int aom_read_symbol_unscaled_(aom_reader *r,
+                                            const aom_cdf_prob *cdf,
+                                            int nsymbs ACCT_STR_PARAM) {
+  int ret;
+#if CONFIG_DAALA_EC
+  ret = od_ec_decode_cdf_unscaled(&r->ec, cdf, nsymbs);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
+
+#if CONFIG_ACCOUNTING
+  if (ACCT_STR_NAME) aom_process_accounting(r, ACCT_STR_NAME);
+#endif
+  return ret;
+}
+#endif
 #endif  // CONFIG_EC_MULTISYMBOL
 
 #ifdef __cplusplus

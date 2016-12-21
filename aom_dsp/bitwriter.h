@@ -204,6 +204,18 @@ static INLINE void aom_write_symbol(aom_writer *w, int symb, aom_cdf_prob *cdf,
   update_cdf(cdf, symb, nsymbs);
 #endif
 }
+
+#if CONFIG_PVQ
+static INLINE void aom_write_symbol_unscaled(aom_writer *w, int symb,
+                                             const aom_cdf_prob *cdf,
+                                             int nsymbs) {
+#if CONFIG_DAALA_EC
+  od_ec_encode_cdf_unscaled(&w->ec, symb, cdf, nsymbs);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
+}
+#endif
 #endif  // CONFIG_EC_MULTISYMBOL
 
 #ifdef __cplusplus
