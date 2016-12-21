@@ -85,6 +85,10 @@ class CORE_EXPORT ImageResourceContent final
   void addObserver(ImageResourceObserver*);
   void removeObserver(ImageResourceObserver*);
 
+  bool isSizeAvailable() const {
+    return m_sizeAvailable == Image::SizeAvailable;
+  }
+
   DECLARE_TRACE();
 
   // Redirecting methods to Resource.
