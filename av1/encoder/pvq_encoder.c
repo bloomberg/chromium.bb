@@ -731,9 +731,13 @@ void od_encode_quantizer_scaling(daala_enc_ctx *enc, int q_scaling,
      : 0;
     left = sbx > 0 ? enc->state.sb_q_scaling[sby*enc->state.nhsb + (sbx - 1)]
      : 0;
-    od_encode_cdf_adapt(&enc->ec, q_scaling,
+#if CONFIG_DAALA_EC
+    od_encode_cdf_adapt(&enc->w.ec, q_scaling,
      enc->state.adapt.q_cdf[above + left*4], 4,
      enc->state.adapt.q_increment);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
   }
 }
 #endif
@@ -888,11 +892,19 @@ int od_pvq_encode(daala_enc_ctx *enc,
        (double)(skip_cdf[2] - skip_cdf[1]));
       dc_rate += 1;
 
-      tell2 = od_ec_enc_tell_frac(&enc->ec);
+#if CONFIG_DAALA_EC
+      tell2 = od_ec_enc_tell_frac(&enc->w.ec);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
       od_encode_checkpoint(enc, &dc_buf);
-      generic_encode(&enc->ec, &enc->state.adapt.model_dc[pli],
+#if CONFIG_DAALA_EC
+      generic_encode(&enc->w.ec, &enc->state.adapt.model_dc[pli],
        n - 1, -1, &enc->state.adapt.ex_dc[pli][bs][0], 2);
-      tell2 = od_ec_enc_tell_frac(&enc->ec) - tell2;
+      tell2 = od_ec_enc_tell_frac(&enc->w.ec) - tell2;
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
       dc_rate += tell2/8.0;
       od_encode_rollback(enc, &dc_buf);
 
@@ -900,10 +912,18 @@ int od_pvq_encode(daala_enc_ctx *enc,
        enc->pvq_norm_lambda);
     }
   }
-  tell = od_ec_enc_tell_frac(&enc->ec);
+#if CONFIG_DAALA_EC
+  tell = od_ec_enc_tell_frac(&enc->w.ec);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
   /* Code as if we're not skipping. */
-  od_encode_cdf_adapt(&enc->ec, 2 + (out[0] != 0), skip_cdf,
+#if CONFIG_DAALA_EC
+  od_encode_cdf_adapt(&enc->w.ec, 2 + (out[0] != 0), skip_cdf,
    4, enc->state.adapt.skip_increment);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
   if (pvq_info)
     pvq_info->ac_dc_coded = 2 + (out[0] != 0);
 #if OD_SIGNAL_Q_SCALING
@@ -944,20 +964,32 @@ int od_pvq_encode(daala_enc_ctx *enc,
     /* Encode CFL flip bit just after the first time it's used. */
     encode_flip = pli != 0 && is_keyframe && theta[i] != -1 && !cfl_encoded;
     if (i == 0 || (!skip_rest && !(skip_dir & (1 << ((i - 1)%3))))) {
-      pvq_encode_partition(&enc->ec, qg[i], theta[i], max_theta[i], y + off[i],
-       size[i], k[i], model, &enc->state.adapt, exg + i, ext + i,
+#if CONFIG_DAALA_EC
+      pvq_encode_partition(&enc->w.ec, qg[i], theta[i], max_theta[i],
+       y + off[i], size[i], k[i], model, &enc->state.adapt, exg + i, ext + i,
        robust || is_keyframe, (pli != 0)*OD_TXSIZES*PVQ_MAX_PARTITIONS
        + bs*PVQ_MAX_PARTITIONS + i, is_keyframe, i == 0 && (i < nb_bands - 1),
        skip_rest, encode_flip, flip);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
     }
     if (i == 0 && !skip_rest && bs > 0) {
-      od_encode_cdf_adapt(&enc->ec, skip_dir,
+#if CONFIG_DAALA_EC
+      od_encode_cdf_adapt(&enc->w.ec, skip_dir,
        &enc->state.adapt.pvq.pvq_skip_dir_cdf[(pli != 0) + 2*(bs - 1)][0], 7,
        enc->state.adapt.pvq.pvq_skip_dir_increment);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
     }
     if (encode_flip) cfl_encoded = 1;
   }
-  tell = od_ec_enc_tell_frac(&enc->ec) - tell;
+#if CONFIG_DAALA_EC
+  tell = od_ec_enc_tell_frac(&enc->w.ec) - tell;
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
   /* Account for the rate of skipping the AC, based on the same DC decision
      we made when trying to not skip AC. */
   {
@@ -991,11 +1023,19 @@ int od_pvq_encode(daala_enc_ctx *enc,
          (double)skip_cdf[0]);
         dc_rate += 1;
 
-        tell2 = od_ec_enc_tell_frac(&enc->ec);
+#if CONFIG_DAALA_EC
+        tell2 = od_ec_enc_tell_frac(&enc->w.ec);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
         od_encode_checkpoint(enc, &dc_buf);
-        generic_encode(&enc->ec, &enc->state.adapt.model_dc[pli],
+#if CONFIG_DAALA_EC
+        generic_encode(&enc->w.ec, &enc->state.adapt.model_dc[pli],
          n - 1, -1, &enc->state.adapt.ex_dc[pli][bs][0], 2);
-        tell2 = od_ec_enc_tell_frac(&enc->ec) - tell2;
+        tell2 = od_ec_enc_tell_frac(&enc->w.ec) - tell2;
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
         dc_rate += tell2/8.0;
         od_encode_rollback(enc, &dc_buf);
 
@@ -1005,8 +1045,12 @@ int od_pvq_encode(daala_enc_ctx *enc,
     }
     /* We decide to skip, roll back everything as it was before. */
     od_encode_rollback(enc, &buf);
-    od_encode_cdf_adapt(&enc->ec, out[0] != 0, skip_cdf,
+#if CONFIG_DAALA_EC
+    od_encode_cdf_adapt(&enc->w.ec, out[0] != 0, skip_cdf,
      4, enc->state.adapt.skip_increment);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
     if (pvq_info)
       pvq_info->ac_dc_coded = (out[0] != 0);
 #if OD_SIGNAL_Q_SCALING

@@ -24,8 +24,8 @@ typedef struct od_rollback_buffer od_rollback_buffer;
 struct daala_enc_ctx{
   /* Stores context-adaptive CDFs for PVQ. */
   od_state state;
-  /* Daala entropy encoder. */
-  od_ec_enc ec;
+  /* AOM entropy encoder. */
+  aom_writer w;
   int use_activity_masking;
   /* Mode of quantization matrice : FLAT (0) or HVS (1) */
   int qm;

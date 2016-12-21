@@ -13,6 +13,7 @@
 #include "./aom_config.h"
 #include "./aom_dsp_rtcd.h"
 
+#include "aom_dsp/bitwriter.h"
 #include "aom_dsp/quantize.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
@@ -1137,7 +1138,11 @@ int av1_pvq_encode_helper(daala_enc_ctx *daala_enc, tran_low_t *const coeff,
 
   *eob = 0;
 
-  tell = od_ec_enc_tell_frac(&daala_enc->ec);
+#if CONFIG_DAALA_EC
+  tell = od_ec_enc_tell_frac(&daala_enc->w.ec);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
 
   // Change coefficient ordering for pvq encoding.
   od_raster_to_coding_order(coeff_pvq, tx_blk_size, tx_type, coeff,
@@ -1181,12 +1186,16 @@ int av1_pvq_encode_helper(daala_enc_ctx *daala_enc, tran_low_t *const coeff,
 
   // Encode residue of DC coeff, if required.
   if (!has_dc_skip || out_int32[0]) {
-    generic_encode(&daala_enc->ec, &daala_enc->state.adapt.model_dc[plane],
+#if CONFIG_DAALA_EC
+    generic_encode(&daala_enc->w.ec, &daala_enc->state.adapt.model_dc[plane],
                    abs(out_int32[0]) - has_dc_skip, -1,
                    &daala_enc->state.adapt.ex_dc[plane][tx_size][0], 2);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
   }
   if (out_int32[0]) {
-    od_ec_enc_bits(&daala_enc->ec, out_int32[0] < 0, 1);
+    aom_write_bit(&daala_enc->w, out_int32[0] < 0);
     skip = 0;
   }
 
@@ -1206,8 +1215,12 @@ int av1_pvq_encode_helper(daala_enc_ctx *daala_enc, tran_low_t *const coeff,
 
   *eob = tx_blk_size * tx_blk_size;
 
-  *rate = (od_ec_enc_tell_frac(&daala_enc->ec) - tell)
+#if CONFIG_DAALA_EC
+  *rate = (od_ec_enc_tell_frac(&daala_enc->w.ec) - tell)
           << (AV1_PROB_COST_SHIFT - OD_BITRES);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
   assert(*rate >= 0);
 #if PVQ_CHROMA_RD
   if (plane != 0) daala_enc->pvq_norm_lambda = save_pvq_lambda;

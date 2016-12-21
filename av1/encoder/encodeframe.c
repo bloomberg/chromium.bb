@@ -4700,10 +4700,19 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
     }
   }
 
-  od_ec_enc_init(&td->mb.daala_enc.ec, 65025);
+#if CONFIG_DAALA_EC
+  od_ec_enc_init(&td->mb.daala_enc.w.ec, 65025);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
 
   adapt = &td->mb.daala_enc.state.adapt;
-  od_ec_enc_reset(&td->mb.daala_enc.ec);
+
+#if CONFIG_DAALA_EC
+  od_ec_enc_reset(&td->mb.daala_enc.w.ec);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
   od_adapt_ctx_reset(adapt, 0);
 #endif  // #if CONFIG_PVQ
 
@@ -4716,7 +4725,11 @@ void av1_encode_tile(AV1_COMP *cpi, ThreadData *td, int tile_row,
       (unsigned int)(tok - cpi->tile_tok[tile_row][tile_col]);
   assert(cpi->tok_count[tile_row][tile_col] <= allocated_tokens(*tile_info));
 #if CONFIG_PVQ
-  od_ec_enc_clear(&td->mb.daala_enc.ec);
+#if CONFIG_DAALA_EC
+  od_ec_enc_clear(&td->mb.daala_enc.w.ec);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
 
   td->mb.pvq_q->last_pos = td->mb.pvq_q->curr_pos;
   // rewind current position so that bitstream can be written

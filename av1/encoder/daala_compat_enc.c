@@ -12,11 +12,19 @@
 #include "encint.h"
 
 void od_encode_checkpoint(const daala_enc_ctx *enc, od_rollback_buffer *rbuf) {
-  od_ec_enc_checkpoint(&rbuf->ec, &enc->ec);
+#if CONFIG_DAALA_EC
+  od_ec_enc_checkpoint(&rbuf->ec, &enc->w.ec);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
   OD_COPY(&rbuf->adapt, &enc->state.adapt, 1);
 }
 
 void od_encode_rollback(daala_enc_ctx *enc, const od_rollback_buffer *rbuf) {
-  od_ec_enc_rollback(&enc->ec, &rbuf->ec);
+#if CONFIG_DAALA_EC
+  od_ec_enc_rollback(&enc->w.ec, &rbuf->ec);
+#else
+#error "CONFIG_PVQ currently requires CONFIG_DAALA_EC."
+#endif
   OD_COPY(&enc->state.adapt, &rbuf->adapt, 1);
 }
