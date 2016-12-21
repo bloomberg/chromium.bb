@@ -71,25 +71,10 @@ void ScrollCanvas(SkCanvas* canvas,
                   const gfx::Rect& in_clip,
                   const gfx::Vector2d& offset) {
   DCHECK(!HasClipOrTransform(*canvas));  // Don't support special stuff.
-#if defined(OS_WIN)
-  // If we have a PlatformCanvas, we should use ScrollDC. Otherwise, fall
-  // through to the software implementation.
-  if (skia::SupportsPlatformPaint(canvas)) {
-    skia::ScopedPlatformPaint scoped_platform_paint(canvas);
-    HDC hdc = scoped_platform_paint.GetNativeDrawingContext();
 
-    RECT damaged_rect;
-    RECT r = in_clip.ToRECT();
-    ScrollDC(hdc, offset.x(), offset.y(), NULL, &r, NULL, &damaged_rect);
-    return;
-  }
-#endif  // defined(OS_WIN)
-  // For non-windows, always do scrolling in software.
-  // Cairo has no nice scroll function so we do our own. On Mac it's possible to
-  // use platform scroll code, but it's complex so we just use the same path
-  // here. Either way it will be software-only, so it shouldn't matter much.
   SkPixmap pixmap;
-  skia::GetWritablePixels(canvas, &pixmap);
+  bool success = skia::GetWritablePixels(canvas, &pixmap);
+  DCHECK(success);
 
   // We expect all coords to be inside the canvas, so clip here.
   gfx::Rect clip = gfx::IntersectRects(
