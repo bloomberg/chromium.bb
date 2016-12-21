@@ -80,25 +80,18 @@ class GitWrapperTestCase(BaseSCMTestCase):
         'current_version',
         'FetchUpstreamTuple',
         'GenerateDiff',
-        'GetBlessedSha1ForSvnRev',
         'GetBranch',
         'GetBranchRef',
         'GetCheckoutRoot',
         'GetDifferentFiles',
         'GetEmail',
         'GetGitDir',
-        'GetGitSvnHeadRev',
         'GetPatchName',
-        'GetSha1ForSvnRev',
-        'GetSVNBranch',
         'GetUpstreamBranch',
         'IsDirectoryVersioned',
-        'IsGitSvn',
         'IsInsideWorkTree',
         'IsValidRevision',
         'IsWorkTreeDirty',
-        'MatchSvnGlob',
-        'ParseGitSvnSha1',
         'RefToRemoteRef',
         'ShortBranchName',
     ]
@@ -111,18 +104,6 @@ class GitWrapperTestCase(BaseSCMTestCase):
                     ).AndReturn('mini@me.com')
     self.mox.ReplayAll()
     self.assertEqual(scm.GIT.GetEmail(self.root_dir), 'mini@me.com')
-
-  def testMatchSvnGlob(self):
-    self.assertEquals(scm.GIT.MatchSvnGlob(
-        'svn://svn.chromium.org/chrome/trunk/src',
-        'svn://svn.chromium.org/chrome',
-        'trunk/src:refs/remotes/origin/trunk',
-        False), 'refs/remotes/origin/trunk')
-    self.assertEquals(scm.GIT.MatchSvnGlob(
-        'https://v8.googlecode.com/svn/branches/bleeding_edge',
-        'https://v8.googlecode.com/svn',
-        'branches/*:refs/remotes/*',
-        True), 'refs/remotes/bleeding_edge')
 
   def testRefToRemoteRefNoRemote(self):
     refs = {

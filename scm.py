@@ -68,11 +68,9 @@ def GenFakeDiff(filename):
 def determine_scm(root):
   """Similar to upload.py's version but much simpler.
 
-  Returns 'svn', 'git' or None.
+  Returns 'git' or None.
   """
-  if os.path.isdir(os.path.join(root, '.svn')):
-    return 'svn'
-  elif os.path.isdir(os.path.join(root, '.git')):
+  if os.path.isdir(os.path.join(root, '.git')):
     return 'git'
   else:
     try:
@@ -162,8 +160,6 @@ class GIT(object):
   @staticmethod
   def GetEmail(cwd):
     """Retrieves the user email address if known."""
-    # We could want to look at the svn cred when it has a svn remote but it
-    # should be fine for now, users should simply configure their git settings.
     try:
       return GIT.Capture(['config', 'user.email'], cwd=cwd)
     except subprocess2.CalledProcessError:
@@ -185,125 +181,9 @@ class GIT(object):
     return GIT.ShortBranchName(GIT.GetBranchRef(cwd))
 
   @staticmethod
-  def IsGitSvn(cwd):
-    """Returns True if this repo looks like it's using git-svn."""
-    # If you have any "svn-remote.*" config keys, we think you're using svn.
-    try:
-      GIT.Capture(['config', '--local', '--get-regexp', r'^svn-remote\.'],
-                  cwd=cwd)
-      return True
-    except subprocess2.CalledProcessError:
-      return False
-
-  @staticmethod
-  def MatchSvnGlob(url, base_url, glob_spec, allow_wildcards):
-    """Return the corresponding git ref if |base_url| together with |glob_spec|
-    matches the full |url|.
-
-    If |allow_wildcards| is true, |glob_spec| can contain wildcards (see below).
-    """
-    fetch_suburl, as_ref = glob_spec.split(':')
-    if allow_wildcards:
-      glob_match = re.match('(.+/)?(\*|{[^/]*})(/.+)?', fetch_suburl)
-      if glob_match:
-        # Parse specs like "branches/*/src:refs/remotes/svn/*" or
-        # "branches/{472,597,648}/src:refs/remotes/svn/*".
-        branch_re = re.escape(base_url)
-        if glob_match.group(1):
-          branch_re += '/' + re.escape(glob_match.group(1))
-        wildcard = glob_match.group(2)
-        if wildcard == '*':
-          branch_re += '([^/]*)'
-        else:
-          # Escape and replace surrounding braces with parentheses and commas
-          # with pipe symbols.
-          wildcard = re.escape(wildcard)
-          wildcard = re.sub('^\\\\{', '(', wildcard)
-          wildcard = re.sub('\\\\,', '|', wildcard)
-          wildcard = re.sub('\\\\}$', ')', wildcard)
-          branch_re += wildcard
-        if glob_match.group(3):
-          branch_re += re.escape(glob_match.group(3))
-        match = re.match(branch_re, url)
-        if match:
-          return re.sub('\*$', match.group(1), as_ref)
-
-    # Parse specs like "trunk/src:refs/remotes/origin/trunk".
-    if fetch_suburl:
-      full_url = base_url + '/' + fetch_suburl
-    else:
-      full_url = base_url
-    if full_url == url:
-      return as_ref
-    return None
-
-  @staticmethod
-  def GetSVNBranch(cwd):
-    """Returns the svn branch name if found."""
-    # Try to figure out which remote branch we're based on.
-    # Strategy:
-    # 1) iterate through our branch history and find the svn URL.
-    # 2) find the svn-remote that fetches from the URL.
-
-    # regexp matching the git-svn line that contains the URL.
-    git_svn_re = re.compile(r'^\s*git-svn-id: (\S+)@', re.MULTILINE)
-
-    # We don't want to go through all of history, so read a line from the
-    # pipe at a time.
-    # The -100 is an arbitrary limit so we don't search forever.
-    cmd = ['git', 'log', '-100', '--pretty=medium']
-    proc = subprocess2.Popen(cmd, cwd=cwd, stdout=subprocess2.PIPE)
-    url = None
-    for line in proc.stdout:
-      match = git_svn_re.match(line)
-      if match:
-        url = match.group(1)
-        proc.stdout.close()  # Cut pipe.
-        break
-
-    if url:
-      svn_remote_re = re.compile(r'^svn-remote\.([^.]+)\.url (.*)$')
-      remotes = GIT.Capture(
-          ['config', '--local', '--get-regexp', r'^svn-remote\..*\.url'],
-          cwd=cwd).splitlines()
-      for remote in remotes:
-        match = svn_remote_re.match(remote)
-        if match:
-          remote = match.group(1)
-          base_url = match.group(2)
-          try:
-            fetch_spec = GIT.Capture(
-                ['config', '--local', 'svn-remote.%s.fetch' % remote],
-                cwd=cwd)
-            branch = GIT.MatchSvnGlob(url, base_url, fetch_spec, False)
-          except subprocess2.CalledProcessError:
-            branch = None
-          if branch:
-            return branch
-          try:
-            branch_spec = GIT.Capture(
-                ['config', '--local', 'svn-remote.%s.branches' % remote],
-                cwd=cwd)
-            branch = GIT.MatchSvnGlob(url, base_url, branch_spec, True)
-          except subprocess2.CalledProcessError:
-            branch = None
-          if branch:
-            return branch
-          try:
-            tag_spec = GIT.Capture(
-                ['config', '--local', 'svn-remote.%s.tags' % remote],
-                cwd=cwd)
-            branch = GIT.MatchSvnGlob(url, base_url, tag_spec, True)
-          except subprocess2.CalledProcessError:
-            branch = None
-          if branch:
-            return branch
-
-  @staticmethod
   def FetchUpstreamTuple(cwd):
     """Returns a tuple containg remote and remote ref,
        e.g. 'origin', 'refs/heads/master'
-       Tries to be intelligent and understand git-svn.
     """
     remote = '.'
     branch = GIT.GetBranch(cwd)
@@ -331,25 +211,16 @@ class GIT(object):
         except subprocess2.CalledProcessError:
           pass
       else:
-        # Fall back on trying a git-svn upstream branch.
-        if GIT.IsGitSvn(cwd):
-          upstream_branch = GIT.GetSVNBranch(cwd)
+        # Else, try to guess the origin remote.
+        remote_branches = GIT.Capture(['branch', '-r'], cwd=cwd).split()
+        if 'origin/master' in remote_branches:
+          # Fall back on origin/master if it exits.
+          remote = 'origin'
+          upstream_branch = 'refs/heads/master'
         else:
-          # Else, try to guess the origin remote.
-          remote_branches = GIT.Capture(['branch', '-r'], cwd=cwd).split()
-          if 'origin/master' in remote_branches:
-            # Fall back on origin/master if it exits.
-            remote = 'origin'
-            upstream_branch = 'refs/heads/master'
-          elif 'origin/trunk' in remote_branches:
-            # Fall back on origin/trunk if it exists. Generally a shared
-            # git-svn clone
-            remote = 'origin'
-            upstream_branch = 'refs/heads/trunk'
-          else:
-            # Give up.
-            remote = None
-            upstream_branch = None
+          # Give up.
+          remote = None
+          upstream_branch = None
     return remote, upstream_branch
 
   @staticmethod
@@ -451,61 +322,6 @@ class GIT(object):
   def CleanupDir(cwd, relative_dir):
     """Cleans up untracked file inside |relative_dir|."""
     return bool(GIT.Capture(['clean', '-df', relative_dir], cwd=cwd))
-
-  @staticmethod
-  def GetGitSvnHeadRev(cwd):
-    """Gets the most recently pulled git-svn revision."""
-    try:
-      output = GIT.Capture(['svn', 'info'], cwd=cwd)
-      match = re.search(r'^Revision: ([0-9]+)$', output, re.MULTILINE)
-      return int(match.group(1)) if match else None
-    except (subprocess2.CalledProcessError, ValueError):
-      return None
-
-  @staticmethod
-  def ParseGitSvnSha1(output):
-    """Parses git-svn output for the first sha1."""
-    match = re.search(r'[0-9a-fA-F]{40}', output)
-    return match.group(0) if match else None
-
-  @staticmethod
-  def GetSha1ForSvnRev(cwd, rev):
-    """Returns a corresponding git sha1 for a SVN revision."""
-    if not GIT.IsGitSvn(cwd=cwd):
-      return None
-    try:
-      output = GIT.Capture(['svn', 'find-rev', 'r' + str(rev)], cwd=cwd)
-      return GIT.ParseGitSvnSha1(output)
-    except subprocess2.CalledProcessError:
-      return None
-
-  @staticmethod
-  def GetBlessedSha1ForSvnRev(cwd, rev):
-    """Returns a git commit hash from the master branch history that has
-    accurate .DEPS.git and git submodules.  To understand why this is more
-    complicated than a simple call to `git svn find-rev`, refer to:
-
-    http://www.chromium.org/developers/how-tos/git-repo
-    """
-    git_svn_rev = GIT.GetSha1ForSvnRev(cwd, rev)
-    if not git_svn_rev:
-      return None
-    try:
-      output = GIT.Capture(
-          ['rev-list', '--ancestry-path', '--reverse',
-          '--grep', 'SVN changes up to revision [0-9]*',
-          '%s..refs/remotes/origin/master' % git_svn_rev], cwd=cwd)
-      if not output:
-        return None
-      sha1 = output.splitlines()[0]
-      if not sha1:
-        return None
-      output = GIT.Capture(['rev-list', '-n', '1', '%s^1' % sha1], cwd=cwd)
-      if git_svn_rev != output.rstrip():
-        raise gclient_utils.Error(sha1)
-      return sha1
-    except subprocess2.CalledProcessError:
-      return None
 
   @staticmethod
   def IsValidRevision(cwd, rev, sha_only=False):
