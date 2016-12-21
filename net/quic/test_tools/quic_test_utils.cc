@@ -84,16 +84,16 @@ QuicPacket* BuildUnsizedDataPacket(QuicFramer* framer,
 }
 
 QuicFlagSaver::QuicFlagSaver() {
-#define QUIC_FLAG(type, flag, value)                                          \
-  CHECK_EQ(value, flag) << "Flag set to an expected value.  A prior test is " \
-                           "likely setting a flag "                           \
-                        << "without using a QuicFlagSaver";
+#define QUIC_FLAG(type, flag, value)                                 \
+  CHECK_EQ(value, base::GetFlag(flag))                               \
+      << "Flag set to an unexpected value.  A prior test is likely " \
+      << "setting a flag without using a QuicFlagSaver";
 #include "net/quic/core/quic_flags_list.h"
 #undef QUIC_FLAG
 }
 
 QuicFlagSaver::~QuicFlagSaver() {
-#define QUIC_FLAG(type, flag, value) flag = value;
+#define QUIC_FLAG(type, flag, value) base::SetFlag(&flag, value);
 #include "net/quic/core/quic_flags_list.h"
 #undef QUIC_FLAG
 }
