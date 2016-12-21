@@ -36,6 +36,7 @@ class ServiceWorkerContextCore;
 class ServiceWorkerDispatcherHost;
 class ServiceWorkerRequestHandler;
 class ServiceWorkerVersion;
+class WebContents;
 
 // This class is the browser-process representation of a service worker
 // provider. There are two general types of providers: 1) those for a client
@@ -56,15 +57,19 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   using GetRegistrationForReadyCallback =
       base::Callback<void(ServiceWorkerRegistration* reigstration)>;
 
+  using WebContentsGetter = base::Callback<WebContents*(void)>;
+
   // PlzNavigate
   // Used to pre-create a ServiceWorkerProviderHost for a navigation. The
   // ServiceWorkerNetworkProvider will later be created in the renderer, should
   // the navigation succeed. |is_parent_frame_is_secure| should be true for main
   // frames. Otherwise it is true iff all ancestor frames of this frame have a
-  // secure origin.
+  // secure origin. |web_contents_getter| indicates the tab where the navigation
+  // is occurring.
   static std::unique_ptr<ServiceWorkerProviderHost> PreCreateNavigationHost(
       base::WeakPtr<ServiceWorkerContextCore> context,
-      bool are_ancestors_secure);
+      bool are_ancestors_secure,
+      const WebContentsGetter& web_contents_getter);
 
   enum class FrameSecurityLevel { UNINITIALIZED, INSECURE, SECURE };
 
@@ -89,6 +94,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   int provider_id() const { return provider_id_; }
   int frame_id() const;
   int route_id() const { return route_id_; }
+  const WebContentsGetter& web_contents_getter() const {
+    return web_contents_getter_;
+  }
 
   bool is_parent_frame_secure() const {
     return parent_frame_security_level_ == FrameSecurityLevel::SECURE;
@@ -354,6 +362,11 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
 
   // Unique within the renderer process.
   int provider_id_;
+
+  // PlzNavigate
+  // Only set when this object is pre-created for a navigation. It indicates the
+  // tab where the navigation occurs.
+  WebContentsGetter web_contents_getter_;
 
   ServiceWorkerProviderType provider_type_;
   FrameSecurityLevel parent_frame_security_level_;

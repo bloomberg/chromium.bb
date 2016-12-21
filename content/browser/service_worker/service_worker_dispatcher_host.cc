@@ -33,6 +33,8 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/origin_util.h"
@@ -71,6 +73,12 @@ const uint32_t kFilteredMessageClasses[] = {
 void RunSoon(const base::Closure& callback) {
   if (!callback.is_null())
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
+}
+
+WebContents* GetWebContents(int render_process_id, int render_frame_id) {
+  RenderFrameHost* rfh =
+      RenderFrameHost::FromID(render_process_id, render_frame_id);
+  return WebContents::FromRenderFrameHost(rfh);
 }
 
 }  // namespace
@@ -338,7 +346,8 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
           pattern, provider_host->topmost_frame_url(), resource_context_,
-          render_process_id_, provider_host->frame_id())) {
+          base::Bind(&GetWebContents, render_process_id_,
+                     provider_host->frame_id()))) {
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
         thread_id, request_id, WebServiceWorkerError::ErrorTypeDisabled,
         base::ASCIIToUTF16(kServiceWorkerRegisterErrorPrefix) +
@@ -410,7 +419,8 @@ void ServiceWorkerDispatcherHost::OnUpdateServiceWorker(
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
           registration->pattern(), provider_host->topmost_frame_url(),
-          resource_context_, render_process_id_, provider_host->frame_id())) {
+          resource_context_, base::Bind(&GetWebContents, render_process_id_,
+                                        provider_host->frame_id()))) {
     Send(new ServiceWorkerMsg_ServiceWorkerUpdateError(
         thread_id, request_id, WebServiceWorkerError::ErrorTypeDisabled,
         base::ASCIIToUTF16(kServiceWorkerUpdateErrorPrefix) +
@@ -489,7 +499,8 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
           registration->pattern(), provider_host->topmost_frame_url(),
-          resource_context_, render_process_id_, provider_host->frame_id())) {
+          resource_context_, base::Bind(&GetWebContents, render_process_id_,
+                                        provider_host->frame_id()))) {
     Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
         thread_id, request_id, WebServiceWorkerError::ErrorTypeDisabled,
         base::ASCIIToUTF16(kUserDeniedPermissionMessage)));
@@ -560,7 +571,8 @@ void ServiceWorkerDispatcherHost::OnGetRegistration(
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
           provider_host->document_url(), provider_host->topmost_frame_url(),
-          resource_context_, render_process_id_, provider_host->frame_id())) {
+          resource_context_, base::Bind(&GetWebContents, render_process_id_,
+                                        provider_host->frame_id()))) {
     Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationError(
         thread_id, request_id, WebServiceWorkerError::ErrorTypeDisabled,
         base::ASCIIToUTF16(kServiceWorkerGetRegistrationErrorPrefix) +
@@ -620,7 +632,8 @@ void ServiceWorkerDispatcherHost::OnGetRegistrations(int thread_id,
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
           provider_host->document_url(), provider_host->topmost_frame_url(),
-          resource_context_, render_process_id_, provider_host->frame_id())) {
+          resource_context_, base::Bind(&GetWebContents, render_process_id_,
+                                        provider_host->frame_id()))) {
     Send(new ServiceWorkerMsg_ServiceWorkerGetRegistrationsError(
         thread_id, request_id, WebServiceWorkerError::ErrorTypeDisabled,
         base::ASCIIToUTF16(kServiceWorkerGetRegistrationsErrorPrefix) +
@@ -727,7 +740,8 @@ void ServiceWorkerDispatcherHost::OnEnableNavigationPreload(
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
           registration->pattern(), provider_host->topmost_frame_url(),
-          resource_context_, render_process_id_, provider_host->frame_id())) {
+          resource_context_, base::Bind(&GetWebContents, render_process_id_,
+                                        provider_host->frame_id()))) {
     Send(new ServiceWorkerMsg_EnableNavigationPreloadError(
         thread_id, request_id, WebServiceWorkerError::ErrorTypeDisabled,
         std::string(kEnableNavigationPreloadErrorPrefix) +
@@ -793,7 +807,8 @@ void ServiceWorkerDispatcherHost::OnGetNavigationPreloadState(
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
           registration->pattern(), provider_host->topmost_frame_url(),
-          resource_context_, render_process_id_, provider_host->frame_id())) {
+          resource_context_, base::Bind(&GetWebContents, render_process_id_,
+                                        provider_host->frame_id()))) {
     Send(new ServiceWorkerMsg_GetNavigationPreloadStateError(
         thread_id, request_id, WebServiceWorkerError::ErrorTypeDisabled,
         std::string(kGetNavigationPreloadStateErrorPrefix) +
@@ -875,7 +890,8 @@ void ServiceWorkerDispatcherHost::OnSetNavigationPreloadHeader(
 
   if (!GetContentClient()->browser()->AllowServiceWorker(
           registration->pattern(), provider_host->topmost_frame_url(),
-          resource_context_, render_process_id_, provider_host->frame_id())) {
+          resource_context_, base::Bind(&GetWebContents, render_process_id_,
+                                        provider_host->frame_id()))) {
     Send(new ServiceWorkerMsg_SetNavigationPreloadHeaderError(
         thread_id, request_id, WebServiceWorkerError::ErrorTypeDisabled,
         std::string(kSetNavigationPreloadHeaderErrorPrefix) +

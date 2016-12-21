@@ -152,11 +152,11 @@ bool ContentBrowserClient::AllowAppCache(const GURL& manifest_url,
   return true;
 }
 
-bool ContentBrowserClient::AllowServiceWorker(const GURL& scope,
-                                              const GURL& document_url,
-                                              content::ResourceContext* context,
-                                              int render_process_id,
-                                              int render_frame_id) {
+bool ContentBrowserClient::AllowServiceWorker(
+    const GURL& scope,
+    const GURL& first_party,
+    ResourceContext* context,
+    const base::Callback<WebContents*(void)>& wc_getter) {
   return true;
 }
 

@@ -327,14 +327,14 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allow the embedder to control if a Service Worker can be associated
   // with the given scope.
-  // Invalid (-1) process/frame ids indicate this is for starting a service
-  // worker, which is not necessarily associated with a particular frame.
+  // A null |wc_getter| callback indicates this is for starting a service
+  // worker, which is not necessarily associated with a particular tab.
   // This is called on the IO thread.
-  virtual bool AllowServiceWorker(const GURL& scope,
-                                  const GURL& first_party,
-                                  content::ResourceContext* context,
-                                  int render_process_id,
-                                  int render_frame_id);
+  virtual bool AllowServiceWorker(
+      const GURL& scope,
+      const GURL& first_party,
+      ResourceContext* context,
+      const base::Callback<WebContents*(void)>& wc_getter);
 
   virtual bool IsDataSaverEnabled(BrowserContext* context);
 

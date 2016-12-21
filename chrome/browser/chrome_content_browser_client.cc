@@ -1866,8 +1866,7 @@ bool ChromeContentBrowserClient::AllowServiceWorker(
     const GURL& scope,
     const GURL& first_party_url,
     content::ResourceContext* context,
-    int render_process_id,
-    int render_frame_id) {
+    const base::Callback<content::WebContents*(void)>& wc_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1878,8 +1877,7 @@ bool ChromeContentBrowserClient::AllowServiceWorker(
   // because of the extension, rather than because of the user's content
   // settings.
   if (!ChromeContentBrowserClientExtensionsPart::AllowServiceWorker(
-          scope, first_party_url, context, render_process_id,
-          render_frame_id)) {
+          scope, first_party_url, context)) {
     return false;
   }
 #endif
@@ -1900,13 +1898,12 @@ bool ChromeContentBrowserClient::AllowServiceWorker(
       io_data->GetCookieSettings()->IsSettingCookieAllowed(scope,
                                                            first_party_url);
   // Record access to database for potential display in UI.
-  // Only post the task if this is for a specific frame.
-  if (render_process_id != -1 && render_frame_id != -1) {
+  // Only post the task if this is for a specific tab.
+  if (!wc_getter.is_null()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::Bind(&TabSpecificContentSettings::ServiceWorkerAccessed,
-                   render_process_id, render_frame_id, scope,
-                   !allow_javascript, !allow_serviceworker));
+                   wc_getter, scope, !allow_javascript, !allow_serviceworker));
   }
   return allow_javascript && allow_serviceworker;
 }

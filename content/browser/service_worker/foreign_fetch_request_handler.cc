@@ -259,16 +259,14 @@ void ForeignFetchRequestHandler::DidFindRegistration(
     return;
   }
 
-  int render_process_id;
-  int render_frame_id;
-  if (!ResourceRequestInfo::GetRenderFrameForRequest(
-          job->request(), &render_process_id, &render_frame_id)) {
-    render_process_id = -1;
-    render_frame_id = -1;
-  }
+  auto request_info = ResourceRequestInfo::ForRequest(job->request());
+  base::Callback<WebContents*(void)> web_contents_getter;
+  if (request_info)
+    web_contents_getter = request_info->GetWebContentsGetterForRequest();
+
   if (!GetContentClient()->browser()->AllowServiceWorker(
           registration->pattern(), job->request()->first_party_for_cookies(),
-          resource_context_, render_process_id, render_frame_id)) {
+          resource_context_, web_contents_getter)) {
     job->FallbackToNetwork();
     return;
   }

@@ -19,7 +19,10 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/resource_response_info.h"
 #include "net/base/load_flags.h"
@@ -213,10 +216,22 @@ void ServiceWorkerControlleeRequestHandler::
   }
   DCHECK(registration.get());
 
+  base::Callback<WebContents*(void)> web_contents_getter;
+  if (IsBrowserSideNavigationEnabled()) {
+    web_contents_getter = provider_host_->web_contents_getter();
+  } else if (provider_host_->process_id() != -1 &&
+             provider_host_->frame_id() != -1) {
+    web_contents_getter = base::Bind(
+        [](int render_process_id, int render_frame_id) {
+          RenderFrameHost* rfh =
+              RenderFrameHost::FromID(render_process_id, render_frame_id);
+          return WebContents::FromRenderFrameHost(rfh);
+        },
+        provider_host_->process_id(), provider_host_->frame_id());
+  }
   if (!GetContentClient()->browser()->AllowServiceWorker(
           registration->pattern(), provider_host_->topmost_frame_url(),
-          resource_context_, provider_host_->process_id(),
-          provider_host_->frame_id())) {
+          resource_context_, web_contents_getter)) {
     job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END2(
         "ServiceWorker",

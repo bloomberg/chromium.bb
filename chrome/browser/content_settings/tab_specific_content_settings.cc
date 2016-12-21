@@ -218,14 +218,12 @@ void TabSpecificContentSettings::FileSystemAccessed(int render_process_id,
 
 // static
 void TabSpecificContentSettings::ServiceWorkerAccessed(
-    int render_process_id,
-    int render_frame_id,
+    const base::Callback<content::WebContents*(void)>& wc_getter,
     const GURL& scope,
     bool blocked_by_policy_javascript,
     bool blocked_by_policy_cookie) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  TabSpecificContentSettings* settings =
-      GetForFrame(render_process_id, render_frame_id);
+  TabSpecificContentSettings* settings = GetForWCGetter(wc_getter);
   if (settings)
     settings->OnServiceWorkerAccessed(scope, blocked_by_policy_javascript,
                                       blocked_by_policy_cookie);

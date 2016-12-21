@@ -267,11 +267,11 @@ class ServiceWorkerDispatcherHostTestP
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
  public:
   ServiceWorkerTestContentBrowserClient() {}
-  bool AllowServiceWorker(const GURL& scope,
-                          const GURL& first_party,
-                          content::ResourceContext* context,
-                          int render_process_id,
-                          int render_frame_id) override {
+  bool AllowServiceWorker(
+      const GURL& scope,
+      const GURL& first_party,
+      content::ResourceContext* context,
+      const base::Callback<WebContents*(void)>& wc_getter) override {
     return false;
   }
 };

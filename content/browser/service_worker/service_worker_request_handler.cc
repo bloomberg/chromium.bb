@@ -90,7 +90,8 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
     RequestContextType request_context_type,
     RequestContextFrameType frame_type,
     bool is_parent_frame_secure,
-    scoped_refptr<ResourceRequestBodyImpl> body) {
+    scoped_refptr<ResourceRequestBodyImpl> body,
+    const base::Callback<WebContents*(void)>& web_contents_getter) {
   CHECK(IsBrowserSideNavigationEnabled());
 
   // Only create a handler when there is a ServiceWorkerNavigationHandlerCore
@@ -114,7 +115,7 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
   std::unique_ptr<ServiceWorkerProviderHost> provider_host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
           navigation_handle_core->context_wrapper()->context()->AsWeakPtr(),
-          is_parent_frame_secure);
+          is_parent_frame_secure, web_contents_getter);
 
   FinalizeHandlerInitialization(
       request, provider_host.get(), blob_storage_context, skip_service_worker,

@@ -502,9 +502,7 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldSwapProcessesForRedirect(
 bool ChromeContentBrowserClientExtensionsPart::AllowServiceWorker(
     const GURL& scope,
     const GURL& first_party_url,
-    content::ResourceContext* context,
-    int render_process_id,
-    int render_frame_id) {
+    content::ResourceContext* context) {
   // We only care about extension urls.
   if (!first_party_url.SchemeIs(kExtensionScheme))
     return true;

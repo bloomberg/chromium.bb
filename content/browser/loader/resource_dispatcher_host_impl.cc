@@ -2271,7 +2271,8 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       new_request.get(), service_worker_handle_core, blob_context,
       info.begin_params.skip_service_worker, resource_type,
       info.begin_params.request_context_type, frame_type,
-      info.are_ancestors_secure, info.common_params.post_data);
+      info.are_ancestors_secure, info.common_params.post_data,
+      extra_info->GetWebContentsGetterForRequest());
 
   // Have the appcache associate its extra info with the request.
   if (appcache_handle_core) {

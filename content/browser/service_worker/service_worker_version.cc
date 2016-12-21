@@ -465,11 +465,13 @@ void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
   }
 
   // Check that the worker is allowed to start on the given scope. Since this
-  // worker might not be used for a specific frame/process, use -1.
+  // worker might not be used for a specific tab, pass a null callback as
+  // WebContents getter.
   // resource_context() can return null in unit tests.
   if (context_->wrapper()->resource_context() &&
       !GetContentClient()->browser()->AllowServiceWorker(
-          scope_, scope_, context_->wrapper()->resource_context(), -1, -1)) {
+          scope_, scope_, context_->wrapper()->resource_context(),
+          base::Callback<WebContents*(void)>())) {
     RecordStartWorkerResult(purpose, status_, kInvalidTraceId,
                             is_browser_startup_complete,
                             SERVICE_WORKER_ERROR_DISALLOWED);
