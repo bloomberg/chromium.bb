@@ -78,9 +78,9 @@ enum class TaskShutdownBehavior {
 // Describes metadata for a single task or a group of tasks.
 class BASE_EXPORT TaskTraits {
  public:
-  // Constructs a default TaskTraits for tasks with
-  //     (1) no I/O,
-  //     (2) priority inherited from the calling context, and
+  // Constructs a default TaskTraits for tasks that
+  //     (1) do not make blocking calls
+  //     (2) can inherit their priority from the calling context, and
   //     (3) may block shutdown or be skipped on shutdown.
   // Tasks that require stricter guarantees and/or know the specific
   // TaskPriority appropriate for them should highlight those by requesting
@@ -90,13 +90,41 @@ class BASE_EXPORT TaskTraits {
   TaskTraits& operator=(const TaskTraits& other) = default;
   ~TaskTraits();
 
-  // Allows tasks with these traits to wait on synchronous file I/O.
+  // Tasks with this trait may block. This includes but is not limited to tasks
+  // that wait on synchronous file I/O operations: read or write a file from
+  // disk, interact with a pipe or a socket, rename or delete a file, enumerate
+  // files in a directory, etc. This trait isn't required for the mere use of
+  // locks. For tasks that block on synchronization primitives (thread or
+  // process handles, waitable events, condition variables), see
+  // WithSyncPrimitives().
+  TaskTraits& MayBlock();
+
+  // Tasks with this trait are allowed to wait on waitable events and condition
+  // variables as well as to join threads and processes. This trait implies
+  // MayBlock().
+  //
+  // This trait should generally not be used.
+  //
+  // Instead of waiting on a waitable event or a condition variable, put the
+  // work that should happen after the wait in a callback and post that callback
+  // from where the waitable event or condition variable would have been
+  // signaled. If something needs to be scheduled after many tasks have
+  // executed, use base::BarrierClosure.
+  //
+  // On Windows, join processes asynchronously using base::win::ObjectWatcher.
+  //
+  // Avoid creating threads. Instead, use
+  // base::Create(Sequenced|SingleTreaded)TaskRunnerWithTraits(). If a thread is
+  // really needed, make it non-joinable and add cleanup work at the end of the
+  // thread's main function (if using base::Thread, override Cleanup()).
+  TaskTraits& WithSyncPrimitives();
+
+  // DEPRECATED
+  // TODO(fdoray): Remove this as part of crbug.com/675660
   TaskTraits& WithFileIO();
 
-  // Allows tasks with these traits to wait on things other than file I/O. In
-  // particular, they may wait on a WaitableEvent or a ConditionVariable, join a
-  // thread or a process, or make a blocking system call that doesn't involve
-  // interactions with the file system.
+  // DEPRECATED
+  // TODO(fdoray): Remove this as part of crbug.com/675660
   TaskTraits& WithWait();
 
   // Applies |priority| to tasks with these traits.
@@ -105,12 +133,15 @@ class BASE_EXPORT TaskTraits {
   // Applies |shutdown_behavior| to tasks with these traits.
   TaskTraits& WithShutdownBehavior(TaskShutdownBehavior shutdown_behavior);
 
-  // Returns true if waiting on synchronous file I/O is allowed by these traits.
-  bool with_file_io() const { return with_file_io_; }
+  // Returns true if tasks with these traits may block.
+  bool may_block() const { return may_block_; }
 
-  // Returns true if waiting on things other than file I/O is allowed by these
-  // traits.
-  bool with_wait() const { return with_wait_; }
+  // Returns true if tasks with these traits may wait on sync primitives.
+  bool with_sync_primitives() const { return with_sync_primitives_; }
+
+  // DEPRECATED
+  // TODO(fdoray): Remove this as part of crbug.com/675660
+  bool with_file_io() const { return may_block(); }
 
   // Returns the priority of tasks with these traits.
   TaskPriority priority() const { return priority_; }
@@ -119,8 +150,8 @@ class BASE_EXPORT TaskTraits {
   TaskShutdownBehavior shutdown_behavior() const { return shutdown_behavior_; }
 
  private:
-  bool with_file_io_;
-  bool with_wait_;
+  bool may_block_;
+  bool with_sync_primitives_;
   TaskPriority priority_;
   TaskShutdownBehavior shutdown_behavior_;
 };

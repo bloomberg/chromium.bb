@@ -17,21 +17,29 @@ namespace base {
 // the header; anything else is subject to change. Tasks should explicitly
 // request defaults if the behavior is critical to the task.
 TaskTraits::TaskTraits()
-    : with_file_io_(false),
-      with_wait_(false),
+    : may_block_(false),
+      with_sync_primitives_(false),
       priority_(internal::GetTaskPriorityForCurrentThread()),
       shutdown_behavior_(TaskShutdownBehavior::SKIP_ON_SHUTDOWN) {}
 
 TaskTraits::~TaskTraits() = default;
 
-TaskTraits& TaskTraits::WithFileIO() {
-  with_file_io_ = true;
+TaskTraits& TaskTraits::MayBlock() {
+  may_block_ = true;
   return *this;
 }
 
-TaskTraits& TaskTraits::WithWait() {
-  with_wait_ = true;
+TaskTraits& TaskTraits::WithSyncPrimitives() {
+  with_sync_primitives_ = true;
   return *this;
+}
+
+TaskTraits& TaskTraits::WithFileIO() {
+  return MayBlock();
+}
+
+TaskTraits& TaskTraits::WithWait() {
+  return MayBlock().WithSyncPrimitives();
 }
 
 TaskTraits& TaskTraits::WithPriority(TaskPriority priority) {

@@ -225,9 +225,9 @@ bool TaskTracker::RunTask(std::unique_ptr<Task> task,
             task->traits.shutdown_behavior() !=
             TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN);
     const bool previous_io_allowed =
-        ThreadRestrictions::SetIOAllowed(task->traits.with_file_io());
+        ThreadRestrictions::SetIOAllowed(task->traits.may_block());
     const bool previous_wait_allowed =
-        ThreadRestrictions::SetWaitAllowed(task->traits.with_wait());
+        ThreadRestrictions::SetWaitAllowed(task->traits.with_sync_primitives());
 
     {
       ScopedSetSequenceTokenForCurrentThread
