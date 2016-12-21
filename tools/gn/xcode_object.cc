@@ -679,7 +679,8 @@ void PBXProject::AddNativeTarget(const std::string& name,
                                  const std::string& type,
                                  const std::string& output_name,
                                  const std::string& output_type,
-                                 const std::string& shell_script) {
+                                 const std::string& shell_script,
+                                 const PBXAttributes& extra_attributes) {
   base::StringPiece ext = FindExtension(&output_name);
   PBXFileReference* product = static_cast<PBXFileReference*>(
       products_->AddChild(base::MakeUnique<PBXFileReference>(
@@ -691,7 +692,7 @@ void PBXProject::AddNativeTarget(const std::string& name,
                                  ? output_name.substr(0, ext_offset - 1)
                                  : output_name;
 
-  PBXAttributes attributes;
+  PBXAttributes attributes = extra_attributes;
   attributes["CODE_SIGNING_REQUIRED"] = "NO";
   attributes["CONFIGURATION_BUILD_DIR"] = ".";
   attributes["PRODUCT_NAME"] = product_name;

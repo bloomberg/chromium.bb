@@ -297,7 +297,8 @@ class PBXProject : public PBXObject {
                        const std::string& type,
                        const std::string& output_name,
                        const std::string& output_type,
-                       const std::string& shell_script);
+                       const std::string& shell_script,
+                       const PBXAttributes& extra_attributes = PBXAttributes());
 
   void SetProjectDirPath(const std::string& project_dir_path);
   void SetProjectRoot(const std::string& project_root);
