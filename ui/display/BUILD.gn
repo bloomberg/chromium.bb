@@ -132,6 +132,8 @@ static_library("test_support") {
 test("display_unittests") {
   sources = [
     "display_change_notifier_unittest.cc",
+    "display_layout_builder_unittest.cc",
+    "display_layout_unittest.cc",
     "display_list_unittest.cc",
     "display_unittest.cc",
     "fake_display_snapshot_unittests.cc",
@@ -142,8 +144,6 @@ test("display_unittests") {
     "manager/chromeos/query_content_protection_task_unittest.cc",
     "manager/chromeos/touchscreen_util_unittest.cc",
     "manager/chromeos/update_display_configuration_task_unittest.cc",
-    "manager/display_layout_builder_unittest.cc",
-    "manager/display_layout_unittest.cc",
     "manager/display_manager_utilities_unittest.cc",
     "manager/managed_display_info_unittest.cc",
     "screen_unittest.cc",
