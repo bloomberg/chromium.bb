@@ -150,7 +150,8 @@ class AXPosition {
       return str;
 
     std::string text = base::UTF16ToUTF8(GetInnerText());
-    DCHECK(!text.empty());
+    DCHECK_GE(text_offset_, 0);
+    DCHECK_LE(text_offset_, static_cast<int>(text.length()));
     std::string annotated_text;
     if (text_offset() == MaxTextOffset()) {
       annotated_text = text + "<>";
@@ -268,11 +269,10 @@ class AXPosition {
     // If the anchor node has no text inside it then the child index should be
     // set to |BEFORE_TEXT|, hence the check for the text's length.
     if (copy->MaxTextOffset() > 0 &&
-        copy->text_offset_ == copy->MaxTextOffset()) {
+        copy->text_offset_ >= copy->MaxTextOffset()) {
       copy->child_index_ = copy->AnchorChildCount();
     } else {
       DCHECK_GE(copy->text_offset_, 0);
-      DCHECK_LT(copy->text_offset_, copy->MaxTextOffset());
       copy->child_index_ = BEFORE_TEXT;
 
       int current_offset = 0;

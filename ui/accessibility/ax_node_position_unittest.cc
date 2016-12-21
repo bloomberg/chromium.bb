@@ -1900,7 +1900,7 @@ INSTANTIATE_TEST_CASE_P(
 
 // TODO(nektar): Move these tests to their own file.
 
-TEST_F(AXPositionTest, AXRangeGetText) {
+TEST_F(AXPositionTest, AXRangeGetTextWithWholeObjects) {
   base::string16 all_text = base::UTF8ToUTF16("ButtonCheck boxLine 1\nLine 2");
   // Create a range starting from the button object and ending at the last
   // character of the root, i.e. at the last character of the second line in the
@@ -1916,6 +1916,24 @@ TEST_F(AXPositionTest, AXRangeGetText) {
   AXRange<AXPosition<AXNodePosition, AXNode>> backward_range(std::move(end),
                                                              std::move(start));
   EXPECT_EQ(all_text, backward_range.GetText());
+}
+
+TEST_F(AXPositionTest, AXRangeGetTextWithTextOffsets) {
+  base::string16 most_text = base::UTF8ToUTF16("tonCheck boxLine 1\nLine");
+  // Create a range starting from the third character in the button object and
+  // ending two characters before the end of the root.
+  TestPositionType start = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, button_.id, 3 /* text_offset */,
+      AX_TEXT_AFFINITY_DOWNSTREAM);
+  TestPositionType end = AXNodePosition::CreateTextPosition(
+      tree_.data().tree_id, static_text2_.id, 4 /* text_offset */,
+      AX_TEXT_AFFINITY_DOWNSTREAM);
+  AXRange<AXPosition<AXNodePosition, AXNode>> forward_range(start->Clone(),
+                                                            end->Clone());
+  EXPECT_EQ(most_text, forward_range.GetText());
+  AXRange<AXPosition<AXNodePosition, AXNode>> backward_range(std::move(end),
+                                                             std::move(start));
+  EXPECT_EQ(most_text, backward_range.GetText());
 }
 
 }  // namespace ui

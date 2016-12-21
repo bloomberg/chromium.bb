@@ -39,7 +39,7 @@ class AXRange {
 
   AXRange(const AXRange& other) = delete;
 
-  AXRange(const AXRange&& other) : AXRange() {
+  AXRange(AXRange&& other) : AXRange() {
     anchor_.swap(other.anchor_);
     focus_.swap(other.focus_);
   }
@@ -78,21 +78,32 @@ class AXRange {
     if (IsNull())
       return text;
 
-    std::unique_ptr<AXPositionType> first, second;
-    if (*anchor_ <= *focus_) {
-      first = anchor_->AsLeafTextPosition();
-      second = focus_->AsLeafTextPosition();
+    std::unique_ptr<AXPositionType> start, end;
+    if (*anchor_ < *focus_) {
+      start = anchor_->AsLeafTextPosition();
+      end = focus_->AsLeafTextPosition();
     } else {
-      first = focus_->AsLeafTextPosition();
-      second = anchor_->AsLeafTextPosition();
+      start = focus_->AsLeafTextPosition();
+      end = anchor_->AsLeafTextPosition();
     }
 
-    do {
-      text += first->GetInnerText();
-      first = first->CreateNextTextAnchorPosition();
-    } while (*first <= *second);
+    int start_offset = start->text_offset();
+    DCHECK_GE(start_offset, 0);
+    int end_offset = end->text_offset();
+    DCHECK_GE(end_offset, 0);
 
-    return text;
+    do {
+      text += start->GetInnerText();
+      start = start->CreateNextTextAnchorPosition();
+    } while (!start->IsNullPosition() && *start <= *end);
+
+    if (static_cast<size_t>(start_offset) > text.length())
+      return base::string16();
+
+    text = text.substr(start_offset, base::string16::npos);
+    size_t text_length = text.length() - end->GetInnerText().length() +
+                         static_cast<size_t>(end_offset);
+    return text.substr(0, text_length);
   }
 
  private:
