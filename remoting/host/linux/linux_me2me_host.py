@@ -470,6 +470,18 @@ class Desktop:
     self.ssh_auth_sockname = ("/tmp/chromoting.%s.ssh_auth_sock" %
                               os.environ["USER"])
 
+  # Returns child environment not containing TMPDIR.
+  # Certain values of TMPDIR can break the X server (crbug.com/672684), so we
+  # want to make sure it isn't set in the envirionment we use to start the
+  # server.
+  def _x_env(self):
+    if "TMPDIR" not in self.child_env:
+      return self.child_env
+    else:
+      env_copy = dict(self.child_env)
+      del env_copy["TMPDIR"]
+      return env_copy
+
   def _wait_for_x(self):
     # Wait for X to be active.
     with open(os.devnull, "r+") as devnull:
@@ -500,7 +512,7 @@ class Desktop:
          "-nolisten", "tcp",
          "-noreset",
          "-screen", "0", screen_option
-        ] + extra_x_args, env=self.child_env)
+        ] + extra_x_args, env=self._x_env())
     if not self.x_proc.pid:
       raise Exception("Could not start Xvfb.")
 
@@ -543,7 +555,7 @@ class Desktop:
          "-logfile", "/dev/null",
          "-verbose", "3",
          "-config", config_file.name
-        ] + extra_x_args, env=self.child_env)
+        ] + extra_x_args, env=self._x_env())
     if not self.x_proc.pid:
       raise Exception("Could not start Xorg.")
     self._wait_for_x()
