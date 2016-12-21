@@ -110,6 +110,7 @@ class PLATFORM_EXPORT Scrollbar : public Widget,
 
   // This returns device-scale-factor-aware pixel value.
   // e.g. 15 in dsf=1.0, 30 in dsf=2.0.
+  // This returns 0 for overlay scrollbars.
   // See also ScrolbarTheme::scrollbatThickness().
   int scrollbarThickness() const;
 

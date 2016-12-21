@@ -335,22 +335,22 @@ int LayoutThemeDefault::popupInternalPaddingBottom(
   return menuListInternalPadding(style, 1);
 }
 
-int LayoutThemeDefault::scrollbarThicknessInDIP() const {
-  if (m_scrollbarThicknessInDIP > 0)
-    return m_scrollbarThicknessInDIP;
+int LayoutThemeDefault::menuListArrowWidthInDIP() const {
+  if (m_menuListArrowWidthInDIP > 0)
+    return m_menuListArrowWidthInDIP;
   int width = Platform::current()
                   ->themeEngine()
                   ->getSize(WebThemeEngine::PartScrollbarUpArrow)
                   .width;
-  const_cast<LayoutThemeDefault*>(this)->m_scrollbarThicknessInDIP =
+  const_cast<LayoutThemeDefault*>(this)->m_menuListArrowWidthInDIP =
       width > 0 ? width : 15;
-  return m_scrollbarThicknessInDIP;
+  return m_menuListArrowWidthInDIP;
 }
 
 float LayoutThemeDefault::clampedMenuListArrowPaddingSize(
     const HostWindow* host,
     const ComputedStyle& style) const {
-  int originalSize = scrollbarThicknessInDIP();
+  int originalSize = menuListArrowWidthInDIP();
   int scaledSize =
       host ? host->windowToViewportScalar(originalSize) : originalSize;
   // The result should not be samller than the scrollbar thickness in order to

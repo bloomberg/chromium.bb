@@ -290,7 +290,7 @@ void ThemePainterDefault::setupMenuListArrow(
   extraParams.menuList.arrowY = middle;
   float arrowBoxWidth = m_theme.clampedMenuListArrowPaddingSize(
       box.frameView()->getHostWindow(), box.styleRef());
-  float arrowScaleFactor = arrowBoxWidth / m_theme.scrollbarThicknessInDIP();
+  float arrowScaleFactor = arrowBoxWidth / m_theme.menuListArrowWidthInDIP();
   if (useMockTheme()) {
     // The size and position of the drop-down button is different between
     // the mock theme and the regular aura theme.

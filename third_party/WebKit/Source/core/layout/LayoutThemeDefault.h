@@ -115,7 +115,11 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
                               const ComputedStyle&) const override;
   int popupInternalPaddingTop(const ComputedStyle&) const override;
   int popupInternalPaddingBottom(const ComputedStyle&) const override;
-  int scrollbarThicknessInDIP() const;
+  // This returns a value based on scrollbar thickness.  It's not 0 even in
+  // overlay scrollbar mode.  On Android, this doesn't match to scrollbar
+  // thickness, which is 3px or 4px, and we use the value from the default Aura
+  // theme.
+  int menuListArrowWidthInDIP() const;
   float clampedMenuListArrowPaddingSize(const HostWindow*,
                                         const ComputedStyle&) const;
 
@@ -155,7 +159,7 @@ class CORE_EXPORT LayoutThemeDefault : public LayoutTheme {
   static unsigned m_inactiveSelectionForegroundColor;
 
   ThemePainterDefault m_painter;
-  int m_scrollbarThicknessInDIP = 0;
+  int m_menuListArrowWidthInDIP = 0;
 };
 
 }  // namespace blink
