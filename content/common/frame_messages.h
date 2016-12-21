@@ -775,6 +775,9 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SetTextTrackSettings,
 // Posts a message from a frame in another process to the current renderer.
 IPC_MESSAGE_ROUTED1(FrameMsg_PostMessageEvent, FrameMsg_PostMessage_Params)
 
+// Tells the RenderFrame to clear the focused element (if any).
+IPC_MESSAGE_ROUTED0(FrameMsg_ClearFocusedElement)
+
 #if defined(OS_ANDROID)
 // Request the distance to the nearest find result in a frame from the point at
 // (x, y), defined in fractions of the content document's width and height. The
@@ -1113,6 +1116,15 @@ IPC_SYNC_MESSAGE_CONTROL3_1(FrameHostMsg_Are3DAPIsBlocked,
                             GURL /* top_origin_url */,
                             content::ThreeDAPIType /* requester */,
                             bool /* blocked */)
+
+// Message sent from renderer to the browser when focus changes inside the
+// frame. The first parameter says whether the newly focused element needs
+// keyboard input (true for textfields, text areas and content editable divs).
+// The second parameter is the node bounds relative to local root's
+// RenderWidgetHostView.
+IPC_MESSAGE_ROUTED2(FrameHostMsg_FocusedNodeChanged,
+                    bool /* is_editable_node */,
+                    gfx::Rect /* node_bounds */)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Notification sent from a renderer to the browser that a Pepper plugin

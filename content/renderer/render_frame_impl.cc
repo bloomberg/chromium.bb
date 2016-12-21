@@ -1582,6 +1582,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_SetHasReceivedUserGesture,
                         OnSetHasReceivedUserGesture)
     IPC_MESSAGE_HANDLER(FrameMsg_RunFileChooserResponse, OnFileChooserResponse)
+    IPC_MESSAGE_HANDLER(FrameMsg_ClearFocusedElement, OnClearFocusedElement)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameMsg_ActivateNearestFindResult,
                         OnActivateNearestFindResult)
@@ -5060,6 +5061,18 @@ void RenderFrameImpl::HandleWebAccessibilityEvent(
 }
 
 void RenderFrameImpl::FocusedNodeChanged(const WebNode& node) {
+  bool is_editable = false;
+  gfx::Rect node_bounds;
+  if (!node.isNull() && node.isElementNode()) {
+    WebElement element = const_cast<WebNode&>(node).to<WebElement>();
+    blink::WebRect rect = element.boundsInViewport();
+    GetRenderWidget()->convertViewportToWindow(&rect);
+    is_editable = element.isEditable();
+    node_bounds = gfx::Rect(rect);
+  }
+  Send(new FrameHostMsg_FocusedNodeChanged(routing_id_, is_editable,
+                                           node_bounds));
+
   for (auto& observer : observers_)
     observer.FocusedNodeChanged(node);
 }
@@ -5627,6 +5640,13 @@ void RenderFrameImpl::OnFileChooserResponse(
     Send(new FrameHostMsg_RunFileChooser(
         routing_id_, file_chooser_completions_.front()->params));
   }
+}
+
+void RenderFrameImpl::OnClearFocusedElement() {
+  // TODO(ekaramad): Should we add a method to WebLocalFrame instead and avoid
+  // calling this on the WebView?
+  if (auto* webview = render_view_->GetWebView())
+    webview->clearFocusedElement();
 }
 
 #if defined(OS_ANDROID)

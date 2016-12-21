@@ -12,10 +12,10 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
@@ -361,6 +361,10 @@ class SitePerProcessTextInputManagerTest : public InProcessBrowserTest {
  protected:
   content::WebContents* active_contents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  content::RenderViewHost* render_view_host() {
+    return active_contents()->GetRenderViewHost();
   }
 
   // static
@@ -865,6 +869,107 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
         base::Bind(&FormFieldDataVerifier::Verify, base::Unretained(&verifier));
     frame->RequestFocusedFormFieldData(callback);
     verifier.Wait();
+  }
+}
+
+// This test makes sure browser correctly tracks focused editable element inside
+// each RenderFrameHost.
+IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
+                       TrackingFocusedElementForAllFrames) {
+  CreateIframePage("a(a, b(a))");
+  std::vector<content::RenderFrameHost*> frames{
+      GetFrame(IndexVector{}), GetFrame(IndexVector{0}),
+      GetFrame(IndexVector{1}), GetFrame(IndexVector{1, 0})};
+  for (size_t i = 0; i < frames.size(); ++i)
+    AddInputFieldToFrame(frames[i], "text", "some text", true);
+
+  // Focus the <input> in |frame| and return if RenderFrameHost thinks there is
+  // a focused editable element in it.
+  auto focus_input_and_return_editable_element_state =
+      [](content::RenderFrameHost* frame) {
+        EXPECT_TRUE(
+            ExecuteScript(frame, "document.querySelector('input').focus();"));
+        return content::DoesFrameHaveFocusedEditableElement(frame);
+      };
+
+  // When focusing an <input> we should receive an update.
+  for (auto* frame : frames)
+    EXPECT_TRUE(focus_input_and_return_editable_element_state(frame));
+
+  // Blur the <input> in |frame| and return if RenderFrameHost thinks there is a
+  // focused editable element in it.
+  auto blur_input_and_return_editable_element_state =
+      [](content::RenderFrameHost* frame) {
+        EXPECT_TRUE(
+            ExecuteScript(frame, "document.querySelector('input').blur();"));
+        return content::DoesFrameHaveFocusedEditableElement(frame);
+      };
+
+  // Similarly, we should receive updates when losing focus.
+  for (auto* frame : frames)
+    EXPECT_FALSE(blur_input_and_return_editable_element_state(frame));
+}
+
+// This test tracks page level focused editable element tracking using
+// RenderViewHost. In a page with multiple frames, a frame is selected and
+// focused. Then the <input> inside frame is both focused and blurred and  and
+// in both cases the test verifies that RendeViewHost is aware whether or not a
+// focused editable element exists on the page.
+IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
+                       TrackPageFocusEditableElement) {
+  CreateIframePage("a(a, b(a))");
+  std::vector<content::RenderFrameHost*> frames{
+      GetFrame(IndexVector{}), GetFrame(IndexVector{0}),
+      GetFrame(IndexVector{1}), GetFrame(IndexVector{1, 0})};
+  for (size_t i = 0; i < frames.size(); ++i)
+    AddInputFieldToFrame(frames[i], "text", "some text", true);
+
+  auto focus_frame = [](content::RenderFrameHost* frame) {
+    EXPECT_TRUE(ExecuteScript(frame, "window.focus();"));
+  };
+
+  auto set_input_focus = [](content::RenderFrameHost* frame, bool focus) {
+    EXPECT_TRUE(ExecuteScript(
+        frame, base::StringPrintf("document.querySelector('input').%s();",
+                                  (focus ? "focus" : "blur"))));
+  };
+
+  for (auto* frame : frames) {
+    focus_frame(frame);
+    // Focus the <input>.
+    set_input_focus(frame, true);
+    EXPECT_TRUE(render_view_host()->IsFocusedElementEditable());
+    // No blur <input>.
+    set_input_focus(frame, false);
+    EXPECT_FALSE(render_view_host()->IsFocusedElementEditable());
+  }
+}
+
+// TODO(ekaramad): Could this become a unit test instead?
+// This test focuses <input> elements on the page and verifies that
+// RenderViewHost knows about the focused editable element. Then it asks the
+// RenderViewHost to clear focused element and verifies that there is no longer
+// a focused editable element on the page.
+IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
+                       ClearFocusedElementOnPage) {
+  CreateIframePage("a(a, b(a))");
+  std::vector<content::RenderFrameHost*> frames{
+      GetFrame(IndexVector{}), GetFrame(IndexVector{0}),
+      GetFrame(IndexVector{1}), GetFrame(IndexVector{1, 0})};
+  for (size_t i = 0; i < frames.size(); ++i)
+    AddInputFieldToFrame(frames[i], "text", "some text", true);
+
+  auto focus_frame_and_input = [](content::RenderFrameHost* frame) {
+    EXPECT_TRUE(ExecuteScript(frame,
+                              "window.focus();"
+                              "document.querySelector('input').focus();"));
+  };
+
+  for (auto* frame : frames) {
+    focus_frame_and_input(frame);
+    EXPECT_TRUE(render_view_host()->IsFocusedElementEditable());
+    render_view_host()->ClearFocusedElement();
+    EXPECT_FALSE(render_view_host()->IsFocusedElementEditable());
   }
 }
 

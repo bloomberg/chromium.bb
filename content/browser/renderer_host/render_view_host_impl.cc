@@ -38,7 +38,6 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
@@ -60,7 +59,6 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
@@ -209,7 +207,6 @@ RenderViewHostImpl::RenderViewHostImpl(
       is_waiting_for_close_ack_(false),
       sudden_termination_allowed_(false),
       render_view_termination_status_(base::TERMINATION_STATUS_STILL_RUNNING),
-      is_focused_element_editable_(false),
       updating_web_preferences_(false),
       render_view_ready_on_process_launch_(false),
       weak_factory_(this) {
@@ -775,11 +772,9 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_RouteCloseEvent,
                         OnRouteCloseEvent)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidZoomURL, OnDidZoomURL)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FocusedNodeTouched, OnFocusedNodeTouched)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -921,32 +916,6 @@ void RenderViewHostImpl::OnTakeFocus(bool reverse) {
     view->TakeFocus(reverse);
 }
 
-void RenderViewHostImpl::OnFocusedNodeChanged(
-    bool is_editable_node,
-    const gfx::Rect& node_bounds_in_viewport) {
-  is_focused_element_editable_ = is_editable_node;
-
-  // None of the rest makes sense without a view.
-  if (!GetWidget()->GetView())
-    return;
-
-  // Convert node_bounds to screen coordinates.
-  gfx::Rect view_bounds_in_screen = GetWidget()->GetView()->GetViewBounds();
-  gfx::Point origin = node_bounds_in_viewport.origin();
-  origin.Offset(view_bounds_in_screen.x(), view_bounds_in_screen.y());
-  gfx::Rect node_bounds_in_screen(origin.x(), origin.y(),
-                                  node_bounds_in_viewport.width(),
-                                  node_bounds_in_viewport.height());
-
-  GetWidget()->GetView()->FocusedNodeChanged(
-      is_editable_node, node_bounds_in_screen);
-
-  FocusedNodeDetails details = {is_editable_node, node_bounds_in_screen};
-  NotificationService::current()->Notify(NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
-                                         Source<RenderViewHost>(this),
-                                         Details<FocusedNodeDetails>(&details));
-}
-
 void RenderViewHostImpl::OnClosePageACK() {
   GetWidget()->decrement_in_flight_event_count();
   ClosePageIgnoringUnloadEvents();
@@ -1000,12 +969,16 @@ void RenderViewHostImpl::OnWebkitPreferencesChanged() {
 }
 
 void RenderViewHostImpl::ClearFocusedElement() {
-  is_focused_element_editable_ = false;
-  Send(new ViewMsg_ClearFocusedElement(GetRoutingID()));
+  // TODO(ekaramad): We should move this to WebContents instead
+  // (https://crbug.com/675975).
+  if (delegate_)
+    delegate_->ClearFocusedElement();
 }
 
 bool RenderViewHostImpl::IsFocusedElementEditable() {
-  return is_focused_element_editable_;
+  // TODO(ekaramad): We should move this to WebContents instead
+  // (https://crbug.com/675975).
+  return delegate_ && delegate_->IsFocusedElementEditable();
 }
 
 void RenderViewHostImpl::Zoom(PageZoom zoom) {
@@ -1056,25 +1029,6 @@ void RenderViewHostImpl::OnDidZoomURL(double zoom_level,
                                      GetRoutingID(),
                                      zoom_level,
                                      net::GetHostOrSpecFromURL(url));
-}
-
-void RenderViewHostImpl::OnFocusedNodeTouched(bool editable) {
-#if defined(OS_WIN)
-  // We use the cursor position to determine where the touch occurred.
-  // TODO(ananta)
-  // Pass this information from blink.
-  // In site isolation mode, we may not have a RenderViewHostImpl instance
-  // which means that displaying the OSK is not going to work. We should
-  // probably move this to RenderWidgetHostImpl and call the view from there.
-  // https://bugs.chromium.org/p/chromium/issues/detail?id=613326
-  POINT cursor_pos = {};
-  ::GetCursorPos(&cursor_pos);
-  float scale = GetScaleFactorForView(GetWidget()->GetView());
-  gfx::Point location_dips_screen =
-      gfx::ConvertPointToDIP(scale, gfx::Point(cursor_pos));
-  if (GetWidget()->GetView())
-    GetWidget()->GetView()->FocusedNodeTouched(location_dips_screen, editable);
-#endif
 }
 
 void RenderViewHostImpl::SelectWordAroundCaret() {

@@ -36,6 +36,10 @@ class GeolocationServiceContext;
 class WakeLockServiceContext;
 }
 
+namespace gfx {
+class Rect;
+}
+
 namespace content {
 class FrameTreeNode;
 class InterstitialPage;
@@ -212,6 +216,14 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // applies, returns null.
   virtual std::unique_ptr<WebUIImpl> CreateWebUIForRenderFrameHost(
       const GURL& url);
+
+  // Called by |frame| to notify that it has received an update on focused
+  // element. |bounds_in_root_view| is the rectangle containing the element that
+  // is focused and is with respect to root frame's RenderWidgetHost's
+  // coordinate space.
+  virtual void OnFocusedElementChangedInFrame(
+      RenderFrameHostImpl* frame,
+      const gfx::Rect& bounds_in_root_view) {}
 
  protected:
   virtual ~RenderFrameHostDelegate() {}

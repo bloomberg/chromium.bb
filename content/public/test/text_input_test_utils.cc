@@ -6,6 +6,7 @@
 
 #include <unordered_set>
 
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -254,6 +255,11 @@ bool RequestCompositionInfoFromActiveWidget(WebContents* web_contents) {
   manager->GetActiveWidget()->Send(new InputMsg_RequestCompositionUpdate(
       manager->GetActiveWidget()->GetRoutingID(), true, false));
   return true;
+}
+
+bool DoesFrameHaveFocusedEditableElement(RenderFrameHost* frame) {
+  return static_cast<RenderFrameHostImpl*>(frame)
+      ->has_focused_editable_element();
 }
 
 size_t GetRegisteredViewsCountFromTextInputManager(WebContents* web_contents) {

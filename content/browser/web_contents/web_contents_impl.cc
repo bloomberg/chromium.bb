@@ -94,6 +94,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_url_parameters.h"
+#include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/guest_mode.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/javascript_dialog_manager.h"
@@ -138,6 +139,11 @@
 #include "ui/base/layout.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gl/gl_switches.h"
+
+#if defined(OS_WIN)
+#include "content/browser/renderer_host/dip_util.h"
+#include "ui/gfx/geometry/dip_util.h"
+#endif
 
 #if defined(OS_ANDROID)
 #include "content/browser/android/content_video_view.h"
@@ -4203,6 +4209,16 @@ bool WebContentsImpl::HideDownloadUI() const {
   return is_overlay_content_;
 }
 
+bool WebContentsImpl::IsFocusedElementEditable() {
+  RenderFrameHostImpl* frame = GetFocusedFrame();
+  return frame && frame->has_focused_editable_element();
+}
+
+void WebContentsImpl::ClearFocusedElement() {
+  if (auto* frame = GetFocusedFrame())
+    frame->ClearFocusedElement();
+}
+
 bool WebContentsImpl::IsNeverVisible() {
   if (!delegate_)
     return false;
@@ -4706,6 +4722,33 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
   SetAsFocusedWebContentsIfNecessary();
 
   frame_tree_.SetFocusedFrame(node, source);
+}
+
+void WebContentsImpl::OnFocusedElementChangedInFrame(
+    RenderFrameHostImpl* frame,
+    const gfx::Rect& bounds_in_root_view) {
+  RenderWidgetHostViewBase* root_view =
+      static_cast<RenderWidgetHostViewBase*>(GetRenderWidgetHostView());
+  if (!root_view || !frame->GetView())
+    return;
+
+  // Converting to screen coordinates.
+  gfx::Point origin = bounds_in_root_view.origin();
+  origin += root_view->GetViewBounds().OffsetFromOrigin();
+  gfx::Rect bounds_in_screen(origin, bounds_in_root_view.size());
+
+  root_view->FocusedNodeChanged(frame->has_focused_editable_element(),
+                                bounds_in_screen);
+
+  FocusedNodeDetails details = {frame->has_focused_editable_element(),
+                                bounds_in_screen};
+
+  // TODO(ekaramad): We should replace this with an observer notification
+  // (https://crbug.com/675975).
+  NotificationService::current()->Notify(
+      NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
+      Source<RenderViewHost>(GetRenderViewHost()),
+      Details<FocusedNodeDetails>(&details));
 }
 
 bool WebContentsImpl::DidAddMessageToConsole(int32_t level,
@@ -5311,6 +5354,21 @@ bool WebContentsImpl::AddDomainInfoToRapporSample(rappor::Sample* sample) {
                                        GetLastCommittedURL()));
 
   return true;
+}
+
+void WebContentsImpl::FocusedNodeTouched(bool editable) {
+#if defined(OS_WIN)
+  // We use the cursor position to determine where the touch occurred.
+  RenderWidgetHostView* view = GetRenderWidgetHostView();
+  if (!view)
+    return;
+  POINT cursor_pos = {};
+  ::GetCursorPos(&cursor_pos);
+  float scale = GetScaleFactorForView(view);
+  gfx::Point location_dips_screen =
+      gfx::ConvertPointToDIP(scale, gfx::Point(cursor_pos));
+  view->FocusedNodeTouched(location_dips_screen, editable);
+#endif
 }
 
 void WebContentsImpl::ShowInsecureLocalhostWarningIfNeeded() {

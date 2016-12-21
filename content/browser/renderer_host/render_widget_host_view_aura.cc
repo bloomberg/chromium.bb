@@ -182,6 +182,8 @@ class WinScreenKeyboardObserver : public ui::OnScreenKeyboardObserver {
       gfx::Point origin(location_in_screen_);
       screen_position_client->ConvertPointFromScreen(window_, &origin);
 
+      // TODO(ekaramad): We should support the case where the focused node is
+      // inside an OOPIF (https://crbug.com/676037).
       // We want to scroll the node into a rectangle which originates from
       // the touch point and a small offset (10) in either direction.
       gfx::Rect node_rect(origin.x(), origin.y(), 10, 10);
@@ -780,7 +782,7 @@ void RenderWidgetHostViewAura::FocusedNodeTouched(
   ui::OnScreenKeyboardDisplayManager* osk_display_manager =
       ui::OnScreenKeyboardDisplayManager::GetInstance();
   DCHECK(osk_display_manager);
-  if (editable && host_ && host_->GetView()) {
+  if (editable && host_ && host_->GetView() && host_->delegate()) {
     keyboard_observer_.reset(new WinScreenKeyboardObserver(
         host_, location_dips_screen, device_scale_factor_, window_));
     virtual_keyboard_requested_ =

@@ -1898,27 +1898,27 @@ TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
 
   ExecuteJavaScriptForTests("document.getElementById('test1').focus();");
   const IPC::Message* msg1 = render_thread_->sink().GetFirstMessageMatching(
-      ViewHostMsg_FocusedNodeChanged::ID);
+      FrameHostMsg_FocusedNodeChanged::ID);
   EXPECT_TRUE(msg1);
 
-  ViewHostMsg_FocusedNodeChanged::Param params;
-  ViewHostMsg_FocusedNodeChanged::Read(msg1, &params);
+  FrameHostMsg_FocusedNodeChanged::Param params;
+  FrameHostMsg_FocusedNodeChanged::Read(msg1, &params);
   EXPECT_TRUE(std::get<0>(params));
   render_thread_->sink().ClearMessages();
 
   ExecuteJavaScriptForTests("document.getElementById('test2').focus();");
   const IPC::Message* msg2 = render_thread_->sink().GetFirstMessageMatching(
-        ViewHostMsg_FocusedNodeChanged::ID);
+      FrameHostMsg_FocusedNodeChanged::ID);
   EXPECT_TRUE(msg2);
-  ViewHostMsg_FocusedNodeChanged::Read(msg2, &params);
+  FrameHostMsg_FocusedNodeChanged::Read(msg2, &params);
   EXPECT_TRUE(std::get<0>(params));
   render_thread_->sink().ClearMessages();
 
   view()->webview()->clearFocusedElement();
   const IPC::Message* msg3 = render_thread_->sink().GetFirstMessageMatching(
-        ViewHostMsg_FocusedNodeChanged::ID);
+      FrameHostMsg_FocusedNodeChanged::ID);
   EXPECT_TRUE(msg3);
-  ViewHostMsg_FocusedNodeChanged::Read(msg3, &params);
+  FrameHostMsg_FocusedNodeChanged::Read(msg3, &params);
   EXPECT_FALSE(std::get<0>(params));
   render_thread_->sink().ClearMessages();
 }

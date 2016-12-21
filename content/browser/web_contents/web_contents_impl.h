@@ -485,6 +485,9 @@ class CONTENT_EXPORT WebContentsImpl
   std::unique_ptr<WebUIImpl> CreateWebUIForRenderFrameHost(
       const GURL& url) override;
   void SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) override;
+  void OnFocusedElementChangedInFrame(
+      RenderFrameHostImpl* frame,
+      const gfx::Rect& bounds_in_root_view) override;
 
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
@@ -555,6 +558,8 @@ class CONTENT_EXPORT WebContentsImpl
   bool IsOverridingUserAgent() override;
   bool IsJavaScriptDialogShowing() const override;
   bool HideDownloadUI() const override;
+  bool IsFocusedElementEditable() override;
+  void ClearFocusedElement() override;
 
   // NavigatorDelegate ---------------------------------------------------------
 
@@ -662,6 +667,7 @@ class CONTENT_EXPORT WebContentsImpl
   TextInputManager* GetTextInputManager() override;
   bool OnUpdateDragCursor() override;
   bool AddDomainInfoToRapporSample(rappor::Sample* sample) override;
+  void FocusedNodeTouched(bool editable) override;
 
   // RenderFrameHostManager::Delegate ------------------------------------------
 

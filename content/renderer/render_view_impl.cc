@@ -1220,7 +1220,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
                         OnEnumerateDirectoryResponse)
     IPC_MESSAGE_HANDLER(ViewMsg_ClosePage, OnClosePage)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
-    IPC_MESSAGE_HANDLER(ViewMsg_ClearFocusedElement, OnClearFocusedElement)
     IPC_MESSAGE_HANDLER(ViewMsg_SetBackgroundOpaque, OnSetBackgroundOpaque)
     IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
                         OnEnablePreferredSizeChangedMode)
@@ -1756,18 +1755,6 @@ void RenderViewImpl::focusedNodeChanged(const WebNode& fromNode,
                                         const WebNode& toNode) {
   has_scrolled_focused_editable_node_into_rect_ = false;
 
-  gfx::Rect node_bounds;
-  bool is_editable = false;
-  if (!toNode.isNull() && toNode.isElementNode()) {
-    WebElement element = const_cast<WebNode&>(toNode).to<WebElement>();
-    blink::WebRect rect = element.boundsInViewport();
-    ConvertViewportToWindowViaWidget(&rect);
-    node_bounds = gfx::Rect(rect);
-    is_editable = element.isEditable();
-  }
-  Send(new ViewHostMsg_FocusedNodeChanged(GetRoutingID(), is_editable,
-                                          node_bounds));
-
   // TODO(estade): remove.
   for (auto& observer : observers_)
     observer.FocusedNodeChanged(toNode);
@@ -1861,20 +1848,6 @@ void RenderViewImpl::didHandleGestureEvent(
     for (auto& observer : observers_)
       observer.DidHandleGestureEvent(event);
   }
-
-  // TODO(ananta): Piggyback off existing IPCs to communicate this information,
-  // crbug/420130.
-#if defined(OS_WIN)
-  if (event.type != blink::WebGestureEvent::GestureTap)
-    return;
-
-  // TODO(estade): hit test the event against focused node to make sure
-  // the tap actually hit the focused node.
-  blink::WebTextInputType text_input_type = GetWebView()->textInputType();
-
-  Send(new ViewHostMsg_FocusedNodeTouched(
-      GetRoutingID(), text_input_type != blink::WebTextInputTypeNone));
-#endif
 }
 
 void RenderViewImpl::initializeLayerTreeView() {
@@ -2340,11 +2313,6 @@ void RenderViewImpl::OnResize(const ResizeParams& params) {
 
   if (old_visible_viewport_size != visible_viewport_size_)
     has_scrolled_focused_editable_node_into_rect_ = false;
-}
-
-void RenderViewImpl::OnClearFocusedElement() {
-  if (webview())
-    webview()->clearFocusedElement();
 }
 
 void RenderViewImpl::OnSetBackgroundOpaque(bool opaque) {

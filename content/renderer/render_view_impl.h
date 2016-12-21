@@ -535,7 +535,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnAllowBindings(int enabled_bindings_flags);
   void OnAllowScriptToClose(bool script_can_close);
   void OnCancelDownload(int32_t download_id);
-  void OnClearFocusedElement();
   void OnClosePage();
   void OnClose();
 

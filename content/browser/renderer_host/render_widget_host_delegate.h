@@ -244,6 +244,11 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // if the eTLD+1 is not known for |render_widget_host|.
   virtual bool AddDomainInfoToRapporSample(rappor::Sample* sample);
 
+  // Notifies the delegate that a focused editable element has been touched
+  // inside this RenderWidgetHost. If |editable| is true then the focused
+  // element accepts text input.
+  virtual void FocusedNodeTouched(bool editable) {}
+
  protected:
   virtual ~RenderWidgetHostDelegate() {}
 };

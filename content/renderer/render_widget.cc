@@ -2115,6 +2115,19 @@ void RenderWidget::didHandleGestureEvent(
     else
       UpdateTextInputState(ShowIme::IF_NEEDED, ChangeSource::FROM_NON_IME);
   }
+// TODO(ananta): Piggyback off existing IPCs to communicate this information,
+// crbug/420130.
+#if defined(OS_WIN)
+  if (event.type != blink::WebGestureEvent::GestureTap)
+    return;
+
+  // TODO(estade): hit test the event against focused node to make sure
+  // the tap actually hit the focused node.
+  blink::WebTextInputType text_input_type = GetWebWidget()->textInputType();
+
+  Send(new ViewHostMsg_FocusedNodeTouched(
+      routing_id_, text_input_type != blink::WebTextInputTypeNone));
+#endif
 #endif
 }
 

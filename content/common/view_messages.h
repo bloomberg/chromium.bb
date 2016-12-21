@@ -519,9 +519,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_DisableAutoResize,
 IPC_MESSAGE_ROUTED1(ViewMsg_SetTextDirection,
                     blink::WebTextDirection /* direction */)
 
-// Tells the renderer to clear the focused element (if any).
-IPC_MESSAGE_ROUTED0(ViewMsg_ClearFocusedElement)
-
 // Make the RenderView background transparent or opaque.
 IPC_MESSAGE_ROUTED1(ViewMsg_SetBackgroundOpaque, bool /* opaque */)
 
@@ -694,14 +691,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateRect,
                     ViewHostMsg_UpdateRect_Params)
 
 IPC_MESSAGE_ROUTED0(ViewHostMsg_Focus)
-
-// Message sent from renderer to the browser when focus changes inside the
-// webpage. The first parameter says whether the newly focused element needs
-// keyboard input (true for textfields, text areas and content editable divs).
-// The second parameter is the node bounds relative to RenderWidgetHostView.
-IPC_MESSAGE_ROUTED2(ViewHostMsg_FocusedNodeChanged,
-                    bool /* is_editable_node */,
-                    gfx::Rect /* node_bounds */)
 
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SetCursor, content::WebCursor)
 

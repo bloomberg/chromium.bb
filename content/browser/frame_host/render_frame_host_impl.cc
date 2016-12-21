@@ -336,6 +336,7 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
       last_navigation_lofi_state_(LOFI_UNSPECIFIED),
       frame_host_binding_(this),
       waiting_for_init_(renderer_initiated_creation),
+      has_focused_editable_element_(false),
       weak_ptr_factory_(this) {
   frame_tree_->AddRenderViewHostRef(render_view_host_);
   GetProcess()->AddRoute(routing_id_, this);
@@ -753,6 +754,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_SerializeAsMHTMLResponse,
                         OnSerializeAsMHTMLResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SelectionChanged, OnSelectionChanged)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
 #if defined(USE_EXTERNAL_POPUP_MENU)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
@@ -2147,6 +2149,20 @@ void RenderFrameHostImpl::OnSelectionChanged(const base::string16& text,
   GetRenderWidgetHost()->SelectionChanged(text, offset, range);
 }
 
+void RenderFrameHostImpl::OnFocusedNodeChanged(
+    bool is_editable_element,
+    const gfx::Rect& bounds_in_frame_widget) {
+  if (!GetView())
+    return;
+
+  has_focused_editable_element_ = is_editable_element;
+  // First convert the bounds to root view.
+  delegate_->OnFocusedElementChangedInFrame(
+      this, gfx::Rect(GetView()->TransformPointToRootCoordSpace(
+                          bounds_in_frame_widget.origin()),
+                      bounds_in_frame_widget.size()));
+}
+
 #if defined(USE_EXTERNAL_POPUP_MENU)
 void RenderFrameHostImpl::OnShowPopup(
     const FrameHostMsg_ShowPopup_Params& params) {
@@ -2794,6 +2810,11 @@ void RenderFrameHostImpl::SuppressFurtherDialogs() {
 
 void RenderFrameHostImpl::SetHasReceivedUserGesture() {
   Send(new FrameMsg_SetHasReceivedUserGesture(GetRoutingID()));
+}
+
+void RenderFrameHostImpl::ClearFocusedElement() {
+  has_focused_editable_element_ = false;
+  Send(new FrameMsg_ClearFocusedElement(GetRoutingID()));
 }
 
 bool RenderFrameHostImpl::IsSameSiteInstance(

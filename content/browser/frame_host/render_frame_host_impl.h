@@ -572,10 +572,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void SetHasReceivedUserGesture();
 
+  void ClearFocusedElement();
+
   // PlzNavigate: returns the LoFi state of the last successful navigation that
   // made a network request.
   LoFiState last_navigation_lofi_state() const {
     return last_navigation_lofi_state_;
+  }
+
+  bool has_focused_editable_element() const {
+    return has_focused_editable_element_;
   }
 
  protected:
@@ -710,6 +716,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnSelectionChanged(const base::string16& text,
                           uint32_t offset,
                           const gfx::Range& range);
+  void OnFocusedNodeChanged(bool is_editable_element,
+                            const gfx::Rect& bounds_in_frame_widget);
 
 #if defined(USE_EXTERNAL_POPUP_MENU)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);
@@ -1072,6 +1080,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // initiated request. Init() will be called, and until then navigation
   // requests should be queued.
   bool waiting_for_init_;
+
+  // If true then this frame's document has a focused element which is editable.
+  bool has_focused_editable_element_;
 
   typedef std::pair<CommonNavigationParams, BeginNavigationParams>
       PendingNavigation;

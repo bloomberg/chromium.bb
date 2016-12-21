@@ -258,11 +258,8 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void OnPasteFromSelectionClipboard();
   void OnRouteCloseEvent();
   void OnTakeFocus(bool reverse);
-  void OnFocusedNodeChanged(bool is_editable_node,
-                            const gfx::Rect& node_bounds_in_viewport);
   void OnClosePageACK();
   void OnDidZoomURL(double zoom_level, const GURL& url);
-  void OnFocusedNodeTouched(bool editable);
   void OnFocus();
 
  private:
@@ -333,9 +330,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
 
   // The termination status of the last render view that terminated.
   base::TerminationStatus render_view_termination_status_;
-
-  // True if the current focused element is editable.
-  bool is_focused_element_editable_;
 
   // This is updated every time UpdateWebkitPreferences is called. That method
   // is in turn called when any of the settings change that the WebPreferences
