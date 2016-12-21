@@ -35,8 +35,10 @@ class AppInfoDialogAshTest : public ash::test::AshTestBase {
     ash::test::AshTestBase::SetUp();
 #if defined(OS_CHROMEOS)
     arc::ArcSessionManager::DisableUIForTesting();
-    bridge_service_ = base::MakeUnique<arc::ArcSessionRunner>(
-        base::Bind(arc::FakeArcSession::Create));
+    bridge_service_ = base::MakeUnique<arc::ArcBridgeService>();
+    bridge_service_->InitializeArcSessionRunner(
+        base::MakeUnique<arc::ArcSessionRunner>(
+            base::Bind(arc::FakeArcSession::Create)));
     arc_session_manager_ =
         base::MakeUnique<arc::ArcSessionManager>(bridge_service_.get());
     arc_session_manager_->OnPrimaryUserProfilePrepared(

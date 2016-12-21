@@ -11,6 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_session_runner.h"
 
 namespace arc {
 
@@ -21,15 +22,9 @@ const base::Feature kArcEnabledFeature{"EnableARC",
 
 }  // namespace
 
-ArcBridgeService::ArcBridgeService()
-    : state_(State::STOPPED),
-      stop_reason_(ArcSessionObserver::StopReason::SHUTDOWN),
-      weak_factory_(this) {}
+ArcBridgeService::ArcBridgeService() = default;
 
-ArcBridgeService::~ArcBridgeService() {
-  DCHECK(CalledOnValidThread());
-  DCHECK(state() == State::STOPPING || state() == State::STOPPED);
-}
+ArcBridgeService::~ArcBridgeService() = default;
 
 // static
 bool ArcBridgeService::GetEnabled(const base::CommandLine* command_line) {
@@ -43,50 +38,45 @@ bool ArcBridgeService::GetAvailable(const base::CommandLine* command_line) {
   return command_line->HasSwitch(chromeos::switches::kArcAvailable);
 }
 
-void ArcBridgeService::RequestStart() {
-  NOTREACHED();
-}
-
-void ArcBridgeService::RequestStop() {
-  NOTREACHED();
-}
-
-void ArcBridgeService::OnShutdown() {
-  NOTREACHED();
+void ArcBridgeService::InitializeArcSessionRunner(
+    std::unique_ptr<ArcSessionRunner> arc_session_runner) {
+  DCHECK(!arc_session_runner_);
+  arc_session_runner_ = std::move(arc_session_runner);
 }
 
 void ArcBridgeService::AddObserver(ArcSessionObserver* observer) {
-  DCHECK(CalledOnValidThread());
-  observer_list_.AddObserver(observer);
+  DCHECK(arc_session_runner_);
+  arc_session_runner_->AddObserver(observer);
 }
 
 void ArcBridgeService::RemoveObserver(ArcSessionObserver* observer) {
-  DCHECK(CalledOnValidThread());
-  observer_list_.RemoveObserver(observer);
+  DCHECK(arc_session_runner_);
+  arc_session_runner_->RemoveObserver(observer);
 }
 
-void ArcBridgeService::SetState(State state) {
-  DCHECK(CalledOnValidThread());
-  DCHECK_NE(state_, state);
-  state_ = state;
-  VLOG(2) << "State: " << static_cast<uint32_t>(state_);
-  if (state_ == State::RUNNING) {
-    for (auto& observer : observer_list())
-      observer.OnSessionReady();
-  } else if (state == State::STOPPED) {
-    for (auto& observer : observer_list())
-      observer.OnSessionStopped(stop_reason_);
-  }
+void ArcBridgeService::RequestStart() {
+  DCHECK(arc_session_runner_);
+  arc_session_runner_->RequestStart();
 }
 
-void ArcBridgeService::SetStopReason(
-    ArcSessionObserver::StopReason stop_reason) {
-  DCHECK(CalledOnValidThread());
-  stop_reason_ = stop_reason;
+void ArcBridgeService::RequestStop() {
+  DCHECK(arc_session_runner_);
+  arc_session_runner_->RequestStop();
 }
 
-bool ArcBridgeService::CalledOnValidThread() {
-  return thread_checker_.CalledOnValidThread();
+void ArcBridgeService::OnShutdown() {
+  DCHECK(arc_session_runner_);
+  arc_session_runner_->OnShutdown();
+}
+
+bool ArcBridgeService::ready() const {
+  DCHECK(arc_session_runner_);
+  return arc_session_runner_->IsRunning();
+}
+
+bool ArcBridgeService::stopped() const {
+  DCHECK(arc_session_runner_);
+  return arc_session_runner_->IsStopped();
 }
 
 }  // namespace arc

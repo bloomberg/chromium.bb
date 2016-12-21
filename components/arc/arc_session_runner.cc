@@ -18,22 +18,29 @@ constexpr base::TimeDelta kDefaultRestartDelay =
 
 }  // namespace
 
-ArcSessionRunner::ArcSessionRunner(scoped_refptr<base::TaskRunner> task_runner)
-    : ArcSessionRunner(base::Bind(&ArcSession::Create, this, task_runner)) {}
-
 ArcSessionRunner::ArcSessionRunner(const ArcSessionFactory& factory)
     : restart_delay_(kDefaultRestartDelay),
       factory_(factory),
       weak_ptr_factory_(this) {}
 
 ArcSessionRunner::~ArcSessionRunner() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (arc_session_)
     arc_session_->RemoveObserver(this);
 }
 
+void ArcSessionRunner::AddObserver(ArcSessionObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  observer_list_.AddObserver(observer);
+}
+
+void ArcSessionRunner::RemoveObserver(ArcSessionObserver* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  observer_list_.RemoveObserver(observer);
+}
+
 void ArcSessionRunner::RequestStart() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Consecutive RequestStart() call. Do nothing.
   if (run_requested_)
@@ -51,15 +58,15 @@ void ArcSessionRunner::RequestStart() {
     // finished stopping, RequestStart() was called. Do nothing in that case,
     // since when |arc_session_| does actually stop, OnSessionStopped() will
     // be called, where it should automatically restart.
-    DCHECK_EQ(state(), State::STOPPING);
+    DCHECK_EQ(state_, State::STOPPING);
   } else {
-    DCHECK_EQ(state(), State::STOPPED);
+    DCHECK_EQ(state_, State::STOPPED);
     StartArcSession();
   }
 }
 
 void ArcSessionRunner::RequestStop() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Consecutive RequestStop() call. Do nothing.
   if (!run_requested_)
@@ -70,9 +77,9 @@ void ArcSessionRunner::RequestStop() {
 
   if (arc_session_) {
     // The |state_| could be either STARTING, RUNNING or STOPPING.
-    DCHECK_NE(state(), State::STOPPED);
+    DCHECK_NE(state_, State::STOPPED);
 
-    if (state() == State::STOPPING) {
+    if (state_ == State::STOPPING) {
       // STOPPING is found in the senario of "RequestStart() -> RequestStop()
       // -> RequestStart() -> RequestStop()" case.
       // In the first RequestStop() call, |state_| is set to STOPPING,
@@ -80,24 +87,24 @@ void ArcSessionRunner::RequestStop() {
       // In that case, ArcSession::Stop() is already called, so do nothing.
       return;
     }
-    SetState(State::STOPPING);
+    state_ = State::STOPPING;
     arc_session_->Stop();
   } else {
-    DCHECK_EQ(state(), State::STOPPED);
+    DCHECK_EQ(state_, State::STOPPED);
     // In case restarting is in progress, cancel it.
     restart_timer_.Stop();
   }
 }
 
 void ArcSessionRunner::OnShutdown() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   VLOG(1) << "OnShutdown";
   run_requested_ = false;
   restart_timer_.Stop();
   if (arc_session_) {
-    if (state() != State::STOPPING)
-      SetState(State::STOPPING);
+    DCHECK_NE(state_, State::STOPPED);
+    state_ = State::STOPPING;
     arc_session_->OnShutdown();
   }
   // ArcSession::OnShutdown() invokes OnSessionStopped() synchronously.
@@ -105,41 +112,53 @@ void ArcSessionRunner::OnShutdown() {
   DCHECK(!arc_session_);
 }
 
+bool ArcSessionRunner::IsRunning() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return state_ == State::RUNNING;
+}
+
+bool ArcSessionRunner::IsStopped() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return state_ == State::STOPPED;
+}
+
 void ArcSessionRunner::SetRestartDelayForTesting(
     const base::TimeDelta& restart_delay) {
-  DCHECK_EQ(state(), State::STOPPED);
+  DCHECK_EQ(state_, State::STOPPED);
   DCHECK(!arc_session_);
   DCHECK(!restart_timer_.IsRunning());
   restart_delay_ = restart_delay;
 }
 
 void ArcSessionRunner::StartArcSession() {
-  DCHECK(CalledOnValidThread());
-  DCHECK_EQ(state(), State::STOPPED);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(state_, State::STOPPED);
   DCHECK(!arc_session_);
   DCHECK(!restart_timer_.IsRunning());
 
   VLOG(1) << "Starting ARC instance";
-  SetStopReason(StopReason::SHUTDOWN);
   arc_session_ = factory_.Run();
   arc_session_->AddObserver(this);
-  SetState(State::STARTING);
+  state_ = State::STARTING;
   arc_session_->Start();
 }
 
 void ArcSessionRunner::OnSessionReady() {
-  DCHECK(CalledOnValidThread());
-  DCHECK_EQ(state(), State::STARTING);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(state_, State::STARTING);
   DCHECK(arc_session_);
   DCHECK(!restart_timer_.IsRunning());
 
   VLOG(0) << "ARC ready";
-  SetState(State::RUNNING);
+  state_ = State::RUNNING;
+
+  for (auto& observer : observer_list_)
+    observer.OnSessionReady();
 }
 
 void ArcSessionRunner::OnSessionStopped(StopReason stop_reason) {
-  DCHECK(CalledOnValidThread());
-  DCHECK_NE(state(), State::STOPPED);
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_NE(state_, State::STOPPED);
   DCHECK(arc_session_);
   DCHECK(!restart_timer_.IsRunning());
 
@@ -154,10 +173,10 @@ void ArcSessionRunner::OnSessionStopped(StopReason stop_reason) {
   // Otherwise, do nothing.
   // If STARTING, ARC instance has not been booted properly, so do not
   // restart it automatically.
-  if (state() == State::RUNNING ||
-      (state() == State::STOPPING && run_requested_)) {
-    // This check is for READY case. In RUNNING case |run_requested_| should
-    // be always true, because if once RequestStop() is called, the state()
+  if (state_ == State::RUNNING ||
+      (state_ == State::STOPPING && run_requested_)) {
+    // This check is for RUNNING case. In RUNNING case |run_requested_| should
+    // be always true, because if once RequestStop() is called, the state_
     // will be set to STOPPING.
     DCHECK(run_requested_);
 
@@ -173,8 +192,9 @@ void ArcSessionRunner::OnSessionStopped(StopReason stop_reason) {
 
   // TODO(hidehiko): Consider to let observers know whether there is scheduled
   // restarting event, or not.
-  SetStopReason(stop_reason);
-  SetState(State::STOPPED);
+  state_ = State::STOPPED;
+  for (auto& observer : observer_list_)
+    observer.OnSessionStopped(stop_reason);
 }
 
 }  // namespace arc

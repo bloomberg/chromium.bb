@@ -5,13 +5,10 @@
 #ifndef COMPONENTS_ARC_ARC_BRIDGE_SERVICE_H_
 #define COMPONENTS_ARC_ARC_BRIDGE_SERVICE_H_
 
-#include <iosfwd>
-#include <string>
-#include <vector>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "components/arc/arc_session_observer.h"
 #include "components/arc/instance_holder.h"
 
 namespace base {
@@ -19,6 +16,7 @@ class CommandLine;
 }  // namespace base
 
 namespace arc {
+
 namespace mojom {
 
 // Instead of including components/arc/common/arc_bridge.mojom.h, list all the
@@ -50,6 +48,9 @@ class WallpaperInstance;
 
 }  // namespace mojom
 
+class ArcSessionObserver;
+class ArcSessionRunner;
+
 // The Chrome-side service that handles ARC instances and ARC bridge creation.
 // This service handles the lifetime of ARC instances and sets up the
 // communication channel (the ARC bridge) used to send and receive messages.
@@ -65,27 +66,22 @@ class ArcBridgeService {
   // Return true if ARC is available on the current board.
   static bool GetAvailable(const base::CommandLine* command_line);
 
-  // HandleStartup() should be called upon profile startup.  This will only
-  // launch an instance if the instance is enabled.
-  // This can only be called on the thread that this class was created on.
+  // Initializes the ArcSessionRunner with the given instance.
+  // This must be called before following proxy methods.
+  void InitializeArcSessionRunner(
+      std::unique_ptr<ArcSessionRunner> arc_session_runner);
 
-  // Starts the ARC service, then it will connect the Mojo channel. When the
-  // bridge becomes ready, OnBridgeReady() is called.
-  virtual void RequestStart();
-
-  // Stops the ARC service.
-  virtual void RequestStop();
-
-  // OnShutdown() should be called when the browser is shutting down. This can
-  // only be called on the thread that this class was created on. We assume that
-  // when this function is called, MessageLoop is no longer exists.
-  virtual void OnShutdown();
-
-  // Adds or removes observers. This can only be called on the thread that this
-  // class was created on. RemoveObserver does nothing if |observer| is not in
-  // the list.
+  // Proxies the method to ArcSessionRunner. See details in the
+  // ArcSessionRunner's comment.
+  // TODO(hidehiko): Move the ownership from ArcBridgeService to
+  // ArcSessionManager, and remove these methods.
   void AddObserver(ArcSessionObserver* observer);
   void RemoveObserver(ArcSessionObserver* observer);
+  void RequestStart();
+  void RequestStop();
+  void OnShutdown();
+  bool ready() const;
+  bool stopped() const;
 
   InstanceHolder<mojom::AppInstance>* app() { return &app_; }
   InstanceHolder<mojom::AudioInstance>* audio() { return &audio_; }
@@ -128,49 +124,7 @@ class ArcBridgeService {
   InstanceHolder<mojom::VideoInstance>* video() { return &video_; }
   InstanceHolder<mojom::WallpaperInstance>* wallpaper() { return &wallpaper_; }
 
-  // Gets if ARC is currently running.
-  bool ready() const { return state() == State::RUNNING; }
-
-  // Gets if ARC is currently stopped. This is not exactly !ready() since there
-  // are transient states between ready() and stopped().
-  bool stopped() const { return state() == State::STOPPED; }
-
- protected:
-  // TODO(hidehiko): Move ArcSessionRunner related part into ArcSessionRunner
-  // when we get rid of inheritance.
-  // The possible states of the bridge.  In the normal flow, the state changes
-  // in the following sequence:
-  //
-  // STOPPED
-  //   RequestStart() ->
-  // STARTING
-  //   OnSessionReady() ->
-  // READY
-  //
-  // The ArcSession state machine can be thought of being substates of
-  // ArcBridgeService's STARTING state.
-  // ArcBridgeService's state machine can be stopped at any phase.
-  //
-  // *
-  //   RequestStop() ->
-  // STOPPING
-  //   OnSessionStopped() ->
-  // STOPPED
-  enum class State {
-    // ARC instance is not currently running.
-    STOPPED,
-
-    // Request to start ARC instance is received. Starting an ARC instance.
-    STARTING,
-
-    // ARC instance has finished initializing, and is now ready for interaction
-    // with other services.
-    RUNNING,
-
-    // Request to stop ARC instance is recieved. Stopping the ARC instance.
-    STOPPING,
-  };
-
+ private:
   // Instance holders.
   InstanceHolder<mojom::AppInstance> app_;
   InstanceHolder<mojom::AudioInstance> audio_;
@@ -197,36 +151,7 @@ class ArcBridgeService {
   InstanceHolder<mojom::VideoInstance> video_;
   InstanceHolder<mojom::WallpaperInstance> wallpaper_;
 
-  // Gets the current state of the bridge service.
-  State state() const { return state_; }
-
-  // Changes the current state and notifies all observers.
-  void SetState(State state);
-
-  // Sets the reason the bridge is stopped. This function must be always called
-  // before SetState(State::STOPPED) to report a correct reason with
-  // Observer::OnBridgeStopped().
-  void SetStopReason(ArcSessionObserver::StopReason stop_reason);
-
-  base::ObserverList<ArcSessionObserver>& observer_list() {
-    return observer_list_;
-  }
-
-  bool CalledOnValidThread();
-
- private:
-  base::ObserverList<ArcSessionObserver> observer_list_;
-
-  base::ThreadChecker thread_checker_;
-
-  // The current state of the bridge.
-  ArcBridgeService::State state_;
-
-  // The reason the bridge is stopped.
-  ArcSessionObserver::StopReason stop_reason_;
-
-  // WeakPtrFactory to use callbacks.
-  base::WeakPtrFactory<ArcBridgeService> weak_factory_;
+  std::unique_ptr<ArcSessionRunner> arc_session_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeService);
 };

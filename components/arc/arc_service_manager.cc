@@ -10,6 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/task_runner.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_session.h"
 #include "components/arc/arc_session_runner.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
 
@@ -56,12 +57,16 @@ ArcServiceManager::ArcServiceManager(
   DCHECK(!g_arc_service_manager);
   g_arc_service_manager = this;
 
+  arc_bridge_service_ = base::MakeUnique<ArcBridgeService>();
   if (g_arc_session_runner_for_testing) {
-    arc_bridge_service_.reset(g_arc_session_runner_for_testing);
+    arc_bridge_service_->InitializeArcSessionRunner(
+        base::WrapUnique(g_arc_session_runner_for_testing));
     g_arc_session_runner_for_testing = nullptr;
   } else {
-    arc_bridge_service_ =
-        base::MakeUnique<ArcSessionRunner>(blocking_task_runner);
+    arc_bridge_service_->InitializeArcSessionRunner(
+        base::MakeUnique<ArcSessionRunner>(base::Bind(&ArcSession::Create,
+                                                      arc_bridge_service_.get(),
+                                                      blocking_task_runner)));
   }
 }
 
