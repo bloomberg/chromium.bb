@@ -37,7 +37,7 @@ class CORE_EXPORT DOMWindowProperty : public GarbageCollectedMixin {
  public:
   explicit DOMWindowProperty(LocalFrame*);
 
-  virtual void frameDestroyed();
+  void frameDestroyed();
 
   LocalFrame* frame() const { return m_frame; }
 
