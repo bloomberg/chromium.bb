@@ -106,19 +106,15 @@ You can also follow the manual instructions on the
 [Mac page](mac_build_instructions.md), but make sure you set the
 GN arg `target_os="ios"`.
 
-## Running `ios_web_shell`
+## Running apps from the commandline
 
 Any target that is built and runs on the bots (see [below](#Troubleshooting))
-should run successfully in a local build. As of the time of writing, this is
-only the `ios_web_shell` and `ios_chrome_unittests` targets—see the note at the
-top of this page. Check the bots periodically for updates; more targets (new
-components) will come on line over time.
-
-To run in the simulator from the command line, you can use `iossim`. For
-example, to run a debug build of `ios_web_shell`:
+should run successfully in a local build. To run in the simulator from the
+command line, you can use `iossim`. For example, to run a debug build of
+`Chromium`:
 
 ```shell
-$ out/Debug-iphonesimulator/iossim out/Debug-iphonesimulator/ios_web_shell.app
+$ out/Debug-iphonesimulator/iossim out/Debug-iphonesimulator/Chromium.app
 ```
 
 ## Update your checkout
