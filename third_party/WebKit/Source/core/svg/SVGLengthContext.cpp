@@ -257,7 +257,7 @@ float SVGLengthContext::convertValueToUserUnits(
     float value,
     SVGLengthMode mode,
     CSSPrimitiveValue::UnitType fromUnit) const {
-  float userUnits = value;
+  double userUnits = value;
   switch (fromUnit) {
     case CSSPrimitiveValue::UnitType::Pixels:
     case CSSPrimitiveValue::UnitType::Number:
