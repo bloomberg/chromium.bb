@@ -56,31 +56,33 @@ void ExternalProcessImporterClient::Start() {
 
   // Dictionary of all localized strings that could be needed by the importer
   // in the external process.
-  base::DictionaryValue localized_strings;
-  localized_strings.SetString(base::IntToString(IDS_BOOKMARK_GROUP),
-                              l10n_util::GetStringUTF8(IDS_BOOKMARK_GROUP));
-  localized_strings.SetString(
+  auto localized_strings = base::MakeUnique<base::DictionaryValue>();
+  localized_strings->SetString(base::IntToString(IDS_BOOKMARK_GROUP),
+                               l10n_util::GetStringUTF8(IDS_BOOKMARK_GROUP));
+  localized_strings->SetString(
       base::IntToString(IDS_BOOKMARK_GROUP_FROM_FIREFOX),
       l10n_util::GetStringUTF8(IDS_BOOKMARK_GROUP_FROM_FIREFOX));
-  localized_strings.SetString(
+  localized_strings->SetString(
       base::IntToString(IDS_BOOKMARK_GROUP_FROM_SAFARI),
       l10n_util::GetStringUTF8(IDS_BOOKMARK_GROUP_FROM_SAFARI));
-  localized_strings.SetString(
+  localized_strings->SetString(
       base::IntToString(IDS_IMPORT_FROM_FIREFOX),
       l10n_util::GetStringUTF8(IDS_IMPORT_FROM_FIREFOX));
-  localized_strings.SetString(
+  localized_strings->SetString(
       base::IntToString(IDS_IMPORT_FROM_ICEWEASEL),
       l10n_util::GetStringUTF8(IDS_IMPORT_FROM_ICEWEASEL));
-  localized_strings.SetString(base::IntToString(IDS_IMPORT_FROM_SAFARI),
-                              l10n_util::GetStringUTF8(IDS_IMPORT_FROM_SAFARI));
-  localized_strings.SetString(
+  localized_strings->SetString(
+      base::IntToString(IDS_IMPORT_FROM_SAFARI),
+      l10n_util::GetStringUTF8(IDS_IMPORT_FROM_SAFARI));
+  localized_strings->SetString(
       base::IntToString(IDS_BOOKMARK_BAR_FOLDER_NAME),
       l10n_util::GetStringUTF8(IDS_BOOKMARK_BAR_FOLDER_NAME));
 
   // If the utility process hasn't started yet the message will queue until it
   // does.
   auto observer_ptr = binding_.CreateInterfacePtrAndBind();
-  profile_import_->StartImport(source_profile_, items_, localized_strings,
+  profile_import_->StartImport(source_profile_, items_,
+                               std::move(localized_strings),
                                std::move(observer_ptr));
 }
 

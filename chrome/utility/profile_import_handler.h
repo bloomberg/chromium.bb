@@ -40,7 +40,7 @@ class ProfileImportHandler : public chrome::mojom::ProfileImport {
   // chrome::mojom::ProfileImport:
   void StartImport(const importer::SourceProfile& source_profile,
                    uint16_t items,
-                   const base::DictionaryValue& localized_strings,
+                   std::unique_ptr<base::DictionaryValue> localized_strings,
                    chrome::mojom::ProfileImportObserverPtr observer) override;
   void CancelImport() override;
   void ReportImportItemFinished(importer::ImportItem item) override;

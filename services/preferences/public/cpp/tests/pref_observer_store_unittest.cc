@@ -35,7 +35,8 @@ class TestPreferenceManager : public prefs::mojom::PreferencesManager {
   // prefs::mojom::TestPreferenceManager:
   void AddObserver(const std::vector<std::string>& preferences,
                    prefs::mojom::PreferencesObserverPtr client) override;
-  void SetPreferences(const base::DictionaryValue& preferences) override;
+  void SetPreferences(
+      std::unique_ptr<base::DictionaryValue> preferences) override;
 
  private:
   bool add_observer_called_;
@@ -55,7 +56,7 @@ void TestPreferenceManager::AddObserver(
 }
 
 void TestPreferenceManager::SetPreferences(
-    const base::DictionaryValue& preferences) {
+    std::unique_ptr<base::DictionaryValue> preferences) {
   set_preferences_called_ = true;
 }
 
@@ -72,7 +73,7 @@ class PrefObserverStoreTest : public testing::Test {
 
   bool Initialized() { return store_->initialized_; }
   void OnPreferencesChanged(const base::DictionaryValue& preferences) {
-    store_->OnPreferencesChanged(std::move(preferences));
+    store_->OnPreferencesChanged(preferences.CreateDeepCopy());
   }
 
   // testing::Test:

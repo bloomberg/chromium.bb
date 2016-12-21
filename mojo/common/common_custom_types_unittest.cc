@@ -25,22 +25,6 @@ struct BounceTestTraits {
   }
 };
 
-template <>
-struct BounceTestTraits<base::DictionaryValue> {
-  static void ExpectEquality(const base::DictionaryValue& a,
-                             const base::DictionaryValue& b) {
-    EXPECT_TRUE(a.Equals(&b));
-  }
-};
-
-template <>
-struct BounceTestTraits<base::ListValue> {
-  static void ExpectEquality(const base::ListValue& a,
-                             const base::ListValue& b) {
-    EXPECT_TRUE(a.Equals(&b));
-  }
-};
-
 template <typename T>
 struct PassTraits {
   using Type = const T&;
@@ -137,13 +121,19 @@ class TestValueImpl : public TestValue {
 
   // TestValue implementation:
   void BounceDictionaryValue(
-      const base::DictionaryValue& in,
+      std::unique_ptr<base::DictionaryValue> in,
       const BounceDictionaryValueCallback& callback) override {
-    callback.Run(in);
+    callback.Run(std::move(in));
   }
-  void BounceListValue(const base::ListValue& in,
+
+  void BounceListValue(std::unique_ptr<base::ListValue> in,
                        const BounceListValueCallback& callback) override {
-    callback.Run(in);
+    callback.Run(std::move(in));
+  }
+
+  void BounceValue(std::unique_ptr<base::Value> in,
+                   const BounceValueCallback& callback) override {
+    callback.Run(std::move(in));
   }
 
  private:
@@ -262,42 +252,78 @@ TEST_F(CommonCustomTypesTest, Value) {
   TestValuePtr ptr;
   TestValueImpl impl(MakeRequest(&ptr));
 
-  base::DictionaryValue dict;
-  dict.SetBoolean("bool", false);
-  dict.SetInteger("int", 2);
-  dict.SetString("string", "some string");
-  dict.SetBoolean("nested.bool", true);
-  dict.SetInteger("nested.int", 9);
-  dict.Set("some_binary", base::BinaryValue::CreateWithCopiedBuffer("mojo", 4));
+  std::unique_ptr<base::Value> output;
+
+  ASSERT_TRUE(ptr->BounceValue(nullptr, &output));
+  EXPECT_FALSE(output);
+
+  std::unique_ptr<base::Value> input = base::Value::CreateNullValue();
+  ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
+  EXPECT_TRUE(base::Value::Equals(input.get(), output.get()));
+
+  input = base::MakeUnique<base::FundamentalValue>(123);
+  ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
+  EXPECT_TRUE(base::Value::Equals(input.get(), output.get()));
+
+  input = base::MakeUnique<base::FundamentalValue>(1.23);
+  ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
+  EXPECT_TRUE(base::Value::Equals(input.get(), output.get()));
+
+  input = base::MakeUnique<base::FundamentalValue>(false);
+  ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
+  EXPECT_TRUE(base::Value::Equals(input.get(), output.get()));
+
+  input = base::MakeUnique<base::StringValue>("test string");
+  ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
+  EXPECT_TRUE(base::Value::Equals(input.get(), output.get()));
+
+  input = base::BinaryValue::CreateWithCopiedBuffer("mojo", 4);
+  ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
+  EXPECT_TRUE(base::Value::Equals(input.get(), output.get()));
+
+  auto dict = base::MakeUnique<base::DictionaryValue>();
+  dict->SetBoolean("bool", false);
+  dict->SetInteger("int", 2);
+  dict->SetString("string", "some string");
+  dict->SetBoolean("nested.bool", true);
+  dict->SetInteger("nested.int", 9);
+  dict->Set("some_binary",
+            base::BinaryValue::CreateWithCopiedBuffer("mojo", 4));
+  dict->Set("null_value", base::Value::CreateNullValue());
   {
     std::unique_ptr<base::ListValue> dict_list(new base::ListValue());
     dict_list->AppendString("string");
     dict_list->AppendBoolean(true);
-    dict.Set("list", std::move(dict_list));
-  }
-  {
-    base::RunLoop run_loop;
-    ptr->BounceDictionaryValue(
-        dict, ExpectResponse(&dict, run_loop.QuitClosure()));
-    run_loop.Run();
+    dict->Set("list", std::move(dict_list));
   }
 
-  base::ListValue list;
-  list.AppendString("string");
-  list.AppendDouble(42.1);
-  list.AppendBoolean(true);
-  list.Append(base::BinaryValue::CreateWithCopiedBuffer("mojo", 4));
+  std::unique_ptr<base::DictionaryValue> dict_output;
+  ASSERT_TRUE(ptr->BounceDictionaryValue(dict->CreateDeepCopy(), &dict_output));
+  EXPECT_TRUE(base::Value::Equals(dict.get(), dict_output.get()));
+
+  input = std::move(dict);
+  ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
+  EXPECT_TRUE(base::Value::Equals(input.get(), output.get()));
+
+  auto list = base::MakeUnique<base::ListValue>();
+  list->AppendString("string");
+  list->AppendDouble(42.1);
+  list->AppendBoolean(true);
+  list->Append(base::BinaryValue::CreateWithCopiedBuffer("mojo", 4));
+  list->Append(base::Value::CreateNullValue());
   {
     std::unique_ptr<base::DictionaryValue> list_dict(
         new base::DictionaryValue());
     list_dict->SetString("string", "str");
-    list.Append(std::move(list_dict));
+    list->Append(std::move(list_dict));
   }
-  {
-    base::RunLoop run_loop;
-    ptr->BounceListValue(list, ExpectResponse(&list, run_loop.QuitClosure()));
-    run_loop.Run();
-  }
+  std::unique_ptr<base::ListValue> list_output;
+  ASSERT_TRUE(ptr->BounceListValue(list->CreateDeepCopy(), &list_output));
+  EXPECT_TRUE(base::Value::Equals(list.get(), list_output.get()));
+
+  input = std::move(list);
+  ASSERT_TRUE(ptr->BounceValue(input->CreateDeepCopy(), &output));
+  ASSERT_TRUE(base::Value::Equals(input.get(), output.get()));
 }
 
 TEST_F(CommonCustomTypesTest, String16) {

@@ -30,10 +30,15 @@ interface TestTime {
 };
 
 interface TestValue {
+  [Sync]
   BounceDictionaryValue(mojo.common.mojom.DictionaryValue in)
       => (mojo.common.mojom.DictionaryValue out);
+  [Sync]
   BounceListValue(mojo.common.mojom.ListValue in)
       => (mojo.common.mojom.ListValue out);
+  [Sync]
+  BounceValue(mojo.common.mojom.Value? in)
+      => (mojo.common.mojom.Value? out);
 };
 
 interface TestString16 {

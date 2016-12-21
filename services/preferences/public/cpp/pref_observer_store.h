@@ -61,7 +61,8 @@ class PrefObserverStore : public ValueMapPrefStore,
                                    base::Value const & value);
 
   // prefs::mojom::PreferenceObserver:
-  void OnPreferencesChanged(const base::DictionaryValue& preferences) override;
+  void OnPreferencesChanged(
+      std::unique_ptr<base::DictionaryValue> preferences) override;
 
   mojo::Binding<prefs::mojom::PreferencesObserver> prefs_binding_;
   prefs::mojom::PreferencesManagerPtr prefs_manager_ptr_;

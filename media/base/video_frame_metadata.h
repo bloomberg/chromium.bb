@@ -156,7 +156,7 @@ class MEDIA_EXPORT VideoFrameMetadata {
   bool IsTrue(Key key) const WARN_UNUSED_RESULT;
 
   // For serialization.
-  void MergeInternalValuesInto(base::DictionaryValue* out) const;
+  std::unique_ptr<base::DictionaryValue> CopyInternalValues() const;
   void MergeInternalValuesFrom(const base::DictionaryValue& in);
 
   // Merges internal values from |metadata_source|.

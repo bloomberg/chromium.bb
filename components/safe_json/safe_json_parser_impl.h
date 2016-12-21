@@ -17,7 +17,6 @@
 #include "content/public/browser/utility_process_mojo_client.h"
 
 namespace base {
-class ListValue;
 class SequencedTaskRunner;
 class Value;
 }
@@ -40,7 +39,7 @@ class SafeJsonParserImpl : public SafeJsonParser {
   void OnConnectionError();
 
   // mojom::SafeJsonParser::Parse callback.
-  void OnParseDone(const base::ListValue& wrapper,
+  void OnParseDone(std::unique_ptr<base::Value> result,
                    const base::Optional<std::string>& error);
 
   // Reports the result on the calling task runner via the |success_callback_|

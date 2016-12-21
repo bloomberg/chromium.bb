@@ -95,7 +95,7 @@ void VideoCaptureHost::OnBufferReady(
 
   media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New();
   info->timestamp = video_frame->timestamp();
-  video_frame->metadata()->MergeInternalValuesInto(&info->metadata);
+  info->metadata = video_frame->metadata()->CopyInternalValues();
 
   DCHECK(media::PIXEL_FORMAT_I420 == video_frame->format() ||
          media::PIXEL_FORMAT_Y16 == video_frame->format());

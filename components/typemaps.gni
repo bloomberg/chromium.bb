@@ -6,6 +6,5 @@ typemaps = [
   "//components/autofill/content/common/autofill_types.typemap",
   "//components/nacl/common/nacl.typemap",
   "//components/password_manager/content/common/credential_manager.typemap",
-  "//components/safe_json/public/interfaces/safe_json.typemap",
   "//components/translate/content/common/translate.typemap",
 ]

@@ -272,7 +272,7 @@ enum BluetoothSdpAttributeType {
 struct BluetoothSdpAttribute {
   BluetoothSdpAttributeType type;
   uint32 type_size;
-  mojo.common.mojom.ListValue value;
+  mojo.common.mojom.LegacyListValue value;
   array<BluetoothSdpAttribute> sequence;
 };
 

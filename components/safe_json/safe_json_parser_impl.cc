@@ -61,28 +61,18 @@ void SafeJsonParserImpl::OnConnectionError() {
                  nullptr, "Connection error with the json parser process."));
 }
 
-void SafeJsonParserImpl::OnParseDone(const base::ListValue& wrapper,
+void SafeJsonParserImpl::OnParseDone(std::unique_ptr<base::Value> result,
                                      const base::Optional<std::string>& error) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
 
   // Shut down the utility process.
   mojo_json_parser_.reset();
 
-  std::unique_ptr<base::Value> parsed_json;
-  std::string error_message;
-  if (!wrapper.empty()) {
-    const base::Value* value = nullptr;
-    CHECK(wrapper.Get(0, &value));
-    parsed_json.reset(value->DeepCopy());
-  } else if (error.has_value()) {
-    error_message = error.value();
-  }
-
   // Call ReportResults() on caller's thread.
   caller_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&SafeJsonParserImpl::ReportResults, base::Unretained(this),
-                 base::Passed(&parsed_json), error_message));
+                 base::Passed(&result), error.value_or("")));
 }
 
 void SafeJsonParserImpl::ReportResults(std::unique_ptr<base::Value> parsed_json,

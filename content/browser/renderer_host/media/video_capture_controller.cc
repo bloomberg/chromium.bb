@@ -393,9 +393,8 @@ void VideoCaptureController::OnIncomingCapturedVideoFrame(
       frame->metadata()->SetDouble(VideoFrameMetadata::FRAME_RATE,
                                    video_capture_format_.frame_rate);
     }
-    std::unique_ptr<base::DictionaryValue> metadata(
-        new base::DictionaryValue());
-    frame->metadata()->MergeInternalValuesInto(metadata.get());
+    std::unique_ptr<base::DictionaryValue> metadata =
+        frame->metadata()->CopyInternalValues();
 
     // Only I420 and Y16 pixel formats are currently supported.
     DCHECK(frame->format() == media::PIXEL_FORMAT_I420 ||

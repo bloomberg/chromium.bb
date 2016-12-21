@@ -30,12 +30,10 @@ void SafeJsonParserMojoImpl::Parse(const std::string& json,
   std::string error;
   std::unique_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
       json, base::JSON_PARSE_RFC, &error_code, &error);
-  base::ListValue wrapper;
   if (value) {
-    wrapper.Append(std::move(value));
-    callback.Run(wrapper, base::nullopt);
+    callback.Run(std::move(value), base::nullopt);
   } else {
-    callback.Run(wrapper, base::make_optional(std::move(error)));
+    callback.Run(nullptr, base::make_optional(std::move(error)));
   }
 }
 

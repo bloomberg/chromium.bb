@@ -4,8 +4,29 @@
 
 module mojo.common.mojom;
 
-[Native]
-struct ListValue;
+union Value {
+  NullValue? null_value;
+  bool bool_value;
+  int32 int_value;
+  double double_value;
+  string string_value;
+  array<uint8> binary_value;
+  DictionaryValue dictionary_value;
+  ListValue list_value;
+};
 
+struct ListValue {
+  array<Value> values;
+};
+
+struct DictionaryValue {
+  map<string, Value> values;
+};
+
+// An empty struct representing a null base::Value.
+struct NullValue {
+};
+
+// To avoid versioning problems for arc. TODO(sammc): Remove ASAP.
 [Native]
-struct DictionaryValue;
+struct LegacyListValue;

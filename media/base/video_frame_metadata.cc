@@ -151,9 +151,9 @@ bool VideoFrameMetadata::IsTrue(Key key) const {
   return GetBoolean(key, &value) && value;
 }
 
-void VideoFrameMetadata::MergeInternalValuesInto(
-    base::DictionaryValue* out) const {
-  out->MergeDictionary(&dictionary_);
+std::unique_ptr<base::DictionaryValue> VideoFrameMetadata::CopyInternalValues()
+    const {
+  return dictionary_.CreateDeepCopy();
 }
 
 void VideoFrameMetadata::MergeInternalValuesFrom(

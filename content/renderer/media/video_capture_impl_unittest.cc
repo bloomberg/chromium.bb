@@ -128,7 +128,7 @@ class VideoCaptureImplTest : public ::testing::Test {
     const base::TimeTicks now = base::TimeTicks::Now();
     media::VideoFrameMetadata frame_metadata;
     frame_metadata.SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME, now);
-    frame_metadata.MergeInternalValuesInto(&info->metadata);
+    info->metadata = frame_metadata.CopyInternalValues();
 
     info->timestamp = now - base::TimeTicks();
     info->pixel_format = media::PIXEL_FORMAT_I420;

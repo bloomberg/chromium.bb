@@ -78,14 +78,14 @@ void PrefObserverStore::SetValueOnPreferenceManager(const std::string& key,
   if (keys_.find(key) == keys_.end())
     return;
 
-  base::DictionaryValue prefs;
-  prefs.Set(key, value.CreateDeepCopy());
-  prefs_manager_ptr_->SetPreferences(prefs);
+  auto prefs = base::MakeUnique<base::DictionaryValue>();
+  prefs->Set(key, value.CreateDeepCopy());
+  prefs_manager_ptr_->SetPreferences(std::move(prefs));
 }
 
 void PrefObserverStore::OnPreferencesChanged(
-    const base::DictionaryValue& preferences) {
-  for (base::DictionaryValue::Iterator it(preferences); !it.IsAtEnd();
+    std::unique_ptr<base::DictionaryValue> preferences) {
+  for (base::DictionaryValue::Iterator it(*preferences); !it.IsAtEnd();
        it.Advance()) {
     if (keys_.find(it.key()) == keys_.end())
       continue;
