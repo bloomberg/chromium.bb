@@ -155,7 +155,6 @@ component("aura") {
     "//skia",
     "//ui/base",
     "//ui/base/ime",
-    "//ui/compositor",
     "//ui/display",
     "//ui/events",
     "//ui/events:events_base",
@@ -166,6 +165,10 @@ component("aura") {
     "//ui/platform_window",
     "//ui/platform_window/mojo",
     "//ui/platform_window/stub",
+  ]
+
+  public_deps = [
+    "//ui/compositor",
   ]
 
   data_deps = [
