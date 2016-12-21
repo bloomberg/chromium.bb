@@ -113,7 +113,8 @@ cr.define('category_default_setting', function() {
             assertEquals(
                 settings.ContentSettingsTypes.GEOLOCATION, contentType);
             assertEquals(enabled, testElement.categoryEnabled);
-            MockInteractions.tap(testElement.$.toggle);
+            browserProxy.resetResolver('setDefaultValueForContentType');
+            MockInteractions.tap(testElement.$.toggle.$.control);
             return browserProxy.whenCalled('setDefaultValueForContentType');
           }).then(function(args) {
             assertEquals(
@@ -192,10 +193,12 @@ cr.define('category_default_setting', function() {
 
             assertEquals(category, contentType);
             assertTrue(testElement.categoryEnabled);
+            assertTrue(testElement.categoryEnabled);
             assertFalse(secondaryToggle.disabled);
             assertTrue(secondaryToggle.checked);
 
-            MockInteractions.tap(testElement.$.toggle);
+            browserProxy.resetResolver('setDefaultValueForContentType');
+            MockInteractions.tap(testElement.$.toggle.$.control);
             return browserProxy.whenCalled('setDefaultValueForContentType');
           }).then(function(args) {
             // Check THIRD_STATE => BLOCK transition succeeded.
@@ -208,7 +211,7 @@ cr.define('category_default_setting', function() {
             assertTrue(secondaryToggle.checked);
 
             browserProxy.resetResolver('setDefaultValueForContentType');
-            MockInteractions.tap(testElement.$.toggle);
+            MockInteractions.tap(testElement.$.toggle.$.control);
             return browserProxy.whenCalled('setDefaultValueForContentType');
           }).then(function(args) {
             // Check BLOCK => THIRD_STATE transition succeeded.
@@ -221,7 +224,7 @@ cr.define('category_default_setting', function() {
             assertTrue(secondaryToggle.checked);
 
             browserProxy.resetResolver('setDefaultValueForContentType');
-            MockInteractions.tap(secondaryToggle);
+            MockInteractions.tap(secondaryToggle.$.control);
             return browserProxy.whenCalled('setDefaultValueForContentType');
           }).then(function(args) {
             // Check THIRD_STATE => ALLOW transition succeeded.
@@ -235,7 +238,7 @@ cr.define('category_default_setting', function() {
             assertFalse(secondaryToggle.checked);
 
             browserProxy.resetResolver('setDefaultValueForContentType');
-            MockInteractions.tap(testElement.$.toggle);
+            MockInteractions.tap(testElement.$.toggle.$.control);
             return browserProxy.whenCalled('setDefaultValueForContentType');
           }).then(function(args) {
             // Check ALLOW => BLOCK transition succeeded.
@@ -248,7 +251,7 @@ cr.define('category_default_setting', function() {
             assertFalse(secondaryToggle.checked);
 
             browserProxy.resetResolver('setDefaultValueForContentType');
-            MockInteractions.tap(testElement.$.toggle);
+            MockInteractions.tap(testElement.$.toggle.$.control);
             return browserProxy.whenCalled('setDefaultValueForContentType');
           }).then(function(args) {
             // Check BLOCK => ALLOW transition succeeded.
@@ -261,7 +264,7 @@ cr.define('category_default_setting', function() {
             assertFalse(secondaryToggle.checked);
 
             browserProxy.resetResolver('setDefaultValueForContentType');
-            MockInteractions.tap(secondaryToggle);
+            MockInteractions.tap(secondaryToggle.$.control);
             return browserProxy.whenCalled('setDefaultValueForContentType');
           }).then(function(args) {
             // Check ALLOW => THIRD_STATE transition succeeded.

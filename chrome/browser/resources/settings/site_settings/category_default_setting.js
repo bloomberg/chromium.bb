@@ -13,12 +13,21 @@ Polymer({
   behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
 
   properties: {
-    /**
-     * Represents the state of the main toggle shown for the category. For
-     * example, the Location category can be set to Block/Ask so false, in that
-     * case, represents Block and true represents Ask.
-     */
-    categoryEnabled: Boolean,
+    /** @private {chrome.settingsPrivate.PrefObject} */
+    controlParams_: {
+      type: Object,
+      value: function() {
+        return /** @type {chrome.settingsPrivate.PrefObject} */({});
+      },
+    },
+
+    /** @private {!DefaultContentSetting} */
+    priorDefaultContentSetting_: {
+      type: Object,
+      value: function() {
+        return /** @type {DefaultContentSetting} */({});
+      },
+    },
 
     /**
      * The description to be shown next to the slider.
@@ -27,32 +36,32 @@ Polymer({
     sliderDescription_: String,
 
     /**
-     * A sub-option toggle is used to represent tri-state categories.
-     * @private
+     * Cookies and Flash settings have a sub-control that is used to mimic a
+     * tri-state value.
+     * @private {chrome.settingsPrivate.PrefObject}
      */
-    subOptionEnabled_: {
-      type: Boolean,
-      value: true,
+    subControlParams_: {
+      type: Object,
+      value: function() {
+        return /** @type {chrome.settingsPrivate.PrefObject} */({});
+      },
     },
   },
 
   observers: [
     'onCategoryChanged_(category)',
+    'onChangePermissionControl_(category, controlParams_.value, ' +
+                               'subControlParams_.value)',
   ],
 
   ready: function() {
     this.addWebUIListener('contentSettingCategoryChanged',
-        this.defaultValueForCategoryChanged_.bind(this));
+        this.onCategoryChanged_.bind(this));
   },
 
-  /**
-   * Called when the default value for a category has been changed.
-   * @param {number} category The category that changed.
-   * @private
-   */
-  defaultValueForCategoryChanged_: function(category) {
-    if (category == this.category)
-      this.onCategoryChanged_();
+  /** @return {boolean} */
+  get categoryEnabled() {
+    return !!assert(this.controlParams_).value;
   },
 
   /**
@@ -91,7 +100,7 @@ Polymer({
         // browser quits".
         var value = settings.PermissionValues.BLOCK;
         if (this.categoryEnabled) {
-          value = this.subOptionEnabled_ ?
+          value = this.subControlParams_.value ?
               settings.PermissionValues.SESSION_ONLY :
               settings.PermissionValues.ALLOW;
         }
@@ -101,7 +110,7 @@ Polymer({
         // This category is tri-state: "Allow", "Block", "Ask before running".
         var value = settings.PermissionValues.BLOCK;
         if (this.categoryEnabled) {
-          value = this.subOptionEnabled_ ?
+          value = this.subControlParams_.value ?
               settings.PermissionValues.IMPORTANT_CONTENT :
               settings.PermissionValues.ALLOW;
         }
@@ -113,43 +122,76 @@ Polymer({
   },
 
   /**
+   * Update the control parameter values from the content settings.
+   * @param {!DefaultContentSetting} update
+   * @private
+   */
+  updateControlParams_: function(update) {
+    // Early out if there is no actual change.
+    if (this.priorDefaultContentSetting_.setting == update.setting &&
+        this.priorDefaultContentSetting_.source == update.source) {
+      return;
+    }
+    this.priorDefaultContentSetting_ = update;
+
+    var basePref = {
+      'key': 'controlParams',
+      'type': chrome.settingsPrivate.PrefType.BOOLEAN,
+    };
+    if (update.source !== undefined &&
+        update.source != ContentSettingProvider.PREFERENCE) {
+      basePref.enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
+      basePref.controlledBy =
+          update.source == ContentSettingProvider.EXTENSION ?
+          chrome.settingsPrivate.ControlledBy.EXTENSION :
+          chrome.settingsPrivate.ControlledBy.USER_POLICY;
+    }
+
+    var prefValue = this.computeIsSettingEnabled(update.setting);
+    // The controlParams_ must be replaced (rather than just value changes) so
+    // that observers will be notified of the change.
+    this.controlParams_ = /** @type {chrome.settingsPrivate.PrefObject} */(
+        Object.assign({'value': prefValue}, basePref));
+
+    var subPrefValue = false;
+    if (this.category == settings.ContentSettingsTypes.PLUGINS ||
+        this.category == settings.ContentSettingsTypes.COOKIES) {
+      if (this.category == settings.ContentSettingsTypes.PLUGINS &&
+          update.setting == settings.PermissionValues.IMPORTANT_CONTENT) {
+        subPrefValue = true;
+      } else if (this.category == settings.ContentSettingsTypes.COOKIES &&
+          update.setting == settings.PermissionValues.SESSION_ONLY) {
+        subPrefValue = true;
+      }
+    }
+    // The subControlParams_ must be replaced (rather than just value changes)
+    // so that observers will be notified of the change.
+    this.subControlParams_ = /** @type {chrome.settingsPrivate.PrefObject} */(
+        Object.assign({'value': subPrefValue}, basePref));
+  },
+
+  /**
    * Handles changes to the category pref and the |category| member variable.
    * @private
    */
   onCategoryChanged_: function() {
     this.browserProxy
-      .getDefaultValueForContentType(this.category)
-        .then(function(defaultValue) {
-          var setting = defaultValue.setting;
-          this.categoryEnabled = this.computeIsSettingEnabled(setting);
+        .getDefaultValueForContentType(
+          this.category).then(function(defaultValue) {
+            this.updateControlParams_(defaultValue);
 
-          // Flash only shows ALLOW or BLOCK descriptions on the slider.
-          var sliderSetting = setting;
-          if (this.category == settings.ContentSettingsTypes.PLUGINS &&
-              setting == settings.PermissionValues.IMPORTANT_CONTENT) {
-            sliderSetting = settings.PermissionValues.ALLOW;
-          } else if (
-              this.category == settings.ContentSettingsTypes.COOKIES &&
-              setting == settings.PermissionValues.SESSION_ONLY) {
-            sliderSetting = settings.PermissionValues.ALLOW;
-          }
-          this.sliderDescription_ =
-              this.computeCategoryDesc(this.category, sliderSetting, true);
-
-          if (this.category == settings.ContentSettingsTypes.PLUGINS) {
-            // The checkbox should only be cleared when the Flash setting
-            // is explicitly set to ALLOW.
-            if (setting == settings.PermissionValues.ALLOW)
-              this.subOptionEnabled_ = false;
-            if (setting == settings.PermissionValues.IMPORTANT_CONTENT)
-              this.subOptionEnabled_ = true;
-          } else if (
-              this.category == settings.ContentSettingsTypes.COOKIES) {
-            if (setting == settings.PermissionValues.ALLOW)
-              this.subOptionEnabled_ = false;
-            else if (setting == settings.PermissionValues.SESSION_ONLY)
-              this.subOptionEnabled_ = true;
-          }
-        }.bind(this));
+            // Flash only shows ALLOW or BLOCK descriptions on the slider.
+            var setting = defaultValue.setting;
+            if (this.category == settings.ContentSettingsTypes.PLUGINS &&
+                setting == settings.PermissionValues.IMPORTANT_CONTENT) {
+              setting = settings.PermissionValues.ALLOW;
+            } else if (
+                this.category == settings.ContentSettingsTypes.COOKIES &&
+                setting == settings.PermissionValues.SESSION_ONLY) {
+              setting = settings.PermissionValues.ALLOW;
+            }
+            this.sliderDescription_ =
+                this.computeCategoryDesc(this.category, setting, true);
+          }.bind(this));
   },
 });
