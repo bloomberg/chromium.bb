@@ -150,7 +150,7 @@ class PresentationConnection::BlobLoader final
 PresentationConnection::PresentationConnection(LocalFrame* frame,
                                                const String& id,
                                                const KURL& url)
-    : DOMWindowProperty(frame),
+    : ContextClient(frame),
       m_id(id),
       m_url(url),
       m_state(WebPresentationConnectionState::Connecting),
@@ -251,7 +251,7 @@ DEFINE_TRACE(PresentationConnection) {
   visitor->trace(m_blobLoader);
   visitor->trace(m_messages);
   EventTargetWithInlineData::trace(visitor);
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 const AtomicString& PresentationConnection::state() const {

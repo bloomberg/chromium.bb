@@ -13,7 +13,7 @@
 
 namespace blink {
 
-Presentation::Presentation(LocalFrame* frame) : DOMWindowProperty(frame) {}
+Presentation::Presentation(LocalFrame* frame) : ContextClient(frame) {}
 
 // static
 Presentation* Presentation::create(LocalFrame* frame) {
@@ -29,7 +29,7 @@ Presentation* Presentation::create(LocalFrame* frame) {
 DEFINE_TRACE(Presentation) {
   visitor->trace(m_defaultRequest);
   visitor->trace(m_receiver);
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 PresentationRequest* Presentation::defaultRequest() const {

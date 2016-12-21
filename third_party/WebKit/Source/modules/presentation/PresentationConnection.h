@@ -5,10 +5,10 @@
 #ifndef PresentationConnection_h
 #define PresentationConnection_h
 
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
-#include "core/frame/DOMWindowProperty.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/modules/presentation/WebPresentationConnectionClient.h"
@@ -28,7 +28,7 @@ class PresentationReceiver;
 class PresentationRequest;
 
 class PresentationConnection final : public EventTargetWithInlineData,
-                                     public DOMWindowProperty {
+                                     public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(PresentationConnection);
   DEFINE_WRAPPERTYPEINFO();
 

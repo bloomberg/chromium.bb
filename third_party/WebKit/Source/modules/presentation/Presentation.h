@@ -6,7 +6,7 @@
 #define Presentation_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 
@@ -22,7 +22,7 @@ class PresentationRequest;
 // details.
 class Presentation final : public GarbageCollected<Presentation>,
                            public ScriptWrappable,
-                           public DOMWindowProperty {
+                           public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(Presentation);
   DEFINE_WRAPPERTYPEINFO();
 

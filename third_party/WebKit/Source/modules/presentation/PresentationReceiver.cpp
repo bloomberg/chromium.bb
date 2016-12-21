@@ -18,7 +18,7 @@ namespace blink {
 
 PresentationReceiver::PresentationReceiver(LocalFrame* frame,
                                            WebPresentationClient* client)
-    : DOMWindowProperty(frame) {
+    : ContextClient(frame) {
   m_connectionList = new PresentationConnectionList(frame->document());
 
   if (client)
@@ -68,6 +68,7 @@ void PresentationReceiver::registerConnection(
 DEFINE_TRACE(PresentationReceiver) {
   visitor->trace(m_connectionList);
   visitor->trace(m_connectionListProperty);
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
 }
+
 }  // namespace blink

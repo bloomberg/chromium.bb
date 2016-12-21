@@ -8,8 +8,8 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseProperty.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMException.h"
-#include "core/frame/DOMWindowProperty.h"
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
@@ -27,7 +27,7 @@ class WebPresentationConnectionClient;
 class MODULES_EXPORT PresentationReceiver final
     : public GarbageCollectedFinalized<PresentationReceiver>,
       public ScriptWrappable,
-      public DOMWindowProperty,
+      public ContextClient,
       public WebPresentationReceiver {
   USING_GARBAGE_COLLECTED_MIXIN(PresentationReceiver);
   DEFINE_WRAPPERTYPEINFO();
