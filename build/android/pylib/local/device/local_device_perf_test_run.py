@@ -425,7 +425,7 @@ class LocalDevicePerfTestRun(local_device_test_run.LocalDeviceTestRun):
     # Affinitize the tests.
     if self._test_instance.trace_output:
       assert not trace_event.trace_is_enabled(), 'Tracing already running.'
-      trace_event.trace_enable(self._test_instance.trace_output)
+      trace_event.trace_enable(self._test_instance.trace_output + '.json')
     self._SplitTestsByAffinity()
     if not self._test_buckets and not self._no_device_tests:
       raise local_device_test_run.NoTestsError()
@@ -466,6 +466,9 @@ class LocalDevicePerfTestRun(local_device_test_run.LocalDeviceTestRun):
     if self._test_instance.trace_output:
       assert trace_event.trace_is_enabled(), 'Tracing not running.'
       trace_event.trace_disable()
+      local_device_test_run.LocalDeviceTestRun._JsonToTrace(
+          self._test_instance.trace_output + '.json',
+          self._test_instance.trace_output)
     return host_test_results + device_test_results
 
   # override
