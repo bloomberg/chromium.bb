@@ -8,7 +8,7 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_E
 
 import android.content.Context;
 import android.net.Uri;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.widget.LinearLayout;
 
 import org.chromium.base.test.util.Feature;

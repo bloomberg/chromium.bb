@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser;
 
 import android.content.DialogInterface;
+import android.support.test.filters.MediumTest;
 import android.support.v7.app.AlertDialog;
-import android.test.suitebuilder.annotation.MediumTest;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;

@@ -10,10 +10,9 @@ import android.content.DialogInterface;
 import android.content.pm.ActivityInfo;
 import android.os.Debug;
 import android.os.SystemClock;
-import android.test.suitebuilder.annotation.LargeTest;
-import android.test.suitebuilder.annotation.MediumTest;
-import android.test.suitebuilder.annotation.SmallTest;
-import android.test.suitebuilder.annotation.Smoke;
+import android.support.test.filters.LargeTest;
+import android.support.test.filters.MediumTest;
+import android.support.test.filters.SmallTest;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -1685,7 +1684,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         assertTrue("notifyChanged() was not called", mNotifyChangedCalled);
     }
 
-    @Smoke
+    @MediumTest
     @Feature({"Android-TabSwitcher"})
     @RetryOnFailure
     public void testTabsAreDestroyedOnModelDestruction() throws InterruptedException {

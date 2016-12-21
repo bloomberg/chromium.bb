@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.omnibox;
 
 import android.content.res.Resources;
+import android.support.test.filters.MediumTest;
 import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.MediumTest;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 

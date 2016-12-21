@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.prerender;
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
 import android.graphics.Rect;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;

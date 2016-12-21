@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.omaha;
 
-import static org.chromium.chrome.test.omaha.MockRequestGenerator.DeviceType;
-
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
@@ -13,13 +11,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.omaha.AttributeFinder;
 import org.chromium.chrome.test.omaha.MockRequestGenerator;
+import org.chromium.chrome.test.omaha.MockRequestGenerator.DeviceType;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

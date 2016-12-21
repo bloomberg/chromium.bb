@@ -7,7 +7,7 @@ package org.chromium.android_webview.test;
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.os.Message;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.apache.http.util.EncodingUtils;
 

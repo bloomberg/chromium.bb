@@ -4,8 +4,8 @@
 
 package org.chromium.chromoting;
 
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 

@@ -5,7 +5,7 @@
 package org.chromium.android_webview.test;
 
 import android.os.StrictMode;
-import android.test.suitebuilder.annotation.LargeTest;
+import android.support.test.filters.LargeTest;
 
 import org.chromium.android_webview.AwBrowserProcess;
 import org.chromium.base.test.util.Feature;

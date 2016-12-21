@@ -5,7 +5,7 @@
 package org.chromium.content.browser;
 
 import android.os.SystemClock;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 

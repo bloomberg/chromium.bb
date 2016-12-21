@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.media.ui;
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
 import android.app.Notification;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.widget.TextView;
 

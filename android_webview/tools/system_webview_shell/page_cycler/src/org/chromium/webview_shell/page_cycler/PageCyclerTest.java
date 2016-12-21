@@ -4,8 +4,8 @@
 
 package org.chromium.webview_shell.page_cycler;
 
+import android.support.test.filters.LargeTest;
 import android.test.ActivityInstrumentationTestCase2;
-import android.test.suitebuilder.annotation.LargeTest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;

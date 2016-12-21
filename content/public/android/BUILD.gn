@@ -374,6 +374,7 @@ android_library("content_javatests") {
     "//mojo/public/java:system_java",
     "//net/android:net_java",
     "//net/android:net_java_test_support",
+    "//third_party/android_support_test_runner:runner_java",
     "//third_party/android_tools:legacy_http_javalib",
     "//ui/android:ui_java",
   ]

@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.omnibox;
 
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;

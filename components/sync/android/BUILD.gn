@@ -42,6 +42,7 @@ android_library("sync_javatests") {
     "//components/signin/core/browser/android:java",
     "//components/signin/core/browser/android:signin_java_test_support",
     "//components/sync:sync_java_test_support",
+    "//third_party/android_support_test_runner:runner_java",
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
     "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
     "//third_party/jsr-305:jsr_305_javalib",

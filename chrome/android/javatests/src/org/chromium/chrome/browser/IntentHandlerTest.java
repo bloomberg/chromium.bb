@@ -11,9 +11,9 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.speech.RecognizerResultsIntent;
+import android.support.test.filters.MediumTest;
+import android.support.test.filters.SmallTest;
 import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.MediumTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.CommandLine;

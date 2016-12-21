@@ -4,7 +4,7 @@
 
 package org.chromium.net.urlconnection;
 
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetTestBase;

@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.omaha;
 
 import android.content.Context;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.MediumTest;
 import android.view.View;
 
 import org.chromium.base.ThreadUtils;

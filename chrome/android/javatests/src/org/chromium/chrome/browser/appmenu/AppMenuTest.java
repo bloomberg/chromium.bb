@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.appmenu;
 
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;

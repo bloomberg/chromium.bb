@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.browsing_data;
 
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.RetryOnFailure;

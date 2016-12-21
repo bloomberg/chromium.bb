@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.compositor.overlays.strip;
 
 import android.content.pm.ActivityInfo;
-import android.test.suitebuilder.annotation.LargeTest;
+import android.support.test.filters.LargeTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;

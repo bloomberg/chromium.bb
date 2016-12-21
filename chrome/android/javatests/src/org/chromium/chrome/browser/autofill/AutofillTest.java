@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.autofill;
 
 import android.graphics.Color;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.view.View;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;

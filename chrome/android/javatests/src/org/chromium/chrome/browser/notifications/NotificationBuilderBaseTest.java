@@ -8,7 +8,7 @@ import android.app.Notification;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.MediumTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.util.UrlUtilities;

@@ -57,10 +57,10 @@ import android.support.test.espresso.action.Press;
 import android.support.test.espresso.action.Tap;
 import android.support.test.espresso.intent.Intents;
 import android.support.test.espresso.web.webdriver.Locator;
+import android.support.test.filters.SmallTest;
 import android.support.test.uiautomator.UiDevice;
 import android.support.test.uiautomator.UiObject;
 import android.support.test.uiautomator.UiSelector;
-import android.test.suitebuilder.annotation.SmallTest;
 import android.view.MenuItem;
 
 import junit.framework.AssertionFailedError;

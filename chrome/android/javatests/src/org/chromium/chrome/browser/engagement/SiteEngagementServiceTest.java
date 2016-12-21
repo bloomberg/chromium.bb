@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.engagement;
 
+import android.support.test.filters.SmallTest;
 import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;

@@ -5,8 +5,8 @@
 package org.chromium.chromoting;
 
 import android.graphics.PointF;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 import android.view.MotionEvent;
 
 import org.chromium.base.test.util.Feature;

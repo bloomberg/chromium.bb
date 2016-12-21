@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.webapps;
 
 import android.app.Activity;
 import android.content.DialogInterface;
+import android.support.test.filters.SmallTest;
 import android.support.v7.app.AlertDialog;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;

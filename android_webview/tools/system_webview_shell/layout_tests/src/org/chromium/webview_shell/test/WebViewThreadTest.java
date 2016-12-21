@@ -4,8 +4,8 @@
 
 package org.chromium.webview_shell.test;
 
+import android.support.test.filters.SmallTest;
 import android.test.ActivityInstrumentationTestCase2;
-import android.test.suitebuilder.annotation.SmallTest;
 import android.webkit.CookieManager;
 import android.webkit.GeolocationPermissions;
 import android.webkit.WebStorage;

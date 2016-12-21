@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.precache;
 
 import android.content.Context;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import com.google.android.gms.gcm.Task;
 

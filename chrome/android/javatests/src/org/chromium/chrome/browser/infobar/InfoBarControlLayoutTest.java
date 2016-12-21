@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.SmallTest;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup.LayoutParams;

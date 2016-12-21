@@ -6,7 +6,7 @@ package org.chromium.net;
 
 import static org.chromium.base.CollectionUtil.newHashSet;
 
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.json.JSONObject;
 

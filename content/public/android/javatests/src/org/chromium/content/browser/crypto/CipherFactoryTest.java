@@ -5,8 +5,8 @@
 package org.chromium.content.browser.crypto;
 
 import android.os.Bundle;
+import android.support.test.filters.MediumTest;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.crypto.CipherFactory.CipherDataObserver;

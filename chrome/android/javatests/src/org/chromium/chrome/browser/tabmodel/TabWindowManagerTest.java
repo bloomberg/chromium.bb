@@ -5,10 +5,9 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import android.app.Activity;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.SmallTest;
-import android.test.suitebuilder.annotation.Smoke;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
@@ -48,7 +47,7 @@ public class TabWindowManagerTest extends InstrumentationTestCase {
     /**
      * Test that a single {@link Activity} can request a {@link TabModelSelector}.
      */
-    @Smoke
+    @SmallTest
     @Feature({"Multiwindow"})
     @UiThreadTest
     public void testSingleActivity() {

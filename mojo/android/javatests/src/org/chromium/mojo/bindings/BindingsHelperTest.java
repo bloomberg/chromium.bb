@@ -4,7 +4,7 @@
 
 package org.chromium.mojo.bindings;
 
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import junit.framework.TestCase;
 
@@ -34,8 +34,8 @@ public class BindingsHelperTest extends TestCase {
                     BindingsHelper.utf8StringSizeInBytes(s));
         }
         assertEquals(1, BindingsHelper.utf8StringSizeInBytes("\0"));
-        String s = new StringBuilder().appendCodePoint(0x0).appendCodePoint(0x80).
-                appendCodePoint(0x800).appendCodePoint(0x10000).toString();
+        String s = new StringBuilder().appendCodePoint(0x0).appendCodePoint(0x80)
+                .appendCodePoint(0x800).appendCodePoint(0x10000).toString();
         assertEquals(10, BindingsHelper.utf8StringSizeInBytes(s));
         assertEquals(10, s.getBytes(Charset.forName("utf8")).length);
     }

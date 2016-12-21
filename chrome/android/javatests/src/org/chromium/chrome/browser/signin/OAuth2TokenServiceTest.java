@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.DisabledTest;

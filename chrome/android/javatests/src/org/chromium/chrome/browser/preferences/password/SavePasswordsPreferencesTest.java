@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.password;
 
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;

@@ -315,8 +315,8 @@ def ProcessJavaTestOptions(args):
   elif args.test_filter:
     args.annotations = []
   else:
-    args.annotations = ['Smoke', 'SmallTest', 'MediumTest', 'LargeTest',
-                        'EnormousTest', 'IntegrationTest']
+    args.annotations = ['SmallTest', 'MediumTest', 'LargeTest', 'EnormousTest',
+                        'IntegrationTest']
 
   if args.exclude_annotation_str:
     args.exclude_annotations = args.exclude_annotation_str.split(',')

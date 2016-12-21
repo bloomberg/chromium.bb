@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.test.suitebuilder.annotation.LargeTest;
+import android.support.test.filters.LargeTest;
 import android.util.Pair;
 
 import org.json.JSONException;

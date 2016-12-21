@@ -9,8 +9,8 @@ import android.content.Context;
 
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.test.suitebuilder.annotation.MediumTest;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.MediumTest;
+import android.support.test.filters.SmallTest;
 import android.util.Log;
 import android.util.Pair;
 

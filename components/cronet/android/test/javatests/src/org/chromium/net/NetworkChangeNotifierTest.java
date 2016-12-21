@@ -9,8 +9,8 @@ import static android.system.OsConstants.SOCK_STREAM;
 
 import android.annotation.TargetApi;
 import android.os.Build;
+import android.support.test.filters.SmallTest;
 import android.system.Os;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;

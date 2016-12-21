@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.ntp.snippets;
 
 import android.graphics.BitmapFactory;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.MediumTest;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;

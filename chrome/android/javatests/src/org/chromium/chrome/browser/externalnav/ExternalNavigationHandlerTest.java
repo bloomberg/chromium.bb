@@ -13,9 +13,9 @@ import android.net.Uri;
 import android.os.SystemClock;
 import android.provider.Browser;
 import android.support.customtabs.CustomTabsIntent;
+import android.support.test.filters.SmallTest;
 import android.test.mock.MockContext;
 import android.test.mock.MockPackageManager;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.IntentHandler;

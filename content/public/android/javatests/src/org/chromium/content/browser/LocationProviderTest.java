@@ -5,13 +5,12 @@
 package org.chromium.content.browser;
 
 import android.app.Activity;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
-
 import org.chromium.device.geolocation.LocationProviderAdapter;
 
 /**

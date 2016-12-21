@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.precache;
 
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.library_loader.LibraryLoader;

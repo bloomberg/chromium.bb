@@ -10,8 +10,8 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
+import android.support.test.filters.SmallTest;
 import android.test.ServiceTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;

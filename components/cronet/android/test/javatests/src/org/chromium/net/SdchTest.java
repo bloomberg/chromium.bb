@@ -5,7 +5,7 @@
 package org.chromium.net;
 
 import android.os.ConditionVariable;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.json.JSONException;
 import org.json.JSONObject;

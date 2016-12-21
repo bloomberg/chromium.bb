@@ -9,7 +9,7 @@ import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.Rect;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.util.Base64;
 
 import org.chromium.android_webview.AwContents;

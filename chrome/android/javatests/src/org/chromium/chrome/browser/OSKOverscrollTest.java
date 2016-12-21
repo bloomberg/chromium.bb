@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser;
 
 import android.graphics.Rect;
+import android.support.test.filters.MediumTest;
 import android.test.MoreAsserts;
-import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;

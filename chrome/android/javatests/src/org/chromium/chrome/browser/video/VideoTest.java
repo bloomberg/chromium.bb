@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.video;
 
-import android.test.suitebuilder.annotation.LargeTest;
+import android.support.test.filters.LargeTest;
 
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;

@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.tabmodel;
 
 import android.annotation.TargetApi;
 import android.os.Build;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.MediumTest;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;

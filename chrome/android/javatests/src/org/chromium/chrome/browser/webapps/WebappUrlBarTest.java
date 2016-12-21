@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
+import android.support.test.filters.MediumTest;
 import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;

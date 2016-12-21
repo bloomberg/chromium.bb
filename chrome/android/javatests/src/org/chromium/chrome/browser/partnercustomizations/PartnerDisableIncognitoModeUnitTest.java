@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.partnercustomizations;
 
 import android.net.Uri;
 import android.os.Bundle;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;

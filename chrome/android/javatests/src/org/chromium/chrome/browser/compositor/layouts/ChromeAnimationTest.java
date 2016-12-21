@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.compositor.layouts;
 import static org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.AnimatableAnimation.createAnimation;
 
 import android.os.SystemClock;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;

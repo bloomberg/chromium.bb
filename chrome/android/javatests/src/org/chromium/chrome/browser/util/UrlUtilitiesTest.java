@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.util;
 
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 

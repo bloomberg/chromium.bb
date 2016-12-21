@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser;
 
 import android.app.Dialog;
+import android.support.test.filters.LargeTest;
 import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.LargeTest;
 import android.text.SpannableString;
 import android.view.View;
 import android.widget.Button;

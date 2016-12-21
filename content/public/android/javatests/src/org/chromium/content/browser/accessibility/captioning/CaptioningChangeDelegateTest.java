@@ -6,7 +6,7 @@ package org.chromium.content.browser.accessibility.captioning;
 
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.content.browser.accessibility.captioning.CaptioningChangeDelegate.ClosedCaptionEdgeAttribute;
 import org.chromium.content.browser.accessibility.captioning.CaptioningChangeDelegate.ClosedCaptionFont;

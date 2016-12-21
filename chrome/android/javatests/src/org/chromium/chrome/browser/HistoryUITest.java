@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser;
 
 import android.preference.PreferenceScreen;
-import android.test.suitebuilder.annotation.LargeTest;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.LargeTest;
+import android.support.test.filters.MediumTest;
 import android.util.JsonReader;
 
 import org.chromium.base.ThreadUtils;

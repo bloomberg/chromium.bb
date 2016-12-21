@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.incognito;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Context;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.MediumTest;
 import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;

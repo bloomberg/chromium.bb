@@ -7,8 +7,8 @@ package org.chromium.components.invalidation;
 import android.accounts.Account;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.support.test.filters.SmallTest;
 import android.test.ServiceTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import com.google.ipc.invalidation.external.client.InvalidationListener.RegistrationState;
 import com.google.ipc.invalidation.external.client.contrib.AndroidListener;

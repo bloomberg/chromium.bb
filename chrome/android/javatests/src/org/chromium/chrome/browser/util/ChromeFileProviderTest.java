@@ -8,8 +8,8 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.ParcelFileDescriptor;
-import android.test.suitebuilder.annotation.LargeTest;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.LargeTest;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.content.browser.test.NativeLibraryTestBase;
 

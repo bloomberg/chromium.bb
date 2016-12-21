@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.toolbar;
 import android.annotation.TargetApi;
 import android.graphics.Color;
 import android.os.Build;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 
 import org.chromium.base.ApiCompatibilityUtils;

@@ -5,7 +5,7 @@
 package org.chromium.android_webview.test;
 
 import android.os.Build;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.view.KeyEvent;
 
 import org.chromium.base.test.util.CallbackHelper;

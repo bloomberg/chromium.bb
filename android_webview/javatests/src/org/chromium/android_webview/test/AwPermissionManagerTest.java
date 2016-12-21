@@ -6,7 +6,7 @@ package org.chromium.android_webview.test;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.permission.AwPermissionRequest;

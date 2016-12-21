@@ -4,8 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import android.support.test.filters.SmallTest;
 import android.test.AndroidTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.HttpAuthDatabase;
 import org.chromium.base.test.util.Feature;

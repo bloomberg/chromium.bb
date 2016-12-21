@@ -129,6 +129,7 @@ android_library("shell_apk_javatests") {
     "//base:base_java_test_support",
     "//chrome/android/webapk/libs/common:common_java",
     "//content/public/test/android:content_java_test_support",
+    "//third_party/android_support_test_runner:runner_java",
   ]
   srcjar_deps = [ "javatests/dex_optimizer:dex_optimizer_service_aidl" ]
 }

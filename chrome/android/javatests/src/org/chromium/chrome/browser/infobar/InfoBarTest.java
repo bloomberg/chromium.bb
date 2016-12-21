@@ -7,9 +7,8 @@ package org.chromium.chrome.browser.infobar;
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.content.Context;
+import android.support.test.filters.MediumTest;
 import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.MediumTest;
-import android.test.suitebuilder.annotation.Smoke;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -121,7 +120,6 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     /**
      * Verify PopUp InfoBar.
      */
-    @Smoke
     @MediumTest
     @Feature({"Browser", "Main"})
     @DisabledTest(message = "crbug.com/593003")
@@ -145,7 +143,6 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     /**
      * Verify Geolocation creates an InfoBar.
      */
-    @Smoke
     @MediumTest
     @Feature({"Browser", "Main"})
     @RetryOnFailure
@@ -387,7 +384,6 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     /**
      * Verifies the unresponsive renderer notification creates an InfoBar.
      */
-    @Smoke
     @MediumTest
     @Feature({"Browser", "Main"})
     @RetryOnFailure
@@ -430,7 +426,6 @@ public class InfoBarTest extends ChromeActivityTestCaseBase<ChromeActivity> {
     /**
      * Verifies the hung renderer InfoBar can kill the hung renderer.
      */
-    @Smoke
     @MediumTest
     @Feature({"Browser", "Main"})
     @RetryOnFailure

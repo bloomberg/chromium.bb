@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.MediumTest;
 
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.UrlConstants;

@@ -1721,6 +1721,29 @@ def _CheckAndroidCrLogUsage(input_api, output_api):
   return results
 
 
+def _CheckAndroidTestAnnotationUsage(input_api, output_api):
+  """Checks that android.test.suitebuilder.annotation.* is no longer used."""
+  deprecated_annotation_import_pattern = input_api.re.compile(
+      r'^import android\.test\.suitebuilder\.annotation\..*;',
+      input_api.re.MULTILINE)
+  sources = lambda x: input_api.FilterSourceFile(
+      x, white_list=(r'.*\.java$',), black_list=None)
+  errors = []
+  for f in input_api.AffectedFiles(sources):
+    for line_num, line in f.ChangedContents():
+      if deprecated_annotation_import_pattern.search(line):
+        errors.append("%s:%d" % (f.LocalPath(), line_num))
+
+  results = []
+  if errors:
+    results.append(output_api.PresubmitError(
+      'Annotations in android.test.suitebuilder.annotation have been'
+      ' deprecated since API level 24. Please use android.support.test.filters'
+      ' from //third_party/android_support_test_runner:runner_java instead.'
+      ' Contact yolandyan@chromium.org if you have any questions.', errors))
+  return results
+
+
 def _CheckAndroidNewMdpiAssetLocation(input_api, output_api):
   """Checks if MDPI assets are placed in a correct directory."""
   file_filter = lambda f: (f.LocalPath().endswith('.png') and
@@ -1998,6 +2021,7 @@ def _AndroidSpecificOnUploadChecks(input_api, output_api):
   results.extend(_CheckAndroidCrLogUsage(input_api, output_api))
   results.extend(_CheckAndroidNewMdpiAssetLocation(input_api, output_api))
   results.extend(_CheckAndroidToastUsage(input_api, output_api))
+  results.extend(_CheckAndroidTestAnnotationUsage(input_api, output_api))
   return results
 
 

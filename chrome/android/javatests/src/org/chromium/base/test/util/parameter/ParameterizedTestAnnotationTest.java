@@ -5,8 +5,8 @@
 package org.chromium.base.test.util.parameter;
 
 import android.app.Activity;
+import android.support.test.filters.SmallTest;
 import android.test.MoreAsserts;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.BaseActivityInstrumentationTestCase;
 import org.chromium.base.test.util.parameter.parameters.MethodParameter;

@@ -6,7 +6,7 @@ package org.chromium.content.browser;
 
 import android.content.res.Configuration;
 import android.os.SystemClock;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;

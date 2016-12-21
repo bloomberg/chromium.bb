@@ -5,8 +5,8 @@
 package org.chromium.net;
 
 import android.os.ConditionVariable;
-import android.test.suitebuilder.annotation.LargeTest;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.LargeTest;
+import android.support.test.filters.SmallTest;
 
 import org.json.JSONObject;
 

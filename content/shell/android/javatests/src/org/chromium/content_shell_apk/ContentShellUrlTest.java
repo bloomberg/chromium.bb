@@ -4,7 +4,7 @@
 
 package org.chromium.content_shell_apk;
 
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 

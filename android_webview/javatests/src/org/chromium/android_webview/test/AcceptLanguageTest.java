@@ -7,7 +7,7 @@ package org.chromium.android_webview.test;
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.LocaleList;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 
 import org.chromium.android_webview.AwContents;

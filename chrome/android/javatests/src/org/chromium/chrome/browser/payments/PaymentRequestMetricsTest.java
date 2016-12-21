@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.payments;
 
 import android.annotation.SuppressLint;
 import android.content.DialogInterface;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;

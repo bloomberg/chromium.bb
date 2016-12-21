@@ -437,6 +437,7 @@ android_library("chrome_test_java") {
     "//printing:printing_java",
     "//third_party/WebKit/public:android_mojo_bindings_java",
     "//third_party/WebKit/public:blink_headers_java",
+    "//third_party/android_support_test_runner:runner_java",
     "//third_party/android_tools:android_support_design_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
     "//third_party/android_tools:android_support_v7_recyclerview_java",
@@ -755,6 +756,7 @@ instrumentation_test_apk("chrome_public_test_apk") {
     ":chrome_test_java",
     "//chrome/android/webapk/libs/runtime_library:runtime_library_javatests",
     "//chrome/android/webapk/shell_apk:shell_apk_javatests",
+    "//third_party/android_support_test_runner:runner_java",
   ]
   additional_apks = [
     "//chrome/android/webapk/libs/runtime_library/javatests/apk_with_webapk_service:apk_with_webapk_service",
@@ -785,6 +787,7 @@ android_library("chrome_sync_shell_test_apk_java") {
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_protobuf:protobuf_nano_javalib",
+    "//third_party/android_support_test_runner:runner_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
     "//ui/android:ui_java",
   ]
@@ -797,6 +800,7 @@ instrumentation_test_apk("chrome_sync_shell_test_apk") {
   android_manifest_dep = ":chrome_sync_shell_test_apk_manifest"
   deps = [
     ":chrome_sync_shell_test_apk_java",
+    "//third_party/android_support_test_runner:runner_java",
   ]
   proguard_enabled = !is_java_debug
 }

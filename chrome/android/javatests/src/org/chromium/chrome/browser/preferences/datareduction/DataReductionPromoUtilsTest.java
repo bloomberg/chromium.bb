@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.preferences.datareduction;
 
 import android.content.Context;
+import android.support.test.filters.SmallTest;
 import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.AdvancedMockContext;

@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser;
 
 import android.app.Dialog;
-import android.test.suitebuilder.annotation.LargeTest;
+import android.support.test.filters.LargeTest;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;

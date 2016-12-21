@@ -13,8 +13,8 @@ import android.os.Build;
 import android.os.FileObserver;
 import android.os.IBinder;
 import android.os.RemoteException;
+import android.support.test.filters.MediumTest;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.MediumTest;
 
 import dalvik.system.DexFile;
 

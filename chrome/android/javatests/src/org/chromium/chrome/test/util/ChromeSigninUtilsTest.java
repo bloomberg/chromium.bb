@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.test.util;
 
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.EnormousTest;
 import org.chromium.base.test.util.FlakyTest;

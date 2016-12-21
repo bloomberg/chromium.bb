@@ -10,9 +10,9 @@ import android.content.pm.PackageManager;
 import android.media.MediaMetadataRetriever;
 import android.net.ConnectivityManager;
 import android.net.Uri;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 import android.test.mock.MockContext;
-import android.test.suitebuilder.annotation.SmallTest;
 import android.util.SparseArray;
 
 import org.chromium.content.browser.MediaResourceGetter.MediaMetadata;

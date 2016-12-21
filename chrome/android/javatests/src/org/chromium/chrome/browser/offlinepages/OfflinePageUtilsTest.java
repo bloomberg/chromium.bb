@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.offlinepages;
 
 import android.content.Context;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;

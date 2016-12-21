@@ -8,7 +8,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 import android.os.PowerManager;
-import android.test.suitebuilder.annotation.Smoke;
+import android.support.test.filters.MediumTest;
 
 import org.chromium.base.test.util.Feature;
 
@@ -18,7 +18,7 @@ import org.chromium.base.test.util.Feature;
 public class ContentShellPreconditionsTest extends ContentShellTestBase {
     @TargetApi(Build.VERSION_CODES.KITKAT_WATCH)
     @SuppressWarnings("deprecation")
-    @Smoke
+    @MediumTest
     @Feature({"TestInfrastructure"})
     public void testScreenIsOn() throws Exception {
         PowerManager pm = (PowerManager) getInstrumentation().getContext().getSystemService(

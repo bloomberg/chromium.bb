@@ -5,7 +5,7 @@
 package org.chromium.android_webview.test;
 
 import android.annotation.SuppressLint;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.util.Pair;
 
 import org.chromium.android_webview.AwContents;

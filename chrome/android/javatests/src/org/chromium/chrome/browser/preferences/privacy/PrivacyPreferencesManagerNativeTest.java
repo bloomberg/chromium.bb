@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.preferences.privacy;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.test.filters.SmallTest;
 import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;

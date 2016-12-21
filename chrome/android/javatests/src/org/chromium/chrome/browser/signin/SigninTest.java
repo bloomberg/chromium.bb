@@ -11,8 +11,8 @@ import android.app.Instrumentation.ActivityMonitor;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.preference.Preference;
+import android.support.test.filters.MediumTest;
 import android.support.v7.app.AlertDialog;
-import android.test.suitebuilder.annotation.MediumTest;
 import android.widget.Button;
 
 import org.chromium.base.ThreadUtils;

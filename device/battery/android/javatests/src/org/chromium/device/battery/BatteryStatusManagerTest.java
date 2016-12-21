@@ -7,8 +7,8 @@ package org.chromium.device.battery;
 import android.content.Intent;
 import android.os.BatteryManager;
 import android.os.Build;
+import android.support.test.filters.SmallTest;
 import android.test.AndroidTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.device.BatteryStatus;
 

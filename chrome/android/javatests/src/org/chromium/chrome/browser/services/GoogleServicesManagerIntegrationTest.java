@@ -22,7 +22,6 @@ public class GoogleServicesManagerIntegrationTest
 
     /**
      * Test changing the state of auto login
-     * @Smoke
      * @SmallTest
      * @Feature({"Sync", "Main"})
      */

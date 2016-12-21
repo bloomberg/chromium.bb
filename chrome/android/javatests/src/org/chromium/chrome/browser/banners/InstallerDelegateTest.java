@@ -6,9 +6,9 @@ package org.chromium.chrome.browser.banners;
 
 import android.content.pm.PackageInfo;
 import android.os.HandlerThread;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 import android.test.mock.MockPackageManager;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.util.Criteria;

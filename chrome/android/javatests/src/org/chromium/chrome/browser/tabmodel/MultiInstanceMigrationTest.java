@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import android.content.Context;
+import android.support.test.filters.MediumTest;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;

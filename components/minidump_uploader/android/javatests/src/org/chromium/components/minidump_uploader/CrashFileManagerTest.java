@@ -7,9 +7,9 @@ package org.chromium.components.minidump_uploader;
 import static org.junit.Assert.assertArrayEquals;
 
 import android.os.ParcelFileDescriptor;
+import android.support.test.filters.MediumTest;
+import android.support.test.filters.SmallTest;
 import android.test.MoreAsserts;
-import android.test.suitebuilder.annotation.MediumTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;

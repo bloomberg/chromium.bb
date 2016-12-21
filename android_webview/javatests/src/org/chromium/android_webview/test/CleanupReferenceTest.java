@@ -4,8 +4,8 @@
 
 package org.chromium.android_webview.test;
 
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.android_webview.CleanupReference;
 import org.chromium.base.annotations.SuppressFBWarnings;

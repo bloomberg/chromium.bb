@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.content.Context;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
 /** Tests for RequestThrottler.
  *

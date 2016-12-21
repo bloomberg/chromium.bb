@@ -15,8 +15,8 @@ import android.os.Bundle;
 import android.os.Process;
 import android.support.customtabs.CustomTabsService;
 import android.support.customtabs.CustomTabsSessionToken;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;

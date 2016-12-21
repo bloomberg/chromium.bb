@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.dom_distiller;
 
+import android.support.test.filters.SmallTest;
 import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;

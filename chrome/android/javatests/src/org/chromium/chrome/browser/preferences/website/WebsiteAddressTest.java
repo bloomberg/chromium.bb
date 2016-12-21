@@ -4,8 +4,7 @@
 
 package org.chromium.chrome.browser.preferences.website;
 
-import android.test.suitebuilder.annotation.SmallTest;
-import android.test.suitebuilder.annotation.Smoke;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.test.util.Feature;
@@ -16,7 +15,6 @@ import org.chromium.content.browser.test.NativeLibraryTestBase;
  */
 public class WebsiteAddressTest extends NativeLibraryTestBase {
 
-    @Smoke
     @SmallTest
     @Feature({"Preferences", "Main"})
     public void testCreate() {

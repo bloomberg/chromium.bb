@@ -4,8 +4,8 @@
 
 package org.chromium.content.browser;
 
-import android.test.suitebuilder.annotation.LargeTest;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.LargeTest;
+import android.support.test.filters.MediumTest;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;

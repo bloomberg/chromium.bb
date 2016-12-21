@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.tabmodel;
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.util.Pair;
 import android.util.SparseArray;
 

@@ -7,7 +7,7 @@ package org.chromium.android_webview.test;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.util.Log;
 
 import org.chromium.android_webview.AwWebResourceResponse;

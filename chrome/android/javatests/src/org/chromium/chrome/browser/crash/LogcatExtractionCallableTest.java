@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.crash;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.MediumTest;
 
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.components.minidump_uploader.CrashFileManager;

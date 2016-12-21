@@ -7,8 +7,8 @@ package org.chromium.net;
 import android.os.Build;
 import android.os.ConditionVariable;
 import android.os.StrictMode;
+import android.support.test.filters.SmallTest;
 import android.test.MoreAsserts;
-import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Log;
 
 import org.chromium.base.test.util.Feature;

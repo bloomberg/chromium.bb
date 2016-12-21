@@ -6,7 +6,7 @@ package org.chromium.content.browser.input;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import android.test.suitebuilder.annotation.LargeTest;
+import android.support.test.filters.LargeTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;

@@ -35,6 +35,7 @@ android_library("javatests") {
     ":signin_java_test_support",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//third_party/android_support_test_runner:runner_java",
   ]
 
   java_files = [ "javatests/src/org/chromium/components/signin/test/AccountManagerHelperTest.java" ]

@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.autofill;
 
 import android.os.Build;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.MediumTest;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.HorizontalScrollView;

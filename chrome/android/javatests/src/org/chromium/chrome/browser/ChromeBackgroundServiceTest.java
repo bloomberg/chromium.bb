@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser;
 
 import android.content.Context;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import com.google.android.gms.gcm.TaskParams;
 

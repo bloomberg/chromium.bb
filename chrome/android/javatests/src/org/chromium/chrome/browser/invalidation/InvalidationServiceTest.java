@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.invalidation;
 
 import android.content.Intent;
+import android.support.test.filters.SmallTest;
 import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import com.google.ipc.invalidation.external.client.types.ObjectId;
 

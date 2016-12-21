@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.provider;
 
 import android.os.Parcel;
+import android.support.test.filters.SmallTest;
 import android.test.AndroidTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.provider.ChromeBrowserProvider.BookmarkNode;

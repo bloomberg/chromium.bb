@@ -7,7 +7,7 @@ package org.chromium.net;
 import static org.chromium.base.CollectionUtil.newHashSet;
 
 import android.os.ConditionVariable;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;

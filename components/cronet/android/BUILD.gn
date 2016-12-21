@@ -472,6 +472,7 @@ instrumentation_test_apk("cronet_sample_test_apk") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//net/android:net_java_test_support",
+    "//third_party/android_support_test_runner:runner_java",
   ]
   additional_apks = [ "//net/android:net_test_support_apk" ]
 
@@ -694,6 +695,7 @@ android_library("cronet_javatests") {
     "//base:base_java_test_support",
     "//net/android:net_java",
     "//net/android:net_java_test_support",
+    "//third_party/android_support_test_runner:runner_java",
   ]
 
   run_findbugs_override = true
@@ -713,6 +715,7 @@ instrumentation_test_apk("cronet_test_instrumentation_apk") {
     "//base:base_java_test_support",
     "//net/android:net_java",
     "//net/android:net_java_test_support",
+    "//third_party/android_support_test_runner:runner_java",
   ]
   additional_apks = [ "//net/android:net_test_support_apk" ]
 

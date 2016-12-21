@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.media.remote;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
-import android.test.suitebuilder.annotation.LargeTest;
+import android.support.test.filters.LargeTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;

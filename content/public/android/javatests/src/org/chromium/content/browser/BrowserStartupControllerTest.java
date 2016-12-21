@@ -5,8 +5,8 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryProcessType;

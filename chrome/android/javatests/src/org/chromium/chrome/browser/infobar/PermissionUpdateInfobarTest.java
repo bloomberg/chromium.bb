@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.infobar;
 
 import android.Manifest;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.preferences.website.ContentSetting;

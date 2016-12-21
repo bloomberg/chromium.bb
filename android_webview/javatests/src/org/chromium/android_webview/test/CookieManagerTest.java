@@ -4,17 +4,16 @@
 
 package org.chromium.android_webview.test;
 
+import android.support.test.filters.MediumTest;
 import android.test.MoreAsserts;
-import android.test.suitebuilder.annotation.MediumTest;
 import android.util.Pair;
 import android.webkit.ValueCallback;
-
-import static org.chromium.android_webview.test.util.CookieUtils.TestValueCallback;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwCookieManager;
 import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.util.CookieUtils;
+import org.chromium.android_webview.test.util.CookieUtils.TestValueCallback;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.JavaScriptUtils;

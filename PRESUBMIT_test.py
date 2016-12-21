@@ -959,6 +959,53 @@ class PydepsNeedsUpdatingTest(unittest.TestCase):
     self.assertTrue('File is stale' in str(results[1]))
 
 
+class AndroidDeprecatedTestAnnotationTest(unittest.TestCase):
+  def testCheckAndroidTestAnnotationUsage(self):
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.files = [
+        MockAffectedFile('LalaLand.java', [
+          'random stuff'
+        ]),
+        MockAffectedFile('CorrectUsage.java', [
+          'import android.support.test.filters.LargeTest;',
+          'import android.support.test.filters.MediumTest;',
+          'import android.support.test.filters.SmallTest;',
+        ]),
+        MockAffectedFile('UsedDeprecatedLargeTestAnnotation.java', [
+          'import android.test.suitebuilder.annotation.LargeTest;',
+        ]),
+        MockAffectedFile('UsedDeprecatedMediumTestAnnotation.java', [
+          'import android.test.suitebuilder.annotation.MediumTest;',
+        ]),
+        MockAffectedFile('UsedDeprecatedSmallTestAnnotation.java', [
+          'import android.test.suitebuilder.annotation.SmallTest;',
+        ]),
+        MockAffectedFile('UsedDeprecatedSmokeAnnotation.java', [
+          'import android.test.suitebuilder.annotation.Smoke;',
+        ])
+    ]
+    msgs = PRESUBMIT._CheckAndroidTestAnnotationUsage(
+        mock_input_api, mock_output_api)
+    self.assertEqual(1, len(msgs),
+                     'Expected %d items, found %d: %s'
+                     % (1, len(msgs), msgs))
+    self.assertEqual(4, len(msgs[0].items),
+                     'Expected %d items, found %d: %s'
+                     % (4, len(msgs[0].items), msgs[0].items))
+    self.assertTrue('UsedDeprecatedLargeTestAnnotation.java:1' in msgs[0].items,
+                    'UsedDeprecatedLargeTestAnnotation not found in errors')
+    self.assertTrue('UsedDeprecatedMediumTestAnnotation.java:1'
+                    in msgs[0].items,
+                    'UsedDeprecatedMediumTestAnnotation not found in errors')
+    self.assertTrue('UsedDeprecatedSmallTestAnnotation.java:1' in msgs[0].items,
+                    'UsedDeprecatedSmallTestAnnotation not found in errors')
+    self.assertTrue('UsedDeprecatedSmokeAnnotation.java:1' in msgs[0].items,
+                    'UsedDeprecatedSmokeAnnotation not found in errors')
+
+
+
 class LogUsageTest(unittest.TestCase):
 
   def testCheckAndroidCrLogUsage(self):

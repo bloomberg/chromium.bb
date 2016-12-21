@@ -4,8 +4,7 @@
 
 package org.chromium.android_webview.test;
 
-import android.test.suitebuilder.annotation.SmallTest;
-import android.test.suitebuilder.annotation.Smoke;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.Feature;
@@ -75,7 +74,6 @@ public class GetTitleTest extends AwTestBase {
      * When the data has title info, the page title is set to it.
      * @throws Throwable
      */
-    @Smoke
     @SmallTest
     @Feature({"AndroidWebView", "Main"})
     public void testLoadDataGetTitle() throws Throwable {

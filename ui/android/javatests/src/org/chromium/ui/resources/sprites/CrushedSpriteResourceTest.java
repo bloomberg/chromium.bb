@@ -4,9 +4,9 @@
 
 package org.chromium.ui.resources.sprites;
 
+import android.support.test.filters.MediumTest;
 import android.test.InstrumentationTestCase;
 import android.test.mock.MockResources;
-import android.test.suitebuilder.annotation.MediumTest;
 import android.util.DisplayMetrics;
 
 import java.io.ByteArrayInputStream;

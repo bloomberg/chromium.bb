@@ -5,9 +5,9 @@
 package org.chromium.chrome.browser.download;
 
 import android.content.pm.PackageManager;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 import android.test.MoreAsserts;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 

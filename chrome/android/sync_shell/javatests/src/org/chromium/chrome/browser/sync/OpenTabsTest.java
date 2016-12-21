@@ -4,8 +4,12 @@
 
 package org.chromium.chrome.browser.sync;
 
-import android.test.suitebuilder.annotation.LargeTest;
+import android.support.test.filters.LargeTest;
 import android.util.Pair;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
@@ -22,9 +26,6 @@ import org.chromium.components.sync.protocol.SessionWindow;
 import org.chromium.components.sync.protocol.SyncEnums;
 import org.chromium.components.sync.protocol.TabNavigation;
 import org.chromium.content.browser.test.util.Criteria;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;

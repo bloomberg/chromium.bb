@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
-import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 
 import org.chromium.base.ThreadUtils;

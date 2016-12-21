@@ -6,8 +6,8 @@ package org.chromium.android_webview.test;
 
 import android.os.Handler;
 import android.os.Message;
-import android.test.suitebuilder.annotation.LargeTest;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.LargeTest;
+import android.support.test.filters.SmallTest;
 import android.view.KeyEvent;
 import android.webkit.WebView.HitTestResult;
 

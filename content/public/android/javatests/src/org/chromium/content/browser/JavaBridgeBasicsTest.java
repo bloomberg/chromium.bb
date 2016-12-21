@@ -6,7 +6,7 @@ package org.chromium.content.browser;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import junit.framework.Assert;
 

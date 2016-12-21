@@ -10,9 +10,9 @@ import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.content.Context;
 import android.os.Bundle;
+import android.support.test.filters.LargeTest;
+import android.support.test.filters.MediumTest;
 import android.test.MoreAsserts;
-import android.test.suitebuilder.annotation.LargeTest;
-import android.test.suitebuilder.annotation.MediumTest;
 import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;

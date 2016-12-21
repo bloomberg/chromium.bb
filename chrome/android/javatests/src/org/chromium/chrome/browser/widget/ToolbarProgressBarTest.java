@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.widget;
 
 import android.animation.Animator;
 import android.animation.Animator.AnimatorListener;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.MediumTest;
 import android.view.View;
 
 import org.chromium.base.ThreadUtils;

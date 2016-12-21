@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import android.support.test.filters.SmallTest;
 import android.test.MoreAsserts;
 import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.tab.Tab;

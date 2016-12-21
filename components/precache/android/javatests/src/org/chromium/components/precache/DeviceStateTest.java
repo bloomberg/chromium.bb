@@ -7,8 +7,8 @@ package org.chromium.components.precache;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.os.BatteryManager;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;

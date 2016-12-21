@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;

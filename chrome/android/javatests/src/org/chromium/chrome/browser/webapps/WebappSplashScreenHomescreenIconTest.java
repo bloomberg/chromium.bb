@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.webapps;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 

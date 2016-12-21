@@ -294,6 +294,7 @@ if (is_android) {
       "//blimp/client/public:public_headers_java",
       "//components/signin/core/browser/android:java",
       "//components/sync/android:sync_java",
+      "//third_party/android_support_test_runner:runner_java",
       "//third_party/android_tools:android_support_v7_appcompat_java",
       "//ui/android:ui_java",
       google_play_services_library,
@@ -383,6 +384,7 @@ if (is_android) {
     android_manifest_dep = ":blimp_test_apk_manifest"
     deps = [
       ":blimp_test_java",
+      "//third_party/android_support_test_runner:runner_java",
     ]
   }
 }

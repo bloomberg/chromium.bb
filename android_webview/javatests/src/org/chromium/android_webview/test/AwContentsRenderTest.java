@@ -6,7 +6,7 @@ package org.chromium.android_webview.test;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.view.View;
 
 import org.chromium.android_webview.AwContents;

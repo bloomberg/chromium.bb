@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.customtabs;
 import android.content.Context;
 import android.os.Process;
 import android.support.customtabs.CustomTabsSessionToken;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.content.browser.test.NativeLibraryTestBase;

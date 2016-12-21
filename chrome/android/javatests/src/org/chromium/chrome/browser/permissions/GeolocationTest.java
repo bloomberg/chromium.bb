@@ -4,9 +4,8 @@
 
 package org.chromium.chrome.browser.permissions;
 
-import android.test.suitebuilder.annotation.LargeTest;
-import android.test.suitebuilder.annotation.MediumTest;
-import android.test.suitebuilder.annotation.Smoke;
+import android.support.test.filters.LargeTest;
+import android.support.test.filters.MediumTest;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
@@ -54,7 +53,6 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * Verify Geolocation creates an InfoBar and receives a mock location.
      * @throws Exception
      */
-    @Smoke
     @MediumTest
     @CommandLineFlags.Add("disable-features=" + MODAL_FLAG)
     @Feature({"Location", "Main"})
@@ -66,7 +64,6 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * Verify Geolocation creates a dialog and receives a mock location.
      * @throws Exception
      */
-    @Smoke
     @MediumTest
     @CommandLineFlags.Add("enable-features=" + MODAL_FLAG)
     @Feature({"Location", "Main"})
@@ -79,7 +76,6 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * enabled and permitted to trigger without a gesture.
      * @throws Exception
      */
-    @Smoke
     @MediumTest
     @CommandLineFlags.Add({NO_GESTURE_FEATURE, FORCE_FIELDTRIAL, FORCE_FIELDTRIAL_PARAMS})
     @Feature({"Location", "Main"})
@@ -92,7 +88,6 @@ public class GeolocationTest extends PermissionTestCaseBase {
      * no user gesture is specified.
      * @throws Exception
      */
-    @Smoke
     @MediumTest
     @CommandLineFlags.Add("enable-features=" + MODAL_FLAG)
     @Feature({"Location", "Main"})

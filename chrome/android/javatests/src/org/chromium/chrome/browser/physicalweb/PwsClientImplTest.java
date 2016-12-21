@@ -5,8 +5,8 @@
 package org.chromium.chrome.browser.physicalweb;
 
 import android.content.Context;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
 import org.chromium.base.LocaleUtils;

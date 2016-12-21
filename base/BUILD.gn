@@ -2439,6 +2439,7 @@ if (is_android) {
     deps = [
       ":base_java",
       ":base_java_test_support",
+      "//third_party/android_support_test_runner:runner_java",
     ]
     java_files = [
       "android/javatests/src/org/chromium/base/AdvancedMockContextTest.java",

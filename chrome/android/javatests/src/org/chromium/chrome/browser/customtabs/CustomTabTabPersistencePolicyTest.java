@@ -9,10 +9,10 @@ import static android.test.MoreAsserts.assertEmpty;
 
 import android.app.Activity;
 import android.os.AsyncTask;
+import android.support.test.filters.MediumTest;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.MediumTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;

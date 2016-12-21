@@ -8,9 +8,9 @@ import static org.chromium.chrome.test.util.OmniboxTestUtils.buildSuggestionMap;
 
 import android.os.Build;
 import android.os.SystemClock;
+import android.support.test.filters.MediumTest;
+import android.support.test.filters.SmallTest;
 import android.support.v4.view.ViewCompat;
-import android.test.suitebuilder.annotation.MediumTest;
-import android.test.suitebuilder.annotation.SmallTest;
 import android.text.Selection;
 import android.util.Pair;
 import android.view.KeyEvent;

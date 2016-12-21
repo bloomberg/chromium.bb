@@ -5,7 +5,7 @@
 package org.chromium.net;
 
 import android.os.ConditionVariable;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.TestUrlRequestCallback.ResponseStep;

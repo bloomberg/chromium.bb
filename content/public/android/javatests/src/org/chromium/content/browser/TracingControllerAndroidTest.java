@@ -7,7 +7,7 @@ package org.chromium.content.browser;
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.os.SystemClock;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.MediumTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;

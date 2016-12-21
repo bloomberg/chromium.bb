@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;

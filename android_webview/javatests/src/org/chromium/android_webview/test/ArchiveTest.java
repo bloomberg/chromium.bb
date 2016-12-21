@@ -4,7 +4,7 @@
 
 package org.chromium.android_webview.test;
 
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.webkit.ValueCallback;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;

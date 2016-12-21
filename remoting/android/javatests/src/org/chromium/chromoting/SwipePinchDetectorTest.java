@@ -6,8 +6,8 @@ package org.chromium.chromoting;
 
 import android.content.Context;
 import android.os.SystemClock;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;

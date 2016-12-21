@@ -7,8 +7,8 @@ package org.chromium.chrome.browser.download.ui;
 import static org.chromium.chrome.browser.widget.DateDividedAdapter.TYPE_DATE;
 import static org.chromium.chrome.browser.widget.DateDividedAdapter.TYPE_NORMAL;
 
+import android.support.test.filters.SmallTest;
 import android.support.v7.widget.RecyclerView;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;

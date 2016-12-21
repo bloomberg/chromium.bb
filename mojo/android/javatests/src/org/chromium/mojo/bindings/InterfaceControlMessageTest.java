@@ -4,7 +4,7 @@
 
 package org.chromium.mojo.bindings;
 
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.mojo.MojoTestCase;
 import org.chromium.mojo.bindings.Callbacks.Callback1;

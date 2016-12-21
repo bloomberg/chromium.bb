@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.infobar;
 
 import android.graphics.Rect;
 import android.graphics.Region;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.MediumTest;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.TextView;

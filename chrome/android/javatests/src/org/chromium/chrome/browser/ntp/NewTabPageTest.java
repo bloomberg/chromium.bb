@@ -5,10 +5,10 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.graphics.Canvas;
+import android.support.test.filters.LargeTest;
+import android.support.test.filters.MediumTest;
+import android.support.test.filters.SmallTest;
 import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.LargeTest;
-import android.test.suitebuilder.annotation.MediumTest;
-import android.test.suitebuilder.annotation.SmallTest;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;

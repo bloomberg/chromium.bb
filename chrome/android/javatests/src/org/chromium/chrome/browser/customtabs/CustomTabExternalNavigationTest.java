@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory.CustomTabNavigationDelegate;

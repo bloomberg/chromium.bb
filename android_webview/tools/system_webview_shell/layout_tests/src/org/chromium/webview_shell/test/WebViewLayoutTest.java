@@ -4,8 +4,8 @@
 
 package org.chromium.webview_shell.test;
 
+import android.support.test.filters.MediumTest;
 import android.test.ActivityInstrumentationTestCase2;
-import android.test.suitebuilder.annotation.MediumTest;
 
 import junit.framework.ComparisonFailure;
 

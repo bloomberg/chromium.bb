@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.sync;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.test.suitebuilder.annotation.LargeTest;
+import android.support.test.filters.LargeTest;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;

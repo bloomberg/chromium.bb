@@ -5,7 +5,7 @@
 package org.chromium.chrome.browser.download;
 
 import android.os.Environment;
-import android.test.suitebuilder.annotation.MediumTest;
+import android.support.test.filters.MediumTest;
 import android.view.View;
 
 import org.chromium.base.Log;

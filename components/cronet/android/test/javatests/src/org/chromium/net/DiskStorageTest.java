@@ -4,7 +4,7 @@
 
 package org.chromium.net;
 
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.base.FileUtils;
 import org.chromium.base.PathUtils;

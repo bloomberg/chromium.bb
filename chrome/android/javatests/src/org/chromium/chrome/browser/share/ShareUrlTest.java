@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.share;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content.browser.test.NativeLibraryTestBase;

@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.sync.ui;
 
-import android.test.suitebuilder.annotation.SmallTest;
+import android.support.test.filters.SmallTest;
 import android.widget.CheckedTextView;
 import android.widget.ListView;
 

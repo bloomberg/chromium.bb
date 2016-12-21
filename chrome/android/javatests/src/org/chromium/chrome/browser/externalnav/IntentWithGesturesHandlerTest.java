@@ -6,8 +6,8 @@ package org.chromium.chrome.browser.externalnav;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.SmallTest;
 
 /**
  * Instrumentation tests for {@link IntentWithGesturesHandler}.

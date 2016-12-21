@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.tabmodel;
 
+import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 import android.test.UiThreadTest;
-import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.content_public.browser.LoadUrlParams;

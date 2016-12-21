@@ -5,8 +5,8 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
+import android.support.test.filters.MediumTest;
 import android.test.InstrumentationTestCase;
-import android.test.suitebuilder.annotation.MediumTest;
 import android.view.WindowManager;
 
 import org.chromium.base.ThreadUtils;
