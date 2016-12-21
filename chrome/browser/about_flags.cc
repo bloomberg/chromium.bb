@@ -980,7 +980,7 @@ const FeatureEntry kFeatureEntries[] = {
         "disable-accelerated-video-decode",
         IDS_FLAGS_ACCELERATED_VIDEO_DECODE_NAME,
         IDS_FLAGS_ACCELERATED_VIDEO_DECODE_DESCRIPTION,
-        kOsMac | kOsWin | kOsCrOS,
+        kOsMac | kOsWin | kOsCrOS | kOsAndroid,
         SINGLE_DISABLE_VALUE_TYPE(switches::kDisableAcceleratedVideoDecode),
     },
 #if defined(USE_ASH)
