@@ -1383,6 +1383,28 @@ class CIDBConnection(SchemaVersionedMySQLConnection):
     return clactions.CLActionHistory(clactions.CLAction(*values)
                                      for values in results)
 
+  @minimum_schema(11)
+  def GetActionsSince(self, start_date):
+    """Get all CL actions after a specific |start_date|.
+
+    Unlike GetActionHistory, this method makes use of only a single simple
+    SELECT query, and does not perform any of the precalculations that
+    CLActionHistory makes use of for statistics. Hence, this method is most
+    suitable for queries expected to return a large result set.
+
+    Args:
+      start_date: (Type: datetime.date) The first date on which you want action
+                  history.
+    """
+    values = {'start_date': start_date.strftime(self._DATE_FORMAT)}
+
+    # Enforce start date
+    conds = 'timestamp >= TIMESTAMP(%(start_date)s)'
+
+    query = '%s WHERE %s' % (self._SQL_FETCH_ACTIONS, conds)
+    results = self._Execute(query, values).fetchall()
+    return [clactions.CLAction(*values) for values in results]
+
   @minimum_schema(29)
   def HasBuildStageFailed(self, build_stage_id):
     """Determine whether a build stage has failed according to cidb.
