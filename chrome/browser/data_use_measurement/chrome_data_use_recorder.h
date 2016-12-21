@@ -18,7 +18,7 @@ typedef std::pair<int, int> RenderFrameHostID;
 class ChromeDataUseRecorder : public DataUseRecorder {
  public:
   ChromeDataUseRecorder();
-  ~ChromeDataUseRecorder();
+  ~ChromeDataUseRecorder() override;
 
   RenderFrameHostID main_frame_id() const { return main_frame_id_; }
 

@@ -26,7 +26,7 @@ namespace data_use_measurement {
 class DataUseRecorder {
  public:
   DataUseRecorder();
-  ~DataUseRecorder();
+  virtual ~DataUseRecorder();
 
   // Returns the actual data used by the entity being tracked.
   DataUse& data_use() { return data_use_; }
