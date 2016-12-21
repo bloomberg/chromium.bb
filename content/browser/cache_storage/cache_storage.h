@@ -166,8 +166,8 @@ class CONTENT_EXPORT CacheStorage {
       const StringVector& original_ordered_cache_names,
       const BoolAndErrorCallback& callback,
       bool success);
-  void DeleteCacheFinalize(std::unique_ptr<CacheStorageCache> doomed_cache);
-  void DeleteCacheDidGetSize(std::unique_ptr<CacheStorageCache> cache,
+  void DeleteCacheFinalize(CacheStorageCache* doomed_cache);
+  void DeleteCacheDidGetSize(CacheStorageCache* doomed_cache,
                              int64_t cache_size);
   void DeleteCacheDidCleanUp(bool success);
 

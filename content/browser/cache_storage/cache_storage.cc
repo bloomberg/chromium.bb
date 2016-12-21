@@ -817,22 +817,21 @@ void CacheStorage::DeleteCacheDidWriteIndex(
 // Call this once the last handle to a doomed cache is gone. It's okay if this
 // doesn't get to complete before shutdown, the cache will be removed from disk
 // on next startup in that case.
-void CacheStorage::DeleteCacheFinalize(
-    std::unique_ptr<CacheStorageCache> doomed_cache) {
-  CacheStorageCache* cache = doomed_cache.get();
-  cache->Size(base::Bind(&CacheStorage::DeleteCacheDidGetSize,
-                         weak_factory_.GetWeakPtr(),
-                         base::Passed(std::move(doomed_cache))));
+void CacheStorage::DeleteCacheFinalize(CacheStorageCache* doomed_cache) {
+  doomed_cache->Size(base::Bind(&CacheStorage::DeleteCacheDidGetSize,
+                                weak_factory_.GetWeakPtr(), doomed_cache));
 }
 
-void CacheStorage::DeleteCacheDidGetSize(
-    std::unique_ptr<CacheStorageCache> cache,
-    int64_t cache_size) {
+void CacheStorage::DeleteCacheDidGetSize(CacheStorageCache* doomed_cache,
+                                         int64_t cache_size) {
   quota_manager_proxy_->NotifyStorageModified(
       storage::QuotaClient::kServiceWorkerCache, origin_,
       storage::kStorageTypeTemporary, -1 * cache_size);
 
-  cache_loader_->CleanUpDeletedCache(cache.get());
+  cache_loader_->CleanUpDeletedCache(doomed_cache);
+  auto doomed_caches_iter = doomed_caches_.find(doomed_cache);
+  DCHECK(doomed_caches_iter != doomed_caches_.end());
+  doomed_caches_.erase(doomed_caches_iter);
 }
 
 void CacheStorage::EnumerateCachesImpl(const StringsCallback& callback) {
@@ -953,8 +952,7 @@ void CacheStorage::DropCacheHandleRef(CacheStorageCache* cache) {
     auto doomed_caches_iter = doomed_caches_.find(cache);
     if (doomed_caches_iter != doomed_caches_.end()) {
       // The last reference to a doomed cache is gone, perform clean up.
-      DeleteCacheFinalize(std::move(doomed_caches_iter->second));
-      doomed_caches_.erase(doomed_caches_iter);
+      DeleteCacheFinalize(cache);
       return;
     }
 
