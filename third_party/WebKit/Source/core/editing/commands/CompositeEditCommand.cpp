@@ -82,23 +82,20 @@ using namespace HTMLNames;
 EditCommandComposition* EditCommandComposition::create(
     Document* document,
     const VisibleSelection& startingSelection,
-    const VisibleSelection& endingSelection,
-    InputEvent::InputType inputType) {
+    const VisibleSelection& endingSelection) {
   return new EditCommandComposition(document, startingSelection,
-                                    endingSelection, inputType);
+                                    endingSelection);
 }
 
 EditCommandComposition::EditCommandComposition(
     Document* document,
     const VisibleSelection& startingSelection,
-    const VisibleSelection& endingSelection,
-    InputEvent::InputType inputType)
+    const VisibleSelection& endingSelection)
     : m_document(document),
       m_startingSelection(startingSelection),
       m_endingSelection(endingSelection),
       m_startingRootEditableElement(startingSelection.rootEditableElement()),
-      m_endingRootEditableElement(endingSelection.rootEditableElement()),
-      m_inputType(inputType) {}
+      m_endingRootEditableElement(endingSelection.rootEditableElement()) {}
 
 bool EditCommandComposition::belongsTo(const LocalFrame& frame) const {
   DCHECK(m_document);
@@ -160,10 +157,6 @@ bool EditCommandComposition::willUnapply(EditCommandSource) {
 bool EditCommandComposition::willReapply(EditCommandSource) {
   // TODO(chongz): Fire 'beforeinput' for 'historyRedo'.
   return true;
-}
-
-InputEvent::InputType EditCommandComposition::inputType() const {
-  return m_inputType;
 }
 
 void EditCommandComposition::append(SimpleEditCommand* command) {
@@ -262,9 +255,10 @@ EditCommandComposition* CompositeEditCommand::ensureComposition() {
   CompositeEditCommand* command = this;
   while (command && command->parent())
     command = command->parent();
-  if (!command->m_composition)
+  if (!command->m_composition) {
     command->m_composition = EditCommandComposition::create(
-        &document(), startingSelection(), endingSelection(), inputType());
+        &document(), startingSelection(), endingSelection());
+  }
   return command->m_composition.get();
 }
 

@@ -48,13 +48,11 @@ class EditCommandComposition final : public UndoStep {
  public:
   static EditCommandComposition* create(Document*,
                                         const VisibleSelection&,
-                                        const VisibleSelection&,
-                                        InputEvent::InputType);
+                                        const VisibleSelection&);
 
   bool belongsTo(const LocalFrame&) const override;
   void unapply(EditCommandSource) override;
   void reapply(EditCommandSource) override;
-  InputEvent::InputType inputType() const override;
   void append(SimpleEditCommand*);
   void append(EditCommandComposition*);
 
@@ -76,8 +74,7 @@ class EditCommandComposition final : public UndoStep {
  private:
   EditCommandComposition(Document*,
                          const VisibleSelection& startingSelection,
-                         const VisibleSelection& endingSelection,
-                         InputEvent::InputType);
+                         const VisibleSelection& endingSelection);
 
   // TODO(chongz): Implement "beforeinput" as described below:
   // Fires "beforeinput" and will returns |false| to cancel unapply / reapply if
@@ -93,7 +90,6 @@ class EditCommandComposition final : public UndoStep {
   HeapVector<Member<SimpleEditCommand>> m_commands;
   Member<Element> m_startingRootEditableElement;
   Member<Element> m_endingRootEditableElement;
-  InputEvent::InputType m_inputType;
 };
 
 class CORE_EXPORT CompositeEditCommand : public EditCommand {
