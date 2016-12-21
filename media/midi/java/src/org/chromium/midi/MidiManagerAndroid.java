@@ -67,8 +67,7 @@ class MidiManagerAndroid {
      * @param nativeManagerPointer The native pointer to a midi::MidiManagerAndroid object.
      */
     private MidiManagerAndroid(Context context, long nativeManagerPointer) {
-        // TODO(crbug.com/665157)
-        // assert ThreadUtils.runningOnUiThread();
+        assert !ThreadUtils.runningOnUiThread();
 
         mManager = (MidiManager) context.getSystemService(Context.MIDI_SERVICE);
         mHandler = new Handler(ThreadUtils.getUiThreadLooper());
