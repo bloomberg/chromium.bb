@@ -174,7 +174,7 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
 
  private:
   class CaptureDeviceStartRequest;
-  struct DeviceEntry;
+  class DeviceEntry;
   struct DeviceInfo;
 
   using SessionMap = std::map<media::VideoCaptureSessionId, MediaStreamDevice>;
@@ -239,10 +239,8 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   void QueueStartDevice(media::VideoCaptureSessionId session_id,
                         DeviceEntry* entry,
                         const media::VideoCaptureParams& params);
-  void OnDeviceStarted(
-      int serial_id,
-      std::unique_ptr<media::FrameBufferPool> frame_buffer_pool,
-      std::unique_ptr<VideoCaptureDevice> device);
+  void OnDeviceStarted(int serial_id,
+                       std::unique_ptr<VideoCaptureDevice> device);
   void DoStopDevice(DeviceEntry* entry);
   void HandleQueuedStartRequest();
 

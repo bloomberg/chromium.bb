@@ -18,11 +18,12 @@
 #include "build/build_config.h"
 #include "components/display_compositor/gl_helper.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/browser/renderer_host/media/video_capture_gpu_jpeg_decoder.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "media/base/video_frame.h"
-#include "media/capture/video/video_capture_buffer_pool.h"
+#include "media/capture/video/video_capture_buffer_pool_impl.h"
 #include "media/capture/video/video_capture_buffer_tracker_factory_impl.h"
 #include "media/capture/video/video_capture_device_client.h"
 
@@ -44,6 +45,50 @@ static const int kInfiniteRatio = 99999;
     UMA_HISTOGRAM_SPARSE_SLOWLY( \
         name, \
         (height) ? ((width) * 100) / (height) : kInfiniteRatio);
+
+std::unique_ptr<media::VideoCaptureJpegDecoder> CreateGpuJpegDecoder(
+    const media::VideoCaptureJpegDecoder::DecodeDoneCB& decode_done_cb) {
+  return base::MakeUnique<VideoCaptureGpuJpegDecoder>(decode_done_cb);
+}
+
+// Decorator for media::VideoFrameReceiver that forwards all incoming calls
+// to the Browser IO thread.
+class VideoFrameReceiverOnIOThread : public media::VideoFrameReceiver {
+ public:
+  explicit VideoFrameReceiverOnIOThread(
+      const base::WeakPtr<VideoFrameReceiver>& receiver)
+      : receiver_(receiver) {}
+
+  void OnIncomingCapturedVideoFrame(
+      std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
+      scoped_refptr<media::VideoFrame> frame) override {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&VideoFrameReceiver::OnIncomingCapturedVideoFrame, receiver_,
+                   base::Passed(&buffer), std::move(frame)));
+  }
+
+  void OnError() override {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&VideoFrameReceiver::OnError, receiver_));
+  }
+
+  void OnLog(const std::string& message) override {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&VideoFrameReceiver::OnLog, receiver_, message));
+  }
+
+  void OnBufferDestroyed(int buffer_id_to_drop) override {
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::Bind(&VideoFrameReceiver::OnBufferDestroyed,
+                                       receiver_, buffer_id_to_drop));
+  }
+
+ private:
+  base::WeakPtr<VideoFrameReceiver> receiver_;
+};
 
 }  // anonymous namespace
 
@@ -95,12 +140,12 @@ VideoCaptureController::BufferState::BufferState(
     int buffer_id,
     int frame_feedback_id,
     media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer,
-    media::FrameBufferPool* frame_buffer_pool,
+    scoped_refptr<media::VideoCaptureBufferPool> buffer_pool,
     scoped_refptr<media::VideoFrame> frame)
     : buffer_id_(buffer_id),
       frame_feedback_id_(frame_feedback_id),
       consumer_feedback_observer_(consumer_feedback_observer),
-      frame_buffer_pool_(frame_buffer_pool),
+      buffer_pool_(std::move(buffer_pool)),
       frame_(std::move(frame)),
       max_consumer_utilization_(
           media::VideoFrameConsumerFeedbackObserver::kNoUtilizationRecorded),
@@ -121,8 +166,7 @@ void VideoCaptureController::BufferState::RecordConsumerUtilization(
 
 void VideoCaptureController::BufferState::IncreaseConsumerCount() {
   if (consumer_hold_count_ == 0)
-    if (frame_buffer_pool_ != nullptr)
-      frame_buffer_pool_->SetBufferHold(buffer_id_);
+    buffer_pool_->HoldForConsumers(buffer_id_, 1);
   consumer_hold_count_++;
 }
 
@@ -135,8 +179,7 @@ void VideoCaptureController::BufferState::DecreaseConsumerCount() {
       consumer_feedback_observer_->OnUtilizationReport(
           frame_feedback_id_, max_consumer_utilization_);
     }
-    if (frame_buffer_pool_ != nullptr)
-      frame_buffer_pool_->ReleaseBufferHold(buffer_id_);
+    buffer_pool_->RelinquishConsumerHold(buffer_id_, 1);
     max_consumer_utilization_ =
         media::VideoFrameConsumerFeedbackObserver::kNoUtilizationRecorded;
   }
@@ -151,13 +194,10 @@ void VideoCaptureController::BufferState::SetConsumerFeedbackObserver(
   consumer_feedback_observer_ = consumer_feedback_observer;
 }
 
-void VideoCaptureController::BufferState::SetFrameBufferPool(
-    media::FrameBufferPool* frame_buffer_pool) {
-  frame_buffer_pool_ = frame_buffer_pool;
-}
-
-VideoCaptureController::VideoCaptureController()
-    : frame_buffer_pool_(nullptr),
+VideoCaptureController::VideoCaptureController(int max_buffers)
+    : buffer_pool_(new media::VideoCaptureBufferPoolImpl(
+          base::MakeUnique<media::VideoCaptureBufferTrackerFactoryImpl>(),
+          max_buffers)),
       consumer_feedback_observer_(nullptr),
       state_(VIDEO_CAPTURE_STATE_STARTED),
       has_received_frames_(false),
@@ -165,20 +205,9 @@ VideoCaptureController::VideoCaptureController()
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
-VideoCaptureController::~VideoCaptureController() = default;
-
 base::WeakPtr<VideoCaptureController>
 VideoCaptureController::GetWeakPtrForIOThread() {
   return weak_ptr_factory_.GetWeakPtr();
-}
-
-void VideoCaptureController::SetFrameBufferPool(
-    std::unique_ptr<media::FrameBufferPool> frame_buffer_pool) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  frame_buffer_pool_ = std::move(frame_buffer_pool);
-  // Update existing BufferState entries.
-  for (auto& entry : buffer_id_to_state_map_)
-    entry.second.SetFrameBufferPool(frame_buffer_pool_.get());
 }
 
 void VideoCaptureController::SetConsumerFeedbackObserver(
@@ -189,6 +218,18 @@ void VideoCaptureController::SetConsumerFeedbackObserver(
   // Update existing BufferState entries.
   for (auto& entry : buffer_id_to_state_map_)
     entry.second.SetConsumerFeedbackObserver(consumer_feedback_observer_.get());
+}
+
+std::unique_ptr<media::VideoCaptureDevice::Client>
+VideoCaptureController::NewDeviceClient() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  return base::MakeUnique<media::VideoCaptureDeviceClient>(
+      base::MakeUnique<VideoFrameReceiverOnIOThread>(
+          this->GetWeakPtrForIOThread()),
+      buffer_pool_,
+      base::Bind(&CreateGpuJpegDecoder,
+                 base::Bind(&VideoFrameReceiver::OnIncomingCapturedVideoFrame,
+                            this->GetWeakPtrForIOThread())));
 }
 
 void VideoCaptureController::AddClient(
@@ -369,11 +410,13 @@ VideoCaptureController::GetVideoCaptureFormat() const {
   return video_capture_format_;
 }
 
+VideoCaptureController::~VideoCaptureController() {
+}
+
 void VideoCaptureController::OnIncomingCapturedVideoFrame(
     std::unique_ptr<media::VideoCaptureDevice::Client::Buffer> buffer,
     scoped_refptr<VideoFrame> frame) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(frame_buffer_pool_);
   const int buffer_id = buffer->id();
   DCHECK_NE(buffer_id, media::VideoCaptureBufferPool::kInvalidId);
 
@@ -383,7 +426,7 @@ void VideoCaptureController::OnIncomingCapturedVideoFrame(
           .insert(std::make_pair(
               buffer_id, BufferState(buffer_id, buffer->frame_feedback_id(),
                                      consumer_feedback_observer_.get(),
-                                     frame_buffer_pool_.get(), frame)))
+                                     buffer_pool_, frame)))
           .first;
   BufferState& buffer_state = it->second;
   DCHECK(buffer_state.HasZeroConsumerHoldCount());
@@ -476,7 +519,6 @@ void VideoCaptureController::OnLog(const std::string& message) {
 
 void VideoCaptureController::OnBufferDestroyed(int buffer_id_to_drop) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(frame_buffer_pool_);
 
   for (const auto& client : controller_clients_) {
     if (client->session_closed)
@@ -504,7 +546,7 @@ void VideoCaptureController::DoNewBufferOnIOThread(
 
   const int buffer_id = buffer->id();
   mojo::ScopedSharedBufferHandle handle =
-      frame_buffer_pool_->GetHandleForTransit(buffer_id);
+      buffer_pool_->GetHandleForTransit(buffer_id);
   client->event_handler->OnBufferCreated(client->controller_id,
                                          std::move(handle),
                                          buffer->mapped_size(), buffer_id);

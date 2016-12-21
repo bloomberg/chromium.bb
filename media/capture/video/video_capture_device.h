@@ -41,15 +41,6 @@ class Location;
 
 namespace media {
 
-class CAPTURE_EXPORT FrameBufferPool {
- public:
-  virtual ~FrameBufferPool() {}
-
-  virtual void SetBufferHold(int buffer_id) = 0;
-  virtual void ReleaseBufferHold(int buffer_id) = 0;
-  virtual mojo::ScopedSharedBufferHandle GetHandleForTransit(int buffer_id) = 0;
-};
-
 class CAPTURE_EXPORT VideoFrameConsumerFeedbackObserver {
  public:
   virtual ~VideoFrameConsumerFeedbackObserver() {}
@@ -157,10 +148,11 @@ class CAPTURE_EXPORT VideoCaptureDevice
     // |timestamp|.
     // TODO(chfremer): Consider removing one of the two in order to simplify the
     // interface.
-    virtual void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
-                                          const VideoCaptureFormat& format,
-                                          base::TimeTicks reference_time,
-                                          base::TimeDelta timestamp) = 0;
+    virtual void OnIncomingCapturedBuffer(
+        std::unique_ptr<Buffer> buffer,
+        const VideoCaptureFormat& frame_format,
+        base::TimeTicks reference_time,
+        base::TimeDelta timestamp) = 0;
     virtual void OnIncomingCapturedVideoFrame(
         std::unique_ptr<Buffer> buffer,
         scoped_refptr<VideoFrame> frame) = 0;
