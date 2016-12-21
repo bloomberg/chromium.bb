@@ -8,6 +8,8 @@
 #include <memory>
 #include <set>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
 #include "base/time/time.h"
 #include "sql/connection.h"
@@ -19,7 +21,7 @@ namespace precache {
 
 void PrintTo(const PrecacheURLInfo& url_info, ::std::ostream* os) {
   *os << "{" << url_info.was_precached << ", " << url_info.is_precached << ", "
-      << url_info.was_used << "}";
+      << url_info.was_used << ", " << url_info.is_download_reported << "}";
 }
 
 namespace {
@@ -43,7 +45,7 @@ class PrecacheURLTableTest : public testing::Test {
 
 TEST_F(PrecacheURLTableTest, AddURLWithNoExistingRow) {
   const base::Time kTime = base::Time::FromInternalValue(100);
-  precache_url_table_->AddURL(GURL("http://url.com"), 1, true, kTime);
+  precache_url_table_->AddURL(GURL("http://url.com"), 1, true, kTime, false);
 
   std::map<GURL, base::Time> expected_map;
   expected_map[GURL("http://url.com")] = kTime;
@@ -56,8 +58,8 @@ TEST_F(PrecacheURLTableTest, AddURLWithNoExistingRow) {
 TEST_F(PrecacheURLTableTest, AddURLWithExistingRow) {
   const base::Time kOldTime = base::Time::FromInternalValue(50);
   const base::Time kNewTime = base::Time::FromInternalValue(100);
-  precache_url_table_->AddURL(GURL("http://url.com"), 1, true, kOldTime);
-  precache_url_table_->AddURL(GURL("http://url.com"), 1, true, kNewTime);
+  precache_url_table_->AddURL(GURL("http://url.com"), 1, true, kOldTime, false);
+  precache_url_table_->AddURL(GURL("http://url.com"), 1, true, kNewTime, false);
 
   std::map<GURL, base::Time> expected_map;
   expected_map[GURL("http://url.com")] = kNewTime;
@@ -71,9 +73,10 @@ TEST_F(PrecacheURLTableTest, SetURLAsNotPrecached) {
   const base::Time kStaysTime = base::Time::FromInternalValue(50);
   const base::Time kDeletedTime = base::Time::FromInternalValue(100);
 
-  precache_url_table_->AddURL(GURL("http://stays.com"), 1, true, kStaysTime);
-  precache_url_table_->AddURL(GURL("http://deleted.com"), 1, true,
-                              kDeletedTime);
+  precache_url_table_->AddURL(GURL("http://stays.com"), 1, true, kStaysTime,
+                              false);
+  precache_url_table_->AddURL(GURL("http://deleted.com"), 1, true, kDeletedTime,
+                              false);
 
   precache_url_table_->SetURLAsNotPrecached(GURL("http://deleted.com"));
 
@@ -85,30 +88,48 @@ TEST_F(PrecacheURLTableTest, SetURLAsNotPrecached) {
   EXPECT_EQ(expected_map, actual_map);
 }
 
+TEST_F(PrecacheURLTableTest, SetDownloadReported) {
+  const GURL url("http://stays.com");
+  precache_url_table_->AddURL(url, 1, true, base::Time::FromInternalValue(50),
+                              false);
+
+  precache_url_table_->SetDownloadReported(1);
+
+  EXPECT_EQ((PrecacheURLInfo{true, true, false, true}),
+            precache_url_table_->GetURLInfo(url));
+}
+
 TEST_F(PrecacheURLTableTest, GetURLInfo) {
   const GURL url("http://url.com");
 
-  EXPECT_EQ((PrecacheURLInfo{false, false, false}),
+  EXPECT_EQ((PrecacheURLInfo{false, false, false, false}),
             precache_url_table_->GetURLInfo(url));
 
-  precache_url_table_->AddURL(url, 1, true, base::Time::FromInternalValue(100));
+  precache_url_table_->AddURL(url, 1, true, base::Time::FromInternalValue(100),
+                              true);
 
-  EXPECT_EQ((PrecacheURLInfo{true, true, false}),
+  EXPECT_EQ((PrecacheURLInfo{true, true, false, true}),
             precache_url_table_->GetURLInfo(url));
 
   precache_url_table_->SetPrecachedURLAsUsed(url);
 
-  EXPECT_EQ((PrecacheURLInfo{true, false, true}),
+  EXPECT_EQ((PrecacheURLInfo{true, false, true, true}),
             precache_url_table_->GetURLInfo(url));
 
-  precache_url_table_->AddURL(url, 1, true, base::Time::FromInternalValue(100));
+  precache_url_table_->AddURL(url, 1, true, base::Time::FromInternalValue(100),
+                              false);
 
-  EXPECT_EQ((PrecacheURLInfo{true, true, false}),
+  EXPECT_EQ((PrecacheURLInfo{true, true, false, false}),
             precache_url_table_->GetURLInfo(url));
 
   precache_url_table_->SetURLAsNotPrecached(url);
 
-  EXPECT_EQ((PrecacheURLInfo{true, false, false}),
+  EXPECT_EQ((PrecacheURLInfo{true, false, false, false}),
+            precache_url_table_->GetURLInfo(url));
+
+  precache_url_table_->SetDownloadReported(1);
+
+  EXPECT_EQ((PrecacheURLInfo{true, false, false, true}),
             precache_url_table_->GetURLInfo(url));
 }
 
@@ -118,10 +139,12 @@ TEST_F(PrecacheURLTableTest, DeleteAllPrecachedBefore) {
   const base::Time kEndTime = base::Time::FromInternalValue(30);
   const base::Time kAfterTime = base::Time::FromInternalValue(40);
 
-  precache_url_table_->AddURL(GURL("http://old.com"), 1, true, kOldTime);
-  precache_url_table_->AddURL(GURL("http://before.com"), 1, true, kBeforeTime);
-  precache_url_table_->AddURL(GURL("http://end.com"), 1, true, kEndTime);
-  precache_url_table_->AddURL(GURL("http://after.com"), 1, true, kAfterTime);
+  precache_url_table_->AddURL(GURL("http://old.com"), 1, true, kOldTime, false);
+  precache_url_table_->AddURL(GURL("http://before.com"), 1, true, kBeforeTime,
+                              false);
+  precache_url_table_->AddURL(GURL("http://end.com"), 1, true, kEndTime, false);
+  precache_url_table_->AddURL(GURL("http://after.com"), 1, true, kAfterTime,
+                              false);
 
   precache_url_table_->DeleteAllPrecachedBefore(kEndTime);
 

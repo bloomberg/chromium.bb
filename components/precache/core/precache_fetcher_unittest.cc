@@ -415,6 +415,9 @@ class PrecacheFetcherTest : public testing::Test {
     return task_runner_;
   }
 
+  // To allow friend access.
+  void Flush() { precache_database_.Flush(); }
+
   // Must be declared first so that it is destroyed last.
   base::MessageLoopForUI loop_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -1241,7 +1244,7 @@ TEST(PrecacheFetcherStandaloneTest, GetResourceURLBase64Hash) {
                  GURL("http://used-resource-1/b.js")}));
 }
 
-TEST_F(PrecacheFetcherTest, SendUsedUnusedResourceHash) {
+TEST_F(PrecacheFetcherTest, SendUsedDownloadedResourceHash) {
   SetDefaultFlags();
 
   std::unique_ptr<PrecacheUnfinishedWork> unfinished_work(
@@ -1278,15 +1281,16 @@ TEST_F(PrecacheFetcherTest, SendUsedUnusedResourceHash) {
                    {GURL("http://used-resource-1/a.js"),
                     GURL("http://used-resource-1/b.js")}),
                true) +
-           "&unused_resources=" +
-           net::EscapeQueryParamValue(
-               PrecacheFetcher::GetResourceURLBase64HashForTesting(
-                   {GURL("http://unused-resource-1/c.js")}),
-               true)),
+           "&d=" + net::EscapeQueryParamValue(
+                       PrecacheFetcher::GetResourceURLBase64HashForTesting(
+                           {GURL("http://used-resource-1/a.js"),
+                            GURL("http://used-resource-1/b.js"),
+                            GURL("http://unused-resource-1/c.js")}),
+                       true)),
       std::string(), net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   factory_.SetFakeResponse(
       GURL(std::string(kManifestURLPrefix) +
-           "top-host-2.com?manifest=1002&used_resources=&unused_resources=" +
+           "top-host-2.com?manifest=1002&used_resources=&d=" +
            net::EscapeQueryParamValue(
                PrecacheFetcher::GetResourceURLBase64HashForTesting(
                    {GURL("http://unused-resource-2/a.js"),
@@ -1295,7 +1299,7 @@ TEST_F(PrecacheFetcherTest, SendUsedUnusedResourceHash) {
       std::string(), net::HTTP_OK, net::URLRequestStatus::SUCCESS);
   factory_.SetFakeResponse(
       GURL(std::string(kManifestURLPrefix) +
-           "top-host-3.com?manifest=1003&used_resources=&unused_resources="),
+           "top-host-3.com?manifest=1003&used_resources=&d="),
       std::string(), net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
   {
@@ -1303,6 +1307,46 @@ TEST_F(PrecacheFetcherTest, SendUsedUnusedResourceHash) {
         request_context_.get(), GURL(), std::string(),
         std::move(unfinished_work), kExperimentID,
         precache_database_.GetWeakPtr(), task_runner(), &precache_delegate_);
+    precache_fetcher.Start();
+
+    base::RunLoop().RunUntilIdle();
+  }
+
+  // If we run the precache again, no download should be reported.
+  factory_.ClearFakeResponses();
+  factory_.SetFakeResponse(GURL(kConfigURL), std::string(), net::HTTP_OK,
+                           net::URLRequestStatus::SUCCESS);
+  // Since we returned an empty proto, the manifest id was set to 0.
+  // The d='s are empty because precache fetches are tried first solely from the
+  // cache and, since any matching request to the fake factory succeeds, it is
+  // hardcoded to be cached even though we didn't specify it as such in the fake
+  // response.
+  factory_.SetFakeResponse(GURL(std::string(kManifestURLPrefix) +
+                                "top-host-1.com?manifest=0&used_resources=&d="),
+                           std::string(), net::HTTP_OK,
+                           net::URLRequestStatus::SUCCESS);
+  factory_.SetFakeResponse(GURL(std::string(kManifestURLPrefix) +
+                                "top-host-2.com?manifest=0&used_resources=&d="),
+                           std::string(), net::HTTP_OK,
+                           net::URLRequestStatus::SUCCESS);
+  factory_.SetFakeResponse(GURL(std::string(kManifestURLPrefix) +
+                                "top-host-3.com?manifest=0&used_resources=&d="),
+                           std::string(), net::HTTP_OK,
+                           net::URLRequestStatus::SUCCESS);
+  // Flush so that previous UpdatePrecacheReferrerHost calls make it through.
+  // Otherwise, manifest_id may be non 0 for some of the hosts.
+  Flush();
+  {
+    std::unique_ptr<PrecacheUnfinishedWork> more_work(
+        new PrecacheUnfinishedWork());
+    more_work->set_start_time(base::Time::UnixEpoch().ToInternalValue());
+    more_work->add_top_host()->set_hostname("top-host-1.com");
+    more_work->add_top_host()->set_hostname("top-host-2.com");
+    more_work->add_top_host()->set_hostname("top-host-3.com");
+    PrecacheFetcher precache_fetcher(
+        request_context_.get(), GURL(), std::string(), std::move(more_work),
+        kExperimentID, precache_database_.GetWeakPtr(), task_runner(),
+        &precache_delegate_);
     precache_fetcher.Start();
 
     base::RunLoop().RunUntilIdle();

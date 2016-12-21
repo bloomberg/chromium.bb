@@ -25,7 +25,8 @@ namespace precache {
 
 bool PrecacheURLInfo::operator==(const PrecacheURLInfo& other) const {
   return was_precached == other.was_precached &&
-         is_precached == other.is_precached && was_used == other.was_used;
+         is_precached == other.is_precached && was_used == other.was_used &&
+         is_download_reported == other.is_download_reported;
 }
 
 PrecacheURLTable::PrecacheURLTable() : db_(NULL) {}
@@ -42,31 +43,36 @@ bool PrecacheURLTable::Init(sql::Connection* db) {
 void PrecacheURLTable::AddURL(const GURL& url,
                               int64_t referrer_host_id,
                               bool is_precached,
-                              const base::Time& precache_time) {
-  Statement statement(
-      db_->GetCachedStatement(SQL_FROM_HERE,
-                              "INSERT OR REPLACE INTO precache_urls (url, "
-                              "referrer_host_id, was_used, is_precached, time) "
-                              "VALUES(?,?,0,?,?)"));
-
+                              const base::Time& precache_time,
+                              bool is_download_reported) {
+  Statement statement(db_->GetCachedStatement(
+      SQL_FROM_HERE,
+      "INSERT OR REPLACE INTO precache_urls "
+      "(url, referrer_host_id, was_used, is_precached, time, "
+      " is_download_reported)"
+      "VALUES(?, ?, 0, ?, ?, ?)"));
   statement.BindString(0, GetKey(url));
   statement.BindInt64(1, referrer_host_id);
   statement.BindInt64(2, is_precached ? 1 : 0);
   statement.BindInt64(3, precache_time.ToInternalValue());
+  statement.BindInt64(4, is_download_reported);
   statement.Run();
 }
 
 PrecacheURLInfo PrecacheURLTable::GetURLInfo(const GURL& url) {
   Statement statement(db_->GetCachedStatement(
       SQL_FROM_HERE,
-      "SELECT is_precached, was_used FROM precache_urls WHERE url=?"));
+      "SELECT is_precached, was_used, is_download_reported "
+      "FROM precache_urls WHERE url=?"));
   statement.BindString(0, GetKey(url));
 
   if (statement.Step()) {
     return {/*present=*/true, /*is_precached=*/statement.ColumnBool(0),
-            /*was_used==*/statement.ColumnBool(1)};
+            /*was_used==*/statement.ColumnBool(1),
+            /*is_download_reported=*/statement.ColumnBool(2)};
   } else {
-    return {/*present=*/false, /*is_precached=*/false, /*was_used=*/false};
+    return {/*present=*/false, /*is_precached=*/false, /*was_used=*/false,
+            /*is_download_reported=*/false};
   }
 }
 
@@ -93,18 +99,28 @@ void PrecacheURLTable::SetURLAsNotPrecached(const GURL& url) {
 void PrecacheURLTable::GetURLListForReferrerHost(
     int64_t referrer_host_id,
     std::vector<GURL>* used_urls,
-    std::vector<GURL>* unused_urls) {
-  Statement statement(db_->GetCachedStatement(
-      SQL_FROM_HERE,
-      "SELECT url, was_used from precache_urls where referrer_host_id=?"));
+    std::vector<GURL>* downloaded_urls) {
+  Statement statement(
+      db_->GetCachedStatement(SQL_FROM_HERE,
+                              "SELECT url, was_used, is_download_reported "
+                              "from precache_urls where referrer_host_id=?"));
   statement.BindInt64(0, referrer_host_id);
   while (statement.Step()) {
     GURL url(statement.ColumnString(0));
     if (statement.ColumnInt(1))
       used_urls->push_back(url);
-    else
-      unused_urls->push_back(url);
+    if (!statement.ColumnInt(2))
+      downloaded_urls->push_back(url);
   }
+}
+
+void PrecacheURLTable::SetDownloadReported(int64_t referrer_host_id) {
+  Statement statement(
+      db_->GetCachedStatement(SQL_FROM_HERE,
+                              "UPDATE precache_urls SET is_download_reported=1 "
+                              "WHERE referrer_host_id=?"));
+  statement.BindInt64(0, referrer_host_id);
+  statement.Run();
 }
 
 void PrecacheURLTable::ClearAllForReferrerHost(int64_t referrer_host_id) {
@@ -153,26 +169,35 @@ void PrecacheURLTable::GetAllDataForTesting(std::map<GURL, base::Time>* map) {
 }
 
 bool PrecacheURLTable::CreateTableIfNonExistent() {
+  // TODO(jamartin): The PRIMARY KEY should be (url, referrer_host_id).
   if (!db_->DoesTableExist("precache_urls")) {
     return db_->Execute(
         "CREATE TABLE precache_urls "
         "(url TEXT PRIMARY KEY, referrer_host_id INTEGER, was_used INTEGER, "
         "is_precached INTEGER, "
-        "time INTEGER)");
+        "time INTEGER, is_download_reported INTEGER)");
   } else {
     // Migrate the table by creating the missing columns.
     if (!db_->DoesColumnExist("precache_urls", "was_used") &&
-        !db_->Execute("ALTER TABLE precache_urls ADD COLUMN was_used INTEGER"))
+        !db_->Execute("ALTER TABLE precache_urls "
+                      "ADD COLUMN was_used INTEGER")) {
       return false;
+    }
     if (!db_->DoesColumnExist("precache_urls", "is_precached") &&
-        !db_->Execute(
-            "ALTER TABLE precache_urls ADD COLUMN is_precached "
-            "INTEGER default 1"))
+        !db_->Execute("ALTER TABLE precache_urls ADD COLUMN is_precached "
+                      "INTEGER default 1")) {
       return false;
+    }
     if (!db_->DoesColumnExist("precache_urls", "referrer_host_id") &&
         !db_->Execute(
-            "ALTER TABLE precache_urls ADD COLUMN referrer_host_id INTEGER"))
+            "ALTER TABLE precache_urls ADD COLUMN referrer_host_id INTEGER")) {
       return false;
+    }
+    if (!db_->DoesColumnExist("precache_urls", "is_download_reported") &&
+        !db_->Execute("ALTER TABLE precache_urls "
+                      "ADD COLUMN is_download_reported INTEGER")) {
+      return false;
+    }
   }
   return true;
 }

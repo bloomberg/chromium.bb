@@ -34,6 +34,9 @@ struct PrecacheURLInfo {
   // is_precached was true).
   bool was_used;
 
+  // It was already reported that this resources was downloaded.
+  bool is_download_reported;
+
   bool operator==(const PrecacheURLInfo& other) const;
 };
 
@@ -55,11 +58,14 @@ class PrecacheURLTable {
 
   // Adds an URL to the table, |referrer_host_id| is the id of the referrer host
   // in PrecacheReferrerHostTable, |is_precached| indicates if the URL is
-  // precached, |time| is the timestamp. Replaces the row if one already exists.
+  // precached, |time| is the timestamp, |is_download_reported| indicates if
+  // this the download of this URL was already reported. Replaces the row if one
+  // already exists.
   void AddURL(const GURL& url,
               int64_t referrer_host_id,
               bool is_precached,
-              const base::Time& precache_time);
+              const base::Time& precache_time,
+              bool is_download_reported);
 
   // Returns information about the URL's status with respect to prefetching.
   PrecacheURLInfo GetURLInfo(const GURL& url);
@@ -70,11 +76,14 @@ class PrecacheURLTable {
   // Set the previously precached URL as not precached, during user browsing.
   void SetURLAsNotPrecached(const GURL& url);
 
-  // Populates the used and unused resource URLs for the referrer host with id
-  // |referrer_host_id|.
+  // Populates the used and downloaded resource URLs for the referrer host with
+  // id |referrer_host_id|.
   void GetURLListForReferrerHost(int64_t referrer_host_id,
                                  std::vector<GURL>* used_urls,
-                                 std::vector<GURL>* unused_urls);
+                                 std::vector<GURL>* downloaded_urls);
+
+  // Sets all the URLs of the given referrer_host_id as is_download_reported.
+  void SetDownloadReported(int64_t referrer_host_id);
 
   // Clears all URL entries for the referrer host |referrer_host_id|.
   void ClearAllForReferrerHost(int64_t referrer_host_id);

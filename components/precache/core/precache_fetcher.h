@@ -49,7 +49,7 @@ struct ManifestHostInfo {
                    const std::string& hostname,
                    int64_t visits,
                    const std::string& used_url_hash,
-                   const std::string& unused_url_hash);
+                   const std::string& downloaded_url_hash);
   ~ManifestHostInfo();
   ManifestHostInfo(ManifestHostInfo&&);
   ManifestHostInfo& operator=(ManifestHostInfo&&);
@@ -60,7 +60,7 @@ struct ManifestHostInfo {
   GURL manifest_url;
   int64_t visits;
   std::string used_url_hash;
-  std::string unused_url_hash;
+  std::string downloaded_url_hash;
 };
 
 // Information about a resource to be downloaded.

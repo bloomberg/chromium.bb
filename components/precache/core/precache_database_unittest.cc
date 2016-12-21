@@ -9,6 +9,8 @@
 #include <map>
 #include <memory>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/hash_tables.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
@@ -263,7 +265,7 @@ TEST_F(PrecacheDatabaseTest, PrecacheOverNetwork) {
 }
 
 TEST_F(PrecacheDatabaseTest, PrecacheFromCacheWithURLTableEntry) {
-  precache_url_table()->AddURL(kURL, kReferrerID, true, kOldFetchTime);
+  precache_url_table()->AddURL(kURL, kReferrerID, true, kOldFetchTime, false);
   RecordPrecacheFromCache(kURL, kFetchTime, kSize);
 
   // The URL table entry should have been updated to have |kFetchTime| as the
@@ -326,7 +328,7 @@ TEST_F(PrecacheDatabaseTest, FetchOverNetwork_Cellular) {
 }
 
 TEST_F(PrecacheDatabaseTest, FetchOverNetworkWithURLTableEntry) {
-  precache_url_table()->AddURL(kURL, kReferrerID, true, kOldFetchTime);
+  precache_url_table()->AddURL(kURL, kReferrerID, true, kOldFetchTime, false);
   RecordFetchFromNetwork(kURL, kLatency, kFetchTime, kSize);
 
   // The URL table entry should have been deleted.
@@ -343,7 +345,7 @@ TEST_F(PrecacheDatabaseTest, FetchOverNetworkWithURLTableEntry) {
 }
 
 TEST_F(PrecacheDatabaseTest, FetchFromCacheWithURLTableEntry_NonCellular) {
-  precache_url_table()->AddURL(kURL, kReferrerID, true, kOldFetchTime);
+  precache_url_table()->AddURL(kURL, kReferrerID, true, kOldFetchTime, false);
   RecordFetchFromCache(kURL, kFetchTime, kSize);
 
   // The URL table entry should have been deleted.
@@ -361,7 +363,7 @@ TEST_F(PrecacheDatabaseTest, FetchFromCacheWithURLTableEntry_NonCellular) {
 }
 
 TEST_F(PrecacheDatabaseTest, FetchFromCacheWithURLTableEntry_Cellular) {
-  precache_url_table()->AddURL(kURL, kReferrerID, true, kOldFetchTime);
+  precache_url_table()->AddURL(kURL, kReferrerID, true, kOldFetchTime, false);
   RecordFetchFromCacheCellular(kURL, kFetchTime, kSize);
 
   // The URL table entry should have been deleted.
@@ -397,9 +399,9 @@ TEST_F(PrecacheDatabaseTest, DeleteExpiredPrecacheHistory) {
   const base::Time k61DaysAgo = kToday - base::TimeDelta::FromDays(61);
 
   precache_url_table()->AddURL(GURL("http://expired-precache.com"), kReferrerID,
-                               true, k61DaysAgo);
+                               true, k61DaysAgo, false);
   precache_url_table()->AddURL(GURL("http://old-precache.com"), kReferrerID,
-                               true, k59DaysAgo);
+                               true, k59DaysAgo, false);
 
   precache_database_->DeleteExpiredPrecacheHistory(kToday);
 
@@ -600,36 +602,37 @@ TEST_F(PrecacheDatabaseTest, GetURLListForReferrerHost) {
     }
   }
   Flush();
-  // Verify the used and unused resources.
+  // Verify the used and downloaded resources.
   for (const auto& test : tests) {
-    std::vector<GURL> expected_used_urls, expected_unused_urls;
+    std::vector<GURL> expected_used_urls, expected_downloaded_urls;
     for (const auto& resource : test.resource_info) {
       if (resource.expected_in_used) {
         expected_used_urls.push_back(GURL(resource.url));
-      } else {
-        expected_unused_urls.push_back(GURL(resource.url));
       }
+      expected_downloaded_urls.push_back(GURL(resource.url));
     }
-    std::vector<GURL> actual_used_urls, actual_unused_urls;
+    std::vector<GURL> actual_used_urls, actual_downloaded_urls;
     auto referrer_id = precache_database_->GetReferrerHost(test.hostname).id;
     EXPECT_NE(PrecacheReferrerHostEntry::kInvalidId, referrer_id);
     precache_database_->GetURLListForReferrerHost(
-        referrer_id, &actual_used_urls, &actual_unused_urls);
-    EXPECT_THAT(expected_used_urls, ::testing::ContainerEq(actual_used_urls));
-    EXPECT_THAT(expected_unused_urls,
-                ::testing::ContainerEq(actual_unused_urls));
+        referrer_id, &actual_used_urls, &actual_downloaded_urls);
+    EXPECT_THAT(actual_used_urls, ::testing::ContainerEq(expected_used_urls));
+    EXPECT_THAT(actual_downloaded_urls,
+                ::testing::ContainerEq(expected_downloaded_urls))
+        << "Host: " << test.hostname;
   }
-  // Subsequent manifest updates should clear the used and unused resources.
+  // Subsequent manifest updates should clear the used and downloaded resources.
   for (const auto& test : tests) {
     precache_database_->UpdatePrecacheReferrerHost(test.hostname, 100,
                                                    kNewFetchTime);
     Flush();
-    std::vector<GURL> actual_used_urls, actual_unused_urls;
+    std::vector<GURL> actual_used_urls, actual_downloaded_urls;
     auto referrer_id = precache_database_->GetReferrerHost(test.hostname).id;
     EXPECT_NE(PrecacheReferrerHostEntry::kInvalidId, referrer_id);
     precache_database_->GetURLListForReferrerHost(
-        referrer_id, &actual_used_urls, &actual_unused_urls);
-    EXPECT_TRUE(actual_used_urls.empty());
+        referrer_id, &actual_used_urls, &actual_downloaded_urls);
+    EXPECT_THAT(actual_used_urls, ::testing::IsEmpty());
+    EXPECT_THAT(actual_downloaded_urls, ::testing::IsEmpty());
   }
   // Resources that were precached previously and not seen in user browsing
   // should be still marked as precached.
@@ -641,6 +644,50 @@ TEST_F(PrecacheDatabaseTest, GetURLListForReferrerHost) {
     }
   }
   EXPECT_EQ(expected_url_table_map, GetActualURLTableMap());
+}
+
+TEST_F(PrecacheDatabaseTest, GetURLListForReferrerHostReportsDownloadedOnce) {
+  precache_database_->UpdatePrecacheReferrerHost("foo.com", 1, kFetchTime);
+  // Add two resources that shouldn't appear in downloaded.
+  Flush();  // We need to write the referrer_host_id.
+  const std::string already_reported_and_not_refetch =
+      "http://foo.com/already-reported-and-not-refetch.js";
+  precache_database_->RecordURLPrefetch(GURL(already_reported_and_not_refetch),
+                                        "foo.com", kPrecacheTime, false, kSize);
+  const std::string already_reported_and_in_cache =
+      "http://foo.com/already-reported-and-in-cache.js";
+  precache_database_->RecordURLPrefetch(GURL(already_reported_and_in_cache),
+                                        "foo.com", kPrecacheTime, false, kSize);
+  const std::string already_reported_but_refetch =
+      "http://foo.com/already-reported-but-refetch.js";
+  precache_database_->RecordURLPrefetch(GURL(already_reported_but_refetch),
+                                        "foo.com", kPrecacheTime, false, kSize);
+  {
+    // Let's mark existing resources as is_download_reported = 1 by calling
+    // GetURLListForReferrerHost.
+    std::vector<GURL> unused_a, unused_b;
+    auto id = precache_database_->GetReferrerHost("foo.com").id;
+    ASSERT_NE(PrecacheReferrerHostEntry::kInvalidId, id);
+    precache_database_->GetURLListForReferrerHost(id, &unused_a, &unused_b);
+  }
+
+  precache_database_->RecordURLPrefetch(GURL(already_reported_and_in_cache),
+                                        "foo.com", kPrecacheTime,
+                                        true /* was_cached */, kSize);
+  precache_database_->RecordURLPrefetch(GURL(already_reported_but_refetch),
+                                        "foo.com", kPrecacheTime,
+                                        false /* was_cached */, kSize);
+  Flush();
+
+  // Only the refetch resource should be reported as downloaded this time
+  // around.
+  std::vector<GURL> _, actual_downloaded_urls;
+  auto referrer_id = precache_database_->GetReferrerHost("foo.com").id;
+  EXPECT_NE(PrecacheReferrerHostEntry::kInvalidId, referrer_id);
+  precache_database_->GetURLListForReferrerHost(referrer_id, &_,
+                                                &actual_downloaded_urls);
+  EXPECT_THAT(actual_downloaded_urls,
+              ElementsAre(GURL(already_reported_but_refetch)));
 }
 
 }  // namespace

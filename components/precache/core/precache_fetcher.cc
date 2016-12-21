@@ -195,13 +195,13 @@ std::deque<ManifestHostInfo> RetrieveManifestInfo(
   for (const auto& host : hosts_to_fetch) {
     auto referrer_host_info = precache_database->GetReferrerHost(host.first);
     if (referrer_host_info.id != PrecacheReferrerHostEntry::kInvalidId) {
-      std::vector<GURL> used_urls, unused_urls;
-      precache_database->GetURLListForReferrerHost(referrer_host_info.id,
-                                                   &used_urls, &unused_urls);
+      std::vector<GURL> used_urls, downloaded_urls;
+      precache_database->GetURLListForReferrerHost(
+          referrer_host_info.id, &used_urls, &downloaded_urls);
       hosts_info.push_back(
           ManifestHostInfo(referrer_host_info.manifest_id, host.first,
                            host.second, GetResourceURLBase64Hash(used_urls),
-                           GetResourceURLBase64Hash(unused_urls)));
+                           GetResourceURLBase64Hash(downloaded_urls)));
     } else {
       hosts_info.push_back(
           ManifestHostInfo(PrecacheReferrerHostEntry::kInvalidId, host.first,
@@ -641,7 +641,7 @@ void PrecacheFetcher::OnManifestInfoRetrieved(
       manifest.manifest_url = net::AppendOrReplaceQueryParameter(
           manifest.manifest_url, "used_resources", manifest.used_url_hash);
       manifest.manifest_url = net::AppendOrReplaceQueryParameter(
-          manifest.manifest_url, "unused_resources", manifest.unused_url_hash);
+          manifest.manifest_url, "d", manifest.downloaded_url_hash);
       DCHECK(manifest.manifest_url.is_valid());
     }
   }
@@ -673,12 +673,12 @@ ManifestHostInfo::ManifestHostInfo(int64_t manifest_id,
                                    const std::string& hostname,
                                    int64_t visits,
                                    const std::string& used_url_hash,
-                                   const std::string& unused_url_hash)
+                                   const std::string& downloaded_url_hash)
     : manifest_id(manifest_id),
       hostname(hostname),
       visits(visits),
       used_url_hash(used_url_hash),
-      unused_url_hash(unused_url_hash) {}
+      downloaded_url_hash(downloaded_url_hash) {}
 
 ManifestHostInfo::~ManifestHostInfo() {}
 
