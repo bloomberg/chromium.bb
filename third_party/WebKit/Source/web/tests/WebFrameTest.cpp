@@ -4118,8 +4118,8 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState) {
   registerMockedHttpURLLoad(secondURL);
   registerMockedHttpURLLoad(thirdURL);
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
   ClearScrollStateOnCommitWebFrameClient client;
+  FrameTestHelpers::WebViewHelper webViewHelper;
   webViewHelper.initializeAndLoad(m_baseURL + firstURL, true, &client);
   webViewHelper.resize(WebSize(pageWidth, pageHeight));
   webViewHelper.webView()->mainFrame()->setScrollOffset(
@@ -7398,8 +7398,8 @@ TEST_P(ParameterizedWebFrameTest, FirstBlankSubframeNavigation) {
   registerMockedHttpURLLoad("history.html");
   registerMockedHttpURLLoad("find.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
   TestHistoryWebFrameClient client;
+  FrameTestHelpers::WebViewHelper webViewHelper;
   webViewHelper.initializeAndLoad("about:blank", true, &client);
 
   WebFrame* frame = webViewHelper.webView()->mainFrame();
@@ -7430,8 +7430,8 @@ TEST_P(ParameterizedWebFrameTest, FirstNonBlankSubframeNavigation) {
   registerMockedHttpURLLoad("history.html");
   registerMockedHttpURLLoad("find.html");
 
-  FrameTestHelpers::WebViewHelper webViewHelper;
   TestHistoryWebFrameClient client;
+  FrameTestHelpers::WebViewHelper webViewHelper;
   webViewHelper.initializeAndLoad("about:blank", true, &client);
 
   WebFrame* frame = webViewHelper.webView()->mainFrame();
@@ -8446,8 +8446,8 @@ class ThemeColorTestWebFrameClient
 
 TEST_P(ParameterizedWebFrameTest, ThemeColor) {
   registerMockedHttpURLLoad("theme_color_test.html");
-  FrameTestHelpers::WebViewHelper webViewHelper;
   ThemeColorTestWebFrameClient client;
+  FrameTestHelpers::WebViewHelper webViewHelper;
   webViewHelper.initializeAndLoad(m_baseURL + "theme_color_test.html", true,
                                   &client);
   EXPECT_TRUE(client.didNotify());
@@ -10108,8 +10108,8 @@ class CallbackOrderingWebFrameClient
 
 TEST_F(WebFrameTest, CallbackOrdering) {
   registerMockedHttpURLLoad("foo.html");
-  FrameTestHelpers::WebViewHelper webViewHelper;
   CallbackOrderingWebFrameClient client;
+  FrameTestHelpers::WebViewHelper webViewHelper;
   webViewHelper.initializeAndLoad(m_baseURL + "foo.html", true, &client);
 }
 
