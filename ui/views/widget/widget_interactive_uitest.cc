@@ -1557,6 +1557,8 @@ TEST_F(WidgetCaptureTest, SetCaptureToNonToplevel) {
 
   EXPECT_TRUE(observer.activation_observed());
   EXPECT_TRUE(child->HasCapture());
+
+  child->RemoveObserver(&observer);
 }
 
 
