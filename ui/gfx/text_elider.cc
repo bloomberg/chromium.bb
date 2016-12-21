@@ -778,7 +778,8 @@ base::string16 TruncateString(const base::string16& string,
             icu::Locale::getDefault(), status));
     if (U_FAILURE(status))
       return string.substr(0, length - 1) + kElideString;
-    bi->setText(string.c_str());
+    icu::UnicodeString bi_text(string.c_str());
+    bi->setText(bi_text);
     index = bi->preceding(static_cast<int32_t>(length));
     if (index == icu::BreakIterator::DONE || index == 0) {
       // We either found no valid word break at all, or one right at the
