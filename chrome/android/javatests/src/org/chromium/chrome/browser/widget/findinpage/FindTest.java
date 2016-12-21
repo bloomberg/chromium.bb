@@ -28,7 +28,9 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.util.FullscreenTestUtils;
 import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -224,6 +226,46 @@ public class FindTest extends ChromeTabbedActivityTestBase {
         waitForFindResults("1/7");
     }
 
+    /**
+     * Verify that Next/Previous buttons are disabled whenever there is no match.
+     */
+    @MediumTest
+    @Feature({"FindInPage"})
+    @RetryOnFailure
+    public void testFindNextPreviousOnNoMatch() throws InterruptedException {
+        loadTestAndVerifyFindInPage("pp", "0/0");
+
+        final TextView findQueryText = getFindQueryText();
+        View next = getActivity().findViewById(R.id.find_next_button);
+        View prev = getActivity().findViewById(R.id.find_prev_button);
+        assertFalse(next.isEnabled());
+        assertFalse(prev.isEnabled());
+
+        KeyUtils.singleKeyEventView(getInstrumentation(), findQueryText, KeyEvent.KEYCODE_DEL);
+        KeyUtils.singleKeyEventView(getInstrumentation(), findQueryText, KeyEvent.KEYCODE_DEL);
+
+        loadTestAndVerifyFindInPage("pitts", "1/7");
+        assertTrue(next.isEnabled());
+        assertTrue(prev.isEnabled());
+    }
+
+    /**
+     * Verify that Find in page toolbar is dismissed on entering fullscreen.
+     */
+    @MediumTest
+    @Feature({"FindInPage"})
+    @RetryOnFailure
+    public void testFullscreen() throws InterruptedException {
+        loadTestAndVerifyFindInPage("pitts", "1/7");
+
+        Tab tab = getActivity().getActivityTab();
+        FullscreenTestUtils.togglePersistentFullscreenAndAssert(tab, true, getActivity());
+        waitForFindInPageVisibility(false);
+
+        FullscreenTestUtils.togglePersistentFullscreenAndAssert(tab, false, getActivity());
+        waitForFindInPageVisibility(false);
+    }
+
     @MediumTest
     @Feature({"FindInPage"})
     @RetryOnFailure
@@ -379,10 +421,7 @@ public class FindTest extends ChromeTabbedActivityTestBase {
     @Feature({"FindInPage"})
     @RetryOnFailure
     public void testBackKeyDismissesFind() throws InterruptedException {
-        loadUrl(mTestServer.getURL(FILEPATH));
-        findInPageFromMenu();
-        final TextView findQueryText = getFindQueryText();
-        KeyUtils.singleKeyEventView(getInstrumentation(), findQueryText, KeyEvent.KEYCODE_A);
+        loadTestAndVerifyFindInPage("pitts", "1/7");
         waitForIME(true);
         // Hide IME by clicking next button from find tool bar.
         singleClickView(getActivity().findViewById(R.id.find_next_button));
