@@ -27,6 +27,11 @@ struct CONTENT_EXPORT Manifest {
   // Structure representing an icon as per the Manifest specification, see:
   // http://w3c.github.io/manifest/#dfn-icon-object
   struct CONTENT_EXPORT Icon {
+    enum IconPurpose {
+      ANY = 0,
+      BADGE,
+    };
+
     Icon();
     Icon(const Icon& other);
     ~Icon();
@@ -46,6 +51,11 @@ struct CONTENT_EXPORT Manifest {
     // Empty if the parsing failed, the field was not present or empty.
     // The special value "any" is represented by gfx::Size(0, 0).
     std::vector<gfx::Size> sizes;
+
+    // Empty if the field was not present or not of type "string". Defaults to
+    // a vector with a single value, IconPurpose::ANY, for all other parsing
+    // exceptions.
+    std::vector<IconPurpose> purpose;
   };
 
   // Structure representing a related application.

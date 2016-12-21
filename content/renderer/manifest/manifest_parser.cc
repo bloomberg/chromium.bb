@@ -276,6 +276,38 @@ std::vector<gfx::Size> ManifestParser::ParseIconSizes(
   return sizes;
 }
 
+std::vector<Manifest::Icon::IconPurpose> ManifestParser::ParseIconPurpose(
+    const base::DictionaryValue& icon) {
+  base::NullableString16 purpose_str = ParseString(icon, "purpose", NoTrim);
+  std::vector<Manifest::Icon::IconPurpose> purposes;
+
+  if (purpose_str.is_null()) {
+    purposes.push_back(Manifest::Icon::IconPurpose::ANY);
+    return purposes;
+  }
+
+  std::vector<base::string16> keywords = base::SplitString(
+      purpose_str.string(), base::ASCIIToUTF16(" "),
+      base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  for (const base::string16& keyword : keywords) {
+    if (base::LowerCaseEqualsASCII(keyword, "any")) {
+      purposes.push_back(Manifest::Icon::IconPurpose::ANY);
+    } else if (base::LowerCaseEqualsASCII(keyword, "badge")) {
+      purposes.push_back(Manifest::Icon::IconPurpose::BADGE);
+    } else {
+      AddErrorInfo(
+          "found icon with invalid purpose. "
+          "Using default value 'any'.");
+    }
+  }
+
+  if (purposes.empty()) {
+    purposes.push_back(Manifest::Icon::IconPurpose::ANY);
+  }
+
+  return purposes;
+}
+
 std::vector<Manifest::Icon> ManifestParser::ParseIcons(
     const base::DictionaryValue& dictionary) {
   std::vector<Manifest::Icon> icons;
@@ -300,6 +332,7 @@ std::vector<Manifest::Icon> ManifestParser::ParseIcons(
       continue;
     icon.type = ParseIconType(*icon_dictionary);
     icon.sizes = ParseIconSizes(*icon_dictionary);
+    icon.purpose = ParseIconPurpose(*icon_dictionary);
 
     icons.push_back(icon);
   }

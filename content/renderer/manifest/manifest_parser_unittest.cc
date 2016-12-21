@@ -878,6 +878,110 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
   }
 }
 
+TEST_F(ManifestParserTest, IconPurposeParseRules) {
+  const std::string kPurposeParseStringError =
+      "property 'purpose' ignored, type string expected.";
+  const std::string kPurposeInvalidValueError =
+      "found icon with invalid purpose. "
+      "Using default value 'any'.";
+
+  // Smoke test.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"purpose\": \"any\" } ] }");
+    EXPECT_EQ(manifest.icons[0].purpose.size(), 1u);
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Trim leading and trailing whitespaces.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"purpose\": \"  any  \" } ] }");
+    EXPECT_EQ(manifest.icons[0].purpose.size(), 1u);
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // 'any' is added when property isn't present.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\" } ] }");
+    EXPECT_EQ(manifest.icons[0].purpose.size(), 1u);
+    EXPECT_EQ(manifest.icons[0].purpose[0], Manifest::Icon::IconPurpose::ANY);
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // 'any' is added with error message when property isn't a string (is a
+  // number).
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"purpose\": 42 } ] }");
+    EXPECT_EQ(manifest.icons[0].purpose.size(), 1u);
+    EXPECT_EQ(manifest.icons[0].purpose[0], Manifest::Icon::IconPurpose::ANY);
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(kPurposeParseStringError, errors()[0]);
+  }
+
+  // 'any' is added with error message when property isn't a string (is a
+  // dictionary).
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"purpose\": {} } ] }");
+    EXPECT_EQ(manifest.icons[0].purpose.size(), 1u);
+    EXPECT_EQ(manifest.icons[0].purpose[0], Manifest::Icon::IconPurpose::ANY);
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(kPurposeParseStringError, errors()[0]);
+  }
+
+  // Smoke test: values correctly parsed.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"purpose\": \"Any Badge\" } ] }");
+    ASSERT_EQ(manifest.icons[0].purpose.size(), 2u);
+    EXPECT_EQ(manifest.icons[0].purpose[0], Manifest::Icon::IconPurpose::ANY);
+    EXPECT_EQ(manifest.icons[0].purpose[1], Manifest::Icon::IconPurpose::BADGE);
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Trim whitespaces between values.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"purpose\": \"  Any   Badge  \" } ] }");
+    ASSERT_EQ(manifest.icons[0].purpose.size(), 2u);
+    EXPECT_EQ(manifest.icons[0].purpose[0], Manifest::Icon::IconPurpose::ANY);
+    EXPECT_EQ(manifest.icons[0].purpose[1], Manifest::Icon::IconPurpose::BADGE);
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Twice the same value is parsed twice.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"purpose\": \"badge badge\" } ] }");
+    ASSERT_EQ(manifest.icons[0].purpose.size(), 2u);
+    EXPECT_EQ(manifest.icons[0].purpose[0], Manifest::Icon::IconPurpose::BADGE);
+    EXPECT_EQ(manifest.icons[0].purpose[1], Manifest::Icon::IconPurpose::BADGE);
+    EXPECT_EQ(0u, GetErrorCount());
+  }
+
+  // Invalid icon purpose is ignored.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"purpose\": \"badge notification\" } ] }");
+    ASSERT_EQ(manifest.icons[0].purpose.size(), 1u);
+    EXPECT_EQ(manifest.icons[0].purpose[0], Manifest::Icon::IconPurpose::BADGE);
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(kPurposeInvalidValueError, errors()[0]);
+  }
+
+  // 'any' is added when developer-supplied purpose is invalid.
+  {
+    Manifest manifest = ParseManifest("{ \"icons\": [ {\"src\": \"\","
+        "\"purpose\": \"notification\" } ] }");
+    ASSERT_EQ(manifest.icons[0].purpose.size(), 1u);
+    EXPECT_EQ(manifest.icons[0].purpose[0], Manifest::Icon::IconPurpose::ANY);
+    ASSERT_EQ(1u, GetErrorCount());
+    EXPECT_EQ(kPurposeInvalidValueError, errors()[0]);
+  }
+}
+
 TEST_F(ManifestParserTest, RelatedApplicationsParseRules) {
   // If no application, empty list.
   {

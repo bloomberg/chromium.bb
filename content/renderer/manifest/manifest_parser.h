@@ -131,6 +131,15 @@ class CONTENT_EXPORT ManifestParser {
   // by gfx::Size(0, 0).
   std::vector<gfx::Size> ParseIconSizes(const base::DictionaryValue& icon);
 
+  // Parses the 'purpose' field of an icon, as defined in:
+  // https://w3c.github.io/manifest/#dfn-steps-for-processing-a-purpose-member-of-an-image
+  // Returns a vector of Manifest::Icon::IconPurpose with the successfully
+  // parsed icon purposes, an empty vector if the field was not present or not
+  // of type "string", and a vector containing Manifest::Icon::IconPurpose::Any
+  // for all other parsing exceptions.
+  std::vector<Manifest::Icon::IconPurpose> ParseIconPurpose(
+      const base::DictionaryValue& icon);
+
   // Parses the 'icons' field of a Manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-an-array-of-images
   // Returns a vector of Manifest::Icon with the successfully parsed icons, if
