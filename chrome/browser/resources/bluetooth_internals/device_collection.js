@@ -87,18 +87,11 @@ cr.define('device_collection', function() {
     /**
      * Updates the device connection status.
      * @param {string} address The address of the device.
-     * @param {number} status .
-     * @param {?Error} opt_error Optional Error from connection.
+     * @param {number} status The new connection status.
      */
     updateConnectionStatus: function(address, status, opt_error) {
-      var message = (opt_error && opt_error.message) || '';
-
       var device = assert(this.getByAddress(address), 'Device does not exist');
       device.connectionStatus = status;
-
-      // TODO(crbug.com/663830): Replace connection error column with better
-      // notification system.
-      device.connectionMessage = message;
       this.updateIndex(this.indexOf(device));
     },
   };

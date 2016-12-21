@@ -15,6 +15,8 @@ var sidebarObj = null;
 cr.define('bluetooth_internals', function() {
   /** @const */ var DevicesPage = devices_page.DevicesPage;
   /** @const */ var PageManager = cr.ui.pageManager.PageManager;
+  /** @const */ var Snackbar = snackbar.Snackbar;
+  /** @const */ var SnackbarType = snackbar.SnackbarType;
 
   /**
    * Observer for page changes. Used to update page title header.
@@ -48,6 +50,64 @@ cr.define('bluetooth_internals', function() {
   /** @type {devices_page.DevicesPage} */
   var devicesPage = null;
 
+  function handleInspect(event) {
+    // TODO(crbug.com/663470): Move connection logic to DeviceDetailsView
+    // when it's added in chrome://bluetooth-internals.
+    var address = event.detail.address;
+    var proxy = deviceAddressToProxy.get(address);
+
+    if (proxy) {
+      // Device is already connected, so disconnect.
+      proxy.disconnect();
+      deviceAddressToProxy.delete(address);
+      devices.updateConnectionStatus(
+          address, device_collection.ConnectionStatus.DISCONNECTED);
+      return;
+    }
+
+    devices.updateConnectionStatus(
+        address, device_collection.ConnectionStatus.CONNECTING);
+
+    adapterBroker.connectToDevice(address).then(function(deviceProxy) {
+      var deviceInfo = devices.getByAddress(address);
+      if (!deviceInfo) {
+        // Device no longer in list, so drop the connection.
+        deviceProxy.disconnect();
+        return;
+      }
+
+      deviceAddressToProxy.set(address, deviceProxy);
+      devices.updateConnectionStatus(
+          address, device_collection.ConnectionStatus.CONNECTED);
+      Snackbar.show(deviceInfo.name_for_display + ': Connected',
+          SnackbarType.SUCCESS);
+
+      // Fetch services asynchronously.
+      return deviceProxy.getServices();
+    }).then(function(response) {
+      if (!response) return;
+
+      var deviceInfo = devices.getByAddress(address);
+      deviceInfo.services = response.services;
+      devices.addOrUpdate(deviceInfo);
+    }).catch(function(error) {
+      // If a connection error occurs while fetching the services, the proxy
+      // reference must be removed.
+      var proxy = deviceAddressToProxy.get(address);
+      if (proxy) {
+        proxy.disconnect();
+        deviceAddressToProxy.delete(address);
+      }
+
+      devices.updateConnectionStatus(
+          address, device_collection.ConnectionStatus.DISCONNECTED);
+
+      var deviceInfo = devices.getByAddress(address);
+      Snackbar.show(deviceInfo.name_for_display + ': ' + error.message,
+          SnackbarType.ERROR, 'Retry', function() { handleInspect(event); });
+    });
+  }
+
   function setupDeviceSystem(response) {
     // Hook up device collection events.
     adapterBroker.addEventListener('deviceadded', function(event) {
@@ -63,50 +123,7 @@ cr.define('bluetooth_internals', function() {
     response.devices.forEach(devices.addOrUpdate, devices /* this */);
 
     devicesPage.setDevices(devices);
-    devicesPage.pageDiv.addEventListener('inspectpressed', function() {
-      // TODO(crbug.com/663470): Move connection logic to DeviceDetailsView
-      // when it's added in chrome://bluetooth-internals.
-      var address = event.detail.address;
-      var proxy = deviceAddressToProxy.get(address);
-
-      if (proxy) {
-        // Device is already connected, so disconnect.
-        proxy.disconnect();
-        deviceAddressToProxy.delete(address);
-        devices.updateConnectionStatus(
-            address, device_collection.ConnectionStatus.DISCONNECTED);
-        return;
-      }
-
-      devices.updateConnectionStatus(
-          address, device_collection.ConnectionStatus.CONNECTING);
-
-      adapterBroker.connectToDevice(address).then(function(deviceProxy) {
-        if (!devices.getByAddress(address)) {
-          // Device no longer in list, so drop the connection.
-          deviceProxy.disconnect();
-          return;
-        }
-
-        deviceAddressToProxy.set(address, deviceProxy);
-        devices.updateConnectionStatus(
-            address, device_collection.ConnectionStatus.CONNECTED);
-
-        // Fetch services asynchronously.
-        return deviceProxy.getServices();
-      }).then(function(response) {
-        if (!response) return;
-
-        var deviceInfo = devices.getByAddress(address);
-        deviceInfo.services = response.services;
-        devices.addOrUpdate(deviceInfo);
-      }).catch(function(error) {
-        devices.updateConnectionStatus(
-            address,
-            device_collection.ConnectionStatus.DISCONNECTED,
-            error);
-      });
-    });
+    devicesPage.pageDiv.addEventListener('inspectpressed', handleInspect);
   }
 
   function setupPages() {
@@ -140,7 +157,10 @@ cr.define('bluetooth_internals', function() {
       .then(function(response) { console.log('adapter', response.info); })
       .then(function() { return adapterBroker.getDevices(); })
       .then(setupDeviceSystem)
-      .catch(function(error) { console.error(error); });
+      .catch(function(error) {
+        Snackbar.show(error.message, SnackbarType.ERROR);
+        console.error(error);
+      });
   }
 
   return {

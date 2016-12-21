@@ -264,6 +264,7 @@ TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
     teardown(function() {
       adapterFactory.reset();
       sidebarObj.close();
+      snackbar.Snackbar.dismiss(true);
     });
 
     /**
@@ -465,7 +466,92 @@ TEST_F('BluetoothInternalsTest', 'Startup_BluetoothInternals', function() {
       sidebarObj.close();
       expectFalse(sidebarNode.classList.contains('open'));
     });
+
+    /* Snackbar Tests */
+    function finishSnackbarTest(done) {
+      // Let event queue finish.
+      setTimeout(function() {
+        expectEquals(0, $('snackbar-container').children.length);
+        expectFalse(!!snackbar.Snackbar.current_);
+        done();
+      }, 10);
+    }
+
+    test('Snackbar_ShowTimeout', function(done) {
+      var snackbar1 = snackbar.Snackbar.show('Message 1');
+      assertEquals(1, $('snackbar-container').children.length);
+
+      snackbar1.addEventListener('dismissed', function() {
+        finishSnackbarTest(done);
+      });
+    });
+
+    test('Snackbar_ShowDismiss', function(done) {
+      var snackbar1 = snackbar.Snackbar.show('Message 1');
+      assertEquals(1, $('snackbar-container').children.length);
+      snackbar1.addEventListener('dismissed', function() {
+        finishSnackbarTest(done);
+      });
+
+      snackbar.Snackbar.dismiss();
+    });
+
+    test('Snackbar_QueueThreeDismiss', function(done) {
+      var expectedCalls = 3;
+      var actualCalls = 0;
+
+      var snackbar1 = snackbar.Snackbar.show('Message 1');
+      var snackbar2 = snackbar.Snackbar.show('Message 2');
+      var snackbar3 = snackbar.Snackbar.show('Message 3');
+
+      assertEquals(1, $('snackbar-container').children.length);
+      expectEquals(2, snackbar.Snackbar.queue_.length);
+
+      function next() {
+        actualCalls++;
+        snackbar.Snackbar.dismiss();
+      }
+
+      snackbar1.addEventListener('dismissed', next);
+      snackbar2.addEventListener('dismissed', next);
+      snackbar3.addEventListener('dismissed', function() {
+        next();
+        expectEquals(expectedCalls, actualCalls);
+        finishSnackbarTest(done);
+      });
+
+      snackbar.Snackbar.dismiss();
+    });
+
+    test('Snackbar_QueueThreeDismissAll', function(done) {
+      var expectedCalls = 1;
+      var actualCalls = 0;
+
+      var snackbar1 = snackbar.Snackbar.show('Message 1');
+      var snackbar2 = snackbar.Snackbar.show('Message 2');
+      var snackbar3 = snackbar.Snackbar.show('Message 3');
+
+      assertEquals(1, $('snackbar-container').children.length);
+      expectEquals(2, snackbar.Snackbar.queue_.length);
+
+      function next() {
+        assertTrue(false);
+      }
+
+      snackbar1.addEventListener('dismissed', function() {
+        expectEquals(0, snackbar.Snackbar.queue_.length);
+        expectFalse(!!snackbar.Snackbar.current_);
+        snackbar.Snackbar.dismiss();
+
+        finishSnackbarTest(done);
+      });
+      snackbar2.addEventListener('dismissed', next);
+      snackbar3.addEventListener('dismissed', next);
+
+      snackbar.Snackbar.dismiss(true);
+    });
   });
+
 
   // Run all registered tests.
   mocha.run();

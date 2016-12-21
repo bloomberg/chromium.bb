@@ -14,7 +14,6 @@ cr.define('device_table', function() {
     SERVICES: 3,
     CONNECTION_STATE: 4,
     INSPECT_LINK: 5,
-    CONNECTION_ERROR: 6,
   };
 
   /**
@@ -117,10 +116,6 @@ cr.define('device_table', function() {
       // Make two extra cells for the inspect link and connect errors.
       var inspectCell = row.insertCell();
 
-      // TODO(crbug.com/663830): Replace connection error column with better
-      // notification system.
-      var connectErrorCell = row.insertCell();
-
       var inspectLink = document.createElement('a', 'action-link');
       inspectCell.appendChild(inspectLink);
       inspectLink.addEventListener('click', function() {
@@ -171,12 +166,6 @@ cr.define('device_table', function() {
           break;
         default: assert('case not handled');
       }
-
-      // TODO(crbug.com/663830): Replace connection error column with better
-      // notification system.
-      var connectErrorCell = row.cells[COLUMNS.CONNECTION_ERROR];
-      connectErrorCell.textContent = device.connectionMessage;
-      connectErrorCell.hidden = !device.connectionMessage;
 
       // Update the properties based on the header field path.
       for (var i = 0; i < this.headers_.length; i++) {

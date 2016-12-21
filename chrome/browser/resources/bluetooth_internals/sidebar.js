@@ -45,6 +45,7 @@ cr.define('sidebar', function() {
     close: function() {
       this.sidebarDiv_.classList.remove('open');
       document.body.style.overflow = '';
+      document.dispatchEvent(new CustomEvent('contentfocus'));
     },
 
     /**
@@ -53,6 +54,7 @@ cr.define('sidebar', function() {
     open: function() {
       document.body.style.overflow = 'hidden';
       this.sidebarDiv_.classList.add('open');
+      document.dispatchEvent(new CustomEvent('contentblur'));
     },
 
     /**

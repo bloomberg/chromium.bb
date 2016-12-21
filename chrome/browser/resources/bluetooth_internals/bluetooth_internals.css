@@ -4,6 +4,7 @@
  */
 
 :root {
+  --fade-duration: 225ms;
   --md-timing-function: cubic-bezier(.4, 0, .6, 1);
   --sidebar-width: 155px;
   --sidebar-neg-width: calc(var(--sidebar-width) * -1);
@@ -133,11 +134,10 @@ h1 {
 }
 
 .sidebar-content button:hover {
-  background-color: #E0E0E0;
+  background-color: #e0e0e0;
 }
 
 .overlay {
-  --fade-duration: 225ms;
   background-color: rgba(0, 0, 0, .5);
   bottom: 0;
   left: 0;
@@ -177,17 +177,17 @@ table {
 
 table th,
 table td {
-  border: 1px solid #D9D9D9;
+  border: 1px solid #d9d9d9;
   padding: 7px;
 }
 
 table th {
-  background-color: #F0F0F0;
+  background-color: #f0f0f0;
   font-weight: normal;
 }
 
 table .removed {
-  background-color: #BDBDBD;
+  background-color: #bdbdbd;
 }
 
 @media screen and (max-width: 600px) {
@@ -205,4 +205,82 @@ table .removed {
     float: left;
     font-weight: bold;
   }
+}
+
+/* Snackbar */
+.snackbar {
+  background-color: #323232;
+  border-radius: 2px;
+  bottom: 0;
+  color: #f1f1f1;
+  display: flex;
+  font-size: 1.5em;
+  justify-content: center;
+  left: 0;
+  margin: 0 auto;
+  max-height: 52px;
+  min-height: 20px;
+  opacity: 0;
+  padding: 14px 24px;
+  position: fixed;
+  right: 0;
+  transform: translate3d(0, 80px, 0);
+  transition: opacity var(--fade-duration), transform var(--fade-duration),
+      visibility var(--fade-duration);
+  transition-timing-function: var(--md-timing-function);
+  visibility: hidden;
+}
+
+.snackbar a {
+  -webkit-margin-start: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-transform: uppercase;
+}
+
+@media screen and (min-width: 601px) {
+  .snackbar {
+    max-width: 568px;
+    min-width: 288px;
+  }
+}
+
+@media screen and (max-width: 600px) {
+  .snackbar {
+    border-radius: 0;
+    margin: 0;
+    right: 0;
+  }
+}
+
+.snackbar div {
+  -webkit-margin-end: 24px;
+  align-self: flex-start;
+}
+
+.snackbar a {
+  color: rgb(238, 255, 65);
+}
+
+.snackbar.success {
+  background-color: rgb(76, 175, 80);
+}
+
+.snackbar.warning {
+  background-color: rgb(255, 152, 0);
+}
+
+.snackbar.warning a {
+  color: rgb(17, 85, 204);
+}
+
+.snackbar.error {
+  background-color: rgb(244, 67, 54);
+}
+
+.snackbar.open {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  visibility: visible;
 }
