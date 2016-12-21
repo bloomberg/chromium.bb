@@ -1942,9 +1942,6 @@ crbug.com/660295 inspector/elements/elements-panel-restore-selection-when-node-c
 crbug.com/659610 fast/css-grid-layout/grid-baseline.html [ Failure ]
 crbug.com/659610 fast/css-grid-layout/grid-baseline-margins.html [ Failure ]
 
-crbug.com/673109 [ Linux Win ] virtual/scalefactor150/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ NeedsRebaseline ]
-crbug.com/673109 [ Linux Win Mac ] virtual/scalefactor200/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ NeedsRebaseline ]
-crbug.com/673109 [ Linux Win ] virtual/scalefactor200withzoom/fast/hidpi/static/popup-menu-with-scrollbar-appearance.html [ NeedsRebaseline ]
 crbug.com/674663 [ Win ] virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ NeedsRebaseline ]
 crbug.com/674663 [ Win ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ NeedsRebaseline ]
 crbug.com/674663 [ Win ] virtual/scalefactor150/fast/hidpi/static/popup-menu-appearance.html [ NeedsRebaseline ]
