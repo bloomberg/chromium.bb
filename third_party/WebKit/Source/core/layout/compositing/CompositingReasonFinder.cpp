@@ -178,6 +178,13 @@ bool CompositingReasonFinder::requiresCompositingForAnimation(
   return style.shouldCompositeForCurrentAnimations();
 }
 
+bool CompositingReasonFinder::requiresCompositingForTransformAnimation(
+    const ComputedStyle& style) {
+  return style.subtreeWillChangeContents()
+             ? style.isRunningTransformAnimationOnCompositor()
+             : style.hasCurrentTransformAnimation();
+}
+
 bool CompositingReasonFinder::requiresCompositingForScrollDependentPosition(
     const PaintLayer* layer) const {
   if (layer->layoutObject()->style()->position() != FixedPosition &&

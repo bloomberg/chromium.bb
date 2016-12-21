@@ -402,15 +402,40 @@ TEST_P(PaintPropertyTreeBuilderTest,
       "  0% { transform: translate(1em, 1em) } "
       "  100% { transform: translate(2em, 2em) } "
       "} "
+      ".animate { "
+      "  animation-name: test; "
+      "  animation-duration: 1s "
+      "}"
       "</style>"
-      "<div id='transform'"
-      "    style='animation-name: test; animation-duration: 1s'>"
-      "</div>");
+      "<div id='target' class='animate'></div>");
+  Element* target = document().getElementById("target");
+  const ObjectPaintProperties* properties =
+      target->layoutObject()->paintProperties();
+  EXPECT_TRUE(properties->transform()->hasDirectCompositingReasons());
+}
 
-  Element* transform = document().getElementById("transform");
-  const ObjectPaintProperties* transformProperties =
-      transform->layoutObject()->paintProperties();
-  EXPECT_TRUE(transformProperties->transform()->hasDirectCompositingReasons());
+TEST_P(PaintPropertyTreeBuilderTest,
+       OpacityAnimationDoesNotCreateTransformNode) {
+  setBodyInnerHTML(
+      "<style>"
+      "div {"
+      "  width: 100px;"
+      "  height: 100px;"
+      "  background-color: red;"
+      "  animation-name: example;"
+      "  animation-duration: 4s;"
+      "}"
+      "@keyframes example {"
+      "  from { opacity: 0.0;}"
+      "  to { opacity: 1.0;}"
+      "}"
+      "</style>"
+      "<div id='target'></div>");
+
+  Element* target = document().getElementById("target");
+  const ObjectPaintProperties* properties =
+      target->layoutObject()->paintProperties();
+  EXPECT_EQ(nullptr, properties->transform());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, WillChangeTransform) {

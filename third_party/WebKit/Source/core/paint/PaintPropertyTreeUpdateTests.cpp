@@ -441,4 +441,29 @@ TEST_P(PaintPropertyTreeUpdateTest,
   EXPECT_EQ(nullptr, frameScroll(childFrameView));
 }
 
+TEST_P(PaintPropertyTreeUpdateTest,
+       TransformNodeWithAnimationLosesNodeWhenAnimationRemoved) {
+  setBodyInnerHTML(
+      "<style>"
+      "@keyframes test {"
+      "  0% { transform: translate(1em, 1em) } "
+      "  100% { transform: translate(2em, 2em) } "
+      "} "
+      ".animate { "
+      "  animation-name: test; "
+      "  animation-duration: 1s "
+      "}"
+      "</style>"
+      "<div id='target' class='animate'></div>");
+  Element* target = document().getElementById("target");
+  const ObjectPaintProperties* properties =
+      target->layoutObject()->paintProperties();
+  EXPECT_TRUE(properties->transform()->hasDirectCompositingReasons());
+
+  // Removing the animation should remove the transform node.
+  target->removeAttribute(HTMLNames::classAttr);
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(nullptr, properties->transform());
+}
+
 }  // namespace blink

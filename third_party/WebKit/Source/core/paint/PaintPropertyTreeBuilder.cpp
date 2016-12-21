@@ -319,7 +319,7 @@ static CompositingReasons compositingReasonsForTransform(
   if (CompositingReasonFinder::requiresCompositingForTransform(object))
     compositingReasons |= CompositingReason3DTransform;
 
-  if (CompositingReasonFinder::requiresCompositingForAnimation(
+  if (CompositingReasonFinder::requiresCompositingForTransformAnimation(
           object.styleRef()))
     compositingReasons |= CompositingReasonActiveAnimation;
 

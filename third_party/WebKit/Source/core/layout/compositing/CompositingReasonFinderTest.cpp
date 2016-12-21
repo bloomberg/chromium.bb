@@ -159,4 +159,56 @@ TEST_F(CompositingReasonFinderTest, OnlyOpaqueFixedLayersPromoted) {
   ASSERT_TRUE(paintLayer);
   EXPECT_EQ(NotComposited, paintLayer->compositingState());
 }
+
+TEST_F(CompositingReasonFinderTest, RequiresCompositingForTransformAnimation) {
+  RefPtr<ComputedStyle> style = ComputedStyle::create();
+  style->setSubtreeWillChangeContents(false);
+
+  style->setHasCurrentTransformAnimation(false);
+  style->setIsRunningTransformAnimationOnCompositor(false);
+  EXPECT_FALSE(
+      CompositingReasonFinder::requiresCompositingForTransformAnimation(
+          *style));
+
+  style->setHasCurrentTransformAnimation(false);
+  style->setIsRunningTransformAnimationOnCompositor(true);
+  EXPECT_FALSE(
+      CompositingReasonFinder::requiresCompositingForTransformAnimation(
+          *style));
+
+  style->setHasCurrentTransformAnimation(true);
+  style->setIsRunningTransformAnimationOnCompositor(false);
+  EXPECT_TRUE(CompositingReasonFinder::requiresCompositingForTransformAnimation(
+      *style));
+
+  style->setHasCurrentTransformAnimation(true);
+  style->setIsRunningTransformAnimationOnCompositor(true);
+  EXPECT_TRUE(CompositingReasonFinder::requiresCompositingForTransformAnimation(
+      *style));
+
+  style->setSubtreeWillChangeContents(true);
+
+  style->setHasCurrentTransformAnimation(false);
+  style->setIsRunningTransformAnimationOnCompositor(false);
+  EXPECT_FALSE(
+      CompositingReasonFinder::requiresCompositingForTransformAnimation(
+          *style));
+
+  style->setHasCurrentTransformAnimation(false);
+  style->setIsRunningTransformAnimationOnCompositor(true);
+  EXPECT_TRUE(CompositingReasonFinder::requiresCompositingForTransformAnimation(
+      *style));
+
+  style->setHasCurrentTransformAnimation(true);
+  style->setIsRunningTransformAnimationOnCompositor(false);
+  EXPECT_FALSE(
+      CompositingReasonFinder::requiresCompositingForTransformAnimation(
+          *style));
+
+  style->setHasCurrentTransformAnimation(true);
+  style->setIsRunningTransformAnimationOnCompositor(true);
+  EXPECT_TRUE(CompositingReasonFinder::requiresCompositingForTransformAnimation(
+      *style));
 }
+
+}  // namespace blink
