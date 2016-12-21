@@ -13,18 +13,23 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/test/fake_intent_helper_instance.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/extension_id.h"
@@ -39,6 +44,9 @@ using HandledIntent = arc::FakeIntentHelperInstance::HandledIntent;
 
 namespace chromeos {
 namespace {
+
+// Name of default profile.
+const char kTestProfileName[] = "test-profile";
 
 // Helper functions returning strings that can be used to compare information
 // about available note-taking apps.
@@ -89,6 +97,7 @@ class TestObserver : public NoteTakingHelper::Observer {
   ~TestObserver() override { NoteTakingHelper::Get()->RemoveObserver(this); }
 
   int num_updates() const { return num_updates_; }
+  void reset_num_updates() { num_updates_ = 0; }
 
  private:
   // NoteTakingHelper::Observer:
@@ -117,15 +126,11 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
     DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         std::unique_ptr<SessionManagerClient>(session_manager_client_));
 
+    profile_manager_.reset(
+        new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
+    ASSERT_TRUE(profile_manager_->SetUp());
     BrowserWithTestWindowTest::SetUp();
-
-    extensions::TestExtensionSystem* extension_system =
-        static_cast<extensions::TestExtensionSystem*>(
-            extensions::ExtensionSystem::Get(profile()));
-    extension_system->CreateExtensionService(
-        base::CommandLine::ForCurrentProcess(),
-        base::FilePath() /* install_directory */,
-        false /* autoupdate_enabled */);
+    InitExtensionService(profile());
   }
 
   void TearDown() override {
@@ -203,23 +208,48 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
         .Build();
   }
 
-  // Installs or uninstalls the passed-in extension.
-  void InstallExtension(const extensions::Extension* extension) {
-    extensions::ExtensionSystem::Get(profile())
+  // Initializes extensions-related objects for |profile|. Tests only need to
+  // call this if they create additional profiles of their own.
+  void InitExtensionService(Profile* profile) {
+    extensions::TestExtensionSystem* extension_system =
+        static_cast<extensions::TestExtensionSystem*>(
+            extensions::ExtensionSystem::Get(profile));
+    extension_system->CreateExtensionService(
+        base::CommandLine::ForCurrentProcess(),
+        base::FilePath() /* install_directory */,
+        false /* autoupdate_enabled */);
+  }
+
+  // Installs or uninstalls |extension| in |profile|.
+  void InstallExtension(const extensions::Extension* extension,
+                        Profile* profile) {
+    extensions::ExtensionSystem::Get(profile)
         ->extension_service()
         ->AddExtension(extension);
   }
-  void UninstallExtension(const extensions::Extension* extension) {
-    extensions::ExtensionSystem::Get(profile())
+  void UninstallExtension(const extensions::Extension* extension,
+                          Profile* profile) {
+    extensions::ExtensionSystem::Get(profile)
         ->extension_service()
         ->UnloadExtension(extension->id(),
                           extensions::UnloadedExtensionInfo::REASON_UNINSTALL);
+  }
+
+  // BrowserWithTestWindowTest:
+  TestingProfile* CreateProfile() override {
+    // Ensure that the profile created by BrowserWithTestWindowTest is
+    // registered with |profile_manager_|.
+    return profile_manager_->CreateTestingProfile(kTestProfileName);
+  }
+  void DestroyProfile(TestingProfile* profile) override {
+    return profile_manager_->DeleteTestingProfile(kTestProfileName);
   }
 
   // Info about launched Chrome apps, in the order they were launched.
   std::vector<ChromeAppLaunchInfo> launched_chrome_apps_;
 
   arc::FakeIntentHelperInstance intent_helper_;
+  std::unique_ptr<TestingProfileManager> profile_manager_;
 
  private:
   // Callback registered with the helper to record Chrome app launch requests.
@@ -237,7 +267,6 @@ class NoteTakingHelperTest : public BrowserWithTestWindowTest {
   bool initialized_ = false;
 
   FakeSessionManagerClient* session_manager_client_ = nullptr;  // Not owned.
-
   ArcAppTest arc_test_;
 
   DISALLOW_COPY_AND_ASSIGN(NoteTakingHelperTest);
@@ -248,7 +277,7 @@ TEST_F(NoteTakingHelperTest, PaletteNotEnabled) {
   Init(0);
   auto extension =
       CreateExtension(NoteTakingHelper::kProdKeepExtensionId, "Keep");
-  InstallExtension(extension.get());
+  InstallExtension(extension.get(), profile());
   EXPECT_FALSE(helper()->IsAppAvailable(profile()));
 }
 
@@ -263,7 +292,7 @@ TEST_F(NoteTakingHelperTest, ListChromeApps) {
   const std::string kProdName = "Google Keep [prod]";
   auto prod_extension =
       CreateExtension(NoteTakingHelper::kProdKeepExtensionId, kProdName);
-  InstallExtension(prod_extension.get());
+  InstallExtension(prod_extension.get(), profile());
   EXPECT_TRUE(helper()->IsAppAvailable(profile()));
   std::vector<NoteTakingAppInfo> apps = helper()->GetAvailableApps(profile());
   ASSERT_EQ(1u, apps.size());
@@ -276,7 +305,7 @@ TEST_F(NoteTakingHelperTest, ListChromeApps) {
   const std::string kDevName = "Google Keep [dev]";
   auto dev_extension =
       CreateExtension(NoteTakingHelper::kDevKeepExtensionId, kDevName);
-  InstallExtension(dev_extension.get());
+  InstallExtension(dev_extension.get(), profile());
   apps = helper()->GetAvailableApps(profile());
   ASSERT_EQ(2u, apps.size());
   EXPECT_EQ(
@@ -290,7 +319,7 @@ TEST_F(NoteTakingHelperTest, ListChromeApps) {
   const extensions::ExtensionId kOtherId = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
   const std::string kOtherName = "Some Other App";
   auto other_extension = CreateExtension(kOtherId, kOtherName);
-  InstallExtension(other_extension.get());
+  InstallExtension(other_extension.get(), profile());
   apps = helper()->GetAvailableApps(profile());
   ASSERT_EQ(2u, apps.size());
   EXPECT_EQ(
@@ -316,7 +345,7 @@ TEST_F(NoteTakingHelperTest, LaunchChromeApp) {
   Init(ENABLE_PALETTE);
   auto extension =
       CreateExtension(NoteTakingHelper::kProdKeepExtensionId, "Keep");
-  InstallExtension(extension.get());
+  InstallExtension(extension.get(), profile());
 
   // Check the Chrome app is launched with the correct parameters.
   const base::FilePath kPath("/foo/bar/photo.jpg");
@@ -331,10 +360,10 @@ TEST_F(NoteTakingHelperTest, FallBackIfPreferredAppUnavailable) {
   Init(ENABLE_PALETTE);
   auto prod_extension =
       CreateExtension(NoteTakingHelper::kProdKeepExtensionId, "prod");
-  InstallExtension(prod_extension.get());
+  InstallExtension(prod_extension.get(), profile());
   auto dev_extension =
       CreateExtension(NoteTakingHelper::kDevKeepExtensionId, "dev");
-  InstallExtension(dev_extension.get());
+  InstallExtension(dev_extension.get(), profile());
 
   // Set the prod app as the default and check that it's launched.
   helper()->SetPreferredApp(profile(), NoteTakingHelper::kProdKeepExtensionId);
@@ -344,7 +373,7 @@ TEST_F(NoteTakingHelperTest, FallBackIfPreferredAppUnavailable) {
             launched_chrome_apps_[0].id);
 
   // Now uninstall the prod app and check that we fall back to the dev app.
-  UninstallExtension(prod_extension.get());
+  UninstallExtension(prod_extension.get(), profile());
   launched_chrome_apps_.clear();
   helper()->LaunchAppForNewNote(profile(), base::FilePath());
   ASSERT_EQ(1u, launched_chrome_apps_.size());
@@ -476,7 +505,7 @@ TEST_F(NoteTakingHelperTest, LaunchAndroidAppWithPath) {
   EXPECT_TRUE(intent_helper_.handled_intents().empty());
 }
 
-TEST_F(NoteTakingHelperTest, NotifyObserver) {
+TEST_F(NoteTakingHelperTest, NotifyObserverAboutAndroidApps) {
   Init(ENABLE_PALETTE | ENABLE_ARC);
   TestObserver observer;
 
@@ -499,6 +528,45 @@ TEST_F(NoteTakingHelperTest, NotifyObserver) {
   EXPECT_EQ(4, observer.num_updates());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(5, observer.num_updates());
+}
+
+TEST_F(NoteTakingHelperTest, NotifyObserverAboutChromeApps) {
+  Init(ENABLE_PALETTE);
+  TestObserver observer;
+  ASSERT_EQ(0, observer.num_updates());
+
+  // Notify that the prod Keep app was installed for the initial profile. Chrome
+  // extensions are queried dynamically when GetAvailableApps() is called, so we
+  // don't need to actually install it.
+  auto keep_extension =
+      CreateExtension(NoteTakingHelper::kProdKeepExtensionId, "Keep");
+  InstallExtension(keep_extension.get(), profile());
+  EXPECT_EQ(1, observer.num_updates());
+
+  // Unloading the extension should also trigger a notification.
+  UninstallExtension(keep_extension.get(), profile());
+  EXPECT_EQ(2, observer.num_updates());
+
+  // Non-whitelisted apps shouldn't trigger notifications.
+  auto other_extension =
+      CreateExtension("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "Some Other App");
+  InstallExtension(other_extension.get(), profile());
+  EXPECT_EQ(2, observer.num_updates());
+  UninstallExtension(other_extension.get(), profile());
+  EXPECT_EQ(2, observer.num_updates());
+
+  // Add a second profile and check that it triggers notifications too.
+  observer.reset_num_updates();
+  const std::string kSecondProfileName = "second-profile";
+  TestingProfile* second_profile =
+      profile_manager_->CreateTestingProfile(kSecondProfileName);
+  InitExtensionService(second_profile);
+  EXPECT_EQ(0, observer.num_updates());
+  InstallExtension(keep_extension.get(), second_profile);
+  EXPECT_EQ(1, observer.num_updates());
+  UninstallExtension(keep_extension.get(), second_profile);
+  EXPECT_EQ(2, observer.num_updates());
+  profile_manager_->DeleteTestingProfile(kSecondProfileName);
 }
 
 }  // namespace chromeos

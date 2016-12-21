@@ -11,8 +11,15 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "components/arc/arc_service_manager.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/notification_source.h"
+#include "extensions/browser/extension_registry_observer.h"
+#include "extensions/common/extension.h"
 
 class Profile;
 
@@ -20,8 +27,12 @@ namespace base {
 class FilePath;
 }  // namespace base
 
+namespace content {
+class BrowserContext;
+}  // namespace content
+
 namespace extensions {
-class Extension;
+class ExtensionRegistry;
 namespace api {
 namespace app_runtime {
 struct ActionData;
@@ -48,7 +59,9 @@ using NoteTakingAppInfos = std::vector<NoteTakingAppInfo>;
 
 // Singleton class used to launch a note-taking app.
 class NoteTakingHelper : public arc::ArcServiceManager::Observer,
-                         public arc::ArcSessionManager::Observer {
+                         public arc::ArcSessionManager::Observer,
+                         public content::NotificationObserver,
+                         public extensions::ExtensionRegistryObserver {
  public:
   // Interface for observing changes to the list of available apps.
   class Observer {
@@ -118,6 +131,15 @@ class NoteTakingHelper : public arc::ArcServiceManager::Observer,
   NoteTakingHelper();
   ~NoteTakingHelper() override;
 
+  // Returns true if |extension| is a whitelisted note-taking app and false
+  // otherwise.
+  bool IsWhitelistedChromeApp(const extensions::Extension* extension) const;
+
+  // Queries and returns all installed and enabled whitelisted Chrome
+  // note-taking apps for |profile|.
+  std::vector<const extensions::Extension*> GetChromeApps(
+      Profile* profile) const;
+
   // Requests a list of Android note-taking apps from ARC.
   void UpdateAndroidApps();
 
@@ -131,6 +153,20 @@ class NoteTakingHelper : public arc::ArcServiceManager::Observer,
                          const std::string& app_id,
                          const base::FilePath& path);
 
+  // content::NotificationObserver:
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
+
+  // extensions::ExtensionRegistryObserver:
+  void OnExtensionLoaded(content::BrowserContext* browser_context,
+                         const extensions::Extension* extension) override;
+  void OnExtensionUnloaded(
+      content::BrowserContext* browser_context,
+      const extensions::Extension* extension,
+      extensions::UnloadedExtensionInfo::Reason reason) override;
+  void OnShutdown(extensions::ExtensionRegistry* registry) override;
+
   // True iff ARC is enabled (i.e. per the checkbox on the settings page). Note
   // that ARC may not be fully started yet when this is true, but it is expected
   // to start eventually. Similarly, ARC may not be fully shut down yet when
@@ -143,10 +179,22 @@ class NoteTakingHelper : public arc::ArcServiceManager::Observer,
   // Callback used to launch Chrome apps. Can be overridden for tests.
   LaunchChromeAppCallback launch_chrome_app_callback_;
 
+  // Extension IDs of whitelisted (but not necessarily installed) Chrome
+  // note-taking apps in the order in which they're chosen if the user hasn't
+  // expressed a preference.
+  std::vector<extensions::ExtensionId> whitelisted_chrome_app_ids_;
+
   // Cached information about available Android note-taking apps.
   NoteTakingAppInfos android_apps_;
 
+  // Tracks ExtensionRegistry observation for different profiles.
+  ScopedObserver<extensions::ExtensionRegistry,
+                 extensions::ExtensionRegistryObserver>
+      extension_registry_observer_;
+
   base::ObserverList<Observer> observers_;
+
+  content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<NoteTakingHelper> weak_ptr_factory_;
 

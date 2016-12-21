@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/note_taking_helper.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "apps/launcher.h"
@@ -15,14 +16,18 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string_split.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
@@ -70,37 +75,6 @@ arc::mojom::IntentInfoPtr CreateIntentInfo(const GURL& clip_data_uri) {
   if (!clip_data_uri.is_empty())
     intent->clip_data_uri = clip_data_uri.spec();
   return intent;
-}
-
-// Returns all installed and enabled whitelisted Chrome note-taking apps.
-std::vector<const extensions::Extension*> GetChromeApps(Profile* profile) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // TODO(derat): Query for additional Chrome apps once http://crbug.com/657139
-  // is resolved.
-  std::vector<extensions::ExtensionId> ids;
-  const std::string switch_value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kNoteTakingAppIds);
-  if (!switch_value.empty()) {
-    ids = base::SplitString(switch_value, ",", base::TRIM_WHITESPACE,
-                            base::SPLIT_WANT_NONEMPTY);
-  }
-  ids.insert(ids.end(), kExtensionIds,
-             kExtensionIds + arraysize(kExtensionIds));
-
-  const extensions::ExtensionRegistry* extension_registry =
-      extensions::ExtensionRegistry::Get(profile);
-  const extensions::ExtensionSet& enabled_extensions =
-      extension_registry->enabled_extensions();
-
-  std::vector<const extensions::Extension*> extensions;
-  for (const auto& id : ids) {
-    if (enabled_extensions.Contains(id)) {
-      extensions.push_back(extension_registry->GetExtensionById(
-          id, extensions::ExtensionRegistry::ENABLED));
-    }
-  }
-  return extensions;
 }
 
 }  // namespace
@@ -218,8 +192,29 @@ void NoteTakingHelper::OnArcOptInChanged(bool enabled) {
 NoteTakingHelper::NoteTakingHelper()
     : launch_chrome_app_callback_(
           base::Bind(&apps::LaunchPlatformAppWithAction)),
+      extension_registry_observer_(this),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  const std::string switch_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kNoteTakingAppIds);
+  if (!switch_value.empty()) {
+    whitelisted_chrome_app_ids_ = base::SplitString(
+        switch_value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  }
+  whitelisted_chrome_app_ids_.insert(whitelisted_chrome_app_ids_.end(),
+                                     kExtensionIds,
+                                     kExtensionIds + arraysize(kExtensionIds));
+
+  // Track profiles so we can observe their extension registries.
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_ADDED,
+                 content::NotificationService::AllBrowserContextsAndSources());
+  for (Profile* profile :
+       g_browser_process->profile_manager()->GetLoadedProfiles()) {
+    extension_registry_observer_.Add(
+        extensions::ExtensionRegistry::Get(profile));
+  }
 
   // Check if the primary profile has already enabled ARC and watch for changes.
   auto session_manager = arc::ArcSessionManager::Get();
@@ -244,11 +239,40 @@ NoteTakingHelper::NoteTakingHelper()
 
 NoteTakingHelper::~NoteTakingHelper() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   // ArcSessionManagerTest shuts down ARC before NoteTakingHelper.
   if (arc::ArcServiceManager::Get())
     arc::ArcServiceManager::Get()->RemoveObserver(this);
   if (arc::ArcSessionManager::Get())
     arc::ArcSessionManager::Get()->RemoveObserver(this);
+}
+
+bool NoteTakingHelper::IsWhitelistedChromeApp(
+    const extensions::Extension* extension) const {
+  DCHECK(extension);
+  return std::find(whitelisted_chrome_app_ids_.begin(),
+                   whitelisted_chrome_app_ids_.end(),
+                   extension->id()) != whitelisted_chrome_app_ids_.end();
+}
+
+std::vector<const extensions::Extension*> NoteTakingHelper::GetChromeApps(
+    Profile* profile) const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  const extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile);
+  const extensions::ExtensionSet& enabled_extensions =
+      extension_registry->enabled_extensions();
+
+  // TODO(derat): Query for additional Chrome apps once http://crbug.com/657139
+  // is resolved.
+  std::vector<const extensions::Extension*> extensions;
+  for (const auto& id : whitelisted_chrome_app_ids_) {
+    if (enabled_extensions.Contains(id)) {
+      extensions.push_back(extension_registry->GetExtensionById(
+          id, extensions::ExtensionRegistry::ENABLED));
+    }
+  }
+  return extensions;
 }
 
 void NoteTakingHelper::UpdateAndroidApps() {
@@ -325,6 +349,39 @@ bool NoteTakingHelper::LaunchAppInternal(Profile* profile,
   }
 
   return true;
+}
+
+void NoteTakingHelper::Observe(int type,
+                               const content::NotificationSource& source,
+                               const content::NotificationDetails& details) {
+  DCHECK_EQ(type, chrome::NOTIFICATION_PROFILE_ADDED);
+  auto registry = extensions::ExtensionRegistry::Get(
+      content::Source<Profile>(source).ptr());
+  DCHECK(!extension_registry_observer_.IsObserving(registry));
+  extension_registry_observer_.Add(registry);
+}
+
+void NoteTakingHelper::OnExtensionLoaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension) {
+  if (IsWhitelistedChromeApp(extension)) {
+    for (auto& observer : observers_)
+      observer.OnAvailableNoteTakingAppsUpdated();
+  }
+}
+
+void NoteTakingHelper::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const extensions::Extension* extension,
+    extensions::UnloadedExtensionInfo::Reason reason) {
+  if (IsWhitelistedChromeApp(extension)) {
+    for (auto& observer : observers_)
+      observer.OnAvailableNoteTakingAppsUpdated();
+  }
+}
+
+void NoteTakingHelper::OnShutdown(extensions::ExtensionRegistry* registry) {
+  extension_registry_observer_.Remove(registry);
 }
 
 }  // namespace chromeos
