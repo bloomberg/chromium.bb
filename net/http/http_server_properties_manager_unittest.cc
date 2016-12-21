@@ -86,7 +86,8 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
       : HttpServerPropertiesManager(pref_delegate,
                                     pref_task_runner,
                                     net_task_runner),
-        pref_update_delay_(base::TimeDelta()) {
+        pref_update_delay_(base::TimeDelta()),
+        cache_update_delay_(base::TimeDelta()) {
     InitializeOnNetworkThread();
   }
 
@@ -108,7 +109,7 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
   // Post tasks without a delay during tests.
   void StartCacheUpdateTimerOnPrefThread(base::TimeDelta delay) override {
     HttpServerPropertiesManager::StartCacheUpdateTimerOnPrefThread(
-        base::TimeDelta());
+        cache_update_delay_);
   }
 
   void UpdatePrefsFromCacheOnNetworkThreadConcrete(
@@ -128,6 +129,9 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
 
   void set_pref_update_delay(base::TimeDelta delay) {
     pref_update_delay_ = delay;
+  }
+  void set_cache_update_delay(base::TimeDelta delay) {
+    cache_update_delay_ = delay;
   }
   MOCK_METHOD0(UpdateCacheFromPrefsOnPrefThread, void());
   MOCK_METHOD1(UpdatePrefsFromCacheOnNetworkThread, void(const base::Closure&));
@@ -150,6 +154,7 @@ class TestingHttpServerPropertiesManager : public HttpServerPropertiesManager {
  private:
   // Time delays used in test for posting tasks. Default to zero.
   base::TimeDelta pref_update_delay_;
+  base::TimeDelta cache_update_delay_;
   DISALLOW_COPY_AND_ASSIGN(TestingHttpServerPropertiesManager);
 };
 
@@ -1193,6 +1198,44 @@ TEST_P(HttpServerPropertiesManagerTest, UpdateCacheWithPrefs) {
   EXPECT_TRUE(
       base::JSONWriter::Write(*http_server_properties, &preferences_json));
   EXPECT_EQ(expected_json, preferences_json);
+}
+
+TEST_P(HttpServerPropertiesManagerTest,
+       SingleCacheUpdateForMultipleUpdatesScheduled) {
+  http_server_props_manager_->set_cache_update_delay(
+      base::TimeDelta::FromMilliseconds(60));
+
+  // Update cache.
+  ExpectCacheUpdate();
+
+  EXPECT_EQ(0u, pref_test_task_runner_->GetPendingTaskCount());
+  // Update cache.
+  http_server_props_manager_->ScheduleUpdateCacheOnPrefThread();
+  EXPECT_EQ(1u, pref_test_task_runner_->GetPendingTaskCount());
+
+  // Move forward the task runner 20ms.
+  pref_test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(20));
+  // Schedule a new cache update within the time window should be a no-op.
+  http_server_props_manager_->ScheduleUpdateCacheOnPrefThread();
+  EXPECT_EQ(1u, pref_test_task_runner_->GetPendingTaskCount());
+
+  // Move forward the task runner 40ms, now the cache update should be
+  // exectured.
+  pref_test_task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(40));
+
+  // Since this test has no pref corruption, there shouldn't be any pref update.
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+
+  // Schedule one more cache update. The task should be successfully scheduled
+  // on pref task runner.
+  ExpectCacheUpdate();
+  http_server_props_manager_->ScheduleUpdateCacheOnPrefThread();
+  EXPECT_EQ(1u, pref_test_task_runner_->GetPendingTaskCount());
+
+  pref_test_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_FALSE(pref_test_task_runner_->HasPendingTask());
+  EXPECT_FALSE(net_test_task_runner_->HasPendingTask());
 }
 
 TEST_P(HttpServerPropertiesManagerTest, AddToAlternativeServiceMap) {
