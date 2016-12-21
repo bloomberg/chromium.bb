@@ -918,7 +918,8 @@ void SVGElement::attributeChanged(const QualifiedName& name,
                                   const AtomicString& oldValue,
                                   const AtomicString& newValue,
                                   AttributeModificationReason) {
-  Element::attributeChanged(name, oldValue, newValue);
+  Element::attributeChanged(name, oldValue, newValue,
+                            AttributeModificationReason::kDirectly);
 
   if (name == HTMLNames::idAttr)
     rebuildAllIncomingReferences();

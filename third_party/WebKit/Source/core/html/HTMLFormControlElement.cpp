@@ -39,6 +39,7 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/page/Page.h"
 #include "core/page/ValidationMessageClient.h"
+#include "platform/EventDispatchForbiddenScope.h"
 #include "platform/text/BidiTextRun.h"
 #include "wtf/Vector.h"
 
@@ -135,15 +136,26 @@ void HTMLFormControlElement::reset() {
   resetImpl();
 }
 
+void HTMLFormControlElement::attributeChanged(
+    const QualifiedName& name,
+    const AtomicString& oldValue,
+    const AtomicString& newValue,
+    AttributeModificationReason reason) {
+  HTMLElement::attributeChanged(name, oldValue, newValue, reason);
+  if (name == disabledAttr && oldValue.isNull() != newValue.isNull()) {
+    disabledAttributeChanged();
+    if (reason == AttributeModificationReason::kDirectly &&
+        isDisabledFormControl() && adjustedFocusedElementInTreeScope() == this)
+      blur();
+  }
+}
+
 void HTMLFormControlElement::parseAttribute(const QualifiedName& name,
                                             const AtomicString& oldValue,
                                             const AtomicString& value) {
   if (name == formAttr) {
     formAttributeChanged();
     UseCounter::count(document(), UseCounter::FormAttribute);
-  } else if (name == disabledAttr) {
-    if (oldValue.isNull() != value.isNull())
-      disabledAttributeChanged();
   } else if (name == readonlyAttr) {
     if (oldValue.isNull() != value.isNull()) {
       setNeedsWillValidateCheck();
@@ -166,17 +178,16 @@ void HTMLFormControlElement::parseAttribute(const QualifiedName& name,
 }
 
 void HTMLFormControlElement::disabledAttributeChanged() {
+  // Don't blur in this function because this is called for descendants of
+  // <fieldset> while tree traversal.
+  EventDispatchForbiddenScope eventForbidden;
+
   setNeedsWillValidateCheck();
   pseudoStateChanged(CSSSelector::PseudoDisabled);
   pseudoStateChanged(CSSSelector::PseudoEnabled);
   if (layoutObject())
     LayoutTheme::theme().controlStateChanged(*layoutObject(),
                                              EnabledControlState);
-  if (isDisabledFormControl() && adjustedFocusedElementInTreeScope() == this) {
-    // We might want to call blur(), but it's dangerous to dispatch events
-    // here.
-    document().setNeedsFocusedElementCheck();
-  }
 }
 
 void HTMLFormControlElement::requiredAttributeChanged() {

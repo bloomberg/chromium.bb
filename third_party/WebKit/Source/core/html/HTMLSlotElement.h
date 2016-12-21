@@ -80,7 +80,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   void attributeChanged(const QualifiedName&,
                         const AtomicString& oldValue,
                         const AtomicString& newValue,
-                        AttributeModificationReason = ModifiedDirectly) final;
+                        AttributeModificationReason) final;
 
   int tabIndex() const override;
   AtomicString name() const;

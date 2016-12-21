@@ -30,6 +30,7 @@
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLLegendElement.h"
 #include "core/layout/LayoutFieldset.h"
+#include "platform/EventDispatchForbiddenScope.h"
 #include "wtf/StdLibExtras.h"
 
 namespace blink {
@@ -62,24 +63,47 @@ bool HTMLFieldSetElement::isSubmittableElement() {
   return false;
 }
 
-void HTMLFieldSetElement::invalidateDisabledStateUnder(Element& base) {
-  for (HTMLFormControlElement& element :
-       Traversal<HTMLFormControlElement>::descendantsOf(base))
-    element.ancestorDisabledStateWasChanged();
+// Returns a disabled focused element if it's in descendants of |base|.
+Element*
+HTMLFieldSetElement::invalidateDescendantDisabledStateAndFindFocusedOne(
+    Element& base) {
+  Element* focusedElement = adjustedFocusedElementInTreeScope();
+  bool shouldBlur = false;
+  {
+    EventDispatchForbiddenScope eventForbidden;
+    for (HTMLFormControlElement& element :
+         Traversal<HTMLFormControlElement>::descendantsOf(base)) {
+      element.ancestorDisabledStateWasChanged();
+      if (focusedElement == &element && element.isDisabledFormControl())
+        shouldBlur = true;
+    }
+  }
+  return shouldBlur ? focusedElement : nullptr;
 }
 
 void HTMLFieldSetElement::disabledAttributeChanged() {
   // This element must be updated before the style of nodes in its subtree gets
   // recalculated.
   HTMLFormControlElement::disabledAttributeChanged();
-  invalidateDisabledStateUnder(*this);
+  if (Element* focusedElement =
+          invalidateDescendantDisabledStateAndFindFocusedOne(*this))
+    focusedElement->blur();
 }
 
 void HTMLFieldSetElement::childrenChanged(const ChildrenChange& change) {
   HTMLFormControlElement::childrenChanged(change);
-  for (HTMLLegendElement& legend :
-       Traversal<HTMLLegendElement>::childrenOf(*this))
-    invalidateDisabledStateUnder(legend);
+  Element* focusedElement = nullptr;
+  {
+    EventDispatchForbiddenScope eventForbidden;
+    for (HTMLLegendElement& legend :
+         Traversal<HTMLLegendElement>::childrenOf(*this)) {
+      if (Element* element =
+              invalidateDescendantDisabledStateAndFindFocusedOne(legend))
+        focusedElement = element;
+    }
+  }
+  if (focusedElement)
+    focusedElement->blur();
 }
 
 bool HTMLFieldSetElement::supportsFocus() const {

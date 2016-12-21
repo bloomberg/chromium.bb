@@ -251,6 +251,20 @@ void HTMLAnchorElement::setActive(bool down) {
   ContainerNode::setActive(down);
 }
 
+void HTMLAnchorElement::attributeChanged(const QualifiedName& name,
+                                         const AtomicString& oldValue,
+                                         const AtomicString& newValue,
+                                         AttributeModificationReason reason) {
+  HTMLElement::attributeChanged(name, oldValue, newValue, reason);
+  if (reason != AttributeModificationReason::kDirectly)
+    return;
+  if (name != hrefAttr && isLink())
+    return;
+  if (adjustedFocusedElementInTreeScope() != this)
+    return;
+  blur();
+}
+
 void HTMLAnchorElement::parseAttribute(const QualifiedName& name,
                                        const AtomicString& oldValue,
                                        const AtomicString& value) {
@@ -261,11 +275,6 @@ void HTMLAnchorElement::parseAttribute(const QualifiedName& name,
       pseudoStateChanged(CSSSelector::PseudoLink);
       pseudoStateChanged(CSSSelector::PseudoVisited);
       pseudoStateChanged(CSSSelector::PseudoAnyLink);
-    }
-    if (wasLink && !isLink() && adjustedFocusedElementInTreeScope() == this) {
-      // We might want to call blur(), but it's dangerous to dispatch
-      // events here.
-      document().setNeedsFocusedElementCheck();
     }
     if (isLink()) {
       String parsedURL = stripLeadingAndTrailingHTMLSpaces(value);

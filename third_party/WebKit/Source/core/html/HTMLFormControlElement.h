@@ -135,6 +135,10 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
  protected:
   HTMLFormControlElement(const QualifiedName& tagName, Document&);
 
+  void attributeChanged(const QualifiedName&,
+                        const AtomicString&,
+                        const AtomicString&,
+                        AttributeModificationReason) override;
   void parseAttribute(const QualifiedName&,
                       const AtomicString&,
                       const AtomicString&) override;

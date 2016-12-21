@@ -2191,13 +2191,6 @@ void Document::layoutUpdated() {
   m_rootScrollerController->didUpdateLayout();
 }
 
-void Document::setNeedsFocusedElementCheck() {
-  setNeedsStyleRecalc(
-      LocalStyleChange,
-      StyleChangeReasonForTracing::createWithExtraData(
-          StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
-}
-
 void Document::clearFocusedElementSoon() {
   if (!m_clearFocusedElementTimer.isActive())
     m_clearFocusedElementTimer.startOneShot(0, BLINK_FROM_HERE);

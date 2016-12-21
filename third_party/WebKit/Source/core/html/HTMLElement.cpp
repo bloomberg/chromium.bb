@@ -426,6 +426,29 @@ const AtomicString& HTMLElement::eventNameForAttributeName(
   return attributeNameToEventNameMap.get(attrName.localName());
 }
 
+void HTMLElement::attributeChanged(const QualifiedName& name,
+                                   const AtomicString& oldValue,
+                                   const AtomicString& newValue,
+                                   AttributeModificationReason reason) {
+  Element::attributeChanged(name, oldValue, newValue, reason);
+  if (reason != AttributeModificationReason::kDirectly)
+    return;
+  if (adjustedFocusedElementInTreeScope() != this)
+    return;
+  if (name == hiddenAttr && !newValue.isNull()) {
+    blur();
+  } else if (name == contenteditableAttr) {
+    // The attribute change may cause supportsFocus() to return false
+    // for the element which had focus.
+    //
+    // TODO(tkent): We should avoid updating style.  We'd like to check only
+    // DOM-level focusability here.
+    document().updateStyleAndLayoutTreeForNode(this);
+    if (!supportsFocus())
+      blur();
+  }
+}
+
 void HTMLElement::parseAttribute(const QualifiedName& name,
                                  const AtomicString& oldValue,
                                  const AtomicString& value) {

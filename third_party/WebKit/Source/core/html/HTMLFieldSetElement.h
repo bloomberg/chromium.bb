@@ -58,7 +58,7 @@ class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
   bool isSubmittableElement() override;
   bool alwaysCreateUserAgentShadowRoot() const override { return false; }
 
-  static void invalidateDisabledStateUnder(Element&);
+  Element* invalidateDescendantDisabledStateAndFindFocusedOne(Element& base);
 };
 
 }  // namespace blink

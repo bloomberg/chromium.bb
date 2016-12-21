@@ -9,19 +9,10 @@ target.focus();
 shouldBe('document.activeElement', 'target');
 debug('Remove href.');
 window.onload = function() {
-    target.addEventListener('blur', function() {
-        testPassed('blur event was disaptched.');
-        target.remove();
-        finishJSTest();
-    }, false);
-    // Need to wait until CheckFocusedElementTask is unqueued.
-    setTimeout(function() {
-        target.removeAttribute('href');
-    }, 10);
-    setTimeout(function() {
-        testFailed('No blur event');
-        finishJSTest();
-    }, 2000);
+    target.removeAttribute('href');
+    shouldBe('document.activeElement', 'document.body');
+    target.remove();
+    finishJSTest();
 };
 </script>
 </body>

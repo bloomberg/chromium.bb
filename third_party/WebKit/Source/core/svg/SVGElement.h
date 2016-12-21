@@ -215,11 +215,10 @@ class CORE_EXPORT SVGElement : public Element {
                       const AtomicString&,
                       const AtomicString&) override;
 
-  void attributeChanged(
-      const QualifiedName&,
-      const AtomicString&,
-      const AtomicString&,
-      AttributeModificationReason = ModifiedDirectly) override;
+  void attributeChanged(const QualifiedName&,
+                        const AtomicString&,
+                        const AtomicString&,
+                        AttributeModificationReason) override;
 
   void collectStyleForPresentationAttribute(const QualifiedName&,
                                             const AtomicString&,

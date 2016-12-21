@@ -706,7 +706,6 @@ class CORE_EXPORT Document : public ContainerNode,
   const UserActionElementSet& userActionElements() const {
     return m_userActionElements;
   }
-  void setNeedsFocusedElementCheck();
   void setAutofocusElement(Element*);
   Element* autofocusElement() const { return m_autofocusElement.get(); }
   void setSequentialFocusNavigationStartingPoint(Node*);

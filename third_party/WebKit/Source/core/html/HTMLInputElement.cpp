@@ -485,16 +485,19 @@ void HTMLInputElement::updateType() {
     DCHECK(elementData());
     AttributeCollection attributes = attributesWithoutUpdate();
     if (const Attribute* height = attributes.find(heightAttr)) {
-      TextControlElement::attributeChanged(heightAttr, height->value(),
-                                           height->value());
+      TextControlElement::attributeChanged(
+          heightAttr, height->value(), height->value(),
+          AttributeModificationReason::kDirectly);
     }
     if (const Attribute* width = attributes.find(widthAttr)) {
-      TextControlElement::attributeChanged(widthAttr, width->value(),
-                                           width->value());
+      TextControlElement::attributeChanged(
+          widthAttr, width->value(), width->value(),
+          AttributeModificationReason::kDirectly);
     }
     if (const Attribute* align = attributes.find(alignAttr)) {
-      TextControlElement::attributeChanged(alignAttr, align->value(),
-                                           align->value());
+      TextControlElement::attributeChanged(
+          alignAttr, align->value(), align->value(),
+          AttributeModificationReason::kDirectly);
     }
   }
 

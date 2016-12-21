@@ -102,6 +102,10 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
  private:
   class NavigationHintSender;
 
+  void attributeChanged(const QualifiedName&,
+                        const AtomicString&,
+                        const AtomicString&,
+                        AttributeModificationReason) override;
   bool shouldHaveFocusAppearance() const final;
   void dispatchFocusEvent(Element* oldFocusedElement,
                           WebFocusType,

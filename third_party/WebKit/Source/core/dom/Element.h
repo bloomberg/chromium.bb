@@ -356,13 +356,24 @@ class CORE_EXPORT Element : public ContainerNode {
   // For exposing to DOM only.
   NamedNodeMap* attributesForBindings() const;
 
-  enum AttributeModificationReason { ModifiedDirectly, ModifiedByCloning };
+  enum class AttributeModificationReason { kDirectly, kByParser, kByCloning };
 
-  // This method is called whenever an attribute is added, changed or removed.
+  // |attributeChanged| is called whenever an attribute is added, changed or
+  // removed. It handles very common attributes such as id, class, name, style,
+  // and slot.
+  //
+  // While the owner document is parsed, this function is called after all
+  // attributes in a start tag were added to the element.
   virtual void attributeChanged(const QualifiedName&,
                                 const AtomicString& oldValue,
                                 const AtomicString& newValue,
-                                AttributeModificationReason = ModifiedDirectly);
+                                AttributeModificationReason);
+
+  // |parseAttribute| is called by |attributeChanged|. If an element
+  // implementation needs to check an attribute update, override this function.
+  //
+  // While the owner document is parsed, this function is called after all
+  // attributes in a start tag were added to the element.
   virtual void parseAttribute(const QualifiedName&,
                               const AtomicString& oldValue,
                               const AtomicString& newValue);

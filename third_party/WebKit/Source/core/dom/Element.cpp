@@ -1310,6 +1310,18 @@ void Element::attributeChanged(const QualifiedName& name,
     if (AXObjectCache* cache = document().existingAXObjectCache())
       cache->handleAttributeChanged(name, this);
   }
+
+  if (reason == AttributeModificationReason::kDirectly &&
+      name == tabindexAttr && adjustedFocusedElementInTreeScope() == this) {
+    // The attribute change may cause supportsFocus() to return false
+    // for the element which had focus.
+    //
+    // TODO(tkent): We should avoid updating style.  We'd like to check only
+    // DOM-level focusability here.
+    document().updateStyleAndLayoutTreeForNode(this);
+    if (!supportsFocus())
+      blur();
+  }
 }
 
 bool Element::hasLegalLinkAttribute(const QualifiedName&) const {
@@ -1488,9 +1500,11 @@ void Element::parserSetAttributes(const Vector<Attribute>& attributeVector) {
 
   // Use attributeVector instead of m_elementData because attributeChanged might
   // modify m_elementData.
-  for (const auto& attribute : attributeVector)
-    attributeChangedFromParserOrByCloning(attribute.name(), attribute.value(),
-                                          ModifiedDirectly);
+  for (const auto& attribute : attributeVector) {
+    attributeChangedFromParserOrByCloning(
+        attribute.name(), attribute.value(),
+        AttributeModificationReason::kByParser);
+  }
 }
 
 bool Element::hasEquivalentAttributes(const Element* other) const {
@@ -2444,11 +2458,6 @@ void Element::parseAttribute(const QualifiedName& name,
     int tabindex = 0;
     if (value.isEmpty() || !parseHTMLInteger(value, tabindex)) {
       clearTabIndexExplicitlyIfNeeded();
-      if (adjustedFocusedElementInTreeScope() == this) {
-        // We might want to call blur(), but it's dangerous to dispatch
-        // events here.
-        document().setNeedsFocusedElementCheck();
-      }
     } else {
       // We only set when value is in integer range.
       setTabIndexExplicitly();
@@ -3527,7 +3536,8 @@ void Element::didAddAttribute(const QualifiedName& name,
                               const AtomicString& value) {
   if (name == HTMLNames::idAttr)
     updateId(nullAtom, value);
-  attributeChanged(name, nullAtom, value);
+  attributeChanged(name, nullAtom, value,
+                   AttributeModificationReason::kDirectly);
   InspectorInstrumentation::didModifyDOMAttr(this, name, value);
   dispatchSubtreeModifiedEvent();
 }
@@ -3537,7 +3547,8 @@ void Element::didModifyAttribute(const QualifiedName& name,
                                  const AtomicString& newValue) {
   if (name == HTMLNames::idAttr)
     updateId(oldValue, newValue);
-  attributeChanged(name, oldValue, newValue);
+  attributeChanged(name, oldValue, newValue,
+                   AttributeModificationReason::kDirectly);
   InspectorInstrumentation::didModifyDOMAttr(this, name, newValue);
   // Do not dispatch a DOMSubtreeModified event here; see bug 81141.
 }
@@ -3546,7 +3557,8 @@ void Element::didRemoveAttribute(const QualifiedName& name,
                                  const AtomicString& oldValue) {
   if (name == HTMLNames::idAttr)
     updateId(oldValue, nullAtom);
-  attributeChanged(name, oldValue, nullAtom);
+  attributeChanged(name, oldValue, nullAtom,
+                   AttributeModificationReason::kDirectly);
   InspectorInstrumentation::didRemoveDOMAttr(this, name);
   dispatchSubtreeModifiedEvent();
 }
@@ -3743,9 +3755,10 @@ void Element::cloneAttributesFromElement(const Element& other) {
     m_elementData = other.m_elementData->makeUniqueCopy();
 
   AttributeCollection attributes = m_elementData->attributes();
-  for (const Attribute& attr : attributes)
-    attributeChangedFromParserOrByCloning(attr.name(), attr.value(),
-                                          ModifiedByCloning);
+  for (const Attribute& attr : attributes) {
+    attributeChangedFromParserOrByCloning(
+        attr.name(), attr.value(), AttributeModificationReason::kByCloning);
+  }
 }
 
 void Element::cloneDataFromElement(const Element& other) {
@@ -3840,7 +3853,7 @@ void Element::styleAttributeChanged(
 
   if (newStyleString.isNull()) {
     ensureUniqueElementData().m_inlineStyle.clear();
-  } else if (modificationReason == ModifiedByCloning ||
+  } else if (modificationReason == AttributeModificationReason::kByCloning ||
              ContentSecurityPolicy::shouldBypassMainWorld(&document()) ||
              (containingShadowRoot() &&
               containingShadowRoot()->type() == ShadowRootType::UserAgent) ||

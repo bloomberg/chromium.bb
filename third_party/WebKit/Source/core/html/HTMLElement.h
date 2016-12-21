@@ -139,6 +139,10 @@ class CORE_EXPORT HTMLElement : public Element {
   void applyBorderAttributeToStyle(const AtomicString&,
                                    MutableStylePropertySet*);
 
+  void attributeChanged(const QualifiedName&,
+                        const AtomicString&,
+                        const AtomicString&,
+                        AttributeModificationReason) override;
   void parseAttribute(const QualifiedName&,
                       const AtomicString&,
                       const AtomicString&) override;
