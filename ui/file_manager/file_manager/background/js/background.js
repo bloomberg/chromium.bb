@@ -74,14 +74,18 @@ function FileBrowserBackground() {
   this.driveSyncHandler = new DriveSyncHandler(this.progressCenter);
 
   /**
+   * @type {!importer.DispositionChecker.CheckerFunction}
+   */
+  this.dispositionChecker_ = importer.DispositionChecker.createChecker(
+      this.historyLoader, this.tracker);
+
+  /**
    * Provides support for scaning media devices as part of Cloud Import.
    * @type {!importer.MediaScanner}
    */
   this.mediaScanner = new importer.DefaultMediaScanner(
       importer.createMetadataHashcode,
-      importer.DispositionChecker.createChecker(
-          this.historyLoader,
-          this.tracker),
+      this.dispositionChecker_,
       importer.DefaultDirectoryWatcher.create);
 
   /**
@@ -92,6 +96,7 @@ function FileBrowserBackground() {
   this.mediaImportHandler = new importer.MediaImportHandler(
       this.progressCenter,
       this.historyLoader,
+      this.dispositionChecker_,
       this.tracker);
 
   /**

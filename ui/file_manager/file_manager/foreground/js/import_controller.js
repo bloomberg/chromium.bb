@@ -175,7 +175,7 @@ importer.ImportController.prototype.onDirectoryChanged_ = function(event) {
   this.scanManager_.reset();
   if (this.isCurrentDirectoryScannable_()) {
     this.checkState_(
-        this.scanManager_.getDirectoryScan(importer.ScanMode.CONTENT));
+        this.scanManager_.getDirectoryScan(importer.ScanMode.HISTORY));
   } else {
     this.checkState_();
   }
@@ -202,7 +202,7 @@ importer.ImportController.prototype.onSelectionChanged_ = function() {
   if (this.environment_.getSelection().length === 0 &&
       this.isCurrentDirectoryScannable_()) {
     this.checkState_(
-        this.scanManager_.getDirectoryScan(importer.ScanMode.CONTENT));
+        this.scanManager_.getDirectoryScan(importer.ScanMode.HISTORY));
   } else {
     this.checkState_();
   }
@@ -226,7 +226,7 @@ importer.ImportController.prototype.onScanInvalidated_ = function() {
   if (this.environment_.getSelection().length === 0 &&
       this.isCurrentDirectoryScannable_()) {
     this.checkState_(
-        this.scanManager_.getDirectoryScan(importer.ScanMode.CONTENT));
+        this.scanManager_.getDirectoryScan(importer.ScanMode.HISTORY));
   } else {
     this.checkState_();
   }
@@ -367,7 +367,7 @@ importer.ImportController.prototype.checkState_ = function(opt_scan) {
     // NOTE, that tryScan_ lazily initializes scans...so if
     // no scan is returned, no scan is possible for the
     // current context.
-    var scan = this.tryScan_(importer.ScanMode.CONTENT);
+    var scan = this.tryScan_(importer.ScanMode.HISTORY);
     // If no scan is created, then no scan is possible in
     // the current context...so hide the UI.
     if (!scan) {

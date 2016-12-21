@@ -198,10 +198,16 @@ importer.DispositionChecker = function(historyLoader, contentMatcher) {
 };
 
 /**
- * @param {!FileEntry} entry
- * @param {!importer.Destination} destination
- * @param {!importer.ScanMode} mode
- * @return {!Promise<!importer.Disposition>}
+ * Type for a function to return content disposition of an entry.
+ *
+ * @typedef {function(!FileEntry, !importer.Destination,
+ *                   !importer.ScanMode):
+ *     !Promise<!importer.Disposition>}
+ */
+importer.DispositionChecker.CheckerFunction;
+
+/**
+ * @type {!importer.DispositionChecker.CheckerFunction}
  */
 importer.DispositionChecker.prototype.getDisposition =
     function(entry, destination, mode) {
@@ -279,9 +285,7 @@ importer.DispositionChecker.prototype.hasHistoryDuplicate_ =
  * @param {!importer.HistoryLoader} historyLoader
  * @param {!analytics.Tracker} tracker
  *
- * @return {function(!FileEntry, !importer.Destination,
- *                   !importer.ScanMode):
- *     !Promise<!importer.Disposition>}
+ * @return {!importer.DispositionChecker.CheckerFunction}
  */
 importer.DispositionChecker.createChecker =
     function(historyLoader, tracker) {

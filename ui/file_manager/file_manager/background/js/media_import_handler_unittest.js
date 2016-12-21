@@ -14,6 +14,9 @@ var mediaImporter;
 /** @type {!importer.TestImportHistory} */
 var importHistory;
 
+/** @param {!importer.DispositionChecker.CheckerFunction} */
+var dispositionChecker;
+
 /** @type {!VolumeInfo} */
 var drive;
 
@@ -76,6 +79,13 @@ function setUp() {
   MockVolumeManager.installMockSingleton(volumeManager);
 
   importHistory = new importer.TestImportHistory();
+
+  // This is the default disposition checker used by mediaImporter.
+  // Tests can replace this at runtime if they want specialized behaviors.
+  dispositionChecker = function() {
+    return Promise.resolve(importer.Disposition.ORIGINAL);
+  };
+
   mediaScanner = new TestMediaScanner();
   destinationFileSystem = new MockFileSystem('googleDriveFilesystem');
   destinationFactory = Promise.resolve(destinationFileSystem.root);
@@ -84,6 +94,9 @@ function setUp() {
   mediaImporter = new importer.MediaImportHandler(
       progressCenter,
       importHistory,
+      function(entry, destination) {
+        return dispositionChecker(entry, destination);
+      },
       new TestTracker());
 }
 
@@ -99,9 +112,9 @@ function testImportMedia(callback) {
 
   var scanResult = new TestScanResult(media);
   var importTask = mediaImporter.importFromScanResult(
-        scanResult,
-        importer.Destination.GOOGLE_DRIVE,
-        destinationFactory);
+      scanResult,
+      importer.Destination.GOOGLE_DRIVE,
+      destinationFactory);
   var whenImportDone = new Promise(
       function(resolve, reject) {
         importTask.addObserver(
@@ -132,6 +145,77 @@ function testImportMedia(callback) {
   scanResult.finalize();
 }
 
+function testImportMedia_skipAndMarkDuplicatedFiles(callback) {
+  var DUPLICATED_FILE_PATH_1 = '/DCIM/photos0/duplicated_1.jpg';
+  var DUPLICATED_FILE_PATH_2 = '/DCIM/photos0/duplicated_2.jpg';
+  var ORIGINAL_FILE_NAME = 'new_image.jpg';
+  var ORIGINAL_FILE_SRC_PATH = '/DCIM/photos0/' + ORIGINAL_FILE_NAME;
+  var ORIGINAL_FILE_DEST_PATH = '/' + ORIGINAL_FILE_NAME;
+  var media = setupFileSystem([
+    DUPLICATED_FILE_PATH_1,
+    ORIGINAL_FILE_NAME,
+    DUPLICATED_FILE_PATH_2,
+  ]);
+
+  dispositionChecker = function(entry, destination) {
+    if (entry.fullPath == DUPLICATED_FILE_PATH_1) {
+      return Promise.resolve(importer.Disposition.HISTORY_DUPLICATE);
+    }
+    if (entry.fullPath == DUPLICATED_FILE_PATH_2) {
+      return Promise.resolve(importer.Disposition.CONTENT_DUPLICATE);
+    }
+    return Promise.resolve(importer.Disposition.ORIGINAL);
+  };
+  mediaImporter = new importer.MediaImportHandler(
+      progressCenter,
+      importHistory,
+      dispositionChecker,
+      new TestTracker());
+  var scanResult = new TestScanResult(media);
+  var importTask = mediaImporter.importFromScanResult(
+      scanResult,
+      importer.Destination.GOOGLE_DRIVE,
+      destinationFactory);
+  var whenImportDone = new Promise(
+      function(resolve, reject) {
+        importTask.addObserver(
+            /**
+             * @param {!importer.TaskQueue.UpdateType} updateType
+             * @param {!importer.TaskQueue.Task} task
+             */
+            function(updateType, task) {
+              switch (updateType) {
+                case importer.TaskQueue.UpdateType.COMPLETE:
+                  resolve();
+                  break;
+                case importer.TaskQueue.UpdateType.ERROR:
+                  reject(new Error(importer.TaskQueue.UpdateType.ERROR));
+                  break;
+              }
+            });
+      });
+
+  reportPromise(
+      whenImportDone.then(
+          function() {
+            // Only the new file should be copied.
+            var copiedEntries = destinationFileSystem.root.getAllChildren();
+            assertEquals(1, copiedEntries.length);
+            assertEquals(ORIGINAL_FILE_DEST_PATH, copiedEntries[0].fullPath);
+            importHistory.assertCopied(media[1],
+                                       importer.Destination.GOOGLE_DRIVE);
+            // The 2 duplicated files should be marked as imported.
+            [media[0], media[2]].forEach(
+                /** @param {!FileEntry} entry */
+                function(entry) {
+                  importHistory.assertImported(
+                      entry, importer.Destination.GOOGLE_DRIVE);
+                });
+          }), callback);
+
+  scanResult.finalize();
+}
+
 function testImportMedia_EmploysEncodedUrls(callback) {
   var media = setupFileSystem([
     '/DCIM/photos0/Mom and Dad.jpg',
@@ -139,9 +223,9 @@ function testImportMedia_EmploysEncodedUrls(callback) {
 
   var scanResult = new TestScanResult(media);
   var importTask = mediaImporter.importFromScanResult(
-        scanResult,
-        importer.Destination.GOOGLE_DRIVE,
-        destinationFactory);
+      scanResult,
+      importer.Destination.GOOGLE_DRIVE,
+      destinationFactory);
 
   var promise = new Promise(
       function(resolve, reject) {
@@ -189,9 +273,9 @@ function testImportMediaWithDuplicateFilenames(callback) {
 
   var scanResult = new TestScanResult(media);
   var importTask = mediaImporter.importFromScanResult(
-        scanResult,
-        importer.Destination.GOOGLE_DRIVE,
-        destinationFactory);
+      scanResult,
+      importer.Destination.GOOGLE_DRIVE,
+      destinationFactory);
   var whenImportDone = new Promise(
       function(resolve, reject) {
         importTask.addObserver(
@@ -235,9 +319,9 @@ function testKeepAwakeDuringImport(callback) {
 
   var scanResult = new TestScanResult(media);
   var importTask = mediaImporter.importFromScanResult(
-        scanResult,
-        importer.Destination.GOOGLE_DRIVE,
-        destinationFactory);
+      scanResult,
+      importer.Destination.GOOGLE_DRIVE,
+      destinationFactory);
   var whenImportDone = new Promise(
       function(resolve, reject) {
         importTask.addObserver(
