@@ -4170,6 +4170,8 @@ void LayoutBox::computeBlockStaticDistance(
       continue;
     const LayoutBox& box = *toLayoutBox(curr);
     staticLogicalTop += box.logicalTop();
+    if (box.isInFlowPositioned())
+      staticLogicalTop += box.offsetForInFlowPosition().height();
     if (!box.isLayoutFlowThread())
       continue;
     // We're walking out of a flowthread here. This flow thread is not in the

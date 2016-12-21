@@ -28,7 +28,7 @@ A centered dialog's position should survive becoming display:none temporarily.
 PASS dialog.getBoundingClientRect().top is expectedTop
 
 Dialog should lose centering when removed from the document.
-FAIL dialog.getBoundingClientRect().top should be 0. Was 800.
+FAIL dialog.getBoundingClientRect().top should be 0. Was 820.
 
 Dialog's specified position should survive after close() and showModal().
 PASS dialog.getBoundingClientRect().top is expectedTop
