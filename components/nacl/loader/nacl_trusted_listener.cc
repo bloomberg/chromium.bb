@@ -11,6 +11,12 @@
 
 namespace {
 
+#if defined(COMPILER_MSVC)
+// Disable warning that we don't care about:
+// warning C4722: destructor never returns, potential memory leak
+#pragma warning(disable : 4722)
+#endif
+
 class NaClExitControlImpl : public nacl::mojom::NaClExitControl {
  public:
   ~NaClExitControlImpl() override {
