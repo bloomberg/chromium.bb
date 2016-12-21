@@ -1007,7 +1007,6 @@ def make_workdir(repository, new_workdir):
     'refs',
     'remotes',
     'rr-cache',
-    'svn'
   ]
   make_workdir_common(repository, new_workdir, GIT_DIRECTORY_WHITELIST,
                       ['HEAD'])

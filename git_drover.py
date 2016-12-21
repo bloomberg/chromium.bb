@@ -214,7 +214,6 @@ class _Drover(object):
       'packed-refs',
       'remotes',
       'rr-cache',
-      'svn',
   ]
   FILES_TO_COPY = ['config', 'HEAD']
 

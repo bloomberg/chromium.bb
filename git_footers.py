@@ -15,7 +15,6 @@ import git_common as git
 
 FOOTER_PATTERN = re.compile(r'^\s*([\w-]+): (.*)$')
 CHROME_COMMIT_POSITION_PATTERN = re.compile(r'^([\w/\-\.]+)@{#(\d+)}$')
-GIT_SVN_ID_PATTERN = re.compile('^([^\s@]+)@(\d+)')
 
 
 def normalize_name(header):
@@ -66,20 +65,6 @@ def split_footers(message):
   if not footer_lines or not all(footers):
     return message_lines, [], []
   return message_lines[:-len(footer_lines)], footer_lines, footers
-
-
-def get_footer_svn_id(branch=None):
-  if not branch:
-    branch = git.root()
-  svn_id = None
-  message = git.run('log', '-1', '--format=%B', branch)
-  footers = parse_footers(message)
-  git_svn_id = get_unique(footers, 'git-svn-id')
-  if git_svn_id:
-    match = GIT_SVN_ID_PATTERN.match(git_svn_id)
-    if match:
-      svn_id = match.group(1)
-  return svn_id
 
 
 def get_footer_change_id(message):
@@ -150,9 +135,7 @@ def get_position(footers):
 
     Cr-Commit-Position: refs/heads/master@{#292272}
 
-    would give the return value ('refs/heads/master', 292272).  If
-    Cr-Commit-Position is not defined, we try to infer the ref and position
-    from git-svn-id. The position number can be None if it was not inferrable.
+    would give the return value ('refs/heads/master', 292272).
   """
 
   position = get_unique(footers, 'Cr-Commit-Position')
@@ -160,29 +143,6 @@ def get_position(footers):
     match = CHROME_COMMIT_POSITION_PATTERN.match(position)
     assert match, 'Invalid Cr-Commit-Position value: %s' % position
     return (match.group(1), match.group(2))
-
-  svn_commit = get_unique(footers, 'git-svn-id')
-  if svn_commit:
-    match = GIT_SVN_ID_PATTERN.match(svn_commit)
-    assert match, 'Invalid git-svn-id value: %s' % svn_commit
-    # V8 has different semantics than Chromium.
-    if re.match(r'.*https?://v8\.googlecode\.com/svn/trunk',
-                match.group(1)):
-      return ('refs/heads/candidates', match.group(2))
-    if re.match(r'.*https?://v8\.googlecode\.com/svn/branches/bleeding_edge',
-                match.group(1)):
-      return ('refs/heads/master', match.group(2))
-
-    # Assume that any trunk svn revision will match the commit-position
-    # semantics.
-    if re.match('.*/trunk.*$', match.group(1)):
-      return ('refs/heads/master', match.group(2))
-
-    # But for now only support faking branch-heads for chrome.
-    branch_match = re.match('.*/chrome/branches/([\w/-]+)/src$', match.group(1))
-    if branch_match:
-      # svn commit numbers do not map to branches.
-      return ('refs/branch-heads/%s' % branch_match.group(1), None)
 
   raise ValueError('Unable to infer commit position from footers')
 

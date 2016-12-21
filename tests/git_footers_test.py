@@ -25,16 +25,6 @@ My commit message is my best friend. It is my life. I must master it.
 
   _position_footer = 'Cr-Commit-Position: %s\n' % _position
 
-  _git_svn_id = ('svn://svn.chromium.org/chrome/trunk/src@290386'
-                 ' 0039d316-1c4b-4281-b951-d872f2087c98')
-
-  _git_svn_id_footer = 'git-svn-id: %s\n' % _git_svn_id
-
-  _git_svn_id_branch = (
-      'svn://svn.chromium.org/chrome/branches/blabble/src@177288')
-
-  _git_svn_id_footer_branch = 'git-svn-id: %s\n' % _git_svn_id_branch
-
   def testFootersBasic(self):
     self.assertEqual(
         git_footers.split_footers('Not-A: footer'),
@@ -52,31 +42,9 @@ My commit message is my best friend. It is my life. I must master it.
         git_footers.parse_footers(self._message + self._position_footer),
         { 'Cr-Commit-Position': [ self._position ] })
     self.assertEqual(
-        git_footers.parse_footers(self._message + self._git_svn_id_footer),
-        { 'Git-Svn-Id': [ self._git_svn_id ] })
-    self.assertEqual(
         git_footers.parse_footers(self._message + self._position_footer
                                                 + self._position_footer),
         { 'Cr-Commit-Position': [ self._position, self._position ] })
-
-  def testTrunkHeuristic(self):
-    footers = git_footers.parse_footers(self._message + self._git_svn_id_footer)
-    self.assertEqual(
-        footers,
-        { 'Git-Svn-Id': [ self._git_svn_id ] })
-    self.assertEqual(
-        git_footers.get_position(footers),
-        ('refs/heads/master', '290386'))
-
-  def testBranchHeuristic(self):
-    footers = git_footers.parse_footers(self._message +
-                                        self._git_svn_id_footer_branch)
-    self.assertEqual(
-        footers,
-        { 'Git-Svn-Id': [ self._git_svn_id_branch ] })
-    self.assertEqual(
-        git_footers.get_position(footers),
-        ('refs/branch-heads/blabble', None))
 
   def testGetFooterChangeId(self):
     msg = '\n'.join(['whatever',
