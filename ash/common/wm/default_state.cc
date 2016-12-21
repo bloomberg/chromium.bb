@@ -451,12 +451,12 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
       }
       gfx::Rect work_area_in_parent =
           GetDisplayWorkAreaBoundsInParent(window_state->window());
-      gfx::Rect bounds = window_state->window()->GetBounds();
+      gfx::Rect bounds = window_state->window()->GetTargetBounds();
       // When display bounds has changed, make sure the entire window is fully
       // visible.
       bounds.AdjustToFit(work_area_in_parent);
       window_state->AdjustSnappedBounds(&bounds);
-      if (window_state->window()->GetBounds() != bounds)
+      if (window_state->window()->GetTargetBounds() != bounds)
         window_state->SetBoundsDirectAnimated(bounds);
       return true;
     }
@@ -476,11 +476,11 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
       }
       gfx::Rect work_area_in_parent =
           GetDisplayWorkAreaBoundsInParent(window_state->window());
-      gfx::Rect bounds = window_state->window()->GetBounds();
+      gfx::Rect bounds = window_state->window()->GetTargetBounds();
       wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent,
                                                       &bounds);
       window_state->AdjustSnappedBounds(&bounds);
-      if (window_state->window()->GetBounds() != bounds)
+      if (window_state->window()->GetTargetBounds() != bounds)
         window_state->SetBoundsDirectAnimated(bounds);
       return true;
     }

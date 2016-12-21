@@ -29,6 +29,7 @@
 #include "ui/aura/env.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/insets.h"
@@ -537,6 +538,42 @@ TEST_F(WorkspaceLayoutManagerTest, NotifyFullscreenChanges) {
   window2_owner.reset();
   EXPECT_EQ(6, observer.call_count());
   EXPECT_FALSE(observer.is_fullscreen());
+}
+
+// For crbug.com/673803, snapped window may not adjust snapped bounds on work
+// area changed properly if window's layer is doing animation. We should use
+// GetTargetBounds to check if snapped bounds need to be changed.
+TEST_F(WorkspaceLayoutManagerTest,
+       SnappedWindowMayNotAdjustBoundsOnWorkAreaChanged) {
+  UpdateDisplay("300x400");
+  std::unique_ptr<WindowOwner> window_owner(
+      CreateTestWindow(gfx::Rect(10, 20, 100, 200)));
+  WmWindow* window = window_owner->window();
+  wm::WindowState* window_state = window->GetWindowState();
+  gfx::Insets insets(0, 0, 50, 0);
+  WmShell::Get()->SetDisplayWorkAreaInsets(window, insets);
+  const wm::WMEvent snap_left(wm::WM_EVENT_SNAP_LEFT);
+  window_state->OnWMEvent(&snap_left);
+  EXPECT_EQ(wm::WINDOW_STATE_TYPE_LEFT_SNAPPED, window_state->GetStateType());
+  const gfx::Rect kWorkAreaBounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().work_area();
+  gfx::Rect expected_bounds =
+      gfx::Rect(kWorkAreaBounds.x(), kWorkAreaBounds.y(),
+                kWorkAreaBounds.width() / 2, kWorkAreaBounds.height());
+  EXPECT_EQ(expected_bounds.ToString(), window->GetBounds().ToString());
+
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  // The following two SetDisplayWorkAreaInsets calls simulate the case of
+  // crbug.com/673803 that work area first becomes fullscreen and then returns
+  // to the original state.
+  WmShell::Get()->SetDisplayWorkAreaInsets(window, gfx::Insets(0, 0, 0, 0));
+  ui::LayerAnimator* animator = window->GetLayer()->GetAnimator();
+  EXPECT_TRUE(animator->is_animating());
+  WmShell::Get()->SetDisplayWorkAreaInsets(window, insets);
+  animator->StopAnimating();
+  EXPECT_FALSE(animator->is_animating());
+  EXPECT_EQ(expected_bounds.ToString(), window->GetBounds().ToString());
 }
 
 // Following "Solo" tests were originally written for BaseLayoutManager.
