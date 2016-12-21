@@ -64,8 +64,6 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
                                    PassRefPtr<SecurityOrigin> securityOrigin)
     : m_callback(callback),
       m_numberOfOutputChannels(numberOfOutputChannels),
-      m_inputBus(AudioBus::create(numberOfInputChannels,
-                                  AudioUtilities::kRenderQuantumFrames)),
       m_renderBus(AudioBus::create(numberOfOutputChannels,
                                    AudioUtilities::kRenderQuantumFrames,
                                    false)),
@@ -130,19 +128,6 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
   m_fifo =
       WTF::wrapUnique(new AudioPullFIFO(*this, numberOfOutputChannels, fifoSize,
                                         AudioUtilities::kRenderQuantumFrames));
-
-  // Input buffering.
-  m_inputFifo = WTF::makeUnique<AudioFIFO>(numberOfInputChannels, fifoSize);
-
-  // If the callback size does not match the render size, then we need to
-  // buffer some extra silence for the input. Otherwise, we can over-consume
-  // the input FIFO.
-  if (m_callbackBufferSize != AudioUtilities::kRenderQuantumFrames) {
-    // FIXME: handle multi-channel input and don't hard-code to stereo.
-    RefPtr<AudioBus> silence =
-        AudioBus::create(2, AudioUtilities::kRenderQuantumFrames);
-    m_inputFifo->push(silence.get());
-  }
 }
 
 AudioDestination::~AudioDestination() {
@@ -171,8 +156,7 @@ unsigned long AudioDestination::maxChannelCount() {
   return static_cast<float>(Platform::current()->audioHardwareOutputChannels());
 }
 
-void AudioDestination::render(const WebVector<float*>& sourceData,
-                              const WebVector<float*>& audioData,
+void AudioDestination::render(const WebVector<float*>& audioData,
                               size_t numberOfFrames,
                               double delay,
                               double delayTimestamp,
@@ -196,15 +180,6 @@ void AudioDestination::render(const WebVector<float*>& sourceData,
   m_outputPosition.timestamp = delayTimestamp;
   m_outputPositionReceivedTimestamp = base::TimeTicks::Now();
 
-  // Buffer optional live input.
-  if (sourceData.size() >= 2) {
-    // FIXME: handle multi-channel input and don't hard-code to stereo.
-    RefPtr<AudioBus> wrapperBus = AudioBus::create(2, numberOfFrames, false);
-    wrapperBus->setChannelMemory(0, sourceData[0], numberOfFrames);
-    wrapperBus->setChannelMemory(1, sourceData[1], numberOfFrames);
-    m_inputFifo->push(wrapperBus.get());
-  }
-
   for (unsigned i = 0; i < m_numberOfOutputChannels; ++i)
     m_renderBus->setChannelMemory(i, audioData[i], numberOfFrames);
 
@@ -214,12 +189,6 @@ void AudioDestination::render(const WebVector<float*>& sourceData,
 }
 
 void AudioDestination::provideInput(AudioBus* bus, size_t framesToProcess) {
-  AudioBus* sourceBus = nullptr;
-  if (m_inputFifo->framesInFifo() >= framesToProcess) {
-    m_inputFifo->consume(m_inputBus.get(), framesToProcess);
-    sourceBus = m_inputBus.get();
-  }
-
   AudioIOPosition outputPosition = m_outputPosition;
 
   // If platfrom buffer is more than two times longer than |framesToProcess|
@@ -237,7 +206,7 @@ void AudioDestination::provideInput(AudioBus* bus, size_t framesToProcess) {
   if (outputPosition.position < 0.0)
     outputPosition.position = 0.0;
 
-  m_callback.render(sourceBus, bus, framesToProcess, outputPosition);
+  m_callback.render(nullptr, bus, framesToProcess, outputPosition);
 }
 
 }  // namespace blink

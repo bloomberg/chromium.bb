@@ -42,7 +42,6 @@
 
 namespace blink {
 
-class AudioFIFO;
 class AudioPullFIFO;
 class SecurityOrigin;
 
@@ -80,8 +79,7 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback,
   float sampleRate() const { return m_sampleRate; }
 
   // WebAudioDevice::RenderCallback
-  void render(const WebVector<float*>& sourceData,
-              const WebVector<float*>& audioData,
+  void render(const WebVector<float*>& audioData,
               size_t numberOfFrames,
               double delay,
               double delayTimestamp,
@@ -105,14 +103,12 @@ class PLATFORM_EXPORT AudioDestination : public WebAudioDevice::RenderCallback,
  private:
   AudioIOCallback& m_callback;
   unsigned m_numberOfOutputChannels;
-  RefPtr<AudioBus> m_inputBus;
   RefPtr<AudioBus> m_renderBus;
   float m_sampleRate;
   bool m_isPlaying;
   std::unique_ptr<WebAudioDevice> m_audioDevice;
   size_t m_callbackBufferSize;
 
-  std::unique_ptr<AudioFIFO> m_inputFifo;
   std::unique_ptr<AudioPullFIFO> m_fifo;
 
   size_t m_framesElapsed;
