@@ -2659,6 +2659,15 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 		wm->server->compositor->xwayland_interface;
 	struct weston_wm_window *parent;
 
+	/* This should be necessary only for override-redirected windows,
+	 * because otherwise MapRequest handler would have already updated
+	 * the properties. However, if X11 clients set properties after
+	 * sending MapWindow, here we can still process them. The decorations
+	 * have already been drawn once with the old property values, so if the
+	 * app changes something affecting decor after MapWindow, we glitch.
+	 * We only hit xserver_map_shell_surface() once per MapWindow and
+	 * wl_surface, so better ensure we get the window type right.
+	 */
 	weston_wm_window_read_properties(window);
 
 	/* A weston_wm_window may have many different surfaces assigned
