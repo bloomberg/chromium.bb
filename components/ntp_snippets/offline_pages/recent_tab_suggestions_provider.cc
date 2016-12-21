@@ -69,6 +69,12 @@ std::unique_ptr<OfflinePageModelQuery> BuildRecentTabsQuery(
   return builder.Build(model->GetPolicyController());
 }
 
+bool IsRecentTab(offline_pages::ClientPolicyController* policy_controller,
+                 const OfflinePageItem& offline_page) {
+  return policy_controller->IsShownAsRecentlyVisitedSite(
+      offline_page.client_id.name_space);
+}
+
 }  // namespace
 
 RecentTabSuggestionsProvider::RecentTabSuggestionsProvider(
@@ -212,7 +218,9 @@ void RecentTabSuggestionsProvider::OfflinePageAdded(
     offline_pages::OfflinePageModel* model,
     const offline_pages::OfflinePageItem& added_page) {
   DCHECK_EQ(offline_page_model_, model);
-  FetchRecentTabs();
+  if (IsRecentTab(model->GetPolicyController(), added_page)) {
+    FetchRecentTabs();
+  }
 }
 
 void RecentTabSuggestionsProvider::

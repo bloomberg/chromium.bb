@@ -182,11 +182,14 @@ TEST_F(RecentTabSuggestionsProviderTest, ShouldDeliverCorrectCategoryInfo) {
                    .has_view_all_action());
 }
 
+// TODO(vitaliii): Break this test into multiple tests. Currently if it fails,
+// it takes long time to find which part of it actually fails.
 TEST_F(RecentTabSuggestionsProviderTest, ShouldDismiss) {
-  EXPECT_CALL(*observer(), OnNewSuggestions(_, _, _)).Times(4);
-  auto recent_tabs_list = CreateDummyRecentTabs({1, 2, 3, 4});
-  for (OfflinePageItem& recent_tab : recent_tabs_list)
+  EXPECT_CALL(*observer(), OnNewSuggestions(_, _, _)).Times(3);
+  auto recent_tabs_list = CreateDummyRecentTabs({1, 2, 3});
+  for (OfflinePageItem& recent_tab : recent_tabs_list) {
     AddOfflinePageToModel(recent_tab);
+  }
 
   // Dismiss 2 and 3.
   EXPECT_CALL(*observer(), OnNewSuggestions(_, _, _)).Times(0);
@@ -197,15 +200,13 @@ TEST_F(RecentTabSuggestionsProviderTest, ShouldDismiss) {
   // They should disappear from the reported suggestions.
   EXPECT_CALL(
       *observer(),
-      OnNewSuggestions(_, recent_tabs_category(),
-                       UnorderedElementsAre(
-                           Property(&ContentSuggestion::url,
-                                    GURL("http://dummy.com/1")),
-                           Property(&ContentSuggestion::url,
-                                    GURL("http://dummy.com/4")))));
+      OnNewSuggestions(
+          _, recent_tabs_category(),
+          UnorderedElementsAre(
+              Property(&ContentSuggestion::url, GURL("http://dummy.com/1")),
+              Property(&ContentSuggestion::url, GURL("http://dummy.com/4")))));
 
-  AddOfflinePageToModel(ntp_snippets::test::CreateDummyOfflinePageItem(
-      4, offline_pages::kDefaultNamespace));
+  AddOfflinePageToModel(CreateDummyRecentTab(4));
   Mock::VerifyAndClearExpectations(observer());
 
   // And appear in the dismissed suggestions.
@@ -232,9 +233,8 @@ TEST_F(RecentTabSuggestionsProviderTest, ShouldDismiss) {
 
   // And appear in the reported suggestions for the category again.
   EXPECT_CALL(*observer(),
-              OnNewSuggestions(_, recent_tabs_category(), SizeIs(4)));
-  AddOfflinePageToModel(ntp_snippets::test::CreateDummyOfflinePageItem(
-      5, offline_pages::kDefaultNamespace));
+              OnNewSuggestions(_, recent_tabs_category(), SizeIs(5)));
+  AddOfflinePageToModel(CreateDummyRecentTab(5));
   Mock::VerifyAndClearExpectations(observer());
 }
 
@@ -304,6 +304,33 @@ TEST_F(RecentTabSuggestionsProviderTest, ShouldNotShowSameUrlMutlipleTimes) {
                       Property(&ContentSuggestion::publish_date, tomorrow))));
 
   AddOfflinePageToModel(offline_pages[2]);
+}
+
+TEST_F(RecentTabSuggestionsProviderTest,
+       ShouldNotFetchIfAddedOfflinePageIsNotRecentTab) {
+  // The provider is not notified about the first recent tab yet.
+  model()->mutable_items()->push_back(CreateDummyRecentTab(1));
+  // It should not fetch when not a recent tab is added, thus, it should not
+  // report the first recent tab (which it is not aware about).
+  EXPECT_CALL(*observer(), OnNewSuggestions(_, _, _)).Times(0);
+  AddOfflinePageToModel(ntp_snippets::test::CreateDummyOfflinePageItem(
+      2, offline_pages::kDefaultNamespace));
+}
+
+TEST_F(RecentTabSuggestionsProviderTest,
+       ShouldFetchIfAddedOfflinePageIsRecentTab) {
+  // The provider is not notified about the first recent tab yet.
+  model()->mutable_items()->push_back(CreateDummyRecentTab(1));
+  // However, it must return the first recent tab (i.e. manually fetch it) even
+  // when notified about a different recent tab.
+  EXPECT_CALL(
+      *observer(),
+      OnNewSuggestions(
+          _, recent_tabs_category(),
+          UnorderedElementsAre(
+              Property(&ContentSuggestion::url, GURL("http://dummy.com/1")),
+              Property(&ContentSuggestion::url, GURL("http://dummy.com/2")))));
+  AddOfflinePageToModel(CreateDummyRecentTab(2));
 }
 
 }  // namespace ntp_snippets
