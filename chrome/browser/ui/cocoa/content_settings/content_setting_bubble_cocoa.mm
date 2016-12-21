@@ -472,12 +472,14 @@ const ContentTypeToNibPath kNibPaths[] = {
                                    title:base::SysUTF8ToNSString(listItem.title)
                                     icon:image
                           referenceFrame:radioFrame];
+      [button setAutoresizingMask:NSViewMinYMargin];
       [[self bubble] addSubview:button];
       popupLinks_[button] = row++;
     } else {
       NSTextField* label =
           LabelWithFrame(base::SysUTF8ToNSString(listItem.title), frame);
       SetControlSize(label, NSSmallControlSize);
+      [label setAutoresizingMask:NSViewMinYMargin];
       [[self bubble] addSubview:label];
       row++;
     }
@@ -782,10 +784,14 @@ const ContentTypeToNibPath kNibPaths[] = {
 - (void)awakeFromNib {
   [super awakeFromNib];
 
+  ContentSettingSimpleBubbleModel* simple_bubble =
+      contentSettingBubbleModel_->AsSimpleBubbleModel();
+
   [[self bubble] setArrowLocation:info_bubble::kTopRight];
 
   // Adapt window size to bottom buttons. Do this before all other layouting.
-  [self initManageDoneButtons];
+  if (simple_bubble && !simple_bubble->bubble_content().manage_text.empty())
+    [self initManageDoneButtons];
 
   [self initializeTitle];
   [self initializeMessage];
@@ -793,11 +799,11 @@ const ContentTypeToNibPath kNibPaths[] = {
   // Note that the per-content-type methods and |initializeRadioGroup| below
   // must be kept in the correct order, as they make interdependent adjustments
   // of the bubble's height.
-  ContentSettingSimpleBubbleModel* simple_bubble =
-      contentSettingBubbleModel_->AsSimpleBubbleModel();
   if (simple_bubble &&
       simple_bubble->content_type() == CONTENT_SETTINGS_TYPE_PLUGINS) {
-    [self sizeToFitLoadButton];
+    if (!simple_bubble->bubble_content().custom_link.empty())
+      [self sizeToFitLoadButton];
+
     [self initializeBlockedPluginsList];
   }
 
@@ -814,6 +820,28 @@ const ContentTypeToNibPath kNibPaths[] = {
       [self initializeGeoLists];
     if (type == CONTENT_SETTINGS_TYPE_MIDI_SYSEX)
       [self initializeMIDISysExLists];
+
+    // For plugins, many controls are now removed. Remove them after the item
+    // list has been placed to preserve the existing layout logic.
+    if (type == CONTENT_SETTINGS_TYPE_PLUGINS) {
+      // The radio group is no longer applicable to plugins.
+      int delta = NSHeight([allowBlockRadioGroup_ frame]);
+      [allowBlockRadioGroup_ removeFromSuperview];
+
+      // Remove the "Load All" button if the model specifes it as empty.
+      if (simple_bubble->bubble_content().custom_link.empty()) {
+        delta += NSHeight([loadButton_ frame]);
+        [loadButton_ removeFromSuperview];
+      }
+
+      // Remove the "Manage" button if the model specifies it as empty.
+      if (simple_bubble->bubble_content().manage_text.empty())
+        [manageButton_ removeFromSuperview];
+
+      NSRect frame = [[self window] frame];
+      frame.size.height -= delta;
+      [[self window] setFrame:frame display:NO];
+    }
   }
 
   if (contentSettingBubbleModel_->AsMediaStreamBubbleModel())
