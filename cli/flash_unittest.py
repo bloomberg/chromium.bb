@@ -292,3 +292,26 @@ class FlashUtilTest(cros_test_lib.MockTempDirTestCase):
       # image.
       with self.PatchObject(cros_build_lib, 'GetChoice', return_value=2):
         self.assertEqual(file_c, flash._ChooseImageFromDirectory(self.tempdir))
+
+  def testIsFilePathGPTDiskImage(self):
+    """Tests the GPT image probing."""
+    # pylint: disable=protected-access
+
+    INVALID_PMBR = ' ' * 0x200
+    INVALID_GPT = ' ' * 0x200
+    VALID_PMBR = (' ' * 0x1fe) + '\x55\xaa'
+    VALID_GPT = 'EFI PART' + (' ' * 0x1f8)
+    TESTCASES = (
+        (False, False, INVALID_PMBR + INVALID_GPT),
+        (False, False, VALID_PMBR + INVALID_GPT),
+        (False, True, INVALID_PMBR + VALID_GPT),
+        (True, True, VALID_PMBR + VALID_GPT),
+    )
+
+    img = os.path.join(self.tempdir, 'img.bin')
+    for exp_pmbr_t, exp_pmbr_f, data in TESTCASES:
+      osutils.WriteFile(img, data)
+      self.assertEqual(
+          flash._IsFilePathGPTDiskImage(img, require_pmbr=True), exp_pmbr_t)
+      self.assertEqual(
+          flash._IsFilePathGPTDiskImage(img, require_pmbr=False), exp_pmbr_f)

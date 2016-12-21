@@ -78,17 +78,29 @@ class UsbImagerOperation(operation.ProgressBarOperation):
     self.ProgressBar(float(self._transferred) / self._size)
 
 
-def _IsFilePathGPTDiskImage(file_path):
+def _IsFilePathGPTDiskImage(file_path, require_pmbr=False):
   """Determines if a file is a valid GPT disk.
 
   Args:
     file_path: Path to the file to test.
+    require_pmbr: Whether to require a PMBR in LBA0.
   """
   if os.path.isfile(file_path):
-    with cros_build_lib.Open(file_path) as image_file:
-      image_file.seek(0x1fe)
-      if image_file.read(10) == '\x55\xaaEFI PART':
+    with open(file_path) as image_file:
+      if require_pmbr:
+        # Seek to the end of LBA0 and look for the PMBR boot signature.
+        image_file.seek(0x1fe)
+        if image_file.read(2) != '\x55\xaa':
+          return False
+        # Current file position is start of LBA1 now.
+      else:
+        # Seek to LBA1 where the GPT starts.
+        image_file.seek(0x200)
+
+      # See if there's a GPT here.
+      if image_file.read(8) == 'EFI PART':
         return True
+
   return False
 
 
