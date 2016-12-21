@@ -70,8 +70,7 @@ void BatteryManager::didUpdateData() {
 
   Document* document = toDocument(getExecutionContext());
   DCHECK(document);
-  if (document->activeDOMObjectsAreSuspended() ||
-      document->isContextDestroyed())
+  if (document->isContextSuspended() || document->isContextDestroyed())
     return;
 
   if (m_batteryStatus.charging() != oldStatus.charging())

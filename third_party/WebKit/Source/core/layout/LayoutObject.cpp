@@ -3122,7 +3122,7 @@ bool LayoutObject::willRenderImage() {
     return false;
 
   // We will not render a new image when SuspendableObjects is suspended
-  if (document().activeDOMObjectsAreSuspended())
+  if (document().isContextSuspended())
     return false;
 
   // If we're not in a window (i.e., we're dormant from being in a background

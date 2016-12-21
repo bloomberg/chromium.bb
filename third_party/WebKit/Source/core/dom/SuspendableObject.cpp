@@ -74,7 +74,7 @@ void SuspendableObject::didMoveToNewExecutionContext(
     return;
   }
 
-  if (context->activeDOMObjectsAreSuspended()) {
+  if (context->isContextSuspended()) {
     suspend();
     return;
   }

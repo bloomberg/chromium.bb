@@ -130,8 +130,7 @@ void NavigatorGamepad::didUpdateData() {
   if (!m_hasEventListener)
     return;
 
-  if (document->isContextDestroyed() ||
-      document->activeDOMObjectsAreSuspended())
+  if (document->isContextDestroyed() || document->isContextSuspended())
     return;
 
   const GamepadDispatcher::ConnectionChange& change =

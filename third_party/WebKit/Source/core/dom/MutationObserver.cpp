@@ -206,7 +206,7 @@ HeapHashSet<Member<Node>> MutationObserver::getObservedNodes() const {
 
 bool MutationObserver::shouldBeSuspended() const {
   return m_callback->getExecutionContext() &&
-         m_callback->getExecutionContext()->activeDOMObjectsAreSuspended();
+         m_callback->getExecutionContext()->isContextSuspended();
 }
 
 void MutationObserver::cancelInspectorAsyncTasks() {

@@ -72,7 +72,7 @@ void ScriptPromiseResolver::onTimerFired(TimerBase*) {
 
 void ScriptPromiseResolver::resolveOrRejectImmediately() {
   DCHECK(!getExecutionContext()->isContextDestroyed());
-  DCHECK(!getExecutionContext()->activeDOMObjectsAreSuspended());
+  DCHECK(!getExecutionContext()->isContextSuspended());
   {
     InspectorInstrumentation::AsyncTask asyncTask(getExecutionContext(), this);
     if (m_state == Resolving) {

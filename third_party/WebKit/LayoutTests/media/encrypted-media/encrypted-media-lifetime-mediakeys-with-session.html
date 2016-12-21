@@ -22,11 +22,11 @@
                 var initDataType;
                 var initData;
                 var mediaKeys;
-                var startingActiveDOMObjectCount = window.internals.activeDOMObjectCount(document);
+                var startingSuspendableObjectCount = window.internals.suspendableObjectCount(document);
 
-                function numActiveDOMObjectsCreated()
+                function numSuspendableObjectsCreated()
                 {
-                    return window.internals.activeDOMObjectCount(document) - startingActiveDOMObjectCount;
+                    return window.internals.suspendableObjectCount(document) - startingSuspendableObjectCount;
                 }
 
                 // Create a MediaKeys object with a session.
@@ -37,27 +37,27 @@
                 }).then(function(result) {
                     mediaKeys = result;
 
-                    // Verify MediaKeys is an ActiveDOMObject.
-                    // In non-Oilpan, numActiveDOMObjectsCreate() == 1.
-                    // In Oilpan, numActiveDOMObjectsCreate() <= 4.
+                    // Verify MediaKeys is an SuspendableObject.
+                    // In non-Oilpan, numSuspendableObjectsCreate() == 1.
+                    // In Oilpan, numSuspendableObjectsCreate() <= 4.
                     // (1 MediaKeys,
                     //  1 MediaKeysInitializer and
                     //  1 MediaKeySystemAccessInitializer (navigator.requestMediaKeySystemAccess() use above),
                     //  1 MediaKeySystemAccessInitializer (isInitDataSupported() (via getSupportedInitDataType())))
-                    assert_between_inclusive(numActiveDOMObjectsCreated(), 1, 4, 'MediaKeys.create()');
+                    assert_between_inclusive(numSuspendableObjectsCreated(), 1, 4, 'MediaKeys.create()');
 
                     var mediaKeySession = mediaKeys.createSession();
                     return mediaKeySession.generateRequest(initDataType, initData);
                 }).then(function() {
                     // Should be 1 MediaKeys + 1 MediaKeySession.
-                    // In non-Oilpan, numActiveDOMObjectsCreate() == 2.
-                    // In Oilpan, numActiveDOMObjectsCreate() <= 6.
+                    // In non-Oilpan, numSuspendableObjectsCreate() == 2.
+                    // In Oilpan, numSuspendableObjectsCreate() <= 6.
                     // (1 MediaKeys,
                     //  1 MediaKeysInitializer and
                     //  2 MediaKeySystemAccessInitializer,
                     //  1 ContentDecryptionModuleResultPromise and
                     //  1 MediaKeySession).
-                    assert_between_inclusive(numActiveDOMObjectsCreated(), 2, 6, 'MediaKeys.createSession()');
+                    assert_between_inclusive(numSuspendableObjectsCreated(), 2, 6, 'MediaKeys.createSession()');
 
                     // Run gc(), should not affect MediaKeys object nor the
                     // session since we still have a reference to it.
@@ -70,7 +70,7 @@
 
                     // MediaKeys + MediaKeySessions should remain.
                     // In non-Oilpan, there is also something from createGCPromise().
-                    assert_between_inclusive(numActiveDOMObjectsCreated(), 2, 3, 'After gc()');
+                    assert_between_inclusive(numSuspendableObjectsCreated(), 2, 3, 'After gc()');
 
                     // Drop reference to the MediaKeys object and run gc()
                     // again. Object should be collected this time. Since
@@ -87,7 +87,7 @@
                 }).then(function(result) {
                     // No MediaKeySessions should remain.
                     // In non-Oilpan, there is also something from createGCPromise().
-                    assert_between_inclusive(numActiveDOMObjectsCreated(), 0, 1, 'After final gc()');
+                    assert_between_inclusive(numSuspendableObjectsCreated(), 0, 1, 'After final gc()');
 
                     test.done();
                 }).catch(function(error) {

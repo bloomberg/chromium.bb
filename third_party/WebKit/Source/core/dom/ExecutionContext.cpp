@@ -48,7 +48,7 @@ namespace blink {
 ExecutionContext::ExecutionContext()
     : m_circularSequentialID(0),
       m_inDispatchErrorEvent(false),
-      m_activeDOMObjectsAreSuspended(false),
+      m_isContextSuspended(false),
       m_isContextDestroyed(false),
       m_windowInteractionTokens(0),
       m_referrerPolicy(ReferrerPolicyDefault) {}
@@ -56,14 +56,14 @@ ExecutionContext::ExecutionContext()
 ExecutionContext::~ExecutionContext() {}
 
 void ExecutionContext::suspendSuspendableObjects() {
-  DCHECK(!m_activeDOMObjectsAreSuspended);
+  DCHECK(!m_isContextSuspended);
   notifySuspendingSuspendableObjects();
-  m_activeDOMObjectsAreSuspended = true;
+  m_isContextSuspended = true;
 }
 
 void ExecutionContext::resumeSuspendableObjects() {
-  DCHECK(m_activeDOMObjectsAreSuspended);
-  m_activeDOMObjectsAreSuspended = false;
+  DCHECK(m_isContextSuspended);
+  m_isContextSuspended = false;
   notifyResumingSuspendableObjects();
 }
 
@@ -88,7 +88,7 @@ void ExecutionContext::suspendSuspendableObjectIfNeeded(
   DCHECK(contains(object));
 #endif
   // Ensure all SuspendableObjects are suspended also newly created ones.
-  if (m_activeDOMObjectsAreSuspended)
+  if (m_isContextSuspended)
     object->suspend();
 }
 

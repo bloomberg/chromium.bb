@@ -42,8 +42,7 @@ ActiveDOMCallback::ActiveDOMCallback(ExecutionContext* context)
 ActiveDOMCallback::~ActiveDOMCallback() {}
 
 bool ActiveDOMCallback::canInvokeCallback() const {
-  return !m_context->activeDOMObjectsAreSuspended() &&
-         !m_context->isContextDestroyed();
+  return !m_context->isContextSuspended() && !m_context->isContextDestroyed();
 }
 
 DEFINE_TRACE(ActiveDOMCallback) {

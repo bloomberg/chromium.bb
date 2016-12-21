@@ -80,7 +80,7 @@ void FileSystemCallbacksBase::didFail(int code) {
 
 bool FileSystemCallbacksBase::shouldScheduleCallback() const {
   return !shouldBlockUntilCompletion() && m_executionContext &&
-         m_executionContext->activeDOMObjectsAreSuspended();
+         m_executionContext->isContextSuspended();
 }
 
 template <typename CB, typename CBArg>

@@ -1481,9 +1481,9 @@ void Internals::setUserPreferredLanguages(const Vector<String>& languages) {
   overrideUserPreferredLanguages(atomicLanguages);
 }
 
-unsigned Internals::activeDOMObjectCount(Document* document) {
+unsigned Internals::suspendableObjectCount(Document* document) {
   DCHECK(document);
-  return document->activeDOMObjectCount();
+  return document->suspendableObjectCount();
 }
 
 static unsigned eventHandlerCount(

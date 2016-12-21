@@ -46,7 +46,7 @@ class CORE_EXPORT ContextLifecycleNotifier
   void notifyResumingSuspendableObjects();
   void notifySuspendingSuspendableObjects();
 
-  unsigned activeDOMObjectCount() const;
+  unsigned suspendableObjectCount() const;
 
  protected:
   // Need a default constructor to link core and modules separately.

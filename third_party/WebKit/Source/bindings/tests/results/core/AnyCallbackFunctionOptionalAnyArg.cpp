@@ -40,7 +40,7 @@ bool AnyCallbackFunctionOptionalAnyArg::call(ScriptWrappable* scriptWrappable, S
 
   ExecutionContext* context = m_scriptState->getExecutionContext();
   DCHECK(context);
-  if (context->activeDOMObjectsAreSuspended() || context->isContextDestroyed())
+  if (context->isContextSuspended() || context->isContextDestroyed())
     return false;
 
   if (m_callback.isEmpty())

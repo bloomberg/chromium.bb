@@ -141,9 +141,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual void tasksWereSuspended() {}
   virtual void tasksWereResumed() {}
 
-  bool activeDOMObjectsAreSuspended() const {
-    return m_activeDOMObjectsAreSuspended;
-  }
+  bool isContextSuspended() const { return m_isContextSuspended; }
   bool isContextDestroyed() const { return m_isContextDestroyed; }
 
   // Called after the construction of an SuspendableObject to synchronize
@@ -200,7 +198,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   bool m_inDispatchErrorEvent;
   HeapVector<Member<ErrorEvent>> m_pendingExceptions;
 
-  bool m_activeDOMObjectsAreSuspended;
+  bool m_isContextSuspended;
   bool m_isContextDestroyed;
 
   Member<PublicURLManager> m_publicURLManager;

@@ -130,7 +130,7 @@ class CORE_EXPORT ScriptPromiseResolver
                 toV8(value, m_scriptState->context()->Global(),
                      m_scriptState->isolate()));
 
-    if (getExecutionContext()->activeDOMObjectsAreSuspended()) {
+    if (getExecutionContext()->isContextSuspended()) {
       // Retain this object until it is actually resolved or rejected.
       keepAliveWhilePending();
       return;

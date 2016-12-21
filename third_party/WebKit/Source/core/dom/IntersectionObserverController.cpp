@@ -61,7 +61,7 @@ void IntersectionObserverController::deliverIntersectionObservations() {
     m_pendingIntersectionObservers.clear();
     return;
   }
-  if (context->activeDOMObjectsAreSuspended()) {
+  if (context->isContextSuspended()) {
     m_callbackFiredWhileSuspended = true;
     return;
   }

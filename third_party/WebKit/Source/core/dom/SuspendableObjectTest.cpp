@@ -60,50 +60,50 @@ class SuspendableObjectTest : public ::testing::Test {
 
   Document& srcDocument() const { return m_srcPageHolder->document(); }
   Document& destDocument() const { return m_destPageHolder->document(); }
-  MockSuspendableObject& activeDOMObject() { return *m_activeDOMObject; }
+  MockSuspendableObject& suspendableObject() { return *m_suspendableObject; }
 
  private:
   std::unique_ptr<DummyPageHolder> m_srcPageHolder;
   std::unique_ptr<DummyPageHolder> m_destPageHolder;
-  Persistent<MockSuspendableObject> m_activeDOMObject;
+  Persistent<MockSuspendableObject> m_suspendableObject;
 };
 
 SuspendableObjectTest::SuspendableObjectTest()
     : m_srcPageHolder(DummyPageHolder::create(IntSize(800, 600))),
       m_destPageHolder(DummyPageHolder::create(IntSize(800, 600))),
-      m_activeDOMObject(
+      m_suspendableObject(
           new MockSuspendableObject(&m_srcPageHolder->document())) {
-  m_activeDOMObject->suspendIfNeeded();
+  m_suspendableObject->suspendIfNeeded();
 }
 
 TEST_F(SuspendableObjectTest, NewContextObserved) {
-  unsigned initialSrcCount = srcDocument().activeDOMObjectCount();
-  unsigned initialDestCount = destDocument().activeDOMObjectCount();
+  unsigned initialSrcCount = srcDocument().suspendableObjectCount();
+  unsigned initialDestCount = destDocument().suspendableObjectCount();
 
-  EXPECT_CALL(activeDOMObject(), resume());
-  activeDOMObject().didMoveToNewExecutionContext(&destDocument());
+  EXPECT_CALL(suspendableObject(), resume());
+  suspendableObject().didMoveToNewExecutionContext(&destDocument());
 
-  EXPECT_EQ(initialSrcCount - 1, srcDocument().activeDOMObjectCount());
-  EXPECT_EQ(initialDestCount + 1, destDocument().activeDOMObjectCount());
+  EXPECT_EQ(initialSrcCount - 1, srcDocument().suspendableObjectCount());
+  EXPECT_EQ(initialDestCount + 1, destDocument().suspendableObjectCount());
 }
 
 TEST_F(SuspendableObjectTest, MoveToActiveDocument) {
-  EXPECT_CALL(activeDOMObject(), resume());
-  activeDOMObject().didMoveToNewExecutionContext(&destDocument());
+  EXPECT_CALL(suspendableObject(), resume());
+  suspendableObject().didMoveToNewExecutionContext(&destDocument());
 }
 
 TEST_F(SuspendableObjectTest, MoveToSuspendedDocument) {
   destDocument().suspendScheduledTasks();
 
-  EXPECT_CALL(activeDOMObject(), suspend());
-  activeDOMObject().didMoveToNewExecutionContext(&destDocument());
+  EXPECT_CALL(suspendableObject(), suspend());
+  suspendableObject().didMoveToNewExecutionContext(&destDocument());
 }
 
 TEST_F(SuspendableObjectTest, MoveToStoppedDocument) {
   destDocument().shutdown();
 
-  EXPECT_CALL(activeDOMObject(), contextDestroyed());
-  activeDOMObject().didMoveToNewExecutionContext(&destDocument());
+  EXPECT_CALL(suspendableObject(), contextDestroyed());
+  suspendableObject().didMoveToNewExecutionContext(&destDocument());
 }
 
 }  // namespace blink

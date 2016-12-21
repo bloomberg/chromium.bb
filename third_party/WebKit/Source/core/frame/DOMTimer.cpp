@@ -135,7 +135,7 @@ void DOMTimer::fired() {
   ExecutionContext* context = getExecutionContext();
   ASSERT(context);
   context->timers()->setTimerNestingLevel(m_nestingLevel);
-  ASSERT(!context->activeDOMObjectsAreSuspended());
+  DCHECK(!context->isContextSuspended());
   // Only the first execution of a multi-shot timer should get an affirmative
   // user gesture indicator.
   UserGestureIndicator gestureIndicator(m_userGestureToken.release());

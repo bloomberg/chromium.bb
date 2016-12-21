@@ -38,13 +38,13 @@ void ContextLifecycleNotifier::notifyResumingSuspendableObjects() {
     if (observer->observerType() !=
         ContextLifecycleObserver::SuspendableObjectType)
       continue;
-    SuspendableObject* activeDOMObject =
+    SuspendableObject* suspendableObject =
         static_cast<SuspendableObject*>(observer);
 #if DCHECK_IS_ON()
-    DCHECK_EQ(activeDOMObject->getExecutionContext(), context());
-    DCHECK(activeDOMObject->suspendIfNeededCalled());
+    DCHECK_EQ(suspendableObject->getExecutionContext(), context());
+    DCHECK(suspendableObject->suspendIfNeededCalled());
 #endif
-    activeDOMObject->resume();
+    suspendableObject->resume();
   }
 }
 
@@ -54,26 +54,26 @@ void ContextLifecycleNotifier::notifySuspendingSuspendableObjects() {
     if (observer->observerType() !=
         ContextLifecycleObserver::SuspendableObjectType)
       continue;
-    SuspendableObject* activeDOMObject =
+    SuspendableObject* suspendableObject =
         static_cast<SuspendableObject*>(observer);
 #if DCHECK_IS_ON()
-    DCHECK_EQ(activeDOMObject->getExecutionContext(), context());
-    DCHECK(activeDOMObject->suspendIfNeededCalled());
+    DCHECK_EQ(suspendableObject->getExecutionContext(), context());
+    DCHECK(suspendableObject->suspendIfNeededCalled());
 #endif
-    activeDOMObject->suspend();
+    suspendableObject->suspend();
   }
 }
 
-unsigned ContextLifecycleNotifier::activeDOMObjectCount() const {
+unsigned ContextLifecycleNotifier::suspendableObjectCount() const {
   DCHECK(!isIteratingOverObservers());
-  unsigned activeDOMObjects = 0;
+  unsigned suspendableObjects = 0;
   for (ContextLifecycleObserver* observer : m_observers) {
     if (observer->observerType() !=
         ContextLifecycleObserver::SuspendableObjectType)
       continue;
-    activeDOMObjects++;
+    suspendableObjects++;
   }
-  return activeDOMObjects;
+  return suspendableObjects;
 }
 
 #if DCHECK_IS_ON()
@@ -83,9 +83,9 @@ bool ContextLifecycleNotifier::contains(SuspendableObject* object) const {
     if (observer->observerType() !=
         ContextLifecycleObserver::SuspendableObjectType)
       continue;
-    SuspendableObject* activeDOMObject =
+    SuspendableObject* suspendableObject =
         static_cast<SuspendableObject*>(observer);
-    if (activeDOMObject == object)
+    if (suspendableObject == object)
       return true;
   }
   return false;

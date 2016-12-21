@@ -39,7 +39,7 @@ bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int num1, int 
 
   ExecutionContext* context = m_scriptState->getExecutionContext();
   DCHECK(context);
-  if (context->activeDOMObjectsAreSuspended() || context->isContextDestroyed())
+  if (context->isContextSuspended() || context->isContextDestroyed())
     return false;
 
   if (m_callback.isEmpty())
