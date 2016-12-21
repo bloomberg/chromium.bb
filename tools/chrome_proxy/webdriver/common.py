@@ -163,26 +163,25 @@ class TestDriver:
     """
     self._OverrideChromeArgs()
     capabilities = {
-      'loggingPrefs': {'performance': 'INFO'},
-      'chromeOptions': {
-        'args': list(self._chrome_args)
-      }
+      'loggingPrefs': {'performance': 'INFO'}
     }
-    if self._flags.android:
-      capabilities['chromeOptions'].update({
-        'androidPackage': self._flags.android_package,
-      })
-      self._logger.debug('Will use Chrome on Android')
-    elif self._flags.chrome_exec:
-      capabilities['chrome.binary'] = self._flags.chrome_exec
-      self._logger.info('Using the Chrome binary at this path: %s',
-        self._flags.chrome_exec)
+    chrome_options = Options()
+    for arg in self._chrome_args:
+      chrome_options.add_argument(arg)
     self._logger.info('Starting Chrome with these flags: %s',
       str(self._chrome_args))
-    self._logger.debug('Starting ChromeDriver with these capabilities: %s',
-      json.dumps(capabilities))
+    if self._flags.android:
+      chrome_options.add_experimental_option('androidPackage',
+        self._flags.android_package)
+      self._logger.debug('Will use Chrome on Android')
+    elif self._flags.chrome_exec:
+      chrome_options.binary_location = self._flags.chrome_exec
+      self._logger.info('Using the Chrome binary at this path: %s',
+        self._flags.chrome_exec)
+    self._logger.debug('ChromeOptions will be parsed into these capabilities: '
+      '%s', json.dumps(chrome_options.to_capabilities()))
     driver = webdriver.Chrome(executable_path=self._flags.chrome_driver,
-      desired_capabilities=capabilities)
+      desired_capabilities=capabilities, chrome_options=chrome_options)
     driver.command_executor._commands.update({
       'getAvailableLogTypes': ('GET', '/session/$sessionId/log/types'),
       'getLog': ('POST', '/session/$sessionId/log')})
