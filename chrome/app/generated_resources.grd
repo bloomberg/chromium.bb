@@ -6021,7 +6021,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         16
       </message>
       <message name="IDS_FLAGS_ENABLE_SLIMMING_PAINT_INVALIDATION_NAME" desc="Title for about:flags option to enable slimming paint invalidation.">
-        Enable slimming paint invalidation.
+        Slimming paint invalidation.
       </message>
       <message name="IDS_FLAGS_ENABLE_SLIMMING_PAINT_INVALIDATION_DESCRIPTION" desc="Description of about:flags option for enabling slimming paint invalidation.">
         Enable a new paint invalidation system.
