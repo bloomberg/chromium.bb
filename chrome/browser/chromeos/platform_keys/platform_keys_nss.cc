@@ -441,11 +441,10 @@ void GenerateRSAKeyWithDB(std::unique_ptr<GenerateRSAKeyState> state,
                           net::NSSCertDatabase* cert_db) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Only the slot and not the NSSCertDatabase is required. Ignore |cert_db|.
-  // This task interacts with the TPM, hence WithFileIO() and WithWait().
+  // This task interacts with the TPM, hence MayBlock().
   base::PostTaskWithTraits(
       FROM_HERE, base::TaskTraits()
-                     .WithFileIO()
-                     .WithWait()
+                     .MayBlock()
                      .WithPriority(base::TaskPriority::BACKGROUND)
                      .WithShutdownBehavior(
                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
@@ -538,11 +537,10 @@ void SignRSAWithDB(std::unique_ptr<SignRSAState> state,
                    net::NSSCertDatabase* cert_db) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Only the slot and not the NSSCertDatabase is required. Ignore |cert_db|.
-  // This task interacts with the TPM, hence WithFileIO() and WithWait().
+  // This task interacts with the TPM, hence MayBlock().
   base::PostTaskWithTraits(
       FROM_HERE, base::TaskTraits()
-                     .WithFileIO()
-                     .WithWait()
+                     .MayBlock()
                      .WithPriority(base::TaskPriority::BACKGROUND)
                      .WithShutdownBehavior(
                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
@@ -609,11 +607,10 @@ void DidGetCertificates(std::unique_ptr<GetCertificatesState> state,
                         std::unique_ptr<net::CertificateList> all_certs) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state->certs_ = std::move(all_certs);
-  // This task interacts with the TPM, hence WithFileIO() and WithWait().
+  // This task interacts with the TPM, hence MayBlock().
   base::PostTaskWithTraits(
       FROM_HERE, base::TaskTraits()
-                     .WithFileIO()
-                     .WithWait()
+                     .MayBlock()
                      .WithPriority(base::TaskPriority::BACKGROUND)
                      .WithShutdownBehavior(
                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
