@@ -677,6 +677,7 @@ mojom("mojo_bindings") {
     "conflicts/module_database_win.mojom",
     "conflicts/module_event_win.mojom",
     "field_trial_recorder.mojom",
+    "net_benchmarking.mojom",
     "network_diagnostics.mojom",
     "renderer_configuration.mojom",
     "resource_usage_reporter.mojom",

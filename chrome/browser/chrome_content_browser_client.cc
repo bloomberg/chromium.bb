@@ -41,7 +41,6 @@
 #include "chrome/browser/budget_service/budget_service_impl.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
-#include "chrome/browser/chrome_net_benchmarking_message_filter.h"
 #include "chrome/browser/chrome_quota_permission_context.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -54,6 +53,7 @@
 #include "chrome/browser/memory/chrome_memory_coordinator_delegate.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
+#include "chrome/browser/net_benchmarking.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/page_load_metrics/metrics_navigation_throttle.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -1038,9 +1038,6 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
     content::RenderProcessHost* host) {
   int id = host->GetID();
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
-  net::URLRequestContextGetter* context =
-      host->GetStoragePartition()->GetURLRequestContext();
-
   host->AddFilter(new ChromeRenderMessageFilter(
       id, profile, host->GetStoragePartition()->GetServiceWorkerContext()));
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -1055,7 +1052,6 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   host->AddFilter(new SpellCheckMessageFilterPlatform(id));
 #endif
-  host->AddFilter(new ChromeNetBenchmarkingMessageFilter(profile, context));
   host->AddFilter(new prerender::PrerenderMessageFilter(id, profile));
   host->AddFilter(new TtsMessageFilter(host->GetBrowserContext()));
 #if BUILDFLAG(ENABLE_WEBRTC)
@@ -1076,6 +1072,8 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 
 #endif
 #if !defined(DISABLE_NACL)
+  net::URLRequestContextGetter* context =
+      host->GetStoragePartition()->GetURLRequestContext();
   host->AddFilter(new nacl::NaClHostMessageFilter(
       id, profile->IsOffTheRecord(),
       profile->GetPath(),
@@ -2963,7 +2961,14 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
       base::Bind(&rappor::RapporRecorderImpl::Create,
                  g_browser_process->rappor_service()),
       ui_task_runner);
-
+  if (NetBenchmarking::CheckBenchmarkingEnabled()) {
+    Profile* profile =
+        Profile::FromBrowserContext(render_process_host->GetBrowserContext());
+    net::URLRequestContextGetter* context =
+        render_process_host->GetStoragePartition()->GetURLRequestContext();
+    registry->AddInterface(
+        base::Bind(&NetBenchmarking::Create, profile, context));
+  }
 #if defined(OS_CHROMEOS)
   registry->AddInterface<metrics::mojom::LeakDetector>(
       base::Bind(&metrics::LeakDetectorRemoteController::Create),
