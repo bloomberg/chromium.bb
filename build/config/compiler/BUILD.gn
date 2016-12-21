@@ -1560,6 +1560,16 @@ config("symbols") {
     } else {
       ldflags = [ "/DEBUG" ]
     }
+
+    if (is_clang) {
+      # /DEBUG:FASTLINK requires every object file to have standalone debug
+      # information.
+      if (is_win_fastlink) {
+        cflags += [ "-fstandalone-debug" ]
+      } else {
+        cflags += [ "-fno-standalone-debug" ]
+      }
+    }
   } else {
     if (is_mac || is_ios) {
       cflags = [ "-gdwarf-2" ]
