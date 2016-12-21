@@ -32,6 +32,7 @@ class AFDODataGenerateStage(generic_stages.BoardSpecificBuilderStage,
       logging.warning('Board %s cannot generate its own AFDO profile.', board)
       return
 
+    afdo.InitGSUrls(board)
     arch = self._GetCurrentArch()
     buildroot = self._build_root
     gs_context = gs.GSContext()
