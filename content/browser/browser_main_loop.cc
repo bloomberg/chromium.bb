@@ -1010,10 +1010,10 @@ int BrowserMainLoop::CreateThreads() {
 
     // Otherwise this thread ID will be backed by a SingleThreadTaskRunner using
     // |non_ui_non_io_task_runner_traits| (which can be augmented below).
-    // TODO(gab): Existing non-UI/non-IO BrowserThreads allow waiting so the
-    // initial redirection will as well but they probably don't need to.
+    // TODO(gab): Existing non-UI/non-IO BrowserThreads allow sync primitives so
+    // the initial redirection will as well but they probably don't need to.
     base::TaskTraits non_ui_non_io_task_runner_traits =
-        base::TaskTraits().WithFileIO().WithWait();
+        base::TaskTraits().MayBlock().WithSyncPrimitives();
 
     switch (thread_id) {
       case BrowserThread::DB:
