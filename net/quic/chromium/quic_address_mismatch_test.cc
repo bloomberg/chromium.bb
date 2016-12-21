@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/core/quic_address_mismatch.h"
+#include "net/quic/chromium/quic_address_mismatch.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
