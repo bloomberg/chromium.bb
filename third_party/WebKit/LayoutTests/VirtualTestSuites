@@ -374,5 +374,15 @@
     "prefix": "spinvalidation",
     "base": "svg",
     "args": ["--enable-blink-features=SlimmingPaintInvalidation"]
+  },
+  {
+    "prefix": "mojo-localstorage",
+    "base": "imported/wpt/webstorage",
+    "args": ["--mojo-local-storage"]
+  },
+  {
+    "prefix": "mojo-localstorage",
+    "base": "storage/domstorage/localstorage",
+    "args": ["--mojo-local-storage"]
   }
 ]
