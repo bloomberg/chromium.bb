@@ -2419,3 +2419,5 @@ crbug.com/657748 imported/csswg-test/css-display-3/display-contents-text-only-00
 
 crbug.com/676229 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ Failure Pass ]
 
+# Temporarily disable sharedarraybuffer test to land API change in v8
+crbug.com/676063 virtual/sharedarraybuffer/fast/workers/worker-sharedarraybuffer-transfer.html [ Pass Timeout ]
