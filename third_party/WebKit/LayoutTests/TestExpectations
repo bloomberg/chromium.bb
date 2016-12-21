@@ -1933,16 +1933,6 @@ crbug.com/660295 inspector/elements/elements-panel-restore-selection-when-node-c
 crbug.com/659610 fast/css-grid-layout/grid-baseline.html [ Failure ]
 crbug.com/659610 fast/css-grid-layout/grid-baseline-margins.html [ Failure ]
 
-crbug.com/674663 [ Win ] virtual/scalefactor150/fast/hidpi/static/calendar-picker-appearance.html [ NeedsRebaseline ]
-crbug.com/674663 [ Win ] virtual/scalefactor150/fast/hidpi/static/data-suggestion-picker-appearance.html [ NeedsRebaseline ]
-crbug.com/674663 [ Win ] virtual/scalefactor150/fast/hidpi/static/popup-menu-appearance.html [ NeedsRebaseline ]
-crbug.com/674663 [ Win ] virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ NeedsRebaseline ]
-crbug.com/674663 [ Win ] virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ NeedsRebaseline ]
-crbug.com/674663 [ Win ] virtual/scalefactor200/fast/hidpi/static/popup-menu-appearance.html [ NeedsRebaseline ]
-crbug.com/674663 [ Win ] virtual/scalefactor200withzoom/fast/hidpi/static/calendar-picker-appearance.html [ NeedsRebaseline ]
-crbug.com/674663 [ Win ] virtual/scalefactor200withzoom/fast/hidpi/static/data-suggestion-picker-appearance.html [ NeedsRebaseline ]
-crbug.com/674663 [ Win ] virtual/scalefactor200withzoom/fast/hidpi/static/popup-menu-appearance.html [ NeedsRebaseline ]
-
 
 # Due to a temporal revert these tests are failing:
 crbug.com/666688 fast/css-grid-layout/grid-change-intrinsic-size-with-auto-repeat-tracks.html [ Failure ]
