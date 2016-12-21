@@ -58,8 +58,8 @@
 import("//testing/test.gni")
 
 declare_args() {
-  # TODO(crbug.com/105388): Disabled until http://crbug.com/105388 is resolved.
-  enable_nocompile_tests = false
+  # TODO(crbug.com/105388): make sure no-compile test is not flaky.
+  enable_nocompile_tests = !is_win && !is_ios && is_clang
 }
 
 if (enable_nocompile_tests) {
