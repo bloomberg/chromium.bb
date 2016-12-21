@@ -2465,3 +2465,6 @@ crbug.com/657748 imported/csswg-test/css-display-3/display-contents-table-002.ht
 crbug.com/657748 imported/csswg-test/css-display-3/display-contents-text-only-001.html [ Failure ]
 
 # ====== End of display: contents tests ======
+
+crbug.com/676229 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ Failure Pass ]
+
