@@ -136,13 +136,15 @@ void RunSwReportersAfterStartup(
       FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&safe_browsing::RunSwReporters, invocations, version,
                  base::ThreadTaskRunnerHandle::Get(),
-                 // Runs LaunchAndWaitForExit() (srt_fetcher_win.cc).
+                 // Runs LaunchAndWaitForExit() which creates (MayBlock()) and
+                 // joins (WithSyncPrimitives()) a process.
                  base::CreateTaskRunnerWithTraits(
                      base::TaskTraits()
                          .WithShutdownBehavior(
                              base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
                          .WithPriority(base::TaskPriority::BACKGROUND)
-                         .WithWait())));
+                         .MayBlock()
+                         .WithSyncPrimitives())));
 }
 
 // Ensures |str| contains only alphanumeric characters and characters from
