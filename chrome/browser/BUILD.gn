@@ -17,6 +17,7 @@ import("//ppapi/features/features.gni")
 import("//printing/features/features.gni")
 import("//rlz/features/features.gni")
 import("//sandbox/features.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//ui/base/ui_features.gni")
 
@@ -925,6 +926,10 @@ split_static_library("browser") {
     "prefs/pref_metrics_service.h",
     "prefs/pref_service_syncable_util.cc",
     "prefs/pref_service_syncable_util.h",
+    "prefs/preferences_connection_manager.cc",
+    "prefs/preferences_connection_manager.h",
+    "prefs/preferences_manager.cc",
+    "prefs/preferences_manager.h",
     "prefs/profile_pref_store_manager.cc",
     "prefs/profile_pref_store_manager.h",
     "prefs/session_startup_pref.cc",
@@ -1524,6 +1529,7 @@ split_static_library("browser") {
     "//printing/features",
     "//rlz/features",
     "//services/image_decoder/public/cpp",
+    "//services/preferences/public/interfaces/",
     "//services/service_manager/public/cpp",
     "//skia",
     "//sql",
@@ -1564,7 +1570,9 @@ split_static_library("browser") {
     "//ui/web_dialogs",
     "//v8",
   ]
-  data_deps = []
+  data_deps = [
+    ":preferences_manifest",
+  ]
 
   if (is_chromeos && use_cras) {
     defines += [ "USE_CRAS" ]
@@ -4473,4 +4481,9 @@ if (enable_pepper_cdms) {
       "media/pepper_cdm_test_constants.h",
     ]
   }
+}
+
+service_manifest("preferences_manifest") {
+  name = "preferences"
+  source = "prefs/preferences_manifest.json"
 }

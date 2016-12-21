@@ -46,6 +46,7 @@
         "ash": [ "ash" ],
         "image_decoder": [ "decode" ],
         "accessibility_autoclick": [ "ash:autoclick" ],
+        "preferences": [ "preferences_manager" ],
         "ui": [ "ime_registrar" ]
       }
     },

@@ -4,8 +4,10 @@ include_rules = [
   "+ash/public",
   "+ash/resources",
   "+ash/shared",
+  "+components/prefs",
   "+components/ui_devtools",
   "+mojo/public/cpp",
+  "+services/preferences/public",
   "+ui",
 ]
 

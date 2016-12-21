@@ -890,6 +890,7 @@ component("ash") {
     "//device/bluetooth",
     "//media",
     "//net",
+    "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",
     "//services/ui/public/interfaces",
     "//skia",

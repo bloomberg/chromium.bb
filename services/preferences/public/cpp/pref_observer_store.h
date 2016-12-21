@@ -12,6 +12,8 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 
+namespace preferences {
+
 class PrefObserverStoreTest;
 
 // An implementation of PrefStore which uses prefs::mojom::PreferenceManager as
@@ -30,9 +32,9 @@ class PrefObserverStore : public ValueMapPrefStore,
   explicit PrefObserverStore(
       prefs::mojom::PreferencesManagerPtr prefs_manager_ptr);
 
-  // Defines the set of |keys| which PrefOvserverStore will handle. Begins
-  // listening for changes to these from |prefs_manager_|.
-  void Init(const std::set<std::string>& keys);
+  // Adds a set of |keys| which PrefObserverStore will handle. Begins listening
+  // for changes to these from |prefs_manager_|.
+  void Subscribe(const std::set<std::string>& keys);
 
   // PrefStore:
   bool GetValue(const std::string& key,
@@ -75,4 +77,5 @@ class PrefObserverStore : public ValueMapPrefStore,
   DISALLOW_COPY_AND_ASSIGN(PrefObserverStore);
 };
 
+}  // namespace preferences
 #endif  // SERVICES_PREFERENCES_PUBLIC_CPP_PREFS_OBSERVER_STORE_H_

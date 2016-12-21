@@ -39,6 +39,10 @@ class Insets;
 class Point;
 }
 
+namespace preferences {
+class PrefObserverStore;
+}
+
 namespace views {
 class PointerWatcher;
 enum class PointerWatcherEventTypes;
@@ -160,6 +164,8 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   }
 
   PaletteDelegate* palette_delegate() { return palette_delegate_.get(); }
+
+  preferences::PrefObserverStore* pref_store() { return pref_store_.get(); }
 
   SessionController* session_controller() { return session_controller_.get(); }
 
@@ -485,6 +491,8 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
 
   base::ObserverList<ShellObserver> shell_observers_;
   std::unique_ptr<ShellDelegate> delegate_;
+
+  scoped_refptr<preferences::PrefObserverStore> pref_store_;
 
   std::unique_ptr<AcceleratorController> accelerator_controller_;
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;

@@ -33,10 +33,10 @@ class TestPreferenceManager : public prefs::mojom::PreferencesManager {
   bool set_preferences_called() { return set_preferences_called_; }
 
   // prefs::mojom::TestPreferenceManager:
-  void AddObserver(const std::vector<std::string>& preferences,
-                   prefs::mojom::PreferencesObserverPtr client) override;
+  void AddObserver(prefs::mojom::PreferencesObserverPtr client) override;
   void SetPreferences(
       std::unique_ptr<base::DictionaryValue> preferences) override;
+  void Subscribe(const std::vector<std::string>& preferences) override;
 
  private:
   bool add_observer_called_;
@@ -48,11 +48,8 @@ class TestPreferenceManager : public prefs::mojom::PreferencesManager {
 };
 
 void TestPreferenceManager::AddObserver(
-    const std::vector<std::string>& preferences,
     prefs::mojom::PreferencesObserverPtr client) {
   add_observer_called_ = true;
-  last_preference_set_.clear();
-  last_preference_set_.insert(preferences.begin(), preferences.end());
 }
 
 void TestPreferenceManager::SetPreferences(
@@ -60,7 +57,15 @@ void TestPreferenceManager::SetPreferences(
   set_preferences_called_ = true;
 }
 
+void TestPreferenceManager::Subscribe(
+    const std::vector<std::string>& preferences) {
+  last_preference_set_.clear();
+  last_preference_set_.insert(preferences.begin(), preferences.end());
+}
+
 }  // namespace
+
+namespace preferences {
 
 class PrefObserverStoreTest : public testing::Test {
  public:
@@ -107,7 +112,7 @@ TEST_F(PrefObserverStoreTest, Initialization) {
   std::set<std::string> keys;
   const std::string key("hey");
   keys.insert(key);
-  store()->Init(keys);
+  store()->Subscribe(keys);
 
   EXPECT_FALSE(Initialized());
   EXPECT_FALSE(observer()->initialized);
@@ -140,7 +145,7 @@ TEST_F(PrefObserverStoreTest, SetValueSilently) {
   std::set<std::string> keys;
   const std::string key("hey");
   keys.insert(key);
-  store()->Init(keys);
+  store()->Subscribe(keys);
 
   const int kValue = 42;
   base::FundamentalValue pref(kValue);
@@ -156,7 +161,7 @@ TEST_F(PrefObserverStoreTest, ReportValueChanged) {
   std::set<std::string> keys;
   const std::string key("hey");
   keys.insert(key);
-  store()->Init(keys);
+  store()->Subscribe(keys);
 
   const int kValue = 42;
   base::FundamentalValue pref(kValue);
@@ -179,7 +184,7 @@ TEST_F(PrefObserverStoreTest, MultipleKeyInitialization) {
   const std::string key2("listen");
   keys.insert(key1);
   keys.insert(key2);
-  store()->Init(keys);
+  store()->Subscribe(keys);
 
   EXPECT_FALSE(Initialized());
   EXPECT_FALSE(observer()->initialized);
@@ -212,7 +217,7 @@ TEST_F(PrefObserverStoreTest, InvalidInitialization) {
   std::set<std::string> keys;
   const std::string key("hey");
   keys.insert(key);
-  store()->Init(keys);
+  store()->Subscribe(keys);
 
   const std::string kInvalidKey("look");
   const int kValue = 42;
@@ -232,7 +237,7 @@ TEST_F(PrefObserverStoreTest, WriteToNestedPrefs) {
   const std::string key2("listen");
   keys.insert(key1);
   keys.insert(key2);
-  store()->Init(keys);
+  store()->Subscribe(keys);
 
   EXPECT_FALSE(Initialized());
   EXPECT_FALSE(observer()->initialized);
@@ -293,7 +298,7 @@ TEST_F(PrefObserverStoreTest, UpdateOuterNestedPrefs) {
   const std::string key2("listen");
   keys.insert(key1);
   keys.insert(key2);
-  store()->Init(keys);
+  store()->Subscribe(keys);
 
   EXPECT_FALSE(Initialized());
   EXPECT_FALSE(observer()->initialized);
@@ -334,3 +339,54 @@ TEST_F(PrefObserverStoreTest, UpdateOuterNestedPrefs) {
   EXPECT_EQ(1u, observer()->changed_keys.size());
   EXPECT_TRUE(manager()->set_preferences_called());
 }
+
+// Tests that a PrefObserverStore can subscribe multiple times to different
+// keys.
+TEST_F(PrefObserverStoreTest, MultipleSubscriptions) {
+  std::set<std::string> keys1;
+  const std::string key1("hey");
+  keys1.insert(key1);
+  store()->Subscribe(keys1);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_NE(manager()->last_preference_set().end(),
+            manager()->last_preference_set().find(key1));
+
+  std::set<std::string> keys2;
+  const std::string key2("listen");
+  keys2.insert(key2);
+  store()->Subscribe(keys2);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_NE(manager()->last_preference_set().end(),
+            manager()->last_preference_set().find(key2));
+}
+
+// Tests that multiple PrefStore::Observers can be added to a PrefObserverStore
+// and that they are each notified of changes.
+TEST_F(PrefObserverStoreTest, MultipleObservers) {
+  PrefStoreObserverMock observer2;
+  store()->AddObserver(&observer2);
+
+  std::set<std::string> keys;
+  const std::string key("hey");
+  keys.insert(key);
+  store()->Subscribe(keys);
+
+  const int kValue = 42;
+  base::FundamentalValue pref(kValue);
+  base::DictionaryValue prefs;
+  prefs.Set(key, pref.CreateDeepCopy());
+
+  // PreferenceManager notifies of PreferencesChanged, completing
+  // initialization.
+  OnPreferencesChanged(prefs);
+  EXPECT_TRUE(observer()->initialized);
+  EXPECT_TRUE(observer2.initialized);
+  EXPECT_TRUE(observer()->initialization_success);
+  EXPECT_TRUE(observer2.initialization_success);
+  observer()->VerifyAndResetChangedKey(key);
+  observer2.VerifyAndResetChangedKey(key);
+
+  store()->RemoveObserver(&observer2);
+}
+
+}  // namespace preferences

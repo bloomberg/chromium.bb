@@ -48,6 +48,9 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "services/preferences/public/cpp/pref_observer_store.h"
+#include "services/preferences/public/interfaces/preferences.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/app_list/presenter/app_list_presenter.h"
 #include "ui/display/display.h"
@@ -122,6 +125,9 @@ void WmShell::Shutdown() {
 
   // Balances the Install() in Initialize().
   views::FocusManagerFactory::Install(nullptr);
+
+  // Removes itself as an observer of |pref_store_|.
+  shelf_controller_.reset();
 }
 
 ShelfModel* WmShell::shelf_model() {
@@ -268,6 +274,14 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
   vpn_list_ = base::MakeUnique<VpnList>();
 #endif
   session_controller_->AddSessionStateObserver(this);
+
+  prefs::mojom::PreferencesManagerPtr pref_manager_ptr;
+  // Can be null in tests.
+  if (!delegate_->GetShellConnector())
+    return;
+  delegate_->GetShellConnector()->ConnectToInterface(prefs::mojom::kServiceName,
+                                                     &pref_manager_ptr);
+  pref_store_ = new preferences::PrefObserverStore(std::move(pref_manager_ptr));
 }
 
 WmShell::~WmShell() {

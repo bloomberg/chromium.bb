@@ -61,6 +61,7 @@
 #include "chrome/browser/payments/payment_request_impl.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/prefs/preferences_connection_manager.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -195,6 +196,7 @@
 #include "ppapi/host/ppapi_host.h"
 #include "printing/features/features.h"
 #include "services/image_decoder/public/interfaces/constants.mojom.h"
+#include "services/preferences/public/interfaces/preferences.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -3085,6 +3087,14 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
 #if defined(OS_CHROMEOS)
   content::ServiceManagerConnection::GetForProcess()->AddConnectionFilter(
       base::MakeUnique<chromeos::ChromeInterfaceFactory>());
+  {
+    content::ServiceInfo info;
+    info.factory = base::Bind([] {
+      return std::unique_ptr<service_manager::Service>(
+          base::MakeUnique<PreferencesConnectionManager>());
+    });
+    services->insert(std::make_pair(prefs::mojom::kServiceName, info));
+  }
 #endif  // OS_CHROMEOS
 }
 

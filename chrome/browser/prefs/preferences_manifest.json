@@ -1,0 +1,13 @@
+{
+  "name": "preferences",
+  "display_name": "Preferences",
+  "interface_provider_specs": {
+    "service_manager:connector": {
+      "provides": {
+        "preferences_manager": [ "prefs::mojom::PreferencesManager" ]
+      },
+      "requires": {
+      }
+    }
+  }
+}

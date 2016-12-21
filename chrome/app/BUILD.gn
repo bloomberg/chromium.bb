@@ -355,8 +355,12 @@ static_library("test_support") {
 
 service_manifest_overlay("chrome_content_browser_manifest_overlay") {
   source = "//chrome/browser/chrome_content_browser_manifest_overlay.json"
-  packaged_services = [ "image_decoder" ]
+  packaged_services = [
+    "image_decoder",
+    "preferences",
+  ]
   deps = [
+    "//chrome/browser:preferences_manifest",
     "//services/image_decoder:manifest",
   ]
 }

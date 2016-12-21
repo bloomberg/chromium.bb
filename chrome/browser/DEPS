@@ -48,6 +48,7 @@ include_rules = [
   "+rlz",
   "+sandbox/win/src",  # The path doesn't say it, but this is the Windows sandbox.
   "+services/image_decoder/public/interfaces",
+  "+services/preferences/public/interfaces",
   "+services/service_manager",
   "+skia/ext",
   "+syzygy/kasko",
