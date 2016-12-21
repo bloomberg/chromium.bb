@@ -202,8 +202,8 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowMenu_: function(source) {
-    return !(this.isExceptionControlled_(source) || this.allSites);
+  isActionMenuHidden_: function(source) {
+    return this.isExceptionControlled_(source) || this.allSites;
   },
 
   /**

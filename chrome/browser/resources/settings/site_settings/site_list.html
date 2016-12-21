@@ -82,7 +82,7 @@
             </template>
 
             <paper-icon-button id="dots" icon="cr:more-vert"
-                hidden="[[isExceptionControlled_(item.source)]]"
+                hidden="[[isActionMenuHidden_(item.source)]]"
                 on-tap="onShowActionMenuTap_">
             </paper-icon-button>
             <template is="dom-if" if="[[enableSiteSettings_]]">

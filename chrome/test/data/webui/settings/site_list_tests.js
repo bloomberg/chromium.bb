@@ -709,6 +709,22 @@ cr.define('site_list', function() {
             });
       });
 
+      test('All sites category no action menu', function() {
+        setUpCategory(settings.ALL_SITES, '', prefsVarious);
+        return browserProxy.whenCalled('getExceptionList').then(
+            function(contentType) {
+              // Use resolver to ensure that the list container is populated.
+              var resolver = new PromiseResolver();
+              testElement.async(resolver.resolve);
+              return resolver.promise.then(function() {
+                var item = testElement.$.listContainer.children[0];
+                var dots = item.querySelector('paper-icon-button');
+                assertTrue(!!dots);
+                assertTrue(dots.hidden);
+              });
+            });
+      });
+
       test('All sites category', function() {
         // Prefs: Multiple and overlapping sites.
         setUpCategory(settings.ALL_SITES, '', prefsVarious);
