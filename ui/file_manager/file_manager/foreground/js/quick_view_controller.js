@@ -115,12 +115,18 @@ QuickViewController.prototype.init_ = function(quickView) {
 
 /**
  * Craete quick view element.
- * TODO(oka): lazy load quick view element for fast Files App initialization.
  * @return Promise<!FilesQuickView>
  * @private
  */
 QuickViewController.prototype.createQuickView_ = function() {
-  return Promise.resolve(document.querySelector('#quick-view'));
+  return new Promise(function(resolve, reject) {
+    Polymer.Base.importHref(
+        'foreground/elements/files_quick_view.html', function() {
+          var quickView = document.querySelector('#quick-view');
+          i18nTemplate.process(quickView, loadTimeData);
+          resolve(quickView);
+        }, reject);
+  });
 };
 
 /**
