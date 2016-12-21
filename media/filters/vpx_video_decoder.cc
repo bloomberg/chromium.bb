@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
@@ -393,8 +394,16 @@ void VpxVideoDecoder::DecodeBuffer(const scoped_refptr<DecoderBuffer>& buffer,
     return;
   }
 
+  bool decode_okay;
   scoped_refptr<VideoFrame> video_frame;
-  if (!VpxDecode(buffer, &video_frame)) {
+  if (config_.codec() == kCodecVP9) {
+    SCOPED_UMA_HISTOGRAM_TIMER("Media.VpxVideoDecoder.Vp9DecodeTime");
+    decode_okay = VpxDecode(buffer, &video_frame);
+  } else {
+    decode_okay = VpxDecode(buffer, &video_frame);
+  }
+
+  if (!decode_okay) {
     state_ = kError;
     bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;
