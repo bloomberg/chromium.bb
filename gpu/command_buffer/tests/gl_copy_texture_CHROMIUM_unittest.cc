@@ -295,6 +295,12 @@ class GLCopyTextureCHROMIUMES3Test : public GLCopyTextureCHROMIUMTest {
     DCHECK(!ShouldSkipTest());
     return !gl_.decoder()->GetFeatureInfo()->feature_flags().ext_srgb;
   }
+
+  // RGB5_A1 is not color-renderable on NVIDIA Mac, see crbug.com/676209.
+  bool ShouldSkipRGB5_A1() const {
+    DCHECK(!ShouldSkipTest());
+    return true;
+  }
 };
 
 INSTANTIATE_TEST_CASE_P(CopyType,
@@ -424,6 +430,8 @@ TEST_P(GLCopyTextureCHROMIUMES3Test, FormatCombinations) {
       if ((dest_format_type.internal_format == GL_SRGB_EXT ||
            dest_format_type.internal_format == GL_SRGB_ALPHA_EXT) &&
           ShouldSkipSRGBEXT())
+        continue;
+      if (dest_format_type.internal_format == GL_RGB5_A1 && ShouldSkipRGB5_A1())
         continue;
 
       const GLsizei kWidth = 8, kHeight = 8;
