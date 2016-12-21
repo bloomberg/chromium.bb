@@ -8,6 +8,7 @@ import android.support.test.filters.SmallTest;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
 
@@ -99,6 +100,7 @@ public class AwServiceWorkerClientTest extends AwTestBase {
 
     // Verify that WebView ServiceWorker code can properly handle resource loading errors
     // that happened in ServiceWorker fetches.
+    @DisabledTest(message = "Disable for flakyness http://crbug.com/676422")
     @SmallTest
     public void testFetchResourceLoadingError() throws Throwable {
         final String fullIndexUrl = mWebServer.setResponse("/index.html", INDEX_HTML, null);
