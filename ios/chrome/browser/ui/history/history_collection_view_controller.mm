@@ -21,6 +21,8 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
+#include "ios/chrome/browser/sync/sync_setup_service.h"
+#include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/activity_indicator_cell.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -45,6 +47,11 @@
 #include "ui/base/l10n/l10n_util_mac.h"
 
 namespace {
+typedef NS_ENUM(NSInteger, ItemType) {
+  ItemTypeHistoryEntry = kItemTypeEnumZero,
+  ItemTypeEntriesStatus,
+  ItemTypeActivityIndicator,
+};
 // Section identifier for the header (sync information) section.
 const NSInteger kEntriesStatusSectionIdentifier = kSectionIdentifierEnumZero;
 // Maximum number of entries to retrieve in a single query to history service.
@@ -107,6 +114,9 @@ const CGFloat kSeparatorInset = 10;
 - (void)removeSelectedItemsFromCollection;
 // Removes all items in the collection that are not included in entries.
 - (void)filterForHistoryEntries:(NSArray*)entries;
+// Adds loading indicator to the top of the history collection, if one is not
+// already present.
+- (void)addLoadingIndicator;
 // Displays context menu on cell pressed with gestureRecognizer.
 - (void)displayContextMenuInvokedByGestureRecognizer:
     (UILongPressGestureRecognizer*)gestureRecognizer;
@@ -315,15 +325,15 @@ const CGFloat kSeparatorInset = 10;
 - (void)historyServiceFacade:(HistoryServiceFacade*)facade
        didReceiveQueryResult:(HistoryServiceFacade::QueryResult)result {
   self.loading = NO;
-  // Remove loading indicator.
-  CollectionViewItem* headerItem = [self.collectionViewModel
-      itemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:0]];
-  if ([headerItem.cellClass isSubclassOfClass:[ActivityIndicatorCell class]]) {
-    [self.collectionViewModel removeItemWithType:kItemTypeEnumZero
-                       fromSectionWithIdentifier:kSectionIdentifierEnumZero];
-    [self.collectionView
-        deleteItemsAtIndexPaths:@[ [NSIndexPath indexPathForItem:0
-                                                       inSection:0] ]];
+  // If history sync is enabled and there hasn't been a response from synced
+  // history, try fetching again.
+  SyncSetupService* syncSetupService =
+      SyncSetupServiceFactory::GetForBrowserState(_browserState);
+  if (syncSetupService->IsSyncEnabled() &&
+      syncSetupService->IsDataTypeEnabled(syncer::HISTORY_DELETE_DIRECTIVES) &&
+      !result.sync_returned) {
+    [self showHistoryMatchingQuery:_currentQuery];
+    return;
   }
 
   // If there are no results and no URLs have been loaded, report that no
@@ -354,7 +364,7 @@ const CGFloat kSeparatorInset = 10;
     DCHECK([[self collectionViewModel] numberOfSections]);
     for (const history::HistoryEntry& entry : entries) {
       HistoryEntryItem* item =
-          [[[HistoryEntryItem alloc] initWithType:kItemTypeEnumZero
+          [[[HistoryEntryItem alloc] initWithType:ItemTypeHistoryEntry
                                      historyEntry:entry
                                      browserState:_browserState
                                          delegate:self] autorelease];
@@ -526,24 +536,9 @@ const CGFloat kSeparatorInset = 10;
 - (void)fetchHistoryForQuery:(NSString*)query
                  priorToTime:(const base::Time&)time {
   self.loading = YES;
-  // Add loading indicator if nothing else is shown.
+  // Add loading indicator if no items are shown.
   if (!self.hasHistoryEntries && !self.isSearching) {
-    [self.collectionView performBatchUpdates:^{
-      NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0 inSection:0];
-      if ([self.collectionViewModel hasItemAtIndexPath:indexPath]) {
-        [self.collectionViewModel
-                   removeItemWithType:kItemTypeEnumZero
-            fromSectionWithIdentifier:kSectionIdentifierEnumZero];
-        [self.collectionView deleteItemsAtIndexPaths:@[ indexPath ]];
-      }
-      CollectionViewItem* loadingIndicatorItem = [[[CollectionViewItem alloc]
-          initWithType:kItemTypeEnumZero] autorelease];
-      loadingIndicatorItem.cellClass = [ActivityIndicatorCell class];
-      [self.collectionViewModel addItem:loadingIndicatorItem
-                toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
-      [self.collectionView insertItemsAtIndexPaths:@[ indexPath ]];
-    }
-                                  completion:nil];
+    [self addLoadingIndicator];
   }
 
   BOOL fetchAllHistory = !query || [query isEqualToString:@""];
@@ -557,7 +552,6 @@ const CGFloat kSeparatorInset = 10;
   options.max_count = kMaxFetchCount;
   options.matching_algorithm =
       query_parser::MatchingAlgorithm::ALWAYS_PREFIX_SEARCH;
-  _historyServiceFacade->QueryOtherFormsOfBrowsingHistory();
   _historyServiceFacade->QueryHistory(queryString, options);
   // Also determine whether notice regarding other forms of browsing history
   // should be shown.
@@ -568,14 +562,14 @@ const CGFloat kSeparatorInset = 10;
   CollectionViewItem* entriesStatusItem = nil;
   if (!self.hasHistoryEntries) {
     CollectionViewTextItem* noResultsItem = [[[CollectionViewTextItem alloc]
-        initWithType:kItemTypeEnumZero] autorelease];
+        initWithType:ItemTypeEntriesStatus] autorelease];
     noResultsItem.text =
         self.isSearching ? l10n_util::GetNSString(IDS_HISTORY_NO_SEARCH_RESULTS)
                          : l10n_util::GetNSString(IDS_HISTORY_NO_RESULTS);
     entriesStatusItem = noResultsItem;
   } else {
     HistoryEntriesStatusItem* historyEntriesStatusItem =
-        [[[HistoryEntriesStatusItem alloc] initWithType:kItemTypeEnumZero]
+        [[[HistoryEntriesStatusItem alloc] initWithType:ItemTypeEntriesStatus]
             autorelease];
     historyEntriesStatusItem.delegate = self;
     AuthenticationService* authService =
@@ -604,7 +598,8 @@ const CGFloat kSeparatorInset = 10;
     NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0 inSection:0];
     if ([items count]) {
       [self.collectionViewModel
-                 removeItemWithType:kItemTypeEnumZero
+                 removeItemWithType:[self.collectionViewModel
+                                        itemTypeForIndexPath:indexPath]
           fromSectionWithIdentifier:kEntriesStatusSectionIdentifier];
       [self.collectionView deleteItemsAtIndexPaths:@[ indexPath ]];
     }
@@ -665,6 +660,33 @@ const CGFloat kSeparatorInset = 10;
     }
   }
   [self removeSelectedItemsFromCollection];
+}
+
+- (void)addLoadingIndicator {
+  NSIndexPath* indexPath = [NSIndexPath indexPathForItem:0 inSection:0];
+  if ([self.collectionViewModel hasItemAtIndexPath:indexPath] &&
+      [self.collectionViewModel itemTypeForIndexPath:indexPath] ==
+          ItemTypeActivityIndicator) {
+    // Do not add indicator a second time.
+    return;
+  }
+
+  [self.collectionView performBatchUpdates:^{
+    if ([self.collectionViewModel hasItemAtIndexPath:indexPath]) {
+      [self.collectionViewModel
+                 removeItemWithType:[self.collectionViewModel
+                                        itemTypeForIndexPath:indexPath]
+          fromSectionWithIdentifier:kSectionIdentifierEnumZero];
+      [self.collectionView deleteItemsAtIndexPaths:@[ indexPath ]];
+    }
+    CollectionViewItem* loadingIndicatorItem = [[[CollectionViewItem alloc]
+        initWithType:ItemTypeActivityIndicator] autorelease];
+    loadingIndicatorItem.cellClass = [ActivityIndicatorCell class];
+    [self.collectionViewModel addItem:loadingIndicatorItem
+              toSectionWithIdentifier:kEntriesStatusSectionIdentifier];
+    [self.collectionView insertItemsAtIndexPaths:@[ indexPath ]];
+  }
+                                completion:nil];
 }
 
 #pragma mark Context Menu

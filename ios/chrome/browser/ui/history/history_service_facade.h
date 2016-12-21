@@ -46,8 +46,13 @@ class HistoryServiceFacade : public history::HistoryServiceObserver {
     base::string16 query;
     base::string16 query_start_time;
     base::string16 query_end_time;
+    // true if all local history from History service has been retrieved.
     bool finished;
+    // true if a query to WebHistoryService has returned successfully.
+    bool sync_returned;
+    // true if results from WebHistoryService have been retrieved.
     bool has_synced_results;
+    // true if all remote history from WebHistoryService has been retrieved.
     bool sync_finished;
     std::vector<history::HistoryEntry> entries;
   };

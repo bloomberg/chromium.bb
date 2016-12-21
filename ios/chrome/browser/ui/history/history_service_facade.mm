@@ -78,6 +78,7 @@ HistoryServiceFacade::QueryResult::QueryResult()
       query_start_time(base::string16()),
       query_end_time(base::string16()),
       finished(false),
+      sync_returned(false),
       has_synced_results(false),
       sync_finished(false),
       entries(std::vector<history::HistoryEntry>()) {}
@@ -140,18 +141,6 @@ void HistoryServiceFacade::QueryHistory(const base::string16& search_text,
   query_results_.clear();
   results_info_value_ = QueryResult();
 
-  // Query local history.
-  history::HistoryService* history_service =
-      ios::HistoryServiceFactory::GetForBrowserState(
-          browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
-  if (history_service) {
-    history_service->QueryHistory(
-        search_text, options,
-        base::Bind(&HistoryServiceFacade::QueryComplete, base::Unretained(this),
-                   search_text, options),
-        &query_task_tracker_);
-  }
-
   // Query synced history.
   history::WebHistoryService* web_history =
       ios::WebHistoryServiceFactory::GetForBrowserState(browser_state_);
@@ -166,6 +155,18 @@ void HistoryServiceFacade::QueryHistory(const base::string16& search_text,
     web_history_timer_.Start(
         FROM_HERE, base::TimeDelta::FromSeconds(kWebHistoryTimeoutSeconds),
         this, &HistoryServiceFacade::WebHistoryTimeout);
+  }
+
+  // Query local history.
+  history::HistoryService* history_service =
+      ios::HistoryServiceFactory::GetForBrowserState(
+          browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
+  if (history_service) {
+    history_service->QueryHistory(
+        search_text, options,
+        base::Bind(&HistoryServiceFacade::QueryComplete, base::Unretained(this),
+                   search_text, options),
+        &query_task_tracker_);
   }
 }
 
@@ -374,6 +375,7 @@ void HistoryServiceFacade::WebHistoryQueryComplete(
   }
 
   results_info_value_.has_synced_results = results_value != NULL;
+  results_info_value_.sync_returned = true;
   if (results_value) {
     std::string continuation_token;
     results_value->GetString("continuation_token", &continuation_token);
