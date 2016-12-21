@@ -542,6 +542,48 @@ TEST_F(CryptAuthEidGeneratorTest, TestIdentifyRemoteDevice_OneDevice_Success) {
   EXPECT_EQ(correct_device.public_key, identified_device->public_key);
 }
 
+TEST_F(CryptAuthEidGeneratorTest,
+    TestIdentifyRemoteDevice_OneDevice_ServiceDataWithOneByteFlag_Success) {
+  SetTestTime(kDefaultCurrentPeriodStart);
+
+  std::string service_data =
+      GenerateFakeAdvertisement(kSecondSeed, kDefaultCurrentPeriodStart,
+                                kDefaultAdvertisingDevicePublicKey);
+
+  // Identifying device should still succeed if there is an extra "flag" byte
+  // after the first 4 bytes.
+  service_data.append(1, static_cast<char>(EidGenerator::kBluetooth4Flag));
+
+  RemoteDevice correct_device =
+      CreateRemoteDevice(kDefaultAdvertisingDevicePublicKey);
+  std::vector<RemoteDevice> device_list = {correct_device};
+  const RemoteDevice* identified_device =
+      eid_generator_->IdentifyRemoteDeviceByAdvertisement(
+          service_data, device_list, scanning_device_beacon_seeds_);
+  EXPECT_EQ(correct_device.public_key, identified_device->public_key);
+}
+
+TEST_F(CryptAuthEidGeneratorTest,
+    TestIdentifyRemoteDevice_OneDevice_ServiceDataWithLongerFlag_Success) {
+  SetTestTime(kDefaultCurrentPeriodStart);
+
+  std::string service_data =
+      GenerateFakeAdvertisement(kSecondSeed, kDefaultCurrentPeriodStart,
+                                kDefaultAdvertisingDevicePublicKey);
+
+  // Identifying device should still succeed if there are extra "flag" bytes
+  // after the first 4 bytes.
+  service_data.append("extra_flag_bytes");
+
+  RemoteDevice correct_device =
+      CreateRemoteDevice(kDefaultAdvertisingDevicePublicKey);
+  std::vector<RemoteDevice> device_list = {correct_device};
+  const RemoteDevice* identified_device =
+      eid_generator_->IdentifyRemoteDeviceByAdvertisement(
+          service_data, device_list, scanning_device_beacon_seeds_);
+  EXPECT_EQ(correct_device.public_key, identified_device->public_key);
+}
+
 TEST_F(CryptAuthEidGeneratorTest, TestIdentifyRemoteDevice_OneDevice_Failure) {
   SetTestTime(kDefaultCurrentPeriodStart);
 

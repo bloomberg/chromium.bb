@@ -29,6 +29,7 @@ const int64_t EidGenerator::kNumMsInEidPeriod =
 const int64_t EidGenerator::kNumMsInBeginningOfEidPeriod =
     base::TimeDelta::FromHours(2).InMilliseconds();
 const int32_t EidGenerator::kNumBytesInEidValue = 2;
+const int8_t EidGenerator::kBluetooth4Flag = 0x01;
 
 // static
 EidGenerator* EidGenerator::GetInstance() {
@@ -170,12 +171,18 @@ RemoteDevice const* EidGenerator::IdentifyRemoteDeviceByAdvertisement(
     const std::string& advertisement_service_data,
     const std::vector<RemoteDevice>& device_list,
     const std::vector<BeaconSeed>& scanning_device_beacon_seeds) const {
+  // Resize the service data to analyze only the first |2 * kNumBytesInEidValue|
+  // bytes. The bytes following these are flags, so they are not needed to
+  // identify the device which sent a message.
+  std::string service_data_without_flags = advertisement_service_data;
+  service_data_without_flags.resize(2 * kNumBytesInEidValue);
+
   for (const auto& remote_device : device_list) {
     std::vector<std::string> possible_advertisements =
         GeneratePossibleAdvertisements(remote_device.public_key,
                                        scanning_device_beacon_seeds);
     for (const auto& possible_advertisement : possible_advertisements) {
-      if (advertisement_service_data == possible_advertisement) {
+      if (service_data_without_flags == possible_advertisement) {
         return const_cast<RemoteDevice*>(&remote_device);
       }
     }

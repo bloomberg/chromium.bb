@@ -65,6 +65,12 @@ class EidGenerator {
     const std::unique_ptr<DataWithTimestamp> adjacent_data;
   };
 
+  // The flag used to denote that a Bluetooth 4.0 device has sent an
+  // advertisement. This flag indicates to the recipient that the sender cannot
+  // act as both a central- and peripheral-role device simultaneously, so the
+  // recipient should advertise back instead of initializing a connection.
+  static const int8_t kBluetooth4Flag;
+
   static EidGenerator* GetInstance();
   virtual ~EidGenerator();
 
