@@ -119,6 +119,14 @@ WebRange WebViewFrameWidget::compositionRange() {
   return m_webView->compositionRange();
 }
 
+WebTextInputInfo WebViewFrameWidget::textInputInfo() {
+  return m_webView->textInputInfo();
+}
+
+WebTextInputType WebViewFrameWidget::textInputType() {
+  return m_webView->textInputType();
+}
+
 bool WebViewFrameWidget::selectionBounds(WebRect& anchor,
                                          WebRect& focus) const {
   return m_webView->selectionBounds(anchor, focus);

@@ -516,6 +516,20 @@ WebRange WebFrameWidgetImpl::compositionRange() {
   return PlainTextRange::create(*editable, range);
 }
 
+WebTextInputInfo WebFrameWidgetImpl::textInputInfo() {
+  LocalFrame* focused = focusedLocalFrameInWidget();
+  if (!focused)
+    return WebTextInputInfo();
+  return focused->inputMethodController().textInputInfo();
+}
+
+WebTextInputType WebFrameWidgetImpl::textInputType() {
+  LocalFrame* focused = focusedLocalFrameInWidget();
+  if (!focused)
+    return WebTextInputTypeNone;
+  return focused->inputMethodController().textInputType();
+}
+
 WebColor WebFrameWidgetImpl::backgroundColor() const {
   if (isTransparent())
     return Color::transparent;

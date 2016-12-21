@@ -189,7 +189,6 @@
 #include "third_party/WebKit/public/web/WebFrameSerializer.h"
 #include "third_party/WebKit/public/web/WebFrameSerializerCacheControlPolicy.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
-#include "third_party/WebKit/public/web/WebInputMethodController.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
@@ -2300,10 +2299,8 @@ void RenderFrameImpl::OnFocusedFormFieldDataRequest(int request_id) {
   WebElement element = frame_->document().focusedElement();
 
   DCHECK(GetRenderWidget()->GetWebWidget());
-  blink::WebInputMethodController* controller =
-      frame_->frameWidget()->getActiveWebInputMethodController();
   blink::WebTextInputInfo info =
-      controller ? controller->textInputInfo() : blink::WebTextInputInfo();
+      GetRenderWidget()->GetWebWidget()->textInputInfo();
   FormFieldData field;
   field.text = info.value.utf8();
   field.placeholder = element.getAttribute("placeholder").utf8();
@@ -6017,7 +6014,7 @@ void RenderFrameImpl::SyncSelectionIfRequired() {
 
     range = gfx::Range(selection.startOffset(), selection.endOffset());
 
-    if (frame_->inputMethodController()->textInputType() !=
+    if (GetRenderWidget()->GetWebWidget()->textInputType() !=
         blink::WebTextInputTypeNone) {
       // If current focused element is editable, we will send 100 more chars
       // before and after selection. It is for input method surrounding text

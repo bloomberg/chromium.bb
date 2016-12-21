@@ -100,6 +100,8 @@ class WebFrameWidgetImpl final
   void mouseCaptureLost() override;
   void setFocus(bool enable) override;
   WebRange compositionRange() override;
+  WebTextInputInfo textInputInfo() override;
+  WebTextInputType textInputType() override;
   WebColor backgroundColor() const override;
   bool selectionBounds(WebRect& anchor, WebRect& focus) const override;
   bool selectionTextDirection(WebTextDirection& start,

@@ -2339,6 +2339,20 @@ WebRange WebViewImpl::compositionRange() {
   return PlainTextRange::create(*editable, range);
 }
 
+WebTextInputInfo WebViewImpl::textInputInfo() {
+  LocalFrame* focused = focusedLocalFrameInWidget();
+  if (!focused)
+    return WebTextInputInfo();
+  return focused->inputMethodController().textInputInfo();
+}
+
+WebTextInputType WebViewImpl::textInputType() {
+  LocalFrame* focused = focusedLocalFrameInWidget();
+  if (!focused)
+    return WebTextInputTypeNone;
+  return focused->inputMethodController().textInputType();
+}
+
 // TODO(ekaramad):This method is almost duplicated in WebFrameWidgetImpl as
 // well. This code needs to be refactored  (http://crbug.com/629721).
 bool WebViewImpl::selectionBounds(WebRect& anchor, WebRect& focus) const {
