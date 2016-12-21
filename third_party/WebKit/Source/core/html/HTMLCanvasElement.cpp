@@ -111,12 +111,16 @@ const int MaxGlobalGPUMemoryUsage =
 // misinterpreted as a user-input value
 const int UndefinedQualityValue = -1.0;
 
-PassRefPtr<Image> createTransparentImage(const IntSize& size) {
+sk_sp<SkImage> createTransparentSkImage(const IntSize& size) {
   DCHECK(ImageBuffer::canCreateImageBuffer(size));
   sk_sp<SkSurface> surface =
       SkSurface::MakeRasterN32Premul(size.width(), size.height());
-  return surface ? StaticBitmapImage::create(surface->makeImageSnapshot())
-                 : nullptr;
+  return surface->makeImageSnapshot();
+}
+
+PassRefPtr<Image> createTransparentImage(const IntSize& size) {
+  sk_sp<SkImage> image = createTransparentSkImage(size);
+  return image ? StaticBitmapImage::create(image) : nullptr;
 }
 
 }  // namespace
@@ -1230,8 +1234,9 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(
   }
 
   if (!m_context) {
-    *status = NormalSourceImageStatus;
-    return createTransparentImage(size());
+    RefPtr<Image> result = createTransparentImage(size());
+    *status = result ? NormalSourceImageStatus : InvalidSourceImageStatus;
+    return result;
   }
 
   if (m_context->getContextType() == CanvasRenderingContext::ContextImageBitmap)
@@ -1245,10 +1250,11 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(
     // use paintRenderingResultsToCanvas instead of getImage in order to keep a
     // cached copy of the backing in the canvas's ImageBuffer.
     renderingContext()->paintRenderingResultsToCanvas(BackBuffer);
-    skImage = hasImageBuffer()
-                  ? buffer()->newSkImageSnapshot(hint, reason)
-                  : createTransparentImage(size())->imageForCurrentFrame(
-                        ColorBehavior::transformToGlobalTarget());
+    if (hasImageBuffer()) {
+      skImage = buffer()->newSkImageSnapshot(hint, reason);
+    } else {
+      skImage = createTransparentSkImage(size());
+    }
   } else {
     if (ExpensiveCanvasHeuristicParameters::
             DisableAccelerationToAvoidReadbacks &&
@@ -1256,12 +1262,13 @@ PassRefPtr<Image> HTMLCanvasElement::getSourceImageForCanvas(
         hint == PreferNoAcceleration && m_context->isAccelerated() &&
         hasImageBuffer())
       buffer()->disableAcceleration();
-    RefPtr<blink::Image> image = renderingContext()->getImage(hint, reason);
-    skImage = image
-                  ? image->imageForCurrentFrame(
-                        ColorBehavior::transformToGlobalTarget())
-                  : createTransparentImage(size())->imageForCurrentFrame(
-                        ColorBehavior::transformToGlobalTarget());
+    RefPtr<Image> image = renderingContext()->getImage(hint, reason);
+    if (image) {
+      skImage =
+          image->imageForCurrentFrame(ColorBehavior::transformToGlobalTarget());
+    } else {
+      skImage = createTransparentSkImage(size());
+    }
   }
 
   if (skImage) {
