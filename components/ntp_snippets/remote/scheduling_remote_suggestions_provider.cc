@@ -137,6 +137,14 @@ void SchedulingRemoteSuggestionsProvider::OnPersistentSchedulerWakeUp() {
                      base::Unretained(this))));
 }
 
+void SchedulingRemoteSuggestionsProvider::OnBrowserStartup() {
+  // TODO(jkrcal): Implement.
+}
+
+void SchedulingRemoteSuggestionsProvider::OnNTPOpened() {
+  // TODO(jkrcal): Implement.
+}
+
 void SchedulingRemoteSuggestionsProvider::SetProviderStatusCallback(
       std::unique_ptr<ProviderStatusCallback> callback) {
   provider_->SetProviderStatusCallback(std::move(callback));

@@ -12,6 +12,10 @@ namespace ntp_snippets {
 // Interface for informing the scheduler.
 class RemoteSuggestionsScheduler {
  public:
+  // External triggers to consider fetching content suggestions.
+  virtual void OnBrowserStartup() = 0;
+  virtual void OnNTPOpened() = 0;
+
   // Fetch content suggestions.
   virtual void OnPersistentSchedulerWakeUp() = 0;
 
