@@ -42,8 +42,8 @@
 #include "core/loader/resource/ScriptResource.h"
 #include "platform/Histogram.h"
 #include "platform/WebFrameScheduler.h"
-#include "platform/tracing/TraceEvent.h"
-#include "platform/tracing/TracedValue.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TracedValue.h"
 #include "public/platform/Platform.h"
 #include <inttypes.h>
 #include <memory>

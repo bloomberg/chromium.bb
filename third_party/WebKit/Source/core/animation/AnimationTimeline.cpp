@@ -38,7 +38,7 @@
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "wtf/PtrUtil.h"

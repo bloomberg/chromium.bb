@@ -26,7 +26,7 @@
 #include "platform/graphics/ImageDecodingStore.h"
 
 #include "platform/graphics/ImageFrameGenerator.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "wtf/Threading.h"
 #include <memory>
 

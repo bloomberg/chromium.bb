@@ -12,7 +12,7 @@
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/PaintLayer.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {
 

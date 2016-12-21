@@ -36,7 +36,7 @@
 #include "platform/fonts/FontCacheMemoryDumpProvider.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/GCTaskRunner.h"
-#include "platform/tracing/MemoryCacheDumpProvider.h"
+#include "platform/instrumentation/tracing/MemoryCacheDumpProvider.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPrerenderingSupport.h"

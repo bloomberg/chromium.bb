@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/tracing/web_memory_allocator_dump.h"
+#include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
 
 #include "base/trace_event/memory_allocator_dump.h"
 #include "wtf/text/StringUTF8Adaptor.h"

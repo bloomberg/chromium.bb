@@ -59,7 +59,7 @@
 #include "core/html/HTMLSpanElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutText.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 

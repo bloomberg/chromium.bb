@@ -9,7 +9,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
-#include "platform/tracing/web_process_memory_dump.h"
+#include "platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "wtf/Allocator.h"
 
 namespace blink {

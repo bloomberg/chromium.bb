@@ -69,7 +69,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebLayerTreeView.h"
 #include "public/platform/WebRect.h"

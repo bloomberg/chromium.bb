@@ -11,7 +11,7 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/InspectorWorkerAgent.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {
 

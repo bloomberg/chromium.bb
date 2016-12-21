@@ -7,7 +7,7 @@
 #include "core/workers/InProcessWorkerObjectProxy.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/compositorworker/CompositorWorkerGlobalScope.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "wtf/Assertions.h"
 #include <memory>
 

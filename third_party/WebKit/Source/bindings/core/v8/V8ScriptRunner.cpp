@@ -40,7 +40,7 @@
 #include "core/loader/resource/ScriptResource.h"
 #include "platform/Histogram.h"
 #include "platform/ScriptForbiddenScope.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 

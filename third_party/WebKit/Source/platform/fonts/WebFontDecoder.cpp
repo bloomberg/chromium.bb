@@ -34,7 +34,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "third_party/harfbuzz-ng/src/hb.h"
 #include "third_party/ots/include/ots-memory-stream.h"

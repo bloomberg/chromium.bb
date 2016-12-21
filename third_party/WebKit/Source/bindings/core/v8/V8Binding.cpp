@@ -61,7 +61,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkletGlobalScope.h"
 #include "core/xml/XPathNSResolver.h"
-#include "platform/tracing/TracedValue.h"
+#include "platform/instrumentation/tracing/TracedValue.h"
 #include "wtf/MathExtras.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"

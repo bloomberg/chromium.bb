@@ -26,7 +26,7 @@
 
 #include "platform/Timer.h"
 
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "wtf/AddressSanitizer.h"

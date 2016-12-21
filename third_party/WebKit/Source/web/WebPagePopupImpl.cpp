@@ -53,7 +53,7 @@
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/animation/CompositorAnimationHost.h"
 #include "platform/heap/Handle.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/WebCompositeAndReadbackAsyncCallback.h"
 #include "public/platform/WebCursorInfo.h"
 #include "public/platform/WebFloatRect.h"

@@ -20,7 +20,7 @@
 #include "core/html/TextControlElement.h"
 #include "core/layout/LayoutObject.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {

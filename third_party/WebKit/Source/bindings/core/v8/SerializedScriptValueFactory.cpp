@@ -12,7 +12,7 @@
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/MessagePort.h"
 #include "core/frame/ImageBitmap.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "wtf/ByteOrder.h"
 #include "wtf/text/StringBuffer.h"
 

@@ -34,7 +34,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "core/loader/resource/CSSStyleSheetResource.h"
 #include "platform/Histogram.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 
 namespace blink {

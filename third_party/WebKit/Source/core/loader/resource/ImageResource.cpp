@@ -33,7 +33,7 @@
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/SharedBuffer.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"

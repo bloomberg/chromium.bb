@@ -43,7 +43,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "wtf/MathExtras.h"

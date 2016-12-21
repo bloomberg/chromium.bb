@@ -51,13 +51,13 @@
 #include "platform/geometry/Region.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #if OS(MACOSX)
 #include "platform/mac/ScrollAnimatorMac.h"
 #endif
 #include "platform/scroll/MainThreadScrollingReason.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollbarTheme.h"
-#include "platform/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayerPositionConstraint.h"

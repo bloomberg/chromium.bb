@@ -81,7 +81,7 @@
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/CompositorFilterOperations.h"
 #include "platform/graphics/filters/Filter.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/transforms/TransformationMatrix.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/StdLibExtras.h"

@@ -48,9 +48,9 @@
 #include "core/html/parser/HTMLTokenizer.h"
 #include "core/loader/LinkLoader.h"
 #include "platform/Histogram.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/network/mime/ContentType.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
-#include "platform/tracing/TraceEvent.h"
 #include <memory>
 
 namespace blink {

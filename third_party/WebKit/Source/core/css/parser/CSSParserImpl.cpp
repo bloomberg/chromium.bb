@@ -28,7 +28,7 @@
 #include "core/dom/Element.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "wtf/PtrUtil.h"
 #include <bitset>
 #include <memory>

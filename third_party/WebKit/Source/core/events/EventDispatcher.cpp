@@ -42,7 +42,7 @@
 #include "core/html/HTMLElement.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/EventDispatchForbiddenScope.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "wtf/RefPtr.h"
 
 namespace blink {

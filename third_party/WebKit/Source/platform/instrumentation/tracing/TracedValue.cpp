@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/tracing/TracedValue.h"
+#include "platform/instrumentation/tracing/TracedValue.h"
 
 #include "wtf/PtrUtil.h"
 #include "wtf/text/StringUTF8Adaptor.h"

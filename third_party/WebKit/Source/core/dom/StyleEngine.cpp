@@ -57,7 +57,7 @@
 #include "core/page/Page.h"
 #include "core/svg/SVGStyleElement.h"
 #include "platform/fonts/FontCache.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {
 

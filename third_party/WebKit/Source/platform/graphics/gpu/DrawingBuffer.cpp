@@ -40,7 +40,7 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/WebGraphicsContext3DProviderWrapper.h"
 #include "platform/graphics/gpu/Extensions3DUtil.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebExternalBitmap.h"

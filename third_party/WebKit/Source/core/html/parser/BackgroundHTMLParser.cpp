@@ -32,7 +32,7 @@
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
 #include "platform/WebTaskRunner.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/Functional.h"

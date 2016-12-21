@@ -53,7 +53,7 @@
 #include "platform/SharedBuffer.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/heap/Handle.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebLoadingBehaviorFlag.h"
 #include "public/platform/WebScheduler.h"

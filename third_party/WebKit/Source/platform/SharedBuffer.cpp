@@ -26,7 +26,7 @@
 
 #include "platform/SharedBuffer.h"
 
-#include "platform/tracing/web_process_memory_dump.h"
+#include "platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "wtf/text/UTF8.h"
 #include "wtf/text/Unicode.h"
 

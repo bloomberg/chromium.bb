@@ -31,7 +31,7 @@
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintLayerStackingNode.h"
 #include "core/paint/PaintLayerStackingNodeIterator.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {
 

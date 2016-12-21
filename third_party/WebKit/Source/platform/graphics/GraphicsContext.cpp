@@ -34,7 +34,7 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/Path.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/KURL.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/skia/include/core/SkAnnotation.h"

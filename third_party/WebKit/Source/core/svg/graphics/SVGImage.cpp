@@ -55,7 +55,7 @@
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "wtf/PassRefPtr.h"
 

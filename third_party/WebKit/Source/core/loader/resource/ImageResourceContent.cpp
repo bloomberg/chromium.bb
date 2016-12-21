@@ -14,7 +14,7 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/BitmapImage.h"
 #include "platform/graphics/PlaceholderImage.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"
 #include <memory>

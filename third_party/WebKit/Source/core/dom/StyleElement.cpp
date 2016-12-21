@@ -33,7 +33,7 @@
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/svg/SVGStyleElement.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {

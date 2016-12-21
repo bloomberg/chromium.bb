@@ -9,7 +9,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/WebFrameScheduler.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {
 

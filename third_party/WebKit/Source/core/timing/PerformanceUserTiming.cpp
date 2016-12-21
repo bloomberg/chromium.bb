@@ -31,7 +31,7 @@
 #include "core/timing/PerformanceMark.h"
 #include "core/timing/PerformanceMeasure.h"
 #include "platform/Histogram.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "wtf/text/StringHash.h"
 

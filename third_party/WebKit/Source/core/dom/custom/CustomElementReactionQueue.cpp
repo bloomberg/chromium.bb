@@ -6,7 +6,7 @@
 
 #include "core/dom/Element.h"
 #include "core/dom/custom/CustomElementReaction.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {
 

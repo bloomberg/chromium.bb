@@ -33,11 +33,10 @@
 
 #include "platform/HostWindow.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/scroll/MainThreadScrollingReason.h"
 #include "platform/scroll/ProgrammaticScrollAnimator.h"
 #include "platform/scroll/ScrollbarTheme.h"
-
-#include "platform/tracing/TraceEvent.h"
 
 static const int kPixelsPerLineStep = 40;
 static const float kMinFractionToStepWhenPaging = 0.875f;

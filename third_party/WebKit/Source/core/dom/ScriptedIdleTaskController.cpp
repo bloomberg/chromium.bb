@@ -10,7 +10,7 @@
 #include "core/frame/PerformanceMonitor.h"
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/Histogram.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebTraceLocation.h"

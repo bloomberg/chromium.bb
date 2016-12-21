@@ -38,7 +38,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/graphics/gpu/SharedContextRateLimiter.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebGraphicsContext3DProvider.h"

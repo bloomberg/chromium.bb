@@ -44,8 +44,8 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/paint/PaintController.h"
-#include "platform/tracing/TraceEvent.h"
-#include "platform/tracing/TracedValue.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TracedValue.h"
 #include "public/platform/Platform.h"
 #include "wtf/PtrUtil.h"
 #include <inttypes.h>

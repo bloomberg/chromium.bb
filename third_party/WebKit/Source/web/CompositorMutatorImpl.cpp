@@ -11,7 +11,7 @@
 #include "platform/graphics/CompositorMutationsTarget.h"
 #include "platform/graphics/CompositorMutatorClient.h"
 #include "platform/heap/Handle.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "web/CompositorProxyClientImpl.h"
 #include "wtf/PtrUtil.h"

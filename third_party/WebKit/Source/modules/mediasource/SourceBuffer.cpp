@@ -50,7 +50,7 @@
 #include "modules/mediasource/MediaSource.h"
 #include "modules/mediasource/SourceBufferTrackBaseSupplement.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/WebSourceBuffer.h"
 #include "wtf/MathExtras.h"
 #include <limits>

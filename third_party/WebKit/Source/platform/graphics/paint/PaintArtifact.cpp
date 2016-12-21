@@ -7,7 +7,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/WebDisplayItemList.h"
 #include "third_party/skia/include/core/SkRegion.h"
 

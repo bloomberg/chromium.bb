@@ -29,7 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/fetch/Resource.h"
 #include "platform/MemoryCoordinator.h"
-#include "platform/tracing/MemoryCacheDumpProvider.h"
+#include "platform/instrumentation/tracing/MemoryCacheDumpProvider.h"
 #include "public/platform/WebThread.h"
 #include "wtf/Allocator.h"
 #include "wtf/HashMap.h"

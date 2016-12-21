@@ -61,7 +61,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/ScriptForbiddenScope.h"
 #include "platform/heap/Handle.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "wtf/Assertions.h"

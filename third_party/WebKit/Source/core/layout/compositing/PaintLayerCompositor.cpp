@@ -67,8 +67,8 @@
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/graphics/paint/TransformDisplayItem.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/json/JSONValues.h"
-#include "platform/tracing/TraceEvent.h"
 
 namespace blink {
 

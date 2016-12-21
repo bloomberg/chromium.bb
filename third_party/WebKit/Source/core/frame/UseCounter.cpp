@@ -36,7 +36,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "platform/Histogram.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace {
 

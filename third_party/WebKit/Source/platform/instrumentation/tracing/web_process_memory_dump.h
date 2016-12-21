@@ -10,7 +10,7 @@
 #include "base/trace_event/heap_profiler_allocation_context.h"
 #include "base/trace_event/memory_dump_request_args.h"
 #include "platform/PlatformExport.h"
-#include "platform/tracing/web_memory_allocator_dump.h"
+#include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/WTFString.h"
 #include <map>

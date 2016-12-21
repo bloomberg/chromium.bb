@@ -30,7 +30,7 @@
 #include "core/frame/PerformanceMonitor.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {

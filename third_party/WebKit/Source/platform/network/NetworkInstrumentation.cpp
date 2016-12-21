@@ -5,9 +5,9 @@
 #include "platform/network/NetworkInstrumentation.h"
 
 #include "base/trace_event/trace_event.h"
+#include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/network/ResourceLoadPriority.h"
 #include "platform/network/ResourceRequest.h"
-#include "platform/tracing/TracedValue.h"
 
 namespace network_instrumentation {
 

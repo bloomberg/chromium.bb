@@ -65,7 +65,7 @@
 #include "platform/Histogram.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/Widget.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"

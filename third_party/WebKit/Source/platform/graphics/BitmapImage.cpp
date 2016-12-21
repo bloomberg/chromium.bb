@@ -35,7 +35,7 @@
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/skia/SkiaUtils.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/PtrUtil.h"

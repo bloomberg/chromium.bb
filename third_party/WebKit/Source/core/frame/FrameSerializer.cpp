@@ -63,7 +63,7 @@
 #include "platform/SerializedResource.h"
 #include "platform/graphics/Image.h"
 #include "platform/heap/Handle.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "wtf/HashSet.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"

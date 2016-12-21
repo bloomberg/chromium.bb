@@ -6,7 +6,7 @@
 
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/compositorworker/AnimationWorkletGlobalScope.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/PtrUtil.h"
 

@@ -32,7 +32,7 @@
 #define PlatformInstrumentation_h
 
 #include "platform/PlatformExport.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {

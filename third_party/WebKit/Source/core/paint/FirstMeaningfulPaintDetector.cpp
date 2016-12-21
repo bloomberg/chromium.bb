@@ -7,7 +7,7 @@
 #include "core/css/FontFaceSet.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/paint/PaintTiming.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {
 

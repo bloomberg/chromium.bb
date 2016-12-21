@@ -10,7 +10,7 @@
 #include "bindings/modules/v8/serialization/V8ScriptValueDeserializerForModules.h"
 #include "bindings/modules/v8/serialization/V8ScriptValueSerializerForModules.h"
 #include "core/dom/ExceptionCode.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {
 

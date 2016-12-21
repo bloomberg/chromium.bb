@@ -23,7 +23,7 @@
 #include "core/fetch/MemoryCache.h"
 
 #include "core/fetch/ResourceLoadingLog.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityOriginHash.h"
 #include "public/platform/Platform.h"

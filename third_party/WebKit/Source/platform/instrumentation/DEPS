@@ -1,0 +1,11 @@
+include_rules = [
+    "+base/gtest_prod_util.h",
+    "+base/json",
+    "+base/macros.h",
+    "+base/memory",
+    "+base/strings",
+    "+base/time",
+    "+base/trace_event",
+    "+base/values.h",
+    "+skia/ext/skia_trace_memory_dump_impl.h",
+]

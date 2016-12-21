@@ -16,7 +16,7 @@
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/WebScheduler.h"
 #include "wtf/Deque.h"
 #include "wtf/PtrUtil.h"

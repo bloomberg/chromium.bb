@@ -19,7 +19,7 @@
 #include "core/dom/custom/CustomElementRegistry.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 
 namespace blink {
 

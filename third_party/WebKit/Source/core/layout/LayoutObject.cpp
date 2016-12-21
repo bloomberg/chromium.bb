@@ -80,7 +80,7 @@
 #include "platform/InstanceCounters.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/TransformState.h"
-#include "platform/tracing/TracedValue.h"
+#include "platform/instrumentation/tracing/TracedValue.h"
 #include "wtf/allocator/Partitions.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"

@@ -6,7 +6,7 @@
 
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "third_party/skia/include/core/SkPictureAnalyzer.h"
 #include "wtf/AutoReset.h"
 #include "wtf/text/StringBuilder.h"

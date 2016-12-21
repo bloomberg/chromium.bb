@@ -13,7 +13,7 @@
 #include "core/inspector/ThreadDebugger.h"
 #include "core/inspector/V8InspectorString.h"
 #include "platform/ScriptForbiddenScope.h"
-#include "platform/tracing/TracedValue.h"
+#include "platform/instrumentation/tracing/TracedValue.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 

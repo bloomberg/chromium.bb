@@ -12,7 +12,7 @@
 #include "core/animation/animatable/AnimatableTransform.h"
 #include "core/animation/animatable/AnimatableValue.h"
 #include "platform/graphics/CompositorMutation.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/transforms/Matrix3DTransformOperation.h"
 #include "platform/transforms/MatrixTransformOperation.h"
 #include "platform/transforms/TransformOperations.h"

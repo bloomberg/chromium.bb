@@ -45,7 +45,7 @@
 #include "core/inspector/InspectorTraceEvents.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/BlameContext.h"
 #include "public/platform/Platform.h"
 #include "wtf/Vector.h"

@@ -26,7 +26,7 @@
 #include "core/loader/DocumentLoadTiming.h"
 
 #include "core/loader/DocumentLoader.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/RefPtr.h"
 

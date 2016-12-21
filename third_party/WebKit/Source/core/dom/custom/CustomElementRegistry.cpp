@@ -23,7 +23,7 @@
 #include "core/dom/custom/CustomElementUpgradeSorter.h"
 #include "core/dom/custom/V0CustomElementRegistrationContext.h"
 #include "core/frame/LocalDOMWindow.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "wtf/Allocator.h"
 
 namespace blink {

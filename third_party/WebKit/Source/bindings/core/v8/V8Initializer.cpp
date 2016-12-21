@@ -53,7 +53,7 @@
 #include "core/workers/WorkerGlobalScope.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/tracing/TraceEvent.h"
+#include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebThread.h"

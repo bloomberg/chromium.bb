@@ -33,7 +33,7 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
 #include "core/inspector/InspectorTraceEvents.h"
-#include "platform/tracing/TracedValue.h"
+#include "platform/instrumentation/tracing/TracedValue.h"
 #include "wtf/Compiler.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/StringBuilder.h"
