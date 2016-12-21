@@ -1752,7 +1752,7 @@
     },
 
     'ndk_next': {
-      'gn_args': 'android_ndk_version="r13b" android_ndk_major_version="13"',
+      'gn_args': 'android_ndk_version="r13b" android_ndk_major_version=13',
     },
 
     'no_pch': {
