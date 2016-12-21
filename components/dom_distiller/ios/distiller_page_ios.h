@@ -10,16 +10,9 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/dom_distiller/core/distiller_page.h"
+#include "components/dom_distiller/ios/favicon_web_state_dispatcher.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "url/gurl.h"
-
-namespace ios {
-class WebControllerProvider;
-}
-
-namespace web {
-class BrowserState;
-}
 
 namespace dom_distiller {
 
@@ -29,7 +22,7 @@ class DistillerWebStateObserver;
 // content.
 class DistillerPageIOS : public DistillerPage {
  public:
-  explicit DistillerPageIOS(web::BrowserState* browser_state);
+  explicit DistillerPageIOS(FaviconWebStateDispatcher* web_state_dispatcher);
   ~DistillerPageIOS() override;
 
  protected:
@@ -48,10 +41,10 @@ class DistillerPageIOS : public DistillerPage {
   // Converts result of WKWebView script evaluation to base::Value
   std::unique_ptr<base::Value> ValueResultFromScriptResult(id wk_result);
 
-  web::BrowserState* browser_state_;
   GURL url_;
   std::string script_;
-  std::unique_ptr<ios::WebControllerProvider> provider_;
+  web::WebState* web_state_;
+  FaviconWebStateDispatcher* web_state_dispatcher_;
   std::unique_ptr<DistillerWebStateObserver> web_state_observer_;
   base::WeakPtrFactory<DistillerPageIOS> weak_ptr_factory_;
 };

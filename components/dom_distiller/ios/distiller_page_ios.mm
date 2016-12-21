@@ -13,10 +13,14 @@
 #include "base/mac/foundation_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "ios/public/provider/web/web_controller_provider.h"
-#include "ios/public/provider/web/web_controller_provider_factory.h"
+#include "components/favicon/ios/web_favicon_driver.h"
 #include "ios/web/public/browser_state.h"
+#import "ios/web/public/navigation_manager.h"
+#import "ios/web/public/web_state/js/crw_js_injection_manager.h"
+#import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#import "ios/web/public/web_state/web_state.h"
 
 namespace {
 
@@ -105,6 +109,7 @@ class DistillerWebStateObserver : public web::WebStateObserver {
   // WebStateObserver implementation:
   void PageLoaded(
       web::PageLoadCompletionStatus load_completion_status) override;
+  void WebStateDestroyed() override;
 
  private:
   DistillerPageIOS* distiller_page_;  // weak, owns this object.
@@ -123,11 +128,15 @@ void DistillerWebStateObserver::PageLoaded(
   distiller_page_->OnLoadURLDone(load_completion_status);
 }
 
+void DistillerWebStateObserver::WebStateDestroyed() {
+  distiller_page_->web_state_ = nullptr;
+}
+
 #pragma mark -
 
-DistillerPageIOS::DistillerPageIOS(web::BrowserState* browser_state)
-    : browser_state_(browser_state), weak_ptr_factory_(this) {
-}
+DistillerPageIOS::DistillerPageIOS(
+    FaviconWebStateDispatcher* web_state_dispatcher)
+    : web_state_dispatcher_(web_state_dispatcher), weak_ptr_factory_(this) {}
 
 DistillerPageIOS::~DistillerPageIOS() {
 }
@@ -143,44 +152,56 @@ void DistillerPageIOS::DistillPageImpl(const GURL& url,
   url_ = url;
   script_ = script;
 
-  // Lazily create provider.
-  if (!provider_) {
-    if (ios::GetWebControllerProviderFactory()) {
-      provider_ =
-          ios::GetWebControllerProviderFactory()->CreateWebControllerProvider(
-              browser_state_);
-      web_state_observer_.reset(
-          new DistillerWebStateObserver(provider_->GetWebState(), this));
-    }
+  web_state_ = web_state_dispatcher_->RequestWebState();
+
+  if (!web_state_) {
+    OnLoadURLDone(web::PageLoadCompletionStatus::FAILURE);
+    return;
   }
 
-  // Load page using provider.
-  if (provider_)
-    provider_->LoadURL(url_);
-  else
-    OnLoadURLDone(web::PageLoadCompletionStatus::FAILURE);
+  web_state_observer_ =
+      base::MakeUnique<DistillerWebStateObserver>(web_state_, this);
+
+  // The favicon driver needs to know which URL is currently fetched.
+  favicon::WebFaviconDriver* favicon_driver =
+      favicon::WebFaviconDriver::FromWebState(web_state_);
+  favicon_driver->FetchFavicon(url_);
+
+  // Load page using WebState.
+  web::NavigationManager::WebLoadParams params(url_);
+  web_state_->SetWebUsageEnabled(true);
+  web_state_->GetNavigationManager()->LoadURLWithParams(params);
+  // GetView is needed because the view is not created (but needed) when
+  // loading the page.
+  web_state_->GetView();
 }
 
 void DistillerPageIOS::OnLoadURLDone(
     web::PageLoadCompletionStatus load_completion_status) {
   // Don't attempt to distill if the page load failed or if there is no
-  // provider.
+  // WebState.
   if (load_completion_status == web::PageLoadCompletionStatus::FAILURE ||
-      !provider_) {
+      !web_state_) {
     HandleJavaScriptResult(nil);
     return;
   }
 
   // Inject the script.
   base::WeakPtr<DistillerPageIOS> weak_this = weak_ptr_factory_.GetWeakPtr();
-  provider_->InjectScript(script_, ^(id result, NSError* error) {
-    DistillerPageIOS* distiller_page = weak_this.get();
-    if (distiller_page)
-      distiller_page->HandleJavaScriptResult(result);
-  });
+
+  [[web_state_->GetJSInjectionReceiver()
+      instanceOfClass:[CRWJSInjectionManager class]]
+      executeJavaScript:base::SysUTF8ToNSString(script_)
+      completionHandler:^(id result, NSError* error) {
+        DistillerPageIOS* distiller_page = weak_this.get();
+        if (distiller_page)
+          distiller_page->HandleJavaScriptResult(result);
+      }];
 }
 
 void DistillerPageIOS::HandleJavaScriptResult(id result) {
+  web_state_dispatcher_->ReturnWebState(web_state_);
+  web_state_ = nullptr;
   std::unique_ptr<base::Value> resultValue = base::Value::CreateNullValue();
   if (result) {
     resultValue = ValueResultFromScriptResult(result);

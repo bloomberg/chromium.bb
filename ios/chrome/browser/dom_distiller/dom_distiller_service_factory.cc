@@ -20,17 +20,20 @@
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/leveldb_proto/proto_database_impl.h"
+#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/browser_state/browser_state_otr_helper.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/dom_distiller/favicon_web_state_dispatcher_impl.h"
+#include "ios/chrome/browser/favicon/favicon_service_factory.h"
+#include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_thread.h"
 
 namespace {
 // A simple wrapper for DomDistillerService to expose it as a
 // KeyedService.
-class DomDistillerKeyedService
-    : public KeyedService,
-      public dom_distiller::DomDistillerService {
+class DomDistillerKeyedService : public KeyedService,
+                                 public dom_distiller::DomDistillerService {
  public:
   DomDistillerKeyedService(
       std::unique_ptr<dom_distiller::DomDistillerStoreInterface> store,
@@ -68,10 +71,12 @@ DomDistillerServiceFactory::DomDistillerServiceFactory()
     : BrowserStateKeyedServiceFactory(
           "DomDistillerService",
           BrowserStateDependencyManager::GetInstance()) {
+  DependsOn(ios::FaviconServiceFactory::GetInstance());
+  DependsOn(ios::HistoryServiceFactory::GetInstance());
+  DependsOn(ios::BookmarkModelFactory::GetInstance());
 }
 
-DomDistillerServiceFactory::~DomDistillerServiceFactory() {
-}
+DomDistillerServiceFactory::~DomDistillerServiceFactory() {}
 
 std::unique_ptr<KeyedService>
 DomDistillerServiceFactory::BuildServiceInstanceFor(
@@ -80,27 +85,33 @@ DomDistillerServiceFactory::BuildServiceInstanceFor(
       web::WebThread::GetBlockingPool()->GetSequencedTaskRunner(
           web::WebThread::GetBlockingPool()->GetSequenceToken());
 
-  std::unique_ptr<leveldb_proto::ProtoDatabaseImpl<ArticleEntry>> db(
-      new leveldb_proto::ProtoDatabaseImpl<ArticleEntry>(
-          background_task_runner));
+  std::unique_ptr<leveldb_proto::ProtoDatabaseImpl<ArticleEntry>> db =
+      base::MakeUnique<leveldb_proto::ProtoDatabaseImpl<ArticleEntry>>(
+          background_task_runner);
 
   base::FilePath database_dir(
       context->GetStatePath().Append(FILE_PATH_LITERAL("Articles")));
 
-  std::unique_ptr<DomDistillerStore> dom_distiller_store(
-      new DomDistillerStore(std::move(db), database_dir));
+  std::unique_ptr<DomDistillerStore> dom_distiller_store =
+      base::MakeUnique<DomDistillerStore>(std::move(db), database_dir);
 
-  std::unique_ptr<DistillerPageFactory> distiller_page_factory(
-      new DistillerPageFactoryIOS(context));
-  std::unique_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory(
-      new DistillerURLFetcherFactory(context->GetRequestContext()));
+  std::unique_ptr<FaviconWebStateDispatcher> web_state_dispatcher =
+      base::MakeUnique<FaviconWebStateDispatcherImpl>(context, -1);
+  std::unique_ptr<DistillerPageFactory> distiller_page_factory =
+      base::MakeUnique<DistillerPageFactoryIOS>(
+          std::move(web_state_dispatcher));
+
+  std::unique_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory =
+      base::MakeUnique<DistillerURLFetcherFactory>(
+          context->GetRequestContext());
 
   dom_distiller::proto::DomDistillerOptions options;
-  std::unique_ptr<DistillerFactory> distiller_factory(new DistillerFactoryImpl(
-      std::move(distiller_url_fetcher_factory), options));
-  std::unique_ptr<DistilledPagePrefs> distilled_page_prefs(
-      new DistilledPagePrefs(
-          ios::ChromeBrowserState::FromBrowserState(context)->GetPrefs()));
+  std::unique_ptr<DistillerFactory> distiller_factory =
+      base::MakeUnique<DistillerFactoryImpl>(
+          std::move(distiller_url_fetcher_factory), options);
+  std::unique_ptr<DistilledPagePrefs> distilled_page_prefs =
+      base::MakeUnique<DistilledPagePrefs>(
+          ios::ChromeBrowserState::FromBrowserState(context)->GetPrefs());
 
   return base::MakeUnique<DomDistillerKeyedService>(
       std::move(dom_distiller_store), std::move(distiller_factory),

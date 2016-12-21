@@ -9,18 +9,18 @@
 
 #include "components/dom_distiller/core/distiller_page.h"
 
-namespace web {
-class BrowserState;
-}
-
 namespace dom_distiller {
+
+class FaviconWebStateDispatcher;
 
 // DistillerPageFactoryIOS is an iOS-specific implementation of the
 // DistillerPageFactory interface allowing the creation of DistillerPage
 // instances.
 class DistillerPageFactoryIOS : public DistillerPageFactory {
  public:
-  DistillerPageFactoryIOS(web::BrowserState* browser_state);
+  explicit DistillerPageFactoryIOS(
+      std::unique_ptr<FaviconWebStateDispatcher> web_state_dispatcher);
+  ~DistillerPageFactoryIOS() override;
 
   // Implementation of DistillerPageFactory:
   std::unique_ptr<DistillerPage> CreateDistillerPage(
@@ -29,7 +29,9 @@ class DistillerPageFactoryIOS : public DistillerPageFactory {
       std::unique_ptr<SourcePageHandle> handle) const override;
 
  private:
-  web::BrowserState* browser_state_;
+  std::unique_ptr<FaviconWebStateDispatcher> web_state_dispatcher_;
+
+  DISALLOW_COPY_AND_ASSIGN(DistillerPageFactoryIOS);
 };
 
 }  // namespace dom_distiller
