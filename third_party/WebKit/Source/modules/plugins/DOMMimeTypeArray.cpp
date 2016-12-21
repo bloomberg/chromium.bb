@@ -28,11 +28,10 @@
 
 namespace blink {
 
-DOMMimeTypeArray::DOMMimeTypeArray(LocalFrame* frame)
-    : DOMWindowProperty(frame) {}
+DOMMimeTypeArray::DOMMimeTypeArray(LocalFrame* frame) : ContextClient(frame) {}
 
 DEFINE_TRACE(DOMMimeTypeArray) {
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 unsigned DOMMimeTypeArray::length() const {

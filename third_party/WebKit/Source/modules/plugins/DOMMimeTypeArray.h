@@ -22,7 +22,7 @@
 #define DOMMimeTypeArray_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "modules/plugins/DOMMimeType.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -34,7 +34,7 @@ class PluginData;
 
 class DOMMimeTypeArray final : public GarbageCollected<DOMMimeTypeArray>,
                                public ScriptWrappable,
-                               public DOMWindowProperty {
+                               public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DOMMimeTypeArray);
 

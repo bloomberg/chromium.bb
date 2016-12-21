@@ -21,7 +21,7 @@
 #define DOMPlugin_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "modules/plugins/DOMMimeType.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -33,7 +33,7 @@ class PluginData;
 
 class DOMPlugin final : public GarbageCollectedFinalized<DOMPlugin>,
                         public ScriptWrappable,
-                        public DOMWindowProperty {
+                        public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(DOMPlugin);
   DEFINE_WRAPPERTYPEINFO();
 

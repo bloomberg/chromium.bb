@@ -25,12 +25,12 @@
 namespace blink {
 
 DOMPlugin::DOMPlugin(PluginData* pluginData, LocalFrame* frame, unsigned index)
-    : DOMWindowProperty(frame), m_pluginData(pluginData), m_index(index) {}
+    : ContextClient(frame), m_pluginData(pluginData), m_index(index) {}
 
 DOMPlugin::~DOMPlugin() {}
 
 DEFINE_TRACE(DOMPlugin) {
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 String DOMPlugin::name() const {

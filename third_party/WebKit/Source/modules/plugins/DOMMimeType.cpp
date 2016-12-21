@@ -30,12 +30,12 @@ namespace blink {
 DOMMimeType::DOMMimeType(PassRefPtr<PluginData> pluginData,
                          LocalFrame* frame,
                          unsigned index)
-    : DOMWindowProperty(frame), m_pluginData(pluginData), m_index(index) {}
+    : ContextClient(frame), m_pluginData(pluginData), m_index(index) {}
 
 DOMMimeType::~DOMMimeType() {}
 
 DEFINE_TRACE(DOMMimeType) {
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 const String& DOMMimeType::type() const {

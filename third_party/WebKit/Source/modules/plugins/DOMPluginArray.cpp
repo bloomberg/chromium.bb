@@ -28,10 +28,10 @@
 
 namespace blink {
 
-DOMPluginArray::DOMPluginArray(LocalFrame* frame) : DOMWindowProperty(frame) {}
+DOMPluginArray::DOMPluginArray(LocalFrame* frame) : ContextClient(frame) {}
 
 DEFINE_TRACE(DOMPluginArray) {
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 unsigned DOMPluginArray::length() const {
