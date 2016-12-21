@@ -7,10 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <deque>
 #include <memory>
 #include <utility>
-#include <vector>
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -503,18 +501,7 @@ class ResourceLoaderTest : public testing::Test,
   bool HandleExternalProtocol(ResourceLoader* loader,
                               const GURL& url) override {
     EXPECT_EQ(loader, loader_.get());
-    ++handle_external_protocol_;
-
-    // Check that calls to HandleExternalProtocol always happen after the calls
-    // to the ResourceHandler's OnWillStart and OnRequestRedirected.
-    EXPECT_EQ(handle_external_protocol_,
-              raw_ptr_resource_handler_->on_will_start_called() +
-                  raw_ptr_resource_handler_->on_request_redirected_called());
-
-    bool return_value = handle_external_protocol_results_.front();
-    if (handle_external_protocol_results_.size() > 1)
-      handle_external_protocol_results_.pop_front();
-    return return_value;
+    return false;
   }
   void DidStartRequest(ResourceLoader* loader) override {
     EXPECT_EQ(loader, loader_.get());
@@ -561,12 +548,6 @@ class ResourceLoaderTest : public testing::Test,
   int did_received_redirect_ = 0;
   int did_receive_response_ = 0;
   int did_finish_loading_ = 0;
-  int handle_external_protocol_ = 0;
-
-  // Allows controlling the return values of sequential calls to
-  // HandleExternalProtocol. Values are removed by the measure they are used
-  // but the last one which is used for all following calls.
-  std::deque<bool> handle_external_protocol_results_{false};
 
   net::URLRequestJobFactoryImpl job_factory_;
   TestNetworkQualityEstimator network_quality_estimator_;
@@ -768,7 +749,6 @@ TEST_F(ResourceLoaderTest, SyncResourceHandler) {
   EXPECT_EQ(1, did_received_redirect_);
   EXPECT_EQ(1, did_receive_response_);
   EXPECT_EQ(1, did_finish_loading_);
-  EXPECT_EQ(2, handle_external_protocol_);
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_request_redirected_called());
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
   EXPECT_EQ(net::OK, raw_ptr_resource_handler_->final_status().error());
@@ -785,51 +765,10 @@ TEST_F(ResourceLoaderTest, SyncResourceHandlerAsyncReads) {
   EXPECT_EQ(0, did_received_redirect_);
   EXPECT_EQ(1, did_receive_response_);
   EXPECT_EQ(1, did_finish_loading_);
-  EXPECT_EQ(1, handle_external_protocol_);
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_request_redirected_called());
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
   EXPECT_EQ(net::OK, raw_ptr_resource_handler_->final_status().error());
   EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
-}
-
-// Test the case where ResourceHandler defers nothing and the request is handled
-// as an external protocol on start.
-TEST_F(ResourceLoaderTest, SyncExternalProtocolHandlingOnStart) {
-  handle_external_protocol_results_ = {true};
-
-  loader_->StartRequest();
-  raw_ptr_resource_handler_->WaitUntilResponseComplete();
-  EXPECT_EQ(0, did_start_request_);
-  EXPECT_EQ(0, did_received_redirect_);
-  EXPECT_EQ(0, did_receive_response_);
-  EXPECT_EQ(1, did_finish_loading_);
-  EXPECT_EQ(1, handle_external_protocol_);
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_start_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_request_redirected_called());
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
-  EXPECT_EQ(net::ERR_ABORTED,
-            raw_ptr_resource_handler_->final_status().error());
-  EXPECT_TRUE(raw_ptr_resource_handler_->body().empty());
-}
-
-// Test the case where ResourceHandler defers nothing and the request is handled
-// as an external protocol on redirect.
-TEST_F(ResourceLoaderTest, SyncExternalProtocolHandlingOnRedirect) {
-  handle_external_protocol_results_ = {false, true};
-
-  loader_->StartRequest();
-  raw_ptr_resource_handler_->WaitUntilResponseComplete();
-  EXPECT_EQ(1, did_start_request_);
-  EXPECT_EQ(1, did_received_redirect_);
-  EXPECT_EQ(0, did_receive_response_);
-  EXPECT_EQ(1, did_finish_loading_);
-  EXPECT_EQ(2, handle_external_protocol_);
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_start_called());
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_request_redirected_called());
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
-  EXPECT_EQ(net::ERR_ABORTED,
-            raw_ptr_resource_handler_->final_status().error());
-  EXPECT_TRUE(raw_ptr_resource_handler_->body().empty());
 }
 
 // Test the case the ResourceHandler defers everything.
@@ -852,13 +791,11 @@ TEST_F(ResourceLoaderTest, AsyncResourceHandler) {
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_start_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_request_redirected_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
-  EXPECT_EQ(0, handle_external_protocol_);
 
   // Resume and run until OnRequestRedirected.
   raw_ptr_resource_handler_->Resume();
   raw_ptr_resource_handler_->WaitUntilDeferred();
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_request_redirected_called());
-  EXPECT_EQ(1, handle_external_protocol_);
 
   // Spinning the message loop should not advance the state further.
   base::RunLoop().RunUntilIdle();
@@ -867,95 +804,11 @@ TEST_F(ResourceLoaderTest, AsyncResourceHandler) {
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_request_redirected_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_will_read_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
-  EXPECT_EQ(1, handle_external_protocol_);
 
   // Resume and run until OnResponseStarted.
   raw_ptr_resource_handler_->Resume();
   raw_ptr_resource_handler_->WaitUntilDeferred();
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_started_called());
-  EXPECT_EQ(2, handle_external_protocol_);
-
-  // Spinning the message loop should not advance the state further.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, did_receive_response_);
-  EXPECT_EQ(0, did_finish_loading_);
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_started_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_will_read_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
-
-  // Resume and run until OnReadCompleted.
-  raw_ptr_resource_handler_->Resume();
-  raw_ptr_resource_handler_->WaitUntilDeferred();
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_completed_called());
-
-  // Spinning the message loop should not advance the state further.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_read_called());
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_completed_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
-
-  // Resume and run until the final 0-byte read, signaling EOF.
-  raw_ptr_resource_handler_->Resume();
-  raw_ptr_resource_handler_->WaitUntilDeferred();
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof());
-
-  // Spinning the message loop should not advance the state further.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
-  EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
-
-  // Resume and run until OnResponseCompleted is called, which again defers the
-  // request.
-  raw_ptr_resource_handler_->Resume();
-  raw_ptr_resource_handler_->WaitUntilResponseComplete();
-  EXPECT_EQ(0, did_finish_loading_);
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
-  EXPECT_EQ(net::OK, raw_ptr_resource_handler_->final_status().error());
-  EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
-
-  // Resume and run until all pending tasks. Note that OnResponseCompleted was
-  // invoked in the previous section, so can't use RunUntilCompleted().
-  raw_ptr_resource_handler_->Resume();
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
-
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1, did_finish_loading_);
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
-  EXPECT_EQ(net::OK, raw_ptr_resource_handler_->final_status().error());
-  EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
-  EXPECT_EQ(2, handle_external_protocol_);
-}
-
-// Same as above, except reads complete asynchronously and there's no redirect.
-TEST_F(ResourceLoaderTest, AsyncResourceHandlerAsyncReads) {
-  SetUpResourceLoaderForUrl(test_async_url());
-
-  raw_ptr_resource_handler_->set_defer_on_will_start(true);
-  raw_ptr_resource_handler_->set_defer_on_response_started(true);
-  raw_ptr_resource_handler_->set_defer_on_read_completed(true);
-  raw_ptr_resource_handler_->set_defer_on_read_eof(true);
-  raw_ptr_resource_handler_->set_defer_on_response_completed(true);
-
-  // Start and run until OnWillStart.
-  loader_->StartRequest();
-  raw_ptr_resource_handler_->WaitUntilDeferred();
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_start_called());
-
-  // Spinning the message loop should not advance the state further.
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0, did_start_request_);
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_start_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_request_redirected_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
-  EXPECT_EQ(0, handle_external_protocol_);
-
-  // Resume and run until OnResponseStarted.
-  raw_ptr_resource_handler_->Resume();
-  raw_ptr_resource_handler_->WaitUntilDeferred();
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_started_called());
-  EXPECT_EQ(1, handle_external_protocol_);
 
   // Spinning the message loop should not advance the state further.
   base::RunLoop().RunUntilIdle();
@@ -1007,7 +860,85 @@ TEST_F(ResourceLoaderTest, AsyncResourceHandlerAsyncReads) {
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
   EXPECT_EQ(net::OK, raw_ptr_resource_handler_->final_status().error());
   EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
-  EXPECT_EQ(1, handle_external_protocol_);
+}
+
+// Same as above, except reads complete asynchronously and there's no redirect.
+TEST_F(ResourceLoaderTest, AsyncResourceHandlerAsyncReads) {
+  SetUpResourceLoaderForUrl(test_async_url());
+
+  raw_ptr_resource_handler_->set_defer_on_will_start(true);
+  raw_ptr_resource_handler_->set_defer_on_response_started(true);
+  raw_ptr_resource_handler_->set_defer_on_read_completed(true);
+  raw_ptr_resource_handler_->set_defer_on_read_eof(true);
+  raw_ptr_resource_handler_->set_defer_on_response_completed(true);
+
+  // Start and run until OnWillStart.
+  loader_->StartRequest();
+  raw_ptr_resource_handler_->WaitUntilDeferred();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_start_called());
+
+  // Spinning the message loop should not advance the state further.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, did_start_request_);
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_start_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_request_redirected_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
+
+  // Resume and run until OnResponseStarted.
+  raw_ptr_resource_handler_->Resume();
+  raw_ptr_resource_handler_->WaitUntilDeferred();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_started_called());
+
+  // Spinning the message loop should not advance the state further.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, did_receive_response_);
+  EXPECT_EQ(0, did_finish_loading_);
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_started_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_will_read_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
+
+  // Resume and run until OnReadCompleted.
+  raw_ptr_resource_handler_->Resume();
+  raw_ptr_resource_handler_->WaitUntilDeferred();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_completed_called());
+
+  // Spinning the message loop should not advance the state further.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_read_called());
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_completed_called());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
+
+  // Resume and run until the final 0-byte read, signalling EOF.
+  raw_ptr_resource_handler_->Resume();
+  raw_ptr_resource_handler_->WaitUntilDeferred();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof());
+
+  // Spinning the message loop should not advance the state further.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_read_eof());
+  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
+  EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
+
+  // Resume and run until OnResponseCompleted is called, which again defers the
+  // request.
+  raw_ptr_resource_handler_->Resume();
+  raw_ptr_resource_handler_->WaitUntilResponseComplete();
+  EXPECT_EQ(0, did_finish_loading_);
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
+  EXPECT_EQ(net::OK, raw_ptr_resource_handler_->final_status().error());
+  EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
+
+  // Resume and run until all pending tasks. Note that OnResponseCompleted was
+  // invoked in the previous section, so can't use RunUntilCompleted().
+  raw_ptr_resource_handler_->Resume();
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, did_finish_loading_);
+  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
+  EXPECT_EQ(net::OK, raw_ptr_resource_handler_->final_status().error());
+  EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
 }
 
 TEST_F(ResourceLoaderTest, SyncCancelOnWillStart) {
@@ -1018,7 +949,6 @@ TEST_F(ResourceLoaderTest, SyncCancelOnWillStart) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, did_start_request_);
   EXPECT_EQ(1, did_finish_loading_);
-  EXPECT_EQ(0, handle_external_protocol_);
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_start_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_request_redirected_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_started_called());
@@ -1038,7 +968,6 @@ TEST_F(ResourceLoaderTest, SyncCancelOnRequestRedirected) {
   EXPECT_EQ(1, did_received_redirect_);
   EXPECT_EQ(0, did_receive_response_);
   EXPECT_EQ(1, did_finish_loading_);
-  EXPECT_EQ(1, handle_external_protocol_);
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_request_redirected_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_will_read_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_completed_called());
@@ -1161,7 +1090,6 @@ TEST_F(ResourceLoaderTest, AsyncCancelOnWillStart) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0, did_start_request_);
   EXPECT_EQ(1, did_finish_loading_);
-  EXPECT_EQ(0, handle_external_protocol_);
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_start_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_request_redirected_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_started_called());
@@ -1181,7 +1109,6 @@ TEST_F(ResourceLoaderTest, AsyncCancelOnRequestRedirected) {
   EXPECT_EQ(1, did_received_redirect_);
   EXPECT_EQ(0, did_receive_response_);
   EXPECT_EQ(1, did_finish_loading_);
-  EXPECT_EQ(1, handle_external_protocol_);
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_request_redirected_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_will_read_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_completed_called());
@@ -1277,67 +1204,6 @@ TEST_F(ResourceLoaderTest, AsyncCancelOnAsyncReceivedEof) {
   EXPECT_EQ(test_data(), raw_ptr_resource_handler_->body());
 }
 
-// Tests the request being deferred and then being handled as an external
-// protocol, both on start.
-TEST_F(ResourceLoaderTest, AsyncExternalProtocolHandlingOnStart) {
-  handle_external_protocol_results_ = {true};
-  raw_ptr_resource_handler_->set_defer_on_will_start(true);
-
-  loader_->StartRequest();
-  raw_ptr_resource_handler_->WaitUntilDeferred();
-  EXPECT_EQ(0, did_finish_loading_);
-  EXPECT_EQ(0, handle_external_protocol_);
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_start_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
-
-  raw_ptr_resource_handler_->Resume();
-  raw_ptr_resource_handler_->WaitUntilResponseComplete();
-  EXPECT_EQ(0, did_start_request_);
-  EXPECT_EQ(1, did_finish_loading_);
-  EXPECT_EQ(1, handle_external_protocol_);
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_start_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_request_redirected_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_started_called());
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
-
-  EXPECT_EQ(net::ERR_ABORTED,
-            raw_ptr_resource_handler_->final_status().error());
-  EXPECT_EQ("", raw_ptr_resource_handler_->body());
-}
-
-// Tests the request being deferred and then being handled as an external
-// protocol, both on redirect.
-TEST_F(ResourceLoaderTest, AsyncExternalProtocolHandlingOnRedirect) {
-  handle_external_protocol_results_ = {false, true};
-  raw_ptr_resource_handler_->set_defer_on_request_redirected(true);
-
-  loader_->StartRequest();
-  raw_ptr_resource_handler_->WaitUntilDeferred();
-  EXPECT_EQ(1, did_start_request_);
-  EXPECT_EQ(1, did_received_redirect_);
-  EXPECT_EQ(0, did_finish_loading_);
-  EXPECT_EQ(1, handle_external_protocol_);
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_start_called());
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_request_redirected_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
-
-  raw_ptr_resource_handler_->Resume();
-  raw_ptr_resource_handler_->WaitUntilResponseComplete();
-  EXPECT_EQ(1, did_start_request_);
-  EXPECT_EQ(1, did_received_redirect_);
-  EXPECT_EQ(0, did_receive_response_);
-  EXPECT_EQ(1, did_finish_loading_);
-  EXPECT_EQ(2, handle_external_protocol_);
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_start_called());
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_request_redirected_called());
-  EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_started_called());
-  EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_completed_called());
-
-  EXPECT_EQ(net::ERR_ABORTED,
-            raw_ptr_resource_handler_->final_status().error());
-  EXPECT_EQ("", raw_ptr_resource_handler_->body());
-}
-
 TEST_F(ResourceLoaderTest, RequestFailsOnStart) {
   SetUpResourceLoaderForUrl(
       net::URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
@@ -1349,7 +1215,6 @@ TEST_F(ResourceLoaderTest, RequestFailsOnStart) {
   EXPECT_EQ(0, did_received_redirect_);
   EXPECT_EQ(0, did_receive_response_);
   EXPECT_EQ(1, did_finish_loading_);
-  EXPECT_EQ(1, handle_external_protocol_);
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_start_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_request_redirected_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_started_called());
@@ -1409,7 +1274,6 @@ TEST_F(ResourceLoaderTest, OutOfBandCancelDuringStart) {
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_request_redirected_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_started_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
-  EXPECT_EQ(1, handle_external_protocol_);
 
   raw_ptr_resource_handler_->CancelWithError(net::ERR_FAILED);
   raw_ptr_resource_handler_->WaitUntilResponseComplete();
@@ -1417,7 +1281,6 @@ TEST_F(ResourceLoaderTest, OutOfBandCancelDuringStart) {
   EXPECT_EQ(0, did_received_redirect_);
   EXPECT_EQ(0, did_receive_response_);
   EXPECT_EQ(1, did_finish_loading_);
-  EXPECT_EQ(1, handle_external_protocol_);
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_start_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_request_redirected_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_started_called());
@@ -1438,14 +1301,12 @@ TEST_F(ResourceLoaderTest, OutOfBandCancelDuringRead) {
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_started_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_read_completed_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_response_completed_called());
-  EXPECT_EQ(1, handle_external_protocol_);
 
   raw_ptr_resource_handler_->CancelWithError(net::ERR_FAILED);
   raw_ptr_resource_handler_->WaitUntilResponseComplete();
   EXPECT_EQ(0, did_received_redirect_);
   EXPECT_EQ(1, did_receive_response_);
   EXPECT_EQ(1, did_finish_loading_);
-  EXPECT_EQ(1, handle_external_protocol_);
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_will_start_called());
   EXPECT_EQ(0, raw_ptr_resource_handler_->on_request_redirected_called());
   EXPECT_EQ(1, raw_ptr_resource_handler_->on_response_started_called());
