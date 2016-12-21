@@ -71,9 +71,9 @@ const GURL ManifestParserTest::default_manifest_url(
 
 TEST_F(ManifestParserTest, CrashTest) {
   // Passing temporary variables should not crash.
-  ManifestParser parser("{\"start_url\": \"/\"}",
-                        GURL("http://example.com"),
-                        GURL("http://example.com"));
+  const base::StringPiece json = "{\"start_url\": \"/\"}";
+  GURL url("http://example.com");
+  ManifestParser parser(json, url, url);
   parser.Parse();
   std::vector<ManifestDebugInfo::Error> errors;
   parser.TakeErrors(&errors);

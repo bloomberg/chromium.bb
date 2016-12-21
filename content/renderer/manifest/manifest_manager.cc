@@ -150,7 +150,9 @@ void ManifestManager::OnManifestFetchComplete(
   }
 
   ManifestUmaUtil::FetchSucceeded();
-  ManifestParser parser(data, response.url(), document_url);
+  GURL response_url = response.url();
+  base::StringPiece data_piece(data);
+  ManifestParser parser(data_piece, response_url, document_url);
   parser.Parse();
 
   fetcher_.reset();
