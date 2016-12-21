@@ -316,6 +316,8 @@ void FrameView::setupRenderThrottling() {
   m_visibilityObserver = new ElementVisibilityObserver(
       targetElement, WTF::bind(
                          [](FrameView* frameView, bool isVisible) {
+                           if (!frameView)
+                             return;
                            frameView->updateRenderThrottlingStatus(
                                !isVisible, frameView->m_subtreeThrottled);
                            frameView->maybeRecordLoadReason();
