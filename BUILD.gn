@@ -111,6 +111,7 @@ group("chromium_builder_tests") {
 if (is_win) {
   group("chrome_official_builder_no_unittests") {
     deps = [
+      "//base/win:eventlog_provider",
       "//chrome/installer/gcapi",
       "//chrome/installer/mini_installer",
       "//cloud_print",
