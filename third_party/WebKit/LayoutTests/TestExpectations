@@ -2221,17 +2221,6 @@ crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-webgl-print
 # Added 2016-12-20
 crbug.com/675907 fast/input/placeholder-wrongly-placed-if-too-tall.html [ Pass Timeout ]
 
-# for Skia DEPS roll
-crbug.com/674509   compositing/overlap-blending/reflection-opacity-huge.html [ NeedsRebaseline ]
-crbug.com/674509   compositing/reflections/animation-inside-reflection.html [ NeedsRebaseline ]
-crbug.com/674509   compositing/reflections/deeply-nested-reflections.html [ NeedsRebaseline ]
-crbug.com/674509   compositing/reflections/load-video-in-reflection.html [ NeedsRebaseline ]
-crbug.com/674509   compositing/reflections/nested-reflection-anchor-point.html [ NeedsRebaseline ]
-crbug.com/674509   compositing/reflections/nested-reflection-animated.html [ NeedsRebaseline ]
-crbug.com/674509   compositing/reflections/nested-reflection-mask-change.html [ NeedsRebaseline ]
-crbug.com/674509   compositing/reflections/nested-reflection-opacity.html [ NeedsRebaseline ]
-crbug.com/674509   media/video-layer-crash.html [ NeedsRebaseline ]
-
 # ====== Random order flaky tests from here ======
 # These tests are flaky when run in random order, which is the default on Linux & Mac since since 2016-12-16.
 
