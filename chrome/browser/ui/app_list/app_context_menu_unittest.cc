@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "components/arc/test/fake_app_instance.h"
-#include "components/arc/test/fake_arc_bridge_service.h"
 #endif
 
 namespace {

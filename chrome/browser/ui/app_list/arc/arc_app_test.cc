@@ -19,8 +19,9 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_session_runner.h"
 #include "components/arc/test/fake_app_instance.h"
-#include "components/arc/test/fake_arc_bridge_service.h"
+#include "components/arc/test/fake_arc_session.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -78,8 +79,9 @@ void ArcAppTest::SetUp(Profile* profile) {
     ArcAppListPrefsFactory::GetInstance()->RecreateServiceInstanceForTesting(
         profile_);
   }
-  arc::ArcServiceManager::SetArcBridgeServiceForTesting(
-      base::MakeUnique<arc::FakeArcBridgeService>());
+  arc::ArcServiceManager::SetArcSessionRunnerForTesting(
+      base::MakeUnique<arc::ArcSessionRunner>(
+          base::Bind(arc::FakeArcSession::Create)));
   arc_service_manager_ = base::MakeUnique<arc::ArcServiceManager>(nullptr);
   arc_session_manager_ = base::MakeUnique<arc::ArcSessionManager>(
       arc_service_manager_->arc_bridge_service());

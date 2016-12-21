@@ -7,16 +7,8 @@ import("//testing/test.gni")
 
 static_library("arc") {
   sources = [
-    "arc_bridge_host_impl.cc",
-    "arc_bridge_host_impl.h",
-    "arc_bridge_service_impl.cc",
-    "arc_bridge_service_impl.h",
-    "arc_features.cc",
-    "arc_features.h",
     "arc_service_manager.cc",
     "arc_service_manager.h",
-    "arc_session.cc",
-    "arc_session.h",
     "audio/arc_audio_bridge.cc",
     "audio/arc_audio_bridge.h",
     "bluetooth/arc_bluetooth_bridge.cc",
@@ -83,7 +75,6 @@ static_library("arc") {
     "//components/onc",
     "//components/prefs",
     "//components/signin/core/account_id",
-    "//components/user_manager",
     "//device/bluetooth",
     "//google_apis",
     "//mojo/edk/system",
@@ -101,19 +92,31 @@ static_library("arc") {
 }
 
 static_library("arc_base") {
+  # TODO(hidehiko): Revisit here and move back some files to "arc"
+  # on completion to move ArcSession task to ArcSessionManager.
   sources = [
+    "arc_bridge_host_impl.cc",
+    "arc_bridge_host_impl.h",
     "arc_bridge_service.cc",
     "arc_bridge_service.h",
+    "arc_features.cc",
+    "arc_features.h",
     "arc_service.cc",
     "arc_service.h",
+    "arc_session.cc",
+    "arc_session.h",
     "arc_session_observer.cc",
     "arc_session_observer.h",
+    "arc_session_runner.cc",
+    "arc_session_runner.h",
     "instance_holder.h",
   ]
 
   deps = [
     "//base",
     "//chromeos",
+    "//components/user_manager",
+    "//mojo/edk/system",
   ]
 
   public_deps = [
@@ -165,8 +168,6 @@ static_library("arc_test_support") {
   sources = [
     "test/fake_app_instance.cc",
     "test/fake_app_instance.h",
-    "test/fake_arc_bridge_service.cc",
-    "test/fake_arc_bridge_service.h",
     "test/fake_arc_session.cc",
     "test/fake_arc_session.h",
     "test/fake_bluetooth_instance.cc",
@@ -194,7 +195,7 @@ static_library("arc_test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "arc_bridge_service_unittest.cc",
+    "arc_session_runner_unittest.cc",
     "bluetooth/arc_bluetooth_bridge_unittest.cc",
     "bluetooth/bluetooth_struct_traits_unittest.cc",
     "bluetooth/bluetooth_type_converters_unittest.cc",

@@ -8,21 +8,19 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/sequenced_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/task_runner.h"
 #include "components/arc/arc_bridge_service.h"
-#include "components/arc/arc_bridge_service_impl.h"
+#include "components/arc/arc_session_runner.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
 
 namespace arc {
-
 namespace {
 
 // Weak pointer.  This class is owned by arc::ArcServiceLauncher.
 ArcServiceManager* g_arc_service_manager = nullptr;
 
 // This pointer is owned by ArcServiceManager.
-ArcBridgeService* g_arc_bridge_service_for_testing = nullptr;
+ArcSessionRunner* g_arc_session_runner_for_testing = nullptr;
 
 }  // namespace
 
@@ -58,11 +56,12 @@ ArcServiceManager::ArcServiceManager(
   DCHECK(!g_arc_service_manager);
   g_arc_service_manager = this;
 
-  if (g_arc_bridge_service_for_testing) {
-    arc_bridge_service_.reset(g_arc_bridge_service_for_testing);
-    g_arc_bridge_service_for_testing = nullptr;
+  if (g_arc_session_runner_for_testing) {
+    arc_bridge_service_.reset(g_arc_session_runner_for_testing);
+    g_arc_session_runner_for_testing = nullptr;
   } else {
-    arc_bridge_service_.reset(new ArcBridgeServiceImpl(blocking_task_runner));
+    arc_bridge_service_ =
+        base::MakeUnique<ArcSessionRunner>(blocking_task_runner);
   }
 }
 
@@ -70,9 +69,8 @@ ArcServiceManager::~ArcServiceManager() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(g_arc_service_manager == this);
   g_arc_service_manager = nullptr;
-  if (g_arc_bridge_service_for_testing) {
-    delete g_arc_bridge_service_for_testing;
-  }
+  if (g_arc_session_runner_for_testing)
+    delete g_arc_session_runner_for_testing;
 }
 
 // static
@@ -117,11 +115,11 @@ void ArcServiceManager::Shutdown() {
 }
 
 // static
-void ArcServiceManager::SetArcBridgeServiceForTesting(
-    std::unique_ptr<ArcBridgeService> arc_bridge_service) {
-  if (g_arc_bridge_service_for_testing)
-    delete g_arc_bridge_service_for_testing;
-  g_arc_bridge_service_for_testing = arc_bridge_service.release();
+void ArcServiceManager::SetArcSessionRunnerForTesting(
+    std::unique_ptr<ArcSessionRunner> arc_session_runner) {
+  if (g_arc_session_runner_for_testing)
+    delete g_arc_session_runner_for_testing;
+  g_arc_session_runner_for_testing = arc_session_runner.release();
 }
 
 }  // namespace arc

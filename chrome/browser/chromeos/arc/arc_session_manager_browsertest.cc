@@ -33,8 +33,8 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
-#include "components/arc/arc_bridge_service_impl.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_session_runner.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
@@ -155,11 +155,9 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
         std::unique_ptr<chromeos::SessionManagerClient>(
             fake_session_manager_client));
 
-    // Mock out ARC bridge.
-    // Here inject FakeArcSession so blocking task runner is not needed.
-    auto service = base::MakeUnique<ArcBridgeServiceImpl>(nullptr);
-    service->SetArcSessionFactoryForTesting(base::Bind(FakeArcSession::Create));
-    ArcServiceManager::SetArcBridgeServiceForTesting(std::move(service));
+    // Mock out ARC instance.
+    ArcServiceManager::SetArcSessionRunnerForTesting(
+        base::MakeUnique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
   }
 
   void SetUpOnMainThread() override {

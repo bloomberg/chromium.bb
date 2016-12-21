@@ -31,7 +31,8 @@
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/test/fake_arc_bridge_service.h"
+#include "components/arc/arc_session_runner.h"
+#include "components/arc/test/fake_arc_session.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/sync/model/fake_sync_change_processor.h"
@@ -73,8 +74,8 @@ class ArcSessionManagerTestBase : public testing::Test {
     profile_ = profile_builder.Build();
     StartPreferenceSyncing();
 
-    ArcServiceManager::SetArcBridgeServiceForTesting(
-        base::MakeUnique<FakeArcBridgeService>());
+    ArcServiceManager::SetArcSessionRunnerForTesting(
+        base::MakeUnique<ArcSessionRunner>(base::Bind(FakeArcSession::Create)));
     arc_service_manager_ = base::MakeUnique<ArcServiceManager>(nullptr);
     arc_session_manager_ = base::MakeUnique<ArcSessionManager>(
         arc_service_manager_->arc_bridge_service());
@@ -99,9 +100,8 @@ class ArcSessionManagerTestBase : public testing::Test {
 
  protected:
   Profile* profile() { return profile_.get(); }
-  FakeArcBridgeService* bridge_service() {
-    return static_cast<FakeArcBridgeService*>(
-        arc_service_manager_->arc_bridge_service());
+  ArcBridgeService* bridge_service() {
+    return arc_service_manager_->arc_bridge_service();
   }
   ArcSessionManager* arc_session_manager() {
     return arc_session_manager_.get();

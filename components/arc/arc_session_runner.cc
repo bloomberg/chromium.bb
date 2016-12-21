@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/arc_bridge_service_impl.h"
+#include "components/arc/arc_session_runner.h"
 
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -18,19 +18,21 @@ constexpr base::TimeDelta kDefaultRestartDelay =
 
 }  // namespace
 
-ArcBridgeServiceImpl::ArcBridgeServiceImpl(
-    const scoped_refptr<base::TaskRunner>& blocking_task_runner)
+ArcSessionRunner::ArcSessionRunner(scoped_refptr<base::TaskRunner> task_runner)
+    : ArcSessionRunner(base::Bind(&ArcSession::Create, this, task_runner)) {}
+
+ArcSessionRunner::ArcSessionRunner(const ArcSessionFactory& factory)
     : restart_delay_(kDefaultRestartDelay),
-      factory_(base::Bind(ArcSession::Create, this, blocking_task_runner)),
+      factory_(factory),
       weak_ptr_factory_(this) {}
 
-ArcBridgeServiceImpl::~ArcBridgeServiceImpl() {
+ArcSessionRunner::~ArcSessionRunner() {
   DCHECK(CalledOnValidThread());
   if (arc_session_)
     arc_session_->RemoveObserver(this);
 }
 
-void ArcBridgeServiceImpl::RequestStart() {
+void ArcSessionRunner::RequestStart() {
   DCHECK(CalledOnValidThread());
 
   // Consecutive RequestStart() call. Do nothing.
@@ -56,7 +58,7 @@ void ArcBridgeServiceImpl::RequestStart() {
   }
 }
 
-void ArcBridgeServiceImpl::RequestStop() {
+void ArcSessionRunner::RequestStop() {
   DCHECK(CalledOnValidThread());
 
   // Consecutive RequestStop() call. Do nothing.
@@ -87,7 +89,7 @@ void ArcBridgeServiceImpl::RequestStop() {
   }
 }
 
-void ArcBridgeServiceImpl::OnShutdown() {
+void ArcSessionRunner::OnShutdown() {
   DCHECK(CalledOnValidThread());
 
   VLOG(1) << "OnShutdown";
@@ -103,16 +105,7 @@ void ArcBridgeServiceImpl::OnShutdown() {
   DCHECK(!arc_session_);
 }
 
-void ArcBridgeServiceImpl::SetArcSessionFactoryForTesting(
-    const ArcSessionFactory& factory) {
-  DCHECK(!factory.is_null());
-  DCHECK_EQ(state(), State::STOPPED);
-  DCHECK(!arc_session_);
-  DCHECK(!restart_timer_.IsRunning());
-  factory_ = factory;
-}
-
-void ArcBridgeServiceImpl::SetRestartDelayForTesting(
+void ArcSessionRunner::SetRestartDelayForTesting(
     const base::TimeDelta& restart_delay) {
   DCHECK_EQ(state(), State::STOPPED);
   DCHECK(!arc_session_);
@@ -120,7 +113,7 @@ void ArcBridgeServiceImpl::SetRestartDelayForTesting(
   restart_delay_ = restart_delay;
 }
 
-void ArcBridgeServiceImpl::StartArcSession() {
+void ArcSessionRunner::StartArcSession() {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(state(), State::STOPPED);
   DCHECK(!arc_session_);
@@ -134,7 +127,7 @@ void ArcBridgeServiceImpl::StartArcSession() {
   arc_session_->Start();
 }
 
-void ArcBridgeServiceImpl::OnSessionReady() {
+void ArcSessionRunner::OnSessionReady() {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(state(), State::STARTING);
   DCHECK(arc_session_);
@@ -144,7 +137,7 @@ void ArcBridgeServiceImpl::OnSessionReady() {
   SetState(State::RUNNING);
 }
 
-void ArcBridgeServiceImpl::OnSessionStopped(StopReason stop_reason) {
+void ArcSessionRunner::OnSessionStopped(StopReason stop_reason) {
   DCHECK(CalledOnValidThread());
   DCHECK_NE(state(), State::STOPPED);
   DCHECK(arc_session_);
@@ -171,11 +164,10 @@ void ArcBridgeServiceImpl::OnSessionStopped(StopReason stop_reason) {
     // There was a previous invocation and it crashed for some reason. Try
     // starting ARC instance later again.
     // Note that even |restart_delay_| is 0 (for testing), it needs to
-    // PostTask, because observer callback may call RequestStart()/Stop(),
-    // which can change restarting.
+    // PostTask, because observer callback may call RequestStart()/Stop().
     VLOG(0) << "ARC restarting";
     restart_timer_.Start(FROM_HERE, restart_delay_,
-                         base::Bind(&ArcBridgeServiceImpl::StartArcSession,
+                         base::Bind(&ArcSessionRunner::StartArcSession,
                                     weak_ptr_factory_.GetWeakPtr()));
   }
 

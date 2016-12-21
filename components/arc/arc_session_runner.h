@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_ARC_BRIDGE_SERVICE_IMPL_H_
-#define COMPONENTS_ARC_ARC_BRIDGE_SERVICE_IMPL_H_
+#ifndef COMPONENTS_ARC_ARC_SESSION_RUNNER_H_
+#define COMPONENTS_ARC_ARC_SESSION_RUNNER_H_
 
 #include <memory>
 
@@ -25,26 +25,26 @@ namespace arc {
 
 class ArcSession;
 
-// Real IPC based ArcBridgeService that is used in production.
-class ArcBridgeServiceImpl : public ArcBridgeService,
-                             public ArcSessionObserver {
+// Accept requests to start/stop ARC instance. Also supports automatic
+// restarting on unexpected ARC instance crash.
+// TODO(hidehiko): Get rid of ArcBridgeService inheritance.
+class ArcSessionRunner : public ArcBridgeService, public ArcSessionObserver {
  public:
   // This is the factory interface to inject ArcSession instance
   // for testing purpose.
   using ArcSessionFactory = base::Callback<std::unique_ptr<ArcSession>()>;
 
-  explicit ArcBridgeServiceImpl(
-      const scoped_refptr<base::TaskRunner>& blocking_task_runner);
-  ~ArcBridgeServiceImpl() override;
+  explicit ArcSessionRunner(scoped_refptr<base::TaskRunner> task_runner);
+
+  // For testing.
+  // TODO(hidehiko): Migrate this and above constructors.
+  explicit ArcSessionRunner(const ArcSessionFactory& factory);
+  ~ArcSessionRunner() override;
 
   // ArcBridgeService overrides:
   void RequestStart() override;
   void RequestStop() override;
   void OnShutdown() override;
-
-  // Inject a factory to create ArcSession instance for testing purpose.
-  // |factory| must not be null.
-  void SetArcSessionFactoryForTesting(const ArcSessionFactory& factory);
 
   // Returns the current ArcSession instance for testing purpose.
   ArcSession* GetArcSessionForTesting() { return arc_session_.get(); }
@@ -57,9 +57,6 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
  private:
   // Starts to run an ARC instance.
   void StartArcSession();
-
-  // Stops the running instance.
-  void StopInstance();
 
   // ArcSessionObserver:
   void OnSessionReady() override;
@@ -81,11 +78,11 @@ class ArcBridgeServiceImpl : public ArcBridgeService,
   std::unique_ptr<ArcSession> arc_session_;
 
   // WeakPtrFactory to use callbacks.
-  base::WeakPtrFactory<ArcBridgeServiceImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcSessionRunner> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcBridgeServiceImpl);
+  DISALLOW_COPY_AND_ASSIGN(ArcSessionRunner);
 };
 
 }  // namespace arc
 
-#endif  // COMPONENTS_ARC_ARC_BRIDGE_SERVICE_IMPL_H_
+#endif  // COMPONENTS_ARC_ARC_SESSION_RUNNER_H_

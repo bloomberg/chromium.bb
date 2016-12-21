@@ -210,8 +210,8 @@
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
-#include "components/arc/arc_bridge_service_impl.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/arc_session_runner.h"
 #include "components/arc/test/fake_arc_session.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
@@ -4068,11 +4068,9 @@ class ArcPolicyTest : public PolicyTest {
         std::unique_ptr<chromeos::SessionManagerClient>(
             fake_session_manager_client_));
 
-    // Inject FakeArcSession here so blocking task runner is not needed.
-    auto service = base::MakeUnique<arc::ArcBridgeServiceImpl>(nullptr);
-    service->SetArcSessionFactoryForTesting(
-        base::Bind(arc::FakeArcSession::Create));
-    arc::ArcServiceManager::SetArcBridgeServiceForTesting(std::move(service));
+    arc::ArcServiceManager::SetArcSessionRunnerForTesting(
+        base::MakeUnique<arc::ArcSessionRunner>(
+            base::Bind(arc::FakeArcSession::Create)));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

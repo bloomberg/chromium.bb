@@ -37,7 +37,6 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/test/fake_app_instance.h"
-#include "components/arc/test/fake_arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"

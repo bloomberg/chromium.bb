@@ -136,6 +136,8 @@ class ArcBridgeService {
   bool stopped() const { return state() == State::STOPPED; }
 
  protected:
+  // TODO(hidehiko): Move ArcSessionRunner related part into ArcSessionRunner
+  // when we get rid of inheritance.
   // The possible states of the bridge.  In the normal flow, the state changes
   // in the following sequence:
   //

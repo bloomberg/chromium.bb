@@ -23,7 +23,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/test/fake_app_instance.h"
-#include "components/arc/test/fake_arc_bridge_service.h"
 
 namespace arc {
 
