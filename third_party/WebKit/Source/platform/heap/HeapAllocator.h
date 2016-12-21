@@ -479,6 +479,17 @@ struct VectorTraits<blink::Member<T>> : VectorTraitsBase<blink::Member<T>> {
 };
 
 template <typename T>
+struct VectorTraits<blink::SameThreadCheckedMember<T>>
+    : VectorTraitsBase<blink::SameThreadCheckedMember<T>> {
+  STATIC_ONLY(VectorTraits);
+  static const bool needsDestruction = false;
+  static const bool canInitializeWithMemset = true;
+  static const bool canClearUnusedSlotsWithMemset = true;
+  static const bool canMoveWithMemcpy = true;
+  static const bool canSwapUsingCopyOrMove = false;
+};
+
+template <typename T>
 struct VectorTraits<blink::TraceWrapperMember<T>>
     : VectorTraitsBase<blink::TraceWrapperMember<T>> {
   STATIC_ONLY(VectorTraits);
@@ -600,6 +611,46 @@ struct HashTraits<blink::Member<T>> : SimpleClassHashTraits<blink::Member<T>> {
   }
 
   static PeekOutType peek(const blink::Member<T>& value) { return value; }
+};
+
+template <typename T>
+struct HashTraits<blink::SameThreadCheckedMember<T>>
+    : SimpleClassHashTraits<blink::SameThreadCheckedMember<T>> {
+  STATIC_ONLY(HashTraits);
+  // FIXME: The distinction between PeekInType and PassInType is there for
+  // the sake of the reference counting handles. When they are gone the two
+  // types can be merged into PassInType.
+  // FIXME: Implement proper const'ness for iterator types. Requires support
+  // in the marking Visitor.
+  using PeekInType = T*;
+  using PassInType = T*;
+  using IteratorGetType = blink::SameThreadCheckedMember<T>*;
+  using IteratorConstGetType = const blink::SameThreadCheckedMember<T>*;
+  using IteratorReferenceType = blink::SameThreadCheckedMember<T>&;
+  using IteratorConstReferenceType = const blink::SameThreadCheckedMember<T>&;
+  static IteratorReferenceType getToReferenceConversion(IteratorGetType x) {
+    return *x;
+  }
+  static IteratorConstReferenceType getToReferenceConstConversion(
+      IteratorConstGetType x) {
+    return *x;
+  }
+
+  using PeekOutType = T*;
+
+  template <typename U>
+  static void store(const U& value,
+                    blink::SameThreadCheckedMember<T>& storage) {
+    storage = value;
+  }
+
+  static PeekOutType peek(const blink::SameThreadCheckedMember<T>& value) {
+    return value;
+  }
+
+  static blink::SameThreadCheckedMember<T> emptyValue() {
+    return blink::SameThreadCheckedMember<T>(nullptr, nullptr);
+  }
 };
 
 template <typename T>

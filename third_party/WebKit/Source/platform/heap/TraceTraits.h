@@ -395,6 +395,14 @@ class TraceEagerlyTrait<Member<T>> {
 };
 
 template <typename T>
+class TraceEagerlyTrait<SameThreadCheckedMember<T>> {
+  STATIC_ONLY(TraceEagerlyTrait);
+
+ public:
+  static const bool value = TraceEagerlyTrait<T>::value;
+};
+
+template <typename T>
 class TraceEagerlyTrait<TraceWrapperMember<T>> {
   STATIC_ONLY(TraceEagerlyTrait);
 

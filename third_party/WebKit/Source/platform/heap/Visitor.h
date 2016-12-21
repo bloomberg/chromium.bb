@@ -51,6 +51,8 @@ class TraceTrait;
 class ThreadState;
 class Visitor;
 template <typename T>
+class SameThreadCheckedMember;
+template <typename T>
 class TraceWrapperMember;
 
 // The TraceMethodDelegate is used to convert a trace method for type T to a
@@ -160,6 +162,11 @@ class VisitorHelper {
 
   template <typename T>
   void trace(const TraceWrapperMember<T>& t) {
+    trace(*(static_cast<const Member<T>*>(&t)));
+  }
+
+  template <typename T>
+  void trace(const SameThreadCheckedMember<T>& t) {
     trace(*(static_cast<const Member<T>*>(&t)));
   }
 
