@@ -224,12 +224,13 @@ void DoElevatedInstallRecoveryComponent(const base::FilePath& path) {
   }
   base::Process process = base::Process::Open(pid);
 #endif
+  // This task joins a process, hence .WithSyncPrimitives().
   base::PostTaskWithTraits(
       FROM_HERE, base::TaskTraits()
                      .WithShutdownBehavior(
                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
                      .WithPriority(base::TaskPriority::BACKGROUND)
-                     .WithWait(),
+                     .WithSyncPrimitives(),
       base::Bind(&WaitForElevatedInstallToComplete, base::Passed(&process)));
 }
 
@@ -239,7 +240,7 @@ void ElevatedInstallRecoveryComponent(const base::FilePath& installer_path) {
                      .WithShutdownBehavior(
                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
                      .WithPriority(base::TaskPriority::BACKGROUND)
-                     .WithFileIO(),
+                     .MayBlock(),
       base::Bind(&DoElevatedInstallRecoveryComponent, installer_path));
 }
 #endif  // defined(OS_WIN)
@@ -371,12 +372,13 @@ bool RecoveryComponentInstaller::RunInstallCommand(
     return false;
 
   // Let worker pool thread wait for us so we don't block Chrome shutdown.
+  // This task joins a process, hence .WithSyncPrimitives().
   base::PostTaskWithTraits(
       FROM_HERE, base::TaskTraits()
                      .WithShutdownBehavior(
                          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
                      .WithPriority(base::TaskPriority::BACKGROUND)
-                     .WithWait(),
+                     .WithSyncPrimitives(),
       base::Bind(&WaitForInstallToComplete, base::Passed(&process),
                  installer_folder, prefs_));
 
