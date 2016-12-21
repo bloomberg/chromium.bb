@@ -50,7 +50,7 @@ void PaintLayerPainter::paint(GraphicsContext& context,
                                       LayoutRect(enclosingIntRect(damageRect)),
                                       globalPaintFlags, LayoutSize());
   if (shouldPaintLayerInSoftwareMode(globalPaintFlags, paintFlags))
-    paintLayer(context, paintingInfo, paintFlags);
+    paint(context, paintingInfo, paintFlags);
 }
 
 static ShouldRespectOverflowClipType shouldRespectOverflowClip(
@@ -86,10 +86,9 @@ bool PaintLayerPainter::paintedOutputInvisible(
   return false;
 }
 
-PaintResult PaintLayerPainter::paintLayer(
-    GraphicsContext& context,
-    const PaintLayerPaintingInfo& paintingInfo,
-    PaintLayerFlags paintFlags) {
+PaintResult PaintLayerPainter::paint(GraphicsContext& context,
+                                     const PaintLayerPaintingInfo& paintingInfo,
+                                     PaintLayerFlags paintFlags) {
   // https://code.google.com/p/chromium/issues/detail?id=343772
   DisableCompositingQueryAsserts disabler;
 
@@ -99,7 +98,7 @@ PaintResult PaintLayerPainter::paintLayer(
       // FIXME: ok, but what about GlobalPaintFlattenCompositingLayers? That's
       // for printing and drag-image.
       // FIXME: why isn't the code here global, as opposed to being set on each
-      // paintLayer() call?
+      // paint() call?
       paintFlags |= PaintLayerUncachedClipRects;
     }
   }
@@ -807,7 +806,7 @@ PaintResult PaintLayerPainter::paintChildren(
             parentLayer->layoutBox()->scrolledContentOffset();
     }
 
-    if (childPainter.paintLayer(context, childPaintingInfo, paintFlags) ==
+    if (childPainter.paint(context, childPaintingInfo, paintFlags) ==
         MayBeClippedByPaintDirtyRect)
       result = MayBeClippedByPaintDirtyRect;
   }
@@ -1111,7 +1110,7 @@ void PaintLayerPainter::paintOverlayScrollbars(
   PaintLayerPaintingInfo paintingInfo(&m_paintLayer,
                                       LayoutRect(enclosingIntRect(damageRect)),
                                       paintFlags, LayoutSize());
-  paintLayer(context, paintingInfo, PaintLayerPaintingOverlayScrollbars);
+  paint(context, paintingInfo, PaintLayerPaintingOverlayScrollbars);
 
   m_paintLayer.setContainsDirtyOverlayScrollbars(false);
 }

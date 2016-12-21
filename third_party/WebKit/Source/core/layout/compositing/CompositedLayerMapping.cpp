@@ -2846,7 +2846,7 @@ void CompositedLayerMapping::doPaintTask(
         graphicsLayer, DisplayItem::kClipLayerOverflowControls, dirtyRect);
 
     PaintLayerPainter(*paintInfo.paintLayer)
-        .paintLayer(context, paintingInfo, paintLayerFlags);
+        .paint(context, paintingInfo, paintLayerFlags);
     context.getPaintController().endItem<EndClipDisplayItem>(
         graphicsLayer, DisplayItem::clipTypeToEndClipType(
                            DisplayItem::kClipLayerOverflowControls));

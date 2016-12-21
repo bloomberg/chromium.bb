@@ -215,8 +215,8 @@ class DraggedNodeImageBuilder {
       PaintLayerFlags flags = PaintLayerHaveTransparency |
                               PaintLayerAppliedTransform |
                               PaintLayerUncachedClipRects;
-      PaintLayerPainter(*layer).paintLayer(dragImageBuilder.context(),
-                                           paintingInfo, flags);
+      PaintLayerPainter(*layer).paint(dragImageBuilder.context(), paintingInfo,
+                                      flags);
     }
     return dragImageBuilder.createImage(
         1.0f, LayoutObject::shouldRespectImageOrientation(draggedLayoutObject));

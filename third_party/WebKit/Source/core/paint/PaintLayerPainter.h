@@ -37,11 +37,11 @@ class CORE_EXPORT PaintLayerPainter {
              const LayoutRect& damageRect,
              const GlobalPaintFlags = GlobalPaintNormalPhase,
              PaintLayerFlags = 0);
-  // paintLayer() assumes that the caller will clip to the bounds of the
-  // painting dirty if necessary.
-  PaintResult paintLayer(GraphicsContext&,
-                         const PaintLayerPaintingInfo&,
-                         PaintLayerFlags);
+  // paint() assumes that the caller will clip to the bounds of the painting
+  // dirty if necessary.
+  PaintResult paint(GraphicsContext&,
+                    const PaintLayerPaintingInfo&,
+                    PaintLayerFlags);
   // paintLayerContents() assumes that the caller will clip to the bounds of the
   // painting dirty rect if necessary.
   PaintResult paintLayerContents(GraphicsContext&,
