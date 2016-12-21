@@ -4,6 +4,9 @@
 
 package org.chromium.components.minidump_uploader;
 
+import static org.junit.Assert.assertArrayEquals;
+
+import android.os.ParcelFileDescriptor;
 import android.test.MoreAsserts;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.SmallTest;
@@ -12,6 +15,7 @@ import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
@@ -337,6 +341,192 @@ public class CrashFileManagerTest extends CrashTestCase {
         CrashFileManager.markUploadSkipped(mDmpFile1);
         assertFalse(mDmpFile1.exists());
         assertTrue(new File(mCrashDir, "123_abc.skipped0").exists());
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testFilterMinidumpFilesOnUid() {
+        assertArrayEquals(new File[] {new File("1_md.dmp")},
+                CrashFileManager.filterMinidumpFilesOnUid(
+                        new File[] {new File("1_md.dmp")}, 1).toArray());
+        assertArrayEquals(new File[0],
+                CrashFileManager.filterMinidumpFilesOnUid(
+                        new File[] {new File("1_md.dmp")}, 12).toArray());
+        assertArrayEquals(new File[0],
+                CrashFileManager.filterMinidumpFilesOnUid(
+                        new File[] {new File("12_md.dmp")}, 1).toArray());
+        assertArrayEquals(new File[] {new File("1000_md.dmp")},
+                CrashFileManager.filterMinidumpFilesOnUid(
+                        new File[] {new File("1000_md.dmp")}, 1000).toArray());
+        assertArrayEquals(new File[0], CrashFileManager.filterMinidumpFilesOnUid(
+                new File[] {new File("-1000_md.dmp")}, -10).toArray());
+        assertArrayEquals(new File[] {new File("-10_md.dmp")},
+                CrashFileManager.filterMinidumpFilesOnUid(
+                        new File[] {new File("-10_md.dmp")}, -10).toArray());
+        assertArrayEquals(new File[] {
+                new File("12_md.dmp"),
+                new File("12_.dmp"),
+                new File("12_minidump.dmp"),
+                new File("12_1_md.dmp")},
+                CrashFileManager.filterMinidumpFilesOnUid(new File[] {
+                        new File("12_md.dmp"),
+                        new File("100_.dmp"),
+                        new File("4000_.dmp"),
+                        new File("12_.dmp"),
+                        new File("12_minidump.dmp"),
+                        new File("23_.dmp"),
+                        new File("12-.dmp"),
+                        new File("12*.dmp"),
+                        new File("12<.dmp"),
+                        new File("12=.dmp"),
+                        new File("12+.dmp"),
+                        new File("12_1_md.dmp"),
+                        new File("1_12_md.dmp")},
+                        12 /* uid */).toArray());
+    }
+
+    /**
+     * Ensure we handle minidump copying correctly when we have reached our limit on the number of
+     * stored minidumps for a certain uid.
+     */
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testMinidumpStorageRestrictionsPerUid() throws IOException {
+        testMinidumpStorageRestrictions(true /* perUid */);
+    }
+
+    /*
+     * Ensure we handle minidump copying correctly when we have reached our limit on the number of
+     * stored minidumps.
+     */
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testMinidumpStorageRestrictionsGlobal() throws IOException {
+        testMinidumpStorageRestrictions(false /* perUid */);
+    }
+
+    private static void deleteFilesInDirIfExists(File directory) {
+        if (directory.isDirectory()) {
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (!file.delete()) {
+                        throw new RuntimeException(
+                                "Couldn't delete file " + file.getAbsolutePath());
+                    }
+                }
+            }
+        }
+    }
+
+    private void testMinidumpStorageRestrictions(boolean perUid) throws IOException {
+        CrashFileManager fileManager =
+                new CrashFileManager(getInstrumentation().getTargetContext().getCacheDir());
+        // Delete existing minidumps to ensure they don't interfere with this test.
+        deleteFilesInDirIfExists(fileManager.getCrashDirectory());
+        assertEquals(0, fileManager.getAllMinidumpFiles(10000 /* maxTries */).length);
+        File tmpCopyDir = new File(getInstrumentation().getTargetContext().getCacheDir(), "tmpDir");
+
+        // Note that these minidump files are set up directly in the cache dir - not in the crash
+        // dir. This is to ensure the CrashFileManager doesn't see these minidumps without us first
+        // copying them.
+        File minidumpToCopy =
+                new File(getInstrumentation().getTargetContext().getCacheDir(), "toCopy.dmp");
+        setUpMinidumpFile(minidumpToCopy, "BOUNDARY");
+        // Ensure we didn't add any new minidumps to the crash directory.
+        assertEquals(0, fileManager.getAllMinidumpFiles(10000 /* maxTries */).length);
+
+        int minidumpLimit = perUid ? CrashFileManager.MAX_CRASH_REPORTS_TO_UPLOAD_PER_UID
+                                   : CrashFileManager.MAX_CRASH_REPORTS_TO_UPLOAD;
+        for (int n = 0; n < minidumpLimit; n++) {
+            ParcelFileDescriptor minidumpFd =
+                    ParcelFileDescriptor.open(minidumpToCopy, ParcelFileDescriptor.MODE_READ_ONLY);
+            try {
+                // If we are testing the app-throttling we want to use the same uid for each
+                // minidump, otherwise use a different one for each minidump.
+                int currentUid = perUid ? 1 : n;
+                assertNotNull(fileManager.copyMinidumpFromFD(
+                        minidumpFd.getFileDescriptor(), tmpCopyDir, currentUid));
+            } finally {
+                minidumpFd.close();
+            }
+        }
+
+        // Update time-stamps of copied files.
+        long initialTimestamp = new Date().getTime();
+        File[] minidumps = fileManager.getAllMinidumpFiles(10000 /* maxTries */);
+        for (int n = 0; n < minidumps.length; n++) {
+            if (!minidumps[n].setLastModified(initialTimestamp + n * 1000)) {
+                throw new RuntimeException(
+                        "Couldn't modify timestamp of " + minidumps[n].getAbsolutePath());
+            }
+        }
+
+        File[] allMinidumps = fileManager.getAllMinidumpFiles(10000 /* maxTries */);
+        assertEquals(minidumpLimit, allMinidumps.length);
+
+        File oldestMinidump = getOldestFile(allMinidumps);
+
+        // Now the crash directory is full - so copying a new minidump should cause the oldest
+        // existing minidump to be deleted.
+        ParcelFileDescriptor minidumpFd =
+                ParcelFileDescriptor.open(minidumpToCopy, ParcelFileDescriptor.MODE_READ_ONLY);
+        fileManager.copyMinidumpFromFD(minidumpFd.getFileDescriptor(), tmpCopyDir, 1 /* uid */);
+        assertEquals(minidumpLimit, fileManager.getAllMinidumpFiles(10000 /* maxTries */).length);
+        // Ensure we removed the oldest file.
+        assertFalse(oldestMinidump.exists());
+    }
+
+    /**
+     * Returns the oldest file in the set of files {@param files}.
+     */
+    private static File getOldestFile(File[] files) {
+        File oldestFile = null;
+        for (File file : files) {
+            if (oldestFile == null || oldestFile.lastModified() > file.lastModified()) {
+                oldestFile = file;
+            }
+        }
+        return oldestFile;
+    }
+
+    /**
+     * Ensure that we won't copy minidumps that are too large.
+     */
+    @MediumTest
+    @Feature({"Android-AppBase"})
+    public void testCantCopyLargeFile() throws IOException {
+        CrashFileManager fileManager =
+                new CrashFileManager(getInstrumentation().getTargetContext().getCacheDir());
+        // Delete existing minidumps to ensure they don't interfere with this test.
+        deleteFilesInDirIfExists(fileManager.getCrashDirectory());
+        assertEquals(0, fileManager.getAllMinidumpFiles(10000 /* maxTries */).length);
+        File tmpCopyDir = new File(getInstrumentation().getTargetContext().getCacheDir(), "tmpDir");
+
+        // Note that these minidump files are set up directly in the cache dir - not in the crash
+        // dir. This is to ensure the CrashFileManager doesn't see these minidumps without us first
+        // copying them.
+        File minidumpToCopy =
+                new File(getInstrumentation().getTargetContext().getCacheDir(), "toCopy.dmp");
+        setUpMinidumpFile(minidumpToCopy, "BOUNDARY");
+        // Write ~1MB data into the minidump file.
+        final int kilo = 1024;
+        byte[] kiloByteArray = new byte[kilo];
+        FileOutputStream minidumpOutputStream =
+                new FileOutputStream(minidumpToCopy, true /* append */);
+        try {
+            for (int n = 0; n < kilo; n++) {
+                minidumpOutputStream.write(kiloByteArray);
+            }
+        } finally {
+            minidumpOutputStream.close();
+        }
+        ParcelFileDescriptor minidumpFd =
+                ParcelFileDescriptor.open(minidumpToCopy, ParcelFileDescriptor.MODE_READ_ONLY);
+        assertNull(fileManager.copyMinidumpFromFD(
+                minidumpFd.getFileDescriptor(), tmpCopyDir, 0 /* uid */));
+        assertEquals(0, tmpCopyDir.listFiles().length);
+        assertEquals(0, fileManager.getAllMinidumpFiles(10000 /* maxTries */).length);
     }
 
     @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")

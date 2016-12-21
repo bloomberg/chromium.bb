@@ -610,10 +610,12 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/policy/AwPolicyProvider.java",
   ]
   deps = [
+    ":android_webview_crash_services_java",
     ":resources",
     ":strings_grd",
     "//base:base_java",
     "//components/autofill/android:autofill_java",
+    "//components/minidump_uploader:minidump_uploader_java",
     "//components/navigation_interception/android:navigation_interception_java",
     "//components/policy/android:policy_java",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
@@ -692,6 +694,31 @@ android_library("android_webview_platform_services_java") {
 
   deps = [
     "//base:base_java",
+  ]
+}
+
+# Keep crash services separate from other WebView code to keep their deps clean
+# (and make them easy to move).
+android_library("android_webview_crash_services_java") {
+  java_files = [
+    "java/src/org/chromium/android_webview/crash/CrashReceiverService.java",
+    "java/src/org/chromium/android_webview/crash/MinidumpUploaderImpl.java",
+    "java/src/org/chromium/android_webview/crash/MinidumpUploader.java",
+    "java/src/org/chromium/android_webview/crash/MinidumpUploadJobService.java",
+    "java/src/org/chromium/android_webview/crash/SynchronizedWebViewCommandLine.java",
+  ]
+  deps = [
+    "//base:base_java",
+    "//components/minidump_uploader:minidump_uploader_java",
+  ]
+
+  srcjar_deps = [ ":crash_receiver_aidl" ]
+}
+
+android_aidl("crash_receiver_aidl") {
+  import_include = "java/src"
+  sources = [
+    "java/src/org/chromium/android_webview/crash/ICrashReceiverService.aidl",
   ]
 }
 

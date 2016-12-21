@@ -10,6 +10,9 @@ import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,6 +24,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 
@@ -62,6 +66,9 @@ public class CrashFileManager {
 
     private static final String UPLOAD_ATTEMPT_DELIMITER = ".try";
 
+    // A delimiter between uid and the rest of a minidump filename. Only used for WebView minidumps.
+    private static final String UID_DELIMITER = "_";
+
     @VisibleForTesting
     protected static final String TMP_SUFFIX = ".tmp";
 
@@ -77,6 +84,18 @@ public class CrashFileManager {
     // age will be removed. The constant is chosen to be quite conservative, while still allowing
     // users to eventually reclaim filesystem storage space from obsolete crash reports.
     private static final int MAX_CRASH_REPORT_AGE_IN_DAYS = 30;
+
+    // The maximum number of non-uploaded crashes to copy to the crash reports directory. The
+    // difference between this value and MAX_CRASH_REPORTS_TO_KEEP is that TO_KEEP is only checked
+    // when we clean out the crash directory - the TO_UPLOAD value is checked every time we try to
+    // copy a minidump - to ensure we don't store too many minidumps before they are cleaned out
+    // after being uploaded.
+    @VisibleForTesting
+    static final int MAX_CRASH_REPORTS_TO_UPLOAD = MAX_CRASH_REPORTS_TO_KEEP * 2;
+    // Same as above except this value is enforced per UID, so that one single app can't hog all
+    // storage/uploading resources.
+    @VisibleForTesting
+    static final int MAX_CRASH_REPORTS_TO_UPLOAD_PER_UID = MAX_CRASH_REPORTS_TO_KEEP;
 
     /**
      * Comparator used for sorting files by modification date.
@@ -253,12 +272,43 @@ public class CrashFileManager {
     }
 
     /**
+     * Create the crash directory for this file manager unless it exists already.
+     * @return true iff the crash directory exists when this method returns.
+     */
+    public boolean ensureCrashDirExists() {
+        File crashDir = getCrashDirectory();
+        if (crashDir.exists()) return true;
+        return crashDir.mkdir();
+    }
+
+    /**
      * Returns all minidump files that could still be uploaded, sorted by modification time stamp.
      * Forced uploads are not included. Only returns files that we have tried to upload less
      * than {@param maxTries} number of times.
      */
     public File[] getAllMinidumpFiles(int maxTries) {
-        return getFilesBelowMaxTries(listCrashFiles(MINIDUMP_PATTERN), maxTries);
+        return getFilesBelowMaxTries(getAllMinidumpFilesIncludingFailed(), maxTries);
+    }
+
+    /**
+     * Returns all minidump files sorted by modification time stamp.
+     * Forced uploads are not included.
+     */
+    private File[] getAllMinidumpFilesIncludingFailed() {
+        return listCrashFiles(MINIDUMP_PATTERN);
+    }
+
+    /**
+     * Returns all minidump files with the uid {@param uid} from {@param minidumpFiles}.
+     */
+    public static List<File> filterMinidumpFilesOnUid(File[] minidumpFiles, int uid) {
+        List<File> uidMinidumps = new ArrayList<>();
+        for (File minidump : minidumpFiles) {
+            if (belongsToUid(minidump, uid)) {
+                uidMinidumps.add(minidump);
+            }
+        }
+        return uidMinidumps;
     }
 
     public void cleanOutAllNonFreshMinidumpFiles() {
@@ -339,7 +389,7 @@ public class CrashFileManager {
     }
 
     @VisibleForTesting
-    File[] getAllUploadedFiles() {
+    public File[] getAllUploadedFiles() {
         return listCrashFiles(UPLOADED_MINIDUMP_PATTERN);
     }
 
@@ -402,7 +452,135 @@ public class CrashFileManager {
         return new File(getCrashDirectory(), CRASH_DUMP_LOGFILE);
     }
 
-    private File[] getAllTempFiles() {
+    @VisibleForTesting
+    File[] getAllTempFiles() {
         return listCrashFiles(TMP_PATTERN);
+    }
+
+    /**
+     * Delete the oldest minidump if we have reached our threshold on the number of minidumps to
+     * store (either per-app, or globally).
+     * @param uid The uid of the app to check the minidump limit for.
+     */
+    private void enforceMinidumpStorageRestrictions(int uid) {
+        File[] allMinidumpFiles = getAllMinidumpFilesIncludingFailed();
+        List<File> minidumpFilesWithCurrentUid = filterMinidumpFilesOnUid(allMinidumpFiles, uid);
+
+        // If we have exceeded our cap per uid, delete the oldest minidump of the same uid
+        if (minidumpFilesWithCurrentUid.size() >= MAX_CRASH_REPORTS_TO_UPLOAD_PER_UID) {
+            // Minidumps are sorted from newest to oldest.
+            File oldestFile =
+                    minidumpFilesWithCurrentUid.get(minidumpFilesWithCurrentUid.size() - 1);
+            if (!oldestFile.delete()) {
+                // Note that we will still try to copy the new file if this deletion fails.
+                Log.w(TAG, "Couldn't delete old minidump " + oldestFile.getAbsolutePath());
+            }
+            return;
+        }
+
+        // If we have exceeded our minidump cap, delete the oldest minidump.
+        if (allMinidumpFiles.length >= MAX_CRASH_REPORTS_TO_UPLOAD) {
+            // Minidumps are sorted from newest to oldest.
+            File oldestFile = allMinidumpFiles[allMinidumpFiles.length - 1];
+            if (!oldestFile.delete()) {
+                // Note that we will still try to copy the new file if this deletion fails.
+                Log.w(TAG, "Couldn't delete old minidump " + oldestFile.getAbsolutePath());
+            }
+        }
+    }
+
+    /**
+     * Copy a minidump from the File Descriptor {@param fd}.
+     * Use {@param tmpDir} as an intermediate location to store temporary files.
+     * @return The new minidump file copied with the contents of the File Descriptor, or null if the
+     *         copying failed.
+     */
+    public File copyMinidumpFromFD(FileDescriptor fd, File tmpDir, int uid)
+            throws IOException {
+        File crashDirectory = getCrashDirectory();
+        if (!crashDirectory.isDirectory() && !crashDirectory.mkdir()) {
+            throw new RuntimeException("Couldn't create " + crashDirectory.getAbsolutePath());
+        }
+        if (!tmpDir.isDirectory() && !tmpDir.mkdir()) {
+            throw new RuntimeException("Couldn't create " + tmpDir.getAbsolutePath());
+        }
+        if (tmpDir.getCanonicalPath().equals(crashDirectory.getCanonicalPath())) {
+            throw new RuntimeException("The tmp-dir and the crash dir can't have the same paths.");
+        }
+
+        enforceMinidumpStorageRestrictions(uid);
+
+        // Make sure the temp file doesn't overwrite an existing file.
+        File tmpFile = createMinidumpTmpFile(tmpDir);
+        FileInputStream in = null;
+        FileOutputStream out = null;
+        // TODO(gsennton): ensure that the copied file is indeed a minidump.
+        try {
+            in = new FileInputStream(fd);
+            out = new FileOutputStream(tmpFile);
+            final int bufSize = 4096;
+            byte[] buf = new byte[bufSize];
+            final int maxSize = 1024 * 1024; // 1MB maximum size
+            int curCount = in.read(buf);
+            int totalCount = curCount;
+            while ((curCount != -1) && (totalCount < maxSize)) {
+                out.write(buf, 0, curCount);
+                curCount = in.read(buf);
+                totalCount += curCount;
+            }
+            if (curCount != -1) {
+                // We are trying to keep on reading beyond our maximum threshold (1MB) - bail!
+                Log.w(TAG, "Tried to copy a file of size > 1MB, deleting the file and bailing!");
+                if (!tmpFile.delete()) {
+                    Log.w(TAG, "Couldn't delete file " + tmpFile.getAbsolutePath());
+                }
+                return null;
+            }
+        } finally {
+            try {
+                if (out != null) out.close();
+            } catch (IOException e) {
+                Log.w(TAG, "Couldn't close minidump output stream ", e);
+            }
+            try {
+                if (in != null) in.close();
+            } catch (IOException e) {
+                Log.w(TAG, "Couldn't close minidump input stream ", e);
+            }
+
+        }
+        File minidumpFile = new File(crashDirectory, createUniqueMinidumpNameForUid(uid));
+        if (tmpFile.renameTo(minidumpFile)) {
+            return minidumpFile;
+        }
+        return null;
+    }
+
+    /**
+     * Returns whether the {@param minidump} belongs to the uid {@param uid}.
+     */
+    private static boolean belongsToUid(File minidump, int uid) {
+        return minidump.getName().startsWith(uid + UID_DELIMITER);
+    }
+
+    /**
+     * Returns a unique minidump name based on {@param uid} to differentiate between minidumps from
+     * different packages.
+     * The 'uniqueness' of the file name lies in it being created from a UUID. A UUID is a
+     * Universally Unique ID - it is simply a 128-bit value that can be used to uniquely identify
+     * some entity. A uid, on the other hand, is a unique identifier for Android packages.
+     */
+    private static String createUniqueMinidumpNameForUid(int uid) {
+        return uid + UID_DELIMITER + UUID.randomUUID() + NOT_YET_UPLOADED_MINIDUMP_SUFFIX;
+    }
+
+    /**
+     * Create a temporary file to store a minidump in before renaming it with a real minidump name.
+     * @return a new temporary file with prefix {@param prefix} stored in the directory
+     * {@param directory}.
+     *
+     */
+    private static File createMinidumpTmpFile(File directory) throws IOException {
+        return File.createTempFile("webview_minidump", TMP_SUFFIX, directory);
     }
 }

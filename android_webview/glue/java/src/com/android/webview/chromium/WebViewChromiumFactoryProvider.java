@@ -403,6 +403,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         final boolean isExternalService = true;
         AwBrowserProcess.configureChildProcessLauncher(webViewPackageName, isExternalService);
         AwBrowserProcess.start();
+        AwBrowserProcess.handleMinidumps(webViewPackageName);
 
         if (isBuildDebuggable()) {
             setWebContentsDebuggingEnabled(true);

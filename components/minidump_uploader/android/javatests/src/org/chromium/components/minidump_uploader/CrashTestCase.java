@@ -105,7 +105,7 @@ public class CrashTestCase extends InstrumentationTestCase {
         protected boolean mIsNetworkAvailable;
         protected boolean mIsEnabledForTests;
 
-        MockCrashReportingPermissionManager() {}
+        public MockCrashReportingPermissionManager() {}
 
         @Override
         public boolean isClientInMetricsSample() {

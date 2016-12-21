@@ -92,7 +92,11 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
         }
     }
 
-    private static class TestHttpURLConnectionFactory implements HttpURLConnectionFactory {
+    /**
+     * A HttpURLConnectionFactory that performs some basic checks to ensure we are uploading
+     * minidumps correctly.
+     */
+    public static class TestHttpURLConnectionFactory implements HttpURLConnectionFactory {
         @Override
         public HttpURLConnection createHttpURLConnection(String url) {
             try {

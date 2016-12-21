@@ -101,9 +101,12 @@ instrumentation_test_apk("android_webview_test_apk") {
   apk_under_test = ":android_webview_apk"
   android_manifest = "../javatests/AndroidManifest.xml"
   deps = [
+    "//android_webview:android_webview_crash_services_java",
     "//android_webview:android_webview_java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//components/minidump_uploader:minidump_uploader_java",
+    "//components/minidump_uploader:minidump_uploader_javatests",
     "//components/policy/android:policy_java",
     "//components/policy/android:policy_java_test_support",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
@@ -191,6 +194,7 @@ instrumentation_test_apk("android_webview_test_apk") {
     "../javatests/src/org/chromium/android_webview/test/WebViewAsynchronousFindApisTest.java",
     "../javatests/src/org/chromium/android_webview/test/WebViewFindApisTestBase.java",
     "../javatests/src/org/chromium/android_webview/test/WebViewModalDialogOverrideTest.java",
+    "../javatests/src/org/chromium/android_webview/test/crash/MinidumpUploaderTest.java",
     "../javatests/src/org/chromium/android_webview/test/util/AwQuotaManagerBridgeTestUtil.java",
     "../javatests/src/org/chromium/android_webview/test/util/AwTestTouchUtils.java",
     "../javatests/src/org/chromium/android_webview/test/util/CommonResources.java",
