@@ -69,17 +69,19 @@ public class SnippetsBridge implements SuggestionsSource {
      * Reschedules the fetching of snippets.
      */
     public static void rescheduleFetching() {
-        nativeRescheduleFetching();
+        nativeRemoteSuggestionsSchedulerRescheduleFetching();
     }
 
+    /**
+     * Fetches remote suggestions in background.
+     */
     public static void fetchRemoteSuggestionsFromBackground() {
-        // Do not force regular background fetches.
-        nativeFetchRemoteSuggestionsInTheBackground();
+        nativeRemoteSuggestionsSchedulerOnFetchDue();
     }
 
     @Override
     public void fetchRemoteSuggestions() {
-        nativeFetchRemoteSuggestions();
+        nativeReloadSuggestions(mNativeSnippetsBridge);
     }
 
     @Override
@@ -271,9 +273,9 @@ public class SnippetsBridge implements SuggestionsSource {
 
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeNTPSnippetsBridge);
-    private static native void nativeFetchRemoteSuggestions();
-    private static native void nativeFetchRemoteSuggestionsInTheBackground();
-    private static native void nativeRescheduleFetching();
+    private native void nativeReloadSuggestions(long nativeNTPSnippetsBridge);
+    private static native void nativeRemoteSuggestionsSchedulerOnFetchDue();
+    private static native void nativeRemoteSuggestionsSchedulerRescheduleFetching();
     private native int[] nativeGetCategories(long nativeNTPSnippetsBridge);
     private native int nativeGetCategoryStatus(long nativeNTPSnippetsBridge, int category);
     private native SuggestionsCategoryInfo nativeGetCategoryInfo(

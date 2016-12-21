@@ -24,6 +24,7 @@
 #include "components/ntp_snippets/content_suggestions_metrics.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
+#include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
 #include "components/prefs/pref_service.h"
 #include "jni/SnippetsBridge_jni.h"
 #include "ui/base/window_open_disposition.h"
@@ -95,7 +96,7 @@ ScopedJavaLocalRef<jobject> ToJavaSuggestionList(
   return result;
 }
 
-ntp_snippets::RemoteSuggestionsProvider* GetRemoteSuggestionsProvider() {
+ntp_snippets::RemoteSuggestionsScheduler* GetRemoteSuggestionsScheduler() {
   ntp_snippets::ContentSuggestionsService* content_suggestions_service =
       ContentSuggestionsServiceFactory::GetForProfile(
           ProfileManager::GetLastUsedProfile());
@@ -103,7 +104,7 @@ ntp_snippets::RemoteSuggestionsProvider* GetRemoteSuggestionsProvider() {
   if (!content_suggestions_service) {
     return nullptr;
   }
-  return content_suggestions_service->ntp_snippets_service();
+  return content_suggestions_service->remote_suggestions_scheduler();
 }
 
 }  // namespace
@@ -115,57 +116,33 @@ static jlong Init(JNIEnv* env,
   return reinterpret_cast<intptr_t>(snippets_bridge);
 }
 
-static void FetchRemoteSuggestions(JNIEnv* env,
-                                   const JavaParamRef<jclass>& caller) {
-  ntp_snippets::RemoteSuggestionsProvider* remote_suggestions_provider =
-      GetRemoteSuggestionsProvider();
-  // Can be null if the feature has been disabled but the scheduler has not been
-  // unregistered yet. The next start should unregister it.
-  if (!remote_suggestions_provider) {
-    return;
-  }
-  remote_suggestions_provider->FetchSnippetsForAllCategories();
-}
-
-static void FetchRemoteSuggestionsInTheBackground(
+// Initiates a background fetch for remote suggestions.
+static void RemoteSuggestionsSchedulerOnFetchDue(
     JNIEnv* env,
     const JavaParamRef<jclass>& caller) {
-  ntp_snippets::RemoteSuggestionsProvider* remote_suggestions_provider =
-      GetRemoteSuggestionsProvider();
-  // Can be null if the feature has been disabled but the scheduler has not been
-  // unregistered yet. The next start should unregister it.
-  if (!remote_suggestions_provider) {
+  ntp_snippets::RemoteSuggestionsScheduler* scheduler =
+      GetRemoteSuggestionsScheduler();
+  if (!scheduler) {
     return;
   }
-  remote_suggestions_provider->FetchSnippetsInTheBackground();
+
+  scheduler->OnPersistentSchedulerWakeUp();
 }
 
 // Reschedules the fetching of snippets. If tasks are already scheduled, they
 // will be rescheduled anyway, so all running intervals will be reset.
-static void RescheduleFetching(JNIEnv* env,
-                               const JavaParamRef<jclass>& caller) {
-  Profile* profile = ProfileManager::GetLastUsedProfile();
-  // Temporary check while investigating crbug.com/647920.
-  CHECK(profile);
-
-  ntp_snippets::ContentSuggestionsService* content_suggestions_service =
-      ContentSuggestionsServiceFactory::GetForProfile(profile);
-
-  // Can maybe be null in some cases? (Incognito profile?) crbug.com/647920
-  if (!content_suggestions_service) {
-    return;
-  }
-
-  ntp_snippets::RemoteSuggestionsProvider* service =
-      content_suggestions_service->ntp_snippets_service();
-
+static void RemoteSuggestionsSchedulerRescheduleFetching(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& caller) {
+  ntp_snippets::RemoteSuggestionsScheduler* scheduler =
+      GetRemoteSuggestionsScheduler();
   // Can be null if the feature has been disabled but the scheduler has not been
   // unregistered yet. The next start should unregister it.
-  if (!service) {
+  if (!scheduler) {
     return;
   }
 
-  service->RescheduleFetching(/*force=*/true);
+  scheduler->RescheduleFetching();
 }
 
 static void OnSuggestionTargetVisited(JNIEnv* env,
@@ -273,6 +250,12 @@ void NTPSnippetsBridge::Fetch(
                                       known_suggestion_ids.end()),
       base::Bind(&NTPSnippetsBridge::OnSuggestionsFetched,
                  weak_ptr_factory_.GetWeakPtr(), category));
+}
+
+void NTPSnippetsBridge::ReloadSuggestions(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj) {
+  content_suggestions_service_->ReloadSuggestions();
 }
 
 void NTPSnippetsBridge::DismissSuggestion(

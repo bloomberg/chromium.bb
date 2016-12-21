@@ -24,9 +24,11 @@
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
+#include "components/ntp_snippets/remote/persistent_scheduler.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
-#include "components/ntp_snippets/remote/remote_suggestions_provider.h"
+#include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
+#include "components/ntp_snippets/remote/scheduling_remote_suggestions_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/version_info/version_info.h"
 #include "google_apis/google_api_keys.h"
@@ -49,10 +51,11 @@ using ios::BookmarkModelFactory;
 using ntp_snippets::BookmarkSuggestionsProvider;
 using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::NTPSnippetsFetcher;
-using ntp_snippets::NTPSnippetsScheduler;
+using ntp_snippets::PersistentScheduler;
 using ntp_snippets::RemoteSuggestionsDatabase;
-using ntp_snippets::RemoteSuggestionsProvider;
+using ntp_snippets::RemoteSuggestionsProviderImpl;
 using ntp_snippets::RemoteSuggestionsStatusService;
+using ntp_snippets::SchedulingRemoteSuggestionsProvider;
 using suggestions::CreateIOSImageDecoder;
 using suggestions::ImageFetcherImpl;
 
@@ -147,7 +150,6 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
         OAuth2TokenServiceFactory::GetForBrowserState(chrome_browser_state);
     scoped_refptr<net::URLRequestContextGetter> request_context =
         browser_state->GetRequestContext();
-    NTPSnippetsScheduler* scheduler = nullptr;
     base::FilePath database_dir(
         browser_state->GetStatePath().Append(ntp_snippets::kDatabaseFolder));
     scoped_refptr<base::SequencedTaskRunner> task_runner =
@@ -155,27 +157,32 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
             ->GetSequencedTaskRunnerWithShutdownBehavior(
                 base::SequencedWorkerPool::GetSequenceToken(),
                 base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
-    std::unique_ptr<RemoteSuggestionsProvider> ntp_snippets_service =
-        base::MakeUnique<RemoteSuggestionsProvider>(
-            service.get(), prefs,
-            GetApplicationContext()->GetApplicationLocale(),
-            service->category_ranker(), service->user_classifier(), scheduler,
-            base::MakeUnique<NTPSnippetsFetcher>(
-                signin_manager, token_service, request_context, prefs, nullptr,
-                base::Bind(&ParseJson),
-                GetChannel() == version_info::Channel::STABLE
-                    ? google_apis::GetAPIKey()
-                    : google_apis::GetNonStableAPIKey(),
-                service->user_classifier()),
-            base::MakeUnique<ImageFetcherImpl>(
-                request_context.get(), web::WebThread::GetBlockingPool()),
-            CreateIOSImageDecoder(task_runner),
-            base::MakeUnique<RemoteSuggestionsDatabase>(database_dir,
-                                                        task_runner),
-            base::MakeUnique<RemoteSuggestionsStatusService>(signin_manager,
-                                                             prefs));
-    service->set_ntp_snippets_service(ntp_snippets_service.get());
-    service->RegisterProvider(std::move(ntp_snippets_service));
+    auto provider = base::MakeUnique<RemoteSuggestionsProviderImpl>(
+        service.get(), prefs, GetApplicationContext()->GetApplicationLocale(),
+        service->category_ranker(),
+        base::MakeUnique<NTPSnippetsFetcher>(
+            signin_manager, token_service, request_context, prefs, nullptr,
+            base::Bind(&ParseJson),
+            GetChannel() == version_info::Channel::STABLE
+                ? google_apis::GetAPIKey()
+                : google_apis::GetNonStableAPIKey(),
+            service->user_classifier()),
+        base::MakeUnique<ImageFetcherImpl>(request_context.get(),
+                                           web::WebThread::GetBlockingPool()),
+        CreateIOSImageDecoder(task_runner),
+        base::MakeUnique<RemoteSuggestionsDatabase>(database_dir, task_runner),
+        base::MakeUnique<RemoteSuggestionsStatusService>(signin_manager,
+                                                         prefs));
+
+    // TODO(jkrcal): Implement a persistent scheduler for iOS. crbug.com/676249
+    auto scheduling_provider =
+        base::MakeUnique<SchedulingRemoteSuggestionsProvider>(
+            service.get(), std::move(provider),
+            /*persistent_scheduler=*/nullptr, service->user_classifier(),
+            prefs);
+    service->set_remote_suggestions_provider(scheduling_provider.get());
+    service->set_remote_suggestions_scheduler(scheduling_provider.get());
+    service->RegisterProvider(std::move(scheduling_provider));
   }
 
   return std::move(service);

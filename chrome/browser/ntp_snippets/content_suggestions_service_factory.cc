@@ -34,10 +34,11 @@
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
 #include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
-#include "components/ntp_snippets/remote/ntp_snippets_scheduler.h"
+#include "components/ntp_snippets/remote/persistent_scheduler.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
-#include "components/ntp_snippets/remote/remote_suggestions_provider.h"
+#include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
+#include "components/ntp_snippets/remote/scheduling_remote_suggestions_provider.h"
 #include "components/ntp_snippets/sessions/foreign_sessions_suggestions_provider.h"
 #include "components/ntp_snippets/sessions/tab_delegate_sync_adapter.h"
 #include "components/prefs/pref_service.h"
@@ -78,10 +79,11 @@ using ntp_snippets::BookmarkSuggestionsProvider;
 using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::ForeignSessionsSuggestionsProvider;
 using ntp_snippets::NTPSnippetsFetcher;
-using ntp_snippets::NTPSnippetsScheduler;
+using ntp_snippets::PersistentScheduler;
 using ntp_snippets::RemoteSuggestionsDatabase;
-using ntp_snippets::RemoteSuggestionsProvider;
+using ntp_snippets::RemoteSuggestionsProviderImpl;
 using ntp_snippets::RemoteSuggestionsStatusService;
+using ntp_snippets::SchedulingRemoteSuggestionsProvider;
 using ntp_snippets::TabDelegateSyncAdapter;
 using suggestions::ImageDecoderImpl;
 using syncer::SyncService;
@@ -147,10 +149,6 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
       content::BrowserContext::GetDefaultStoragePartition(profile)
           ->GetURLRequestContext();
 
-  NTPSnippetsScheduler* scheduler = nullptr;
-#if defined(OS_ANDROID)
-  scheduler = NTPSnippetsLauncher::Get();
-#endif  // OS_ANDROID
   base::FilePath database_dir(
       profile->GetPath().Append(ntp_snippets::kDatabaseFolder));
   scoped_refptr<base::SequencedTaskRunner> task_runner =
@@ -160,9 +158,9 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
   bool is_stable_channel =
       chrome::GetChannel() == version_info::Channel::STABLE;
-  auto provider = base::MakeUnique<RemoteSuggestionsProvider>(
+  auto provider = base::MakeUnique<RemoteSuggestionsProviderImpl>(
       service, pref_service, g_browser_process->GetApplicationLocale(),
-      service->category_ranker(), service->user_classifier(), scheduler,
+      service->category_ranker(),
       base::MakeUnique<NTPSnippetsFetcher>(
           signin_manager, token_service, request_context, pref_service,
           language_model, base::Bind(&safe_json::SafeJsonParser::Parse),
@@ -175,8 +173,19 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
       base::MakeUnique<RemoteSuggestionsDatabase>(database_dir, task_runner),
       base::MakeUnique<RemoteSuggestionsStatusService>(signin_manager,
                                                        pref_service));
-  service->set_ntp_snippets_service(provider.get());
-  service->RegisterProvider(std::move(provider));
+
+  PersistentScheduler* scheduler = nullptr;
+#if defined(OS_ANDROID)
+  scheduler = NTPSnippetsLauncher::Get();
+#endif  // OS_ANDROID
+
+  auto scheduling_provider =
+      base::MakeUnique<SchedulingRemoteSuggestionsProvider>(
+          service, std::move(provider), scheduler, service->user_classifier(),
+          pref_service);
+  service->set_remote_suggestions_provider(scheduling_provider.get());
+  service->set_remote_suggestions_scheduler(scheduling_provider.get());
+  service->RegisterProvider(std::move(scheduling_provider));
 }
 
 void RegisterForeignSessionsProvider(SyncService* sync_service,

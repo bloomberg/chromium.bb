@@ -104,6 +104,12 @@ class ContentSuggestionsProvider {
                      const std::set<std::string>& known_suggestion_ids,
                      const FetchDoneCallback& callback) = 0;
 
+  // Reloads suggestions from all categories. If the suggestions change, the
+  // observer must be notified via OnNewSuggestions();
+  // TODO(jkcal): make pure virtual (involves touching all providers) or remove
+  // by resolving the pull/push dichotomy.
+  virtual void ReloadSuggestions() {}
+
   // Removes history from the specified time range where the URL matches the
   // |filter|. The data removed depends on the provider. Note that the
   // data outside the time range may be deleted, for example suggestions, which

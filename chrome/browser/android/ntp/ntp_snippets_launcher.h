@@ -9,12 +9,13 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "components/ntp_snippets/remote/ntp_snippets_scheduler.h"
+#include "components/ntp_snippets/remote/persistent_scheduler.h"
 
 // Android implementation of ntp_snippets::NTPSnippetsScheduler.
 // The NTPSnippetsLauncher singleton owns the Java SnippetsLauncher object, and
 // is used to schedule the fetching of snippets. Runs on the UI thread.
-class NTPSnippetsLauncher : public ntp_snippets::NTPSnippetsScheduler {
+class NTPSnippetsLauncher
+    : public ntp_snippets::PersistentScheduler {
  public:
   static NTPSnippetsLauncher* Get();
 

@@ -30,7 +30,8 @@ ContentSuggestionsService::ContentSuggestionsService(
     : state_(state),
       signin_observer_(this),
       history_service_observer_(this),
-      ntp_snippets_service_(nullptr),
+      remote_suggestions_provider_(nullptr),
+      remote_suggestions_scheduler_(nullptr),
       pref_service_(pref_service),
       user_classifier_(pref_service),
       category_ranker_(std::move(category_ranker)) {
@@ -49,7 +50,8 @@ ContentSuggestionsService::ContentSuggestionsService(
 ContentSuggestionsService::~ContentSuggestionsService() = default;
 
 void ContentSuggestionsService::Shutdown() {
-  ntp_snippets_service_ = nullptr;
+  remote_suggestions_provider_ = nullptr;
+  remote_suggestions_scheduler_ = nullptr;
   suggestions_by_category_.clear();
   providers_by_category_.clear();
   categories_.clear();
@@ -232,6 +234,12 @@ void ContentSuggestionsService::Fetch(
   }
 
   providers_it->second->Fetch(category, known_suggestion_ids, callback);
+}
+
+void ContentSuggestionsService::ReloadSuggestions() {
+  for (const auto& provider : providers_) {
+    provider->ReloadSuggestions();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////

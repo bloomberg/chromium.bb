@@ -33,6 +33,7 @@ class PrefRegistrySimple;
 namespace ntp_snippets {
 
 class RemoteSuggestionsProvider;
+class RemoteSuggestionsScheduler;
 
 // Retrieves suggestions from a number of ContentSuggestionsProviders and serves
 // them grouped into categories. There can be at most one provider per category.
@@ -143,9 +144,20 @@ class ContentSuggestionsService : public KeyedService,
   // Fetches additional contents for the given |category|. If the fetch was
   // completed, the given |callback| is called with the updated content.
   // This includes new and old data.
+  // TODO(jkrcal): Consider either renaming this to FetchMore or unify the ways
+  // to get suggestions to just this async Fetch() API.
   void Fetch(const Category& category,
              const std::set<std::string>& known_suggestion_ids,
              const FetchDoneCallback& callback);
+
+  // Reloads suggestions from all categories, from all providers. If a provider
+  // naturally has some ability to generate fresh suggestions, it may provide a
+  // completely new set of suggestions. If the provider has no ability to
+  // generate fresh suggestions on demand, it may only fill in any vacant space
+  // by suggestions that were previously not included due to space limits (there
+  // may be vacant space because of the user dismissing suggestions in the
+  // meantime).
+  void ReloadSuggestions();
 
   // Observer accessors.
   void AddObserver(Observer* observer);
@@ -194,15 +206,29 @@ class ContentSuggestionsService : public KeyedService,
   // supports it).
   void ClearDismissedSuggestionsForDebugging(Category category);
 
-  // The reference to the RemoteSuggestionsProvider provider should only be set
-  // by the factory and only be used for scheduling, periodic fetching and
-  // debugging.
-  RemoteSuggestionsProvider* ntp_snippets_service() {
-    return ntp_snippets_service_;
+  // The reference to the RemoteSuggestionsProvider provider should
+  // only be set by the factory and only used for debugging.
+  // TODO(jkrcal) The way we deal with the circular dependency feels wrong.
+  // Consider swapping the dependencies: first constructing all providers, then
+  // constructing the service (passing the remote provider as arg), finally
+  // registering the service as an observer of all providers?
+  void set_remote_suggestions_provider(
+      RemoteSuggestionsProvider* remote_suggestions_provider) {
+    remote_suggestions_provider_ = remote_suggestions_provider;
   }
-  void set_ntp_snippets_service(
-      RemoteSuggestionsProvider* ntp_snippets_service) {
-    ntp_snippets_service_ = ntp_snippets_service;
+  RemoteSuggestionsProvider* remote_suggestions_provider_for_debugging() {
+    return remote_suggestions_provider_;
+  }
+
+  // The reference to RemoteSuggestionsScheduler should only be set by the
+  // factory. The interface is suited for informing about external events that
+  // have influence on scheduling remote fetches.
+  void set_remote_suggestions_scheduler(
+      ntp_snippets::RemoteSuggestionsScheduler* remote_suggestions_scheduler) {
+    remote_suggestions_scheduler_ = remote_suggestions_scheduler;
+  }
+  RemoteSuggestionsScheduler* remote_suggestions_scheduler() {
+    return remote_suggestions_scheduler_;
   }
 
   UserClassifier* user_classifier() { return &user_classifier_; }
@@ -308,11 +334,14 @@ class ContentSuggestionsService : public KeyedService,
 
   const std::vector<ContentSuggestion> no_suggestions_;
 
-  // Keep a direct reference to this special provider to redirect scheduling,
-  // background fetching and debugging calls to it. If the
-  // RemoteSuggestionsProvider is loaded, it is also present in |providers_|,
-  // otherwise this is a nullptr.
-  RemoteSuggestionsProvider* ntp_snippets_service_;
+  // Keep a direct reference to this special provider to redirect debugging
+  // calls to it. If the RemoteSuggestionsProvider is loaded, it is also present
+  // in |providers_|, otherwise this is a nullptr.
+  RemoteSuggestionsProvider* remote_suggestions_provider_;
+
+  // Interface for informing about external events that have influence on
+  // scheduling remote fetches. Not owned.
+  RemoteSuggestionsScheduler* remote_suggestions_scheduler_;
 
   PrefService* pref_service_;
 

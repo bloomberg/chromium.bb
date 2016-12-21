@@ -28,6 +28,7 @@
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
+#include "components/ntp_snippets/remote/ntp_snippets_fetcher.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider.h"
 #include "components/ntp_snippets/switches.h"
 #include "components/prefs/pref_service.h"
@@ -38,6 +39,7 @@ using ntp_snippets::Category;
 using ntp_snippets::CategoryInfo;
 using ntp_snippets::CategoryStatus;
 using ntp_snippets::KnownCategories;
+using ntp_snippets::RemoteSuggestionsProvider;
 using ntp_snippets::UserClassifier;
 
 namespace {
@@ -88,7 +90,8 @@ SnippetsInternalsMessageHandler::SnippetsInternalsMessageHandler(
       dom_loaded_(false),
       content_suggestions_service_(content_suggestions_service),
       remote_suggestions_provider_(
-          content_suggestions_service_->ntp_snippets_service()),
+          content_suggestions_service_
+              ->remote_suggestions_provider_for_debugging()),
       pref_service_(pref_service),
       weak_ptr_factory_(this) {}
 
@@ -195,7 +198,7 @@ void SnippetsInternalsMessageHandler::HandleDownload(
   if (!remote_suggestions_provider_)
     return;
 
-  remote_suggestions_provider_->FetchSnippetsForAllCategories();
+  remote_suggestions_provider_->ReloadSuggestions();
 }
 
 void SnippetsInternalsMessageHandler::HandleClearCachedSuggestions(
@@ -265,7 +268,7 @@ void SnippetsInternalsMessageHandler::ClearClassification(
 void SnippetsInternalsMessageHandler::FetchRemoteSuggestionsInTheBackground(
     const base::ListValue* args) {
   DCHECK_EQ(0u, args->GetSize());
-  remote_suggestions_provider_->FetchSnippetsInTheBackground();
+  remote_suggestions_provider_->RefetchInTheBackground(nullptr);
 }
 
 void SnippetsInternalsMessageHandler::SendAllContent() {
@@ -295,18 +298,16 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
   SendLastRemoteSuggestionsBackgroundFetchTime();
 
   if (remote_suggestions_provider_) {
+    const ntp_snippets::NTPSnippetsFetcher* fetcher =
+        remote_suggestions_provider_
+            ->snippets_fetcher_for_testing_and_debugging();
     // TODO(fhorschig): Read this string from variations directly.
-    SendString("switch-personalized",
-               remote_suggestions_provider_->snippets_fetcher()
-                   ->PersonalizationModeString());
+    SendString("switch-personalized", fetcher->PersonalizationModeString());
 
-    SendString(
-        "switch-fetch-url",
-        remote_suggestions_provider_->snippets_fetcher()->fetch_url().spec());
+    SendString("switch-fetch-url", fetcher->fetch_url().spec());
     web_ui()->CallJavascriptFunctionUnsafe(
         "chrome.SnippetsInternals.receiveJson",
-        base::StringValue(
-            remote_suggestions_provider_->snippets_fetcher()->last_json()));
+        base::StringValue(fetcher->last_json()));
   }
 
   SendContentSuggestions();
@@ -377,7 +378,9 @@ void SnippetsInternalsMessageHandler::SendContentSuggestions() {
 
   if (remote_suggestions_provider_) {
     const std::string& status =
-        remote_suggestions_provider_->snippets_fetcher()->last_status();
+        remote_suggestions_provider_
+            ->snippets_fetcher_for_testing_and_debugging()
+            ->last_status();
     if (!status.empty())
       SendString("remote-status", "Finished: " + status);
   }
