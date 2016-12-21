@@ -181,6 +181,8 @@ class Timer : public TaskRunnerTimer<TimerFiredClass> {
 // This subclass of Timer posts its tasks on the current thread's default task
 // runner.  Tasks posted on there are not throttled when the tab is in the
 // background.
+//
+// DEPRECATED: Use TaskRunnerHelper::get with TaskType::Unthrottled.
 template <typename TimerFiredClass>
 class UnthrottledThreadTimer : public TaskRunnerTimer<TimerFiredClass> {
  public:

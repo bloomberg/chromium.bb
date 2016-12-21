@@ -553,12 +553,13 @@ class CORE_EXPORT HTMLMediaElement
 
   void viewportFillDebouncerTimerFired(TimerBase*);
 
-  UnthrottledThreadTimer<HTMLMediaElement> m_loadTimer;
-  UnthrottledThreadTimer<HTMLMediaElement> m_progressEventTimer;
-  UnthrottledThreadTimer<HTMLMediaElement> m_playbackProgressTimer;
-  UnthrottledThreadTimer<HTMLMediaElement> m_audioTracksTimer;
-  UnthrottledThreadTimer<HTMLMediaElement> m_viewportFillDebouncerTimer;
-  UnthrottledThreadTimer<HTMLMediaElement> m_checkViewportIntersectionTimer;
+  TaskRunnerTimer<HTMLMediaElement> m_loadTimer;
+  TaskRunnerTimer<HTMLMediaElement> m_progressEventTimer;
+  TaskRunnerTimer<HTMLMediaElement> m_playbackProgressTimer;
+  TaskRunnerTimer<HTMLMediaElement> m_audioTracksTimer;
+  TaskRunnerTimer<HTMLMediaElement> m_viewportFillDebouncerTimer;
+  TaskRunnerTimer<HTMLMediaElement> m_checkViewportIntersectionTimer;
+
   Member<TimeRanges> m_playedTimeRanges;
   Member<GenericEventQueue> m_asyncEventQueue;
 

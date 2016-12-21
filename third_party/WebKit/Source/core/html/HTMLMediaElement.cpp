@@ -362,15 +362,27 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
                                    Document& document)
     : HTMLElement(tagName, document),
       SuspendableObject(&document),
-      m_loadTimer(this, &HTMLMediaElement::loadTimerFired),
-      m_progressEventTimer(this, &HTMLMediaElement::progressEventTimerFired),
-      m_playbackProgressTimer(this,
-                              &HTMLMediaElement::playbackProgressTimerFired),
-      m_audioTracksTimer(this, &HTMLMediaElement::audioTracksTimerFired),
+      m_loadTimer(TaskRunnerHelper::get(TaskType::Unthrottled, &document),
+                  this,
+                  &HTMLMediaElement::loadTimerFired),
+      m_progressEventTimer(
+          TaskRunnerHelper::get(TaskType::Unthrottled, &document),
+          this,
+          &HTMLMediaElement::progressEventTimerFired),
+      m_playbackProgressTimer(
+          TaskRunnerHelper::get(TaskType::Unthrottled, &document),
+          this,
+          &HTMLMediaElement::playbackProgressTimerFired),
+      m_audioTracksTimer(
+          TaskRunnerHelper::get(TaskType::Unthrottled, &document),
+          this,
+          &HTMLMediaElement::audioTracksTimerFired),
       m_viewportFillDebouncerTimer(
+          TaskRunnerHelper::get(TaskType::Unthrottled, &document),
           this,
           &HTMLMediaElement::viewportFillDebouncerTimerFired),
       m_checkViewportIntersectionTimer(
+          TaskRunnerHelper::get(TaskType::Unthrottled, &document),
           this,
           &HTMLMediaElement::checkViewportIntersectionTimerFired),
       m_playedTimeRanges(),
@@ -465,6 +477,19 @@ void HTMLMediaElement::dispose() {
 
 void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument) {
   BLINK_MEDIA_LOG << "didMoveToNewDocument(" << (void*)this << ")";
+
+  m_loadTimer.moveToNewTaskRunner(
+      TaskRunnerHelper::get(TaskType::Unthrottled, &document()));
+  m_progressEventTimer.moveToNewTaskRunner(
+      TaskRunnerHelper::get(TaskType::Unthrottled, &document()));
+  m_playbackProgressTimer.moveToNewTaskRunner(
+      TaskRunnerHelper::get(TaskType::Unthrottled, &document()));
+  m_audioTracksTimer.moveToNewTaskRunner(
+      TaskRunnerHelper::get(TaskType::Unthrottled, &document()));
+  m_viewportFillDebouncerTimer.moveToNewTaskRunner(
+      TaskRunnerHelper::get(TaskType::Unthrottled, &document()));
+  m_checkViewportIntersectionTimer.moveToNewTaskRunner(
+      TaskRunnerHelper::get(TaskType::Unthrottled, &document()));
 
   m_autoplayUmaHelper->didMoveToNewDocument(oldDocument);
   // If any experiment is enabled, then we want to enable a user gesture by
