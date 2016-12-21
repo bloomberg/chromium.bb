@@ -76,3 +76,17 @@ source_set("dummy") {
     "//chromecast/public",
   ]
 }
+
+# Implementation of video decoder that discards decoder buffers.
+# Used on audio platforms for media streams containing video.
+source_set("null") {
+  sources = [
+    "video_decoder_null.cc",
+    "video_decoder_null.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/public/media",
+  ]
+}

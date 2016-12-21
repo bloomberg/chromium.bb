@@ -20,7 +20,7 @@ class SingleThreadTaskRunner;
 namespace chromecast {
 namespace media {
 class AudioDecoderAlsa;
-class VideoDecoderAlsa;
+class VideoDecoderNull;
 
 class MediaPipelineBackendAlsa : public MediaPipelineBackend {
  public:
@@ -54,7 +54,7 @@ class MediaPipelineBackendAlsa : public MediaPipelineBackend {
   State state_;
 
   const MediaPipelineDeviceParams params_;
-  std::unique_ptr<VideoDecoderAlsa> video_decoder_;
+  std::unique_ptr<VideoDecoderNull> video_decoder_;
   std::unique_ptr<AudioDecoderAlsa> audio_decoder_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendAlsa);

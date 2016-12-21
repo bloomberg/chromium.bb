@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_ALSA_VIDEO_DECODER_ALSA_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_VIDEO_DECODER_ALSA_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_VIDEO_DECODER_NULL_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_VIDEO_DECODER_NULL_H_
 
 #include <stdint.h>
 
@@ -14,10 +14,10 @@
 namespace chromecast {
 namespace media {
 
-class VideoDecoderAlsa : public MediaPipelineBackend::VideoDecoder {
+class VideoDecoderNull : public MediaPipelineBackend::VideoDecoder {
  public:
-  VideoDecoderAlsa();
-  ~VideoDecoderAlsa() override;
+  VideoDecoderNull();
+  ~VideoDecoderNull() override;
 
   // MediaPipelineBackend::VideoDecoder implementation:
   void SetDelegate(Delegate* delegate) override;
@@ -30,12 +30,12 @@ class VideoDecoderAlsa : public MediaPipelineBackend::VideoDecoder {
   void OnEndOfStream();
 
   Delegate* delegate_;
-  base::WeakPtrFactory<VideoDecoderAlsa> weak_factory_;
+  base::WeakPtrFactory<VideoDecoderNull> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(VideoDecoderAlsa);
+  DISALLOW_COPY_AND_ASSIGN(VideoDecoderNull);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_ALSA_VIDEO_DECODER_ALSA_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_VIDEO_DECODER_NULL_H_

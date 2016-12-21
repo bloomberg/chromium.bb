@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/backend/alsa/video_decoder_alsa.h"
+#include "chromecast/media/cma/backend/video_decoder_null.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -13,35 +13,35 @@
 namespace chromecast {
 namespace media {
 
-VideoDecoderAlsa::VideoDecoderAlsa()
+VideoDecoderNull::VideoDecoderNull()
     : delegate_(nullptr), weak_factory_(this) {}
 
-VideoDecoderAlsa::~VideoDecoderAlsa() {}
+VideoDecoderNull::~VideoDecoderNull() {}
 
-void VideoDecoderAlsa::SetDelegate(Delegate* delegate) {
+void VideoDecoderNull::SetDelegate(Delegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
 }
 
-MediaPipelineBackend::BufferStatus VideoDecoderAlsa::PushBuffer(
+MediaPipelineBackend::BufferStatus VideoDecoderNull::PushBuffer(
     CastDecoderBuffer* buffer) {
   DCHECK(delegate_);
   DCHECK(buffer);
   if (buffer->end_of_stream()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&VideoDecoderAlsa::OnEndOfStream,
+        FROM_HERE, base::Bind(&VideoDecoderNull::OnEndOfStream,
                               weak_factory_.GetWeakPtr()));
   }
   return MediaPipelineBackend::kBufferSuccess;
 }
 
-void VideoDecoderAlsa::GetStatistics(Statistics* statistics) {}
+void VideoDecoderNull::GetStatistics(Statistics* statistics) {}
 
-bool VideoDecoderAlsa::SetConfig(const VideoConfig& config) {
+bool VideoDecoderNull::SetConfig(const VideoConfig& config) {
   return true;
 }
 
-void VideoDecoderAlsa::OnEndOfStream() {
+void VideoDecoderNull::OnEndOfStream() {
   delegate_->OnEndOfStream();
 }
 
