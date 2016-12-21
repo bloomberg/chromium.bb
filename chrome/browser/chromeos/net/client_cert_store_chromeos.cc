@@ -82,9 +82,8 @@ void ClientCertStoreChromeOS::GotAdditionalCerts(
         password_delegate_factory_.Run(request->host_and_port));
   }
   base::PostTaskWithTraitsAndReply(
-      FROM_HERE,
-      base::TaskTraits().WithWait().WithFileIO().WithShutdownBehavior(
-          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      FROM_HERE, base::TaskTraits().MayBlock().WithShutdownBehavior(
+                     base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
       base::Bind(&ClientCertStoreChromeOS::GetAndFilterCertsOnWorkerThread,
                  base::Unretained(this), base::Passed(&password_delegate),
                  request, additional_certs, selected_certs),
