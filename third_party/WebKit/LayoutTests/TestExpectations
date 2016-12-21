@@ -908,9 +908,6 @@ crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-out
 crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-polygon-004.html [ Failure ]
 crbug.com/441840 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-shape-arguments-000.html [ Failure ]
 
-crbug.com/673597 css3/blending/mix-blend-mode-simple-text.html [ NeedsRebaseline ]
-crbug.com/673597 css3/blending/mix-blend-mode-simple.html [ NeedsRebaseline ]
-
 crbug.com/666657 imported/csswg-test/css-text-decor-3/text-emphasis-color-001.xht [ Failure ]
 crbug.com/666657 imported/csswg-test/css-text-decor-3/text-emphasis-position-above-left-001.xht [ Failure ]
 crbug.com/666657 imported/csswg-test/css-text-decor-3/text-emphasis-position-above-left-002.xht [ Failure ]
