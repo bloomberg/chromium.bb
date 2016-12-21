@@ -17,13 +17,26 @@
 
 namespace safe_browsing {
 
+namespace {
+
+// Utility function for populating hashes.
+FullHash HashForUrl(const GURL& url) {
+  std::vector<FullHash> full_hashes;
+  V4ProtocolManagerUtil::UrlToFullHashes(url, &full_hashes);
+  // ASSERT_GE(full_hashes.size(), 1u);
+  return full_hashes[0];
+}
+
+}  // namespace
+
 class FakeV4Database : public V4Database {
  public:
   static void Create(
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       std::unique_ptr<StoreMap> store_map,
       const StoreAndHashPrefixes& store_and_hash_prefixes,
-      NewDatabaseReadyCallback new_db_callback) {
+      NewDatabaseReadyCallback new_db_callback,
+      bool stores_available) {
     // Mimics V4Database::Create
     const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner =
         base::MessageLoop::current()->task_runner();
@@ -31,9 +44,10 @@ class FakeV4Database : public V4Database {
         FROM_HERE,
         base::Bind(&FakeV4Database::CreateOnTaskRunner, db_task_runner,
                    base::Passed(&store_map), store_and_hash_prefixes,
-                   callback_task_runner, new_db_callback));
+                   callback_task_runner, new_db_callback, stores_available));
   }
 
+  // V4Database implementation
   void GetStoresMatchingFullHash(
       const FullHash& full_hash,
       const StoresToCheck& stores_to_check,
@@ -47,16 +61,22 @@ class FakeV4Database : public V4Database {
     }
   }
 
+  bool AreStoresAvailable(const StoresToCheck& stores_to_check) const override {
+    return stores_available_;
+  }
+
  private:
   static void CreateOnTaskRunner(
       const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
       std::unique_ptr<StoreMap> store_map,
       const StoreAndHashPrefixes& store_and_hash_prefixes,
       const scoped_refptr<base::SingleThreadTaskRunner>& callback_task_runner,
-      NewDatabaseReadyCallback new_db_callback) {
+      NewDatabaseReadyCallback new_db_callback,
+      bool stores_available) {
     // Mimics the semantics of V4Database::CreateOnTaskRunner
-    std::unique_ptr<FakeV4Database> fake_v4_database(new FakeV4Database(
-        db_task_runner, std::move(store_map), store_and_hash_prefixes));
+    std::unique_ptr<FakeV4Database> fake_v4_database(
+        new FakeV4Database(db_task_runner, std::move(store_map),
+                           store_and_hash_prefixes, stores_available));
     callback_task_runner->PostTask(
         FROM_HERE,
         base::Bind(new_db_callback, base::Passed(&fake_v4_database)));
@@ -64,11 +84,14 @@ class FakeV4Database : public V4Database {
 
   FakeV4Database(const scoped_refptr<base::SequencedTaskRunner>& db_task_runner,
                  std::unique_ptr<StoreMap> store_map,
-                 const StoreAndHashPrefixes& store_and_hash_prefixes)
+                 const StoreAndHashPrefixes& store_and_hash_prefixes,
+                 bool stores_available)
       : V4Database(db_task_runner, std::move(store_map)),
-        store_and_hash_prefixes_(store_and_hash_prefixes) {}
+        store_and_hash_prefixes_(store_and_hash_prefixes),
+        stores_available_(stores_available) {}
 
   const StoreAndHashPrefixes store_and_hash_prefixes_;
+  const bool stores_available_;
 };
 
 class TestClient : public SafeBrowsingDatabaseManager::Client {
@@ -147,7 +170,8 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
     return v4_local_database_manager_->queued_checks_;
   }
 
-  void ReplaceV4Database(const StoreAndHashPrefixes& store_and_hash_prefixes) {
+  void ReplaceV4Database(const StoreAndHashPrefixes& store_and_hash_prefixes,
+                         bool stores_available = false) {
     // Disable the V4LocalDatabaseManager first so that if the callback to
     // verify checksum has been scheduled, then it doesn't do anything when it
     // is called back.
@@ -163,7 +187,8 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
         base::Bind(&V4LocalDatabaseManager::DatabaseReadyForChecks,
                    base::Unretained(v4_local_database_manager_.get()));
     FakeV4Database::Create(task_runner_, base::MakeUnique<StoreMap>(),
-                           store_and_hash_prefixes, db_ready_callback);
+                           store_and_hash_prefixes, db_ready_callback,
+                           stores_available);
     WaitForTasksOnTaskRunner();
   }
 
@@ -194,6 +219,18 @@ class V4LocalDatabaseManagerTest : public PlatformTest {
     // V4LocalDatabaseManager has read the data from disk.
     task_runner_->RunPendingTasks();
     base::RunLoop().RunUntilIdle();
+  }
+
+  // For those tests that need the fake manager
+  void SetupFakeManager() {
+    // StopLocalDatabaseManager before resetting it because that's what
+    // ~V4LocalDatabaseManager expects.
+    StopLocalDatabaseManager();
+    v4_local_database_manager_ =
+        make_scoped_refptr(new FakeV4LocalDatabaseManager(base_dir_.GetPath()));
+    SetTaskRunnerForTest();
+    StartLocalDatabaseManager();
+    WaitForTasksOnTaskRunner();
   }
 
   base::ScopedTempDir base_dir_;
@@ -315,14 +352,7 @@ TEST_F(V4LocalDatabaseManagerTest, TestChecksAreQueued) {
 // it uses a fake V4LocalDatabaseManager to assert that PerformFullHashCheck is
 // called async.
 TEST_F(V4LocalDatabaseManagerTest, PerformFullHashCheckCalledAsync) {
-  // StopLocalDatabaseManager before resetting it because that's what
-  // ~V4LocalDatabaseManager expects.
-  StopLocalDatabaseManager();
-  v4_local_database_manager_ =
-      make_scoped_refptr(new FakeV4LocalDatabaseManager(base_dir_.GetPath()));
-  SetTaskRunnerForTest();
-  StartLocalDatabaseManager();
-  WaitForTasksOnTaskRunner();
+  SetupFakeManager();
   net::TestURLFetcherFactory factory;
 
   StoreAndHashPrefixes store_and_hash_prefixes;
@@ -345,14 +375,7 @@ TEST_F(V4LocalDatabaseManagerTest, PerformFullHashCheckCalledAsync) {
 }
 
 TEST_F(V4LocalDatabaseManagerTest, UsingWeakPtrDropsCallback) {
-  // StopLocalDatabaseManager before resetting it because that's what
-  // ~V4LocalDatabaseManager expects.
-  StopLocalDatabaseManager();
-  v4_local_database_manager_ =
-      make_scoped_refptr(new FakeV4LocalDatabaseManager(base_dir_.GetPath()));
-  SetTaskRunnerForTest();
-  StartLocalDatabaseManager();
-  WaitForTasksOnTaskRunner();
+  SetupFakeManager();
   net::TestURLFetcherFactory factory;
 
   StoreAndHashPrefixes store_and_hash_prefixes;
@@ -375,13 +398,82 @@ TEST_F(V4LocalDatabaseManagerTest, UsingWeakPtrDropsCallback) {
   WaitForTasksOnTaskRunner();
 }
 
+TEST_F(V4LocalDatabaseManagerTest, TestMatchCsdWhitelistUrl) {
+  SetupFakeManager();
+  GURL good_url("http://safe.com");
+  GURL other_url("http://iffy.com");
+
+  StoreAndHashPrefixes store_and_hash_prefixes;
+  store_and_hash_prefixes.emplace_back(GetUrlCsdWhitelistId(),
+                                       HashForUrl(good_url));
+
+  ReplaceV4Database(store_and_hash_prefixes, false /* not available */);
+  // No match, but since we never loaded the whitelist (not available),
+  // it defaults to true.
+  EXPECT_TRUE(v4_local_database_manager_->MatchCsdWhitelistUrl(good_url));
+
+  ReplaceV4Database(store_and_hash_prefixes, true /* available */);
+  // Not whitelisted.
+  EXPECT_FALSE(v4_local_database_manager_->MatchCsdWhitelistUrl(other_url));
+  // Whitelisted.
+  EXPECT_TRUE(v4_local_database_manager_->MatchCsdWhitelistUrl(good_url));
+
+  EXPECT_FALSE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
+      v4_local_database_manager_));
+}
+
+TEST_F(V4LocalDatabaseManagerTest, TestMatchDownloadWhitelistString) {
+  SetupFakeManager();
+  FullHash good_hash(crypto::SHA256HashString("Good .exe contents"));
+  FullHash other_hash(crypto::SHA256HashString("Other .exe contents"));
+
+  StoreAndHashPrefixes store_and_hash_prefixes;
+  store_and_hash_prefixes.emplace_back(GetCertCsdDownloadWhitelistId(),
+                                       good_hash);
+
+  ReplaceV4Database(store_and_hash_prefixes, false /* not available */);
+  // Verify it defaults to false when DB is not available.
+  EXPECT_FALSE(
+      v4_local_database_manager_->MatchDownloadWhitelistString(good_hash));
+
+  ReplaceV4Database(store_and_hash_prefixes, true /* available */);
+  // Not whitelisted.
+  EXPECT_FALSE(
+      v4_local_database_manager_->MatchDownloadWhitelistString(other_hash));
+  // Whitelisted.
+  EXPECT_TRUE(
+      v4_local_database_manager_->MatchDownloadWhitelistString(good_hash));
+
+  EXPECT_FALSE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
+      v4_local_database_manager_));
+}
+
+TEST_F(V4LocalDatabaseManagerTest, TestMatchDownloadWhitelistUrl) {
+  SetupFakeManager();
+  GURL good_url("http://safe.com");
+  GURL other_url("http://iffy.com");
+
+  StoreAndHashPrefixes store_and_hash_prefixes;
+  store_and_hash_prefixes.emplace_back(GetCertCsdDownloadWhitelistId(),
+                                       HashForUrl(good_url));
+
+  ReplaceV4Database(store_and_hash_prefixes, false /* not available */);
+  // Verify it defaults to false when DB is not available.
+  EXPECT_FALSE(v4_local_database_manager_->MatchDownloadWhitelistUrl(good_url));
+
+  ReplaceV4Database(store_and_hash_prefixes, true /* available */);
+  // Not whitelisted.
+  EXPECT_FALSE(
+      v4_local_database_manager_->MatchDownloadWhitelistUrl(other_url));
+  // Whitelisted.
+  EXPECT_TRUE(v4_local_database_manager_->MatchDownloadWhitelistUrl(good_url));
+
+  EXPECT_FALSE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
+      v4_local_database_manager_));
+}
+
 TEST_F(V4LocalDatabaseManagerTest, TestMatchMalwareIP) {
-  StopLocalDatabaseManager();
-  v4_local_database_manager_ =
-      make_scoped_refptr(new FakeV4LocalDatabaseManager(base_dir_.GetPath()));
-  SetTaskRunnerForTest();
-  StartLocalDatabaseManager();
-  WaitForTasksOnTaskRunner();
+  SetupFakeManager();
 
   // >>> hashlib.sha1(socket.inet_pton(socket.AF_INET6,
   // '::ffff:192.168.1.2')).digest() + chr(128)
@@ -394,41 +486,43 @@ TEST_F(V4LocalDatabaseManagerTest, TestMatchMalwareIP) {
   ReplaceV4Database(store_and_hash_prefixes);
 
   EXPECT_FALSE(v4_local_database_manager_->MatchMalwareIP(""));
-  EXPECT_FALSE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
-      v4_local_database_manager_));
-
-  // The fake database returns no match.
+  // Not blacklisted.
   EXPECT_FALSE(v4_local_database_manager_->MatchMalwareIP("192.168.1.1"));
-  EXPECT_FALSE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
-      v4_local_database_manager_));
-
-  // The fake database returns a matched hash prefix.
+  // Blacklisted.
   EXPECT_TRUE(v4_local_database_manager_->MatchMalwareIP("192.168.1.2"));
+
   EXPECT_FALSE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
       v4_local_database_manager_));
 }
 
 TEST_F(V4LocalDatabaseManagerTest, TestMatchModuleWhitelist) {
-  StopLocalDatabaseManager();
-  v4_local_database_manager_ =
-      make_scoped_refptr(new FakeV4LocalDatabaseManager(base_dir_.GetPath()));
-  SetTaskRunnerForTest();
-  StartLocalDatabaseManager();
-  WaitForTasksOnTaskRunner();
+  SetupFakeManager();
 
   StoreAndHashPrefixes store_and_hash_prefixes;
   store_and_hash_prefixes.emplace_back(GetChromeFilenameClientIncidentId(),
                                        crypto::SHA256HashString("chrome.dll"));
 
-  ReplaceV4Database(store_and_hash_prefixes);
-
-  // No match -- i.e. not whitelisted
-  EXPECT_FALSE(
+  ReplaceV4Database(store_and_hash_prefixes, false /* not available */);
+  // No match, but since we never loaded the whitelist (not available),
+  // it defaults to true.
+  EXPECT_TRUE(
       v4_local_database_manager_->MatchModuleWhitelistString("badstuff.dll"));
 
+  ReplaceV4Database(store_and_hash_prefixes, true /* available */);
+  // Not whitelisted.
+  EXPECT_FALSE(
+      v4_local_database_manager_->MatchModuleWhitelistString("badstuff.dll"));
   // Whitelisted.
   EXPECT_TRUE(
       v4_local_database_manager_->MatchModuleWhitelistString("chrome.dll"));
+
+  EXPECT_FALSE(FakeV4LocalDatabaseManager::PerformFullHashCheckCalled(
+      v4_local_database_manager_));
 }
+
+// TODO(nparker): Add tests for
+//   CheckDownloadUrl()
+//   CheckExtensionIDs()
+//   CheckResourceUrl()
 
 }  // namespace safe_browsing

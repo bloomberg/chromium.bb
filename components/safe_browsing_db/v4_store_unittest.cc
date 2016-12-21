@@ -69,19 +69,23 @@ class V4StoreTest : public PlatformTest {
     } else {
       ASSERT_FALSE(store);
     }
+
+    updated_store_ = std::move(store);
   }
 
   base::ScopedTempDir temp_dir_;
   base::FilePath store_path_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   content::TestBrowserThreadBundle thread_bundle_;
+  std::unique_ptr<V4Store> updated_store_;
 };
 
 TEST_F(V4StoreTest, TestReadFromEmptyFile) {
   base::CloseFile(base::OpenFile(store_path_, "wb+"));
 
-  EXPECT_EQ(FILE_EMPTY_FAILURE,
-            V4Store(task_runner_, store_path_).ReadFromDisk());
+  V4Store store(task_runner_, store_path_);
+  EXPECT_EQ(FILE_EMPTY_FAILURE, store.ReadFromDisk());
+  EXPECT_FALSE(store.HasValidData());
 }
 
 TEST_F(V4StoreTest, TestReadFromAbsentFile) {
@@ -136,6 +140,7 @@ TEST_F(V4StoreTest, TestReadFromNoHashPrefixesFile) {
   EXPECT_EQ(READ_SUCCESS, store.ReadFromDisk());
   EXPECT_TRUE(store.hash_prefix_map_.empty());
   EXPECT_EQ(14, store.file_size_);
+  EXPECT_FALSE(store.HasValidData());
 }
 
 TEST_F(V4StoreTest, TestAddUnlumpedHashesWithInvalidAddition) {
@@ -724,6 +729,7 @@ TEST_F(V4StoreTest, TestRemovalsWithRiceEncodingSucceeds) {
   EXPECT_EQ(APPLY_UPDATE_SUCCESS,
             store.MergeUpdate(prefix_map_old, prefix_map_additions, nullptr,
                               expected_checksum));
+  EXPECT_FALSE(store.HasValidData());  // Never actually read from disk.
 
   // At this point, the store map looks like this:
   // 4: 1111abcdefgh
@@ -754,6 +760,9 @@ TEST_F(V4StoreTest, TestRemovalsWithRiceEncodingSucceeds) {
 
   // This ensures that the callback was called.
   EXPECT_TRUE(called_back);
+  // ApplyUpdate was successful, so we have valid data.
+  ASSERT_TRUE(updated_store_);
+  EXPECT_TRUE(updated_store_->HasValidData());
 }
 
 TEST_F(V4StoreTest, TestMergeUpdatesFailsChecksum) {
@@ -834,6 +843,7 @@ TEST_F(V4StoreTest, FullUpdateFailsChecksumSynchronously) {
       base::Bind(&V4StoreTest::UpdatedStoreReady, base::Unretained(this),
                  &called_back, false /* expect_store */);
   EXPECT_FALSE(base::PathExists(store.store_path_));
+  EXPECT_FALSE(store.HasValidData());  // Never actually read from disk.
 
   // Now create a response with invalid checksum.
   std::unique_ptr<ListUpdateResponse> lur(new ListUpdateResponse);
@@ -851,6 +861,7 @@ TEST_F(V4StoreTest, FullUpdateFailsChecksumSynchronously) {
   EXPECT_TRUE(called_back);
   // Ensure that the file is still not created.
   EXPECT_FALSE(base::PathExists(store.store_path_));
+  EXPECT_FALSE(updated_store_);
 }
 
 }  // namespace safe_browsing

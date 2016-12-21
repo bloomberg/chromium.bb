@@ -116,6 +116,13 @@ class V4Database {
   // Returns the current state of each of the stores being managed.
   std::unique_ptr<StoreStateMap> GetStoreStateMap();
 
+  // Check if all the selected stores are available and populated.
+  // Returns false if any of |stores_to_check| don't have valid data.
+  // A store may be unavailble if either it hasn't yet gotten a proper
+  // full-update (just after install, or corrupted/missing file), or if it's
+  // not supported in this build (i.e. Chromium).
+  virtual bool AreStoresAvailable(const StoresToCheck& stores_to_check) const;
+
   // Searches for a hash prefix matching the |full_hash| in stores in the
   // database, filtered by |stores_to_check|, and returns the identifier of the
   // store along with the matching hash prefix in |matched_hash_prefix_map|.

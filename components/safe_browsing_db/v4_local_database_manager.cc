@@ -240,13 +240,19 @@ bool V4LocalDatabaseManager::CheckExtensionIDs(
 bool V4LocalDatabaseManager::CheckResourceUrl(const GURL& url, Client* client) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!enabled_ || !CanCheckUrl(url)) {
+  StoresToCheck stores_to_check({GetChromeUrlClientIncidentId()});
+
+  if (!CanCheckUrl(url) || !AreStoresAvailableNow(stores_to_check)) {
+    // Fail open: Mark resource as safe immediately.
+    // TODO(nparker): This should queue the request if the DB isn't yet
+    // loaded, and later decide if this store is available.
+    // Currently this is the only store that requires full-hash-checks
+    // AND isn't supported on Chromium, so it's unique.
     return true;
   }
 
   std::unique_ptr<PendingCheck> check = base::MakeUnique<PendingCheck>(
-      client, ClientCallbackType::CHECK_RESOURCE_URL,
-      StoresToCheck({GetChromeUrlClientIncidentId()}),
+      client, ClientCallbackType::CHECK_RESOURCE_URL, stores_to_check,
       std::vector<GURL>(1, url));
 
   return HandleCheck(std::move(check));
@@ -255,37 +261,43 @@ bool V4LocalDatabaseManager::CheckResourceUrl(const GURL& url, Client* client) {
 bool V4LocalDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!enabled_ || !v4_database_) {
-    // To make sure we are conservative we return true.
+  StoresToCheck stores_to_check({GetUrlCsdWhitelistId()});
+  if (!AreStoresAvailableNow(stores_to_check)) {
+    // Fail open: Whitelist everything. Otherwise we may run the
+    // CSD phishing/malware detector on popular domains and generate
+    // undue load on the client and server. This has the effect of disabling
+    // CSD phishing/malware detection until the store is first synced.
     return true;
   }
 
-  return HandleUrlSynchronously(url, StoresToCheck({GetUrlCsdWhitelistId()}));
+  return HandleUrlSynchronously(url, stores_to_check);
 }
 
 bool V4LocalDatabaseManager::MatchDownloadWhitelistString(
     const std::string& str) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!enabled_ || !v4_database_) {
-    // To make sure we are conservative we return true.
-    return true;
+  StoresToCheck stores_to_check({GetCertCsdDownloadWhitelistId()});
+  if (!AreStoresAvailableNow(stores_to_check)) {
+    // Fail close: Whitelist nothing. This may generate download-protection
+    // pings for whitelisted binaries, but that's fine.
+    return false;
   }
 
-  return HandleHashSynchronously(
-      str, StoresToCheck({GetCertCsdDownloadWhitelistId()}));
+  return HandleHashSynchronously(str, stores_to_check);
 }
 
 bool V4LocalDatabaseManager::MatchDownloadWhitelistUrl(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!enabled_ || !v4_database_) {
-    // To make sure we are conservative we return true.
-    return true;
+  StoresToCheck stores_to_check({GetUrlCsdDownloadWhitelistId()});
+  if (!AreStoresAvailableNow(stores_to_check)) {
+    // Fail close: Whitelist nothing. This may generate download-protection
+    // pings for whitelisted domains, but that's fine.
+    return false;
   }
 
-  return HandleUrlSynchronously(
-      url, StoresToCheck({GetUrlCsdDownloadWhitelistId()}));
+  return HandleUrlSynchronously(url, stores_to_check);
 }
 
 bool V4LocalDatabaseManager::MatchMalwareIP(const std::string& ip_address) {
@@ -308,15 +320,16 @@ bool V4LocalDatabaseManager::MatchModuleWhitelistString(
     const std::string& str) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!enabled_ || !v4_database_) {
-    // To make sure we are conservative we return true.
+  StoresToCheck stores_to_check({GetChromeFilenameClientIncidentId()});
+  if (!AreStoresAvailableNow(stores_to_check)) {
+    // Fail open: Whitelist everything.  This has the effect of marking
+    // all DLLs as safe until the DB is synced and loaded.
     return true;
   }
 
   // str is the module's filename.  Convert to hash.
   FullHash hash = crypto::SHA256HashString(str);
-  return HandleHashSynchronously(
-      hash, StoresToCheck({GetChromeFilenameClientIncidentId()}));
+  return HandleHashSynchronously(hash, stores_to_check);
 }
 
 ThreatSource V4LocalDatabaseManager::GetThreatSource() const {
@@ -684,6 +697,12 @@ void V4LocalDatabaseManager::UpdateRequestCompleted(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   v4_database_->ApplyUpdate(std::move(parsed_server_response),
                             db_updated_callback_);
+}
+
+bool V4LocalDatabaseManager::AreStoresAvailableNow(
+    const StoresToCheck& stores_to_check) const {
+  return enabled_ && v4_database_ &&
+         v4_database_->AreStoresAvailable(stores_to_check);
 }
 
 }  // namespace safe_browsing

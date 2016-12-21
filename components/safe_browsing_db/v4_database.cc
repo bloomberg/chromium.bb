@@ -175,6 +175,19 @@ std::unique_ptr<StoreStateMap> V4Database::GetStoreStateMap() {
   return store_state_map;
 }
 
+bool V4Database::AreStoresAvailable(
+    const StoresToCheck& stores_to_check) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  for (const ListIdentifier& identifier : stores_to_check) {
+    const auto& store_pair = store_map_->find(identifier);
+    if (store_pair == store_map_->end())
+      return false;  // Store not in our list
+    if (!store_pair->second->HasValidData())
+      return false;  // Store never properly populated.
+  }
+  return true;
+}
+
 void V4Database::GetStoresMatchingFullHash(
     const FullHash& full_hash,
     const StoresToCheck& stores_to_check,

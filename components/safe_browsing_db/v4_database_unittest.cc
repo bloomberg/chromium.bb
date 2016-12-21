@@ -29,6 +29,8 @@ class FakeV4Store : public V4Store {
     return hash_prefix_should_match_ ? full_hash : HashPrefix();
   }
 
+  bool HasValidData() const override { return true; }
+
   void set_hash_prefix_matches(bool hash_prefix_matches) {
     hash_prefix_should_match_ = hash_prefix_matches;
   }
@@ -448,6 +450,30 @@ TEST_F(V4DatabaseTest, VerifyChecksumCalledAsync) {
   EXPECT_FALSE(verify_checksum_called_back_);
   WaitForTasksOnTaskRunner();
   EXPECT_TRUE(verify_checksum_called_back_);
+}
+
+// Test that we can properly check for unsupported stores
+TEST_F(V4DatabaseTest, TestStoresAvailable) {
+  bool hash_prefix_matches = false;
+  RegisterFactory(hash_prefix_matches);
+
+  V4Database::Create(task_runner_, database_dirname_, list_infos_,
+                     callback_db_ready_);
+  created_but_not_called_back_ = true;
+  WaitForTasksOnTaskRunner();
+  EXPECT_EQ(true, created_and_called_back_);
+
+  // Doesn't exist in out list
+  const ListIdentifier bogus_id(LINUX_PLATFORM, CHROME_EXTENSION,
+                                CSD_WHITELIST);
+
+  EXPECT_TRUE(v4_database_->AreStoresAvailable(
+      StoresToCheck({linux_malware_id_, win_malware_id_})));
+
+  EXPECT_FALSE(v4_database_->AreStoresAvailable(
+      StoresToCheck({linux_malware_id_, bogus_id})));
+
+  EXPECT_FALSE(v4_database_->AreStoresAvailable(StoresToCheck({bogus_id})));
 }
 
 }  // namespace safe_browsing

@@ -194,6 +194,10 @@ class V4Store {
   // of the hash prefixes.
   void Initialize();
 
+  // True if this store has valid contents, either from a successful read
+  // from disk or a full update.  This does not mean the checksum was verified.
+  virtual bool HasValidData() const;
+
   // Reset internal state.
   void Reset();
 
@@ -392,6 +396,10 @@ class V4Store {
 
   // The size of the file on disk for this store.
   int64_t file_size_;
+
+  // True if the file was successfully read+parsed or was populated from
+  // a full update.
+  bool has_valid_data_;
 
   // The state of the store as returned by the PVer4 server in the last applied
   // update response.

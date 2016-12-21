@@ -249,6 +249,10 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   void UpdateRequestCompleted(
       std::unique_ptr<ParsedServerResponse> parsed_server_response);
 
+  // Return true if we're enabled and have loaded real data for all of
+  // these stores.
+  bool AreStoresAvailableNow(const StoresToCheck& stores_to_check) const;
+
   // The base directory under which to create the files that contain hashes.
   const base::FilePath base_path_;
 
