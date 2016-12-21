@@ -336,15 +336,15 @@ var spellcheckTestRunning = false;
 const testQueue = [];
 
 /**
+ * @param {!Test} testObject
  * @param {!Sample|string} input
  * @param {function(!Document)|string} tester
  * @param {string} expectedText
- * @param {Object} args
  */
-function invokeSpellcheckTest(input, tester, expectedText, args) {
+function invokeSpellcheckTest(testObject, input, tester, expectedText) {
   spellcheckTestRunning = true;
 
-  async_test(testObject => {
+  testObject.step(() => {
     // TODO(xiaochengh): Merge the following part with |assert_selection|.
     /** @type {!Sample} */
     const sample = typeof(input) === 'string' ? new Sample(input) : input;
@@ -372,28 +372,37 @@ function invokeSpellcheckTest(input, tester, expectedText, args) {
         () => verifyMarkers(testObject, sample, expectedText,
                             kMaxRetry, kRetryInterval),
         kRetryInterval);
-  }, args[kTitle], args);
+  });
 }
 
 add_result_callback(testObj => {
     if (!testObj.properties[kIsSpellcheckTest])
       return;
-    spellcheckTestRunning = false;
 
+    /** @type {boolean} */
+    var shouldRemoveSample = false;
     if (testObj.status === testObj.PASS) {
-      if (testObj.properties[kCallback]) {
+      if (testObj.properties[kCallback])
         testObj.properties[kCallback](testObj.sample);
-      } else {
-        testObj.sample.remove();
-      }
+      else
+        shouldRemoveSample = true;
+    } else {
+      if (window.testRunner)
+        shouldRemoveSample = true;
     }
+
+    if (shouldRemoveSample)
+      testObj.sample.remove();
+
+    // This is the earliest timing when a new spellcheck_test can be started.
+    spellcheckTestRunning = false;
 
     /** @type {Object} */
     const next = testQueue.shift();
     if (next === undefined)
       return;
-    invokeSpellcheckTest(next.input, next.tester,
-                         next.expectedText, next.args);
+    invokeSpellcheckTest(next.testObject, next.input,
+                         next.tester, next.expectedText);
 });
 
 /**
@@ -428,15 +437,17 @@ function spellcheckTest(input, tester, expectedText, opt_args) {
 
   /** @type {!Object} */
   const args = getTestArguments(opt_args);
+  /** @type {!Test}  */
+  const testObject = async_test(args[kTitle], args);
 
   if (spellcheckTestRunning) {
     testQueue.push({
-        input: input, tester: tester,
-        expectedText: expectedText, args: args});
+        testObject: testObject, input: input,
+        tester: tester, expectedText: expectedText});
     return;
   }
 
-  invokeSpellcheckTest(input, tester, expectedText, args);
+  invokeSpellcheckTest(testObject, input, tester, expectedText);
 }
 
 // Export symbols
