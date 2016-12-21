@@ -196,7 +196,7 @@ class MojomProcessor(object):
       with open(rel_filename.path) as f:
         source = f.read()
     except IOError as e:
-      print "%s: Error: %s" % (e.rel_filename.path, e.strerror) + \
+      print "%s: Error: %s" % (rel_filename.path, e.strerror) + \
           MakeImportStackMessage(imported_filename_stack + [rel_filename.path])
       sys.exit(1)
 
