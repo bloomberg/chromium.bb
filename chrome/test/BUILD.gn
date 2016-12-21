@@ -2555,16 +2555,9 @@ test("browser_tests") {
         "../browser/apps/drive/drive_app_provider_browsertest.cc",
         "../browser/ui/app_list/app_list_controller_browsertest.cc",
         "../browser/ui/app_list/app_list_service_impl_browsertest.cc",
-        "../browser/ui/app_list/app_list_service_views_browsertest.cc",
         "../browser/ui/app_list/search/webstore/webstore_provider_browsertest.cc",
         "../browser/ui/app_list/speech_recognizer_browsertest.cc",
       ]
-      if (is_mac) {
-        # This assumes the AppList is views-based, but Mac only links
-        # browser parts for the Cocoa implementation.
-        sources -=
-            [ "../browser/ui/app_list/app_list_service_views_browsertest.cc" ]
-      }
     }
     if (enable_service_discovery) {
       sources += [ "../browser/extensions/api/mdns/mdns_apitest.cc" ]
@@ -4841,14 +4834,17 @@ test("unit_tests") {
     sources += [
       "../browser/apps/drive/drive_app_mapping_unittest.cc",
       "../browser/ui/app_list/app_context_menu_unittest.cc",
-      "../browser/ui/app_list/app_list_positioner_unittest.cc",
       "../browser/ui/app_list/app_list_service_unittest.cc",
       "../browser/ui/app_list/app_list_test_util.cc",
       "../browser/ui/app_list/app_list_test_util.h",
+      "../browser/ui/app_list/arc/arc_app_test.cc",
+      "../browser/ui/app_list/arc/arc_app_test.h",
+      "../browser/ui/app_list/arc/arc_app_unittest.cc",
       "../browser/ui/app_list/extension_app_model_builder_unittest.cc",
       "../browser/ui/app_list/profile_loader_unittest.cc",
       "../browser/ui/app_list/search/app_search_provider_unittest.cc",
       "../browser/ui/app_list/search/history_unittest.cc",
+      "../browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader_unittest.cc",
       "../browser/ui/app_list/search/omnibox_result_unittest.cc",
       "../browser/ui/app_list/search/suggestions/suggestions_search_provider_unittest.cc",
       "../browser/ui/app_list/speech_auth_helper_unittest.cc",
@@ -4856,22 +4852,12 @@ test("unit_tests") {
       "../browser/ui/app_list/test/fake_profile.h",
       "../browser/ui/app_list/test/fake_profile_store.cc",
       "../browser/ui/app_list/test/fake_profile_store.h",
-      "../browser/ui/app_list/test/fast_show_pickler_unittest.cc",
-      "../browser/ui/views/app_list/linux/app_list_linux_unittest.cc",
-    ]
-    deps += [ "//ui/app_list:test_support" ]
-  }
-  if (enable_app_list && is_chromeos) {
-    sources += [
-      "../browser/ui/app_list/arc/arc_app_test.cc",
-      "../browser/ui/app_list/arc/arc_app_test.h",
-      "../browser/ui/app_list/arc/arc_app_unittest.cc",
-      "../browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader_unittest.cc",
       "../browser/ui/views/apps/app_info_dialog/app_info_dialog_ash_unittest.cc",
     ]
-    sources -=
-        [ "../browser/ui/views/app_list/linux/app_list_linux_unittest.cc" ]
-    deps += [ "//components/arc:arc_test_support" ]
+    deps += [
+      "//components/arc:arc_test_support",
+      "//ui/app_list:test_support",
+    ]
   }
   if (enable_plugins && !enable_plugin_installation) {
     sources -= [ "../browser/plugins/plugin_installer_unittest.cc" ]

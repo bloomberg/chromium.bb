@@ -10,14 +10,14 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
-#include "chrome/browser/ui/app_list/app_list_service_views.h"
-#include "chrome/browser/ui/app_list/app_list_shower_views.h"
+#include "chrome/browser/ui/ash/app_list/test/app_list_service_ash_test_api.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "ui/app_list/app_list_switches.h"
+#include "ui/app_list/presenter/app_list_presenter_impl.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
@@ -28,11 +28,6 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/focus_manager.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/app_list/test/app_list_service_ash_test_api.h"
-#include "ui/app_list/presenter/app_list_presenter_impl.h"
-#endif
 
 namespace {
 
@@ -75,18 +70,9 @@ class CustomLauncherPageBrowserTest
 
   app_list::AppListView* GetAppListView() {
     app_list::AppListView* app_list_view = nullptr;
-#if defined(OS_CHROMEOS)
     AppListServiceAshTestApi service_test;
     app_list_view = service_test.GetAppListView();
     EXPECT_TRUE(service_test.GetAppListPresenter()->GetTargetVisibility());
-#else
-    AppListServiceViews* service =
-        static_cast<AppListServiceViews*>(AppListService::Get());
-    // The app list should have loaded instantly since the profile is already
-    // loaded.
-    EXPECT_TRUE(service->IsAppListVisible());
-    app_list_view = service->shower().app_list();
-#endif
     return app_list_view;
   }
 
@@ -222,16 +208,13 @@ IN_PROC_BROWSER_TEST_F(CustomLauncherPageBrowserTest,
   const int num_steps = 5;
   const int num_fingers = 2;
 
-#if defined(OS_CHROMEOS)
-  // Gesture events need to be in host coordinates. On Desktop platforms, the
-  // Widget is the host, so nothing needs to be done. On ChromeOS, the points
-  // need to be put into screen coordinates. This works because the root window
-  // assumes it fills the screen.
+  // Gesture events need to be in host coordinates. The points need to be put
+  // into screen coordinates. This works because the root window assumes it
+  // fills the screen.
   point_in_clickzone = bounds.CenterPoint();
   point_above_clickzone.SetPoint(point_in_clickzone.x(), bounds.y() - 10);
   views::View::ConvertPointToScreen(contents_view, &point_above_clickzone);
   views::View::ConvertPointToScreen(contents_view, &point_in_clickzone);
-#endif
 
   // Back to the start page. And send a scroll gesture.
   SetActiveStateAndVerify(app_list::AppListModel::STATE_START);

@@ -21,17 +21,14 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/chromeos_switches.h"
+#include "components/user_manager/user_names.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/search_result.h"
 #include "ui/app_list/search_result_observer.h"
 #include "ui/base/models/list_model_observer.h"
-
-#if defined(OS_CHROMEOS)
-#include "chromeos/chromeos_switches.h"
-#include "components/user_manager/user_names.h"
-#endif  // defined(OS_CHROMEOS)
 
 // Browser Test for AppListController that runs on all platforms supporting
 // app_list.
@@ -165,8 +162,6 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
   service->DismissAppList();
 }
 
-#if defined(OS_CHROMEOS)
-
 class AppListControllerGuestModeBrowserTest : public InProcessBrowserTest {
  public:
   AppListControllerGuestModeBrowserTest() {}
@@ -196,5 +191,3 @@ IN_PROC_BROWSER_TEST_F(AppListControllerGuestModeBrowserTest, Incognito) {
   service->ShowForProfile(browser()->profile());
   EXPECT_EQ(browser()->profile(), service->GetCurrentAppListProfile());
 }
-
-#endif  // defined(OS_CHROMEOS)
