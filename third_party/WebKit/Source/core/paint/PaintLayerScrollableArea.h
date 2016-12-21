@@ -476,6 +476,12 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void invalidateStickyConstraintsFor(PaintLayer*,
                                       bool needsCompositingUpdate = true);
 
+  void removeStyleRelatedMainThreadScrollingReasons();
+  void addStyleRelatedMainThreadScrollingReasons(const uint32_t);
+  bool hasMainThreadScrollingReason(uint32_t reason) const {
+    return m_reasons & reason;
+  }
+
   uint64_t id() const;
 
   DECLARE_VIRTUAL_TRACE();
@@ -531,6 +537,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
     return *m_rareData.get();
   }
 
+  bool computeNeedsCompositedScrolling(const LCDTextMode, const PaintLayer*);
   PaintLayer& m_layer;
 
   PaintLayer* m_nextTopmostScrollChild;
@@ -581,6 +588,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
   ScrollAnchor m_scrollAnchor;
 
   std::unique_ptr<PaintLayerScrollableAreaRareData> m_rareData;
+
+  // MainThreadScrollingReason due to the properties of the LayoutObject
+  uint32_t m_reasons;
 
 #if ENABLE(ASSERT)
   bool m_hasBeenDisposed;

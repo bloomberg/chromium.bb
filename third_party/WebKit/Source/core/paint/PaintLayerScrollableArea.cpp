@@ -106,7 +106,8 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       m_scrollbarManager(*this),
       m_scrollCorner(nullptr),
       m_resizer(nullptr),
-      m_scrollAnchor(this)
+      m_scrollAnchor(this),
+      m_reasons(0)
 #if DCHECK_IS_ON()
       ,
       m_hasBeenDisposed(false)
@@ -143,6 +144,8 @@ void PaintLayerScrollableArea::dispose() {
       frameView->removeAnimatingScrollableArea(this);
     }
   }
+
+  removeStyleRelatedMainThreadScrollingReasons();
 
   if (ScrollingCoordinator* scrollingCoordinator = getScrollingCoordinator())
     scrollingCoordinator->willDestroyScrollableArea(this);
@@ -1721,8 +1724,8 @@ bool PaintLayerScrollableArea::shouldScrollOnMainThread() const {
   return ScrollableArea::shouldScrollOnMainThread();
 }
 
-static bool layerNeedsCompositedScrolling(
-    PaintLayerScrollableArea::LCDTextMode mode,
+bool PaintLayerScrollableArea::computeNeedsCompositedScrolling(
+    const LCDTextMode mode,
     const PaintLayer* layer) {
   if (!layer->scrollsOverflow())
     return false;
@@ -1743,10 +1746,16 @@ static bool layerNeedsCompositedScrolling(
       layer->backgroundIsKnownToBeOpaqueInRect(
           toLayoutBox(layer->layoutObject())->paddingBoxRect()) &&
       !layer->compositesWithTransform() && !layer->compositesWithOpacity();
+
   if (mode == PaintLayerScrollableArea::ConsiderLCDText &&
       !layer->compositor()->preferCompositingToLCDTextEnabled() &&
-      !backgroundSupportsLCDText)
+      !backgroundSupportsLCDText) {
+    if (layer->compositesWithOpacity()) {
+      addStyleRelatedMainThreadScrollingReasons(
+          MainThreadScrollingReason::kHasOpacity);
+    }
     return false;
+  }
 
   // TODO(schenney) Tests fail if we do not also exclude
   // layer->layoutObject()->style()->hasBorderDecoration() (missing background
@@ -1757,10 +1766,47 @@ static bool layerNeedsCompositedScrolling(
            layer->layoutObject()->style()->hasBorderRadius());
 }
 
+void PaintLayerScrollableArea::addStyleRelatedMainThreadScrollingReasons(
+    const uint32_t reason) {
+  LocalFrame* frame = box().frame();
+  if (!frame)
+    return;
+  FrameView* frameView = frame->view();
+  if (!frameView)
+    return;
+
+  frameView->adjustStyleRelatedMainThreadScrollingReasons(reason, true);
+  m_reasons |= reason;
+}
+
+void PaintLayerScrollableArea::removeStyleRelatedMainThreadScrollingReasons() {
+  LocalFrame* frame = box().frame();
+  if (!frame)
+    return;
+  FrameView* frameView = frame->view();
+  if (!frameView)
+    return;
+
+  // Decrese the number of layers that have any main thread
+  // scrolling reasons stored in FrameView
+  for (uint32_t i = 0;
+       i < MainThreadScrollingReason::kMainThreadScrollingReasonCount; ++i) {
+    uint32_t reason = 1 << i;
+    if (hasMainThreadScrollingReason(reason)) {
+      m_reasons &= ~reason;
+      frameView->adjustStyleRelatedMainThreadScrollingReasons(reason, false);
+    }
+  }
+}
+
 void PaintLayerScrollableArea::updateNeedsCompositedScrolling(
     LCDTextMode mode) {
+  // Clear all style related main thread scrolling reasons, if any,
+  // before calling computeNeedsCompositedScrolling
+  removeStyleRelatedMainThreadScrollingReasons();
   const bool needsCompositedScrolling =
-      layerNeedsCompositedScrolling(mode, layer());
+      computeNeedsCompositedScrolling(mode, layer());
+
   if (static_cast<bool>(m_needsCompositedScrolling) !=
       needsCompositedScrolling) {
     m_needsCompositedScrolling = needsCompositedScrolling;

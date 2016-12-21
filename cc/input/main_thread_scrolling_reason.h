@@ -31,6 +31,7 @@ struct MainThreadScrollingReason {
     // animation running on the main thread or on the compositor thread.
     kHandlingScrollFromMainThread = 1 << 13,
     kCustomScrollbarScrolling = 1 << 15,
+    kHasOpacity = 1 << 16,
 
     // Transient scrolling reasons. These are computed for each scroll begin.
     kNonFastScrollableRegion = 1 << 5,
@@ -42,7 +43,7 @@ struct MainThreadScrollingReason {
     kPageBasedScrolling = 1 << 12,
 
     // The number of flags in this struct (excluding itself).
-    kMainThreadScrollingReasonCount = 17,
+    kMainThreadScrollingReasonCount = 18,
   };
 
   // Returns true if the given MainThreadScrollingReason can be set by the main
@@ -52,7 +53,7 @@ struct MainThreadScrollingReason {
         kNotScrollingOnMain | kHasBackgroundAttachmentFixedObjects |
         kHasNonLayerViewportConstrainedObjects | kThreadedScrollingDisabled |
         kScrollbarScrolling | kPageOverlay | kHandlingScrollFromMainThread |
-        kCustomScrollbarScrolling;
+        kCustomScrollbarScrolling | kHasOpacity;
     return (reasons & reasons_set_by_main_thread) == reasons;
   }
 
@@ -97,6 +98,8 @@ struct MainThreadScrollingReason {
       tracedValue->AppendString("Handling scroll from main thread");
     if (reasons & MainThreadScrollingReason::kCustomScrollbarScrolling)
       tracedValue->AppendString("Custom scrollbar scrolling");
+    if (reasons & MainThreadScrollingReason::kHasOpacity)
+      tracedValue->AppendString("Has opacity");
 
     // Transient scrolling reasons.
     if (reasons & MainThreadScrollingReason::kNonFastScrollableRegion)
@@ -114,6 +117,20 @@ struct MainThreadScrollingReason {
     if (reasons & MainThreadScrollingReason::kPageBasedScrolling)
       tracedValue->AppendString("Page-based scrolling");
     tracedValue->EndArray();
+  }
+
+  // For a given reason, return its index in enum
+  static int getReasonIndex(uint32_t reason) {
+    // Multiple reasons provided
+    if (reason & (reason - 1))
+      return -1;
+
+    int index = 0;
+    while (reason > 0) {
+      reason = reason >> 1;
+      ++index;
+    }
+    return index;
   }
 };
 

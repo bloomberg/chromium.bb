@@ -197,7 +197,10 @@ FrameView::FrameView(LocalFrame& frame)
       m_needsScrollbarsUpdate(false),
       m_suppressAdjustViewSize(false),
       m_allowsLayoutInvalidationAfterLayoutClean(true),
-      m_mainThreadScrollingReasons(0) {
+      m_mainThreadScrollingReasons(0),
+      m_mainThreadScrollingReasonsCounter(
+          MainThreadScrollingReason::kMainThreadScrollingReasonCount,
+          0) {
   init();
 }
 
@@ -4787,6 +4790,9 @@ MainThreadScrollingReasons FrameView::mainThreadScrollingReasonsPerFrame()
 
   if (hasBackgroundAttachmentFixedObjects())
     reasons |= MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
+
+  reasons |= getStyleRelatedMainThreadScrollingReasons();
+
   ScrollingReasons scrollingReasons = getScrollingReasons();
   const bool mayBeScrolledByInput = (scrollingReasons == Scrollable);
   const bool mayBeScrolledByScript =
@@ -4849,6 +4855,29 @@ String FrameView::mainThreadScrollingReasonsAsText() const {
                     m_mainThreadScrollingReasons)
                     .c_str());
   return result;
+}
+
+void FrameView::adjustStyleRelatedMainThreadScrollingReasons(
+    const uint32_t reason,
+    bool increase) {
+  int index = MainThreadScrollingReason::getReasonIndex(reason);
+  DCHECK_GE(index, 0);
+  m_mainThreadScrollingReasonsCounter[index] += increase ? 1 : -1;
+  DCHECK_GE(m_mainThreadScrollingReasonsCounter[index], 0);
+}
+
+MainThreadScrollingReasons
+FrameView::getStyleRelatedMainThreadScrollingReasons() const {
+  MainThreadScrollingReasons reasons =
+      static_cast<MainThreadScrollingReasons>(0);
+  for (uint32_t reason = 1;
+       reason < MainThreadScrollingReason::kMainThreadScrollingReasonCount;
+       ++reason) {
+    if (m_mainThreadScrollingReasonsCounter[reason] > 0) {
+      reasons |= 1 << (reason - 1);
+    }
+  }
+  return reasons;
 }
 
 }  // namespace blink

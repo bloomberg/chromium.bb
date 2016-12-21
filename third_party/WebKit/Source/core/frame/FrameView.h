@@ -805,6 +805,10 @@ class CORE_EXPORT FrameView final
   // Main thread scrolling reasons for this object only. For all reasons,
   // see: mainThreadScrollingReasons().
   MainThreadScrollingReasons mainThreadScrollingReasonsPerFrame() const;
+  void adjustStyleRelatedMainThreadScrollingReasons(const uint32_t reason,
+                                                    bool increase);
+  MainThreadScrollingReasons getStyleRelatedMainThreadScrollingReasons() const;
+
   bool hasVisibleSlowRepaintViewportConstrainedObjects() const;
 
  protected:
@@ -1176,6 +1180,11 @@ class CORE_EXPORT FrameView final
 
   bool m_isStoringCompositedLayerDebugInfo;
   MainThreadScrollingReasons m_mainThreadScrollingReasons;
+  // For recording main thread scrolling reasons
+  // due to layout object properties. e.g. opacity, transform.
+  // The size of the vector depends on the number of
+  // main thread scrolling reasons.
+  Vector<int> m_mainThreadScrollingReasonsCounter;
 };
 
 inline void FrameView::incrementVisuallyNonEmptyCharacterCount(unsigned count) {

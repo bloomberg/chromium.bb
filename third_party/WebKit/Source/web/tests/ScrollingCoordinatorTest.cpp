@@ -1029,4 +1029,51 @@ TEST_F(ScrollingCoordinatorTest,
       MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects);
 }
 
+TEST_F(ScrollingCoordinatorTest, StyleRelatedMainThreadScrollingReason) {
+  registerMockedHttpURLLoad("two_transparent_scrollable_area.html");
+  navigateTo(m_baseURL + "two_transparent_scrollable_area.html");
+  webViewImpl()->settings()->setPreferCompositingToLCDTextEnabled(false);
+  forceFullCompositingUpdate();
+
+  FrameView* frameView = frame()->view();
+  ASSERT_TRUE(frameView);
+  ASSERT_TRUE(frameView->mainThreadScrollingReasons() &
+              MainThreadScrollingReason::kHasOpacity);
+
+  // Remove opacity from one of the scrollers.
+  // Still need to scroll on main thread.
+  Document* document = frame()->document();
+  Element* container = document->getElementById("scroller1");
+  DCHECK(container);
+
+  container->removeAttribute("class");
+  forceFullCompositingUpdate();
+
+  ASSERT_TRUE(frameView->mainThreadScrollingReasons() &
+              MainThreadScrollingReason::kHasOpacity);
+
+  // Remove opacity from the other scroller would lead to
+  // scroll on impl.
+  container = document->getElementById("scroller2");
+  DCHECK(container);
+
+  container->removeAttribute("class");
+  forceFullCompositingUpdate();
+
+  ASSERT_FALSE(frameView->mainThreadScrollingReasons() &
+               MainThreadScrollingReason::kHasOpacity);
+
+  // Add opacity would again lead to scroll on main thread
+  container->setAttribute("class", "transparent", ASSERT_NO_EXCEPTION);
+  forceFullCompositingUpdate();
+
+  ASSERT_TRUE(frameView->mainThreadScrollingReasons() &
+              MainThreadScrollingReason::kHasOpacity);
+
+  webViewImpl()->settings()->setPreferCompositingToLCDTextEnabled(true);
+  forceFullCompositingUpdate();
+
+  ASSERT_FALSE(frameView->mainThreadScrollingReasons());
+}
+
 }  // namespace blink
