@@ -98,8 +98,10 @@ window.Audit = (function () {
       this._expected = null;
       this._expectedDescription = null;
 
-      this._result = true;
       this._detail = '';
+      this._printActualForFailure = true;
+
+      this._result = null;
 
       /**
        * @param {Number} numberOfErrors   Number of errors to be printed.
@@ -132,10 +134,14 @@ window.Audit = (function () {
     }
 
     _buildResultText () {
-      if (!this._actualDescription) {
-        this._actualDescription =
-            _generateDescription(this._actual, this._options);
-      }
+      if (this._result === null)
+        _throwException('Illegal invocation: the assertion is not finished.');
+
+      let actualString = _generateDescription(this._actual, this._options);
+
+      // Use generated text when the description is not provided.
+      if (!this._actualDescription)
+        this._actualDescription = actualString;
 
       if (!this._expectedDescription) {
         this._expectedDescription =
@@ -167,6 +173,11 @@ window.Audit = (function () {
         re = re.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');
         this._detail = this._detail.replace(new RegExp(re, 'g'),
             _generateDescription(this._options[name]));
+      }
+
+      // If the test failed, add the actual value at the end.
+      if (this._result === false && this._printActualForFailure === true) {
+        this._detail += ' Got ' + actualString + '.';
       }
     }
 
@@ -248,6 +259,7 @@ window.Audit = (function () {
      */
     throw () {
       this._processArguments(arguments);
+      this._printActualForFailure = false;
 
       let didThrowCorrectly = false;
       let passDetail, failDetail;
@@ -285,6 +297,8 @@ window.Audit = (function () {
      *   "PASS   let foo = "bar" did not throw an exception."
      */
     notThrow () {
+      this._printActualForFailure = false;
+
       let didThrowCorrectly = false;
       let passDetail, failDetail;
 
@@ -487,6 +501,7 @@ window.Audit = (function () {
      */
     beConstantValueOf () {
       this._processArguments(arguments);
+      this._printActualForFailure = false;
 
       let passed = true;
       let passDetail, failDetail;
@@ -505,7 +520,7 @@ window.Audit = (function () {
       } else {
         let counter = 0;
         failDetail = 'Expected ${expected} for all values but found '
-            + numberOfErrors + ' unexpected values. : ';
+            + numberOfErrors + ' unexpected values: ';
         failDetail += '\n\tIndex\tActual';
         for (let errorIndex in errors) {
           failDetail += '\n\t[' + errorIndex + ']'
@@ -532,6 +547,7 @@ window.Audit = (function () {
      */
     beEqualToArray () {
       this._processArguments(arguments);
+      this._printActualForFailure = false;
 
       let passed = true;
       let passDetail, failDetail;
@@ -585,6 +601,7 @@ window.Audit = (function () {
      */
     containValues () {
       this._processArguments(arguments);
+      this._printActualForFailure = false;
 
       let passed = true;
       let indexedActual = [];
@@ -633,6 +650,7 @@ window.Audit = (function () {
      */
     notGlitch () {
       this._processArguments(arguments);
+      this._printActualForFailure = false;
 
       let passed = true;
       let passDetail, failDetail;
@@ -672,11 +690,13 @@ window.Audit = (function () {
       let absExpected = this._expected ? Math.abs(this._expected) : 1;
       let error = Math.abs(this._actual - this._expected) / absExpected;
 
+      // debugger;
+
       return this._assert(
           error <= this._options.threshold,
           '${actual} is ${expected} within an error of ${threshold}.',
-          '${actual} is not close to ${expected} within an error of ' +
-            '${threshold}');
+          '${actual} is not close to ${expected} within a relative error of ' +
+            '${threshold} (RelErr=' + error + ').');
     }
 
     /**
@@ -697,6 +717,7 @@ window.Audit = (function () {
      */
     beCloseToArray () {
       this._processArguments(arguments);
+      this._printActualForFailure = false;
 
       let passed = true;
       let passDetail, failDetail;
