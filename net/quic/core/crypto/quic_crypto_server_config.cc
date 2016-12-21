@@ -900,7 +900,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
     char plaintext[kMaxPacketSize];
     size_t plaintext_length = 0;
     const bool success = crypters.decrypter->DecryptPacket(
-        kDefaultPathId, 0 /* packet number */,
+        QUIC_VERSION_35, kDefaultPathId, 0 /* packet number */,
         StringPiece() /* associated data */, cetv_ciphertext, plaintext,
         &plaintext_length, kMaxPacketSize);
     if (!success) {

@@ -169,3 +169,12 @@ QUIC_FLAG(bool, FLAGS_quic_large_ifw_options, false)
 
 // If true, fix Cubic\'s use of kBetaLastMax for n-connection emulation.
 QUIC_FLAG(bool, FLAGS_quic_fix_beta_last_max, false)
+
+// If true, enable QUIC v37.
+QUIC_FLAG(bool, FLAGS_quic_enable_version_37, false)
+
+// If true, disables QUIC v34.
+QUIC_FLAG(bool, FLAGS_quic_disable_version_34, false)
+
+// Allow quic to properly support proxying 100 Continue responses.
+QUIC_FLAG(bool, FLAGS_quic_supports_100_continue, false)

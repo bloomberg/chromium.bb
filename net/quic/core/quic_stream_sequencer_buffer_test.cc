@@ -138,7 +138,7 @@ TEST_F(QuicStreamSequencerBufferTest, OnStreamDataWithinBlock) {
 TEST_F(QuicStreamSequencerBufferTest, OnStreamDataInvalidSource) {
   // Pass in an invalid source, expects to return error.
   StringPiece source;
-  source.set(nullptr, 1024);
+  source = StringPiece(nullptr, 1024);
   size_t written;
   clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
   QuicTime t = clock_.ApproximateNow();

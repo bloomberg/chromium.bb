@@ -119,8 +119,9 @@ class TestSession : public QuicSpdySession {
         crypto_stream_(this),
         writev_consumes_all_data_(false) {
     Initialize();
-    this->connection()->SetEncrypter(ENCRYPTION_FORWARD_SECURE,
-                                     new NullEncrypter());
+    this->connection()->SetEncrypter(
+        ENCRYPTION_FORWARD_SECURE,
+        new NullEncrypter(connection->perspective()));
   }
 
   ~TestSession() override { delete connection(); }
