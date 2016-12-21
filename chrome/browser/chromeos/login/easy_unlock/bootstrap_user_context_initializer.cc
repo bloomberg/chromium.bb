@@ -178,7 +178,7 @@ void BootstrapUserContextInitializer::OnGetUserInfoResponse(
   }
 
   user_context_.SetAccountId(user_manager::known_user::GetAccountId(
-      user_manager::CanonicalizeUserID(email), gaia_id));
+      user_manager::CanonicalizeUserID(email), gaia_id, AccountType::GOOGLE));
   StartCheckExistingKeys();
 }
 

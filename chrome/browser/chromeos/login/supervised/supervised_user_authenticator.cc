@@ -70,7 +70,7 @@ void Mount(SupervisedUserAuthenticator::AuthAttempt* attempt,
   Key key(attempt->password);
   key.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, system_salt);
   const AccountId account_id = user_manager::known_user::GetAccountId(
-      attempt->username, std::string() /* gaia_id */);
+      attempt->username, std::string() /* id */, AccountType::UNKNOWN);
   const cryptohome::Identification cryptohome_id(account_id);
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncMount(
       cryptohome_id, key.GetSecret(), flags,
@@ -95,7 +95,7 @@ void AddKey(SupervisedUserAuthenticator::AuthAttempt* attempt,
   Key master_key(plain_text_master_key);
   master_key.Transform(Key::KEY_TYPE_SALTED_SHA256_TOP_HALF, system_salt);
   const AccountId account_id = user_manager::known_user::GetAccountId(
-      attempt->username, std::string() /* gaia_id */);
+      attempt->username, std::string() /* id */, AccountType::UNKNOWN);
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncAddKey(
       cryptohome::Identification(account_id), user_key.GetSecret(),
       master_key.GetSecret(),

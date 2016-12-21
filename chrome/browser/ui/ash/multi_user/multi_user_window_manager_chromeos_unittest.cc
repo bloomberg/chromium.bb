@@ -53,9 +53,12 @@
 
 namespace {
 
-const char kAAccountIdString[] = "{\"email\":\"A\",\"gaia_id\":\"\"}";
-const char kBAccountIdString[] = "{\"email\":\"B\",\"gaia_id\":\"\"}";
-const char kArrowBAccountIdString[] = "->{\"email\":\"B\",\"gaia_id\":\"\"}";
+const char kAAccountIdString[] =
+    "{\"account_type\":\"google\",\"email\":\"A\",\"gaia_id\":\"\"}";
+const char kBAccountIdString[] =
+    "{\"account_type\":\"google\",\"email\":\"B\",\"gaia_id\":\"\"}";
+const char kArrowBAccountIdString[] =
+    "->{\"account_type\":\"google\",\"email\":\"B\",\"gaia_id\":\"\"}";
 
 // TOOD(beng): This implementation seems only superficially different to the
 //             production impl. Evaluate whether or not we can just use that

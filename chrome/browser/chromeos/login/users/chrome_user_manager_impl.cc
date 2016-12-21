@@ -500,8 +500,8 @@ void ChromeUserManagerImpl::Observe(
 
 void ChromeUserManagerImpl::OnExternalDataSet(const std::string& policy,
                                               const std::string& user_id) {
-  const AccountId account_id =
-      user_manager::known_user::GetAccountId(user_id, std::string());
+  const AccountId account_id = user_manager::known_user::GetAccountId(
+      user_id, std::string() /* id */, AccountType::UNKNOWN);
   if (policy == policy::key::kUserAvatarImage)
     GetUserImageManager(account_id)->OnExternalDataSet(policy);
   else if (policy == policy::key::kWallpaperImage)
@@ -512,8 +512,8 @@ void ChromeUserManagerImpl::OnExternalDataSet(const std::string& policy,
 
 void ChromeUserManagerImpl::OnExternalDataCleared(const std::string& policy,
                                                   const std::string& user_id) {
-  const AccountId account_id =
-      user_manager::known_user::GetAccountId(user_id, std::string());
+  const AccountId account_id = user_manager::known_user::GetAccountId(
+      user_id, std::string() /* id */, AccountType::UNKNOWN);
   if (policy == policy::key::kUserAvatarImage)
     GetUserImageManager(account_id)->OnExternalDataCleared(policy);
   else if (policy == policy::key::kWallpaperImage)
@@ -526,8 +526,8 @@ void ChromeUserManagerImpl::OnExternalDataFetched(
     const std::string& policy,
     const std::string& user_id,
     std::unique_ptr<std::string> data) {
-  const AccountId account_id =
-      user_manager::known_user::GetAccountId(user_id, std::string());
+  const AccountId account_id = user_manager::known_user::GetAccountId(
+      user_id, std::string() /* id */, AccountType::UNKNOWN);
   if (policy == policy::key::kUserAvatarImage)
     GetUserImageManager(account_id)
         ->OnExternalDataFetched(policy, std::move(data));
@@ -539,8 +539,8 @@ void ChromeUserManagerImpl::OnExternalDataFetched(
 }
 
 void ChromeUserManagerImpl::OnPolicyUpdated(const std::string& user_id) {
-  const AccountId account_id =
-      user_manager::known_user::GetAccountId(user_id, std::string());
+  const AccountId account_id = user_manager::known_user::GetAccountId(
+      user_id, std::string() /* id */, AccountType::UNKNOWN);
   const user_manager::User* user = FindUser(account_id);
   if (!user || user->GetType() != user_manager::USER_TYPE_PUBLIC_ACCOUNT)
     return;
@@ -1216,8 +1216,8 @@ void ChromeUserManagerImpl::UpdateUserTimeZoneRefresher(Profile* profile) {
 void ChromeUserManagerImpl::SetUserAffiliation(
     const std::string& user_email,
     const AffiliationIDSet& user_affiliation_ids) {
-  const AccountId& account_id =
-      user_manager::known_user::GetAccountId(user_email, std::string());
+  const AccountId& account_id = user_manager::known_user::GetAccountId(
+      user_email, std::string() /* id */, AccountType::UNKNOWN);
   user_manager::User* user = FindUserAndModify(account_id);
 
   if (user) {
