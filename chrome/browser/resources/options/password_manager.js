@@ -160,14 +160,24 @@ cr.define('options', function() {
     },
 
     /**
-     * Updates the visibility of the list and empty list placeholder.
+     * Updates the list with the given entries and updates the visibility of the
+     * list and empty list placeholder.
      * @param {!cr.ui.List} list The list to toggle visilibility for.
+     * @param {!Array} entries The list of entries.
      */
-    updateListVisibility_: function(list) {
-      var empty = list.dataModel.length == 0;
+    updateListAndVisibility_: function(list, entries) {
+      // Setting the dataModel results in a redraw of the viewport, which is why
+      // the visibility needs to be updated first. Otherwise, redraw will not
+      // render the updated entries when transitioning from a previously empty
+      // list to a non-empty one. The attribute list.hidden would be true in
+      // this case, resulting in |redraw()| not adding the new elements to the
+      // viewport and thus showing a empty list to the user
+      // (http://crbug.com/672869).
+      var empty = entries.length == 0;
       var listPlaceHolderID = list.id + '-empty-placeholder';
       list.hidden = empty;
       $(listPlaceHolderID).hidden = !empty;
+      list.dataModel = new ArrayDataModel(entries);
     },
 
     /**
@@ -195,8 +205,7 @@ cr.define('options', function() {
         };
         entries = entries.filter(filter);
       }
-      this.savedPasswordsList_.dataModel = new ArrayDataModel(entries);
-      this.updateListVisibility_(this.savedPasswordsList_);
+      this.updateListAndVisibility_(assert(this.savedPasswordsList_), entries);
     },
 
     /**
@@ -205,8 +214,8 @@ cr.define('options', function() {
      * @param {!Array} entries The list of password exception data.
      */
     setPasswordExceptionsList_: function(entries) {
-      this.passwordExceptionsList_.dataModel = new ArrayDataModel(entries);
-      this.updateListVisibility_(this.passwordExceptionsList_);
+      this.updateListAndVisibility_(
+          assert(this.passwordExceptionsList_), entries);
     },
 
     /**
