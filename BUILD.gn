@@ -759,6 +759,12 @@ group("gn_only") {
       "//ui/views/mus:views_mus_unittests",
     ]
 
+    # crbug.com/676055: media_service_unittests fails to link under Windows
+    # component builds, due to duplicate symbol definitions.
+    if (is_win && is_component_build) {
+      deps -= [ "//media/mojo/services:media_service_unittests" ]
+    }
+
     if (use_ozone && is_chromeos) {
       deps += [ "//services/ui/display:display_service_unittests" ]
     }
