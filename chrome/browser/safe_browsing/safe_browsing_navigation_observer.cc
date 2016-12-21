@@ -6,7 +6,10 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -74,9 +77,16 @@ void SafeBrowsingNavigationObserver::MaybeCreateForWebContents(
     content::WebContents* web_contents) {
   if (FromWebContents(web_contents))
     return;
-  // TODO(jialiul): This method will be called by TabHelpers::AttachTabHelpers.
-  // Complete this method when the entire class is ready.
-  NOTIMPLEMENTED();
+
+  if (safe_browsing::SafeBrowsingNavigationObserverManager::IsEnabledAndReady(
+        Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {
+    web_contents->SetUserData(
+        kWebContentsUserDataKey,
+        new SafeBrowsingNavigationObserver(
+            web_contents,
+            g_browser_process->safe_browsing_service()
+                ->navigation_observer_manager()));
+  }
 }
 
 // static
@@ -115,11 +125,13 @@ void SafeBrowsingNavigationObserver::DidStartNavigation(
          !SafeBrowsingNavigationObserverManager::IsUserGestureExpired(
              last_user_gesture_timestamp_)) ||
         !navigation_handle->IsRendererInitiated()) {
-      nav_event.is_user_initiated = has_user_gesture_;
-      manager_->OnUserGestureConsumed(web_contents(),
-                                      last_user_gesture_timestamp_);
+      nav_event.is_user_initiated = true;
+      if (has_user_gesture_) {
+        manager_->OnUserGestureConsumed(web_contents(),
+                                        last_user_gesture_timestamp_);
+        has_user_gesture_ = false;
+      }
     }
-    has_user_gesture_ = false;
   }
 
   // All the other fields are reconstructed based on current content of

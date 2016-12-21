@@ -64,7 +64,9 @@ struct ResolvedIPAddress {
 class SafeBrowsingNavigationObserver : public base::SupportsUserData::Data,
                                        public content::WebContentsObserver {
  public:
-  static void MaybeCreateForWebContents(content::WebContents* web_contents);
+  static void MaybeCreateForWebContents(
+      content::WebContents* web_contents);
+
   static SafeBrowsingNavigationObserver* FromWebContents(
       content::WebContents* web_contents);
 

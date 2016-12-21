@@ -38,6 +38,7 @@
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/sandboxed_zip_analyzer.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/pref_names.h"
@@ -73,12 +74,16 @@
 #endif
 
 using content::BrowserThread;
+namespace safe_browsing {
 
 namespace {
 
 const int64_t kDownloadRequestTimeoutMs = 7000;
 // We sample 1% of whitelisted downloads to still send out download pings.
 const double kWhitelistDownloadSampleRate = 0.01;
+
+// The number of user gestures we trace back for download attribution.
+const int kDownloadAttributionUserGestureLimit = 2;
 
 const char kDownloadExtensionUmaName[] = "SBClientDownload.DownloadExtensions";
 const char kUnsupportedSchemeUmaPrefix[] = "SBClientDownload.UnsupportedScheme";
@@ -96,8 +101,6 @@ void RecordCountOfWhitelistedDownload(WhitelistType type) {
 }
 
 }  // namespace
-
-namespace safe_browsing {
 
 const char DownloadProtectionService::kDownloadRequestUrl[] =
     "https://sb-ssl.google.com/safebrowsing/clientreport/download";
@@ -1002,6 +1005,12 @@ class DownloadProtectionService::CheckClientDownloadRequest
         item_->GetTargetFilePath().BaseName().AsUTF8Unsafe());
     }
     request.set_download_type(type_);
+
+    service_->AddReferrerChainToClientDownloadRequest(
+      item_->GetURL(),
+      item_->GetWebContents(),
+      &request);
+
     if (archive_is_valid_ != ArchiveValid::UNSET)
       request.set_archive_valid(archive_is_valid_ == ArchiveValid::VALID);
     request.mutable_signature()->CopyFrom(signature_info_);
@@ -1349,6 +1358,10 @@ class DownloadProtectionService::PPAPIDownloadRequest
       *(request.add_alternate_extensions()) =
           base::FilePath(default_file_path_.FinalExtension()).AsUTF8Unsafe();
     }
+    service_->AddReferrerChainToClientDownloadRequest(
+      requestor_url_,
+      nullptr,
+      &request);
 
     if (!request.SerializeToString(&client_download_request_data_)) {
       // More of an internal error than anything else. Note that the UNKNOWN
@@ -1516,6 +1529,7 @@ DownloadProtectionService::DownloadProtectionService(
   if (sb_service) {
     ui_manager_ = sb_service->ui_manager();
     database_manager_ = sb_service->database_manager();
+    navigation_observer_manager_ = sb_service->navigation_observer_manager();
     ParseManualBlacklistFlag();
   }
 }
@@ -1777,6 +1791,37 @@ GURL DownloadProtectionService::GetDownloadRequestUrl() {
     url = url.Resolve("?key=" + net::EscapeQueryParamValue(api_key, true));
 
   return url;
+}
+
+void DownloadProtectionService::AddReferrerChainToClientDownloadRequest(
+    const GURL& download_url,
+    content::WebContents* web_contents,
+    ClientDownloadRequest* out_request) {
+  if (!base::FeatureList::IsEnabled(
+      SafeBrowsingNavigationObserverManager::kDownloadAttribution) ||
+      !navigation_observer_manager_) {
+    return;
+  }
+
+  int download_tab_id = SessionTabHelper::IdForTab(web_contents);
+  UMA_HISTOGRAM_BOOLEAN(
+      "SafeBrowsing.ReferrerHasInvalidTabID.DownloadAttribution",
+      download_tab_id == -1);
+  std::vector<ReferrerChainEntry> attribution_chain;
+  SafeBrowsingNavigationObserverManager::AttributionResult result =
+      navigation_observer_manager_->IdentifyReferrerChain(
+          download_url,
+          download_tab_id,
+          kDownloadAttributionUserGestureLimit,
+          &attribution_chain);
+  UMA_HISTOGRAM_COUNTS_100(
+      "SafeBrowsing.ReferrerURLChainSize.DownloadAttribution",
+      attribution_chain.size());
+  UMA_HISTOGRAM_ENUMERATION(
+      "SafeBrowsing.ReferrerAttributionResult.DownloadAttribution", result,
+      SafeBrowsingNavigationObserverManager::ATTRIBUTION_FAILURE_TYPE_MAX);
+  for (auto entry : attribution_chain)
+    *out_request->add_referrer_chain() = std::move(entry);
 }
 
 }  // namespace safe_browsing

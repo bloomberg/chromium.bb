@@ -28,6 +28,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
+#include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -309,6 +310,11 @@ void SafeBrowsingService::Initialize() {
     database_manager_ = CreateDatabaseManager();
   }
 
+  if (base::FeatureList::IsEnabled(
+    SafeBrowsingNavigationObserverManager::kDownloadAttribution)) {
+    navigation_observer_manager_ = new SafeBrowsingNavigationObserverManager();
+  }
+
   services_delegate_->Initialize();
   services_delegate_->InitializeCsdService(url_request_context_getter_.get());
 
@@ -391,6 +397,11 @@ SafeBrowsingService::ui_manager() const {
 const scoped_refptr<SafeBrowsingDatabaseManager>&
 SafeBrowsingService::database_manager() const {
   return enabled_v4_only_ ? v4_local_database_manager() : database_manager_;
+}
+
+scoped_refptr<SafeBrowsingNavigationObserverManager>
+SafeBrowsingService::navigation_observer_manager() {
+  return navigation_observer_manager_;
 }
 
 SafeBrowsingProtocolManager* SafeBrowsingService::protocol_manager() const {

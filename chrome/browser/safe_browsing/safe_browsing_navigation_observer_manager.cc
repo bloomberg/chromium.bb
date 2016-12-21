@@ -9,10 +9,15 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer.h"
+#include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/tab_contents/retargeting_details.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -47,9 +52,12 @@ static const double kUserGestureTTLInSecond = 1.0;
 // navigation related records that happened 2 minutes ago are considered as
 // expired. So we clean up these navigation footprints every 2 minutes.
 static const double kNavigationFootprintTTLInSecond = 120.0;
-// The number of user gestures we trace back for download attribution.
-static const int kDownloadAttributionUserGestureLimit = 2;
 
+// static
+const base::Feature
+SafeBrowsingNavigationObserverManager::kDownloadAttribution {
+    "DownloadAttribution", base::FEATURE_DISABLED_BY_DEFAULT
+};
 // static
 bool SafeBrowsingNavigationObserverManager::IsUserGestureExpired(
     const base::Time& timestamp) {
@@ -66,12 +74,23 @@ GURL SafeBrowsingNavigationObserverManager::ClearEmptyRef(const GURL& url) {
   return url;
 }
 
+// static
+bool SafeBrowsingNavigationObserverManager::IsEnabledAndReady(
+    Profile* profile) {
+  return base::FeatureList::IsEnabled(
+      SafeBrowsingNavigationObserverManager::kDownloadAttribution) &&
+      profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled) &&
+      g_browser_process->safe_browsing_service() &&
+      g_browser_process->safe_browsing_service()->navigation_observer_manager();
+}
+
 SafeBrowsingNavigationObserverManager::SafeBrowsingNavigationObserverManager() {
   registrar_.Add(this, chrome::NOTIFICATION_RETARGETING,
                  content::NotificationService::AllSources());
 
-  // TODO(jialiul): call ScheduleNextCleanUpAfterInterval() when this class is
-  // ready to be hooked into SafeBrowsingService.
+  // Schedule clean up in 2 minutes.
+  ScheduleNextCleanUpAfterInterval(
+      base::TimeDelta::FromSecondsD(kNavigationFootprintTTLInSecond));
 }
 
 void SafeBrowsingNavigationObserverManager::RecordNavigationEvent(
@@ -206,29 +225,6 @@ SafeBrowsingNavigationObserverManager::IdentifyReferrerChain(
     }
   }
   return result;
-}
-
-void SafeBrowsingNavigationObserverManager::
-    AddReferrerChainToClientDownloadRequest(
-        const GURL& download_url,
-        content::WebContents* source_contents,
-        ClientDownloadRequest* out_request) {
-  int download_tab_id = SessionTabHelper::IdForTab(source_contents);
-  UMA_HISTOGRAM_BOOLEAN(
-      "SafeBrowsing.ReferrerHasInvalidTabID.DownloadAttribution",
-      download_tab_id == -1);
-  std::vector<ReferrerChainEntry> attribution_chain;
-  AttributionResult result = IdentifyReferrerChain(
-      download_url, download_tab_id, kDownloadAttributionUserGestureLimit,
-      &attribution_chain);
-  UMA_HISTOGRAM_COUNTS_100(
-      "SafeBrowsing.ReferrerURLChainSize.DownloadAttribution",
-      attribution_chain.size());
-  UMA_HISTOGRAM_ENUMERATION(
-      "SafeBrowsing.ReferrerAttributionResult.DownloadAttribution", result,
-      SafeBrowsingNavigationObserverManager::ATTRIBUTION_FAILURE_TYPE_MAX);
-  for (auto entry : attribution_chain)
-    *out_request->add_referrer_chain() = entry;
 }
 
 SafeBrowsingNavigationObserverManager::

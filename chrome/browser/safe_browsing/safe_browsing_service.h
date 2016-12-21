@@ -49,6 +49,7 @@ class DownloadProtectionService;
 struct ResourceRequestInfo;
 struct SafeBrowsingProtocolConfig;
 class SafeBrowsingDatabaseManager;
+class SafeBrowsingNavigationObserverManager;
 class SafeBrowsingPingManager;
 class SafeBrowsingProtocolManager;
 class SafeBrowsingProtocolManagerDelegate;
@@ -128,6 +129,9 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // This returns either the v3 or the v4 database manager, depending on
   // the experiment settings.
   const scoped_refptr<SafeBrowsingDatabaseManager>& database_manager() const;
+
+  scoped_refptr<SafeBrowsingNavigationObserverManager>
+  navigation_observer_manager();
 
   SafeBrowsingProtocolManager* protocol_manager() const;
 
@@ -290,6 +294,10 @@ class SafeBrowsingService : public base::RefCountedThreadSafe<
   // The database manager handles the database and download logic.  Accessed on
   // both UI and IO thread.
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
+
+  // The navigation observer manager handles download attribution.
+  scoped_refptr<SafeBrowsingNavigationObserverManager>
+  navigation_observer_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingService);
 };

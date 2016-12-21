@@ -431,6 +431,12 @@ class DownloadProtectionServiceTest : public testing::Test {
     final_path_ = final_full_path;
     hash_ = "hash";
 
+    if (url_chain_.size() > 0) {
+      EXPECT_CALL(*item, GetURL()).WillRepeatedly(ReturnRef(url_chain_.back()));
+    } else{
+      GURL empty_url;
+      EXPECT_CALL(*item, GetURL()).WillRepeatedly(ReturnRef(empty_url));
+    }
     EXPECT_CALL(*item, GetFullPath()).WillRepeatedly(ReturnRef(tmp_path_));
     EXPECT_CALL(*item, GetTargetFilePath())
         .WillRepeatedly(ReturnRef(final_path_));

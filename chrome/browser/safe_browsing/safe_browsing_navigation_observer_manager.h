@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_NAVIGATION_OBSERVER_MANAGER_H_
 #define CHROME_BROWSER_SAFE_BROWSING_SAFE_BROWSING_NAVIGATION_OBSERVER_MANAGER_H_
 
+#include "base/feature_list.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
+
+class Profile;
 
 namespace safe_browsing {
 
@@ -28,6 +31,8 @@ class SafeBrowsingNavigationObserverManager
     : public content::NotificationObserver,
       public base::RefCountedThreadSafe<SafeBrowsingNavigationObserverManager> {
  public:
+  static const base::Feature kDownloadAttribution;
+
   // For UMA histogram counting. Do NOT change order.
   enum AttributionResult {
     SUCCESS = 1,                   // Identified referrer chain is not empty.
@@ -43,11 +48,17 @@ class SafeBrowsingNavigationObserverManager
   // Helper function to check if user gesture is older than
   // kUserGestureTTLInSecond.
   static bool IsUserGestureExpired(const base::Time& timestamp);
+
   // Helper function to strip empty ref fragment from a URL. Many pages
   // end up with a "#" at the end of their URLs due to navigation triggered by
   // href="#" and javascript onclick function. We don't want to have separate
   // entries for these cases in the maps.
   static GURL ClearEmptyRef(const GURL& url);
+
+  // Checks if we should enable observing navigations for safe browsing purpose.
+  // Return true if the safe browsing service and the download attribution
+  // feature are both enabled, and safe browsing service is initialized.
+  static bool IsEnabledAndReady(Profile* profile);
 
   SafeBrowsingNavigationObserverManager();
 
@@ -79,15 +90,6 @@ class SafeBrowsingNavigationObserverManager
       int target_tab_id,  // -1 if tab id is not valid
       int user_gesture_count_limit,
       std::vector<ReferrerChainEntry>* out_referrer_chain);
-
-  // Identify and add referrer chain info of a download to ClientDownloadRequest
-  // proto. This function also record UMA stats of download attribution result.
-  // TODO(jialiul): This function will be moved to DownloadProtectionService
-  // class shortly.
-  void AddReferrerChainToClientDownloadRequest(
-      const GURL& download_url,
-      content::WebContents* source_contents,
-      ClientDownloadRequest* out_request);
 
  private:
   friend class base::RefCountedThreadSafe<
