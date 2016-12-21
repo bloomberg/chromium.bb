@@ -482,6 +482,12 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         for batch in batch_tests_run:
             self.assertEqual(len(batch), 1, '%s had too many tests' % ', '.join(batch))
 
+    def test_sharding(self):
+        # Test that we actually select the right part
+        tests_to_run = ['passes/error.html', 'passes/image.html', 'passes/platform_image.html', 'passes/text.html']
+        tests_run = get_tests_run(['--shard-index', '0', '--total-shards', '2', '--order', 'natural'] + tests_to_run)
+        self.assertEqual(tests_run, ['passes/error.html', 'passes/image.html'])
+
     def test_skip_failing_tests(self):
         # This tests that we skip both known failing and known flaky tests. Because there are
         # no known flaky tests in the default test_expectations, we add additional expectations.
