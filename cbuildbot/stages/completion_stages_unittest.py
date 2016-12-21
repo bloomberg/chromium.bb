@@ -978,7 +978,7 @@ class PublishUprevChangesStageTest(
   def testAndroidPush(self):
     """Test values for PublishUprevChanges with Android PFQ."""
     self.build_type = constants.ANDROID_PFQ_TYPE
-    self._Prepare(bot_id='master-android-pfq',
+    self._Prepare(bot_id=constants.ANDROID_PFQ_MASTER,
                   extra_config={'build_type': constants.BUILD_FROM_SOURCE_TYPE,
                                 'push_overlays': constants.PUBLIC_OVERLAYS,
                                 'master': True},

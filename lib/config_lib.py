@@ -117,6 +117,7 @@ def UseBuildbucketScheduler(config):
   return config.name in (constants.CQ_MASTER,
                          constants.CANARY_MASTER,
                          constants.PFQ_MASTER,
+                         constants.ANDROID_PFQ_MASTER,
                          constants.PRE_CQ_LAUNCHER_NAME)
 
 def RetryAlreadyStartedSlaves(config):
