@@ -22,14 +22,6 @@
 @interface BeginForegrounding : NSObject<ApplicationStep>
 @end
 
-// Initializes the browser state held by the application state, setting its
-// initial cookie policies and any other pre-foreground inialization.
-//  Pre:  Application phase is APPLICATION_BACKGROUNDED and the application
-//        state has a non-null browser state.
-//  Post: Application phase is (still) APPLICATION_BACKGROUNDED.
-@interface BrowserStateInitializer : NSObject<ApplicationStep>
-@end
-
 // Creates the main window and makes it key, but doesn't make it visible yet.
 //  Pre:  Application phase is APPLICATION_BACKGROUNDED.
 //  Post: Application phase is (still) APPLICATION_BACKGROUNDED.

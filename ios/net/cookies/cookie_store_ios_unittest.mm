@@ -373,7 +373,6 @@ class CookieStoreIOSWithBackend : public testing::Test {
         kTestCookieURL4("http://bar.google.com/bar"),
         backend_(new TestPersistentCookieStore),
         store_(new net::CookieStoreIOS(backend_.get())) {
-    net::CookieStoreIOS::SetCookiePolicy(net::CookieStoreIOS::ALLOW);
     cookie_changed_callback_ = store_->AddCallbackForCookie(
         kTestCookieURL, "abc",
         base::Bind(&RecordCookieChanges, &cookies_changed_, &cookies_removed_));
@@ -544,15 +543,7 @@ TEST(CookieStoreIOS, GetAllCookiesForURLAsync) {
   options.set_include_httponly();
   cookie_store->SetCookieWithOptionsAsync(
       kTestCookieURL, "a=b", options, net::CookieStore::SetCookiesCallback());
-  // Disallow cookies.
-  CookieStoreIOS::SetCookiePolicy(CookieStoreIOS::BLOCK);
-  // No cookie in the system store.
-  NSHTTPCookieStorage* system_store =
-      [NSHTTPCookieStorage sharedHTTPCookieStorage];
-  EXPECT_EQ(0u, [[system_store cookies] count]);
-  // Flushing should not have any effect.
-  cookie_store->FlushStore(base::Closure());
-  // Check we can get the cookie even though cookies are disabled.
+  // Check we can get the cookie.
   GetAllCookiesCallback callback;
   cookie_store->GetAllCookiesForURLAsync(
       kTestCookieURL,
@@ -562,11 +553,6 @@ TEST(CookieStoreIOS, GetAllCookiesForURLAsync) {
   net::CanonicalCookie cookie = callback.cookie_list()[0];
   EXPECT_EQ("a", cookie.Name());
   EXPECT_EQ("b", cookie.Value());
-  // Re-enable cookies.
-  CookieStoreIOS::SetCookiePolicy(CookieStoreIOS::ALLOW);
-  // Cookie is back in the system store.
-  EXPECT_EQ(1u, [[system_store cookies] count]);
-  cookie_store->UnSynchronize();
 }
 
 // Tests that cookies can be read before the backend is loaded.
@@ -584,24 +570,6 @@ TEST_F(CookieStoreIOSWithBackend, NotSynchronized) {
 TEST_F(CookieStoreIOSWithBackend, Synchronizing) {
   // Start synchronization.
   CookieStoreIOS::SwitchSynchronizedStore(nullptr, store_.get());
-  GetCookieCallback callback;
-  GetCookies(base::Bind(&GetCookieCallback::Run, base::Unretained(&callback)));
-  // Backend loading completes (end of synchronization).
-  backend_->RunLoadedCallback();
-  EXPECT_TRUE(callback.did_run());
-  EXPECT_EQ("a=b", callback.cookie_line());
-  store_->UnSynchronize();
-}
-
-// Tests that cookies can be read before synchronization is complete, when
-// triggered by a change in cookie policy.
-TEST_F(CookieStoreIOSWithBackend, SynchronizingAfterPolicyChange) {
-  ClearCookies();
-  CookieStoreIOS::SetCookiePolicy(CookieStoreIOS::BLOCK);
-  // SwitchSynchronizedStore() does nothing when cookies are blocked.
-  CookieStoreIOS::SwitchSynchronizedStore(nullptr, store_.get());
-  // Start synchronization by allowing cookies.
-  CookieStoreIOS::SetCookiePolicy(CookieStoreIOS::ALLOW);
   GetCookieCallback callback;
   GetCookies(base::Bind(&GetCookieCallback::Run, base::Unretained(&callback)));
   // Backend loading completes (end of synchronization).
@@ -650,55 +618,6 @@ TEST_F(CookieStoreIOSWithBackend, SyncThenUnsyncWithPendingTasks) {
   EXPECT_TRUE(callback.did_run());
   EXPECT_EQ("a=b", callback.cookie_line());
   dummy_store->UnSynchronize();
-}
-
-TEST_F(CookieStoreIOSWithBackend, ChangePolicyOnceDuringSynchronization) {
-  // Start synchronization.
-  CookieStoreIOS::SwitchSynchronizedStore(nullptr, store_.get());
-  // Toggle cookie policy to trigger another synchronization while the first one
-  // is still in progress.
-  CookieStoreIOS::SetCookiePolicy(CookieStoreIOS::BLOCK);
-  // Backend loading completes (end of synchronization).
-  backend_->RunLoadedCallback();
-  CookieStoreIOS::SetCookiePolicy(CookieStoreIOS::ALLOW);
-  GetCookieCallback callback;
-  GetCookies(base::Bind(&GetCookieCallback::Run, base::Unretained(&callback)));
-  EXPECT_TRUE(callback.did_run());
-  EXPECT_EQ("a=b", callback.cookie_line());
-  store_->UnSynchronize();
-}
-
-TEST_F(CookieStoreIOSWithBackend,
-       ChangePolicyDuringSynchronizationWithPendingTask) {
-  // Start synchronization.
-  CookieStoreIOS::SwitchSynchronizedStore(nullptr, store_.get());
-  // Create a pending task while synchronization is in progress.
-  GetCookieCallback callback;
-  GetCookies(base::Bind(&GetCookieCallback::Run, base::Unretained(&callback)));
-  // Toggle cookie policy to trigger another synchronization while the first one
-  // is still in progress.
-  CookieStoreIOS::SetCookiePolicy(CookieStoreIOS::BLOCK);
-  // Backend loading completes (end of synchronization).
-  backend_->RunLoadedCallback();
-  EXPECT_TRUE(callback.did_run());
-  EXPECT_EQ("a=b", callback.cookie_line());
-  store_->UnSynchronize();
-}
-
-TEST_F(CookieStoreIOSWithBackend, ChangePolicyTwiceDuringSynchronization) {
-  // Start synchronization.
-  CookieStoreIOS::SwitchSynchronizedStore(nullptr, store_.get());
-  // Toggle cookie policy to trigger another synchronization while the first one
-  // is still in progress.
-  CookieStoreIOS::SetCookiePolicy(CookieStoreIOS::BLOCK);
-  CookieStoreIOS::SetCookiePolicy(CookieStoreIOS::ALLOW);
-  // Backend loading completes (end of synchronization).
-  backend_->RunLoadedCallback();
-  GetCookieCallback callback;
-  GetCookies(base::Bind(&GetCookieCallback::Run, base::Unretained(&callback)));
-  EXPECT_TRUE(callback.did_run());
-  EXPECT_EQ("a=b", callback.cookie_line());
-  store_->UnSynchronize();
 }
 
 TEST_F(CookieStoreIOSWithBackend, UnSynchronizeBeforeLoadComplete) {
@@ -765,17 +684,6 @@ TEST_F(CookieStoreIOSWithBackend, ManualFlush) {
   EXPECT_TRUE(backend_->flushed());
 
   store_->UnSynchronize();
-}
-
-TEST_F(CookieStoreIOSWithBackend, FlushOnPolicyChange) {
-  // Start synchronization.
-  CookieStoreIOS::SwitchSynchronizedStore(nullptr, store_.get());
-  // Toggle cookie policy to trigger a flush.
-  EXPECT_FALSE(backend_->flushed());
-  CookieStoreIOS::SetCookiePolicy(CookieStoreIOS::BLOCK);
-  EXPECT_TRUE(backend_->flushed());
-  store_->UnSynchronize();
-  CookieStoreIOS::SetCookiePolicy(CookieStoreIOS::ALLOW);
 }
 
 TEST_F(CookieStoreIOSWithBackend, NoInitialNotifyWithNoCookie) {

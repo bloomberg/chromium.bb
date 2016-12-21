@@ -111,7 +111,6 @@
     [[StartChromeMain alloc] init],
     [[SetBrowserState alloc] init],
     [[BeginForegrounding alloc] init],
-    [[BrowserStateInitializer alloc] init],
     [[PrepareForUI alloc] init],
     [[CompleteForegrounding alloc] init],
     [[TabGridCoordinator alloc] init],

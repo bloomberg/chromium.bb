@@ -488,8 +488,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)markEulaAsAccepted;
 // Sends any feedback that happens to still be on local storage.
 - (void)sendQueuedFeedback;
-// Sets the iOS cookie policy to match that of the given browser state.
-- (void)setInitialCookiesPolicy:(ios::ChromeBrowserState*)browserState;
 // Called whenever an orientation change is received.
 - (void)orientationDidChange:(NSNotification*)notification;
 // Register to receive orientation change notification to update breakpad
@@ -790,7 +788,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 
 - (void)initializeBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(!browserState->IsOffTheRecord());
-  [self setInitialCookiesPolicy:browserState];
   search_engines::UpdateSearchEnginesIfNeeded(
       browserState->GetPrefs(),
       ios::TemplateURLServiceFactory::GetForBrowserState(browserState));
@@ -1044,43 +1041,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
                         ->GetUserFeedbackProvider()
                         ->Synchronize();
                   }];
-}
-
-- (void)setInitialCookiesPolicy:(ios::ChromeBrowserState*)browserState {
-  DCHECK(browserState);
-  net::CookieStoreIOS::CookiePolicy policy = net::CookieStoreIOS::BLOCK;
-
-  auto settingsFactory =
-      ios::HostContentSettingsMapFactory::GetForBrowserState(browserState);
-  DCHECK(settingsFactory);
-  ContentSetting cookieSetting = settingsFactory->GetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_COOKIES, nullptr);
-
-  if (!web::IsAcceptCookieControlSupported()) {
-    // Override the Accept Cookie policy as ALLOW is the only policy
-    // supported by //web.
-    policy = net::CookieStoreIOS::ALLOW;
-    if (cookieSetting == CONTENT_SETTING_BLOCK) {
-      settingsFactory->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES,
-                                                CONTENT_SETTING_ALLOW);
-    }
-  } else {
-    switch (cookieSetting) {
-      case CONTENT_SETTING_ALLOW:
-        policy = net::CookieStoreIOS::ALLOW;
-        break;
-      case CONTENT_SETTING_BLOCK:
-        policy = net::CookieStoreIOS::BLOCK;
-        break;
-      default:
-        NOTREACHED() << "Unsupported cookie policy.";
-        break;
-    }
-  }
-
-  web::WebThread::PostTask(
-      web::WebThread::IO, FROM_HERE,
-      base::Bind(&net::CookieStoreIOS::SetCookiePolicy, policy));
 }
 
 - (void)orientationDidChange:(NSNotification*)notification {

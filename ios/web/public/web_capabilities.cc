@@ -6,12 +6,6 @@
 
 namespace web {
 
-bool IsAcceptCookieControlSupported() {
-  // TODO(crbug.com/462424): WKWebView supports only the ALLOW policy on iOS9.
-  // Revisit this issue with the next major release of iOS.
-  return false;
-}
-
 bool IsAutoDetectEncodingSupported() {
   // TODO(crbug.com/600765): WKWebView does not provide API for auto-detection
   // of the page encoding. Revisit this issue with the next major of iOS.

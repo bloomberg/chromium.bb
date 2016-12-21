@@ -61,7 +61,6 @@ class NotificationTrampoline {
 
   // Notify the observers.
   void NotifyCookiesChanged();
-  void NotifyCookiePolicyChanged();
 
  private:
   NotificationTrampoline();
@@ -93,11 +92,6 @@ void NotificationTrampoline::RemoveObserver(CookieNotificationObserver* obs) {
 void NotificationTrampoline::NotifyCookiesChanged() {
   for (auto& observer : observer_list_)
     observer.OnSystemCookiesChanged();
-}
-
-void NotificationTrampoline::NotifyCookiePolicyChanged() {
-  for (auto& observer : observer_list_)
-    observer.OnSystemCookiePolicyChanged();
 }
 
 NotificationTrampoline::NotificationTrampoline() {
@@ -314,19 +308,6 @@ CookieStoreIOS::CookieStoreIOS(
 
 CookieStoreIOS::~CookieStoreIOS() {
   NotificationTrampoline::GetInstance()->RemoveObserver(this);
-}
-
-// static
-void CookieStoreIOS::SetCookiePolicy(CookiePolicy setting) {
-  NSHTTPCookieAcceptPolicy policy = (setting == ALLOW)
-                                        ? NSHTTPCookieAcceptPolicyAlways
-                                        : NSHTTPCookieAcceptPolicyNever;
-  NSHTTPCookieStorage* store = [NSHTTPCookieStorage sharedHTTPCookieStorage];
-  NSHTTPCookieAcceptPolicy current_policy = [store cookieAcceptPolicy];
-  if (current_policy == policy)
-    return;
-  [store setCookieAcceptPolicy:policy];
-  NotificationTrampoline::GetInstance()->NotifyCookiePolicyChanged();
 }
 
 // static
@@ -765,44 +746,6 @@ void CookieStoreIOS::ClearSystemStore() {
     [system_store_ deleteCookie:cookie];
   DCHECK_EQ(0u, [[system_store_ cookies] count]);
   creation_time_manager_->Clear();
-}
-
-void CookieStoreIOS::OnSystemCookiePolicyChanged() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  // If the CookieStoreIOS is not synchronized or is not backed by
-  // |NSHTTPCookieStorage sharedHTTPCookieStorage| this callback is irrelevant.
-  if (synchronization_state_ == NOT_SYNCHRONIZED ||
-      system_store_ != [NSHTTPCookieStorage sharedHTTPCookieStorage]) {
-    return;
-  }
-
-  NSHTTPCookieAcceptPolicy policy =
-      [system_store_ cookieAcceptPolicy];
-  if (policy == NSHTTPCookieAcceptPolicyAlways) {
-    // If cookies are disabled, the system cookie store should be empty.
-    DCHECK(![[system_store_ cookies] count]);
-    DCHECK(synchronization_state_ != SYNCHRONIZING);
-    synchronization_state_ = SYNCHRONIZING;
-    cookie_monster_->GetAllCookiesAsync(base::Bind(
-        &CookieStoreIOS::AddCookiesToSystemStore, weak_factory_.GetWeakPtr()));
-  } else {
-    DCHECK_EQ(NSHTTPCookieAcceptPolicyNever, policy);
-    // FlushStore() does not write the cookies to disk when they are disabled.
-    // Explicitly copy them.
-    WriteToCookieMonster([system_store_ cookies]);
-    FlushStore(base::Closure());
-    ClearSystemStore();
-    if (synchronization_state_ == SYNCHRONIZING) {
-      // If synchronization was in progress, abort it and leave the cookie store
-      // empty.
-      // Temporarily toggle the synchronization state so that pending tasks are
-      // redirected to cookie_monster_ and can complete normally.
-      synchronization_state_ = NOT_SYNCHRONIZED;
-      RunAllPendingTasks();
-      synchronization_state_ = SYNCHRONIZED;
-    }
-  }
 }
 
 void CookieStoreIOS::SetSynchronizedWithSystemStore(bool synchronized) {

@@ -37,9 +37,6 @@ class CookieNotificationObserver {
   // Called when any cookie is added, deleted or changed in
   // |NSHTTPCookieStorge sharedHTTPCookieStorage|.
   virtual void OnSystemCookiesChanged() = 0;
-  // Called when the cookie policy changes on
-  // |NSHTTPCookieStorge sharedHTTPCookieStorage|.
-  virtual void OnSystemCookiePolicyChanged() = 0;
 };
 
 // The CookieStoreIOS is an implementation of CookieStore relying on
@@ -77,11 +74,6 @@ class CookieStoreIOS : public net::CookieStore,
   ~CookieStoreIOS() override;
 
   enum CookiePolicy { ALLOW, BLOCK };
-
-  // Must be called on the thread where CookieStoreIOS instances live.
-  // Affects only those CookieStoreIOS instances that are backed by
-  // |NSHTTPCookieStorage sharedHTTPCookieStorage|.
-  static void SetCookiePolicy(CookiePolicy setting);
 
   // Create an instance of CookieStoreIOS that is generated from the cookies
   // stored in |cookie_storage|. The CookieStoreIOS uses the |cookie_storage|
@@ -199,7 +191,6 @@ class CookieStoreIOS : public net::CookieStore,
 
   // Inherited CookieNotificationObserver methods.
   void OnSystemCookiesChanged() override;
-  void OnSystemCookiePolicyChanged() override;
 
   void DeleteCookiesWithFilter(const CookieFilterFunction& filter,
                                const DeleteCallback& callback);

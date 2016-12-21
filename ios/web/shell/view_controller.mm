@@ -13,7 +13,6 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/net/cookies/cookie_store_ios.h"
 #import "ios/net/crn_http_protocol_handler.h"
 #import "ios/net/empty_nsurlcache.h"
 #import "ios/net/request_tracker.h"
@@ -165,7 +164,6 @@ using web::NavigationManager;
 - (void)setUpNetworkStack {
   // Disable the default cache.
   [NSURLCache setSharedURLCache:[EmptyNSURLCache emptyNSURLCache]];
-  net::CookieStoreIOS::SetCookiePolicy(net::CookieStoreIOS::ALLOW);
 }
 
 - (void)didReceiveMemoryWarning {

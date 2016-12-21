@@ -7,10 +7,6 @@
 
 namespace web {
 
-// Returns true if fine control of "Accept Cookie" policy is supported
-// by //web.
-bool IsAcceptCookieControlSupported();
-
 // Returns true if auto-detection of page encoding is supported by //web.
 bool IsAutoDetectEncodingSupported();
 
