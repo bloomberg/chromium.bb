@@ -2886,6 +2886,50 @@ char *drmGetRenderDeviceNameFromFd(int fd)
     return drmGetMinorNameForFD(fd, DRM_NODE_RENDER);
 }
 
+#ifdef __linux__
+static char * DRM_PRINTFLIKE(2, 3)
+sysfs_uevent_get(const char *path, const char *fmt, ...)
+{
+    char filename[PATH_MAX + 1], *key, *line = NULL, *value = NULL;
+    size_t size = 0, len;
+    ssize_t num;
+    va_list ap;
+    FILE *fp;
+
+    va_start(ap, fmt);
+    num = vasprintf(&key, fmt, ap);
+    va_end(ap);
+    len = num;
+
+    snprintf(filename, sizeof(filename), "%s/uevent", path);
+
+    fp = fopen(filename, "r");
+    if (!fp) {
+        free(key);
+        return NULL;
+    }
+
+    while ((num = getline(&line, &size, fp)) >= 0) {
+        if ((strncmp(line, key, len) == 0) && (line[len] == '=')) {
+            char *start = line + len + 1, *end = line + num - 1;
+
+            if (*end != '\n')
+                end++;
+
+            value = strndup(start, end - start);
+            break;
+        }
+    }
+
+    free(line);
+    fclose(fp);
+
+    free(key);
+
+    return value;
+}
+#endif
+
 static int drmParseSubsystemType(int maj, int min)
 {
 #ifdef __linux__
@@ -2905,6 +2949,9 @@ static int drmParseSubsystemType(int maj, int min)
 
     if (strncmp(name, "/pci", 4) == 0)
         return DRM_BUS_PCI;
+
+    if (strncmp(name, "/usb", 4) == 0)
+        return DRM_BUS_USB;
 
     return -EINVAL;
 #elif defined(__OpenBSD__)
@@ -2992,6 +3039,10 @@ static int drmCompareBusInfo(drmDevicePtr a, drmDevicePtr b)
     switch (a->bustype) {
     case DRM_BUS_PCI:
         return memcmp(a->businfo.pci, b->businfo.pci, sizeof(drmPciBusInfo));
+
+    case DRM_BUS_USB:
+        return memcmp(a->businfo.usb, b->businfo.usb, sizeof(drmUsbBusInfo));
+
     default:
         break;
     }
@@ -3235,6 +3286,113 @@ free_device:
     return ret;
 }
 
+static int drmParseUsbBusInfo(int maj, int min, drmUsbBusInfoPtr info)
+{
+#ifdef __linux__
+    char path[PATH_MAX + 1], *value;
+    unsigned int bus, dev;
+    int ret;
+
+    snprintf(path, sizeof(path), "/sys/dev/char/%d:%d/device", maj, min);
+
+    value = sysfs_uevent_get(path, "BUSNUM");
+    if (!value)
+        return -ENOENT;
+
+    ret = sscanf(value, "%03u", &bus);
+    free(value);
+
+    if (ret <= 0)
+        return -errno;
+
+    value = sysfs_uevent_get(path, "DEVNUM");
+    if (!value)
+        return -ENOENT;
+
+    ret = sscanf(value, "%03u", &dev);
+    free(value);
+
+    if (ret <= 0)
+        return -errno;
+
+    info->bus = bus;
+    info->dev = dev;
+
+    return 0;
+#else
+#warning "Missing implementation of drmParseUsbBusInfo"
+    return -EINVAL;
+#endif
+}
+
+static int drmParseUsbDeviceInfo(int maj, int min, drmUsbDeviceInfoPtr info)
+{
+#ifdef __linux__
+    char path[PATH_MAX + 1], *value;
+    unsigned int vendor, product;
+    int ret;
+
+    snprintf(path, sizeof(path), "/sys/dev/char/%d:%d/device", maj, min);
+
+    value = sysfs_uevent_get(path, "PRODUCT");
+    if (!value)
+        return -ENOENT;
+
+    ret = sscanf(value, "%x/%x", &vendor, &product);
+    free(value);
+
+    if (ret <= 0)
+        return -errno;
+
+    info->vendor = vendor;
+    info->product = product;
+
+    return 0;
+#else
+#warning "Missing implementation of drmParseUsbDeviceInfo"
+    return -EINVAL;
+#endif
+}
+
+static int drmProcessUsbDevice(drmDevicePtr *device, const char *node,
+                               int node_type, int maj, int min,
+                               bool fetch_deviceinfo, uint32_t flags)
+{
+    drmDevicePtr dev;
+    char *ptr;
+    int ret;
+
+    dev = drmDeviceAlloc(node_type, node, sizeof(drmUsbBusInfo),
+                         sizeof(drmUsbDeviceInfo), &ptr);
+    if (!dev)
+        return -ENOMEM;
+
+    dev->bustype = DRM_BUS_USB;
+
+    dev->businfo.usb = (drmUsbBusInfoPtr)ptr;
+
+    ret = drmParseUsbBusInfo(maj, min, dev->businfo.usb);
+    if (ret < 0)
+        goto free_device;
+
+    if (fetch_deviceinfo) {
+        ptr += sizeof(drmUsbBusInfo);
+        dev->deviceinfo.usb = (drmUsbDeviceInfoPtr)ptr;
+
+        ret = drmParseUsbDeviceInfo(maj, min, dev->deviceinfo.usb);
+        if (ret < 0)
+            goto free_device;
+    }
+
+    *device = dev;
+
+    return 0;
+
+free_device:
+    free(dev);
+    return ret;
+}
+
 /* Consider devices located on the same bus as duplicate and fold the respective
  * entries into a single one.
  *
@@ -3410,6 +3568,14 @@ int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
                 continue;
 
             break;
+
+        case DRM_BUS_USB:
+            ret = drmProcessUsbDevice(&d, node, node_type, maj, min, true, flags);
+            if (ret)
+                continue;
+
+            break;
+
         default:
             continue;
         }
@@ -3541,6 +3707,15 @@ int drmGetDevices2(uint32_t flags, drmDevicePtr devices[], int max_devices)
                 continue;
 
             break;
+
+        case DRM_BUS_USB:
+            ret = drmProcessUsbDevice(&device, node, node_type, maj, min,
+                                      devices != NULL, flags);
+            if (ret)
+                goto free_devices;
+
+            break;
+
         default:
             continue;
         }
