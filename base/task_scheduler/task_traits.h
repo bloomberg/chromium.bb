@@ -100,8 +100,7 @@ class BASE_EXPORT TaskTraits {
   TaskTraits& MayBlock();
 
   // Tasks with this trait are allowed to wait on waitable events and condition
-  // variables as well as to join threads and processes. This trait implies
-  // MayBlock().
+  // variables as well as to join threads and processes.
   //
   // This trait should generally not be used.
   //
@@ -117,6 +116,10 @@ class BASE_EXPORT TaskTraits {
   // base::Create(Sequenced|SingleTreaded)TaskRunnerWithTraits(). If a thread is
   // really needed, make it non-joinable and add cleanup work at the end of the
   // thread's main function (if using base::Thread, override Cleanup()).
+  //
+  // MayBlock() must be specified in conjunction with this trait if and only if
+  // removing usage of sync primitives in the labeled tasks would still result
+  // in tasks that may block (per MayBlock()'s definition).
   TaskTraits& WithSyncPrimitives();
 
   // DEPRECATED
