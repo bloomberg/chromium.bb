@@ -337,11 +337,10 @@ void EasyUnlockTpmKeyManager::CreateKeyInSystemSlot(
   // but there should be at most one such task at a time.
   get_tpm_slot_weak_ptr_factory_.InvalidateWeakPtrs();
 
-  // This task interacts with the TPM, hence WithFileIO() and WithWait().
+  // This task interacts with the TPM, hence MayBlock().
   base::PostTaskWithTraits(
-      FROM_HERE,
-      base::TaskTraits().WithFileIO().WithWait().WithShutdownBehavior(
-          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      FROM_HERE, base::TaskTraits().MayBlock().WithShutdownBehavior(
+                     base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
       base::Bind(&CreateTpmKeyPairOnWorkerThread, base::Passed(&system_slot),
                  public_key, base::ThreadTaskRunnerHandle::Get(),
                  base::Bind(&EasyUnlockTpmKeyManager::OnTpmKeyCreated,
@@ -355,11 +354,10 @@ void EasyUnlockTpmKeyManager::SignDataWithSystemSlot(
     crypto::ScopedPK11Slot system_slot) {
   CHECK(system_slot);
 
-  // This task interacts with the TPM, hence WithFileIO() and WithWait().
+  // This task interacts with the TPM, hence MayBlock().
   base::PostTaskWithTraits(
-      FROM_HERE,
-      base::TaskTraits().WithFileIO().WithWait().WithShutdownBehavior(
-          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      FROM_HERE, base::TaskTraits().MayBlock().WithShutdownBehavior(
+                     base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
       base::Bind(&SignDataOnWorkerThread, base::Passed(&system_slot),
                  public_key, data, base::ThreadTaskRunnerHandle::Get(),
                  base::Bind(&EasyUnlockTpmKeyManager::OnDataSigned,
