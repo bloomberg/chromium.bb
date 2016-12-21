@@ -225,8 +225,10 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
         bubble.style.visibility = 'hidden';
         bubble.hidden = false;
         // Now we need the bubble to have the new content before calculating
-        // size.
-        bubble.replaceContent(error);
+        // size. Undefined |error| == reuse old content.
+        if (error !== undefined)
+          bubble.replaceContent(error);
+
         // Get bubble size.
         var bubbleOffsetHeight = parseInt(bubble.offsetHeight);
         var bubbleOffsetWidth = parseInt(bubble.offsetWidth);
