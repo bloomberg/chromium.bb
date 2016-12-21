@@ -1207,7 +1207,7 @@ static bool isGeneratedImage(CSSValueID id) {
 
 CSSValue* consumeImage(CSSParserTokenRange& range,
                        const CSSParserContext& context,
-                       ConsumeGeneratedImage generatedImage) {
+                       ConsumeGeneratedImagePolicy generatedImage) {
   AtomicString uri = consumeUrlAsStringView(range).toAtomicString();
   if (!uri.isNull())
     return createCSSImageValueWithReferrer(uri, context);
@@ -1215,8 +1215,10 @@ CSSValue* consumeImage(CSSParserTokenRange& range,
     CSSValueID id = range.peek().functionId();
     if (id == CSSValueWebkitImageSet)
       return consumeImageSet(range, context);
-    if (generatedImage == ConsumeGeneratedImage::Allow && isGeneratedImage(id))
+    if (generatedImage == ConsumeGeneratedImagePolicy::Allow &&
+        isGeneratedImage(id)) {
       return consumeGeneratedImage(range, context);
+    }
   }
   return nullptr;
 }

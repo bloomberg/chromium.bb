@@ -84,11 +84,12 @@ bool consumeOneOrTwoValuedPosition(CSSParserTokenRange&,
                                    CSSValue*& resultX,
                                    CSSValue*& resultY);
 
-enum class ConsumeGeneratedImage { Allow, Forbid };
+enum class ConsumeGeneratedImagePolicy { Allow, Forbid };
 
-CSSValue* consumeImage(CSSParserTokenRange&,
-                       const CSSParserContext&,
-                       ConsumeGeneratedImage = ConsumeGeneratedImage::Allow);
+CSSValue* consumeImage(
+    CSSParserTokenRange&,
+    const CSSParserContext&,
+    ConsumeGeneratedImagePolicy = ConsumeGeneratedImagePolicy::Allow);
 CSSValue* consumeImageOrNone(CSSParserTokenRange&, const CSSParserContext&);
 
 bool isCSSWideKeyword(StringView);

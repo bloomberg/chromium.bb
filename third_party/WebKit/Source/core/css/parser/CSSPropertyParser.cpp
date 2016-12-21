@@ -2051,8 +2051,8 @@ static CSSValue* consumeCursor(CSSParserTokenRange& range,
                                const CSSParserContext& context,
                                bool inQuirksMode) {
   CSSValueList* list = nullptr;
-  while (CSSValue* image =
-             consumeImage(range, context, ConsumeGeneratedImage::Forbid)) {
+  while (CSSValue* image = consumeImage(range, context,
+                                        ConsumeGeneratedImagePolicy::Forbid)) {
     double num;
     IntPoint hotSpot(-1, -1);
     bool hotSpotSpecified = false;
