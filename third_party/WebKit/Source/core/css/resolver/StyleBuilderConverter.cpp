@@ -895,13 +895,13 @@ StyleOffsetRotation StyleBuilderConverter::convertOffsetRotate(
     } else if (item->isIdentifierValue() &&
                toCSSIdentifierValue(*item).getValueID() == CSSValueReverse) {
       result.type = OffsetRotationAuto;
-      result.angle += 180;
+      result.angle = clampTo<float>(result.angle + 180);
     } else {
       const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(*item);
-      result.angle += primitiveValue.computeDegrees();
+      result.angle =
+          clampTo<float>(result.angle + primitiveValue.computeDegrees());
     }
   }
-  result.angle = clampTo<float>(result.angle);
 
   return result;
 }
