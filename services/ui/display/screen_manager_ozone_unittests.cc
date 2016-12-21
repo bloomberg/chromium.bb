@@ -9,16 +9,21 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "services/ui/display/screen_manager.h"
+#include "services/ui/common/task_runner_test_base.h"
 #include "services/ui/display/screen_manager_ozone.h"
 #include "services/ui/display/viewport_metrics.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/display.h"
 #include "ui/display/display_switches.h"
+#include "ui/display/fake_display_delegate.h"
 #include "ui/display/fake_display_snapshot.h"
+#include "ui/display/screen.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/display/types/display_snapshot.h"
+#include "ui/display/types/fake_display_controller.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/ozone/public/ozone_platform.h"
 
 namespace display {
@@ -37,29 +42,19 @@ struct DisplayState {
 };
 
 // Matchers that operate on DisplayState.
-MATCHER_P(DisplayId, display_id, "") {
+MATCHER_P(DisplayIdIs, display_id, "") {
   *result_listener << "has id " << arg.id;
   return arg.id == display_id;
 }
 
-MATCHER_P(DisplaySize, size_string, "") {
-  *result_listener << "has size " << arg.metrics.bounds.size().ToString();
-  return arg.metrics.bounds.size().ToString() == size_string;
+MATCHER_P(DisplayPixelSizeIs, size_string, "") {
+  *result_listener << "has size " << arg.metrics.pixel_size.ToString();
+  return arg.metrics.pixel_size.ToString() == size_string;
 }
 
-MATCHER_P(DisplayOrigin, origin_string, "") {
-  *result_listener << "has origin " << arg.metrics.bounds.origin().ToString();
-  return arg.metrics.bounds.origin().ToString() == origin_string;
-}
-
-// Make a DisplaySnapshot with specified id and size.
-std::unique_ptr<DisplaySnapshot> MakeSnapshot(int64_t id,
-                                              const gfx::Size& size) {
-  return FakeDisplaySnapshot::Builder()
-      .SetId(id)
-      .SetNativeMode(size)
-      .SetCurrentMode(size)
-      .Build();
+MATCHER_P(DisplayBoundsIs, bounds_string, "") {
+  *result_listener << "has size " << arg.metrics.bounds.ToString();
+  return arg.metrics.bounds.ToString() == bounds_string;
 }
 
 // Test delegate to track what functions calls the delegate receives.
@@ -120,7 +115,7 @@ class TestScreenManagerDelegate : public ScreenManagerDelegate {
 
 // Test fixture with helpers to act like ui::DisplayConfigurator and send
 // OnDisplayModeChanged() to ScreenManagerOzone.
-class ScreenManagerOzoneTest : public testing::Test {
+class ScreenManagerOzoneTest : public ui::TaskRunnerTestBase {
  public:
   ScreenManagerOzoneTest() {}
   ~ScreenManagerOzoneTest() override {}
@@ -129,102 +124,84 @@ class ScreenManagerOzoneTest : public testing::Test {
   TestScreenManagerDelegate* delegate() { return &delegate_; }
 
   // Adds a display snapshot with specified ID and default size.
-  void AddDisplay(int64_t id) { return AddDisplay(id, gfx::Size(1024, 768)); }
+  void AddDisplay(int64_t id) {
+    return AddDisplay(FakeDisplaySnapshot::Builder()
+                          .SetId(id)
+                          .SetNativeMode(gfx::Size(1024, 768))
+                          .Build());
+  }
 
-  // Adds a display snapshot with specified ID and size to list of snapshots.
-  void AddDisplay(int64_t id, const gfx::Size& size) {
-    snapshots_.push_back(MakeSnapshot(id, size));
-    TriggerOnDisplayModeChanged();
+  void AddDisplay(std::unique_ptr<ui::DisplaySnapshot> snapshot) {
+    EXPECT_TRUE(fake_display_controller_->AddDisplay(std::move(snapshot)));
+    RunAllTasks();
   }
 
   // Removes display snapshot with specified ID.
   void RemoveDisplay(int64_t id) {
-    snapshots_.erase(
-        std::remove_if(snapshots_.begin(), snapshots_.end(),
-                       [id](std::unique_ptr<DisplaySnapshot>& snapshot) {
-                         return snapshot->display_id() == id;
-                       }));
-    TriggerOnDisplayModeChanged();
+    EXPECT_TRUE(fake_display_controller_->RemoveDisplay(id));
+    RunAllTasks();
   }
 
-  // Modify the size of the display snapshot with specified ID.
-  void ModifyDisplay(int64_t id, const gfx::Size& size) {
-    DisplaySnapshot* snapshot = GetSnapshotById(id);
+  static void SetUpTestCase() { ui::DeviceDataManager::CreateInstance(); }
 
-    const DisplayMode* new_mode = nullptr;
-    for (auto& mode : snapshot->modes()) {
-      if (mode->size() == size) {
-        new_mode = mode.get();
-        break;
-      }
-    }
-
-    if (!new_mode) {
-      snapshot->add_mode(new DisplayMode(size, false, 30.0f));
-      new_mode = snapshot->modes().back().get();
-    }
-
-    snapshot->set_current_mode(new_mode);
-    TriggerOnDisplayModeChanged();
-  }
-
-  // Calls OnDisplayModeChanged with our list of display snapshots.
-  void TriggerOnDisplayModeChanged() {
-    std::vector<DisplaySnapshot*> snapshots_ptrs;
-    for (auto& snapshot : snapshots_) {
-      snapshots_ptrs.push_back(snapshot.get());
-    }
-    screen_manager_->OnDisplayModeChanged(snapshots_ptrs);
-  }
+  static void TearDownTestCase() { ui::DeviceDataManager::DeleteInstance(); }
 
  private:
-  DisplaySnapshot* GetSnapshotById(int64_t id) {
-    for (auto& snapshot : snapshots_) {
-      if (snapshot->display_id() == id)
-        return snapshot.get();
-    }
-    return nullptr;
-  }
-
   // testing::Test:
   void SetUp() override {
+    TaskRunnerTestBase::SetUp();
+
     base::CommandLine::ForCurrentProcess()->AppendSwitchNative(
         switches::kScreenConfig, "none");
 
-    testing::Test::SetUp();
-    ui::OzonePlatform::InitializeForUI();
     screen_manager_ = base::MakeUnique<ScreenManagerOzone>();
-    screen_manager_->Init(&delegate_);
 
-    // Have all tests start with a 1024x768 display by default.
-    AddDisplay(1, gfx::Size(1024, 768));
-    TriggerOnDisplayModeChanged();
+    // Create NDD for FakeDisplayController.
+    std::unique_ptr<ui::NativeDisplayDelegate> ndd =
+        base::MakeUnique<FakeDisplayDelegate>();
+    fake_display_controller_ = ndd->GetFakeDisplayController();
+
+    // Add NDD to ScreenManager so one isn't loaded from Ozone.
+    screen_manager_->native_display_delegate_ = std::move(ndd);
+
+    AddDisplay(FakeDisplaySnapshot::Builder()
+                   .SetId(1)
+                   .SetNativeMode(gfx::Size(1024, 768))
+                   .SetType(ui::DISPLAY_CONNECTION_TYPE_INTERNAL)
+                   .Build());
+
+    screen_manager_->Init(&delegate_);
+    RunAllTasks();
 
     // Double check the expected display exists and clear counters.
     ASSERT_THAT(delegate()->added(), SizeIs(1));
-    ASSERT_THAT(delegate_.added()[0], DisplayId(1));
-    ASSERT_THAT(delegate_.added()[0], DisplayOrigin("0,0"));
-    ASSERT_THAT(delegate_.added()[0], DisplaySize("1024x768"));
+    ASSERT_THAT(delegate_.added()[0], DisplayIdIs(1));
+    ASSERT_THAT(delegate_.added()[0], DisplayBoundsIs("0,0 1024x768"));
+    ASSERT_THAT(delegate_.added()[0], DisplayPixelSizeIs("1024x768"));
     ASSERT_EQ("Added(1);Primary(1)", delegate()->changes());
     delegate_.Reset();
   }
 
   void TearDown() override {
-    snapshots_.clear();
     delegate_.Reset();
     screen_manager_.reset();
   }
 
+  FakeDisplayController* fake_display_controller_ = nullptr;
   TestScreenManagerDelegate delegate_;
   std::unique_ptr<ScreenManagerOzone> screen_manager_;
-  std::vector<std::unique_ptr<DisplaySnapshot>> snapshots_;
 };
 
 TEST_F(ScreenManagerOzoneTest, AddDisplay) {
-  AddDisplay(2);
+  AddDisplay(FakeDisplaySnapshot::Builder()
+                 .SetId(2)
+                 .SetNativeMode(gfx::Size(1600, 900))
+                 .Build());
 
-  // Check that display 2 was added.
+  // Check that display 2 was added with expected bounds and pixel_size.
   EXPECT_EQ("Added(2)", delegate()->changes());
+  EXPECT_THAT(delegate()->added()[0], DisplayPixelSizeIs("1600x900"));
+  EXPECT_THAT(delegate()->added()[0], DisplayBoundsIs("1024,0 1600x900"));
 }
 
 TEST_F(ScreenManagerOzoneTest, RemoveDisplay) {
@@ -237,114 +214,74 @@ TEST_F(ScreenManagerOzoneTest, RemoveDisplay) {
   EXPECT_EQ("Removed(2)", delegate()->changes());
 }
 
-TEST_F(ScreenManagerOzoneTest, RemoveFirstDisplay) {
+TEST_F(ScreenManagerOzoneTest, DISABLED_RemovePrimaryDisplay) {
   AddDisplay(2);
   delegate()->Reset();
 
   RemoveDisplay(1);
 
-  // Check that display 1 was removed and display 2 was modified due to the
-  // origin changing.
-  EXPECT_EQ("Primary(2);Removed(1);Modified(2)", delegate()->changes());
+  // Check that display 1 was removed and display 2 becomes the primary display
+  // and has it's origin change.
+  EXPECT_EQ("Removed(1);Modified(2);Primary(2)", delegate()->changes());
   ASSERT_THAT(delegate()->modified(), SizeIs(1));
-  EXPECT_THAT(delegate()->modified()[0], DisplayId(2));
-  EXPECT_THAT(delegate()->modified()[0], DisplayOrigin("0,0"));
+  EXPECT_THAT(delegate()->modified()[0], DisplayIdIs(2));
+  EXPECT_THAT(delegate()->modified()[0], DisplayBoundsIs("0,0 1024x768"));
 }
 
-TEST_F(ScreenManagerOzoneTest, RemoveMultipleDisplay) {
+TEST_F(ScreenManagerOzoneTest, AddRemoveMultipleDisplay) {
   AddDisplay(2);
   AddDisplay(3);
+  EXPECT_EQ("Added(2);Added(3)", delegate()->changes());
+  EXPECT_THAT(delegate()->added()[0], DisplayBoundsIs("1024,0 1024x768"));
+  EXPECT_THAT(delegate()->added()[1], DisplayBoundsIs("2048,0 1024x768"));
   delegate()->Reset();
 
+  // Check that display 2 was removed and display 3 origin changed.
   RemoveDisplay(2);
+  EXPECT_EQ("Removed(2);Modified(3)", delegate()->changes());
+  EXPECT_THAT(delegate()->modified()[0], DisplayBoundsIs("1024,0 1024x768"));
+  delegate()->Reset();
+
+  // Check that display 3 was removed.
   RemoveDisplay(3);
-
-  // Check that display 2 was removed and display 3 is modifed (origin change),
-  // then display 3 was removed.
-  EXPECT_EQ("Removed(2);Modified(3);Removed(3)", delegate()->changes());
+  EXPECT_EQ("Removed(3)", delegate()->changes());
 }
 
-TEST_F(ScreenManagerOzoneTest, ModifyDisplaySize) {
-  const gfx::Size size1(1920, 1200);
-  const gfx::Size size2(1680, 1050);
+TEST_F(ScreenManagerOzoneTest, AddDisplay4k) {
+  AddDisplay(FakeDisplaySnapshot::Builder()
+                 .SetId(2)
+                 .SetNativeMode(gfx::Size(4096, 2160))
+                 .SetType(ui::DISPLAY_CONNECTION_TYPE_DVI)
+                 .Build());
 
-  AddDisplay(2, size1);
-
-  // Check that display 2 was added with expected size.
-  ASSERT_THAT(delegate()->added(), SizeIs(1));
-  EXPECT_THAT(delegate()->added()[0], DisplayId(2));
-  EXPECT_THAT(delegate()->added()[0], DisplaySize(size1.ToString()));
+  // Check that display 2 has a device scale factor of 2 since it's a 4k
+  // display.
   EXPECT_EQ("Added(2)", delegate()->changes());
-  delegate()->Reset();
-
-  ModifyDisplay(2, size2);
-
-  // Check that display 2 was modified to have the new expected size.
-  ASSERT_THAT(delegate()->modified(), SizeIs(1));
-  EXPECT_THAT(delegate()->modified()[0], DisplayId(2));
-  EXPECT_THAT(delegate()->modified()[0], DisplaySize(size2.ToString()));
-  EXPECT_EQ("Modified(2)", delegate()->changes());
-}
-
-TEST_F(ScreenManagerOzoneTest, ModifyFirstDisplaySize) {
-  const gfx::Size size(1920, 1200);
-
-  AddDisplay(2, size);
-
-  // Check that display 2 has the expected initial origin.
-  EXPECT_EQ("Added(2)", delegate()->changes());
-  ASSERT_THAT(delegate()->added(), SizeIs(1));
-  EXPECT_THAT(delegate()->added()[0], DisplayOrigin("1024,0"));
-  delegate()->Reset();
-
-  ModifyDisplay(1, size);
-
-  // Check that display 1 was modified with a new size and display 2 origin was
-  // modified after.
-  EXPECT_EQ("Modified(1);Modified(2)", delegate()->changes());
-  ASSERT_THAT(delegate()->modified(), SizeIs(2));
-  EXPECT_THAT(delegate()->modified()[0], DisplayId(1));
-  EXPECT_THAT(delegate()->modified()[0], DisplaySize(size.ToString()));
-  EXPECT_THAT(delegate()->modified()[1], DisplayId(2));
-  EXPECT_THAT(delegate()->modified()[1], DisplayOrigin("1920,0"));
-}
-
-TEST_F(ScreenManagerOzoneTest, RemovePrimaryDisplay) {
-  AddDisplay(2);
-  delegate()->Reset();
-
-  RemoveDisplay(1);
-
-  // Check the primary display changed because the old primary was removed.
-  EXPECT_EQ("Primary(2);Removed(1);Modified(2)", delegate()->changes());
-}
-
-TEST_F(ScreenManagerOzoneTest, RemoveLastDisplay) {
-  RemoveDisplay(1);
-
-  // Check that display 1 is removed and no updates for the primary display are
-  // received.
-  EXPECT_EQ("Removed(1)", delegate()->changes());
+  EXPECT_THAT(delegate()->added()[0], DisplayBoundsIs("1024,0 2048x1080"));
+  EXPECT_THAT(delegate()->added()[0], DisplayPixelSizeIs("4096x2160"));
 }
 
 TEST_F(ScreenManagerOzoneTest, SwapPrimaryDisplay) {
   AddDisplay(2);
   delegate()->Reset();
 
-  screen_manager()->SwapPrimaryDisplay();
-  EXPECT_EQ("Primary(2)", delegate()->changes());
-}
+  EXPECT_EQ(1, Screen::GetScreen()->GetPrimaryDisplay().id());
 
-TEST_F(ScreenManagerOzoneTest, SwapPrimaryThreeDisplays) {
-  AddDisplay(2);
-  AddDisplay(3);
-  EXPECT_EQ("Added(2);Added(3)", delegate()->changes());
+  // Swapping displays will modify the bounds of both displays and change the
+  // primary.
+  screen_manager()->SwapPrimaryDisplay();
+  EXPECT_EQ("Modified(1);Modified(2);Primary(2)", delegate()->changes());
+  EXPECT_THAT(delegate()->modified()[0], DisplayBoundsIs("-1024,0 1024x768"));
+  EXPECT_THAT(delegate()->modified()[1], DisplayBoundsIs("0,0 1024x768"));
+  EXPECT_EQ(2, Screen::GetScreen()->GetPrimaryDisplay().id());
   delegate()->Reset();
 
+  // Swapping again should be similar and end up back with display 1 as primary.
   screen_manager()->SwapPrimaryDisplay();
-  screen_manager()->SwapPrimaryDisplay();
-  screen_manager()->SwapPrimaryDisplay();
-  EXPECT_EQ("Primary(2);Primary(3);Primary(1)", delegate()->changes());
+  EXPECT_EQ("Modified(1);Modified(2);Primary(1)", delegate()->changes());
+  EXPECT_THAT(delegate()->modified()[0], DisplayBoundsIs("0,0 1024x768"));
+  EXPECT_THAT(delegate()->modified()[1], DisplayBoundsIs("1024,0 1024x768"));
+  EXPECT_EQ(1, Screen::GetScreen()->GetPrimaryDisplay().id());
 }
 
 }  // namespace display

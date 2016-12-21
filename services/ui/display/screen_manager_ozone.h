@@ -7,10 +7,8 @@
 
 #include <stdint.h>
 
-#include <set>
-#include <vector>
+#include <memory>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/connection.h"
@@ -20,25 +18,32 @@
 #include "services/ui/public/interfaces/display/display_controller.mojom.h"
 #include "services/ui/public/interfaces/display/test_display_controller.mojom.h"
 #include "ui/display/display.h"
+#include "ui/display/display_observer.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/types/display_constants.h"
-#include "ui/display/types/fake_display_controller.h"
 
 namespace display {
+
+class DisplayChangeObserver;
+class FakeDisplayController;
+class ScreenBase;
 
 // ScreenManagerOzone provides the necessary functionality to configure all
 // attached physical displays on the ozone platform.
 class ScreenManagerOzone
     : public ScreenManager,
-      public ui::DisplayConfigurator::Observer,
-      public ui::DisplayConfigurator::StateController,
-      public service_manager::InterfaceFactory<mojom::DisplayController>,
-      public service_manager::InterfaceFactory<mojom::TestDisplayController>,
+      public mojom::TestDisplayController,
       public mojom::DisplayController,
-      public mojom::TestDisplayController {
+      public DisplayObserver,
+      public DisplayManager::Delegate,
+      public service_manager::InterfaceFactory<mojom::DisplayController>,
+      public service_manager::InterfaceFactory<mojom::TestDisplayController> {
  public:
   ScreenManagerOzone();
   ~ScreenManagerOzone() override;
+
+  void SetPrimaryDisplayId(int64_t display_id);
 
   // ScreenManager:
   void AddInterfaces(service_manager::InterfaceRegistry* registry) override;
@@ -64,77 +69,21 @@ class ScreenManagerOzone
  private:
   friend class ScreenManagerOzoneTest;
 
-  // TODO(kylechar): This struct is just temporary until we migrate
-  // DisplayManager code out of ash so it can be used here.
-  struct DisplayInfo {
-    DisplayInfo();
-    DisplayInfo(const DisplayInfo& other);
-    ~DisplayInfo();
+  ViewportMetrics GetViewportMetricsForDisplay(const Display& display);
 
-    int64_t id = kInvalidDisplayId;
-    // Information about display viewport.
-    ViewportMetrics metrics;
-    // Last insets received from WM.
-    gfx::Insets last_work_area_insets;
+  // DisplayObserver:
+  void OnDisplayAdded(const Display& new_display) override;
+  void OnDisplayRemoved(const Display& old_display) override;
+  void OnDisplayMetricsChanged(const Display& display,
+                               uint32_t changed_metrics) override;
 
-    // Temporary hack to allow changing display resolution.
-    std::vector<gfx::Size> supported_sizes;
-    gfx::Size requested_size;
-
-    // The display bounds have been modified and delegate should be updated.
-    bool modified = false;
-    // The display has been removed and delegate should be updated.
-    bool removed = false;
-  };
-  using CachedDisplayIterator = std::vector<DisplayInfo>::iterator;
-
-  // Processes list of display snapshots and sets |removed| on any displays that
-  // have been removed. Updates |primary_display_id_| if the primary display was
-  // removed. Does not remove displays from |cached_displays_| or send updates
-  // to delegate.
-  void ProcessRemovedDisplays(
-      const ui::DisplayConfigurator::DisplayStateList& snapshots);
-
-  // Processes list of display snapshots and updates the bounds of any displays
-  // in |cached_displays_| that have changed size. Does not send updates to
-  // delegate.
-  void ProcessModifiedDisplays(
-      const ui::DisplayConfigurator::DisplayStateList& snapshots);
-
-  // Looks at |cached_displays_| for modified or removed displays. Also updates
-  // display bounds in response to modified or removed displays. Sends updates
-  // to the delegate when appropriate by calling OnDisplayModified() or
-  // OnDisplayRemoved(). Makes at most one call to delegate per display.
-  //
-  // Usually used after ProcessRemovedDisplays() and ProcessModifiedDisplays().
-  void UpdateCachedDisplays();
-
-  // Processes list of display snapshots and adds any new displays to
-  // |cached_displays_|. Updates delegate by calling OnDisplayAdded().
-  void AddNewDisplays(
-      const ui::DisplayConfigurator::DisplayStateList& snapshots);
-
-  // Returns an iterator to the cached display with |display_id| or an end
-  // iterator if there is no display with that id.
-  CachedDisplayIterator GetCachedDisplayIterator(int64_t display_id);
-
-  // Converts |snapshot| into ViewportMetrics.
-  ViewportMetrics MetricsFromSnapshot(const ui::DisplaySnapshot& snapshot,
-                                      const gfx::Point& origin);
-
-  // ui::DisplayConfigurator::Observer:
-  void OnDisplayModeChanged(
-      const ui::DisplayConfigurator::DisplayStateList& displays) override;
-  void OnDisplayModeChangeFailed(
-      const ui::DisplayConfigurator::DisplayStateList& displays,
-      ui::MultipleDisplayState failed_new_state) override;
-
-  // ui::DisplayConfigurator::StateController:
-  ui::MultipleDisplayState GetStateForDisplayIds(
-      const ui::DisplayConfigurator::DisplayStateList& display_states)
-      const override;
-  bool GetResolutionForDisplayId(int64_t display_id,
-                                 gfx::Size* size) const override;
+  // DisplayManager::Delegate:
+  void CreateOrUpdateMirroringDisplay(
+      const DisplayInfoList& display_info_list) override;
+  void CloseMirroringDisplayIfNotNecessary() override;
+  void PreDisplayConfigurationChange(bool clear_focus) override;
+  void PostDisplayConfigurationChange(bool must_clear_window) override;
+  ui::DisplayConfigurator* display_configurator() override;
 
   // mojo::InterfaceFactory<mojom::DisplayController>:
   void Create(const service_manager::Identity& remote_identity,
@@ -145,20 +94,19 @@ class ScreenManagerOzone
               mojom::TestDisplayControllerRequest request) override;
 
   ui::DisplayConfigurator display_configurator_;
+  std::unique_ptr<DisplayManager> display_manager_;
+  std::unique_ptr<DisplayChangeObserver> display_change_observer_;
+
+  ScreenBase* screen_ = nullptr;
   ScreenManagerDelegate* delegate_ = nullptr;
+
+  std::unique_ptr<ui::NativeDisplayDelegate> native_display_delegate_;
 
   // If not null it provides a way to modify the display state when running off
   // device (eg. running mustash on Linux).
   FakeDisplayController* fake_display_controller_ = nullptr;
 
-  // Tracks if we've made a display configuration change and want to wait for
-  // the display configuration to update before making further changes.
-  bool wait_for_display_config_update_ = false;
-
-  // TODO(kylechar): These values can/should be replaced by DisplayLayout.
-  int64_t primary_display_id_ = display::kInvalidDisplayId;
-  std::vector<DisplayInfo> cached_displays_;
-  gfx::Point next_display_origin_;
+  int64_t primary_display_id_ = kInvalidDisplayId;
 
   mojo::BindingSet<mojom::DisplayController> controller_bindings_;
   mojo::BindingSet<mojom::TestDisplayController> test_bindings_;

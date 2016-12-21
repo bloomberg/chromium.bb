@@ -108,6 +108,10 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
     force_bounds_changed_ = force_bounds_changed;
   }
 
+  void set_configure_displays(bool configure_displays) {
+    configure_displays_ = configure_displays;
+  }
+
   // Returns the display id of the first display in the outupt list.
   int64_t first_display_id() const { return first_display_id_; }
 
@@ -413,6 +417,11 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
                           std::vector<int64_t>* updated_ids);
 
   Delegate* delegate_ = nullptr;  // not owned.
+
+  // When set to true, DisplayManager will use DisplayConfigurator to configure
+  // displays. By default, this is set to true when running on device and false
+  // when running off device.
+  bool configure_displays_ = false;
 
   std::unique_ptr<Screen> screen_;
 

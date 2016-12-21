@@ -10,6 +10,19 @@ namespace display {
 
 namespace {
 
+std::string TouchSupportString(Display::TouchSupport touch_support) {
+  switch (touch_support) {
+    case Display::TOUCH_SUPPORT_UNKNOWN:
+      return "unknown";
+    case Display::TOUCH_SUPPORT_AVAILABLE:
+      return "available";
+    case Display::TOUCH_SUPPORT_UNAVAILABLE:
+      return "unavailable";
+  }
+  NOTREACHED();
+  return "Invalid TouchSupport";
+}
+
 std::string RotationString(Display::Rotation rotation) {
   switch (rotation) {
     case Display::ROTATE_0:
@@ -30,10 +43,12 @@ std::string RotationString(Display::Rotation rotation) {
 std::string ViewportMetrics::ToString() const {
   return base::StringPrintf(
       "ViewportMetrics(bounds=%s, work_area=%s, pixel_size=%s, "
-      "rotation=%s, device_scale_factor=%g)",
+      "rotation=%s, touch_support=%s, "
+      "device_scale_factor=%g, ui_scale_factor=%g)",
       bounds.ToString().c_str(), work_area.ToString().c_str(),
       pixel_size.ToString().c_str(), RotationString(rotation).c_str(),
-      device_scale_factor);
+      TouchSupportString(touch_support).c_str(), device_scale_factor,
+      ui_scale_factor);
 }
 
 }  // namespace display

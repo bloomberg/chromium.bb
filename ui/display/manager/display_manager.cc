@@ -136,7 +136,8 @@ DisplayManager::DisplayManager(std::unique_ptr<Screen> screen)
       layout_store_(new DisplayLayoutStore),
       weak_ptr_factory_(this) {
 #if defined(OS_CHROMEOS)
-  change_display_upon_host_resize_ = !base::SysInfo::IsRunningOnChromeOS();
+  configure_displays_ = base::SysInfo::IsRunningOnChromeOS();
+  change_display_upon_host_resize_ = !configure_displays_;
   unified_desktop_enabled_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableUnifiedDesktop);
 #endif
@@ -380,7 +381,7 @@ bool DisplayManager::SetDisplayMode(
   if (resolution_changed && IsInUnifiedMode()) {
     ReconfigureDisplays();
 #if defined(OS_CHROMEOS)
-  } else if (resolution_changed && base::SysInfo::IsRunningOnChromeOS()) {
+  } else if (resolution_changed && configure_displays_) {
     delegate_->display_configurator()->OnConfigurationChanged();
 #endif
   }
@@ -494,7 +495,7 @@ void DisplayManager::SetColorCalibrationProfile(
   if (delegate_)
     delegate_->PreDisplayConfigurationChange(false);
   // Just sets color profile if it's not running on ChromeOS (like tests).
-  if (!base::SysInfo::IsRunningOnChromeOS() ||
+  if (!configure_displays_ ||
       delegate_->display_configurator()->SetColorCalibrationProfile(display_id,
                                                                     profile)) {
     display_info_[display_id].SetColorProfile(profile);
@@ -604,8 +605,7 @@ void DisplayManager::OnNativeDisplaysChanged(
   }
 
 #if defined(OS_CHROMEOS)
-  if (!base::SysInfo::IsRunningOnChromeOS() &&
-      new_display_info_list.size() > 1) {
+  if (!configure_displays_ && new_display_info_list.size() > 1) {
     DisplayIdList list = GenerateDisplayIdList(
         new_display_info_list.begin(), new_display_info_list.end(),
         [](const ManagedDisplayInfo& info) { return info.id(); });
@@ -927,7 +927,7 @@ void DisplayManager::SetMirrorMode(bool mirror) {
     return;
 
 #if defined(OS_CHROMEOS)
-  if (base::SysInfo::IsRunningOnChromeOS()) {
+  if (configure_displays_) {
     ui::MultipleDisplayState new_state =
         mirror ? ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR
                : ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;

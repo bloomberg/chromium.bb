@@ -128,6 +128,7 @@ source_set("lib") {
 repack("resources_strings") {
   sources = [
     "$root_gen_dir/ui/strings/app_locale_settings_en-US.pak",
+    "$root_gen_dir/ui/strings/ui_strings_en-US.pak",
   ]
   output = "$root_out_dir/mus_app_resources_strings.pak"
   deps = [

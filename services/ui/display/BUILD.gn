@@ -44,20 +44,27 @@ source_set("display") {
 if (use_ozone && is_chromeos) {
   test("display_service_unittests") {
     sources = [
+      "run_all_unittests.cc",
       "screen_manager_ozone_unittests.cc",
     ]
 
     deps = [
       ":display",
       "//base",
-      "//base/test:run_all_unittests",
       "//base/test:test_support",
+      "//services/ui/common:task_runner_test_base",
       "//testing/gmock",
       "//testing/gtest",
+      "//ui/base",
       "//ui/display",
+      "//ui/events/devices",
       "//ui/gfx",
       "//ui/gfx:test_support",
       "//ui/ozone",
+    ]
+
+    data_deps = [
+      "//ui/resources:ui_test_pak_data",
     ]
   }
 }

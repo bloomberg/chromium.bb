@@ -5,6 +5,8 @@
 #ifndef SERVICES_UI_DISPLAY_VIEWPORT_METRICS_H_
 #define SERVICES_UI_DISPLAY_VIEWPORT_METRICS_H_
 
+#include <string>
+
 #include "ui/display/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -18,13 +20,17 @@ struct ViewportMetrics {
   gfx::Rect work_area;  // DIP.
   gfx::Size pixel_size;
   Display::Rotation rotation = Display::ROTATE_0;
+  Display::TouchSupport touch_support = Display::TOUCH_SUPPORT_UNKNOWN;
   float device_scale_factor = 0.0f;
+  float ui_scale_factor = 0.0f;
 };
 
 inline bool operator==(const ViewportMetrics& lhs, const ViewportMetrics& rhs) {
   return lhs.bounds == rhs.bounds && lhs.work_area == rhs.work_area &&
          lhs.pixel_size == rhs.pixel_size && lhs.rotation == rhs.rotation &&
-         lhs.device_scale_factor == rhs.device_scale_factor;
+         lhs.touch_support == rhs.touch_support &&
+         lhs.device_scale_factor == rhs.device_scale_factor &&
+         lhs.ui_scale_factor == rhs.ui_scale_factor;
 }
 
 inline bool operator!=(const ViewportMetrics& lhs, const ViewportMetrics& rhs) {
