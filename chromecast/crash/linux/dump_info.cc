@@ -148,8 +148,7 @@ bool DumpInfo::SetDumpTimeFromString(const std::string& timestr) {
     return false;
   }
 
-  dump_time_ = base::Time::FromLocalExploded(ex);
-  return true;
+  return base::Time::FromLocalExploded(ex, &dump_time_);
 }
 
 }  // namespace chromecast

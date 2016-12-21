@@ -640,7 +640,6 @@ TEST_F(DriveApiRequestsTest, FilesPatchRequest) {
 
     request->set_title("new title");
     base::Time modified_date_utc;
-    base::Time::FromUTCExploded(kLastViewedByMeDate);
     ASSERT_TRUE(base::Time::FromUTCExploded(kModifiedDate, &modified_date_utc));
     request->set_modified_date(modified_date_utc);
 

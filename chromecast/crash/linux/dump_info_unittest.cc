@@ -54,7 +54,8 @@ TEST(DumpInfoTest, AllRequiredFieldsIsValid) {
   ex.day_of_month = 12;
   ex.month = 11;
   ex.year = 2001;
-  base::Time dump_time = base::Time::FromLocalExploded(ex);
+  base::Time dump_time;
+  EXPECT_TRUE(base::Time::FromLocalExploded(ex, &dump_time));
 
   ASSERT_TRUE(info->valid());
   ASSERT_EQ("name", info->params().process_name);
@@ -92,7 +93,8 @@ TEST(DumpInfoTest, SomeRequiredFieldsEmptyIsValid) {
   ex.day_of_month = 12;
   ex.month = 11;
   ex.year = 2001;
-  base::Time dump_time = base::Time::FromLocalExploded(ex);
+  base::Time dump_time;
+  EXPECT_TRUE(base::Time::FromLocalExploded(ex, &dump_time));
 
   ASSERT_TRUE(info->valid());
   ASSERT_EQ("name", info->params().process_name);
@@ -125,7 +127,8 @@ TEST(DumpInfoTest, AllOptionalFieldsIsValid) {
   ex.day_of_month = 12;
   ex.month = 11;
   ex.year = 2001;
-  base::Time dump_time = base::Time::FromLocalExploded(ex);
+  base::Time dump_time;
+  EXPECT_TRUE(base::Time::FromLocalExploded(ex, &dump_time));
 
   ASSERT_TRUE(info->valid());
   ASSERT_EQ("name", info->params().process_name);
@@ -159,7 +162,8 @@ TEST(DumpInfoTest, SomeOptionalFieldsIsValid) {
   ex.day_of_month = 12;
   ex.month = 11;
   ex.year = 2001;
-  base::Time dump_time = base::Time::FromLocalExploded(ex);
+  base::Time dump_time;
+  EXPECT_TRUE(base::Time::FromLocalExploded(ex, &dump_time));
 
   ASSERT_TRUE(info->valid());
   ASSERT_EQ("name", info->params().process_name);

@@ -230,7 +230,12 @@ Time Time::LocalMidnight() const {
   exploded.minute = 0;
   exploded.second = 0;
   exploded.millisecond = 0;
-  return FromLocalExploded(exploded);
+  Time out_time;
+  if (FromLocalExploded(exploded, &out_time))
+    return out_time;
+  // This function must not fail.
+  NOTREACHED();
+  return Time();
 }
 
 // static
