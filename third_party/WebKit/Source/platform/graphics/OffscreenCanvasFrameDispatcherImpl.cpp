@@ -36,6 +36,7 @@ OffscreenCanvasFrameDispatcherImpl::OffscreenCanvasFrameDispatcherImpl(
     : m_frameSinkId(cc::FrameSinkId(clientId, sinkId)),
       m_width(width),
       m_height(height),
+      m_changeSizeForNextCommit(false),
       m_nextResourceId(1u),
       m_binding(this),
       m_placeholderCanvasId(canvasId) {
@@ -357,6 +358,10 @@ void OffscreenCanvasFrameDispatcherImpl::dispatchFrame(
       NOTREACHED();
   }
 
+  if (m_changeSizeForNextCommit) {
+    m_currentLocalFrameId = m_surfaceIdAllocator.GenerateId();
+    m_changeSizeForNextCommit = false;
+  }
   m_sink->SubmitCompositorFrame(m_currentLocalFrameId, std::move(frame));
 }
 
@@ -406,8 +411,11 @@ bool OffscreenCanvasFrameDispatcherImpl::verifyImageSize(
 }
 
 void OffscreenCanvasFrameDispatcherImpl::reshape(int width, int height) {
-  m_width = width;
-  m_height = height;
+  if (m_width != width || m_height != height) {
+    m_width = width;
+    m_height = height;
+    m_changeSizeForNextCommit = true;
+  }
 }
 
 }  // namespace blink

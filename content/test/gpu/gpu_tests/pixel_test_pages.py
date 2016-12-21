@@ -240,6 +240,20 @@ def ExperimentalCanvasFeaturesPages(base_name):
       browser_args=browser_args + ['--disable-accelerated-2d-canvas']),
 
     PixelTestPage(
+      'pixel_offscreenCanvas_2d_resize_on_worker.html',
+      base_name + '_OffscreenCanvas2DResizeOnWorker',
+      test_rect=[0, 0, 200, 200],
+      revision=1,
+      browser_args=browser_args),
+
+    PixelTestPage(
+      'pixel_offscreenCanvas_webgl_resize_on_worker.html',
+      base_name + '_OffscreenCanvasWebglResizeOnWorker',
+      test_rect=[0, 0, 200, 200],
+      revision=1,
+      browser_args=browser_args),
+
+    PixelTestPage(
       'pixel_canvas_display_linear-rgb.html',
       base_name + '_CanvasDisplayLinearRGBAccelerated2D',
       test_rect=[0, 0, 140, 140],

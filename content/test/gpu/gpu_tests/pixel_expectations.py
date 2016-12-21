@@ -24,6 +24,10 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_ScissorTestWithPreserveDrawingBuffer',
         ['android'], bug=521588)
 
+    # TODO(xlai): Check / generate reference images.
+    self.Fail('Pixel_OffscreenCanvas2DResizeOnWorker', bug=662498)
+    self.Fail('Pixel_OffscreenCanvasWebglResizeOnWorker', bug=662498)
+
     # TODO(ccameron) fix these on Mac Retina
     self.Fail('Pixel_CSS3DBlueBox', ['mac'], bug=533690)
 

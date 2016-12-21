@@ -89,13 +89,13 @@ void CanvasSurfaceLayerBridge::OnSurfaceCreated(const cc::SurfaceId& surfaceId,
                                                 int32_t height,
                                                 float deviceScaleFactor) {
   if (!m_currentSurfaceId.is_valid() && surfaceId.is_valid()) {
+    // First time a SurfaceId is received
     m_currentSurfaceId = surfaceId;
     GraphicsLayer::unregisterContentsLayer(m_webLayer.get());
     m_webLayer->removeFromParent();
 
     scoped_refptr<cc::SurfaceLayer> surfaceLayer =
         cc::SurfaceLayer::Create(m_refFactory);
-    // TODO(xlai): Update this on resize.
     cc::SurfaceInfo info(surfaceId, deviceScaleFactor,
                          gfx::Size(width, height));
     surfaceLayer->SetSurfaceInfo(
@@ -106,9 +106,20 @@ void CanvasSurfaceLayerBridge::OnSurfaceCreated(const cc::SurfaceId& surfaceId,
         Platform::current()->compositorSupport()->createLayerFromCCLayer(
             m_CCLayer.get());
     GraphicsLayer::registerContentsLayer(m_webLayer.get());
-
-    m_observer->OnWebLayerReplaced();
+  } else if (m_currentSurfaceId != surfaceId) {
+    // A different SurfaceId is received, prompting change to existing
+    // SurfaceLayer
+    m_currentSurfaceId = surfaceId;
+    cc::SurfaceInfo info(m_currentSurfaceId, deviceScaleFactor,
+                         gfx::Size(width, height));
+    cc::SurfaceLayer* surfaceLayer =
+        static_cast<cc::SurfaceLayer*>(m_CCLayer.get());
+    surfaceLayer->SetSurfaceInfo(
+        info, true /* scale layer bounds with surface size */);
   }
+
+  m_observer->OnWebLayerReplaced();
+  m_CCLayer->SetBounds(gfx::Size(width, height));
 }
 
 void CanvasSurfaceLayerBridge::satisfyCallback(

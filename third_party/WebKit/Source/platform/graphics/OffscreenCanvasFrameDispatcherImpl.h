@@ -61,6 +61,7 @@ class PLATFORM_EXPORT OffscreenCanvasFrameDispatcherImpl final
 
   int m_width;
   int m_height;
+  bool m_changeSizeForNextCommit;
 
   unsigned m_nextResourceId;
   HashMap<unsigned, RefPtr<StaticBitmapImage>> m_cachedImages;
