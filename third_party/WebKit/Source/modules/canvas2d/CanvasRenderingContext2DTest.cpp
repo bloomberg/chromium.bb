@@ -25,6 +25,8 @@
 #include "platform/graphics/test/FakeWebGraphicsContext3DProvider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColorSpaceXform.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -1269,6 +1271,145 @@ TEST_F(CanvasRenderingContext2DTest,
   // Restore global state to avoid interfering with other tests
   ColorBehavior::setGlobalTargetColorSpaceForTesting(
       savedGlobalTargetColorSpace);
+}
+
+enum class ColorSpaceConversion : uint8_t {
+  NONE = 0,
+  DEFAULT_NOT_COLOR_CORRECTED = 1,
+  DEFAULT_COLOR_CORRECTED = 2,
+  SRGB = 3,
+  LINEAR_RGB = 4,
+
+  LAST = LINEAR_RGB
+};
+
+static ImageBitmapOptions prepareBitmapOptionsAndSetRuntimeFlags(
+    const ColorSpaceConversion& colorSpaceConversion) {
+  // Set the color space conversion in ImageBitmapOptions
+  ImageBitmapOptions options;
+  static const Vector<String> conversions = {"none", "default", "default",
+                                             "srgb", "linear-rgb"};
+  options.setColorSpaceConversion(
+      conversions[static_cast<uint8_t>(colorSpaceConversion)]);
+
+  // Set the runtime flags
+  bool flag = (colorSpaceConversion !=
+               ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED);
+  RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(true);
+  RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(flag);
+  RuntimeEnabledFeatures::setColorCorrectRenderingDefaultModeEnabled(!flag);
+
+  return options;
+}
+
+TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
+  bool experimentalCanvasFeaturesRuntimeFlag =
+      RuntimeEnabledFeatures::experimentalCanvasFeaturesEnabled();
+  bool colorCorrectRenderingRuntimeFlag =
+      RuntimeEnabledFeatures::colorCorrectRenderingEnabled();
+  bool colorCorrectRenderingDefaultModeRuntimeFlag =
+      RuntimeEnabledFeatures::colorCorrectRenderingDefaultModeEnabled();
+
+  Persistent<HTMLCanvasElement> canvas =
+      Persistent<HTMLCanvasElement>(canvasElement());
+  CanvasContextCreationAttributes attributes;
+  attributes.setAlpha(true);
+  attributes.setColorSpace("srgb");
+  CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(
+      canvas->getCanvasRenderingContext("2d", attributes));
+  StringOrCanvasGradientOrCanvasPattern fillStyle;
+  fillStyle.setString("#FF0000");
+  context->setFillStyle(fillStyle);
+  context->fillRect(0, 0, 10, 10);
+  NonThrowableExceptionState exceptionState;
+  uint8_t* srcPixel =
+      context->getImageData(5, 5, 1, 1, exceptionState)->data()->data();
+  // Swizzle if needed
+  if (kN32_SkColorType == kBGRA_8888_SkColorType)
+    std::swap(srcPixel[0], srcPixel[2]);
+
+  // Create and test the ImageBitmap objects.
+  Optional<IntRect> cropRect = IntRect(0, 0, 10, 10);
+  sk_sp<SkColorSpace> colorSpace = nullptr;
+  SkColorType colorType = SkColorType::kN32_SkColorType;
+  SkColorSpaceXform::ColorFormat colorFormat32 =
+      (colorType == kBGRA_8888_SkColorType)
+          ? SkColorSpaceXform::ColorFormat::kBGRA_8888_ColorFormat
+          : SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
+  SkColorSpaceXform::ColorFormat colorFormat = colorFormat32;
+  sk_sp<SkColorSpace> srcRGBColorSpace =
+      SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+
+  for (uint8_t i = static_cast<uint8_t>(
+           ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED);
+       i <= static_cast<uint8_t>(ColorSpaceConversion::LAST); i++) {
+    ColorSpaceConversion colorSpaceConversion =
+        static_cast<ColorSpaceConversion>(i);
+    ImageBitmapOptions options =
+        prepareBitmapOptionsAndSetRuntimeFlags(colorSpaceConversion);
+    ImageBitmap* imageBitmap = ImageBitmap::create(canvas, cropRect, options);
+    // ColorBehavior::ignore() is used instead of
+    // ColorBehavior::transformToTargetForTesting() to avoid color conversion to
+    // display color profile, as we want to solely rely on the color correction
+    // that happens in ImageBitmap create method.
+    SkImage* convertedImage =
+        imageBitmap->bitmapImage()
+            ->imageForCurrentFrame(ColorBehavior::ignore())
+            .get();
+
+    switch (colorSpaceConversion) {
+      case ColorSpaceConversion::NONE:
+        NOTREACHED();
+        break;
+      case ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED:
+        // TODO(zakerinasab): Replace sRGB with a call to
+        // ImageDecoder::globalTargetColorSpace() when the crash problem on Mac
+        // is fixed. crbug.com/668546.
+        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+        colorFormat = colorFormat32;
+        break;
+      case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
+      case ColorSpaceConversion::SRGB:
+        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGB_Named);
+        colorFormat = colorFormat32;
+        break;
+      case ColorSpaceConversion::LINEAR_RGB:
+        colorSpace = SkColorSpace::MakeNamed(SkColorSpace::kSRGBLinear_Named);
+        colorType = SkColorType::kRGBA_F16_SkColorType;
+        colorFormat = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+        break;
+      default:
+        NOTREACHED();
+    }
+
+    SkImageInfo imageInfo = SkImageInfo::Make(
+        1, 1, colorType, SkAlphaType::kPremul_SkAlphaType, colorSpace);
+    std::unique_ptr<uint8_t[]> convertedPixel(
+        new uint8_t[imageInfo.bytesPerPixel()]());
+    convertedImage->readPixels(
+        imageInfo, convertedPixel.get(),
+        convertedImage->width() * imageInfo.bytesPerPixel(), 5, 5);
+
+    // Transform the source pixel and check if the image bitmap color conversion
+    // is done correctly.
+    std::unique_ptr<SkColorSpaceXform> colorSpaceXform =
+        SkColorSpaceXform::New(srcRGBColorSpace.get(), colorSpace.get());
+    std::unique_ptr<uint8_t[]> transformedPixel(
+        new uint8_t[imageInfo.bytesPerPixel()]());
+    colorSpaceXform->apply(colorFormat, transformedPixel.get(), colorFormat32,
+                           srcPixel, 1, SkAlphaType::kPremul_SkAlphaType);
+
+    int compare = std::memcmp(convertedPixel.get(), transformedPixel.get(),
+                              imageInfo.bytesPerPixel());
+    ASSERT_EQ(compare, 0);
+  }
+
+  RuntimeEnabledFeatures::setExperimentalCanvasFeaturesEnabled(
+      experimentalCanvasFeaturesRuntimeFlag);
+  RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(
+      colorCorrectRenderingRuntimeFlag);
+  RuntimeEnabledFeatures::setColorCorrectRenderingDefaultModeEnabled(
+      colorCorrectRenderingDefaultModeRuntimeFlag);
 }
 
 }  // namespace blink
