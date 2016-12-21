@@ -1079,10 +1079,6 @@ void AccessibilityManager::SetProfile(Profile* profile) {
             &AccessibilityManager::UpdateChromeOSAccessibilityHistograms,
             base::Unretained(this)));
 
-    chromevox_loader_->SetProfile(
-        profile, base::Bind(&AccessibilityManager::PostSwitchChromeVoxProfile,
-                            weak_ptr_factory_.GetWeakPtr()));
-
     extensions::ExtensionRegistry* registry =
         extensions::ExtensionRegistry::Get(profile);
     if (!extension_registry_observer_.IsObserving(registry))
