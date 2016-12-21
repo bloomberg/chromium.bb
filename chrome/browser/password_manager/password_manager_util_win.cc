@@ -207,10 +207,11 @@ void GetOsPasswordStatus() {
       new OsPasswordStatus(PASSWORD_STATUS_UNKNOWN));
   PasswordCheckPrefs* prefs_weak = prefs.get();
   OsPasswordStatus* status_weak = status.get();
+  // This task calls ::LogonUser(), hence MayBlock().
   base::PostTaskWithTraitsAndReply(
       FROM_HERE, base::TaskTraits()
                      .WithPriority(base::TaskPriority::BACKGROUND)
-                     .WithWait(),
+                     .MayBlock(),
       base::Bind(&GetOsPasswordStatusInternal, prefs_weak, status_weak),
       base::Bind(&ReplyOsPasswordStatus, base::Passed(&prefs),
                  base::Passed(&status)));
