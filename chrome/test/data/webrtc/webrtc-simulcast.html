@@ -135,12 +135,12 @@ function trace(text) {
 
 function initialize() {
   trace('Setting up for a new call.');
-  var servers = null;
+  var configs = {iceServers:[], rtcpMuxPolicy:'negotiate'};
   var constraints = {'mandatory': {'DtlsSrtpKeyAgreement': false}};
-  pcClient = new webkitRTCPeerConnection(servers, constraints);
+  pcClient = new webkitRTCPeerConnection(configs, constraints);
   trace('Created local peer connection object pcClient');
   pcClient.onicecandidate = onClientIceCandidate;
-  pcServer = new webkitRTCPeerConnection(servers, constraints);
+  pcServer = new webkitRTCPeerConnection(configs, constraints);
   trace('Created remote peer connection object pcServer');
   pcServer.onicecandidate = onServerIceCandidate;
   pcServer.onaddstream = onServerGotStream;

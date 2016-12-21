@@ -229,10 +229,8 @@ WebRTCIceTransportPolicy iceTransportPolicyFromString(const String& policy) {
 
 WebRTCConfiguration parseConfiguration(ExecutionContext* context,
                                        const RTCConfiguration& configuration,
-                                       ExceptionState& exceptionState,
-                                       RtcpMuxPolicy* selectedRtcpMuxPolicy) {
+                                       ExceptionState& exceptionState) {
   DCHECK(context);
-  DCHECK(selectedRtcpMuxPolicy);
 
   WebRTCIceTransportPolicy iceTransportPolicy = WebRTCIceTransportPolicy::kAll;
   if (configuration.hasIceTransportPolicy()) {
@@ -261,20 +259,13 @@ WebRTCConfiguration parseConfiguration(ExecutionContext* context,
     DCHECK_EQ(bundlePolicyString, "balanced");
   }
 
-  // For the histogram value of "WebRTC.PeerConnection.SelectedRtcpMuxPolicy".
-  *selectedRtcpMuxPolicy = RtcpMuxPolicyDefault;
-  WebRTCRtcpMuxPolicy rtcpMuxPolicy = WebRTCRtcpMuxPolicy::kNegotiate;
-  if (configuration.hasRtcpMuxPolicy()) {
-    String rtcpMuxPolicyString = configuration.rtcpMuxPolicy();
-    if (rtcpMuxPolicyString == "require") {
-      *selectedRtcpMuxPolicy = RtcpMuxPolicyRequire;
-      rtcpMuxPolicy = WebRTCRtcpMuxPolicy::kRequire;
-    } else {
-      DCHECK_EQ(rtcpMuxPolicyString, "negotiate");
-      *selectedRtcpMuxPolicy = RtcpMuxPolicyNegotiate;
-    }
+  WebRTCRtcpMuxPolicy rtcpMuxPolicy = WebRTCRtcpMuxPolicy::kRequire;
+  String rtcpMuxPolicyString = configuration.rtcpMuxPolicy();
+  if (rtcpMuxPolicyString == "negotiate") {
+    rtcpMuxPolicy = WebRTCRtcpMuxPolicy::kNegotiate;
+  } else {
+    DCHECK_EQ(rtcpMuxPolicyString, "require");
   }
-
   WebRTCConfiguration webConfiguration;
   webConfiguration.iceTransportPolicy = iceTransportPolicy;
   webConfiguration.bundlePolicy = bundlePolicy;
@@ -441,11 +432,8 @@ RTCPeerConnection* RTCPeerConnection::create(
     UseCounter::count(context,
                       UseCounter::RTCPeerConnectionConstructorCompliant);
 
-  // Record the RtcpMuxPolicy for histogram
-  // "WebRTC.PeerConnection.SelectedRtcpMuxPolicy".
-  RtcpMuxPolicy selectedRtcpMuxPolicy = RtcpMuxPolicyDefault;
-  WebRTCConfiguration configuration = parseConfiguration(
-      context, rtcConfiguration, exceptionState, &selectedRtcpMuxPolicy);
+  WebRTCConfiguration configuration =
+      parseConfiguration(context, rtcConfiguration, exceptionState);
   if (exceptionState.hadException())
     return 0;
 
@@ -476,9 +464,6 @@ RTCPeerConnection* RTCPeerConnection::create(
   peerConnection->suspendIfNeeded();
   if (exceptionState.hadException())
     return 0;
-
-  peerConnection->m_peerHandler->logSelectedRtcpMuxPolicy(
-      selectedRtcpMuxPolicy);
 
   return peerConnection;
 }
@@ -811,9 +796,8 @@ void RTCPeerConnection::updateIce(ExecutionContext* context,
   if (throwExceptionIfSignalingStateClosed(m_signalingState, exceptionState))
     return;
 
-  RtcpMuxPolicy selectedRtcpMuxPolicy = RtcpMuxPolicyDefault;
-  WebRTCConfiguration configuration = parseConfiguration(
-      context, rtcConfiguration, exceptionState, &selectedRtcpMuxPolicy);
+  WebRTCConfiguration configuration =
+      parseConfiguration(context, rtcConfiguration, exceptionState);
 
   if (exceptionState.hadException())
     return;

@@ -52,7 +52,6 @@ class MockWebRTCPeerConnectionHandler
   blink::WebRTCSessionDescription remoteDescription() override;
   bool setConfiguration(
       const blink::WebRTCConfiguration& configuration) override;
-  void logSelectedRtcpMuxPolicy(blink::RtcpMuxPolicy) override;
   bool addICECandidate(const blink::WebRTCICECandidate& ice_candidate) override;
   bool addICECandidate(const blink::WebRTCVoidRequest& request,
                        const blink::WebRTCICECandidate& ice_candidate) override;

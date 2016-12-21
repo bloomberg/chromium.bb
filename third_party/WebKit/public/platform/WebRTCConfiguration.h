@@ -58,7 +58,7 @@ struct WebRTCConfiguration {
   WebVector<WebRTCIceServer> iceServers;
   WebRTCIceTransportPolicy iceTransportPolicy = WebRTCIceTransportPolicy::kAll;
   WebRTCBundlePolicy bundlePolicy = WebRTCBundlePolicy::kBalanced;
-  WebRTCRtcpMuxPolicy rtcpMuxPolicy = WebRTCRtcpMuxPolicy::kNegotiate;
+  WebRTCRtcpMuxPolicy rtcpMuxPolicy = WebRTCRtcpMuxPolicy::kRequire;
   WebVector<std::unique_ptr<WebRTCCertificate>> certificates;
 };
 

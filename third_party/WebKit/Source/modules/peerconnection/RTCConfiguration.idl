@@ -38,8 +38,7 @@ dictionary RTCConfiguration {
     // https://crbug.com/659131
     RTCIceTransportPolicy iceTransports;
     RTCBundlePolicy bundlePolicy = "balanced";
-    // TODO(foolip): |rtcpMuxPolicy| default should be "require".
-    RTCRtcpMuxPolicy rtcpMuxPolicy;
+    RTCRtcpMuxPolicy rtcpMuxPolicy = "require";
     // TODO(foolip): DOMString peerIdentity;
     sequence<RTCCertificate> certificates;
     // TODO(foolip): unsigned short iceCandidatePoolSize = 0;
