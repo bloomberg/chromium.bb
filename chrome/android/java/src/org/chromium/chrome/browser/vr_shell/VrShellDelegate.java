@@ -51,6 +51,13 @@ public class VrShellDelegate {
     @IntDef({ENTER_VR_NOT_NECESSARY, ENTER_VR_CANCELLED, ENTER_VR_REQUESTED, ENTER_VR_SUCCEEDED })
     public @interface EnterVRResult {}
 
+    public static final int VR_NOT_AVAILABLE = 0;
+    public static final int VR_CARDBOARD = 1;
+    public static final int VR_DAYDREAM = 2; // Supports both Cardboard and Daydream viewer.
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({VR_NOT_AVAILABLE, VR_CARDBOARD, VR_DAYDREAM})
+    public @interface VrSupportLevel {}
+
     // TODO(bshe): These should be replaced by string provided by NDK. Currently, it only available
     // in SDK and we don't want add dependency to SDK just to get these strings.
     private static final String DAYDREAM_VR_EXTRA = "android.intent.extra.VR_LAUNCH";
@@ -63,14 +70,13 @@ public class VrShellDelegate {
     private static final long REENTER_VR_TIMEOUT_MS = 1000;
 
     private final ChromeTabbedActivity mActivity;
-    private final TabObserver mTabObserver;
-    private final Intent mEnterVRIntent;
+    private TabObserver mTabObserver;
+    private Intent mEnterVRIntent;
 
-    private boolean mVrAvailable;
-    private boolean mCardboardSupportOnly = true;
-    private Boolean mVrShellEnabled;
+    @VrSupportLevel
+    private int mVrSupportLevel;
 
-    private VrClassesBuilder mVrClassesBuilder;
+    private final VrClassesBuilder mVrClassesBuilder;
     private VrShell mVrShell;
     private NonPresentingGvrContext mNonPresentingGvrContext;
     private VrDaydreamApi mVrDaydreamApi;
@@ -88,41 +94,52 @@ public class VrShellDelegate {
 
     public VrShellDelegate(ChromeTabbedActivity activity) {
         mActivity = activity;
+        mVrClassesBuilder = createVrClassesBuilder();
+        updateVrSupportLevel();
+    }
 
-        mVrAvailable = createVrClassesBuilder() && isVrCoreCompatible();
-        // Daydream ready devices support both Cardboard and Daydream mode.
-        if (mVrAvailable && createVrDaydreamApi() && mVrDaydreamApi.isDaydreamReadyDevice()) {
-            mCardboardSupportOnly = false;
+    /**
+     * Updates mVrSupportLevel to the correct value. isVrCoreCompatible might return different value
+     * at runtime.
+     */
+    // TODO(bshe): Find a place to call this function again, i.e. page refresh or onResume.
+    private void updateVrSupportLevel() {
+        if (mVrClassesBuilder == null || !isVrCoreCompatible()) {
+            mVrSupportLevel = VR_NOT_AVAILABLE;
+            mEnterVRIntent = null;
+            mTabObserver = null;
+            return;
         }
 
-        if (mVrAvailable && !mCardboardSupportOnly) {
+        if (mVrDaydreamApi == null) {
+            mVrDaydreamApi = mVrClassesBuilder.createVrDaydreamApi();
+        }
+
+        if (mEnterVRIntent == null) {
             mEnterVRIntent =
                     mVrDaydreamApi.createVrIntent(new ComponentName(mActivity, VR_ACTIVITY_ALIAS));
-        } else {
-            mEnterVRIntent = null;
         }
-        if (mVrAvailable) {
+
+        if (mTabObserver == null) {
             mTabObserver = new EmptyTabObserver() {
                 @Override
                 public void onContentChanged(Tab tab) {
                     if (tab.getNativePage() != null || tab.isShowingSadTab()) {
                         // For now we don't handle native pages. crbug.com/661609.
-                        shutdownVR(false, !mCardboardSupportOnly /* showTransition */);
+                        shutdownVR(false, mVrSupportLevel == VR_DAYDREAM /* showTransition */);
                     }
                 }
 
                 @Override
                 public void onWebContentsSwapped(
                         Tab tab, boolean didStartLoad, boolean didFinishLoad) {
-                    // TODO(mthiesse): Update the native WebContents pointer and compositor. This
-                    // doesn't seem to get triggered in VR Shell currently, but that's likely to
-                    // change
-                    // when we have omnibar navigation.
+                    // TODO(mthiesse): Update the native WebContents pointer and compositor.
+                    shutdownVR(false, mVrSupportLevel == VR_DAYDREAM /* showTransition */);
                 }
             };
-        } else {
-            mTabObserver = null;
         }
+
+        mVrSupportLevel = mVrDaydreamApi.isDaydreamReadyDevice() ? VR_DAYDREAM : VR_CARDBOARD;
     }
 
     /**
@@ -130,27 +147,25 @@ public class VrShellDelegate {
      * class can be initialized.
      */
     public void onNativeLibraryReady() {
-        if (!mVrAvailable) return;
+        if (mVrSupportLevel == VR_NOT_AVAILABLE) return;
         mNativeVrShellDelegate = nativeInit();
     }
 
     @SuppressWarnings("unchecked")
-    private boolean createVrClassesBuilder() {
+    private VrClassesBuilder createVrClassesBuilder() {
         try {
             Class<? extends VrClassesBuilder> vrClassesBuilderClass =
                     (Class<? extends VrClassesBuilder>) Class.forName(
                             "org.chromium.chrome.browser.vr_shell.VrClassesBuilderImpl");
             Constructor<?> vrClassesBuilderConstructor =
                     vrClassesBuilderClass.getConstructor(Activity.class);
-            mVrClassesBuilder =
-                    (VrClassesBuilder) vrClassesBuilderConstructor.newInstance(mActivity);
-            return true;
+            return (VrClassesBuilder) vrClassesBuilderConstructor.newInstance(mActivity);
         } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
                 | IllegalArgumentException | InvocationTargetException | NoSuchMethodException e) {
             if (!(e instanceof ClassNotFoundException)) {
                 Log.e(TAG, "Unable to instantiate VrClassesBuilder", e);
             }
-            return false;
+            return null;
         }
     }
 
@@ -159,7 +174,7 @@ public class VrShellDelegate {
      */
     public void enterVRFromIntent(Intent intent) {
         // Vr Intent is only used on Daydream devices.
-        if (!mVrAvailable || mCardboardSupportOnly) return;
+        if (mVrSupportLevel != VR_DAYDREAM) return;
         assert isVrIntent(intent);
         if (mListeningForWebVrActivateBeforePause && !mRequestedWebVR) {
             nativeDisplayActivate(mNativeVrShellDelegate);
@@ -223,7 +238,7 @@ public class VrShellDelegate {
         }
         // If vr isn't in the build, or we haven't initialized yet, or vr shell is not enabled and
         // this is not a web vr request, then return immediately.
-        if (!mVrAvailable || mNativeVrShellDelegate == 0
+        if (mVrSupportLevel == VR_NOT_AVAILABLE || mNativeVrShellDelegate == 0
                 || (!isVrShellEnabled() && !(mRequestedWebVR || mListeningForWebVrActivate))) {
             return false;
         }
@@ -275,11 +290,11 @@ public class VrShellDelegate {
      */
     @EnterVRResult
     public int enterVRIfNecessary() {
-        if (!mVrAvailable) return ENTER_VR_CANCELLED;
+        if (mVrSupportLevel == VR_NOT_AVAILABLE) return ENTER_VR_CANCELLED;
         if (mInVr) return ENTER_VR_NOT_NECESSARY;
         if (!canEnterVR(mActivity.getActivityTab())) return ENTER_VR_CANCELLED;
 
-        if (mCardboardSupportOnly || !mVrDaydreamApi.isDaydreamCurrentViewer()) {
+        if (mVrSupportLevel == VR_CARDBOARD || !mVrDaydreamApi.isDaydreamCurrentViewer()) {
             // Avoid using launchInVr which would trigger DON flow regardless current viewer type
             // due to the lack of support for unexported activities.
             return enterVR() ? ENTER_VR_SUCCEEDED : ENTER_VR_CANCELLED;
@@ -293,7 +308,7 @@ public class VrShellDelegate {
     private boolean exitWebVR() {
         if (!mInVr) return false;
         mVrShell.setWebVrModeEnabled(false);
-        if (mCardboardSupportOnly) {
+        if (mVrSupportLevel == VR_CARDBOARD) {
             // Transition screen is not available for Cardboard only (non-Daydream) devices.
             // TODO(bshe): Fix this once b/33490788 is fixed.
             shutdownVR(false, false);
@@ -315,9 +330,9 @@ public class VrShellDelegate {
      * Resumes VR Shell.
      */
     public void maybeResumeVR() {
-        if (!mVrAvailable) return;
-        if ((isVrShellEnabled() || mListeningForWebVrActivateBeforePause)
-                && !mCardboardSupportOnly) {
+        if (mVrSupportLevel == VR_NOT_AVAILABLE) return;
+        if (mVrSupportLevel == VR_DAYDREAM
+                && (isVrShellEnabled() || mListeningForWebVrActivateBeforePause)) {
             registerDaydreamIntent();
         }
         // If this is still set, it means the user backed out of the DON flow, and we won't be
@@ -351,7 +366,7 @@ public class VrShellDelegate {
             } finally {
                 StrictMode.setThreadPolicy(oldPolicy);
             }
-        } else if (!mCardboardSupportOnly && mVrDaydreamApi.isDaydreamCurrentViewer()
+        } else if (mVrSupportLevel == VR_DAYDREAM && mVrDaydreamApi.isDaydreamCurrentViewer()
                 && mLastVRExit + REENTER_VR_TIMEOUT_MS > SystemClock.uptimeMillis()) {
             enterVRIfNecessary();
         }
@@ -361,9 +376,9 @@ public class VrShellDelegate {
      * Pauses VR Shell.
      */
     public void maybePauseVR() {
-        if (!mVrAvailable) return;
+        if (mVrSupportLevel == VR_NOT_AVAILABLE) return;
 
-        if (!mCardboardSupportOnly) {
+        if (mVrSupportLevel == VR_DAYDREAM) {
             unregisterDaydreamIntent();
 
             // When the active web page has a vrdisplayactivate event handler,
@@ -390,14 +405,14 @@ public class VrShellDelegate {
      * @return Whether or not we exited VR.
      */
     public boolean exitVRIfNecessary(boolean isPausing) {
-        if (!mVrAvailable) return false;
+        if (mVrSupportLevel == VR_NOT_AVAILABLE) return false;
         if (!mInVr) return false;
         shutdownVR(isPausing, false);
         return true;
     }
 
     public void onExitVRResult(int resultCode) {
-        assert mVrAvailable;
+        assert mVrSupportLevel != VR_NOT_AVAILABLE;
         if (resultCode == Activity.RESULT_OK) {
             mVrShell.setVrModeEnabled(false);
         } else {
@@ -444,7 +459,7 @@ public class VrShellDelegate {
     private void setListeningForWebVrActivate(boolean listening) {
         // Non-Daydream devices may not have the concept of display activate. So disable
         // mListeningForWebVrActivate for them.
-        if (!mVrAvailable || mCardboardSupportOnly) return;
+        if (mVrSupportLevel != VR_DAYDREAM) return;
         mListeningForWebVrActivate = listening;
         if (listening) {
             registerDaydreamIntent();
@@ -479,19 +494,11 @@ public class VrShellDelegate {
     }
 
     private boolean isVrCoreCompatible() {
-        if (mVrClassesBuilder == null) return false;
-
-        if (mVrCoreVersionChecker != null) {
-            return mVrCoreVersionChecker.isVrCoreCompatible();
+        assert mVrClassesBuilder != null;
+        if (mVrCoreVersionChecker == null) {
+            mVrCoreVersionChecker = mVrClassesBuilder.createVrCoreVersionChecker();
         }
-        mVrCoreVersionChecker = mVrClassesBuilder.createVrCoreVersionChecker();
         return mVrCoreVersionChecker.isVrCoreCompatible();
-    }
-
-    private boolean createVrDaydreamApi() {
-        if (mVrClassesBuilder == null) return false;
-        mVrDaydreamApi = mVrClassesBuilder.createVrDaydreamApi();
-        return true;
     }
 
     private boolean createVrShell() {
@@ -569,17 +576,13 @@ public class VrShellDelegate {
     /**
      * @return Whether or not VR Shell is currently enabled.
      */
-    public boolean isVrShellEnabled() {
-        // Disable VR Shell for Cardboard only (non-Daydream) devices.
-        // TODO(amp|bshe): Investigate if removing LibraryLoader.isInitialized from the check is
-        // possible.
-        if (!mVrAvailable || mCardboardSupportOnly || !LibraryLoader.isInitialized()) {
+    private boolean isVrShellEnabled() {
+        // Only enable ChromeVR (VrShell) on Daydream devices as it currently needs a Daydream
+        // controller.
+        if (mVrSupportLevel != VR_DAYDREAM) {
             return false;
         }
-        if (mVrShellEnabled == null) {
-            mVrShellEnabled = ChromeFeatureList.isEnabled(ChromeFeatureList.VR_SHELL);
-        }
-        return mVrShellEnabled;
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.VR_SHELL);
     }
 
     /**

@@ -1652,14 +1652,6 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
         setMergedInstanceTaskId(getTaskId());
     }
 
-    /**
-     * See VrShellDelegate#isVrShellEnabled()
-     */
-    @Override
-    public boolean isVrShellEnabled() {
-        return mVrShellDelegate.isVrShellEnabled();
-    }
-
     // TODO(mthiesse): Toggle toolbar overlay, popups, etc.
     public void setUIVisibilityForVR(int visibility) {
         mControlContainer.setVisibility(visibility);
