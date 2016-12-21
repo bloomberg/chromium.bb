@@ -713,7 +713,12 @@ class NET_EXPORT NetworkQualityEstimator
   // |effective_connection_type_recomputation_interval_| ago).
   EffectiveConnectionType effective_connection_type_;
 
-  // Minimum and Maximum signal strength (in dbM) observed since last connection
+  // Last known value of the wireless signal strength. Set to INT32_MIN if
+  // unavailable. |signal_strength_dbm_| is reset to INT32_MIN on connection
+  // change events.
+  int32_t signal_strength_dbm_;
+
+  // Minimum and maximum signal strength (in dbM) observed since last connection
   // change. Updated on connection change and main frame requests.
   int32_t min_signal_strength_since_connection_change_;
   int32_t max_signal_strength_since_connection_change_;

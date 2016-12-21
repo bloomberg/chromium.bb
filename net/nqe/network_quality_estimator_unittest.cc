@@ -1098,13 +1098,16 @@ TEST(NetworkQualityEstimatorTest, TestGetMetricsSince) {
   for (size_t i = 0; i < 2; ++i) {
     estimator.downstream_throughput_kbps_observations_.AddObservation(
         NetworkQualityEstimator::ThroughputObservation(
-            old_downlink_kbps, old, NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
+            old_downlink_kbps, old, INT32_MIN,
+            NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
     estimator.rtt_observations_.AddObservation(
         NetworkQualityEstimator::RttObservation(
-            old_url_rtt, old, NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
+            old_url_rtt, old, INT32_MIN,
+            NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
     estimator.rtt_observations_.AddObservation(
         NetworkQualityEstimator::RttObservation(
-            old_tcp_rtt, old, NETWORK_QUALITY_OBSERVATION_SOURCE_TCP));
+            old_tcp_rtt, old, INT32_MIN,
+            NETWORK_QUALITY_OBSERVATION_SOURCE_TCP));
   }
 
   const int32_t new_downlink_kbps = 100;
@@ -1121,13 +1124,15 @@ TEST(NetworkQualityEstimatorTest, TestGetMetricsSince) {
 
   estimator.downstream_throughput_kbps_observations_.AddObservation(
       NetworkQualityEstimator::ThroughputObservation(
-          new_downlink_kbps, now, NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
+          new_downlink_kbps, now, INT32_MIN,
+          NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
   estimator.rtt_observations_.AddObservation(
       NetworkQualityEstimator::RttObservation(
-          new_url_rtt, now, NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
+          new_url_rtt, now, INT32_MIN,
+          NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
   estimator.rtt_observations_.AddObservation(
       NetworkQualityEstimator::RttObservation(
-          new_tcp_rtt, now, NETWORK_QUALITY_OBSERVATION_SOURCE_TCP));
+          new_tcp_rtt, now, INT32_MIN, NETWORK_QUALITY_OBSERVATION_SOURCE_TCP));
 
   const struct {
     base::TimeTicks start_timestamp;
@@ -1691,7 +1696,7 @@ TEST(NetworkQualityEstimatorTest, UnknownEffectiveConnectionType) {
                                   "test");
 
   NetworkQualityEstimator::RttObservation rtt_observation(
-      base::TimeDelta::FromSeconds(5), tick_clock_ptr->NowTicks(),
+      base::TimeDelta::FromSeconds(5), tick_clock_ptr->NowTicks(), INT32_MIN,
       NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP);
 
   for (size_t i = 0; i < 10; ++i) {
@@ -1705,7 +1710,7 @@ TEST(NetworkQualityEstimatorTest, UnknownEffectiveConnectionType) {
   // more RTT sample should trigger recomputation of the effective connection
   // type since the last computed effective connection type was unknown.
   estimator.NotifyObserversOfRTT(NetworkQualityEstimator::RttObservation(
-      base::TimeDelta::FromSeconds(5), tick_clock_ptr->NowTicks(),
+      base::TimeDelta::FromSeconds(5), tick_clock_ptr->NowTicks(), INT32_MIN,
       NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
   ++expected_effective_connection_type_notifications;
   EXPECT_EQ(expected_effective_connection_type_notifications,
@@ -1785,11 +1790,11 @@ TEST(NetworkQualityEstimatorTest,
       estimator.rtt_observations_.AddObservation(
           NetworkQualityEstimator::RttObservation(
               base::TimeDelta::FromSeconds(5), tick_clock_ptr->NowTicks(),
-              NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
+              INT32_MIN, NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
 
       estimator.NotifyObserversOfRTT(NetworkQualityEstimator::RttObservation(
           base::TimeDelta::FromSeconds(5), tick_clock_ptr->NowTicks(),
-          NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
+          INT32_MIN, NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP));
 
       if (i == rtt_observations_count) {
         // Effective connection type must be recomputed since the number of RTT
