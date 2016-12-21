@@ -745,7 +745,10 @@ StoreWriteResult V4Store::WriteToDisk(const Checksum& checksum) {
   file_format.SerializeToString(&file_format_string);
   size_t written = base::WriteFile(new_filename, file_format_string.data(),
                                    file_format_string.size());
-  DCHECK_EQ(file_format_string.size(), written);
+
+  if (file_format_string.size() != written) {
+    return UNEXPECTED_BYTES_WRITTEN_FAILURE;
+  }
 
   if (!base::Move(new_filename, store_path_)) {
     return UNABLE_TO_RENAME_FAILURE;

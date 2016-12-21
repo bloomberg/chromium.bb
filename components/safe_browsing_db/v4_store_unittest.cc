@@ -834,6 +834,14 @@ TEST_F(V4StoreTest, WriteToDiskFails) {
   // the temp store file to |store_path_| it fails.
   EXPECT_EQ(UNABLE_TO_RENAME_FAILURE,
             V4Store(task_runner_, temp_dir_.GetPath()).WriteToDisk(Checksum()));
+
+  // Give a location that isn't writable, even for the tmp file.
+  base::FilePath non_writable_dir =
+      temp_dir_.GetPath()
+          .Append(FILE_PATH_LITERAL("nonexistent_dir"))
+          .Append(FILE_PATH_LITERAL("some.store"));
+  EXPECT_EQ(UNEXPECTED_BYTES_WRITTEN_FAILURE,
+            V4Store(task_runner_, non_writable_dir).WriteToDisk(Checksum()));
 }
 
 TEST_F(V4StoreTest, FullUpdateFailsChecksumSynchronously) {
