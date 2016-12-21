@@ -15,6 +15,7 @@
 
 namespace blink {
 
+class CSSParserContext;
 class CSSStringValue;
 class CSSURIValue;
 class CSSValuePair;

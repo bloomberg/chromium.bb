@@ -30,6 +30,7 @@
 #include "core/CoreExport.h"
 #include "platform/fonts/FontTraits.h"
 #include "wtf/Allocator.h"
+#include "wtf/text/AtomicString.h"
 
 namespace blink {
 

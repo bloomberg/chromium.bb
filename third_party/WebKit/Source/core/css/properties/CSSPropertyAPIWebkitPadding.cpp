@@ -4,6 +4,7 @@
 
 #include "core/css/properties/CSSPropertyAPIWebkitPadding.h"
 
+#include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 

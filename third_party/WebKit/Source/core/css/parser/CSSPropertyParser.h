@@ -26,6 +26,7 @@
 #define CSSPropertyParser_h
 
 #include "core/css/StyleRule.h"
+#include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "wtf/text/StringView.h"
 

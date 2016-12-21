@@ -6,6 +6,7 @@
 
 #include "core/css/CSSSelectorList.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSTokenizer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

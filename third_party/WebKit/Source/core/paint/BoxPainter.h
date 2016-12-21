@@ -15,6 +15,7 @@
 namespace blink {
 
 class ComputedStyle;
+class Document;
 class FillLayer;
 class FloatRoundedRect;
 class GraphicsContext;

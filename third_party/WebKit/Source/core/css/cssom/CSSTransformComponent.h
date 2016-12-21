@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "core/css/CSSFunctionValue.h"
+#include "wtf/text/WTFString.h"
 
 namespace blink {
 

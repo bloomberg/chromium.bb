@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/MediaValues.h"
+#include "platform/CrossThreadCopier.h"
 
 namespace blink {
 

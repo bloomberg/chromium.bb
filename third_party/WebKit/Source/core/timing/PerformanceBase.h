@@ -51,6 +51,7 @@ class ExceptionState;
 class LocalFrame;
 class PerformanceObserver;
 class PerformanceTiming;
+class ResourceResponse;
 class ResourceTimingInfo;
 class UserTiming;
 

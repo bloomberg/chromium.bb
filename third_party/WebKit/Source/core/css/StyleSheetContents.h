@@ -24,6 +24,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/RuleSet.h"
+#include "core/css/parser/CSSParserContext.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/HashMap.h"

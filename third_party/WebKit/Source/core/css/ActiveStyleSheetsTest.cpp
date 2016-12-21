@@ -8,7 +8,7 @@
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/StyleSheetList.h"
-#include "core/css/parser/CSSParserMode.h"
+#include "core/css/parser/CSSParserContext.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/dom/shadow/ShadowRootInit.h"

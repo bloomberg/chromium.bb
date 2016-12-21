@@ -9,7 +9,6 @@
 #include "core/css/CSSProperty.h"
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/StylePropertySet.h"
-#include "core/css/parser/CSSParserMode.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
@@ -19,6 +18,7 @@
 namespace blink {
 
 class CSSLazyParsingState;
+class CSSParserContext;
 class CSSParserObserver;
 class CSSParserObserverWrapper;
 class StyleRule;

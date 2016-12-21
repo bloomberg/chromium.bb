@@ -13,7 +13,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
-#include "core/css/parser/CSSParserMode.h"
+#include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSParserSelector.h"
 #include "core/dom/Document.h"
 #include "core/fetch/FetchContext.h"

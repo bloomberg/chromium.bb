@@ -7,7 +7,7 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/parser/CSSLazyParsingState.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/css/parser/CSSParserMode.h"
+#include "core/css/parser/CSSParserContext.h"
 #include "core/frame/FrameHost.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Heap.h"

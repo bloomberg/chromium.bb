@@ -6,11 +6,13 @@
 #define CSSPropertyAPI_h
 
 #include "core/CSSPropertyNames.h"
-#include "core/css/CSSValue.h"
-#include "core/css/parser/CSSParserMode.h"
-#include "core/css/parser/CSSParserTokenRange.h"
+#include "wtf/Allocator.h"
 
 namespace blink {
+
+class CSSValue;
+class CSSParserContext;
+class CSSParserTokenRange;
 
 // We will use this API to represent all functions used for property-specific
 // logic inside the blink style engine. All specific properties are subclasses

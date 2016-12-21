@@ -5,6 +5,7 @@
 #include "core/dom/SelectorQuery.h"
 
 #include "core/css/parser/CSSParser.h"
+#include "core/css/parser/CSSParserContext.h"
 #include "core/dom/Document.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLHtmlElement.h"

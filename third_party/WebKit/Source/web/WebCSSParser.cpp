@@ -5,6 +5,7 @@
 #include "public/web/WebCSSParser.h"
 
 #include "core/css/parser/CSSParser.h"
+#include "platform/graphics/Color.h"
 #include "public/platform/WebString.h"
 
 namespace blink {

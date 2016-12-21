@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class CSSParserContext;
 class CSSSelectorList;
 class StyleSheetContents;
 

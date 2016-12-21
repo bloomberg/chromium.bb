@@ -7,14 +7,13 @@
 
 #include "core/CSSPropertyNames.h"
 #include "core/CoreExport.h"
-#include "core/css/CSSValue.h"
 #include "core/css/StylePropertySet.h"
-#include "core/css/parser/CSSParserMode.h"
-#include "platform/graphics/Color.h"
+#include "core/css/parser/CSSParserContext.h"
 #include <memory>
 
 namespace blink {
 
+class Color;
 class CSSParserObserver;
 class CSSParserTokenRange;
 class CSSSelectorList;
@@ -23,6 +22,7 @@ class ImmutableStylePropertySet;
 class StyleRuleBase;
 class StyleRuleKeyframe;
 class StyleSheetContents;
+class CSSValue;
 
 // This class serves as the public API for the css/parser subsystem
 class CORE_EXPORT CSSParser {

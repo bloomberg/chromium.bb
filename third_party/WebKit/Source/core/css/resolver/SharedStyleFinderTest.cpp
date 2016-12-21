@@ -7,6 +7,7 @@
 #include "core/css/RuleFeature.h"
 #include "core/css/RuleSet.h"
 #include "core/css/parser/CSSParser.h"
+#include "core/css/parser/CSSParserContext.h"
 #include "core/dom/Document.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLElement.h"

@@ -35,6 +35,7 @@
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
+#include "wtf/WeakPtr.h"
 #include <memory>
 
 namespace blink {

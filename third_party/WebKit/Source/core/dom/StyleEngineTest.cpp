@@ -5,6 +5,7 @@
 #include "core/dom/StyleEngine.h"
 
 #include "core/css/StyleSheetContents.h"
+#include "core/css/parser/CSSParserContext.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/shadow/ShadowRootInit.h"
