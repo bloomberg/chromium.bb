@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
+#include "chrome/browser/android/offline_pages/background_loader_offliner_factory.h"
 #include "chrome/browser/android/offline_pages/background_scheduler_bridge.h"
 #include "chrome/browser/android/offline_pages/downloads/offline_page_notification_bridge.h"
 #include "chrome/browser/android/offline_pages/prerendering_offliner_factory.h"
@@ -25,6 +26,7 @@
 #include "components/offline_pages/core/background/request_queue_store_sql.h"
 #include "components/offline_pages/core/background/scheduler.h"
 #include "components/offline_pages/core/downloads/download_notifying_observer.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/nqe/network_quality_estimator.h"
 
@@ -50,8 +52,14 @@ RequestCoordinator* RequestCoordinatorFactory::GetForBrowserContext(
 KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   std::unique_ptr<OfflinerPolicy> policy(new OfflinerPolicy());
-  std::unique_ptr<OfflinerFactory> prerenderer_offliner(
-      new PrerenderingOfflinerFactory(context));
+  std::unique_ptr<OfflinerFactory> offliner;
+
+  // Determines which offliner to use based on flag.
+  if (ShouldUseNewBackgroundLoader()) {
+    offliner.reset(new BackgroundLoaderOfflinerFactory(context));
+  } else {
+    offliner.reset(new PrerenderingOfflinerFactory(context));
+  }
 
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
       content::BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
@@ -71,7 +79,7 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
   // TODO(fgorski): Something needs to keep the handle to the Notification
   // dispatcher.
   RequestCoordinator* request_coordinator = new RequestCoordinator(
-      std::move(policy), std::move(prerenderer_offliner), std::move(queue),
+      std::move(policy), std::move(offliner), std::move(queue),
       std::move(scheduler), network_quality_estimator);
 
   DownloadNotifyingObserver::CreateAndStartObserving(
