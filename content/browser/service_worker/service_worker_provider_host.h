@@ -289,6 +289,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
                            UpdateForceBypassCache);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTestP,
                            ServiceWorkerDataRequestAnnotation);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTestP,
+                           SkipServiceWorkerForServiceWorkerRequest);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerProviderHostTestP, ContextSecurity);
 
   struct OneShotGetReadyCallback {

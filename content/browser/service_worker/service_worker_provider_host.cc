@@ -375,6 +375,20 @@ ServiceWorkerProviderHost::CreateRequestHandler(
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     scoped_refptr<ResourceRequestBodyImpl> body,
     bool skip_service_worker) {
+  // |skip_service_worker| is meant to apply to requests that could be handled
+  // by a service worker, as opposed to requests for the service worker script
+  // itself. So ignore it here for the service worker script and its imported
+  // scripts.
+  // TODO(falken): Really it should be treated as an error to set
+  // |skip_service_worker| for requests to start the service worker, but it's
+  // difficult to fix that renderer-side, since we don't know whether a request
+  // is for a service worker without access to IsHostToRunningServiceWorker() as
+  // that state is stored browser-side.
+  if (IsHostToRunningServiceWorker() &&
+      (resource_type == RESOURCE_TYPE_SERVICE_WORKER ||
+       resource_type == RESOURCE_TYPE_SCRIPT)) {
+    skip_service_worker = false;
+  }
   if (skip_service_worker) {
     if (!ServiceWorkerUtils::IsMainResourceType(resource_type))
       return std::unique_ptr<ServiceWorkerRequestHandler>();
