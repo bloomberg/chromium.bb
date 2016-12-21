@@ -289,6 +289,9 @@ class ArcAppListPrefs
       int32_t task_id,
       const arc::mojom::OrientationLock orientation_lock) override;
 
+  void OnInstallationStarted() override;
+  void OnInstallationFinished() override;
+
   void StartPrefs();
 
   void UpdateDefaultAppsHiddenState();
@@ -349,6 +352,10 @@ class ArcAppListPrefs
   void MaybeShowPackageInAppLauncher(
       const arc::mojom::ArcPackageInfo& package_info);
 
+  // Returns true is specified package is new in the system, was not installed
+  // and it is not scheduled to install by sync.
+  bool IsUnknownPackage(const std::string& package_name) const;
+
   Profile* const profile_;
 
   // Owned by the BrowserContext.
@@ -365,6 +372,8 @@ class ArcAppListPrefs
   std::unordered_set<std::string> ready_apps_;
   // Contains set of ARC apps that are currently tracked.
   std::unordered_set<std::string> tracked_apps_;
+  // Contains number of ARC packages that are currently installing.
+  int installing_packages_count_ = 0;
   // Keeps deferred icon load requests. Each app may contain several requests
   // for different scale factor. Scale factor is defined by specific bit
   // position.
@@ -383,6 +392,8 @@ class ArcAppListPrefs
   bool default_apps_ready_ = false;
   ArcDefaultAppList default_apps_;
   base::Closure default_apps_ready_callback_;
+  int last_shown_batch_installation_revision_ = -1;
+  int current_batch_installation_revision_ = 0;
 
   base::WeakPtrFactory<ArcAppListPrefs> weak_ptr_factory_;
 

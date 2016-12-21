@@ -679,6 +679,7 @@ void ArcAppListPrefs::OnInstanceReady() {
 
 void ArcAppListPrefs::OnInstanceClosed() {
   DisableAllApps();
+  installing_packages_count_ = 0;
   binding_.Close();
 
   if (sync_service_) {
@@ -1119,8 +1120,15 @@ void ArcAppListPrefs::MaybeShowPackageInAppLauncher(
     AppListService* service = AppListService::Get();
     CHECK(service);
     service->ShowForAppInstall(profile_, app_id, false);
+    last_shown_batch_installation_revision_ =
+        current_batch_installation_revision_;
     break;
   }
+}
+
+bool ArcAppListPrefs::IsUnknownPackage(const std::string& package_name) const {
+  return !GetPackage(package_name) &&
+      !sync_service_->IsPackageSyncing(package_name);
 }
 
 void ArcAppListPrefs::OnPackageAdded(
@@ -1129,14 +1137,16 @@ void ArcAppListPrefs::OnPackageAdded(
 
   // Ignore packages installed by internal sync.
   DCHECK(sync_service_);
-  const bool new_package_in_system = !GetPackage(package_info->package_name) &&
-      !sync_service_->IsPackageSyncing(package_info->package_name);
+  const bool unknown_package = IsUnknownPackage(package_info->package_name);
 
   AddOrUpdatePackagePrefs(prefs_, *package_info);
   for (auto& observer : observer_list_)
     observer.OnPackageInstalled(*package_info);
-  if (new_package_in_system)
+  if (unknown_package &&
+      current_batch_installation_revision_ !=
+          last_shown_batch_installation_revision_) {
     MaybeShowPackageInAppLauncher(*package_info);
+  }
 }
 
 void ArcAppListPrefs::OnPackageModified(
@@ -1242,6 +1252,21 @@ void ArcAppListPrefs::OnIconInstalled(const std::string& app_id,
 
   for (auto& observer : observer_list_)
     observer.OnAppIconUpdated(app_id, scale_factor);
+}
+
+void ArcAppListPrefs::OnInstallationStarted() {
+  // Start new batch installation group if this is first installation.
+  if (!installing_packages_count_)
+    ++current_batch_installation_revision_;
+  ++installing_packages_count_;
+}
+
+void ArcAppListPrefs::OnInstallationFinished() {
+  if (!installing_packages_count_) {
+    VLOG(2) << "Received unexpected installation finished event";
+    return;
+  }
+  --installing_packages_count_;
 }
 
 ArcAppListPrefs::AppInfo::AppInfo(const std::string& name,

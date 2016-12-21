@@ -58,6 +58,8 @@ constexpr char kTestAppName2[] = "Test Arc App 2";
 constexpr char kTestShortcutName[] = "Test Shortcut";
 constexpr char kTestShortcutName2[] = "Test Shortcut 2";
 constexpr char kTestAppPackage[] = "test.arc.app.package";
+constexpr char kTestAppPackage2[] = "test.arc.app.package2";
+constexpr char kTestAppPackage3[] = "test.arc.app.package3";
 constexpr char kTestAppActivity[] = "test.arc.app.package.activity";
 constexpr char kTestAppActivity2[] = "test.arc.gitapp.package.activity2";
 constexpr char kTestShelfGroup[] = "shelf_group";
@@ -65,20 +67,22 @@ constexpr char kTestShelfGroup2[] = "shelf_group_2";
 constexpr char kTestShelfGroup3[] = "shelf_group_3";
 constexpr int kAppAnimatedThresholdMs = 100;
 
-std::string GetTestApp1Id() {
-  return ArcAppListPrefs::GetAppId(kTestAppPackage, kTestAppActivity);
+std::string GetTestApp1Id(const std::string& package_name) {
+  return ArcAppListPrefs::GetAppId(package_name, kTestAppActivity);
 }
 
-std::string GetTestApp2Id() {
-  return ArcAppListPrefs::GetAppId(kTestAppPackage, kTestAppActivity2);
+std::string GetTestApp2Id(const std::string& package_name) {
+  return ArcAppListPrefs::GetAppId(package_name, kTestAppActivity2);
 }
 
-std::vector<arc::mojom::AppInfoPtr> GetTestAppsList(bool multi_app) {
+std::vector<arc::mojom::AppInfoPtr> GetTestAppsList(
+    const std::string& package_name,
+    bool multi_app) {
   std::vector<arc::mojom::AppInfoPtr> apps;
 
   arc::mojom::AppInfoPtr app(arc::mojom::AppInfo::New());
   app->name = kTestAppName;
-  app->package_name = kTestAppPackage;
+  app->package_name = package_name;
   app->activity = kTestAppActivity;
   app->sticky = false;
   apps.push_back(std::move(app));
@@ -86,7 +90,7 @@ std::vector<arc::mojom::AppInfoPtr> GetTestAppsList(bool multi_app) {
   if (multi_app) {
     app = arc::mojom::AppInfo::New();
     app->name = kTestAppName2;
-    app->package_name = kTestAppPackage;
+    app->package_name = package_name;
     app->activity = kTestAppActivity2;
     app->sticky = false;
     apps.push_back(std::move(app));
@@ -165,16 +169,16 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
     arc::ArcSessionManager::Get()->EnableArc();
   }
 
-  void InstallTestApps(bool multi_app) {
-    app_host()->OnAppListRefreshed(GetTestAppsList(multi_app));
+  void InstallTestApps(const std::string& package_name, bool multi_app) {
+    app_host()->OnAppListRefreshed(GetTestAppsList(package_name, multi_app));
 
     std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-        app_prefs()->GetApp(GetTestApp1Id());
+        app_prefs()->GetApp(GetTestApp1Id(package_name));
     ASSERT_TRUE(app_info);
     EXPECT_TRUE(app_info->ready);
     if (multi_app) {
       std::unique_ptr<ArcAppListPrefs::AppInfo> app_info2 =
-          app_prefs()->GetApp(GetTestApp2Id());
+          app_prefs()->GetApp(GetTestApp2Id(package_name));
       ASSERT_TRUE(app_info2);
       EXPECT_TRUE(app_info2->ready);
     }
@@ -201,9 +205,9 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
     return shortcut_id;
   }
 
-  void SendPackageAdded(bool package_synced) {
+  void SendPackageAdded(const std::string& package_name, bool package_synced) {
     arc::mojom::ArcPackageInfo package_info;
-    package_info.package_name = kTestAppPackage;
+    package_info.package_name = package_name;
     package_info.package_version = 1;
     package_info.last_backup_android_id = 1;
     package_info.last_backup_time = 1;
@@ -214,12 +218,24 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
     base::RunLoop().RunUntilIdle();
   }
 
-  void SendPackageUpdated(bool multi_app) {
-    app_host()->OnPackageAppListRefreshed(kTestAppPackage,
-                                          GetTestAppsList(multi_app));
+  void SendPackageUpdated(const std::string& package_name, bool multi_app) {
+    app_host()->OnPackageAppListRefreshed(
+        package_name, GetTestAppsList(package_name, multi_app));
   }
 
-  void SendPackageRemoved() { app_host()->OnPackageRemoved(kTestAppPackage); }
+  void SendPackageRemoved(const std::string& package_name) {
+    app_host()->OnPackageRemoved(package_name);
+  }
+
+  void SendInstallationStarted() {
+    app_host()->OnInstallationStarted();
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void SendInstallationFinished() {
+    app_host()->OnInstallationFinished();
+    base::RunLoop().RunUntilIdle();
+  }
 
   void StartInstance() {
     if (arc_session_manager()->profile() != profile())
@@ -280,10 +296,10 @@ class ArcAppDeferredLauncherBrowserTest
 IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
   // Install app to remember existing apps.
   StartInstance();
-  InstallTestApps(false);
-  SendPackageAdded(false);
+  InstallTestApps(kTestAppPackage, false);
+  SendPackageAdded(kTestAppPackage, false);
 
-  const std::string app_id = GetTestApp1Id();
+  const std::string app_id = GetTestApp1Id(kTestAppPackage);
   if (is_pinned()) {
     shelf_delegate()->PinAppWithID(app_id);
     EXPECT_TRUE(shelf_delegate()->GetShelfIDForAppID(app_id));
@@ -316,8 +332,8 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
     case TEST_ACTION_START:
       // Now simulates that Arc is started and app list is refreshed. This
       // should stop animation and delete icon from the shelf.
-      InstallTestApps(false);
-      SendPackageAdded(false);
+      InstallTestApps(kTestAppPackage, false);
+      SendPackageAdded(kTestAppPackage, false);
       EXPECT_TRUE(chrome_controller()
                       ->GetArcDeferredLauncher()
                       ->GetActiveTime(app_id)
@@ -361,11 +377,11 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, PinOnPackageUpdateAndRemove) {
   // sycing is initialized.
   app_list::AppListSyncableServiceFactory::GetForProfile(profile())->GetModel();
 
-  InstallTestApps(true);
-  SendPackageAdded(false);
+  InstallTestApps(kTestAppPackage, true);
+  SendPackageAdded(kTestAppPackage, false);
 
-  const std::string app_id1 = GetTestApp1Id();
-  const std::string app_id2 = GetTestApp2Id();
+  const std::string app_id1 = GetTestApp1Id(kTestAppPackage);
+  const std::string app_id2 = GetTestApp2Id(kTestAppPackage);
   shelf_delegate()->PinAppWithID(app_id1);
   shelf_delegate()->PinAppWithID(app_id2);
   const ash::ShelfID shelf_id1_before =
@@ -374,19 +390,19 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, PinOnPackageUpdateAndRemove) {
   EXPECT_TRUE(shelf_delegate()->GetShelfIDForAppID(app_id2));
 
   // Package contains only one app. App list is not shown for updated package.
-  SendPackageUpdated(false);
+  SendPackageUpdated(kTestAppPackage, false);
   // Second pin should gone.
   EXPECT_EQ(shelf_id1_before, shelf_delegate()->GetShelfIDForAppID(app_id1));
   EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id2));
 
   // Package contains two apps. App list is not shown for updated package.
-  SendPackageUpdated(true);
+  SendPackageUpdated(kTestAppPackage, true);
   // Second pin should not appear.
   EXPECT_EQ(shelf_id1_before, shelf_delegate()->GetShelfIDForAppID(app_id1));
   EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id2));
 
   // Package removed.
-  SendPackageRemoved();
+  SendPackageRemoved(kTestAppPackage);
   // No pin is expected.
   EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id1));
   EXPECT_FALSE(shelf_delegate()->GetShelfIDForAppID(app_id2));
@@ -401,25 +417,44 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, AppListShown) {
 
   EXPECT_FALSE(app_list_service->IsAppListVisible());
 
+  SendInstallationStarted();
+  SendInstallationStarted();
+
   // New package is available. Show app list.
-  InstallTestApps(false);
-  SendPackageAdded(true);
+  SendInstallationFinished();
+  InstallTestApps(kTestAppPackage, false);
+  SendPackageAdded(kTestAppPackage, true);
   EXPECT_TRUE(app_list_service->IsAppListVisible());
 
   app_list_service->DismissAppList();
   EXPECT_FALSE(app_list_service->IsAppListVisible());
 
   // Send package update event. App list is not shown.
-  SendPackageAdded(true);
+  SendPackageAdded(kTestAppPackage, true);
   EXPECT_FALSE(app_list_service->IsAppListVisible());
+
+  // Install next package from batch. Next new package is available.
+  // Don't show app list.
+  SendInstallationFinished();
+  InstallTestApps(kTestAppPackage2, false);
+  SendPackageAdded(kTestAppPackage2, true);
+  EXPECT_FALSE(app_list_service->IsAppListVisible());
+
+  // Run next installation batch. App list should be shown again.
+  SendInstallationStarted();
+  SendInstallationFinished();
+  InstallTestApps(kTestAppPackage3, false);
+  SendPackageAdded(kTestAppPackage3, true);
+  EXPECT_TRUE(app_list_service->IsAppListVisible());
+  app_list_service->DismissAppList();
 }
 
 // Test AppListControllerDelegate::IsAppOpen for Arc apps.
 IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, IsAppOpen) {
   StartInstance();
-  InstallTestApps(false);
-  SendPackageAdded(true);
-  const std::string app_id = GetTestApp1Id();
+  InstallTestApps(kTestAppPackage, false);
+  SendPackageAdded(kTestAppPackage, true);
+  const std::string app_id = GetTestApp1Id(kTestAppPackage);
 
   AppListService* service = AppListService::Get();
   AppListControllerDelegate* delegate = service->GetControllerDelegate();
@@ -436,14 +471,14 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, IsAppOpen) {
 // Test Shelf Groups
 IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, ShelfGroup) {
   StartInstance();
-  InstallTestApps(false);
-  SendPackageAdded(true);
+  InstallTestApps(kTestAppPackage, false);
+  SendPackageAdded(kTestAppPackage, true);
   const std::string shorcut_id1 =
       InstallShortcut(kTestShortcutName, kTestShelfGroup);
   const std::string shorcut_id2 =
       InstallShortcut(kTestShortcutName2, kTestShelfGroup2);
 
-  const std::string app_id = GetTestApp1Id();
+  const std::string app_id = GetTestApp1Id(kTestAppPackage);
   std::unique_ptr<ArcAppListPrefs::AppInfo> info = app_prefs()->GetApp(app_id);
   ASSERT_TRUE(info);
 
