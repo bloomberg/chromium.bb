@@ -200,7 +200,7 @@ bool IconTypeIsDark(IconType icon_type) {
 }
 
 bool IconTypeHasVPNBadge(IconType icon_type) {
-  return (icon_type != ICON_TYPE_LIST);
+  return (icon_type != ICON_TYPE_LIST && icon_type != ICON_TYPE_MENU_LIST);
 }
 
 // This defines how we assemble a network icon.
@@ -926,14 +926,17 @@ base::string16 GetLabelForNetwork(const chromeos::NetworkState* network,
                                   IconType icon_type) {
   DCHECK(network);
   std::string activation_state = network->activation_state();
-  if (icon_type == ICON_TYPE_LIST) {
+  if (icon_type == ICON_TYPE_LIST || icon_type == ICON_TYPE_MENU_LIST) {
     // Show "<network>: [Connecting|Activating|Reconnecting]..."
+    // TODO(varkha): Remaining states should migrate to secondary status in the
+    // network item and no longer be part of the label.
+    // See http://crbug.com/676181 .
     if (network->IsReconnecting()) {
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_LIST_RECONNECTING,
           base::UTF8ToUTF16(network->name()));
     }
-    if (network->IsConnectingState()) {
+    if (icon_type != ICON_TYPE_MENU_LIST && network->IsConnectingState()) {
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_LIST_CONNECTING,
           base::UTF8ToUTF16(network->name()));
@@ -1089,6 +1092,7 @@ void PurgeNetworkIconCache() {
   PurgeIconMap(ICON_TYPE_TRAY, network_paths);
   PurgeIconMap(ICON_TYPE_DEFAULT_VIEW, network_paths);
   PurgeIconMap(ICON_TYPE_LIST, network_paths);
+  PurgeIconMap(ICON_TYPE_MENU_LIST, network_paths);
 }
 
 }  // namespace network_icon

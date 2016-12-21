@@ -361,8 +361,8 @@ void NetworkListViewMd::UpdateNetworkIcons() {
     if (!network)
       continue;
     bool prohibited_by_policy = IsProhibitedByPolicy(network);
-    info->label =
-        network_icon::GetLabelForNetwork(network, network_icon::ICON_TYPE_LIST);
+    info->label = network_icon::GetLabelForNetwork(
+        network, network_icon::ICON_TYPE_MENU_LIST);
     info->image =
         network_icon::GetImageForNetwork(network, network_icon::ICON_TYPE_LIST);
     info->disable =

@@ -22,7 +22,8 @@ namespace network_icon {
 enum IconType {
   ICON_TYPE_TRAY,          // light icons with VPN badges
   ICON_TYPE_DEFAULT_VIEW,  // dark icons with VPN badges
-  ICON_TYPE_LIST,          // dark icons without VPN badges
+  ICON_TYPE_LIST,          // dark icons without VPN badges; in-line status
+  ICON_TYPE_MENU_LIST,     // dark icons without VPN badges; separate status
 };
 
 // Gets the image for the network associated with |service_path|. |network| must
@@ -48,7 +49,8 @@ ASH_EXPORT gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
 // Returns a vpn image suitable for use on a light background.
 ASH_EXPORT gfx::ImageSkia GetVpnImage();
 
-// Returns the label for |network| based on |icon_type|. |network| can be NULL.
+// Returns the label for |network| based on |icon_type|. |network| cannot be
+// nullptr.
 ASH_EXPORT base::string16 GetLabelForNetwork(
     const chromeos::NetworkState* network,
     IconType icon_type);

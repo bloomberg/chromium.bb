@@ -282,8 +282,9 @@ void VPNListNetworkEntry::UpdateFromNetworkState(
 
   gfx::ImageSkia image =
       network_icon::GetImageForNetwork(network, network_icon::ICON_TYPE_LIST);
-  base::string16 label =
-      network_icon::GetLabelForNetwork(network, network_icon::ICON_TYPE_LIST);
+  base::string16 label = network_icon::GetLabelForNetwork(
+      network, UseMd() ? network_icon::ICON_TYPE_MENU_LIST
+                       : network_icon::ICON_TYPE_LIST);
   if (UseMd()) {
     if (network->IsConnectedState())
       SetupConnectedItemMd(label, image);
