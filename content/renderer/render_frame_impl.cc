@@ -1932,11 +1932,15 @@ void RenderFrameImpl::OnReplaceMisspelling(const base::string16& text) {
 }
 
 void RenderFrameImpl::OnCopyImageAt(int x, int y) {
-  frame_->copyImageAt(WebPoint(x, y));
+  blink::WebFloatRect viewport_position(x, y, 0, 0);
+  GetRenderWidget()->convertWindowToViewport(&viewport_position);
+  frame_->copyImageAt(WebPoint(viewport_position.x, viewport_position.y));
 }
 
 void RenderFrameImpl::OnSaveImageAt(int x, int y) {
-  frame_->saveImageAt(WebPoint(x, y));
+  blink::WebFloatRect viewport_position(x, y, 0, 0);
+  GetRenderWidget()->convertWindowToViewport(&viewport_position);
+  frame_->saveImageAt(WebPoint(viewport_position.x, viewport_position.y));
 }
 
 void RenderFrameImpl::OnAddMessageToConsole(ConsoleMessageLevel level,
