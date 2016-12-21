@@ -10,9 +10,22 @@
 Polymer({
   is: 'settings-site-settings-page',
 
-  behaviors: [SiteSettingsBehavior],
+  behaviors: [SiteSettingsBehavior, WebUIListenerBehavior],
 
   properties: {
+    /**
+     * An object to bind default value labels to (so they are not in the |this|
+     * scope). The keys of this object are the values of the
+     * settings.ContentSettingsTypes enum.
+     * @private
+     */
+    default_: {
+      type: Object,
+      value: function() {
+        return {};
+      },
+    },
+
     /** @private */
     enableSiteSettings_: {
       type: Boolean,
@@ -26,35 +39,36 @@ Polymer({
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
     this.ALL_SITES = settings.ALL_SITES;
 
-    // Look up the default value for each category and show it.
-    this.setDefaultValue_(this.ContentSettingsTypes.AUTOMATIC_DOWNLOADS,
-        '#automaticDownloads');
-    this.setDefaultValue_(this.ContentSettingsTypes.BACKGROUND_SYNC,
-        '#backgroundSync');
-    this.setDefaultValue_(this.ContentSettingsTypes.CAMERA, '#camera');
-    this.setDefaultValue_(this.ContentSettingsTypes.COOKIES, '#cookies');
-    this.setDefaultValue_(this.ContentSettingsTypes.GEOLOCATION,
-        '#geolocation');
-    this.setDefaultValue_(this.ContentSettingsTypes.IMAGES, '#images');
-    this.setDefaultValue_(this.ContentSettingsTypes.JAVASCRIPT,
-        '#javascript');
-    this.setDefaultValue_(this.ContentSettingsTypes.KEYGEN, '#keygen');
-    this.setDefaultValue_(this.ContentSettingsTypes.MIC, '#mic');
-    this.setDefaultValue_(this.ContentSettingsTypes.NOTIFICATIONS,
-        '#notifications');
-    this.setDefaultValue_(this.ContentSettingsTypes.PLUGINS, '#plugins');
-    this.setDefaultValue_(this.ContentSettingsTypes.POPUPS, '#popups');
-    this.setDefaultValue_(this.ContentSettingsTypes.PROTOCOL_HANDLERS,
-        '#handlers');
-    this.setDefaultValue_(this.ContentSettingsTypes.UNSANDBOXED_PLUGINS,
-        '#unsandboxedPlugins');
+    var keys = Object.keys(settings.ContentSettingsTypes);
+    for (var i = 0; i < keys.length; ++i) {
+      var key = settings.ContentSettingsTypes[keys[i]];
+      // Default labels are not applicable to USB and ZOOM.
+      if (key == settings.ContentSettingsTypes.USB_DEVICES ||
+          key == settings.ContentSettingsTypes.ZOOM_LEVELS)
+        continue;
+      this.updateDefaultValueLabel_(key);
+    }
+
+    this.addWebUIListener(
+        'contentSettingCategoryChanged',
+        this.updateDefaultValueLabel_.bind(this));
   },
 
-  setDefaultValue_: function(category, id) {
+  /**
+   * @param {string} category The category to update.
+   * @private
+   */
+  updateDefaultValueLabel_: function(category) {
     this.browserProxy.getDefaultValueForContentType(
-        category).then(function(setting) {
-          var description = this.computeCategoryDesc(category, setting, false);
-          this.$$(id).innerText = description;
+        category).then(function(defaultValue) {
+          var labelVar =
+              'default_.' + Polymer.CaseMap.dashToCamelCase(category);
+          this.set(
+              labelVar,
+              this.computeCategoryDesc(
+                  category,
+                  defaultValue.setting,
+                  /*showRecommendation=*/false));
         }.bind(this));
   },
 

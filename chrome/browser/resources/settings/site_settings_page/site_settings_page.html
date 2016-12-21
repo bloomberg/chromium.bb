@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="/icons.html">
 <link rel="import" href="/route.html">
@@ -26,7 +27,7 @@
       <iron-icon icon="settings:cookie"></iron-icon>
       <div class="middle">
         <div>$i18n{siteSettingsCookies}</div>
-        <div id="cookies" class="secondary"></div>
+        <div class="secondary">[[default_.cookies]]</div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -36,7 +37,7 @@
       <iron-icon icon="settings:location-on"></iron-icon>
       <div class="middle">
         <div>$i18n{siteSettingsLocation}</div>
-        <div id="geolocation" class="secondary"></div>
+        <div class="secondary">[[default_.location]]</div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -47,7 +48,7 @@
       <iron-icon icon="settings:videocam"></iron-icon>
       <div class="middle">
         <div>$i18n{siteSettingsCamera}</div>
-        <div id="camera" class="secondary"></div>
+        <div class="secondary">[[default_.mediaStreamCamera]]</div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -57,7 +58,7 @@
       <iron-icon icon="settings:mic"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsMic}
-        <div id="mic" class="secondary"></div>
+        <div class="secondary">[[default_.mediaStreamMic]]</div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -68,7 +69,7 @@
       <iron-icon icon="settings:notifications"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsNotifications}
-        <div id="notifications" class="secondary"></div>
+        <div class="secondary">[[default_.notifications]]</div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -79,7 +80,7 @@
       <iron-icon icon="settings:input"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsJavascript}
-        <div id="javascript" class="secondary"></div>
+        <div class="secondary">[[default_.javascript]]</div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -89,7 +90,7 @@
       <iron-icon icon="cr:extension"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsFlash}
-        <div id="plugins" class="secondary"></div>
+        <div class="secondary">[[default_.plugins]]</div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -99,7 +100,7 @@
       <iron-icon icon="settings:photo"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsImages}
-        <div id="images" class="secondary"></div>
+        <div class="secondary">[[default_.images]]</div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -109,7 +110,7 @@
       <iron-icon icon="cr:open-in-new"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsPopups}
-        <div id="popups" class="secondary"></div>
+        <div class="secondary">[[default_.popups]]</div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -120,7 +121,7 @@
       <iron-icon icon="settings:sync"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsBackgroundSync}
-        <div id="backgroundSync" class="secondary"></div>
+        <div class="secondary">[[default_.backgroundSync]]</div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -130,7 +131,7 @@
       <iron-icon icon="settings:code"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsKeygen}
-        <div id="keygen" class="secondary"></div>
+        <div class="secondary">[[default_.keygen]]</div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -141,7 +142,7 @@
       <iron-icon icon="cr:file-download"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsAutomaticDownloads}
-        <div id="automaticDownloads" class="secondary"></div>
+        <div class="secondary">[[default_.multipleAutomaticDownloads]]</div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -152,7 +153,7 @@
       <iron-icon icon="cr:extension"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsUnsandboxedPlugins}
-        <div id="unsandboxedPlugins" class="secondary"></div>
+        <div class="secondary">[[default_.ppapiBroker]]</div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
@@ -163,7 +164,7 @@
       <iron-icon icon="settings:protocol-handler"></iron-icon>
       <div class="middle">
         $i18n{siteSettingsHandlers}
-        <div id="handlers" class="secondary"></div>
+        <div class="secondary">[[default_.registerProtocolHandler]]</div>
       </div>
       <button class="subpage-arrow" is="paper-icon-button-light"></button>
     </div>
