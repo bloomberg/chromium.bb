@@ -126,12 +126,23 @@ class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
     // objects or if we are outside of object construction.
     if (!IsGarbageCollectedMixin<T>::value ||
         !threadState->isMixinInConstruction()) {
+      // If the wrapper is already marked we can bail out here.
       if (TraceTrait<T>::heapObjectHeader(dstObject)->isWrapperHeaderMarked())
         return;
+      // Otherwise, eagerly mark the wrapper header and put the object on the
+      // marking deque for further processing.
+      WrapperVisitor* const visitor = currentVisitor(threadState->isolate());
+      TraceTrait<T>::markWrapperNoTracing(visitor, dstObject);
+      visitor->pushToMarkingDeque(TraceTrait<T>::traceMarkedWrapper,
+                                  TraceTrait<T>::heapObjectHeader, dstObject);
+      return;
     }
 
+    // We cannot eagerly mark the wrapper header because of mixin
+    // construction. Delay further processing until AdvanceMarking, which has to
+    // be in a non-construction state. This path may result in duplicates.
     currentVisitor(threadState->isolate())
-        ->pushToMarkingDeque(TraceTrait<T>::markWrapper,
+        ->pushToMarkingDeque(TraceTrait<T>::markAndTraceWrapper,
                              TraceTrait<T>::heapObjectHeader, dstObject);
   }
 

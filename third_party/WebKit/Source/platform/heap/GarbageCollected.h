@@ -77,7 +77,9 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
   virtual void trace(Visitor*) {}
   virtual void adjustAndMark(InlinedGlobalMarkingVisitor) const = 0;
   virtual void trace(InlinedGlobalMarkingVisitor);
-  virtual void adjustAndMarkWrapper(const WrapperVisitor*) const = 0;
+  virtual void adjustAndMarkAndTraceWrapper(const WrapperVisitor*) const = 0;
+  virtual void adjustAndMarkWrapperNoTracing(const WrapperVisitor*) const = 0;
+  virtual void adjustAndTraceMarkedWrapper(const WrapperVisitor*) const = 0;
   virtual bool isHeapObjectAlive() const = 0;
   virtual HeapObjectHeader* adjustAndGetHeapObjectHeader() const = 0;
 };
@@ -102,29 +104,45 @@ class PLATFORM_EXPORT GarbageCollectedMixin {
                                                                               \
  private:
 
-#define DEFINE_GARBAGE_COLLECTED_MIXIN_WRAPPER_METHODS(TYPE)                  \
- public:                                                                      \
-  void adjustAndMarkWrapper(const WrapperVisitor* visitor) const override {   \
-    typedef WTF::IsSubclassOfTemplate<typename std::remove_const<TYPE>::type, \
-                                      blink::GarbageCollected>                \
-        IsSubclassOfGarbageCollected;                                         \
-    static_assert(                                                            \
-        IsSubclassOfGarbageCollected::value,                                  \
-        "only garbage collected objects can have garbage collected mixins");  \
-    AdjustAndMarkTrait<TYPE>::markWrapper(visitor,                            \
-                                          static_cast<const TYPE*>(this));    \
-  }                                                                           \
-  HeapObjectHeader* adjustAndGetHeapObjectHeader() const override {           \
-    typedef WTF::IsSubclassOfTemplate<typename std::remove_const<TYPE>::type, \
-                                      blink::GarbageCollected>                \
-        IsSubclassOfGarbageCollected;                                         \
-    static_assert(                                                            \
-        IsSubclassOfGarbageCollected::value,                                  \
-        "only garbage collected objects can have garbage collected mixins");  \
-    return AdjustAndMarkTrait<TYPE>::heapObjectHeader(                        \
-        static_cast<const TYPE*>(this));                                      \
-  }                                                                           \
-                                                                              \
+#define DEFINE_GARBAGE_COLLECTED_MIXIN_WRAPPER_METHODS(TYPE)                 \
+ private:                                                                    \
+  typedef WTF::IsSubclassOfTemplate<typename std::remove_const<TYPE>::type,  \
+                                    blink::GarbageCollected>                 \
+      IsSubclassOfGarbageCollected;                                          \
+                                                                             \
+ public:                                                                     \
+  void adjustAndMarkAndTraceWrapper(const WrapperVisitor* visitor)           \
+      const override {                                                       \
+    static_assert(                                                           \
+        IsSubclassOfGarbageCollected::value,                                 \
+        "only garbage collected objects can have garbage collected mixins"); \
+    return AdjustAndMarkTrait<TYPE>::markAndTraceWrapper(                    \
+        visitor, static_cast<const TYPE*>(this));                            \
+  }                                                                          \
+  void adjustAndMarkWrapperNoTracing(const WrapperVisitor* visitor)          \
+      const override {                                                       \
+    static_assert(                                                           \
+        IsSubclassOfGarbageCollected::value,                                 \
+        "only garbage collected objects can have garbage collected mixins"); \
+    return AdjustAndMarkTrait<TYPE>::markWrapperNoTracing(                   \
+        visitor, static_cast<const TYPE*>(this));                            \
+  }                                                                          \
+  void adjustAndTraceMarkedWrapper(const WrapperVisitor* visitor)            \
+      const override {                                                       \
+    static_assert(                                                           \
+        IsSubclassOfGarbageCollected::value,                                 \
+        "only garbage collected objects can have garbage collected mixins"); \
+    AdjustAndMarkTrait<TYPE>::traceMarkedWrapper(                            \
+        visitor, static_cast<const TYPE*>(this));                            \
+  }                                                                          \
+  HeapObjectHeader* adjustAndGetHeapObjectHeader() const override {          \
+    static_assert(                                                           \
+        IsSubclassOfGarbageCollected::value,                                 \
+        "only garbage collected objects can have garbage collected mixins"); \
+    return AdjustAndMarkTrait<TYPE>::heapObjectHeader(                       \
+        static_cast<const TYPE*>(this));                                     \
+  }                                                                          \
+                                                                             \
  private:
 
 // A C++ object's vptr will be initialized to its leftmost base's vtable after

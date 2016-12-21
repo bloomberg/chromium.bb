@@ -188,7 +188,7 @@ TEST(ScriptWrappableVisitorTest, OilpanClearsMarkingDequeWhenObjectDied) {
   ScriptWrappableVisitor* visitor =
       V8PerIsolateData::from(scope.isolate())->scriptWrappableVisitor();
   visitor->pushToMarkingDeque(
-      TraceTrait<DeathAwareScriptWrappable>::markWrapper,
+      TraceTrait<DeathAwareScriptWrappable>::markAndTraceWrapper,
       TraceTrait<DeathAwareScriptWrappable>::heapObjectHeader, object);
 
   EXPECT_EQ(visitor->getMarkingDeque()->first().rawObjectPointer(), object);
@@ -282,6 +282,7 @@ TEST(ScriptWrappableVisitorTest,
 
   visitor->getMarkingDeque()->clear();
   visitor->getVerifierDeque()->clear();
+  visitor->getHeadersToUnmark()->clear();
 }
 
 namespace {

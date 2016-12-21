@@ -47,11 +47,23 @@ class AdjustAndMarkTrait<T, false> {
   STATIC_ONLY(AdjustAndMarkTrait);
 
  public:
-  static void markWrapper(const WrapperVisitor* visitor, const T* t) {
+  static void markAndTraceWrapper(const WrapperVisitor* visitor, const T* t) {
     if (visitor->markWrapperHeader(heapObjectHeader(t))) {
       visitor->markWrappersInAllWorlds(t);
       visitor->dispatchTraceWrappers(t);
     }
+  }
+  static void markWrapperNoTracing(const WrapperVisitor* visitor, const T* t) {
+    DCHECK(!heapObjectHeader(t)->isWrapperHeaderMarked());
+    visitor->markWrapperHeader(heapObjectHeader(t));
+  }
+  static void traceMarkedWrapper(const WrapperVisitor* visitor, const T* t) {
+    DCHECK(heapObjectHeader(t)->isWrapperHeaderMarked());
+    // The term *mark* is misleading here as we effectively trace through the
+    // API boundary, i.e., tell V8 that an object is alive. Actual marking
+    // will be done in V8.
+    visitor->markWrappersInAllWorlds(t);
+    visitor->dispatchTraceWrappers(t);
   }
   static HeapObjectHeader* heapObjectHeader(const T* t) {
     return HeapObjectHeader::fromPayload(t);
@@ -99,8 +111,14 @@ class AdjustAndMarkTrait<T, true> {
   STATIC_ONLY(AdjustAndMarkTrait);
 
  public:
-  static void markWrapper(const WrapperVisitor* visitor, const T* t) {
-    t->adjustAndMarkWrapper(visitor);
+  static void markAndTraceWrapper(const WrapperVisitor* visitor, const T* t) {
+    t->adjustAndMarkAndTraceWrapper(visitor);
+  }
+  static void markWrapperNoTracing(const WrapperVisitor* visitor, const T* t) {
+    t->adjustAndMarkWrapperNoTracing(visitor);
+  }
+  static void traceMarkedWrapper(const WrapperVisitor* visitor, const T* t) {
+    t->adjustAndTraceMarkedWrapper(visitor);
   }
   static HeapObjectHeader* heapObjectHeader(const T* t) {
     return t->adjustAndGetHeapObjectHeader();
@@ -205,11 +223,28 @@ class TraceTrait {
   static void trace(Visitor*, void* self);
   static void trace(InlinedGlobalMarkingVisitor, void* self);
 
-  static void markWrapper(const WrapperVisitor* visitor, const void* t) {
+  static void markAndTraceWrapper(const WrapperVisitor* visitor,
+                                  const void* t) {
     static_assert(CanTraceWrappers<T>::value,
                   "T should be able to trace wrappers. See "
                   "dispatchTraceWrappers in WrapperVisitor.h");
-    AdjustAndMarkTrait<T>::markWrapper(visitor, reinterpret_cast<const T*>(t));
+    AdjustAndMarkTrait<T>::markAndTraceWrapper(visitor,
+                                               reinterpret_cast<const T*>(t));
+  }
+  static void markWrapperNoTracing(const WrapperVisitor* visitor,
+                                   const void* t) {
+    static_assert(CanTraceWrappers<T>::value,
+                  "T should be able to trace wrappers. See "
+                  "dispatchTraceWrappers in WrapperVisitor.h");
+    AdjustAndMarkTrait<T>::markWrapperNoTracing(visitor,
+                                                reinterpret_cast<const T*>(t));
+  }
+  static void traceMarkedWrapper(const WrapperVisitor* visitor, const void* t) {
+    static_assert(CanTraceWrappers<T>::value,
+                  "T should be able to trace wrappers. See "
+                  "dispatchTraceWrappers in WrapperVisitor.h");
+    AdjustAndMarkTrait<T>::traceMarkedWrapper(visitor,
+                                              reinterpret_cast<const T*>(t));
   }
   static HeapObjectHeader* heapObjectHeader(const void* t) {
     static_assert(CanTraceWrappers<T>::value,

@@ -93,10 +93,9 @@ class PLATFORM_EXPORT WrapperVisitor {
   template <typename T>
   void traceWrappers(const T* traceable) const {
     static_assert(sizeof(T), "T must be fully defined");
-    // Ideally, we'd assert that we can cast to TraceWrapperBase here.
-    static_assert(
-        IsGarbageCollectedType<T>::value,
-        "Only garbage collected objects can be used in traceWrappers().");
+    static_assert(CanTraceWrappers<T>::value,
+                  "T should be able to trace wrappers. See "
+                  "dispatchTraceWrappers in WrapperVisitor.h");
 
     if (!traceable) {
       return;
@@ -106,7 +105,8 @@ class PLATFORM_EXPORT WrapperVisitor {
       return;
     }
 
-    pushToMarkingDeque(TraceTrait<T>::markWrapper,
+    TraceTrait<T>::markWrapperNoTracing(this, traceable);
+    pushToMarkingDeque(TraceTrait<T>::traceMarkedWrapper,
                        TraceTrait<T>::heapObjectHeader, traceable);
   }
 
