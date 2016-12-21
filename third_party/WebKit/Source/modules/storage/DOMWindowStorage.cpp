@@ -18,14 +18,14 @@
 namespace blink {
 
 DOMWindowStorage::DOMWindowStorage(LocalDOMWindow& window)
-    : DOMWindowProperty(window.frame()), m_window(&window) {}
+    : ContextClient(window.frame()), m_window(&window) {}
 
 DEFINE_TRACE(DOMWindowStorage) {
   visitor->trace(m_window);
   visitor->trace(m_sessionStorage);
   visitor->trace(m_localStorage);
   Supplement<LocalDOMWindow>::trace(visitor);
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 // static

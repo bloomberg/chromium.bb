@@ -38,7 +38,7 @@
 namespace blink {
 
 DOMWindowQuota::DOMWindowQuota(LocalDOMWindow& window)
-    : DOMWindowProperty(window.frame()) {}
+    : ContextClient(window.frame()) {}
 
 const char* DOMWindowQuota::supplementName() {
   return "DOMWindowQuota";
@@ -69,7 +69,7 @@ DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo() const {
 DEFINE_TRACE(DOMWindowQuota) {
   visitor->trace(m_storageInfo);
   Supplement<LocalDOMWindow>::trace(visitor);
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 }  // namespace blink

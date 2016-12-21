@@ -36,7 +36,7 @@
 namespace blink {
 
 DOMWindowCrypto::DOMWindowCrypto(LocalDOMWindow& window)
-    : DOMWindowProperty(window.frame()) {}
+    : ContextClient(window.frame()) {}
 
 const char* DOMWindowCrypto::supplementName() {
   return "DOMWindowCrypto";
@@ -65,7 +65,7 @@ Crypto* DOMWindowCrypto::crypto() const {
 DEFINE_TRACE(DOMWindowCrypto) {
   visitor->trace(m_crypto);
   Supplement<LocalDOMWindow>::trace(visitor);
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 }  // namespace blink

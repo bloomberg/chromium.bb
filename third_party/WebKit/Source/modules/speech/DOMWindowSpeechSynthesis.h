@@ -26,7 +26,7 @@
 #ifndef DOMWindowSpeechSynthesis_h
 #define DOMWindowSpeechSynthesis_h
 
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "modules/ModulesExport.h"
 #include "modules/speech/SpeechSynthesis.h"
 #include "platform/Supplementable.h"
@@ -39,7 +39,7 @@ class DOMWindow;
 class MODULES_EXPORT DOMWindowSpeechSynthesis final
     : public GarbageCollected<DOMWindowSpeechSynthesis>,
       public Supplement<LocalDOMWindow>,
-      public DOMWindowProperty {
+      public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(DOMWindowSpeechSynthesis);
 
  public:

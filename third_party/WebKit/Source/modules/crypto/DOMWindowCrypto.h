@@ -31,7 +31,7 @@
 #ifndef DOMWindowCrypto_h
 #define DOMWindowCrypto_h
 
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
@@ -43,7 +43,7 @@ class LocalDOMWindow;
 
 class DOMWindowCrypto final : public GarbageCollected<DOMWindowCrypto>,
                               public Supplement<LocalDOMWindow>,
-                              public DOMWindowProperty {
+                              public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(DOMWindowCrypto);
 
  public:
