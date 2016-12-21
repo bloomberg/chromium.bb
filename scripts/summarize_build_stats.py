@@ -721,7 +721,7 @@ def GenerateReport(file_out, summary):
                         reverse=True)
   cl_fails = [{'id': b_id, 'rejections': rejs} for rejs, b_id in sorted_fails]
   cl_flake_fmt = ('  <li><a href="http://{id}">{id}</a> '
-                  '(<b>[{rejections}] false rejection of build</b>): '
+                  '(<b>[{rejections}] build failures</b>): '
                   '_<replace>explanation</replace>_</li>')
   report['cl_flakes_html'] = '\n'.join([cl_flake_fmt.format(**x)
                                         for x in cl_fails])
