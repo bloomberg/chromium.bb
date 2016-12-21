@@ -465,7 +465,10 @@ void HTMLFormElement::reset() {
     return;
   }
 
-  for (const auto& element : listedElements()) {
+  // Copy the element list because |reset()| implementation can update DOM
+  // structure.
+  ListedElement::List elements(listedElements());
+  for (const auto& element : elements) {
     if (element->isFormControlElement())
       toHTMLFormControlElement(element)->reset();
   }
