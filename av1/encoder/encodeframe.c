@@ -5577,7 +5577,7 @@ static int check_intra_sb(const AV1_COMP *const cpi, const TileInfo *const tile,
                           PC_TREE *pc_tree) {
   const AV1_COMMON *const cm = &cpi->common;
 
-  const int hbs = num_8x8_blocks_wide_lookup[bsize] / 2;
+  const int hbs = mi_size_wide[bsize] / 2;
   const PARTITION_TYPE partition = pc_tree->partitioning;
   const BLOCK_SIZE subsize = get_subsize(bsize, partition);
 #if CONFIG_EXT_PARTITION_TYPES
@@ -5744,8 +5744,8 @@ static void predict_b_extend(const AV1_COMP *const cpi, ThreadData *td,
   MACROBLOCKD *const xd = &x->e_mbd;
   int r = (mi_row_pred - mi_row_top) * MI_SIZE;
   int c = (mi_col_pred - mi_col_top) * MI_SIZE;
-  const int mi_width_top = num_8x8_blocks_wide_lookup[bsize_top];
-  const int mi_height_top = num_8x8_blocks_high_lookup[bsize_top];
+  const int mi_width_top = mi_size_wide[bsize_top];
+  const int mi_height_top = mi_size_high[bsize_top];
 
   if (mi_row_pred < mi_row_top || mi_col_pred < mi_col_top ||
       mi_row_pred >= mi_row_top + mi_height_top ||
@@ -5786,8 +5786,8 @@ static void extend_dir(const AV1_COMP *const cpi, ThreadData *td,
   // dir: 0-lower, 1-upper, 2-left, 3-right
   //      4-lowerleft, 5-upperleft, 6-lowerright, 7-upperright
   MACROBLOCKD *xd = &td->mb.e_mbd;
-  const int mi_width = num_8x8_blocks_wide_lookup[bsize];
-  const int mi_height = num_8x8_blocks_high_lookup[bsize];
+  const int mi_width = mi_size_wide[bsize];
+  const int mi_height = mi_size_high[bsize];
   int xss = xd->plane[1].subsampling_x;
   int yss = xd->plane[1].subsampling_y;
   int b_sub8x8 = (bsize < BLOCK_8X8) ? 1 : 0;
@@ -5796,11 +5796,12 @@ static void extend_dir(const AV1_COMP *const cpi, ThreadData *td,
   int unit, mi_row_pred, mi_col_pred;
 
   if (dir == 0 || dir == 1) {  // lower and upper
-    extend_bsize = (mi_width == 1 || bsize < BLOCK_8X8 || xss < yss)
-                       ? BLOCK_8X8
-                       : BLOCK_16X8;
-    unit = num_8x8_blocks_wide_lookup[extend_bsize];
-    mi_row_pred = mi_row + ((dir == 0) ? mi_height : -1);
+    extend_bsize =
+        (mi_width == mi_size_wide[BLOCK_8X8] || bsize < BLOCK_8X8 || xss < yss)
+            ? BLOCK_8X8
+            : BLOCK_16X8;
+    unit = mi_size_wide[extend_bsize];
+    mi_row_pred = mi_row + ((dir == 0) ? mi_height : -mi_size_high[BLOCK_8X8]);
     mi_col_pred = mi_col;
 
     predict_b_extend(cpi, td, tile, block, mi_row, mi_col, mi_row_pred,
@@ -5809,7 +5810,7 @@ static void extend_dir(const AV1_COMP *const cpi, ThreadData *td,
 
     if (mi_width > unit) {
       int i;
-      for (i = 0; i < mi_width / unit - 1; i++) {
+      for (i = 0; i < mi_width; i += unit) {
         mi_col_pred += unit;
         predict_b_extend(cpi, td, tile, block, mi_row, mi_col, mi_row_pred,
                          mi_col_pred, mi_row_top, mi_col_top, dst_buf,
@@ -5818,12 +5819,13 @@ static void extend_dir(const AV1_COMP *const cpi, ThreadData *td,
       }
     }
   } else if (dir == 2 || dir == 3) {  // left and right
-    extend_bsize = (mi_height == 1 || bsize < BLOCK_8X8 || yss < xss)
-                       ? BLOCK_8X8
-                       : BLOCK_8X16;
-    unit = num_8x8_blocks_high_lookup[extend_bsize];
+    extend_bsize =
+        (mi_height == mi_size_high[BLOCK_8X8] || bsize < BLOCK_8X8 || yss < xss)
+            ? BLOCK_8X8
+            : BLOCK_8X16;
+    unit = mi_size_high[extend_bsize];
     mi_row_pred = mi_row;
-    mi_col_pred = mi_col + ((dir == 3) ? mi_width : -1);
+    mi_col_pred = mi_col + ((dir == 3) ? mi_width : -mi_size_wide[BLOCK_8X8]);
 
     predict_b_extend(cpi, td, tile, block, mi_row, mi_col, mi_row_pred,
                      mi_col_pred, mi_row_top, mi_col_top, dst_buf, dst_stride,
@@ -5831,7 +5833,7 @@ static void extend_dir(const AV1_COMP *const cpi, ThreadData *td,
 
     if (mi_height > unit) {
       int i;
-      for (i = 0; i < mi_height / unit - 1; i++) {
+      for (i = 0; i < mi_height; i += unit) {
         mi_row_pred += unit;
         predict_b_extend(cpi, td, tile, block, mi_row, mi_col, mi_row_pred,
                          mi_col_pred, mi_row_top, mi_col_top, dst_buf,
@@ -5841,8 +5843,10 @@ static void extend_dir(const AV1_COMP *const cpi, ThreadData *td,
     }
   } else {
     extend_bsize = BLOCK_8X8;
-    mi_row_pred = mi_row + ((dir == 4 || dir == 6) ? mi_height : -1);
-    mi_col_pred = mi_col + ((dir == 6 || dir == 7) ? mi_width : -1);
+    mi_row_pred = mi_row + ((dir == 4 || dir == 6) ? mi_height
+                                                   : -mi_size_high[BLOCK_8X8]);
+    mi_col_pred =
+        mi_col + ((dir == 6 || dir == 7) ? mi_width : -mi_size_wide[BLOCK_8X8]);
 
     predict_b_extend(cpi, td, tile, block, mi_row, mi_col, mi_row_pred,
                      mi_col_pred, mi_row_top, mi_col_top, dst_buf, dst_stride,
@@ -5893,7 +5897,7 @@ static void predict_sb_complex(const AV1_COMP *const cpi, ThreadData *td,
   MACROBLOCKD *const xd = &x->e_mbd;
 
   const int ctx = partition_plane_context(xd, mi_row, mi_col, bsize);
-  const int hbs = num_8x8_blocks_wide_lookup[bsize] / 2;
+  const int hbs = mi_size_wide[bsize] / 2;
   const PARTITION_TYPE partition = pc_tree->partitioning;
   const BLOCK_SIZE subsize = get_subsize(bsize, partition);
 #if CONFIG_EXT_PARTITION_TYPES
