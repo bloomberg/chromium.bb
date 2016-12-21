@@ -60,7 +60,6 @@ public class VrShellDelegate {
 
     // TODO(bshe): These should be replaced by string provided by NDK. Currently, it only available
     // in SDK and we don't want add dependency to SDK just to get these strings.
-    private static final String DAYDREAM_VR_EXTRA = "android.intent.extra.VR_LAUNCH";
     private static final String DAYDREAM_CATEGORY = "com.google.intent.category.DAYDREAM";
     private static final String CARDBOARD_CATEGORY = "com.google.intent.category.CARDBOARD";
 
@@ -175,7 +174,7 @@ public class VrShellDelegate {
     public void enterVRFromIntent(Intent intent) {
         // Vr Intent is only used on Daydream devices.
         if (mVrSupportLevel != VR_DAYDREAM) return;
-        assert isVrIntent(intent);
+        assert isDaydreamVrIntent(intent);
         if (mListeningForWebVrActivateBeforePause && !mRequestedWebVR) {
             nativeDisplayActivate(mNativeVrShellDelegate);
             return;
@@ -556,14 +555,9 @@ public class VrShellDelegate {
     /**
      * Whether or not the intent is a Daydream VR Intent.
      */
-    public boolean isVrIntent(Intent intent) {
-        if (intent == null) return false;
-        if (intent.getBooleanExtra(DAYDREAM_VR_EXTRA, false)) return true;
-        if (intent.getCategories() != null) {
-            if (intent.getCategories().contains(DAYDREAM_CATEGORY)) return true;
-            if (intent.getCategories().contains(CARDBOARD_CATEGORY)) return true;
-        }
-        return false;
+    public boolean isDaydreamVrIntent(Intent intent) {
+        if (intent == null || intent.getCategories() == null) return false;
+        return intent.getCategories().contains(DAYDREAM_CATEGORY);
     }
 
     /**

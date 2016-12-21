@@ -479,7 +479,9 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             if (CommandLine.getInstance().hasSwitch(ContentSwitches.ENABLE_TEST_INTENTS)) {
                 handleDebugIntent(intent);
             }
-            if (mVrShellDelegate.isVrIntent(intent)) mVrShellDelegate.enterVRFromIntent(intent);
+            if (mVrShellDelegate.isDaydreamVrIntent(intent)) {
+                mVrShellDelegate.enterVRFromIntent(intent);
+            }
         } finally {
             TraceEvent.end("ChromeTabbedActivity.onNewIntentWithNative");
         }
@@ -646,7 +648,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
             mIntentWithEffect = false;
             if ((mIsOnFirstRun || getSavedInstanceState() == null) && intent != null) {
-                if (mVrShellDelegate.isVrIntent(intent)) {
+                if (mVrShellDelegate.isDaydreamVrIntent(intent)) {
                     // TODO(mthiesse): Improve startup when started from a VR intent. Right now
                     // we launch out of VR, partially load out of VR, then switch into VR.
                     mVrShellDelegate.enterVRIfNecessary();
