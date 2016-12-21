@@ -6,7 +6,7 @@
 #define DOMWindowPerformance_h
 
 #include "core/CoreExport.h"
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Noncopyable.h"
@@ -20,7 +20,7 @@ class Performance;
 class CORE_EXPORT DOMWindowPerformance final
     : public GarbageCollected<DOMWindowPerformance>,
       public Supplement<LocalDOMWindow>,
-      public DOMWindowProperty {
+      public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(DOMWindowPerformance);
   WTF_MAKE_NONCOPYABLE(DOMWindowPerformance);
 

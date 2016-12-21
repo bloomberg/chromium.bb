@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -53,7 +53,7 @@ class ScriptValue;
 class CORE_EXPORT PerformanceTiming final
     : public GarbageCollected<PerformanceTiming>,
       public ScriptWrappable,
-      public DOMWindowProperty {
+      public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(PerformanceTiming);
 
