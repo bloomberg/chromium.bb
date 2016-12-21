@@ -46,6 +46,7 @@
 
 namespace blink {
 
+class CompiledScript;
 class DOMWrapperWorld;
 class Element;
 class HTMLDocument;
@@ -95,6 +96,12 @@ class CORE_EXPORT ScriptController final
       v8::Local<v8::Context>,
       const ScriptSourceCode&,
       AccessControlStatus = NotSharableCrossOrigin);
+
+  // The same, but separated into two phases.
+  // compileScriptInMainWorld may return nullptr.
+  CompiledScript* compileScriptInMainWorld(const ScriptSourceCode&,
+                                           AccessControlStatus);
+  void executeScriptInMainWorld(const CompiledScript&);
 
   // Executes JavaScript in an isolated world. The script gets its own global
   // scope, its own prototypes for intrinsic JavaScript objects (String, Array,

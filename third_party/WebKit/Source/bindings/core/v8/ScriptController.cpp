@@ -32,6 +32,7 @@
 
 #include "bindings/core/v8/ScriptController.h"
 
+#include "bindings/core/v8/CompiledScript.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -93,6 +94,32 @@ void ScriptController::updateSecurityOrigin(SecurityOrigin* securityOrigin) {
   m_windowProxyManager->updateSecurityOrigin(securityOrigin);
 }
 
+namespace {
+
+V8CacheOptions cacheOptions(const ScriptResource* resource,
+                            const Settings* settings) {
+  V8CacheOptions v8CacheOptions(V8CacheOptionsDefault);
+  if (settings)
+    v8CacheOptions = settings->v8CacheOptions();
+  if (resource && !resource->response().cacheStorageCacheName().isNull()) {
+    switch (settings->v8CacheStrategiesForCacheStorage()) {
+      case V8CacheStrategiesForCacheStorage::None:
+        v8CacheOptions = V8CacheOptionsNone;
+        break;
+      case V8CacheStrategiesForCacheStorage::Normal:
+        v8CacheOptions = V8CacheOptionsCode;
+        break;
+      case V8CacheStrategiesForCacheStorage::Default:
+      case V8CacheStrategiesForCacheStorage::Aggressive:
+        v8CacheOptions = V8CacheOptionsAlways;
+        break;
+    }
+  }
+  return v8CacheOptions;
+}
+
+}  // namespace
+
 v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(
     v8::Local<v8::Context> context,
     const ScriptSourceCode& source,
@@ -105,24 +132,8 @@ v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(
 
   v8::Local<v8::Value> result;
   {
-    V8CacheOptions v8CacheOptions(V8CacheOptionsDefault);
-    if (frame()->settings())
-      v8CacheOptions = frame()->settings()->v8CacheOptions();
-    if (source.resource() &&
-        !source.resource()->response().cacheStorageCacheName().isNull()) {
-      switch (frame()->settings()->v8CacheStrategiesForCacheStorage()) {
-        case V8CacheStrategiesForCacheStorage::None:
-          v8CacheOptions = V8CacheOptionsNone;
-          break;
-        case V8CacheStrategiesForCacheStorage::Normal:
-          v8CacheOptions = V8CacheOptionsCode;
-          break;
-        case V8CacheStrategiesForCacheStorage::Default:
-        case V8CacheStrategiesForCacheStorage::Aggressive:
-          v8CacheOptions = V8CacheOptionsAlways;
-          break;
-      }
-    }
+    V8CacheOptions v8CacheOptions =
+        cacheOptions(source.resource(), frame()->settings());
 
     // Isolate exceptions that occur when compiling and executing
     // the code. These exceptions should not interfere with
@@ -148,6 +159,54 @@ v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(
                        InspectorUpdateCountersEvent::data());
 
   return result;
+}
+
+CompiledScript* ScriptController::compileScriptInMainWorld(
+    const ScriptSourceCode& source,
+    AccessControlStatus accessControlStatus) {
+  V8CacheOptions v8CacheOptions =
+      cacheOptions(source.resource(), frame()->settings());
+
+  v8::HandleScope handleScope(isolate());
+  v8::TryCatch tryCatch(isolate());
+  tryCatch.SetVerbose(true);
+
+  v8::Local<v8::Script> script;
+  if (!v8Call(V8ScriptRunner::compileScript(
+                  source, isolate(), accessControlStatus, v8CacheOptions),
+              script, tryCatch)) {
+    return nullptr;
+  }
+
+  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                       "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
+                       InspectorUpdateCountersEvent::data());
+  return new CompiledScript(isolate(), script, source);
+}
+
+void ScriptController::executeScriptInMainWorld(
+    const CompiledScript& compiledScript) {
+  TRACE_EVENT1("devtools.timeline", "EvaluateScript", "data",
+               InspectorEvaluateScriptEvent::data(
+                   frame(), compiledScript.url().getString(),
+                   compiledScript.startPosition()));
+  InspectorInstrumentation::NativeBreakpoint nativeBreakpoint(
+      frame()->document(), "scriptFirstStatement", false);
+
+  v8::HandleScope handleScope(isolate());
+  v8::TryCatch tryCatch(isolate());
+  tryCatch.SetVerbose(true);
+
+  v8::Local<v8::Value> result;
+  if (!v8Call(
+          V8ScriptRunner::runCompiledScript(
+              isolate(), compiledScript.script(isolate()), frame()->document()),
+          result, tryCatch))
+    return;
+
+  TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
+                       "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
+                       InspectorUpdateCountersEvent::data());
 }
 
 bool ScriptController::initializeMainWorld() {
