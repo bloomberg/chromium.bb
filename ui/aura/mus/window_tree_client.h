@@ -258,7 +258,7 @@ class AURA_EXPORT WindowTreeClient
   // Called when a property needs to change as the result of a change in the
   // server, or the server failing to accept a change.
   void SetWindowBoundsFromServer(WindowMus* window,
-                                 const gfx::Rect& revert_bounds);
+                                 const gfx::Rect& revert_bounds_in_pixels);
   void SetWindowVisibleFromServer(WindowMus* window, bool visible);
 
   // Called from OnWindowMusBoundsChanged() and SetRootWindowBounds().
@@ -382,7 +382,7 @@ class AURA_EXPORT WindowTreeClient
   void WmDisplayModified(const display::Display& display) override;
   void WmSetBounds(uint32_t change_id,
                    Id window_id,
-                   const gfx::Rect& transit_bounds) override;
+                   const gfx::Rect& transit_bounds_in_pixels) override;
   void WmSetProperty(
       uint32_t change_id,
       Id window_id,

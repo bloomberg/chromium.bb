@@ -133,8 +133,8 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
     // Applies to ADD, ADD_TRANSIENT, REMOVE, REMOVE_TRANSIENT, REORDER and
     // TRANSIENT_REORDER.
     Id child_id;
-    // Applies to BOUNDS.
-    gfx::Rect bounds;
+    // Applies to BOUNDS. This should be in dip.
+    gfx::Rect bounds_in_dip;
     // Applies to VISIBLE.
     bool visible;
     // Applies to PROPERTY.

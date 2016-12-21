@@ -65,8 +65,8 @@ WindowTreeHostMus::WindowTreeHostMus(
         static_cast<gfx::AcceleratedWidget>(accelerated_widget_count++);
 #endif
   }
-  // TODO(markdittmer): Use correct device-scale-factor from |window|.
-  OnAcceleratedWidgetAvailable(accelerated_widget, 1.f);
+  OnAcceleratedWidgetAvailable(accelerated_widget,
+                               GetDisplay().device_scale_factor());
 
   delegate_->OnWindowTreeHostCreated(this);
 
@@ -103,9 +103,9 @@ WindowTreeHostMus::~WindowTreeHostMus() {
   DestroyDispatcher();
 }
 
-void WindowTreeHostMus::SetBoundsFromServer(const gfx::Rect& bounds) {
+void WindowTreeHostMus::SetBoundsFromServer(const gfx::Rect& bounds_in_pixels) {
   base::AutoReset<bool> resetter(&in_set_bounds_from_server_, true);
-  SetBoundsInPixels(bounds);
+  SetBoundsInPixels(bounds_in_pixels);
 }
 
 void WindowTreeHostMus::SetClientArea(
@@ -120,12 +120,9 @@ void WindowTreeHostMus::SetHitTestMask(const base::Optional<gfx::Rect>& rect) {
 }
 
 display::Display WindowTreeHostMus::GetDisplay() const {
-  for (const display::Display& display :
-       display::Screen::GetScreen()->GetAllDisplays()) {
-    if (display.id() == display_id_)
-      return display;
-  }
-  return display::Display();
+  display::Display display;
+  display::Screen::GetScreen()->GetDisplayWithDisplayId(display_id_, &display);
+  return display;
 }
 
 void WindowTreeHostMus::HideImpl() {

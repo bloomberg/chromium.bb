@@ -147,7 +147,7 @@ WindowPortMus::ServerChanges::iterator WindowPortMus::FindChangeByTypeAndData(
           return iter;
         break;
       case ServerChangeType::BOUNDS:
-        if (iter->data.bounds == data.bounds)
+        if (iter->data.bounds_in_dip == data.bounds_in_dip)
           return iter;
         break;
       case ServerChangeType::DESTROY:
@@ -206,7 +206,7 @@ void WindowPortMus::ReorderFromServer(WindowMus* child,
 
 void WindowPortMus::SetBoundsFromServer(const gfx::Rect& bounds) {
   ServerChangeData data;
-  data.bounds = bounds;
+  data.bounds_in_dip = bounds;
   ScopedServerChange change(this, ServerChangeType::BOUNDS, data);
   window_->SetBounds(bounds);
 }
@@ -322,7 +322,7 @@ WindowPortMus::PrepareForServerBoundsChange(const gfx::Rect& bounds) {
   std::unique_ptr<WindowMusChangeDataImpl> data(
       base::MakeUnique<WindowMusChangeDataImpl>());
   ServerChangeData change_data;
-  change_data.bounds = bounds;
+  change_data.bounds_in_dip = bounds;
   data->change = base::MakeUnique<ScopedServerChange>(
       this, ServerChangeType::BOUNDS, change_data);
   return std::move(data);
@@ -408,7 +408,7 @@ void WindowPortMus::OnVisibilityChanged(bool visible) {
 void WindowPortMus::OnDidChangeBounds(const gfx::Rect& old_bounds,
                                       const gfx::Rect& new_bounds) {
   ServerChangeData change_data;
-  change_data.bounds = new_bounds;
+  change_data.bounds_in_dip = new_bounds;
   if (!RemoveChangeByTypeAndData(ServerChangeType::BOUNDS, change_data))
     window_tree_client_->OnWindowMusBoundsChanged(this, old_bounds, new_bounds);
 }

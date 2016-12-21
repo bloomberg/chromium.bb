@@ -38,6 +38,7 @@
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/path.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/platform_window/platform_window_delegate.h"
@@ -394,6 +395,14 @@ void SetIconProperty(ui::Window* window,
     window->ClearSharedProperty(property);
 }
 
+// Helper function to get the device_scale_factor() of the display::Display
+// nearest to |window|.
+float ScaleFactorForDisplay(aura::Window* window) {
+  return display::Screen::GetScreen()
+      ->GetDisplayNearestWindow(window)
+      .device_scale_factor();
+}
+
 }  // namespace
 
 class NativeWidgetMus::MusWindowObserver : public ui::WindowObserver {
@@ -460,7 +469,8 @@ class NativeWidgetMus::MusWindowObserver : public ui::WindowObserver {
                               const gfx::Rect& old_bounds,
                               const gfx::Rect& new_bounds) override {
     DCHECK_EQ(window, mus_window());
-    window_tree_host()->SetBoundsInPixels(new_bounds);
+    window_tree_host()->SetBoundsInPixels(gfx::ConvertRectToPixel(
+        ScaleFactorForDisplay(aura_window()), new_bounds));
   }
   void OnWindowFocusChanged(ui::Window* gained_focus,
                             ui::Window* lost_focus) override {
@@ -475,6 +485,7 @@ class NativeWidgetMus::MusWindowObserver : public ui::WindowObserver {
 
  private:
   ui::Window* mus_window() { return native_widget_mus_->window(); }
+  aura::Window* aura_window() { return native_widget_mus_->aura_window(); }
   WindowTreeHostMus* window_tree_host() {
     return native_widget_mus_->window_tree_host();
   }
@@ -1018,7 +1029,10 @@ void NativeWidgetMus::SetBounds(const gfx::Rect& bounds_in_screen) {
   size.SetToMax(min_size);
   window_->SetBounds(gfx::Rect(origin, size));
   // Observer on |window_tree_host_| expected to synchronously update bounds.
-  DCHECK(window_->bounds() == window_tree_host_->GetBoundsInPixels());
+  DCHECK_EQ(gfx::ConvertRectToPixel(ScaleFactorForDisplay(content_),
+                                    window_->bounds())
+                .ToString(),
+            window_tree_host_->GetBoundsInPixels().ToString());
 }
 
 void NativeWidgetMus::SetSize(const gfx::Size& size) {

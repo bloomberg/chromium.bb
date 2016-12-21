@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
@@ -31,6 +32,7 @@
 #include "ui/aura/window_property.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/compositor/compositor.h"
+#include "ui/display/display_switches.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/rect.h"
@@ -79,6 +81,40 @@ std::vector<uint8_t> ConvertToPropertyTransportValue(int64_t value) {
 
 using WindowTreeClientWmTest = test::AuraMusWmTestBase;
 using WindowTreeClientClientTest = test::AuraMusClientTestBase;
+
+// WindowTreeClientWmTest with --force-device-scale-factor=2.
+class WindowTreeClientWmTestHighDPI : public WindowTreeClientWmTest {
+ public:
+  WindowTreeClientWmTestHighDPI() {}
+  ~WindowTreeClientWmTestHighDPI() override {}
+
+  // WindowTreeClientWmTest:
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kForceDeviceScaleFactor, "2");
+    WindowTreeClientWmTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeClientWmTestHighDPI);
+};
+
+// WindowTreeClientClientTest with --force-device-scale-factor=2.
+class WindowTreeClientClientTestHighDPI : public WindowTreeClientClientTest {
+ public:
+  WindowTreeClientClientTestHighDPI() {}
+  ~WindowTreeClientClientTestHighDPI() override {}
+
+  // WindowTreeClientClientTest:
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kForceDeviceScaleFactor, "2");
+    WindowTreeClientClientTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WindowTreeClientClientTestHighDPI);
+};
 
 // Verifies bounds are reverted if the server replied that the change failed.
 TEST_F(WindowTreeClientWmTest, SetBoundsFailed) {
@@ -1389,6 +1425,42 @@ TEST_F(WindowTreeClientWmTest, NewWindowTreeHostIsConfiguredCorrectly) {
             window_tree_host->window()->bounds());
   EXPECT_TRUE(window_tree_host->window()->IsVisible());
   EXPECT_EQ(display.id(), window_tree_host->display_id());
+}
+
+TEST_F(WindowTreeClientWmTestHighDPI, SetBounds) {
+  const gfx::Rect original_bounds(root_window()->bounds());
+  const gfx::Rect new_bounds(gfx::Rect(0, 0, 100, 100));
+  ASSERT_NE(new_bounds, root_window()->bounds());
+  root_window()->SetBounds(new_bounds);
+  EXPECT_EQ(new_bounds, root_window()->bounds());
+
+  // Simulate the server responding with a bounds change. Server should operate
+  // in pixels.
+  const gfx::Rect server_changed_bounds(gfx::Rect(0, 0, 200, 200));
+  window_tree_client()->OnWindowBoundsChanged(
+      server_id(root_window()), original_bounds, server_changed_bounds);
+  EXPECT_EQ(new_bounds, root_window()->bounds());
+}
+
+TEST_F(WindowTreeClientClientTestHighDPI, NewTopLevelWindowBounds) {
+  WindowTreeHostMus window_tree_host(window_tree_client_impl());
+  Window* top_level = window_tree_host.window();
+  window_tree_host.InitHost();
+
+  ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
+  data->window_id = server_id(top_level);
+  data->bounds.SetRect(2, 4, 6, 8);
+  const int64_t display_id = 10;
+  uint32_t change_id;
+  ASSERT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
+      WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
+  window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
+                                          display_id, true);
+
+  // aura::Window should operate in DIP and aura::WindowTreeHost should operate
+  // in pixels.
+  EXPECT_EQ(gfx::Rect(0, 0, 3, 4), top_level->bounds());
+  EXPECT_EQ(gfx::Rect(2, 4, 6, 8), top_level->GetHost()->GetBoundsInPixels());
 }
 
 }  // namespace aura

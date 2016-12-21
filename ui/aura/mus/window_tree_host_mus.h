@@ -51,8 +51,8 @@ class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
 
   ~WindowTreeHostMus() override;
 
-  // Sets the bounds in dips.
-  void SetBoundsFromServer(const gfx::Rect& bounds);
+  // Sets the bounds in pixels.
+  void SetBoundsFromServer(const gfx::Rect& bounds_in_pixels);
 
   ui::EventDispatchDetails SendEventToProcessor(ui::Event* event) {
     return aura::WindowTreeHostPlatform::SendEventToProcessor(event);

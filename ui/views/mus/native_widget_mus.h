@@ -99,6 +99,7 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
     return compositor_frame_sink_type_;
   }
   ui::Window* window() { return window_; }
+  aura::Window* aura_window() { return content_; }
   WindowTreeHostMus* window_tree_host() { return window_tree_host_.get(); }
 
   aura::Window* GetRootWindow();

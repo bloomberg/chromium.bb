@@ -134,10 +134,8 @@ void SetWindowTypeFromProperties(
 }
 
 // Helper function to get the device_scale_factor() of the display::Display
-// with |display_id|.
+// nearest to |window|.
 float ScaleFactorForDisplay(Window* window) {
-  // TODO(riajiang): Change to use display::GetDisplayWithDisplayId() after
-  // https://codereview.chromium.org/2361283002/ is landed.
   return display::Screen::GetScreen()
       ->GetDisplayNearestWindow(window)
       .device_scale_factor();
@@ -426,7 +424,8 @@ WindowMus* WindowTreeClient::NewWindowFromWindowData(
   SetWindowTypeFromProperties(window, window_data.properties);
   window->Init(ui::LAYER_NOT_DRAWN);
   SetLocalPropertiesFromServerProperties(window_mus, window_data);
-  window_mus->SetBoundsFromServer(window_data.bounds);
+  window_mus->SetBoundsFromServer(
+      gfx::ConvertRectToDIP(ScaleFactorForDisplay(window), window_data.bounds));
   if (parent)
     parent->AddChildFromServer(window_port_mus_ptr);
   if (window_data.visible)
@@ -537,13 +536,15 @@ void WindowTreeClient::OnReceivedCursorLocationMemory(
 
 void WindowTreeClient::SetWindowBoundsFromServer(
     WindowMus* window,
-    const gfx::Rect& revert_bounds) {
+    const gfx::Rect& revert_bounds_in_pixels) {
   if (IsRoot(window)) {
-    GetWindowTreeHostMus(window)->SetBoundsFromServer(revert_bounds);
+    // WindowTreeHost expects bounds to be in pixels.
+    GetWindowTreeHostMus(window)->SetBoundsFromServer(revert_bounds_in_pixels);
     return;
   }
 
-  window->SetBoundsFromServer(revert_bounds);
+  window->SetBoundsFromServer(gfx::ConvertRectToDIP(
+      ScaleFactorForDisplay(window->GetWindow()), revert_bounds_in_pixels));
 }
 
 void WindowTreeClient::SetWindowVisibleFromServer(WindowMus* window,
@@ -648,7 +649,10 @@ void WindowTreeClient::OnWindowMusBoundsChanged(WindowMus* window,
   if (IsRoot(window))
     return;
 
-  ScheduleInFlightBoundsChange(window, old_bounds, new_bounds);
+  float device_scale_factor = ScaleFactorForDisplay(window->GetWindow());
+  ScheduleInFlightBoundsChange(
+      window, gfx::ConvertRectToPixel(device_scale_factor, old_bounds),
+      gfx::ConvertRectToPixel(device_scale_factor, new_bounds));
 }
 
 void WindowTreeClient::OnWindowMusAddChild(WindowMus* parent,
@@ -925,7 +929,8 @@ void WindowTreeClient::OnTopLevelCreated(uint32_t change_id,
         GetOldestInFlightChangeMatching(bounds_change);
     if (current_change)
       current_change->SetRevertValueFrom(bounds_change);
-    else if (window->GetWindow()->bounds() != bounds)
+    else if (gfx::ConvertRectToPixel(ScaleFactorForDisplay(window->GetWindow()),
+                                     window->GetWindow()->bounds()) != bounds)
       SetWindowBoundsFromServer(window, bounds);
   }
 
@@ -1347,24 +1352,25 @@ void WindowTreeClient::WmDisplayModified(const display::Display& display) {
   window_manager_delegate_->OnWmDisplayModified(display);
 }
 
-// TODO(riajiang): Convert between pixel and DIP for window bounds properly.
-// (http://crbug.com/646942)
 void WindowTreeClient::WmSetBounds(uint32_t change_id,
                                    Id window_id,
-                                   const gfx::Rect& transit_bounds) {
+                                   const gfx::Rect& transit_bounds_in_pixels) {
   WindowMus* window = GetWindowByServerId(window_id);
   bool result = false;
   if (window) {
+    float device_scale_factor = ScaleFactorForDisplay(window->GetWindow());
     DCHECK(window_manager_delegate_);
-    gfx::Rect bounds = transit_bounds;
+    gfx::Rect transit_bounds_in_dip =
+        gfx::ConvertRectToDIP(device_scale_factor, transit_bounds_in_pixels);
+    gfx::Rect bounds_in_dip = transit_bounds_in_dip;
     // TODO: this needs to trigger scheduling a bounds change on |window|.
-    result =
-        window_manager_delegate_->OnWmSetBounds(window->GetWindow(), &bounds);
+    result = window_manager_delegate_->OnWmSetBounds(window->GetWindow(),
+                                                     &bounds_in_dip);
     if (result) {
       // If the resulting bounds differ return false. Returning false ensures
       // the client applies the bounds we set below.
-      result = bounds == transit_bounds;
-      window->SetBoundsFromServer(bounds);
+      result = bounds_in_dip == transit_bounds_in_dip;
+      window->SetBoundsFromServer(bounds_in_dip);
     }
   }
   if (window_manager_internal_client_)
@@ -1528,11 +1534,13 @@ void WindowTreeClient::SetUnderlaySurfaceOffsetAndExtendedHitArea(
     const gfx::Vector2d& offset,
     const gfx::Insets& hit_area) {
   if (window_manager_internal_client_) {
-    // TODO(riajiang): Figure out if |offset| needs to be converted.
-    // (http://crbugs.com/646932)
+    float device_scale_factor = ScaleFactorForDisplay(window);
+    gfx::Vector2dF offset_in_pixels =
+        gfx::ScaleVector2d(offset, device_scale_factor);
     window_manager_internal_client_->SetUnderlaySurfaceOffsetAndExtendedHitArea(
-        WindowMus::Get(window)->server_id(), offset.x(), offset.y(),
-        gfx::ConvertInsetsToDIP(ScaleFactorForDisplay(window), hit_area));
+        WindowMus::Get(window)->server_id(), offset_in_pixels.x(),
+        offset_in_pixels.y(),
+        gfx::ConvertInsetsToPixel(device_scale_factor, hit_area));
   }
 }
 
