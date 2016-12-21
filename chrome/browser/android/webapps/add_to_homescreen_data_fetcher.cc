@@ -104,8 +104,6 @@ void AddToHomescreenDataFetcher::OnDidGetWebApplicationInfo(
   WebApplicationInfo web_app_info = received_web_app_info;
   web_app_info.title =
       web_app_info.title.substr(0, chrome::kMaxMetaTagAttributeLength);
-  web_app_info.description =
-      web_app_info.description.substr(0, chrome::kMaxMetaTagAttributeLength);
 
   // Simply set the user-editable title to be the page's title
   shortcut_info_.user_title = web_app_info.title.empty()
@@ -201,6 +199,11 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
         (data.error_code == NO_ERROR_DETECTED &&
          AreWebManifestUrlsWebApkCompatible(data.manifest));
     weak_observer_->OnDidDetermineWebApkCompatibility(webapk_compatible);
+
+    // WebAPKs are wholly defined by the Web Manifest. Ignore the <meta> tag
+    // data received in OnDidGetWebApplicationInfo().
+    if (webapk_compatible)
+      shortcut_info_ = ShortcutInfo(GURL());
   }
 
   if (!data.manifest.IsEmpty()) {

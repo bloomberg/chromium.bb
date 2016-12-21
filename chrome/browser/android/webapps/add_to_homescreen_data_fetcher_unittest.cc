@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/nullable_string16.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/common/web_application_info.h"
@@ -96,7 +97,11 @@ class MockWebContents : public content::TestWebContents {
 // called.
 class ObserverWaiter : public AddToHomescreenDataFetcher::Observer {
  public:
-  ObserverWaiter() {}
+  ObserverWaiter()
+      : is_webapk_compatible_(false),
+        determined_webapk_compatibility_(false),
+        title_available_(false),
+        data_available_(false) {}
   ~ObserverWaiter() override {}
 
   // Waits till the OnDataAvailable() callback is called.
@@ -190,6 +195,11 @@ class AddToHomescreenDataFetcherTest : public ChromeRenderViewHostTestHarness {
     SetContents(mock_web_contents);
   }
 
+  void TearDown() override {
+    embedded_worker_test_helper_.reset();
+    ChromeRenderViewHostTestHarness::TearDown();
+  }
+
   scoped_refptr<AddToHomescreenDataFetcher> BuildFetcher(
       bool check_webapk_compatible,
       AddToHomescreenDataFetcher::Observer* observer) {
@@ -275,6 +285,59 @@ class AddToHomescreenDataFetcherTestCommon
  private:
   DISALLOW_COPY_AND_ASSIGN(AddToHomescreenDataFetcherTestCommon);
 };
+
+// Test that when the manifest provides Manifest::short_name but not
+// Manifest::name that Manifest::short_name is used as the name instead of
+// WebApplicationInfo::title.
+TEST_P(AddToHomescreenDataFetcherTestCommon,
+       ManifestShortNameClobbersWebApplicationName) {
+  WebApplicationInfo web_application_info;
+  web_application_info.title = base::UTF8ToUTF16("Meta Title");
+
+  content::Manifest manifest(BuildDefaultManifest());
+  manifest.name = base::NullableString16();
+
+  RegisterServiceWorker(GURL(kDefaultStartUrl));
+  SetManifest(GURL(kDefaultManifestUrl), manifest, 0);
+
+  ObserverWaiter waiter;
+  scoped_refptr<AddToHomescreenDataFetcher> fetcher(BuildFetcher(&waiter));
+  fetcher->OnDidGetWebApplicationInfo(web_application_info);
+  waiter.WaitForDataAvailable();
+
+  EXPECT_TRUE(base::EqualsASCII(fetcher->shortcut_info().name,
+                                kDefaultManifestShortName));
+
+  fetcher->set_weak_observer(nullptr);
+}
+
+// Test that when the manifest does not provide either Manifest::short_name nor
+// Manifest::name that:
+// - The page is not WebAPK compatible.
+// - WebApplicationInfo::title is used as the "name".
+TEST_P(AddToHomescreenDataFetcherTestCommon, ManifestNoNameNoShortName) {
+    const char* kWebApplicationInfoTitle = "Meta Title";
+    WebApplicationInfo web_application_info;
+    web_application_info.title = base::UTF8ToUTF16(kWebApplicationInfoTitle);
+
+    content::Manifest manifest(BuildDefaultManifest());
+    manifest.name = base::NullableString16();
+    manifest.short_name = base::NullableString16();
+
+    RegisterServiceWorker(GURL(kDefaultStartUrl));
+    SetManifest(GURL(kDefaultManifestUrl), manifest, 0);
+
+    ObserverWaiter waiter;
+    scoped_refptr<AddToHomescreenDataFetcher> fetcher(BuildFetcher(&waiter));
+    fetcher->OnDidGetWebApplicationInfo(web_application_info);
+    waiter.WaitForDataAvailable();
+
+    EXPECT_FALSE(waiter.is_webapk_compatible());
+    EXPECT_TRUE(base::EqualsASCII(fetcher->shortcut_info().name,
+                                  kWebApplicationInfoTitle));
+
+    fetcher->set_weak_observer(nullptr);
+}
 
 // Checks that the AddToHomescreenDataFetcher::Observer callbacks are called
 // when a service worker is registered and the manifest fetch times out.
