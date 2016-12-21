@@ -45,6 +45,8 @@ source_set("reading_list") {
     "reading_list_view_controller.mm",
     "reading_list_view_controller_builder.h",
     "reading_list_view_controller_builder.mm",
+    "reading_list_view_controller_container.h",
+    "reading_list_view_controller_container.mm",
   ]
   deps = [
     "//base",

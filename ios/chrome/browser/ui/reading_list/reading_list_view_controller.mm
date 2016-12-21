@@ -51,9 +51,6 @@ NSString* const kEmptyReadingListBackgroundIcon = @"reading_list_icon";
 NSString* const kEmptyReadingListShareIcon = @"share_icon";
 NSString* const kShareIconMarker = @"SHARE_ICON";
 
-// Height of the toolbar.
-const int kToolbarHeight = 48;
-
 // Background view constants.
 const CGFloat kTextImageSpacing = 10;
 const CGFloat kTextHorizontalMargin = 32;
@@ -112,8 +109,6 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 // Returns whether there are elements in the section identified by
 // |sectionIdentifier|.
 - (BOOL)hasItemInSection:(SectionIdentifier)sectionIdentifier;
-// Adds the bottom toolbar with the edition options.
-- (void)addToolbar;
 // Updates the toolbar state according to the selected items.
 - (void)updateToolbarState;
 // Displays an action sheet to let the user choose to mark all the elements as
@@ -173,6 +168,7 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 @synthesize largeIconService = _largeIconService;
 @synthesize readingListDownloadService = _readingListDownloadService;
 @synthesize attributesProvider = _attributesProvider;
+@synthesize audience = _audience;
 
 #pragma mark lifecycle
 
@@ -180,21 +176,19 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
                       tabModel:(TabModel*)tabModel
               largeIconService:(favicon::LargeIconService*)largeIconService
     readingListDownloadService:
-        (ReadingListDownloadService*)readingListDownloadService {
+        (ReadingListDownloadService*)readingListDownloadService
+                       toolbar:(ReadingListToolbar*)toolbar {
   self = [super initWithStyle:CollectionViewControllerStyleAppBar];
   if (self) {
     DCHECK(model);
-
-    // Configure modal presentation.
-    [self setModalPresentationStyle:UIModalPresentationFormSheet];
-    [self setModalTransitionStyle:UIModalTransitionStyleCoverVertical];
+    _toolbar = toolbar;
+    _toolbar.delegate = self;
 
     _readingListModel = model;
     _tabModel = tabModel;
     _largeIconService = largeIconService;
     _readingListDownloadService = readingListDownloadService;
     _emptyCollectionBackground = [self emptyCollectionBackground];
-    _toolbar = [[ReadingListToolbar alloc] initWithFrame:CGRectZero];
 
     _modelBridge.reset(new ReadingListModelBridge(self, model));
   }
@@ -219,20 +213,16 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   [_toolbar setState:toolbarState];
 }
 
-#pragma mark - UIViewController
-
-- (void)updateViewConstraints {
-  NSDictionary* views = @{ @"toolbar" : _toolbar };
-  NSDictionary* metrics = @{ @"toolbarHeight" : @(kToolbarHeight) };
-  NSArray* constraints =
-      @[ @"V:[toolbar(==toolbarHeight)]|", @"H:|[toolbar]|" ];
-  ApplyVisualConstraintsWithMetrics(constraints, views, metrics);
-  [super updateViewConstraints];
+- (void)setAudience:(id<ReadingListViewControllerAudience>)audience {
+  _audience = audience;
+  if (self.readingListModel->loaded())
+    [audience setCollectionHasItems:self.readingListModel->size() > 0];
 }
+
+#pragma mark - UIViewController
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  [self addToolbar];
 
   self.title = l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_READING_LIST);
 
@@ -456,11 +446,11 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
   if (self.readingListModel->size() == 0) {
     // The collection is empty, add background.
     self.collectionView.backgroundView = _emptyCollectionBackground;
-    [_toolbar setHidden:YES];
+    [self.audience setCollectionHasItems:NO];
   } else {
     [self loadItems];
     self.collectionView.backgroundView = nil;
-    [_toolbar setHidden:NO];
+    [self.audience setCollectionHasItems:YES];
   }
 }
 
@@ -573,16 +563,6 @@ using ItemsMapByDate = std::multimap<int64_t, ReadingListCollectionViewItem*>;
 }
 
 #pragma mark - Private methods - Toolbar
-
-- (void)addToolbar {
-  [_toolbar setDelegate:self];
-  [_toolbar setTranslatesAutoresizingMaskIntoConstraints:NO];
-  [self.view addSubview:_toolbar];
-  UIEdgeInsets insets = self.collectionView.contentInset;
-  insets.bottom += kToolbarHeight + 8;
-  self.collectionView.contentInset = insets;
-  [_toolbar setHidden:YES];
-}
 
 - (void)updateToolbarState {
   BOOL readSelected = NO;

@@ -103,7 +103,8 @@ class ReadingListViewControllerTest : public web::WebTestWithWebState {
                      initWithModel:reading_list_model_.get()
                           tabModel:tabModel
                   largeIconService:large_icon_service_.get()
-        readingListDownloadService:nil]);
+        readingListDownloadService:nil
+                           toolbar:nil]);
   }
 
   DISALLOW_COPY_AND_ASSIGN(ReadingListViewControllerTest);

@@ -19,6 +19,15 @@ class ReadingListDownloadService;
 class ReadingListModel;
 @class TabModel;
 
+// Audience for the ReadingListViewController, managing the visibility of the
+// toolbar.
+@protocol ReadingListViewControllerAudience<NSObject>
+
+// Whether the collection has items.
+- (void)setCollectionHasItems:(BOOL)hasItems;
+
+@end
+
 @interface ReadingListViewController
     : CollectionViewController<ReadingListToolbarDelegate>
 
@@ -33,9 +42,12 @@ class ReadingListModel;
               largeIconService:(favicon::LargeIconService*)largeIconService
     readingListDownloadService:
         (ReadingListDownloadService*)readingListDownloadService
+                       toolbar:(ReadingListToolbar*)toolbar
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithStyle:(CollectionViewControllerStyle)style
     NS_UNAVAILABLE;
+
+@property(nonatomic, weak) id<ReadingListViewControllerAudience> audience;
 
 @end
 
