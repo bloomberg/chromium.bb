@@ -5,8 +5,7 @@
 #ifndef NET_QUIC_CORE_CRYPTO_QUIC_CRYPTO_CLIENT_CONFIG_H_
 #define NET_QUIC_CORE_CRYPTO_QUIC_CRYPTO_CLIENT_CONFIG_H_
 
-#include <stdint.h>
-
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <queue>
@@ -85,7 +84,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
     // InvalidateServerConfig clears the cached server config (if any).
     void InvalidateServerConfig();
 
-    // SetProof stores a certificate chain and signature.
+    // SetProof stores a cert chain, cert signed timestamp and signature.
     void SetProof(const std::vector<std::string>& certs,
                   base::StringPiece cert_sct,
                   base::StringPiece chlo_hash,
@@ -202,6 +201,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // Used to filter server ids for partial config deletion.
   class ServerIdFilter {
    public:
+    virtual ~ServerIdFilter() {}
+
     // Returns true if |server_id| matches the filter.
     virtual bool Matches(const QuicServerId& server_id) const = 0;
   };

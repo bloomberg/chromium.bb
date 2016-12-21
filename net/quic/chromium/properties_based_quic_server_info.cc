@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/core/crypto/properties_based_quic_server_info.h"
+#include "net/quic/chromium/properties_based_quic_server_info.h"
 
 #include "base/base64.h"
 #include "base/metrics/histogram_macros.h"

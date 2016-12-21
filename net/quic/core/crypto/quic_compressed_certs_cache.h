@@ -74,7 +74,6 @@ class QUIC_EXPORT_PRIVATE QuicCompressedCertsCache {
     CachedCerts(const UncompressedCerts& uncompressed_certs,
                 const std::string& compressed_cert);
     CachedCerts(const CachedCerts& other);
-
     ~CachedCerts();
 
     // Returns true if the |uncompressed_certs| matches uncompressed

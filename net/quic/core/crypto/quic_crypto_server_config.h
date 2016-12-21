@@ -5,9 +5,8 @@
 #ifndef NET_QUIC_CORE_CRYPTO_QUIC_CRYPTO_SERVER_CONFIG_H_
 #define NET_QUIC_CORE_CRYPTO_QUIC_CRYPTO_SERVER_CONFIG_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
+#include <cstddef>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
@@ -15,8 +14,6 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
-#include "net/base/ip_address.h"
-#include "net/base/ip_endpoint.h"
 #include "net/quic/core/crypto/crypto_handshake.h"
 #include "net/quic/core/crypto/crypto_handshake_message.h"
 #include "net/quic/core/crypto/crypto_protocol.h"

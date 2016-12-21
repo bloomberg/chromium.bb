@@ -11,6 +11,7 @@
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::IntToString;
 using std::string;
 
 namespace net {
@@ -58,6 +59,8 @@ TEST_F(QuicCompressedCertsCacheTest, CacheMiss) {
                          chain, "mismatched common certs", cached_certs));
   EXPECT_EQ(nullptr, certs_cache_.GetCompressedCert(chain, common_certs,
                                                     "mismatched cached certs"));
+
+  // A different chain though with equivalent certs should get a cache miss.
   QuicReferenceCountedPointer<ProofSource::Chain> chain2(
       new ProofSource::Chain(certs));
   EXPECT_EQ(nullptr,
@@ -81,7 +84,7 @@ TEST_F(QuicCompressedCertsCacheTest, CacheMissDueToEviction) {
   for (unsigned int i = 0;
        i < QuicCompressedCertsCache::kQuicCompressedCertsCacheSize; i++) {
     EXPECT_EQ(certs_cache_.Size(), i + 1);
-    certs_cache_.Insert(chain, base::IntToString(i), "", base::IntToString(i));
+    certs_cache_.Insert(chain, IntToString(i), "", IntToString(i));
   }
   EXPECT_EQ(certs_cache_.MaxSize(), certs_cache_.Size());
 

@@ -5,8 +5,8 @@
 #ifndef NET_QUIC_CORE_CRYPTO_NULL_DECRYPTER_H_
 #define NET_QUIC_CORE_CRYPTO_NULL_DECRYPTER_H_
 
-#include <stddef.h>
-#include <stdint.h>
+#include <cstddef>
+#include <cstdint>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"

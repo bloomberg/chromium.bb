@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "crypto/hkdf.h"
 #include "crypto/secure_hash.h"
-#include "net/base/ip_address.h"
 #include "net/quic/core/crypto/aes_128_gcm_12_decrypter.h"
 #include "net/quic/core/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/core/crypto/cert_compressor.h"
@@ -2025,8 +2024,7 @@ QuicCryptoServerConfig::Config::Config()
       priority(0),
       source_address_token_boxer(nullptr) {}
 
-QuicCryptoServerConfig::Config::~Config() {
-}
+QuicCryptoServerConfig::Config::~Config() {}
 
 QuicSignedServerConfig::QuicSignedServerConfig() {}
 QuicSignedServerConfig::~QuicSignedServerConfig() {}

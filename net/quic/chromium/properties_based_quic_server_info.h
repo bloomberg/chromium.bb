@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_QUIC_CORE_CRYPTO_PROPERTIES_BASED_QUIC_SERVER_INFO_H_
-#define NET_QUIC_CORE_CRYPTO_PROPERTIES_BASED_QUIC_SERVER_INFO_H_
+#ifndef NET_QUIC_CHROMIUM_PROPERTIES_BASED_QUIC_SERVER_INFO_H_
+#define NET_QUIC_CHROMIUM_PROPERTIES_BASED_QUIC_SERVER_INFO_H_
 
 #include <string>
 #include <vector>
@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/completion_callback.h"
-#include "net/quic/core/crypto/quic_server_info.h"
+#include "net/quic/chromium/quic_server_info.h"
 #include "net/quic/platform/api/quic_export.h"
 
 namespace net {
@@ -61,4 +61,4 @@ class QUIC_EXPORT_PRIVATE PropertiesBasedQuicServerInfoFactory
 
 }  // namespace net
 
-#endif  // NET_QUIC_CORE_CRYPTO_PROPERTIES_BASED_QUIC_SERVER_INFO_H_
+#endif  // NET_QUIC_CHROMIUM_PROPERTIES_BASED_QUIC_SERVER_INFO_H_

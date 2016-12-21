@@ -21,7 +21,7 @@ namespace net {
 // chains and signatures that prove its identity.
 class QUIC_EXPORT_PRIVATE ProofSource {
  public:
-  // Chain is a reference-counted wrapper for a std::vector of std::stringified
+  // Chain is a reference-counted wrapper for a vector of stringified
   // certificates.
   struct QUIC_EXPORT_PRIVATE Chain : public QuicReferenceCounted {
     explicit Chain(const std::vector<std::string>& certs);

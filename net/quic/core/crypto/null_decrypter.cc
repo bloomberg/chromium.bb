@@ -4,7 +4,7 @@
 
 #include "net/quic/core/crypto/null_decrypter.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "net/quic/core/quic_bug_tracker.h"
 #include "net/quic/core/quic_data_reader.h"

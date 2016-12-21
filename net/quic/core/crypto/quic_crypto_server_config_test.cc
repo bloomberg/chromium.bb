@@ -8,21 +8,17 @@
 
 #include <memory>
 
-#include "net/quic/core/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/quic/core/crypto/cert_compressor.h"
 #include "net/quic/core/crypto/chacha20_poly1305_encrypter.h"
 #include "net/quic/core/crypto/crypto_handshake_message.h"
 #include "net/quic/core/crypto/crypto_secret_boxer.h"
 #include "net/quic/core/crypto/crypto_server_config_protobuf.h"
 #include "net/quic/core/crypto/quic_random.h"
-#include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_time.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/quic_crypto_server_config_peer.h"
-#include "net/quic/test_tools/quic_test_utils.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
@@ -210,7 +206,7 @@ class SourceAddressTokenTest : public ::testing::Test {
 
 // Test basic behavior of source address tokens including being specific
 // to a single IP address and server config.
-TEST_F(SourceAddressTokenTest, NewSourceAddressToken) {
+TEST_F(SourceAddressTokenTest, SourceAddressToken) {
   // Primary config generates configs that validate successfully.
   const string token4 = NewSourceAddressToken(kPrimary, ip4_);
   const string token4d = NewSourceAddressToken(kPrimary, ip4_dual_);
@@ -228,7 +224,7 @@ TEST_F(SourceAddressTokenTest, NewSourceAddressToken) {
   ASSERT_EQ(HANDSHAKE_OK, ValidateSourceAddressTokens(kPrimary, token6, ip6_));
 }
 
-TEST_F(SourceAddressTokenTest, NewSourceAddressTokenExpiration) {
+TEST_F(SourceAddressTokenTest, SourceAddressTokenExpiration) {
   const string token = NewSourceAddressToken(kPrimary, ip4_);
 
   // Validation fails if the token is from the future.
@@ -242,7 +238,7 @@ TEST_F(SourceAddressTokenTest, NewSourceAddressTokenExpiration) {
             ValidateSourceAddressTokens(kPrimary, token, ip4_));
 }
 
-TEST_F(SourceAddressTokenTest, NewSourceAddressTokenWithNetworkParams) {
+TEST_F(SourceAddressTokenTest, SourceAddressTokenWithNetworkParams) {
   // Make sure that if the source address token contains CachedNetworkParameters
   // that this gets written to ValidateSourceAddressToken output argument.
   CachedNetworkParameters cached_network_params_input;

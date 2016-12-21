@@ -5,8 +5,6 @@
 #ifndef NET_QUIC_CORE_CRYPTO_CRYPTO_HANDSHAKE_H_
 #define NET_QUIC_CORE_CRYPTO_CRYPTO_HANDSHAKE_H_
 
-#include <stdint.h>
-
 #include <memory>
 #include <string>
 #include <vector>

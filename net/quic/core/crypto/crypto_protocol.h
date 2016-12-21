@@ -5,9 +5,7 @@
 #ifndef NET_QUIC_CORE_CRYPTO_CRYPTO_PROTOCOL_H_
 #define NET_QUIC_CORE_CRYPTO_CRYPTO_PROTOCOL_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
+#include <cstddef>
 #include <string>
 
 #include "net/quic/core/quic_tag.h"

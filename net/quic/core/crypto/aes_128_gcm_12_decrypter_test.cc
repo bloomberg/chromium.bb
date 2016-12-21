@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 

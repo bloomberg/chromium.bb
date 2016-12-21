@@ -17,7 +17,7 @@ namespace net {
 
 namespace {
 
-const size_t kQuicTagSize = sizeof(uint32_t);
+const size_t kQuicTagSize = sizeof(QuicTag);
 const size_t kCryptoEndOffsetSize = sizeof(uint32_t);
 const size_t kNumEntriesSize = sizeof(uint16_t);
 

@@ -8,7 +8,6 @@
 #include <ostream>
 #include <vector>
 
-#include "base/strings/string_number_conversions.h"
 #include "crypto/secure_hash.h"
 #include "net/quic/core/crypto/cert_compressor.h"
 #include "net/quic/core/crypto/common_cert_set.h"
@@ -45,7 +44,7 @@ class DummyProofVerifierCallback : public ProofVerifierCallback {
   void Run(bool ok,
            const std::string& error_details,
            std::unique_ptr<ProofVerifyDetails>* details) override {
-    // Do nothing
+    DCHECK(false);
   }
 };
 
@@ -862,6 +861,7 @@ TEST_P(CryptoServerTest, ProofForSuppliedServerConfig) {
       "#004b5453", srct_hex_.c_str(),
       "PUBS", pub_hex_.c_str(),
       "NONC", nonce_hex_.c_str(),
+      "NONP", "123456789012345678901234567890",
       "VER\0", client_version_string_.c_str(),
       "XLCT", XlctHexString().c_str(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
@@ -952,7 +952,6 @@ TEST_P(CryptoServerTest, ValidXlct) {
       "#004b5453", srct_hex_.c_str(),
       "PUBS", pub_hex_.c_str(),
       "NONC", nonce_hex_.c_str(),
-      "NONP", "123456789012345678901234567890",
       "VER\0", client_version_string_.c_str(),
       "XLCT", XlctHexString().c_str(),
       "$padding", static_cast<int>(kClientHelloMinimumSize),
