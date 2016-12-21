@@ -3,22 +3,22 @@
 <html>
 <head>
   <style>
-    .container {
+    * {
+      margin: 0;
+    }
+    #container {
       position: relative;
       height: 300px;
       width: 300px;
       margin: 10px;
       background-color: green;
+      opacity: 0.5;
       transition-property: opacity;
       transition-timing-function: linear;
       transition-duration: 5s;
     }
-  
-    #first {
-      opacity: 0.5;
-    }
 
-    .box {
+    #box {
       position: absolute;
       left: 10px;
       top: 10px;
@@ -27,7 +27,7 @@
       background-color: blue;
     }
 
-    .indicator {
+    #indicator {
       position: absolute;
       top: 150px;
       left: 150px;
@@ -41,9 +41,14 @@
     if (window.testRunner)
       testRunner.waitUntilDone();
 
+    function waitForCompositor() {
+      var box = document.getElementById('box');
+      return box.animate({transform: ['scale(1)', 'scale(1)']}, 1).ready;
+    }
+
     function runTest()
     {
-      var container = document.getElementById('first');
+      var container = document.getElementById('container');
       container.style.opacity = 1;
       
       // dump the tree in the middle of the transition
@@ -52,7 +57,9 @@
           window.internals.pauseAnimations(2.5);
       }
       if (window.testRunner) {
+        waitForCompositor().then(() => {
           testRunner.notifyDone();
+        });
       }
     }
     // FIXME: this should use runTransitionTest().
@@ -61,9 +68,9 @@
 </head>
 <body>
 
-  <div class="container" id="first">
-    <div class="box"></div>
-    <div class="indicator"></div>
+  <div id="container">
+    <div id="box"></div>
+    <div id="indicator"></div>
   </div>
 
 </body>
