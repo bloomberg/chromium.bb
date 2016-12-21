@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/card_unmask_delegate.h"
@@ -22,13 +23,14 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
-#include "ui/base/test/user_interactive_test_case.h"
 
 namespace autofill {
 
 namespace {
 
-enum class CreditCardExpiry : uint8_t { EXPIRED, VALID };
+// Forms of the dialog that can be invoked.
+constexpr const char kExpiryExpired[] = "expired";
+constexpr const char kExpiryValid[] = "valid";
 
 class TestCardUnmaskDelegate : public CardUnmaskDelegate {
  public:
@@ -85,12 +87,13 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
   DISALLOW_COPY_AND_ASSIGN(TestCardUnmaskPromptController);
 };
 
-class CardUnmaskPromptViewBrowserTest : public InProcessBrowserTest {
+class CardUnmaskPromptViewBrowserTest : public DialogBrowserTest {
  public:
-  CardUnmaskPromptViewBrowserTest() : InProcessBrowserTest() {}
+  CardUnmaskPromptViewBrowserTest() {}
 
   ~CardUnmaskPromptViewBrowserTest() override {}
 
+  // DialogBrowserTest:
   void SetUpOnMainThread() override {
     runner_ = new content::MessageLoopRunner;
     contents_ = browser()->tab_strip_model()->GetActiveWebContents();
@@ -98,10 +101,11 @@ class CardUnmaskPromptViewBrowserTest : public InProcessBrowserTest {
     delegate_.reset(new TestCardUnmaskDelegate());
   }
 
-  void ShowUI(CreditCardExpiry expired) {
+  void ShowDialog(const std::string& name) override {
     CardUnmaskPromptView* dialog =
         CreateCardUnmaskPromptView(controller(), contents());
-    CreditCard card = (expired == CreditCardExpiry::EXPIRED)
+    EXPECT_TRUE(name == kExpiryExpired || name == kExpiryValid);
+    CreditCard card = (name == kExpiryExpired)
                           ? test::GetMaskedServerCard()
                           : test::GetMaskedServerCardAmex();
     controller()->ShowPrompt(dialog, card, AutofillClient::UNMASK_FOR_AUTOFILL,
@@ -126,23 +130,16 @@ class CardUnmaskPromptViewBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(CardUnmaskPromptViewBrowserTest);
 };
 
-// Permanently disabled test used to invoke the UI for the card unmask prompt
-// with an expired credit card, which shows additional month/year controls.
-IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
-                       DISABLED_InvokeExpired) {
-  ShowUI(CreditCardExpiry::EXPIRED);
-  ::test::RunTestInteractively();
+IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest, InvokeDialog_expired) {
+  RunDialog();
 }
 
-// Permanently disabled test used to invoke the UI for the card unmask prompt
-// with a valid credit card, which only shows the CCV Textfield.
-IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest, DISABLED_InvokeValid) {
-  ShowUI(CreditCardExpiry::VALID);
-  ::test::RunTestInteractively();
+IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest, InvokeDialog_valid) {
+  RunDialog();
 }
 
 IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest, DisplayUI) {
-  ShowUI(CreditCardExpiry::EXPIRED);
+  ShowDialog(kExpiryExpired);
 }
 
 // TODO(bondd): bring up on Mac.
@@ -151,7 +148,7 @@ IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest, DisplayUI) {
 // message is showing.
 IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
                        EarlyCloseAfterSuccess) {
-  ShowUI(CreditCardExpiry::EXPIRED);
+  ShowDialog(kExpiryExpired);
   controller()->OnUnmaskResponse(base::ASCIIToUTF16("123"),
                                  base::ASCIIToUTF16("10"),
                                  base::ASCIIToUTF16("19"), false);
@@ -173,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
 // https://crbug.com/484376
 IN_PROC_BROWSER_TEST_F(CardUnmaskPromptViewBrowserTest,
                        CloseTabWhileDialogShowing) {
-  ShowUI(CreditCardExpiry::EXPIRED);
+  ShowDialog(kExpiryExpired);
   // Simulate AutofillManager (the delegate in production code) being destroyed
   // before CardUnmaskPromptViewBridge::OnConstrainedWindowClosed() is called.
   FreeDelegate();
