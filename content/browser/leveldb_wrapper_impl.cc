@@ -259,10 +259,12 @@ void LevelDBWrapperImpl::OnLoadComplete(
     std::vector<leveldb::mojom::KeyValuePtr> data) {
   DCHECK(!map_);
   map_.reset(new ValueMap);
+  bytes_used_ = 0;
   for (auto& it : data) {
     DCHECK_GE(it->key.size(), prefix_.size());
     (*map_)[std::vector<uint8_t>(it->key.begin() + prefix_.size(),
                                  it->key.end())] = it->value;
+    bytes_used_ += it->key.size() - prefix_.size() + it->value.size();
   }
 
   // We proceed without using a backing store, nothing will be persisted but the

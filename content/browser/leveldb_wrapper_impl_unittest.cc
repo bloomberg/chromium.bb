@@ -314,4 +314,129 @@ TEST_F(LevelDBWrapperImplTest, CommitPutToDB) {
   EXPECT_EQ(value2, get_mock_data(kTestPrefix + key2));
 }
 
+TEST_F(LevelDBWrapperImplTest, PutOverQuotaLargeValue) {
+  std::vector<uint8_t> key = StdStringToUint8Vector("newkey");
+  std::vector<uint8_t> value(kTestSizeLimit, 4);
+
+  bool called = false;
+  bool success;
+  wrapper()->Put(key, value, kTestSource,
+                 base::Bind(&SuccessCallback, &called, &success));
+  ASSERT_TRUE(called);
+  EXPECT_FALSE(success);
+
+  value.resize(kTestSizeLimit / 2);
+  called = false;
+  wrapper()->Put(key, value, kTestSource,
+                 base::Bind(&SuccessCallback, &called, &success));
+  ASSERT_TRUE(called);
+  EXPECT_TRUE(success);
+}
+
+TEST_F(LevelDBWrapperImplTest, PutOverQuotaLargeKey) {
+  std::vector<uint8_t> key(kTestSizeLimit, 'a');
+  std::vector<uint8_t> value = StdStringToUint8Vector("newvalue");
+
+  bool called = false;
+  bool success;
+  wrapper()->Put(key, value, kTestSource,
+                 base::Bind(&SuccessCallback, &called, &success));
+  ASSERT_TRUE(called);
+  EXPECT_FALSE(success);
+
+  key.resize(kTestSizeLimit / 2);
+  called = false;
+  wrapper()->Put(key, value, kTestSource,
+                 base::Bind(&SuccessCallback, &called, &success));
+  ASSERT_TRUE(called);
+  EXPECT_TRUE(success);
+}
+
+TEST_F(LevelDBWrapperImplTest, PutWhenAlreadyOverQuota) {
+  std::string key = "largedata";
+  std::vector<uint8_t> value(kTestSizeLimit, 4);
+
+  set_mock_data(kTestPrefix + key, Uint8VectorToStdString(value));
+
+  // Put with same data should succeed.
+  bool called = false;
+  bool success;
+  wrapper()->Put(StdStringToUint8Vector(key), value, kTestSource,
+                 base::Bind(&SuccessCallback, &called, &success));
+  ASSERT_TRUE(called);
+  EXPECT_TRUE(success);
+
+  // Put with same data size should succeed.
+  called = false;
+  value[1] = 13;
+  wrapper()->Put(StdStringToUint8Vector(key), value, kTestSource,
+                 base::Bind(&SuccessCallback, &called, &success));
+  ASSERT_TRUE(called);
+  EXPECT_TRUE(success);
+
+  // Adding a new key when already over quota should not succeed.
+  called = false;
+  wrapper()->Put(StdStringToUint8Vector("newkey"), {1, 2, 3}, kTestSource,
+                 base::Bind(&SuccessCallback, &called, &success));
+  ASSERT_TRUE(called);
+  EXPECT_FALSE(success);
+
+  // Reducing size should also succeed.
+  value.resize(kTestSizeLimit / 2);
+  called = false;
+  wrapper()->Put(StdStringToUint8Vector(key), value, kTestSource,
+                 base::Bind(&SuccessCallback, &called, &success));
+  ASSERT_TRUE(called);
+  EXPECT_TRUE(success);
+
+  // Increasing size again should succeed, as still under the limit.
+  value.resize(value.size() + 1);
+  called = false;
+  wrapper()->Put(StdStringToUint8Vector(key), value, kTestSource,
+                 base::Bind(&SuccessCallback, &called, &success));
+  ASSERT_TRUE(called);
+  EXPECT_TRUE(success);
+
+  // But increasing back to original size should fail.
+  value.resize(kTestSizeLimit);
+  called = false;
+  wrapper()->Put(StdStringToUint8Vector(key), value, kTestSource,
+                 base::Bind(&SuccessCallback, &called, &success));
+  ASSERT_TRUE(called);
+  EXPECT_FALSE(success);
+}
+
+TEST_F(LevelDBWrapperImplTest, PutWhenAlreadyOverQuotaBecauseOfLargeKey) {
+  std::vector<uint8_t> key(kTestSizeLimit, 'x');
+  std::vector<uint8_t> value = StdStringToUint8Vector("value");
+
+  set_mock_data(kTestPrefix + Uint8VectorToStdString(key),
+                Uint8VectorToStdString(value));
+
+  // Put with same data size should succeed.
+  bool called = false;
+  bool success;
+  value[0] = 'X';
+  wrapper()->Put(key, value, kTestSource,
+                 base::Bind(&SuccessCallback, &called, &success));
+  ASSERT_TRUE(called);
+  EXPECT_TRUE(success);
+
+  // Reducing size should also succeed.
+  value.clear();
+  called = false;
+  wrapper()->Put(key, value, kTestSource,
+                 base::Bind(&SuccessCallback, &called, &success));
+  ASSERT_TRUE(called);
+  EXPECT_TRUE(success);
+
+  // Increasing size should fail.
+  value.resize(1, 'a');
+  called = false;
+  wrapper()->Put(key, value, kTestSource,
+                 base::Bind(&SuccessCallback, &called, &success));
+  ASSERT_TRUE(called);
+  EXPECT_FALSE(success);
+}
+
 }  // namespace content
