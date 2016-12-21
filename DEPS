@@ -368,7 +368,7 @@ deps_os = {
       Var('chromium_git') + '/external/github.com/material-foundation/material-sprited-animation-view-ios.git' + '@' + 'e240cdcd4538f0763ca5bd8c5afc2991eb482f1a',
 
     'src/ios/third_party/material_text_accessibility_ios/src':
-      Var('chromium_git') + '/external/github.com/google/material-text-accessibility-ios.git' + '@' + '96d2b0f13976a897bc7a41daf67f36d9548cff94',
+      Var('chromium_git') + '/external/github.com/material-foundation/material-text-accessibility-ios.git' + '@' + '96d2b0f13976a897bc7a41daf67f36d9548cff94',
 
     'src/ios/third_party/ochamcrest/src':
       Var('chromium_git') + '/external/github.com/hamcrest/OCHamcrest.git' + '@' + 'd7ee4ecfb6bd13c3c8d364682b6228ccd86e1e1a',
