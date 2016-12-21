@@ -91,7 +91,7 @@ void av1_free_ref_frame_buffers(BufferPool *pool) {
 void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
   av1_alloc_restoration_struct(&cm->rst_info, cm->width, cm->height);
   cm->rst_internal.tmpbuf =
-      (uint8_t *)aom_realloc(cm->rst_internal.tmpbuf, RESTORATION_TMPBUF_SIZE);
+      (int32_t *)aom_realloc(cm->rst_internal.tmpbuf, RESTORATION_TMPBUF_SIZE);
   if (cm->rst_internal.tmpbuf == NULL)
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate internal tmpbuf for restoration");

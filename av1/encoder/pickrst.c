@@ -121,35 +121,55 @@ static int64_t try_restoration_frame(const YV12_BUFFER_CONFIG *src,
   return filt_err;
 }
 
-static int64_t get_pixel_proj_error(int32_t *src, int width, int height,
-                                    int src_stride, int32_t *dgd,
-                                    int dgd_stride, int32_t *flt1,
-                                    int flt1_stride, int32_t *flt2,
-                                    int flt2_stride, int *xqd) {
+static int64_t get_pixel_proj_error(uint8_t *src8, int width, int height,
+                                    int src_stride, uint8_t *dat8,
+                                    int dat_stride, int bit_depth,
+                                    int32_t *flt1, int flt1_stride,
+                                    int32_t *flt2, int flt2_stride, int *xqd) {
   int i, j;
   int64_t err = 0;
   int xq[2];
   decode_xq(xqd, xq);
-  for (i = 0; i < height; ++i) {
-    for (j = 0; j < width; ++j) {
-      const int32_t s = (int32_t)src[i * src_stride + j];
-      const int32_t u = (int32_t)dgd[i * dgd_stride + j];
-      const int32_t f1 = (int32_t)flt1[i * flt1_stride + j] - u;
-      const int32_t f2 = (int32_t)flt2[i * flt2_stride + j] - u;
-      const int64_t v = xq[0] * f1 + xq[1] * f2 + (u << SGRPROJ_PRJ_BITS);
-      const int32_t e =
-          ROUND_POWER_OF_TWO(v, SGRPROJ_RST_BITS + SGRPROJ_PRJ_BITS) -
-          ROUND_POWER_OF_TWO(s, SGRPROJ_RST_BITS);
-      err += e * e;
+  if (bit_depth == 8) {
+    const uint8_t *src = src8;
+    const uint8_t *dat = dat8;
+    for (i = 0; i < height; ++i) {
+      for (j = 0; j < width; ++j) {
+        const int32_t u =
+            (int32_t)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
+        const int32_t f1 = (int32_t)flt1[i * flt1_stride + j] - u;
+        const int32_t f2 = (int32_t)flt2[i * flt2_stride + j] - u;
+        const int64_t v = xq[0] * f1 + xq[1] * f2 + (u << SGRPROJ_PRJ_BITS);
+        const int32_t e =
+            ROUND_POWER_OF_TWO(v, SGRPROJ_RST_BITS + SGRPROJ_PRJ_BITS) -
+            src[i * src_stride + j];
+        err += e * e;
+      }
+    }
+  } else {
+    const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+    const uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
+    for (i = 0; i < height; ++i) {
+      for (j = 0; j < width; ++j) {
+        const int32_t u =
+            (int32_t)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
+        const int32_t f1 = (int32_t)flt1[i * flt1_stride + j] - u;
+        const int32_t f2 = (int32_t)flt2[i * flt2_stride + j] - u;
+        const int64_t v = xq[0] * f1 + xq[1] * f2 + (u << SGRPROJ_PRJ_BITS);
+        const int32_t e =
+            ROUND_POWER_OF_TWO(v, SGRPROJ_RST_BITS + SGRPROJ_PRJ_BITS) -
+            src[i * src_stride + j];
+        err += e * e;
+      }
     }
   }
   return err;
 }
 
-static void get_proj_subspace(int32_t *src, int width, int height,
-                              int src_stride, int32_t *dgd, int dgd_stride,
-                              int32_t *flt1, int flt1_stride, int32_t *flt2,
-                              int flt2_stride, int *xq) {
+static void get_proj_subspace(uint8_t *src8, int width, int height,
+                              int src_stride, uint8_t *dat8, int dat_stride,
+                              int bit_depth, int32_t *flt1, int flt1_stride,
+                              int32_t *flt2, int flt2_stride, int *xq) {
   int i, j;
   double H[2][2] = { { 0, 0 }, { 0, 0 } };
   double C[2] = { 0, 0 };
@@ -159,17 +179,39 @@ static void get_proj_subspace(int32_t *src, int width, int height,
 
   xq[0] = -(1 << SGRPROJ_PRJ_BITS) / 4;
   xq[1] = (1 << SGRPROJ_PRJ_BITS) - xq[0];
-  for (i = 0; i < height; ++i) {
-    for (j = 0; j < width; ++j) {
-      const double u = (double)dgd[i * dgd_stride + j];
-      const double s = (double)src[i * src_stride + j] - u;
-      const double f1 = (double)flt1[i * flt1_stride + j] - u;
-      const double f2 = (double)flt2[i * flt2_stride + j] - u;
-      H[0][0] += f1 * f1;
-      H[1][1] += f2 * f2;
-      H[0][1] += f1 * f2;
-      C[0] += f1 * s;
-      C[1] += f2 * s;
+  if (bit_depth == 8) {
+    const uint8_t *src = src8;
+    const uint8_t *dat = dat8;
+    for (i = 0; i < height; ++i) {
+      for (j = 0; j < width; ++j) {
+        const double u = (double)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
+        const double s =
+            (double)(src[i * src_stride + j] << SGRPROJ_RST_BITS) - u;
+        const double f1 = (double)flt1[i * flt1_stride + j] - u;
+        const double f2 = (double)flt2[i * flt2_stride + j] - u;
+        H[0][0] += f1 * f1;
+        H[1][1] += f2 * f2;
+        H[0][1] += f1 * f2;
+        C[0] += f1 * s;
+        C[1] += f2 * s;
+      }
+    }
+  } else {
+    const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
+    const uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
+    for (i = 0; i < height; ++i) {
+      for (j = 0; j < width; ++j) {
+        const double u = (double)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
+        const double s =
+            (double)(src[i * src_stride + j] << SGRPROJ_RST_BITS) - u;
+        const double f1 = (double)flt1[i * flt1_stride + j] - u;
+        const double f2 = (double)flt2[i * flt2_stride + j] - u;
+        H[0][0] += f1 * f1;
+        H[1][1] += f2 * f2;
+        H[0][1] += f1 * f2;
+        C[0] += f1 * s;
+        C[1] += f2 * s;
+      }
     }
   }
   H[0][0] /= size;
@@ -196,33 +238,25 @@ void encode_xq(int *xq, int *xqd) {
 static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
                                           int dat_stride, uint8_t *src8,
                                           int src_stride, int bit_depth,
-                                          int *eps, int *xqd, void *srcbuf,
-                                          void *rstbuf) {
-  int32_t *srd = (int32_t *)srcbuf;
-  int32_t *dgd = (int32_t *)rstbuf;
-  int32_t *flt1 = dgd + RESTORATION_TILEPELS_MAX;
+                                          int *eps, int *xqd, int32_t *rstbuf) {
+  int32_t *flt1 = rstbuf;
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
-  uint8_t *tmpbuf2 = (uint8_t *)(flt2 + RESTORATION_TILEPELS_MAX);
+  int32_t *tmpbuf2 = flt2 + RESTORATION_TILEPELS_MAX;
   int i, j, ep, bestep = 0;
   int64_t err, besterr = -1;
   int exqd[2], bestxqd[2] = { 0, 0 };
+
   for (ep = 0; ep < SGRPROJ_PARAMS; ep++) {
     int exq[2];
     if (bit_depth > 8) {
-      uint16_t *src = CONVERT_TO_SHORTPTR(src8);
       uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
       for (i = 0; i < height; ++i) {
         for (j = 0; j < width; ++j) {
           flt1[i * width + j] = (int32_t)dat[i * dat_stride + j];
           flt2[i * width + j] = (int32_t)dat[i * dat_stride + j];
-          dgd[i * width + j] = (int32_t)dat[i * dat_stride + j]
-                               << SGRPROJ_RST_BITS;
-          srd[i * width + j] = (int32_t)src[i * src_stride + j]
-                               << SGRPROJ_RST_BITS;
         }
       }
     } else {
-      uint8_t *src = src8;
       uint8_t *dat = dat8;
       for (i = 0; i < height; ++i) {
         for (j = 0; j < width; ++j) {
@@ -230,8 +264,6 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
           const int l = i * dat_stride + j;
           flt1[k] = (int32_t)dat[l];
           flt2[k] = (int32_t)dat[l];
-          dgd[k] = (int32_t)dat[l] << SGRPROJ_RST_BITS;
-          srd[k] = (int32_t)src[i * src_stride + j] << SGRPROJ_RST_BITS;
         }
       }
     }
@@ -239,11 +271,12 @@ static void search_selfguided_restoration(uint8_t *dat8, int width, int height,
                                sgr_params[ep].r1, sgr_params[ep].e1, tmpbuf2);
     av1_selfguided_restoration(flt2, width, height, width, bit_depth,
                                sgr_params[ep].r2, sgr_params[ep].e2, tmpbuf2);
-    get_proj_subspace(srd, width, height, width, dgd, width, flt1, width, flt2,
-                      width, exq);
+    get_proj_subspace(src8, width, height, src_stride, dat8, dat_stride,
+                      bit_depth, flt1, width, flt2, width, exq);
     encode_xq(exq, exqd);
-    err = get_pixel_proj_error(srd, width, height, width, dgd, width, flt1,
-                               width, flt2, width, exqd);
+    err =
+        get_pixel_proj_error(src8, width, height, src_stride, dat8, dat_stride,
+                             bit_depth, flt1, width, flt2, width, exqd);
     if (besterr == -1 || err < besterr) {
       bestep = ep;
       besterr = err;
@@ -303,7 +336,7 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
         8,
 #endif  // CONFIG_AOM_HIGHBITDEPTH
         &rsi->sgrproj_info[tile_idx].ep, rsi->sgrproj_info[tile_idx].xqd,
-        cpi->extra_rstbuf, cm->rst_internal.tmpbuf);
+        cm->rst_internal.tmpbuf);
     rsi->sgrproj_info[tile_idx].level = 1;
     err = try_restoration_tile(src, cpi, rsi, 1, partial_frame, tile_idx, 0, 0,
                                dst_frame);
@@ -376,7 +409,7 @@ static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
                                             int height, int dgd_stride,
                                             uint8_t *src8, int src_stride,
                                             int bit_depth, int *sigma_r,
-                                            void *fltbuf, void *rstbuf) {
+                                            uint8_t *fltbuf, int32_t *tmpbuf) {
   const int first_p_step = 8;
   const int second_p_range = first_p_step >> 1;
   const int second_p_step = 2;
@@ -385,8 +418,7 @@ static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
   int p, best_p0, best_p = -1;
   int64_t best_sse = INT64_MAX, sse;
   if (bit_depth == 8) {
-    uint8_t *flt = (uint8_t *)fltbuf;
-    int32_t *tmpbuf = (int32_t *)rstbuf;
+    uint8_t *flt = fltbuf;
     uint8_t *dgd = dgd8;
     uint8_t *src = src8;
     // First phase
@@ -428,7 +460,6 @@ static void search_domaintxfmrf_restoration(uint8_t *dgd8, int width,
   } else {
 #if CONFIG_AOM_HIGHBITDEPTH
     uint16_t *flt = (uint16_t *)fltbuf;
-    int32_t *tmpbuf = (int32_t *)rstbuf;
     uint16_t *dgd = CONVERT_TO_SHORTPTR(dgd8);
     uint16_t *src = CONVERT_TO_SHORTPTR(src8);
     // First phase
