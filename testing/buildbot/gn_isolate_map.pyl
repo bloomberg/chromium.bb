@@ -460,10 +460,6 @@
     "executable": "gl_unittests",
     "args": ["--ozone-platform=x11"],
   },
-  "gn_all": {
-    "label": "//:gn_all",
-    "type": "additional_compile_target",
-  },
   "gn_unittests": {
     "label": "//tools/gn:gn_unittests",
     "type": "raw",
@@ -516,10 +512,6 @@
   "interactive_ui_tests": {
     "label": "//chrome/test:interactive_ui_tests",
     "type": "windowed_test_launcher",
-  },
-  "ios:all": {
-    "label": "//ios:all",
-    "type": "additional_compile_target",
   },
   "ios_chrome_unittests": {
     "label": "//ios/chrome/test:ios_chrome_unittests",

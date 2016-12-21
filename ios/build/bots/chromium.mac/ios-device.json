@@ -19,7 +19,7 @@
     "use_goma=true"
   ],
   "additional_compile_targets": [
-    "ios:all"
+    "all"
   ],
   "compiler": "ninja",
   "configuration": "Release",

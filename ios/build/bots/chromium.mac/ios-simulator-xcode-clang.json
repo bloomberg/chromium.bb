@@ -21,7 +21,7 @@
     "use_xcode_clang=true"
   ],
   "additional_compile_targets": [
-    "ios:all"
+    "all"
   ],
   "compiler": "ninja",
   "configuration": "Debug",

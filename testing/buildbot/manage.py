@@ -156,8 +156,6 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
   'next_version_mini_installer',
 
   # this is used at least on iOS
-  'gn_all',
-  'ios:all',
   'cronet_test',
 
   # These are listed in Builders that are skipped for other reasons.

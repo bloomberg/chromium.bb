@@ -15,7 +15,7 @@
     "use_goma=true"
   ],
   "additional_compile_targets": [
-    "ios:all"
+    "all"
   ],
   "use_goma_canary": true,
   "compiler": "ninja",
