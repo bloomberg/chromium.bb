@@ -87,9 +87,6 @@ class TestingPlatformMockScheduler : public WebScheduler {
   TestingPlatformMockScheduler();
   ~TestingPlatformMockScheduler() override;
 
-  void runSingleTask();
-  void runAllTasks();
-
   // WebScheduler implementation:
   WebTaskRunner* loadingTaskRunner() override { return nullptr; }
   WebTaskRunner* timerTaskRunner() override { return nullptr; }
