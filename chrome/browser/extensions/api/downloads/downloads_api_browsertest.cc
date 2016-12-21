@@ -17,8 +17,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_file_icon_extractor.h"
 #include "chrome/browser/download/download_service.h"
@@ -703,25 +703,29 @@ class HTML5FileWriter {
     }
     // Invoke the fileapi to copy it into the sandboxed filesystem.
     bool result = false;
-    base::RunLoop run_loop;
+    base::WaitableEvent done_event(
+        base::WaitableEvent::ResetPolicy::MANUAL,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&CreateFileForTestingOnIOThread, base::Unretained(context),
-                   path, temp_file, base::Unretained(&result),
-                   run_loop.QuitClosure()));
+        base::Bind(&CreateFileForTestingOnIOThread,
+                   base::Unretained(context),
+                   path, temp_file,
+                   base::Unretained(&result),
+                   base::Unretained(&done_event)));
     // Wait for that to finish.
-    run_loop.Run();
+    done_event.Wait();
     base::DeleteFile(temp_file, false);
     return result;
   }
 
  private:
   static void CopyInCompletion(bool* result,
-                               const base::Closure& quit_closure,
+                               base::WaitableEvent* done_event,
                                base::File::Error error) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     *result = error == base::File::FILE_OK;
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_closure);
+    done_event->Signal();
   }
 
   static void CreateFileForTestingOnIOThread(
@@ -729,11 +733,13 @@ class HTML5FileWriter {
       const storage::FileSystemURL& path,
       const base::FilePath& temp_file,
       bool* result,
-      const base::Closure& quit_closure) {
+      base::WaitableEvent* done_event) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     context->operation_runner()->CopyInForeignFile(
         temp_file, path,
-        base::Bind(&CopyInCompletion, base::Unretained(result), quit_closure));
+        base::Bind(&CopyInCompletion,
+                   base::Unretained(result),
+                   base::Unretained(done_event)));
   }
 };
 

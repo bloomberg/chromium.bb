@@ -46,9 +46,10 @@ PaymentAppContentUnitTestBase::PaymentAppContentUnitTestBase()
           new TestBrowserThreadBundle(TestBrowserThreadBundle::IO_MAINLOOP)),
       embedded_worker_helper_(new EmbeddedWorkerTestHelper(base::FilePath())),
       storage_partition_impl_(
-          new StoragePartitionImpl(embedded_worker_helper_->browser_context(),
-                                   base::FilePath(),
-                                   nullptr)),
+          new StoragePartitionImpl(
+              embedded_worker_helper_->browser_context(), base::FilePath(),
+              nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+              nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr)),
       payment_app_context_(new PaymentAppContextImpl()) {
   embedded_worker_helper_->context_wrapper()->set_storage_partition(
       storage_partition_impl_.get());

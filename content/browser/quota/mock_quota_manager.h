@@ -56,7 +56,7 @@ class MockQuotaManager : public QuotaManager {
   // a helper method MockQuotaManagerProxy::SetQuota().
   void GetUsageAndQuota(const GURL& origin,
                         storage::StorageType type,
-                        const UsageAndQuotaCallback& callback) override;
+                        const GetUsageAndQuotaCallback& callback) override;
 
   // Overrides QuotaManager's implementation with a canned implementation that
   // allows clients to set up the origin database that should be queried. This

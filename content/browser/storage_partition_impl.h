@@ -14,7 +14,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_sync/background_sync_context.h"
 #include "content/browser/broadcast_channel/broadcast_channel_provider.h"
@@ -165,9 +164,23 @@ class CONTENT_EXPORT  StoragePartitionImpl
       bool in_memory,
       const base::FilePath& relative_partition_path);
 
-  StoragePartitionImpl(BrowserContext* browser_context,
-                       const base::FilePath& partition_path,
-                       storage::SpecialStoragePolicy* special_storage_policy);
+  StoragePartitionImpl(
+      BrowserContext* browser_context,
+      const base::FilePath& partition_path,
+      storage::QuotaManager* quota_manager,
+      ChromeAppCacheService* appcache_service,
+      storage::FileSystemContext* filesystem_context,
+      storage::DatabaseTracker* database_tracker,
+      DOMStorageContextWrapper* dom_storage_context,
+      IndexedDBContextImpl* indexed_db_context,
+      CacheStorageContextImpl* cache_storage_context,
+      ServiceWorkerContextWrapper* service_worker_context,
+      storage::SpecialStoragePolicy* special_storage_policy,
+      HostZoomLevelContext* host_zoom_level_context,
+      PlatformNotificationContextImpl* platform_notification_context,
+      BackgroundSyncContext* background_sync_context,
+      PaymentAppContextImpl* payment_app_context,
+      scoped_refptr<BroadcastChannelProvider>broadcast_channel_provider);
 
   // We will never have both remove_origin be populated and a cookie_matcher.
   void ClearDataImpl(uint32_t remove_mask,
@@ -197,10 +210,6 @@ class CONTENT_EXPORT  StoragePartitionImpl
   void SetMediaURLRequestContext(
       net::URLRequestContextGetter* media_url_request_context);
 
-  // Function used by the quota system to ask the embedder for the
-  // storage configuration info.
-  void GetQuotaSettings(const storage::OptionalQuotaSettingsCallback& callback);
-
   base::FilePath partition_path_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_;
   scoped_refptr<net::URLRequestContextGetter> media_url_request_context_;
@@ -225,8 +234,6 @@ class CONTENT_EXPORT  StoragePartitionImpl
   // StoragePartitionImplMap which then owns StoragePartitionImpl. When the
   // BrowserContext is destroyed, |this| will be destroyed too.
   BrowserContext* browser_context_;
-
-  base::WeakPtrFactory<StoragePartitionImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(StoragePartitionImpl);
 };

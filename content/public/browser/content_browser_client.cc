@@ -6,7 +6,6 @@
 
 #include "base/files/file_path.h"
 #include "base/guid.h"
-#include "base/logging.h"
 #include "build/build_config.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/memory_coordinator_delegate.h"
@@ -233,12 +232,10 @@ QuotaPermissionContext* ContentBrowserClient::CreateQuotaPermissionContext() {
   return nullptr;
 }
 
-void ContentBrowserClient::GetQuotaSettings(
-    BrowserContext* context,
-    StoragePartition* partition,
-    const storage::OptionalQuotaSettingsCallback& callback) {
-  // By default, no quota is provided, embedders should override.
-  callback.Run(storage::GetNoQuotaSettings());
+std::unique_ptr<storage::QuotaEvictionPolicy>
+ContentBrowserClient::GetTemporaryStorageEvictionPolicy(
+    content::BrowserContext* context) {
+  return std::unique_ptr<storage::QuotaEvictionPolicy>();
 }
 
 void ContentBrowserClient::SelectClientCertificate(

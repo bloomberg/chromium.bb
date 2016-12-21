@@ -119,7 +119,9 @@ void LayoutTestMessageFilter::OnClearAllDatabases() {
 }
 
 void LayoutTestMessageFilter::OnSetDatabaseQuota(int quota) {
-  quota_manager_->SetQuotaSettings(storage::GetHardCodedSettings(quota));
+  quota_manager_->SetTemporaryGlobalOverrideQuota(
+      quota * storage::QuotaManager::kPerHostTemporaryPortion,
+      storage::QuotaCallback());
 }
 
 void LayoutTestMessageFilter::OnSimulateWebNotificationClick(

@@ -20,6 +20,10 @@ bool MockExtensionSpecialStoragePolicy::IsStorageSessionOnly(
   return false;
 }
 
+bool MockExtensionSpecialStoragePolicy::CanQueryDiskSize(const GURL& origin) {
+  return false;
+}
+
 bool MockExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {
   return false;
 }

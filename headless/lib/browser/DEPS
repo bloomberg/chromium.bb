@@ -1,5 +1,4 @@
 include_rules = [
   "+components/security_state",
-  "+storage/browser/quota",
   "+ui/aura",
 ]

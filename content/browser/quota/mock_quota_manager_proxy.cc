@@ -40,7 +40,7 @@ void MockQuotaManagerProxy::GetUsageAndQuota(
     base::SequencedTaskRunner* original_task_runner,
     const GURL& origin,
     StorageType type,
-    const QuotaManager::UsageAndQuotaCallback& callback) {
+    const QuotaManager::GetUsageAndQuotaCallback& callback) {
   if (mock_manager()) {
     mock_manager()->GetUsageAndQuota(origin, type, callback);
   }

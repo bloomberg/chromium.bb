@@ -114,6 +114,11 @@ bool ExtensionSpecialStoragePolicy::IsStorageSessionOnly(const GURL& origin) {
   return cookie_settings_->IsCookieSessionOnly(origin);
 }
 
+bool ExtensionSpecialStoragePolicy::CanQueryDiskSize(const GURL& origin) {
+  base::AutoLock locker(lock_);
+  return installed_apps_.Contains(origin);
+}
+
 bool ExtensionSpecialStoragePolicy::HasSessionOnlyOrigins() {
   if (cookie_settings_.get() == NULL)
     return false;
@@ -172,6 +177,9 @@ void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
       extension->is_app()) {
     if (NeedsProtection(extension) && protected_apps_.Add(extension))
       change_flags |= SpecialStoragePolicy::STORAGE_PROTECTED;
+    // FIXME: Does GrantRightsForExtension imply |extension| is installed?
+    if (extension->is_app())
+      installed_apps_.Add(extension);
 
     if (extension->permissions_data()->HasAPIPermission(
             APIPermission::kUnlimitedStorage) &&
@@ -217,6 +225,9 @@ void ExtensionSpecialStoragePolicy::RevokeRightsForExtension(
     if (NeedsProtection(extension) && protected_apps_.Remove(extension))
       change_flags |= SpecialStoragePolicy::STORAGE_PROTECTED;
 
+    if (extension->is_app())
+      installed_apps_.Remove(extension);
+
     if (extension->permissions_data()->HasAPIPermission(
             APIPermission::kUnlimitedStorage) &&
         unlimited_extensions_.Remove(extension))
@@ -240,6 +251,7 @@ void ExtensionSpecialStoragePolicy::RevokeRightsForAllExtensions() {
   {
     base::AutoLock locker(lock_);
     protected_apps_.Clear();
+    installed_apps_.Clear();
     unlimited_extensions_.Clear();
     file_handler_extensions_.Clear();
     isolated_extensions_.Clear();

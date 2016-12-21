@@ -14,7 +14,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_base.h"
-#include "storage/browser/quota/quota_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 
@@ -260,9 +259,6 @@ class InProcessBrowserTest : public content::BrowserTestBase {
   // True if the accessibility test should run for a particular test case.
   // This is reset for every test case.
   bool run_accessibility_checks_for_test_case_;
-
-  // We use hardcoded quota settings to have a consistent testing environment.
-  storage::QuotaSettings quota_settings_;
 
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool* autorelease_pool_;

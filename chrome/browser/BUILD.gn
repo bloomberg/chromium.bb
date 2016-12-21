@@ -352,6 +352,8 @@ split_static_library("browser") {
     "download/save_package_file_picker.h",
     "engagement/important_sites_util.cc",
     "engagement/important_sites_util.h",
+    "engagement/site_engagement_eviction_policy.cc",
+    "engagement/site_engagement_eviction_policy.h",
     "engagement/site_engagement_helper.cc",
     "engagement/site_engagement_helper.h",
     "engagement/site_engagement_metrics.cc",

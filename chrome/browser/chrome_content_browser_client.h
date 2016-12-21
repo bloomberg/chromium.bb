@@ -171,11 +171,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       const GURL& url,
       content::ResourceContext* context) override;
   content::QuotaPermissionContext* CreateQuotaPermissionContext() override;
-  void GetQuotaSettings(
-      content::BrowserContext* context,
-      content::StoragePartition* partition,
-      const storage::OptionalQuotaSettingsCallback& callback) override;
-
+  std::unique_ptr<storage::QuotaEvictionPolicy>
+  GetTemporaryStorageEvictionPolicy(content::BrowserContext* context) override;
   void AllowCertificateError(
       content::WebContents* web_contents,
       int cert_error,
@@ -330,7 +327,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
  private:
   friend class DisableWebRtcEncryptionFlagTest;
-  friend class InProcessBrowserTest;
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   // Copies disable WebRTC encryption switch depending on the channel.
@@ -360,11 +356,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       bool allowed_by_default,
       const base::Callback<void(bool)>& callback);
 #endif
-
-  // The value pointed to by |settings| should remain valid until the
-  // the function is called again with a new value or a nullptr.
-  static void SetDefaultQuotaSettingsForTesting(
-      const storage::QuotaSettings *settings);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Set of origins that can use TCP/UDP private APIs from NaCl.

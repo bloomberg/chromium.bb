@@ -136,7 +136,9 @@ class BackgroundSyncManagerTest : public testing::Test {
     // Create a StoragePartition with the correct BrowserContext so that the
     // BackgroundSyncManager can find the BrowserContext through it.
     storage_partition_impl_.reset(new StoragePartitionImpl(
-        helper_->browser_context(), base::FilePath(), nullptr));
+        helper_->browser_context(), base::FilePath(), nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr));
     helper_->context_wrapper()->set_storage_partition(
         storage_partition_impl_.get());
 

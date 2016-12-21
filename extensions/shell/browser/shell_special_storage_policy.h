@@ -20,6 +20,7 @@ class ShellSpecialStoragePolicy : public storage::SpecialStoragePolicy {
   bool IsStorageUnlimited(const GURL& origin) override;
   bool IsStorageDurable(const GURL& origin) override;
   bool IsStorageSessionOnly(const GURL& origin) override;
+  bool CanQueryDiskSize(const GURL& origin) override;
   bool HasIsolatedStorage(const GURL& origin) override;
   bool HasSessionOnlyOrigins() override;
 

@@ -70,7 +70,7 @@ class MockQuotaManagerProxy : public storage::QuotaManagerProxy {
   void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
                         const GURL& origin,
                         storage::StorageType type,
-                        const UsageAndQuotaCallback& callback) override {
+                        const GetUsageAndQuotaCallback& callback) override {
     callback.Run(storage::kQuotaStatusOk, usage_, quota_);
   }
 

@@ -68,8 +68,7 @@ class UsageMockQuotaManager : public QuotaManager {
                      base::FilePath(),
                      base::ThreadTaskRunnerHandle::Get().get(),
                      base::ThreadTaskRunnerHandle::Get().get(),
-                     special_storage_policy,
-                     storage::GetQuotaSettingsFunc()),
+                     special_storage_policy),
         callback_usage_(0),
         callback_quota_(0),
         callback_status_(kQuotaStatusOk),
@@ -89,7 +88,7 @@ class UsageMockQuotaManager : public QuotaManager {
   void GetUsageAndQuotaForWebApps(
       const GURL& origin,
       StorageType type,
-      const UsageAndQuotaCallback& callback) override {
+      const GetUsageAndQuotaCallback& callback) override {
     if (initialized_)
       callback.Run(callback_status_, callback_usage_, callback_quota_);
     else
@@ -104,7 +103,7 @@ class UsageMockQuotaManager : public QuotaManager {
   int64_t callback_quota_;
   QuotaStatusCode callback_status_;
   bool initialized_;
-  UsageAndQuotaCallback delayed_callback_;
+  GetUsageAndQuotaCallback delayed_callback_;
 };
 
 }  // namespace
@@ -650,8 +649,7 @@ class StorageMonitorIntegrationTest : public testing::Test {
     storage_policy_ = new MockSpecialStoragePolicy();
     quota_manager_ = new QuotaManager(
         false, data_dir_.GetPath(), base::ThreadTaskRunnerHandle::Get().get(),
-        base::ThreadTaskRunnerHandle::Get().get(), storage_policy_.get(),
-        storage::GetQuotaSettingsFunc());
+        base::ThreadTaskRunnerHandle::Get().get(), storage_policy_.get());
 
     client_ = new MockStorageClient(quota_manager_->proxy(),
                                     NULL,

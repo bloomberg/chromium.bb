@@ -277,13 +277,12 @@ class AppCacheStorageImplTest : public testing::Test {
                        base::FilePath(),
                        io_thread->task_runner().get(),
                        db_thread->task_runner().get(),
-                       nullptr,
-                       storage::GetQuotaSettingsFunc()),
+                       NULL),
           async_(false) {}
 
     void GetUsageAndQuota(const GURL& origin,
                           storage::StorageType type,
-                          const UsageAndQuotaCallback& callback) override {
+                          const GetUsageAndQuotaCallback& callback) override {
       EXPECT_EQ(storage::kStorageTypeTemporary, type);
       if (async_) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -294,7 +293,7 @@ class AppCacheStorageImplTest : public testing::Test {
       CallCallback(callback);
     }
 
-    void CallCallback(const UsageAndQuotaCallback& callback) {
+    void CallCallback(const GetUsageAndQuotaCallback& callback) {
       callback.Run(storage::kQuotaStatusOk, 0, kMockQuota);
     }
 
@@ -346,7 +345,7 @@ class AppCacheStorageImplTest : public testing::Test {
     void GetUsageAndQuota(base::SequencedTaskRunner* original_task_runner,
                           const GURL& origin,
                           storage::StorageType type,
-                          const UsageAndQuotaCallback& callback) override {}
+                          const GetUsageAndQuotaCallback& callback) override {}
 
     int notify_storage_accessed_count_;
     int notify_storage_modified_count_;

@@ -32,7 +32,6 @@
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
 #include "storage/browser/fileapi/file_system_context.h"
-#include "storage/browser/quota/quota_manager.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -101,6 +100,7 @@ class Origin;
 
 namespace storage {
 class FileSystemBackend;
+class QuotaEvictionPolicy;
 }
 
 namespace content {
@@ -127,7 +127,6 @@ class RenderViewHost;
 class ResourceContext;
 class SiteInstance;
 class SpeechRecognitionManagerDelegate;
-class StoragePartition;
 class TracingDelegate;
 class VpnServiceProxy;
 class WebContents;
@@ -463,13 +462,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Create and return a new quota permission context.
   virtual QuotaPermissionContext* CreateQuotaPermissionContext();
 
-  // Allows the embedder to provide settings that determine the amount
-  // of disk space that may be used by content facing storage apis like
-  // IndexedDatabase and ServiceWorker::CacheStorage and others.
-  virtual void GetQuotaSettings(
-      content::BrowserContext* context,
-      content::StoragePartition* partition,
-      const storage::OptionalQuotaSettingsCallback& callback);
+  // Gives the embedder a chance to register a custom QuotaEvictionPolicy for
+  // temporary storage.
+  virtual std::unique_ptr<storage::QuotaEvictionPolicy>
+  GetTemporaryStorageEvictionPolicy(BrowserContext* context);
 
   // Informs the embedder that a certificate error has occured.  If
   // |overridable| is true and if |strict_enforcement| is false, the user

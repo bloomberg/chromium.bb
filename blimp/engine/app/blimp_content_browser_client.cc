@@ -8,12 +8,9 @@
 #include "blimp/engine/app/settings_manager.h"
 #include "blimp/engine/grit/blimp_browser_resources.h"
 #include "blimp/engine/mojo/blob_channel_service.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
-#include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace blimp {
@@ -70,17 +67,6 @@ BlimpContentBrowserClient::GetServiceManifestOverlay(
   base::StringPiece manifest_contents =
       rb.GetRawDataResourceForScale(id, ui::ScaleFactor::SCALE_FACTOR_NONE);
   return base::JSONReader::Read(manifest_contents);
-}
-
-void BlimpContentBrowserClient::GetQuotaSettings(
-    content::BrowserContext* context,
-    content::StoragePartition* partition,
-    const storage::OptionalQuotaSettingsCallback& callback) {
-  content::BrowserThread::PostTaskAndReplyWithResult(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&storage::CalculateNominalDynamicSettings,
-                 partition->GetPath(), context->IsOffTheRecord()),
-      callback);
 }
 
 }  // namespace engine

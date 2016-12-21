@@ -22,7 +22,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/after_startup_task_utils.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -249,12 +248,6 @@ void InProcessBrowserTest::SetUp() {
 
   google_util::SetMockLinkDoctorBaseURLForTesting();
 
-  // Use hardcoded quota settings to have a consistent testing environment.
-  const int kQuota = 5 * 1024 * 1024;
-  quota_settings_ = storage::QuotaSettings(kQuota * 5, kQuota, 0);
-  ChromeContentBrowserClient::SetDefaultQuotaSettingsForTesting(
-      &quota_settings_);
-
   BrowserTestBase::SetUp();
 }
 
@@ -364,7 +357,6 @@ void InProcessBrowserTest::TearDown() {
 #endif
   BrowserTestBase::TearDown();
   OSCryptMocker::TearDown();
-  ChromeContentBrowserClient::SetDefaultQuotaSettingsForTesting(nullptr);
 }
 
 void InProcessBrowserTest::CloseBrowserSynchronously(Browser* browser) {
