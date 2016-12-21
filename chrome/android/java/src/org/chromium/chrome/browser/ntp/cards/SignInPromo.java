@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v7.widget.RecyclerView;
 
+import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
@@ -114,13 +115,15 @@ public class SignInPromo extends OptionalLeaf
     }
 
     /** Hides the sign in promo and sets a preference to make sure it is not shown again. */
-    public void dismiss() {
+    @Override
+    public void dismiss(Callback<String> itemRemovedCallback) {
         mDismissed = true;
         setVisible(false);
 
         ChromePreferenceManager.getInstance(ContextUtils.getApplicationContext())
                 .setNewTabPageSigninPromoDismissed(true);
         mObserver.unregister();
+        itemRemovedCallback.onResult(ContextUtils.getApplicationContext().getString(getHeader()));
     }
 
     @VisibleForTesting

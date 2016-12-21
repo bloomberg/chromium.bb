@@ -4,25 +4,19 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
-import android.annotation.SuppressLint;
-import android.graphics.Canvas;
-import android.support.annotation.StringRes;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.ViewHolder;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.chromium.base.Log;
+import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.UiConfig;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
-import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 
 /**
@@ -32,12 +26,9 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
  * elements will be the cards shown to the user
  */
 public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements NodeParent {
-    private static final String TAG = "Ntp";
-
     private final NewTabPageManager mNewTabPageManager;
     private final View mAboveTheFoldView;
     private final UiConfig mUiConfig;
-    private final ItemTouchCallbacks mItemTouchCallbacks = new ItemTouchCallbacks();
     private NewTabPageRecyclerView mRecyclerView;
 
     private final InnerNode mRoot;
@@ -48,66 +39,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
     private final AllDismissedItem mAllDismissed;
     private final Footer mFooter;
     private final SpacingItem mBottomSpacer = new SpacingItem();
-
-    private class ItemTouchCallbacks extends ItemTouchHelper.Callback {
-        @Override
-        public void onSwiped(ViewHolder viewHolder, int direction) {
-            mRecyclerView.onItemDismissStarted(viewHolder);
-            NewTabPageAdapter.this.dismissItem(viewHolder.getAdapterPosition());
-        }
-
-        @Override
-        public void clearView(RecyclerView recyclerView, ViewHolder viewHolder) {
-            // clearView() is called when an interaction with the item is finished, which does
-            // not mean that the user went all the way and dismissed the item before releasing it.
-            // We need to check that the item has been removed.
-            if (viewHolder.getAdapterPosition() == RecyclerView.NO_POSITION) {
-                mRecyclerView.onItemDismissFinished(viewHolder);
-            }
-
-            super.clearView(recyclerView, viewHolder);
-        }
-
-        @Override
-        public boolean onMove(RecyclerView recyclerView, ViewHolder viewHolder, ViewHolder target) {
-            assert false; // Drag and drop not supported, the method will never be called.
-            return false;
-        }
-
-        @Override
-        public int getMovementFlags(RecyclerView recyclerView, ViewHolder viewHolder) {
-            assert viewHolder instanceof NewTabPageViewHolder;
-
-            int swipeFlags = 0;
-            if (((NewTabPageViewHolder) viewHolder).isDismissable()) {
-                swipeFlags = ItemTouchHelper.START | ItemTouchHelper.END;
-            }
-
-            return makeMovementFlags(0 /* dragFlags */, swipeFlags);
-        }
-
-        @Override
-        public void onChildDraw(Canvas c, RecyclerView recyclerView, ViewHolder viewHolder,
-                float dX, float dY, int actionState, boolean isCurrentlyActive) {
-            assert viewHolder instanceof NewTabPageViewHolder;
-
-            // The item has already been removed. We have nothing more to do.
-            // In some cases a removed children may call this method when unrelated items are
-            // interacted with, but this check also covers the case.
-            // See https://crbug.com/664466, b/32900699
-            if (viewHolder.getAdapterPosition() == RecyclerView.NO_POSITION) return;
-
-            // We use our own implementation of the dismissal animation, so we don't call the
-            // parent implementation. (by default it changes the translation-X and elevation)
-            mRecyclerView.updateViewStateForDismiss(dX, (NewTabPageViewHolder) viewHolder);
-
-            // If there is another item that should be animated at the same time, do the same to it.
-            NewTabPageViewHolder siblingViewHolder = getDismissSibling(viewHolder);
-            if (siblingViewHolder != null) {
-                mRecyclerView.updateViewStateForDismiss(dX, siblingViewHolder);
-            }
-        }
-    }
 
     /**
      * Creates the adapter that will manage all the cards to display on the NTP.
@@ -137,11 +68,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
         updateAllDismissedVisibility();
         mRoot.setParent(this);
-    }
-
-    /** Returns callbacks to configure the interactions with the RecyclerView's items. */
-    public ItemTouchHelper.Callback getItemTouchCallbacks() {
-        return mItemTouchCallbacks;
     }
 
     @Override
@@ -271,59 +197,8 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
      * Dismisses the item at the provided adapter position. Can also cause the dismissal of other
      * items or even entire sections.
      */
-    // TODO(crbug.com/635567): Fix this properly.
-    @SuppressLint("SwitchIntDef")
-    public void dismissItem(int position) {
-        int itemViewType = getItemViewType(position);
-
-        // TODO(dgn): Polymorphism is supposed to allow to avoid that kind of stuff.
-        switch (itemViewType) {
-            case ItemViewType.STATUS:
-            case ItemViewType.ACTION:
-                dismissSection(position);
-                return;
-
-            case ItemViewType.SNIPPET:
-                dismissSuggestion(position);
-                return;
-
-            case ItemViewType.PROMO:
-                dismissPromo();
-                return;
-
-            default:
-                Log.wtf(TAG, "Unsupported dismissal of item of type %d", itemViewType);
-                return;
-        }
-    }
-
-    private void dismissSection(int position) {
-        SuggestionsSection section = getSuggestionsSection(position);
-        mSections.dismissSection(section);
-        announceItemRemoved(section.getHeaderText());
-    }
-
-    private void dismissSuggestion(int position) {
-        SnippetArticle suggestion = mRoot.getSuggestionAt(position);
-        SuggestionsSource suggestionsSource = mNewTabPageManager.getSuggestionsSource();
-        if (suggestionsSource == null) {
-            // It is possible for this method to be called after the NewTabPage has had destroy()
-            // called. This can happen when NewTabPageRecyclerView.dismissWithAnimation() is called
-            // and the animation ends after the user has navigated away. In this case we cannot
-            // inform the native side that the snippet has been dismissed (http://crbug.com/649299).
-            return;
-        }
-
-        announceItemRemoved(suggestion.mTitle);
-
-        suggestionsSource.dismissSuggestion(suggestion);
-        SuggestionsSection section = getSuggestionsSection(position);
-        section.removeSuggestion(suggestion);
-    }
-
-    private void dismissPromo() {
-        announceItemRemoved(mSigninPromo.getHeader());
-        mSigninPromo.dismiss();
+    public void dismissItem(int position, Callback<String> itemRemovedCallback) {
+        mRoot.dismissItem(position, itemRemovedCallback);
     }
 
     /**
@@ -340,19 +215,6 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
     private boolean hasAllBeenDismissed() {
         return mSections.isEmpty() && !mSigninPromo.isVisible();
-    }
-
-    /**
-     * @param itemPosition The position of an item in the adapter.
-     * @return Returns the {@link SuggestionsSection} that contains the item at
-     *     {@code itemPosition}, or null if the item is not part of one.
-     */
-    private SuggestionsSection getSuggestionsSection(int itemPosition) {
-        int relativePosition = itemPosition - mRoot.getStartingOffsetForChild(mSections);
-        assert relativePosition >= 0;
-        TreeNode child = mSections.getChildForPosition(relativePosition);
-        if (!(child instanceof SuggestionsSection)) return null;
-        return (SuggestionsSection) child;
     }
 
     private int getChildPositionOffset(TreeNode child) {
@@ -379,20 +241,5 @@ public class NewTabPageAdapter extends Adapter<NewTabPageViewHolder> implements 
 
     InnerNode getRootForTesting() {
         return mRoot;
-    }
-
-    private void announceItemRemoved(String itemTitle) {
-        // In tests the RecyclerView can be null.
-        if (mRecyclerView == null) return;
-
-        mRecyclerView.announceForAccessibility(mRecyclerView.getResources().getString(
-                R.string.ntp_accessibility_item_removed, itemTitle));
-    }
-
-    private void announceItemRemoved(@StringRes int stringToAnnounce) {
-        // In tests the RecyclerView can be null.
-        if (mRecyclerView == null) return;
-
-        announceItemRemoved(mRecyclerView.getResources().getString(stringToAnnounce));
     }
 }

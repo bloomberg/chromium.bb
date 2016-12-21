@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
 /**
@@ -35,6 +36,11 @@ public abstract class Leaf extends ChildNode {
         if (position != 0) throw new IndexOutOfBoundsException();
 
         return null;
+    }
+
+    @Override
+    public void dismissItem(int position, Callback<String> itemRemovedCallback) {
+        assert false;
     }
 
     @Override

@@ -10,6 +10,7 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -25,6 +26,7 @@ import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.registerCategory;
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.viewTypeToString;
 
+import android.content.res.Resources;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.AdapterDataObserver;
 
@@ -38,10 +40,16 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Implementation;
+import org.robolectric.annotation.Implements;
+import org.robolectric.shadows.ShadowResources;
 
+import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.EnableFeatures;
 import org.chromium.chrome.browser.ntp.NewTabPage.DestructionObserver;
@@ -162,6 +170,8 @@ public class NewTabPageAdapterTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+
+        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
 
         // Initialise the sign in state. We will be signed in by default in the tests.
         assertFalse(ChromePreferenceManager.getInstance(RuntimeEnvironment.application)
@@ -412,9 +422,9 @@ public class NewTabPageAdapterTest {
         SuggestionsSection section42 =
                 mAdapter.getSectionListForTesting().getSectionForTesting(category);
         assertSectionMatches(section(3), section42);
-        section42.removeSuggestion(articles.get(0));
-        section42.removeSuggestion(articles.get(1));
-        section42.removeSuggestion(articles.get(2));
+        section42.removeSuggestionById(articles.get(0).mIdWithinCategory);
+        section42.removeSuggestionById(articles.get(1).mIdWithinCategory);
+        section42.removeSuggestionById(articles.get(2).mIdWithinCategory);
         assertItemsFor(sectionWithStatusCard());
 
         // Part 2: VisibleIfEmpty = false
@@ -467,9 +477,9 @@ public class NewTabPageAdapterTest {
         SuggestionsSection section42 =
                 mAdapter.getSectionListForTesting().getSectionForTesting(category);
         assertSectionMatches(section(3).withActionButton(), section42);
-        section42.removeSuggestion(articles.get(0));
-        section42.removeSuggestion(articles.get(1));
-        section42.removeSuggestion(articles.get(2));
+        section42.removeSuggestionById(articles.get(0).mIdWithinCategory);
+        section42.removeSuggestionById(articles.get(1).mIdWithinCategory);
+        section42.removeSuggestionById(articles.get(2).mIdWithinCategory);
         assertItemsFor(sectionWithStatusCard().withActionButton());
 
         // Part 1: Without "View All" action
@@ -491,9 +501,9 @@ public class NewTabPageAdapterTest {
         // 2.3 - When all suggestions are dismissed.
         section42 = mAdapter.getSectionListForTesting().getSectionForTesting(category);
         assertSectionMatches(section(3), section42);
-        section42.removeSuggestion(articles.get(0));
-        section42.removeSuggestion(articles.get(1));
-        section42.removeSuggestion(articles.get(2));
+        section42.removeSuggestionById(articles.get(0).mIdWithinCategory);
+        section42.removeSuggestionById(articles.get(1).mIdWithinCategory);
+        section42.removeSuggestionById(articles.get(2).mIdWithinCategory);
         assertItemsFor(sectionWithStatusCard());
     }
 
@@ -620,6 +630,9 @@ public class NewTabPageAdapterTest {
         registerCategory(suggestionsSource, KnownCategories.ARTICLES, 3);
         when(mNewTabPageManager.getSuggestionsSource()).thenReturn(suggestionsSource);
 
+        @SuppressWarnings("unchecked")
+        Callback<String> itemDismissedCallback = mock(Callback.class);
+
         reloadNtp();
         AdapterDataObserver dataObserver = mock(AdapterDataObserver.class);
         mAdapter.registerAdapterDataObserver(dataObserver);
@@ -633,19 +646,23 @@ public class NewTabPageAdapterTest {
         // 5   | Footer
         // 6   | Spacer
 
-        mAdapter.dismissItem(3); // Dismiss the second suggestion of the second section.
+        // Dismiss the second suggestion of the second section.
+        mAdapter.dismissItem(3, itemDismissedCallback);
+        verify(itemDismissedCallback).onResult(anyString());
         verify(dataObserver).onItemRangeRemoved(3, 1);
         verify(dataObserver).onItemRangeChanged(5, 1, null);
 
         // Make sure the call with the updated position works properly.
-        mAdapter.dismissItem(3);
+        mAdapter.dismissItem(3, itemDismissedCallback);
+        verify(itemDismissedCallback, times(2)).onResult(anyString());
         verify(dataObserver, times(2)).onItemRangeRemoved(3, 1);
         verify(dataObserver).onItemRangeChanged(4, 1, null);
         verifyNoMoreInteractions(dataObserver);
 
         // Dismiss the last suggestion in the section. We should now show the status card.
         reset(dataObserver);
-        mAdapter.dismissItem(2);
+        mAdapter.dismissItem(2, itemDismissedCallback);
+        verify(itemDismissedCallback, times(3)).onResult(anyString());
         verify(dataObserver).onItemRangeRemoved(2, 1); // Suggestion removed
         verify(dataObserver).onItemRangeChanged(3, 1, null); // Spacer refresh
         verify(dataObserver).onItemRangeInserted(2, 1); // Status card added
@@ -743,7 +760,12 @@ public class NewTabPageAdapterTest {
 
     @Test
     @Feature({"Ntp"})
+    @Config(shadows = MyShadowResources.class)
     public void testSigninPromoDismissal() {
+        final String signInPromoText = "sign in";
+        when(MyShadowResources.sResources.getText(R.string.snippets_disabled_generic_prompt))
+                .thenReturn(signInPromoText);
+
         when(mMockSigninManager.isSignInAllowed()).thenReturn(true);
         when(mMockSigninManager.isSignedInOnNative()).thenReturn(false);
         ChromePreferenceManager.getInstance(RuntimeEnvironment.application)
@@ -752,8 +774,11 @@ public class NewTabPageAdapterTest {
 
         final int signInPromoPosition = mAdapter.getFirstPositionForType(ItemViewType.PROMO);
         assertNotEquals(RecyclerView.NO_POSITION, signInPromoPosition);
-        mAdapter.dismissItem(signInPromoPosition);
+        @SuppressWarnings("unchecked")
+        Callback<String> itemDismissedCallback = mock(Callback.class);
+        mAdapter.dismissItem(signInPromoPosition, itemDismissedCallback);
 
+        verify(itemDismissedCallback).onResult(anyString());
         assertFalse(isSignInPromoVisible());
         assertTrue(ChromePreferenceManager.getInstance(RuntimeEnvironment.application)
                            .getNewTabPageSigninPromoDismissed());
@@ -778,6 +803,9 @@ public class NewTabPageAdapterTest {
             }
         }
 
+        @SuppressWarnings("unchecked")
+        Callback<String> itemDismissedCallback = mock(Callback.class);
+
         // By default, there is no All Dismissed item.
         // Adapter content:
         // Idx | Item
@@ -793,7 +821,10 @@ public class NewTabPageAdapterTest {
                 mAdapter.getFirstPositionForType(ItemViewType.ALL_DISMISSED));
 
         // When we remove the section, the All Dismissed item should be there.
-        mAdapter.dismissItem(2);
+        mAdapter.dismissItem(2, itemDismissedCallback);
+
+        verify(itemDismissedCallback).onResult(anyString());
+
         // Adapter content:
         // Idx | Item
         // ----|--------------------
@@ -869,6 +900,20 @@ public class NewTabPageAdapterTest {
         assertEquals(3, mAdapter.getFirstPositionForType(ItemViewType.FOOTER));
         assertEquals(RecyclerView.NO_POSITION,
                 mAdapter.getFirstPositionForType(ItemViewType.ALL_DISMISSED));
+    }
+
+    /**
+     * Robolectric shadow to mock out calls to {@link Resources#getString}.
+     */
+    @Implements(Resources.class)
+    public static class MyShadowResources extends ShadowResources {
+        public static final Resources sResources = mock(Resources.class);
+
+        @Override
+        @Implementation
+        public CharSequence getText(int id) {
+            return sResources.getText(id);
+        }
     }
 
     /**

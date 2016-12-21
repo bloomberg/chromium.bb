@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
 /**
@@ -48,6 +49,14 @@ interface TreeNode {
      * an article.
      */
     SnippetArticle getSuggestionAt(int position);
+
+    /**
+     * Dismiss the item at the given {@code position}.
+     * @param position The position of the item to be dismissed.
+     * @param itemRemovedCallback Should be called with the title of the dismissed item, to announce
+     * it for accessibility purposes.
+     */
+    public void dismissItem(int position, Callback<String> itemRemovedCallback);
 
     /**
      * The dismiss sibling is an item that should be dismissed at the same time as the provided

@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.ntp.snippets.SectionHeader;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
+import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.ClientId;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
@@ -30,6 +31,7 @@ import java.util.List;
 public class SuggestionsSection extends InnerNode {
     private static final String TAG = "NtpCards";
 
+    private final Delegate mDelegate;
     private final SuggestionsCategoryInfo mCategoryInfo;
     private final OfflinePageBridge mOfflinePageBridge;
 
@@ -42,13 +44,22 @@ public class SuggestionsSection extends InnerNode {
 
     private boolean mIsNtpDestroyed;
 
-    public SuggestionsSection(NewTabPageManager manager, OfflinePageBridge offlinePageBridge,
-            SuggestionsCategoryInfo info) {
+    /**
+     * Delegate interface that allows dismissing this section without introducing
+     * a circular dependency.
+     */
+    public interface Delegate {
+        void dismissSection(SuggestionsSection section);
+    }
+
+    public SuggestionsSection(Delegate delegate, NewTabPageManager manager,
+            OfflinePageBridge offlinePageBridge, SuggestionsCategoryInfo info) {
+        mDelegate = delegate;
         mCategoryInfo = info;
         mOfflinePageBridge = offlinePageBridge;
 
         mHeader = new SectionHeader(info.getTitle());
-        mSuggestionsList = new SuggestionsList(info);
+        mSuggestionsList = new SuggestionsList(manager, info);
         mStatus = StatusItem.createNoSuggestionsItem(info);
         mMoreButton = new ActionItem(this);
         mProgressIndicator = new ProgressItem();
@@ -60,9 +71,12 @@ public class SuggestionsSection extends InnerNode {
 
     private static class SuggestionsList extends ChildNode implements Iterable<SnippetArticle> {
         private final List<SnippetArticle> mSuggestions = new ArrayList<>();
+        private final NewTabPageManager mNewTabPageManager;
         private final SuggestionsCategoryInfo mCategoryInfo;
 
-        public SuggestionsList(SuggestionsCategoryInfo categoryInfo) {
+        public SuggestionsList(NewTabPageManager newTabPageManager,
+                SuggestionsCategoryInfo categoryInfo) {
+            mNewTabPageManager = newTabPageManager;
             mCategoryInfo = categoryInfo;
         }
 
@@ -74,11 +88,13 @@ public class SuggestionsSection extends InnerNode {
         @Override
         @ItemViewType
         public int getItemViewType(int position) {
+            checkIndex(position);
             return ItemViewType.SNIPPET;
         }
 
         @Override
         public void onBindViewHolder(NewTabPageViewHolder holder, int position) {
+            checkIndex(position);
             assert holder instanceof SnippetArticleViewHolder;
             ((SnippetArticleViewHolder) holder)
                     .onBindViewHolder(getSuggestionAt(position), mCategoryInfo);
@@ -91,15 +107,8 @@ public class SuggestionsSection extends InnerNode {
 
         @Override
         public int getDismissSiblingPosDelta(int position) {
+            checkIndex(position);
             return 0;
-        }
-
-        public void remove(SnippetArticle suggestion) {
-            int removedIndex = mSuggestions.indexOf(suggestion);
-            if (removedIndex == -1) throw new IndexOutOfBoundsException();
-
-            mSuggestions.remove(removedIndex);
-            notifyItemRemoved(removedIndex);
         }
 
         public void clear() {
@@ -118,9 +127,33 @@ public class SuggestionsSection extends InnerNode {
             notifyItemRangeInserted(insertionPointIndex, suggestions.size());
         }
 
+        public SnippetArticle remove(int position) {
+            SnippetArticle suggestion = mSuggestions.remove(position);
+            notifyItemRemoved(position);
+            return suggestion;
+        }
+
         @Override
         public Iterator<SnippetArticle> iterator() {
             return mSuggestions.iterator();
+        }
+
+        @Override
+        public void dismissItem(int position, Callback<String> itemRemovedCallback) {
+            checkIndex(position);
+            SuggestionsSource suggestionsSource = mNewTabPageManager.getSuggestionsSource();
+            if (suggestionsSource == null) {
+                // It is possible for this method to be called after the NewTabPage has had
+                // destroy() called. This can happen when
+                // NewTabPageRecyclerView.dismissWithAnimation() is called and the animation ends
+                // after the user has navigated away. In this case we cannot inform the native side
+                // that the snippet has been dismissed (http://crbug.com/649299).
+                return;
+            }
+
+            SnippetArticle suggestion = remove(position);
+            suggestionsSource.dismissSuggestion(suggestion);
+            itemRemovedCallback.onResult(suggestion.mTitle);
         }
     }
 
@@ -168,17 +201,35 @@ public class SuggestionsSection extends InnerNode {
         mMoreButton.refreshVisibility();
     }
 
-    public void removeSuggestion(SnippetArticle suggestion) {
-        mSuggestionsList.remove(suggestion);
-        refreshChildrenVisibility();
+    @Override
+    public void dismissItem(int position, Callback<String> itemRemovedCallback) {
+        if (!hasSuggestions()) {
+            mDelegate.dismissSection(this);
+            itemRemovedCallback.onResult(getHeaderText());
+            return;
+        }
+
+        super.dismissItem(position, itemRemovedCallback);
     }
 
+    @Override
+    public void onItemRangeRemoved(TreeNode child, int index, int count) {
+        super.onItemRangeRemoved(child, index, count);
+        if (child == mSuggestionsList) refreshChildrenVisibility();
+    }
+
+    /**
+     * Removes a suggestion. Does nothing if the ID is unknown.
+     * @param idWithinCategory The ID of the suggestion to remove.
+     */
     public void removeSuggestionById(String idWithinCategory) {
+        int i = 0;
         for (SnippetArticle suggestion : mSuggestionsList) {
             if (suggestion.mIdWithinCategory.equals(idWithinCategory)) {
-                removeSuggestion(suggestion);
+                mSuggestionsList.remove(i);
                 return;
             }
+            i++;
         }
     }
 

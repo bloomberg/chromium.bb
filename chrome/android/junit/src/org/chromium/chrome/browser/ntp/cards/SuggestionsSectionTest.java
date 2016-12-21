@@ -29,7 +29,10 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.Callback;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.EnableFeatures;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.ntp.cards.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus;
@@ -47,8 +50,10 @@ import java.util.List;
 @RunWith(LocalRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class SuggestionsSectionTest {
-
-    @Mock private NodeParent mParent;
+    @Mock
+    private SuggestionsSection.Delegate mDelegate;
+    @Mock
+    private NodeParent mParent;
     @Mock private NewTabPageManager mManager;
     private FakeOfflinePageBridge mBridge;
 
@@ -92,6 +97,7 @@ public class SuggestionsSectionTest {
         reset(mParent);
 
         assertEquals(2, section.getItemCount()); // When empty, we have the header and status card.
+        assertEquals(ItemViewType.STATUS, section.getItemViewType(1));
 
         section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
         verify(mParent).onItemRangeInserted(section, 1, suggestionCount);
@@ -128,12 +134,12 @@ public class SuggestionsSectionTest {
         verifyNoMoreInteractions(mParent);
     }
 
-    @Test(expected = IndexOutOfBoundsException.class)
+    @Test
     @Feature({"Ntp"})
     public void testRemoveUnknownSuggestion() {
         SuggestionsSection section = createSectionWithReloadAction(false);
         section.setStatus(CategoryStatus.AVAILABLE);
-        section.removeSuggestion(createDummySuggestions(1).get(0));
+        section.removeSuggestionById("foobar");
     }
 
     @Test
@@ -148,12 +154,15 @@ public class SuggestionsSectionTest {
 
         section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
 
-        section.removeSuggestion(snippets.get(1));
+        section.removeSuggestionById(snippets.get(1).mIdWithinCategory);
         verify(mParent).onItemRangeRemoved(section, 2, 1);
 
-        section.removeSuggestion(snippets.get(0));
+        section.removeSuggestionById(snippets.get(0).mIdWithinCategory);
         verify(mParent).onItemRangeRemoved(section, 1, 1);
         verify(mParent).onItemRangeInserted(section, 1, 1);
+
+        assertEquals(2, section.getItemCount());
+        assertEquals(ItemViewType.STATUS, section.getItemViewType(1));
     }
 
     @Test
@@ -174,13 +183,33 @@ public class SuggestionsSectionTest {
         assertEquals(3, section.getItemCount()); // We have the header and status card and a button.
 
         section.addSuggestions(snippets, CategoryStatus.AVAILABLE);
+        assertEquals(4, section.getItemCount());
 
-        section.removeSuggestion(snippets.get(0));
+        section.removeSuggestionById(snippets.get(0).mIdWithinCategory);
         verify(mParent).onItemRangeRemoved(section, 1, 1);
 
-        section.removeSuggestion(snippets.get(1));
+        section.removeSuggestionById(snippets.get(1).mIdWithinCategory);
         verify(mParent, times(2)).onItemRangeRemoved(section, 1, 1);
         verify(mParent).onItemRangeInserted(section, 1, 1); // Only the status card is added.
+        assertEquals(3, section.getItemCount());
+        assertEquals(ItemViewType.STATUS, section.getItemViewType(1));
+        assertEquals(ItemViewType.ACTION, section.getItemViewType(2));
+    }
+
+    @Test
+    @Feature({"Ntp"})
+    @EnableFeatures({ChromeFeatureList.NTP_SUGGESTIONS_SECTION_DISMISSAL})
+    public void testDismissSection() {
+        SuggestionsSection section = createSectionWithReloadAction(false);
+        section.setStatus(CategoryStatus.AVAILABLE);
+        reset(mParent);
+        assertEquals(2, section.getItemCount());
+
+        @SuppressWarnings("unchecked")
+        Callback<String> callback = mock(Callback.class);
+        section.dismissItem(1, callback);
+        verify(mDelegate).dismissSection(section);
+        verify(callback).onResult(section.getHeaderText());
     }
 
     @Test
@@ -347,7 +376,7 @@ public class SuggestionsSectionTest {
     }
 
     private SuggestionsSection createSection(SuggestionsCategoryInfo info) {
-        SuggestionsSection section = new SuggestionsSection(mManager, mBridge, info);
+        SuggestionsSection section = new SuggestionsSection(mDelegate, mManager, mBridge, info);
         section.setParent(mParent);
         return section;
     }

@@ -24,7 +24,8 @@ import java.util.Map;
  * A node in the tree containing a list of all suggestions sections. It listens to changes in the
  * suggestions source and updates the corresponding sections.
  */
-public class SectionList extends InnerNode implements SuggestionsSource.Observer {
+public class SectionList
+        extends InnerNode implements SuggestionsSource.Observer, SuggestionsSection.Delegate {
     private static final String TAG = "Ntp";
 
     /** Maps suggestion categories to sections, with stable iteration ordering. */
@@ -91,7 +92,7 @@ public class SectionList extends InnerNode implements SuggestionsSource.Observer
 
         // Create the section if needed.
         if (section == null) {
-            section = new SuggestionsSection(mNewTabPageManager, mOfflinePageBridge, info);
+            section = new SuggestionsSection(this, mNewTabPageManager, mOfflinePageBridge, info);
             mSections.put(category, section);
             addChild(section);
         }
@@ -207,6 +208,7 @@ public class SectionList extends InnerNode implements SuggestionsSource.Observer
      * Dismisses a section.
      * @param section The section to be dismissed.
      */
+    @Override
     public void dismissSection(SuggestionsSection section) {
         assert SnippetsConfig.isSectionDismissalEnabled();
 

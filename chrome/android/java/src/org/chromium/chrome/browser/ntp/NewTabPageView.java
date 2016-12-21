@@ -22,7 +22,6 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.AdapterDataObserver;
 import android.support.v7.widget.RecyclerView.ViewHolder;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -402,10 +401,7 @@ public class NewTabPageView extends FrameLayout
             mRecyclerView.getLinearLayoutManager().scrollToPositionWithOffset(
                     scrollPosition, scrollOffset);
 
-            // Set up swipe-to-dismiss
-            ItemTouchHelper helper =
-                    new ItemTouchHelper(mNewTabPageAdapter.getItemTouchCallbacks());
-            helper.attachToRecyclerView(mRecyclerView);
+            mRecyclerView.setUpSwipeToDismiss();
 
             initializeSearchBoxRecyclerViewScrollHandling();
 

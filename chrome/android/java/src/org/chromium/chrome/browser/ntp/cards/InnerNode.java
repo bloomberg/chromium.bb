@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp.cards;
 
+import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
@@ -17,16 +18,16 @@ public class InnerNode extends ChildNode implements NodeParent {
     private final List<TreeNode> mChildren = new ArrayList<>();
 
     private int getChildIndexForPosition(int position) {
-        if (position < 0) {
-            throw new IndexOutOfBoundsException(Integer.toString(position));
-        }
+        checkIndex(position);
         int numItems = 0;
         int numChildren = mChildren.size();
         for (int i = 0; i < numChildren; i++) {
             numItems += mChildren.get(i).getItemCount();
             if (position < numItems) return i;
         }
-        throw new IndexOutOfBoundsException(position + "/" + numItems);
+        // checkIndex() will have caught this case already.
+        assert false;
+        return -1;
     }
 
     private int getStartingOffsetForChildIndex(int childIndex) {
@@ -81,6 +82,13 @@ public class InnerNode extends ChildNode implements NodeParent {
         int index = getChildIndexForPosition(position);
         return mChildren.get(index).getSuggestionAt(
                 position - getStartingOffsetForChildIndex(index));
+    }
+
+    @Override
+    public void dismissItem(int position, Callback<String> itemRemovedCallback) {
+        int index = getChildIndexForPosition(position);
+        getChildren().get(index).dismissItem(
+                position - getStartingOffsetForChildIndex(index), itemRemovedCallback);
     }
 
     @Override

@@ -45,4 +45,10 @@ public abstract class ChildNode implements TreeNode {
     protected void notifyItemRemoved(int index) {
         notifyItemRangeRemoved(index, 1);
     }
+
+    protected void checkIndex(int position) {
+        if (position < 0 || position >= getItemCount()) {
+            throw new IndexOutOfBoundsException(position + "/" + getItemCount());
+        }
+    }
 }
