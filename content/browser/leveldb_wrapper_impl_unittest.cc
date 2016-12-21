@@ -4,10 +4,10 @@
 
 #include "content/browser/leveldb_wrapper_impl.h"
 
-#include "base/debug/stack_trace.h"
-
+#include "base/run_loop.h"
 #include "components/leveldb/public/cpp/util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using leveldb::StdStringToUint8Vector;
@@ -38,6 +38,17 @@ bool StartsWith(const std::vector<uint8_t>& key,
                 const std::vector<uint8_t>& prefix) {
   return base::StartsWith(AsStringPiece(key), AsStringPiece(prefix),
                           base::CompareCase::SENSITIVE);
+}
+
+std::vector<uint8_t> successor(std::vector<uint8_t> data) {
+  for (unsigned i = data.size(); i > 0; --i) {
+    if (data[i - 1] < 255) {
+      data[i - 1]++;
+      return data;
+    }
+  }
+  NOTREACHED();
+  return data;
 }
 
 class MockLevelDBDatabase : public leveldb::mojom::LevelDBDatabase {
@@ -73,7 +84,8 @@ class MockLevelDBDatabase : public leveldb::mojom::LevelDBDatabase {
           mock_data_.erase(op->key);
           break;
         case leveldb::mojom::BatchOperationType::DELETE_PREFIXED_KEY:
-          FAIL();
+          mock_data_.erase(mock_data_.lower_bound(op->key),
+                           mock_data_.lower_bound(successor(op->key)));
           break;
       }
     }
@@ -153,37 +165,36 @@ class MockLevelDBDatabase : public leveldb::mojom::LevelDBDatabase {
 
 void NoOp() {}
 
-void GetCallback(bool* called,
+void GetCallback(const base::Closure& callback,
                  bool* success_out,
                  std::vector<uint8_t>* value_out,
                  bool success,
                  const std::vector<uint8_t>& value) {
-  *called = true;
   *success_out = success;
   *value_out = value;
+  callback.Run();
 }
 
-void GetAllCallback(bool* called,
-                    leveldb::mojom::DatabaseError* status_out,
-                    std::vector<mojom::KeyValuePtr>* data_out,
-                    leveldb::mojom::DatabaseError status,
-                    std::vector<mojom::KeyValuePtr> data) {
-  *called = true;
-  *status_out = status;
-  *data_out = std::move(data);
-}
-
-void SuccessCallback(bool* called, bool* success_out, bool success) {
-  *called = true;
+void SuccessCallback(const base::Closure& callback,
+                     bool* success_out,
+                     bool success) {
   *success_out = success;
+  callback.Run();
 }
-
-void NoOpSuccess(bool success) {}
 
 }  // namespace
 
-class LevelDBWrapperImplTest : public testing::Test {
+class LevelDBWrapperImplTest : public testing::Test,
+                               public mojom::LevelDBObserver {
  public:
+  struct Observation {
+    enum { kAdd, kChange, kDelete, kDeleteAll } type;
+    std::string key;
+    std::string old_value;
+    std::string new_value;
+    std::string source;
+  };
+
   LevelDBWrapperImplTest()
       : db_(&mock_data_),
         level_db_wrapper_(&db_,
@@ -192,14 +203,25 @@ class LevelDBWrapperImplTest : public testing::Test {
                           base::TimeDelta::FromSeconds(5),
                           10 * 1024 * 1024 /* max_bytes_per_hour */,
                           60 /* max_commits_per_hour */,
-                          base::Bind(&NoOp)) {
+                          base::Bind(&NoOp)),
+        observer_binding_(this) {
     set_mock_data(std::string(kTestPrefix) + "def", "defdata");
     set_mock_data(std::string(kTestPrefix) + "123", "123data");
     set_mock_data("123", "baddata");
+
+    level_db_wrapper_.Bind(mojo::MakeRequest(&level_db_wrapper_ptr_));
+    mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
+    observer_binding_.Bind(&ptr_info, level_db_wrapper_ptr_.associated_group());
+    level_db_wrapper_ptr_->AddObserver(std::move(ptr_info));
   }
 
   void set_mock_data(const std::string& key, const std::string& value) {
     mock_data_[StdStringToUint8Vector(key)] = StdStringToUint8Vector(value);
+  }
+
+  void set_mock_data(const std::vector<uint8_t>& key,
+                     const std::vector<uint8_t>& value) {
+    mock_data_[key] = value;
   }
 
   bool has_mock_data(const std::string& key) {
@@ -212,53 +234,108 @@ class LevelDBWrapperImplTest : public testing::Test {
                : "";
   }
 
-  mojom::LevelDBWrapper* wrapper() { return &level_db_wrapper_; }
+  mojom::LevelDBWrapper* wrapper() { return level_db_wrapper_ptr_.get(); }
+
+  bool GetSync(const std::vector<uint8_t>& key, std::vector<uint8_t>* result) {
+    base::RunLoop run_loop;
+    bool success = false;
+    wrapper()->Get(key, base::Bind(&GetCallback, run_loop.QuitClosure(),
+                                   &success, result));
+    run_loop.Run();
+    return success;
+  }
+
+  bool PutSync(const std::vector<uint8_t>& key,
+               const std::vector<uint8_t>& value,
+               std::string source = kTestSource) {
+    base::RunLoop run_loop;
+    bool success = false;
+    wrapper()->Put(
+        key, value, source,
+        base::Bind(&SuccessCallback, run_loop.QuitClosure(), &success));
+    run_loop.Run();
+    return success;
+  }
+
+  bool DeleteSync(const std::vector<uint8_t>& key) {
+    base::RunLoop run_loop;
+    bool success = false;
+    wrapper()->Delete(
+        key, kTestSource,
+        base::Bind(&SuccessCallback, run_loop.QuitClosure(), &success));
+    run_loop.Run();
+    return success;
+  }
+
+  bool DeleteAllSync() {
+    base::RunLoop run_loop;
+    bool success = false;
+    wrapper()->DeleteAll(
+        kTestSource,
+        base::Bind(&SuccessCallback, run_loop.QuitClosure(), &success));
+    run_loop.Run();
+    return success;
+  }
 
   void CommitChanges() {
     ASSERT_TRUE(level_db_wrapper_.commit_batch_);
     level_db_wrapper_.CommitChanges();
   }
 
+  const std::vector<Observation>& observations() { return observations_; }
+
  private:
+  // LevelDBObserver:
+  void KeyAdded(const std::vector<uint8_t>& key,
+                const std::vector<uint8_t>& value,
+                const std::string& source) override {
+    observations_.push_back({Observation::kAdd, Uint8VectorToStdString(key), "",
+                             Uint8VectorToStdString(value), source});
+  }
+  void KeyChanged(const std::vector<uint8_t>& key,
+                  const std::vector<uint8_t>& new_value,
+                  const std::vector<uint8_t>& old_value,
+                  const std::string& source) override {
+    observations_.push_back({Observation::kChange, Uint8VectorToStdString(key),
+                             Uint8VectorToStdString(old_value),
+                             Uint8VectorToStdString(new_value), source});
+  }
+  void KeyDeleted(const std::vector<uint8_t>& key,
+                  const std::vector<uint8_t>& old_value,
+                  const std::string& source) override {
+    observations_.push_back({Observation::kDelete, Uint8VectorToStdString(key),
+                             Uint8VectorToStdString(old_value), "", source});
+  }
+  void AllDeleted(const std::string& source) override {
+    observations_.push_back({Observation::kDeleteAll, "", "", "", source});
+  }
+  void GetAllComplete(const std::string& source) override {}
+
   TestBrowserThreadBundle thread_bundle_;
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
   MockLevelDBDatabase db_;
   LevelDBWrapperImpl level_db_wrapper_;
+  mojom::LevelDBWrapperPtr level_db_wrapper_ptr_;
+  mojo::AssociatedBinding<mojom::LevelDBObserver> observer_binding_;
+  std::vector<Observation> observations_;
 };
 
 TEST_F(LevelDBWrapperImplTest, GetLoadedFromMap) {
-  bool called = false;
-  bool success;
   std::vector<uint8_t> result;
-  wrapper()->Get(StdStringToUint8Vector("123"),
-                 base::Bind(&GetCallback, &called, &success, &result));
-  ASSERT_TRUE(called);
-  EXPECT_TRUE(success);
+  EXPECT_TRUE(GetSync(StdStringToUint8Vector("123"), &result));
   EXPECT_EQ(StdStringToUint8Vector("123data"), result);
 
-  called = false;
-  wrapper()->Get(StdStringToUint8Vector("x"),
-                 base::Bind(&GetCallback, &called, &success, &result));
-  ASSERT_TRUE(called);
-  EXPECT_FALSE(success);
+  EXPECT_FALSE(GetSync(StdStringToUint8Vector("x"), &result));
 }
 
 TEST_F(LevelDBWrapperImplTest, GetFromPutOverwrite) {
   std::vector<uint8_t> key = StdStringToUint8Vector("123");
   std::vector<uint8_t> value = StdStringToUint8Vector("foo");
 
-  bool called = false;
-  bool success;
-  wrapper()->Put(key, value, kTestSource,
-                 base::Bind(&SuccessCallback, &called, &success));
-  ASSERT_TRUE(called);
-  EXPECT_TRUE(success);
+  EXPECT_TRUE(PutSync(key, value));
 
-  called = false;
   std::vector<uint8_t> result;
-  wrapper()->Get(key, base::Bind(&GetCallback, &called, &success, &result));
-  ASSERT_TRUE(called);
-  EXPECT_TRUE(success);
+  EXPECT_TRUE(GetSync(key, &result));
   EXPECT_EQ(value, result);
 }
 
@@ -266,28 +343,17 @@ TEST_F(LevelDBWrapperImplTest, GetFromPutNewKey) {
   std::vector<uint8_t> key = StdStringToUint8Vector("newkey");
   std::vector<uint8_t> value = StdStringToUint8Vector("foo");
 
-  bool called = false;
-  bool success;
-  wrapper()->Put(key, value, kTestSource,
-                 base::Bind(&SuccessCallback, &called, &success));
-  ASSERT_TRUE(called);
-  EXPECT_TRUE(success);
+  EXPECT_TRUE(PutSync(key, value));
 
-  called = false;
   std::vector<uint8_t> result;
-  wrapper()->Get(key, base::Bind(&GetCallback, &called, &success, &result));
-  ASSERT_TRUE(called);
-  EXPECT_TRUE(success);
+  EXPECT_TRUE(GetSync(key, &result));
   EXPECT_EQ(value, result);
 }
 
 TEST_F(LevelDBWrapperImplTest, GetAll) {
-  bool called = false;
   leveldb::mojom::DatabaseError status;
   std::vector<mojom::KeyValuePtr> data;
-  wrapper()->GetAll(kTestSource,
-                    base::Bind(&GetAllCallback, &called, &status, &data));
-  ASSERT_TRUE(called);
+  EXPECT_TRUE(wrapper()->GetAll(kTestSource, &status, &data));
   EXPECT_EQ(leveldb::mojom::DatabaseError::OK, status);
   EXPECT_EQ(2u, data.size());
 }
@@ -298,58 +364,118 @@ TEST_F(LevelDBWrapperImplTest, CommitPutToDB) {
   std::string key2 = "abc";
   std::string value2 = "data abc";
 
-  wrapper()->Put(StdStringToUint8Vector(key1), StdStringToUint8Vector(value1),
-                 kTestSource, base::Bind(&NoOpSuccess));
-  wrapper()->Put(StdStringToUint8Vector(key2),
-                 StdStringToUint8Vector("old value"), kTestSource,
-                 base::Bind(&NoOpSuccess));
-  wrapper()->Put(StdStringToUint8Vector(key2), StdStringToUint8Vector(value2),
-                 kTestSource, base::Bind(&NoOpSuccess));
+  EXPECT_TRUE(
+      PutSync(StdStringToUint8Vector(key1), StdStringToUint8Vector(value1)));
+  EXPECT_TRUE(PutSync(StdStringToUint8Vector(key2),
+                      StdStringToUint8Vector("old value")));
+  EXPECT_TRUE(
+      PutSync(StdStringToUint8Vector(key2), StdStringToUint8Vector(value2)));
+
+  EXPECT_FALSE(has_mock_data(kTestPrefix + key2));
 
   CommitChanges();
-
   EXPECT_TRUE(has_mock_data(kTestPrefix + key1));
   EXPECT_EQ(value1, get_mock_data(kTestPrefix + key1));
   EXPECT_TRUE(has_mock_data(kTestPrefix + key2));
   EXPECT_EQ(value2, get_mock_data(kTestPrefix + key2));
 }
 
+TEST_F(LevelDBWrapperImplTest, PutObservations) {
+  std::string key = "new_key";
+  std::string value1 = "foo";
+  std::string value2 = "data abc";
+  std::string source1 = "source1";
+  std::string source2 = "source2";
+
+  EXPECT_TRUE(PutSync(StdStringToUint8Vector(key),
+                      StdStringToUint8Vector(value1), source1));
+  ASSERT_EQ(1u, observations().size());
+  EXPECT_EQ(Observation::kAdd, observations()[0].type);
+  EXPECT_EQ(key, observations()[0].key);
+  EXPECT_EQ(value1, observations()[0].new_value);
+  EXPECT_EQ(source1, observations()[0].source);
+
+  EXPECT_TRUE(PutSync(StdStringToUint8Vector(key),
+                      StdStringToUint8Vector(value2), source2));
+  ASSERT_EQ(2u, observations().size());
+  EXPECT_EQ(Observation::kChange, observations()[1].type);
+  EXPECT_EQ(key, observations()[1].key);
+  EXPECT_EQ(value1, observations()[1].old_value);
+  EXPECT_EQ(value2, observations()[1].new_value);
+  EXPECT_EQ(source2, observations()[1].source);
+}
+
+TEST_F(LevelDBWrapperImplTest, DeleteNonExistingKey) {
+  EXPECT_TRUE(DeleteSync(StdStringToUint8Vector("doesn't exist")));
+  EXPECT_EQ(0u, observations().size());
+}
+
+TEST_F(LevelDBWrapperImplTest, DeleteExistingKey) {
+  std::string key = "newkey";
+  std::string value = "foo";
+  set_mock_data(kTestPrefix + key, value);
+
+  EXPECT_TRUE(DeleteSync(StdStringToUint8Vector(key)));
+  ASSERT_EQ(1u, observations().size());
+  EXPECT_EQ(Observation::kDelete, observations()[0].type);
+  EXPECT_EQ(key, observations()[0].key);
+  EXPECT_EQ(value, observations()[0].old_value);
+  EXPECT_EQ(kTestSource, observations()[0].source);
+
+  EXPECT_TRUE(has_mock_data(kTestPrefix + key));
+
+  CommitChanges();
+  EXPECT_FALSE(has_mock_data(kTestPrefix + key));
+}
+
+TEST_F(LevelDBWrapperImplTest, DeleteAll) {
+  std::string key = "newkey";
+  std::string value = "foo";
+  std::string dummy_key = "foobar";
+  set_mock_data(dummy_key, value);
+  set_mock_data(kTestPrefix + key, value);
+
+  EXPECT_TRUE(DeleteAllSync());
+  ASSERT_EQ(1u, observations().size());
+  EXPECT_EQ(Observation::kDeleteAll, observations()[0].type);
+  EXPECT_EQ(kTestSource, observations()[0].source);
+
+  EXPECT_TRUE(has_mock_data(kTestPrefix + key));
+  EXPECT_TRUE(has_mock_data(dummy_key));
+
+  CommitChanges();
+  EXPECT_FALSE(has_mock_data(kTestPrefix + key));
+  EXPECT_TRUE(has_mock_data(dummy_key));
+
+  // Deleting all again should still work, an cause an observation.
+  EXPECT_TRUE(DeleteAllSync());
+  ASSERT_EQ(2u, observations().size());
+  EXPECT_EQ(Observation::kDeleteAll, observations()[1].type);
+  EXPECT_EQ(kTestSource, observations()[1].source);
+
+  // And now we've deleted all, writing something the quota size should work.
+  EXPECT_TRUE(PutSync(std::vector<uint8_t>(kTestSizeLimit, 'b'),
+                      std::vector<uint8_t>()));
+}
+
 TEST_F(LevelDBWrapperImplTest, PutOverQuotaLargeValue) {
   std::vector<uint8_t> key = StdStringToUint8Vector("newkey");
   std::vector<uint8_t> value(kTestSizeLimit, 4);
 
-  bool called = false;
-  bool success;
-  wrapper()->Put(key, value, kTestSource,
-                 base::Bind(&SuccessCallback, &called, &success));
-  ASSERT_TRUE(called);
-  EXPECT_FALSE(success);
+  EXPECT_FALSE(PutSync(key, value));
 
   value.resize(kTestSizeLimit / 2);
-  called = false;
-  wrapper()->Put(key, value, kTestSource,
-                 base::Bind(&SuccessCallback, &called, &success));
-  ASSERT_TRUE(called);
-  EXPECT_TRUE(success);
+  EXPECT_TRUE(PutSync(key, value));
 }
 
 TEST_F(LevelDBWrapperImplTest, PutOverQuotaLargeKey) {
   std::vector<uint8_t> key(kTestSizeLimit, 'a');
   std::vector<uint8_t> value = StdStringToUint8Vector("newvalue");
 
-  bool called = false;
-  bool success;
-  wrapper()->Put(key, value, kTestSource,
-                 base::Bind(&SuccessCallback, &called, &success));
-  ASSERT_TRUE(called);
-  EXPECT_FALSE(success);
+  EXPECT_FALSE(PutSync(key, value));
 
   key.resize(kTestSizeLimit / 2);
-  called = false;
-  wrapper()->Put(key, value, kTestSource,
-                 base::Bind(&SuccessCallback, &called, &success));
-  ASSERT_TRUE(called);
-  EXPECT_TRUE(success);
+  EXPECT_TRUE(PutSync(key, value));
 }
 
 TEST_F(LevelDBWrapperImplTest, PutWhenAlreadyOverQuota) {
@@ -359,51 +485,26 @@ TEST_F(LevelDBWrapperImplTest, PutWhenAlreadyOverQuota) {
   set_mock_data(kTestPrefix + key, Uint8VectorToStdString(value));
 
   // Put with same data should succeed.
-  bool called = false;
-  bool success;
-  wrapper()->Put(StdStringToUint8Vector(key), value, kTestSource,
-                 base::Bind(&SuccessCallback, &called, &success));
-  ASSERT_TRUE(called);
-  EXPECT_TRUE(success);
+  EXPECT_TRUE(PutSync(StdStringToUint8Vector(key), value));
 
   // Put with same data size should succeed.
-  called = false;
   value[1] = 13;
-  wrapper()->Put(StdStringToUint8Vector(key), value, kTestSource,
-                 base::Bind(&SuccessCallback, &called, &success));
-  ASSERT_TRUE(called);
-  EXPECT_TRUE(success);
+  EXPECT_TRUE(PutSync(StdStringToUint8Vector(key), value));
 
   // Adding a new key when already over quota should not succeed.
-  called = false;
-  wrapper()->Put(StdStringToUint8Vector("newkey"), {1, 2, 3}, kTestSource,
-                 base::Bind(&SuccessCallback, &called, &success));
-  ASSERT_TRUE(called);
-  EXPECT_FALSE(success);
+  EXPECT_FALSE(PutSync(StdStringToUint8Vector("newkey"), {1, 2, 3}));
 
   // Reducing size should also succeed.
   value.resize(kTestSizeLimit / 2);
-  called = false;
-  wrapper()->Put(StdStringToUint8Vector(key), value, kTestSource,
-                 base::Bind(&SuccessCallback, &called, &success));
-  ASSERT_TRUE(called);
-  EXPECT_TRUE(success);
+  EXPECT_TRUE(PutSync(StdStringToUint8Vector(key), value));
 
   // Increasing size again should succeed, as still under the limit.
   value.resize(value.size() + 1);
-  called = false;
-  wrapper()->Put(StdStringToUint8Vector(key), value, kTestSource,
-                 base::Bind(&SuccessCallback, &called, &success));
-  ASSERT_TRUE(called);
-  EXPECT_TRUE(success);
+  EXPECT_TRUE(PutSync(StdStringToUint8Vector(key), value));
 
   // But increasing back to original size should fail.
   value.resize(kTestSizeLimit);
-  called = false;
-  wrapper()->Put(StdStringToUint8Vector(key), value, kTestSource,
-                 base::Bind(&SuccessCallback, &called, &success));
-  ASSERT_TRUE(called);
-  EXPECT_FALSE(success);
+  EXPECT_FALSE(PutSync(StdStringToUint8Vector(key), value));
 }
 
 TEST_F(LevelDBWrapperImplTest, PutWhenAlreadyOverQuotaBecauseOfLargeKey) {
@@ -414,29 +515,16 @@ TEST_F(LevelDBWrapperImplTest, PutWhenAlreadyOverQuotaBecauseOfLargeKey) {
                 Uint8VectorToStdString(value));
 
   // Put with same data size should succeed.
-  bool called = false;
-  bool success;
   value[0] = 'X';
-  wrapper()->Put(key, value, kTestSource,
-                 base::Bind(&SuccessCallback, &called, &success));
-  ASSERT_TRUE(called);
-  EXPECT_TRUE(success);
+  EXPECT_TRUE(PutSync(key, value));
 
   // Reducing size should also succeed.
   value.clear();
-  called = false;
-  wrapper()->Put(key, value, kTestSource,
-                 base::Bind(&SuccessCallback, &called, &success));
-  ASSERT_TRUE(called);
-  EXPECT_TRUE(success);
+  EXPECT_TRUE(PutSync(key, value));
 
   // Increasing size should fail.
   value.resize(1, 'a');
-  called = false;
-  wrapper()->Put(key, value, kTestSource,
-                 base::Bind(&SuccessCallback, &called, &success));
-  ASSERT_TRUE(called);
-  EXPECT_FALSE(success);
+  EXPECT_FALSE(PutSync(key, value));
 }
 
 }  // namespace content
