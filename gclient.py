@@ -1562,24 +1562,6 @@ it or fix the checkout.
 #### gclient commands.
 
 
-def CMDcleanup(parser, args):
-  """DEPRECATED: SVN-only. Cleaned up all working copies.
-
-  This is a no-op in Git.
-  """
-  parser.add_option('--deps', dest='deps_os', metavar='OS_LIST',
-                    help='override deps for the specified (comma-separated) '
-                         'platform(s); \'all\' will process all deps_os '
-                         'references')
-  (options, args) = parser.parse_args(args)
-  client = GClient.LoadCurrentConfig(options)
-  if not client:
-    raise gclient_utils.Error('client not configured; see \'gclient config\'')
-  if options.verbose:
-    client.PrintLocationAndContents()
-  return client.RunOnDeps('cleanup', args)
-
-
 @subcommand.usage('[command] [args ...]')
 def CMDrecurse(parser, args):
   """Operates [command args ...] on all the dependencies.

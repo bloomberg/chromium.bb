@@ -143,7 +143,7 @@ class SCMWrapper(object):
     print(*args, **kwargs)
 
   def RunCommand(self, command, options, args, file_list=None):
-    commands = ['cleanup', 'update', 'updatesingle', 'revert',
+    commands = ['update', 'updatesingle', 'revert',
                 'revinfo', 'status', 'diff', 'pack', 'runhooks']
 
     if not command in commands:
@@ -269,13 +269,6 @@ class GitWrapper(SCMWrapper):
     # TODO(floitsch): get the time-stamp of the given revision and not just the
     # time-stamp of the currently checked out revision.
     return self._Capture(['log', '-n', '1', '--format=%ai'])
-
-  @staticmethod
-  def cleanup(options, args, file_list):
-    """'Cleanup' the repo.
-
-    There's no real git equivalent for the svn cleanup command, do a no-op.
-    """
 
   def diff(self, options, _args, _file_list):
     try:

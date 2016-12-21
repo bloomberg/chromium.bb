@@ -143,16 +143,6 @@ class GClientSmokeBase(fake_repos.FakeReposTestBase):
     self.assertEquals(len(results), len(items), (stdout, items, len(results)))
     return results
 
-  @staticmethod
-  def svnBlockCleanup(out):
-    """Work around svn status difference between svn 1.5 and svn 1.6
-    I don't know why but on Windows they are reversed. So sorts the items."""
-    for i in xrange(len(out)):
-      if len(out[i]) < 2:
-        continue
-      out[i] = [out[i][0]] + sorted([x[1:].strip() for x in out[i][1:]])
-    return out
-
 
 class GClientSmoke(GClientSmokeBase):
   """Doesn't require git-daemon."""
@@ -179,7 +169,6 @@ class GClientSmoke(GClientSmokeBase):
 
   def testNotConfigured(self):
     res = ('', 'Error: client not configured; see \'gclient config\'\n', 1)
-    self.check(res, self.gclient(['cleanup']))
     self.check(res, self.gclient(['diff']))
     self.check(res, self.gclient(['pack']))
     self.check(res, self.gclient(['revert']))
@@ -265,7 +254,6 @@ class GClientSmoke(GClientSmokeBase):
     self.assertTree({})
     results = self.gclient(['revinfo'])
     self.check(('./: None\n', '', 0), results)
-    self.check(('', '', 0), self.gclient(['cleanup']))
     self.check(('', '', 0), self.gclient(['diff']))
     self.assertTree({})
     self.check(('', '', 0), self.gclient(['pack']))
