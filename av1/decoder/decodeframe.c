@@ -832,7 +832,7 @@ static void dec_extend_dir(AV1Decoder *const pbi, MACROBLOCKD *const xd,
     if (mi_width > unit) {
       int i;
       assert(!b_sub8x8);
-      for (i = 0; i < mi_width / unit - 1; i++) {
+      for (i = 0; i < mi_width; i += unit) {
         mi_col_pred += unit;
         dec_predict_b_extend(pbi, xd, tile, block, mi_row, mi_col, mi_row_pred,
                              mi_col_pred, mi_row_top, mi_col_top, dst_buf,
@@ -853,7 +853,7 @@ static void dec_extend_dir(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 
     if (mi_height > unit) {
       int i;
-      for (i = 0; i < mi_height / unit - 1; i++) {
+      for (i = 0; i < mi_height; i += unit) {
         mi_row_pred += unit;
         dec_predict_b_extend(pbi, xd, tile, block, mi_row, mi_col, mi_row_pred,
                              mi_col_pred, mi_row_top, mi_col_top, dst_buf,
