@@ -7,7 +7,9 @@
 #include "platform/SharedBuffer.h"
 #include "platform/image-decoders/ImageDecoderTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkSurface.h"
 #include "wtf/RefPtr.h"
 #include <memory>
 
@@ -19,8 +21,8 @@ namespace blink {
  *  SkImage* imageA = decoder.createFrameAtIndex(0);
  *  // supply more (but not all) data to the decoder
  *  SkImage* imageB = decoder.createFrameAtIndex(laterFrame);
- *  imageB->preroll();
- *  imageA->preroll();
+ *  draw(imageB);
+ *  draw(imageA);
  *
  *  This results in using the same ImageDecoder (in the ImageDecodingStore) to
  *  decode less data the second time. This test ensures that it is safe to do
@@ -49,8 +51,11 @@ static void mixImages(const char* fileName,
   decoder->setData(almostCompleteFile, false);
   sk_sp<SkImage> imageWithMoreData = decoder->createFrameAtIndex(laterFrame);
 
-  imageWithMoreData->preroll();
-  partialImage->preroll();
+  // we now want to ensure we don't crash if we access these in this order
+  SkImageInfo info = SkImageInfo::MakeN32Premul(10, 10);
+  sk_sp<SkSurface> surf = SkSurface::MakeRaster(info);
+  surf->getCanvas()->drawImage(imageWithMoreData, 0, 0);
+  surf->getCanvas()->drawImage(partialImage, 0, 0);
 }
 
 TEST(DeferredImageDecoderTestWoPlatform, mixImagesGif) {
