@@ -766,8 +766,10 @@ extern int drmPrimeFDToHandle(int fd, int prime_fd, uint32_t *handle);
 extern char *drmGetPrimaryDeviceNameFromFd(int fd);
 extern char *drmGetRenderDeviceNameFromFd(int fd);
 
-#define DRM_BUS_PCI   0
-#define DRM_BUS_USB   1
+#define DRM_BUS_PCI       0
+#define DRM_BUS_USB       1
+#define DRM_BUS_PLATFORM  2
+#define DRM_BUS_HOST1X    3
 
 typedef struct _drmPciBusInfo {
     uint16_t domain;
@@ -794,6 +796,26 @@ typedef struct _drmUsbDeviceInfo {
     uint16_t product;
 } drmUsbDeviceInfo, *drmUsbDeviceInfoPtr;
 
+#define DRM_PLATFORM_DEVICE_NAME_LEN 512
+
+typedef struct _drmPlatformBusInfo {
+    char fullname[DRM_PLATFORM_DEVICE_NAME_LEN];
+} drmPlatformBusInfo, *drmPlatformBusInfoPtr;
+
+typedef struct _drmPlatformDeviceInfo {
+    char **compatible; /* NULL terminated list of compatible strings */
+} drmPlatformDeviceInfo, *drmPlatformDeviceInfoPtr;
+
+#define DRM_HOST1X_DEVICE_NAME_LEN 512
+
+typedef struct _drmHost1xBusInfo {
+    char fullname[DRM_HOST1X_DEVICE_NAME_LEN];
+} drmHost1xBusInfo, *drmHost1xBusInfoPtr;
+
+typedef struct _drmHost1xDeviceInfo {
+    char **compatible; /* NULL terminated list of compatible strings */
+} drmHost1xDeviceInfo, *drmHost1xDeviceInfoPtr;
+
 typedef struct _drmDevice {
     char **nodes; /* DRM_NODE_MAX sized array */
     int available_nodes; /* DRM_NODE_* bitmask */
@@ -801,10 +823,14 @@ typedef struct _drmDevice {
     union {
         drmPciBusInfoPtr pci;
         drmUsbBusInfoPtr usb;
+        drmPlatformBusInfoPtr platform;
+        drmHost1xBusInfoPtr host1x;
     } businfo;
     union {
         drmPciDeviceInfoPtr pci;
         drmUsbDeviceInfoPtr usb;
+        drmPlatformDeviceInfoPtr platform;
+        drmHost1xDeviceInfoPtr host1x;
     } deviceinfo;
 } drmDevice, *drmDevicePtr;
 

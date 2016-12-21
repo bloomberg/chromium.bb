@@ -2953,6 +2953,12 @@ static int drmParseSubsystemType(int maj, int min)
     if (strncmp(name, "/usb", 4) == 0)
         return DRM_BUS_USB;
 
+    if (strncmp(name, "/platform", 9) == 0)
+        return DRM_BUS_PLATFORM;
+
+    if (strncmp(name, "/host1x", 7) == 0)
+        return DRM_BUS_HOST1X;
+
     return -EINVAL;
 #elif defined(__OpenBSD__)
     return DRM_BUS_PCI;
@@ -3042,6 +3048,12 @@ static int drmCompareBusInfo(drmDevicePtr a, drmDevicePtr b)
 
     case DRM_BUS_USB:
         return memcmp(a->businfo.usb, b->businfo.usb, sizeof(drmUsbBusInfo));
+
+    case DRM_BUS_PLATFORM:
+        return memcmp(a->businfo.platform, b->businfo.platform, sizeof(drmPlatformBusInfo));
+
+    case DRM_BUS_HOST1X:
+        return memcmp(a->businfo.host1x, b->businfo.host1x, sizeof(drmHost1xBusInfo));
 
     default:
         break;
@@ -3187,10 +3199,54 @@ static int drmParsePciDeviceInfo(int maj, int min,
 #endif
 }
 
+static void drmFreePlatformDevice(drmDevicePtr device)
+{
+    if (device->deviceinfo.platform) {
+        if (device->deviceinfo.platform->compatible) {
+            char **compatible = device->deviceinfo.platform->compatible;
+
+            while (*compatible) {
+                free(*compatible);
+                compatible++;
+            }
+
+            free(device->deviceinfo.platform->compatible);
+        }
+    }
+}
+
+static void drmFreeHost1xDevice(drmDevicePtr device)
+{
+    if (device->deviceinfo.host1x) {
+        if (device->deviceinfo.host1x->compatible) {
+            char **compatible = device->deviceinfo.host1x->compatible;
+
+            while (*compatible) {
+                free(*compatible);
+                compatible++;
+            }
+
+            free(device->deviceinfo.host1x->compatible);
+        }
+    }
+}
+
 void drmFreeDevice(drmDevicePtr *device)
 {
     if (device == NULL)
         return;
+
+    if (*device) {
+        switch ((*device)->bustype) {
+        case DRM_BUS_PLATFORM:
+            drmFreePlatformDevice(*device);
+            break;
+
+        case DRM_BUS_HOST1X:
+            drmFreeHost1xDevice(*device);
+            break;
+        }
+    }
 
     free(*device);
     *device = NULL;
@@ -3393,6 +3449,220 @@ free_device:
     return ret;
 }
 
+static int drmParsePlatformBusInfo(int maj, int min, drmPlatformBusInfoPtr info)
+{
+#ifdef __linux__
+    char path[PATH_MAX + 1], *name;
+
+    snprintf(path, sizeof(path), "/sys/dev/char/%d:%d/device", maj, min);
+
+    name = sysfs_uevent_get(path, "OF_FULLNAME");
+    if (!name)
+        return -ENOENT;
+
+    strncpy(info->fullname, name, DRM_PLATFORM_DEVICE_NAME_LEN);
+    info->fullname[DRM_PLATFORM_DEVICE_NAME_LEN - 1] = '\0';
+    free(name);
+
+    return 0;
+#else
+#warning "Missing implementation of drmParsePlatformBusInfo"
+    return -EINVAL;
+#endif
+}
+
+static int drmParsePlatformDeviceInfo(int maj, int min,
+                                      drmPlatformDeviceInfoPtr info)
+{
+#ifdef __linux__
+    char path[PATH_MAX + 1], *value;
+    unsigned int count, i;
+    int err;
+
+    snprintf(path, sizeof(path), "/sys/dev/char/%d:%d/device", maj, min);
+
+    value = sysfs_uevent_get(path, "OF_COMPATIBLE_N");
+    if (!value)
+        return -ENOENT;
+
+    sscanf(value, "%u", &count);
+    free(value);
+
+    info->compatible = calloc(count + 1, sizeof(*info->compatible));
+    if (!info->compatible)
+        return -ENOMEM;
+
+    for (i = 0; i < count; i++) {
+        value = sysfs_uevent_get(path, "OF_COMPATIBLE_%u", i);
+        if (!value) {
+            err = -ENOENT;
+            goto free;
+        }
+
+        info->compatible[i] = value;
+    }
+
+    return 0;
+
+free:
+    while (i--)
+        free(info->compatible[i]);
+
+    free(info->compatible);
+    return err;
+#else
+#warning "Missing implementation of drmParsePlatformDeviceInfo"
+    return -EINVAL;
+#endif
+}
+
+static int drmProcessPlatformDevice(drmDevicePtr *device,
+                                    const char *node, int node_type,
+                                    int maj, int min, bool fetch_deviceinfo,
+                                    uint32_t flags)
+{
+    drmDevicePtr dev;
+    char *ptr;
+    int ret;
+
+    dev = drmDeviceAlloc(node_type, node, sizeof(drmPlatformBusInfo),
+                         sizeof(drmPlatformDeviceInfo), &ptr);
+    if (!dev)
+        return -ENOMEM;
+
+    dev->bustype = DRM_BUS_PLATFORM;
+
+    dev->businfo.platform = (drmPlatformBusInfoPtr)ptr;
+
+    ret = drmParsePlatformBusInfo(maj, min, dev->businfo.platform);
+    if (ret < 0)
+        goto free_device;
+
+    if (fetch_deviceinfo) {
+        ptr += sizeof(drmPlatformBusInfo);
+        dev->deviceinfo.platform = (drmPlatformDeviceInfoPtr)ptr;
+
+        ret = drmParsePlatformDeviceInfo(maj, min, dev->deviceinfo.platform);
+        if (ret < 0)
+            goto free_device;
+    }
+
+    *device = dev;
+
+    return 0;
+
+free_device:
+    free(dev);
+    return ret;
+}
+
+static int drmParseHost1xBusInfo(int maj, int min, drmHost1xBusInfoPtr info)
+{
+#ifdef __linux__
+    char path[PATH_MAX + 1], *name;
+
+    snprintf(path, sizeof(path), "/sys/dev/char/%d:%d/device", maj, min);
+
+    name = sysfs_uevent_get(path, "OF_FULLNAME");
+    if (!name)
+        return -ENOENT;
+
+    strncpy(info->fullname, name, DRM_HOST1X_DEVICE_NAME_LEN);
+    info->fullname[DRM_HOST1X_DEVICE_NAME_LEN - 1] = '\0';
+    free(name);
+
+    return 0;
+#else
+#warning "Missing implementation of drmParseHost1xBusInfo"
+    return -EINVAL;
+#endif
+}
+
+static int drmParseHost1xDeviceInfo(int maj, int min,
+                                    drmHost1xDeviceInfoPtr info)
+{
+#ifdef __linux__
+    char path[PATH_MAX + 1], *value;
+    unsigned int count, i;
+    int err;
+
+    snprintf(path, sizeof(path), "/sys/dev/char/%d:%d/device", maj, min);
+
+    value = sysfs_uevent_get(path, "OF_COMPATIBLE_N");
+    if (!value)
+        return -ENOENT;
+
+    sscanf(value, "%u", &count);
+    free(value);
+
+    info->compatible = calloc(count + 1, sizeof(*info->compatible));
+    if (!info->compatible)
+        return -ENOMEM;
+
+    for (i = 0; i < count; i++) {
+        value = sysfs_uevent_get(path, "OF_COMPATIBLE_%u", i);
+        if (!value) {
+            err = -ENOENT;
+            goto free;
+        }
+
+        info->compatible[i] = value;
+    }
+
+    return 0;
+
+free:
+    while (i--)
+        free(info->compatible[i]);
+
+    free(info->compatible);
+    return err;
+#else
+#warning "Missing implementation of drmParseHost1xDeviceInfo"
+    return -EINVAL;
+#endif
+}
+
+static int drmProcessHost1xDevice(drmDevicePtr *device,
+                                  const char *node, int node_type,
+                                  int maj, int min, bool fetch_deviceinfo,
+                                  uint32_t flags)
+{
+    drmDevicePtr dev;
+    char *ptr;
+    int ret;
+
+    dev = drmDeviceAlloc(node_type, node, sizeof(drmHost1xBusInfo),
+                         sizeof(drmHost1xDeviceInfo), &ptr);
+    if (!dev)
+        return -ENOMEM;
+
+    dev->bustype = DRM_BUS_HOST1X;
+
+    dev->businfo.host1x = (drmHost1xBusInfoPtr)ptr;
+
+    ret = drmParseHost1xBusInfo(maj, min, dev->businfo.host1x);
+    if (ret < 0)
+        goto free_device;
+
+    if (fetch_deviceinfo) {
+        ptr += sizeof(drmHost1xBusInfo);
+        dev->deviceinfo.host1x = (drmHost1xDeviceInfoPtr)ptr;
+
+        ret = drmParseHost1xDeviceInfo(maj, min, dev->deviceinfo.host1x);
+        if (ret < 0)
+            goto free_device;
+    }
+
+    *device = dev;
+
+    return 0;
+
+free_device:
+    free(dev);
+    return ret;
+}
+
 /* Consider devices located on the same bus as duplicate and fold the respective
  * entries into a single one.
  *
@@ -3576,6 +3846,20 @@ int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
 
             break;
 
+        case DRM_BUS_PLATFORM:
+            ret = drmProcessPlatformDevice(&d, node, node_type, maj, min, true, flags);
+            if (ret)
+                continue;
+
+            break;
+
+        case DRM_BUS_HOST1X:
+            ret = drmProcessHost1xDevice(&d, node, node_type, maj, min, true, flags);
+            if (ret)
+                continue;
+
+            break;
+
         default:
             continue;
         }
@@ -3711,6 +3995,22 @@ int drmGetDevices2(uint32_t flags, drmDevicePtr devices[], int max_devices)
         case DRM_BUS_USB:
             ret = drmProcessUsbDevice(&device, node, node_type, maj, min,
                                       devices != NULL, flags);
+            if (ret)
+                goto free_devices;
+
+            break;
+
+        case DRM_BUS_PLATFORM:
+            ret = drmProcessPlatformDevice(&device, node, node_type, maj, min,
+                                           devices != NULL, flags);
+            if (ret)
+                goto free_devices;
+
+            break;
+
+        case DRM_BUS_HOST1X:
+            ret = drmProcessHost1xDevice(&device, node, node_type, maj, min,
+                                         devices != NULL, flags);
             if (ret)
                 goto free_devices;
 
