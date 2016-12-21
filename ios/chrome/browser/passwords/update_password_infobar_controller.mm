@@ -10,7 +10,7 @@
 #include "ios/chrome/browser/infobars/confirm_infobar_controller+protected.h"
 #include "ios/chrome/browser/passwords/ios_chrome_update_password_infobar_delegate.h"
 #import "ios/chrome/browser/ui/elements/selector_coordinator.h"
-#import "ios/public/provider/chrome/browser/ui/infobar_view_protocol.h"
+#import "ios/chrome/browser/ui/infobars/infobar_view_protocol.h"
 
 namespace {
 // Tag for the account link in the info bar message. Set to 10 to avoid conflict

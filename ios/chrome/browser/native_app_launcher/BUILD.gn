@@ -17,9 +17,8 @@ source_set("native_app_launcher") {
     "//components/infobars/core",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/infobars",
-    "//ios/public/provider/chrome/browser",
+    "//ios/chrome/browser/ui/infobars",
     "//ios/public/provider/chrome/browser/native_app_launcher",
-    "//ios/public/provider/chrome/browser/ui",
     "//ui/base",
     "//url",
   ]

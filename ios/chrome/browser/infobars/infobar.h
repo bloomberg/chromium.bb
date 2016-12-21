@@ -10,7 +10,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "components/infobars/core/infobar.h"
-#import "ios/public/provider/chrome/browser/ui/infobar_view_delegate.h"
+#import "ios/chrome/browser/ui/infobars/infobar_view_delegate.h"
 
 @class InfoBarController;
 @class UIView;

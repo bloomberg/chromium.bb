@@ -22,9 +22,6 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   static TestChromeBrowserProvider* GetTestProvider();
 
   // ChromeBrowserProvider:
-  InfoBarViewPlaceholder CreateInfoBarView(
-      CGRect frame,
-      InfoBarViewDelegate* delegate) override NS_RETURNS_RETAINED;
   SigninResourcesProvider* GetSigninResourcesProvider() override;
   void SetChromeIdentityServiceForTesting(
       std::unique_ptr<ChromeIdentityService> service) override;

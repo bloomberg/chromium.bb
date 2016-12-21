@@ -20,7 +20,6 @@
 class AppDistributionProvider;
 class BrandedImageProvider;
 class GURL;
-class InfoBarViewDelegate;
 class OmahaServiceProvider;
 class PrefService;
 class SpotlightProvider;
@@ -91,11 +90,6 @@ class ChromeBrowserProvider {
   // Registers all prefs that will be used via a PrefService attached to a
   // Profile.
   virtual void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-  // Returns an infobar view conforming to the InfoBarViewProtocol. The returned
-  // object is retained.
-  virtual InfoBarViewPlaceholder CreateInfoBarView(
-      CGRect frame,
-      InfoBarViewDelegate* delegate) NS_RETURNS_RETAINED;
   // Returns an instance of a signing error provider.
   virtual SigninErrorProvider* GetSigninErrorProvider();
   // Returns an instance of a signin resources provider.

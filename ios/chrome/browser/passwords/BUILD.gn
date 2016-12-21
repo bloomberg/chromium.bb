@@ -69,6 +69,7 @@ source_set("passwords") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/elements",
+    "//ios/chrome/browser/ui/infobars",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/ui",
     "//ios/web",

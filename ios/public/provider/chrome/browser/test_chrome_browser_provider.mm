@@ -17,7 +17,6 @@
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/test_signin_resources_provider.h"
 #import "ios/public/provider/chrome/browser/spotlight/test_spotlight_provider.h"
-#import "ios/public/provider/chrome/browser/ui/test_infobar_view.h"
 #import "ios/public/provider/chrome/browser/ui/test_styled_text_field.h"
 #import "ios/public/provider/chrome/browser/user_feedback/test_user_feedback_provider.h"
 #import "ios/public/provider/chrome/browser/voice/test_voice_search_provider.h"
@@ -45,12 +44,6 @@ TestChromeBrowserProvider* TestChromeBrowserProvider::GetTestProvider() {
   ChromeBrowserProvider* provider = GetChromeBrowserProvider();
   DCHECK(provider);
   return static_cast<TestChromeBrowserProvider*>(provider);
-}
-
-InfoBarViewPlaceholder TestChromeBrowserProvider::CreateInfoBarView(
-    CGRect frame,
-    InfoBarViewDelegate* delegate) {
-  return [[TestInfoBarView alloc] init];
 }
 
 SigninResourcesProvider*

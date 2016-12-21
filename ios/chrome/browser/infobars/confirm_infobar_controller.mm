@@ -8,9 +8,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/ui/infobar_view_delegate.h"
-#import "ios/public/provider/chrome/browser/ui/infobar_view_protocol.h"
+#import "ios/chrome/browser/ui/infobars/infobar_view.h"
+#import "ios/chrome/browser/ui/infobars/infobar_view_delegate.h"
+#import "ios/chrome/browser/ui/infobars/infobar_view_protocol.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/image/image.h"
@@ -63,7 +63,7 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
   UIView<InfoBarViewProtocol>* infoBarView;
   _confirmInfobarDelegate = delegate->AsConfirmInfoBarDelegate();
   infoBarView =
-      ios::GetChromeBrowserProvider()->CreateInfoBarView(frame, self.delegate);
+      [[InfoBarView alloc] initWithFrame:frame delegate:self.delegate];
   // Model data.
   gfx::Image modelIcon = _confirmInfobarDelegate->GetIcon();
   int buttons = _confirmInfobarDelegate->GetButtons();

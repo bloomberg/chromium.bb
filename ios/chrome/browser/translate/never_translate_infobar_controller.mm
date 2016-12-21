@@ -10,10 +10,10 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "ios/chrome/browser/translate/translate_infobar_tags.h"
+#import "ios/chrome/browser/ui/infobars/infobar_view.h"
+#import "ios/chrome/browser/ui/infobars/infobar_view_delegate.h"
+#import "ios/chrome/browser/ui/infobars/infobar_view_protocol.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
-#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/ui/infobar_view_delegate.h"
-#import "ios/public/provider/chrome/browser/ui/infobar_view_protocol.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 
@@ -35,8 +35,8 @@
   base::scoped_nsobject<UIView<InfoBarViewProtocol>> infoBarView;
   translate::TranslateInfoBarDelegate* translateInfoBarDelegate =
       delegate->AsTranslateInfoBarDelegate();
-  ios::ChromeBrowserProvider* provider = ios::GetChromeBrowserProvider();
-  infoBarView.reset(provider->CreateInfoBarView(frame, self.delegate));
+  infoBarView.reset(
+      [[InfoBarView alloc] initWithFrame:frame delegate:self.delegate]);
   // Icon
   gfx::Image icon = translateInfoBarDelegate->GetIcon();
   if (!icon.IsEmpty())

@@ -21,9 +21,6 @@ class DownstreamChromiumBrowserProvider : public ChromiumBrowserProvider {
   // converted to not go through the provider API at all.
   void RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable* registry) override;
-  InfoBarViewPlaceholder CreateInfoBarView(
-      CGRect frame,
-      InfoBarViewDelegate* delegate) override NS_RETURNS_RETAINED;
   ios::LiveTabContextProvider* GetLiveTabContextProvider() override;
   void SetUIViewAlphaWithAnimation(UIView* view, float alpha) override;
   autofill::CardUnmaskPromptView* CreateCardUnmaskPromptView(

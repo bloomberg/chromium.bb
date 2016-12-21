@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_PUBLIC_PROVIDER_CHROME_BROWSER_UI_INFOBAR_VIEW_DELEGATE_H_
-#define IOS_PUBLIC_PROVIDER_CHROME_BROWSER_UI_INFOBAR_VIEW_DELEGATE_H_
+#ifndef IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_VIEW_DELEGATE_H_
+#define IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_VIEW_DELEGATE_H_
 
 #import <Foundation/Foundation.h>
 
@@ -23,4 +23,4 @@ class InfoBarViewDelegate {
   virtual ~InfoBarViewDelegate() {}
 };
 
-#endif  // IOS_PUBLIC_PROVIDER_CHROME_BROWSER_UI_INFOBAR_VIEW_DELEGATE_H_
+#endif  // IOS_CHROME_BROWSER_UI_INFOBARS_INFOBAR_VIEW_DELEGATE_H_

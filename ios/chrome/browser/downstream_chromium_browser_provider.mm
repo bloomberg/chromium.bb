@@ -17,7 +17,6 @@
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
 #import "ios/chrome/browser/ui/browser_list_ios.h"
-#import "ios/chrome/browser/ui/infobars/infobar_view.h"
 #include "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 #import "ios/chrome/common/material_timing.h"
 
@@ -33,12 +32,6 @@ void DownstreamChromiumBrowserProvider::RegisterProfilePrefs(
   [BookmarkInteractionController registerBrowserStatePrefs:registry];
   [BookmarkPromoController registerBrowserStatePrefs:registry];
   [HandoffManager registerBrowserStatePrefs:registry];
-}
-
-InfoBarViewPlaceholder DownstreamChromiumBrowserProvider::CreateInfoBarView(
-    CGRect frame,
-    InfoBarViewDelegate* delegate) NS_RETURNS_RETAINED {
-  return [[InfoBarView alloc] initWithFrame:frame delegate:delegate];
 }
 
 ios::LiveTabContextProvider*

@@ -7,7 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/fancy_ui/bidi_container_view.h"
-#import "ios/public/provider/chrome/browser/ui/infobar_view_protocol.h"
+#import "ios/chrome/browser/ui/infobars/infobar_view_protocol.h"
 
 class InfoBarViewDelegate;
 @protocol InfoBarViewProtocol;

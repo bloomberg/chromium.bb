@@ -24,11 +24,11 @@ ChromeBrowserProvider* GetChromeBrowserProvider() {
   return g_chrome_browser_provider;
 }
 
-ChromeBrowserProvider::~ChromeBrowserProvider() {}
-
 // A dummy implementation of ChromeBrowserProvider.
 
 ChromeBrowserProvider::ChromeBrowserProvider() {}
+
+ChromeBrowserProvider::~ChromeBrowserProvider() {}
 
 void ChromeBrowserProvider::Initialize() const {}
 
@@ -36,12 +36,6 @@ void ChromeBrowserProvider::AssertBrowserContextKeyedFactoriesBuilt() {}
 
 void ChromeBrowserProvider::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {}
-
-InfoBarViewPlaceholder ChromeBrowserProvider::CreateInfoBarView(
-    CGRect frame,
-    InfoBarViewDelegate* delegate) {
-  return nullptr;
-}
 
 SigninErrorProvider* ChromeBrowserProvider::GetSigninErrorProvider() {
   return nullptr;

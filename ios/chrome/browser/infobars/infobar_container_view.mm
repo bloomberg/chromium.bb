@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "ios/chrome/browser/infobars/infobar.h"
-#include "ios/public/provider/chrome/browser/ui/infobar_view_protocol.h"
+#include "ios/chrome/browser/ui/infobars/infobar_view_protocol.h"
 #include "ui/base/device_form_factor.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
