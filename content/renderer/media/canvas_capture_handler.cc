@@ -17,6 +17,7 @@
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/render_thread_impl.h"
+#include "media/base/limits.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamSource.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/libyuv/include/libyuv.h"
@@ -38,11 +39,14 @@ namespace content {
 // This class is single threaded and pinned to main render thread.
 class VideoCapturerSource : public media::VideoCapturerSource {
  public:
-  explicit VideoCapturerSource(base::WeakPtr<CanvasCaptureHandler>
-                                   canvas_handler,
-                               double frame_rate)
-      : frame_rate_(frame_rate),
-        canvas_handler_(canvas_handler) {}
+  VideoCapturerSource(base::WeakPtr<CanvasCaptureHandler> canvas_handler,
+                      double frame_rate)
+      : frame_rate_(static_cast<float>(
+            std::min(static_cast<double>(media::limits::kMaxFramesPerSecond),
+                     frame_rate))),
+        canvas_handler_(canvas_handler) {
+    DCHECK_LE(0, frame_rate_);
+  }
 
  protected:
   void GetCurrentSupportedFormats(
@@ -79,7 +83,7 @@ class VideoCapturerSource : public media::VideoCapturerSource {
   }
 
  private:
-  const double frame_rate_;
+  const float frame_rate_;
   // Bound to Main Render thread.
   base::ThreadChecker main_render_thread_checker_;
   // CanvasCaptureHandler is owned by CanvasDrawListener in blink and might be
