@@ -26,12 +26,12 @@ class NoopClient final : public GarbageCollectedFinalized<NoopClient>,
   void onStateChange() override {}
 };
 
-class Tee final : public GarbageCollectedFinalized<Tee>,
-                  public BytesConsumer::Client {
-  USING_GARBAGE_COLLECTED_MIXIN(Tee);
+class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
+                        public BytesConsumer::Client {
+  USING_GARBAGE_COLLECTED_MIXIN(TeeHelper);
 
  public:
-  Tee(ExecutionContext* executionContext, BytesConsumer* consumer)
+  TeeHelper(ExecutionContext* executionContext, BytesConsumer* consumer)
       : m_src(consumer),
         m_destination1(new Destination(executionContext, this)),
         m_destination2(new Destination(executionContext, this)) {
@@ -126,7 +126,7 @@ class Tee final : public GarbageCollectedFinalized<Tee>,
 
   class Destination final : public BytesConsumer {
    public:
-    Destination(ExecutionContext* executionContext, Tee* tee)
+    Destination(ExecutionContext* executionContext, TeeHelper* tee)
         : m_executionContext(executionContext), m_tee(tee) {}
 
     Result beginRead(const char** buffer, size_t* available) override {
@@ -218,7 +218,7 @@ class Tee final : public GarbageCollectedFinalized<Tee>,
 
     Error getError() const override { return m_tee->getError(); }
 
-    String debugName() const override { return "Tee::Destination"; }
+    String debugName() const override { return "TeeHelper::Destination"; }
 
     void enqueue(Chunk* chunk) {
       if (m_isCancelled)
@@ -277,7 +277,7 @@ class Tee final : public GarbageCollectedFinalized<Tee>,
     }
 
     Member<ExecutionContext> m_executionContext;
-    Member<Tee> m_tee;
+    Member<TeeHelper> m_tee;
     Member<BytesConsumer::Client> m_client;
     HeapDeque<Member<Chunk>> m_chunks;
     Member<Chunk> m_chunkInUse;
@@ -362,7 +362,7 @@ void BytesConsumer::tee(ExecutionContext* executionContext,
     return;
   }
 
-  Tee* tee = new Tee(executionContext, src);
+  TeeHelper* tee = new TeeHelper(executionContext, src);
   *dest1 = tee->destination1();
   *dest2 = tee->destination2();
 }
