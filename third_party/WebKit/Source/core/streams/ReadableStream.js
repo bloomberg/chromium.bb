@@ -506,6 +506,7 @@
     }
 
     v8.rejectPromise(reader[_closedPromise], e);
+    v8.markPromiseAsHandled(reader[_closedPromise]);
   }
 
   function ReadableStreamClose(stream) {
@@ -588,7 +589,8 @@
         break;
       case STATE_ERRORED:
         reader[_closedPromise] = Promise_reject(stream[_storedError]);
-      break;
+        v8.markPromiseAsHandled(reader[_closedPromise]);
+        break;
     }
   }
 
@@ -608,6 +610,7 @@
     } else {
       reader[_closedPromise] = Promise_reject(new TypeError(errReleasedReaderClosedPromise));
     }
+    v8.markPromiseAsHandled(reader[_closedPromise]);
 
     reader[_ownerReadableStream][_reader] = undefined;
     reader[_ownerReadableStream] = undefined;
