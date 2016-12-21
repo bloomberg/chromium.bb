@@ -110,7 +110,7 @@ class CppTypeGenerator(object):
       cpp_type = 'base::DictionaryValue'
     elif type_.property_type == PropertyType.ARRAY:
       item_cpp_type = self.GetCppType(type_.item_type, is_in_container=True)
-      cpp_type = 'std::vector<%s>' % cpp_util.PadForGenerics(item_cpp_type)
+      cpp_type = 'std::vector<%s>' % item_cpp_type
     elif type_.property_type == PropertyType.BINARY:
       cpp_type = 'std::vector<char>'
     else:
@@ -125,7 +125,7 @@ class CppTypeGenerator(object):
       # Wrap ptrs and base::Values in containers (which aren't movable) in
       # scoped_ptrs.
       if is_ptr or (is_in_container and is_base_value):
-        cpp_type = 'std::unique_ptr<%s>' % cpp_util.PadForGenerics(cpp_type)
+        cpp_type = 'std::unique_ptr<%s>' % cpp_type
 
     return cpp_type
 
