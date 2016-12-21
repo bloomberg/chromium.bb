@@ -337,6 +337,8 @@ imported/wpt/url [ Skip ]
 ## Owners: jsbell@chromium.org
 # imported/wpt/user-timing [ Pass ]
 imported/wpt/vibration [ Skip ]
+## Owners: bsheedy@chromium.org
+# imported/wpt/vr [ Pass ]
 imported/wpt/wai-aria [ Skip ]
 ## Owners: suzyh@chromium.org
 # imported/wpt/web-animations [ Pass ]
