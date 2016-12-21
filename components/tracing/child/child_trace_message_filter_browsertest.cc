@@ -55,7 +55,8 @@ class ChildTracingTest : public content::RenderViewTest, public IPC::Listener {
     // registered itself by now; this cannot be prevented easily.
     mock_dump_provider_.reset(new MockDumpProvider());
     MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        mock_dump_provider_.get(), "MockDumpProvider", nullptr);
+        mock_dump_provider_.get(), "MockDumpProvider",
+        base::ThreadTaskRunnerHandle::Get());
     MemoryDumpManager::GetInstance()
         ->set_dumper_registrations_ignored_for_testing(true);
 

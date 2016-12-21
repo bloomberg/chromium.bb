@@ -103,8 +103,8 @@ class MemoryTracingTest : public ContentBrowserTest {
   }
 
   void TearDown() override {
-    MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-        mock_dump_provider_.get());
+    MemoryDumpManager::GetInstance()->UnregisterAndDeleteDumpProviderSoon(
+        std::move(mock_dump_provider_));
     mock_dump_provider_.reset();
     ContentBrowserTest::TearDown();
   }

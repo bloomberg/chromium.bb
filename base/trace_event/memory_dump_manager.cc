@@ -277,6 +277,11 @@ void MemoryDumpManager::RegisterDumpProviderInternal(
       new MemoryDumpProviderInfo(mdp, name, std::move(task_runner), options,
                                  whitelisted_for_background_mode);
 
+  if (options.is_fast_polling_supported) {
+    DCHECK(!mdpinfo->task_runner) << "MemoryDumpProviders capable of fast "
+                                     "polling must NOT be thread bound.";
+  }
+
   {
     AutoLock lock(lock_);
     bool already_registered = !dump_providers_.insert(mdpinfo).second;
@@ -351,10 +356,7 @@ void MemoryDumpManager::UnregisterDumpProviderInternal(
   }
 
   if ((*mdp_iter)->options.is_fast_polling_supported && dump_thread_) {
-    DCHECK(take_mdp_ownership_and_delete_async)
-        << "MemoryDumpProviders capable of fast polling must NOT be thread "
-           "bound and hence must be destroyed using "
-           "UnregisterAndDeleteDumpProviderSoon()";
+    DCHECK(take_mdp_ownership_and_delete_async);
     dump_thread_->task_runner()->PostTask(
         FROM_HERE, Bind(&MemoryDumpManager::UnregisterPollingMDPOnDumpThread,
                         Unretained(this), *mdp_iter));
@@ -371,7 +373,6 @@ void MemoryDumpManager::UnregisterDumpProviderInternal(
 
 void MemoryDumpManager::RegisterPollingMDPOnDumpThread(
     scoped_refptr<MemoryDumpManager::MemoryDumpProviderInfo> mdpinfo) {
-  DCHECK(!mdpinfo->task_runner);
   AutoLock lock(lock_);
   dump_providers_for_polling_.insert(mdpinfo);
 }
