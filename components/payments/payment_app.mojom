@@ -25,8 +25,9 @@ struct PaymentAppManifest {
 };
 
 interface PaymentAppManager {
-  SetManifest(string service_worker_scope, PaymentAppManifest payment_app_manifest)
+  Init(string service_worker_scope);
+  SetManifest(PaymentAppManifest payment_app_manifest)
       => (PaymentAppManifestError error);
-  GetManifest(string service_worker_scope)
+  GetManifest()
       => (PaymentAppManifest payment_app_manifest, PaymentAppManifestError error);
 };

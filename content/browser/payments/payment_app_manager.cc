@@ -35,8 +35,12 @@ PaymentAppManager::PaymentAppManager(
                  base::Unretained(this)));
 }
 
+void PaymentAppManager::Init(const std::string& scope) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  scope_ = GURL(scope);
+}
+
 void PaymentAppManager::SetManifest(
-    const std::string& scope,
     payments::mojom::PaymentAppManifestPtr manifest,
     const SetManifestCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -45,15 +49,13 @@ void PaymentAppManager::SetManifest(
   // the payment app to be registered. Please see http://crbug.com/665949.
 
   payment_app_context_->payment_app_database()->WriteManifest(
-      GURL(scope), std::move(manifest), callback);
+      scope_, std::move(manifest), callback);
 }
 
-void PaymentAppManager::GetManifest(const std::string& scope,
-                                    const GetManifestCallback& callback) {
+void PaymentAppManager::GetManifest(const GetManifestCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  payment_app_context_->payment_app_database()->ReadManifest(GURL(scope),
-                                                             callback);
+  payment_app_context_->payment_app_database()->ReadManifest(scope_, callback);
 }
 
 void PaymentAppManager::OnConnectionError() {

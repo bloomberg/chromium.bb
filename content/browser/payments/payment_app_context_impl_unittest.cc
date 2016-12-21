@@ -57,8 +57,7 @@ class PaymentAppContextTest : public PaymentAppContentUnitTestBase {
     PaymentAppManifestError error =
         PaymentAppManifestError::MANIFEST_STORAGE_OPERATION_FAILED;
     bool called = false;
-    SetManifest(manager, scope_url.spec(),
-                CreatePaymentAppManifestForTest(scope_url.spec()),
+    SetManifest(manager, CreatePaymentAppManifestForTest(scope_url.spec()),
                 base::Bind(&SetManifestCallback, &called, &error));
     ASSERT_TRUE(called);
 

@@ -12,6 +12,7 @@
 #include "components/payments/payment_app.mojom.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "url/gurl.h"
 
 namespace content {
 
@@ -30,11 +31,10 @@ class CONTENT_EXPORT PaymentAppManager
   friend class PaymentAppContentUnitTestBase;
 
   // payments::mojom::PaymentAppManager methods:
-  void SetManifest(const std::string& scope,
-                   payments::mojom::PaymentAppManifestPtr manifest,
+  void Init(const std::string& scope) override;
+  void SetManifest(payments::mojom::PaymentAppManifestPtr manifest,
                    const SetManifestCallback& callback) override;
-  void GetManifest(const std::string& scope,
-                   const GetManifestCallback& callback) override;
+  void GetManifest(const GetManifestCallback& callback) override;
 
   // Called when an error is detected on binding_.
   void OnConnectionError();
@@ -42,10 +42,9 @@ class CONTENT_EXPORT PaymentAppManager
   // PaymentAppContextImpl owns PaymentAppManager
   PaymentAppContextImpl* payment_app_context_;
 
+  GURL scope_;
   mojo::Binding<payments::mojom::PaymentAppManager> binding_;
-
   base::WeakPtrFactory<PaymentAppManager> weak_ptr_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(PaymentAppManager);
 };
 

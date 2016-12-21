@@ -33,6 +33,12 @@ void RegisterServiceWorkerCallback(bool* called,
   *called = true;
 }
 
+void UnregisterServiceWorkerCallback(bool* called,
+                                     ServiceWorkerStatusCode status) {
+  EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
+  *called = true;
+}
+
 }  // namespace
 
 PaymentAppContentUnitTestBase::PaymentAppContentUnitTestBase()
@@ -88,8 +94,11 @@ PaymentAppManager* PaymentAppContentUnitTestBase::CreatePaymentAppManager(
   // Find a last registered payment app manager.
   for (const auto& candidate_manager :
        payment_app_context_->payment_app_managers_) {
-    if (!base::ContainsKey(existing_managers, candidate_manager.first))
+    if (!base::ContainsKey(existing_managers, candidate_manager.first)) {
+      candidate_manager.first->Init(scope_url.spec());
+      base::RunLoop().RunUntilIdle();
       return candidate_manager.first;
+    }
   }
 
   NOTREACHED();
@@ -98,20 +107,18 @@ PaymentAppManager* PaymentAppContentUnitTestBase::CreatePaymentAppManager(
 
 void PaymentAppContentUnitTestBase::SetManifest(
     PaymentAppManager* manager,
-    const std::string& scope,
     payments::mojom::PaymentAppManifestPtr manifest,
     const PaymentAppManager::SetManifestCallback& callback) {
   ASSERT_NE(nullptr, manager);
-  manager->SetManifest(scope, std::move(manifest), callback);
+  manager->SetManifest(std::move(manifest), callback);
   base::RunLoop().RunUntilIdle();
 }
 
 void PaymentAppContentUnitTestBase::GetManifest(
     PaymentAppManager* manager,
-    const std::string& scope,
     const PaymentAppManager::GetManifestCallback& callback) {
   ASSERT_NE(nullptr, manager);
-  manager->GetManifest(scope, callback);
+  manager->GetManifest(callback);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -132,6 +139,16 @@ PaymentAppContentUnitTestBase::CreatePaymentAppManifestForTest(
   manifest->options.push_back(std::move(option));
 
   return manifest;
+}
+
+void PaymentAppContentUnitTestBase::UnregisterServiceWorker(
+    const GURL& scope_url) {
+  // Unregister service worker.
+  bool called = false;
+  embedded_worker_helper_->context()->UnregisterServiceWorker(
+      scope_url, base::Bind(&UnregisterServiceWorkerCallback, &called));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
 }
 
 }  // namespace content

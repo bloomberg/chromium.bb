@@ -18,8 +18,6 @@ namespace {
 
 const char kServiceWorkerPattern[] = "https://example.com/a";
 const char kServiceWorkerScript[] = "https://example.com/a/script.js";
-const char kUnregisteredServiceWorkerPattern[] =
-    "https://example.com/unregistered";
 
 void SetManifestCallback(bool* called,
                          PaymentAppManifestError* out_error,
@@ -61,7 +59,7 @@ TEST_F(PaymentAppManagerTest, SetAndGetManifest) {
   bool called = false;
   PaymentAppManifestError error =
       PaymentAppManifestError::MANIFEST_STORAGE_OPERATION_FAILED;
-  SetManifest(payment_app_manager(), kServiceWorkerPattern,
+  SetManifest(payment_app_manager(),
               CreatePaymentAppManifestForTest(kServiceWorkerPattern),
               base::Bind(&SetManifestCallback, &called, &error));
   ASSERT_TRUE(called);
@@ -72,9 +70,8 @@ TEST_F(PaymentAppManagerTest, SetAndGetManifest) {
   PaymentAppManifestPtr read_manifest;
   PaymentAppManifestError read_error =
       PaymentAppManifestError::MANIFEST_STORAGE_OPERATION_FAILED;
-  GetManifest(
-      payment_app_manager(), kServiceWorkerPattern,
-      base::Bind(&GetManifestCallback, &called, &read_manifest, &read_error));
+  GetManifest(payment_app_manager(), base::Bind(&GetManifestCallback, &called,
+                                                &read_manifest, &read_error));
   ASSERT_TRUE(called);
 
   ASSERT_EQ(payments::mojom::PaymentAppManifestError::NONE, read_error);
@@ -91,7 +88,8 @@ TEST_F(PaymentAppManagerTest, SetAndGetManifest) {
 TEST_F(PaymentAppManagerTest, SetManifestWithoutAssociatedServiceWorker) {
   bool called = false;
   PaymentAppManifestError error = PaymentAppManifestError::NONE;
-  SetManifest(payment_app_manager(), kUnregisteredServiceWorkerPattern,
+  UnregisterServiceWorker(GURL(kServiceWorkerPattern));
+  SetManifest(payment_app_manager(),
               CreatePaymentAppManifestForTest(kServiceWorkerPattern),
               base::Bind(&SetManifestCallback, &called, &error));
   ASSERT_TRUE(called);
@@ -103,9 +101,9 @@ TEST_F(PaymentAppManagerTest, GetManifestWithoutAssociatedServiceWorker) {
   bool called = false;
   PaymentAppManifestPtr read_manifest;
   PaymentAppManifestError read_error = PaymentAppManifestError::NONE;
-  GetManifest(
-      payment_app_manager(), kUnregisteredServiceWorkerPattern,
-      base::Bind(&GetManifestCallback, &called, &read_manifest, &read_error));
+  UnregisterServiceWorker(GURL(kServiceWorkerPattern));
+  GetManifest(payment_app_manager(), base::Bind(&GetManifestCallback, &called,
+                                                &read_manifest, &read_error));
   ASSERT_TRUE(called);
 
   EXPECT_EQ(PaymentAppManifestError::NO_ACTIVE_WORKER, read_error);
@@ -115,9 +113,8 @@ TEST_F(PaymentAppManagerTest, GetManifestWithNoSavedManifest) {
   bool called = false;
   PaymentAppManifestPtr read_manifest;
   PaymentAppManifestError read_error = PaymentAppManifestError::NONE;
-  GetManifest(
-      payment_app_manager(), kServiceWorkerPattern,
-      base::Bind(&GetManifestCallback, &called, &read_manifest, &read_error));
+  GetManifest(payment_app_manager(), base::Bind(&GetManifestCallback, &called,
+                                                &read_manifest, &read_error));
   ASSERT_TRUE(called);
 
   EXPECT_EQ(PaymentAppManifestError::MANIFEST_STORAGE_OPERATION_FAILED,

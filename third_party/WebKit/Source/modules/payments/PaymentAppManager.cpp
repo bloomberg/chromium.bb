@@ -101,7 +101,6 @@ ScriptPromise PaymentAppManager::setManifest(
   ScriptPromise promise = resolver->promise();
 
   m_manager->SetManifest(
-      m_registration->scope(),
       payments::mojom::blink::PaymentAppManifest::From(manifest),
       convertToBaseCallback(WTF::bind(&PaymentAppManager::onSetManifest,
                                       wrapPersistent(this),
@@ -120,10 +119,9 @@ ScriptPromise PaymentAppManager::getManifest(ScriptState* scriptState) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
-  m_manager->GetManifest(m_registration->scope(),
-                         convertToBaseCallback(WTF::bind(
-                             &PaymentAppManager::onGetManifest,
-                             wrapPersistent(this), wrapPersistent(resolver))));
+  m_manager->GetManifest(convertToBaseCallback(
+      WTF::bind(&PaymentAppManager::onGetManifest, wrapPersistent(this),
+                wrapPersistent(resolver))));
 
   return promise;
 }
@@ -140,6 +138,8 @@ PaymentAppManager::PaymentAppManager(ServiceWorkerRegistration* registration)
 
   m_manager.set_connection_error_handler(convertToBaseCallback(WTF::bind(
       &PaymentAppManager::onServiceConnectionError, wrapWeakPersistent(this))));
+
+  m_manager->Init(m_registration->scope());
 }
 
 void PaymentAppManager::onSetManifest(

@@ -34,14 +34,13 @@ class PaymentAppContentUnitTestBase : public testing::Test {
   PaymentAppManager* CreatePaymentAppManager(const GURL& scope_url,
                                              const GURL& sw_script_url);
   void SetManifest(PaymentAppManager* manager,
-                   const std::string& scope,
                    payments::mojom::PaymentAppManifestPtr manifest,
                    const PaymentAppManager::SetManifestCallback& callback);
   void GetManifest(PaymentAppManager* manager,
-                   const std::string& scope,
                    const PaymentAppManager::GetManifestCallback& callback);
   payments::mojom::PaymentAppManifestPtr CreatePaymentAppManifestForTest(
       const std::string& name);
+  void UnregisterServiceWorker(const GURL& scope_url);
 
  private:
   std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
