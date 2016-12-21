@@ -265,6 +265,22 @@ std::unique_ptr<base::Value> NetLogSpdyAdoptedPushStreamCallback(
   return std::move(dict);
 }
 
+std::unique_ptr<base::Value> NetLogSpdySessionStalledCallback(
+    size_t num_active_streams,
+    size_t num_created_streams,
+    size_t num_pushed_streams,
+    size_t max_concurrent_streams,
+    const std::string& url,
+    NetLogCaptureMode capture_mode) {
+  auto dict = base::MakeUnique<base::DictionaryValue>();
+  dict->SetInteger("num_active_streams", num_active_streams);
+  dict->SetInteger("num_created_streams", num_created_streams);
+  dict->SetInteger("num_pushed_streams", num_pushed_streams);
+  dict->SetInteger("max_concurrent_streams", max_concurrent_streams);
+  dict->SetString("url", url);
+  return std::move(dict);
+}
+
 // Helper function to return the total size of an array of objects
 // with .size() member functions.
 template <typename T, size_t N> size_t GetTotalSize(const T (&arr)[N]) {
@@ -824,7 +840,13 @@ int SpdySession::TryCreateStream(
     return CreateStream(*request, stream);
   }
 
-  net_log().AddEvent(NetLogEventType::HTTP2_SESSION_STALLED_MAX_STREAMS);
+  if (net_log().IsCapturing()) {
+    net_log().AddEvent(
+        NetLogEventType::HTTP2_SESSION_STALLED_MAX_STREAMS,
+        base::Bind(&NetLogSpdySessionStalledCallback, active_streams_.size(),
+                   created_streams_.size(), num_pushed_streams_,
+                   max_concurrent_streams_, request->url().spec()));
+  }
   RequestPriority priority = request->priority();
   CHECK_GE(priority, MINIMUM_PRIORITY);
   CHECK_LE(priority, MAXIMUM_PRIORITY);
