@@ -102,12 +102,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
      * @param item The item to mark for removal.
      */
     public void markItemForRemoval(HistoryItem item) {
-        ItemGroup group = getGroupAt(item.getPosition()).first;
-        group.removeItem(item);
-        // Remove the group if only the date header is left.
-        if (group.size() == 1) removeGroup(group);
-        notifyDataSetChanged();
-
+        removeItem(item);
         mBridge.markItemForRemoval(item);
     }
 

@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.widget.DateDividedAdapter.ItemGroup;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -442,10 +443,20 @@ public abstract class DateDividedAdapter extends Adapter<RecyclerView.ViewHolder
     }
 
     /**
-     * @param group The group to remove from the adapter.
+     * @param item The item to remove from the adapter.
      */
-    protected void removeGroup(ItemGroup group) {
-        mGroups.remove(group);
+    protected void removeItem(TimedItem item) {
+        ItemGroup group = getGroupAt(item.getPosition()).first;
+        group.removeItem(item);
+        mSize--;
+
+        // Remove the group if only the date header is left.
+        if (group.size() == 1) {
+            mGroups.remove(group);
+            mSize--;
+        }
+
+        notifyDataSetChanged();
     }
 
     /**
