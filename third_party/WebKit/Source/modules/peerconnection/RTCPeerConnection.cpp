@@ -1147,8 +1147,7 @@ ScriptPromise RTCPeerConnection::getStats(ScriptState* scriptState,
   return promise;
 }
 
-ScriptPromise RTCPeerConnection::getStats(ScriptState* scriptState,
-                                          MediaStreamTrack* selector) {
+ScriptPromise RTCPeerConnection::getStats(ScriptState* scriptState) {
   ExecutionContext* context = scriptState->getExecutionContext();
   UseCounter::count(context, UseCounter::RTCPeerConnectionGetStats);
 

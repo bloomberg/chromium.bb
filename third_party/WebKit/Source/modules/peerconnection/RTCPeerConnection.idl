@@ -107,7 +107,10 @@ enum RTCIceConnectionState {
     // non-optional) argument, and there should be a third failureCallback
     // argument.
     [CallWith=ScriptState, LegacyInterfaceTypeChecking] Promise<void> getStats(RTCStatsCallback successCallback, optional MediaStreamTrack? selector);
-    [CallWith=ScriptState, RuntimeEnabled=RTCPeerConnectionNewGetStats] Promise<RTCStatsReport> getStats(optional MediaStreamTrack? selector);
+    // TODO(hbos): The spec has an optional |selector| argument that is not
+    // supported yet. There is a discussion about what to do with it (clarify
+    // spec, remove it or change it?): https://github.com/w3c/webrtc-stats/issues/116
+    [CallWith=ScriptState, RuntimeEnabled=RTCPeerConnectionNewGetStats] Promise<RTCStatsReport> getStats();
 
     // https://w3c.github.io/webrtc-pc/#peer-to-peer-data-api
     // TODO(guidou): The label argument should have [TreatNullAs=EmptyString]

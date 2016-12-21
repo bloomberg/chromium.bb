@@ -147,7 +147,7 @@ class RTCPeerConnection final : public EventTargetWithInlineData,
   ScriptPromise getStats(ScriptState*,
                          RTCStatsCallback* successCallback,
                          MediaStreamTrack* selector = nullptr);
-  ScriptPromise getStats(ScriptState*, MediaStreamTrack* selector = nullptr);
+  ScriptPromise getStats(ScriptState*);
 
   RTCDataChannel* createDataChannel(ExecutionContext*,
                                     String label,

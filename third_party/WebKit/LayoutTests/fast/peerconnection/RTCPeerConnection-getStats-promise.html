@@ -46,26 +46,22 @@ function assert_expected_report(report) {
 }
 
 promise_test(function() {
+  let test = this;
   return navigator.mediaDevices.getUserMedia({audio:true, video:true})
     .then(function(mediaStream) {
         pc.addStream(mediaStream);
         var selector = pc.getLocalStreams()[0].getVideoTracks()[0];
         assert_not_equals(selector, null);
-        return pc.getStats(selector)
-          .then(function(report) {
-              assert_expected_report(report);
-            });
+        return promise_rejects(test, new TypeError(), pc.getStats(selector));
       });
 }, 'getStats(MediaStreamTrack selector)');
 
 promise_test(function() {
+  let test = this;
   return navigator.mediaDevices.getUserMedia({audio:true, video:true})
     .then(function(mediaStream) {
         pc.addStream(mediaStream);
-        return pc.getStats(null)
-          .then(function(report) {
-              assert_expected_report(report);
-            });
+        return promise_rejects(test, new TypeError(), pc.getStats(null));
       });
 }, 'getStats(null)');
 
