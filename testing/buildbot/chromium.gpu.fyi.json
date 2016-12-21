@@ -10363,6 +10363,9 @@
         "use_xvfb": false
       },
       {
+        "args": [
+          "--test_video_data=../../media/test/data/test-25fps.h264:320:240:250:258:50:175:1"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -10836,6 +10839,9 @@
         "use_xvfb": false
       },
       {
+        "args": [
+          "--test_video_data=../../media/test/data/test-25fps.h264:320:240:250:258:50:175:1"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11325,6 +11331,9 @@
         "use_xvfb": false
       },
       {
+        "args": [
+          "--test_video_data=../../media/test/data/test-25fps.h264:320:240:250:258:50:175:1"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -11837,6 +11846,9 @@
         "use_xvfb": false
       },
       {
+        "args": [
+          "--test_video_data=../../media/test/data/test-25fps.h264:320:240:250:258:50:175:1"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12336,6 +12348,9 @@
         "use_xvfb": false
       },
       {
+        "args": [
+          "--test_video_data=../../media/test/data/test-25fps.h264:320:240:250:258:50:175:1"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12786,6 +12801,9 @@
         "use_xvfb": false
       },
       {
+        "args": [
+          "--test_video_data=../../media/test/data/test-25fps.h264:320:240:250:258:50:175:1"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13259,6 +13277,9 @@
         "use_xvfb": false
       },
       {
+        "args": [
+          "--test_video_data=../../media/test/data/test-25fps.h264:320:240:250:258:50:175:1"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -13705,6 +13726,9 @@
         "use_xvfb": false
       },
       {
+        "args": [
+          "--test_video_data=../../media/test/data/test-25fps.h264:320:240:250:258:50:175:1"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14235,6 +14259,9 @@
         "use_xvfb": false
       },
       {
+        "args": [
+          "--test_video_data=../../media/test/data/test-25fps.h264:320:240:250:258:50:175:1"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -14724,6 +14751,9 @@
         "use_xvfb": false
       },
       {
+        "args": [
+          "--test_video_data=../../media/test/data/test-25fps.h264:320:240:250:258:50:175:1"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15213,6 +15243,9 @@
         "use_xvfb": false
       },
       {
+        "args": [
+          "--test_video_data=../../media/test/data/test-25fps.h264:320:240:250:258:50:175:1"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -15820,6 +15853,9 @@
         "use_xvfb": false
       },
       {
+        "args": [
+          "--test_video_data=../../media/test/data/test-25fps.h264:320:240:250:258:50:175:1"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16332,6 +16368,9 @@
         "use_xvfb": false
       },
       {
+        "args": [
+          "--test_video_data=../../media/test/data/test-25fps.h264:320:240:250:258:50:175:1"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -16808,6 +16847,9 @@
         "use_xvfb": false
       },
       {
+        "args": [
+          "--test_video_data=../../media/test/data/test-25fps.h264:320:240:250:258:50:175:1"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -17332,6 +17374,9 @@
         "use_xvfb": false
       },
       {
+        "args": [
+          "--test_video_data=../../media/test/data/test-25fps.h264:320:240:250:258:50:175:1"
+        ],
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

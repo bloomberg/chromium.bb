@@ -951,7 +951,7 @@
   "video_decode_accelerator_unittest": {
     "label": "//media/gpu:video_decode_accelerator_unittest",
     "type": "raw",
-    "args": ["--test_video_data=../../media/test/data/test-25fps.h264:320:240:250:258:50:175:1"],
+    "args": [],
   },
   "views_aura_mus_unittests": {
     "label": "//ui/views/mus:views_aura_mus_unittests",

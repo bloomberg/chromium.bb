@@ -1093,6 +1093,10 @@ COMMON_GTESTS = {
         'os_types': ['win']
       },
     ],
+    'args': [
+      '--test_video_data='
+          '../../media/test/data/test-25fps.h264:320:240:250:258:50:175:1'
+    ],
   },
 }
 
