@@ -982,9 +982,9 @@ void SVGSMILElement::endListChanged(SMILTime) {
 }
 
 SVGSMILElement::RestartedInterval SVGSMILElement::maybeRestartInterval(
-    SMILTime elapsed) {
-  ASSERT(!m_isWaitingForFirstInterval);
-  ASSERT(elapsed >= m_interval.begin);
+    double elapsed) {
+  DCHECK(!m_isWaitingForFirstInterval);
+  DCHECK(elapsed >= m_interval.begin);
 
   Restart restart = this->getRestart();
   if (restart == RestartNever)
@@ -1007,9 +1007,9 @@ SVGSMILElement::RestartedInterval SVGSMILElement::maybeRestartInterval(
   return DidNotRestartInterval;
 }
 
-void SVGSMILElement::seekToIntervalCorrespondingToTime(SMILTime elapsed) {
-  ASSERT(!m_isWaitingForFirstInterval);
-  ASSERT(elapsed >= m_interval.begin);
+void SVGSMILElement::seekToIntervalCorrespondingToTime(double elapsed) {
+  DCHECK(!m_isWaitingForFirstInterval);
+  DCHECK(elapsed >= m_interval.begin);
 
   // Manually seek from interval to interval, just as if the animation would run
   // regulary.
@@ -1048,7 +1048,7 @@ void SVGSMILElement::seekToIntervalCorrespondingToTime(SMILTime elapsed) {
 }
 
 float SVGSMILElement::calculateAnimationPercentAndRepeat(
-    SMILTime elapsed,
+    double elapsed,
     unsigned& repeat) const {
   SMILTime simpleDuration = this->simpleDuration();
   repeat = 0;
@@ -1060,9 +1060,9 @@ float SVGSMILElement::calculateAnimationPercentAndRepeat(
     repeat = 0;
     return 1.f;
   }
-  ASSERT(m_interval.begin.isFinite());
-  ASSERT(simpleDuration.isFinite());
-  SMILTime activeTime = elapsed - m_interval.begin;
+  DCHECK(m_interval.begin.isFinite());
+  DCHECK(simpleDuration.isFinite());
+  double activeTime = elapsed - m_interval.begin.value();
   SMILTime repeatingDuration = this->repeatingDuration();
   if (elapsed >= m_interval.end || activeTime > repeatingDuration) {
     repeat = static_cast<unsigned>(repeatingDuration.value() /
@@ -1078,12 +1078,12 @@ float SVGSMILElement::calculateAnimationPercentAndRepeat(
       return 1.0f;
     return clampTo<float>(percent);
   }
-  repeat = static_cast<unsigned>(activeTime.value() / simpleDuration.value());
-  SMILTime simpleTime = fmod(activeTime.value(), simpleDuration.value());
-  return clampTo<float>(simpleTime.value() / simpleDuration.value());
+  repeat = static_cast<unsigned>(activeTime / simpleDuration.value());
+  double simpleTime = fmod(activeTime, simpleDuration.value());
+  return clampTo<float>(simpleTime / simpleDuration.value());
 }
 
-SMILTime SVGSMILElement::calculateNextProgressTime(SMILTime elapsed) const {
+SMILTime SVGSMILElement::calculateNextProgressTime(double elapsed) const {
   if (m_activeState == Active) {
     // If duration is indefinite the value does not actually change over time.
     // Same is true for <set>.
@@ -1113,7 +1113,7 @@ SVGSMILElement::ActiveState SVGSMILElement::determineActiveState(
   return fill() == FillFreeze ? Frozen : Inactive;
 }
 
-bool SVGSMILElement::isContributing(SMILTime elapsed) const {
+bool SVGSMILElement::isContributing(double elapsed) const {
   // Animation does not contribute during the active time if it is past its
   // repeating duration and has fill=remove.
   return (m_activeState == Active &&
@@ -1122,7 +1122,7 @@ bool SVGSMILElement::isContributing(SMILTime elapsed) const {
          m_activeState == Frozen;
 }
 
-bool SVGSMILElement::progress(SMILTime elapsed, bool seekToTime) {
+bool SVGSMILElement::progress(double elapsed, bool seekToTime) {
   ASSERT(m_timeContainer);
   ASSERT(m_isWaitingForFirstInterval || m_interval.begin.isFinite());
 

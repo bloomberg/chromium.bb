@@ -85,8 +85,8 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime previousIntervalBegin() const { return m_previousIntervalBegin; }
   SMILTime simpleDuration() const;
 
-  void seekToIntervalCorrespondingToTime(SMILTime elapsed);
-  bool progress(SMILTime elapsed, bool seekToTime);
+  void seekToIntervalCorrespondingToTime(double elapsed);
+  bool progress(double elapsed, bool seekToTime);
   SMILTime nextProgressTime() const;
   void updateAnimatedValue(SVGSMILElement* resultElement) {
     updateAnimation(m_lastPercent, m_lastRepeat, resultElement);
@@ -97,7 +97,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   static SMILTime parseClockValue(const String&);
   static SMILTime parseOffsetValue(const String&);
 
-  bool isContributing(SMILTime elapsed) const;
+  bool isContributing(double elapsed) const;
   bool isFrozen() const;
 
   unsigned documentOrderIndex() const { return m_documentOrderIndex; }
@@ -176,7 +176,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   enum RestartedInterval { DidNotRestartInterval, DidRestartInterval };
 
-  RestartedInterval maybeRestartInterval(SMILTime elapsed);
+  RestartedInterval maybeRestartInterval(double elapsed);
   void beginListChanged(SMILTime eventTime);
   void endListChanged(SMILTime eventTime);
 
@@ -247,9 +247,9 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   QualifiedName m_attributeName;
 
   ActiveState determineActiveState(SMILTime elapsed) const;
-  float calculateAnimationPercentAndRepeat(SMILTime elapsed,
+  float calculateAnimationPercentAndRepeat(double elapsed,
                                            unsigned& repeat) const;
-  SMILTime calculateNextProgressTime(SMILTime elapsed) const;
+  SMILTime calculateNextProgressTime(double elapsed) const;
 
   Member<SVGElement> m_targetElement;
 
