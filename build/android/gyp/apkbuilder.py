@@ -163,12 +163,15 @@ def _AddNativeLibraries(out_apk, native_libs, android_abi, uncompress):
   """Add native libraries to APK."""
   for path in native_libs:
     basename = os.path.basename(path)
-    apk_path = 'lib/%s/%s' % (android_abi, basename)
 
     compress = None
-    if (uncompress and os.path.splitext(basename)[1] == '.so'):
+    if (uncompress and os.path.splitext(basename)[1] == '.so'
+        and 'android_linker' not in basename):
       compress = False
+      # Add prefix to prevent android install from extracting upon install.
+      basename = 'crazy.' + basename
 
+    apk_path = 'lib/%s/%s' % (android_abi, basename)
     build_utils.AddToZipHermetic(out_apk,
                                  apk_path,
                                  src_path=path,
@@ -265,8 +268,9 @@ def main(args):
                               options.uncompress_shared_libraries)
 
         for name in sorted(options.native_lib_placeholders):
-          # Empty libs files are ignored by md5check, but rezip requires them
-          # to be empty in order to identify them as placeholders.
+          # Note: Empty libs files are ignored by md5check (can cause issues
+          # with stale builds when the only change is adding/removing
+          # placeholders).
           apk_path = 'lib/%s/%s' % (options.android_abi, name)
           build_utils.AddToZipHermetic(out_apk, apk_path, data='')
 

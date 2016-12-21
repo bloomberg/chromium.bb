@@ -135,8 +135,7 @@ def AddDiffFiles(diff_files, tmp_dir_32, out_zip, expected_files,
 
 
 def SignAndAlignApk(tmp_apk, signed_tmp_apk, new_apk, zipalign_path,
-                    keystore_path, key_name, key_password,
-                    page_align_shared_libraries):
+                    keystore_path, key_name, key_password):
   try:
     finalize_apk.JarSigner(
         keystore_path,
@@ -149,7 +148,6 @@ def SignAndAlignApk(tmp_apk, signed_tmp_apk, new_apk, zipalign_path,
 
   try:
     finalize_apk.AlignApk(zipalign_path,
-                          page_align_shared_libraries,
                           signed_tmp_apk,
                           new_apk)
   except build_utils.CalledProcessError as e:
@@ -224,7 +222,8 @@ def main():
   parser.add_argument('--key_name', required=True)
   parser.add_argument('--key_password', required=True)
   parser.add_argument('--shared_library')
-  parser.add_argument('--page-align-shared-libraries', action='store_true')
+  parser.add_argument('--page-align-shared-libraries', action='store_true',
+                      help='Obsolete, but remains for backwards compatibility')
   parser.add_argument('--uncompress-shared-libraries', action='store_true')
   parser.add_argument('--debug', action='store_true')
   # This option shall only used in debug build, see http://crbug.com/631494.
@@ -250,8 +249,7 @@ def main():
     MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64)
 
     SignAndAlignApk(tmp_apk, signed_tmp_apk, new_apk, args.zipalign_path,
-                    args.keystore_path, args.key_name, args.key_password,
-                    args.page_align_shared_libraries)
+                    args.keystore_path, args.key_name, args.key_password)
 
   except ApkMergeFailure as e:
     print e
