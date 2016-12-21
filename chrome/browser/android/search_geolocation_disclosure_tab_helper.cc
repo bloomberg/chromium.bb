@@ -90,6 +90,10 @@ void SearchGeolocationDisclosureTabHelper::RegisterProfilePrefs(
 
 void SearchGeolocationDisclosureTabHelper::
     MaybeShowDefaultSearchGeolocationDisclosure(const GURL& gurl) {
+  // Don't show in incognito.
+  if (GetProfile()->IsOffTheRecord())
+    return;
+
   // Only show the disclosure for default search navigations from the omnibox.
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(GetProfile());
