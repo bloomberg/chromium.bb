@@ -230,6 +230,7 @@ component("skia") {
   sources += skia_core_sources
   sources += skia_effects_sources
   sources += skia_utils_sources
+  sources += skia_xps_sources
   sources += [
     "//third_party/skia/src/fonts/SkFontMgr_indirect.cpp",
     "//third_party/skia/src/fonts/SkRemotableFontMgr.cpp",
@@ -258,9 +259,6 @@ component("skia") {
     "//third_party/skia/src/ports/SkTypeface_win_dw.cpp",
     "//third_party/skia/src/sfnt/SkOTTable_name.cpp",
     "//third_party/skia/src/sfnt/SkOTUtils.cpp",
-    "//third_party/skia/src/xps/SkDocument_XPS.cpp",
-    "//third_party/skia/src/xps/SkDocument_XPS_None.cpp",
-    "//third_party/skia/src/xps/SkXPSDevice.cpp",
   ]
 
   if (is_mac) {
