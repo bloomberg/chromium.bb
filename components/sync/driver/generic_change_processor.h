@@ -14,7 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 #include "components/sync/model/attachments/attachment_service.h"
 #include "components/sync/model/attachments/attachment_service_proxy.h"
 #include "components/sync/model/attachments/attachment_store.h"
@@ -38,17 +38,16 @@ class Entry;
 typedef std::vector<SyncData> SyncDataList;
 
 // Datatype agnostic change processor. One instance of GenericChangeProcessor
-// is created for each datatype and lives on the datatype's thread. It then
+// is created for each datatype and lives on the datatype's sequence. It then
 // handles all interaction with the sync api, both translating pushes from the
 // local service into transactions and receiving changes from the sync model,
 // which then get converted into SyncChange's and sent to the local service.
 //
 // As a rule, the GenericChangeProcessor is not thread safe, and should only
-// be used on the same thread in which it was created.
+// be used on the same sequence in which it was created.
 class GenericChangeProcessor : public ChangeProcessor,
                                public SyncChangeProcessor,
-                               public AttachmentService::Delegate,
-                               public base::NonThreadSafe {
+                               public AttachmentService::Delegate {
  public:
   // Create a change processor for |type| and connect it to the syncer.
   // |attachment_store| can be null which means that datatype will not use sync
@@ -146,6 +145,8 @@ class GenericChangeProcessor : public ChangeProcessor,
   // applied to |current_entry|.
   void NotifyLocalChangeObservers(const syncable::Entry* current_entry,
                                   const SyncChange& change);
+
+  base::SequenceChecker sequence_checker_;
 
   const ModelType type_;
 

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "components/sync/driver/data_type_controller.h"
@@ -78,8 +79,8 @@ class SharedChangeProcessor
       std::unique_ptr<DataTypeErrorHandler> error_handler,
       const base::WeakPtr<SyncMergeResult>& merge_result);
 
-  // Disconnects from the generic change processor. May be called from any
-  // thread. After this, all attempts to interact with the change processor by
+  // Disconnects from the generic change processor. This method is thread-safe.
+  // After this, all attempts to interact with the change processor by
   // |local_service_| are dropped and return errors. The syncer will be safe to
   // shut down from the point of view of this datatype.
   // Note: Once disconnected, you cannot reconnect without creating a new
@@ -89,7 +90,7 @@ class SharedChangeProcessor
   virtual bool Disconnect();
 
   // GenericChangeProcessor stubs (with disconnect support).
-  // Should only be called on the same thread the datatype resides.
+  // Should only be called on the same sequence the datatype resides.
   virtual int GetSyncCount();
   virtual SyncError ProcessSyncChanges(
       const tracked_objects::Location& from_here,
@@ -143,11 +144,11 @@ class SharedChangeProcessor
   // destructed and/or disconnected on this loop, see ~SharedChangeProcessor.
   const scoped_refptr<const base::SingleThreadTaskRunner> frontend_task_runner_;
 
-  // The loop that all methods except the constructor, destructor, and
-  // Disconnect() should be called on.  Set in Connect().
-  scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner_;
+  // The execution sequence that all methods except the constructor, destructor,
+  // and Disconnect() should be called on. Set in Connect().
+  scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
 
-  // Used only on |backend_loop_|.
+  // Used only on |backend_task_runner_|.
   GenericChangeProcessor* generic_change_processor_;
 
   std::unique_ptr<DataTypeErrorHandler> error_handler_;
