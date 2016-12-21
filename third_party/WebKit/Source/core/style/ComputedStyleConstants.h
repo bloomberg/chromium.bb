@@ -156,17 +156,17 @@ enum class EOverflow : unsigned {
   PagedY
 };
 
-enum EVerticalAlign {
-  VerticalAlignBaseline,
-  VerticalAlignMiddle,
-  VerticalAlignSub,
-  VerticalAlignSuper,
-  VerticalAlignTextTop,
-  VerticalAlignTextBottom,
-  VerticalAlignTop,
-  VerticalAlignBottom,
-  VerticalAlignBaselineMiddle,
-  VerticalAlignLength
+enum class EVerticalAlign : unsigned {
+  Baseline,
+  Middle,
+  Sub,
+  Super,
+  TextTop,
+  TextBottom,
+  Top,
+  Bottom,
+  BaselineMiddle,
+  Length
 };
 
 enum EClear { ClearNone = 0, ClearLeft = 1, ClearRight = 2, ClearBoth = 3 };

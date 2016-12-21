@@ -534,7 +534,7 @@ void StyleBuilderFunctions::applyInheritCSSPropertyVerticalAlign(
     StyleResolverState& state) {
   EVerticalAlign verticalAlign = state.parentStyle()->verticalAlign();
   state.style()->setVerticalAlign(verticalAlign);
-  if (verticalAlign == VerticalAlignLength)
+  if (verticalAlign == EVerticalAlign::Length)
     state.style()->setVerticalAlignLength(
         state.parentStyle()->getVerticalAlignLength());
 }

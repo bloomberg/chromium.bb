@@ -291,7 +291,7 @@ bool LengthPropertyFunctions::getLength(CSSPropertyID property,
       result = style.strokeWidth().length();
       return true;
     case CSSPropertyVerticalAlign:
-      if (style.verticalAlign() != VerticalAlignLength)
+      if (style.verticalAlign() != EVerticalAlign::Length)
         return false;
       result = style.getVerticalAlignLength();
       return true;

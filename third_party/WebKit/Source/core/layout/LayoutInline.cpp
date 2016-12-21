@@ -235,8 +235,8 @@ void LayoutInline::updateAlwaysCreateLineBoxes(bool fullLayout) {
   bool alwaysCreateLineBoxesNew =
       (parentLayoutInline && parentLayoutInline->alwaysCreateLineBoxes()) ||
       (parentLayoutInline &&
-       parentStyle.verticalAlign() != VerticalAlignBaseline) ||
-      style()->verticalAlign() != VerticalAlignBaseline ||
+       parentStyle.verticalAlign() != EVerticalAlign::Baseline) ||
+      style()->verticalAlign() != EVerticalAlign::Baseline ||
       style()->getTextEmphasisMark() != TextEmphasisMarkNone ||
       (checkFonts &&
        (!styleRef().hasIdenticalAscentDescentAndLineGap(parentStyle) ||
@@ -249,7 +249,7 @@ void LayoutInline::updateAlwaysCreateLineBoxes(bool fullLayout) {
     const ComputedStyle& childStyle = styleRef(true);
     alwaysCreateLineBoxesNew =
         !firstLineParentStyle.hasIdenticalAscentDescentAndLineGap(childStyle) ||
-        childStyle.verticalAlign() != VerticalAlignBaseline ||
+        childStyle.verticalAlign() != EVerticalAlign::Baseline ||
         firstLineParentStyle.lineHeight() != childStyle.lineHeight();
   }
 

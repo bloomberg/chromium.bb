@@ -329,7 +329,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
         static_cast<unsigned>(initialOverflowAnchor());
     m_nonInheritedData.m_overflowX = static_cast<unsigned>(initialOverflowX());
     m_nonInheritedData.m_overflowY = static_cast<unsigned>(initialOverflowY());
-    m_nonInheritedData.m_verticalAlign = initialVerticalAlign();
+    m_nonInheritedData.m_verticalAlign =
+        static_cast<unsigned>(initialVerticalAlign());
     m_nonInheritedData.m_clear = initialClear();
     m_nonInheritedData.m_position = initialPosition();
     m_nonInheritedData.m_tableLayout = initialTableLayout();
@@ -1878,7 +1879,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void setUnicodeBidi(EUnicodeBidi b) { m_nonInheritedData.m_unicodeBidi = b; }
 
   // vertical-align
-  static EVerticalAlign initialVerticalAlign() { return VerticalAlignBaseline; }
+  static EVerticalAlign initialVerticalAlign() {
+    return EVerticalAlign::Baseline;
+  }
   EVerticalAlign verticalAlign() const {
     return static_cast<EVerticalAlign>(m_nonInheritedData.m_verticalAlign);
   }
@@ -1886,10 +1889,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return m_box->verticalAlign();
   }
   void setVerticalAlign(EVerticalAlign v) {
-    m_nonInheritedData.m_verticalAlign = v;
+    m_nonInheritedData.m_verticalAlign = static_cast<unsigned>(v);
   }
   void setVerticalAlignLength(const Length& length) {
-    setVerticalAlign(VerticalAlignLength);
+    setVerticalAlign(EVerticalAlign::Length);
     SET_VAR(m_box, m_verticalAlign, length);
   }
 

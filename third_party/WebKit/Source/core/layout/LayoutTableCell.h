@@ -195,9 +195,9 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   int cellBaselinePosition() const;
   bool isBaselineAligned() const {
     EVerticalAlign va = style()->verticalAlign();
-    return va == VerticalAlignBaseline || va == VerticalAlignTextBottom ||
-           va == VerticalAlignTextTop || va == VerticalAlignSuper ||
-           va == VerticalAlignSub || va == VerticalAlignLength;
+    return va == EVerticalAlign::Baseline || va == EVerticalAlign::TextBottom ||
+           va == EVerticalAlign::TextTop || va == EVerticalAlign::Super ||
+           va == EVerticalAlign::Sub || va == EVerticalAlign::Length;
   }
 
   // Align the cell in the block direction. This is done by calculating an

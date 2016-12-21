@@ -88,8 +88,8 @@ static inline bool hasIdenticalLineHeightProperties(
     bool isRoot) {
   return parentStyle.hasIdenticalAscentDescentAndLineGap(childStyle) &&
          parentStyle.lineHeight() == childStyle.lineHeight() &&
-         (parentStyle.verticalAlign() == VerticalAlignBaseline || isRoot) &&
-         childStyle.verticalAlign() == VerticalAlignBaseline;
+         (parentStyle.verticalAlign() == EVerticalAlign::Baseline || isRoot) &&
+         childStyle.verticalAlign() == EVerticalAlign::Baseline;
 }
 
 void InlineFlowBox::addToLine(InlineBox* child) {
@@ -531,10 +531,10 @@ void InlineFlowBox::adjustMaxAscentAndDescent(int& maxAscent,
     // positioned elements
     if (curr->getLineLayoutItem().isOutOfFlowPositioned())
       continue;  // Positioned placeholders don't affect calculations.
-    if (curr->verticalAlign() == VerticalAlignTop ||
-        curr->verticalAlign() == VerticalAlignBottom) {
+    if (curr->verticalAlign() == EVerticalAlign::Top ||
+        curr->verticalAlign() == EVerticalAlign::Bottom) {
       int lineHeight = curr->lineHeight().round();
-      if (curr->verticalAlign() == VerticalAlignTop) {
+      if (curr->verticalAlign() == EVerticalAlign::Top) {
         if (maxAscent + maxDescent < lineHeight)
           maxDescent = lineHeight - maxAscent;
       } else {
@@ -637,10 +637,10 @@ void InlineFlowBox::computeLogicalBoxHeights(
                                     affectsAscent, affectsDescent);
 
     LayoutUnit boxHeight(ascent + descent);
-    if (curr->verticalAlign() == VerticalAlignTop) {
+    if (curr->verticalAlign() == EVerticalAlign::Top) {
       if (maxPositionTop < boxHeight)
         maxPositionTop = boxHeight;
-    } else if (curr->verticalAlign() == VerticalAlignBottom) {
+    } else if (curr->verticalAlign() == EVerticalAlign::Bottom) {
       if (maxPositionBottom < boxHeight)
         maxPositionBottom = boxHeight;
     } else if (!inlineFlowBox || noQuirksMode ||
@@ -728,9 +728,9 @@ void InlineFlowBox::placeBoxesInBlockDirection(
     InlineFlowBox* inlineFlowBox =
         curr->isInlineFlowBox() ? toInlineFlowBox(curr) : nullptr;
     bool childAffectsTopBottomPos = true;
-    if (curr->verticalAlign() == VerticalAlignTop) {
+    if (curr->verticalAlign() == EVerticalAlign::Top) {
       curr->setLogicalTop(top);
-    } else if (curr->verticalAlign() == VerticalAlignBottom) {
+    } else if (curr->verticalAlign() == EVerticalAlign::Bottom) {
       curr->setLogicalTop((top + maxHeight - curr->lineHeight()));
     } else {
       if (!noQuirksMode && inlineFlowBox && !inlineFlowBox->hasTextChildren() &&

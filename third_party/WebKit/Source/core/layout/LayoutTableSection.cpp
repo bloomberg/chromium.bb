@@ -1199,7 +1199,7 @@ void LayoutTableSection::layoutRows() {
       // dependencies and unstable layout.
       if (state.isPaginated() &&
           crossesPageBoundary(LayoutUnit(rowLogicalTop), LayoutUnit(rHeight)))
-        cellVerticalAlign = VerticalAlignTop;
+        cellVerticalAlign = EVerticalAlign::Top;
       else
         cellVerticalAlign = cell->style()->verticalAlign();
       cell->computeIntrinsicPadding(rHeight, cellVerticalAlign, layouter);
