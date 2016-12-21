@@ -108,7 +108,7 @@ class ImageLoader::Task {
     v8::HandleScope scope(isolate);
     // If we're invoked from C++ without a V8 context on the stack, we should
     // run the microtask in the context of the element's document's main world.
-    if (ScriptState::hasCurrentScriptState(isolate)) {
+    if (!isolate->GetCurrentContext().IsEmpty()) {
       m_scriptState = ScriptState::current(isolate);
     } else {
       m_scriptState =

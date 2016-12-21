@@ -46,9 +46,7 @@ namespace blink {
 static V8PerIsolateData* mainThreadPerIsolateData = 0;
 
 static void beforeCallEnteredCallback(v8::Isolate* isolate) {
-  RELEASE_ASSERT(!ScriptForbiddenScope::isScriptForbidden() ||
-                 isolate->GetCurrentContext() ==
-                     v8::Debug::GetDebugContext(isolate));
+  RELEASE_ASSERT(!ScriptForbiddenScope::isScriptForbidden());
 }
 
 static void microtasksCompletedCallback(v8::Isolate* isolate) {

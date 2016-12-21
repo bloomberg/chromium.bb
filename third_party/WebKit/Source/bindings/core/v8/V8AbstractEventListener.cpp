@@ -203,7 +203,7 @@ v8::Local<v8::Object> V8AbstractEventListener::getReceiverObject(
 
 bool V8AbstractEventListener::belongsToTheCurrentWorld(
     ExecutionContext* executionContext) const {
-  if (ScriptState::hasCurrentScriptState(isolate()) &&
+  if (!isolate()->GetCurrentContext().IsEmpty() &&
       &world() == &DOMWrapperWorld::current(isolate()))
     return true;
   // If currently parsing, the parser could be accessing this listener

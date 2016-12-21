@@ -123,16 +123,6 @@ class CORE_EXPORT ScriptState : public RefCounted<ScriptState> {
     return from(info.Holder()->CreationContext());
   }
 
-  // Debugger context doesn't have associated ScriptState and when current
-  // context is debugger it should be treated as if context stack was empty.
-  static bool hasCurrentScriptState(v8::Isolate* isolate) {
-    v8::HandleScope scope(isolate);
-    v8::Local<v8::Context> context = isolate->GetCurrentContext();
-    if (context.IsEmpty())
-      return false;
-    return context != v8::Debug::GetDebugContext(isolate);
-  }
-
   static ScriptState* from(v8::Local<v8::Context> context) {
     ASSERT(!context.IsEmpty());
     ScriptState* scriptState =
