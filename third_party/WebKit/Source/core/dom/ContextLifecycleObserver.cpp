@@ -9,6 +9,25 @@
 
 namespace blink {
 
+ContextClient::ContextClient(LocalFrame* frame)
+    : m_executionContext(frame ? frame->document() : nullptr) {}
+
+ExecutionContext* ContextClient::getExecutionContext() const {
+  return m_executionContext && !m_executionContext->isContextDestroyed()
+             ? m_executionContext
+             : nullptr;
+}
+
+LocalFrame* ContextClient::frame() const {
+  return m_executionContext && m_executionContext->isDocument()
+             ? toDocument(m_executionContext)->frame()
+             : nullptr;
+}
+
+DEFINE_TRACE(ContextClient) {
+  visitor->trace(m_executionContext);
+}
+
 LocalFrame* ContextLifecycleObserver::frame() const {
   return getExecutionContext() && getExecutionContext()->isDocument()
              ? toDocument(getExecutionContext())->frame()

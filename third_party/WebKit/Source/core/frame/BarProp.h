@@ -30,7 +30,7 @@
 #define BarProp_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -39,7 +39,7 @@ class LocalFrame;
 
 class BarProp final : public GarbageCollected<BarProp>,
                       public ScriptWrappable,
-                      public DOMWindowProperty {
+                      public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(BarProp);
 

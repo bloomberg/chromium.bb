@@ -35,14 +35,35 @@ namespace blink {
 
 class LocalFrame;
 
+// ContextClient and ContextLifecycleObserver are helpers to associate a
+// class with an ExecutionContext. ContextLifecycleObserver provides an
+// additional contextDestroyed() hook to execute cleanup code when a
+// context is destroyed. Prefer the simpler ContextClient when possible.
+//
+// getExecutionContext() returns null after the observing context is detached.
+// frame() returns null after the observing context is detached or if the
+// context doesn't have a frame (i.e., if the context is not a Document).
+
+class CORE_EXPORT ContextClient : public GarbageCollectedMixin {
+ public:
+  ExecutionContext* getExecutionContext() const;
+  LocalFrame* frame() const;
+
+  DECLARE_VIRTUAL_TRACE();
+
+ protected:
+  explicit ContextClient(ExecutionContext* executionContext)
+      : m_executionContext(executionContext) {}
+  explicit ContextClient(LocalFrame*);
+
+ private:
+  WeakMember<ExecutionContext> m_executionContext;
+};
+
 class CORE_EXPORT ContextLifecycleObserver
     : public LifecycleObserver<ExecutionContext, ContextLifecycleObserver> {
  public:
-  // Returns null after the observing context is detached.
   ExecutionContext* getExecutionContext() const { return lifecycleContext(); }
-
-  // Returns null after the observing context is detached or if the context
-  // doesn't have a frame (i.e., if the context is not a Document).
   LocalFrame* frame() const;
 
   enum Type {
