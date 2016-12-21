@@ -74,6 +74,9 @@ class CORE_EXPORT HTMLViewSourceDocument final : public HTMLDocument {
                bool isLink = false,
                bool isAnchor = false,
                const AtomicString& link = nullAtom);
+  int addSrcset(const String& source,
+               int start,
+               int end);
   void maybeAddSpanForAnnotation(SourceAnnotation);
 
   Element* addLink(const AtomicString& url, bool isAnchor);

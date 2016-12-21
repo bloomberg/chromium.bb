@@ -162,9 +162,13 @@ void HTMLViewSourceDocument::processTagToken(const String& source,
     index = addRange(source, index,
                      iter->valueRange().start - token.startIndex(), emptyAtom);
 
-    bool isLink = name == srcAttr || name == hrefAttr;
-    index = addRange(source, index, iter->valueRange().end - token.startIndex(),
-                     "html-attribute-value", isLink, tagName == aTag, value);
+    if (name == srcsetAttr) {
+        index = addSrcset(source, index, iter->valueRange().end - token.startIndex());
+    } else {
+        bool isLink = name == srcAttr || name == hrefAttr;
+        index = addRange(source, index, iter->valueRange().end - token.startIndex(),
+                         "html-attribute-value", isLink, tagName == aTag, value);
+    }
 
     ++iter;
   }
@@ -310,6 +314,30 @@ Element* HTMLViewSourceDocument::addLink(const AtomicString& url,
   anchor->setAttribute(hrefAttr, url);
   m_current->parserAppendChild(anchor);
   return anchor;
+}
+
+int HTMLViewSourceDocument::addSrcset(const String& source,
+                                     int start,
+                                     int end) {
+  String srcset = source.substring(start, end-start);
+  Vector<String> srclist;
+  srcset.split(',', true, srclist);
+  unsigned size = srclist.size();
+  for (unsigned i = 0; i < size; i++) {
+    Vector<String> tmp;
+    srclist[i].split(' ', tmp);
+    if (tmp.size() > 0) {
+      AtomicString link(tmp[0]);
+      m_current = addLink(link, false);
+      addText(srclist[i], "html-attribute-value");
+      m_current = toElement(m_current->parentNode());
+    } else {
+      addText(srclist[i], "html-attribute-value");
+    }
+    if (i + 1 < size)
+      addText(",", "html-attribute-value");
+  }
+  return end;
 }
 
 void HTMLViewSourceDocument::maybeAddSpanForAnnotation(
