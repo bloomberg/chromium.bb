@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/compatibility.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
@@ -10,9 +11,6 @@
 
   <body>
     <script>
-      description("Test AnalyserNode getFloatFrequencyData and getByteFrequencyData");
-      window.jsTestIsAsync = true;
-
       var sampleRate = 48000;
       // Render enough data to run the test.  
       var renderFrames = 2*1024;
@@ -107,7 +105,6 @@
       });
 
       audit.defineTask("finish", function (done) {
-        finishJSTest();
         done();
       });
 

@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/compatibility.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
@@ -10,9 +11,6 @@
 
   <body>
     <script>
-      description("Test AnalyserNode getFloatTimeDomainData");
-      window.jsTestIsAsync = true;
-
       // Use a power of two to eliminate any round-off in the computation of the times for
       // context.suspend().
       var sampleRate = 32768;
@@ -40,10 +38,8 @@
           var shortData = new Float32Array(8);
           // Initialize the array to Infinity to represent uninitialize data.
           shortData.fill(Infinity);
-          testPassed(shortData.length + "-element short array initialized to Infinity.");
 
           analyser.getFloatTimeDomainData(shortData);
-          testPassed("getFloatTimeDomainData(<" + shortData.length + "-element vector>).");
 
           // The short array should be filled with the expected data, with no errors thrown.
 
@@ -54,10 +50,8 @@
           var longData = new Float32Array(2 * fftSize);
           // Initialize the array to Infinity to represent uninitialize data.
           longData.fill(Infinity);
-          testPassed(longData.length + "-element long array initialized to Infinity.");
 
           analyser.getFloatTimeDomainData(longData);
-          testPassed("getFloatTimeDomainData(<" + longData.length + "-element vector>).");
 
           // The long array should filled with the expected data but the extra elements should be
           // untouched.
@@ -73,10 +67,8 @@
         }).then(context.resume.bind(context));
 
         context.startRendering().then(function (buffer) {
-          if (success)
-            testPassed("Long and short time domain arrays handled correctly.\n");
-          else
-            testFailed("Long and short time domain arrays handled incorrectly.\n");
+          Should("Long and short time domain arrays handled", success)
+            .summarize("correctly.", "incorrectly.");
         }).then(done);
       });
 
@@ -94,10 +86,9 @@
       }
 
       audit.defineTask("summarize size tests", function (done) {
-        if (success)
-          testPassed("Time domain data contained the correct data for each size.\n");
-        else
-          testFailed("Time domain data did not contain the correct data for each size.\n");
+        Should("Time domain data", success)
+          .summarize("contained the correct data for each size.",
+                     "did not contain the correct data for each size.");
 
         done();
       });
@@ -139,20 +130,14 @@
         }
 
         context.startRendering().then(function (b) {
-          if (success) {
-            testPassed(
-              "Time domain data contained initial zeroes and correct data as expected.\n");
-          } else {
-            testFailed(
-              "Time domain data did not contain initial zeroes and correct data as expected.\n"
-            );
-          }
-
+          Should("Time domain data", success)
+            .summarize(
+              "contained initial zeroes and correct data as expected",
+              "did not contain initial zeroes and correct data as expected.");
         }).then(done);
       });
 
       audit.defineTask("finish", function (done) {
-        finishJSTest();
         done();
       });
 

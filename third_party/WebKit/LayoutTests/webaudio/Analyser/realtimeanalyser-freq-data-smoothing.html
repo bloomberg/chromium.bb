@@ -1,7 +1,8 @@
 <!doctype html>
 <html>
   <head>
-    <script src="../../resources/js-test.js"></script>
+    <script src="../../resources/testharness.js"></script>
+    <script src="../../resources/testharnessreport.js"></script> 
     <script src="../resources/compatibility.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audio-testing.js"></script>
@@ -13,9 +14,6 @@
 
   <body>
     <script>
-      description("Test AnalyserNode getFloatFrequencyData and getByteFrequencyData, Smoothing");
-      window.jsTestIsAsync = true;
-
       // Use a power of two to eliminate any round-off in the computation of the times for
       // context.suspend().
       var sampleRate = 32768;
@@ -117,18 +115,16 @@
         }).then(context.resume.bind(context));
 
         context.startRendering().then(function (buffer) {
-          var prefix = "FFT smoothing performed ";
-          var suffix = " with smoothing constant " + analyser.smoothingTimeConstant + ".\n"
+          var prefix = "FFT smoothing performed";
+          var suffix = " with smoothing constant " + analyser.smoothingTimeConstant;
 
-          if (success)
-            testPassed(prefix + "correctly" + suffix);
-          else
-            testFailed(prefix + "incorrectly" + suffix);
+          Should(prefix, success)
+            .summarize("correctly" + suffix,
+                       "incorrectly" + suffix);
         }).then(done);
       });
 
       audit.defineTask("finish", function (done) {
-        finishJSTest();
         done();
       });
 
