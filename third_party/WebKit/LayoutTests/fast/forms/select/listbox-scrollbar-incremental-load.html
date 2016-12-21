@@ -15,7 +15,9 @@
     <script>
         document.body.offsetTop;
         testRunner.waitUntilDone();
-        setTimeout('testRunner.notifyDone();', 0);
+        window.requestAnimationFrame(function() {
+          testRunner.notifyDone();
+        });
     </script>
     <option>Five</option>
     <option>Six</option>
