@@ -117,8 +117,6 @@ class SourceBuffer final : public EventTargetWithInlineData,
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  enum AppendError { NoDecodeError, DecodeError };
-
   SourceBuffer(std::unique_ptr<WebSourceBuffer>,
                MediaSource*,
                GenericEventQueue*);
@@ -131,7 +129,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
   bool evictCodedFrames(size_t newDataSize);
   void appendBufferInternal(const unsigned char*, unsigned, ExceptionState&);
   void appendBufferAsyncPart();
-  void appendError(AppendError);
+  void appendError();
 
   void removeAsyncPart();
 

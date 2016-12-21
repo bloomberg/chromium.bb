@@ -1213,7 +1213,7 @@ void SourceBuffer::appendBufferAsyncPart() {
   if (!appendSuccess) {
     m_pendingAppendData.clear();
     m_pendingAppendDataOffset = 0;
-    appendError(DecodeError);
+    appendError();
   } else {
     m_pendingAppendDataOffset += appendSize;
 
@@ -1269,8 +1269,8 @@ void SourceBuffer::removeAsyncPart() {
   scheduleEvent(EventTypeNames::updateend);
 }
 
-void SourceBuffer::appendError(AppendError err) {
-  BLINK_SBLOG << __func__ << " this=" << this << " AppendError=" << err;
+void SourceBuffer::appendError() {
+  BLINK_SBLOG << __func__ << " this=" << this;
   // Section 3.5.3 Append Error Algorithm
   // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-append-error
 
@@ -1290,12 +1290,7 @@ void SourceBuffer::appendError(AppendError err) {
 
   // 5. If decode error is true, then run the end of stream algorithm with the
   // error parameter set to "decode".
-  if (err == DecodeError) {
-    m_source->endOfStream("decode", ASSERT_NO_EXCEPTION);
-  } else {
-    DCHECK_EQ(err, NoDecodeError);
-    // Nothing else to do in this case.
-  }
+  m_source->endOfStream("decode", ASSERT_NO_EXCEPTION);
 }
 
 DEFINE_TRACE(SourceBuffer) {
