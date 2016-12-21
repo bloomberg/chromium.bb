@@ -137,8 +137,7 @@ void JpegClient::CreateJpegDecoder() {
   decoder_.reset(
       new VaapiJpegDecodeAccelerator(base::ThreadTaskRunnerHandle::Get()));
 #elif defined(OS_CHROMEOS) && defined(USE_V4L2_CODEC)
-  scoped_refptr<V4L2Device> device =
-      V4L2Device::Create(V4L2Device::kJpegDecoder);
+  scoped_refptr<V4L2Device> device = V4L2Device::Create();
   if (!device.get()) {
     LOG(ERROR) << "V4L2Device::Create failed";
     SetState(CS_ERROR);
@@ -562,7 +561,10 @@ int main(int argc, char** argv) {
     }
     if (it->first == "v" || it->first == "vmodule")
       continue;
-    LOG(FATAL) << "Unexpected switch: " << it->first << ":" << it->second;
+    if (it->first == "h" || it->first == "help")
+      continue;
+    LOG(ERROR) << "Unexpected switch: " << it->first << ":" << it->second;
+    return -EINVAL;
   }
 #if defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY)
   media::VaapiWrapper::PreSandboxInitialization();
