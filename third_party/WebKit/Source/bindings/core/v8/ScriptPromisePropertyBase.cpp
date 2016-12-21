@@ -17,7 +17,7 @@ namespace blink {
 ScriptPromisePropertyBase::ScriptPromisePropertyBase(
     ExecutionContext* executionContext,
     Name name)
-    : ContextLifecycleObserver(executionContext),
+    : ContextClient(executionContext),
       m_isolate(toIsolate(executionContext)),
       m_name(name),
       m_state(Pending) {}
@@ -207,7 +207,7 @@ v8::Local<v8::String> ScriptPromisePropertyBase::resolverName() {
 }
 
 DEFINE_TRACE(ScriptPromisePropertyBase) {
-  ContextLifecycleObserver::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 }  // namespace blink
