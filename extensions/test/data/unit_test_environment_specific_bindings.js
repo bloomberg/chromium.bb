@@ -5,7 +5,6 @@
 var sendRequestNatives = requireNative('sendRequest');
 
 function registerHooks(api) {
-  var chromeTest = api.compiledApi;
   var apiFunctions = api.apiFunctions;
 
   apiFunctions.setHandleRequest('notifyPass', function() {

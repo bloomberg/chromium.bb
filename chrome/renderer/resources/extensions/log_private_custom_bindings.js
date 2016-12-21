@@ -4,7 +4,6 @@
 
 // Custom binding for the logPrivate API.
 var binding = require('binding').Binding.create('logPrivate');
-var sendRequest = require('sendRequest');
 
 var getFileBindingsForApi =
     require('fileEntryBindingUtil').getFileBindingsForApi;
@@ -13,7 +12,6 @@ var bindFileEntryCallback = fileBindings.bindFileEntryCallback;
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
-  var fileSystem = bindingsAPI.compiledApi;
 
   $Array.forEach(['dumpLogs'],
                   function(functionName) {
