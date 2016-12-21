@@ -166,21 +166,21 @@ int WmShelf::PrimaryAxisValue(int horizontal, int vertical) const {
 void WmShelf::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior) {
   DCHECK(shelf_layout_manager_);
 
+  if (auto_hide_behavior_ == auto_hide_behavior)
+    return;
+
   // Force a stack dump when this method is invoked too frequently.
   // This block is here temporary to help investigate http://crbug.com/665093 .
-  constexpr int kAutoHideRepeatInterval = 10000;
-  constexpr int kMaxAutoHideChangesIn10Seconds = 100;
+  constexpr int kAutoHideRepeatInterval = 1000;
+  constexpr int kMaxAutoHideChanges = 20;
   if ((base::TimeTicks::Now() - time_last_auto_hide_change_).InMilliseconds() <
       kAutoHideRepeatInterval) {
-    if (++count_auto_hide_changes_ > kMaxAutoHideChangesIn10Seconds)
+    if (++count_auto_hide_changes_ > kMaxAutoHideChanges)
       CHECK(false);
   } else {
     count_auto_hide_changes_ = 0;
   }
   time_last_auto_hide_change_ = base::TimeTicks::Now();
-
-  if (auto_hide_behavior_ == auto_hide_behavior)
-    return;
 
   auto_hide_behavior_ = auto_hide_behavior;
   WmShell::Get()->shelf_controller()->NotifyShelfAutoHideBehaviorChanged(this);
@@ -309,7 +309,7 @@ ShelfView* WmShelf::GetShelfViewForTesting() {
   return shelf_view_;
 }
 
-WmShelf::WmShelf() {}
+WmShelf::WmShelf() : time_last_auto_hide_change_(base::TimeTicks::Now()) {}
 
 WmShelf::~WmShelf() {}
 

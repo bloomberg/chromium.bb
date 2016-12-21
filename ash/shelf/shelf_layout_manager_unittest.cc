@@ -584,6 +584,10 @@ void ShelfLayoutManagerTest::RunGestureDragTests(gfx::Vector2d delta) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS, shelf->auto_hide_behavior());
+
+  // Avoid a CHECK that makes sure SetAutoHideBehavior is not called too
+  // frequently. This is to help investigate http://crbug.com/665093 .
+  shelf->count_auto_hide_changes_ = 0;
 }
 
 // Need to be implemented.  http://crbug.com/111279.

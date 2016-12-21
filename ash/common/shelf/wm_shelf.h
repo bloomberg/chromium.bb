@@ -24,6 +24,7 @@ class GestureEvent;
 namespace ash {
 
 class ShelfLayoutManager;
+class ShelfLayoutManagerTest;
 class ShelfLockingManager;
 class ShelfView;
 class ShelfWidget;
@@ -146,6 +147,8 @@ class ASH_EXPORT WmShelf : public ShelfLayoutManagerObserver {
                            BackgroundAnimatorChangeType change_type) override;
 
  private:
+  friend class ShelfLayoutManagerTest;
+
   // Layout manager for the shelf container window. Instances are constructed by
   // ShelfWidget and lifetimes are managed by the container windows themselves.
   ShelfLayoutManager* shelf_layout_manager_ = nullptr;
