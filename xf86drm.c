@@ -3157,57 +3157,81 @@ void drmFreeDevices(drmDevicePtr devices[], int count)
             drmFreeDevice(&devices[i]);
 }
 
+static drmDevicePtr drmDeviceAlloc(unsigned int type, const char *node,
+                                   size_t bus_size, size_t device_size,
+                                   char **ptrp)
+{
+    size_t max_node_length, extra, size;
+    drmDevicePtr device;
+    unsigned int i;
+    char *ptr;
+
+    max_node_length = ALIGN(drmGetMaxNodeName(), sizeof(void *));
+    extra = DRM_NODE_MAX * (sizeof(void *) + max_node_length);
+
+    size = sizeof(*device) + extra + bus_size + device_size;
+
+    device = calloc(1, size);
+    if (!device)
+        return NULL;
+
+    device->available_nodes = 1 << type;
+
+    ptr = (char *)device + sizeof(*device);
+    device->nodes = (char **)ptr;
+
+    ptr += DRM_NODE_MAX * sizeof(void *);
+
+    for (i = 0; i < DRM_NODE_MAX; i++) {
+        device->nodes[i] = ptr;
+        ptr += max_node_length;
+    }
+
+    memcpy(device->nodes[type], node, max_node_length);
+
+    *ptrp = ptr;
+
+    return device;
+}
+
 static int drmProcessPciDevice(drmDevicePtr *device,
                                const char *node, int node_type,
                                int maj, int min, bool fetch_deviceinfo,
                                uint32_t flags)
 {
-    const int max_node_str = ALIGN(drmGetMaxNodeName(), sizeof(void *));
-    int ret, i;
+    drmDevicePtr dev;
     char *addr;
+    int ret;
 
-    *device = calloc(1, sizeof(drmDevice) +
-                     (DRM_NODE_MAX * (sizeof(void *) + max_node_str)) +
-                     sizeof(drmPciBusInfo) +
-                     sizeof(drmPciDeviceInfo));
-    if (!*device)
+    dev = drmDeviceAlloc(node_type, node, sizeof(drmPciBusInfo),
+                         sizeof(drmPciDeviceInfo), &addr);
+    if (!dev)
         return -ENOMEM;
 
-    addr = (char*)*device;
+    dev->bustype = DRM_BUS_PCI;
 
-    (*device)->bustype = DRM_BUS_PCI;
-    (*device)->available_nodes = 1 << node_type;
+    dev->businfo.pci = (drmPciBusInfoPtr)addr;
 
-    addr += sizeof(drmDevice);
-    (*device)->nodes = (char**)addr;
-
-    addr += DRM_NODE_MAX * sizeof(void *);
-    for (i = 0; i < DRM_NODE_MAX; i++) {
-        (*device)->nodes[i] = addr;
-        addr += max_node_str;
-    }
-    memcpy((*device)->nodes[node_type], node, max_node_str);
-
-    (*device)->businfo.pci = (drmPciBusInfoPtr)addr;
-
-    ret = drmParsePciBusInfo(maj, min, (*device)->businfo.pci);
+    ret = drmParsePciBusInfo(maj, min, dev->businfo.pci);
     if (ret)
         goto free_device;
 
     // Fetch the device info if the user has requested it
     if (fetch_deviceinfo) {
         addr += sizeof(drmPciBusInfo);
-        (*device)->deviceinfo.pci = (drmPciDeviceInfoPtr)addr;
+        dev->deviceinfo.pci = (drmPciDeviceInfoPtr)addr;
 
-        ret = drmParsePciDeviceInfo(maj, min, (*device)->deviceinfo.pci, flags);
+        ret = drmParsePciDeviceInfo(maj, min, dev->deviceinfo.pci, flags);
         if (ret)
             goto free_device;
     }
+
+    *device = dev;
+
     return 0;
 
 free_device:
-    free(*device);
-    *device = NULL;
+    free(dev);
     return ret;
 }
 
