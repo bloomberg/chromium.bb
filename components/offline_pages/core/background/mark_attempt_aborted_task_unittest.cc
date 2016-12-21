@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/offline_pages/core/background/change_requests_state_task.h"
 #include "components/offline_pages/core/background/mark_attempt_started_task.h"
 #include "components/offline_pages/core/background/request_queue_in_memory_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -155,6 +156,48 @@ TEST_F(MarkAttemptAbortedTaskTest, MarkAttemptAbortedWhenItemMissing) {
   EXPECT_EQ(ItemActionStatus::NOT_FOUND,
             last_result()->item_statuses.at(0).second);
   EXPECT_EQ(0UL, last_result()->updated_items.size());
+}
+
+TEST_F(MarkAttemptAbortedTaskTest, MarkAttemptAbortedWhenPaused) {
+  RequestQueueInMemoryStore store;
+  InitializeStore(&store);
+  AddItemToStore(&store);
+
+  // First mark attempt started.
+  MarkAttemptStartedTask start_request_task(
+      &store, kRequestId1,
+      base::Bind(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
+                 base::Unretained(this)));
+  start_request_task.Run();
+  PumpLoop();
+  ClearResults();
+
+  // Mark the attempt as PAUSED, so we test the PAUSED to PAUSED transition.
+    std::vector<int64_t> requests;
+  requests.push_back(kRequestId1);
+  ChangeRequestsStateTask pauseTask(
+      &store, requests, SavePageRequest::RequestState::PAUSED,
+      base::Bind(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
+                 base::Unretained(this)));
+  pauseTask.Run();
+  PumpLoop();
+
+  // Abort the task, the state should not change from PAUSED.
+  MarkAttemptAbortedTask abortTask(
+      &store, kRequestId1,
+      base::Bind(&MarkAttemptAbortedTaskTest::ChangeRequestsStateCallback,
+                 base::Unretained(this)));
+
+  abortTask.Run();
+  PumpLoop();
+  ASSERT_TRUE(last_result());
+  EXPECT_EQ(1UL, last_result()->item_statuses.size());
+  EXPECT_EQ(kRequestId1, last_result()->item_statuses.at(0).first);
+  EXPECT_EQ(ItemActionStatus::SUCCESS,
+            last_result()->item_statuses.at(0).second);
+  EXPECT_EQ(1UL, last_result()->updated_items.size());
+  EXPECT_EQ(SavePageRequest::RequestState::PAUSED,
+            last_result()->updated_items.at(0).request_state());
 }
 
 }  // namespace offline_pages

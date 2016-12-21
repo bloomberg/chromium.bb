@@ -45,8 +45,8 @@ class SavePageRequest {
   // Marks attempt as completed and clears |last_attempt_time_|.
   void MarkAttemptCompleted();
 
-  // Marks attempt as aborted. Specifically it clears |last_attempt_time_|
-  // and decrements |attempt_count_|.
+  // Marks attempt as aborted. This will change the state of an OFFLINING
+  // request to be AVAILABLE.  It will not change the state of a PAUSED request.
   void MarkAttemptAborted();
 
   // Mark the attempt as paused.  It is not available for future prerendering

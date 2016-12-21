@@ -82,7 +82,8 @@ void SavePageRequest::MarkAttemptAborted() {
   // We intentinally do not increment the completed_attempt_count_, since this
   // was killed before it completed, so we could use the phone or browser for
   // other things.
-  state_ = RequestState::AVAILABLE;
+  if (state_ == RequestState::OFFLINING)
+    state_ = RequestState::AVAILABLE;
 }
 
 void SavePageRequest::MarkAttemptPaused() {
