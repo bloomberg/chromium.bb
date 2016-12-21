@@ -3591,7 +3591,7 @@ static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
   if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
     for (i = 0; i < num_workers; ++i) {
       TileWorkerData *const twd = (TileWorkerData *)pbi->tile_workers[i].data1;
-      av1_accumulate_frame_counts(cm, &twd->counts);
+      av1_accumulate_frame_counts(&cm->counts, &twd->counts);
     }
   }
 

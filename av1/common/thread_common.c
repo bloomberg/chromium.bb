@@ -518,19 +518,13 @@ void av1_loop_filter_dealloc(AV1LfSync *lf_sync) {
 
 // Accumulate frame counts. FRAME_COUNTS consist solely of 'unsigned int'
 // members, so we treat it as an array, and sum over the whole length.
-void av1_accumulate_frame_counts(AV1_COMMON *cm, FRAME_COUNTS *counts) {
-  unsigned int *const acc = (unsigned int *)&cm->counts;
+void av1_accumulate_frame_counts(FRAME_COUNTS *acc_counts,
+                                 FRAME_COUNTS *counts) {
+  unsigned int *const acc = (unsigned int *)acc_counts;
   const unsigned int *const cnt = (unsigned int *)counts;
 
   const unsigned int n_counts = sizeof(FRAME_COUNTS) / sizeof(unsigned int);
   unsigned int i;
 
   for (i = 0; i < n_counts; i++) acc[i] += cnt[i];
-
-#if CONFIG_DELTA_Q
-  for (i = 0; i < DELTA_Q_CONTEXTS; i++) {
-    int j;
-    for (j = 0; j < 2; ++j) cm->counts.delta_q[i][j] += counts->delta_q[i][j];
-  }
-#endif
 }

@@ -54,7 +54,7 @@ void av1_loop_filter_frame_mt(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                               int partial_frame, AVxWorker *workers,
                               int num_workers, AV1LfSync *lf_sync);
 
-void av1_accumulate_frame_counts(struct AV1Common *cm,
+void av1_accumulate_frame_counts(struct FRAME_COUNTS *acc_counts,
                                  struct FRAME_COUNTS *counts);
 
 #ifdef __cplusplus

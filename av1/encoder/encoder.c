@@ -72,6 +72,10 @@
 #include "aom_util/debug_util.h"
 #endif  // CONFIG_BITSTREAM_DEBUG
 
+#if CONFIG_ENTROPY_STATS
+FRAME_COUNTS aggregate_fc;
+#endif  // CONFIG_ENTROPY_STATS
+
 #define AM_SEGMENT_ID_INACTIVE 7
 #define AM_SEGMENT_ID_ACTIVE 0
 
@@ -2186,6 +2190,9 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
     cpi->worst_consistency = 100.0;
   }
 #endif
+#if CONFIG_ENTROPY_STATS
+  av1_zero(aggregate_fc);
+#endif  // CONFIG_ENTROPY_STATS
 
   cpi->first_time_stamp_ever = INT64_MAX;
 
@@ -2464,6 +2471,14 @@ void av1_remove_compressor(AV1_COMP *cpi) {
 
   cm = &cpi->common;
   if (cm->current_video_frame > 0) {
+#if CONFIG_ENTROPY_STATS
+    if (cpi->oxcf.pass != 1) {
+      fprintf(stderr, "Writing counts.stt\n");
+      FILE *f = fopen("counts.stt", "wb");
+      fwrite(&aggregate_fc, sizeof(aggregate_fc), 1, f);
+      fclose(f);
+    }
+#endif  // CONFIG_ENTROPY_STATS
 #if CONFIG_INTERNAL_STATS
     aom_clear_system_state();
 
@@ -4813,7 +4828,9 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   for (t = 0; t < TX_SIZES; t++)
     av1_full_to_model_counts(cpi->td.counts->coef[t],
                              cpi->td.rd_counts.coef_counts[t]);
-
+#if CONFIG_ENTROPY_STATS
+  av1_accumulate_frame_counts(&aggregate_fc, &cm->counts);
+#endif  // CONFIG_ENTROPY_STATS
   if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
 #if CONFIG_ENTROPY
     cm->partial_prob_update = 0;
