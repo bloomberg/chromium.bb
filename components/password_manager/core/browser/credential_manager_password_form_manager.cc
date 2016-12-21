@@ -6,8 +6,10 @@
 
 #include <utility>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -22,16 +24,20 @@ CredentialManagerPasswordFormManager::CredentialManagerPasswordFormManager(
     base::WeakPtr<PasswordManagerDriver> driver,
     const PasswordForm& observed_form,
     std::unique_ptr<autofill::PasswordForm> saved_form,
-    CredentialManagerPasswordFormManagerDelegate* delegate)
-    : PasswordFormManager(
-          driver->GetPasswordManager(),
-          client,
-          driver,
-          observed_form,
-          base::WrapUnique(new FormSaverImpl(client->GetPasswordStore())),
-          nullptr),
+    CredentialManagerPasswordFormManagerDelegate* delegate,
+    std::unique_ptr<FormSaver> form_saver,
+    FormFetcher* form_fetcher)
+    : PasswordFormManager(driver->GetPasswordManager(),
+                          client,
+                          driver,
+                          observed_form,
+                          (form_saver ? std::move(form_saver)
+                                      : base::MakeUnique<FormSaverImpl>(
+                                            client->GetPasswordStore())),
+                          form_fetcher),
       delegate_(delegate),
-      saved_form_(std::move(saved_form)) {
+      saved_form_(std::move(saved_form)),
+      weak_factory_(this) {
   DCHECK(saved_form_);
 }
 
@@ -47,6 +53,18 @@ void CredentialManagerPasswordFormManager::ProcessMatches(
   // indeed the credential set that the user used to sign into the site.
   saved_form_->preferred = true;
   ProvisionallySave(*saved_form_, IGNORE_OTHER_POSSIBLE_USERNAMES);
+
+  // Notify the delegate. This might result in deleting |this|, while
+  // ProcessMatches is being called from FormFetcherImpl, owned by |this|. If
+  // done directly, once ProcessMatches returns, the FormFetcherImpl will be
+  // used after free. Therefore the call is posted to a separate task.
+  base::SequencedTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&CredentialManagerPasswordFormManager::NotifyDelegate,
+                 weak_factory_.GetWeakPtr()));
+}
+
+void CredentialManagerPasswordFormManager::NotifyDelegate() {
   delegate_->OnProvisionalSaveComplete();
 }
 

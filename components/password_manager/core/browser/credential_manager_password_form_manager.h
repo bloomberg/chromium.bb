@@ -33,7 +33,9 @@ class CredentialManagerPasswordFormManager : public PasswordFormManager {
   // Given a |client| and an |observed_form|, kick off the process of fetching
   // matching logins from the password store; if |observed_form| doesn't map to
   // a blacklisted origin, provisionally save |saved_form|. Once saved, let the
-  // delegate know that it's safe to poke at the UI.
+  // delegate know that it's safe to poke at the UI. |form_fetcher| is passed
+  // to PasswordFormManager. |form_saver| can be null, in which case it is
+  // created automatically.
   //
   // This class does not take ownership of |delegate|.
   CredentialManagerPasswordFormManager(
@@ -41,7 +43,9 @@ class CredentialManagerPasswordFormManager : public PasswordFormManager {
       base::WeakPtr<PasswordManagerDriver> driver,
       const autofill::PasswordForm& observed_form,
       std::unique_ptr<autofill::PasswordForm> saved_form,
-      CredentialManagerPasswordFormManagerDelegate* delegate);
+      CredentialManagerPasswordFormManagerDelegate* delegate,
+      std::unique_ptr<FormSaver> form_saver,
+      FormFetcher* form_fetcher);
   ~CredentialManagerPasswordFormManager() override;
 
   void ProcessMatches(
@@ -49,8 +53,13 @@ class CredentialManagerPasswordFormManager : public PasswordFormManager {
       size_t filtered_count) override;
 
  private:
+  // Calls OnProvisionalSaveComplete on |delegate_|.
+  void NotifyDelegate();
+
   CredentialManagerPasswordFormManagerDelegate* delegate_;
   std::unique_ptr<autofill::PasswordForm> saved_form_;
+
+  base::WeakPtrFactory<CredentialManagerPasswordFormManager> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerPasswordFormManager);
 };

@@ -11,6 +11,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/password_manager/core/browser/form_saver.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -206,7 +207,7 @@ void CredentialManager::SignedIn(int request_id,
       new password_manager::CredentialManagerPasswordFormManager(
           client_, driver_->AsWeakPtr(),
           *password_manager::CreateObservedPasswordFormFromOrigin(page_url),
-          std::move(form), this));
+          std::move(form), this, nullptr, nullptr));
 }
 
 void CredentialManager::SignedOut(int request_id, const GURL& source_url) {
