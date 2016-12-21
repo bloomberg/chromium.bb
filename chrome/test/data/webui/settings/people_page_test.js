@@ -11,6 +11,7 @@ cr.define('settings_people_page', function() {
   var TestProfileInfoBrowserProxy = function() {
     settings.TestBrowserProxy.call(this, [
       'getProfileInfo',
+      'getProfileStatsCount',
       'getProfileManagesSupervisedUsers',
     ]);
 
@@ -27,6 +28,11 @@ cr.define('settings_people_page', function() {
     getProfileInfo: function() {
       this.methodCalled('getProfileInfo');
       return Promise.resolve(this.fakeProfileInfo);
+    },
+
+    /** @override */
+    getProfileStatsCount: function() {
+      this.methodCalled('getProfileStatsCount');
     },
 
     /** @override */
@@ -165,7 +171,9 @@ cr.define('settings_people_page', function() {
           Polymer.dom.flush();
 
           assertTrue(peoplePage.$.disconnectDialog.open);
-          assertFalse(peoplePage.$.deleteProfile.hidden);
+          var deleteProfileCheckbox = peoplePage.$$('#deleteProfile');
+          assertTrue(!!deleteProfileCheckbox);
+          assertLT(0, deleteProfileCheckbox.clientHeight);
 
           var disconnectConfirm = peoplePage.$.disconnectConfirm;
           assertTrue(!!disconnectConfirm);
@@ -194,7 +202,9 @@ cr.define('settings_people_page', function() {
           Polymer.dom.flush();
 
           assertTrue(peoplePage.$.disconnectDialog.open);
-          assertTrue(peoplePage.$.deleteProfile.hidden);
+          var deleteProfileCheckbox = peoplePage.$$('#deleteProfile');
+          assertTrue(!!deleteProfileCheckbox);
+          assertEquals(0, deleteProfileCheckbox.clientHeight);
 
           var disconnectManagedProfileConfirm =
               peoplePage.$.disconnectManagedProfileConfirm;

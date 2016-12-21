@@ -48,6 +48,23 @@ Polymer({
      */
     profileManagesSupervisedUsers_: Boolean,
 
+    /**
+     * The profile deletion warning. The message indicates the number of
+     * profile stats that will be deleted if a non-zero count for the profile
+     * stats is returned from the browser.
+     */
+    deleteProfileWarning_: String,
+
+    /**
+     * True if the profile deletion warning is visible.
+     */
+    deleteProfileWarningVisible_: Boolean,
+
+    /**
+     * True if the checkbox to delete the profile has been checked.
+     */
+    deleteProfile_: Boolean,
+
 <if expr="not chromeos">
     /** @private */
     showImportDataDialog_: {
@@ -138,6 +155,9 @@ Polymer({
     this.addWebUIListener('profile-manages-supervised-users-changed',
                           this.handleProfileManagesSupervisedUsers_.bind(this));
 
+    this.addWebUIListener('profile-stats-count-ready',
+                          this.handleProfileStatsCount_.bind(this));
+
     this.syncBrowserProxy_.getSyncStatus().then(
         this.handleSyncStatus_.bind(this));
     this.addWebUIListener('sync-status-changed',
@@ -160,6 +180,9 @@ Polymer({
         settings.getCurrentRoute() == settings.Route.IMPORT_DATA;
 
     if (settings.getCurrentRoute() == settings.Route.SIGN_OUT) {
+      // Request the latest profile stats count, but don't wait for it.
+      settings.ProfileInfoBrowserProxyImpl.getInstance().getProfileStatsCount();
+
       // If the sync status has not been fetched yet, optimistically display
       // the disconnect dialog. There is another check when the sync status is
       // fetched. The dialog will be closed then the user is not signed in.
@@ -200,6 +223,22 @@ Polymer({
    */
   handleProfileManagesSupervisedUsers_: function(managesSupervisedUsers) {
     this.profileManagesSupervisedUsers_ = managesSupervisedUsers;
+  },
+
+  /**
+   * Handler for when the profile stats count is pushed from the browser.
+   * @param {number} count
+   * @private
+   */
+  handleProfileStatsCount_: function(count) {
+    this.deleteProfileWarning_ = (count > 0) ?
+        (count == 1) ?
+            loadTimeData.getStringF('deleteProfileWarningWithCountsSingular',
+                                    this.syncStatus.signedInUsername) :
+            loadTimeData.getStringF('deleteProfileWarningWithCountsPlural',
+                                    count, this.syncStatus.signedInUsername) :
+        loadTimeData.getStringF('deleteProfileWarningWithoutCounts',
+                                this.syncStatus.signedInUsername);
   },
 
   /**
@@ -275,8 +314,7 @@ Polymer({
 
   /** @private */
   onDisconnectConfirm_: function() {
-    var deleteProfile = !!this.syncStatus.domain ||
-        (this.$.deleteProfile && this.$.deleteProfile.checked);
+    var deleteProfile = !!this.syncStatus.domain || this.deleteProfile_;
     // Trigger the sign out event after the navigateToPreviousRoute().
     // So that the navigation to the setting page could be finished before the
     // sign out if navigateToPreviousRoute() returns synchronously even the

@@ -23,6 +23,8 @@
 #else
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
+#include "chrome/browser/profiles/profile_statistics.h"
+#include "chrome/browser/profiles/profile_statistics_factory.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #endif
 
@@ -34,6 +36,8 @@ const char ProfileInfoHandler::kProfileInfoChangedEventName[] =
 const char
     ProfileInfoHandler::kProfileManagesSupervisedUsersChangedEventName[] =
         "profile-manages-supervised-users-changed";
+const char ProfileInfoHandler::kProfileStatsCountReadyEventName[] =
+    "profile-stats-count-ready";
 
 ProfileInfoHandler::ProfileInfoHandler(Profile* profile)
     : profile_(profile),
@@ -45,6 +49,12 @@ void ProfileInfoHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getProfileInfo", base::Bind(&ProfileInfoHandler::HandleGetProfileInfo,
                                    base::Unretained(this)));
+#if !defined(OS_CHROMEOS)
+  web_ui()->RegisterMessageCallback(
+      "getProfileStatsCount",
+      base::Bind(&ProfileInfoHandler::HandleGetProfileStats,
+                 base::Unretained(this)));
+#endif
   web_ui()->RegisterMessageCallback(
       "getProfileManagesSupervisedUsers",
       base::Bind(&ProfileInfoHandler::HandleGetProfileManagesSupervisedUsers,
@@ -104,6 +114,36 @@ void ProfileInfoHandler::HandleGetProfileInfo(const base::ListValue* args) {
 
   ResolveJavascriptCallback(*callback_id, *GetAccountNameAndIcon());
 }
+
+#if !defined(OS_CHROMEOS)
+void ProfileInfoHandler::HandleGetProfileStats(const base::ListValue* args) {
+  // Because there is open browser window for the current profile, statistics
+  // from the ProfileAttributesStorage may not be up-to-date or may be missing
+  // (e.g., |item.success| is false). Therefore, query the actual statistics.
+  ProfileStatisticsFactory::GetForProfile(profile_)->GatherStatistics(
+      base::Bind(&ProfileInfoHandler::PushProfileStatsCount,
+                 base::Unretained(this)));
+}
+
+void ProfileInfoHandler::PushProfileStatsCount(
+    profiles::ProfileCategoryStats stats) {
+  int count = 0;
+  for (const auto& item : stats) {
+    std::unique_ptr<base::DictionaryValue> stat(new base::DictionaryValue);
+    if (!item.success) {
+      count = 0;
+      break;
+    }
+    count += item.count;
+  }
+  // PushProfileStatsCount gets invoked multiple times as each stat becomes
+  // available. Therefore, webUIListenerCallback mechanism is used instead of
+  // the Promise callback approach.
+  CallJavascriptFunction("cr.webUIListenerCallback",
+                         base::StringValue(kProfileStatsCountReadyEventName),
+                         base::FundamentalValue(count));
+}
+#endif
 
 void ProfileInfoHandler::HandleGetProfileManagesSupervisedUsers(
     const base::ListValue* args) {

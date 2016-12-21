@@ -30,6 +30,12 @@ cr.define('settings', function() {
     getProfileInfo: function() {},
 
     /**
+     * Requests the profile stats count. The result is returned by the
+     * 'profile-stats-count-ready' WebUI listener event.
+     */
+    getProfileStatsCount: function() {},
+
+    /**
      * Returns a Promise that's true if the profile manages supervised users.
      * @return {!Promise<boolean>}
      */
@@ -47,6 +53,11 @@ cr.define('settings', function() {
     /** @override */
     getProfileInfo: function() {
       return cr.sendWithPromise('getProfileInfo');
+    },
+
+    /** @override */
+    getProfileStatsCount: function() {
+      chrome.send('getProfileStatsCount');
     },
 
     /** @override */

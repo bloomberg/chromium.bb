@@ -16,6 +16,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#else
+#include "chrome/browser/profiles/profile_statistics_common.h"
 #endif
 
 class Profile;
@@ -30,6 +34,7 @@ class ProfileInfoHandler : public SettingsPageUIHandler,
  public:
   static const char kProfileInfoChangedEventName[];
   static const char kProfileManagesSupervisedUsersChangedEventName[];
+  static const char kProfileStatsCountReadyEventName[];
 
   explicit ProfileInfoHandler(Profile* profile);
   ~ProfileInfoHandler() override;
@@ -60,8 +65,15 @@ class ProfileInfoHandler : public SettingsPageUIHandler,
   // Callbacks from the page.
   void HandleGetProfileInfo(const base::ListValue* args);
   void HandleGetProfileManagesSupervisedUsers(const base::ListValue* args);
-
   void PushProfileInfo();
+
+#if !defined(OS_CHROMEOS)
+  void HandleGetProfileStats(const base::ListValue* args);
+
+  // Returns the sum of the counts of individual profile states. Returns 0 if
+  // there exists a stat that was not successfully retrieved.
+  void PushProfileStatsCount(profiles::ProfileCategoryStats stats);
+#endif
 
   // Pushes whether the current profile manages supervised users to JavaScript.
   void PushProfileManagesSupervisedUsersStatus();
