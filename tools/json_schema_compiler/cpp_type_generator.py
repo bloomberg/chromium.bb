@@ -25,7 +25,7 @@ class CppTypeGenerator(object):
   """Manages the types of properties and provides utilities for getting the
   C++ type out of a model.Property
   """
-  def __init__(self, model, schema_loader, default_namespace=None):
+  def __init__(self, model, namespace_resolver, default_namespace=None):
     """Creates a cpp_type_generator. The given root_namespace should be of the
     format extensions::api::sub. The generator will generate code suitable for
     use in the given model's namespace.
@@ -33,7 +33,7 @@ class CppTypeGenerator(object):
     self._default_namespace = default_namespace
     if self._default_namespace is None:
       self._default_namespace = model.namespaces.values()[0]
-    self._schema_loader = schema_loader
+    self._namespace_resolver = namespace_resolver
 
   def GetEnumNoneValue(self, type_):
     """Gets the enum value in the given model.Property indicating no value has
@@ -66,7 +66,7 @@ class CppTypeGenerator(object):
     """Translates a model.Property or model.Type into its C++ type.
 
     If REF types from different namespaces are referenced, will resolve
-    using self._schema_loader.
+    using self._namespace_resolver.
 
     Use |is_ptr| if the type is optional. This will wrap the type in a
     scoped_ptr if possible (it is not possible to wrap an enum).
@@ -173,8 +173,8 @@ class CppTypeGenerator(object):
     """Finds the model.Type with name |qualified_name|. If it's not from
     |self._default_namespace| then it needs to be qualified.
     """
-    namespace = self._schema_loader.ResolveType(full_name,
-                                                self._default_namespace)
+    namespace = self._namespace_resolver.ResolveType(full_name,
+                                                     self._default_namespace)
     if namespace is None:
       raise KeyError('Cannot resolve type %s. Maybe it needs a prefix '
                      'if it comes from another namespace?' % full_name)
