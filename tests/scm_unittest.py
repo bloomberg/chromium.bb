@@ -60,7 +60,6 @@ class RootTestCase(BaseSCMTestCase):
         'os',
         're',
         'subprocess2',
-        'SVN',
         'sys',
         'tempfile',
         'time',
