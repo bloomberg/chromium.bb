@@ -5,16 +5,38 @@
 package org.chromium.chrome.browser.history;
 
 import android.content.Context;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.AttributeSet;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.selection.SelectionToolbar;
+import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
+
+import java.util.List;
 
 /**
  * The SelectionToolbar for the browsing history UI.
  */
-public class HistoryManagerToolbar extends SelectionToolbar<HistoryItem> {
+public class HistoryManagerToolbar extends SelectionToolbar<HistoryItem>
+        implements OnEditorActionListener {
+    private HistoryManager mManager;
+    private boolean mIsSearching;
+
+    private LinearLayout mSearchView;
+    private EditText mSearchEditText;
+    private TintedImageButton mDeleteTextButton;
+
     public HistoryManagerToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
         inflateMenu(R.menu.history_manager_menu);
@@ -24,5 +46,108 @@ public class HistoryManagerToolbar extends SelectionToolbar<HistoryItem> {
         }
 
         // TODO(twellington): Add content descriptions to the number roll view.
+    }
+
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+        mSearchView = (LinearLayout) findViewById(R.id.history_search);
+
+        mSearchEditText = (EditText) findViewById(R.id.history_search_text);
+        mSearchEditText.setOnEditorActionListener(this);
+        mSearchEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mDeleteTextButton.setVisibility(
+                        TextUtils.isEmpty(s) ? View.INVISIBLE : View.VISIBLE);
+                if (mIsSearching) mManager.performSearch(s.toString());
+            }
+
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {}
+        });
+
+        mDeleteTextButton = (TintedImageButton) findViewById(R.id.delete_button);
+        mDeleteTextButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mSearchEditText.setText("");
+            }
+        });
+    }
+
+    /**
+     * @param manager The {@link HistoryManager} associated with this toolbar.
+     */
+    public void setManager(HistoryManager manager) {
+        mManager = manager;
+    }
+
+    /**
+     * Shows the search edit text box and related views.
+     */
+    public void showSearchView() {
+        mIsSearching = true;
+        mSelectionDelegate.clearSelection();
+
+        getMenu().setGroupVisible(mNormalGroupResId, false);
+        getMenu().setGroupVisible(mSelectedGroupResId, false);
+        setNavigationButton(NAVIGATION_BUTTON_BACK);
+        mSearchView.setVisibility(View.VISIBLE);
+
+        mSearchEditText.requestFocus();
+        UiUtils.showKeyboard(mSearchEditText);
+        setTitle(null);
+    }
+
+    /**
+     * Hides the search edit text box and related views.
+     */
+    public void hideSearchView() {
+        mIsSearching = false;
+        mSearchEditText.setText("");
+        UiUtils.hideKeyboard(mSearchEditText);
+        mSearchView.setVisibility(View.GONE);
+
+        mManager.onEndSearch();
+    }
+
+    @Override
+    public void onSelectionStateChange(List<HistoryItem> selectedItems) {
+        super.onSelectionStateChange(selectedItems);
+        if (!mIsSearching) return;
+
+        if (mIsSelectionEnabled) {
+            mSearchView.setVisibility(View.GONE);
+            UiUtils.hideKeyboard(mSearchEditText);
+        } else {
+            mSearchView.setVisibility(View.VISIBLE);
+            getMenu().setGroupVisible(mNormalGroupResId, false);
+            setNavigationButton(NAVIGATION_BUTTON_BACK);
+        }
+    }
+
+    @Override
+    protected void onDataChanged(int numItems) {
+        getMenu().findItem(R.id.search_menu_id).setVisible(!mIsSearching && numItems != 0);
+    }
+
+    @Override
+    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+        if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+            UiUtils.hideKeyboard(v);
+        }
+        return false;
+    }
+
+    @Override
+    protected void onNavigationBack() {
+        hideSearchView();
+
+        // Call #onSelectionStateChange() to reset toolbar buttons and title.
+        super.onSelectionStateChange(mSelectionDelegate.getSelectedItems());
     }
 }

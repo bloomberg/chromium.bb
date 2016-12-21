@@ -50,8 +50,11 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     private boolean mIsDestroyed;
     private boolean mIsInitialized;
     private boolean mIsLoadingItems;
+    private boolean mIsSearching;
     private boolean mHasMorePotentialItems;
+    private boolean mClearOnNextQueryComplete;
     private long mNextQueryEndTime;
+    private String mQueryText = EMPTY_QUERY;
 
     public HistoryAdapter(SelectionDelegate<HistoryItem> delegate, HistoryManager manager) {
         setHasStableIds(true);
@@ -72,8 +75,11 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
      * Initializes the HistoryAdapter and loads the first set of browsing history items.
      */
     public void initialize() {
+        mIsInitialized = false;
         mIsLoadingItems = true;
-        mBridge.queryHistory(EMPTY_QUERY, 0);
+        mNextQueryEndTime = 0;
+        mClearOnNextQueryComplete = true;
+        mBridge.queryHistory(mQueryText, mNextQueryEndTime);
     }
 
     /**
@@ -86,7 +92,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         mIsLoadingItems = true;
         addFooter();
         notifyDataSetChanged();
-        mBridge.queryHistory(EMPTY_QUERY, mNextQueryEndTime);
+        mBridge.queryHistory(mQueryText, mNextQueryEndTime);
     }
 
     /**
@@ -94,6 +100,29 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
      */
     public boolean canLoadMoreItems() {
         return !mIsLoadingItems && mHasMorePotentialItems;
+    }
+
+    /**
+     * Called to perform a search.
+     * @param query The text to search for.
+     */
+    public void search(String query) {
+        mQueryText = query;
+        mNextQueryEndTime = 0;
+        mIsSearching = true;
+        mClearOnNextQueryComplete = true;
+        mBridge.queryHistory(mQueryText, mNextQueryEndTime);
+    }
+
+    /**
+     * Called when a search is ended.
+     */
+    public void onEndSearch() {
+        mQueryText = EMPTY_QUERY;
+        mIsSearching = false;
+
+        // Re-initialize the data in the adapter.
+        initialize();
     }
 
     /**
@@ -141,9 +170,13 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         // destroyed to avoid unnecessary work.
         if (mIsDestroyed) return;
 
-        if (!mIsInitialized) {
+        if (mClearOnNextQueryComplete) {
             clear(true);
-            if (items.size() > 0) addHeader();
+            mClearOnNextQueryComplete = false;
+        }
+
+        if (!mIsInitialized) {
+            if (items.size() > 0 && !mIsSearching) addHeader();
             mIsInitialized = true;
         }
 

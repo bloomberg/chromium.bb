@@ -394,4 +394,5 @@
     <!--  Miscellaneous dimensions -->
     <dimen name="action_bar_shadow_height">10dp</dimen>
     <dimen name="selectable_list_layout_end_icon">24dp</dimen>
+    <dimen name="selectable_list_layout_start_icon_width">64dp</dimen>
 </resources>

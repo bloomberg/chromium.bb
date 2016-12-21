@@ -7,7 +7,13 @@
     xmlns:chrome="http://schemas.android.com/apk/res-auto" >
 
     <group android:id="@+id/normal_menu_group" >
-        <!-- TODO(twellington): add search and info button. -->
+        <!-- TODO(twellington): add privacy disclaimer toggle button. -->
+        <item
+            android:id="@+id/search_menu_id"
+            android:icon="@drawable/ic_search"
+            android:title="@string/search"
+            android:visible="false"
+            chrome:showAsAction="ifRoom" />
         <item
             android:id="@+id/close_menu_id"
             android:icon="@drawable/btn_close"

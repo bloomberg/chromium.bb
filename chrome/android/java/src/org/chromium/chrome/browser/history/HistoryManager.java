@@ -43,9 +43,10 @@ public class HistoryManager implements OnMenuItemClickListener {
     private static final int MEGABYTES_TO_BYTES =  1024 * 1024;
 
     private final Activity mActivity;
-    private final SelectableListLayout mSelectableListLayout;
+    private final SelectableListLayout<HistoryItem> mSelectableListLayout;
     private final HistoryAdapter mHistoryAdapter;
     private final SelectionDelegate<HistoryItem> mSelectionDelegate;
+    private final HistoryManagerToolbar mToolbar;
     private LargeIconBridge mLargeIconBridge;
 
     /**
@@ -59,12 +60,13 @@ public class HistoryManager implements OnMenuItemClickListener {
         mHistoryAdapter = new HistoryAdapter(mSelectionDelegate, this);
 
         mSelectableListLayout =
-                (SelectableListLayout) LayoutInflater.from(activity).inflate(
+                (SelectableListLayout<HistoryItem>) LayoutInflater.from(activity).inflate(
                         R.layout.history_main, null);
         RecyclerView recyclerView = mSelectableListLayout.initializeRecyclerView(mHistoryAdapter);
-        mSelectableListLayout.initializeToolbar(R.layout.history_toolbar, mSelectionDelegate,
-                R.string.menu_history, null, R.id.normal_menu_group,
-                R.id.selection_mode_menu_group, this);
+        mToolbar = (HistoryManagerToolbar) mSelectableListLayout.initializeToolbar(
+                R.layout.history_toolbar, mSelectionDelegate, R.string.menu_history, null,
+                R.id.normal_menu_group, R.id.selection_mode_menu_group, this);
+        mToolbar.setManager(this);
         mSelectableListLayout.initializeEmptyView(
                 TintedDrawable.constructTintedDrawable(mActivity.getResources(),
                         R.drawable.history_large),
@@ -114,6 +116,9 @@ public class HistoryManager implements OnMenuItemClickListener {
             mHistoryAdapter.removeItems();
             mSelectionDelegate.clearSelection();
             return true;
+        } else if (item.getItemId() == R.id.search_menu_id) {
+            mToolbar.showSearchView();
+            mSelectableListLayout.setEmptyViewText(R.string.history_manager_no_results);
         }
         return false;
     }
@@ -192,6 +197,22 @@ public class HistoryManager implements OnMenuItemClickListener {
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(mActivity,
                 ClearBrowsingDataPreferences.class.getName());
         IntentUtils.safeStartActivity(mActivity, intent);
+    }
+
+    /**
+     * Called to perform a search.
+     * @param query The text to search for.
+     */
+    public void performSearch(String query) {
+        mHistoryAdapter.search(query);
+    }
+
+    /**
+     * Called when a search is ended.
+     */
+    public void onEndSearch() {
+        mHistoryAdapter.onEndSearch();
+        mSelectableListLayout.setEmptyViewText(R.string.history_manager_empty);
     }
 
     /**

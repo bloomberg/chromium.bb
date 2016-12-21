@@ -34,13 +34,16 @@ import javax.annotation.Nullable;
  *
  * After the SelectableListLayout is inflated, it should be initialized through calls to
  * #initializeRecyclerView(), #initializeToolbar(), and #initializeEmptyView().
+ *
+ * @param <E> The type of the selectable items this layout holds.
  */
-public class SelectableListLayout extends RelativeLayout {
+public class SelectableListLayout<E> extends RelativeLayout {
     private Adapter<RecyclerView.ViewHolder> mAdapter;
     private ViewStub mToolbarStub;
     private TextView mEmptyView;
     private LoadingView mLoadingView;
     private RecyclerView mRecyclerView;
+    SelectionToolbar<E> mToolbar;
 
     private final AdapterDataObserver mAdapterObserver = new AdapterDataObserver() {
         @Override
@@ -55,6 +58,8 @@ public class SelectableListLayout extends RelativeLayout {
             // At inflation, the RecyclerView is set to gone, and the loading view is visible. As
             // long as the adapter data changes, we show the recycler view, and hide loading view.
             mLoadingView.hideLoadingUI();
+
+            mToolbar.onDataChanged(mAdapter.getItemCount());
         }
     };
 
@@ -116,16 +121,17 @@ public class SelectableListLayout extends RelativeLayout {
      * @param listener The OnMenuItemClickListener to set on the toolbar.
      * @return The initialized SelectionToolbar.
      */
-    public <E> SelectionToolbar<E> initializeToolbar(int toolbarLayoutId,
+    public SelectionToolbar<E> initializeToolbar(int toolbarLayoutId,
             SelectionDelegate<E> delegate, int titleResId, @Nullable DrawerLayout drawerLayout,
             int normalGroupResId, int selectedGroupResId, OnMenuItemClickListener listener) {
         mToolbarStub.setLayoutResource(toolbarLayoutId);
         @SuppressWarnings("unchecked")
         SelectionToolbar<E> toolbar = (SelectionToolbar<E>) mToolbarStub.inflate();
-        toolbar.initialize(delegate, titleResId, drawerLayout, normalGroupResId,
+        mToolbar = toolbar;
+        mToolbar.initialize(delegate, titleResId, drawerLayout, normalGroupResId,
                 selectedGroupResId);
-        toolbar.setOnMenuItemClickListener(listener);
-        return toolbar;
+        mToolbar.setOnMenuItemClickListener(listener);
+        return mToolbar;
     }
 
     /**
@@ -136,6 +142,13 @@ public class SelectableListLayout extends RelativeLayout {
      */
     public void initializeEmptyView(Drawable emptyDrawable, int emptyStringResId) {
         mEmptyView.setCompoundDrawablesWithIntrinsicBounds(null, emptyDrawable, null, null);
+        mEmptyView.setText(emptyStringResId);
+    }
+
+    /**
+     * @param emptyStringResId The string to show when the selectable list is empty.
+     */
+    public void setEmptyViewText(int emptyStringResId) {
         mEmptyView.setText(emptyStringResId);
     }
 

@@ -48,8 +48,8 @@ public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>
     private ActionBarDrawerToggle mActionBarDrawerToggle;
     private int mNavigationButton;
     private int mTitleResId;
-    private int mNormalGroupResId;
-    private int mSelectedGroupResId;
+    protected int mNormalGroupResId;
+    protected int mSelectedGroupResId;
 
     /**
      * Constructor for inflating from XML.
@@ -228,6 +228,12 @@ public class SelectionToolbar<E> extends Toolbar implements SelectionObserver<E>
         }
         setNavigationContentDescription(contentDescriptionId);
     }
+
+    /**
+     * Called when the data in the selectable list this toolbar is associated with changes.
+     * @param numItems The number of items in the selectable list.
+     */
+    protected void onDataChanged(int numItems) {}
 
     /**
      * Set up ActionBarDrawerToggle, a.k.a. hamburger button.

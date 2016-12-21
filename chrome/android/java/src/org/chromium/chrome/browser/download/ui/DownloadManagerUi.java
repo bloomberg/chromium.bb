@@ -176,7 +176,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
     private Activity mActivity;
     private ViewGroup mMainView;
     private DownloadManagerToolbar mToolbar;
-    private SelectableListLayout mSelectableListLayout;
+    private SelectableListLayout<DownloadHistoryItemWrapper> mSelectableListLayout;
 
     public DownloadManagerUi(
             Activity activity, boolean isOffTheRecord, ComponentName parentComponent) {
@@ -192,8 +192,8 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
             addDrawerListener(drawerLayout);
         }
 
-        mSelectableListLayout =
-                (SelectableListLayout) mMainView.findViewById(R.id.selectable_list);
+        mSelectableListLayout = (SelectableListLayout<DownloadHistoryItemWrapper>)
+                mMainView.findViewById(R.id.selectable_list);
 
         mSelectableListLayout.initializeEmptyView(
                 VectorDrawableCompat.create(mActivity.getResources(),

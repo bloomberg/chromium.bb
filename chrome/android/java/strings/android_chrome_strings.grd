@@ -203,6 +203,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SHARE" desc="Content description for a button to share item(s). [CHAR-LIMIT=20]">
         Share
       </message>
+      <message name="IDS_SEARCH" desc="The label for a search button.">
+        Search
+      </message>
 
       <!-- Main Preferences -->
       <message name="IDS_PREFERENCES" desc="Title for Chrome's Settings.">
@@ -721,9 +724,6 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_ALLOW_DSE" desc="Summary text explaining that Chrome will allow the default search engine to access the user's location, but only when the user searches directly from the address bar. e.g. Location access: Allow (for address bar searches)">
         Allow (for address bar searches)
-      </message>
-      <message name="IDS_WEBSITE_SETTINGS_SEARCH" desc="The label for the search button on the Website Settings page.">
-        Search
       </message>
       <message name="IDS_WEBSITE_RESET" desc="The label for the button allowing users to clear all data and reset the permissions for a website.">
         Clear &amp; reset
@@ -1805,6 +1805,12 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <!-- Browsing History UI -->
       <message name="IDS_HISTORY_MANAGER_EMPTY" desc="Indicates that there are no browsing history items.">
         No history here
+      </message>
+      <message name="IDS_HISTORY_MANAGER_NO_RESULTS" desc="Text explaining that no browsing history items match a search query.">
+        No history found
+      </message>
+      <message name="IDS_HISTORY_MANAGER_SEARCH" desc="Placeholder text for the input field that allows users to search browsing history.">
+        Search your history
       </message>
 
       <!-- Document mode messages -->

@@ -17,7 +17,7 @@
 
         <ImageView
             android:id="@+id/bookmark_image"
-            android:layout_width="64dp"
+            android:layout_width="@dimen/selectable_list_layout_start_icon_width"
             android:layout_height="match_parent"
             android:contentDescription="@null"
             android:scaleType="center" />
