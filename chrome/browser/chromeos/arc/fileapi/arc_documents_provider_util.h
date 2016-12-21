@@ -23,6 +23,10 @@ extern const char kDocumentsProviderMountPointName[];
 // The path of ARC documents provider file system mount point.
 extern const base::FilePath::CharType kDocumentsProviderMountPointPath[];
 
+// MIME type for directories in Android.
+// Defined as DocumentsContract.Document.MIME_TYPE_DIR in Android.
+extern const char kAndroidDirectoryMimeType[];
+
 // Parses a FileSystemURL pointing to ARC documents provider file system.
 // On success, true is returned. All arguments must not be nullptr.
 bool ParseDocumentsProviderUrl(const storage::FileSystemURL& url,

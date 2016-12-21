@@ -1434,6 +1434,7 @@ source_set("unit_tests") {
     "arc/fileapi/arc_content_file_system_async_file_util_unittest.cc",
     "arc/fileapi/arc_content_file_system_file_stream_reader_unittest.cc",
     "arc/fileapi/arc_content_file_system_url_util_unittest.cc",
+    "arc/fileapi/arc_documents_provider_root_unittest.cc",
     "arc/fileapi/arc_documents_provider_util_unittest.cc",
     "arc/intent_helper/arc_external_protocol_dialog_unittest.cc",
     "arc/intent_helper/arc_navigation_throttle_unittest.cc",

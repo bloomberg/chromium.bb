@@ -14,6 +14,7 @@ namespace arc {
 const char kDocumentsProviderMountPointName[] = "arc-documents-provider";
 const base::FilePath::CharType kDocumentsProviderMountPointPath[] =
     "/special/arc-documents-provider";
+const char kAndroidDirectoryMimeType[] = "vnd.android.document/directory";
 
 bool ParseDocumentsProviderUrl(const storage::FileSystemURL& url,
                                std::string* authority,

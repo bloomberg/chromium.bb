@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_FILE_SYSTEM_INSTANCE_UTIL_H_
 #define CHROME_BROWSER_CHROMEOS_ARC_FILEAPI_ARC_FILE_SYSTEM_INSTANCE_UTIL_H_
 
+#include <string>
+
 #include "components/arc/common/file_system.mojom.h"
 
 class GURL;
@@ -15,16 +17,22 @@ namespace file_system_instance_util {
 using GetFileSizeCallback = mojom::FileSystemInstance::GetFileSizeCallback;
 using OpenFileToReadCallback =
     mojom::FileSystemInstance::OpenFileToReadCallback;
+using GetDocumentCallback = mojom::FileSystemInstance::GetDocumentCallback;
+using GetChildDocumentsCallback =
+    mojom::FileSystemInstance::GetChildDocumentsCallback;
 
-// Utility which posts a task to run GetFileSize.
-// This function must be called on the IO thread.
+// Utility functions to post a task to run FileSystemInstance methods.
+// These functions must be called on the IO thread.
 void GetFileSizeOnIOThread(const GURL& arc_url,
                            const GetFileSizeCallback& callback);
-
-// Utility which posts a task to run OpenFileToRead.
-// This function must be called on the IO thread.
 void OpenFileToReadOnIOThread(const GURL& arc_url,
                               const OpenFileToReadCallback& callback);
+void GetDocumentOnIOThread(const std::string& authority,
+                           const std::string& document_id,
+                           const GetDocumentCallback& callback);
+void GetChildDocumentsOnIOThread(const std::string& authority,
+                                 const std::string& parent_document_id,
+                                 const GetChildDocumentsCallback& callback);
 
 }  // namespace file_system_instance_util
 }  // namespace arc
