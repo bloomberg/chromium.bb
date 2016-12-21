@@ -87,8 +87,8 @@ bool LanguageDetectionController::OnTextCaptured(
     return false;
   }
 
-  int capture_text_time = 0;
-  command.GetInteger("captureTextTime", &capture_text_time);
+  double capture_text_time = 0;
+  command.GetDouble("captureTextTime", &capture_text_time);
   UMA_HISTOGRAM_TIMES(kTranslateCaptureText,
                       base::TimeDelta::FromMillisecondsD(capture_text_time));
   std::string html_lang;

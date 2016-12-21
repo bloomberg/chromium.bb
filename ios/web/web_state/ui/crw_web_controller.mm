@@ -19,7 +19,6 @@
 #include "base/ios/ios_util.h"
 #import "base/ios/ns_error_util.h"
 #include "base/ios/weak_nsobject.h"
-#include "base/json/json_reader.h"
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
@@ -2698,18 +2697,10 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     return NO;
   }
 
-  int errorCode = 0;
-  std::string errorMessage;
-  std::unique_ptr<base::Value> inputJSONData(
-      base::JSONReader::ReadAndReturnError(
-          base::SysNSStringToUTF8(scriptMessage.body), false, &errorCode,
-          &errorMessage));
-  if (errorCode) {
-    DLOG(WARNING) << "JSON parse error: %s" << errorMessage.c_str();
-    return NO;
-  }
+  std::unique_ptr<base::Value> messageAsValue =
+      web::ValueResultFromWKResult(scriptMessage.body);
   base::DictionaryValue* message = nullptr;
-  if (!inputJSONData->GetAsDictionary(&message)) {
+  if (!messageAsValue || !messageAsValue->GetAsDictionary(&message)) {
     return NO;
   }
   std::string windowID;
@@ -2921,8 +2912,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     inputMissing = true;
   }
 
-  if (!message->GetInteger("keyCode", &keyCode) || keyCode < 0)
+  double keyCodeAsDouble = 0;
+  if (!message->GetDouble("keyCode", &keyCodeAsDouble) || keyCodeAsDouble < 0) {
     keyCode = web::WebStateObserver::kInvalidFormKeyCode;
+  } else {
+    keyCode = static_cast<int>(keyCodeAsDouble);
+  }
   _webStateImpl->OnFormActivityRegistered(formName, fieldName, type, value,
                                           keyCode, inputMissing);
   return YES;
@@ -2930,8 +2925,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (BOOL)handleCredentialsRequestedMessage:(base::DictionaryValue*)message
                                   context:(NSDictionary*)context {
-  int request_id = -1;
-  if (!message->GetInteger("requestId", &request_id)) {
+  double request_id = -1;
+  if (!message->GetDouble("requestId", &request_id)) {
     DLOG(WARNING) << "JS message parameter not found: requestId";
     return NO;
   }
@@ -2956,15 +2951,16 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
   DCHECK(context[web::kUserIsInteractingKey]);
   _webStateImpl->OnCredentialsRequested(
-      request_id, net::GURLWithNSURL(context[web::kOriginURLKey]), unmediated,
-      federations, [context[web::kUserIsInteractingKey] boolValue]);
+      static_cast<int>(request_id),
+      net::GURLWithNSURL(context[web::kOriginURLKey]), unmediated, federations,
+      [context[web::kUserIsInteractingKey] boolValue]);
   return YES;
 }
 
 - (BOOL)handleSignedInMessage:(base::DictionaryValue*)message
                       context:(NSDictionary*)context {
-  int request_id = -1;
-  if (!message->GetInteger("requestId", &request_id)) {
+  double request_id = -1;
+  if (!message->GetDouble("requestId", &request_id)) {
     DLOG(WARNING) << "JS message parameter not found: requestId";
     return NO;
   }
@@ -2975,11 +2971,11 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       DLOG(WARNING) << "JS message parameter 'credential' is invalid";
       return NO;
     }
-    _webStateImpl->OnSignedIn(request_id,
+    _webStateImpl->OnSignedIn(static_cast<int>(request_id),
                               net::GURLWithNSURL(context[web::kOriginURLKey]),
                               credential);
   } else {
-    _webStateImpl->OnSignedIn(request_id,
+    _webStateImpl->OnSignedIn(static_cast<int>(request_id),
                               net::GURLWithNSURL(context[web::kOriginURLKey]));
   }
   return YES;
@@ -2987,20 +2983,20 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (BOOL)handleSignedOutMessage:(base::DictionaryValue*)message
                        context:(NSDictionary*)context {
-  int request_id = -1;
-  if (!message->GetInteger("requestId", &request_id)) {
+  double request_id = -1;
+  if (!message->GetDouble("requestId", &request_id)) {
     DLOG(WARNING) << "JS message parameter not found: requestId";
     return NO;
   }
-  _webStateImpl->OnSignedOut(request_id,
+  _webStateImpl->OnSignedOut(static_cast<int>(request_id),
                              net::GURLWithNSURL(context[web::kOriginURLKey]));
   return YES;
 }
 
 - (BOOL)handleSignInFailedMessage:(base::DictionaryValue*)message
                           context:(NSDictionary*)context {
-  int request_id = -1;
-  if (!message->GetInteger("requestId", &request_id)) {
+  double request_id = -1;
+  if (!message->GetDouble("requestId", &request_id)) {
     DLOG(WARNING) << "JS message parameter not found: requestId";
     return NO;
   }
@@ -3012,11 +3008,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       return NO;
     }
     _webStateImpl->OnSignInFailed(
-        request_id, net::GURLWithNSURL(context[web::kOriginURLKey]),
-        credential);
+        static_cast<int>(request_id),
+        net::GURLWithNSURL(context[web::kOriginURLKey]), credential);
   } else {
     _webStateImpl->OnSignInFailed(
-        request_id, net::GURLWithNSURL(context[web::kOriginURLKey]));
+        static_cast<int>(request_id),
+        net::GURLWithNSURL(context[web::kOriginURLKey]));
   }
   return YES;
 }
@@ -3077,9 +3074,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (BOOL)handleWindowHistoryGoMessage:(base::DictionaryValue*)message
                              context:(NSDictionary*)context {
-  int delta = 0;
-  if (message->GetInteger("value", &delta)) {
-    [self goDelta:delta];
+  double delta = 0;
+  if (message->GetDouble("value", &delta)) {
+    [self goDelta:static_cast<int>(delta)];
     return YES;
   }
   return NO;
