@@ -68,6 +68,7 @@ disable=
   design,
   missing-docstring,
   locally-disabled,
+  locally-enabled,
   star-args,
   wildcard-import,
   fixme,

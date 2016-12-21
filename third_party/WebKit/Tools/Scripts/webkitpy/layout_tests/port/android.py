@@ -45,22 +45,52 @@ from webkitpy.layout_tests.port import factory
 from webkitpy.layout_tests.port import server_process
 from webkitpy.common.system.profiler import SingleFileOutputProfiler
 
-_CHROMIUM_SRC_ROOT = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..', '..', '..'))
-_DEVIL_ROOT = os.path.join(
-    _CHROMIUM_SRC_ROOT, 'third_party', 'catapult', 'devil')
 
-sys.path.append(_DEVIL_ROOT)
-from devil import devil_env
-from devil.android import battery_utils
-from devil.android import device_errors
-from devil.android import device_utils
-from devil.android.perf import perf_control
-from devil.android.sdk import intent
+# These are stub globals used for android-specific modules. We
+# don't import them unless we actually need a real Android port object,
+# in order to not have the dependency on all of the android and catapult
+# modules in non-Android ports.
+# pylint: disable=invalid-name
+battery_utils = None
+device_errors = None
+device_utils = None
+devil_chromium = None
+devil_env = None
+intent = None
+perf_control = None
+# pylint: enable=invalid-name
 
-_BUILD_ANDROID_ROOT = os.path.join(_CHROMIUM_SRC_ROOT, 'build', 'android')
-sys.path.append(_BUILD_ANDROID_ROOT)
-import devil_chromium
+
+def _import_android_packages_if_necessary():
+    # pylint: disable=invalid-name
+    global battery_utils
+    global device_errors
+    global device_utils
+    global devil_chromium
+    global devil_env
+    global intent
+    global perf_control
+    # pylint: enable=invalid-name
+
+    if not battery_utils:
+        chromium_src_root = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), '..', '..', '..',
+                         '..', '..', '..', '..'))
+        devil_root = os.path.join(chromium_src_root, 'third_party', 'catapult',
+                                  'devil')
+        build_android_root = os.path.join(chromium_src_root, 'build', 'android')
+        sys.path.insert(0, devil_root)
+        sys.path.insert(0, build_android_root)
+        from importlib import import_module
+
+        battery_utils = import_module('devil.android.battery_utils')
+        devil_env = import_module('devil.devil_env')
+        device_errors = import_module('devil.android.device_errors')
+        device_utils = import_module('devil.android.device_utils')
+        devil_chromium = import_module('devil_chromium')
+        intent = import_module('devil.android.sdk.intent')
+        perf_control = import_module('devil.android.perf.perf_control')
+
 
 _log = logging.getLogger(__name__)
 
@@ -261,6 +291,7 @@ class AndroidPort(base.Port):
     BUILD_REQUIREMENTS_URL = 'https://www.chromium.org/developers/how-tos/android-build-instructions'
 
     def __init__(self, host, port_name, **kwargs):
+        _import_android_packages_if_necessary()
         super(AndroidPort, self).__init__(host, port_name, **kwargs)
 
         self._operating_system = 'android'
