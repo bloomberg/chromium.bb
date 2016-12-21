@@ -25,9 +25,9 @@ cc::Layer* EffectPaintPropertyNode::ensureDummyLayer() const {
 
 String EffectPaintPropertyNode::toString() const {
   return String::format(
-      "localTransformSpace=%p outputClip=%p opacity=%f filter=%s",
+      "localTransformSpace=%p outputClip=%p opacity=%f filter=%s blendMode=%s",
       m_localTransformSpace.get(), m_outputClip.get(), m_opacity,
-      m_filter.toString().ascii().data());
+      m_filter.toString().ascii().data(), SkBlendMode_Name(m_blendMode));
 }
 
 }  // namespace blink

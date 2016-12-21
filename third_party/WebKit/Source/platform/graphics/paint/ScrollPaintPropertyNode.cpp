@@ -21,10 +21,12 @@ String ScrollPaintPropertyNode::toString() const {
       MainThreadScrollingReason::mainThreadScrollingReasonsAsText(
           m_mainThreadScrollingReasons);
   return String::format(
-      "scrollOffsetTranslation=%s clip=%s bounds=%s "
-      "mainThreadScrollingReasons=%s",
+      "scrollOffsetTranslation=%s clip=%s bounds=%s userScrollableHorizontal=%s"
+      " userScrollableVertical=%s mainThreadScrollingReasons=%s",
       scrollOffset.toString().ascii().data(), m_clip.toString().ascii().data(),
       m_bounds.toString().ascii().data(),
+      m_userScrollableHorizontal ? "yes" : "no",
+      m_userScrollableVertical ? "yes" : "no",
       mainThreadScrollingReasonsAsText.c_str());
 }
 
