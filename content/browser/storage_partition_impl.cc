@@ -574,10 +574,8 @@ BroadcastChannelProvider* StoragePartitionImpl::GetBroadcastChannelProvider() {
 
 void StoragePartitionImpl::OpenLocalStorage(
     const url::Origin& origin,
-    mojom::LevelDBObserverPtr observer,
     mojo::InterfaceRequest<mojom::LevelDBWrapper> request) {
-  dom_storage_context_->OpenLocalStorage(
-      origin, std::move(observer), std::move(request));
+  dom_storage_context_->OpenLocalStorage(origin, std::move(request));
 }
 
 void StoragePartitionImpl::ClearDataImpl(

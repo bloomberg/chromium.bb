@@ -96,7 +96,6 @@ class DOMStorageContextWrapper::MojoState {
         weak_ptr_factory_(this) {}
 
   void OpenLocalStorage(const url::Origin& origin,
-                        mojom::LevelDBObserverPtr observer,
                         mojom::LevelDBWrapperRequest request);
 
  private:
@@ -121,7 +120,6 @@ class DOMStorageContextWrapper::MojoState {
   // The (possibly delayed) implementation of OpenLocalStorage(). Can be called
   // directly from that function, or through |on_database_open_callbacks_|.
   void BindLocalStorage(const url::Origin& origin,
-                        mojom::LevelDBObserverPtr observer,
                         mojom::LevelDBWrapperRequest request);
 
   service_manager::Connector* const connector_;
@@ -151,7 +149,6 @@ class DOMStorageContextWrapper::MojoState {
 
 void DOMStorageContextWrapper::MojoState::OpenLocalStorage(
     const url::Origin& origin,
-    mojom::LevelDBObserverPtr observer,
     mojom::LevelDBWrapperRequest request) {
   // If we don't have a filesystem_connection_, we'll need to establish one.
   if (connection_state_ == NO_CONNECTION) {
@@ -187,11 +184,11 @@ void DOMStorageContextWrapper::MojoState::OpenLocalStorage(
     // Queue this OpenLocalStorage call for when we have a level db pointer.
     on_database_opened_callbacks_.push_back(
         base::Bind(&MojoState::BindLocalStorage, weak_ptr_factory_.GetWeakPtr(),
-                   origin, base::Passed(&observer), base::Passed(&request)));
+                   origin, base::Passed(&request)));
     return;
   }
 
-  BindLocalStorage(origin, std::move(observer), std::move(request));
+  BindLocalStorage(origin, std::move(request));
 }
 
 void DOMStorageContextWrapper::MojoState::OnDirectoryOpened(
@@ -236,7 +233,6 @@ void DOMStorageContextWrapper::MojoState::OnDatabaseOpened(
 
 void DOMStorageContextWrapper::MojoState::BindLocalStorage(
     const url::Origin& origin,
-    mojom::LevelDBObserverPtr observer,
     mojom::LevelDBWrapperRequest request) {
   // Delay for a moment after a value is set in anticipation
   // of other values being set, so changes are batched.
@@ -260,7 +256,6 @@ void DOMStorageContextWrapper::MojoState::BindLocalStorage(
   }
 
   found->second->Bind(std::move(request));
-  found->second->AddObserver(std::move(observer));
 }
 
 DOMStorageContextWrapper::DOMStorageContextWrapper(
@@ -421,10 +416,8 @@ void DOMStorageContextWrapper::Flush() {
 
 void DOMStorageContextWrapper::OpenLocalStorage(
     const url::Origin& origin,
-    mojom::LevelDBObserverPtr observer,
     mojom::LevelDBWrapperRequest request) {
-  mojo_state_->OpenLocalStorage(
-      origin, std::move(observer), std::move(request));
+  mojo_state_->OpenLocalStorage(origin, std::move(request));
 }
 
 void DOMStorageContextWrapper::OnMemoryPressure(

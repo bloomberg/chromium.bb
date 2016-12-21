@@ -78,12 +78,15 @@ void LevelDBWrapperImpl::Bind(mojom::LevelDBWrapperRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void LevelDBWrapperImpl::AddObserver(mojom::LevelDBObserverPtr observer) {
-  observers_.AddPtr(std::move(observer));
-}
-
 void LevelDBWrapperImpl::EnableAggressiveCommitDelay() {
   s_aggressive_flushing_enabled_ = true;
+}
+
+void LevelDBWrapperImpl::AddObserver(
+    mojom::LevelDBObserverAssociatedPtrInfo observer) {
+  mojom::LevelDBObserverAssociatedPtr observer_ptr;
+  observer_ptr.Bind(std::move(observer));
+  observers_.AddPtr(std::move(observer_ptr));
 }
 
 void LevelDBWrapperImpl::Put(const std::vector<uint8_t>& key,

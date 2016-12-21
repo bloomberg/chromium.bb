@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/nullable_string16.h"
 #include "content/common/leveldb_wrapper.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -101,7 +101,7 @@ class LocalStorageCachedArea : public mojom::LevelDBObserver,
   bool ignore_all_mutations_ = false;
   std::string get_all_request_id_;
   mojom::LevelDBWrapperPtr leveldb_;
-  mojo::Binding<mojom::LevelDBObserver> binding_;
+  mojo::AssociatedBinding<mojom::LevelDBObserver> binding_;
   LocalStorageCachedAreas* cached_areas_;
   std::map<std::string, LocalStorageArea*> areas_;
   base::WeakPtrFactory<LocalStorageCachedArea> weak_factory_;

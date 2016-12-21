@@ -30,6 +30,8 @@ struct KeyValue {
 // A wrapper around leveldb that supports giving notifications when values
 // change.
 interface LevelDBWrapper {
+  AddObserver(associated LevelDBObserver observer);
+
   // Sets the database entry for |key| to |value|. Returns OK on success.
   Put(array<uint8> key, array<uint8> value, string source) => (bool success);
 

@@ -44,7 +44,6 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   ~LevelDBWrapperImpl() override;
 
   void Bind(mojom::LevelDBWrapperRequest request);
-  void AddObserver(mojom::LevelDBObserverPtr observer);
 
   // Commence aggressive flushing. This should be called early during startup,
   // before any localStorage writing. Currently scheduled writes will not be
@@ -92,6 +91,7 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
   };
 
   // LevelDBWrapperImpl:
+  void AddObserver(mojom::LevelDBObserverAssociatedPtrInfo observer) override;
   void Put(const std::vector<uint8_t>& key,
            const std::vector<uint8_t>& value,
            const std::string& source,
@@ -118,7 +118,7 @@ class CONTENT_EXPORT LevelDBWrapperImpl : public mojom::LevelDBWrapper {
 
   std::vector<uint8_t> prefix_;
   mojo::BindingSet<mojom::LevelDBWrapper> bindings_;
-  mojo::InterfacePtrSet<mojom::LevelDBObserver> observers_;
+  mojo::AssociatedInterfacePtrSet<mojom::LevelDBObserver> observers_;
   base::Closure no_bindings_callback_;
   leveldb::mojom::LevelDBDatabase* database_;
   std::unique_ptr<ValueMap> map_;

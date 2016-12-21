@@ -57,9 +57,11 @@ LocalStorageCachedArea::LocalStorageCachedArea(
     LocalStorageCachedAreas* cached_areas)
     : origin_(origin), binding_(this),
       cached_areas_(cached_areas), weak_factory_(this) {
-  storage_partition_service->OpenLocalStorage(
-      origin_, binding_.CreateInterfacePtrAndBind(),
-      mojo::MakeRequest(&leveldb_));
+  storage_partition_service->OpenLocalStorage(origin_,
+                                              mojo::MakeRequest(&leveldb_));
+  mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
+  binding_.Bind(&ptr_info, leveldb_.associated_group());
+  leveldb_->AddObserver(std::move(ptr_info));
 }
 
 LocalStorageCachedArea::~LocalStorageCachedArea() {

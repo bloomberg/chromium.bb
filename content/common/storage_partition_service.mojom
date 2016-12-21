@@ -10,6 +10,5 @@ import "url/mojo/origin.mojom";
 // Returns services related to the current storage partition.
 interface StoragePartitionService {
   OpenLocalStorage(url.mojom.Origin origin,
-                   LevelDBObserver observer,
                    LevelDBWrapper& database);
 };
