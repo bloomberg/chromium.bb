@@ -191,13 +191,13 @@ FAIL overflow:hidden ignored even with zero height ("<div style='height:0; overf
 FAIL text-overflow:ellipsis ignored ("<div style='width:0; overflow:hidden; text-overflow:ellipsis'>abc") assert_equals: expected "abc" but got ""
 PASS innerText not supported on SVG elements ("<svg>abc") 
 PASS innerText not supported on MathML elements ("<math>abc") 
-FAIL <rp> rendered ("<div><ruby>abc<rp>(</rp><rt>def</rt><rp>)</rp></ruby>") assert_equals: expected "abc(def)" but got "abcdef"
-PASS Lone <rp> rendered ("<div><rp>abc</rp>") 
-PASS visibility:hidden <rp> not rendered ("<div><rp style='visibility:hidden'>abc</rp>") 
-FAIL Lone <rp> rendered without whitespace trimming ("<div><rp> abc </rp>") assert_equals: expected " abc " but got "abc"
-PASS display:block <rp> induces line breaks ("<div><rp style='display:block'>abc</rp>def") 
-FAIL display:block <rp> induces line breaks but doesn't trim whitespace ("<div><rp style='display:block'> abc </rp>def") assert_equals: expected " abc \ndef" but got "abc\ndef"
-FAIL <rp> in a replaced element still renders ("<div><select class='poke-rp'></select>") assert_equals: expected "abc" but got ""
+PASS <rt> and no <rp> ("<div><ruby>abc<rt>def</rt></ruby>") 
+PASS <rp> ("<div><ruby>abc<rp>(</rp><rt>def</rt><rp>)</rp></ruby>") 
+FAIL Lone <rp> ("<div><rp>abc</rp>") assert_equals: expected "" but got "abc"
+PASS visibility:hidden <rp> ("<div><rp style='visibility:hidden'>abc</rp>") 
+PASS display:block <rp> ("<div><rp style='display:block'>abc</rp>def") 
+PASS display:block <rp> with whitespace ("<div><rp style='display:block'> abc </rp>def") 
+PASS <rp> in a <select> ("<div><select class='poke-rp'></select>") 
 PASS Shadow DOM contents ignored ("<div class='shadow'>") 
 PASS Shadow DOM contents ignored ("<div><div class='shadow'>") 
 FAIL CSS 'order' property ignored ("<div style='display:flex'><div style='order:1'>1</div><div>2</div></div>") assert_equals: expected "1\n2" but got "1\n2\n"

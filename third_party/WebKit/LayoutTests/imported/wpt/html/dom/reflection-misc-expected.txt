@@ -19,6 +19,8 @@ PASS script.type: 32 tests
 PASS script.charset: 32 tests
 PASS script.defer: 33 tests
 PASS script.crossOrigin: 52 tests
+PASS script.nonce: 32 tests
+PASS script.integrity: 32 tests
 PASS noscript.title: 32 tests
 PASS noscript.lang: 32 tests
 PASS noscript.dir: 62 tests

@@ -25,8 +25,6 @@ FAIL If the event's initialized flag is not set, an InvalidStateError must be th
 PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (ProgressEvent). 
 PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (StorageEvent). 
 PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (SVGEvents). 
-FAIL If the event's initialized flag is not set, an InvalidStateError must be thrown (SVGZoomEvent). Failed to execute 'createEvent' on 'Document': The provided event type ('SVGZoomEvent') is invalid.
-FAIL If the event's initialized flag is not set, an InvalidStateError must be thrown (SVGZoomEvents). Failed to execute 'createEvent' on 'Document': The provided event type ('SVGZoomEvents') is invalid.
 PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (TextEvent). 
 PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (TouchEvent). 
 PASS If the event's initialized flag is not set, an InvalidStateError must be thrown (TrackEvent). 

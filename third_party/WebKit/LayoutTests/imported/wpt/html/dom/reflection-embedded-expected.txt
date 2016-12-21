@@ -22,6 +22,31 @@ PASS img.useMap: 32 tests
 PASS img.isMap: 33 tests
 PASS img.width: 9 tests
 PASS img.height: 9 tests
+PASS img.referrerPolicy: 27 tests
+FAIL img.referrerPolicy: setAttribute() to "same-origin" assert_equals: IDL get expected "same-origin" but got ""
+PASS img.referrerPolicy: 3 tests
+FAIL img.referrerPolicy: setAttribute() to "SAME-ORIGIN" assert_equals: IDL get expected "same-origin" but got ""
+PASS img.referrerPolicy: 5 tests
+FAIL img.referrerPolicy: setAttribute() to "strict-origin" assert_equals: IDL get expected "strict-origin" but got ""
+PASS img.referrerPolicy: 3 tests
+FAIL img.referrerPolicy: setAttribute() to "STRICT-ORIGIN" assert_equals: IDL get expected "strict-origin" but got ""
+PASS img.referrerPolicy: 5 tests
+FAIL img.referrerPolicy: setAttribute() to "strict-origin-when-cross-origin" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+PASS img.referrerPolicy: 3 tests
+FAIL img.referrerPolicy: setAttribute() to "STRICT-ORIGIN-WHEN-CROSS-ORIGIN" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+PASS img.referrerPolicy: 30 tests
+FAIL img.referrerPolicy: IDL set to "same-origin" assert_equals: IDL get expected "same-origin" but got ""
+PASS img.referrerPolicy: 3 tests
+FAIL img.referrerPolicy: IDL set to "SAME-ORIGIN" assert_equals: IDL get expected "same-origin" but got ""
+PASS img.referrerPolicy: 5 tests
+FAIL img.referrerPolicy: IDL set to "strict-origin" assert_equals: IDL get expected "strict-origin" but got ""
+PASS img.referrerPolicy: 3 tests
+FAIL img.referrerPolicy: IDL set to "STRICT-ORIGIN" assert_equals: IDL get expected "strict-origin" but got ""
+PASS img.referrerPolicy: 5 tests
+FAIL img.referrerPolicy: IDL set to "strict-origin-when-cross-origin" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+PASS img.referrerPolicy: 3 tests
+FAIL img.referrerPolicy: IDL set to "STRICT-ORIGIN-WHEN-CROSS-ORIGIN" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+PASS img.referrerPolicy: 5 tests
 PASS img.name: 32 tests
 PASS img.lowsrc: 38 tests
 PASS img.align: 32 tests
@@ -40,8 +65,67 @@ PASS iframe.src: 38 tests
 PASS iframe.srcdoc: 32 tests
 PASS iframe.name: 32 tests
 PASS iframe.allowFullscreen: 33 tests
+FAIL iframe.allowUserMedia: typeof IDL attribute assert_equals: expected "boolean" but got "undefined"
+FAIL iframe.allowUserMedia: IDL get with DOM attribute unset assert_equals: expected (boolean) false but got (undefined) undefined
+FAIL iframe.allowUserMedia: setAttribute() to "" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL iframe.allowUserMedia: setAttribute() to " foo " assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL iframe.allowUserMedia: setAttribute() to undefined assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL iframe.allowUserMedia: setAttribute() to null assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL iframe.allowUserMedia: setAttribute() to 7 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL iframe.allowUserMedia: setAttribute() to 1.5 assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL iframe.allowUserMedia: setAttribute() to true assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL iframe.allowUserMedia: setAttribute() to false assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL iframe.allowUserMedia: setAttribute() to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL iframe.allowUserMedia: setAttribute() to NaN assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL iframe.allowUserMedia: setAttribute() to Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL iframe.allowUserMedia: setAttribute() to -Infinity assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL iframe.allowUserMedia: setAttribute() to "\0" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL iframe.allowUserMedia: setAttribute() to object "test-toString" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL iframe.allowUserMedia: setAttribute() to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL iframe.allowUserMedia: setAttribute() to "allowUserMedia" assert_equals: IDL get expected (boolean) true but got (undefined) undefined
+FAIL iframe.allowUserMedia: IDL set to "" assert_equals: hasAttribute() expected false but got true
+FAIL iframe.allowUserMedia: IDL set to " foo " assert_equals: IDL get expected (boolean) true but got (string) " foo "
+FAIL iframe.allowUserMedia: IDL set to undefined assert_equals: hasAttribute() expected false but got true
+FAIL iframe.allowUserMedia: IDL set to null assert_equals: hasAttribute() expected false but got true
+FAIL iframe.allowUserMedia: IDL set to 7 assert_equals: IDL get expected (boolean) true but got (number) 7
+FAIL iframe.allowUserMedia: IDL set to 1.5 assert_equals: IDL get expected (boolean) true but got (number) 1.5
+PASS iframe.allowUserMedia: IDL set to true 
+FAIL iframe.allowUserMedia: IDL set to false assert_equals: hasAttribute() expected false but got true
+FAIL iframe.allowUserMedia: IDL set to object "[object Object]" assert_equals: IDL get expected (boolean) true but got (object) object "[object Object]"
+FAIL iframe.allowUserMedia: IDL set to NaN assert_equals: hasAttribute() expected false but got true
+FAIL iframe.allowUserMedia: IDL set to Infinity assert_equals: IDL get expected (boolean) true but got (number) Infinity
+FAIL iframe.allowUserMedia: IDL set to -Infinity assert_equals: IDL get expected (boolean) true but got (number) -Infinity
+FAIL iframe.allowUserMedia: IDL set to "\0" assert_equals: IDL get expected (boolean) true but got (string) "\0"
+FAIL iframe.allowUserMedia: IDL set to object "test-toString" assert_equals: IDL get expected (boolean) true but got (object) object "test-toString"
+FAIL iframe.allowUserMedia: IDL set to object "test-valueOf" assert_equals: IDL get expected (boolean) true but got (object) object "test-valueOf"
+PASS iframe.allowPaymentRequest: 33 tests
 PASS iframe.width: 32 tests
 PASS iframe.height: 32 tests
+PASS iframe.referrerPolicy: 27 tests
+FAIL iframe.referrerPolicy: setAttribute() to "same-origin" assert_equals: IDL get expected "same-origin" but got ""
+PASS iframe.referrerPolicy: 3 tests
+FAIL iframe.referrerPolicy: setAttribute() to "SAME-ORIGIN" assert_equals: IDL get expected "same-origin" but got ""
+PASS iframe.referrerPolicy: 5 tests
+FAIL iframe.referrerPolicy: setAttribute() to "strict-origin" assert_equals: IDL get expected "strict-origin" but got ""
+PASS iframe.referrerPolicy: 3 tests
+FAIL iframe.referrerPolicy: setAttribute() to "STRICT-ORIGIN" assert_equals: IDL get expected "strict-origin" but got ""
+PASS iframe.referrerPolicy: 5 tests
+FAIL iframe.referrerPolicy: setAttribute() to "strict-origin-when-cross-origin" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+PASS iframe.referrerPolicy: 3 tests
+FAIL iframe.referrerPolicy: setAttribute() to "STRICT-ORIGIN-WHEN-CROSS-ORIGIN" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+PASS iframe.referrerPolicy: 30 tests
+FAIL iframe.referrerPolicy: IDL set to "same-origin" assert_equals: IDL get expected "same-origin" but got ""
+PASS iframe.referrerPolicy: 3 tests
+FAIL iframe.referrerPolicy: IDL set to "SAME-ORIGIN" assert_equals: IDL get expected "same-origin" but got ""
+PASS iframe.referrerPolicy: 5 tests
+FAIL iframe.referrerPolicy: IDL set to "strict-origin" assert_equals: IDL get expected "strict-origin" but got ""
+PASS iframe.referrerPolicy: 3 tests
+FAIL iframe.referrerPolicy: IDL set to "STRICT-ORIGIN" assert_equals: IDL get expected "strict-origin" but got ""
+PASS iframe.referrerPolicy: 5 tests
+FAIL iframe.referrerPolicy: IDL set to "strict-origin-when-cross-origin" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+PASS iframe.referrerPolicy: 3 tests
+FAIL iframe.referrerPolicy: IDL set to "STRICT-ORIGIN-WHEN-CROSS-ORIGIN" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+PASS iframe.referrerPolicy: 5 tests
 PASS iframe.align: 32 tests
 PASS iframe.scrolling: 32 tests
 PASS iframe.frameBorder: 32 tests
@@ -320,6 +404,31 @@ PASS area.target: 32 tests
 PASS area.download: 32 tests
 PASS area.ping: 32 tests
 PASS area.rel: 32 tests
+PASS area.referrerPolicy: 27 tests
+FAIL area.referrerPolicy: setAttribute() to "same-origin" assert_equals: IDL get expected "same-origin" but got ""
+PASS area.referrerPolicy: 3 tests
+FAIL area.referrerPolicy: setAttribute() to "SAME-ORIGIN" assert_equals: IDL get expected "same-origin" but got ""
+PASS area.referrerPolicy: 5 tests
+FAIL area.referrerPolicy: setAttribute() to "strict-origin" assert_equals: IDL get expected "strict-origin" but got ""
+PASS area.referrerPolicy: 3 tests
+FAIL area.referrerPolicy: setAttribute() to "STRICT-ORIGIN" assert_equals: IDL get expected "strict-origin" but got ""
+PASS area.referrerPolicy: 5 tests
+FAIL area.referrerPolicy: setAttribute() to "strict-origin-when-cross-origin" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+PASS area.referrerPolicy: 3 tests
+FAIL area.referrerPolicy: setAttribute() to "STRICT-ORIGIN-WHEN-CROSS-ORIGIN" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+PASS area.referrerPolicy: 30 tests
+FAIL area.referrerPolicy: IDL set to "same-origin" assert_equals: IDL get expected "same-origin" but got ""
+PASS area.referrerPolicy: 3 tests
+FAIL area.referrerPolicy: IDL set to "SAME-ORIGIN" assert_equals: IDL get expected "same-origin" but got ""
+PASS area.referrerPolicy: 5 tests
+FAIL area.referrerPolicy: IDL set to "strict-origin" assert_equals: IDL get expected "strict-origin" but got ""
+PASS area.referrerPolicy: 3 tests
+FAIL area.referrerPolicy: IDL set to "STRICT-ORIGIN" assert_equals: IDL get expected "strict-origin" but got ""
+PASS area.referrerPolicy: 5 tests
+FAIL area.referrerPolicy: IDL set to "strict-origin-when-cross-origin" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+PASS area.referrerPolicy: 3 tests
+FAIL area.referrerPolicy: IDL set to "STRICT-ORIGIN-WHEN-CROSS-ORIGIN" assert_equals: IDL get expected "strict-origin-when-cross-origin" but got ""
+PASS area.referrerPolicy: 5 tests
 PASS area.href: 38 tests
 PASS area.noHref: 33 tests
 Harness: the test ran to completion.
