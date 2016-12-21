@@ -433,9 +433,9 @@ void PerformanceBase::addLongTaskTiming(double startTime,
   if (!hasObserverFor(PerformanceEntry::LongTask))
     return;
   PerformanceEntry* entry = PerformanceLongTaskTiming::create(
-      monotonicTimeToDOMHighResTimeStampInMillis(startTime),
-      monotonicTimeToDOMHighResTimeStampInMillis(endTime), name,
-      culpritFrameSrc, culpritFrameId, culpritFrameName);
+      monotonicTimeToDOMHighResTimeStamp(startTime),
+      monotonicTimeToDOMHighResTimeStamp(endTime), name, culpritFrameSrc,
+      culpritFrameId, culpritFrameName);
   notifyObserversOfEntry(*entry);
 }
 
@@ -560,11 +560,6 @@ DOMHighResTimeStamp PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
   double timeInSeconds = monotonicTime - m_timeOrigin;
   return convertSecondsToDOMHighResTimeStamp(
       clampTimeResolution(timeInSeconds));
-}
-
-double PerformanceBase::monotonicTimeToDOMHighResTimeStampInMillis(
-    DOMHighResTimeStamp monotonicTime) const {
-  return monotonicTimeToDOMHighResTimeStamp(monotonicTime) * 1000;
 }
 
 DOMHighResTimeStamp PerformanceBase::now() const {

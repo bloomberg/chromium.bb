@@ -78,7 +78,6 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   // document's time origin and has a time resolution that is safe for
   // exposing to web.
   DOMHighResTimeStamp monotonicTimeToDOMHighResTimeStamp(double) const;
-  double monotonicTimeToDOMHighResTimeStampInMillis(DOMHighResTimeStamp) const;
   DOMHighResTimeStamp now() const;
 
   double timeOrigin() const { return m_timeOrigin; }

@@ -8,13 +8,25 @@
 
 namespace blink {
 
+namespace {
+
+double clampToMillisecond(double timeInMillis) {
+  // Long task times are clamped to 1 millisecond for security.
+  return floor(timeInMillis);
+}
+
+}  // namespace
+
 PerformanceLongTaskTiming::PerformanceLongTaskTiming(double startTime,
                                                      double endTime,
                                                      String name,
                                                      String culpritFrameSrc,
                                                      String culpritFrameId,
                                                      String culpritFrameName)
-    : PerformanceEntry(name, "longtask", startTime, endTime),
+    : PerformanceEntry(name,
+                       "longtask",
+                       clampToMillisecond(startTime),
+                       clampToMillisecond(endTime)),
       m_culpritFrameSrc(culpritFrameSrc),
       m_culpritFrameId(culpritFrameId),
       m_culpritFrameName(culpritFrameName) {}
