@@ -190,7 +190,7 @@ void RangeInputType::handleKeydownEvent(KeyboardEvent* event) {
   const Decimal bigStep =
       std::max((stepRange.maximum() - stepRange.minimum()) / 10, step);
 
-  TextDirection dir = LTR;
+  TextDirection dir = TextDirection::Ltr;
   bool isVertical = false;
   if (element().layoutObject()) {
     dir = computedTextDirection();
@@ -199,24 +199,27 @@ void RangeInputType::handleKeydownEvent(KeyboardEvent* event) {
   }
 
   Decimal newValue;
-  if (key == "ArrowUp")
+  if (key == "ArrowUp") {
     newValue = current + step;
-  else if (key == "ArrowDown")
+  } else if (key == "ArrowDown") {
     newValue = current - step;
-  else if (key == "ArrowLeft")
-    newValue = (isVertical || dir == RTL) ? current + step : current - step;
-  else if (key == "ArrowRight")
-    newValue = (isVertical || dir == RTL) ? current - step : current + step;
-  else if (key == "PageUp")
+  } else if (key == "ArrowLeft") {
+    newValue = (isVertical || dir == TextDirection::Rtl) ? current + step
+                                                         : current - step;
+  } else if (key == "ArrowRight") {
+    newValue = (isVertical || dir == TextDirection::Rtl) ? current - step
+                                                         : current + step;
+  } else if (key == "PageUp") {
     newValue = current + bigStep;
-  else if (key == "PageDown")
+  } else if (key == "PageDown") {
     newValue = current - bigStep;
-  else if (key == "Home")
+  } else if (key == "Home") {
     newValue = isVertical ? stepRange.maximum() : stepRange.minimum();
-  else if (key == "End")
+  } else if (key == "End") {
     newValue = isVertical ? stepRange.minimum() : stepRange.maximum();
-  else
+  } else {
     return;  // Did not match any key binding.
+  }
 
   newValue = stepRange.clampValue(newValue);
 

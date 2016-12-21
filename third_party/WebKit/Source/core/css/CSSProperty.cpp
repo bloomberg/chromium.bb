@@ -53,7 +53,7 @@ static CSSPropertyID resolveToPhysicalProperty(
     WritingMode writingMode,
     LogicalBoxSide logicalSide,
     const StylePropertyShorthand& shorthand) {
-  if (direction == LTR) {
+  if (direction == TextDirection::Ltr) {
     if (writingMode == TopToBottomWritingMode) {
       // The common case. The logical and physical box sides match.
       // Left = Start, Right = End, Before = Top, After = Bottom

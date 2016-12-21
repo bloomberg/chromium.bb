@@ -335,7 +335,7 @@ void LayoutSVGInlineText::updateMetricsList(bool& lastCharacterWasWhiteSpace) {
   BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
   BidiRunList<BidiCharacterRun>& bidiRuns = bidiResolver.runs();
   bool bidiOverride = isOverride(styleRef().unicodeBidi());
-  BidiStatus status(LTR, bidiOverride);
+  BidiStatus status(TextDirection::Ltr, bidiOverride);
   if (run.is8Bit() || bidiOverride) {
     WTF::Unicode::CharDirection direction = WTF::Unicode::LeftToRight;
     // If BiDi override is in effect, use the specified direction.

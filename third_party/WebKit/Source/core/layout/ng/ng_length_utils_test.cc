@@ -273,8 +273,8 @@ TEST_F(NGLengthUtilsTest, testMargins) {
 
   NGConstraintSpace* constraintSpace(ConstructConstraintSpace(200, 300));
 
-  NGBoxStrut margins =
-      ComputeMargins(*constraintSpace, *style_, kHorizontalTopBottom, LTR);
+  NGBoxStrut margins = ComputeMargins(*constraintSpace, *style_,
+                                      kHorizontalTopBottom, TextDirection::Ltr);
 
   EXPECT_EQ(LayoutUnit(20), margins.block_start);
   EXPECT_EQ(LayoutUnit(52), margins.inline_end);
@@ -325,8 +325,8 @@ TEST_F(NGLengthUtilsTest, testAutoMargins) {
   NGFragmentBuilder builder(NGPhysicalFragmentBase::kFragmentBox);
   builder.SetInlineSize(LayoutUnit(150));
   NGPhysicalFragment* physical_fragment = builder.ToFragment();
-  NGFragment* fragment =
-      new NGFragment(kHorizontalTopBottom, LTR, physical_fragment);
+  NGFragment* fragment = new NGFragment(kHorizontalTopBottom,
+                                        TextDirection::Ltr, physical_fragment);
 
   NGConstraintSpace* constraint_space(ConstructConstraintSpace(200, 300));
 

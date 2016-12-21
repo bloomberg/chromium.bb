@@ -69,7 +69,7 @@ class PLATFORM_EXPORT TextRun final {
           float expansion = 0,
           ExpansionBehavior expansionBehavior = AllowTrailingExpansion |
                                                 ForbidLeadingExpansion,
-          TextDirection direction = LTR,
+          TextDirection direction = TextDirection::Ltr,
           bool directionalOverride = false)
       : m_charactersLength(len),
         m_len(len),
@@ -79,7 +79,7 @@ class PLATFORM_EXPORT TextRun final {
         m_expansionBehavior(expansionBehavior),
         m_is8Bit(true),
         m_allowTabs(false),
-        m_direction(direction),
+        m_direction(static_cast<unsigned>(direction)),
         m_directionalOverride(directionalOverride),
         m_disableSpacing(false),
         m_textJustify(TextJustifyAuto),
@@ -94,7 +94,7 @@ class PLATFORM_EXPORT TextRun final {
           float expansion = 0,
           ExpansionBehavior expansionBehavior = AllowTrailingExpansion |
                                                 ForbidLeadingExpansion,
-          TextDirection direction = LTR,
+          TextDirection direction = TextDirection::Ltr,
           bool directionalOverride = false)
       : m_charactersLength(len),
         m_len(len),
@@ -104,7 +104,7 @@ class PLATFORM_EXPORT TextRun final {
         m_expansionBehavior(expansionBehavior),
         m_is8Bit(false),
         m_allowTabs(false),
-        m_direction(direction),
+        m_direction(static_cast<unsigned>(direction)),
         m_directionalOverride(directionalOverride),
         m_disableSpacing(false),
         m_textJustify(TextJustifyAuto),
@@ -118,7 +118,7 @@ class PLATFORM_EXPORT TextRun final {
           float expansion = 0,
           ExpansionBehavior expansionBehavior = AllowTrailingExpansion |
                                                 ForbidLeadingExpansion,
-          TextDirection direction = LTR,
+          TextDirection direction = TextDirection::Ltr,
           bool directionalOverride = false)
       : m_charactersLength(string.length()),
         m_len(string.length()),
@@ -127,7 +127,7 @@ class PLATFORM_EXPORT TextRun final {
         m_expansion(expansion),
         m_expansionBehavior(expansionBehavior),
         m_allowTabs(false),
-        m_direction(direction),
+        m_direction(static_cast<unsigned>(direction)),
         m_directionalOverride(directionalOverride),
         m_disableSpacing(false),
         m_textJustify(TextJustifyAuto),
@@ -240,13 +240,15 @@ class PLATFORM_EXPORT TextRun final {
   TextDirection direction() const {
     return static_cast<TextDirection>(m_direction);
   }
-  bool rtl() const { return m_direction == RTL; }
-  bool ltr() const { return m_direction == LTR; }
+  bool rtl() const { return direction() == TextDirection::Rtl; }
+  bool ltr() const { return direction() == TextDirection::Ltr; }
   bool directionalOverride() const { return m_directionalOverride; }
   bool spacingDisabled() const { return m_disableSpacing; }
 
   void disableSpacing() { m_disableSpacing = true; }
-  void setDirection(TextDirection direction) { m_direction = direction; }
+  void setDirection(TextDirection direction) {
+    m_direction = static_cast<unsigned>(direction);
+  }
   void setDirectionalOverride(bool override) {
     m_directionalOverride = override;
   }

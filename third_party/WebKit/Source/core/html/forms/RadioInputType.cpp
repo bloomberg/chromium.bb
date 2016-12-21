@@ -106,7 +106,7 @@ void RadioInputType::handleKeydownEvent(KeyboardEvent* event) {
   Document& document = element().document();
   if (isSpatialNavigationEnabled(document.frame()))
     return;
-  bool forward = computedTextDirection() == RTL
+  bool forward = computedTextDirection() == TextDirection::Rtl
                      ? (key == "ArrowDown" || key == "ArrowLeft")
                      : (key == "ArrowDown" || key == "ArrowRight");
 

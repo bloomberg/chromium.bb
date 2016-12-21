@@ -116,7 +116,8 @@ PassRefPtr<ComputedStyle> HTMLImageFallbackHelper::customStyleForAltText(
   // image for the element's writing direction.
   brokenImage->setInlineStyleProperty(
       CSSPropertyFloat,
-      AtomicString(newStyle->direction() == LTR ? "left" : "right"));
+      AtomicString(newStyle->direction() == TextDirection::Ltr ? "left"
+                                                               : "right"));
 
   // This is an <img> with no attributes, so don't display anything.
   if (noImageSourceSpecified(element) &&

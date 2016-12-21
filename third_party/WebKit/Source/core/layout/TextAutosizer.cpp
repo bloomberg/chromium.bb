@@ -819,7 +819,7 @@ TextAutosizer::Fingerprint TextAutosizer::computeFingerprint(
       QualifiedNameHash::hash(toElement(node)->tagQName());
 
   if (const ComputedStyle* style = layoutObject->style()) {
-    data.m_packedStyleProperties = style->direction();
+    data.m_packedStyleProperties = static_cast<unsigned>(style->direction());
     data.m_packedStyleProperties |= (style->position() << 1);
     data.m_packedStyleProperties |=
         (static_cast<unsigned>(style->floating()) << 4);

@@ -485,7 +485,7 @@ bool LayoutThemeMac::isControlStyled(const ComputedStyle& style) const {
       return true;
     // NSPopUpButtonCell on macOS 10.9 doesn't support
     // NSUserInterfaceLayoutDirectionRightToLeft.
-    if (IsOS10_9() && style.direction() == RTL)
+    if (IsOS10_9() && style.direction() == TextDirection::Rtl)
       return true;
   }
   // Some other cells don't work well when scaled.
@@ -820,7 +820,7 @@ void LayoutThemeMac::setPopupButtonCellState(const LayoutObject& object,
   updatePressedState(popupButton, object);
 
   popupButton.userInterfaceLayoutDirection =
-      object.styleRef().direction() == LTR
+      object.styleRef().direction() == TextDirection::Ltr
           ? NSUserInterfaceLayoutDirectionLeftToRight
           : NSUserInterfaceLayoutDirectionRightToLeft;
 }

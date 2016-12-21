@@ -956,9 +956,9 @@ TextDirection directionOfEnclosingBlockAlgorithm(
                          position.computeContainerNode()),
                      CannotCrossEditingBoundary);
   if (!enclosingBlockElement)
-    return LTR;
+    return TextDirection::Ltr;
   LayoutObject* layoutObject = enclosingBlockElement->layoutObject();
-  return layoutObject ? layoutObject->style()->direction() : LTR;
+  return layoutObject ? layoutObject->style()->direction() : TextDirection::Ltr;
 }
 
 TextDirection directionOfEnclosingBlock(const Position& position) {
@@ -971,7 +971,7 @@ TextDirection directionOfEnclosingBlock(const PositionInFlatTree& position) {
 }
 
 TextDirection primaryDirectionOf(const Node& node) {
-  TextDirection primaryDirection = LTR;
+  TextDirection primaryDirection = TextDirection::Ltr;
   for (const LayoutObject* r = node.layoutObject(); r; r = r->parent()) {
     if (r->isLayoutBlockFlow()) {
       primaryDirection = r->style()->direction();

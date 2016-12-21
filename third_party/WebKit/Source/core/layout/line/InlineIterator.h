@@ -146,9 +146,11 @@ static inline WTF::Unicode::CharDirection embedCharFromDirection(
     TextDirection dir,
     EUnicodeBidi unicodeBidi) {
   using namespace WTF::Unicode;
-  if (unicodeBidi == Embed)
-    return dir == RTL ? RightToLeftEmbedding : LeftToRightEmbedding;
-  return dir == RTL ? RightToLeftOverride : LeftToRightOverride;
+  if (unicodeBidi == Embed) {
+    return dir == TextDirection::Rtl ? RightToLeftEmbedding
+                                     : LeftToRightEmbedding;
+  }
+  return dir == TextDirection::Rtl ? RightToLeftOverride : LeftToRightOverride;
 }
 
 static inline bool treatAsIsolated(const ComputedStyle& style) {
@@ -593,7 +595,7 @@ inline BidiRun* InlineBidiResolver::addTrailingRun(
   BidiRun* newTrailingRun = new BidiRun(
       context->override(), context->level(), start, stop, run->m_lineLayoutItem,
       WTF::Unicode::OtherNeutral, context->dir());
-  if (direction == LTR)
+  if (direction == TextDirection::Ltr)
     runs.addRun(newTrailingRun);
   else
     runs.prependRun(newTrailingRun);

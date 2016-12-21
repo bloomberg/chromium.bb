@@ -135,7 +135,7 @@ bool ThemePainterMac::paintCapsLockIndicator(const LayoutObject& o,
   CGFloat minX = CGRectGetMinX(cgr);
   CGFloat minY = CGRectGetMinY(cgr);
   CGFloat heightScale = r.height() / kSquareSize;
-  bool isRTL = o.styleRef().direction() == RTL;
+  const bool isRTL = o.styleRef().direction() == TextDirection::Rtl;
   CGAffineTransform transform =
       CGAffineTransformMake(heightScale, 0,                           // A  B
                             0, heightScale,                           // C  D
@@ -283,7 +283,7 @@ bool ThemePainterMac::paintMenuListButton(const LayoutObject& o,
   float scaledPaddingEnd =
       LayoutThemeMac::menuListArrowPaddingEnd * o.styleRef().effectiveZoom();
   float leftEdge;
-  if (o.styleRef().direction() == LTR) {
+  if (o.styleRef().direction() == TextDirection::Ltr) {
     leftEdge = bounds.maxX() - scaledPaddingEnd - arrowWidth;
   } else {
     leftEdge = bounds.x() + scaledPaddingEnd;

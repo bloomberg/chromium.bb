@@ -706,8 +706,9 @@ static VisiblePosition visualWordPosition(
 
     bool isWordBreak;
     bool boxHasSameDirectionalityAsBlock = box->direction() == blockDirection;
-    bool movingBackward = (direction == MoveLeft && box->direction() == LTR) ||
-                          (direction == MoveRight && box->direction() == RTL);
+    bool movingBackward =
+        (direction == MoveLeft && box->direction() == TextDirection::Ltr) ||
+        (direction == MoveRight && box->direction() == TextDirection::Rtl);
     if ((skipsSpaceWhenMovingRight && boxHasSameDirectionalityAsBlock) ||
         (!skipsSpaceWhenMovingRight && movingBackward)) {
       bool logicalStartInLayoutObject =
@@ -744,7 +745,7 @@ VisiblePosition leftWordPosition(const VisiblePosition& visiblePosition,
       isEditablePosition(visiblePosition.deepEquivalent())) {
     TextDirection blockDirection =
         directionOfEnclosingBlock(visiblePosition.deepEquivalent());
-    leftWordBreak = blockDirection == LTR
+    leftWordBreak = blockDirection == TextDirection::Ltr
                         ? startOfEditableContent(visiblePosition)
                         : endOfEditableContent(visiblePosition);
   }
@@ -764,7 +765,7 @@ VisiblePosition rightWordPosition(const VisiblePosition& visiblePosition,
       isEditablePosition(visiblePosition.deepEquivalent())) {
     TextDirection blockDirection =
         directionOfEnclosingBlock(visiblePosition.deepEquivalent());
-    rightWordBreak = blockDirection == LTR
+    rightWordBreak = blockDirection == TextDirection::Ltr
                          ? endOfEditableContent(visiblePosition)
                          : startOfEditableContent(visiblePosition);
   }
@@ -2212,13 +2213,15 @@ bool isEndOfEditableOrNonEditableContent(
 VisiblePosition leftBoundaryOfLine(const VisiblePosition& c,
                                    TextDirection direction) {
   DCHECK(c.isValid()) << c;
-  return direction == LTR ? logicalStartOfLine(c) : logicalEndOfLine(c);
+  return direction == TextDirection::Ltr ? logicalStartOfLine(c)
+                                         : logicalEndOfLine(c);
 }
 
 VisiblePosition rightBoundaryOfLine(const VisiblePosition& c,
                                     TextDirection direction) {
   DCHECK(c.isValid()) << c;
-  return direction == LTR ? logicalEndOfLine(c) : logicalStartOfLine(c);
+  return direction == TextDirection::Ltr ? logicalEndOfLine(c)
+                                         : logicalStartOfLine(c);
 }
 
 static bool isNonTextLeafChild(LayoutObject* object) {
@@ -3332,7 +3335,7 @@ static PositionTemplate<Strategy> leftVisuallyDistinctCandidate(
     InlineBox* box = boxPosition.inlineBox;
     int offset = boxPosition.offsetInBox;
     if (!box)
-      return primaryDirection == LTR
+      return primaryDirection == TextDirection::Ltr
                  ? previousVisuallyDistinctCandidate(deepPosition)
                  : nextVisuallyDistinctCandidate(deepPosition);
 
@@ -3348,7 +3351,7 @@ static PositionTemplate<Strategy> leftVisuallyDistinctCandidate(
       if (!lineLayoutItem.node()) {
         box = box->prevLeafChild();
         if (!box)
-          return primaryDirection == LTR
+          return primaryDirection == TextDirection::Ltr
                      ? previousVisuallyDistinctCandidate(deepPosition)
                      : nextVisuallyDistinctCandidate(deepPosition);
         lineLayoutItem = box->getLineLayoutItem();
@@ -3372,10 +3375,11 @@ static PositionTemplate<Strategy> leftVisuallyDistinctCandidate(
         InlineBox* prevBox = box->prevLeafChildIgnoringLineBreak();
         if (!prevBox) {
           PositionTemplate<Strategy> positionOnLeft =
-              primaryDirection == LTR ? previousVisuallyDistinctCandidate(
-                                            visiblePosition.deepEquivalent())
-                                      : nextVisuallyDistinctCandidate(
-                                            visiblePosition.deepEquivalent());
+              primaryDirection == TextDirection::Ltr
+                  ? previousVisuallyDistinctCandidate(
+                        visiblePosition.deepEquivalent())
+                  : nextVisuallyDistinctCandidate(
+                        visiblePosition.deepEquivalent());
           if (positionOnLeft.isNull())
             return PositionTemplate<Strategy>();
 
@@ -3403,13 +3407,14 @@ static PositionTemplate<Strategy> leftVisuallyDistinctCandidate(
       if (box->direction() == primaryDirection) {
         if (!prevBox) {
           InlineBox* logicalStart = 0;
-          if (primaryDirection == LTR
+          if (primaryDirection == TextDirection::Ltr
                   ? box->root().getLogicalStartBoxWithNode(logicalStart)
                   : box->root().getLogicalEndBoxWithNode(logicalStart)) {
             box = logicalStart;
             lineLayoutItem = box->getLineLayoutItem();
-            offset = primaryDirection == LTR ? box->caretMinOffset()
-                                             : box->caretMaxOffset();
+            offset = primaryDirection == TextDirection::Ltr
+                         ? box->caretMinOffset()
+                         : box->caretMaxOffset();
           }
           break;
         }
@@ -3471,8 +3476,8 @@ static PositionTemplate<Strategy> leftVisuallyDistinctCandidate(
           level = box->bidiLevel();
         }
         lineLayoutItem = box->getLineLayoutItem();
-        offset = primaryDirection == LTR ? box->caretMinOffset()
-                                         : box->caretMaxOffset();
+        offset = primaryDirection == TextDirection::Ltr ? box->caretMinOffset()
+                                                        : box->caretMaxOffset();
       }
       break;
     }
@@ -3502,7 +3507,7 @@ VisiblePositionTemplate<Strategy> leftPositionOfAlgorithm(
   const VisiblePositionTemplate<Strategy> left = createVisiblePosition(pos);
   DCHECK_NE(left.deepEquivalent(), visiblePosition.deepEquivalent());
 
-  return directionOfEnclosingBlock(left.deepEquivalent()) == LTR
+  return directionOfEnclosingBlock(left.deepEquivalent()) == TextDirection::Ltr
              ? honorEditingBoundaryAtOrBefore(left,
                                               visiblePosition.deepEquivalent())
              : honorEditingBoundaryAtOrAfter(left,
@@ -3539,7 +3544,7 @@ static PositionTemplate<Strategy> rightVisuallyDistinctCandidate(
     InlineBox* box = boxPosition.inlineBox;
     int offset = boxPosition.offsetInBox;
     if (!box)
-      return primaryDirection == LTR
+      return primaryDirection == TextDirection::Ltr
                  ? nextVisuallyDistinctCandidate(deepPosition)
                  : previousVisuallyDistinctCandidate(deepPosition);
 
@@ -3556,7 +3561,7 @@ static PositionTemplate<Strategy> rightVisuallyDistinctCandidate(
       if (!layoutObject->node()) {
         box = box->nextLeafChild();
         if (!box)
-          return primaryDirection == LTR
+          return primaryDirection == TextDirection::Ltr
                      ? nextVisuallyDistinctCandidate(deepPosition)
                      : previousVisuallyDistinctCandidate(deepPosition);
         layoutObject =
@@ -3581,7 +3586,7 @@ static PositionTemplate<Strategy> rightVisuallyDistinctCandidate(
         InlineBox* nextBox = box->nextLeafChildIgnoringLineBreak();
         if (!nextBox) {
           PositionTemplate<Strategy> positionOnRight =
-              primaryDirection == LTR
+              primaryDirection == TextDirection::Ltr
                   ? nextVisuallyDistinctCandidate(deepPosition)
                   : previousVisuallyDistinctCandidate(deepPosition);
           if (positionOnRight.isNull())
@@ -3613,14 +3618,15 @@ static PositionTemplate<Strategy> rightVisuallyDistinctCandidate(
       if (box->direction() == primaryDirection) {
         if (!nextBox) {
           InlineBox* logicalEnd = 0;
-          if (primaryDirection == LTR
+          if (primaryDirection == TextDirection::Ltr
                   ? box->root().getLogicalEndBoxWithNode(logicalEnd)
                   : box->root().getLogicalStartBoxWithNode(logicalEnd)) {
             box = logicalEnd;
             layoutObject =
                 LineLayoutAPIShim::layoutObjectFrom(box->getLineLayoutItem());
-            offset = primaryDirection == LTR ? box->caretMaxOffset()
-                                             : box->caretMinOffset();
+            offset = primaryDirection == TextDirection::Ltr
+                         ? box->caretMaxOffset()
+                         : box->caretMinOffset();
           }
           break;
         }
@@ -3689,8 +3695,8 @@ static PositionTemplate<Strategy> rightVisuallyDistinctCandidate(
         }
         layoutObject =
             LineLayoutAPIShim::layoutObjectFrom(box->getLineLayoutItem());
-        offset = primaryDirection == LTR ? box->caretMaxOffset()
-                                         : box->caretMinOffset();
+        offset = primaryDirection == TextDirection::Ltr ? box->caretMaxOffset()
+                                                        : box->caretMinOffset();
       }
       break;
     }
@@ -3720,7 +3726,7 @@ static VisiblePositionTemplate<Strategy> rightPositionOfAlgorithm(
   const VisiblePositionTemplate<Strategy> right = createVisiblePosition(pos);
   DCHECK_NE(right.deepEquivalent(), visiblePosition.deepEquivalent());
 
-  return directionOfEnclosingBlock(right.deepEquivalent()) == LTR
+  return directionOfEnclosingBlock(right.deepEquivalent()) == TextDirection::Ltr
              ? honorEditingBoundaryAtOrAfter(right,
                                              visiblePosition.deepEquivalent())
              : honorEditingBoundaryAtOrBefore(right,

@@ -102,10 +102,10 @@ void LayoutMenuList::adjustInnerStyle() {
   Length paddingEnd = Length(LayoutTheme::theme().popupInternalPaddingEnd(
                                  frameView()->getHostWindow(), styleRef()),
                              Fixed);
-  innerStyle.setPaddingLeft(styleRef().direction() == LTR ? paddingStart
-                                                          : paddingEnd);
-  innerStyle.setPaddingRight(styleRef().direction() == LTR ? paddingEnd
-                                                           : paddingStart);
+  innerStyle.setPaddingLeft(
+      styleRef().direction() == TextDirection::Ltr ? paddingStart : paddingEnd);
+  innerStyle.setPaddingRight(
+      styleRef().direction() == TextDirection::Ltr ? paddingEnd : paddingStart);
   innerStyle.setPaddingTop(
       Length(LayoutTheme::theme().popupInternalPaddingTop(styleRef()), Fixed));
   innerStyle.setPaddingBottom(Length(

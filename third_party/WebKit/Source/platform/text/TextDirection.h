@@ -28,10 +28,10 @@
 
 namespace blink {
 
-enum TextDirection { RTL, LTR };
+enum class TextDirection : unsigned { Rtl, Ltr };
 
 inline bool isLeftToRightDirection(TextDirection direction) {
-  return direction == LTR;
+  return direction == TextDirection::Ltr;
 }
 }
 

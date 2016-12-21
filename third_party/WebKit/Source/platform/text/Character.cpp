@@ -136,7 +136,7 @@ unsigned Character::expansionOpportunityCount(const LChar* characters,
     return length;
   }
 
-  if (direction == LTR) {
+  if (direction == TextDirection::Ltr) {
     for (size_t i = 0; i < length; ++i) {
       if (treatAsSpace(characters[i])) {
         count++;
@@ -165,7 +165,7 @@ unsigned Character::expansionOpportunityCount(const UChar* characters,
                                               bool& isAfterExpansion,
                                               const TextJustify textJustify) {
   unsigned count = 0;
-  if (direction == LTR) {
+  if (direction == TextDirection::Ltr) {
     for (size_t i = 0; i < length; ++i) {
       UChar32 character = characters[i];
       if (treatAsSpace(character)) {

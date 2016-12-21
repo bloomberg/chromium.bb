@@ -700,7 +700,7 @@ void LayoutBlockFlow::updateLogicalWidthForAlignment(
       }
     // Fall through
     case ETextAlign::Start:
-      if (direction == LTR)
+      if (direction == TextDirection::Ltr)
         updateLogicalWidthForLeftAlignedBlock(
             style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft,
             totalLogicalWidth, availableLogicalWidth);
@@ -710,7 +710,7 @@ void LayoutBlockFlow::updateLogicalWidthForAlignment(
             totalLogicalWidth, availableLogicalWidth);
       break;
     case ETextAlign::End:
-      if (direction == LTR)
+      if (direction == TextDirection::Ltr)
         updateLogicalWidthForRightAlignedBlock(
             style()->isLeftToRightDirection(), trailingSpaceRun, logicalLeft,
             totalLogicalWidth, availableLogicalWidth);
@@ -1140,8 +1140,9 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(
     } else {
       VisualDirectionOverride override =
           (styleToUse.rtlOrdering() == EOrder::Visual
-               ? (styleToUse.direction() == LTR ? VisualLeftToRightOverride
-                                                : VisualRightToLeftOverride)
+               ? (styleToUse.direction() == TextDirection::Ltr
+                      ? VisualLeftToRightOverride
+                      : VisualRightToLeftOverride)
                : NoVisualOverride);
       if (isNewUBAParagraph && styleToUse.unicodeBidi() == Plaintext &&
           !resolver.context()->parent()) {
@@ -2356,7 +2357,7 @@ void LayoutBlockFlow::checkLinesForTextOverflow() {
   const Font& firstLineFont = firstLineStyle()->font();
   // FIXME: We should probably not hard-code the direction here.
   // https://crbug.com/333004
-  TextDirection ellipsisDirection = LTR;
+  TextDirection ellipsisDirection = TextDirection::Ltr;
   float firstLineEllipsisWidth = 0;
   float ellipsisWidth = 0;
 

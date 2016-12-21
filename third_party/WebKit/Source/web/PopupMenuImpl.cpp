@@ -320,9 +320,11 @@ void PopupMenuImpl::addElementStyle(ItemIterationContext& context,
   if (style->display() == EDisplay::None)
     addProperty("display", String("none"), data);
   const ComputedStyle& baseStyle = context.baseStyle();
-  if (baseStyle.direction() != style->direction())
-    addProperty("direction", String(style->direction() == RTL ? "rtl" : "ltr"),
-                data);
+  if (baseStyle.direction() != style->direction()) {
+    addProperty(
+        "direction",
+        String(style->direction() == TextDirection::Rtl ? "rtl" : "ltr"), data);
+  }
   if (isOverride(style->unicodeBidi()))
     addProperty("unicodeBidi", String("bidi-override"), data);
   Color foregroundColor = style->visitedDependentColor(CSSPropertyColor);

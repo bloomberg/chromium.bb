@@ -300,8 +300,12 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
   void setBidiLevel(unsigned char level) {
     m_bitfields.setBidiEmbeddingLevel(level);
   }
-  TextDirection direction() const { return bidiLevel() % 2 ? RTL : LTR; }
-  bool isLeftToRightDirection() const { return direction() == LTR; }
+  TextDirection direction() const {
+    return bidiLevel() % 2 ? TextDirection::Rtl : TextDirection::Ltr;
+  }
+  bool isLeftToRightDirection() const {
+    return direction() == TextDirection::Ltr;
+  }
   int caretLeftmostOffset() const {
     return isLeftToRightDirection() ? caretMinOffset() : caretMaxOffset();
   }

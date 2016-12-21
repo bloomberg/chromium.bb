@@ -460,8 +460,8 @@ void HTMLFormControlElement::updateVisibleValidationMessage() {
 
   m_hasValidationMessage = true;
   ValidationMessageClient* client = &page->validationMessageClient();
-  TextDirection messageDir = LTR;
-  TextDirection subMessageDir = LTR;
+  TextDirection messageDir = TextDirection::Ltr;
+  TextDirection subMessageDir = TextDirection::Ltr;
   String subMessage = validationSubMessage().stripWhiteSpace();
   if (message.isEmpty())
     client->hideValidationMessage(*this);

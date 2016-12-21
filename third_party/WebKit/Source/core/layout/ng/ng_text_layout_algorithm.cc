@@ -86,8 +86,8 @@ void NGTextLayoutAlgorithm::CreateLine(
 
   if (!inline_box_->IsBidiEnabled()) {
     // If no bidi reordering, the logical order is the visual order.
-    DCHECK_EQ(constraint_space.Direction(), LTR);
-    DCHECK_EQ(items[0].Style()->direction(), LTR);
+    DCHECK_EQ(constraint_space.Direction(), TextDirection::Ltr);
+    DCHECK_EQ(items[0].Style()->direction(), TextDirection::Ltr);
     fragments_out->append(new NGTextFragment(
         constraint_space.WritingMode(), constraint_space.Direction(),
         text_builder.ToTextFragment(inline_box_, items.StartIndex(),

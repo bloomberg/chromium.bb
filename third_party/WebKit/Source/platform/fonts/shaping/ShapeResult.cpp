@@ -155,7 +155,7 @@ ShapeResult::ShapeResult(const Font* font,
       m_primaryFont(const_cast<SimpleFontData*>(font->primaryFont())),
       m_numCharacters(numCharacters),
       m_numGlyphs(0),
-      m_direction(direction),
+      m_direction(static_cast<unsigned>(direction)),
       m_hasVerticalOffsets(0) {}
 
 ShapeResult::ShapeResult(const ShapeResult& other)
@@ -186,7 +186,7 @@ int ShapeResult::offsetForPosition(float targetX,
   int charactersSoFar = 0;
   float currentX = 0;
 
-  if (m_direction == RTL) {
+  if (rtl()) {
     charactersSoFar = m_numCharacters;
     for (unsigned i = 0; i < m_runs.size(); ++i) {
       if (!m_runs[i])

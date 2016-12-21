@@ -187,7 +187,7 @@ TEST_F(NGLayoutInlineItemsBuilderTest, BidiBlockOverride) {
   NGLayoutInlineItemsBuilder builder(&items);
   RefPtr<ComputedStyle> block_style(ComputedStyle::create());
   block_style->setUnicodeBidi(Override);
-  block_style->setDirection(RTL);
+  block_style->setDirection(TextDirection::Rtl);
   builder.EnterBlock(block_style.get());
   builder.Append("Hello", style_.get());
   builder.ExitBlock();
@@ -216,7 +216,7 @@ TEST_F(NGLayoutInlineItemsBuilderTest, BidiIsolate) {
   std::unique_ptr<LayoutInline> isolateRTL(
       createLayoutInline([](ComputedStyle* style) {
         style->setUnicodeBidi(Isolate);
-        style->setDirection(RTL);
+        style->setDirection(TextDirection::Rtl);
       }));
   builder.EnterInline(isolateRTL.get());
   builder.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style_.get());
@@ -240,7 +240,7 @@ TEST_F(NGLayoutInlineItemsBuilderTest, BidiIsolateOverride) {
   std::unique_ptr<LayoutInline> isolateOverrideRTL(
       createLayoutInline([](ComputedStyle* style) {
         style->setUnicodeBidi(IsolateOverride);
-        style->setDirection(RTL);
+        style->setDirection(TextDirection::Rtl);
       }));
   builder.EnterInline(isolateOverrideRTL.get());
   builder.Append(u"\u05E2\u05D1\u05E8\u05D9\u05EA", style_.get());

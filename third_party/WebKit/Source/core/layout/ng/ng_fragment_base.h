@@ -48,7 +48,7 @@ class CORE_EXPORT NGFragmentBase : public GarbageCollected<NGFragmentBase> {
                  NGPhysicalFragmentBase* physical_fragment)
       : physical_fragment_(physical_fragment),
         writing_mode_(writing_mode),
-        direction_(direction) {}
+        direction_(static_cast<unsigned>(direction)) {}
 
   Member<NGPhysicalFragmentBase> physical_fragment_;
 

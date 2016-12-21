@@ -85,7 +85,7 @@ TEST_F(NGInlineNodeTest, SegmentASCII) {
   node->SegmentText();
   Vector<NGLayoutInlineItem>& items = node->Items();
   ASSERT_EQ(1u, items.size());
-  TEST_ITEM_OFFSET_DIR(items[0], 0u, 5u, LTR);
+  TEST_ITEM_OFFSET_DIR(items[0], 0u, 5u, TextDirection::Ltr);
 }
 
 TEST_F(NGInlineNodeTest, SegmentHebrew) {
@@ -95,7 +95,7 @@ TEST_F(NGInlineNodeTest, SegmentHebrew) {
   ASSERT_EQ(1u, node->Items().size());
   Vector<NGLayoutInlineItem>& items = node->Items();
   ASSERT_EQ(1u, items.size());
-  TEST_ITEM_OFFSET_DIR(items[0], 0u, 5u, RTL);
+  TEST_ITEM_OFFSET_DIR(items[0], 0u, 5u, TextDirection::Rtl);
 }
 
 TEST_F(NGInlineNodeTest, SegmentSplit1To2) {
@@ -105,8 +105,8 @@ TEST_F(NGInlineNodeTest, SegmentSplit1To2) {
   ASSERT_EQ(2u, node->Items().size());
   Vector<NGLayoutInlineItem>& items = node->Items();
   ASSERT_EQ(2u, items.size());
-  TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u, LTR);
-  TEST_ITEM_OFFSET_DIR(items[1], 6u, 11u, RTL);
+  TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u, TextDirection::Ltr);
+  TEST_ITEM_OFFSET_DIR(items[1], 6u, 11u, TextDirection::Rtl);
 }
 
 TEST_F(NGInlineNodeTest, SegmentSplit3To4) {
@@ -117,10 +117,10 @@ TEST_F(NGInlineNodeTest, SegmentSplit3To4) {
   node->SegmentText();
   Vector<NGLayoutInlineItem>& items = node->Items();
   ASSERT_EQ(4u, items.size());
-  TEST_ITEM_OFFSET_DIR(items[0], 0u, 3u, LTR);
-  TEST_ITEM_OFFSET_DIR(items[1], 3u, 6u, LTR);
-  TEST_ITEM_OFFSET_DIR(items[2], 6u, 7u, RTL);
-  TEST_ITEM_OFFSET_DIR(items[3], 7u, 11u, RTL);
+  TEST_ITEM_OFFSET_DIR(items[0], 0u, 3u, TextDirection::Ltr);
+  TEST_ITEM_OFFSET_DIR(items[1], 3u, 6u, TextDirection::Ltr);
+  TEST_ITEM_OFFSET_DIR(items[2], 6u, 7u, TextDirection::Rtl);
+  TEST_ITEM_OFFSET_DIR(items[3], 7u, 11u, TextDirection::Rtl);
 }
 
 TEST_F(NGInlineNodeTest, SegmentBidiOverride) {
@@ -132,10 +132,10 @@ TEST_F(NGInlineNodeTest, SegmentBidiOverride) {
   node->SegmentText();
   Vector<NGLayoutInlineItem>& items = node->Items();
   ASSERT_EQ(4u, items.size());
-  TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u, LTR);
-  TEST_ITEM_OFFSET_DIR(items[1], 6u, 7u, RTL);
-  TEST_ITEM_OFFSET_DIR(items[2], 7u, 10u, RTL);
-  TEST_ITEM_OFFSET_DIR(items[3], 10u, 11u, LTR);
+  TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u, TextDirection::Ltr);
+  TEST_ITEM_OFFSET_DIR(items[1], 6u, 7u, TextDirection::Rtl);
+  TEST_ITEM_OFFSET_DIR(items[2], 7u, 10u, TextDirection::Rtl);
+  TEST_ITEM_OFFSET_DIR(items[3], 10u, 11u, TextDirection::Ltr);
 }
 
 static NGInlineNodeForTest* CreateBidiIsolateNode(const ComputedStyle* style) {
@@ -157,15 +157,15 @@ TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
   NGInlineNodeForTest* node = CreateBidiIsolateNode(style_.get());
   Vector<NGLayoutInlineItem>& items = node->Items();
   ASSERT_EQ(9u, items.size());
-  TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u, LTR);
-  TEST_ITEM_OFFSET_DIR(items[1], 6u, 7u, LTR);
-  TEST_ITEM_OFFSET_DIR(items[2], 7u, 13u, RTL);
-  TEST_ITEM_OFFSET_DIR(items[3], 13u, 14u, RTL);
-  TEST_ITEM_OFFSET_DIR(items[4], 14u, 15u, LTR);
-  TEST_ITEM_OFFSET_DIR(items[5], 15u, 16u, RTL);
-  TEST_ITEM_OFFSET_DIR(items[6], 16u, 21u, RTL);
-  TEST_ITEM_OFFSET_DIR(items[7], 21u, 22u, LTR);
-  TEST_ITEM_OFFSET_DIR(items[8], 22u, 28u, LTR);
+  TEST_ITEM_OFFSET_DIR(items[0], 0u, 6u, TextDirection::Ltr);
+  TEST_ITEM_OFFSET_DIR(items[1], 6u, 7u, TextDirection::Ltr);
+  TEST_ITEM_OFFSET_DIR(items[2], 7u, 13u, TextDirection::Rtl);
+  TEST_ITEM_OFFSET_DIR(items[3], 13u, 14u, TextDirection::Rtl);
+  TEST_ITEM_OFFSET_DIR(items[4], 14u, 15u, TextDirection::Ltr);
+  TEST_ITEM_OFFSET_DIR(items[5], 15u, 16u, TextDirection::Rtl);
+  TEST_ITEM_OFFSET_DIR(items[6], 16u, 21u, TextDirection::Rtl);
+  TEST_ITEM_OFFSET_DIR(items[7], 21u, 22u, TextDirection::Ltr);
+  TEST_ITEM_OFFSET_DIR(items[8], 22u, 28u, TextDirection::Ltr);
 }
 
 #define TEST_TEXT_FRAGMENT(fragment, node, start_index, end_index, dir) \
@@ -179,11 +179,11 @@ TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   HeapVector<Member<NGPhysicalTextFragment>> fragments;
   CreateLine(node, 0, node->Items().size(), &fragments);
   ASSERT_EQ(5u, fragments.size());
-  TEST_TEXT_FRAGMENT(fragments[0], node, 0u, 1u, LTR);
-  TEST_TEXT_FRAGMENT(fragments[1], node, 6u, 7u, RTL);
-  TEST_TEXT_FRAGMENT(fragments[2], node, 4u, 5u, LTR);
-  TEST_TEXT_FRAGMENT(fragments[3], node, 2u, 3u, RTL);
-  TEST_TEXT_FRAGMENT(fragments[4], node, 8u, 9u, LTR);
+  TEST_TEXT_FRAGMENT(fragments[0], node, 0u, 1u, TextDirection::Ltr);
+  TEST_TEXT_FRAGMENT(fragments[1], node, 6u, 7u, TextDirection::Rtl);
+  TEST_TEXT_FRAGMENT(fragments[2], node, 4u, 5u, TextDirection::Ltr);
+  TEST_TEXT_FRAGMENT(fragments[3], node, 2u, 3u, TextDirection::Rtl);
+  TEST_TEXT_FRAGMENT(fragments[4], node, 8u, 9u, TextDirection::Ltr);
 }
 
 TEST_F(NGInlineNodeTest, CreateLineRangeBidiIsolate) {
@@ -191,9 +191,9 @@ TEST_F(NGInlineNodeTest, CreateLineRangeBidiIsolate) {
   HeapVector<Member<NGPhysicalTextFragment>> fragments;
   CreateLine(node, 2, 7, &fragments);
   ASSERT_EQ(3u, fragments.size());
-  TEST_TEXT_FRAGMENT(fragments[0], node, 6u, 7u, RTL);
-  TEST_TEXT_FRAGMENT(fragments[1], node, 4u, 5u, LTR);
-  TEST_TEXT_FRAGMENT(fragments[2], node, 2u, 3u, RTL);
+  TEST_TEXT_FRAGMENT(fragments[0], node, 6u, 7u, TextDirection::Rtl);
+  TEST_TEXT_FRAGMENT(fragments[1], node, 4u, 5u, TextDirection::Ltr);
+  TEST_TEXT_FRAGMENT(fragments[2], node, 2u, 3u, TextDirection::Rtl);
 }
 
 }  // namespace blink

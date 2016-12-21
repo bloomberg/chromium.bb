@@ -34,7 +34,7 @@ NGConstraintSpace::NGConstraintSpace(
       block_direction_fragmentation_type_(block_direction_fragmentation_type),
       is_new_fc_(is_new_fc),
       writing_mode_(writing_mode),
-      direction_(direction),
+      direction_(static_cast<unsigned>(direction)),
       exclusions_(exclusions_) {}
 
 NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(

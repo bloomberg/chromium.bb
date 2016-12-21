@@ -100,7 +100,7 @@ void SelectionModifier::willBeModified(EAlteration alter,
   } else {
     switch (direction) {
       case DirectionRight:
-        if (directionOfSelection() == LTR)
+        if (directionOfSelection() == TextDirection::Ltr)
           baseIsStart = true;
         else
           baseIsStart = false;
@@ -109,7 +109,7 @@ void SelectionModifier::willBeModified(EAlteration alter,
         baseIsStart = true;
         break;
       case DirectionLeft:
-        if (directionOfSelection() == LTR)
+        if (directionOfSelection() == TextDirection::Ltr)
           baseIsStart = false;
         else
           baseIsStart = true;
@@ -202,19 +202,19 @@ VisiblePosition SelectionModifier::modifyExtendingRight(
   // block is RTL direction.
   switch (granularity) {
     case CharacterGranularity:
-      if (directionOfEnclosingBlock() == LTR)
+      if (directionOfEnclosingBlock() == TextDirection::Ltr)
         pos = nextPositionOf(pos, CanSkipOverEditingBoundary);
       else
         pos = previousPositionOf(pos, CanSkipOverEditingBoundary);
       break;
     case WordGranularity:
-      if (directionOfEnclosingBlock() == LTR)
+      if (directionOfEnclosingBlock() == TextDirection::Ltr)
         pos = nextWordPositionForPlatform(pos);
       else
         pos = previousWordPosition(pos);
       break;
     case LineBoundary:
-      if (directionOfEnclosingBlock() == LTR)
+      if (directionOfEnclosingBlock() == TextDirection::Ltr)
         pos = modifyExtendingForward(granularity);
       else
         pos = modifyExtendingBackward(granularity);
@@ -229,7 +229,8 @@ VisiblePosition SelectionModifier::modifyExtendingRight(
       pos = modifyExtendingForward(granularity);
       break;
   }
-  adjustPositionForUserSelectAll(pos, directionOfEnclosingBlock() == LTR);
+  adjustPositionForUserSelectAll(
+      pos, directionOfEnclosingBlock() == TextDirection::Ltr);
   return pos;
 }
 
@@ -272,7 +273,8 @@ VisiblePosition SelectionModifier::modifyExtendingForward(
         pos = endOfDocument(pos);
       break;
   }
-  adjustPositionForUserSelectAll(pos, directionOfEnclosingBlock() == LTR);
+  adjustPositionForUserSelectAll(
+      pos, directionOfEnclosingBlock() == TextDirection::Ltr);
   return pos;
 }
 
@@ -282,7 +284,7 @@ VisiblePosition SelectionModifier::modifyMovingRight(
   switch (granularity) {
     case CharacterGranularity:
       if (m_selection.isRange()) {
-        if (directionOfSelection() == LTR)
+        if (directionOfSelection() == TextDirection::Ltr)
           pos =
               createVisiblePosition(m_selection.end(), m_selection.affinity());
         else
@@ -388,19 +390,19 @@ VisiblePosition SelectionModifier::modifyExtendingLeft(
   // block is RTL direction.
   switch (granularity) {
     case CharacterGranularity:
-      if (directionOfEnclosingBlock() == LTR)
+      if (directionOfEnclosingBlock() == TextDirection::Ltr)
         pos = previousPositionOf(pos, CanSkipOverEditingBoundary);
       else
         pos = nextPositionOf(pos, CanSkipOverEditingBoundary);
       break;
     case WordGranularity:
-      if (directionOfEnclosingBlock() == LTR)
+      if (directionOfEnclosingBlock() == TextDirection::Ltr)
         pos = previousWordPosition(pos);
       else
         pos = nextWordPositionForPlatform(pos);
       break;
     case LineBoundary:
-      if (directionOfEnclosingBlock() == LTR)
+      if (directionOfEnclosingBlock() == TextDirection::Ltr)
         pos = modifyExtendingBackward(granularity);
       else
         pos = modifyExtendingForward(granularity);
@@ -414,7 +416,8 @@ VisiblePosition SelectionModifier::modifyExtendingLeft(
       pos = modifyExtendingBackward(granularity);
       break;
   }
-  adjustPositionForUserSelectAll(pos, !(directionOfEnclosingBlock() == LTR));
+  adjustPositionForUserSelectAll(
+      pos, !(directionOfEnclosingBlock() == TextDirection::Ltr));
   return pos;
 }
 
@@ -462,7 +465,8 @@ VisiblePosition SelectionModifier::modifyExtendingBackward(
         pos = startOfDocument(pos);
       break;
   }
-  adjustPositionForUserSelectAll(pos, !(directionOfEnclosingBlock() == LTR));
+  adjustPositionForUserSelectAll(
+      pos, !(directionOfEnclosingBlock() == TextDirection::Ltr));
   return pos;
 }
 
@@ -472,7 +476,7 @@ VisiblePosition SelectionModifier::modifyMovingLeft(
   switch (granularity) {
     case CharacterGranularity:
       if (m_selection.isRange()) {
-        if (directionOfSelection() == LTR)
+        if (directionOfSelection() == TextDirection::Ltr)
           pos = createVisiblePosition(m_selection.start(),
                                       m_selection.affinity());
         else
@@ -681,8 +685,9 @@ bool SelectionModifier::modify(EAlteration alter,
       } else {
         TextDirection textDirection = directionOfEnclosingBlock();
         if (direction == DirectionForward ||
-            (textDirection == LTR && direction == DirectionRight) ||
-            (textDirection == RTL && direction == DirectionLeft))
+            (textDirection == TextDirection::Ltr &&
+             direction == DirectionRight) ||
+            (textDirection == TextDirection::Rtl && direction == DirectionLeft))
           setSelectionEnd(&m_selection, position);
         else
           setSelectionStart(&m_selection, position);

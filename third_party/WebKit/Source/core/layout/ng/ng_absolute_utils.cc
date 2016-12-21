@@ -84,7 +84,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
       margin_right = LayoutUnit();
     DCHECK(child_auto_width.has_value());
     width = *child_auto_width;
-    if (space.Direction() == LTR) {
+    if (space.Direction() == TextDirection::Ltr) {
       left = static_position.LeftPosition(container_size.width, width,
                                           margin_left, margin_right);
     } else {
@@ -103,7 +103,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
         margin_right = margin_space / 2;
       } else {
         // Margins are negative.
-        if (space.Direction() == LTR) {
+        if (space.Direction() == TextDirection::Ltr) {
           margin_left = LayoutUnit();
           margin_right = margin_space;
         } else {
@@ -119,7 +119,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
       // Are values overconstrained?
       if (margin_left + margin_right != margin_space) {
         // Relax the end.
-        if (space.Direction() == LTR)
+        if (space.Direction() == TextDirection::Ltr)
           right -= margin_left + margin_right - margin_space;
         else
           left -= margin_left + margin_right - margin_space;
@@ -142,7 +142,7 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
   } else if (left == NGSizeIndefinite && right == NGSizeIndefinite) {
     // Rule 2.
     DCHECK_NE(width, NGSizeIndefinite);
-    if (space.Direction() == LTR)
+    if (space.Direction() == TextDirection::Ltr)
       left = static_position.LeftPosition(container_size.width, width,
                                           margin_left, margin_right);
     else

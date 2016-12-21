@@ -13,7 +13,9 @@ namespace blink {
 
 NGFragmentBuilder::NGFragmentBuilder(
     NGPhysicalFragmentBase::NGFragmentType type)
-    : type_(type), writing_mode_(kHorizontalTopBottom), direction_(LTR) {}
+    : type_(type),
+      writing_mode_(kHorizontalTopBottom),
+      direction_(TextDirection::Ltr) {}
 
 NGFragmentBuilder& NGFragmentBuilder::SetWritingMode(
     NGWritingMode writing_mode) {

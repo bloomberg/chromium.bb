@@ -317,7 +317,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
         static_cast<unsigned>(initialListStyleType());
     m_inheritedData.m_hasSimpleUnderline = false;
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
-    m_inheritedData.m_direction = initialDirection();
+    m_inheritedData.m_direction = static_cast<unsigned>(initialDirection());
     m_inheritedData.m_rtlOrdering = static_cast<unsigned>(initialRTLOrdering());
     m_inheritedData.m_insideLink = NotInsideLink;
     m_inheritedData.m_writingMode = initialWritingMode();
@@ -2026,11 +2026,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // direction
-  static TextDirection initialDirection() { return LTR; }
+  static TextDirection initialDirection() { return TextDirection::Ltr; }
   TextDirection direction() const {
     return static_cast<TextDirection>(m_inheritedData.m_direction);
   }
-  void setDirection(TextDirection v) { m_inheritedData.m_direction = v; }
+  void setDirection(TextDirection v) {
+    m_inheritedData.m_direction = static_cast<unsigned>(v);
+  }
 
   // color
   static Color initialColor() { return Color::black; }
@@ -3315,7 +3317,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // Direction utility functions.
-  bool isLeftToRightDirection() const { return direction() == LTR; }
+  bool isLeftToRightDirection() const {
+    return direction() == TextDirection::Ltr;
+  }
 
   // Perspective utility functions.
   bool hasPerspective() const {

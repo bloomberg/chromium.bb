@@ -197,7 +197,8 @@ void NGLayoutInlineItemsBuilder::RemoveTrailingCollapsibleSpace(
 void NGLayoutInlineItemsBuilder::AppendBidiControl(const ComputedStyle* style,
                                                    UChar ltr,
                                                    UChar rtl) {
-  AppendAsOpaqueToSpaceCollapsing(style->direction() == RTL ? rtl : ltr);
+  AppendAsOpaqueToSpaceCollapsing(
+      style->direction() == TextDirection::Rtl ? rtl : ltr);
 }
 
 void NGLayoutInlineItemsBuilder::EnterBlock(const ComputedStyle* style) {

@@ -1030,7 +1030,8 @@ void InlineTextBoxPainter::paintDecorations(
                          : m_inlineTextBox.truncation(),
         ltr == flowIsLTR ? m_inlineTextBox.truncation()
                          : m_inlineTextBox.len() - m_inlineTextBox.truncation(),
-        m_inlineTextBox.textPos(), flowIsLTR ? LTR : RTL,
+        m_inlineTextBox.textPos(),
+        flowIsLTR ? TextDirection::Ltr : TextDirection::Rtl,
         m_inlineTextBox.isFirstLineStyle()));
     if (!flowIsLTR)
       localOrigin.move(m_inlineTextBox.logicalWidth() - width, LayoutUnit());
@@ -1141,7 +1142,8 @@ void InlineTextBoxPainter::paintCompositionUnderline(
           : m_inlineTextBox.getLineLayoutItem().width(
                 m_inlineTextBox.start(), paintStart - m_inlineTextBox.start(),
                 m_inlineTextBox.textPos(),
-                m_inlineTextBox.isLeftToRightDirection() ? LTR : RTL,
+                m_inlineTextBox.isLeftToRightDirection() ? TextDirection::Ltr
+                                                         : TextDirection::Rtl,
                 m_inlineTextBox.isFirstLineStyle());
   // how much line to draw
   float width;
@@ -1159,7 +1161,8 @@ void InlineTextBoxPainter::paintCompositionUnderline(
             : m_inlineTextBox.start() + m_inlineTextBox.len() - paintEnd;
     width = m_inlineTextBox.getLineLayoutItem().width(
         paintFrom, paintLength, LayoutUnit(m_inlineTextBox.textPos() + start),
-        flowIsLTR ? LTR : RTL, m_inlineTextBox.isFirstLineStyle());
+        flowIsLTR ? TextDirection::Ltr : TextDirection::Rtl,
+        m_inlineTextBox.isFirstLineStyle());
   }
   // In RTL mode, start and width are computed from the right end of the text
   // box: starting at |logicalWidth| - |start| and continuing left by |width| to

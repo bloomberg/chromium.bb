@@ -130,12 +130,12 @@ struct BidiStatus final {
   // direction.  Uses TextDirection as it only has two possibilities instead of
   // WTF::Unicode::Direction which has 19.
   BidiStatus(TextDirection textDirection, bool isOverride) {
-    WTF::Unicode::CharDirection direction = textDirection == LTR
+    WTF::Unicode::CharDirection direction = textDirection == TextDirection::Ltr
                                                 ? WTF::Unicode::LeftToRight
                                                 : WTF::Unicode::RightToLeft;
     eor = lastStrong = last = direction;
-    context = BidiContext::create(textDirection == LTR ? 0 : 1, direction,
-                                  isOverride);
+    context = BidiContext::create(textDirection == TextDirection::Ltr ? 0 : 1,
+                                  direction, isOverride);
   }
 
   BidiStatus(WTF::Unicode::CharDirection eorDir,
@@ -153,7 +153,7 @@ struct BidiStatus final {
                                      bool isOverride,
                                      unsigned char level) {
     WTF::Unicode::CharDirection direction;
-    if (textDirection == RTL) {
+    if (textDirection == TextDirection::Rtl) {
       level = nextGreaterOddLevel(level);
       direction = WTF::Unicode::RightToLeft;
     } else {
@@ -255,8 +255,9 @@ class BidiResolver final {
   void setStatus(const BidiStatus s) {
     ASSERT(s.context);
     m_status = s;
-    m_paragraphDirectionality =
-        s.context->dir() == WTF::Unicode::LeftToRight ? LTR : RTL;
+    m_paragraphDirectionality = s.context->dir() == WTF::Unicode::LeftToRight
+                                    ? TextDirection::Ltr
+                                    : TextDirection::Rtl;
   }
 
   MidpointState<Iterator>& midpointState() { return m_midpointState; }
@@ -552,8 +553,9 @@ void BidiResolver<Iterator, Run, IsolatedRun>::applyL1Rule(
     return;
 
   bool shouldReorder =
-      trailingSpaceRun !=
-      (m_paragraphDirectionality == LTR ? runs.lastRun() : runs.firstRun());
+      trailingSpaceRun != (m_paragraphDirectionality == TextDirection::Ltr
+                               ? runs.lastRun()
+                               : runs.firstRun());
   if (firstSpace != trailingSpaceRun->start()) {
     BidiContext* baseContext = context();
     while (BidiContext* parent = baseContext->parent())
@@ -571,7 +573,7 @@ void BidiResolver<Iterator, Run, IsolatedRun>::applyL1Rule(
     return;
   }
 
-  if (m_paragraphDirectionality == LTR) {
+  if (m_paragraphDirectionality == TextDirection::Ltr) {
     runs.moveRunToEnd(trailingSpaceRun);
     trailingSpaceRun->m_level = 0;
   } else {
@@ -750,19 +752,19 @@ BidiResolver<Iterator, Run, IsolatedRun>::determineDirectionalityInternal(
     if (charDirection == WTF::Unicode::LeftToRight) {
       if (hasStrongDirectionality)
         *hasStrongDirectionality = true;
-      return LTR;
+      return TextDirection::Ltr;
     }
     if (charDirection == WTF::Unicode::RightToLeft ||
         charDirection == WTF::Unicode::RightToLeftArabic) {
       if (hasStrongDirectionality)
         *hasStrongDirectionality = true;
-      return RTL;
+      return TextDirection::Rtl;
     }
     increment();
   }
   if (hasStrongDirectionality)
     *hasStrongDirectionality = false;
-  return LTR;
+  return TextDirection::Ltr;
 }
 
 inline TextDirection directionForCharacter(UChar32 character) {
@@ -770,8 +772,8 @@ inline TextDirection directionForCharacter(UChar32 character) {
       WTF::Unicode::direction(character);
   if (charDirection == WTF::Unicode::RightToLeft ||
       charDirection == WTF::Unicode::RightToLeftArabic)
-    return RTL;
-  return LTR;
+    return TextDirection::Rtl;
+  return TextDirection::Ltr;
 }
 
 template <class Iterator, class Run, class IsolatedRun>

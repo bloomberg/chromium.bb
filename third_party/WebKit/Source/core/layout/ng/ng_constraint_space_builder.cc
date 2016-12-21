@@ -18,7 +18,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
       is_block_direction_triggers_scrollbar_(false),
       fragmentation_type_(kFragmentNone),
       is_new_fc_(parent_space->IsNewFormattingContext()),
-      text_direction_(parent_space->Direction()),
+      text_direction_(static_cast<unsigned>(parent_space->Direction())),
       exclusions_(parent_space->Exclusions()) {}
 
 NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(NGWritingMode writing_mode)
@@ -30,7 +30,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(NGWritingMode writing_mode)
       is_block_direction_triggers_scrollbar_(false),
       fragmentation_type_(kFragmentNone),
       is_new_fc_(false),
-      text_direction_(TextDirection::LTR),
+      text_direction_(static_cast<unsigned>(TextDirection::Ltr)),
       exclusions_(new NGExclusions()) {}
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetAvailableSize(
@@ -47,7 +47,7 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetPercentageResolutionSize(
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetTextDirection(
     TextDirection text_direction) {
-  text_direction_ = text_direction;
+  text_direction_ = static_cast<unsigned>(text_direction);
   return *this;
 }
 

@@ -381,7 +381,8 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR,
     LayoutUnit widthOfVisibleText(getLineLayoutItem().width(
         ltr == flowIsLTR ? m_start : m_start + offset,
         ltr == flowIsLTR ? offset : m_len - offset, textPos(),
-        flowIsLTR ? LTR : RTL, isFirstLineStyle()));
+        flowIsLTR ? TextDirection::Ltr : TextDirection::Rtl,
+        isFirstLineStyle()));
 
     // The ellipsis needs to be placed just after the last visible character.
     // Where "after" is defined by the flow directionality, not the inline

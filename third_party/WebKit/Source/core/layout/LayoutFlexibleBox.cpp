@@ -269,7 +269,7 @@ IntSize LayoutFlexibleBox::originAdjustmentForScrollbars() const {
   WritingMode writingMode = style()->getWritingMode();
 
   if (flexDirection == FlowRow) {
-    if (textDirection == RTL) {
+    if (textDirection == TextDirection::Rtl) {
       if (writingMode == TopToBottomWritingMode)
         size.expand(adjustmentWidth, 0);
       else
@@ -278,7 +278,7 @@ IntSize LayoutFlexibleBox::originAdjustmentForScrollbars() const {
     if (writingMode == RightToLeftWritingMode)
       size.expand(adjustmentWidth, 0);
   } else if (flexDirection == FlowRowReverse) {
-    if (textDirection == LTR) {
+    if (textDirection == TextDirection::Ltr) {
       if (writingMode == TopToBottomWritingMode)
         size.expand(adjustmentWidth, 0);
       else

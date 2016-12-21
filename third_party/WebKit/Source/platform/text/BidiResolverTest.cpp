@@ -48,14 +48,14 @@ TEST(BidiResolver, Basic) {
   TextDirection direction =
       bidiResolver.determineParagraphDirectionality(&hasStrongDirectionality);
   EXPECT_TRUE(hasStrongDirectionality);
-  EXPECT_EQ(LTR, direction);
+  EXPECT_EQ(TextDirection::Ltr, direction);
 }
 
 TextDirection determineParagraphDirectionality(
     const TextRun& textRun,
     bool* hasStrongDirectionality = 0) {
   BidiResolver<TextRunIterator, BidiCharacterRun> resolver;
-  resolver.setStatus(BidiStatus(LTR, false));
+  resolver.setStatus(BidiStatus(TextDirection::Ltr, false));
   resolver.setPositionIgnoringNestedIsolates(TextRunIterator(&textRun, 0));
   return resolver.determineParagraphDirectionality(hasStrongDirectionality);
 }
@@ -78,33 +78,34 @@ void testDirectionality(const TestData& entry) {
 }
 
 TEST(BidiResolver, ParagraphDirectionSurrogates) {
-  const TestData testData[] = {// Test strong RTL, non-BMP. (U+10858 Imperial
-                               // Aramaic number one, strong RTL)
-                               {{0xD802, 0xDC58}, 2, RTL, true},
+  const TestData testData[] = {
+      // Test strong RTL, non-BMP. (U+10858 Imperial
+      // Aramaic number one, strong RTL)
+      {{0xD802, 0xDC58}, 2, TextDirection::Rtl, true},
 
-                               // Test strong LTR, non-BMP. (U+1D15F Musical
-                               // symbol quarter note, strong LTR)
-                               {{0xD834, 0xDD5F}, 2, LTR, true},
+      // Test strong LTR, non-BMP. (U+1D15F Musical
+      // symbol quarter note, strong LTR)
+      {{0xD834, 0xDD5F}, 2, TextDirection::Ltr, true},
 
-                               // Test broken surrogate: valid leading, invalid
-                               // trail. (Lead of U+10858, space)
-                               {{0xD802, ' '}, 2, LTR, false},
+      // Test broken surrogate: valid leading, invalid
+      // trail. (Lead of U+10858, space)
+      {{0xD802, ' '}, 2, TextDirection::Ltr, false},
 
-                               // Test broken surrogate: invalid leading. (Trail
-                               // of U+10858, U+05D0 Hebrew Alef)
-                               {{0xDC58, 0x05D0}, 2, RTL, true},
+      // Test broken surrogate: invalid leading. (Trail
+      // of U+10858, U+05D0 Hebrew Alef)
+      {{0xDC58, 0x05D0}, 2, TextDirection::Rtl, true},
 
-                               // Test broken surrogate: valid leading, invalid
-                               // trail/valid lead, valid trail.
-                               {{0xD802, 0xD802, 0xDC58}, 3, RTL, true},
+      // Test broken surrogate: valid leading, invalid
+      // trail/valid lead, valid trail.
+      {{0xD802, 0xD802, 0xDC58}, 3, TextDirection::Rtl, true},
 
-                               // Test broken surrogate: valid leading, no trail
-                               // (string too short). (Lead of U+10858)
-                               {{0xD802, 0xDC58}, 1, LTR, false},
+      // Test broken surrogate: valid leading, no trail
+      // (string too short). (Lead of U+10858)
+      {{0xD802, 0xDC58}, 1, TextDirection::Ltr, false},
 
-                               // Test broken surrogate: trail appearing before
-                               // lead. (U+10858 units reversed)
-                               {{0xDC58, 0xD802}, 2, LTR, false}};
+      // Test broken surrogate: trail appearing before
+      // lead. (U+10858 units reversed)
+      {{0xDC58, 0xD802}, 2, TextDirection::Ltr, false}};
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(testData); ++i)
     testDirectionality(testData[i]);
 }
@@ -184,10 +185,10 @@ void BidiTestRunner::runTest(const std::basic_string<UChar>& input,
       textRun.setDirection(determineParagraphDirectionality(textRun));
       break;
     case bidi_test::DirectionLTR:
-      textRun.setDirection(LTR);
+      textRun.setDirection(TextDirection::Ltr);
       break;
     case bidi_test::DirectionRTL:
-      textRun.setDirection(RTL);
+      textRun.setDirection(TextDirection::Rtl);
       break;
   }
   BidiResolver<TextRunIterator, BidiCharacterRun> resolver;

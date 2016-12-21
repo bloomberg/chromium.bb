@@ -181,7 +181,7 @@ LayoutRect InlineFlowBoxPainter::paintRectForImageStrip(
   // off.
   LayoutUnit logicalOffsetOnLine;
   LayoutUnit totalLogicalWidth;
-  if (direction == LTR) {
+  if (direction == TextDirection::Ltr) {
     for (const InlineFlowBox* curr = m_inlineFlowBox.prevLineBox(); curr;
          curr = curr->prevLineBox())
       logicalOffsetOnLine += curr->logicalWidth();
@@ -315,8 +315,8 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(
       // FIXME: What the heck do we do with RTL here? The math we're using is
       // obviously not right, but it isn't even clear how this should work at
       // all.
-      LayoutRect imageStripPaintRect =
-          paintRectForImageStrip(adjustedPaintOffset, frameRect.size(), LTR);
+      LayoutRect imageStripPaintRect = paintRectForImageStrip(
+          adjustedPaintOffset, frameRect.size(), TextDirection::Ltr);
       GraphicsContextStateSaver stateSaver(paintInfo.context);
       paintInfo.context.clip(adjustedClipRect);
       BoxPainter::paintBorder(
@@ -401,8 +401,8 @@ void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo,
     // We have a mask image that spans multiple lines.
     // FIXME: What the heck do we do with RTL here? The math we're using is
     // obviously not right, but it isn't even clear how this should work at all.
-    LayoutRect imageStripPaintRect =
-        paintRectForImageStrip(adjustedPaintOffset, frameRect.size(), LTR);
+    LayoutRect imageStripPaintRect = paintRectForImageStrip(
+        adjustedPaintOffset, frameRect.size(), TextDirection::Ltr);
     FloatRect clipRect(clipRectForNinePieceImageStrip(
         m_inlineFlowBox, maskNinePieceImage, paintRect));
     GraphicsContextStateSaver stateSaver(paintInfo.context);

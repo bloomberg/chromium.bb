@@ -105,7 +105,7 @@ void LayoutSliderContainer::layout() {
     // FIXME: Work around rounding issues in RTL vertical sliders. We want them
     // to render identically to LTR vertical sliders. We can remove this work
     // around when subpixel rendering is enabled on all ports.
-    mutableStyleRef().setDirection(LTR);
+    mutableStyleRef().setDirection(TextDirection::Ltr);
   }
 
   Element* thumbElement = input->userAgentShadowRoot()->getElementById(

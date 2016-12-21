@@ -291,7 +291,7 @@ std::unique_ptr<DragImage> DragImage::create(const KURL& url,
   IntPoint textPos(
       kDragLabelBorderX,
       kDragLabelBorderY + labelFont.getFontDescription().computedPixelSize());
-  if (hasStrongDirectionality && textRun.direction() == RTL) {
+  if (hasStrongDirectionality && textRun.direction() == TextDirection::Rtl) {
     float textWidth = labelFont.width(textRun);
     int availableWidth = imageSize.width() - kDragLabelBorderX * 2;
     textPos.setX(availableWidth - ceilf(textWidth));

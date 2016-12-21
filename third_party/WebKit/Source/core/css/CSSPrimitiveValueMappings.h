@@ -2852,10 +2852,10 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(TextDirection e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case LTR:
+    case TextDirection::Ltr:
       m_valueID = CSSValueLtr;
       break;
-    case RTL:
+    case TextDirection::Rtl:
       m_valueID = CSSValueRtl;
       break;
   }
@@ -2865,15 +2865,15 @@ template <>
 inline TextDirection CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueLtr:
-      return LTR;
+      return TextDirection::Ltr;
     case CSSValueRtl:
-      return RTL;
+      return TextDirection::Rtl;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return LTR;
+  return TextDirection::Ltr;
 }
 
 template <>

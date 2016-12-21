@@ -129,7 +129,7 @@ TextRun constructTextRun(const Font& font,
                          TextRunFlags flags) {
   return constructTextRun(font, string, style,
                           string.isEmpty() || string.is8Bit()
-                              ? LTR
+                              ? TextDirection::Ltr
                               : determineDirectionality(string),
                           flags);
 }
@@ -140,15 +140,17 @@ TextRun constructTextRun(const Font& font,
                          unsigned length,
                          const ComputedStyle& style) {
   ASSERT(offset + length <= text.textLength());
-  if (text.hasEmptyText())
+  if (text.hasEmptyText()) {
     return constructTextRunInternal(font, static_cast<const LChar*>(nullptr), 0,
-                                    style, LTR);
-  if (text.is8Bit())
+                                    style, TextDirection::Ltr);
+  }
+  if (text.is8Bit()) {
     return constructTextRunInternal(font, text.characters8() + offset, length,
-                                    style, LTR);
+                                    style, TextDirection::Ltr);
+  }
 
   TextRun run = constructTextRunInternal(font, text.characters16() + offset,
-                                         length, style, LTR);
+                                         length, style, TextDirection::Ltr);
   run.setDirection(directionForRun(run));
   return run;
 }

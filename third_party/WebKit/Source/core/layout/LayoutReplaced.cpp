@@ -301,7 +301,7 @@ void LayoutReplaced::computePositionedLogicalWidth(
     } else {
       // Use the containing block's direction rather than the parent block's
       // per CSS 2.1 reference test abspos-replaced-width-margin-000.
-      if (containerDirection == LTR) {
+      if (containerDirection == TextDirection::Ltr) {
         marginLogicalLeftAlias = LayoutUnit();
         marginLogicalRightAlias = difference;  // will be negative
       } else {
@@ -366,7 +366,7 @@ void LayoutReplaced::computePositionedLogicalWidth(
     logicalLeftValue = valueForLength(logicalLeft, containerLogicalWidth);
     // If the containing block is right-to-left, then push the left position as
     // far to the right as possible
-    if (containerDirection == RTL) {
+    if (containerDirection == TextDirection::Rtl) {
       int totalLogicalWidth =
           (computedValues.m_extent + logicalLeftValue + logicalRightValue +
            marginLogicalLeftAlias + marginLogicalRightAlias)

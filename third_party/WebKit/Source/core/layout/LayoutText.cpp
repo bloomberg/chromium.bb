@@ -1089,7 +1089,7 @@ void LayoutText::computePreferredLogicalWidths(
   BidiResolver<TextRunIterator, BidiCharacterRun> bidiResolver;
   BidiCharacterRun* run;
   TextDirection textDirection = styleToUse.direction();
-  if ((is8Bit() && textDirection == LTR) ||
+  if ((is8Bit() && textDirection == TextDirection::Ltr) ||
       isOverride(styleToUse.unicodeBidi())) {
     run = 0;
   } else {
@@ -1202,13 +1202,17 @@ void LayoutText::computePreferredLogicalWidths(
       float wordTrailingSpaceWidth = 0;
       if (isSpace &&
           (f.getFontDescription().getTypesettingFeatures() & Kerning)) {
-        ASSERT(textDirection >= 0 && textDirection <= 1);
-        if (!cachedWordTrailingSpaceWidth[textDirection])
-          cachedWordTrailingSpaceWidth[textDirection] =
+        const unsigned textDirectionIndex =
+            static_cast<unsigned>(textDirection);
+        DCHECK_GE(textDirectionIndex, 0U);
+        DCHECK_LE(textDirectionIndex, 1U);
+        if (!cachedWordTrailingSpaceWidth[textDirectionIndex])
+          cachedWordTrailingSpaceWidth[textDirectionIndex] =
               f.width(constructTextRun(f, &spaceCharacter, 1, styleToUse,
                                        textDirection)) +
               wordSpacing;
-        wordTrailingSpaceWidth = cachedWordTrailingSpaceWidth[textDirection];
+        wordTrailingSpaceWidth =
+            cachedWordTrailingSpaceWidth[textDirectionIndex];
       }
 
       float w;

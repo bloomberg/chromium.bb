@@ -988,16 +988,16 @@ AccessibilityTextDirection AXLayoutObject::textDirection() const {
 
   if (style->isHorizontalWritingMode()) {
     switch (style->direction()) {
-      case LTR:
+      case TextDirection::Ltr:
         return AccessibilityTextDirectionLTR;
-      case RTL:
+      case TextDirection::Rtl:
         return AccessibilityTextDirectionRTL;
     }
   } else {
     switch (style->direction()) {
-      case LTR:
+      case TextDirection::Ltr:
         return AccessibilityTextDirectionTTB;
-      case RTL:
+      case TextDirection::Rtl:
         return AccessibilityTextDirectionBTT;
     }
   }

@@ -671,8 +671,8 @@ ALWAYS_INLINE TextDirection
 textDirectionFromUnicode(WTF::Unicode::CharDirection direction) {
   return direction == WTF::Unicode::RightToLeft ||
                  direction == WTF::Unicode::RightToLeftArabic
-             ? RTL
-             : LTR;
+             ? TextDirection::Rtl
+             : TextDirection::Ltr;
 }
 
 ALWAYS_INLINE float textWidth(

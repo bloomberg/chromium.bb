@@ -39,7 +39,7 @@ TextDirection directionForRun(TextRun& run, bool* hasStrongDirectionality) {
   if (!hasStrongDirectionality) {
     // 8bit is Latin-1 and therefore is always LTR.
     if (run.is8Bit())
-      return LTR;
+      return TextDirection::Ltr;
 
     // length == 1 for more than 90% of cases of width() for CJK text.
     if (run.length() == 1 && U16_IS_SINGLE(run.characters16()[0]))

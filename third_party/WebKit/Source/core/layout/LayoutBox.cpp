@@ -3707,7 +3707,7 @@ void LayoutBox::computeInlineStaticDistance(
 
   // FIXME: The static distance computation has not been patched for mixed
   // writing modes yet.
-  if (child->parent()->style()->direction() == LTR) {
+  if (child->parent()->style()->direction() == TextDirection::Ltr) {
     LayoutUnit staticPosition = child->layer()->staticInlinePosition() -
                                 containerBlock->borderLogicalLeft();
     for (LayoutObject* curr = child->parent(); curr && curr != containerBlock;
@@ -4005,7 +4005,7 @@ void LayoutBox::computePositionedLogicalWidthUsing(
       } else {
         // Use the containing block's direction rather than the parent block's
         // per CSS 2.1 reference test abspos-non-replaced-width-margin-000.
-        if (containerDirection == LTR) {
+        if (containerDirection == TextDirection::Ltr) {
           marginLogicalLeftValue = LayoutUnit();
           marginLogicalRightValue = availableSpace;  // will be negative
         } else {
@@ -4032,7 +4032,7 @@ void LayoutBox::computePositionedLogicalWidthUsing(
 
       // Use the containing block's direction rather than the parent block's
       // per CSS 2.1 reference test abspos-non-replaced-width-margin-000.
-      if (containerDirection == RTL)
+      if (containerDirection == TextDirection::Rtl)
         logicalLeftValue = (availableSpace + logicalLeftValue) -
                            marginLogicalLeftValue - marginLogicalRightValue;
     }

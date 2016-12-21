@@ -35,7 +35,8 @@
 namespace blink {
 
 WebTextRun::operator TextRun() const {
-  return TextRun(text, 0, 0, TextRun::AllowTrailingExpansion, rtl ? RTL : LTR,
+  return TextRun(text, 0, 0, TextRun::AllowTrailingExpansion,
+                 rtl ? TextDirection::Rtl : TextDirection::Ltr,
                  directionalOverride);
 }
 

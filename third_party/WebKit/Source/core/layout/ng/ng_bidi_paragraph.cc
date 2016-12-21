@@ -19,11 +19,13 @@ bool NGBidiParagraph::SetParagraph(const String& text,
   DCHECK(!ubidi_);
   ubidi_ = ubidi_open();
   ICUError error;
-  ubidi_setPara(ubidi_, text.characters16(), text.length(),
-                block_style->unicodeBidi() == Plaintext
-                    ? UBIDI_DEFAULT_LTR
-                    : (block_style->direction() == RTL ? UBIDI_RTL : UBIDI_LTR),
-                nullptr, &error);
+  ubidi_setPara(
+      ubidi_, text.characters16(), text.length(),
+      block_style->unicodeBidi() == Plaintext
+          ? UBIDI_DEFAULT_LTR
+          : (block_style->direction() == TextDirection::Rtl ? UBIDI_RTL
+                                                            : UBIDI_LTR),
+      nullptr, &error);
   if (U_FAILURE(error)) {
     NOTREACHED();
     ubidi_close(ubidi_);
