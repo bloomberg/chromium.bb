@@ -44,8 +44,7 @@ ExternalProcessImporterClient::ExternalProcessImporterClient(
 void ExternalProcessImporterClient::Start() {
   AddRef();  // balanced in Cleanup.
 
-  chrome::mojom::ProfileImportRequest request =
-      mojo::MakeRequest(&profile_import_);
+  chrome::mojom::ProfileImportRequest request(&profile_import_);
 
   BrowserThread::ID thread_id;
   CHECK(BrowserThread::GetCurrentThreadIdentifier(&thread_id));

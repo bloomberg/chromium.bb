@@ -158,8 +158,7 @@ void GpuMain::CreateDisplayCompositorInternal(
                                  : nullptr;
 
   mojom::GpuServicePtr gpu_service;
-  mojom::GpuServiceRequest gpu_service_request =
-      mojo::MakeRequest(&gpu_service);
+  mojom::GpuServiceRequest gpu_service_request(&gpu_service);
 
   if (gpu_thread_.task_runner()->BelongsToCurrentThread()) {
     // If the DisplayCompositor creation was delayed because GpuService

@@ -31,6 +31,19 @@ class InterfaceRequest {
   InterfaceRequest() {}
   InterfaceRequest(decltype(nullptr)) {}
 
+  // Creates a new message pipe over which Interface is to be served, binding
+  // the specified InterfacePtr to one end of the message pipe and this
+  // InterfaceRequest to the other. For example usage, see comments on
+  // MakeRequest(InterfacePtr*) below.
+  explicit InterfaceRequest(InterfacePtr<Interface>* ptr,
+                            scoped_refptr<base::SingleThreadTaskRunner> runner =
+                                base::ThreadTaskRunnerHandle::Get()) {
+    MessagePipe pipe;
+    ptr->Bind(InterfacePtrInfo<Interface>(std::move(pipe.handle0), 0u),
+              std::move(runner));
+    Bind(std::move(pipe.handle1));
+  }
+
   // Takes the message pipe from another InterfaceRequest.
   InterfaceRequest(InterfaceRequest&& other) {
     handle_ = std::move(other.handle_);
@@ -136,7 +149,7 @@ InterfaceRequest<Interface> MakeRequest(ScopedMessagePipeHandle handle) {
 //
 //   CollectorPtr collector = ...;  // Connect to Collector.
 //   SourcePtr source;
-//   InterfaceRequest<Source> source_request = MakeRequest(&source);
+//   InterfaceRequest<Source> source_request(&source);
 //   collector->RegisterSource(std::move(source));
 //   CreateSource(std::move(source_request));  // Create implementation locally.
 //
@@ -145,10 +158,7 @@ InterfaceRequest<Interface> MakeRequest(
     InterfacePtr<Interface>* ptr,
     scoped_refptr<base::SingleThreadTaskRunner> runner =
         base::ThreadTaskRunnerHandle::Get()) {
-  MessagePipe pipe;
-  ptr->Bind(InterfacePtrInfo<Interface>(std::move(pipe.handle0), 0u),
-            std::move(runner));
-  return MakeRequest<Interface>(std::move(pipe.handle1));
+  return InterfaceRequest<Interface>(ptr, runner);
 }
 
 // Fuses an InterfaceRequest<T> endpoint with an InterfacePtrInfo<T> endpoint.

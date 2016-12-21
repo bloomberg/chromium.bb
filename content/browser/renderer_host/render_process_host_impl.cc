@@ -934,8 +934,7 @@ void RenderProcessHostImpl::InitializeChannelProxy() {
       // ServiceManagerConnection prior to this point. This class of test code
       // doesn't care about render processes, so we can initialize a dummy
       // connection.
-      service_manager::mojom::ServiceRequest request =
-          mojo::MakeRequest(&test_service_);
+      service_manager::mojom::ServiceRequest request(&test_service_);
       ServiceManagerConnection::SetForProcess(ServiceManagerConnection::Create(
           std::move(request), io_task_runner));
     }

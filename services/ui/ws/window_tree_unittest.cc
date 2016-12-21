@@ -222,7 +222,7 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   EXPECT_TRUE(wm_tree()->AddWindow(wm_root_id, embed_window_id));
   display()->root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
   mojom::WindowTreeClientPtr client;
-  mojom::WindowTreeClientRequest client_request = MakeRequest(&client);
+  mojom::WindowTreeClientRequest client_request(&client);
   wm_client()->Bind(std::move(client_request));
   const uint32_t embed_flags = 0;
   wm_tree()->Embed(embed_window_id, std::move(client), embed_flags);

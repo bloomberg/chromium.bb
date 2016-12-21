@@ -177,8 +177,7 @@ void FakeRemoterFactory::Create(mojom::RemotingSourcePtr source,
 scoped_refptr<RemotingSourceImpl> CreateRemotingSourceImpl(
     bool start_will_fail) {
   mojom::RemotingSourcePtr remoting_source;
-  mojom::RemotingSourceRequest remoting_source_request =
-      mojo::MakeRequest(&remoting_source);
+  mojom::RemotingSourceRequest remoting_source_request(&remoting_source);
   mojom::RemoterPtr remoter;
   std::unique_ptr<mojom::RemoterFactory> remoter_factory =
       base::MakeUnique<FakeRemoterFactory>(start_will_fail);

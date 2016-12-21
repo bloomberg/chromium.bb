@@ -708,7 +708,7 @@ TEST_F(InterfacePtrTest, Fusion) {
 
   // Create another PingTest pipe.
   sample::PingTestPtr ptr;
-  sample::PingTestRequest request = MakeRequest(&ptr);
+  sample::PingTestRequest request(&ptr);
 
   // Fuse the new pipe to the one hanging off |impl|.
   EXPECT_TRUE(FuseInterface(std::move(request), proxy.PassInterface()));
@@ -796,7 +796,7 @@ TEST_F(InterfacePtrTest, InterfaceRequestResetWithReason) {
 
 TEST_F(InterfacePtrTest, CallbackOwnsInterfacePtr) {
   sample::PingTestPtr ptr;
-  sample::PingTestRequest request = MakeRequest(&ptr);
+  sample::PingTestRequest request(&ptr);
 
   base::RunLoop run_loop;
 

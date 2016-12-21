@@ -514,7 +514,7 @@ ServiceManager::ServiceManager(
           std::move(service_process_launcher_factory)),
       weak_ptr_factory_(this) {
   mojom::ServicePtr service;
-  mojom::ServiceRequest request = mojo::MakeRequest(&service);
+  mojom::ServiceRequest request(&service);
 
   InterfaceProviderSpec spec;
   spec.provides[kCapability_ServiceManager].insert(
@@ -581,7 +581,7 @@ mojom::ServiceRequest ServiceManager::StartEmbedderService(
   params->set_target(embedder_identity);
 
   mojom::ServicePtr service;
-  mojom::ServiceRequest request = mojo::MakeRequest(&service);
+  mojom::ServiceRequest request(&service);
   Connect(std::move(params), std::move(service), nullptr);
 
   return request;
@@ -879,7 +879,7 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
         std::move(client_process_connection));
   } else {
     // Otherwise we create a new Service pipe.
-    mojom::ServiceRequest request = MakeRequest(&service);
+    mojom::ServiceRequest request(&service);
     CHECK(!result->package_path.empty());
 
     // The catalog was unable to read a manifest for this service. We can't do

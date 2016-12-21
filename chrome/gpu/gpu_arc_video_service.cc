@@ -136,8 +136,7 @@ void GpuArcVideoService::DeprecatedConnect(
   service->client_.set_connection_error_handler(base::Bind(&OnConnectionError));
 
   ::arc::mojom::VideoAcceleratorServicePtr service_proxy;
-  ::arc::mojom::VideoAcceleratorServiceRequest request =
-      mojo::MakeRequest(&service_proxy);
+  ::arc::mojom::VideoAcceleratorServiceRequest request(&service_proxy);
   service->client_->DeprecatedInit(std::move(service_proxy));
 
   auto binding = mojo::MakeStrongBinding(std::move(service),

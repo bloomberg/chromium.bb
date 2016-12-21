@@ -115,7 +115,7 @@ service_manager::mojom::ServicePtr Catalog::TakeService() {
 
 Catalog::Catalog(std::unique_ptr<Store> store)
     : store_(std::move(store)), weak_factory_(this) {
-  service_manager::mojom::ServiceRequest request = MakeRequest(&service_);
+  service_manager::mojom::ServiceRequest request(&service_);
   service_context_.reset(new service_manager::ServiceContext(
       base::MakeUnique<ServiceImpl>(this), std::move(request)));
 }

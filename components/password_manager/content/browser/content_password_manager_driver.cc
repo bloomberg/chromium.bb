@@ -308,8 +308,8 @@ ContentPasswordManagerDriver::GetAutofillAgent() {
 const autofill::mojom::PasswordAutofillAgentPtr&
 ContentPasswordManagerDriver::GetPasswordAutofillAgent() {
   if (!password_autofill_agent_) {
-    autofill::mojom::PasswordAutofillAgentRequest request =
-        mojo::MakeRequest(&password_autofill_agent_);
+    autofill::mojom::PasswordAutofillAgentRequest request(
+        &password_autofill_agent_);
     // Some test codes may have no initialized remote interfaces.
     if (render_frame_host_->GetRemoteInterfaces()) {
       render_frame_host_->GetRemoteInterfaces()->GetInterface(

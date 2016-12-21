@@ -161,8 +161,8 @@ class ServiceManagerContext::InProcessServiceManagerContext
   service_manager::mojom::ServiceRequest Start(
       std::unique_ptr<BuiltinManifestProvider> manifest_provider) {
     service_manager::mojom::ServicePtr embedder_service_proxy;
-    service_manager::mojom::ServiceRequest embedder_service_request =
-        mojo::MakeRequest(&embedder_service_proxy);
+    service_manager::mojom::ServiceRequest embedder_service_request(
+        &embedder_service_proxy);
     service_manager::mojom::ServicePtrInfo embedder_service_proxy_info =
         embedder_service_proxy.PassInterface();
     BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)->PostTask(

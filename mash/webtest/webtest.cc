@@ -191,8 +191,7 @@ void Webtest::Launch(uint32_t what, mojom::LaunchMode how) {
   context()->connector()->ConnectToInterface("navigation", &view_factory);
   navigation::mojom::ViewPtr view;
   navigation::mojom::ViewClientPtr view_client;
-  navigation::mojom::ViewClientRequest view_client_request =
-      MakeRequest(&view_client);
+  navigation::mojom::ViewClientRequest view_client_request(&view_client);
   view_factory->CreateView(std::move(view_client), MakeRequest(&view));
   UI* ui = new UI(this, std::move(view), std::move(view_client_request));
   views::Widget* window = views::Widget::CreateWindowWithContextAndBounds(
