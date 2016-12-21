@@ -60,6 +60,7 @@ VideoRendererImpl::VideoRendererImpl(
       have_renderered_frames_(false),
       last_frame_opaque_(false),
       painted_first_frame_(false),
+      max_buffered_frames_(limits::kMaxVideoFrames),
       weak_factory_(this),
       frame_callback_weak_factory_(this) {
   if (gpu_factories &&
@@ -116,6 +117,11 @@ void VideoRendererImpl::Flush(const base::Closure& callback) {
   // they may use to output more frames that won't be used.
   algorithm_->Reset();
   painted_first_frame_ = false;
+
+  // Reset preroll capacity so seek time is not penalized.
+  // TODO(dalecurtis): Not sure if this is the right decision, but it's what we
+  // do for audio, so carry over that behavior for now.
+  max_buffered_frames_ = limits::kMaxVideoFrames;
 }
 
 void VideoRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
@@ -332,6 +338,13 @@ void VideoRendererImpl::OnTimeStopped() {
   if (buffering_state_ == BUFFERING_HAVE_NOTHING) {
     base::AutoLock al(lock_);
     RemoveFramesForUnderflowOrBackgroundRendering();
+
+    // If we've underflowed, increase the number of frames required to reach
+    // BUFFERING_HAVE_ENOUGH upon resume; this will help prevent us from
+    // repeatedly underflowing.
+    const size_t kMaxBufferedFrames = 2 * limits::kMaxVideoFrames;
+    if (max_buffered_frames_ < kMaxBufferedFrames)
+      ++max_buffered_frames_;
   }
 }
 
@@ -566,13 +579,12 @@ void VideoRendererImpl::UpdateStats_Locked() {
 
 bool VideoRendererImpl::HaveReachedBufferingCap() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  const size_t kMaxVideoFrames = limits::kMaxVideoFrames;
 
   // When the display rate is less than the frame rate, the effective frames
   // queued may be much smaller than the actual number of frames queued.  Here
   // we ensure that frames_queued() doesn't get excessive.
-  return algorithm_->effective_frames_queued() >= kMaxVideoFrames ||
-         algorithm_->frames_queued() >= 3 * kMaxVideoFrames;
+  return algorithm_->effective_frames_queued() >= max_buffered_frames_ ||
+         algorithm_->frames_queued() >= 3 * max_buffered_frames_;
 }
 
 void VideoRendererImpl::StartSink() {
