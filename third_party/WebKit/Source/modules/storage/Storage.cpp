@@ -36,7 +36,7 @@ Storage* Storage::create(LocalFrame* frame, StorageArea* storageArea) {
 }
 
 Storage::Storage(LocalFrame* frame, StorageArea* storageArea)
-    : DOMWindowProperty(frame), m_storageArea(storageArea) {
+    : ContextClient(frame), m_storageArea(storageArea) {
   DCHECK(frame);
   DCHECK(m_storageArea);
 }
@@ -102,7 +102,7 @@ bool Storage::namedPropertyQuery(const AtomicString& name,
 
 DEFINE_TRACE(Storage) {
   visitor->trace(m_storageArea);
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 }  // namespace blink

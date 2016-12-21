@@ -662,14 +662,13 @@ bool WebPluginContainerImpl::wantsWheelEvents() {
 
 WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement* element,
                                                WebPlugin* webPlugin)
-    : DOMWindowProperty(element->document().frame()),
+    : ContextClient(element->document().frame()),
       m_element(element),
       m_webPlugin(webPlugin),
       m_webLayer(nullptr),
       m_touchEventRequestType(TouchEventRequestTypeNone),
       m_wantsWheelEvents(false),
-      m_isDisposed(false) {
-}
+      m_isDisposed(false) {}
 
 WebPluginContainerImpl::~WebPluginContainerImpl() {
   // The plugin container must have been disposed of by now.
@@ -696,7 +695,7 @@ void WebPluginContainerImpl::dispose() {
 
 DEFINE_TRACE(WebPluginContainerImpl) {
   visitor->trace(m_element);
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
   PluginView::trace(visitor);
 }
 

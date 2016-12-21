@@ -28,7 +28,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "modules/storage/StorageArea.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -41,7 +41,7 @@ class LocalFrame;
 
 class Storage final : public GarbageCollected<Storage>,
                       public ScriptWrappable,
-                      public DOMWindowProperty {
+                      public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Storage);
 
