@@ -31,7 +31,7 @@
 namespace blink {
 
 NavigatorGeolocation::NavigatorGeolocation(LocalFrame* frame)
-    : DOMWindowProperty(frame) {}
+    : ContextClient(frame) {}
 
 const char* NavigatorGeolocation::supplementName() {
   return "NavigatorGeolocation";
@@ -60,7 +60,7 @@ Geolocation* NavigatorGeolocation::geolocation() {
 DEFINE_TRACE(NavigatorGeolocation) {
   visitor->trace(m_geolocation);
   Supplement<Navigator>::trace(visitor);
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 }  // namespace blink

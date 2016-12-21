@@ -31,7 +31,7 @@
 #ifndef NavigatorStorageQuota_h
 #define NavigatorStorageQuota_h
 
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "modules/quota/DeprecatedStorageQuota.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
@@ -46,7 +46,7 @@ class StorageQuota;
 class NavigatorStorageQuota final
     : public GarbageCollected<NavigatorStorageQuota>,
       public Supplement<Navigator>,
-      public DOMWindowProperty {
+      public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorStorageQuota);
 
  public:

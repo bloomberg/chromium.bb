@@ -5,7 +5,7 @@
 #ifndef NavigatorPlugins_h
 #define NavigatorPlugins_h
 
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/Supplementable.h"
 
 namespace blink {
@@ -17,7 +17,7 @@ class Navigator;
 
 class NavigatorPlugins final : public GarbageCollected<NavigatorPlugins>,
                                public Supplement<Navigator>,
-                               public DOMWindowProperty {
+                               public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorPlugins);
 
  public:

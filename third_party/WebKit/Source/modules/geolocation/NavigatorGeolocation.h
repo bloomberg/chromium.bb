@@ -20,7 +20,7 @@
 #ifndef NavigatorGeolocation_h
 #define NavigatorGeolocation_h
 
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 
@@ -33,7 +33,7 @@ class Navigator;
 class NavigatorGeolocation final
     : public GarbageCollected<NavigatorGeolocation>,
       public Supplement<Navigator>,
-      public DOMWindowProperty {
+      public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorGeolocation);
 
  public:

@@ -42,12 +42,11 @@
 
 namespace blink {
 
-NavigatorWebMIDI::NavigatorWebMIDI(LocalFrame* frame)
-    : DOMWindowProperty(frame) {}
+NavigatorWebMIDI::NavigatorWebMIDI(LocalFrame* frame) : ContextClient(frame) {}
 
 DEFINE_TRACE(NavigatorWebMIDI) {
   Supplement<Navigator>::trace(visitor);
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 const char* NavigatorWebMIDI::supplementName() {

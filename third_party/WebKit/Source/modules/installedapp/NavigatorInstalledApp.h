@@ -5,7 +5,7 @@
 #ifndef NavigatorInstalledApp_h
 #define NavigatorInstalledApp_h
 
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
@@ -21,7 +21,7 @@ class InstalledAppController;
 class NavigatorInstalledApp final
     : public GarbageCollected<NavigatorInstalledApp>,
       public Supplement<Navigator>,
-      public DOMWindowProperty {
+      public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorInstalledApp);
 
  public:

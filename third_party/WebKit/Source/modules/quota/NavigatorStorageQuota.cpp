@@ -38,7 +38,7 @@
 namespace blink {
 
 NavigatorStorageQuota::NavigatorStorageQuota(LocalFrame* frame)
-    : DOMWindowProperty(frame) {}
+    : ContextClient(frame) {}
 
 const char* NavigatorStorageQuota::supplementName() {
   return "NavigatorStorageQuota";
@@ -104,7 +104,7 @@ DEFINE_TRACE(NavigatorStorageQuota) {
   visitor->trace(m_persistentStorage);
   visitor->trace(m_storageManager);
   Supplement<Navigator>::trace(visitor);
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 }  // namespace blink

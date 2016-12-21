@@ -5,7 +5,7 @@
 #ifndef NavigatorNetworkInformation_h
 #define NavigatorNetworkInformation_h
 
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/Supplementable.h"
 
 namespace blink {
@@ -16,7 +16,7 @@ class NetworkInformation;
 class NavigatorNetworkInformation final
     : public GarbageCollected<NavigatorNetworkInformation>,
       public Supplement<Navigator>,
-      public DOMWindowProperty {
+      public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorNetworkInformation);
 
  public:

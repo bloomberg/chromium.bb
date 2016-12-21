@@ -6,7 +6,7 @@
 #define NavigatorVR_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/page/PageVisibilityObserver.h"
 #include "modules/ModulesExport.h"
@@ -26,7 +26,7 @@ class VRController;
 class MODULES_EXPORT NavigatorVR final
     : public GarbageCollectedFinalized<NavigatorVR>,
       public Supplement<Navigator>,
-      public DOMWindowProperty,
+      public ContextClient,
       public PageVisibilityObserver,
       public LocalDOMWindow::EventListenerObserver {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorVR);

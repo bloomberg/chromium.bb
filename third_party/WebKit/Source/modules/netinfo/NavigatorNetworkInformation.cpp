@@ -12,7 +12,7 @@
 namespace blink {
 
 NavigatorNetworkInformation::NavigatorNetworkInformation(Navigator& navigator)
-    : DOMWindowProperty(navigator.frame()) {}
+    : ContextClient(navigator.frame()) {}
 
 NavigatorNetworkInformation& NavigatorNetworkInformation::from(
     Navigator& navigator) {
@@ -53,7 +53,7 @@ NetworkInformation* NavigatorNetworkInformation::connection() {
 DEFINE_TRACE(NavigatorNetworkInformation) {
   visitor->trace(m_connection);
   Supplement<Navigator>::trace(visitor);
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 }  // namespace blink

@@ -23,7 +23,7 @@
 namespace blink {
 
 NavigatorInstalledApp::NavigatorInstalledApp(LocalFrame* frame)
-    : DOMWindowProperty(frame) {}
+    : ContextClient(frame) {}
 
 NavigatorInstalledApp* NavigatorInstalledApp::from(Document& document) {
   if (!document.frame() || !document.frame()->domWindow())
@@ -102,7 +102,7 @@ const char* NavigatorInstalledApp::supplementName() {
 
 DEFINE_TRACE(NavigatorInstalledApp) {
   Supplement<Navigator>::trace(visitor);
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 }  // namespace blink

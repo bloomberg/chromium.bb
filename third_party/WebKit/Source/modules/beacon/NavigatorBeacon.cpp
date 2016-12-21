@@ -21,12 +21,12 @@
 namespace blink {
 
 NavigatorBeacon::NavigatorBeacon(Navigator& navigator)
-    : DOMWindowProperty(navigator.frame()), m_transmittedBytes(0) {}
+    : ContextClient(navigator.frame()), m_transmittedBytes(0) {}
 
 NavigatorBeacon::~NavigatorBeacon() {}
 
 DEFINE_TRACE(NavigatorBeacon) {
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
   Supplement<Navigator>::trace(visitor);
 }
 

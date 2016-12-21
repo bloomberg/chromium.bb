@@ -37,11 +37,11 @@
 namespace blink {
 
 NavigatorDoNotTrack::NavigatorDoNotTrack(LocalFrame* frame)
-    : DOMWindowProperty(frame) {}
+    : ContextClient(frame) {}
 
 DEFINE_TRACE(NavigatorDoNotTrack) {
   Supplement<Navigator>::trace(visitor);
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
 }
 
 const char* NavigatorDoNotTrack::supplementName() {

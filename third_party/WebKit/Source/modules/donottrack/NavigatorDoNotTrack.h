@@ -31,7 +31,7 @@
 #ifndef NavigatorDoNotTrack_h
 #define NavigatorDoNotTrack_h
 
-#include "core/frame/DOMWindowProperty.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "platform/Supplementable.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/WTFString.h"
@@ -43,7 +43,7 @@ class Navigator;
 
 class NavigatorDoNotTrack final : public GarbageCollected<NavigatorDoNotTrack>,
                                   public Supplement<Navigator>,
-                                  public DOMWindowProperty {
+                                  public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorDoNotTrack);
 
  public:

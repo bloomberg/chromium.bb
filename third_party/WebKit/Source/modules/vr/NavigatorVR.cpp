@@ -90,12 +90,12 @@ DEFINE_TRACE(NavigatorVR) {
   visitor->trace(m_controller);
 
   Supplement<Navigator>::trace(visitor);
-  DOMWindowProperty::trace(visitor);
+  ContextClient::trace(visitor);
   PageVisibilityObserver::trace(visitor);
 }
 
 NavigatorVR::NavigatorVR(LocalFrame* frame)
-    : DOMWindowProperty(frame), PageVisibilityObserver(frame->page()) {
+    : ContextClient(frame), PageVisibilityObserver(frame->page()) {
   frame->domWindow()->registerEventListenerObserver(this);
 }
 
