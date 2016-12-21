@@ -10,6 +10,7 @@
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
+#import "components/handoff/handoff_manager.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/ntp_snippets/bookmarks/bookmark_suggestions_provider.h"
@@ -44,6 +45,8 @@
 #include "ios/chrome/browser/physical_web/physical_web_prefs_registration.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
 #include "ios/chrome/browser/voice/voice_search_prefs_registration.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -107,6 +110,10 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ZeroSuggestProvider::RegisterProfilePrefs(registry);
   RegisterVoiceSearchBrowserStatePrefs(registry);
 
+  [BookmarkInteractionController registerBrowserStatePrefs:registry];
+  [BookmarkPromoController registerBrowserStatePrefs:registry];
+  [HandoffManager registerBrowserStatePrefs:registry];
+
   registry->RegisterBooleanPref(prefs::kDataSaverEnabled, false);
   registry->RegisterBooleanPref(
       prefs::kEnableDoNotTrack, false,
@@ -141,8 +148,6 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
   // Register prefs used by Clear Browsing Data UI.
   browsing_data::prefs::RegisterBrowserUserPrefs(registry);
-
-  ios::GetChromeBrowserProvider()->RegisterProfilePrefs(registry);
 }
 
 // This method should be periodically pruned of year+ old migrations.

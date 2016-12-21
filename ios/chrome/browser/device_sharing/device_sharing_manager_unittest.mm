@@ -41,9 +41,6 @@ class DeviceSharingManagerTest : public PlatformTest {
     PlatformTest::SetUp();
     TestChromeBrowserState::Builder mainBrowserStateBuilder;
     chrome_browser_state_ = mainBrowserStateBuilder.Build();
-    sync_preferences::TestingPrefServiceSyncable* prefs =
-        chrome_browser_state_->GetTestingPrefService();
-    [HandoffManager registerBrowserStatePrefs:prefs->registry()];
     sharing_manager_.reset([[TestDeviceSharingManager alloc] init]);
   }
 

@@ -10,12 +10,9 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
-#import "components/handoff/handoff_manager.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_provider_impl.h"
 #include "ios/chrome/browser/tabs/tab_model_synced_window_delegate_getter.h"
 #include "ios/chrome/browser/ui/autofill/card_unmask_prompt_view_bridge.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
 #import "ios/chrome/browser/ui/browser_list_ios.h"
 #include "ios/chrome/browser/ui/webui/chrome_web_ui_ios_controller_factory.h"
 #import "ios/chrome/common/material_timing.h"
@@ -26,13 +23,6 @@ DownstreamChromiumBrowserProvider::DownstreamChromiumBrowserProvider()
               ios_internal::TabRestoreServiceDelegateProviderImpl>()) {}
 
 DownstreamChromiumBrowserProvider::~DownstreamChromiumBrowserProvider() {}
-
-void DownstreamChromiumBrowserProvider::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
-  [BookmarkInteractionController registerBrowserStatePrefs:registry];
-  [BookmarkPromoController registerBrowserStatePrefs:registry];
-  [HandoffManager registerBrowserStatePrefs:registry];
-}
 
 ios::LiveTabContextProvider*
 DownstreamChromiumBrowserProvider::GetLiveTabContextProvider() {

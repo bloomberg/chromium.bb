@@ -34,9 +34,6 @@ void ChromeBrowserProvider::Initialize() const {}
 
 void ChromeBrowserProvider::AssertBrowserContextKeyedFactoriesBuilt() {}
 
-void ChromeBrowserProvider::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {}
-
 SigninErrorProvider* ChromeBrowserProvider::GetSigninErrorProvider() {
   return nullptr;
 }

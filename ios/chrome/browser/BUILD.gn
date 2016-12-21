@@ -264,7 +264,6 @@ source_set("downstream_provider") {
   ]
   deps = [
     "//base",
-    "//components/handoff",
     "//components/pref_registry",
     "//components/prefs",
     "//ios/chrome/browser",
@@ -280,7 +279,6 @@ source_set("downstream_provider") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui:browser_list",
     "//ios/chrome/browser/ui/autofill:autofill_internal",
-    "//ios/chrome/browser/ui/bookmarks",
     "//ios/chrome/browser/ui/webui:webui_internal",
     "//ios/chrome/common",
   ]

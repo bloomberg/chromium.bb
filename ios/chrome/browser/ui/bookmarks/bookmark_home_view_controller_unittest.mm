@@ -4,7 +4,6 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_handset_view_controller.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_ios_unittest.h"
@@ -38,15 +37,7 @@ using bookmarks::BookmarkNode;
 
 namespace {
 
-class BookmarkHomeViewControllerTest : public BookmarkIOSUnitTest {
- public:
-  void SetUp() override {
-    BookmarkIOSUnitTest::SetUp();
-    sync_preferences::TestingPrefServiceSyncable* pref =
-        chrome_browser_state_->GetTestingPrefService();
-    [BookmarkPromoController registerBrowserStatePrefs:pref->registry()];
-  }
-};
+using BookmarkHomeViewControllerTest = BookmarkIOSUnitTest;
 
 TEST_F(BookmarkHomeViewControllerTest, DeleteNodesUpdatesEditNodes) {
   const BookmarkNode* mobileNode = _bookmarkModel->mobile_node();

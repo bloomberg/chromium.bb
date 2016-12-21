@@ -21,7 +21,6 @@ class AppDistributionProvider;
 class BrandedImageProvider;
 class GURL;
 class OmahaServiceProvider;
-class PrefService;
 class SpotlightProvider;
 class UserFeedbackProvider;
 class VoiceSearchProvider;
@@ -37,10 +36,6 @@ class WebState;
 
 namespace sync_sessions {
 class SyncedWindowDelegatesGetter;
-}
-
-namespace user_prefs {
-class PrefRegistrySyncable;
 }
 
 @protocol AppRatingPrompt;
@@ -87,9 +82,6 @@ class ChromeBrowserProvider {
 
   // Asserts all iOS-specific |BrowserContextKeyedServiceFactory| are built.
   virtual void AssertBrowserContextKeyedFactoriesBuilt();
-  // Registers all prefs that will be used via a PrefService attached to a
-  // Profile.
-  virtual void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
   // Returns an instance of a signing error provider.
   virtual SigninErrorProvider* GetSigninErrorProvider();
   // Returns an instance of a signin resources provider.
