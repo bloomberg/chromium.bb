@@ -247,12 +247,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
       return "<source src> with a <picture> parent is invalid and therefore "
              "ignored. Please use <source srcset> instead.";
 
-    case UseCounter::RadioNameMatchingASCIICaseless:
-    case UseCounter::RadioNameMatchingCaseFolding:
-      return willBeRemoved(
-          "Case-insensitive matching for <input type=radio name=...>", M57,
-          "6165799291060224");
-
     case UseCounter::ConsoleTimeline:
       return replacedBy("'console.timeline'", "'console.time'");
 

@@ -21,29 +21,10 @@
 #include "core/html/forms/RadioButtonGroupScope.h"
 
 #include "core/InputTypeNames.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/FrameConsole.h"
-#include "core/frame/LocalFrame.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/inspector/ConsoleMessage.h"
 #include "wtf/HashMap.h"
 
 namespace blink {
-
-namespace {
-
-void addSingletonDeprecationMessage(const LocalFrame* frame,
-                                    UseCounter::Feature feature,
-                                    const AtomicString& name1,
-                                    const AtomicString& name2) {
-  if (!frame)
-    return;
-  frame->console().addSingletonMessage(ConsoleMessage::create(
-      DeprecationMessageSource, WarningMessageLevel,
-      Deprecation::deprecationMessage(feature) + " Comparing name=" + name1 +
-          " and name=" + name2));
-}
-}
 
 class RadioButtonGroup : public GarbageCollected<RadioButtonGroup> {
  public:
@@ -234,22 +215,8 @@ void RadioButtonGroupScope::addButton(HTMLInputElement* element) {
     m_nameToGroupMap = new NameToGroupMap;
 
   auto keyValue = m_nameToGroupMap->add(element->name(), nullptr).storedValue;
-  if (!keyValue->value) {
+  if (!keyValue->value)
     keyValue->value = RadioButtonGroup::create();
-  } else {
-    if (keyValue->key == element->name()) {
-      UseCounter::count(element->document(),
-                        UseCounter::RadioNameMatchingStrict);
-    } else if (equalIgnoringASCIICase(keyValue->key, element->name())) {
-      addSingletonDeprecationMessage(element->document().frame(),
-                                     UseCounter::RadioNameMatchingASCIICaseless,
-                                     keyValue->key, element->name());
-    } else {
-      addSingletonDeprecationMessage(element->document().frame(),
-                                     UseCounter::RadioNameMatchingCaseFolding,
-                                     keyValue->key, element->name());
-    }
-  }
   keyValue->value->add(element);
 }
 
