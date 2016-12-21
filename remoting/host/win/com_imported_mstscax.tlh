@@ -11,8 +11,8 @@
 //     exclude("wireHWND", "_RemotableHandle", "__MIDL_IWinTypes_0009"), \
 //     rename_namespace("mstsc") raw_interfaces_only no_implementation
 //
-// Created by Microsoft (R) C/C++ Compiler Version 10.00.40219.01 (c995c7e6).
-// compiler-generated file created 01/16/14 at 11:56:07 - DO NOT EDIT!
+// Created by Microsoft (R) C/C++ Compiler Version 14.00.24213.1 (d1417caf).
+// compiler-generated file created 12/20/16 at 15:35:24 - DO NOT EDIT!
 
 #pragma once
 #pragma pack(push, 8)
@@ -29,9 +29,9 @@ struct __declspec(uuid("8c11efa1-92c3-11d1-bc1e-00c04fa31489"))
 /* LIBID */ __MSTSCLib;
 struct __declspec(uuid("336d5562-efa8-482e-8cb3-c5c0fc7a7db6"))
 /* dispinterface */ IMsTscAxEvents;
-enum __MIDL___MIDL_itf_mstsax_0000_0036_0001;
-enum __MIDL___MIDL_itf_mstsax_0000_0046_0001;
-enum __MIDL___MIDL_itf_mstsax_0000_0046_0002;
+enum __MIDL___MIDL_itf_mstsax_0000_0037_0001;
+enum __MIDL___MIDL_itf_mstsax_0000_0049_0001;
+enum __MIDL___MIDL_itf_mstsax_0000_0049_0002;
 struct /* coclass */ MsTscAxNotSafeForScripting;
 struct __declspec(uuid("92b4a539-7115-4b7c-a5a9-e5d9efc2780a"))
 /* dual interface */ IMsRdpClient;
@@ -141,6 +141,12 @@ struct __declspec(uuid("89acb528-2557-4d16-8625-226a30e97e9a"))
 enum __MIDL___MIDL_itf_mstsax_0000_0000_0003;
 enum __MIDL_IMsRdpClient8_0001;
 struct /* coclass */ MsRdpClient8;
+struct /* coclass */ MsRdpClient9NotSafeForScripting;
+struct __declspec(uuid("28904001-04b6-436c-a55b-0af1a0883dc9"))
+/* dual interface */ IMsRdpClient9;
+struct __declspec(uuid("011c3236-4d81-4515-9143-067ab630d299"))
+/* dual interface */ IMsRdpClientTransportSettings4;
+struct /* coclass */ MsRdpClient9;
 struct __declspec(uuid("079863b7-6d47-4105-8bfe-0cdcb360e67d"))
 /* dispinterface */ IRemoteDesktopClientEvents;
 struct /* coclass */ RemoteDesktopClient;
@@ -155,9 +161,9 @@ enum __MIDL_IRemoteDesktopClientActions_0002;
 enum __MIDL_IRemoteDesktopClientActions_0003;
 struct __declspec(uuid("260ec22d-8cbc-44b5-9e88-2a37f6c93ae9"))
 /* dual interface */ IRemoteDesktopClientTouchPointer;
-typedef enum __MIDL___MIDL_itf_mstsax_0000_0036_0001 AutoReconnectContinueState;
-typedef enum __MIDL___MIDL_itf_mstsax_0000_0046_0001 RemoteProgramResult;
-typedef enum __MIDL___MIDL_itf_mstsax_0000_0046_0002 RemoteWindowDisplayedAttribute;
+typedef enum __MIDL___MIDL_itf_mstsax_0000_0037_0001 AutoReconnectContinueState;
+typedef enum __MIDL___MIDL_itf_mstsax_0000_0049_0001 RemoteProgramResult;
+typedef enum __MIDL___MIDL_itf_mstsax_0000_0049_0002 RemoteWindowDisplayedAttribute;
 typedef enum __MIDL___MIDL_itf_mstsax_0000_0000_0001 ExtendedDisconnectReasonCode;
 typedef enum __MIDL_IMsRdpClient_0001 ControlCloseStatus;
 #if !defined(_WIN64)
@@ -224,6 +230,8 @@ _COM_SMARTPTR_TYPEDEF(IMsRdpPreferredRedirectionInfo, __uuidof(IMsRdpPreferredRe
 _COM_SMARTPTR_TYPEDEF(IMsRdpExtendedSettings, __uuidof(IMsRdpExtendedSettings));
 _COM_SMARTPTR_TYPEDEF(IMsRdpClientAdvancedSettings8, __uuidof(IMsRdpClientAdvancedSettings8));
 _COM_SMARTPTR_TYPEDEF(IMsRdpClient8, __uuidof(IMsRdpClient8));
+_COM_SMARTPTR_TYPEDEF(IMsRdpClientTransportSettings4, __uuidof(IMsRdpClientTransportSettings4));
+_COM_SMARTPTR_TYPEDEF(IMsRdpClient9, __uuidof(IMsRdpClient9));
 _COM_SMARTPTR_TYPEDEF(IRemoteDesktopClientEvents, __uuidof(IRemoteDesktopClientEvents));
 _COM_SMARTPTR_TYPEDEF(IRemoteDesktopClientSettings, __uuidof(IRemoteDesktopClientSettings));
 _COM_SMARTPTR_TYPEDEF(IRemoteDesktopClientActions, __uuidof(IRemoteDesktopClientActions));
@@ -238,14 +246,14 @@ struct __declspec(uuid("336d5562-efa8-482e-8cb3-c5c0fc7a7db6"))
 IMsTscAxEvents : IDispatch
 {};
 
-enum __MIDL___MIDL_itf_mstsax_0000_0036_0001
+enum __MIDL___MIDL_itf_mstsax_0000_0037_0001
 {
     autoReconnectContinueAutomatic = 0,
     autoReconnectContinueStop = 1,
     autoReconnectContinueManual = 2
 };
 
-enum __MIDL___MIDL_itf_mstsax_0000_0046_0001
+enum __MIDL___MIDL_itf_mstsax_0000_0049_0001
 {
     remoteAppResultOk = 0,
     remoteAppResultLocked = 1,
@@ -257,7 +265,7 @@ enum __MIDL___MIDL_itf_mstsax_0000_0046_0001
     remoteAppResultHookNotLoaded = 7
 };
 
-enum __MIDL___MIDL_itf_mstsax_0000_0046_0002
+enum __MIDL___MIDL_itf_mstsax_0000_0049_0002
 {
     remoteAppWindowNone = 0,
     remoteAppWindowDisplayed = 1,
@@ -753,6 +761,8 @@ enum __MIDL___MIDL_itf_mstsax_0000_0000_0001
     exDiscReasonServerDeniedConnectionFips = 8,
     exDiscReasonServerInsufficientPrivileges = 9,
     exDiscReasonServerFreshCredsRequired = 10,
+    exDiscReasonRpcInitiatedDisconnectByUser = 11,
+    exDiscReasonLogoffByUser = 12,
     exDiscReasonLicenseInternal = 256,
     exDiscReasonLicenseNoLicenseServer = 257,
     exDiscReasonLicenseNoLicense = 258,
@@ -1797,7 +1807,8 @@ enum __MIDL___MIDL_itf_mstsax_0000_0000_0004
     RemoteSessionActionAppbar = 1,
     RemoteSessionActionSnap = 2,
     RemoteSessionActionStartScreen = 3,
-    RemoteSessionActionAppSwitch = 4
+    RemoteSessionActionAppSwitch = 4,
+    RemoteSessionActionActionCenter = 5
 };
 
 struct __declspec(uuid("89acb528-2557-4d16-8625-226a30e97e9a"))
@@ -1850,6 +1861,88 @@ enum __MIDL_IMsRdpClient8_0001
 struct __declspec(uuid("5f681803-2900-4c43-a1cc-cf405404a676"))
 MsRdpClient8;
     // [ default ] interface IMsRdpClient8
+    // interface IMsRdpClient7
+    // interface IMsRdpClient6
+    // interface IMsRdpClient5
+    // interface IMsRdpClient4
+    // interface IMsRdpClient3
+    // interface IMsRdpClient2
+    // interface IMsRdpClient
+    // interface IMsTscAx
+    // interface IMsTscAx_Redist
+    // [ default, source ] dispinterface IMsTscAxEvents
+    // interface IMsTscNonScriptable
+    // interface IMsRdpClientNonScriptable
+    // interface IMsRdpClientNonScriptable2
+    // interface IMsRdpClientNonScriptable3
+    // interface IMsRdpClientNonScriptable4
+    // interface IMsRdpClientNonScriptable5
+    // interface IMsRdpPreferredRedirectionInfo
+
+struct __declspec(uuid("8b918b82-7985-4c24-89df-c33ad2bbfbcd"))
+MsRdpClient9NotSafeForScripting;
+    // [ default ] interface IMsRdpClient9
+    // interface IMsRdpClient8
+    // interface IMsRdpClient7
+    // interface IMsRdpClient6
+    // interface IMsRdpClient5
+    // interface IMsRdpClient4
+    // interface IMsRdpClient3
+    // interface IMsRdpClient2
+    // interface IMsRdpClient
+    // interface IMsTscAx
+    // interface IMsTscAx_Redist
+    // [ default, source ] dispinterface IMsTscAxEvents
+    // interface IMsTscNonScriptable
+    // interface IMsRdpClientNonScriptable
+    // interface IMsRdpClientNonScriptable2
+    // interface IMsRdpClientNonScriptable3
+    // interface IMsRdpClientNonScriptable4
+    // interface IMsRdpClientNonScriptable5
+    // interface IMsRdpPreferredRedirectionInfo
+    // interface IMsRdpExtendedSettings
+
+struct __declspec(uuid("011c3236-4d81-4515-9143-067ab630d299"))
+IMsRdpClientTransportSettings4 : IMsRdpClientTransportSettings3
+{
+    //
+    // Raw methods provided by interface
+    //
+
+      virtual HRESULT __stdcall put_GatewayBrokeringType (
+        /*[in]*/ unsigned long _arg1 ) = 0;
+};
+
+struct __declspec(uuid("28904001-04b6-436c-a55b-0af1a0883dc9"))
+IMsRdpClient9 : IMsRdpClient8
+{
+    //
+    // Raw methods provided by interface
+    //
+
+      virtual HRESULT __stdcall get_TransportSettings4 (
+        /*[out,retval]*/ struct IMsRdpClientTransportSettings4 * * ppXportSet4 ) = 0;
+      virtual HRESULT __stdcall SyncSessionDisplaySettings ( ) = 0;
+      virtual HRESULT __stdcall UpdateSessionDisplaySettings (
+        /*[in]*/ unsigned long ulDesktopWidth,
+        /*[in]*/ unsigned long ulDesktopHeight,
+        /*[in]*/ unsigned long ulPhysicalWidth,
+        /*[in]*/ unsigned long ulPhysicalHeight,
+        /*[in]*/ unsigned long ulOrientation,
+        /*[in]*/ unsigned long ulDesktopScaleFactor,
+        /*[in]*/ unsigned long ulDeviceScaleFactor ) = 0;
+      virtual HRESULT __stdcall attachEvent (
+        /*[in]*/ BSTR eventName,
+        /*[in]*/ IDispatch * callback ) = 0;
+      virtual HRESULT __stdcall detachEvent (
+        /*[in]*/ BSTR eventName,
+        /*[in]*/ IDispatch * callback ) = 0;
+};
+
+struct __declspec(uuid("301b94ba-5d25-4a12-bffe-3b6e7a616585"))
+MsRdpClient9;
+    // [ default ] interface IMsRdpClient9
+    // interface IMsRdpClient8
     // interface IMsRdpClient7
     // interface IMsRdpClient6
     // interface IMsRdpClient5
@@ -1977,6 +2070,15 @@ IRemoteDesktopClient : IDispatch
         /*[out,retval]*/ struct IRemoteDesktopClientTouchPointer * * TouchPointer ) = 0;
       virtual HRESULT __stdcall DeleteSavedCredentials (
         /*[in]*/ BSTR serverName ) = 0;
+      virtual HRESULT __stdcall UpdateSessionDisplaySettings (
+        /*[in]*/ unsigned long width,
+        /*[in]*/ unsigned long height ) = 0;
+      virtual HRESULT __stdcall attachEvent (
+        /*[in]*/ BSTR eventName,
+        /*[in]*/ IDispatch * callback ) = 0;
+      virtual HRESULT __stdcall detachEvent (
+        /*[in]*/ BSTR eventName,
+        /*[in]*/ IDispatch * callback ) = 0;
 };
 
 } // namespace mstsc
