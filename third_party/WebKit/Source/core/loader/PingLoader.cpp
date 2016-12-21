@@ -31,6 +31,7 @@
 
 #include "core/loader/PingLoader.h"
 
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/DOMArrayBufferView.h"
 #include "core/dom/Document.h"
 #include "core/dom/SecurityContext.h"
@@ -187,7 +188,9 @@ class BeaconFormData final : public Beacon {
 };
 
 class PingLoaderImpl : public GarbageCollectedFinalized<PingLoaderImpl>,
+                       public ContextClient,
                        private WebURLLoaderClient {
+  USING_GARBAGE_COLLECTED_MIXIN(PingLoaderImpl);
   WTF_MAKE_NONCOPYABLE(PingLoaderImpl);
 
  public:
@@ -214,7 +217,6 @@ class PingLoaderImpl : public GarbageCollectedFinalized<PingLoaderImpl>,
 
   void didFailLoading(LocalFrame*);
 
-  WeakMember<LocalFrame> m_frame;
   std::unique_ptr<WebURLLoader> m_loader;
   Timer<PingLoaderImpl> m_timeout;
   String m_url;
@@ -232,7 +234,7 @@ PingLoaderImpl::PingLoaderImpl(LocalFrame* frame,
                                const AtomicString& initiator,
                                StoredCredentials credentialsAllowed,
                                bool isBeacon)
-    : m_frame(frame),
+    : ContextClient(frame),
       m_timeout(this, &PingLoaderImpl::timeout),
       m_url(request.url()),
       m_identifier(createUniqueIdentifier()),
@@ -313,9 +315,9 @@ bool PingLoaderImpl::willFollowRedirect(
   if (!CrossOriginAccessControl::handleRedirect(
           m_origin, newRequest, redirectResponse, AllowStoredCredentials,
           options, errorDescription)) {
-    if (m_frame) {
-      if (m_frame->document()) {
-        m_frame->document()->addConsoleMessage(ConsoleMessage::create(
+    if (frame()) {
+      if (frame()->document()) {
+        frame()->document()->addConsoleMessage(ConsoleMessage::create(
             JSMessageSource, ErrorMessageLevel, errorDescription));
       }
     }
@@ -331,31 +333,31 @@ bool PingLoaderImpl::willFollowRedirect(
 }
 
 void PingLoaderImpl::didReceiveResponse(const WebURLResponse& response) {
-  if (m_frame) {
+  if (frame()) {
     TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
                  InspectorResourceFinishEvent::data(m_identifier, 0, true));
     const ResourceResponse& resourceResponse = response.toResourceResponse();
     InspectorInstrumentation::didReceiveResourceResponse(
-        m_frame, m_identifier, 0, resourceResponse, 0);
-    didFailLoading(m_frame);
+        frame(), m_identifier, 0, resourceResponse, 0);
+    didFailLoading(frame());
   }
   dispose();
 }
 
 void PingLoaderImpl::didReceiveData(const char*, int) {
-  if (m_frame) {
+  if (frame()) {
     TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
                  InspectorResourceFinishEvent::data(m_identifier, 0, true));
-    didFailLoading(m_frame);
+    didFailLoading(frame());
   }
   dispose();
 }
 
 void PingLoaderImpl::didFinishLoading(double, int64_t, int64_t) {
-  if (m_frame) {
+  if (frame()) {
     TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
                  InspectorResourceFinishEvent::data(m_identifier, 0, true));
-    didFailLoading(m_frame);
+    didFailLoading(frame());
   }
   dispose();
 }
@@ -363,19 +365,19 @@ void PingLoaderImpl::didFinishLoading(double, int64_t, int64_t) {
 void PingLoaderImpl::didFail(const WebURLError& resourceError,
                              int64_t,
                              int64_t) {
-  if (m_frame) {
+  if (frame()) {
     TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
                  InspectorResourceFinishEvent::data(m_identifier, 0, true));
-    didFailLoading(m_frame);
+    didFailLoading(frame());
   }
   dispose();
 }
 
 void PingLoaderImpl::timeout(TimerBase*) {
-  if (m_frame) {
+  if (frame()) {
     TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
                  InspectorResourceFinishEvent::data(m_identifier, 0, true));
-    didFailLoading(m_frame);
+    didFailLoading(frame());
   }
   dispose();
 }
@@ -388,7 +390,7 @@ void PingLoaderImpl::didFailLoading(LocalFrame* frame) {
 }
 
 DEFINE_TRACE(PingLoaderImpl) {
-  visitor->trace(m_frame);
+  ContextClient::trace(visitor);
 }
 
 void finishPingRequestInitialization(
