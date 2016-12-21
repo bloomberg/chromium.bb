@@ -59,6 +59,9 @@ class DataReductionProxyMetricsObserver
   ObservePolicy OnHidden(
       const page_load_metrics::PageLoadTiming& timing,
       const page_load_metrics::PageLoadExtraInfo& info) override;
+  ObservePolicy FlushMetricsOnAppEnterBackground(
+      const page_load_metrics::PageLoadTiming& timing,
+      const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnComplete(const page_load_metrics::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnDomContentLoadedEventStart(

@@ -308,10 +308,11 @@ void MetricsWebContentsObserver::OnInputEvent(
 }
 
 void MetricsWebContentsObserver::FlushMetricsOnAppEnterBackground() {
-  // Signal to observers that we've been backgrounded, in cases where the
-  // FlushMetricsOnAppEnterBackground callback gets invoked before the
-  // associated WasHidden callback.
-  WasHidden();
+  // Note that, while a call to FlushMetricsOnAppEnterBackground usually
+  // indicates that the app is about to be backgrounded, there are cases where
+  // the app may not end up getting backgrounded. Thus, we should not assume
+  // anything about foreground / background state of the associated tab as part
+  // of this method call.
 
   if (committed_load_)
     committed_load_->FlushMetricsOnAppEnterBackground();

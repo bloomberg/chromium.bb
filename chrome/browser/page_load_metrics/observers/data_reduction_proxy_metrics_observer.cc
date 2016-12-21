@@ -132,6 +132,18 @@ DataReductionProxyMetricsObserver::OnHidden(
   return STOP_OBSERVING;
 }
 
+page_load_metrics::PageLoadMetricsObserver::ObservePolicy
+DataReductionProxyMetricsObserver::FlushMetricsOnAppEnterBackground(
+    const page_load_metrics::PageLoadTiming& timing,
+    const page_load_metrics::PageLoadExtraInfo& info) {
+  // FlushMetricsOnAppEnterBackground is invoked on Android in cases where the
+  // app is about to be backgrounded, as part of the Activity.onPause()
+  // flow. After this method is invoked, Chrome may be killed without further
+  // notification, so we send a pingback with data collected up to this point.
+  SendPingback(timing, info);
+  return STOP_OBSERVING;
+}
+
 void DataReductionProxyMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
