@@ -20,7 +20,7 @@ class CONTENT_EXPORT SyntheticMouseDriver : public SyntheticPointerDriver {
   void DispatchEvent(SyntheticGestureTarget* target,
                      const base::TimeTicks& timestamp) override;
 
-  int Press(float x, float y) override;
+  void Press(float x, float y, int index = 0) override;
   void Move(float x, float y, int index = 0) override;
   void Release(int index = 0) override;
 

@@ -11,58 +11,77 @@
 namespace content {
 
 SyntheticPointerAction::SyntheticPointerAction(
-    const SyntheticPointerActionParams& params)
-    : params_(params) {}
-
-SyntheticPointerAction::SyntheticPointerAction(
-    std::vector<SyntheticPointerActionParams>* param_list,
-    SyntheticPointerDriver* synthetic_pointer_driver)
-    : param_list_(param_list),
-      synthetic_pointer_driver_(synthetic_pointer_driver) {}
+    const SyntheticPointerActionListParams& params)
+    : params_(params),
+      gesture_source_type_(SyntheticGestureParams::DEFAULT_INPUT),
+      state_(UNINITIALIZED),
+      num_actions_dispatched_(0U) {}
 
 SyntheticPointerAction::~SyntheticPointerAction() {}
 
 SyntheticGesture::Result SyntheticPointerAction::ForwardInputEvents(
     const base::TimeTicks& timestamp,
     SyntheticGestureTarget* target) {
-  DCHECK(synthetic_pointer_driver_);
-  return ForwardTouchOrMouseInputEvents(timestamp, target);
+  if (state_ == UNINITIALIZED) {
+    gesture_source_type_ = params_.gesture_source_type;
+    if (gesture_source_type_ == SyntheticGestureParams::DEFAULT_INPUT)
+      gesture_source_type_ = target->GetDefaultSyntheticGestureSourceType();
+
+    if (!synthetic_pointer_driver_) {
+      synthetic_pointer_driver_ =
+          SyntheticPointerDriver::Create(gesture_source_type_);
+    }
+    state_ = RUNNING;
+  }
+
+  DCHECK_NE(gesture_source_type_, SyntheticGestureParams::DEFAULT_INPUT);
+  if (gesture_source_type_ == SyntheticGestureParams::DEFAULT_INPUT)
+    return SyntheticGesture::GESTURE_SOURCE_TYPE_NOT_IMPLEMENTED;
+
+  state_ = ForwardTouchOrMouseInputEvents(timestamp, target);
+
+  if (state_ == INVALID)
+    return POINTER_ACTION_INPUT_INVALID;
+
+  return (state_ == DONE) ? SyntheticGesture::GESTURE_FINISHED
+                          : SyntheticGesture::GESTURE_RUNNING;
 }
 
-SyntheticGesture::Result SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
+SyntheticPointerAction::GestureState
+SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
     const base::TimeTicks& timestamp,
     SyntheticGestureTarget* target) {
-  for (SyntheticPointerActionParams& params : *param_list_) {
-    if (!synthetic_pointer_driver_->UserInputCheck(params))
-      return POINTER_ACTION_INPUT_INVALID;
+  DCHECK_LT(num_actions_dispatched_, params_.params.size());
+  SyntheticPointerActionListParams::ParamList& param_list =
+      params_.params[num_actions_dispatched_];
+  for (SyntheticPointerActionParams& param : param_list) {
+    if (!synthetic_pointer_driver_->UserInputCheck(param))
+      return INVALID;
 
-    switch (params.pointer_action_type()) {
-      case SyntheticPointerActionParams::PointerActionType::PRESS: {
-        int index = synthetic_pointer_driver_->Press(params.position().x(),
-                                                     params.position().y());
-        params.set_index(index);
+    switch (param.pointer_action_type()) {
+      case SyntheticPointerActionParams::PointerActionType::PRESS:
+        synthetic_pointer_driver_->Press(param.position().x(),
+                                         param.position().y(), param.index());
         break;
-      }
       case SyntheticPointerActionParams::PointerActionType::MOVE:
-        synthetic_pointer_driver_->Move(params.position().x(),
-                                        params.position().y(), params.index());
+        synthetic_pointer_driver_->Move(param.position().x(),
+                                        param.position().y(), param.index());
         break;
       case SyntheticPointerActionParams::PointerActionType::RELEASE:
-        synthetic_pointer_driver_->Release(params.index());
-        // Only reset the index for touch pointers.
-        if (params.gesture_source_type != SyntheticGestureParams::MOUSE_INPUT)
-          params.set_index(-1);
+        synthetic_pointer_driver_->Release(param.index());
         break;
       case SyntheticPointerActionParams::PointerActionType::IDLE:
         break;
       case SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED:
-        return POINTER_ACTION_INPUT_INVALID;
-      case SyntheticPointerActionParams::PointerActionType::FINISH:
-        return GESTURE_FINISHED;
+        return INVALID;
     }
   }
   synthetic_pointer_driver_->DispatchEvent(target, timestamp);
-  return GESTURE_FINISHED;
+  num_actions_dispatched_++;
+  if (num_actions_dispatched_ == params_.params.size())
+    return DONE;
+  else
+    return RUNNING;
 }
 
 }  // namespace content

@@ -8,7 +8,7 @@
 
 #include "content/common/content_param_traits.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
-#include "content/common/input/synthetic_pointer_action_params.h"
+#include "content/common/input/synthetic_pointer_action_list_params.h"
 #include "content/common/input/synthetic_smooth_drag_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
 #include "content/common/input_messages.h"
@@ -85,9 +85,9 @@ void ParamTraits<content::SyntheticGesturePacket>::Write(base::Pickle* m,
       WriteParam(m, *content::SyntheticTapGestureParams::Cast(
           p.gesture_params()));
       break;
-    case content::SyntheticGestureParams::POINTER_ACTION:
-      WriteParam(
-          m, *content::SyntheticPointerActionParams::Cast(p.gesture_params()));
+    case content::SyntheticGestureParams::POINTER_ACTION_LIST:
+      WriteParam(m, *content::SyntheticPointerActionListParams::Cast(
+                        p.gesture_params()));
       break;
   }
 }
@@ -118,11 +118,10 @@ bool ParamTraits<content::SyntheticGesturePacket>::Read(
       gesture_params =
           ReadGestureParams<content::SyntheticTapGestureParams>(m, iter);
       break;
-    case content::SyntheticGestureParams::POINTER_ACTION: {
+    case content::SyntheticGestureParams::POINTER_ACTION_LIST:
       gesture_params =
-          ReadGestureParams<content::SyntheticPointerActionParams>(m, iter);
+          ReadGestureParams<content::SyntheticPointerActionListParams>(m, iter);
       break;
-    }
     default:
       return false;
   }
@@ -156,9 +155,10 @@ void ParamTraits<content::SyntheticGesturePacket>::Log(const param_type& p,
           *content::SyntheticTapGestureParams::Cast(p.gesture_params()),
           l);
       break;
-    case content::SyntheticGestureParams::POINTER_ACTION:
-      LogParam(*content::SyntheticPointerActionParams::Cast(p.gesture_params()),
-               l);
+    case content::SyntheticGestureParams::POINTER_ACTION_LIST:
+      LogParam(
+          *content::SyntheticPointerActionListParams::Cast(p.gesture_params()),
+          l);
       break;
   }
 }

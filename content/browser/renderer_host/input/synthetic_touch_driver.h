@@ -22,7 +22,7 @@ class CONTENT_EXPORT SyntheticTouchDriver : public SyntheticPointerDriver {
   void DispatchEvent(SyntheticGestureTarget* target,
                      const base::TimeTicks& timestamp) override;
 
-  int Press(float x, float y) override;
+  void Press(float x, float y, int index) override;
   void Move(float x, float y, int index) override;
   void Release(int index) override;
 
@@ -30,7 +30,11 @@ class CONTENT_EXPORT SyntheticTouchDriver : public SyntheticPointerDriver {
       const SyntheticPointerActionParams& params) const override;
 
  private:
+  using IndexMap = std::array<int, blink::WebTouchEvent::kTouchesLengthCap>;
+
   SyntheticWebTouchEvent touch_event_;
+  IndexMap index_map_;
+
   DISALLOW_COPY_AND_ASSIGN(SyntheticTouchDriver);
 };
 

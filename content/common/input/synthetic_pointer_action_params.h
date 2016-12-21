@@ -18,41 +18,30 @@ struct FuzzTraits;
 
 namespace content {
 
-struct CONTENT_EXPORT SyntheticPointerActionParams
-    : public SyntheticGestureParams {
+struct CONTENT_EXPORT SyntheticPointerActionParams {
  public:
   // All the pointer actions that will be dispatched together will be grouped
-  // in an array. A FINISH action will be received when we reach the end of the
-  // action sequence.
+  // in an array.
   enum class PointerActionType {
     NOT_INITIALIZED,
     PRESS,
     MOVE,
     RELEASE,
     IDLE,
-    FINISH,
-    POINTER_ACTION_TYPE_MAX = FINISH
+    POINTER_ACTION_TYPE_MAX = IDLE
   };
 
   SyntheticPointerActionParams();
-  SyntheticPointerActionParams(PointerActionType action_type,
-                               GestureSourceType source_type);
-  SyntheticPointerActionParams(const SyntheticPointerActionParams& other);
-  ~SyntheticPointerActionParams() override;
-
-  GestureType GetGestureType() const override;
-
-  static const SyntheticPointerActionParams* Cast(
-      const SyntheticGestureParams* gesture_params);
+  SyntheticPointerActionParams(PointerActionType action_type);
+  ~SyntheticPointerActionParams();
 
   void set_pointer_action_type(PointerActionType pointer_action_type) {
     pointer_action_type_ = pointer_action_type;
   }
 
   void set_index(int index) {
-    DCHECK(pointer_action_type_ != PointerActionType::FINISH);
-    // For mouse pointers, the index should always be 0.
-    DCHECK(gesture_source_type != MOUSE_INPUT || index == 0);
+    DCHECK_GE(index, 0);
+    DCHECK_LT(index, blink::WebTouchEvent::kTouchesLengthCap);
     index_ = index;
   }
 
@@ -65,9 +54,8 @@ struct CONTENT_EXPORT SyntheticPointerActionParams
   PointerActionType pointer_action_type() const { return pointer_action_type_; }
 
   int index() const {
-    DCHECK(pointer_action_type_ != PointerActionType::FINISH);
-    // For mouse pointers, the index should always be 0.
-    DCHECK(gesture_source_type != MOUSE_INPUT || index_ == 0);
+    DCHECK_GE(index_, 0);
+    DCHECK_LT(index_, blink::WebTouchEvent::kTouchesLengthCap);
     return index_;
   }
 
@@ -82,9 +70,10 @@ struct CONTENT_EXPORT SyntheticPointerActionParams
   friend struct ipc_fuzzer::FuzzTraits<content::SyntheticPointerActionParams>;
 
   PointerActionType pointer_action_type_;
-  // Pass a position value when sending a press or move action.
+  // The position of the pointer, where it presses or moves to.
   gfx::PointF position_;
-  // Pass an index value except if the pointer_action_type_ is PROCESS.
+  // The index of the pointer in the pointer action sequence passed from the
+  // user API.
   int index_;
 };
 

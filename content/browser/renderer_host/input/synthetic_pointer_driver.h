@@ -28,7 +28,7 @@ class CONTENT_EXPORT SyntheticPointerDriver {
   virtual void DispatchEvent(SyntheticGestureTarget* target,
                              const base::TimeTicks& timestamp) = 0;
 
-  virtual int Press(float x, float y) = 0;
+  virtual void Press(float x, float y, int index = 0) = 0;
   virtual void Move(float x, float y, int index = 0) = 0;
   virtual void Release(int index = 0) = 0;
 

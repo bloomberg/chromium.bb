@@ -18,11 +18,11 @@ void SyntheticMouseDriver::DispatchEvent(SyntheticGestureTarget* target,
   target->DispatchInputEventToPlatform(mouse_event_);
 }
 
-int SyntheticMouseDriver::Press(float x, float y) {
+void SyntheticMouseDriver::Press(float x, float y, int index) {
+  DCHECK_EQ(index, 0);
   mouse_event_ = SyntheticWebMouseEventBuilder::Build(
       blink::WebInputEvent::MouseDown, x, y, 0);
   mouse_event_.clickCount = 1;
-  return 0;
 }
 
 void SyntheticMouseDriver::Move(float x, float y, int index) {
@@ -44,7 +44,7 @@ void SyntheticMouseDriver::Release(int index) {
 
 bool SyntheticMouseDriver::UserInputCheck(
     const SyntheticPointerActionParams& params) const {
-  if (params.gesture_source_type != SyntheticGestureParams::MOUSE_INPUT)
+  if (params.index() != 0)
     return false;
 
   if (params.pointer_action_type() ==

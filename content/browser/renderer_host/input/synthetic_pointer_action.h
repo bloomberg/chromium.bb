@@ -10,16 +10,15 @@
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 #include "content/browser/renderer_host/input/synthetic_pointer_driver.h"
 #include "content/common/content_export.h"
+#include "content/common/input/synthetic_pointer_action_list_params.h"
 #include "content/common/input/synthetic_pointer_action_params.h"
-
-using blink::WebTouchEvent;
 
 namespace content {
 
 class CONTENT_EXPORT SyntheticPointerAction : public SyntheticGesture {
  public:
-  SyntheticPointerAction(std::vector<SyntheticPointerActionParams>* param_list,
-                         SyntheticPointerDriver* synthetic_pointer_driver);
+  explicit SyntheticPointerAction(
+      const SyntheticPointerActionListParams& params);
   ~SyntheticPointerAction() override;
 
   SyntheticGesture::Result ForwardInputEvents(
@@ -27,23 +26,18 @@ class CONTENT_EXPORT SyntheticPointerAction : public SyntheticGesture {
       SyntheticGestureTarget* target) override;
 
  private:
-  explicit SyntheticPointerAction(const SyntheticPointerActionParams& params);
-  SyntheticGesture::Result ForwardTouchOrMouseInputEvents(
-      const base::TimeTicks& timestamp,
-      SyntheticGestureTarget* target);
+  enum GestureState { UNINITIALIZED, RUNNING, INVALID, DONE };
 
-  // SyntheticGestureController is responsible to create the
-  // SyntheticPointerActions and control when to forward them.
+  GestureState ForwardTouchOrMouseInputEvents(const base::TimeTicks& timestamp,
+                                              SyntheticGestureTarget* target);
 
-  // These two objects will be owned by SyntheticGestureController, which
-  // will manage their lifetime by initiating them when it starts processing a
-  // pointer action sequence and resetting them when it finishes.
-  // param_list_ contains a list of pointer actions which will be dispatched
-  // together.
-  std::vector<SyntheticPointerActionParams>* param_list_;
-  SyntheticPointerDriver* synthetic_pointer_driver_;
-
-  SyntheticPointerActionParams params_;
+  // params_ contains a list of lists of pointer actions, that each list of
+  // pointer actions will be dispatched together.
+  SyntheticPointerActionListParams params_;
+  std::unique_ptr<SyntheticPointerDriver> synthetic_pointer_driver_;
+  SyntheticGestureParams::GestureSourceType gesture_source_type_;
+  GestureState state_;
+  size_t num_actions_dispatched_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticPointerAction);
 };

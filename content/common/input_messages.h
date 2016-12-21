@@ -20,6 +20,7 @@
 #include "content/common/input/synthetic_gesture_packet.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"
+#include "content/common/input/synthetic_pointer_action_list_params.h"
 #include "content/common/input/synthetic_pointer_action_params.h"
 #include "content/common/input/synthetic_smooth_drag_gesture_params.h"
 #include "content/common/input/synthetic_smooth_scroll_gesture_params.h"
@@ -111,10 +112,14 @@ IPC_STRUCT_TRAITS_BEGIN(content::SyntheticTapGestureParams)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::SyntheticPointerActionParams)
-  IPC_STRUCT_TRAITS_PARENT(content::SyntheticGestureParams)
   IPC_STRUCT_TRAITS_MEMBER(pointer_action_type_)
   IPC_STRUCT_TRAITS_MEMBER(index_)
   IPC_STRUCT_TRAITS_MEMBER(position_)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::SyntheticPointerActionListParams)
+  IPC_STRUCT_TRAITS_PARENT(content::SyntheticGestureParams)
+  IPC_STRUCT_TRAITS_MEMBER(params)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::InputEventAck)

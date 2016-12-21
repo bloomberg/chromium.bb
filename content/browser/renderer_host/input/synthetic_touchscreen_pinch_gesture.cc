@@ -87,8 +87,8 @@ void SyntheticTouchscreenPinchGesture::ForwardTouchInputEvents(
 void SyntheticTouchscreenPinchGesture::PressTouchPoints(
     SyntheticGestureTarget* target,
     const base::TimeTicks& timestamp) {
-  synthetic_pointer_driver_->Press(params_.anchor.x(), start_y_0_);
-  synthetic_pointer_driver_->Press(params_.anchor.x(), start_y_1_);
+  synthetic_pointer_driver_->Press(params_.anchor.x(), start_y_0_, 0);
+  synthetic_pointer_driver_->Press(params_.anchor.x(), start_y_1_, 1);
   synthetic_pointer_driver_->DispatchEvent(target, timestamp);
 }
 

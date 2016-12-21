@@ -168,6 +168,8 @@ source_set("common") {
     "input/synthetic_gesture_params.h",
     "input/synthetic_pinch_gesture_params.cc",
     "input/synthetic_pinch_gesture_params.h",
+    "input/synthetic_pointer_action_list_params.cc",
+    "input/synthetic_pointer_action_list_params.h",
     "input/synthetic_pointer_action_params.cc",
     "input/synthetic_pointer_action_params.h",
     "input/synthetic_smooth_drag_gesture_params.cc",

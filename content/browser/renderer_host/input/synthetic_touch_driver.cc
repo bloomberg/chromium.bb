@@ -6,42 +6,51 @@
 
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
 
-using blink::WebTouchEvent;
-
 namespace content {
 
-SyntheticTouchDriver::SyntheticTouchDriver() {}
+SyntheticTouchDriver::SyntheticTouchDriver() {
+  std::fill(index_map_.begin(), index_map_.end(), -1);
+}
 
 SyntheticTouchDriver::SyntheticTouchDriver(SyntheticWebTouchEvent touch_event)
-    : touch_event_(touch_event) {}
+    : touch_event_(touch_event) {
+  std::fill(index_map_.begin(), index_map_.end(), -1);
+}
 
 SyntheticTouchDriver::~SyntheticTouchDriver() {}
 
 void SyntheticTouchDriver::DispatchEvent(SyntheticGestureTarget* target,
                                          const base::TimeTicks& timestamp) {
   touch_event_.timeStampSeconds = ConvertTimestampToSeconds(timestamp);
-  target->DispatchInputEventToPlatform(touch_event_);
+  if (touch_event_.type != blink::WebInputEvent::Undefined)
+    target->DispatchInputEventToPlatform(touch_event_);
   touch_event_.ResetPoints();
 }
 
-int SyntheticTouchDriver::Press(float x, float y) {
-  int index = touch_event_.PressPoint(x, y);
-  return index;
+void SyntheticTouchDriver::Press(float x, float y, int index) {
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, blink::WebTouchEvent::kTouchesLengthCap);
+  int touch_index = touch_event_.PressPoint(x, y);
+  index_map_[index] = touch_index;
 }
 
 void SyntheticTouchDriver::Move(float x, float y, int index) {
-  touch_event_.MovePoint(index, x, y);
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, blink::WebTouchEvent::kTouchesLengthCap);
+  touch_event_.MovePoint(index_map_[index], x, y);
 }
 
 void SyntheticTouchDriver::Release(int index) {
-  touch_event_.ReleasePoint(index);
+  DCHECK_GE(index, 0);
+  DCHECK_LT(index, blink::WebTouchEvent::kTouchesLengthCap);
+  touch_event_.ReleasePoint(index_map_[index]);
+  index_map_[index] = -1;
 }
 
 bool SyntheticTouchDriver::UserInputCheck(
     const SyntheticPointerActionParams& params) const {
-  DCHECK_GE(params.index(), -1);
-  DCHECK_LT(params.index(), WebTouchEvent::kTouchesLengthCap);
-  if (params.gesture_source_type != SyntheticGestureParams::TOUCH_INPUT)
+  if (params.index() < 0 ||
+      params.index() >= blink::WebTouchEvent::kTouchesLengthCap)
     return false;
 
   if (params.pointer_action_type() ==
@@ -51,19 +60,19 @@ bool SyntheticTouchDriver::UserInputCheck(
 
   if (params.pointer_action_type() ==
           SyntheticPointerActionParams::PointerActionType::PRESS &&
-      params.index() >= 0) {
+      index_map_[params.index()] >= 0) {
     return false;
   }
 
   if (params.pointer_action_type() ==
           SyntheticPointerActionParams::PointerActionType::MOVE &&
-      params.index() == -1) {
+      index_map_[params.index()] == -1) {
     return false;
   }
 
   if (params.pointer_action_type() ==
           SyntheticPointerActionParams::PointerActionType::RELEASE &&
-      params.index() == -1) {
+      index_map_[params.index()] == -1) {
     return false;
   }
 
