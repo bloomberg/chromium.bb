@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/core/crypto/crypto_framer.h"
 #include "net/quic/core/crypto/crypto_handshake.h"
@@ -23,6 +22,7 @@
 #include "net/quic/test_tools/quic_connection_peer.h"
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/tools/quic/quic_per_connection_packet_writer.h"
+#include "third_party/boringssl/src/include/openssl/sha.h"
 
 using base::StringPiece;
 using std::string;
@@ -98,11 +98,18 @@ QuicFlagSaver::~QuicFlagSaver() {
 #undef QUIC_FLAG
 }
 
+string Sha1Hash(StringPiece data) {
+  char buffer[SHA_DIGEST_LENGTH];
+  SHA1(reinterpret_cast<const uint8_t*>(data.data()), data.size(),
+       reinterpret_cast<uint8_t*>(buffer));
+  return string(buffer, arraysize(buffer));
+}
+
 uint64_t SimpleRandom::RandUint64() {
-  unsigned char hash[base::kSHA1Length];
-  base::SHA1HashBytes(reinterpret_cast<unsigned char*>(&seed_), sizeof(seed_),
-                      hash);
-  memcpy(&seed_, hash, sizeof(seed_));
+  string hash =
+      Sha1Hash(StringPiece(reinterpret_cast<char*>(&seed_), sizeof(seed_)));
+  DCHECK_EQ(static_cast<size_t>(SHA_DIGEST_LENGTH), hash.length());
+  memcpy(&seed_, hash.data(), sizeof(seed_));
   return seed_;
 }
 

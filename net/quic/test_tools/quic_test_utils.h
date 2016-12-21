@@ -216,6 +216,9 @@ class QuicFlagSaver {
   ~QuicFlagSaver();
 };
 
+// Compute SHA-1 hash of the supplied std::string.
+std::string Sha1Hash(base::StringPiece data);
+
 // Simple random number generator used to compute random numbers suitable
 // for pseudo-randomly dropping packets in tests.  It works by computing
 // the sha1 hash of the current seed, and using the first 64 bits as
