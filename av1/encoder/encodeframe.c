@@ -5774,13 +5774,8 @@ static void predict_b_extend(const AV1_COMP *const cpi, ThreadData *td,
 #endif  // CONFIG_EXT_INTER
                      mi_row_pred, mi_col_pred, bsize_pred, b_sub8x8, block);
 
-  if (!dry_run && !bextend) {
-#if CONFIG_SUPERTX
+  if (!dry_run && !bextend)
     update_stats(&cpi->common, td, mi_row_pred, mi_col_pred, 1);
-#else
-    update_stats(&cpi->common, td, mi_row_pred, mi_col_pred);
-#endif
-  }
 }
 
 static void extend_dir(const AV1_COMP *const cpi, ThreadData *td,
