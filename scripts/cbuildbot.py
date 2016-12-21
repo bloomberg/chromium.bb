@@ -525,7 +525,14 @@ def _CreateParser():
                           help=('Args passed directly to the bootstrap re-exec '
                                 'to skip verification by the bootstrap code'))
   group.add_remote_option('--buildbot', dest='buildbot', action='store_true',
-                          default=False, help='This is running on a buildbot')
+                          default=False,
+                          help='This is running on a buildbot. '
+                               'This can be used to make a build operate '
+                               'like an official builder, e.g. generate '
+                               'new version numbers and archive official '
+                               'artifacts and such. This should only be '
+                               'used if you are confident in what you are '
+                               'doing, as it will make automated commits.')
   parser.add_remote_option('--repo-cache', type='path',
                            help='Directory from which to copy a repo checkout '
                                 'if our build root is empty, to avoid '
