@@ -426,27 +426,13 @@ void StyleEngine::createResolver() {
   m_resolver->setRuleUsageTracker(m_tracker);
 }
 
-void StyleEngine::clearResolver() {
+void StyleEngine::clearResolvers() {
   DCHECK(!document().inStyleRecalc());
   DCHECK(isMaster() || !m_resolver);
 
   document().clearScopedStyleResolver();
-  // TODO(rune@opera.com): The clearing of all shadow tree scoped style
-  // resolvers below should not be necessary. It was introduced to fix a crash
-  // bug (https://crbug.com/447976) when clearResolver is called from didDetach
-  // on document destruction. That was pre-oilpan, and removing the for-loop
-  // below does not re-introduce that crash. If m_activeTreeScopes keeps too
-  // much memory alive after detach, we should probably clear m_activeTreeScopes
-  // in didDetach instead.
-  //
-  // The current code will clear too much if clearResolver is called from
-  // clearMasterResolver as a result of a Reconstruct in
-  // DocumentStyleSheetCollection. Such a reconstruct should not necessarily
-  // affect scoped resolvers from shadow trees at all.
   for (TreeScope* treeScope : m_activeTreeScopes)
     treeScope->clearScopedStyleResolver();
-
-  m_treeBoundaryCrossingScopes.clear();
 
   if (m_resolver) {
     TRACE_EVENT1("blink", "StyleEngine::clearResolver", "frame",
@@ -457,8 +443,11 @@ void StyleEngine::clearResolver() {
 }
 
 void StyleEngine::didDetach() {
+  clearResolvers();
   m_globalRuleSet.dispose();
-  clearResolver();
+  m_treeBoundaryCrossingScopes.clear();
+  m_dirtyTreeScopes.clear();
+  m_activeTreeScopes.clear();
   m_viewportResolver = nullptr;
   m_mediaQueryEvaluator = nullptr;
   clearFontCache();

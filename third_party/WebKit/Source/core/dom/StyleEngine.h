@@ -187,7 +187,6 @@ class CORE_EXPORT StyleEngine final
   }
 
   bool hasResolver() const { return m_resolver; }
-  void clearResolver();
 
   StyleInvalidator& styleInvalidator() { return m_styleInvalidator; }
   bool mediaQueryAffectedByViewportChange();
@@ -287,6 +286,7 @@ class CORE_EXPORT StyleEngine final
   }
 
   void createResolver();
+  void clearResolvers();
 
   CSSStyleSheet* parseSheet(Element&,
                             const String& text,
