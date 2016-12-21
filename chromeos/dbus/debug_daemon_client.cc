@@ -22,9 +22,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_util.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 #include "chromeos/dbus/pipe_reader.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -55,9 +54,9 @@ void EmptyStopAgentTracingCallbackBody(
 class PipeReaderWrapper : public base::SupportsWeakPtr<PipeReaderWrapper> {
  public:
   explicit PipeReaderWrapper(const DebugDaemonClient::GetLogsCallback& callback)
-      : task_runner_(
-            base::WorkerPool::GetTaskRunner(true /** tasks_are_slow */)),
-        pipe_reader_(task_runner_,
+      : pipe_reader_(base::CreateTaskRunnerWithTraits(
+                         base::TaskTraits().MayBlock().WithShutdownBehavior(
+                             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)),
                      base::Bind(&PipeReaderWrapper::OnIOComplete, AsWeakPtr())),
         callback_(callback) {}
 
@@ -93,7 +92,6 @@ class PipeReaderWrapper : public base::SupportsWeakPtr<PipeReaderWrapper> {
   void TerminateStream() { pipe_reader_.OnDataReady(-1); }
 
  private:
-  scoped_refptr<base::TaskRunner> task_runner_;
   PipeReaderForString pipe_reader_;
   DebugDaemonClient::GetLogsCallback callback_;
 
