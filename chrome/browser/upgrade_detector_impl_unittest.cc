@@ -7,11 +7,13 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TestUpgradeDetectorImpl : public UpgradeDetectorImpl {
@@ -88,6 +90,10 @@ TEST(UpgradeDetectorImplTest, VariationsChanges) {
   EXPECT_EQ(chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
             notifications_listener.notifications_received().front());
   EXPECT_EQ(0, detector.trigger_critical_update_call_count());
+
+  // Execute tasks sent to FILE thread by |detector| referencing it
+  // while it's still in scope.
+  content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
 }
 
 TEST(UpgradeDetectorImplTest, VariationsCriticalChanges) {
@@ -109,4 +115,8 @@ TEST(UpgradeDetectorImplTest, VariationsCriticalChanges) {
   EXPECT_EQ(chrome::NOTIFICATION_UPGRADE_RECOMMENDED,
             notifications_listener.notifications_received().front());
   EXPECT_EQ(1, detector.trigger_critical_update_call_count());
+
+  // Execute tasks sent to FILE thread by |detector| referencing it
+  // while it's still in scope.
+  content::RunAllPendingInMessageLoop(content::BrowserThread::FILE);
 }
