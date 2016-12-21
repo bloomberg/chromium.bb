@@ -40,8 +40,6 @@ class HttpEquiv {
   static void processHttpEquivSetCookie(Document&,
                                         const AtomicString& content,
                                         Element*);
-  static void processHttpEquivXFrameOptions(Document&,
-                                            const AtomicString& content);
   static void processHttpEquivContentSecurityPolicy(
       Document&,
       const AtomicString& equiv,

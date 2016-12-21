@@ -1,4 +1,4 @@
-CONSOLE ERROR: Refused to display 'http://localhost:8000/security/XFrameOptions/resources/x-frame-options-multiple-headers-sameorigin.cgi' in a frame because it set 'X-Frame-Options' to 'SAMEORIGIN, SAMEORIGIN'.
+CONSOLE ERROR: Refused to display 'http://localhost:8000/security/XFrameOptions/resources/x-frame-options-multiple-headers-sameorigin.cgi' in a frame because it set 'X-Frame-Options' to 'sameorigin'.
 CONSOLE MESSAGE: line 16: PASS: Access to contentWindow.location.href threw an exception.
 The frame below should not load, proving that 'sameorigin, sameorigin' === 'sameorigin'.
 

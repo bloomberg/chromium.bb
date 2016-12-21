@@ -597,6 +597,8 @@ source_set("browser") {
     "find_request_manager.cc",
     "find_request_manager.h",
     "font_list_async.cc",
+    "frame_host/ancestor_throttle.cc",
+    "frame_host/ancestor_throttle.h",
     "frame_host/cross_process_frame_connector.cc",
     "frame_host/cross_process_frame_connector.h",
     "frame_host/debug_urls.cc",

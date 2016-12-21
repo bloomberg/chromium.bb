@@ -118,6 +118,9 @@ class PLATFORM_EXPORT ResourceError final {
 
   void setIsCacheMiss(bool isCacheMiss) { m_isCacheMiss = isCacheMiss; }
   bool isCacheMiss() const { return m_isCacheMiss; }
+  bool wasBlockedByResponse() const {
+    return m_errorCode == net::ERR_BLOCKED_BY_RESPONSE;
+  }
 
   void setShouldCollapseInitiator(bool shouldCollapseInitiator) {
     m_shouldCollapseInitiator = shouldCollapseInitiator;

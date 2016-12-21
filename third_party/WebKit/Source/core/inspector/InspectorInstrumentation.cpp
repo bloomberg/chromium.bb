@@ -139,11 +139,11 @@ void didReceiveResourceResponseButCanceled(LocalFrame* frame,
   didReceiveResourceResponse(frame, identifier, loader, r, resource);
 }
 
-void continueAfterXFrameOptionsDenied(LocalFrame* frame,
-                                      DocumentLoader* loader,
-                                      unsigned long identifier,
-                                      const ResourceResponse& r,
-                                      Resource* resource) {
+void canceledAfterReceivedResourceResponse(LocalFrame* frame,
+                                           DocumentLoader* loader,
+                                           unsigned long identifier,
+                                           const ResourceResponse& r,
+                                           Resource* resource) {
   didReceiveResourceResponseButCanceled(frame, loader, identifier, r, resource);
 }
 

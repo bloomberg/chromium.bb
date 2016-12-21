@@ -112,7 +112,7 @@ DocumentLoader::DocumentLoader(LocalFrame* frame,
       m_documentLoadTiming(*this),
       m_timeOfLastDataReceived(0.0),
       m_applicationCacheHost(ApplicationCacheHost::create(this)),
-      m_wasBlockedAfterXFrameOptionsOrCSP(false),
+      m_wasBlockedAfterCSP(false),
       m_state(NotStarted),
       m_inDataReceived(false),
       m_dataBuffer(SharedBuffer::create()) {
@@ -286,6 +286,13 @@ void DocumentLoader::notifyFinished(Resource* resource) {
   if (m_applicationCacheHost)
     m_applicationCacheHost->failedLoadingMainResource();
   m_state = MainResourceDone;
+
+  if (m_mainResource->resourceError().wasBlockedByResponse()) {
+    InspectorInstrumentation::canceledAfterReceivedResourceResponse(
+        m_frame, this, mainResourceIdentifier(), resource->response(),
+        m_mainResource.get());
+  }
+
   frameLoader()->loadFailed(this, m_mainResource->resourceError());
   clearMainResourceHandle();
 }
@@ -402,12 +409,12 @@ bool DocumentLoader::shouldContinueForResponse() const {
   return true;
 }
 
-void DocumentLoader::cancelLoadAfterXFrameOptionsOrCSPDenied(
+void DocumentLoader::cancelLoadAfterCSPDenied(
     const ResourceResponse& response) {
-  InspectorInstrumentation::continueAfterXFrameOptionsDenied(
+  InspectorInstrumentation::canceledAfterReceivedResourceResponse(
       m_frame, this, mainResourceIdentifier(), response, m_mainResource.get());
 
-  setWasBlockedAfterXFrameOptionsOrCSP();
+  setWasBlockedAfterCSP();
 
   // Pretend that this was an empty HTTP 200 response.  Don't reuse the original
   // URL for the empty page (https://crbug.com/622385).
@@ -449,32 +456,8 @@ void DocumentLoader::responseReceived(
   m_contentSecurityPolicy->didReceiveHeaders(
       ContentSecurityPolicyResponseHeaders(response));
   if (!m_contentSecurityPolicy->allowAncestors(m_frame, response.url())) {
-    cancelLoadAfterXFrameOptionsOrCSPDenied(response);
+    cancelLoadAfterCSPDenied(response);
     return;
-  }
-
-  // 'frame-ancestors' obviates 'x-frame-options':
-  // https://w3c.github.io/webappsec/specs/content-security-policy/#frame-ancestors-and-frame-options
-  if (!m_contentSecurityPolicy->isFrameAncestorsEnforced()) {
-    HTTPHeaderMap::const_iterator it =
-        response.httpHeaderFields().find(HTTPNames::X_Frame_Options);
-    if (it != response.httpHeaderFields().end()) {
-      String content = it->value;
-      if (frameLoader()->shouldInterruptLoadForXFrameOptions(
-              content, response.url(), mainResourceIdentifier())) {
-        String message = "Refused to display '" +
-                         response.url().elidedString() +
-                         "' in a frame because it set 'X-Frame-Options' to '" +
-                         content + "'.";
-        ConsoleMessage* consoleMessage = ConsoleMessage::createForRequest(
-            SecurityMessageSource, ErrorMessageLevel, message, response.url(),
-            mainResourceIdentifier());
-        frame()->document()->addConsoleMessage(consoleMessage);
-
-        cancelLoadAfterXFrameOptionsOrCSPDenied(response);
-        return;
-      }
-    }
   }
 
   if (RuntimeEnabledFeatures::embedderCSPEnforcementEnabled() &&
@@ -501,7 +484,7 @@ void DocumentLoader::responseReceived(
             SecurityMessageSource, ErrorMessageLevel, message, response.url(),
             mainResourceIdentifier());
         frame()->document()->addConsoleMessage(consoleMessage);
-        cancelLoadAfterXFrameOptionsOrCSPDenied(response);
+        cancelLoadAfterCSPDenied(response);
         return;
       }
     }

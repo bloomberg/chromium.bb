@@ -47,11 +47,11 @@ CORE_EXPORT void asyncTaskScheduled(ExecutionContext*,
                                     bool recurring);
 CORE_EXPORT void asyncTaskCanceled(ExecutionContext*, void*);
 CORE_EXPORT void allAsyncTasksCanceled(ExecutionContext*);
-CORE_EXPORT void continueAfterXFrameOptionsDenied(LocalFrame*,
-                                                  DocumentLoader*,
-                                                  unsigned long identifier,
-                                                  const ResourceResponse&,
-                                                  Resource*);
+CORE_EXPORT void canceledAfterReceivedResourceResponse(LocalFrame*,
+                                                       DocumentLoader*,
+                                                       unsigned long identifier,
+                                                       const ResourceResponse&,
+                                                       Resource*);
 CORE_EXPORT void continueWithPolicyIgnore(LocalFrame*,
                                           DocumentLoader*,
                                           unsigned long identifier,

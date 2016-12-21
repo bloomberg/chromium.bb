@@ -58,14 +58,6 @@ enum ContentTypeOptionsDisposition {
   ContentTypeOptionsNosniff
 };
 
-enum XFrameOptionsDisposition {
-  XFrameOptionsInvalid,
-  XFrameOptionsDeny,
-  XFrameOptionsSameOrigin,
-  XFrameOptionsAllowAll,
-  XFrameOptionsConflict
-};
-
 // Be sure to update the behavior of
 // XSSAuditor::combineXSSProtectionHeaderAndCSP whenever you change this enum's
 // content or ordering.
@@ -135,8 +127,6 @@ parseXSSProtectionHeader(const String& header,
                          String& failureReason,
                          unsigned& failurePosition,
                          String& reportURL);
-PLATFORM_EXPORT XFrameOptionsDisposition
-parseXFrameOptionsHeader(const String&);
 PLATFORM_EXPORT CacheControlHeader
 parseCacheControlDirectives(const AtomicString& cacheControlHeader,
                             const AtomicString& pragmaHeader);

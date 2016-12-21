@@ -11,6 +11,7 @@
 #include "content/browser/browsing_data/clear_site_data_throttle.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
+#include "content/browser/frame_host/ancestor_throttle.h"
 #include "content/browser/frame_host/debug_urls.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigator.h"
@@ -277,7 +278,9 @@ void NavigationHandleImpl::Resume() {
 
 void NavigationHandleImpl::CancelDeferredNavigation(
     NavigationThrottle::ThrottleCheckResult result) {
-  DCHECK(state_ == DEFERRING_START || state_ == DEFERRING_REDIRECT);
+  DCHECK(state_ == DEFERRING_START ||
+         state_ == DEFERRING_REDIRECT ||
+         state_ == DEFERRING_RESPONSE);
   DCHECK(result == NavigationThrottle::CANCEL_AND_IGNORE ||
          result == NavigationThrottle::CANCEL);
   state_ = CANCELING;
@@ -585,6 +588,9 @@ NavigationHandleImpl::CheckWillStartRequest() {
         state_ = DEFERRING_START;
         next_index_ = i + 1;
         return result;
+
+      case NavigationThrottle::BLOCK_RESPONSE:
+        NOTREACHED();
     }
   }
   next_index_ = 0;
@@ -615,6 +621,7 @@ NavigationHandleImpl::CheckWillRedirectRequest() {
         return result;
 
       case NavigationThrottle::BLOCK_REQUEST:
+      case NavigationThrottle::BLOCK_RESPONSE:
         NOTREACHED();
     }
   }
@@ -642,6 +649,7 @@ NavigationHandleImpl::CheckWillProcessResponse() {
 
       case NavigationThrottle::CANCEL:
       case NavigationThrottle::CANCEL_AND_IGNORE:
+      case NavigationThrottle::BLOCK_RESPONSE:
         state_ = CANCELING;
         return result;
 
@@ -779,6 +787,11 @@ void NavigationHandleImpl::RegisterNavigationThrottles() {
       ClearSiteDataThrottle::CreateThrottleForNavigation(this);
   if (clear_site_data_throttle)
     throttles_to_register.push_back(std::move(clear_site_data_throttle));
+
+  std::unique_ptr<content::NavigationThrottle> ancestor_throttle =
+      content::AncestorThrottle::MaybeCreateThrottleFor(this);
+  if (ancestor_throttle)
+    throttles_.push_back(std::move(ancestor_throttle));
 
   if (throttles_to_register.size() > 0) {
     throttles_.insert(throttles_.begin(), throttles_to_register.begin(),

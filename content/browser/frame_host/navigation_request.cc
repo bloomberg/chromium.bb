@@ -507,7 +507,7 @@ void NavigationRequest::OnResponseStarted(
 
 void NavigationRequest::OnRequestFailed(bool has_stale_copy_in_cache,
                                         int net_error) {
-  DCHECK(state_ == STARTED);
+  DCHECK(state_ == STARTED || state_ == RESPONSE_STARTED);
   state_ = FAILED;
   navigation_handle_->set_net_error_code(static_cast<net::Error>(net_error));
   frame_tree_node_->navigator()->FailedNavigation(
@@ -527,7 +527,8 @@ void NavigationRequest::OnRequestStarted(base::TimeTicks timestamp) {
 
 void NavigationRequest::OnStartChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
-  CHECK(result != NavigationThrottle::DEFER);
+  DCHECK(result != NavigationThrottle::DEFER);
+  DCHECK(result != NavigationThrottle::BLOCK_RESPONSE);
 
   if (on_start_checks_complete_closure_)
     on_start_checks_complete_closure_.Run();
@@ -542,6 +543,8 @@ void NavigationRequest::OnStartChecksComplete(
 
   if (result == NavigationThrottle::BLOCK_REQUEST) {
     OnRequestFailed(false, net::ERR_BLOCKED_BY_CLIENT);
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
+    // destroyed the NavigationRequest.
     return;
   }
 
@@ -620,7 +623,8 @@ void NavigationRequest::OnStartChecksComplete(
 
 void NavigationRequest::OnRedirectChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
-  CHECK(result != NavigationThrottle::DEFER);
+  DCHECK(result != NavigationThrottle::DEFER);
+  DCHECK(result != NavigationThrottle::BLOCK_RESPONSE);
 
   // Abort the request if needed. This will destroy the NavigationRequest.
   if (result == NavigationThrottle::CANCEL_AND_IGNORE ||
@@ -635,13 +639,20 @@ void NavigationRequest::OnRedirectChecksComplete(
 
 void NavigationRequest::OnWillProcessResponseChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
-  CHECK(result != NavigationThrottle::DEFER);
+  DCHECK(result != NavigationThrottle::DEFER);
 
   // Abort the request if needed. This will destroy the NavigationRequest.
   if (result == NavigationThrottle::CANCEL_AND_IGNORE ||
       result == NavigationThrottle::CANCEL) {
     // TODO(clamy): distinguish between CANCEL and CANCEL_AND_IGNORE.
     frame_tree_node_->ResetNavigationRequest(false);
+    return;
+  }
+
+  if (result == NavigationThrottle::BLOCK_RESPONSE) {
+    OnRequestFailed(false, net::ERR_BLOCKED_BY_RESPONSE);
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
+    // destroyed the NavigationRequest.
     return;
   }
 

@@ -38,6 +38,11 @@ class CONTENT_EXPORT NavigationThrottle {
     // error page for net::ERR_BLOCKED_BY_CLIENT being loaded in the frame that
     // is navigated.
     BLOCK_REQUEST,
+
+    // Blocks a navigation due to rules asserted by a response (for instance,
+    // embedding restrictions like 'X-Frame-Options'). This result will only
+    // be returned from WillProcessResponse.
+    BLOCK_RESPONSE,
   };
 
   NavigationThrottle(NavigationHandle* navigation_handle);
@@ -67,7 +72,8 @@ class CONTENT_EXPORT NavigationThrottle {
   // throttle is associated with remain alive during the duration of this
   // method. Failing to do so will result in use-after-free bugs. Should the
   // implementer need to destroy the WebContents, it should return CANCEL,
-  // CANCEL_AND_IGNORE and perform the destruction asynchronously.
+  // CANCEL_AND_IGNORE, or BLOCK_RESPONSE and perform the destruction
+  // asynchronously.
   virtual ThrottleCheckResult WillProcessResponse();
 
   // The NavigationHandle that is tracking the information related to this

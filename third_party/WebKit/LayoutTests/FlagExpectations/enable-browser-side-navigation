@@ -30,6 +30,7 @@ crbug.com/551000 http/tests/inspector/extensions-network-redirect.html [ Timeout
 crbug.com/551000 http/tests/inspector/network/network-datareceived.html [ Failure ]
 crbug.com/551000 http/tests/inspector/network/network-document-initiator.html [ Failure ]
 crbug.com/551000 http/tests/inspector/network/network-initiator.html [ Failure ]
+crbug.com/551000 http/tests/inspector/network/x-frame-options-deny.html [ Failure ]
 crbug.com/551000 http/tests/inspector/resource-har-conversion.html [ Failure ]
 crbug.com/551000 http/tests/inspector/resource-parameters-ipv6.html [ Failure Timeout ]
 crbug.com/551000 http/tests/inspector/resource-parameters.html [ Failure ]
@@ -45,6 +46,7 @@ crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/network-docum
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/network-initiator.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/resource-har-conversion.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/resource-parameters.html [ Failure ]
+crbug.com/625765 virtual/mojo-loading/http/tests/inspector/network/x-frame-options-deny.html [ Failure ]
 
 # https://crbug.com/625765: Need to solve duplicate output from
 # WebFrameTestClient::willSendRequest() that causes text failures.
@@ -53,9 +55,7 @@ crbug.com/625765 http/tests/history/post-replace-state-reload.html [ Failure ]
 crbug.com/625765 http/tests/loading/redirect-methods.html [ Crash Failure ]
 crbug.com/625765 http/tests/navigation/location-reload-after-post.php [ Failure ]
 crbug.com/625765 http/tests/security/XFrameOptions/x-frame-options-allowall.html [ Failure ]
-crbug.com/625765 http/tests/security/XFrameOptions/x-frame-options-deny.html [ Failure ]
 crbug.com/625765 http/tests/security/XFrameOptions/x-frame-options-invalid.html [ Failure ]
-crbug.com/625765 http/tests/security/XFrameOptions/x-frame-options-multiple-headers-conflict.html [ Failure ]
 crbug.com/625765 http/tests/security/XFrameOptions/x-frame-options-multiple-headers-sameorigin-allow.html [ Failure ]
 crbug.com/625765 http/tests/security/XFrameOptions/x-frame-options-none.html [ Failure ]
 crbug.com/625765 http/tests/security/XFrameOptions/x-frame-options-parent-same-origin-allow.html [ Failure ]
