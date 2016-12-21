@@ -11,6 +11,11 @@ LayoutUnit MinAndMaxContentSizes::ShrinkToFit(LayoutUnit available_size) const {
   return std::min(max_content, std::max(min_content, available_size));
 }
 
+bool MinAndMaxContentSizes::operator==(
+    const MinAndMaxContentSizes& other) const {
+  return min_content == other.min_content && max_content == other.max_content;
+}
+
 NGPhysicalSize NGLogicalSize::ConvertToPhysical(NGWritingMode mode) const {
   return mode == kHorizontalTopBottom ? NGPhysicalSize(inline_size, block_size)
                                       : NGPhysicalSize(block_size, inline_size);

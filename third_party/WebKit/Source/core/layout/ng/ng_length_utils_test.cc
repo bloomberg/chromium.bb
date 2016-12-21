@@ -122,6 +122,77 @@ TEST_F(NGLengthUtilsTest, testResolveBlockLength) {
                                LengthResolveType::kContentSize));
 }
 
+TEST_F(NGLengthUtilsTest, testComputeContentContribution) {
+  MinAndMaxContentSizes sizes;
+  sizes.min_content = LayoutUnit(30);
+  sizes.max_content = LayoutUnit(40);
+
+  MinAndMaxContentSizes expected{LayoutUnit(), LayoutUnit()};
+  style_->setLogicalWidth(Length(30, Percent));
+  EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
+
+  style_->setLogicalWidth(Length(FillAvailable));
+  EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
+
+  expected = MinAndMaxContentSizes{LayoutUnit(150), LayoutUnit(150)};
+  style_->setLogicalWidth(Length(150, Fixed));
+  EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
+
+  expected = sizes;
+  style_->setLogicalWidth(Length(Auto));
+  EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
+
+  expected = MinAndMaxContentSizes{LayoutUnit(430), LayoutUnit(440)};
+  style_->setPaddingLeft(Length(400, Fixed));
+  EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
+
+  expected = MinAndMaxContentSizes{LayoutUnit(100), LayoutUnit(100)};
+  style_->setPaddingLeft(Length(0, Fixed));
+  style_->setLogicalWidth(Length(CalculationValue::create(
+      PixelsAndPercent(100, -10), ValueRangeNonNegative)));
+  EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
+
+  expected = MinAndMaxContentSizes{LayoutUnit(30), LayoutUnit(35)};
+  style_->setLogicalWidth(Length(Auto));
+  style_->setMaxWidth(Length(35, Fixed));
+  EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
+
+  expected = MinAndMaxContentSizes{LayoutUnit(80), LayoutUnit(80)};
+  style_->setLogicalWidth(Length(50, Fixed));
+  style_->setMinWidth(Length(80, Fixed));
+  EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
+
+  expected = MinAndMaxContentSizes{LayoutUnit(150), LayoutUnit(150)};
+  style_ = ComputedStyle::create();
+  style_->setLogicalWidth(Length(100, Fixed));
+  style_->setPaddingLeft(Length(50, Fixed));
+  EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
+
+  expected = MinAndMaxContentSizes{LayoutUnit(100), LayoutUnit(100)};
+  style_->setBoxSizing(BoxSizingBorderBox);
+  EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
+
+  // Content size should never be below zero, even with box-sizing: border-box
+  // and a large padding...
+  expected = MinAndMaxContentSizes{LayoutUnit(400), LayoutUnit(400)};
+  style_->setPaddingLeft(Length(400, Fixed));
+  EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
+
+  expected.min_content = expected.max_content =
+      sizes.min_content + LayoutUnit(400);
+  style_->setLogicalWidth(Length(MinContent));
+  EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
+  style_->setLogicalWidth(Length(100, Fixed));
+  style_->setMaxWidth(Length(MaxContent));
+  // Due to padding and box-sizing, width computes to 400px and max-width to
+  // 440px, so the result is 400.
+  expected = MinAndMaxContentSizes{LayoutUnit(400), LayoutUnit(400)};
+  EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
+  expected = MinAndMaxContentSizes{LayoutUnit(40), LayoutUnit(40)};
+  style_->setPaddingLeft(Length(0, Fixed));
+  EXPECT_EQ(expected, ComputeMinAndMaxContentContribution(*style_, sizes));
+}
+
 TEST_F(NGLengthUtilsTest, testComputeInlineSizeForFragment) {
   MinAndMaxContentSizes sizes;
   sizes.min_content = LayoutUnit(30);

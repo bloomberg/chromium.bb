@@ -22,7 +22,13 @@ struct CORE_EXPORT MinAndMaxContentSizes {
   LayoutUnit min_content;
   LayoutUnit max_content;
   LayoutUnit ShrinkToFit(LayoutUnit available_size) const;
+  bool operator==(const MinAndMaxContentSizes& other) const;
 };
+
+inline std::ostream& operator<<(std::ostream& stream,
+                                const MinAndMaxContentSizes& value) {
+  return stream << "(" << value.min_content << ", " << value.max_content << ")";
+}
 
 struct NGLogicalSize {
   NGLogicalSize() {}

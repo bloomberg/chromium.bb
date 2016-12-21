@@ -35,6 +35,11 @@ enum class LengthResolveType {
 // MinAndMaxContentSizes struct to those functions.
 CORE_EXPORT bool NeedMinAndMaxContentSizes(const ComputedStyle&);
 
+// Like NeedMinAndMaxContentSizes, but for use when calling
+// ComputeMinAndMaxContentContribution.
+CORE_EXPORT bool NeedMinAndMaxContentSizesForContentContribution(
+    const ComputedStyle&);
+
 // Convert an inline-axis length to a layout unit using the given constraint
 // space.
 CORE_EXPORT LayoutUnit
@@ -51,6 +56,17 @@ CORE_EXPORT LayoutUnit ResolveBlockLength(const NGConstraintSpace&,
                                           const Length&,
                                           LayoutUnit content_size,
                                           LengthResolveType);
+
+// For the given style and min/max content sizes, computes the min and max
+// content contribution (https://drafts.csswg.org/css-sizing/#contributions).
+// This is similar to ComputeInlineSizeForFragment except that it does not
+// require a constraint space (percentage sizes as well as auto margins compute
+// to zero) and that an auto inline size resolves to the respective min/max
+// content size.
+// Also, the min/max contribution does include the inline margins as well.
+CORE_EXPORT MinAndMaxContentSizes ComputeMinAndMaxContentContribution(
+    const ComputedStyle&,
+    const WTF::Optional<MinAndMaxContentSizes>&);
 
 // Resolves the given length to a layout unit, constraining it by the min
 // logical width and max logical width properties from the ComputedStyle

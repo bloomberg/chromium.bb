@@ -5,6 +5,7 @@
 #include "core/layout/ng/ng_length_utils.h"
 
 #include "core/layout/ng/ng_constraint_space.h"
+#include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_base.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LayoutUnit.h"
@@ -26,6 +27,11 @@ bool NeedMinAndMaxContentSizes(const ComputedStyle& style) {
   return style.logicalWidth().isIntrinsic() ||
          style.logicalMinWidth().isIntrinsic() ||
          style.logicalMaxWidth().isIntrinsic();
+}
+
+bool NeedMinAndMaxContentSizesForContentContribution(
+    const ComputedStyle& style) {
+  return NeedMinAndMaxContentSizes(style) || style.logicalWidth().isAuto();
 }
 
 LayoutUnit ResolveInlineLength(
@@ -173,6 +179,52 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraint_space,
       NOTREACHED();
       return border_and_padding.BlockSum();
   }
+}
+
+MinAndMaxContentSizes ComputeMinAndMaxContentContribution(
+    const ComputedStyle& style,
+    const WTF::Optional<MinAndMaxContentSizes>& min_and_max) {
+  // Synthesize a zero-sized constraint space for passing to
+  // ResolveInlineLength.
+  NGWritingMode writing_mode = FromPlatformWritingMode(style.getWritingMode());
+  NGConstraintSpaceBuilder builder(writing_mode);
+  NGConstraintSpace* space = builder.ToConstraintSpace();
+
+  MinAndMaxContentSizes computed_sizes;
+  Length inline_size = style.logicalWidth();
+  if (inline_size.isAuto()) {
+    CHECK(min_and_max.has_value());
+    NGBoxStrut border_and_padding =
+        ComputeBorders(style) + ComputePadding(*space, style);
+    computed_sizes.min_content =
+        min_and_max->min_content + border_and_padding.InlineSum();
+    computed_sizes.max_content =
+        min_and_max->max_content + border_and_padding.InlineSum();
+  } else {
+    computed_sizes.min_content = computed_sizes.max_content =
+        ResolveInlineLength(*space, style, min_and_max, inline_size,
+                            LengthResolveType::kContentSize);
+  }
+
+  Length max_length = style.logicalMaxWidth();
+  if (!max_length.isMaxSizeNone()) {
+    LayoutUnit max = ResolveInlineLength(*space, style, min_and_max, max_length,
+                                         LengthResolveType::kMaxSize);
+    computed_sizes.min_content = std::min(computed_sizes.min_content, max);
+    computed_sizes.max_content = std::min(computed_sizes.max_content, max);
+  }
+
+  LayoutUnit min =
+      ResolveInlineLength(*space, style, min_and_max, style.logicalMinWidth(),
+                          LengthResolveType::kMinSize);
+  computed_sizes.min_content = std::max(computed_sizes.min_content, min);
+  computed_sizes.max_content = std::max(computed_sizes.max_content, min);
+
+  NGBoxStrut margins =
+      ComputeMargins(*space, style, writing_mode, style.direction());
+  computed_sizes.min_content += margins.InlineSum();
+  computed_sizes.max_content += margins.InlineSum();
+  return computed_sizes;
 }
 
 LayoutUnit ComputeInlineSizeForFragment(
