@@ -6370,7 +6370,7 @@ All users must sign out to continue.
     Manage your Android <ph name="BEGIN_LINK">&lt;a is="action-link" id="android-apps-settings-link" role="link"&gt;</ph>preferences<ph name="END_LINK">&lt;/a&gt;</ph>.
   </message>
   <message name="IDS_ARC_NOTIFICATION_TITLE" desc="Title of the first-run notification that enables Android apps.">
-    Google Play Store
+    Google Play Store (beta)
   </message>
   <message name="IDS_ARC_NOTIFICATION_MESSAGE" desc="Description message of the first-run notification that enables Android apps.">
     Over a million apps and games now available on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
