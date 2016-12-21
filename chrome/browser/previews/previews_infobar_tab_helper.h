@@ -29,11 +29,6 @@ class PreviewsInfoBarTabHelper
     displayed_preview_infobar_ = displayed;
   }
 
-  // Whether an offline preview has been shown for this page.
-  bool is_showing_offline_preview() const {
-    return is_showing_offline_preview_;
-  }
-
  private:
   friend class content::WebContentsUserData<PreviewsInfoBarTabHelper>;
   friend class PreviewsInfoBarTabHelperUnitTest;
@@ -46,9 +41,6 @@ class PreviewsInfoBarTabHelper
 
   // True if the InfoBar for a preview has been shown for the page.
   bool displayed_preview_infobar_;
-
-  // Whether an offline preview has been shown for this page.
-  bool is_showing_offline_preview_;
 
   DISALLOW_COPY_AND_ASSIGN(PreviewsInfoBarTabHelper);
 };

@@ -55,8 +55,7 @@ PreviewsInfoBarTabHelper::~PreviewsInfoBarTabHelper() {}
 PreviewsInfoBarTabHelper::PreviewsInfoBarTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      displayed_preview_infobar_(false),
-      is_showing_offline_preview_(false) {
+      displayed_preview_infobar_(false){
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 }
 
@@ -66,7 +65,6 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
   if (!navigation_handle->IsInMainFrame() ||
       !navigation_handle->HasCommitted() || navigation_handle->IsSamePage())
     return;
-  is_showing_offline_preview_ = false;
   displayed_preview_infobar_ = false;
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
@@ -82,7 +80,6 @@ void PreviewsInfoBarTabHelper::DidFinishNavigation(
         data_reduction_proxy_settings =
             DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
                 web_contents()->GetBrowserContext());
-    is_showing_offline_preview_ = true;
     PreviewsInfoBarDelegate::Create(
         web_contents(), PreviewsInfoBarDelegate::OFFLINE,
         data_reduction_proxy_settings &&
