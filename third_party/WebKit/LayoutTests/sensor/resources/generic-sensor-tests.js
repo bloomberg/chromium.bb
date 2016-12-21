@@ -291,7 +291,6 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
           return new Promise((resolve, reject) => {
             let fastSensorNotifiedCounter = 0;
             let slowSensorNotifiedCounter = 0;
-            let readingUpdatesCounter = 0;
 
             let fastSensorWrapper = new CallbackWrapper(() => {
               fastSensorNotifiedCounter++;
@@ -301,16 +300,11 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
               slowSensorNotifiedCounter++;
               if (slowSensorNotifiedCounter == 1) {
                   fastSensor.start();
-                  readingUpdatesCounter = mockSensor.reading_updates_count();
               } else if (slowSensorNotifiedCounter == 2) {
                 // By the moment slow sensor (9 Hz) is notified for the
                 // next time, the fast sensor (30 Hz) has been notified
                 // for int(30/9) = 3 times.
-                // In actual implementation updates are bound to rAF,
-                // (not to a timer) so fluctuations are possible, so we
-                // reference to the actual elapsed updates count.
-                let elapsedUpdates = mockSensor.reading_updates_count() - readingUpdatesCounter;
-                assert_equals(fastSensorNotifiedCounter, elapsedUpdates);
+                assert_equals(fastSensorNotifiedCounter, 3);
                 fastSensor.stop();
                 slowSensor.stop();
                 resolve(mockSensor);

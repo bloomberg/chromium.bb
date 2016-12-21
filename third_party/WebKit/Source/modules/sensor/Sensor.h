@@ -20,6 +20,7 @@ namespace blink {
 class ExceptionState;
 class ExecutionContext;
 class SensorReading;
+class SensorUpdateNotificationStrategy;
 
 class Sensor : public EventTargetWithInlineData,
                public ActiveScriptWrappable<Sensor>,
@@ -82,16 +83,19 @@ class Sensor : public EventTargetWithInlineData,
 
   // SensorController::Observer overrides.
   void onSensorInitialized() override;
-  void onSensorReadingChanged(double timestamp) override;
+  void onSensorReadingChanged() override;
   void onSensorError(ExceptionCode,
                      const String& sanitizedMessage,
                      const String& unsanitizedMessage) override;
+  void onSuspended() override;
 
   void onStartRequestCompleted(bool);
   void onStopRequestCompleted(bool);
 
   void startListening();
   void stopListening();
+
+  void onSensorUpdateNotification();
 
   void updateState(SensorState newState);
   void reportError(ExceptionCode = UnknownError,
@@ -107,9 +111,9 @@ class Sensor : public EventTargetWithInlineData,
   device::mojom::blink::SensorType m_type;
   SensorState m_state;
   Member<SensorProxy> m_sensorProxy;
+  std::unique_ptr<SensorUpdateNotificationStrategy> m_sensorUpdateNotifier;
   device::SensorReading m_storedData;
   SensorConfigurationPtr m_configuration;
-  double m_lastUpdateTimestamp;
 };
 
 }  // namespace blink

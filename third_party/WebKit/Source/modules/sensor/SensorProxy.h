@@ -12,6 +12,7 @@
 #include "device/generic_sensor/public/interfaces/sensor_provider.mojom-blink.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "platform/Supplementable.h"
+#include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Vector.h"
 
@@ -20,7 +21,6 @@ namespace blink {
 class SensorProviderProxy;
 class SensorReading;
 class SensorReadingFactory;
-class SensorReadingUpdater;
 
 // This class wraps 'Sensor' mojo interface and used by multiple
 // JS sensor instances of the same type (within a single frame).
@@ -38,16 +38,13 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
     // methods can be called.
     virtual void onSensorInitialized() {}
     // Platfrom sensort reading has changed.
-    // |timestamp| Reference timestamp in seconds of the moment when
-    // sensor reading was updated from the buffer.
-    // Note: |timestamp| values are only used to calculate elapsed time
-    // between shared buffer readings. These values *do not* correspond
-    // to sensor reading timestamps which are obtained on platform side.
-    virtual void onSensorReadingChanged(double timestamp) {}
+    virtual void onSensorReadingChanged() {}
     // An error has occurred.
     virtual void onSensorError(ExceptionCode,
                                const String& sanitizedMessage,
                                const String& unsanitizedMessage) {}
+    // Sensor reading change notification is suspended.
+    virtual void onSuspended() {}
   };
 
   ~SensorProxy();
@@ -61,10 +58,6 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
 
   bool isInitializing() const { return m_state == Initializing; }
   bool isInitialized() const { return m_state == Initialized; }
-
-  // Is watching new reading data (initialized, not suspended and has
-  // configurations added).
-  bool isActive() const;
 
   void addConfiguration(device::mojom::blink::SensorConfigurationPtr,
                         std::unique_ptr<Function<void(bool)>>);
@@ -86,25 +79,20 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
 
   double maximumFrequency() const { return m_maximumFrequency; }
 
-  Document* document() const { return m_document; }
-  const WTF::Vector<double>& frequenciesUsed() const {
-    return m_frequenciesUsed;
-  }
-
   DECLARE_VIRTUAL_TRACE();
 
  private:
   friend class SensorProviderProxy;
-  friend class SensorReadingUpdaterContinuous;
-  friend class SensorReadingUpdaterOnChange;
   SensorProxy(device::mojom::blink::SensorType,
               SensorProviderProxy*,
-              Document*,
+              Page*,
               std::unique_ptr<SensorReadingFactory>);
+  // Returns true if this instance is using polling timer to
+  // periodically fetch reading data from shared buffer.
+  bool usesPollingTimer() const;
 
   // Updates sensor reading from shared buffer.
   void updateSensorReading();
-  void notifySensorChanged(double timestamp);
 
   // device::mojom::blink::SensorClient overrides.
   void RaiseError() override;
@@ -128,7 +116,8 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   void onRemoveConfigurationCompleted(double frequency, bool result);
 
   bool tryReadFromBuffer(device::SensorReading& result);
-  void onAnimationFrame(double timestamp);
+  void updatePollingStatus();
+  void onTimerFired(TimerBase*);
 
   device::mojom::blink::SensorType m_type;
   device::mojom::blink::ReportingMode m_mode;
@@ -145,14 +134,13 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
   mojo::ScopedSharedBufferHandle m_sharedBufferHandle;
   mojo::ScopedSharedBufferMapping m_sharedBuffer;
   bool m_suspended;
-  Member<Document> m_document;
   Member<SensorReading> m_reading;
   std::unique_ptr<SensorReadingFactory> m_readingFactory;
   double m_maximumFrequency;
 
-  Member<SensorReadingUpdater> m_readingUpdater;
+  // Used for continious reporting mode.
+  Timer<SensorProxy> m_timer;
   WTF::Vector<double> m_frequenciesUsed;
-  double m_lastRafTimestamp;
 
   using ReadingBuffer = device::SensorReadingSharedBuffer;
   static_assert(

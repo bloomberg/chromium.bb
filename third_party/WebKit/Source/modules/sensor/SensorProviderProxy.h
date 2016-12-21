@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class Document;
+class Page;
 class SensorProxy;
 class SensorReadingFactory;
 
@@ -31,7 +31,7 @@ class SensorProviderProxy final
   ~SensorProviderProxy();
 
   SensorProxy* createSensorProxy(device::mojom::blink::SensorType,
-                                 Document*,
+                                 Page*,
                                  std::unique_ptr<SensorReadingFactory>);
 
   SensorProxy* getSensorProxy(device::mojom::blink::SensorType);

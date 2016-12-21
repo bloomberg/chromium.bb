@@ -13,6 +13,7 @@
 #include "modules/sensor/SensorErrorEvent.h"
 #include "modules/sensor/SensorProviderProxy.h"
 #include "modules/sensor/SensorReading.h"
+#include "modules/sensor/SensorUpdateNotificationStrategy.h"
 
 using namespace device::mojom::blink;
 
@@ -25,8 +26,7 @@ Sensor::Sensor(ExecutionContext* executionContext,
     : ContextLifecycleObserver(executionContext),
       m_sensorOptions(sensorOptions),
       m_type(type),
-      m_state(Sensor::SensorState::Idle),
-      m_lastUpdateTimestamp(0.0) {
+      m_state(Sensor::SensorState::Idle) {
   // Check secure context.
   String errorMessage;
   if (!executionContext->isSecureContext(errorMessage)) {
@@ -77,7 +77,7 @@ void Sensor::start(ScriptState* scriptState, ExceptionState& exceptionState) {
         InvalidStateError, "The Sensor is no longer associated to a frame.");
     return;
   }
-  m_lastUpdateTimestamp = WTF::monotonicallyIncreasingTime();
+
   startListening();
 }
 
@@ -164,7 +164,7 @@ void Sensor::initSensorProxyIfNeeded() {
   m_sensorProxy = provider->getSensorProxy(m_type);
 
   if (!m_sensorProxy) {
-    m_sensorProxy = provider->createSensorProxy(m_type, document,
+    m_sensorProxy = provider->createSensorProxy(m_type, document->page(),
                                                 createSensorReadingFactory());
   }
 }
@@ -182,15 +182,10 @@ void Sensor::onSensorInitialized() {
   startListening();
 }
 
-void Sensor::onSensorReadingChanged(double timestamp) {
-  if (m_state != Sensor::SensorState::Activated)
-    return;
-
-  DCHECK_GT(m_configuration->frequency, 0.0);
-  double period = 1 / m_configuration->frequency;
-  if (timestamp - m_lastUpdateTimestamp >= period) {
-    m_lastUpdateTimestamp = timestamp;
-    notifySensorReadingChanged();
+void Sensor::onSensorReadingChanged() {
+  if (m_state == Sensor::SensorState::Activated) {
+    DCHECK(m_sensorUpdateNotifier);
+    m_sensorUpdateNotifier->onSensorReadingChanged();
   }
 }
 
@@ -198,6 +193,8 @@ void Sensor::onSensorError(ExceptionCode code,
                            const String& sanitizedMessage,
                            const String& unsanitizedMessage) {
   reportError(code, sanitizedMessage, unsanitizedMessage);
+  if (m_sensorUpdateNotifier)
+    m_sensorUpdateNotifier->cancelPendingNotifications();
 }
 
 void Sensor::onStartRequestCompleted(bool result) {
@@ -211,6 +208,13 @@ void Sensor::onStartRequestCompleted(bool result) {
     return;
   }
 
+  DCHECK(m_configuration);
+  DCHECK(m_sensorProxy);
+  auto updateCallback =
+      WTF::bind(&Sensor::onSensorUpdateNotification, wrapWeakPersistent(this));
+  DCHECK_GT(m_configuration->frequency, 0);
+  m_sensorUpdateNotifier = SensorUpdateNotificationStrategy::create(
+      m_configuration->frequency, std::move(updateCallback));
   updateState(Sensor::SensorState::Activated);
 }
 
@@ -241,11 +245,33 @@ void Sensor::stopListening() {
   DCHECK(m_sensorProxy);
   updateState(Sensor::SensorState::Idle);
 
+  if (m_sensorUpdateNotifier)
+    m_sensorUpdateNotifier->cancelPendingNotifications();
+
   if (m_sensorProxy->isInitialized()) {
     DCHECK(m_configuration);
     m_sensorProxy->removeConfiguration(m_configuration->Clone());
   }
   m_sensorProxy->removeObserver(this);
+}
+
+void Sensor::onSensorUpdateNotification() {
+  if (m_state != Sensor::SensorState::Activated)
+    return;
+
+  DCHECK(m_sensorProxy);
+  DCHECK(m_sensorProxy->isInitialized());
+  DCHECK(m_sensorProxy->sensorReading());
+
+  if (getExecutionContext() &&
+      m_sensorProxy->sensorReading()->isReadingUpdated(m_storedData)) {
+    getExecutionContext()->postTask(
+        TaskType::Sensor, BLINK_FROM_HERE,
+        createSameThreadTask(&Sensor::notifySensorReadingChanged,
+                             wrapWeakPersistent(this)));
+  }
+
+  m_storedData = m_sensorProxy->sensorReading()->data();
 }
 
 void Sensor::updateState(Sensor::SensorState newState) {
@@ -254,10 +280,6 @@ void Sensor::updateState(Sensor::SensorState newState) {
 
   if (newState == SensorState::Activated && getExecutionContext()) {
     DCHECK_EQ(SensorState::Activating, m_state);
-    // The initial value for m_lastUpdateTimestamp is set to current time,
-    // so that the first reading update will be notified considering the given
-    // frequency hint.
-    m_lastUpdateTimestamp = WTF::monotonicallyIncreasingTime();
     getExecutionContext()->postTask(
         TaskType::Sensor, BLINK_FROM_HERE,
         createSameThreadTask(&Sensor::notifyOnActivate,
@@ -281,14 +303,13 @@ void Sensor::reportError(ExceptionCode code,
   }
 }
 
-void Sensor::notifySensorReadingChanged() {
-  DCHECK(m_sensorProxy);
-  DCHECK(m_sensorProxy->sensorReading());
+void Sensor::onSuspended() {
+  if (m_sensorUpdateNotifier)
+    m_sensorUpdateNotifier->cancelPendingNotifications();
+}
 
-  if (m_sensorProxy->sensorReading()->isReadingUpdated(m_storedData)) {
-    m_storedData = m_sensorProxy->sensorReading()->data();
-    dispatchEvent(Event::create(EventTypeNames::change));
-  }
+void Sensor::notifySensorReadingChanged() {
+  dispatchEvent(Event::create(EventTypeNames::change));
 }
 
 void Sensor::notifyOnActivate() {
