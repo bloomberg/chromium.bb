@@ -317,7 +317,7 @@ static bool isIntersectionOrEnclosureTarget(LayoutObject* layoutObject) {
 bool SVGSVGElement::checkIntersectionOrEnclosure(
     const SVGElement& element,
     const FloatRect& rect,
-    CheckIntersectionOrEnclosure mode) const {
+    GeometryMatchingMode mode) const {
   LayoutObject* layoutObject = element.layoutObject();
   ASSERT(!layoutObject || layoutObject->style());
   if (!layoutObject ||
@@ -351,7 +351,7 @@ bool SVGSVGElement::checkIntersectionOrEnclosure(
 StaticNodeList* SVGSVGElement::collectIntersectionOrEnclosureList(
     const FloatRect& rect,
     SVGElement* referenceElement,
-    CheckIntersectionOrEnclosure mode) const {
+    GeometryMatchingMode mode) const {
   HeapVector<Member<Node>> nodes;
 
   const SVGElement* root = this;

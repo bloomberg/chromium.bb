@@ -143,15 +143,15 @@ class SVGSVGElement final : public SVGGraphicsElement,
 
   void finishParsingChildren() override;
 
-  enum CheckIntersectionOrEnclosure { CheckIntersection, CheckEnclosure };
+  enum GeometryMatchingMode { CheckIntersection, CheckEnclosure };
 
   bool checkIntersectionOrEnclosure(const SVGElement&,
                                     const FloatRect&,
-                                    CheckIntersectionOrEnclosure) const;
+                                    GeometryMatchingMode) const;
   StaticNodeList* collectIntersectionOrEnclosureList(
       const FloatRect&,
       SVGElement*,
-      CheckIntersectionOrEnclosure) const;
+      GeometryMatchingMode) const;
 
   Member<SVGAnimatedLength> m_x;
   Member<SVGAnimatedLength> m_y;
