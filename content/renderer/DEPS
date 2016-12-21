@@ -38,5 +38,6 @@ specific_include_rules = {
   ],
   "render_thread_impl_discardable_memory_browsertest\.cc": [
     "+components/discardable_memory/service",
+    "+content/browser/browser_main_loop.h",
   ],
 }

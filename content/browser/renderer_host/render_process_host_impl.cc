@@ -1304,10 +1304,11 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   // Chrome browser process only provides DiscardableSharedMemory service when
   // Chrome is not running in mus+ash.
   if (!service_manager::ServiceManagerIsRemote()) {
-    registry->AddInterface(base::Bind(
-        &discardable_memory::DiscardableSharedMemoryManager::Bind,
-        base::Unretained(discardable_memory::DiscardableSharedMemoryManager::
-                             GetInstance())));
+    discardable_memory::DiscardableSharedMemoryManager* manager =
+        BrowserMainLoop::GetInstance()->discardable_shared_memory_manager();
+    registry->AddInterface(
+        base::Bind(&discardable_memory::DiscardableSharedMemoryManager::Bind,
+                   base::Unretained(manager)));
   }
 
   GetContentClient()->browser()->ExposeInterfacesToRenderer(registry.get(),

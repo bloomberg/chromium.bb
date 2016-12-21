@@ -199,7 +199,8 @@ void Service::OnStart() {
 
   ime_server_.Init(context()->connector(), test_config_);
 
-  discardable_memory::DiscardableSharedMemoryManager::CreateInstance();
+  discardable_shared_memory_manager_ =
+      base::MakeUnique<discardable_memory::DiscardableSharedMemoryManager>();
 }
 
 bool Service::OnConnect(const service_manager::ServiceInfo& remote_info,
@@ -368,8 +369,7 @@ void Service::Create(const service_manager::Identity& remote_identity,
 void Service::Create(
     const service_manager::Identity& remote_identity,
     discardable_memory::mojom::DiscardableSharedMemoryManagerRequest request) {
-  discardable_memory::DiscardableSharedMemoryManager::GetInstance()->Bind(
-      std::move(request));
+  discardable_shared_memory_manager_->Bind(std::move(request));
 }
 
 void Service::Create(const service_manager::Identity& remote_identity,

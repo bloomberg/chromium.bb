@@ -39,6 +39,10 @@ namespace device {
 class TimeZoneMonitor;
 }
 
+namespace discardable_memory {
+class DiscardableSharedMemoryManager;
+}
+
 namespace media {
 #if defined(OS_WIN)
 class SystemMessageWindowWin;
@@ -144,6 +148,10 @@ class CONTENT_EXPORT BrowserMainLoop {
   }
   device::TimeZoneMonitor* time_zone_monitor() const {
     return time_zone_monitor_.get();
+  }
+  discardable_memory::DiscardableSharedMemoryManager*
+  discardable_shared_memory_manager() const {
+    return discardable_shared_memory_manager_.get();
   }
   midi::MidiService* midi_service() const { return midi_service_.get(); }
   base::Thread* indexed_db_thread() const { return indexed_db_thread_.get(); }
@@ -312,6 +320,8 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   std::unique_ptr<SpeechRecognitionManagerImpl> speech_recognition_manager_;
   std::unique_ptr<device::TimeZoneMonitor> time_zone_monitor_;
+  std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
+      discardable_shared_memory_manager_;
   scoped_refptr<SaveFileManager> save_file_manager_;
 
   // DO NOT add members here. Add them to the right categories above.

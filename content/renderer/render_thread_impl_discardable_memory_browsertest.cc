@@ -16,6 +16,7 @@
 #include "build/build_config.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -74,7 +75,8 @@ IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
   memory->Unlock();
 
   // Purge all unlocked memory.
-  discardable_memory::DiscardableSharedMemoryManager::GetInstance()
+  BrowserMainLoop::GetInstance()
+      ->discardable_shared_memory_manager()
       ->SetMemoryLimit(0);
 
   // Should fail as memory should have been purged.
@@ -114,7 +116,8 @@ IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
   EXPECT_TRUE(memory);
   memory.reset();
 
-  EXPECT_GE(discardable_memory::DiscardableSharedMemoryManager::GetInstance()
+  EXPECT_GE(BrowserMainLoop::GetInstance()
+                ->discardable_shared_memory_manager()
                 ->GetBytesAllocated(),
             kSize);
 
@@ -124,7 +127,8 @@ IN_PROC_BROWSER_TEST_F(RenderThreadImplDiscardableMemoryBrowserTest,
   base::TimeTicks end =
       base::TimeTicks::Now() + base::TimeDelta::FromSeconds(5);
   while (base::TimeTicks::Now() < end) {
-    if (!discardable_memory::DiscardableSharedMemoryManager::GetInstance()
+    if (!BrowserMainLoop::GetInstance()
+             ->discardable_shared_memory_manager()
              ->GetBytesAllocated())
       break;
   }

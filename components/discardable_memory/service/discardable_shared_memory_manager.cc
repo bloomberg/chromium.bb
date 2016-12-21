@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/debug/crash_logging.h"
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory.h"
 #include "base/memory/memory_coordinator_client_registry.h"
@@ -207,9 +206,6 @@ int64_t GetDefaultMemoryLimit() {
                   base::SysInfo::AmountOfPhysicalMemory() / 4);
 }
 
-base::LazyInstance<DiscardableSharedMemoryManager>
-    g_discardable_shared_memory_manager = LAZY_INSTANCE_INITIALIZER;
-
 const int kEnforceMemoryPolicyDelayMs = 1000;
 
 // Global atomic to generate unique discardable shared memory IDs.
@@ -248,19 +244,6 @@ DiscardableSharedMemoryManager::DiscardableSharedMemoryManager()
 DiscardableSharedMemoryManager::~DiscardableSharedMemoryManager() {
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
-}
-
-// static
-DiscardableSharedMemoryManager*
-DiscardableSharedMemoryManager::CreateInstance() {
-  DCHECK(g_discardable_shared_memory_manager == nullptr);
-  return g_discardable_shared_memory_manager.Pointer();
-}
-
-// static
-DiscardableSharedMemoryManager* DiscardableSharedMemoryManager::GetInstance() {
-  DCHECK(!(g_discardable_shared_memory_manager == nullptr));
-  return g_discardable_shared_memory_manager.Pointer();
 }
 
 void DiscardableSharedMemoryManager::Bind(

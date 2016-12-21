@@ -41,6 +41,10 @@
 #include "ui/ozone/public/client_native_pixmap_factory.h"
 #endif
 
+namespace discardable_memory {
+class DiscardableSharedMemoryManager;
+}
+
 namespace display {
 class ScreenManager;
 }
@@ -190,6 +194,9 @@ class Service
   std::unique_ptr<ws::TouchController> touch_controller_;
   IMERegistrarImpl ime_registrar_;
   IMEServerImpl ime_server_;
+
+  std::unique_ptr<discardable_memory::DiscardableSharedMemoryManager>
+      discardable_shared_memory_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };

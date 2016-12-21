@@ -44,12 +44,6 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
   DiscardableSharedMemoryManager();
   ~DiscardableSharedMemoryManager() override;
 
-  // Create a sigleton instance.
-  static DiscardableSharedMemoryManager* CreateInstance();
-
-  // Returns a singleton instance.
-  static DiscardableSharedMemoryManager* GetInstance();
-
   // Bind the manager to a mojo interface request.
   void Bind(mojom::DiscardableSharedMemoryManagerRequest request);
 
