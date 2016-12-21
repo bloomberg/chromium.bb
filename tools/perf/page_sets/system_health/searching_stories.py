@@ -4,10 +4,7 @@
 
 from page_sets.system_health import system_health_story
 
-from telemetry import decorators
 
-
-@decorators.Disabled('win')  # http://crbug.com/642463
 class SearchGoogleStory(system_health_story.SystemHealthStory):
   NAME = 'search:portal:google'
   URL = 'https://www.google.co.uk/'
