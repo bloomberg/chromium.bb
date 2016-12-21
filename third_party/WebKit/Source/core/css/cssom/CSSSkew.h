@@ -20,9 +20,7 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
     return new CSSSkew(ax, ay);
   }
 
-  static CSSSkew* fromCSSValue(const CSSFunctionValue& value) {
-    return nullptr;
-  }
+  static CSSSkew* fromCSSValue(const CSSFunctionValue&);
 
   // Bindings requires returning non-const pointers. This is safe because
   // CSSAngleValues are immutable.

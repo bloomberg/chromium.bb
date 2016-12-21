@@ -7,6 +7,12 @@
 
 <script>
 
+let zeroAngle = new CSSAngleValue(0, 'deg');
+
+function angleValue(value, unit) {
+  return new CSSAngleValue(value, unit);
+}
+
 function cssTransformWithRotate(angleValue) {
   return new CSSTransformValue([
       new CSSRotation(angleValue)]);
@@ -28,47 +34,73 @@ runInlineStylePropertyMapTests( {
     // Scales
     // TODO(meade)
     // Skews
-    // TODO(meade)
+    new CSSTransformValue([new CSSSkew(angleValue(30, 'deg'), zeroAngle)]),
+    new CSSTransformValue([new CSSSkew(angleValue(10, 'rad'), zeroAngle)]),
+    new CSSTransformValue([new CSSSkew(angleValue(2, 'grad'), zeroAngle)]),
+    new CSSTransformValue([new CSSSkew(angleValue(0.2, 'turn'), zeroAngle)]),
+    new CSSTransformValue([new CSSSkew(zeroAngle, angleValue(30, 'deg'))]),
+    new CSSTransformValue([new CSSSkew(zeroAngle, angleValue(10, 'rad'))]),
+    new CSSTransformValue([new CSSSkew(zeroAngle, angleValue(2, 'grad'))]),
+    new CSSTransformValue([new CSSSkew(zeroAngle, angleValue(0.2, 'turn'))]),
     // Rotations
-    cssTransformWithRotate(new CSSAngleValue(30, 'deg')),
-    cssTransformWithRotate(new CSSAngleValue(10, 'rad')),
-    cssTransformWithRotate(new CSSAngleValue(2, 'grad')),
-    cssTransformWithRotate(new CSSAngleValue(0.2, 'turn')),
-    cssTransformWithRotate3D(1, 2, 3, new CSSAngleValue(30, 'deg')),
-    cssTransformWithRotate3D(1, 2, 3, new CSSAngleValue(10, 'rad')),
-    cssTransformWithRotate3D(1, 2, 3, new CSSAngleValue(2, 'grad')),
-    cssTransformWithRotate3D(1, 2, 3, new CSSAngleValue(0.2, 'turn')),
+    cssTransformWithRotate(angleValue(30, 'deg')),
+    cssTransformWithRotate(angleValue(10, 'rad')),
+    cssTransformWithRotate(angleValue(2, 'grad')),
+    cssTransformWithRotate(angleValue(0.2, 'turn')),
+    cssTransformWithRotate3D(1, 2, 3, angleValue(30, 'deg')),
+    cssTransformWithRotate3D(1, 2, 3, angleValue(10, 'rad')),
+    cssTransformWithRotate3D(1, 2, 3, angleValue(2, 'grad')),
+    cssTransformWithRotate3D(1, 2, 3, angleValue(0.2, 'turn')),
     // Perspectives
     // TODO(meade)
   ],
   // Values with these strings aren't used in Typed OM, but can also be
   // represented by the specified values.
   validStringMappings: {
+    // Skews
+    'skew(45deg)':
+      new CSSTransformValue([new CSSSkew(angleValue(45, 'deg'), zeroAngle)]),
+    'skew(1rad)':
+      new CSSTransformValue([new CSSSkew(angleValue(1, 'rad'), zeroAngle)]),
+    'skew(6.2grad)':
+      new CSSTransformValue([new CSSSkew(angleValue(6.2, 'grad'), zeroAngle)]),
+    'skew(0.31turn)':
+      new CSSTransformValue([new CSSSkew(angleValue(0.31, 'turn'), zeroAngle)]),
+    'skewX(45deg)':
+      new CSSTransformValue([new CSSSkew(angleValue(45, 'deg'), zeroAngle)]),
+    'skewX(1rad)':
+      new CSSTransformValue([new CSSSkew(angleValue(1, 'rad'), zeroAngle)]),
+    'skewX(6.2grad)':
+      new CSSTransformValue([new CSSSkew(angleValue(6.2, 'grad'), zeroAngle)]),
+    'skewX(0.31turn)':
+      new CSSTransformValue([new CSSSkew(angleValue(0.31, 'turn'), zeroAngle)]),
+    'skewY(45deg)':
+      new CSSTransformValue([new CSSSkew(zeroAngle, angleValue(45, 'deg'))]),
+    'skewY(1rad)':
+      new CSSTransformValue([new CSSSkew(zeroAngle, angleValue(1, 'rad'))]),
+    'skewY(6.2grad)':
+      new CSSTransformValue([new CSSSkew(zeroAngle, angleValue(6.2, 'grad'))]),
+    'skewY(0.31turn)':
+      new CSSTransformValue([new CSSSkew(zeroAngle, angleValue(0.31, 'turn'))]),
     // Rotations
-    'rotateX(45deg)':
-      cssTransformWithRotate3D(1, 0, 0, new CSSAngleValue(45, 'deg')),
-    'rotateX(1rad)':
-      cssTransformWithRotate3D(1, 0, 0, new CSSAngleValue(1, 'rad')),
+    'rotateX(45deg)': cssTransformWithRotate3D(1, 0, 0, angleValue(45, 'deg')),
+    'rotateX(1rad)': cssTransformWithRotate3D(1, 0, 0, angleValue(1, 'rad')),
     'rotateX(6.2grad)':
-      cssTransformWithRotate3D(1, 0, 0, new CSSAngleValue(6.2, 'grad')),
+      cssTransformWithRotate3D(1, 0, 0, angleValue(6.2, 'grad')),
     'rotateX(0.31turn)':
-      cssTransformWithRotate3D(1, 0, 0, new CSSAngleValue(0.31, 'turn')),
-    'rotateY(45deg)':
-      cssTransformWithRotate3D(0, 1, 0, new CSSAngleValue(45, 'deg')),
-    'rotateY(1rad)':
-      cssTransformWithRotate3D(0, 1, 0, new CSSAngleValue(1, 'rad')),
+      cssTransformWithRotate3D(1, 0, 0, angleValue(0.31, 'turn')),
+    'rotateY(45deg)': cssTransformWithRotate3D(0, 1, 0, angleValue(45, 'deg')),
+    'rotateY(1rad)': cssTransformWithRotate3D(0, 1, 0, angleValue(1, 'rad')),
     'rotateY(6.2grad)':
-      cssTransformWithRotate3D(0, 1, 0, new CSSAngleValue(6.2, 'grad')),
+      cssTransformWithRotate3D(0, 1, 0, angleValue(6.2, 'grad')),
     'rotateY(0.31turn)':
-      cssTransformWithRotate3D(0, 1, 0, new CSSAngleValue(0.31, 'turn')),
-    'rotateZ(45deg)':
-      cssTransformWithRotate3D(0, 0, 1, new CSSAngleValue(45, 'deg')),
-    'rotateZ(1rad)':
-      cssTransformWithRotate3D(0, 0, 1, new CSSAngleValue(1, 'rad')),
+      cssTransformWithRotate3D(0, 1, 0, angleValue(0.31, 'turn')),
+    'rotateZ(45deg)': cssTransformWithRotate3D(0, 0, 1, angleValue(45, 'deg')),
+    'rotateZ(1rad)': cssTransformWithRotate3D(0, 0, 1, angleValue(1, 'rad')),
     'rotateZ(6.2grad)':
-      cssTransformWithRotate3D(0, 0, 1, new CSSAngleValue(6.2, 'grad')),
+      cssTransformWithRotate3D(0, 0, 1, angleValue(6.2, 'grad')),
     'rotateZ(0.31turn)':
-      cssTransformWithRotate3D(0, 0, 1, new CSSAngleValue(0.31, 'turn')),
+      cssTransformWithRotate3D(0, 0, 1, angleValue(0.31, 'turn')),
   },
   supportsMultiple: false,
   invalidObjects: [new CSSSimpleLength(4, 'px')]
@@ -96,5 +128,38 @@ test(function() {
   assert_equals(result.cssText, 'rotate3d(1, 2, 3, calc(102.296deg))');
 }, 'Getting transform when it has a rotate3d with a calc angle does not crash');
 
-</script>
+test(function() {
+  testElement.style.transform = 'skew(calc(5deg + 0.1rad))';
+  let result = testElement.styleMap.get('transform');
+  assert_equals(result.cssText, 'skew(calc(10.7296deg))');
+  assert_equals(result.constructor,  CSSStyleValue);
+}, 'Getting transform when it has a skew with a calc angle does not crash');
 
+test(function() {
+  testElement.style.transform = 'skew(calc(5deg + 0.1rad), 5deg)';
+  let result = testElement.styleMap.get('transform');
+  assert_equals(result.cssText, 'skew(calc(10.7296deg), 5deg)');
+  assert_equals(result.constructor,  CSSStyleValue);
+
+  testElement.style.transform = 'skew(5deg, calc(5deg + 0.1rad))';
+  result = testElement.styleMap.get('transform');
+  assert_equals(result.cssText, 'skew(5deg, calc(10.7296deg))');
+  assert_equals(result.constructor,  CSSStyleValue);
+}, 'Getting transform when it has a 2-argument skew with a calc angle ' +
+   'does not crash');
+
+test(function() {
+  testElement.style.transform = 'skewX(calc(5deg + 0.1rad))';
+  let result = testElement.styleMap.get('transform');
+  assert_equals(result.cssText, 'skewX(calc(10.7296deg))');
+  assert_equals(result.constructor,  CSSStyleValue);
+}, 'Getting transform when it has a skewX with a calc angle does not crash');
+
+test(function() {
+  testElement.style.transform = 'skewY(calc(5deg + 0.1rad))';
+  let result = testElement.styleMap.get('transform');
+  assert_equals(result.cssText, 'skewY(calc(10.7296deg))');
+  assert_equals(result.constructor,  CSSStyleValue);
+}, 'Getting transform when it has a skewY with a calc angle does not crash');
+
+</script>
