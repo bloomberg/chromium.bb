@@ -34,7 +34,7 @@ layer at (0,0) size 800x600
               LayoutText {#text} at (2,2) size 38x18
                 text run at (2,2) width 38: "world"
           LayoutTableRow {TR} at (0,74) size 149x40
-            LayoutTableCell {TD} at (2,77) size 145x34 [border: (1px inset #808080)] [r=3 c=0 rs=1 cs=1]
+            LayoutTableCell {TD} at (2,74) size 145x40 [border: (1px inset #808080)] [r=3 c=0 rs=1 cs=1]
               LayoutText {#text} at (0,0) size 0x0
       LayoutTable {TABLE} at (0,267) size 106x78
         LayoutTableSection {TBODY} at (0,0) size 106x78
@@ -76,6 +76,6 @@ layer at (0,0) size 800x600
                   text run at (246,0) width 121: "Definitely. Should."
 layer at (74,14) size 712x13
   LayoutBlockFlow {DIV} at (3,3) size 712x13
-layer at (14,236) size 141x30 clip at (15,237) size 139x28
-  LayoutTextControl {TEXTAREA} at (2,2) size 141x30 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
+layer at (14,233) size 141x36 clip at (15,234) size 139x34
+  LayoutTextControl {TEXTAREA} at (2,2) size 141x36 [bgcolor=#FFFFFF] [border: (1px solid #000000)]
     LayoutBlockFlow {DIV} at (3,3) size 135x13

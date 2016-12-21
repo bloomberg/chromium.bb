@@ -15,5 +15,5 @@ layer at (0,0) size 800x94
           LayoutTableRow {DIV} at (0,0) size 150x0
           LayoutTableRow (anonymous) at (0,0) size 150x18
             LayoutTableCell (anonymous) at (0,0) size 150x18 [r=2 c=0 rs=1 cs=1]
-              LayoutBlockFlow {DIV} at (0,5) size 75x9 [bgcolor=#0000FF]
-              LayoutBlockFlow {DIV} at (75,5) size 75x9 [bgcolor=#0000FF]
+              LayoutBlockFlow {DIV} at (0,14) size 75x0 [bgcolor=#0000FF]
+              LayoutBlockFlow {DIV} at (75,14) size 75x0 [bgcolor=#0000FF]
