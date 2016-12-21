@@ -344,7 +344,10 @@ cr.define('cr.ui.login', function() {
                 currentStepId) != -1) {
           chrome.send('toggleEnableDebuggingScreen');
         }
-      } else if (name == ACCELERATOR_ENROLLMENT) {
+      } else if (name == ACCELERATOR_ENROLLMENT ||
+                 name == ACCELERATOR_ENROLLMENT_AD) {
+        if (name == ACCELERATOR_ENROLLMENT_AD)
+          chrome.send('toggleEnrollmentAd');
         if (currentStepId == SCREEN_GAIA_SIGNIN ||
             currentStepId == SCREEN_ACCOUNT_PICKER) {
           chrome.send('toggleEnrollmentScreen');
@@ -353,11 +356,6 @@ cr.define('cr.ui.login', function() {
           // In this case update check will be skipped and OOBE will
           // proceed straight to enrollment screen when EULA is accepted.
           chrome.send('skipUpdateEnrollAfterEula');
-        }
-      } else if (name == ACCELERATOR_ENROLLMENT_AD) {
-        if (currentStepId == SCREEN_GAIA_SIGNIN ||
-            currentStepId == SCREEN_ACCOUNT_PICKER) {
-          chrome.send('toggleEnrollmentAd');
         }
       } else if (name == ACCELERATOR_KIOSK_ENABLE) {
         if (currentStepId == SCREEN_GAIA_SIGNIN ||

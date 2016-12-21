@@ -1216,7 +1216,6 @@ void SigninScreenHandler::HandleToggleEnrollmentAd() {
   chromeos::DBusThreadManager::Get()
       ->GetUpstartClient()
       ->StartAuthPolicyService();
-  HandleToggleEnrollmentScreen();
 }
 
 void SigninScreenHandler::HandleToggleEnableDebuggingScreen() {
