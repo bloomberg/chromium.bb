@@ -428,7 +428,10 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   ResourceRequest request;
   request.method = original_request->method();
   request.url = original_request->url();
-  request.request_initiator = original_request->initiator();
+  // TODO(horo): Set first_party_for_cookies to support Same-site Cookies.
+  request.request_initiator = original_request->initiator().has_value()
+                                  ? original_request->initiator()
+                                  : url::Origin(original_request->url());
   request.referrer = GURL(original_request->referrer());
   request.referrer_policy = original_info->GetReferrerPolicy();
   request.visibility_state = original_info->GetVisibilityState();

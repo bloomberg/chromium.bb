@@ -209,6 +209,11 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
   if (frame_entry.method() == "POST")
     request_body = frame_entry.GetPostData();
 
+  base::Optional<url::Origin> initiator =
+      frame_tree_node->IsMainFrame()
+          ? base::Optional<url::Origin>()
+          : base::Optional<url::Origin>(
+                frame_tree_node->frame_tree()->root()->current_origin());
   std::unique_ptr<NavigationRequest> navigation_request(new NavigationRequest(
       frame_tree_node, entry.ConstructCommonNavigationParams(
                            frame_entry, request_body, dest_url, dest_referrer,
@@ -216,7 +221,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
       BeginNavigationParams(entry.extra_headers(), net::LOAD_NORMAL,
                             false,  // has_user_gestures
                             false,  // skip_service_worker
-                            REQUEST_CONTEXT_TYPE_LOCATION),
+                            REQUEST_CONTEXT_TYPE_LOCATION, initiator),
       entry.ConstructRequestNavigationParams(
           frame_entry, is_same_document_history_load,
           is_history_navigation_in_new_child,
@@ -612,8 +617,8 @@ void NavigationRequest::OnStartChecksComplete(
       frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
       base::MakeUnique<NavigationRequestInfo>(
           common_params_, begin_params_, first_party_for_cookies,
-          frame_tree_node_->current_origin(), frame_tree_node_->IsMainFrame(),
-          parent_is_main_frame, IsSecureFrame(frame_tree_node_->parent()),
+          frame_tree_node_->IsMainFrame(), parent_is_main_frame,
+          IsSecureFrame(frame_tree_node_->parent()),
           frame_tree_node_->frame_tree_node_id(), is_for_guests_only,
           report_raw_headers, navigating_frame_host->GetVisibilityState()),
       std::move(navigation_ui_data),

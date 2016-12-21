@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
@@ -22,6 +23,7 @@
 #include "content/public/common/resource_response.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -146,8 +148,10 @@ struct CONTENT_EXPORT BeginNavigationParams {
                         int load_flags,
                         bool has_user_gesture,
                         bool skip_service_worker,
-                        RequestContextType request_context_type);
+                        RequestContextType request_context_type,
+                        const base::Optional<url::Origin>& initiator_origin);
   BeginNavigationParams(const BeginNavigationParams& other);
+  ~BeginNavigationParams();
 
   // Additional HTTP request headers.
   std::string headers;
@@ -167,6 +171,11 @@ struct CONTENT_EXPORT BeginNavigationParams {
   // See WebSearchableFormData for a description of these.
   GURL searchable_form_url;
   std::string searchable_form_encoding;
+
+  // Indicates the initiator of the request. In auxilliary navigations, this is
+  // the origin of the document that triggered the navigation. This parameter
+  // can be null during browser-initiated navigations.
+  base::Optional<url::Origin> initiator_origin;
 };
 
 // Provided by the browser -----------------------------------------------------

@@ -2762,6 +2762,23 @@ TEST_F(URLRequestTest, SameSiteCookies) {
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
   }
 
+  // Verify that both cookies are sent when the request has no initiator (can
+  // happen for main frame browser-initiated navigations).
+  {
+    TestDelegate d;
+    std::unique_ptr<URLRequest> req(default_context_.CreateRequest(
+        test_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d));
+    req->set_first_party_for_cookies(test_server.GetURL(kHost, "/"));
+    req->Start();
+    base::RunLoop().Run();
+
+    EXPECT_NE(std::string::npos,
+              d.data_received().find("StrictSameSiteCookie=1"));
+    EXPECT_NE(std::string::npos, d.data_received().find("LaxSameSiteCookie=1"));
+    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
+    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
+  }
+
   // Verify that both cookies are sent for same-registrable-domain requests.
   {
     TestDelegate d;

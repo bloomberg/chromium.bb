@@ -25,7 +25,6 @@ struct CONTENT_EXPORT NavigationRequestInfo {
   NavigationRequestInfo(const CommonNavigationParams& common_params,
                         const BeginNavigationParams& begin_params,
                         const GURL& first_party_for_cookies,
-                        const url::Origin& request_initiator,
                         bool is_main_frame,
                         bool parent_is_main_frame,
                         bool are_ancestors_secure,
@@ -41,9 +40,6 @@ struct CONTENT_EXPORT NavigationRequestInfo {
   // Usually the URL of the document in the top-level window, which may be
   // checked by the third-party cookie blocking policy.
   const GURL first_party_for_cookies;
-
-  // The origin of the context which initiated the request.
-  const url::Origin request_initiator;
 
   const bool is_main_frame;
   const bool parent_is_main_frame;

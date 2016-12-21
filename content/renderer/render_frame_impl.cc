@@ -6184,13 +6184,17 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
          GetRequestContextFrameTypeForWebURLRequest(info.urlRequest) ==
              REQUEST_CONTEXT_FRAME_TYPE_NESTED);
 
+  base::Optional<url::Origin> initiator_origin =
+      info.urlRequest.requestorOrigin().isNull()
+          ? base::Optional<url::Origin>()
+          : base::Optional<url::Origin>(info.urlRequest.requestorOrigin());
   BeginNavigationParams begin_navigation_params(
       GetWebURLRequestHeaders(info.urlRequest),
       GetLoadFlagsForWebURLRequest(info.urlRequest),
       info.urlRequest.hasUserGesture(),
       info.urlRequest.skipServiceWorker() !=
           blink::WebURLRequest::SkipServiceWorker::None,
-      GetRequestContextTypeForWebURLRequest(info.urlRequest));
+      GetRequestContextTypeForWebURLRequest(info.urlRequest), initiator_origin);
 
   if (!info.form.isNull()) {
     WebSearchableFormData web_searchable_form_data(info.form);

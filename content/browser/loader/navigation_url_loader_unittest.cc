@@ -107,14 +107,14 @@ class NavigationURLLoaderTest : public testing::Test {
       const GURL& url,
       NavigationURLLoaderDelegate* delegate) {
     BeginNavigationParams begin_params(std::string(), net::LOAD_NORMAL, false,
-                                       false, REQUEST_CONTEXT_TYPE_LOCATION);
+                                       false, REQUEST_CONTEXT_TYPE_LOCATION,
+                                       url::Origin(url));
     CommonNavigationParams common_params;
     common_params.url = url;
     std::unique_ptr<NavigationRequestInfo> request_info(
-        new NavigationRequestInfo(
-            common_params, begin_params, url, url::Origin(url), true, false,
-            false, -1, false, false, blink::WebPageVisibilityStateVisible));
-
+        new NavigationRequestInfo(common_params, begin_params, url, true, false,
+                                  false, -1, false, false,
+                                  blink::WebPageVisibilityStateVisible));
     return NavigationURLLoader::Create(browser_context_.get(),
                                        std::move(request_info), nullptr,
                                        nullptr, nullptr, delegate);

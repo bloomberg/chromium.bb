@@ -409,9 +409,10 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
   InitializeRenderFrameIfNeeded();
 
   if (IsBrowserSideNavigationEnabled()) {
-    BeginNavigationParams begin_params(std::string(), net::LOAD_NORMAL,
-                                       has_user_gesture, false,
-                                       REQUEST_CONTEXT_TYPE_HYPERLINK);
+    // TODO(mkwst): The initiator origin here is incorrect.
+    BeginNavigationParams begin_params(
+        std::string(), net::LOAD_NORMAL, has_user_gesture, false,
+        REQUEST_CONTEXT_TYPE_HYPERLINK, url::Origin());
     CommonNavigationParams common_params;
     common_params.url = url;
     common_params.referrer = Referrer(GURL(), blink::WebReferrerPolicyDefault);

@@ -91,15 +91,19 @@ BeginNavigationParams::BeginNavigationParams(
     int load_flags,
     bool has_user_gesture,
     bool skip_service_worker,
-    RequestContextType request_context_type)
+    RequestContextType request_context_type,
+    const base::Optional<url::Origin>& initiator_origin)
     : headers(headers),
       load_flags(load_flags),
       has_user_gesture(has_user_gesture),
       skip_service_worker(skip_service_worker),
-      request_context_type(request_context_type) {}
+      request_context_type(request_context_type),
+      initiator_origin(initiator_origin) {}
 
 BeginNavigationParams::BeginNavigationParams(
     const BeginNavigationParams& other) = default;
+
+BeginNavigationParams::~BeginNavigationParams() {}
 
 StartNavigationParams::StartNavigationParams()
     : transferred_request_child_id(-1),

@@ -139,12 +139,6 @@ crbug.com/640631 virtual/mojo-loading/http/tests/loading/text-content-type-with-
 crbug.com/647698 http/tests/loading/307-after-303-after-post.html [ Failure ]
 crbug.com/647698 virtual/mojo-loading/http/tests/loading/307-after-303-after-post.html [ Failure ]
 
-# https://crbug.com/648608: Properly set the initator of the navigation.
-crbug.com/648608 http/tests/cookies/same-site/popup-same-site-post.html [ Failure ]
-crbug.com/648608 http/tests/cookies/same-site/popup-same-site.html [ Failure ]
-crbug.com/648608 virtual/mojo-loading/http/tests/cookies/same-site/popup-same-site-post.html [ Failure ]
-crbug.com/648608 virtual/mojo-loading/http/tests/cookies/same-site/popup-same-site.html [ Failure ]
-
 # https://crbug.com/673742 Calling document.open should cancel a load
 crbug.com/673742 fast/dom/Document/open-with-pending-load.html [ Failure ]
 

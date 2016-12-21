@@ -24,6 +24,7 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -879,10 +880,23 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest, Basic) {
   // All resources loaded directly by the top-level document (including the
   // top-level document itself) should have a |first_party| and |initiator|
   // that match the URL of the top-level document.
-  for (auto* request : delegate_->data()) {
-    SCOPED_TRACE(request->url);
-    EXPECT_EQ(top_url, request->first_party);
-    EXPECT_EQ(top_origin, request->initiator);
+  // PlzNavigate: the document itself should have an empty initiator.
+  if (IsBrowserSideNavigationEnabled()) {
+    const RequestDataForDelegate* first_request = delegate_->data()[0];
+    EXPECT_EQ(top_url, first_request->first_party);
+    EXPECT_FALSE(first_request->initiator.has_value());
+    for (size_t i = 1; i < delegate_->data().size(); i++) {
+      const RequestDataForDelegate* request = delegate_->data()[i];
+      EXPECT_EQ(top_url, request->first_party);
+      ASSERT_TRUE(request->initiator.has_value());
+      EXPECT_EQ(top_origin, request->initiator);
+    }
+  } else {
+    for (auto* request : delegate_->data()) {
+      SCOPED_TRACE(request->url);
+      EXPECT_EQ(top_url, request->first_party);
+      EXPECT_EQ(top_origin, request->initiator);
+    }
   }
 }
 
@@ -902,10 +916,16 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
 
   // The first items loaded are the top-level and nested documents. These should
   // both have a |first_party| and |initiator| that match the URL of the
-  // top-level document:
+  // top-level document.
+  // PlzNavigate: the top-level initiator is null.
   EXPECT_EQ(top_url, delegate_->data()[0]->url);
   EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
-  EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
+  if (IsBrowserSideNavigationEnabled()) {
+    EXPECT_FALSE(delegate_->data()[0]->initiator.has_value());
+  } else {
+    ASSERT_TRUE(delegate_->data()[0]->initiator.has_value());
+    EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
+  }
 
   EXPECT_EQ(nested_url, delegate_->data()[1]->url);
   EXPECT_EQ(top_url, delegate_->data()[1]->first_party);
@@ -934,9 +954,15 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
 
   // User-initiated top-level navigations have a first-party and initiator that
   // matches the URL to which they navigate.
+  // PlzNavigate: the top-level initiator is null.
   EXPECT_EQ(top_url, delegate_->data()[0]->url);
   EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
-  EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
+  if (IsBrowserSideNavigationEnabled()) {
+    EXPECT_FALSE(delegate_->data()[0]->initiator.has_value());
+  } else {
+    ASSERT_TRUE(delegate_->data()[0]->initiator.has_value());
+    EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
+  }
 
   // Subresource requests have a first-party and initiator that matches the
   // document in which they're embedded.
@@ -973,9 +999,15 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
 
   // User-initiated top-level navigations have a first-party and initiator that
   // matches the URL to which they navigate, even if they fail to load.
+  // PlzNavigate: the top-level initiator is null.
   EXPECT_EQ(top_url, delegate_->data()[0]->url);
   EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
-  EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
+  if (IsBrowserSideNavigationEnabled()) {
+    EXPECT_FALSE(delegate_->data()[0]->initiator.has_value());
+  } else {
+    ASSERT_TRUE(delegate_->data()[0]->initiator.has_value());
+    EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
+  }
 
   // Auxiliary navigations have a first-party that matches the URL to which they
   // navigate, and an initiator that matches the document that triggered them.
@@ -1014,9 +1046,15 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
 
   // User-initiated top-level navigations have a first-party and initiator that
   // matches the URL to which they navigate, even if they fail to load.
+  // PlzNavigate: the top-level initiator is null.
   EXPECT_EQ(top_url, delegate_->data()[0]->url);
   EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
-  EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
+  if (IsBrowserSideNavigationEnabled()) {
+    EXPECT_FALSE(delegate_->data()[0]->initiator.has_value());
+  } else {
+    ASSERT_TRUE(delegate_->data()[0]->initiator.has_value());
+    EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
+  }
 
   // Auxiliary navigations have a first-party that matches the URL to which they
   // navigate, and an initiator that matches the document that triggered them.
@@ -1038,9 +1076,15 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
 
   // User-initiated top-level navigations have a first-party and initiator that
   // matches the URL to which they navigate, even if they fail to load.
+  // PlzNavigate: the top-level initiator is null.
   EXPECT_EQ(top_url, delegate_->data()[0]->url);
   EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
-  EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
+  if (IsBrowserSideNavigationEnabled()) {
+    EXPECT_FALSE(delegate_->data()[0]->initiator.has_value());
+  } else {
+    ASSERT_TRUE(delegate_->data()[0]->initiator.has_value());
+    EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
@@ -1063,9 +1107,15 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
 
   // User-initiated top-level navigations have a first-party and initiator that
   // matches the URL to which they navigate.
+  // PlzNavigate: the top-level initiator is null.
   EXPECT_EQ(top_url, delegate_->data()[0]->url);
   EXPECT_EQ(top_url, delegate_->data()[0]->first_party);
-  EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
+  if (IsBrowserSideNavigationEnabled()) {
+    EXPECT_FALSE(delegate_->data()[0]->initiator.has_value());
+  } else {
+    ASSERT_TRUE(delegate_->data()[0]->initiator.has_value());
+    EXPECT_EQ(top_origin, delegate_->data()[0]->initiator);
+  }
 
   EXPECT_EQ(top_js_url, delegate_->data()[1]->url);
   EXPECT_EQ(top_url, delegate_->data()[1]->first_party);
