@@ -1545,7 +1545,7 @@ PASS TreeWalker interface: document.createTreeWalker(document.body, NodeFilter.S
 PASS TreeWalker interface: document.createTreeWalker(document.body, NodeFilter.SHOW_ALL, null, false) must inherit property "nextSibling" with the proper type (8) 
 PASS TreeWalker interface: document.createTreeWalker(document.body, NodeFilter.SHOW_ALL, null, false) must inherit property "previousNode" with the proper type (9) 
 PASS TreeWalker interface: document.createTreeWalker(document.body, NodeFilter.SHOW_ALL, null, false) must inherit property "nextNode" with the proper type (10) 
-FAIL NodeFilter interface: existence and properties of interface object assert_equals: prototype of self's property "NodeFilter" is not Object.prototype expected (object) object "[object Object]" but got (function) function "function () {}"
+FAIL NodeFilter interface: existence and properties of interface object assert_equals: prototype of self's property "NodeFilter" is not Object.prototype expected (object) object "[object Object]" but got (function) function "function () { [native code] }"
 PASS NodeFilter interface object name 
 FAIL NodeFilter interface: existence and properties of interface prototype object assert_false: NodeFilter should not have a "prototype" property expected false got true
 FAIL NodeFilter interface: existence and properties of interface prototype object's "constructor" property assert_false: NodeFilter should not have a "prototype" property expected false got true

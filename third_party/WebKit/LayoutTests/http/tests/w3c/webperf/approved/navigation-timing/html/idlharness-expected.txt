@@ -75,7 +75,7 @@ PASS PerformanceNavigation interface: window.performance.navigation must inherit
 PASS PerformanceNavigation interface: window.performance.navigation must inherit property "TYPE_RESERVED" with the proper type (3) 
 PASS PerformanceNavigation interface: window.performance.navigation must inherit property "type" with the proper type (4) 
 PASS PerformanceNavigation interface: window.performance.navigation must inherit property "redirectCount" with the proper type (5) 
-FAIL Performance interface: existence and properties of interface object assert_equals: prototype of self's property "Performance" is not Function.prototype expected function "function () {}" but got function "function EventTarget() { [native code] }"
+FAIL Performance interface: existence and properties of interface object assert_equals: prototype of self's property "Performance" is not Function.prototype expected function "function () { [native code] }" but got function "function EventTarget() { [native code] }"
 PASS Performance interface object length 
 PASS Performance interface object name 
 FAIL Performance interface: existence and properties of interface prototype object assert_equals: prototype of Performance.prototype is not Object.prototype expected object "[object Object]" but got object "[object EventTarget]"

@@ -1324,14 +1324,6 @@ crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure 
 
 crbug.com/649159 imported/wpt/shadow-dom/slotchange-event.html [ Failure ]
 
-crbug.com/666223 fast/workers/constructor-proto.html [ NeedsRebaseline ]
-crbug.com/666223 http/tests/w3c/webperf/approved/navigation-timing/html/idlharness.html [ NeedsRebaseline ]
-crbug.com/666223 virtual/mojo-loading/http/tests/w3c/webperf/approved/navigation-timing/html/idlharness.html [ NeedsRebaseline ]
-crbug.com/666223 imported/wpt/WebIDL/ecmascript-binding/es-exceptions/constructor-object.html [ NeedsRebaseline ]
-crbug.com/666223 imported/wpt/dom/interfaces.html [ NeedsRebaseline ]
-crbug.com/666223 inspector/sources/debugger-ui/watch-expressions-preserve-expansion.html [ NeedsRebaseline ]
-crbug.com/666223 virtual/sharedarraybuffer/fast/workers/constructor-proto.html [ NeedsRebaseline ]
-
 # These are the failing tests because Chrome hasn't implemented according to the spec.
 crbug.com/645988 imported/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
 

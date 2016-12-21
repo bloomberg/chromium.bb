@@ -16,7 +16,7 @@ globalObject: Object
       __proto__: Object
     __proto__: Object
 windowAlias: Window
-array: Array[300]
+array: Array(300)
     [0 .. 99]
     [100 .. 199]
     [200 .. 299]
@@ -121,14 +121,14 @@ array: Array[300]
       298: 298
       299: 299
     length: 300
-    __proto__: Array[0]
+    __proto__: Array(0)
 func: function () {return a + b;}
     arguments: null
     caller: null
     length: 0
     name: 
     prototype: Object
-    __proto__: function () {}
+    __proto__: function () { [native code] }
     [[FunctionLocation]]: Object
     [[Scopes]]: Scopes[2]
       0: Closure
@@ -143,7 +143,7 @@ globalObject: Object
       __proto__: Object
     __proto__: Object
 windowAlias: Window
-array: Array[300]
+array: Array(300)
     [0 .. 99]
     [100 .. 199]
     [200 .. 299]
@@ -248,14 +248,14 @@ array: Array[300]
       298: 298
       299: 299
     length: 300
-    __proto__: Array[0]
+    __proto__: Array(0)
 func: function () {return a + b;}
     arguments: null
     caller: null
     length: 0
     name: 
     prototype: Object
-    __proto__: function () {}
+    __proto__: function () { [native code] }
     [[FunctionLocation]]: Object
     [[Scopes]]: Scopes[2]
       0: Closure
