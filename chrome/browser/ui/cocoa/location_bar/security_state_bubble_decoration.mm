@@ -30,9 +30,6 @@
 
 namespace {
 
-// This is used to increase the left padding of this decoration.
-const CGFloat kLeftSidePadding = 5.0;
-
 // Padding between the icon and label.
 CGFloat kIconLabelPadding = 4.0;
 
@@ -44,8 +41,7 @@ const CGFloat kRetinaBaselineOffset = 0.5;
 
 // The info-bubble point should look like it points to the bottom of the lock
 // icon. Determined with Pixie.app.
-const CGFloat kPageInfoBubblePointXOffset = 5.0;
-const CGFloat kPageInfoBubblePointYOffset = 6.0;
+const CGFloat kPageInfoBubblePointYOffset = 2.0;
 
 // Minimum acceptable width for the ev bubble.
 const CGFloat kMinElidedBubbleWidth = 150.0;
@@ -159,18 +155,7 @@ void SecurityStateBubbleDecoration::DrawInFrame(NSRect frame,
     CGFloat image_alpha =
         image_fade_ && animation_.IsShowing() ? GetAnimationProgress() : 1.0;
 
-    // Center the image vertically.
-    const NSSize image_size = [image_ size];
-    NSRect image_rect = decoration_frame;
-    image_rect.origin.y +=
-        std::floor((NSHeight(decoration_frame) - image_size.height) / 2.0);
-    if (is_rtl) {
-      image_rect.origin.x =
-          NSMaxX(decoration_frame) - image_size.width - kLeftSidePadding;
-    } else {
-      image_rect.origin.x += kLeftSidePadding;
-    }
-    image_rect.size = image_size;
+    NSRect image_rect = GetImageRectInFrame(decoration_frame);
     [image_ drawInRect:image_rect
               fromRect:NSZeroRect  // Entire image
              operation:NSCompositeSourceOver
@@ -289,7 +274,7 @@ bool SecurityStateBubbleDecoration::AcceptsMousePress() {
 
 NSPoint SecurityStateBubbleDecoration::GetBubblePointInFrame(NSRect frame) {
   NSRect image_rect = GetImageRectInFrame(frame);
-  return NSMakePoint(NSMidX(image_rect) + kPageInfoBubblePointXOffset,
+  return NSMakePoint(NSMidX(image_rect),
                      NSMaxY(image_rect) - kPageInfoBubblePointYOffset);
 }
 

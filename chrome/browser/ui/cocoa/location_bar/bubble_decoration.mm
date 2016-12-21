@@ -78,8 +78,13 @@ NSRect BubbleDecoration::GetImageRectInFrame(NSRect frame) {
     const NSSize image_size = [image_ size];
 
     image_rect.origin.y +=
-        std::floor((NSHeight(frame) - image_size.height) / 2.0);
+        std::floor((NSHeight(image_rect) - image_size.height) / 2.0);
+    image_rect.origin.x += kLeftSidePadding;
     image_rect.size = image_size;
+    if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
+      image_rect.origin.x =
+          NSMaxX(frame) - NSWidth(image_rect) - NSMinX(image_rect);
+    }
   }
   return image_rect;
 }
@@ -119,18 +124,7 @@ void BubbleDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   const BOOL is_rtl = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
 
   if (image_) {
-    // Center the image vertically.
-    const NSSize image_size = [image_ size];
-    NSRect image_rect = decoration_frame;
-    if (is_rtl) {
-      image_rect.origin.x =
-          NSMaxX(decoration_frame) - image_size.width - kLeftSidePadding;
-    } else {
-      image_rect.origin.x += kLeftSidePadding;
-    }
-    image_rect.origin.y +=
-        std::floor((NSHeight(decoration_frame) - image_size.height) / 2.0);
-    image_rect.size = image_size;
+    NSRect image_rect = GetImageRectInFrame(frame);
     [image_ drawInRect:image_rect
               fromRect:NSZeroRect  // Entire image
              operation:NSCompositeSourceOver

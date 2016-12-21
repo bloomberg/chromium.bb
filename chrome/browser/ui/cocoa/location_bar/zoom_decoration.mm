@@ -8,6 +8,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#import "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
@@ -116,7 +117,10 @@ void ZoomDecoration::ShowAndUpdateUI(zoom::ZoomController* zoom_controller,
 }
 
 NSPoint ZoomDecoration::GetBubblePointInFrame(NSRect frame) {
-  return NSMakePoint(NSMaxX(frame), NSMaxY(frame));
+  return NSMakePoint(cocoa_l10n_util::ShouldDoExperimentalRTLLayout()
+                         ? NSMinX(frame)
+                         : NSMaxX(frame),
+                     NSMaxY(frame));
 }
 
 bool ZoomDecoration::IsAtDefaultZoom() const {

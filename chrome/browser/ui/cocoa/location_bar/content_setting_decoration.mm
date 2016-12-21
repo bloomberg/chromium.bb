@@ -264,12 +264,6 @@ ContentSettingDecoration::CreateAnimatedText() {
 }
 
 NSPoint ContentSettingDecoration::GetBubblePointInFrame(NSRect frame) {
-  // Compute the frame as if there is no animation pill in the Omnibox. Place
-  // the bubble where the icon would be without animation, so when the animation
-  // ends, the bubble is pointing in the right place.
-  NSSize image_size = [GetImage() size];
-  frame.origin.x += frame.size.width - image_size.width;
-  frame.size = image_size;
 
   const NSRect draw_frame = GetDrawRectInFrame(frame);
   return NSMakePoint(NSMidX(draw_frame),
