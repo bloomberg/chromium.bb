@@ -17,7 +17,7 @@ class ExternalProtocolDialogDelegate : public ProtocolDialogDelegate {
  public:
   explicit ExternalProtocolDialogDelegate(const GURL& url,
                                           int render_process_host_id,
-                                          int tab_contents_id);
+                                          int render_view_routing_id);
   ~ExternalProtocolDialogDelegate() override;
 
   const base::string16& program_name() const { return program_name_; }
@@ -32,7 +32,7 @@ class ExternalProtocolDialogDelegate : public ProtocolDialogDelegate {
 
  private:
   int render_process_host_id_;
-  int tab_contents_id_;
+  int render_view_routing_id_;
   const base::string16 program_name_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProtocolDialogDelegate);

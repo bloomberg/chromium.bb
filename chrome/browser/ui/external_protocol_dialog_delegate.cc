@@ -27,10 +27,10 @@ base::string16 ElideCommandName(const base::string16& command_name) {
 ExternalProtocolDialogDelegate::ExternalProtocolDialogDelegate(
     const GURL& url,
     int render_process_host_id,
-    int tab_contents_id)
+    int render_view_routing_id)
     : ProtocolDialogDelegate(url),
       render_process_host_id_(render_process_host_id),
-      tab_contents_id_(tab_contents_id),
+      render_view_routing_id_(render_view_routing_id),
       program_name_(shell_integration::GetApplicationNameForProtocol(url)) {}
 
 ExternalProtocolDialogDelegate::~ExternalProtocolDialogDelegate() {
@@ -66,8 +66,8 @@ void ExternalProtocolDialogDelegate::DoAccept(const GURL& url,
                                            ExternalProtocolHandler::DONT_BLOCK);
   }
 
-  content::WebContents* web_contents =
-      tab_util::GetWebContentsByID(render_process_host_id_, tab_contents_id_);
+  content::WebContents* web_contents = tab_util::GetWebContentsByID(
+      render_process_host_id_, render_view_routing_id_);
 
   ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url, web_contents);
 }

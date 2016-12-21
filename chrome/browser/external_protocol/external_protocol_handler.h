@@ -65,7 +65,7 @@ class ExternalProtocolHandler {
   // Allowing use of a delegate to facilitate unit testing.
   static void LaunchUrlWithDelegate(const GURL& url,
                                     int render_process_host_id,
-                                    int tab_contents_id,
+                                    int render_view_routing_id,
                                     ui::PageTransition page_transition,
                                     bool has_user_gesture,
                                     Delegate* delegate);

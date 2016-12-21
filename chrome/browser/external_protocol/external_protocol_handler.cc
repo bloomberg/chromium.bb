@@ -80,10 +80,10 @@ void RunExternalProtocolDialogWithDelegate(
 void LaunchUrlWithoutSecurityCheckWithDelegate(
     const GURL& url,
     int render_process_host_id,
-    int tab_contents_id,
+    int render_view_routing_id,
     ExternalProtocolHandler::Delegate* delegate) {
-  content::WebContents* web_contents =
-      tab_util::GetWebContentsByID(render_process_host_id, tab_contents_id);
+  content::WebContents* web_contents = tab_util::GetWebContentsByID(
+      render_process_host_id, render_view_routing_id);
 
   if (!delegate) {
     ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url, web_contents);
@@ -98,7 +98,7 @@ void LaunchUrlWithoutSecurityCheckWithDelegate(
 void OnDefaultProtocolClientWorkerFinished(
     const GURL& escaped_url,
     int render_process_host_id,
-    int tab_contents_id,
+    int render_view_routing_id,
     bool prompt_user,
     ui::PageTransition page_transition,
     bool has_user_gesture,
@@ -121,14 +121,14 @@ void OnDefaultProtocolClientWorkerFinished(
     // Ask the user if they want to allow the protocol. This will call
     // LaunchUrlWithoutSecurityCheck if the user decides to accept the
     // protocol.
-    RunExternalProtocolDialogWithDelegate(escaped_url, render_process_host_id,
-                                          tab_contents_id, page_transition,
-                                          has_user_gesture, delegate);
+    RunExternalProtocolDialogWithDelegate(
+        escaped_url, render_process_host_id, render_view_routing_id,
+        page_transition, has_user_gesture, delegate);
     return;
   }
 
   LaunchUrlWithoutSecurityCheckWithDelegate(escaped_url, render_process_host_id,
-                                            tab_contents_id, delegate);
+                                            render_view_routing_id, delegate);
 }
 
 }  // namespace
@@ -187,7 +187,7 @@ void ExternalProtocolHandler::SetBlockState(const std::string& scheme,
 void ExternalProtocolHandler::LaunchUrlWithDelegate(
     const GURL& url,
     int render_process_host_id,
-    int tab_contents_id,
+    int render_view_routing_id,
     ui::PageTransition page_transition,
     bool has_user_gesture,
     Delegate* delegate) {
@@ -211,7 +211,7 @@ void ExternalProtocolHandler::LaunchUrlWithDelegate(
   // message loops.
   shell_integration::DefaultWebClientWorkerCallback callback = base::Bind(
       &OnDefaultProtocolClientWorkerFinished, url, render_process_host_id,
-      tab_contents_id, block_state == UNKNOWN, page_transition,
+      render_view_routing_id, block_state == UNKNOWN, page_transition,
       has_user_gesture, delegate);
 
   // Start the check process running. This will send tasks to the FILE thread
