@@ -117,12 +117,8 @@ class IsolateStorageTest(auto_stub.TestCase):
 
     s = self.get_server()
     replies = s.fetch('abc123')
-    got_exception = False
-    try:
+    with self.assertRaises(IOError):
       _response = replies.next()
-    except IOError:
-      got_exception = True
-    self.assertTrue(got_exception)
 
   def testFetchThrowsOnFailure(self):
     """Fetch: if something goes wrong in Isolate, we throw an exception"""
@@ -136,12 +132,41 @@ class IsolateStorageTest(auto_stub.TestCase):
 
     s = self.get_server()
     replies = s.fetch('abc123')
-    got_exception = False
-    try:
+    with self.assertRaises(IOError):
       _response = replies.next()
-    except IOError:
-      got_exception = True
-    self.assertTrue(got_exception)
+
+  def testFetchThrowsCorrectExceptionOnGrpcFailure(self):
+    """Fetch: if something goes wrong in gRPC, we throw an IOError"""
+    def FetchBlobs(_self, _request, timeout=None):
+      del timeout
+      raise isolate_storage.grpc.RpcError('proxy died during initial fetch :(')
+    self.mock(FileServiceStubMock, 'FetchBlobs', FetchBlobs)
+
+    s = self.get_server()
+    replies = s.fetch('abc123')
+    with self.assertRaises(IOError):
+      _response = replies.next()
+
+  def testFetchThrowsCorrectExceptionOnStreamingGrpcFailure(self):
+    """Fetch: if something goes wrong in gRPC, we throw an IOError"""
+    def FetchBlobs(self, request, timeout=None):
+      del timeout
+      self.request = request
+      response = isolate_storage.isolate_bot_pb2.FetchBlobsReply()
+      response.status.succeeded = True
+      for i in range(0, 3):
+        if i is 2:
+          raise isolate_storage.grpc.RpcError(
+              'proxy died during fetch stream :(')
+        response.data.data = str(i)
+        response.data.offset = i
+        yield response
+    self.mock(FileServiceStubMock, 'FetchBlobs', FetchBlobs)
+
+    s = self.get_server()
+    with self.assertRaises(IOError):
+      for _response in s.fetch('abc123'):
+        pass
 
   def testPushHappySingleSmall(self):
     """Push: send one chunk of small data"""
@@ -224,12 +249,20 @@ class IsolateStorageTest(auto_stub.TestCase):
 
     s = self.get_server()
     i = isolate_storage.Item(digest='abc123', size=0)
-    got_exception = False
-    try:
+    with self.assertRaises(IOError):
       s.push(i, isolate_storage._IsolateServerGrpcPushState(), '1234')
-    except IOError:
-      got_exception = True
-    self.assertTrue(got_exception)
+
+  def testPushThrowsCorrectExceptionOnGrpcFailure(self):
+    """Push: if something goes wrong in Isolate, we throw an exception"""
+    def PushBlobs(_self, _request, timeout=None):
+      del timeout
+      raise isolate_storage.grpc.RpcError('proxy died during push :(')
+    self.mock(FileServiceStubMock, 'PushBlobs', PushBlobs)
+
+    s = self.get_server()
+    i = isolate_storage.Item(digest='abc123', size=0)
+    with self.assertRaises(IOError):
+      s.push(i, isolate_storage._IsolateServerGrpcPushState(), '1234')
 
   def testContainsHappySimple(self):
     """Contains: basic sanity check"""
@@ -273,6 +306,21 @@ class IsolateStorageTest(auto_stub.TestCase):
     self.assertTrue(items[1] in response)
     self.assertTrue(items[2] in response)
 
+  def testContainsThrowsCorrectExceptionOnGrpcFailure(self):
+    """Contains: the digests are missing"""
+    def Contains(_self, _request, timeout=None):
+      del timeout
+      raise isolate_storage.grpc.RpcError('proxy died during contains :(')
+    self.mock(FileServiceStubMock, 'Contains', Contains)
+
+    items = []
+    for i in range(0, 3):
+      digest = ''.join(['a', str(i)])
+      i = isolate_storage.Item(digest=digest, size=1)
+      items.append(i)
+    s = self.get_server()
+    with self.assertRaises(IOError):
+      _response = s.contains(items)
 
 
 if __name__ == '__main__':

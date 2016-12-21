@@ -542,17 +542,21 @@ class IsolateServerGrpc(StorageApi):
     # array (like [0x01, 0x2a, 0xbc]).
     req_digest.digest = binascii.unhexlify(digest)
     expected_offset = 0
-    for response in self._stub.FetchBlobs(request,
-                                          timeout=DOWNLOAD_READ_TIMEOUT):
-      if not response.status.succeeded:
-        raise IOError(
-            'Error while fetching %s: %s' % (digest, response.status))
-      if not expected_offset == response.data.offset:
-        raise IOError(
-            'Error while fetching %s: expected offset %d, got %d' % (
-                digest, expected_offset, response.data.offset))
-      expected_offset += len(response.data.data)
-      yield response.data.data
+    try:
+      for response in self._stub.FetchBlobs(request,
+                                            timeout=DOWNLOAD_READ_TIMEOUT):
+        if not response.status.succeeded:
+          raise IOError(
+              'Error while fetching %s: %s' % (digest, response.status))
+        if not expected_offset == response.data.offset:
+          raise IOError(
+              'Error while fetching %s: expected offset %d, got %d' % (
+                  digest, expected_offset, response.data.offset))
+        expected_offset += len(response.data.data)
+        yield response.data.data
+    except grpc.RpcError as g:
+      logging.error('gRPC error during fetch: re-throwing as IOError (%s)' % g)
+      raise IOError(g)
 
   def push(self, item, push_state, content=None):
     assert isinstance(item, Item)
@@ -594,7 +598,12 @@ class IsolateServerGrpc(StorageApi):
             chunk = chunk[slice_len:]
 
       # TODO(aludwin): batch up several requests to reuse TCP connections
-      response = self._stub.PushBlobs(slicer())
+      try:
+        response = self._stub.PushBlobs(slicer())
+      except grpc.RpcError as g:
+        logging.error('gRPC error during push: re-throwing as IOError (%s)' % g)
+        raise IOError(g)
+
       if not response.status.succeeded:
         raise IOError(
             'Error while uploading %s: %s' % (
@@ -614,7 +623,12 @@ class IsolateServerGrpc(StorageApi):
       cd = request.digest.add()
       cd.digest = binascii.unhexlify(item.digest)
       items_by_digest[cd.digest] = item
-    response = self._stub.Contains(request)
+    try:
+      response = self._stub.Contains(request)
+    except grpc.RpcError as g:
+      logging.error('gRPC error during contains: re-throwing as IOError (%s)'
+                    % g)
+      raise IOError(g)
 
     # If everything's present, return the empty set.
     if response.status.succeeded:
