@@ -18,11 +18,6 @@
 @interface CRWWebViewScrollViewProxy () {
   __weak UIScrollView* _scrollView;
   base::scoped_nsobject<id> _observers;
-  // When |_ignoreScroll| is set to YES, do not pass on -scrollViewDidScroll
-  // calls to observers.  This is used by -setContentInsetFast, which needs to
-  // update and reset the contentOffset to force a fast update.  These updates
-  // should be a no-op for the contentOffset, so the callbacks can be ignored.
-  BOOL _ignoreScroll;
 }
 
 // Returns the key paths that need to be observed for UIScrollView.
@@ -114,40 +109,6 @@
   return _scrollView ? [_scrollView contentOffset] : CGPointZero;
 }
 
-- (void)setContentInsetFast:(UIEdgeInsets)contentInset {
-  if (!_scrollView)
-    return;
-
-  // The method -scrollViewSetContentInsetImpl below is bypassing UIWebView's
-  // subclassed UIScrollView implemention of setContentOffset.  UIKIt's
-  // implementation calls the internal method |_updateViewSettings| after
-  // updating the contentInsets.  This ensures things like absolute positions
-  // are correctly updated.  The problem is |_updateViewSettings| does lots of
-  // other things and is very very slow.  The workaround below simply sets the
-  // scrollView's content insets directly, and then fiddles with the
-  // contentOffset below to correct the absolute positioning of elements.
-  static void (*scrollViewSetContentInsetImpl)(id, SEL, UIEdgeInsets);
-  static SEL setContentInset;
-  static dispatch_once_t onceToken;
-  dispatch_once(&onceToken, ^{
-      setContentInset = @selector(setContentInset:);
-      scrollViewSetContentInsetImpl =
-          (void (*)(id, SEL, UIEdgeInsets))class_getMethodImplementation(
-              [UIScrollView class], setContentInset);
-  });
-  scrollViewSetContentInsetImpl(_scrollView, setContentInset, contentInset);
-
-  // Change and then reset the contentOffset to force the view into updating the
-  // absolute position of elements and content frame. Updating the
-  // contentOffset will cause the -scrollViewDidScroll callback to fire.
-  // Because we are eventually setting the contentOffset back to it's original
-  // position, we can ignore these calls.
-  base::AutoReset<BOOL> autoReset(&_ignoreScroll, YES);
-  CGPoint contentOffset = [_scrollView contentOffset];
-  _scrollView.contentOffset = CGPointMake(contentOffset.x, contentOffset.y + 1);
-  _scrollView.contentOffset = contentOffset;
-}
-
 - (void)setContentInset:(UIEdgeInsets)contentInset {
   [_scrollView setContentInset:contentInset];
 }
@@ -189,9 +150,7 @@
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
   DCHECK_EQ(_scrollView, scrollView);
-  if (!_ignoreScroll) {
-    [_observers webViewScrollViewDidScroll:self];
-  }
+  [_observers webViewScrollViewDidScroll:self];
 }
 
 - (void)scrollViewWillBeginDragging:(UIScrollView*)scrollView {

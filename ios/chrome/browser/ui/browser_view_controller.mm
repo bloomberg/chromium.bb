@@ -2642,7 +2642,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     headerAnimationCompleted:(BOOL)completed
                       offset:(CGFloat)offset {
   if (completed)
-    [controller setToolbarInsetsForHeaderOffset:offset forceUpdate:YES];
+    [controller setToolbarInsetsForHeaderOffset:offset];
 }
 
 - (void)setFramesForHeaders:(const std::vector<HeaderDefinition>)headers

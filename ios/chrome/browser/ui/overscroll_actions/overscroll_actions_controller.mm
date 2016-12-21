@@ -587,7 +587,7 @@ NSString* const kOverscollActionsDidEnd = @"OverscollActionsDidStop";
   if (_scrollview)
     [_scrollview setContentInset:contentInset];
   else
-    [_webViewScrollViewProxy setContentInsetFast:contentInset];
+    [_webViewScrollViewProxy setContentInset:contentInset];
 }
 
 - (UIView<RelaxedBoundsConstraintsHitTestSupport>*)headerView {

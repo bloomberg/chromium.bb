@@ -36,10 +36,6 @@
 // Returns the scrollview's gesture recognizers.
 @property(weak, nonatomic, readonly) NSArray* gestureRecognizers;
 
-// Calls UIScrollView's implementation of setContentInset: directly. This
-// bypasses a very slow update path in UIWebView.
-- (void)setContentInsetFast:(UIEdgeInsets)contentInset;
-
 - (void)addGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer;
 - (void)removeGestureRecognizer:(UIGestureRecognizer*)gestureRecognizer;
 - (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated;

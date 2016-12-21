@@ -106,13 +106,8 @@ extern NSString* const kSetupForTestingWillCloseAllTabsNotification;
 // is necessary when programatically scrolling down the y offset.
 - (void)shouldSkipNextScrollOffsetForHeader;
 
-// Update the insets during animation. When |forceUpdate| is set to NO, a faster
-// workaround implemention is used to update the content's offset.  That
-// implemention does not cause a full update. |forceUpdate| should only be set
-// to |NO| when -setToolbarInsetsForHeaderOffset is called
-// in quick succession during scroll callbacks.
-- (void)setToolbarInsetsForHeaderOffset:(CGFloat)headerOffset
-                            forceUpdate:(BOOL)forceUpdate;
+// Updates the insets during animation.
+- (void)setToolbarInsetsForHeaderOffset:(CGFloat)headerOffset;
 
 // Set the content offset of the underlying UIScrollView so that the content
 // is not hidden by the header. The header will be moved to its visible position

@@ -687,8 +687,7 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
   [webViewProxy_ setTopContentPadding:newTopPadding];
 }
 
-- (void)setToolbarInsetsForHeaderOffset:(CGFloat)headerOffset
-                            forceUpdate:(BOOL)forceUpdate {
+- (void)setToolbarInsetsForHeaderOffset:(CGFloat)headerOffset {
   // Make space for the header in the scroll view.
   CGFloat topInset = self.headerHeight - headerOffset;
   UIEdgeInsets insets = self.scrollViewProxy.contentInset;
@@ -785,7 +784,7 @@ BOOL CGFloatEquals(CGFloat a, CGFloat b) {
 - (void)webViewScrollViewProxyDidSetScrollView:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
   webViewScrollViewProxy.contentOffset = CGPointMake(0.0, -self.headerHeight);
-  [self setToolbarInsetsForHeaderOffset:0.0 forceUpdate:YES];
+  [self setToolbarInsetsForHeaderOffset:0.0];
 }
 
 #pragma mark - UIGestureRecognizerDelegate
