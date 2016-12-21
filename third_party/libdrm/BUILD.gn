@@ -10,7 +10,7 @@ declare_args() {
   # library shipped with the system. In release builds of Chrome OS we
   # use the system version, but when building on dev workstations we
   # bundle it because Ubuntu doesn't ship a usable version.
-  use_system_libdrm = true
+  use_system_libdrm = false
 }
 
 if (!use_system_libdrm) {
