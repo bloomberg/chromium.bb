@@ -91,7 +91,6 @@ class Port(object):
         ('mac10.11', 'x86'),
         ('win7', 'x86'),
         ('win10', 'x86'),
-        ('precise', 'x86_64'),
         ('trusty', 'x86_64'),
         # FIXME: Technically this should be 'arm', but adding a third architecture type breaks TestConfigurationConverter.
         # If we need this to be 'arm' in the future, then we first have to fix TestConfigurationConverter.
@@ -101,7 +100,7 @@ class Port(object):
     CONFIGURATION_SPECIFIER_MACROS = {
         'mac': ['retina', 'mac10.9', 'mac10.10', 'mac10.11'],
         'win': ['win7', 'win10'],
-        'linux': ['precise', 'trusty'],
+        'linux': ['trusty'],
         'android': ['icecreamsandwich'],
     }
 
