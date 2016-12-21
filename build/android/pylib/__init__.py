@@ -13,13 +13,19 @@ _DEVIL_PATH = os.path.join(_CATAPULT_PATH, 'devil')
 
 _PYTRACE_PATH = os.path.join(_CATAPULT_PATH, 'common', 'py_trace_event')
 
+_PY_UTILS_PATH = os.path.join(_CATAPULT_PATH, 'common', 'py_utils')
+
 _TRACE2HTML_PATH = os.path.join(_CATAPULT_PATH, 'tracing')
+
 
 if _DEVIL_PATH not in sys.path:
   sys.path.append(_DEVIL_PATH)
 
 if _PYTRACE_PATH not in sys.path:
   sys.path.append(_PYTRACE_PATH)
+
+if _PY_UTILS_PATH not in sys.path:
+  sys.path.append(_PY_UTILS_PATH)
 
 if _TRACE2HTML_PATH not in sys.path:
   sys.path.append(_TRACE2HTML_PATH)

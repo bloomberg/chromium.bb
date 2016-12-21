@@ -39,6 +39,8 @@ from pylib.linker import setup as linker_setup
 from pylib.results import json_results
 from pylib.results import report_results
 
+from py_utils import contextlib_ext
+
 
 _DEVIL_STATIC_CONFIG_FILE = os.path.abspath(os.path.join(
     host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'devil_config.json'))
@@ -739,20 +741,16 @@ def RunTestsInPlatformMode(args):
   all_iteration_results = []
 
   @contextlib.contextmanager
-  def noop():
-    yield
+  def write_json_file():
+    try:
+      yield
+    finally:
+      json_results.GenerateJsonResultsFile(
+          all_raw_results, args.json_results_file)
 
-  json_writer = noop()
-  if args.json_results_file:
-    @contextlib.contextmanager
-    def write_json_file():
-      try:
-        yield
-      finally:
-        json_results.GenerateJsonResultsFile(
-            all_raw_results, args.json_results_file)
-
-    json_writer = write_json_file()
+  json_writer = contextlib_ext.Optional(
+      write_json_file(),
+      args.json_results_file)
 
   ### Set up test objects.
 

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import collections
-import contextlib
 import io
 import json
 import logging
@@ -31,6 +30,7 @@ from pylib.constants import host_paths
 from pylib.local.device import local_device_environment
 from pylib.local.device import local_device_test_run
 from py_trace_event import trace_event
+from py_utils import contextlib_ext
 
 
 class HeartBeat(object):
@@ -96,20 +96,12 @@ class TestShard(object):
 
     self._LogTest(test, cmd, timeout)
 
-    @contextlib.contextmanager
-    def trace_if_enabled(test):
-      try:
-        if self._test_instance.trace_output:
-          trace_event.trace_begin(test)
-        yield
-      finally:
-        if self._test_instance.trace_output:
-          trace_event.trace_end(test)
-
     try:
       start_time = time.time()
 
-      with trace_if_enabled(test):
+      with contextlib_ext.Optional(
+          trace_event.trace(test),
+          self._test_instance.trace_output):
         exit_code, output = cmd_helper.GetCmdStatusAndOutputWithTimeout(
             cmd, timeout, cwd=cwd, shell=True)
       end_time = time.time()
