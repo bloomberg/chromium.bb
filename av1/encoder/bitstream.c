@@ -734,7 +734,7 @@ static void update_supertx_probs(AV1_COMMON *cm, int probwt, aom_writer *w) {
   int savings = 0;
   int do_update = 0;
   for (i = 0; i < PARTITION_SUPERTX_CONTEXTS; ++i) {
-    for (j = 1; j < TX_SIZES; ++j) {
+    for (j = TX_8X8; j < TX_SIZES; ++j) {
       savings += av1_cond_prob_diff_update_savings(
           &cm->fc->supertx_prob[i][j], cm->counts.supertx[i][j], probwt);
     }
@@ -743,7 +743,7 @@ static void update_supertx_probs(AV1_COMMON *cm, int probwt, aom_writer *w) {
   aom_write(w, do_update, GROUP_DIFF_UPDATE_PROB);
   if (do_update) {
     for (i = 0; i < PARTITION_SUPERTX_CONTEXTS; ++i) {
-      for (j = 1; j < TX_SIZES; ++j) {
+      for (j = TX_8X8; j < TX_SIZES; ++j) {
         av1_cond_prob_diff_update(w, &cm->fc->supertx_prob[i][j],
                                   cm->counts.supertx[i][j], probwt);
       }
@@ -2246,8 +2246,8 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 #if CONFIG_SUPERTX
   mbmi = &cm->mi_grid_visible[mi_offset]->mbmi;
   xd->mi = cm->mi_grid_visible + mi_offset;
-  set_mi_row_col(xd, tile, mi_row, num_8x8_blocks_high_lookup[bsize], mi_col,
-                 num_8x8_blocks_wide_lookup[bsize], cm->mi_rows, cm->mi_cols);
+  set_mi_row_col(xd, tile, mi_row, mi_size_high[bsize], mi_col,
+                 mi_size_wide[bsize], cm->mi_rows, cm->mi_cols);
   if (!supertx_enabled && !frame_is_intra_only(cm) &&
       partition != PARTITION_NONE && bsize <= MAX_SUPERTX_BLOCK_SIZE &&
       !xd->lossless[0]) {
@@ -2332,8 +2332,8 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 #if CONFIG_SUPERTX
   if (partition != PARTITION_NONE && supertx_enabled && pack_token) {
     int skip;
-    const int bsw = num_8x8_blocks_wide_lookup[bsize];
-    const int bsh = num_8x8_blocks_high_lookup[bsize];
+    const int bsw = mi_size_wide[bsize];
+    const int bsh = mi_size_high[bsize];
     xd->mi = cm->mi_grid_visible + mi_offset;
     supertx_size = mbmi->tx_size;
     set_mi_row_col(xd, tile, mi_row, bsh, mi_col, bsw, cm->mi_rows,
@@ -2363,19 +2363,25 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
     if (!skip) {
       assert(*tok < tok_end);
       for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
+        const struct macroblockd_plane *const pd = &xd->plane[plane];
         const int mbmi_txb_size = txsize_to_bsize[mbmi->tx_size];
-        const int num_4x4_w = num_4x4_blocks_wide_lookup[mbmi_txb_size];
-        const int num_4x4_h = num_4x4_blocks_high_lookup[mbmi_txb_size];
+        const BLOCK_SIZE plane_bsize = get_plane_block_size(mbmi_txb_size, pd);
+
+        const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
+        const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
+
         int row, col;
         TX_SIZE tx =
             plane ? get_uv_tx_size(mbmi, &xd->plane[plane]) : mbmi->tx_size;
         BLOCK_SIZE txb_size = txsize_to_bsize[tx];
-        int bw = num_4x4_blocks_wide_lookup[txb_size];
+
+        const int stepr = tx_size_high_unit[txb_size];
+        const int stepc = tx_size_wide_unit[txb_size];
 
         TOKEN_STATS token_stats;
         token_stats.cost = 0;
-        for (row = 0; row < num_4x4_h; row += bw)
-          for (col = 0; col < num_4x4_w; col += bw)
+        for (row = 0; row < max_blocks_high; row += stepr)
+          for (col = 0; col < max_blocks_wide; col += stepc)
             pack_mb_tokens(w, tok, tok_end, cm->bit_depth, tx, &token_stats);
         assert(*tok < tok_end && (*tok)->token == EOSB_TOKEN);
         (*tok)++;

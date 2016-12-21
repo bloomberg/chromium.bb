@@ -343,8 +343,8 @@ static void set_offsets_supertx(const AV1_COMP *const cpi, ThreadData *td,
   MACROBLOCK *const x = &td->mb;
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
-  const int mi_width = num_8x8_blocks_wide_lookup[bsize];
-  const int mi_height = num_8x8_blocks_high_lookup[bsize];
+  const int mi_width = mi_size_wide[bsize];
+  const int mi_height = mi_size_high[bsize];
 
   set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
 
@@ -364,8 +364,8 @@ static void set_offsets_extend(const AV1_COMP *const cpi, ThreadData *td,
   MACROBLOCK *const x = &td->mb;
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
-  const int mi_width = num_8x8_blocks_wide_lookup[bsize_pred];
-  const int mi_height = num_8x8_blocks_high_lookup[bsize_pred];
+  const int mi_width = mi_size_wide[bsize_pred];
+  const int mi_height = mi_size_high[bsize_pred];
 
   set_mode_info_offsets(cpi, x, xd, mi_row_ori, mi_col_ori);
 
@@ -377,7 +377,8 @@ static void set_offsets_extend(const AV1_COMP *const cpi, ThreadData *td,
   x->mv_col_max = (cm->mi_cols - mi_col_pred) * MI_SIZE + AOM_INTERP_EXTEND;
 
   // Set up distance of MB to edge of frame in 1/8th pel units.
-  assert(!(mi_col_pred & (mi_width - 1)) && !(mi_row_pred & (mi_height - 1)));
+  assert(!(mi_col_pred & (mi_width - mi_size_wide[BLOCK_8X8])) &&
+         !(mi_row_pred & (mi_height - mi_size_high[BLOCK_8X8])));
   set_mi_row_col(xd, tile, mi_row_pred, mi_height, mi_col_pred, mi_width,
                  cm->mi_rows, cm->mi_cols);
   xd->up_available = (mi_row_ori > tile->mi_row_start);
@@ -393,10 +394,8 @@ static void set_segment_id_supertx(const AV1_COMP *const cpi,
                                    const int mi_col, const BLOCK_SIZE bsize) {
   const AV1_COMMON *cm = &cpi->common;
   const struct segmentation *seg = &cm->seg;
-  const int miw =
-      AOMMIN(num_8x8_blocks_wide_lookup[bsize], cm->mi_cols - mi_col);
-  const int mih =
-      AOMMIN(num_8x8_blocks_high_lookup[bsize], cm->mi_rows - mi_row);
+  const int miw = AOMMIN(mi_size_wide[bsize], cm->mi_cols - mi_col);
+  const int mih = AOMMIN(mi_size_high[bsize], cm->mi_rows - mi_row);
   const int mi_offset = mi_row * cm->mi_stride + mi_col;
   MODE_INFO **const mip = cm->mi_grid_visible + mi_offset;
   int r, c;
@@ -1240,8 +1239,8 @@ static void update_state_supertx(const AV1_COMP *const cpi, ThreadData *td,
   MODE_INFO *mi_addr = xd->mi[0];
   const struct segmentation *const seg = &cm->seg;
   const int mis = cm->mi_stride;
-  const int mi_width = num_8x8_blocks_wide_lookup[bsize];
-  const int mi_height = num_8x8_blocks_high_lookup[bsize];
+  const int mi_width = mi_size_wide[bsize];
+  const int mi_height = mi_size_high[bsize];
   const int x_mis = AOMMIN(mi_width, cm->mi_cols - mi_col);
   const int y_mis = AOMMIN(mi_height, cm->mi_rows - mi_row);
   MV_REF *const frame_mvs = cm->cur_frame->mvs + mi_row * cm->mi_cols + mi_col;
@@ -1403,7 +1402,7 @@ static void update_state_sb_supertx(const AV1_COMP *const cpi, ThreadData *td,
   MACROBLOCKD *const xd = &x->e_mbd;
   struct macroblock_plane *const p = x->plane;
   struct macroblockd_plane *const pd = xd->plane;
-  int bsl = b_width_log2_lookup[bsize], hbs = (1 << bsl) / 4;
+  int hbs = mi_size_wide[bsize] / 2;
   PARTITION_TYPE partition = pc_tree->partitioning;
   BLOCK_SIZE subsize = get_subsize(bsize, partition);
   int i;
@@ -1556,7 +1555,7 @@ static void update_supertx_param_sb(const AV1_COMP *const cpi, ThreadData *td,
                                     int best_tx, TX_SIZE supertx_size,
                                     PC_TREE *pc_tree) {
   const AV1_COMMON *const cm = &cpi->common;
-  int bsl = b_width_log2_lookup[bsize], hbs = (1 << bsl) / 4;
+  const int hbs = mi_size_wide[bsize] / 2;
   PARTITION_TYPE partition = pc_tree->partitioning;
   BLOCK_SIZE subsize = get_subsize(bsize, partition);
 #if CONFIG_EXT_PARTITION_TYPES
@@ -2281,8 +2280,8 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
     TX_SIZE supertx_size = max_txsize_lookup[bsize];
     supertx_enabled = check_supertx_sb(bsize, supertx_size, pc_tree);
     if (supertx_enabled) {
-      const int mi_width = num_8x8_blocks_wide_lookup[bsize];
-      const int mi_height = num_8x8_blocks_high_lookup[bsize];
+      const int mi_width = mi_size_wide[bsize];
+      const int mi_height = mi_size_high[bsize];
       int x_idx, y_idx, i;
       uint8_t *dst_buf[3];
       int dst_stride[3];

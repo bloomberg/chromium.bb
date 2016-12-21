@@ -840,12 +840,13 @@ static void dec_extend_dir(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       }
     }
   } else if (dir == 2 || dir == 3) {
-    extend_bsize = (mi_height == 1 || bsize < BLOCK_8X8 || yss < xss)
-                       ? BLOCK_8X8
-                       : BLOCK_8X16;
-    unit = num_8x8_blocks_high_lookup[extend_bsize];
+    extend_bsize =
+        (mi_height == mi_size_high[BLOCK_8X8] || bsize < BLOCK_8X8 || yss < xss)
+            ? BLOCK_8X8
+            : BLOCK_8X16;
+    unit = mi_size_high[extend_bsize];
     mi_row_pred = mi_row;
-    mi_col_pred = mi_col + ((dir == 3) ? mi_width : -1);
+    mi_col_pred = mi_col + ((dir == 3) ? mi_width : -mi_size_wide[BLOCK_8X8]);
 
     dec_predict_b_extend(pbi, xd, tile, block, mi_row, mi_col, mi_row_pred,
                          mi_col_pred, mi_row_top, mi_col_top, dst_buf,
@@ -862,8 +863,10 @@ static void dec_extend_dir(AV1Decoder *const pbi, MACROBLOCKD *const xd,
     }
   } else {
     extend_bsize = BLOCK_8X8;
-    mi_row_pred = mi_row + ((dir == 4 || dir == 6) ? mi_height : -1);
-    mi_col_pred = mi_col + ((dir == 6 || dir == 7) ? mi_width : -1);
+    mi_row_pred = mi_row + ((dir == 4 || dir == 6) ? mi_height
+                                                   : -mi_size_high[BLOCK_8X8]);
+    mi_col_pred =
+        mi_col + ((dir == 6 || dir == 7) ? mi_width : -mi_size_wide[BLOCK_8X8]);
     dec_predict_b_extend(pbi, xd, tile, block, mi_row, mi_col, mi_row_pred,
                          mi_col_pred, mi_row_top, mi_col_top, dst_buf,
                          dst_stride, top_bsize, extend_bsize, b_sub8x8, 1);
@@ -899,7 +902,7 @@ static void dec_predict_sb_complex(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                                    BLOCK_SIZE bsize, BLOCK_SIZE top_bsize,
                                    uint8_t *dst_buf[3], int dst_stride[3]) {
   const AV1_COMMON *const cm = &pbi->common;
-  const int hbs = num_8x8_blocks_wide_lookup[bsize] / 2;
+  const int hbs = mi_size_wide[bsize] / 2;
   const PARTITION_TYPE partition = get_partition(cm, mi_row, mi_col, bsize);
   const BLOCK_SIZE subsize = get_subsize(bsize, partition);
 #if CONFIG_EXT_PARTITION_TYPES
@@ -1327,10 +1330,8 @@ static void dec_predict_sb_complex(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 static void set_segment_id_supertx(const AV1_COMMON *const cm, const int mi_row,
                                    const int mi_col, const BLOCK_SIZE bsize) {
   const struct segmentation *seg = &cm->seg;
-  const int miw =
-      AOMMIN(num_8x8_blocks_wide_lookup[bsize], cm->mi_cols - mi_col);
-  const int mih =
-      AOMMIN(num_8x8_blocks_high_lookup[bsize], cm->mi_rows - mi_row);
+  const int miw = AOMMIN(mi_size_wide[bsize], cm->mi_cols - mi_col);
+  const int mih = AOMMIN(mi_size_high[bsize], cm->mi_rows - mi_row);
   const int mi_offset = mi_row * cm->mi_stride + mi_col;
   MODE_INFO **const mip = cm->mi_grid_visible + mi_offset;
   int r, c;
@@ -1761,7 +1762,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #if CONFIG_SUPERTX
   const int read_token = !supertx_enabled;
   int skip = 0;
-  TX_SIZE supertx_size = b_width_log2_lookup[bsize];
+  TX_SIZE supertx_size = b_width_log2_lookup[bsize] + CONFIG_CB4X4;
   const TileInfo *const tile = &xd->tile;
   int txfm = DCT_DCT;
 #endif  // CONFIG_SUPERTX
@@ -1964,8 +1965,8 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 
     xd->mi = cm->mi_grid_visible + offset;
     xd->mi[0] = cm->mi + offset;
-    set_mi_row_col(xd, tile, mi_row, num_8x8_blocks_high_lookup[bsize], mi_col,
-                   num_8x8_blocks_wide_lookup[bsize], cm->mi_rows, cm->mi_cols);
+    set_mi_row_col(xd, tile, mi_row, mi_size_high[bsize], mi_col,
+                   mi_size_wide[bsize], cm->mi_rows, cm->mi_cols);
     set_skip_context(xd, mi_row, mi_col);
     skip = read_skip(cm, xd, xd->mi[0]->mbmi.segment_id_supertx, r);
     if (skip) {
@@ -2009,19 +2010,11 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
         const struct macroblockd_plane *const pd = &xd->plane[i];
         int row, col;
         const TX_SIZE tx_size = i ? get_uv_tx_size(mbmi, pd) : mbmi->tx_size;
+        const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
         const int stepr = tx_size_high_unit[tx_size];
         const int stepc = tx_size_wide_unit[tx_size];
-        int max_blocks_wide =
-            pd->width + (xd->mb_to_right_edge >= 0
-                             ? 0
-                             : xd->mb_to_right_edge >> (3 + pd->subsampling_x));
-        int max_blocks_high =
-            pd->height +
-            (xd->mb_to_bottom_edge >= 0 ? 0 : xd->mb_to_bottom_edge >>
-                                                  (3 + pd->subsampling_y));
-
-        max_blocks_wide >>= tx_size_wide_log2[0];
-        max_blocks_high >>= tx_size_wide_log2[0];
+        const int max_blocks_wide = max_block_wide(xd, plane_bsize, i);
+        const int max_blocks_high = max_block_high(xd, plane_bsize, i);
 
         for (row = 0; row < max_blocks_high; row += stepr)
           for (col = 0; col < max_blocks_wide; col += stepc)
